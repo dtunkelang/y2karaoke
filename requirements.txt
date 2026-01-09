@@ -1,0 +1,8 @@
+yt-dlp>=2024.0.0
+audio-separator>=0.17.0
+syncedlyrics>=0.10.0
+openai-whisper>=20231117
+whisper-timestamped>=1.14.0
+moviepy>=1.0.3
+numpy>=1.24.0
+Pillow>=10.0.0
