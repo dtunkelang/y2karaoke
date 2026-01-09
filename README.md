@@ -15,7 +15,7 @@ Generate karaoke videos from YouTube URLs with word-by-word highlighting.
 
 ### Prerequisites
 
-- Python 3.10+
+- **Python 3.12** (required - onnxruntime is not yet available for Python 3.13+)
 - ffmpeg
 
 ### Setup
@@ -25,13 +25,23 @@ Generate karaoke videos from YouTube URLs with word-by-word highlighting.
 git clone https://github.com/dtunkelang/y2karaoke.git
 cd y2karaoke
 
-# Create virtual environment
-python3 -m venv venv
+# Create virtual environment with Python 3.12
+python3.12 -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 
 # Install dependencies
 pip install -r requirements.txt
 ```
+
+### Troubleshooting
+
+If you see `ModuleNotFoundError: No module named 'onnxruntime'`, your Python version is likely too new. Verify you're using Python 3.12:
+
+```bash
+python --version  # Should show Python 3.12.x
+```
+
+If not, recreate the virtual environment with `python3.12 -m venv venv`.
 
 ## Usage
 
