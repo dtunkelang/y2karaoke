@@ -22,7 +22,7 @@ Generate karaoke videos from YouTube URLs with word-by-word highlighting.
 
 ```bash
 # Clone the repository
-git clone https://github.com/YOUR_USERNAME/y2karaoke.git
+git clone https://github.com/dtunkelang/y2karaoke.git
 cd y2karaoke
 
 # Create virtual environment
