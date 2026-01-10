@@ -21,10 +21,16 @@ BG_COLOR_BOTTOM = (40, 20, 60)   # Dark purple
 TEXT_COLOR = (255, 255, 255)     # White
 HIGHLIGHT_COLOR = (255, 215, 0)  # Gold
 SUNG_COLOR = (180, 180, 180)    # Gray (already sung)
+PROGRESS_BAR_BG = (60, 60, 80)  # Progress bar background
+PROGRESS_BAR_FG = (255, 215, 0) # Progress bar fill (gold)
 
 # Font settings
 FONT_SIZE = 72
 LINE_SPACING = 100
+
+# Instrumental break settings
+INSTRUMENTAL_BREAK_THRESHOLD = 5.0  # seconds - minimum gap to show progress bar
+LYRICS_LEAD_TIME = 2.0              # seconds - show lyrics before they start
 
 
 def get_font(size: int = FONT_SIZE) -> ImageFont.FreeTypeFont:
@@ -63,6 +69,80 @@ def create_gradient_background() -> np.ndarray:
     return np.array(img)
 
 
+def draw_progress_bar(
+    draw: ImageDraw.Draw,
+    progress: float,
+    y_center: int = VIDEO_HEIGHT // 2,
+) -> None:
+    """
+    Draw a horizontal progress bar at the center of the screen.
+
+    Args:
+        draw: PIL ImageDraw object
+        progress: Progress value from 0.0 to 1.0
+        y_center: Vertical center position of the bar
+    """
+    bar_width = 600
+    bar_height = 12
+    border_radius = 6
+
+    x_start = (VIDEO_WIDTH - bar_width) // 2
+    x_end = x_start + bar_width
+    y_start = y_center - bar_height // 2
+    y_end = y_center + bar_height // 2
+
+    draw.rounded_rectangle(
+        [(x_start, y_start), (x_end, y_end)],
+        radius=border_radius,
+        fill=PROGRESS_BAR_BG,
+    )
+
+    if progress > 0:
+        fill_width = int(bar_width * min(progress, 1.0))
+        if fill_width > 0:
+            draw.rounded_rectangle(
+                [(x_start, y_start), (x_start + fill_width, y_end)],
+                radius=border_radius,
+                fill=PROGRESS_BAR_FG,
+            )
+
+
+def draw_logo_screen(
+    draw: ImageDraw.Draw,
+    font: ImageFont.FreeTypeFont,
+) -> None:
+    """Draw the y2karaoke logo screen for the outro."""
+    logo_font = get_font(96)
+    tagline_font = get_font(36)
+    url_font = get_font(28)
+
+    logo_text = "y2karaoke"
+    tagline_text = "youtube to karaoke"
+    url_text = "github.com/dtunkelang/y2karaoke"
+
+    # Center the logo
+    logo_bbox = logo_font.getbbox(logo_text)
+    logo_width = logo_bbox[2] - logo_bbox[0]
+    logo_x = (VIDEO_WIDTH - logo_width) // 2
+    logo_y = VIDEO_HEIGHT // 2 - 80
+
+    # Center the tagline
+    tagline_bbox = tagline_font.getbbox(tagline_text)
+    tagline_width = tagline_bbox[2] - tagline_bbox[0]
+    tagline_x = (VIDEO_WIDTH - tagline_width) // 2
+    tagline_y = logo_y + 100
+
+    # Center the URL
+    url_bbox = url_font.getbbox(url_text)
+    url_width = url_bbox[2] - url_bbox[0]
+    url_x = (VIDEO_WIDTH - url_width) // 2
+    url_y = tagline_y + 60
+
+    draw.text((logo_x, logo_y), logo_text, font=logo_font, fill=HIGHLIGHT_COLOR)
+    draw.text((tagline_x, tagline_y), tagline_text, font=tagline_font, fill=TEXT_COLOR)
+    draw.text((url_x, url_y), url_text, font=url_font, fill=SUNG_COLOR)
+
+
 def render_frame(
     lines: list[Line],
     current_time: float,
@@ -73,13 +153,59 @@ def render_frame(
     img = Image.fromarray(background.copy())
     draw = ImageDraw.Draw(img)
 
-    # Find current line index
+    # Check if we're in an instrumental break
+    show_progress_bar = False
+    progress = 0.0
+
+    # Handle intro: before first lyrics start
+    if lines and current_time < lines[0].start_time:
+        first_line = lines[0]
+        if first_line.start_time >= INSTRUMENTAL_BREAK_THRESHOLD:
+            time_until_first = first_line.start_time - current_time
+            if time_until_first > LYRICS_LEAD_TIME:
+                show_progress_bar = True
+                break_end = first_line.start_time - LYRICS_LEAD_TIME
+                progress = current_time / break_end if break_end > 0 else 1.0
+
+    # Find current line index (the line we're currently on or just finished)
     current_line_idx = 0
     for i, line in enumerate(lines):
         if line.start_time <= current_time:
             current_line_idx = i
 
-    # Show current line and next line
+    # Handle outro: after last lyrics end, show logo screen
+    if lines and current_time >= lines[-1].end_time:
+        draw_logo_screen(draw, font)
+        return np.array(img)
+
+    # Handle mid-song gaps between lines
+    if not show_progress_bar and current_line_idx < len(lines):
+        current_line = lines[current_line_idx]
+        next_line_idx = current_line_idx + 1
+
+        # Check if there's a next line and we're past the current line
+        if next_line_idx < len(lines) and current_time >= current_line.end_time:
+            next_line = lines[next_line_idx]
+            gap = next_line.start_time - current_line.end_time
+
+            # If gap is large enough for instrumental break
+            if gap >= INSTRUMENTAL_BREAK_THRESHOLD:
+                time_until_next = next_line.start_time - current_time
+
+                # Show progress bar if we're not within lead time of next lyrics
+                if time_until_next > LYRICS_LEAD_TIME:
+                    show_progress_bar = True
+                    break_start = current_line.end_time
+                    break_end = next_line.start_time - LYRICS_LEAD_TIME
+                    break_duration = break_end - break_start
+                    elapsed = current_time - break_start
+                    progress = elapsed / break_duration if break_duration > 0 else 1.0
+
+    if show_progress_bar:
+        draw_progress_bar(draw, progress)
+        return np.array(img)
+
+    # Normal lyrics display
     lines_to_show = []
     if current_line_idx < len(lines):
         lines_to_show.append((lines[current_line_idx], True))  # (line, is_current)

@@ -23,6 +23,7 @@ output/
 *.mp4
 *.wav
 *.mp3
+*.png
 
 # Cache
 .cache/
