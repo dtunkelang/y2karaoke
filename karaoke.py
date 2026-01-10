@@ -21,6 +21,7 @@ from separator import separate_vocals
 from lyrics import get_lyrics, Line, Word
 from renderer import render_karaoke_video
 from audio_effects import process_audio
+from uploader import upload_video, generate_metadata
 
 
 # Default cache directory
@@ -118,6 +119,16 @@ def main():
         type=float,
         default=1.0,
         help="Tempo multiplier (1.0 = original, 0.5 = half speed, 2.0 = double)"
+    )
+    parser.add_argument(
+        "--upload",
+        action="store_true",
+        help="Upload to YouTube as unlisted video after rendering"
+    )
+    parser.add_argument(
+        "--no-upload",
+        action="store_true",
+        help="Skip the upload prompt (for batch/script mode)"
     )
 
     args = parser.parse_args()
@@ -251,6 +262,29 @@ def main():
         print("SUCCESS!")
         print(f"Output: {output_path}")
         print("=" * 60)
+
+        # Handle YouTube upload
+        should_upload = args.upload
+        if not should_upload and not args.no_upload:
+            # Prompt user
+            try:
+                response = input("\nUpload to YouTube as unlisted video? [y/N]: ").strip().lower()
+                should_upload = response in ('y', 'yes')
+            except EOFError:
+                should_upload = False
+
+        if should_upload:
+            try:
+                video_title, description = generate_metadata(title, artist)
+                video_url = upload_video(output_path, video_title, description)
+                print("\n" + "=" * 60)
+                print("UPLOAD COMPLETE!")
+                print(f"Share this link: {video_url}")
+                print("=" * 60)
+            except FileNotFoundError as e:
+                print(f"\n{e}")
+            except Exception as e:
+                print(f"\nUpload failed: {e}")
 
     except KeyboardInterrupt:
         print("\n\nCancelled by user.")

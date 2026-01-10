@@ -11,6 +11,7 @@ Generate karaoke videos from YouTube URLs with word-by-word highlighting.
 - Renders KaraFun-style karaoke videos with word highlighting
 - **Key shifting** (-12 to +12 semitones) to match your vocal range
 - **Tempo control** (speed up or slow down) with synchronized lyrics
+- **YouTube upload** with unlisted/shareable link
 - Caches intermediate files for fast re-rendering
 
 ## Installation
@@ -65,6 +66,12 @@ python karaoke.py "https://youtube.com/watch?v=VIDEO_ID" -o output.mp4 --key +2 
 
 # Force reprocess (ignore cache)
 python karaoke.py "https://youtube.com/watch?v=VIDEO_ID" -o output.mp4 --force
+
+# Upload to YouTube after rendering (unlisted link)
+python karaoke.py "https://youtube.com/watch?v=VIDEO_ID" -o output.mp4 --upload
+
+# Skip the upload prompt (for scripts/batch mode)
+python karaoke.py "https://youtube.com/watch?v=VIDEO_ID" -o output.mp4 --no-upload
 ```
 
 ### Options
@@ -75,6 +82,8 @@ python karaoke.py "https://youtube.com/watch?v=VIDEO_ID" -o output.mp4 --force
 | `--offset` | Timing offset in seconds (default: -0.3) |
 | `--key` | Shift key by N semitones (-12 to +12, default: 0) |
 | `--tempo` | Tempo multiplier (0.5 = half speed, 2.0 = double, default: 1.0) |
+| `--upload` | Upload to YouTube as unlisted video after rendering |
+| `--no-upload` | Skip the upload prompt |
 | `--work-dir` | Working directory for intermediate files |
 | `--keep-files` | Keep intermediate files |
 | `--force` | Force re-download and re-process |
@@ -99,6 +108,20 @@ python karaoke.py "https://youtube.com/watch?v=VIDEO_ID" -o output.mp4 --force
 ## Caching
 
 Intermediate files are cached in `~/.cache/karaoke/{video_id}/` by default. This allows fast re-rendering when adjusting timing offsets.
+
+## YouTube Upload Setup
+
+To enable YouTube uploads, you need to set up Google OAuth credentials:
+
+1. Go to [Google Cloud Console](https://console.cloud.google.com/)
+2. Create a new project (or select existing)
+3. Enable the **YouTube Data API v3**
+4. Go to **Credentials** → **Create Credentials** → **OAuth client ID**
+5. Select **Desktop app** as application type
+6. Download the JSON file
+7. Save it as `~/.cache/karaoke/client_secrets.json`
+
+On first upload, a browser window will open for authentication. Credentials are cached for future use.
 
 ## License
 
