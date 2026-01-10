@@ -18,8 +18,9 @@ import shutil
 
 from downloader import download_audio
 from separator import separate_vocals
-from lyrics import get_lyrics
+from lyrics import get_lyrics, Line, Word
 from renderer import render_karaoke_video
+from audio_effects import process_audio
 
 
 # Default cache directory
@@ -45,6 +46,31 @@ def find_existing_file(pattern: str) -> str | None:
     """Find an existing file matching a glob pattern."""
     matches = glob.glob(pattern)
     return matches[0] if matches else None
+
+
+def scale_lyrics_timing(lines: list[Line], tempo_multiplier: float) -> list[Line]:
+    """Scale all lyrics timestamps by the tempo multiplier."""
+    if tempo_multiplier == 1.0:
+        return lines
+
+    scaled_lines = []
+    for line in lines:
+        scaled_words = [
+            Word(
+                text=word.text,
+                start_time=word.start_time / tempo_multiplier,
+                end_time=word.end_time / tempo_multiplier,
+            )
+            for word in line.words
+        ]
+        scaled_lines.append(
+            Line(
+                words=scaled_words,
+                start_time=line.start_time / tempo_multiplier,
+                end_time=line.end_time / tempo_multiplier,
+            )
+        )
+    return scaled_lines
 
 
 def main():
@@ -81,8 +107,28 @@ def main():
         action="store_true",
         help="Force re-download and re-process even if cached files exist"
     )
+    parser.add_argument(
+        "--key",
+        type=int,
+        default=0,
+        help="Shift key by N semitones (-12 to +12)"
+    )
+    parser.add_argument(
+        "--tempo",
+        type=float,
+        default=1.0,
+        help="Tempo multiplier (1.0 = original, 0.5 = half speed, 2.0 = double)"
+    )
 
     args = parser.parse_args()
+
+    # Validate key and tempo
+    if not -12 <= args.key <= 12:
+        print("ERROR: --key must be between -12 and +12 semitones")
+        sys.exit(1)
+    if args.tempo <= 0:
+        print("ERROR: --tempo must be positive")
+        sys.exit(1)
 
     # Extract video ID for cache directory
     video_id = extract_video_id(args.url)
@@ -106,7 +152,7 @@ def main():
         print(f"Cache directory: {work_dir}")
 
         # Step 1: Download audio from YouTube (skip if exists)
-        print("\n[1/4] Downloading audio from YouTube...")
+        print("\n[1/5] Downloading audio from YouTube...")
 
         # Find original audio file (not stems)
         stem_suffixes = ['_Vocals', '_Bass', '_Drums', '_Other', '_instrumental', '_htdemucs']
@@ -137,7 +183,7 @@ def main():
         print(f"      Artist: {artist}")
 
         # Step 2: Separate vocals from instrumental (skip if exists)
-        print("\n[2/4] Separating vocals from instrumental...")
+        print("\n[2/5] Separating vocals from instrumental...")
 
         existing_vocals = find_existing_file(os.path.join(work_dir, "*_(Vocals)_*.wav"))
         existing_instrumental = find_existing_file(os.path.join(work_dir, "*_instrumental.wav"))
@@ -152,12 +198,39 @@ def main():
             instrumental_path = separation_result['instrumental_path']
 
         # Step 3: Get lyrics with timing
-        print("\n[3/4] Fetching lyrics and timing...")
+        print("\n[3/5] Fetching lyrics and timing...")
         lines = get_lyrics(title, artist, vocals_path)
         print(f"      Found {len(lines)} lines of lyrics")
 
-        # Step 4: Render karaoke video
-        print("\n[4/4] Rendering karaoke video...")
+        # Step 4: Apply audio effects (key shift / tempo change)
+        if args.key != 0 or args.tempo != 1.0:
+            print("\n[4/5] Applying audio effects...")
+            if args.key != 0:
+                print(f"      Key shift: {args.key:+d} semitones")
+            if args.tempo != 1.0:
+                print(f"      Tempo: {args.tempo:.2f}x")
+
+            # Process instrumental track
+            processed_instrumental = os.path.join(
+                work_dir,
+                f"instrumental_key{args.key:+d}_tempo{args.tempo:.2f}.wav"
+            )
+            process_audio(
+                instrumental_path,
+                processed_instrumental,
+                semitones=args.key,
+                tempo_multiplier=args.tempo,
+            )
+            instrumental_path = processed_instrumental
+
+            # Scale lyrics timing to match tempo change
+            lines = scale_lyrics_timing(lines, args.tempo)
+        else:
+            print("\n[4/5] Applying audio effects...")
+            print("      No audio effects requested")
+
+        # Step 5: Render karaoke video
+        print("\n[5/5] Rendering karaoke video...")
 
         # Determine output path
         if args.output:

@@ -9,6 +9,8 @@ Generate karaoke videos from YouTube URLs with word-by-word highlighting.
 - Fetches time-synced lyrics automatically
 - Falls back to Whisper for word-level timing if needed
 - Renders KaraFun-style karaoke videos with word highlighting
+- **Key shifting** (-12 to +12 semitones) to match your vocal range
+- **Tempo control** (speed up or slow down) with synchronized lyrics
 - Caches intermediate files for fast re-rendering
 
 ## Installation
@@ -52,6 +54,15 @@ python karaoke.py "https://youtube.com/watch?v=VIDEO_ID" -o output.mp4
 # Adjust timing offset (negative = highlight earlier)
 python karaoke.py "https://youtube.com/watch?v=VIDEO_ID" -o output.mp4 --offset -0.5
 
+# Shift key down 3 semitones (for a lower vocal range)
+python karaoke.py "https://youtube.com/watch?v=VIDEO_ID" -o output.mp4 --key -3
+
+# Slow down to 80% speed (great for learning)
+python karaoke.py "https://youtube.com/watch?v=VIDEO_ID" -o output.mp4 --tempo 0.8
+
+# Combine options: shift key up, slow down, adjust timing
+python karaoke.py "https://youtube.com/watch?v=VIDEO_ID" -o output.mp4 --key +2 --tempo 0.9 --offset -0.5
+
 # Force reprocess (ignore cache)
 python karaoke.py "https://youtube.com/watch?v=VIDEO_ID" -o output.mp4 --force
 ```
@@ -62,6 +73,8 @@ python karaoke.py "https://youtube.com/watch?v=VIDEO_ID" -o output.mp4 --force
 |--------|-------------|
 | `-o, --output` | Output video path (default: `{title}_karaoke.mp4`) |
 | `--offset` | Timing offset in seconds (default: -0.3) |
+| `--key` | Shift key by N semitones (-12 to +12, default: 0) |
+| `--tempo` | Tempo multiplier (0.5 = half speed, 2.0 = double, default: 1.0) |
 | `--work-dir` | Working directory for intermediate files |
 | `--keep-files` | Keep intermediate files |
 | `--force` | Force re-download and re-process |
@@ -70,9 +83,9 @@ python karaoke.py "https://youtube.com/watch?v=VIDEO_ID" -o output.mp4 --force
 
 1. **Download**: Downloads audio from YouTube using yt-dlp
 2. **Separate**: Removes vocals using demucs AI model, keeps instrumental
-3. **Lyrics**: Fetches synced lyrics from online sources (LRCLIB, etc.)
-4. **Fallback**: If no synced lyrics found, uses Whisper for word timing
-5. **Render**: Creates video with word-by-word highlighting
+3. **Lyrics**: Fetches synced lyrics from online sources (LRCLIB, etc.). Falls back to Whisper for word timing if needed.
+4. **Audio Effects**: Applies key shift and/or tempo changes (if requested)
+5. **Render**: Creates video with word-by-word highlighting, lyrics timing adjusted to match tempo
 
 ## Video Style
 
