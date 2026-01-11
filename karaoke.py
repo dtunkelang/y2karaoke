@@ -16,7 +16,7 @@ import re
 import sys
 import shutil
 
-from downloader import download_audio, download_video
+from downloader import download_audio, download_video, clean_title
 from separator import separate_vocals
 from lyrics import get_lyrics, Line, Word
 from renderer import render_karaoke_video
@@ -280,11 +280,14 @@ def main():
             safe_title = "".join(c for c in title if c.isalnum() or c in ' -_')[:50]
             output_path = f"{safe_title}_karaoke.mp4"
 
+        # Clean up title for splash screen (remove "(Official Video)", "[4K]", etc.)
+        display_title = clean_title(title, artist)
+
         render_karaoke_video(
             lines=lines,
             audio_path=instrumental_path,
             output_path=output_path,
-            title=title,
+            title=display_title,
             artist=artist,
             timing_offset=args.offset,
             background_segments=background_segments,

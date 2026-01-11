@@ -10,6 +10,54 @@ def sanitize_filename(name: str) -> str:
     return re.sub(r'[<>:"/\\|?*]', '', name)
 
 
+def clean_title(title: str, artist: str = "") -> str:
+    """
+    Clean up YouTube video title for display.
+
+    Removes common suffixes like (Official Video), [4K], etc.
+    Also extracts song title if format is "Artist - Song Title".
+    """
+    # Common patterns to remove (case insensitive)
+    patterns_to_remove = [
+        r'\s*\(Official\s*(Music\s*)?Video\)',
+        r'\s*\(Official\s*Audio\)',
+        r'\s*\(Official\s*Lyric\s*Video\)',
+        r'\s*\(Lyric\s*Video\)',
+        r'\s*\(Lyrics?\)',
+        r'\s*\(Audio\)',
+        r'\s*\(Visualizer\)',
+        r'\s*\(Remaster(ed)?\s*\d*\)',
+        r'\s*\(Live\)',
+        r'\s*\[Official\s*(Music\s*)?Video\]',
+        r'\s*\[Official\s*Audio\]',
+        r'\s*\[4K\]',
+        r'\s*\[HD\]',
+        r'\s*\[HQ\]',
+        r'\s*\[\d+K\]',
+        r'\s*\(4K\)',
+        r'\s*\(HD\)',
+        r'\s*\(HQ\)',
+        r'\s*\(\d+K\)',
+        r'\s*【[^】]*】',  # Japanese brackets
+        r'\s*ft\.?\s+[^(\[]+$',  # Remove "ft. Artist" at end (optional)
+    ]
+
+    cleaned = title
+    for pattern in patterns_to_remove:
+        cleaned = re.sub(pattern, '', cleaned, flags=re.IGNORECASE)
+
+    # If title is "Artist - Song Title", extract just the song title
+    if ' - ' in cleaned and artist:
+        parts = cleaned.split(' - ', 1)
+        # Check if first part matches artist name (fuzzy match)
+        artist_lower = artist.lower().strip()
+        first_part_lower = parts[0].lower().strip()
+        if artist_lower in first_part_lower or first_part_lower in artist_lower:
+            cleaned = parts[1]
+
+    return cleaned.strip()
+
+
 def download_audio(url: str, output_dir: str = ".") -> dict:
     """
     Download audio from YouTube URL.
