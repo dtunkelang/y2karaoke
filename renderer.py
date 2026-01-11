@@ -35,7 +35,7 @@ LINE_SPACING = 100
 
 # Instrumental break settings
 INSTRUMENTAL_BREAK_THRESHOLD = 5.0  # seconds - minimum gap to show progress bar
-LYRICS_LEAD_TIME = 2.0              # seconds - show lyrics before they start
+LYRICS_LEAD_TIME = 1.0              # seconds - show lyrics before they start
 
 # Splash screen settings
 SPLASH_DURATION = 4.0               # seconds - how long to show splash before fading
@@ -272,7 +272,10 @@ def render_frame(
     # Normal lyrics display
     lines_to_show = []
     if current_line_idx < len(lines):
-        lines_to_show.append((lines[current_line_idx], True))  # (line, is_current)
+        current_line = lines[current_line_idx]
+        # Only mark as "current" (with highlighting) if we're at or past the line's start
+        is_actually_current = current_time >= current_line.start_time
+        lines_to_show.append((current_line, is_actually_current))
     if current_line_idx + 1 < len(lines):
         lines_to_show.append((lines[current_line_idx + 1], False))
 
@@ -313,11 +316,10 @@ def render_frame(
             word_idx += 1
 
             # Determine color based on timing
+            # KaraFun style: once a word is highlighted, it stays highlighted
             if is_current:
-                if current_time >= word.end_time:
-                    color = SUNG_COLOR  # Already sung
-                elif current_time >= word.start_time:
-                    color = HIGHLIGHT_COLOR  # Currently singing
+                if current_time >= word.start_time:
+                    color = HIGHLIGHT_COLOR  # Highlighted (current or already sung)
                 else:
                     color = TEXT_COLOR  # Not yet sung
             else:

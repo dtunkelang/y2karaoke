@@ -8,7 +8,7 @@ This repository (`y2karaoke`) generates karaoke-style videos from YouTube URLs w
 
 1. Download audio from YouTube.
 2. Separate vocals from instrumental using an AI model (demucs via `audio-separator`).
-3. Fetch time-synced lyrics (LRC) and fall back to Whisper for word-level timing.
+3. Transcribe vocals with whisperx for accurate word-level timing via forced alignment.
 4. Optionally apply audio effects (key shifting and tempo changes) to the instrumental.
 5. Render a 1080p video with KaraFun-style word highlighting.
 6. Optionally upload the rendered video to YouTube as unlisted.
@@ -31,8 +31,8 @@ Key Python dependencies (see `requirements.txt`) include:
 
 - `yt-dlp` for YouTube downloading
 - `audio-separator` (demucs) for stem separation
-- `syncedlyrics` for synced LRC lyrics
-- `openai-whisper` / `whisper-timestamped` for word-level timing fallback
+- `syncedlyrics` for fetching lyrics text
+- `whisperx` for word-level timing via forced alignment (uses wav2vec2)
 - `moviepy`, `Pillow`, `numpy` for video rendering
 - `librosa`, `soundfile`, `pydub` for audio processing
 - Google API client libraries for YouTube uploads
@@ -50,7 +50,7 @@ python karaoke.py "https://youtube.com/watch?v=VIDEO_ID" -o output.mp4
 Important CLI options (see `karaoke.py` and README):
 
 - `-o, --output`: Output video path (default: `{title}_karaoke.mp4`).
-- `--offset`: Timing offset in seconds (negative = highlight earlier, default: `-0.3`).
+- `--offset`: Timing offset in seconds (negative = highlight earlier, default: `0.0`).
 - `--key`: Key shift in semitones (`-12` to `+12`, default `0`).
 - `--tempo`: Tempo multiplier (e.g., `0.8` = slower, `1.2` = faster; default `1.0`).
 - `--work-dir`: Working directory for intermediate files (default: `~/.cache/karaoke/{video_id}`).
@@ -128,13 +128,14 @@ The central orchestration lives in `karaoke.py`:
    - If no explicit instrumental stem is found, non-vocal stems (e.g., bass, drums, other) are mixed into an instrumental using `pydub` (see `mix_stems`).
 
 5. **Lyrics step (`lyrics.get_lyrics`)**
-   - Attempts to fetch synced LRC lyrics via `syncedlyrics.search`, using `"{artist} {title}"` as the search term.
-   - On success, parses LRC into a list of `Line` objects with word-level timing using `parse_lrc`:
-     - Each `Line` contains `words: list[Word]` plus `start_time` and `end_time` for the line.
-     - Word durations are evenly distributed between consecutive LRC timestamps.
-   - If no synced lyrics are found or parsing yields no lines, and a vocals track is available, falls back to Whisper:
-     - `get_lyrics_with_whisper` loads the `medium` Whisper model via `whisper_timestamped`.
-     - Transcribes the vocals with word timestamps and constructs `Line`/`Word` objects from the segments.
+   - Optionally fetches lyrics text via `syncedlyrics.search` for reference (currently not used for filtering).
+   - Uses `whisperx` to transcribe the vocals track with accurate word-level timing:
+     - Loads the `medium` Whisper model for transcription.
+     - Applies `whisperx.align()` with wav2vec2 for forced alignment to get precise word boundaries.
+     - Handles words missing timestamps by interpolating from segment timing.
+   - Post-processes the lyrics:
+     - `fix_word_timing`: Fixes unrealistic word durations (e.g., first words that are too long) by deriving timing from neighboring words.
+     - `split_long_lines`: Recursively splits lines longer than 45 characters to fit on screen.
 
 6. **Audio effects step (`audio_effects.process_audio`)**
    - If key and tempo are unchanged (`key == 0` and `tempo == 1.0`), the instrumental is copied unchanged.
@@ -151,10 +152,10 @@ The central orchestration lives in `karaoke.py`:
      - Determines the current and next lyric lines relative to the adjusted time (`t - offset`).
      - Renders up to two lines of text, centered vertically.
      - Measures word widths to center lines horizontally.
-     - Colors words based on timing:
-       - Already-sung words: gray.
-       - Current word: gold.
-       - Future words: white.
+     - Uses KaraFun-style word highlighting:
+       - Words stay gold once they've been sung (no gray for past words).
+       - Future words on the current line: white.
+       - Next line: all white.
    - Assembles a `VideoClip` from the frame function, attaches the audio, and writes an H.264/AAC MP4 file.
 
 8. **YouTube upload step (`uploader.upload_video`)**
@@ -166,7 +167,7 @@ The central orchestration lives in `karaoke.py`:
 - `karaoke.py`: CLI entrypoint and top-level orchestration of the entire pipeline, including caching logic, error handling, and user prompts for upload.
 - `downloader.py`: Wraps `yt-dlp` to extract metadata and download audio-only content as WAV.
 - `separator.py`: Handles vocal/instrumental separation via `audio-separator`/demucs and, when necessary, mixes non-vocal stems into a synthesized instrumental.
-- `lyrics.py`: Encapsulates lyrics fetching and timing, including LRC parsing and Whisper-based transcription fallback. Defines the `Word` and `Line` dataclasses used across the codebase.
+- `lyrics.py`: Encapsulates lyrics fetching and timing using whisperx for forced alignment. Includes post-processing for word timing fixes and line splitting. Defines the `Word` and `Line` dataclasses used across the codebase.
 - `audio_effects.py`: Applies key shifting and tempo changes to audio, including a combined `process_audio` helper for the typical pipeline.
 - `renderer.py`: Renders the final karaoke video frames and composes the movie file with audio.
 - `uploader.py`: Manages YouTube OAuth credentials and uploads MP4 files with generated metadata (title/description).
@@ -209,7 +210,7 @@ On first use, `upload_video` will open a local browser window for user consent a
 
 - Several steps are **computationally heavy** and/or **network-dependent**:
   - Demucs-based separation (`audio-separator`) can be slow and memory-intensive, especially for long tracks.
-  - Whisper `medium` model download and inference may be time-consuming; avoid unnecessary reruns by relying on caching when possible.
+  - whisperx transcription and alignment may be time-consuming; the alignment step downloads wav2vec2 models on first use.
   - Synced lyrics fetching and YouTube uploads depend on external services; they may fail due to network or API issues.
 - When modifying the pipeline, consider the caching structure in `karaoke.py` so that repeated operations (download, separation, transcription) are not needlessly redone.
 - There is no current automated test harness; if tests are added, prefer to mock external services (YouTube, remote lyrics APIs, demucs, Whisper) and to keep heavy operations out of the fast test path.

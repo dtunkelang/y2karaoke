@@ -102,7 +102,7 @@ def main():
         "--offset",
         type=float,
         help="Timing offset in seconds (negative = highlight earlier, positive = later)",
-        default=-0.3
+        default=0.0
     )
     parser.add_argument(
         "--force",
