@@ -37,6 +37,9 @@ LINE_SPACING = 100
 INSTRUMENTAL_BREAK_THRESHOLD = 5.0  # seconds - minimum gap to show progress bar
 LYRICS_LEAD_TIME = 2.0              # seconds - show lyrics before they start
 
+# Splash screen settings
+SPLASH_DURATION = 4.0               # seconds - how long to show splash before fading
+
 
 def get_font(size: int = FONT_SIZE) -> ImageFont.FreeTypeFont:
     """Get a suitable font for rendering."""
@@ -148,11 +151,53 @@ def draw_logo_screen(
     draw.text((url_x, url_y), url_text, font=url_font, fill=SUNG_COLOR)
 
 
+def draw_splash_screen(
+    draw: ImageDraw.Draw,
+    title: str,
+    artist: str,
+) -> None:
+    """Draw the intro splash screen with song title and artist."""
+    title_font = get_font(84)
+    artist_font = get_font(48)
+    logo_font = get_font(32)
+
+    # Truncate long titles
+    max_title_chars = 40
+    display_title = title if len(title) <= max_title_chars else title[:max_title_chars-3] + "..."
+
+    # Center the title
+    title_bbox = title_font.getbbox(display_title)
+    title_width = title_bbox[2] - title_bbox[0]
+    title_x = (VIDEO_WIDTH - title_width) // 2
+    title_y = VIDEO_HEIGHT // 2 - 80
+
+    # Center the artist
+    artist_text = f"by {artist}"
+    artist_bbox = artist_font.getbbox(artist_text)
+    artist_width = artist_bbox[2] - artist_bbox[0]
+    artist_x = (VIDEO_WIDTH - artist_width) // 2
+    artist_y = title_y + 100
+
+    # y2karaoke branding at bottom
+    logo_text = "y2karaoke"
+    logo_bbox = logo_font.getbbox(logo_text)
+    logo_width = logo_bbox[2] - logo_bbox[0]
+    logo_x = (VIDEO_WIDTH - logo_width) // 2
+    logo_y = VIDEO_HEIGHT - 100
+
+    # Draw text
+    draw.text((title_x, title_y), display_title, font=title_font, fill=HIGHLIGHT_COLOR)
+    draw.text((artist_x, artist_y), artist_text, font=artist_font, fill=TEXT_COLOR)
+    draw.text((logo_x, logo_y), logo_text, font=logo_font, fill=SUNG_COLOR)
+
+
 def render_frame(
     lines: list[Line],
     current_time: float,
     font: ImageFont.FreeTypeFont,
     background: np.ndarray,
+    title: Optional[str] = None,
+    artist: Optional[str] = None,
 ) -> np.ndarray:
     """Render a single frame at the given time."""
     img = Image.fromarray(background.copy())
@@ -160,17 +205,27 @@ def render_frame(
 
     # Check if we're in an instrumental break
     show_progress_bar = False
+    show_splash = False
     progress = 0.0
 
     # Handle intro: before first lyrics start
     if lines and current_time < lines[0].start_time:
         first_line = lines[0]
-        if first_line.start_time >= INSTRUMENTAL_BREAK_THRESHOLD:
-            time_until_first = first_line.start_time - current_time
+        time_until_first = first_line.start_time - current_time
+
+        # Show splash screen for the first SPLASH_DURATION seconds
+        if current_time < SPLASH_DURATION and title and artist:
+            show_splash = True
+        # Then show progress bar if there's still a long intro
+        elif first_line.start_time >= INSTRUMENTAL_BREAK_THRESHOLD:
             if time_until_first > LYRICS_LEAD_TIME:
                 show_progress_bar = True
+                # Progress bar starts after splash ends
+                bar_start = min(SPLASH_DURATION, first_line.start_time - LYRICS_LEAD_TIME)
                 break_end = first_line.start_time - LYRICS_LEAD_TIME
-                progress = current_time / break_end if break_end > 0 else 1.0
+                elapsed = current_time - bar_start
+                bar_duration = break_end - bar_start
+                progress = elapsed / bar_duration if bar_duration > 0 else 1.0
 
     # Find current line index (the line we're currently on or just finished)
     current_line_idx = 0
@@ -205,6 +260,10 @@ def render_frame(
                     break_duration = break_end - break_start
                     elapsed = current_time - break_start
                     progress = elapsed / break_duration if break_duration > 0 else 1.0
+
+    if show_splash:
+        draw_splash_screen(draw, title, artist)
+        return np.array(img)
 
     if show_progress_bar:
         draw_progress_bar(draw, progress)
@@ -275,6 +334,7 @@ def render_karaoke_video(
     audio_path: str,
     output_path: str,
     title: Optional[str] = None,
+    artist: Optional[str] = None,
     timing_offset: float = 0.0,
     background_segments: Optional[list[BackgroundSegment]] = None,
 ) -> str:
@@ -285,6 +345,8 @@ def render_karaoke_video(
         lines: List of Line objects with word timing
         audio_path: Path to instrumental audio
         output_path: Where to save the video
+        title: Song title (for splash screen)
+        artist: Artist name (for splash screen)
         timing_offset: Offset in seconds (negative = highlight earlier)
         background_segments: Optional list of background segments for dynamic backgrounds
 
@@ -322,7 +384,7 @@ def render_karaoke_video(
         else:
             background = static_background
 
-        return render_frame(lines, adjusted_time, font, background)
+        return render_frame(lines, adjusted_time, font, background, title, artist)
 
     # Create video clip
     print(f"Creating video ({duration:.1f}s at {FPS}fps)...")

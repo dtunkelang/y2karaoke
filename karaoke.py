@@ -285,6 +285,7 @@ def main():
             audio_path=instrumental_path,
             output_path=output_path,
             title=title,
+            artist=artist,
             timing_offset=args.offset,
             background_segments=background_segments,
         )
