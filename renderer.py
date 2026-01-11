@@ -1,13 +1,18 @@
 """Karaoke video renderer with KaraFun-style word highlighting."""
 
+from __future__ import annotations
+
 import os
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
 
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 from moviepy import AudioFileClip, VideoClip
 
 from lyrics import Line, Word
+
+if TYPE_CHECKING:
+    from backgrounds import BackgroundSegment
 
 
 # Video settings
@@ -271,6 +276,7 @@ def render_karaoke_video(
     output_path: str,
     title: Optional[str] = None,
     timing_offset: float = 0.0,
+    background_segments: Optional[list[BackgroundSegment]] = None,
 ) -> str:
     """
     Render a complete karaoke video.
@@ -280,6 +286,7 @@ def render_karaoke_video(
         audio_path: Path to instrumental audio
         output_path: Where to save the video
         timing_offset: Offset in seconds (negative = highlight earlier)
+        background_segments: Optional list of background segments for dynamic backgrounds
 
     Returns:
         Path to the output video
@@ -294,12 +301,27 @@ def render_karaoke_video(
 
     # Prepare rendering
     font = get_font()
-    background = create_gradient_background()
+    static_background = create_gradient_background()
+
+    # Import here to avoid circular imports
+    if background_segments:
+        from backgrounds import get_background_at_time
 
     # Create frame generator (apply timing offset)
     def make_frame(t):
         # Offset adjusts effective time: negative offset = highlight earlier
         adjusted_time = t - timing_offset
+
+        # Get background - dynamic if available, otherwise static gradient
+        if background_segments:
+            bg = get_background_at_time(background_segments, t)
+            if bg is not None:
+                background = bg
+            else:
+                background = static_background
+        else:
+            background = static_background
+
         return render_frame(lines, adjusted_time, font, background)
 
     # Create video clip

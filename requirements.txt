@@ -1,4 +1,5 @@
 yt-dlp>=2024.0.0
+scenedetect[opencv]>=0.6.0
 audio-separator>=0.17.0
 onnxruntime>=1.17.0
 syncedlyrics>=0.10.0

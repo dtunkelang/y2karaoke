@@ -16,12 +16,13 @@ import re
 import sys
 import shutil
 
-from downloader import download_audio
+from downloader import download_audio, download_video
 from separator import separate_vocals
 from lyrics import get_lyrics, Line, Word
 from renderer import render_karaoke_video
 from audio_effects import process_audio
 from uploader import upload_video, generate_metadata
+from backgrounds import create_background_segments
 
 
 # Default cache directory
@@ -130,6 +131,11 @@ def main():
         action="store_true",
         help="Skip the upload prompt (for batch/script mode)"
     )
+    parser.add_argument(
+        "--backgrounds",
+        action="store_true",
+        help="Use video backgrounds extracted from the original YouTube video"
+    )
 
     args = parser.parse_args()
 
@@ -193,6 +199,17 @@ def main():
         print(f"      Title: {title}")
         print(f"      Artist: {artist}")
 
+        # Download video if backgrounds are requested
+        video_path = None
+        if args.backgrounds:
+            existing_video = find_existing_file(os.path.join(work_dir, "*_video.mp4"))
+            if existing_video and not args.force:
+                print(f"      Using cached video: {os.path.basename(existing_video)}")
+                video_path = existing_video
+            else:
+                video_result = download_video(args.url, output_dir=work_dir)
+                video_path = video_result['video_path']
+
         # Step 2: Separate vocals from instrumental (skip if exists)
         print("\n[2/5] Separating vocals from instrumental...")
 
@@ -243,6 +260,19 @@ def main():
         # Step 5: Render karaoke video
         print("\n[5/5] Rendering karaoke video...")
 
+        # Create background segments if video backgrounds requested
+        background_segments = None
+        if args.backgrounds and video_path:
+            from moviepy import AudioFileClip
+            audio_clip = AudioFileClip(instrumental_path)
+            duration = audio_clip.duration
+            audio_clip.close()
+
+            print("      Extracting video backgrounds...")
+            background_segments = create_background_segments(video_path, lines, duration)
+            if background_segments:
+                print(f"      Created {len(background_segments)} background segments")
+
         # Determine output path
         if args.output:
             output_path = args.output
@@ -256,6 +286,7 @@ def main():
             output_path=output_path,
             title=title,
             timing_offset=args.offset,
+            background_segments=background_segments,
         )
 
         print("\n" + "=" * 60)
