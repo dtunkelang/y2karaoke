@@ -6,6 +6,64 @@ from typing import Optional
 
 import syncedlyrics
 
+# Try to import Korean romanizer
+try:
+    from korean_romanizer.romanizer import Romanizer
+    KOREAN_ROMANIZER_AVAILABLE = True
+except ImportError:
+    KOREAN_ROMANIZER_AVAILABLE = False
+
+
+def contains_korean(text: str) -> bool:
+    """Check if text contains Korean characters (Hangul)."""
+    # Korean Unicode ranges: Hangul Syllables (AC00-D7AF), Hangul Jamo, etc.
+    for char in text:
+        if '\uac00' <= char <= '\ud7af':  # Hangul Syllables
+            return True
+        if '\u1100' <= char <= '\u11ff':  # Hangul Jamo
+            return True
+        if '\u3130' <= char <= '\u318f':  # Hangul Compatibility Jamo
+            return True
+    return False
+
+
+def romanize_korean(text: str) -> str:
+    """
+    Romanize Korean text while preserving non-Korean parts.
+
+    Uses the Revised Romanization of Korean standard.
+    """
+    if not KOREAN_ROMANIZER_AVAILABLE:
+        return text
+
+    if not contains_korean(text):
+        return text
+
+    try:
+        # The romanizer works on the whole string
+        romanizer = Romanizer(text)
+        return romanizer.romanize()
+    except Exception:
+        # If romanization fails, return original
+        return text
+
+
+def romanize_line(text: str) -> str:
+    """
+    Romanize a line of lyrics, handling mixed Korean/English text.
+    """
+    if not contains_korean(text):
+        return text
+
+    # Romanize the entire line
+    romanized = romanize_korean(text)
+
+    # Clean up common issues
+    # Remove extra spaces
+    romanized = " ".join(romanized.split())
+
+    return romanized
+
 
 @dataclass
 class Word:
@@ -50,6 +108,159 @@ def extract_lyrics_text(lrc_text: str) -> list[str]:
     return lines
 
 
+def parse_lrc_with_timing(lrc_text: str) -> list[tuple[float, str]]:
+    """
+    Parse LRC format to extract lines with timestamps.
+
+    Returns:
+        List of (timestamp_seconds, text) tuples
+    """
+    lines = []
+    for line in lrc_text.strip().split('\n'):
+        match = re.match(r'\[(\d+):(\d+)\.(\d+)\]\s*(.*)', line)
+        if match:
+            minutes = int(match.group(1))
+            seconds = int(match.group(2))
+            centiseconds = int(match.group(3))
+            timestamp = minutes * 60 + seconds + centiseconds / 100
+            text = match.group(4).strip()
+            if text:
+                lines.append((timestamp, text))
+    return lines
+
+
+def create_lines_from_lrc(lrc_text: str, romanize: bool = True) -> list[Line]:
+    """
+    Create Line objects from LRC format with evenly distributed word timing.
+
+    Uses the LRC timestamps for line timing and distributes words evenly
+    within each line's duration.
+
+    Args:
+        lrc_text: LRC format lyrics text
+        romanize: If True, romanize non-Latin scripts (e.g., Korean to romanized)
+    """
+    timed_lines = parse_lrc_with_timing(lrc_text)
+
+    if not timed_lines:
+        return []
+
+    lines = []
+    for i, (start_time, text) in enumerate(timed_lines):
+        # Romanize Korean text if requested
+        if romanize:
+            text = romanize_line(text)
+
+        # Get end time from next line or add default duration
+        if i + 1 < len(timed_lines):
+            end_time = timed_lines[i + 1][0]
+            # Cap the line duration at a reasonable max (e.g., 10 seconds)
+            if end_time - start_time > 10.0:
+                end_time = start_time + 5.0
+        else:
+            end_time = start_time + 3.0
+
+        # Split text into words
+        word_texts = text.split()
+        if not word_texts:
+            continue
+
+        # Distribute timing evenly across words
+        line_duration = end_time - start_time
+        # Leave small gaps between words
+        word_duration = (line_duration * 0.95) / len(word_texts)
+
+        words = []
+        for j, word_text in enumerate(word_texts):
+            word_start = start_time + j * (line_duration / len(word_texts))
+            word_end = word_start + word_duration
+            words.append(Word(
+                text=word_text,
+                start_time=word_start,
+                end_time=word_end,
+            ))
+
+        lines.append(Line(
+            words=words,
+            start_time=start_time,
+            end_time=words[-1].end_time if words else end_time,
+        ))
+
+    return lines
+
+
+def normalize_text(text: str) -> str:
+    """Normalize text for comparison (lowercase, remove punctuation)."""
+    # Lowercase and remove punctuation except apostrophes in contractions
+    text = text.lower()
+    # Keep apostrophes in words like "don't", "I'm"
+    text = re.sub(r"[^\w\s']", "", text)
+    # Normalize whitespace
+    text = " ".join(text.split())
+    return text
+
+
+def fetch_lyrics_multi_source(title: str, artist: str) -> tuple[Optional[str], bool, str]:
+    """
+    Fetch lyrics from multiple sources and search variations.
+
+    Returns:
+        Tuple of (lrc_text, is_synced, source_description)
+        - lrc_text: Raw LRC format text (or plain text if not synced)
+        - is_synced: True if lyrics have timing info
+        - source_description: Description of the source used
+    """
+    from downloader import clean_title
+
+    # Clean the title first
+    clean = clean_title(title, artist)
+
+    # Try multiple search term variations
+    search_variations = [
+        f"{artist} {clean}",           # Artist + clean title
+        f"{clean} {artist}",           # Clean title + artist
+        clean,                          # Just clean title
+        f"{artist} {title}",           # Artist + original title
+        title,                          # Just original title
+    ]
+
+    # Remove duplicates while preserving order
+    seen = set()
+    unique_searches = []
+    for s in search_variations:
+        normalized = s.lower().strip()
+        if normalized not in seen:
+            seen.add(normalized)
+            unique_searches.append(s)
+
+    # Try synced lyrics first (has timing info)
+    for search_term in unique_searches:
+        print(f"  Trying: {search_term}")
+        try:
+            lrc = syncedlyrics.search(search_term, synced_only=True)
+            if lrc:
+                lines = extract_lyrics_text(lrc)
+                if lines and len(lines) >= 5:  # Need meaningful content
+                    print(f"  Found synced lyrics ({len(lines)} lines)")
+                    return lrc, True, f"synced: {search_term}"
+        except Exception as e:
+            print(f"  Error: {e}")
+
+    # Try plain lyrics as fallback (no timing but better for reference)
+    for search_term in unique_searches[:3]:  # Only try first few
+        try:
+            lrc = syncedlyrics.search(search_term, synced_only=False)
+            if lrc:
+                lines = extract_lyrics_text(lrc)
+                if lines and len(lines) >= 5:
+                    print(f"  Found plain lyrics ({len(lines)} lines)")
+                    return lrc, False, f"plain: {search_term}"
+        except Exception:
+            pass
+
+    return None, False, "none"
+
+
 def fetch_synced_lyrics(title: str, artist: str) -> Optional[str]:
     """Fetch synced lyrics using syncedlyrics library."""
     search_term = f"{artist} {title}"
@@ -64,6 +275,103 @@ def fetch_synced_lyrics(title: str, artist: str) -> Optional[str]:
         print(f"Error fetching lyrics: {e}")
 
     return None
+
+
+def match_line_to_lyrics(transcribed_line: str, lyrics_lines: list[str], used_indices: set) -> tuple[Optional[str], Optional[int]]:
+    """
+    Find the best matching lyrics line for a transcribed line.
+
+    Returns:
+        Tuple of (matched_lyrics_line, lyrics_index) or (None, None) if no good match
+    """
+    from difflib import SequenceMatcher
+
+    transcribed_norm = normalize_text(transcribed_line)
+    if not transcribed_norm:
+        return None, None
+
+    best_match = None
+    best_score = 0.0
+    best_idx = None
+
+    for i, lyrics_line in enumerate(lyrics_lines):
+        # Skip already used lines (allow some reuse for repeated choruses)
+        lyrics_norm = normalize_text(lyrics_line)
+        if not lyrics_norm:
+            continue
+
+        # Calculate similarity
+        score = SequenceMatcher(None, transcribed_norm, lyrics_norm).ratio()
+
+        # Bonus for unused lines (prefer sequential matching)
+        if i not in used_indices:
+            score += 0.1
+
+        if score > best_score:
+            best_score = score
+            best_match = lyrics_line
+            best_idx = i
+
+    # Require decent similarity (0.5 = 50% match)
+    if best_score >= 0.5:
+        return best_match, best_idx
+
+    return None, None
+
+
+def correct_transcription_with_lyrics(lines: list["Line"], lyrics_text: list[str]) -> list["Line"]:
+    """
+    Correct transcribed lines using known lyrics.
+
+    Matches each transcribed line to the best lyrics line and replaces
+    the text while keeping the timing from transcription.
+    """
+    if not lyrics_text:
+        return lines
+
+    corrected_lines = []
+    used_indices: set[int] = set()
+
+    for line in lines:
+        transcribed_text = line.text
+        matched_lyrics, idx = match_line_to_lyrics(transcribed_text, lyrics_text, used_indices)
+
+        if matched_lyrics and idx is not None:
+            used_indices.add(idx)
+
+            # Replace words with lyrics text while keeping timing
+            lyrics_words = matched_lyrics.split()
+
+            if len(lyrics_words) == len(line.words):
+                # Same word count - direct replacement
+                new_words = [
+                    Word(text=lw, start_time=w.start_time, end_time=w.end_time)
+                    for lw, w in zip(lyrics_words, line.words)
+                ]
+            elif len(lyrics_words) > 0 and len(line.words) > 0:
+                # Different word count - redistribute timing
+                total_duration = line.end_time - line.start_time
+                word_duration = total_duration / len(lyrics_words)
+
+                new_words = []
+                for i, lw in enumerate(lyrics_words):
+                    start = line.start_time + i * word_duration
+                    end = start + word_duration - 0.02
+                    new_words.append(Word(text=lw, start_time=start, end_time=end))
+            else:
+                # Keep original
+                new_words = line.words
+
+            corrected_lines.append(Line(
+                words=new_words,
+                start_time=line.start_time,
+                end_time=line.end_time,
+            ))
+        else:
+            # No match - keep original transcription
+            corrected_lines.append(line)
+
+    return corrected_lines
 
 
 def transcribe_and_align(vocals_path: str, lyrics_text: Optional[list[str]] = None) -> list[Line]:
@@ -411,27 +719,50 @@ def get_lyrics(title: str, artist: str, vocals_path: Optional[str] = None) -> li
     Get lyrics with accurate word-level timing.
 
     Strategy:
-    1. Fetch lyrics text from online sources
-    2. Use whisperx to transcribe audio with word-level alignment
-    3. Filter transcription to match fetched lyrics (removes extra content)
+    1. Fetch synced lyrics from online sources (preferred - has timing + correct text)
+    2. If synced lyrics found, use them directly with evenly distributed word timing
+    3. If no synced lyrics, fall back to whisperx transcription
 
-    If no online lyrics found, falls back to pure transcription.
+    This approach preserves the original lyrics text (including romanized non-English)
+    rather than relying on whisperx transcription which may translate or mishear.
     """
-    # Try to fetch lyrics text
-    lrc = fetch_synced_lyrics(title, artist)
-    lyrics_text = None
+    # Try to fetch lyrics from multiple sources
+    print("Fetching lyrics from online sources...")
+    lrc_text, is_synced, source = fetch_lyrics_multi_source(title, artist)
 
-    if lrc:
-        lyrics_text = extract_lyrics_text(lrc)
-        print(f"Got {len(lyrics_text)} lines of lyrics text")
+    if lrc_text and is_synced:
+        # Use synced lyrics directly - preserves original text including romanized lyrics
+        print(f"Using synced lyrics from {source}")
+        lines = create_lines_from_lrc(lrc_text)
+
+        if lines:
+            # Apply line splitting for long lines
+            lines = split_long_lines(lines)
+            print(f"Got {len(lines)} lines of lyrics")
+            return lines
+
+    # Fall back to whisperx transcription if no synced lyrics
+    if not vocals_path:
+        raise RuntimeError("Could not get lyrics: no synced lyrics found and no vocals path provided")
+
+    if lrc_text:
+        # Have plain lyrics (no timing) - use whisperx but try to match text
+        print(f"Using whisperx with lyrics reference from {source}")
+        lyrics_text = extract_lyrics_text(lrc_text)
     else:
-        print("No lyrics found online, will transcribe from audio")
+        print("No lyrics found online, will transcribe from audio only")
+        lyrics_text = None
 
-    # Transcribe and align
-    if vocals_path:
-        return transcribe_and_align(vocals_path, lyrics_text)
+    # Transcribe and align with whisperx
+    lines = transcribe_and_align(vocals_path, lyrics_text)
 
-    raise RuntimeError("Could not get lyrics: no vocals path provided")
+    # Cross-check and correct transcription using known lyrics (if we have them)
+    if lyrics_text:
+        original_count = len(lines)
+        lines = correct_transcription_with_lyrics(lines, lyrics_text)
+        print(f"Corrected transcription: {original_count} lines processed")
+
+    return lines
 
 
 if __name__ == "__main__":
