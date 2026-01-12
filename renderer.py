@@ -9,7 +9,7 @@ import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 from moviepy import AudioFileClip, VideoClip
 
-from lyrics import Line, Word
+from lyrics import Line, Word, SongMetadata
 
 if TYPE_CHECKING:
     from backgrounds import BackgroundSegment
@@ -28,6 +28,14 @@ HIGHLIGHT_COLOR = (255, 215, 0)  # Gold
 SUNG_COLOR = (180, 180, 180)    # Gray (already sung)
 PROGRESS_BAR_BG = (60, 60, 80)  # Progress bar background
 PROGRESS_BAR_FG = (255, 215, 0) # Progress bar fill (gold)
+
+# Singer-specific colors for duets (KaraFun style)
+SINGER1_COLOR = (100, 180, 255)     # Light blue for singer 1
+SINGER1_HIGHLIGHT = (50, 150, 255)  # Brighter blue when highlighted
+SINGER2_COLOR = (255, 150, 200)     # Pink for singer 2
+SINGER2_HIGHLIGHT = (255, 100, 180) # Brighter pink when highlighted
+BOTH_COLOR = (200, 150, 255)        # Light purple for both singers
+BOTH_HIGHLIGHT = (180, 100, 255)    # Brighter purple when highlighted
 
 # Font settings
 FONT_SIZE = 72
@@ -60,6 +68,28 @@ def get_font(size: int = FONT_SIZE) -> ImageFont.FreeTypeFont:
 
     # Fall back to default
     return ImageFont.load_default()
+
+
+def get_singer_colors(singer: str, is_highlighted: bool) -> tuple[tuple[int, int, int], tuple[int, int, int]]:
+    """
+    Get the text and highlight colors for a singer.
+
+    Args:
+        singer: Singer identifier ("singer1", "singer2", "both", or "")
+        is_highlighted: Whether the word is currently being sung
+
+    Returns:
+        Tuple of (text_color, highlight_color) for this singer
+    """
+    if singer == "singer1":
+        return (SINGER1_COLOR, SINGER1_HIGHLIGHT)
+    elif singer == "singer2":
+        return (SINGER2_COLOR, SINGER2_HIGHLIGHT)
+    elif singer == "both":
+        return (BOTH_COLOR, BOTH_HIGHLIGHT)
+    else:
+        # Default colors (gold highlight, white text)
+        return (TEXT_COLOR, HIGHLIGHT_COLOR)
 
 
 def create_gradient_background() -> np.ndarray:
@@ -198,6 +228,7 @@ def render_frame(
     background: np.ndarray,
     title: Optional[str] = None,
     artist: Optional[str] = None,
+    is_duet: bool = False,
 ) -> np.ndarray:
     """Render a single frame at the given time."""
     img = Image.fromarray(background.copy())
@@ -315,15 +346,27 @@ def render_frame(
             word = line.words[word_idx]
             word_idx += 1
 
-            # Determine color based on timing
+            # Determine color based on timing and singer
             # KaraFun style: once a word is highlighted, it stays highlighted
-            if is_current:
-                if current_time >= word.start_time:
-                    color = HIGHLIGHT_COLOR  # Highlighted (current or already sung)
+            if is_duet and word.singer:
+                # Duet mode: use singer-specific colors
+                text_color, highlight_color = get_singer_colors(word.singer, False)
+                if is_current:
+                    if current_time >= word.start_time:
+                        color = highlight_color  # Highlighted (current or already sung)
+                    else:
+                        color = text_color  # Not yet sung (singer's color, not highlighted)
                 else:
-                    color = TEXT_COLOR  # Not yet sung
+                    color = text_color  # Next line - singer's unhighlighted color
             else:
-                color = TEXT_COLOR  # Next line - all white
+                # Non-duet mode: use default gold/white
+                if is_current:
+                    if current_time >= word.start_time:
+                        color = HIGHLIGHT_COLOR  # Highlighted (current or already sung)
+                    else:
+                        color = TEXT_COLOR  # Not yet sung
+                else:
+                    color = TEXT_COLOR  # Next line - all white
 
             draw.text((x, y), text, font=font, fill=color)
             x += word_widths[i]
@@ -339,6 +382,7 @@ def render_karaoke_video(
     artist: Optional[str] = None,
     timing_offset: float = 0.0,
     background_segments: Optional[list[BackgroundSegment]] = None,
+    song_metadata: Optional[SongMetadata] = None,
 ) -> str:
     """
     Render a complete karaoke video.
@@ -351,6 +395,7 @@ def render_karaoke_video(
         artist: Artist name (for splash screen)
         timing_offset: Offset in seconds (negative = highlight earlier)
         background_segments: Optional list of background segments for dynamic backgrounds
+        song_metadata: Optional metadata about singers (for duet coloring)
 
     Returns:
         Path to the output video
@@ -366,6 +411,7 @@ def render_karaoke_video(
     # Prepare rendering
     font = get_font()
     static_background = create_gradient_background()
+    is_duet = song_metadata.is_duet if song_metadata else False
 
     # Import here to avoid circular imports
     if background_segments:
@@ -386,7 +432,7 @@ def render_karaoke_video(
         else:
             background = static_background
 
-        return render_frame(lines, adjusted_time, font, background, title, artist)
+        return render_frame(lines, adjusted_time, font, background, title, artist, is_duet)
 
     # Create video clip
     print(f"Creating video ({duration:.1f}s at {FPS}fps)...")

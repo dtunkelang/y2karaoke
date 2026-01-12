@@ -18,7 +18,7 @@ import shutil
 
 from downloader import download_audio, download_video, clean_title
 from separator import separate_vocals
-from lyrics import get_lyrics, Line, Word
+from lyrics import get_lyrics, Line, Word, SongMetadata, extract_artists_from_title
 from renderer import render_karaoke_video
 from audio_effects import process_audio
 from uploader import upload_video, generate_metadata
@@ -227,8 +227,10 @@ def main():
 
         # Step 3: Get lyrics with timing
         print("\n[3/5] Fetching lyrics and timing...")
-        lines = get_lyrics(title, artist, vocals_path)
+        lines, song_metadata = get_lyrics(title, artist, vocals_path)
         print(f"      Found {len(lines)} lines of lyrics")
+        if song_metadata and song_metadata.is_duet:
+            print(f"      Duet detected: {', '.join(song_metadata.singers)}")
 
         # Step 4: Apply audio effects (key shift / tempo change)
         if args.key != 0 or args.tempo != 1.0:
@@ -283,14 +285,19 @@ def main():
         # Clean up title for splash screen (remove "(Official Video)", "[4K]", etc.)
         display_title = clean_title(title, artist)
 
+        # Extract all artists from title for splash screen (handles duets/collaborations)
+        artists_list = extract_artists_from_title(title, artist)
+        display_artist = " & ".join(artists_list) if len(artists_list) > 1 else artist
+
         render_karaoke_video(
             lines=lines,
             audio_path=instrumental_path,
             output_path=output_path,
             title=display_title,
-            artist=artist,
+            artist=display_artist,
             timing_offset=args.offset,
             background_segments=background_segments,
+            song_metadata=song_metadata,
         )
 
         print("\n" + "=" * 60)

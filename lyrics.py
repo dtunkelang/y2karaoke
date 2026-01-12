@@ -71,6 +71,7 @@ class Word:
     text: str
     start_time: float  # seconds
     end_time: float    # seconds
+    singer: str = ""   # Singer identifier (e.g., "singer1", "singer2", "both")
 
 
 @dataclass
@@ -79,10 +80,37 @@ class Line:
     words: list[Word]
     start_time: float
     end_time: float
+    singer: str = ""   # Singer for this line (e.g., "singer1", "singer2", "both")
 
     @property
     def text(self) -> str:
         return " ".join(w.text for w in self.words)
+
+
+@dataclass
+class SongMetadata:
+    """Metadata about singers in a song."""
+    singers: list[str]  # List of singer names in order (e.g., ["Bruno Mars", "Lady Gaga"])
+    is_duet: bool = False
+
+    def get_singer_id(self, singer_name: str) -> str:
+        """Convert singer name to singer ID (singer1, singer2, both)."""
+        if not singer_name:
+            return ""
+
+        name_lower = singer_name.lower()
+
+        # Check for "both" or "&" indicators
+        if "&" in name_lower or "both" in name_lower or "," in name_lower:
+            return "both"
+
+        # Match against known singers
+        for i, known_singer in enumerate(self.singers):
+            if known_singer.lower() in name_lower or name_lower in known_singer.lower():
+                return f"singer{i + 1}"
+
+        # Default to first singer if no match
+        return "singer1" if self.singers else ""
 
 
 def parse_lrc_timestamp(ts: str) -> float:
@@ -126,6 +154,291 @@ def parse_lrc_with_timing(lrc_text: str) -> list[tuple[float, str]]:
             text = match.group(4).strip()
             if text:
                 lines.append((timestamp, text))
+    return lines
+
+
+def extract_artists_from_title(title: str, known_artist: str) -> list[str]:
+    """
+    Extract artist names from a title like "Artist1, Artist2 - Song Name".
+
+    Args:
+        title: The full title (e.g., "Lady Gaga, Bruno Mars - Die With A Smile")
+        known_artist: The artist we already know (from metadata)
+
+    Returns:
+        List of artist names found
+    """
+    artists = []
+
+    # Check if title has "Artist - Song" format
+    if " - " in title:
+        artist_part = title.split(" - ")[0].strip()
+
+        # Split by common separators: comma, ampersand, "and", "ft.", "feat."
+        parts = re.split(r'[,&]|\b(?:and|ft\.?|feat\.?)\b', artist_part, flags=re.IGNORECASE)
+        artists = [p.strip() for p in parts if p.strip()]
+
+    # If we couldn't extract from title, use known_artist
+    if not artists:
+        artists = [known_artist]
+
+    return artists
+
+
+def fetch_genius_lyrics_with_singers(title: str, artist: str) -> tuple[Optional[list[tuple[str, str]]], Optional[SongMetadata]]:
+    """
+    Fetch lyrics from Genius with singer annotations.
+
+    Returns:
+        Tuple of (lyrics_with_singers, metadata)
+        - lyrics_with_singers: List of (text, singer_name) tuples for each line
+        - metadata: SongMetadata with singer info, or None if not a duet
+    """
+    try:
+        import requests
+        from bs4 import BeautifulSoup
+    except ImportError:
+        print("  requests/beautifulsoup4 not available for Genius scraping")
+        return None, None
+
+    from downloader import clean_title
+
+    # Extract artists from title (for collaborations/duets)
+    artists_from_title = extract_artists_from_title(title, artist)
+
+    # Clean title and create URL slug
+    clean = clean_title(title, artist)
+
+    # Try to construct Genius URL
+    # Format: artist-song-title-lyrics (lowercase, spaces to dashes)
+    def make_slug(text: str) -> str:
+        # Remove special characters, convert spaces to dashes
+        slug = re.sub(r'[^\w\s-]', '', text.lower())
+        slug = re.sub(r'\s+', '-', slug)
+        return slug
+
+    # Try different URL patterns
+    artist_slug = make_slug(artist)
+    title_slug = make_slug(clean)
+
+    # Handle multiple artists (from title or artist field)
+    # Genius uses "and" between artists in URLs
+    artist_parts = re.split(r'[,&]', artist)
+    artist_parts = [p.strip() for p in artist_parts if p.strip()]
+
+    # If only one artist in the artist field, try using artists from title
+    if len(artist_parts) < 2 and len(artists_from_title) >= 2:
+        artist_parts = artists_from_title
+
+    url_patterns = []
+
+    # Try full artist slug with "and" for duets/collaborations
+    if len(artist_parts) >= 2:
+        combined_slug = "-and-".join(make_slug(p) for p in artist_parts)
+        url_patterns.append(f"https://genius.com/{combined_slug}-{title_slug}-lyrics")
+        # Also try reversed order
+        combined_slug_reversed = "-and-".join(make_slug(p) for p in reversed(artist_parts))
+        url_patterns.append(f"https://genius.com/{combined_slug_reversed}-{title_slug}-lyrics")
+
+    # Try standard patterns
+    url_patterns.extend([
+        f"https://genius.com/{artist_slug}-{title_slug}-lyrics",
+        f"https://genius.com/{artist_slug.split('-')[0]}-{title_slug}-lyrics",
+    ])
+
+    # Also try with just the first artist
+    if artist_parts:
+        first_artist_slug = make_slug(artist_parts[0])
+        url_patterns.append(f"https://genius.com/{first_artist_slug}-{title_slug}-lyrics")
+
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
+    }
+
+    soup = None
+    for url in url_patterns:
+        print(f"  Trying Genius: {url}")
+        try:
+            response = requests.get(url, headers=headers, timeout=10)
+            if response.status_code == 200:
+                soup = BeautifulSoup(response.text, 'html.parser')
+                break
+        except Exception as e:
+            print(f"  Error: {e}")
+            continue
+
+    if not soup:
+        return None, None
+
+    # Extract all text including annotations
+    lyrics_containers = soup.find_all('div', {'data-lyrics-container': 'true'})
+
+    if not lyrics_containers:
+        return None, None
+
+    # Parse lyrics with singer annotations
+    lines_with_singers: list[tuple[str, str]] = []
+    current_singer = ""
+    singers_found: set[str] = set()
+
+    # Pattern to match section headers like [Verse 1: Bruno Mars] or [Chorus]
+    section_pattern = re.compile(r'\[([^\]]+)\]')
+
+    for container in lyrics_containers:
+        # Get HTML with line breaks preserved
+        for br in container.find_all('br'):
+            br.replace_with('\n')
+
+        text = container.get_text()
+
+        for line in text.split('\n'):
+            line = line.strip()
+            if not line:
+                continue
+
+            # Check if this is a section header
+            section_match = section_pattern.match(line)
+            if section_match:
+                header = section_match.group(1)
+                # Extract singer from header like "Verse 1: Bruno Mars" or "Chorus: Lady Gaga & Bruno Mars"
+                if ':' in header:
+                    singer_part = header.split(':', 1)[1].strip()
+                    current_singer = singer_part
+                    singers_found.add(singer_part)
+                continue
+
+            # Regular lyrics line
+            lines_with_singers.append((line, current_singer))
+
+    if not lines_with_singers:
+        return None, None
+
+    # Determine if this is a duet
+    # Extract unique singer names (not combined ones)
+    unique_singers: list[str] = []
+    for singer in singers_found:
+        if '&' in singer or ',' in singer:
+            # Split combined singers
+            parts = re.split(r'[&,]', singer)
+            for part in parts:
+                name = part.strip()
+                if name and name not in unique_singers:
+                    unique_singers.append(name)
+        elif singer and singer.lower() != 'both':
+            if singer not in unique_singers:
+                unique_singers.append(singer)
+
+    is_duet = len(unique_singers) >= 2
+    metadata = SongMetadata(singers=unique_singers[:2], is_duet=is_duet) if is_duet else None
+
+    print(f"  Found {len(lines_with_singers)} lines with singer annotations")
+    if metadata:
+        print(f"  Detected duet: {', '.join(metadata.singers)}")
+
+    return lines_with_singers, metadata
+
+
+def merge_lyrics_with_singer_info(
+    timed_lines: list[tuple[float, str]],
+    genius_lines: list[tuple[str, str]],
+    metadata: SongMetadata,
+    romanize: bool = True,
+) -> list[Line]:
+    """
+    Merge synced lyrics timing with Genius singer annotations.
+
+    Uses fuzzy matching to align lines from both sources.
+
+    Args:
+        timed_lines: List of (timestamp, text) from synced lyrics
+        genius_lines: List of (text, singer_name) from Genius
+        metadata: SongMetadata with singer info
+        romanize: Whether to romanize non-Latin text
+
+    Returns:
+        List of Line objects with timing and singer info
+    """
+    from difflib import SequenceMatcher
+
+    if not timed_lines:
+        return []
+
+    # Build a lookup of Genius lines for matching
+    # Normalize text for comparison
+    genius_normalized = [
+        (normalize_text(text), singer)
+        for text, singer in genius_lines
+    ]
+
+    lines = []
+    used_genius_indices: set[int] = set()
+
+    for i, (start_time, text) in enumerate(timed_lines):
+        # Romanize if needed
+        if romanize:
+            text = romanize_line(text)
+
+        # Get end time from next line
+        if i + 1 < len(timed_lines):
+            end_time = timed_lines[i + 1][0]
+            if end_time - start_time > 10.0:
+                end_time = start_time + 5.0
+        else:
+            end_time = start_time + 3.0
+
+        # Try to find matching Genius line for singer info
+        text_normalized = normalize_text(text)
+        best_match_idx = None
+        best_score = 0.0
+
+        for j, (genius_norm, singer) in enumerate(genius_normalized):
+            if j in used_genius_indices:
+                continue
+
+            score = SequenceMatcher(None, text_normalized, genius_norm).ratio()
+
+            # Prefer sequential matches
+            if j not in used_genius_indices:
+                score += 0.05
+
+            if score > best_score and score > 0.5:
+                best_score = score
+                best_match_idx = j
+
+        # Get singer info from match
+        singer_id = ""
+        if best_match_idx is not None:
+            used_genius_indices.add(best_match_idx)
+            _, singer_name = genius_lines[best_match_idx]
+            singer_id = metadata.get_singer_id(singer_name)
+
+        # Split text into words
+        word_texts = text.split()
+        if not word_texts:
+            continue
+
+        # Distribute timing evenly across words
+        line_duration = end_time - start_time
+        word_duration = (line_duration * 0.95) / len(word_texts)
+
+        words = []
+        for j, word_text in enumerate(word_texts):
+            word_start = start_time + j * (line_duration / len(word_texts))
+            word_end = word_start + word_duration
+            words.append(Word(
+                text=word_text,
+                start_time=word_start,
+                end_time=word_end,
+                singer=singer_id,
+            ))
+
+        lines.append(Line(
+            words=words,
+            start_time=start_time,
+            end_time=words[-1].end_time if words else end_time,
+            singer=singer_id,
+        ))
+
     return lines
 
 
@@ -714,18 +1027,29 @@ def filter_lines_by_lyrics(transcribed_lines: list[Line], lyrics_text: list[str]
     return filtered_lines
 
 
-def get_lyrics(title: str, artist: str, vocals_path: Optional[str] = None) -> list[Line]:
+def get_lyrics(
+    title: str,
+    artist: str,
+    vocals_path: Optional[str] = None,
+) -> tuple[list[Line], Optional[SongMetadata]]:
     """
-    Get lyrics with accurate word-level timing.
+    Get lyrics with accurate word-level timing and optional singer info.
 
     Strategy:
-    1. Fetch synced lyrics from online sources (preferred - has timing + correct text)
-    2. If synced lyrics found, use them directly with evenly distributed word timing
-    3. If no synced lyrics, fall back to whisperx transcription
+    1. Try to fetch Genius lyrics with singer annotations (for duets)
+    2. Fetch synced lyrics from online sources (preferred - has timing + correct text)
+    3. If both found, merge timing with singer info
+    4. If no synced lyrics, fall back to whisperx transcription
 
-    This approach preserves the original lyrics text (including romanized non-English)
-    rather than relying on whisperx transcription which may translate or mishear.
+    Returns:
+        Tuple of (lines, metadata)
+        - lines: List of Line objects with word timing (and singer info if duet)
+        - metadata: SongMetadata with singer info, or None if not a duet
     """
+    # Try to fetch Genius lyrics with singer annotations
+    print("Checking for singer annotations (Genius)...")
+    genius_lines, metadata = fetch_genius_lyrics_with_singers(title, artist)
+
     # Try to fetch lyrics from multiple sources
     print("Fetching lyrics from online sources...")
     lrc_text, is_synced, source = fetch_lyrics_multi_source(title, artist)
@@ -733,13 +1057,20 @@ def get_lyrics(title: str, artist: str, vocals_path: Optional[str] = None) -> li
     if lrc_text and is_synced:
         # Use synced lyrics directly - preserves original text including romanized lyrics
         print(f"Using synced lyrics from {source}")
-        lines = create_lines_from_lrc(lrc_text)
+
+        # If we have Genius singer info, merge with synced timing
+        if genius_lines and metadata and metadata.is_duet:
+            print(f"Merging with singer info from Genius")
+            timed_lines = parse_lrc_with_timing(lrc_text)
+            lines = merge_lyrics_with_singer_info(timed_lines, genius_lines, metadata)
+        else:
+            lines = create_lines_from_lrc(lrc_text)
 
         if lines:
             # Apply line splitting for long lines
             lines = split_long_lines(lines)
             print(f"Got {len(lines)} lines of lyrics")
-            return lines
+            return lines, metadata
 
     # Fall back to whisperx transcription if no synced lyrics
     if not vocals_path:
@@ -762,7 +1093,7 @@ def get_lyrics(title: str, artist: str, vocals_path: Optional[str] = None) -> li
         lines = correct_transcription_with_lyrics(lines, lyrics_text)
         print(f"Corrected transcription: {original_count} lines processed")
 
-    return lines
+    return lines, None
 
 
 if __name__ == "__main__":
@@ -776,8 +1107,12 @@ if __name__ == "__main__":
     artist = sys.argv[2]
     vocals_path = sys.argv[3] if len(sys.argv) > 3 else None
 
-    lines = get_lyrics(title, artist, vocals_path)
+    lines, metadata = get_lyrics(title, artist, vocals_path)
+
+    if metadata and metadata.is_duet:
+        print(f"\nDuet detected: {', '.join(metadata.singers)}")
 
     print(f"\nFound {len(lines)} lines:")
     for line in lines[:10]:  # Show first 10 lines
-        print(f"[{line.start_time:.2f}s] {line.text}")
+        singer_info = f" [{line.singer}]" if line.singer else ""
+        print(f"[{line.start_time:.2f}s]{singer_info} {line.text}")
