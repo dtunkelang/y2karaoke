@@ -16,6 +16,20 @@ try:
 except ImportError:
     KOREAN_ROMANIZER_AVAILABLE = False
 
+# Try to import Chinese romanizer (pinyin)
+try:
+    from pypinyin import lazy_pinyin, Style
+    CHINESE_ROMANIZER_AVAILABLE = True
+except ImportError:
+    CHINESE_ROMANIZER_AVAILABLE = False
+
+# Try to import Japanese romanizer (kana/kanji -> romaji)
+try:
+    from pykakasi import kakasi
+    JAPANESE_ROMANIZER_AVAILABLE = True
+except ImportError:
+    JAPANESE_ROMANIZER_AVAILABLE = False
+
 
 def contains_korean(text: str) -> bool:
     """Check if text contains Korean characters (Hangul)."""
@@ -51,21 +65,115 @@ def romanize_korean(text: str) -> str:
         return text
 
 
-def romanize_line(text: str) -> str:
+def contains_chinese(text: str) -> bool:
+    """Check if text contains Chinese (CJK) characters."""
+    # Basic CJK Unified Ideographs block; this covers most common Han characters.
+    for char in text:
+        if "\u4e00" <= char <= "\u9fff":
+            return True
+    return False
+
+
+def romanize_chinese(text: str) -> str:
+    """Romanize Chinese text (Han characters) while preserving other scripts.
+
+    Uses pypinyin to generate Pinyin without tone marks for readability.
+    Non-Chinese characters are passed through unchanged.
     """
-    Romanize a line of lyrics, handling mixed Korean/English text.
-    """
-    if not contains_korean(text):
+    if not CHINESE_ROMANIZER_AVAILABLE:
         return text
 
-    # Romanize the entire line
-    romanized = romanize_korean(text)
+    if not contains_chinese(text):
+        return text
 
-    # Clean up common issues
-    # Remove extra spaces
-    romanized = " ".join(romanized.split())
+    # Build result by chunking consecutive Chinese characters so we can
+    # insert spaces between syllables but keep non-Chinese regions intact.
+    result_parts: list[str] = []
+    chinese_buffer: list[str] = []
 
-    return romanized
+    def flush_chinese() -> None:
+        if not chinese_buffer:
+            return
+        segment = "".join(chinese_buffer)
+        chinese_buffer.clear()
+        try:
+            # lazy_pinyin returns a list of syllables; join with spaces
+            pinyin_list = lazy_pinyin(segment, style=Style.NORMAL)
+            result_parts.append(" ".join(pinyin_list))
+        except Exception:
+            # On any pypinyin failure, fall back to the original segment
+            result_parts.append(segment)
+
+    for ch in text:
+        if contains_chinese(ch):
+            chinese_buffer.append(ch)
+        else:
+            flush_chinese()
+            result_parts.append(ch)
+
+    flush_chinese()
+    return "".join(result_parts)
+
+
+def contains_japanese(text: str) -> bool:
+    """Check if text contains Japanese characters (Hiragana/Katakana)."""
+    for ch in text:
+        # Hiragana
+        if "\u3040" <= ch <= "\u309f":
+            return True
+        # Katakana (including Katakana Phonetic Extensions)
+        if "\u30a0" <= ch <= "\u30ff" or "\u31f0" <= ch <= "\u31ff":
+            return True
+    return False
+
+
+_JAPANESE_CONVERTER = None
+
+
+def romanize_japanese(text: str) -> str:
+    """Romanize Japanese text (kana/kanji) while preserving other scripts.
+
+    Uses pykakasi to generate romaji. Non-Japanese characters are passed
+    through unchanged.
+    """
+    global _JAPANESE_CONVERTER
+
+    if not JAPANESE_ROMANIZER_AVAILABLE:
+        return text
+
+    if not contains_japanese(text):
+        return text
+
+    try:
+        if _JAPANESE_CONVERTER is None:
+            kks = kakasi()
+            kks.setMode("H", "a")  # Hiragana to ascii
+            kks.setMode("K", "a")  # Katakana to ascii
+            kks.setMode("J", "a")  # Japanese (kanji) to ascii
+            _JAPANESE_CONVERTER = kks.getConverter()
+        return _JAPANESE_CONVERTER.do(text)
+    except Exception:
+        # On any pykakasi failure, fall back to the original
+        return text
+
+
+def romanize_line(text: str) -> str:
+    """Romanize a line of lyrics, handling mixed Korean/Japanese/Chinese/English text."""
+    # Apply Korean romanization first
+    if contains_korean(text):
+        text = romanize_korean(text)
+
+    # Then apply Japanese romanization
+    if contains_japanese(text):
+        text = romanize_japanese(text)
+
+    # Finally apply Chinese romanization (including any remaining Han characters)
+    if contains_chinese(text):
+        text = romanize_chinese(text)
+
+    # Clean up common issues: collapse repeated whitespace
+    text = " ".join(text.split())
+    return text
 
 
 @dataclass

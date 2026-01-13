@@ -7,6 +7,7 @@ Generate karaoke videos from YouTube URLs with word-by-word highlighting.
 - Downloads audio from YouTube
 - Separates vocals from instrumental using AI (demucs)
 - Fetches synced lyrics when available and uses WhisperX for precise word-level timing
+- Automatically romanizes supported non-Latin lyrics (Korean, Chinese, Japanese) when libraries are available
 - Renders KaraFun-style karaoke videos with word-by-word highlighting
 - Optional dynamic video backgrounds generated from the original YouTube video
 - Duet-friendly visuals with singer-specific coloring and instrumental-break progress bar
@@ -146,6 +147,16 @@ For debugging or experimenting with individual steps, you can run the core modul
 3. **Lyrics**: Fetches lyrics text from online sources when available and uses WhisperX-based transcription and forced alignment on the vocal track for robust word-level timing.
 4. **Audio Effects**: Applies key shift and/or tempo changes (if requested)
 5. **Render**: Creates video with word-by-word highlighting, lyrics timing adjusted to match tempo
+
+## International lyrics and romanization
+
+For songs with non-Latin scripts, y2karaoke can optionally romanize lyrics before rendering:
+
+- **Korean (Hangul)**: Romanized using `korean-romanizer` (Revised Romanization style) when available.
+- **Chinese (Han characters)**: Romanized to **pinyin without tone marks** using `pypinyin`, while leaving non-Chinese text untouched.
+- **Japanese (hiragana/katakana/kanji)**: Romanized to **romaji** using `pykakasi`, preserving non-Japanese parts of the line.
+
+Romanization is **best-effort** and only applied when the corresponding libraries are installed. If a provider already returns romanized lyrics (e.g., pinyin/romaji lines), those are kept as-is. Advanced users who prefer original scripts can disable romanization by editing `lyrics.py` to skip or remove calls to `romanize_line`.
 
 ## Video Style
 
