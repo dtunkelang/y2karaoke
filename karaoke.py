@@ -227,7 +227,7 @@ def main():
 
         # Step 3: Get lyrics with timing
         print("\n[3/5] Fetching lyrics and timing...")
-        lines, song_metadata = get_lyrics(title, artist, vocals_path)
+        lines, song_metadata = get_lyrics(title, artist, vocals_path, cache_dir=work_dir)
         print(f"      Found {len(lines)} lines of lyrics")
         if song_metadata and song_metadata.is_duet:
             print(f"      Duet detected: {', '.join(song_metadata.singers)}")

@@ -4,6 +4,9 @@ import re
 from dataclasses import dataclass
 from typing import Optional
 
+import json
+import os
+
 import syncedlyrics
 
 # Try to import Korean romanizer
@@ -183,6 +186,65 @@ def extract_artists_from_title(title: str, known_artist: str) -> list[str]:
         artists = [known_artist]
 
     return artists
+
+
+def _lines_to_json(lines: list[Line]) -> list[dict]:
+    data: list[dict] = []
+    for line in lines:
+        data.append({
+            "start_time": line.start_time,
+            "end_time": line.end_time,
+            "singer": line.singer,
+            "words": [
+                {
+                    "text": w.text,
+                    "start_time": w.start_time,
+                    "end_time": w.end_time,
+                    "singer": w.singer,
+                }
+                for w in line.words
+            ],
+        })
+    return data
+
+
+def _lines_from_json(data: list[dict]) -> list[Line]:
+    lines: list[Line] = []
+    for item in data:
+        words = [
+            Word(
+                text=w["text"],
+                start_time=float(w["start_time"]),
+                end_time=float(w["end_time"]),
+                singer=w.get("singer", ""),
+            )
+            for w in item.get("words", [])
+        ]
+        lines.append(Line(
+            words=words,
+            start_time=float(item["start_time"]),
+            end_time=float(item["end_time"]),
+            singer=item.get("singer", ""),
+        ))
+    return lines
+
+
+def _metadata_to_json(metadata: Optional[SongMetadata]) -> Optional[dict]:
+    if metadata is None:
+        return None
+    return {
+        "singers": metadata.singers,
+        "is_duet": metadata.is_duet,
+    }
+
+
+def _metadata_from_json(data: Optional[dict]) -> Optional[SongMetadata]:
+    if not data:
+        return None
+    return SongMetadata(
+        singers=list(data.get("singers", [])),
+        is_duet=bool(data.get("is_duet", False)),
+    )
 
 
 def fetch_genius_lyrics_with_singers(title: str, artist: str) -> tuple[Optional[list[tuple[str, str]]], Optional[SongMetadata]]:
@@ -590,9 +652,17 @@ def fetch_synced_lyrics(title: str, artist: str) -> Optional[str]:
     return None
 
 
-def match_line_to_lyrics(transcribed_line: str, lyrics_lines: list[str], used_indices: set) -> tuple[Optional[str], Optional[int]]:
-    """
-    Find the best matching lyrics line for a transcribed line.
+def match_line_to_lyrics(
+    transcribed_line: str,
+    lyrics_lines: list[str],
+    used_indices: set,
+    last_idx: Optional[int] = None,
+) -> tuple[Optional[str], Optional[int]]:
+    """Find the best matching lyrics line for a transcribed line.
+
+    Adds a bias towards keeping the matched lyrics index moving
+    forward through the song so that lines are not applied badly
+    out of order.
 
     Returns:
         Tuple of (matched_lyrics_line, lyrics_index) or (None, None) if no good match
@@ -608,17 +678,26 @@ def match_line_to_lyrics(transcribed_line: str, lyrics_lines: list[str], used_in
     best_idx = None
 
     for i, lyrics_line in enumerate(lyrics_lines):
-        # Skip already used lines (allow some reuse for repeated choruses)
+        # Skip already used lines (we don't want to reuse the exact
+        # same Genius line for different segments).
+        if i in used_indices:
+            continue
+
         lyrics_norm = normalize_text(lyrics_line)
         if not lyrics_norm:
             continue
 
-        # Calculate similarity
+        # Base similarity
         score = SequenceMatcher(None, transcribed_norm, lyrics_norm).ratio()
 
-        # Bonus for unused lines (prefer sequential matching)
-        if i not in used_indices:
-            score += 0.1
+        # Encourage monotonic progression through the lyrics: prefer
+        # indices at or after the last matched index, slightly penalize
+        # going backwards unless the match is extremely strong.
+        if last_idx is not None:
+            if i >= last_idx:
+                score += 0.05
+            else:
+                score -= 0.15
 
         if score > best_score:
             best_score = score
@@ -633,58 +712,322 @@ def match_line_to_lyrics(transcribed_line: str, lyrics_lines: list[str], used_in
 
 
 def correct_transcription_with_lyrics(lines: list["Line"], lyrics_text: list[str]) -> list["Line"]:
-    """
-    Correct transcribed lines using known lyrics.
+    """Align Whisper transcription to reference lyrics in order.
 
-    Matches each transcribed line to the best lyrics line and replaces
-    the text while keeping the timing from transcription.
+    We treat the reference lyrics (from Genius/LRC) as the source of
+    truth for *text* and WhisperX as the source of *timing*.
+
+    This function performs a global, order-preserving alignment between
+    the sequence of transcribed lines and the sequence of reference
+    lyric lines, then rebuilds each aligned line using:
+      - the *text* from the reference lyrics, and
+      - the *time span* from the corresponding Whisper line, with words
+        distributed across that span.
+
+    Any Whisper lines that cannot be matched reasonably well to a
+    reference lyric line are dropped so that no hallucinated text is
+    shown.
     """
-    if not lyrics_text:
+    if not lyrics_text or not lines:
         return lines
 
-    corrected_lines = []
-    used_indices: set[int] = set()
+    from difflib import SequenceMatcher
 
-    for line in lines:
-        transcribed_text = line.text
-        matched_lyrics, idx = match_line_to_lyrics(transcribed_text, lyrics_text, used_indices)
+    # Clean up reference lyrics and transcription text
+    ref_lines = [ln.strip() for ln in lyrics_text if ln.strip()]
+    if not ref_lines:
+        return lines
 
-        if matched_lyrics and idx is not None:
-            used_indices.add(idx)
+    trans_norm = [normalize_text(l.text) for l in lines]
+    ref_norm = [normalize_text(ln) for ln in ref_lines]
 
-            # Replace words with lyrics text while keeping timing
-            lyrics_words = matched_lyrics.split()
+    N = len(lines)
+    M = len(ref_lines)
 
-            if len(lyrics_words) == len(line.words):
-                # Same word count - direct replacement
-                new_words = [
-                    Word(text=lw, start_time=w.start_time, end_time=w.end_time)
-                    for lw, w in zip(lyrics_words, line.words)
-                ]
-            elif len(lyrics_words) > 0 and len(line.words) > 0:
-                # Different word count - redistribute timing
-                total_duration = line.end_time - line.start_time
-                word_duration = total_duration / len(lyrics_words)
+    # Dynamic-programming alignment between transcription (i) and
+    # reference lyrics (j). States are prefixes [0..i), [0..j).
+    NEG_INF = -1e9
+    dp: list[list[float]] = [[NEG_INF] * (M + 1) for _ in range(N + 1)]
+    back: list[list[Optional[tuple[str, int, int, Optional[float]]]]] = [
+        [None] * (M + 1) for _ in range(N + 1)
+    ]
+    dp[0][0] = 0.0
 
-                new_words = []
-                for i, lw in enumerate(lyrics_words):
-                    start = line.start_time + i * word_duration
-                    end = start + word_duration - 0.02
-                    new_words.append(Word(text=lw, start_time=start, end_time=end))
-            else:
-                # Keep original
-                new_words = line.words
+    # Penalties for skipping lines
+    skip_transcribed_penalty = 0.3  # drop a Whisper segment
+    skip_ref_penalty = 0.4         # skip a reference lyric line
 
-            corrected_lines.append(Line(
+    for i in range(N + 1):
+        for j in range(M + 1):
+            cur = dp[i][j]
+            if cur <= NEG_INF / 2:
+                continue
+
+            # Option 1: match lines[i] with ref_lines[j]
+            if i < N and j < M:
+                ti = trans_norm[i]
+                rj = ref_norm[j]
+                if ti and rj:
+                    sim = SequenceMatcher(None, ti, rj).ratio()
+                else:
+                    sim = 0.0
+
+                # We only want to reward reasonably good matches; very
+                # low similarity is treated like zero gain.
+                gain = max(sim - 0.3, 0.0)
+                new = cur + gain
+                if new > dp[i + 1][j + 1]:
+                    dp[i + 1][j + 1] = new
+                    back[i + 1][j + 1] = ("M", i, j, sim)
+
+            # Option 2: skip a transcribed line (drop this Whisper
+            # segment; maybe silence or misrecognition).
+            if i < N:
+                new = cur - skip_transcribed_penalty
+                if new > dp[i + 1][j]:
+                    dp[i + 1][j] = new
+                    back[i + 1][j] = ("ST", i, j, None)
+
+            # Option 3: skip a reference lyric line (may be unsung or
+            # too short for Whisper to detect clearly).
+            if j < M:
+                new = cur - skip_ref_penalty
+                if new > dp[i][j + 1]:
+                    dp[i][j + 1] = new
+                    back[i][j + 1] = ("SR", i, j, None)
+
+    # Backtrack to recover matches
+    i, j = N, M
+    matches: list[tuple[int, int, float]] = []  # (trans_idx, ref_idx, sim)
+
+    while i > 0 or j > 0:
+        info = back[i][j]
+        if info is None:
+            break
+        op, pi, pj, sim = info
+        if op == "M" and sim is not None:
+            matches.append((pi, pj, sim))
+        i, j = pi, pj
+
+    matches.reverse()
+
+    # Build aligned lines: one for each reasonably good match.
+    aligned: list[Line] = []
+    SIM_THRESHOLD = 0.5
+
+    for trans_idx, ref_idx, sim in matches:
+        if sim < SIM_THRESHOLD:
+            continue
+
+        src_line = lines[trans_idx]
+        text = ref_lines[ref_idx].strip()
+        ref_words = text.split()
+        if not ref_words:
+            continue
+
+        whisper_words = src_line.words
+        if not whisper_words:
+            # Fallback: treat like a single span with even distribution
+            start = src_line.start_time
+            end = src_line.end_time
+            duration = max(end - start, 0.1)
+            line_duration = duration
+            word_duration = (line_duration * 0.95) / len(ref_words)
+
+            new_words: list[Word] = []
+            for k, wtxt in enumerate(ref_words):
+                w_start = start + k * (line_duration / len(ref_words))
+                w_end = w_start + word_duration
+                new_words.append(Word(
+                    text=wtxt,
+                    start_time=w_start,
+                    end_time=w_end,
+                ))
+
+            aligned.append(Line(
                 words=new_words,
-                start_time=line.start_time,
-                end_time=line.end_time,
+                start_time=new_words[0].start_time,
+                end_time=new_words[-1].end_time,
             ))
-        else:
-            # No match - keep original transcription
-            corrected_lines.append(line)
+            continue
 
-    return corrected_lines
+        # Word-level alignment between Whisper words and reference
+        # words within this line.
+        import re
+        from difflib import SequenceMatcher
+
+        def norm_token(t: str) -> str:
+            # Lowercase and strip punctuation, keep apostrophes
+            t = t.lower()
+            return re.sub(r"[^\w']", "", t)
+
+        W = len(whisper_words)
+        G = len(ref_words)
+
+        w_norm = [norm_token(w.text) for w in whisper_words]
+        g_norm = [norm_token(t) for t in ref_words]
+
+        NEG_INF_W = -1e9
+        dpw: list[list[float]] = [[NEG_INF_W] * (G + 1) for _ in range(W + 1)]
+        backw: list[list[Optional[tuple[str, int, int, Optional[float]]]]] = [
+            [None] * (G + 1) for _ in range(W + 1)
+        ]
+        dpw[0][0] = 0.0
+
+        skip_w_penalty = 0.3  # drop a Whisper word
+        skip_g_penalty = 0.3  # drop a Genius word within this line
+
+        for wi in range(W + 1):
+            for gi in range(G + 1):
+                curw = dpw[wi][gi]
+                if curw <= NEG_INF_W / 2:
+                    continue
+
+                # Match whisper_words[wi] with ref_words[gi]
+                if wi < W and gi < G:
+                    tn = w_norm[wi]
+                    rn = g_norm[gi]
+                    if tn and rn:
+                        s = SequenceMatcher(None, tn, rn).ratio()
+                    else:
+                        s = 0.0
+                    gain = max(s - 0.2, 0.0)
+                    neww = curw + gain
+                    if neww > dpw[wi + 1][gi + 1]:
+                        dpw[wi + 1][gi + 1] = neww
+                        backw[wi + 1][gi + 1] = ("M", wi, gi, s)
+
+                # Skip whisper word
+                if wi < W:
+                    neww = curw - skip_w_penalty
+                    if neww > dpw[wi + 1][gi]:
+                        dpw[wi + 1][gi] = neww
+                        backw[wi + 1][gi] = ("SW", wi, gi, None)
+
+                # Skip reference word
+                if gi < G:
+                    neww = curw - skip_g_penalty
+                    if neww > dpw[wi][gi + 1]:
+                        dpw[wi][gi + 1] = neww
+                        backw[wi][gi + 1] = ("SG", wi, gi, None)
+
+        # Backtrack word matches
+        wi, gi = W, G
+        word_matches: list[tuple[int, int, float]] = []  # (w_idx, g_idx, sim)
+        while wi > 0 or gi > 0:
+            info = backw[wi][gi]
+            if info is None:
+                break
+            op, pwi, pgi, sim = info
+            if op == "M" and sim is not None:
+                word_matches.append((pwi, pgi, sim))
+            wi, gi = pwi, pgi
+
+        word_matches.reverse()
+
+        # Aggregate timing for each Genius word
+        SIM_W_THRESHOLD = 0.5
+        g_times: list[Optional[tuple[float, float]]] = [None] * G
+        for w_idx, g_idx, sim in word_matches:
+            if sim < SIM_W_THRESHOLD:
+                continue
+            w = whisper_words[w_idx]
+            cur = g_times[g_idx]
+            if cur is None:
+                g_times[g_idx] = (w.start_time, w.end_time)
+            else:
+                s0, e0 = cur
+                g_times[g_idx] = (min(s0, w.start_time), max(e0, w.end_time))
+
+        # If no Genius words got timings, fall back to even distribution
+        if all(t is None for t in g_times):
+            start = src_line.start_time
+            end = src_line.end_time
+            duration = max(end - start, 0.1)
+            line_duration = duration
+            word_duration = (line_duration * 0.95) / len(ref_words)
+
+            new_words = []
+            for k, wtxt in enumerate(ref_words):
+                w_start = start + k * (line_duration / len(ref_words))
+                w_end = w_start + word_duration
+                new_words.append(Word(
+                    text=wtxt,
+                    start_time=w_start,
+                    end_time=w_end,
+                ))
+
+            aligned.append(Line(
+                words=new_words,
+                start_time=new_words[0].start_time,
+                end_time=new_words[-1].end_time,
+            ))
+            continue
+
+        # Interpolate timings for unmatched Genius words using anchors
+        line_start = src_line.start_time
+        line_end = src_line.end_time
+        new_words: list[Word] = []
+
+        # Collect anchor indices
+        anchors = [idx for idx, t in enumerate(g_times) if t is not None]
+        if not anchors:
+            anchors = []
+
+        for gi_idx in range(G):
+            if g_times[gi_idx] is not None:
+                # Use the aggregated Whisper timing
+                s, e = g_times[gi_idx]
+            else:
+                # Interpolate between nearest anchors
+                # Find previous and next anchors
+                prev_a = max([a for a in anchors if a < gi_idx], default=None)
+                next_a = min([a for a in anchors if a > gi_idx], default=None)
+
+                if prev_a is None and next_a is None:
+                    # Should not happen due to earlier check, but be safe
+                    s = line_start
+                    e = line_end
+                elif prev_a is None:
+                    # Before first anchor: spread from line_start to first anchor
+                    next_s, _ = g_times[next_a]  # type: ignore
+                    span = max(next_s - line_start, 0.1)
+                    offset = (gi_idx / max(next_a, 1)) * span
+                    s = line_start + offset
+                    e = s + span / max(next_a + 1, 2)
+                elif next_a is None:
+                    # After last anchor: spread from last anchor to line_end
+                    _, prev_e = g_times[prev_a]  # type: ignore
+                    span = max(line_end - prev_e, 0.1)
+                    offset = ((gi_idx - prev_a) / max(G - prev_a, 1)) * span
+                    s = prev_e + offset
+                    e = s + span / max(G - prev_a + 1, 2)
+                else:
+                    # Between two anchors: interpolate within that window
+                    _, prev_e = g_times[prev_a]  # type: ignore
+                    next_s, _ = g_times[next_a]  # type: ignore
+                    span = max(next_s - prev_e, 0.1)
+                    rel_pos = (gi_idx - prev_a) / max(next_a - prev_a, 1)
+                    s = prev_e + rel_pos * span
+                    e = s + span / max(next_a - prev_a + 1, 2)
+
+            # Ensure non-degenerate durations
+            if e <= s:
+                e = s + 0.05
+
+            new_words.append(Word(
+                text=ref_words[gi_idx],
+                start_time=s,
+                end_time=e,
+            ))
+
+        aligned.append(Line(
+            words=new_words,
+            start_time=new_words[0].start_time,
+            end_time=new_words[-1].end_time,
+        ))
+
+    return aligned
 
 
 def transcribe_and_align(vocals_path: str, lyrics_text: Optional[list[str]] = None) -> list[Line]:
@@ -1031,6 +1374,7 @@ def get_lyrics(
     title: str,
     artist: str,
     vocals_path: Optional[str] = None,
+    cache_dir: Optional[str] = None,
 ) -> tuple[list[Line], Optional[SongMetadata]]:
     """
     Get lyrics with accurate word-level timing and optional singer info.
@@ -1046,13 +1390,110 @@ def get_lyrics(
         - lines: List of Line objects with word timing (and singer info if duet)
         - metadata: SongMetadata with singer info, or None if not a duet
     """
-    # Try to fetch Genius lyrics with singer annotations
+    # Try to fetch Genius lyrics with singer annotations, with simple
+    # on-disk caching when a cache_dir is provided.
     print("Checking for singer annotations (Genius)...")
-    genius_lines, metadata = fetch_genius_lyrics_with_singers(title, artist)
+    genius_lines: Optional[list[tuple[str, str]]] = None
+    metadata: Optional[SongMetadata] = None
+
+    genius_cache_path = None
+    if cache_dir:
+        os.makedirs(cache_dir, exist_ok=True)
+        genius_cache_path = os.path.join(cache_dir, "genius_cache.json")
+        if os.path.exists(genius_cache_path):
+            try:
+                with open(genius_cache_path, "r", encoding="utf-8") as f:
+                    cached = json.load(f)
+                cached_lines = cached.get("lines", [])
+                genius_lines = [(item["text"], item.get("singer", "")) for item in cached_lines]
+                metadata = _metadata_from_json(cached.get("metadata"))
+                print("  Using cached Genius lyrics")
+            except Exception:
+                genius_lines = None
+                metadata = None
+
+    if genius_lines is None:
+        genius_lines, metadata = fetch_genius_lyrics_with_singers(title, artist)
+        if genius_cache_path and genius_lines is not None:
+            try:
+                payload = {
+                    "lines": [
+                        {"text": text, "singer": singer}
+                        for (text, singer) in genius_lines
+                    ],
+                    "metadata": _metadata_to_json(metadata),
+                }
+                with open(genius_cache_path, "w", encoding="utf-8") as f:
+                    json.dump(payload, f, ensure_ascii=False, indent=2)
+            except Exception:
+                pass
+
+    # Extract plain Genius lyrics text (without singer info) for later use.
+    # Filter out obvious non-lyric lines like contributor headers and
+    # page titles (e.g., "3 Contributors... Lyrics[Verse]").
+    if genius_lines:
+        def _is_probable_lyric(text: str) -> bool:
+            t = text.strip()
+            if not t:
+                return False
+            lower = t.lower()
+            if "contributors" in lower:
+                return False
+            if " lyrics" in lower or lower.endswith(" lyrics"):
+                return False
+            if "lyrics[" in lower:
+                return False
+            # Drop pure section headers like [Verse], [Chorus]
+            if t.startswith("[") and t.endswith("]"):
+                return False
+            return True
+
+        genius_lyrics_text = [text for text, _ in genius_lines if _is_probable_lyric(text)] or None
+    else:
+        genius_lyrics_text = None
 
     # Try to fetch lyrics from multiple sources
     print("Fetching lyrics from online sources...")
     lrc_text, is_synced, source = fetch_lyrics_multi_source(title, artist)
+
+    # If we found synced lyrics, but we also have Genius lyrics, make
+    # sure they look like the same song before trusting the LRC file.
+    if lrc_text and is_synced and genius_lyrics_text:
+        from difflib import SequenceMatcher
+
+        lrc_plain = extract_lyrics_text(lrc_text)
+        # Compare up to the first N non-empty lines to avoid being
+        # tricked by completely wrong matches from providers.
+        max_lines = 10
+        lrc_sample = [ln for ln in lrc_plain if ln.strip()][:max_lines]
+        genius_sample = [ln for ln in genius_lyrics_text if ln.strip()][:max_lines]
+
+        def best_match_score(src: str, candidates: list[str]) -> float:
+            if not candidates:
+                return 0.0
+            src_norm = normalize_text(src)
+            if not src_norm:
+                return 0.0
+            best = 0.0
+            for cand in candidates:
+                cand_norm = normalize_text(cand)
+                if not cand_norm:
+                    continue
+                s = SequenceMatcher(None, src_norm, cand_norm).ratio()
+                if s > best:
+                    best = s
+            return best
+
+        if lrc_sample and genius_sample:
+            scores = [best_match_score(ln, genius_sample) for ln in lrc_sample]
+            avg_score = sum(scores) / len(scores) if scores else 0.0
+        else:
+            avg_score = 0.0
+
+        if avg_score < 0.4:
+            print("Synced lyrics appear to be for a different song; ignoring and falling back to Genius/audio.")
+            lrc_text = None
+            is_synced = False
 
     if lrc_text and is_synced:
         # Use synced lyrics directly - preserves original text including romanized lyrics
@@ -1076,16 +1517,51 @@ def get_lyrics(
     if not vocals_path:
         raise RuntimeError("Could not get lyrics: no synced lyrics found and no vocals path provided")
 
-    if lrc_text:
+    # If we only have unsynced/plain lyrics from providers and ALSO have
+    # Genius lyrics, prefer Genius as the reference text and ignore the
+    # plain provider lyrics.
+    if lrc_text and (not is_synced) and genius_lyrics_text:
+        print("Using whisperx with lyrics reference from Genius (ignoring unsynced lyrics from providers)")
+        lyrics_text = [line for line in genius_lyrics_text if line.strip()]
+    elif lrc_text:
         # Have plain lyrics (no timing) - use whisperx but try to match text
         print(f"Using whisperx with lyrics reference from {source}")
         lyrics_text = extract_lyrics_text(lrc_text)
+    elif genius_lyrics_text:
+        # No LRC from providers, but Genius lyrics are available
+        print("Using whisperx with lyrics reference from Genius")
+        # Filter out any empty lines just in case
+        lyrics_text = [line for line in genius_lyrics_text if line.strip()]
     else:
         print("No lyrics found online, will transcribe from audio only")
         lyrics_text = None
 
-    # Transcribe and align with whisperx
-    lines = transcribe_and_align(vocals_path, lyrics_text)
+    # Transcribe and align with whisperx, with optional caching of the
+    # pre-alignment transcription so we don't have to rerun WhisperX
+    # on subsequent runs.
+    if cache_dir:
+        os.makedirs(cache_dir, exist_ok=True)
+        transcript_path = os.path.join(cache_dir, "whisper_transcript.json")
+    else:
+        transcript_path = None
+
+    if transcript_path and os.path.exists(transcript_path):
+        try:
+            with open(transcript_path, "r", encoding="utf-8") as f:
+                raw = json.load(f)
+            lines = _lines_from_json(raw.get("lines", []))
+            print(f"Loaded cached Whisper transcription with {len(lines)} lines")
+        except Exception:
+            lines = transcribe_and_align(vocals_path, lyrics_text)
+    else:
+        lines = transcribe_and_align(vocals_path, lyrics_text)
+        if transcript_path:
+            try:
+                payload = {"lines": _lines_to_json(lines)}
+                with open(transcript_path, "w", encoding="utf-8") as f:
+                    json.dump(payload, f, ensure_ascii=False)
+            except Exception:
+                pass
 
     # Cross-check and correct transcription using known lyrics (if we have them)
     if lyrics_text:

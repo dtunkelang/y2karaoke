@@ -1,7 +1,6 @@
 """Vocal separation using audio-separator (demucs)."""
 
 import os
-from audio_separator.separator import Separator
 
 
 def mix_stems(stem_files: list[str], output_path: str) -> str:
@@ -32,21 +31,37 @@ def separate_vocals(audio_path: str, output_dir: str = ".") -> dict:
     Returns:
         dict with keys: vocals_path, instrumental_path
     """
-    os.makedirs(output_dir, exist_ok=True)
+    import os
+    import torch
 
-    print("Separating vocals from instrumental...")
+    # Temporarily force Torch to report MPS as unavailable so that
+    # audio-separator uses CPU instead of MPS. This avoids the
+    # "Output channels > 65536 not supported at the MPS device" error
+    # seen with Demucs on Apple Silicon.
+    mps = getattr(torch.backends, "mps", None)
+    orig_is_available = None
+    if mps is not None and hasattr(mps, "is_available"):
+        orig_is_available = mps.is_available
+        mps.is_available = lambda: False
 
-    # Initialize separator with demucs model
-    separator = Separator(
-        output_dir=output_dir,
-        output_format="wav",
-    )
+    try:
+        from audio_separator.separator import Separator
 
-    # Load the demucs model (htdemucs is the default high-quality model)
-    separator.load_model(model_filename="htdemucs_ft.yaml")
+        os.makedirs(output_dir, exist_ok=True)
 
-    # Separate the audio
-    output_files = separator.separate(audio_path)
+        # Initialize separator with the Demucs model (htdemucs).
+        separator = Separator(
+            output_dir=output_dir,
+            output_format="wav",
+        )
+
+        separator.load_model(model_filename="htdemucs_ft.yaml")
+
+        # Separate the audio
+        output_files = separator.separate(audio_path)
+    finally:
+        if orig_is_available is not None:
+            mps.is_available = orig_is_available
 
     # Convert to full paths
     output_files = [os.path.join(output_dir, f) if not os.path.isabs(f) else f for f in output_files]
