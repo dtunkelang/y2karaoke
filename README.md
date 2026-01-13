@@ -63,8 +63,15 @@ python karaoke.py "https://youtube.com/watch?v=VIDEO_ID" -o output.mp4 --key -3
 # Slow down to 80% speed (great for learning)
 python karaoke.py "https://youtube.com/watch?v=VIDEO_ID" -o output.mp4 --tempo 0.8
 
+# Skip the first 8 seconds of audio (e.g., to remove a long intro)
+python karaoke.py "https://youtube.com/watch?v=VIDEO_ID" -o output.mp4 --audio-start 8
+
 # Use dynamic video backgrounds from the original YouTube video
 python karaoke.py "https://youtube.com/watch?v=VIDEO_ID" -o output.mp4 --backgrounds
+
+# Use lyrics from a different title/artist (e.g., cover of an original)
+python karaoke.py "https://youtube.com/watch?v=VIDEO_ID" -o output.mp4 \
+  --lyrics-title "Aucun Express" --lyrics-artist "Alain Bashung"
 
 # Combine options: shift key up, slow down, adjust timing
 python karaoke.py "https://youtube.com/watch?v=VIDEO_ID" -o output.mp4 --key +2 --tempo 0.9 --offset -0.5
@@ -87,6 +94,9 @@ python karaoke.py "https://youtube.com/watch?v=VIDEO_ID" -o output.mp4 --no-uplo
 | `--offset` | Timing offset in seconds (negative = highlight earlier, positive = later, default: 0.0) |
 | `--key` | Shift key by N semitones (-12 to +12, default: 0) |
 | `--tempo` | Tempo multiplier (0.5 = half speed, 2.0 = double, default: 1.0) |
+| `--audio-start` | Start audio processing from this many seconds into the track (skip intro; default: 0.0) |
+| `--lyrics-title` | Override song title used when searching for lyrics (useful for covers) |
+| `--lyrics-artist` | Override artist used when searching for lyrics (useful for covers) |
 | `--upload` | Upload to YouTube as unlisted video after rendering |
 | `--no-upload` | Skip the upload prompt (for batch/script mode) |
 | `--backgrounds` | Use video backgrounds extracted from the original YouTube video |

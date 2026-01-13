@@ -50,6 +50,28 @@ def find_existing_file(pattern: str) -> str | None:
     return matches[0] if matches else None
 
 
+def trim_audio_leading(input_path: str, output_path: str, start_time: float) -> str:
+    """Trim leading audio and write a new WAV starting at start_time seconds.
+
+    This is used to skip intros or spoken segments at the beginning of the
+    downloaded track before running separation/lyrics.
+    """
+    if start_time <= 0:
+        return input_path
+
+    from pydub import AudioSegment
+
+    audio = AudioSegment.from_wav(input_path)
+    start_ms = int(start_time * 1000)
+    if start_ms >= len(audio):
+        # If the requested start is beyond the audio length, fall back to original
+        return input_path
+
+    trimmed = audio[start_ms:]
+    trimmed.export(output_path, format="wav")
+    return output_path
+
+
 def scale_lyrics_timing(lines: list[Line], tempo_multiplier: float) -> list[Line]:
     """Scale all lyrics timestamps by the tempo multiplier."""
     if tempo_multiplier == 1.0:
@@ -110,6 +132,22 @@ def main():
         help="Force re-download and re-process even if cached files exist"
     )
     parser.add_argument(
+        "--audio-start",
+        type=float,
+        default=0.0,
+        help="Start audio processing from this many seconds into the track (skip intro)",
+    )
+    parser.add_argument(
+        "--lyrics-title",
+        help="Override song title to use when searching for lyrics (useful for covers)",
+        default=None,
+    )
+    parser.add_argument(
+        "--lyrics-artist",
+        help="Override artist name to use when searching for lyrics (useful for covers)",
+        default=None,
+    )
+    parser.add_argument(
         "--key",
         type=int,
         default=0,
@@ -139,12 +177,15 @@ def main():
 
     args = parser.parse_args()
 
-    # Validate key and tempo
+    # Validate key, tempo, audio start
     if not -12 <= args.key <= 12:
         print("ERROR: --key must be between -12 and +12 semitones")
         sys.exit(1)
     if args.tempo <= 0:
         print("ERROR: --tempo must be positive")
+        sys.exit(1)
+    if args.audio_start < 0:
+        print("ERROR: --audio-start must be non-negative")
         sys.exit(1)
 
     # Extract video ID for cache directory
@@ -199,6 +240,29 @@ def main():
         print(f"      Title: {title}")
         print(f"      Artist: {artist}")
 
+        # If requested, trim leading audio to skip an intro
+        effective_audio_path = audio_path
+        if args.audio_start > 0:
+            base = os.path.splitext(os.path.basename(audio_path))[0]
+            trimmed_name = f"{base}_from{args.audio_start:.2f}s.wav"
+            trimmed_path = os.path.join(work_dir, trimmed_name)
+
+            if os.path.exists(trimmed_path) and not args.force:
+                print(f"      Using cached trimmed audio from {args.audio_start:.2f}s: {os.path.basename(trimmed_path)}")
+                effective_audio_path = trimmed_path
+            else:
+                print(f"      Trimming leading {args.audio_start:.2f}s from audio...")
+                effective_audio_path = trim_audio_leading(audio_path, trimmed_path, args.audio_start)
+
+        # Choose which metadata to use when searching for lyrics (covers vs originals)
+        lyrics_title = args.lyrics_title or title
+        lyrics_artist = args.lyrics_artist or artist
+
+        if args.lyrics_title or args.lyrics_artist:
+            print("\n      Using overridden metadata for lyrics search:")
+            print(f"      Lyrics title:  {lyrics_title}")
+            print(f"      Lyrics artist: {lyrics_artist}")
+
         # Download video if backgrounds are requested
         video_path = None
         if args.backgrounds:
@@ -213,21 +277,24 @@ def main():
         # Step 2: Separate vocals from instrumental (skip if exists)
         print("\n[2/5] Separating vocals from instrumental...")
 
-        existing_vocals = find_existing_file(os.path.join(work_dir, "*_(Vocals)_*.wav"))
-        existing_instrumental = find_existing_file(os.path.join(work_dir, "*_instrumental.wav"))
+        # Prefer stems that correspond to the effective audio base name to
+        # avoid mixing cached stems from a different intro/offset.
+        effective_base = os.path.splitext(os.path.basename(effective_audio_path))[0]
+        existing_vocals = find_existing_file(os.path.join(work_dir, f"{effective_base}*_(Vocals)_*.wav"))
+        existing_instrumental = find_existing_file(os.path.join(work_dir, f"{effective_base}*_instrumental.wav"))
 
         if existing_vocals and existing_instrumental and not args.force:
             print(f"      Using cached stems")
             vocals_path = existing_vocals
             instrumental_path = existing_instrumental
         else:
-            separation_result = separate_vocals(audio_path, output_dir=work_dir)
+            separation_result = separate_vocals(effective_audio_path, output_dir=work_dir)
             vocals_path = separation_result['vocals_path']
             instrumental_path = separation_result['instrumental_path']
 
         # Step 3: Get lyrics with timing
         print("\n[3/5] Fetching lyrics and timing...")
-        lines, song_metadata = get_lyrics(title, artist, vocals_path, cache_dir=work_dir)
+        lines, song_metadata = get_lyrics(lyrics_title, lyrics_artist, vocals_path, cache_dir=work_dir)
         print(f"      Found {len(lines)} lines of lyrics")
         if song_metadata and song_metadata.is_duet:
             print(f"      Duet detected: {', '.join(song_metadata.singers)}")
