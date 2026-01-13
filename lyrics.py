@@ -712,93 +712,111 @@ def match_line_to_lyrics(
 
 
 def correct_transcription_with_lyrics(lines: list["Line"], lyrics_text: list[str]) -> list["Line"]:
-    """Align Whisper transcription to reference lyrics in order.
+    """Align Whisper transcription to reference lyrics at the word level.
 
-    We treat the reference lyrics (from Genius/LRC) as the source of
+    This treats the reference lyrics (from Genius/LRC) as the source of
     truth for *text* and WhisperX as the source of *timing*.
 
-    This function performs a global, order-preserving alignment between
-    the sequence of transcribed lines and the sequence of reference
-    lyric lines, then rebuilds each aligned line using:
-      - the *text* from the reference lyrics, and
-      - the *time span* from the corresponding Whisper line, with words
-        distributed across that span.
-
-    Any Whisper lines that cannot be matched reasonably well to a
-    reference lyric line are dropped so that no hallucinated text is
-    shown.
+    The alignment is done globally over the entire song by flattening
+    both sequences into words and running a DP alignment between the
+    Whisper words (with timestamps) and the Genius words (without
+    timestamps). We then reconstruct per-line timing for Genius lyrics
+    based on the aligned word timings.
     """
     if not lyrics_text or not lines:
         return lines
 
+    import re
     from difflib import SequenceMatcher
 
-    # Clean up reference lyrics and transcription text
+    def norm_token(t: str) -> str:
+        t = t.lower()
+        return re.sub(r"[^\w']", "", t)
+
+    # Flatten Genius lyrics into tokens with line indices
     ref_lines = [ln.strip() for ln in lyrics_text if ln.strip()]
     if not ref_lines:
         return lines
 
-    trans_norm = [normalize_text(l.text) for l in lines]
-    ref_norm = [normalize_text(ln) for ln in ref_lines]
+    genius_tokens: list[dict] = []  # {"raw", "norm", "line_idx"}
+    for line_idx, text in enumerate(ref_lines):
+        for raw in text.split():
+            genius_tokens.append({
+                "raw": raw,
+                "norm": norm_token(raw),
+                "line_idx": line_idx,
+            })
 
-    N = len(lines)
-    M = len(ref_lines)
+    G = len(genius_tokens)
+    if G == 0:
+        return lines
 
-    # Dynamic-programming alignment between transcription (i) and
-    # reference lyrics (j). States are prefixes [0..i), [0..j).
+    # Flatten Whisper output into tokens with timings
+    whisper_tokens: list[dict] = []  # {"raw", "norm", "start", "end"}
+    for line in lines:
+        for w in line.words:
+            whisper_tokens.append({
+                "raw": w.text,
+                "norm": norm_token(w.text),
+                "start": w.start_time,
+                "end": w.end_time,
+            })
+
+    W = len(whisper_tokens)
+    if W == 0:
+        return lines
+
+    # Global DP alignment between whisper_tokens (i) and genius_tokens (j)
     NEG_INF = -1e9
-    dp: list[list[float]] = [[NEG_INF] * (M + 1) for _ in range(N + 1)]
+    dp: list[list[float]] = [[NEG_INF] * (G + 1) for _ in range(W + 1)]
     back: list[list[Optional[tuple[str, int, int, Optional[float]]]]] = [
-        [None] * (M + 1) for _ in range(N + 1)
+        [None] * (G + 1) for _ in range(W + 1)
     ]
     dp[0][0] = 0.0
 
-    # Penalties for skipping lines
-    skip_transcribed_penalty = 0.3  # drop a Whisper segment
-    skip_ref_penalty = 0.4         # skip a reference lyric line
+    skip_whisper_penalty = 0.4
+    skip_genius_penalty = 0.4
 
-    for i in range(N + 1):
-        for j in range(M + 1):
+    for i in range(W + 1):
+        for j in range(G + 1):
             cur = dp[i][j]
             if cur <= NEG_INF / 2:
                 continue
 
-            # Option 1: match lines[i] with ref_lines[j]
-            if i < N and j < M:
-                ti = trans_norm[i]
-                rj = ref_norm[j]
-                if ti and rj:
-                    sim = SequenceMatcher(None, ti, rj).ratio()
+            # Match whisper_tokens[i] with genius_tokens[j]
+            if i < W and j < G:
+                tn = whisper_tokens[i]["norm"]
+                rn = genius_tokens[j]["norm"]
+                if tn == rn and tn != "":
+                    s = 1.0
+                elif tn and rn:
+                    s = SequenceMatcher(None, tn, rn).ratio()
                 else:
-                    sim = 0.0
+                    s = 0.0
 
-                # We only want to reward reasonably good matches; very
-                # low similarity is treated like zero gain.
-                gain = max(sim - 0.3, 0.0)
+                gain = max(s - 0.3, 0.0)
                 new = cur + gain
                 if new > dp[i + 1][j + 1]:
                     dp[i + 1][j + 1] = new
-                    back[i + 1][j + 1] = ("M", i, j, sim)
+                    back[i + 1][j + 1] = ("M", i, j, s)
 
-            # Option 2: skip a transcribed line (drop this Whisper
-            # segment; maybe silence or misrecognition).
-            if i < N:
-                new = cur - skip_transcribed_penalty
+            # Skip a Whisper word
+            if i < W:
+                new = cur - skip_whisper_penalty
                 if new > dp[i + 1][j]:
                     dp[i + 1][j] = new
-                    back[i + 1][j] = ("ST", i, j, None)
+                    back[i + 1][j] = ("SW", i, j, None)
 
-            # Option 3: skip a reference lyric line (may be unsung or
-            # too short for Whisper to detect clearly).
-            if j < M:
-                new = cur - skip_ref_penalty
+            # Skip a Genius word
+            if j < G:
+                new = cur - skip_genius_penalty
                 if new > dp[i][j + 1]:
                     dp[i][j + 1] = new
-                    back[i][j + 1] = ("SR", i, j, None)
+                    back[i][j + 1] = ("SG", i, j, None)
 
-    # Backtrack to recover matches
-    i, j = N, M
-    matches: list[tuple[int, int, float]] = []  # (trans_idx, ref_idx, sim)
+    # Backtrack to recover word-level matches
+    i, j = W, G
+    matches: list[tuple[int, int, float]] = []  # (whisper_idx, genius_idx, sim)
 
     while i > 0 or j > 0:
         info = back[i][j]
@@ -811,223 +829,104 @@ def correct_transcription_with_lyrics(lines: list["Line"], lyrics_text: list[str
 
     matches.reverse()
 
-    # Build aligned lines: one for each reasonably good match.
-    aligned: list[Line] = []
+    # Aggregate timings for each Genius word
     SIM_THRESHOLD = 0.5
+    g_times: list[Optional[tuple[float, float]]] = [None] * G
 
-    for trans_idx, ref_idx, sim in matches:
+    for w_idx, g_idx, sim in matches:
         if sim < SIM_THRESHOLD:
             continue
+        wt = whisper_tokens[w_idx]
+        cur = g_times[g_idx]
+        if cur is None:
+            g_times[g_idx] = (wt["start"], wt["end"])
+        else:
+            s0, e0 = cur
+            g_times[g_idx] = (min(s0, wt["start"]), max(e0, wt["end"]))
 
-        src_line = lines[trans_idx]
-        text = ref_lines[ref_idx].strip()
-        ref_words = text.split()
-        if not ref_words:
+    # If we failed to align anything, fall back to original lines
+    if all(t is None for t in g_times):
+        return lines
+
+    # Interpolate timings for unmatched Genius words using anchors
+    track_start = min(w["start"] for w in whisper_tokens)
+    track_end = max(w["end"] for w in whisper_tokens)
+
+    anchors = [idx for idx, t in enumerate(g_times) if t is not None]
+
+    for gi in range(G):
+        if g_times[gi] is not None:
             continue
 
-        whisper_words = src_line.words
-        if not whisper_words:
-            # Fallback: treat like a single span with even distribution
-            start = src_line.start_time
-            end = src_line.end_time
-            duration = max(end - start, 0.1)
-            line_duration = duration
-            word_duration = (line_duration * 0.95) / len(ref_words)
+        prev_a = max([a for a in anchors if a < gi], default=None) if anchors else None
+        next_a = min([a for a in anchors if a > gi], default=None) if anchors else None
 
-            new_words: list[Word] = []
-            for k, wtxt in enumerate(ref_words):
-                w_start = start + k * (line_duration / len(ref_words))
-                w_end = w_start + word_duration
-                new_words.append(Word(
-                    text=wtxt,
-                    start_time=w_start,
-                    end_time=w_end,
-                ))
+        if prev_a is None and next_a is None:
+            # Spread uniformly across the track
+            span = max(track_end - track_start, 0.1)
+            frac = gi / max(G, 1)
+            s = track_start + frac * span
+            e = s + span / max(G * 2, 1)
+        elif prev_a is None:
+            # Before first anchor
+            next_s, _ = g_times[next_a]  # type: ignore
+            span = max(next_s - track_start, 0.1)
+            frac = gi / max(next_a, 1)
+            s = track_start + frac * span
+            e = s + span / max(next_a + 1, 2)
+        elif next_a is None:
+            # After last anchor
+            _, prev_e = g_times[prev_a]  # type: ignore
+            span = max(track_end - prev_e, 0.1)
+            frac = (gi - prev_a) / max(G - prev_a, 1)
+            s = prev_e + frac * span
+            e = s + span / max(G - prev_a + 1, 2)
+        else:
+            # Between two anchors
+            _, prev_e = g_times[prev_a]  # type: ignore
+            next_s, _ = g_times[next_a]  # type: ignore
+            span = max(next_s - prev_e, 0.1)
+            frac = (gi - prev_a) / max(next_a - prev_a, 1)
+            s = prev_e + frac * span
+            e = s + span / max(next_a - prev_a + 1, 2)
 
-            aligned.append(Line(
-                words=new_words,
-                start_time=new_words[0].start_time,
-                end_time=new_words[-1].end_time,
-            ))
-            continue
+        if e <= s:
+            e = s + 0.05
+        g_times[gi] = (s, e)
 
-        # Word-level alignment between Whisper words and reference
-        # words within this line.
-        import re
-        from difflib import SequenceMatcher
-
-        def norm_token(t: str) -> str:
-            # Lowercase and strip punctuation, keep apostrophes
-            t = t.lower()
-            return re.sub(r"[^\w']", "", t)
-
-        W = len(whisper_words)
-        G = len(ref_words)
-
-        w_norm = [norm_token(w.text) for w in whisper_words]
-        g_norm = [norm_token(t) for t in ref_words]
-
-        NEG_INF_W = -1e9
-        dpw: list[list[float]] = [[NEG_INF_W] * (G + 1) for _ in range(W + 1)]
-        backw: list[list[Optional[tuple[str, int, int, Optional[float]]]]] = [
-            [None] * (G + 1) for _ in range(W + 1)
+    # Reconstruct Line objects grouped by Genius line indices
+    aligned_lines: list[Line] = []
+    for line_idx, _ in enumerate(ref_lines):
+        token_indices = [
+            k for k, tok in enumerate(genius_tokens)
+            if tok["line_idx"] == line_idx
         ]
-        dpw[0][0] = 0.0
-
-        skip_w_penalty = 0.3  # drop a Whisper word
-        skip_g_penalty = 0.3  # drop a Genius word within this line
-
-        for wi in range(W + 1):
-            for gi in range(G + 1):
-                curw = dpw[wi][gi]
-                if curw <= NEG_INF_W / 2:
-                    continue
-
-                # Match whisper_words[wi] with ref_words[gi]
-                if wi < W and gi < G:
-                    tn = w_norm[wi]
-                    rn = g_norm[gi]
-                    if tn and rn:
-                        s = SequenceMatcher(None, tn, rn).ratio()
-                    else:
-                        s = 0.0
-                    gain = max(s - 0.2, 0.0)
-                    neww = curw + gain
-                    if neww > dpw[wi + 1][gi + 1]:
-                        dpw[wi + 1][gi + 1] = neww
-                        backw[wi + 1][gi + 1] = ("M", wi, gi, s)
-
-                # Skip whisper word
-                if wi < W:
-                    neww = curw - skip_w_penalty
-                    if neww > dpw[wi + 1][gi]:
-                        dpw[wi + 1][gi] = neww
-                        backw[wi + 1][gi] = ("SW", wi, gi, None)
-
-                # Skip reference word
-                if gi < G:
-                    neww = curw - skip_g_penalty
-                    if neww > dpw[wi][gi + 1]:
-                        dpw[wi][gi + 1] = neww
-                        backw[wi][gi + 1] = ("SG", wi, gi, None)
-
-        # Backtrack word matches
-        wi, gi = W, G
-        word_matches: list[tuple[int, int, float]] = []  # (w_idx, g_idx, sim)
-        while wi > 0 or gi > 0:
-            info = backw[wi][gi]
-            if info is None:
-                break
-            op, pwi, pgi, sim = info
-            if op == "M" and sim is not None:
-                word_matches.append((pwi, pgi, sim))
-            wi, gi = pwi, pgi
-
-        word_matches.reverse()
-
-        # Aggregate timing for each Genius word
-        SIM_W_THRESHOLD = 0.5
-        g_times: list[Optional[tuple[float, float]]] = [None] * G
-        for w_idx, g_idx, sim in word_matches:
-            if sim < SIM_W_THRESHOLD:
-                continue
-            w = whisper_words[w_idx]
-            cur = g_times[g_idx]
-            if cur is None:
-                g_times[g_idx] = (w.start_time, w.end_time)
-            else:
-                s0, e0 = cur
-                g_times[g_idx] = (min(s0, w.start_time), max(e0, w.end_time))
-
-        # If no Genius words got timings, fall back to even distribution
-        if all(t is None for t in g_times):
-            start = src_line.start_time
-            end = src_line.end_time
-            duration = max(end - start, 0.1)
-            line_duration = duration
-            word_duration = (line_duration * 0.95) / len(ref_words)
-
-            new_words = []
-            for k, wtxt in enumerate(ref_words):
-                w_start = start + k * (line_duration / len(ref_words))
-                w_end = w_start + word_duration
-                new_words.append(Word(
-                    text=wtxt,
-                    start_time=w_start,
-                    end_time=w_end,
-                ))
-
-            aligned.append(Line(
-                words=new_words,
-                start_time=new_words[0].start_time,
-                end_time=new_words[-1].end_time,
-            ))
+        if not token_indices:
             continue
 
-        # Interpolate timings for unmatched Genius words using anchors
-        line_start = src_line.start_time
-        line_end = src_line.end_time
-        new_words: list[Word] = []
-
-        # Collect anchor indices
-        anchors = [idx for idx, t in enumerate(g_times) if t is not None]
-        if not anchors:
-            anchors = []
-
-        for gi_idx in range(G):
-            if g_times[gi_idx] is not None:
-                # Use the aggregated Whisper timing
-                s, e = g_times[gi_idx]
-            else:
-                # Interpolate between nearest anchors
-                # Find previous and next anchors
-                prev_a = max([a for a in anchors if a < gi_idx], default=None)
-                next_a = min([a for a in anchors if a > gi_idx], default=None)
-
-                if prev_a is None and next_a is None:
-                    # Should not happen due to earlier check, but be safe
-                    s = line_start
-                    e = line_end
-                elif prev_a is None:
-                    # Before first anchor: spread from line_start to first anchor
-                    next_s, _ = g_times[next_a]  # type: ignore
-                    span = max(next_s - line_start, 0.1)
-                    offset = (gi_idx / max(next_a, 1)) * span
-                    s = line_start + offset
-                    e = s + span / max(next_a + 1, 2)
-                elif next_a is None:
-                    # After last anchor: spread from last anchor to line_end
-                    _, prev_e = g_times[prev_a]  # type: ignore
-                    span = max(line_end - prev_e, 0.1)
-                    offset = ((gi_idx - prev_a) / max(G - prev_a, 1)) * span
-                    s = prev_e + offset
-                    e = s + span / max(G - prev_a + 1, 2)
-                else:
-                    # Between two anchors: interpolate within that window
-                    _, prev_e = g_times[prev_a]  # type: ignore
-                    next_s, _ = g_times[next_a]  # type: ignore
-                    span = max(next_s - prev_e, 0.1)
-                    rel_pos = (gi_idx - prev_a) / max(next_a - prev_a, 1)
-                    s = prev_e + rel_pos * span
-                    e = s + span / max(next_a - prev_a + 1, 2)
-
-            # Ensure non-degenerate durations
+        words: list[Word] = []
+        for k in token_indices:
+            tok = genius_tokens[k]
+            s, e = g_times[k] or (track_start, track_end)
             if e <= s:
                 e = s + 0.05
-
-            new_words.append(Word(
-                text=ref_words[gi_idx],
+            words.append(Word(
+                text=tok["raw"],
                 start_time=s,
                 end_time=e,
             ))
 
-        aligned.append(Line(
-            words=new_words,
-            start_time=new_words[0].start_time,
-            end_time=new_words[-1].end_time,
+        words.sort(key=lambda w: w.start_time)
+        aligned_lines.append(Line(
+            words=words,
+            start_time=words[0].start_time,
+            end_time=words[-1].end_time,
         ))
 
-    return aligned
+    # Optionally split very long lines for display
+    aligned_lines = split_long_lines(aligned_lines)
+
+    return aligned_lines
 
 
 def transcribe_and_align(vocals_path: str, lyrics_text: Optional[list[str]] = None) -> list[Line]:
