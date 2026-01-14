@@ -8,7 +8,7 @@ Generate karaoke videos from YouTube URLs or song titles with word-by-word highl
 - Downloads audio from YouTube
 - Separates vocals from instrumental using AI (demucs)
 - **Hybrid timing system**: Combines synced lyrics (line timing) with WhisperX (word timing) for maximum accuracy
-- **Multi-language support**: Automatically romanizes Japanese, Korean, and Chinese lyrics with proper spacing
+- **Multi-language support**: Automatically romanizes Japanese, Korean, Chinese, Arabic, and Hebrew lyrics with proper spacing
 - Renders KaraFun-style karaoke videos with word-by-word highlighting
 - **Smart line splitting**: Automatically breaks long lines for better readability
 - Optional dynamic video backgrounds generated from the original YouTube video
