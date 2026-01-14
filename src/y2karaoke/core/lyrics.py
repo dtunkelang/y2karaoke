@@ -1857,7 +1857,10 @@ def get_lyrics(
     genius_cache_path = None
     if cache_dir:
         os.makedirs(cache_dir, exist_ok=True)
-        genius_cache_path = os.path.join(cache_dir, "genius_cache.json")
+        # Include artist and title in cache filename to handle overrides
+        import hashlib
+        cache_key = hashlib.md5(f"{artist}:{title}".encode()).hexdigest()[:8]
+        genius_cache_path = os.path.join(cache_dir, f"genius_cache_{cache_key}.json")
         if os.path.exists(genius_cache_path):
             try:
                 with open(genius_cache_path, "r", encoding="utf-8") as f:
