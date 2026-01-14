@@ -507,13 +507,23 @@ def fetch_genius_lyrics_with_singers(title: str, artist: str) -> tuple[Optional[
         text = re.sub(r'\s+', ' ', text).strip()  # Normalize spaces
         return text
     
-    search_query = f"{clean_for_search(artist)} {clean_for_search(title)}"
+    # Clean title: remove featured artists and extra info
+    def clean_title_for_search(title: str) -> str:
+        # Remove everything after pipe character
+        title = re.split(r'\s*[|｜]\s*', title)[0]
+        # Remove featured artists (ft., feat., featuring)
+        title = re.sub(r'\s*[\(\[]?\s*(ft\.?|feat\.?|featuring).*?[\)\]]?\s*$', '', title, flags=re.IGNORECASE)
+        title = re.sub(r'\s*[\(\[].*?[\)\]]\s*', '', title)  # Remove any remaining parentheses/brackets
+        return title.strip()
+    
+    cleaned_title = clean_title_for_search(title)
+    search_query = f"{clean_for_search(artist)} {clean_for_search(cleaned_title)}"
     api_url = f"https://genius.com/api/search/multi?q={search_query.replace(' ', '%20')}"
     
     song_url = None
     
     try:
-        print(f"  Searching Genius: {artist} - {title}")
+        print(f"  Searching Genius: {artist} - {cleaned_title}")
         response = requests.get(api_url, headers=headers, timeout=10)
         response.raise_for_status()
         
@@ -1957,6 +1967,11 @@ def get_lyrics(
                 print(f"✓ Using cached final lyrics ({len(lines)} lines)")
                 # Split long lines even when loading from cache
                 lines = split_long_lines(lines)
+                # Romanize any non-Latin text (for mixed-language songs)
+                for line in lines:
+                    for word in line.words:
+                        if any(ord(c) > 127 for c in word.text):
+                            word.text = romanize_line(word.text)
                 return lines, metadata
             except Exception as e:
                 print(f"  Cache read failed: {e}, will regenerate")
@@ -2009,6 +2024,12 @@ def get_lyrics(
         original_count = len(lines)
         lines = correct_transcription_with_lyrics(lines, lyrics_text, synced_timings)
         print(f"Corrected transcription: {original_count} lines processed")
+    
+    # Romanize any non-Latin text before caching (for mixed-language songs)
+    for line in lines:
+        for word in line.words:
+            if any(ord(c) > 127 for c in word.text):
+                word.text = romanize_line(word.text)
     
     # Cache the final result
     if final_cache_path:
