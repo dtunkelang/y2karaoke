@@ -1725,7 +1725,6 @@ def split_long_lines(lines: list[Line], max_width_ratio: float = 0.75) -> list[L
         # Find split point by measuring cumulative width
         best_split = total_words // 2
         cumulative_width = 0
-        target_width = max_width / 2  # Split at half of max width, not half of current width
 
         for i, word in enumerate(words):
             word_text = word.text + " "
@@ -1733,9 +1732,13 @@ def split_long_lines(lines: list[Line], max_width_ratio: float = 0.75) -> list[L
             word_width = word_bbox[2] - word_bbox[0]
             cumulative_width += word_width
             
-            if cumulative_width >= target_width:
-                best_split = i + 1
+            # Split when we exceed max_width for the first line
+            if cumulative_width > max_width:
+                best_split = max(1, i)  # Split before this word
                 break
+        else:
+            # If we never exceeded, split at midpoint
+            best_split = total_words // 2
 
         # Ensure we don't create tiny splits
         best_split = max(1, min(best_split, total_words - 1))
