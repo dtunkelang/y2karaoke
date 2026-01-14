@@ -157,43 +157,43 @@ For debugging or experimenting with individual steps, you can run the core modul
 
 - **Download only (audio metadata + WAV)**
   ```bash
-  python downloader.py "https://youtube.com/watch?v=VIDEO_ID"
+  python -m y2karaoke.core.downloader "https://youtube.com/watch?v=VIDEO_ID"
   ```
   Downloads the audio track to `./output` and prints basic metadata (title, artist, duration).
 
 - **Separate vocals and instrumental for a local WAV file**
   ```bash
-  python separator.py path/to/audio.wav
+  python -m y2karaoke.core.separator path/to/audio.wav
   ```
   Writes separated stems into `./output` and prints the paths for vocals and instrumental.
 
 - **Fetch and inspect lyrics/timing**
   ```bash
-  python lyrics.py "Song Title" "Artist Name" [optional_vocals.wav]
+  python -m y2karaoke.core.lyrics "Song Title" "Artist Name" [optional_vocals.wav]
   ```
   Prints detected lines (and duet information when available). If you provide a vocals WAV, it can fall back to WhisperX transcription.
 
 - **Apply audio effects (key/tempo) to an existing WAV**
   ```bash
-  python audio_effects.py input.wav output.wav <semitones> [tempo_multiplier]
+  python -m y2karaoke.core.audio_effects input.wav output.wav <semitones> [tempo_multiplier]
   ```
-  Example: `python audio_effects.py input.wav output_key-3_tempo0.8.wav -3 0.8`
+  Example: `python -m y2karaoke.core.audio_effects input.wav output_key-3_tempo0.8.wav -3 0.8`
 
 - **Test rendering (single preview frame)**
   ```bash
-  python renderer.py
+  python -m y2karaoke.core.renderer
   ```
   Renders a sample frame to `test_frame.png` for quickly checking fonts/layout.
 
 - **Upload an existing MP4 to YouTube**
   ```bash
-  python uploader.py output.mp4 [title] [artist]
+  python -m y2karaoke.core.uploader output.mp4 [title] [artist]
   ```
   Uses your saved OAuth credentials to upload as an unlisted video.
 
 - **Inspect video backgrounds / scene detection**
   ```bash
-  python backgrounds.py path/to/video.mp4
+  python -m y2karaoke.core.backgrounds path/to/video.mp4
   ```
   Runs scene detection and saves a sample processed background to `test_background.png`.
 
