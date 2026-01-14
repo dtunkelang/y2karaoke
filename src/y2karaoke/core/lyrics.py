@@ -909,7 +909,7 @@ def fetch_lyrics_multi_source(title: str, artist: str) -> tuple[Optional[str], b
         - is_synced: True if lyrics have timing info
         - source_description: Description of the source used
     """
-    from downloader import clean_title
+    from .downloader import clean_title
 
     # Clean the title first
     clean = clean_title(title, artist)
