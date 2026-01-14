@@ -87,6 +87,15 @@ try:
 except ImportError:
     JAPANESE_ROMANIZER_AVAILABLE = False
 
+# Try to import Arabic/Hebrew romanizer
+try:
+    import pyarabic.araby as araby
+    ARABIC_ROMANIZER_AVAILABLE = True
+except ImportError:
+    ARABIC_ROMANIZER_AVAILABLE = False
+
+HEBREW_ROMANIZER_AVAILABLE = True  # We'll use a simple mapping
+
 
 def contains_korean(text: str) -> bool:
     """Check if text contains Korean characters (Hangul)."""
@@ -213,8 +222,84 @@ def romanize_japanese(text: str) -> str:
         return text
 
 
+def contains_arabic(text: str) -> bool:
+    """Check if text contains Arabic characters."""
+    for ch in text:
+        # Arabic Unicode range
+        if "\u0600" <= ch <= "\u06ff" or "\u0750" <= ch <= "\u077f":
+            return True
+    return False
+
+
+def contains_hebrew(text: str) -> bool:
+    """Check if text contains Hebrew characters."""
+    for ch in text:
+        # Hebrew Unicode range
+        if "\u0590" <= ch <= "\u05ff":
+            return True
+    return False
+
+
+def romanize_arabic(text: str) -> str:
+    """Romanize Arabic text to Latin script."""
+    if not ARABIC_ROMANIZER_AVAILABLE:
+        return text
+    
+    if not contains_arabic(text):
+        return text
+    
+    try:
+        # Simple Arabic to Latin transliteration mapping
+        arabic_to_latin = {
+            'ا': 'a', 'ب': 'b', 'ت': 't', 'ث': 'th', 'ج': 'j', 'ح': 'h', 'خ': 'kh',
+            'د': 'd', 'ذ': 'dh', 'ر': 'r', 'ز': 'z', 'س': 's', 'ش': 'sh', 'ص': 's',
+            'ض': 'd', 'ط': 't', 'ظ': 'z', 'ع': 'a', 'غ': 'gh', 'ف': 'f', 'ق': 'q',
+            'ك': 'k', 'ل': 'l', 'م': 'm', 'ن': 'n', 'ه': 'h', 'و': 'w', 'ي': 'y',
+            'ى': 'a', 'ة': 'h', 'ء': '', 'ئ': '', 'ؤ': 'w', 'إ': 'i', 'أ': 'a',
+            'آ': 'aa', 'َ': 'a', 'ُ': 'u', 'ِ': 'i', 'ّ': '', 'ْ': ''
+        }
+        
+        result = []
+        for char in text:
+            if char in arabic_to_latin:
+                result.append(arabic_to_latin[char])
+            else:
+                result.append(char)
+        return ''.join(result)
+    except Exception:
+        return text
+
+
+def romanize_hebrew(text: str) -> str:
+    """Romanize Hebrew text to Latin script."""
+    if not HEBREW_ROMANIZER_AVAILABLE:
+        return text
+    
+    if not contains_hebrew(text):
+        return text
+    
+    try:
+        # Simple Hebrew to Latin transliteration mapping
+        hebrew_to_latin = {
+            'א': 'a', 'ב': 'b', 'ג': 'g', 'ד': 'd', 'ה': 'h', 'ו': 'v', 'ז': 'z',
+            'ח': 'ch', 'ט': 't', 'י': 'y', 'כ': 'k', 'ך': 'kh', 'ל': 'l', 'מ': 'm',
+            'ם': 'm', 'נ': 'n', 'ן': 'n', 'ס': 's', 'ע': 'a', 'פ': 'p', 'ף': 'f',
+            'צ': 'ts', 'ץ': 'ts', 'ק': 'k', 'ר': 'r', 'ש': 'sh', 'ת': 't'
+        }
+        
+        result = []
+        for char in text:
+            if char in hebrew_to_latin:
+                result.append(hebrew_to_latin[char])
+            else:
+                result.append(char)
+        return ''.join(result)
+    except Exception:
+        return text
+
+
 def romanize_line(text: str) -> str:
-    """Romanize a line of lyrics, handling mixed Korean/Japanese/Chinese/English text."""
+    """Romanize a line of lyrics, handling mixed Korean/Japanese/Chinese/Arabic/Hebrew/English text."""
     # Apply Korean romanization first
     if contains_korean(text):
         text = romanize_korean(text)
@@ -223,9 +308,17 @@ def romanize_line(text: str) -> str:
     if contains_japanese(text):
         text = romanize_japanese(text)
 
-    # Finally apply Chinese romanization (including any remaining Han characters)
+    # Apply Chinese romanization (including any remaining Han characters)
     if contains_chinese(text):
         text = romanize_chinese(text)
+    
+    # Apply Arabic romanization
+    if contains_arabic(text):
+        text = romanize_arabic(text)
+    
+    # Apply Hebrew romanization
+    if contains_hebrew(text):
+        text = romanize_hebrew(text)
 
     # Clean up common issues: collapse repeated whitespace
     text = " ".join(text.split())

@@ -209,8 +209,10 @@ For songs with non-Latin scripts, y2karaoke automatically romanizes lyrics befor
 - **Korean (Hangul)**: Romanized using `korean-romanizer` (Revised Romanization style) when available.
 - **Chinese (Han characters)**: Romanized to **pinyin without tone marks** using `pypinyin`, while leaving non-Chinese text untouched.
 - **Japanese (hiragana/katakana/kanji)**: Romanized to **romaji** using `pykakasi`, preserving word boundaries and spacing.
+- **Arabic**: Romanized using simple transliteration mapping to Latin script.
+- **Hebrew**: Romanized using simple transliteration mapping to Latin script.
 
-Romanization is **best-effort** and only applied when the corresponding libraries are installed. If synced lyrics are in non-Latin scripts but Genius has romanized versions, the system will automatically romanize the synced lyrics to match for optimal hybrid alignment.
+Romanization is **best-effort** and only applied when the corresponding libraries are installed. If synced lyrics are in non-Latin scripts but Genius has romanized versions, the system will automatically romanize the synced lyrics to match for optimal hybrid alignment. Works seamlessly with mixed-language songs (e.g., English/Korean, English/Japanese).
 
 ## Video Style
 
