@@ -41,6 +41,9 @@ pip install -e .
 
 # Or install from requirements.txt
 pip install -r requirements.txt
+
+# Optional: Install romanization libraries for non-Latin scripts
+pip install korean-romanizer pypinyin pykakasi pyarabic
 ```
 
 ### Migration from Old Version

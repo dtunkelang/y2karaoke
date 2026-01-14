@@ -16,6 +16,7 @@ soundfile>=0.12.0
 korean-romanizer>=0.28.0
 pypinyin>=0.50.0
 pykakasi>=2.2.1
+pyarabic>=0.6.15
 
 # YouTube upload support
 google-api-python-client>=2.100.0
