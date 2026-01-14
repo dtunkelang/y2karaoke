@@ -2132,6 +2132,9 @@ def get_lyrics(
             if any(ord(c) > 127 for c in word.text):
                 word.text = romanize_line(word.text)
     
+    # Split long lines for display
+    lines = split_long_lines(lines)
+    
     # Cache the final result
     if final_cache_path:
         try:
