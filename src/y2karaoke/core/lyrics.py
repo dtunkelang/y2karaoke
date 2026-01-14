@@ -1330,16 +1330,25 @@ def transcribe_and_align(vocals_path: str, lyrics_text: Optional[list[str]] = No
     language = None
     if lyrics_text:
         sample = " ".join(lyrics_text[:10]).lower()
+        
+        # Count English words (common words that appear in English)
+        english_words = ["the ", "you ", "and ", "are ", "is ", "it ", "to ", "of ", "in ", "that ", "have ", "i ", "for ", "not ", "on ", "with ", "he ", "as ", "do ", "at "]
+        english_count = sum(1 for word in english_words if word in sample)
+        
         # Check for Japanese romanization patterns (common particles and endings)
         japanese_patterns = ["wa ", "ga ", "wo ", "ni ", "de ", "to ", "no ", "ka ", "ne ", "yo ", 
-                           "desu", "masu", "tte", "kara", "made", "nai", "tai", "tte"]
+                           "desu", "masu", "tte", "kara", "made", "nai", "tai"]
         # Check for Spanish (require multiple matches to avoid false positives)
         spanish_words = ["el ", "la ", "los ", "las ", "que ", "con ", "por ", "para ", "esta ", "como "]
         
         japanese_count = sum(1 for pattern in japanese_patterns if pattern in sample)
         spanish_count = sum(1 for word in spanish_words if word in sample)
         
-        if japanese_count >= 3:
+        # Prioritize English if it has strong presence (for mixed-language songs)
+        if english_count >= 5:
+            language = "en"
+            print(f"Detected English from lyrics, using language: {language}")
+        elif japanese_count >= 3:
             language = "ja"
             print(f"Detected Japanese from lyrics, using language: {language}")
         elif spanish_count >= 3:
