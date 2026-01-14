@@ -1,0 +1,85 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "y2karaoke"
+version = "1.0.0"
+description = "Generate karaoke videos from YouTube URLs with word-by-word highlighting"
+readme = "README.md"
+license = {text = "MIT"}
+authors = [
+    {name = "Daniel Tunkelang", email = "dtunkelang@example.com"}
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: End Users/Desktop",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Multimedia :: Video",
+    "Topic :: Multimedia :: Sound/Audio",
+]
+requires-python = ">=3.12"
+dependencies = [
+    "yt-dlp>=2024.0.0",
+    "scenedetect[opencv]>=0.6.0",
+    "audio-separator>=0.17.0",
+    "onnxruntime>=1.16.0",
+    "syncedlyrics>=0.10.0",
+    "whisperx>=3.1.0",
+    "moviepy>=2.0.0",
+    "numpy>=1.24.0,<2.0.0",
+    "Pillow>=10.0.0",
+    "pydub>=0.25.0",
+    "librosa>=0.10.0",
+    "soundfile>=0.12.0",
+    "requests>=2.31.0",
+    "beautifulsoup4>=4.12.0",
+    "click>=8.0.0",
+]
+
+[project.optional-dependencies]
+romanization = [
+    "korean-romanizer>=0.28.0",
+    "pypinyin>=0.50.0",
+    "pykakasi>=2.2.1",
+]
+youtube = [
+    "google-api-python-client>=2.100.0",
+    "google-auth-oauthlib>=1.0.0",
+    "google-auth-httplib2>=0.1.0",
+]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    "black>=23.0.0",
+    "flake8>=6.0.0",
+    "mypy>=1.0.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/dtunkelang/y2karaoke"
+Repository = "https://github.com/dtunkelang/y2karaoke"
+Issues = "https://github.com/dtunkelang/y2karaoke/issues"
+
+[project.scripts]
+y2karaoke = "y2karaoke.cli:cli"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.black]
+line-length = 88
+target-version = ['py312']
+
+[tool.mypy]
+python_version = "3.12"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]

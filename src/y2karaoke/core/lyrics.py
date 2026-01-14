@@ -2,12 +2,69 @@
 
 import re
 from dataclasses import dataclass
-from typing import Optional
+from typing import Optional, List, Dict, Any
+from pathlib import Path
 
 import json
 import os
 
 import syncedlyrics
+
+from ..exceptions import LyricsError
+from ..utils.logging import get_logger
+
+logger = get_logger(__name__)
+
+@dataclass
+class Word:
+    """A word with timing information."""
+    text: str
+    start_time: float
+    end_time: float
+
+@dataclass
+class Line:
+    """A line of lyrics with words."""
+    words: List[Word]
+    start_time: float
+    end_time: float
+
+@dataclass
+class SongMetadata:
+    """Metadata about the song."""
+    is_duet: bool = False
+    singers: List[str] = None
+    
+    def __post_init__(self):
+        if self.singers is None:
+            self.singers = []
+
+class LyricsProcessor:
+    """Process lyrics with timing and romanization."""
+    
+    def __init__(self):
+        self._setup_romanizers()
+    
+    def _setup_romanizers(self):
+        """Setup optional romanization libraries."""
+        pass  # The original code handles this with global imports
+    
+    def get_lyrics(
+        self, 
+        title: str, 
+        artist: str, 
+        vocals_path: str, 
+        cache_dir: str,
+        force: bool = False
+    ) -> Dict[str, Any]:
+        """Get lyrics with timing information."""
+        
+        try:
+            lines, metadata = get_lyrics(title, artist, vocals_path, cache_dir)
+            return {'lines': lines, 'metadata': metadata}
+        except Exception as e:
+            raise LyricsError(f"Could not get lyrics: {e}")
+
 
 # Try to import Korean romanizer
 try:
@@ -146,12 +203,11 @@ def romanize_japanese(text: str) -> str:
 
     try:
         if _JAPANESE_CONVERTER is None:
-            kks = kakasi()
-            kks.setMode("H", "a")  # Hiragana to ascii
-            kks.setMode("K", "a")  # Katakana to ascii
-            kks.setMode("J", "a")  # Japanese (kanji) to ascii
-            _JAPANESE_CONVERTER = kks.getConverter()
-        return _JAPANESE_CONVERTER.do(text)
+            _JAPANESE_CONVERTER = kakasi()
+        
+        result = _JAPANESE_CONVERTER.convert(text)
+        # Join with spaces to preserve word boundaries
+        return " ".join([item["hepburn"] for item in result])
     except Exception:
         # On any pykakasi failure, fall back to the original
         return text
@@ -439,23 +495,71 @@ def fetch_genius_lyrics_with_singers(title: str, artist: str) -> tuple[Optional[
         url_patterns.append(f"https://genius.com/{first_artist_slug}-{title_slug}-lyrics")
 
     headers = {
-        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36'
     }
 
-    # Try romanized patterns
-    url_patterns = add_romanized_urls(url_patterns)
+    # Use Genius API to search for the song
+    # Format: lowercase, remove punctuation (but convert hyphens to spaces), single spaces
+    def clean_for_search(text: str) -> str:
+        text = text.lower()
+        text = text.replace('-', ' ')  # Convert hyphens to spaces
+        text = re.sub(r'[^\w\s]', '', text)  # Remove other punctuation
+        text = re.sub(r'\s+', ' ', text).strip()  # Normalize spaces
+        return text
+    
+    search_query = f"{clean_for_search(artist)} {clean_for_search(title)}"
+    api_url = f"https://genius.com/api/search/multi?q={search_query.replace(' ', '%20')}"
+    
+    song_url = None
+    
+    try:
+        print(f"  Searching Genius: {artist} - {title}")
+        response = requests.get(api_url, headers=headers, timeout=10)
+        response.raise_for_status()
+        
+        data = response.json()
+        
+        # Look through search results for song matches
+        if 'response' in data and 'sections' in data['response']:
+            for section in data['response']['sections']:
+                if section.get('type') == 'song':
+                    for hit in section.get('hits', []):
+                        result = hit.get('result', {})
+                        url = result.get('url', '')
+                        result_title = result.get('title', '').lower()
+                        result_artist = result.get('primary_artist', {}).get('name', '').lower()
+                        
+                        # Prefer romanized versions
+                        if 'romanized' in url.lower():
+                            song_url = url
+                            print(f"  Found romanized: {song_url}")
+                            break
+                        elif not song_url:
+                            song_url = url
+                    
+                    if song_url and 'romanized' in song_url.lower():
+                        break
+        
+        if song_url and 'romanized' not in song_url.lower():
+            print(f"  Found: {song_url}")
+        
+        if not song_url:
+            print(f"  No Genius results found")
+            return None, None
+        
+    except Exception as e:
+        print(f"  Genius search failed: {e}")
+        return None, None
 
+    # Fetch the lyrics page
     soup = None
-    for url in url_patterns:
-        print(f"  Trying Genius: {url}")
-        try:
-            response = requests.get(url, headers=headers, timeout=10)
-            if response.status_code == 200:
-                soup = BeautifulSoup(response.text, 'html.parser')
-                break
-        except Exception as e:
-            print(f"  Error: {e}")
-            continue
+    try:
+        response = requests.get(song_url, headers=headers, timeout=10)
+        if response.status_code == 200:
+            soup = BeautifulSoup(response.text, 'html.parser')
+    except Exception as e:
+        print(f"  Error fetching lyrics: {e}")
+        return None, None
 
     if not soup:
         return None, None
@@ -839,11 +943,121 @@ def match_line_to_lyrics(
     return None, None
 
 
-def correct_transcription_with_lyrics(lines: list["Line"], lyrics_text: list[str]) -> list["Line"]:
+def _hybrid_alignment(whisper_lines: list["Line"], lyrics_text: list[str], synced_timings: list[tuple[float, str]], norm_token_func) -> list["Line"]:
+    """
+    Hybrid alignment: use synced lyrics for line timing, WhisperX for word timing.
+    
+    For each synced line:
+    1. Find matching WhisperX words within the line's time window
+    2. Use WhisperX word timings if they look reasonable
+    3. Fall back to interpolation if WhisperX timing is missing or unreasonable
+    4. Ensure words are always in correct order
+    """
+    from difflib import SequenceMatcher
+    
+    # Build a flat list of all WhisperX words with timing
+    whisper_words = []
+    for line in whisper_lines:
+        for word in line.words:
+            whisper_words.append({
+                "text": word.text,
+                "norm": norm_token_func(word.text),
+                "start": word.start_time,
+                "end": word.end_time
+            })
+    
+    # Sort WhisperX words by start time to ensure temporal order
+    whisper_words.sort(key=lambda w: w["start"])
+    
+    result_lines = []
+    
+    for line_start, line_text in synced_timings:
+        # Find the next line's start time (or use a default duration)
+        idx = synced_timings.index((line_start, line_text))
+        if idx + 1 < len(synced_timings):
+            line_end = synced_timings[idx + 1][0]
+        else:
+            line_end = line_start + 3.0  # Default 3 second duration for last line
+        
+        # Get words from this line
+        line_words_text = line_text.split()
+        if not line_words_text:
+            continue
+        
+        # Find WhisperX words that fall within this time window
+        candidates = [w for w in whisper_words if line_start <= w["start"] < line_end]
+        
+        # Try to match line words to WhisperX words in order
+        result_words = []
+        used_indices = set()
+        
+        for word_idx, word_text in enumerate(line_words_text):
+            word_norm = norm_token_func(word_text)
+            
+            # Find best matching WhisperX word that hasn't been used yet
+            # and comes after the last used word (to maintain order)
+            best_match = None
+            best_score = 0.0
+            best_cand_idx = -1
+            
+            for cand_idx, cand in enumerate(candidates):
+                if cand_idx in used_indices:
+                    continue
+                    
+                # Ensure temporal order: this candidate should come after previous matches
+                if result_words and cand["start"] < result_words[-1].start_time:
+                    continue
+                
+                score = SequenceMatcher(None, word_norm, cand["norm"]).ratio()
+                if score > best_score:
+                    best_score = score
+                    best_match = cand
+                    best_cand_idx = cand_idx
+            
+            # Use WhisperX timing if match is good, otherwise interpolate
+            if best_match and best_score > 0.6:
+                result_words.append(Word(
+                    text=word_text,
+                    start_time=best_match["start"],
+                    end_time=best_match["end"]
+                ))
+                used_indices.add(best_cand_idx)
+            else:
+                # Interpolate timing within the line
+                num_words = len(line_words_text)
+                word_duration = (line_end - line_start) / num_words
+                word_start = line_start + word_idx * word_duration
+                word_end = word_start + word_duration
+                
+                # Ensure this word doesn't start before the previous word ends
+                if result_words and word_start < result_words[-1].end_time:
+                    word_start = result_words[-1].end_time
+                    word_end = word_start + word_duration
+                
+                result_words.append(Word(
+                    text=word_text,
+                    start_time=word_start,
+                    end_time=word_end
+                ))
+        
+        if result_words:
+            result_lines.append(Line(
+                words=result_words,
+                start_time=result_words[0].start_time,
+                end_time=result_words[-1].end_time
+            ))
+    
+    return result_lines
+
+
+def correct_transcription_with_lyrics(lines: list["Line"], lyrics_text: list[str], synced_line_timings: Optional[list[tuple[float, str]]] = None) -> list["Line"]:
     """Align Whisper transcription to reference lyrics at the word level.
 
     This treats the reference lyrics (from Genius/LRC) as the source of
     truth for *text* and WhisperX as the source of *timing*.
+    
+    If synced_line_timings are provided, use them to anchor line start times
+    and only use WhisperX for word-level detail within each line.
 
     The alignment is done globally over the entire song by flattening
     both sequences into words and running a DP alignment between the
@@ -860,6 +1074,12 @@ def correct_transcription_with_lyrics(lines: list["Line"], lyrics_text: list[str
     def norm_token(t: str) -> str:
         t = t.lower()
         return re.sub(r"[^\w']", "", t)
+
+    # If we have synced line timings, use hybrid approach:
+    # - Use synced lyrics for line start/end times
+    # - Use WhisperX for word-level timing within each line
+    if synced_line_timings:
+        return _hybrid_alignment(lines, lyrics_text, synced_line_timings, norm_token)
 
     # Flatten Genius lyrics into tokens with line indices
     ref_lines = [ln.strip() for ln in lyrics_text if ln.strip()]
@@ -1065,14 +1285,18 @@ def transcribe_and_align(vocals_path: str, lyrics_text: Optional[list[str]] = No
 
     Args:
         vocals_path: Path to vocals audio file
-        lyrics_text: Optional list of lyrics lines (not used - kept for API compatibility)
+        lyrics_text: Optional list of lyrics lines - used to detect language
 
     Returns:
         List of Line objects with word timing
     """
     import whisperx
     import torch
+    import warnings
 
+    # Suppress PyTorch Lightning upgrade warnings
+    warnings.filterwarnings("ignore", message="Lightning automatically upgraded")
+    
     # Fix for PyTorch 2.6+ weights_only=True compatibility with pyannote
     _original_torch_load = torch.load
     def _patched_torch_load(*args, **kwargs):
@@ -1083,18 +1307,68 @@ def transcribe_and_align(vocals_path: str, lyrics_text: Optional[list[str]] = No
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
     compute_type = "float16" if device == "cuda" else "int8"
+    
+    # Set number of threads for CPU inference
+    import os
+    if device == "cpu":
+        # Use all available CPU cores
+        num_threads = os.cpu_count() or 4
+        torch.set_num_threads(num_threads)
+        print(f"Using {num_threads} CPU threads for WhisperX")
 
-    print(f"Loading whisperx model (device: {device})...")
-    model = whisperx.load_model("medium", device, compute_type=compute_type, language="en")
+    # Detect language from lyrics if available
+    language = None
+    if lyrics_text:
+        sample = " ".join(lyrics_text[:10]).lower()
+        # Check for Japanese romanization patterns (common particles and endings)
+        japanese_patterns = ["wa ", "ga ", "wo ", "ni ", "de ", "to ", "no ", "ka ", "ne ", "yo ", 
+                           "desu", "masu", "tte", "kara", "made", "nai", "tai", "tte"]
+        # Check for Spanish (require multiple matches to avoid false positives)
+        spanish_words = ["el ", "la ", "los ", "las ", "que ", "con ", "por ", "para ", "esta ", "como "]
+        
+        japanese_count = sum(1 for pattern in japanese_patterns if pattern in sample)
+        spanish_count = sum(1 for word in spanish_words if word in sample)
+        
+        if japanese_count >= 3:
+            language = "ja"
+            print(f"Detected Japanese from lyrics, using language: {language}")
+        elif spanish_count >= 3:
+            language = "es"
+            print(f"Detected Spanish from lyrics, using language: {language}")
+    
+    print(f"Loading whisperx model (device: {device}, compute_type: {compute_type})...")
+    model = whisperx.load_model(
+        "base",  # Use base model instead of medium for 5x speed improvement
+        device, 
+        compute_type=compute_type, 
+        language=None,  # Auto-detect to avoid model download issues
+        download_root=None,
+        threads=num_threads if device == "cpu" else 0
+    )
 
-    print("Transcribing audio...")
+    print("Transcribing audio (this may take several minutes)...")
     audio = whisperx.load_audio(vocals_path)
-    result = model.transcribe(audio, batch_size=16)
+    result = model.transcribe(
+        audio, 
+        batch_size=32,  # Increase batch size for faster processing
+        language=language
+    )
+    
+    # Get language (either forced or detected)
+    detected_lang = language or result.get("language", "en")
+    print(f"Using language: {detected_lang}")
 
     # Load alignment model for word-level timestamps
     print("Aligning words to audio...")
-    model_a, metadata = whisperx.load_align_model(language_code="en", device=device)
-    result = whisperx.align(result["segments"], model_a, metadata, audio, device)
+    model_a, metadata = whisperx.load_align_model(language_code=detected_lang, device=device)
+    result = whisperx.align(
+        result["segments"], 
+        model_a, 
+        metadata, 
+        audio, 
+        device,
+        return_char_alignments=False  # Skip character alignments for speed
+    )
 
     # Convert to our Line/Word format
     # Handle words missing timestamps by interpolating from segment timing
@@ -1294,28 +1568,50 @@ def fix_word_timing(lines: list[Line], max_word_duration: float = 2.0, max_gap: 
     return fixed_lines
 
 
-def split_long_lines(lines: list[Line], max_chars: int = 45) -> list[Line]:
+def split_long_lines(lines: list[Line], max_width_ratio: float = 0.75) -> list[Line]:
     """
     Split lines that are too wide to fit on screen.
 
     Args:
         lines: List of Line objects
-        max_chars: Maximum characters per line (approximate)
+        max_width_ratio: Maximum width as ratio of screen width (0.75 = 75%)
 
     Returns:
         List of Line objects with long lines split
     """
+    from PIL import ImageFont
+    
+    # Use the same font size as the renderer (72)
+    FONT_SIZE = 72
+    
+    # Load font to measure width
+    try:
+        font = ImageFont.truetype("/System/Library/Fonts/Supplemental/Arial Bold.ttf", FONT_SIZE)
+    except:
+        try:
+            # Try alternative font path
+            font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", FONT_SIZE)
+        except:
+            # Fallback - use character count approximation
+            return _split_by_char_count(lines, max_chars=50)
+    
+    VIDEO_WIDTH = 1920
+    max_width = VIDEO_WIDTH * max_width_ratio
+    
     split_lines = []
 
     for line in lines:
+        # Measure line width
         line_text = " ".join(w.text for w in line.words)
+        bbox = font.getbbox(line_text)
+        line_width = bbox[2] - bbox[0]
 
-        if len(line_text) <= max_chars:
+        if line_width <= max_width:
             # Line fits, keep as-is
             split_lines.append(line)
             continue
 
-        # Need to split - find a good break point near the middle
+        # Need to split - find a good break point
         words = line.words
         total_words = len(words)
 
@@ -1323,14 +1619,18 @@ def split_long_lines(lines: list[Line], max_chars: int = 45) -> list[Line]:
             split_lines.append(line)
             continue
 
-        # Find split point - try to split roughly in half by character count
+        # Find split point by measuring cumulative width
         best_split = total_words // 2
-        half_chars = len(line_text) // 2
+        cumulative_width = 0
+        target_width = max_width / 2  # Split at half of max width, not half of current width
 
-        char_count = 0
         for i, word in enumerate(words):
-            char_count += len(word.text) + 1  # +1 for space
-            if char_count >= half_chars:
+            word_text = word.text + " "
+            word_bbox = font.getbbox(word_text)
+            word_width = word_bbox[2] - word_bbox[0]
+            cumulative_width += word_width
+            
+            if cumulative_width >= target_width:
                 best_split = i + 1
                 break
 
@@ -1341,15 +1641,14 @@ def split_long_lines(lines: list[Line], max_chars: int = 45) -> list[Line]:
         first_words = words[:best_split]
         second_words = words[best_split:]
 
-        first_line = None
-        second_line = None
-
         if first_words:
             first_line = Line(
                 words=first_words,
                 start_time=first_words[0].start_time,
                 end_time=first_words[-1].end_time,
             )
+            # Recursively split if still too long
+            split_lines.extend(split_long_lines([first_line], max_width_ratio))
 
         if second_words:
             second_line = Line(
@@ -1357,13 +1656,44 @@ def split_long_lines(lines: list[Line], max_chars: int = 45) -> list[Line]:
                 start_time=second_words[0].start_time,
                 end_time=second_words[-1].end_time,
             )
+            # Recursively split if still too long
+            split_lines.extend(split_long_lines([second_line], max_width_ratio))
 
-        # Recursively split if still too long
-        if first_line:
-            split_lines.extend(split_long_lines([first_line], max_chars))
-        if second_line:
-            split_lines.extend(split_long_lines([second_line], max_chars))
+    return split_lines
 
+
+def _split_by_char_count(lines: list[Line], max_chars: int = 50) -> list[Line]:
+    """Fallback line splitting using character count."""
+    split_lines = []
+    for line in lines:
+        line_text = " ".join(w.text for w in line.words)
+        if len(line_text) <= max_chars:
+            split_lines.append(line)
+            continue
+        
+        words = line.words
+        if len(words) < 2:
+            split_lines.append(line)
+            continue
+        
+        # Split at midpoint
+        mid = len(words) // 2
+        first_words = words[:mid]
+        second_words = words[mid:]
+        
+        if first_words:
+            split_lines.append(Line(
+                words=first_words,
+                start_time=first_words[0].start_time,
+                end_time=first_words[-1].end_time,
+            ))
+        if second_words:
+            split_lines.append(Line(
+                words=second_words,
+                start_time=second_words[0].start_time,
+                end_time=second_words[-1].end_time,
+            ))
+    
     return split_lines
 
 
@@ -1512,8 +1842,33 @@ def get_lyrics(
             return best
 
         if lrc_sample and genius_sample:
-            scores = [best_match_score(ln, genius_sample) for ln in lrc_sample]
+            # Try romanizing synced lyrics if they contain non-Latin scripts
+            print("Checking if synced lyrics need romanization...")
+            lrc_sample_romanized = [romanize_line(ln) if any(ord(c) > 127 for c in ln) else ln 
+                                   for ln in lrc_sample]
+            
+            scores = [best_match_score(ln, genius_sample) for ln in lrc_sample_romanized]
             avg_score = sum(scores) / len(scores) if scores else 0.0
+            print(f"Match score after romanization: {avg_score:.2f}")
+            
+            # If romanization improved the match, romanize all synced lyrics
+            if avg_score >= 0.4 and lrc_sample_romanized != lrc_sample:
+                print(f"Romanizing synced lyrics for better match (score: {avg_score:.2f})")
+                lrc_lines = lrc_text.split('\n')
+                romanized_lines = []
+                for i, line in enumerate(lrc_lines):
+                    if i % 10 == 0:
+                        print(f"  Romanizing line {i}/{len(lrc_lines)}...")
+                    # Preserve timing tags, romanize only the text
+                    if line.strip().startswith('[') and ']' in line:
+                        tag_end = line.index(']') + 1
+                        timing = line[:tag_end]
+                        text = line[tag_end:]
+                        romanized_lines.append(timing + romanize_line(text))
+                    else:
+                        romanized_lines.append(romanize_line(line) if line.strip() else line)
+                lrc_text = '\n'.join(romanized_lines)
+                print("✓ Romanization complete")
         else:
             avg_score = 0.0
 
@@ -1523,22 +1878,42 @@ def get_lyrics(
             is_synced = False
 
     if lrc_text and is_synced:
-        # Use synced lyrics directly - preserves original text including romanized lyrics
-        print(f"Using synced lyrics from {source}")
-
-        # If we have Genius singer info, merge with synced timing
-        if genius_lines and metadata and metadata.is_duet:
-            print(f"Merging with singer info from Genius")
-            timed_lines = parse_lrc_with_timing(lrc_text)
-            lines = merge_lyrics_with_singer_info(timed_lines, genius_lines, metadata)
+        # We have synced lyrics - use them as reference text for WhisperX
+        print(f"Found synced lyrics from {source}")
+        
+        # Extract lyrics text for WhisperX alignment
+        lyrics_text = extract_lyrics_text(lrc_text)
+        
+        # If we have vocals, use WhisperX for accurate word-level timing
+        if vocals_path:
+            print("Using WhisperX for accurate word-level timing with synced lyrics as reference...")
+            # Fall through to WhisperX transcription below
         else:
-            lines = create_lines_from_lrc(lrc_text)
+            # No vocals available, use synced lyrics timing directly
+            print(f"Using synced lyrics timing from {source}")
+            if genius_lines and metadata and metadata.is_duet:
+                print(f"Merging with singer info from Genius")
+                timed_lines = parse_lrc_with_timing(lrc_text)
+                lines = merge_lyrics_with_singer_info(timed_lines, genius_lines, metadata)
+            else:
+                lines = create_lines_from_lrc(lrc_text)
 
-        if lines:
-            # Apply line splitting for long lines
-            lines = split_long_lines(lines)
-            print(f"Got {len(lines)} lines of lyrics")
-            return lines, metadata
+            if lines:
+                lines = split_long_lines(lines)
+                print(f"Got {len(lines)} lines of lyrics")
+                # Cache the final result
+                if cache_dir:
+                    try:
+                        payload = {
+                            "lines": _lines_to_json(lines),
+                            "metadata": _metadata_to_json(metadata) if metadata else None
+                        }
+                        with open(os.path.join(cache_dir, "lyrics_final.json"), "w", encoding="utf-8") as f:
+                            json.dump(payload, f, ensure_ascii=False, indent=2)
+                        print(f"✓ Cached final lyrics result")
+                    except Exception as e:
+                        print(f"  Warning: Failed to cache final lyrics: {e}")
+                return lines, metadata
 
     # Fall back to whisperx transcription if no synced lyrics
     if not vocals_path:
@@ -1566,9 +1941,38 @@ def get_lyrics(
     # Transcribe and align with whisperx, with optional caching of the
     # pre-alignment transcription so we don't have to rerun WhisperX
     # on subsequent runs.
+    
+    # First check if we have a complete cached result
+    final_cache_path = None
     if cache_dir:
         os.makedirs(cache_dir, exist_ok=True)
-        transcript_path = os.path.join(cache_dir, "whisper_transcript.json")
+        final_cache_path = os.path.join(cache_dir, "lyrics_final.json")
+        
+        if os.path.exists(final_cache_path):
+            try:
+                with open(final_cache_path, "r", encoding="utf-8") as f:
+                    cached = json.load(f)
+                lines = _lines_from_json(cached.get("lines", []))
+                metadata = _metadata_from_json(cached.get("metadata"))
+                print(f"✓ Using cached final lyrics ({len(lines)} lines)")
+                # Split long lines even when loading from cache
+                lines = split_long_lines(lines)
+                return lines, metadata
+            except Exception as e:
+                print(f"  Cache read failed: {e}, will regenerate")
+    
+    # No final cache, proceed with transcription
+    # Detect language from lyrics first for cache key
+    detected_language = None
+    if lyrics_text:
+        sample = " ".join(lyrics_text[:5]).lower()
+        if any(word in sample for word in ["el", "la", "los", "las", "que", "de", "con", "por", "para"]):
+            detected_language = "es"
+    
+    if cache_dir:
+        # Include language in cache filename to avoid conflicts
+        lang_suffix = f"_{detected_language}" if detected_language else ""
+        transcript_path = os.path.join(cache_dir, f"whisper_transcript{lang_suffix}.json")
     else:
         transcript_path = None
 
@@ -1584,19 +1988,42 @@ def get_lyrics(
         lines = transcribe_and_align(vocals_path, lyrics_text)
         if transcript_path:
             try:
-                payload = {"lines": _lines_to_json(lines)}
+                payload = {
+                    "lines": _lines_to_json(lines),
+                    "language": detected_language
+                }
                 with open(transcript_path, "w", encoding="utf-8") as f:
                     json.dump(payload, f, ensure_ascii=False)
+                print(f"✓ Cached Whisper transcription")
             except Exception:
                 pass
 
     # Cross-check and correct transcription using known lyrics (if we have them)
+    # If we have synced lyrics with line timing, pass them for hybrid alignment
+    synced_timings = None
+    if lrc_text and is_synced:
+        synced_timings = parse_lrc_with_timing(lrc_text)
+        print(f"Using hybrid alignment: synced line timing + WhisperX word timing")
+    
     if lyrics_text:
         original_count = len(lines)
-        lines = correct_transcription_with_lyrics(lines, lyrics_text)
+        lines = correct_transcription_with_lyrics(lines, lyrics_text, synced_timings)
         print(f"Corrected transcription: {original_count} lines processed")
+    
+    # Cache the final result
+    if final_cache_path:
+        try:
+            payload = {
+                "lines": _lines_to_json(lines),
+                "metadata": _metadata_to_json(metadata) if metadata else None
+            }
+            with open(final_cache_path, "w", encoding="utf-8") as f:
+                json.dump(payload, f, ensure_ascii=False, indent=2)
+            print(f"✓ Cached final lyrics result")
+        except Exception as e:
+            print(f"  Warning: Failed to cache final lyrics: {e}")
 
-    return lines, None
+    return lines, metadata
 
 
 if __name__ == "__main__":
