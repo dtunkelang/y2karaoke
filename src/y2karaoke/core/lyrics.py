@@ -1685,16 +1685,18 @@ def split_long_lines(lines: list[Line], max_width_ratio: float = 0.75) -> list[L
     # Use the same font size as the renderer (72)
     FONT_SIZE = 72
     
-    # Load font to measure width
+    # Load font to measure width - use same font as renderer
     try:
-        font = ImageFont.truetype("/System/Library/Fonts/Supplemental/Arial Bold.ttf", FONT_SIZE)
+        font = ImageFont.truetype("/System/Library/Fonts/Arial.ttf", FONT_SIZE)
     except:
         try:
-            # Try alternative font path
-            font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", FONT_SIZE)
+            font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", FONT_SIZE)
         except:
-            # Fallback - use character count approximation
-            return _split_by_char_count(lines, max_chars=50)
+            try:
+                font = ImageFont.truetype("C:/Windows/Fonts/arial.ttf", FONT_SIZE)
+            except:
+                # Fallback - use character count approximation
+                return _split_by_char_count(lines, max_chars=50)
     
     VIDEO_WIDTH = 1920
     max_width = VIDEO_WIDTH * max_width_ratio
