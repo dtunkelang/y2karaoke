@@ -1704,12 +1704,14 @@ def split_long_lines(lines: list[Line], max_width_ratio: float = 0.75) -> list[L
     split_lines = []
 
     for line in lines:
-        # Measure line width
-        line_text = " ".join(w.text for w in line.words)
-        bbox = font.getbbox(line_text)
-        line_width = bbox[2] - bbox[0]
+        # Measure line width exactly as renderer does - sum of individual word widths with spaces
+        total_width = 0
+        for word in line.words:
+            bbox = font.getbbox(word.text + " ")
+            word_width = bbox[2] - bbox[0]
+            total_width += word_width
 
-        if line_width <= max_width:
+        if total_width <= max_width:
             # Line fits, keep as-is
             split_lines.append(line)
             continue
