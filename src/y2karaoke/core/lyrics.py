@@ -520,75 +520,15 @@ def fetch_genius_lyrics_with_singers(title: str, artist: str) -> tuple[Optional[
         print("  requests/beautifulsoup4 not available for Genius scraping")
         return None, None
 
-    from downloader import clean_title
-
-    # Extract artists from title (for collaborations/duets)
-    artists_from_title = extract_artists_from_title(title, artist)
-
-    # Clean title and create URL slug
-    clean = clean_title(title, artist)
-
-    # Try to construct Genius URL
-    # Format: artist-song-title-lyrics (lowercase, spaces to dashes)
+    # Helper function to create URL slugs
     def make_slug(text: str) -> str:
-        # Remove special characters, convert spaces to dashes
         slug = re.sub(r'[^\w\s-]', '', text.lower())
         slug = re.sub(r'\s+', '-', slug)
         return slug
 
-    from urllib.parse import urlparse
-
-    def add_romanized_urls(url_patterns):
-        new_urls = []
-        for url in url_patterns:
-            if not url.endswith("-lyrics"):
-                continue  # defensive: skip unexpected formats
-            base = url.replace("https://genius.com/", "")
-            base = base[:-len("-lyrics")]
-            romanized_url = (
-                "https://genius.com/"
-                "Genius-romanizations-"
-                f"{base}-romanized-lyrics"
-            )
-            new_urls.append(romanized_url)
-            return url_patterns + new_urls
-
-    # Try different URL patterns
-    artist_slug = make_slug(artist)
-    title_slug = make_slug(clean)
-
-    # Handle multiple artists (from title or artist field)
-    # Genius uses "and" between artists in URLs
-    artist_parts = re.split(r'[,&]', artist)
-    artist_parts = [p.strip() for p in artist_parts if p.strip()]
-
-    # If only one artist in the artist field, try using artists from title
-    if len(artist_parts) < 2 and len(artists_from_title) >= 2:
-        artist_parts = artists_from_title
-
-    url_patterns = []
-
-    # Try full artist slug with "and" for duets/collaborations
-    if len(artist_parts) >= 2:
-        combined_slug = "-and-".join(make_slug(p) for p in artist_parts)
-        url_patterns.append(f"https://genius.com/{combined_slug}-{title_slug}-lyrics")
-        # Also try reversed order
-        combined_slug_reversed = "-and-".join(make_slug(p) for p in reversed(artist_parts))
-        url_patterns.append(f"https://genius.com/{combined_slug_reversed}-{title_slug}-lyrics")
-
-    # Try standard patterns
-    url_patterns.extend([
-        f"https://genius.com/{artist_slug}-{title_slug}-lyrics",
-        f"https://genius.com/{artist_slug.split('-')[0]}-{title_slug}-lyrics",
-    ])
-
-    # Also try with just the first artist
-    if artist_parts:
-        first_artist_slug = make_slug(artist_parts[0])
-        url_patterns.append(f"https://genius.com/{first_artist_slug}-{title_slug}-lyrics")
-
     headers = {
-        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36'
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36',
+        'Accept': '*/*'
     }
 
     # Use Genius API to search for the song
@@ -610,48 +550,97 @@ def fetch_genius_lyrics_with_singers(title: str, artist: str) -> tuple[Optional[
         return title.strip()
     
     cleaned_title = clean_title_for_search(title)
-    search_query = f"{clean_for_search(artist)} {clean_for_search(cleaned_title)}"
-    api_url = f"https://genius.com/api/search/multi?q={search_query.replace(' ', '%20')}"
     
+    print(f"  Searching Genius: {artist} - {cleaned_title}")
+    
+    all_urls = []
+    
+    # Try searching with just title + "romanized" first, then regular search
+    search_queries = [
+        f"{clean_for_search(cleaned_title)} romanized",
+        f"{clean_for_search(artist)} {clean_for_search(cleaned_title)}"
+    ]
+    
+    for search_query in search_queries:
+        api_url = f"https://genius.com/api/search/song?per_page=10&q={search_query.replace(' ', '%20')}"
+        
+        try:
+            response = requests.get(api_url, headers=headers, timeout=10)
+            response.raise_for_status()
+            data = response.json()
+            
+            if 'response' in data and 'sections' in data['response']:
+                for section in data['response']['sections']:
+                    if section.get('type') == 'song':
+                        for hit in section.get('hits', []):
+                            result = hit.get('result', {})
+                            url = result.get('url', '')
+                            if url and url.endswith('-lyrics') and '/artists/' not in url:
+                                all_urls.append(url)
+        except Exception as e:
+            print(f"  Genius search failed: {e}")
+    
+    # Also try constructing URLs directly
+    def make_slug(text: str) -> str:
+        slug = re.sub(r'[^\w\s-]', '', text.lower())
+        slug = re.sub(r'\s+', '-', slug)
+        return slug
+    
+    artist_slug = make_slug(artist)
+    title_slug = make_slug(cleaned_title)
+    
+    # Add constructed URLs to candidates
+    all_urls.extend([
+        f"https://genius.com/Genius-romanizations-{artist_slug}-{title_slug}-romanized-lyrics",
+        f"https://genius.com/{artist_slug}-{title_slug}-lyrics"
+    ])
+    
+    # Remove duplicates while preserving order
+    seen = set()
+    unique_urls = []
+    for url in all_urls:
+        if url not in seen:
+            seen.add(url)
+            unique_urls.append(url)
+    
+    # Now prioritize: romanized > original language > skip translations
     song_url = None
+    original_url = None
     
-    try:
-        print(f"  Searching Genius: {artist} - {cleaned_title}")
-        response = requests.get(api_url, headers=headers, timeout=10)
-        response.raise_for_status()
+    for url in unique_urls:
+        # Check if URL exists
+        try:
+            response = requests.get(url, headers=headers, timeout=10)
+            if response.status_code != 200:
+                continue
+        except:
+            continue
         
-        data = response.json()
+        # Skip translations
+        if 'translation' in url.lower():
+            continue
         
-        # Look through search results for song matches
-        if 'response' in data and 'sections' in data['response']:
-            for section in data['response']['sections']:
-                if section.get('type') == 'song':
-                    for hit in section.get('hits', []):
-                        result = hit.get('result', {})
-                        url = result.get('url', '')
-                        result_title = result.get('title', '').lower()
-                        result_artist = result.get('primary_artist', {}).get('name', '').lower()
-                        
-                        # Prefer romanized versions
-                        if 'romanized' in url.lower():
-                            song_url = url
-                            print(f"  Found romanized: {song_url}")
-                            break
-                        elif not song_url:
-                            song_url = url
-                    
-                    if song_url and 'romanized' in song_url.lower():
-                        break
+        # Prioritize romanized
+        if 'romanized' in url.lower():
+            song_url = url
+            print(f"  Found romanized: {song_url}")
+            break
         
-        if song_url and 'romanized' not in song_url.lower():
+        # Keep track of original language version as fallback
+        if not original_url:
+            original_url = url
+    
+    # If no romanized found, use original language version
+    if not song_url and original_url:
+        song_url = original_url
+        print(f"  Found original: {song_url}")
+    
+    # Print result if found
+    if song_url:
+        if 'romanized' not in song_url.lower():
             print(f"  Found: {song_url}")
-        
-        if not song_url:
-            print(f"  No Genius results found")
-            return None, None
-        
-    except Exception as e:
-        print(f"  Genius search failed: {e}")
+    else:
+        print(f"  No Genius results found")
         return None, None
 
     # Fetch the lyrics page

@@ -53,6 +53,10 @@ def clean_title(title: str, artist: str = "") -> str:
         r'\s*\(\d+K\)',
         r'\s*【[^】]*】',
         r'\s*ft\.?\s+[^(\[]+$',
+        r'\s*\(Lyrics?\s*(and|&|\+)?\s*Translation\)',
+        r'\s*\(Translation\)',
+        r'\s*Lyrics?\s*(and|&|\+)?\s*Translation\s*$',
+        r'\s*Translation\s*$',
     ]
 
     cleaned = title
