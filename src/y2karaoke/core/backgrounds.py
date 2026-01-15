@@ -118,10 +118,11 @@ class BackgroundProcessor:
     
     def _detect_scenes_subprocess(self, video_path: str) -> List[float]:
         """Detect scene changes using subprocess."""
-        
+
         try:
-            # Simple scene detection code
-            code = f'''
+            # Simple scene detection code - video_path passed safely via sys.argv
+            code = '''
+import sys
 import cv2
 import numpy as np
 
@@ -129,53 +130,54 @@ def detect_scenes(video_path, threshold=30.0):
     cap = cv2.VideoCapture(video_path)
     if not cap.isOpened():
         return []
-    
+
     fps = cap.get(cv2.CAP_PROP_FPS)
     frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-    
+
     scenes = [0.0]  # Always include start
     prev_frame = None
-    
+
     # Sample every 30 frames for speed
     for i in range(0, frame_count, 30):
         cap.set(cv2.CAP_PROP_POS_FRAMES, i)
         ret, frame = cap.read()
-        
+
         if not ret:
             break
-        
+
         if prev_frame is not None:
             # Calculate frame difference
             diff = cv2.absdiff(frame, prev_frame)
             mean_diff = np.mean(diff)
-            
+
             if mean_diff > threshold:
                 timestamp = i / fps
                 scenes.append(timestamp)
-        
+
         prev_frame = frame
-    
+
     cap.release()
     return scenes
 
-scenes = detect_scenes("{video_path}")
-print(",".join(map(str, scenes)))
+if len(sys.argv) > 1:
+    scenes = detect_scenes(sys.argv[1])
+    print(",".join(map(str, scenes)))
 '''
-            
+
             result = subprocess.run(
-                [sys.executable, '-c', code],
+                [sys.executable, '-c', code, video_path],
                 capture_output=True,
                 text=True,
                 timeout=30
             )
-            
+
             if result.returncode == 0 and result.stdout.strip():
                 times = [float(x) for x in result.stdout.strip().split(',')]
                 return times[:10]  # Limit scenes
-            
+
         except Exception as e:
             logger.warning(f"Scene detection subprocess failed: {e}")
-        
+
         return []
     
     def _is_valid_frame(self, frame: np.ndarray, min_brightness: int = 20) -> bool:

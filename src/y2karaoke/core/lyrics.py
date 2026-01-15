@@ -2,7 +2,7 @@
 
 import re
 from dataclasses import dataclass
-from typing import Optional, List, Dict, Any
+from typing import Optional, Dict, Any
 from pathlib import Path
 
 import json
@@ -15,29 +15,6 @@ from ..utils.logging import get_logger
 
 logger = get_logger(__name__)
 
-@dataclass
-class Word:
-    """A word with timing information."""
-    text: str
-    start_time: float
-    end_time: float
-
-@dataclass
-class Line:
-    """A line of lyrics with words."""
-    words: List[Word]
-    start_time: float
-    end_time: float
-
-@dataclass
-class SongMetadata:
-    """Metadata about the song."""
-    is_duet: bool = False
-    singers: List[str] = None
-    
-    def __post_init__(self):
-        if self.singers is None:
-            self.singers = []
 
 class LyricsProcessor:
     """Process lyrics with timing and romanization."""

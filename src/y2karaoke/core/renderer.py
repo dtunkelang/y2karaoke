@@ -11,8 +11,9 @@ from PIL import Image, ImageDraw, ImageFont
 from moviepy import AudioFileClip, VideoClip
 
 from ..config import (
-    VIDEO_WIDTH, VIDEO_HEIGHT, FPS, Colors, 
-    FONT_SIZE, LINE_SPACING, SPLASH_DURATION
+    VIDEO_WIDTH, VIDEO_HEIGHT, FPS, Colors,
+    FONT_SIZE, LINE_SPACING, SPLASH_DURATION,
+    INSTRUMENTAL_BREAK_THRESHOLD, LYRICS_LEAD_TIME
 )
 from ..exceptions import RenderError
 from ..utils.logging import get_logger
@@ -279,47 +280,6 @@ class VideoRenderer:
             x_pos += word_widths[i]
 
 
-# Backward compatibility function
-def render_karaoke_video(**kwargs):
-    """Render karaoke video (backward compatibility)."""
-    renderer = VideoRenderer()
-    renderer.render_karaoke_video(**kwargs)
-
-
-# Video settings
-VIDEO_WIDTH = 1920
-VIDEO_HEIGHT = 1080
-FPS = 30
-
-# Colors (RGB)
-BG_COLOR_TOP = (20, 20, 40)      # Dark blue
-BG_COLOR_BOTTOM = (40, 20, 60)   # Dark purple
-TEXT_COLOR = (255, 255, 255)     # White
-HIGHLIGHT_COLOR = (255, 215, 0)  # Gold
-SUNG_COLOR = (180, 180, 180)    # Gray (already sung)
-PROGRESS_BAR_BG = (60, 60, 80)  # Progress bar background
-PROGRESS_BAR_FG = (255, 215, 0) # Progress bar fill (gold)
-
-# Singer-specific colors for duets (KaraFun style)
-SINGER1_COLOR = (100, 180, 255)     # Light blue for singer 1
-SINGER1_HIGHLIGHT = (50, 150, 255)  # Brighter blue when highlighted
-SINGER2_COLOR = (255, 150, 200)     # Pink for singer 2
-SINGER2_HIGHLIGHT = (255, 100, 180) # Brighter pink when highlighted
-BOTH_COLOR = (200, 150, 255)        # Light purple for both singers
-BOTH_HIGHLIGHT = (180, 100, 255)    # Brighter purple when highlighted
-
-# Font settings
-FONT_SIZE = 72
-LINE_SPACING = 100
-
-# Instrumental break settings
-INSTRUMENTAL_BREAK_THRESHOLD = 5.0  # seconds - minimum gap to show progress bar
-LYRICS_LEAD_TIME = 1.0              # seconds - show lyrics before they start
-
-# Splash screen settings
-SPLASH_DURATION = 4.0               # seconds - how long to show splash before fading
-
-
 def get_font(size: int = FONT_SIZE) -> ImageFont.FreeTypeFont:
     """Get a suitable font for rendering."""
     # Try common fonts
@@ -353,14 +313,14 @@ def get_singer_colors(singer: str, is_highlighted: bool) -> tuple[tuple[int, int
         Tuple of (text_color, highlight_color) for this singer
     """
     if singer == "singer1":
-        return (SINGER1_COLOR, SINGER1_HIGHLIGHT)
+        return (Colors.SINGER1, Colors.SINGER1_HIGHLIGHT)
     elif singer == "singer2":
-        return (SINGER2_COLOR, SINGER2_HIGHLIGHT)
+        return (Colors.SINGER2, Colors.SINGER2_HIGHLIGHT)
     elif singer == "both":
-        return (BOTH_COLOR, BOTH_HIGHLIGHT)
+        return (Colors.BOTH, Colors.BOTH_HIGHLIGHT)
     else:
         # Default colors (gold highlight, white text)
-        return (TEXT_COLOR, HIGHLIGHT_COLOR)
+        return (Colors.TEXT, Colors.HIGHLIGHT)
 
 
 def create_gradient_background() -> np.ndarray:
@@ -370,9 +330,9 @@ def create_gradient_background() -> np.ndarray:
 
     for y in range(VIDEO_HEIGHT):
         ratio = y / VIDEO_HEIGHT
-        r = int(BG_COLOR_TOP[0] * (1 - ratio) + BG_COLOR_BOTTOM[0] * ratio)
-        g = int(BG_COLOR_TOP[1] * (1 - ratio) + BG_COLOR_BOTTOM[1] * ratio)
-        b = int(BG_COLOR_TOP[2] * (1 - ratio) + BG_COLOR_BOTTOM[2] * ratio)
+        r = int(Colors.BG_TOP[0] * (1 - ratio) + Colors.BG_BOTTOM[0] * ratio)
+        g = int(Colors.BG_TOP[1] * (1 - ratio) + Colors.BG_BOTTOM[1] * ratio)
+        b = int(Colors.BG_TOP[2] * (1 - ratio) + Colors.BG_BOTTOM[2] * ratio)
         draw.line([(0, y), (VIDEO_WIDTH, y)], fill=(r, g, b))
 
     return np.array(img)
@@ -403,7 +363,7 @@ def draw_progress_bar(
     draw.rounded_rectangle(
         [(x_start, y_start), (x_end, y_end)],
         radius=border_radius,
-        fill=PROGRESS_BAR_BG,
+        fill=Colors.PROGRESS_BG,
     )
 
     if progress > 0:
@@ -412,7 +372,7 @@ def draw_progress_bar(
             draw.rounded_rectangle(
                 [(x_start, y_start), (x_start + fill_width, y_end)],
                 radius=border_radius,
-                fill=PROGRESS_BAR_FG,
+                fill=Colors.PROGRESS_FG,
             )
 
 
@@ -447,9 +407,9 @@ def draw_logo_screen(
     url_x = (VIDEO_WIDTH - url_width) // 2
     url_y = tagline_y + 60
 
-    draw.text((logo_x, logo_y), logo_text, font=logo_font, fill=HIGHLIGHT_COLOR)
-    draw.text((tagline_x, tagline_y), tagline_text, font=tagline_font, fill=TEXT_COLOR)
-    draw.text((url_x, url_y), url_text, font=url_font, fill=SUNG_COLOR)
+    draw.text((logo_x, logo_y), logo_text, font=logo_font, fill=Colors.HIGHLIGHT)
+    draw.text((tagline_x, tagline_y), tagline_text, font=tagline_font, fill=Colors.TEXT)
+    draw.text((url_x, url_y), url_text, font=url_font, fill=Colors.SUNG)
 
 
 def draw_splash_screen(
@@ -487,9 +447,9 @@ def draw_splash_screen(
     logo_y = VIDEO_HEIGHT - 100
 
     # Draw text
-    draw.text((title_x, title_y), display_title, font=title_font, fill=HIGHLIGHT_COLOR)
-    draw.text((artist_x, artist_y), artist_text, font=artist_font, fill=TEXT_COLOR)
-    draw.text((logo_x, logo_y), logo_text, font=logo_font, fill=SUNG_COLOR)
+    draw.text((title_x, title_y), display_title, font=title_font, fill=Colors.HIGHLIGHT)
+    draw.text((artist_x, artist_y), artist_text, font=artist_font, fill=Colors.TEXT)
+    draw.text((logo_x, logo_y), logo_text, font=logo_font, fill=Colors.SUNG)
 
 
 def render_frame(
@@ -647,11 +607,11 @@ def render_frame(
                 # Non-duet mode: use default gold/white
                 if is_current:
                     if current_time >= word.start_time:
-                        color = HIGHLIGHT_COLOR  # Highlighted (current or already sung)
+                        color = Colors.HIGHLIGHT  # Highlighted (current or already sung)
                     else:
-                        color = TEXT_COLOR  # Not yet sung
+                        color = Colors.TEXT  # Not yet sung
                 else:
-                    color = TEXT_COLOR  # Next line - all white
+                    color = Colors.TEXT  # Next line - all white
 
             draw.text((x, y), text, font=font, fill=color)
             x += word_widths[i]
@@ -671,10 +631,10 @@ def render_karaoke_video(
 ) -> str:
     """Render karaoke video using MoviePy (simple and fast)."""
     from moviepy import AudioFileClip, VideoClip
-    
-    print("Rendering karaoke video...")
+
+    logger.info("Rendering karaoke video...")
     if timing_offset != 0:
-        print(f"Applying timing offset: {timing_offset:+.2f}s")
+        logger.info(f"Applying timing offset: {timing_offset:+.2f}s")
 
     # Load audio to get duration
     audio = AudioFileClip(audio_path)
@@ -688,7 +648,7 @@ def render_karaoke_video(
     # Create frame generator
     def make_frame(t):
         adjusted_time = t - timing_offset
-        
+
         if background_segments:
             from backgrounds import get_background_at_time
             bg = get_background_at_time(background_segments, t)
@@ -699,13 +659,13 @@ def render_karaoke_video(
         return render_frame(lines, adjusted_time, font, background, title, artist, is_duet)
 
     # Create video clip
-    print(f"Creating video ({duration:.1f}s at {FPS}fps)...")
+    logger.info(f"Creating video ({duration:.1f}s at {FPS}fps)...")
     video = VideoClip(make_frame, duration=duration)
     video = video.with_fps(FPS)
     video = video.with_audio(audio)
 
     # Write output
-    print(f"Writing video to {output_path}...")
+    logger.info(f"Writing video to {output_path}...")
     video.write_videofile(
         output_path,
         fps=FPS,
@@ -720,7 +680,7 @@ def render_karaoke_video(
     audio.close()
     video.close()
 
-    print(f"Done! Output: {output_path}")
+    logger.info(f"Done! Output: {output_path}")
     return output_path
 
 

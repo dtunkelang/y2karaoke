@@ -1,6 +1,5 @@
 """Main karaoke generator orchestrating all components."""
 
-import tempfile
 from pathlib import Path
 from typing import Dict, Optional, Any
 

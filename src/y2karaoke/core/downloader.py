@@ -1,7 +1,6 @@
 """YouTube downloader with improved error handling."""
 
 import hashlib
-import json
 import re
 from pathlib import Path
 from typing import Dict, Optional
@@ -63,11 +62,17 @@ def clean_title(title: str, artist: str = "") -> str:
     for pattern in patterns_to_remove:
         cleaned = re.sub(pattern, '', cleaned, flags=re.IGNORECASE)
 
-    # Extract song title if format is "Artist - Song Title"
+    # Extract song title if format is "Artist - Song Title" or "Song Title - Artist"
     if ' - ' in cleaned and artist:
         parts = cleaned.split(' - ', 1)
-        if len(parts) == 2 and artist.lower() in parts[0].lower():
-            cleaned = parts[1]
+        if len(parts) == 2:
+            artist_lower = artist.lower()
+            # Handle "Artist - Song Title" format
+            if artist_lower in parts[0].lower():
+                cleaned = parts[1]
+            # Handle "Song Title - Artist" format
+            elif artist_lower in parts[1].lower():
+                cleaned = parts[0]
 
     return cleaned.strip()
 
