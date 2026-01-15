@@ -56,6 +56,11 @@ def clean_title(title: str, artist: str = "") -> str:
         r'\s*\(Translation\)',
         r'\s*Lyrics?\s*(and|&|\+)?\s*Translation\s*$',
         r'\s*Translation\s*$',
+        # Aspect ratios and year patterns
+        r'\s*\d+:\d+\s*',  # 16:9, 4:3, etc.
+        r'\s*-?\s*\d{4}\s*(Original\s*)?(Music|Musik)?\s*Video\s*',  # "2003 Original Music Video"
+        r'\s*-?\s*Original\s*(Music|Musik)?\s*Video\s*',  # "Original Music Video"
+        r'\s*by\s+[^-]+$',  # "by Artist Name" at end
     ]
 
     cleaned = title

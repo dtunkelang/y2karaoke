@@ -49,7 +49,7 @@ KEY_SHIFT_RANGE = (-12, 12)
 TEMPO_RANGE = (0.1, 3.0)
 
 # Timing settings
-INSTRUMENTAL_BREAK_THRESHOLD = 5.0
+INSTRUMENTAL_BREAK_THRESHOLD = 8.0  # Show instrumental break screen for gaps >= 8 seconds
 LYRICS_LEAD_TIME = 1.0
 SPLASH_DURATION = 4.0
 

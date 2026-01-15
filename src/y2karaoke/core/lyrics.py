@@ -373,21 +373,55 @@ def parse_lrc_timestamp(ts: str) -> float:
     return 0.0
 
 
-def extract_lyrics_text(lrc_text: str) -> list[str]:
-    """Extract plain text lines from LRC format (no timing)."""
+def extract_lyrics_text(lrc_text: str, title: str = "", artist: str = "") -> list[str]:
+    """Extract plain text lines from LRC format (no timing), filtering metadata."""
     lines = []
     for line in lrc_text.strip().split('\n'):
         match = re.match(r'\[\d+:\d+\.\d+\]\s*(.*)', line)
         if match:
             text = match.group(1).strip()
-            if text:
+            if text and not _is_metadata_line(text, title, artist):
                 lines.append(text)
     return lines
 
 
-def parse_lrc_with_timing(lrc_text: str) -> list[tuple[float, str]]:
+def _is_metadata_line(text: str, title: str = "", artist: str = "") -> bool:
+    """Check if a line is metadata rather than actual lyrics."""
+    text_lower = text.lower().strip()
+
+    # Skip lines that are obviously metadata labels
+    metadata_prefixes = [
+        "artist:", "song:", "title:", "album:", "writer:", "composer:",
+        "lyricist:", "lyrics by", "written by", "produced by", "music by",
+    ]
+    for prefix in metadata_prefixes:
+        if text_lower.startswith(prefix):
+            return True
+
+    # Skip lines that are just the artist or title name (with some flexibility)
+    if title:
+        title_lower = title.lower()
+        # Check if line is just the title (possibly with minor differences)
+        if text_lower == title_lower or text_lower.replace(" ", "") == title_lower.replace(" ", ""):
+            return True
+
+    if artist:
+        artist_lower = artist.lower()
+        # Check if line is just the artist name
+        if text_lower == artist_lower or text_lower.replace(" ", "") == artist_lower.replace(" ", ""):
+            return True
+
+    return False
+
+
+def parse_lrc_with_timing(lrc_text: str, title: str = "", artist: str = "") -> list[tuple[float, str]]:
     """
     Parse LRC format to extract lines with timestamps.
+
+    Args:
+        lrc_text: Raw LRC text content
+        title: Song title (used to filter metadata lines)
+        artist: Artist name (used to filter metadata lines)
 
     Returns:
         List of (timestamp_seconds, text) tuples
@@ -401,7 +435,7 @@ def parse_lrc_with_timing(lrc_text: str) -> list[tuple[float, str]]:
             centiseconds = int(match.group(3))
             timestamp = minutes * 60 + seconds + centiseconds / 100
             text = match.group(4).strip()
-            if text:
+            if text and not _is_metadata_line(text, title, artist):
                 lines.append((timestamp, text))
     return lines
 
@@ -842,7 +876,12 @@ def merge_lyrics_with_singer_info(
     return lines
 
 
-def create_lines_from_lrc(lrc_text: str, romanize: bool = True) -> list[Line]:
+def create_lines_from_lrc(
+    lrc_text: str,
+    romanize: bool = True,
+    title: str = "",
+    artist: str = "",
+) -> list[Line]:
     """
     Create Line objects from LRC format with evenly distributed word timing.
 
@@ -852,8 +891,10 @@ def create_lines_from_lrc(lrc_text: str, romanize: bool = True) -> list[Line]:
     Args:
         lrc_text: LRC format lyrics text
         romanize: If True, romanize non-Latin scripts (e.g., Korean to romanized)
+        title: Song title for metadata filtering
+        artist: Artist name for metadata filtering
     """
-    timed_lines = parse_lrc_with_timing(lrc_text)
+    timed_lines = parse_lrc_with_timing(lrc_text, title, artist)
 
     if not timed_lines:
         return []
@@ -983,7 +1024,7 @@ def fetch_lyrics_multi_source(title: str, artist: str) -> tuple[Optional[str], b
         print(f"  Trying: {search_term}")
         lrc = _search_syncedlyrics_with_retry(search_term, synced_only=True)
         if lrc:
-            lines = extract_lyrics_text(lrc)
+            lines = extract_lyrics_text(lrc, title, artist)
             if lines and len(lines) >= 5:  # Need meaningful content
                 print(f"  Found synced lyrics ({len(lines)} lines)")
                 return lrc, True, f"synced: {search_term}"
@@ -992,7 +1033,7 @@ def fetch_lyrics_multi_source(title: str, artist: str) -> tuple[Optional[str], b
     for search_term in unique_searches[:3]:  # Only try first few
         lrc = _search_syncedlyrics_with_retry(search_term, synced_only=False)
         if lrc:
-            lines = extract_lyrics_text(lrc)
+            lines = extract_lyrics_text(lrc, title, artist)
             if lines and len(lines) >= 5:
                 print(f"  Found plain lyrics ({len(lines)} lines)")
                 return lrc, False, f"plain: {search_term}"
@@ -1075,7 +1116,7 @@ def match_line_to_lyrics(
 def _hybrid_alignment(whisper_lines: list["Line"], lyrics_text: list[str], synced_timings: list[tuple[float, str]], norm_token_func) -> list["Line"]:
     """
     Hybrid alignment: use synced lyrics for line timing, WhisperX for word timing.
-    
+
     For each synced line:
     1. Find matching WhisperX words within the line's time window
     2. Use WhisperX word timings if they look reasonable
@@ -1083,7 +1124,7 @@ def _hybrid_alignment(whisper_lines: list["Line"], lyrics_text: list[str], synce
     4. Ensure words are always in correct order
     """
     from difflib import SequenceMatcher
-    
+
     # Build a flat list of all WhisperX words with timing
     whisper_words = []
     for line in whisper_lines:
@@ -1094,12 +1135,12 @@ def _hybrid_alignment(whisper_lines: list["Line"], lyrics_text: list[str], synce
                 "start": word.start_time,
                 "end": word.end_time
             })
-    
+
     # Sort WhisperX words by start time to ensure temporal order
     whisper_words.sort(key=lambda w: w["start"])
-    
+
     result_lines = []
-    
+
     for line_start, line_text in synced_timings:
         # Find the next line's start time (or use a default duration)
         idx = synced_timings.index((line_start, line_text))
@@ -1112,32 +1153,48 @@ def _hybrid_alignment(whisper_lines: list["Line"], lyrics_text: list[str], synce
         line_words_text = line_text.split()
         if not line_words_text:
             continue
-        
-        # Find WhisperX words that fall within this time window
-        candidates = [w for w in whisper_words if line_start <= w["start"] < line_end]
-        
+
+        # Find WhisperX words that could belong to this line
+        # Use a generous time window since LRC timing can be significantly off from actual audio
+        # We'll rely on the time_bonus scoring to prefer words closer to expected timing
+        TIME_TOLERANCE = 8.0  # generous tolerance to catch large LRC timing errors
+        candidates = [w for w in whisper_words if (line_start - TIME_TOLERANCE) <= w["start"] < line_end]
+
         # Try to match line words to WhisperX words in order
         result_words = []
         used_indices = set()
-        
+
+        # Calculate expected timing for each word based on LRC
+        num_words = len(line_words_text)
+        word_duration = (line_end - line_start) / num_words
+
         for word_idx, word_text in enumerate(line_words_text):
             word_norm = norm_token_func(word_text)
-            
+            expected_time = line_start + word_idx * word_duration
+
             # Find best matching WhisperX word that hasn't been used yet
             # and comes after the last used word (to maintain order)
             best_match = None
             best_score = 0.0
             best_cand_idx = -1
-            
+
             for cand_idx, cand in enumerate(candidates):
                 if cand_idx in used_indices:
                     continue
-                    
+
                 # Ensure temporal order: this candidate should come after previous matches
                 if result_words and cand["start"] < result_words[-1].start_time:
                     continue
-                
-                score = SequenceMatcher(None, word_norm, cand["norm"]).ratio()
+
+                text_score = SequenceMatcher(None, word_norm, cand["norm"]).ratio()
+
+                # Prefer candidates closer to expected timing (within reason)
+                time_diff = abs(cand["start"] - expected_time)
+                # Give a bonus for candidates within 2 seconds of expected time
+                # This helps select the right "I" when there are multiple
+                time_bonus = 0.1 if time_diff < 2.0 else 0.0
+
+                score = text_score + time_bonus
                 if score > best_score:
                     best_score = score
                     best_match = cand
@@ -1152,17 +1209,15 @@ def _hybrid_alignment(whisper_lines: list["Line"], lyrics_text: list[str], synce
                 ))
                 used_indices.add(best_cand_idx)
             else:
-                # Interpolate timing within the line
-                num_words = len(line_words_text)
-                word_duration = (line_end - line_start) / num_words
-                word_start = line_start + word_idx * word_duration
+                # Interpolate timing within the line using expected_time calculated above
+                word_start = expected_time
                 word_end = word_start + word_duration
-                
+
                 # Ensure this word doesn't start before the previous word ends
                 if result_words and word_start < result_words[-1].end_time:
                     word_start = result_words[-1].end_time
                     word_end = word_start + word_duration
-                
+
                 result_words.append(Word(
                     text=word_text,
                     start_time=word_start,
@@ -1204,11 +1259,11 @@ def correct_transcription_with_lyrics(lines: list["Line"], lyrics_text: list[str
         t = t.lower()
         return re.sub(r"[^\w']", "", t)
 
-    # If we have synced line timings, use hybrid approach:
-    # - Use synced lyrics for line start/end times
-    # - Use WhisperX for word-level timing within each line
-    if synced_line_timings:
-        return _hybrid_alignment(lines, lyrics_text, synced_line_timings, norm_token)
+    # Note: Previously used hybrid alignment when synced_line_timings were available,
+    # but LRC timing can be significantly off from actual audio. The DP-based alignment
+    # below uses WhisperX timing as the primary source (from actual audio analysis)
+    # and just corrects the text using the lyrics reference.
+    # The synced_line_timings parameter is kept for API compatibility but not used.
 
     # Flatten Genius lyrics into tokens with line indices
     ref_lines = [ln.strip() for ln in lyrics_text if ln.strip()]
@@ -1952,7 +2007,7 @@ def get_lyrics(
     if lrc_text and is_synced and genius_lyrics_text:
         from difflib import SequenceMatcher
 
-        lrc_plain = extract_lyrics_text(lrc_text)
+        lrc_plain = extract_lyrics_text(lrc_text, title, artist)
         # Compare up to the first N non-empty lines to avoid being
         # tricked by completely wrong matches from providers.
         max_lines = 10
@@ -2016,7 +2071,7 @@ def get_lyrics(
         print(f"Found synced lyrics from {source}")
         
         # Extract lyrics text for WhisperX alignment
-        lyrics_text = extract_lyrics_text(lrc_text)
+        lyrics_text = extract_lyrics_text(lrc_text, title, artist)
         
         # If we have vocals, use WhisperX for accurate word-level timing
         if vocals_path:
@@ -2027,10 +2082,10 @@ def get_lyrics(
             print(f"Using synced lyrics timing from {source}")
             if genius_lines and metadata and metadata.is_duet:
                 print(f"Merging with singer info from Genius")
-                timed_lines = parse_lrc_with_timing(lrc_text)
+                timed_lines = parse_lrc_with_timing(lrc_text, title, artist)
                 lines = merge_lyrics_with_singer_info(timed_lines, genius_lines, metadata)
             else:
-                lines = create_lines_from_lrc(lrc_text)
+                lines = create_lines_from_lrc(lrc_text, title=title, artist=artist)
 
             if lines:
                 lines = split_long_lines(lines)
@@ -2062,7 +2117,7 @@ def get_lyrics(
     elif lrc_text:
         # Have plain lyrics (no timing) - use whisperx but try to match text
         print(f"Using whisperx with lyrics reference from {source}")
-        lyrics_text = extract_lyrics_text(lrc_text)
+        lyrics_text = extract_lyrics_text(lrc_text, title, artist)
     elif genius_lyrics_text:
         # No LRC from providers, but Genius lyrics are available
         print("Using whisperx with lyrics reference from Genius")
@@ -2141,7 +2196,7 @@ def get_lyrics(
     # If we have synced lyrics with line timing, pass them for hybrid alignment
     synced_timings = None
     if lrc_text and is_synced:
-        synced_timings = parse_lrc_with_timing(lrc_text)
+        synced_timings = parse_lrc_with_timing(lrc_text, title, artist)
         print(f"Using hybrid alignment: synced line timing + WhisperX word timing")
     
     if lyrics_text:
@@ -2157,7 +2212,20 @@ def get_lyrics(
     
     # Split long lines for display
     lines = split_long_lines(lines)
-    
+
+    # Sort lines by start time to ensure proper temporal order
+    # (hybrid alignment may produce out-of-order lines due to LRC/WhisperX discrepancies)
+    lines.sort(key=lambda l: l.start_time)
+
+    # Fix overlapping lines by capping end_time at next line's start_time
+    for i in range(len(lines) - 1):
+        if lines[i].end_time > lines[i + 1].start_time:
+            # Cap end_time with a small gap for visual separation
+            lines[i].end_time = lines[i + 1].start_time - 0.1
+            # Also update the last word's end_time
+            if lines[i].words:
+                lines[i].words[-1].end_time = lines[i].end_time
+
     # Cache the final result
     if final_cache_path:
         try:
