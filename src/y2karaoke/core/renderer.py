@@ -521,6 +521,27 @@ def render_frame(
     # Scroll happens every 3 lines: display_start_idx = 0, 3, 6, 9, ...
     display_start_idx = (current_line_idx // 3) * 3
 
+    # After an instrumental break, reset display to start from the post-break line
+    # Check both current line and next line for breaks
+    if current_line_idx > 0:
+        prev_line = lines[current_line_idx - 1]
+        curr_line = lines[current_line_idx]
+        gap = curr_line.start_time - prev_line.end_time
+        if gap >= INSTRUMENTAL_BREAK_THRESHOLD:
+            display_start_idx = current_line_idx
+
+    # Also check if we're in the lead-time window before a post-break line
+    next_line_idx = current_line_idx + 1
+    if next_line_idx < len(lines):
+        curr_line = lines[current_line_idx]
+        next_line = lines[next_line_idx]
+        gap = next_line.start_time - curr_line.end_time
+        # If there's a break before next line and we're past current line's end
+        if gap >= INSTRUMENTAL_BREAK_THRESHOLD and current_time >= curr_line.end_time:
+            # We're in the transition - start display from next line
+            display_start_idx = next_line_idx
+            current_line_idx = next_line_idx  # Update so highlighting works correctly
+
     # Show up to 4 lines starting from display_start_idx
     # Stop early if there's an instrumental break before a line
     for i in range(4):
