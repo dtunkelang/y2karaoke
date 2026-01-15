@@ -12,8 +12,20 @@ import syncedlyrics
 
 from ..exceptions import LyricsError
 from ..utils.logging import get_logger
+from ..utils.retry import retry_with_backoff, DEFAULT_MAX_RETRIES
 
 logger = get_logger(__name__)
+
+# Network exceptions to retry
+try:
+    import requests
+    NETWORK_EXCEPTIONS = (
+        requests.exceptions.RequestException,
+        requests.exceptions.Timeout,
+        requests.exceptions.ConnectionError,
+    )
+except ImportError:
+    NETWORK_EXCEPTIONS = (Exception,)
 
 
 class LyricsProcessor:
@@ -481,6 +493,35 @@ def _metadata_from_json(data: Optional[dict]) -> Optional[SongMetadata]:
     )
 
 
+def _make_request_with_retry(
+    url: str,
+    headers: dict,
+    timeout: int = 10,
+    max_retries: int = DEFAULT_MAX_RETRIES,
+) -> Optional["requests.Response"]:
+    """Make an HTTP GET request with retry logic."""
+    import requests
+    import time
+
+    delay = 1.0
+    last_error = None
+
+    for attempt in range(max_retries + 1):
+        try:
+            response = requests.get(url, headers=headers, timeout=timeout)
+            return response
+        except (requests.exceptions.RequestException, requests.exceptions.Timeout) as e:
+            last_error = e
+            if attempt < max_retries:
+                logger.debug(f"Request retry {attempt + 1}/{max_retries}: {e}")
+                time.sleep(delay)
+                delay = min(delay * 2, 30.0)
+
+    if last_error:
+        logger.warning(f"Request failed after {max_retries} retries: {last_error}")
+    return None
+
+
 def fetch_genius_lyrics_with_singers(title: str, artist: str) -> tuple[Optional[list[tuple[str, str]]], Optional[SongMetadata]]:
     """
     Fetch lyrics from Genius with singer annotations.
@@ -540,12 +581,16 @@ def fetch_genius_lyrics_with_singers(title: str, artist: str) -> tuple[Optional[
     
     for search_query in search_queries:
         api_url = f"https://genius.com/api/search/song?per_page=10&q={search_query.replace(' ', '%20')}"
-        
+
+        response = _make_request_with_retry(api_url, headers)
+        if response is None:
+            print(f"  Genius search failed after retries")
+            continue
+
         try:
-            response = requests.get(api_url, headers=headers, timeout=10)
             response.raise_for_status()
             data = response.json()
-            
+
             if 'response' in data and 'sections' in data['response']:
                 for section in data['response']['sections']:
                     if section.get('type') == 'song':
@@ -585,24 +630,21 @@ def fetch_genius_lyrics_with_singers(title: str, artist: str) -> tuple[Optional[
     original_url = None
     
     for url in unique_urls:
-        # Check if URL exists
-        try:
-            response = requests.get(url, headers=headers, timeout=10)
-            if response.status_code != 200:
-                continue
-        except:
+        # Check if URL exists (with retry)
+        response = _make_request_with_retry(url, headers)
+        if response is None or response.status_code != 200:
             continue
-        
+
         # Skip translations
         if 'translation' in url.lower():
             continue
-        
+
         # Prioritize romanized
         if 'romanized' in url.lower():
             song_url = url
             print(f"  Found romanized: {song_url}")
             break
-        
+
         # Keep track of original language version as fallback
         if not original_url:
             original_url = url
@@ -620,18 +662,13 @@ def fetch_genius_lyrics_with_singers(title: str, artist: str) -> tuple[Optional[
         print(f"  No Genius results found")
         return None, None
 
-    # Fetch the lyrics page
-    soup = None
-    try:
-        response = requests.get(song_url, headers=headers, timeout=10)
-        if response.status_code == 200:
-            soup = BeautifulSoup(response.text, 'html.parser')
-    except Exception as e:
-        print(f"  Error fetching lyrics: {e}")
+    # Fetch the lyrics page (with retry)
+    response = _make_request_with_retry(song_url, headers)
+    if response is None or response.status_code != 200:
+        print(f"  Error fetching lyrics page")
         return None, None
 
-    if not soup:
-        return None, None
+    soup = BeautifulSoup(response.text, 'html.parser')
 
     # Extract all text including annotations
     lyrics_containers = soup.find_all('div', {'data-lyrics-container': 'true'})
@@ -876,6 +913,38 @@ def normalize_text(text: str) -> str:
     return text
 
 
+def _search_syncedlyrics_with_retry(
+    search_term: str,
+    synced_only: bool = True,
+    max_retries: int = DEFAULT_MAX_RETRIES,
+) -> Optional[str]:
+    """Search syncedlyrics with retry logic for network failures."""
+    import time
+
+    delay = 1.0
+    last_error = None
+
+    for attempt in range(max_retries + 1):
+        try:
+            return syncedlyrics.search(search_term, synced_only=synced_only)
+        except Exception as e:
+            last_error = e
+            # Only retry on network-related errors
+            error_str = str(e).lower()
+            if any(word in error_str for word in ['timeout', 'connection', 'network', 'socket']):
+                if attempt < max_retries:
+                    logger.debug(f"Syncedlyrics retry {attempt + 1}/{max_retries}: {e}")
+                    time.sleep(delay)
+                    delay = min(delay * 2, 30.0)
+                    continue
+            # For non-network errors, don't retry
+            break
+
+    if last_error:
+        logger.debug(f"Syncedlyrics search failed: {last_error}")
+    return None
+
+
 def fetch_lyrics_multi_source(title: str, artist: str) -> tuple[Optional[str], bool, str]:
     """
     Fetch lyrics from multiple sources and search variations.
@@ -912,27 +981,21 @@ def fetch_lyrics_multi_source(title: str, artist: str) -> tuple[Optional[str], b
     # Try synced lyrics first (has timing info)
     for search_term in unique_searches:
         print(f"  Trying: {search_term}")
-        try:
-            lrc = syncedlyrics.search(search_term, synced_only=True)
-            if lrc:
-                lines = extract_lyrics_text(lrc)
-                if lines and len(lines) >= 5:  # Need meaningful content
-                    print(f"  Found synced lyrics ({len(lines)} lines)")
-                    return lrc, True, f"synced: {search_term}"
-        except Exception as e:
-            print(f"  Error: {e}")
+        lrc = _search_syncedlyrics_with_retry(search_term, synced_only=True)
+        if lrc:
+            lines = extract_lyrics_text(lrc)
+            if lines and len(lines) >= 5:  # Need meaningful content
+                print(f"  Found synced lyrics ({len(lines)} lines)")
+                return lrc, True, f"synced: {search_term}"
 
     # Try plain lyrics as fallback (no timing but better for reference)
     for search_term in unique_searches[:3]:  # Only try first few
-        try:
-            lrc = syncedlyrics.search(search_term, synced_only=False)
-            if lrc:
-                lines = extract_lyrics_text(lrc)
-                if lines and len(lines) >= 5:
-                    print(f"  Found plain lyrics ({len(lines)} lines)")
-                    return lrc, False, f"plain: {search_term}"
-        except Exception:
-            pass
+        lrc = _search_syncedlyrics_with_retry(search_term, synced_only=False)
+        if lrc:
+            lines = extract_lyrics_text(lrc)
+            if lines and len(lines) >= 5:
+                print(f"  Found plain lyrics ({len(lines)} lines)")
+                return lrc, False, f"plain: {search_term}"
 
     return None, False, "none"
 
@@ -942,13 +1005,10 @@ def fetch_synced_lyrics(title: str, artist: str) -> Optional[str]:
     search_term = f"{artist} {title}"
     print(f"Searching for lyrics: {search_term}")
 
-    try:
-        lrc = syncedlyrics.search(search_term, synced_only=True)
-        if lrc:
-            print("Found lyrics online!")
-            return lrc
-    except Exception as e:
-        print(f"Error fetching lyrics: {e}")
+    lrc = _search_syncedlyrics_with_retry(search_term, synced_only=True)
+    if lrc:
+        print("Found lyrics online!")
+        return lrc
 
     return None
 
@@ -1657,25 +1717,11 @@ def split_long_lines(lines: list[Line], max_width_ratio: float = 0.75) -> list[L
     Returns:
         List of Line objects with long lines split
     """
-    from PIL import ImageFont
-    
-    # Use the same font size as the renderer (72)
-    FONT_SIZE = 72
-    
-    # Load font to measure width - use same font as renderer
-    try:
-        font = ImageFont.truetype("/System/Library/Fonts/Arial.ttf", FONT_SIZE)
-    except:
-        try:
-            font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", FONT_SIZE)
-        except:
-            try:
-                font = ImageFont.truetype("C:/Windows/Fonts/arial.ttf", FONT_SIZE)
-            except:
-                # Fallback - use character count approximation
-                return _split_by_char_count(lines, max_chars=50)
-    
-    VIDEO_WIDTH = 1920
+    from ..utils.fonts import get_font
+    from ..config import VIDEO_WIDTH
+
+    # Use the shared font loader to ensure consistency with renderer
+    font = get_font()
     max_width = VIDEO_WIDTH * max_width_ratio
     
     split_lines = []

@@ -17,6 +17,7 @@ from ..config import (
 )
 from ..exceptions import RenderError
 from ..utils.logging import get_logger
+from ..utils.fonts import get_font
 
 logger = get_logger(__name__)
 
@@ -25,36 +26,12 @@ if TYPE_CHECKING:
 
 class VideoRenderer:
     """Render karaoke videos with word-by-word highlighting."""
-    
+
     def __init__(self):
         self.width = VIDEO_WIDTH
         self.height = VIDEO_HEIGHT
         self.fps = FPS
-        self._load_font()
-    
-    def _load_font(self):
-        """Load font for text rendering."""
-        try:
-            # Try to load a system font
-            font_paths = [
-                "/System/Library/Fonts/Arial.ttf",  # macOS
-                "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",  # Linux
-                "C:/Windows/Fonts/arial.ttf",  # Windows
-            ]
-            
-            self.font = None
-            for font_path in font_paths:
-                if Path(font_path).exists():
-                    self.font = ImageFont.truetype(font_path, FONT_SIZE)
-                    break
-            
-            if self.font is None:
-                self.font = ImageFont.load_default()
-                logger.warning("Using default font - text may not look optimal")
-                
-        except Exception as e:
-            logger.warning(f"Font loading failed: {e}, using default")
-            self.font = ImageFont.load_default()
+        self.font = get_font()  # Use shared font utility
     
     def render_karaoke_video(
         self,
@@ -280,27 +257,6 @@ class VideoRenderer:
             x_pos += word_widths[i]
 
 
-def get_font(size: int = FONT_SIZE) -> ImageFont.FreeTypeFont:
-    """Get a suitable font for rendering."""
-    # Try common fonts
-    font_paths = [
-        "/System/Library/Fonts/Helvetica.ttc",
-        "/System/Library/Fonts/SFNSDisplay.ttf",
-        "/Library/Fonts/Arial.ttf",
-        "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
-    ]
-
-    for path in font_paths:
-        if os.path.exists(path):
-            try:
-                return ImageFont.truetype(path, size)
-            except Exception:
-                continue
-
-    # Fall back to default
-    return ImageFont.load_default()
-
-
 def get_singer_colors(singer: str, is_highlighted: bool) -> tuple[tuple[int, int, int], tuple[int, int, int]]:
     """
     Get the text and highlight colors for a singer.
@@ -323,17 +279,22 @@ def get_singer_colors(singer: str, is_highlighted: bool) -> tuple[tuple[int, int
         return (Colors.TEXT, Colors.HIGHLIGHT)
 
 
-def create_gradient_background() -> np.ndarray:
+def create_gradient_background(
+    width: Optional[int] = None,
+    height: Optional[int] = None,
+) -> np.ndarray:
     """Create a gradient background image."""
-    img = Image.new('RGB', (VIDEO_WIDTH, VIDEO_HEIGHT))
+    w = width or VIDEO_WIDTH
+    h = height or VIDEO_HEIGHT
+    img = Image.new('RGB', (w, h))
     draw = ImageDraw.Draw(img)
 
-    for y in range(VIDEO_HEIGHT):
-        ratio = y / VIDEO_HEIGHT
+    for y in range(h):
+        ratio = y / h
         r = int(Colors.BG_TOP[0] * (1 - ratio) + Colors.BG_BOTTOM[0] * ratio)
         g = int(Colors.BG_TOP[1] * (1 - ratio) + Colors.BG_BOTTOM[1] * ratio)
         b = int(Colors.BG_TOP[2] * (1 - ratio) + Colors.BG_BOTTOM[2] * ratio)
-        draw.line([(0, y), (VIDEO_WIDTH, y)], fill=(r, g, b))
+        draw.line([(0, y), (w, y)], fill=(r, g, b))
 
     return np.array(img)
 
@@ -460,8 +421,12 @@ def render_frame(
     title: Optional[str] = None,
     artist: Optional[str] = None,
     is_duet: bool = False,
+    width: Optional[int] = None,
+    height: Optional[int] = None,
 ) -> np.ndarray:
     """Render a single frame at the given time."""
+    video_width = width or VIDEO_WIDTH
+    video_height = height or VIDEO_HEIGHT
     img = Image.fromarray(background.copy())
     draw = ImageDraw.Draw(img)
 
@@ -549,7 +514,7 @@ def render_frame(
 
     # Calculate vertical positioning (center the lines)
     total_height = len(lines_to_show) * LINE_SPACING
-    start_y = (VIDEO_HEIGHT - total_height) // 2
+    start_y = (video_height - total_height) // 2
 
     for idx, (line, is_current) in enumerate(lines_to_show):
         y = start_y + idx * LINE_SPACING
@@ -570,16 +535,9 @@ def render_frame(
             word_widths.append(width)
             total_width += width
         
-        # Check if line is too wide (>80% of screen width)
-        max_width = VIDEO_WIDTH * 0.8
-        if total_width > max_width:
-            # Line is too wide, need to split it
-            # For now, just scale down the font or truncate
-            # TODO: Implement proper line splitting
-            pass
-
         # Start x position for centered text
-        x = (VIDEO_WIDTH - total_width) // 2
+        # Note: Line splitting is handled in lyrics.py split_long_lines()
+        x = (video_width - total_width) // 2
 
         # Draw each word with appropriate color
         word_idx = 0
@@ -619,6 +577,50 @@ def render_frame(
     return np.array(img)
 
 
+class RenderProgressBar:
+    """Custom progress bar for video rendering."""
+
+    def __init__(self, total_frames: int):
+        self.total_frames = total_frames
+        self.current_frame = 0
+        self.last_percent = -1
+
+    def __call__(self, gf, t):
+        """Called by MoviePy for each frame."""
+        self.current_frame += 1
+        percent = int(100 * self.current_frame / self.total_frames)
+        if percent != self.last_percent and percent % 5 == 0:
+            bar_len = 30
+            filled = int(bar_len * percent / 100)
+            bar = "█" * filled + "░" * (bar_len - filled)
+            print(f"\r  Rendering: [{bar}] {percent}%", end="", flush=True)
+            self.last_percent = percent
+        return gf(t)
+
+
+class ProgressLogger:
+    """Custom logger for MoviePy that shows a progress bar."""
+
+    def __init__(self, total_duration: float, fps: int):
+        self.total_frames = int(total_duration * fps)
+        self.last_percent = -1
+
+    def bars_callback(self, bar, attr, value, old_value=None):
+        """Callback for progress bars."""
+        if attr == "index":
+            percent = int(100 * value / self.total_frames) if self.total_frames > 0 else 0
+            if percent != self.last_percent:
+                bar_len = 30
+                filled = int(bar_len * percent / 100)
+                bar_str = "█" * filled + "░" * (bar_len - filled)
+                print(f"\r  Rendering: [{bar_str}] {percent}%", end="", flush=True)
+                self.last_percent = percent
+
+    def callback(self, **kw):
+        """General callback."""
+        pass
+
+
 def render_karaoke_video(
     lines: list[Line],
     audio_path: str,
@@ -628,11 +630,39 @@ def render_karaoke_video(
     timing_offset: float = 0.0,
     background_segments: Optional[list[BackgroundSegment]] = None,
     song_metadata: Optional[SongMetadata] = None,
+    show_progress: bool = True,
+    width: Optional[int] = None,
+    height: Optional[int] = None,
+    fps: Optional[int] = None,
+    font_size: Optional[int] = None,
 ) -> str:
-    """Render karaoke video using MoviePy (simple and fast)."""
+    """Render karaoke video using MoviePy (simple and fast).
+
+    Args:
+        lines: List of Line objects with word-level timing
+        audio_path: Path to the audio file
+        output_path: Path for the output video
+        title: Song title for splash screen
+        artist: Artist name for splash screen
+        timing_offset: Timing offset in seconds
+        background_segments: Optional background segments from video
+        song_metadata: Optional song metadata for duet detection
+        show_progress: Whether to show rendering progress bar
+        width: Video width (default: from config)
+        height: Video height (default: from config)
+        fps: Video frame rate (default: from config)
+        font_size: Font size for lyrics (default: from config)
+    """
     from moviepy import AudioFileClip, VideoClip
 
+    # Use provided settings or fall back to config defaults
+    video_width = width or VIDEO_WIDTH
+    video_height = height or VIDEO_HEIGHT
+    video_fps = fps or FPS
+    lyrics_font_size = font_size or FONT_SIZE
+
     logger.info("Rendering karaoke video...")
+    logger.info(f"Resolution: {video_width}x{video_height}, FPS: {video_fps}, Font: {lyrics_font_size}px")
     if timing_offset != 0:
         logger.info(f"Applying timing offset: {timing_offset:+.2f}s")
 
@@ -640,12 +670,17 @@ def render_karaoke_video(
     audio = AudioFileClip(audio_path)
     duration = audio.duration
 
-    # Prepare rendering
-    font = get_font()
-    static_background = create_gradient_background()
+    # Prepare rendering with custom font size
+    font = get_font(lyrics_font_size)
+    static_background = create_gradient_background(video_width, video_height)
     is_duet = song_metadata.is_duet if song_metadata else False
 
-    # Create frame generator
+    # Track progress
+    total_frames = int(duration * video_fps)
+    frame_count = [0]
+    last_percent = [-1]
+
+    # Create frame generator with progress tracking
     def make_frame(t):
         adjusted_time = t - timing_offset
 
@@ -656,25 +691,44 @@ def render_karaoke_video(
         else:
             background = static_background
 
-        return render_frame(lines, adjusted_time, font, background, title, artist, is_duet)
+        # Update progress
+        if show_progress:
+            frame_count[0] += 1
+            percent = int(100 * frame_count[0] / total_frames) if total_frames > 0 else 0
+            if percent != last_percent[0] and percent % 2 == 0:
+                bar_len = 30
+                filled = int(bar_len * percent / 100)
+                bar = "█" * filled + "░" * (bar_len - filled)
+                print(f"\r  Rendering: [{bar}] {percent}%", end="", flush=True)
+                last_percent[0] = percent
+
+        return render_frame(
+            lines, adjusted_time, font, background, title, artist, is_duet,
+            video_width, video_height
+        )
 
     # Create video clip
-    logger.info(f"Creating video ({duration:.1f}s at {FPS}fps)...")
+    logger.info(f"Creating video ({duration:.1f}s at {video_fps}fps, {total_frames} frames)...")
     video = VideoClip(make_frame, duration=duration)
-    video = video.with_fps(FPS)
+    video = video.with_fps(video_fps)
     video = video.with_audio(audio)
 
     # Write output
     logger.info(f"Writing video to {output_path}...")
+    if show_progress:
+        print()  # New line before progress bar
     video.write_videofile(
         output_path,
-        fps=FPS,
+        fps=video_fps,
         codec='libx264',
         audio_codec='aac',
         threads=4,
         preset='medium',
-        logger=None,
+        logger=None,  # We handle progress ourselves
     )
+
+    if show_progress:
+        print()  # New line after progress bar
 
     # Clean up
     audio.close()

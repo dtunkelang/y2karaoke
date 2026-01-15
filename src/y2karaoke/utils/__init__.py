@@ -6,10 +6,12 @@ from .validation import (
     validate_offset, validate_output_path, sanitize_filename
 )
 from .cache import CacheManager
+from .fonts import get_font, get_font_path
 
 __all__ = [
     'setup_logging', 'get_logger',
     'validate_youtube_url', 'validate_key_shift', 'validate_tempo',
     'validate_offset', 'validate_output_path', 'sanitize_filename',
     'CacheManager',
+    'get_font', 'get_font_path',
 ]

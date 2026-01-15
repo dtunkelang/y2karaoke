@@ -7,7 +7,7 @@ from typing import Optional
 import click
 
 from . import __version__
-from .config import get_cache_dir
+from .config import get_cache_dir, parse_resolution, RESOLUTION_PRESETS
 from .exceptions import Y2KaraokeError
 from .utils.cache import CacheManager
 from .utils.logging import setup_logging, get_logger
@@ -95,13 +95,21 @@ def cli(ctx, verbose, log_file):
               help='Keep intermediate files')
 @click.option('--work-dir', type=click.Path(),
               help='Working directory for intermediate files')
+@click.option('--resolution', type=str, default=None,
+              help=f"Video resolution (e.g., '1920x1080', '720p', '1080p', '4k'). Default: 1080p")
+@click.option('--fps', type=int, default=None,
+              help='Video frame rate (default: 30)')
+@click.option('--font-size', type=int, default=None,
+              help='Font size for lyrics (default: 72)')
+@click.option('--no-progress', is_flag=True,
+              help='Disable progress bar during rendering')
 @click.pass_context
-def generate(ctx, url_or_query, output, offset, key, tempo, audio_start, 
+def generate(ctx, url_or_query, output, offset, key, tempo, audio_start,
              lyrics_title, lyrics_artist, backgrounds, upload, no_upload,
-             force, keep_files, work_dir):
+             force, keep_files, work_dir, resolution, fps, font_size, no_progress):
     """Generate karaoke video from YouTube URL or search query."""
     logger = ctx.obj['logger']
-    
+
     try:
         # Check if input is a URL or search query
         url = url_or_query
@@ -112,15 +120,38 @@ def generate(ctx, url_or_query, output, offset, key, tempo, audio_start,
             if not url:
                 raise Y2KaraokeError(f"No YouTube results found for: {url_or_query}")
             logger.info(f"Found: {url}")
-        
+
         # Validate inputs
         url = validate_youtube_url(url)
         key = validate_key_shift(key)
         tempo = validate_tempo(tempo)
         offset = validate_offset(offset)
-        
+
         if audio_start < 0:
             raise click.BadParameter("--audio-start must be non-negative")
+
+        # Parse and validate video settings
+        video_settings = {}
+        if resolution:
+            try:
+                width, height = parse_resolution(resolution)
+                video_settings['width'] = width
+                video_settings['height'] = height
+                logger.info(f"Using resolution: {width}x{height}")
+            except ValueError as e:
+                raise click.BadParameter(str(e))
+
+        if fps:
+            if fps < 1 or fps > 120:
+                raise click.BadParameter("FPS must be between 1 and 120")
+            video_settings['fps'] = fps
+
+        if font_size:
+            if font_size < 10 or font_size > 200:
+                raise click.BadParameter("Font size must be between 10 and 200")
+            video_settings['font_size'] = font_size
+
+        video_settings['show_progress'] = not no_progress
         
         # Setup generator
         cache_dir = Path(work_dir) if work_dir else get_cache_dir()
@@ -149,6 +180,7 @@ def generate(ctx, url_or_query, output, offset, key, tempo, audio_start,
                 lyrics_artist=lyrics_artist,
                 use_backgrounds=backgrounds,
                 force_reprocess=force,
+                video_settings=video_settings if video_settings else None,
             )
             
             logger.info(f"✅ Karaoke video generated: {result['output_path']}")

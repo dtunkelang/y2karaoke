@@ -37,6 +37,7 @@ class KaraokeGenerator:
         lyrics_artist: Optional[str] = None,
         use_backgrounds: bool = False,
         force_reprocess: bool = False,
+        video_settings: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
         """Generate karaoke video from YouTube URL."""
         import time
@@ -147,6 +148,7 @@ class KaraokeGenerator:
                 timing_offset=offset,
                 background_segments=background_segments,
                 song_metadata=lyrics_result.get('metadata'),
+                video_settings=video_settings,
             )
             
             total_time = time.time() - total_start
@@ -359,13 +361,17 @@ class KaraokeGenerator:
         processor = BackgroundProcessor()
         return processor.create_background_segments(video_path, lines, duration)
     
-    def _render_video(self, **kwargs):
+    def _render_video(self, video_settings: Optional[Dict[str, Any]] = None, **kwargs):
         """Render the final karaoke video."""
         logger.info("🎬 Rendering karaoke video...")
-        
+
         # Import here to avoid circular imports
         from ..core.renderer import render_karaoke_video
-        
+
+        # Merge video_settings into kwargs
+        if video_settings:
+            kwargs.update(video_settings)
+
         # Use the standalone function (not the class method)
         render_karaoke_video(**kwargs)
     

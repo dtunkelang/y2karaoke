@@ -2,16 +2,24 @@
 
 import os
 from pathlib import Path
-from typing import Tuple
+from typing import Tuple, Optional
 
 # Directories
 DEFAULT_CACHE_DIR = Path.home() / ".cache" / "karaoke"
 DEFAULT_OUTPUT_DIR = Path.cwd()
 
-# Video settings
-VIDEO_WIDTH = 1920
-VIDEO_HEIGHT = 1080
-FPS = 30
+# Video settings (can be overridden via environment variables)
+VIDEO_WIDTH = int(os.getenv("Y2KARAOKE_VIDEO_WIDTH", "1920"))
+VIDEO_HEIGHT = int(os.getenv("Y2KARAOKE_VIDEO_HEIGHT", "1080"))
+FPS = int(os.getenv("Y2KARAOKE_FPS", "30"))
+
+# Resolution presets
+RESOLUTION_PRESETS = {
+    "720p": (1280, 720),
+    "1080p": (1920, 1080),
+    "1440p": (2560, 1440),
+    "4k": (3840, 2160),
+}
 
 # Colors (RGB tuples)
 class Colors:
@@ -31,9 +39,9 @@ class Colors:
     BOTH = (200, 150, 255)
     BOTH_HIGHLIGHT = (180, 100, 255)
 
-# Font settings
-FONT_SIZE = 72
-LINE_SPACING = 100
+# Font settings (can be overridden via environment variables)
+FONT_SIZE = int(os.getenv("Y2KARAOKE_FONT_SIZE", "72"))
+LINE_SPACING = int(os.getenv("Y2KARAOKE_LINE_SPACING", "100"))
 
 # Audio processing
 AUDIO_SAMPLE_RATE = 44100
@@ -63,3 +71,41 @@ def get_cache_dir() -> Path:
 def get_credentials_dir() -> Path:
     """Get credentials directory."""
     return get_cache_dir()
+
+
+def parse_resolution(resolution_str: str) -> Tuple[int, int]:
+    """
+    Parse resolution string into (width, height) tuple.
+
+    Args:
+        resolution_str: Resolution as "WIDTHxHEIGHT" (e.g., "1920x1080")
+                       or preset name (e.g., "720p", "1080p", "4k")
+
+    Returns:
+        Tuple of (width, height)
+
+    Raises:
+        ValueError: If resolution string is invalid
+    """
+    resolution_str = resolution_str.lower().strip()
+
+    # Check if it's a preset
+    if resolution_str in RESOLUTION_PRESETS:
+        return RESOLUTION_PRESETS[resolution_str]
+
+    # Try to parse as WIDTHxHEIGHT
+    if "x" in resolution_str:
+        try:
+            parts = resolution_str.split("x")
+            width = int(parts[0])
+            height = int(parts[1])
+            if width > 0 and height > 0:
+                return (width, height)
+        except (ValueError, IndexError):
+            pass
+
+    raise ValueError(
+        f"Invalid resolution: {resolution_str}. "
+        f"Use format 'WIDTHxHEIGHT' (e.g., '1920x1080') or "
+        f"preset name: {', '.join(RESOLUTION_PRESETS.keys())}"
+    )
