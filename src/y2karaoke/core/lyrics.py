@@ -1913,6 +1913,240 @@ def filter_lines_by_lyrics(transcribed_lines: list[Line], lyrics_text: list[str]
     return filtered_lines
 
 
+def analyze_audio_energy(audio_path: str, hop_length: int = 512, sr: int = 22050) -> dict:
+    """
+    Analyze audio to detect vocal activity regions.
+
+    Args:
+        audio_path: Path to audio file (preferably isolated vocals)
+        hop_length: Samples between frames for RMS calculation
+        sr: Sample rate for loading audio
+
+    Returns:
+        Dict with 'times', 'energy', 'threshold', and 'is_vocal' arrays
+    """
+    try:
+        import librosa
+        import numpy as np
+    except ImportError:
+        print("  Warning: librosa not available, skipping audio energy validation")
+        return None
+
+    try:
+        # Load audio
+        y, sr = librosa.load(audio_path, sr=sr)
+
+        # Compute RMS energy
+        rms = librosa.feature.rms(y=y, hop_length=hop_length)[0]
+
+        # Convert frame indices to times
+        times = librosa.frames_to_time(np.arange(len(rms)), sr=sr, hop_length=hop_length)
+
+        # Compute adaptive threshold (median + std gives robust threshold)
+        # Use a higher percentile to focus on actual vocal regions
+        threshold = np.percentile(rms, 30)  # 30th percentile as baseline for "silence"
+
+        # Smooth the energy to avoid noise
+        from scipy.ndimage import uniform_filter1d
+        smoothed_rms = uniform_filter1d(rms, size=10)
+
+        # Detect vocal activity
+        is_vocal = smoothed_rms > threshold
+
+        return {
+            'times': times,
+            'energy': smoothed_rms,
+            'threshold': threshold,
+            'is_vocal': is_vocal,
+            'sr': sr,
+            'hop_length': hop_length,
+        }
+    except Exception as e:
+        print(f"  Warning: Failed to analyze audio energy: {e}")
+        return None
+
+
+def get_vocal_activity_at_time(audio_analysis: dict, time: float) -> tuple[bool, float]:
+    """
+    Check if there's vocal activity at a specific time.
+
+    Returns:
+        Tuple of (is_vocal, energy_level)
+    """
+    if audio_analysis is None:
+        return True, 1.0  # Assume vocal if no analysis
+
+    import numpy as np
+    times = audio_analysis['times']
+    idx = np.searchsorted(times, time)
+    idx = min(idx, len(times) - 1)
+
+    return bool(audio_analysis['is_vocal'][idx]), float(audio_analysis['energy'][idx])
+
+
+def validate_and_fix_timing_with_audio(
+    lines: list["Line"],
+    audio_analysis: dict,
+    min_vocal_ratio: float = 0.3,
+) -> list["Line"]:
+    """
+    Validate lyrics timing against audio energy and fix obvious mismatches.
+
+    This function:
+    1. Checks if lyrics lines fall within vocal activity regions
+    2. Detects lines placed during silence (likely timing errors)
+    3. Attempts to shift misaligned lines to nearby vocal regions
+    4. Validates that gaps marked as instrumental actually have low vocal energy
+
+    Args:
+        lines: List of Line objects with timing
+        audio_analysis: Output from analyze_audio_energy()
+        min_vocal_ratio: Minimum ratio of line duration that should have vocal activity
+
+    Returns:
+        List of Line objects with validated/corrected timing
+    """
+    if audio_analysis is None or not lines:
+        return lines
+
+    import numpy as np
+
+    times = audio_analysis['times']
+    is_vocal = audio_analysis['is_vocal']
+    energy = audio_analysis['energy']
+
+    corrected_lines = []
+    corrections_made = 0
+
+    for line in lines:
+        # Find the time range for this line
+        start_time = line.start_time
+        end_time = line.end_time
+
+        # Get indices for this time range
+        start_idx = np.searchsorted(times, start_time)
+        end_idx = np.searchsorted(times, end_time)
+        start_idx = min(start_idx, len(times) - 1)
+        end_idx = min(end_idx, len(times) - 1)
+
+        if start_idx >= end_idx:
+            corrected_lines.append(line)
+            continue
+
+        # Check vocal activity during this line
+        line_vocal = is_vocal[start_idx:end_idx]
+        vocal_ratio = np.mean(line_vocal) if len(line_vocal) > 0 else 0
+
+        if vocal_ratio >= min_vocal_ratio:
+            # Line timing seems correct - vocals present
+            corrected_lines.append(line)
+        else:
+            # Line placed during silence - try to find nearby vocal region
+            # Search within ±3 seconds for vocal activity
+            search_window = 3.0
+            search_start = max(0, start_time - search_window)
+            search_end = min(times[-1], end_time + search_window)
+
+            search_start_idx = np.searchsorted(times, search_start)
+            search_end_idx = np.searchsorted(times, search_end)
+
+            # Find the strongest vocal region in the search window
+            search_energy = energy[search_start_idx:search_end_idx]
+            search_vocal = is_vocal[search_start_idx:search_end_idx]
+
+            if len(search_energy) > 0 and np.any(search_vocal):
+                # Find the peak energy within vocal regions
+                vocal_energy = np.where(search_vocal, search_energy, 0)
+                peak_idx = np.argmax(vocal_energy)
+                peak_time = times[search_start_idx + peak_idx]
+
+                # Calculate offset to shift the line
+                line_duration = end_time - start_time
+                offset = peak_time - (start_time + line_duration / 2)
+
+                # Only apply correction if offset is significant but not too large
+                if 0.5 < abs(offset) < search_window:
+                    # Shift the line
+                    new_start = start_time + offset
+                    new_end = end_time + offset
+
+                    # Shift all words proportionally
+                    new_words = []
+                    for word in line.words:
+                        new_word = Word(
+                            text=word.text,
+                            start_time=word.start_time + offset,
+                            end_time=word.end_time + offset,
+                            singer=word.singer,
+                        )
+                        new_words.append(new_word)
+
+                    corrected_line = Line(
+                        words=new_words,
+                        start_time=new_start,
+                        end_time=new_end,
+                        singer=line.singer,
+                    )
+                    corrected_lines.append(corrected_line)
+                    corrections_made += 1
+                    continue
+
+            # Couldn't find better placement, keep original
+            corrected_lines.append(line)
+
+    if corrections_made > 0:
+        print(f"  Audio validation: corrected timing for {corrections_made} lines")
+
+    return corrected_lines
+
+
+def validate_instrumental_breaks(
+    lines: list["Line"],
+    audio_analysis: dict,
+    break_threshold: float = 8.0,
+    max_vocal_ratio: float = 0.2,
+) -> list[tuple[float, float, bool]]:
+    """
+    Validate that gaps between lines actually correspond to instrumental sections.
+
+    Returns:
+        List of (gap_start, gap_end, is_valid_break) tuples
+    """
+    if audio_analysis is None or len(lines) < 2:
+        return []
+
+    import numpy as np
+
+    times = audio_analysis['times']
+    is_vocal = audio_analysis['is_vocal']
+    results = []
+
+    for i in range(len(lines) - 1):
+        gap_start = lines[i].end_time
+        gap_end = lines[i + 1].start_time
+        gap_duration = gap_end - gap_start
+
+        if gap_duration >= break_threshold:
+            # Check vocal activity during the gap
+            start_idx = np.searchsorted(times, gap_start)
+            end_idx = np.searchsorted(times, gap_end)
+            start_idx = min(start_idx, len(times) - 1)
+            end_idx = min(end_idx, len(times) - 1)
+
+            if start_idx < end_idx:
+                gap_vocal = is_vocal[start_idx:end_idx]
+                vocal_ratio = np.mean(gap_vocal)
+
+                # Gap is valid if mostly non-vocal
+                is_valid = vocal_ratio <= max_vocal_ratio
+                results.append((gap_start, gap_end, is_valid))
+
+                if not is_valid:
+                    print(f"  Warning: Gap at {gap_start:.1f}s-{gap_end:.1f}s has {vocal_ratio:.0%} vocal activity")
+
+    return results
+
+
 def get_lyrics(
     title: str,
     artist: str,
@@ -2225,6 +2459,21 @@ def get_lyrics(
             # Also update the last word's end_time
             if lines[i].words:
                 lines[i].words[-1].end_time = lines[i].end_time
+
+    # Validate and fix timing using audio energy analysis
+    if vocals_path:
+        print("Validating timing against audio energy...")
+        audio_analysis = analyze_audio_energy(vocals_path)
+        if audio_analysis is not None:
+            lines = validate_and_fix_timing_with_audio(lines, audio_analysis)
+            # Check for problematic instrumental breaks
+            break_issues = validate_instrumental_breaks(lines, audio_analysis)
+            if break_issues:
+                invalid_breaks = [(s, e) for s, e, valid in break_issues if not valid]
+                if invalid_breaks:
+                    print(f"  Found {len(invalid_breaks)} gaps with unexpected vocal activity")
+            # Re-sort after any corrections
+            lines.sort(key=lambda l: l.start_time)
 
     # Cache the final result
     if final_cache_path:
