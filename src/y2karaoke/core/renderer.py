@@ -516,15 +516,24 @@ def render_frame(
     # Scroll in chunks of 3: when current line reaches position 3 (4th line),
     # scroll so that line becomes position 0 (1st line)
     lines_to_show = []
-    
+
     # Calculate which line should be at the top of the display
     # Scroll happens every 3 lines: display_start_idx = 0, 3, 6, 9, ...
     display_start_idx = (current_line_idx // 3) * 3
-    
-    # Show 4 lines starting from display_start_idx
+
+    # Show up to 4 lines starting from display_start_idx
+    # Stop early if there's an instrumental break before a line
     for i in range(4):
         line_idx = display_start_idx + i
         if line_idx < len(lines):
+            # Check if there's an instrumental break before this line
+            if line_idx > 0:
+                prev_line = lines[line_idx - 1]
+                this_line = lines[line_idx]
+                gap = this_line.start_time - prev_line.end_time
+                # Don't show lines after an upcoming instrumental break
+                if gap >= INSTRUMENTAL_BREAK_THRESHOLD and current_time < this_line.start_time - LYRICS_LEAD_TIME:
+                    break
             is_current = (line_idx == current_line_idx and current_time >= lines[line_idx].start_time)
             lines_to_show.append((lines[line_idx], is_current))
 
