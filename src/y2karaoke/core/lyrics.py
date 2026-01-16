@@ -2841,12 +2841,14 @@ def get_lyrics(
                 lines[i].words[-1].end_time = lines[i].end_time
 
     # Validate and fix timing using audio energy analysis
-    # Skip validation if we have high-quality synced lyrics timing
-    if vocals_path and not (lrc_text and is_synced):
+    # When we have synced lyrics, use a higher threshold to only fix obvious errors
+    if vocals_path:
         logger.info("Validating timing against audio energy...")
         audio_analysis = analyze_audio_energy(vocals_path)
         if audio_analysis is not None:
-            lines = validate_and_fix_timing_with_audio(lines, audio_analysis)
+            # Use stricter threshold for synced lyrics (only fix if < 10% vocal activity)
+            min_vocal_ratio = 0.1 if (lrc_text and is_synced) else 0.3
+            lines = validate_and_fix_timing_with_audio(lines, audio_analysis, min_vocal_ratio)
             # Check for problematic instrumental breaks
             break_issues = validate_instrumental_breaks(lines, audio_analysis)
             if break_issues:
