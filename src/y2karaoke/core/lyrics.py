@@ -675,6 +675,7 @@ def fetch_genius_lyrics_with_singers(title: str, artist: str) -> tuple[Optional[
     # Now prioritize: romanized > original language > skip translations
     song_url = None
     original_url = None
+    url_from_api = False  # Track if URL came from API search
     
     for url in unique_urls:
         # Check if URL exists (with retry)
@@ -689,12 +690,19 @@ def fetch_genius_lyrics_with_singers(title: str, artist: str) -> tuple[Optional[
         # Verify artist name is in URL (avoid wrong artist matches)
         url_lower = url.lower()
         artist_words = artist.lower().split()
-        if not any(word in url_lower for word in artist_words if len(word) > 3):
+        # Use words longer than 3 chars, or all words if none are long enough
+        long_words = [word for word in artist_words if len(word) > 3]
+        words_to_check = long_words if long_words else artist_words
+        if not any(word in url_lower for word in words_to_check):
             continue
 
         # Prioritize romanized
         if 'romanized' in url.lower():
             song_url = url
+            # If this is a romanized URL, clear API metadata (we'll extract from page)
+            if 'genius-romanizations' in url.lower():
+                genius_title = None
+                genius_artist = None
             print(f"  Found romanized: {song_url}")
             break
 
@@ -722,6 +730,41 @@ def fetch_genius_lyrics_with_singers(title: str, artist: str) -> tuple[Optional[
         return None, None
 
     soup = BeautifulSoup(response.text, 'html.parser')
+
+    # Extract title and artist from page if not available from API
+    if not genius_title or not genius_artist:
+        # For romanized URLs, parse from the URL itself
+        if 'genius-romanizations' in song_url.lower() and '-romanized-lyrics' in song_url.lower():
+            # URL format: https://genius.com/Genius-romanizations-{artist}-{title}-romanized-lyrics
+            url_parts = song_url.split('/')[-1]  # Get last part
+            url_parts = url_parts.replace('-romanized-lyrics', '')  # Remove suffix
+            url_parts = url_parts.replace('Genius-romanizations-', '')  # Remove prefix
+            url_parts = url_parts.replace('genius-romanizations-', '')  # Case insensitive
+            # Split into words and capitalize
+            words = url_parts.split('-')
+            # First word is usually artist, rest is title
+            if len(words) >= 2:
+                if not genius_artist:
+                    genius_artist = words[0].upper()  # PSY, etc.
+                if not genius_title:
+                    genius_title = ' '.join(word.capitalize() for word in words[1:])
+        else:
+            # Try to extract from page title (e.g., "PSY - 강남스타일 (Gangnam Style) (Romanized)")
+            title_tag = soup.find('title')
+            if title_tag:
+                page_title = title_tag.get_text().strip()
+                # Remove " Lyrics | Genius Lyrics" suffix
+                page_title = re.sub(r'\s*Lyrics\s*\|.*$', '', page_title, flags=re.IGNORECASE)
+                # Try to parse "Artist - Title" format
+                if ' - ' in page_title or ' – ' in page_title:
+                    parts = re.split(r'\s+[-–]\s+', page_title, 1)
+                    if len(parts) == 2:
+                        if not genius_artist:
+                            genius_artist = parts[0].strip()
+                        if not genius_title:
+                            genius_title = parts[1].strip()
+                elif not genius_title:
+                    genius_title = page_title
 
     # Extract all text including annotations
     lyrics_containers = soup.find_all('div', {'data-lyrics-container': 'true'})
@@ -2485,6 +2528,16 @@ def get_lyrics(
                 return False
             # Drop pure section headers like [Verse], [Chorus]
             if t.startswith("[") and t.endswith("]"):
+                return False
+            # Drop description/metadata lines
+            if "translations" in lower or "translation" in lower:
+                return False
+            if "youtube" in lower or "video went viral" in lower:
+                return False
+            if "read more" in lower or "…" in t or "..." in t:
+                return False
+            # Drop very long lines (likely descriptions)
+            if len(t) > 200:
                 return False
             return True
 

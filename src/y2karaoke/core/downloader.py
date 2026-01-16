@@ -61,6 +61,8 @@ def clean_title(title: str, artist: str = "") -> str:
         r'\s*-?\s*\d{4}\s*(Original\s*)?(Music|Musik)?\s*Video\s*',  # "2003 Original Music Video"
         r'\s*-?\s*Original\s*(Music|Musik)?\s*Video\s*',  # "Original Music Video"
         r'\s*by\s+[^-]+$',  # "by Artist Name" at end
+        r'\s*M/?V\s*$',  # M/V or MV at end
+        r'\s*\(M/?V\)',  # (M/V) or (MV)
     ]
 
     cleaned = title
@@ -199,12 +201,14 @@ class YouTubeDownloader:
         # Try to extract from description first (often more accurate)
         if description:
             lines = description.split('\n')
-            # Check if first 2 lines look like title/artist
-            if len(lines) >= 2:
-                line1 = lines[0].strip()
-                line2 = lines[1].strip()
-                # If line2 looks like an artist name (not a URL, not too long)
-                if line2 and len(line2) < 100 and not line2.startswith('http') and not line2.startswith('👉'):
+            # Skip promotional URLs at the top
+            non_url_lines = [line.strip() for line in lines if line.strip() and not line.strip().startswith('http') and '@' not in line]
+            # Check if first 2 non-URL lines look like title/artist
+            if len(non_url_lines) >= 2:
+                line1 = non_url_lines[0]
+                line2 = non_url_lines[1]
+                # If line2 looks like an artist name (not too long, not a hashtag line)
+                if line2 and len(line2) < 100 and not line2.startswith('#') and not line2.startswith('👉'):
                     # Clean up common suffixes
                     artist = re.sub(r'\s*[\(\[].*?[\)\]]\s*', '', line2).strip()
                     if artist and len(artist) > 2:
@@ -238,10 +242,13 @@ class YouTubeDownloader:
         # Try to extract from description first
         if description:
             lines = description.split('\n')
-            for line in lines[:5]:  # Check first 5 lines
+            # Skip promotional URLs and hashtag lines
+            for line in lines[:10]:  # Check first 10 lines
                 line = line.strip()
-                # Skip common provider/metadata lines
-                if not line or 'provided to' in line.lower() or 'youtube' in line.lower():
+                # Skip URLs, hashtags, and common provider/metadata lines
+                if not line or line.startswith('http') or line.startswith('#') or '@' in line:
+                    continue
+                if 'provided to' in line.lower() or 'youtube' in line.lower():
                     continue
                 # Skip lines with · (often "Title · Artist" format)
                 if '·' in line:
@@ -252,8 +259,8 @@ class YouTubeDownloader:
                         if song_title and len(song_title) > 2 and len(song_title) < 100:
                             logger.info(f"Extracted title from description: {song_title}")
                             return song_title
-                # If line looks like a title (not a URL, not too long)
-                if line and len(line) < 100 and not line.startswith('http'):
+                # If line looks like a title (not too long)
+                if line and len(line) < 100:
                     # Clean up
                     song_title = re.sub(r'\s*[\(\[].*?[\)\]]\s*', '', line).strip()
                     if song_title and len(song_title) > 2:
