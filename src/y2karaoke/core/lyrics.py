@@ -1956,6 +1956,19 @@ def transcribe_and_align(vocals_path: str, lyrics_text: Optional[list[str]] = No
 
     # Fix bad word timing (first words, words after long gaps)
     lines = fix_word_timing(lines)
+    
+    # Apply perceptual timing adjustment (shift slightly earlier for better sync)
+    # WhisperX detects phoneme onset, but humans perceive words slightly before
+    # Apply small negative offset (0.1-0.15s) for better perceived timing
+    perceptual_offset = -0.15
+    for line in lines:
+        line.start_time += perceptual_offset
+        line.end_time += perceptual_offset
+        for word in line.words:
+            word.start_time += perceptual_offset
+            word.end_time += perceptual_offset
+    
+    print(f"Applied perceptual timing adjustment: {perceptual_offset:.2f}s")
 
     # Split lines that are too wide for the screen
     lines = split_long_lines(lines)
