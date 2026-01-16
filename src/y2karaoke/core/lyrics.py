@@ -2457,6 +2457,112 @@ def validate_instrumental_breaks(
     return results
 
 
+def _assess_timing_quality(
+    lines: list[Line],
+    synced_timings: Optional[list[tuple[float, float]]] = None,
+    genius_text: Optional[list[str]] = None,
+    audio_analysis: Optional[Dict] = None
+) -> tuple[float, list[str]]:
+    """
+    Assess timing quality based on guardrails and input comparison.
+    
+    Returns:
+        Tuple of (score 0-100, list of issue descriptions)
+    """
+    from difflib import SequenceMatcher
+    import numpy as np
+    
+    score = 100.0
+    issues = []
+    
+    # Guardrail checks
+    # 1. Check for overlapping lines
+    overlaps = sum(1 for i in range(len(lines) - 1) if lines[i].end_time > lines[i + 1].start_time)
+    if overlaps > 0:
+        score -= min(20, overlaps * 5)
+        issues.append(f"{overlaps} overlapping lines detected")
+    
+    # 2. Check for unreasonably short/long lines
+    short_lines = sum(1 for line in lines if line.end_time - line.start_time < 0.3)
+    long_lines = sum(1 for line in lines if line.end_time - line.start_time > 15.0)
+    if short_lines > len(lines) * 0.1:
+        score -= 10
+        issues.append(f"{short_lines} lines shorter than 0.3s")
+    if long_lines > 0:
+        score -= min(10, long_lines * 5)
+        issues.append(f"{long_lines} lines longer than 15s")
+    
+    # 3. Check for unreasonably short/long words
+    all_words = [w for line in lines for w in line.words]
+    short_words = sum(1 for w in all_words if w.end_time - w.start_time < 0.05)
+    if short_words > len(all_words) * 0.2:
+        score -= 10
+        issues.append(f"{short_words}/{len(all_words)} words shorter than 0.05s")
+    
+    # 4. Check for large gaps between lines (> 10s)
+    large_gaps = []
+    for i in range(len(lines) - 1):
+        gap = lines[i + 1].start_time - lines[i].end_time
+        if gap > 10.0:
+            large_gaps.append((i, gap))
+    if large_gaps:
+        score -= min(10, len(large_gaps) * 3)
+        issues.append(f"{len(large_gaps)} gaps longer than 10s")
+    
+    # Compare to synced timings if available
+    if synced_timings and len(synced_timings) == len(lines):
+        timing_diffs = []
+        for i, (line, (sync_start, sync_end)) in enumerate(zip(lines, synced_timings)):
+            start_diff = abs(line.start_time - sync_start)
+            timing_diffs.append(start_diff)
+        
+        avg_diff = np.mean(timing_diffs)
+        max_diff = np.max(timing_diffs)
+        
+        if avg_diff > 1.0:
+            score -= min(15, avg_diff * 5)
+            issues.append(f"Average {avg_diff:.1f}s deviation from synced lyrics")
+        if max_diff > 5.0:
+            score -= 10
+            issues.append(f"Max {max_diff:.1f}s deviation from synced lyrics")
+    
+    # Compare text to Genius if available
+    if genius_text:
+        final_text = [" ".join(w.text for w in line.words).lower() for line in lines]
+        genius_normalized = [line.lower().strip() for line in genius_text if line.strip()]
+        
+        # Match lines
+        match_scores = []
+        for final_line in final_text[:min(10, len(final_text))]:
+            best = max((SequenceMatcher(None, final_line, g).ratio() for g in genius_normalized), default=0)
+            match_scores.append(best)
+        
+        avg_match = np.mean(match_scores) if match_scores else 0
+        if avg_match < 0.7:
+            score -= min(20, (0.7 - avg_match) * 50)
+            issues.append(f"Text match with Genius: {avg_match:.0%} (expected >70%)")
+    
+    # Check vocal activity alignment if audio analysis available
+    if audio_analysis:
+        times = audio_analysis['times']
+        is_vocal = audio_analysis['is_vocal']
+        
+        low_vocal_lines = 0
+        for line in lines[:min(20, len(lines))]:  # Check first 20 lines
+            start_idx = np.searchsorted(times, line.start_time)
+            end_idx = np.searchsorted(times, line.end_time)
+            if start_idx < end_idx:
+                vocal_ratio = np.mean(is_vocal[start_idx:end_idx])
+                if vocal_ratio < 0.2:
+                    low_vocal_lines += 1
+        
+        if low_vocal_lines > len(lines) * 0.2:
+            score -= 15
+            issues.append(f"{low_vocal_lines} lines with <20% vocal activity")
+    
+    return max(0, score), issues
+
+
 def get_lyrics(
     title: str,
     artist: str,
@@ -2991,6 +3097,21 @@ def get_lyrics(
             # Also update the last word's end_time
             if lines[i].words:
                 lines[i].words[-1].end_time = lines[i].end_time
+
+    # Quality assessment
+    quality_score, quality_issues = _assess_timing_quality(
+        lines, 
+        synced_timings=synced_timings if (lrc_text and is_synced) else None,
+        genius_text=genius_lyrics_text if genius_lyrics_text else None,
+        audio_analysis=audio_analysis if vocals_path else None
+    )
+    
+    print(f"\n📊 Timing Quality Assessment: {quality_score:.0f}/100")
+    if quality_issues:
+        for issue in quality_issues:
+            print(f"  ⚠️  {issue}")
+    else:
+        print(f"  ✓ No significant issues detected")
 
     # Cache the final result
     if final_cache_path:
