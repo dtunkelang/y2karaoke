@@ -259,6 +259,9 @@ class YouTubeDownloader:
                     continue
                 if 'provided to' in line.lower() or 'youtube' in line.lower():
                     continue
+                # Skip promotional lines
+                if any(word in line.lower() for word in ['visit:', 'merchandise', 'releases', 'store', 'buy', 'download']):
+                    continue
                 
                 if '·' in line:
                     parts = line.split('·')
