@@ -2988,19 +2988,26 @@ def get_lyrics(
                         search_vocal = is_vocal[:search_end_idx]
                         
                         if len(search_vocal) > 0 and np.any(search_vocal):
-                            # Find first point with vocal activity
+                            # Find first sustained vocal activity (not just first spike)
                             vocal_indices = np.where(search_vocal)[0]
                             if len(vocal_indices) > 0:
-                                first_vocal_idx = vocal_indices[0]
+                                # Look for first sustained period (at least 5 consecutive frames)
+                                for i in range(len(vocal_indices) - 5):
+                                    if np.all(np.diff(vocal_indices[i:i+5]) == 1):
+                                        first_vocal_idx = vocal_indices[i]
+                                        break
+                                else:
+                                    first_vocal_idx = vocal_indices[0]
+                                
                                 actual_start = times[first_vocal_idx]
                                 
-                                # Calculate offset
-                                detected_offset = actual_start - first_line.start_time
+                                # Calculate offset with small buffer (0.5s) to ensure highlighting isn't too early
+                                detected_offset = actual_start - first_line.start_time + 0.5
                                 
                                 # Apply if offset is significant (> 1s) and reasonable (< 15s)
                                 if 1.0 < detected_offset < 15.0:
                                     print(f"  Detected intro: vocals start at {actual_start:.1f}s, synced lyrics at {first_line.start_time:.1f}s")
-                                    print(f"  Applying {detected_offset:.1f}s offset to skip intro...")
+                                    print(f"  Applying {detected_offset:.1f}s offset (includes 0.5s buffer)...")
                                     
                                     # Apply offset to all lines
                                     for line in lines:
