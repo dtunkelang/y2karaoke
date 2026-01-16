@@ -2883,26 +2883,28 @@ def get_lyrics(
                         search_energy = energy[search_start_idx:search_end_idx]
                         
                         if len(search_energy) > 0 and np.any(search_vocal):
-                            # Find where vocals start
-                            vocal_energy = np.where(search_vocal, search_energy, 0)
-                            peak_idx = np.argmax(vocal_energy)
-                            actual_start = times[search_start_idx + peak_idx]
-                            
-                            # Calculate offset
-                            detected_offset = actual_start - first_line.start_time
-                            
-                            # Only apply if offset is significant (> 1 second) but reasonable (< 10 seconds)
-                            if 1.0 < detected_offset < 10.0:
-                                print(f"  Detected timing offset: {detected_offset:.1f}s (synced lyrics appear to start too early)")
-                                print(f"  Applying automatic offset correction...")
+                            # Find where vocals start (first sustained vocal activity)
+                            # Look for first point where we have vocal activity
+                            vocal_indices = np.where(search_vocal)[0]
+                            if len(vocal_indices) > 0:
+                                first_vocal_idx = vocal_indices[0]
+                                actual_start = times[search_start_idx + first_vocal_idx]
                                 
-                                # Apply offset to all lines
-                                for line in lines:
-                                    line.start_time += detected_offset
-                                    line.end_time += detected_offset
-                                    for word in line.words:
-                                        word.start_time += detected_offset
-                                        word.end_time += detected_offset
+                                # Calculate offset
+                                detected_offset = actual_start - first_line.start_time
+                                
+                                # Only apply if offset is significant (> 1 second) but reasonable (< 10 seconds)
+                                if 1.0 < detected_offset < 10.0:
+                                    print(f"  Detected timing offset: {detected_offset:.1f}s (synced lyrics appear to start too early)")
+                                    print(f"  Applying automatic offset correction...")
+                                    
+                                    # Apply offset to all lines
+                                    for line in lines:
+                                        line.start_time += detected_offset
+                                        line.end_time += detected_offset
+                                        for word in line.words:
+                                            word.start_time += detected_offset
+                                            word.end_time += detected_offset
             
             lines = validate_and_fix_timing_with_audio(lines, audio_analysis, min_vocal_ratio)
             # Check for problematic instrumental breaks
