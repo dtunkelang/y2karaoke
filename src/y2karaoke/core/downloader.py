@@ -238,12 +238,24 @@ class YouTubeDownloader:
         # Try to extract from description first
         if description:
             lines = description.split('\n')
-            if len(lines) >= 1:
-                line1 = lines[0].strip()
-                # If line1 looks like a title (not a URL, not too long)
-                if line1 and len(line1) < 100 and not line1.startswith('http'):
+            for line in lines[:5]:  # Check first 5 lines
+                line = line.strip()
+                # Skip common provider/metadata lines
+                if not line or 'provided to' in line.lower() or 'youtube' in line.lower():
+                    continue
+                # Skip lines with · (often "Title · Artist" format)
+                if '·' in line:
+                    # Extract title from "Title · Artist" format
+                    parts = line.split('·')
+                    if len(parts) >= 2:
+                        song_title = parts[0].strip()
+                        if song_title and len(song_title) > 2 and len(song_title) < 100:
+                            logger.info(f"Extracted title from description: {song_title}")
+                            return song_title
+                # If line looks like a title (not a URL, not too long)
+                if line and len(line) < 100 and not line.startswith('http'):
                     # Clean up
-                    song_title = re.sub(r'\s*[\(\[].*?[\)\]]\s*', '', line1).strip()
+                    song_title = re.sub(r'\s*[\(\[].*?[\)\]]\s*', '', line).strip()
                     if song_title and len(song_title) > 2:
                         logger.info(f"Extracted title from description: {song_title}")
                         return song_title
