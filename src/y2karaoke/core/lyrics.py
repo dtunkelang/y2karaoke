@@ -2541,7 +2541,7 @@ def get_lyrics(
         else:
             avg_score = 0.0
 
-        if avg_score < 0.75:
+        if avg_score < 0.5:
             print(f"Synced lyrics match score too low ({avg_score:.2f}); using WhisperX with Genius lyrics instead.")
             lrc_text = None
             is_synced = False
