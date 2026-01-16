@@ -1191,6 +1191,10 @@ def _hybrid_alignment(whisper_lines: list["Line"], lyrics_text: list[str], synce
         # Interpolate word timing within this line
         duration = next_time - sync_time
         word_duration = duration / len(words)
+        
+        # Apply guardrails: cap word duration between 0.1s and 2.0s
+        word_duration = max(0.1, min(2.0, word_duration))
+        
         for word_idx, word in enumerate(words):
             word_start = sync_time + word_idx * word_duration
             word_end = word_start + word_duration
@@ -1274,14 +1278,24 @@ def _hybrid_alignment(whisper_lines: list["Line"], lyrics_text: list[str], synce
     result_lines = []
     for line_idx in sorted(lines_dict.keys()):
         words_data = lines_dict[line_idx]
-        words = [
-            Word(
+        words = []
+        for w in words_data:
+            start = w.get('start', 0.0)
+            end = w.get('end', 0.3)
+            duration = end - start
+            
+            # Apply guardrails: cap word duration between 0.1s and 2.5s
+            if duration < 0.1:
+                end = start + 0.1
+            elif duration > 2.5:
+                end = start + 2.5
+            
+            words.append(Word(
                 text=w['text'],
-                start_time=w.get('start', 0.0),
-                end_time=w.get('end', 0.3)
-            )
-            for w in words_data
-        ]
+                start_time=start,
+                end_time=end
+            ))
+        
         if words:
             result_lines.append(Line(
                 words=words,
