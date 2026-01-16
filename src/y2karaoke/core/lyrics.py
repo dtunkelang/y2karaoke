@@ -658,10 +658,12 @@ def fetch_genius_lyrics_with_singers(title: str, artist: str) -> tuple[Optional[
     artist_slug = make_slug(artist)
     title_slug = make_slug(cleaned_title)
     
-    # Add constructed URLs to candidates
+    # Add constructed URLs to candidates with multiple variations
     all_urls.extend([
         f"https://genius.com/Genius-romanizations-{artist_slug}-{title_slug}-romanized-lyrics",
-        f"https://genius.com/{artist_slug}-{title_slug}-lyrics"
+        f"https://genius.com/{artist_slug}-{title_slug}-lyrics",
+        # Try with just title (for songs with many featured artists)
+        f"https://genius.com/{title_slug}-lyrics",
     ])
     
     # Remove duplicates while preserving order
@@ -2608,7 +2610,9 @@ def get_lyrics(
         else:
             avg_score = 0.0
 
-        if avg_score < 0.5:
+        # Only discard synced lyrics if we have Genius lyrics that don't match
+        # If we have no Genius lyrics at all, keep the synced lyrics
+        if avg_score < 0.5 and genius_lyrics_text:
             print(f"Synced lyrics match score too low ({avg_score:.2f}); using WhisperX with Genius lyrics instead.")
             lrc_text = None
             is_synced = False
