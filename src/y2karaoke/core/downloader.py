@@ -226,7 +226,7 @@ class YouTubeDownloader:
         # Fallback to uploader, but clean it up
         artist = uploader
         # Remove common channel suffixes
-        suffixes = ['Official', 'VEVO', 'Records', 'Music', 'Channel']
+        suffixes = ['Official', 'VEVO', 'Records', 'Music', 'Channel', '- Topic', ' - Topic']
         for suffix in suffixes:
             if artist.endswith(suffix):
                 artist = artist[:-len(suffix)].strip()
