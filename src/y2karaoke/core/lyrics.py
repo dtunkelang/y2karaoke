@@ -1252,10 +1252,6 @@ def _hybrid_alignment(whisper_lines: list["Line"], lyrics_text: list[str], synce
     
     logger.info(f"Matching {len(genius_words)} Genius words to {len(synced_words)} synced words")
     
-    # Debug: check if synced words have timing
-    if synced_words:
-        logger.info(f"First synced word: {synced_words[0]['text']} at {synced_words[0]['start']:.2f}s")
-    
     # Match Genius words to synced words using sequence alignment
     genius_norms = [norm_token_func(w['text']) for w in genius_words]
     synced_norms = [w['norm'] for w in synced_words]
@@ -1385,10 +1381,6 @@ def _hybrid_alignment(whisper_lines: list["Line"], lyrics_text: list[str], synce
                 else:
                     # Lines are far enough apart, stop shifting
                     break
-    
-    # Debug: check first result line before temporal order check
-    if result_lines:
-        logger.info(f"Before temporal check - First line: {result_lines[0].text[:50]} at {result_lines[0].start_time:.2f}s")
     
     # Final pass: ensure lines are in temporal order
     logger.info(f"Checking temporal order for {len(result_lines)} lines")
@@ -2812,10 +2804,6 @@ def get_lyrics(
         lines = correct_transcription_with_lyrics(lines, lyrics_text, synced_timings)
         print(f"Corrected transcription: {original_count} lines processed, {len(lines)} lines returned")
         
-        # Debug: check timing after correction
-        if lines:
-            print(f"  After correction: First line at {lines[0].start_time:.2f}s: {lines[0].text[:50]}")
-        
         # Debug: check word order after correction
         if genius_lyrics_text and avg_score >= 0.75:
             all_words = [w.text for line in lines for w in line.words]
@@ -2827,16 +2815,8 @@ def get_lyrics(
             if any(ord(c) > 127 for c in word.text):
                 word.text = romanize_line(word.text)
     
-    # Debug: check timing after romanization
-    if lines:
-        print(f"  After romanization: First line at {lines[0].start_time:.2f}s")
-    
     # Split long lines for display
     lines = split_long_lines(lines)
-    
-    # Debug: check timing after splitting
-    if lines:
-        print(f"  After splitting: First line at {lines[0].start_time:.2f}s")
     
     # Debug: check word order after splitting
     if genius_lyrics_text and avg_score >= 0.75:
@@ -2865,16 +2845,7 @@ def get_lyrics(
         logger.info("Validating timing against audio energy...")
         audio_analysis = analyze_audio_energy(vocals_path)
         if audio_analysis is not None:
-            # Debug: check timing before audio validation
-            if lines:
-                print(f"  Before audio validation: First line at {lines[0].start_time:.2f}s")
-            
             lines = validate_and_fix_timing_with_audio(lines, audio_analysis)
-            
-            # Debug: check timing after audio validation
-            if lines:
-                print(f"  After audio validation: First line at {lines[0].start_time:.2f}s")
-            
             # Check for problematic instrumental breaks
             break_issues = validate_instrumental_breaks(lines, audio_analysis)
             if break_issues:
