@@ -198,93 +198,87 @@ class YouTubeDownloader:
     
     def _extract_artist(self, title: str, uploader: str, description: str = "") -> str:
         """Extract artist name from title, description, or uploader."""
-        # Try to extract from description first (often more accurate)
+        # Strategy 1: YouTube Music format in description ("Title · Artist")
         if description:
             lines = description.split('\n')
-            # Skip promotional URLs and "Provided to" lines
             non_url_lines = [line.strip() for line in lines 
                            if line.strip() 
                            and not line.strip().startswith('http') 
                            and '@' not in line
                            and 'provided to' not in line.lower()]
             
-            # Check first non-URL line for "Title · Artist" format
             if non_url_lines:
                 line1 = non_url_lines[0]
                 if '·' in line1:
                     parts = line1.split('·')
                     if len(parts) >= 2:
-                        artist = parts[-1].strip()  # Take last part as artist
-                        if artist and len(artist) > 2 and len(artist) < 100:
-                            logger.info(f"Extracted artist from description: {artist}")
+                        artist = parts[-1].strip()
+                        if artist and 2 < len(artist) < 100:
+                            logger.info(f"Extracted artist from description (· format): {artist}")
                             return artist
-            
-            # Check if first 2 non-URL lines look like title/artist
-            if len(non_url_lines) >= 2:
-                line1 = non_url_lines[0]
-                line2 = non_url_lines[1]
-                # If line2 looks like an artist name (not too long, not a hashtag line)
-                if line2 and len(line2) < 100 and not line2.startswith('#') and not line2.startswith('👉'):
-                    # Clean up common suffixes
-                    artist = re.sub(r'\s*[\(\[].*?[\)\]]\s*', '', line2).strip()
-                    if artist and len(artist) > 2:
-                        logger.info(f"Extracted artist from description: {artist}")
-                        return artist
+                
+                # Check second line for artist name
+                if len(non_url_lines) >= 2:
+                    line2 = non_url_lines[1]
+                    if line2 and 2 < len(line2) < 100 and not line2.startswith('#') and not line2.startswith('👉'):
+                        artist = re.sub(r'\s*[\(\[].*?[\)\]]\s*', '', line2).strip()
+                        if artist:
+                            logger.info(f"Extracted artist from description (line 2): {artist}")
+                            return artist
         
-        # Try to extract from "Artist - Song" format in title
+        # Strategy 2: "Artist - Title" format in video title
         if ' - ' in title:
             parts = title.split(' - ', 1)
             if len(parts) == 2:
                 potential_artist = parts[0].strip()
-                # Basic validation - not too long, no obvious video indicators
                 if len(potential_artist) < 50 and not any(
                     word in potential_artist.lower() 
-                    for word in ['official', 'video', 'audio', 'lyrics']
+                    for word in ['official', 'video', 'audio', 'lyrics', 'lyric']
                 ):
+                    logger.info(f"Extracted artist from title (- format): {potential_artist}")
                     return potential_artist
         
-        # Fallback to uploader, but clean it up
+        # Strategy 3: Clean up uploader name
         artist = uploader
-        # Remove common channel suffixes
-        suffixes = ['Official', 'VEVO', 'Records', 'Music', 'Channel', '- Topic', ' - Topic']
+        suffixes = ['Official', 'VEVO', 'Records', 'Music', 'Channel', '- Topic', ' - Topic', 'TV']
         for suffix in suffixes:
             if artist.endswith(suffix):
                 artist = artist[:-len(suffix)].strip()
         
+        logger.info(f"Using uploader as artist: {artist}")
         return artist or "Unknown"
     
     def _extract_title(self, title: str, artist: str, description: str = "") -> str:
         """Extract song title from title or description."""
-        # Try to extract from description first
+        # Strategy 1: YouTube Music format in description ("Title · Artist")
         if description:
             lines = description.split('\n')
-            # Skip promotional URLs and hashtag lines
-            for line in lines[:10]:  # Check first 10 lines
+            for line in lines[:10]:
                 line = line.strip()
-                # Skip URLs, hashtags, and common provider/metadata lines
                 if not line or line.startswith('http') or line.startswith('#') or '@' in line:
                     continue
                 if 'provided to' in line.lower() or 'youtube' in line.lower():
                     continue
-                # Skip lines with · (often "Title · Artist" format)
+                
                 if '·' in line:
-                    # Extract title from "Title · Artist" format
                     parts = line.split('·')
                     if len(parts) >= 2:
                         song_title = parts[0].strip()
-                        if song_title and len(song_title) > 2 and len(song_title) < 100:
-                            logger.info(f"Extracted title from description: {song_title}")
+                        if song_title and 2 < len(song_title) < 100:
+                            logger.info(f"Extracted title from description (· format): {song_title}")
                             return song_title
-                # If line looks like a title (not too long)
+                
+                # First non-metadata line might be title
                 if line and len(line) < 100:
-                    # Clean up
                     song_title = re.sub(r'\s*[\(\[].*?[\)\]]\s*', '', line).strip()
                     if song_title and len(song_title) > 2:
-                        logger.info(f"Extracted title from description: {song_title}")
+                        logger.info(f"Extracted title from description (line 1): {song_title}")
                         return song_title
         
-        # Fall back to cleaning the title
-        return clean_title(title, artist)
+        # Strategy 2: Clean the video title
+        cleaned = clean_title(title, artist)
+        logger.info(f"Extracted title from video title: {cleaned}")
+        return cleaned
 
 # Convenience functions for backward compatibility
 def download_audio(url: str, output_dir: Optional[str] = None) -> Dict[str, str]:

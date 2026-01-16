@@ -143,14 +143,27 @@ class KaraokeGenerator:
             final_title = lyrics_title or audio_result['title']
             final_artist = lyrics_artist or audio_result['artist']
             
+            print(f"\n📝 Metadata Summary:")
+            print(f"  YouTube: \"{audio_result['title']}\" by {audio_result['artist']}")
+            
             if lyrics_result.get('metadata'):
                 metadata = lyrics_result['metadata']
+                if metadata.title or metadata.artist:
+                    print(f"  Genius:  \"{metadata.title or '(not found)'}\" by {metadata.artist or '(not found)'}")
+                
                 if metadata.title:
                     final_title = metadata.title
                     logger.info(f"Using title from Genius: {final_title}")
                 if metadata.artist:
                     final_artist = metadata.artist
                     logger.info(f"Using artist from Genius: {final_artist}")
+            
+            if lyrics_title or lyrics_artist:
+                print(f"  Override: \"{lyrics_title or final_title}\" by {lyrics_artist or final_artist}")
+                final_title = lyrics_title or final_title
+                final_artist = lyrics_artist or final_artist
+            
+            print(f"  Final:   \"{final_title}\" by {final_artist}")
             
             self._render_video(
                 lines=scaled_lines,
