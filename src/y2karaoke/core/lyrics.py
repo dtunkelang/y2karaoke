@@ -2551,6 +2551,25 @@ def get_lyrics(
     logger.info("Fetching lyrics from online sources...")
     lrc_text, is_synced, source = fetch_lyrics_multi_source(title, artist)
 
+    # Romanize synced lyrics if they contain non-Latin scripts
+    # This ensures WhisperX romanized output matches synced lyrics for hybrid alignment
+    if lrc_text and is_synced:
+        lrc_sample = extract_lyrics_text(lrc_text, title, artist)
+        if lrc_sample and any(any(ord(c) > 127 for c in ln) for ln in lrc_sample):
+            print(f"Romanizing synced lyrics for WhisperX compatibility...")
+            lrc_lines = lrc_text.split('\n')
+            romanized_lines = []
+            for line in lrc_lines:
+                if line.strip().startswith('[') and ']' in line:
+                    tag_end = line.index(']') + 1
+                    timing = line[:tag_end]
+                    text = line[tag_end:]
+                    romanized_lines.append(timing + romanize_line(text))
+                else:
+                    romanized_lines.append(romanize_line(line) if line.strip() else line)
+            lrc_text = '\n'.join(romanized_lines)
+            logger.info("✓ Romanization complete")
+
     # If we found synced lyrics, but we also have Genius lyrics, make
     # sure they look like the same song before trusting the LRC file.
     if lrc_text and is_synced and genius_lyrics_text:
