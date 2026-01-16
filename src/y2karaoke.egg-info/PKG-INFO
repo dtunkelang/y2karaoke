@@ -48,15 +48,17 @@ Requires-Dist: mypy>=1.0.0; extra == "dev"
 
 # y2karaoke
 
-Generate karaoke videos from YouTube URLs with word-by-word highlighting.
+Generate karaoke videos from YouTube URLs or song titles with word-by-word highlighting.
 
 ## Features
 
+- **Smart search**: Use YouTube URLs or just search by song title and artist
 - Downloads audio from YouTube
 - Separates vocals from instrumental using AI (demucs)
-- Fetches synced lyrics when available and uses WhisperX for precise word-level timing
-- Automatically romanizes supported non-Latin lyrics (Korean, Chinese, Japanese) when libraries are available
+- **Hybrid timing system**: Combines synced lyrics (line timing) with WhisperX (word timing) for maximum accuracy
+- **Multi-language support**: Automatically romanizes Japanese, Korean, Chinese, Arabic, and Hebrew lyrics with proper spacing
 - Renders KaraFun-style karaoke videos with word-by-word highlighting
+- **Smart line splitting**: Automatically breaks long lines for better readability
 - Optional dynamic video backgrounds generated from the original YouTube video
 - Duet-friendly visuals with singer-specific coloring and instrumental-break progress bar
 - **Key shifting** (-12 to +12 semitones) to match your vocal range
@@ -87,6 +89,9 @@ pip install -e .
 
 # Or install from requirements.txt
 pip install -r requirements.txt
+
+# Optional: Install romanization libraries for non-Latin scripts
+pip install korean-romanizer pypinyin pykakasi pyarabic
 ```
 
 ### Migration from Old Version
@@ -112,10 +117,13 @@ If not, recreate the virtual environment with `python3.12 -m venv venv`.
 ### New CLI Interface (Recommended)
 
 ```bash
-# Basic usage
+# Basic usage with YouTube URL
 y2karaoke generate "https://youtube.com/watch?v=VIDEO_ID" -o output.mp4
 
-# Or using Python module
+# Or search by song title and artist
+y2karaoke generate "taste sabrina carpenter" -o output.mp4
+
+# Using Python module
 python -m y2karaoke.cli generate "https://youtube.com/watch?v=VIDEO_ID" -o output.mp4
 
 # Adjust timing offset (negative = highlight earlier, positive = later)
@@ -135,7 +143,7 @@ y2karaoke generate "https://youtube.com/watch?v=VIDEO_ID" -o output.mp4 --backgr
 
 # Use lyrics from a different title/artist (e.g., cover of an original)
 y2karaoke generate "https://youtube.com/watch?v=VIDEO_ID" -o output.mp4 \
-  --lyrics-title "Aucun Express" --lyrics-artist "Alain Bashung"
+  --lyrics-title "Song Title" --lyrics-artist "Artist Name"
 
 # Combine options: shift key up, slow down, adjust timing
 y2karaoke generate "https://youtube.com/watch?v=VIDEO_ID" -o output.mp4 --key +2 --tempo 0.9 --offset -0.5
@@ -197,43 +205,43 @@ For debugging or experimenting with individual steps, you can run the core modul
 
 - **Download only (audio metadata + WAV)**
   ```bash
-  python downloader.py "https://youtube.com/watch?v=VIDEO_ID"
+  python -m y2karaoke.core.downloader "https://youtube.com/watch?v=VIDEO_ID"
   ```
   Downloads the audio track to `./output` and prints basic metadata (title, artist, duration).
 
 - **Separate vocals and instrumental for a local WAV file**
   ```bash
-  python separator.py path/to/audio.wav
+  python -m y2karaoke.core.separator path/to/audio.wav
   ```
   Writes separated stems into `./output` and prints the paths for vocals and instrumental.
 
 - **Fetch and inspect lyrics/timing**
   ```bash
-  python lyrics.py "Song Title" "Artist Name" [optional_vocals.wav]
+  python -m y2karaoke.core.lyrics "Song Title" "Artist Name" [optional_vocals.wav]
   ```
   Prints detected lines (and duet information when available). If you provide a vocals WAV, it can fall back to WhisperX transcription.
 
 - **Apply audio effects (key/tempo) to an existing WAV**
   ```bash
-  python audio_effects.py input.wav output.wav <semitones> [tempo_multiplier]
+  python -m y2karaoke.core.audio_effects input.wav output.wav <semitones> [tempo_multiplier]
   ```
-  Example: `python audio_effects.py input.wav output_key-3_tempo0.8.wav -3 0.8`
+  Example: `python -m y2karaoke.core.audio_effects input.wav output_key-3_tempo0.8.wav -3 0.8`
 
 - **Test rendering (single preview frame)**
   ```bash
-  python renderer.py
+  python -m y2karaoke.core.renderer
   ```
   Renders a sample frame to `test_frame.png` for quickly checking fonts/layout.
 
 - **Upload an existing MP4 to YouTube**
   ```bash
-  python uploader.py output.mp4 [title] [artist]
+  python -m y2karaoke.core.uploader output.mp4 [title] [artist]
   ```
   Uses your saved OAuth credentials to upload as an unlisted video.
 
 - **Inspect video backgrounds / scene detection**
   ```bash
-  python backgrounds.py path/to/video.mp4
+  python -m y2karaoke.core.backgrounds path/to/video.mp4
   ```
   Runs scene detection and saves a sample processed background to `test_background.png`.
 
@@ -241,25 +249,28 @@ For debugging or experimenting with individual steps, you can run the core modul
 
 1. **Download**: Downloads audio from YouTube using yt-dlp
 2. **Separate**: Removes vocals using demucs AI model, keeps instrumental
-3. **Lyrics**: Fetches lyrics text from online sources when available and uses WhisperX-based transcription and forced alignment on the vocal track for robust word-level timing.
+3. **Lyrics**: Fetches synced lyrics when available and combines them with WhisperX transcription for hybrid alignment - synced lyrics provide accurate line timing, WhisperX provides precise word-level timing
 4. **Audio Effects**: Applies key shift and/or tempo changes (if requested)
 5. **Render**: Creates video with word-by-word highlighting, lyrics timing adjusted to match tempo
 
 ## International lyrics and romanization
 
-For songs with non-Latin scripts, y2karaoke can optionally romanize lyrics before rendering:
+For songs with non-Latin scripts, y2karaoke automatically romanizes lyrics before rendering:
 
 - **Korean (Hangul)**: Romanized using `korean-romanizer` (Revised Romanization style) when available.
 - **Chinese (Han characters)**: Romanized to **pinyin without tone marks** using `pypinyin`, while leaving non-Chinese text untouched.
-- **Japanese (hiragana/katakana/kanji)**: Romanized to **romaji** using `pykakasi`, preserving non-Japanese parts of the line.
+- **Japanese (hiragana/katakana/kanji)**: Romanized to **romaji** using `pykakasi`, preserving word boundaries and spacing.
+- **Arabic**: Romanized using simple transliteration mapping to Latin script.
+- **Hebrew**: Romanized using simple transliteration mapping to Latin script.
 
-Romanization is **best-effort** and only applied when the corresponding libraries are installed. If a provider already returns romanized lyrics (e.g., pinyin/romaji lines), those are kept as-is. Advanced users who prefer original scripts can disable romanization by editing `lyrics.py` to skip or remove calls to `romanize_line`.
+Romanization is **best-effort** and only applied when the corresponding libraries are installed. If synced lyrics are in non-Latin scripts but Genius has romanized versions, the system will automatically romanize the synced lyrics to match for optimal hybrid alignment. Works seamlessly with mixed-language songs (e.g., English/Korean, English/Japanese).
 
 ## Video Style
 
 - 1920x1080 resolution at 30fps
 - Dark gradient background (blue to purple) by default, or dynamic video backgrounds when `--backgrounds` is enabled
-- Two lines visible at a time
+- Four lines visible at a time with smart scrolling
+- Long lines automatically split for better readability (75% screen width threshold)
 - Current and already-sung words highlighted in gold (KaraFun-style — they stay gold once sung)
 - White for upcoming words on the current and next line
 - Optional singer-specific colors in duet songs

@@ -71,14 +71,14 @@ def test_end_to_end():
         logger.info("   - librosa (for audio effects)")
         logger.info("   - whisperx (for lyrics transcription)")
         
-        return True
+        # Use assert instead of return
+        assert True
         
     except Exception as e:
         logger.error(f"❌ Test failed: {e}")
         import traceback
         traceback.print_exc()
-        return False
+        assert False, f"Test failed: {e}"
 
 if __name__ == "__main__":
-    success = test_end_to_end()
-    sys.exit(0 if success else 1)
+    test_end_to_end()

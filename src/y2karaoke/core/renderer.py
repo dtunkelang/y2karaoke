@@ -825,4 +825,4 @@ if __name__ == "__main__":
 
     # Save test frame
     Image.fromarray(frame).save("test_frame.png")
-    print("Saved test_frame.png")
+    logger.info("Saved test_frame.png")

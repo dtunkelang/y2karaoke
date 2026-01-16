@@ -1,125 +1,85 @@
-"""Retry utility with exponential backoff for external API calls."""
+"""Retry utilities with exponential backoff."""
 
 import time
+import random
+from typing import Callable, Any, Type, Tuple
 from functools import wraps
-from typing import Callable, TypeVar, Any, Optional, Type, Tuple
 
 from ..utils.logging import get_logger
 
 logger = get_logger(__name__)
 
-T = TypeVar('T')
-
-# Default retry settings
 DEFAULT_MAX_RETRIES = 3
-DEFAULT_BASE_DELAY = 1.0  # seconds
-DEFAULT_MAX_DELAY = 30.0  # seconds
-DEFAULT_BACKOFF_FACTOR = 2.0
-
+DEFAULT_BASE_DELAY = 1.0
+DEFAULT_MAX_DELAY = 60.0
 
 def retry_with_backoff(
     max_retries: int = DEFAULT_MAX_RETRIES,
     base_delay: float = DEFAULT_BASE_DELAY,
     max_delay: float = DEFAULT_MAX_DELAY,
-    backoff_factor: float = DEFAULT_BACKOFF_FACTOR,
-    exceptions: Tuple[Type[Exception], ...] = (Exception,),
-    on_retry: Optional[Callable[[Exception, int], None]] = None,
-) -> Callable[[Callable[..., T]], Callable[..., T]]:
-    """
-    Decorator that retries a function with exponential backoff.
-
-    Args:
-        max_retries: Maximum number of retry attempts
-        base_delay: Initial delay between retries in seconds
-        max_delay: Maximum delay between retries in seconds
-        backoff_factor: Multiplier for delay after each retry
-        exceptions: Tuple of exception types to catch and retry
-        on_retry: Optional callback function called on each retry with (exception, attempt)
-
-    Returns:
-        Decorated function with retry logic
-    """
-    def decorator(func: Callable[..., T]) -> Callable[..., T]:
+    exceptions: Tuple[Type[Exception], ...] = (Exception,)
+) -> Callable:
+    """Decorator for retrying functions with exponential backoff."""
+    
+    def decorator(func: Callable) -> Callable:
         @wraps(func)
-        def wrapper(*args: Any, **kwargs: Any) -> T:
-            last_exception: Optional[Exception] = None
-            delay = base_delay
-
+        def wrapper(*args: Any, **kwargs: Any) -> Any:
+            last_exception = None
+            
             for attempt in range(max_retries + 1):
                 try:
                     return func(*args, **kwargs)
                 except exceptions as e:
                     last_exception = e
-
-                    if attempt < max_retries:
-                        # Log the retry
-                        logger.debug(
-                            f"Retry {attempt + 1}/{max_retries} for {func.__name__}: {e}"
-                        )
-
-                        # Call the on_retry callback if provided
-                        if on_retry:
-                            on_retry(e, attempt + 1)
-
-                        # Wait before retrying
-                        time.sleep(delay)
-
-                        # Increase delay with backoff, but cap at max_delay
-                        delay = min(delay * backoff_factor, max_delay)
-                    else:
-                        logger.warning(
-                            f"All {max_retries} retries exhausted for {func.__name__}: {e}"
-                        )
-
-            # If we've exhausted all retries, raise the last exception
-            if last_exception:
-                raise last_exception
-
-            # This should never happen, but satisfies type checker
-            raise RuntimeError("Unexpected state in retry logic")
-
+                    
+                    if attempt == max_retries:
+                        logger.error(f"Function {func.__name__} failed after {max_retries + 1} attempts")
+                        raise
+                    
+                    # Calculate delay with exponential backoff and jitter
+                    delay = min(base_delay * (2 ** attempt), max_delay)
+                    jitter = random.uniform(0, delay * 0.1)
+                    total_delay = delay + jitter
+                    
+                    logger.warning(f"Attempt {attempt + 1} failed for {func.__name__}: {e}")
+                    logger.info(f"Retrying in {total_delay:.1f}s...")
+                    time.sleep(total_delay)
+                except Exception as e:
+                    logger.error(f"Non-retryable error in {func.__name__}: {e}")
+                    raise
+            
+            # This should never be reached, but just in case
+            raise last_exception or Exception("Unknown error")
+        
         return wrapper
     return decorator
 
-
-def retry_request(
-    func: Callable[..., T],
-    *args: Any,
-    max_retries: int = DEFAULT_MAX_RETRIES,
-    base_delay: float = DEFAULT_BASE_DELAY,
-    **kwargs: Any,
-) -> T:
-    """
-    Execute a function with retry logic (non-decorator version).
-
-    Args:
-        func: Function to execute
-        *args: Positional arguments for the function
-        max_retries: Maximum number of retry attempts
-        base_delay: Initial delay between retries
-        **kwargs: Keyword arguments for the function
-
-    Returns:
-        Result of the function call
-
-    Raises:
-        The last exception if all retries fail
-    """
-    last_exception: Optional[Exception] = None
-    delay = base_delay
-
-    for attempt in range(max_retries + 1):
-        try:
-            return func(*args, **kwargs)
-        except Exception as e:
-            last_exception = e
-
-            if attempt < max_retries:
-                logger.debug(f"Retry {attempt + 1}/{max_retries}: {e}")
+class RetryManager:
+    """Context manager for retry operations."""
+    
+    def __init__(
+        self,
+        operation_name: str,
+        max_retries: int = DEFAULT_MAX_RETRIES,
+        base_delay: float = DEFAULT_BASE_DELAY,
+        exceptions: Tuple[Type[Exception], ...] = (Exception,)
+    ):
+        self.operation_name = operation_name
+        self.max_retries = max_retries
+        self.base_delay = base_delay
+        self.exceptions = exceptions
+        self.attempt = 0
+    
+    def __enter__(self):
+        return self
+    
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if exc_type and issubclass(exc_type, self.exceptions):
+            if self.attempt < self.max_retries:
+                delay = self.base_delay * (2 ** self.attempt)
+                logger.warning(f"Attempt {self.attempt + 1} failed for {self.operation_name}")
+                logger.info(f"Retrying in {delay:.1f}s...")
                 time.sleep(delay)
-                delay = min(delay * DEFAULT_BACKOFF_FACTOR, DEFAULT_MAX_DELAY)
-
-    if last_exception:
-        raise last_exception
-
-    raise RuntimeError("Unexpected state in retry logic")
+                self.attempt += 1
+                return True  # Suppress the exception
+        return False  # Let the exception propagate

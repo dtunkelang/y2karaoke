@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Dict, Optional
 
 from ..exceptions import SeparationError
+from ..utils.performance import timing_decorator
 from ..utils.logging import get_logger
 
 logger = get_logger(__name__)
@@ -20,6 +21,7 @@ class AudioSeparator:
         """Configure torch to avoid MPS issues on Apple Silicon."""
         pass  # The original code handles this in the function
     
+    @timing_decorator
     def separate_vocals(self, audio_path: str, output_dir: Optional[str] = None) -> Dict[str, str]:
         """Separate vocals from instrumental track."""
         if output_dir is None:
@@ -159,7 +161,7 @@ def separate_vocals(audio_path: str, output_dir: str = ".") -> dict:
 if __name__ == "__main__":
     import sys
     if len(sys.argv) < 2:
-        print("Usage: python separator.py <audio_file>")
+        logger.info("Usage: python separator.py <audio_file>")
         sys.exit(1)
 
     result = separate_vocals(sys.argv[1], output_dir="./output")

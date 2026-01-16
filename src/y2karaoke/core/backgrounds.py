@@ -161,7 +161,7 @@ def detect_scenes(video_path, threshold=30.0):
 
 if len(sys.argv) > 1:
     scenes = detect_scenes(sys.argv[1])
-    print(",".join(map(str, scenes)))
+    logger.info(",".join(map(str, scenes)))
 '''
 
             result = subprocess.run(

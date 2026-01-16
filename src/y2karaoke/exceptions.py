@@ -31,3 +31,7 @@ class ValidationError(Y2KaraokeError):
 class CacheError(Y2KaraokeError):
     """Error with cache operations."""
     pass
+
+class ConfigError(Y2KaraokeError):
+    """Configuration error."""
+    pass

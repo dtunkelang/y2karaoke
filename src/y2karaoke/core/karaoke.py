@@ -44,9 +44,9 @@ class KaraokeGenerator:
         
         total_start = time.time()
         
-        print("\n" + "=" * 60)
-        print("🎤 KARAOKE VIDEO GENERATION")
-        print("=" * 60)
+        logger.info("\n" + "=" * 60)
+        logger.info("🎤 KARAOKE VIDEO GENERATION")
+        logger.info("=" * 60)
         logger.info(f"URL: {url}")
         
         # Extract video ID for caching
@@ -59,7 +59,7 @@ class KaraokeGenerator:
         
         try:
             # Step 1: Download audio
-            print("[1/6] Downloading audio...")
+            logger.info("[1/6] Downloading audio...")
             step_start = time.time()
             audio_result = self._download_audio(video_id, url, force_reprocess)
             print(f"  ✓ Completed in {time.time() - step_start:.1f}s\n")
@@ -67,7 +67,7 @@ class KaraokeGenerator:
             # Step 2: Download video if backgrounds requested
             video_path = None
             if use_backgrounds:
-                print("[2/6] Downloading video for backgrounds...")
+                logger.info("[2/6] Downloading video for backgrounds...")
                 step_start = time.time()
                 video_result = self._download_video(video_id, url, force_reprocess)
                 video_path = video_result['video_path']

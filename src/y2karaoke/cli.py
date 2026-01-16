@@ -47,7 +47,7 @@ def search_youtube(query: str) -> Optional[str]:
         
         return None
         
-    except Exception as e:
+    except (requests.exceptions.RequestException, TimeoutError) as e:
         raise Y2KaraokeError(f"YouTube search failed: {e}")
 
 

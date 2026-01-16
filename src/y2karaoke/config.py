@@ -4,6 +4,8 @@ import os
 from pathlib import Path
 from typing import Tuple, Optional
 
+from .exceptions import ConfigError
+
 # Directories
 DEFAULT_CACHE_DIR = Path.home() / ".cache" / "karaoke"
 DEFAULT_OUTPUT_DIR = Path.cwd()
@@ -48,6 +50,49 @@ AUDIO_SAMPLE_RATE = 44100
 KEY_SHIFT_RANGE = (-12, 12)
 TEMPO_RANGE = (0.1, 3.0)
 
+# Video timing
+SPLASH_DURATION = 3.0
+INSTRUMENTAL_BREAK_THRESHOLD = 5.0
+LYRICS_LEAD_TIME = 2.0
+
+# Line splitting
+MAX_LINE_WIDTH_RATIO = 0.75  # 75% of screen width
+
+def validate_config() -> None:
+    """Validate configuration values."""
+    if not (0.1 <= TEMPO_RANGE[0] <= TEMPO_RANGE[1] <= 3.0):
+        raise ConfigError("Invalid tempo range")
+    
+    if not (-12 <= KEY_SHIFT_RANGE[0] <= KEY_SHIFT_RANGE[1] <= 12):
+        raise ConfigError("Invalid key shift range")
+    
+    if VIDEO_WIDTH <= 0 or VIDEO_HEIGHT <= 0:
+        raise ConfigError("Invalid video dimensions")
+    
+    if FPS <= 0:
+        raise ConfigError("Invalid FPS value")
+
+def get_cache_dir() -> Path:
+    """Get cache directory from environment or default."""
+    cache_dir = os.getenv("Y2KARAOKE_CACHE_DIR")
+    if cache_dir:
+        return Path(cache_dir)
+    return DEFAULT_CACHE_DIR
+
+def parse_resolution(resolution: str) -> Tuple[int, int]:
+    """Parse resolution string to width, height tuple."""
+    if resolution in RESOLUTION_PRESETS:
+        return RESOLUTION_PRESETS[resolution]
+    
+    try:
+        width, height = resolution.split('x')
+        return int(width), int(height)
+    except ValueError:
+        raise ConfigError(f"Invalid resolution format: {resolution}")
+
+# Validate config on import
+validate_config()
+
 # Timing settings
 INSTRUMENTAL_BREAK_THRESHOLD = 8.0  # Show instrumental break screen for gaps >= 8 seconds
 LYRICS_LEAD_TIME = 1.0
@@ -63,10 +108,6 @@ CACHE_CLEANUP_THRESHOLD = 0.8
 
 # API settings
 YOUTUBE_API_SCOPES = ['https://www.googleapis.com/auth/youtube.upload']
-
-def get_cache_dir() -> Path:
-    """Get cache directory from environment or default."""
-    return Path(os.getenv("Y2KARAOKE_CACHE_DIR", DEFAULT_CACHE_DIR))
 
 def get_credentials_dir() -> Path:
     """Get credentials directory."""
