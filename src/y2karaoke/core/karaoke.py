@@ -165,6 +165,12 @@ class KaraokeGenerator:
             
             print(f"  Final:   \"{final_title}\" by {final_artist}")
             
+            # Update cached metadata with final values
+            self.cache_manager.save_metadata(video_id, {
+                'title': final_title,
+                'artist': final_artist,
+            })
+            
             self._render_video(
                 lines=scaled_lines,
                 audio_path=processed_instrumental,
