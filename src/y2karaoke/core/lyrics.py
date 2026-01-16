@@ -2866,6 +2866,15 @@ def get_lyrics(
                         for word in lines[i].words:
                             word.start_time += shift
                             word.end_time += shift
+    
+    # Fix overlapping lines after audio validation by capping end_time
+    for i in range(len(lines) - 1):
+        if lines[i].end_time > lines[i + 1].start_time:
+            # Cap end_time with a small gap for visual separation
+            lines[i].end_time = lines[i + 1].start_time - 0.1
+            # Also update the last word's end_time
+            if lines[i].words:
+                lines[i].words[-1].end_time = lines[i].end_time
 
     # Cache the final result
     if final_cache_path:
