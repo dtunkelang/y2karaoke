@@ -337,10 +337,13 @@ class Line:
 
 
 @dataclass
+@dataclass
 class SongMetadata:
-    """Metadata about singers in a song."""
+    """Metadata about singers in a song and correct title/artist from Genius."""
     singers: list[str]  # List of singer names in order (e.g., ["Bruno Mars", "Lady Gaga"])
     is_duet: bool = False
+    title: Optional[str] = None  # Correct title from Genius
+    artist: Optional[str] = None  # Correct artist from Genius
 
     def get_singer_id(self, singer_name: str) -> str:
         """Convert singer name to singer ID (singer1, singer2, both)."""
@@ -563,7 +566,7 @@ def fetch_genius_lyrics_with_singers(title: str, artist: str) -> tuple[Optional[
     Returns:
         Tuple of (lyrics_with_singers, metadata)
         - lyrics_with_singers: List of (text, singer_name) tuples for each line
-        - metadata: SongMetadata with singer info, or None if not a duet
+        - metadata: SongMetadata with singer info and correct title/artist from Genius
     """
     try:
         import requests
@@ -606,8 +609,10 @@ def fetch_genius_lyrics_with_singers(title: str, artist: str) -> tuple[Optional[
     print(f"  Searching Genius: {artist} - {cleaned_title}")
     
     all_urls = []
+    genius_title = None
+    genius_artist = None
     
-    # Try searching with just title + "romanized" first, then regular search
+    # Try searching with artist + title, then title + artist (in case they're swapped)
     search_queries = [
         f"{clean_for_search(artist)} {clean_for_search(cleaned_title)}",
         f"{clean_for_search(cleaned_title)} {clean_for_search(artist)}"
@@ -633,8 +638,16 @@ def fetch_genius_lyrics_with_singers(title: str, artist: str) -> tuple[Optional[
                             url = result.get('url', '')
                             if url and url.endswith('-lyrics') and '/artists/' not in url:
                                 all_urls.append(url)
+                                # Capture title and artist from first valid result
+                                if genius_title is None:
+                                    genius_title = result.get('title')
+                                    genius_artist = result.get('artist_names')
         except Exception as e:
             print(f"  Genius search failed: {e}")
+        
+        # If we found results, stop searching
+        if all_urls:
+            break
     
     # Also try constructing URLs directly
     def make_slug(text: str) -> str:
@@ -769,11 +782,32 @@ def fetch_genius_lyrics_with_singers(title: str, artist: str) -> tuple[Optional[
                 unique_singers.append(singer)
 
     is_duet = len(unique_singers) >= 2
-    metadata = SongMetadata(singers=unique_singers[:2], is_duet=is_duet) if is_duet else None
+    
+    # Create metadata with title/artist from Genius and singer info
+    if is_duet:
+        metadata = SongMetadata(
+            singers=unique_singers[:2], 
+            is_duet=is_duet,
+            title=genius_title,
+            artist=genius_artist
+        )
+    elif genius_title or genius_artist:
+        # Even if not a duet, include title/artist metadata
+        metadata = SongMetadata(
+            singers=[],
+            is_duet=False,
+            title=genius_title,
+            artist=genius_artist
+        )
+    else:
+        metadata = None
 
     print(f"  Found {len(lines_with_singers)} lines with singer annotations")
     if metadata:
-        print(f"  Detected duet: {', '.join(metadata.singers)}")
+        if metadata.is_duet:
+            print(f"  Detected duet: {', '.join(metadata.singers)}")
+        if metadata.title and metadata.artist:
+            print(f"  Genius metadata: {metadata.title} by {metadata.artist}")
 
     return lines_with_singers, metadata
 

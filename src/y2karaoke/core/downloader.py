@@ -117,6 +117,7 @@ class YouTubeDownloader:
                 info = ydl.extract_info(url, download=False)
                 title = info.get('title', 'Unknown')
                 uploader = info.get('uploader', 'Unknown')
+                description = info.get('description', '')
                 
                 # Download the audio
                 ydl.download([url])
@@ -133,11 +134,9 @@ class YouTubeDownloader:
                     else:
                         raise DownloadError("Downloaded audio file not found")
                 
-                # Extract artist from title or uploader
-                artist = self._extract_artist(title, uploader)
-                
-                # Clean title (remove artist prefix if present)
-                cleaned_title = clean_title(title, artist)
+                # Extract artist and title from description or title
+                artist = self._extract_artist(title, uploader, description)
+                cleaned_title = self._extract_title(title, artist, description)
                 
                 logger.info(f"Downloaded: {cleaned_title} by {artist}")
                 
@@ -195,9 +194,24 @@ class YouTubeDownloader:
         except Exception as e:
             raise DownloadError(f"Failed to download video: {e}")
     
-    def _extract_artist(self, title: str, uploader: str) -> str:
-        """Extract artist name from title or uploader."""
-        # Try to extract from "Artist - Song" format
+    def _extract_artist(self, title: str, uploader: str, description: str = "") -> str:
+        """Extract artist name from title, description, or uploader."""
+        # Try to extract from description first (often more accurate)
+        if description:
+            lines = description.split('\n')
+            # Check if first 2 lines look like title/artist
+            if len(lines) >= 2:
+                line1 = lines[0].strip()
+                line2 = lines[1].strip()
+                # If line2 looks like an artist name (not a URL, not too long)
+                if line2 and len(line2) < 100 and not line2.startswith('http') and not line2.startswith('👉'):
+                    # Clean up common suffixes
+                    artist = re.sub(r'\s*[\(\[].*?[\)\]]\s*', '', line2).strip()
+                    if artist and len(artist) > 2:
+                        logger.info(f"Extracted artist from description: {artist}")
+                        return artist
+        
+        # Try to extract from "Artist - Song" format in title
         if ' - ' in title:
             parts = title.split(' - ', 1)
             if len(parts) == 2:
@@ -218,6 +232,25 @@ class YouTubeDownloader:
                 artist = artist[:-len(suffix)].strip()
         
         return artist or "Unknown"
+    
+    def _extract_title(self, title: str, artist: str, description: str = "") -> str:
+        """Extract song title from title or description."""
+        # Try to extract from description first
+        if description:
+            lines = description.split('\n')
+            if len(lines) >= 1:
+                line1 = lines[0].strip()
+                # If line1 looks like a title (not a URL, not too long)
+                if line1 and len(line1) < 100 and not line1.startswith('http'):
+                    # Clean up
+                    song_title = re.sub(r'\s*[\(\[].*?[\)\]]\s*', '', line1).strip()
+                    if song_title and len(song_title) > 2:
+                        logger.info(f"Extracted title from description: {song_title}")
+                        return song_title
+        
+        # Fall back to cleaning the title
+        from .downloader import clean_title
+        return clean_title(title, artist)
 
 # Convenience functions for backward compatibility
 def download_audio(url: str, output_dir: Optional[str] = None) -> Dict[str, str]:

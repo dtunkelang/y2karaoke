@@ -139,12 +139,25 @@ class KaraokeGenerator:
                 print(f"  ✓ Completed in {time.time() - step_start:.1f}s\n")
             
             # Step 10: Render karaoke video
+            # Prefer Genius metadata over YouTube metadata if available
+            final_title = lyrics_title or audio_result['title']
+            final_artist = lyrics_artist or audio_result['artist']
+            
+            if lyrics_result.get('metadata'):
+                metadata = lyrics_result['metadata']
+                if metadata.title:
+                    final_title = metadata.title
+                    logger.info(f"Using title from Genius: {final_title}")
+                if metadata.artist:
+                    final_artist = metadata.artist
+                    logger.info(f"Using artist from Genius: {final_artist}")
+            
             self._render_video(
                 lines=scaled_lines,
                 audio_path=processed_instrumental,
                 output_path=output_path,
-                title=lyrics_title or audio_result['title'],
-                artist=lyrics_artist or audio_result['artist'],
+                title=final_title,
+                artist=final_artist,
                 timing_offset=offset,
                 background_segments=background_segments,
                 song_metadata=lyrics_result.get('metadata'),
@@ -162,8 +175,8 @@ class KaraokeGenerator:
             
             return {
                 'output_path': str(output_path),
-                'title': audio_result['title'],
-                'artist': audio_result['artist'],
+                'title': final_title,
+                'artist': final_artist,
                 'video_id': video_id,
             }
             
