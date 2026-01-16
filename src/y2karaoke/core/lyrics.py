@@ -2596,6 +2596,9 @@ def get_lyrics(
     if not vocals_path:
         raise RuntimeError("Could not get lyrics: no synced lyrics found and no vocals path provided")
 
+    # Initialize lyrics_text
+    lyrics_text = None
+    
     # If we only have unsynced/plain lyrics from providers and ALSO have
     # Genius lyrics, prefer Genius as the reference text and ignore the
     # plain provider lyrics.

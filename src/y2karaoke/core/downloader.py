@@ -249,7 +249,6 @@ class YouTubeDownloader:
                         return song_title
         
         # Fall back to cleaning the title
-        from .downloader import clean_title
         return clean_title(title, artist)
 
 # Convenience functions for backward compatibility
