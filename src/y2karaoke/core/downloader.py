@@ -201,8 +201,24 @@ class YouTubeDownloader:
         # Try to extract from description first (often more accurate)
         if description:
             lines = description.split('\n')
-            # Skip promotional URLs at the top
-            non_url_lines = [line.strip() for line in lines if line.strip() and not line.strip().startswith('http') and '@' not in line]
+            # Skip promotional URLs and "Provided to" lines
+            non_url_lines = [line.strip() for line in lines 
+                           if line.strip() 
+                           and not line.strip().startswith('http') 
+                           and '@' not in line
+                           and 'provided to' not in line.lower()]
+            
+            # Check first non-URL line for "Title · Artist" format
+            if non_url_lines:
+                line1 = non_url_lines[0]
+                if '·' in line1:
+                    parts = line1.split('·')
+                    if len(parts) >= 2:
+                        artist = parts[-1].strip()  # Take last part as artist
+                        if artist and len(artist) > 2 and len(artist) < 100:
+                            logger.info(f"Extracted artist from description: {artist}")
+                            return artist
+            
             # Check if first 2 non-URL lines look like title/artist
             if len(non_url_lines) >= 2:
                 line1 = non_url_lines[0]
