@@ -2323,7 +2323,12 @@ def validate_and_fix_timing_with_audio(
     corrected_lines = []
     corrections_made = 0
 
-    for line in lines:
+    for i, line in enumerate(lines):
+        # Skip validation for first line - often has intro/buildup before vocals
+        if i == 0:
+            corrected_lines.append(line)
+            continue
+        
         # Find the time range for this line
         start_time = line.start_time
         end_time = line.end_time
