@@ -2961,43 +2961,93 @@ def get_lyrics(
             min_vocal_ratio = 0.1 if (lrc_text and is_synced) else 0.3
             
             # For synced lyrics, detect intro offset by matching lyrics text against WhisperX
-            if lrc_text and is_synced and len(lines) > 3 and lyrics_text:
+            if lrc_text and is_synced and len(lines) > 3:
+                import numpy as np
                 from difflib import SequenceMatcher
                 
-                # Get first few lines of expected lyrics (normalized)
-                expected_words = []
-                for i in range(min(3, len(lyrics_text))):
-                    expected_words.extend(lyrics_text[i].lower().split())
-                expected_text = " ".join(expected_words[:15])  # First ~15 words
+                times = audio_analysis['times']
+                is_vocal = audio_analysis['is_vocal']
                 
-                # Get WhisperX transcription as continuous text
-                whisper_words = [w.text.lower() for line in lines for w in line.words]
+                # First check: is there vocal activity at the first line's expected time?
+                first_line = lines[0]
+                start_idx = np.searchsorted(times, first_line.start_time)
+                end_idx = np.searchsorted(times, first_line.end_time)
+                start_idx = min(start_idx, len(times) - 1)
+                end_idx = min(end_idx, len(times) - 1)
                 
-                # Try to find where expected lyrics start in WhisperX transcription
-                best_match_idx = -1
-                best_score = 0.0
+                if start_idx < end_idx:
+                    line_vocal = is_vocal[start_idx:end_idx]
+                    vocal_ratio = np.mean(line_vocal) if len(line_vocal) > 0 else 0
+                    
+                    # If first line has very low vocal activity, find where vocals actually start
+                    if vocal_ratio < 0.2:
+                        # Find first sustained vocal activity
+                        search_end = min(times[-1], first_line.start_time + 15.0)
+                        search_end_idx = np.searchsorted(times, search_end)
+                        
+                        search_vocal = is_vocal[:search_end_idx]
+                        
+                        if len(search_vocal) > 0 and np.any(search_vocal):
+                            # Find first point with vocal activity
+                            vocal_indices = np.where(search_vocal)[0]
+                            if len(vocal_indices) > 0:
+                                first_vocal_idx = vocal_indices[0]
+                                actual_start = times[first_vocal_idx]
+                                
+                                # Calculate offset
+                                detected_offset = actual_start - first_line.start_time
+                                
+                                # Apply if offset is significant (> 1s) and reasonable (< 15s)
+                                if 1.0 < detected_offset < 15.0:
+                                    print(f"  Detected intro: vocals start at {actual_start:.1f}s, synced lyrics at {first_line.start_time:.1f}s")
+                                    print(f"  Applying {detected_offset:.1f}s offset to skip intro...")
+                                    
+                                    # Apply offset to all lines
+                                    for line in lines:
+                                        line.start_time += detected_offset
+                                        line.end_time += detected_offset
+                                        for word in line.words:
+                                            word.start_time += detected_offset
+                                            word.end_time += detected_offset
                 
-                # Search through WhisperX words for best match
-                for start_idx in range(min(50, len(whisper_words) - 10)):  # Check first 50 words
-                    candidate = " ".join(whisper_words[start_idx:start_idx + 15])
-                    score = SequenceMatcher(None, expected_text, candidate).ratio()
-                    if score > best_score:
-                        best_score = score
-                        best_match_idx = start_idx
-                
-                # If we found a good match and it's not at the start, calculate offset
-                if best_score > 0.6 and best_match_idx > 0:
-                    # Find the time of the matched word in WhisperX
-                    word_count = 0
-                    match_time = None
-                    for line in lines:
-                        for word in line.words:
-                            if word_count == best_match_idx:
-                                match_time = word.start_time
+                # Second check: try text matching if we have lyrics_text
+                elif lyrics_text:
+                    from difflib import SequenceMatcher
+                    
+                    # Get first few lines of expected lyrics (normalized)
+                    expected_words = []
+                    for i in range(min(3, len(lyrics_text))):
+                        expected_words.extend(lyrics_text[i].lower().split())
+                    expected_text = " ".join(expected_words[:15])  # First ~15 words
+                    
+                    # Get WhisperX transcription as continuous text
+                    whisper_words = [w.text.lower() for line in lines for w in line.words]
+                    
+                    # Try to find where expected lyrics start in WhisperX transcription
+                    best_match_idx = -1
+                    best_score = 0.0
+                    
+                    # Search through WhisperX words for best match
+                    for start_idx in range(min(50, len(whisper_words) - 10)):  # Check first 50 words
+                        candidate = " ".join(whisper_words[start_idx:start_idx + 15])
+                        score = SequenceMatcher(None, expected_text, candidate).ratio()
+                        if score > best_score:
+                            best_score = score
+                            best_match_idx = start_idx
+                    
+                    # If we found a good match and it's not at the start, calculate offset
+                    if best_score > 0.6 and best_match_idx > 0:
+                        # Find the time of the matched word in WhisperX
+                        word_count = 0
+                        match_time = None
+                        for line in lines:
+                            for word in line.words:
+                                if word_count == best_match_idx:
+                                    match_time = word.start_time
+                                    break
+                                word_count += 1
+                            if match_time is not None:
                                 break
-                            word_count += 1
-                        if match_time is not None:
-                            break
                     
                     if match_time is not None and match_time > 1.0:
                         # Calculate offset: lyrics should start at match_time, not at first line time
