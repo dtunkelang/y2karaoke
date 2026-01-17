@@ -1959,60 +1959,48 @@ def transcribe_and_align(vocals_path: str, lyrics_text: Optional[list[str]] = No
     
     # Detect and correct timing drift using cross-correlation with vocal audio
     if vocals_path:
-        print("  Detecting timing drift using vocal audio analysis...")
+        print("  Detecting actual vocal start timing...")
         import librosa
         import numpy as np
-        from scipy import signal
         
         try:
             # Load vocals audio
             y, sr = librosa.load(vocals_path, sr=16000)
             
-            # Create expected timing signal from lyrics
-            duration = len(y) / sr
-            expected_signal = np.zeros(int(duration * 100))  # 10ms resolution
+            # Find first significant vocal activity
+            window_size = int(0.2 * sr)  # 200ms windows
+            threshold = 0.001  # Vocal activity threshold
             
-            for line in lines:
-                for word in line.words:
-                    start_idx = int(word.start_time * 100)
-                    end_idx = int(word.end_time * 100)
-                    if start_idx < len(expected_signal) and end_idx <= len(expected_signal):
-                        expected_signal[start_idx:end_idx] = 1.0
-            
-            # Create actual vocal activity signal
-            hop_length = int(sr * 0.01)  # 10ms hops
-            rms = librosa.feature.rms(y=y, hop_length=hop_length, frame_length=hop_length*2)[0]
-            vocal_signal = (rms > np.percentile(rms, 30)).astype(float)  # Threshold at 30th percentile
-            
-            # Pad signals to same length
-            min_len = min(len(expected_signal), len(vocal_signal))
-            expected_signal = expected_signal[:min_len]
-            vocal_signal = vocal_signal[:min_len]
-            
-            # Find optimal offset using cross-correlation
-            correlation = signal.correlate(vocal_signal, expected_signal, mode='full')
-            lag = signal.correlation_lags(len(vocal_signal), len(expected_signal), mode='full')
-            
-            # Find peak correlation
-            max_corr_idx = np.argmax(correlation)
-            optimal_lag = lag[max_corr_idx]
-            timing_correction = optimal_lag * 0.01  # Convert to seconds
-            
-            print(f"    Cross-correlation analysis: {timing_correction:+.2f}s correction needed")
-            
-            # Apply correction if significant
-            if abs(timing_correction) > 0.2:
-                print(f"    Applying timing drift correction: {timing_correction:+.2f}s")
+            actual_vocal_start = None
+            for i in range(0, len(y) - window_size, window_size // 4):
+                segment = y[i:i + window_size]
+                rms = np.sqrt(np.mean(segment**2))
                 
-                for line in lines:
-                    line.start_time += timing_correction
-                    line.end_time += timing_correction
-                    for word in line.words:
-                        word.start_time += timing_correction
-                        word.end_time += timing_correction
+                if rms > threshold:
+                    actual_vocal_start = i / sr
+                    break
+            
+            if actual_vocal_start is not None and len(lines) > 0:
+                first_word_expected = lines[0].words[0].start_time if lines[0].words else lines[0].start_time
+                timing_correction = actual_vocal_start - first_word_expected
+                
+                print(f"    Actual vocals start at: {actual_vocal_start:.2f}s")
+                print(f"    First word expected at: {first_word_expected:.2f}s") 
+                print(f"    Timing correction needed: {timing_correction:+.2f}s")
+                
+                # Apply correction if significant
+                if abs(timing_correction) > 0.3:
+                    print(f"    Applying vocal start correction: {timing_correction:+.2f}s")
+                    
+                    for line in lines:
+                        line.start_time += timing_correction
+                        line.end_time += timing_correction
+                        for word in line.words:
+                            word.start_time += timing_correction
+                            word.end_time += timing_correction
             
         except Exception as e:
-            print(f"    Warning: Could not analyze timing drift: {e}")
+            print(f"    Warning: Could not analyze vocal start timing: {e}")
     
     # Apply perceptual timing adjustment (shift slightly earlier for better sync)
     # WhisperX detects phoneme onset, but humans perceive words slightly before
@@ -3186,21 +3174,8 @@ def get_lyrics(
                                 
                                 actual_start = times[first_vocal_idx]
                                 
-                                # Calculate offset with small buffer (0.5s) to ensure highlighting isn't too early
-                                detected_offset = actual_start - first_line.start_time + 0.5
-                                
-                                # Apply if offset is significant (> 1s) and reasonable (< 15s)
-                                if 1.0 < detected_offset < 15.0:
-                                    print(f"  Detected intro: vocals start at {actual_start:.1f}s, synced lyrics at {first_line.start_time:.1f}s")
-                                    print(f"  Applying {detected_offset:.1f}s offset (includes 0.5s buffer)...")
-                                    
-                                    # Apply offset to all lines
-                                    for line in lines:
-                                        line.start_time += detected_offset
-                                        line.end_time += detected_offset
-                                        for word in line.words:
-                                            word.start_time += detected_offset
-                                            word.end_time += detected_offset
+                                # Skip intro detection since we now use direct vocal start detection
+                                pass
                 
                 # Second check: try text matching if we have lyrics_text
                 elif lyrics_text:
