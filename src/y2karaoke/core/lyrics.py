@@ -1969,6 +1969,21 @@ def transcribe_and_align(vocals_path: str, lyrics_text: Optional[list[str]] = No
             word.end_time += perceptual_offset
     
     print(f"Applied perceptual timing adjustment: {perceptual_offset:.2f}s")
+    
+    # Smooth timing quantization for more natural word boundaries
+    # Add small random variations to break up mechanical timing
+    import random
+    random.seed(42)  # Consistent results
+    
+    for line in lines:
+        for i, word in enumerate(line.words):
+            # Add small timing variation (±25ms) to reduce quantization artifacts
+            if i > 0:  # Don't adjust first word of line
+                variation = random.uniform(-0.025, 0.025)
+                word.start_time += variation
+                word.end_time += variation
+    
+    print(f"Applied timing smoothing to reduce quantization artifacts")
 
     # Split lines that are too wide for the screen
     lines = split_long_lines(lines)
