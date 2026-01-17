@@ -1237,8 +1237,8 @@ def _hybrid_alignment(whisper_lines: list["Line"], lyrics_text: list[str], synce
         duration = next_time - sync_time
         word_duration = duration / len(words)
         
-        # Apply guardrails: cap word duration between 0.1s and 2.0s
-        word_duration = max(0.1, min(2.0, word_duration))
+        # Apply guardrails: cap word duration between 0.05s and 2.0s (reduced min for fast songs)
+        word_duration = max(0.05, min(2.0, word_duration))
         
         for word_idx, word in enumerate(words):
             word_start = sync_time + word_idx * word_duration
