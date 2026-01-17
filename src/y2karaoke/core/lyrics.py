@@ -2930,7 +2930,7 @@ def get_lyrics(
 
         # Only discard synced lyrics if we have Genius lyrics that don't match
         # If we have no Genius lyrics at all, keep the synced lyrics
-        if avg_score < 0.5 and genius_lyrics_text:
+        if genius_lyrics_text and 'avg_score' in locals() and avg_score < 0.5:
             print(f"Synced lyrics match score too low ({avg_score:.2f}); using WhisperX with Genius lyrics instead.")
             lrc_text = None
             is_synced = False
@@ -2962,9 +2962,6 @@ def get_lyrics(
             
             if genius_has_ah and not synced_has_ah:
                 print(f"Using Genius lyrics (more complete with ah-ah lines) over synced lyrics")
-                lyrics_text = genius_lyrics_text
-            elif 'avg_score' in locals() and avg_score >= 0.75:
-                print(f"Using Genius lyrics text with synced timing (match score: {avg_score:.2f})")
                 lyrics_text = genius_lyrics_text
             else:
                 print(f"Using synced lyrics (Genius available but no ah-ah advantage)")
@@ -3113,7 +3110,7 @@ def get_lyrics(
     synced_timings = None
     if lrc_text and is_synced:
         synced_timings = parse_lrc_with_timing(lrc_text, title, artist)
-        if genius_lyrics_text and avg_score >= 0.75:
+        if genius_lyrics_text and 'avg_score' in locals() and avg_score >= 0.75:
             # CRITICAL: Override lyrics_text with Genius text for absolute order
             lyrics_text = [line for line in genius_lyrics_text if line.strip()]
             print(f"Using hybrid alignment: Genius text (absolute order) + synced timing hints")
@@ -3179,7 +3176,7 @@ def get_lyrics(
                                             word.end_time -= shift_amount
         
         # Debug: check word order after correction
-        if genius_lyrics_text and avg_score >= 0.75:
+        if genius_lyrics_text and 'avg_score' in locals() and avg_score >= 0.75:
             all_words = [w.text for line in lines for w in line.words]
             print(f"  After correction: {len(all_words)} words, first 5: {all_words[:5]}")
     
@@ -3193,14 +3190,14 @@ def get_lyrics(
     lines = split_long_lines(lines)
     
     # Debug: check word order after splitting
-    if genius_lyrics_text and avg_score >= 0.75:
+    if genius_lyrics_text and 'avg_score' in locals() and avg_score >= 0.75:
         all_words = [w.text for line in lines for w in line.words]
         print(f"  After splitting: {len(all_words)} words, first 5: {all_words[:5]}")
         print(f"  Lines 14-17 after split: {[(i, lines[i].start_time, ' '.join([w.text for w in lines[i].words])[:30]) for i in range(14, min(17, len(lines)))]}")
 
     # Sort lines by start time ONLY if not using Genius text as absolute source
     # When using Genius text, the order is already correct and must be preserved
-    if not (genius_lyrics_text and avg_score >= 0.75 and lrc_text and is_synced):
+    if not (genius_lyrics_text and 'avg_score' in locals() and avg_score >= 0.75 and lrc_text and is_synced):
         lines.sort(key=lambda l: l.start_time)
     else:
         print(f"  Skipping sort to preserve Genius order")
@@ -3437,7 +3434,7 @@ def get_lyrics(
                 if invalid_breaks:
                     print(f"  Found {len(invalid_breaks)} gaps with unexpected vocal activity")
             # Re-sort after any corrections ONLY if not using Genius text
-            if not (genius_lyrics_text and avg_score >= 0.75 and lrc_text and is_synced):
+            if not (genius_lyrics_text and 'avg_score' in locals() and avg_score >= 0.75 and lrc_text and is_synced):
                 lines.sort(key=lambda l: l.start_time)
             else:
                 # When using Genius text, fix any temporal ordering issues without sorting
