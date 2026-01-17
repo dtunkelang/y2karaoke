@@ -2039,14 +2039,14 @@ def transcribe_and_align(vocals_path: str, lyrics_text: Optional[list[str]] = No
             
             print(f"    Detected {len(onset_frames)} vocal onsets")
             
-            # Create timing anchors every 20 seconds to prevent drift
+            # Create timing anchors every 10 seconds to prevent drift
             song_duration = max(line.end_time for line in lines) if lines else 0
-            anchor_interval = 20.0  # seconds
+            anchor_interval = 10.0  # More frequent checks
             
             for anchor_time in range(int(anchor_interval), int(song_duration), int(anchor_interval)):
                 # Find lines around this anchor point
                 anchor_lines = [line for line in lines 
-                              if abs(line.start_time - anchor_time) < 10.0]
+                              if abs(line.start_time - anchor_time) < 5.0]  # Smaller search window
                 
                 if anchor_lines:
                     # Find closest vocal onset to expected timing
@@ -2054,12 +2054,12 @@ def transcribe_and_align(vocals_path: str, lyrics_text: Optional[list[str]] = No
                     expected_time = closest_line.start_time
                     
                     # Find nearest vocal onset
-                    nearby_onsets = [t for t in onset_frames if abs(t - expected_time) <= 2.0]
+                    nearby_onsets = [t for t in onset_frames if abs(t - expected_time) <= 1.5]
                     if nearby_onsets:
                         actual_onset = min(nearby_onsets, key=lambda t: abs(t - expected_time))
                         drift_correction = actual_onset - expected_time
                         
-                        if abs(drift_correction) > 0.2:
+                        if abs(drift_correction) > 0.1:  # More sensitive threshold
                             print(f"    Anchor at {anchor_time}s: {drift_correction:+.2f}s drift correction")
                             
                             # Apply correction to all subsequent lines
@@ -2070,6 +2070,10 @@ def transcribe_and_align(vocals_path: str, lyrics_text: Optional[list[str]] = No
                                     for word in line.words:
                                         word.start_time += drift_correction
                                         word.end_time += drift_correction
+                        else:
+                            print(f"    Anchor at {anchor_time}s: {drift_correction:+.2f}s (no correction needed)")
+                    else:
+                        print(f"    Anchor at {anchor_time}s: no nearby vocal onsets found")
             
             # Also refine individual words within ±0.5s
             refined_words = 0
