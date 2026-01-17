@@ -1976,9 +1976,13 @@ def transcribe_and_align(vocals_path: str, lyrics_text: Optional[list[str]] = No
     random.seed(42)  # Consistent results
     
     for line in lines:
+        if len(line.words) <= 1:
+            continue  # Skip single-word lines
+            
         for i, word in enumerate(line.words):
             # Add small timing variation (±25ms) to reduce quantization artifacts
-            if i > 0:  # Don't adjust first word of line
+            # Don't adjust first or last word of line to preserve line boundaries
+            if 0 < i < len(line.words) - 1:
                 variation = random.uniform(-0.025, 0.025)
                 word.start_time += variation
                 word.end_time += variation
