@@ -1959,8 +1959,8 @@ def transcribe_and_align(vocals_path: str, lyrics_text: Optional[list[str]] = No
     
     # Apply perceptual timing adjustment (shift slightly earlier for better sync)
     # WhisperX detects phoneme onset, but humans perceive words slightly before
-    # Apply small negative offset (0.2-0.25s) for better perceived timing in fast songs
-    perceptual_offset = -0.25
+    # Apply small negative offset (0.1-0.15s) for better perceived timing
+    perceptual_offset = -0.15
     for line in lines:
         line.start_time += perceptual_offset
         line.end_time += perceptual_offset
@@ -1969,6 +1969,50 @@ def transcribe_and_align(vocals_path: str, lyrics_text: Optional[list[str]] = No
             word.end_time += perceptual_offset
     
     print(f"Applied perceptual timing adjustment: {perceptual_offset:.2f}s")
+    
+    # Refine word timing using vocal onset detection from separated audio
+    if vocals_path:
+        print("  Refining word timing using vocal onset detection...")
+        import librosa
+        
+        try:
+            # Load vocals audio
+            y, sr = librosa.load(vocals_path, sr=22050)
+            
+            # Detect onset times in the vocal track
+            onset_frames = librosa.onset.onset_detect(
+                y=y, sr=sr, 
+                hop_length=512,
+                backtrack=True,  # More accurate onset timing
+                units='time'
+            )
+            
+            print(f"    Detected {len(onset_frames)} vocal onsets")
+            
+            # Refine word start times by snapping to nearest vocal onsets
+            refined_words = 0
+            for line in lines:
+                for word in line.words:
+                    # Find closest onset within ±0.5s of WhisperX timing
+                    word_time = word.start_time
+                    nearby_onsets = [t for t in onset_frames if abs(t - word_time) <= 0.5]
+                    
+                    if nearby_onsets:
+                        # Use the closest onset
+                        closest_onset = min(nearby_onsets, key=lambda t: abs(t - word_time))
+                        timing_adjustment = closest_onset - word.start_time
+                        
+                        # Only adjust if the change is reasonable (< 0.3s)
+                        if abs(timing_adjustment) < 0.3:
+                            word.start_time = closest_onset
+                            # Keep word duration roughly the same
+                            word.end_time = word.start_time + (word.end_time - word_time)
+                            refined_words += 1
+            
+            print(f"    Refined timing for {refined_words} words using vocal onsets")
+            
+        except Exception as e:
+            print(f"    Warning: Could not refine timing with vocal onsets: {e}")
     
     # Smooth timing quantization for more natural word boundaries
     # Add small random variations to break up mechanical timing
@@ -3228,29 +3272,31 @@ def get_lyrics(
                         word_vocal = is_vocal[word_start_idx:word_end_idx]
                         vocal_ratio = np.mean(word_vocal) if len(word_vocal) > 0 else 0
                         
+                        print(f"    Word '{word.text}' at {word.start_time:.1f}s: {vocal_ratio:.0%} vocal activity")
+                        
                         total_checked += 1
-                        if vocal_ratio < 0.3:  # Less than 30% vocal activity during word
+                        if vocal_ratio < 0.5:  # Less than 50% vocal activity during word (more aggressive)
                             misaligned_words += 1
             
-            # If most words are misaligned, find the actual vocal start and apply global offset
-            if total_checked > 0 and misaligned_words / total_checked > 0.6:
+            # If many words are misaligned, find the actual vocal start and apply global offset
+            if total_checked > 0 and misaligned_words / total_checked > 0.4:  # Lower threshold (40%)
                 print(f"  Detected timing misalignment: {misaligned_words}/{total_checked} words have low vocal activity")
                 
                 # Find where vocals actually start in the audio
                 first_line_expected = lines[0].start_time
-                search_start = max(0, first_line_expected - 5.0)
-                search_end = min(times[-1], first_line_expected + 10.0)
+                search_start = max(0, first_line_expected - 8.0)  # Search wider range
+                search_end = min(times[-1], first_line_expected + 5.0)
                 
                 search_start_idx = np.searchsorted(times, search_start)
                 search_end_idx = np.searchsorted(times, search_end)
                 
                 # Find first sustained vocal activity
-                for i in range(search_start_idx, search_end_idx - 10):
-                    if i + 10 < len(is_vocal) and np.mean(is_vocal[i:i+10]) > 0.5:  # 10 consecutive frames with >50% vocal
+                for i in range(search_start_idx, search_end_idx - 5):
+                    if i + 5 < len(is_vocal) and np.mean(is_vocal[i:i+5]) > 0.6:  # 5 consecutive frames with >60% vocal
                         actual_vocal_start = times[i]
                         timing_offset = actual_vocal_start - first_line_expected
                         
-                        if abs(timing_offset) > 1.0:  # Significant offset detected
+                        if abs(timing_offset) > 0.5:  # Apply even small offsets (0.5s+)
                             print(f"  Applying global timing correction: {timing_offset:+.1f}s")
                             
                             # Apply offset to all lines and words
