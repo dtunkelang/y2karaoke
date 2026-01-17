@@ -1988,51 +1988,6 @@ def transcribe_and_align(vocals_path: str, lyrics_text: Optional[list[str]] = No
                 word.end_time += variation
     
     print(f"Applied timing smoothing to reduce quantization artifacts")
-    
-    # Fix unrealistic gaps between lines using vocal activity analysis
-    if vocals_path:
-        audio_analysis = analyze_audio_energy(vocals_path)
-        if audio_analysis is not None:
-            import numpy as np
-            times = audio_analysis['times']
-            is_vocal = audio_analysis['is_vocal']
-            
-            for i in range(len(lines) - 1):
-                current_line = lines[i]
-                next_line = lines[i + 1]
-                gap = next_line.start_time - current_line.end_time
-                
-                if gap > 2.0:  # Only check significant gaps
-                    # Check vocal activity in the gap
-                    gap_start_idx = np.searchsorted(times, current_line.end_time)
-                    gap_end_idx = np.searchsorted(times, next_line.start_time)
-                    
-                    if gap_start_idx < gap_end_idx:
-                        gap_vocal = is_vocal[gap_start_idx:gap_end_idx]
-                        vocal_ratio = np.mean(gap_vocal) if len(gap_vocal) > 0 else 0
-                        
-                        # If there's significant vocal activity in the "gap", compress it
-                        if vocal_ratio > 0.1:  # More than 10% vocal activity
-                            # Find where vocals actually resume
-                            vocal_indices = np.where(gap_vocal)[0]
-                            if len(vocal_indices) > 0:
-                                first_vocal_idx = vocal_indices[0]
-                                actual_resume_time = times[gap_start_idx + first_vocal_idx]
-                                
-                                # Compress gap to match actual vocal activity
-                                target_gap = max(0.5, actual_resume_time - current_line.end_time)
-                                shift_amount = gap - target_gap
-                                
-                                if shift_amount > 1.0:  # Only if significant compression needed
-                                    print(f"  Fixing {gap:.1f}s gap between lines {i+1}-{i+2} (vocal activity detected), compressing to {target_gap:.1f}s")
-                                    
-                                    # Shift all subsequent lines earlier
-                                    for j in range(i + 1, len(lines)):
-                                        lines[j].start_time -= shift_amount
-                                        lines[j].end_time -= shift_amount
-                                        for word in lines[j].words:
-                                            word.start_time -= shift_amount
-                                            word.end_time -= shift_amount
 
     # Split lines that are too wide for the screen
     lines = split_long_lines(lines)
@@ -2991,6 +2946,58 @@ def get_lyrics(
         original_count = len(lines)
         lines = correct_transcription_with_lyrics(lines, lyrics_text, synced_timings)
         print(f"Corrected transcription: {original_count} lines processed, {len(lines)} lines returned")
+        
+        # Fix unrealistic gaps using vocal activity analysis (do this early)
+        if vocals_path:
+            audio_analysis = analyze_audio_energy(vocals_path)
+            if audio_analysis is not None:
+                import numpy as np
+                times = audio_analysis['times']
+                is_vocal = audio_analysis['is_vocal']
+                
+                for i in range(len(lines) - 1):
+                    current_line = lines[i]
+                    next_line = lines[i + 1]
+                    gap = next_line.start_time - current_line.end_time
+                    
+                    if gap > 2.0:  # Only check significant gaps
+                        print(f"  Checking gap {i+1}->{i+2}: {gap:.1f}s")
+                        # Check vocal activity in the gap
+                        gap_start_idx = np.searchsorted(times, current_line.end_time)
+                        gap_end_idx = np.searchsorted(times, next_line.start_time)
+                        
+                        if gap_start_idx < gap_end_idx:
+                            gap_vocal = is_vocal[gap_start_idx:gap_end_idx]
+                            vocal_ratio = np.mean(gap_vocal) if len(gap_vocal) > 0 else 0
+                            
+                            # If there's significant vocal activity in the "gap", compress it
+                            if vocal_ratio > 0.1:  # More than 10% vocal activity
+                                # For very high vocal activity (>50%), assume continuous singing
+                                if vocal_ratio > 0.5:
+                                    # Compress to minimal gap (0.2s) for continuous sections
+                                    target_gap = 0.2
+                                    shift_amount = gap - target_gap
+                                    print(f"  Fixing {gap:.1f}s gap between lines {i+1}-{i+2} ({vocal_ratio:.0%} vocal activity), compressing to {target_gap:.1f}s")
+                                else:
+                                    # Find where vocals actually resume
+                                    vocal_indices = np.where(gap_vocal)[0]
+                                    if len(vocal_indices) > 0:
+                                        first_vocal_idx = vocal_indices[0]
+                                        actual_resume_time = times[gap_start_idx + first_vocal_idx]
+                                        
+                                        # Compress gap to match actual vocal activity
+                                        target_gap = max(0.5, actual_resume_time - current_line.end_time)
+                                        shift_amount = gap - target_gap
+                                        print(f"  Fixing {gap:.1f}s gap between lines {i+1}-{i+2} ({vocal_ratio:.0%} vocal activity), compressing to {target_gap:.1f}s")
+                                
+                                if shift_amount > 0.5:  # Only if significant compression needed
+                                    # Shift all subsequent lines earlier
+                                    for j in range(i + 1, len(lines)):
+                                        lines[j].start_time -= shift_amount
+                                        lines[j].end_time -= shift_amount
+                                        for word in lines[j].words:
+                                            word.start_time -= shift_amount
+                                            word.end_time -= shift_amount
         
         # Debug: check word order after correction
         if genius_lyrics_text and avg_score >= 0.75:
