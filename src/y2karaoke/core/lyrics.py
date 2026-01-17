@@ -3209,6 +3209,59 @@ def get_lyrics(
                                             word.end_time += detected_offset
             
             lines = validate_and_fix_timing_with_audio(lines, audio_analysis, min_vocal_ratio)
+            
+            # Global timing validation - check if overall timing is off by several seconds
+            print("  Validating overall timing alignment...")
+            times = audio_analysis['times']
+            is_vocal = audio_analysis['is_vocal']
+            
+            # Check first few words to see if they align with actual vocal activity
+            misaligned_words = 0
+            total_checked = 0
+            
+            for line_idx, line in enumerate(lines[:3]):  # Check first 3 lines
+                for word_idx, word in enumerate(line.words[:2]):  # First 2 words per line
+                    word_start_idx = np.searchsorted(times, word.start_time)
+                    word_end_idx = np.searchsorted(times, word.end_time)
+                    
+                    if word_start_idx < len(is_vocal) and word_end_idx <= len(is_vocal):
+                        word_vocal = is_vocal[word_start_idx:word_end_idx]
+                        vocal_ratio = np.mean(word_vocal) if len(word_vocal) > 0 else 0
+                        
+                        total_checked += 1
+                        if vocal_ratio < 0.3:  # Less than 30% vocal activity during word
+                            misaligned_words += 1
+            
+            # If most words are misaligned, find the actual vocal start and apply global offset
+            if total_checked > 0 and misaligned_words / total_checked > 0.6:
+                print(f"  Detected timing misalignment: {misaligned_words}/{total_checked} words have low vocal activity")
+                
+                # Find where vocals actually start in the audio
+                first_line_expected = lines[0].start_time
+                search_start = max(0, first_line_expected - 5.0)
+                search_end = min(times[-1], first_line_expected + 10.0)
+                
+                search_start_idx = np.searchsorted(times, search_start)
+                search_end_idx = np.searchsorted(times, search_end)
+                
+                # Find first sustained vocal activity
+                for i in range(search_start_idx, search_end_idx - 10):
+                    if i + 10 < len(is_vocal) and np.mean(is_vocal[i:i+10]) > 0.5:  # 10 consecutive frames with >50% vocal
+                        actual_vocal_start = times[i]
+                        timing_offset = actual_vocal_start - first_line_expected
+                        
+                        if abs(timing_offset) > 1.0:  # Significant offset detected
+                            print(f"  Applying global timing correction: {timing_offset:+.1f}s")
+                            
+                            # Apply offset to all lines and words
+                            for line in lines:
+                                line.start_time += timing_offset
+                                line.end_time += timing_offset
+                                for word in line.words:
+                                    word.start_time += timing_offset
+                                    word.end_time += timing_offset
+                        break
+            
             # Check for problematic instrumental breaks
             break_issues = validate_instrumental_breaks(lines, audio_analysis)
             if break_issues:
