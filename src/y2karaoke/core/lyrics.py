@@ -2,6 +2,7 @@
 
 import re
 from dataclasses import dataclass
+from enum import Enum
 from typing import Optional, Dict, Any, List, Tuple
 from pathlib import Path
 
@@ -13,6 +14,13 @@ import syncedlyrics
 from ..exceptions import LyricsError
 from ..utils.logging import get_logger
 from ..utils.retry import retry_with_backoff, DEFAULT_MAX_RETRIES
+
+import unicodedata
+
+import time
+import random
+import requests
+from requests import Response
 
 logger = get_logger(__name__)
 
@@ -249,176 +257,450 @@ def romanize_multilingual(text: str) -> str:
 # Alias for backward compatibility
 romanize_line = romanize_multilingual
 
+class SingerID(str, Enum):
+    SINGER1 = "singer1"
+    SINGER2 = "singer2"
+    BOTH = "both"
+    UNKNOWN = ""
+
+
 @dataclass
 class Word:
-    """A word with timing information."""
+    """A word with timing and singer information."""
     text: str
     start_time: float  # seconds
     end_time: float    # seconds
-    singer: str = ""   # Singer identifier (e.g., "singer1", "singer2", "both")
+    singer: SingerID = SingerID.UNKNOWN
+
+    def validate(self) -> None:
+        if self.start_time < 0 or self.end_time < 0:
+            raise ValueError("Word timing must be non-negative")
+        if self.end_time < self.start_time:
+            raise ValueError("Word end_time must be >= start_time")
 
 
 @dataclass
 class Line:
-    """A line of lyrics with words."""
-    words: list[Word]
-    start_time: float
-    end_time: float
-    singer: str = ""   # Singer for this line (e.g., "singer1", "singer2", "both")
+    """A line of lyrics composed of words."""
+    words: List[Word]
+    singer: SingerID = SingerID.UNKNOWN
+
+    @property
+    def start_time(self) -> float:
+        return self.words[0].start_time if self.words else 0.0
+
+    @property
+    def end_time(self) -> float:
+        return self.words[-1].end_time if self.words else 0.0
 
     @property
     def text(self) -> str:
         return " ".join(w.text for w in self.words)
 
+    def validate(self) -> None:
+        if not self.words:
+            raise ValueError("Line must contain at least one word")
 
-@dataclass
+        for w in self.words:
+            w.validate()
+            if w.start_time < self.start_time or w.end_time > self.end_time:
+                raise ValueError("Word timing outside line bounds")
+
+
 @dataclass
 class SongMetadata:
-    """Metadata about singers in a song and correct title/artist from Genius."""
-    singers: list[str]  # List of singer names in order (e.g., ["Bruno Mars", "Lady Gaga"])
+    """Metadata about singers and canonical title/artist from Genius."""
+    singers: List[str]  # Ordered list of singer names
     is_duet: bool = False
-    title: Optional[str] = None  # Correct title from Genius
-    artist: Optional[str] = None  # Correct artist from Genius
+    title: Optional[str] = None
+    artist: Optional[str] = None
 
-    def get_singer_id(self, singer_name: str) -> str:
-        """Convert singer name to singer ID (singer1, singer2, both)."""
+    def get_singer_id(self, singer_name: str) -> SingerID:
+        """Map a singer name string to a SingerID."""
         if not singer_name:
-            return ""
+            return SingerID.UNKNOWN
 
-        name_lower = singer_name.lower()
+        name = singer_name.lower().strip()
 
-        # Check for "both" or "&" indicators
-        if "&" in name_lower or "both" in name_lower or "," in name_lower:
-            return "both"
+        # Explicit duet indicators commonly used by Genius
+        duet_tokens = ["&", " and ", " feat ", " feat.", " with ", " x "]
+        if any(token in name for token in duet_tokens):
+            return SingerID.BOTH
 
-        # Match against known singers
+        # Match against known singers with conservative rules
         for i, known_singer in enumerate(self.singers):
-            if known_singer.lower() in name_lower or name_lower in known_singer.lower():
-                return f"singer{i + 1}"
+            ks = known_singer.lower()
+            if name == ks or name.startswith(ks) or ks.startswith(name):
+                return SingerID(f"singer{i + 1}")
 
-        # Default to first singer if no match
-        return "singer1" if self.singers else ""
-
-
-def parse_lrc_timestamp(ts: str) -> float:
-    """Parse LRC timestamp [mm:ss.xx] to seconds."""
-    match = re.match(r'\[(\d+):(\d+)\.(\d+)\]', ts)
-    if match:
-        minutes = int(match.group(1))
-        seconds = int(match.group(2))
-        centiseconds = int(match.group(3))
-        return minutes * 60 + seconds + centiseconds / 100
-    return 0.0
+        # Fallback
+        return SingerID.SINGER1 if self.singers else SingerID.UNKNOWN
 
 
-def extract_lyrics_text(lrc_text: str, title: str = "", artist: str = "") -> list[str]:
-    """Extract plain text lines from LRC format (no timing), filtering metadata."""
-    lines = []
-    for line in lrc_text.strip().split('\n'):
-        match = re.match(r'\[\d+:\d+\.\d+\]\s*(.*)', line)
-        if match:
-            text = match.group(1).strip()
-            if text and not _is_metadata_line(text, title, artist):
-                lines.append(text)
-    return lines
+_LRC_TS_RE = re.compile(
+    r"""
+    \[                      # opening bracket
+    (?P<min>\d+)            # minutes
+    :
+    (?P<sec>[0-5]?\d)       # seconds (0–59, permissive)
+    (?:\.(?P<frac>\d{1,3}))?  # optional fractional seconds (1–3 digits)
+    \]                      # closing bracket
+    """,
+    re.VERBOSE,
+)
+
+
+def parse_lrc_timestamp(ts: str) -> Optional[float]:
+    """
+    Parse an LRC timestamp to seconds.
+
+    Supported formats:
+      [mm:ss]
+      [mm:ss.x]
+      [mm:ss.xx]
+      [mm:ss.xxx]
+
+    Returns:
+      float seconds on success
+      None on invalid input
+    """
+    if not ts:
+        return None
+
+    match = _LRC_TS_RE.match(ts.strip())
+    if not match:
+        return None
+
+    minutes = int(match.group("min"))
+    seconds = int(match.group("sec"))
+    frac = match.group("frac")
+
+    # Defensive sanity checks
+    if seconds >= 60:
+        return None
+
+    if frac is None:
+        frac_seconds = 0.0
+    else:
+        # Interpret fraction correctly based on digit length
+        frac_seconds = int(frac) / (10 ** len(frac))
+
+    return minutes * 60 + seconds + frac_seconds
+
+# Timestamp pattern (shared with timestamp parser)
+_LRC_TIMESTAMP_RE = re.compile(
+    r"\[\d+:[0-5]?\d(?:\.\d{1,3})?\]"
+)
+
+# Known LRC metadata tags
+_LRC_METADATA_RE = re.compile(
+    r"""
+    ^\[
+    (ti|ar|al|by|offset|length|re|ve|au)
+    \s*:
+    """,
+    re.IGNORECASE | re.VERBOSE,
+)
+
+# Lines that are *effectively* empty after normalization
+_WHITESPACE_RE = re.compile(r"\s+")
+
+
+def extract_lyrics_text(
+    lrc_text: str,
+    title: str = "",
+    artist: str = "",
+) -> List[str]:
+    """
+    Extract plain lyric lines from LRC text.
+
+    Robust to:
+    - multiple timestamps per line
+    - missing timestamps
+    - all known LRC metadata tags
+    - extra whitespace
+    - malformed lines
+
+    Never silently drops non-metadata lyric text.
+    """
+    if not lrc_text:
+        return []
+
+    results: List[str] = []
+
+    for raw_line in lrc_text.splitlines():
+        line = raw_line.strip()
+
+        # Skip physically empty lines
+        if not line:
+            continue
+
+        # Skip explicit LRC metadata lines
+        if _LRC_METADATA_RE.match(line):
+            continue
+
+        # Remove all timestamps
+        text = _LRC_TIMESTAMP_RE.sub("", line)
+
+        # Normalize whitespace
+        text = _WHITESPACE_RE.sub(" ", text).strip()
+
+        # Skip lines that became empty *only* due to timestamps
+        if not text:
+            continue
+
+        # Skip title/artist echoes or other metadata-like content
+        if _is_metadata_line(text, title, artist):
+            continue
+
+        results.append(text)
+
+    return results
+
+
+# Explicit metadata prefixes (strong signal)
+_METADATA_PREFIXES = (
+    "artist:",
+    "song:",
+    "title:",
+    "album:",
+    "writer:",
+    "composer:",
+    "lyricist:",
+    "lyrics by",
+    "written by",
+    "produced by",
+    "music by",
+    "performed by",
+    "vocals by",
+)
+
+# Structural markers that are not lyrics
+_STRUCTURAL_RE = re.compile(
+    r"""
+    ^
+    (?:\(?\s*)?
+    (
+        verse\s*\d+ |
+        chorus |
+        refrain |
+        bridge |
+        intro |
+        outro |
+        hook |
+        pre[-\s]?chorus |
+        post[-\s]?chorus
+    )
+    (?:\s*\)?)?
+    $
+    """,
+    re.IGNORECASE | re.VERBOSE,
+)
+
+# Credit-like phrases anywhere in the line
+_INLINE_CREDIT_RE = re.compile(
+    r"""
+    \b(
+        written\s+by |
+        lyrics\s+by |
+        produced\s+by |
+        composed\s+by |
+        arranged\s+by |
+        music\s+by
+    )\b
+    """,
+    re.IGNORECASE | re.VERBOSE,
+)
+
+# Lines that are almost certainly separators or garbage
+_GARBAGE_RE = re.compile(r"^[\W_]+$")
+
+# Aggressive but safe normalization for comparisons
+_NORMALIZE_RE = re.compile(r"[^a-z0-9]+")
+
+
+def _normalize(s: str) -> str:
+    s = unicodedata.normalize("NFKD", s)
+    s = s.lower()
+    return _NORMALIZE_RE.sub("", s)
 
 
 def _is_metadata_line(text: str, title: str = "", artist: str = "") -> bool:
-    """Check if a line is metadata rather than actual lyrics."""
-    text_lower = text.lower().strip()
+    """
+    Heuristically decide whether a line is metadata rather than lyrics.
 
-    # Skip lines that are obviously metadata labels
-    metadata_prefixes = [
-        "artist:", "song:", "title:", "album:", "writer:", "composer:",
-        "lyricist:", "lyrics by", "written by", "produced by", "music by",
-    ]
-    for prefix in metadata_prefixes:
-        if text_lower.startswith(prefix):
+    Design goals:
+    - Never silently drop real lyrics
+    - Catch common and uncommon metadata
+    - Be language-agnostic
+    - Avoid ML or statistical assumptions
+    """
+    if not text:
+        return True
+
+    raw = text.strip()
+    lower = raw.lower()
+
+    # 1. Obvious garbage / separators
+    if _GARBAGE_RE.match(raw):
+        return True
+
+    # 2. Explicit metadata prefixes
+    for prefix in _METADATA_PREFIXES:
+        if lower.startswith(prefix):
             return True
 
-    # Skip lines that are just the artist or title name (with some flexibility)
+    # 3. Structural markers ("Chorus", "Verse 2", etc.)
+    if _STRUCTURAL_RE.match(lower):
+        return True
+
+    # 4. Inline credit sentences
+    if _INLINE_CREDIT_RE.search(lower):
+        return True
+
+    # 5. Pure title echo (normalized exact match)
     if title:
-        title_lower = title.lower()
-        # Check if line is just the title (possibly with minor differences)
-        if text_lower == title_lower or text_lower.replace(" ", "") == title_lower.replace(" ", ""):
+        if _normalize(raw) == _normalize(title):
             return True
 
+    # 6. Pure artist echo (normalized exact match)
     if artist:
-        artist_lower = artist.lower()
-        # Check if line is just the artist name
-        if text_lower == artist_lower or text_lower.replace(" ", "") == artist_lower.replace(" ", ""):
+        if _normalize(raw) == _normalize(artist):
             return True
+
+    # 7. Ultra-short non-lexical noise
+    if len(raw) <= 2 and not any(c.isalnum() for c in raw):
+        return True
 
     return False
 
 
-def parse_lrc_with_timing(lrc_text: str, title: str = "", artist: str = "") -> list[tuple[float, str]]:
+# Reuse timestamp regex from previous modules
+_LRC_TIMESTAMP_RE = re.compile(r"\[(\d+):([0-5]?\d)(?:\.(\d{1,3}))?\]")
+
+def parse_lrc_with_timing(
+    lrc_text: str,
+    title: str = "",
+    artist: str = "",
+) -> List[Tuple[float, str]]:
     """
-    Parse LRC format to extract lines with timestamps.
+    Parse LRC text to extract (timestamp_seconds, lyric_text) tuples.
 
-    Args:
-        lrc_text: Raw LRC text content
-        title: Song title (used to filter metadata lines)
-        artist: Artist name (used to filter metadata lines)
-
-    Returns:
-        List of (timestamp_seconds, text) tuples
+    Handles:
+      - multiple timestamps per line
+      - timestamps with 1-3 fractional digits
+      - metadata filtering
+      - empty lines and garbage lines safely
     """
-    lines = []
-    for line in lrc_text.strip().split('\n'):
-        match = re.match(r'\[(\d+):(\d+)\.(\d+)\]\s*(.*)', line)
-        if match:
-            minutes = int(match.group(1))
-            seconds = int(match.group(2))
-            centiseconds = int(match.group(3))
-            timestamp = minutes * 60 + seconds + centiseconds / 100
-            text = match.group(4).strip()
-            if text and not _is_metadata_line(text, title, artist):
-                lines.append((timestamp, text))
-    return lines
+    if not lrc_text:
+        return []
+
+    results: List[Tuple[float, str]] = []
+
+    for raw_line in lrc_text.splitlines():
+        line = raw_line.strip()
+        if not line:
+            continue
+
+        # Remove lines that are metadata
+        if _is_metadata_line(line, title, artist):
+            continue
+
+        # Find all timestamps in the line
+        matches = list(_LRC_TIMESTAMP_RE.finditer(line))
+        if not matches:
+            continue  # No valid timestamp
+
+        # Remove all timestamps to get lyric text
+        text = _LRC_TIMESTAMP_RE.sub("", line).strip()
+        if not text:
+            continue  # timestamp-only lines
+
+        # Normalize whitespace
+        text = re.sub(r"\s+", " ", text)
+
+        for m in matches:
+            minutes = int(m.group(1))
+            seconds = int(m.group(2))
+            frac = m.group(3)
+            if frac is None:
+                frac_seconds = 0.0
+            else:
+                frac_seconds = int(frac) / (10 ** len(frac))
+            timestamp = minutes * 60 + seconds + frac_seconds
+
+            results.append((timestamp, text))
+
+    # Sort by timestamp to be safe
+    results.sort(key=lambda x: x[0])
+    return results
 
 
-def extract_artists_from_title(title: str, known_artist: str) -> list[str]:
+# Regex for splitting multiple artists
+_ARTIST_SPLIT_RE = re.compile(
+    r"""
+    ,|           # comma
+    &|           # ampersand
+    \bx\b|       # "x" as collaboration
+    \band\b|     # "and"
+    \bft\.?\b|   # "ft" or "ft."
+    \bfeat\.?\b  # "feat" or "feat."
+    """,
+    re.IGNORECASE | re.VERBOSE,
+)
+
+
+def extract_artists_from_title(title: str, known_artist: str) -> List[str]:
     """
-    Extract artist names from a title like "Artist1, Artist2 - Song Name".
+    Extract artist names from a title like:
+        "Artist1, Artist2 & Artist3 feat. Artist4 - Song Name"
 
-    Args:
-        title: The full title (e.g., "Lady Gaga, Bruno Mars - Die With A Smile")
-        known_artist: The artist we already know (from metadata)
-
-    Returns:
-        List of artist names found
+    Returns a list of artist names found. Falls back to known_artist.
     """
-    artists = []
+    if not title:
+        return [known_artist] if known_artist else []
 
-    # Check if title has "Artist - Song" format
+    # Extract the left-hand side of "Artist(s) - Song"
     if " - " in title:
-        artist_part = title.split(" - ")[0].strip()
+        artist_part = title.split(" - ", 1)[0].strip()
+    else:
+        artist_part = title.strip()
 
-        # Split by common separators: comma, ampersand, "and", "ft.", "feat."
-        parts = re.split(r'[,&]|\b(?:and|ft\.?|feat\.?)\b', artist_part, flags=re.IGNORECASE)
-        artists = [p.strip() for p in parts if p.strip()]
+    # Split by common collaboration separators
+    raw_artists = _ARTIST_SPLIT_RE.split(artist_part)
 
-    # If we couldn't extract from title, use known_artist
-    if not artists:
-        artists = [known_artist]
+    # Normalize: strip whitespace, remove empty strings, remove duplicates preserving order
+    seen = set()
+    artists: List[str] = []
+    for a in raw_artists:
+        name = a.strip()
+        if name and name.lower() not in seen:
+            artists.append(name)
+            seen.add(name.lower())
+
+    # Fallback if nothing parsed
+    if not artists and known_artist:
+        artists = [known_artist.strip()]
 
     return artists
 
 
-def _lines_to_json(lines: list[Line]) -> list[dict]:
-    data: list[dict] = []
+def _lines_to_json(lines: List[Line]) -> List[Dict[str, Any]]:
+    """
+    Convert list of Line objects to JSON-serializable dicts.
+    """
+    data: List[Dict[str, Any]] = []
+
     for line in lines:
+        line.validate()
         data.append({
-            "start_time": line.start_time,
-            "end_time": line.end_time,
-            "singer": line.singer,
+            "singer": str(line.singer),
             "words": [
                 {
                     "text": w.text,
                     "start_time": w.start_time,
                     "end_time": w.end_time,
-                    "singer": w.singer,
+                    "singer": str(w.singer),
                 }
                 for w in line.words
             ],
@@ -426,72 +708,134 @@ def _lines_to_json(lines: list[Line]) -> list[dict]:
     return data
 
 
-def _lines_from_json(data: list[dict]) -> list[Line]:
-    lines: list[Line] = []
+def _lines_from_json(data: List[Dict[str, Any]]) -> List[Line]:
+    """
+    Reconstruct Line objects from JSON dicts.
+    """
+    lines: List[Line] = []
+
     for item in data:
-        words = [
-            Word(
-                text=w["text"],
-                start_time=float(w["start_time"]),
-                end_time=float(w["end_time"]),
-                singer=w.get("singer", ""),
+        words_data = item.get("words", [])
+        if not words_data:
+            continue  # Skip lines with no words
+
+        words: List[Word] = []
+        for w in words_data:
+            try:
+                word = Word(
+                    text=str(w["text"]),
+                    start_time=float(w["start_time"]),
+                    end_time=float(w["end_time"]),
+                    singer=str(w.get("singer", "")),
+                )
+                word.validate()
+                words.append(word)
+            except (KeyError, ValueError, TypeError) as e:
+                # Skip invalid words but log if needed
+                continue
+
+        if not words:
+            continue
+
+        try:
+            line = Line(
+                words=words,
+                singer=str(item.get("singer", "")),
             )
-            for w in item.get("words", [])
-        ]
-        lines.append(Line(
-            words=words,
-            start_time=float(item["start_time"]),
-            end_time=float(item["end_time"]),
-            singer=item.get("singer", ""),
-        ))
+            line.validate()
+            lines.append(line)
+        except ValueError:
+            continue  # Skip lines that fail validation
+
     return lines
 
 
-def _metadata_to_json(metadata: Optional[SongMetadata]) -> Optional[dict]:
+def _metadata_to_json(metadata: Optional[SongMetadata]) -> Optional[Dict[str, Any]]:
+    """
+    Convert SongMetadata to JSON-serializable dict.
+    """
     if metadata is None:
         return None
+
     return {
-        "singers": metadata.singers,
-        "is_duet": metadata.is_duet,
+        "singers": list(metadata.singers),
+        "is_duet": bool(metadata.is_duet),
+        "title": metadata.title,
+        "artist": metadata.artist,
     }
 
 
-def _metadata_from_json(data: Optional[dict]) -> Optional[SongMetadata]:
+def _metadata_from_json(data: Optional[Dict[str, Any]]) -> Optional[SongMetadata]:
+    """
+    Reconstruct SongMetadata from JSON dict.
+    """
     if not data:
         return None
+
     return SongMetadata(
         singers=list(data.get("singers", [])),
         is_duet=bool(data.get("is_duet", False)),
+        title=data.get("title"),
+        artist=data.get("artist"),
     )
 
 
+DEFAULT_MAX_RETRIES = 3
+
 def _make_request_with_retry(
     url: str,
-    headers: dict,
+    headers: Optional[Dict[str, str]] = None,
     timeout: int = 10,
     max_retries: int = DEFAULT_MAX_RETRIES,
-) -> Optional["requests.Response"]:
-    """Make an HTTP GET request with retry logic."""
-    import requests
-    import time
+    backoff_factor: float = 1.0,
+    status_forcelist: Optional[list[int]] = None,
+) -> Optional[Response]:
+    """
+    Make an HTTP GET request with robust retry logic.
 
-    delay = 1.0
+    Retries on:
+      - network exceptions (connection errors, timeouts)
+      - HTTP status codes in `status_forcelist` (default: 500, 502, 503, 504, 429)
+
+    Uses exponential backoff with jitter.
+    """
+    if status_forcelist is None:
+        status_forcelist = [500, 502, 503, 504, 429]
+
+    delay = backoff_factor
     last_error = None
 
     for attempt in range(max_retries + 1):
         try:
             response = requests.get(url, headers=headers, timeout=timeout)
-            return response
+
+            if response.status_code < 400:
+                # Success
+                if attempt > 0:
+                    logger.debug(f"Request succeeded on retry {attempt}: {url}")
+                return response
+
+            if response.status_code not in status_forcelist:
+                # Non-retriable HTTP error
+                logger.warning(f"Non-retriable HTTP error {response.status_code} for {url}")
+                return response
+
+            last_error = f"HTTP {response.status_code}"
+
         except (requests.exceptions.RequestException, requests.exceptions.Timeout) as e:
             last_error = e
-            if attempt < max_retries:
-                logger.debug(f"Request retry {attempt + 1}/{max_retries}: {e}")
-                time.sleep(delay)
-                delay = min(delay * 2, 30.0)
 
-    if last_error:
-        logger.warning(f"Request failed after {max_retries} retries: {last_error}")
+        # Retry logic
+        if attempt < max_retries:
+            jitter = random.uniform(0, 0.5 * delay)
+            sleep_time = min(delay + jitter, 30.0)
+            logger.debug(f"Retry {attempt + 1}/{max_retries} after {sleep_time:.1f}s: {last_error}")
+            time.sleep(sleep_time)
+            delay = min(delay * 2, 30.0)
+
+    logger.warning(f"Request failed after {max_retries} retries: {last_error}")
     return None
+
 
 
 def fetch_genius_lyrics_with_singers(title: str, artist: str) -> tuple[Optional[list[tuple[str, str]]], Optional[SongMetadata]]:
