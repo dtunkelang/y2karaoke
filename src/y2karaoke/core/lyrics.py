@@ -22,6 +22,8 @@ import random
 import requests
 from requests import Response
 
+from bs4 import BeautifulSoup
+
 logger = get_logger(__name__)
 
 # Network exceptions to retry
@@ -836,304 +838,241 @@ def _make_request_with_retry(
     logger.warning(f"Request failed after {max_retries} retries: {last_error}")
     return None
 
-
-
-def fetch_genius_lyrics_with_singers(title: str, artist: str) -> tuple[Optional[list[tuple[str, str]]], Optional[SongMetadata]]:
+def fetch_genius_lyrics_with_singers(
+    title: str,
+    artist: str
+) -> Tuple[Optional[List[Tuple[str, str]]], Optional[SongMetadata]]:
     """
     Fetch lyrics from Genius with singer annotations.
 
     Returns:
         Tuple of (lyrics_with_singers, metadata)
-        - lyrics_with_singers: List of (text, singer_name) tuples for each line
-        - metadata: SongMetadata with singer info and correct title/artist from Genius
+        - lyrics_with_singers: List of (line_text, singer_name) tuples for each line
+        - metadata: SongMetadata with singers, title, artist
     """
     try:
         import requests
-        from bs4 import BeautifulSoup
+        from urllib.parse import quote
     except ImportError:
-        logger.warning("requests/beautifulsoup4 not available for Genius scraping")
+        logger.warning("requests/urllib not available for Genius scraping")
         return None, None
 
-    # Helper function to create URL slugs
-    def make_slug(text: str) -> str:
-        slug = re.sub(r'[^\w\s-]', '', text.lower())
-        slug = re.sub(r'\s+', '-', slug)
-        return slug
-
     headers = {
-        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36',
-        'Accept': '*/*'
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+                      "AppleWebKit/537.36 (KHTML, like Gecko) "
+                      "Chrome/143.0.0.0 Safari/537.36",
     }
 
-    # Use Genius API to search for the song
-    # Format: lowercase, remove punctuation (but convert hyphens to spaces), single spaces
+    # ---------- Helper functions ----------
+    def make_slug(text: str) -> str:
+        slug = re.sub(r"[^\w\s-]", "", text.lower())
+        slug = re.sub(r"\s+", "-", slug)
+        return slug.strip("-")
+
     def clean_for_search(text: str) -> str:
-        text = text.lower()
-        text = text.replace('-', ' ')  # Convert hyphens to spaces
-        text = re.sub(r'[^\w\s]', '', text)  # Remove other punctuation
-        text = re.sub(r'\s+', ' ', text).strip()  # Normalize spaces
-        return text
-    
-    # Clean title: remove featured artists and extra info
+        text = text.lower().replace("-", " ")
+        text = re.sub(r"[^\w\s]", "", text)
+        return re.sub(r"\s+", " ", text).strip()
+
     def clean_title_for_search(title: str) -> str:
-        # Remove everything after pipe character
-        title = re.split(r'\s*[|｜]\s*', title)[0]
-        # Remove featured artists (ft., feat., featuring)
-        title = re.sub(r'\s*[\(\[]?\s*(ft\.?|feat\.?|featuring).*?[\)\]]?\s*$', '', title, flags=re.IGNORECASE)
-        title = re.sub(r'\s*[\(\[].*?[\)\]]\s*', '', title)  # Remove any remaining parentheses/brackets
+        title = re.split(r"\s*[|｜]\s*", title)[0]
+        title = re.sub(r"\s*[\(\[]?\s*(ft\.?|feat\.?|featuring).*?[\)\]]?\s*$", "", title, flags=re.IGNORECASE)
+        title = re.sub(r"\s*[\(\[].*?[\)\]]\s*", "", title)
         return title.strip()
-    
+
+    def parse_section_singers(header: str) -> str:
+        """
+        Extract singer(s) from section header like "Verse 1: Bruno Mars & Lady Gaga"
+        """
+        if ":" in header:
+            return header.split(":", 1)[1].strip()
+        return ""
+
     cleaned_title = clean_title_for_search(title)
-    
-    print(f"  Searching Genius: {artist} - {cleaned_title}")
-    
-    all_urls = []
-    genius_title = None
-    genius_artist = None
-    
-    # Try searching with artist + title, then title + artist (in case they're swapped)
     search_queries = [
         f"{clean_for_search(artist)} {clean_for_search(cleaned_title)}",
         f"{clean_for_search(cleaned_title)} {clean_for_search(artist)}"
     ]
-    
-    for search_query in search_queries:
-        api_url = f"https://genius.com/api/search/song?per_page=10&q={search_query.replace(' ', '%20')}"
 
-        response = _make_request_with_retry(api_url, headers)
-        if response is None:
-            print(f"  Genius search failed after retries")
+    # ---------- 1. Search Genius API ----------
+    all_urls = []
+    genius_title, genius_artist = None, None
+
+    for q in search_queries:
+        api_url = f"https://genius.com/api/search/song?per_page=10&q={quote(q)}"
+        resp = _make_request_with_retry(api_url, headers)
+        if not resp:
             continue
-
         try:
-            response.raise_for_status()
-            data = response.json()
-
-            if 'response' in data and 'sections' in data['response']:
-                for section in data['response']['sections']:
-                    if section.get('type') == 'song':
-                        for hit in section.get('hits', []):
-                            result = hit.get('result', {})
-                            url = result.get('url', '')
-                            if url and url.endswith('-lyrics') and '/artists/' not in url:
-                                all_urls.append(url)
-                                # Capture title and artist from first valid result
-                                if genius_title is None:
-                                    genius_title = result.get('title')
-                                    genius_artist = result.get('artist_names')
+            resp.raise_for_status()
+            data = resp.json()
+            sections = data.get("response", {}).get("sections", [])
+            for section in sections:
+                if section.get("type") != "song":
+                    continue
+                for hit in section.get("hits", []):
+                    result = hit.get("result", {})
+                    url = result.get("url", "")
+                    if url.endswith("-lyrics") and "/artists/" not in url:
+                        all_urls.append(url)
+                        if genius_title is None:
+                            genius_title = result.get("title")
+                            genius_artist = result.get("artist_names")
         except Exception as e:
-            print(f"  Genius search failed: {e}")
-        
-        # If we found results, stop searching
+            logger.debug(f"Genius API parse failed: {e}")
         if all_urls:
             break
-    
-    # Also try constructing URLs directly
-    def make_slug(text: str) -> str:
-        slug = re.sub(r'[^\w\s-]', '', text.lower())
-        slug = re.sub(r'\s+', '-', slug)
-        return slug
-    
-    artist_slug = make_slug(artist)
-    title_slug = make_slug(cleaned_title)
-    
-    # Add constructed URLs to candidates with multiple variations
+
+    # ---------- 2. Construct candidate URLs ----------
+    artist_slug, title_slug = make_slug(artist), make_slug(cleaned_title)
     all_urls.extend([
         f"https://genius.com/Genius-romanizations-{artist_slug}-{title_slug}-romanized-lyrics",
         f"https://genius.com/{artist_slug}-{title_slug}-lyrics",
-        # Try with just title (for songs with many featured artists)
         f"https://genius.com/{title_slug}-lyrics",
     ])
-    
-    # Remove duplicates while preserving order
+
+    # Remove duplicates
     seen = set()
-    unique_urls = []
-    for url in all_urls:
-        if url not in seen:
-            seen.add(url)
-            unique_urls.append(url)
-    
-    # Now prioritize: romanized > original language > skip translations
-    song_url = None
-    original_url = None
-    url_from_api = False  # Track if URL came from API search
-    
-    for url in unique_urls:
-        # Check if URL exists (with retry)
-        response = _make_request_with_retry(url, headers)
-        if response is None or response.status_code != 200:
-            continue
+    candidate_urls = [u for u in all_urls if not (u in seen or seen.add(u))]
 
-        # Skip translations
-        if 'translation' in url.lower():
+    # ---------- 3. Prioritize URL ----------
+    song_url, original_url = None, None
+    for url in candidate_urls:
+        resp = _make_request_with_retry(url, headers)
+        if not resp or resp.status_code != 200:
             continue
-        
-        # Verify artist name is in URL (avoid wrong artist matches)
+        if "translation" in url.lower():
+            continue
         url_lower = url.lower()
-        artist_words = artist.lower().split()
-        # Use words longer than 3 chars, or all words if none are long enough
-        long_words = [word for word in artist_words if len(word) > 3]
-        words_to_check = long_words if long_words else artist_words
-        if not any(word in url_lower for word in words_to_check):
+        artist_words = [w for w in artist.lower().split() if len(w) > 3] or artist.lower().split()
+        if not any(word in url_lower for word in artist_words):
             continue
-
-        # Prioritize romanized
-        if 'romanized' in url.lower():
+        if "romanized" in url_lower:
             song_url = url
-            # If this is a romanized URL, clear API metadata (we'll extract from page)
-            if 'genius-romanizations' in url.lower():
-                genius_title = None
-                genius_artist = None
-            print(f"  Found romanized: {song_url}")
             break
-
-        # Keep track of original language version as fallback
         if not original_url:
             original_url = url
-    
-    # If no romanized found, use original language version
     if not song_url and original_url:
         song_url = original_url
-        print(f"  Found original: {song_url}")
-    
-    # Print result if found
-    if song_url:
-        if 'romanized' not in song_url.lower():
-            print(f"  Found: {song_url}")
-    else:
-        print(f"  No Genius results found")
+    if not song_url:
         return None, None
 
-    # Fetch the lyrics page (with retry)
-    response = _make_request_with_retry(song_url, headers)
-    if response is None or response.status_code != 200:
-        print(f"  Error fetching lyrics page")
+    # ---------- 4. Fetch lyrics page ----------
+    resp = _make_request_with_retry(song_url, headers)
+    if not resp or resp.status_code != 200:
         return None, None
 
-    soup = BeautifulSoup(response.text, 'html.parser')
+    soup = BeautifulSoup(resp.text, "html.parser")
 
-    # Extract title and artist from page if not available from API
+    # ---------- 5. Extract title/artist ----------
     if not genius_title or not genius_artist:
-        # For romanized URLs, parse from the URL itself
-        if 'genius-romanizations' in song_url.lower() and '-romanized-lyrics' in song_url.lower():
-            # URL format: https://genius.com/Genius-romanizations-{artist}-{title}-romanized-lyrics
-            url_parts = song_url.split('/')[-1]  # Get last part
-            url_parts = url_parts.replace('-romanized-lyrics', '')  # Remove suffix
-            url_parts = url_parts.replace('Genius-romanizations-', '')  # Remove prefix
-            url_parts = url_parts.replace('genius-romanizations-', '')  # Case insensitive
-            # Split into words and capitalize
-            words = url_parts.split('-')
-            # First word is usually artist, rest is title
-            if len(words) >= 2:
-                if not genius_artist:
-                    genius_artist = words[0].upper()  # PSY, etc.
-                if not genius_title:
-                    genius_title = ' '.join(word.capitalize() for word in words[1:])
+        if "romanized" in song_url.lower():
+            parts = song_url.split("/")[-1].replace("-romanized-lyrics", "").replace("genius-romanizations-", "").split("-")
+            if len(parts) >= 2:
+                genius_artist = parts[0].upper() if not genius_artist else genius_artist
+                genius_title = " ".join(w.capitalize() for w in parts[1:]) if not genius_title else genius_title
         else:
-            # Try to extract from page title (e.g., "PSY - 강남스타일 (Gangnam Style) (Romanized)")
-            title_tag = soup.find('title')
-            if title_tag:
-                page_title = title_tag.get_text().strip()
-                # Remove " Lyrics | Genius Lyrics" suffix
-                page_title = re.sub(r'\s*Lyrics\s*\|.*$', '', page_title, flags=re.IGNORECASE)
-                # Try to parse "Artist - Title" format
-                if ' - ' in page_title or ' – ' in page_title:
-                    parts = re.split(r'\s+[-–]\s+', page_title, 1)
-                    if len(parts) == 2:
-                        if not genius_artist:
-                            genius_artist = parts[0].strip()
-                        if not genius_title:
-                            genius_title = parts[1].strip()
-                elif not genius_title:
-                    genius_title = page_title
+            page_title = soup.title.get_text(strip=True) if soup.title else ""
+            page_title = re.sub(r"\s*Lyrics\s*\|.*$", "", page_title, flags=re.IGNORECASE)
+            if " - " in page_title or " – " in page_title:
+                parts = re.split(r"\s+[-–]\s+", page_title, 1)
+                if len(parts) == 2:
+                    genius_artist = genius_artist or parts[0].strip()
+                    genius_title = genius_title or parts[1].strip()
+            elif not genius_title:
+                genius_title = page_title
 
-    # Extract all text including annotations
-    lyrics_containers = soup.find_all('div', {'data-lyrics-container': 'true'})
-
+    # ---------- 6. Parse lyrics with singer annotations ----------
+    lyrics_containers = soup.find_all("div", {"data-lyrics-container": "true"})
     if not lyrics_containers:
         return None, None
 
-    # Parse lyrics with singer annotations
-    lines_with_singers: list[tuple[str, str]] = []
+    lines_with_singers: List[Tuple[str, str]] = []
     current_singer = ""
-    singers_found: set[str] = set()
-
-    # Pattern to match section headers like [Verse 1: Bruno Mars] or [Chorus]
-    section_pattern = re.compile(r'\[([^\]]+)\]')
+    singers_found = set()
+    section_pattern = re.compile(r"\[([^\]]+)\]")
 
     for container in lyrics_containers:
-        # Get HTML with line breaks preserved
-        for br in container.find_all('br'):
-            br.replace_with('\n')
-
+        for br in container.find_all("br"):
+            br.replace_with("\n")
         text = container.get_text()
-
-        for line in text.split('\n'):
+        for line in text.split("\n"):
             line = line.strip()
             if not line:
                 continue
-
-            # Check if this is a section header
-            section_match = section_pattern.match(line)
-            if section_match:
-                header = section_match.group(1)
-                # Extract singer from header like "Verse 1: Bruno Mars" or "Chorus: Lady Gaga & Bruno Mars"
-                if ':' in header:
-                    singer_part = header.split(':', 1)[1].strip()
-                    current_singer = singer_part
-                    singers_found.add(singer_part)
+            m = section_pattern.match(line)
+            if m:
+                header = m.group(1)
+                current_singer = parse_section_singers(header) or current_singer
+                if current_singer:
+                    singers_found.add(current_singer)
                 continue
-
-            # Regular lyrics line
             lines_with_singers.append((line, current_singer))
 
     if not lines_with_singers:
         return None, None
 
-    # Determine if this is a duet
-    # Extract unique singer names (not combined ones)
-    unique_singers: list[str] = []
+    # ---------- 7. Determine unique singers ----------
+    unique_singers = []
     for singer in singers_found:
-        if '&' in singer or ',' in singer:
-            # Split combined singers
-            parts = re.split(r'[&,]', singer)
-            for part in parts:
-                name = part.strip()
-                if name and name not in unique_singers:
-                    unique_singers.append(name)
-        elif singer and singer.lower() != 'both':
-            if singer not in unique_singers:
-                unique_singers.append(singer)
-
+        parts = re.split(r"[&,]|and|ft\.?|feat\.?", singer, flags=re.IGNORECASE)
+        for p in parts:
+            name = p.strip()
+            if name and name.lower() != "both" and name not in unique_singers:
+                unique_singers.append(name)
     is_duet = len(unique_singers) >= 2
-    
-    # Create metadata with title/artist from Genius and singer info
-    if is_duet:
-        metadata = SongMetadata(
-            singers=unique_singers[:2], 
-            is_duet=is_duet,
-            title=genius_title,
-            artist=genius_artist
-        )
-    elif genius_title or genius_artist:
-        # Even if not a duet, include title/artist metadata
-        metadata = SongMetadata(
-            singers=[],
-            is_duet=False,
-            title=genius_title,
-            artist=genius_artist
-        )
-    else:
-        metadata = None
 
-    print(f"  Found {len(lines_with_singers)} lines with singer annotations")
-    if metadata:
-        if metadata.is_duet:
-            print(f"  Detected duet: {', '.join(metadata.singers)}")
-        if metadata.title and metadata.artist:
-            print(f"  Genius metadata: {metadata.title} by {metadata.artist}")
+    # ---------- 8. Build metadata ----------
+    metadata = SongMetadata(
+        singers=unique_singers[:2] if is_duet else [],
+        is_duet=is_duet,
+        title=genius_title,
+        artist=genius_artist
+    )
 
     return lines_with_singers, metadata
+
+
+def fetch_genius_lines(
+    title: str,
+    artist: str
+) -> tuple[Optional[List[Line]], Optional[SongMetadata]]:
+    """
+    Fetch lyrics from Genius and convert them directly into Line objects with Words.
+
+    Returns:
+        - List[Line]: Each line has words with start_time/end_time=0.0
+        - SongMetadata with singers, title, artist
+    """
+    tuples, metadata = fetch_genius_lyrics_with_singers(title, artist)
+    if not tuples:
+        return None, None
+
+    lines: List[Line] = []
+    for line_text, singer_name in tuples:
+        words_texts = line_text.split()
+        if not words_texts:
+            continue
+        words = [
+            Word(
+                text=w,
+                start_time=0.0,
+                end_time=0.0,
+                singer=singer_name
+            )
+            for w in words_texts
+        ]
+        line = Line(
+            words=words,
+            singer=singer_name
+        )
+        try:
+            line.validate()
+        except ValueError:
+            continue
+        lines.append(line)
+
+    return lines, metadata
 
 
 def merge_lyrics_with_singer_info(
@@ -1232,8 +1171,6 @@ def merge_lyrics_with_singer_info(
 
         lines.append(Line(
             words=words,
-            start_time=start_time,
-            end_time=words[-1].end_time if words else end_time,
             singer=singer_id,
         ))
 
@@ -1300,8 +1237,6 @@ def create_lines_from_lrc(
 
         lines.append(Line(
             words=words,
-            start_time=start_time,
-            end_time=words[-1].end_time if words else end_time,
         ))
 
     return lines
@@ -1723,8 +1658,6 @@ def _hybrid_alignment(whisper_lines: list["Line"], lyrics_text: list[str], synce
         if words:
             result_lines.append(Line(
                 words=words,
-                start_time=words[0].start_time,
-                end_time=words[-1].end_time
             ))
     
     # Check for lines that are too short and extend them
@@ -1753,16 +1686,13 @@ def _hybrid_alignment(whisper_lines: list["Line"], lyrics_text: list[str], synce
                 word.start_time = line.start_time + j * word_duration
                 word.end_time = word.start_time + word_duration
 
-            line.end_time = line.words[-1].end_time
             new_end = line.end_time
             extension = new_end - old_end
 
             # Only shift following lines that would overlap (within 0.5 second)
             for j in range(i + 1, len(result_lines)):
                 if result_lines[j].start_time < new_end + 0.5:
-                    # This line would overlap, shift it
-                    result_lines[j].start_time += extension
-                    result_lines[j].end_time += extension
+                    # This line would overlap, shift it by updating word timings
                     for word in result_lines[j].words:
                         word.start_time += extension
                         word.end_time += extension
@@ -1781,9 +1711,6 @@ def _hybrid_alignment(whisper_lines: list["Line"], lyrics_text: list[str], synce
             # This line starts before previous line - shift it forward
             logger.info(f"Fixing line {i}: {curr_start:.2f}s < {prev_start:.2f}s")
             shift = prev_start - curr_start + 0.1
-            duration = result_lines[i].end_time - result_lines[i].start_time
-            result_lines[i].start_time += shift
-            result_lines[i].end_time = result_lines[i].start_time + duration
             # Shift all words in this line
             for word in result_lines[i].words:
                 word.start_time += shift
@@ -1808,8 +1735,7 @@ def _hybrid_alignment(whisper_lines: list["Line"], lyrics_text: list[str], synce
             for i, word in enumerate(line.words):
                 word.start_time = line.start_time + i * word_duration
                 word.end_time = word.start_time + word_duration * 0.8
-            
-            line.end_time = line.words[-1].end_time
+
             print(f"HYBRID: Fixed to {line.end_time - line.start_time:.1f}s")
     
     logger.info(f"_hybrid_alignment returning {len(result_lines)} lines")
@@ -1927,8 +1853,6 @@ def _align_genius_to_whisperx_simple(whisper_lines: list["Line"], genius_text: l
         if result_words:
             result_lines.append(Line(
                 words=result_words,
-                start_time=result_words[0].start_time,
-                end_time=result_words[-1].end_time
             ))
     
     return result_lines
@@ -2164,8 +2088,6 @@ def correct_transcription_with_lyrics(lines: list["Line"], lyrics_text: list[str
         words.sort(key=lambda w: w.start_time)
         aligned_lines.append(Line(
             words=words,
-            start_time=words[0].start_time,
-            end_time=words[-1].end_time,
         ))
 
     # Optionally split very long lines for display
@@ -2370,8 +2292,6 @@ def transcribe_and_align(vocals_path: str, lyrics_text: Optional[list[str]] = No
         if words:
             lines.append(Line(
                 words=words,
-                start_time=words[0].start_time,
-                end_time=words[-1].end_time,
             ))
 
     # Fix bad word timing (first words, words after long gaps)
@@ -2416,10 +2336,8 @@ def transcribe_and_align(vocals_path: str, lyrics_text: Optional[list[str]] = No
                 # Apply correction to align first word with target video timing
                 if abs(timing_correction) > 0.3:
                     print(f"    Applying vocal start correction: {timing_correction:+.2f}s")
-                    
+
                     for line in lines:
-                        line.start_time += timing_correction
-                        line.end_time += timing_correction
                         for word in line.words:
                             word.start_time += timing_correction
                             word.end_time += timing_correction
@@ -2432,8 +2350,6 @@ def transcribe_and_align(vocals_path: str, lyrics_text: Optional[list[str]] = No
     # Apply small negative offset (0.1-0.15s) for better perceived timing
     perceptual_offset = -0.15
     for line in lines:
-        line.start_time += perceptual_offset
-        line.end_time += perceptual_offset
         for word in line.words:
             word.start_time += perceptual_offset
             word.end_time += perceptual_offset
@@ -2487,8 +2403,7 @@ def transcribe_and_align(vocals_path: str, lyrics_text: Optional[list[str]] = No
                             for i, word in enumerate(line.words):
                                 word.start_time = line.start_time + i * word_duration
                                 word.end_time = word.start_time + word_duration * 0.8
-                            
-                            line.end_time = line.words[-1].end_time
+
                             print(f"    FIXED: Redistributed to {line.end_time - line.start_time:.1f}s")
                 
                 # Continue with normal anchor processing
@@ -2512,8 +2427,6 @@ def transcribe_and_align(vocals_path: str, lyrics_text: Optional[list[str]] = No
                             # Apply correction to all subsequent lines
                             for line in lines:
                                 if line.start_time >= expected_time:
-                                    line.start_time += drift_correction
-                                    line.end_time += drift_correction
                                     for word in line.words:
                                         word.start_time += drift_correction
                                         word.end_time += drift_correction
@@ -2664,8 +2577,6 @@ def fix_word_timing(lines: list[Line], max_word_duration: float = 2.0, max_gap: 
         if fixed_words:
             fixed_lines.append(Line(
                 words=fixed_words,
-                start_time=fixed_words[0].start_time,
-                end_time=fixed_words[-1].end_time,
             ))
 
     return fixed_lines
@@ -2740,8 +2651,6 @@ def split_long_lines(lines: list[Line], max_width_ratio: float = 0.75) -> list[L
         if first_words:
             first_line = Line(
                 words=first_words,
-                start_time=first_words[0].start_time,
-                end_time=first_words[-1].end_time,
             )
             # Recursively split if still too long
             split_lines.extend(split_long_lines([first_line], max_width_ratio))
@@ -2749,8 +2658,6 @@ def split_long_lines(lines: list[Line], max_width_ratio: float = 0.75) -> list[L
         if second_words:
             second_line = Line(
                 words=second_words,
-                start_time=second_words[0].start_time,
-                end_time=second_words[-1].end_time,
             )
             # Recursively split if still too long
             split_lines.extend(split_long_lines([second_line], max_width_ratio))
@@ -2780,14 +2687,10 @@ def _split_by_char_count(lines: list[Line], max_chars: int = 50) -> list[Line]:
         if first_words:
             split_lines.append(Line(
                 words=first_words,
-                start_time=first_words[0].start_time,
-                end_time=first_words[-1].end_time,
             ))
         if second_words:
             split_lines.append(Line(
                 words=second_words,
-                start_time=second_words[0].start_time,
-                end_time=second_words[-1].end_time,
             ))
     
     return split_lines
@@ -2981,10 +2884,6 @@ def validate_and_fix_timing_with_audio(
 
                 # Only apply correction if offset is significant but not too large
                 if 0.5 < abs(offset) < search_window:
-                    # Shift the line
-                    new_start = start_time + offset
-                    new_end = end_time + offset
-
                     # Shift all words proportionally
                     new_words = []
                     for word in line.words:
@@ -2998,8 +2897,6 @@ def validate_and_fix_timing_with_audio(
 
                     corrected_line = Line(
                         words=new_words,
-                        start_time=new_start,
-                        end_time=new_end,
                         singer=line.singer,
                     )
                     corrected_lines.append(corrected_line)
@@ -3631,10 +3528,8 @@ def get_lyrics(
                                         print(f"  Fixing {gap:.1f}s gap between lines {i+1}->{i+2} ({vocal_ratio:.0%} vocal activity), compressing to {target_gap:.1f}s")
 
                                 if shift_amount > 0.5:  # Only if significant compression needed
-                                    # Shift all subsequent lines earlier
+                                    # Shift all subsequent lines earlier by updating word timings
                                     for j in range(i + 1, len(lines)):
-                                        lines[j].start_time -= shift_amount
-                                        lines[j].end_time -= shift_amount
                                         for word in lines[j].words:
                                             word.start_time -= shift_amount
                                             word.end_time -= shift_amount
@@ -3670,10 +3565,10 @@ def get_lyrics(
     for i in range(len(lines) - 1):
         if lines[i].end_time > lines[i + 1].start_time:
             # Cap end_time with a small gap for visual separation
-            lines[i].end_time = lines[i + 1].start_time - 0.1
-            # Also update the last word's end_time
+            new_end = lines[i + 1].start_time - 0.1
+            # Update the last word's end_time (which updates line.end_time)
             if lines[i].words:
-                lines[i].words[-1].end_time = lines[i].end_time
+                lines[i].words[-1].end_time = new_end
 
     # Validate and fix timing using audio energy analysis
     # When we have synced lyrics, use a higher threshold to only fix obvious errors
@@ -3777,8 +3672,6 @@ def get_lyrics(
                             
                             # Apply offset to all lines
                             for line in lines:
-                                line.start_time += detected_offset
-                                line.end_time += detected_offset
                                 for word in line.words:
                                     word.start_time += detected_offset
                                     word.end_time += detected_offset
@@ -3826,11 +3719,9 @@ def get_lyrics(
                                 if 1.0 < detected_offset < 10.0:
                                     print(f"  Detected timing offset: {detected_offset:.1f}s (synced lyrics appear to start too early)")
                                     print(f"  Applying automatic offset correction...")
-                                    
+
                                     # Apply offset to all lines
                                     for line in lines:
-                                        line.start_time += detected_offset
-                                        line.end_time += detected_offset
                                         for word in line.words:
                                             word.start_time += detected_offset
                                             word.end_time += detected_offset
@@ -3881,11 +3772,9 @@ def get_lyrics(
                         
                         if abs(timing_offset) > 0.5:  # Apply even small offsets (0.5s+)
                             print(f"  Applying global timing correction: {timing_offset:+.1f}s")
-                            
-                            # Apply offset to all lines and words
+
+                            # Apply offset to all lines by updating word timings
                             for line in lines:
-                                line.start_time += timing_offset
-                                line.end_time += timing_offset
                                 for word in line.words:
                                     word.start_time += timing_offset
                                     word.end_time += timing_offset
@@ -3931,18 +3820,14 @@ def get_lyrics(
                                 new_end = new_start + time_per_line - 0.1  # Small gap between lines
                                 old_start = line.start_time
 
-                                # Update line timing
-                                line.start_time = new_start
-                                line.end_time = new_end
-
-                                # Redistribute words evenly within the line
+                                # Redistribute words evenly within the new time range
                                 if line.words:
                                     word_duration = (new_end - new_start) / len(line.words)
                                     for k, word in enumerate(line.words):
                                         word.start_time = new_start + k * word_duration
                                         word.end_time = word.start_time + word_duration * 0.9
 
-                                print(f"    Moved line {line_idx} '{' '.join(w.text for w in line.words)[:20]}': {old_start:.1f}s -> {new_start:.1f}s")
+                                print(f"    Moved line {line_idx} '{' '.join(w.text for w in line.words)[:20]}': {old_start:.1f}s -> {line.start_time:.1f}s")
                         else:
                             print(f"    No slow vocalization lines found near this gap")
             # Re-sort after any corrections ONLY if not using Genius text
@@ -3954,20 +3839,18 @@ def get_lyrics(
                     if lines[i].start_time < lines[i-1].end_time:
                         # Shift this line to start after previous line ends
                         shift = lines[i-1].end_time - lines[i].start_time + 0.1
-                        lines[i].start_time += shift
-                        lines[i].end_time += shift
                         for word in lines[i].words:
                             word.start_time += shift
                             word.end_time += shift
-    
+
     # Fix overlapping lines after audio validation by capping end_time
     for i in range(len(lines) - 1):
         if lines[i].end_time > lines[i + 1].start_time:
             # Cap end_time with a small gap for visual separation
-            lines[i].end_time = lines[i + 1].start_time - 0.1
-            # Also update the last word's end_time
+            new_end = lines[i + 1].start_time - 0.1
+            # Update the last word's end_time (which updates line.end_time)
             if lines[i].words:
-                lines[i].words[-1].end_time = lines[i].end_time
+                lines[i].words[-1].end_time = new_end
 
     # Quality assessment
     quality_score, quality_issues = _assess_timing_quality(
@@ -3993,10 +3876,8 @@ def get_lyrics(
         
         if abs(final_adjustment) > 0.5:
             print(f"  Final timing adjustment: {final_adjustment:+.1f}s to start lyrics at {target_start_time}s")
-            
+
             for line in lines:
-                line.start_time += final_adjustment
-                line.end_time += final_adjustment
                 for word in line.words:
                     word.start_time += final_adjustment
                     word.end_time += final_adjustment
