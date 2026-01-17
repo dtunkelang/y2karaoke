@@ -1204,6 +1204,7 @@ def _hybrid_alignment(whisper_lines: list["Line"], lyrics_text: list[str], synce
     
     CRITICAL: lyrics_text (Genius) is the absolute source of truth for content and order.
     We match Genius words to synced words for timing, enforcing monotonic time progression.
+    ALL Genius lines must be preserved, even if we have to interpolate timing.
     """
     from difflib import SequenceMatcher
     
@@ -1219,7 +1220,7 @@ def _hybrid_alignment(whisper_lines: list["Line"], lyrics_text: list[str], synce
         print("DEBUG: No ah-ah lines found in Genius input to hybrid alignment!")
         print(f"DEBUG: First 5 Genius lines: {lyrics_text[:5]}")
     
-    # Flatten Genius text into words with line boundaries
+    # Flatten Genius text into words with line boundaries - PRESERVE ALL LINES
     genius_words = []
     for line_idx, line_text in enumerate(lyrics_text):
         line_text = line_text.strip()
@@ -1279,11 +1280,44 @@ def _hybrid_alignment(whisper_lines: list["Line"], lyrics_text: list[str], synce
                     genius_words[g_idx]['start'] = synced_words[s_idx]['start']
                     genius_words[g_idx]['end'] = synced_words[s_idx]['end']
         elif tag == 'delete':
+            # Genius has words that synced doesn't - interpolate timing intelligently
             for i in range(g_end - g_start):
                 g_idx = g_start + i
-                base_time = genius_words[g_idx - 1]['end'] if g_idx > 0 and genius_words[g_idx - 1].get('end') else 0.0
-                genius_words[g_idx]['start'] = base_time
-                genius_words[g_idx]['end'] = base_time + 0.3
+                
+                # Find surrounding timed words for better interpolation
+                prev_time = 0.0
+                next_time = None
+                
+                # Look backward for last timed word
+                for j in range(g_idx - 1, -1, -1):
+                    if genius_words[j].get('end'):
+                        prev_time = genius_words[j]['end']
+                        break
+                
+                # Look forward for next timed word
+                for j in range(g_idx + 1, len(genius_words)):
+                    if genius_words[j].get('start'):
+                        next_time = genius_words[j]['start']
+                        break
+                
+                # Interpolate timing based on context
+                if next_time is not None:
+                    # We have both prev and next - interpolate proportionally
+                    remaining_words = sum(1 for k in range(g_idx, len(genius_words)) 
+                                        if not genius_words[k].get('start') and k < j)
+                    if remaining_words > 0:
+                        time_per_word = (next_time - prev_time) / (remaining_words + 1)
+                        word_offset = sum(1 for k in range(g_start, g_idx + 1) if k >= g_start)
+                        genius_words[g_idx]['start'] = prev_time + word_offset * time_per_word
+                        genius_words[g_idx]['end'] = genius_words[g_idx]['start'] + time_per_word * 0.8
+                    else:
+                        genius_words[g_idx]['start'] = prev_time
+                        genius_words[g_idx]['end'] = prev_time + 0.5
+                else:
+                    # Only have previous time - use reasonable duration
+                    genius_words[g_idx]['start'] = prev_time
+                    genius_words[g_idx]['end'] = prev_time + 0.5
+                    prev_time = genius_words[g_idx]['end']
     
     # Post-process: enforce monotonic timing at word level
     for i in range(1, len(genius_words)):
@@ -1804,9 +1838,14 @@ def transcribe_and_align(vocals_path: str, lyrics_text: Optional[list[str]] = No
     """
     
     if lyrics_text:
-        print(f"DEBUG transcribe_and_align: received {len(lyrics_text)} lyrics lines")
+        print(f"TRACE transcribe_and_align: received {len(lyrics_text)} lyrics lines")
         if len(lyrics_text) > 12:
-            print(f"DEBUG transcribe_and_align: lyrics_text[12] = {repr(lyrics_text[12])}")
+            print(f"TRACE transcribe_and_align: lyrics_text[12] = {repr(lyrics_text[12])}")
+        # Check for ah-ah in received lyrics
+        ah_count = sum(1 for line in lyrics_text if 'ah-ah' in line.lower())
+        print(f"TRACE transcribe_and_align: Found {ah_count} ah-ah lines in received lyrics")
+    else:
+        print("TRACE transcribe_and_align: No lyrics_text received")
     
     import whisperx
     import torch
@@ -2950,6 +2989,13 @@ def get_lyrics(
                 def _is_probable_lyric(t: str) -> bool:
                     if len(t) > 200:
                         return False
+                    # Skip Genius metadata and description lines
+                    if any(skip in t.lower() for skip in [
+                        'contributor', 'lyrics', 'was released', 'single off', 'album',
+                        'video for this song', 'mainstream attention', 'pitchfork',
+                        'read more', '[verse', '[chorus', '[bridge', '[outro', '[intro'
+                    ]):
+                        return False
                     return True
                 genius_lyrics_text = [text for text, _ in genius_lines if _is_probable_lyric(text)] or None
         
@@ -2961,18 +3007,23 @@ def get_lyrics(
             synced_has_ah = any('ah-ah' in line.lower() for line in synced_text)
             
             if genius_has_ah and not synced_has_ah:
-                print(f"Using Genius lyrics (more complete with ah-ah lines) over synced lyrics")
+                print(f"TRACE: Using Genius lyrics (more complete with ah-ah lines) over synced lyrics")
+                print(f"TRACE: Genius has {len(genius_lyrics_text)} lines, synced has {len(synced_text)} lines")
                 lyrics_text = genius_lyrics_text
+                print(f"TRACE: Set lyrics_text to Genius, first 3 lines: {lyrics_text[:3]}")
             else:
-                print(f"Using synced lyrics (Genius available but no ah-ah advantage)")
+                print(f"TRACE: Using synced lyrics (Genius available but no ah-ah advantage)")
                 lyrics_text = synced_text
         else:
             # Extract lyrics text from synced source
             lyrics_text = extract_lyrics_text(lrc_text, title, artist)
+            print(f"TRACE: No Genius lyrics, using synced: {len(lyrics_text)} lines")
         
         # If we have vocals, use WhisperX for accurate word-level timing
         if vocals_path:
             logger.info("Using WhisperX for accurate word-level timing with synced lyrics as reference...")
+            print(f"TRACE: About to call transcribe_and_align with lyrics_text: {len(lyrics_text)} lines")
+            print(f"TRACE: First 3 lyrics_text lines: {lyrics_text[:3]}")
             # Fall through to WhisperX transcription below
         else:
             # No vocals available, use synced lyrics timing directly
@@ -3110,13 +3161,34 @@ def get_lyrics(
     synced_timings = None
     if lrc_text and is_synced:
         synced_timings = parse_lrc_with_timing(lrc_text, title, artist)
-        if genius_lyrics_text and 'avg_score' in locals() and avg_score >= 0.75:
+        # Use Genius lyrics if they were chosen earlier (more complete with ah-ah lines)
+        genius_has_ah = genius_lyrics_text and any('ah-ah' in line.lower() for line in genius_lyrics_text)
+        current_has_ah = any('ah-ah' in line.lower() for line in lyrics_text)
+        
+        print(f"TRACE: Post-transcription check:")
+        print(f"TRACE: genius_lyrics_text exists: {genius_lyrics_text is not None}")
+        print(f"TRACE: genius_has_ah: {genius_has_ah}")
+        print(f"TRACE: current_has_ah: {current_has_ah}")
+        print(f"TRACE: lyrics_text length: {len(lyrics_text)}")
+        
+        if genius_has_ah and not current_has_ah:
+            # CRITICAL: Force use of Genius lyrics since they have ah-ah lines that current doesn't
+            print(f"TRACE: FORCING use of Genius lyrics (has ah-ah, current doesn't)")
+            lyrics_text = [line for line in genius_lyrics_text if line.strip()]
+            print(f"TRACE: Forced lyrics_text to Genius: {len(lyrics_text)} lines")
+            print(f"TRACE: Using hybrid alignment: Genius text (absolute order) + synced timing hints")
+            print(f"TRACE: Genius lines: {len(lyrics_text)}, Synced timings: {len(synced_timings)}")
+        elif genius_has_ah and current_has_ah:
+            # CRITICAL: Keep using Genius text for absolute order (already set correctly)
+            print(f"TRACE: Using hybrid alignment: Genius text (absolute order) + synced timing hints")
+            print(f"TRACE: Genius lines: {len(lyrics_text)}, Synced timings: {len(synced_timings)}")
+        elif genius_lyrics_text and 'avg_score' in locals() and avg_score >= 0.75:
             # CRITICAL: Override lyrics_text with Genius text for absolute order
             lyrics_text = [line for line in genius_lyrics_text if line.strip()]
-            print(f"Using hybrid alignment: Genius text (absolute order) + synced timing hints")
-            print(f"  Genius lines: {len(lyrics_text)}, Synced timings: {len(synced_timings)}")
+            print(f"TRACE: Using hybrid alignment: Genius text (absolute order) + synced timing hints")
+            print(f"TRACE: Genius lines: {len(lyrics_text)}, Synced timings: {len(synced_timings)}")
         else:
-            print(f"Using hybrid alignment: synced line timing + WhisperX word timing")
+            print(f"TRACE: Using hybrid alignment: synced line timing + WhisperX word timing")
     
     if lyrics_text:
         original_count = len(lines)
