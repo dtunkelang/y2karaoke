@@ -123,6 +123,33 @@ class KaraokeGenerator:
                 lyrics_result['lines'], tempo_multiplier
             )
             
+            # Step 7.5: Ensure lyrics start after splash screen
+            if scaled_lines and scaled_lines[0].start_time < 3.5:  # SPLASH_DURATION + 0.5s buffer
+                splash_offset = 3.5 - scaled_lines[0].start_time
+                logger.info(f"⏱️ Adding {splash_offset:.1f}s offset for splash screen")
+                
+                # Import here to avoid circular imports
+                from ..core.lyrics import Line, Word
+                
+                offset_lines = []
+                for line in scaled_lines:
+                    offset_words = [
+                        Word(
+                            text=word.text,
+                            start_time=word.start_time + splash_offset,
+                            end_time=word.end_time + splash_offset,
+                        )
+                        for word in line.words
+                    ]
+                    offset_lines.append(
+                        Line(
+                            words=offset_words,
+                            start_time=line.start_time + splash_offset,
+                            end_time=line.end_time + splash_offset,
+                        )
+                    )
+                scaled_lines = offset_lines
+            
             # Step 8: Generate output path if not provided
             if output_path is None:
                 safe_title = sanitize_filename(audio_result['title'])
