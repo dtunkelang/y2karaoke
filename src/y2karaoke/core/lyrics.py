@@ -1209,6 +1209,16 @@ def _hybrid_alignment(whisper_lines: list["Line"], lyrics_text: list[str], synce
     
     logger.info(f"_hybrid_alignment called with {len(lyrics_text)} Genius lines, {len(synced_timings)} synced timings")
     
+    # Debug: Check for ah-ah lines in input
+    ah_lines = [i for i, text in enumerate(lyrics_text) if 'ah-ah' in text.lower()]
+    if ah_lines:
+        print(f"DEBUG: Found {len(ah_lines)} ah-ah lines in Genius input at indices: {ah_lines}")
+        for idx in ah_lines:
+            print(f"  {idx}: \"{lyrics_text[idx]}\"")
+    else:
+        print("DEBUG: No ah-ah lines found in Genius input to hybrid alignment!")
+        print(f"DEBUG: First 5 Genius lines: {lyrics_text[:5]}")
+    
     # Flatten Genius text into words with line boundaries
     genius_words = []
     for line_idx, line_text in enumerate(lyrics_text):
@@ -1318,6 +1328,17 @@ def _hybrid_alignment(whisper_lines: list["Line"], lyrics_text: list[str], synce
         if line_idx not in lines_dict:
             lines_dict[line_idx] = []
         lines_dict[line_idx].append(word_data)
+    
+    # Debug: Check if ah-ah lines survived to final output
+    ah_lines_final = []
+    for line_idx, words in lines_dict.items():
+        line_text = ' '.join(w['text'] for w in words)
+        if 'ah-ah' in line_text.lower():
+            ah_lines_final.append(line_idx)
+    if ah_lines_final:
+        print(f"DEBUG: {len(ah_lines_final)} ah-ah lines survived to final output at indices: {ah_lines_final}")
+    else:
+        print("DEBUG: No ah-ah lines in final output - they were filtered out!")
     
     # Build result lines
     result_lines = []
@@ -1561,7 +1582,16 @@ def correct_transcription_with_lyrics(lines: list["Line"], lyrics_text: list[str
     # Use hybrid alignment when synced timings are available
     # This preserves Genius text order while using synced line timing
     if synced_line_timings:
-        return _hybrid_alignment(lines, lyrics_text, synced_line_timings, norm_token)
+        # Check if Genius lyrics are more complete than synced lyrics
+        genius_has_ah = any('ah-ah' in line.lower() for line in lyrics_text)
+        synced_has_ah = any('ah-ah' in text.lower() for _, text in synced_line_timings)
+        
+        if genius_has_ah and not synced_has_ah:
+            print("DEBUG: Genius has ah-ah lines but synced doesn't - using Genius as primary source")
+            # Use Genius lyrics as primary source, but still use synced timings where possible
+            return _hybrid_alignment(lines, lyrics_text, synced_line_timings, norm_token)
+        else:
+            return _hybrid_alignment(lines, lyrics_text, synced_line_timings, norm_token)
 
     # Flatten Genius lyrics into tokens with line indices
     ref_lines = [ln.strip() for ln in lyrics_text if ln.strip()]
