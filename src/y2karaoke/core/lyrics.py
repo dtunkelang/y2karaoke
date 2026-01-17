@@ -2,7 +2,7 @@
 
 import re
 from dataclasses import dataclass
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, List, Tuple
 from pathlib import Path
 
 import json
@@ -54,265 +54,200 @@ class LyricsProcessor:
         except Exception as e:
             raise LyricsError(f"Could not get lyrics: {e}")
 
+# =========================
+# Multilingual Romanizer
+# =========================
 
+# ----------------------
 # Try to import Korean romanizer
+# ----------------------
 try:
     from korean_romanizer.romanizer import Romanizer
     KOREAN_ROMANIZER_AVAILABLE = True
 except ImportError:
     KOREAN_ROMANIZER_AVAILABLE = False
 
-# Try to import Chinese romanizer (pinyin)
+# ----------------------
+# Try to import Chinese romanizer (pypinyin)
+# ----------------------
 try:
     from pypinyin import lazy_pinyin, Style
     CHINESE_ROMANIZER_AVAILABLE = True
 except ImportError:
     CHINESE_ROMANIZER_AVAILABLE = False
 
-# Try to import Japanese romanizer (kana/kanji -> romaji)
+# ----------------------
+# Try to import Japanese romanizer (pykakasi)
+# ----------------------
 try:
     from pykakasi import kakasi
     JAPANESE_ROMANIZER_AVAILABLE = True
 except ImportError:
     JAPANESE_ROMANIZER_AVAILABLE = False
 
-# Try to import Arabic/Hebrew romanizer
+# ----------------------
+# Try to import Arabic romanizer
+# ----------------------
 try:
     import pyarabic.araby as araby
     ARABIC_ROMANIZER_AVAILABLE = True
 except ImportError:
     ARABIC_ROMANIZER_AVAILABLE = False
 
-HEBREW_ROMANIZER_AVAILABLE = True  # We'll use a simple mapping
+# ----------------------
+# Hebrew romanization: simple mapping
+# ----------------------
+HEBREW_ROMANIZER_AVAILABLE = True
 
+# ----------------------
+# Unicode ranges for each script
+# ----------------------
+# Korean
+KOREAN_RANGES: List[Tuple[int, int]] = [
+    (0x1100, 0x11FF),
+    (0x3130, 0x318F),
+    (0xAC00, 0xD7AF),
+    (0xA960, 0xA97F),
+    (0xD7B0, 0xD7FF),
+]
 
-def contains_korean(text: str) -> bool:
-    """Check if text contains Korean characters (Hangul)."""
-    # Korean Unicode ranges: Hangul Syllables (AC00-D7AF), Hangul Jamo, etc.
-    for char in text:
-        if '\uac00' <= char <= '\ud7af':  # Hangul Syllables
-            return True
-        if '\u1100' <= char <= '\u11ff':  # Hangul Jamo
-            return True
-        if '\u3130' <= char <= '\u318f':  # Hangul Compatibility Jamo
-            return True
-    return False
+# Japanese
+JAPANESE_HIRAGANA = (0x3040, 0x309F)
+JAPANESE_KATAKANA = (0x30A0, 0x30FF)
+JAPANESE_KANJI_RANGES = [
+    (0x3400, 0x4DBF),  # Kanji Extension A
+    (0x4E00, 0x9FFF),  # Kanji
+]
 
+# Chinese
+CHINESE_RANGES: List[Tuple[int, int]] = [
+    (0x3400, 0x4DBF),  # Extension A
+    (0x4E00, 0x9FFF),  # Unified Ideographs
+    (0xF900, 0xFAFF),  # Compatibility
+    (0x20000, 0x2CEAF), # Extensions B-E
+]
 
-def romanize_korean(text: str) -> str:
-    """
-    Romanize Korean text while preserving non-Korean parts.
+# Arabic
+ARABIC_RANGES = [(0x0600, 0x06FF), (0x0750, 0x077F)]
 
-    Uses the Revised Romanization of Korean standard.
-    """
-    if not KOREAN_ROMANIZER_AVAILABLE:
-        return text
+# Hebrew
+HEBREW_RANGES = [(0x0590, 0x05FF)]
 
-    if not contains_korean(text):
-        return text
+# ----------------------
+# Segment regexes for contiguous blocks
+# ----------------------
+KOREAN_RE = r'\u1100-\u11FF\u3130-\u318F\uAC00-\uD7AF\uA960-\uA97F\uD7B0-\uD7FF'
+JAPANESE_RE = r'\u3040-\u309F\u30A0-\u30FF\u3400-\u4DBF\u4E00-\u9FFF'
+CHINESE_RE = r'\u3400-\u4DBF\u4E00-\u9FFF\uF900-\uFAFF\U00020000-\U0002CEAF'
+ARABIC_RE = r'\u0600-\u06FF\u0750-\u077F'
+HEBREW_RE = r'\u0590-\u05FF'
 
-    try:
-        # The romanizer works on the whole string
-        romanizer = Romanizer(text)
-        return romanizer.romanize()
-    except Exception:
-        # If romanization fails, return original
-        return text
+MULTILINGUAL_RE = re.compile(f'([{KOREAN_RE}{JAPANESE_RE}{CHINESE_RE}{ARABIC_RE}{HEBREW_RE}]+)')
 
+# ----------------------
+# Arabic and Hebrew transliteration tables
+# ----------------------
+ARABIC_TO_LATIN = {
+    'ا': 'a', 'ب': 'b', 'ت': 't', 'ث': 'th', 'ج': 'j', 'ح': 'h', 'خ': 'kh',
+    'د': 'd', 'ذ': 'dh', 'ر': 'r', 'ز': 'z', 'س': 's', 'ش': 'sh', 'ص': 's',
+    'ض': 'd', 'ط': 't', 'ظ': 'z', 'ع': 'a', 'غ': 'gh', 'ف': 'f', 'ق': 'q',
+    'ك': 'k', 'ل': 'l', 'م': 'm', 'ن': 'n', 'ه': 'h', 'و': 'w', 'ي': 'y',
+    'ى': 'a', 'ة': 'h', 'ء': '', 'ئ': '', 'ؤ': 'w', 'إ': 'i', 'أ': 'a',
+    'آ': 'aa', 'َ': 'a', 'ُ': 'u', 'ِ': 'i', 'ّ': '', 'ْ': ''
+}
 
-def contains_chinese(text: str) -> bool:
-    """Check if text contains Chinese (CJK) characters."""
-    # Basic CJK Unified Ideographs block; this covers most common Han characters.
-    for char in text:
-        if "\u4e00" <= char <= "\u9fff":
-            return True
-    return False
+HEBREW_TO_LATIN = {
+    'א': 'a', 'ב': 'b', 'ג': 'g', 'ד': 'd', 'ה': 'h', 'ו': 'v', 'ז': 'z',
+    'ח': 'ch', 'ט': 't', 'י': 'y', 'כ': 'k', 'ך': 'kh', 'ל': 'l', 'מ': 'm',
+    'ם': 'm', 'נ': 'n', 'ן': 'n', 'ס': 's', 'ע': 'a', 'פ': 'p', 'ף': 'f',
+    'צ': 'ts', 'ץ': 'ts', 'ק': 'k', 'ר': 'r', 'ש': 'sh', 'ת': 't'
+}
 
-
-def romanize_chinese(text: str) -> str:
-    """Romanize Chinese text (Han characters) while preserving other scripts.
-
-    Uses pypinyin to generate Pinyin without tone marks for readability.
-    Non-Chinese characters are passed through unchanged.
-    """
-    if not CHINESE_ROMANIZER_AVAILABLE:
-        return text
-
-    if not contains_chinese(text):
-        return text
-
-    # Build result by chunking consecutive Chinese characters so we can
-    # insert spaces between syllables but keep non-Chinese regions intact.
-    result_parts: list[str] = []
-    chinese_buffer: list[str] = []
-
-    def flush_chinese() -> None:
-        if not chinese_buffer:
-            return
-        segment = "".join(chinese_buffer)
-        chinese_buffer.clear()
-        try:
-            # lazy_pinyin returns a list of syllables; join with spaces
-            pinyin_list = lazy_pinyin(segment, style=Style.NORMAL)
-            result_parts.append(" ".join(pinyin_list))
-        except Exception:
-            # On any pypinyin failure, fall back to the original segment
-            result_parts.append(segment)
-
-    for ch in text:
-        if contains_chinese(ch):
-            chinese_buffer.append(ch)
-        else:
-            flush_chinese()
-            result_parts.append(ch)
-
-    flush_chinese()
-    return "".join(result_parts)
-
-
-def contains_japanese(text: str) -> bool:
-    """Check if text contains Japanese characters (Hiragana/Katakana)."""
-    for ch in text:
-        # Hiragana
-        if "\u3040" <= ch <= "\u309f":
-            return True
-        # Katakana (including Katakana Phonetic Extensions)
-        if "\u30a0" <= ch <= "\u30ff" or "\u31f0" <= ch <= "\u31ff":
-            return True
-    return False
-
-
+# ----------------------
+# Japanese converter cache
+# ----------------------
 _JAPANESE_CONVERTER = None
 
+# ----------------------
+# Individual segment romanizers
+# ----------------------
+def romanize_korean(block: str) -> str:
+    if not KOREAN_ROMANIZER_AVAILABLE:
+        return block
+    try:
+        return Romanizer(block).romanize()
+    except Exception:
+        return block
 
-def romanize_japanese(text: str) -> str:
-    """Romanize Japanese text (kana/kanji) while preserving other scripts.
+def romanize_chinese(block: str) -> str:
+    if not CHINESE_ROMANIZER_AVAILABLE:
+        return block
+    try:
+        return " ".join(lazy_pinyin(block, style=Style.NORMAL))
+    except Exception:
+        return block
 
-    Uses pykakasi to generate romaji. Non-Japanese characters are passed
-    through unchanged.
-    """
+def romanize_japanese(block: str) -> str:
     global _JAPANESE_CONVERTER
-
     if not JAPANESE_ROMANIZER_AVAILABLE:
-        return text
-
-    if not contains_japanese(text):
-        return text
-
+        return block
+    if _JAPANESE_CONVERTER is None:
+        _JAPANESE_CONVERTER = kakasi()
     try:
-        if _JAPANESE_CONVERTER is None:
-            _JAPANESE_CONVERTER = kakasi()
-        
-        result = _JAPANESE_CONVERTER.convert(text)
-        # Join with spaces to preserve word boundaries
-        return " ".join([item["hepburn"] for item in result])
+        result = _JAPANESE_CONVERTER.convert(block)
+        return " ".join(item["hepburn"] for item in result)
     except Exception:
-        # On any pykakasi failure, fall back to the original
-        return text
+        return block
 
-
-def contains_arabic(text: str) -> bool:
-    """Check if text contains Arabic characters."""
-    for ch in text:
-        # Arabic Unicode range
-        if "\u0600" <= ch <= "\u06ff" or "\u0750" <= ch <= "\u077f":
-            return True
-    return False
-
-
-def contains_hebrew(text: str) -> bool:
-    """Check if text contains Hebrew characters."""
-    for ch in text:
-        # Hebrew Unicode range
-        if "\u0590" <= ch <= "\u05ff":
-            return True
-    return False
-
-
-def romanize_arabic(text: str) -> str:
-    """Romanize Arabic text to Latin script."""
+def romanize_arabic(block: str) -> str:
     if not ARABIC_ROMANIZER_AVAILABLE:
-        return text
-    
-    if not contains_arabic(text):
-        return text
-    
+        return block
     try:
-        # Simple Arabic to Latin transliteration mapping
-        arabic_to_latin = {
-            'ا': 'a', 'ب': 'b', 'ت': 't', 'ث': 'th', 'ج': 'j', 'ح': 'h', 'خ': 'kh',
-            'د': 'd', 'ذ': 'dh', 'ر': 'r', 'ز': 'z', 'س': 's', 'ش': 'sh', 'ص': 's',
-            'ض': 'd', 'ط': 't', 'ظ': 'z', 'ع': 'a', 'غ': 'gh', 'ف': 'f', 'ق': 'q',
-            'ك': 'k', 'ل': 'l', 'م': 'm', 'ن': 'n', 'ه': 'h', 'و': 'w', 'ي': 'y',
-            'ى': 'a', 'ة': 'h', 'ء': '', 'ئ': '', 'ؤ': 'w', 'إ': 'i', 'أ': 'a',
-            'آ': 'aa', 'َ': 'a', 'ُ': 'u', 'ِ': 'i', 'ّ': '', 'ْ': ''
-        }
-        
-        result = []
-        for char in text:
-            if char in arabic_to_latin:
-                result.append(arabic_to_latin[char])
-            else:
-                result.append(char)
-        return ''.join(result)
+        return ''.join(ARABIC_TO_LATIN.get(c, c) for c in block)
     except Exception:
-        return text
+        return block
 
-
-def romanize_hebrew(text: str) -> str:
-    """Romanize Hebrew text to Latin script."""
+def romanize_hebrew(block: str) -> str:
     if not HEBREW_ROMANIZER_AVAILABLE:
-        return text
-    
-    if not contains_hebrew(text):
-        return text
-    
+        return block
     try:
-        # Simple Hebrew to Latin transliteration mapping
-        hebrew_to_latin = {
-            'א': 'a', 'ב': 'b', 'ג': 'g', 'ד': 'd', 'ה': 'h', 'ו': 'v', 'ז': 'z',
-            'ח': 'ch', 'ט': 't', 'י': 'y', 'כ': 'k', 'ך': 'kh', 'ל': 'l', 'מ': 'm',
-            'ם': 'm', 'נ': 'n', 'ן': 'n', 'ס': 's', 'ע': 'a', 'פ': 'p', 'ף': 'f',
-            'צ': 'ts', 'ץ': 'ts', 'ק': 'k', 'ר': 'r', 'ש': 'sh', 'ת': 't'
-        }
-        
-        result = []
-        for char in text:
-            if char in hebrew_to_latin:
-                result.append(hebrew_to_latin[char])
-            else:
-                result.append(char)
-        return ''.join(result)
+        return ''.join(HEBREW_TO_LATIN.get(c, c) for c in block)
     except Exception:
-        return text
+        return block
 
+# ----------------------
+# Optimized single-pass multilingual romanizer
+# ----------------------
+SCRIPT_ROMANIZER_MAP = [
+    (KOREAN_RANGES, romanize_korean),
+    ([JAPANESE_HIRAGANA, JAPANESE_KATAKANA] + JAPANESE_KANJI_RANGES, romanize_japanese),
+    (CHINESE_RANGES, romanize_chinese),
+    (ARABIC_RANGES, romanize_arabic),
+    (HEBREW_RANGES, romanize_hebrew),
+]
 
-def romanize_line(text: str) -> str:
-    """Romanize a line of lyrics, handling mixed Korean/Japanese/Chinese/Arabic/Hebrew/English text."""
-    # Apply Korean romanization first
-    if contains_korean(text):
-        text = romanize_korean(text)
+def romanize_multilingual(text: str) -> str:
+    """
+    Romanize mixed Korean, Japanese, Chinese, Arabic, Hebrew, and English text
+    in a single pass. Preserves non-target scripts.
+    """
+    def replace_block(match: re.Match) -> str:
+        block = match.group()
+        code = ord(block[0])
+        for ranges, romanizer in SCRIPT_ROMANIZER_MAP:
+            for start, end in ranges:
+                if start <= code <= end:
+                    try:
+                        return romanizer(block)
+                    except Exception:
+                        return block
+        return block  # fallback if no script matches
 
-    # Then apply Japanese romanization
-    if contains_japanese(text):
-        text = romanize_japanese(text)
+    romanized = MULTILINGUAL_RE.sub(replace_block, text)
+    return " ".join(romanized.split())  # collapse repeated spaces
 
-    # Apply Chinese romanization (including any remaining Han characters)
-    if contains_chinese(text):
-        text = romanize_chinese(text)
-    
-    # Apply Arabic romanization
-    if contains_arabic(text):
-        text = romanize_arabic(text)
-    
-    # Apply Hebrew romanization
-    if contains_hebrew(text):
-        text = romanize_hebrew(text)
-
-    # Clean up common issues: collapse repeated whitespace
-    text = " ".join(text.split())
-    return text
-
+# Alias for backward compatibility
+romanize_line = romanize_multilingual
 
 @dataclass
 class Word:
@@ -1282,44 +1217,87 @@ def _hybrid_alignment(whisper_lines: list["Line"], lyrics_text: list[str], synce
         elif tag == 'delete':
             # Genius has words that synced doesn't - interpolate timing intelligently
             # This handles cases like "Ah-ah, ah-ah" lines that aren't in synced lyrics
-            
+
             # Find the time span this deletion should fill
             start_time = 0.0
             end_time = None
-            
+
             # Look backward for the last timed word
             for j in range(g_start - 1, -1, -1):
                 if genius_words[j].get('end'):
                     start_time = genius_words[j]['end']
                     break
-            
-            # Look forward for the next timed word  
+
+            # Look forward for the next timed word
             for j in range(g_end, len(genius_words)):
                 if genius_words[j].get('start'):
                     end_time = genius_words[j]['start']
                     break
-            
-            # If we have a time span, distribute the deleted words evenly within it
+
+            # Get the text of these Genius-only words to check for slow vocalizations
+            genius_only_text = ' '.join(genius_words[g_idx]['text'] for g_idx in range(g_start, g_end)).lower()
+            is_slow_vocalization = any(pattern in genius_only_text for pattern in
+                                       ['ah-ah', 'ah ah', 'oh-oh', 'oh oh', 'la-la', 'la la', 'na-na', 'na na'])
+
+            # Estimate local tempo from nearby synced words
+            local_word_durations = []
+            # Look at words before
+            for j in range(max(0, s_start - 5), s_start):
+                if j < len(synced_words):
+                    dur = synced_words[j]['end'] - synced_words[j]['start']
+                    if 0.05 < dur < 2.0:
+                        local_word_durations.append(dur)
+            # Look at words after
+            for j in range(s_start, min(len(synced_words), s_start + 5)):
+                dur = synced_words[j]['end'] - synced_words[j]['start']
+                if 0.05 < dur < 2.0:
+                    local_word_durations.append(dur)
+
+            # Calculate local average word duration (tempo indicator)
+            if local_word_durations:
+                local_avg_duration = sum(local_word_durations) / len(local_word_durations)
+            else:
+                local_avg_duration = 0.3  # Default for fast songs
+
+            num_words = g_end - g_start
+
+            # If we have a time span, distribute the deleted words within it
             if end_time is not None and end_time > start_time:
                 time_span = end_time - start_time
-                num_words = g_end - g_start
-                
-                # Give more time if this is a large gap (likely where vocal sections belong)
-                if time_span > 5.0:  # Large gap - likely instrumental with vocals
-                    word_duration = min(1.0, time_span / num_words)  # Cap at 1s per word
+
+                # Determine word duration based on context
+                if is_slow_vocalization:
+                    # Slow vocalizations get more time (0.8-1.5s per syllable)
+                    # But MUST fit within the available time span to avoid cascade issues
+                    ideal_duration = min(1.5, max(0.8, time_span / num_words))
+                    total_time_needed = ideal_duration * num_words
+                    if total_time_needed > time_span * 0.9:  # Leave 10% buffer
+                        # Constrain to fit within available time
+                        word_duration = time_span * 0.9 / num_words
+                        logger.info(f"Slow vocalization '{genius_only_text}' constrained to {word_duration:.2f}s/word (time_span={time_span:.1f}s)")
+                    else:
+                        word_duration = ideal_duration
+                        logger.info(f"Slow vocalization detected: '{genius_only_text}' - using {word_duration:.2f}s/word")
+                elif time_span > 5.0:
+                    # Large gap - likely instrumental with vocals, use local tempo
+                    word_duration = min(1.0, max(local_avg_duration, time_span / num_words))
                 else:
-                    word_duration = time_span / (num_words + 1)  # Leave some buffer
-                
+                    # Normal case - use local tempo but leave buffer
+                    word_duration = min(local_avg_duration * 1.2, time_span / (num_words + 1))
+
                 for i in range(g_end - g_start):
                     g_idx = g_start + i
                     genius_words[g_idx]['start'] = start_time + i * word_duration
                     genius_words[g_idx]['end'] = genius_words[g_idx]['start'] + word_duration * 0.8
             else:
-                # Fallback: use reasonable durations
+                # Fallback: use local tempo or reasonable default
+                word_duration = local_avg_duration if local_word_durations else 0.5
+                if is_slow_vocalization:
+                    word_duration = max(0.8, word_duration)
                 for i in range(g_end - g_start):
                     g_idx = g_start + i
-                    genius_words[g_idx]['start'] = start_time + i * 0.5
-                    genius_words[g_idx]['end'] = genius_words[g_idx]['start'] + 0.4
+                    genius_words[g_idx]['start'] = start_time + i * word_duration
+                    genius_words[g_idx]['end'] = genius_words[g_idx]['start'] + word_duration * 0.8
     
     # Post-process: enforce monotonic timing at word level
     for i in range(1, len(genius_words)):
@@ -1410,25 +1388,34 @@ def _hybrid_alignment(whisper_lines: list["Line"], lyrics_text: list[str], synce
         duration = line.end_time - line.start_time
         line_text = ' '.join(w.text for w in line.words)
         
-        # If line is very short (< 1.5 seconds) and has repetitive text, extend it
-        if duration < 1.5 and ('la-la' in line_text.lower() or 'la-la-la-la' in line_text.lower()):
-            logger.info(f"Extending short line {i}: '{line_text}' from {duration:.2f}s to 2.5s")
-            target_duration = 2.5
+        # If line is short and has repetitive/vocalization text, extend it
+        # These patterns are typically sung slowly even in fast songs
+        is_slow_vocalization = (
+            'la-la' in line_text.lower() or
+            'ah-ah' in line_text.lower() or
+            'oh-oh' in line_text.lower() or
+            'na-na' in line_text.lower()
+        )
+        # Slow vocalizations need more time - extend if under 3.5 seconds
+        if duration < 3.5 and is_slow_vocalization:
+            # Target duration: 4 seconds for slow vocalizations
+            target_duration = 4.0
+            logger.info(f"Extending slow vocalization line {i}: '{line_text}' from {duration:.2f}s to {target_duration}s")
             old_end = line.end_time
             word_duration = target_duration / len(line.words)
-            
+
             # Extend this line's words
             for j, word in enumerate(line.words):
                 word.start_time = line.start_time + j * word_duration
                 word.end_time = word.start_time + word_duration
-            
+
             line.end_time = line.words[-1].end_time
             new_end = line.end_time
             extension = new_end - old_end
-            
-            # Only shift following lines that would overlap (within 1 second)
+
+            # Only shift following lines that would overlap (within 0.5 second)
             for j in range(i + 1, len(result_lines)):
-                if result_lines[j].start_time < new_end + 0.1:
+                if result_lines[j].start_time < new_end + 0.5:
                     # This line would overlap, shift it
                     result_lines[j].start_time += extension
                     result_lines[j].end_time += extension
@@ -1462,6 +1449,24 @@ def _hybrid_alignment(whisper_lines: list["Line"], lyrics_text: list[str], synce
     
     if fixes_applied > 0:
         logger.info(f"Applied {fixes_applied} temporal ordering fixes")
+    
+    # Check for and fix lines with bad timing (too long with gaps)
+    for line in result_lines:
+        line_duration = line.end_time - line.start_time
+        if line_duration > 6.0 and len(line.words) > 1:  # Long line with multiple words
+            line_text = ' '.join(w.text for w in line.words)
+            print(f"HYBRID: Fixing long line ({line_duration:.1f}s): \"{line_text[:50]}...\"")
+            
+            # Redistribute timing evenly
+            target_duration = min(4.0, line_duration * 0.6)
+            word_duration = target_duration / len(line.words)
+            
+            for i, word in enumerate(line.words):
+                word.start_time = line.start_time + i * word_duration
+                word.end_time = word.start_time + word_duration * 0.8
+            
+            line.end_time = line.words[-1].end_time
+            print(f"HYBRID: Fixed to {line.end_time - line.start_time:.1f}s")
     
     logger.info(f"_hybrid_alignment returning {len(result_lines)} lines")
     return result_lines
@@ -2123,16 +2128,16 @@ def transcribe_and_align(vocals_path: str, lyrics_text: Optional[list[str]] = No
                 if not anchor_lines:
                     continue
                 
-                # Check for lines that are unusually long (>8s) which often have bad timing
+                # Check for lines that are unusually long (>6s) which often have bad timing
                 for line in anchor_lines:
                     line_duration = line.end_time - line.start_time
-                    if line_duration > 8.0:  # Unusually long line
+                    if line_duration > 6.0:  # Lower threshold to catch more problematic lines
                         line_text = ' '.join(w.text for w in line.words)
                         print(f"    WARNING: Long line ({line_duration:.1f}s) at {line.start_time:.1f}s: \"{line_text[:50]}...\"")
                         
                         # Redistribute timing more evenly within this line
                         if len(line.words) > 1:
-                            target_duration = min(6.0, line_duration)  # Cap at 6s
+                            target_duration = min(4.0, line_duration * 0.6)  # More aggressive reduction
                             word_duration = target_duration / len(line.words)
                             
                             for i, word in enumerate(line.words):
@@ -3232,21 +3237,35 @@ def get_lyrics(
                 times = audio_analysis['times']
                 is_vocal = audio_analysis['is_vocal']
                 
+                # Helper to detect slow vocalization lines
+                def is_slow_vocalization_line(line):
+                    line_text = ' '.join(w.text for w in line.words).lower()
+                    return any(p in line_text for p in ['ah-ah', 'ah ah', 'oh-oh', 'oh oh', 'la-la', 'la la', 'na-na', 'na na'])
+
                 for i in range(len(lines) - 1):
                     current_line = lines[i]
                     next_line = lines[i + 1]
                     gap = next_line.start_time - current_line.end_time
-                    
+
                     if gap > 2.0:  # Only check significant gaps
+                        # IMPORTANT: Don't compress gaps between slow vocalization lines
+                        # These lines (like "ah-ah") are sung slowly and need the time
+                        current_is_slow = is_slow_vocalization_line(current_line)
+                        next_is_slow = is_slow_vocalization_line(next_line)
+
+                        if current_is_slow or next_is_slow:
+                            print(f"  Skipping gap {i+1}->{i+2}: {gap:.1f}s (slow vocalization lines, preserving timing)")
+                            continue
+
                         print(f"  Checking gap {i+1}->{i+2}: {gap:.1f}s")
                         # Check vocal activity in the gap
                         gap_start_idx = np.searchsorted(times, current_line.end_time)
                         gap_end_idx = np.searchsorted(times, next_line.start_time)
-                        
+
                         if gap_start_idx < gap_end_idx:
                             gap_vocal = is_vocal[gap_start_idx:gap_end_idx]
                             vocal_ratio = np.mean(gap_vocal) if len(gap_vocal) > 0 else 0
-                            
+
                             # If there's significant vocal activity in the "gap", compress it
                             if vocal_ratio > 0.1:  # More than 10% vocal activity
                                 # For very high vocal activity (>50%), assume continuous singing
@@ -3254,19 +3273,19 @@ def get_lyrics(
                                     # Compress to minimal gap (0.2s) for continuous sections
                                     target_gap = 0.2
                                     shift_amount = gap - target_gap
-                                    print(f"  Fixing {gap:.1f}s gap between lines {i+1}-{i+2} ({vocal_ratio:.0%} vocal activity), compressing to {target_gap:.1f}s")
+                                    print(f"  Fixing {gap:.1f}s gap between lines {i+1}->{i+2} ({vocal_ratio:.0%} vocal activity), compressing to {target_gap:.1f}s")
                                 else:
                                     # Find where vocals actually resume
                                     vocal_indices = np.where(gap_vocal)[0]
                                     if len(vocal_indices) > 0:
                                         first_vocal_idx = vocal_indices[0]
                                         actual_resume_time = times[gap_start_idx + first_vocal_idx]
-                                        
+
                                         # Compress gap to match actual vocal activity
                                         target_gap = max(0.5, actual_resume_time - current_line.end_time)
                                         shift_amount = gap - target_gap
-                                        print(f"  Fixing {gap:.1f}s gap between lines {i+1}-{i+2} ({vocal_ratio:.0%} vocal activity), compressing to {target_gap:.1f}s")
-                                
+                                        print(f"  Fixing {gap:.1f}s gap between lines {i+1}->{i+2} ({vocal_ratio:.0%} vocal activity), compressing to {target_gap:.1f}s")
+
                                 if shift_amount > 0.5:  # Only if significant compression needed
                                     # Shift all subsequent lines earlier
                                     for j in range(i + 1, len(lines)):
@@ -3534,6 +3553,54 @@ def get_lyrics(
                 invalid_breaks = [(s, e) for s, e, valid in break_issues if not valid]
                 if invalid_breaks:
                     print(f"  Found {len(invalid_breaks)} gaps with unexpected vocal activity")
+
+                    # Try to fix gaps by repositioning slow vocalization lines
+                    def is_slow_vocal_line(line):
+                        text = ' '.join(w.text for w in line.words).lower()
+                        return any(p in text for p in ['ah-ah', 'ah ah', 'oh-oh', 'oh oh', 'la-la', 'la la', 'na-na', 'na na'])
+
+                    for gap_start, gap_end in invalid_breaks:
+                        gap_duration = gap_end - gap_start
+                        print(f"  Attempting to fix gap {gap_start:.1f}s-{gap_end:.1f}s ({gap_duration:.1f}s)")
+
+                        # Find slow vocalization lines that are NEAR this gap (within 20s)
+                        # Don't move lines that are far away - they likely belong to a different section
+                        slow_lines = []
+                        for i, line in enumerate(lines):
+                            if is_slow_vocal_line(line):
+                                # Check if this line is NOT already inside the gap
+                                line_in_gap = (line.start_time >= gap_start - 1.0 and line.end_time <= gap_end + 1.0)
+                                # Check if this line is NEAR the gap (within 20s after the gap ends)
+                                line_near_gap = (line.start_time >= gap_end and line.start_time <= gap_end + 20.0)
+                                if not line_in_gap and line_near_gap:
+                                    slow_lines.append((i, line))
+                                    print(f"    Found slow vocalization line {i} at {line.start_time:.1f}s: '{' '.join(w.text for w in line.words)[:20]}'")
+
+                        if slow_lines:
+                            # Reposition these lines to fill the gap
+                            num_slow_lines = len(slow_lines)
+                            time_per_line = gap_duration / num_slow_lines
+                            print(f"    Repositioning {num_slow_lines} slow vocalization lines to fill gap ({time_per_line:.1f}s each)")
+
+                            for j, (line_idx, line) in enumerate(slow_lines):
+                                new_start = gap_start + j * time_per_line
+                                new_end = new_start + time_per_line - 0.1  # Small gap between lines
+                                old_start = line.start_time
+
+                                # Update line timing
+                                line.start_time = new_start
+                                line.end_time = new_end
+
+                                # Redistribute words evenly within the line
+                                if line.words:
+                                    word_duration = (new_end - new_start) / len(line.words)
+                                    for k, word in enumerate(line.words):
+                                        word.start_time = new_start + k * word_duration
+                                        word.end_time = word.start_time + word_duration * 0.9
+
+                                print(f"    Moved line {line_idx} '{' '.join(w.text for w in line.words)[:20]}': {old_start:.1f}s -> {new_start:.1f}s")
+                        else:
+                            print(f"    No slow vocalization lines found near this gap")
             # Re-sort after any corrections ONLY if not using Genius text
             if not (genius_lyrics_text and 'avg_score' in locals() and avg_score >= 0.75 and lrc_text and is_synced):
                 lines.sort(key=lambda l: l.start_time)
