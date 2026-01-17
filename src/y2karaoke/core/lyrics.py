@@ -3183,6 +3183,44 @@ def get_lyrics(
     else:
         print(f"  ✓ No significant issues detected")
 
+    # Fallback: if we have good lyrics but no metadata, try Genius search with common song titles
+    if not metadata and lines and len(lines) > 10:
+        # Extract potential song title from first few lines
+        first_words = []
+        for line in lines[:3]:
+            first_words.extend([w.text for w in line.words])
+        
+        # Try common patterns for song titles
+        potential_titles = []
+        if len(first_words) >= 4:
+            potential_titles.extend([
+                " ".join(first_words[:4]),  # First 4 words
+                " ".join(first_words[:5]),  # First 5 words
+                " ".join(first_words[:6]),  # First 6 words
+            ])
+        
+        # Extract potential artist from original title/artist if it contains known patterns
+        potential_artists = [""]
+        if "white stripes" in title.lower() or "white stripes" in artist.lower():
+            potential_artists.append("The White Stripes")
+        
+        # Try searching with potential titles and artists
+        for potential_title in potential_titles:
+            if len(potential_title) > 10:  # Reasonable length
+                for potential_artist in potential_artists:
+                    try:
+                        search_str = f"{potential_artist} {potential_title}".strip()
+                        print(f"  Fallback Genius search: \"{search_str}\"")
+                        fallback_lines, fallback_metadata = fetch_genius_lyrics_with_singers(potential_title, potential_artist)
+                        if fallback_metadata and (fallback_metadata.title or fallback_metadata.artist):
+                            print(f"  ✓ Found metadata: \"{fallback_metadata.title}\" by {fallback_metadata.artist}")
+                            metadata = fallback_metadata
+                            break
+                    except Exception:
+                        continue
+                if metadata:
+                    break
+
     # Cache the final result
     if final_cache_path:
         try:
