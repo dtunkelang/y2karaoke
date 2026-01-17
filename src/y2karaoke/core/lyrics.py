@@ -2039,21 +2039,53 @@ def transcribe_and_align(vocals_path: str, lyrics_text: Optional[list[str]] = No
             
             print(f"    Detected {len(onset_frames)} vocal onsets")
             
-            # Refine word start times by snapping to nearest vocal onsets
+            # Create timing anchors every 20 seconds to prevent drift
+            song_duration = max(line.end_time for line in lines) if lines else 0
+            anchor_interval = 20.0  # seconds
+            
+            for anchor_time in range(int(anchor_interval), int(song_duration), int(anchor_interval)):
+                # Find lines around this anchor point
+                anchor_lines = [line for line in lines 
+                              if abs(line.start_time - anchor_time) < 10.0]
+                
+                if anchor_lines:
+                    # Find closest vocal onset to expected timing
+                    closest_line = min(anchor_lines, key=lambda l: abs(l.start_time - anchor_time))
+                    expected_time = closest_line.start_time
+                    
+                    # Find nearest vocal onset
+                    nearby_onsets = [t for t in onset_frames if abs(t - expected_time) <= 2.0]
+                    if nearby_onsets:
+                        actual_onset = min(nearby_onsets, key=lambda t: abs(t - expected_time))
+                        drift_correction = actual_onset - expected_time
+                        
+                        if abs(drift_correction) > 0.2:
+                            print(f"    Anchor at {anchor_time}s: {drift_correction:+.2f}s drift correction")
+                            
+                            # Apply correction to all subsequent lines
+                            for line in lines:
+                                if line.start_time >= expected_time:
+                                    line.start_time += drift_correction
+                                    line.end_time += drift_correction
+                                    for word in line.words:
+                                        word.start_time += drift_correction
+                                        word.end_time += drift_correction
+            
+            # Also refine individual words within ±0.5s
             refined_words = 0
             for line in lines:
                 for word in line.words:
-                    # Find closest onset within ±0.5s of WhisperX timing
+                    # Find closest onset within ±0.3s of WhisperX timing
                     word_time = word.start_time
-                    nearby_onsets = [t for t in onset_frames if abs(t - word_time) <= 0.5]
+                    nearby_onsets = [t for t in onset_frames if abs(t - word_time) <= 0.3]
                     
                     if nearby_onsets:
                         # Use the closest onset
                         closest_onset = min(nearby_onsets, key=lambda t: abs(t - word_time))
                         timing_adjustment = closest_onset - word.start_time
                         
-                        # Only adjust if the change is reasonable (< 0.3s)
-                        if abs(timing_adjustment) < 0.3:
+                        # Only adjust if the change is small (< 0.2s)
+                        if abs(timing_adjustment) < 0.2:
                             word.start_time = closest_onset
                             # Keep word duration roughly the same
                             word.end_time = word.start_time + (word.end_time - word_time)
