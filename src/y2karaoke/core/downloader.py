@@ -198,7 +198,38 @@ class YouTubeDownloader:
     
     def _extract_artist(self, title: str, uploader: str, description: str = "") -> str:
         """Extract artist name from title, description, or uploader."""
-        # Strategy 1: YouTube Music format in description ("Title · Artist")
+        # Strategy 1: Check if description is mostly promotional
+        if description:
+            lines = description.split('\n')[:5]  # Check first 5 lines
+            promotional_count = 0
+            for line in lines:
+                if any(word in line.lower() for word in ['listen to', 'subscribe', 'merch', 'lnk.to', 'follow', 'watch the official']):
+                    promotional_count += 1
+            
+            # If most lines are promotional, skip description and extract from title
+            if promotional_count >= 2:
+                logger.info("Description appears promotional, extracting from title/uploader")
+                if ' - ' in title:
+                    parts = title.split(' - ', 1)
+                    if len(parts) == 2:
+                        potential_artist = parts[0].strip()
+                        if len(potential_artist) < 50 and not any(
+                            word in potential_artist.lower() 
+                            for word in ['official', 'video', 'audio', 'lyrics', 'lyric']
+                        ):
+                            logger.info(f"Extracted artist from title (- format): {potential_artist}")
+                            return potential_artist
+                
+                # Fall back to uploader
+                artist = uploader
+                suffixes = ['Official', 'VEVO', 'Records', 'Music', 'Channel', '- Topic', ' - Topic', 'TV']
+                for suffix in suffixes:
+                    if artist.endswith(suffix):
+                        artist = artist[:-len(suffix)].strip()
+                logger.info(f"Using uploader as artist: {artist}")
+                return artist or "Unknown"
+        
+        # Strategy 2: YouTube Music format in description ("Title · Artist")
         if description:
             lines = description.split('\n')
             non_url_lines = [line.strip() for line in lines 
@@ -226,7 +257,7 @@ class YouTubeDownloader:
                             logger.info(f"Extracted artist from description (line 2): {artist}")
                             return artist
         
-        # Strategy 2: "Artist - Title" format in video title
+        # Strategy 3: "Artist - Title" format in video title
         if ' - ' in title:
             parts = title.split(' - ', 1)
             if len(parts) == 2:
@@ -238,7 +269,7 @@ class YouTubeDownloader:
                     logger.info(f"Extracted artist from title (- format): {potential_artist}")
                     return potential_artist
         
-        # Strategy 3: Clean up uploader name
+        # Strategy 4: Clean up uploader name
         artist = uploader
         suffixes = ['Official', 'VEVO', 'Records', 'Music', 'Channel', '- Topic', ' - Topic', 'TV']
         for suffix in suffixes:
@@ -250,7 +281,22 @@ class YouTubeDownloader:
     
     def _extract_title(self, title: str, artist: str, description: str = "") -> str:
         """Extract song title from title or description."""
-        # Strategy 1: YouTube Music format in description ("Title · Artist")
+        # Strategy 1: Check if description is mostly promotional
+        if description:
+            lines = description.split('\n')[:5]  # Check first 5 lines
+            promotional_count = 0
+            for line in lines:
+                if any(word in line.lower() for word in ['listen to', 'subscribe', 'merch', 'lnk.to', 'follow', 'watch the official']):
+                    promotional_count += 1
+            
+            # If most lines are promotional, skip description and use video title
+            if promotional_count >= 2:
+                logger.info("Description appears promotional, using video title")
+                cleaned = clean_title(title, artist)
+                logger.info(f"Extracted title from video title: {cleaned}")
+                return cleaned
+        
+        # Strategy 2: YouTube Music format in description ("Title · Artist")
         if description:
             lines = description.split('\n')
             for line in lines[:10]:
@@ -278,7 +324,7 @@ class YouTubeDownloader:
                         logger.info(f"Extracted title from description (line 1): {song_title}")
                         return song_title
         
-        # Strategy 2: Clean the video title
+        # Strategy 3: Clean the video title
         cleaned = clean_title(title, artist)
         logger.info(f"Extracted title from video title: {cleaned}")
         return cleaned
