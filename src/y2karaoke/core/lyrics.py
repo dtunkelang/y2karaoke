@@ -2117,6 +2117,33 @@ def transcribe_and_align(vocals_path: str, lyrics_text: Optional[list[str]] = No
             for anchor_time in range(int(anchor_interval), int(song_duration), int(anchor_interval)):
                 # Find lines around this anchor point
                 anchor_lines = [line for line in lines 
+                              if line.start_time <= anchor_time <= line.end_time or 
+                                 abs(line.start_time - anchor_time) < 2.0]
+                
+                if not anchor_lines:
+                    continue
+                
+                # Check for lines that are unusually long (>8s) which often have bad timing
+                for line in anchor_lines:
+                    line_duration = line.end_time - line.start_time
+                    if line_duration > 8.0:  # Unusually long line
+                        line_text = ' '.join(w.text for w in line.words)
+                        print(f"    WARNING: Long line ({line_duration:.1f}s) at {line.start_time:.1f}s: \"{line_text[:50]}...\"")
+                        
+                        # Redistribute timing more evenly within this line
+                        if len(line.words) > 1:
+                            target_duration = min(6.0, line_duration)  # Cap at 6s
+                            word_duration = target_duration / len(line.words)
+                            
+                            for i, word in enumerate(line.words):
+                                word.start_time = line.start_time + i * word_duration
+                                word.end_time = word.start_time + word_duration * 0.8
+                            
+                            line.end_time = line.words[-1].end_time
+                            print(f"    FIXED: Redistributed to {line.end_time - line.start_time:.1f}s")
+                
+                # Continue with normal anchor processing
+                anchor_lines = [line for line in lines 
                               if abs(line.start_time - anchor_time) < 3.0]  # Smaller search window
                 
                 if anchor_lines:
