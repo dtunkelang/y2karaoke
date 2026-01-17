@@ -3390,6 +3390,23 @@ def get_lyrics(
     else:
         print(f"  ✓ No significant issues detected")
 
+    # Final timing adjustment to ensure lyrics start at proper video time
+    # Target: first word at 5.5s in video (3s splash + 2.5s audio)
+    if lines:
+        current_first_word = lines[0].words[0].start_time if lines[0].words else lines[0].start_time
+        target_start_time = 5.5
+        final_adjustment = target_start_time - current_first_word
+        
+        if abs(final_adjustment) > 0.5:
+            print(f"  Final timing adjustment: {final_adjustment:+.1f}s to start lyrics at {target_start_time}s")
+            
+            for line in lines:
+                line.start_time += final_adjustment
+                line.end_time += final_adjustment
+                for word in line.words:
+                    word.start_time += final_adjustment
+                    word.end_time += final_adjustment
+
     # Fallback: if we have good lyrics but no metadata, try Genius search with common song titles
     if not metadata and lines and len(lines) > 10:
         # Extract potential song title from first few lines
