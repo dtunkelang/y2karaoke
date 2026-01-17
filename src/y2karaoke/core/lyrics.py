@@ -1281,43 +1281,45 @@ def _hybrid_alignment(whisper_lines: list["Line"], lyrics_text: list[str], synce
                     genius_words[g_idx]['end'] = synced_words[s_idx]['end']
         elif tag == 'delete':
             # Genius has words that synced doesn't - interpolate timing intelligently
-            for i in range(g_end - g_start):
-                g_idx = g_start + i
+            # This handles cases like "Ah-ah, ah-ah" lines that aren't in synced lyrics
+            
+            # Find the time span this deletion should fill
+            start_time = 0.0
+            end_time = None
+            
+            # Look backward for the last timed word
+            for j in range(g_start - 1, -1, -1):
+                if genius_words[j].get('end'):
+                    start_time = genius_words[j]['end']
+                    break
+            
+            # Look forward for the next timed word  
+            for j in range(g_end, len(genius_words)):
+                if genius_words[j].get('start'):
+                    end_time = genius_words[j]['start']
+                    break
+            
+            # If we have a time span, distribute the deleted words evenly within it
+            if end_time is not None and end_time > start_time:
+                time_span = end_time - start_time
+                num_words = g_end - g_start
                 
-                # Find surrounding timed words for better interpolation
-                prev_time = 0.0
-                next_time = None
-                
-                # Look backward for last timed word
-                for j in range(g_idx - 1, -1, -1):
-                    if genius_words[j].get('end'):
-                        prev_time = genius_words[j]['end']
-                        break
-                
-                # Look forward for next timed word
-                for j in range(g_idx + 1, len(genius_words)):
-                    if genius_words[j].get('start'):
-                        next_time = genius_words[j]['start']
-                        break
-                
-                # Interpolate timing based on context
-                if next_time is not None:
-                    # We have both prev and next - interpolate proportionally
-                    remaining_words = sum(1 for k in range(g_idx, len(genius_words)) 
-                                        if not genius_words[k].get('start') and k < j)
-                    if remaining_words > 0:
-                        time_per_word = (next_time - prev_time) / (remaining_words + 1)
-                        word_offset = sum(1 for k in range(g_start, g_idx + 1) if k >= g_start)
-                        genius_words[g_idx]['start'] = prev_time + word_offset * time_per_word
-                        genius_words[g_idx]['end'] = genius_words[g_idx]['start'] + time_per_word * 0.8
-                    else:
-                        genius_words[g_idx]['start'] = prev_time
-                        genius_words[g_idx]['end'] = prev_time + 0.5
+                # Give more time if this is a large gap (likely where vocal sections belong)
+                if time_span > 5.0:  # Large gap - likely instrumental with vocals
+                    word_duration = min(1.0, time_span / num_words)  # Cap at 1s per word
                 else:
-                    # Only have previous time - use reasonable duration
-                    genius_words[g_idx]['start'] = prev_time
-                    genius_words[g_idx]['end'] = prev_time + 0.5
-                    prev_time = genius_words[g_idx]['end']
+                    word_duration = time_span / (num_words + 1)  # Leave some buffer
+                
+                for i in range(g_end - g_start):
+                    g_idx = g_start + i
+                    genius_words[g_idx]['start'] = start_time + i * word_duration
+                    genius_words[g_idx]['end'] = genius_words[g_idx]['start'] + word_duration * 0.8
+            else:
+                # Fallback: use reasonable durations
+                for i in range(g_end - g_start):
+                    g_idx = g_start + i
+                    genius_words[g_idx]['start'] = start_time + i * 0.5
+                    genius_words[g_idx]['end'] = genius_words[g_idx]['start'] + 0.4
     
     # Post-process: enforce monotonic timing at word level
     for i in range(1, len(genius_words)):
