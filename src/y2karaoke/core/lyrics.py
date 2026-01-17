@@ -1959,8 +1959,8 @@ def transcribe_and_align(vocals_path: str, lyrics_text: Optional[list[str]] = No
     
     # Apply perceptual timing adjustment (shift slightly earlier for better sync)
     # WhisperX detects phoneme onset, but humans perceive words slightly before
-    # Apply small negative offset (0.1-0.15s) for better perceived timing
-    perceptual_offset = -0.15
+    # Apply small negative offset (0.2-0.25s) for better perceived timing in fast songs
+    perceptual_offset = -0.25
     for line in lines:
         line.start_time += perceptual_offset
         line.end_time += perceptual_offset
