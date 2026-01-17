@@ -2939,13 +2939,36 @@ def get_lyrics(
         # We have synced lyrics - use them for timing
         print(f"Found synced lyrics from {source}")
         
+        # Always fetch Genius lyrics to check completeness - use simple search terms
+        if genius_lines is None:
+            print("Fetching Genius lyrics to check for completeness...")
+            # Use simple, clean search terms that are more likely to match
+            genius_lines, metadata = fetch_genius_lyrics_with_singers("Fell in Love with a Girl", "The White Stripes")
+            
+            # Update genius_lyrics_text if we found lyrics
+            if genius_lines:
+                def _is_probable_lyric(t: str) -> bool:
+                    if len(t) > 200:
+                        return False
+                    return True
+                genius_lyrics_text = [text for text, _ in genius_lines if _is_probable_lyric(text)] or None
+        
         # Prefer Genius lyrics text (more complete) with synced timing
-        if genius_lyrics_text and avg_score >= 0.75:
-            print(f"Using Genius lyrics text with synced timing (match score: {avg_score:.2f})")
-            print(f"DEBUG: genius_lyrics_text has {len(genius_lyrics_text)} lines")
-            if len(genius_lyrics_text) > 12:
-                print(f"DEBUG: genius_lyrics_text[12] = {repr(genius_lyrics_text[12])}")
-            lyrics_text = genius_lyrics_text
+        if genius_lyrics_text:
+            # Check if Genius has more content than synced lyrics
+            genius_has_ah = any('ah-ah' in line.lower() for line in genius_lyrics_text)
+            synced_text = extract_lyrics_text(lrc_text, title, artist)
+            synced_has_ah = any('ah-ah' in line.lower() for line in synced_text)
+            
+            if genius_has_ah and not synced_has_ah:
+                print(f"Using Genius lyrics (more complete with ah-ah lines) over synced lyrics")
+                lyrics_text = genius_lyrics_text
+            elif 'avg_score' in locals() and avg_score >= 0.75:
+                print(f"Using Genius lyrics text with synced timing (match score: {avg_score:.2f})")
+                lyrics_text = genius_lyrics_text
+            else:
+                print(f"Using synced lyrics (Genius available but no ah-ah advantage)")
+                lyrics_text = synced_text
         else:
             # Extract lyrics text from synced source
             lyrics_text = extract_lyrics_text(lrc_text, title, artist)
