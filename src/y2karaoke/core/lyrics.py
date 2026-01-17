@@ -1957,6 +1957,63 @@ def transcribe_and_align(vocals_path: str, lyrics_text: Optional[list[str]] = No
     # Fix bad word timing (first words, words after long gaps)
     lines = fix_word_timing(lines)
     
+    # Detect and correct timing drift using cross-correlation with vocal audio
+    if vocals_path:
+        print("  Detecting timing drift using vocal audio analysis...")
+        import librosa
+        import numpy as np
+        from scipy import signal
+        
+        try:
+            # Load vocals audio
+            y, sr = librosa.load(vocals_path, sr=16000)
+            
+            # Create expected timing signal from lyrics
+            duration = len(y) / sr
+            expected_signal = np.zeros(int(duration * 100))  # 10ms resolution
+            
+            for line in lines:
+                for word in line.words:
+                    start_idx = int(word.start_time * 100)
+                    end_idx = int(word.end_time * 100)
+                    if start_idx < len(expected_signal) and end_idx <= len(expected_signal):
+                        expected_signal[start_idx:end_idx] = 1.0
+            
+            # Create actual vocal activity signal
+            hop_length = int(sr * 0.01)  # 10ms hops
+            rms = librosa.feature.rms(y=y, hop_length=hop_length, frame_length=hop_length*2)[0]
+            vocal_signal = (rms > np.percentile(rms, 30)).astype(float)  # Threshold at 30th percentile
+            
+            # Pad signals to same length
+            min_len = min(len(expected_signal), len(vocal_signal))
+            expected_signal = expected_signal[:min_len]
+            vocal_signal = vocal_signal[:min_len]
+            
+            # Find optimal offset using cross-correlation
+            correlation = signal.correlate(vocal_signal, expected_signal, mode='full')
+            lag = signal.correlation_lags(len(vocal_signal), len(expected_signal), mode='full')
+            
+            # Find peak correlation
+            max_corr_idx = np.argmax(correlation)
+            optimal_lag = lag[max_corr_idx]
+            timing_correction = optimal_lag * 0.01  # Convert to seconds
+            
+            print(f"    Cross-correlation analysis: {timing_correction:+.2f}s correction needed")
+            
+            # Apply correction if significant
+            if abs(timing_correction) > 0.2:
+                print(f"    Applying timing drift correction: {timing_correction:+.2f}s")
+                
+                for line in lines:
+                    line.start_time += timing_correction
+                    line.end_time += timing_correction
+                    for word in line.words:
+                        word.start_time += timing_correction
+                        word.end_time += timing_correction
+            
+        except Exception as e:
+            print(f"    Warning: Could not analyze timing drift: {e}")
+    
     # Apply perceptual timing adjustment (shift slightly earlier for better sync)
     # WhisperX detects phoneme onset, but humans perceive words slightly before
     # Apply small negative offset (0.1-0.15s) for better perceived timing
