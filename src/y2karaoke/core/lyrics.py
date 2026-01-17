@@ -2039,9 +2039,9 @@ def transcribe_and_align(vocals_path: str, lyrics_text: Optional[list[str]] = No
             
             print(f"    Detected {len(onset_frames)} vocal onsets")
             
-            # Create timing anchors every 3 seconds to prevent drift (very frequent for fast songs)
+            # Create timing anchors every 2 seconds to prevent drift (maximum frequency for fast songs)
             song_duration = max(line.end_time for line in lines) if lines else 0
-            anchor_interval = 3.0  # Very frequent checks
+            anchor_interval = 2.0  # Maximum frequency checks
             
             for anchor_time in range(int(anchor_interval), int(song_duration), int(anchor_interval)):
                 # Find lines around this anchor point
