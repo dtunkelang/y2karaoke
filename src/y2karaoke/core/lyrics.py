@@ -1982,13 +1982,18 @@ def transcribe_and_align(vocals_path: str, lyrics_text: Optional[list[str]] = No
             
             if actual_vocal_start is not None and len(lines) > 0:
                 first_word_expected = lines[0].words[0].start_time if lines[0].words else lines[0].start_time
-                timing_correction = actual_vocal_start - first_word_expected
                 
-                print(f"    Actual vocals start at: {actual_vocal_start:.2f}s")
-                print(f"    First word expected at: {first_word_expected:.2f}s") 
+                # The actual vocal start should align with when we want the first word in the video
+                # Target: first word at 5-6s in video (after splash screen)
+                target_first_word_time = 5.5  # Target timing in video
+                timing_correction = target_first_word_time - first_word_expected
+                
+                print(f"    Actual vocals start at: {actual_vocal_start:.2f}s in audio")
+                print(f"    First word currently at: {first_word_expected:.2f}s in video") 
+                print(f"    Target first word at: {target_first_word_time:.2f}s in video")
                 print(f"    Timing correction needed: {timing_correction:+.2f}s")
                 
-                # Apply correction if significant
+                # Apply correction to align first word with target video timing
                 if abs(timing_correction) > 0.3:
                     print(f"    Applying vocal start correction: {timing_correction:+.2f}s")
                     
