@@ -117,7 +117,7 @@ class VideoRenderer:
         draw = ImageDraw.Draw(img)
         
         # Show splash screen at the beginning
-        if t < SPLASH_DURATION:
+        if t < SPLASH_DURATION and lines and lines[0].start_time > 1.0:
             self._draw_splash_screen(draw, title, artist)
         else:
             # Draw lyrics
@@ -456,9 +456,11 @@ def render_frame(
         first_line = lines[0]
         time_until_first = first_line.start_time - current_time
 
-        # Show splash screen for the first SPLASH_DURATION seconds
+        # Show splash screen for the first SPLASH_DURATION seconds OR until lyrics start (whichever is shorter)
         if current_time < SPLASH_DURATION and title and artist:
-            show_splash = True
+            # Don't show splash if lyrics start very early (within 1 second)
+            if first_line.start_time > 1.0:
+                show_splash = True
         # Then show progress bar if there's still a long intro
         elif first_line.start_time >= INSTRUMENTAL_BREAK_THRESHOLD:
             if time_until_first > LYRICS_LEAD_TIME:
