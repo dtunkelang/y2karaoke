@@ -490,10 +490,19 @@ def get_lyrics_simple(
             logger.info(f"Created {len(lines)} lines from LRC timing")
 
             # 5. Refine word timing using audio onset detection
-            from .word_timing import refine_word_timing
+            from .word_timing import refine_word_timing, score_timing_quality, fix_timing_issues
             logger.info("Refining word timing with onset detection...")
             lines = refine_word_timing(lines, vocals_path)
-            logger.info("Word timing refined")
+
+            # 6. Score and fix timing quality
+            quality = score_timing_quality(lines)
+            logger.info(f"Timing quality: {quality.score:.2f} (short:{quality.short_words}, overlap:{quality.overlapping_words}, gaps:{quality.large_gaps})")
+
+            if quality.score < 0.8:
+                logger.info("Fixing timing issues...")
+                lines = fix_timing_issues(lines)
+                quality_after = score_timing_quality(lines)
+                logger.info(f"Quality after fix: {quality_after.score:.2f}")
         else:
             # No LRC - fall back to forced alignment
             logger.info("No LRC timing, using forced alignment...")
