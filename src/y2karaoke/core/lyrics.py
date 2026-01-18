@@ -629,6 +629,32 @@ def fetch_genius_lyrics_with_singers(title: str, artist: str) -> tuple[Optional[
     singers_found: set[str] = set()
     section_pattern = re.compile(r'\[([^\]]+)\]')
 
+    def is_genius_metadata(line: str) -> bool:
+        """Check if a line is Genius page metadata rather than lyrics."""
+        # Skip lines with contributor counts
+        if re.match(r'^\d+\s*Contributor', line):
+            return True
+        # Skip lines with translation language lists
+        if 'Translations' in line and any(lang in line for lang in ['Türkçe', 'Français', 'Español', 'Deutsch', 'Português']):
+            return True
+        # Skip description text patterns
+        description_patterns = [
+            'is the first track',
+            'is the second track',
+            'is the third track',
+            'is a song by',
+            'was released as',
+            'Read More',
+            'studio album',
+            'music video featuring',
+        ]
+        if any(pattern in line for pattern in description_patterns):
+            return True
+        # Skip if line is extremely long (likely concatenated metadata)
+        if len(line) > 300:
+            return True
+        return False
+
     for container in lyrics_containers:
         for br in container.find_all('br'):
             br.replace_with('\n')
@@ -636,6 +662,9 @@ def fetch_genius_lyrics_with_singers(title: str, artist: str) -> tuple[Optional[
         for line in text.split('\n'):
             line = line.strip()
             if not line:
+                continue
+            # Skip Genius metadata lines
+            if is_genius_metadata(line):
                 continue
             section_match = section_pattern.match(line)
             if section_match:
