@@ -138,14 +138,14 @@ class KaraokeGenerator:
                             text=word.text,
                             start_time=word.start_time + splash_offset,
                             end_time=word.end_time + splash_offset,
+                            singer=word.singer,
                         )
                         for word in line.words
                     ]
                     offset_lines.append(
                         Line(
                             words=offset_words,
-                            start_time=line.start_time + splash_offset,
-                            end_time=line.end_time + splash_offset,
+                            singer=line.singer,
                         )
                     )
                 scaled_lines = offset_lines
@@ -346,14 +346,19 @@ class KaraokeGenerator:
     ) -> Dict[str, Any]:
         """Get lyrics with caching."""
         logger.info("📝 Fetching lyrics...")
-        
+
         # Import here to avoid circular imports
         from ..core.lyrics import LyricsProcessor
-        
+
         processor = LyricsProcessor()
-        cache_dir = self.cache_manager.get_video_cache_dir(video_id)
-        
-        return processor.get_lyrics(title, artist, vocals_path, str(cache_dir), force)
+
+        lines, metadata = processor.get_lyrics(
+            title=title,
+            artist=artist,
+            romanize=True,
+        )
+
+        return {'lines': lines, 'metadata': metadata}
     
     def _apply_audio_effects(
         self, audio_path: str, key_shift: int, tempo: float, video_id: str, force: bool
@@ -393,14 +398,14 @@ class KaraokeGenerator:
                     text=word.text,
                     start_time=word.start_time / tempo_multiplier,
                     end_time=word.end_time / tempo_multiplier,
+                    singer=word.singer,
                 )
                 for word in line.words
             ]
             scaled_lines.append(
                 Line(
                     words=scaled_words,
-                    start_time=line.start_time / tempo_multiplier,
-                    end_time=line.end_time / tempo_multiplier,
+                    singer=line.singer,
                 )
             )
         return scaled_lines

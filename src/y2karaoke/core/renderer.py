@@ -804,8 +804,6 @@ if __name__ == "__main__":
                 Word("a", 1.5, 1.7),
                 Word("test", 1.7, 2.0),
             ],
-            start_time=0.0,
-            end_time=2.0,
         ),
         Line(
             words=[
@@ -813,8 +811,6 @@ if __name__ == "__main__":
                 Word("line", 2.5, 3.0),
                 Word("here", 3.0, 3.5),
             ],
-            start_time=2.0,
-            end_time=3.5,
         ),
     ]
 

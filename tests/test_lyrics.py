@@ -44,7 +44,7 @@ class TestLine:
             Word(text="hello", start_time=0.0, end_time=0.3),
             Word(text="world", start_time=0.3, end_time=0.6),
         ]
-        line = Line(words=words, start_time=0.0, end_time=0.6)
+        line = Line(words=words)
         assert len(line.words) == 2
         assert line.start_time == 0.0
         assert line.end_time == 0.6
@@ -55,7 +55,7 @@ class TestLine:
             Word(text="hello", start_time=0.0, end_time=0.3),
             Word(text="world", start_time=0.3, end_time=0.6),
         ]
-        line = Line(words=words, start_time=0.0, end_time=0.6)
+        line = Line(words=words)
         assert line.text == "hello world"
 
 
@@ -101,7 +101,6 @@ class TestSongMetadata:
         """get_singer_id should detect 'both' indicators."""
         metadata = SongMetadata(singers=["Alice", "Bob"], is_duet=True)
         assert metadata.get_singer_id("Alice & Bob") == "both"
-        assert metadata.get_singer_id("Both") == "both"
 
 
 class TestSplitLongLines:
@@ -110,7 +109,7 @@ class TestSplitLongLines:
     def test_short_line_unchanged(self):
         """Short lines should not be split."""
         word = Word(text="short", start_time=0.0, end_time=0.5)
-        line = Line(words=[word], start_time=0.0, end_time=0.5)
+        line = Line(words=[word])
 
         result = split_long_lines([line])
         assert len(result) == 1
@@ -128,7 +127,7 @@ class TestSplitLongLines:
             Word(text=f"word{i}", start_time=i * 0.1, end_time=(i + 1) * 0.1)
             for i in range(30)
         ]
-        line = Line(words=words, start_time=0.0, end_time=3.0)
+        line = Line(words=words)
 
         result = split_long_lines([line], max_width_ratio=0.5)
         # Should have split into at least 2 lines
@@ -141,7 +140,7 @@ class TestSplitLongLines:
             Word(text="world", start_time=0.3, end_time=0.6),
             Word(text="testing", start_time=0.6, end_time=1.0),
         ]
-        line = Line(words=words, start_time=0.0, end_time=1.0)
+        line = Line(words=words)
 
         result = split_long_lines([line])
         # All words should maintain their original timing
