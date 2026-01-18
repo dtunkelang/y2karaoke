@@ -615,6 +615,9 @@ def fetch_genius_lyrics_with_singers(title: str, artist: str) -> tuple[Optional[
         if len(parts) == 2:
             genius_artist = parts[0].strip()
             genius_title = parts[1].strip()
+            # Strip "Lyrics" suffix from title
+            if genius_title.endswith(" Lyrics"):
+                genius_title = genius_title[:-7].strip()
 
     # Extract lyrics containers
     lyrics_containers = soup.find_all('div', {'data-lyrics-container': 'true'})
