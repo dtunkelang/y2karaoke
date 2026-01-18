@@ -170,10 +170,10 @@ class TestParseLrcTimestamp:
         result = parse_lrc_timestamp("[00:00.00]")
         assert result == 0.0
 
-    def test_invalid_format_returns_zero(self):
-        """Invalid format should return 0.0."""
+    def test_invalid_format_returns_none(self):
+        """Invalid format should return None."""
         result = parse_lrc_timestamp("invalid")
-        assert result == 0.0
+        assert result is None
 
 
 class TestParseLrcWithTiming:

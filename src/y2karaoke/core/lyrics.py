@@ -4,8 +4,6 @@ import re
 import unicodedata
 import time
 import random
-from dataclasses import dataclass
-from enum import Enum
 from typing import List, Tuple, Dict, Any, Optional
 from pathlib import Path
 
@@ -13,8 +11,6 @@ import requests
 from requests import Response
 from bs4 import BeautifulSoup
 from rapidfuzz import fuzz
-
-from pathlib import Path
 
 try:
     import syncedlyrics
@@ -34,82 +30,31 @@ logger = get_logger(__name__)
 from ..exceptions import LyricsError
 
 # ----------------------
+# Data models
+# ----------------------
+from .models import SingerID, Word, Line, SongMetadata
+
+# ----------------------
+# Romanization
+# ----------------------
+from .romanization import romanize_line, romanize_multilingual
+
+# ----------------------
+# Serialization
+# ----------------------
+from .serialization import (
+    lines_to_json as _lines_to_json,
+    lines_from_json as _lines_from_json,
+    metadata_to_json as _metadata_to_json,
+    metadata_from_json as _metadata_from_json,
+    save_lyrics_to_json,
+    load_lyrics_from_json,
+)
+
+# ----------------------
 # Retry constants
 # ----------------------
 DEFAULT_MAX_RETRIES = 3
-
-# ----------------------
-# Singer ID
-# ----------------------
-class SingerID(str, Enum):
-    SINGER1 = "singer1"
-    SINGER2 = "singer2"
-    BOTH = "both"
-    UNKNOWN = ""
-
-# ----------------------
-# Word & Line
-# ----------------------
-@dataclass
-class Word:
-    text: str
-    start_time: float
-    end_time: float
-    singer: SingerID = SingerID.UNKNOWN
-
-    def validate(self) -> None:
-        if self.start_time < 0 or self.end_time < 0:
-            raise ValueError("Word timing must be non-negative")
-        if self.end_time < self.start_time:
-            raise ValueError("Word end_time must be >= start_time")
-
-@dataclass
-class Line:
-    words: List[Word]
-    singer: SingerID = SingerID.UNKNOWN
-
-    @property
-    def start_time(self) -> float:
-        return self.words[0].start_time if self.words else 0.0
-
-    @property
-    def end_time(self) -> float:
-        return self.words[-1].end_time if self.words else 0.0
-
-    @property
-    def text(self) -> str:
-        return " ".join(w.text for w in self.words)
-
-    def validate(self) -> None:
-        if not self.words:
-            raise ValueError("Line must contain at least one word")
-        for w in self.words:
-            w.validate()
-            if w.start_time < self.start_time or w.end_time > self.end_time:
-                raise ValueError("Word timing outside line bounds")
-
-# ----------------------
-# Song Metadata
-# ----------------------
-@dataclass
-class SongMetadata:
-    singers: List[str]
-    is_duet: bool = False
-    title: Optional[str] = None
-    artist: Optional[str] = None
-
-    def get_singer_id(self, singer_name: str) -> SingerID:
-        if not singer_name:
-            return SingerID.UNKNOWN
-        name = singer_name.lower().strip()
-        duet_tokens = ["&", " and ", " feat ", " feat.", " with ", " x "]
-        if any(token in name for token in duet_tokens):
-            return SingerID.BOTH
-        for i, known_singer in enumerate(self.singers):
-            ks = known_singer.lower()
-            if name == ks or name.startswith(ks) or ks.startswith(name):
-                return SingerID(f"singer{i + 1}")
-        return SingerID.SINGER1 if self.singers else SingerID.UNKNOWN
 
 # ----------------------
 # LRC timestamp parser
@@ -139,149 +84,6 @@ def parse_lrc_timestamp(ts: str) -> Optional[float]:
     frac = match.group("frac")
     frac_seconds = int(frac) / (10 ** len(frac)) if frac else 0.0
     return minutes * 60 + seconds + frac_seconds
-
-# ----------------------
-# Multilingual Romanizers
-# ----------------------
-
-# Korean
-try:
-    from korean_romanizer.romanizer import Romanizer
-    KOREAN_ROMANIZER_AVAILABLE = True
-except ImportError:
-    KOREAN_ROMANIZER_AVAILABLE = False
-
-# Chinese
-try:
-    from pypinyin import lazy_pinyin, Style
-    CHINESE_ROMANIZER_AVAILABLE = True
-except ImportError:
-    CHINESE_ROMANIZER_AVAILABLE = False
-
-# Japanese
-try:
-    from pykakasi import kakasi
-    JAPANESE_ROMANIZER_AVAILABLE = True
-except ImportError:
-    JAPANESE_ROMANIZER_AVAILABLE = False
-
-# Arabic
-try:
-    import pyarabic.araby as araby
-    ARABIC_ROMANIZER_AVAILABLE = True
-except ImportError:
-    ARABIC_ROMANIZER_AVAILABLE = False
-
-HEBREW_ROMANIZER_AVAILABLE = True
-
-# Unicode ranges
-KOREAN_RANGES = [(0x1100, 0x11FF), (0x3130, 0x318F), (0xAC00, 0xD7AF), (0xA960, 0xA97F), (0xD7B0, 0xD7FF)]
-JAPANESE_HIRAGANA = (0x3040, 0x309F)
-JAPANESE_KATAKANA = (0x30A0, 0x30FF)
-JAPANESE_KANJI_RANGES = [(0x3400, 0x4DBF), (0x4E00, 0x9FFF)]
-CHINESE_RANGES = [(0x3400, 0x4DBF), (0x4E00, 0x9FFF), (0xF900, 0xFAFF), (0x20000, 0x2CEAF)]
-ARABIC_RANGES = [(0x0600, 0x06FF), (0x0750, 0x077F)]
-HEBREW_RANGES = [(0x0590, 0x05FF)]
-
-# ----------------------
-# Romanization functions
-# ----------------------
-_JAPANESE_CONVERTER = None
-
-def romanize_korean(text: str) -> str:
-    if not KOREAN_ROMANIZER_AVAILABLE:
-        return text
-    try:
-        return Romanizer(text).romanize()
-    except Exception:
-        return text
-
-def romanize_chinese(text: str) -> str:
-    if not CHINESE_ROMANIZER_AVAILABLE:
-        return text
-    try:
-        return " ".join(lazy_pinyin(text, style=Style.NORMAL))
-    except Exception:
-        return text
-
-def romanize_japanese(text: str) -> str:
-    global _JAPANESE_CONVERTER
-    if not JAPANESE_ROMANIZER_AVAILABLE:
-        return text
-    if _JAPANESE_CONVERTER is None:
-        _JAPANESE_CONVERTER = kakasi()
-    try:
-        result = _JAPANESE_CONVERTER.convert(text)
-        return " ".join(item["hepburn"] for item in result)
-    except Exception:
-        return text
-
-ARABIC_TO_LATIN = {
-    'ا': 'a', 'ب': 'b', 'ت': 't', 'ث': 'th', 'ج': 'j', 'ح': 'h', 'خ': 'kh',
-    'د': 'd', 'ذ': 'dh', 'ر': 'r', 'ز': 'z', 'س': 's', 'ش': 'sh', 'ص': 's',
-    'ض': 'd', 'ط': 't', 'ظ': 'z', 'ع': 'a', 'غ': 'gh', 'ف': 'f', 'ق': 'q',
-    'ك': 'k', 'ل': 'l', 'م': 'm', 'ن': 'n', 'ه': 'h', 'و': 'w', 'ي': 'y',
-    'ى': 'a', 'ة': 'h', 'ء': '', 'ئ': '', 'ؤ': 'w', 'إ': 'i', 'أ': 'a', 'آ': 'aa',
-    'َ': 'a', 'ُ': 'u', 'ِ': 'i', 'ّ': '', 'ْ': ''
-}
-
-HEBREW_TO_LATIN = {
-    'א': 'a', 'ב': 'b', 'ג': 'g', 'ד': 'd', 'ה': 'h', 'ו': 'v', 'ז': 'z',
-    'ח': 'ch', 'ט': 't', 'י': 'y', 'כ': 'k', 'ך': 'kh', 'ל': 'l', 'מ': 'm',
-    'ם': 'm', 'נ': 'n', 'ן': 'n', 'ס': 's', 'ע': 'a', 'פ': 'p', 'ף': 'f',
-    'צ': 'ts', 'ץ': 'ts', 'ק': 'k', 'ר': 'r', 'ש': 'sh', 'ת': 't'
-}
-
-def romanize_arabic(text: str) -> str:
-    if not ARABIC_ROMANIZER_AVAILABLE:
-        return text
-    try:
-        return ''.join(ARABIC_TO_LATIN.get(c, c) for c in text)
-    except Exception:
-        return text
-
-def romanize_hebrew(text: str) -> str:
-    try:
-        return ''.join(HEBREW_TO_LATIN.get(c, c) for c in text)
-    except Exception:
-        return text
-
-# ----------------------
-# Multilingual single-pass romanizer
-# ----------------------
-SCRIPT_ROMANIZER_MAP = [
-    (KOREAN_RANGES, romanize_korean),
-    ([JAPANESE_HIRAGANA, JAPANESE_KATAKANA] + JAPANESE_KANJI_RANGES, romanize_japanese),
-    (CHINESE_RANGES, romanize_chinese),
-    (ARABIC_RANGES, romanize_arabic),
-    (HEBREW_RANGES, romanize_hebrew),
-]
-
-# Regex for blocks of scripts
-KOREAN_RE = r'\u1100-\u11FF\u3130-\u318F\uAC00-\uD7AF\uA960-\uA97F\uD7B0-\uD7FF'
-JAPANESE_RE = r'\u3040-\u309F\u30A0-\u30FF\u3400-\u4DBF\u4E00-\u9FFF'
-CHINESE_RE = r'\u3400-\u4DBF\u4E00-\u9FFF\uF900-\uFAFF\U00020000-\U0002CEAF'
-ARABIC_RE = r'\u0600-\u06FF\u0750-\u077F'
-HEBREW_RE = r'\u0590-\u05FF'
-MULTILINGUAL_RE = re.compile(f'([{KOREAN_RE}{JAPANESE_RE}{CHINESE_RE}{ARABIC_RE}{HEBREW_RE}]+)')
-
-def romanize_multilingual(text: str) -> str:
-    def replace_block(match: re.Match) -> str:
-        block = match.group()
-        code = ord(block[0])
-        for ranges, romanizer in SCRIPT_ROMANIZER_MAP:
-            for start, end in ranges:
-                if start <= code <= end:
-                    try:
-                        return romanizer(block)
-                    except Exception:
-                        return block
-        return block
-    romanized = MULTILINGUAL_RE.sub(replace_block, text)
-    return " ".join(romanized.split())  # collapse repeated spaces
-
-# Alias
-romanize_line = romanize_multilingual
 
 # ----------------------
 # Metadata filtering
@@ -780,242 +582,6 @@ def merge_lyrics_with_singer_info(
 
     return lines
 
-# ----------------------
-# JSON serialization/deserialization for Lines and Metadata
-# ----------------------
-def _lines_to_json(lines: List[Line]) -> List[dict]:
-    """
-    Convert a list of Line objects into JSON-serializable dicts.
-    """
-    data: List[dict] = []
-    for line in lines:
-        data.append({
-            "start_time": line.start_time,
-            "end_time": line.end_time,
-            "singer": line.singer,
-            "words": [
-                {
-                    "text": w.text,
-                    "start_time": w.start_time,
-                    "end_time": w.end_time,
-                    "singer": w.singer,
-                } for w in line.words
-            ]
-        })
-    return data
-
-def _lines_from_json(data: List[dict]) -> List[Line]:
-    """
-    Convert JSON data back into Line objects with Word objects.
-    """
-    lines: List[Line] = []
-    for item in data:
-        words = [
-            Word(
-                text=w["text"],
-                start_time=float(w["start_time"]),
-                end_time=float(w["end_time"]),
-                singer=w.get("singer", "")
-            ) for w in item.get("words", [])
-        ]
-        lines.append(Line(
-            words=words,
-            singer=item.get("singer", "")
-        ))
-    return lines
-
-def _metadata_to_json(metadata: Optional[SongMetadata]) -> Optional[dict]:
-    """
-    Convert SongMetadata to JSON-serializable dict.
-    """
-    if not metadata:
-        return None
-    return {
-        "singers": metadata.singers,
-        "is_duet": metadata.is_duet,
-        "title": metadata.title,
-        "artist": metadata.artist
-    }
-
-def _metadata_from_json(data: Optional[dict]) -> Optional[SongMetadata]:
-    """
-    Convert JSON dict back into SongMetadata.
-    """
-    if not data:
-        return None
-    return SongMetadata(
-        singers=list(data.get("singers", [])),
-        is_duet=bool(data.get("is_duet", False)),
-        title=data.get("title"),
-        artist=data.get("artist")
-    )
-
-# ----------------------
-# Utility: Save Lines and Metadata to JSON file
-# ----------------------
-def save_lyrics_to_json(filepath: str, lines: List[Line], metadata: Optional[SongMetadata] = None) -> None:
-    import json
-    data = {
-        "lines": _lines_to_json(lines),
-        "metadata": _metadata_to_json(metadata)
-    }
-    with open(filepath, "w", encoding="utf-8") as f:
-        json.dump(data, f, ensure_ascii=False, indent=2)
-
-# ----------------------
-# Utility: Load Lines and Metadata from JSON file
-# ----------------------
-def load_lyrics_from_json(filepath: str) -> Tuple[List[Line], Optional[SongMetadata]]:
-    import json
-    with open(filepath, "r", encoding="utf-8") as f:
-        data = json.load(f)
-    lines = _lines_from_json(data.get("lines", []))
-    metadata = _metadata_from_json(data.get("metadata"))
-    return lines, metadata
-
-# ----------------------
-# Constants & Regexes
-# ----------------------
-DEFAULT_MAX_RETRIES = 5
-LRC_TIMESTAMP_RE = re.compile(r'\[(\d+):(\d+)(?:\.(\d+))?\]')
-
-# ----------------------
-# Text normalization utilities
-# ----------------------
-def normalize_text(text: str) -> str:
-    """
-    Normalize text for comparison: lowercase, remove punctuation, collapse spaces.
-    """
-    text = text.lower()
-    text = re.sub(r'[^\w\s]', '', text)
-    text = re.sub(r'\s+', ' ', text).strip()
-    return text
-
-# ----------------------
-# Romanization placeholder
-# ----------------------
-def romanize_line(text: str) -> str:
-    """
-    Placeholder for romanization. Replace with actual Korean/other romanization logic.
-    For now, returns text unchanged.
-    """
-    return text
-
-# ----------------------
-# LRC parsing utilities
-# ----------------------
-def parse_lrc_timestamp(ts: str) -> float:
-    """
-    Parse LRC timestamp [mm:ss.xx] to seconds (robust to variations).
-    """
-    match = LRC_TIMESTAMP_RE.match(ts)
-    if match:
-        minutes = int(match.group(1))
-        seconds = int(match.group(2))
-        fraction = int(match.group(3)) if match.group(3) else 0
-        # Treat fraction as centiseconds if < 100, else milliseconds
-        if fraction < 100:
-            fraction /= 100
-        else:
-            fraction /= 1000
-        return minutes * 60 + seconds + fraction
-    return 0.0
-
-def parse_lrc_with_timing(lrc_text: str, title: str = "", artist: str = "") -> List[Tuple[float, str]]:
-    """
-    Parse LRC text with timestamps, return list of (timestamp_seconds, line_text).
-    Ignores metadata lines.
-    """
-    lines: List[Tuple[float, str]] = []
-    for line in lrc_text.strip().splitlines():
-        match = LRC_TIMESTAMP_RE.match(line)
-        if not match:
-            continue
-        timestamp = parse_lrc_timestamp(match.group(0))
-        text = line[match.end():].strip()
-        if text and not _is_metadata_line(text, title, artist):
-            lines.append((timestamp, text))
-    return lines
-
-def _is_metadata_line(text: str, title: str = "", artist: str = "") -> bool:
-    """
-    Determine if a line is metadata rather than lyrics.
-    """
-    t = text.lower().strip()
-    metadata_prefixes = [
-        "artist:", "song:", "title:", "album:", "writer:", "composer:",
-        "lyricist:", "lyrics by", "written by", "produced by", "music by"
-    ]
-    if any(t.startswith(p) for p in metadata_prefixes):
-        return True
-    if title:
-        t_title = title.lower().replace(" ", "")
-        if t.replace(" ", "") == t_title:
-            return True
-    if artist:
-        t_artist = artist.lower().replace(" ", "")
-        if t.replace(" ", "") == t_artist:
-            return True
-    return False
-
-# ----------------------
-# Extract artists from title
-# ----------------------
-def extract_artists_from_title(title: str, known_artist: str) -> List[str]:
-    """
-    Extract artist names from a title string like "Artist1, Artist2 - Song Name".
-    """
-    artists: List[str] = []
-    if " - " in title:
-        artist_part = title.split(" - ")[0].strip()
-        parts = re.split(r'[,&]|\b(?:and|ft\.?|feat\.?)\b', artist_part, flags=re.IGNORECASE)
-        artists = [p.strip() for p in parts if p.strip()]
-    if not artists:
-        artists = [known_artist]
-    return artists
-
-# ----------------------
-# Create Lines from LRC
-# ----------------------
-def create_lines_from_lrc(
-    lrc_text: str,
-    romanize: bool = True,
-    title: str = "",
-    artist: str = "",
-) -> List[Line]:
-    """
-    Create Line objects from LRC format with evenly distributed word timing.
-    """
-    timed_lines = parse_lrc_with_timing(lrc_text, title, artist)
-    if not timed_lines:
-        return []
-
-    lines: List[Line] = []
-    for i, (start_time, text) in enumerate(timed_lines):
-        line_text = romanize_line(text) if romanize else text
-        end_time = timed_lines[i + 1][0] if i + 1 < len(timed_lines) else start_time + 3.0
-        if i + 1 < len(timed_lines) and end_time - start_time > 10.0:
-            end_time = start_time + 5.0
-
-        word_texts = line_text.split()
-        if not word_texts:
-            continue
-
-        line_duration = end_time - start_time
-        word_duration = max((line_duration * 0.95) / len(word_texts), 0.01)
-
-        words: List[Word] = []
-        for j, word_text in enumerate(word_texts):
-            word_start = start_time + j * (line_duration / len(word_texts))
-            word_end = word_start + word_duration
-            words.append(Word(
-                text=word_text,
-                start_time=word_start,
-                end_time=word_end
-            ))
-
-        lines.append(Line(words=words))
-    return lines
 
 class LyricsProcessor:
     def __init__(self, cache_dir: Optional[str] = None):
