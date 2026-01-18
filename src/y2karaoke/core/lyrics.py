@@ -61,6 +61,16 @@ from .genius import (
 )
 
 # ----------------------
+# Forced alignment
+# ----------------------
+from .forced_align import (
+    forced_align,
+    detect_song_start,
+    alignment_quality,
+    refine_with_onset_detection,
+)
+
+# ----------------------
 # LRC timestamp parser
 # ----------------------
 _LRC_TS_RE = re.compile(
@@ -260,6 +270,128 @@ def create_lines_from_lrc(
         ))
 
     return lines
+
+
+# ----------------------
+# Simplified lyrics pipeline (Phase 4 refactor)
+# ----------------------
+def get_lyrics_simple(
+    title: str,
+    artist: str,
+    vocals_path: Optional[str] = None,
+    romanize: bool = True,
+) -> Tuple[List[Line], Optional[SongMetadata]]:
+    """
+    Simplified lyrics pipeline using forced alignment.
+
+    This function implements the clean architecture:
+    1. Get canonical text + singer info from Genius
+    2. Detect where vocals start in audio (offset)
+    3. Use forced alignment for word-level timing
+    4. Apply romanization if needed
+
+    Args:
+        title: Song title
+        artist: Artist name
+        vocals_path: Path to vocals audio (optional, for word-level timing)
+        romanize: Whether to romanize non-Latin scripts
+
+    Returns:
+        Tuple of (lines, metadata)
+    """
+    # 1. Get canonical lyrics from Genius
+    logger.info("Fetching lyrics from Genius...")
+    genius_lines, metadata = fetch_genius_lyrics_with_singers(title, artist)
+
+    if not genius_lines:
+        # Fallback: placeholder
+        logger.warning("No lyrics found, using placeholder")
+        word = Word(text="Lyrics not available", start_time=0.0, end_time=3.0)
+        line = Line(words=[word])
+        return [line], SongMetadata(singers=[], is_duet=False, title=title, artist=artist)
+
+    # Extract text lines (without singer info for alignment)
+    text_lines = [text for text, _ in genius_lines if text.strip()]
+    logger.info(f"Got {len(text_lines)} lines from Genius")
+
+    # 2. If we have vocals, use forced alignment
+    if vocals_path:
+        logger.info("Detecting song start...")
+        offset = detect_song_start(vocals_path)
+        logger.info(f"Vocals start at {offset:.2f}s")
+
+        # Get LRC timing if available (for alignment hints)
+        line_timings = None
+        try:
+            from y2karaoke.core.sync import fetch_lyrics_multi_source
+            lrc_text, is_synced, source = fetch_lyrics_multi_source(title, artist)
+            if lrc_text and is_synced:
+                line_timings = parse_lrc_with_timing(lrc_text, title, artist)
+                logger.info(f"Got {len(line_timings)} timing hints from {source}")
+        except Exception as e:
+            logger.warning(f"Could not get LRC timing: {e}")
+
+        # Forced alignment
+        logger.info("Running forced alignment...")
+        lines = forced_align(
+            text_lines=text_lines,
+            audio_path=vocals_path,
+            offset=offset,
+            line_timings=line_timings,
+        )
+
+        # Refine with onset detection
+        if lines:
+            lines = refine_with_onset_detection(lines, vocals_path)
+
+        # Check quality
+        quality = alignment_quality(lines)
+        logger.info(f"Alignment quality: {quality:.2f}")
+
+        if quality < 0.3 and line_timings:
+            # Fall back to LRC timing
+            logger.warning("Low alignment quality, falling back to LRC timing")
+            lines = create_lines_from_lrc(lrc_text, romanize=romanize, title=title, artist=artist)
+    else:
+        # No audio - use estimated timing
+        logger.info("No audio, using estimated timing")
+        lines = []
+        for i, text in enumerate(text_lines):
+            line_start = i * 3.0
+            word_texts = text.split()
+            if not word_texts:
+                continue
+            word_duration = 2.5 / len(word_texts)
+            words = [
+                Word(
+                    text=w,
+                    start_time=line_start + j * word_duration,
+                    end_time=line_start + (j + 1) * word_duration,
+                )
+                for j, w in enumerate(word_texts)
+            ]
+            lines.append(Line(words=words))
+
+    # 3. Apply romanization if needed
+    if romanize:
+        for line in lines:
+            for word in line.words:
+                if any(ord(c) > 127 for c in word.text):
+                    word.text = romanize_line(word.text)
+
+    # 4. Add singer info from Genius
+    if metadata and metadata.is_duet:
+        # Map singer info back to lines using fuzzy matching
+        for i, line in enumerate(lines):
+            if i < len(genius_lines):
+                _, singer_name = genius_lines[i]
+                singer_id = metadata.get_singer_id(singer_name)
+                line.singer = singer_id
+                for word in line.words:
+                    word.singer = singer_id
+
+    logger.info(f"Returning {len(lines)} lines")
+    return lines, metadata
 
 
 class LyricsProcessor:
