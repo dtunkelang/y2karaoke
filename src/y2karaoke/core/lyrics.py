@@ -488,6 +488,12 @@ def get_lyrics_simple(
             logger.info("Using LRC timing as primary source")
             lines = _create_lines_from_lrc_timings(line_timings, text_lines)
             logger.info(f"Created {len(lines)} lines from LRC timing")
+
+            # 5. Refine word timing using audio onset detection
+            from .word_timing import refine_word_timing
+            logger.info("Refining word timing with onset detection...")
+            lines = refine_word_timing(lines, vocals_path)
+            logger.info("Word timing refined")
         else:
             # No LRC - fall back to forced alignment
             logger.info("No LRC timing, using forced alignment...")
