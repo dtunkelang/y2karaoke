@@ -549,6 +549,10 @@ def fetch_genius_lyrics_with_singers(title: str, artist: str) -> tuple[Optional[
     cleaned_title = re.split(r'\s*[|｜]\s*', title)[0]
     cleaned_title = re.sub(r'\s*[\(\[]?\s*(ft\.?|feat\.?|featuring).*?[\)\]]?\s*$', '', cleaned_title, flags=re.IGNORECASE)
     cleaned_title = re.sub(r'\s*[\(\[].*?[\)\]]\s*', '', cleaned_title).strip()
+    # Remove common YouTube suffixes
+    for suffix in [' Lyrics', ' Official Video', ' Official Audio', ' Official Music Video', ' Audio', ' Video']:
+        if cleaned_title.endswith(suffix):
+            cleaned_title = cleaned_title[:-len(suffix)].strip()
 
     # Construct primary URL
     artist_slug = make_slug(artist)
