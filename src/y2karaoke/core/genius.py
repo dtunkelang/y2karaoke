@@ -200,8 +200,20 @@ def fetch_genius_lyrics_with_singers(
     current_singer = ""
     singers_found: set = set()
     section_pattern = re.compile(r'\[([^\]]+)\]')
+    lyrics_started = False  # Track if we've hit actual lyrics content
 
     for container in lyrics_containers:
+        # Remove structural elements that contain metadata, not lyrics
+        # These are identified by their class names in the Genius HTML structure
+        for elem in container.find_all(['div', 'span', 'a'], class_=lambda x: x and any(
+            pattern in ' '.join(x) for pattern in [
+                'LyricsHeader',      # Contains contributor count and title
+                'SongBioPreview',    # Contains song description/bio
+                'ContributorsCredit', # Contributor information
+            ]
+        )):
+            elem.decompose()
+
         for br in container.find_all('br'):
             br.replace_with('\n')
         text = container.get_text()
@@ -209,17 +221,26 @@ def fetch_genius_lyrics_with_singers(
             line = line.strip()
             if not line:
                 continue
-            # Skip Genius metadata lines
-            if _is_genius_metadata(line):
-                continue
+
+            # Check for section marker - this indicates start of actual lyrics
             section_match = section_pattern.match(line)
             if section_match:
+                lyrics_started = True
                 header = section_match.group(1)
                 if ':' in header:
                     singer_part = header.split(':', 1)[1].strip()
                     current_singer = singer_part
                     singers_found.add(singer_part)
                 continue
+
+            # Skip everything before the first section marker (bio/description text)
+            if not lyrics_started:
+                continue
+
+            # Skip Genius metadata lines that might appear within lyrics
+            if _is_genius_metadata(line):
+                continue
+
             lines_with_singers.append((line, current_singer))
 
     if not lines_with_singers:

@@ -3,7 +3,7 @@
 import hashlib
 import re
 from pathlib import Path
-from typing import Dict, Optional
+from typing import Dict, Optional, Tuple
 
 import yt_dlp
 
@@ -13,6 +13,232 @@ from ..utils.logging import get_logger
 from ..utils.validation import sanitize_filename, validate_youtube_url
 
 logger = get_logger(__name__)
+
+
+def extract_metadata_from_youtube(url: str) -> Dict[str, str]:
+    """
+    Extract song metadata (artist, title) from a YouTube URL.
+
+    Uses multiple strategies:
+    1. yt-dlp's structured fields (artist, track, creator)
+    2. Parse "Artist - Song Title" format from video title
+    3. Fall back to uploader name if nothing else works
+
+    Args:
+        url: YouTube video URL
+
+    Returns:
+        Dict with 'artist', 'title', and 'video_id' keys
+    """
+    try:
+        ydl_opts = {
+            'quiet': True,
+            'no_warnings': True,
+            'extract_flat': False,
+        }
+
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            info = ydl.extract_info(url, download=False)
+
+            video_title = info.get('title', '')
+            uploader = info.get('uploader', '')
+            description = info.get('description', '')
+            video_id = info.get('id', extract_video_id(url))
+
+            # Strategy 1: Use yt-dlp's structured metadata fields
+            # These are often populated for official music channels
+            yt_artist = info.get('artist') or info.get('creator') or ''
+            yt_track = info.get('track') or ''
+
+            if yt_artist and yt_track:
+                logger.info(f"Using yt-dlp metadata: '{yt_track}' by '{yt_artist}'")
+                return {
+                    'artist': yt_artist,
+                    'title': yt_track,
+                    'video_id': video_id,
+                }
+
+            # Strategy 2: Parse "Artist - Song Title" from video title
+            # This is the most common format for music videos
+            artist, title = _parse_artist_title_from_video_title(video_title, uploader)
+
+            if artist and title:
+                logger.info(f"Parsed from video title: '{title}' by '{artist}'")
+                return {
+                    'artist': artist,
+                    'title': title,
+                    'video_id': video_id,
+                }
+
+            # Strategy 3: Try to get info from description
+            artist, title = _parse_metadata_from_description(description, video_title)
+
+            if artist and title:
+                logger.info(f"Parsed from description: '{title}' by '{artist}'")
+                return {
+                    'artist': artist,
+                    'title': title,
+                    'video_id': video_id,
+                }
+
+            # Strategy 4: Fall back to uploader as artist
+            artist = _clean_uploader_name(uploader)
+            title = clean_title(video_title, artist)
+
+            logger.info(f"Fallback: '{title}' by '{artist}'")
+            return {
+                'artist': artist or 'Unknown',
+                'title': title or video_title,
+                'video_id': video_id,
+            }
+
+    except Exception as e:
+        logger.error(f"Failed to extract metadata from YouTube: {e}")
+        return {
+            'artist': 'Unknown',
+            'title': 'Unknown',
+            'video_id': extract_video_id(url),
+        }
+
+
+def _parse_artist_title_from_video_title(video_title: str, uploader: str = "") -> Tuple[str, str]:
+    """
+    Parse artist and song title from a YouTube video title.
+
+    Handles formats like:
+    - "Queen - Crazy Little Thing Called Love (Official Video)"
+    - "Artist Name - Song Title [Official Audio]"
+    - "Song Title by Artist Name"
+
+    Returns:
+        Tuple of (artist, title), or ("", "") if parsing fails
+    """
+    if not video_title:
+        return "", ""
+
+    # Clean the title first
+    cleaned = video_title
+
+    # Remove common suffixes (but preserve the core "Artist - Title")
+    patterns_to_remove = [
+        r'\s*\(Official\s*(Music\s*)?Video\)',
+        r'\s*\(Official\s*Audio\)',
+        r'\s*\(Official\s*Lyric\s*Video\)',
+        r'\s*\(Lyric\s*Video\)',
+        r'\s*\(Lyrics?\)',
+        r'\s*\(Audio\)',
+        r'\s*\(Visualizer\)',
+        r'\s*\(Remaster(ed)?\s*\d*\)',
+        r'\s*\(Live\)',
+        r'\s*\[Official\s*(Music\s*)?Video\]',
+        r'\s*\[Official\s*Audio\]',
+        r'\s*\[4K\]',
+        r'\s*\[HD\]',
+        r'\s*\[HQ\]',
+        r'\s*\[\d+K\]',
+        r'\s*\(4K\)',
+        r'\s*\(HD\)',
+        r'\s*\(HQ\)',
+        r'\s*\(\d+K\)',
+        r'\s*【[^】]*】',
+        r'\s*M/?V\s*$',
+        r'\s*\(M/?V\)',
+    ]
+
+    for pattern in patterns_to_remove:
+        cleaned = re.sub(pattern, '', cleaned, flags=re.IGNORECASE)
+
+    cleaned = cleaned.strip()
+
+    # Try "Artist - Title" format (most common)
+    if ' - ' in cleaned:
+        parts = cleaned.split(' - ', 1)
+        if len(parts) == 2:
+            potential_artist = parts[0].strip()
+            potential_title = parts[1].strip()
+
+            # Validate that artist part doesn't look like a song title
+            # (e.g., doesn't contain common song words)
+            if len(potential_artist) < 50 and potential_artist:
+                # Additional cleaning of the title part
+                potential_title = re.sub(r'\s*\(feat\.?.*?\)', '', potential_title, flags=re.IGNORECASE)
+                potential_title = re.sub(r'\s*ft\.?\s+.*$', '', potential_title, flags=re.IGNORECASE)
+                potential_title = potential_title.strip()
+
+                if potential_title:
+                    return potential_artist, potential_title
+
+    # Try "Title by Artist" format
+    by_match = re.search(r'^(.+?)\s+by\s+([^()\[\]]+)$', cleaned, re.IGNORECASE)
+    if by_match:
+        potential_title = by_match.group(1).strip()
+        potential_artist = by_match.group(2).strip()
+        if potential_artist and potential_title:
+            return potential_artist, potential_title
+
+    return "", ""
+
+
+def _parse_metadata_from_description(description: str, video_title: str) -> Tuple[str, str]:
+    """
+    Extract artist and title from video description.
+
+    Handles YouTube Music format: "Song Title · Artist Name · Album"
+
+    Returns:
+        Tuple of (artist, title), or ("", "") if parsing fails
+    """
+    if not description:
+        return "", ""
+
+    lines = description.split('\n')
+
+    for line in lines[:10]:
+        line = line.strip()
+        if not line:
+            continue
+
+        # Skip URLs and metadata lines
+        if line.startswith('http') or '@' in line:
+            continue
+        if 'provided to' in line.lower() or 'auto-generated' in line.lower():
+            continue
+
+        # YouTube Music format: "Title · Artist · Album"
+        if '·' in line:
+            parts = [p.strip() for p in line.split('·')]
+            if len(parts) >= 2:
+                title = parts[0]
+                artist = parts[1]
+                # Validate
+                if title and artist and 2 < len(title) < 100 and 2 < len(artist) < 100:
+                    return artist, title
+
+    return "", ""
+
+
+def _clean_uploader_name(uploader: str) -> str:
+    """Clean up a YouTube uploader name to extract artist name."""
+    if not uploader:
+        return ""
+
+    artist = uploader
+    suffixes = [
+        'Official', 'VEVO', 'Records', 'Music', 'Channel',
+        '- Topic', ' - Topic', 'TV', 'Band', 'Entertainment'
+    ]
+
+    for suffix in suffixes:
+        if artist.endswith(suffix):
+            artist = artist[:-len(suffix)].strip()
+
+    # Also handle prefixes
+    prefixes = ['Official']
+    for prefix in prefixes:
+        if artist.startswith(prefix):
+            artist = artist[len(prefix):].strip()
+
+    return artist.strip()
 
 def extract_video_id(url: str) -> str:
     """Extract YouTube video ID from URL."""
@@ -117,17 +343,17 @@ class YouTubeDownloader:
         try:
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                 info = ydl.extract_info(url, download=False)
-                title = info.get('title', 'Unknown')
+                video_title = info.get('title', 'Unknown')
                 uploader = info.get('uploader', 'Unknown')
                 description = info.get('description', '')
-                
+
                 # Download the audio
                 ydl.download([url])
-                
+
                 # Find the downloaded file
-                safe_title = sanitize_filename(title)
+                safe_title = sanitize_filename(video_title)
                 audio_path = output_dir / f"{safe_title}.wav"
-                
+
                 if not audio_path.exists():
                     # Try to find any wav file in the directory
                     wav_files = list(output_dir.glob("*.wav"))
@@ -135,20 +361,38 @@ class YouTubeDownloader:
                         audio_path = wav_files[0]
                     else:
                         raise DownloadError("Downloaded audio file not found")
-                
-                # Extract artist and title from description or title
-                artist = self._extract_artist(title, uploader, description)
-                cleaned_title = self._extract_title(title, artist, description)
-                
+
+                # Extract artist and title using improved strategies
+                # Strategy 1: Use yt-dlp's structured metadata fields
+                yt_artist = info.get('artist') or info.get('creator') or ''
+                yt_track = info.get('track') or ''
+
+                if yt_artist and yt_track:
+                    artist = yt_artist
+                    cleaned_title = yt_track
+                    logger.info(f"Using yt-dlp metadata: '{cleaned_title}' by '{artist}'")
+                else:
+                    # Strategy 2: Parse from video title
+                    artist, cleaned_title = _parse_artist_title_from_video_title(video_title, uploader)
+
+                    if not (artist and cleaned_title):
+                        # Strategy 3: Try description
+                        artist, cleaned_title = _parse_metadata_from_description(description, video_title)
+
+                    if not (artist and cleaned_title):
+                        # Strategy 4: Fall back to old methods
+                        artist = self._extract_artist(video_title, uploader, description)
+                        cleaned_title = self._extract_title(video_title, artist, description)
+
                 logger.info(f"Downloaded: {cleaned_title} by {artist}")
-                
+
                 return {
                     'audio_path': str(audio_path),
                     'title': cleaned_title,
                     'artist': artist,
                     'video_id': video_id,
                 }
-                
+
         except Exception as e:
             raise DownloadError(f"Failed to download audio: {e}")
     
@@ -175,24 +419,42 @@ class YouTubeDownloader:
         try:
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                 info = ydl.extract_info(url, download=False)
-                title = info.get('title', 'Unknown')
-                
+                video_title = info.get('title', 'Unknown')
+                uploader = info.get('uploader', 'Unknown')
+                description = info.get('description', '')
+
                 ydl.download([url])
-                
+
                 # Find the downloaded video file
                 video_files = list(output_dir.glob("*_video.*"))
                 if not video_files:
                     raise DownloadError("Downloaded video file not found")
-                
+
                 video_path = video_files[0]
                 logger.info(f"Downloaded video: {video_path.name}")
-                
+
+                # Extract metadata using improved strategies
+                yt_artist = info.get('artist') or info.get('creator') or ''
+                yt_track = info.get('track') or ''
+
+                if yt_artist and yt_track:
+                    artist = yt_artist
+                    cleaned_title = yt_track
+                else:
+                    artist, cleaned_title = _parse_artist_title_from_video_title(video_title, uploader)
+                    if not (artist and cleaned_title):
+                        artist, cleaned_title = _parse_metadata_from_description(description, video_title)
+                    if not (artist and cleaned_title):
+                        artist = _clean_uploader_name(uploader)
+                        cleaned_title = clean_title(video_title, artist)
+
                 return {
                     'video_path': str(video_path),
-                    'title': title,
+                    'title': cleaned_title or video_title,
+                    'artist': artist or 'Unknown',
                     'video_id': video_id,
                 }
-                
+
         except Exception as e:
             raise DownloadError(f"Failed to download video: {e}")
     
