@@ -35,6 +35,7 @@ class KaraokeGenerator:
         audio_start: float = 0.0,
         lyrics_title: Optional[str] = None,
         lyrics_artist: Optional[str] = None,
+        lyrics_offset: Optional[float] = None,
         use_backgrounds: bool = False,
         force_reprocess: bool = False,
         video_settings: Optional[Dict[str, Any]] = None,
@@ -99,7 +100,8 @@ class KaraokeGenerator:
                 lyrics_artist or audio_result['artist'],
                 separation_result['vocals_path'],
                 video_id,
-                force_reprocess
+                force_reprocess,
+                lyrics_offset=lyrics_offset,
             )
             print(f"  ✓ Completed in {time.time() - step_start:.1f}s")
             print(f"  Found {len(lyrics_result['lines'])} lines of lyrics\n")
@@ -342,19 +344,20 @@ class KaraokeGenerator:
         return self.separator.separate_vocals(audio_path, str(cache_dir))
     
     def _get_lyrics(
-        self, title: str, artist: str, vocals_path: str, video_id: str, force: bool
+        self, title: str, artist: str, vocals_path: str, video_id: str, force: bool,
+        lyrics_offset: Optional[float] = None,
     ) -> Dict[str, Any]:
-        """Get lyrics with caching."""
+        """Get lyrics with caching and timing."""
         logger.info("📝 Fetching lyrics...")
 
         # Import here to avoid circular imports
-        from ..core.lyrics import LyricsProcessor
+        from ..core.lyrics import get_lyrics_simple
 
-        processor = LyricsProcessor()
-
-        lines, metadata = processor.get_lyrics(
+        lines, metadata = get_lyrics_simple(
             title=title,
             artist=artist,
+            vocals_path=vocals_path,
+            lyrics_offset=lyrics_offset,
             romanize=True,
         )
 

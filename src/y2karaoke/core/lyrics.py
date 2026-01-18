@@ -273,6 +273,85 @@ def create_lines_from_lrc(
 
 
 # ----------------------
+# Create lines from LRC timing with Genius text
+# ----------------------
+def _create_lines_from_lrc_timings(
+    lrc_timings: List[Tuple[float, str]],
+    genius_lines: List[str],
+) -> List[Line]:
+    """
+    Create Line objects using LRC timing and Genius text.
+
+    Matches Genius lines to LRC lines by fuzzy matching, then uses
+    the Genius text (canonical) with LRC timing.
+
+    Args:
+        lrc_timings: List of (timestamp, text) from LRC with offset applied
+        genius_lines: List of text lines from Genius (canonical)
+
+    Returns:
+        List of Line objects with word-level timing
+    """
+    from difflib import SequenceMatcher
+
+    lines: List[Line] = []
+    used_genius = set()
+
+    for i, (start_time, lrc_text) in enumerate(lrc_timings):
+        # Determine end time from next line or estimate
+        if i + 1 < len(lrc_timings):
+            end_time = lrc_timings[i + 1][0]
+            # Cap line duration at 10 seconds
+            if end_time - start_time > 10.0:
+                end_time = start_time + 5.0
+        else:
+            end_time = start_time + 3.0
+
+        # Find best matching Genius line (prefer unused lines)
+        best_match = None
+        best_score = 0.0
+        lrc_normalized = lrc_text.lower().strip()
+
+        for j, genius_text in enumerate(genius_lines):
+            if j in used_genius:
+                continue
+            genius_normalized = genius_text.lower().strip()
+            score = SequenceMatcher(None, lrc_normalized, genius_normalized).ratio()
+            if score > best_score:
+                best_score = score
+                best_match = (j, genius_text)
+
+        # Use Genius text if good match, otherwise use LRC text
+        if best_match and best_score > 0.5:
+            used_genius.add(best_match[0])
+            line_text = best_match[1]
+        else:
+            line_text = lrc_text
+
+        # Create words with evenly distributed timing
+        word_texts = line_text.split()
+        if not word_texts:
+            continue
+
+        line_duration = end_time - start_time
+        word_duration = (line_duration * 0.95) / len(word_texts)
+
+        words = []
+        for j, word_text in enumerate(word_texts):
+            word_start = start_time + j * (line_duration / len(word_texts))
+            word_end = word_start + word_duration
+            words.append(Word(
+                text=word_text,
+                start_time=word_start,
+                end_time=word_end,
+            ))
+
+        lines.append(Line(words=words))
+
+    return lines
+
+
+# ----------------------
 # Line splitting for display
 # ----------------------
 def split_long_lines(lines: List[Line], max_width_ratio: float = 0.75) -> List[Line]:
@@ -326,6 +405,7 @@ def get_lyrics_simple(
     artist: str,
     vocals_path: Optional[str] = None,
     cache_dir: Optional[str] = None,
+    lyrics_offset: Optional[float] = None,
     romanize: bool = True,
 ) -> Tuple[List[Line], Optional[SongMetadata]]:
     """
@@ -333,16 +413,17 @@ def get_lyrics_simple(
 
     This function implements the clean architecture:
     1. Get canonical text + singer info from Genius
-    2. Detect where vocals start in audio (offset)
-    3. Use forced alignment for word-level timing
-    4. Apply romanization if needed
-
-    Note: cache_dir is accepted for API compatibility but not currently used.
+    2. Get line timing from syncedlyrics (LRC)
+    3. Detect/apply offset between audio and LRC timing
+    4. Use forced alignment for word-level timing
+    5. Apply romanization if needed
 
     Args:
         title: Song title
         artist: Artist name
         vocals_path: Path to vocals audio (optional, for word-level timing)
+        cache_dir: Cache directory (accepted for API compatibility)
+        lyrics_offset: Manual timing offset in seconds (auto-detected if None)
         romanize: Whether to romanize non-Latin scripts
 
     Returns:
@@ -363,44 +444,67 @@ def get_lyrics_simple(
     text_lines = [text for text, _ in genius_lines if text.strip()]
     logger.info(f"Got {len(text_lines)} lines from Genius")
 
-    # 2. If we have vocals, use forced alignment
+    # 2. Get LRC timing from syncedlyrics
+    line_timings = None
+    lrc_text = None
+    try:
+        from y2karaoke.core.sync import fetch_lyrics_multi_source
+        lrc_text, is_synced, source = fetch_lyrics_multi_source(title, artist)
+        if lrc_text and is_synced:
+            line_timings = parse_lrc_with_timing(lrc_text, title, artist)
+            logger.info(f"Got {len(line_timings)} line timings from {source}")
+    except Exception as e:
+        logger.warning(f"Could not get LRC timing: {e}")
+
+    # 3. If we have vocals, detect/apply offset
     if vocals_path:
-        logger.info("Detecting song start...")
-        offset = detect_song_start(vocals_path)
-        logger.info(f"Vocals start at {offset:.2f}s")
+        # Detect where vocals actually start in audio
+        detected_vocal_start = detect_song_start(vocals_path)
+        logger.info(f"Detected vocal start at {detected_vocal_start:.2f}s")
 
-        # Get LRC timing if available (for alignment hints)
-        line_timings = None
-        try:
-            from y2karaoke.core.sync import fetch_lyrics_multi_source
-            lrc_text, is_synced, source = fetch_lyrics_multi_source(title, artist)
-            if lrc_text and is_synced:
-                line_timings = parse_lrc_with_timing(lrc_text, title, artist)
-                logger.info(f"Got {len(line_timings)} timing hints from {source}")
-        except Exception as e:
-            logger.warning(f"Could not get LRC timing: {e}")
+        # Compute or use manual offset
+        if lyrics_offset is not None:
+            # Manual override
+            offset = lyrics_offset
+            logger.info(f"Using manual lyrics offset: {offset:.2f}s")
+        elif line_timings:
+            # Auto-compute offset: difference between detected vocal start and first LRC timestamp
+            first_lrc_time = line_timings[0][0]
+            offset = detected_vocal_start - first_lrc_time
+            logger.info(f"Auto-computed lyrics offset: {offset:.2f}s (vocal start {detected_vocal_start:.2f}s - LRC start {first_lrc_time:.2f}s)")
+        else:
+            # No LRC timing, use detected vocal start as offset
+            offset = detected_vocal_start
+            logger.info(f"No LRC timing, using vocal start as offset: {offset:.2f}s")
 
-        # Forced alignment
-        logger.info("Running forced alignment...")
-        lines = forced_align(
-            text_lines=text_lines,
-            audio_path=vocals_path,
-            offset=offset,
-            line_timings=line_timings,
-        )
+        # Apply offset to LRC timings
+        if line_timings and offset != 0:
+            line_timings = [(ts + offset, text) for ts, text in line_timings]
+            logger.info(f"Applied offset to {len(line_timings)} line timings")
 
-        # Refine with onset detection
-        if lines:
-            lines = refine_with_onset_detection(lines, vocals_path)
+        # 4. Create lines with timing
+        if line_timings:
+            # Use LRC timing as primary source (with offset already applied)
+            logger.info("Using LRC timing as primary source")
+            lines = _create_lines_from_lrc_timings(line_timings, text_lines)
+            logger.info(f"Created {len(lines)} lines from LRC timing")
+        else:
+            # No LRC - fall back to forced alignment
+            logger.info("No LRC timing, using forced alignment...")
+            lines = forced_align(
+                text_lines=text_lines,
+                audio_path=vocals_path,
+                offset=offset,
+                line_timings=None,
+            )
 
-        # Check quality
-        quality = alignment_quality(lines)
-        logger.info(f"Alignment quality: {quality:.2f}")
+            # Refine with onset detection
+            if lines:
+                lines = refine_with_onset_detection(lines, vocals_path)
 
-        if quality < 0.3 and line_timings:
-            # Fall back to LRC timing
-            logger.warning("Low alignment quality, falling back to LRC timing")
-            lines = create_lines_from_lrc(lrc_text, romanize=romanize, title=title, artist=artist)
+            # Check quality
+            quality = alignment_quality(lines)
+            logger.info(f"Alignment quality: {quality:.2f}")
     else:
         # No audio - use estimated timing
         logger.info("No audio, using estimated timing")

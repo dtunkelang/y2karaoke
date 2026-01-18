@@ -83,6 +83,8 @@ def cli(ctx, verbose, log_file):
               help='Start audio processing from this many seconds (skip intro)')
 @click.option('--lyrics-title', help='Override song title for lyrics search')
 @click.option('--lyrics-artist', help='Override artist for lyrics search')
+@click.option('--lyrics-offset', type=float, default=None,
+              help='Manual lyrics timing offset in seconds (auto-detected if not set). Positive = lyrics later, negative = earlier')
 @click.option('--backgrounds', is_flag=True, 
               help='Use video backgrounds from original YouTube video')
 @click.option('--upload', is_flag=True, 
@@ -105,7 +107,7 @@ def cli(ctx, verbose, log_file):
               help='Disable progress bar during rendering')
 @click.pass_context
 def generate(ctx, url_or_query, output, offset, key, tempo, audio_start,
-             lyrics_title, lyrics_artist, backgrounds, upload, no_upload,
+             lyrics_title, lyrics_artist, lyrics_offset, backgrounds, upload, no_upload,
              force, keep_files, work_dir, resolution, fps, font_size, no_progress):
     """Generate karaoke video from YouTube URL or search query."""
     logger = ctx.obj['logger']
@@ -178,6 +180,7 @@ def generate(ctx, url_or_query, output, offset, key, tempo, audio_start,
                 audio_start=audio_start,
                 lyrics_title=lyrics_title,
                 lyrics_artist=lyrics_artist,
+                lyrics_offset=lyrics_offset,
                 use_backgrounds=backgrounds,
                 force_reprocess=force,
                 video_settings=video_settings if video_settings else None,
