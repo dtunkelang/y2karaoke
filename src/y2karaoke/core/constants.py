@@ -1,3 +1,5 @@
+import re
+
 TITLE_CLEANUP_PATTERNS = [
     r'\s*[|｜]\s*.*$',  # Remove after | or ｜
     r'\s*[\(\[]?\s*(ft\.?|feat\.?|featuring).*?[\)\]]?\s*$',  # Featuring
