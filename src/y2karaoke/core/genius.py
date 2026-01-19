@@ -1,5 +1,6 @@
 """Genius lyrics fetching with singer annotations."""
 
+import re
 from typing import List, Tuple, Optional
 from ..utils.logging import get_logger
 from .models import SingerID, Word, Line, SongMetadata
