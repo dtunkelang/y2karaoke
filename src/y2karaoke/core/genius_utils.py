@@ -2,7 +2,8 @@
 
 import re
 import unicodedata
-from typing import List, Tuple
+from typing import List, Tuple, Optional
+from .fetch import fetch_html, fetch_json
 
 # ----------------------
 # Constants / Patterns
@@ -31,7 +32,6 @@ TRANSLATION_LANGUAGES = ['Türkçe','Français','Español','Deutsch','Português
 # Helper functions
 # ----------------------
 def make_slug(text: str) -> str:
-    """Convert text to lowercase slug suitable for URLs."""
     text = unicodedata.normalize("NFKD", text)
     text = text.lower()
     text = re.sub(r'[^\w\s-]', '', text)
@@ -40,7 +40,6 @@ def make_slug(text: str) -> str:
 
 
 def clean_title_for_search(title: str, title_cleanup_patterns: list, youtube_suffixes: list) -> str:
-    """Clean a song title for Genius search."""
     cleaned = title
     for pattern in title_cleanup_patterns:
         cleaned = re.sub(pattern, '', cleaned, flags=re.IGNORECASE)
@@ -51,7 +50,6 @@ def clean_title_for_search(title: str, title_cleanup_patterns: list, youtube_suf
 
 
 def is_genius_metadata(line: str) -> bool:
-    """Determine if a line from Genius is metadata rather than lyrics."""
     if re.match(r'^\d+\s*Contributor', line):
         return True
     if 'Translations' in line and any(lang in line for lang in TRANSLATION_LANGUAGES):
@@ -64,7 +62,6 @@ def is_genius_metadata(line: str) -> bool:
 
 
 def strip_leading_artist_from_line(text: str, artist: str) -> str:
-    """Remove leading artist labels from a lyric line."""
     if not artist:
         return text
     pattern = re.compile(
@@ -77,7 +74,6 @@ def filter_singer_only_lines(
     lines: List[Tuple[str, str]],
     known_singers: List[str]
 ) -> List[Tuple[str, str]]:
-    """Filter out lines that only mention singers and contain no lyrics."""
     known_set = {s.lower() for s in known_singers}
     filtered = []
     for text, singer in lines:
@@ -89,7 +85,6 @@ def filter_singer_only_lines(
 
 
 def normalize_text(text: str) -> str:
-    """Normalize text for fuzzy matching."""
     if not text:
         return ""
     text = text.lower()
@@ -98,3 +93,55 @@ def normalize_text(text: str) -> str:
     text = re.sub(r"[^\w\s]", "", text)
     text = re.sub(r"\s+", " ", text)
     return text.strip()
+
+
+# ----------------------
+# URL resolution
+# ----------------------
+def resolve_genius_url(title: str, artist: str, romanized: bool = True) -> Optional[str]:
+    from .genius_utils import make_slug, clean_title_for_search, TITLE_CLEANUP_PATTERNS, YOUTUBE_SUFFIXES
+
+    cleaned_title = clean_title_for_search(title, TITLE_CLEANUP_PATTERNS, YOUTUBE_SUFFIXES)
+    artist_slug = make_slug(artist)
+    title_slug = make_slug(cleaned_title)
+
+    candidate_urls = [
+        f"https://genius.com/{artist_slug}-{title_slug}-lyrics",
+        f"https://genius.com/{title_slug}-lyrics",
+    ]
+    if romanized:
+        candidate_urls.insert(0, f"https://genius.com/Genius-romanizations-{artist_slug}-{title_slug}-romanized-lyrics")
+
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) '
+                      'AppleWebKit/537.36 (KHTML, like Gecko) '
+                      'Chrome/143.0.0.0 Safari/537.36',
+        'Accept': '*/*'
+    }
+
+    # Try candidate URLs first
+    for url in candidate_urls:
+        html = fetch_html(url, headers=headers)
+        if html and not any(tag in url.lower() for tag in ["translation", "übersetzung"]):
+            return url
+
+    # Fallback: Genius API search
+    search_queries = [f"{artist} {cleaned_title}", f"{cleaned_title} {artist}"]
+    for query in search_queries:
+        api_url = f"https://genius.com/api/search/song?per_page=5&q={query.replace(' ', '%20')}"
+        data = fetch_json(api_url, headers=headers)
+        if not data:
+            continue
+
+        sections = data.get('response', {}).get('sections', [])
+        for section in sections:
+            if section.get('type') != 'song':
+                continue
+            for hit in section.get('hits', []):
+                result = hit.get('result', {})
+                url = result.get('url')
+                if url and url.endswith("-lyrics") and '/artists/' not in url and \
+                   not any(tag in url.lower() for tag in ["translation", "übersetzung"]):
+                    return url
+
+    return None
