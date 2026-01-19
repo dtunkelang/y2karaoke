@@ -6,6 +6,7 @@ import random
 import unicodedata
 from difflib import SequenceMatcher
 from typing import List, Tuple, Optional
+import logging
 
 import requests
 from bs4 import BeautifulSoup
@@ -20,87 +21,124 @@ logger = get_logger(__name__)
 # Retry constants
 # ----------------------
 DEFAULT_MAX_RETRIES = 5
+BACKOFF_FACTOR = 1.0
 
+# ----------------------
+# Patterns
+# ----------------------
+TITLE_CLEANUP_PATTERNS = [
+    r'\s*[|｜]\s*.*$',  # Remove after | or ｜
+    r'\s*[\(\[]?\s*(ft\.?|feat\.?|featuring).*?[\)\]]?\s*$',  # Featuring
+    r'\s*[\(\[].*?[\)\]]\s*',  # Parentheses/brackets
+]
 
+YOUTUBE_SUFFIXES = [
+    ' Lyrics', ' Official Video', ' Official Audio',
+    ' Official Music Video', ' Audio', ' Video'
+]
+
+DESCRIPTION_PATTERNS = [
+    'is the first track', 'is the second track', 'is the third track',
+    'is a song by', 'was released as', 'Read More', 'studio album',
+    'music video featuring'
+]
+DESCRIPTION_REGEX = re.compile("|".join(map(re.escape, DESCRIPTION_PATTERNS)), re.IGNORECASE)
+
+TRANSLATION_LANGUAGES = ['Türkçe','Français','Español','Deutsch','Português']
+
+# ----------------------
+# Utility functions
+# ----------------------
 def _make_request_with_retry(
     url: str,
     headers: Optional[dict] = None,
     timeout: int = 10,
     max_retries: int = DEFAULT_MAX_RETRIES,
+    backoff_factor: float = BACKOFF_FACTOR
 ) -> Optional[requests.Response]:
-    """
-    Make an HTTP GET request with retry logic and exponential backoff.
-    Returns the requests.Response or None if all retries fail.
-    """
     headers = headers or {
         "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
                       "AppleWebKit/537.36 (KHTML, like Gecko) "
                       "Chrome/143.0.0.0 Safari/537.36"
     }
 
-    delay = 1.0
-
+    delay = backoff_factor
     for attempt in range(max_retries + 1):
         try:
             response = requests.get(url, headers=headers, timeout=timeout)
             response.raise_for_status()
             return response
-        except (requests.exceptions.RequestException, requests.exceptions.Timeout):
+        except requests.exceptions.RequestException as e:
+            logger.warning(f"Request failed (attempt {attempt}/{max_retries}) for {url}: {e}")
             if attempt < max_retries:
-                sleep_time = delay + random.uniform(0, 0.5)
-                time.sleep(sleep_time)
+                time.sleep(delay + random.uniform(0, 0.5))
                 delay = min(delay * 2, 30.0)
+        except Exception as e:
+            logger.error(f"Unexpected error during request to {url}: {e}")
+            break
     return None
 
-
 def _make_slug(text: str) -> str:
-    """Convert text to URL slug for Genius URLs."""
-    slug = re.sub(r'[^\w\s-]', '', text.lower())
-    slug = re.sub(r'\s+', '-', slug)
-    return slug
-
+    text = unicodedata.normalize("NFKD", text)
+    text = text.lower()
+    text = re.sub(r'[^\w\s-]', '', text)
+    text = re.sub(r'\s+', '-', text)
+    return text.strip('-')
 
 def _clean_title_for_search(title: str) -> str:
-    """Clean a title for Genius search by removing common suffixes and noise."""
-    cleaned = re.split(r'\s*[|｜]\s*', title)[0]
-    cleaned = re.sub(r'\s*[\(\[]?\s*(ft\.?|feat\.?|featuring).*?[\)\]]?\s*$', '', cleaned, flags=re.IGNORECASE)
-    cleaned = re.sub(r'\s*[\(\[].*?[\)\]]\s*', '', cleaned).strip()
-
-    # Remove common YouTube suffixes
-    for suffix in [' Lyrics', ' Official Video', ' Official Audio', ' Official Music Video', ' Audio', ' Video']:
+    cleaned = title
+    for pattern in TITLE_CLEANUP_PATTERNS:
+        cleaned = re.sub(pattern, '', cleaned, flags=re.IGNORECASE)
+    for suffix in YOUTUBE_SUFFIXES:
         if cleaned.endswith(suffix):
             cleaned = cleaned[:-len(suffix)].strip()
-
-    return cleaned
-
+    return cleaned.strip()
 
 def _is_genius_metadata(line: str) -> bool:
-    """Check if a line is Genius page metadata rather than lyrics."""
-    # Skip lines with contributor counts
     if re.match(r'^\d+\s*Contributor', line):
         return True
-    # Skip lines with translation language lists
-    if 'Translations' in line and any(lang in line for lang in ['Türkçe', 'Français', 'Español', 'Deutsch', 'Português']):
+    if 'Translations' in line and any(lang in line for lang in TRANSLATION_LANGUAGES):
         return True
-    # Skip description text patterns
-    description_patterns = [
-        'is the first track',
-        'is the second track',
-        'is the third track',
-        'is a song by',
-        'was released as',
-        'Read More',
-        'studio album',
-        'music video featuring',
-    ]
-    if any(pattern in line for pattern in description_patterns):
+    if DESCRIPTION_REGEX.search(line):
         return True
-    # Skip if line is extremely long (likely concatenated metadata)
     if len(line) > 300:
         return True
     return False
 
+def strip_leading_artist_from_line(text: str, artist: str) -> str:
+    if not artist:
+        return text
+    pattern = re.compile(
+        rf'^(?:\[{re.escape(artist)}\]\s*|{re.escape(artist)}\s*[-–]\s*)', re.IGNORECASE
+    )
+    return pattern.sub('', text).strip()
 
+def filter_singer_only_lines(
+    lines: List[Tuple[str, str]],
+    known_singers: List[str]
+) -> List[Tuple[str, str]]:
+    known_set = {s.lower() for s in known_singers}
+    filtered = []
+    for text, singer in lines:
+        text_clean = strip_leading_artist_from_line(text, artist='')
+        parts = re.split(r'[\/,]', text_clean.lower())
+        if any(p.strip() not in known_set for p in parts):
+            filtered.append((text_clean, singer))
+    return filtered
+
+def normalize_text(text: str) -> str:
+    if not text:
+        return ""
+    text = text.lower()
+    text = unicodedata.normalize('NFKD', text)
+    text = "".join(c for c in text if not unicodedata.combining(c))
+    text = re.sub(r"[^\w\s]", "", text)
+    text = re.sub(r"\s+", " ", text)
+    return text.strip()
+
+# ----------------------
+# Main lyrics fetching
+# ----------------------
 def fetch_genius_lyrics_with_singers(
     title: str,
     artist: str
@@ -108,14 +146,8 @@ def fetch_genius_lyrics_with_singers(
     """
     Fetch lyrics from Genius with singer annotations.
 
-    Args:
-        title: Song title
-        artist: Artist name
-
-    Returns:
-        Tuple of (lyrics_with_singers, metadata)
-        - lyrics_with_singers: List of (text, singer_name) tuples for each line
-        - metadata: SongMetadata with singer info and correct title/artist from Genius
+    Captures all lines, including those before any section markers.
+    Strips artist prefixes and filters singer-only lines.
     """
     headers = {
         'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36',
@@ -132,6 +164,7 @@ def fetch_genius_lyrics_with_singers(
         f"https://genius.com/Genius-romanizations-{artist_slug}-{title_slug}-romanized-lyrics",
     ]
 
+    # Try candidate URLs first
     song_url = None
     for url in candidate_urls:
         response = _make_request_with_retry(url, headers)
@@ -139,8 +172,8 @@ def fetch_genius_lyrics_with_singers(
             song_url = url
             break
 
+    # Fallback: search API
     if not song_url:
-        # Fallback: search API
         search_queries = [f"{artist} {cleaned_title}", f"{cleaned_title} {artist}"]
         for query in search_queries:
             api_url = f"https://genius.com/api/search/song?per_page=5&q={query.replace(' ', '%20')}"
@@ -168,14 +201,14 @@ def fetch_genius_lyrics_with_singers(
     if not song_url:
         return None, None
 
-    # Fetch page
+    # Fetch lyrics page
     response = _make_request_with_retry(song_url, headers)
     if not response or response.status_code != 200:
         return None, None
 
     soup = BeautifulSoup(response.text, 'html.parser')
 
-    # Extract title/artist from page
+    # Extract Genius title/artist from page
     page_title = soup.find('title').get_text().strip() if soup.find('title') else ""
     genius_title = cleaned_title
     genius_artist = artist
@@ -196,10 +229,9 @@ def fetch_genius_lyrics_with_singers(
     current_singer = ""
     singers_found: set = set()
     section_pattern = re.compile(r'\[([^\]]+)\]')
-    lyrics_started = False  # Track if we've hit actual lyrics content
 
     for container in lyrics_containers:
-        # Remove structural metadata elements
+        # Remove structural metadata
         for elem in container.find_all(['div', 'span', 'a'], class_=lambda x: x and any(
             pattern in ' '.join(x) for pattern in ['LyricsHeader', 'SongBioPreview', 'ContributorsCredit']
         )):
@@ -207,29 +239,22 @@ def fetch_genius_lyrics_with_singers(
 
         for br in container.find_all('br'):
             br.replace_with('\n')
+
         text = container.get_text()
         for line in text.split('\n'):
             line = line.strip()
-            if not line:
+            if not line or _is_genius_metadata(line):
                 continue
 
             # Section marker indicates singer
             section_match = section_pattern.match(line)
-            if section_match:
-                lyrics_started = True
-                header = section_match.group(1)
-                if ':' in header:
-                    singer_part = header.split(':', 1)[1].strip()
-                    current_singer = singer_part
-                    singers_found.add(singer_part)
+            if section_match and ':' in section_match.group(1):
+                singer_part = section_match.group(1).split(':', 1)[1].strip()
+                current_singer = singer_part
+                singers_found.add(singer_part)
                 continue
 
-            if not lyrics_started:
-                continue
-
-            if _is_genius_metadata(line):
-                continue
-
+            # Append line regardless of current_singer
             lines_with_singers.append((line, current_singer))
 
     if not lines_with_singers:
@@ -239,8 +264,7 @@ def fetch_genius_lyrics_with_singers(
     unique_singers: List[str] = []
     for singer in singers_found:
         if '&' in singer or ',' in singer:
-            parts = re.split(r'[&,]', singer)
-            for part in parts:
+            for part in re.split(r'[&,]', singer):
                 name = part.strip()
                 if name and name not in unique_singers:
                     unique_singers.append(name)
@@ -257,90 +281,39 @@ def fetch_genius_lyrics_with_singers(
         artist=genius_artist
     )
 
-    # --- Helper: strip leading artist name from a line ---
-    def _strip_leading_artist_from_line(text: str, artist: str) -> str:
-        if not artist:
-            return text
-        artist_escaped = re.escape(artist.strip())
-        pattern = re.compile(
-            rf'^(?:\[{artist_escaped}\]\s*|{artist_escaped}\s*[-–]\s*)',
-            flags=re.IGNORECASE
-        )
-        return pattern.sub('', text, count=1).strip()
-
-    # --- Helper: filter out singer-only lines ---
-    def _filter_singer_only_lines(genius_lines, known_singers):
-        if not known_singers:
-            return genius_lines
-        known_singers_set = set(s.lower() for s in known_singers)
-        filtered = []
-        for text, singer in genius_lines:
-            text_clean = _strip_leading_artist_from_line(text, artist='')  # optional: no global artist removal
-            parts = re.split(r'[\/,]', text_clean.lower().strip())
-            if any(part.strip() not in known_singers_set for part in parts):
-                filtered.append((text_clean, singer))
-        return filtered
-
-    # --- Apply fixes ---
+    # --- Strip artist prefixes ---
     lines_with_singers = [
-        (_strip_leading_artist_from_line(text, artist), singer)
+        (strip_leading_artist_from_line(text, artist), singer)
         for text, singer in lines_with_singers
     ]
 
-    lines_with_singers = _filter_singer_only_lines(
+    # --- Filter singer-only lines ---
+    lines_with_singers = filter_singer_only_lines(
         lines_with_singers,
         known_singers=metadata.singers if metadata else [artist]
     )
 
     return lines_with_singers, metadata
 
-def normalize_text(text: str) -> str:
-    """
-    Normalize text for fuzzy matching:
-    - Lowercase
-    - Remove diacritics
-    - Remove punctuation
-    - Collapse whitespace
-    """
-    if not text:
-        return ""
-    text = text.lower()
-    text = unicodedata.normalize('NFKD', text)
-    text = "".join(c for c in text if not unicodedata.combining(c))
-    text = re.sub(r"[^\w\s]", "", text)
-    text = re.sub(r"\s+", " ", text)
-    return text.strip()
 
-
+# ----------------------
+# Lyrics merging
+# ----------------------
 def merge_lyrics_with_singer_info(
     timed_lines: List[Tuple[float, str]],
     genius_lines: List[Tuple[str, str]],
     metadata: SongMetadata,
     romanize: bool = True,
 ) -> List[Line]:
-    """
-    Merge timed lyrics with Genius singer annotations using fuzzy matching.
-
-    Args:
-        timed_lines: List of (timestamp, text) tuples from synced lyrics
-        genius_lines: List of (text, singer_name) tuples from Genius
-        metadata: SongMetadata for singer ID mapping
-        romanize: Whether to romanize the text
-
-    Returns:
-        List of Line objects with timing and singer info
-    """
     if not timed_lines:
         return []
 
-    # Normalize Genius lines for matching
     genius_normalized = [(normalize_text(t), s) for t, s in genius_lines]
     used_genius_indices: set = set()
     lines: List[Line] = []
 
     for i, (start_time, text) in enumerate(timed_lines):
         line_text = romanize_line(text) if romanize else text
-
         end_time = timed_lines[i + 1][0] if i + 1 < len(timed_lines) else start_time + 3.0
         if i + 1 < len(timed_lines) and end_time - start_time > 10.0:
             end_time = start_time + 5.0
@@ -372,8 +345,8 @@ def merge_lyrics_with_singer_info(
 
         line_duration = end_time - start_time
         word_duration = max((line_duration * 0.95) / len(word_texts), 0.01)
-
         words: List[Word] = []
+
         for j, word_text in enumerate(word_texts):
             word_start = start_time + j * (line_duration / len(word_texts))
             word_end = word_start + word_duration
@@ -387,20 +360,4 @@ def merge_lyrics_with_singer_info(
         lines.append(Line(words=words, singer=singer_id))
 
     return lines
-    
-if __name__ == "__main__" and __file__.endswith("genius.py"):
-    test_title = "Somewhere I Belong"
-    test_artist = "Linkin Park"
-
-    lines_with_singers, metadata = fetch_genius_lyrics_with_singers(test_title, test_artist)
-
-    if not lines_with_singers:
-        print("No lyrics found")
-    else:
-        print(f"Song: {metadata.title} by {metadata.artist}")
-        print(f"Singers: {metadata.singers} (duet: {metadata.is_duet})")
-        print("\nFirst 10 lines (after stripping artist-only lines):")
-        for i, (line, singer) in enumerate(lines_with_singers[:10]):
-            singer_info = f" [{singer}]" if singer else ""
-            print(f"{i+1:02d}: {line}{singer_info}")
 
