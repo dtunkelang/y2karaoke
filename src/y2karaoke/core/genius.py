@@ -126,7 +126,6 @@ def fetch_genius_lyrics_with_singers(
     artist_slug = _make_slug(artist)
     title_slug = _make_slug(cleaned_title)
 
-    # Try direct URL patterns first
     candidate_urls = [
         f"https://genius.com/{artist_slug}-{title_slug}-lyrics",
         f"https://genius.com/{title_slug}-lyrics",
@@ -140,12 +139,9 @@ def fetch_genius_lyrics_with_singers(
             song_url = url
             break
 
-    # Fallback: search API if no URL worked
     if not song_url:
-        search_queries = [
-            f"{artist} {cleaned_title}",
-            f"{cleaned_title} {artist}"
-        ]
+        # Fallback: search API
+        search_queries = [f"{artist} {cleaned_title}", f"{cleaned_title} {artist}"]
         for query in search_queries:
             api_url = f"https://genius.com/api/search/song?per_page=5&q={query.replace(' ', '%20')}"
             response = _make_request_with_retry(api_url, headers)
@@ -203,14 +199,9 @@ def fetch_genius_lyrics_with_singers(
     lyrics_started = False  # Track if we've hit actual lyrics content
 
     for container in lyrics_containers:
-        # Remove structural elements that contain metadata, not lyrics
-        # These are identified by their class names in the Genius HTML structure
+        # Remove structural metadata elements
         for elem in container.find_all(['div', 'span', 'a'], class_=lambda x: x and any(
-            pattern in ' '.join(x) for pattern in [
-                'LyricsHeader',      # Contains contributor count and title
-                'SongBioPreview',    # Contains song description/bio
-                'ContributorsCredit', # Contributor information
-            ]
+            pattern in ' '.join(x) for pattern in ['LyricsHeader', 'SongBioPreview', 'ContributorsCredit']
         )):
             elem.decompose()
 
@@ -222,7 +213,7 @@ def fetch_genius_lyrics_with_singers(
             if not line:
                 continue
 
-            # Check for section marker - this indicates start of actual lyrics
+            # Section marker indicates singer
             section_match = section_pattern.match(line)
             if section_match:
                 lyrics_started = True
@@ -233,11 +224,9 @@ def fetch_genius_lyrics_with_singers(
                     singers_found.add(singer_part)
                 continue
 
-            # Skip everything before the first section marker (bio/description text)
             if not lyrics_started:
                 continue
 
-            # Skip Genius metadata lines that might appear within lyrics
             if _is_genius_metadata(line):
                 continue
 
@@ -268,8 +257,42 @@ def fetch_genius_lyrics_with_singers(
         artist=genius_artist
     )
 
-    return lines_with_singers, metadata
+    # --- Helper: strip leading artist name from a line ---
+    def _strip_leading_artist_from_line(text: str, artist: str) -> str:
+        if not artist:
+            return text
+        artist_escaped = re.escape(artist.strip())
+        pattern = re.compile(
+            rf'^(?:\[{artist_escaped}\]\s*|{artist_escaped}\s*[-–]\s*)',
+            flags=re.IGNORECASE
+        )
+        return pattern.sub('', text, count=1).strip()
 
+    # --- Helper: filter out singer-only lines ---
+    def _filter_singer_only_lines(genius_lines, known_singers):
+        if not known_singers:
+            return genius_lines
+        known_singers_set = set(s.lower() for s in known_singers)
+        filtered = []
+        for text, singer in genius_lines:
+            text_clean = _strip_leading_artist_from_line(text, artist='')  # optional: no global artist removal
+            parts = re.split(r'[\/,]', text_clean.lower().strip())
+            if any(part.strip() not in known_singers_set for part in parts):
+                filtered.append((text_clean, singer))
+        return filtered
+
+    # --- Apply fixes ---
+    lines_with_singers = [
+        (_strip_leading_artist_from_line(text, artist), singer)
+        for text, singer in lines_with_singers
+    ]
+
+    lines_with_singers = _filter_singer_only_lines(
+        lines_with_singers,
+        known_singers=metadata.singers if metadata else [artist]
+    )
+
+    return lines_with_singers, metadata
 
 def normalize_text(text: str) -> str:
     """
@@ -364,3 +387,20 @@ def merge_lyrics_with_singer_info(
         lines.append(Line(words=words, singer=singer_id))
 
     return lines
+    
+if __name__ == "__main__" and __file__.endswith("genius.py"):
+    test_title = "Somewhere I Belong"
+    test_artist = "Linkin Park"
+
+    lines_with_singers, metadata = fetch_genius_lyrics_with_singers(test_title, test_artist)
+
+    if not lines_with_singers:
+        print("No lyrics found")
+    else:
+        print(f"Song: {metadata.title} by {metadata.artist}")
+        print(f"Singers: {metadata.singers} (duet: {metadata.is_duet})")
+        print("\nFirst 10 lines (after stripping artist-only lines):")
+        for i, (line, singer) in enumerate(lines_with_singers[:10]):
+            singer_info = f" [{singer}]" if singer else ""
+            print(f"{i+1:02d}: {line}{singer_info}")
+
