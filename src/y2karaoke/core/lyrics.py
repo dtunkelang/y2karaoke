@@ -316,6 +316,29 @@ def split_long_lines(lines: List[Line], max_width_ratio: float = 0.75) -> List[L
 
 
 # ----------------------
+# LRC fetching helper
+# ----------------------
+def _fetch_lrc_timings(title: str, artist: str) -> Optional[List[Tuple[float, str]]]:
+    """
+    Fetch LRC text from available sources and parse timings.
+    Returns:
+        List of (timestamp, text) tuples or None if unavailable.
+    """
+    try:
+        from y2karaoke.core.sync import fetch_lyrics_multi_source
+        lrc_text, is_synced, source = fetch_lyrics_multi_source(title, artist)
+        if lrc_text and is_synced:
+            lines = parse_lrc_with_timing(lrc_text, title, artist)
+            logger.info(f"✅ Got {len(lines)} LRC lines from {source}")
+            return lines
+        else:
+            logger.info(f"No synced LRC available from {source}")
+            return None
+    except Exception as e:
+        logger.warning(f"LRC fetch failed: {e}")
+        return None
+
+# ----------------------
 # Simplified lyrics pipeline (Phase 4 refactor)
 # ----------------------
 def get_lyrics_simple(
@@ -331,7 +354,7 @@ def get_lyrics_simple(
 
     Steps:
     1. Fetch canonical text + singer info from Genius
-    2. Fetch LRC line timings from syncedlyrics
+    2. Fetch LRC line timings from syncedlyrics (via helper)
     3. Detect/apply offset between audio and LRC only if reasonable
     4. Create lines from LRC + Genius text
     5. Refine word timing using audio
@@ -348,57 +371,45 @@ def get_lyrics_simple(
     text_lines = [text for text, _ in genius_lines if text.strip()]
     logger.info(f"Got {len(text_lines)} lines from Genius")
 
-    # 2. LRC timings
-    line_timings: Optional[List[Tuple[float, str]]] = None
-    try:
-        from y2karaoke.core.sync import fetch_lyrics_multi_source
-        lrc_text, is_synced, source = fetch_lyrics_multi_source(title, artist)
-        if lrc_text and is_synced:
-            line_timings = parse_lrc_with_timing(lrc_text, title, artist)
-            logger.info(f"Got {len(line_timings)} line timings from {source}")
-    except Exception as e:
-        logger.warning(f"Could not get LRC timing: {e}")
+    # 2. LRC timings (via new helper)
+    line_timings: Optional[List[Tuple[float, str]]] = _fetch_lrc_timings(title, artist)
+
+    if line_timings:
+        logger.info(f"Got {len(line_timings)} LRC line timings")
+    else:
+        logger.info("No synced LRC timings available")
 
     # 3. Detect/apply offset with vocals
     offset = 0.0
-    if vocals_path:
+    if vocals_path and line_timings:
         detected_vocal_start = detect_song_start(vocals_path)
         logger.info(f"Detected vocal start in audio: {detected_vocal_start:.2f}s")
 
         if lyrics_offset is not None:
             offset = lyrics_offset
             logger.info(f"Using manual lyrics offset: {offset:.2f}s")
-        elif line_timings:
+        else:
             first_lrc_time = line_timings[0][0]
             delta = detected_vocal_start - first_lrc_time
-
-            # Only apply small positive offsets; never shift lyrics earlier than LRC
             if 0.0 < delta <= 5.0:
                 offset = delta
-                line_timings = [(ts + offset, text) for ts, text in line_timings]
                 logger.info(f"Applied small positive offset: {offset:.2f}s")
             else:
                 offset = 0.0
                 logger.info(f"LRC timestamps trusted, no offset applied (delta={delta:.2f}s)")
 
-        else:
-            offset = detected_vocal_start
-            logger.info(f"No LRC, using detected vocal start as offset: {offset:.2f}s")
-
-        if line_timings and offset != 0.0:
+        if offset != 0.0:
             line_timings = [(ts + offset, text) for ts, text in line_timings]
             logger.info(f"Applied offset to {len(line_timings)} LRC lines")
 
     # 4. Create lines
     if line_timings:
-        # Create lines from LRC + Genius text
         lines = _create_lines_from_lrc_timings(line_timings, text_lines)
 
-        # Refine word-level timing only if vocals exist and LRC timestamps are reasonable
-        if vocals_path and line_timings and len(line_timings) > 1:
+        if vocals_path and len(line_timings) > 1:
             from .word_timing import refine_word_timing
             lines = refine_word_timing(lines, vocals_path)
-            logger.info("✅ Word-level timing refined using vocals")    
+            logger.info("✅ Word-level timing refined using vocals")
     else:
         # fallback evenly spaced lines
         lines = []
