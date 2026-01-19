@@ -1,20 +1,16 @@
 """Genius lyrics fetching with singer annotations."""
 
-import re
-import unicodedata
 from typing import List, Tuple, Optional
-
 from ..utils.logging import get_logger
 from .models import SingerID, Word, Line, SongMetadata
 from .romanization import romanize_line
 from .fetch import fetch_html, fetch_json
+from .text_utils import normalize_text, make_slug, clean_title_for_search
 from .genius_utils import (
-    _make_slug,
-    _clean_title_for_search,
     _is_genius_metadata,
     strip_leading_artist_from_line,
     filter_singer_only_lines,
-    normalize_text
+    resolve_genius_url
 )
 from .lyrics_merge import merge_lyrics_with_singer_info
 
@@ -32,6 +28,7 @@ def parse_genius_html(html: str, artist: str) -> Tuple[Optional[List[Tuple[str, 
         metadata: SongMetadata object
     """
     from bs4 import BeautifulSoup
+    import re
 
     soup = BeautifulSoup(html, 'html.parser')
 
@@ -140,54 +137,16 @@ def fetch_genius_lyrics_with_singers(
         'Accept': '*/*'
     }
 
-    cleaned_title = _clean_title_for_search(title)
-    artist_slug = _make_slug(artist)
-    title_slug = _make_slug(cleaned_title)
-
-    candidate_urls = [
-        f"https://genius.com/{artist_slug}-{title_slug}-lyrics",
-        f"https://genius.com/{title_slug}-lyrics",
-        f"https://genius.com/Genius-romanizations-{artist_slug}-{title_slug}-romanized-lyrics",
-    ]
-
-    # Try candidate URLs first
-    song_url = None
-    for url in candidate_urls:
-        html = fetch_html(url, headers=headers)
-        if html and "translation" not in url.lower():
-            song_url = url
-            break
-
-    # Fallback: search API using fetch_json
-    if not song_url:
-        search_queries = [f"{artist} {cleaned_title}", f"{cleaned_title} {artist}"]
-        for query in search_queries:
-            api_url = f"https://genius.com/api/search/song?per_page=5&q={query.replace(' ', '%20')}"
-            data = fetch_json(api_url, headers=headers)
-            if not data:
-                continue
-
-            sections = data.get('response', {}).get('sections', [])
-            for section in sections:
-                if section.get('type') == 'song':
-                    for hit in section.get('hits', []):
-                        result = hit.get('result', {})
-                        url = result.get('url')
-                        if url and url.endswith('-lyrics') and '/artists/' not in url:
-                            song_url = url
-                            break
-                if song_url:
-                    break
-            if song_url:
-                break
-
+    # Resolve song URL using Genius-specific helper
+    song_url = resolve_genius_url(title, artist)
     if not song_url:
         return None, None
 
-    # Fetch lyrics page and parse
+    # Fetch lyrics page
     html = fetch_html(song_url, headers=headers)
     if not html:
         return None, None
 
+    # Parse HTML and extract lines + metadata
     lines_with_singers, metadata = parse_genius_html(html, artist)
     return lines_with_singers, metadata

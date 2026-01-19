@@ -1,36 +1,47 @@
-"""Genius lyrics fetching with singer annotations."""
+"""
+Genius-specific helper functions.
+
+Contains utilities for:
+- Detecting Genius metadata lines
+- Stripping artist prefixes
+- Filtering singer-only lines
+- Resolving Genius URLs
+"""
 
 import re
-import unicodedata
 from typing import List, Tuple, Optional
-from ..utils.logging import get_logger
-from .constants import TITLE_CLEANUP_PATTERNS, YOUTUBE_SUFFIXES, DESCRIPTION_REGEX, TRANSLATION_LANGUAGES
 
-logger = get_logger(__name__)
+from .models import SongMetadata
+from .text_utils import normalize_text, make_slug, clean_title_for_search
 
+# ----------------------
+# Constants / Patterns
+# ----------------------
+TITLE_CLEANUP_PATTERNS = [
+    r'\s*[|｜]\s*.*$',  # Remove after | or ｜
+    r'\s*[\(\[]?\s*(ft\.?|feat\.?|featuring).*?[\)\]]?\s*$',  # Featuring
+    r'\s*[\(\[].*?[\)\]]\s*',  # Parentheses/brackets
+]
+
+YOUTUBE_SUFFIXES = [
+    ' Lyrics', ' Official Video', ' Official Audio',
+    ' Official Music Video', ' Audio', ' Video'
+]
+
+DESCRIPTION_PATTERNS = [
+    'is the first track', 'is the second track', 'is the third track',
+    'is a song by', 'was released as', 'Read More', 'studio album',
+    'music video featuring'
+]
+DESCRIPTION_REGEX = re.compile("|".join(map(re.escape, DESCRIPTION_PATTERNS)), re.IGNORECASE)
+
+TRANSLATION_LANGUAGES = ['Türkçe','Français','Español','Deutsch','Português']
 
 # ----------------------
 # Utility functions
 # ----------------------
-def _make_slug(text: str) -> str:
-    text = unicodedata.normalize("NFKD", text)
-    text = text.lower()
-    text = re.sub(r'[^\w\s-]', '', text)
-    text = re.sub(r'\s+', '-', text)
-    return text.strip('-')
-
-
-def _clean_title_for_search(title: str) -> str:
-    cleaned = title
-    for pattern in TITLE_CLEANUP_PATTERNS:
-        cleaned = re.sub(pattern, '', cleaned, flags=re.IGNORECASE)
-    for suffix in YOUTUBE_SUFFIXES:
-        if cleaned.endswith(suffix):
-            cleaned = cleaned[:-len(suffix)].strip()
-    return cleaned.strip()
-
-
 def _is_genius_metadata(line: str) -> bool:
+    """Detect lines that are likely Genius metadata rather than lyrics."""
     if re.match(r'^\d+\s*Contributor', line):
         return True
     if 'Translations' in line and any(lang in line for lang in TRANSLATION_LANGUAGES):
@@ -43,10 +54,12 @@ def _is_genius_metadata(line: str) -> bool:
 
 
 def strip_leading_artist_from_line(text: str, artist: str) -> str:
+    """Remove leading artist prefixes from a lyric line."""
     if not artist:
         return text
     pattern = re.compile(
-        rf'^(?:\[{re.escape(artist)}\]\s*|{re.escape(artist)}\s*[-–]\s*)', re.IGNORECASE
+        rf'^(?:\[{re.escape(artist)}\]\s*|{re.escape(artist)}\s*[-–]\s*)',
+        re.IGNORECASE
     )
     return pattern.sub('', text).strip()
 
@@ -55,6 +68,7 @@ def filter_singer_only_lines(
     lines: List[Tuple[str, str]],
     known_singers: List[str]
 ) -> List[Tuple[str, str]]:
+    """Remove lines that only contain known singer names."""
     known_set = {s.lower() for s in known_singers}
     filtered = []
     for text, singer in lines:
@@ -65,12 +79,23 @@ def filter_singer_only_lines(
     return filtered
 
 
-def normalize_text(text: str) -> str:
-    if not text:
-        return ""
-    text = text.lower()
-    text = unicodedata.normalize('NFKD', text)
-    text = "".join(c for c in text if not unicodedata.combining(c))
-    text = re.sub(r"[^\w\s]", "", text)
-    text = re.sub(r"\s+", " ", text)
-    return text.strip()
+# ----------------------
+# URL resolution
+# ----------------------
+def resolve_genius_url(title: str, artist: str) -> str:
+    """
+    Construct candidate Genius URLs for a song.
+
+    Returns the first plausible URL as a string.
+    """
+    artist_slug = make_slug(artist)
+    title_slug = make_slug(clean_title_for_search(title, TITLE_CLEANUP_PATTERNS, YOUTUBE_SUFFIXES))
+
+    candidate_urls = [
+        f"https://genius.com/{artist_slug}-{title_slug}-lyrics",
+        f"https://genius.com/{title_slug}-lyrics",
+        f"https://genius.com/Genius-romanizations-{artist_slug}-{title_slug}-romanized-lyrics",
+    ]
+
+    # Return the first candidate URL (the caller can validate existence)
+    return candidate_urls[0]
