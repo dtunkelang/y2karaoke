@@ -1,30 +1,21 @@
 """Genius lyrics fetching with singer annotations."""
 
 import re
-import time
-import random
 import unicodedata
 from difflib import SequenceMatcher
 from typing import List, Tuple, Optional
-import logging
 
-import requests
 from bs4 import BeautifulSoup
 
 from ..utils.logging import get_logger
 from .models import SingerID, Word, Line, SongMetadata
 from .romanization import romanize_line
+from .fetch import fetch_html, fetch_json
 
 logger = get_logger(__name__)
 
 # ----------------------
-# Retry constants
-# ----------------------
-DEFAULT_MAX_RETRIES = 5
-BACKOFF_FACTOR = 1.0
-
-# ----------------------
-# Patterns
+# Constants / Patterns
 # ----------------------
 TITLE_CLEANUP_PATTERNS = [
     r'\s*[|｜]\s*.*$',  # Remove after | or ｜
@@ -49,41 +40,13 @@ TRANSLATION_LANGUAGES = ['Türkçe','Français','Español','Deutsch','Português
 # ----------------------
 # Utility functions
 # ----------------------
-def _make_request_with_retry(
-    url: str,
-    headers: Optional[dict] = None,
-    timeout: int = 10,
-    max_retries: int = DEFAULT_MAX_RETRIES,
-    backoff_factor: float = BACKOFF_FACTOR
-) -> Optional[requests.Response]:
-    headers = headers or {
-        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
-                      "AppleWebKit/537.36 (KHTML, like Gecko) "
-                      "Chrome/143.0.0.0 Safari/537.36"
-    }
-
-    delay = backoff_factor
-    for attempt in range(max_retries + 1):
-        try:
-            response = requests.get(url, headers=headers, timeout=timeout)
-            response.raise_for_status()
-            return response
-        except requests.exceptions.RequestException as e:
-            logger.warning(f"Request failed (attempt {attempt}/{max_retries}) for {url}: {e}")
-            if attempt < max_retries:
-                time.sleep(delay + random.uniform(0, 0.5))
-                delay = min(delay * 2, 30.0)
-        except Exception as e:
-            logger.error(f"Unexpected error during request to {url}: {e}")
-            break
-    return None
-
 def _make_slug(text: str) -> str:
     text = unicodedata.normalize("NFKD", text)
     text = text.lower()
     text = re.sub(r'[^\w\s-]', '', text)
     text = re.sub(r'\s+', '-', text)
     return text.strip('-')
+
 
 def _clean_title_for_search(title: str) -> str:
     cleaned = title
@@ -93,6 +56,7 @@ def _clean_title_for_search(title: str) -> str:
         if cleaned.endswith(suffix):
             cleaned = cleaned[:-len(suffix)].strip()
     return cleaned.strip()
+
 
 def _is_genius_metadata(line: str) -> bool:
     if re.match(r'^\d+\s*Contributor', line):
@@ -105,6 +69,7 @@ def _is_genius_metadata(line: str) -> bool:
         return True
     return False
 
+
 def strip_leading_artist_from_line(text: str, artist: str) -> str:
     if not artist:
         return text
@@ -112,6 +77,7 @@ def strip_leading_artist_from_line(text: str, artist: str) -> str:
         rf'^(?:\[{re.escape(artist)}\]\s*|{re.escape(artist)}\s*[-–]\s*)', re.IGNORECASE
     )
     return pattern.sub('', text).strip()
+
 
 def filter_singer_only_lines(
     lines: List[Tuple[str, str]],
@@ -126,6 +92,7 @@ def filter_singer_only_lines(
             filtered.append((text_clean, singer))
     return filtered
 
+
 def normalize_text(text: str) -> str:
     if not text:
         return ""
@@ -135,6 +102,7 @@ def normalize_text(text: str) -> str:
     text = re.sub(r"[^\w\s]", "", text)
     text = re.sub(r"\s+", " ", text)
     return text.strip()
+
 
 # ----------------------
 # Main lyrics fetching
@@ -167,34 +135,31 @@ def fetch_genius_lyrics_with_singers(
     # Try candidate URLs first
     song_url = None
     for url in candidate_urls:
-        response = _make_request_with_retry(url, headers)
-        if response and response.status_code == 200 and "translation" not in url.lower():
+        html = fetch_html(url, headers=headers)
+        if html and "translation" not in url.lower():
             song_url = url
             break
 
-    # Fallback: search API
+    # Fallback: search API using fetch_json
     if not song_url:
         search_queries = [f"{artist} {cleaned_title}", f"{cleaned_title} {artist}"]
         for query in search_queries:
             api_url = f"https://genius.com/api/search/song?per_page=5&q={query.replace(' ', '%20')}"
-            response = _make_request_with_retry(api_url, headers)
-            if not response:
+            data = fetch_json(api_url, headers=headers)
+            if not data:
                 continue
-            try:
-                data = response.json()
-                sections = data.get('response', {}).get('sections', [])
-                for section in sections:
-                    if section.get('type') == 'song':
-                        for hit in section.get('hits', []):
-                            result = hit.get('result', {})
-                            url = result.get('url')
-                            if url and url.endswith('-lyrics') and '/artists/' not in url:
-                                song_url = url
-                                break
-                    if song_url:
-                        break
-            except Exception:
-                continue
+
+            sections = data.get('response', {}).get('sections', [])
+            for section in sections:
+                if section.get('type') == 'song':
+                    for hit in section.get('hits', []):
+                        result = hit.get('result', {})
+                        url = result.get('url')
+                        if url and url.endswith('-lyrics') and '/artists/' not in url:
+                            song_url = url
+                            break
+                if song_url:
+                    break
             if song_url:
                 break
 
@@ -202,11 +167,11 @@ def fetch_genius_lyrics_with_singers(
         return None, None
 
     # Fetch lyrics page
-    response = _make_request_with_retry(song_url, headers)
-    if not response or response.status_code != 200:
+    html = fetch_html(song_url, headers=headers)
+    if not html:
         return None, None
 
-    soup = BeautifulSoup(response.text, 'html.parser')
+    soup = BeautifulSoup(html, 'html.parser')
 
     # Extract Genius title/artist from page
     page_title = soup.find('title').get_text().strip() if soup.find('title') else ""
@@ -226,7 +191,7 @@ def fetch_genius_lyrics_with_singers(
         return None, None
 
     lines_with_singers: List[Tuple[str, str]] = []
-    current_singer = ""
+    current_singers: List[str] = []
     singers_found: set = set()
     section_pattern = re.compile(r'\[([^\]]+)\]')
 
@@ -246,31 +211,39 @@ def fetch_genius_lyrics_with_singers(
             if not line or _is_genius_metadata(line):
                 continue
 
-            # Section marker indicates singer
+            # Section marker indicates singer(s)
             section_match = section_pattern.match(line)
             if section_match and ':' in section_match.group(1):
-                singer_part = section_match.group(1).split(':', 1)[1].strip()
-                current_singer = singer_part
-                singers_found.add(singer_part)
+                raw_singers = section_match.group(1).split(':', 1)[1].strip()
+                # Split by commas or ampersands, deduplicate while preserving order
+                seen = set()
+                current_singers = []
+                for s in re.split(r'[,&]', raw_singers):
+                    s_clean = s.strip()
+                    if s_clean and s_clean not in seen:
+                        current_singers.append(s_clean)
+                        seen.add(s_clean)
+                singers_found.update(current_singers)
                 continue
 
-            # Append line regardless of current_singer
-            lines_with_singers.append((line, current_singer))
+            # Append line with current singer(s) joined by commas
+            singer_str = ', '.join(current_singers)
+            lines_with_singers.append((line, singer_str))
 
     if not lines_with_singers:
         return None, None
 
-    # Determine unique singers
+    # Determine unique singers for metadata
     unique_singers: List[str] = []
-    for singer in singers_found:
-        if '&' in singer or ',' in singer:
-            for part in re.split(r'[&,]', singer):
-                name = part.strip()
-                if name and name not in unique_singers:
-                    unique_singers.append(name)
-        elif singer and singer.lower() != 'both':
-            if singer not in unique_singers:
-                unique_singers.append(singer)
+    for s in singers_found:
+        if '&' in s or ',' in s:
+            for part in re.split(r'[&,]', s):
+                part = part.strip()
+                if part and part not in unique_singers:
+                    unique_singers.append(part)
+        elif s and s.lower() != 'both':
+            if s not in unique_singers:
+                unique_singers.append(s)
 
     is_duet = len(unique_singers) >= 2
 
@@ -360,4 +333,3 @@ def merge_lyrics_with_singer_info(
         lines.append(Line(words=words, singer=singer_id))
 
     return lines
-
