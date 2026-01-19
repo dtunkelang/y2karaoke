@@ -456,21 +456,20 @@ def render_frame(
         first_line = lines[0]
         time_until_first = first_line.start_time - current_time
 
-        # Show splash screen for the first SPLASH_DURATION seconds OR until lyrics start (whichever is shorter)
+        # Show splash screen for the first SPLASH_DURATION seconds OR until lyrics start
         if current_time < SPLASH_DURATION and title and artist:
             show_splash = True
         # Then show progress bar if there's still a long intro
         elif first_line.start_time >= INSTRUMENTAL_BREAK_THRESHOLD:
             if time_until_first > LYRICS_LEAD_TIME:
                 show_progress_bar = True
-                # Progress bar starts after splash ends
                 bar_start = min(SPLASH_DURATION, first_line.start_time - LYRICS_LEAD_TIME)
                 break_end = first_line.start_time - LYRICS_LEAD_TIME
                 elapsed = current_time - bar_start
                 bar_duration = break_end - bar_start
                 progress = elapsed / bar_duration if bar_duration > 0 else 1.0
 
-    # Find current line index (the line we're currently on or just finished)
+    # Find current line index
     current_line_idx = 0
     for i, line in enumerate(lines):
         if line.start_time <= current_time:
@@ -485,17 +484,11 @@ def render_frame(
     if not show_progress_bar and current_line_idx < len(lines):
         current_line = lines[current_line_idx]
         next_line_idx = current_line_idx + 1
-
-        # Check if there's a next line and we're past the current line
         if next_line_idx < len(lines) and current_time >= current_line.end_time:
             next_line = lines[next_line_idx]
             gap = next_line.start_time - current_line.end_time
-
-            # If gap is large enough for instrumental break
             if gap >= INSTRUMENTAL_BREAK_THRESHOLD:
                 time_until_next = next_line.start_time - current_time
-
-                # Show progress bar if we're not within lead time of next lyrics
                 if time_until_next > LYRICS_LEAD_TIME:
                     show_progress_bar = True
                     break_start = current_line.end_time
@@ -513,66 +506,50 @@ def render_frame(
         return np.array(img)
 
     # Normal lyrics display - show up to 4 lines
-    # Scroll in chunks of 3: when current line reaches position 3 (4th line),
-    # scroll so that line becomes position 0 (1st line)
     lines_to_show = []
 
-    # Calculate which line should be at the top of the display
-    # Scroll happens every 3 lines: display_start_idx = 0, 3, 6, 9, ...
+    # Scroll in chunks of 3 lines
     display_start_idx = (current_line_idx // 3) * 3
 
-    # After an instrumental break, reset display to start from the post-break line
-    # Check both current line and next line for breaks
-    if current_line_idx > 0:
-        prev_line = lines[current_line_idx - 1]
-        curr_line = lines[current_line_idx]
-        gap = curr_line.start_time - prev_line.end_time
-        if gap >= INSTRUMENTAL_BREAK_THRESHOLD:
-            display_start_idx = current_line_idx
-
-    # Also check if we're in the lead-time window before a post-break line
+    # After an instrumental break, adjust display start if we're in lead-time window
     next_line_idx = current_line_idx + 1
     if next_line_idx < len(lines):
         curr_line = lines[current_line_idx]
         next_line = lines[next_line_idx]
         gap = next_line.start_time - curr_line.end_time
-        # If there's a break before next line and we're past current line's end
         if gap >= INSTRUMENTAL_BREAK_THRESHOLD and current_time >= curr_line.end_time:
-            # We're in the transition - start display from next line
             display_start_idx = next_line_idx
-            current_line_idx = next_line_idx  # Update so highlighting works correctly
+            current_line_idx = next_line_idx  # Update for highlighting
 
-    # Show up to 4 lines starting from display_start_idx
-    # Stop early if there's an instrumental break before a line
+    # Build the visible lines list
     for i in range(4):
         line_idx = display_start_idx + i
-        if line_idx < len(lines):
-            # Check if there's an instrumental break before this line
-            if line_idx > 0:
-                prev_line = lines[line_idx - 1]
-                this_line = lines[line_idx]
-                gap = this_line.start_time - prev_line.end_time
-                # Don't show lines after an upcoming instrumental break
-                if gap >= INSTRUMENTAL_BREAK_THRESHOLD and current_time < this_line.start_time - LYRICS_LEAD_TIME:
-                    break
-            is_current = (line_idx == current_line_idx and current_time >= lines[line_idx].start_time)
-            lines_to_show.append((lines[line_idx], is_current))
+        if line_idx >= len(lines):
+            break
+        # Stop early if there's an instrumental break before this line
+        if line_idx > 0:
+            prev_line = lines[line_idx - 1]
+            this_line = lines[line_idx]
+            gap = this_line.start_time - prev_line.end_time
+            if gap >= INSTRUMENTAL_BREAK_THRESHOLD and current_time < this_line.start_time - LYRICS_LEAD_TIME:
+                break
+        is_current = (line_idx == current_line_idx and current_time >= lines[line_idx].start_time)
+        lines_to_show.append((lines[line_idx], is_current))
 
-    # Calculate vertical positioning (center the lines)
+    # Vertical positioning
     total_height = len(lines_to_show) * LINE_SPACING
     start_y = (video_height - total_height) // 2
 
     for idx, (line, is_current) in enumerate(lines_to_show):
         y = start_y + idx * LINE_SPACING
 
-        # Calculate total line width for centering
+        # Compute total width for centering
         words_with_spaces = []
         for i, word in enumerate(line.words):
             words_with_spaces.append(word.text)
             if i < len(line.words) - 1:
                 words_with_spaces.append(" ")
 
-        # Measure total width
         total_width = 0
         word_widths = []
         for text in words_with_spaces:
@@ -580,12 +557,9 @@ def render_frame(
             width = bbox[2] - bbox[0]
             word_widths.append(width)
             total_width += width
-        
-        # Start x position for centered text
-        # Note: Line splitting is handled in lyrics.py split_long_lines()
+
         x = (video_width - total_width) // 2
 
-        # Draw each word with appropriate color
         word_idx = 0
         for i, text in enumerate(words_with_spaces):
             if text == " ":
@@ -595,27 +569,18 @@ def render_frame(
             word = line.words[word_idx]
             word_idx += 1
 
-            # Determine color based on timing and singer
-            # KaraFun style: once a word is highlighted, it stays highlighted
+            # Determine color
             if is_duet and word.singer:
-                # Duet mode: use singer-specific colors
                 text_color, highlight_color = get_singer_colors(word.singer, False)
                 if is_current:
-                    if current_time >= word.start_time:
-                        color = highlight_color  # Highlighted (current or already sung)
-                    else:
-                        color = text_color  # Not yet sung (singer's color, not highlighted)
+                    color = highlight_color if current_time >= word.start_time else text_color
                 else:
-                    color = text_color  # Next line - singer's unhighlighted color
+                    color = text_color
             else:
-                # Non-duet mode: use default gold/white
                 if is_current:
-                    if current_time >= word.start_time:
-                        color = Colors.HIGHLIGHT  # Highlighted (current or already sung)
-                    else:
-                        color = Colors.TEXT  # Not yet sung
+                    color = Colors.HIGHLIGHT if current_time >= word.start_time else Colors.TEXT
                 else:
-                    color = Colors.TEXT  # Next line - all white
+                    color = Colors.TEXT
 
             draw.text((x, y), text, font=font, fill=color)
             x += word_widths[i]

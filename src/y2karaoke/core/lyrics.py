@@ -330,7 +330,7 @@ def _create_lines_from_lrc_timings(
         line_duration = end_time - start_time
         word_count = len(word_texts)
         word_duration = (line_duration * 0.95) / word_count
-
+        
         words = []
         for j, word_text in enumerate(word_texts):
             word_start = start_time + j * (line_duration / word_count)
@@ -340,6 +340,11 @@ def _create_lines_from_lrc_timings(
                 start_time=word_start,
                 end_time=word_end,
             ))
+
+        # --- Option B: skip exact duplicate text from the previous line ---
+        line_text_str = " ".join([w.text for w in words]).strip()
+        if lines and " ".join([w.text for w in lines[-1].words]).strip() == line_text_str:
+            continue  # skip this duplicate line
 
         lines.append(Line(words=words))
 
