@@ -17,6 +17,8 @@ try:
 except ImportError:
     syncedlyrics = None
 
+from .lrc_utils import parse_lrc_timestamp, extract_lyrics_text, parse_lrc_with_timing
+
 # ----------------------
 # Logging helper
 # ----------------------
@@ -71,35 +73,6 @@ from .forced_align import (
 )
 
 # ----------------------
-# LRC timestamp parser
-# ----------------------
-_LRC_TS_RE = re.compile(
-    r"""
-    \[                      # opening bracket
-    (?P<min>\d+)            # minutes
-    :
-    (?P<sec>[0-5]?\d)       # seconds
-    (?:\.(?P<frac>\d{1,3}))?  # optional fractional seconds
-    \]                      # closing bracket
-    """,
-    re.VERBOSE
-)
-
-def parse_lrc_timestamp(ts: str) -> Optional[float]:
-    if not ts:
-        return None
-    match = _LRC_TS_RE.match(ts.strip())
-    if not match:
-        return None
-    minutes = int(match.group("min"))
-    seconds = int(match.group("sec"))
-    if seconds >= 60:
-        return None
-    frac = match.group("frac")
-    frac_seconds = int(frac) / (10 ** len(frac)) if frac else 0.0
-    return minutes * 60 + seconds + frac_seconds
-
-# ----------------------
 # Metadata filtering
 # ----------------------
 def _is_metadata_line(text: str, title: str = "", artist: str = "") -> bool:
@@ -136,60 +109,6 @@ def _is_metadata_line(text: str, title: str = "", artist: str = "") -> bool:
             return True
 
     return False
-
-# ----------------------
-# Extract plain text lines from LRC
-# ----------------------
-def extract_lyrics_text(lrc_text: str, title: str = "", artist: str = "") -> List[str]:
-    """
-    Extract plain text lines from LRC format (ignore timing and metadata).
-    """
-    if not lrc_text:
-        return []
-
-    lines: List[str] = []
-    for line in lrc_text.strip().splitlines():
-        line = line.strip()
-        if not line:
-            continue
-        match = _LRC_TS_RE.match(line)
-        if match:
-            text_part = line[match.end():].strip()
-            if text_part and not _is_metadata_line(text_part, title, artist):
-                lines.append(text_part)
-    return lines
-
-# ----------------------
-# Parse LRC lines with timing
-# ----------------------
-def parse_lrc_with_timing(lrc_text: str, title: str = "", artist: str = "") -> List[Tuple[float, str]]:
-    """
-    Parse LRC format and extract (timestamp, text) tuples.
-    Skips metadata lines.
-    """
-    if not lrc_text:
-        return []
-
-    lines: List[Tuple[float, str]] = []
-
-    for line in lrc_text.strip().splitlines():
-        line = line.strip()
-        if not line:
-            continue
-
-        match = _LRC_TS_RE.match(line)
-        if not match:
-            continue
-
-        timestamp = parse_lrc_timestamp(match.group(0))
-        if timestamp is None:
-            continue
-
-        text_part = line[match.end():].strip()
-        if text_part and not _is_metadata_line(text_part, title, artist):
-            lines.append((timestamp, text_part))
-
-    return lines
 
 # ----------------------
 # Extract artists from title
