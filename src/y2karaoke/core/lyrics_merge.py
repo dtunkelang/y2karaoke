@@ -3,7 +3,7 @@ from difflib import SequenceMatcher
 
 from .models import Word, Line, SongMetadata
 from .romanization import romanize_line
-from .genius_utils import normalize_text
+from .text_utils import normalize_text
 
 # ----------------------
 # Lyrics merging

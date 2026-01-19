@@ -2,18 +2,18 @@
 
 import re
 from typing import List, Tuple, Optional
+
 from ..utils.logging import get_logger
 from .models import SingerID, Word, Line, SongMetadata
 from .romanization import romanize_line
-from .fetch import fetch_html
-from .genius_utils import (
+from .fetch import fetch_html, fetch_json
+from .genius_utils import resolve_genius_url, TITLE_CLEANUP_PATTERNS, YOUTUBE_SUFFIXES
+from .text_utils import (
     make_slug,
     clean_title_for_search,
-    is_genius_metadata,
-    strip_leading_artist_from_line,
-    filter_singer_only_lines,
     normalize_text,
-    resolve_genius_url,
+    strip_leading_artist_from_line,
+    filter_singer_only_lines
 )
 from .lyrics_merge import merge_lyrics_with_singer_info
 
@@ -23,6 +23,7 @@ logger = get_logger(__name__)
 # HTML parsing / singer extraction
 # ----------------------
 def parse_genius_html(html: str, artist: str) -> Tuple[Optional[List[Tuple[str, str]]], Optional[SongMetadata]]:
+    """Parse Genius lyrics HTML and extract lines with singer annotations."""
     from bs4 import BeautifulSoup
 
     soup = BeautifulSoup(html, 'html.parser')
@@ -62,7 +63,7 @@ def parse_genius_html(html: str, artist: str) -> Tuple[Optional[List[Tuple[str, 
         text = container.get_text()
         for line in text.split('\n'):
             line = line.strip()
-            if not line or is_genius_metadata(line):
+            if not line or re.match(r'^\d+\s*Contributor', line) or len(line) > 300:
                 continue
 
             # Section marker indicates singer
@@ -73,24 +74,27 @@ def parse_genius_html(html: str, artist: str) -> Tuple[Optional[List[Tuple[str, 
                 singers_found.add(singer_part)
                 continue
 
-            # Append line regardless of current_singer
+            # Append line with current singer
             lines_with_singers.append((line, current_singer))
 
     if not lines_with_singers:
         return None, None
 
-    # Determine unique singers
-    unique_singers: List[str] = []
-    for singer in singers_found:
-        if '&' in singer or ',' in singer:
-            for part in re.split(r'[&,]', singer):
-                name = part.strip()
-                if name and name not in unique_singers:
-                    unique_singers.append(name)
-        elif singer and singer.lower() != 'both':
-            if singer not in unique_singers:
-                unique_singers.append(singer)
+    # Determine unique singers robustly
+    all_singers: set = set()
+    for line_text, singer in lines_with_singers:
+        for part in re.split(r'\s*[,&/]\s*', singer):
+            name = part.strip()
+            if name and name.lower() != 'both':
+                all_singers.add(name)
 
+    for header in singers_found:
+        for part in re.split(r'\s*[,&/]\s*', header):
+            name = part.strip()
+            if name and name.lower() != 'both':
+                all_singers.add(name)
+
+    unique_singers = list(all_singers)
     is_duet = len(unique_singers) >= 2
 
     metadata = SongMetadata(
@@ -114,7 +118,6 @@ def parse_genius_html(html: str, artist: str) -> Tuple[Optional[List[Tuple[str, 
 
     return lines_with_singers, metadata
 
-
 # ----------------------
 # Main lyrics fetching
 # ----------------------
@@ -124,13 +127,68 @@ def fetch_genius_lyrics_with_singers(
 ) -> Tuple[Optional[List[Tuple[str, str]]], Optional[SongMetadata]]:
     """
     Fetch lyrics from Genius with singer annotations.
+
+    Captures all lines, including those before any section markers.
+    Strips artist prefixes and filters singer-only lines.
+    Fast-fail safe for tests.
     """
-    song_url = resolve_genius_url(title, artist)
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 '
+                      '(KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36',
+        'Accept': '*/*'
+    }
+
+    cleaned_title = clean_title_for_search(title, TITLE_CLEANUP_PATTERNS, YOUTUBE_SUFFIXES)
+    artist_slug = make_slug(artist)
+    title_slug = make_slug(cleaned_title)
+
+    candidate_urls = [
+        f"https://genius.com/{artist_slug}-{title_slug}-lyrics",
+        f"https://genius.com/{title_slug}-lyrics",
+        f"https://genius.com/Genius-romanizations-{artist_slug}-{title_slug}-romanized-lyrics",
+    ]
+
+    # Try candidate URLs first (short timeout, skip translations)
+    song_url = None
+    for url in candidate_urls:
+        html = fetch_html(url, headers=headers, timeout=5)  # 5s per request
+        if html and "translation" not in url.lower():
+            song_url = url
+            break
+
+    # Fallback: search API
     if not song_url:
+        search_queries = [f"{artist} {cleaned_title}", f"{cleaned_title} {artist}"]
+        for query in search_queries:
+            api_url = f"https://genius.com/api/search/song?per_page=2&q={query.replace(' ', '%20')}"
+            data = fetch_json(api_url, headers=headers, timeout=5)
+            if not data:
+                continue
+
+            sections = data.get('response', {}).get('sections', [])
+            for section in sections:
+                if section.get('type') != 'song':
+                    continue
+                for hit in section.get('hits', []):
+                    result = hit.get('result', {})
+                    url = result.get('url')
+                    if url and url.endswith('-lyrics') and '/artists/' not in url and "translation" not in url.lower():
+                        song_url = url
+                        break
+                if song_url:
+                    break
+            if song_url:
+                break
+
+    if not song_url:
+        logger.warning(f"Failed to resolve Genius URL for {title} {artist}")
         return None, None
 
-    html = fetch_html(song_url)
+    # Fetch and parse lyrics
+    html = fetch_html(song_url, headers=headers, timeout=5)
     if not html:
+        logger.warning(f"Failed to fetch Genius page for {song_url}")
         return None, None
 
-    return parse_genius_html(html, artist)
+    lines_with_singers, metadata = parse_genius_html(html, artist)
+    return lines_with_singers, metadata

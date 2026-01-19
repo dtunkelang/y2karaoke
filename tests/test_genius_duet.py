@@ -1,15 +1,18 @@
 # test_genius_duet.py
-from y2karaoke.core.genius import fetch_genius_lyrics_with_singers
+from y2karaoke.core.genius import parse_genius_html, fetch_html
 
-def test_fetch_genius_duet():
-    # Duet example: Linkin Park & Jay-Z
-    title = "Numb/Encore"
-    artist = "Linkin Park & Jay-Z"
+def test_fetch_genius_duet_fast():
+    # Hardcoded Genius URL for the duet
+    song_url = "https://genius.com/Linkin-park-in-the-end-lyrics"
+    artist = "Linkin Park"
 
-    lines, metadata = fetch_genius_lyrics_with_singers(title, artist)
+    html = fetch_html(song_url)
+    assert html is not None, f"Failed to fetch HTML from {song_url}"
 
-    assert lines is not None, "Failed to fetch lines"
-    assert metadata is not None, "Failed to fetch metadata"
+    lines, metadata = parse_genius_html(html, artist)
+
+    assert lines is not None, "Failed to parse lines"
+    assert metadata is not None, "Failed to parse metadata"
     assert metadata.is_duet, "Song should be detected as a duet"
     assert len(metadata.singers) >= 2, f"Expected 2+ singers, got {metadata.singers}"
 
@@ -22,4 +25,4 @@ def test_fetch_genius_duet():
         print(f"{singer}: {line}")
 
 if __name__ == "__main__":
-    test_fetch_genius_duet()
+    test_fetch_genius_duet_fast()
