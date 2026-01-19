@@ -350,36 +350,60 @@ def get_lyrics_simple(
     romanize: bool = True,
 ) -> Tuple[List[Line], Optional[SongMetadata]]:
     """
-    Simplified lyrics pipeline using forced alignment with safe vocal offset.
+    Simplified lyrics pipeline using Genius text as canonical source,
+    optionally aligning with LRC timings and vocals audio.
 
     Steps:
-    1. Fetch canonical text + singer info from Genius
-    2. Fetch LRC line timings from syncedlyrics (via helper)
-    3. Detect/apply offset between audio and LRC only if reasonable
-    4. Create lines from LRC + Genius text
-    5. Refine word timing using audio
-    6. Apply romanization if needed
+    1. Fetch Genius lyrics + singer info
+    2. Fetch LRC line timings using syncedlyrics (skipping translations)
+    3. Apply vocal offset if reasonable
+    4. Create Line objects from LRC + Genius text
+    5. Refine word timing using vocals
+    6. Romanize non-ASCII lyrics if requested
     """
-    # 1. Genius lyrics
+
     logger.info("Fetching lyrics from Genius...")
     genius_lines, metadata = fetch_genius_lyrics_with_singers(title, artist)
     if not genius_lines:
         logger.warning("No Genius lyrics found, using placeholder")
-        word = Word(text="Lyrics not available", start_time=0.0, end_time=3.0)
-        return [Line(words=[word])], SongMetadata(singers=[], is_duet=False, title=title, artist=artist)
+        placeholder_word = Word(text="Lyrics not available", start_time=0.0, end_time=3.0)
+        return [Line(words=[placeholder_word])], SongMetadata(
+            singers=[], is_duet=False, title=title, artist=artist
+        )
 
     text_lines = [text for text, _ in genius_lines if text.strip()]
     logger.info(f"Got {len(text_lines)} lines from Genius")
 
-    # 2. LRC timings (via new helper)
-    line_timings: Optional[List[Tuple[float, str]]] = _fetch_lrc_timings(title, artist)
+    # ----------------------
+    # Helper: fetch LRC timings
+    # ----------------------
+    def _fetch_lrc_timings(title: str, artist: str) -> Optional[List[Tuple[float, str]]]:
+        """
+        Attempt to fetch LRC timings from syncedlyrics or other sources,
+        skipping translated pages and returning parsed (timestamp, text) tuples.
+        """
+        try:
+            from y2karaoke.core.sync import fetch_lyrics_multi_source
+
+            lrc_text, is_synced, source = fetch_lyrics_multi_source(title, artist)
+            if lrc_text and is_synced:
+                lines = parse_lrc_with_timing(lrc_text, title, artist)
+                logger.info(f"Fetched {len(lines)} LRC lines from {source}")
+                return lines
+        except Exception as e:
+            logger.warning(f"LRC timing fetch failed: {e}")
+        return None
+
+    line_timings = _fetch_lrc_timings(title, artist)
 
     if line_timings:
         logger.info(f"Got {len(line_timings)} LRC line timings")
     else:
         logger.info("No synced LRC timings available")
 
-    # 3. Detect/apply offset with vocals
+    # ----------------------
+    # Apply vocal offset if available
+    # ----------------------
     offset = 0.0
     if vocals_path and line_timings:
         detected_vocal_start = detect_song_start(vocals_path)
@@ -395,14 +419,15 @@ def get_lyrics_simple(
                 offset = delta
                 logger.info(f"Applied small positive offset: {offset:.2f}s")
             else:
-                offset = 0.0
                 logger.info(f"LRC timestamps trusted, no offset applied (delta={delta:.2f}s)")
 
         if offset != 0.0:
             line_timings = [(ts + offset, text) for ts, text in line_timings]
             logger.info(f"Applied offset to {len(line_timings)} LRC lines")
 
-    # 4. Create lines
+    # ----------------------
+    # Create Line objects
+    # ----------------------
     if line_timings:
         lines = _create_lines_from_lrc_timings(line_timings, text_lines)
 
@@ -411,13 +436,13 @@ def get_lyrics_simple(
             lines = refine_word_timing(lines, vocals_path)
             logger.info("✅ Word-level timing refined using vocals")
     else:
-        # fallback evenly spaced lines
+        # Fallback evenly spaced lines
         lines = []
         for i, text in enumerate(text_lines):
-            line_start = i * 3.0
             word_texts = text.split()
             if not word_texts:
                 continue
+            line_start = i * 3.0
             word_duration = 2.5 / len(word_texts)
             words = [
                 Word(
@@ -429,14 +454,18 @@ def get_lyrics_simple(
             ]
             lines.append(Line(words=words))
 
-    # 5. Romanize if needed
+    # ----------------------
+    # Romanize if requested
+    # ----------------------
     if romanize:
         for line in lines:
             for word in line.words:
                 if any(ord(c) > 127 for c in word.text):
                     word.text = romanize_line(word.text)
 
-    # 6. Add singer info
+    # ----------------------
+    # Apply singer info for duets
+    # ----------------------
     if metadata and metadata.is_duet:
         for i, line in enumerate(lines):
             if i < len(genius_lines):
