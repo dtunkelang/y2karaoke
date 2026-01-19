@@ -489,90 +489,43 @@ class LyricsProcessor:
         title: Optional[str] = None,
         artist: Optional[str] = None,
         romanize: bool = True,
-        **kwargs,  # absorb extra positional arguments from CLI
+        **kwargs,  # absorb extra positional arguments from CLI or future options
     ) -> Tuple[List[Line], Optional[SongMetadata]]:
         """
-        Fetch lyrics and timing information for a song.
+        Fetch lyrics and word timings for a song.
 
-        Tries the following in order:
-            1. YouTube captions (LRC)
-            2. Genius lyrics (with singer annotations)
-            3. Placeholder if both fail
+        Delegates to get_lyrics_simple() which handles:
+        - Genius lyrics with singer info
+        - Optional LRC timings and vocal alignment
+        - Romanization
 
         Returns:
             lines: List of Line objects
             metadata: SongMetadata or None
         """
-        lines: List[Line] = []
-        metadata: Optional[SongMetadata] = None
+        if not title or not artist:
+            logger.warning("Title or artist missing; returning placeholder lyrics")
+            placeholder_word = Word(text="Lyrics not available", start_time=0.0, end_time=3.0)
+            placeholder_line = Line(words=[placeholder_word], singer="")
+            placeholder_metadata = SongMetadata(
+                singers=[],
+                is_duet=False,
+                title=title or "Unknown",
+                artist=artist or "Unknown",
+            )
+            return [placeholder_line], placeholder_metadata
 
-        # --- 1. Try YouTube LRC ---
-        if youtube_url:
-            try:
-                from y2karaoke.core.sync import get_lrc_from_youtube
-                lrc_text = get_lrc_from_youtube(youtube_url)
-                if lrc_text:
-                    lines = create_lines_from_lrc(
-                        lrc_text,
-                        romanize=romanize,
-                        title=title or "",
-                        artist=artist or "",
-                    )
-                    if lines:
-                        logger.info(f"✅ Fetched lyrics from YouTube LRC: {len(lines)} lines")
-                        metadata = SongMetadata(
-                            singers=[],
-                            is_duet=False,
-                            title=title,
-                            artist=artist
-                        )
-                        return lines, metadata
-            except Exception as e:
-                logger.warning(f"YouTube LRC fetch failed: {e}")
-
-        # --- 2. Try Genius ---
-        if title and artist:
-            try:
-                genius_lines, genius_metadata = fetch_genius_lyrics_with_singers(title, artist)
-                if genius_lines:
-                    if lines:
-                        # Merge existing YouTube timing with Genius singers
-                        lines = merge_lyrics_with_singer_info(
-                            timed_lines=[(w.start_time, w.text) for l in lines for w in l.words],
-                            genius_lines=genius_lines,
-                            metadata=genius_metadata,
-                            romanize=romanize,
-                        )
-                        metadata = genius_metadata
-                    else:
-                        # No timing, create evenly spaced lines
-                        timed_lines = [(i * 3.0, text) for i, (text, _) in enumerate(genius_lines)]
-                        lines = merge_lyrics_with_singer_info(
-                            timed_lines=timed_lines,
-                            genius_lines=genius_lines,
-                            metadata=genius_metadata,
-                            romanize=romanize,
-                        )
-                        metadata = genius_metadata
-                    logger.info(f"✅ Fetched lyrics from Genius: {len(lines)} lines")
-                    return lines, metadata
-            except Exception as e:
-                logger.warning(f"Genius fetch failed: {e}")
-
-        # --- 3. Fallback placeholder ---
-        placeholder_text = "Lyrics not available"
-        word = Word(text=placeholder_text, start_time=0.0, end_time=3.0)
-        line = Line(words=[word], singer="")
-        lines = [line]
-        metadata = SongMetadata(
-            singers=[],
-            is_duet=False,
-            title=title or "Unknown",
-            artist=artist or "Unknown"
+        # Delegate everything to the simplified pipeline
+        lines, metadata = get_lyrics_simple(
+            title=title,
+            artist=artist,
+            vocals_path=kwargs.get("vocals_path"),
+            cache_dir=self.cache_dir,
+            lyrics_offset=kwargs.get("lyrics_offset"),
+            romanize=romanize,
         )
-        logger.warning("⚠ Using placeholder lyrics")
-        return lines, metadata
 
+        return lines, metadata
 
 # ----------------------
 # LEGACY HELPER FUNCTIONS REMOVED (Phase 5 cleanup)
