@@ -184,6 +184,7 @@ def generate(ctx, url_or_query, output, offset, key, tempo, audio_start,
                 use_backgrounds=backgrounds,
                 force_reprocess=force,
                 video_settings=video_settings if video_settings else None,
+                original_prompt=url_or_query,  # <-- pass the CLI query here
             )
             
             logger.info(f"✅ Karaoke video generated: {result['output_path']}")
