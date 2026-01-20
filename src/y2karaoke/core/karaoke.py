@@ -53,20 +53,44 @@ class KaraokeGenerator:
     # ------------------------
     # MusicBrainz helpers
     # ------------------------
+    from difflib import SequenceMatcher
+
+    # Expanded stop-word set for more flexible matching
+    STOP_WORDS = {"the", "a", "an", "and", "&", "of", "with", "in", "+", "n"}
+
+    def _normalize_for_matching(s: str) -> str:
+        """Lowercase, remove punctuation, strip stop words, collapse whitespace."""
+        s = s.casefold()
+        s = "".join(c for c in s if c.isalnum() or c.isspace())
+        tokens = [t for t in s.split() if t not in STOP_WORDS]
+        return " ".join(tokens).strip()
+
+    def _fuzzy_match(s1: str, s2: str, threshold: float = 0.9) -> bool:
+        """Return True if s1 and s2 are sufficiently similar."""
+        return SequenceMatcher(None, _normalize_for_matching(s1), _normalize_for_matching(s2)).ratio() >= threshold
+
     def _guess_artist_title_musicbrainz(
-        self, prompt: str, fallback_artist: str = "", fallback_title: str = ""
+        self,
+        prompt: str,
+        fallback_artist: str = "",
+        fallback_title: str = "",
     ) -> tuple[str, str]:
         """
-        Guess artist/title from a prompt string using MusicBrainz, allowing
-        flexible matching (ignoring stopwords and minor differences).
+        Guess artist/title from a prompt string using MusicBrainz, with flexible matching.
+        Returns (artist, title), or fallbacks if no match found.
         """
-        tokens = prompt.split()
-        n = len(tokens)
+        import musicbrainzngs
 
-        # Try all possible splits
-        for i in range(1, n):
+        tokens = prompt.split()
+        if len(tokens) < 2:
+            # Fallback if prompt is too short
+            return fallback_artist or "", fallback_title or prompt
+
+        # Try all reasonable splits of the prompt into artist/title pairs
+        for i in range(1, len(tokens)):
             first = " ".join(tokens[:i])
             second = " ".join(tokens[i:])
+
             for artist_candidate, title_candidate in [(first, second), (second, first)]:
                 try:
                     result = musicbrainzngs.search_recordings(
@@ -79,21 +103,18 @@ class KaraokeGenerator:
                         candidate_artist = r["artist-credit"][0]["artist"]["name"]
                         candidate_title = r["title"]
 
-                        norm_artist_input = self._normalize(artist_candidate)
-                        norm_title_input = self._normalize(title_candidate)
-                        norm_artist_mb = self._normalize(candidate_artist)
-                        norm_title_mb = self._normalize(candidate_title)
-
-                        # Flexible match: exact or string similarity threshold
-                        if norm_artist_input == norm_artist_mb and norm_title_input == norm_title_mb:
+                        # Flexible matching: stop-word aware + fuzzy similarity
+                        if _fuzzy_match(artist_candidate, candidate_artist) and \
+                           _fuzzy_match(title_candidate, candidate_title):
                             return candidate_artist, candidate_title
 
                 except Exception:
+                    # Ignore transient errors, continue to next candidate
                     continue
 
-        # Fallback to defaults
+        # Nothing found: fallback
         return fallback_artist or "", fallback_title or prompt
-
+    
     # ------------------------
     # Main generate method
     # ------------------------
