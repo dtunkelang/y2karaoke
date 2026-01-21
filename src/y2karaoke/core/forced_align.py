@@ -7,7 +7,6 @@ need to find when they occur in the audio.
 
 import warnings
 from typing import List, Tuple, Optional
-from dataclasses import dataclass
 
 from ..utils.logging import get_logger
 from .models import Word, Line
@@ -16,22 +15,6 @@ from .alignment_audio import detect_song_start, get_audio_duration
 
 logger = get_logger(__name__)
 
-
-@dataclass
-class WordTiming:
-    """Timing information for a single word."""
-    text: str
-    start: float
-    end: float
-    confidence: float = 1.0
-
-
-@dataclass
-class AlignmentResult:
-    """Result of forced alignment."""
-    lines: List[Line]
-    quality_score: float
-    offset_applied: float
 
 def forced_align(
     text_lines: List[str],
@@ -191,107 +174,3 @@ def _apply_perceptual_offset(lines: List[Line], offset: float) -> List[Line]:
     return lines
 
 
-def alignment_quality(lines: List[Line], audio_path: Optional[str] = None) -> float:
-    """
-    Score the quality of an alignment.
-
-    Components:
-    - timing_smoothness: Penalize unrealistic word durations (<50ms or >3s)
-    - gap_penalty: Penalize large gaps between consecutive words
-    - monotonicity: Words should be in time order
-    - coverage: All text should be aligned
-
-    Returns:
-        Score from 0.0 (bad) to 1.0 (good)
-    """
-    if not lines:
-        return 0.0
-
-    total_words = sum(len(line.words) for line in lines)
-    if total_words == 0:
-        return 0.0
-
-    penalties = 0.0
-
-    # Check word durations
-    for line in lines:
-        for word in line.words:
-            duration = word.end_time - word.start_time
-            if duration < 0.05:
-                penalties += 0.1  # Too short
-            elif duration > 3.0:
-                penalties += 0.1  # Too long
-
-    # Check gaps between words
-    prev_end = 0.0
-    for line in lines:
-        for word in line.words:
-            gap = word.start_time - prev_end
-            if gap > 5.0:
-                penalties += 0.2  # Large gap
-            elif gap < -0.1:
-                penalties += 0.3  # Overlap (monotonicity violation)
-            prev_end = word.end_time
-
-    # Calculate score
-    score = max(0.0, 1.0 - (penalties / total_words))
-    return score
-
-
-def refine_with_onset_detection(
-    lines: List[Line],
-    audio_path: str,
-    max_shift: float = 0.3
-) -> List[Line]:
-    """
-    Refine word timing using vocal onset detection.
-
-    Uses librosa's onset detection to find actual vocal onsets
-    and slightly adjust word timing to match.
-
-    Args:
-        lines: Lines with initial timing from forced alignment
-        audio_path: Path to vocals audio
-        max_shift: Maximum timing shift in seconds
-
-    Returns:
-        Lines with refined timing
-    """
-    try:
-        import librosa
-        import numpy as np
-
-        # Load audio
-        y, sr = librosa.load(audio_path, sr=22050)
-
-        # Detect onsets
-        onset_times = librosa.onset.onset_detect(
-            y=y, sr=sr,
-            hop_length=512,
-            backtrack=True,
-            units='time'
-        )
-
-        if len(onset_times) == 0:
-            return lines
-
-        # For each word, find the closest onset and adjust
-        for line in lines:
-            for word in line.words:
-                # Find closest onset to word start
-                closest_idx = np.argmin(np.abs(onset_times - word.start_time))
-                closest_onset = onset_times[closest_idx]
-
-                shift = closest_onset - word.start_time
-
-                # Only apply if shift is small enough
-                if abs(shift) <= max_shift:
-                    duration = word.end_time - word.start_time
-                    word.start_time = closest_onset
-                    word.end_time = closest_onset + duration
-
-        return lines
-
-    except Exception as e:
-        logger.warning(f"Onset refinement failed: {e}")
-        return lines

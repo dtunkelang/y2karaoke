@@ -4,8 +4,7 @@ This module scores and fixes word timing, and provides fallback onset/energy-bas
 """
 
 from dataclasses import dataclass
-from typing import List, Tuple
-import numpy as np
+from typing import List
 
 from ..utils.logging import get_logger
 from .models import Word, Line
@@ -122,75 +121,3 @@ def fix_timing_issues(
     return fixed_lines
 
 
-# ----------------------
-# Onset / energy fallback utilities
-# ----------------------
-def detect_line_onsets(vocals_path: str, line_start: float, line_end: float) -> List[float]:
-    """Detect onsets within a specific line segment."""
-    try:
-        import librosa
-
-        y, sr = librosa.load(
-            vocals_path,
-            sr=22050,
-            offset=max(0, line_start - 0.1),
-            duration=(line_end - line_start) + 0.2
-        )
-        onset_frames = librosa.onset.onset_detect(
-            y=y, sr=sr, hop_length=512, backtrack=True, units='frames'
-        )
-        onset_times = librosa.frames_to_time(onset_frames, sr=sr, hop_length=512)
-        onset_times += max(0, line_start - 0.1)
-        onset_times = onset_times[(onset_times >= line_start) & (onset_times <= line_end)]
-        return list(onset_times)
-
-    except Exception as e:
-        logger.warning(f"Onset detection failed for line: {e}")
-        return []
-
-
-def estimate_word_boundaries_from_energy(
-    vocals_path: str,
-    line_start: float,
-    line_end: float,
-    num_words: int,
-) -> List[Tuple[float, float]]:
-    """Estimate word boundaries using RMS energy peaks."""
-    try:
-        import librosa
-        from scipy.signal import find_peaks
-
-        y, sr = librosa.load(vocals_path, sr=22050, offset=line_start, duration=line_end - line_start)
-        frame_length = int(0.025 * sr)
-        hop_length = int(0.010 * sr)
-        rms = librosa.feature.rms(y=y, frame_length=frame_length, hop_length=hop_length)[0]
-        times = librosa.frames_to_time(np.arange(len(rms)), sr=sr, hop_length=hop_length) + line_start
-        peaks, _ = find_peaks(rms, distance=int(0.1 * sr / hop_length))
-
-        if len(peaks) < num_words:
-            duration = line_end - line_start
-            word_duration = duration / num_words
-            return [(line_start + i * word_duration, line_start + (i + 1) * word_duration) for i in range(num_words)]
-
-        boundaries = []
-        peak_times = times[peaks]
-        for i in range(num_words):
-            if i < len(peak_times):
-                center = peak_times[i]
-                start = line_start if i == 0 else (peak_times[i - 1] + center) / 2
-                end = line_end if i >= len(peak_times) - 1 else (center + peak_times[i + 1]) / 2
-                boundaries.append((start, end))
-            else:
-                remaining = num_words - i
-                remaining_duration = line_end - boundaries[-1][1] if boundaries else line_end - line_start
-                word_duration = remaining_duration / remaining
-                start = boundaries[-1][1] if boundaries else line_start
-                boundaries.append((start, start + word_duration))
-
-        return boundaries
-
-    except Exception as e:
-        logger.warning(f"Energy-based boundary estimation failed: {e}")
-        duration = line_end - line_start
-        word_duration = duration / num_words
-        return [(line_start + i * word_duration, line_start + (i + 1) * word_duration) for i in range(num_words)]
