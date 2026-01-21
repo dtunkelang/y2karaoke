@@ -8,7 +8,6 @@ from typing import List
 
 from ..utils.logging import get_logger
 from .models import Word, Line
-from .refine import refine_word_timing  # <- moved refinement logic here
 
 logger = get_logger(__name__)
 

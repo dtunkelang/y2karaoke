@@ -1,7 +1,5 @@
 """Frame rendering for karaoke videos."""
 
-from __future__ import annotations
-
 from typing import Optional
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
@@ -10,10 +8,10 @@ from ..config import (
     VIDEO_WIDTH, VIDEO_HEIGHT, LINE_SPACING,
     SPLASH_DURATION, INSTRUMENTAL_BREAK_THRESHOLD, LYRICS_LEAD_TIME, Colors
 )
-from .backgrounds_static import draw_logo_screen, draw_splash_screen, create_gradient_background
+from .backgrounds_static import draw_logo_screen, draw_splash_screen
 from .progress import draw_progress_bar
 from .lyrics_renderer import get_singer_colors
-from ..core import Line, SongMetadata  # adjust import to your repo structure
+from .models import Line
 
 
 def render_frame(

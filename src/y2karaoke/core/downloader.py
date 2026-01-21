@@ -12,10 +12,6 @@ from .youtube_metadata import (
     sanitize_filename,
     validate_youtube_url,
     extract_video_id,
-    _parse_artist_title_from_video_title,
-    _parse_metadata_from_description,
-    _clean_uploader_name,
-    clean_title,
     extract_metadata_from_youtube,
 )
 

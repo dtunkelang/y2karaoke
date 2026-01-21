@@ -4,8 +4,7 @@ import re
 from typing import List, Tuple, Optional
 
 from ..utils.logging import get_logger
-from .models import SingerID, Word, Line, SongMetadata
-from .romanization import romanize_line
+from .models import SongMetadata
 from .fetch import fetch_html, fetch_json
 from .text_utils import (
     make_slug,

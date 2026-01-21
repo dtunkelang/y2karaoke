@@ -1,11 +1,10 @@
 """Static background and splash/logo rendering for karaoke videos."""
 
-from __future__ import annotations
 from typing import Optional
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 
-from ..config import VIDEO_WIDTH, VIDEO_HEIGHT, Colors, SPLASH_DURATION
+from ..config import VIDEO_WIDTH, VIDEO_HEIGHT, Colors
 from ..utils.fonts import get_font
 
 

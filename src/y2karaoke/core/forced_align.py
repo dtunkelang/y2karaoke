@@ -11,7 +11,7 @@ from typing import List, Tuple, Optional
 from ..utils.logging import get_logger
 from .models import Word, Line
 from .alignment_segments import build_segments_from_lrc, build_segments_estimated, build_lines_estimated
-from .alignment_audio import detect_song_start, get_audio_duration
+from .alignment_audio import get_audio_duration
 
 logger = get_logger(__name__)
 

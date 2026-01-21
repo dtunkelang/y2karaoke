@@ -2,15 +2,13 @@
 
 from __future__ import annotations
 from typing import TYPE_CHECKING, Optional, List
-import numpy as np
-from PIL import ImageFont
 from moviepy import AudioFileClip, VideoClip
 
 from ..config import VIDEO_WIDTH, VIDEO_HEIGHT, FPS, FONT_SIZE
 from ..utils.logging import get_logger
 from ..utils.fonts import get_font
 from .frame_renderer import render_frame
-from ..core import Line, SongMetadata
+from .models import Line, SongMetadata
 from .backgrounds_static import create_gradient_background
 
 if TYPE_CHECKING:

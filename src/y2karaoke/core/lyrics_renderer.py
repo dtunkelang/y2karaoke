@@ -1,7 +1,6 @@
 """Lyrics rendering utilities for karaoke videos."""
 
-from __future__ import annotations
-from typing import Optional, Any, List
+from typing import Optional, Any
 from PIL import ImageDraw
 
 from ..config import LINE_SPACING, Colors

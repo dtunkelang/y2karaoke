@@ -3,8 +3,7 @@
 import subprocess
 import sys
 from dataclasses import dataclass
-from pathlib import Path
-from typing import List, Optional, TYPE_CHECKING
+from typing import List, TYPE_CHECKING
 
 import cv2
 import numpy as np
@@ -15,7 +14,7 @@ from ..exceptions import RenderError
 from ..utils.logging import get_logger
 
 if TYPE_CHECKING:
-    from .lyrics import Line
+    from .models import Line
 
 logger = get_logger(__name__)
 

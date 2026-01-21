@@ -2,14 +2,10 @@
 
 from pathlib import Path
 from typing import Dict, Optional, Any
-import string
-import re
 from time import time
-from difflib import SequenceMatcher
 import musicbrainzngs
 
 from ..config import get_cache_dir
-from ..exceptions import Y2KaraokeError
 from ..utils.cache import CacheManager
 from ..utils.logging import get_logger
 from ..utils.validation import sanitize_filename

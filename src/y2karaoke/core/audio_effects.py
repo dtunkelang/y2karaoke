@@ -1,7 +1,6 @@
 """Audio effects processing with validation."""
 
 from pathlib import Path
-from typing import Optional
 
 import librosa
 import numpy as np

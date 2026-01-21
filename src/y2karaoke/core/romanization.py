@@ -29,7 +29,7 @@ except ImportError:
 
 # Arabic
 try:
-    import pyarabic.araby as araby
+    import pyarabic.araby  # noqa: F401 - imported for availability check
     ARABIC_ROMANIZER_AVAILABLE = True
 except ImportError:
     ARABIC_ROMANIZER_AVAILABLE = False
