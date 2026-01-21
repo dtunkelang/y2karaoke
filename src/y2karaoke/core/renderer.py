@@ -24,6 +24,7 @@ from .backgrounds_static import (
     draw_splash_screen
 )
 from .progress import draw_progress_bar, RenderProgressBar, ProgressLogger
+from .lyrics_renderer import draw_lyrics_frame, get_singer_colors
 
 logger = get_logger(__name__)
 
@@ -113,140 +114,45 @@ class VideoRenderer:
         song_metadata: Optional[Any] = None
     ) -> np.ndarray:
         """Render a single frame at time t."""
-        
-        # Create base image
+
+        # Determine base image
         if background_segments:
             img = self._get_background_frame(t, background_segments)
         else:
-            img = self._create_gradient_background()
-        
+            img = create_gradient_background(self.width, self.height)
+
         draw = ImageDraw.Draw(img)
-        
+
         # Show splash screen at the beginning
         if t < SPLASH_DURATION:
-            self._draw_splash_screen(draw, title, artist)
+            draw_splash_screen(draw, title, artist, self.width, self.height)
         else:
-            # Draw lyrics
-            self._draw_lyrics(draw, t, lines, song_metadata)
-        
-        # Convert to numpy array
+            # Draw lyrics frame
+            is_duet = song_metadata.is_duet if song_metadata else False
+            draw_lyrics_frame(
+                draw,
+                t,
+                lines,
+                self.font,
+                self.height,
+                is_duet=is_duet,
+                song_metadata=song_metadata
+            )
+
         return np.array(img)
     
     def _get_background_frame(self, t: float, background_segments) -> Image.Image:
-        """Get background frame for time t."""
-        
-        # Find appropriate background segment
+        """Get the background frame for time t.
+
+        Falls back to a gradient if no segment matches.
+        """
         for segment in background_segments:
             if segment.start_time <= t <= segment.end_time:
                 # Convert numpy array to PIL Image
                 return Image.fromarray(segment.image)
-        
-        # Fallback to gradient
-        return self._create_gradient_background()
-        
-    def _draw_lyrics(
-        self, 
-        draw: ImageDraw.Draw, 
-        t: float, 
-        lines,
-        song_metadata: Optional[Any] = None
-    ):
-        """Draw lyrics with highlighting."""
-        
-        # Find current and next lines
-        current_line_idx = None
-        next_line_idx = None
-        
-        for i, line in enumerate(lines):
-            if line.start_time <= t <= line.end_time:
-                current_line_idx = i
-                break
-            elif line.start_time > t:
-                next_line_idx = i
-                break
-        
-        # If no current line, find the next upcoming line
-        if current_line_idx is None and next_line_idx is None:
-            for i, line in enumerate(lines):
-                if line.start_time > t:
-                    next_line_idx = i
-                    break
-        
-        # Draw current line (if any)
-        if current_line_idx is not None:
-            line = lines[current_line_idx]
-            y_pos = self.height // 2 - LINE_SPACING // 2
-            self._draw_line(draw, line, t, y_pos, is_current=True)
-        
-        # Draw next line (if any)
-        if next_line_idx is not None:
-            line = lines[next_line_idx]
-            y_pos = self.height // 2 + LINE_SPACING // 2
-            self._draw_line(draw, line, t, y_pos, is_current=False)
-    
-    def _draw_line(
-        self, 
-        draw: ImageDraw.Draw, 
-        line, 
-        t: float, 
-        y_pos: int, 
-        is_current: bool
-    ):
-        """Draw a single line of lyrics."""
-        
-        # Calculate total line width for centering
-        total_width = 0
-        word_widths = []
-        
-        for word in line.words:
-            bbox = draw.textbbox((0, 0), word.text + " ", font=self.font)
-            width = bbox[2] - bbox[0]
-            word_widths.append(width)
-            total_width += width
-        
-        # Start position (centered)
-        x_pos = (self.width - total_width) // 2
-        
-        # Draw each word
-        for i, word in enumerate(line.words):
-            # Determine word color based on timing
-            if is_current and word.start_time <= t <= word.end_time:
-                # Currently being sung
-                color = Colors.HIGHLIGHT
-            elif is_current and t > word.end_time:
-                # Already sung
-                color = Colors.SUNG
-            else:
-                # Not yet sung or upcoming line
-                color = Colors.TEXT
-            
-            # Draw word
-            draw.text((x_pos, y_pos), word.text, font=self.font, fill=color)
-            
-            # Move to next word position
-            x_pos += word_widths[i]
 
-
-def get_singer_colors(singer: str, is_highlighted: bool) -> tuple[tuple[int, int, int], tuple[int, int, int]]:
-    """
-    Get the text and highlight colors for a singer.
-
-    Args:
-        singer: Singer identifier ("singer1", "singer2", "both", or "")
-        is_highlighted: Whether the word is currently being sung
-
-    Returns:
-        Tuple of (text_color, highlight_color) for this singer
-    """
-    if singer == "singer1":
-        return (Colors.SINGER1, Colors.SINGER1_HIGHLIGHT)
-    elif singer == "singer2":
-        return (Colors.SINGER2, Colors.SINGER2_HIGHLIGHT)
-    elif singer == "both":
-        return (Colors.BOTH, Colors.BOTH_HIGHLIGHT)
-    else:
-        # Default colors (gold highlight, white text)
-        return (Colors.TEXT, Colors.HIGHLIGHT)
+        # Fallback to gradient background
+        return create_gradient_background(self.width, self.height)
 
 def render_frame(
     lines: list[Line],
@@ -260,46 +166,40 @@ def render_frame(
     height: Optional[int] = None,
 ) -> np.ndarray:
     """Render a single frame at the given time."""
+
     video_width = width or VIDEO_WIDTH
     video_height = height or VIDEO_HEIGHT
     img = Image.fromarray(background.copy())
     draw = ImageDraw.Draw(img)
 
-    # Check if we're in an instrumental break
+    show_splash = current_time < SPLASH_DURATION and title and artist
     show_progress_bar = False
-    show_splash = False
     progress = 0.0
 
     # Handle intro: before first lyrics start
     if lines and current_time < lines[0].start_time:
         first_line = lines[0]
         time_until_first = first_line.start_time - current_time
+        if first_line.start_time >= INSTRUMENTAL_BREAK_THRESHOLD and time_until_first > LYRICS_LEAD_TIME:
+            show_progress_bar = True
+            bar_start = min(SPLASH_DURATION, first_line.start_time - LYRICS_LEAD_TIME)
+            break_end = first_line.start_time - LYRICS_LEAD_TIME
+            elapsed = current_time - bar_start
+            bar_duration = break_end - bar_start
+            progress = elapsed / bar_duration if bar_duration > 0 else 1.0
 
-        # Show splash screen for the first SPLASH_DURATION seconds OR until lyrics start
-        if current_time < SPLASH_DURATION and title and artist:
-            show_splash = True
-        # Then show progress bar if there's still a long intro
-        elif first_line.start_time >= INSTRUMENTAL_BREAK_THRESHOLD:
-            if time_until_first > LYRICS_LEAD_TIME:
-                show_progress_bar = True
-                bar_start = min(SPLASH_DURATION, first_line.start_time - LYRICS_LEAD_TIME)
-                break_end = first_line.start_time - LYRICS_LEAD_TIME
-                elapsed = current_time - bar_start
-                bar_duration = break_end - bar_start
-                progress = elapsed / bar_duration if bar_duration > 0 else 1.0
-
-    # Find current line index
+    # Determine current line
     current_line_idx = 0
     for i, line in enumerate(lines):
         if line.start_time <= current_time:
             current_line_idx = i
 
-    # Handle outro: after last lyrics end, show logo screen
+    # Handle outro: after last lyrics
     if lines and current_time >= lines[-1].end_time:
         draw_logo_screen(draw, font, video_width, video_height)
         return np.array(img)
 
-    # Handle mid-song gaps between lines
+    # Handle mid-song gaps
     if not show_progress_bar and current_line_idx < len(lines):
         current_line = lines[current_line_idx]
         next_line_idx = current_line_idx + 1
@@ -326,11 +226,9 @@ def render_frame(
 
     # Normal lyrics display - show up to 4 lines
     lines_to_show = []
-
-    # Scroll in chunks of 3 lines
     display_start_idx = (current_line_idx // 3) * 3
 
-    # After an instrumental break, adjust display start if we're in lead-time window
+    # Adjust display after instrumental break
     next_line_idx = current_line_idx + 1
     if next_line_idx < len(lines):
         curr_line = lines[current_line_idx]
@@ -338,21 +236,20 @@ def render_frame(
         gap = next_line.start_time - curr_line.end_time
         if gap >= INSTRUMENTAL_BREAK_THRESHOLD and current_time >= curr_line.end_time:
             display_start_idx = next_line_idx
-            current_line_idx = next_line_idx  # Update for highlighting
+            current_line_idx = next_line_idx
 
-    # Build the visible lines list
+    # Build visible lines
     for i in range(4):
         line_idx = display_start_idx + i
         if line_idx >= len(lines):
             break
-        # Stop early if there's an instrumental break before this line
         if line_idx > 0:
             prev_line = lines[line_idx - 1]
             this_line = lines[line_idx]
             gap = this_line.start_time - prev_line.end_time
             if gap >= INSTRUMENTAL_BREAK_THRESHOLD and current_time < this_line.start_time - LYRICS_LEAD_TIME:
                 break
-        is_current = (line_idx == current_line_idx and current_time >= lines[line_idx].start_time)
+        is_current = line_idx == current_line_idx and current_time >= lines[line_idx].start_time
         lines_to_show.append((lines[line_idx], is_current))
 
     # Vertical positioning
@@ -362,7 +259,7 @@ def render_frame(
     for idx, (line, is_current) in enumerate(lines_to_show):
         y = start_y + idx * LINE_SPACING
 
-        # Compute total width for centering
+        # Prepare words for centering
         words_with_spaces = []
         for i, word in enumerate(line.words):
             words_with_spaces.append(word.text)
@@ -391,15 +288,9 @@ def render_frame(
             # Determine color
             if is_duet and word.singer:
                 text_color, highlight_color = get_singer_colors(word.singer, False)
-                if is_current:
-                    color = highlight_color if current_time >= word.start_time else text_color
-                else:
-                    color = text_color
+                color = highlight_color if is_current and current_time >= word.start_time else text_color
             else:
-                if is_current:
-                    color = Colors.HIGHLIGHT if current_time >= word.start_time else Colors.TEXT
-                else:
-                    color = Colors.TEXT
+                color = Colors.HIGHLIGHT if is_current and current_time >= word.start_time else Colors.TEXT
 
             draw.text((x, y), text, font=font, fill=color)
             x += word_widths[i]
