@@ -10,11 +10,9 @@ from .fetch import fetch_html, fetch_json
 from .text_utils import (
     make_slug,
     clean_title_for_search,
-    normalize_text,
     strip_leading_artist_from_line,
     filter_singer_only_lines
 )
-from .lyrics_merge import merge_lyrics_with_singer_info
 
 logger = get_logger(__name__)
 
