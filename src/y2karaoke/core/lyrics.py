@@ -88,7 +88,7 @@ def get_lyrics_simple(
     """
     from .genius import fetch_genius_lyrics_with_singers
     from .refine import refine_word_timing
-    from .alignment_audio import detect_song_start
+    from .alignment import detect_song_start
 
     # 1. Fetch canonical lyrics from Genius
     logger.info("Fetching lyrics from Genius...")
