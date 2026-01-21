@@ -8,7 +8,7 @@ from .models import Line, Word, SongMetadata
 from .romanization import romanize_line
 from .lyrics_processing import create_lines_from_lrc
 from .lyrics_utils import _create_lines_from_lrc_timings
-from .forced_align import detect_song_start
+from .alignment_audio import detect_song_start
 from .sync import fetch_lyrics_multi_source
 from .lrc_utils import parse_lrc_with_timing
 

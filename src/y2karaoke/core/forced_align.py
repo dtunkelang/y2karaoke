@@ -11,11 +11,8 @@ from dataclasses import dataclass
 
 from ..utils.logging import get_logger
 from .models import Word, Line
-from .alignment_segments import (
-    build_segments_from_lrc,
-    build_segments_estimated,
-    build_lines_estimated,
-)
+from .alignment_segments import build_segments_from_lrc, build_segments_estimated, build_lines_estimated
+from .alignment_audio import detect_song_start, get_audio_duration
 
 logger = get_logger(__name__)
 
@@ -35,84 +32,6 @@ class AlignmentResult:
     lines: List[Line]
     quality_score: float
     offset_applied: float
-
-
-def detect_song_start(audio_path: str, min_duration: float = 0.3) -> float:
-    """
-    Detect where vocals actually start in the audio.
-
-    YouTube audio often has silence or intro before vocals begin.
-    This function finds the first sustained vocal activity.
-
-    Uses adaptive thresholding based on the audio's noise floor,
-    and requires sustained activity to avoid false positives.
-
-    Args:
-        audio_path: Path to vocals audio file
-        min_duration: Minimum duration of vocal activity to count as "start" (seconds)
-
-    Returns:
-        Time in seconds when vocals start
-    """
-    try:
-        import librosa
-        import numpy as np
-
-        # Load audio at 16kHz for faster processing
-        y, sr = librosa.load(audio_path, sr=16000)
-
-        # Compute RMS energy in frames
-        frame_length = int(0.05 * sr)  # 50ms frames
-        hop_length = frame_length // 2  # 25ms hop
-
-        rms = librosa.feature.rms(y=y, frame_length=frame_length, hop_length=hop_length)[0]
-
-        # Adaptive threshold: use percentile of RMS values
-        # This adapts to different recording levels
-        noise_floor = np.percentile(rms, 10)  # Bottom 10% is noise
-        peak_level = np.percentile(rms, 95)   # Top 5% is vocal peaks
-
-        # Threshold is between noise and peaks
-        threshold = noise_floor + 0.15 * (peak_level - noise_floor)
-
-        # Find frames above threshold
-        above_threshold = rms > threshold
-
-        # Require sustained activity (min_duration consecutive frames)
-        min_frames = int(min_duration * sr / hop_length)
-
-        # Find first sustained region
-        consecutive = 0
-        for i, is_active in enumerate(above_threshold):
-            if is_active:
-                consecutive += 1
-                if consecutive >= min_frames:
-                    # Found sustained activity - return start of this region
-                    start_frame = i - consecutive + 1
-                    start_time = start_frame * hop_length / sr
-                    logger.info(f"Detected vocal start at {start_time:.2f}s (threshold: {threshold:.4f})")
-                    return start_time
-            else:
-                consecutive = 0
-
-        logger.warning("No sustained vocal activity detected, assuming start at 0")
-        return 0.0
-
-    except Exception as e:
-        logger.warning(f"Could not detect song start: {e}")
-        return 0.0
-
-
-def get_audio_duration(audio_path: str) -> float:
-    """Get the duration of an audio file in seconds."""
-    try:
-        import librosa
-        duration = librosa.get_duration(path=audio_path)
-        return duration
-    except Exception as e:
-        logger.warning(f"Could not get audio duration: {e}")
-        return 180.0  # Default 3 minutes
-
 
 def forced_align(
     text_lines: List[str],
