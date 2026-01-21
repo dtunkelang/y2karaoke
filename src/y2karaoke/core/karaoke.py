@@ -9,15 +9,15 @@ from difflib import SequenceMatcher
 import musicbrainzngs
 
 from ..config import get_cache_dir
-from ..core.downloader import YouTubeDownloader, extract_video_id
-from ..core.separator import AudioSeparator
-from ..core.audio_effects import AudioProcessor
 from ..exceptions import Y2KaraokeError
 from ..utils.cache import CacheManager
 from ..utils.logging import get_logger
 from ..utils.validation import sanitize_filename
-from ..core.title_resolver import resolve_artist_title_from_youtube
-
+from .title_resolver import resolve_artist_title_from_youtube
+from .downloader import YouTubeDownloader, extract_video_id
+from .separator import AudioSeparator
+from .audio_effects import AudioProcessor
+from .audio_utils import trim_audio_if_needed, apply_audio_effects
 
 logger = get_logger(__name__)
 
@@ -79,8 +79,12 @@ class KaraokeGenerator:
             video_path = video_result["video_path"]
 
         # Step 3: Trim audio if needed
-        effective_audio_path = self._trim_audio_if_needed(
-            audio_result["audio_path"], audio_start, video_id, force_reprocess
+        effective_audio_path = trim_audio_if_needed(
+            audio_result["audio_path"], 
+            audio_start, 
+            video_id, 
+            self.cache_manager,  # pass the cache manager
+            force=force_reprocess
         )
 
         # Step 4: Separate vocals
@@ -122,8 +126,14 @@ class KaraokeGenerator:
         )
                 
         # Step 7: Apply audio effects
-        processed_instrumental = self._apply_audio_effects(
-            separation_result["instrumental_path"], key_shift, tempo_multiplier, video_id, force_reprocess
+        processed_instrumental = apply_audio_effects(
+            effective_audio_path,
+            key_shift,
+            tempo_multiplier,
+            video_id,
+            self.cache_manager,   # pass the cache manager
+            self.audio_processor, # pass the audio processor
+            force=force_reprocess
         )
 
         # Step 8: Scale lyrics timing
@@ -206,25 +216,6 @@ class KaraokeGenerator:
         cache_dir = self.cache_manager.get_video_cache_dir(video_id)
         return self.downloader.download_video(url, cache_dir)
 
-    def _trim_audio_if_needed(self, audio_path: str, start_time: float, video_id: str, force: bool) -> str:
-        if start_time <= 0:
-            return audio_path
-        logger.info(f"✂️ Trimming audio from {start_time:.2f}s")
-        trimmed_name = f"trimmed_from_{start_time:.2f}s.wav"
-        if not force and self.cache_manager.file_exists(video_id, trimmed_name):
-            logger.info("📁 Using cached trimmed audio")
-            return str(self.cache_manager.get_file_path(video_id, trimmed_name))
-        from pydub import AudioSegment
-        audio = AudioSegment.from_wav(audio_path)
-        start_ms = int(start_time * 1000)
-        if start_ms >= len(audio):
-            logger.warning("Start time beyond audio length, using original")
-            return audio_path
-        trimmed = audio[start_ms:]
-        trimmed_path = self.cache_manager.get_file_path(video_id, trimmed_name)
-        trimmed.export(str(trimmed_path), format="wav")
-        return str(trimmed_path)
-
     def _separate_vocals(self, audio_path: str, video_id: str, force: bool) -> Dict[str, str]:
         logger.info("🎵 Separating vocals...")
         audio_filename = Path(audio_path).name.lower()
@@ -249,17 +240,6 @@ class KaraokeGenerator:
         from ..core.lyrics import get_lyrics_simple
         lines, metadata = get_lyrics_simple(title=title, artist=artist, vocals_path=vocals_path, lyrics_offset=lyrics_offset, romanize=True)
         return {"lines": lines, "metadata": metadata}
-
-    def _apply_audio_effects(self, audio_path: str, key_shift: int, tempo: float, video_id: str, force: bool) -> str:
-        if key_shift == 0 and tempo == 1.0:
-            return audio_path
-        logger.info(f"🎛️ Applying effects: key={key_shift:+d}, tempo={tempo:.2f}x")
-        effects_name = f"instrumental_key{key_shift:+d}_tempo{tempo:.2f}.wav"
-        if not force and self.cache_manager.file_exists(video_id, effects_name):
-            logger.info("📁 Using cached processed audio")
-            return str(self.cache_manager.get_file_path(video_id, effects_name))
-        output_path = self.cache_manager.get_file_path(video_id, effects_name)
-        return self.audio_processor.process_audio(audio_path, str(output_path), key_shift, tempo)
 
     def _scale_lyrics_timing(self, lines, tempo_multiplier: float):
         if tempo_multiplier == 1.0:
