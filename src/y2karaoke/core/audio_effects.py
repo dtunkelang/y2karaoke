@@ -3,7 +3,6 @@
 from pathlib import Path
 
 import librosa
-import numpy as np
 import soundfile as sf
 
 from ..config import AUDIO_SAMPLE_RATE

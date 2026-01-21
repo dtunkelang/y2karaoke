@@ -84,24 +84,6 @@ def parse_lrc_timestamp(ts: str) -> Optional[float]:
     return minutes * 60 + seconds + frac_seconds
 
 
-def extract_lyrics_text(lrc_text: str, title: str = "", artist: str = "") -> List[str]:
-    """Extract plain text lines from LRC format (ignore timing and metadata)."""
-    if not lrc_text:
-        return []
-
-    lines: List[str] = []
-    for line in lrc_text.strip().splitlines():
-        line = line.strip()
-        if not line:
-            continue
-        match = _LRC_TS_RE.match(line)
-        if match:
-            text_part = line[match.end():].strip()
-            if text_part and not _is_metadata_line(text_part, title, artist):
-                lines.append(text_part)
-    return lines
-
-
 def parse_lrc_with_timing(lrc_text: str, title: str = "", artist: str = "") -> List[Tuple[float, str]]:
     """Parse LRC format and extract (timestamp, text) tuples."""
     if not lrc_text:
