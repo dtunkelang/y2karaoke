@@ -17,7 +17,7 @@ from .title_resolver import resolve_artist_title_from_youtube
 from .downloader import YouTubeDownloader, extract_video_id
 from .separator import AudioSeparator
 from .audio_effects import AudioProcessor
-from .audio_utils import trim_audio_if_needed, apply_audio_effects
+from .audio_utils import trim_audio_if_needed, apply_audio_effects, separate_vocals
 
 logger = get_logger(__name__)
 
@@ -88,7 +88,13 @@ class KaraokeGenerator:
         )
 
         # Step 4: Separate vocals
-        separation_result = self._separate_vocals(effective_audio_path, video_id, force_reprocess)
+        separation_result = separate_vocals(
+            effective_audio_path,
+            video_id,
+            self.separator,
+            self.cache_manager,
+            force=force_reprocess
+        )
 
         # Step 5: Determine final artist/title for lyrics
         if original_prompt and not lyrics_title and not lyrics_artist:
@@ -215,25 +221,6 @@ class KaraokeGenerator:
                 return {"video_path": str(video_files[0])}
         cache_dir = self.cache_manager.get_video_cache_dir(video_id)
         return self.downloader.download_video(url, cache_dir)
-
-    def _separate_vocals(self, audio_path: str, video_id: str, force: bool) -> Dict[str, str]:
-        logger.info("🎵 Separating vocals...")
-        audio_filename = Path(audio_path).name.lower()
-        if any(marker in audio_filename for marker in ["vocals", "instrumental", "drums", "bass", "other"]):
-            cache_dir = self.cache_manager.get_video_cache_dir(video_id)
-            vocals_files = list(Path(cache_dir).glob("*[Vv]ocals*.wav"))
-            instrumental_files = list(Path(cache_dir).glob("*instrumental*.wav"))
-            if vocals_files and instrumental_files:
-                return {"vocals_path": str(vocals_files[0]), "instrumental_path": str(instrumental_files[0])}
-            raise RuntimeError(f"Found separated file but missing vocals/instrumental: {audio_path}")
-        if not force:
-            vocals_files = self.cache_manager.find_files(video_id, "*vocals*.wav")
-            instrumental_files = self.cache_manager.find_files(video_id, "*instrumental*.wav")
-            if vocals_files and instrumental_files:
-                logger.info("📁 Using cached separation")
-                return {"vocals_path": str(vocals_files[0]), "instrumental_path": str(instrumental_files[0])}
-        cache_dir = self.cache_manager.get_video_cache_dir(video_id)
-        return self.separator.separate_vocals(audio_path, str(cache_dir))
 
     def _get_lyrics(self, title: str, artist: str, vocals_path: str, video_id: str, force: bool, lyrics_offset: Optional[float] = None) -> Dict[str, Any]:
         logger.info("📝 Fetching lyrics...")
