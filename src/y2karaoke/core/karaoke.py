@@ -40,7 +40,7 @@ class KaraokeGenerator:
         self.audio_processor = AudioProcessor()
         self._temp_files = []
         self._original_prompt: Optional[str] = None
-    
+
     # ------------------------
     # Main generate method
     # ------------------------
@@ -60,7 +60,7 @@ class KaraokeGenerator:
         video_settings: Optional[Dict[str, Any]] = None,
         original_prompt: Optional[str] = None,
     ) -> Dict[str, Any]:
-        """Generate karaoke video from YouTube URL."""
+
         self._original_prompt = original_prompt
         total_start = time()
 
@@ -80,11 +80,11 @@ class KaraokeGenerator:
 
         # Step 3: Trim audio if needed
         effective_audio_path = trim_audio_if_needed(
-            audio_result["audio_path"], 
-            audio_start, 
-            video_id, 
-            self.cache_manager,  # pass the cache manager
-            force=force_reprocess
+            audio_result["audio_path"],
+            audio_start,
+            video_id,
+            self.cache_manager,
+            force=force_reprocess,
         )
 
         # Step 4: Separate vocals
@@ -93,7 +93,7 @@ class KaraokeGenerator:
             video_id,
             self.separator,
             self.cache_manager,
-            force=force_reprocess
+            force=force_reprocess,
         )
 
         # Step 5: Determine final artist/title for lyrics
@@ -107,19 +107,17 @@ class KaraokeGenerator:
             else:
                 youtube_title = original_prompt
 
-            # Get YouTube uploader/channel as artist hint
             youtube_artist_hint = self.downloader.get_video_uploader(url)
 
-            # Use the robust candidate resolver with hint
             final_artist, final_title = resolve_artist_title_from_youtube(
                 youtube_title,
                 youtube_artist=youtube_artist_hint,
-                fallback_artist=audio_result['artist'],
-                fallback_title=audio_result['title']
+                fallback_artist=audio_result["artist"],
+                fallback_title=audio_result["title"],
             )
         else:
-            final_artist = lyrics_artist if lyrics_artist else audio_result['artist']
-            final_title = lyrics_title if lyrics_title else audio_result['title']
+            final_artist = lyrics_artist if lyrics_artist else audio_result["artist"]
+            final_title = lyrics_title if lyrics_title else audio_result["title"]
 
         # Step 6: Fetch lyrics
         lyrics_result = self._get_lyrics(
@@ -130,16 +128,16 @@ class KaraokeGenerator:
             force_reprocess,
             lyrics_offset=lyrics_offset,
         )
-                
+
         # Step 7: Apply audio effects
         processed_instrumental = apply_audio_effects(
             effective_audio_path,
             key_shift,
             tempo_multiplier,
             video_id,
-            self.cache_manager,   # pass the cache manager
-            self.audio_processor, # pass the audio processor
-            force=force_reprocess
+            self.cache_manager,
+            self.audio_processor,
+            force=force_reprocess,
         )
 
         # Step 8: Scale lyrics timing
@@ -200,7 +198,8 @@ class KaraokeGenerator:
         if metadata and not force:
             audio_files = self.cache_manager.find_files(video_id, "*.wav")
             original_audio = [
-                f for f in audio_files
+                f
+                for f in audio_files
                 if not any(stem in f.name for stem in ["_Vocals", "_Bass", "_Drums", "_Other", "_instrumental"])
             ]
             if original_audio:
@@ -225,7 +224,9 @@ class KaraokeGenerator:
     def _get_lyrics(self, title: str, artist: str, vocals_path: str, video_id: str, force: bool, lyrics_offset: Optional[float] = None) -> Dict[str, Any]:
         logger.info("📝 Fetching lyrics...")
         from ..core.lyrics import get_lyrics_simple
-        lines, metadata = get_lyrics_simple(title=title, artist=artist, vocals_path=vocals_path, lyrics_offset=lyrics_offset, romanize=True)
+        lines, metadata = get_lyrics_simple(
+            title=title, artist=artist, vocals_path=vocals_path, lyrics_offset=lyrics_offset, romanize=True
+        )
         return {"lines": lines, "metadata": metadata}
 
     def _scale_lyrics_timing(self, lines, tempo_multiplier: float):
@@ -235,7 +236,15 @@ class KaraokeGenerator:
         from ..core.lyrics import Line, Word
         scaled_lines = []
         for line in lines:
-            scaled_words = [Word(text=w.text, start_time=w.start_time / tempo_multiplier, end_time=w.end_time / tempo_multiplier, singer=w.singer) for w in line.words]
+            scaled_words = [
+                Word(
+                    text=w.text,
+                    start_time=w.start_time / tempo_multiplier,
+                    end_time=w.end_time / tempo_multiplier,
+                    singer=w.singer,
+                )
+                for w in line.words
+            ]
             scaled_lines.append(Line(words=scaled_words, singer=line.singer))
         return scaled_lines
 
