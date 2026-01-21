@@ -97,9 +97,13 @@ class KaraokeGenerator:
             else:
                 youtube_title = original_prompt
 
-            # Use the new robust candidate resolver
+            # Get YouTube uploader/channel as artist hint
+            youtube_artist_hint = self.downloader.get_video_uploader(url)
+
+            # Use the robust candidate resolver with hint
             final_artist, final_title = resolve_artist_title_from_youtube(
                 youtube_title,
+                youtube_artist=youtube_artist_hint,
                 fallback_artist=audio_result['artist'],
                 fallback_title=audio_result['title']
             )
