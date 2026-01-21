@@ -51,9 +51,9 @@ KEY_SHIFT_RANGE = (-12, 12)
 TEMPO_RANGE = (0.1, 3.0)
 
 # Video timing
-SPLASH_DURATION = 3.0
-INSTRUMENTAL_BREAK_THRESHOLD = 5.0
-LYRICS_LEAD_TIME = 2.0
+SPLASH_DURATION = 4.0
+INSTRUMENTAL_BREAK_THRESHOLD = 8.0  # Show instrumental break screen for gaps >= 8 seconds
+LYRICS_LEAD_TIME = 1.0
 
 # Line splitting
 MAX_LINE_WIDTH_RATIO = 0.75  # 75% of screen width
@@ -79,24 +79,8 @@ def get_cache_dir() -> Path:
         return Path(cache_dir)
     return DEFAULT_CACHE_DIR
 
-def parse_resolution(resolution: str) -> Tuple[int, int]:
-    """Parse resolution string to width, height tuple."""
-    if resolution in RESOLUTION_PRESETS:
-        return RESOLUTION_PRESETS[resolution]
-    
-    try:
-        width, height = resolution.split('x')
-        return int(width), int(height)
-    except ValueError:
-        raise ConfigError(f"Invalid resolution format: {resolution}")
-
 # Validate config on import
 validate_config()
-
-# Timing settings
-INSTRUMENTAL_BREAK_THRESHOLD = 8.0  # Show instrumental break screen for gaps >= 8 seconds
-LYRICS_LEAD_TIME = 1.0
-SPLASH_DURATION = 4.0
 
 # Background processing
 DARKEN_FACTOR = 0.4

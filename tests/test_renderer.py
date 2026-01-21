@@ -5,15 +5,13 @@ import numpy as np
 from dataclasses import dataclass
 from unittest.mock import patch, MagicMock
 
-from y2karaoke.core.renderer import (
-    VideoRenderer,
-    render_frame,
+from y2karaoke.core.backgrounds_static import (
     create_gradient_background,
-    draw_progress_bar,
     draw_splash_screen,
     draw_logo_screen,
-    get_singer_colors,
 )
+from y2karaoke.core.frame_renderer import render_frame, get_singer_colors
+from y2karaoke.core.progress import draw_progress_bar
 from y2karaoke.config import VIDEO_WIDTH, VIDEO_HEIGHT, Colors
 
 
@@ -199,16 +197,3 @@ class TestDrawLogoScreen:
         # Should not raise
 
 
-class TestVideoRenderer:
-    """Tests for the VideoRenderer class."""
-
-    def test_init_creates_font(self):
-        """VideoRenderer should initialize with a font."""
-        renderer = VideoRenderer()
-        assert renderer.font is not None
-
-    def test_init_sets_dimensions(self):
-        """VideoRenderer should initialize with video dimensions."""
-        renderer = VideoRenderer()
-        assert renderer.width == VIDEO_WIDTH
-        assert renderer.height == VIDEO_HEIGHT
