@@ -16,6 +16,8 @@ from ..exceptions import Y2KaraokeError
 from ..utils.cache import CacheManager
 from ..utils.logging import get_logger
 from ..utils.validation import sanitize_filename
+from ..core.title_resolver import resolve_artist_title_from_youtube
+
 
 logger = get_logger(__name__)
 
@@ -38,163 +40,6 @@ class KaraokeGenerator:
         self.audio_processor = AudioProcessor()
         self._temp_files = []
         self._original_prompt: Optional[str] = None
-
-    # ------------------------
-    # Helpers
-    # ------------------------
-    @staticmethod
-    def _normalize_for_matching(s: str) -> str:
-        s = s.casefold()
-        s = "".join(c for c in s if c.isalnum() or c.isspace())
-        tokens = [t for t in s.split() if t not in STOP_WORDS]
-        return " ".join(tokens).strip()
-
-    # ------------------------
-    # MusicBrainz candidate fetching
-    # ------------------------
-    def _guess_artist_title_musicbrainz_candidates(
-        self, prompt: str, fallback_artist: str = "", fallback_title: str = ""
-    ) -> list[dict]:
-        """
-        Query MusicBrainz and return a list of candidate (artist, title) pairs with scores.
-        """
-        from musicbrainzngs import search_recordings
-
-        logger.info(f"Querying MusicBrainz for prompt: '{prompt}'")
-        candidates = []
-
-        try:
-            results = search_recordings(recording=prompt, limit=15).get("recording-list", [])
-        except Exception as e:
-            logger.warning(f"MusicBrainz search failed: {e}")
-            results = []
-
-        prompt_words = set(self._normalize_for_matching(prompt).split())
-
-        for r in results:
-            artist_list = r.get("artist-credit", [])
-            title = r.get("title", "")
-            if not title or not artist_list:
-                continue
-            artist = " & ".join([a["artist"]["name"] for a in artist_list])
-            candidate_words = set(self._normalize_for_matching(f"{artist} {title}").split())
-            extra_words = candidate_words - prompt_words
-            score = len(candidate_words & prompt_words) - 0.5 * len(extra_words)
-            candidates.append({
-                "artist": artist,
-                "title": title,
-                "score": score,
-                "extra_words": extra_words
-            })
-            logger.info(f"Candidate: artist='{artist}', title='{title}', score={score:.3f}, extra_words={extra_words}")
-
-        # Always include fallback
-        if fallback_artist or fallback_title:
-            candidates.append({
-                "artist": fallback_artist,
-                "title": fallback_title,
-                "score": 0.0,
-                "extra_words": set()
-            })
-
-        return candidates
-
-    # ------------------------
-    # Resolve artist/title from YouTube title
-    # ------------------------
-    def _resolve_artist_title_from_youtube(
-        self, youtube_title: str, fallback_artist: str = "", fallback_title: str = ""
-    ) -> tuple[str, str]:
-        """
-        Robustly pick artist/title from a YouTube title using MusicBrainz candidates.
-        Strips decorative parentheticals (e.g., '(Live)', '(Anthology)') for canonical Genius matching.
-        """
-        DECORATOR_KEYWORDS = [
-            "cover", "live", "acoustic", "remastered", "version", "anthology", "from", "by", "vs", "feat", "featuring"
-        ]
-
-        def strip_decorative_parentheses(title: str) -> str:
-            def is_decorative(text: str) -> bool:
-                text_lower = text.lower()
-                return any(keyword in text_lower for keyword in DECORATOR_KEYWORDS)
-            return re.sub(
-                r'\(([^)]*)\)',
-                lambda m: '' if is_decorative(m.group(1)) else m.group(0),
-                title
-            ).strip()
-
-        # ------------------------
-        # Clean YouTube title
-        # ------------------------
-        cleaned = youtube_title
-        cleaned = re.sub(r'[\(\[\{].*?[\)\]\}]', '', cleaned)
-        for s in ["Official Music Video", "Official Audio", "Lyric Video", "HD", "4K"]:
-            cleaned = cleaned.replace(s, '')
-        parts = cleaned.split(' - ')
-        if len(parts) > 2 and parts[0].strip().lower() == parts[1].strip().lower():
-            cleaned = " - ".join([parts[0].strip()] + parts[2:])
-        cleaned = cleaned.strip()
-        logger.info(f"Cleaned YouTube title: '{cleaned}'")
-
-        # Also prepare stripped version for matching
-        cleaned_yt_title = strip_decorative_parentheses(cleaned)
-
-        # ------------------------
-        # Fetch candidates
-        # ------------------------
-        candidates = self._guess_artist_title_musicbrainz_candidates(
-            cleaned, fallback_artist=fallback_artist, fallback_title=fallback_title
-        )
-        if not candidates:
-            logger.info("No MusicBrainz candidates found; using fallback")
-            return fallback_artist or "Unknown", fallback_title or "Unknown"
-
-        yt_norm = re.sub(r'[^a-z0-9]+', ' ', cleaned_yt_title.lower()).strip()
-        yt_words = set(yt_norm.split())
-
-        best_score = -999
-        best_candidate = (fallback_artist, fallback_title)
-
-        for c in candidates:
-            # Strip decorative parentheticals from candidate title
-            candidate_title = strip_decorative_parentheses(c["title"])
-
-            artist_norm = re.sub(r'[^a-z0-9]+', ' ', c["artist"].lower()).strip()
-            title_norm = re.sub(r'[^a-z0-9]+', ' ', candidate_title.lower()).strip()
-            combined_norm = f"{artist_norm} {title_norm}"
-            combined_words = set(combined_norm.split())
-
-            # Base similarity
-            score = SequenceMatcher(None, yt_norm, combined_norm).ratio()
-
-            # Penalize extra words
-            extra_words = combined_words - yt_words
-            score -= 0.05 * len(extra_words)
-
-            # Heavily penalize candidate artist words not in YouTube title (cover artists)
-            artist_words = set(artist_norm.split())
-            missing_artist_words = artist_words - yt_words
-            score -= 0.2 * len(missing_artist_words)
-
-            # Bonus if artist appears early
-            artist_pos = yt_norm.find(artist_norm)
-            if artist_pos >= 0:
-                score += max(0, 0.1 - artist_pos / 1000)
-
-            # Slight boost for shorter titles
-            score += 0.001 / max(len(title_norm.split()), 1)
-
-            logger.info(
-                f"Candidate: artist='{c['artist']}', title='{candidate_title}', score={score:.3f}, "
-                f"extra_words={extra_words}, missing_artist_words={missing_artist_words}, artist_pos={artist_pos}"
-            )
-
-            if score > best_score:
-                best_score = score
-                best_candidate = (c["artist"], candidate_title)
-
-        logger.info(f"Selected candidate: '{best_candidate[0]}' - '{best_candidate[1]}' (score={best_score:.3f})")
-        return best_candidate
     
     # ------------------------
     # Main generate method
@@ -253,7 +98,7 @@ class KaraokeGenerator:
                 youtube_title = original_prompt
 
             # Use the new robust candidate resolver
-            final_artist, final_title = self._resolve_artist_title_from_youtube(
+            final_artist, final_title = resolve_artist_title_from_youtube(
                 youtube_title,
                 fallback_artist=audio_result['artist'],
                 fallback_title=audio_result['title']

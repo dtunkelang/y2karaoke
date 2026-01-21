@@ -14,7 +14,6 @@ from ..utils.validation import sanitize_filename, validate_youtube_url
 
 logger = get_logger(__name__)
 
-
 def extract_metadata_from_youtube(url: str) -> Dict[str, str]:
     """
     Extract song metadata (artist, title) from a YouTube URL.
@@ -311,14 +310,12 @@ def clean_title(title: str, artist: str = "") -> str:
 
 class YouTubeDownloader:
     """YouTube downloader with caching and error handling."""
-    
+
     def __init__(self, cache_dir: Optional[Path] = None):
         self.cache_dir = cache_dir or get_cache_dir()
-    
+
     def get_video_title(self, url: str) -> str:
-        """
-        Return the title of a YouTube video without downloading the full video.
-        """
+        """Return the title of a YouTube video without downloading the full video."""
         import yt_dlp
 
         ydl_opts = {
@@ -331,7 +328,21 @@ class YouTubeDownloader:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=False)
             return info.get('title', url)  # fallback to URL if title not found
-    
+
+    def get_video_uploader(self, url: str) -> str:
+        """Return the uploader/channel name for a YouTube video using yt-dlp."""
+        import yt_dlp
+
+        ydl_opts = {'quiet': True, 'skip_download': True, 'extract_flat': True}
+
+        try:
+            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                info = ydl.extract_info(url, download=False)
+                return info.get('uploader', '')  # uploader name
+        except Exception as e:
+            logger.warning(f"Failed to get uploader for {url}: {e}")
+            return ""
+           
     def download_audio(self, url: str, output_dir: Optional[Path] = None) -> Dict[str, str]:
         """Download audio from YouTube URL."""
         url = validate_youtube_url(url)
