@@ -23,6 +23,7 @@ from .backgrounds_static import (
     draw_logo_screen,
     draw_splash_screen
 )
+from .progress import draw_progress_bar, RenderProgressBar, ProgressLogger
 
 logger = get_logger(__name__)
 
@@ -131,22 +132,6 @@ class VideoRenderer:
         # Convert to numpy array
         return np.array(img)
     
-    def _create_gradient_background(self) -> Image.Image:
-        """Create gradient background."""
-        img = Image.new('RGB', (self.width, self.height))
-        
-        for y in range(self.height):
-            # Linear interpolation between top and bottom colors
-            ratio = y / self.height
-            r = int(Colors.BG_TOP[0] * (1 - ratio) + Colors.BG_BOTTOM[0] * ratio)
-            g = int(Colors.BG_TOP[1] * (1 - ratio) + Colors.BG_BOTTOM[1] * ratio)
-            b = int(Colors.BG_TOP[2] * (1 - ratio) + Colors.BG_BOTTOM[2] * ratio)
-            
-            for x in range(self.width):
-                img.putpixel((x, y), (r, g, b))
-        
-        return img
-    
     def _get_background_frame(self, t: float, background_segments) -> Image.Image:
         """Get background frame for time t."""
         
@@ -158,27 +143,7 @@ class VideoRenderer:
         
         # Fallback to gradient
         return self._create_gradient_background()
-    
-    def _draw_splash_screen(self, draw: ImageDraw.Draw, title: str, artist: str):
-        """Draw splash screen with title and artist."""
         
-        # Draw title
-        title_bbox = draw.textbbox((0, 0), title, font=self.font)
-        title_width = title_bbox[2] - title_bbox[0]
-        title_x = (self.width - title_width) // 2
-        title_y = self.height // 2 - 50
-        
-        draw.text((title_x, title_y), title, font=self.font, fill=Colors.HIGHLIGHT)
-        
-        # Draw artist
-        artist_text = f"by {artist}"
-        artist_bbox = draw.textbbox((0, 0), artist_text, font=self.font)
-        artist_width = artist_bbox[2] - artist_bbox[0]
-        artist_x = (self.width - artist_width) // 2
-        artist_y = title_y + 80
-        
-        draw.text((artist_x, artist_y), artist_text, font=self.font, fill=Colors.TEXT)
-    
     def _draw_lyrics(
         self, 
         draw: ImageDraw.Draw, 
@@ -282,49 +247,6 @@ def get_singer_colors(singer: str, is_highlighted: bool) -> tuple[tuple[int, int
     else:
         # Default colors (gold highlight, white text)
         return (Colors.TEXT, Colors.HIGHLIGHT)
-
-def draw_progress_bar(
-    draw: ImageDraw.Draw,
-    progress: float,
-    width: Optional[int] = None,
-    height: Optional[int] = None,
-) -> None:
-    """
-    Draw a horizontal progress bar at the center of the screen.
-
-    Args:
-        draw: PIL ImageDraw object
-        progress: Progress value from 0.0 to 1.0
-        width: Video width (default: from config)
-        height: Video height (default: from config)
-    """
-    video_width = width or VIDEO_WIDTH
-    video_height = height or VIDEO_HEIGHT
-
-    bar_width = 600
-    bar_height = 12
-    border_radius = 6
-    y_center = video_height // 2
-
-    x_start = (video_width - bar_width) // 2
-    x_end = x_start + bar_width
-    y_start = y_center - bar_height // 2
-    y_end = y_center + bar_height // 2
-
-    draw.rounded_rectangle(
-        [(x_start, y_start), (x_end, y_end)],
-        radius=border_radius,
-        fill=Colors.PROGRESS_BG,
-    )
-
-    if progress > 0:
-        fill_width = int(bar_width * min(progress, 1.0))
-        if fill_width > 0:
-            draw.rounded_rectangle(
-                [(x_start, y_start), (x_start + fill_width, y_end)],
-                radius=border_radius,
-                fill=Colors.PROGRESS_FG,
-            )
 
 def render_frame(
     lines: list[Line],
@@ -483,51 +405,6 @@ def render_frame(
             x += word_widths[i]
 
     return np.array(img)
-
-
-class RenderProgressBar:
-    """Custom progress bar for video rendering."""
-
-    def __init__(self, total_frames: int):
-        self.total_frames = total_frames
-        self.current_frame = 0
-        self.last_percent = -1
-
-    def __call__(self, gf, t):
-        """Called by MoviePy for each frame."""
-        self.current_frame += 1
-        percent = int(100 * self.current_frame / self.total_frames)
-        if percent != self.last_percent and percent % 5 == 0:
-            bar_len = 30
-            filled = int(bar_len * percent / 100)
-            bar = "█" * filled + "░" * (bar_len - filled)
-            print(f"\r  Rendering: [{bar}] {percent}%", end="", flush=True)
-            self.last_percent = percent
-        return gf(t)
-
-
-class ProgressLogger:
-    """Custom logger for MoviePy that shows a progress bar."""
-
-    def __init__(self, total_duration: float, fps: int):
-        self.total_frames = int(total_duration * fps)
-        self.last_percent = -1
-
-    def bars_callback(self, bar, attr, value, old_value=None):
-        """Callback for progress bars."""
-        if attr == "index":
-            percent = int(100 * value / self.total_frames) if self.total_frames > 0 else 0
-            if percent != self.last_percent:
-                bar_len = 30
-                filled = int(bar_len * percent / 100)
-                bar_str = "█" * filled + "░" * (bar_len - filled)
-                print(f"\r  Rendering: [{bar_str}] {percent}%", end="", flush=True)
-                self.last_percent = percent
-
-    def callback(self, **kw):
-        """General callback."""
-        pass
-
 
 def render_karaoke_video(
     lines: list[Line],
