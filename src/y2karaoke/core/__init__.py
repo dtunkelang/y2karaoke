@@ -5,7 +5,8 @@ from .separator import AudioSeparator, separate_vocals
 from .audio_effects import AudioProcessor, process_audio
 from .models import SingerID, Word, Line, SongMetadata
 from .lyrics import LyricsProcessor, get_lyrics
-from .renderer import VideoRenderer, render_karaoke_video
+from .renderer import VideoRenderer
+from .video_writer import render_karaoke_video
 from .backgrounds import BackgroundProcessor, BackgroundSegment, create_background_segments
 from .uploader import YouTubeUploader, upload_video
 from .karaoke import KaraokeGenerator

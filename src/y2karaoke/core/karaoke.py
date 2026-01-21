@@ -283,7 +283,7 @@ class KaraokeGenerator:
 
     def _render_video(self, video_settings: Optional[Dict[str, Any]] = None, **kwargs):
         logger.info("🎬 Rendering karaoke video...")
-        from ..core.renderer import render_karaoke_video
+        from .video_writer import render_karaoke_video
         if video_settings:
             kwargs.update(video_settings)
         render_karaoke_video(**kwargs)
