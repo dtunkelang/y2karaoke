@@ -10,6 +10,7 @@ import numpy as np
 
 from ..utils.logging import get_logger
 from .models import Word, Line
+from .refine import refine_word_timing
 
 logger = get_logger(__name__)
 
@@ -158,62 +159,6 @@ def fix_timing_issues(
         fixed_lines.append(Line(words=fixed_words, singer=line.singer))
 
     return fixed_lines
-
-
-def refine_word_timing(
-    lines: List[Line],
-    vocals_path: str,
-    respect_line_boundaries: bool = True,
-) -> List[Line]:
-    """
-    Refine word timing using audio onset detection.
-
-    Takes lines with evenly-distributed word timing and refines them
-    based on detected onsets in the vocals audio.
-
-    Args:
-        lines: List of Line objects with initial word timing
-        vocals_path: Path to vocals audio file
-        respect_line_boundaries: If True, words stay within their line's time window
-
-    Returns:
-        List of Line objects with refined word timing
-    """
-    try:
-        import librosa
-
-        # Load audio
-        y, sr = librosa.load(vocals_path, sr=22050)
-
-        # Detect onsets globally
-        onset_frames = librosa.onset.onset_detect(
-            y=y, sr=sr,
-            hop_length=512,
-            backtrack=True,
-            units='frames'
-        )
-        onset_times = librosa.frames_to_time(onset_frames, sr=sr, hop_length=512)
-
-        logger.info(f"Detected {len(onset_times)} onsets in vocals")
-
-        # Compute energy envelope for duration estimation
-        rms = librosa.feature.rms(y=y, frame_length=2048, hop_length=512)[0]
-        rms_times = librosa.frames_to_time(np.arange(len(rms)), sr=sr, hop_length=512)
-
-        # Refine each line
-        refined_lines = []
-        for line in lines:
-            refined_line = _refine_line_timing(
-                line, onset_times, rms, rms_times, respect_line_boundaries
-            )
-            refined_lines.append(refined_line)
-
-        return refined_lines
-
-    except Exception as e:
-        logger.warning(f"Word timing refinement failed: {e}, using original timing")
-        return lines
-
 
 def _refine_line_timing(
     line: Line,

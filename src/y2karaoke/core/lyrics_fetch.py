@@ -43,7 +43,7 @@ def get_lyrics_simple(
     import logging
     logger = logging.getLogger(__name__)
     from .genius import fetch_genius_lyrics_with_singers
-    from .word_timing import refine_word_timing
+    from .refine import refine_word_timing
 
     logger.info("Fetching lyrics from Genius...")
     genius_lines, metadata = fetch_genius_lyrics_with_singers(title, artist)
