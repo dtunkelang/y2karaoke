@@ -7,7 +7,6 @@ from ..utils.logging import get_logger
 from .models import SingerID, Word, Line, SongMetadata
 from .romanization import romanize_line
 from .fetch import fetch_html, fetch_json
-from .genius_utils import resolve_genius_url, TITLE_CLEANUP_PATTERNS, YOUTUBE_SUFFIXES
 from .text_utils import (
     make_slug,
     clean_title_for_search,
@@ -18,6 +17,23 @@ from .text_utils import (
 from .lyrics_merge import merge_lyrics_with_singer_info
 
 logger = get_logger(__name__)
+
+# ----------------------
+# Constants for title cleaning
+# ----------------------
+TITLE_CLEANUP_PATTERNS = [
+    r"\(feat\..*?\)",
+    r"\(ft\..*?\)",
+    r"\(with .*?\)",
+    r"\[.*?\]",
+    r"\|.*",
+]
+
+YOUTUBE_SUFFIXES = [
+    "official video",
+    "official music video",
+    "lyrics",
+]
 
 # ----------------------
 # HTML parsing / singer extraction
