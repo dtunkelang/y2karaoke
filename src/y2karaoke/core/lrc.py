@@ -35,19 +35,51 @@ _LRC_TS_RE = re.compile(
 def _is_metadata_line(text: str, title: str = "", artist: str = "") -> bool:
     """
     Determine if a line is metadata rather than actual lyrics.
-    Skips obvious labels and title/artist lines.
+    Skips obvious labels, credits, and title/artist lines.
     """
+    import re
+
     if not text:
         return True
 
     text_lower = text.lower().strip()
 
+    # Skip empty or whitespace-only
+    if not text_lower:
+        return True
+
+    # Skip lines that are just symbols
+    if all(c in "♪🎵🎶♫♬-–—=_.·•" or c.isspace() for c in text):
+        return True
+
     metadata_prefixes = [
         "artist:", "song:", "title:", "album:", "writer:", "composer:",
         "lyricist:", "lyrics by", "written by", "produced by", "music by",
+        "source:", "contributor:", "編曲:", "作詞:", "作曲:", "歌手:",
+        "arranged by", "performed by", "vocals by", "music and lyrics",
     ]
     for prefix in metadata_prefixes:
         if text_lower.startswith(prefix):
+            return True
+
+    # Skip common metadata patterns
+    metadata_patterns = [
+        "all rights reserved", "copyright", "℗", "©",
+        "(instrumental)", "[instrumental]", "(intro)", "[intro]",
+        "(outro)", "[outro]", "(verse)", "[verse]", "(chorus)", "[chorus]",
+        "(bridge)", "[bridge]", "(hook)", "[hook]",
+    ]
+    for pattern in metadata_patterns:
+        if pattern in text_lower:
+            return True
+
+    # Skip contributor credit patterns like "username : Name" or "word: Name"
+    # These are common in community-sourced LRC files
+    credit_pattern = re.match(r'^(\w+)\s*:\s*([A-Z][a-z]+(\s+[A-Z][a-z]+)*)\s*$', text.strip())
+    if credit_pattern:
+        # Short first word (likely username) followed by proper name
+        first_word = credit_pattern.group(1)
+        if len(first_word) <= 15:  # Usernames are typically short
             return True
 
     if title:
@@ -55,6 +87,12 @@ def _is_metadata_line(text: str, title: str = "", artist: str = "") -> bool:
         line_normalized = text_lower.replace(" ", "")
         if line_normalized == title_lower:
             return True
+        # Also check if line is just "title - artist" or "artist - title"
+        if artist:
+            combined1 = f"{title.lower()}-{artist.lower()}".replace(" ", "")
+            combined2 = f"{artist.lower()}-{title.lower()}".replace(" ", "")
+            if line_normalized == combined1 or line_normalized == combined2:
+                return True
 
     if artist:
         artist_lower = artist.lower().replace(" ", "")

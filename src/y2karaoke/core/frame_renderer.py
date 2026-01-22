@@ -125,26 +125,110 @@ def render_frame(
         word_widths = []
         for text in words_with_spaces:
             bbox = font.getbbox(text)
-            width = bbox[2] - bbox[0]
-            word_widths.append(width)
-            total_width += width
+            w = bbox[2] - bbox[0]
+            word_widths.append(w)
+            total_width += w
 
-        x = (video_width - total_width) // 2
+        line_x = (video_width - total_width) // 2
+
+        # Determine default colors (used for highlight and non-duet)
+        if is_duet and line.words and line.words[0].singer:
+            _, highlight_color = get_singer_colors(line.words[0].singer, False)
+        else:
+            highlight_color = Colors.HIGHLIGHT
+
+        # Draw unhighlighted text first (with per-word duet colors if applicable)
+        x = line_x
         word_idx = 0
         for i, text in enumerate(words_with_spaces):
             if text == " ":
                 x += word_widths[i]
                 continue
             word = line.words[word_idx]
+            if is_duet and word.singer:
+                text_color, _ = get_singer_colors(word.singer, False)
+            else:
+                text_color = Colors.TEXT
+            draw.text((x, y), text, font=font, fill=text_color)
+            x += word_widths[i]
             word_idx += 1
 
-            if is_duet and word.singer:
-                text_color, highlight_color = get_singer_colors(word.singer, False)
-                color = highlight_color if is_current and current_time >= word.start_time else text_color
-            else:
-                color = Colors.HIGHLIGHT if is_current and current_time >= word.start_time else Colors.TEXT
+        # For current line, draw highlighted portion with gradual sweep
+        if is_current:
+            # Calculate highlight width based on current time
+            highlight_width = 0
+            x = line_x
+            word_idx = 0
+            for i, text in enumerate(words_with_spaces):
+                if text == " ":
+                    word = line.words[word_idx - 1] if word_idx > 0 else line.words[0]
+                    # Include space if previous word is done
+                    if current_time >= word.end_time:
+                        highlight_width += word_widths[i]
+                    elif current_time >= word.start_time:
+                        # Partial space based on word progress
+                        word_duration = word.end_time - word.start_time
+                        if word_duration > 0:
+                            progress = (current_time - word.start_time) / word_duration
+                            if progress >= 0.9:  # Include space near end of word
+                                highlight_width += word_widths[i]
+                    continue
 
-            draw.text((x, y), text, font=font, fill=color)
-            x += word_widths[i]
+                word = line.words[word_idx]
+                word_idx += 1
+
+                if current_time >= word.end_time:
+                    # Word fully highlighted
+                    highlight_width += word_widths[i]
+                elif current_time >= word.start_time:
+                    # Partial highlight within word
+                    word_duration = word.end_time - word.start_time
+                    if word_duration > 0:
+                        progress = (current_time - word.start_time) / word_duration
+                        highlight_width += int(word_widths[i] * progress)
+                    break
+                else:
+                    break
+
+            # Draw highlighted text directly on top, clipped to highlight_width
+            if highlight_width > 0:
+                highlight_boundary = line_x + highlight_width
+                x = line_x
+                word_idx = 0
+                for i, text in enumerate(words_with_spaces):
+                    if text == " ":
+                        x += word_widths[i]
+                        continue
+
+                    word_end_x = x + word_widths[i]
+
+                    # Skip if entirely past highlight boundary
+                    if x >= highlight_boundary:
+                        break
+
+                    word = line.words[word_idx]
+                    if is_duet and word.singer:
+                        _, word_highlight_color = get_singer_colors(word.singer, False)
+                    else:
+                        word_highlight_color = Colors.HIGHLIGHT
+
+                    if word_end_x <= highlight_boundary:
+                        # Entire word is highlighted - draw directly
+                        draw.text((x, y), text, font=font, fill=word_highlight_color)
+                    else:
+                        # Partial word - draw character by character
+                        char_x = x
+                        for char in text:
+                            char_bbox = font.getbbox(char)
+                            char_width = char_bbox[2] - char_bbox[0]
+                            if char_x + char_width <= highlight_boundary:
+                                draw.text((char_x, y), char, font=font, fill=word_highlight_color)
+                            elif char_x < highlight_boundary:
+                                # Partial character - still draw it highlighted
+                                draw.text((char_x, y), char, font=font, fill=word_highlight_color)
+                            char_x += char_width
+
+                    x += word_widths[i]
+                    word_idx += 1
 
     return np.array(img)
