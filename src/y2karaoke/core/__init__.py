@@ -7,7 +7,6 @@ from .models import SingerID, Word, Line, SongMetadata
 from .lyrics import LyricsProcessor, get_lyrics
 from .video_writer import render_karaoke_video
 from .backgrounds import BackgroundProcessor, BackgroundSegment, create_background_segments
-from .uploader import YouTubeUploader, upload_video
 from .karaoke import KaraokeGenerator
 
 __all__ = [
@@ -18,6 +17,5 @@ __all__ = [
     'LyricsProcessor', 'get_lyrics',
     'render_karaoke_video',
     'BackgroundProcessor', 'BackgroundSegment', 'create_background_segments',
-    'YouTubeUploader', 'upload_video',
     'KaraokeGenerator',
 ]

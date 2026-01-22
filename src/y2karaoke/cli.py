@@ -81,10 +81,6 @@ def cli(ctx, verbose, log_file):
               help='Manual lyrics timing offset in seconds')
 @click.option('--backgrounds', is_flag=True,
               help='Use video backgrounds from original YouTube video')
-@click.option('--upload', is_flag=True,
-              help='Upload to YouTube as unlisted video')
-@click.option('--no-upload', is_flag=True,
-              help='Skip upload prompt (for batch mode)')
 @click.option('--force', is_flag=True,
               help='Force re-download and re-process cached files')
 @click.option('--keep-files', is_flag=True,
@@ -101,7 +97,7 @@ def cli(ctx, verbose, log_file):
               help='Disable progress bar during rendering')
 @click.pass_context
 def generate(ctx, url_or_query, output, offset, key, tempo, audio_start,
-             lyrics_title, lyrics_artist, lyrics_offset, backgrounds, upload, no_upload,
+             lyrics_title, lyrics_artist, lyrics_offset, backgrounds,
              force, keep_files, work_dir, resolution, fps, font_size, no_progress):
     """Generate karaoke video from YouTube URL or search query."""
     logger = ctx.obj['logger']
@@ -166,18 +162,6 @@ def generate(ctx, url_or_query, output, offset, key, tempo, audio_start,
         )
 
         logger.info(f"✅ Karaoke video generated: {result['output_path']}")
-
-        # Handle upload
-        should_upload = upload
-        if not should_upload and not no_upload:
-            should_upload = False
-        if should_upload:
-            upload_result = generator.upload_video(
-                result['output_path'],
-                result['title'],
-                result['artist']
-            )
-            logger.info(f"🎥 Uploaded to YouTube: {upload_result['url']}")
 
         # Cleanup
         if not keep_files:

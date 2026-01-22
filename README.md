@@ -15,7 +15,6 @@ Generate karaoke videos from YouTube URLs or song titles with word-by-word highl
 - Duet-friendly visuals with singer-specific coloring and instrumental-break progress bar
 - **Key shifting** (-12 to +12 semitones) to match your vocal range
 - **Tempo control** (speed up or slow down) with synchronized lyrics
-- **YouTube upload** with unlisted/shareable link
 - Caches intermediate files so expensive steps (separation, transcription) are reused across runs
 
 ## Installation
@@ -44,14 +43,6 @@ pip install -r requirements.txt
 
 # Optional: Install romanization libraries for non-Latin scripts
 pip install korean-romanizer pypinyin pykakasi pyarabic
-```
-
-### Migration from Old Version
-
-If you have an existing installation, run the migration script:
-
-```bash
-python migrate.py
 ```
 
 ### Troubleshooting
@@ -103,11 +94,6 @@ y2karaoke generate "https://youtube.com/watch?v=VIDEO_ID" -o output.mp4 --key +2
 # Force reprocess (ignore cache)
 y2karaoke generate "https://youtube.com/watch?v=VIDEO_ID" -o output.mp4 --force
 
-# Upload to YouTube after rendering (unlisted link)
-y2karaoke generate "https://youtube.com/watch?v=VIDEO_ID" -o output.mp4 --upload
-
-# Skip the upload prompt (for scripts/batch mode)
-y2karaoke generate "https://youtube.com/watch?v=VIDEO_ID" -o output.mp4 --no-upload
 ```
 
 ### Cache Management
@@ -144,8 +130,6 @@ python karaoke.py "https://youtube.com/watch?v=VIDEO_ID" -o output.mp4 --offset 
 | `--audio-start` | Start audio processing from this many seconds into the track (skip intro; default: 0.0) |
 | `--lyrics-title` | Override song title used when searching for lyrics (useful for covers) |
 | `--lyrics-artist` | Override artist used when searching for lyrics (useful for covers) |
-| `--upload` | Upload to YouTube as unlisted video after rendering |
-| `--no-upload` | Skip the upload prompt (for batch/script mode) |
 | `--backgrounds` | Use video backgrounds extracted from the original YouTube video |
 | `--work-dir` | Working directory for intermediate files (default: `~/.cache/karaoke/{video_id}`) |
 | `--keep-files` | Keep intermediate files (audio, stems, etc.) |
@@ -184,12 +168,6 @@ For debugging or experimenting with individual steps, you can run the core modul
   python -m y2karaoke.core.renderer
   ```
   Renders a sample frame to `test_frame.png` for quickly checking fonts/layout.
-
-- **Upload an existing MP4 to YouTube**
-  ```bash
-  python -m y2karaoke.core.uploader output.mp4 [title] [artist]
-  ```
-  Uses your saved OAuth credentials to upload as an unlisted video.
 
 - **Inspect video backgrounds / scene detection**
   ```bash
@@ -232,20 +210,6 @@ Romanization is **best-effort** and only applied when the corresponding librarie
 ## Caching
 
 Intermediate files are cached in `~/.cache/karaoke/{video_id}/` by default, including downloaded audio, separated stems, processed instrumentals for particular key/tempo settings, and lyrics/timing metadata. This allows fast re-runs when adjusting timing offsets, key, or tempo without repeating the expensive separation and transcription steps.
-
-## YouTube Upload Setup
-
-To enable YouTube uploads, you need to set up Google OAuth credentials:
-
-1. Go to [Google Cloud Console](https://console.cloud.google.com/)
-2. Create a new project (or select existing)
-3. Enable the **YouTube Data API v3**
-4. Go to **Credentials** → **Create Credentials** → **OAuth client ID**
-5. Select **Desktop app** as application type
-6. Download the JSON file
-7. Save it as `~/.cache/karaoke/client_secrets.json`
-
-On first upload, a browser window will open for authentication. Credentials are cached for future use.
 
 ## License
 

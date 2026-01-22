@@ -90,9 +90,6 @@ BLUR_RADIUS = 3
 MAX_CACHE_SIZE_GB = 10
 CACHE_CLEANUP_THRESHOLD = 0.8
 
-# API settings
-YOUTUBE_API_SCOPES = ['https://www.googleapis.com/auth/youtube.upload']
-
 def get_credentials_dir() -> Path:
     """Get credentials directory."""
     return get_cache_dir()

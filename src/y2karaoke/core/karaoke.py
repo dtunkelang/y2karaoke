@@ -260,12 +260,6 @@ class KaraokeGenerator:
             kwargs.update(video_settings)
         render_karaoke_video(**kwargs)
 
-    def upload_video(self, video_path: str, title: str, artist: str) -> Dict[str, str]:
-        logger.info("📤 Uploading to YouTube...")
-        from ..core.uploader import YouTubeUploader
-        uploader = YouTubeUploader()
-        return uploader.upload_video(video_path, title, artist)
-
     def cleanup_temp_files(self):
         for temp_file in self._temp_files:
             try:
