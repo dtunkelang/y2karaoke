@@ -19,12 +19,15 @@ from .utils.validation import (
 
 
 def search_youtube(query: str) -> Optional[str]:
-    """Search YouTube and return the first video URL."""
+    """Search YouTube and return the best matching video URL.
+
+    Filters out live, extended, and remix versions unless those terms
+    are explicitly in the search query.
+    """
     try:
         import requests
-        from bs4 import BeautifulSoup
     except ImportError:
-        raise Y2KaraokeError("requests and beautifulsoup4 required for YouTube search")
+        raise Y2KaraokeError("requests required for YouTube search")
 
     search_query = query.replace(" ", "+")
     search_url = f"https://www.youtube.com/results?search_query={search_query}"
@@ -38,10 +41,58 @@ def search_youtube(query: str) -> Optional[str]:
         response.raise_for_status()
 
         import re
-        video_id_match = re.search(r'"videoId":"([^"]+)"', response.text)
-        if video_id_match:
-            video_id = video_id_match.group(1)
-            return f"https://www.youtube.com/watch?v={video_id}"
+
+        # Extract video data from YouTube's initial data JSON
+        # Find all video entries with their titles
+        candidates = []
+
+        # Pattern to find video renderer objects with videoId and title
+        # YouTube embeds this data in a JSON structure
+        video_pattern = re.compile(
+            r'"videoRenderer":\s*\{[^}]*"videoId":\s*"([^"]+)"[^}]*"title":\s*\{"runs":\s*\[\{"text":\s*"([^"]+)"',
+            re.DOTALL
+        )
+
+        for match in video_pattern.finditer(response.text):
+            video_id = match.group(1)
+            title = match.group(2)
+            candidates.append((video_id, title))
+
+        # Fallback: just get video IDs if title extraction fails
+        if not candidates:
+            for match in re.finditer(r'"videoId":"([^"]+)"', response.text):
+                video_id = match.group(1)
+                # Avoid duplicates and short IDs (which may be playlist IDs)
+                if len(video_id) == 11 and video_id not in [c[0] for c in candidates]:
+                    candidates.append((video_id, ""))
+
+        if not candidates:
+            return None
+
+        # Check if query contains filter terms
+        query_lower = query.lower()
+        filter_terms = ["live", "extended", "remix"]
+        query_has_filter_term = any(term in query_lower for term in filter_terms)
+
+        # If query doesn't have filter terms, deprioritize videos with those terms
+        if not query_has_filter_term:
+            preferred = []
+            fallback = []
+
+            for video_id, title in candidates:
+                title_lower = title.lower()
+                has_filter_term = any(term in title_lower for term in filter_terms)
+
+                if has_filter_term:
+                    fallback.append((video_id, title))
+                else:
+                    preferred.append((video_id, title))
+
+            # Use preferred list if available, otherwise fall back
+            candidates = preferred if preferred else fallback
+
+        if candidates:
+            return f"https://www.youtube.com/watch?v={candidates[0][0]}"
         return None
 
     except (requests.exceptions.RequestException, TimeoutError) as e:
