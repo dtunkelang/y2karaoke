@@ -102,7 +102,7 @@ def extract_metadata_from_youtube(url: str) -> Dict[str, str]:
     """Unified metadata extraction (artist/title) for YouTube URL."""
     import yt_dlp
 
-    ydl_opts = {'quiet': True, 'skip_download': True, 'extract_flat': True}
+    ydl_opts = {'quiet': True, 'no_warnings': True, 'skip_download': True, 'extract_flat': True}
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         info = ydl.extract_info(url, download=False)
         video_title = info.get('title', '')

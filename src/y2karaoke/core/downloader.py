@@ -31,6 +31,7 @@ class YouTubeDownloader:
         """Return the title of a YouTube video without downloading the full video."""
         ydl_opts = {
             'quiet': True,
+            'no_warnings': True,
             'skip_download': True,
             'forcejson': True,
             'extract_flat': True,
@@ -41,7 +42,7 @@ class YouTubeDownloader:
 
     def get_video_uploader(self, url: str) -> str:
         """Return the uploader/channel name for a YouTube video without downloading full video."""
-        ydl_opts = {'quiet': True, 'skip_download': True, 'extract_flat': True}
+        ydl_opts = {'quiet': True, 'no_warnings': True, 'skip_download': True, 'extract_flat': True}
         try:
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                 info = ydl.extract_info(url, download=False)
