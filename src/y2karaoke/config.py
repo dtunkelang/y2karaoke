@@ -54,6 +54,7 @@ TEMPO_RANGE = (0.1, 3.0)
 SPLASH_DURATION = 4.0
 INSTRUMENTAL_BREAK_THRESHOLD = 8.0  # Show instrumental break screen for gaps >= 8 seconds
 LYRICS_LEAD_TIME = 1.0
+HIGHLIGHT_LEAD_TIME = 0.15  # Seconds to advance highlight ahead of audio
 
 # Line splitting
 MAX_LINE_WIDTH_RATIO = 0.75  # 75% of screen width

@@ -77,9 +77,11 @@ def separate_vocals(
         raise RuntimeError(f"Found separated file but missing vocals/instrumental: {audio_path}")
 
     if not force:
-        vocals_files = cache_manager.find_files(video_id, "*vocals*.wav")
+        # Check for cached files (audio-separator uses "(Vocals)" with capital V)
+        vocals_files = cache_manager.find_files(video_id, "*[Vv]ocals*.wav")
         instrumental_files = cache_manager.find_files(video_id, "*instrumental*.wav")
         if vocals_files and instrumental_files:
+            logger.debug(f"Using cached separation: {vocals_files[0].name}")
             return {"vocals_path": str(vocals_files[0]), "instrumental_path": str(instrumental_files[0])}
 
     cache_dir = cache_manager.get_video_cache_dir(video_id)

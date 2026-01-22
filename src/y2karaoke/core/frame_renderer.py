@@ -6,7 +6,8 @@ from PIL import Image, ImageDraw, ImageFont
 
 from ..config import (
     VIDEO_WIDTH, VIDEO_HEIGHT, LINE_SPACING,
-    SPLASH_DURATION, INSTRUMENTAL_BREAK_THRESHOLD, LYRICS_LEAD_TIME, Colors
+    SPLASH_DURATION, INSTRUMENTAL_BREAK_THRESHOLD, LYRICS_LEAD_TIME,
+    HIGHLIGHT_LEAD_TIME, Colors
 )
 from .backgrounds_static import draw_logo_screen, draw_splash_screen
 from .progress import draw_progress_bar
@@ -155,7 +156,10 @@ def render_frame(
 
         # For current line, draw highlighted portion with gradual sweep
         if is_current:
-            # Calculate highlight width based on current time
+            # Add lead time so highlight appears slightly ahead of audio
+            highlight_time = current_time + HIGHLIGHT_LEAD_TIME
+
+            # Calculate highlight width based on highlight time
             highlight_width = 0
             x = line_x
             word_idx = 0
@@ -163,13 +167,13 @@ def render_frame(
                 if text == " ":
                     word = line.words[word_idx - 1] if word_idx > 0 else line.words[0]
                     # Include space if previous word is done
-                    if current_time >= word.end_time:
+                    if highlight_time >= word.end_time:
                         highlight_width += word_widths[i]
-                    elif current_time >= word.start_time:
+                    elif highlight_time >= word.start_time:
                         # Partial space based on word progress
                         word_duration = word.end_time - word.start_time
                         if word_duration > 0:
-                            progress = (current_time - word.start_time) / word_duration
+                            progress = (highlight_time - word.start_time) / word_duration
                             if progress >= 0.9:  # Include space near end of word
                                 highlight_width += word_widths[i]
                     continue
@@ -177,14 +181,14 @@ def render_frame(
                 word = line.words[word_idx]
                 word_idx += 1
 
-                if current_time >= word.end_time:
+                if highlight_time >= word.end_time:
                     # Word fully highlighted
                     highlight_width += word_widths[i]
-                elif current_time >= word.start_time:
+                elif highlight_time >= word.start_time:
                     # Partial highlight within word
                     word_duration = word.end_time - word.start_time
                     if word_duration > 0:
-                        progress = (current_time - word.start_time) / word_duration
+                        progress = (highlight_time - word.start_time) / word_duration
                         highlight_width += int(word_widths[i] * progress)
                     break
                 else:
