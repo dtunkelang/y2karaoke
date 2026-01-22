@@ -18,11 +18,98 @@ from .utils.validation import (
 )
 
 
+def _check_lrc_available(title: str, artist: str) -> bool:
+    """Check if synced LRC lyrics are available for a track."""
+    try:
+        from .core.sync import fetch_lyrics_multi_source, SYNCEDLYRICS_AVAILABLE
+        if not SYNCEDLYRICS_AVAILABLE:
+            return False
+        _, is_synced, _ = fetch_lyrics_multi_source(title, artist, synced_only=True)
+        return is_synced
+    except Exception:
+        return False
+
+
+def _search_title_only_with_consensus(query: str, initial_recordings: list) -> list:
+    """Search for a title without artist, looking for consensus among recordings.
+
+    For unique/famous songs, there should be a dominant artist with consistent duration.
+    This avoids matching obscure covers or songs with coincidentally similar titles.
+    Prefers artists that have LRC lyrics available.
+
+    Args:
+        query: The search query (assumed to be just a title)
+        initial_recordings: Recordings from the initial search
+
+    Returns:
+        List of (duration, artist, title) tuples if consensus found, else empty list.
+    """
+    from collections import Counter
+
+    # Collect all recordings with exact or very close title match
+    query_normalized = query.lower().strip()
+    candidates = []
+
+    for rec in initial_recordings:
+        title = rec.get('title', '')
+        length = rec.get('length')
+        if not length:
+            continue
+
+        # Require exact title match (case-insensitive) to avoid partial matches
+        # that might contain the artist name in the title
+        title_normalized = title.lower().strip()
+        if title_normalized != query_normalized:
+            continue
+
+        artist_credits = rec.get('artist-credit', [])
+        artists = [a['artist']['name'] for a in artist_credits if 'artist' in a]
+        artist_name = ' & '.join(artists) if artists else None
+
+        if artist_name:
+            candidates.append({
+                'duration': int(length) // 1000,
+                'artist': artist_name,
+                'title': title,
+            })
+
+    if not candidates:
+        return []
+
+    # Find unique artists sorted by frequency
+    artist_counts = Counter(c['artist'] for c in candidates)
+    all_artists = artist_counts.most_common()  # Check all artists
+
+    # First pass: find any artist with LRC available (prioritize by frequency)
+    for artist_name, count in all_artists:
+        artist_matches = [c for c in candidates if c['artist'] == artist_name]
+        sample_title = artist_matches[0]['title']
+
+        if _check_lrc_available(sample_title, artist_name):
+            # Found an artist with LRC available - use them
+            return [(c['duration'], c['artist'], c['title']) for c in artist_matches]
+
+    # No artist with LRC found - only fall back if we have strong consensus
+    # (multiple recordings by same artist with consistent duration)
+    if len(candidates) >= 2:
+        most_common_artist, artist_count = all_artists[0]
+        if artist_count >= 2 and artist_count / len(candidates) >= 0.4:
+            artist_matches = [c for c in candidates if c['artist'] == most_common_artist]
+            durations = [c['duration'] for c in artist_matches]
+            rounded = [d // 5 * 5 for d in durations]
+            duration_counts = Counter(rounded)
+            if duration_counts.most_common(1)[0][1] >= 2:
+                return [(c['duration'], c['artist'], c['title']) for c in artist_matches]
+
+    return []
+
+
 def _get_track_duration_from_musicbrainz(query: str) -> tuple[Optional[int], Optional[str], Optional[str]]:
     """Query MusicBrainz to get canonical track duration, artist, and title.
 
     Tries to parse artist and title from query, then finds the most
-    common duration for that track.
+    common duration for that track. If query is just a title (no artist),
+    looks for consensus among recordings to identify the canonical version.
 
     Returns:
         Tuple of (duration_seconds, artist, title). Any may be None if not found.
@@ -98,6 +185,10 @@ def _get_track_duration_from_musicbrainz(query: str) -> tuple[Optional[int], Opt
                         artist_name = ' & '.join(artists) if artists else None
                         title = rec.get('title')
                         matches.append((int(length) // 1000, artist_name, title))
+
+        # If still no matches, try title-only search looking for consensus
+        if not matches and not artist_hint:
+            matches = _search_title_only_with_consensus(query_clean, recordings)
 
         if not matches:
             return None, None, None

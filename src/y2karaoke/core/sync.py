@@ -1,7 +1,7 @@
 """Synced lyrics fetching using syncedlyrics library."""
 
 import re
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Dict
 
 from ..utils.logging import get_logger
 
@@ -14,6 +14,10 @@ except ImportError:
     syncedlyrics = None
     SYNCEDLYRICS_AVAILABLE = False
 
+# Cache for LRC results to avoid duplicate fetches
+# Key: (artist.lower(), title.lower()), Value: (lrc_text, is_synced, source_name)
+_lrc_cache: Dict[Tuple[str, str], Tuple[Optional[str], bool, str]] = {}
+
 
 def fetch_lyrics_multi_source(
     title: str,
@@ -23,6 +27,9 @@ def fetch_lyrics_multi_source(
 ) -> Tuple[Optional[str], bool, str]:
     """
     Fetch lyrics from multiple sources using syncedlyrics.
+
+    Results are cached to avoid duplicate network requests when checking
+    LRC availability during search and then fetching lyrics later.
 
     Args:
         title: Song title
@@ -40,6 +47,13 @@ def fetch_lyrics_multi_source(
         logger.warning("syncedlyrics not installed")
         return None, False, ""
 
+    # Check cache first
+    cache_key = (artist.lower().strip(), title.lower().strip())
+    if cache_key in _lrc_cache:
+        cached = _lrc_cache[cache_key]
+        logger.info(f"Using cached LRC result for {artist} - {title}")
+        return cached
+
     search_term = f"{artist} {title}"
     logger.info(f"Searching for synced lyrics: {search_term}")
 
@@ -53,7 +67,9 @@ def fetch_lyrics_multi_source(
             )
             if lrc and _has_timestamps(lrc):
                 logger.info("Found enhanced (word-level) synced lyrics")
-                return lrc, True, "syncedlyrics (enhanced)"
+                result = (lrc, True, "syncedlyrics (enhanced)")
+                _lrc_cache[cache_key] = result
+                return result
 
         # Try synced lyrics
         lrc = syncedlyrics.search(
@@ -65,17 +81,25 @@ def fetch_lyrics_multi_source(
             is_synced = _has_timestamps(lrc)
             if is_synced:
                 logger.info("Found synced lyrics with line timing")
-                return lrc, True, "syncedlyrics"
+                result = (lrc, True, "syncedlyrics")
+                _lrc_cache[cache_key] = result
+                return result
             elif not synced_only:
                 logger.info("Found plain lyrics (no timing)")
-                return lrc, False, "syncedlyrics"
+                result = (lrc, False, "syncedlyrics")
+                _lrc_cache[cache_key] = result
+                return result
 
         logger.warning("No synced lyrics found")
-        return None, False, ""
+        result = (None, False, "")
+        _lrc_cache[cache_key] = result
+        return result
 
     except Exception as e:
         logger.error(f"Error fetching synced lyrics: {e}")
-        return None, False, ""
+        result = (None, False, "")
+        _lrc_cache[cache_key] = result
+        return result
 
 
 def _has_timestamps(lrc_text: str) -> bool:
