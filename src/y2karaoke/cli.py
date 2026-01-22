@@ -18,11 +18,14 @@ from .utils.validation import (
 )
 
 
-def _get_track_duration_from_musicbrainz(query: str) -> Optional[int]:
-    """Query MusicBrainz to get canonical track duration in seconds.
+def _get_track_duration_from_musicbrainz(query: str) -> tuple[Optional[int], Optional[str], Optional[str]]:
+    """Query MusicBrainz to get canonical track duration, artist, and title.
 
     Tries to parse artist and title from query, then finds the most
     common duration for that track.
+
+    Returns:
+        Tuple of (duration_seconds, artist, title). Any may be None if not found.
     """
     try:
         import musicbrainzngs
@@ -54,10 +57,10 @@ def _get_track_duration_from_musicbrainz(query: str) -> Optional[int]:
         recordings = results.get('recording-list', [])
 
         if not recordings:
-            return None
+            return None, None, None
 
-        # Collect durations from matching recordings
-        durations = []
+        # Collect durations and track info from matching recordings
+        matches = []  # List of (duration, artist, title)
         query_words = set(query_clean.split())
 
         for rec in recordings:
@@ -66,15 +69,18 @@ def _get_track_duration_from_musicbrainz(query: str) -> Optional[int]:
                 continue
 
             # Check if recording matches query (artist name contains query words)
-            artists = [a['artist']['name'].lower() for a in rec.get('artist-credit', []) if 'artist' in a]
-            artist_str = ' '.join(artists)
+            artist_credits = rec.get('artist-credit', [])
+            artists = [a['artist']['name'] for a in artist_credits if 'artist' in a]
+            artist_str_lower = ' '.join(a.lower() for a in artists)
 
             # Require at least one query word in artist name for relevance
-            if any(word in artist_str for word in query_words):
-                durations.append(int(length) // 1000)
+            if any(word in artist_str_lower for word in query_words):
+                artist_name = ' & '.join(artists) if artists else None
+                title = rec.get('title')
+                matches.append((int(length) // 1000, artist_name, title))
 
         # If no artist matches, try a second search with query words as artist
-        if not durations and not artist_hint:
+        if not matches and not artist_hint:
             # Use first word(s) as potential artist
             words = query_clean.split()
             if len(words) >= 2:
@@ -87,22 +93,26 @@ def _get_track_duration_from_musicbrainz(query: str) -> Optional[int]:
                 for rec in results2.get('recording-list', []):
                     length = rec.get('length')
                     if length:
-                        durations.append(int(length) // 1000)
+                        artist_credits = rec.get('artist-credit', [])
+                        artists = [a['artist']['name'] for a in artist_credits if 'artist' in a]
+                        artist_name = ' & '.join(artists) if artists else None
+                        title = rec.get('title')
+                        matches.append((int(length) // 1000, artist_name, title))
 
-        if not durations:
-            return None
+        if not matches:
+            return None, None, None
 
-        # Return most common duration (mode) to handle different versions
-        # Group similar durations (within 5 seconds)
+        # Find most common duration (mode) to handle different versions
+        durations = [m[0] for m in matches]
         rounded = [d // 5 * 5 for d in durations]
         most_common_rounded = Counter(rounded).most_common(1)[0][0]
 
-        # Return the actual duration closest to the most common rounded value
-        closest = min(durations, key=lambda d: abs(d - most_common_rounded))
-        return closest
+        # Find the match with duration closest to the most common rounded value
+        best_match = min(matches, key=lambda m: abs(m[0] - most_common_rounded))
+        return best_match
 
     except Exception:
-        return None
+        return None, None, None
 
 
 def _extract_youtube_candidates(response_text: str) -> list:
@@ -143,20 +153,25 @@ def _extract_youtube_candidates(response_text: str) -> list:
     return candidates
 
 
-def search_youtube(query: str) -> Optional[str]:
-    """Search YouTube and return the best matching video URL.
+def search_youtube(query: str) -> dict[str, Optional[str]]:
+    """Search YouTube and return the best matching video URL with metadata.
 
     Uses MusicBrainz to find the canonical track duration, then selects
     the YouTube video with the closest duration. This helps avoid live,
     extended, and remix versions which typically have different lengths.
+
+    Returns:
+        Dict with 'url', 'artist', 'title' keys. 'url' is None if not found.
+        'artist' and 'title' are set if MusicBrainz was used for matching.
     """
     try:
         import requests
     except ImportError:
         raise Y2KaraokeError("requests required for YouTube search")
 
-    # Get canonical track duration from MusicBrainz
-    target_duration = _get_track_duration_from_musicbrainz(query)
+    # Get canonical track info from MusicBrainz
+    target_duration, mb_artist, mb_title = _get_track_duration_from_musicbrainz(query)
+    used_musicbrainz = target_duration is not None
 
     search_query = query.replace(" ", "+")
     search_url = f"https://www.youtube.com/results?search_query={search_query}"
@@ -172,7 +187,7 @@ def search_youtube(query: str) -> Optional[str]:
         candidates = _extract_youtube_candidates(response.text)
 
         if not candidates:
-            return None
+            return {'url': None, 'artist': None, 'title': None}
 
         # If we have a target duration, rank by closest match
         if target_duration:
@@ -186,7 +201,11 @@ def search_youtube(query: str) -> Optional[str]:
 
                 # Only use duration match if it's reasonably close (within 30 seconds)
                 if abs(best['duration'] - target_duration) <= 30:
-                    return f"https://www.youtube.com/watch?v={best['video_id']}"
+                    return {
+                        'url': f"https://www.youtube.com/watch?v={best['video_id']}",
+                        'artist': mb_artist,
+                        'title': mb_title,
+                    }
 
         # Fallback: filter by title keywords (live, extended, remix)
         query_lower = query.lower()
@@ -199,8 +218,13 @@ def search_youtube(query: str) -> Optional[str]:
                 candidates = preferred
 
         if candidates:
-            return f"https://www.youtube.com/watch?v={candidates[0]['video_id']}"
-        return None
+            # Didn't use MusicBrainz duration match, so don't return artist/title
+            return {
+                'url': f"https://www.youtube.com/watch?v={candidates[0]['video_id']}",
+                'artist': None,
+                'title': None,
+            }
+        return {'url': None, 'artist': None, 'title': None}
 
     except (requests.exceptions.RequestException, TimeoutError) as e:
         raise Y2KaraokeError(f"YouTube search failed: {e}")
@@ -261,14 +285,21 @@ def generate(ctx, url_or_query, output, offset, key, tempo, audio_start,
     logger = ctx.obj['logger']
 
     try:
-        # Determine YouTube URL
+        # Determine YouTube URL and metadata
         url = url_or_query
+        search_artist = None
+        search_title = None
         if not url_or_query.startswith('http'):
             logger.info(f"Searching YouTube for: {url_or_query}")
-            url = search_youtube(url_or_query)
+            search_result = search_youtube(url_or_query)
+            url = search_result['url']
+            search_artist = search_result['artist']
+            search_title = search_result['title']
             if not url:
                 raise Y2KaraokeError(f"No YouTube results found for: {url_or_query}")
             logger.info(f"Found: {url}")
+            if search_artist and search_title:
+                logger.info(f"MusicBrainz match: {search_artist} - {search_title}")
 
         url = validate_youtube_url(url)
         key = validate_key_shift(key)
@@ -302,6 +333,10 @@ def generate(ctx, url_or_query, output, offset, key, tempo, audio_start,
         else:
             output_path = None
 
+        # Use MusicBrainz results if user didn't provide explicit values
+        effective_lyrics_title = lyrics_title or search_title
+        effective_lyrics_artist = lyrics_artist or search_artist
+
         # Run generation
         result = generator.generate(
             url=url,
@@ -310,8 +345,8 @@ def generate(ctx, url_or_query, output, offset, key, tempo, audio_start,
             key_shift=key,
             tempo_multiplier=tempo,
             audio_start=audio_start,
-            lyrics_title=lyrics_title,
-            lyrics_artist=lyrics_artist,
+            lyrics_title=effective_lyrics_title,
+            lyrics_artist=effective_lyrics_artist,
             lyrics_offset=lyrics_offset,
             use_backgrounds=backgrounds,
             force_reprocess=force,

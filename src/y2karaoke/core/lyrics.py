@@ -40,21 +40,21 @@ __all__ = [
 ]
 
 
-def _fetch_lrc_timings(title: str, artist: str) -> Optional[List[Tuple[float, str]]]:
-    """Fetch LRC text from available sources and parse timings."""
+def _fetch_lrc_text_and_timings(title: str, artist: str) -> Tuple[Optional[str], Optional[List[Tuple[float, str]]]]:
+    """Fetch raw LRC text and parsed timings from available sources."""
     try:
         from .sync import fetch_lyrics_multi_source
         lrc_text, is_synced, source = fetch_lyrics_multi_source(title, artist)
         if lrc_text and is_synced:
             lines = parse_lrc_with_timing(lrc_text, title, artist)
             logger.info(f"Got {len(lines)} LRC lines from {source}")
-            return lines
+            return lrc_text, lines
         else:
             logger.info(f"No synced LRC available from {source}")
-            return None
+            return None, None
     except Exception as e:
         logger.warning(f"LRC fetch failed: {e}")
-        return None
+        return None, None
 
 
 def get_lyrics_simple(
@@ -65,11 +65,11 @@ def get_lyrics_simple(
     lyrics_offset: Optional[float] = None,
     romanize: bool = True,
 ) -> Tuple[List[Line], Optional[SongMetadata]]:
-    """Simplified lyrics pipeline using Genius + LRC + vocals alignment.
+    """Simplified lyrics pipeline favoring LRC over Genius.
 
     Pipeline:
-    1. Fetch canonical lyrics from Genius (with singer annotations)
-    2. Fetch LRC timing from syncedlyrics
+    1. Try to fetch LRC lyrics with timing (preferred source)
+    2. If no LRC, fall back to Genius lyrics
     3. Detect vocal offset and align timing
     4. Create Line objects with word-level timing
     5. Refine timing using audio onset detection
@@ -90,20 +90,24 @@ def get_lyrics_simple(
     from .refine import refine_word_timing
     from .alignment import detect_song_start
 
-    # 1. Fetch canonical lyrics from Genius
-    logger.info("Fetching lyrics from Genius...")
-    genius_lines, metadata = fetch_genius_lyrics_with_singers(title, artist)
-    if not genius_lines:
-        logger.warning("No Genius lyrics found, using placeholder")
-        placeholder_word = Word(text="Lyrics not available", start_time=0.0, end_time=3.0)
-        return [Line(words=[placeholder_word])], SongMetadata(
-            singers=[], is_duet=False, title=title, artist=artist
-        )
+    # 1. Try LRC first (preferred source)
+    logger.info("Fetching LRC lyrics...")
+    lrc_text, line_timings = _fetch_lrc_text_and_timings(title, artist)
 
-    text_lines = [text for text, _ in genius_lines if text.strip()]
-
-    # 2. Fetch LRC timing
-    line_timings = _fetch_lrc_timings(title, artist)
+    # 2. Fetch Genius as fallback or for singer info
+    genius_lines, metadata = None, None
+    if not line_timings:
+        logger.info("No LRC found, fetching lyrics from Genius...")
+        genius_lines, metadata = fetch_genius_lyrics_with_singers(title, artist)
+        if not genius_lines:
+            logger.warning("No lyrics found from any source, using placeholder")
+            placeholder_word = Word(text="Lyrics not available", start_time=0.0, end_time=3.0)
+            return [Line(words=[placeholder_word])], SongMetadata(
+                singers=[], is_duet=False, title=title, artist=artist
+            )
+    else:
+        # Still fetch Genius for singer/duet metadata only
+        genius_lines, metadata = fetch_genius_lyrics_with_singers(title, artist)
 
     # 3. Apply vocal offset if available
     offset = 0.0
@@ -123,13 +127,29 @@ def get_lyrics_simple(
 
     # 4. Create Line objects
     if line_timings:
-        lines = create_lines_from_lrc_timings(line_timings, text_lines)
+        # Use LRC text directly (preferred)
+        lines = create_lines_from_lrc(lrc_text, romanize=False, title=title, artist=artist)
+        # Apply timing from parsed line_timings
+        for i, line in enumerate(lines):
+            if i < len(line_timings):
+                line_start = line_timings[i][0]
+                line_end = line_timings[i + 1][0] if i + 1 < len(line_timings) else line_start + 3.0
+                if line_end - line_start > 10.0:
+                    line_end = line_start + 5.0
+                word_count = len(line.words)
+                if word_count > 0:
+                    line_duration = line_end - line_start
+                    word_duration = (line_duration * 0.95) / word_count
+                    for j, word in enumerate(line.words):
+                        word.start_time = line_start + j * (line_duration / word_count)
+                        word.end_time = word.start_time + word_duration
         # 5. Refine word timing using audio
         if vocals_path and len(line_timings) > 1:
             lines = refine_word_timing(lines, vocals_path)
             logger.info("Word-level timing refined using vocals")
     else:
-        # Fallback: evenly spaced lines without LRC
+        # Fallback: use Genius text with evenly spaced lines
+        text_lines = [text for text, _ in genius_lines if text.strip()]
         lrc_text = "\n".join(text_lines)
         lines = create_lines_from_lrc(lrc_text, romanize=romanize, title=title, artist=artist)
 
@@ -140,8 +160,8 @@ def get_lyrics_simple(
                 if any(ord(c) > 127 for c in word.text):
                     word.text = romanize_line(word.text)
 
-    # Apply singer info for duets
-    if metadata and metadata.is_duet:
+    # Apply singer info for duets (from Genius metadata)
+    if metadata and metadata.is_duet and genius_lines:
         for i, line in enumerate(lines):
             if i < len(genius_lines):
                 _, singer_name = genius_lines[i]

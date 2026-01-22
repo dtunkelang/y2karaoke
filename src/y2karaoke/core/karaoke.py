@@ -125,9 +125,9 @@ class KaraokeGenerator:
             lyrics_offset=lyrics_offset,
         )
 
-        # Step 7: Apply audio effects
+        # Step 7: Apply audio effects to instrumental (vocals removed)
         processed_instrumental = apply_audio_effects(
-            effective_audio_path,
+            separation_result["instrumental_path"],
             key_shift,
             tempo_multiplier,
             video_id,
