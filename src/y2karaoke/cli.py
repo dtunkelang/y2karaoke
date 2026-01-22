@@ -18,16 +18,145 @@ from .utils.validation import (
 )
 
 
+def _get_track_duration_from_musicbrainz(query: str) -> Optional[int]:
+    """Query MusicBrainz to get canonical track duration in seconds.
+
+    Tries to parse artist and title from query, then finds the most
+    common duration for that track.
+    """
+    try:
+        import musicbrainzngs
+        from collections import Counter
+
+        musicbrainzngs.set_useragent('y2karaoke', '1.0', 'https://github.com/dtunkelang/y2karaoke')
+
+        query_clean = query.strip().lower()
+
+        # Try to extract artist and title from query
+        # Common patterns: "artist - title", "artist title"
+        artist_hint = None
+        title_hint = query_clean
+
+        if ' - ' in query_clean:
+            parts = query_clean.split(' - ', 1)
+            artist_hint = parts[0].strip()
+            title_hint = parts[1].strip()
+
+        # Search with artist filter if we have a hint
+        if artist_hint:
+            results = musicbrainzngs.search_recordings(
+                recording=title_hint, artist=artist_hint, limit=15
+            )
+        else:
+            # Try using query words as potential artist
+            results = musicbrainzngs.search_recordings(recording=query_clean, limit=15)
+
+        recordings = results.get('recording-list', [])
+
+        if not recordings:
+            return None
+
+        # Collect durations from matching recordings
+        durations = []
+        query_words = set(query_clean.split())
+
+        for rec in recordings:
+            length = rec.get('length')
+            if not length:
+                continue
+
+            # Check if recording matches query (artist name contains query words)
+            artists = [a['artist']['name'].lower() for a in rec.get('artist-credit', []) if 'artist' in a]
+            artist_str = ' '.join(artists)
+
+            # Require at least one query word in artist name for relevance
+            if any(word in artist_str for word in query_words):
+                durations.append(int(length) // 1000)
+
+        # If no artist matches, try a second search with query words as artist
+        if not durations and not artist_hint:
+            # Use first word(s) as potential artist
+            words = query_clean.split()
+            if len(words) >= 2:
+                # Try first word as artist, rest as title
+                results2 = musicbrainzngs.search_recordings(
+                    recording=' '.join(words[1:]),
+                    artist=words[0],
+                    limit=15
+                )
+                for rec in results2.get('recording-list', []):
+                    length = rec.get('length')
+                    if length:
+                        durations.append(int(length) // 1000)
+
+        if not durations:
+            return None
+
+        # Return most common duration (mode) to handle different versions
+        # Group similar durations (within 5 seconds)
+        rounded = [d // 5 * 5 for d in durations]
+        most_common_rounded = Counter(rounded).most_common(1)[0][0]
+
+        # Return the actual duration closest to the most common rounded value
+        closest = min(durations, key=lambda d: abs(d - most_common_rounded))
+        return closest
+
+    except Exception:
+        return None
+
+
+def _extract_youtube_candidates(response_text: str) -> list:
+    """Extract video candidates with titles and durations from YouTube response."""
+    import re
+
+    candidates = []
+
+    # Pattern to find video renderer objects with videoId and title
+    video_pattern = re.compile(
+        r'"videoRenderer":\{"videoId":"([^"]{11})".{0,800}?"title":\{"runs":\[\{"text":"([^"]+)"',
+        re.DOTALL
+    )
+
+    for match in video_pattern.finditer(response_text):
+        video_id = match.group(1)
+        title = match.group(2)
+
+        # Find duration for this video
+        duration_pattern = rf'"videoRenderer":\{{"videoId":"{video_id}".{{0,2000}}?"simpleText":"(\d+:\d+(?::\d+)?)"'
+        duration_match = re.search(duration_pattern, response_text, re.DOTALL)
+
+        duration_sec = None
+        if duration_match:
+            time_str = duration_match.group(1)
+            parts = time_str.split(':')
+            if len(parts) == 2:
+                duration_sec = int(parts[0]) * 60 + int(parts[1])
+            elif len(parts) == 3:
+                duration_sec = int(parts[0]) * 3600 + int(parts[1]) * 60 + int(parts[2])
+
+        candidates.append({
+            'video_id': video_id,
+            'title': title,
+            'duration': duration_sec
+        })
+
+    return candidates
+
+
 def search_youtube(query: str) -> Optional[str]:
     """Search YouTube and return the best matching video URL.
 
-    Filters out live, extended, and remix versions unless those terms
-    are explicitly in the search query.
+    Uses MusicBrainz to find the canonical track duration, then selects
+    the YouTube video with the closest duration. This helps avoid live,
+    extended, and remix versions which typically have different lengths.
     """
     try:
         import requests
     except ImportError:
         raise Y2KaraokeError("requests required for YouTube search")
+
+    # Get canonical track duration from MusicBrainz
+    target_duration = _get_track_duration_from_musicbrainz(query)
 
     search_query = query.replace(" ", "+")
     search_url = f"https://www.youtube.com/results?search_query={search_query}"
@@ -40,59 +169,37 @@ def search_youtube(query: str) -> Optional[str]:
         response = requests.get(search_url, headers=headers, timeout=10)
         response.raise_for_status()
 
-        import re
-
-        # Extract video data from YouTube's initial data JSON
-        # Find all video entries with their titles
-        candidates = []
-
-        # Pattern to find video renderer objects with videoId and title
-        # YouTube embeds JSON with videoId followed by title within ~800 chars
-        video_pattern = re.compile(
-            r'"videoRenderer":\{"videoId":"([^"]{11})".{0,800}?"title":\{"runs":\[\{"text":"([^"]+)"',
-            re.DOTALL
-        )
-
-        for match in video_pattern.finditer(response.text):
-            video_id = match.group(1)
-            title = match.group(2)
-            candidates.append((video_id, title))
-
-        # Fallback: just get video IDs if title extraction fails
-        if not candidates:
-            for match in re.finditer(r'"videoId":"([^"]+)"', response.text):
-                video_id = match.group(1)
-                # Avoid duplicates and short IDs (which may be playlist IDs)
-                if len(video_id) == 11 and video_id not in [c[0] for c in candidates]:
-                    candidates.append((video_id, ""))
+        candidates = _extract_youtube_candidates(response.text)
 
         if not candidates:
             return None
 
-        # Check if query contains filter terms
+        # If we have a target duration, rank by closest match
+        if target_duration:
+            # Filter to candidates with duration info
+            with_duration = [c for c in candidates if c['duration'] is not None]
+
+            if with_duration:
+                # Sort by duration difference from target
+                with_duration.sort(key=lambda c: abs(c['duration'] - target_duration))
+                best = with_duration[0]
+
+                # Only use duration match if it's reasonably close (within 30 seconds)
+                if abs(best['duration'] - target_duration) <= 30:
+                    return f"https://www.youtube.com/watch?v={best['video_id']}"
+
+        # Fallback: filter by title keywords (live, extended, remix)
         query_lower = query.lower()
         filter_terms = ["live", "extended", "remix"]
         query_has_filter_term = any(term in query_lower for term in filter_terms)
 
-        # If query doesn't have filter terms, deprioritize videos with those terms
         if not query_has_filter_term:
-            preferred = []
-            fallback = []
-
-            for video_id, title in candidates:
-                title_lower = title.lower()
-                has_filter_term = any(term in title_lower for term in filter_terms)
-
-                if has_filter_term:
-                    fallback.append((video_id, title))
-                else:
-                    preferred.append((video_id, title))
-
-            # Use preferred list if available, otherwise fall back
-            candidates = preferred if preferred else fallback
+            preferred = [c for c in candidates if not any(term in c['title'].lower() for term in filter_terms)]
+            if preferred:
+                candidates = preferred
 
         if candidates:
-            return f"https://www.youtube.com/watch?v={candidates[0][0]}"
+            return f"https://www.youtube.com/watch?v={candidates[0]['video_id']}"
         return None
 
     except (requests.exceptions.RequestException, TimeoutError) as e:
