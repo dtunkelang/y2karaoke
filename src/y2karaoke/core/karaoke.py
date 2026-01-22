@@ -189,18 +189,21 @@ class KaraokeGenerator:
     # Helper methods
     # ------------------------
     def _download_audio(self, video_id: str, url: str, force: bool) -> Dict[str, str]:
-        logger.info("📥 Downloading audio...")
         metadata = self.cache_manager.load_metadata(video_id)
         if metadata and not force:
             audio_files = self.cache_manager.find_files(video_id, "*.wav")
+            # Filter out separated stems (audio-separator uses parentheses like "(Vocals)")
+            separated_stems = ["vocals", "bass", "drums", "other", "instrumental"]
             original_audio = [
                 f
                 for f in audio_files
-                if not any(stem in f.name for stem in ["_Vocals", "_Bass", "_Drums", "_Other", "_instrumental"])
+                if not any(stem in f.name.lower() for stem in separated_stems)
             ]
             if original_audio:
                 logger.info("📁 Using cached audio")
                 return {"audio_path": str(original_audio[0]), "title": metadata["title"], "artist": metadata["artist"]}
+
+        logger.info("📥 Downloading audio...")
 
         cache_dir = self.cache_manager.get_video_cache_dir(video_id)
         result = self.downloader.download_audio(url, cache_dir)
