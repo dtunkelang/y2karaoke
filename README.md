@@ -109,16 +109,6 @@ y2karaoke cache cleanup --days 30
 y2karaoke cache clear VIDEO_ID
 ```
 
-### Legacy Interface (Backward Compatible)
-
-```bash
-# Basic usage (same as before)
-python karaoke.py "https://youtube.com/watch?v=VIDEO_ID" -o output.mp4
-
-# All old options still work
-python karaoke.py "https://youtube.com/watch?v=VIDEO_ID" -o output.mp4 --offset -0.5 --key -3 --tempo 0.8
-```
-
 ### Options
 
 | Option | Description |
