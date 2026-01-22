@@ -18,16 +18,41 @@ from .utils.validation import (
 )
 
 
-def _check_lrc_available(title: str, artist: str) -> bool:
-    """Check if synced LRC lyrics are available for a track."""
+def _check_lrc_available(title: str, artist: str) -> tuple[bool, int | None]:
+    """Check if synced LRC lyrics are available and get implied duration.
+
+    Returns:
+        Tuple of (is_available, implied_duration_seconds).
+        implied_duration is the last timestamp + 5s buffer, or None if unavailable.
+    """
     try:
         from .core.sync import fetch_lyrics_multi_source, SYNCEDLYRICS_AVAILABLE
+        from .core.lrc import parse_lrc_with_timing
         if not SYNCEDLYRICS_AVAILABLE:
-            return False
-        _, is_synced, _ = fetch_lyrics_multi_source(title, artist, synced_only=True)
-        return is_synced
+            return False, None
+        lrc_text, is_synced, _ = fetch_lyrics_multi_source(title, artist, synced_only=True)
+        if not is_synced or not lrc_text:
+            return False, None
+        # Parse to get last timestamp
+        timings = parse_lrc_with_timing(lrc_text, title, artist)
+        if timings:
+            last_ts = timings[-1][0]
+            # Estimate track duration: last lyric + small buffer
+            implied_duration = int(last_ts + 5)
+            return True, implied_duration
+        return True, None
     except Exception:
-        return False
+        return False, None
+
+
+def _normalize_title(title: str) -> str:
+    """Normalize title for comparison by removing punctuation and extra spaces."""
+    import re
+    # Remove common punctuation that varies between versions
+    normalized = re.sub(r'[,.\-:;\'\"!?()]', ' ', title.lower())
+    # Collapse multiple spaces to single space
+    normalized = re.sub(r'\s+', ' ', normalized).strip()
+    return normalized
 
 
 def _search_title_only_with_consensus(query: str, initial_recordings: list) -> list:
@@ -46,8 +71,8 @@ def _search_title_only_with_consensus(query: str, initial_recordings: list) -> l
     """
     from collections import Counter
 
-    # Collect all recordings with exact or very close title match
-    query_normalized = query.lower().strip()
+    # Collect all recordings with matching title (normalized for punctuation differences)
+    query_normalized = _normalize_title(query)
     candidates = []
 
     for rec in initial_recordings:
@@ -56,9 +81,8 @@ def _search_title_only_with_consensus(query: str, initial_recordings: list) -> l
         if not length:
             continue
 
-        # Require exact title match (case-insensitive) to avoid partial matches
-        # that might contain the artist name in the title
-        title_normalized = title.lower().strip()
+        # Match titles after normalizing punctuation (e.g., "Piazza, New York Catcher" == "Piazza New York Catcher")
+        title_normalized = _normalize_title(title)
         if title_normalized != query_normalized:
             continue
 
@@ -85,8 +109,13 @@ def _search_title_only_with_consensus(query: str, initial_recordings: list) -> l
         artist_matches = [c for c in candidates if c['artist'] == artist_name]
         sample_title = artist_matches[0]['title']
 
-        if _check_lrc_available(sample_title, artist_name):
-            # Found an artist with LRC available - use them
+        lrc_available, lrc_duration = _check_lrc_available(sample_title, artist_name)
+        if lrc_available:
+            # Found an artist with LRC available
+            # If we have LRC duration, prefer recordings that match it
+            if lrc_duration:
+                # Sort by how close duration is to LRC-implied duration
+                artist_matches.sort(key=lambda c: abs(c['duration'] - lrc_duration))
             return [(c['duration'], c['artist'], c['title']) for c in artist_matches]
 
     # No artist with LRC found - only fall back if we have strong consensus
@@ -150,56 +179,71 @@ def _get_track_duration_from_musicbrainz(query: str) -> tuple[Optional[int], Opt
         matches = []  # List of (duration, artist, title)
         query_words = set(query_clean.split())
 
-        for rec in recordings:
-            length = rec.get('length')
-            if not length:
-                continue
-
-            # Check if recording matches query (artist name contains query words)
-            artist_credits = rec.get('artist-credit', [])
-            artists = [a['artist']['name'] for a in artist_credits if 'artist' in a]
-            artist_str_lower = ' '.join(a.lower() for a in artists)
-
-            # Require at least one query word in artist name for relevance
-            if any(word in artist_str_lower for word in query_words):
-                artist_name = ' & '.join(artists) if artists else None
-                title = rec.get('title')
-                matches.append((int(length) // 1000, artist_name, title))
-
-        # If no artist matches, try a second search with query words as artist
-        if not matches and not artist_hint:
-            # Use first word(s) as potential artist
-            words = query_clean.split()
-            if len(words) >= 2:
-                # Try first word as artist, rest as title
-                results2 = musicbrainzngs.search_recordings(
-                    recording=' '.join(words[1:]),
-                    artist=words[0],
-                    limit=15
-                )
-                for rec in results2.get('recording-list', []):
-                    length = rec.get('length')
-                    if length:
-                        artist_credits = rec.get('artist-credit', [])
-                        artists = [a['artist']['name'] for a in artist_credits if 'artist' in a]
-                        artist_name = ' & '.join(artists) if artists else None
-                        title = rec.get('title')
-                        matches.append((int(length) // 1000, artist_name, title))
-
-        # If still no matches, try title-only search looking for consensus
-        if not matches and not artist_hint:
+        # For title-only queries (no artist hint), use consensus search with LRC checking
+        if not artist_hint:
             matches = _search_title_only_with_consensus(query_clean, recordings)
+        else:
+            # We have an artist hint - match recordings where artist contains query words
+            for rec in recordings:
+                length = rec.get('length')
+                if not length:
+                    continue
+
+                artist_credits = rec.get('artist-credit', [])
+                artists = [a['artist']['name'] for a in artist_credits if 'artist' in a]
+                artist_str_lower = ' '.join(a.lower() for a in artists)
+
+                if any(word in artist_str_lower for word in query_words):
+                    artist_name = ' & '.join(artists) if artists else None
+                    title = rec.get('title')
+                    matches.append((int(length) // 1000, artist_name, title))
 
         if not matches:
             return None, None, None
 
-        # Find most common duration (mode) to handle different versions
-        durations = [m[0] for m in matches]
-        rounded = [d // 5 * 5 for d in durations]
+        # Score matches: prefer clean titles and common durations
+        # Penalize titles with parenthetical content (live versions, remixes, etc.)
+        import re
+
+        def score_match(m):
+            duration, artist, title = m
+            score = 0
+
+            # Penalize parenthetical suffixes heavily (live, remix, demo, etc.)
+            paren_match = re.search(r'\([^)]+\)\s*$', title)
+            if paren_match:
+                paren_content = paren_match.group().lower()
+                # Extra penalty for live/remix/demo indicators
+                if any(word in paren_content for word in ['live', 'remix', 'demo', 'acoustic', 'radio', 'edit', 'version']):
+                    score -= 100
+                else:
+                    score -= 50
+
+            # Penalize bracket suffixes too
+            if re.search(r'\[[^\]]+\]\s*$', title):
+                score -= 50
+
+            return score
+
+        # Find most common duration among clean (non-penalized) matches first
+        clean_matches = [m for m in matches if score_match(m) >= 0]
+        if clean_matches:
+            durations = [m[0] for m in clean_matches]
+        else:
+            durations = [m[0] for m in matches]
+
+        # Use smaller rounding (3s) to avoid grouping different versions
+        rounded = [d // 3 * 3 for d in durations]
         most_common_rounded = Counter(rounded).most_common(1)[0][0]
 
-        # Find the match with duration closest to the most common rounded value
-        best_match = min(matches, key=lambda m: abs(m[0] - most_common_rounded))
+        # Score by: title cleanliness + duration proximity to mode
+        def final_score(m):
+            title_score = score_match(m)
+            duration_diff = abs(m[0] - most_common_rounded)
+            # Combine: title cleanliness matters most, then duration proximity
+            return (title_score, -duration_diff)
+
+        best_match = max(matches, key=final_score)
         return best_match
 
     except Exception:
@@ -309,11 +353,18 @@ def search_youtube(query: str) -> dict[str, Optional[str]]:
                 candidates = preferred
 
         if candidates:
-            # Didn't use MusicBrainz duration match, so don't return artist/title
+            # Sort by duration if we have a target (pick closest match among filtered)
+            if target_duration:
+                with_duration = [c for c in candidates if c['duration'] is not None]
+                if with_duration:
+                    with_duration.sort(key=lambda c: abs(c['duration'] - target_duration))
+                    candidates = with_duration
+
+            # Use MusicBrainz artist/title if available for lyrics lookup
             return {
                 'url': f"https://www.youtube.com/watch?v={candidates[0]['video_id']}",
-                'artist': None,
-                'title': None,
+                'artist': mb_artist,
+                'title': mb_title,
             }
         return {'url': None, 'artist': None, 'title': None}
 
