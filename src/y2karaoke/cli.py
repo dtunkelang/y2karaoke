@@ -47,9 +47,9 @@ def search_youtube(query: str) -> Optional[str]:
         candidates = []
 
         # Pattern to find video renderer objects with videoId and title
-        # YouTube embeds this data in a JSON structure
+        # YouTube embeds JSON with videoId followed by title within ~800 chars
         video_pattern = re.compile(
-            r'"videoRenderer":\s*\{[^}]*"videoId":\s*"([^"]+)"[^}]*"title":\s*\{"runs":\s*\[\{"text":\s*"([^"]+)"',
+            r'"videoRenderer":\{"videoId":"([^"]{11})".{0,800}?"title":\{"runs":\[\{"text":"([^"]+)"',
             re.DOTALL
         )
 
