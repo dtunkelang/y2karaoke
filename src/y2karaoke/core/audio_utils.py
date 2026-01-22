@@ -22,7 +22,7 @@ def trim_audio_if_needed(
 
     trimmed_name = f"trimmed_from_{start_time:.2f}s.wav"
     if not force and cache_manager.file_exists(video_id, trimmed_name):
-        logger.info("📁 Using cached trimmed audio")
+        logger.debug("📁 Using cached trimmed audio")
         return str(cache_manager.get_file_path(video_id, trimmed_name))
 
     logger.info(f"✂️ Trimming audio from {start_time:.2f}s")
@@ -53,7 +53,7 @@ def apply_audio_effects(
 
     effects_name = f"instrumental_key{key_shift:+d}_tempo{tempo:.2f}.wav"
     if not force and cache_manager.file_exists(video_id, effects_name):
-        logger.info("📁 Using cached processed audio")
+        logger.debug("📁 Using cached processed audio")
         return str(cache_manager.get_file_path(video_id, effects_name))
 
     logger.info(f"🎛️ Applying effects: key={key_shift:+d}, tempo={tempo:.2f}x")

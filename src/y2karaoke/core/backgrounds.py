@@ -71,7 +71,7 @@ class BackgroundProcessor:
                     end_time=end_time
                 ))
             
-            logger.info(f"Created {len(segments)} background segments")
+            logger.debug(f"Created {len(segments)} background segments")
             return segments
             
         except Exception as e:
@@ -160,7 +160,7 @@ def detect_scenes(video_path, threshold=30.0):
 
 if len(sys.argv) > 1:
     scenes = detect_scenes(sys.argv[1])
-    logger.info(",".join(map(str, scenes)))
+    logger.debug(",".join(map(str, scenes)))
 '''
 
             result = subprocess.run(

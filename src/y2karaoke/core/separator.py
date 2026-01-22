@@ -38,7 +38,7 @@ class AudioSeparator:
         existing_instrumental = self._find_existing_file(output_dir, f"{effective_base}*_instrumental.wav")
         
         if existing_vocals and existing_instrumental:
-            logger.info("Using cached vocal separation")
+            logger.debug("Using cached vocal separation")
             return {
                 'vocals_path': existing_vocals,
                 'instrumental_path': existing_instrumental
@@ -143,14 +143,14 @@ def separate_vocals(audio_path: str, output_dir: str = ".") -> dict:
             # Mix bass + drums + other into instrumental
             base_name = os.path.basename(audio_path).rsplit('.', 1)[0]
             instrumental_path = os.path.join(output_dir, f"{base_name}_instrumental.wav")
-            logger.info(f"Mixing {len(non_vocal_files)} stems into instrumental track...")
+            logger.debug(f"Mixing {len(non_vocal_files)} stems into instrumental track...")
             mix_stems(non_vocal_files, instrumental_path)
 
     if not vocals_path or not instrumental_path:
         raise RuntimeError(f"Failed to separate tracks. Output files: {output_files}")
 
-    logger.info(f"Vocals: {vocals_path}")
-    logger.info(f"Instrumental: {instrumental_path}")
+    logger.debug(f"Vocals: {vocals_path}")
+    logger.debug(f"Instrumental: {instrumental_path}")
 
     return {
         'vocals_path': vocals_path,

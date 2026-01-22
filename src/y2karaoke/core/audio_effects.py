@@ -38,7 +38,7 @@ class AudioProcessor:
         
         # No processing needed
         if semitones == 0 and tempo_multiplier == 1.0:
-            logger.info("No audio effects requested, copying file")
+            logger.debug("No audio effects requested, copying file")
             import shutil
             shutil.copy(input_path, output_path)
             return str(output_path)
@@ -65,7 +65,7 @@ class AudioProcessor:
             # Save processed audio
             sf.write(str(output_path), y, sr)
             
-            logger.info(f"Audio processing completed: {output_path.name}")
+            logger.debug(f"Audio processing completed: {output_path.name}")
             return str(output_path)
             
         except Exception as e:

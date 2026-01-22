@@ -51,11 +51,11 @@ def fetch_lyrics_multi_source(
     cache_key = (artist.lower().strip(), title.lower().strip())
     if cache_key in _lrc_cache:
         cached = _lrc_cache[cache_key]
-        logger.info(f"Using cached LRC result for {artist} - {title}")
+        logger.debug(f"Using cached LRC result for {artist} - {title}")
         return cached
 
     search_term = f"{artist} {title}"
-    logger.info(f"Searching for synced lyrics: {search_term}")
+    logger.debug(f"Searching for synced lyrics: {search_term}")
 
     try:
         # Try enhanced (word-level) first if requested
@@ -66,7 +66,7 @@ def fetch_lyrics_multi_source(
                 enhanced=True,
             )
             if lrc and _has_timestamps(lrc):
-                logger.info("Found enhanced (word-level) synced lyrics")
+                logger.debug("Found enhanced (word-level) synced lyrics")
                 result = (lrc, True, "syncedlyrics (enhanced)")
                 _lrc_cache[cache_key] = result
                 return result
@@ -80,12 +80,12 @@ def fetch_lyrics_multi_source(
         if lrc:
             is_synced = _has_timestamps(lrc)
             if is_synced:
-                logger.info("Found synced lyrics with line timing")
+                logger.debug("Found synced lyrics with line timing")
                 result = (lrc, True, "syncedlyrics")
                 _lrc_cache[cache_key] = result
                 return result
             elif not synced_only:
-                logger.info("Found plain lyrics (no timing)")
+                logger.debug("Found plain lyrics (no timing)")
                 result = (lrc, False, "syncedlyrics")
                 _lrc_cache[cache_key] = result
                 return result

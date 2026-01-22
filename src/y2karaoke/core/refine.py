@@ -23,7 +23,7 @@ def refine_word_timing(lines: List[Line], vocals_path: str, respect_line_boundar
             units='frames'
         )
         onset_times = librosa.frames_to_time(onset_frames, sr=sr, hop_length=512)
-        logger.info(f"Detected {len(onset_times)} onsets in vocals")
+        logger.debug(f"Detected {len(onset_times)} onsets in vocals")
 
         # Compute RMS energy
         rms = librosa.feature.rms(y=y, frame_length=2048, hop_length=512)[0]

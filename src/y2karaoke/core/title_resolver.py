@@ -33,7 +33,7 @@ def guess_musicbrainz_candidates(prompt: str, fallback_artist: str = "", fallbac
     """Query MusicBrainz and return a list of candidate (artist, title) pairs with scores."""
     from musicbrainzngs import search_recordings
 
-    logger.info(f"Querying MusicBrainz for prompt: '{prompt}'")
+    logger.debug(f"Querying MusicBrainz for prompt: '{prompt}'")
     candidates = []
 
     try:
@@ -70,7 +70,7 @@ def guess_musicbrainz_candidates(prompt: str, fallback_artist: str = "", fallbac
             "extra_words": extra_words
         })
 
-        logger.info(f"Candidate: artist='{artist}', title='{title}', score={log_score:.3f}, extra_words={extra_words}")
+        logger.debug(f"Candidate: artist='{artist}', title='{title}', score={log_score:.3f}, extra_words={extra_words}")
     
     # Always include fallback
     if fallback_artist or fallback_title:
@@ -97,14 +97,14 @@ def resolve_artist_title_from_youtube(
     for s in ["Official Music Video", "Official Audio", "Lyric Video", "HD", "4K"]:
         cleaned = cleaned.replace(s, '')
     cleaned = cleaned.strip()
-    logger.info(f"Cleaned YouTube title: '{cleaned}'")
+    logger.debug(f"Cleaned YouTube title: '{cleaned}'")
 
     # 2. Fetch MusicBrainz candidates
     candidates = guess_musicbrainz_candidates(
         cleaned, fallback_artist=fallback_artist, fallback_title=fallback_title
     )
     if not candidates:
-        logger.info("No MusicBrainz candidates found; using fallback")
+        logger.debug("No MusicBrainz candidates found; using fallback")
         return fallback_artist or "Unknown", fallback_title or "Unknown"
 
     # Normalize YouTube info
@@ -157,7 +157,7 @@ def resolve_artist_title_from_youtube(
         # Log a cleaner version for clarity
         log_extra = f", extra_words={extra_words}" if extra_words else ""
         log_missing = f", missing_artist_words={missing_artist_words}" if missing_artist_words else ""
-        logger.info(
+        logger.debug(
             f"Candidate: artist='{c['artist']}', title='{c['title']}', "
             f"score={max(0.0, score):.3f}{log_extra}{log_missing}, artist_pos={artist_pos}"
         )

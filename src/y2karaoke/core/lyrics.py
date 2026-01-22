@@ -47,10 +47,10 @@ def _fetch_lrc_text_and_timings(title: str, artist: str) -> Tuple[Optional[str],
         lrc_text, is_synced, source = fetch_lyrics_multi_source(title, artist)
         if lrc_text and is_synced:
             lines = parse_lrc_with_timing(lrc_text, title, artist)
-            logger.info(f"Got {len(lines)} LRC lines from {source}")
+            logger.debug(f"Got {len(lines)} LRC lines from {source}")
             return lrc_text, lines
         else:
-            logger.info(f"No synced LRC available from {source}")
+            logger.debug(f"No synced LRC available from {source}")
             return None, None
     except Exception as e:
         logger.warning(f"LRC fetch failed: {e}")
@@ -91,13 +91,13 @@ def get_lyrics_simple(
     from .alignment import detect_song_start
 
     # 1. Try LRC first (preferred source)
-    logger.info("Fetching LRC lyrics...")
+    logger.debug("Fetching LRC lyrics...")
     lrc_text, line_timings = _fetch_lrc_text_and_timings(title, artist)
 
     # 2. Fetch Genius as fallback or for singer info
     genius_lines, metadata = None, None
     if not line_timings:
-        logger.info("No LRC found, fetching lyrics from Genius...")
+        logger.debug("No LRC found, fetching lyrics from Genius...")
         genius_lines, metadata = fetch_genius_lyrics_with_singers(title, artist)
         if not genius_lines:
             logger.warning("No lyrics found from any source, using placeholder")
@@ -113,7 +113,7 @@ def get_lyrics_simple(
     offset = 0.0
     if vocals_path and line_timings:
         detected_vocal_start = detect_song_start(vocals_path)
-        logger.info(f"Detected vocal start in audio: {detected_vocal_start:.2f}s")
+        logger.debug(f"Detected vocal start in audio: {detected_vocal_start:.2f}s")
         if lyrics_offset is not None:
             offset = lyrics_offset
         else:
@@ -146,7 +146,7 @@ def get_lyrics_simple(
         # 5. Refine word timing using audio
         if vocals_path and len(line_timings) > 1:
             lines = refine_word_timing(lines, vocals_path)
-            logger.info("Word-level timing refined using vocals")
+            logger.debug("Word-level timing refined using vocals")
     else:
         # Fallback: use Genius text with evenly spaced lines
         text_lines = [text for text, _ in genius_lines if text.strip()]
@@ -170,7 +170,7 @@ def get_lyrics_simple(
                 for word in line.words:
                     word.singer = singer_id
 
-    logger.info(f"Returning {len(lines)} lines")
+    logger.debug(f"Returning {len(lines)} lines")
     return lines, metadata
 
 

@@ -38,7 +38,7 @@ def detect_song_start(audio_path: str, min_duration: float = 0.3) -> float:
                 if consecutive >= min_frames:
                     start_frame = i - consecutive + 1
                     start_time = start_frame * hop_length / sr
-                    logger.info(f"Detected vocal start at {start_time:.2f}s")
+                    logger.debug(f"Detected vocal start at {start_time:.2f}s")
                     return start_time
             else:
                 consecutive = 0
