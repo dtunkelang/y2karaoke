@@ -159,40 +159,17 @@ def render_frame(
             # Add lead time so highlight appears slightly ahead of audio
             highlight_time = current_time + HIGHLIGHT_LEAD_TIME
 
-            # Calculate highlight width based on highlight time
-            highlight_width = 0
-            x = line_x
-            word_idx = 0
-            for i, text in enumerate(words_with_spaces):
-                if text == " ":
-                    word = line.words[word_idx - 1] if word_idx > 0 else line.words[0]
-                    # Include space if previous word is done
-                    if highlight_time >= word.end_time:
-                        highlight_width += word_widths[i]
-                    elif highlight_time >= word.start_time:
-                        # Partial space based on word progress
-                        word_duration = word.end_time - word.start_time
-                        if word_duration > 0:
-                            progress = (highlight_time - word.start_time) / word_duration
-                            if progress >= 0.9:  # Include space near end of word
-                                highlight_width += word_widths[i]
-                    continue
+            # Calculate line progress (0 to 1) based on line duration
+            # This ensures highlight completes by line.end_time regardless of word timings
+            line_duration = line.end_time - line.start_time
+            if line_duration > 0:
+                line_progress = (highlight_time - line.start_time) / line_duration
+                line_progress = max(0.0, min(1.0, line_progress))
+            else:
+                line_progress = 1.0
 
-                word = line.words[word_idx]
-                word_idx += 1
-
-                if highlight_time >= word.end_time:
-                    # Word fully highlighted
-                    highlight_width += word_widths[i]
-                elif highlight_time >= word.start_time:
-                    # Partial highlight within word
-                    word_duration = word.end_time - word.start_time
-                    if word_duration > 0:
-                        progress = (highlight_time - word.start_time) / word_duration
-                        highlight_width += int(word_widths[i] * progress)
-                    break
-                else:
-                    break
+            # Calculate highlight width as proportion of total line width
+            highlight_width = int(total_width * line_progress)
 
             # Draw highlighted text directly on top, clipped to highlight_width
             if highlight_width > 0:
