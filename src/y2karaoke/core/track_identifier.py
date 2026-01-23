@@ -895,7 +895,7 @@ class TrackIdentifier:
         """Search YouTube and return the video with closest duration match.
 
         Uses a two-stage approach: first searches without modification,
-        then falls back to adding "lyrics" if no good duration match is found.
+        then falls back to adding "audio" if no good duration match is found.
 
         Args:
             query: Search query
@@ -915,24 +915,24 @@ class TrackIdentifier:
                 if diff <= tolerance:
                     return result
 
-                # Not a good match - try with "lyrics" as fallback
-                logger.debug(f"Initial search found video with duration diff={diff}s, trying 'lyrics' search")
-                lyrics_result = self._search_youtube_single(f"{query} lyrics", target_duration)
+                # Not a good match - try with "audio" as fallback
+                logger.debug(f"Initial search found video with duration diff={diff}s, trying 'audio' search")
+                audio_result = self._search_youtube_single(f"{query} audio", target_duration)
 
-                if lyrics_result and lyrics_result['duration']:
-                    lyrics_diff = abs(lyrics_result['duration'] - target_duration)
-                    if lyrics_diff < diff:
-                        logger.debug(f"'lyrics' search found better match: diff={lyrics_diff}s vs {diff}s")
-                        return lyrics_result
+                if audio_result and audio_result['duration']:
+                    audio_diff = abs(audio_result['duration'] - target_duration)
+                    if audio_diff < diff:
+                        logger.debug(f"'audio' search found better match: diff={audio_diff}s vs {diff}s")
+                        return audio_result
 
-                # Original was still better (or lyrics search found nothing)
+                # Original was still better (or audio search found nothing)
                 return result
             else:
                 return result
 
-        # First search found nothing, try with "lyrics"
-        logger.debug(f"Initial search found no results, trying 'lyrics' search")
-        return self._search_youtube_single(f"{query} lyrics", target_duration)
+        # First search found nothing, try with "audio"
+        logger.debug(f"Initial search found no results, trying 'audio' search")
+        return self._search_youtube_single(f"{query} audio", target_duration)
 
     def _search_youtube_single(
         self,

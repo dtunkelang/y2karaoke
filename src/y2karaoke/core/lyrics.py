@@ -23,6 +23,37 @@ from .lrc import (
 
 logger = logging.getLogger(__name__)
 
+
+def _estimate_singing_duration(text: str, word_count: int) -> float:
+    """
+    Estimate how long it takes to sing a line based on text content.
+
+    Uses character count as primary heuristic since longer words take
+    longer to sing. Assumes roughly 12-15 characters per second for
+    typical singing tempo.
+
+    Args:
+        text: The line text
+        word_count: Number of words in the line
+
+    Returns:
+        Estimated duration in seconds
+    """
+    char_count = len(text.replace(" ", ""))
+
+    # Base estimate: ~0.07 seconds per character (roughly 14 chars/sec)
+    char_based = char_count * 0.07
+
+    # Minimum based on word count (~0.25 sec per word for fast singing)
+    word_based = word_count * 0.25
+
+    # Use the larger of the two estimates
+    duration = max(char_based, word_based)
+
+    # Clamp to reasonable range
+    return max(0.5, min(duration, 8.0))
+
+
 __all__ = [
     # Models
     "Word",
@@ -143,17 +174,21 @@ def get_lyrics_simple(
     offset = 0.0
     if vocals_path and line_timings:
         detected_vocal_start = detect_song_start(vocals_path)
-        logger.debug(f"Detected vocal start in audio: {detected_vocal_start:.2f}s")
+        first_lrc_time = line_timings[0][0]
+        delta = detected_vocal_start - first_lrc_time
+        logger.debug(
+            f"Vocal timing: audio={detected_vocal_start:.2f}s, "
+            f"LRC={first_lrc_time:.2f}s, delta={delta:.2f}s"
+        )
         if lyrics_offset is not None:
             offset = lyrics_offset
         else:
-            # Only auto-apply offset if difference is significant (> 1.5s)
-            # Small differences are likely detection noise, not actual timing issues
-            first_lrc_time = line_timings[0][0]
-            delta = detected_vocal_start - first_lrc_time
-            if delta > 1.5 and delta <= 5.0:
+            # Auto-apply offset if difference is noticeable (> 0.3s) but reasonable (< 10s)
+            # With improved onset detection, smaller corrections are reliable
+            # Negative offsets (LRC ahead of audio) are also valid
+            if abs(delta) > 0.3 and abs(delta) <= 10.0:
                 offset = delta
-                logger.debug(f"Auto-applying vocal offset: {offset:.2f}s")
+                logger.info(f"Auto-applying vocal offset: {offset:+.2f}s")
 
         if offset != 0.0:
             line_timings = [(ts + offset, text) for ts, text in line_timings]
@@ -166,12 +201,18 @@ def get_lyrics_simple(
         for i, line in enumerate(lines):
             if i < len(line_timings):
                 line_start = line_timings[i][0]
-                line_end = line_timings[i + 1][0] if i + 1 < len(line_timings) else line_start + 3.0
-                if line_end - line_start > 10.0:
-                    line_end = line_start + 5.0
+                next_line_start = line_timings[i + 1][0] if i + 1 < len(line_timings) else line_start + 5.0
                 word_count = len(line.words)
                 if word_count > 0:
-                    line_duration = line_end - line_start
+                    # Estimate actual singing duration based on text content
+                    # rather than stretching to fill gap to next line
+                    line_text = " ".join(w.text for w in line.words)
+                    estimated_duration = _estimate_singing_duration(line_text, word_count)
+                    # Don't exceed gap to next line
+                    line_duration = min(estimated_duration, next_line_start - line_start)
+                    # But ensure minimum duration
+                    line_duration = max(line_duration, word_count * 0.15)
+
                     word_duration = (line_duration * 0.95) / word_count
                     for j, word in enumerate(line.words):
                         word.start_time = line_start + j * (line_duration / word_count)
