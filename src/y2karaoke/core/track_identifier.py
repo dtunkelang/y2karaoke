@@ -654,7 +654,11 @@ class TrackIdentifier:
         return normalized
 
     def _score_and_select_best(self, matches: List[tuple]) -> Optional[tuple]:
-        """Score matches and select the best one, penalizing live/remix versions."""
+        """Score matches and select the best one, penalizing live/remix versions.
+
+        Prefers shorter durations when scores are equal, as original studio versions
+        are typically shorter than extended/live versions.
+        """
         if not matches:
             return None
 
@@ -683,13 +687,25 @@ class TrackIdentifier:
         else:
             durations = [m[0] for m in matches]
 
-        rounded = [d // 3 * 3 for d in durations]
-        most_common_rounded = Counter(rounded).most_common(1)[0][0]
+        # Find duration clusters and prefer the shorter common duration
+        # (original album versions are typically shorter than extended/live)
+        rounded = [d // 10 * 10 for d in durations]  # Round to 10s for clustering
+        duration_counts = Counter(rounded)
+
+        # Get durations with at least 2 occurrences, sorted by duration (shortest first)
+        common_durations = sorted([d for d, c in duration_counts.items() if c >= 2])
+        if common_durations:
+            # Prefer the shortest common duration (likely original version)
+            target_duration = common_durations[0]
+        else:
+            # Fallback to most common single duration
+            target_duration = duration_counts.most_common(1)[0][0]
 
         def final_score(m):
             title_score = score_match(m)
-            duration_diff = abs(m[0] - most_common_rounded)
-            return (title_score, -duration_diff)
+            duration_diff = abs(m[0] - target_duration)
+            # Use negative duration as tiebreaker (prefer shorter)
+            return (title_score, -duration_diff, -m[0])
 
         return max(matches, key=final_score)
 
@@ -878,8 +894,55 @@ class TrackIdentifier:
     ) -> Optional[Dict[str, Any]]:
         """Search YouTube and return the video with closest duration match.
 
+        Uses a two-stage approach: first searches without modification,
+        then falls back to adding "lyrics" if no good duration match is found.
+
         Args:
             query: Search query
+            target_duration: Target duration in seconds
+
+        Returns:
+            Dict with 'url' and 'duration' keys, or None if not found
+        """
+        # First try without "lyrics"
+        result = self._search_youtube_single(query, target_duration)
+
+        if result:
+            # Check if this is a good duration match
+            if target_duration > 0 and result['duration']:
+                tolerance = max(20, int(target_duration * 0.15))
+                diff = abs(result['duration'] - target_duration)
+                if diff <= tolerance:
+                    return result
+
+                # Not a good match - try with "lyrics" as fallback
+                logger.debug(f"Initial search found video with duration diff={diff}s, trying 'lyrics' search")
+                lyrics_result = self._search_youtube_single(f"{query} lyrics", target_duration)
+
+                if lyrics_result and lyrics_result['duration']:
+                    lyrics_diff = abs(lyrics_result['duration'] - target_duration)
+                    if lyrics_diff < diff:
+                        logger.debug(f"'lyrics' search found better match: diff={lyrics_diff}s vs {diff}s")
+                        return lyrics_result
+
+                # Original was still better (or lyrics search found nothing)
+                return result
+            else:
+                return result
+
+        # First search found nothing, try with "lyrics"
+        logger.debug(f"Initial search found no results, trying 'lyrics' search")
+        return self._search_youtube_single(f"{query} lyrics", target_duration)
+
+    def _search_youtube_single(
+        self,
+        query: str,
+        target_duration: int
+    ) -> Optional[Dict[str, Any]]:
+        """Execute a single YouTube search and return the best match.
+
+        Args:
+            query: Search query (used as-is)
             target_duration: Target duration in seconds
 
         Returns:
