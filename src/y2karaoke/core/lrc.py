@@ -65,8 +65,10 @@ def _is_metadata_line(text: str, title: str = "", artist: str = "", timestamp: f
         "lyricist:", "lyrics by", "written by", "produced by", "music by",
         "source:", "contributor:", "arranged by", "performed by", "vocals by",
         "music and lyrics", "words and music",
-        # Japanese metadata (kanji and romanized) - various spacing
-        "編曲:", "作詞:", "作曲:", "歌手:",
+        # Chinese metadata (simplified and traditional)
+        "作词", "作詞", "作曲", "编曲", "編曲", "制作人", "演唱", "歌手",
+        "词:", "曲:", "词 :", "曲 :",
+        # Japanese metadata (romanized) - various spacing
         "saku:", "saku :", "sakkyoku:", "sakkyoku :", "sakushi:", "sakushi :",
         "henkyoku:", "henkyoku :", "kashu:", "kashu :",
         # Korean metadata
