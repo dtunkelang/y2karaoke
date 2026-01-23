@@ -17,6 +17,23 @@ from ..exceptions import Y2KaraokeError
 
 logger = get_logger(__name__)
 
+# Stopwords for multiple languages - filtered during title/artist matching
+STOP_WORDS = {
+    # English
+    "the", "a", "an", "and", "or", "of", "with", "in", "to", "for", "by",
+    "&", "+",
+    # Spanish
+    "el", "la", "los", "las", "un", "una", "unos", "unas", "y", "de", "del", "con",
+    # French
+    "le", "la", "les", "un", "une", "des", "et", "de", "du", "au", "aux",
+    # German
+    "der", "die", "das", "ein", "eine", "und", "von", "mit",
+    # Italian
+    "il", "lo", "la", "i", "gli", "le", "un", "uno", "una", "e", "di", "del", "della",
+    # Portuguese
+    "o", "a", "os", "as", "um", "uma", "uns", "umas", "e", "de", "do", "da", "dos", "das",
+}
+
 # Initialize MusicBrainz
 musicbrainzngs.set_useragent(
     "y2karaoke", "1.0", "https://github.com/dtunkelang/y2karaoke"
@@ -384,6 +401,7 @@ class TrackIdentifier:
         Prioritizes studio recordings by:
         1. Including release information to check for album vs. compilation
         2. Filtering and sorting by recording attributes
+        3. Boosting recordings with titles matching the search hint
         """
         try:
             # Include release info to check release type
@@ -396,10 +414,31 @@ class TrackIdentifier:
 
             recordings = results.get('recording-list', [])
 
-            # Score and sort recordings to prioritize studio versions
+            # Score and sort recordings to prioritize studio versions and title matches
             scored = []
             for rec in recordings:
                 score = self._score_recording_studio_likelihood(rec)
+
+                # Bonus for title match (when user explicitly provides title)
+                if title_hint:
+                    rec_title = rec.get('title', '')
+
+                    # First check exact match (with stopwords retained)
+                    title_hint_norm = self._normalize_title(title_hint, remove_stopwords=False)
+                    rec_title_norm = self._normalize_title(rec_title, remove_stopwords=False)
+
+                    if rec_title_norm == title_hint_norm:
+                        score += 100  # Strong bonus for exact match - should outweigh album release bonus
+                    else:
+                        # Check match with stopwords removed (looser matching)
+                        title_hint_no_stop = self._normalize_title(title_hint, remove_stopwords=True)
+                        rec_title_no_stop = self._normalize_title(rec_title, remove_stopwords=True)
+
+                        if rec_title_no_stop == title_hint_no_stop:
+                            score += 30  # Moderate bonus for stopword-invariant match
+                        elif title_hint_no_stop in rec_title_no_stop or rec_title_no_stop in title_hint_no_stop:
+                            score += 15  # Small bonus for partial match
+
                 scored.append((score, rec))
 
             # Sort by score (highest first) and take top 15
@@ -497,6 +536,7 @@ class TrackIdentifier:
         the caller should also try artist/title splits.
         """
         title_normalized = self._normalize_title(title_hint)
+        title_normalized_no_stop = self._normalize_title(title_hint, remove_stopwords=True)
         candidates = []
 
         # Check if query might contain an artist name (parenthetical in results would match)
@@ -510,7 +550,10 @@ class TrackIdentifier:
                 continue
 
             rec_title_normalized = self._normalize_title(title)
-            if rec_title_normalized != title_normalized:
+            rec_title_no_stop = self._normalize_title(title, remove_stopwords=True)
+
+            # Try exact match first, then stopword-removed match
+            if rec_title_normalized != title_normalized and rec_title_no_stop != title_normalized_no_stop:
                 continue
 
             artist_credits = rec.get('artist-credit', [])
@@ -594,10 +637,20 @@ class TrackIdentifier:
 
         return None
 
-    def _normalize_title(self, title: str) -> str:
-        """Normalize title for comparison."""
+    def _normalize_title(self, title: str, remove_stopwords: bool = False) -> str:
+        """Normalize title for comparison.
+
+        Args:
+            title: Title string to normalize
+            remove_stopwords: If True, remove common stopwords (the, el, los, etc.)
+        """
         normalized = re.sub(r'[,.\-:;\'\"!?()]', ' ', title.lower())
         normalized = re.sub(r'\s+', ' ', normalized).strip()
+
+        if remove_stopwords:
+            words = [w for w in normalized.split() if w not in STOP_WORDS]
+            normalized = ' '.join(words)
+
         return normalized
 
     def _score_and_select_best(self, matches: List[tuple]) -> Optional[tuple]:
