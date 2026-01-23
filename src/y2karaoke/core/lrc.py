@@ -63,8 +63,14 @@ def _is_metadata_line(text: str, title: str = "", artist: str = "", timestamp: f
     metadata_prefixes = [
         "artist:", "song:", "title:", "album:", "writer:", "composer:",
         "lyricist:", "lyrics by", "written by", "produced by", "music by",
-        "source:", "contributor:", "編曲:", "作詞:", "作曲:", "歌手:",
-        "arranged by", "performed by", "vocals by", "music and lyrics",
+        "source:", "contributor:", "arranged by", "performed by", "vocals by",
+        "music and lyrics",
+        # Japanese metadata (kanji and romanized)
+        "編曲:", "作詞:", "作曲:", "歌手:",
+        "saku:", "saku :", "sakkyoku:", "sakkyoku :", "sakushi:", "sakushi :",
+        "henkyoku:", "henkyoku :", "kashu:", "kashu :",
+        # Korean metadata
+        "작사:", "작곡:", "편곡:",
     ]
     for prefix in metadata_prefixes:
         if text_lower.startswith(prefix):
