@@ -3,8 +3,9 @@
 import re
 import sys
 import os
+import time
 from contextlib import contextmanager
-from typing import Optional, Tuple, Dict
+from typing import Optional, Tuple, Dict, List
 
 from ..utils.logging import get_logger
 
@@ -18,19 +19,122 @@ except ImportError:
     SYNCEDLYRICS_AVAILABLE = False
 
 
+# Provider order: prioritize more reliable sources
+# NetEase and Lrclib tend to have good coverage, Musixmatch has rate limits
+PROVIDER_ORDER = ['netease', 'lrclib', 'megalobiz', 'deezer', 'musixmatch']
+
+# Providers that have shown persistent failures (skip after repeated errors)
+_failed_providers: Dict[str, int] = {}
+_FAILURE_THRESHOLD = 3  # Skip provider after this many consecutive failures
+
+
 @contextmanager
 def _suppress_stderr():
     """Temporarily suppress stderr to hide noisy library output."""
-    # Save the original stderr
     original_stderr = sys.stderr
     try:
-        # Redirect stderr to devnull
         sys.stderr = open(os.devnull, 'w')
         yield
     finally:
-        # Restore stderr
         sys.stderr.close()
         sys.stderr = original_stderr
+
+
+def _search_single_provider(
+    search_term: str,
+    provider: str,
+    synced_only: bool = True,
+    enhanced: bool = False,
+    max_retries: int = 2,
+    retry_delay: float = 1.0,
+) -> Optional[str]:
+    """Search a single provider with retry logic.
+
+    Args:
+        search_term: Search query
+        provider: Provider name
+        synced_only: Only return synced lyrics
+        enhanced: Try word-level timing
+        max_retries: Number of retries on failure
+        retry_delay: Base delay between retries (exponential backoff)
+
+    Returns:
+        LRC text if found, None otherwise
+    """
+    global _failed_providers
+
+    # Skip providers that have failed too many times
+    if _failed_providers.get(provider, 0) >= _FAILURE_THRESHOLD:
+        logger.debug(f"Skipping {provider} due to repeated failures")
+        return None
+
+    for attempt in range(max_retries + 1):
+        try:
+            with _suppress_stderr():
+                lrc = syncedlyrics.search(
+                    search_term,
+                    providers=[provider],
+                    synced_only=synced_only,
+                    enhanced=enhanced,
+                )
+            if lrc:
+                # Success - reset failure count
+                _failed_providers[provider] = 0
+                return lrc
+            # No result but no error - don't count as failure
+            return None
+
+        except Exception as e:
+            error_msg = str(e).lower()
+            # Check for transient vs permanent errors
+            is_transient = any(x in error_msg for x in [
+                'connection', 'timeout', 'temporarily', 'rate limit',
+                'remote end closed', '429', '503', '502'
+            ])
+
+            if is_transient and attempt < max_retries:
+                delay = retry_delay * (2 ** attempt)  # Exponential backoff
+                logger.debug(f"{provider} transient error, retrying in {delay:.1f}s: {e}")
+                time.sleep(delay)
+                continue
+            else:
+                # Permanent error or retries exhausted
+                _failed_providers[provider] = _failed_providers.get(provider, 0) + 1
+                logger.debug(f"{provider} failed (attempt {attempt + 1}): {e}")
+                return None
+
+    return None
+
+
+def _search_with_fallback(
+    search_term: str,
+    synced_only: bool = True,
+    enhanced: bool = False,
+) -> Tuple[Optional[str], str]:
+    """Search across providers with fallback.
+
+    Tries each provider in order until one succeeds.
+
+    Returns:
+        Tuple of (lrc_text, provider_name)
+    """
+    for provider in PROVIDER_ORDER:
+        logger.debug(f"Trying {provider} for: {search_term}")
+        lrc = _search_single_provider(
+            search_term,
+            provider,
+            synced_only=synced_only,
+            enhanced=enhanced,
+        )
+        if lrc:
+            logger.debug(f"Found lyrics from {provider}")
+            return lrc, provider
+
+        # Small delay between providers to be nice to services
+        time.sleep(0.3)
+
+    return None, ""
+
 
 # Cache for LRC results to avoid duplicate fetches
 # Key: (artist.lower(), title.lower()), Value: (lrc_text, is_synced, source_name)
@@ -46,8 +150,8 @@ def fetch_lyrics_multi_source(
     """
     Fetch lyrics from multiple sources using syncedlyrics.
 
-    Results are cached to avoid duplicate network requests when checking
-    LRC availability during search and then fetching lyrics later.
+    Tries providers in order with retries and fallback for reliability.
+    Results are cached to avoid duplicate network requests.
 
     Args:
         title: Song title
@@ -76,41 +180,39 @@ def fetch_lyrics_multi_source(
     logger.debug(f"Searching for synced lyrics: {search_term}")
 
     try:
-        # Suppress noisy error messages from syncedlyrics providers
-        with _suppress_stderr():
-            # Try enhanced (word-level) first if requested
-            if enhanced:
-                lrc = syncedlyrics.search(
-                    search_term,
-                    synced_only=True,
-                    enhanced=True,
-                )
-                if lrc and _has_timestamps(lrc):
-                    logger.debug("Found enhanced (word-level) synced lyrics")
-                    result = (lrc, True, "syncedlyrics (enhanced)")
-                    _lrc_cache[cache_key] = result
-                    return result
-
-            # Try synced lyrics
-            lrc = syncedlyrics.search(
+        # Try enhanced (word-level) first if requested
+        if enhanced:
+            lrc, provider = _search_with_fallback(
                 search_term,
-                synced_only=synced_only,
+                synced_only=True,
+                enhanced=True,
             )
+            if lrc and _has_timestamps(lrc):
+                logger.debug(f"Found enhanced (word-level) synced lyrics from {provider}")
+                result = (lrc, True, f"{provider} (enhanced)")
+                _lrc_cache[cache_key] = result
+                return result
+
+        # Try synced lyrics with provider fallback
+        lrc, provider = _search_with_fallback(
+            search_term,
+            synced_only=synced_only,
+        )
 
         if lrc:
             is_synced = _has_timestamps(lrc)
             if is_synced:
-                logger.debug("Found synced lyrics with line timing")
-                result = (lrc, True, "syncedlyrics")
+                logger.debug(f"Found synced lyrics from {provider}")
+                result = (lrc, True, provider)
                 _lrc_cache[cache_key] = result
                 return result
             elif not synced_only:
-                logger.debug("Found plain lyrics (no timing)")
-                result = (lrc, False, "syncedlyrics")
+                logger.debug(f"Found plain lyrics from {provider}")
+                result = (lrc, False, provider)
                 _lrc_cache[cache_key] = result
                 return result
 
-        logger.warning("No synced lyrics found")
+        logger.warning("No synced lyrics found from any provider")
         result = (None, False, "")
         _lrc_cache[cache_key] = result
         return result
@@ -253,26 +355,21 @@ def fetch_lyrics_for_duration(
 
     # Strategy 2: Try searching with different terms
     alternative_searches = [
+        f"{title} {artist}",  # Swap order
         f"{artist} {title} official",
         f"{artist} {title} album version",
-        f"{title} {artist}",  # Swap order
     ]
 
     for search_term in alternative_searches:
         logger.debug(f"Trying alternative LRC search: {search_term}")
-        try:
-            with _suppress_stderr():
-                lrc = syncedlyrics.search(search_term, synced_only=True)
-            if lrc and _has_timestamps(lrc):
-                alt_duration = get_lrc_duration(lrc)
-                if alt_duration:
-                    diff = abs(alt_duration - target_duration)
-                    if diff <= tolerance:
-                        logger.info(f"Found LRC with alternative search '{search_term}': {alt_duration}s")
-                        return lrc, True, f"syncedlyrics ({search_term})", alt_duration
-        except Exception as e:
-            logger.debug(f"Alternative search failed: {e}")
-            continue
+        lrc, provider = _search_with_fallback(search_term, synced_only=True)
+        if lrc and _has_timestamps(lrc):
+            alt_duration = get_lrc_duration(lrc)
+            if alt_duration:
+                diff = abs(alt_duration - target_duration)
+                if diff <= tolerance:
+                    logger.info(f"Found LRC with alternative search '{search_term}' from {provider}: {alt_duration}s")
+                    return lrc, True, f"{provider} ({search_term})", alt_duration
 
     # Strategy 3: If we found LRC but duration doesn't match, return it anyway
     # with a warning - better than nothing
