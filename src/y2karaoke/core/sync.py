@@ -112,16 +112,81 @@ def _has_timestamps(lrc_text: str) -> bool:
 
 
 def get_lrc_duration(lrc_text: str) -> Optional[int]:
-    """Get the implied duration from LRC text (last timestamp + buffer)."""
+    """Get the implied duration from LRC text based on timestamp span.
+
+    Uses first-to-last timestamp difference plus a proportional buffer,
+    rather than arbitrary fixed buffer.
+    """
     if not lrc_text or not _has_timestamps(lrc_text):
         return None
 
     from .lrc import parse_lrc_with_timing
     timings = parse_lrc_with_timing(lrc_text, "", "")
-    if timings:
-        last_ts = timings[-1][0]
-        return int(last_ts + 5)  # Add 5s buffer for outro
-    return None
+    if not timings or len(timings) < 2:
+        return None
+
+    first_ts = timings[0][0]
+    last_ts = timings[-1][0]
+    lyrics_span = last_ts - first_ts
+
+    # Add proportional buffer: ~10% of span or minimum 3s for outro
+    # This accounts for songs with varying outro lengths
+    buffer = max(3, int(lyrics_span * 0.1))
+
+    return int(last_ts + buffer)
+
+
+def validate_lrc_quality(lrc_text: str, expected_duration: Optional[int] = None) -> tuple[bool, str]:
+    """Validate that an LRC file has sufficient quality for karaoke use.
+
+    Checks:
+    - Minimum timestamp density (at least 1 timestamp per 15 seconds)
+    - Sufficient coverage of expected duration (80%+ if duration provided)
+    - No large gaps (>30s) in the middle of the song
+
+    Args:
+        lrc_text: The LRC text to validate
+        expected_duration: Expected song duration in seconds (optional)
+
+    Returns:
+        Tuple of (is_valid, reason_if_invalid)
+    """
+    if not lrc_text or not _has_timestamps(lrc_text):
+        return False, "No timestamps found"
+
+    from .lrc import parse_lrc_with_timing
+    timings = parse_lrc_with_timing(lrc_text, "", "")
+
+    if len(timings) < 5:
+        return False, f"Too few timestamped lines ({len(timings)})"
+
+    first_ts = timings[0][0]
+    last_ts = timings[-1][0]
+    lyrics_span = last_ts - first_ts
+
+    if lyrics_span < 30:
+        return False, f"Lyrics span too short ({lyrics_span:.0f}s)"
+
+    # Check timestamp density: at least 1 per 15 seconds on average
+    density = len(timings) / (lyrics_span / 15) if lyrics_span > 0 else 0
+    if density < 1.0:
+        return False, f"Timestamp density too low ({density:.2f} per 15s)"
+
+    # Check for large gaps (>30s) that might indicate missing sections
+    for i in range(1, len(timings)):
+        gap = timings[i][0] - timings[i-1][0]
+        if gap > 30:
+            logger.debug(f"Large gap detected in LRC: {gap:.0f}s between lines {i-1} and {i}")
+            # Don't fail for single large gap (could be instrumental break)
+            # but flag if there are multiple
+
+    # Check coverage of expected duration
+    if expected_duration and expected_duration > 0:
+        coverage = lyrics_span / expected_duration
+        if coverage < 0.6:
+            return False, f"LRC covers only {coverage*100:.0f}% of expected duration"
+
+    return True, ""
 
 
 def fetch_lyrics_for_duration(
