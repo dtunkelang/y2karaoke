@@ -7,7 +7,7 @@ from PIL import Image, ImageDraw, ImageFont
 from ..config import (
     VIDEO_WIDTH, VIDEO_HEIGHT, LINE_SPACING,
     SPLASH_DURATION, INSTRUMENTAL_BREAK_THRESHOLD, LYRICS_LEAD_TIME,
-    HIGHLIGHT_LEAD_TIME, Colors
+    HIGHLIGHT_LEAD_TIME, LYRICS_ACTIVATION_LEAD, Colors
 )
 from .backgrounds_static import draw_logo_screen, draw_splash_screen
 from .progress import draw_progress_bar
@@ -49,9 +49,11 @@ def render_frame(
             progress = elapsed / bar_duration if bar_duration > 0 else 1.0
 
     # --- Determine current line ---
+    # Use activation lead to start highlighting a line early (compensate for timing lag)
+    activation_time = current_time + LYRICS_ACTIVATION_LEAD
     current_line_idx = 0
     for i, line in enumerate(lines):
-        if line.start_time <= current_time:
+        if line.start_time <= activation_time:
             current_line_idx = i
 
     # --- Outro after last lyrics ---
@@ -108,7 +110,7 @@ def render_frame(
             gap = this_line.start_time - prev_line.end_time
             if gap >= INSTRUMENTAL_BREAK_THRESHOLD and current_time < this_line.start_time - LYRICS_LEAD_TIME:
                 break
-        is_current = line_idx == current_line_idx and current_time >= lines[line_idx].start_time
+        is_current = line_idx == current_line_idx and activation_time >= lines[line_idx].start_time
         lines_to_show.append((lines[line_idx], is_current))
 
     total_height = len(lines_to_show) * LINE_SPACING
@@ -156,8 +158,9 @@ def render_frame(
 
         # For current line, draw highlighted portion with gradual sweep
         if is_current:
-            # Add lead time so highlight appears slightly ahead of audio
-            highlight_time = current_time + HIGHLIGHT_LEAD_TIME
+            # Use activation_time (which includes LYRICS_ACTIVATION_LEAD) plus small lead
+            # for smooth highlight sweep that completes by the shifted end time
+            highlight_time = activation_time + HIGHLIGHT_LEAD_TIME
 
             # Calculate line progress (0 to 1) based on line duration
             # This ensures highlight completes by line.end_time regardless of word timings

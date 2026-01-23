@@ -9,7 +9,6 @@ from ..config import get_cache_dir
 from ..utils.cache import CacheManager
 from ..utils.logging import get_logger
 from ..utils.validation import sanitize_filename
-from .title_resolver import resolve_artist_title_from_youtube
 from .downloader import YouTubeDownloader, extract_video_id
 from .separator import AudioSeparator
 from .audio_effects import AudioProcessor
@@ -55,6 +54,7 @@ class KaraokeGenerator:
         force_reprocess: bool = False,
         video_settings: Optional[Dict[str, Any]] = None,
         original_prompt: Optional[str] = None,
+        target_duration: Optional[int] = None,
     ) -> Dict[str, Any]:
 
         self._original_prompt = original_prompt
@@ -93,29 +93,11 @@ class KaraokeGenerator:
         )
 
         # Step 5: Determine final artist/title for lyrics
-        if original_prompt and not lyrics_title and not lyrics_artist:
-            if url.startswith("http"):
-                try:
-                    youtube_title = self.downloader.get_video_title(url)
-                except Exception as e:
-                    logger.warning(f"Failed to fetch YouTube title: {e}")
-                    youtube_title = original_prompt
-            else:
-                youtube_title = original_prompt
+        # Trust the upstream identification from CLI; only use download metadata as fallback
+        final_artist = lyrics_artist if lyrics_artist else audio_result["artist"]
+        final_title = lyrics_title if lyrics_title else audio_result["title"]
 
-            youtube_artist_hint = self.downloader.get_video_uploader(url)
-
-            final_artist, final_title = resolve_artist_title_from_youtube(
-                youtube_title,
-                youtube_artist=youtube_artist_hint,
-                fallback_artist=audio_result["artist"],
-                fallback_title=audio_result["title"],
-            )
-        else:
-            final_artist = lyrics_artist if lyrics_artist else audio_result["artist"]
-            final_title = lyrics_title if lyrics_title else audio_result["title"]
-
-        # Step 6: Fetch lyrics
+        # Step 6: Fetch lyrics (with duration validation if available)
         lyrics_result = self._get_lyrics(
             final_title,
             final_artist,
@@ -123,6 +105,7 @@ class KaraokeGenerator:
             video_id,
             force_reprocess,
             lyrics_offset=lyrics_offset,
+            target_duration=target_duration,
         )
 
         # Step 7: Apply audio effects to instrumental (vocals removed)
@@ -220,11 +203,11 @@ class KaraokeGenerator:
         cache_dir = self.cache_manager.get_video_cache_dir(video_id)
         return self.downloader.download_video(url, cache_dir)
 
-    def _get_lyrics(self, title: str, artist: str, vocals_path: str, video_id: str, force: bool, lyrics_offset: Optional[float] = None) -> Dict[str, Any]:
+    def _get_lyrics(self, title: str, artist: str, vocals_path: str, video_id: str, force: bool, lyrics_offset: Optional[float] = None, target_duration: Optional[int] = None) -> Dict[str, Any]:
         logger.info("📝 Fetching lyrics...")
         from ..core.lyrics import get_lyrics_simple
         lines, metadata = get_lyrics_simple(
-            title=title, artist=artist, vocals_path=vocals_path, lyrics_offset=lyrics_offset, romanize=True
+            title=title, artist=artist, vocals_path=vocals_path, lyrics_offset=lyrics_offset, romanize=True, target_duration=target_duration
         )
         return {"lines": lines, "metadata": metadata}
 

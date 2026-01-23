@@ -40,18 +40,46 @@ __all__ = [
 ]
 
 
-def _fetch_lrc_text_and_timings(title: str, artist: str) -> Tuple[Optional[str], Optional[List[Tuple[float, str]]]]:
-    """Fetch raw LRC text and parsed timings from available sources."""
+def _fetch_lrc_text_and_timings(
+    title: str,
+    artist: str,
+    target_duration: Optional[int] = None
+) -> Tuple[Optional[str], Optional[List[Tuple[float, str]]]]:
+    """Fetch raw LRC text and parsed timings from available sources.
+
+    Args:
+        title: Song title
+        artist: Artist name
+        target_duration: Expected track duration in seconds (for validation)
+
+    Returns:
+        Tuple of (lrc_text, parsed_timings)
+    """
     try:
-        from .sync import fetch_lyrics_multi_source
-        lrc_text, is_synced, source = fetch_lyrics_multi_source(title, artist)
-        if lrc_text and is_synced:
-            lines = parse_lrc_with_timing(lrc_text, title, artist)
-            logger.debug(f"Got {len(lines)} LRC lines from {source}")
-            return lrc_text, lines
+        if target_duration:
+            # Use duration-aware fetch to find LRC matching target
+            from .sync import fetch_lyrics_for_duration
+            lrc_text, is_synced, source, lrc_duration = fetch_lyrics_for_duration(
+                title, artist, target_duration, tolerance=20
+            )
+            if lrc_text and is_synced:
+                lines = parse_lrc_with_timing(lrc_text, title, artist)
+                logger.debug(f"Got {len(lines)} LRC lines from {source} (duration: {lrc_duration}s)")
+                return lrc_text, lines
+            else:
+                logger.debug(f"No duration-matched LRC available")
+                return None, None
         else:
-            logger.debug(f"No synced LRC available from {source}")
-            return None, None
+            # Fallback to standard fetch without duration validation
+            from .sync import fetch_lyrics_multi_source
+            lrc_text, is_synced, source = fetch_lyrics_multi_source(title, artist)
+            if lrc_text and is_synced:
+                lines = parse_lrc_with_timing(lrc_text, title, artist)
+                logger.debug(f"Got {len(lines)} LRC lines from {source}")
+                return lrc_text, lines
+            else:
+                logger.debug(f"No synced LRC available from {source}")
+                return None, None
     except Exception as e:
         logger.warning(f"LRC fetch failed: {e}")
         return None, None
@@ -64,6 +92,7 @@ def get_lyrics_simple(
     cache_dir: Optional[str] = None,
     lyrics_offset: Optional[float] = None,
     romanize: bool = True,
+    target_duration: Optional[int] = None,
 ) -> Tuple[List[Line], Optional[SongMetadata]]:
     """Simplified lyrics pipeline favoring LRC over Genius.
 
@@ -82,6 +111,7 @@ def get_lyrics_simple(
         cache_dir: Cache directory (unused, for API compatibility)
         lyrics_offset: Manual timing offset in seconds (auto-detected if None)
         romanize: Whether to romanize non-Latin scripts
+        target_duration: Expected track duration in seconds (for LRC validation)
 
     Returns:
         Tuple of (lines, metadata)
@@ -90,9 +120,9 @@ def get_lyrics_simple(
     from .refine import refine_word_timing
     from .alignment import detect_song_start
 
-    # 1. Try LRC first (preferred source)
-    logger.debug("Fetching LRC lyrics...")
-    lrc_text, line_timings = _fetch_lrc_text_and_timings(title, artist)
+    # 1. Try LRC first (preferred source), with duration validation if provided
+    logger.debug(f"Fetching LRC lyrics... (target_duration={target_duration})")
+    lrc_text, line_timings = _fetch_lrc_text_and_timings(title, artist, target_duration)
 
     # 2. Fetch Genius as fallback or for singer info
     genius_lines, metadata = None, None
@@ -117,10 +147,13 @@ def get_lyrics_simple(
         if lyrics_offset is not None:
             offset = lyrics_offset
         else:
+            # Only auto-apply offset if difference is significant (> 1.5s)
+            # Small differences are likely detection noise, not actual timing issues
             first_lrc_time = line_timings[0][0]
             delta = detected_vocal_start - first_lrc_time
-            if 0.0 < delta <= 5.0:
+            if delta > 1.5 and delta <= 5.0:
                 offset = delta
+                logger.debug(f"Auto-applying vocal offset: {offset:.2f}s")
 
         if offset != 0.0:
             line_timings = [(ts + offset, text) for ts, text in line_timings]

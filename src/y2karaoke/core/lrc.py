@@ -32,10 +32,18 @@ _LRC_TS_RE = re.compile(
 # ----------------------
 # Metadata filtering
 # ----------------------
-def _is_metadata_line(text: str, title: str = "", artist: str = "") -> bool:
+def _is_metadata_line(text: str, title: str = "", artist: str = "", timestamp: float = -1.0) -> bool:
     """
     Determine if a line is metadata rather than actual lyrics.
-    Skips obvious labels, credits, and title/artist lines.
+    Skips obvious labels, credits, and title/artist lines that appear as headers.
+
+    Args:
+        text: The line text to check
+        title: Song title (for filtering title-only header lines)
+        artist: Artist name (for filtering artist-only header lines)
+        timestamp: Line timestamp in seconds (-1 if unknown). Lines matching
+                   title/artist are only filtered if they appear very early (< 2s),
+                   as later occurrences are likely actual lyrics.
     """
     import re
 
@@ -82,7 +90,11 @@ def _is_metadata_line(text: str, title: str = "", artist: str = "") -> bool:
         if len(first_word) <= 15:  # Usernames are typically short
             return True
 
-    if title:
+    # Only filter title/artist lines if they appear very early (likely headers)
+    # Lines appearing later (>= 2s) with title text are probably actual lyrics
+    is_early_line = timestamp < 2.0
+
+    if title and is_early_line:
         title_lower = title.lower().replace(" ", "")
         line_normalized = text_lower.replace(" ", "")
         if line_normalized == title_lower:
@@ -94,7 +106,7 @@ def _is_metadata_line(text: str, title: str = "", artist: str = "") -> bool:
             if line_normalized == combined1 or line_normalized == combined2:
                 return True
 
-    if artist:
+    if artist and is_early_line:
         artist_lower = artist.lower().replace(" ", "")
         line_normalized = text_lower.replace(" ", "")
         if line_normalized == artist_lower:
@@ -142,7 +154,7 @@ def parse_lrc_with_timing(lrc_text: str, title: str = "", artist: str = "") -> L
             continue
 
         text_part = line[match.end():].strip()
-        if text_part and not _is_metadata_line(text_part, title, artist):
+        if text_part and not _is_metadata_line(text_part, title, artist, timestamp):
             lines.append((timestamp, text_part))
 
     return lines
