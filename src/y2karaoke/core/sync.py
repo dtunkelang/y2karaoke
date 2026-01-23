@@ -1,6 +1,9 @@
 """Synced lyrics fetching using syncedlyrics library."""
 
 import re
+import sys
+import os
+from contextlib import contextmanager
 from typing import Optional, Tuple, Dict
 
 from ..utils.logging import get_logger
@@ -13,6 +16,21 @@ try:
 except ImportError:
     syncedlyrics = None
     SYNCEDLYRICS_AVAILABLE = False
+
+
+@contextmanager
+def _suppress_stderr():
+    """Temporarily suppress stderr to hide noisy library output."""
+    # Save the original stderr
+    original_stderr = sys.stderr
+    try:
+        # Redirect stderr to devnull
+        sys.stderr = open(os.devnull, 'w')
+        yield
+    finally:
+        # Restore stderr
+        sys.stderr.close()
+        sys.stderr = original_stderr
 
 # Cache for LRC results to avoid duplicate fetches
 # Key: (artist.lower(), title.lower()), Value: (lrc_text, is_synced, source_name)
@@ -58,24 +76,26 @@ def fetch_lyrics_multi_source(
     logger.debug(f"Searching for synced lyrics: {search_term}")
 
     try:
-        # Try enhanced (word-level) first if requested
-        if enhanced:
+        # Suppress noisy error messages from syncedlyrics providers
+        with _suppress_stderr():
+            # Try enhanced (word-level) first if requested
+            if enhanced:
+                lrc = syncedlyrics.search(
+                    search_term,
+                    synced_only=True,
+                    enhanced=True,
+                )
+                if lrc and _has_timestamps(lrc):
+                    logger.debug("Found enhanced (word-level) synced lyrics")
+                    result = (lrc, True, "syncedlyrics (enhanced)")
+                    _lrc_cache[cache_key] = result
+                    return result
+
+            # Try synced lyrics
             lrc = syncedlyrics.search(
                 search_term,
-                synced_only=True,
-                enhanced=True,
+                synced_only=synced_only,
             )
-            if lrc and _has_timestamps(lrc):
-                logger.debug("Found enhanced (word-level) synced lyrics")
-                result = (lrc, True, "syncedlyrics (enhanced)")
-                _lrc_cache[cache_key] = result
-                return result
-
-        # Try synced lyrics
-        lrc = syncedlyrics.search(
-            search_term,
-            synced_only=synced_only,
-        )
 
         if lrc:
             is_synced = _has_timestamps(lrc)
@@ -241,7 +261,8 @@ def fetch_lyrics_for_duration(
     for search_term in alternative_searches:
         logger.debug(f"Trying alternative LRC search: {search_term}")
         try:
-            lrc = syncedlyrics.search(search_term, synced_only=True)
+            with _suppress_stderr():
+                lrc = syncedlyrics.search(search_term, synced_only=True)
             if lrc and _has_timestamps(lrc):
                 alt_duration = get_lrc_duration(lrc)
                 if alt_duration:

@@ -64,8 +64,8 @@ def _is_metadata_line(text: str, title: str = "", artist: str = "", timestamp: f
         "artist:", "song:", "title:", "album:", "writer:", "composer:",
         "lyricist:", "lyrics by", "written by", "produced by", "music by",
         "source:", "contributor:", "arranged by", "performed by", "vocals by",
-        "music and lyrics",
-        # Japanese metadata (kanji and romanized)
+        "music and lyrics", "words and music",
+        # Japanese metadata (kanji and romanized) - various spacing
         "編曲:", "作詞:", "作曲:", "歌手:",
         "saku:", "saku :", "sakkyoku:", "sakkyoku :", "sakushi:", "sakushi :",
         "henkyoku:", "henkyoku :", "kashu:", "kashu :",
@@ -74,6 +74,18 @@ def _is_metadata_line(text: str, title: str = "", artist: str = "", timestamp: f
     ]
     for prefix in metadata_prefixes:
         if text_lower.startswith(prefix):
+            return True
+
+    # Check for metadata patterns anywhere in the line (not just start)
+    # This catches lines like "Lyrics: John Lennon" or "Music: Paul McCartney"
+    metadata_keywords = [
+        "composer", "lyricist", "writer", "arranger", "producer",
+        "saku", "sakkyoku", "sakushi", "henkyoku",
+    ]
+    # Pattern: keyword followed by colon and a proper name
+    for keyword in metadata_keywords:
+        pattern = rf'\b{keyword}\s*:\s*[A-Z]'
+        if re.search(pattern, text, re.IGNORECASE):
             return True
 
     # Skip common metadata patterns
