@@ -131,13 +131,17 @@ class TrackIdentifier:
                         # Strong bonus if split_artist matches the result artist
                         # (the search hint found what we were looking for)
                         if split_artist.lower() in artist.lower() or artist.lower() in split_artist.lower():
-                            score += 15
+                            score += 20
 
-                        # Bonus if result artist appears in original query
-                        artist_words = set(artist.lower().split())
-                        artist_in_query = any(w in query_lower for w in artist_words if len(w) > 2)
+                        # Check if result artist has any words in common with the query
+                        # This is crucial - an artist with NO connection to query is suspicious
+                        artist_words = set(w for w in artist.lower().split() if len(w) > 2)
+                        artist_in_query = any(w in query_lower for w in artist_words)
                         if artist_in_query:
-                            score += 10
+                            score += 15
+                        else:
+                            # Strong penalty if artist is completely unrelated to query
+                            score -= 30
 
                         # Check if result title/artist contain query words
                         result_words = set(f"{artist} {title}".lower().split())
@@ -395,59 +399,83 @@ class TrackIdentifier:
 
         return None, cleaned
 
-    def _query_musicbrainz(self, query: str, artist_hint: Optional[str], title_hint: str) -> List[Dict]:
+    def _query_musicbrainz(
+        self,
+        query: str,
+        artist_hint: Optional[str],
+        title_hint: str,
+        max_retries: int = 2
+    ) -> List[Dict]:
         """Query MusicBrainz for recordings matching the query.
 
         Prioritizes studio recordings by:
         1. Including release information to check for album vs. compilation
         2. Filtering and sorting by recording attributes
         3. Boosting recordings with titles matching the search hint
+
+        Includes retry logic for transient network errors.
         """
-        try:
-            # Include release info to check release type
-            if artist_hint:
-                results = musicbrainzngs.search_recordings(
-                    recording=title_hint, artist=artist_hint, limit=25
-                )
-            else:
-                results = musicbrainzngs.search_recordings(recording=query, limit=25)
+        import time
 
-            recordings = results.get('recording-list', [])
+        for attempt in range(max_retries + 1):
+            try:
+                # Include release info to check release type
+                if artist_hint:
+                    results = musicbrainzngs.search_recordings(
+                        recording=title_hint, artist=artist_hint, limit=25
+                    )
+                else:
+                    results = musicbrainzngs.search_recordings(recording=query, limit=25)
 
-            # Score and sort recordings to prioritize studio versions and title matches
-            scored = []
-            for rec in recordings:
-                score = self._score_recording_studio_likelihood(rec)
+                recordings = results.get('recording-list', [])
 
-                # Bonus for title match (when user explicitly provides title)
-                if title_hint:
-                    rec_title = rec.get('title', '')
+                # Score and sort recordings to prioritize studio versions and title matches
+                scored = []
+                for rec in recordings:
+                    score = self._score_recording_studio_likelihood(rec)
 
-                    # First check exact match (with stopwords retained)
-                    title_hint_norm = self._normalize_title(title_hint, remove_stopwords=False)
-                    rec_title_norm = self._normalize_title(rec_title, remove_stopwords=False)
+                    # Bonus for title match (when user explicitly provides title)
+                    if title_hint:
+                        rec_title = rec.get('title', '')
 
-                    if rec_title_norm == title_hint_norm:
-                        score += 100  # Strong bonus for exact match - should outweigh album release bonus
-                    else:
-                        # Check match with stopwords removed (looser matching)
-                        title_hint_no_stop = self._normalize_title(title_hint, remove_stopwords=True)
-                        rec_title_no_stop = self._normalize_title(rec_title, remove_stopwords=True)
+                        # First check exact match (with stopwords retained)
+                        title_hint_norm = self._normalize_title(title_hint, remove_stopwords=False)
+                        rec_title_norm = self._normalize_title(rec_title, remove_stopwords=False)
 
-                        if rec_title_no_stop == title_hint_no_stop:
-                            score += 30  # Moderate bonus for stopword-invariant match
-                        elif title_hint_no_stop in rec_title_no_stop or rec_title_no_stop in title_hint_no_stop:
-                            score += 15  # Small bonus for partial match
+                        if rec_title_norm == title_hint_norm:
+                            score += 100  # Strong bonus for exact match - should outweigh album release bonus
+                        else:
+                            # Check match with stopwords removed (looser matching)
+                            title_hint_no_stop = self._normalize_title(title_hint, remove_stopwords=True)
+                            rec_title_no_stop = self._normalize_title(rec_title, remove_stopwords=True)
 
-                scored.append((score, rec))
+                            if rec_title_no_stop == title_hint_no_stop:
+                                score += 30  # Moderate bonus for stopword-invariant match
+                            elif title_hint_no_stop in rec_title_no_stop or rec_title_no_stop in title_hint_no_stop:
+                                score += 15  # Small bonus for partial match
 
-            # Sort by score (highest first) and take top 15
-            scored.sort(key=lambda x: x[0], reverse=True)
-            return [rec for _, rec in scored[:15]]
+                    scored.append((score, rec))
 
-        except Exception as e:
-            logger.warning(f"MusicBrainz search failed: {e}")
-            return []
+                # Sort by score (highest first) and take top 15
+                scored.sort(key=lambda x: x[0], reverse=True)
+                return [rec for _, rec in scored[:15]]
+
+            except Exception as e:
+                error_msg = str(e).lower()
+                is_transient = any(x in error_msg for x in [
+                    'connection', 'timeout', 'reset', 'temporarily', 'urlopen error'
+                ])
+
+                if is_transient and attempt < max_retries:
+                    delay = 1.0 * (2 ** attempt)
+                    logger.debug(f"MusicBrainz transient error, retrying in {delay:.1f}s: {e}")
+                    time.sleep(delay)
+                    continue
+                else:
+                    logger.warning(f"MusicBrainz search failed: {e}")
+                    return []
+
+        return []
 
     def _score_recording_studio_likelihood(self, recording: Dict) -> int:
         """Score a MusicBrainz recording by how likely it is to be a studio version.
