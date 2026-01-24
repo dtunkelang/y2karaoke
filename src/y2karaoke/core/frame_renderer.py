@@ -4,15 +4,79 @@ from typing import Optional
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 
+import math
+
 from ..config import (
     VIDEO_WIDTH, VIDEO_HEIGHT, LINE_SPACING,
     SPLASH_DURATION, INSTRUMENTAL_BREAK_THRESHOLD, LYRICS_LEAD_TIME,
-    HIGHLIGHT_LEAD_TIME, LYRICS_ACTIVATION_LEAD, Colors
+    HIGHLIGHT_LEAD_TIME, LYRICS_ACTIVATION_LEAD,
+    CUE_INDICATOR_DURATION, CUE_INDICATOR_MIN_GAP, Colors
 )
 from .backgrounds_static import draw_logo_screen, draw_splash_screen
 from .progress import draw_progress_bar
 from .lyrics_renderer import get_singer_colors
 from .models import Line
+
+
+def _draw_cue_indicator(
+    draw: ImageDraw.Draw,
+    x: int,
+    y: int,
+    time_until_start: float,
+    font_size: int
+) -> None:
+    """Draw animated cue indicator (pulsing dots) to prepare singer.
+
+    Args:
+        draw: PIL ImageDraw object
+        x: X position (left side of line)
+        y: Y position (vertical center of line)
+        time_until_start: Seconds until the line starts
+        font_size: Font size for scaling the indicator
+    """
+    # Three dots that pulse in sequence as countdown
+    dot_radius = max(4, font_size // 12)
+    dot_spacing = dot_radius * 3
+    total_width = dot_spacing * 2 + dot_radius * 2
+
+    # Position dots to the left of the line
+    start_x = x - total_width - dot_spacing
+
+    # Calculate which dots to show based on countdown
+    # At 3s: 3 dots, at 2s: 2 dots, at 1s: 1 dot (pulsing)
+    dots_to_show = min(3, max(1, int(time_until_start) + 1))
+
+    # Pulse animation (sine wave for smooth pulsing)
+    pulse = 0.5 + 0.5 * math.sin(time_until_start * math.pi * 3)  # 1.5 Hz pulse
+
+    for i in range(3):
+        dot_x = start_x + i * dot_spacing
+        dot_y = y
+
+        if i < dots_to_show:
+            # Active dot - gold color with pulse on the leading dot
+            if i == dots_to_show - 1:
+                # Leading dot pulses
+                alpha = int(128 + 127 * pulse)
+                radius = int(dot_radius * (0.8 + 0.4 * pulse))
+            else:
+                # Other dots are solid
+                alpha = 255
+                radius = dot_radius
+
+            color = Colors.CUE_INDICATOR
+            draw.ellipse(
+                [dot_x - radius, dot_y - radius, dot_x + radius, dot_y + radius],
+                fill=color
+            )
+        else:
+            # Inactive dot - dim outline
+            draw.ellipse(
+                [dot_x - dot_radius, dot_y - dot_radius,
+                 dot_x + dot_radius, dot_y + dot_radius],
+                outline=(100, 100, 100),
+                width=1
+            )
 
 
 def render_frame(
@@ -116,6 +180,31 @@ def render_frame(
     total_height = len(lines_to_show) * LINE_SPACING
     start_y = (video_height - total_height) // 2
 
+    # Determine if we should show cue indicator for the first displayed line
+    show_cue = False
+    cue_time_until = 0.0
+    if lines_to_show:
+        first_line = lines_to_show[0][0]
+        time_until_first = first_line.start_time - current_time
+
+        # Check if this is after a significant gap (or at song start)
+        first_line_idx = display_start_idx
+        if first_line_idx == 0:
+            # Start of song - show cue if we're in the countdown window
+            gap_before = first_line.start_time  # Gap from 0
+        else:
+            prev_line = lines[first_line_idx - 1]
+            gap_before = first_line.start_time - prev_line.end_time
+
+        # Show cue indicator if:
+        # 1. There's a significant gap before this line
+        # 2. We're within the cue duration window
+        # 3. The line hasn't started yet
+        if (gap_before >= CUE_INDICATOR_MIN_GAP and
+            0 < time_until_first <= CUE_INDICATOR_DURATION):
+            show_cue = True
+            cue_time_until = time_until_first
+
     for idx, (line, is_current) in enumerate(lines_to_show):
         y = start_y + idx * LINE_SPACING
         words_with_spaces = []
@@ -133,6 +222,12 @@ def render_frame(
             total_width += w
 
         line_x = (video_width - total_width) // 2
+
+        # Draw cue indicator for first line if appropriate
+        if idx == 0 and show_cue:
+            # Get font size for scaling (estimate from line spacing)
+            font_size = LINE_SPACING * 3 // 4
+            _draw_cue_indicator(draw, line_x, y + font_size // 2, cue_time_until, font_size)
 
         # Determine default colors (used for highlight and non-duet)
         if is_duet and line.words and line.words[0].singer:

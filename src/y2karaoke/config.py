@@ -32,7 +32,8 @@ class Colors:
     SUNG = (180, 180, 180)
     PROGRESS_BG = (60, 60, 80)
     PROGRESS_FG = (255, 215, 0)
-    
+    CUE_INDICATOR = (255, 215, 0)  # Gold color for cue indicator
+
     # Duet colors
     SINGER1 = (100, 180, 255)
     SINGER1_HIGHLIGHT = (50, 150, 255)
@@ -56,6 +57,8 @@ INSTRUMENTAL_BREAK_THRESHOLD = 8.0  # Show instrumental break screen for gaps >=
 LYRICS_LEAD_TIME = 1.0
 HIGHLIGHT_LEAD_TIME = 0.15  # Seconds to advance highlight sweep within a line
 LYRICS_ACTIVATION_LEAD = 0.2  # Seconds to activate a line early (compensate for timing lag)
+CUE_INDICATOR_DURATION = 3.0  # Seconds before line start to show cue indicator
+CUE_INDICATOR_MIN_GAP = 4.0  # Only show cue after gaps >= this many seconds
 
 # Line splitting
 MAX_LINE_WIDTH_RATIO = 0.75  # 75% of screen width
