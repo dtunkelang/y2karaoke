@@ -206,12 +206,16 @@ def get_lyrics_simple(
                 next_line_start = line_timings[i + 1][0] if i + 1 < len(line_timings) else line_start + 5.0
                 word_count = len(line.words)
                 if word_count > 0:
-                    # Use the full gap to next line for initial word distribution
-                    # This gives the refinement step access to all onsets in the window
-                    # The refinement will then use vocal end detection to trim appropriately
+                    # Estimate how long it actually takes to sing this line
+                    line_text = " ".join(w.text for w in line.words)
+                    estimated_duration = _estimate_singing_duration(line_text, word_count)
+
+                    # Use gap to next line, but cap at estimated singing duration + buffer
+                    # The buffer allows refinement to find nearby onsets, but prevents
+                    # spreading words over excessively long gaps (like instrumental breaks)
                     gap_to_next = next_line_start - line_start
-                    # Cap at reasonable maximum to avoid extremely slow highlighting
-                    line_duration = min(gap_to_next, 10.0)
+                    max_duration = estimated_duration * 1.3  # 30% buffer for variation
+                    line_duration = min(gap_to_next, max_duration)
                     # Ensure minimum duration
                     line_duration = max(line_duration, word_count * 0.15)
 

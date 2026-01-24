@@ -35,7 +35,11 @@ def refine_word_timing(lines: List[Line], vocals_path: str, respect_line_boundar
         peak_level = np.percentile(rms, 90)
         silence_threshold = noise_floor + 0.15 * (peak_level - noise_floor)
 
-        # Refine each line
+        # First pass: detect and fix unreasonable gaps between lines
+        # This corrects bad LRC timestamps where lines start too late
+        lines = _adjust_line_starts_for_gaps(lines, onset_times, rms, rms_times, silence_threshold)
+
+        # Second pass: refine word timing within each line
         refined_lines = []
         for line in lines:
             refined_lines.append(
@@ -50,6 +54,92 @@ def refine_word_timing(lines: List[Line], vocals_path: str, respect_line_boundar
     except Exception as e:
         logger.warning(f"Word timing refinement failed: {e}, using original timing")
         return lines
+
+
+# ----------------------
+# Gap detection and correction
+# ----------------------
+def _adjust_line_starts_for_gaps(
+    lines: List[Line],
+    onset_times: np.ndarray,
+    rms: np.ndarray,
+    rms_times: np.ndarray,
+    silence_threshold: float
+) -> List[Line]:
+    """Detect and fix unreasonable gaps between consecutive lines.
+
+    LRC timestamps can be wrong, placing line starts too late. This function
+    detects when there's singing in the gap between lines and snaps the
+    next line's start time to match the actual audio.
+    """
+    if len(lines) < 2:
+        return lines
+
+    adjusted_lines = [lines[0]]  # First line stays as-is
+
+    for i in range(1, len(lines)):
+        prev_line = adjusted_lines[-1]
+        curr_line = lines[i]
+
+        if not prev_line.words or not curr_line.words:
+            adjusted_lines.append(curr_line)
+            continue
+
+        prev_end = prev_line.end_time
+        curr_start = curr_line.start_time
+        gap = curr_start - prev_end
+
+        # Estimate expected gap: should be small if lines flow continuously
+        # A gap > 2x the previous line's duration is suspicious
+        prev_duration = prev_line.end_time - prev_line.start_time
+        expected_max_gap = max(0.5, prev_duration * 0.5)  # Allow some breathing room
+
+        if gap <= expected_max_gap:
+            # Gap is reasonable
+            adjusted_lines.append(curr_line)
+            continue
+
+        # Large gap detected - check if there's singing in the gap
+        # Look for onsets between prev_end and curr_start
+        gap_onsets = onset_times[(onset_times > prev_end + 0.1) & (onset_times < curr_start - 0.1)]
+
+        if len(gap_onsets) == 0:
+            # No onsets in gap - might be a legitimate pause
+            adjusted_lines.append(curr_line)
+            continue
+
+        # Check energy in gap to confirm vocals are present
+        gap_mask = (rms_times >= prev_end) & (rms_times <= curr_start)
+        gap_rms = rms[gap_mask]
+
+        if len(gap_rms) == 0 or np.mean(gap_rms) < silence_threshold:
+            # Gap is mostly silent - legitimate pause
+            adjusted_lines.append(curr_line)
+            continue
+
+        # Found singing in the gap! Snap line start to first onset after prev_end
+        # Add small buffer to avoid cutting off consonants
+        new_start = gap_onsets[0] - 0.05
+        new_start = max(new_start, prev_end + 0.05)  # Don't overlap with previous line
+
+        shift = curr_start - new_start
+        if shift > 0.3:  # Only adjust if shift is significant
+            logger.info(f"Gap correction: '{curr_line.words[0].text}...' shifted {shift:.2f}s earlier")
+
+            # Shift all words in this line
+            new_words = []
+            for word in curr_line.words:
+                new_words.append(Word(
+                    text=word.text,
+                    start_time=word.start_time - shift,
+                    end_time=word.end_time - shift,
+                    singer=word.singer
+                ))
+            adjusted_lines.append(Line(words=new_words, singer=curr_line.singer))
+        else:
+            adjusted_lines.append(curr_line)
+
+    return adjusted_lines
 
 
 # ----------------------
@@ -73,24 +163,36 @@ def _refine_line_timing(
     line_onsets = onset_times[(onset_times >= line_start - 0.1) & (onset_times <= line_end)]
 
     # Detect actual vocal end time (when energy drops to silence)
+    # But never extend beyond line_end - the estimated duration is our upper bound
     vocal_end = _detect_vocal_end(
         line_start, line_end, rms, rms_times, silence_threshold, len(line.words)
     )
+    vocal_end = min(vocal_end, line_end)  # Never extend beyond estimated duration
 
     if len(line_onsets) < len(line.words):
-        # Not enough onsets - still apply vocal end detection to last word
-        logger.debug(f"Line has {len(line.words)} words but only {len(line_onsets)} onsets, applying vocal end only")
+        # Not enough onsets - redistribute words evenly within detected vocal duration
+        actual_duration = vocal_end - line_start
+        line_text = " ".join(w.text for w in line.words)
+        logger.debug(f"Line '{line_text[:30]}...' ({len(line.words)} words): duration={actual_duration:.2f}s")
         words = list(line.words)
-        if words and vocal_end < words[-1].end_time:
-            last_word = words[-1]
-            # Ensure minimum word duration
-            new_end = max(vocal_end, last_word.start_time + 0.1)
-            words[-1] = Word(
-                text=last_word.text,
-                start_time=last_word.start_time,
-                end_time=new_end,
-                singer=last_word.singer
-            )
+        if words:
+            word_count = len(words)
+            if actual_duration > 0 and word_count > 0:
+                word_spacing = actual_duration / word_count
+                new_words = []
+                for i, word in enumerate(words):
+                    new_start = line_start + i * word_spacing
+                    new_end = new_start + (word_spacing * 0.9)  # 90% of slot
+                    # Ensure last word ends at vocal_end
+                    if i == word_count - 1:
+                        new_end = vocal_end
+                    new_words.append(Word(
+                        text=word.text,
+                        start_time=new_start,
+                        end_time=new_end,
+                        singer=word.singer
+                    ))
+                return Line(words=new_words, singer=line.singer)
         return Line(words=words, singer=line.singer)
 
     refined_words = _match_words_to_onsets(
@@ -296,10 +398,9 @@ def _match_words_to_onsets(
         if i + 1 < len(words):
             new_end = word_starts[i + 1] - 0.02
         else:
-            # Last word - end at detected vocal end
-            char_count = len(word.text)
-            estimated_duration = max(0.15, min(0.1 * char_count, 0.8))
-            new_end = min(new_start + estimated_duration, vocal_end)
+            # Last word - extend to vocal_end to fill gap to next line
+            # This prevents pauses when lyrics flow continuously
+            new_end = vocal_end
 
         # Ensure minimum duration
         min_duration = 0.1

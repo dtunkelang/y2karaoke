@@ -124,8 +124,13 @@ class TrackIdentifier:
 
         logger.info(f"Identified from LRC: {artist or 'Unknown'} - {title}")
 
-        # Search YouTube for matching video
-        youtube_result = self._search_youtube_by_duration(query, lrc_duration)
+        # Search YouTube for matching video using identified artist/title
+        # This ensures we find the right version, not a cover/tribute
+        search_query = f"{artist} {title}" if artist and artist != "Unknown" else query
+        youtube_result = self._search_youtube_verified(search_query, lrc_duration, artist, title)
+        if not youtube_result:
+            # Fallback to original query if artist-specific search fails
+            youtube_result = self._search_youtube_verified(query, lrc_duration, artist, title)
         if not youtube_result:
             return None
 
@@ -191,12 +196,17 @@ class TrackIdentifier:
     ) -> tuple[Optional[str], Optional[str]]:
         """Look up MusicBrainz to identify artist/title from a query.
 
-        Uses the expected duration to help identify the correct recording.
+        Uses the expected duration AND query word matching to identify the correct recording.
         """
+        query_words = set(self._normalize_title(query).split())
+
         try:
             # Search MusicBrainz with the full query
-            results = musicbrainzngs.search_recordings(recording=query, limit=10)
+            results = musicbrainzngs.search_recordings(recording=query, limit=15)
             recordings = results.get('recording-list', [])
+
+            best_match = None
+            best_score = 0
 
             for rec in recordings:
                 length = rec.get('length')
@@ -218,9 +228,24 @@ class TrackIdentifier:
                 artist_name = ' & '.join(artists) if artists else None
                 title = rec.get('title')
 
-                if artist_name and title:
-                    logger.debug(f"MusicBrainz identified: {artist_name} - {title}")
-                    return artist_name, title
+                if not artist_name or not title:
+                    continue
+
+                # Score by how many query words match artist+title
+                result_text = f"{artist_name} {title}".lower()
+                result_words = set(self._normalize_title(result_text).split())
+                matching_words = query_words & result_words
+                score = len(matching_words)
+
+                # Require at least 2 matching words (to avoid false positives)
+                if score >= 2 and score > best_score:
+                    best_score = score
+                    best_match = (artist_name, title)
+                    logger.debug(f"MusicBrainz candidate: {artist_name} - {title} (score={score})")
+
+            if best_match:
+                logger.debug(f"MusicBrainz identified: {best_match[0]} - {best_match[1]}")
+                return best_match
 
         except Exception as e:
             logger.debug(f"MusicBrainz lookup failed: {e}")
@@ -1296,6 +1321,102 @@ class TrackIdentifier:
                 return True
 
         return False
+
+    def _search_youtube_verified(
+        self,
+        query: str,
+        target_duration: int,
+        expected_artist: Optional[str],
+        expected_title: Optional[str]
+    ) -> Optional[Dict[str, Any]]:
+        """Search YouTube and return a video that matches artist/title.
+
+        Verifies that the video title contains the expected artist or title
+        to avoid covers, tributes, and mismatches.
+
+        Args:
+            query: Search query
+            target_duration: Target duration in seconds
+            expected_artist: Expected artist name to match
+            expected_title: Expected song title to match
+
+        Returns:
+            Dict with 'url', 'duration', and 'title' keys, or None if not found
+        """
+        try:
+            import requests
+        except ImportError:
+            return self._search_youtube_by_duration(query, target_duration)
+
+        search_query = query.replace(" ", "+")
+        search_url = f"https://www.youtube.com/results?search_query={search_query}"
+
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
+        }
+
+        try:
+            response = requests.get(search_url, headers=headers, timeout=10)
+            response.raise_for_status()
+
+            candidates = self._extract_youtube_candidates(response.text)
+
+            if not candidates:
+                return None
+
+            # Prepare matching criteria
+            artist_words = set(self._normalize_title(expected_artist or "").split())
+            title_words = set(self._normalize_title(expected_title or "").split())
+
+            # Filter and score candidates
+            scored = []
+            tolerance = max(20, int(target_duration * 0.15)) if target_duration > 0 else 30
+
+            for c in candidates:
+                if c['duration'] is None:
+                    continue
+
+                duration_diff = abs(c['duration'] - target_duration)
+                if duration_diff > tolerance:
+                    continue
+
+                # Skip non-studio versions
+                if self._is_likely_non_studio(c['title']):
+                    logger.debug(f"Skipping non-studio: {c['title']}")
+                    continue
+
+                # Score by how well the title matches expected artist/title
+                video_title_normalized = self._normalize_title(c['title'])
+                video_words = set(video_title_normalized.split())
+
+                artist_match = len(artist_words & video_words) if artist_words else 0
+                title_match = len(title_words & video_words) if title_words else 0
+                total_match = artist_match + title_match
+
+                # Require at least some match
+                if total_match == 0:
+                    logger.debug(f"Skipping no-match: {c['title']}")
+                    continue
+
+                # Score: higher match is better, lower duration diff is better
+                score = (total_match * 10) - duration_diff
+                scored.append((score, c))
+                logger.debug(f"YouTube candidate: {c['title']} (match={total_match}, diff={duration_diff}s, score={score})")
+
+            if scored:
+                scored.sort(key=lambda x: x[0], reverse=True)
+                best = scored[0][1]
+                logger.info(f"Found: https://www.youtube.com/watch?v={best['video_id']}")
+                return {
+                    'url': f"https://www.youtube.com/watch?v={best['video_id']}",
+                    'duration': best['duration'],
+                    'title': best['title']
+                }
+
+        except Exception as e:
+            logger.warning(f"YouTube verified search failed: {e}")
+
+        return None
 
     def _search_youtube_by_duration(
         self,
