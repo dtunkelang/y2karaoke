@@ -59,6 +59,174 @@ class TrackIdentifier:
     def __init__(self):
         self._lrc_cache: Dict[tuple, tuple] = {}
 
+    def _try_direct_lrc_search(self, query: str) -> Optional[TrackInfo]:
+        """Try to find track by searching LRC providers directly.
+
+        This is the simplest approach - just search for the query and see if
+        LRC providers can find it. Works well for queries like "artist title"
+        or "title artist" without needing complex parsing.
+
+        Returns:
+            TrackInfo if found, None otherwise
+        """
+        from .sync import fetch_lyrics_multi_source, get_lrc_duration
+
+        logger.debug(f"Trying direct LRC search: {query}")
+
+        # Try searching with the query as-is
+        lrc_text, is_synced, source = fetch_lyrics_multi_source(
+            query, "",  # Empty artist, let provider search freely
+            synced_only=True
+        )
+
+        if not is_synced or not lrc_text:
+            # Also try with query parts swapped (in case order is wrong)
+            parts = query.split()
+            if len(parts) >= 2:
+                # Try "last_part first_parts"
+                swapped = f"{parts[-1]} {' '.join(parts[:-1])}"
+                lrc_text, is_synced, source = fetch_lyrics_multi_source(
+                    swapped, "", synced_only=True
+                )
+
+        if not is_synced or not lrc_text:
+            return None
+
+        # Get duration from LRC
+        lrc_duration = get_lrc_duration(lrc_text)
+        if not lrc_duration or lrc_duration < 60:
+            return None
+
+        logger.info(f"Direct LRC search found lyrics from {source} (duration: {lrc_duration}s)")
+
+        # Try to extract artist/title from LRC metadata tags
+        artist, title = self._extract_lrc_metadata(lrc_text)
+
+        # Fall back to parsing the query
+        if not artist or not title:
+            artist_hint, title_hint = self._parse_query(query)
+            if not artist:
+                artist = artist_hint
+            if not title:
+                title = title_hint or query
+
+        # If still no artist, try MusicBrainz to identify properly
+        if not artist or artist == "Unknown":
+            mb_artist, mb_title = self._lookup_musicbrainz_for_query(query, lrc_duration)
+            if mb_artist:
+                artist = mb_artist
+            if mb_title:
+                title = mb_title
+
+        # Last resort: try to infer from query
+        if not artist:
+            artist = self._infer_artist_from_query(query, title)
+
+        logger.info(f"Identified from LRC: {artist or 'Unknown'} - {title}")
+
+        # Search YouTube for matching video
+        youtube_result = self._search_youtube_by_duration(query, lrc_duration)
+        if not youtube_result:
+            return None
+
+        return TrackInfo(
+            artist=artist or "Unknown",
+            title=title,
+            duration=lrc_duration,
+            youtube_url=youtube_result['url'],
+            youtube_duration=youtube_result['duration'] or lrc_duration,
+            source="syncedlyrics",
+            lrc_duration=lrc_duration,
+            lrc_validated=True
+        )
+
+    def _extract_lrc_metadata(self, lrc_text: str) -> tuple[Optional[str], Optional[str]]:
+        """Extract artist and title from LRC metadata tags.
+
+        LRC files often have tags like:
+        [ar:Artist Name]
+        [ti:Song Title]
+        """
+        artist = None
+        title = None
+
+        for line in lrc_text.split('\n')[:20]:  # Check first 20 lines
+            line = line.strip()
+            # Artist tag
+            match = re.match(r'\[ar:(.+)\]', line, re.IGNORECASE)
+            if match:
+                artist = match.group(1).strip()
+                continue
+            # Title tag
+            match = re.match(r'\[ti:(.+)\]', line, re.IGNORECASE)
+            if match:
+                title = match.group(1).strip()
+                continue
+
+        return artist, title
+
+    def _infer_artist_from_query(self, query: str, title: Optional[str]) -> Optional[str]:
+        """Try to infer artist name from query by removing title words."""
+        if not title:
+            return None
+
+        query_lower = query.lower()
+        title_lower = title.lower()
+
+        # Remove title words from query to get potential artist
+        remaining = query_lower
+        for word in title_lower.split():
+            remaining = remaining.replace(word, '', 1)
+
+        # Clean up and capitalize
+        remaining = ' '.join(remaining.split())
+        if remaining and len(remaining) > 2:
+            # Title case the result
+            return remaining.title()
+
+        return None
+
+    def _lookup_musicbrainz_for_query(
+        self, query: str, expected_duration: int
+    ) -> tuple[Optional[str], Optional[str]]:
+        """Look up MusicBrainz to identify artist/title from a query.
+
+        Uses the expected duration to help identify the correct recording.
+        """
+        try:
+            # Search MusicBrainz with the full query
+            results = musicbrainzngs.search_recordings(recording=query, limit=10)
+            recordings = results.get('recording-list', [])
+
+            for rec in recordings:
+                length = rec.get('length')
+                if not length:
+                    continue
+
+                duration_sec = int(length) // 1000
+
+                # Check if duration matches (within 30s)
+                if abs(duration_sec - expected_duration) > 30:
+                    continue
+
+                # Skip unreasonably long recordings
+                if duration_sec > 720:
+                    continue
+
+                artist_credits = rec.get('artist-credit', [])
+                artists = [a['artist']['name'] for a in artist_credits if 'artist' in a]
+                artist_name = ' & '.join(artists) if artists else None
+                title = rec.get('title')
+
+                if artist_name and title:
+                    logger.debug(f"MusicBrainz identified: {artist_name} - {title}")
+                    return artist_name, title
+
+        except Exception as e:
+            logger.debug(f"MusicBrainz lookup failed: {e}")
+
+        return None, None
+
     # -------------------------
     # Path A: Search String -> Track
     # -------------------------
@@ -67,12 +235,13 @@ class TrackIdentifier:
         """Identify track from a search string (not a URL).
 
         Flow:
-        1. Parse query for artist/title hints
-        2. Query MusicBrainz for candidate recordings
-        3. If no separator found, try different artist/title splits
-        4. Check LRC availability and duration for candidates
-        5. Filter out live/remix versions
-        6. Search YouTube for videos matching canonical duration
+        1. Try direct LRC search with the query (simplest approach)
+        2. Parse query for artist/title hints
+        3. Query MusicBrainz for candidate recordings
+        4. If no separator found, try different artist/title splits
+        5. Check LRC availability and duration for candidates
+        6. Filter out live/remix versions
+        7. Search YouTube for videos matching canonical duration
 
         Args:
             query: Search string like "Artist - Title" or just "Title"
@@ -81,6 +250,11 @@ class TrackIdentifier:
             TrackInfo with canonical artist, title, duration, and YouTube URL
         """
         logger.info(f"Identifying track from search: {query}")
+
+        # First, try direct LRC search - this often works and is simpler
+        direct_result = self._try_direct_lrc_search(query)
+        if direct_result:
+            return direct_result
 
         # Parse query for artist/title hints
         artist_hint, title_hint = self._parse_query(query)
@@ -120,6 +294,13 @@ class TrackIdentifier:
                     )
                     if candidate:
                         duration, artist, title = candidate
+
+                        # Skip recordings with unreasonable durations (> 12 minutes)
+                        # These are likely albums, compilations, or misidentified entries
+                        if duration > 720:
+                            logger.debug(f"Skipping candidate with unreasonable duration: {artist} - {title} ({duration}s)")
+                            continue
+
                         # Check if this candidate has LRC (higher confidence match)
                         has_lrc, lrc_duration = self._check_lrc_and_duration(title, artist)
 
@@ -143,15 +324,34 @@ class TrackIdentifier:
                             # Strong penalty if artist is completely unrelated to query
                             score -= 30
 
+                        # Strong bonus if split_title matches the result title
+                        # This is the most important signal - user typed this as the song name
+                        split_title_norm = self._normalize_title(split_title, remove_stopwords=True)
+                        result_title_norm = self._normalize_title(title, remove_stopwords=True)
+
+                        # Check title word overlap
+                        title_words = set(self._normalize_title(title).split())
+                        split_title_words = set(self._normalize_title(split_title).split())
+                        title_overlap = split_title_words & title_words
+
+                        # REJECT candidates with zero title overlap - this prevents
+                        # "Prayers like Dirt" matching when looking for "Aucun Express"
+                        if not title_overlap:
+                            logger.debug(f"Skipping candidate with no title overlap: {artist} - {title} (split_title={split_title})")
+                            continue
+
+                        if split_title_norm == result_title_norm:
+                            score += 50  # Strong bonus for exact title match
+                        elif split_title_norm in result_title_norm or result_title_norm in split_title_norm:
+                            score += 25  # Partial title match
+                        else:
+                            # Partial word overlap - bonus proportional to overlap
+                            score += len(title_overlap) * 10
+
                         # Check if result title/artist contain query words
                         result_words = set(f"{artist} {title}".lower().split())
                         matching_words = query_words & result_words
                         score += len(matching_words) * 3  # Bonus for matching words
-
-                        # Penalty if result title doesn't share any words with query
-                        title_words = set(title.lower().split())
-                        if not (query_words & title_words):
-                            score -= 25  # Strong penalty for unrelated title
 
                         # Penalty if result artist looks like a song title (contains common song words)
                         song_title_indicators = ['rhapsody', 'symphony', 'concerto', 'song', 'ballad']
@@ -159,7 +359,7 @@ class TrackIdentifier:
                             score -= 15  # Likely misidentified as artist
 
                         split_candidates.append((score, candidate))
-                        logger.debug(f"Split candidate: {artist} - {title} (score={score}, has_lrc={has_lrc})")
+                        logger.debug(f"Split candidate: {artist} - {title} (score={score}, has_lrc={has_lrc}, duration={duration}s)")
 
             # Pick the best candidate
             if split_candidates:
@@ -275,8 +475,10 @@ class TrackIdentifier:
 
         logger.debug(f"Found {len(unique_candidates)} unique candidates to check")
 
-        # Find best LRC match by duration
-        best_match = self._find_best_lrc_by_duration(unique_candidates, yt_duration)
+        # Find best LRC match by duration AND title similarity
+        best_match = self._find_best_lrc_by_duration(
+            unique_candidates, yt_duration, parsed_title or yt_title
+        )
 
         if best_match:
             artist, title, lrc_duration = best_match
@@ -292,7 +494,7 @@ class TrackIdentifier:
             return TrackInfo(
                 artist=artist,
                 title=title,
-                duration=lrc_duration,
+                duration=yt_duration,  # Use YouTube duration, not LRC duration
                 youtube_url=url,
                 youtube_duration=yt_duration,
                 source="syncedlyrics",
@@ -300,9 +502,42 @@ class TrackIdentifier:
                 lrc_validated=lrc_validated
             )
 
-        # Fallback: use parsed info without LRC validation
-        fallback_artist = parsed_artist or yt_uploader or "Unknown"
-        fallback_title = parsed_title or yt_title
+        # Fallback: try to use the best available artist/title
+        # If we have candidates from MusicBrainz, prefer those over yt_uploader
+        fallback_artist = None
+        fallback_title = None
+
+        # First try: use MusicBrainz results if any
+        if unique_candidates:
+            # Prefer candidates that look like real artists (not yt_uploader)
+            for c in unique_candidates:
+                if c['artist'] != yt_uploader:
+                    fallback_artist = c['artist']
+                    fallback_title = c['title']
+                    break
+
+        # Second try: use parsed info
+        if not fallback_artist:
+            fallback_artist = parsed_artist
+            fallback_title = parsed_title
+
+        # Third try: if title contains artist name (no separator detected), try splits
+        if not fallback_artist and parsed_title:
+            splits = self._try_artist_title_splits(parsed_title)
+            for split_artist, split_title in splits[:3]:  # Try top 3 splits
+                # Quick LRC check for this split
+                has_lrc, _ = self._check_lrc_and_duration(split_title, split_artist)
+                if has_lrc:
+                    fallback_artist = split_artist
+                    fallback_title = split_title
+                    logger.info(f"Found LRC with title split: {split_artist} - {split_title}")
+                    break
+
+        # Final fallback: uploader as artist
+        if not fallback_artist:
+            fallback_artist = yt_uploader or "Unknown"
+            fallback_title = parsed_title or yt_title
+
         logger.warning(f"No LRC match found, using: {fallback_artist} - {fallback_title}")
 
         return TrackInfo(
@@ -397,14 +632,80 @@ class TrackIdentifier:
                 parts = cleaned.split(sep, 1)
                 return parts[0].strip(), parts[1].strip()
 
+        # No separator found - try to detect "Artist Name song title" pattern
+        # by querying MusicBrainz with different word splits
+        parsed = self._try_parse_artist_from_title(cleaned)
+        if parsed:
+            return parsed
+
         return None, cleaned
+
+    def _try_parse_artist_from_title(self, title: str) -> Optional[tuple[str, str]]:
+        """Try to extract artist from a title without separators.
+
+        For titles like "The White Stripes fell in love with a girl",
+        tries splitting at word boundaries and checking MusicBrainz for valid artists.
+        """
+        words = title.split()
+        if len(words) < 3:
+            return None
+
+        # Try different splits - common patterns are 2-4 word artist names
+        # Start from 2 words to avoid matching single words like "The" to "The Beatles"
+        for split_point in range(2, min(5, len(words))):
+            potential_artist = ' '.join(words[:split_point])
+            potential_title = ' '.join(words[split_point:])
+
+            # Skip if potential title is too short
+            if len(potential_title.split()) < 2:
+                continue
+
+            # Skip very short potential artists (avoid "The" matching "The Beatles")
+            if len(potential_artist) < 5:
+                continue
+
+            # Quick check: query MusicBrainz for this artist
+            try:
+                results = musicbrainzngs.search_artists(artist=potential_artist, limit=3)
+                artists = results.get('artist-list', [])
+
+                for artist in artists:
+                    artist_name = artist.get('name', '')
+                    # Check for exact match (case-insensitive)
+                    if artist_name.lower() == potential_artist.lower():
+                        logger.debug(f"Detected artist '{artist_name}' from title: '{title}'")
+                        return artist_name, potential_title
+
+                    # Accept if potential_artist contains most of artist_name
+                    # (e.g., "White Stripes" matches "The White Stripes")
+                    # But NOT if potential_artist is just a small part of artist_name
+                    artist_name_lower = artist_name.lower()
+                    potential_lower = potential_artist.lower()
+
+                    # Check if one contains the other with significant overlap
+                    if potential_lower in artist_name_lower:
+                        # potential is substring of artist - check it's significant
+                        if len(potential_lower) >= len(artist_name_lower) * 0.6:
+                            logger.debug(f"Detected artist '{artist_name}' from title: '{title}'")
+                            return artist_name, potential_title
+                    elif artist_name_lower in potential_lower:
+                        # artist is substring of potential - check it's significant
+                        if len(artist_name_lower) >= len(potential_lower) * 0.6:
+                            logger.debug(f"Detected artist '{artist_name}' from title: '{title}'")
+                            return artist_name, potential_title
+
+            except Exception as e:
+                logger.debug(f"Artist detection query failed: {e}")
+                continue
+
+        return None
 
     def _query_musicbrainz(
         self,
         query: str,
         artist_hint: Optional[str],
         title_hint: str,
-        max_retries: int = 2
+        max_retries: int = 3
     ) -> List[Dict]:
         """Query MusicBrainz for recordings matching the query.
 
@@ -534,7 +835,10 @@ class TrackIdentifier:
 
     def _find_best_with_artist_hint(self, recordings: List[Dict], query: str, artist_hint: str) -> Optional[tuple]:
         """Find best recording when artist hint is available."""
-        query_words = set(query.lower().split())
+        # Use artist_hint words for matching, not the full query
+        # Require significant overlap to prevent "Hamlet Express" matching "aucun express"
+        artist_hint_words = set(w.lower() for w in artist_hint.split() if len(w) > 2)
+        artist_hint_lower = self._normalize_title(artist_hint)
         matches = []
 
         for rec in recordings:
@@ -542,14 +846,41 @@ class TrackIdentifier:
             if not length:
                 continue
 
+            duration_sec = int(length) // 1000
+
+            # Skip recordings with unreasonable durations (> 12 minutes)
+            # These are likely albums, compilations, or misidentified entries
+            if duration_sec > 720:
+                continue
+
             artist_credits = rec.get('artist-credit', [])
             artists = [a['artist']['name'] for a in artist_credits if 'artist' in a]
-            artist_str_lower = ' '.join(a.lower() for a in artists)
+            artist_str_lower = self._normalize_title(' '.join(artists))
+            artist_words = set(artist_str_lower.split())
 
-            if any(word in artist_str_lower for word in query_words):
+            # Check if artist matches the hint with substantial overlap
+            # Require either:
+            # 1. Full containment (one is substring of the other)
+            # 2. Majority word overlap (> 50% for multi-word, or exact match for single word)
+            if artist_hint_lower in artist_str_lower or artist_str_lower in artist_hint_lower:
+                artist_matches = True
+            elif artist_hint_words and artist_words:
+                # Calculate word overlap
+                overlap = artist_hint_words & artist_words
+                if len(artist_hint_words) == 1:
+                    # Single word hint - require exact match
+                    artist_matches = artist_hint_words == artist_words or artist_hint_lower == artist_str_lower
+                else:
+                    # Multi-word hint - require > 50% overlap (strictly greater)
+                    overlap_ratio = len(overlap) / len(artist_hint_words)
+                    artist_matches = overlap_ratio > 0.5
+            else:
+                artist_matches = False
+
+            if artist_matches:
                 artist_name = ' & '.join(artists) if artists else None
                 title = rec.get('title')
-                matches.append((int(length) // 1000, artist_name, title))
+                matches.append((duration_sec, artist_name, title))
 
         if not matches:
             return None
@@ -575,6 +906,11 @@ class TrackIdentifier:
             title = rec.get('title', '')
             length = rec.get('length')
             if not length:
+                continue
+
+            duration_sec = int(length) // 1000
+            # Skip recordings with unreasonable durations (> 12 minutes)
+            if duration_sec > 720:
                 continue
 
             rec_title_normalized = self._normalize_title(title)
@@ -788,23 +1124,30 @@ class TrackIdentifier:
         self,
         candidates: List[Dict],
         target_duration: int,
+        title_hint: str = "",
         tolerance: int = 15
     ) -> Optional[tuple[str, str, int]]:
-        """Find the candidate whose LRC duration best matches the target duration.
+        """Find the candidate whose LRC duration and title best match.
 
-        Uses improved LRC validation to ensure quality matches.
+        Scores candidates by both duration match AND title similarity to
+        ensure we pick the right song, not just any song by the same artist.
 
         Args:
             candidates: List of dicts with 'artist' and 'title' keys
             target_duration: Target duration in seconds (from YouTube)
+            title_hint: The expected title (from YouTube or parsed)
             tolerance: Maximum acceptable duration difference in seconds
 
         Returns:
             Tuple of (artist, title, lrc_duration) or None if no match found
         """
-        best_match = None
-        best_diff = float('inf')
+        from difflib import SequenceMatcher
+
+        scored_matches = []
         fallback_match = None
+
+        # Normalize title hint for comparison
+        title_hint_words = set(self._normalize_title(title_hint, remove_stopwords=True).split())
 
         for candidate in candidates:
             artist = candidate['artist']
@@ -825,23 +1168,62 @@ class TrackIdentifier:
                     fallback_match = (artist, title, target_duration)
                 continue
 
-            diff = abs(lrc_duration - target_duration)
-            logger.debug(f"LRC candidate: {artist} - {title}, duration={lrc_duration}s, diff={diff}s")
+            # Score by both duration and title similarity
+            duration_diff = abs(lrc_duration - target_duration)
 
-            if diff < best_diff:
-                best_diff = diff
-                best_match = (artist, title, lrc_duration)
+            # Title similarity: check word overlap and sequence match
+            candidate_title_normalized = self._normalize_title(title, remove_stopwords=True)
+            candidate_title_words = set(candidate_title_normalized.split())
 
-        if best_match and best_diff <= tolerance:
-            return best_match
-        elif best_match:
-            logger.warning(f"Best LRC match has {best_diff}s duration difference (tolerance: {tolerance}s)")
-            return best_match
-        elif fallback_match:
-            logger.warning("Using LRC with unknown duration as fallback")
-            return fallback_match
+            # Word overlap score (0-1)
+            if title_hint_words:
+                word_overlap = len(title_hint_words & candidate_title_words) / len(title_hint_words)
+            else:
+                word_overlap = 0
 
-        return None
+            # Sequence similarity (0-1)
+            title_hint_norm = self._normalize_title(title_hint, remove_stopwords=False)
+            seq_similarity = SequenceMatcher(None, title_hint_norm, candidate_title_normalized).ratio()
+
+            # Combined title score (higher is better)
+            title_score = (word_overlap * 0.6) + (seq_similarity * 0.4)
+
+            # Duration score (0-1, 1 = perfect match)
+            duration_score = max(0, 1 - (duration_diff / 60))  # Linear decay over 60s
+
+            # Combined score: title match is more important than duration
+            # A perfect title match with okay duration beats okay title with perfect duration
+            combined_score = (title_score * 0.7) + (duration_score * 0.3)
+
+            logger.debug(
+                f"LRC candidate: {artist} - {title}, "
+                f"duration={lrc_duration}s (diff={duration_diff}s), "
+                f"title_score={title_score:.2f}, combined={combined_score:.2f}"
+            )
+
+            scored_matches.append((combined_score, duration_diff, artist, title, lrc_duration))
+
+        if not scored_matches:
+            if fallback_match:
+                logger.warning("Using LRC with unknown duration as fallback")
+                return fallback_match
+            return None
+
+        # Sort by combined score (highest first), then by duration diff (lowest first)
+        scored_matches.sort(key=lambda x: (-x[0], x[1]))
+
+        best = scored_matches[0]
+        combined_score, duration_diff, artist, title, lrc_duration = best
+
+        # Warn if title match is poor
+        if combined_score < 0.3:
+            logger.warning(f"Best LRC match has low title similarity ({combined_score:.2f})")
+
+        if duration_diff <= tolerance:
+            return (artist, title, lrc_duration)
+        else:
+            logger.warning(f"Best LRC match has {duration_diff}s duration difference (tolerance: {tolerance}s)")
+            return (artist, title, lrc_duration)
 
     def _is_likely_non_studio(self, title: str) -> bool:
         """Check if a title suggests a non-studio version.

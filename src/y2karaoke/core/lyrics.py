@@ -176,19 +176,21 @@ def get_lyrics_simple(
         detected_vocal_start = detect_song_start(vocals_path)
         first_lrc_time = line_timings[0][0]
         delta = detected_vocal_start - first_lrc_time
-        logger.debug(
-            f"Vocal timing: audio={detected_vocal_start:.2f}s, "
-            f"LRC={first_lrc_time:.2f}s, delta={delta:.2f}s"
+        logger.info(
+            f"Vocal timing: audio_start={detected_vocal_start:.2f}s, "
+            f"LRC_start={first_lrc_time:.2f}s, delta={delta:+.2f}s"
         )
         if lyrics_offset is not None:
             offset = lyrics_offset
         else:
-            # Auto-apply offset if difference is noticeable (> 0.3s) but reasonable (< 10s)
-            # With improved onset detection, smaller corrections are reliable
+            # Auto-apply offset if difference is noticeable (> 0.3s) but reasonable (< 30s)
+            # Songs can have long intros, so allow larger offsets
             # Negative offsets (LRC ahead of audio) are also valid
-            if abs(delta) > 0.3 and abs(delta) <= 10.0:
+            if abs(delta) > 0.3 and abs(delta) <= 30.0:
                 offset = delta
                 logger.info(f"Auto-applying vocal offset: {offset:+.2f}s")
+            elif abs(delta) > 30.0:
+                logger.warning(f"Large timing delta ({delta:+.2f}s) - not auto-applying. Use --lyrics-offset to adjust manually.")
 
         if offset != 0.0:
             line_timings = [(ts + offset, text) for ts, text in line_timings]
