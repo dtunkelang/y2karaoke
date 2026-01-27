@@ -21,7 +21,8 @@ except ImportError:
 
 # Provider order: prioritize more reliable sources
 # NetEase and Lrclib tend to have good coverage, Musixmatch has rate limits
-PROVIDER_ORDER = ['netease', 'lrclib', 'megalobiz', 'deezer', 'musixmatch']
+PROVIDER_ORDER = ["Musixmatch", "Lrclib", "NetEase", "Megalobiz", "Genius"]
+
 
 # Providers that have shown persistent failures (skip after repeated errors)
 _failed_providers: Dict[str, int] = {}
