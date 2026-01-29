@@ -1085,18 +1085,32 @@ def fix_spurious_gaps(
 # ============================================================================
 
 @dataclass
+class TranscriptionWord:
+    """A word from Whisper transcription with timing."""
+    start: float
+    end: float
+    text: str
+    probability: float = 1.0
+
+
+@dataclass
 class TranscriptionSegment:
     """A segment from Whisper transcription."""
     start: float
     end: float
     text: str
+    words: List[TranscriptionWord] = None
+
+    def __post_init__(self):
+        if self.words is None:
+            self.words = []
 
 
 def transcribe_vocals(
     vocals_path: str,
     language: Optional[str] = None,
     model_size: str = "base",
-) -> Tuple[List[TranscriptionSegment], str]:
+) -> Tuple[List[TranscriptionSegment], List[TranscriptionWord], str]:
     """Transcribe vocals using Whisper.
 
     Args:
@@ -1105,13 +1119,13 @@ def transcribe_vocals(
         model_size: Whisper model size ('tiny', 'base', 'small', 'medium', 'large')
 
     Returns:
-        Tuple of (list of TranscriptionSegment, detected language code)
+        Tuple of (list of TranscriptionSegment, list of all TranscriptionWord, detected language code)
     """
     try:
         from faster_whisper import WhisperModel
     except ImportError:
         logger.warning("faster-whisper not installed, cannot transcribe")
-        return [], ""
+        return [], [], ""
 
     try:
         logger.info(f"Loading Whisper model ({model_size})...")
@@ -1125,22 +1139,35 @@ def transcribe_vocals(
             vad_filter=True,  # Filter out non-speech
         )
 
-        # Convert to list of TranscriptionSegment
+        # Convert to list of TranscriptionSegment with words
         result = []
+        all_words = []
         for seg in segments:
+            seg_words = []
+            if seg.words:
+                for w in seg.words:
+                    tw = TranscriptionWord(
+                        start=w.start,
+                        end=w.end,
+                        text=w.word.strip(),
+                        probability=w.probability,
+                    )
+                    seg_words.append(tw)
+                    all_words.append(tw)
             result.append(TranscriptionSegment(
                 start=seg.start,
                 end=seg.end,
                 text=seg.text.strip(),
+                words=seg_words,
             ))
 
         detected_lang = info.language
-        logger.info(f"Transcribed {len(result)} segments (language: {detected_lang})")
-        return result, detected_lang
+        logger.info(f"Transcribed {len(result)} segments, {len(all_words)} words (language: {detected_lang})")
+        return result, all_words, detected_lang
 
     except Exception as e:
         logger.error(f"Transcription failed: {e}")
-        return [], ""
+        return [], [], ""
 
 
 def _normalize_text_for_matching(text: str) -> str:
@@ -1167,6 +1194,9 @@ def _normalize_text_for_matching(text: str) -> str:
 # Cache for epitran instances (they're expensive to create)
 _epitran_cache: Dict[str, any] = {}
 _panphon_distance = None
+_panphon_ft = None
+_ipa_cache: Dict[str, str] = {}  # Cache for IPA transliterations
+_ipa_segs_cache: Dict[str, List[str]] = {}  # Cache for IPA segments
 
 
 def _get_epitran(language: str = "fra-Latn"):
@@ -1196,12 +1226,54 @@ def _get_panphon_distance():
     return _panphon_distance
 
 
+def _get_panphon_ft():
+    """Get or create a panphon FeatureTable."""
+    global _panphon_ft
+    if _panphon_ft is None:
+        try:
+            import panphon.featuretable
+            _panphon_ft = panphon.featuretable.FeatureTable()
+        except ImportError:
+            return None
+    return _panphon_ft
+
+
+def _get_ipa(text: str, language: str = "fra-Latn") -> Optional[str]:
+    """Get IPA transliteration with caching."""
+    cache_key = f"{language}:{text}"
+    if cache_key in _ipa_cache:
+        return _ipa_cache[cache_key]
+
+    epi = _get_epitran(language)
+    if epi is None:
+        return None
+
+    norm = _normalize_text_for_matching(text)
+    ipa = epi.transliterate(norm)
+    _ipa_cache[cache_key] = ipa
+    return ipa
+
+
+def _get_ipa_segs(ipa: str) -> List[str]:
+    """Get IPA segments with caching."""
+    if ipa in _ipa_segs_cache:
+        return _ipa_segs_cache[ipa]
+
+    ft = _get_panphon_ft()
+    if ft is None:
+        return []
+
+    segs = ft.ipa_segs(ipa)
+    _ipa_segs_cache[ipa] = segs
+    return segs
+
+
 def _phonetic_similarity(text1: str, text2: str, language: str = "fra-Latn") -> float:
     """Calculate phonetic similarity using epitran and panphon.
 
     Strategy:
-    1. Normalize text and convert to IPA via epitran
-    2. Tokenize IPA into phonetic segments via panphon
+    1. Normalize text and convert to IPA via epitran (cached)
+    2. Tokenize IPA into phonetic segments via panphon (cached)
     3. Compute weighted Levenshtein distance using panphon's feature_edit_distance
        (substitution cost = phonetic feature distance between segments)
     4. Normalize by segment count to get similarity score
@@ -1214,29 +1286,22 @@ def _phonetic_similarity(text1: str, text2: str, language: str = "fra-Latn") -> 
     Returns:
         Similarity score from 0.0 to 1.0
     """
-    epi = _get_epitran(language)
     dst = _get_panphon_distance()
 
-    if epi is None or dst is None:
+    if dst is None:
         return _text_similarity_basic(text1, text2)
 
     try:
-        import panphon.featuretable
-        ft = panphon.featuretable.FeatureTable()
-
-        # Normalize and transliterate to IPA
-        norm1 = _normalize_text_for_matching(text1)
-        norm2 = _normalize_text_for_matching(text2)
-
-        ipa1 = epi.transliterate(norm1)
-        ipa2 = epi.transliterate(norm2)
+        # Get cached IPA transliterations
+        ipa1 = _get_ipa(text1, language)
+        ipa2 = _get_ipa(text2, language)
 
         if not ipa1 or not ipa2:
             return _text_similarity_basic(text1, text2)
 
-        # Tokenize into phonetic segments for proper length normalization
-        segs1 = ft.ipa_segs(ipa1)
-        segs2 = ft.ipa_segs(ipa2)
+        # Get cached IPA segments
+        segs1 = _get_ipa_segs(ipa1)
+        segs2 = _get_ipa_segs(ipa2)
 
         if not segs1 or not segs2:
             return _text_similarity_basic(text1, text2)
@@ -1421,40 +1486,171 @@ def _whisper_lang_to_epitran(lang: str) -> str:
     return mapping.get(lang, 'eng-Latn')  # Default to English
 
 
+def align_words_to_whisper(
+    lines: List[Line],
+    whisper_words: List[TranscriptionWord],
+    min_similarity: float = 0.5,
+    max_time_shift: float = 5.0,
+    language: str = "fra-Latn",
+) -> Tuple[List[Line], List[str]]:
+    """Align individual LRC words to Whisper word timestamps using phonetic matching.
+
+    This is more precise than segment-level alignment because:
+    1. Whisper's word timestamps are generally accurate even when text isn't
+    2. Phonetic matching handles speech recognition errors
+    3. We can correct individual words without affecting the whole line
+
+    Args:
+        lines: Lyrics lines with word-level timing
+        whisper_words: All Whisper transcription words with timestamps
+        min_similarity: Minimum phonetic similarity to consider a match
+        max_time_shift: Maximum time difference to search for matches
+        language: Epitran language code for phonetic matching
+
+    Returns:
+        Tuple of (aligned lines, list of correction descriptions)
+    """
+    from .models import Line, Word
+
+    if not lines or not whisper_words:
+        return lines, []
+
+    aligned_lines: List[Line] = []
+    corrections: List[str] = []
+
+    # Pre-compute IPA for all Whisper words (they'll be compared many times)
+    logger.debug(f"Pre-computing IPA for {len(whisper_words)} Whisper words...")
+    for ww in whisper_words:
+        _get_ipa(ww.text, language)
+
+    # Build a time-indexed structure for efficient lookup
+    # Sort whisper words by start time
+    sorted_whisper = sorted(whisper_words, key=lambda w: w.start)
+
+    # Track which whisper words have been used
+    used_whisper_indices: set = set()
+
+    for line in lines:
+        if not line.words:
+            aligned_lines.append(line)
+            continue
+
+        new_words: List[Word] = []
+        line_corrections = 0
+
+        for word in line.words:
+            lrc_text = word.text.strip()
+            lrc_start = word.start_time
+
+            # Skip very short words (punctuation, etc.)
+            if len(lrc_text) < 2:
+                new_words.append(word)
+                continue
+
+            # Pre-compute IPA for LRC word
+            lrc_ipa = _get_ipa(lrc_text, language)
+
+            # Find best matching Whisper word within time window
+            best_match = None
+            best_match_idx = None
+            best_similarity = 0.0
+
+            for i, ww in enumerate(sorted_whisper):
+                if i in used_whisper_indices:
+                    continue
+
+                # Only consider words within time window
+                time_diff = abs(ww.start - lrc_start)
+                if time_diff > max_time_shift:
+                    # Since sorted, we can break early if we've passed the window
+                    if ww.start > lrc_start + max_time_shift:
+                        break
+                    continue
+
+                # Quick pre-filter: skip if basic similarity is too low
+                # This avoids expensive phonetic comparison for obvious non-matches
+                basic_sim = _text_similarity_basic(lrc_text, ww.text)
+                if basic_sim < 0.25:
+                    continue
+
+                # Calculate phonetic similarity (uses cached IPA)
+                similarity = _phonetic_similarity(lrc_text, ww.text, language)
+
+                if similarity > best_similarity and similarity >= min_similarity:
+                    best_similarity = similarity
+                    best_match = ww
+                    best_match_idx = i
+
+            if best_match is not None:
+                # Found a good match - adopt Whisper timing
+                time_shift = best_match.start - lrc_start
+                used_whisper_indices.add(best_match_idx)
+
+                # Only correct if shift is significant (> 0.15s)
+                if abs(time_shift) > 0.15:
+                    new_word = Word(
+                        text=word.text,
+                        start_time=best_match.start,
+                        end_time=best_match.end,
+                        singer=word.singer,
+                    )
+                    new_words.append(new_word)
+                    line_corrections += 1
+                else:
+                    new_words.append(word)
+            else:
+                # No good match, keep original
+                new_words.append(word)
+
+        # Create new line with updated words
+        new_line = Line(words=new_words, singer=line.singer)
+        aligned_lines.append(new_line)
+
+        if line_corrections > 0:
+            line_text = " ".join(w.text for w in line.words)[:40]
+            corrections.append(
+                f"Line aligned {line_corrections} word(s): \"{line_text}...\""
+            )
+
+    return aligned_lines, corrections
+
+
 def correct_timing_with_whisper(
     lines: List[Line],
     vocals_path: str,
     language: Optional[str] = None,
+    model_size: str = "base",
 ) -> Tuple[List[Line], List[str]]:
     """Correct lyrics timing using Whisper transcription.
 
     This is a high-level function that:
-    1. Transcribes the vocals with Whisper
-    2. Aligns LRC lines to transcription segments using phonetic matching
+    1. Transcribes the vocals with Whisper (with word timestamps)
+    2. Aligns LRC words to Whisper words using phonetic matching
     3. Returns corrected lines
 
     Args:
         lines: Lyrics lines with potentially wrong timing
         vocals_path: Path to vocals audio
         language: Language code (auto-detected if None)
+        model_size: Whisper model size ('tiny', 'base', 'small', 'medium', 'large')
 
     Returns:
         Tuple of (corrected lines, list of corrections)
     """
-    # Transcribe vocals
-    transcription, detected_lang = transcribe_vocals(vocals_path, language)
+    # Transcribe vocals (now returns segments, all_words, and language)
+    transcription, all_words, detected_lang = transcribe_vocals(vocals_path, language, model_size)
 
-    if not transcription:
-        logger.warning("No transcription available, skipping Whisper alignment")
+    if not all_words:
+        logger.warning("No transcription words available, skipping Whisper alignment")
         return lines, []
 
     # Map to epitran language code for phonetic matching
     epitran_lang = _whisper_lang_to_epitran(detected_lang)
     logger.debug(f"Using epitran language: {epitran_lang} (from Whisper: {detected_lang})")
 
-    # Align lyrics to transcription with phonetic matching
-    aligned_lines, alignments = align_lyrics_to_transcription(
-        lines, transcription, language=epitran_lang
+    # Use word-level alignment instead of segment-level
+    aligned_lines, alignments = align_words_to_whisper(
+        lines, all_words, language=epitran_lang
     )
 
     # Post-process: reject corrections that break line ordering
@@ -1463,7 +1659,7 @@ def correct_timing_with_whisper(
     )
 
     if alignments:
-        logger.info(f"Whisper alignment: corrected {len(alignments)} lines")
+        logger.info(f"Whisper word-level alignment: {len(alignments)} lines corrected")
 
     return aligned_lines, alignments
 

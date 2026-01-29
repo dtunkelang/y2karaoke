@@ -144,6 +144,7 @@ def get_lyrics_simple(
     evaluate_sources: bool = False,
     use_whisper: bool = False,
     whisper_language: Optional[str] = None,
+    whisper_model: str = "base",
 ) -> Tuple[List[Line], Optional[SongMetadata]]:
     """Simplified lyrics pipeline favoring LRC over Genius.
 
@@ -168,6 +169,7 @@ def get_lyrics_simple(
                          based on timing alignment with audio
         use_whisper: If True, use Whisper transcription to align lyrics timing
         whisper_language: Language code for Whisper (auto-detected if None)
+        whisper_model: Whisper model size ('tiny', 'base', 'small', 'medium', 'large')
 
     Returns:
         Tuple of (lines, metadata)
@@ -283,7 +285,8 @@ def get_lyrics_simple(
                         try:
                             from .timing_evaluator import correct_timing_with_whisper
                             lines, whisper_fixes = correct_timing_with_whisper(
-                                lines, vocals_path, language=whisper_language
+                                lines, vocals_path, language=whisper_language,
+                                model_size=whisper_model
                             )
                             if whisper_fixes:
                                 logger.info(f"Whisper aligned {len(whisper_fixes)} line(s)")
