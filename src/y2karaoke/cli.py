@@ -67,11 +67,15 @@ def cli(ctx, verbose, log_file):
               help='Disable progress bar during rendering')
 @click.option('--evaluate-lyrics', is_flag=True,
               help='Compare all lyrics sources and select best based on timing')
+@click.option('--whisper', is_flag=True,
+              help='Use Whisper transcription to improve lyrics timing alignment')
+@click.option('--whisper-language', type=str, default=None,
+              help='Language code for Whisper (e.g., "fr", "en"). Auto-detected if not specified.')
 @click.pass_context
 def generate(ctx, url_or_query, output, offset, key, tempo, audio_start,
              lyrics_title, lyrics_artist, lyrics_offset, backgrounds,
              force, keep_files, work_dir, resolution, fps, font_size, no_progress,
-             evaluate_lyrics):
+             evaluate_lyrics, whisper, whisper_language):
     """Generate karaoke video from YouTube URL or search query."""
     logger = ctx.obj['logger']
 
@@ -144,6 +148,8 @@ def generate(ctx, url_or_query, output, offset, key, tempo, audio_start,
             original_prompt=url_or_query,
             target_duration=track_info.duration,
             evaluate_lyrics_sources=evaluate_lyrics,
+            use_whisper=whisper,
+            whisper_language=whisper_language,
         )
 
         logger.info(f"✅ Karaoke video generated: {result['output_path']}")

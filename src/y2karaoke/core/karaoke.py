@@ -56,6 +56,8 @@ class KaraokeGenerator:
         original_prompt: Optional[str] = None,
         target_duration: Optional[int] = None,
         evaluate_lyrics_sources: bool = False,
+        use_whisper: bool = False,
+        whisper_language: Optional[str] = None,
     ) -> Dict[str, Any]:
 
         self._original_prompt = original_prompt
@@ -108,6 +110,8 @@ class KaraokeGenerator:
             lyrics_offset=lyrics_offset,
             target_duration=target_duration,
             evaluate_sources=evaluate_lyrics_sources,
+            use_whisper=use_whisper,
+            whisper_language=whisper_language,
         )
 
         # Step 7: Apply audio effects to instrumental (vocals removed)
@@ -205,11 +209,11 @@ class KaraokeGenerator:
         cache_dir = self.cache_manager.get_video_cache_dir(video_id)
         return self.downloader.download_video(url, cache_dir)
 
-    def _get_lyrics(self, title: str, artist: str, vocals_path: str, video_id: str, force: bool, lyrics_offset: Optional[float] = None, target_duration: Optional[int] = None, evaluate_sources: bool = False) -> Dict[str, Any]:
+    def _get_lyrics(self, title: str, artist: str, vocals_path: str, video_id: str, force: bool, lyrics_offset: Optional[float] = None, target_duration: Optional[int] = None, evaluate_sources: bool = False, use_whisper: bool = False, whisper_language: Optional[str] = None) -> Dict[str, Any]:
         logger.info("📝 Fetching lyrics...")
         from ..core.lyrics import get_lyrics_simple
         lines, metadata = get_lyrics_simple(
-            title=title, artist=artist, vocals_path=vocals_path, lyrics_offset=lyrics_offset, romanize=True, target_duration=target_duration, evaluate_sources=evaluate_sources
+            title=title, artist=artist, vocals_path=vocals_path, lyrics_offset=lyrics_offset, romanize=True, target_duration=target_duration, evaluate_sources=evaluate_sources, use_whisper=use_whisper, whisper_language=whisper_language
         )
         return {"lines": lines, "metadata": metadata}
 

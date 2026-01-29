@@ -142,6 +142,8 @@ def get_lyrics_simple(
     romanize: bool = True,
     target_duration: Optional[int] = None,
     evaluate_sources: bool = False,
+    use_whisper: bool = False,
+    whisper_language: Optional[str] = None,
 ) -> Tuple[List[Line], Optional[SongMetadata]]:
     """Simplified lyrics pipeline favoring LRC over Genius.
 
@@ -151,7 +153,8 @@ def get_lyrics_simple(
     3. Detect vocal offset and align timing
     4. Create Line objects with word-level timing
     5. Refine timing using audio onset detection
-    6. Apply romanization if needed
+    6. Optionally align to Whisper transcription for severely broken LRC
+    7. Apply romanization if needed
 
     Args:
         title: Song title
@@ -163,6 +166,8 @@ def get_lyrics_simple(
         target_duration: Expected track duration in seconds (for LRC validation)
         evaluate_sources: If True, compare all lyrics sources and select best
                          based on timing alignment with audio
+        use_whisper: If True, use Whisper transcription to align lyrics timing
+        whisper_language: Language code for Whisper (auto-detected if None)
 
     Returns:
         Tuple of (lines, metadata)
@@ -272,6 +277,20 @@ def get_lyrics_simple(
                         logger.info(f"Corrected {len(ts_fixes)} line timestamp(s)")
                         for fix in ts_fixes:
                             logger.debug(f"  {fix}")
+
+                    # 5c. Optionally use Whisper for more accurate alignment
+                    if use_whisper:
+                        try:
+                            from .timing_evaluator import correct_timing_with_whisper
+                            lines, whisper_fixes = correct_timing_with_whisper(
+                                lines, vocals_path, language=whisper_language
+                            )
+                            if whisper_fixes:
+                                logger.info(f"Whisper aligned {len(whisper_fixes)} line(s)")
+                                for fix in whisper_fixes:
+                                    logger.debug(f"  {fix}")
+                        except Exception as e:
+                            logger.warning(f"Whisper alignment failed: {e}")
             except Exception as e:
                 logger.debug(f"Could not apply timing fixes: {e}")
     else:

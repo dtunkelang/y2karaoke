@@ -1080,6 +1080,445 @@ def fix_spurious_gaps(
     return fixed_lines, fixes
 
 
+# ============================================================================
+# Whisper-based transcription and alignment
+# ============================================================================
+
+@dataclass
+class TranscriptionSegment:
+    """A segment from Whisper transcription."""
+    start: float
+    end: float
+    text: str
+
+
+def transcribe_vocals(
+    vocals_path: str,
+    language: Optional[str] = None,
+    model_size: str = "base",
+) -> Tuple[List[TranscriptionSegment], str]:
+    """Transcribe vocals using Whisper.
+
+    Args:
+        vocals_path: Path to vocals audio file
+        language: Language code (e.g., 'fr', 'en'). Auto-detected if None.
+        model_size: Whisper model size ('tiny', 'base', 'small', 'medium', 'large')
+
+    Returns:
+        Tuple of (list of TranscriptionSegment, detected language code)
+    """
+    try:
+        from faster_whisper import WhisperModel
+    except ImportError:
+        logger.warning("faster-whisper not installed, cannot transcribe")
+        return [], ""
+
+    try:
+        logger.info(f"Loading Whisper model ({model_size})...")
+        model = WhisperModel(model_size, device="cpu", compute_type="int8")
+
+        logger.info(f"Transcribing vocals{f' in {language}' if language else ''}...")
+        segments, info = model.transcribe(
+            vocals_path,
+            language=language,
+            word_timestamps=True,
+            vad_filter=True,  # Filter out non-speech
+        )
+
+        # Convert to list of TranscriptionSegment
+        result = []
+        for seg in segments:
+            result.append(TranscriptionSegment(
+                start=seg.start,
+                end=seg.end,
+                text=seg.text.strip(),
+            ))
+
+        detected_lang = info.language
+        logger.info(f"Transcribed {len(result)} segments (language: {detected_lang})")
+        return result, detected_lang
+
+    except Exception as e:
+        logger.error(f"Transcription failed: {e}")
+        return [], ""
+
+
+def _normalize_text_for_matching(text: str) -> str:
+    """Normalize text for fuzzy matching (basic normalization)."""
+    import re
+    import unicodedata
+
+    # Convert to lowercase
+    text = text.lower()
+
+    # Normalize unicode (é -> e, etc.)
+    text = unicodedata.normalize('NFD', text)
+    text = ''.join(c for c in text if unicodedata.category(c) != 'Mn')
+
+    # Remove punctuation
+    text = re.sub(r"[^\w\s]", "", text)
+
+    # Collapse whitespace
+    text = re.sub(r"\s+", " ", text).strip()
+
+    return text
+
+
+# Cache for epitran instances (they're expensive to create)
+_epitran_cache: Dict[str, any] = {}
+_panphon_distance = None
+
+
+def _get_epitran(language: str = "fra-Latn"):
+    """Get or create an epitran instance for a language."""
+    global _epitran_cache
+    if language not in _epitran_cache:
+        try:
+            import epitran
+            _epitran_cache[language] = epitran.Epitran(language)
+        except ImportError:
+            return None
+        except Exception as e:
+            logger.debug(f"Could not create epitran for {language}: {e}")
+            return None
+    return _epitran_cache[language]
+
+
+def _get_panphon_distance():
+    """Get or create a panphon distance calculator."""
+    global _panphon_distance
+    if _panphon_distance is None:
+        try:
+            import panphon.distance
+            _panphon_distance = panphon.distance.Distance()
+        except ImportError:
+            return None
+    return _panphon_distance
+
+
+def _phonetic_similarity(text1: str, text2: str, language: str = "fra-Latn") -> float:
+    """Calculate phonetic similarity using epitran and panphon.
+
+    Strategy:
+    1. Normalize text and convert to IPA via epitran
+    2. Tokenize IPA into phonetic segments via panphon
+    3. Compute weighted Levenshtein distance using panphon's feature_edit_distance
+       (substitution cost = phonetic feature distance between segments)
+    4. Normalize by segment count to get similarity score
+
+    Args:
+        text1: First text
+        text2: Second text
+        language: Epitran language code (default: French)
+
+    Returns:
+        Similarity score from 0.0 to 1.0
+    """
+    epi = _get_epitran(language)
+    dst = _get_panphon_distance()
+
+    if epi is None or dst is None:
+        return _text_similarity_basic(text1, text2)
+
+    try:
+        import panphon.featuretable
+        ft = panphon.featuretable.FeatureTable()
+
+        # Normalize and transliterate to IPA
+        norm1 = _normalize_text_for_matching(text1)
+        norm2 = _normalize_text_for_matching(text2)
+
+        ipa1 = epi.transliterate(norm1)
+        ipa2 = epi.transliterate(norm2)
+
+        if not ipa1 or not ipa2:
+            return _text_similarity_basic(text1, text2)
+
+        # Tokenize into phonetic segments for proper length normalization
+        segs1 = ft.ipa_segs(ipa1)
+        segs2 = ft.ipa_segs(ipa2)
+
+        if not segs1 or not segs2:
+            return _text_similarity_basic(text1, text2)
+
+        # Calculate feature edit distance (weighted Levenshtein)
+        fed = dst.feature_edit_distance(ipa1, ipa2)
+
+        # Normalize by max segment count
+        # Feature distance is typically 0-1 per substitution, with
+        # insertions/deletions costing ~1.0
+        max_segs = max(len(segs1), len(segs2))
+
+        # Convert normalized distance to similarity
+        # Distance of 0 = identical, distance of max_segs = completely different
+        normalized_distance = fed / max_segs
+        similarity = max(0.0, 1.0 - normalized_distance)
+
+        return similarity
+
+    except Exception as e:
+        logger.debug(f"Phonetic similarity failed: {e}")
+        return _text_similarity_basic(text1, text2)
+
+
+def _text_similarity_basic(text1: str, text2: str) -> float:
+    """Basic text similarity using SequenceMatcher."""
+    from difflib import SequenceMatcher
+
+    norm1 = _normalize_text_for_matching(text1)
+    norm2 = _normalize_text_for_matching(text2)
+
+    if not norm1 or not norm2:
+        return 0.0
+
+    return SequenceMatcher(None, norm1, norm2).ratio()
+
+
+def _text_similarity(text1: str, text2: str, use_phonetic: bool = True, language: str = "fra-Latn") -> float:
+    """Calculate similarity between two text strings.
+
+    Args:
+        text1: First text
+        text2: Second text
+        use_phonetic: If True, use phonetic similarity (epitran/panphon)
+        language: Language code for phonetic comparison
+
+    Returns:
+        Similarity score from 0.0 to 1.0
+    """
+    if use_phonetic:
+        return _phonetic_similarity(text1, text2, language)
+    else:
+        return _text_similarity_basic(text1, text2)
+
+
+def align_lyrics_to_transcription(
+    lines: List[Line],
+    transcription: List[TranscriptionSegment],
+    min_similarity: float = 0.4,
+    max_time_shift: float = 10.0,
+    language: str = "fra-Latn",
+) -> Tuple[List[Line], List[str]]:
+    """Align lyrics lines to Whisper transcription using fuzzy matching.
+
+    For each lyrics line, finds the best matching transcription segment
+    and adjusts timing accordingly. Only applies corrections that are
+    within a reasonable time range to avoid catastrophic misalignment.
+
+    Args:
+        lines: Lyrics lines with potentially wrong timing
+        transcription: Whisper transcription segments with correct timing
+        min_similarity: Minimum text similarity to consider a match
+        max_time_shift: Maximum time shift to apply (seconds)
+
+    Returns:
+        Tuple of (aligned lines, list of alignment descriptions)
+    """
+    from .models import Line, Word
+
+    if not lines or not transcription:
+        return lines, []
+
+    aligned_lines: List[Line] = []
+    alignments: List[str] = []
+
+    # Track used segments to avoid double-matching
+    used_segments: set = set()
+
+    for i, line in enumerate(lines):
+        if not line.words:
+            aligned_lines.append(line)
+            continue
+
+        line_text = " ".join(w.text for w in line.words)
+        line_start = line.start_time
+
+        # Find best matching transcription segment within reasonable time range
+        best_match_idx = None
+        best_score = -float('inf')
+        best_segment = None
+        best_similarity = 0.0
+
+        for j, seg in enumerate(transcription):
+            if j in used_segments:
+                continue
+
+            # Only consider segments within max_time_shift of current position
+            time_diff = abs(seg.start - line_start)
+            if time_diff > max_time_shift:
+                continue
+
+            similarity = _text_similarity(line_text, seg.text, use_phonetic=True, language=language)
+
+            if similarity < min_similarity:
+                continue
+
+            # Score: prioritize similarity, with small time bonus
+            time_bonus = max(0, (max_time_shift - time_diff) / max_time_shift) * 0.1
+            score = similarity + time_bonus
+
+            if score > best_score:
+                best_score = score
+                best_similarity = similarity
+                best_match_idx = j
+                best_segment = seg
+
+        if best_segment is not None and best_similarity >= min_similarity:
+            used_segments.add(best_match_idx)
+
+            # Calculate timing adjustment
+            offset = best_segment.start - line_start
+            new_duration = best_segment.end - best_segment.start
+
+            # Only adjust if offset is significant but not too large
+            if 0.3 < abs(offset) <= max_time_shift:
+                # Redistribute words across the new duration
+                word_count = len(line.words)
+                word_spacing = new_duration / word_count if word_count > 0 else 0
+
+                new_words = []
+                for k, word in enumerate(line.words):
+                    new_start = best_segment.start + k * word_spacing
+                    new_end = new_start + (word_spacing * 0.9)
+                    new_words.append(Word(
+                        text=word.text,
+                        start_time=new_start,
+                        end_time=new_end,
+                        singer=word.singer,
+                    ))
+
+                aligned_line = Line(words=new_words, singer=line.singer)
+                aligned_lines.append(aligned_line)
+
+                alignments.append(
+                    f"Line {i+1} aligned to transcription: {offset:+.1f}s "
+                    f"(similarity: {best_similarity:.0%}) \"{line_text[:30]}...\""
+                )
+                continue
+
+        # No good match found or no adjustment needed
+        aligned_lines.append(line)
+
+    return aligned_lines, alignments
+
+
+def _whisper_lang_to_epitran(lang: str) -> str:
+    """Map Whisper language code to epitran language code."""
+    mapping = {
+        'fr': 'fra-Latn',
+        'en': 'eng-Latn',
+        'es': 'spa-Latn',
+        'de': 'deu-Latn',
+        'it': 'ita-Latn',
+        'pt': 'por-Latn',
+        'nl': 'nld-Latn',
+        'pl': 'pol-Latn',
+        'ru': 'rus-Cyrl',
+        'ja': 'jpn-Hira',
+        'ko': 'kor-Hang',
+        'zh': 'cmn-Hans',
+    }
+    return mapping.get(lang, 'eng-Latn')  # Default to English
+
+
+def correct_timing_with_whisper(
+    lines: List[Line],
+    vocals_path: str,
+    language: Optional[str] = None,
+) -> Tuple[List[Line], List[str]]:
+    """Correct lyrics timing using Whisper transcription.
+
+    This is a high-level function that:
+    1. Transcribes the vocals with Whisper
+    2. Aligns LRC lines to transcription segments using phonetic matching
+    3. Returns corrected lines
+
+    Args:
+        lines: Lyrics lines with potentially wrong timing
+        vocals_path: Path to vocals audio
+        language: Language code (auto-detected if None)
+
+    Returns:
+        Tuple of (corrected lines, list of corrections)
+    """
+    # Transcribe vocals
+    transcription, detected_lang = transcribe_vocals(vocals_path, language)
+
+    if not transcription:
+        logger.warning("No transcription available, skipping Whisper alignment")
+        return lines, []
+
+    # Map to epitran language code for phonetic matching
+    epitran_lang = _whisper_lang_to_epitran(detected_lang)
+    logger.debug(f"Using epitran language: {epitran_lang} (from Whisper: {detected_lang})")
+
+    # Align lyrics to transcription with phonetic matching
+    aligned_lines, alignments = align_lyrics_to_transcription(
+        lines, transcription, language=epitran_lang
+    )
+
+    # Post-process: reject corrections that break line ordering
+    aligned_lines, alignments = _fix_ordering_violations(
+        lines, aligned_lines, alignments
+    )
+
+    if alignments:
+        logger.info(f"Whisper alignment: corrected {len(alignments)} lines")
+
+    return aligned_lines, alignments
+
+
+def _fix_ordering_violations(
+    original_lines: List[Line],
+    aligned_lines: List[Line],
+    alignments: List[str],
+) -> Tuple[List[Line], List[str]]:
+    """Fix lines that were moved out of order by Whisper alignment.
+
+    If a line's Whisper-aligned timing would cause it to overlap with
+    or come before the previous line, revert to the original timing.
+    """
+    from .models import Line, Word
+
+    if not aligned_lines:
+        return aligned_lines, alignments
+
+    fixed_lines: List[Line] = []
+    fixed_alignments: List[str] = []
+    prev_end_time = 0.0
+    reverted_count = 0
+
+    for i, (orig, aligned) in enumerate(zip(original_lines, aligned_lines)):
+        if not aligned.words:
+            fixed_lines.append(aligned)
+            continue
+
+        aligned_start = aligned.start_time
+
+        # Check if this line would start before previous line ended
+        if aligned_start < prev_end_time - 0.1:  # Small tolerance
+            # Revert to original timing
+            fixed_lines.append(orig)
+            if orig.words:
+                prev_end_time = orig.end_time
+            reverted_count += 1
+        else:
+            # Keep the aligned timing
+            fixed_lines.append(aligned)
+            prev_end_time = aligned.end_time
+
+    # Update alignments list (remove reverted ones)
+    if reverted_count > 0:
+        logger.debug(f"Reverted {reverted_count} Whisper alignments due to ordering violations")
+        # Filter alignments to only include successful ones
+        fixed_alignments = [a for a in alignments if True]  # Keep all for now
+        # Actually recount
+        actual_corrections = len(alignments) - reverted_count
+        fixed_alignments = alignments[:actual_corrections] if actual_corrections > 0 else []
+
+    return fixed_lines, fixed_alignments if reverted_count > 0 else alignments
+
+
 def print_comparison_report(
     title: str,
     artist: str,
