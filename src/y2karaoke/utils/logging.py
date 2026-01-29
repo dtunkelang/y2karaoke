@@ -11,7 +11,13 @@ def setup_logging(
     verbose: bool = False
 ) -> logging.Logger:
     """Set up logging configuration."""
-    
+
+    # Suppress noisy third-party library logs
+    logging.getLogger("musicbrainzngs").setLevel(logging.WARNING)
+    logging.getLogger("syncedlyrics").setLevel(logging.WARNING)
+    logging.getLogger("urllib3").setLevel(logging.WARNING)
+    logging.getLogger("httpx").setLevel(logging.WARNING)
+
     # Create logger
     logger = logging.getLogger("y2karaoke")
     logger.setLevel(getattr(logging, level.upper()))

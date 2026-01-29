@@ -1,4 +1,4 @@
-"""Synced lyrics fetching using syncedlyrics library."""
+"""Synced lyrics fetching using syncedlyrics and lyriq libraries."""
 
 import re
 import sys
@@ -18,10 +18,22 @@ except ImportError:
     syncedlyrics = None
     SYNCEDLYRICS_AVAILABLE = False
 
+try:
+    from lyriq import get_lyrics as lyriq_get_lyrics
+    LYRIQ_AVAILABLE = True
+except ImportError:
+    lyriq_get_lyrics = None
+    LYRIQ_AVAILABLE = False
 
-# Provider order: prioritize more reliable sources
-# NetEase and Lrclib tend to have good coverage, Musixmatch has rate limits
-PROVIDER_ORDER = ["Musixmatch", "Lrclib", "NetEase", "Megalobiz", "Genius"]
+
+# Provider order for syncedlyrics: prioritize more reliable sources
+# Note: lyriq (LRCLib) is tried first before syncedlyrics providers
+# Musixmatch: Best quality but has rate limits
+# NetEase: Good coverage, especially for Asian music
+# Megalobiz: Less reliable but can have unique content
+# Lrclib: Moved to end since lyriq already uses LRCLib API with potentially better search
+# Genius: Plain text only (not useful for synced lyrics, kept as last resort)
+PROVIDER_ORDER = ["Musixmatch", "NetEase", "Megalobiz", "Lrclib", "Genius"]
 
 
 # Providers that have shown persistent failures (skip after repeated errors)
@@ -141,6 +153,84 @@ def _search_with_fallback(
 # Key: (artist.lower(), title.lower()), Value: (lrc_text, is_synced, source_name)
 _lrc_cache: Dict[Tuple[str, str], Tuple[Optional[str], bool, str]] = {}
 
+# Cache for lyriq results
+_lyriq_cache: Dict[Tuple[str, str], Optional[str]] = {}
+
+
+def _fetch_from_lyriq(
+    title: str,
+    artist: str,
+    max_retries: int = 2,
+    retry_delay: float = 1.0,
+) -> Optional[str]:
+    """Fetch lyrics from lyriq (LRCLib API).
+
+    lyriq provides a different search/matching algorithm than syncedlyrics'
+    Lrclib provider, so it may find different results.
+
+    Args:
+        title: Song title
+        artist: Artist name
+        max_retries: Number of retries on failure
+        retry_delay: Base delay between retries (exponential backoff)
+
+    Returns:
+        LRC text if found, None otherwise
+    """
+    if not LYRIQ_AVAILABLE:
+        return None
+
+    # Check cache
+    cache_key = (artist.lower().strip(), title.lower().strip())
+    if cache_key in _lyriq_cache:
+        return _lyriq_cache[cache_key]
+
+    for attempt in range(max_retries + 1):
+        try:
+            with _suppress_stderr():
+                # lyriq.get_lyrics returns a Lyrics object or None
+                lyrics_obj = lyriq_get_lyrics(title, artist)
+
+            if lyrics_obj is None:
+                _lyriq_cache[cache_key] = None
+                return None
+
+            # lyriq returns a Lyrics object with synced_lyrics and plain_lyrics attributes
+            synced = getattr(lyrics_obj, 'synced_lyrics', None)
+            if synced and _has_timestamps(synced):
+                logger.debug(f"Found synced lyrics from lyriq (LRCLib)")
+                _lyriq_cache[cache_key] = synced
+                return synced
+
+            # Fall back to plain lyrics if no synced available
+            plain = getattr(lyrics_obj, 'plain_lyrics', None)
+            if plain:
+                logger.debug(f"Found plain lyrics from lyriq (no timestamps)")
+                _lyriq_cache[cache_key] = None  # Don't cache plain for synced requests
+                return None
+
+            _lyriq_cache[cache_key] = None
+            return None
+
+        except Exception as e:
+            error_msg = str(e).lower()
+            is_transient = any(x in error_msg for x in [
+                'connection', 'timeout', 'temporarily', 'rate limit',
+                'remote end closed', '429', '503', '502'
+            ])
+
+            if is_transient and attempt < max_retries:
+                delay = retry_delay * (2 ** attempt)
+                logger.debug(f"lyriq transient error, retrying in {delay:.1f}s: {e}")
+                time.sleep(delay)
+                continue
+            else:
+                logger.debug(f"lyriq failed (attempt {attempt + 1}): {e}")
+                _lyriq_cache[cache_key] = None
+                return None
+
+    return None
+
 
 def fetch_lyrics_multi_source(
     title: str,
@@ -149,9 +239,10 @@ def fetch_lyrics_multi_source(
     enhanced: bool = False,
 ) -> Tuple[Optional[str], bool, str]:
     """
-    Fetch lyrics from multiple sources using syncedlyrics.
+    Fetch lyrics from multiple sources using lyriq and syncedlyrics.
 
-    Tries providers in order with retries and fallback for reliability.
+    Tries lyriq first (LRCLib with potentially better search matching),
+    then falls back to syncedlyrics providers in order with retries.
     Results are cached to avoid duplicate network requests.
 
     Args:
@@ -166,10 +257,6 @@ def fetch_lyrics_multi_source(
         - is_synced: True if lyrics have timestamps
         - source_name: Name of the source that provided lyrics
     """
-    if not SYNCEDLYRICS_AVAILABLE:
-        logger.warning("syncedlyrics not installed")
-        return None, False, ""
-
     # Check cache first
     cache_key = (artist.lower().strip(), title.lower().strip())
     if cache_key in _lrc_cache:
@@ -181,6 +268,22 @@ def fetch_lyrics_multi_source(
     logger.debug(f"Searching for synced lyrics: {search_term}")
 
     try:
+        # Try lyriq first (LRCLib with potentially better search matching)
+        if LYRIQ_AVAILABLE:
+            logger.debug(f"Trying lyriq for: {title} - {artist}")
+            lrc = _fetch_from_lyriq(title, artist)
+            if lrc and _has_timestamps(lrc):
+                logger.debug(f"Found synced lyrics from lyriq (LRCLib)")
+                result = (lrc, True, "lyriq (LRCLib)")
+                _lrc_cache[cache_key] = result
+                return result
+
+        if not SYNCEDLYRICS_AVAILABLE:
+            logger.warning("syncedlyrics not installed")
+            result = (None, False, "")
+            _lrc_cache[cache_key] = result
+            return result
+
         # Try enhanced (word-level) first if requested
         if enhanced:
             lrc, provider = _search_with_fallback(
@@ -337,11 +440,11 @@ def fetch_lyrics_for_duration(
         - source_name: Name of the source that provided lyrics
         - lrc_duration: Duration implied by the LRC timestamps
     """
-    if not SYNCEDLYRICS_AVAILABLE:
-        logger.warning("syncedlyrics not installed")
+    if not SYNCEDLYRICS_AVAILABLE and not LYRIQ_AVAILABLE:
+        logger.warning("Neither syncedlyrics nor lyriq installed")
         return None, False, "", None
 
-    # Strategy 1: Try the standard search
+    # Strategy 1: Try the standard search (tries lyriq first, then syncedlyrics providers)
     lrc_text, is_synced, source = fetch_lyrics_multi_source(title, artist, synced_only=True)
 
     if is_synced and lrc_text:
@@ -354,23 +457,24 @@ def fetch_lyrics_for_duration(
             else:
                 logger.warning(f"LRC duration mismatch: LRC={lrc_duration}s, target={target_duration}s, diff={diff}s")
 
-    # Strategy 2: Try searching with different terms
-    alternative_searches = [
-        f"{title} {artist}",  # Swap order
-        f"{artist} {title} official",
-        f"{artist} {title} album version",
-    ]
+    # Strategy 2: Try searching with different terms (syncedlyrics only)
+    if SYNCEDLYRICS_AVAILABLE:
+        alternative_searches = [
+            f"{title} {artist}",  # Swap order
+            f"{artist} {title} official",
+            f"{artist} {title} album version",
+        ]
 
-    for search_term in alternative_searches:
-        logger.debug(f"Trying alternative LRC search: {search_term}")
-        lrc, provider = _search_with_fallback(search_term, synced_only=True)
-        if lrc and _has_timestamps(lrc):
-            alt_duration = get_lrc_duration(lrc)
-            if alt_duration:
-                diff = abs(alt_duration - target_duration)
-                if diff <= tolerance:
-                    logger.info(f"Found LRC with alternative search '{search_term}' from {provider}: {alt_duration}s")
-                    return lrc, True, f"{provider} ({search_term})", alt_duration
+        for search_term in alternative_searches:
+            logger.debug(f"Trying alternative LRC search: {search_term}")
+            lrc, provider = _search_with_fallback(search_term, synced_only=True)
+            if lrc and _has_timestamps(lrc):
+                alt_duration = get_lrc_duration(lrc)
+                if alt_duration:
+                    diff = abs(alt_duration - target_duration)
+                    if diff <= tolerance:
+                        logger.info(f"Found LRC with alternative search '{search_term}' from {provider}: {alt_duration}s")
+                        return lrc, True, f"{provider} ({search_term})", alt_duration
 
     # Strategy 3: If we found LRC but duration doesn't match, return it anyway
     # with a warning - better than nothing
@@ -380,3 +484,57 @@ def fetch_lyrics_for_duration(
         return lrc_text, is_synced, source, lrc_duration
 
     return None, False, "", None
+
+
+def fetch_from_all_sources(
+    title: str,
+    artist: str,
+) -> Dict[str, Tuple[Optional[str], Optional[int]]]:
+    """
+    Fetch lyrics from all available sources for comparison.
+
+    This function fetches lyrics from all providers without caching,
+    useful for comparing timing quality across sources.
+
+    Args:
+        title: Song title
+        artist: Artist name
+
+    Returns:
+        Dict mapping source name to (lrc_text, lrc_duration) tuple
+    """
+    results: Dict[str, Tuple[Optional[str], Optional[int]]] = {}
+
+    # Try lyriq
+    if LYRIQ_AVAILABLE:
+        try:
+            with _suppress_stderr():
+                lyrics_obj = lyriq_get_lyrics(title, artist)
+            if lyrics_obj:
+                synced = getattr(lyrics_obj, 'synced_lyrics', None)
+                if synced and _has_timestamps(synced):
+                    duration = get_lrc_duration(synced)
+                    results["lyriq (LRCLib)"] = (synced, duration)
+        except Exception as e:
+            logger.debug(f"lyriq fetch failed for comparison: {e}")
+
+    # Try each syncedlyrics provider individually
+    if SYNCEDLYRICS_AVAILABLE:
+        search_term = f"{artist} {title}"
+        for provider in PROVIDER_ORDER:
+            if provider == "Genius":  # Skip Genius as it only provides plain text
+                continue
+            try:
+                with _suppress_stderr():
+                    lrc = syncedlyrics.search(
+                        search_term,
+                        providers=[provider],
+                        synced_only=True,
+                    )
+                if lrc and _has_timestamps(lrc):
+                    duration = get_lrc_duration(lrc)
+                    results[provider] = (lrc, duration)
+            except Exception as e:
+                logger.debug(f"{provider} fetch failed for comparison: {e}")
+
+    return results

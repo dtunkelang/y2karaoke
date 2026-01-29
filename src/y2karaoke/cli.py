@@ -65,10 +65,13 @@ def cli(ctx, verbose, log_file):
               help='Font size for lyrics (default: 72)')
 @click.option('--no-progress', is_flag=True,
               help='Disable progress bar during rendering')
+@click.option('--evaluate-lyrics', is_flag=True,
+              help='Compare all lyrics sources and select best based on timing')
 @click.pass_context
 def generate(ctx, url_or_query, output, offset, key, tempo, audio_start,
              lyrics_title, lyrics_artist, lyrics_offset, backgrounds,
-             force, keep_files, work_dir, resolution, fps, font_size, no_progress):
+             force, keep_files, work_dir, resolution, fps, font_size, no_progress,
+             evaluate_lyrics):
     """Generate karaoke video from YouTube URL or search query."""
     logger = ctx.obj['logger']
 
@@ -140,6 +143,7 @@ def generate(ctx, url_or_query, output, offset, key, tempo, audio_start,
             video_settings=video_settings if video_settings else None,
             original_prompt=url_or_query,
             target_duration=track_info.duration,
+            evaluate_lyrics_sources=evaluate_lyrics,
         )
 
         logger.info(f"✅ Karaoke video generated: {result['output_path']}")
@@ -203,6 +207,62 @@ def clear(video_id, cache_dir):
     manager = CacheManager(cache_path)
     manager.clear_video_cache(video_id)
     click.echo(f"✅ Cleared cache for video {video_id}")
+
+
+@cli.command()
+@click.argument('url_or_query')
+@click.option('--lyrics-title', help='Override song title for lyrics search')
+@click.option('--lyrics-artist', help='Override artist for lyrics search')
+@click.option('--work-dir', type=click.Path(), help='Working directory')
+@click.option('--force', is_flag=True, help='Force re-download cached files')
+@click.pass_context
+def evaluate_timing(ctx, url_or_query, lyrics_title, lyrics_artist, work_dir, force):
+    """Evaluate lyrics timing quality against audio analysis.
+
+    Compares timing from all available lyrics sources (lyriq, Musixmatch,
+    Lrclib, NetEase, etc.) against detected vocal onsets and pauses in
+    the audio to identify the most accurate source.
+    """
+    logger = ctx.obj['logger']
+
+    try:
+        from .core.track_identifier import TrackIdentifier
+        from .core.downloader import YouTubeDownloader
+        from .core.separator import separate_vocals
+        from .core.timing_evaluator import print_comparison_report
+
+        # Identify track
+        identifier = TrackIdentifier()
+        if url_or_query.startswith('http'):
+            track_info = identifier.identify_from_url(url_or_query)
+        else:
+            track_info = identifier.identify_from_search(url_or_query)
+
+        effective_title = lyrics_title or track_info.title
+        effective_artist = lyrics_artist or track_info.artist
+
+        logger.info(f"Evaluating: {effective_artist} - {effective_title}")
+
+        # Download audio
+        cache_dir = Path(work_dir) if work_dir else get_cache_dir()
+        downloader = YouTubeDownloader(cache_dir=cache_dir)
+        result = downloader.download_audio(track_info.youtube_url)
+        audio_path = result["audio_path"]
+        logger.info(f"Downloaded audio: {audio_path}")
+
+        # Separate vocals
+        vocals_path, _ = separate_vocals(audio_path, cache_dir=cache_dir)
+        logger.info(f"Separated vocals: {vocals_path}")
+
+        # Run comparison
+        print_comparison_report(effective_title, effective_artist, vocals_path)
+
+    except Exception as e:
+        logger.error(f"❌ Evaluation failed: {e}")
+        if ctx.obj.get('verbose'):
+            import traceback
+            traceback.print_exc()
+        sys.exit(1)
 
 
 if __name__ == '__main__':

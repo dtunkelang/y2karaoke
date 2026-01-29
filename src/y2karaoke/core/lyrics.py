@@ -74,19 +74,36 @@ __all__ = [
 def _fetch_lrc_text_and_timings(
     title: str,
     artist: str,
-    target_duration: Optional[int] = None
-) -> Tuple[Optional[str], Optional[List[Tuple[float, str]]]]:
+    target_duration: Optional[int] = None,
+    vocals_path: Optional[str] = None,
+    evaluate_sources: bool = False,
+) -> Tuple[Optional[str], Optional[List[Tuple[float, str]]], str]:
     """Fetch raw LRC text and parsed timings from available sources.
 
     Args:
         title: Song title
         artist: Artist name
         target_duration: Expected track duration in seconds (for validation)
+        vocals_path: Path to vocals audio (for timing evaluation)
+        evaluate_sources: If True, compare all sources and select best based on timing
 
     Returns:
-        Tuple of (lrc_text, parsed_timings)
+        Tuple of (lrc_text, parsed_timings, source_name)
     """
     try:
+        # If evaluation is requested and we have vocals, compare all sources
+        if evaluate_sources and vocals_path:
+            from .timing_evaluator import select_best_source
+            lrc_text, source, report = select_best_source(
+                title, artist, vocals_path, target_duration
+            )
+            if lrc_text:
+                lines = parse_lrc_with_timing(lrc_text, title, artist)
+                score_str = f" (score: {report.overall_score:.1f})" if report else ""
+                logger.info(f"Selected best source: {source}{score_str}")
+                return lrc_text, lines, source
+            # Fall through to standard fetch if evaluation fails
+
         if target_duration:
             # Use duration-aware fetch to find LRC matching target
             from .sync import fetch_lyrics_for_duration
@@ -96,10 +113,10 @@ def _fetch_lrc_text_and_timings(
             if lrc_text and is_synced:
                 lines = parse_lrc_with_timing(lrc_text, title, artist)
                 logger.debug(f"Got {len(lines)} LRC lines from {source} (duration: {lrc_duration}s)")
-                return lrc_text, lines
+                return lrc_text, lines, source
             else:
                 logger.debug(f"No duration-matched LRC available")
-                return None, None
+                return None, None, ""
         else:
             # Fallback to standard fetch without duration validation
             from .sync import fetch_lyrics_multi_source
@@ -107,13 +124,13 @@ def _fetch_lrc_text_and_timings(
             if lrc_text and is_synced:
                 lines = parse_lrc_with_timing(lrc_text, title, artist)
                 logger.debug(f"Got {len(lines)} LRC lines from {source}")
-                return lrc_text, lines
+                return lrc_text, lines, source
             else:
                 logger.debug(f"No synced LRC available from {source}")
-                return None, None
+                return None, None, ""
     except Exception as e:
         logger.warning(f"LRC fetch failed: {e}")
-        return None, None
+        return None, None, ""
 
 
 def get_lyrics_simple(
@@ -124,6 +141,7 @@ def get_lyrics_simple(
     lyrics_offset: Optional[float] = None,
     romanize: bool = True,
     target_duration: Optional[int] = None,
+    evaluate_sources: bool = False,
 ) -> Tuple[List[Line], Optional[SongMetadata]]:
     """Simplified lyrics pipeline favoring LRC over Genius.
 
@@ -143,6 +161,8 @@ def get_lyrics_simple(
         lyrics_offset: Manual timing offset in seconds (auto-detected if None)
         romanize: Whether to romanize non-Latin scripts
         target_duration: Expected track duration in seconds (for LRC validation)
+        evaluate_sources: If True, compare all lyrics sources and select best
+                         based on timing alignment with audio
 
     Returns:
         Tuple of (lines, metadata)
@@ -152,8 +172,10 @@ def get_lyrics_simple(
     from .alignment import detect_song_start
 
     # 1. Try LRC first (preferred source), with duration validation if provided
-    logger.debug(f"Fetching LRC lyrics... (target_duration={target_duration})")
-    lrc_text, line_timings = _fetch_lrc_text_and_timings(title, artist, target_duration)
+    logger.debug(f"Fetching LRC lyrics... (target_duration={target_duration}, evaluate={evaluate_sources})")
+    lrc_text, line_timings, source = _fetch_lrc_text_and_timings(
+        title, artist, target_duration, vocals_path, evaluate_sources
+    )
 
     # 2. Fetch Genius as fallback or for singer info
     genius_lines, metadata = None, None
@@ -230,6 +252,28 @@ def get_lyrics_simple(
         if vocals_path and len(line_timings) > 1:
             lines = refine_word_timing(lines, vocals_path)
             logger.debug("Word-level timing refined using vocals")
+
+            # 5b. Fix spurious gaps (lines incorrectly split where singing is continuous)
+            # and correct timestamp offsets
+            try:
+                from .timing_evaluator import extract_audio_features, fix_spurious_gaps, correct_line_timestamps
+                audio_features = extract_audio_features(vocals_path)
+                if audio_features:
+                    # First merge lines that should be continuous
+                    lines, gap_fixes = fix_spurious_gaps(lines, audio_features)
+                    if gap_fixes:
+                        logger.info(f"Fixed {len(gap_fixes)} spurious gap(s) in lyrics timing")
+                        for fix in gap_fixes:
+                            logger.debug(f"  {fix}")
+
+                    # Then correct timestamp offsets
+                    lines, ts_fixes = correct_line_timestamps(lines, audio_features)
+                    if ts_fixes:
+                        logger.info(f"Corrected {len(ts_fixes)} line timestamp(s)")
+                        for fix in ts_fixes:
+                            logger.debug(f"  {fix}")
+            except Exception as e:
+                logger.debug(f"Could not apply timing fixes: {e}")
     else:
         # Fallback: use Genius text with evenly spaced lines
         text_lines = [text for text, _ in genius_lines if text.strip()]
