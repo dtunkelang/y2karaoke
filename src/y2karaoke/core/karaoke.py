@@ -59,6 +59,8 @@ class KaraokeGenerator:
         use_whisper: bool = False,
         whisper_language: Optional[str] = None,
         whisper_model: str = "base",
+        shorten_breaks: bool = False,
+        max_break_duration: float = 20.0,
     ) -> Dict[str, Any]:
 
         self._original_prompt = original_prompt
@@ -127,8 +129,24 @@ class KaraokeGenerator:
             force=force_reprocess,
         )
 
+        # Step 7b: Optionally shorten long instrumental breaks
+        break_edits = []
+        if shorten_breaks:
+            processed_instrumental, break_edits = self._shorten_breaks(
+                processed_instrumental,
+                separation_result["vocals_path"],
+                video_id,
+                max_break_duration,
+                force=force_reprocess,
+            )
+
         # Step 8: Scale lyrics timing
         scaled_lines = self._scale_lyrics_timing(lyrics_result["lines"], tempo_multiplier)
+
+        # Step 8b: Adjust lyrics timing for shortened breaks
+        if break_edits:
+            from .break_shortener import adjust_lyrics_timing
+            scaled_lines = adjust_lyrics_timing(scaled_lines, break_edits)
 
         # Step 9: Ensure lyrics start after splash
         if scaled_lines and scaled_lines[0].start_time < 3.5:
@@ -237,6 +255,29 @@ class KaraokeGenerator:
             ]
             scaled_lines.append(Line(words=scaled_words, singer=line.singer))
         return scaled_lines
+
+    def _shorten_breaks(self, instrumental_path: str, vocals_path: str, video_id: str, max_break_duration: float, force: bool = False):
+        """Shorten long instrumental breaks."""
+        from .break_shortener import shorten_instrumental_breaks
+
+        # Check cache
+        shortened_name = f"shortened_breaks_{max_break_duration:.0f}s.wav"
+        if not force and self.cache_manager.file_exists(video_id, shortened_name):
+            logger.info("📁 Using cached shortened audio")
+            # We don't have cached edits, so return empty list (timing already adjusted)
+            return str(self.cache_manager.get_file_path(video_id, shortened_name)), []
+
+        logger.info(f"✂️ Shortening instrumental breaks longer than {max_break_duration:.0f}s...")
+        output_path = self.cache_manager.get_file_path(video_id, shortened_name)
+
+        shortened_path, edits = shorten_instrumental_breaks(
+            instrumental_path,
+            vocals_path,
+            str(output_path),
+            max_break_duration=max_break_duration,
+        )
+
+        return shortened_path, edits
 
     def _create_background_segments(self, video_path: str, lines, audio_path: str):
         logger.info("🎨 Creating background segments...")

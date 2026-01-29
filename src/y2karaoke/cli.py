@@ -73,11 +73,16 @@ def cli(ctx, verbose, log_file):
               help='Language code for Whisper (e.g., "fr", "en"). Auto-detected if not specified.')
 @click.option('--whisper-model', type=click.Choice(['tiny', 'base', 'small', 'medium', 'large']),
               default='base', help='Whisper model size (default: base)')
+@click.option('--shorten-breaks', is_flag=True,
+              help='Shorten long instrumental breaks for better karaoke flow')
+@click.option('--max-break', type=float, default=20.0,
+              help='Maximum instrumental break duration in seconds (default: 20)')
 @click.pass_context
 def generate(ctx, url_or_query, output, offset, key, tempo, audio_start,
              lyrics_title, lyrics_artist, lyrics_offset, backgrounds,
              force, keep_files, work_dir, resolution, fps, font_size, no_progress,
-             evaluate_lyrics, whisper, whisper_language, whisper_model):
+             evaluate_lyrics, whisper, whisper_language, whisper_model,
+             shorten_breaks, max_break):
     """Generate karaoke video from YouTube URL or search query."""
     logger = ctx.obj['logger']
 
@@ -153,6 +158,8 @@ def generate(ctx, url_or_query, output, offset, key, tempo, audio_start,
             use_whisper=whisper,
             whisper_language=whisper_language,
             whisper_model=whisper_model,
+            shorten_breaks=shorten_breaks,
+            max_break_duration=max_break,
         )
 
         logger.info(f"✅ Karaoke video generated: {result['output_path']}")
