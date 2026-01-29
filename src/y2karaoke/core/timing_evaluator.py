@@ -442,6 +442,66 @@ def _check_vocal_activity_in_range(
     return active_frames / len(range_energy)
 
 
+def _check_for_silence_in_range(
+    start_time: float,
+    end_time: float,
+    audio_features: AudioFeatures,
+    min_silence_duration: float = 0.5,
+) -> bool:
+    """Check if there's a significant silence region within a time range.
+
+    Even if there's some vocal activity in the range, if there's also
+    a sustained silence period, it indicates a real phrase boundary.
+
+    Args:
+        start_time: Start of range to check
+        end_time: End of range to check
+        audio_features: Audio features with energy envelope
+        min_silence_duration: Minimum silence duration to detect
+
+    Returns:
+        True if there's a silence region >= min_silence_duration
+    """
+    times = audio_features.energy_times
+    energy = audio_features.energy_envelope
+
+    # Use 2% of peak as silence threshold
+    peak_level = np.max(energy) if len(energy) > 0 else 1.0
+    silence_threshold = 0.02 * peak_level
+
+    # Find indices for the range
+    start_idx = np.searchsorted(times, start_time)
+    end_idx = np.searchsorted(times, end_time)
+
+    if start_idx >= end_idx or start_idx >= len(energy):
+        return False
+
+    # Scan for silence regions
+    in_silence = False
+    silence_start_time = 0.0
+
+    for i in range(start_idx, min(end_idx, len(times))):
+        t = times[i]
+        is_silent = energy[i] < silence_threshold
+
+        if is_silent and not in_silence:
+            in_silence = True
+            silence_start_time = t
+        elif not is_silent and in_silence:
+            silence_duration = t - silence_start_time
+            if silence_duration >= min_silence_duration:
+                return True
+            in_silence = False
+
+    # Check if still in silence at end of range
+    if in_silence:
+        silence_duration = min(end_time, times[min(end_idx, len(times) - 1)]) - silence_start_time
+        if silence_duration >= min_silence_duration:
+            return True
+
+    return False
+
+
 def _calculate_pause_score(
     lines: List[Line],
     audio_features: AudioFeatures,
@@ -639,14 +699,14 @@ def correct_line_timestamps(
 ) -> Tuple[List[Line], List[str]]:
     """Correct line timestamps to align with detected vocal onsets.
 
-    For each line, finds the best matching vocal onset considering:
-    1. Proximity to the LRC timestamp
-    2. Whether there's silence before the onset (indicating a phrase start)
+    Uses a two-tier approach:
+    1. If LRC timestamp has singing nearby, use proximity-based correction (normal case)
+    2. If LRC timestamp falls during silence, find next phrase after previous line (fallback)
 
     Args:
         lines: Original lyrics lines with timing
         audio_features: Extracted audio features with onset times
-        max_correction: Maximum allowed timestamp correction in seconds
+        max_correction: Maximum correction for normal cases (seconds)
 
     Returns:
         Tuple of (corrected_lines, list of correction descriptions)
@@ -660,6 +720,9 @@ def correct_line_timestamps(
     corrections: List[str] = []
     onset_times = audio_features.onset_times
 
+    # Track where previous line's audio actually ended (for fallback)
+    prev_line_audio_end = 0.0
+
     for i, line in enumerate(lines):
         if not line.words:
             corrected_lines.append(line)
@@ -668,47 +731,88 @@ def correct_line_timestamps(
         line_start = line.start_time
         line_duration = line.end_time - line_start
 
-        # Find best onset: prefer onsets that follow silence (phrase boundaries)
+        # Check if LRC timestamp is reasonable (singing at or near that time)
+        singing_at_lrc_time = _check_vocal_activity_in_range(
+            line_start - 0.5, line_start + 0.5, audio_features
+        ) > 0.3
+
+        best_onset = None
+
         if len(onset_times) > 0:
-            best_onset = None
-            best_score = float('inf')
-
-            # Check onsets within search window
-            search_start = line_start - max_correction
-            search_end = line_start + max_correction
-
-            candidate_onsets = onset_times[
-                (onset_times >= search_start) & (onset_times <= search_end)
-            ]
-
-            for onset in candidate_onsets:
-                # Score based on distance from LRC timestamp
-                distance = abs(onset - line_start)
-
-                # Check if there's silence before this onset (phrase boundary indicator)
+            if singing_at_lrc_time:
+                # Check if LRC timestamp is at END of a phrase (silence follows)
+                # vs BEGINNING (silence precedes)
+                silence_after = _check_vocal_activity_in_range(
+                    line_start + 0.1, line_start + 0.6, audio_features
+                ) < 0.3
                 silence_before = _check_vocal_activity_in_range(
-                    max(0, onset - 0.5), onset - 0.1, audio_features
-                )
+                    max(0, line_start - 0.6), line_start - 0.1, audio_features
+                ) < 0.3
 
-                # Lower score is better
-                # Prefer onsets after silence (silence_before < 0.3)
-                # Penalize onsets that are much earlier than LRC timestamp
-                score = distance
-                if silence_before < 0.3:
-                    score -= 1.0  # Bonus for following silence
-                if onset < line_start - 0.5:
-                    score += 1.0  # Penalty for being too early
+                if silence_after and not silence_before:
+                    # LRC timestamp is at END of phrase - find phrase start
+                    # Look backwards for the onset that started this phrase
+                    search_start = max(0, prev_line_audio_end + 0.2)
+                    candidate_onsets = onset_times[
+                        (onset_times >= search_start) & (onset_times < line_start)
+                    ]
 
-                if score < best_score:
-                    best_score = score
-                    best_onset = onset
+                    for onset in candidate_onsets:
+                        onset_silence_before = _check_vocal_activity_in_range(
+                            max(0, onset - 0.5), onset - 0.1, audio_features
+                        )
+                        if onset_silence_before < 0.3:
+                            best_onset = onset
+                            break
+                else:
+                    # Normal case: LRC timestamp is reasonable, use proximity-based correction
+                    best_score = float('inf')
+                    search_start = line_start - max_correction
+                    search_end = line_start + max_correction
+
+                    candidate_onsets = onset_times[
+                        (onset_times >= search_start) & (onset_times <= search_end)
+                    ]
+
+                    for onset in candidate_onsets:
+                        distance = abs(onset - line_start)
+
+                        onset_silence_before = _check_vocal_activity_in_range(
+                            max(0, onset - 0.5), onset - 0.1, audio_features
+                        )
+
+                        score = distance
+                        if onset_silence_before < 0.3:
+                            score -= 1.0  # Bonus for following silence
+                        if onset < line_start - 0.5:
+                            score += 1.0  # Penalty for being too early
+
+                        if score < best_score:
+                            best_score = score
+                            best_onset = onset
+
+            else:
+                # Fallback: LRC timestamp is wrong (silence at that time)
+                # Find next phrase start after previous line ended
+                search_after = prev_line_audio_end + 0.2
+
+                candidate_onsets = onset_times[onset_times >= search_after]
+
+                for onset in candidate_onsets:
+                    silence_before = _check_vocal_activity_in_range(
+                        max(0, onset - 0.5), onset - 0.1, audio_features
+                    )
+
+                    if silence_before < 0.3:
+                        # Found phrase start after silence
+                        best_onset = onset
+                        break
 
             if best_onset is not None:
                 offset = best_onset - line_start
 
-                # Only correct if offset is significant
-                if 0.3 < abs(offset) <= max_correction:
-                    # Apply correction - shift all words
+                # Apply correction if significant
+                if abs(offset) > 0.3:
                     new_words = []
                     for word in line.words:
                         new_words.append(Word(
@@ -721,6 +825,10 @@ def correct_line_timestamps(
                     corrected_line = Line(words=new_words, singer=line.singer)
                     corrected_lines.append(corrected_line)
 
+                    prev_line_audio_end = _find_phrase_end(
+                        best_onset, best_onset + 30.0, audio_features, min_silence_duration=0.3
+                    )
+
                     line_text = " ".join(w.text for w in line.words)[:30]
                     corrections.append(
                         f"Line {i+1} shifted {offset:+.1f}s: \"{line_text}...\""
@@ -729,8 +837,74 @@ def correct_line_timestamps(
 
         # No correction needed
         corrected_lines.append(line)
+        prev_line_audio_end = _find_phrase_end(
+            line_start, line_start + 30.0, audio_features, min_silence_duration=0.3
+        )
 
     return corrected_lines, corrections
+
+
+def _find_phrase_end(
+    start_time: float,
+    max_end_time: float,
+    audio_features: AudioFeatures,
+    min_silence_duration: float = 0.3,
+) -> float:
+    """Find where a phrase actually ends by detecting silence.
+
+    Searches for the first silence region after start_time that lasts
+    at least min_silence_duration seconds.
+
+    Args:
+        start_time: When the phrase starts
+        max_end_time: Don't search beyond this time
+        audio_features: Audio features with energy envelope
+        min_silence_duration: Minimum silence to consider phrase end
+
+    Returns:
+        Estimated end time of the phrase
+    """
+    times = audio_features.energy_times
+    energy = audio_features.energy_envelope
+
+    # Use 2% of peak as silence threshold (consistent with _check_vocal_activity_in_range)
+    peak_level = np.max(energy) if len(energy) > 0 else 1.0
+    silence_threshold = 0.02 * peak_level
+
+    # Find start index
+    start_idx = np.searchsorted(times, start_time)
+
+    # Track silence duration
+    in_silence = False
+    silence_start_time = 0.0
+
+    for i in range(start_idx, len(times)):
+        t = times[i]
+        if t > max_end_time:
+            break
+
+        is_silent = energy[i] < silence_threshold
+
+        if is_silent and not in_silence:
+            # Entering silence
+            in_silence = True
+            silence_start_time = t
+        elif not is_silent and in_silence:
+            # Exiting silence - check if it was long enough
+            silence_duration = t - silence_start_time
+            if silence_duration >= min_silence_duration:
+                # Found real phrase end
+                return silence_start_time
+            in_silence = False
+
+    # If still in silence at max_end_time, check duration
+    if in_silence:
+        silence_duration = min(max_end_time, times[-1]) - silence_start_time
+        if silence_duration >= min_silence_duration:
+            return silence_start_time
+
+    # No silence found - use max_end_time
+    return max_end_time
 
 
 def fix_spurious_gaps(
@@ -741,7 +915,9 @@ def fix_spurious_gaps(
     """Fix spurious gaps by merging lines that should be continuous.
 
     When a gap between lines has significant vocal activity (indicating
-    continuous singing), merge the lines into one.
+    continuous singing), merge the lines into one. Uses audio analysis
+    to find the actual end of the merged phrase rather than using
+    potentially incorrect LRC timestamps.
 
     Args:
         lines: Original lyrics lines
@@ -768,53 +944,134 @@ def fix_spurious_gaps(
             i += 1
             continue
 
-        # Check if we should merge with next line
-        if i + 1 < len(lines) and lines[i + 1].words:
-            next_line = lines[i + 1]
-            line_end = current_line.end_time
-            next_start = next_line.start_time
-            gap_duration = next_start - line_end
+        # Collect all lines that should be merged (may be more than 2)
+        lines_to_merge = [current_line]
+        j = i + 1
 
-            if gap_duration > 0.3:  # Only check meaningful gaps
+        while j < len(lines) and lines[j].words:
+            next_line = lines[j]
+            prev_line = lines_to_merge[-1]
+            line_end = prev_line.end_time
+            next_start = next_line.start_time
+
+            # Find where the current phrase ACTUALLY ends using audio
+            phrase_start = lines_to_merge[0].start_time
+            actual_phrase_end = _find_phrase_end(
+                phrase_start, phrase_start + 30.0, audio_features, min_silence_duration=0.3
+            )
+
+            # Check if singing at next_start - if there's silence at the LRC timestamp,
+            # the timestamp is unreliable and the content may belong to current phrase
+            singing_at_next_start = _check_vocal_activity_in_range(
+                next_start - 0.2, next_start + 0.2, audio_features
+            ) > 0.5
+
+            if not singing_at_next_start:
+                # LRC timestamp falls during silence - timestamp is wrong
+                # Check if the content belongs to current phrase:
+                # If phrase_end is AFTER the LRC end of current line, merge
+                if actual_phrase_end > line_end + 0.5:
+                    # Current phrase continues past its LRC end time
+                    # The next line's content is likely part of this phrase
+                    lines_to_merge.append(next_line)
+                    j += 1
+                    continue
+
+            # If actual phrase end is past the next LRC timestamp,
+            # the lines should be merged (singing continues through)
+            if actual_phrase_end > next_start - 0.5:
+                lines_to_merge.append(next_line)
+                j += 1
+                continue
+
+            # Check for silence between phrase end and next line
+            # If there's a significant silence, don't merge
+            has_silence = _check_for_silence_in_range(
+                actual_phrase_end, next_start, audio_features, min_silence_duration=0.5
+            )
+
+            if has_silence:
+                # Real pause detected - stop merging
+                break
+
+            # Check if there's continuous vocal activity in the gap
+            gap_start = actual_phrase_end
+            gap_end = next_start
+
+            if gap_end - gap_start > 0.5:
                 vocal_activity = _check_vocal_activity_in_range(
-                    line_end, next_start, audio_features
+                    gap_start, gap_end, audio_features
                 )
 
                 if vocal_activity > activity_threshold:
-                    # Merge lines - combine words and redistribute timing
-                    merged_words = list(current_line.words) + list(next_line.words)
+                    # But check there's no silence at the start (phrase boundary)
+                    has_early_silence = _check_for_silence_in_range(
+                        gap_start, min(gap_start + 1.0, gap_end),
+                        audio_features, min_silence_duration=0.3
+                    )
 
-                    # Redistribute timing across all words
-                    total_start = current_line.start_time
-                    total_end = next_line.end_time
-                    total_duration = total_end - total_start
-                    word_count = len(merged_words)
-
-                    if word_count > 0:
-                        word_spacing = total_duration / word_count
-                        new_words = []
-                        for j, word in enumerate(merged_words):
-                            new_start = total_start + j * word_spacing
-                            new_end = new_start + (word_spacing * 0.9)
-                            new_words.append(Word(
-                                text=word.text,
-                                start_time=new_start,
-                                end_time=new_end,
-                                singer=word.singer,
-                            ))
-
-                        merged_line = Line(words=new_words, singer=current_line.singer)
-                        fixed_lines.append(merged_line)
-
-                        current_text = " ".join(w.text for w in current_line.words)[:25]
-                        next_text = " ".join(w.text for w in next_line.words)[:25]
-                        fixes.append(
-                            f"Merged lines {i+1} and {i+2}: "
-                            f"\"{current_text}...\" + \"{next_text}...\""
-                        )
-
-                        i += 2  # Skip both lines
+                    if not has_early_silence:
+                        lines_to_merge.append(next_line)
+                        j += 1
                         continue
+
+            # Gap has no vocal activity or has a real pause - stop merging
+            break
+
+        if len(lines_to_merge) > 1:
+            # Merge all collected lines
+            merged_words = []
+            for line in lines_to_merge:
+                merged_words.extend(list(line.words))
+
+            # Find actual phrase end using audio analysis
+            phrase_start = lines_to_merge[0].start_time
+            # Look for silence up to the next unmerged line's start (or +30s max)
+            if j < len(lines) and lines[j].words:
+                search_end = lines[j].start_time
+            else:
+                search_end = phrase_start + 30.0
+
+            phrase_end = _find_phrase_end(
+                phrase_start, search_end, audio_features, min_silence_duration=0.3
+            )
+
+            # Sanity check: phrase should be at least 0.5s per word
+            min_duration = len(merged_words) * 0.3
+            if phrase_end - phrase_start < min_duration:
+                phrase_end = phrase_start + min_duration
+
+            total_duration = phrase_end - phrase_start
+            word_count = len(merged_words)
+
+            if word_count > 0:
+                word_spacing = total_duration / word_count
+                new_words = []
+                for k, word in enumerate(merged_words):
+                    new_start = phrase_start + k * word_spacing
+                    new_end = new_start + (word_spacing * 0.9)
+                    new_words.append(Word(
+                        text=word.text,
+                        start_time=new_start,
+                        end_time=new_end,
+                        singer=word.singer,
+                    ))
+
+                merged_line = Line(words=new_words, singer=lines_to_merge[0].singer)
+                fixed_lines.append(merged_line)
+
+                merged_texts = [
+                    " ".join(w.text for w in line.words)[:20]
+                    for line in lines_to_merge
+                ]
+                fixes.append(
+                    f"Merged {len(lines_to_merge)} lines ({i+1}-{i+len(lines_to_merge)}): "
+                    f"duration {phrase_end - phrase_start:.1f}s - "
+                    f"\"{' + '.join(merged_texts)}...\""
+                )
+
+                i = j  # Skip all merged lines
+                continue
 
         # No merge needed, keep original
         fixed_lines.append(current_line)
