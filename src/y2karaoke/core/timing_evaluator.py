@@ -55,11 +55,76 @@ class TimingReport:
     total_lines: int = 0
 
 
+def _get_audio_features_cache_path(vocals_path: str) -> Optional[str]:
+    """Get the cache file path for audio features."""
+    from pathlib import Path
+
+    vocals_file = Path(vocals_path)
+    if not vocals_file.exists():
+        return None
+
+    cache_name = f"{vocals_file.stem}_audio_features.npz"
+    return str(vocals_file.parent / cache_name)
+
+
+def _load_audio_features_cache(cache_path: str) -> Optional[AudioFeatures]:
+    """Load cached audio features if available."""
+    from pathlib import Path
+    import json
+
+    cache_file = Path(cache_path)
+    if not cache_file.exists():
+        return None
+
+    try:
+        data = np.load(cache_file, allow_pickle=True)
+
+        # Reconstruct AudioFeatures
+        features = AudioFeatures(
+            onset_times=data['onset_times'],
+            silence_regions=list(data['silence_regions']),
+            vocal_start=float(data['vocal_start']),
+            vocal_end=float(data['vocal_end']),
+            duration=float(data['duration']),
+            energy_envelope=data['energy_envelope'],
+            energy_times=data['energy_times'],
+        )
+
+        logger.debug(f"Loaded cached audio features: {len(features.onset_times)} onsets")
+        return features
+
+    except Exception as e:
+        logger.debug(f"Failed to load audio features cache: {e}")
+        return None
+
+
+def _save_audio_features_cache(cache_path: str, features: AudioFeatures) -> None:
+    """Save audio features to cache."""
+    try:
+        np.savez(
+            cache_path,
+            onset_times=features.onset_times,
+            silence_regions=np.array(features.silence_regions, dtype=object),
+            vocal_start=features.vocal_start,
+            vocal_end=features.vocal_end,
+            duration=features.duration,
+            energy_envelope=features.energy_envelope,
+            energy_times=features.energy_times,
+        )
+        logger.debug(f"Saved audio features to cache: {cache_path}")
+
+    except Exception as e:
+        logger.debug(f"Failed to save audio features cache: {e}")
+
+
 def extract_audio_features(
     vocals_path: str,
     min_silence_duration: float = 0.5,
 ) -> Optional[AudioFeatures]:
     """Extract audio features for timing evaluation.
+
+    Results are cached to disk alongside the vocals file to avoid
+    expensive re-extraction on subsequent runs.
 
     Args:
         vocals_path: Path to vocals audio file
@@ -68,6 +133,13 @@ def extract_audio_features(
     Returns:
         AudioFeatures object or None if extraction fails
     """
+    # Check cache first
+    cache_path = _get_audio_features_cache_path(vocals_path)
+    if cache_path:
+        cached = _load_audio_features_cache(cache_path)
+        if cached:
+            return cached
+
     try:
         import librosa
 
@@ -99,7 +171,7 @@ def extract_audio_features(
         vocal_start = _find_vocal_start(onset_times, rms, rms_times, silence_threshold)
         vocal_end = _find_vocal_end(rms, rms_times, silence_threshold)
 
-        return AudioFeatures(
+        features = AudioFeatures(
             onset_times=onset_times,
             silence_regions=silence_regions,
             vocal_start=vocal_start,
@@ -108,6 +180,12 @@ def extract_audio_features(
             energy_envelope=rms,
             energy_times=rms_times,
         )
+
+        # Save to cache
+        if cache_path:
+            _save_audio_features_cache(cache_path, features)
+
+        return features
 
     except Exception as e:
         logger.error(f"Failed to extract audio features: {e}")
@@ -1088,12 +1166,117 @@ class TranscriptionSegment:
             self.words = []
 
 
+def _get_whisper_cache_path(vocals_path: str, model_size: str, language: Optional[str]) -> Optional[str]:
+    """Get the cache file path for Whisper transcription results.
+
+    Cache is stored alongside the vocals file to ensure it's invalidated
+    when the audio changes.
+    """
+    import hashlib
+    from pathlib import Path
+
+    vocals_file = Path(vocals_path)
+    if not vocals_file.exists():
+        return None
+
+    # Create cache filename with model and language info
+    lang_suffix = f"_{language}" if language else "_auto"
+    cache_name = f"{vocals_file.stem}_whisper_{model_size}{lang_suffix}.json"
+    return str(vocals_file.parent / cache_name)
+
+
+def _load_whisper_cache(cache_path: str) -> Optional[Tuple[List[TranscriptionSegment], List[TranscriptionWord], str]]:
+    """Load cached Whisper transcription if available."""
+    import json
+    from pathlib import Path
+
+    cache_file = Path(cache_path)
+    if not cache_file.exists():
+        return None
+
+    try:
+        with open(cache_file, 'r') as f:
+            data = json.load(f)
+
+        # Reconstruct TranscriptionSegment and TranscriptionWord objects
+        segments = []
+        all_words = []
+        for seg_data in data.get('segments', []):
+            seg_words = []
+            for w_data in seg_data.get('words', []):
+                tw = TranscriptionWord(
+                    start=w_data['start'],
+                    end=w_data['end'],
+                    text=w_data['text'],
+                    probability=w_data.get('probability', 1.0),
+                )
+                seg_words.append(tw)
+                all_words.append(tw)
+            segments.append(TranscriptionSegment(
+                start=seg_data['start'],
+                end=seg_data['end'],
+                text=seg_data['text'],
+                words=seg_words,
+            ))
+
+        detected_lang = data.get('language', '')
+        logger.info(f"Loaded cached Whisper transcription: {len(segments)} segments, {len(all_words)} words")
+        return segments, all_words, detected_lang
+
+    except Exception as e:
+        logger.debug(f"Failed to load Whisper cache: {e}")
+        return None
+
+
+def _save_whisper_cache(
+    cache_path: str,
+    segments: List[TranscriptionSegment],
+    all_words: List[TranscriptionWord],
+    language: str,
+) -> None:
+    """Save Whisper transcription to cache."""
+    import json
+
+    try:
+        data = {
+            'language': language,
+            'segments': [
+                {
+                    'start': seg.start,
+                    'end': seg.end,
+                    'text': seg.text,
+                    'words': [
+                        {
+                            'start': w.start,
+                            'end': w.end,
+                            'text': w.text,
+                            'probability': w.probability,
+                        }
+                        for w in (seg.words or [])
+                    ]
+                }
+                for seg in segments
+            ]
+        }
+
+        with open(cache_path, 'w') as f:
+            json.dump(data, f)
+
+        logger.debug(f"Saved Whisper transcription to cache: {cache_path}")
+
+    except Exception as e:
+        logger.debug(f"Failed to save Whisper cache: {e}")
+
+
 def transcribe_vocals(
     vocals_path: str,
     language: Optional[str] = None,
     model_size: str = "base",
 ) -> Tuple[List[TranscriptionSegment], List[TranscriptionWord], str]:
     """Transcribe vocals using Whisper.
+
+    Results are cached to disk alongside the vocals file to avoid
+    expensive re-transcription on subsequent runs.
 
     Args:
         vocals_path: Path to vocals audio file
@@ -1103,6 +1286,13 @@ def transcribe_vocals(
     Returns:
         Tuple of (list of TranscriptionSegment, list of all TranscriptionWord, detected language code)
     """
+    # Check cache first
+    cache_path = _get_whisper_cache_path(vocals_path, model_size, language)
+    if cache_path:
+        cached = _load_whisper_cache(cache_path)
+        if cached:
+            return cached
+
     try:
         from faster_whisper import WhisperModel
     except ImportError:
@@ -1145,6 +1335,11 @@ def transcribe_vocals(
 
         detected_lang = info.language
         logger.info(f"Transcribed {len(result)} segments, {len(all_words)} words (language: {detected_lang})")
+
+        # Save to cache
+        if cache_path:
+            _save_whisper_cache(cache_path, result, all_words, detected_lang)
+
         return result, all_words, detected_lang
 
     except Exception as e:

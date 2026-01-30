@@ -165,8 +165,8 @@ def _search_with_fallback(
 
 
 # Cache for LRC results to avoid duplicate fetches
-# Key: (artist.lower(), title.lower()), Value: (lrc_text, is_synced, source_name)
-_lrc_cache: Dict[Tuple[str, str], Tuple[Optional[str], bool, str]] = {}
+# Key: (artist.lower(), title.lower()), Value: (lrc_text, is_synced, source_name, lrc_duration)
+_lrc_cache: Dict[Tuple[str, str], Tuple[Optional[str], bool, str, Optional[int]]] = {}
 
 # Cache for lyriq results
 _lyriq_cache: Dict[Tuple[str, str], Optional[str]] = {}
@@ -252,6 +252,8 @@ def fetch_lyrics_multi_source(
     artist: str,
     synced_only: bool = True,
     enhanced: bool = False,
+    target_duration: Optional[int] = None,
+    duration_tolerance: int = 20,
 ) -> Tuple[Optional[str], bool, str]:
     """
     Fetch lyrics from multiple sources using lyriq and syncedlyrics.
@@ -265,6 +267,8 @@ def fetch_lyrics_multi_source(
         artist: Artist name
         synced_only: Only return synced (timestamped) lyrics
         enhanced: Try to get word-level timing (Musixmatch only)
+        target_duration: Expected track duration in seconds (for cache validation)
+        duration_tolerance: Maximum acceptable duration difference (seconds)
 
     Returns:
         Tuple of (lrc_text, is_synced, source_name)
@@ -276,8 +280,17 @@ def fetch_lyrics_multi_source(
     cache_key = (artist.lower().strip(), title.lower().strip())
     if cache_key in _lrc_cache:
         cached = _lrc_cache[cache_key]
-        logger.debug(f"Using cached LRC result for {artist} - {title}")
-        return cached
+        cached_duration = cached[3] if len(cached) > 3 else None
+        # If target_duration specified, validate cached duration matches
+        if target_duration and cached_duration:
+            if abs(cached_duration - target_duration) > duration_tolerance:
+                logger.debug(f"Cached LRC duration ({cached_duration}s) doesn't match target ({target_duration}s), re-fetching")
+            else:
+                logger.debug(f"Using cached LRC result for {artist} - {title}")
+                return (cached[0], cached[1], cached[2])
+        else:
+            logger.debug(f"Using cached LRC result for {artist} - {title}")
+            return (cached[0], cached[1], cached[2])
 
     search_term = f"{artist} {title}"
     logger.debug(f"Searching for synced lyrics: {search_term}")
@@ -289,15 +302,16 @@ def fetch_lyrics_multi_source(
             lrc = _fetch_from_lyriq(title, artist)
             if lrc and _has_timestamps(lrc):
                 logger.debug(f"Found synced lyrics from lyriq (LRCLib)")
-                result = (lrc, True, "lyriq (LRCLib)")
+                lrc_duration = get_lrc_duration(lrc)
+                result = (lrc, True, "lyriq (LRCLib)", lrc_duration)
                 _lrc_cache[cache_key] = result
-                return result
+                return (lrc, True, "lyriq (LRCLib)")
 
         if not SYNCEDLYRICS_AVAILABLE:
             logger.warning("syncedlyrics not installed")
-            result = (None, False, "")
+            result = (None, False, "", None)
             _lrc_cache[cache_key] = result
-            return result
+            return (None, False, "")
 
         # Try enhanced (word-level) first if requested
         if enhanced:
@@ -308,9 +322,10 @@ def fetch_lyrics_multi_source(
             )
             if lrc and _has_timestamps(lrc):
                 logger.debug(f"Found enhanced (word-level) synced lyrics from {provider}")
-                result = (lrc, True, f"{provider} (enhanced)")
+                lrc_duration = get_lrc_duration(lrc)
+                result = (lrc, True, f"{provider} (enhanced)", lrc_duration)
                 _lrc_cache[cache_key] = result
-                return result
+                return (lrc, True, f"{provider} (enhanced)")
 
         # Try synced lyrics with provider fallback
         lrc, provider = _search_with_fallback(
@@ -322,25 +337,26 @@ def fetch_lyrics_multi_source(
             is_synced = _has_timestamps(lrc)
             if is_synced:
                 logger.debug(f"Found synced lyrics from {provider}")
-                result = (lrc, True, provider)
+                lrc_duration = get_lrc_duration(lrc)
+                result = (lrc, True, provider, lrc_duration)
                 _lrc_cache[cache_key] = result
-                return result
+                return (lrc, True, provider)
             elif not synced_only:
                 logger.debug(f"Found plain lyrics from {provider}")
-                result = (lrc, False, provider)
+                result = (lrc, False, provider, None)
                 _lrc_cache[cache_key] = result
-                return result
+                return (lrc, False, provider)
 
         logger.warning("No synced lyrics found from any provider")
-        result = (None, False, "")
+        result = (None, False, "", None)
         _lrc_cache[cache_key] = result
-        return result
+        return (None, False, "")
 
     except Exception as e:
         logger.error(f"Error fetching synced lyrics: {e}")
-        result = (None, False, "")
+        result = (None, False, "", None)
         _lrc_cache[cache_key] = result
-        return result
+        return (None, False, "")
 
 
 def _has_timestamps(lrc_text: str) -> bool:
@@ -460,7 +476,10 @@ def fetch_lyrics_for_duration(
         return None, False, "", None
 
     # Strategy 1: Try the standard search (tries lyriq first, then syncedlyrics providers)
-    lrc_text, is_synced, source = fetch_lyrics_multi_source(title, artist, synced_only=True)
+    # Pass target_duration to enable cache validation
+    lrc_text, is_synced, source = fetch_lyrics_multi_source(
+        title, artist, synced_only=True, target_duration=target_duration, duration_tolerance=tolerance
+    )
 
     if is_synced and lrc_text:
         lrc_duration = get_lrc_duration(lrc_text)

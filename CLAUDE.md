@@ -339,6 +339,25 @@ TEMPO_RANGE = (0.1, 3.0)
 - Stores: audio, separated stems, processed audio, lyrics metadata
 - Methods: `load_metadata()`, `save_metadata()`, `get_cache_stats()`, `cleanup_old_files()`
 
+**Cached operations:**
+
+| Operation | Cache Type | Cache Key | Notes |
+|-----------|------------|-----------|-------|
+| YouTube download | File | video_id | WAV audio and video files |
+| Vocal separation | File | audio filename pattern | `*Vocals*.wav`, `*instrumental*.wav` |
+| Audio effects | File | `audio_{suffix}_key{N}_tempo{N}.wav` | Includes key shift and tempo |
+| Audio trimming | File | `trimmed_from_{N}s.wav` | Start time in filename |
+| Break shortening | File | `shortened_breaks_{N}s{suffix}.wav` | Duration and track suffix |
+| LRC lyrics | In-memory | `(artist, title)` + duration validation | Checks cached duration matches target |
+| Whisper transcription | File | `{stem}_whisper_{model}_{lang}.json` | Stored alongside vocals |
+| Audio features | File | `{stem}_audio_features.npz` | Onsets, silence regions, energy |
+| IPA transliteration | In-memory | `{language}:{text}` | For phonetic matching |
+
+**Cache consistency:**
+- LRC cache validates duration when `target_duration` is specified
+- Audio effects cache includes all parameters in filename
+- Whisper and audio features are cached alongside the source audio file
+
 ## File Structure Summary
 
 ```
