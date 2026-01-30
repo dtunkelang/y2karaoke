@@ -330,12 +330,18 @@ def shorten_instrumental_breaks(
 def adjust_lyrics_timing(
     lines: list,
     edits: List[BreakEdit],
+    keep_start: float = 5.0,
+    keep_end: float = 3.0,
+    crossfade_duration: float = 1.0,
 ) -> list:
     """Adjust lyrics timing based on break edits.
 
     Args:
         lines: List of Line objects with word timing
         edits: List of BreakEdit objects describing removed time
+        keep_start: Seconds kept at start of each break
+        keep_end: Seconds kept at end of each break
+        crossfade_duration: Duration of crossfade in seconds
 
     Returns:
         New list of Line objects with adjusted timing
@@ -357,13 +363,23 @@ def adjust_lyrics_timing(
             # Calculate how much time to subtract based on which edits occurred before this word
             time_adjustment = 0.0
             for edit in edits:
-                if word.start_time > edit.original_end:
-                    # Word is after this edit, subtract full removed time
+                cut_start = edit.original_start + keep_start
+                cut_end = edit.original_end - keep_end
+
+                if word.start_time >= edit.original_end:
+                    # Word is after this break entirely, subtract full removed time
                     time_adjustment += edit.time_removed
-                elif word.start_time > edit.original_start + 5.0:  # After keep_start
-                    # Word is within the cut section - this shouldn't happen
-                    # but handle gracefully by placing at the crossfade point
-                    time_adjustment += (word.start_time - edit.original_start - 5.0)
+                elif word.start_time >= cut_end:
+                    # Word is in the "keep_end" portion (last 3 seconds of break)
+                    # These get shifted to right after the crossfade
+                    # New position = keep_start + crossfade + (word_time - cut_end)
+                    # Adjustment = word_time - new_position = word_time - (original_start + keep_start + crossfade + word_time - cut_end)
+                    #            = cut_end - original_start - keep_start - crossfade
+                    time_adjustment += (cut_end - edit.original_start - keep_start - crossfade_duration)
+                elif word.start_time > cut_start:
+                    # Word is in the cut section (should be rare - lyrics during instrumental)
+                    # Place at the crossfade point
+                    time_adjustment += (word.start_time - cut_start)
 
             new_word = Word(
                 text=word.text,

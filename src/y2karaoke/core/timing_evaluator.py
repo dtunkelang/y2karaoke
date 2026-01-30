@@ -792,11 +792,15 @@ def correct_line_timestamps(
                             best_onset = onset
 
             else:
-                # Fallback: LRC timestamp is wrong (silence at that time)
-                # Find next phrase start after previous line ended
-                search_after = prev_line_audio_end + 0.2
+                # Fallback: LRC timestamp falls during silence
+                # Be conservative - only correct if we find a clear phrase start nearby
+                # Use same max_correction as normal case to avoid large shifts
+                search_after = max(prev_line_audio_end + 0.2, line_start - max_correction)
+                search_before = line_start + max_correction
 
-                candidate_onsets = onset_times[onset_times >= search_after]
+                candidate_onsets = onset_times[
+                    (onset_times >= search_after) & (onset_times <= search_before)
+                ]
 
                 for onset in candidate_onsets:
                     silence_before = _check_vocal_activity_in_range(
@@ -966,56 +970,34 @@ def fix_spurious_gaps(
                 next_start - 0.2, next_start + 0.2, audio_features
             ) > 0.5
 
-            if not singing_at_next_start:
-                # LRC timestamp falls during silence - timestamp is wrong
-                # Check if the content belongs to current phrase:
-                # If phrase_end is AFTER the LRC end of current line, merge
-                if actual_phrase_end > line_end + 0.5:
-                    # Current phrase continues past its LRC end time
-                    # The next line's content is likely part of this phrase
-                    lines_to_merge.append(next_line)
-                    j += 1
-                    continue
+            # Only merge if there's truly continuous vocal activity through the gap
+            # Be conservative - good LRC timing shouldn't be "fixed"
+            gap_start = line_end
+            gap_end = next_start
+            gap_duration = gap_end - gap_start
 
-            # If actual phrase end is past the next LRC timestamp,
-            # the lines should be merged (singing continues through)
-            if actual_phrase_end > next_start - 0.5:
-                lines_to_merge.append(next_line)
-                j += 1
-                continue
-
-            # Check for silence between phrase end and next line
-            # If there's a significant silence, don't merge
-            has_silence = _check_for_silence_in_range(
-                actual_phrase_end, next_start, audio_features, min_silence_duration=0.5
-            )
-
-            if has_silence:
-                # Real pause detected - stop merging
+            # Don't even consider merging if the gap is more than 2 seconds
+            # That's a real pause in almost any song
+            if gap_duration > 2.0:
                 break
 
-            # Check if there's continuous vocal activity in the gap
-            gap_start = actual_phrase_end
-            gap_end = next_start
-
-            if gap_end - gap_start > 0.5:
-                vocal_activity = _check_vocal_activity_in_range(
-                    gap_start, gap_end, audio_features
-                )
-
-                if vocal_activity > activity_threshold:
-                    # But check there's no silence at the start (phrase boundary)
-                    has_early_silence = _check_for_silence_in_range(
-                        gap_start, min(gap_start + 1.0, gap_end),
-                        audio_features, min_silence_duration=0.3
+            # Check if there's actual singing THROUGH the gap
+            # (not just at the boundaries, but in the middle)
+            if gap_duration > 0.3:
+                # Check middle portion of gap for vocal activity
+                mid_start = gap_start + 0.15
+                mid_end = gap_end - 0.15
+                if mid_end > mid_start:
+                    mid_activity = _check_vocal_activity_in_range(
+                        mid_start, mid_end, audio_features
                     )
-
-                    if not has_early_silence:
+                    # Only merge if there's strong continuous singing (>70% activity)
+                    if mid_activity > 0.7:
                         lines_to_merge.append(next_line)
                         j += 1
                         continue
 
-            # Gap has no vocal activity or has a real pause - stop merging
+            # Gap has no continuous vocal activity - stop merging
             break
 
         if len(lines_to_merge) > 1:

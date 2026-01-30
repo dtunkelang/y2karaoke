@@ -119,6 +119,10 @@ def _search_single_provider(
     return None
 
 
+# Cache for search term results
+_search_cache: Dict[str, Tuple[Optional[str], str]] = {}
+
+
 def _search_with_fallback(
     search_term: str,
     synced_only: bool = True,
@@ -127,10 +131,17 @@ def _search_with_fallback(
     """Search across providers with fallback.
 
     Tries each provider in order until one succeeds.
+    Results are cached by search term.
 
     Returns:
         Tuple of (lrc_text, provider_name)
     """
+    # Check cache first
+    cache_key = f"{search_term.lower()}:{synced_only}:{enhanced}"
+    if cache_key in _search_cache:
+        logger.debug(f"Using cached search result for: {search_term}")
+        return _search_cache[cache_key]
+
     for provider in PROVIDER_ORDER:
         logger.debug(f"Trying {provider} for: {search_term}")
         lrc = _search_single_provider(
@@ -141,12 +152,16 @@ def _search_with_fallback(
         )
         if lrc:
             logger.debug(f"Found lyrics from {provider}")
-            return lrc, provider
+            result = (lrc, provider)
+            _search_cache[cache_key] = result
+            return result
 
         # Small delay between providers to be nice to services
         time.sleep(0.3)
 
-    return None, ""
+    result = (None, "")
+    _search_cache[cache_key] = result
+    return result
 
 
 # Cache for LRC results to avoid duplicate fetches

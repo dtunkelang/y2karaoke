@@ -258,14 +258,36 @@ class KaraokeGenerator:
 
     def _shorten_breaks(self, instrumental_path: str, vocals_path: str, video_id: str, max_break_duration: float, force: bool = False):
         """Shorten long instrumental breaks."""
-        from .break_shortener import shorten_instrumental_breaks
+        import json
+        from .break_shortener import shorten_instrumental_breaks, BreakEdit
 
-        # Check cache
+        # Check cache (both audio and edits)
         shortened_name = f"shortened_breaks_{max_break_duration:.0f}s.wav"
+        edits_name = f"shortened_breaks_{max_break_duration:.0f}s_edits.json"
+
         if not force and self.cache_manager.file_exists(video_id, shortened_name):
-            logger.info("📁 Using cached shortened audio")
-            # We don't have cached edits, so return empty list (timing already adjusted)
-            return str(self.cache_manager.get_file_path(video_id, shortened_name)), []
+            # Try to load cached edits
+            edits_path = self.cache_manager.get_file_path(video_id, edits_name)
+            if edits_path.exists():
+                try:
+                    with open(edits_path) as f:
+                        edits_data = json.load(f)
+                    edits = [
+                        BreakEdit(
+                            original_start=e["original_start"],
+                            original_end=e["original_end"],
+                            new_end=e["new_end"],
+                            time_removed=e["time_removed"],
+                        )
+                        for e in edits_data
+                    ]
+                    logger.info(f"📁 Using cached shortened audio ({len(edits)} break edits)")
+                    return str(self.cache_manager.get_file_path(video_id, shortened_name)), edits
+                except Exception as e:
+                    logger.debug(f"Could not load cached edits: {e}")
+            else:
+                logger.info("📁 Using cached shortened audio (no edits)")
+                return str(self.cache_manager.get_file_path(video_id, shortened_name)), []
 
         logger.info(f"✂️ Shortening instrumental breaks longer than {max_break_duration:.0f}s...")
         output_path = self.cache_manager.get_file_path(video_id, shortened_name)
@@ -276,6 +298,21 @@ class KaraokeGenerator:
             str(output_path),
             max_break_duration=max_break_duration,
         )
+
+        # Cache the edits for future runs
+        if edits:
+            edits_path = self.cache_manager.get_file_path(video_id, edits_name)
+            edits_data = [
+                {
+                    "original_start": e.original_start,
+                    "original_end": e.original_end,
+                    "new_end": e.new_end,
+                    "time_removed": e.time_removed,
+                }
+                for e in edits
+            ]
+            with open(edits_path, "w") as f:
+                json.dump(edits_data, f)
 
         return shortened_path, edits
 

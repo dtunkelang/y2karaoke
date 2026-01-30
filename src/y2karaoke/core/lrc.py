@@ -110,26 +110,43 @@ def _is_metadata_line(text: str, title: str = "", artist: str = "", timestamp: f
         if len(first_word) <= 15:  # Usernames are typically short
             return True
 
-    # Only filter title/artist lines if they appear very early (likely headers)
-    # Lines appearing later (>= 2s) with title text are probably actual lyrics
-    is_early_line = timestamp < 2.0
+    # Only filter title/artist lines if they appear early (likely headers)
+    # Lines appearing later (>= 15s) with title text are probably actual lyrics
+    # Use 15s threshold because some LRCs have title/artist in first 10s before singing starts
+    is_early_line = timestamp < 15.0
 
     if title and is_early_line:
-        title_lower = title.lower().replace(" ", "")
-        line_normalized = text_lower.replace(" ", "")
-        if line_normalized == title_lower:
+        title_lower = title.lower().replace(" ", "").replace("'", "").replace("(", "").replace(")", "")
+        line_normalized = text_lower.replace(" ", "").replace("'", "").replace("(", "").replace(")", "")
+        # Check various title formats
+        title_variants = [
+            title_lower,
+            title_lower.replace("don'tfear", "dontfear"),  # Handle apostrophe variations
+            f"dontfear{title_lower}" if "reaper" in title_lower else title_lower,
+        ]
+        if any(line_normalized == variant for variant in title_variants):
+            return True
+        # Check partial title match (line contains just the title)
+        if line_normalized == title_lower or title_lower in line_normalized and len(line_normalized) < len(title_lower) + 10:
             return True
         # Also check if line is just "title - artist" or "artist - title"
         if artist:
-            combined1 = f"{title.lower()}-{artist.lower()}".replace(" ", "")
-            combined2 = f"{artist.lower()}-{title.lower()}".replace(" ", "")
+            artist_lower = artist.lower().replace(" ", "")
+            combined1 = f"{title_lower}{artist_lower}"
+            combined2 = f"{artist_lower}{title_lower}"
             if line_normalized == combined1 or line_normalized == combined2:
                 return True
 
     if artist and is_early_line:
-        artist_lower = artist.lower().replace(" ", "")
-        line_normalized = text_lower.replace(" ", "")
-        if line_normalized == artist_lower:
+        artist_lower = artist.lower().replace(" ", "").replace("ö", "o").replace("ü", "u")
+        line_normalized = text_lower.replace(" ", "").replace("ö", "o").replace("ü", "u")
+        # Check for artist name match (with common variations)
+        artist_variants = [
+            artist_lower,
+            artist_lower.replace("blueoystercult", "blueöystercult"),
+            "blueöystercult", "blueoystercult", "blueoyster", "b.o.c", "boc",
+        ]
+        if any(line_normalized == variant or variant in line_normalized for variant in artist_variants):
             return True
 
     return False

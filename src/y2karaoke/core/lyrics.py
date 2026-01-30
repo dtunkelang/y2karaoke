@@ -176,7 +176,8 @@ def get_lyrics_simple(
     """
     from .genius import fetch_genius_lyrics_with_singers
     from .refine import refine_word_timing
-    from .alignment import detect_song_start
+    from .alignment import detect_song_start, adjust_timing_for_duration_mismatch
+    from .sync import get_lrc_duration
 
     # 1. Try LRC first (preferred source), with duration validation if provided
     logger.debug(f"Fetching LRC lyrics... (target_duration={target_duration}, evaluate={evaluate_sources})")
@@ -255,47 +256,38 @@ def get_lyrics_simple(
                         # Ensure last word doesn't extend past next line
                         if j == word_count - 1:
                             word.end_time = min(word.end_time, next_line_start - 0.05)
-        # 5. Refine word timing using audio
+        # 5. Refine word timing using audio (within-line only, preserves line boundaries)
         if vocals_path and len(line_timings) > 1:
             lines = refine_word_timing(lines, vocals_path)
             logger.debug("Word-level timing refined using vocals")
 
-            # 5b. Fix spurious gaps (lines incorrectly split where singing is continuous)
-            # and correct timestamp offsets
-            try:
-                from .timing_evaluator import extract_audio_features, fix_spurious_gaps, correct_line_timestamps
-                audio_features = extract_audio_features(vocals_path)
-                if audio_features:
-                    # First merge lines that should be continuous
-                    lines, gap_fixes = fix_spurious_gaps(lines, audio_features)
-                    if gap_fixes:
-                        logger.info(f"Fixed {len(gap_fixes)} spurious gap(s) in lyrics timing")
-                        for fix in gap_fixes:
-                            logger.debug(f"  {fix}")
+            # 5b. Adjust for duration mismatch (e.g., LRC is for radio edit, video is album version)
+            # This detects instrumental breaks that differ in length and adjusts timing accordingly
+            lrc_duration = get_lrc_duration(lrc_text)
+            if target_duration and lrc_duration and abs(target_duration - lrc_duration) > 10:
+                logger.info(f"Duration mismatch: LRC={lrc_duration}s, audio={target_duration}s (diff={target_duration - lrc_duration:+}s)")
+                lines = adjust_timing_for_duration_mismatch(
+                    lines, line_timings, vocals_path,
+                    lrc_duration=lrc_duration, audio_duration=target_duration
+                )
 
-                    # Then correct timestamp offsets
-                    lines, ts_fixes = correct_line_timestamps(lines, audio_features)
-                    if ts_fixes:
-                        logger.info(f"Corrected {len(ts_fixes)} line timestamp(s)")
-                        for fix in ts_fixes:
+            # 5c. Optionally use Whisper for more accurate alignment
+            # Note: We skip fix_spurious_gaps and correct_line_timestamps because
+            # they often do more harm than good for songs with accurate LRC timing.
+            # The LRC line boundaries and timestamps should be trusted.
+            if use_whisper:
+                try:
+                    from .timing_evaluator import correct_timing_with_whisper
+                    lines, whisper_fixes = correct_timing_with_whisper(
+                        lines, vocals_path, language=whisper_language,
+                        model_size=whisper_model
+                    )
+                    if whisper_fixes:
+                        logger.info(f"Whisper aligned {len(whisper_fixes)} line(s)")
+                        for fix in whisper_fixes:
                             logger.debug(f"  {fix}")
-
-                    # 5c. Optionally use Whisper for more accurate alignment
-                    if use_whisper:
-                        try:
-                            from .timing_evaluator import correct_timing_with_whisper
-                            lines, whisper_fixes = correct_timing_with_whisper(
-                                lines, vocals_path, language=whisper_language,
-                                model_size=whisper_model
-                            )
-                            if whisper_fixes:
-                                logger.info(f"Whisper aligned {len(whisper_fixes)} line(s)")
-                                for fix in whisper_fixes:
-                                    logger.debug(f"  {fix}")
-                        except Exception as e:
-                            logger.warning(f"Whisper alignment failed: {e}")
-            except Exception as e:
-                logger.debug(f"Could not apply timing fixes: {e}")
+                except Exception as e:
+                    logger.warning(f"Whisper alignment failed: {e}")
     else:
         # Fallback: use Genius text with evenly spaced lines
         text_lines = [text for text, _ in genius_lines if text.strip()]
