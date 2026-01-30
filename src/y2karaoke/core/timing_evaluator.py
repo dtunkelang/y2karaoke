@@ -1378,7 +1378,6 @@ _ipa_segs_cache: Dict[str, List[str]] = {}  # Cache for IPA segments
 
 def _get_epitran(language: str = "fra-Latn"):
     """Get or create an epitran instance for a language."""
-    global _epitran_cache
     if language not in _epitran_cache:
         try:
             import epitran

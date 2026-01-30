@@ -74,8 +74,6 @@ def _search_single_provider(
     Returns:
         LRC text if found, None otherwise
     """
-    global _failed_providers
-
     # Skip providers that have failed too many times
     if _failed_providers.get(provider, 0) >= _FAILURE_THRESHOLD:
         logger.debug(f"Skipping {provider} due to repeated failures")
