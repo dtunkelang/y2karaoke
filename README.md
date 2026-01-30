@@ -201,6 +201,16 @@ Romanization is **best-effort** and only applied when the corresponding librarie
 
 Intermediate files are cached in `~/.cache/karaoke/{video_id}/` by default, including downloaded audio, separated stems, processed instrumentals for particular key/tempo settings, and lyrics/timing metadata. This allows fast re-runs when adjusting timing offsets, key, or tempo without repeating the expensive separation and transcription steps.
 
+## Technical Documentation
+
+For detailed technical architecture, see [CLAUDE.md](CLAUDE.md). This document covers:
+- Overall pipeline and orchestration
+- Track identification (artist/title) from URLs and search queries
+- Lyrics and timing fetching from multiple providers
+- Audio retrieval and vocal separation
+- Alignment algorithms and audio analysis
+- Timing quality evaluation
+
 ## License
 
 MIT
