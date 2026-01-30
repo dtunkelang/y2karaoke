@@ -51,6 +51,17 @@ class TrackInfo:
     source: str  # "musicbrainz", "syncedlyrics", "youtube"
     lrc_duration: Optional[int] = None  # duration implied by LRC lyrics (if found)
     lrc_validated: bool = False  # True if LRC duration matches canonical duration
+    # Quality reporting fields
+    identification_quality: float = 100.0  # 0-100 confidence score
+    quality_issues: Optional[List[str]] = None  # List of quality concerns
+    sources_tried: Optional[List[str]] = None  # List of sources attempted
+    fallback_used: bool = False  # True if had to fall back from primary source
+
+    def __post_init__(self):
+        if self.quality_issues is None:
+            object.__setattr__(self, 'quality_issues', [])
+        if self.sources_tried is None:
+            object.__setattr__(self, 'sources_tried', [])
 
 
 class TrackIdentifier:

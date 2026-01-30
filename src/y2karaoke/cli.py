@@ -179,6 +179,33 @@ def generate(ctx, url_or_query, output, offset, key, tempo, audio_start,
 
         logger.info(f"✅ Karaoke video generated: {result['output_path']}")
 
+        # Display quality summary
+        quality_score = result.get('quality_score', 0)
+        quality_level = result.get('quality_level', 'unknown')
+        quality_issues = result.get('quality_issues', [])
+
+        if quality_score >= 80:
+            quality_indicator = "🟢"
+        elif quality_score >= 50:
+            quality_indicator = "🟡"
+        else:
+            quality_indicator = "🔴"
+
+        logger.info(f"{quality_indicator} Quality: {quality_score:.0f}/100 ({quality_level})")
+
+        if result.get('lyrics_source'):
+            logger.info(f"   Lyrics source: {result['lyrics_source']}")
+        if result.get('alignment_method'):
+            logger.info(f"   Alignment: {result['alignment_method']}")
+
+        if quality_issues and quality_score < 80:
+            logger.info("   Issues:")
+            for issue in quality_issues[:3]:
+                logger.info(f"     - {issue}")
+
+        if quality_score < 50:
+            logger.warning("   Consider using --whisper for better alignment")
+
         # Cleanup
         if not keep_files:
             generator.cleanup_temp_files()

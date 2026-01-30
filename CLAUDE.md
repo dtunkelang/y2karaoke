@@ -394,6 +394,44 @@ y2karaoke/
 └── tests/                        # Test suite
 ```
 
+## Quality Reporting
+
+The pipeline includes comprehensive quality evaluation and reporting at each step.
+
+### Quality Data Structures
+**File:** `src/y2karaoke/core/models.py`
+
+- `StepQuality`: Base class for step quality reports (quality_score 0-100, status, issues)
+- `TrackIdentificationQuality`: Match confidence, source agreement, fallback status
+- `LyricsQuality`: Source, coverage, timestamp density, duration match
+- `TimingAlignmentQuality`: Method used, lines aligned, average offset
+- `PipelineQualityReport`: Aggregated report with overall score and recommendations
+
+### Quality Reporting Functions
+
+**LRC Quality** (`sync.py`):
+- `get_lyrics_quality_report(lrc_text, source, target_duration)`: Returns quality metrics
+
+**Lyrics with Quality** (`lyrics.py`):
+- `get_lyrics_with_quality(...)`: Returns (lines, metadata, quality_report)
+- Reports: lyrics source, alignment method, whisper usage, issues
+
+**Pipeline Output** (`karaoke.py`):
+The `generate()` method returns quality information:
+```python
+{
+    "output_path": str,
+    "quality_score": float,      # 0-100
+    "quality_level": str,        # "high", "medium", "low"
+    "quality_issues": List[str],
+    "lyrics_source": str,
+    "alignment_method": str,     # "lrc_only", "onset_refined", "whisper_hybrid"
+}
+```
+
+**CLI Display** (`cli.py`):
+After generation, displays quality summary with color-coded indicator (🟢/🟡/🔴).
+
 ## Common Debugging Scenarios
 
 ### Lyrics timing is off

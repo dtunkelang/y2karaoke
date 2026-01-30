@@ -204,9 +204,40 @@ class KaraokeGenerator:
         )
 
         total_time = time() - total_start
-        logger.info(f"✅ Karaoke generation complete: {output_path} ({total_time:.1f}s)")
 
-        return {"output_path": str(output_path), "title": final_title, "artist": final_artist, "video_id": video_id}
+        # Build quality report
+        lyrics_quality = lyrics_result.get("quality", {})
+        quality_score = lyrics_quality.get("overall_score", 50.0)
+        quality_issues = lyrics_quality.get("issues", [])
+
+        # Log quality summary
+        if quality_score >= 80:
+            quality_emoji = "✅"
+            quality_level = "high"
+        elif quality_score >= 50:
+            quality_emoji = "⚠️"
+            quality_level = "medium"
+        else:
+            quality_emoji = "❌"
+            quality_level = "low"
+
+        logger.info(f"{quality_emoji} Karaoke generation complete: {output_path} ({total_time:.1f}s)")
+        logger.info(f"   Quality: {quality_score:.0f}/100 ({quality_level} confidence)")
+        if quality_issues:
+            for issue in quality_issues[:3]:
+                logger.info(f"   - {issue}")
+
+        return {
+            "output_path": str(output_path),
+            "title": final_title,
+            "artist": final_artist,
+            "video_id": video_id,
+            "quality_score": quality_score,
+            "quality_level": quality_level,
+            "quality_issues": quality_issues,
+            "lyrics_source": lyrics_quality.get("source", ""),
+            "alignment_method": lyrics_quality.get("alignment_method", ""),
+        }
 
     # ------------------------
     # Helper methods
@@ -245,11 +276,11 @@ class KaraokeGenerator:
 
     def _get_lyrics(self, title: str, artist: str, vocals_path: str, video_id: str, force: bool, lyrics_offset: Optional[float] = None, target_duration: Optional[int] = None, evaluate_sources: bool = False, use_whisper: bool = False, whisper_language: Optional[str] = None, whisper_model: str = "base") -> Dict[str, Any]:
         logger.info("📝 Fetching lyrics...")
-        from ..core.lyrics import get_lyrics_simple
-        lines, metadata = get_lyrics_simple(
+        from ..core.lyrics import get_lyrics_with_quality
+        lines, metadata, quality_report = get_lyrics_with_quality(
             title=title, artist=artist, vocals_path=vocals_path, lyrics_offset=lyrics_offset, romanize=True, target_duration=target_duration, evaluate_sources=evaluate_sources, use_whisper=use_whisper, whisper_language=whisper_language, whisper_model=whisper_model
         )
-        return {"lines": lines, "metadata": metadata}
+        return {"lines": lines, "metadata": metadata, "quality": quality_report}
 
     def _scale_lyrics_timing(self, lines, tempo_multiplier: float):
         if tempo_multiplier == 1.0:

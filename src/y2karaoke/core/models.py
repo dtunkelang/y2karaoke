@@ -1,8 +1,8 @@
-"""Data models for lyrics processing."""
+"""Data models for lyrics processing and quality reporting."""
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import Enum
-from typing import List, Optional
+from typing import List, Optional, Dict
 
 
 class SingerID(str, Enum):
@@ -76,3 +76,182 @@ class SongMetadata:
             if name == ks or name.startswith(ks) or ks.startswith(name):
                 return SingerID(f"singer{i + 1}")
         return SingerID.SINGER1 if self.singers else SingerID.UNKNOWN
+
+
+# =============================================================================
+# Quality Report Data Structures
+# =============================================================================
+
+
+@dataclass
+class StepQuality:
+    """Quality report for a single pipeline step."""
+    step_name: str
+    quality_score: float  # 0-100
+    status: str = "success"  # "success", "degraded", "failed"
+    cached: bool = False
+    issues: List[str] = field(default_factory=list)
+    details: Dict[str, any] = field(default_factory=dict)
+
+    @property
+    def is_good(self) -> bool:
+        return self.quality_score >= 70
+
+    @property
+    def needs_review(self) -> bool:
+        return 40 <= self.quality_score < 70
+
+    @property
+    def is_poor(self) -> bool:
+        return self.quality_score < 40
+
+
+@dataclass
+class TrackIdentificationQuality(StepQuality):
+    """Quality report for track identification step."""
+    match_confidence: float = 0.0  # 0-100
+    source: str = ""  # "musicbrainz", "syncedlyrics", "youtube"
+    duration_agreement: str = ""  # "All sources match", "LRC differs by Ns"
+    sources_tried: List[str] = field(default_factory=list)
+    fallback_used: bool = False
+
+    def __post_init__(self):
+        self.step_name = "track_identification"
+
+
+@dataclass
+class LyricsQuality(StepQuality):
+    """Quality report for LRC lyrics fetching step."""
+    source: str = ""  # Provider that succeeded
+    sources_tried: List[str] = field(default_factory=list)
+    coverage: float = 0.0  # 0-1, % of song duration covered
+    timestamp_density: float = 0.0  # Lines per 10 seconds
+    duration: Optional[int] = None  # LRC implied duration
+    duration_match: bool = True  # Does LRC duration match target?
+
+    def __post_init__(self):
+        self.step_name = "lyrics_fetch"
+
+
+@dataclass
+class TimingAlignmentQuality(StepQuality):
+    """Quality report for timing alignment step."""
+    method_used: str = "lrc_only"  # "lrc_only", "onset_refined", "whisper_hybrid", "whisper_dtw"
+    lines_aligned: int = 0
+    total_lines: int = 0
+    avg_offset: float = 0.0  # Average timing adjustment
+    lines_with_issues: int = 0
+    whisper_used: bool = False
+
+    def __post_init__(self):
+        self.step_name = "timing_alignment"
+
+    @property
+    def alignment_rate(self) -> float:
+        return (self.lines_aligned / self.total_lines * 100) if self.total_lines > 0 else 0.0
+
+
+@dataclass
+class SeparationQuality(StepQuality):
+    """Quality report for vocal separation step."""
+    model_used: str = "htdemucs"
+    # Note: Full audio quality metrics require additional analysis
+    # These are placeholders for future enhancement
+
+    def __post_init__(self):
+        self.step_name = "vocal_separation"
+
+
+@dataclass
+class BreakShorteningQuality(StepQuality):
+    """Quality report for break shortening step."""
+    breaks_detected: int = 0
+    breaks_shortened: int = 0
+    total_time_removed: float = 0.0
+    beat_aligned: bool = True
+
+    def __post_init__(self):
+        self.step_name = "break_shortening"
+
+
+@dataclass
+class PipelineQualityReport:
+    """Aggregated quality report for the entire pipeline."""
+    overall_score: float  # 0-100, weighted average
+    confidence_level: str  # "high", "medium", "low"
+    steps: Dict[str, StepQuality] = field(default_factory=dict)
+    warnings: List[str] = field(default_factory=list)
+    recommendations: List[str] = field(default_factory=list)
+
+    @classmethod
+    def from_steps(cls, steps: List[StepQuality]) -> "PipelineQualityReport":
+        """Create a pipeline report from individual step reports."""
+        if not steps:
+            return cls(overall_score=0, confidence_level="low")
+
+        # Weighted average based on step importance
+        weights = {
+            "track_identification": 1.5,
+            "lyrics_fetch": 2.0,
+            "timing_alignment": 2.5,
+            "vocal_separation": 1.0,
+            "break_shortening": 0.5,
+        }
+
+        total_weight = 0.0
+        weighted_sum = 0.0
+        steps_dict = {}
+        warnings = []
+        recommendations = []
+
+        for step in steps:
+            steps_dict[step.step_name] = step
+            weight = weights.get(step.step_name, 1.0)
+            weighted_sum += step.quality_score * weight
+            total_weight += weight
+
+            # Collect warnings
+            if step.status == "failed":
+                warnings.append(f"{step.step_name}: Failed")
+            elif step.status == "degraded":
+                warnings.append(f"{step.step_name}: Degraded quality ({step.quality_score:.0f}%)")
+            warnings.extend(step.issues)
+
+        overall = weighted_sum / total_weight if total_weight > 0 else 0.0
+
+        # Determine confidence level
+        if overall >= 80 and not any(s.status == "failed" for s in steps):
+            confidence = "high"
+        elif overall >= 50:
+            confidence = "medium"
+            recommendations.append("Review timing alignment before use")
+        else:
+            confidence = "low"
+            recommendations.append("Manual timing review recommended")
+            recommendations.append("Consider using --whisper for better alignment")
+
+        return cls(
+            overall_score=overall,
+            confidence_level=confidence,
+            steps=steps_dict,
+            warnings=warnings,
+            recommendations=recommendations,
+        )
+
+    def summary(self) -> str:
+        """Generate a human-readable summary."""
+        lines = [
+            f"Quality: {self.overall_score:.0f}/100 ({self.confidence_level} confidence)",
+        ]
+
+        if self.warnings:
+            lines.append(f"Warnings: {len(self.warnings)}")
+            for w in self.warnings[:3]:  # Show top 3
+                lines.append(f"  - {w}")
+
+        if self.recommendations:
+            lines.append("Recommendations:")
+            for r in self.recommendations:
+                lines.append(f"  - {r}")
+
+        return "\n".join(lines)

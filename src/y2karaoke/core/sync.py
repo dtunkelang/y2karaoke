@@ -520,6 +520,123 @@ def fetch_lyrics_for_duration(
     return None, False, "", None
 
 
+def get_lyrics_quality_report(
+    lrc_text: str,
+    source: str,
+    target_duration: Optional[int] = None,
+    sources_tried: Optional[List[str]] = None,
+) -> Dict[str, any]:
+    """
+    Generate a quality report for fetched LRC lyrics.
+
+    Args:
+        lrc_text: The LRC text to analyze
+        source: The source that provided the lyrics
+        target_duration: Expected track duration for comparison
+        sources_tried: List of sources that were attempted
+
+    Returns:
+        Dict with quality metrics:
+        - quality_score: 0-100 overall quality
+        - source: Provider that succeeded
+        - sources_tried: Providers attempted
+        - coverage: Fraction of duration covered (0-1)
+        - timestamp_density: Lines per 10 seconds
+        - duration: Implied duration from LRC
+        - duration_match: Whether duration matches target
+        - issues: List of quality concerns
+    """
+    from .lrc import parse_lrc_with_timing
+
+    report = {
+        "quality_score": 0.0,
+        "source": source,
+        "sources_tried": sources_tried or [],
+        "coverage": 0.0,
+        "timestamp_density": 0.0,
+        "duration": None,
+        "duration_match": True,
+        "issues": [],
+    }
+
+    if not lrc_text or not _has_timestamps(lrc_text):
+        report["quality_score"] = 0.0
+        report["issues"].append("No synced lyrics found")
+        return report
+
+    # Parse timings
+    timings = parse_lrc_with_timing(lrc_text, "", "")
+    if not timings or len(timings) < 2:
+        report["quality_score"] = 20.0
+        report["issues"].append("Too few timestamped lines")
+        return report
+
+    # Calculate metrics
+    first_ts = timings[0][0]
+    last_ts = timings[-1][0]
+    lyrics_span = last_ts - first_ts
+
+    # Duration
+    lrc_duration = get_lrc_duration(lrc_text)
+    report["duration"] = lrc_duration
+
+    # Coverage (relative to target or LRC duration)
+    reference_duration = target_duration or lrc_duration or lyrics_span
+    if reference_duration > 0:
+        report["coverage"] = min(1.0, lyrics_span / reference_duration)
+
+    # Timestamp density (lines per 10 seconds)
+    if lyrics_span > 0:
+        report["timestamp_density"] = len(timings) / (lyrics_span / 10.0)
+
+    # Duration match
+    if target_duration and lrc_duration:
+        diff = abs(lrc_duration - target_duration)
+        report["duration_match"] = diff <= 20
+        if diff > 20:
+            report["issues"].append(f"Duration mismatch: LRC={lrc_duration}s, target={target_duration}s")
+
+    # Calculate quality score
+    score = 100.0
+
+    # Deduct for low coverage
+    if report["coverage"] < 0.6:
+        score -= 30
+        report["issues"].append(f"Low coverage ({report['coverage']*100:.0f}%)")
+    elif report["coverage"] < 0.8:
+        score -= 15
+
+    # Deduct for low density
+    if report["timestamp_density"] < 1.5:
+        score -= 20
+        report["issues"].append(f"Low timestamp density ({report['timestamp_density']:.1f}/10s)")
+    elif report["timestamp_density"] < 2.0:
+        score -= 10
+
+    # Deduct for duration mismatch
+    if not report["duration_match"]:
+        score -= 20
+
+    # Deduct for few lines
+    if len(timings) < 10:
+        score -= 15
+        report["issues"].append(f"Only {len(timings)} lines")
+
+    # Check for large gaps
+    large_gaps = 0
+    for i in range(1, len(timings)):
+        gap = timings[i][0] - timings[i-1][0]
+        if gap > 30:
+            large_gaps += 1
+
+    if large_gaps > 2:
+        score -= 10
+        report["issues"].append(f"{large_gaps} large gaps (>30s)")
+
+    report["quality_score"] = max(0.0, min(100.0, score))
+    return report
+
+
 def fetch_from_all_sources(
     title: str,
     artist: str,
