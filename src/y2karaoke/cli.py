@@ -95,7 +95,12 @@ def generate(ctx, url_or_query, output, offset, key, tempo, audio_start,
         if url_or_query.startswith('http'):
             # Path B: YouTube URL input
             logger.info(f"Identifying track from URL: {url_or_query}")
-            track_info = identifier.identify_from_url(url_or_query)
+            # Pass explicit artist/title if provided - these override YouTube metadata for LRC search
+            track_info = identifier.identify_from_url(
+                url_or_query,
+                artist_hint=lyrics_artist,
+                title_hint=lyrics_title,
+            )
             logger.info(f"Identified: {track_info.artist} - {track_info.title} (source: {track_info.source})")
         else:
             # Path A: Search string input

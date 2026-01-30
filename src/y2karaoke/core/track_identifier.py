@@ -437,19 +437,26 @@ class TrackIdentifier:
     # Path B: YouTube URL -> Track
     # -------------------------
 
-    def identify_from_url(self, url: str) -> TrackInfo:
+    def identify_from_url(
+        self,
+        url: str,
+        artist_hint: Optional[str] = None,
+        title_hint: Optional[str] = None,
+    ) -> TrackInfo:
         """Identify track from a YouTube URL.
 
         Flow:
         1. Get YouTube video metadata (title, uploader, duration)
-        2. Cross-validate: check if YouTube title indicates non-studio version
-        3. Parse video title for artist/title hints
+        2. If artist_hint/title_hint provided, use those directly for LRC search
+        3. Otherwise, parse video title for artist/title hints
         4. Query MusicBrainz for candidates
         5. Check LRC for each candidate, score by duration match
         6. Return candidate with best duration match
 
         Args:
             url: YouTube URL
+            artist_hint: Explicit artist name (overrides YouTube metadata parsing)
+            title_hint: Explicit song title (overrides YouTube metadata parsing)
 
         Returns:
             TrackInfo with canonical artist, title, and the given YouTube URL
@@ -460,21 +467,40 @@ class TrackIdentifier:
         yt_title, yt_uploader, yt_duration = self._get_youtube_metadata(url)
         logger.info(f"YouTube: '{yt_title}' by {yt_uploader} ({yt_duration}s)")
 
-        # Cross-validate: warn if YouTube title suggests non-studio version
-        if self._is_likely_non_studio(yt_title):
-            logger.warning(f"YouTube video appears to be non-studio version: '{yt_title}'")
-            logger.warning("Lyrics timing may not match. Consider using a studio version URL.")
+        # If explicit artist/title provided, use them directly (skip YouTube parsing)
+        if artist_hint and title_hint:
+            logger.info(f"Using provided artist/title: {artist_hint} - {title_hint}")
+            parsed_artist = artist_hint
+            parsed_title = title_hint
+        else:
+            # Cross-validate: warn if YouTube title suggests non-studio version
+            if self._is_likely_non_studio(yt_title):
+                logger.warning(f"YouTube video appears to be non-studio version: '{yt_title}'")
+                logger.warning("Lyrics timing may not match. Consider using a studio version URL.")
 
-        # Parse video title for hints
-        parsed_artist, parsed_title = self._parse_youtube_title(yt_title)
-        logger.debug(f"Parsed from title: artist='{parsed_artist}', title='{parsed_title}'")
+            # Parse video title for hints
+            parsed_artist, parsed_title = self._parse_youtube_title(yt_title)
+            logger.debug(f"Parsed from title: artist='{parsed_artist}', title='{parsed_title}'")
 
         # Query MusicBrainz for candidates
         search_query = f"{parsed_artist} {parsed_title}" if parsed_artist else parsed_title
         recordings = self._query_musicbrainz(search_query, parsed_artist, parsed_title)
 
         # Build candidate list with (artist, title) pairs
+        # PRIORITY: YouTube uploader is often the correct artist for official channels
         candidates = []
+
+        # Add YouTube uploader as HIGH PRIORITY candidate first
+        # Official artist channels (like "The Doors") are the most reliable source
+        if yt_uploader and parsed_title:
+            candidates.append({'artist': yt_uploader, 'title': parsed_title})
+
+        # Add parsed artist from title if different from uploader
+        if parsed_artist and parsed_title:
+            if not yt_uploader or parsed_artist.lower() != yt_uploader.lower():
+                candidates.append({'artist': parsed_artist, 'title': parsed_title})
+
+        # Add MusicBrainz results (lower priority - may include covers)
         for rec in recordings:
             artist_credits = rec.get('artist-credit', [])
             artists = [a['artist']['name'] for a in artist_credits if 'artist' in a]
@@ -482,12 +508,6 @@ class TrackIdentifier:
             title = rec.get('title')
             if artist_name and title:
                 candidates.append({'artist': artist_name, 'title': title})
-
-        # Add parsed hint as fallback candidate
-        if parsed_artist and parsed_title:
-            candidates.append({'artist': parsed_artist, 'title': parsed_title})
-        elif yt_uploader and parsed_title:
-            candidates.append({'artist': yt_uploader, 'title': parsed_title})
 
         # Deduplicate candidates
         seen = set()
