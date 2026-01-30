@@ -34,6 +34,7 @@ class BreakEdit:
     original_end: float
     new_end: float  # Where the break now ends (after shortening)
     time_removed: float  # How much time was removed
+    cut_start: float = 0.0  # Actual cut start point (after beat alignment)
 
     @property
     def original_duration(self) -> float:
@@ -204,20 +205,21 @@ def shorten_break(
 
 
 def shorten_instrumental_breaks(
-    instrumental_path: str,
+    audio_path: str,
     vocals_path: str,
     output_path: str,
-    max_break_duration: float = 20.0,
+    max_break_duration: float = 30.0,
     keep_start: float = 5.0,
     keep_end: float = 3.0,
     crossfade_ms: int = 1000,
     skip_intro: bool = True,
     intro_threshold: float = 10.0,
+    beat_reference_path: Optional[str] = None,
 ) -> Tuple[str, List[BreakEdit]]:
     """Shorten all long instrumental breaks in an audio file.
 
     Args:
-        instrumental_path: Path to instrumental audio
+        audio_path: Path to audio file to shorten (can be instrumental, vocals, or original)
         vocals_path: Path to vocals (for detecting breaks)
         output_path: Where to save the shortened audio
         max_break_duration: Breaks longer than this will be shortened
@@ -226,10 +228,15 @@ def shorten_instrumental_breaks(
         crossfade_ms: Crossfade duration in milliseconds
         skip_intro: Whether to skip breaks at the very beginning
         intro_threshold: Breaks starting before this time are considered intro
+        beat_reference_path: Path to audio for beat detection (defaults to audio_path).
+            Use this to ensure consistent cut points across different audio tracks.
 
     Returns:
         Tuple of (output_path, list of BreakEdit objects for timing adjustment)
     """
+    # Use beat_reference_path for beat detection, or fall back to audio_path
+    beat_path = beat_reference_path or audio_path
+
     # Detect breaks
     breaks = detect_instrumental_breaks(vocals_path, min_break_duration=5.0)
 
@@ -242,12 +249,12 @@ def shorten_instrumental_breaks(
 
     if not long_breaks:
         logger.info("No long instrumental breaks to shorten")
-        return instrumental_path, []
+        return audio_path, []
 
     logger.info(f"Found {len(long_breaks)} long instrumental break(s) to shorten")
 
     # Load full audio
-    audio = AudioSegment.from_file(instrumental_path)
+    audio = AudioSegment.from_file(audio_path)
 
     # Process each break, tracking edits
     edits: List[BreakEdit] = []
@@ -271,9 +278,9 @@ def shorten_instrumental_breaks(
             logger.debug(f"Break at {break_info.start:.1f}s too short to cut effectively")
             continue
 
-        # Align to beats
-        cut_out_start = find_beat_near(instrumental_path, cut_out_start)
-        cut_out_end = find_beat_near(instrumental_path, cut_out_end)
+        # Align to beats (always use beat_path for consistent cut points)
+        cut_out_start = find_beat_near(beat_path, cut_out_start)
+        cut_out_end = find_beat_near(beat_path, cut_out_end)
 
         # Convert to ms (adjusted for previous edits)
         cut_start_ms = int((cut_out_start - cumulative_removed) * 1000)
@@ -296,6 +303,7 @@ def shorten_instrumental_breaks(
             original_end=break_info.end,
             new_end=break_info.start + keep_start + (crossfade_ms / 1000) + keep_end,
             time_removed=time_removed,
+            cut_start=cut_out_start,  # Store actual beat-aligned cut point
         )
         edits.append(edit)
 
@@ -336,6 +344,9 @@ def adjust_lyrics_timing(
 ) -> list:
     """Adjust lyrics timing based on break edits.
 
+    Simple logic: for each break, shift all lyrics after the cut start
+    by the amount of time removed. Edits must be in chronological order.
+
     Args:
         lines: List of Line objects with word timing
         edits: List of BreakEdit objects describing removed time
@@ -347,9 +358,21 @@ def adjust_lyrics_timing(
         New list of Line objects with adjusted timing
     """
     from .models import Line, Word
+    from ..utils.logging import get_logger
+    logger = get_logger(__name__)
 
     if not edits:
         return lines
+
+    # Sort edits by original_start to ensure chronological order
+    sorted_edits = sorted(edits, key=lambda e: e.original_start)
+
+    # Log the edits for debugging
+    logger.debug(f"Adjusting lyrics for {len(sorted_edits)} break edits:")
+    for i, edit in enumerate(sorted_edits):
+        # Use actual beat-aligned cut_start if available, otherwise calculate
+        cut_start = edit.cut_start if edit.cut_start > 0 else edit.original_start + keep_start
+        logger.debug(f"  Edit {i}: cut_start={cut_start:.1f}s, time_removed={edit.time_removed:.1f}s")
 
     adjusted_lines = []
 
@@ -360,26 +383,14 @@ def adjust_lyrics_timing(
 
         new_words = []
         for word in line.words:
-            # Calculate how much time to subtract based on which edits occurred before this word
+            # Calculate cumulative time adjustment
+            # For each edit, if word starts after the cut_start, shift by time_removed
             time_adjustment = 0.0
-            for edit in edits:
-                cut_start = edit.original_start + keep_start
-                cut_end = edit.original_end - keep_end
-
-                if word.start_time >= edit.original_end:
-                    # Word is after this break entirely, subtract full removed time
+            for edit in sorted_edits:
+                # Use actual beat-aligned cut_start if available, otherwise calculate
+                cut_start = edit.cut_start if edit.cut_start > 0 else edit.original_start + keep_start
+                if word.start_time >= cut_start:
                     time_adjustment += edit.time_removed
-                elif word.start_time >= cut_end:
-                    # Word is in the "keep_end" portion (last 3 seconds of break)
-                    # These get shifted to right after the crossfade
-                    # New position = keep_start + crossfade + (word_time - cut_end)
-                    # Adjustment = word_time - new_position = word_time - (original_start + keep_start + crossfade + word_time - cut_end)
-                    #            = cut_end - original_start - keep_start - crossfade
-                    time_adjustment += (cut_end - edit.original_start - keep_start - crossfade_duration)
-                elif word.start_time > cut_start:
-                    # Word is in the cut section (should be rare - lyrics during instrumental)
-                    # Place at the crossfade point
-                    time_adjustment += (word.start_time - cut_start)
 
             new_word = Word(
                 text=word.text,
@@ -390,5 +401,20 @@ def adjust_lyrics_timing(
             new_words.append(new_word)
 
         adjusted_lines.append(Line(words=new_words, singer=line.singer))
+
+    # Log sample adjustments
+    if adjusted_lines and adjusted_lines[0].words:
+        first_word = lines[0].words[0] if lines[0].words else None
+        new_first = adjusted_lines[0].words[0]
+        if first_word:
+            logger.debug(f"First word '{first_word.text}': {first_word.start_time:.1f}s → {new_first.start_time:.1f}s")
+    if len(adjusted_lines) > 1:
+        # Find first line after the first break
+        for i, line in enumerate(lines):
+            if line.words and line.words[0].start_time > sorted_edits[0].original_start:
+                orig = line.words[0]
+                adj = adjusted_lines[i].words[0]
+                logger.debug(f"First word after break 1 '{orig.text}': {orig.start_time:.1f}s → {adj.start_time:.1f}s")
+                break
 
     return adjusted_lines

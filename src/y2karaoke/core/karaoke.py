@@ -60,7 +60,8 @@ class KaraokeGenerator:
         whisper_language: Optional[str] = None,
         whisper_model: str = "base",
         shorten_breaks: bool = False,
-        max_break_duration: float = 20.0,
+        max_break_duration: float = 30.0,
+        debug_audio: str = "instrumental",
     ) -> Dict[str, Any]:
 
         self._original_prompt = original_prompt
@@ -118,26 +119,39 @@ class KaraokeGenerator:
             whisper_model=whisper_model,
         )
 
-        # Step 7: Apply audio effects to instrumental (vocals removed)
-        processed_instrumental = apply_audio_effects(
-            separation_result["instrumental_path"],
+        # Step 7: Select and process audio track based on debug_audio setting
+        if debug_audio == "vocals":
+            base_audio_path = separation_result["vocals_path"]
+            logger.info("🔊 Using vocals track (debug mode)")
+        elif debug_audio == "original":
+            base_audio_path = audio_result["audio_path"]
+            logger.info("🔊 Using original track with vocals (debug mode)")
+        else:
+            base_audio_path = separation_result["instrumental_path"]
+
+        processed_audio = apply_audio_effects(
+            base_audio_path,
             key_shift,
             tempo_multiplier,
             video_id,
             self.cache_manager,
             self.audio_processor,
             force=force_reprocess,
+            cache_suffix=f"_{debug_audio}" if debug_audio != "instrumental" else "",
         )
 
         # Step 7b: Optionally shorten long instrumental breaks
+        # Break detection uses vocals, beat alignment uses instrumental for consistent cuts
         break_edits = []
         if shorten_breaks:
-            processed_instrumental, break_edits = self._shorten_breaks(
-                processed_instrumental,
+            processed_audio, break_edits = self._shorten_breaks(
+                processed_audio,
                 separation_result["vocals_path"],
+                separation_result["instrumental_path"],  # Always use instrumental for beat alignment
                 video_id,
                 max_break_duration,
                 force=force_reprocess,
+                cache_suffix=f"_{debug_audio}" if debug_audio != "instrumental" else "",
             )
 
         # Step 8: Scale lyrics timing
@@ -174,12 +188,12 @@ class KaraokeGenerator:
         # Step 11: Create background segments
         background_segments = None
         if use_backgrounds and video_path:
-            background_segments = self._create_background_segments(video_path, scaled_lines, processed_instrumental)
+            background_segments = self._create_background_segments(video_path, scaled_lines, processed_audio)
 
         # Step 12: Render video
         self._render_video(
             lines=scaled_lines,
-            audio_path=processed_instrumental,
+            audio_path=processed_audio,
             output_path=output_path,
             title=final_title,
             artist=final_artist,
@@ -256,14 +270,18 @@ class KaraokeGenerator:
             scaled_lines.append(Line(words=scaled_words, singer=line.singer))
         return scaled_lines
 
-    def _shorten_breaks(self, instrumental_path: str, vocals_path: str, video_id: str, max_break_duration: float, force: bool = False):
-        """Shorten long instrumental breaks."""
+    def _shorten_breaks(self, audio_path: str, vocals_path: str, instrumental_path: str, video_id: str, max_break_duration: float, force: bool = False, cache_suffix: str = ""):
+        """Shorten long instrumental breaks in the given audio track.
+
+        Break detection always uses vocals, and beat alignment always uses instrumental
+        to ensure consistent cuts across different audio tracks.
+        """
         import json
         from .break_shortener import shorten_instrumental_breaks, BreakEdit
 
         # Check cache (both audio and edits)
-        shortened_name = f"shortened_breaks_{max_break_duration:.0f}s.wav"
-        edits_name = f"shortened_breaks_{max_break_duration:.0f}s_edits.json"
+        shortened_name = f"shortened_breaks_{max_break_duration:.0f}s{cache_suffix}.wav"
+        edits_name = f"shortened_breaks_{max_break_duration:.0f}s_edits.json"  # Edits are same for all tracks
 
         if not force and self.cache_manager.file_exists(video_id, shortened_name):
             # Try to load cached edits
@@ -278,6 +296,7 @@ class KaraokeGenerator:
                             original_end=e["original_end"],
                             new_end=e["new_end"],
                             time_removed=e["time_removed"],
+                            cut_start=e.get("cut_start", 0.0),
                         )
                         for e in edits_data
                     ]
@@ -293,26 +312,29 @@ class KaraokeGenerator:
         output_path = self.cache_manager.get_file_path(video_id, shortened_name)
 
         shortened_path, edits = shorten_instrumental_breaks(
-            instrumental_path,
+            audio_path,
             vocals_path,
             str(output_path),
             max_break_duration=max_break_duration,
+            beat_reference_path=instrumental_path,
         )
 
-        # Cache the edits for future runs
+        # Cache the edits for future runs (only once, not per audio track)
         if edits:
             edits_path = self.cache_manager.get_file_path(video_id, edits_name)
-            edits_data = [
-                {
-                    "original_start": e.original_start,
-                    "original_end": e.original_end,
-                    "new_end": e.new_end,
-                    "time_removed": e.time_removed,
-                }
-                for e in edits
-            ]
-            with open(edits_path, "w") as f:
-                json.dump(edits_data, f)
+            if not edits_path.exists():
+                edits_data = [
+                    {
+                        "original_start": e.original_start,
+                        "original_end": e.original_end,
+                        "new_end": e.new_end,
+                        "time_removed": e.time_removed,
+                        "cut_start": e.cut_start,
+                    }
+                    for e in edits
+                ]
+                with open(edits_path, "w") as f:
+                    json.dump(edits_data, f)
 
         return shortened_path, edits
 

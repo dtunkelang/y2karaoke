@@ -46,12 +46,13 @@ def apply_audio_effects(
     cache_manager: Any,
     audio_processor: Any,
     force: bool = False,
+    cache_suffix: str = "",
 ) -> str:
     """Apply key shift and tempo effects to audio, caching the result."""
     if key_shift == 0 and tempo == 1.0:
         return audio_path
 
-    effects_name = f"instrumental_key{key_shift:+d}_tempo{tempo:.2f}.wav"
+    effects_name = f"audio{cache_suffix}_key{key_shift:+d}_tempo{tempo:.2f}.wav"
     if not force and cache_manager.file_exists(video_id, effects_name):
         logger.debug("📁 Using cached processed audio")
         return str(cache_manager.get_file_path(video_id, effects_name))

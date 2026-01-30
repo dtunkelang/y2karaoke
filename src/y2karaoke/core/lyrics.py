@@ -217,6 +217,9 @@ def get_lyrics_simple(
             # Songs can have long intros, so allow larger offsets
             # Negative offsets (LRC ahead of audio) are also valid
             if abs(delta) > 0.3 and abs(delta) <= 30.0:
+                # Warn if offset is suspiciously large - may indicate bad audio source
+                if abs(delta) > 10.0:
+                    logger.warning(f"Large vocal offset ({delta:+.2f}s) - audio may have intro/speech not in LRC")
                 offset = delta
                 logger.info(f"Auto-applying vocal offset: {offset:+.2f}s")
             elif abs(delta) > 30.0:

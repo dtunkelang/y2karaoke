@@ -515,6 +515,63 @@ class TrackIdentifier:
                 logger.warning(f"Non-studio YouTube video with mismatched LRC duration "
                              f"(YT: {yt_duration}s, LRC: {lrc_duration}s). Timing may be significantly off.")
 
+            # If LRC duration doesn't match YouTube, try to find a YouTube video that matches the LRC
+            # This handles cases where user provided album version URL but LRC is for radio edit
+            if not lrc_validated and abs(lrc_duration - yt_duration) > 15:
+                logger.info(f"LRC duration ({lrc_duration}s) differs from YouTube ({yt_duration}s) by {abs(lrc_duration - yt_duration)}s")
+                logger.info(f"Searching for YouTube video matching LRC duration...")
+
+                # Use _search_youtube_verified to ensure we find videos that MATCH the expected song
+                # This prevents picking a different song by the same artist with similar duration
+                search_queries = [
+                    f"{artist} {title} official audio",  # Most likely to be clean studio recording
+                    f"{artist} {title} audio",
+                    f"{artist} {title}",
+                ]
+
+                for search_query in search_queries:
+                    alt_youtube = self._search_youtube_verified(
+                        search_query, lrc_duration, artist, title
+                    )
+
+                    if alt_youtube and alt_youtube['duration']:
+                        alt_diff = abs(alt_youtube['duration'] - lrc_duration)
+                        if alt_diff <= 15:
+                            logger.info(f"Found matching YouTube video: {alt_youtube['url']} ({alt_youtube['duration']}s)")
+                            return TrackInfo(
+                                artist=artist,
+                                title=title,
+                                duration=lrc_duration,
+                                youtube_url=alt_youtube['url'],
+                                youtube_duration=alt_youtube['duration'],
+                                source="syncedlyrics",
+                                lrc_duration=lrc_duration,
+                                lrc_validated=True
+                            )
+
+                logger.warning(f"Could not find clean YouTube video matching LRC duration ({lrc_duration}s)")
+
+                # Also try searching with "radio edit" if the difference suggests it
+                if abs(lrc_duration - yt_duration) > 20:
+                    alt_youtube = self._search_youtube_verified(
+                        f"{artist} {title} radio edit",
+                        lrc_duration, artist, title
+                    )
+                    if alt_youtube and alt_youtube['duration']:
+                        alt_diff = abs(alt_youtube['duration'] - lrc_duration)
+                        if alt_diff <= 15:
+                            logger.info(f"Found radio edit: {alt_youtube['url']} ({alt_youtube['duration']}s)")
+                            return TrackInfo(
+                                artist=artist,
+                                title=title,
+                                duration=lrc_duration,
+                                youtube_url=alt_youtube['url'],
+                                youtube_duration=alt_youtube['duration'],
+                                source="syncedlyrics",
+                                lrc_duration=lrc_duration,
+                                lrc_validated=True
+                            )
+
             logger.info(f"Best LRC match: {artist} - {title} (LRC duration: {lrc_duration}s, validated: {lrc_validated})")
             return TrackInfo(
                 artist=artist,
@@ -647,8 +704,16 @@ class TrackIdentifier:
                        "Lyric Video", "Lyrics", "HD", "4K", "MV", "(Official)"]:
             cleaned = re.sub(rf'\s*[\(\[]?\s*{re.escape(suffix)}\s*[\)\]]?\s*$', '', cleaned, flags=re.IGNORECASE)
 
-        # Remove parenthetical/bracket content
-        cleaned = re.sub(r'\s*[\(\[].*?[\)\]]\s*', ' ', cleaned)
+        # Only remove parenthetical/bracket content that looks like metadata
+        # (e.g., "Remastered 2023", "feat. Artist", "Live") - NOT actual title parts like "(Don't Fear)"
+        metadata_patterns = [
+            r'\s*[\(\[](?:remaster(?:ed)?|remix|live|acoustic|demo|edit|version|ver\.?|'
+            r'feat\.?\s+[^)\]]+|ft\.?\s+[^)\]]+|with\s+[^)\]]+|'
+            r'\d{4}(?:\s+remaster)?|single|album|ep|radio|extended|original|'
+            r'bonus\s+track|deluxe|explicit|clean)[\)\]]\s*',
+        ]
+        for pattern in metadata_patterns:
+            cleaned = re.sub(pattern, ' ', cleaned, flags=re.IGNORECASE)
         cleaned = re.sub(r'\s+', ' ', cleaned).strip()
 
         # Try to split on " - " or " – " or " — "
@@ -1255,16 +1320,41 @@ class TrackIdentifier:
 
         Comprehensive detection of live, remix, acoustic, cover, and other
         non-canonical versions to help select studio recordings.
+
+        Note: "single edit", "radio edit", "album version" etc. ARE studio
+        recordings - they're just different cuts of the studio recording.
         """
         title_lower = title.lower()
+
+        # First check for studio edit/version indicators - these are NOT non-studio
+        # Patterns like "single edit", "radio version", "album edit" indicate official releases
+        studio_edit_pattern = r'\b(single|radio|album)\s*(edit|version)?\b'
+        if re.search(studio_edit_pattern, title_lower):
+            # Check if this is actually a radio SHOW (non-studio) vs radio EDIT (studio)
+            # "radio edit" = studio, "radio 1 session" = non-studio
+            if 'radio' in title_lower:
+                # Radio show indicators
+                radio_show_patterns = [
+                    r'radio\s*\d',  # "radio 1", "radio 2"
+                    r'radio\s+session',
+                    r'bbc\s+radio',
+                    r'radio\s+show',
+                ]
+                is_radio_show = any(re.search(p, title_lower) for p in radio_show_patterns)
+                if not is_radio_show:
+                    # This looks like "radio edit" or "radio version" - it's studio
+                    return False
+            else:
+                # "single edit", "album version" etc. - definitely studio
+                return False
 
         # Terms that indicate live/alternate versions
         non_studio_terms = [
             # Live performances
-            'live', 'concert', 'performance', 'tour', 'in concert',
-            # Alternate versions
+            'live', 'concert', 'performance', 'performs', 'performing', 'tour', 'in concert',
+            # Alternate versions (but NOT radio/single/album edits - handled above)
             'acoustic', 'unplugged', 'stripped', 'piano version',
-            'remix', 'extended', 'extended mix', 'radio edit', 'single edit',
+            'remix', 'extended', 'extended mix',
             'demo', 'rehearsal', 'bootleg', 'outtake', 'alternate take',
             # Other artists
             'cover', 'tribute', 'karaoke', 'instrumental',
@@ -1272,8 +1362,8 @@ class TrackIdentifier:
             'reaction', 'tutorial', 'lesson', 'how to play', 'guitar lesson',
             # Audio effects
             'slowed', 'sped up', 'reverb', '8d audio', 'nightcore', 'bass boosted',
-            # Sessions
-            'session', 'sessions', 'studio session', 'garage session',
+            # Sessions (these are typically live/alternate recordings)
+            'session', 'sessions',
             'bbc session', 'peel session', 'maida vale',
             # Parody
             'parody', 'weird al',
@@ -1310,13 +1400,17 @@ class TrackIdentifier:
             if re.search(pattern, title_lower):
                 return True
 
-        # Check for parenthetical indicators
+        # Check for parenthetical indicators - but allow studio edits
         paren_match = re.search(r'\(([^)]+)\)', title_lower)
         if paren_match:
             paren_content = paren_match.group(1)
+            # Skip if it's a studio edit indicator
+            if re.search(r'\b(single|radio|album)\s*(edit|version)?\b', paren_content):
+                return False
+            # Check for non-studio indicators
             if any(term in paren_content for term in [
-                'live', 'acoustic', 'remix', 'demo', 'cover', 'version',
-                'session', 'unplugged', 'stripped', 'edit', 'mix'
+                'live', 'acoustic', 'remix', 'demo', 'cover',
+                'session', 'unplugged', 'stripped'
             ]):
                 return True
 
