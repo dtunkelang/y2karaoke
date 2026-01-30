@@ -92,3 +92,24 @@ exclude = ["venv", ".git", "__pycache__", "build", "dist"]
 testpaths = ["tests"]
 python_files = ["test_*.py"]
 addopts = "--tb=short -v"
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "network: marks tests that require network access",
+    "integration: marks integration tests",
+]
+
+[tool.coverage.run]
+source = ["src/y2karaoke"]
+branch = true
+omit = ["*/tests/*", "*/__pycache__/*"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+]
+fail_under = 0
+show_missing = true

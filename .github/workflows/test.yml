@@ -1,0 +1,87 @@
+name: Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+
+      - name: Cache pip packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements*.txt', '**/pyproject.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+
+      - name: Run linting (flake8)
+        run: |
+          flake8 src/y2karaoke --count --select=E9,F63,F7,F82 --show-source --statistics
+          flake8 src/y2karaoke --count --exit-zero --max-complexity=10 --statistics
+
+      - name: Run formatting check (black)
+        run: |
+          black --check --diff src/y2karaoke tests
+
+      - name: Run type checking (mypy)
+        run: |
+          mypy src/y2karaoke --ignore-missing-imports --no-error-summary || true
+
+      - name: Run tests with coverage
+        run: |
+          pytest tests/ -v --cov=src/y2karaoke --cov-report=xml --cov-report=term-missing
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./coverage.xml
+          fail_ci_if_error: false
+          verbose: true
+
+  lint-strict:
+    runs-on: ubuntu-latest
+    # This job runs stricter checks but doesn't fail the build
+    continue-on-error: true
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dev dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install black flake8 mypy
+
+      - name: Full flake8 check
+        run: |
+          flake8 src/y2karaoke --count --max-complexity=15 --max-line-length=127 --statistics
+
+      - name: Strict mypy check
+        run: |
+          mypy src/y2karaoke --ignore-missing-imports
