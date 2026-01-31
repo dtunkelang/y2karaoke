@@ -29,7 +29,9 @@ def parse_resolution(resolution: str) -> tuple[int, int]:
         width, height = int(width_str), int(height_str)
         return width, height
     except Exception:
-        raise ValueError(f"Invalid resolution format: {resolution}. Expected 'WIDTHxHEIGHT'.")
+        raise ValueError(
+            f"Invalid resolution format: {resolution}. Expected 'WIDTHxHEIGHT'."
+        )
 
 
 def identify_track(logger, identifier, url_or_query, lyrics_artist, lyrics_title):
@@ -44,7 +46,9 @@ def identify_track(logger, identifier, url_or_query, lyrics_artist, lyrics_title
         logger.info(f"Identifying track from search: {url_or_query}")
         track_info = identifier.identify_from_search(url_or_query)
         logger.info(f"Found: {track_info.youtube_url}")
-    logger.info(f"Identified: {track_info.artist} - {track_info.title} (source: {track_info.source})")
+    logger.info(
+        f"Identified: {track_info.artist} - {track_info.title} (source: {track_info.source})"
+    )
     return track_info
 
 
@@ -64,8 +68,12 @@ def build_video_settings(resolution, fps, font_size, no_progress):
 
 def resolve_shorten_breaks(logger, shorten_breaks, track_info):
     if shorten_breaks and not track_info.lrc_validated:
-        logger.warning("⚠️  LRC duration doesn't match audio - disabling break shortening")
-        logger.warning("   Break shortening requires matching LRC timing to work correctly")
+        logger.warning(
+            "⚠️  LRC duration doesn't match audio - disabling break shortening"
+        )
+        logger.warning(
+            "   Break shortening requires matching LRC timing to work correctly"
+        )
         return False
     return shorten_breaks
 
@@ -239,7 +247,9 @@ def generate(
 
     try:
         identifier = TrackIdentifier()
-        track_info = identify_track(logger, identifier, url_or_query, lyrics_artist, lyrics_title)
+        track_info = identify_track(
+            logger, identifier, url_or_query, lyrics_artist, lyrics_title
+        )
 
         url = validate_youtube_url(track_info.youtube_url)
         key = validate_key_shift(key)
@@ -255,7 +265,9 @@ def generate(
         generator = KaraokeGenerator(cache_dir=cache_dir)
 
         output_path = validate_output_path(output) if output else None
-        effective_shorten_breaks = resolve_shorten_breaks(logger, shorten_breaks, track_info)
+        effective_shorten_breaks = resolve_shorten_breaks(
+            logger, shorten_breaks, track_info
+        )
 
         result = generator.generate(
             url=url,
@@ -294,6 +306,7 @@ def generate(
         logger.error(f"❌ Unexpected error: {e}")
         if ctx.obj.get("verbose"):
             import traceback
+
             traceback.print_exc()
         sys.exit(1)
 

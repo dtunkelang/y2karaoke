@@ -119,7 +119,7 @@ def _clean_uploader_name(uploader: str) -> str:
     prefixes = ["Official"]
     for prefix in prefixes:
         if artist.startswith(prefix):
-            artist = artist[len(prefix):].strip()
+            artist = artist[len(prefix) :].strip()
     return artist
 
 

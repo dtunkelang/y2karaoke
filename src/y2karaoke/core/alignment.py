@@ -196,7 +196,9 @@ def adjust_timing_for_duration_mismatch(
         logger.debug("No significant LRC gaps detected")
         return lines
 
-    audio_silences = detect_audio_silence_regions(vocals_path, min_silence_duration=10.0)
+    audio_silences = detect_audio_silence_regions(
+        vocals_path, min_silence_duration=10.0
+    )
     if not audio_silences:
         logger.debug("No significant audio silences detected")
         return lines
@@ -216,12 +218,15 @@ def adjust_timing_for_duration_mismatch(
 
 # --- helpers below ---
 
+
 def _durations_within_tolerance(lrc_duration, audio_duration, tolerance=10) -> bool:
     if lrc_duration is None or audio_duration is None:
         return False
     diff = abs(audio_duration - lrc_duration)
     if diff <= tolerance:
-        logger.debug(f"Duration difference ({diff}s) within tolerance, no adjustment needed")
+        logger.debug(
+            f"Duration difference ({diff}s) within tolerance, no adjustment needed"
+        )
         return True
     return False
 
@@ -237,7 +242,9 @@ def _calculate_adjustments(lrc_gaps, audio_silences, max_match_distance=20.0):
 
         for audio_start, audio_end in audio_silences:
             adjusted_lrc_end = lrc_end + cumulative_adj
-            distance = min(abs(audio_end - adjusted_lrc_end), abs(audio_start - adjusted_lrc_start))
+            distance = min(
+                abs(audio_end - adjusted_lrc_end), abs(audio_start - adjusted_lrc_start)
+            )
             if distance < best_distance and distance < max_match_distance:
                 best_distance = distance
                 best_match = (audio_start, audio_end)
@@ -352,7 +359,7 @@ def detect_song_start(audio_path: str, min_duration: float = 0.3) -> float:
 
             # Check for sustained activity in the frames following the onset
             frames_above = (
-                rms[onset_frame: onset_frame + min_frames] > energy_threshold
+                rms[onset_frame : onset_frame + min_frames] > energy_threshold
             )
             if np.mean(frames_above) > 0.6:  # At least 60% of frames above threshold
                 logger.debug(f"Detected vocal onset at {onset_time:.2f}s")

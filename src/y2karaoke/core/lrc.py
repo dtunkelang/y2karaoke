@@ -279,7 +279,7 @@ def parse_lrc_with_timing(
         if timestamp is None:
             continue
 
-        text_part = line[match.end():].strip()
+        text_part = line[match.end() :].strip()
         if text_part and not _is_metadata_line(text_part, title, artist, timestamp):
             lines.append((timestamp, text_part))
 

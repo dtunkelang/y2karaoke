@@ -291,10 +291,10 @@ def shorten_instrumental_breaks(
             segments.append(audio[last_end_ms:cut_start_ms])
 
         # Create crossfade between cut points
-        fade_out_segment = audio[cut_start_ms: cut_start_ms + crossfade_ms].fade_out(
+        fade_out_segment = audio[cut_start_ms : cut_start_ms + crossfade_ms].fade_out(
             crossfade_ms
         )
-        fade_in_segment = audio[cut_end_ms: cut_end_ms + crossfade_ms].fade_in(
+        fade_in_segment = audio[cut_end_ms : cut_end_ms + crossfade_ms].fade_in(
             crossfade_ms
         )
         crossfaded = fade_out_segment.overlay(fade_in_segment)
