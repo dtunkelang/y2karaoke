@@ -8,6 +8,7 @@ from y2karaoke.core.separator import separate_vocals
 from y2karaoke.core.lyrics import get_lyrics
 from y2karaoke.core.video_writer import render_karaoke_video
 
+
 @pytest.mark.skip(reason="Requires cached audio files - run manually if available")
 def test_original():
     """Test rendering with cached audio files (requires manual setup)."""
@@ -44,9 +45,11 @@ def test_original():
 
     if vocals_file and instrumental_file:
         # Get lyrics
-        lines, metadata = get_lyrics("Never Gonna Give You Up", "Rick Astley", vocals_file, cache_dir)
+        lines, metadata = get_lyrics(
+            "Never Gonna Give You Up", "Rick Astley", vocals_file, cache_dir
+        )
         print(f"Got {len(lines)} lines of lyrics")
-        
+
         # Render video
         render_karaoke_video(
             lines=lines,
@@ -60,6 +63,7 @@ def test_original():
         print("✅ Original version completed")
     else:
         print("❌ Missing required files")
+
 
 if __name__ == "__main__":
     test_original()

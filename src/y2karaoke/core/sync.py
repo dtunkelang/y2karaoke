@@ -13,6 +13,7 @@ logger = get_logger(__name__)
 
 try:
     import syncedlyrics
+
     SYNCEDLYRICS_AVAILABLE = True
 except ImportError:
     syncedlyrics = None
@@ -20,6 +21,7 @@ except ImportError:
 
 try:
     from lyriq import get_lyrics as lyriq_get_lyrics
+
     LYRIQ_AVAILABLE = True
 except ImportError:
     lyriq_get_lyrics = None
@@ -46,7 +48,7 @@ def _suppress_stderr():
     """Temporarily suppress stderr to hide noisy library output."""
     original_stderr = sys.stderr
     try:
-        sys.stderr = open(os.devnull, 'w')
+        sys.stderr = open(os.devnull, "w")
         yield
     finally:
         sys.stderr.close()
@@ -98,14 +100,25 @@ def _search_single_provider(
         except Exception as e:
             error_msg = str(e).lower()
             # Check for transient vs permanent errors
-            is_transient = any(x in error_msg for x in [
-                'connection', 'timeout', 'temporarily', 'rate limit',
-                'remote end closed', '429', '503', '502'
-            ])
+            is_transient = any(
+                x in error_msg
+                for x in [
+                    "connection",
+                    "timeout",
+                    "temporarily",
+                    "rate limit",
+                    "remote end closed",
+                    "429",
+                    "503",
+                    "502",
+                ]
+            )
 
             if is_transient and attempt < max_retries:
-                delay = retry_delay * (2 ** attempt)  # Exponential backoff
-                logger.debug(f"{provider} transient error, retrying in {delay:.1f}s: {e}")
+                delay = retry_delay * (2**attempt)  # Exponential backoff
+                logger.debug(
+                    f"{provider} transient error, retrying in {delay:.1f}s: {e}"
+                )
                 time.sleep(delay)
                 continue
             else:
@@ -209,16 +222,16 @@ def _fetch_from_lyriq(
                 return None
 
             # lyriq returns a Lyrics object with synced_lyrics and plain_lyrics attributes
-            synced = getattr(lyrics_obj, 'synced_lyrics', None)
+            synced = getattr(lyrics_obj, "synced_lyrics", None)
             if synced and _has_timestamps(synced):
-                logger.debug(f"Found synced lyrics from lyriq (LRCLib)")
+                logger.debug("Found synced lyrics from lyriq (LRCLib)")
                 _lyriq_cache[cache_key] = synced
                 return synced
 
             # Fall back to plain lyrics if no synced available
-            plain = getattr(lyrics_obj, 'plain_lyrics', None)
+            plain = getattr(lyrics_obj, "plain_lyrics", None)
             if plain:
-                logger.debug(f"Found plain lyrics from lyriq (no timestamps)")
+                logger.debug("Found plain lyrics from lyriq (no timestamps)")
                 _lyriq_cache[cache_key] = None  # Don't cache plain for synced requests
                 return None
 
@@ -227,13 +240,22 @@ def _fetch_from_lyriq(
 
         except Exception as e:
             error_msg = str(e).lower()
-            is_transient = any(x in error_msg for x in [
-                'connection', 'timeout', 'temporarily', 'rate limit',
-                'remote end closed', '429', '503', '502'
-            ])
+            is_transient = any(
+                x in error_msg
+                for x in [
+                    "connection",
+                    "timeout",
+                    "temporarily",
+                    "rate limit",
+                    "remote end closed",
+                    "429",
+                    "503",
+                    "502",
+                ]
+            )
 
             if is_transient and attempt < max_retries:
-                delay = retry_delay * (2 ** attempt)
+                delay = retry_delay * (2**attempt)
                 logger.debug(f"lyriq transient error, retrying in {delay:.1f}s: {e}")
                 time.sleep(delay)
                 continue
@@ -282,7 +304,9 @@ def fetch_lyrics_multi_source(
         # If target_duration specified, validate cached duration matches
         if target_duration and cached_duration:
             if abs(cached_duration - target_duration) > duration_tolerance:
-                logger.debug(f"Cached LRC duration ({cached_duration}s) doesn't match target ({target_duration}s), re-fetching")
+                logger.debug(
+                    f"Cached LRC duration ({cached_duration}s) doesn't match target ({target_duration}s), re-fetching"
+                )
             else:
                 logger.debug(f"Using cached LRC result for {artist} - {title}")
                 return (cached[0], cached[1], cached[2])
@@ -299,7 +323,7 @@ def fetch_lyrics_multi_source(
             logger.debug(f"Trying lyriq for: {title} - {artist}")
             lrc = _fetch_from_lyriq(title, artist)
             if lrc and _has_timestamps(lrc):
-                logger.debug(f"Found synced lyrics from lyriq (LRCLib)")
+                logger.debug("Found synced lyrics from lyriq (LRCLib)")
                 lrc_duration = get_lrc_duration(lrc)
                 result = (lrc, True, "lyriq (LRCLib)", lrc_duration)
                 _lrc_cache[cache_key] = result
@@ -319,7 +343,9 @@ def fetch_lyrics_multi_source(
                 enhanced=True,
             )
             if lrc and _has_timestamps(lrc):
-                logger.debug(f"Found enhanced (word-level) synced lyrics from {provider}")
+                logger.debug(
+                    f"Found enhanced (word-level) synced lyrics from {provider}"
+                )
                 lrc_duration = get_lrc_duration(lrc)
                 result = (lrc, True, f"{provider} (enhanced)", lrc_duration)
                 _lrc_cache[cache_key] = result
@@ -362,7 +388,7 @@ def _has_timestamps(lrc_text: str) -> bool:
     if not lrc_text:
         return False
     # LRC timestamps look like [mm:ss.xx] or [mm:ss:xx]
-    timestamp_pattern = r'\[\d{1,2}:\d{2}[.:]\d{2,3}\]'
+    timestamp_pattern = r"\[\d{1,2}:\d{2}[.:]\d{2,3}\]"
     return bool(re.search(timestamp_pattern, lrc_text))
 
 
@@ -376,6 +402,7 @@ def get_lrc_duration(lrc_text: str) -> Optional[int]:
         return None
 
     from .lrc import parse_lrc_with_timing
+
     timings = parse_lrc_with_timing(lrc_text, "", "")
     if not timings or len(timings) < 2:
         return None
@@ -391,7 +418,9 @@ def get_lrc_duration(lrc_text: str) -> Optional[int]:
     return int(last_ts + buffer)
 
 
-def validate_lrc_quality(lrc_text: str, expected_duration: Optional[int] = None) -> tuple[bool, str]:
+def validate_lrc_quality(
+    lrc_text: str, expected_duration: Optional[int] = None
+) -> tuple[bool, str]:
     """Validate that an LRC file has sufficient quality for karaoke use.
 
     Checks:
@@ -410,6 +439,7 @@ def validate_lrc_quality(lrc_text: str, expected_duration: Optional[int] = None)
         return False, "No timestamps found"
 
     from .lrc import parse_lrc_with_timing
+
     timings = parse_lrc_with_timing(lrc_text, "", "")
 
     if len(timings) < 5:
@@ -429,9 +459,11 @@ def validate_lrc_quality(lrc_text: str, expected_duration: Optional[int] = None)
 
     # Check for large gaps (>30s) that might indicate missing sections
     for i in range(1, len(timings)):
-        gap = timings[i][0] - timings[i-1][0]
+        gap = timings[i][0] - timings[i - 1][0]
         if gap > 30:
-            logger.debug(f"Large gap detected in LRC: {gap:.0f}s between lines {i-1} and {i}")
+            logger.debug(
+                f"Large gap detected in LRC: {gap:.0f}s between lines {i-1} and {i}"
+            )
             # Don't fail for single large gap (could be instrumental break)
             # but flag if there are multiple
 
@@ -476,7 +508,11 @@ def fetch_lyrics_for_duration(
     # Strategy 1: Try the standard search (tries lyriq first, then syncedlyrics providers)
     # Pass target_duration to enable cache validation
     lrc_text, is_synced, source = fetch_lyrics_multi_source(
-        title, artist, synced_only=True, target_duration=target_duration, duration_tolerance=tolerance
+        title,
+        artist,
+        synced_only=True,
+        target_duration=target_duration,
+        duration_tolerance=tolerance,
     )
 
     if is_synced and lrc_text:
@@ -484,10 +520,14 @@ def fetch_lyrics_for_duration(
         if lrc_duration:
             diff = abs(lrc_duration - target_duration)
             if diff <= tolerance:
-                logger.info(f"Found LRC with matching duration: {lrc_duration}s (target: {target_duration}s)")
+                logger.info(
+                    f"Found LRC with matching duration: {lrc_duration}s (target: {target_duration}s)"
+                )
                 return lrc_text, is_synced, source, lrc_duration
             else:
-                logger.warning(f"LRC duration mismatch: LRC={lrc_duration}s, target={target_duration}s, diff={diff}s")
+                logger.warning(
+                    f"LRC duration mismatch: LRC={lrc_duration}s, target={target_duration}s, diff={diff}s"
+                )
 
     # Strategy 2: Try searching with different terms (syncedlyrics only)
     if SYNCEDLYRICS_AVAILABLE:
@@ -505,14 +545,16 @@ def fetch_lyrics_for_duration(
                 if alt_duration:
                     diff = abs(alt_duration - target_duration)
                     if diff <= tolerance:
-                        logger.info(f"Found LRC with alternative search '{search_term}' from {provider}: {alt_duration}s")
+                        logger.info(
+                            f"Found LRC with alternative search '{search_term}' from {provider}: {alt_duration}s"
+                        )
                         return lrc, True, f"{provider} ({search_term})", alt_duration
 
     # Strategy 3: If we found LRC but duration doesn't match, return it anyway
     # with a warning - better than nothing
     if is_synced and lrc_text:
         lrc_duration = get_lrc_duration(lrc_text)
-        logger.warning(f"Using LRC despite duration mismatch. LRC timing may be off.")
+        logger.warning("Using LRC despite duration mismatch. LRC timing may be off.")
         return lrc_text, is_synced, source, lrc_duration
 
     return None, False, "", None
@@ -592,7 +634,9 @@ def get_lyrics_quality_report(
         diff = abs(lrc_duration - target_duration)
         report["duration_match"] = diff <= 20
         if diff > 20:
-            report["issues"].append(f"Duration mismatch: LRC={lrc_duration}s, target={target_duration}s")
+            report["issues"].append(
+                f"Duration mismatch: LRC={lrc_duration}s, target={target_duration}s"
+            )
 
     # Calculate quality score
     score = 100.0
@@ -607,7 +651,9 @@ def get_lyrics_quality_report(
     # Deduct for low density
     if report["timestamp_density"] < 1.5:
         score -= 20
-        report["issues"].append(f"Low timestamp density ({report['timestamp_density']:.1f}/10s)")
+        report["issues"].append(
+            f"Low timestamp density ({report['timestamp_density']:.1f}/10s)"
+        )
     elif report["timestamp_density"] < 2.0:
         score -= 10
 
@@ -623,7 +669,7 @@ def get_lyrics_quality_report(
     # Check for large gaps
     large_gaps = 0
     for i in range(1, len(timings)):
-        gap = timings[i][0] - timings[i-1][0]
+        gap = timings[i][0] - timings[i - 1][0]
         if gap > 30:
             large_gaps += 1
 
@@ -660,7 +706,7 @@ def fetch_from_all_sources(
             with _suppress_stderr():
                 lyrics_obj = lyriq_get_lyrics(title, artist)
             if lyrics_obj:
-                synced = getattr(lyrics_obj, 'synced_lyrics', None)
+                synced = getattr(lyrics_obj, "synced_lyrics", None)
                 if synced and _has_timestamps(synced):
                     duration = get_lrc_duration(synced)
                     results["lyriq (LRCLib)"] = (synced, duration)

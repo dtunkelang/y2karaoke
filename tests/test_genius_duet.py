@@ -1,6 +1,7 @@
 # test_genius_duet.py
 from y2karaoke.core.genius import parse_genius_html, fetch_html
 
+
 def test_fetch_genius_duet_fast():
     # Hardcoded Genius URL for the duet
     song_url = "https://genius.com/Linkin-park-in-the-end-lyrics"
@@ -23,6 +24,7 @@ def test_fetch_genius_duet_fast():
     print("First 10 lines with singer annotations:")
     for line, singer in lines[:10]:
         print(f"{singer}: {line}")
+
 
 if __name__ == "__main__":
     test_fetch_genius_duet_fast()

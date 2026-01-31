@@ -25,14 +25,16 @@ _LRC_TS_RE = re.compile(
     (?:\.(?P<frac>\d{1,3}))?  # optional fractional seconds
     \]                      # closing bracket
     """,
-    re.VERBOSE
+    re.VERBOSE,
 )
 
 
 # ----------------------
 # Metadata filtering
 # ----------------------
-def _is_metadata_line(text: str, title: str = "", artist: str = "", timestamp: float = -1.0) -> bool:
+def _is_metadata_line(
+    text: str, title: str = "", artist: str = "", timestamp: float = -1.0
+) -> bool:
     """
     Determine if a line is metadata rather than actual lyrics.
     Skips obvious labels, credits, and title/artist lines that appear as headers.
@@ -61,18 +63,52 @@ def _is_metadata_line(text: str, title: str = "", artist: str = "", timestamp: f
         return True
 
     metadata_prefixes = [
-        "artist:", "song:", "title:", "album:", "writer:", "composer:",
-        "lyricist:", "lyrics by", "written by", "produced by", "music by",
-        "source:", "contributor:", "arranged by", "performed by", "vocals by",
-        "music and lyrics", "words and music",
+        "artist:",
+        "song:",
+        "title:",
+        "album:",
+        "writer:",
+        "composer:",
+        "lyricist:",
+        "lyrics by",
+        "written by",
+        "produced by",
+        "music by",
+        "source:",
+        "contributor:",
+        "arranged by",
+        "performed by",
+        "vocals by",
+        "music and lyrics",
+        "words and music",
         # Chinese metadata (simplified and traditional)
-        "作词", "作詞", "作曲", "编曲", "編曲", "制作人", "演唱", "歌手",
-        "词:", "曲:", "词 :", "曲 :",
+        "作词",
+        "作詞",
+        "作曲",
+        "编曲",
+        "編曲",
+        "制作人",
+        "演唱",
+        "歌手",
+        "词:",
+        "曲:",
+        "词 :",
+        "曲 :",
         # Japanese metadata (romanized) - various spacing
-        "saku:", "saku :", "sakkyoku:", "sakkyoku :", "sakushi:", "sakushi :",
-        "henkyoku:", "henkyoku :", "kashu:", "kashu :",
+        "saku:",
+        "saku :",
+        "sakkyoku:",
+        "sakkyoku :",
+        "sakushi:",
+        "sakushi :",
+        "henkyoku:",
+        "henkyoku :",
+        "kashu:",
+        "kashu :",
         # Korean metadata
-        "작사:", "작곡:", "편곡:",
+        "작사:",
+        "작곡:",
+        "편곡:",
     ]
     for prefix in metadata_prefixes:
         if text_lower.startswith(prefix):
@@ -81,21 +117,42 @@ def _is_metadata_line(text: str, title: str = "", artist: str = "", timestamp: f
     # Check for metadata patterns anywhere in the line (not just start)
     # This catches lines like "Lyrics: John Lennon" or "Music: Paul McCartney"
     metadata_keywords = [
-        "composer", "lyricist", "writer", "arranger", "producer",
-        "saku", "sakkyoku", "sakushi", "henkyoku",
+        "composer",
+        "lyricist",
+        "writer",
+        "arranger",
+        "producer",
+        "saku",
+        "sakkyoku",
+        "sakushi",
+        "henkyoku",
     ]
     # Pattern: keyword followed by colon and a proper name
     for keyword in metadata_keywords:
-        pattern = rf'\b{keyword}\s*:\s*[A-Z]'
+        pattern = rf"\b{keyword}\s*:\s*[A-Z]"
         if re.search(pattern, text, re.IGNORECASE):
             return True
 
     # Skip common metadata patterns
     metadata_patterns = [
-        "all rights reserved", "copyright", "℗", "©",
-        "(instrumental)", "[instrumental]", "(intro)", "[intro]",
-        "(outro)", "[outro]", "(verse)", "[verse]", "(chorus)", "[chorus]",
-        "(bridge)", "[bridge]", "(hook)", "[hook]",
+        "all rights reserved",
+        "copyright",
+        "℗",
+        "©",
+        "(instrumental)",
+        "[instrumental]",
+        "(intro)",
+        "[intro]",
+        "(outro)",
+        "[outro]",
+        "(verse)",
+        "[verse]",
+        "(chorus)",
+        "[chorus]",
+        "(bridge)",
+        "[bridge]",
+        "(hook)",
+        "[hook]",
     ]
     for pattern in metadata_patterns:
         if pattern in text_lower:
@@ -103,7 +160,9 @@ def _is_metadata_line(text: str, title: str = "", artist: str = "", timestamp: f
 
     # Skip contributor credit patterns like "username : Name" or "word: Name"
     # These are common in community-sourced LRC files
-    credit_pattern = re.match(r'^(\w+)\s*:\s*([A-Z][a-z]+(\s+[A-Z][a-z]+)*)\s*$', text.strip())
+    credit_pattern = re.match(
+        r"^(\w+)\s*:\s*([A-Z][a-z]+(\s+[A-Z][a-z]+)*)\s*$", text.strip()
+    )
     if credit_pattern:
         # Short first word (likely username) followed by proper name
         first_word = credit_pattern.group(1)
@@ -116,18 +175,35 @@ def _is_metadata_line(text: str, title: str = "", artist: str = "", timestamp: f
     is_early_line = timestamp < 15.0
 
     if title and is_early_line:
-        title_lower = title.lower().replace(" ", "").replace("'", "").replace("(", "").replace(")", "")
-        line_normalized = text_lower.replace(" ", "").replace("'", "").replace("(", "").replace(")", "")
+        title_lower = (
+            title.lower()
+            .replace(" ", "")
+            .replace("'", "")
+            .replace("(", "")
+            .replace(")", "")
+        )
+        line_normalized = (
+            text_lower.replace(" ", "")
+            .replace("'", "")
+            .replace("(", "")
+            .replace(")", "")
+        )
         # Check various title formats
         title_variants = [
             title_lower,
-            title_lower.replace("don'tfear", "dontfear"),  # Handle apostrophe variations
+            title_lower.replace(
+                "don'tfear", "dontfear"
+            ),  # Handle apostrophe variations
             f"dontfear{title_lower}" if "reaper" in title_lower else title_lower,
         ]
         if any(line_normalized == variant for variant in title_variants):
             return True
         # Check partial title match (line contains just the title)
-        if line_normalized == title_lower or title_lower in line_normalized and len(line_normalized) < len(title_lower) + 10:
+        if (
+            line_normalized == title_lower
+            or title_lower in line_normalized
+            and len(line_normalized) < len(title_lower) + 10
+        ):
             return True
         # Also check if line is just "title - artist" or "artist - title"
         if artist:
@@ -138,15 +214,26 @@ def _is_metadata_line(text: str, title: str = "", artist: str = "", timestamp: f
                 return True
 
     if artist and is_early_line:
-        artist_lower = artist.lower().replace(" ", "").replace("ö", "o").replace("ü", "u")
-        line_normalized = text_lower.replace(" ", "").replace("ö", "o").replace("ü", "u")
+        artist_lower = (
+            artist.lower().replace(" ", "").replace("ö", "o").replace("ü", "u")
+        )
+        line_normalized = (
+            text_lower.replace(" ", "").replace("ö", "o").replace("ü", "u")
+        )
         # Check for artist name match (with common variations)
         artist_variants = [
             artist_lower,
             artist_lower.replace("blueoystercult", "blueöystercult"),
-            "blueöystercult", "blueoystercult", "blueoyster", "b.o.c", "boc",
+            "blueöystercult",
+            "blueoystercult",
+            "blueoyster",
+            "b.o.c",
+            "boc",
         ]
-        if any(line_normalized == variant or variant in line_normalized for variant in artist_variants):
+        if any(
+            line_normalized == variant or variant in line_normalized
+            for variant in artist_variants
+        ):
             return True
 
     return False
@@ -171,7 +258,9 @@ def parse_lrc_timestamp(ts: str) -> Optional[float]:
     return minutes * 60 + seconds + frac_seconds
 
 
-def parse_lrc_with_timing(lrc_text: str, title: str = "", artist: str = "") -> List[Tuple[float, str]]:
+def parse_lrc_with_timing(
+    lrc_text: str, title: str = "", artist: str = ""
+) -> List[Tuple[float, str]]:
     """Parse LRC format and extract (timestamp, text) tuples."""
     if not lrc_text:
         return []
@@ -294,7 +383,10 @@ def create_lines_from_lrc_timings(
 
         # Skip duplicate consecutive lines
         line_text_str = " ".join([w.text for w in words]).strip()
-        if lines and " ".join([w.text for w in lines[-1].words]).strip() == line_text_str:
+        if (
+            lines
+            and " ".join([w.text for w in lines[-1].words]).strip() == line_text_str
+        ):
             continue
 
         lines.append(Line(words=words))

@@ -10,7 +10,7 @@ from .text_utils import (
     make_slug,
     clean_title_for_search,
     strip_leading_artist_from_line,
-    filter_singer_only_lines
+    filter_singer_only_lines,
 )
 
 logger = get_logger(__name__)
@@ -32,21 +32,28 @@ YOUTUBE_SUFFIXES = [
     "lyrics",
 ]
 
+
 # ----------------------
 # HTML parsing / singer extraction
 # ----------------------
-def parse_genius_html(html: str, artist: str) -> Tuple[Optional[List[Tuple[str, str]]], Optional[SongMetadata]]:
+def parse_genius_html(
+    html: str, artist: str
+) -> Tuple[Optional[List[Tuple[str, str]]], Optional[SongMetadata]]:
     """Parse Genius lyrics HTML and extract lines with singer annotations."""
     from bs4 import BeautifulSoup
 
-    soup = BeautifulSoup(html, 'html.parser')
+    soup = BeautifulSoup(html, "html.parser")
 
     # Extract Genius title/artist from page
-    page_title = soup.find('title').get_text().strip() if soup.find('title') else ""
+    page_title = soup.find("title").get_text().strip() if soup.find("title") else ""
     genius_title = artist  # fallback
     genius_artist = artist
     if page_title and "|" in page_title:
-        parts = page_title.split("|")[0].split("–") if "–" in page_title else page_title.split("-")
+        parts = (
+            page_title.split("|")[0].split("–")
+            if "–" in page_title
+            else page_title.split("-")
+        )
         if len(parts) == 2:
             genius_artist = parts[0].strip()
             genius_title = parts[1].strip()
@@ -54,35 +61,40 @@ def parse_genius_html(html: str, artist: str) -> Tuple[Optional[List[Tuple[str, 
                 genius_title = genius_title[:-7].strip()
 
     # Extract lyrics containers
-    lyrics_containers = soup.find_all('div', {'data-lyrics-container': 'true'})
+    lyrics_containers = soup.find_all("div", {"data-lyrics-container": "true"})
     if not lyrics_containers:
         return None, None
 
     lines_with_singers: List[Tuple[str, str]] = []
     current_singer = ""
     singers_found: set = set()
-    section_pattern = re.compile(r'\[([^\]]+)\]')
+    section_pattern = re.compile(r"\[([^\]]+)\]")
 
     for container in lyrics_containers:
         # Remove structural metadata
-        for elem in container.find_all(['div', 'span', 'a'], class_=lambda x: x and any(
-            pattern in ' '.join(x) for pattern in ['LyricsHeader', 'SongBioPreview', 'ContributorsCredit']
-        )):
+        for elem in container.find_all(
+            ["div", "span", "a"],
+            class_=lambda x: x
+            and any(
+                pattern in " ".join(x)
+                for pattern in ["LyricsHeader", "SongBioPreview", "ContributorsCredit"]
+            ),
+        ):
             elem.decompose()
 
-        for br in container.find_all('br'):
-            br.replace_with('\n')
+        for br in container.find_all("br"):
+            br.replace_with("\n")
 
         text = container.get_text()
-        for line in text.split('\n'):
+        for line in text.split("\n"):
             line = line.strip()
-            if not line or re.match(r'^\d+\s*Contributor', line) or len(line) > 300:
+            if not line or re.match(r"^\d+\s*Contributor", line) or len(line) > 300:
                 continue
 
             # Section marker indicates singer
             section_match = section_pattern.match(line)
-            if section_match and ':' in section_match.group(1):
-                singer_part = section_match.group(1).split(':', 1)[1].strip()
+            if section_match and ":" in section_match.group(1):
+                singer_part = section_match.group(1).split(":", 1)[1].strip()
                 current_singer = singer_part
                 singers_found.add(singer_part)
                 continue
@@ -96,15 +108,15 @@ def parse_genius_html(html: str, artist: str) -> Tuple[Optional[List[Tuple[str, 
     # Determine unique singers robustly
     all_singers: set = set()
     for line_text, singer in lines_with_singers:
-        for part in re.split(r'\s*[,&/]\s*', singer):
+        for part in re.split(r"\s*[,&/]\s*", singer):
             name = part.strip()
-            if name and name.lower() != 'both':
+            if name and name.lower() != "both":
                 all_singers.add(name)
 
     for header in singers_found:
-        for part in re.split(r'\s*[,&/]\s*', header):
+        for part in re.split(r"\s*[,&/]\s*", header):
             name = part.strip()
-            if name and name.lower() != 'both':
+            if name and name.lower() != "both":
                 all_singers.add(name)
 
     unique_singers = list(all_singers)
@@ -114,7 +126,7 @@ def parse_genius_html(html: str, artist: str) -> Tuple[Optional[List[Tuple[str, 
         singers=unique_singers[:2] if is_duet else [],
         is_duet=is_duet,
         title=genius_title,
-        artist=genius_artist
+        artist=genius_artist,
     )
 
     # --- Strip artist prefixes ---
@@ -125,18 +137,17 @@ def parse_genius_html(html: str, artist: str) -> Tuple[Optional[List[Tuple[str, 
 
     # --- Filter singer-only lines ---
     lines_with_singers = filter_singer_only_lines(
-        lines_with_singers,
-        known_singers=metadata.singers if metadata else [artist]
+        lines_with_singers, known_singers=metadata.singers if metadata else [artist]
     )
 
     return lines_with_singers, metadata
+
 
 # ----------------------
 # Main lyrics fetching
 # ----------------------
 def fetch_genius_lyrics_with_singers(
-    title: str,
-    artist: str
+    title: str, artist: str
 ) -> Tuple[Optional[List[Tuple[str, str]]], Optional[SongMetadata]]:
     """
     Fetch lyrics from Genius with singer annotations.
@@ -146,12 +157,14 @@ def fetch_genius_lyrics_with_singers(
     Fast-fail safe for tests.
     """
     headers = {
-        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 '
-                      '(KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36',
-        'Accept': '*/*'
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
+        "(KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+        "Accept": "*/*",
     }
 
-    cleaned_title = clean_title_for_search(title, TITLE_CLEANUP_PATTERNS, YOUTUBE_SUFFIXES)
+    cleaned_title = clean_title_for_search(
+        title, TITLE_CLEANUP_PATTERNS, YOUTUBE_SUFFIXES
+    )
     artist_slug = make_slug(artist)
     title_slug = make_slug(cleaned_title)
 
@@ -178,14 +191,19 @@ def fetch_genius_lyrics_with_singers(
             if not data:
                 continue
 
-            sections = data.get('response', {}).get('sections', [])
+            sections = data.get("response", {}).get("sections", [])
             for section in sections:
-                if section.get('type') != 'song':
+                if section.get("type") != "song":
                     continue
-                for hit in section.get('hits', []):
-                    result = hit.get('result', {})
-                    url = result.get('url')
-                    if url and url.endswith('-lyrics') and '/artists/' not in url and "translation" not in url.lower():
+                for hit in section.get("hits", []):
+                    result = hit.get("result", {})
+                    url = result.get("url")
+                    if (
+                        url
+                        and url.endswith("-lyrics")
+                        and "/artists/" not in url
+                        and "translation" not in url.lower()
+                    ):
                         song_url = url
                         break
                 if song_url:

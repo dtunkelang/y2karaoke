@@ -12,6 +12,7 @@ from y2karaoke.core.genius import fetch_genius_lyrics_with_singers as original_f
 CACHE_DIR = ".genius_cache"
 os.makedirs(CACHE_DIR, exist_ok=True)
 
+
 def cache_genius(func):
     @wraps(func)
     def wrapper(title, artist, *args, **kwargs):
@@ -24,7 +25,9 @@ def cache_genius(func):
         with open(cache_path, "wb") as f:
             pickle.dump(result, f)
         return result
+
     return wrapper
+
 
 fetch_genius_lyrics_with_singers = cache_genius(original_fetch)
 
@@ -37,6 +40,7 @@ SONGS = [
     {"title": "Bohemian Rhapsody", "artist": "Queen"},
 ]
 
+
 # ------------------------------
 # Stable Tests
 # ------------------------------
@@ -46,15 +50,21 @@ def test_genius_fetch_returns_lines(song):
     lines, metadata = fetch_genius_lyrics_with_singers(song["title"], song["artist"])
     assert lines, f"No lyrics returned for {song['title']}"
 
+
 @pytest.mark.parametrize("song", SONGS)
 def test_no_artist_only_lines(song):
     """Ensure that no line consists solely of artist names."""
     lines, metadata = fetch_genius_lyrics_with_singers(song["title"], song["artist"])
     known_singers = set(metadata.singers if metadata else [song["artist"]])
     for text, singer in lines:
-        parts = [p.strip().lower() for p in text.replace("&", "/").replace(",", "/").split("/")]
-        assert not all(part in (s.lower() for s in known_singers) for part in parts), \
-            f"Artist-only line detected in {song['title']}: {text}"
+        parts = [
+            p.strip().lower()
+            for p in text.replace("&", "/").replace(",", "/").split("/")
+        ]
+        assert not all(
+            part in (s.lower() for s in known_singers) for part in parts
+        ), f"Artist-only line detected in {song['title']}: {text}"
+
 
 @pytest.mark.parametrize("song", SONGS)
 def test_fetch_returns_nonempty_text(song):
@@ -62,6 +72,7 @@ def test_fetch_returns_nonempty_text(song):
     lines, metadata = fetch_genius_lyrics_with_singers(song["title"], song["artist"])
     for text, _ in lines:
         assert text.strip(), f"Empty text line returned for {song['title']}"
+
 
 @pytest.mark.parametrize("song", SONGS)
 def test_print_sample_lines(song):

@@ -3,7 +3,9 @@
 from ..config import Colors
 
 
-def get_singer_colors(singer: str, is_highlighted: bool) -> tuple[tuple[int, int, int], tuple[int, int, int]]:
+def get_singer_colors(
+    singer: str, is_highlighted: bool
+) -> tuple[tuple[int, int, int], tuple[int, int, int]]:
     """Get text and highlight colors for a singer."""
     if singer == "singer1":
         return (Colors.SINGER1, Colors.SINGER1_HIGHLIGHT)

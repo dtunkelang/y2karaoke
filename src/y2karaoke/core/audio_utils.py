@@ -60,6 +60,8 @@ def apply_audio_effects(
     logger.info(f"🎛️ Applying effects: key={key_shift:+d}, tempo={tempo:.2f}x")
     output_path = cache_manager.get_file_path(video_id, effects_name)
     return audio_processor.process_audio(audio_path, str(output_path), key_shift, tempo)
+
+
 def separate_vocals(
     audio_path: str,
     video_id: str,
@@ -69,13 +71,21 @@ def separate_vocals(
 ) -> dict[str, str]:
     """Separate vocals and instrumental from audio, using cache if available."""
     audio_filename = Path(audio_path).name.lower()
-    if any(marker in audio_filename for marker in ["vocals", "instrumental", "drums", "bass", "other"]):
+    if any(
+        marker in audio_filename
+        for marker in ["vocals", "instrumental", "drums", "bass", "other"]
+    ):
         cache_dir = cache_manager.get_video_cache_dir(video_id)
         vocals_files = list(Path(cache_dir).glob("*[Vv]ocals*.wav"))
         instrumental_files = list(Path(cache_dir).glob("*[Ii]nstrumental*.wav"))
         if vocals_files and instrumental_files:
-            return {"vocals_path": str(vocals_files[0]), "instrumental_path": str(instrumental_files[0])}
-        raise RuntimeError(f"Found separated file but missing vocals/instrumental: {audio_path}")
+            return {
+                "vocals_path": str(vocals_files[0]),
+                "instrumental_path": str(instrumental_files[0]),
+            }
+        raise RuntimeError(
+            f"Found separated file but missing vocals/instrumental: {audio_path}"
+        )
 
     if not force:
         # Check for cached files (audio-separator uses "(Vocals)" and "(Instrumental)" with capitals)
@@ -83,7 +93,10 @@ def separate_vocals(
         instrumental_files = cache_manager.find_files(video_id, "*[Ii]nstrumental*.wav")
         if vocals_files and instrumental_files:
             logger.info("📁 Using cached vocal separation")
-            return {"vocals_path": str(vocals_files[0]), "instrumental_path": str(instrumental_files[0])}
+            return {
+                "vocals_path": str(vocals_files[0]),
+                "instrumental_path": str(instrumental_files[0]),
+            }
 
     cache_dir = cache_manager.get_video_cache_dir(video_id)
     return separator.separate_vocals(audio_path, str(cache_dir))

@@ -30,30 +30,37 @@ class YouTubeDownloader:
     def get_video_title(self, url: str) -> str:
         """Return the title of a YouTube video without downloading the full video."""
         ydl_opts = {
-            'quiet': True,
-            'no_warnings': True,
-            'skip_download': True,
-            'forcejson': True,
-            'extract_flat': True,
+            "quiet": True,
+            "no_warnings": True,
+            "skip_download": True,
+            "forcejson": True,
+            "extract_flat": True,
         }
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=False)
-            return info.get('title', url)
+            return info.get("title", url)
 
     def get_video_uploader(self, url: str) -> str:
         """Return the uploader/channel name for a YouTube video without downloading full video."""
-        ydl_opts = {'quiet': True, 'no_warnings': True, 'skip_download': True, 'extract_flat': True}
+        ydl_opts = {
+            "quiet": True,
+            "no_warnings": True,
+            "skip_download": True,
+            "extract_flat": True,
+        }
         try:
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                 info = ydl.extract_info(url, download=False)
-                return info.get('uploader', 'Unknown')
+                return info.get("uploader", "Unknown")
         except Exception:
             return "Unknown"
 
     # ------------------------
     # Download methods
     # ------------------------
-    def download_audio(self, url: str, output_dir: Optional[Path] = None) -> Dict[str, str]:
+    def download_audio(
+        self, url: str, output_dir: Optional[Path] = None
+    ) -> Dict[str, str]:
         url = validate_youtube_url(url)
         video_id = extract_video_id(url)
         output_dir = Path(output_dir or self.cache_dir / video_id)
@@ -62,15 +69,17 @@ class YouTubeDownloader:
         logger.info(f"Downloading audio from {url}")
 
         ydl_opts = {
-            'format': 'bestaudio/best',
-            'outtmpl': str(output_dir / '%(title)s.%(ext)s'),
-            'postprocessors': [{
-                'key': 'FFmpegExtractAudio',
-                'preferredcodec': 'wav',
-                'preferredquality': '192',
-            }],
-            'quiet': True,
-            'no_warnings': True,
+            "format": "bestaudio/best",
+            "outtmpl": str(output_dir / "%(title)s.%(ext)s"),
+            "postprocessors": [
+                {
+                    "key": "FFmpegExtractAudio",
+                    "preferredcodec": "wav",
+                    "preferredquality": "192",
+                }
+            ],
+            "quiet": True,
+            "no_warnings": True,
         }
 
         try:
@@ -79,7 +88,7 @@ class YouTubeDownloader:
                 ydl.download([url])
 
                 # Find the file
-                video_title = info.get('title', 'Unknown')
+                video_title = info.get("title", "Unknown")
                 safe_title = sanitize_filename(video_title)
                 audio_path = output_dir / f"{safe_title}.wav"
                 if not audio_path.exists():
@@ -91,19 +100,21 @@ class YouTubeDownloader:
 
                 # Extract metadata
                 metadata = extract_metadata_from_youtube(url)
-                artist = metadata['artist']
-                cleaned_title = metadata['title']
+                artist = metadata["artist"]
+                cleaned_title = metadata["title"]
 
                 return {
-                    'audio_path': str(audio_path),
-                    'title': cleaned_title,
-                    'artist': artist,
-                    'video_id': video_id,
+                    "audio_path": str(audio_path),
+                    "title": cleaned_title,
+                    "artist": artist,
+                    "video_id": video_id,
                 }
         except Exception as e:
             raise DownloadError(f"Failed to download audio: {e}")
 
-    def download_video(self, url: str, output_dir: Optional[Path] = None) -> Dict[str, str]:
+    def download_video(
+        self, url: str, output_dir: Optional[Path] = None
+    ) -> Dict[str, str]:
         url = validate_youtube_url(url)
         video_id = extract_video_id(url)
         output_dir = Path(output_dir or self.cache_dir / video_id)
@@ -112,10 +123,10 @@ class YouTubeDownloader:
         logger.info(f"Downloading video from {url}")
 
         ydl_opts = {
-            'format': 'best[height<=720]',
-            'outtmpl': str(output_dir / '%(title)s_video.%(ext)s'),
-            'quiet': True,
-            'no_warnings': True,
+            "format": "best[height<=720]",
+            "outtmpl": str(output_dir / "%(title)s_video.%(ext)s"),
+            "quiet": True,
+            "no_warnings": True,
         }
 
         try:
@@ -130,14 +141,14 @@ class YouTubeDownloader:
 
                 # Extract metadata
                 metadata = extract_metadata_from_youtube(url)
-                artist = metadata['artist']
-                cleaned_title = metadata['title']
+                artist = metadata["artist"]
+                cleaned_title = metadata["title"]
 
                 return {
-                    'video_path': str(video_path),
-                    'title': cleaned_title or info.get('title', 'Unknown'),
-                    'artist': artist or 'Unknown',
-                    'video_id': video_id,
+                    "video_path": str(video_path),
+                    "title": cleaned_title or info.get("title", "Unknown"),
+                    "artist": artist or "Unknown",
+                    "video_id": video_id,
                 }
         except Exception as e:
             raise DownloadError(f"Failed to download video: {e}")

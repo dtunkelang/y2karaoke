@@ -7,6 +7,7 @@ from typing import List, Optional, Dict
 
 class SingerID(str, Enum):
     """Identifier for singer in duets."""
+
     SINGER1 = "singer1"
     SINGER2 = "singer2"
     BOTH = "both"
@@ -16,6 +17,7 @@ class SingerID(str, Enum):
 @dataclass
 class Word:
     """A single word with timing information."""
+
     text: str
     start_time: float
     end_time: float
@@ -31,6 +33,7 @@ class Word:
 @dataclass
 class Line:
     """A line of lyrics containing multiple words."""
+
     words: List[Word]
     singer: SingerID = SingerID.UNKNOWN
 
@@ -58,6 +61,7 @@ class Line:
 @dataclass
 class SongMetadata:
     """Metadata about a song including singer information."""
+
     singers: List[str]
     is_duet: bool = False
     title: Optional[str] = None
@@ -86,6 +90,7 @@ class SongMetadata:
 @dataclass
 class StepQuality:
     """Quality report for a single pipeline step."""
+
     step_name: str
     quality_score: float  # 0-100
     status: str = "success"  # "success", "degraded", "failed"
@@ -109,6 +114,7 @@ class StepQuality:
 @dataclass
 class TrackIdentificationQuality(StepQuality):
     """Quality report for track identification step."""
+
     match_confidence: float = 0.0  # 0-100
     source: str = ""  # "musicbrainz", "syncedlyrics", "youtube"
     duration_agreement: str = ""  # "All sources match", "LRC differs by Ns"
@@ -122,6 +128,7 @@ class TrackIdentificationQuality(StepQuality):
 @dataclass
 class LyricsQuality(StepQuality):
     """Quality report for LRC lyrics fetching step."""
+
     source: str = ""  # Provider that succeeded
     sources_tried: List[str] = field(default_factory=list)
     coverage: float = 0.0  # 0-1, % of song duration covered
@@ -136,7 +143,10 @@ class LyricsQuality(StepQuality):
 @dataclass
 class TimingAlignmentQuality(StepQuality):
     """Quality report for timing alignment step."""
-    method_used: str = "lrc_only"  # "lrc_only", "onset_refined", "whisper_hybrid", "whisper_dtw"
+
+    method_used: str = (
+        "lrc_only"  # "lrc_only", "onset_refined", "whisper_hybrid", "whisper_dtw"
+    )
     lines_aligned: int = 0
     total_lines: int = 0
     avg_offset: float = 0.0  # Average timing adjustment
@@ -148,12 +158,17 @@ class TimingAlignmentQuality(StepQuality):
 
     @property
     def alignment_rate(self) -> float:
-        return (self.lines_aligned / self.total_lines * 100) if self.total_lines > 0 else 0.0
+        return (
+            (self.lines_aligned / self.total_lines * 100)
+            if self.total_lines > 0
+            else 0.0
+        )
 
 
 @dataclass
 class SeparationQuality(StepQuality):
     """Quality report for vocal separation step."""
+
     model_used: str = "htdemucs"
     # Note: Full audio quality metrics require additional analysis
     # These are placeholders for future enhancement
@@ -165,6 +180,7 @@ class SeparationQuality(StepQuality):
 @dataclass
 class BreakShorteningQuality(StepQuality):
     """Quality report for break shortening step."""
+
     breaks_detected: int = 0
     breaks_shortened: int = 0
     total_time_removed: float = 0.0
@@ -177,6 +193,7 @@ class BreakShorteningQuality(StepQuality):
 @dataclass
 class PipelineQualityReport:
     """Aggregated quality report for the entire pipeline."""
+
     overall_score: float  # 0-100, weighted average
     confidence_level: str  # "high", "medium", "low"
     steps: Dict[str, StepQuality] = field(default_factory=dict)
@@ -214,7 +231,9 @@ class PipelineQualityReport:
             if step.status == "failed":
                 warnings.append(f"{step.step_name}: Failed")
             elif step.status == "degraded":
-                warnings.append(f"{step.step_name}: Degraded quality ({step.quality_score:.0f}%)")
+                warnings.append(
+                    f"{step.step_name}: Degraded quality ({step.quality_score:.0f}%)"
+                )
             warnings.extend(step.issues)
 
         overall = weighted_sum / total_weight if total_weight > 0 else 0.0

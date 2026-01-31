@@ -143,8 +143,6 @@ class TestBackgroundProcessorIntegration:
         """Should create background segments from video."""
         processor = BackgroundProcessor()
         segments = processor.create_background_segments(
-            video_path="test_video.mp4",
-            lines=[],
-            duration=10.0
+            video_path="test_video.mp4", lines=[], duration=10.0
         )
         assert isinstance(segments, list)

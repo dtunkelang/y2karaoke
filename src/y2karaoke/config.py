@@ -2,7 +2,7 @@
 
 import os
 from pathlib import Path
-from typing import Tuple, Optional
+from typing import Tuple
 
 from .exceptions import ConfigError
 
@@ -23,6 +23,7 @@ RESOLUTION_PRESETS = {
     "4k": (3840, 2160),
 }
 
+
 # Colors (RGB tuples)
 class Colors:
     BG_TOP = (20, 20, 40)
@@ -42,6 +43,7 @@ class Colors:
     BOTH = (200, 150, 255)
     BOTH_HIGHLIGHT = (180, 100, 255)
 
+
 # Font settings (can be overridden via environment variables)
 FONT_SIZE = int(os.getenv("Y2KARAOKE_FONT_SIZE", "72"))
 LINE_SPACING = int(os.getenv("Y2KARAOKE_LINE_SPACING", "100"))
@@ -53,29 +55,35 @@ TEMPO_RANGE = (0.1, 3.0)
 
 # Video timing
 SPLASH_DURATION = 4.0
-INSTRUMENTAL_BREAK_THRESHOLD = 8.0  # Show instrumental break screen for gaps >= 8 seconds
+INSTRUMENTAL_BREAK_THRESHOLD = (
+    8.0  # Show instrumental break screen for gaps >= 8 seconds
+)
 LYRICS_LEAD_TIME = 1.0
 HIGHLIGHT_LEAD_TIME = 0.15  # Seconds to advance highlight sweep within a line
-LYRICS_ACTIVATION_LEAD = 0.2  # Seconds to activate a line early (compensate for timing lag)
+LYRICS_ACTIVATION_LEAD = (
+    0.2  # Seconds to activate a line early (compensate for timing lag)
+)
 CUE_INDICATOR_DURATION = 3.0  # Seconds before line start to show cue indicator
 CUE_INDICATOR_MIN_GAP = 4.0  # Only show cue after gaps >= this many seconds
 
 # Line splitting
 MAX_LINE_WIDTH_RATIO = 0.75  # 75% of screen width
 
+
 def validate_config() -> None:
     """Validate configuration values."""
     if not (0.1 <= TEMPO_RANGE[0] <= TEMPO_RANGE[1] <= 3.0):
         raise ConfigError("Invalid tempo range")
-    
+
     if not (-12 <= KEY_SHIFT_RANGE[0] <= KEY_SHIFT_RANGE[1] <= 12):
         raise ConfigError("Invalid key shift range")
-    
+
     if VIDEO_WIDTH <= 0 or VIDEO_HEIGHT <= 0:
         raise ConfigError("Invalid video dimensions")
-    
+
     if FPS <= 0:
         raise ConfigError("Invalid FPS value")
+
 
 def get_cache_dir() -> Path:
     """Get cache directory from environment or default."""
@@ -83,6 +91,7 @@ def get_cache_dir() -> Path:
     if cache_dir:
         return Path(cache_dir)
     return DEFAULT_CACHE_DIR
+
 
 # Validate config on import
 validate_config()
@@ -94,6 +103,7 @@ BLUR_RADIUS = 3
 # Cache settings
 MAX_CACHE_SIZE_GB = 10
 CACHE_CLEANUP_THRESHOLD = 0.8
+
 
 def get_credentials_dir() -> Path:
     """Get credentials directory."""

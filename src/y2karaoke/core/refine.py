@@ -8,7 +8,9 @@ from .models import Word, Line
 logger = get_logger(__name__)
 
 
-def refine_word_timing(lines: List[Line], vocals_path: str, respect_line_boundaries: bool = True) -> List[Line]:
+def refine_word_timing(
+    lines: List[Line], vocals_path: str, respect_line_boundaries: bool = True
+) -> List[Line]:
     """Refine word timing using audio onset detection."""
     try:
         import librosa
@@ -17,18 +19,16 @@ def refine_word_timing(lines: List[Line], vocals_path: str, respect_line_boundar
         y, sr = librosa.load(vocals_path, sr=22050)
         hop_length = 512
         onset_frames = librosa.onset.onset_detect(
-            y=y,
-            sr=sr,
-            hop_length=hop_length,
-            backtrack=True,
-            units='frames'
+            y=y, sr=sr, hop_length=hop_length, backtrack=True, units="frames"
         )
         onset_times = librosa.frames_to_time(onset_frames, sr=sr, hop_length=hop_length)
         logger.debug(f"Detected {len(onset_times)} onsets in vocals")
 
         # Compute RMS energy for vocal end detection
         rms = librosa.feature.rms(y=y, frame_length=2048, hop_length=hop_length)[0]
-        rms_times = librosa.frames_to_time(np.arange(len(rms)), sr=sr, hop_length=hop_length)
+        rms_times = librosa.frames_to_time(
+            np.arange(len(rms)), sr=sr, hop_length=hop_length
+        )
 
         # Compute energy threshold for silence detection
         noise_floor = np.percentile(rms, 10)
@@ -40,8 +40,12 @@ def refine_word_timing(lines: List[Line], vocals_path: str, respect_line_boundar
         for line in lines:
             refined_lines.append(
                 _refine_line_timing(
-                    line, onset_times, rms, rms_times,
-                    silence_threshold, respect_line_boundaries
+                    line,
+                    onset_times,
+                    rms,
+                    rms_times,
+                    silence_threshold,
+                    respect_line_boundaries,
                 )
             )
 
@@ -61,7 +65,7 @@ def _refine_line_timing(
     rms: np.ndarray,
     rms_times: np.ndarray,
     silence_threshold: float,
-    respect_boundaries: bool
+    respect_boundaries: bool,
 ) -> Line:
     """Refine timing for a single line."""
     if not line.words:
@@ -70,7 +74,9 @@ def _refine_line_timing(
     line_start, line_end = line.start_time, line.end_time
     # Use a small buffer before line start but NO buffer after line end
     # to avoid matching onsets that belong to the next line
-    line_onsets = onset_times[(onset_times >= line_start - 0.1) & (onset_times <= line_end)]
+    line_onsets = onset_times[
+        (onset_times >= line_start - 0.1) & (onset_times <= line_end)
+    ]
 
     # Detect actual vocal end time (when energy drops to silence)
     # But never extend beyond line_end - the estimated duration is our upper bound
@@ -83,7 +89,9 @@ def _refine_line_timing(
         # Not enough onsets - redistribute words evenly within detected vocal duration
         actual_duration = vocal_end - line_start
         line_text = " ".join(w.text for w in line.words)
-        logger.debug(f"Line '{line_text[:30]}...' ({len(line.words)} words): duration={actual_duration:.2f}s")
+        logger.debug(
+            f"Line '{line_text[:30]}...' ({len(line.words)} words): duration={actual_duration:.2f}s"
+        )
         words = list(line.words)
         if words:
             word_count = len(words)
@@ -96,12 +104,14 @@ def _refine_line_timing(
                     # Ensure last word ends at vocal_end
                     if i == word_count - 1:
                         new_end = vocal_end
-                    new_words.append(Word(
-                        text=word.text,
-                        start_time=new_start,
-                        end_time=new_end,
-                        singer=word.singer
-                    ))
+                    new_words.append(
+                        Word(
+                            text=word.text,
+                            start_time=new_start,
+                            end_time=new_end,
+                            singer=word.singer,
+                        )
+                    )
                 return Line(words=new_words, singer=line.singer)
         return Line(words=words, singer=line.singer)
 
@@ -118,7 +128,7 @@ def _detect_vocal_end(
     rms_times: np.ndarray,
     silence_threshold: float,
     word_count: int,
-    min_silence_duration: float = 0.4
+    min_silence_duration: float = 0.4,
 ) -> float:
     """
     Detect when vocals actually end within a line by finding sustained silence.
@@ -182,7 +192,7 @@ def _match_words_to_onsets(
     onsets: np.ndarray,
     line_start: float,
     vocal_end: float,
-    respect_boundaries: bool
+    respect_boundaries: bool,
 ) -> List[Word]:
     """Order-preserving assignment of words to onsets.
 
@@ -216,7 +226,7 @@ def _match_words_to_onsets(
     for i, word in enumerate(words):
         expected_start = word.start_time
         best_onset_idx = None
-        best_score = float('inf')
+        best_score = float("inf")
 
         # Search for best onset starting from min_next_onset_idx
         for j in range(min_next_onset_idx, n_onsets):
@@ -248,7 +258,10 @@ def _match_words_to_onsets(
             # Skip past this onset and any nearby ones (same word syllables)
             skip_until = sorted_onsets[best_onset_idx] + SYLLABLE_GAP
             min_next_onset_idx = best_onset_idx + 1
-            while min_next_onset_idx < n_onsets and sorted_onsets[min_next_onset_idx] < skip_until:
+            while (
+                min_next_onset_idx < n_onsets
+                and sorted_onsets[min_next_onset_idx] < skip_until
+            ):
                 min_next_onset_idx += 1
         else:
             # No good onset found - will use expected time
@@ -283,22 +296,22 @@ def _match_words_to_onsets(
                 word_starts[i] = next_matched_time - est_duration
             else:
                 # No future matched word - use previous word's end
-                if i > 0 and word_starts[i-1] is not None:
-                    char_count = len(words[i-1].text)
+                if i > 0 and word_starts[i - 1] is not None:
+                    char_count = len(words[i - 1].text)
                     est_duration = max(0.15, min(0.08 * char_count, 0.5))
-                    word_starts[i] = word_starts[i-1] + est_duration
+                    word_starts[i] = word_starts[i - 1] + est_duration
                 else:
                     word_starts[i] = words[i].start_time
 
     # Ensure monotonically increasing start times
     for i in range(1, n_words):
-        if word_starts[i] <= word_starts[i-1]:
-            word_starts[i] = word_starts[i-1] + 0.1
+        if word_starts[i] <= word_starts[i - 1]:
+            word_starts[i] = word_starts[i - 1] + 0.1
 
     # Build refined words list
     refined_words = []
     for i, word in enumerate(words):
-        is_last_word = (i == len(words) - 1)
+        is_last_word = i == len(words) - 1
         new_start = word_starts[i]
 
         if respect_boundaries:
@@ -321,6 +334,13 @@ def _match_words_to_onsets(
         if respect_boundaries and is_last_word:
             new_end = max(new_start + min_duration, min(new_end, vocal_end))
 
-        refined_words.append(Word(text=word.text, start_time=new_start, end_time=new_end, singer=word.singer))
+        refined_words.append(
+            Word(
+                text=word.text,
+                start_time=new_start,
+                end_time=new_end,
+                singer=word.singer,
+            )
+        )
 
     return refined_words

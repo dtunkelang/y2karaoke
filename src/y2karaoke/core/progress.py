@@ -2,6 +2,7 @@
 
 from ..config import VIDEO_WIDTH, VIDEO_HEIGHT
 
+
 class RenderProgressBar:
     """Custom progress bar for video rendering."""
 
@@ -32,7 +33,9 @@ class ProgressLogger:
     def bars_callback(self, bar, attr, value, old_value=None):
         """Callback for progress bars."""
         if attr == "index":
-            percent = int(100 * value / self.total_frames) if self.total_frames > 0 else 0
+            percent = (
+                int(100 * value / self.total_frames) if self.total_frames > 0 else 0
+            )
             if percent != self.last_percent:
                 bar_len = 30
                 filled = int(bar_len * percent / 100)
@@ -43,6 +46,7 @@ class ProgressLogger:
     def callback(self, **kw):
         """General callback."""
         pass
+
 
 def draw_progress_bar(
     draw,
@@ -72,8 +76,12 @@ def draw_progress_bar(
 
     # Draw background
     draw.rounded_rectangle(
-        [(width - bar_width) // 2, (height - bar_height) // 2,
-         (width + bar_width) // 2, (height + bar_height) // 2],
+        [
+            (width - bar_width) // 2,
+            (height - bar_height) // 2,
+            (width + bar_width) // 2,
+            (height + bar_height) // 2,
+        ],
         radius=border_radius,
         fill=Colors.PROGRESS_BG,
     )
@@ -83,8 +91,12 @@ def draw_progress_bar(
         fill_width = int(bar_width * min(progress, 1.0))
         if fill_width > 0:
             draw.rounded_rectangle(
-                [(width - bar_width) // 2, (height - bar_height) // 2,
-                 (width - bar_width) // 2 + fill_width, (height + bar_height) // 2],
+                [
+                    (width - bar_width) // 2,
+                    (height - bar_height) // 2,
+                    (width - bar_width) // 2 + fill_width,
+                    (height + bar_height) // 2,
+                ],
                 radius=border_radius,
                 fill=Colors.PROGRESS_FG,
             )

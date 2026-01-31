@@ -17,6 +17,7 @@ logger = get_logger(__name__)
 @dataclass
 class TimingIssue:
     """Represents a timing inconsistency between lyrics and audio."""
+
     issue_type: str  # "early_line", "late_line", "missing_pause", "unexpected_pause"
     line_index: int
     lyrics_time: float
@@ -29,6 +30,7 @@ class TimingIssue:
 @dataclass
 class AudioFeatures:
     """Extracted audio features for timing evaluation."""
+
     onset_times: np.ndarray  # Detected onset times
     silence_regions: List[Tuple[float, float]]  # (start, end) of silent regions
     vocal_start: float  # First vocal onset
@@ -41,6 +43,7 @@ class AudioFeatures:
 @dataclass
 class TimingReport:
     """Comprehensive timing evaluation report."""
+
     source_name: str
     overall_score: float  # 0-100, higher is better
     line_alignment_score: float  # How well line starts match onsets
@@ -70,7 +73,6 @@ def _get_audio_features_cache_path(vocals_path: str) -> Optional[str]:
 def _load_audio_features_cache(cache_path: str) -> Optional[AudioFeatures]:
     """Load cached audio features if available."""
     from pathlib import Path
-    import json
 
     cache_file = Path(cache_path)
     if not cache_file.exists():
@@ -81,16 +83,18 @@ def _load_audio_features_cache(cache_path: str) -> Optional[AudioFeatures]:
 
         # Reconstruct AudioFeatures
         features = AudioFeatures(
-            onset_times=data['onset_times'],
-            silence_regions=list(data['silence_regions']),
-            vocal_start=float(data['vocal_start']),
-            vocal_end=float(data['vocal_end']),
-            duration=float(data['duration']),
-            energy_envelope=data['energy_envelope'],
-            energy_times=data['energy_times'],
+            onset_times=data["onset_times"],
+            silence_regions=list(data["silence_regions"]),
+            vocal_start=float(data["vocal_start"]),
+            vocal_end=float(data["vocal_end"]),
+            duration=float(data["duration"]),
+            energy_envelope=data["energy_envelope"],
+            energy_times=data["energy_times"],
         )
 
-        logger.debug(f"Loaded cached audio features: {len(features.onset_times)} onsets")
+        logger.debug(
+            f"Loaded cached audio features: {len(features.onset_times)} onsets"
+        )
         return features
 
     except Exception as e:
@@ -150,13 +154,15 @@ def extract_audio_features(
 
         # Onset detection
         onset_frames = librosa.onset.onset_detect(
-            y=y, sr=sr, hop_length=hop_length, backtrack=True, units='frames'
+            y=y, sr=sr, hop_length=hop_length, backtrack=True, units="frames"
         )
         onset_times = librosa.frames_to_time(onset_frames, sr=sr, hop_length=hop_length)
 
         # RMS energy for silence detection
         rms = librosa.feature.rms(y=y, frame_length=2048, hop_length=hop_length)[0]
-        rms_times = librosa.frames_to_time(np.arange(len(rms)), sr=sr, hop_length=hop_length)
+        rms_times = librosa.frames_to_time(
+            np.arange(len(rms)), sr=sr, hop_length=hop_length
+        )
 
         # Compute silence threshold
         noise_floor = np.percentile(rms, 10)
@@ -165,7 +171,9 @@ def extract_audio_features(
 
         # Find silence regions
         is_silent = rms < silence_threshold
-        silence_regions = _find_silence_regions(is_silent, rms_times, min_silence_duration)
+        silence_regions = _find_silence_regions(
+            is_silent, rms_times, min_silence_duration
+        )
 
         # Find vocal start and end
         vocal_start = _find_vocal_start(onset_times, rms, rms_times, silence_threshold)
@@ -239,7 +247,9 @@ def _find_vocal_start(
             continue
 
         # Check for sustained energy after onset
-        min_frames = int(min_duration / (rms_times[1] - rms_times[0]) if len(rms_times) > 1 else 10)
+        min_frames = int(
+            min_duration / (rms_times[1] - rms_times[0]) if len(rms_times) > 1 else 10
+        )
         end_idx = min(onset_idx + min_frames, len(rms))
 
         if end_idx > onset_idx:
@@ -310,26 +320,31 @@ def evaluate_timing(
 
             # Report significant timing issues
             if abs(onset_delta) > 0.3:
-                severity = "minor" if abs(onset_delta) < 0.5 else (
-                    "moderate" if abs(onset_delta) < 1.0 else "severe"
+                severity = (
+                    "minor"
+                    if abs(onset_delta) < 0.5
+                    else ("moderate" if abs(onset_delta) < 1.0 else "severe")
                 )
                 issue_type = "early_line" if onset_delta > 0 else "late_line"
-                issues.append(TimingIssue(
-                    issue_type=issue_type,
-                    line_index=i,
-                    lyrics_time=line_start,
-                    audio_time=closest_onset,
-                    delta=onset_delta,
-                    severity=severity,
-                    description=f"Line {i+1} starts {abs(onset_delta):.2f}s {'before' if onset_delta > 0 else 'after'} detected onset"
-                ))
+                issues.append(
+                    TimingIssue(
+                        issue_type=issue_type,
+                        line_index=i,
+                        lyrics_time=line_start,
+                        audio_time=closest_onset,
+                        delta=onset_delta,
+                        severity=severity,
+                        description=f"Line {i+1} starts {abs(onset_delta):.2f}s"
+                        " {'before' if onset_delta > 0 else 'after'} detected onset",
+                    )
+                )
 
     # Check for pause alignment
     pause_issues = _check_pause_alignment(lines, audio_features)
     issues.extend(pause_issues)
 
     # Calculate scores
-    total_lines = len([l for l in lines if l.words])
+    total_lines = len([line for line in lines if line.words])
 
     # Line alignment score: based on how many lines match onsets within tolerance
     line_alignment_score = (matched_count / total_lines * 100) if total_lines > 0 else 0
@@ -346,8 +361,13 @@ def evaluate_timing(
 
     # Generate summary
     summary = _generate_summary(
-        overall_score, line_alignment_score, pause_score,
-        avg_offset, std_offset, len(issues), total_lines
+        overall_score,
+        line_alignment_score,
+        pause_score,
+        avg_offset,
+        std_offset,
+        len(issues),
+        total_lines,
     )
 
     return TimingReport(
@@ -400,11 +420,11 @@ def _check_pause_alignment(
     issues = []
 
     for i in range(len(lines) - 1):
-        if not lines[i].words or not lines[i+1].words:
+        if not lines[i].words or not lines[i + 1].words:
             continue
 
         line_end = lines[i].end_time
-        next_start = lines[i+1].start_time
+        next_start = lines[i + 1].start_time
         gap_duration = next_start - line_end
 
         # Check any gap > 0.5 seconds for spurious pauses
@@ -417,24 +437,28 @@ def _check_pause_alignment(
 
             if vocal_activity > 0.5:  # More than 50% of gap has vocal activity
                 # This is a spurious gap - lyrics say pause but audio shows singing
-                severity = "severe" if vocal_activity > 0.8 else (
-                    "moderate" if vocal_activity > 0.6 else "minor"
+                severity = (
+                    "severe"
+                    if vocal_activity > 0.8
+                    else ("moderate" if vocal_activity > 0.6 else "minor")
                 )
                 line_text = " ".join(w.text for w in lines[i].words)[:30]
-                next_text = " ".join(w.text for w in lines[i+1].words)[:30]
-                issues.append(TimingIssue(
-                    issue_type="spurious_gap",
-                    line_index=i,
-                    lyrics_time=line_end,
-                    audio_time=None,
-                    delta=gap_duration,
-                    severity=severity,
-                    description=(
-                        f"Gap of {gap_duration:.1f}s between lines {i+1} and {i+2} "
-                        f"has {vocal_activity*100:.0f}% vocal activity - likely continuous singing. "
-                        f"Lines: \"{line_text}...\" → \"{next_text}...\""
+                next_text = " ".join(w.text for w in lines[i + 1].words)[:30]
+                issues.append(
+                    TimingIssue(
+                        issue_type="spurious_gap",
+                        line_index=i,
+                        lyrics_time=line_end,
+                        audio_time=None,
+                        delta=gap_duration,
+                        severity=severity,
+                        description=(
+                            f"Gap of {gap_duration:.1f}s between lines {i+1} and {i+2} "
+                            f"has {vocal_activity*100:.0f}% vocal activity - likely continuous singing. "
+                            f'Lines: "{line_text}..." → "{next_text}..."'
+                        ),
                     )
-                ))
+                )
             elif gap_duration > 2.0:
                 # Large gap - check if there's corresponding silence
                 has_silence = any(
@@ -442,15 +466,18 @@ def _check_pause_alignment(
                     for silence_start, silence_end in audio_features.silence_regions
                 )
                 if not has_silence:
-                    issues.append(TimingIssue(
-                        issue_type="missing_pause",
-                        line_index=i,
-                        lyrics_time=line_end,
-                        audio_time=None,
-                        delta=gap_duration,
-                        severity="moderate",
-                        description=f"Gap of {gap_duration:.1f}s between lines {i+1} and {i+2} has no corresponding silence in audio"
-                    ))
+                    issues.append(
+                        TimingIssue(
+                            issue_type="missing_pause",
+                            line_index=i,
+                            lyrics_time=line_end,
+                            audio_time=None,
+                            delta=gap_duration,
+                            severity="moderate",
+                            description=f"Gap of {gap_duration:.1f}s between lines"
+                            " {i+1} and {i+2} has no corresponding silence in audio",
+                        )
+                    )
 
     # Check for silence regions not covered by lyrics gaps
     for silence_start, silence_end in audio_features.silence_regions:
@@ -461,25 +488,27 @@ def _check_pause_alignment(
         # Check if any lyrics gap covers this silence
         covered = False
         for i in range(len(lines) - 1):
-            if not lines[i].words or not lines[i+1].words:
+            if not lines[i].words or not lines[i + 1].words:
                 continue
             line_end = lines[i].end_time
-            next_start = lines[i+1].start_time
+            next_start = lines[i + 1].start_time
 
             if line_end <= silence_start and next_start >= silence_end:
                 covered = True
                 break
 
         if not covered and silence_start > audio_features.vocal_start:
-            issues.append(TimingIssue(
-                issue_type="unexpected_pause",
-                line_index=-1,
-                lyrics_time=silence_start,
-                audio_time=silence_start,
-                delta=silence_duration,
-                severity="minor",
-                description=f"Silence at {silence_start:.1f}s ({silence_duration:.1f}s) not reflected in lyrics timing"
-            ))
+            issues.append(
+                TimingIssue(
+                    issue_type="unexpected_pause",
+                    line_index=-1,
+                    lyrics_time=silence_start,
+                    audio_time=silence_start,
+                    delta=silence_duration,
+                    severity="minor",
+                    description=f"Silence at {silence_start:.1f}s ({silence_duration:.1f}s) not reflected in lyrics timing",
+                )
+            )
 
     return issues
 
@@ -498,7 +527,9 @@ def _check_vocal_activity_in_range(
         Fraction of the time range that has vocal activity (0.0 to 1.0)
     """
     # Find frames in this range
-    mask = (audio_features.energy_times >= start_time) & (audio_features.energy_times <= end_time)
+    mask = (audio_features.energy_times >= start_time) & (
+        audio_features.energy_times <= end_time
+    )
     range_energy = audio_features.energy_envelope[mask]
 
     if len(range_energy) == 0:
@@ -573,7 +604,9 @@ def _check_for_silence_in_range(
 
     # Check if still in silence at end of range
     if in_silence:
-        silence_duration = min(end_time, times[min(end_idx, len(times) - 1)]) - silence_start_time
+        silence_duration = (
+            min(end_time, times[min(end_idx, len(times) - 1)]) - silence_start_time
+        )
         if silence_duration >= min_silence_duration:
             return True
 
@@ -589,8 +622,13 @@ def _calculate_pause_score(
         return 100.0  # No silence to match
 
     matched_silences = 0
-    total_silences = len([s for s in audio_features.silence_regions
-                         if s[1] - s[0] >= 2.0 and s[0] > audio_features.vocal_start])
+    total_silences = len(
+        [
+            s
+            for s in audio_features.silence_regions
+            if s[1] - s[0] >= 2.0 and s[0] > audio_features.vocal_start
+        ]
+    )
 
     if total_silences == 0:
         return 100.0
@@ -603,10 +641,10 @@ def _calculate_pause_score(
 
         # Check if any lyrics gap covers this silence
         for i in range(len(lines) - 1):
-            if not lines[i].words or not lines[i+1].words:
+            if not lines[i].words or not lines[i + 1].words:
                 continue
             line_end = lines[i].end_time
-            next_start = lines[i+1].start_time
+            next_start = lines[i + 1].start_time
 
             # Allow some tolerance (0.5s)
             if line_end <= silence_start + 0.5 and next_start >= silence_end - 0.5:
@@ -626,10 +664,10 @@ def _generate_summary(
     total_lines: int,
 ) -> str:
     """Generate a human-readable summary."""
-    quality = "excellent" if overall >= 90 else (
-        "good" if overall >= 75 else (
-            "fair" if overall >= 60 else "poor"
-        )
+    quality = (
+        "excellent"
+        if overall >= 90
+        else ("good" if overall >= 75 else ("fair" if overall >= 60 else "poor"))
     )
 
     lines = [
@@ -682,14 +720,18 @@ def compare_sources(
 
         try:
             # Parse and create lines
-            lines = create_lines_from_lrc(lrc_text, romanize=False, title=title, artist=artist)
+            lines = create_lines_from_lrc(
+                lrc_text, romanize=False, title=title, artist=artist
+            )
 
             # Apply timing from parsed LRC
             timings = parse_lrc_with_timing(lrc_text, title, artist)
             for i, line in enumerate(lines):
                 if i < len(timings):
                     line_start = timings[i][0]
-                    next_start = timings[i + 1][0] if i + 1 < len(timings) else line_start + 5.0
+                    next_start = (
+                        timings[i + 1][0] if i + 1 < len(timings) else line_start + 5.0
+                    )
                     word_count = len(line.words)
                     if word_count > 0:
                         word_duration = (next_start - line_start) * 0.95 / word_count
@@ -729,7 +771,7 @@ def select_best_source(
     Returns:
         Tuple of (lrc_text, source_name, timing_report) or (None, None, None)
     """
-    from .sync import fetch_from_all_sources, get_lrc_duration
+    from .sync import fetch_from_all_sources
 
     reports = compare_sources(title, artist, vocals_path)
 
@@ -807,12 +849,14 @@ def correct_line_timestamps(
             continue
 
         line_start = line.start_time
-        line_duration = line.end_time - line_start
 
         # Check if LRC timestamp is reasonable (singing at or near that time)
-        singing_at_lrc_time = _check_vocal_activity_in_range(
-            line_start - 0.5, line_start + 0.5, audio_features
-        ) > 0.3
+        singing_at_lrc_time = (
+            _check_vocal_activity_in_range(
+                line_start - 0.5, line_start + 0.5, audio_features
+            )
+            > 0.3
+        )
 
         best_onset = None
 
@@ -820,12 +864,18 @@ def correct_line_timestamps(
             if singing_at_lrc_time:
                 # Check if LRC timestamp is at END of a phrase (silence follows)
                 # vs BEGINNING (silence precedes)
-                silence_after = _check_vocal_activity_in_range(
-                    line_start + 0.1, line_start + 0.6, audio_features
-                ) < 0.3
-                silence_before = _check_vocal_activity_in_range(
-                    max(0, line_start - 0.6), line_start - 0.1, audio_features
-                ) < 0.3
+                silence_after = (
+                    _check_vocal_activity_in_range(
+                        line_start + 0.1, line_start + 0.6, audio_features
+                    )
+                    < 0.3
+                )
+                silence_before = (
+                    _check_vocal_activity_in_range(
+                        max(0, line_start - 0.6), line_start - 0.1, audio_features
+                    )
+                    < 0.3
+                )
 
                 if silence_after and not silence_before:
                     # LRC timestamp is at END of phrase - find phrase start
@@ -844,7 +894,7 @@ def correct_line_timestamps(
                             break
                 else:
                     # Normal case: LRC timestamp is reasonable, use proximity-based correction
-                    best_score = float('inf')
+                    best_score = float("inf")
                     search_start = line_start - max_correction
                     search_end = line_start + max_correction
 
@@ -873,7 +923,9 @@ def correct_line_timestamps(
                 # Fallback: LRC timestamp falls during silence
                 # Be conservative - only correct if we find a clear phrase start nearby
                 # Use same max_correction as normal case to avoid large shifts
-                search_after = max(prev_line_audio_end + 0.2, line_start - max_correction)
+                search_after = max(
+                    prev_line_audio_end + 0.2, line_start - max_correction
+                )
                 search_before = line_start + max_correction
 
                 candidate_onsets = onset_times[
@@ -897,23 +949,28 @@ def correct_line_timestamps(
                 if abs(offset) > 0.3:
                     new_words = []
                     for word in line.words:
-                        new_words.append(Word(
-                            text=word.text,
-                            start_time=word.start_time + offset,
-                            end_time=word.end_time + offset,
-                            singer=word.singer,
-                        ))
+                        new_words.append(
+                            Word(
+                                text=word.text,
+                                start_time=word.start_time + offset,
+                                end_time=word.end_time + offset,
+                                singer=word.singer,
+                            )
+                        )
 
                     corrected_line = Line(words=new_words, singer=line.singer)
                     corrected_lines.append(corrected_line)
 
                     prev_line_audio_end = _find_phrase_end(
-                        best_onset, best_onset + 30.0, audio_features, min_silence_duration=0.3
+                        best_onset,
+                        best_onset + 30.0,
+                        audio_features,
+                        min_silence_duration=0.3,
                     )
 
                     line_text = " ".join(w.text for w in line.words)[:30]
                     corrections.append(
-                        f"Line {i+1} shifted {offset:+.1f}s: \"{line_text}...\""
+                        f'Line {i+1} shifted {offset:+.1f}s: "{line_text}..."'
                     )
                     continue
 
@@ -1038,15 +1095,6 @@ def fix_spurious_gaps(
 
             # Find where the current phrase ACTUALLY ends using audio
             phrase_start = lines_to_merge[0].start_time
-            actual_phrase_end = _find_phrase_end(
-                phrase_start, phrase_start + 30.0, audio_features, min_silence_duration=0.3
-            )
-
-            # Check if singing at next_start - if there's silence at the LRC timestamp,
-            # the timestamp is unreliable and the content may belong to current phrase
-            singing_at_next_start = _check_vocal_activity_in_range(
-                next_start - 0.2, next_start + 0.2, audio_features
-            ) > 0.5
 
             # Only merge if there's truly continuous vocal activity through the gap
             # Be conservative - good LRC timing shouldn't be "fixed"
@@ -1110,19 +1158,20 @@ def fix_spurious_gaps(
                 for k, word in enumerate(merged_words):
                     new_start = phrase_start + k * word_spacing
                     new_end = new_start + (word_spacing * 0.9)
-                    new_words.append(Word(
-                        text=word.text,
-                        start_time=new_start,
-                        end_time=new_end,
-                        singer=word.singer,
-                    ))
+                    new_words.append(
+                        Word(
+                            text=word.text,
+                            start_time=new_start,
+                            end_time=new_end,
+                            singer=word.singer,
+                        )
+                    )
 
                 merged_line = Line(words=new_words, singer=lines_to_merge[0].singer)
                 fixed_lines.append(merged_line)
 
                 merged_texts = [
-                    " ".join(w.text for w in line.words)[:20]
-                    for line in lines_to_merge
+                    " ".join(w.text for w in line.words)[:20] for line in lines_to_merge
                 ]
                 fixes.append(
                     f"Merged {len(lines_to_merge)} lines ({i+1}-{i+len(lines_to_merge)}): "
@@ -1144,9 +1193,11 @@ def fix_spurious_gaps(
 # Whisper-based transcription and alignment
 # ============================================================================
 
+
 @dataclass
 class TranscriptionWord:
     """A word from Whisper transcription with timing."""
+
     start: float
     end: float
     text: str
@@ -1156,6 +1207,7 @@ class TranscriptionWord:
 @dataclass
 class TranscriptionSegment:
     """A segment from Whisper transcription."""
+
     start: float
     end: float
     text: str
@@ -1166,13 +1218,14 @@ class TranscriptionSegment:
             self.words = []
 
 
-def _get_whisper_cache_path(vocals_path: str, model_size: str, language: Optional[str]) -> Optional[str]:
+def _get_whisper_cache_path(
+    vocals_path: str, model_size: str, language: Optional[str]
+) -> Optional[str]:
     """Get the cache file path for Whisper transcription results.
 
     Cache is stored alongside the vocals file to ensure it's invalidated
     when the audio changes.
     """
-    import hashlib
     from pathlib import Path
 
     vocals_file = Path(vocals_path)
@@ -1185,7 +1238,9 @@ def _get_whisper_cache_path(vocals_path: str, model_size: str, language: Optiona
     return str(vocals_file.parent / cache_name)
 
 
-def _load_whisper_cache(cache_path: str) -> Optional[Tuple[List[TranscriptionSegment], List[TranscriptionWord], str]]:
+def _load_whisper_cache(
+    cache_path: str,
+) -> Optional[Tuple[List[TranscriptionSegment], List[TranscriptionWord], str]]:
     """Load cached Whisper transcription if available."""
     import json
     from pathlib import Path
@@ -1195,32 +1250,36 @@ def _load_whisper_cache(cache_path: str) -> Optional[Tuple[List[TranscriptionSeg
         return None
 
     try:
-        with open(cache_file, 'r') as f:
+        with open(cache_file, "r") as f:
             data = json.load(f)
 
         # Reconstruct TranscriptionSegment and TranscriptionWord objects
         segments = []
         all_words = []
-        for seg_data in data.get('segments', []):
+        for seg_data in data.get("segments", []):
             seg_words = []
-            for w_data in seg_data.get('words', []):
+            for w_data in seg_data.get("words", []):
                 tw = TranscriptionWord(
-                    start=w_data['start'],
-                    end=w_data['end'],
-                    text=w_data['text'],
-                    probability=w_data.get('probability', 1.0),
+                    start=w_data["start"],
+                    end=w_data["end"],
+                    text=w_data["text"],
+                    probability=w_data.get("probability", 1.0),
                 )
                 seg_words.append(tw)
                 all_words.append(tw)
-            segments.append(TranscriptionSegment(
-                start=seg_data['start'],
-                end=seg_data['end'],
-                text=seg_data['text'],
-                words=seg_words,
-            ))
+            segments.append(
+                TranscriptionSegment(
+                    start=seg_data["start"],
+                    end=seg_data["end"],
+                    text=seg_data["text"],
+                    words=seg_words,
+                )
+            )
 
-        detected_lang = data.get('language', '')
-        logger.info(f"Loaded cached Whisper transcription: {len(segments)} segments, {len(all_words)} words")
+        detected_lang = data.get("language", "")
+        logger.info(
+            f"Loaded cached Whisper transcription: {len(segments)} segments, {len(all_words)} words"
+        )
         return segments, all_words, detected_lang
 
     except Exception as e:
@@ -1239,27 +1298,27 @@ def _save_whisper_cache(
 
     try:
         data = {
-            'language': language,
-            'segments': [
+            "language": language,
+            "segments": [
                 {
-                    'start': seg.start,
-                    'end': seg.end,
-                    'text': seg.text,
-                    'words': [
+                    "start": seg.start,
+                    "end": seg.end,
+                    "text": seg.text,
+                    "words": [
                         {
-                            'start': w.start,
-                            'end': w.end,
-                            'text': w.text,
-                            'probability': w.probability,
+                            "start": w.start,
+                            "end": w.end,
+                            "text": w.text,
+                            "probability": w.probability,
                         }
                         for w in (seg.words or [])
-                    ]
+                    ],
                 }
                 for seg in segments
-            ]
+            ],
         }
 
-        with open(cache_path, 'w') as f:
+        with open(cache_path, "w") as f:
             json.dump(data, f)
 
         logger.debug(f"Saved Whisper transcription to cache: {cache_path}")
@@ -1326,15 +1385,19 @@ def transcribe_vocals(
                     )
                     seg_words.append(tw)
                     all_words.append(tw)
-            result.append(TranscriptionSegment(
-                start=seg.start,
-                end=seg.end,
-                text=seg.text.strip(),
-                words=seg_words,
-            ))
+            result.append(
+                TranscriptionSegment(
+                    start=seg.start,
+                    end=seg.end,
+                    text=seg.text.strip(),
+                    words=seg_words,
+                )
+            )
 
         detected_lang = info.language
-        logger.info(f"Transcribed {len(result)} segments, {len(all_words)} words (language: {detected_lang})")
+        logger.info(
+            f"Transcribed {len(result)} segments, {len(all_words)} words (language: {detected_lang})"
+        )
 
         # Save to cache
         if cache_path:
@@ -1356,8 +1419,8 @@ def _normalize_text_for_matching(text: str) -> str:
     text = text.lower()
 
     # Normalize unicode (é -> e, etc.)
-    text = unicodedata.normalize('NFD', text)
-    text = ''.join(c for c in text if unicodedata.category(c) != 'Mn')
+    text = unicodedata.normalize("NFD", text)
+    text = "".join(c for c in text if unicodedata.category(c) != "Mn")
 
     # Remove punctuation
     text = re.sub(r"[^\w\s]", "", text)
@@ -1381,6 +1444,7 @@ def _get_epitran(language: str = "fra-Latn"):
     if language not in _epitran_cache:
         try:
             import epitran
+
             _epitran_cache[language] = epitran.Epitran(language)
         except ImportError:
             return None
@@ -1396,6 +1460,7 @@ def _get_panphon_distance():
     if _panphon_distance is None:
         try:
             import panphon.distance
+
             _panphon_distance = panphon.distance.Distance()
         except ImportError:
             return None
@@ -1408,6 +1473,7 @@ def _get_panphon_ft():
     if _panphon_ft is None:
         try:
             import panphon.featuretable
+
             _panphon_ft = panphon.featuretable.FeatureTable()
         except ImportError:
             return None
@@ -1515,7 +1581,9 @@ def _text_similarity_basic(text1: str, text2: str) -> float:
     return SequenceMatcher(None, norm1, norm2).ratio()
 
 
-def _text_similarity(text1: str, text2: str, use_phonetic: bool = True, language: str = "fra-Latn") -> float:
+def _text_similarity(
+    text1: str, text2: str, use_phonetic: bool = True, language: str = "fra-Latn"
+) -> float:
     """Calculate similarity between two text strings.
 
     Args:
@@ -1576,7 +1644,7 @@ def align_lyrics_to_transcription(
 
         # Find best matching transcription segment within reasonable time range
         best_match_idx = None
-        best_score = -float('inf')
+        best_score = -float("inf")
         best_segment = None
         best_similarity = 0.0
 
@@ -1589,7 +1657,9 @@ def align_lyrics_to_transcription(
             if time_diff > max_time_shift:
                 continue
 
-            similarity = _text_similarity(line_text, seg.text, use_phonetic=True, language=language)
+            similarity = _text_similarity(
+                line_text, seg.text, use_phonetic=True, language=language
+            )
 
             if similarity < min_similarity:
                 continue
@@ -1621,19 +1691,21 @@ def align_lyrics_to_transcription(
                 for k, word in enumerate(line.words):
                     new_start = best_segment.start + k * word_spacing
                     new_end = new_start + (word_spacing * 0.9)
-                    new_words.append(Word(
-                        text=word.text,
-                        start_time=new_start,
-                        end_time=new_end,
-                        singer=word.singer,
-                    ))
+                    new_words.append(
+                        Word(
+                            text=word.text,
+                            start_time=new_start,
+                            end_time=new_end,
+                            singer=word.singer,
+                        )
+                    )
 
                 aligned_line = Line(words=new_words, singer=line.singer)
                 aligned_lines.append(aligned_line)
 
                 alignments.append(
                     f"Line {i+1} aligned to transcription: {offset:+.1f}s "
-                    f"(similarity: {best_similarity:.0%}) \"{line_text[:30]}...\""
+                    f'(similarity: {best_similarity:.0%}) "{line_text[:30]}..."'
                 )
                 continue
 
@@ -1646,20 +1718,20 @@ def align_lyrics_to_transcription(
 def _whisper_lang_to_epitran(lang: str) -> str:
     """Map Whisper language code to epitran language code."""
     mapping = {
-        'fr': 'fra-Latn',
-        'en': 'eng-Latn',
-        'es': 'spa-Latn',
-        'de': 'deu-Latn',
-        'it': 'ita-Latn',
-        'pt': 'por-Latn',
-        'nl': 'nld-Latn',
-        'pl': 'pol-Latn',
-        'ru': 'rus-Cyrl',
-        'ja': 'jpn-Hira',
-        'ko': 'kor-Hang',
-        'zh': 'cmn-Hans',
+        "fr": "fra-Latn",
+        "en": "eng-Latn",
+        "es": "spa-Latn",
+        "de": "deu-Latn",
+        "it": "ita-Latn",
+        "pt": "por-Latn",
+        "nl": "nld-Latn",
+        "pl": "pol-Latn",
+        "ru": "rus-Cyrl",
+        "ja": "jpn-Hira",
+        "ko": "kor-Hang",
+        "zh": "cmn-Hans",
     }
-    return mapping.get(lang, 'eng-Latn')  # Default to English
+    return mapping.get(lang, "eng-Latn")  # Default to English
 
 
 def align_words_to_whisper(
@@ -1723,9 +1795,6 @@ def align_words_to_whisper(
                 new_words.append(word)
                 continue
 
-            # Pre-compute IPA for LRC word
-            lrc_ipa = _get_ipa(lrc_text, language)
-
             # Find best matching Whisper word within time window
             best_match = None
             best_match_idx = None
@@ -1785,7 +1854,7 @@ def align_words_to_whisper(
         if line_corrections > 0:
             line_text = " ".join(w.text for w in line.words)[:40]
             corrections.append(
-                f"Line aligned {line_corrections} word(s): \"{line_text}...\""
+                f'Line aligned {line_corrections} word(s): "{line_text}..."'
             )
 
     return aligned_lines, corrections
@@ -1878,14 +1947,16 @@ def align_dtw_whisper(
     for line_idx, line in enumerate(lines):
         for word_idx, word in enumerate(line.words):
             if len(word.text.strip()) >= 2:
-                lrc_words.append({
-                    'line_idx': line_idx,
-                    'word_idx': word_idx,
-                    'text': word.text,
-                    'start': word.start_time,
-                    'end': word.end_time,
-                    'word': word,
-                })
+                lrc_words.append(
+                    {
+                        "line_idx": line_idx,
+                        "word_idx": word_idx,
+                        "text": word.text,
+                        "start": word.start_time,
+                        "end": word.end_time,
+                        "word": word,
+                    }
+                )
 
     if not lrc_words:
         return lines, []
@@ -1895,31 +1966,33 @@ def align_dtw_whisper(
     for ww in whisper_words:
         _get_ipa(ww.text, language)
     for lw in lrc_words:
-        _get_ipa(lw['text'], language)
+        _get_ipa(lw["text"], language)
 
     # Build cost matrix based on phonetic dissimilarity + temporal penalty
     # Cost = (1 - similarity) + time_penalty
     # Time penalty discourages matching words that are far apart in time
-    logger.debug(f"DTW: Building cost matrix ({len(lrc_words)} x {len(whisper_words)})...")
+    logger.debug(
+        f"DTW: Building cost matrix ({len(lrc_words)} x {len(whisper_words)})..."
+    )
 
     from collections import defaultdict
     import numpy as np
 
     # Store word times for temporal penalty
-    lrc_times = np.array([lw['start'] for lw in lrc_words])
+    lrc_times = np.array([lw["start"] for lw in lrc_words])
     whisper_times = np.array([ww.start for ww in whisper_words])
 
     # Compute phonetic similarities (sparse - only for words within time window)
     phonetic_costs = defaultdict(lambda: 1.0)  # Default high cost
 
     for i, lw in enumerate(lrc_words):
-        lrc_time = lw['start']
+        lrc_time = lw["start"]
         for j, ww in enumerate(whisper_words):
             # Only consider words within 20s of each other
             time_diff = abs(ww.start - lrc_time)
             if time_diff > 20:
                 continue
-            sim = _phonetic_similarity(lw['text'], ww.text, language)
+            sim = _phonetic_similarity(lw["text"], ww.text, language)
             if sim >= min_similarity:
                 phonetic_costs[(i, j)] = 1.0 - sim
 
@@ -1963,7 +2036,7 @@ def align_dtw_whisper(
             ww = whisper_words[whisper_idx]
             lw = lrc_words[lrc_idx]
             # Verify it's a reasonable match
-            sim = _phonetic_similarity(lw['text'], ww.text, language)
+            sim = _phonetic_similarity(lw["text"], ww.text, language)
             if sim >= min_similarity:
                 alignments_map[lrc_idx] = (ww, sim)
 
@@ -1983,7 +2056,7 @@ def align_dtw_whisper(
             # Find this word in lrc_words
             lrc_word_idx = None
             for i, lw in enumerate(lrc_words):
-                if lw['line_idx'] == line_idx and lw['word_idx'] == word_idx:
+                if lw["line_idx"] == line_idx and lw["word_idx"] == word_idx:
                     lrc_word_idx = i
                     break
 
@@ -2012,7 +2085,7 @@ def align_dtw_whisper(
         if line_corrections > 0:
             line_text = " ".join(w.text for w in line.words)[:40]
             corrections.append(
-                f"DTW aligned {line_corrections} word(s) in line {line_idx}: \"{line_text}...\""
+                f'DTW aligned {line_corrections} word(s) in line {line_idx}: "{line_text}..."'
             )
 
     logger.info(f"DTW alignment complete: {len(corrections)} lines modified")
@@ -2048,7 +2121,9 @@ def correct_timing_with_whisper(
         Tuple of (corrected lines, list of corrections)
     """
     # Transcribe vocals (returns segments, all_words, and language)
-    transcription, all_words, detected_lang = transcribe_vocals(vocals_path, language, model_size)
+    transcription, all_words, detected_lang = transcribe_vocals(
+        vocals_path, language, model_size
+    )
 
     if not transcription:
         logger.warning("No transcription available, skipping Whisper alignment")
@@ -2056,7 +2131,9 @@ def correct_timing_with_whisper(
 
     # Map to epitran language code for phonetic matching
     epitran_lang = _whisper_lang_to_epitran(detected_lang)
-    logger.debug(f"Using epitran language: {epitran_lang} (from Whisper: {detected_lang})")
+    logger.debug(
+        f"Using epitran language: {epitran_lang} (from Whisper: {detected_lang})"
+    )
 
     # Pre-compute IPA for Whisper words
     logger.debug(f"Pre-computing IPA for {len(all_words)} Whisper words...")
@@ -2064,14 +2141,18 @@ def correct_timing_with_whisper(
         _get_ipa(w.text, epitran_lang)
 
     # Assess LRC quality
-    quality, assessments = _assess_lrc_quality(lines, all_words, epitran_lang, tolerance=1.5)
+    quality, assessments = _assess_lrc_quality(
+        lines, all_words, epitran_lang, tolerance=1.5
+    )
     logger.info(f"LRC timing quality: {quality:.0%} of lines within 1.5s of Whisper")
 
     if quality >= 0.7:
         # LRC is mostly good - only fix individual bad lines using hybrid approach
         logger.info("LRC timing is good, using targeted corrections only")
         aligned_lines, alignments = align_hybrid_lrc_whisper(
-            lines, transcription, all_words,
+            lines,
+            transcription,
+            all_words,
             language=epitran_lang,
             trust_threshold=trust_lrc_threshold,
             correct_threshold=correct_lrc_threshold,
@@ -2080,7 +2161,9 @@ def correct_timing_with_whisper(
         # Mixed quality - use hybrid approach
         logger.info("LRC timing is mixed, using hybrid Whisper alignment")
         aligned_lines, alignments = align_hybrid_lrc_whisper(
-            lines, transcription, all_words,
+            lines,
+            transcription,
+            all_words,
             language=epitran_lang,
             trust_threshold=trust_lrc_threshold,
             correct_threshold=correct_lrc_threshold,
@@ -2089,7 +2172,8 @@ def correct_timing_with_whisper(
         # LRC is broken - use DTW for global alignment
         logger.info("LRC timing is poor, using DTW global alignment")
         aligned_lines, alignments = align_dtw_whisper(
-            lines, all_words,
+            lines,
+            all_words,
             language=epitran_lang,
         )
 
@@ -2160,7 +2244,6 @@ def align_hybrid_lrc_whisper(
 
         line_text = " ".join(w.text for w in line.words)
         line_start = line.start_time
-        line_end = line.end_time
 
         # Find best matching Whisper segment
         best_segment = None
@@ -2180,14 +2263,18 @@ def align_hybrid_lrc_whisper(
                 best_offset = seg.start - line_start
 
         # Decide whether to trust LRC or use Whisper
-        timing_error = abs(best_offset) if best_segment else float('inf')
+        timing_error = abs(best_offset) if best_segment else float("inf")
 
         if best_segment and timing_error < trust_threshold:
             # LRC timing is good - keep it
             aligned_lines.append(line)
             recent_offsets.append(0.0)  # No drift
 
-        elif best_segment and timing_error >= correct_threshold and best_similarity >= 0.5:
+        elif (
+            best_segment
+            and timing_error >= correct_threshold
+            and best_similarity >= 0.5
+        ):
             # LRC timing is significantly off - use Whisper
             # Apply offset to all words in the line proportionally
             new_words = []
@@ -2204,13 +2291,15 @@ def align_hybrid_lrc_whisper(
             aligned_lines.append(new_line)
 
             corrections.append(
-                f"Line {line_idx} shifted {best_offset:+.1f}s (similarity: {best_similarity:.0%}): \"{line_text[:35]}...\""
+                f'Line {line_idx} shifted {best_offset:+.1f}s (similarity: {best_similarity:.0%}): "{line_text[:35]}..."'
             )
             recent_offsets.append(best_offset)
 
         elif timing_error >= trust_threshold and timing_error < correct_threshold:
             # Intermediate case - check if there's consistent drift
-            if len(recent_offsets) >= 2 and all(abs(o) > 0.5 for o in recent_offsets[-2:]):
+            if len(recent_offsets) >= 2 and all(
+                abs(o) > 0.5 for o in recent_offsets[-2:]
+            ):
                 # Recent lines had drift, apply average drift to this line too
                 avg_drift = sum(recent_offsets[-3:]) / len(recent_offsets[-3:])
                 if abs(avg_drift) > trust_threshold:
@@ -2228,7 +2317,7 @@ def align_hybrid_lrc_whisper(
                     aligned_lines.append(new_line)
 
                     corrections.append(
-                        f"Line {line_idx} drift-corrected {avg_drift:+.1f}s: \"{line_text[:35]}...\""
+                        f'Line {line_idx} drift-corrected {avg_drift:+.1f}s: "{line_text[:35]}..."'
                     )
                     recent_offsets.append(avg_drift)
                     continue
@@ -2258,7 +2347,7 @@ def align_hybrid_lrc_whisper(
                         aligned_lines.append(new_line)
 
                         corrections.append(
-                            f"Line {line_idx} drift-corrected {avg_drift:+.1f}s (no match): \"{line_text[:35]}...\""
+                            f'Line {line_idx} drift-corrected {avg_drift:+.1f}s (no match): "{line_text[:35]}..."'
                         )
                         recent_offsets.append(avg_drift)
                         continue
@@ -2280,7 +2369,7 @@ def _fix_ordering_violations(
     If a line's Whisper-aligned timing would cause it to overlap with
     or come before the previous line, revert to the original timing.
     """
-    from .models import Line, Word
+    from .models import Line
 
     if not aligned_lines:
         return aligned_lines, alignments
@@ -2311,12 +2400,16 @@ def _fix_ordering_violations(
 
     # Update alignments list (remove reverted ones)
     if reverted_count > 0:
-        logger.debug(f"Reverted {reverted_count} Whisper alignments due to ordering violations")
+        logger.debug(
+            f"Reverted {reverted_count} Whisper alignments due to ordering violations"
+        )
         # Filter alignments to only include successful ones
         fixed_alignments = [a for a in alignments if True]  # Keep all for now
         # Actually recount
         actual_corrections = len(alignments) - reverted_count
-        fixed_alignments = alignments[:actual_corrections] if actual_corrections > 0 else []
+        fixed_alignments = (
+            alignments[:actual_corrections] if actual_corrections > 0 else []
+        )
 
     return fixed_lines, fixed_alignments if reverted_count > 0 else alignments
 
@@ -2341,7 +2434,9 @@ def print_comparison_report(
         return
 
     # Sort by score
-    sorted_reports = sorted(reports.items(), key=lambda x: x[1].overall_score, reverse=True)
+    sorted_reports = sorted(
+        reports.items(), key=lambda x: x[1].overall_score, reverse=True
+    )
 
     for i, (source_name, report) in enumerate(sorted_reports):
         rank = "★" if i == 0 else f"{i+1}"
@@ -2350,9 +2445,11 @@ def print_comparison_report(
         print(report.summary)
 
         if report.issues:
-            print(f"\nTop issues:")
+            print("\nTop issues:")
             severe_issues = [iss for iss in report.issues if iss.severity == "severe"]
-            moderate_issues = [iss for iss in report.issues if iss.severity == "moderate"]
+            moderate_issues = [
+                iss for iss in report.issues if iss.severity == "moderate"
+            ]
 
             for issue in (severe_issues + moderate_issues)[:5]:
                 print(f"  [{issue.severity.upper()}] {issue.description}")

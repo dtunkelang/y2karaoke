@@ -29,7 +29,9 @@ def _strip_parentheses(title: str) -> str:
     return re.sub(r"\s*[\(\[].*?[\)\]]\s*", "", title).strip()
 
 
-def guess_musicbrainz_candidates(prompt: str, fallback_artist: str = "", fallback_title: str = "") -> list[dict]:
+def guess_musicbrainz_candidates(
+    prompt: str, fallback_artist: str = "", fallback_title: str = ""
+) -> list[dict]:
     """Query MusicBrainz and return a list of candidate (artist, title) pairs with scores."""
     from musicbrainzngs import search_recordings
 
@@ -37,17 +39,21 @@ def guess_musicbrainz_candidates(prompt: str, fallback_artist: str = "", fallbac
     candidates = []
 
     try:
-        results = search_recordings(recording=prompt, limit=15).get("recording-list", [])
+        results = search_recordings(recording=prompt, limit=15).get(
+            "recording-list", []
+        )
     except Exception as e:
         logger.warning(f"MusicBrainz search failed: {e}")
         results = []
 
     prompt_words = set(normalize_string(prompt).split())
-    
+
     for r in results:
         # Skip if r is not a dict
         if not isinstance(r, dict):
-            logger.warning(f"Skipping MusicBrainz result because it is not a dict: {r!r}")
+            logger.warning(
+                f"Skipping MusicBrainz result because it is not a dict: {r!r}"
+            )
             continue
 
         artist_list = r.get("artist-credit", [])
@@ -55,7 +61,13 @@ def guess_musicbrainz_candidates(prompt: str, fallback_artist: str = "", fallbac
         if not title or not artist_list:
             continue
 
-        artist = " & ".join([a["artist"]["name"] for a in artist_list if "artist" in a and "name" in a["artist"]])
+        artist = " & ".join(
+            [
+                a["artist"]["name"]
+                for a in artist_list
+                if "artist" in a and "name" in a["artist"]
+            ]
+        )
         candidate_words = set(normalize_string(f"{artist} {title}").split())
         extra_words = candidate_words - prompt_words
         score = len(candidate_words & prompt_words) - 0.5 * len(extra_words)
@@ -63,29 +75,38 @@ def guess_musicbrainz_candidates(prompt: str, fallback_artist: str = "", fallbac
         # Clip score to [0, 1] for logging clarity
         log_score = max(0.0, min(1.0, score))
 
-        candidates.append({
-            "artist": artist,
-            "title": _strip_parentheses(title),
-            "score": score,  # keep raw score for internal use
-            "extra_words": extra_words
-        })
+        candidates.append(
+            {
+                "artist": artist,
+                "title": _strip_parentheses(title),
+                "score": score,  # keep raw score for internal use
+                "extra_words": extra_words,
+            }
+        )
 
-        logger.debug(f"Candidate: artist='{artist}', title='{title}', score={log_score:.3f}, extra_words={extra_words}")
-    
+        logger.debug(
+            f"Candidate: artist='{artist}', title='{title}', score={log_score:.3f}, extra_words={extra_words}"
+        )
+
     # Always include fallback
     if fallback_artist or fallback_title:
-        candidates.append({
-            "artist": fallback_artist,
-            "title": fallback_title,
-            "score": 0.0,
-            "extra_words": set()
-        })
+        candidates.append(
+            {
+                "artist": fallback_artist,
+                "title": fallback_title,
+                "score": 0.0,
+                "extra_words": set(),
+            }
+        )
 
     return candidates
 
+
 def resolve_artist_title_from_youtube(
-    youtube_title: str, youtube_artist: Optional[str] = None,
-    fallback_artist: str = "", fallback_title: str = ""
+    youtube_title: str,
+    youtube_artist: Optional[str] = None,
+    fallback_artist: str = "",
+    fallback_title: str = "",
 ) -> tuple[str, str]:
     """
     Pick the best artist/title from YouTube using MusicBrainz candidates.
@@ -93,9 +114,9 @@ def resolve_artist_title_from_youtube(
 
     # 1. Clean YouTube title
     cleaned = youtube_title
-    cleaned = re.sub(r'[\(\[\{].*?[\)\]\}]', '', cleaned)
+    cleaned = re.sub(r"[\(\[\{].*?[\)\]\}]", "", cleaned)
     for s in ["Official Music Video", "Official Audio", "Lyric Video", "HD", "4K"]:
-        cleaned = cleaned.replace(s, '')
+        cleaned = cleaned.replace(s, "")
     cleaned = cleaned.strip()
     logger.debug(f"Cleaned YouTube title: '{cleaned}'")
 
@@ -114,7 +135,7 @@ def resolve_artist_title_from_youtube(
 
     best_score = -999
     best_candidate = {"artist": fallback_artist, "title": fallback_title}
-    
+
     for c in candidates:
         # Guard against malformed candidate
         if not isinstance(c, dict):
@@ -156,22 +177,30 @@ def resolve_artist_title_from_youtube(
 
         # Log a cleaner version for clarity
         log_extra = f", extra_words={extra_words}" if extra_words else ""
-        log_missing = f", missing_artist_words={missing_artist_words}" if missing_artist_words else ""
+        log_missing = (
+            f", missing_artist_words={missing_artist_words}"
+            if missing_artist_words
+            else ""
+        )
         logger.debug(
             f"Candidate: artist='{c['artist']}', title='{c['title']}', "
             f"score={max(0.0, score):.3f}{log_extra}{log_missing}, artist_pos={artist_pos}"
         )
-        
+
         if score > best_score:
             best_score = score
             best_candidate = c
-    
+
     # 3. Strip parentheticals from final title for Genius
     final_artist = best_candidate.get("artist", fallback_artist) or "Unknown"
-    final_title = _strip_parentheses(best_candidate.get("title", fallback_title) or "Unknown")
+    final_title = _strip_parentheses(
+        best_candidate.get("title", fallback_title) or "Unknown"
+    )
 
     # Use a non-negative score for logging
     log_best_score = max(0.0, best_score)
-    logger.info(f"Selected candidate: '{final_artist}' - '{final_title}' (score={log_best_score:.3f})")
-    
+    logger.info(
+        f"Selected candidate: '{final_artist}' - '{final_title}' (score={log_best_score:.3f})"
+    )
+
     return final_artist, final_title

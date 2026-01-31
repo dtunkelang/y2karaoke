@@ -41,7 +41,9 @@ def render_karaoke_video(
     lyrics_font_size = font_size or FONT_SIZE
 
     logger.info("Rendering karaoke video...")
-    logger.info(f"Resolution: {video_width}x{video_height}, FPS: {video_fps}, Font: {lyrics_font_size}px")
+    logger.info(
+        f"Resolution: {video_width}x{video_height}, FPS: {video_fps}, Font: {lyrics_font_size}px"
+    )
     if timing_offset != 0:
         logger.info(f"Applying timing offset: {timing_offset:+.2f}s")
 
@@ -71,7 +73,9 @@ def render_karaoke_video(
 
         if show_progress:
             frame_count[0] += 1
-            percent = int(100 * frame_count[0] / total_frames) if total_frames > 0 else 0
+            percent = (
+                int(100 * frame_count[0] / total_frames) if total_frames > 0 else 0
+            )
             if percent != last_percent[0] and percent % 2 == 0:
                 bar_len = 30
                 filled = int(bar_len * percent / 100)
@@ -80,11 +84,20 @@ def render_karaoke_video(
                 last_percent[0] = percent
 
         return render_frame(
-            lines, adjusted_time, font, background, title, artist, is_duet,
-            video_width, video_height
+            lines,
+            adjusted_time,
+            font,
+            background,
+            title,
+            artist,
+            is_duet,
+            video_width,
+            video_height,
         )
 
-    logger.info(f"Creating video ({duration:.1f}s at {video_fps}fps, {total_frames} frames)...")
+    logger.info(
+        f"Creating video ({duration:.1f}s at {video_fps}fps, {total_frames} frames)..."
+    )
     video = VideoClip(make_frame, duration=duration)
     video = video.with_fps(video_fps)
     video = video.with_audio(audio)
@@ -95,10 +108,10 @@ def render_karaoke_video(
     video.write_videofile(
         output_path,
         fps=video_fps,
-        codec='libx264',
-        audio_codec='aac',
+        codec="libx264",
+        audio_codec="aac",
         threads=4,
-        preset='medium',
+        preset="medium",
         logger=None,
     )
     if show_progress:

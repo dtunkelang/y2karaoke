@@ -7,10 +7,17 @@ from PIL import Image, ImageDraw, ImageFont
 import math
 
 from ..config import (
-    VIDEO_WIDTH, VIDEO_HEIGHT, LINE_SPACING,
-    SPLASH_DURATION, INSTRUMENTAL_BREAK_THRESHOLD, LYRICS_LEAD_TIME,
-    HIGHLIGHT_LEAD_TIME, LYRICS_ACTIVATION_LEAD,
-    CUE_INDICATOR_DURATION, CUE_INDICATOR_MIN_GAP, Colors
+    VIDEO_WIDTH,
+    VIDEO_HEIGHT,
+    LINE_SPACING,
+    SPLASH_DURATION,
+    INSTRUMENTAL_BREAK_THRESHOLD,
+    LYRICS_LEAD_TIME,
+    HIGHLIGHT_LEAD_TIME,
+    LYRICS_ACTIVATION_LEAD,
+    CUE_INDICATOR_DURATION,
+    CUE_INDICATOR_MIN_GAP,
+    Colors,
 )
 from .backgrounds_static import draw_logo_screen, draw_splash_screen
 from .progress import draw_progress_bar
@@ -19,11 +26,7 @@ from .models import Line
 
 
 def _draw_cue_indicator(
-    draw: ImageDraw.Draw,
-    x: int,
-    y: int,
-    time_until_start: float,
-    font_size: int
+    draw: ImageDraw.Draw, x: int, y: int, time_until_start: float, font_size: int
 ) -> None:
     """Draw animated cue indicator (pulsing dots) to prepare singer.
 
@@ -57,25 +60,27 @@ def _draw_cue_indicator(
             # Active dot - gold color with pulse on the leading dot
             if i == dots_to_show - 1:
                 # Leading dot pulses
-                alpha = int(128 + 127 * pulse)
                 radius = int(dot_radius * (0.8 + 0.4 * pulse))
             else:
                 # Other dots are solid
-                alpha = 255
                 radius = dot_radius
 
             color = Colors.CUE_INDICATOR
             draw.ellipse(
                 [dot_x - radius, dot_y - radius, dot_x + radius, dot_y + radius],
-                fill=color
+                fill=color,
             )
         else:
             # Inactive dot - dim outline
             draw.ellipse(
-                [dot_x - dot_radius, dot_y - dot_radius,
-                 dot_x + dot_radius, dot_y + dot_radius],
+                [
+                    dot_x - dot_radius,
+                    dot_y - dot_radius,
+                    dot_x + dot_radius,
+                    dot_y + dot_radius,
+                ],
                 outline=(100, 100, 100),
-                width=1
+                width=1,
             )
 
 
@@ -104,7 +109,10 @@ def render_frame(
     if lines and current_time < lines[0].start_time:
         first_line = lines[0]
         time_until_first = first_line.start_time - current_time
-        if first_line.start_time >= INSTRUMENTAL_BREAK_THRESHOLD and time_until_first > LYRICS_LEAD_TIME:
+        if (
+            first_line.start_time >= INSTRUMENTAL_BREAK_THRESHOLD
+            and time_until_first > LYRICS_LEAD_TIME
+        ):
             show_progress_bar = True
             bar_start = min(SPLASH_DURATION, first_line.start_time - LYRICS_LEAD_TIME)
             break_end = first_line.start_time - LYRICS_LEAD_TIME
@@ -172,9 +180,15 @@ def render_frame(
             prev_line = lines[line_idx - 1]
             this_line = lines[line_idx]
             gap = this_line.start_time - prev_line.end_time
-            if gap >= INSTRUMENTAL_BREAK_THRESHOLD and current_time < this_line.start_time - LYRICS_LEAD_TIME:
+            if (
+                gap >= INSTRUMENTAL_BREAK_THRESHOLD
+                and current_time < this_line.start_time - LYRICS_LEAD_TIME
+            ):
                 break
-        is_current = line_idx == current_line_idx and activation_time >= lines[line_idx].start_time
+        is_current = (
+            line_idx == current_line_idx
+            and activation_time >= lines[line_idx].start_time
+        )
         lines_to_show.append((lines[line_idx], is_current))
 
     total_height = len(lines_to_show) * LINE_SPACING
@@ -200,8 +214,10 @@ def render_frame(
         # 1. There's a significant gap before this line
         # 2. We're within the cue duration window
         # 3. The line hasn't started yet
-        if (gap_before >= CUE_INDICATOR_MIN_GAP and
-            0 < time_until_first <= CUE_INDICATOR_DURATION):
+        if (
+            gap_before >= CUE_INDICATOR_MIN_GAP
+            and 0 < time_until_first <= CUE_INDICATOR_DURATION
+        ):
             show_cue = True
             cue_time_until = time_until_first
 
@@ -227,13 +243,13 @@ def render_frame(
         if idx == 0 and show_cue:
             # Get font size for scaling (estimate from line spacing)
             font_size = LINE_SPACING * 3 // 4
-            _draw_cue_indicator(draw, line_x, y + font_size // 2, cue_time_until, font_size)
+            _draw_cue_indicator(
+                draw, line_x, y + font_size // 2, cue_time_until, font_size
+            )
 
         # Determine default colors (used for highlight and non-duet)
         if is_duet and line.words and line.words[0].singer:
             _, highlight_color = get_singer_colors(line.words[0].singer, False)
-        else:
-            highlight_color = Colors.HIGHLIGHT
 
         # Draw unhighlighted text first (with per-word duet colors if applicable)
         x = line_x
@@ -301,10 +317,20 @@ def render_frame(
                             char_bbox = font.getbbox(char)
                             char_width = char_bbox[2] - char_bbox[0]
                             if char_x + char_width <= highlight_boundary:
-                                draw.text((char_x, y), char, font=font, fill=word_highlight_color)
+                                draw.text(
+                                    (char_x, y),
+                                    char,
+                                    font=font,
+                                    fill=word_highlight_color,
+                                )
                             elif char_x < highlight_boundary:
                                 # Partial character - still draw it highlighted
-                                draw.text((char_x, y), char, font=font, fill=word_highlight_color)
+                                draw.text(
+                                    (char_x, y),
+                                    char,
+                                    font=font,
+                                    fill=word_highlight_color,
+                                )
                             char_x += char_width
 
                     x += word_widths[i]

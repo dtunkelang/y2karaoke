@@ -45,7 +45,9 @@ def draw_splash_screen(
 
     # Truncate long titles
     max_title_chars = 40
-    display_title = title if len(title) <= max_title_chars else title[: max_title_chars - 3] + "..."
+    display_title = (
+        title if len(title) <= max_title_chars else title[: max_title_chars - 3] + "..."
+    )
 
     # Center title
     title_bbox = title_font.getbbox(display_title)
@@ -67,6 +69,7 @@ def draw_splash_screen(
     draw.text((title_x, title_y), display_title, font=title_font, fill=Colors.HIGHLIGHT)
     draw.text((artist_x, artist_y), artist_text, font=artist_font, fill=Colors.TEXT)
     draw.text((logo_x, logo_y), logo_text, font=logo_font, fill=Colors.SUNG)
+
 
 def draw_logo_screen(
     draw: ImageDraw.Draw,
@@ -109,4 +112,3 @@ def draw_logo_screen(
     draw.text((logo_x, logo_y), logo_text, font=logo_font, fill=Colors.HIGHLIGHT)
     draw.text((tagline_x, tagline_y), tagline_text, font=tagline_font, fill=Colors.TEXT)
     draw.text((url_x, url_y), url_text, font=url_font, fill=Colors.SUNG)
-

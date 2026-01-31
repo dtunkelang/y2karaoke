@@ -147,7 +147,9 @@ class KaraokeGenerator:
             processed_audio, break_edits = self._shorten_breaks(
                 processed_audio,
                 separation_result["vocals_path"],
-                separation_result["instrumental_path"],  # Always use instrumental for beat alignment
+                separation_result[
+                    "instrumental_path"
+                ],  # Always use instrumental for beat alignment
                 video_id,
                 max_break_duration,
                 force=force_reprocess,
@@ -155,17 +157,21 @@ class KaraokeGenerator:
             )
 
         # Step 8: Scale lyrics timing
-        scaled_lines = self._scale_lyrics_timing(lyrics_result["lines"], tempo_multiplier)
+        scaled_lines = self._scale_lyrics_timing(
+            lyrics_result["lines"], tempo_multiplier
+        )
 
         # Step 8b: Adjust lyrics timing for shortened breaks
         if break_edits:
             from .break_shortener import adjust_lyrics_timing
+
             scaled_lines = adjust_lyrics_timing(scaled_lines, break_edits)
 
         # Step 9: Ensure lyrics start after splash
         if scaled_lines and scaled_lines[0].start_time < 3.5:
             splash_offset = 3.5 - scaled_lines[0].start_time
             from ..core.lyrics import Line, Word
+
             offset_lines = []
             for line in scaled_lines:
                 offset_words = [
@@ -188,7 +194,9 @@ class KaraokeGenerator:
         # Step 11: Create background segments
         background_segments = None
         if use_backgrounds and video_path:
-            background_segments = self._create_background_segments(video_path, scaled_lines, processed_audio)
+            background_segments = self._create_background_segments(
+                video_path, scaled_lines, processed_audio
+            )
 
         # Step 12: Render video
         self._render_video(
@@ -221,7 +229,9 @@ class KaraokeGenerator:
             quality_emoji = "❌"
             quality_level = "low"
 
-        logger.info(f"{quality_emoji} Karaoke generation complete: {output_path} ({total_time:.1f}s)")
+        logger.info(
+            f"{quality_emoji} Karaoke generation complete: {output_path} ({total_time:.1f}s)"
+        )
         logger.info(f"   Quality: {quality_score:.0f}/100 ({quality_level} confidence)")
         if quality_issues:
             for issue in quality_issues[:3]:
@@ -255,13 +265,19 @@ class KaraokeGenerator:
             ]
             if original_audio:
                 logger.info("📁 Using cached audio")
-                return {"audio_path": str(original_audio[0]), "title": metadata["title"], "artist": metadata["artist"]}
+                return {
+                    "audio_path": str(original_audio[0]),
+                    "title": metadata["title"],
+                    "artist": metadata["artist"],
+                }
 
         logger.info("📥 Downloading audio...")
 
         cache_dir = self.cache_manager.get_video_cache_dir(video_id)
         result = self.downloader.download_audio(url, cache_dir)
-        self.cache_manager.save_metadata(video_id, {"title": result["title"], "artist": result["artist"]})
+        self.cache_manager.save_metadata(
+            video_id, {"title": result["title"], "artist": result["artist"]}
+        )
         return result
 
     def _download_video(self, video_id: str, url: str, force: bool) -> Dict[str, str]:
@@ -274,11 +290,34 @@ class KaraokeGenerator:
         cache_dir = self.cache_manager.get_video_cache_dir(video_id)
         return self.downloader.download_video(url, cache_dir)
 
-    def _get_lyrics(self, title: str, artist: str, vocals_path: str, video_id: str, force: bool, lyrics_offset: Optional[float] = None, target_duration: Optional[int] = None, evaluate_sources: bool = False, use_whisper: bool = False, whisper_language: Optional[str] = None, whisper_model: str = "base") -> Dict[str, Any]:
+    def _get_lyrics(
+        self,
+        title: str,
+        artist: str,
+        vocals_path: str,
+        video_id: str,
+        force: bool,
+        lyrics_offset: Optional[float] = None,
+        target_duration: Optional[int] = None,
+        evaluate_sources: bool = False,
+        use_whisper: bool = False,
+        whisper_language: Optional[str] = None,
+        whisper_model: str = "base",
+    ) -> Dict[str, Any]:
         logger.info("📝 Fetching lyrics...")
         from ..core.lyrics import get_lyrics_with_quality
+
         lines, metadata, quality_report = get_lyrics_with_quality(
-            title=title, artist=artist, vocals_path=vocals_path, lyrics_offset=lyrics_offset, romanize=True, target_duration=target_duration, evaluate_sources=evaluate_sources, use_whisper=use_whisper, whisper_language=whisper_language, whisper_model=whisper_model
+            title=title,
+            artist=artist,
+            vocals_path=vocals_path,
+            lyrics_offset=lyrics_offset,
+            romanize=True,
+            target_duration=target_duration,
+            evaluate_sources=evaluate_sources,
+            use_whisper=use_whisper,
+            whisper_language=whisper_language,
+            whisper_model=whisper_model,
         )
         return {"lines": lines, "metadata": metadata, "quality": quality_report}
 
@@ -287,6 +326,7 @@ class KaraokeGenerator:
             return lines
         logger.info(f"⏱️ Scaling lyrics timing for {tempo_multiplier:.2f}x tempo")
         from ..core.lyrics import Line, Word
+
         scaled_lines = []
         for line in lines:
             scaled_words = [
@@ -301,7 +341,16 @@ class KaraokeGenerator:
             scaled_lines.append(Line(words=scaled_words, singer=line.singer))
         return scaled_lines
 
-    def _shorten_breaks(self, audio_path: str, vocals_path: str, instrumental_path: str, video_id: str, max_break_duration: float, force: bool = False, cache_suffix: str = ""):
+    def _shorten_breaks(
+        self,
+        audio_path: str,
+        vocals_path: str,
+        instrumental_path: str,
+        video_id: str,
+        max_break_duration: float,
+        force: bool = False,
+        cache_suffix: str = "",
+    ):
         """Shorten long instrumental breaks in the given audio track.
 
         Break detection always uses vocals, and beat alignment always uses instrumental
@@ -331,15 +380,25 @@ class KaraokeGenerator:
                         )
                         for e in edits_data
                     ]
-                    logger.info(f"📁 Using cached shortened audio ({len(edits)} break edits)")
-                    return str(self.cache_manager.get_file_path(video_id, shortened_name)), edits
+                    logger.info(
+                        f"📁 Using cached shortened audio ({len(edits)} break edits)"
+                    )
+                    return (
+                        str(self.cache_manager.get_file_path(video_id, shortened_name)),
+                        edits,
+                    )
                 except Exception as e:
                     logger.debug(f"Could not load cached edits: {e}")
             else:
                 logger.info("📁 Using cached shortened audio (no edits)")
-                return str(self.cache_manager.get_file_path(video_id, shortened_name)), []
+                return (
+                    str(self.cache_manager.get_file_path(video_id, shortened_name)),
+                    [],
+                )
 
-        logger.info(f"✂️ Shortening instrumental breaks longer than {max_break_duration:.0f}s...")
+        logger.info(
+            f"✂️ Shortening instrumental breaks longer than {max_break_duration:.0f}s..."
+        )
         output_path = self.cache_manager.get_file_path(video_id, shortened_name)
 
         shortened_path, edits = shorten_instrumental_breaks(
@@ -373,6 +432,7 @@ class KaraokeGenerator:
         logger.info("🎨 Creating background segments...")
         from ..core.backgrounds import BackgroundProcessor
         from moviepy import AudioFileClip
+
         with AudioFileClip(audio_path) as clip:
             duration = clip.duration
         processor = BackgroundProcessor()
@@ -381,6 +441,7 @@ class KaraokeGenerator:
     def _render_video(self, video_settings: Optional[Dict[str, Any]] = None, **kwargs):
         logger.info("🎬 Rendering karaoke video...")
         from .video_writer import render_karaoke_video
+
         if video_settings:
             kwargs.update(video_settings)
         render_karaoke_video(**kwargs)

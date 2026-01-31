@@ -128,7 +128,9 @@ class TestNormalizeTitle:
     def test_stopword_removal(self):
         """Removes stopwords when requested."""
         identifier = TrackIdentifier()
-        result = identifier._normalize_title("The Sound of Silence", remove_stopwords=True)
+        result = identifier._normalize_title(
+            "The Sound of Silence", remove_stopwords=True
+        )
         assert "the" not in result.split()
         assert "of" not in result.split()
         assert "sound" in result.split()
@@ -151,11 +153,15 @@ class TestNormalizeTitle:
         """Removes stopwords from multiple languages."""
         identifier = TrackIdentifier()
         # Spanish
-        result = identifier._normalize_title("El Amor de Mi Vida", remove_stopwords=True)
+        result = identifier._normalize_title(
+            "El Amor de Mi Vida", remove_stopwords=True
+        )
         assert "el" not in result.split()
         assert "de" not in result.split()
         # French - uses "le", "la", "les", "de", etc.
-        result = identifier._normalize_title("Le Monde de la Vie", remove_stopwords=True)
+        result = identifier._normalize_title(
+            "Le Monde de la Vie", remove_stopwords=True
+        )
         assert "le" not in result.split()
         assert "la" not in result.split()
         assert "de" not in result.split()
@@ -297,9 +303,7 @@ class TestParseYoutubeTitle:
     def test_removes_official_audio(self):
         """Removes 'Official Audio' suffix."""
         identifier = TrackIdentifier()
-        artist, title = identifier._parse_youtube_title(
-            "Artist - Song Official Audio"
-        )
+        artist, title = identifier._parse_youtube_title("Artist - Song Official Audio")
         assert title == "Song"
 
     def test_removes_hd_4k(self):
@@ -313,9 +317,7 @@ class TestParseYoutubeTitle:
     def test_removes_lyric_video(self):
         """Removes 'Lyric Video' suffix."""
         identifier = TrackIdentifier()
-        artist, title = identifier._parse_youtube_title(
-            "Artist - Song (Lyric Video)"
-        )
+        artist, title = identifier._parse_youtube_title("Artist - Song (Lyric Video)")
         assert title == "Song"
 
     def test_pipe_separator(self):
@@ -347,7 +349,7 @@ class TestTrackInfo:
             duration=354,
             youtube_url="https://youtube.com/watch?v=fJ9rUzIMcZQ",
             youtube_duration=354,
-            source="musicbrainz"
+            source="musicbrainz",
         )
         assert info.artist == "Queen"
         assert info.title == "Bohemian Rhapsody"
@@ -366,7 +368,7 @@ class TestTrackInfo:
             youtube_duration=354,
             source="syncedlyrics",
             lrc_duration=354,
-            lrc_validated=True
+            lrc_validated=True,
         )
         assert info.lrc_duration == 354
         assert info.lrc_validated is True
@@ -382,7 +384,7 @@ class TestTrackInfo:
             source="youtube",
             identification_quality=75.0,
             quality_issues=["LRC not found"],
-            fallback_used=True
+            fallback_used=True,
         )
         assert info.identification_quality == 75.0
         assert "LRC not found" in info.quality_issues
@@ -396,11 +398,11 @@ class TestScoreRecordingStudioLikelihood:
         """Studio recordings get high scores."""
         identifier = TrackIdentifier()
         recording = {
-            'title': 'Bohemian Rhapsody',
-            'disambiguation': '',
-            'release-list': [
-                {'release-group': {'primary-type': 'Album', 'secondary-type-list': []}}
-            ]
+            "title": "Bohemian Rhapsody",
+            "disambiguation": "",
+            "release-list": [
+                {"release-group": {"primary-type": "Album", "secondary-type-list": []}}
+            ],
         }
         score = identifier._score_recording_studio_likelihood(recording)
         assert score > 100  # Base + album bonus
@@ -409,9 +411,9 @@ class TestScoreRecordingStudioLikelihood:
         """Live recordings get lower scores."""
         identifier = TrackIdentifier()
         recording = {
-            'title': 'Bohemian Rhapsody (Live)',
-            'disambiguation': 'live',
-            'release-list': []
+            "title": "Bohemian Rhapsody (Live)",
+            "disambiguation": "live",
+            "release-list": [],
         }
         score = identifier._score_recording_studio_likelihood(recording)
         assert score < 50  # Significant penalty
@@ -420,11 +422,16 @@ class TestScoreRecordingStudioLikelihood:
         """Recordings only on compilations get lower scores."""
         identifier = TrackIdentifier()
         recording = {
-            'title': 'Bohemian Rhapsody',
-            'disambiguation': '',
-            'release-list': [
-                {'release-group': {'primary-type': 'Album', 'secondary-type-list': ['Compilation']}}
-            ]
+            "title": "Bohemian Rhapsody",
+            "disambiguation": "",
+            "release-list": [
+                {
+                    "release-group": {
+                        "primary-type": "Album",
+                        "secondary-type-list": ["Compilation"],
+                    }
+                }
+            ],
         }
         score = identifier._score_recording_studio_likelihood(recording)
         # Should be lower than album release
@@ -433,9 +440,9 @@ class TestScoreRecordingStudioLikelihood:
         """Demo recordings get lower scores."""
         identifier = TrackIdentifier()
         recording = {
-            'title': 'Bohemian Rhapsody',
-            'disambiguation': 'demo',
-            'release-list': []
+            "title": "Bohemian Rhapsody",
+            "disambiguation": "demo",
+            "release-list": [],
         }
         score = identifier._score_recording_studio_likelihood(recording)
         assert score < 50
@@ -447,7 +454,9 @@ class TestInferArtistFromQuery:
     def test_basic_inference(self):
         """Infers artist by removing title words."""
         identifier = TrackIdentifier()
-        artist = identifier._infer_artist_from_query("queen bohemian rhapsody", "Bohemian Rhapsody")
+        artist = identifier._infer_artist_from_query(
+            "queen bohemian rhapsody", "Bohemian Rhapsody"
+        )
         assert artist is not None
         assert "queen" in artist.lower()
 
@@ -460,36 +469,46 @@ class TestInferArtistFromQuery:
     def test_remaining_too_short(self):
         """Returns None when remaining text is too short."""
         identifier = TrackIdentifier()
-        artist = identifier._infer_artist_from_query("a bohemian rhapsody", "Bohemian Rhapsody")
+        artist = identifier._infer_artist_from_query(
+            "a bohemian rhapsody", "Bohemian Rhapsody"
+        )
         assert artist is None
 
 
 class TestIdentifyFromSearchMocked:
     """Tests for identify_from_search with mocked external services."""
 
-    @patch('y2karaoke.core.track_identifier.TrackIdentifier._try_direct_lrc_search')
-    @patch('y2karaoke.core.track_identifier.TrackIdentifier._query_musicbrainz')
-    @patch('y2karaoke.core.track_identifier.TrackIdentifier._find_best_with_artist_hint')
-    @patch('y2karaoke.core.track_identifier.TrackIdentifier._search_youtube_by_duration')
-    @patch('y2karaoke.core.sync.fetch_lyrics_for_duration')
+    @patch("y2karaoke.core.track_identifier.TrackIdentifier._try_direct_lrc_search")
+    @patch("y2karaoke.core.track_identifier.TrackIdentifier._query_musicbrainz")
+    @patch(
+        "y2karaoke.core.track_identifier.TrackIdentifier._find_best_with_artist_hint"
+    )
+    @patch(
+        "y2karaoke.core.track_identifier.TrackIdentifier._search_youtube_by_duration"
+    )
+    @patch("y2karaoke.core.sync.fetch_lyrics_for_duration")
     def test_successful_identification_with_artist(
-        self, mock_fetch_lyrics, mock_yt_search, mock_find_best,
-        mock_mb_query, mock_direct_lrc
+        self,
+        mock_fetch_lyrics,
+        mock_yt_search,
+        mock_find_best,
+        mock_mb_query,
+        mock_direct_lrc,
     ):
         """Successfully identifies track with artist hint."""
         mock_direct_lrc.return_value = None
         mock_mb_query.return_value = [
             {
-                'title': 'Bohemian Rhapsody',
-                'length': 354000,
-                'artist-credit': [{'artist': {'name': 'Queen'}}]
+                "title": "Bohemian Rhapsody",
+                "length": 354000,
+                "artist-credit": [{"artist": {"name": "Queen"}}],
             }
         ]
-        mock_find_best.return_value = (354, 'Queen', 'Bohemian Rhapsody')
+        mock_find_best.return_value = (354, "Queen", "Bohemian Rhapsody")
         mock_fetch_lyrics.return_value = ("lrc text", True, "lyriq", 354)
         mock_yt_search.return_value = {
-            'url': 'https://youtube.com/watch?v=fJ9rUzIMcZQ',
-            'duration': 354
+            "url": "https://youtube.com/watch?v=fJ9rUzIMcZQ",
+            "duration": 354,
         }
 
         identifier = TrackIdentifier()
@@ -500,7 +519,7 @@ class TestIdentifyFromSearchMocked:
         assert result.duration == 354
         assert result.source == "musicbrainz"
 
-    @patch('y2karaoke.core.track_identifier.TrackIdentifier._try_direct_lrc_search')
+    @patch("y2karaoke.core.track_identifier.TrackIdentifier._try_direct_lrc_search")
     def test_direct_lrc_success(self, mock_direct_lrc):
         """Uses direct LRC search when successful."""
         mock_direct_lrc.return_value = TrackInfo(
@@ -511,7 +530,7 @@ class TestIdentifyFromSearchMocked:
             youtube_duration=354,
             source="syncedlyrics",
             lrc_duration=354,
-            lrc_validated=True
+            lrc_validated=True,
         )
 
         identifier = TrackIdentifier()
@@ -521,9 +540,9 @@ class TestIdentifyFromSearchMocked:
         assert result.title == "Bohemian Rhapsody"
         assert result.source == "syncedlyrics"
 
-    @patch('y2karaoke.core.track_identifier.TrackIdentifier._try_direct_lrc_search')
-    @patch('y2karaoke.core.track_identifier.TrackIdentifier._query_musicbrainz')
-    @patch('y2karaoke.core.track_identifier.TrackIdentifier._fallback_youtube_search')
+    @patch("y2karaoke.core.track_identifier.TrackIdentifier._try_direct_lrc_search")
+    @patch("y2karaoke.core.track_identifier.TrackIdentifier._query_musicbrainz")
+    @patch("y2karaoke.core.track_identifier.TrackIdentifier._fallback_youtube_search")
     def test_fallback_to_youtube(self, mock_fallback, mock_mb_query, mock_direct_lrc):
         """Falls back to YouTube when MusicBrainz returns no results."""
         mock_direct_lrc.return_value = None
@@ -534,7 +553,7 @@ class TestIdentifyFromSearchMocked:
             duration=200,
             youtube_url="https://youtube.com/watch?v=abc123",
             youtube_duration=200,
-            source="youtube"
+            source="youtube",
         )
 
         identifier = TrackIdentifier()
@@ -547,9 +566,9 @@ class TestIdentifyFromSearchMocked:
 class TestIdentifyFromUrlMocked:
     """Tests for identify_from_url with mocked external services."""
 
-    @patch('y2karaoke.core.track_identifier.TrackIdentifier._get_youtube_metadata')
-    @patch('y2karaoke.core.track_identifier.TrackIdentifier._query_musicbrainz')
-    @patch('y2karaoke.core.track_identifier.TrackIdentifier._find_best_lrc_by_duration')
+    @patch("y2karaoke.core.track_identifier.TrackIdentifier._get_youtube_metadata")
+    @patch("y2karaoke.core.track_identifier.TrackIdentifier._query_musicbrainz")
+    @patch("y2karaoke.core.track_identifier.TrackIdentifier._find_best_lrc_by_duration")
     def test_successful_identification(
         self, mock_find_lrc, mock_mb_query, mock_yt_metadata
     ):
@@ -557,25 +576,23 @@ class TestIdentifyFromUrlMocked:
         mock_yt_metadata.return_value = ("Queen - Bohemian Rhapsody", "Queen", 354)
         mock_mb_query.return_value = [
             {
-                'title': 'Bohemian Rhapsody',
-                'length': 354000,
-                'artist-credit': [{'artist': {'name': 'Queen'}}]
+                "title": "Bohemian Rhapsody",
+                "length": 354000,
+                "artist-credit": [{"artist": {"name": "Queen"}}],
             }
         ]
         mock_find_lrc.return_value = ("Queen", "Bohemian Rhapsody", 354)
 
         identifier = TrackIdentifier()
-        result = identifier.identify_from_url(
-            "https://youtube.com/watch?v=fJ9rUzIMcZQ"
-        )
+        result = identifier.identify_from_url("https://youtube.com/watch?v=fJ9rUzIMcZQ")
 
         assert result.artist == "Queen"
         assert result.title == "Bohemian Rhapsody"
         assert result.youtube_duration == 354
 
-    @patch('y2karaoke.core.track_identifier.TrackIdentifier._get_youtube_metadata')
-    @patch('y2karaoke.core.track_identifier.TrackIdentifier._query_musicbrainz')
-    @patch('y2karaoke.core.track_identifier.TrackIdentifier._find_best_lrc_by_duration')
+    @patch("y2karaoke.core.track_identifier.TrackIdentifier._get_youtube_metadata")
+    @patch("y2karaoke.core.track_identifier.TrackIdentifier._query_musicbrainz")
+    @patch("y2karaoke.core.track_identifier.TrackIdentifier._find_best_lrc_by_duration")
     def test_explicit_artist_title_override(
         self, mock_find_lrc, mock_mb_query, mock_yt_metadata
     ):
@@ -588,28 +605,24 @@ class TestIdentifyFromUrlMocked:
         result = identifier.identify_from_url(
             "https://youtube.com/watch?v=abc123",
             artist_hint="The Beatles",
-            title_hint="Yesterday"
+            title_hint="Yesterday",
         )
 
         # Should use provided artist/title for search, not YouTube metadata
         mock_mb_query.assert_called()
         # The search query should contain "The Beatles Yesterday"
 
-    @patch('y2karaoke.core.track_identifier.TrackIdentifier._get_youtube_metadata')
-    @patch('y2karaoke.core.track_identifier.TrackIdentifier._query_musicbrainz')
-    @patch('y2karaoke.core.track_identifier.TrackIdentifier._find_best_lrc_by_duration')
-    def test_fallback_when_no_lrc(
-        self, mock_find_lrc, mock_mb_query, mock_yt_metadata
-    ):
+    @patch("y2karaoke.core.track_identifier.TrackIdentifier._get_youtube_metadata")
+    @patch("y2karaoke.core.track_identifier.TrackIdentifier._query_musicbrainz")
+    @patch("y2karaoke.core.track_identifier.TrackIdentifier._find_best_lrc_by_duration")
+    def test_fallback_when_no_lrc(self, mock_find_lrc, mock_mb_query, mock_yt_metadata):
         """Falls back to parsed info when no LRC found."""
         mock_yt_metadata.return_value = ("Artist - Song Title", "ArtistChannel", 180)
         mock_mb_query.return_value = []
         mock_find_lrc.return_value = None
 
         identifier = TrackIdentifier()
-        result = identifier.identify_from_url(
-            "https://youtube.com/watch?v=xyz789"
-        )
+        result = identifier.identify_from_url("https://youtube.com/watch?v=xyz789")
 
         assert result.source == "youtube"
         assert result.youtube_duration == 180
@@ -622,13 +635,13 @@ class TestCheckLrcAndDuration:
         """Results are cached to avoid redundant lookups."""
         identifier = TrackIdentifier()
 
-        with patch('y2karaoke.core.sync.fetch_lyrics_multi_source') as mock_fetch:
+        with patch("y2karaoke.core.sync.fetch_lyrics_multi_source") as mock_fetch:
             mock_fetch.return_value = ("[00:00.00]Line\n[03:30.00]End", True, "lyriq")
 
-            with patch('y2karaoke.core.sync.get_lrc_duration') as mock_duration:
+            with patch("y2karaoke.core.sync.get_lrc_duration") as mock_duration:
                 mock_duration.return_value = 210
 
-                with patch('y2karaoke.core.sync.validate_lrc_quality') as mock_validate:
+                with patch("y2karaoke.core.sync.validate_lrc_quality") as mock_validate:
                     mock_validate.return_value = (True, None)
 
                     # First call
@@ -644,13 +657,13 @@ class TestCheckLrcAndDuration:
         """Cache key is case-insensitive."""
         identifier = TrackIdentifier()
 
-        with patch('y2karaoke.core.sync.fetch_lyrics_multi_source') as mock_fetch:
+        with patch("y2karaoke.core.sync.fetch_lyrics_multi_source") as mock_fetch:
             mock_fetch.return_value = ("[00:00.00]Line", True, "lyriq")
 
-            with patch('y2karaoke.core.sync.get_lrc_duration') as mock_duration:
+            with patch("y2karaoke.core.sync.get_lrc_duration") as mock_duration:
                 mock_duration.return_value = 210
 
-                with patch('y2karaoke.core.sync.validate_lrc_quality') as mock_validate:
+                with patch("y2karaoke.core.sync.validate_lrc_quality") as mock_validate:
                     mock_validate.return_value = (True, None)
 
                     # Different cases should hit same cache entry
@@ -669,15 +682,15 @@ class TestFindBestWithArtistHint:
         identifier = TrackIdentifier()
         recordings = [
             {
-                'title': 'Yesterday',
-                'length': 125000,
-                'artist-credit': [{'artist': {'name': 'The Beatles'}}]
+                "title": "Yesterday",
+                "length": 125000,
+                "artist-credit": [{"artist": {"name": "The Beatles"}}],
             },
             {
-                'title': 'Yesterday',
-                'length': 180000,
-                'artist-credit': [{'artist': {'name': 'Some Cover Band'}}]
-            }
+                "title": "Yesterday",
+                "length": 180000,
+                "artist-credit": [{"artist": {"name": "Some Cover Band"}}],
+            },
         ]
 
         result = identifier._find_best_with_artist_hint(
@@ -693,9 +706,9 @@ class TestFindBestWithArtistHint:
         identifier = TrackIdentifier()
         recordings = [
             {
-                'title': 'Let It Be',
-                'length': 243000,
-                'artist-credit': [{'artist': {'name': 'The Beatles'}}]
+                "title": "Let It Be",
+                "length": 243000,
+                "artist-credit": [{"artist": {"name": "The Beatles"}}],
             }
         ]
 
@@ -712,9 +725,9 @@ class TestFindBestWithArtistHint:
         identifier = TrackIdentifier()
         recordings = [
             {
-                'title': 'Song',
-                'length': 800000,  # 800 seconds = 13+ minutes
-                'artist-credit': [{'artist': {'name': 'Artist'}}]
+                "title": "Song",
+                "length": 800000,  # 800 seconds = 13+ minutes
+                "artist-credit": [{"artist": {"name": "Artist"}}],
             }
         ]
 
@@ -732,11 +745,11 @@ class TestFindBestLrcByDuration:
         """Prefers candidate with closer duration match."""
         identifier = TrackIdentifier()
         candidates = [
-            {'artist': 'Artist1', 'title': 'Song'},
-            {'artist': 'Artist2', 'title': 'Song'},
+            {"artist": "Artist1", "title": "Song"},
+            {"artist": "Artist2", "title": "Song"},
         ]
 
-        with patch.object(identifier, '_check_lrc_and_duration') as mock_check:
+        with patch.object(identifier, "_check_lrc_and_duration") as mock_check:
             # First candidate: duration way off
             # Second candidate: duration close
             mock_check.side_effect = [
@@ -755,11 +768,11 @@ class TestFindBestLrcByDuration:
         """Prefers candidate with better title similarity."""
         identifier = TrackIdentifier()
         candidates = [
-            {'artist': 'Artist', 'title': 'Different Song'},
-            {'artist': 'Artist', 'title': 'Expected Song Title'},
+            {"artist": "Artist", "title": "Different Song"},
+            {"artist": "Artist", "title": "Expected Song Title"},
         ]
 
-        with patch.object(identifier, '_check_lrc_and_duration') as mock_check:
+        with patch.object(identifier, "_check_lrc_and_duration") as mock_check:
             mock_check.return_value = (True, 200)  # Both have same duration
 
             result = identifier._find_best_lrc_by_duration(
@@ -773,10 +786,10 @@ class TestFindBestLrcByDuration:
         """Returns None when no candidates have LRC."""
         identifier = TrackIdentifier()
         candidates = [
-            {'artist': 'Artist', 'title': 'Song'},
+            {"artist": "Artist", "title": "Song"},
         ]
 
-        with patch.object(identifier, '_check_lrc_and_duration') as mock_check:
+        with patch.object(identifier, "_check_lrc_and_duration") as mock_check:
             mock_check.return_value = (False, None)
 
             result = identifier._find_best_lrc_by_duration(
@@ -793,23 +806,23 @@ class TestExtractYoutubeCandidates:
         """Extracts video ID and title from YouTube response."""
         identifier = TrackIdentifier()
         # Simplified mock response structure
-        response = '''
+        response = """
         "videoRenderer":{"videoId":"dQw4w9WgXcQ","title":{"runs":[{"text":"Rick Astley - Never Gonna Give You Up"}
-        '''
+        """
 
         candidates = identifier._extract_youtube_candidates(response)
 
         assert len(candidates) >= 1
-        assert candidates[0]['video_id'] == 'dQw4w9WgXcQ'
-        assert 'Never Gonna Give You Up' in candidates[0]['title']
+        assert candidates[0]["video_id"] == "dQw4w9WgXcQ"
+        assert "Never Gonna Give You Up" in candidates[0]["title"]
 
     def test_extracts_duration(self):
         """Extracts duration when available."""
         identifier = TrackIdentifier()
         # Mock response with duration
-        response = '''
+        response = """
         "videoRenderer":{"videoId":"dQw4w9WgXcQ","title":{"runs":[{"text":"Song Title"}],"simpleText":"3:32"
-        '''
+        """
 
         candidates = identifier._extract_youtube_candidates(response)
 
@@ -820,17 +833,17 @@ class TestExtractYoutubeCandidates:
 class TestSearchYoutubeByDuration:
     """Tests for _search_youtube_by_duration - YouTube search with duration matching."""
 
-    @patch('requests.get')
+    @patch("requests.get")
     def test_filters_non_studio_versions(self, mock_get):
         """Filters out non-studio versions from results."""
         identifier = TrackIdentifier()
 
         # Mock response with both studio and live versions
         mock_response = Mock()
-        mock_response.text = '''
+        mock_response.text = """
         "videoRenderer":{"videoId":"abc123","title":{"runs":[{"text":"Song - Official Audio"}]},"simpleText":"3:30"}
         "videoRenderer":{"videoId":"def456","title":{"runs":[{"text":"Song Live at Concert"}]},"simpleText":"3:30"}
-        '''
+        """
         mock_response.raise_for_status = Mock()
         mock_get.return_value = mock_response
 

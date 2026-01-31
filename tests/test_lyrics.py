@@ -15,6 +15,7 @@ from y2karaoke.core.lyrics import (
 # Dataclass Tests
 # ------------------------------
 
+
 class TestWord:
     def test_word_creation(self):
         word = Word(text="hello", start_time=0.0, end_time=0.5)
@@ -88,6 +89,7 @@ class TestSongMetadata:
 # split_long_lines Tests
 # ------------------------------
 
+
 class TestSplitLongLines:
     def test_short_line_unchanged(self):
         word = Word(text="short", start_time=0.0, end_time=0.5)
@@ -101,7 +103,10 @@ class TestSplitLongLines:
         assert result == []
 
     def test_long_line_split(self):
-        words = [Word(text=f"word{i}", start_time=i*0.1, end_time=(i+1)*0.1) for i in range(30)]
+        words = [
+            Word(text=f"word{i}", start_time=i * 0.1, end_time=(i + 1) * 0.1)
+            for i in range(30)
+        ]
         line = Line(words=words)
         result = split_long_lines([line], max_width_ratio=0.5)
         assert len(result) >= 2
@@ -122,6 +127,7 @@ class TestSplitLongLines:
 # ------------------------------
 # LRC Parsing Tests
 # ------------------------------
+
 
 class TestParseLrcTimestamp:
     def test_parse_simple_timestamp(self):
@@ -164,6 +170,7 @@ class TestParseLrcWithTiming:
 # ------------------------------
 # Romanization Tests
 # ------------------------------
+
 
 class TestRomanization:
     def test_english_unchanged(self):

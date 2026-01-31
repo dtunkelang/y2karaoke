@@ -20,18 +20,82 @@ logger = get_logger(__name__)
 # Stopwords for multiple languages - filtered during title/artist matching
 STOP_WORDS = {
     # English
-    "the", "a", "an", "and", "or", "of", "with", "in", "to", "for", "by",
-    "&", "+",
+    "the",
+    "a",
+    "an",
+    "and",
+    "or",
+    "of",
+    "with",
+    "in",
+    "to",
+    "for",
+    "by",
+    "&",
+    "+",
     # Spanish
-    "el", "la", "los", "las", "un", "una", "unos", "unas", "y", "de", "del", "con",
+    "el",
+    "la",
+    "los",
+    "las",
+    "un",
+    "una",
+    "unos",
+    "unas",
+    "y",
+    "de",
+    "del",
+    "con",
     # French
-    "le", "la", "les", "un", "une", "des", "et", "de", "du", "au", "aux",
+    "le",
+    "la",
+    "les",
+    "un",
+    "une",
+    "des",
+    "et",
+    "de",
+    "du",
+    "au",
+    "aux",
     # German
-    "der", "die", "das", "ein", "eine", "und", "von", "mit",
+    "der",
+    "die",
+    "das",
+    "ein",
+    "eine",
+    "und",
+    "von",
+    "mit",
     # Italian
-    "il", "lo", "la", "i", "gli", "le", "un", "uno", "una", "e", "di", "del", "della",
+    "il",
+    "lo",
+    "la",
+    "i",
+    "gli",
+    "le",
+    "un",
+    "uno",
+    "una",
+    "e",
+    "di",
+    "del",
+    "della",
     # Portuguese
-    "o", "a", "os", "as", "um", "uma", "uns", "umas", "e", "de", "do", "da", "dos", "das",
+    "o",
+    "a",
+    "os",
+    "as",
+    "um",
+    "uma",
+    "uns",
+    "umas",
+    "e",
+    "de",
+    "do",
+    "da",
+    "dos",
+    "das",
 }
 
 # Initialize MusicBrainz
@@ -43,6 +107,7 @@ musicbrainzngs.set_useragent(
 @dataclass
 class TrackInfo:
     """Canonical track information from identification pipeline."""
+
     artist: str
     title: str
     duration: int  # canonical duration in seconds
@@ -59,9 +124,9 @@ class TrackInfo:
 
     def __post_init__(self):
         if self.quality_issues is None:
-            object.__setattr__(self, 'quality_issues', [])
+            object.__setattr__(self, "quality_issues", [])
         if self.sources_tried is None:
-            object.__setattr__(self, 'sources_tried', [])
+            object.__setattr__(self, "sources_tried", [])
 
 
 class TrackIdentifier:
@@ -86,8 +151,7 @@ class TrackIdentifier:
 
         # Try searching with the query as-is
         lrc_text, is_synced, source = fetch_lyrics_multi_source(
-            query, "",  # Empty artist, let provider search freely
-            synced_only=True
+            query, "", synced_only=True  # Empty artist, let provider search freely
         )
 
         if not is_synced or not lrc_text:
@@ -108,7 +172,9 @@ class TrackIdentifier:
         if not lrc_duration or lrc_duration < 60:
             return None
 
-        logger.info(f"Direct LRC search found lyrics from {source} (duration: {lrc_duration}s)")
+        logger.info(
+            f"Direct LRC search found lyrics from {source} (duration: {lrc_duration}s)"
+        )
 
         # Try to extract artist/title from LRC metadata tags
         artist, title = self._extract_lrc_metadata(lrc_text)
@@ -123,7 +189,9 @@ class TrackIdentifier:
 
         # If still no artist, try MusicBrainz to identify properly
         if not artist or artist == "Unknown":
-            mb_artist, mb_title = self._lookup_musicbrainz_for_query(query, lrc_duration)
+            mb_artist, mb_title = self._lookup_musicbrainz_for_query(
+                query, lrc_duration
+            )
             if mb_artist:
                 artist = mb_artist
             if mb_title:
@@ -138,10 +206,14 @@ class TrackIdentifier:
         # Search YouTube for matching video using identified artist/title
         # This ensures we find the right version, not a cover/tribute
         search_query = f"{artist} {title}" if artist and artist != "Unknown" else query
-        youtube_result = self._search_youtube_verified(search_query, lrc_duration, artist, title)
+        youtube_result = self._search_youtube_verified(
+            search_query, lrc_duration, artist, title
+        )
         if not youtube_result:
             # Fallback to original query if artist-specific search fails
-            youtube_result = self._search_youtube_verified(query, lrc_duration, artist, title)
+            youtube_result = self._search_youtube_verified(
+                query, lrc_duration, artist, title
+            )
         if not youtube_result:
             return None
 
@@ -149,14 +221,16 @@ class TrackIdentifier:
             artist=artist or "Unknown",
             title=title,
             duration=lrc_duration,
-            youtube_url=youtube_result['url'],
-            youtube_duration=youtube_result['duration'] or lrc_duration,
+            youtube_url=youtube_result["url"],
+            youtube_duration=youtube_result["duration"] or lrc_duration,
             source="syncedlyrics",
             lrc_duration=lrc_duration,
-            lrc_validated=True
+            lrc_validated=True,
         )
 
-    def _extract_lrc_metadata(self, lrc_text: str) -> tuple[Optional[str], Optional[str]]:
+    def _extract_lrc_metadata(
+        self, lrc_text: str
+    ) -> tuple[Optional[str], Optional[str]]:
         """Extract artist and title from LRC metadata tags.
 
         LRC files often have tags like:
@@ -166,22 +240,24 @@ class TrackIdentifier:
         artist = None
         title = None
 
-        for line in lrc_text.split('\n')[:20]:  # Check first 20 lines
+        for line in lrc_text.split("\n")[:20]:  # Check first 20 lines
             line = line.strip()
             # Artist tag
-            match = re.match(r'\[ar:(.+)\]', line, re.IGNORECASE)
+            match = re.match(r"\[ar:(.+)\]", line, re.IGNORECASE)
             if match:
                 artist = match.group(1).strip()
                 continue
             # Title tag
-            match = re.match(r'\[ti:(.+)\]', line, re.IGNORECASE)
+            match = re.match(r"\[ti:(.+)\]", line, re.IGNORECASE)
             if match:
                 title = match.group(1).strip()
                 continue
 
         return artist, title
 
-    def _infer_artist_from_query(self, query: str, title: Optional[str]) -> Optional[str]:
+    def _infer_artist_from_query(
+        self, query: str, title: Optional[str]
+    ) -> Optional[str]:
         """Try to infer artist name from query by removing title words."""
         if not title:
             return None
@@ -192,10 +268,10 @@ class TrackIdentifier:
         # Remove title words from query to get potential artist
         remaining = query_lower
         for word in title_lower.split():
-            remaining = remaining.replace(word, '', 1)
+            remaining = remaining.replace(word, "", 1)
 
         # Clean up and capitalize
-        remaining = ' '.join(remaining.split())
+        remaining = " ".join(remaining.split())
         if remaining and len(remaining) > 2:
             # Title case the result
             return remaining.title()
@@ -214,13 +290,13 @@ class TrackIdentifier:
         try:
             # Search MusicBrainz with the full query
             results = musicbrainzngs.search_recordings(recording=query, limit=15)
-            recordings = results.get('recording-list', [])
+            recordings = results.get("recording-list", [])
 
             best_match = None
             best_score = 0
 
             for rec in recordings:
-                length = rec.get('length')
+                length = rec.get("length")
                 if not length:
                     continue
 
@@ -234,10 +310,10 @@ class TrackIdentifier:
                 if duration_sec > 720:
                     continue
 
-                artist_credits = rec.get('artist-credit', [])
-                artists = [a['artist']['name'] for a in artist_credits if 'artist' in a]
-                artist_name = ' & '.join(artists) if artists else None
-                title = rec.get('title')
+                artist_credits = rec.get("artist-credit", [])
+                artists = [a["artist"]["name"] for a in artist_credits if "artist" in a]
+                artist_name = " & ".join(artists) if artists else None
+                title = rec.get("title")
 
                 if not artist_name or not title:
                     continue
@@ -252,10 +328,14 @@ class TrackIdentifier:
                 if score >= 2 and score > best_score:
                     best_score = score
                     best_match = (artist_name, title)
-                    logger.debug(f"MusicBrainz candidate: {artist_name} - {title} (score={score})")
+                    logger.debug(
+                        f"MusicBrainz candidate: {artist_name} - {title} (score={score})"
+                    )
 
             if best_match:
-                logger.debug(f"MusicBrainz identified: {best_match[0]} - {best_match[1]}")
+                logger.debug(
+                    f"MusicBrainz identified: {best_match[0]} - {best_match[1]}"
+                )
                 return best_match
 
         except Exception as e:
@@ -312,7 +392,9 @@ class TrackIdentifier:
 
         # If no match found and no separator was in query, try different artist/title splits
         if not best and not artist_hint:
-            logger.debug("No match with title-only search, trying artist/title splits...")
+            logger.debug(
+                "No match with title-only search, trying artist/title splits..."
+            )
             splits = self._try_artist_title_splits(query)
             query_words = set(query.lower().split())
             query_lower = query.lower()
@@ -320,7 +402,9 @@ class TrackIdentifier:
             # Collect all candidates with their quality scores
             split_candidates = []
             for split_artist, split_title in splits:
-                logger.debug(f"Trying split: artist='{split_artist}', title='{split_title}'")
+                logger.debug(
+                    f"Trying split: artist='{split_artist}', title='{split_title}'"
+                )
                 split_recordings = self._query_musicbrainz(
                     f"{split_artist} {split_title}", split_artist, split_title
                 )
@@ -334,11 +418,15 @@ class TrackIdentifier:
                         # Skip recordings with unreasonable durations (> 12 minutes)
                         # These are likely albums, compilations, or misidentified entries
                         if duration > 720:
-                            logger.debug(f"Skipping candidate with unreasonable duration: {artist} - {title} ({duration}s)")
+                            logger.debug(
+                                f"Skipping candidate with unreasonable duration: {artist} - {title} ({duration}s)"
+                            )
                             continue
 
                         # Check if this candidate has LRC (higher confidence match)
-                        has_lrc, lrc_duration = self._check_lrc_and_duration(title, artist)
+                        has_lrc, lrc_duration = self._check_lrc_and_duration(
+                            title, artist
+                        )
 
                         # Score based on multiple factors
                         score = 0
@@ -347,12 +435,17 @@ class TrackIdentifier:
 
                         # Strong bonus if split_artist matches the result artist
                         # (the search hint found what we were looking for)
-                        if split_artist.lower() in artist.lower() or artist.lower() in split_artist.lower():
+                        if (
+                            split_artist.lower() in artist.lower()
+                            or artist.lower() in split_artist.lower()
+                        ):
                             score += 20
 
                         # Check if result artist has any words in common with the query
                         # This is crucial - an artist with NO connection to query is suspicious
-                        artist_words = set(w for w in artist.lower().split() if len(w) > 2)
+                        artist_words = set(
+                            w for w in artist.lower().split() if len(w) > 2
+                        )
                         artist_in_query = any(w in query_lower for w in artist_words)
                         if artist_in_query:
                             score += 15
@@ -362,23 +455,34 @@ class TrackIdentifier:
 
                         # Strong bonus if split_title matches the result title
                         # This is the most important signal - user typed this as the song name
-                        split_title_norm = self._normalize_title(split_title, remove_stopwords=True)
-                        result_title_norm = self._normalize_title(title, remove_stopwords=True)
+                        split_title_norm = self._normalize_title(
+                            split_title, remove_stopwords=True
+                        )
+                        result_title_norm = self._normalize_title(
+                            title, remove_stopwords=True
+                        )
 
                         # Check title word overlap
                         title_words = set(self._normalize_title(title).split())
-                        split_title_words = set(self._normalize_title(split_title).split())
+                        split_title_words = set(
+                            self._normalize_title(split_title).split()
+                        )
                         title_overlap = split_title_words & title_words
 
                         # REJECT candidates with zero title overlap - this prevents
                         # "Prayers like Dirt" matching when looking for "Aucun Express"
                         if not title_overlap:
-                            logger.debug(f"Skipping candidate with no title overlap: {artist} - {title} (split_title={split_title})")
+                            logger.debug(
+                                f"Skipping candidate with no title overlap: {artist} - {title} (split_title={split_title})"
+                            )
                             continue
 
                         if split_title_norm == result_title_norm:
                             score += 50  # Strong bonus for exact title match
-                        elif split_title_norm in result_title_norm or result_title_norm in split_title_norm:
+                        elif (
+                            split_title_norm in result_title_norm
+                            or result_title_norm in split_title_norm
+                        ):
                             score += 25  # Partial title match
                         else:
                             # Partial word overlap - bonus proportional to overlap
@@ -390,12 +494,20 @@ class TrackIdentifier:
                         score += len(matching_words) * 3  # Bonus for matching words
 
                         # Penalty if result artist looks like a song title (contains common song words)
-                        song_title_indicators = ['rhapsody', 'symphony', 'concerto', 'song', 'ballad']
+                        song_title_indicators = [
+                            "rhapsody",
+                            "symphony",
+                            "concerto",
+                            "song",
+                            "ballad",
+                        ]
                         if any(ind in artist.lower() for ind in song_title_indicators):
                             score -= 15  # Likely misidentified as artist
 
                         split_candidates.append((score, candidate))
-                        logger.debug(f"Split candidate: {artist} - {title} (score={score}, has_lrc={has_lrc}, duration={duration}s)")
+                        logger.debug(
+                            f"Split candidate: {artist} - {title} (score={score}, has_lrc={has_lrc}, duration={duration}s)"
+                        )
 
             # Pick the best candidate
             if split_candidates:
@@ -408,22 +520,28 @@ class TrackIdentifier:
             return self._fallback_youtube_search(query)
 
         canonical_duration, canonical_artist, canonical_title = best
-        logger.info(f"Canonical track: {canonical_artist} - {canonical_title} ({canonical_duration}s)")
+        logger.info(
+            f"Canonical track: {canonical_artist} - {canonical_title} ({canonical_duration}s)"
+        )
 
         # Validate LRC duration matches canonical duration
         from .sync import fetch_lyrics_for_duration
+
         _, _, _, lrc_duration = fetch_lyrics_for_duration(
             canonical_title, canonical_artist, canonical_duration, tolerance=20
         )
-        lrc_validated = lrc_duration is not None and abs(lrc_duration - canonical_duration) <= 20
+        lrc_validated = (
+            lrc_duration is not None and abs(lrc_duration - canonical_duration) <= 20
+        )
 
         if lrc_duration and not lrc_validated:
-            logger.warning(f"LRC duration ({lrc_duration}s) doesn't match canonical ({canonical_duration}s) - lyrics timing may be off")
+            logger.warning(
+                f"LRC duration ({lrc_duration}s) doesn't match canonical ({canonical_duration}s) - lyrics timing may be off"
+            )
 
         # Search YouTube with duration matching
         youtube_result = self._search_youtube_by_duration(
-            f"{canonical_artist} {canonical_title}",
-            canonical_duration
+            f"{canonical_artist} {canonical_title}", canonical_duration
         )
 
         if not youtube_result:
@@ -437,11 +555,11 @@ class TrackIdentifier:
             artist=canonical_artist,
             title=canonical_title,
             duration=canonical_duration,
-            youtube_url=youtube_result['url'],
-            youtube_duration=youtube_result['duration'],
+            youtube_url=youtube_result["url"],
+            youtube_duration=youtube_result["duration"],
             source="musicbrainz",
             lrc_duration=lrc_duration,
-            lrc_validated=lrc_validated
+            lrc_validated=lrc_validated,
         )
 
     # -------------------------
@@ -486,15 +604,23 @@ class TrackIdentifier:
         else:
             # Cross-validate: warn if YouTube title suggests non-studio version
             if self._is_likely_non_studio(yt_title):
-                logger.warning(f"YouTube video appears to be non-studio version: '{yt_title}'")
-                logger.warning("Lyrics timing may not match. Consider using a studio version URL.")
+                logger.warning(
+                    f"YouTube video appears to be non-studio version: '{yt_title}'"
+                )
+                logger.warning(
+                    "Lyrics timing may not match. Consider using a studio version URL."
+                )
 
             # Parse video title for hints
             parsed_artist, parsed_title = self._parse_youtube_title(yt_title)
-            logger.debug(f"Parsed from title: artist='{parsed_artist}', title='{parsed_title}'")
+            logger.debug(
+                f"Parsed from title: artist='{parsed_artist}', title='{parsed_title}'"
+            )
 
         # Query MusicBrainz for candidates
-        search_query = f"{parsed_artist} {parsed_title}" if parsed_artist else parsed_title
+        search_query = (
+            f"{parsed_artist} {parsed_title}" if parsed_artist else parsed_title
+        )
         recordings = self._query_musicbrainz(search_query, parsed_artist, parsed_title)
 
         # Build candidate list with (artist, title) pairs
@@ -504,27 +630,27 @@ class TrackIdentifier:
         # Add YouTube uploader as HIGH PRIORITY candidate first
         # Official artist channels (like "The Doors") are the most reliable source
         if yt_uploader and parsed_title:
-            candidates.append({'artist': yt_uploader, 'title': parsed_title})
+            candidates.append({"artist": yt_uploader, "title": parsed_title})
 
         # Add parsed artist from title if different from uploader
         if parsed_artist and parsed_title:
             if not yt_uploader or parsed_artist.lower() != yt_uploader.lower():
-                candidates.append({'artist': parsed_artist, 'title': parsed_title})
+                candidates.append({"artist": parsed_artist, "title": parsed_title})
 
         # Add MusicBrainz results (lower priority - may include covers)
         for rec in recordings:
-            artist_credits = rec.get('artist-credit', [])
-            artists = [a['artist']['name'] for a in artist_credits if 'artist' in a]
-            artist_name = ' & '.join(artists) if artists else None
-            title = rec.get('title')
+            artist_credits = rec.get("artist-credit", [])
+            artists = [a["artist"]["name"] for a in artist_credits if "artist" in a]
+            artist_name = " & ".join(artists) if artists else None
+            title = rec.get("title")
             if artist_name and title:
-                candidates.append({'artist': artist_name, 'title': title})
+                candidates.append({"artist": artist_name, "title": title})
 
         # Deduplicate candidates
         seen = set()
         unique_candidates = []
         for c in candidates:
-            key = (c['artist'].lower(), c['title'].lower())
+            key = (c["artist"].lower(), c["title"].lower())
             if key not in seen:
                 seen.add(key)
                 unique_candidates.append(c)
@@ -543,14 +669,19 @@ class TrackIdentifier:
             # Additional cross-validation: if YouTube is non-studio but we found studio LRC,
             # the timing might be off
             if self._is_likely_non_studio(yt_title) and not lrc_validated:
-                logger.warning(f"Non-studio YouTube video with mismatched LRC duration "
-                             f"(YT: {yt_duration}s, LRC: {lrc_duration}s). Timing may be significantly off.")
+                logger.warning(
+                    f"Non-studio YouTube video with mismatched LRC duration "
+                    f"(YT: {yt_duration}s, LRC: {lrc_duration}s). Timing may be significantly off."
+                )
 
             # If LRC duration doesn't match YouTube, try to find a YouTube video that matches the LRC
             # This handles cases where user provided album version URL but LRC is for radio edit
             if not lrc_validated and abs(lrc_duration - yt_duration) > 15:
-                logger.info(f"LRC duration ({lrc_duration}s) differs from YouTube ({yt_duration}s) by {abs(lrc_duration - yt_duration)}s")
-                logger.info(f"Searching for YouTube video matching LRC duration...")
+                logger.info(
+                    f"LRC duration ({lrc_duration}s) differs from YouTube"
+                    " ({yt_duration}s) by {abs(lrc_duration - yt_duration)}s"
+                )
+                logger.info("Searching for YouTube video matching LRC duration...")
 
                 # Use _search_youtube_verified to ensure we find videos that MATCH the expected song
                 # This prevents picking a different song by the same artist with similar duration
@@ -565,45 +696,52 @@ class TrackIdentifier:
                         search_query, lrc_duration, artist, title
                     )
 
-                    if alt_youtube and alt_youtube['duration']:
-                        alt_diff = abs(alt_youtube['duration'] - lrc_duration)
+                    if alt_youtube and alt_youtube["duration"]:
+                        alt_diff = abs(alt_youtube["duration"] - lrc_duration)
                         if alt_diff <= 15:
-                            logger.info(f"Found matching YouTube video: {alt_youtube['url']} ({alt_youtube['duration']}s)")
+                            logger.info(
+                                f"Found matching YouTube video: {alt_youtube['url']} ({alt_youtube['duration']}s)"
+                            )
                             return TrackInfo(
                                 artist=artist,
                                 title=title,
                                 duration=lrc_duration,
-                                youtube_url=alt_youtube['url'],
-                                youtube_duration=alt_youtube['duration'],
+                                youtube_url=alt_youtube["url"],
+                                youtube_duration=alt_youtube["duration"],
                                 source="syncedlyrics",
                                 lrc_duration=lrc_duration,
-                                lrc_validated=True
+                                lrc_validated=True,
                             )
 
-                logger.warning(f"Could not find clean YouTube video matching LRC duration ({lrc_duration}s)")
+                logger.warning(
+                    f"Could not find clean YouTube video matching LRC duration ({lrc_duration}s)"
+                )
 
                 # Also try searching with "radio edit" if the difference suggests it
                 if abs(lrc_duration - yt_duration) > 20:
                     alt_youtube = self._search_youtube_verified(
-                        f"{artist} {title} radio edit",
-                        lrc_duration, artist, title
+                        f"{artist} {title} radio edit", lrc_duration, artist, title
                     )
-                    if alt_youtube and alt_youtube['duration']:
-                        alt_diff = abs(alt_youtube['duration'] - lrc_duration)
+                    if alt_youtube and alt_youtube["duration"]:
+                        alt_diff = abs(alt_youtube["duration"] - lrc_duration)
                         if alt_diff <= 15:
-                            logger.info(f"Found radio edit: {alt_youtube['url']} ({alt_youtube['duration']}s)")
+                            logger.info(
+                                f"Found radio edit: {alt_youtube['url']} ({alt_youtube['duration']}s)"
+                            )
                             return TrackInfo(
                                 artist=artist,
                                 title=title,
                                 duration=lrc_duration,
-                                youtube_url=alt_youtube['url'],
-                                youtube_duration=alt_youtube['duration'],
+                                youtube_url=alt_youtube["url"],
+                                youtube_duration=alt_youtube["duration"],
                                 source="syncedlyrics",
                                 lrc_duration=lrc_duration,
-                                lrc_validated=True
+                                lrc_validated=True,
                             )
 
-            logger.info(f"Best LRC match: {artist} - {title} (LRC duration: {lrc_duration}s, validated: {lrc_validated})")
+            logger.info(
+                f"Best LRC match: {artist} - {title} (LRC duration: {lrc_duration}s, validated: {lrc_validated})"
+            )
             return TrackInfo(
                 artist=artist,
                 title=title,
@@ -612,7 +750,7 @@ class TrackIdentifier:
                 youtube_duration=yt_duration,
                 source="syncedlyrics",
                 lrc_duration=lrc_duration,
-                lrc_validated=lrc_validated
+                lrc_validated=lrc_validated,
             )
 
         # Fallback: try to use the best available artist/title
@@ -624,9 +762,9 @@ class TrackIdentifier:
         if unique_candidates:
             # Prefer candidates that look like real artists (not yt_uploader)
             for c in unique_candidates:
-                if c['artist'] != yt_uploader:
-                    fallback_artist = c['artist']
-                    fallback_title = c['title']
+                if c["artist"] != yt_uploader:
+                    fallback_artist = c["artist"]
+                    fallback_title = c["title"]
                     break
 
         # Second try: use parsed info
@@ -643,7 +781,9 @@ class TrackIdentifier:
                 if has_lrc:
                     fallback_artist = split_artist
                     fallback_title = split_title
-                    logger.info(f"Found LRC with title split: {split_artist} - {split_title}")
+                    logger.info(
+                        f"Found LRC with title split: {split_artist} - {split_title}"
+                    )
                     break
 
         # Final fallback: uploader as artist
@@ -651,7 +791,9 @@ class TrackIdentifier:
             fallback_artist = yt_uploader or "Unknown"
             fallback_title = parsed_title or yt_title
 
-        logger.warning(f"No LRC match found, using: {fallback_artist} - {fallback_title}")
+        logger.warning(
+            f"No LRC match found, using: {fallback_artist} - {fallback_title}"
+        )
 
         return TrackInfo(
             artist=fallback_artist,
@@ -659,7 +801,7 @@ class TrackIdentifier:
             duration=yt_duration,
             youtube_url=url,
             youtube_duration=yt_duration,
-            source="youtube"
+            source="youtube",
         )
 
     # -------------------------
@@ -679,14 +821,14 @@ class TrackIdentifier:
         query_clean = query.strip()
 
         # Try various separators in order of preference
-        separators = [' - ', ' – ', ' — ', ': ']
+        separators = [" - ", " – ", " — ", ": "]
         for sep in separators:
             if sep in query_clean:
                 parts = query_clean.split(sep, 1)
                 return parts[0].strip(), parts[1].strip()
 
         # Try "Title by Artist" format
-        by_match = re.match(r'^(.+?)\s+by\s+(.+)$', query_clean, re.IGNORECASE)
+        by_match = re.match(r"^(.+?)\s+by\s+(.+)$", query_clean, re.IGNORECASE)
         if by_match:
             title = by_match.group(1).strip()
             artist = by_match.group(2).strip()
@@ -712,15 +854,15 @@ class TrackIdentifier:
         # Most common pattern: first word(s) = artist, rest = title
         # Try shorter artists first (single word artists are common)
         for i in range(1, len(words)):
-            artist = ' '.join(words[:i])
-            title = ' '.join(words[i:])
+            artist = " ".join(words[:i])
+            title = " ".join(words[i:])
             splits.append((artist, title))
 
         # Less common: last word(s) = artist, beginning = title
         # (e.g., "yesterday beatles" -> "beatles", "yesterday")
         for i in range(len(words) - 1, 0, -1):
-            title = ' '.join(words[:i])
-            artist = ' '.join(words[i:])
+            title = " ".join(words[:i])
+            artist = " ".join(words[i:])
             # Only add if not already present
             if (artist, title) not in splits:
                 splits.append((artist, title))
@@ -731,24 +873,38 @@ class TrackIdentifier:
         """Parse a YouTube video title for artist/title."""
         # Remove common suffixes
         cleaned = title
-        for suffix in ["Official Music Video", "Official Video", "Official Audio",
-                       "Lyric Video", "Lyrics", "HD", "4K", "MV", "(Official)"]:
-            cleaned = re.sub(rf'\s*[\(\[]?\s*{re.escape(suffix)}\s*[\)\]]?\s*$', '', cleaned, flags=re.IGNORECASE)
+        for suffix in [
+            "Official Music Video",
+            "Official Video",
+            "Official Audio",
+            "Lyric Video",
+            "Lyrics",
+            "HD",
+            "4K",
+            "MV",
+            "(Official)",
+        ]:
+            cleaned = re.sub(
+                rf"\s*[\(\[]?\s*{re.escape(suffix)}\s*[\)\]]?\s*$",
+                "",
+                cleaned,
+                flags=re.IGNORECASE,
+            )
 
         # Only remove parenthetical/bracket content that looks like metadata
         # (e.g., "Remastered 2023", "feat. Artist", "Live") - NOT actual title parts like "(Don't Fear)"
         metadata_patterns = [
-            r'\s*[\(\[](?:remaster(?:ed)?|remix|live|acoustic|demo|edit|version|ver\.?|'
-            r'feat\.?\s+[^)\]]+|ft\.?\s+[^)\]]+|with\s+[^)\]]+|'
-            r'\d{4}(?:\s+remaster)?|single|album|ep|radio|extended|original|'
-            r'bonus\s+track|deluxe|explicit|clean)[\)\]]\s*',
+            r"\s*[\(\[](?:remaster(?:ed)?|remix|live|acoustic|demo|edit|version|ver\.?|"
+            r"feat\.?\s+[^)\]]+|ft\.?\s+[^)\]]+|with\s+[^)\]]+|"
+            r"\d{4}(?:\s+remaster)?|single|album|ep|radio|extended|original|"
+            r"bonus\s+track|deluxe|explicit|clean)[\)\]]\s*",
         ]
         for pattern in metadata_patterns:
-            cleaned = re.sub(pattern, ' ', cleaned, flags=re.IGNORECASE)
-        cleaned = re.sub(r'\s+', ' ', cleaned).strip()
+            cleaned = re.sub(pattern, " ", cleaned, flags=re.IGNORECASE)
+        cleaned = re.sub(r"\s+", " ", cleaned).strip()
 
         # Try to split on " - " or " – " or " — "
-        for sep in [' - ', ' – ', ' — ', ' | ']:
+        for sep in [" - ", " – ", " — ", " | "]:
             if sep in cleaned:
                 parts = cleaned.split(sep, 1)
                 return parts[0].strip(), parts[1].strip()
@@ -774,8 +930,8 @@ class TrackIdentifier:
         # Try different splits - common patterns are 2-4 word artist names
         # Start from 2 words to avoid matching single words like "The" to "The Beatles"
         for split_point in range(2, min(5, len(words))):
-            potential_artist = ' '.join(words[:split_point])
-            potential_title = ' '.join(words[split_point:])
+            potential_artist = " ".join(words[:split_point])
+            potential_title = " ".join(words[split_point:])
 
             # Skip if potential title is too short
             if len(potential_title.split()) < 2:
@@ -787,14 +943,18 @@ class TrackIdentifier:
 
             # Quick check: query MusicBrainz for this artist
             try:
-                results = musicbrainzngs.search_artists(artist=potential_artist, limit=3)
-                artists = results.get('artist-list', [])
+                results = musicbrainzngs.search_artists(
+                    artist=potential_artist, limit=3
+                )
+                artists = results.get("artist-list", [])
 
                 for artist in artists:
-                    artist_name = artist.get('name', '')
+                    artist_name = artist.get("name", "")
                     # Check for exact match (case-insensitive)
                     if artist_name.lower() == potential_artist.lower():
-                        logger.debug(f"Detected artist '{artist_name}' from title: '{title}'")
+                        logger.debug(
+                            f"Detected artist '{artist_name}' from title: '{title}'"
+                        )
                         return artist_name, potential_title
 
                     # Accept if potential_artist contains most of artist_name
@@ -807,12 +967,16 @@ class TrackIdentifier:
                     if potential_lower in artist_name_lower:
                         # potential is substring of artist - check it's significant
                         if len(potential_lower) >= len(artist_name_lower) * 0.6:
-                            logger.debug(f"Detected artist '{artist_name}' from title: '{title}'")
+                            logger.debug(
+                                f"Detected artist '{artist_name}' from title: '{title}'"
+                            )
                             return artist_name, potential_title
                     elif artist_name_lower in potential_lower:
                         # artist is substring of potential - check it's significant
                         if len(artist_name_lower) >= len(potential_lower) * 0.6:
-                            logger.debug(f"Detected artist '{artist_name}' from title: '{title}'")
+                            logger.debug(
+                                f"Detected artist '{artist_name}' from title: '{title}'"
+                            )
                             return artist_name, potential_title
 
             except Exception as e:
@@ -826,7 +990,7 @@ class TrackIdentifier:
         query: str,
         artist_hint: Optional[str],
         title_hint: str,
-        max_retries: int = 3
+        max_retries: int = 3,
     ) -> List[Dict]:
         """Query MusicBrainz for recordings matching the query.
 
@@ -847,9 +1011,11 @@ class TrackIdentifier:
                         recording=title_hint, artist=artist_hint, limit=25
                     )
                 else:
-                    results = musicbrainzngs.search_recordings(recording=query, limit=25)
+                    results = musicbrainzngs.search_recordings(
+                        recording=query, limit=25
+                    )
 
-                recordings = results.get('recording-list', [])
+                recordings = results.get("recording-list", [])
 
                 # Score and sort recordings to prioritize studio versions and title matches
                 scored = []
@@ -858,22 +1024,35 @@ class TrackIdentifier:
 
                     # Bonus for title match (when user explicitly provides title)
                     if title_hint:
-                        rec_title = rec.get('title', '')
+                        rec_title = rec.get("title", "")
 
                         # First check exact match (with stopwords retained)
-                        title_hint_norm = self._normalize_title(title_hint, remove_stopwords=False)
-                        rec_title_norm = self._normalize_title(rec_title, remove_stopwords=False)
+                        title_hint_norm = self._normalize_title(
+                            title_hint, remove_stopwords=False
+                        )
+                        rec_title_norm = self._normalize_title(
+                            rec_title, remove_stopwords=False
+                        )
 
                         if rec_title_norm == title_hint_norm:
                             score += 100  # Strong bonus for exact match - should outweigh album release bonus
                         else:
                             # Check match with stopwords removed (looser matching)
-                            title_hint_no_stop = self._normalize_title(title_hint, remove_stopwords=True)
-                            rec_title_no_stop = self._normalize_title(rec_title, remove_stopwords=True)
+                            title_hint_no_stop = self._normalize_title(
+                                title_hint, remove_stopwords=True
+                            )
+                            rec_title_no_stop = self._normalize_title(
+                                rec_title, remove_stopwords=True
+                            )
 
                             if rec_title_no_stop == title_hint_no_stop:
-                                score += 30  # Moderate bonus for stopword-invariant match
-                            elif title_hint_no_stop in rec_title_no_stop or rec_title_no_stop in title_hint_no_stop:
+                                score += (
+                                    30  # Moderate bonus for stopword-invariant match
+                                )
+                            elif (
+                                title_hint_no_stop in rec_title_no_stop
+                                or rec_title_no_stop in title_hint_no_stop
+                            ):
                                 score += 15  # Small bonus for partial match
 
                     scored.append((score, rec))
@@ -884,13 +1063,22 @@ class TrackIdentifier:
 
             except Exception as e:
                 error_msg = str(e).lower()
-                is_transient = any(x in error_msg for x in [
-                    'connection', 'timeout', 'reset', 'temporarily', 'urlopen error'
-                ])
+                is_transient = any(
+                    x in error_msg
+                    for x in [
+                        "connection",
+                        "timeout",
+                        "reset",
+                        "temporarily",
+                        "urlopen error",
+                    ]
+                )
 
                 if is_transient and attempt < max_retries:
-                    delay = 1.0 * (2 ** attempt)
-                    logger.debug(f"MusicBrainz transient error, retrying in {delay:.1f}s: {e}")
+                    delay = 1.0 * (2**attempt)
+                    logger.debug(
+                        f"MusicBrainz transient error, retrying in {delay:.1f}s: {e}"
+                    )
                     time.sleep(delay)
                     continue
                 else:
@@ -910,20 +1098,35 @@ class TrackIdentifier:
         - Title patterns indicating non-studio versions
         """
         score = 100  # Base score
-        title = recording.get('title', '')
-        disambiguation = recording.get('disambiguation', '')
+        title = recording.get("title", "")
+        disambiguation = recording.get("disambiguation", "")
 
         # Check disambiguation field (MusicBrainz's own classification)
         disambig_lower = disambiguation.lower()
         non_studio_disambig = [
-            'live', 'demo', 'remix', 'acoustic', 'radio edit', 'single version',
-            'alternate', 'instrumental', 'a]cappella', 'karaoke', 'cover',
-            'session', 'bootleg', 'rehearsal', 'unplugged', 'stripped'
+            "live",
+            "demo",
+            "remix",
+            "acoustic",
+            "radio edit",
+            "single version",
+            "alternate",
+            "instrumental",
+            "a]cappella",
+            "karaoke",
+            "cover",
+            "session",
+            "bootleg",
+            "rehearsal",
+            "unplugged",
+            "stripped",
         ]
         for term in non_studio_disambig:
             if term in disambig_lower:
                 score -= 80
-                logger.debug(f"Recording '{title}' penalized for disambiguation: '{disambiguation}'")
+                logger.debug(
+                    f"Recording '{title}' penalized for disambiguation: '{disambiguation}'"
+                )
                 break
 
         # Check title for non-studio indicators
@@ -931,20 +1134,22 @@ class TrackIdentifier:
             score -= 60
 
         # Check release list if available
-        releases = recording.get('release-list', [])
+        releases = recording.get("release-list", [])
         has_album_release = False
         has_compilation_only = True
 
         for release in releases:
-            release_group = release.get('release-group', {})
-            primary_type = release_group.get('primary-type', '').lower()
-            secondary_types = [t.lower() for t in release_group.get('secondary-type-list', [])]
+            release_group = release.get("release-group", {})
+            primary_type = release_group.get("primary-type", "").lower()
+            secondary_types = [
+                t.lower() for t in release_group.get("secondary-type-list", [])
+            ]
 
             # Prefer recordings that appear on actual albums
-            if primary_type == 'album' and 'compilation' not in secondary_types:
+            if primary_type == "album" and "compilation" not in secondary_types:
                 has_album_release = True
                 has_compilation_only = False
-            elif primary_type in ['single', 'ep']:
+            elif primary_type in ["single", "ep"]:
                 has_compilation_only = False
 
         if has_album_release:
@@ -954,7 +1159,9 @@ class TrackIdentifier:
 
         return score
 
-    def _find_best_with_artist_hint(self, recordings: List[Dict], query: str, artist_hint: str) -> Optional[tuple]:
+    def _find_best_with_artist_hint(
+        self, recordings: List[Dict], query: str, artist_hint: str
+    ) -> Optional[tuple]:
         """Find best recording when artist hint is available."""
         # Use artist_hint words for matching, not the full query
         # Require significant overlap to prevent "Hamlet Express" matching "aucun express"
@@ -963,7 +1170,7 @@ class TrackIdentifier:
         matches = []
 
         for rec in recordings:
-            length = rec.get('length')
+            length = rec.get("length")
             if not length:
                 continue
 
@@ -974,23 +1181,29 @@ class TrackIdentifier:
             if duration_sec > 720:
                 continue
 
-            artist_credits = rec.get('artist-credit', [])
-            artists = [a['artist']['name'] for a in artist_credits if 'artist' in a]
-            artist_str_lower = self._normalize_title(' '.join(artists))
+            artist_credits = rec.get("artist-credit", [])
+            artists = [a["artist"]["name"] for a in artist_credits if "artist" in a]
+            artist_str_lower = self._normalize_title(" ".join(artists))
             artist_words = set(artist_str_lower.split())
 
             # Check if artist matches the hint with substantial overlap
             # Require either:
             # 1. Full containment (one is substring of the other)
             # 2. Majority word overlap (> 50% for multi-word, or exact match for single word)
-            if artist_hint_lower in artist_str_lower or artist_str_lower in artist_hint_lower:
+            if (
+                artist_hint_lower in artist_str_lower
+                or artist_str_lower in artist_hint_lower
+            ):
                 artist_matches = True
             elif artist_hint_words and artist_words:
                 # Calculate word overlap
                 overlap = artist_hint_words & artist_words
                 if len(artist_hint_words) == 1:
                     # Single word hint - require exact match
-                    artist_matches = artist_hint_words == artist_words or artist_hint_lower == artist_str_lower
+                    artist_matches = (
+                        artist_hint_words == artist_words
+                        or artist_hint_lower == artist_str_lower
+                    )
                 else:
                     # Multi-word hint - require > 50% overlap (strictly greater)
                     overlap_ratio = len(overlap) / len(artist_hint_words)
@@ -999,8 +1212,8 @@ class TrackIdentifier:
                 artist_matches = False
 
             if artist_matches:
-                artist_name = ' & '.join(artists) if artists else None
-                title = rec.get('title')
+                artist_name = " & ".join(artists) if artists else None
+                title = rec.get("title")
                 matches.append((duration_sec, artist_name, title))
 
         if not matches:
@@ -1008,7 +1221,9 @@ class TrackIdentifier:
 
         return self._score_and_select_best(matches)
 
-    def _find_best_title_only(self, recordings: List[Dict], title_hint: str) -> Optional[tuple]:
+    def _find_best_title_only(
+        self, recordings: List[Dict], title_hint: str
+    ) -> Optional[tuple]:
         """Find best recording for title-only searches using consensus and LRC preference.
 
         Note: This method is conservative - it requires an exact normalized title match.
@@ -1016,7 +1231,9 @@ class TrackIdentifier:
         the caller should also try artist/title splits.
         """
         title_normalized = self._normalize_title(title_hint)
-        title_normalized_no_stop = self._normalize_title(title_hint, remove_stopwords=True)
+        title_normalized_no_stop = self._normalize_title(
+            title_hint, remove_stopwords=True
+        )
         candidates = []
 
         # Check if query might contain an artist name (parenthetical in results would match)
@@ -1024,8 +1241,8 @@ class TrackIdentifier:
         query_words = set(title_hint.lower().split())
 
         for rec in recordings:
-            title = rec.get('title', '')
-            length = rec.get('length')
+            title = rec.get("title", "")
+            length = rec.get("length")
             if not length:
                 continue
 
@@ -1038,12 +1255,15 @@ class TrackIdentifier:
             rec_title_no_stop = self._normalize_title(title, remove_stopwords=True)
 
             # Try exact match first, then stopword-removed match
-            if rec_title_normalized != title_normalized and rec_title_no_stop != title_normalized_no_stop:
+            if (
+                rec_title_normalized != title_normalized
+                and rec_title_no_stop != title_normalized_no_stop
+            ):
                 continue
 
-            artist_credits = rec.get('artist-credit', [])
-            artists = [a['artist']['name'] for a in artist_credits if 'artist' in a]
-            artist_name = ' & '.join(artists) if artists else None
+            artist_credits = rec.get("artist-credit", [])
+            artists = [a["artist"]["name"] for a in artist_credits if "artist" in a]
+            artist_name = " & ".join(artists) if artists else None
 
             if not artist_name:
                 continue
@@ -1051,44 +1271,56 @@ class TrackIdentifier:
             # Skip if this looks like a cover/tribute version
             # Pattern: Title has "(Artist)" crediting original artist, but performing artist is different
             # e.g., "Bohemian Rhapsody (Queen)" by "Doctor Octoroc"
-            paren_match = re.search(r'\(([^)]+)\)', title)
+            paren_match = re.search(r"\(([^)]+)\)", title)
             if paren_match:
                 paren_content = paren_match.group(1).lower().strip()
                 # If parenthetical content matches a query word but NOT the artist name,
                 # this is likely a cover crediting the original artist
                 paren_words = set(paren_content.split())
                 artist_words = set(artist_name.lower().split())
-                query_matches_paren = any(word in paren_content for word in query_words if len(word) > 3)
+                query_matches_paren = any(
+                    word in paren_content for word in query_words if len(word) > 3
+                )
 
                 if query_matches_paren and not (paren_words & artist_words):
                     # Parenthetical credits a different artist than the performer
-                    logger.debug(f"Skipping likely cover (credits original artist): {artist_name} - {title}")
+                    logger.debug(
+                        f"Skipping likely cover (credits original artist): {artist_name} - {title}"
+                    )
                     continue
 
-            candidates.append({
-                'duration': int(length) // 1000,
-                'artist': artist_name,
-                'title': title,
-            })
+            candidates.append(
+                {
+                    "duration": int(length) // 1000,
+                    "artist": artist_name,
+                    "title": title,
+                }
+            )
 
         if not candidates:
             return None
 
         # Find unique artists sorted by frequency
-        artist_counts = Counter(c['artist'] for c in candidates)
+        artist_counts = Counter(c["artist"] for c in candidates)
         all_artists = artist_counts.most_common()
 
         # Calculate MusicBrainz duration consensus (most common duration cluster)
-        all_durations = [c['duration'] for c in candidates]
+        all_durations = [c["duration"] for c in candidates]
         rounded_durations = [d // 5 * 5 for d in all_durations]
-        mb_consensus_duration = Counter(rounded_durations).most_common(1)[0][0] if rounded_durations else None
+        mb_consensus_duration = (
+            Counter(rounded_durations).most_common(1)[0][0]
+            if rounded_durations
+            else None
+        )
 
         # First pass: find artist with LRC available, but validate against MB consensus
         for artist_name, count in all_artists:
-            artist_matches = [c for c in candidates if c['artist'] == artist_name]
-            sample_title = artist_matches[0]['title']
+            artist_matches = [c for c in candidates if c["artist"] == artist_name]
+            sample_title = artist_matches[0]["title"]
 
-            lrc_available, lrc_duration = self._check_lrc_and_duration(sample_title, artist_name)
+            lrc_available, lrc_duration = self._check_lrc_and_duration(
+                sample_title, artist_name
+            )
             if lrc_available:
                 # Check if LRC duration is reasonable compared to MusicBrainz consensus
                 if lrc_duration and mb_consensus_duration:
@@ -1096,29 +1328,38 @@ class TrackIdentifier:
                     # If LRC duration differs significantly from MB consensus (>30s),
                     # prefer MB consensus - the LRC might be for a different version
                     if lrc_mb_diff > 30:
-                        logger.debug(f"LRC duration ({lrc_duration}s) differs from MB consensus ({mb_consensus_duration}s) by {lrc_mb_diff}s - using MB consensus")
+                        logger.debug(
+                            f"LRC duration ({lrc_duration}s) differs from MB"
+                            " consensus ({mb_consensus_duration}s) by {lrc_mb_diff}s - using MB consensus"
+                        )
                         # Sort by proximity to MB consensus instead
-                        artist_matches.sort(key=lambda c: abs(c['duration'] - mb_consensus_duration))
+                        artist_matches.sort(
+                            key=lambda c: abs(c["duration"] - mb_consensus_duration)
+                        )
                     else:
                         # LRC duration is reasonable, use it
-                        artist_matches.sort(key=lambda c: abs(c['duration'] - lrc_duration))
+                        artist_matches.sort(
+                            key=lambda c: abs(c["duration"] - lrc_duration)
+                        )
                 elif lrc_duration:
-                    artist_matches.sort(key=lambda c: abs(c['duration'] - lrc_duration))
+                    artist_matches.sort(key=lambda c: abs(c["duration"] - lrc_duration))
 
                 best = artist_matches[0]
-                return (best['duration'], best['artist'], best['title'])
+                return (best["duration"], best["artist"], best["title"])
 
         # Fallback: use most common artist with duration consensus
         if len(candidates) >= 2:
             most_common_artist, artist_count = all_artists[0]
             if artist_count >= 2 and artist_count / len(candidates) >= 0.4:
-                artist_matches = [c for c in candidates if c['artist'] == most_common_artist]
-                durations = [c['duration'] for c in artist_matches]
+                artist_matches = [
+                    c for c in candidates if c["artist"] == most_common_artist
+                ]
+                durations = [c["duration"] for c in artist_matches]
                 rounded = [d // 5 * 5 for d in durations]
                 duration_counts = Counter(rounded)
                 if duration_counts.most_common(1)[0][1] >= 2:
                     best = artist_matches[0]
-                    return (best['duration'], best['artist'], best['title'])
+                    return (best["duration"], best["artist"], best["title"])
 
         return None
 
@@ -1129,12 +1370,12 @@ class TrackIdentifier:
             title: Title string to normalize
             remove_stopwords: If True, remove common stopwords (the, el, los, etc.)
         """
-        normalized = re.sub(r'[,.\-:;\'\"!?()]', ' ', title.lower())
-        normalized = re.sub(r'\s+', ' ', normalized).strip()
+        normalized = re.sub(r"[,.\-:;\'\"!?()]", " ", title.lower())
+        normalized = re.sub(r"\s+", " ", normalized).strip()
 
         if remove_stopwords:
             words = [w for w in normalized.split() if w not in STOP_WORDS]
-            normalized = ' '.join(words)
+            normalized = " ".join(words)
 
         return normalized
 
@@ -1152,15 +1393,26 @@ class TrackIdentifier:
             score = 0
 
             # Penalize parenthetical suffixes (live, remix, demo, etc.)
-            paren_match = re.search(r'\([^)]+\)\s*$', title)
+            paren_match = re.search(r"\([^)]+\)\s*$", title)
             if paren_match:
                 paren_content = paren_match.group().lower()
-                if any(word in paren_content for word in ['live', 'remix', 'demo', 'acoustic', 'radio', 'edit', 'version']):
+                if any(
+                    word in paren_content
+                    for word in [
+                        "live",
+                        "remix",
+                        "demo",
+                        "acoustic",
+                        "radio",
+                        "edit",
+                        "version",
+                    ]
+                ):
                     score -= 100
                 else:
                     score -= 50
 
-            if re.search(r'\[[^\]]+\]\s*$', title):
+            if re.search(r"\[[^\]]+\]\s*$", title):
                 score -= 50
 
             return score
@@ -1194,7 +1446,9 @@ class TrackIdentifier:
 
         return max(matches, key=final_score)
 
-    def _check_lrc_and_duration(self, title: str, artist: str, expected_duration: Optional[int] = None) -> tuple[bool, Optional[int]]:
+    def _check_lrc_and_duration(
+        self, title: str, artist: str, expected_duration: Optional[int] = None
+    ) -> tuple[bool, Optional[int]]:
         """Check if synced LRC lyrics are available, valid, and get implied duration.
 
         Uses improved LRC validation to ensure lyrics have sufficient quality:
@@ -1207,14 +1461,21 @@ class TrackIdentifier:
             return self._lrc_cache[cache_key]
 
         try:
-            from .sync import fetch_lyrics_multi_source, get_lrc_duration, validate_lrc_quality, SYNCEDLYRICS_AVAILABLE
+            from .sync import (
+                fetch_lyrics_multi_source,
+                get_lrc_duration,
+                validate_lrc_quality,
+                SYNCEDLYRICS_AVAILABLE,
+            )
 
             if not SYNCEDLYRICS_AVAILABLE:
                 result = (False, None)
                 self._lrc_cache[cache_key] = result
                 return result
 
-            lrc_text, is_synced, _ = fetch_lyrics_multi_source(title, artist, synced_only=True)
+            lrc_text, is_synced, _ = fetch_lyrics_multi_source(
+                title, artist, synced_only=True
+            )
             if not is_synced or not lrc_text:
                 result = (False, None)
                 self._lrc_cache[cache_key] = result
@@ -1246,7 +1507,7 @@ class TrackIdentifier:
         candidates: List[Dict],
         target_duration: int,
         title_hint: str = "",
-        tolerance: int = 15
+        tolerance: int = 15,
     ) -> Optional[tuple[str, str, int]]:
         """Find the candidate whose LRC duration and title best match.
 
@@ -1268,11 +1529,13 @@ class TrackIdentifier:
         fallback_match = None
 
         # Normalize title hint for comparison
-        title_hint_words = set(self._normalize_title(title_hint, remove_stopwords=True).split())
+        title_hint_words = set(
+            self._normalize_title(title_hint, remove_stopwords=True).split()
+        )
 
         for candidate in candidates:
-            artist = candidate['artist']
-            title = candidate['title']
+            artist = candidate["artist"]
+            title = candidate["title"]
 
             # Pass expected duration to help with validation
             lrc_available, lrc_duration = self._check_lrc_and_duration(
@@ -1293,18 +1556,24 @@ class TrackIdentifier:
             duration_diff = abs(lrc_duration - target_duration)
 
             # Title similarity: check word overlap and sequence match
-            candidate_title_normalized = self._normalize_title(title, remove_stopwords=True)
+            candidate_title_normalized = self._normalize_title(
+                title, remove_stopwords=True
+            )
             candidate_title_words = set(candidate_title_normalized.split())
 
             # Word overlap score (0-1)
             if title_hint_words:
-                word_overlap = len(title_hint_words & candidate_title_words) / len(title_hint_words)
+                word_overlap = len(title_hint_words & candidate_title_words) / len(
+                    title_hint_words
+                )
             else:
                 word_overlap = 0
 
             # Sequence similarity (0-1)
             title_hint_norm = self._normalize_title(title_hint, remove_stopwords=False)
-            seq_similarity = SequenceMatcher(None, title_hint_norm, candidate_title_normalized).ratio()
+            seq_similarity = SequenceMatcher(
+                None, title_hint_norm, candidate_title_normalized
+            ).ratio()
 
             # Combined title score (higher is better)
             title_score = (word_overlap * 0.6) + (seq_similarity * 0.4)
@@ -1322,7 +1591,9 @@ class TrackIdentifier:
                 f"title_score={title_score:.2f}, combined={combined_score:.2f}"
             )
 
-            scored_matches.append((combined_score, duration_diff, artist, title, lrc_duration))
+            scored_matches.append(
+                (combined_score, duration_diff, artist, title, lrc_duration)
+            )
 
         if not scored_matches:
             if fallback_match:
@@ -1338,12 +1609,16 @@ class TrackIdentifier:
 
         # Warn if title match is poor
         if combined_score < 0.3:
-            logger.warning(f"Best LRC match has low title similarity ({combined_score:.2f})")
+            logger.warning(
+                f"Best LRC match has low title similarity ({combined_score:.2f})"
+            )
 
         if duration_diff <= tolerance:
             return (artist, title, lrc_duration)
         else:
-            logger.warning(f"Best LRC match has {duration_diff}s duration difference (tolerance: {tolerance}s)")
+            logger.warning(
+                f"Best LRC match has {duration_diff}s duration difference (tolerance: {tolerance}s)"
+            )
             return (artist, title, lrc_duration)
 
     def _is_likely_non_studio(self, title: str) -> bool:
@@ -1359,19 +1634,21 @@ class TrackIdentifier:
 
         # First check for studio edit/version indicators - these are NOT non-studio
         # Patterns like "single edit", "radio version", "album edit" indicate official releases
-        studio_edit_pattern = r'\b(single|radio|album)\s*(edit|version)?\b'
+        studio_edit_pattern = r"\b(single|radio|album)\s*(edit|version)?\b"
         if re.search(studio_edit_pattern, title_lower):
             # Check if this is actually a radio SHOW (non-studio) vs radio EDIT (studio)
             # "radio edit" = studio, "radio 1 session" = non-studio
-            if 'radio' in title_lower:
+            if "radio" in title_lower:
                 # Radio show indicators
                 radio_show_patterns = [
-                    r'radio\s*\d',  # "radio 1", "radio 2"
-                    r'radio\s+session',
-                    r'bbc\s+radio',
-                    r'radio\s+show',
+                    r"radio\s*\d",  # "radio 1", "radio 2"
+                    r"radio\s+session",
+                    r"bbc\s+radio",
+                    r"radio\s+show",
                 ]
-                is_radio_show = any(re.search(p, title_lower) for p in radio_show_patterns)
+                is_radio_show = any(
+                    re.search(p, title_lower) for p in radio_show_patterns
+                )
                 if not is_radio_show:
                     # This looks like "radio edit" or "radio version" - it's studio
                     return False
@@ -1382,22 +1659,53 @@ class TrackIdentifier:
         # Terms that indicate live/alternate versions
         non_studio_terms = [
             # Live performances
-            'live', 'concert', 'performance', 'performs', 'performing', 'tour', 'in concert',
+            "live",
+            "concert",
+            "performance",
+            "performs",
+            "performing",
+            "tour",
+            "in concert",
             # Alternate versions (but NOT radio/single/album edits - handled above)
-            'acoustic', 'unplugged', 'stripped', 'piano version',
-            'remix', 'extended', 'extended mix',
-            'demo', 'rehearsal', 'bootleg', 'outtake', 'alternate take',
+            "acoustic",
+            "unplugged",
+            "stripped",
+            "piano version",
+            "remix",
+            "extended",
+            "extended mix",
+            "demo",
+            "rehearsal",
+            "bootleg",
+            "outtake",
+            "alternate take",
             # Other artists
-            'cover', 'tribute', 'karaoke', 'instrumental',
+            "cover",
+            "tribute",
+            "karaoke",
+            "instrumental",
             # Not music
-            'reaction', 'tutorial', 'lesson', 'how to play', 'guitar lesson',
+            "reaction",
+            "tutorial",
+            "lesson",
+            "how to play",
+            "guitar lesson",
             # Audio effects
-            'slowed', 'sped up', 'reverb', '8d audio', 'nightcore', 'bass boosted',
+            "slowed",
+            "sped up",
+            "reverb",
+            "8d audio",
+            "nightcore",
+            "bass boosted",
             # Sessions (these are typically live/alternate recordings)
-            'session', 'sessions',
-            'bbc session', 'peel session', 'maida vale',
+            "session",
+            "sessions",
+            "bbc session",
+            "peel session",
+            "maida vale",
             # Parody
-            'parody', 'weird al',
+            "parody",
+            "weird al",
         ]
 
         # Check for any of these terms
@@ -1408,41 +1716,50 @@ class TrackIdentifier:
         # Check for common live venue patterns
         live_patterns = [
             # General venue patterns
-            r'\bat\b.*\b(show|festival|arena|stadium|hall|theater|theatre|club|center|centre)\b',
-            r'\blive\s+(at|from|in)\b',
+            r"\bat\b.*\b(show|festival|arena|stadium|hall|theater|theatre|club|center|centre)\b",
+            r"\blive\s+(at|from|in)\b",
             # TV shows
-            r'\b(snl|saturday night live|letterman|fallon|kimmel|conan|ellen|tonight show)\b',
-            r'\b(jools holland|later with|top of the pops|totp|graham norton)\b',
-            r'\b(tiny desk|npr|kexp|colors?\s*show|a]colors)\b',
+            r"\b(snl|saturday night live|letterman|fallon|kimmel|conan|ellen|tonight show)\b",
+            r"\b(jools holland|later with|top of the pops|totp|graham norton)\b",
+            r"\b(tiny desk|npr|kexp|colors?\s*show|a]colors)\b",
             # Festivals
-            r'\b(glastonbury|coachella|lollapalooza|reading|leeds|bonnaroo)\b',
-            r'\b(rock am ring|download|download festival|wacken|hellfest)\b',
-            r'\b(south by southwest|sxsw|austin city limits|acl)\b',
+            r"\b(glastonbury|coachella|lollapalooza|reading|leeds|bonnaroo)\b",
+            r"\b(rock am ring|download|download festival|wacken|hellfest)\b",
+            r"\b(south by southwest|sxsw|austin city limits|acl)\b",
             # Awards shows
-            r'\b(mtv|vma|grammy|grammys|brit awards?|ama|american music)\b',
-            r'\b(billboard|bet awards|iheartradio)\b',
+            r"\b(mtv|vma|grammy|grammys|brit awards?|ama|american music)\b",
+            r"\b(billboard|bet awards|iheartradio)\b",
             # Unplugged/session series
-            r'\b(unplugged|stripped|acoustic sessions?)\b',
-            r'\b(spotify\s*sessions?|apple\s*music\s*sessions?)\b',
+            r"\b(unplugged|stripped|acoustic sessions?)\b",
+            r"\b(spotify\s*sessions?|apple\s*music\s*sessions?)\b",
             # Year indicators often mean live recordings
-            r'\b(19|20)\d{2}\s+(tour|live|concert|performance)\b',
+            r"\b(19|20)\d{2}\s+(tour|live|concert|performance)\b",
         ]
         for pattern in live_patterns:
             if re.search(pattern, title_lower):
                 return True
 
         # Check for parenthetical indicators - but allow studio edits
-        paren_match = re.search(r'\(([^)]+)\)', title_lower)
+        paren_match = re.search(r"\(([^)]+)\)", title_lower)
         if paren_match:
             paren_content = paren_match.group(1)
             # Skip if it's a studio edit indicator
-            if re.search(r'\b(single|radio|album)\s*(edit|version)?\b', paren_content):
+            if re.search(r"\b(single|radio|album)\s*(edit|version)?\b", paren_content):
                 return False
             # Check for non-studio indicators
-            if any(term in paren_content for term in [
-                'live', 'acoustic', 'remix', 'demo', 'cover',
-                'session', 'unplugged', 'stripped'
-            ]):
+            if any(
+                term in paren_content
+                for term in [
+                    "live",
+                    "acoustic",
+                    "remix",
+                    "demo",
+                    "cover",
+                    "session",
+                    "unplugged",
+                    "stripped",
+                ]
+            ):
                 return True
 
         return False
@@ -1452,7 +1769,7 @@ class TrackIdentifier:
         query: str,
         target_duration: int,
         expected_artist: Optional[str],
-        expected_title: Optional[str]
+        expected_title: Optional[str],
     ) -> Optional[Dict[str, Any]]:
         """Search YouTube and return a video that matches artist/title.
 
@@ -1477,7 +1794,7 @@ class TrackIdentifier:
         search_url = f"https://www.youtube.com/results?search_query={search_query}"
 
         headers = {
-            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
+            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36"
         }
 
         try:
@@ -1495,23 +1812,25 @@ class TrackIdentifier:
 
             # Filter and score candidates
             scored = []
-            tolerance = max(20, int(target_duration * 0.15)) if target_duration > 0 else 30
+            tolerance = (
+                max(20, int(target_duration * 0.15)) if target_duration > 0 else 30
+            )
 
             for c in candidates:
-                if c['duration'] is None:
+                if c["duration"] is None:
                     continue
 
-                duration_diff = abs(c['duration'] - target_duration)
+                duration_diff = abs(c["duration"] - target_duration)
                 if duration_diff > tolerance:
                     continue
 
                 # Skip non-studio versions
-                if self._is_likely_non_studio(c['title']):
+                if self._is_likely_non_studio(c["title"]):
                     logger.debug(f"Skipping non-studio: {c['title']}")
                     continue
 
                 # Score by how well the title matches expected artist/title
-                video_title_normalized = self._normalize_title(c['title'])
+                video_title_normalized = self._normalize_title(c["title"])
                 video_words = set(video_title_normalized.split())
 
                 artist_match = len(artist_words & video_words) if artist_words else 0
@@ -1526,16 +1845,20 @@ class TrackIdentifier:
                 # Score: higher match is better, lower duration diff is better
                 score = (total_match * 10) - duration_diff
                 scored.append((score, c))
-                logger.debug(f"YouTube candidate: {c['title']} (match={total_match}, diff={duration_diff}s, score={score})")
+                logger.debug(
+                    f"YouTube candidate: {c['title']} (match={total_match}, diff={duration_diff}s, score={score})"
+                )
 
             if scored:
                 scored.sort(key=lambda x: x[0], reverse=True)
                 best = scored[0][1]
-                logger.info(f"Found: https://www.youtube.com/watch?v={best['video_id']}")
+                logger.info(
+                    f"Found: https://www.youtube.com/watch?v={best['video_id']}"
+                )
                 return {
-                    'url': f"https://www.youtube.com/watch?v={best['video_id']}",
-                    'duration': best['duration'],
-                    'title': best['title']
+                    "url": f"https://www.youtube.com/watch?v={best['video_id']}",
+                    "duration": best["duration"],
+                    "title": best["title"],
                 }
 
         except Exception as e:
@@ -1544,9 +1867,7 @@ class TrackIdentifier:
         return None
 
     def _search_youtube_by_duration(
-        self,
-        query: str,
-        target_duration: int
+        self, query: str, target_duration: int
     ) -> Optional[Dict[str, Any]]:
         """Search YouTube and return the video with closest duration match.
 
@@ -1565,20 +1886,26 @@ class TrackIdentifier:
 
         if result:
             # Check if this is a good duration match
-            if target_duration > 0 and result['duration']:
+            if target_duration > 0 and result["duration"]:
                 tolerance = max(20, int(target_duration * 0.15))
-                diff = abs(result['duration'] - target_duration)
+                diff = abs(result["duration"] - target_duration)
                 if diff <= tolerance:
                     return result
 
                 # Not a good match - try with "audio" as fallback
-                logger.debug(f"Initial search found video with duration diff={diff}s, trying 'audio' search")
-                audio_result = self._search_youtube_single(f"{query} audio", target_duration)
+                logger.debug(
+                    f"Initial search found video with duration diff={diff}s, trying 'audio' search"
+                )
+                audio_result = self._search_youtube_single(
+                    f"{query} audio", target_duration
+                )
 
-                if audio_result and audio_result['duration']:
-                    audio_diff = abs(audio_result['duration'] - target_duration)
+                if audio_result and audio_result["duration"]:
+                    audio_diff = abs(audio_result["duration"] - target_duration)
                     if audio_diff < diff:
-                        logger.debug(f"'audio' search found better match: diff={audio_diff}s vs {diff}s")
+                        logger.debug(
+                            f"'audio' search found better match: diff={audio_diff}s vs {diff}s"
+                        )
                         return audio_result
 
                 # Original was still better (or audio search found nothing)
@@ -1587,13 +1914,11 @@ class TrackIdentifier:
                 return result
 
         # First search found nothing, try with "audio"
-        logger.debug(f"Initial search found no results, trying 'audio' search")
+        logger.debug("Initial search found no results, trying 'audio' search")
         return self._search_youtube_single(f"{query} audio", target_duration)
 
     def _search_youtube_single(
-        self,
-        query: str,
-        target_duration: int
+        self, query: str, target_duration: int
     ) -> Optional[Dict[str, Any]]:
         """Execute a single YouTube search and return the best match.
 
@@ -1613,7 +1938,7 @@ class TrackIdentifier:
         search_url = f"https://www.youtube.com/results?search_query={search_query}"
 
         headers = {
-            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
+            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36"
         }
 
         try:
@@ -1627,58 +1952,76 @@ class TrackIdentifier:
 
             # Check if query explicitly asks for a non-studio version
             query_lower = query.lower()
-            query_wants_non_studio = any(term in query_lower for term in
-                ['live', 'concert', 'acoustic', 'remix', 'cover', 'karaoke'])
+            query_wants_non_studio = any(
+                term in query_lower
+                for term in ["live", "concert", "acoustic", "remix", "cover", "karaoke"]
+            )
 
             # Filter candidates with duration info
-            with_duration = [c for c in candidates if c['duration'] is not None]
+            with_duration = [c for c in candidates if c["duration"] is not None]
 
             if not with_duration:
                 # No duration info available, just filter out non-studio and take first
                 if not query_wants_non_studio:
-                    filtered = [c for c in candidates if not self._is_likely_non_studio(c['title'])]
+                    filtered = [
+                        c
+                        for c in candidates
+                        if not self._is_likely_non_studio(c["title"])
+                    ]
                     if filtered:
                         candidates = filtered
                 if candidates:
                     return {
-                        'url': f"https://www.youtube.com/watch?v={candidates[0]['video_id']}",
-                        'duration': None
+                        "url": f"https://www.youtube.com/watch?v={candidates[0]['video_id']}",
+                        "duration": None,
                     }
                 return None
 
             # Filter out non-studio versions first (unless query asks for them)
             if not query_wants_non_studio:
-                studio_candidates = [c for c in with_duration if not self._is_likely_non_studio(c['title'])]
+                studio_candidates = [
+                    c
+                    for c in with_duration
+                    if not self._is_likely_non_studio(c["title"])
+                ]
                 if studio_candidates:
                     with_duration = studio_candidates
-                    logger.debug(f"Filtered to {len(studio_candidates)} studio version candidates")
+                    logger.debug(
+                        f"Filtered to {len(studio_candidates)} studio version candidates"
+                    )
 
             # Use proportional tolerance: max of 20s or 15% of target duration
-            tolerance = max(20, int(target_duration * 0.15)) if target_duration > 0 else 30
+            tolerance = (
+                max(20, int(target_duration * 0.15)) if target_duration > 0 else 30
+            )
 
             # Sort by duration difference from target
-            with_duration.sort(key=lambda c: abs(c['duration'] - target_duration))
+            with_duration.sort(key=lambda c: abs(c["duration"] - target_duration))
 
             for candidate in with_duration:
-                diff = abs(candidate['duration'] - target_duration)
-                logger.debug(f"YouTube candidate: '{candidate['title']}' duration={candidate['duration']}s, diff={diff}s")
+                diff = abs(candidate["duration"] - target_duration)
+                logger.debug(
+                    f"YouTube candidate: '{candidate['title']}' duration={candidate['duration']}s, diff={diff}s"
+                )
 
                 if diff <= tolerance:
                     return {
-                        'url': f"https://www.youtube.com/watch?v={candidate['video_id']}",
-                        'duration': candidate['duration']
+                        "url": f"https://www.youtube.com/watch?v={candidate['video_id']}",
+                        "duration": candidate["duration"],
                     }
 
             # No good duration match found - take the best available from filtered list
             # but warn about the mismatch
             if with_duration:
                 best = with_duration[0]
-                diff = abs(best['duration'] - target_duration) if target_duration else 0
-                logger.warning(f"No YouTube video within {tolerance}s of target ({target_duration}s). "
-                             f"Best match: '{best['title']}' ({best['duration']}s, diff={diff}s)")
+                diff = abs(best["duration"] - target_duration) if target_duration else 0
+                logger.warning(
+                    f"No YouTube video within {tolerance}s of target ({target_duration}s). "
+                    f"Best match: '{best['title']}' ({best['duration']}s, diff={diff}s)"
+                )
                 return {
-                    'url': f"https://www.youtube.com/watch?v={best['video_id']}",
-                    'duration': best['duration']
+                    "url": f"https://www.youtube.com/watch?v={best['video_id']}",
+                    "duration": best["duration"],
                 }
 
             return None
@@ -1693,7 +2036,7 @@ class TrackIdentifier:
 
         video_pattern = re.compile(
             r'"videoRenderer":\{"videoId":"([^"]{11})".{0,800}?"title":\{"runs":\[\{"text":"([^"]+)"',
-            re.DOTALL
+            re.DOTALL,
         )
 
         for match in video_pattern.finditer(response_text):
@@ -1706,17 +2049,17 @@ class TrackIdentifier:
             duration_sec = None
             if duration_match:
                 time_str = duration_match.group(1)
-                parts = time_str.split(':')
+                parts = time_str.split(":")
                 if len(parts) == 2:
                     duration_sec = int(parts[0]) * 60 + int(parts[1])
                 elif len(parts) == 3:
-                    duration_sec = int(parts[0]) * 3600 + int(parts[1]) * 60 + int(parts[2])
+                    duration_sec = (
+                        int(parts[0]) * 3600 + int(parts[1]) * 60 + int(parts[2])
+                    )
 
-            candidates.append({
-                'video_id': video_id,
-                'title': title,
-                'duration': duration_sec
-            })
+            candidates.append(
+                {"video_id": video_id, "title": title, "duration": duration_sec}
+            )
 
         return candidates
 
@@ -1730,18 +2073,18 @@ class TrackIdentifier:
             import yt_dlp
 
             ydl_opts = {
-                'quiet': True,
-                'no_warnings': True,
-                'extract_flat': False,
-                'skip_download': True,
+                "quiet": True,
+                "no_warnings": True,
+                "extract_flat": False,
+                "skip_download": True,
             }
 
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                 info = ydl.extract_info(url, download=False)
 
-                title = info.get('title', 'Unknown')
-                uploader = info.get('uploader', info.get('channel', 'Unknown'))
-                duration = int(info.get('duration', 0))
+                title = info.get("title", "Unknown")
+                uploader = info.get("uploader", info.get("channel", "Unknown"))
+                duration = int(info.get("duration", 0))
 
                 return title, uploader, duration
 
@@ -1762,8 +2105,8 @@ class TrackIdentifier:
         return TrackInfo(
             artist=artist_hint or "Unknown",
             title=title_hint,
-            duration=youtube_result['duration'] or 0,
-            youtube_url=youtube_result['url'],
-            youtube_duration=youtube_result['duration'] or 0,
-            source="youtube"
+            duration=youtube_result["duration"] or 0,
+            youtube_url=youtube_result["url"],
+            youtube_duration=youtube_result["duration"] or 0,
+            source="youtube",
         )

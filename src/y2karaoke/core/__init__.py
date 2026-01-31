@@ -6,16 +6,30 @@ from .audio_effects import AudioProcessor, process_audio
 from .models import SingerID, Word, Line, SongMetadata
 from .lyrics import LyricsProcessor, get_lyrics
 from .video_writer import render_karaoke_video
-from .backgrounds import BackgroundProcessor, BackgroundSegment, create_background_segments
+from .backgrounds import (
+    BackgroundProcessor,
+    BackgroundSegment,
+    create_background_segments,
+)
 from .karaoke import KaraokeGenerator
 
 __all__ = [
-    'YouTubeDownloader', 'download_audio', 'download_video',
-    'AudioSeparator', 'separate_vocals',
-    'AudioProcessor', 'process_audio',
-    'SingerID', 'Word', 'Line', 'SongMetadata',
-    'LyricsProcessor', 'get_lyrics',
-    'render_karaoke_video',
-    'BackgroundProcessor', 'BackgroundSegment', 'create_background_segments',
-    'KaraokeGenerator',
+    "YouTubeDownloader",
+    "download_audio",
+    "download_video",
+    "AudioSeparator",
+    "separate_vocals",
+    "AudioProcessor",
+    "process_audio",
+    "SingerID",
+    "Word",
+    "Line",
+    "SongMetadata",
+    "LyricsProcessor",
+    "get_lyrics",
+    "render_karaoke_video",
+    "BackgroundProcessor",
+    "BackgroundSegment",
+    "create_background_segments",
+    "KaraokeGenerator",
 ]

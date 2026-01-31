@@ -2,7 +2,7 @@
 
 from typing import List, Tuple, Optional
 import numpy as np
-
+from .models import Line, Word
 from ..utils.logging import get_logger
 
 logger = get_logger(__name__)
@@ -32,8 +32,12 @@ def detect_audio_silence_regions(
 
         hop_length = 512
         frame_length = 2048
-        rms = librosa.feature.rms(y=y, frame_length=frame_length, hop_length=hop_length)[0]
-        times = librosa.frames_to_time(np.arange(len(rms)), sr=sr, hop_length=hop_length)
+        rms = librosa.feature.rms(
+            y=y, frame_length=frame_length, hop_length=hop_length
+        )[0]
+        times = librosa.frames_to_time(
+            np.arange(len(rms)), sr=sr, hop_length=hop_length
+        )
 
         # Use absolute threshold based on noise floor to peak ratio
         # This is more reliable than percentile for detecting instrumental breaks
@@ -42,7 +46,9 @@ def detect_audio_silence_regions(
         peak_level = np.percentile(rms, 95)
         # Threshold at noise_floor + 10% of dynamic range - catches instrumental bleed
         threshold = noise_floor + 0.10 * (peak_level - noise_floor)
-        logger.debug(f"Silence detection: noise={noise_floor:.4f}, peak={peak_level:.4f}, threshold={threshold:.4f}")
+        logger.debug(
+            f"Silence detection: noise={noise_floor:.4f}, peak={peak_level:.4f}, threshold={threshold:.4f}"
+        )
 
         # Find silence regions
         is_silent = rms < threshold
@@ -103,7 +109,9 @@ def detect_lrc_gaps(
 
         if gap_duration >= min_gap_duration:
             gaps.append((current_time, next_time))
-            logger.debug(f"LRC gap {len(gaps)}: {current_time:.1f}s - {next_time:.1f}s ({gap_duration:.1f}s)")
+            logger.debug(
+                f"LRC gap {len(gaps)}: {current_time:.1f}s - {next_time:.1f}s ({gap_duration:.1f}s)"
+            )
 
     return gaps
 
@@ -154,7 +162,10 @@ def calculate_gap_adjustments(
             duration_diff = audio_duration - lrc_duration
 
             if abs(duration_diff) > 1.0:  # Only adjust for differences > 1s
-                logger.info(f"Gap at LRC {lrc_start:.1f}s: LRC={lrc_duration:.1f}s, audio={audio_duration:.1f}s, diff={duration_diff:+.1f}s")
+                logger.info(
+                    f"Gap at LRC {lrc_start:.1f}s: LRC={lrc_duration:.1f}s,"
+                    " audio={audio_duration:.1f}s, diff={duration_diff:+.1f}s"
+                )
                 cumulative_adj += duration_diff
                 adjustments.append((lrc_end, cumulative_adj))
         else:
@@ -173,101 +184,82 @@ def adjust_timing_for_duration_mismatch(
     lrc_duration: Optional[int] = None,
     audio_duration: Optional[int] = None,
 ) -> list:
-    """Adjust lyrics timing based on duration mismatches between LRC and audio.
+    """Adjust lyrics timing based on duration mismatches between LRC and audio."""
 
-    This handles cases where the LRC was created for a different version of the
-    song (e.g., radio edit vs. album version with extended instrumental breaks).
+    # Early exit if durations close enough
+    if _durations_within_tolerance(lrc_duration, audio_duration):
+        return lines
 
-    Strategy:
-    1. Detect large gaps in LRC and corresponding silences in audio
-    2. For each gap, calculate if there's a duration difference
-    3. Apply cumulative adjustments to lines after each gap
-
-    Args:
-        lines: List of Line objects with timing
-        line_timings: Original LRC line timings
-        vocals_path: Path to vocals audio
-        lrc_duration: Duration implied by LRC (optional)
-        audio_duration: Actual audio duration (optional)
-
-    Returns:
-        Lines with adjusted timing
-    """
-    from .models import Line, Word
-
-    # Skip if durations are close enough
-    if lrc_duration and audio_duration:
-        diff = abs(audio_duration - lrc_duration)
-        if diff <= 10:
-            logger.debug(f"Duration difference ({diff}s) within tolerance, no gap adjustment needed")
-            return lines
-
-    # Detect gaps in LRC
+    # Detect gaps and silences
     lrc_gaps = detect_lrc_gaps(line_timings, min_gap_duration=10.0)
     if not lrc_gaps:
         logger.debug("No significant LRC gaps detected")
         return lines
 
-    # Detect silence regions in audio
     audio_silences = detect_audio_silence_regions(vocals_path, min_silence_duration=10.0)
     if not audio_silences:
         logger.debug("No significant audio silences detected")
         return lines
 
-    # Match LRC gaps to audio silences and calculate adjustments
-    # The key insight: we need to align where vocals RESUME after each break
-    # LRC gap end = when LRC expects next line
-    # Audio silence end = when vocals actually resume
-    # Adjustment = audio_silence_end - lrc_gap_end
-    adjustments = []  # List of (lrc_gap_end, cumulative_adjustment)
-    cumulative_adj = 0.0
-
-    for lrc_start, lrc_end in lrc_gaps:
-        lrc_gap_duration = lrc_end - lrc_start
-
-        # Find audio silence that corresponds to this LRC gap
-        # Account for previous adjustments when matching
-        adjusted_lrc_start = lrc_start + cumulative_adj
-        best_match = None
-        best_distance = float('inf')
-
-        for audio_start, audio_end in audio_silences:
-            # Match based on where singing should resume (end of gap/silence)
-            adjusted_lrc_end = lrc_end + cumulative_adj
-            distance = abs(audio_end - adjusted_lrc_end)
-            # Also check start alignment
-            start_distance = abs(audio_start - adjusted_lrc_start)
-
-            # Use minimum of start or end distance
-            match_distance = min(distance, start_distance)
-            if match_distance < best_distance and match_distance < 20.0:
-                best_distance = match_distance
-                best_match = (audio_start, audio_end)
-
-        if best_match:
-            audio_start, audio_end = best_match
-
-            # Calculate adjustment: where do vocals actually resume vs where LRC expects
-            # If audio_end > lrc_end + cumulative_adj: audio has longer silence, shift lyrics later
-            # If audio_end < lrc_end + cumulative_adj: audio has shorter silence, shift lyrics earlier
-            adjusted_lrc_end = lrc_end + cumulative_adj
-            end_diff = audio_end - adjusted_lrc_end
-
-            if abs(end_diff) > 1.0:  # Only adjust for differences > 1s
-                logger.info(f"Gap at LRC {lrc_start:.1f}s: LRC resumes at {lrc_end:.1f}s, "
-                           f"audio resumes at {audio_end:.1f}s, shift={end_diff:+.1f}s")
-                cumulative_adj += end_diff
-                adjustments.append((lrc_end, cumulative_adj))
-        else:
-            logger.debug(f"No audio silence match for LRC gap at {lrc_start:.1f}s")
+    # Calculate adjustments
+    adjustments = _calculate_adjustments(lrc_gaps, audio_silences)
 
     if not adjustments:
         logger.debug("No timing adjustments calculated")
         return lines
 
-    logger.info(f"Total timing adjustment: {cumulative_adj:+.1f}s")
+    logger.info(f"Total timing adjustment: {adjustments[-1][1]:+.1f}s")
 
     # Apply adjustments to lines
+    return _apply_adjustments_to_lines(lines, adjustments)
+
+
+# --- helpers below ---
+
+def _durations_within_tolerance(lrc_duration, audio_duration, tolerance=10) -> bool:
+    if lrc_duration is None or audio_duration is None:
+        return False
+    diff = abs(audio_duration - lrc_duration)
+    if diff <= tolerance:
+        logger.debug(f"Duration difference ({diff}s) within tolerance, no adjustment needed")
+        return True
+    return False
+
+
+def _calculate_adjustments(lrc_gaps, audio_silences, max_match_distance=20.0):
+    """Return list of (lrc_gap_end, cumulative_adjustment)."""
+    adjustments = []
+    cumulative_adj = 0.0
+
+    for lrc_start, lrc_end in lrc_gaps:
+        adjusted_lrc_start = lrc_start + cumulative_adj
+        best_match, best_distance = None, float("inf")
+
+        for audio_start, audio_end in audio_silences:
+            adjusted_lrc_end = lrc_end + cumulative_adj
+            distance = min(abs(audio_end - adjusted_lrc_end), abs(audio_start - adjusted_lrc_start))
+            if distance < best_distance and distance < max_match_distance:
+                best_distance = distance
+                best_match = (audio_start, audio_end)
+
+        if best_match:
+            audio_start, audio_end = best_match
+            end_diff = audio_end - (lrc_end + cumulative_adj)
+            if abs(end_diff) > 1.0:
+                logger.info(
+                    f"Gap at LRC {lrc_start:.1f}s: LRC resumes at {lrc_end:.1f}s, "
+                    f"audio resumes at {audio_end:.1f}s, shift={end_diff:+.1f}s"
+                )
+                cumulative_adj += end_diff
+                adjustments.append((lrc_end, cumulative_adj))
+        else:
+            logger.debug(f"No audio silence match for LRC gap at {lrc_start:.1f}s")
+
+    return adjustments
+
+
+def _apply_adjustments_to_lines(lines: list, adjustments: list) -> list:
+    """Apply cumulative adjustments to Line objects."""
     adjusted_lines = []
 
     for line in lines:
@@ -275,28 +267,26 @@ def adjust_timing_for_duration_mismatch(
             adjusted_lines.append(line)
             continue
 
-        # Find which adjustment applies to this line
-        line_start = line.start_time
+        # Determine adjustment for this line
         adjustment = 0.0
-
         for gap_end, adj in adjustments:
-            if line_start >= gap_end:
+            if line.start_time >= gap_end:
                 adjustment = adj
 
         if adjustment == 0.0:
             adjusted_lines.append(line)
             continue
 
-        # Apply adjustment to all words in this line
-        new_words = []
-        for word in line.words:
-            new_words.append(Word(
-                text=word.text,
-                start_time=word.start_time + adjustment,
-                end_time=word.end_time + adjustment,
-                singer=word.singer,
-            ))
-
+        # Apply adjustment to all words
+        new_words = [
+            Word(
+                text=w.text,
+                start_time=w.start_time + adjustment,
+                end_time=w.end_time + adjustment,
+                singer=w.singer,
+            )
+            for w in line.words
+        ]
         adjusted_lines.append(Line(words=new_words, singer=line.singer))
 
         line_text = " ".join(w.text for w in line.words[:3])
@@ -329,7 +319,7 @@ def detect_song_start(audio_path: str, min_duration: float = 0.3) -> float:
             y=y_vocal_band,
             sr=sr,
             hop_length=hop_length,
-            aggregate=np.median  # More robust to outliers
+            aggregate=np.median,  # More robust to outliers
         )
 
         # Find onsets with backtracking to get actual start times
@@ -338,7 +328,7 @@ def detect_song_start(audio_path: str, min_duration: float = 0.3) -> float:
             sr=sr,
             hop_length=hop_length,
             backtrack=True,
-            units='time'
+            units="time",
         )
 
         if len(onsets) == 0:
@@ -361,7 +351,9 @@ def detect_song_start(audio_path: str, min_duration: float = 0.3) -> float:
                 continue
 
             # Check for sustained activity in the frames following the onset
-            frames_above = rms[onset_frame:onset_frame + min_frames] > energy_threshold
+            frames_above = (
+                rms[onset_frame: onset_frame + min_frames] > energy_threshold
+            )
             if np.mean(frames_above) > 0.6:  # At least 60% of frames above threshold
                 logger.debug(f"Detected vocal onset at {onset_time:.2f}s")
                 return onset_time
@@ -377,7 +369,6 @@ def detect_song_start(audio_path: str, min_duration: float = 0.3) -> float:
 
 def _bandpass_filter(y, sr: int, low_freq: int = 100, high_freq: int = 4000):
     """Apply a bandpass filter to isolate vocal frequencies."""
-    import numpy as np
     from scipy import signal
 
     # Design butterworth bandpass filter
@@ -386,7 +377,7 @@ def _bandpass_filter(y, sr: int, low_freq: int = 100, high_freq: int = 4000):
     high = min(high_freq / nyquist, 0.99)  # Stay below Nyquist
 
     # Use 4th order filter for good selectivity without ringing
-    b, a = signal.butter(4, [low, high], btype='band')
+    b, a = signal.butter(4, [low, high], btype="band")
 
     # Apply filter with zero-phase (filtfilt) for no time delay
     y_filtered = signal.filtfilt(b, a, y)
@@ -404,11 +395,7 @@ def _detect_song_start_rms(y, sr: int, min_duration: float = 0.3) -> float:
     frame_length = int(0.05 * sr)
     hop_length = frame_length // 2
 
-    rms = librosa.feature.rms(
-        y=y,
-        frame_length=frame_length,
-        hop_length=hop_length
-    )[0]
+    rms = librosa.feature.rms(y=y, frame_length=frame_length, hop_length=hop_length)[0]
 
     noise_floor = np.percentile(rms, 10)
     peak_level = np.percentile(rms, 95)
