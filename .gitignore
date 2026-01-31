@@ -30,3 +30,6 @@ output/
 .cache/
 .genius_cache
 tests/.genius_cache
+
+# Coverage
+.coverage

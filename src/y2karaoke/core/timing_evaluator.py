@@ -812,6 +812,85 @@ def select_best_source(
     return None, None, None
 
 
+def _find_best_onset_for_phrase_end(
+    onset_times: np.ndarray,
+    line_start: float,
+    prev_line_audio_end: float,
+    audio_features: AudioFeatures,
+) -> Optional[float]:
+    """Find best onset when LRC timestamp is at end of phrase (silence follows)."""
+    search_start = max(0, prev_line_audio_end + 0.2)
+    candidate_onsets = onset_times[
+        (onset_times >= search_start) & (onset_times < line_start)
+    ]
+
+    for onset in candidate_onsets:
+        onset_silence_before = _check_vocal_activity_in_range(
+            max(0, onset - 0.5), onset - 0.1, audio_features
+        )
+        if onset_silence_before < 0.3:
+            return onset
+    return None
+
+
+def _find_best_onset_proximity(
+    onset_times: np.ndarray,
+    line_start: float,
+    max_correction: float,
+    audio_features: AudioFeatures,
+) -> Optional[float]:
+    """Find best onset using proximity-based scoring."""
+    search_start = line_start - max_correction
+    search_end = line_start + max_correction
+    candidate_onsets = onset_times[
+        (onset_times >= search_start) & (onset_times <= search_end)
+    ]
+
+    best_onset = None
+    best_score = float("inf")
+
+    for onset in candidate_onsets:
+        distance = abs(onset - line_start)
+        onset_silence_before = _check_vocal_activity_in_range(
+            max(0, onset - 0.5), onset - 0.1, audio_features
+        )
+
+        score = distance
+        if onset_silence_before < 0.3:
+            score -= 1.0  # Bonus for following silence
+        if onset < line_start - 0.5:
+            score += 1.0  # Penalty for being too early
+
+        if score < best_score:
+            best_score = score
+            best_onset = onset
+
+    return best_onset
+
+
+def _find_best_onset_during_silence(
+    onset_times: np.ndarray,
+    line_start: float,
+    prev_line_audio_end: float,
+    max_correction: float,
+    audio_features: AudioFeatures,
+) -> Optional[float]:
+    """Find best onset when LRC timestamp falls during silence."""
+    search_after = max(prev_line_audio_end + 0.2, line_start - max_correction)
+    search_before = line_start + max_correction
+    candidate_onsets = onset_times[
+        (onset_times >= search_after) & (onset_times <= search_before)
+    ]
+
+    for onset in candidate_onsets:
+        silence_before = _check_vocal_activity_in_range(
+            max(0, onset - 0.5), onset - 0.1, audio_features
+        )
+        if silence_before < 0.3:
+            return onset
+    return None
+
+
 def correct_line_timestamps(
     lines: List[Line],
     audio_features: AudioFeatures,
@@ -839,8 +918,6 @@ def correct_line_timestamps(
     corrected_lines: List[Line] = []
     corrections: List[str] = []
     onset_times = audio_features.onset_times
-
-    # Track where previous line's audio actually ended (for fallback)
     prev_line_audio_end = 0.0
 
     for i, line in enumerate(lines):
@@ -849,8 +926,6 @@ def correct_line_timestamps(
             continue
 
         line_start = line.start_time
-
-        # Check if LRC timestamp is reasonable (singing at or near that time)
         singing_at_lrc_time = (
             _check_vocal_activity_in_range(
                 line_start - 0.5, line_start + 0.5, audio_features
@@ -862,8 +937,6 @@ def correct_line_timestamps(
 
         if len(onset_times) > 0:
             if singing_at_lrc_time:
-                # Check if LRC timestamp is at END of a phrase (silence follows)
-                # vs BEGINNING (silence precedes)
                 silence_after = (
                     _check_vocal_activity_in_range(
                         line_start + 0.1, line_start + 0.6, audio_features
@@ -878,89 +951,37 @@ def correct_line_timestamps(
                 )
 
                 if silence_after and not silence_before:
-                    # LRC timestamp is at END of phrase - find phrase start
-                    # Look backwards for the onset that started this phrase
-                    search_start = max(0, prev_line_audio_end + 0.2)
-                    candidate_onsets = onset_times[
-                        (onset_times >= search_start) & (onset_times < line_start)
-                    ]
-
-                    for onset in candidate_onsets:
-                        onset_silence_before = _check_vocal_activity_in_range(
-                            max(0, onset - 0.5), onset - 0.1, audio_features
-                        )
-                        if onset_silence_before < 0.3:
-                            best_onset = onset
-                            break
-                else:
-                    # Normal case: LRC timestamp is reasonable, use proximity-based correction
-                    best_score = float("inf")
-                    search_start = line_start - max_correction
-                    search_end = line_start + max_correction
-
-                    candidate_onsets = onset_times[
-                        (onset_times >= search_start) & (onset_times <= search_end)
-                    ]
-
-                    for onset in candidate_onsets:
-                        distance = abs(onset - line_start)
-
-                        onset_silence_before = _check_vocal_activity_in_range(
-                            max(0, onset - 0.5), onset - 0.1, audio_features
-                        )
-
-                        score = distance
-                        if onset_silence_before < 0.3:
-                            score -= 1.0  # Bonus for following silence
-                        if onset < line_start - 0.5:
-                            score += 1.0  # Penalty for being too early
-
-                        if score < best_score:
-                            best_score = score
-                            best_onset = onset
-
-            else:
-                # Fallback: LRC timestamp falls during silence
-                # Be conservative - only correct if we find a clear phrase start nearby
-                # Use same max_correction as normal case to avoid large shifts
-                search_after = max(
-                    prev_line_audio_end + 0.2, line_start - max_correction
-                )
-                search_before = line_start + max_correction
-
-                candidate_onsets = onset_times[
-                    (onset_times >= search_after) & (onset_times <= search_before)
-                ]
-
-                for onset in candidate_onsets:
-                    silence_before = _check_vocal_activity_in_range(
-                        max(0, onset - 0.5), onset - 0.1, audio_features
+                    best_onset = _find_best_onset_for_phrase_end(
+                        onset_times, line_start, prev_line_audio_end, audio_features
                     )
-
-                    if silence_before < 0.3:
-                        # Found phrase start after silence
-                        best_onset = onset
-                        break
+                else:
+                    best_onset = _find_best_onset_proximity(
+                        onset_times, line_start, max_correction, audio_features
+                    )
+            else:
+                best_onset = _find_best_onset_during_silence(
+                    onset_times,
+                    line_start,
+                    prev_line_audio_end,
+                    max_correction,
+                    audio_features,
+                )
 
             if best_onset is not None:
                 offset = best_onset - line_start
 
-                # Apply correction if significant
                 if abs(offset) > 0.3:
-                    new_words = []
-                    for word in line.words:
-                        new_words.append(
-                            Word(
-                                text=word.text,
-                                start_time=word.start_time + offset,
-                                end_time=word.end_time + offset,
-                                singer=word.singer,
-                            )
+                    new_words = [
+                        Word(
+                            text=word.text,
+                            start_time=word.start_time + offset,
+                            end_time=word.end_time + offset,
+                            singer=word.singer,
                         )
+                        for word in line.words
+                    ]
 
-                    corrected_line = Line(words=new_words, singer=line.singer)
-                    corrected_lines.append(corrected_line)
-
+                    corrected_lines.append(Line(words=new_words, singer=line.singer))
                     prev_line_audio_end = _find_phrase_end(
                         best_onset,
                         best_onset + 30.0,
@@ -974,7 +995,6 @@ def correct_line_timestamps(
                     )
                     continue
 
-        # No correction needed
         corrected_lines.append(line)
         prev_line_audio_end = _find_phrase_end(
             line_start, line_start + 30.0, audio_features, min_silence_duration=0.3
@@ -1734,6 +1754,47 @@ def _whisper_lang_to_epitran(lang: str) -> str:
     return mapping.get(lang, "eng-Latn")  # Default to English
 
 
+def _find_best_whisper_match(
+    lrc_text: str,
+    lrc_start: float,
+    sorted_whisper: List[TranscriptionWord],
+    used_indices: set,
+    min_similarity: float,
+    max_time_shift: float,
+    language: str,
+) -> Tuple[Optional[TranscriptionWord], Optional[int], float]:
+    """Find the best matching Whisper word for an LRC word.
+
+    Returns:
+        Tuple of (best_match, best_match_index, best_similarity)
+    """
+    best_match = None
+    best_match_idx = None
+    best_similarity = 0.0
+
+    for i, ww in enumerate(sorted_whisper):
+        if i in used_indices:
+            continue
+
+        time_diff = abs(ww.start - lrc_start)
+        if time_diff > max_time_shift:
+            if ww.start > lrc_start + max_time_shift:
+                break
+            continue
+
+        basic_sim = _text_similarity_basic(lrc_text, ww.text)
+        if basic_sim < 0.25:
+            continue
+
+        similarity = _phonetic_similarity(lrc_text, ww.text, language)
+        if similarity > best_similarity and similarity >= min_similarity:
+            best_similarity = similarity
+            best_match = ww
+            best_match_idx = i
+
+    return best_match, best_match_idx, best_similarity
+
+
 def align_words_to_whisper(
     lines: List[Line],
     whisper_words: List[TranscriptionWord],
@@ -1742,11 +1803,6 @@ def align_words_to_whisper(
     language: str = "fra-Latn",
 ) -> Tuple[List[Line], List[str]]:
     """Align individual LRC words to Whisper word timestamps using phonetic matching.
-
-    This is more precise than segment-level alignment because:
-    1. Whisper's word timestamps are generally accurate even when text isn't
-    2. Phonetic matching handles speech recognition errors
-    3. We can correct individual words without affecting the whole line
 
     Args:
         lines: Lyrics lines with word-level timing
@@ -1763,20 +1819,15 @@ def align_words_to_whisper(
     if not lines or not whisper_words:
         return lines, []
 
-    aligned_lines: List[Line] = []
-    corrections: List[str] = []
-
-    # Pre-compute IPA for all Whisper words (they'll be compared many times)
+    # Pre-compute IPA for all Whisper words
     logger.debug(f"Pre-computing IPA for {len(whisper_words)} Whisper words...")
     for ww in whisper_words:
         _get_ipa(ww.text, language)
 
-    # Build a time-indexed structure for efficient lookup
-    # Sort whisper words by start time
     sorted_whisper = sorted(whisper_words, key=lambda w: w.start)
-
-    # Track which whisper words have been used
     used_whisper_indices: set = set()
+    aligned_lines: List[Line] = []
+    corrections: List[str] = []
 
     for line in lines:
         if not line.words:
@@ -1788,69 +1839,39 @@ def align_words_to_whisper(
 
         for word in line.words:
             lrc_text = word.text.strip()
-            lrc_start = word.start_time
-
-            # Skip very short words (punctuation, etc.)
             if len(lrc_text) < 2:
                 new_words.append(word)
                 continue
 
-            # Find best matching Whisper word within time window
-            best_match = None
-            best_match_idx = None
-            best_similarity = 0.0
-
-            for i, ww in enumerate(sorted_whisper):
-                if i in used_whisper_indices:
-                    continue
-
-                # Only consider words within time window
-                time_diff = abs(ww.start - lrc_start)
-                if time_diff > max_time_shift:
-                    # Since sorted, we can break early if we've passed the window
-                    if ww.start > lrc_start + max_time_shift:
-                        break
-                    continue
-
-                # Quick pre-filter: skip if basic similarity is too low
-                # This avoids expensive phonetic comparison for obvious non-matches
-                basic_sim = _text_similarity_basic(lrc_text, ww.text)
-                if basic_sim < 0.25:
-                    continue
-
-                # Calculate phonetic similarity (uses cached IPA)
-                similarity = _phonetic_similarity(lrc_text, ww.text, language)
-
-                if similarity > best_similarity and similarity >= min_similarity:
-                    best_similarity = similarity
-                    best_match = ww
-                    best_match_idx = i
+            best_match, best_idx, _ = _find_best_whisper_match(
+                lrc_text,
+                word.start_time,
+                sorted_whisper,
+                used_whisper_indices,
+                min_similarity,
+                max_time_shift,
+                language,
+            )
 
             if best_match is not None:
-                # Found a good match - adopt Whisper timing
-                time_shift = best_match.start - lrc_start
-                used_whisper_indices.add(best_match_idx)
-
-                # Only correct if shift is significant (> 0.15s)
+                used_whisper_indices.add(best_idx)
+                time_shift = best_match.start - word.start_time
                 if abs(time_shift) > 0.15:
-                    new_word = Word(
-                        text=word.text,
-                        start_time=best_match.start,
-                        end_time=best_match.end,
-                        singer=word.singer,
+                    new_words.append(
+                        Word(
+                            text=word.text,
+                            start_time=best_match.start,
+                            end_time=best_match.end,
+                            singer=word.singer,
+                        )
                     )
-                    new_words.append(new_word)
                     line_corrections += 1
                 else:
                     new_words.append(word)
             else:
-                # No good match, keep original
                 new_words.append(word)
 
-        # Create new line with updated words
-        new_line = Line(words=new_words, singer=line.singer)
-        aligned_lines.append(new_line)
-
+        aligned_lines.append(Line(words=new_words, singer=line.singer))
         if line_corrections > 0:
             line_text = " ".join(w.text for w in line.words)[:40]
             corrections.append(
@@ -1917,6 +1938,126 @@ def _assess_lrc_quality(
     return quality, assessments
 
 
+def _extract_lrc_words(lines: List[Line]) -> List[Dict]:
+    """Extract all LRC words with their line/word indices."""
+    lrc_words = []
+    for line_idx, line in enumerate(lines):
+        for word_idx, word in enumerate(line.words):
+            if len(word.text.strip()) >= 2:
+                lrc_words.append(
+                    {
+                        "line_idx": line_idx,
+                        "word_idx": word_idx,
+                        "text": word.text,
+                        "start": word.start_time,
+                        "end": word.end_time,
+                        "word": word,
+                    }
+                )
+    return lrc_words
+
+
+def _compute_phonetic_costs(
+    lrc_words: List[Dict],
+    whisper_words: List[TranscriptionWord],
+    language: str,
+    min_similarity: float,
+) -> Dict[Tuple[int, int], float]:
+    """Compute sparse phonetic cost matrix for DTW."""
+    from collections import defaultdict
+
+    phonetic_costs = defaultdict(lambda: 1.0)
+
+    for i, lw in enumerate(lrc_words):
+        lrc_time = lw["start"]
+        for j, ww in enumerate(whisper_words):
+            time_diff = abs(ww.start - lrc_time)
+            if time_diff > 20:
+                continue
+            sim = _phonetic_similarity(lw["text"], ww.text, language)
+            if sim >= min_similarity:
+                phonetic_costs[(i, j)] = 1.0 - sim
+
+    return phonetic_costs
+
+
+def _extract_alignments_from_path(
+    path: List[Tuple[int, int]],
+    lrc_words: List[Dict],
+    whisper_words: List[TranscriptionWord],
+    language: str,
+    min_similarity: float,
+) -> Dict[int, Tuple[TranscriptionWord, float]]:
+    """Extract validated alignments from DTW path."""
+    alignments_map = {}
+
+    for lrc_idx, whisper_idx in path:
+        if lrc_idx not in alignments_map:
+            ww = whisper_words[whisper_idx]
+            lw = lrc_words[lrc_idx]
+            sim = _phonetic_similarity(lw["text"], ww.text, language)
+            if sim >= min_similarity:
+                alignments_map[lrc_idx] = (ww, sim)
+
+    return alignments_map
+
+
+def _apply_dtw_alignments(
+    lines: List[Line],
+    lrc_words: List[Dict],
+    alignments_map: Dict[int, Tuple[TranscriptionWord, float]],
+) -> Tuple[List[Line], List[str]]:
+    """Apply DTW alignments to create corrected lines."""
+    from .models import Line, Word
+
+    corrections = []
+    aligned_lines = []
+
+    for line_idx, line in enumerate(lines):
+        if not line.words:
+            aligned_lines.append(line)
+            continue
+
+        new_words = []
+        line_corrections = 0
+
+        for word_idx, word in enumerate(line.words):
+            lrc_word_idx = None
+            for i, lw in enumerate(lrc_words):
+                if lw["line_idx"] == line_idx and lw["word_idx"] == word_idx:
+                    lrc_word_idx = i
+                    break
+
+            if lrc_word_idx is not None and lrc_word_idx in alignments_map:
+                ww, sim = alignments_map[lrc_word_idx]
+                time_shift = ww.start - word.start_time
+
+                if abs(time_shift) > 1.0:
+                    new_words.append(
+                        Word(
+                            text=word.text,
+                            start_time=ww.start,
+                            end_time=ww.end,
+                            singer=word.singer,
+                        )
+                    )
+                    line_corrections += 1
+                else:
+                    new_words.append(word)
+            else:
+                new_words.append(word)
+
+        aligned_lines.append(Line(words=new_words, singer=line.singer))
+
+        if line_corrections > 0:
+            line_text = " ".join(w.text for w in line.words)[:40]
+            corrections.append(
+                f'DTW aligned {line_corrections} word(s) in line {line_idx}: "{line_text}..."'
+            )
+
+    return aligned_lines, corrections
+
+
 def align_dtw_whisper(
     lines: List[Line],
     whisper_words: List[TranscriptionWord],
@@ -1937,27 +2078,10 @@ def align_dtw_whisper(
     Returns:
         Tuple of (aligned lines, list of corrections)
     """
-    from .models import Line, Word
-
     if not lines or not whisper_words:
         return lines, []
 
-    # Extract all LRC words with their line indices
-    lrc_words = []
-    for line_idx, line in enumerate(lines):
-        for word_idx, word in enumerate(line.words):
-            if len(word.text.strip()) >= 2:
-                lrc_words.append(
-                    {
-                        "line_idx": line_idx,
-                        "word_idx": word_idx,
-                        "text": word.text,
-                        "start": word.start_time,
-                        "end": word.end_time,
-                        "word": word,
-                    }
-                )
-
+    lrc_words = _extract_lrc_words(lines)
     if not lrc_words:
         return lines, []
 
@@ -1968,57 +2092,30 @@ def align_dtw_whisper(
     for lw in lrc_words:
         _get_ipa(lw["text"], language)
 
-    # Build cost matrix based on phonetic dissimilarity + temporal penalty
-    # Cost = (1 - similarity) + time_penalty
-    # Time penalty discourages matching words that are far apart in time
     logger.debug(
         f"DTW: Building cost matrix ({len(lrc_words)} x {len(whisper_words)})..."
     )
+    phonetic_costs = _compute_phonetic_costs(
+        lrc_words, whisper_words, language, min_similarity
+    )
 
-    from collections import defaultdict
-    import numpy as np
-
-    # Store word times for temporal penalty
-    lrc_times = np.array([lw["start"] for lw in lrc_words])
-    whisper_times = np.array([ww.start for ww in whisper_words])
-
-    # Compute phonetic similarities (sparse - only for words within time window)
-    phonetic_costs = defaultdict(lambda: 1.0)  # Default high cost
-
-    for i, lw in enumerate(lrc_words):
-        lrc_time = lw["start"]
-        for j, ww in enumerate(whisper_words):
-            # Only consider words within 20s of each other
-            time_diff = abs(ww.start - lrc_time)
-            if time_diff > 20:
-                continue
-            sim = _phonetic_similarity(lw["text"], ww.text, language)
-            if sim >= min_similarity:
-                phonetic_costs[(i, j)] = 1.0 - sim
-
-    # Run DTW using fastdtw with custom distance that includes temporal penalty
+    # Run DTW
     logger.debug("DTW: Running alignment...")
     try:
         from fastdtw import fastdtw
 
-        # Create sequences with both index and time
+        lrc_times = np.array([lw["start"] for lw in lrc_words])
+        whisper_times = np.array([ww.start for ww in whisper_words])
+
         lrc_seq = np.column_stack([np.arange(len(lrc_words)), lrc_times])
         whisper_seq = np.column_stack([np.arange(len(whisper_words)), whisper_times])
 
         def dtw_dist(a, b):
             i, lrc_t = int(a[0]), a[1]
             j, whisper_t = int(b[0]), b[1]
-
-            # Phonetic cost (0-1, lower is better match)
             phon_cost = phonetic_costs[(i, j)]
-
-            # Temporal penalty: penalize large time differences
-            # Scale so that 10s difference adds ~0.5 to cost
             time_diff = abs(whisper_t - lrc_t)
-            time_penalty = min(time_diff / 20.0, 1.0)  # Cap at 1.0
-
-            # Combined cost: phonetic similarity is primary, time is secondary
-            # Weight: 70% phonetic, 30% temporal
+            time_penalty = min(time_diff / 20.0, 1.0)
             return 0.7 * phon_cost + 0.3 * time_penalty
 
         distance, path = fastdtw(lrc_seq, whisper_seq, dist=dtw_dist)
@@ -2027,66 +2124,11 @@ def align_dtw_whisper(
         logger.warning("fastdtw not available, falling back to greedy alignment")
         return lines, []
 
-    # Extract alignment from path
-    # path is list of (lrc_idx, whisper_idx) tuples
-    alignments_map = {}  # lrc_word_idx -> whisper_word
-    for lrc_idx, whisper_idx in path:
-        if lrc_idx not in alignments_map:
-            # Only take first match for each LRC word
-            ww = whisper_words[whisper_idx]
-            lw = lrc_words[lrc_idx]
-            # Verify it's a reasonable match
-            sim = _phonetic_similarity(lw["text"], ww.text, language)
-            if sim >= min_similarity:
-                alignments_map[lrc_idx] = (ww, sim)
+    alignments_map = _extract_alignments_from_path(
+        path, lrc_words, whisper_words, language, min_similarity
+    )
 
-    # Apply alignments to create new lines
-    corrections = []
-    aligned_lines = []
-
-    for line_idx, line in enumerate(lines):
-        if not line.words:
-            aligned_lines.append(line)
-            continue
-
-        new_words = []
-        line_corrections = 0
-
-        for word_idx, word in enumerate(line.words):
-            # Find this word in lrc_words
-            lrc_word_idx = None
-            for i, lw in enumerate(lrc_words):
-                if lw["line_idx"] == line_idx and lw["word_idx"] == word_idx:
-                    lrc_word_idx = i
-                    break
-
-            if lrc_word_idx is not None and lrc_word_idx in alignments_map:
-                ww, sim = alignments_map[lrc_word_idx]
-                time_shift = ww.start - word.start_time
-
-                # Only correct if shift is significant (> 1s)
-                if abs(time_shift) > 1.0:
-                    new_word = Word(
-                        text=word.text,
-                        start_time=ww.start,
-                        end_time=ww.end,
-                        singer=word.singer,
-                    )
-                    new_words.append(new_word)
-                    line_corrections += 1
-                else:
-                    new_words.append(word)
-            else:
-                new_words.append(word)
-
-        new_line = Line(words=new_words, singer=line.singer)
-        aligned_lines.append(new_line)
-
-        if line_corrections > 0:
-            line_text = " ".join(w.text for w in line.words)[:40]
-            corrections.append(
-                f'DTW aligned {line_corrections} word(s) in line {line_idx}: "{line_text}..."'
-            )
+    aligned_lines, corrections = _apply_dtw_alignments(lines, lrc_words, alignments_map)
 
     logger.info(f"DTW alignment complete: {len(corrections)} lines modified")
     return aligned_lines, corrections
@@ -2188,6 +2230,63 @@ def correct_timing_with_whisper(
     return aligned_lines, alignments
 
 
+def _find_best_whisper_segment(
+    line_text: str,
+    line_start: float,
+    sorted_segments: List[TranscriptionSegment],
+    language: str,
+    min_similarity: float,
+) -> Tuple[Optional[TranscriptionSegment], float, float]:
+    """Find best matching Whisper segment for a line."""
+    best_segment = None
+    best_similarity = 0.0
+    best_offset = 0.0
+
+    for seg in sorted_segments:
+        if seg.start > line_start + 15 or seg.end < line_start - 15:
+            continue
+
+        similarity = _phonetic_similarity(line_text, seg.text, language)
+        if similarity > best_similarity and similarity >= min_similarity:
+            best_similarity = similarity
+            best_segment = seg
+            best_offset = seg.start - line_start
+
+    return best_segment, best_similarity, best_offset
+
+
+def _apply_offset_to_line(line: Line, offset: float) -> Line:
+    """Apply timing offset to all words in a line."""
+    from .models import Line, Word
+
+    new_words = [
+        Word(
+            text=word.text,
+            start_time=word.start_time + offset,
+            end_time=word.end_time + offset,
+            singer=word.singer,
+        )
+        for word in line.words
+    ]
+    return Line(words=new_words, singer=line.singer)
+
+
+def _calculate_drift_correction(
+    recent_offsets: List[float], trust_threshold: float
+) -> Optional[float]:
+    """Calculate drift correction from recent offsets if consistent drift exists."""
+    if len(recent_offsets) < 2:
+        return None
+
+    # Check recent lines for consistent drift
+    recent_nonzero = [o for o in recent_offsets[-5:] if abs(o) > 0.5]
+    if len(recent_nonzero) >= 2:
+        avg_drift = sum(recent_nonzero) / len(recent_nonzero)
+        if abs(avg_drift) > trust_threshold:
+            return avg_drift
+    return None
+
+
 def align_hybrid_lrc_whisper(
     lines: List[Line],
     segments: List[TranscriptionSegment],
@@ -2218,23 +2317,16 @@ def align_hybrid_lrc_whisper(
     Returns:
         Tuple of (aligned lines, list of corrections)
     """
-    from .models import Line, Word
-
     if not lines or not segments:
         return lines, []
 
-    # Pre-compute IPA for efficiency
     logger.debug(f"Pre-computing IPA for {len(words)} Whisper words...")
     for w in words:
         _get_ipa(w.text, language)
 
     aligned_lines: List[Line] = []
     corrections: List[str] = []
-
-    # Track timing drift for interpolation
     recent_offsets: List[float] = []
-
-    # Sort segments by time for efficient lookup
     sorted_segments = sorted(segments, key=lambda s: s.start)
 
     for line_idx, line in enumerate(lines):
@@ -2245,114 +2337,58 @@ def align_hybrid_lrc_whisper(
         line_text = " ".join(w.text for w in line.words)
         line_start = line.start_time
 
-        # Find best matching Whisper segment
-        best_segment = None
-        best_similarity = 0.0
-        best_offset = 0.0
+        best_segment, best_similarity, best_offset = _find_best_whisper_segment(
+            line_text, line_start, sorted_segments, language, min_similarity
+        )
 
-        for seg in sorted_segments:
-            # Only consider segments within reasonable range
-            if seg.start > line_start + 15 or seg.end < line_start - 15:
-                continue
-
-            similarity = _phonetic_similarity(line_text, seg.text, language)
-
-            if similarity > best_similarity and similarity >= min_similarity:
-                best_similarity = similarity
-                best_segment = seg
-                best_offset = seg.start - line_start
-
-        # Decide whether to trust LRC or use Whisper
         timing_error = abs(best_offset) if best_segment else float("inf")
 
+        # Case 1: LRC timing is good - keep it
         if best_segment and timing_error < trust_threshold:
-            # LRC timing is good - keep it
             aligned_lines.append(line)
-            recent_offsets.append(0.0)  # No drift
+            recent_offsets.append(0.0)
+            continue
 
-        elif (
+        # Case 2: LRC timing is significantly off - use Whisper
+        if (
             best_segment
             and timing_error >= correct_threshold
             and best_similarity >= 0.5
         ):
-            # LRC timing is significantly off - use Whisper
-            # Apply offset to all words in the line proportionally
-            new_words = []
-            for word in line.words:
-                new_word = Word(
-                    text=word.text,
-                    start_time=word.start_time + best_offset,
-                    end_time=word.end_time + best_offset,
-                    singer=word.singer,
-                )
-                new_words.append(new_word)
-
-            new_line = Line(words=new_words, singer=line.singer)
-            aligned_lines.append(new_line)
-
+            aligned_lines.append(_apply_offset_to_line(line, best_offset))
             corrections.append(
                 f'Line {line_idx} shifted {best_offset:+.1f}s (similarity: {best_similarity:.0%}): "{line_text[:35]}..."'
             )
             recent_offsets.append(best_offset)
+            continue
 
-        elif timing_error >= trust_threshold and timing_error < correct_threshold:
-            # Intermediate case - check if there's consistent drift
+        # Case 3: Intermediate timing error - check for consistent drift
+        if timing_error >= trust_threshold and timing_error < correct_threshold:
             if len(recent_offsets) >= 2 and all(
                 abs(o) > 0.5 for o in recent_offsets[-2:]
             ):
-                # Recent lines had drift, apply average drift to this line too
                 avg_drift = sum(recent_offsets[-3:]) / len(recent_offsets[-3:])
                 if abs(avg_drift) > trust_threshold:
-                    new_words = []
-                    for word in line.words:
-                        new_word = Word(
-                            text=word.text,
-                            start_time=word.start_time + avg_drift,
-                            end_time=word.end_time + avg_drift,
-                            singer=word.singer,
-                        )
-                        new_words.append(new_word)
-
-                    new_line = Line(words=new_words, singer=line.singer)
-                    aligned_lines.append(new_line)
-
+                    aligned_lines.append(_apply_offset_to_line(line, avg_drift))
                     corrections.append(
                         f'Line {line_idx} drift-corrected {avg_drift:+.1f}s: "{line_text[:35]}..."'
                     )
                     recent_offsets.append(avg_drift)
                     continue
 
-            # No clear signal - keep LRC
             aligned_lines.append(line)
             recent_offsets.append(0.0)
+            continue
 
+        # Case 4: No good match - apply drift correction if available
+        drift = _calculate_drift_correction(recent_offsets, trust_threshold)
+        if drift is not None:
+            aligned_lines.append(_apply_offset_to_line(line, drift))
+            corrections.append(
+                f'Line {line_idx} drift-corrected {drift:+.1f}s (no match): "{line_text[:35]}..."'
+            )
+            recent_offsets.append(drift)
         else:
-            # No good match - check for drift from recent corrections
-            if len(recent_offsets) >= 2:
-                recent_nonzero = [o for o in recent_offsets[-5:] if abs(o) > 0.5]
-                if len(recent_nonzero) >= 2:
-                    avg_drift = sum(recent_nonzero) / len(recent_nonzero)
-                    if abs(avg_drift) > trust_threshold:
-                        new_words = []
-                        for word in line.words:
-                            new_word = Word(
-                                text=word.text,
-                                start_time=word.start_time + avg_drift,
-                                end_time=word.end_time + avg_drift,
-                                singer=word.singer,
-                            )
-                            new_words.append(new_word)
-
-                        new_line = Line(words=new_words, singer=line.singer)
-                        aligned_lines.append(new_line)
-
-                        corrections.append(
-                            f'Line {line_idx} drift-corrected {avg_drift:+.1f}s (no match): "{line_text[:35]}..."'
-                        )
-                        recent_offsets.append(avg_drift)
-                        continue
-
-            # Keep original
             aligned_lines.append(line)
             recent_offsets.append(0.0)
 

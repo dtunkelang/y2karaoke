@@ -347,6 +347,112 @@ class TrackIdentifier:
     # Path A: Search String -> Track
     # -------------------------
 
+    def _score_split_candidate(
+        self, candidate: tuple, split_artist: str, split_title: str, query: str
+    ) -> Optional[int]:
+        """Score a split candidate for matching quality. Returns None to reject."""
+        duration, artist, title = candidate
+        query_words = set(query.lower().split())
+        query_lower = query.lower()
+
+        if duration > 720:
+            logger.debug(
+                f"Skipping candidate with unreasonable duration: {artist} - {title} ({duration}s)"
+            )
+            return None
+
+        has_lrc, _ = self._check_lrc_and_duration(title, artist)
+
+        score = 10 if has_lrc else 0
+
+        # Artist match bonus
+        if (
+            split_artist.lower() in artist.lower()
+            or artist.lower() in split_artist.lower()
+        ):
+            score += 20
+
+        # Artist in query check
+        artist_words = set(w for w in artist.lower().split() if len(w) > 2)
+        if any(w in query_lower for w in artist_words):
+            score += 15
+        else:
+            score -= 30
+
+        # Title matching
+        split_title_norm = self._normalize_title(split_title, remove_stopwords=True)
+        result_title_norm = self._normalize_title(title, remove_stopwords=True)
+        title_words = set(self._normalize_title(title).split())
+        split_title_words = set(self._normalize_title(split_title).split())
+        title_overlap = split_title_words & title_words
+
+        if not title_overlap:
+            logger.debug(
+                f"Skipping candidate with no title overlap: {artist} - {title}"
+            )
+            return None
+
+        if split_title_norm == result_title_norm:
+            score += 50
+        elif (
+            split_title_norm in result_title_norm
+            or result_title_norm in split_title_norm
+        ):
+            score += 25
+        else:
+            score += len(title_overlap) * 10
+
+        # Query word matching bonus
+        result_words = set(f"{artist} {title}".lower().split())
+        score += len(query_words & result_words) * 3
+
+        # Penalty for artist names that look like song titles
+        song_title_indicators = ["rhapsody", "symphony", "concerto", "song", "ballad"]
+        if any(ind in artist.lower() for ind in song_title_indicators):
+            score -= 15
+
+        return score
+
+    def _try_split_search(self, query: str) -> Optional[tuple]:
+        """Try artist/title splits to find best candidate."""
+        splits = self._try_artist_title_splits(query)
+        split_candidates = []
+
+        for split_artist, split_title in splits:
+            logger.debug(
+                f"Trying split: artist='{split_artist}', title='{split_title}'"
+            )
+            split_recordings = self._query_musicbrainz(
+                f"{split_artist} {split_title}", split_artist, split_title
+            )
+            if not split_recordings:
+                continue
+
+            candidate = self._find_best_with_artist_hint(
+                split_recordings, query, split_artist
+            )
+            if not candidate:
+                continue
+
+            score = self._score_split_candidate(
+                candidate, split_artist, split_title, query
+            )
+            if score is not None:
+                duration, artist, title = candidate
+                has_lrc, _ = self._check_lrc_and_duration(title, artist)
+                logger.debug(
+                    f"Split candidate: {artist} - {title} (score={score}, has_lrc={has_lrc})"
+                )
+                split_candidates.append((score, candidate))
+
+        if split_candidates:
+            split_candidates.sort(key=lambda x: x[0], reverse=True)
+            best = split_candidates[0][1]
+            logger.info(f"Selected best split match: {best[1]} - {best[2]}")
+            return best
+
+        return None
+
     def identify_from_search(self, query: str) -> TrackInfo:
         """Identify track from a search string (not a URL).
 
@@ -367,153 +473,30 @@ class TrackIdentifier:
         """
         logger.info(f"Identifying track from search: {query}")
 
-        # First, try direct LRC search - this often works and is simpler
         direct_result = self._try_direct_lrc_search(query)
         if direct_result:
             return direct_result
 
-        # Parse query for artist/title hints
         artist_hint, title_hint = self._parse_query(query)
         logger.debug(f"Parsed hints: artist='{artist_hint}', title='{title_hint}'")
 
-        # Query MusicBrainz
         recordings = self._query_musicbrainz(query, artist_hint, title_hint)
 
         if not recordings:
             logger.warning("No MusicBrainz results, falling back to YouTube search")
             return self._fallback_youtube_search(query)
 
-        # Find best candidate with LRC preference
         best = None
         if artist_hint:
             best = self._find_best_with_artist_hint(recordings, query, artist_hint)
         else:
             best = self._find_best_title_only(recordings, title_hint)
 
-        # If no match found and no separator was in query, try different artist/title splits
         if not best and not artist_hint:
             logger.debug(
                 "No match with title-only search, trying artist/title splits..."
             )
-            splits = self._try_artist_title_splits(query)
-            query_words = set(query.lower().split())
-            query_lower = query.lower()
-
-            # Collect all candidates with their quality scores
-            split_candidates = []
-            for split_artist, split_title in splits:
-                logger.debug(
-                    f"Trying split: artist='{split_artist}', title='{split_title}'"
-                )
-                split_recordings = self._query_musicbrainz(
-                    f"{split_artist} {split_title}", split_artist, split_title
-                )
-                if split_recordings:
-                    candidate = self._find_best_with_artist_hint(
-                        split_recordings, query, split_artist
-                    )
-                    if candidate:
-                        duration, artist, title = candidate
-
-                        # Skip recordings with unreasonable durations (> 12 minutes)
-                        # These are likely albums, compilations, or misidentified entries
-                        if duration > 720:
-                            logger.debug(
-                                f"Skipping candidate with unreasonable duration: {artist} - {title} ({duration}s)"
-                            )
-                            continue
-
-                        # Check if this candidate has LRC (higher confidence match)
-                        has_lrc, lrc_duration = self._check_lrc_and_duration(
-                            title, artist
-                        )
-
-                        # Score based on multiple factors
-                        score = 0
-                        if has_lrc:
-                            score += 10  # LRC available is important
-
-                        # Strong bonus if split_artist matches the result artist
-                        # (the search hint found what we were looking for)
-                        if (
-                            split_artist.lower() in artist.lower()
-                            or artist.lower() in split_artist.lower()
-                        ):
-                            score += 20
-
-                        # Check if result artist has any words in common with the query
-                        # This is crucial - an artist with NO connection to query is suspicious
-                        artist_words = set(
-                            w for w in artist.lower().split() if len(w) > 2
-                        )
-                        artist_in_query = any(w in query_lower for w in artist_words)
-                        if artist_in_query:
-                            score += 15
-                        else:
-                            # Strong penalty if artist is completely unrelated to query
-                            score -= 30
-
-                        # Strong bonus if split_title matches the result title
-                        # This is the most important signal - user typed this as the song name
-                        split_title_norm = self._normalize_title(
-                            split_title, remove_stopwords=True
-                        )
-                        result_title_norm = self._normalize_title(
-                            title, remove_stopwords=True
-                        )
-
-                        # Check title word overlap
-                        title_words = set(self._normalize_title(title).split())
-                        split_title_words = set(
-                            self._normalize_title(split_title).split()
-                        )
-                        title_overlap = split_title_words & title_words
-
-                        # REJECT candidates with zero title overlap - this prevents
-                        # "Prayers like Dirt" matching when looking for "Aucun Express"
-                        if not title_overlap:
-                            logger.debug(
-                                f"Skipping candidate with no title overlap: {artist} - {title} (split_title={split_title})"
-                            )
-                            continue
-
-                        if split_title_norm == result_title_norm:
-                            score += 50  # Strong bonus for exact title match
-                        elif (
-                            split_title_norm in result_title_norm
-                            or result_title_norm in split_title_norm
-                        ):
-                            score += 25  # Partial title match
-                        else:
-                            # Partial word overlap - bonus proportional to overlap
-                            score += len(title_overlap) * 10
-
-                        # Check if result title/artist contain query words
-                        result_words = set(f"{artist} {title}".lower().split())
-                        matching_words = query_words & result_words
-                        score += len(matching_words) * 3  # Bonus for matching words
-
-                        # Penalty if result artist looks like a song title (contains common song words)
-                        song_title_indicators = [
-                            "rhapsody",
-                            "symphony",
-                            "concerto",
-                            "song",
-                            "ballad",
-                        ]
-                        if any(ind in artist.lower() for ind in song_title_indicators):
-                            score -= 15  # Likely misidentified as artist
-
-                        split_candidates.append((score, candidate))
-                        logger.debug(
-                            f"Split candidate: {artist} - {title} (score={score}, has_lrc={has_lrc}, duration={duration}s)"
-                        )
-
-            # Pick the best candidate
-            if split_candidates:
-                split_candidates.sort(key=lambda x: x[0], reverse=True)
-                best = split_candidates[0][1]
-                logger.info(f"Selected best split match: {best[1]} - {best[2]}")
+            best = self._try_split_search(query)
 
         if not best:
             logger.warning("No suitable MusicBrainz candidate, falling back to YouTube")
@@ -524,7 +507,6 @@ class TrackIdentifier:
             f"Canonical track: {canonical_artist} - {canonical_title} ({canonical_duration}s)"
         )
 
-        # Validate LRC duration matches canonical duration
         from .sync import fetch_lyrics_for_duration
 
         _, _, _, lrc_duration = fetch_lyrics_for_duration(
@@ -539,13 +521,11 @@ class TrackIdentifier:
                 f"LRC duration ({lrc_duration}s) doesn't match canonical ({canonical_duration}s) - lyrics timing may be off"
             )
 
-        # Search YouTube with duration matching
         youtube_result = self._search_youtube_by_duration(
             f"{canonical_artist} {canonical_title}", canonical_duration
         )
 
         if not youtube_result:
-            # Try with original query
             youtube_result = self._search_youtube_by_duration(query, canonical_duration)
 
         if not youtube_result:
@@ -565,6 +545,146 @@ class TrackIdentifier:
     # -------------------------
     # Path B: YouTube URL -> Track
     # -------------------------
+
+    def _build_url_candidates(
+        self,
+        yt_uploader: str,
+        parsed_artist: Optional[str],
+        parsed_title: str,
+        recordings: List[Dict],
+    ) -> List[Dict]:
+        """Build deduplicated candidate list from various sources."""
+        candidates = []
+
+        if yt_uploader and parsed_title:
+            candidates.append({"artist": yt_uploader, "title": parsed_title})
+
+        if parsed_artist and parsed_title:
+            if not yt_uploader or parsed_artist.lower() != yt_uploader.lower():
+                candidates.append({"artist": parsed_artist, "title": parsed_title})
+
+        for rec in recordings:
+            artist_credits = rec.get("artist-credit", [])
+            artists = [a["artist"]["name"] for a in artist_credits if "artist" in a]
+            artist_name = " & ".join(artists) if artists else None
+            title = rec.get("title")
+            if artist_name and title:
+                candidates.append({"artist": artist_name, "title": title})
+
+        seen = set()
+        unique = []
+        for c in candidates:
+            key = (c["artist"].lower(), c["title"].lower())
+            if key not in seen:
+                seen.add(key)
+                unique.append(c)
+
+        return unique
+
+    def _search_matching_youtube_video(
+        self, artist: str, title: str, lrc_duration: int, yt_duration: int
+    ) -> Optional[TrackInfo]:
+        """Search for a YouTube video matching LRC duration."""
+        logger.info(
+            f"LRC duration ({lrc_duration}s) differs from YouTube ({yt_duration}s)"
+        )
+        logger.info("Searching for YouTube video matching LRC duration...")
+
+        search_queries = [
+            f"{artist} {title} official audio",
+            f"{artist} {title} audio",
+            f"{artist} {title}",
+        ]
+
+        for search_query in search_queries:
+            alt_youtube = self._search_youtube_verified(
+                search_query, lrc_duration, artist, title
+            )
+            if alt_youtube and alt_youtube["duration"]:
+                if abs(alt_youtube["duration"] - lrc_duration) <= 15:
+                    logger.info(
+                        f"Found matching YouTube video: {alt_youtube['url']} ({alt_youtube['duration']}s)"
+                    )
+                    return TrackInfo(
+                        artist=artist,
+                        title=title,
+                        duration=lrc_duration,
+                        youtube_url=alt_youtube["url"],
+                        youtube_duration=alt_youtube["duration"],
+                        source="syncedlyrics",
+                        lrc_duration=lrc_duration,
+                        lrc_validated=True,
+                    )
+
+        logger.warning(
+            f"Could not find clean YouTube video matching LRC duration ({lrc_duration}s)"
+        )
+
+        if abs(lrc_duration - yt_duration) > 20:
+            alt_youtube = self._search_youtube_verified(
+                f"{artist} {title} radio edit", lrc_duration, artist, title
+            )
+            if (
+                alt_youtube
+                and alt_youtube["duration"]
+                and abs(alt_youtube["duration"] - lrc_duration) <= 15
+            ):
+                logger.info(
+                    f"Found radio edit: {alt_youtube['url']} ({alt_youtube['duration']}s)"
+                )
+                return TrackInfo(
+                    artist=artist,
+                    title=title,
+                    duration=lrc_duration,
+                    youtube_url=alt_youtube["url"],
+                    youtube_duration=alt_youtube["duration"],
+                    source="syncedlyrics",
+                    lrc_duration=lrc_duration,
+                    lrc_validated=True,
+                )
+
+        return None
+
+    def _find_fallback_artist_title(
+        self,
+        unique_candidates: List[Dict],
+        yt_uploader: str,
+        parsed_artist: Optional[str],
+        parsed_title: str,
+        yt_title: str,
+    ) -> tuple[str, str]:
+        """Find fallback artist/title when no LRC match is found."""
+        fallback_artist = None
+        fallback_title = None
+
+        if unique_candidates:
+            for c in unique_candidates:
+                if c["artist"] != yt_uploader:
+                    fallback_artist = c["artist"]
+                    fallback_title = c["title"]
+                    break
+
+        if not fallback_artist:
+            fallback_artist = parsed_artist
+            fallback_title = parsed_title
+
+        if not fallback_artist and parsed_title:
+            splits = self._try_artist_title_splits(parsed_title)
+            for split_artist, split_title in splits[:3]:
+                has_lrc, _ = self._check_lrc_and_duration(split_title, split_artist)
+                if has_lrc:
+                    fallback_artist = split_artist
+                    fallback_title = split_title
+                    logger.info(
+                        f"Found LRC with title split: {split_artist} - {split_title}"
+                    )
+                    break
+
+        if not fallback_artist:
+            fallback_artist = yt_uploader or "Unknown"
+            fallback_title = parsed_title or yt_title
+
+        return fallback_artist, fallback_title
 
     def identify_from_url(
         self,
@@ -592,17 +712,14 @@ class TrackIdentifier:
         """
         logger.info(f"Identifying track from URL: {url}")
 
-        # Get YouTube metadata
         yt_title, yt_uploader, yt_duration = self._get_youtube_metadata(url)
         logger.info(f"YouTube: '{yt_title}' by {yt_uploader} ({yt_duration}s)")
 
-        # If explicit artist/title provided, use them directly (skip YouTube parsing)
         if artist_hint and title_hint:
             logger.info(f"Using provided artist/title: {artist_hint} - {title_hint}")
             parsed_artist = artist_hint
             parsed_title = title_hint
         else:
-            # Cross-validate: warn if YouTube title suggests non-studio version
             if self._is_likely_non_studio(yt_title):
                 logger.warning(
                     f"YouTube video appears to be non-studio version: '{yt_title}'"
@@ -611,53 +728,21 @@ class TrackIdentifier:
                     "Lyrics timing may not match. Consider using a studio version URL."
                 )
 
-            # Parse video title for hints
             parsed_artist, parsed_title = self._parse_youtube_title(yt_title)
             logger.debug(
                 f"Parsed from title: artist='{parsed_artist}', title='{parsed_title}'"
             )
 
-        # Query MusicBrainz for candidates
         search_query = (
             f"{parsed_artist} {parsed_title}" if parsed_artist else parsed_title
         )
         recordings = self._query_musicbrainz(search_query, parsed_artist, parsed_title)
 
-        # Build candidate list with (artist, title) pairs
-        # PRIORITY: YouTube uploader is often the correct artist for official channels
-        candidates = []
-
-        # Add YouTube uploader as HIGH PRIORITY candidate first
-        # Official artist channels (like "The Doors") are the most reliable source
-        if yt_uploader and parsed_title:
-            candidates.append({"artist": yt_uploader, "title": parsed_title})
-
-        # Add parsed artist from title if different from uploader
-        if parsed_artist and parsed_title:
-            if not yt_uploader or parsed_artist.lower() != yt_uploader.lower():
-                candidates.append({"artist": parsed_artist, "title": parsed_title})
-
-        # Add MusicBrainz results (lower priority - may include covers)
-        for rec in recordings:
-            artist_credits = rec.get("artist-credit", [])
-            artists = [a["artist"]["name"] for a in artist_credits if "artist" in a]
-            artist_name = " & ".join(artists) if artists else None
-            title = rec.get("title")
-            if artist_name and title:
-                candidates.append({"artist": artist_name, "title": title})
-
-        # Deduplicate candidates
-        seen = set()
-        unique_candidates = []
-        for c in candidates:
-            key = (c["artist"].lower(), c["title"].lower())
-            if key not in seen:
-                seen.add(key)
-                unique_candidates.append(c)
-
+        unique_candidates = self._build_url_candidates(
+            yt_uploader, parsed_artist, parsed_title, recordings
+        )
         logger.debug(f"Found {len(unique_candidates)} unique candidates to check")
 
-        # Find best LRC match by duration AND title similarity
         best_match = self._find_best_lrc_by_duration(
             unique_candidates, yt_duration, parsed_title or yt_title
         )
@@ -666,78 +751,18 @@ class TrackIdentifier:
             artist, title, lrc_duration = best_match
             lrc_validated = abs(lrc_duration - yt_duration) <= 15
 
-            # Additional cross-validation: if YouTube is non-studio but we found studio LRC,
-            # the timing might be off
             if self._is_likely_non_studio(yt_title) and not lrc_validated:
                 logger.warning(
                     f"Non-studio YouTube video with mismatched LRC duration "
-                    f"(YT: {yt_duration}s, LRC: {lrc_duration}s). Timing may be significantly off."
+                    f"(YT: {yt_duration}s, LRC: {lrc_duration}s)"
                 )
 
-            # If LRC duration doesn't match YouTube, try to find a YouTube video that matches the LRC
-            # This handles cases where user provided album version URL but LRC is for radio edit
             if not lrc_validated and abs(lrc_duration - yt_duration) > 15:
-                logger.info(
-                    f"LRC duration ({lrc_duration}s) differs from YouTube"
-                    " ({yt_duration}s) by {abs(lrc_duration - yt_duration)}s"
+                alt_result = self._search_matching_youtube_video(
+                    artist, title, lrc_duration, yt_duration
                 )
-                logger.info("Searching for YouTube video matching LRC duration...")
-
-                # Use _search_youtube_verified to ensure we find videos that MATCH the expected song
-                # This prevents picking a different song by the same artist with similar duration
-                search_queries = [
-                    f"{artist} {title} official audio",  # Most likely to be clean studio recording
-                    f"{artist} {title} audio",
-                    f"{artist} {title}",
-                ]
-
-                for search_query in search_queries:
-                    alt_youtube = self._search_youtube_verified(
-                        search_query, lrc_duration, artist, title
-                    )
-
-                    if alt_youtube and alt_youtube["duration"]:
-                        alt_diff = abs(alt_youtube["duration"] - lrc_duration)
-                        if alt_diff <= 15:
-                            logger.info(
-                                f"Found matching YouTube video: {alt_youtube['url']} ({alt_youtube['duration']}s)"
-                            )
-                            return TrackInfo(
-                                artist=artist,
-                                title=title,
-                                duration=lrc_duration,
-                                youtube_url=alt_youtube["url"],
-                                youtube_duration=alt_youtube["duration"],
-                                source="syncedlyrics",
-                                lrc_duration=lrc_duration,
-                                lrc_validated=True,
-                            )
-
-                logger.warning(
-                    f"Could not find clean YouTube video matching LRC duration ({lrc_duration}s)"
-                )
-
-                # Also try searching with "radio edit" if the difference suggests it
-                if abs(lrc_duration - yt_duration) > 20:
-                    alt_youtube = self._search_youtube_verified(
-                        f"{artist} {title} radio edit", lrc_duration, artist, title
-                    )
-                    if alt_youtube and alt_youtube["duration"]:
-                        alt_diff = abs(alt_youtube["duration"] - lrc_duration)
-                        if alt_diff <= 15:
-                            logger.info(
-                                f"Found radio edit: {alt_youtube['url']} ({alt_youtube['duration']}s)"
-                            )
-                            return TrackInfo(
-                                artist=artist,
-                                title=title,
-                                duration=lrc_duration,
-                                youtube_url=alt_youtube["url"],
-                                youtube_duration=alt_youtube["duration"],
-                                source="syncedlyrics",
-                                lrc_duration=lrc_duration,
-                                lrc_validated=True,
-                            )
+                if alt_result:
+                    return alt_result
 
             logger.info(
                 f"Best LRC match: {artist} - {title} (LRC duration: {lrc_duration}s, validated: {lrc_validated})"
@@ -745,7 +770,7 @@ class TrackIdentifier:
             return TrackInfo(
                 artist=artist,
                 title=title,
-                duration=yt_duration,  # Use YouTube duration, not LRC duration
+                duration=yt_duration,
                 youtube_url=url,
                 youtube_duration=yt_duration,
                 source="syncedlyrics",
@@ -753,43 +778,9 @@ class TrackIdentifier:
                 lrc_validated=lrc_validated,
             )
 
-        # Fallback: try to use the best available artist/title
-        # If we have candidates from MusicBrainz, prefer those over yt_uploader
-        fallback_artist = None
-        fallback_title = None
-
-        # First try: use MusicBrainz results if any
-        if unique_candidates:
-            # Prefer candidates that look like real artists (not yt_uploader)
-            for c in unique_candidates:
-                if c["artist"] != yt_uploader:
-                    fallback_artist = c["artist"]
-                    fallback_title = c["title"]
-                    break
-
-        # Second try: use parsed info
-        if not fallback_artist:
-            fallback_artist = parsed_artist
-            fallback_title = parsed_title
-
-        # Third try: if title contains artist name (no separator detected), try splits
-        if not fallback_artist and parsed_title:
-            splits = self._try_artist_title_splits(parsed_title)
-            for split_artist, split_title in splits[:3]:  # Try top 3 splits
-                # Quick LRC check for this split
-                has_lrc, _ = self._check_lrc_and_duration(split_title, split_artist)
-                if has_lrc:
-                    fallback_artist = split_artist
-                    fallback_title = split_title
-                    logger.info(
-                        f"Found LRC with title split: {split_artist} - {split_title}"
-                    )
-                    break
-
-        # Final fallback: uploader as artist
-        if not fallback_artist:
-            fallback_artist = yt_uploader or "Unknown"
-            fallback_title = parsed_title or yt_title
+        fallback_artist, fallback_title = self._find_fallback_artist_title(
+            unique_candidates, yt_uploader, parsed_artist, parsed_title, yt_title
+        )
 
         logger.warning(
             f"No LRC match found, using: {fallback_artist} - {fallback_title}"
@@ -1221,6 +1212,55 @@ class TrackIdentifier:
 
         return self._score_and_select_best(matches)
 
+    def _is_likely_cover_recording(
+        self, title: str, artist_name: str, query_words: set
+    ) -> bool:
+        """Check if a recording is likely a cover based on parenthetical credits.
+
+        Pattern: Title has "(Artist)" crediting original artist, but performing artist is different.
+        e.g., "Bohemian Rhapsody (Queen)" by "Doctor Octoroc" is likely a cover.
+        """
+        paren_match = re.search(r"\(([^)]+)\)", title)
+        if not paren_match:
+            return False
+
+        paren_content = paren_match.group(1).lower().strip()
+        paren_words = set(paren_content.split())
+        artist_words = set(artist_name.lower().split())
+        query_matches_paren = any(
+            word in paren_content for word in query_words if len(word) > 3
+        )
+
+        if query_matches_paren and not (paren_words & artist_words):
+            logger.debug(
+                f"Skipping likely cover (credits original artist): {artist_name} - {title}"
+            )
+            return True
+        return False
+
+    def _select_best_from_artist_matches(
+        self,
+        artist_matches: List[Dict],
+        lrc_duration: Optional[int],
+        mb_consensus: Optional[int],
+    ) -> tuple:
+        """Select best recording from matches for a given artist, using duration matching."""
+        if lrc_duration and mb_consensus:
+            lrc_mb_diff = abs(lrc_duration - mb_consensus)
+            if lrc_mb_diff > 30:
+                logger.debug(
+                    f"LRC duration ({lrc_duration}s) differs from MB"
+                    f" consensus ({mb_consensus}s) by {lrc_mb_diff}s - using MB consensus"
+                )
+                artist_matches.sort(key=lambda c: abs(c["duration"] - mb_consensus))
+            else:
+                artist_matches.sort(key=lambda c: abs(c["duration"] - lrc_duration))
+        elif lrc_duration:
+            artist_matches.sort(key=lambda c: abs(c["duration"] - lrc_duration))
+
+        best = artist_matches[0]
+        return (best["duration"], best["artist"], best["title"])
+
     def _find_best_title_only(
         self, recordings: List[Dict], title_hint: str
     ) -> Optional[tuple]:
@@ -1234,11 +1274,8 @@ class TrackIdentifier:
         title_normalized_no_stop = self._normalize_title(
             title_hint, remove_stopwords=True
         )
-        candidates = []
-
-        # Check if query might contain an artist name (parenthetical in results would match)
-        # In that case, be more strict about what we accept
         query_words = set(title_hint.lower().split())
+        candidates = []
 
         for rec in recordings:
             title = rec.get("title", "")
@@ -1247,14 +1284,12 @@ class TrackIdentifier:
                 continue
 
             duration_sec = int(length) // 1000
-            # Skip recordings with unreasonable durations (> 12 minutes)
             if duration_sec > 720:
                 continue
 
             rec_title_normalized = self._normalize_title(title)
             rec_title_no_stop = self._normalize_title(title, remove_stopwords=True)
 
-            # Try exact match first, then stopword-removed match
             if (
                 rec_title_normalized != title_normalized
                 and rec_title_no_stop != title_normalized_no_stop
@@ -1268,30 +1303,12 @@ class TrackIdentifier:
             if not artist_name:
                 continue
 
-            # Skip if this looks like a cover/tribute version
-            # Pattern: Title has "(Artist)" crediting original artist, but performing artist is different
-            # e.g., "Bohemian Rhapsody (Queen)" by "Doctor Octoroc"
-            paren_match = re.search(r"\(([^)]+)\)", title)
-            if paren_match:
-                paren_content = paren_match.group(1).lower().strip()
-                # If parenthetical content matches a query word but NOT the artist name,
-                # this is likely a cover crediting the original artist
-                paren_words = set(paren_content.split())
-                artist_words = set(artist_name.lower().split())
-                query_matches_paren = any(
-                    word in paren_content for word in query_words if len(word) > 3
-                )
-
-                if query_matches_paren and not (paren_words & artist_words):
-                    # Parenthetical credits a different artist than the performer
-                    logger.debug(
-                        f"Skipping likely cover (credits original artist): {artist_name} - {title}"
-                    )
-                    continue
+            if self._is_likely_cover_recording(title, artist_name, query_words):
+                continue
 
             candidates.append(
                 {
-                    "duration": int(length) // 1000,
+                    "duration": duration_sec,
                     "artist": artist_name,
                     "title": title,
                 }
@@ -1300,11 +1317,9 @@ class TrackIdentifier:
         if not candidates:
             return None
 
-        # Find unique artists sorted by frequency
         artist_counts = Counter(c["artist"] for c in candidates)
         all_artists = artist_counts.most_common()
 
-        # Calculate MusicBrainz duration consensus (most common duration cluster)
         all_durations = [c["duration"] for c in candidates]
         rounded_durations = [d // 5 * 5 for d in all_durations]
         mb_consensus_duration = (
@@ -1313,7 +1328,7 @@ class TrackIdentifier:
             else None
         )
 
-        # First pass: find artist with LRC available, but validate against MB consensus
+        # First pass: find artist with LRC available
         for artist_name, count in all_artists:
             artist_matches = [c for c in candidates if c["artist"] == artist_name]
             sample_title = artist_matches[0]["title"]
@@ -1322,30 +1337,9 @@ class TrackIdentifier:
                 sample_title, artist_name
             )
             if lrc_available:
-                # Check if LRC duration is reasonable compared to MusicBrainz consensus
-                if lrc_duration and mb_consensus_duration:
-                    lrc_mb_diff = abs(lrc_duration - mb_consensus_duration)
-                    # If LRC duration differs significantly from MB consensus (>30s),
-                    # prefer MB consensus - the LRC might be for a different version
-                    if lrc_mb_diff > 30:
-                        logger.debug(
-                            f"LRC duration ({lrc_duration}s) differs from MB"
-                            " consensus ({mb_consensus_duration}s) by {lrc_mb_diff}s - using MB consensus"
-                        )
-                        # Sort by proximity to MB consensus instead
-                        artist_matches.sort(
-                            key=lambda c: abs(c["duration"] - mb_consensus_duration)
-                        )
-                    else:
-                        # LRC duration is reasonable, use it
-                        artist_matches.sort(
-                            key=lambda c: abs(c["duration"] - lrc_duration)
-                        )
-                elif lrc_duration:
-                    artist_matches.sort(key=lambda c: abs(c["duration"] - lrc_duration))
-
-                best = artist_matches[0]
-                return (best["duration"], best["artist"], best["title"])
+                return self._select_best_from_artist_matches(
+                    artist_matches, lrc_duration, mb_consensus_duration
+                )
 
         # Fallback: use most common artist with duration consensus
         if len(candidates) >= 2:

@@ -1,6 +1,6 @@
 """Word timing refinement using onsets and energy analysis."""
 
-from typing import List
+from typing import List, Optional, Tuple
 import numpy as np
 from ..utils.logging import get_logger
 from .models import Word, Line
@@ -187,6 +187,115 @@ def _detect_vocal_end(
     return detected_end
 
 
+def _find_best_onset_for_word(
+    word_idx: int,
+    expected_start: float,
+    sorted_onsets: np.ndarray,
+    min_next_onset_idx: int,
+    n_words: int,
+    n_onsets: int,
+) -> Tuple[Optional[int], float]:
+    """Find best onset index for a word, respecting order constraints."""
+    best_onset_idx = None
+    best_score = float("inf")
+
+    for j in range(min_next_onset_idx, n_onsets):
+        onset = sorted_onsets[j]
+        distance = abs(onset - expected_start)
+
+        if onset < expected_start - 0.5:
+            distance += 2.0
+
+        remaining_words = n_words - word_idx - 1
+        remaining_onsets = n_onsets - j - 1
+        if remaining_words > 0 and remaining_onsets < remaining_words:
+            pass
+        elif distance > 2.0:
+            continue
+
+        if distance < best_score:
+            best_score = distance
+            best_onset_idx = j
+
+    return best_onset_idx, best_score
+
+
+def _fix_unmatched_word_starts(
+    word_starts: List[Optional[float]],
+    words: List[Word],
+) -> List[float]:
+    """Fix words without onset matches by interpolating from neighbors."""
+    n_words = len(words)
+
+    for i in range(n_words - 1, -1, -1):
+        if word_starts[i] is None:
+            next_matched_time = None
+            for j in range(i + 1, n_words):
+                if word_starts[j] is not None:
+                    next_matched_time = word_starts[j]
+                    break
+
+            if next_matched_time is not None:
+                char_count = len(words[i].text)
+                est_duration = max(0.15, min(0.08 * char_count, 0.5))
+                word_starts[i] = next_matched_time - est_duration
+            else:
+                if i > 0 and word_starts[i - 1] is not None:
+                    char_count = len(words[i - 1].text)
+                    est_duration = max(0.15, min(0.08 * char_count, 0.5))
+                    word_starts[i] = word_starts[i - 1] + est_duration
+                else:
+                    word_starts[i] = words[i].start_time
+
+    # Ensure monotonically increasing
+    for i in range(1, n_words):
+        if word_starts[i] <= word_starts[i - 1]:
+            word_starts[i] = word_starts[i - 1] + 0.1
+
+    return word_starts
+
+
+def _build_refined_words(
+    words: List[Word],
+    word_starts: List[float],
+    line_start: float,
+    vocal_end: float,
+    respect_boundaries: bool,
+) -> List[Word]:
+    """Build refined words list with proper timing."""
+    refined_words = []
+    min_duration = 0.1
+
+    for i, word in enumerate(words):
+        is_last_word = i == len(words) - 1
+        new_start = word_starts[i]
+
+        if respect_boundaries:
+            new_start = max(line_start, new_start)
+
+        if i + 1 < len(words):
+            new_end = word_starts[i + 1] - 0.02
+        else:
+            new_end = vocal_end
+
+        if new_end - new_start < min_duration:
+            new_end = new_start + min_duration
+
+        if respect_boundaries and is_last_word:
+            new_end = max(new_start + min_duration, min(new_end, vocal_end))
+
+        refined_words.append(
+            Word(
+                text=word.text,
+                start_time=new_start,
+                end_time=new_end,
+                singer=word.singer,
+            )
+        )
+
+    return refined_words
+
+
 def _match_words_to_onsets(
     words: List[Word],
     onsets: np.ndarray,
@@ -210,52 +319,21 @@ def _match_words_to_onsets(
     if len(onsets) == 0:
         return list(words)
 
-    # Sort onsets chronologically
     sorted_onsets = np.sort(onsets)
     n_words = len(words)
     n_onsets = len(sorted_onsets)
-
-    # Match words to onsets with order preservation
-    # Key insight: after matching a word to an onset, skip any nearby onsets
-    # (within 0.3s) as they're likely syllables of the same word
-    SYLLABLE_GAP = 0.3  # Onsets closer than this are same word
+    SYLLABLE_GAP = 0.3
 
     word_to_onset = []
-    min_next_onset_idx = 0  # Don't consider onsets before this index
+    min_next_onset_idx = 0
 
     for i, word in enumerate(words):
-        expected_start = word.start_time
-        best_onset_idx = None
-        best_score = float("inf")
-
-        # Search for best onset starting from min_next_onset_idx
-        for j in range(min_next_onset_idx, n_onsets):
-            onset = sorted_onsets[j]
-
-            # Score based on distance to expected time
-            distance = abs(onset - expected_start)
-
-            # Strong penalty for onset significantly before expected
-            if onset < expected_start - 0.5:
-                distance += 2.0
-
-            # Check if we'd leave enough onsets for remaining words
-            remaining_words = n_words - i - 1
-            remaining_onsets = n_onsets - j - 1
-            if remaining_words > 0 and remaining_onsets < remaining_words:
-                # Not enough onsets left, must use this one or earlier
-                pass
-            elif distance > 2.0:
-                # If this onset is far from expected and we have onsets to spare, skip it
-                continue
-
-            if distance < best_score:
-                best_score = distance
-                best_onset_idx = j
+        best_onset_idx, best_score = _find_best_onset_for_word(
+            i, word.start_time, sorted_onsets, min_next_onset_idx, n_words, n_onsets
+        )
 
         if best_onset_idx is not None and best_score < 3.0:
             word_to_onset.append(best_onset_idx)
-            # Skip past this onset and any nearby ones (same word syllables)
             skip_until = sorted_onsets[best_onset_idx] + SYLLABLE_GAP
             min_next_onset_idx = best_onset_idx + 1
             while (
@@ -264,83 +342,16 @@ def _match_words_to_onsets(
             ):
                 min_next_onset_idx += 1
         else:
-            # No good onset found - will use expected time
             word_to_onset.append(None)
 
-    # First pass: calculate start times for all words
-    # For words without onset match, we'll fix them in second pass
-    word_starts = []
-    for i, word in enumerate(words):
-        onset_idx = word_to_onset[i]
-        if onset_idx is not None:
-            word_starts.append(sorted_onsets[onset_idx])
-        else:
-            word_starts.append(None)  # Will fix in second pass
+    # Build initial word starts from onset matches
+    word_starts = [
+        sorted_onsets[idx] if idx is not None else None for idx in word_to_onset
+    ]
 
-    # Second pass: fix words without onset matches
-    # For unmatched words, place them relative to the next matched word
-    for i in range(n_words - 1, -1, -1):
-        if word_starts[i] is None:
-            # Find next word with a matched onset
-            next_matched_time = None
-            for j in range(i + 1, n_words):
-                if word_starts[j] is not None:
-                    next_matched_time = word_starts[j]
-                    break
+    # Fix unmatched words and ensure monotonic ordering
+    word_starts = _fix_unmatched_word_starts(word_starts, words)
 
-            if next_matched_time is not None:
-                # Place this word just before the next matched word
-                # Estimate duration based on character count
-                char_count = len(words[i].text)
-                est_duration = max(0.15, min(0.08 * char_count, 0.5))
-                word_starts[i] = next_matched_time - est_duration
-            else:
-                # No future matched word - use previous word's end
-                if i > 0 and word_starts[i - 1] is not None:
-                    char_count = len(words[i - 1].text)
-                    est_duration = max(0.15, min(0.08 * char_count, 0.5))
-                    word_starts[i] = word_starts[i - 1] + est_duration
-                else:
-                    word_starts[i] = words[i].start_time
-
-    # Ensure monotonically increasing start times
-    for i in range(1, n_words):
-        if word_starts[i] <= word_starts[i - 1]:
-            word_starts[i] = word_starts[i - 1] + 0.1
-
-    # Build refined words list
-    refined_words = []
-    for i, word in enumerate(words):
-        is_last_word = i == len(words) - 1
-        new_start = word_starts[i]
-
-        if respect_boundaries:
-            new_start = max(line_start, new_start)
-
-        # Estimate end time
-        if i + 1 < len(words):
-            new_end = word_starts[i + 1] - 0.02
-        else:
-            # Last word - extend to vocal_end to fill gap to next line
-            # This prevents pauses when lyrics flow continuously
-            new_end = vocal_end
-
-        # Ensure minimum duration
-        min_duration = 0.1
-        if new_end - new_start < min_duration:
-            new_end = new_start + min_duration
-
-        # For last word, clamp to vocal_end but ensure minimum duration
-        if respect_boundaries and is_last_word:
-            new_end = max(new_start + min_duration, min(new_end, vocal_end))
-
-        refined_words.append(
-            Word(
-                text=word.text,
-                start_time=new_start,
-                end_time=new_end,
-                singer=word.singer,
-            )
-        )
-
-    return refined_words
+    return _build_refined_words(
+        words, word_starts, line_start, vocal_end, respect_boundaries
+    )

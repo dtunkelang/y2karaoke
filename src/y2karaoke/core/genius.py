@@ -36,18 +36,12 @@ YOUTUBE_SUFFIXES = [
 # ----------------------
 # HTML parsing / singer extraction
 # ----------------------
-def parse_genius_html(
-    html: str, artist: str
-) -> Tuple[Optional[List[Tuple[str, str]]], Optional[SongMetadata]]:
-    """Parse Genius lyrics HTML and extract lines with singer annotations."""
-    from bs4 import BeautifulSoup
-
-    soup = BeautifulSoup(html, "html.parser")
-
-    # Extract Genius title/artist from page
+def _extract_genius_title_artist(soup, artist: str) -> Tuple[str, str]:
+    """Extract title and artist from Genius page title."""
     page_title = soup.find("title").get_text().strip() if soup.find("title") else ""
     genius_title = artist  # fallback
     genius_artist = artist
+
     if page_title and "|" in page_title:
         parts = (
             page_title.split("|")[0].split("–")
@@ -60,11 +54,13 @@ def parse_genius_html(
             if genius_title.endswith(" Lyrics"):
                 genius_title = genius_title[:-7].strip()
 
-    # Extract lyrics containers
-    lyrics_containers = soup.find_all("div", {"data-lyrics-container": "true"})
-    if not lyrics_containers:
-        return None, None
+    return genius_title, genius_artist
 
+
+def _extract_lines_from_containers(
+    lyrics_containers,
+) -> Tuple[List[Tuple[str, str]], set]:
+    """Extract lyrics lines with singer annotations from containers."""
     lines_with_singers: List[Tuple[str, str]] = []
     current_singer = ""
     singers_found: set = set()
@@ -91,7 +87,6 @@ def parse_genius_html(
             if not line or re.match(r"^\d+\s*Contributor", line) or len(line) > 300:
                 continue
 
-            # Section marker indicates singer
             section_match = section_pattern.match(line)
             if section_match and ":" in section_match.group(1):
                 singer_part = section_match.group(1).split(":", 1)[1].strip()
@@ -99,14 +94,17 @@ def parse_genius_html(
                 singers_found.add(singer_part)
                 continue
 
-            # Append line with current singer
             lines_with_singers.append((line, current_singer))
 
-    if not lines_with_singers:
-        return None, None
+    return lines_with_singers, singers_found
 
-    # Determine unique singers robustly
+
+def _collect_unique_singers(
+    lines_with_singers: List[Tuple[str, str]], singers_found: set
+) -> List[str]:
+    """Collect unique singer names from lines and section headers."""
     all_singers: set = set()
+
     for line_text, singer in lines_with_singers:
         for part in re.split(r"\s*[,&/]\s*", singer):
             name = part.strip()
@@ -119,7 +117,31 @@ def parse_genius_html(
             if name and name.lower() != "both":
                 all_singers.add(name)
 
-    unique_singers = list(all_singers)
+    return list(all_singers)
+
+
+def parse_genius_html(
+    html: str, artist: str
+) -> Tuple[Optional[List[Tuple[str, str]]], Optional[SongMetadata]]:
+    """Parse Genius lyrics HTML and extract lines with singer annotations."""
+    from bs4 import BeautifulSoup
+
+    soup = BeautifulSoup(html, "html.parser")
+
+    genius_title, genius_artist = _extract_genius_title_artist(soup, artist)
+
+    lyrics_containers = soup.find_all("div", {"data-lyrics-container": "true"})
+    if not lyrics_containers:
+        return None, None
+
+    lines_with_singers, singers_found = _extract_lines_from_containers(
+        lyrics_containers
+    )
+
+    if not lines_with_singers:
+        return None, None
+
+    unique_singers = _collect_unique_singers(lines_with_singers, singers_found)
     is_duet = len(unique_singers) >= 2
 
     metadata = SongMetadata(
@@ -129,13 +151,11 @@ def parse_genius_html(
         artist=genius_artist,
     )
 
-    # --- Strip artist prefixes ---
     lines_with_singers = [
         (strip_leading_artist_from_line(text, artist), singer)
         for text, singer in lines_with_singers
     ]
 
-    # --- Filter singer-only lines ---
     lines_with_singers = filter_singer_only_lines(
         lines_with_singers, known_singers=metadata.singers if metadata else [artist]
     )

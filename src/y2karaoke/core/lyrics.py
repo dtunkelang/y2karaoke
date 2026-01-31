@@ -70,6 +70,272 @@ __all__ = [
 ]
 
 
+def _create_no_lyrics_placeholder(
+    title: str, artist: str
+) -> Tuple[List[Line], SongMetadata]:
+    """Create placeholder content when no lyrics are found."""
+    placeholder_word = Word(text="Lyrics not available", start_time=0.0, end_time=3.0)
+    return [Line(words=[placeholder_word])], SongMetadata(
+        singers=[], is_duet=False, title=title, artist=artist
+    )
+
+
+def _detect_and_apply_offset(
+    vocals_path: str,
+    line_timings: List[Tuple[float, str]],
+    lyrics_offset: Optional[float],
+) -> Tuple[List[Tuple[float, str]], float]:
+    """Detect vocal offset and apply to line timings.
+
+    Returns updated line_timings and the offset that was applied.
+    """
+    from .alignment import detect_song_start
+
+    detected_vocal_start = detect_song_start(vocals_path)
+    first_lrc_time = line_timings[0][0]
+    delta = detected_vocal_start - first_lrc_time
+
+    logger.info(
+        f"Vocal timing: audio_start={detected_vocal_start:.2f}s, "
+        f"LRC_start={first_lrc_time:.2f}s, delta={delta:+.2f}s"
+    )
+
+    offset = 0.0
+    if lyrics_offset is not None:
+        offset = lyrics_offset
+    elif abs(delta) > 0.3 and abs(delta) <= 30.0:
+        if abs(delta) > 10.0:
+            logger.warning(
+                f"Large vocal offset ({delta:+.2f}s) - audio may have intro/speech not in LRC"
+            )
+        offset = delta
+        logger.info(f"Auto-applying vocal offset: {offset:+.2f}s")
+    elif abs(delta) > 30.0:
+        logger.warning(
+            f"Large timing delta ({delta:+.2f}s) - not auto-applying. "
+            "Use --lyrics-offset to adjust manually."
+        )
+
+    if offset != 0.0:
+        line_timings = [(ts + offset, text) for ts, text in line_timings]
+
+    return line_timings, offset
+
+
+def _distribute_word_timing_in_line(
+    line: Line, line_start: float, next_line_start: float
+) -> None:
+    """Distribute word timing evenly within a line based on estimated duration."""
+    word_count = len(line.words)
+    if word_count == 0:
+        return
+
+    line_text = " ".join(w.text for w in line.words)
+    estimated_duration = _estimate_singing_duration(line_text, word_count)
+
+    gap_to_next = next_line_start - line_start
+    max_duration = estimated_duration * 1.3  # 30% buffer
+    line_duration = min(gap_to_next, max_duration)
+    line_duration = max(line_duration, word_count * 0.15)
+
+    word_duration = (line_duration * 0.95) / word_count
+    for j, word in enumerate(line.words):
+        word.start_time = line_start + j * (line_duration / word_count)
+        word.end_time = word.start_time + word_duration
+        if j == word_count - 1:
+            word.end_time = min(word.end_time, next_line_start - 0.05)
+
+
+def _apply_timing_to_lines(
+    lines: List[Line], line_timings: List[Tuple[float, str]]
+) -> None:
+    """Apply timing from line_timings to lines in place."""
+    for i, line in enumerate(lines):
+        if i < len(line_timings):
+            line_start = line_timings[i][0]
+            next_line_start = (
+                line_timings[i + 1][0]
+                if i + 1 < len(line_timings)
+                else line_start + 5.0
+            )
+            _distribute_word_timing_in_line(line, line_start, next_line_start)
+
+
+def _refine_timing_with_audio(
+    lines: List[Line],
+    vocals_path: str,
+    line_timings: List[Tuple[float, str]],
+    lrc_text: str,
+    target_duration: Optional[int],
+) -> List[Line]:
+    """Refine word timing using audio onset detection and handle duration mismatch."""
+    from .refine import refine_word_timing
+    from .alignment import adjust_timing_for_duration_mismatch
+    from .sync import get_lrc_duration
+
+    lines = refine_word_timing(lines, vocals_path)
+    logger.debug("Word-level timing refined using vocals")
+
+    lrc_duration = get_lrc_duration(lrc_text)
+    if target_duration and lrc_duration and abs(target_duration - lrc_duration) > 10:
+        logger.info(
+            f"Duration mismatch: LRC={lrc_duration}s, "
+            f"audio={target_duration}s (diff={target_duration - lrc_duration:+}s)"
+        )
+        lines = adjust_timing_for_duration_mismatch(
+            lines,
+            line_timings,
+            vocals_path,
+            lrc_duration=lrc_duration,
+            audio_duration=target_duration,
+        )
+
+    return lines
+
+
+def _apply_whisper_alignment(
+    lines: List[Line],
+    vocals_path: str,
+    whisper_language: Optional[str],
+    whisper_model: str,
+) -> Tuple[List[Line], List[str]]:
+    """Apply Whisper alignment to lines. Returns (lines, fixes_list)."""
+    from .timing_evaluator import correct_timing_with_whisper
+
+    lines, whisper_fixes = correct_timing_with_whisper(
+        lines,
+        vocals_path,
+        language=whisper_language,
+        model_size=whisper_model,
+    )
+    if whisper_fixes:
+        logger.info(f"Whisper aligned {len(whisper_fixes)} line(s)")
+        for fix in whisper_fixes:
+            logger.debug(f"  {fix}")
+    return lines, whisper_fixes
+
+
+def _romanize_lines(lines: List[Line]) -> None:
+    """Apply romanization to non-Latin characters in lines."""
+    for line in lines:
+        for word in line.words:
+            if any(ord(c) > 127 for c in word.text):
+                word.text = romanize_line(word.text)
+
+
+def _apply_singer_info(
+    lines: List[Line],
+    genius_lines: List[Tuple[str, str]],
+    metadata: SongMetadata,
+) -> None:
+    """Apply singer info from Genius to lines for duets."""
+    for i, line in enumerate(lines):
+        if i < len(genius_lines):
+            _, singer_name = genius_lines[i]
+            singer_id = metadata.get_singer_id(singer_name)
+            line.singer = singer_id
+            for word in line.words:
+                word.singer = singer_id
+
+
+def _detect_offset_with_issues(
+    vocals_path: str,
+    line_timings: List[Tuple[float, str]],
+    lyrics_offset: Optional[float],
+    issues: List[str],
+) -> Tuple[List[Tuple[float, str]], float]:
+    """Detect vocal offset, track issues for quality report.
+
+    Returns (updated_line_timings, offset_applied).
+    """
+    from .alignment import detect_song_start
+
+    detected_vocal_start = detect_song_start(vocals_path)
+    first_lrc_time = line_timings[0][0]
+    delta = detected_vocal_start - first_lrc_time
+
+    logger.info(
+        f"Vocal timing: audio_start={detected_vocal_start:.2f}s, "
+        f"LRC_start={first_lrc_time:.2f}s, delta={delta:+.2f}s"
+    )
+
+    offset = 0.0
+    if lyrics_offset is not None:
+        offset = lyrics_offset
+    elif abs(delta) > 0.3 and abs(delta) <= 30.0:
+        if abs(delta) > 10.0:
+            logger.warning(f"Large vocal offset ({delta:+.2f}s) - audio may have intro")
+            issues.append(f"Large vocal offset ({delta:+.2f}s)")
+        offset = delta
+        logger.info(f"Auto-applying vocal offset: {offset:+.2f}s")
+    elif abs(delta) > 30.0:
+        logger.warning(f"Large timing delta ({delta:+.2f}s) - not auto-applying.")
+        issues.append(f"Large timing delta ({delta:+.2f}s) not applied")
+
+    if offset != 0.0:
+        line_timings = [(ts + offset, text) for ts, text in line_timings]
+
+    return line_timings, offset
+
+
+def _refine_timing_with_quality(
+    lines: List[Line],
+    vocals_path: str,
+    line_timings: List[Tuple[float, str]],
+    lrc_text: str,
+    target_duration: Optional[int],
+    issues: List[str],
+) -> Tuple[List[Line], str]:
+    """Refine timing and track issues. Returns (lines, alignment_method)."""
+    from .refine import refine_word_timing
+    from .alignment import adjust_timing_for_duration_mismatch
+    from .sync import get_lrc_duration
+
+    lines = refine_word_timing(lines, vocals_path)
+    alignment_method = "onset_refined"
+    logger.debug("Word-level timing refined using vocals")
+
+    lrc_duration = get_lrc_duration(lrc_text)
+    if target_duration and lrc_duration and abs(target_duration - lrc_duration) > 10:
+        logger.info(f"Duration mismatch: LRC={lrc_duration}s, audio={target_duration}s")
+        issues.append(
+            f"Duration mismatch: LRC={lrc_duration}s vs audio={target_duration}s"
+        )
+        lines = adjust_timing_for_duration_mismatch(
+            lines,
+            line_timings,
+            vocals_path,
+            lrc_duration=lrc_duration,
+            audio_duration=target_duration,
+        )
+
+    return lines, alignment_method
+
+
+def _calculate_quality_score(quality_report: dict) -> float:
+    """Calculate overall quality score from report components."""
+    # Base score on lyrics quality if available
+    if quality_report["lyrics_quality"]:
+        base_score = quality_report["lyrics_quality"].get("quality_score", 50.0)
+    else:
+        base_score = 30.0  # Genius fallback
+
+    # Adjust for alignment method
+    method_bonus = {
+        "whisper_hybrid": 10,
+        "onset_refined": 5,
+        "lrc_only": 0,
+        "genius_fallback": -20,
+        "none": -50,
+    }
+    base_score += method_bonus.get(quality_report["alignment_method"], 0)
+
+    # Adjust for issues
+    base_score -= len(quality_report["issues"]) * 5
+
+    return max(0.0, min(100.0, base_score))
+
+
 def _fetch_lrc_text_and_timings(
     title: str,
     artist: str,
@@ -179,13 +445,11 @@ def get_lyrics_simple(
         Tuple of (lines, metadata)
     """
     from .genius import fetch_genius_lyrics_with_singers
-    from .refine import refine_word_timing
-    from .alignment import detect_song_start, adjust_timing_for_duration_mismatch
-    from .sync import get_lrc_duration
 
     # 1. Try LRC first (preferred source), with duration validation if provided
     logger.debug(
-        f"Fetching LRC lyrics... (target_duration={target_duration}, evaluate={evaluate_sources})"
+        f"Fetching LRC lyrics... (target_duration={target_duration}, "
+        f"evaluate={evaluate_sources})"
     )
     lrc_text, line_timings, source = _fetch_lrc_text_and_timings(
         title, artist, target_duration, vocals_path, evaluate_sources
@@ -198,130 +462,36 @@ def get_lyrics_simple(
         genius_lines, metadata = fetch_genius_lyrics_with_singers(title, artist)
         if not genius_lines:
             logger.warning("No lyrics found from any source, using placeholder")
-            placeholder_word = Word(
-                text="Lyrics not available", start_time=0.0, end_time=3.0
-            )
-            return [Line(words=[placeholder_word])], SongMetadata(
-                singers=[], is_duet=False, title=title, artist=artist
-            )
+            return _create_no_lyrics_placeholder(title, artist)
     else:
         # Still fetch Genius for singer/duet metadata only
         genius_lines, metadata = fetch_genius_lyrics_with_singers(title, artist)
 
     # 3. Apply vocal offset if available
-    offset = 0.0
     if vocals_path and line_timings:
-        detected_vocal_start = detect_song_start(vocals_path)
-        first_lrc_time = line_timings[0][0]
-        delta = detected_vocal_start - first_lrc_time
-        logger.info(
-            f"Vocal timing: audio_start={detected_vocal_start:.2f}s, "
-            f"LRC_start={first_lrc_time:.2f}s, delta={delta:+.2f}s"
+        line_timings, _ = _detect_and_apply_offset(
+            vocals_path, line_timings, lyrics_offset
         )
-        if lyrics_offset is not None:
-            offset = lyrics_offset
-        else:
-            # Auto-apply offset if difference is noticeable (> 0.3s) but reasonable (< 30s)
-            # Songs can have long intros, so allow larger offsets
-            # Negative offsets (LRC ahead of audio) are also valid
-            if abs(delta) > 0.3 and abs(delta) <= 30.0:
-                # Warn if offset is suspiciously large - may indicate bad audio source
-                if abs(delta) > 10.0:
-                    logger.warning(
-                        f"Large vocal offset ({delta:+.2f}s) - audio may have intro/speech not in LRC"
-                    )
-                offset = delta
-                logger.info(f"Auto-applying vocal offset: {offset:+.2f}s")
-            elif abs(delta) > 30.0:
-                logger.warning(
-                    f"Large timing delta ({delta:+.2f}s) - not auto-applying. Use --lyrics-offset to adjust manually."
-                )
-
-        if offset != 0.0:
-            line_timings = [(ts + offset, text) for ts, text in line_timings]
 
     # 4. Create Line objects
     if line_timings:
-        # Use LRC text directly (preferred)
         lines = create_lines_from_lrc(
             lrc_text, romanize=False, title=title, artist=artist
         )
-        # Apply timing from parsed line_timings
-        for i, line in enumerate(lines):
-            if i < len(line_timings):
-                line_start = line_timings[i][0]
-                next_line_start = (
-                    line_timings[i + 1][0]
-                    if i + 1 < len(line_timings)
-                    else line_start + 5.0
-                )
-                word_count = len(line.words)
-                if word_count > 0:
-                    # Estimate how long it actually takes to sing this line
-                    line_text = " ".join(w.text for w in line.words)
-                    estimated_duration = _estimate_singing_duration(
-                        line_text, word_count
-                    )
+        _apply_timing_to_lines(lines, line_timings)
 
-                    # Use gap to next line, but cap at estimated singing duration + buffer
-                    # The buffer allows refinement to find nearby onsets, but prevents
-                    # spreading words over excessively long gaps (like instrumental breaks)
-                    gap_to_next = next_line_start - line_start
-                    max_duration = estimated_duration * 1.3  # 30% buffer for variation
-                    line_duration = min(gap_to_next, max_duration)
-                    # Ensure minimum duration
-                    line_duration = max(line_duration, word_count * 0.15)
-
-                    word_duration = (line_duration * 0.95) / word_count
-                    for j, word in enumerate(line.words):
-                        word.start_time = line_start + j * (line_duration / word_count)
-                        word.end_time = word.start_time + word_duration
-                        # Ensure last word doesn't extend past next line
-                        if j == word_count - 1:
-                            word.end_time = min(word.end_time, next_line_start - 0.05)
-        # 5. Refine word timing using audio (within-line only, preserves line boundaries)
+        # 5. Refine word timing using audio
         if vocals_path and len(line_timings) > 1:
-            lines = refine_word_timing(lines, vocals_path)
-            logger.debug("Word-level timing refined using vocals")
+            lines = _refine_timing_with_audio(
+                lines, vocals_path, line_timings, lrc_text, target_duration
+            )
 
-            # 5b. Adjust for duration mismatch (e.g., LRC is for radio edit, video is album version)
-            # This detects instrumental breaks that differ in length and adjusts timing accordingly
-            lrc_duration = get_lrc_duration(lrc_text)
-            if (
-                target_duration
-                and lrc_duration
-                and abs(target_duration - lrc_duration) > 10
-            ):
-                logger.info(
-                    f"Duration mismatch: LRC={lrc_duration}s,"
-                    "audio={target_duration}s (diff={target_duration - lrc_duration:+}s)"
-                )
-                lines = adjust_timing_for_duration_mismatch(
-                    lines,
-                    line_timings,
-                    vocals_path,
-                    lrc_duration=lrc_duration,
-                    audio_duration=target_duration,
-                )
-
-            # 5c. Optionally use Whisper for more accurate alignment
-            # Note: We skip fix_spurious_gaps and correct_line_timestamps because
-            # they often do more harm than good for songs with accurate LRC timing.
-            # The LRC line boundaries and timestamps should be trusted.
+            # 5b. Optionally use Whisper for more accurate alignment
             if use_whisper:
                 try:
-                    from .timing_evaluator import correct_timing_with_whisper
-
-                    lines, whisper_fixes = correct_timing_with_whisper(
-                        lines,
-                        vocals_path,
-                        language=whisper_language,
-                        model_size=whisper_model,
+                    lines, _ = _apply_whisper_alignment(
+                        lines, vocals_path, whisper_language, whisper_model
                     )
-                    if whisper_fixes:
-                        logger.info(f"Whisper aligned {len(whisper_fixes)} line(s)")
-                        for fix in whisper_fixes:
-                            logger.debug(f"  {fix}")
                 except Exception as e:
                     logger.warning(f"Whisper alignment failed: {e}")
     else:
@@ -334,20 +504,11 @@ def get_lyrics_simple(
 
     # 6. Romanize
     if romanize:
-        for line in lines:
-            for word in line.words:
-                if any(ord(c) > 127 for c in word.text):
-                    word.text = romanize_line(word.text)
+        _romanize_lines(lines)
 
     # Apply singer info for duets (from Genius metadata)
     if metadata and metadata.is_duet and genius_lines:
-        for i, line in enumerate(lines):
-            if i < len(genius_lines):
-                _, singer_name = genius_lines[i]
-                singer_id = metadata.get_singer_id(singer_name)
-                line.singer = singer_id
-                for word in line.words:
-                    word.singer = singer_id
+        _apply_singer_info(lines, genius_lines, metadata)
 
     logger.debug(f"Returning {len(lines)} lines")
     return lines, metadata
@@ -381,10 +542,7 @@ def get_lyrics_with_quality(
         - overall_score: float 0-100
         - issues: list of str
     """
-    from .genius import fetch_genius_lyrics_with_singers
-    from .refine import refine_word_timing
-    from .alignment import detect_song_start, adjust_timing_for_duration_mismatch
-    from .sync import get_lrc_duration, get_lyrics_quality_report
+    from .sync import get_lyrics_quality_report
 
     quality_report = {
         "lyrics_quality": {},
@@ -399,16 +557,95 @@ def get_lyrics_with_quality(
 
     # 1. Try LRC first
     logger.debug(
-        f"Fetching LRC lyrics... (target_duration={target_duration}, evaluate={evaluate_sources})"
+        f"Fetching LRC lyrics... (target_duration={target_duration}, "
+        f"evaluate={evaluate_sources})"
     )
     lrc_text, line_timings, source = _fetch_lrc_text_and_timings(
         title, artist, target_duration, vocals_path, evaluate_sources
     )
-
     quality_report["source"] = source
 
     # 2. Fetch Genius as fallback or for singer info
-    genius_lines, metadata = None, None
+    genius_lines, metadata = _fetch_genius_with_quality_tracking(
+        line_timings, title, artist, quality_report
+    )
+    if genius_lines is None and not line_timings:
+        # No lyrics from any source - return placeholder
+        lines, meta = _create_no_lyrics_placeholder(title, artist)
+        return lines, meta, quality_report
+
+    # Get LRC quality report if we have LRC
+    if line_timings:
+        quality_report["lyrics_quality"] = get_lyrics_quality_report(
+            lrc_text, source, target_duration
+        )
+
+    # 3. Apply vocal offset if available
+    if vocals_path and line_timings:
+        line_timings, _ = _detect_offset_with_issues(
+            vocals_path, line_timings, lyrics_offset, quality_report["issues"]
+        )
+
+    # 4. Create Line objects and apply timing
+    if line_timings:
+        lines = create_lines_from_lrc(
+            lrc_text, romanize=False, title=title, artist=artist
+        )
+        quality_report["alignment_method"] = "lrc_only"
+        _apply_timing_to_lines(lines, line_timings)
+
+        # 5. Refine word timing using audio
+        if vocals_path and len(line_timings) > 1:
+            lines, method = _refine_timing_with_quality(
+                lines,
+                vocals_path,
+                line_timings,
+                lrc_text,
+                target_duration,
+                quality_report["issues"],
+            )
+            quality_report["alignment_method"] = method
+
+            # 5b. Apply Whisper if requested
+            if use_whisper:
+                lines, quality_report = _apply_whisper_with_quality(
+                    lines, vocals_path, whisper_language, whisper_model, quality_report
+                )
+    else:
+        # Fallback: use Genius text
+        text_lines = [text for text, _ in genius_lines if text.strip()]
+        lrc_text = "\n".join(text_lines)
+        lines = create_lines_from_lrc(
+            lrc_text, romanize=romanize, title=title, artist=artist
+        )
+
+    # 6. Romanize
+    if romanize:
+        _romanize_lines(lines)
+
+    # Apply singer info for duets
+    if metadata and metadata.is_duet and genius_lines:
+        _apply_singer_info(lines, genius_lines, metadata)
+
+    # Calculate overall quality score
+    quality_report["total_lines"] = len(lines)
+    quality_report["overall_score"] = _calculate_quality_score(quality_report)
+
+    logger.debug(
+        f"Returning {len(lines)} lines (quality: {quality_report['overall_score']:.0f})"
+    )
+    return lines, metadata, quality_report
+
+
+def _fetch_genius_with_quality_tracking(
+    line_timings: Optional[List[Tuple[float, str]]],
+    title: str,
+    artist: str,
+    quality_report: dict,
+) -> Tuple[Optional[List[Tuple[str, str]]], Optional[SongMetadata]]:
+    """Fetch Genius lyrics with quality tracking for fallback case."""
+    from .genius import fetch_genius_lyrics_with_singers
+
     if not line_timings:
         logger.debug("No LRC found, fetching lyrics from Genius...")
         genius_lines, metadata = fetch_genius_lyrics_with_singers(title, artist)
@@ -418,184 +655,32 @@ def get_lyrics_with_quality(
             logger.warning("No lyrics found from any source, using placeholder")
             quality_report["issues"].append("No lyrics found from any source")
             quality_report["overall_score"] = 0.0
-            placeholder_word = Word(
-                text="Lyrics not available", start_time=0.0, end_time=3.0
-            )
-            return (
-                [Line(words=[placeholder_word])],
-                SongMetadata(singers=[], is_duet=False, title=title, artist=artist),
-                quality_report,
-            )
+            return None, None
+        return genius_lines, metadata
     else:
-        genius_lines, metadata = fetch_genius_lyrics_with_singers(title, artist)
-        # Get LRC quality report
-        quality_report["lyrics_quality"] = get_lyrics_quality_report(
-            lrc_text, source, target_duration
+        return fetch_genius_lyrics_with_singers(title, artist)
+
+
+def _apply_whisper_with_quality(
+    lines: List[Line],
+    vocals_path: str,
+    whisper_language: Optional[str],
+    whisper_model: str,
+    quality_report: dict,
+) -> Tuple[List[Line], dict]:
+    """Apply Whisper alignment and update quality report."""
+    try:
+        lines, whisper_fixes = _apply_whisper_alignment(
+            lines, vocals_path, whisper_language, whisper_model
         )
-
-    # 3. Apply vocal offset if available
-    offset = 0.0
-    if vocals_path and line_timings:
-        detected_vocal_start = detect_song_start(vocals_path)
-        first_lrc_time = line_timings[0][0]
-        delta = detected_vocal_start - first_lrc_time
-        logger.info(
-            f"Vocal timing: audio_start={detected_vocal_start:.2f}s, "
-            f"LRC_start={first_lrc_time:.2f}s, delta={delta:+.2f}s"
-        )
-        if lyrics_offset is not None:
-            offset = lyrics_offset
-        else:
-            if abs(delta) > 0.3 and abs(delta) <= 30.0:
-                if abs(delta) > 10.0:
-                    logger.warning(
-                        f"Large vocal offset ({delta:+.2f}s) - audio may have intro/speech not in LRC"
-                    )
-                    quality_report["issues"].append(
-                        f"Large vocal offset ({delta:+.2f}s)"
-                    )
-                offset = delta
-                logger.info(f"Auto-applying vocal offset: {offset:+.2f}s")
-            elif abs(delta) > 30.0:
-                logger.warning(
-                    f"Large timing delta ({delta:+.2f}s) - not auto-applying."
-                )
-                quality_report["issues"].append(
-                    f"Large timing delta ({delta:+.2f}s) not applied"
-                )
-
-        if offset != 0.0:
-            line_timings = [(ts + offset, text) for ts, text in line_timings]
-
-    # 4. Create Line objects
-    if line_timings:
-        lines = create_lines_from_lrc(
-            lrc_text, romanize=False, title=title, artist=artist
-        )
-        quality_report["alignment_method"] = "lrc_only"
-
-        for i, line in enumerate(lines):
-            if i < len(line_timings):
-                line_start = line_timings[i][0]
-                next_line_start = (
-                    line_timings[i + 1][0]
-                    if i + 1 < len(line_timings)
-                    else line_start + 5.0
-                )
-                word_count = len(line.words)
-                if word_count > 0:
-                    line_text = " ".join(w.text for w in line.words)
-                    estimated_duration = _estimate_singing_duration(
-                        line_text, word_count
-                    )
-                    gap_to_next = next_line_start - line_start
-                    max_duration = estimated_duration * 1.3
-                    line_duration = min(gap_to_next, max_duration)
-                    line_duration = max(line_duration, word_count * 0.15)
-
-                    word_duration = (line_duration * 0.95) / word_count
-                    for j, word in enumerate(line.words):
-                        word.start_time = line_start + j * (line_duration / word_count)
-                        word.end_time = word.start_time + word_duration
-                        if j == word_count - 1:
-                            word.end_time = min(word.end_time, next_line_start - 0.05)
-
-        # 5. Refine word timing using audio
-        if vocals_path and len(line_timings) > 1:
-            lines = refine_word_timing(lines, vocals_path)
-            quality_report["alignment_method"] = "onset_refined"
-            logger.debug("Word-level timing refined using vocals")
-
-            lrc_duration = get_lrc_duration(lrc_text)
-            if (
-                target_duration
-                and lrc_duration
-                and abs(target_duration - lrc_duration) > 10
-            ):
-                logger.info(
-                    f"Duration mismatch: LRC={lrc_duration}s, audio={target_duration}s"
-                )
-                quality_report["issues"].append(
-                    f"Duration mismatch: LRC={lrc_duration}s vs audio={target_duration}s"
-                )
-                lines = adjust_timing_for_duration_mismatch(
-                    lines,
-                    line_timings,
-                    vocals_path,
-                    lrc_duration=lrc_duration,
-                    audio_duration=target_duration,
-                )
-
-            if use_whisper:
-                try:
-                    from .timing_evaluator import correct_timing_with_whisper
-
-                    lines, whisper_fixes = correct_timing_with_whisper(
-                        lines,
-                        vocals_path,
-                        language=whisper_language,
-                        model_size=whisper_model,
-                    )
-                    quality_report["whisper_used"] = True
-                    quality_report["whisper_corrections"] = len(whisper_fixes)
-                    if whisper_fixes:
-                        quality_report["alignment_method"] = "whisper_hybrid"
-                        logger.info(f"Whisper aligned {len(whisper_fixes)} line(s)")
-                except Exception as e:
-                    logger.warning(f"Whisper alignment failed: {e}")
-                    quality_report["issues"].append(f"Whisper alignment failed: {e}")
-    else:
-        text_lines = [text for text, _ in genius_lines if text.strip()]
-        lrc_text = "\n".join(text_lines)
-        lines = create_lines_from_lrc(
-            lrc_text, romanize=romanize, title=title, artist=artist
-        )
-
-    # 6. Romanize
-    if romanize:
-        for line in lines:
-            for word in line.words:
-                if any(ord(c) > 127 for c in word.text):
-                    word.text = romanize_line(word.text)
-
-    # Apply singer info for duets
-    if metadata and metadata.is_duet and genius_lines:
-        for i, line in enumerate(lines):
-            if i < len(genius_lines):
-                _, singer_name = genius_lines[i]
-                singer_id = metadata.get_singer_id(singer_name)
-                line.singer = singer_id
-                for word in line.words:
-                    word.singer = singer_id
-
-    # Calculate overall quality score
-    quality_report["total_lines"] = len(lines)
-
-    # Base score on lyrics quality if available
-    if quality_report["lyrics_quality"]:
-        base_score = quality_report["lyrics_quality"].get("quality_score", 50.0)
-    else:
-        base_score = 30.0  # Genius fallback
-
-    # Adjust for alignment method
-    method_bonus = {
-        "whisper_hybrid": 10,
-        "onset_refined": 5,
-        "lrc_only": 0,
-        "genius_fallback": -20,
-        "none": -50,
-    }
-    base_score += method_bonus.get(quality_report["alignment_method"], 0)
-
-    # Adjust for issues
-    base_score -= len(quality_report["issues"]) * 5
-
-    quality_report["overall_score"] = max(0.0, min(100.0, base_score))
-
-    logger.debug(
-        f"Returning {len(lines)} lines (quality: {quality_report['overall_score']:.0f})"
-    )
-    return lines, metadata, quality_report
+        quality_report["whisper_used"] = True
+        quality_report["whisper_corrections"] = len(whisper_fixes)
+        if whisper_fixes:
+            quality_report["alignment_method"] = "whisper_hybrid"
+    except Exception as e:
+        logger.warning(f"Whisper alignment failed: {e}")
+        quality_report["issues"].append(f"Whisper alignment failed: {e}")
+    return lines, quality_report
 
 
 class LyricsProcessor:

@@ -560,6 +560,47 @@ def fetch_lyrics_for_duration(
     return None, False, "", None
 
 
+def _count_large_gaps(timings: List[Tuple[float, str]], threshold: float = 30.0) -> int:
+    """Count gaps between consecutive timestamps exceeding threshold."""
+    return sum(
+        1
+        for i in range(1, len(timings))
+        if timings[i][0] - timings[i - 1][0] > threshold
+    )
+
+
+def _calculate_quality_score(report: Dict[str, any], num_timings: int) -> float:
+    """Calculate quality score based on metrics in report."""
+    score = 100.0
+
+    # Coverage penalties
+    if report["coverage"] < 0.6:
+        score -= 30
+        report["issues"].append(f"Low coverage ({report['coverage']*100:.0f}%)")
+    elif report["coverage"] < 0.8:
+        score -= 15
+
+    # Density penalties
+    if report["timestamp_density"] < 1.5:
+        score -= 20
+        report["issues"].append(
+            f"Low timestamp density ({report['timestamp_density']:.1f}/10s)"
+        )
+    elif report["timestamp_density"] < 2.0:
+        score -= 10
+
+    # Duration mismatch penalty
+    if not report["duration_match"]:
+        score -= 20
+
+    # Few lines penalty
+    if num_timings < 10:
+        score -= 15
+        report["issues"].append(f"Only {num_timings} lines")
+
+    return score
+
+
 def get_lyrics_quality_report(
     lrc_text: str,
     source: str,
@@ -600,7 +641,6 @@ def get_lyrics_quality_report(
     }
 
     if not lrc_text or not _has_timestamps(lrc_text):
-        report["quality_score"] = 0.0
         report["issues"].append("No synced lyrics found")
         return report
 
@@ -612,11 +652,7 @@ def get_lyrics_quality_report(
         return report
 
     # Calculate metrics
-    first_ts = timings[0][0]
-    last_ts = timings[-1][0]
-    lyrics_span = last_ts - first_ts
-
-    # Duration
+    lyrics_span = timings[-1][0] - timings[0][0]
     lrc_duration = get_lrc_duration(lrc_text)
     report["duration"] = lrc_duration
 
@@ -629,7 +665,7 @@ def get_lyrics_quality_report(
     if lyrics_span > 0:
         report["timestamp_density"] = len(timings) / (lyrics_span / 10.0)
 
-    # Duration match
+    # Duration match check
     if target_duration and lrc_duration:
         diff = abs(lrc_duration - target_duration)
         report["duration_match"] = diff <= 20
@@ -638,41 +674,11 @@ def get_lyrics_quality_report(
                 f"Duration mismatch: LRC={lrc_duration}s, target={target_duration}s"
             )
 
-    # Calculate quality score
-    score = 100.0
+    # Calculate base score
+    score = _calculate_quality_score(report, len(timings))
 
-    # Deduct for low coverage
-    if report["coverage"] < 0.6:
-        score -= 30
-        report["issues"].append(f"Low coverage ({report['coverage']*100:.0f}%)")
-    elif report["coverage"] < 0.8:
-        score -= 15
-
-    # Deduct for low density
-    if report["timestamp_density"] < 1.5:
-        score -= 20
-        report["issues"].append(
-            f"Low timestamp density ({report['timestamp_density']:.1f}/10s)"
-        )
-    elif report["timestamp_density"] < 2.0:
-        score -= 10
-
-    # Deduct for duration mismatch
-    if not report["duration_match"]:
-        score -= 20
-
-    # Deduct for few lines
-    if len(timings) < 10:
-        score -= 15
-        report["issues"].append(f"Only {len(timings)} lines")
-
-    # Check for large gaps
-    large_gaps = 0
-    for i in range(1, len(timings)):
-        gap = timings[i][0] - timings[i - 1][0]
-        if gap > 30:
-            large_gaps += 1
-
+    # Gap penalty
+    large_gaps = _count_large_gaps(timings)
     if large_gaps > 2:
         score -= 10
         report["issues"].append(f"{large_gaps} large gaps (>30s)")

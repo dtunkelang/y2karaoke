@@ -32,209 +32,203 @@ _LRC_TS_RE = re.compile(
 # ----------------------
 # Metadata filtering
 # ----------------------
+
+# Prefixes that indicate metadata lines
+_METADATA_PREFIXES = [
+    "artist:",
+    "song:",
+    "title:",
+    "album:",
+    "writer:",
+    "composer:",
+    "lyricist:",
+    "lyrics by",
+    "written by",
+    "produced by",
+    "music by",
+    "source:",
+    "contributor:",
+    "arranged by",
+    "performed by",
+    "vocals by",
+    "music and lyrics",
+    "words and music",
+    # Chinese metadata
+    "作词",
+    "作詞",
+    "作曲",
+    "编曲",
+    "編曲",
+    "制作人",
+    "演唱",
+    "歌手",
+    "词:",
+    "曲:",
+    "词 :",
+    "曲 :",
+    # Japanese metadata (romanized)
+    "saku:",
+    "saku :",
+    "sakkyoku:",
+    "sakkyoku :",
+    "sakushi:",
+    "sakushi :",
+    "henkyoku:",
+    "henkyoku :",
+    "kashu:",
+    "kashu :",
+    # Korean metadata
+    "작사:",
+    "작곡:",
+    "편곡:",
+]
+
+# Keywords that indicate metadata when followed by colon and name
+_METADATA_KEYWORDS = [
+    "composer",
+    "lyricist",
+    "writer",
+    "arranger",
+    "producer",
+    "saku",
+    "sakkyoku",
+    "sakushi",
+    "henkyoku",
+]
+
+# Patterns that indicate non-lyric content
+_METADATA_PATTERNS = [
+    "all rights reserved",
+    "copyright",
+    "℗",
+    "©",
+    "(instrumental)",
+    "[instrumental]",
+    "(intro)",
+    "[intro]",
+    "(outro)",
+    "[outro]",
+    "(verse)",
+    "[verse]",
+    "(chorus)",
+    "[chorus]",
+    "(bridge)",
+    "[bridge]",
+    "(hook)",
+    "[hook]",
+]
+
+
+def _is_empty_or_symbols(text: str) -> bool:
+    """Check if line is empty or contains only musical symbols."""
+    if not text or not text.strip():
+        return True
+    return all(c in "♪🎵🎶♫♬-–—=_.·•" or c.isspace() for c in text)
+
+
+def _has_metadata_prefix(text_lower: str) -> bool:
+    """Check if line starts with a metadata prefix."""
+    return any(text_lower.startswith(prefix) for prefix in _METADATA_PREFIXES)
+
+
+def _has_metadata_keyword(text: str) -> bool:
+    """Check if line contains metadata keyword pattern."""
+    import re
+
+    for keyword in _METADATA_KEYWORDS:
+        if re.search(rf"\b{keyword}\s*:\s*[A-Z]", text, re.IGNORECASE):
+            return True
+    return False
+
+
+def _has_metadata_pattern(text_lower: str) -> bool:
+    """Check if line contains metadata patterns like copyright or section markers."""
+    return any(pattern in text_lower for pattern in _METADATA_PATTERNS)
+
+
+def _is_credit_pattern(text: str) -> bool:
+    """Check if line matches contributor credit pattern."""
+    import re
+
+    match = re.match(r"^(\w+)\s*:\s*([A-Z][a-z]+(\s+[A-Z][a-z]+)*)\s*$", text.strip())
+    return match is not None and len(match.group(1)) <= 15
+
+
+def _normalize_for_comparison(text: str) -> str:
+    """Normalize text for title/artist comparison."""
+    return (
+        text.lower().replace(" ", "").replace("'", "").replace("(", "").replace(")", "")
+    )
+
+
+def _is_title_header(text_lower: str, title: str, artist: str) -> bool:
+    """Check if line is a title header."""
+    title_norm = _normalize_for_comparison(title)
+    line_norm = _normalize_for_comparison(text_lower)
+
+    # Direct title match
+    if line_norm == title_norm:
+        return True
+    # Title contained with little extra
+    if title_norm in line_norm and len(line_norm) < len(title_norm) + 10:
+        return True
+    # Combined title-artist patterns
+    if artist:
+        artist_norm = _normalize_for_comparison(artist)
+        if line_norm in (f"{title_norm}{artist_norm}", f"{artist_norm}{title_norm}"):
+            return True
+    return False
+
+
+def _is_artist_header(text_lower: str, artist: str) -> bool:
+    """Check if line is an artist header."""
+    artist_norm = artist.lower().replace(" ", "").replace("ö", "o").replace("ü", "u")
+    line_norm = text_lower.replace(" ", "").replace("ö", "o").replace("ü", "u")
+
+    artist_variants = [
+        artist_norm,
+        artist_norm.replace("blueoystercult", "blueöystercult"),
+        "blueöystercult",
+        "blueoystercult",
+        "blueoyster",
+        "b.o.c",
+        "boc",
+    ]
+    return any(line_norm == v or v in line_norm for v in artist_variants)
+
+
 def _is_metadata_line(
     text: str, title: str = "", artist: str = "", timestamp: float = -1.0
 ) -> bool:
     """
     Determine if a line is metadata rather than actual lyrics.
-    Skips obvious labels, credits, and title/artist lines that appear as headers.
 
     Args:
         text: The line text to check
         title: Song title (for filtering title-only header lines)
         artist: Artist name (for filtering artist-only header lines)
-        timestamp: Line timestamp in seconds (-1 if unknown). Lines matching
-                   title/artist are only filtered if they appear very early (< 2s),
-                   as later occurrences are likely actual lyrics.
+        timestamp: Line timestamp in seconds (-1 if unknown)
     """
-    import re
-
-    if not text:
+    if _is_empty_or_symbols(text):
         return True
 
     text_lower = text.lower().strip()
 
-    # Skip empty or whitespace-only
-    if not text_lower:
+    if _has_metadata_prefix(text_lower):
+        return True
+    if _has_metadata_keyword(text):
+        return True
+    if _has_metadata_pattern(text_lower):
+        return True
+    if _is_credit_pattern(text):
         return True
 
-    # Skip lines that are just symbols
-    if all(c in "♪🎵🎶♫♬-–—=_.·•" or c.isspace() for c in text):
+    # Only filter title/artist if appearing early (< 15s)
+    is_early = timestamp < 15.0
+    if title and is_early and _is_title_header(text_lower, title, artist):
         return True
-
-    metadata_prefixes = [
-        "artist:",
-        "song:",
-        "title:",
-        "album:",
-        "writer:",
-        "composer:",
-        "lyricist:",
-        "lyrics by",
-        "written by",
-        "produced by",
-        "music by",
-        "source:",
-        "contributor:",
-        "arranged by",
-        "performed by",
-        "vocals by",
-        "music and lyrics",
-        "words and music",
-        # Chinese metadata (simplified and traditional)
-        "作词",
-        "作詞",
-        "作曲",
-        "编曲",
-        "編曲",
-        "制作人",
-        "演唱",
-        "歌手",
-        "词:",
-        "曲:",
-        "词 :",
-        "曲 :",
-        # Japanese metadata (romanized) - various spacing
-        "saku:",
-        "saku :",
-        "sakkyoku:",
-        "sakkyoku :",
-        "sakushi:",
-        "sakushi :",
-        "henkyoku:",
-        "henkyoku :",
-        "kashu:",
-        "kashu :",
-        # Korean metadata
-        "작사:",
-        "작곡:",
-        "편곡:",
-    ]
-    for prefix in metadata_prefixes:
-        if text_lower.startswith(prefix):
-            return True
-
-    # Check for metadata patterns anywhere in the line (not just start)
-    # This catches lines like "Lyrics: John Lennon" or "Music: Paul McCartney"
-    metadata_keywords = [
-        "composer",
-        "lyricist",
-        "writer",
-        "arranger",
-        "producer",
-        "saku",
-        "sakkyoku",
-        "sakushi",
-        "henkyoku",
-    ]
-    # Pattern: keyword followed by colon and a proper name
-    for keyword in metadata_keywords:
-        pattern = rf"\b{keyword}\s*:\s*[A-Z]"
-        if re.search(pattern, text, re.IGNORECASE):
-            return True
-
-    # Skip common metadata patterns
-    metadata_patterns = [
-        "all rights reserved",
-        "copyright",
-        "℗",
-        "©",
-        "(instrumental)",
-        "[instrumental]",
-        "(intro)",
-        "[intro]",
-        "(outro)",
-        "[outro]",
-        "(verse)",
-        "[verse]",
-        "(chorus)",
-        "[chorus]",
-        "(bridge)",
-        "[bridge]",
-        "(hook)",
-        "[hook]",
-    ]
-    for pattern in metadata_patterns:
-        if pattern in text_lower:
-            return True
-
-    # Skip contributor credit patterns like "username : Name" or "word: Name"
-    # These are common in community-sourced LRC files
-    credit_pattern = re.match(
-        r"^(\w+)\s*:\s*([A-Z][a-z]+(\s+[A-Z][a-z]+)*)\s*$", text.strip()
-    )
-    if credit_pattern:
-        # Short first word (likely username) followed by proper name
-        first_word = credit_pattern.group(1)
-        if len(first_word) <= 15:  # Usernames are typically short
-            return True
-
-    # Only filter title/artist lines if they appear early (likely headers)
-    # Lines appearing later (>= 15s) with title text are probably actual lyrics
-    # Use 15s threshold because some LRCs have title/artist in first 10s before singing starts
-    is_early_line = timestamp < 15.0
-
-    if title and is_early_line:
-        title_lower = (
-            title.lower()
-            .replace(" ", "")
-            .replace("'", "")
-            .replace("(", "")
-            .replace(")", "")
-        )
-        line_normalized = (
-            text_lower.replace(" ", "")
-            .replace("'", "")
-            .replace("(", "")
-            .replace(")", "")
-        )
-        # Check various title formats
-        title_variants = [
-            title_lower,
-            title_lower.replace(
-                "don'tfear", "dontfear"
-            ),  # Handle apostrophe variations
-            f"dontfear{title_lower}" if "reaper" in title_lower else title_lower,
-        ]
-        if any(line_normalized == variant for variant in title_variants):
-            return True
-        # Check partial title match (line contains just the title)
-        if (
-            line_normalized == title_lower
-            or title_lower in line_normalized
-            and len(line_normalized) < len(title_lower) + 10
-        ):
-            return True
-        # Also check if line is just "title - artist" or "artist - title"
-        if artist:
-            artist_lower = artist.lower().replace(" ", "")
-            combined1 = f"{title_lower}{artist_lower}"
-            combined2 = f"{artist_lower}{title_lower}"
-            if line_normalized == combined1 or line_normalized == combined2:
-                return True
-
-    if artist and is_early_line:
-        artist_lower = (
-            artist.lower().replace(" ", "").replace("ö", "o").replace("ü", "u")
-        )
-        line_normalized = (
-            text_lower.replace(" ", "").replace("ö", "o").replace("ü", "u")
-        )
-        # Check for artist name match (with common variations)
-        artist_variants = [
-            artist_lower,
-            artist_lower.replace("blueoystercult", "blueöystercult"),
-            "blueöystercult",
-            "blueoystercult",
-            "blueoyster",
-            "b.o.c",
-            "boc",
-        ]
-        if any(
-            line_normalized == variant or variant in line_normalized
-            for variant in artist_variants
-        ):
-            return True
+    if artist and is_early and _is_artist_header(text_lower, artist):
+        return True
 
     return False
 
