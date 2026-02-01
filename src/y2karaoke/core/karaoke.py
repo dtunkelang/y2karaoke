@@ -1,7 +1,7 @@
 """Main karaoke generator orchestrating all components."""
 
 from pathlib import Path
-from typing import Dict, Optional, Any
+from typing import Dict, List, Optional, Any
 from time import time
 import musicbrainzngs
 
@@ -33,7 +33,7 @@ class KaraokeGenerator:
         self.downloader = YouTubeDownloader(self.cache_dir)
         self.separator = AudioSeparator()
         self.audio_processor = AudioProcessor()
-        self._temp_files = []
+        self._temp_files: List[str] = []
         self._original_prompt: Optional[str] = None
 
     # ------------------------

@@ -133,7 +133,7 @@ def resolve_artist_title_from_youtube(
     yt_words = set(yt_norm.split())
     youtube_artist_norm = normalize_string(youtube_artist or "")
 
-    best_score = -999
+    best_score = -999.0
     best_candidate = {"artist": fallback_artist, "title": fallback_title}
 
     for c in candidates:

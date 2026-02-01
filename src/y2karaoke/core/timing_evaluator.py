@@ -781,7 +781,7 @@ def select_best_source(
 
     # Score each source
     best_source = None
-    best_score = -1
+    best_score = -1.0
     best_report = None
 
     sources = fetch_from_all_sources(title, artist)
