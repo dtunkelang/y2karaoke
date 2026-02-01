@@ -8,7 +8,7 @@ This module handles two distinct paths for identifying track information:
 import re
 from dataclasses import dataclass
 from collections import Counter
-from typing import Optional, List, Dict, Any
+from typing import Optional, List, Dict, Any, Tuple
 
 import musicbrainzngs
 
