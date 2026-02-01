@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import List, Optional, Dict
+from typing import List, Optional, Dict, Any
 
 
 class SingerID(str, Enum):
@@ -96,7 +96,7 @@ class StepQuality:
     status: str = "success"  # "success", "degraded", "failed"
     cached: bool = False
     issues: List[str] = field(default_factory=list)
-    details: Dict[str, any] = field(default_factory=dict)
+    details: Dict[str, Any] = field(default_factory=dict)
 
     @property
     def is_good(self) -> bool:
@@ -121,7 +121,7 @@ class TrackIdentificationQuality(StepQuality):
     sources_tried: List[str] = field(default_factory=list)
     fallback_used: bool = False
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         self.step_name = "track_identification"
 
 
@@ -136,7 +136,7 @@ class LyricsQuality(StepQuality):
     duration: Optional[int] = None  # LRC implied duration
     duration_match: bool = True  # Does LRC duration match target?
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         self.step_name = "lyrics_fetch"
 
 
@@ -153,7 +153,7 @@ class TimingAlignmentQuality(StepQuality):
     lines_with_issues: int = 0
     whisper_used: bool = False
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         self.step_name = "timing_alignment"
 
     @property
@@ -173,7 +173,7 @@ class SeparationQuality(StepQuality):
     # Note: Full audio quality metrics require additional analysis
     # These are placeholders for future enhancement
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         self.step_name = "vocal_separation"
 
 
@@ -186,7 +186,7 @@ class BreakShorteningQuality(StepQuality):
     total_time_removed: float = 0.0
     beat_aligned: bool = True
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         self.step_name = "break_shortening"
 
 

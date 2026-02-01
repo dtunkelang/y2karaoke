@@ -150,7 +150,7 @@ def romanize_korean(text: str) -> str:
     if not KOREAN_ROMANIZER_AVAILABLE:
         return text
     try:
-        return Romanizer(text).romanize()
+        return str(Romanizer(text).romanize())
     except Exception:
         return text
 
@@ -233,7 +233,7 @@ def romanize_multilingual(text: str) -> str:
             for start, end in ranges:
                 if start <= code <= end:
                     try:
-                        return romanizer(block)
+                        return str(romanizer(block))
                     except Exception:
                         return block
         return block

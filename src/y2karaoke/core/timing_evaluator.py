@@ -5,7 +5,7 @@ characteristics to evaluate timing quality and identify inconsistencies.
 """
 
 from dataclasses import dataclass, field
-from typing import List, Optional, Tuple, Dict
+from typing import List, Optional, Tuple, Dict, Any
 import numpy as np
 
 from ..utils.logging import get_logger
@@ -1452,7 +1452,7 @@ def _normalize_text_for_matching(text: str) -> str:
 
 
 # Cache for epitran instances (they're expensive to create)
-_epitran_cache: Dict[str, any] = {}
+_epitran_cache: Dict[str, Any] = {}
 _panphon_distance = None
 _panphon_ft = None
 _ipa_cache: Dict[str, str] = {}  # Cache for IPA transliterations

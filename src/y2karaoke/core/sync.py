@@ -5,7 +5,7 @@ import sys
 import os
 import time
 from contextlib import contextmanager
-from typing import Optional, Tuple, Dict, List
+from typing import Optional, Tuple, Dict, List, Any
 
 from ..utils.logging import get_logger
 
@@ -569,7 +569,7 @@ def _count_large_gaps(timings: List[Tuple[float, str]], threshold: float = 30.0)
     )
 
 
-def _calculate_quality_score(report: Dict[str, any], num_timings: int) -> float:
+def _calculate_quality_score(report: Dict[str, Any], num_timings: int) -> float:
     """Calculate quality score based on metrics in report."""
     score = 100.0
 
@@ -606,7 +606,7 @@ def get_lyrics_quality_report(
     source: str,
     target_duration: Optional[int] = None,
     sources_tried: Optional[List[str]] = None,
-) -> Dict[str, any]:
+) -> Dict[str, Any]:
     """
     Generate a quality report for fetched LRC lyrics.
 

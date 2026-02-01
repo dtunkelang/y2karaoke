@@ -27,11 +27,11 @@ class AudioProcessor:
         tempo_multiplier: float = 1.0,
     ) -> str:
         """Apply key shift and/or tempo change to audio file."""
-        input_path = Path(input_path)
-        output_path = Path(output_path)
+        input_file = Path(input_path)
+        output_file = Path(output_path)
 
-        if not input_path.exists():
-            raise ValidationError(f"Input audio file not found: {input_path}")
+        if not input_file.exists():
+            raise ValidationError(f"Input audio file not found: {input_file}")
 
         # Validate parameters
         semitones = validate_key_shift(semitones)
@@ -42,8 +42,8 @@ class AudioProcessor:
             logger.debug("No audio effects requested, copying file")
             import shutil
 
-            shutil.copy(input_path, output_path)
-            return str(output_path)
+            shutil.copy(input_file, output_file)
+            return str(output_file)
 
         logger.info(
             f"Processing audio: key={semitones:+d}, tempo={tempo_multiplier:.2f}x"
@@ -51,7 +51,7 @@ class AudioProcessor:
 
         try:
             # Load audio
-            y, sr = librosa.load(str(input_path), sr=self.sample_rate)
+            y, sr = librosa.load(str(input_file), sr=self.sample_rate)
 
             # Apply pitch shift
             if semitones != 0:
@@ -64,13 +64,13 @@ class AudioProcessor:
                 y = librosa.effects.time_stretch(y, rate=tempo_multiplier)
 
             # Ensure output directory exists
-            output_path.parent.mkdir(parents=True, exist_ok=True)
+            output_file.parent.mkdir(parents=True, exist_ok=True)
 
             # Save processed audio
-            sf.write(str(output_path), y, sr)
+            sf.write(str(output_file), y, sr)
 
-            logger.debug(f"Audio processing completed: {output_path.name}")
-            return str(output_path)
+            logger.debug(f"Audio processing completed: {output_file.name}")
+            return str(output_file)
 
         except Exception as e:
             raise ValidationError(f"Audio processing failed: {e}")
