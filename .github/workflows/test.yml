@@ -51,7 +51,7 @@ jobs:
 
       - name: Run tests with coverage
         run: |
-          pytest tests/ -v --cov=src/y2karaoke --cov-report=xml --cov-report=term-missing
+          pytest tests/ -v -m "not network" --cov=src/y2karaoke --cov-report=xml --cov-report=term-missing
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4

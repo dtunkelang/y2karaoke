@@ -1,7 +1,9 @@
 # test_genius_fetch.py
+import pytest
 from y2karaoke.core.genius import fetch_genius_lyrics_with_singers
 
 
+@pytest.mark.network
 def test_fetch_genius_song():
     # Example: pick a song you know exists on Genius
     title = "Bohemian Rhapsody"

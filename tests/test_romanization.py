@@ -2,6 +2,11 @@ import pytest
 from y2karaoke.core.lyrics import Line, Word
 from y2karaoke.core.romanization import romanize_line
 
+# Skip if korean-romanizer is not installed (optional dependency)
+korean_romanizer = pytest.importorskip(
+    "korean_romanizer", reason="korean-romanizer not installed"
+)
+
 
 def test_romanization_line():
     # Sample non-ASCII text (Korean)

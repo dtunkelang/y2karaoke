@@ -42,8 +42,9 @@ SONGS = [
 
 
 # ------------------------------
-# Stable Tests
+# Stable Tests (require network)
 # ------------------------------
+@pytest.mark.network
 @pytest.mark.parametrize("song", SONGS)
 def test_genius_fetch_returns_lines(song):
     """Check that fetching lyrics returns at least one line."""
@@ -51,6 +52,7 @@ def test_genius_fetch_returns_lines(song):
     assert lines, f"No lyrics returned for {song['title']}"
 
 
+@pytest.mark.network
 @pytest.mark.parametrize("song", SONGS)
 def test_no_artist_only_lines(song):
     """Ensure that no line consists solely of artist names."""
@@ -66,6 +68,7 @@ def test_no_artist_only_lines(song):
         ), f"Artist-only line detected in {song['title']}: {text}"
 
 
+@pytest.mark.network
 @pytest.mark.parametrize("song", SONGS)
 def test_fetch_returns_nonempty_text(song):
     """Ensure no lines are completely empty."""
