@@ -351,13 +351,16 @@ def _match_words_to_onsets(
             word_to_onset.append(None)
 
     # Build initial word starts from onset matches
-    word_starts = [
-        sorted_onsets[idx] if idx is not None else None for idx in word_to_onset
+    initial_word_starts: List[Optional[float]] = [
+        float(sorted_onsets[idx]) if idx is not None else None
+        for idx in word_to_onset
     ]
 
     # Fix unmatched words and ensure monotonic ordering
-    word_starts = _fix_unmatched_word_starts(word_starts, words)
+    final_word_starts: List[float] = _fix_unmatched_word_starts(
+        initial_word_starts, words
+    )
 
     return _build_refined_words(
-        words, word_starts, line_start, vocal_end, respect_boundaries
+        words, final_word_starts, line_start, vocal_end, respect_boundaries
     )

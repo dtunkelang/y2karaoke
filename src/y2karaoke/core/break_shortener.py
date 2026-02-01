@@ -155,13 +155,13 @@ def shorten_break(
     keep_end: float = 3.0,
     crossfade_duration: float = 1.0,
     align_to_beats: bool = True,
-) -> Tuple[AudioSegment, AudioSegment, float, float]:
-    """Shorten a single instrumental break.
+) -> Tuple[Optional[float], Optional[float], float, float]:
+    """Calculate cut points for shortening a single instrumental break.
 
     Strategy:
     1. Keep the first `keep_start` seconds of the break
     2. Keep the last `keep_end` seconds of the break
-    3. Crossfade between them
+    3. Plan crossfade between them
     4. Optionally align cuts to beat boundaries
 
     Args:
@@ -173,7 +173,8 @@ def shorten_break(
         align_to_beats: Whether to align cuts to beat boundaries
 
     Returns:
-        Tuple of (before_segment, shortened_break, after_start_time, time_removed)
+        Tuple of (cut_start, cut_end, after_start_time, time_removed)
+        If break is too short to cut, returns (None, None, break_end, 0.0)
     """
     # Calculate cut points
     cut_out_start = break_info.start + keep_start
@@ -203,7 +204,7 @@ def shorten_break(
         f"(removing {time_removed:.1f}s)"
     )
 
-    return cut_out_start, cut_out_end, time_removed
+    return cut_out_start, cut_out_end, cut_out_end, time_removed
 
 
 def shorten_instrumental_breaks(
