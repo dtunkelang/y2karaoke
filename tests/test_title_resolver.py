@@ -193,9 +193,7 @@ class TestResolveArtistTitleFromYoutube:
             {"artist": "Artist", "title": "Song", "score": 5.0}
         ]
 
-        resolve_artist_title_from_youtube(
-            "Artist - Song (Official Music Video) [HD]"
-        )
+        resolve_artist_title_from_youtube("Artist - Song (Official Music Video) [HD]")
 
         # Check that cleaned title was passed to candidates
         call_args = mock_candidates.call_args[0][0]
