@@ -1470,38 +1470,38 @@ class TrackIdentifier:
             )
 
             if not SYNCEDLYRICS_AVAILABLE:
-                result = (False, None)
-                self._lrc_cache[cache_key] = result
-                return result
+                no_sync: Tuple[bool, Optional[int]] = (False, None)
+                self._lrc_cache[cache_key] = no_sync
+                return no_sync
 
             lrc_text, is_synced, _ = fetch_lyrics_multi_source(
                 title, artist, synced_only=True
             )
             if not is_synced or not lrc_text:
-                result = (False, None)
-                self._lrc_cache[cache_key] = result
-                return result
+                not_synced: Tuple[bool, Optional[int]] = (False, None)
+                self._lrc_cache[cache_key] = not_synced
+                return not_synced
 
             # Validate LRC quality
             is_valid, reason = validate_lrc_quality(lrc_text, expected_duration)
             if not is_valid:
                 logger.debug(f"LRC for {artist} - {title} failed validation: {reason}")
-                result = (False, None)
-                self._lrc_cache[cache_key] = result
-                return result
+                invalid: Tuple[bool, Optional[int]] = (False, None)
+                self._lrc_cache[cache_key] = invalid
+                return invalid
 
             # Get duration using improved calculation
             implied_duration = get_lrc_duration(lrc_text)
-            result = (True, implied_duration)
+            found: Tuple[bool, Optional[int]] = (True, implied_duration)
 
-            self._lrc_cache[cache_key] = result
-            return result
+            self._lrc_cache[cache_key] = found
+            return found
 
         except Exception as e:
             logger.debug(f"LRC check failed for {artist} - {title}: {e}")
-            result = (False, None)
-            self._lrc_cache[cache_key] = result
-            return result
+            error: Tuple[bool, Optional[int]] = (False, None)
+            self._lrc_cache[cache_key] = error
+            return error
 
     def _find_best_lrc_by_duration(
         self,

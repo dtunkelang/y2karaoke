@@ -363,7 +363,7 @@ def _fetch_lrc_text_and_timings(
             lrc_text, source, report = select_best_source(
                 title, artist, vocals_path, target_duration
             )
-            if lrc_text:
+            if lrc_text and source:
                 lines = parse_lrc_with_timing(lrc_text, title, artist)
                 score_str = f" (score: {report.overall_score:.1f})" if report else ""
                 logger.info(f"Selected best source: {source}{score_str}")
@@ -474,7 +474,7 @@ def get_lyrics_simple(
         )
 
     # 4. Create Line objects
-    if line_timings:
+    if line_timings and lrc_text:
         lines = create_lines_from_lrc(
             lrc_text, romanize=False, title=title, artist=artist
         )
@@ -496,8 +496,11 @@ def get_lyrics_simple(
                     logger.warning(f"Whisper alignment failed: {e}")
     else:
         # Fallback: use Genius text with evenly spaced lines
-        text_lines = [text for text, _ in genius_lines if text.strip()]
-        lrc_text = "\n".join(text_lines)
+        if genius_lines:
+            text_lines = [text for text, _ in genius_lines if text.strip()]
+            lrc_text = "\n".join(text_lines)
+        else:
+            lrc_text = ""
         lines = create_lines_from_lrc(
             lrc_text, romanize=romanize, title=title, artist=artist
         )
@@ -575,19 +578,22 @@ def get_lyrics_with_quality(
         return lines, meta, quality_report
 
     # Get LRC quality report if we have LRC
-    if line_timings:
+    if line_timings and lrc_text:
         quality_report["lyrics_quality"] = get_lyrics_quality_report(
             lrc_text, source, target_duration
         )
 
+    # Cast issues to the expected type for helper functions
+    issues_list: List[str] = quality_report["issues"]  # type: ignore[assignment]
+
     # 3. Apply vocal offset if available
     if vocals_path and line_timings:
         line_timings, _ = _detect_offset_with_issues(
-            vocals_path, line_timings, lyrics_offset, quality_report["issues"]
+            vocals_path, line_timings, lyrics_offset, issues_list
         )
 
     # 4. Create Line objects and apply timing
-    if line_timings:
+    if line_timings and lrc_text:
         lines = create_lines_from_lrc(
             lrc_text, romanize=False, title=title, artist=artist
         )
@@ -602,7 +608,7 @@ def get_lyrics_with_quality(
                 line_timings,
                 lrc_text,
                 target_duration,
-                quality_report["issues"],
+                issues_list,
             )
             quality_report["alignment_method"] = method
 
@@ -613,10 +619,13 @@ def get_lyrics_with_quality(
                 )
     else:
         # Fallback: use Genius text
-        text_lines = [text for text, _ in genius_lines if text.strip()]
-        lrc_text = "\n".join(text_lines)
+        if genius_lines:
+            text_lines = [text for text, _ in genius_lines if text.strip()]
+            fallback_text = "\n".join(text_lines)
+        else:
+            fallback_text = ""
         lines = create_lines_from_lrc(
-            lrc_text, romanize=romanize, title=title, artist=artist
+            fallback_text, romanize=romanize, title=title, artist=artist
         )
 
     # 6. Romanize

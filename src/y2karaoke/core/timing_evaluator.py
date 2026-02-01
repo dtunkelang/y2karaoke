@@ -1231,9 +1231,9 @@ class TranscriptionSegment:
     start: float
     end: float
     text: str
-    words: List[TranscriptionWord] = None
+    words: Optional[List[TranscriptionWord]] = None
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         if self.words is None:
             self.words = []
 

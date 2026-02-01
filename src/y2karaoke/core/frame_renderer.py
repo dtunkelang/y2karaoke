@@ -316,7 +316,7 @@ def render_frame(
             lines, current_line_idx, current_time
         )
 
-    if show_splash:
+    if show_splash and title and artist:
         draw_splash_screen(draw, title, artist, video_width, video_height)
         return np.array(img)
 

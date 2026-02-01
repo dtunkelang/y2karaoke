@@ -77,7 +77,7 @@ def mix_stems(stem_files: list[str], output_path: str) -> str:
         raise RuntimeError("No stem files to mix")
 
     # Load and mix all stems
-    mixed = None
+    mixed = None  # type: Optional[AudioSegment]
     for stem_file in stem_files:
         stem = AudioSegment.from_wav(stem_file)
         if mixed is None:
@@ -86,7 +86,8 @@ def mix_stems(stem_files: list[str], output_path: str) -> str:
             mixed = mixed.overlay(stem)
 
     # Export the mixed audio
-    mixed.export(output_path, format="wav")
+    if mixed is not None:
+        mixed.export(output_path, format="wav")
     return output_path
 
 
@@ -131,7 +132,7 @@ def separate_vocals(audio_path: str, output_dir: str = ".") -> dict:
         # Separate the audio
         output_files = separator.separate(audio_path)
     finally:
-        if orig_is_available is not None:
+        if orig_is_available is not None and mps is not None:
             mps.is_available = orig_is_available
 
     # Convert to full paths
