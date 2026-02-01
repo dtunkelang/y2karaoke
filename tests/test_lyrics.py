@@ -235,15 +235,27 @@ class TestMetadataFiltering:
 
     def test_title_header_filtering(self):
         # Title-only line at start should be filtered
-        assert _is_metadata_line("My Song Title", title="My Song Title", timestamp=0.0) is True
+        assert (
+            _is_metadata_line("My Song Title", title="My Song Title", timestamp=0.0)
+            is True
+        )
         # But not after 15 seconds
-        assert _is_metadata_line("My Song Title", title="My Song Title", timestamp=20.0) is False
+        assert (
+            _is_metadata_line("My Song Title", title="My Song Title", timestamp=20.0)
+            is False
+        )
 
     def test_artist_header_filtering(self):
         # Artist-only line at start should be filtered
-        assert _is_metadata_line("The Beatles", artist="The Beatles", timestamp=5.0) is True
+        assert (
+            _is_metadata_line("The Beatles", artist="The Beatles", timestamp=5.0)
+            is True
+        )
         # But not after 15 seconds
-        assert _is_metadata_line("The Beatles", artist="The Beatles", timestamp=20.0) is False
+        assert (
+            _is_metadata_line("The Beatles", artist="The Beatles", timestamp=20.0)
+            is False
+        )
 
     def test_chinese_metadata_prefixes(self):
         assert _is_metadata_line("作词: 某人") is True
@@ -252,7 +264,9 @@ class TestMetadataFiltering:
 
     def test_actual_lyrics_not_filtered(self):
         assert _is_metadata_line("I want to hold your hand") is False
-        assert _is_metadata_line("Yesterday, all my troubles seemed so far away") is False
+        assert (
+            _is_metadata_line("Yesterday, all my troubles seemed so far away") is False
+        )
 
 
 # ------------------------------
@@ -354,7 +368,10 @@ class TestCreateLinesFromLrcTimings:
         lines = create_lines_from_lrc_timings(lrc_timings, genius_lines)
         assert len(lines) == 1
         # Low match score should use LRC text
-        assert "completely" in lines[0].text.lower() or "something" in lines[0].text.lower()
+        assert (
+            "completely" in lines[0].text.lower()
+            or "something" in lines[0].text.lower()
+        )
 
     def test_timing_preserved(self):
         lrc_timings = [
