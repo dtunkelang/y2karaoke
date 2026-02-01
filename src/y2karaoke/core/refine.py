@@ -352,8 +352,7 @@ def _match_words_to_onsets(
 
     # Build initial word starts from onset matches
     initial_word_starts: List[Optional[float]] = [
-        float(sorted_onsets[idx]) if idx is not None else None
-        for idx in word_to_onset
+        float(sorted_onsets[idx]) if idx is not None else None for idx in word_to_onset
     ]
 
     # Fix unmatched words and ensure monotonic ordering
