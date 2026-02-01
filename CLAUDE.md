@@ -10,6 +10,27 @@ Y2Karaoke generates karaoke videos with word-by-word highlighting from YouTube U
 - `karaoke.py` - Legacy wrapper, delegates to `y2karaoke.cli:cli()`
 - `src/y2karaoke/cli.py` - Main CLI with `generate`, `cache`, and `evaluate-timing` commands
 
+## Development Environment
+
+**IMPORTANT:** Always use the virtual environment for running commands.
+
+```bash
+# Activate venv before running any Python commands
+source venv/bin/activate
+
+# Run tests
+source venv/bin/activate && pytest tests/ -v
+
+# Run specific test file
+source venv/bin/activate && pytest tests/test_models.py -v
+
+# Run linting
+source venv/bin/activate && black --check src/y2karaoke tests
+source venv/bin/activate && flake8 src/y2karaoke
+```
+
+The project uses Python 3.12 with dependencies installed via `pip install -e ".[dev]"`.
+
 ## 1. Overall Pipeline
 
 The main orchestrator is `KaraokeGenerator` in `src/y2karaoke/core/karaoke.py`.

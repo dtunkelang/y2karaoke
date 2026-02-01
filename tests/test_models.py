@@ -201,11 +201,15 @@ class TestStepQuality:
 
 class TestTrackIdentificationQuality:
     def test_step_name_set(self):
-        quality = TrackIdentificationQuality(quality_score=80)
+        quality = TrackIdentificationQuality(
+            step_name="track_identification", quality_score=80
+        )
         assert quality.step_name == "track_identification"
 
     def test_default_values(self):
-        quality = TrackIdentificationQuality(quality_score=80)
+        quality = TrackIdentificationQuality(
+            step_name="track_identification", quality_score=80
+        )
         assert quality.match_confidence == 0.0
         assert quality.source == ""
         assert quality.fallback_used is False
@@ -218,11 +222,11 @@ class TestTrackIdentificationQuality:
 
 class TestLyricsQuality:
     def test_step_name_set(self):
-        quality = LyricsQuality(quality_score=80)
+        quality = LyricsQuality(step_name="lyrics_fetch", quality_score=80)
         assert quality.step_name == "lyrics_fetch"
 
     def test_default_values(self):
-        quality = LyricsQuality(quality_score=80)
+        quality = LyricsQuality(step_name="lyrics_fetch", quality_score=80)
         assert quality.coverage == 0.0
         assert quality.timestamp_density == 0.0
         assert quality.duration_match is True
@@ -235,18 +239,24 @@ class TestLyricsQuality:
 
 class TestTimingAlignmentQuality:
     def test_step_name_set(self):
-        quality = TimingAlignmentQuality(quality_score=80)
+        quality = TimingAlignmentQuality(step_name="timing_alignment", quality_score=80)
         assert quality.step_name == "timing_alignment"
 
     def test_alignment_rate(self):
         quality = TimingAlignmentQuality(
-            quality_score=80, lines_aligned=80, total_lines=100
+            step_name="timing_alignment",
+            quality_score=80,
+            lines_aligned=80,
+            total_lines=100,
         )
         assert quality.alignment_rate == 80.0
 
     def test_alignment_rate_zero_total(self):
         quality = TimingAlignmentQuality(
-            quality_score=80, lines_aligned=0, total_lines=0
+            step_name="timing_alignment",
+            quality_score=80,
+            lines_aligned=0,
+            total_lines=0,
         )
         assert quality.alignment_rate == 0.0
 
@@ -264,9 +274,11 @@ class TestPipelineQualityReport:
 
     def test_from_steps_high_quality(self):
         steps = [
-            TrackIdentificationQuality(quality_score=90),
-            LyricsQuality(quality_score=85),
-            TimingAlignmentQuality(quality_score=80),
+            TrackIdentificationQuality(
+                step_name="track_identification", quality_score=90
+            ),
+            LyricsQuality(step_name="lyrics_fetch", quality_score=85),
+            TimingAlignmentQuality(step_name="timing_alignment", quality_score=80),
         ]
         report = PipelineQualityReport.from_steps(steps)
         assert report.overall_score >= 80
@@ -274,9 +286,11 @@ class TestPipelineQualityReport:
 
     def test_from_steps_medium_quality(self):
         steps = [
-            TrackIdentificationQuality(quality_score=60),
-            LyricsQuality(quality_score=55),
-            TimingAlignmentQuality(quality_score=50),
+            TrackIdentificationQuality(
+                step_name="track_identification", quality_score=60
+            ),
+            LyricsQuality(step_name="lyrics_fetch", quality_score=55),
+            TimingAlignmentQuality(step_name="timing_alignment", quality_score=50),
         ]
         report = PipelineQualityReport.from_steps(steps)
         assert 50 <= report.overall_score < 80
@@ -284,9 +298,11 @@ class TestPipelineQualityReport:
 
     def test_from_steps_low_quality(self):
         steps = [
-            TrackIdentificationQuality(quality_score=30),
-            LyricsQuality(quality_score=25),
-            TimingAlignmentQuality(quality_score=20),
+            TrackIdentificationQuality(
+                step_name="track_identification", quality_score=30
+            ),
+            LyricsQuality(step_name="lyrics_fetch", quality_score=25),
+            TimingAlignmentQuality(step_name="timing_alignment", quality_score=20),
         ]
         report = PipelineQualityReport.from_steps(steps)
         assert report.overall_score < 50
@@ -294,7 +310,10 @@ class TestPipelineQualityReport:
 
     def test_from_steps_collects_warnings(self):
         step = TrackIdentificationQuality(
-            quality_score=50, status="degraded", issues=["Issue 1", "Issue 2"]
+            step_name="track_identification",
+            quality_score=50,
+            status="degraded",
+            issues=["Issue 1", "Issue 2"],
         )
         report = PipelineQualityReport.from_steps([step])
         assert len(report.warnings) > 0
@@ -302,8 +321,10 @@ class TestPipelineQualityReport:
 
     def test_from_steps_recommendations_for_low_quality(self):
         steps = [
-            TrackIdentificationQuality(quality_score=30),
-            LyricsQuality(quality_score=25),
+            TrackIdentificationQuality(
+                step_name="track_identification", quality_score=30
+            ),
+            LyricsQuality(step_name="lyrics_fetch", quality_score=25),
         ]
         report = PipelineQualityReport.from_steps(steps)
         assert len(report.recommendations) > 0
@@ -312,8 +333,12 @@ class TestPipelineQualityReport:
     def test_from_steps_weighted_average(self):
         # Timing alignment has weight 2.5, higher than track ID (1.5)
         steps = [
-            TrackIdentificationQuality(quality_score=100),  # weight 1.5
-            TimingAlignmentQuality(quality_score=0),  # weight 2.5
+            TrackIdentificationQuality(
+                step_name="track_identification", quality_score=100
+            ),  # weight 1.5
+            TimingAlignmentQuality(
+                step_name="timing_alignment", quality_score=0
+            ),  # weight 2.5
         ]
         report = PipelineQualityReport.from_steps(steps)
         # Weighted: (100*1.5 + 0*2.5) / (1.5+2.5) = 150/4 = 37.5
@@ -321,8 +346,10 @@ class TestPipelineQualityReport:
 
     def test_summary(self):
         steps = [
-            TrackIdentificationQuality(quality_score=80),
-            LyricsQuality(quality_score=75),
+            TrackIdentificationQuality(
+                step_name="track_identification", quality_score=80
+            ),
+            LyricsQuality(step_name="lyrics_fetch", quality_score=75),
         ]
         report = PipelineQualityReport.from_steps(steps)
         summary = report.summary()
@@ -331,8 +358,10 @@ class TestPipelineQualityReport:
 
     def test_steps_dict(self):
         steps = [
-            TrackIdentificationQuality(quality_score=80),
-            LyricsQuality(quality_score=75),
+            TrackIdentificationQuality(
+                step_name="track_identification", quality_score=80
+            ),
+            LyricsQuality(step_name="lyrics_fetch", quality_score=75),
         ]
         report = PipelineQualityReport.from_steps(steps)
         assert "track_identification" in report.steps

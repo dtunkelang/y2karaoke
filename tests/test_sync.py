@@ -149,10 +149,10 @@ class TestCountLargeGaps:
         assert _count_large_gaps(timings) == 2
 
     def test_custom_threshold(self):
-        timings = [(0.0, "a"), (20.0, "b"), (50.0, "c")]
-        # Default 30s threshold: 1 gap (30s between b and c)
+        timings = [(0.0, "a"), (20.0, "b"), (51.0, "c")]
+        # 30s threshold: 1 gap (31s between b and c, exceeds 30)
         assert _count_large_gaps(timings, threshold=30.0) == 1
-        # 15s threshold: 2 gaps (20s and 30s)
+        # 15s threshold: 2 gaps (20s > 15 and 31s > 15)
         assert _count_large_gaps(timings, threshold=15.0) == 2
 
     def test_empty_list(self):
