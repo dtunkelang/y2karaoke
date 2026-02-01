@@ -684,7 +684,11 @@ class TrackIdentifier:
             fallback_artist = yt_uploader or "Unknown"
             fallback_title = parsed_title or yt_title
 
-        return fallback_artist, fallback_title
+        # Ensure we always return strings
+        final_artist: str = fallback_artist if fallback_artist else "Unknown"
+        final_title: str = fallback_title if fallback_title else yt_title
+
+        return final_artist, final_title
 
     def identify_from_url(
         self,
@@ -714,6 +718,9 @@ class TrackIdentifier:
 
         yt_title, yt_uploader, yt_duration = self._get_youtube_metadata(url)
         logger.info(f"YouTube: '{yt_title}' by {yt_uploader} ({yt_duration}s)")
+
+        parsed_artist: Optional[str]
+        parsed_title: str
 
         if artist_hint and title_hint:
             logger.info(f"Using provided artist/title: {artist_hint} - {title_hint}")
