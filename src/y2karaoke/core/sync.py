@@ -163,16 +163,16 @@ def _search_with_fallback(
         )
         if lrc:
             logger.debug(f"Found lyrics from {provider}")
-            result = (lrc, provider)
-            _search_cache[cache_key] = result
-            return result
+            found_result: Tuple[Optional[str], str] = (lrc, provider)
+            _search_cache[cache_key] = found_result
+            return found_result
 
         # Small delay between providers to be nice to services
         time.sleep(0.3)
 
-    result = (None, "")
-    _search_cache[cache_key] = result
-    return result
+    empty_result: Tuple[Optional[str], str] = (None, "")
+    _search_cache[cache_key] = empty_result
+    return empty_result
 
 
 # Cache for LRC results to avoid duplicate fetches
@@ -331,8 +331,13 @@ def fetch_lyrics_multi_source(
 
         if not SYNCEDLYRICS_AVAILABLE:
             logger.warning("syncedlyrics not installed")
-            result = (None, False, "", None)
-            _lrc_cache[cache_key] = result
+            no_sync_result: Tuple[Optional[str], bool, str, Optional[int]] = (
+                None,
+                False,
+                "",
+                None,
+            )
+            _lrc_cache[cache_key] = no_sync_result
             return (None, False, "")
 
         # Try enhanced (word-level) first if requested
@@ -372,14 +377,24 @@ def fetch_lyrics_multi_source(
                 return (lrc, False, provider)
 
         logger.warning("No synced lyrics found from any provider")
-        result = (None, False, "", None)
-        _lrc_cache[cache_key] = result
+        not_found: Tuple[Optional[str], bool, str, Optional[int]] = (
+            None,
+            False,
+            "",
+            None,
+        )
+        _lrc_cache[cache_key] = not_found
         return (None, False, "")
 
     except Exception as e:
         logger.error(f"Error fetching synced lyrics: {e}")
-        result = (None, False, "", None)
-        _lrc_cache[cache_key] = result
+        error_result: Tuple[Optional[str], bool, str, Optional[int]] = (
+            None,
+            False,
+            "",
+            None,
+        )
+        _lrc_cache[cache_key] = error_result
         return (None, False, "")
 
 
@@ -572,20 +587,19 @@ def _count_large_gaps(timings: List[Tuple[float, str]], threshold: float = 30.0)
 def _calculate_quality_score(report: Dict[str, Any], num_timings: int) -> float:
     """Calculate quality score based on metrics in report."""
     score = 100.0
+    issues: List[str] = report["issues"]
 
     # Coverage penalties
     if report["coverage"] < 0.6:
         score -= 30
-        report["issues"].append(f"Low coverage ({report['coverage']*100:.0f}%)")
+        issues.append(f"Low coverage ({report['coverage']*100:.0f}%)")
     elif report["coverage"] < 0.8:
         score -= 15
 
     # Density penalties
     if report["timestamp_density"] < 1.5:
         score -= 20
-        report["issues"].append(
-            f"Low timestamp density ({report['timestamp_density']:.1f}/10s)"
-        )
+        issues.append(f"Low timestamp density ({report['timestamp_density']:.1f}/10s)")
     elif report["timestamp_density"] < 2.0:
         score -= 10
 
@@ -596,7 +610,7 @@ def _calculate_quality_score(report: Dict[str, Any], num_timings: int) -> float:
     # Few lines penalty
     if num_timings < 10:
         score -= 15
-        report["issues"].append(f"Only {num_timings} lines")
+        issues.append(f"Only {num_timings} lines")
 
     return score
 
@@ -629,7 +643,8 @@ def get_lyrics_quality_report(
     """
     from .lrc import parse_lrc_with_timing
 
-    report = {
+    issues: List[str] = []
+    report: Dict[str, Any] = {
         "quality_score": 0.0,
         "source": source,
         "sources_tried": sources_tried or [],
@@ -637,18 +652,18 @@ def get_lyrics_quality_report(
         "timestamp_density": 0.0,
         "duration": None,
         "duration_match": True,
-        "issues": [],
+        "issues": issues,
     }
 
     if not lrc_text or not _has_timestamps(lrc_text):
-        report["issues"].append("No synced lyrics found")
+        issues.append("No synced lyrics found")
         return report
 
     # Parse timings
     timings = parse_lrc_with_timing(lrc_text, "", "")
     if not timings or len(timings) < 2:
         report["quality_score"] = 20.0
-        report["issues"].append("Too few timestamped lines")
+        issues.append("Too few timestamped lines")
         return report
 
     # Calculate metrics
@@ -670,7 +685,7 @@ def get_lyrics_quality_report(
         diff = abs(lrc_duration - target_duration)
         report["duration_match"] = diff <= 20
         if diff > 20:
-            report["issues"].append(
+            issues.append(
                 f"Duration mismatch: LRC={lrc_duration}s, target={target_duration}s"
             )
 
@@ -681,7 +696,7 @@ def get_lyrics_quality_report(
     large_gaps = _count_large_gaps(timings)
     if large_gaps > 2:
         score -= 10
-        report["issues"].append(f"{large_gaps} large gaps (>30s)")
+        issues.append(f"{large_gaps} large gaps (>30s)")
 
     report["quality_score"] = max(0.0, min(100.0, score))
     return report

@@ -402,7 +402,8 @@ def evaluate_timing(ctx, url_or_query, lyrics_title, lyrics_artist, work_dir, fo
         logger.info(f"Downloaded audio: {audio_path}")
 
         # Separate vocals
-        vocals_path, _ = separate_vocals(audio_path, cache_dir=cache_dir)
+        sep_result = separate_vocals(audio_path, output_dir=str(cache_dir))
+        vocals_path = sep_result["vocals_path"]
         logger.info(f"Separated vocals: {vocals_path}")
 
         # Run comparison
