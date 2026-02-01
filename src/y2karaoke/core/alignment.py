@@ -52,24 +52,24 @@ def detect_audio_silence_regions(
 
         # Find silence regions
         is_silent = rms < threshold
-        silences = []
+        silences: List[Tuple[float, float]] = []
         in_silence = False
-        silence_start = 0
+        silence_start = 0.0
 
         for i, (t, silent) in enumerate(zip(times, is_silent)):
             if silent and not in_silence:
                 in_silence = True
-                silence_start = t
+                silence_start = float(t)
             elif not silent and in_silence:
                 in_silence = False
-                silence_end = t
+                silence_end = float(t)
                 duration = silence_end - silence_start
                 if duration >= min_silence_duration:
                     silences.append((silence_start, silence_end))
 
         # Handle case ending in silence
         if in_silence:
-            silence_end = times[-1]
+            silence_end = float(times[-1])
             duration = silence_end - silence_start
             if duration >= min_silence_duration:
                 silences.append((silence_start, silence_end))
@@ -142,7 +142,7 @@ def calculate_gap_adjustments(
         adjusted_lrc_start = lrc_start + cumulative_adj
 
         best_match = None
-        best_overlap = 0
+        best_overlap = 0.0
 
         for audio_start, audio_end in audio_silences:
             # Check if this audio silence overlaps with the adjusted LRC gap position

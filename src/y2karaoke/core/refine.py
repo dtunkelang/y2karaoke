@@ -184,7 +184,7 @@ def _detect_vocal_end(
     # Don't extend beyond original line_end
     detected_end = min(detected_end, line_end)
 
-    return detected_end
+    return float(detected_end)
 
 
 def _find_best_onset_for_word(
@@ -240,19 +240,25 @@ def _fix_unmatched_word_starts(
                 est_duration = max(0.15, min(0.08 * char_count, 0.5))
                 word_starts[i] = next_matched_time - est_duration
             else:
-                if i > 0 and word_starts[i - 1] is not None:
+                prev_start = word_starts[i - 1] if i > 0 else None
+                if prev_start is not None:
                     char_count = len(words[i - 1].text)
                     est_duration = max(0.15, min(0.08 * char_count, 0.5))
-                    word_starts[i] = word_starts[i - 1] + est_duration
+                    word_starts[i] = prev_start + est_duration
                 else:
                     word_starts[i] = words[i].start_time
 
-    # Ensure monotonically increasing
-    for i in range(1, n_words):
-        if word_starts[i] <= word_starts[i - 1]:
-            word_starts[i] = word_starts[i - 1] + 0.1
+    # Ensure monotonically increasing - at this point all values should be filled
+    result: List[float] = []
+    for i in range(n_words):
+        start = word_starts[i]
+        if start is None:
+            start = words[i].start_time  # Fallback
+        if i > 0 and start <= result[i - 1]:
+            start = result[i - 1] + 0.1
+        result.append(start)
 
-    return word_starts
+    return result
 
 
 def _build_refined_words(
@@ -324,7 +330,7 @@ def _match_words_to_onsets(
     n_onsets = len(sorted_onsets)
     SYLLABLE_GAP = 0.3
 
-    word_to_onset = []
+    word_to_onset: List[Optional[int]] = []
     min_next_onset_idx = 0
 
     for i, word in enumerate(words):
