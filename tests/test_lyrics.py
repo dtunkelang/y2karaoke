@@ -10,6 +10,12 @@ from y2karaoke.core.lyrics import (
     parse_lrc_with_timing,
     romanize_line,
 )
+from y2karaoke.core.lrc import (
+    create_lines_from_lrc,
+    create_lines_from_lrc_timings,
+    _is_empty_or_symbols,
+    _is_metadata_line,
+)
 
 # ------------------------------
 # Dataclass Tests
@@ -189,3 +195,255 @@ class TestRomanization:
     def test_numbers_unchanged(self):
         result = romanize_line("123")
         assert result == "123"
+
+
+# ------------------------------
+# Metadata Filtering Tests
+# ------------------------------
+
+
+class TestMetadataFiltering:
+    def test_empty_string_is_metadata(self):
+        assert _is_empty_or_symbols("") is True
+        assert _is_empty_or_symbols("   ") is True
+
+    def test_music_symbols_only_is_metadata(self):
+        assert _is_empty_or_symbols("♪♪♪") is True
+        assert _is_empty_or_symbols("🎵🎶") is True
+        assert _is_empty_or_symbols("---") is True
+
+    def test_actual_lyrics_not_metadata(self):
+        assert _is_empty_or_symbols("Hello world") is False
+        assert _is_empty_or_symbols("I love you") is False
+
+    def test_metadata_prefix_detection(self):
+        assert _is_metadata_line("Artist: John Doe") is True
+        assert _is_metadata_line("Title: My Song") is True
+        assert _is_metadata_line("Composer: Bach") is True
+        assert _is_metadata_line("Lyrics by: Someone") is True
+        assert _is_metadata_line("Written by: Author") is True
+
+    def test_metadata_pattern_detection(self):
+        assert _is_metadata_line("(instrumental)") is True
+        assert _is_metadata_line("[Chorus]") is True
+        assert _is_metadata_line("(Verse 1)") is True
+        assert _is_metadata_line("© 2024 All rights reserved") is True
+
+    def test_credit_pattern_detection(self):
+        assert _is_metadata_line("Composer: John Smith") is True
+        assert _is_metadata_line("Lyricist: Jane Doe") is True
+
+    def test_title_header_filtering(self):
+        # Title-only line at start should be filtered
+        assert _is_metadata_line("My Song Title", title="My Song Title", timestamp=0.0) is True
+        # But not after 15 seconds
+        assert _is_metadata_line("My Song Title", title="My Song Title", timestamp=20.0) is False
+
+    def test_artist_header_filtering(self):
+        # Artist-only line at start should be filtered
+        assert _is_metadata_line("The Beatles", artist="The Beatles", timestamp=5.0) is True
+        # But not after 15 seconds
+        assert _is_metadata_line("The Beatles", artist="The Beatles", timestamp=20.0) is False
+
+    def test_chinese_metadata_prefixes(self):
+        assert _is_metadata_line("作词: 某人") is True
+        assert _is_metadata_line("作曲: 作曲家") is True
+        assert _is_metadata_line("编曲: 编曲师") is True
+
+    def test_actual_lyrics_not_filtered(self):
+        assert _is_metadata_line("I want to hold your hand") is False
+        assert _is_metadata_line("Yesterday, all my troubles seemed so far away") is False
+
+
+# ------------------------------
+# create_lines_from_lrc Tests
+# ------------------------------
+
+
+class TestCreateLinesFromLrc:
+    def test_simple_lrc(self):
+        lrc_text = "[00:10.00]Hello world\n[00:15.00]Second line"
+        lines = create_lines_from_lrc(lrc_text, romanize=False)
+        assert len(lines) == 2
+        assert lines[0].text == "Hello world"
+        assert lines[1].text == "Second line"
+
+    def test_word_timing_distribution(self):
+        lrc_text = "[00:10.00]One two three\n[00:15.00]Next"
+        lines = create_lines_from_lrc(lrc_text, romanize=False)
+        # First line has 3 words
+        assert len(lines[0].words) == 3
+        # Words should have progressive timing
+        assert lines[0].words[0].start_time < lines[0].words[1].start_time
+        assert lines[0].words[1].start_time < lines[0].words[2].start_time
+
+    def test_empty_lrc_returns_empty(self):
+        lines = create_lines_from_lrc("", romanize=False)
+        assert lines == []
+
+    def test_metadata_lines_filtered(self):
+        lrc_text = "[00:01.00]Artist: Someone\n[00:10.00]Actual lyrics here"
+        lines = create_lines_from_lrc(lrc_text, romanize=False)
+        assert len(lines) == 1
+        assert lines[0].text == "Actual lyrics here"
+
+    def test_title_artist_header_filtered(self):
+        lrc_text = "[00:01.00]My Song\n[00:03.00]The Artist\n[00:10.00]Actual lyrics"
+        lines = create_lines_from_lrc(
+            lrc_text, romanize=False, title="My Song", artist="The Artist"
+        )
+        assert len(lines) == 1
+        assert lines[0].text == "Actual lyrics"
+
+    def test_long_gap_capped(self):
+        # If gap between lines > 10s, end_time should be capped
+        lrc_text = "[00:10.00]First line\n[00:30.00]Second line"
+        lines = create_lines_from_lrc(lrc_text, romanize=False)
+        first_line_end = lines[0].end_time
+        # End time should be ~15s (10s start + 5s cap), not 30s
+        assert first_line_end < 20.0
+
+    def test_last_line_duration(self):
+        lrc_text = "[00:10.00]Only line"
+        lines = create_lines_from_lrc(lrc_text, romanize=False)
+        # Last line should have ~3s duration
+        assert abs(lines[0].end_time - 13.0) < 0.5
+
+    def test_romanization_applied(self):
+        lrc_text = "[00:10.00]你好世界"
+        lines = create_lines_from_lrc(lrc_text, romanize=True)
+        # Should be romanized (not Chinese characters)
+        assert len(lines) == 1
+        # Check it's romanized (contains Latin characters, not Chinese)
+        assert any(c.isalpha() and ord(c) < 128 for c in lines[0].text)
+
+
+# ------------------------------
+# create_lines_from_lrc_timings Tests
+# ------------------------------
+
+
+class TestCreateLinesFromLrcTimings:
+    def test_basic_matching(self):
+        lrc_timings = [
+            (10.0, "hello world"),
+            (15.0, "goodbye world"),
+        ]
+        genius_lines = ["Hello World", "Goodbye World"]
+        lines = create_lines_from_lrc_timings(lrc_timings, genius_lines)
+        assert len(lines) == 2
+        # Should use Genius text (capitalized)
+        assert lines[0].text == "Hello World"
+        assert lines[1].text == "Goodbye World"
+
+    def test_fuzzy_matching(self):
+        lrc_timings = [
+            (10.0, "helo wrold"),  # Typos
+        ]
+        genius_lines = ["Hello World"]
+        lines = create_lines_from_lrc_timings(lrc_timings, genius_lines)
+        assert len(lines) == 1
+        # Should match despite typos
+        assert lines[0].text == "Hello World"
+
+    def test_no_match_uses_lrc_text(self):
+        lrc_timings = [
+            (10.0, "completely different"),
+        ]
+        genius_lines = ["Something else entirely"]
+        lines = create_lines_from_lrc_timings(lrc_timings, genius_lines)
+        assert len(lines) == 1
+        # Low match score should use LRC text
+        assert "completely" in lines[0].text.lower() or "something" in lines[0].text.lower()
+
+    def test_timing_preserved(self):
+        lrc_timings = [
+            (10.0, "first line"),
+            (15.0, "second line"),
+        ]
+        genius_lines = ["First Line", "Second Line"]
+        lines = create_lines_from_lrc_timings(lrc_timings, genius_lines)
+        # First line should start at 10s
+        assert lines[0].start_time == 10.0
+        # Second line should start at 15s
+        assert lines[1].start_time == 15.0
+
+    def test_duplicate_lines_filtered(self):
+        lrc_timings = [
+            (10.0, "repeat this"),
+            (12.0, "repeat this"),
+            (15.0, "different line"),
+        ]
+        genius_lines = ["Repeat This", "Repeat This", "Different Line"]
+        lines = create_lines_from_lrc_timings(lrc_timings, genius_lines)
+        # Consecutive duplicates should be filtered
+        assert len(lines) == 2
+
+    def test_empty_timings_returns_empty(self):
+        lines = create_lines_from_lrc_timings([], ["Some lyrics"])
+        assert lines == []
+
+    def test_word_timing_distribution(self):
+        lrc_timings = [
+            (10.0, "one two three"),
+            (15.0, "next"),
+        ]
+        genius_lines = ["One Two Three", "Next"]
+        lines = create_lines_from_lrc_timings(lrc_timings, genius_lines)
+        # Check word timing is progressive
+        first_line = lines[0]
+        assert len(first_line.words) == 3
+        assert first_line.words[0].start_time < first_line.words[1].start_time
+        assert first_line.words[1].start_time < first_line.words[2].start_time
+
+
+# ------------------------------
+# Edge Cases and Integration Tests
+# ------------------------------
+
+
+class TestLyricsEdgeCases:
+    def test_lrc_with_only_timestamps(self):
+        lrc_text = "[00:10.00]\n[00:15.00]\n[00:20.00]"
+        lines = create_lines_from_lrc(lrc_text, romanize=False)
+        assert lines == []
+
+    def test_lrc_with_instrumental_markers(self):
+        lrc_text = "[00:05.00](Instrumental)\n[00:30.00]Actual lyrics here"
+        lines = create_lines_from_lrc(lrc_text, romanize=False)
+        assert len(lines) == 1
+        assert lines[0].text == "Actual lyrics here"
+
+    def test_lrc_with_section_markers(self):
+        lrc_text = "[00:05.00][Verse 1]\n[00:10.00]Lyrics in verse"
+        lines = create_lines_from_lrc(lrc_text, romanize=False)
+        assert len(lines) == 1
+        assert "Lyrics" in lines[0].text
+
+    def test_parse_timestamp_various_formats(self):
+        # Standard format
+        assert abs(parse_lrc_timestamp("[01:30.50]") - 90.5) < 0.01
+        # No fractional
+        assert abs(parse_lrc_timestamp("[02:00]") - 120.0) < 0.01
+        # Single digit fractional
+        assert abs(parse_lrc_timestamp("[00:30.5]") - 30.5) < 0.01
+        # Three digit fractional
+        assert abs(parse_lrc_timestamp("[00:30.500]") - 30.5) < 0.01
+
+    def test_line_singer_preserved_in_split(self):
+        words = [
+            Word(text=f"word{i}", start_time=i * 0.1, end_time=(i + 1) * 0.1)
+            for i in range(20)
+        ]
+        line = Line(words=words, singer="singer1")
+        result = split_long_lines([line], max_width_ratio=0.3)
+        # All split lines should preserve singer
+        for split_line in result:
+            assert split_line.singer == "singer1"
+
+    def test_word_end_time_before_next_line(self):
+        lrc_text = "[00:10.00]First line\n[00:12.00]Second line"
+        lines = create_lines_from_lrc(lrc_text, romanize=False)
+        # Last word of first line should end before second line starts
+        first_line_last_word = lines[0].words[-1]
+        assert first_line_last_word.end_time <= 12.0
