@@ -290,6 +290,16 @@ class TestMetadataFiltering:
             is False
         )
 
+    def test_promo_filter_toggle(self):
+        assert (
+            _is_metadata_line(
+                "Download the song at https://example.com",
+                timestamp=5.0,
+                filter_promos=False,
+            )
+            is False
+        )
+
 
 # ------------------------------
 # create_lines_from_lrc Tests

@@ -194,6 +194,11 @@ def cli(ctx, verbose, log_file):
     help="Compare all lyrics sources and select best based on timing",
 )
 @click.option(
+    "--filter-promos/--no-filter-promos",
+    default=True,
+    help="Filter obvious promo/CTA lines at the start of LRC lyrics",
+)
+@click.option(
     "--whisper",
     is_flag=True,
     help="Use Whisper transcription to improve lyrics timing alignment",
@@ -251,6 +256,7 @@ def generate(
     whisper,
     whisper_language,
     whisper_model,
+    filter_promos,
     shorten_breaks,
     max_break,
     debug_audio,
@@ -304,6 +310,7 @@ def generate(
             use_whisper=whisper,
             whisper_language=whisper_language,
             whisper_model=whisper_model,
+            filter_promos=filter_promos,
             shorten_breaks=effective_shorten_breaks,
             max_break_duration=max_break,
             debug_audio=debug_audio,

@@ -59,6 +59,7 @@ class KaraokeGenerator:
         use_whisper: bool = False,
         whisper_language: Optional[str] = None,
         whisper_model: str = "base",
+        filter_promos: bool = True,
         shorten_breaks: bool = False,
         max_break_duration: float = 30.0,
         debug_audio: str = "instrumental",
@@ -117,6 +118,7 @@ class KaraokeGenerator:
             use_whisper=use_whisper,
             whisper_language=whisper_language,
             whisper_model=whisper_model,
+            filter_promos=filter_promos,
         )
 
         # Step 7: Select and process audio track based on debug_audio setting
@@ -303,6 +305,7 @@ class KaraokeGenerator:
         use_whisper: bool = False,
         whisper_language: Optional[str] = None,
         whisper_model: str = "base",
+        filter_promos: bool = True,
     ) -> Dict[str, Any]:
         logger.info("📝 Fetching lyrics...")
         from ..core.lyrics import get_lyrics_with_quality
@@ -313,6 +316,7 @@ class KaraokeGenerator:
             vocals_path=vocals_path,
             lyrics_offset=lyrics_offset,
             romanize=True,
+            filter_promos=filter_promos,
             target_duration=target_duration,
             evaluate_sources=evaluate_sources,
             use_whisper=use_whisper,

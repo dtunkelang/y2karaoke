@@ -207,7 +207,11 @@ def _is_promo_like_title_line(text: str, title: str) -> bool:
     has_sentence_punct = re.search(r"[.!?]$", text.strip()) is not None
     long_enough = len(text_lower) >= max(24, len(title_lower) + 8)
 
-    if not starts_with_title and (has_quoted_title or has_sentence_punct) and long_enough:
+    if (
+        not starts_with_title
+        and (has_quoted_title or has_sentence_punct)
+        and long_enough
+    ):
         return True
     return False
 
@@ -256,7 +260,11 @@ def _is_artist_header(text_lower: str, artist: str) -> bool:
 
 
 def _is_metadata_line(
-    text: str, title: str = "", artist: str = "", timestamp: float = -1.0
+    text: str,
+    title: str = "",
+    artist: str = "",
+    timestamp: float = -1.0,
+    filter_promos: bool = True,
 ) -> bool:
     """
     Determine if a line is metadata rather than actual lyrics.
@@ -290,10 +298,11 @@ def _is_metadata_line(
         return True
 
     # Filter obvious promo/CTA lines only at the very beginning.
-    if timestamp <= 12.0 and _is_promo_line(text):
-        return True
-    if timestamp <= 15.0 and _is_promo_like_title_line(text, title):
-        return True
+    if filter_promos:
+        if timestamp <= 12.0 and _is_promo_line(text):
+            return True
+        if timestamp <= 15.0 and _is_promo_like_title_line(text, title):
+            return True
 
     return False
 
@@ -318,7 +327,10 @@ def parse_lrc_timestamp(ts: str) -> Optional[float]:
 
 
 def parse_lrc_with_timing(
-    lrc_text: str, title: str = "", artist: str = ""
+    lrc_text: str,
+    title: str = "",
+    artist: str = "",
+    filter_promos: bool = True,
 ) -> List[Tuple[float, str]]:
     """Parse LRC format and extract (timestamp, text) tuples."""
     if not lrc_text:
@@ -339,7 +351,9 @@ def parse_lrc_with_timing(
             continue
 
         text_part = line[match.end() :].strip()
-        if text_part and not _is_metadata_line(text_part, title, artist, timestamp):
+        if text_part and not _is_metadata_line(
+            text_part, title, artist, timestamp, filter_promos=filter_promos
+        ):
             lines.append((timestamp, text_part))
 
     return lines
@@ -353,9 +367,10 @@ def create_lines_from_lrc(
     romanize: bool = True,
     title: str = "",
     artist: str = "",
+    filter_promos: bool = True,
 ) -> List[Line]:
     """Create Line objects from LRC text with evenly distributed word timings."""
-    timed_lines = parse_lrc_with_timing(lrc_text, title, artist)
+    timed_lines = parse_lrc_with_timing(lrc_text, title, artist, filter_promos)
     if not timed_lines:
         return []
 

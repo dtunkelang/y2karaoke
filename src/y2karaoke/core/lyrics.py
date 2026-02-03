@@ -342,6 +342,7 @@ def _fetch_lrc_text_and_timings(
     target_duration: Optional[int] = None,
     vocals_path: Optional[str] = None,
     evaluate_sources: bool = False,
+    filter_promos: bool = True,
 ) -> Tuple[Optional[str], Optional[List[Tuple[float, str]]], str]:
     """Fetch raw LRC text and parsed timings from available sources.
 
@@ -364,7 +365,9 @@ def _fetch_lrc_text_and_timings(
                 title, artist, vocals_path, target_duration
             )
             if lrc_text and source:
-                lines = parse_lrc_with_timing(lrc_text, title, artist)
+                lines = parse_lrc_with_timing(
+                    lrc_text, title, artist, filter_promos=filter_promos
+                )
                 score_str = f" (score: {report.overall_score:.1f})" if report else ""
                 logger.info(f"Selected best source: {source}{score_str}")
                 return lrc_text, lines, source
@@ -378,7 +381,9 @@ def _fetch_lrc_text_and_timings(
                 title, artist, target_duration, tolerance=20
             )
             if lrc_text and is_synced:
-                lines = parse_lrc_with_timing(lrc_text, title, artist)
+                lines = parse_lrc_with_timing(
+                    lrc_text, title, artist, filter_promos=filter_promos
+                )
                 logger.debug(
                     f"Got {len(lines)} LRC lines from {source} (duration: {lrc_duration}s)"
                 )
@@ -392,7 +397,9 @@ def _fetch_lrc_text_and_timings(
 
             lrc_text, is_synced, source = fetch_lyrics_multi_source(title, artist)
             if lrc_text and is_synced:
-                lines = parse_lrc_with_timing(lrc_text, title, artist)
+                lines = parse_lrc_with_timing(
+                    lrc_text, title, artist, filter_promos=filter_promos
+                )
                 logger.debug(f"Got {len(lines)} LRC lines from {source}")
                 return lrc_text, lines, source
             else:
@@ -410,6 +417,7 @@ def get_lyrics_simple(
     cache_dir: Optional[str] = None,
     lyrics_offset: Optional[float] = None,
     romanize: bool = True,
+    filter_promos: bool = True,
     target_duration: Optional[int] = None,
     evaluate_sources: bool = False,
     use_whisper: bool = False,
@@ -452,7 +460,7 @@ def get_lyrics_simple(
         f"evaluate={evaluate_sources})"
     )
     lrc_text, line_timings, source = _fetch_lrc_text_and_timings(
-        title, artist, target_duration, vocals_path, evaluate_sources
+        title, artist, target_duration, vocals_path, evaluate_sources, filter_promos
     )
 
     # 2. Fetch Genius as fallback or for singer info
@@ -476,7 +484,11 @@ def get_lyrics_simple(
     # 4. Create Line objects
     if line_timings and lrc_text:
         lines = create_lines_from_lrc(
-            lrc_text, romanize=False, title=title, artist=artist
+            lrc_text,
+            romanize=False,
+            title=title,
+            artist=artist,
+            filter_promos=filter_promos,
         )
         _apply_timing_to_lines(lines, line_timings)
 
@@ -502,7 +514,11 @@ def get_lyrics_simple(
         else:
             lrc_text = ""
         lines = create_lines_from_lrc(
-            lrc_text, romanize=romanize, title=title, artist=artist
+            lrc_text,
+            romanize=romanize,
+            title=title,
+            artist=artist,
+            filter_promos=filter_promos,
         )
 
     # 6. Romanize
@@ -524,6 +540,7 @@ def get_lyrics_with_quality(
     cache_dir: Optional[str] = None,
     lyrics_offset: Optional[float] = None,
     romanize: bool = True,
+    filter_promos: bool = True,
     target_duration: Optional[int] = None,
     evaluate_sources: bool = False,
     use_whisper: bool = False,
@@ -564,7 +581,7 @@ def get_lyrics_with_quality(
         f"evaluate={evaluate_sources})"
     )
     lrc_text, line_timings, source = _fetch_lrc_text_and_timings(
-        title, artist, target_duration, vocals_path, evaluate_sources
+        title, artist, target_duration, vocals_path, evaluate_sources, filter_promos
     )
     quality_report["source"] = source
 
@@ -595,7 +612,11 @@ def get_lyrics_with_quality(
     # 4. Create Line objects and apply timing
     if line_timings and lrc_text:
         lines = create_lines_from_lrc(
-            lrc_text, romanize=False, title=title, artist=artist
+            lrc_text,
+            romanize=False,
+            title=title,
+            artist=artist,
+            filter_promos=filter_promos,
         )
         quality_report["alignment_method"] = "lrc_only"
         _apply_timing_to_lines(lines, line_timings)
@@ -625,7 +646,11 @@ def get_lyrics_with_quality(
         else:
             fallback_text = ""
         lines = create_lines_from_lrc(
-            fallback_text, romanize=romanize, title=title, artist=artist
+            fallback_text,
+            romanize=romanize,
+            title=title,
+            artist=artist,
+            filter_promos=filter_promos,
         )
 
     # 6. Romanize
