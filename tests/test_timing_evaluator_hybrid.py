@@ -114,6 +114,7 @@ def test_align_hybrid_lrc_whisper_no_match_uses_drift(monkeypatch):
     assert aligned[2].words[0].start_time == 6.5
     assert any("no match" in c for c in corrections)
 
+
 def test_fix_ordering_violations_reverts(monkeypatch):
     original = [
         Line(words=[Word(text="a", start_time=0.0, end_time=1.0)]),

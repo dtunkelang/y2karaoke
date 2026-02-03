@@ -3,7 +3,9 @@ import y2karaoke.core.track_identifier as ti
 
 def test_infer_artist_from_query_basic():
     identifier = ti.TrackIdentifier()
-    artist = identifier._infer_artist_from_query("Daft Punk One More Time", "One More Time")
+    artist = identifier._infer_artist_from_query(
+        "Daft Punk One More Time", "One More Time"
+    )
     assert artist == "Daft Punk"
 
 
@@ -39,7 +41,9 @@ def test_lookup_musicbrainz_for_query_selects_best(monkeypatch):
 
     monkeypatch.setattr(ti.musicbrainzngs, "search_recordings", fake_search_recordings)
 
-    artist, title = identifier._lookup_musicbrainz_for_query("Good Artist Good Title", 205)
+    artist, title = identifier._lookup_musicbrainz_for_query(
+        "Good Artist Good Title", 205
+    )
 
     assert artist == "Good Artist"
     assert title == "Good Title"
@@ -152,7 +156,10 @@ def test_query_musicbrainz_exact_title_match_beats_partial(monkeypatch):
     def fake_search_recordings(recording, artist=None, limit=25):
         return {
             "recording-list": [
-                {"title": "Song Extended", "artist-credit": [{"artist": {"name": "Artist"}}]},
+                {
+                    "title": "Song Extended",
+                    "artist-credit": [{"artist": {"name": "Artist"}}],
+                },
                 {"title": "Song", "artist-credit": [{"artist": {"name": "Artist"}}]},
             ]
         }

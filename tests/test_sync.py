@@ -4,7 +4,6 @@ import pytest
 
 from y2karaoke.core import sync
 
-
 LRC_TEXT = "\n".join(
     [
         "[00:00.00]Line one",
@@ -155,6 +154,7 @@ def test_fetch_lyrics_for_duration_uses_alternative_search(monkeypatch):
         "fetch_lyrics_multi_source",
         lambda *a, **k: ("[00:00.00]Short", True, "primary"),
     )
+
     def fake_duration(lrc_text):
         return 120 if lrc_text == LRC_TEXT else 50
 
@@ -186,9 +186,13 @@ def test_fetch_from_all_sources_collects_results(monkeypatch):
     monkeypatch.setattr(sync, "LYRIQ_AVAILABLE", True)
     monkeypatch.setattr(sync, "SYNCEDLYRICS_AVAILABLE", True)
     monkeypatch.setattr(sync, "lyriq_get_lyrics", lambda *a, **k: Lyrics())
-    monkeypatch.setattr(sync, "syncedlyrics", types.SimpleNamespace(search=lambda *a, **k: LRC_TEXT))
+    monkeypatch.setattr(
+        sync, "syncedlyrics", types.SimpleNamespace(search=lambda *a, **k: LRC_TEXT)
+    )
 
     results = sync.fetch_from_all_sources("Title", "Artist")
 
     assert "lyriq (LRCLib)" in results
-    assert any(provider in results for provider in sync.PROVIDER_ORDER if provider != "Genius")
+    assert any(
+        provider in results for provider in sync.PROVIDER_ORDER if provider != "Genius"
+    )

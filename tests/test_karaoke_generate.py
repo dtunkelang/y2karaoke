@@ -18,7 +18,11 @@ def test_generate_offsets_lines_and_uses_vocals_debug(monkeypatch, tmp_path):
     monkeypatch.setattr(
         generator,
         "_download_audio",
-        lambda *a, **k: {"audio_path": "audio.wav", "title": "Title", "artist": "Artist"},
+        lambda *a, **k: {
+            "audio_path": "audio.wav",
+            "title": "Title",
+            "artist": "Artist",
+        },
     )
     monkeypatch.setattr(
         "y2karaoke.core.karaoke.trim_audio_if_needed", lambda *a, **k: "trimmed.wav"
@@ -80,7 +84,11 @@ def test_generate_uses_original_audio_debug(monkeypatch, tmp_path):
     monkeypatch.setattr(
         generator,
         "_download_audio",
-        lambda *a, **k: {"audio_path": "audio.wav", "title": "Title", "artist": "Artist"},
+        lambda *a, **k: {
+            "audio_path": "audio.wav",
+            "title": "Title",
+            "artist": "Artist",
+        },
     )
     monkeypatch.setattr(
         "y2karaoke.core.karaoke.trim_audio_if_needed", lambda *a, **k: "trimmed.wav"

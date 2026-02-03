@@ -4,10 +4,14 @@ import y2karaoke.core.track_identifier as ti
 def test_score_split_candidate_rejects_long_duration(monkeypatch):
     identifier = ti.TrackIdentifier()
 
-    monkeypatch.setattr(identifier, "_check_lrc_and_duration", lambda title, artist: (True, 200))
+    monkeypatch.setattr(
+        identifier, "_check_lrc_and_duration", lambda title, artist: (True, 200)
+    )
 
     candidate = (721, "Artist", "Title")
-    score = identifier._score_split_candidate(candidate, "Artist", "Title", "Artist Title")
+    score = identifier._score_split_candidate(
+        candidate, "Artist", "Title", "Artist Title"
+    )
 
     assert score is None
 
@@ -15,10 +19,14 @@ def test_score_split_candidate_rejects_long_duration(monkeypatch):
 def test_score_split_candidate_rejects_no_title_overlap(monkeypatch):
     identifier = ti.TrackIdentifier()
 
-    monkeypatch.setattr(identifier, "_check_lrc_and_duration", lambda title, artist: (False, None))
+    monkeypatch.setattr(
+        identifier, "_check_lrc_and_duration", lambda title, artist: (False, None)
+    )
 
     candidate = (200, "Artist", "Alpha")
-    score = identifier._score_split_candidate(candidate, "Artist", "Beta", "Artist Beta")
+    score = identifier._score_split_candidate(
+        candidate, "Artist", "Beta", "Artist Beta"
+    )
 
     assert score is None
 
@@ -26,10 +34,14 @@ def test_score_split_candidate_rejects_no_title_overlap(monkeypatch):
 def test_score_split_candidate_rewards_matches(monkeypatch):
     identifier = ti.TrackIdentifier()
 
-    monkeypatch.setattr(identifier, "_check_lrc_and_duration", lambda title, artist: (True, 200))
+    monkeypatch.setattr(
+        identifier, "_check_lrc_and_duration", lambda title, artist: (True, 200)
+    )
 
     candidate = (200, "Artist", "Hello")
-    score = identifier._score_split_candidate(candidate, "Artist", "Hello", "Artist Hello")
+    score = identifier._score_split_candidate(
+        candidate, "Artist", "Hello", "Artist Hello"
+    )
 
     assert score is not None
     assert score > 50
@@ -38,7 +50,9 @@ def test_score_split_candidate_rewards_matches(monkeypatch):
 def test_score_split_candidate_penalizes_song_title_like_artist(monkeypatch):
     identifier = ti.TrackIdentifier()
 
-    monkeypatch.setattr(identifier, "_check_lrc_and_duration", lambda title, artist: (True, 200))
+    monkeypatch.setattr(
+        identifier, "_check_lrc_and_duration", lambda title, artist: (True, 200)
+    )
 
     candidate = (200, "Symphony Orchestra", "Hello")
     score = identifier._score_split_candidate(
@@ -55,7 +69,9 @@ def test_score_split_candidate_penalizes_song_title_like_artist(monkeypatch):
 def test_score_split_candidate_applies_query_penalty_and_overlap(monkeypatch):
     identifier = ti.TrackIdentifier()
 
-    monkeypatch.setattr(identifier, "_check_lrc_and_duration", lambda title, artist: (True, 200))
+    monkeypatch.setattr(
+        identifier, "_check_lrc_and_duration", lambda title, artist: (True, 200)
+    )
 
     candidate = (200, "Artist Name", "Hello There")
     split_artist = "Artist Name"
@@ -76,7 +92,9 @@ def test_score_split_candidate_applies_query_penalty_and_overlap(monkeypatch):
 def test_score_split_candidate_artist_match_bonus(monkeypatch):
     identifier = ti.TrackIdentifier()
 
-    monkeypatch.setattr(identifier, "_check_lrc_and_duration", lambda title, artist: (True, 200))
+    monkeypatch.setattr(
+        identifier, "_check_lrc_and_duration", lambda title, artist: (True, 200)
+    )
 
     candidate = (200, "Artist Name", "Hello There")
     split_title = "Hello There"
@@ -96,7 +114,9 @@ def test_score_split_candidate_artist_match_bonus(monkeypatch):
 def test_score_split_candidate_partial_title_match(monkeypatch):
     identifier = ti.TrackIdentifier()
 
-    monkeypatch.setattr(identifier, "_check_lrc_and_duration", lambda title, artist: (True, 200))
+    monkeypatch.setattr(
+        identifier, "_check_lrc_and_duration", lambda title, artist: (True, 200)
+    )
 
     candidate = (200, "Artist", "Hello There")
     score = identifier._score_split_candidate(

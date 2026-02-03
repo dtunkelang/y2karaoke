@@ -1,8 +1,11 @@
 """Tests for timing_evaluator module - focused on core functionality."""
 
+import sys
+from types import SimpleNamespace
+from unittest.mock import Mock, patch
+
 import numpy as np
 import pytest
-from unittest.mock import Mock, patch
 
 from y2karaoke.core.timing_evaluator import (
     TimingIssue,
@@ -268,3 +271,54 @@ class TestExtractAudioFeatures:
         features = extract_audio_features("nonexistent.wav")
 
         assert features is None
+
+    def test_extract_audio_features_success(self, monkeypatch, tmp_path):
+        cache_path = tmp_path / "vocals.audio.npz"
+
+        monkeypatch.setattr(
+            "y2karaoke.core.timing_evaluator._get_audio_features_cache_path",
+            lambda _path: str(cache_path),
+        )
+        monkeypatch.setattr(
+            "y2karaoke.core.timing_evaluator._load_audio_features_cache",
+            lambda _path: None,
+        )
+
+        saved = {}
+
+        def fake_save(path, features):
+            saved["path"] = path
+            saved["features"] = features
+
+        monkeypatch.setattr(
+            "y2karaoke.core.timing_evaluator._save_audio_features_cache",
+            fake_save,
+        )
+
+        def fake_load(_path, sr=22050):
+            y = np.array([0.0, 0.5, 0.0, 0.2], dtype=float)
+            return y, sr
+
+        def fake_onset_detect(**_kwargs):
+            return np.array([1, 3])
+
+        def fake_frames_to_time(frames, sr, hop_length):
+            return np.array(frames, dtype=float) * (hop_length / sr)
+
+        def fake_rms(**_kwargs):
+            return np.array([[0.1, 0.3, 0.05, 0.0]], dtype=float)
+
+        fake_librosa = SimpleNamespace(
+            load=fake_load,
+            onset=SimpleNamespace(onset_detect=fake_onset_detect),
+            frames_to_time=fake_frames_to_time,
+            feature=SimpleNamespace(rms=fake_rms),
+        )
+
+        monkeypatch.setitem(sys.modules, "librosa", fake_librosa)
+
+        features = extract_audio_features("vocals.wav", min_silence_duration=0.1)
+
+        assert features is not None
+        assert saved["path"] == str(cache_path)
+        assert features.duration == pytest.approx(4 / 22050)

@@ -60,9 +60,7 @@ def test_shorten_instrumental_breaks_no_long_breaks(monkeypatch):
 def test_shorten_instrumental_breaks_skips_intro(monkeypatch):
     monkeypatch.setattr(
         "y2karaoke.core.break_shortener.detect_instrumental_breaks",
-        lambda _path, min_break_duration=5.0: [
-            InstrumentalBreak(start=2.0, end=40.0)
-        ],
+        lambda _path, min_break_duration=5.0: [InstrumentalBreak(start=2.0, end=40.0)],
     )
     monkeypatch.setattr(
         "y2karaoke.core.break_shortener.AudioSegment.from_file",
@@ -86,9 +84,7 @@ def test_shorten_instrumental_breaks_applies_edit(monkeypatch):
 
     monkeypatch.setattr(
         "y2karaoke.core.break_shortener.detect_instrumental_breaks",
-        lambda _path, min_break_duration=5.0: [
-            InstrumentalBreak(start=20.0, end=60.0)
-        ],
+        lambda _path, min_break_duration=5.0: [InstrumentalBreak(start=20.0, end=60.0)],
     )
     monkeypatch.setattr(
         "y2karaoke.core.break_shortener.AudioSegment.from_file",

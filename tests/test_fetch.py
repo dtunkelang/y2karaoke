@@ -42,7 +42,9 @@ def test_fetch_html_success():
 
 
 def test_fetch_html_retries_and_returns_none(monkeypatch):
-    session = FakeSession([FakeResponse(raise_error=True), FakeResponse(raise_error=True)])
+    session = FakeSession(
+        [FakeResponse(raise_error=True), FakeResponse(raise_error=True)]
+    )
     monkeypatch.setattr(fetch.time, "sleep", lambda *_: None)
     monkeypatch.setattr(fetch.random, "random", lambda: 0.0)
 
@@ -56,12 +58,9 @@ def test_fetch_html_retries_and_returns_none(monkeypatch):
 
 def test_fetch_json_success():
     session = FakeSession([FakeResponse(json_data={"ok": True})])
-    assert (
-        fetch.fetch_json(
-            "https://example.com", session=session, max_retries=1, retry_sleep=0
-        )
-        == {"ok": True}
-    )
+    assert fetch.fetch_json(
+        "https://example.com", session=session, max_retries=1, retry_sleep=0
+    ) == {"ok": True}
 
 
 def test_fetch_json_retries_and_returns_none(monkeypatch):

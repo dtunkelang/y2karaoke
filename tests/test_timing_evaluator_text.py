@@ -18,12 +18,8 @@ def test_whisper_cache_round_trip(tmp_path):
     assert cache_path is not None
     assert cache_path.endswith("vocals_whisper_base_fr.json")
 
-    words = [
-        TranscriptionWord(start=0.0, end=0.5, text="bonjour", probability=0.9)
-    ]
-    segments = [
-        TranscriptionSegment(start=0.0, end=0.6, text="bonjour", words=words)
-    ]
+    words = [TranscriptionWord(start=0.0, end=0.5, text="bonjour", probability=0.9)]
+    segments = [TranscriptionSegment(start=0.0, end=0.6, text="bonjour", words=words)]
     _save_whisper_cache(cache_path, segments, words, "fr")
 
     loaded = _load_whisper_cache(cache_path)

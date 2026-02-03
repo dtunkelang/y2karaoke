@@ -47,8 +47,7 @@ def test_resolve_url_or_query_requires_title():
 
 def test_resolve_url_or_query_builds_query():
     assert (
-        cli.resolve_url_or_query(None, artist="Artist", title="Song")
-        == "Artist - Song"
+        cli.resolve_url_or_query(None, artist="Artist", title="Song") == "Artist - Song"
     )
     assert cli.resolve_url_or_query(None, artist=None, title="Song") == "Song"
 

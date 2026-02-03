@@ -30,9 +30,7 @@ def test_align_lyrics_to_transcription_adjusts_times():
 
 
 def test_align_lyrics_to_transcription_skips_when_out_of_range():
-    lines = [
-        Line(words=[Word(text="hello", start_time=0.0, end_time=0.5)])
-    ]
+    lines = [Line(words=[Word(text="hello", start_time=0.0, end_time=0.5)])]
     transcription = [
         te.TranscriptionSegment(start=20.0, end=21.0, text="hello", words=[])
     ]

@@ -5,7 +5,9 @@ from y2karaoke.core import genius
 
 
 def test_extract_genius_title_artist():
-    html = "<html><head><title>Artist - Song Lyrics | Genius Lyrics</title></head></html>"
+    html = (
+        "<html><head><title>Artist - Song Lyrics | Genius Lyrics</title></head></html>"
+    )
     title, artist = genius._extract_genius_title_artist(
         BeautifulSoup(html, "html.parser"), "Fallback"
     )
@@ -88,11 +90,7 @@ def test_fetch_genius_lyrics_with_singers_search_fallback(monkeypatch):
                     {
                         "type": "song",
                         "hits": [
-                            {
-                                "result": {
-                                    "url": "https://genius.com/artist-song-lyrics"
-                                }
-                            }
+                            {"result": {"url": "https://genius.com/artist-song-lyrics"}}
                         ],
                     }
                 ]
@@ -129,7 +127,11 @@ def test_fetch_genius_lyrics_with_singers_search_skips_non_song(monkeypatch):
                         "type": "song",
                         "hits": [
                             {"result": {"url": "https://genius.com/artists/Artist"}},
-                            {"result": {"url": "https://genius.com/artist-song-translation"}},
+                            {
+                                "result": {
+                                    "url": "https://genius.com/artist-song-translation"
+                                }
+                            },
                             {"result": {"url": "https://genius.com/artist-song"}},
                         ],
                     },

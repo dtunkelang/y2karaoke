@@ -145,8 +145,12 @@ def test_find_fallback_artist_title_uses_parsed_artist():
 
 def test_find_fallback_artist_title_split_no_lrc(monkeypatch):
     identifier = ti.TrackIdentifier()
-    monkeypatch.setattr(identifier, "_try_artist_title_splits", lambda *_: [("Split", "Title")])
-    monkeypatch.setattr(identifier, "_check_lrc_and_duration", lambda *a, **k: (False, None))
+    monkeypatch.setattr(
+        identifier, "_try_artist_title_splits", lambda *_: [("Split", "Title")]
+    )
+    monkeypatch.setattr(
+        identifier, "_check_lrc_and_duration", lambda *a, **k: (False, None)
+    )
 
     artist, title = identifier._find_fallback_artist_title(
         unique_candidates=[],

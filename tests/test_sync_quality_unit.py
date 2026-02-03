@@ -90,6 +90,8 @@ def test_fetch_lyrics_for_duration_alt_search(monkeypatch):
 
 def test_get_lyrics_quality_report_gap_penalty(monkeypatch):
     lrc_text = "[00:01.00]A\n[00:40.00]B\n[01:20.00]C\n[02:05.00]D"
-    report = sync.get_lyrics_quality_report(lrc_text, source="test", target_duration=200)
+    report = sync.get_lyrics_quality_report(
+        lrc_text, source="test", target_duration=200
+    )
     assert report["quality_score"] >= 0.0
     assert report["duration"] is not None

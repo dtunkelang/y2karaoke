@@ -55,7 +55,11 @@ def test_shorten_breaks_writes_edits_cache(monkeypatch, tmp_path):
 
     def fake_shorten(*args, **kwargs):
         return (
-            str(generator.cache_manager.get_file_path(video_id, "shortened_breaks_30s.wav")),
+            str(
+                generator.cache_manager.get_file_path(
+                    video_id, "shortened_breaks_30s.wav"
+                )
+            ),
             [
                 BreakEdit(
                     original_start=5.0,

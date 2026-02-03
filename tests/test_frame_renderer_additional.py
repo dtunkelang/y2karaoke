@@ -52,7 +52,9 @@ def test_draw_line_text_uses_singer_color(monkeypatch):
         is_duet=True,
     )
 
-    assert any(call.kwargs.get("fill") == (1, 2, 3) for call in draw.text.call_args_list)
+    assert any(
+        call.kwargs.get("fill") == (1, 2, 3) for call in draw.text.call_args_list
+    )
 
 
 def test_draw_highlight_sweep_partial_word(monkeypatch):
@@ -84,7 +86,9 @@ def test_render_frame_draws_splash(monkeypatch):
         called["splash"] = True
 
     monkeypatch.setattr("y2karaoke.core.frame_renderer.draw_splash_screen", fake_splash)
-    monkeypatch.setattr("y2karaoke.core.frame_renderer.draw_progress_bar", lambda *a, **k: None)
+    monkeypatch.setattr(
+        "y2karaoke.core.frame_renderer.draw_progress_bar", lambda *a, **k: None
+    )
 
     lines = [_line("hi", start=1.0, end=2.0)]
     background = np.zeros((1080, 1920, 3), dtype=np.uint8)
@@ -109,8 +113,12 @@ def test_render_frame_draws_progress_bar(monkeypatch):
     def fake_progress(*args, **kwargs):
         called["progress"] = True
 
-    monkeypatch.setattr("y2karaoke.core.frame_renderer.draw_progress_bar", fake_progress)
-    monkeypatch.setattr("y2karaoke.core.frame_renderer.draw_splash_screen", lambda *a, **k: None)
+    monkeypatch.setattr(
+        "y2karaoke.core.frame_renderer.draw_progress_bar", fake_progress
+    )
+    monkeypatch.setattr(
+        "y2karaoke.core.frame_renderer.draw_splash_screen", lambda *a, **k: None
+    )
 
     start = INSTRUMENTAL_BREAK_THRESHOLD + 5.0
     lines = [_line("hi", start=start, end=start + 1.0)]

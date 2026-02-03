@@ -148,9 +148,7 @@ class TestCacheManager:
         assert not stale_file.exists()
         assert not cache_dir.exists()
 
-    def test_auto_cleanup_runs_two_passes_when_still_large(
-        self, temp_dir, monkeypatch
-    ):
+    def test_auto_cleanup_runs_two_passes_when_still_large(self, temp_dir, monkeypatch):
         """Auto cleanup performs multiple passes if needed."""
         manager = CacheManager(temp_dir)
 

@@ -9,7 +9,9 @@ from y2karaoke.core import youtube_metadata
 
 def test_validate_youtube_url_accepts_valid_urls():
     assert (
-        youtube_metadata.validate_youtube_url("https://www.youtube.com/watch?v=abc123def45")
+        youtube_metadata.validate_youtube_url(
+            "https://www.youtube.com/watch?v=abc123def45"
+        )
         == "https://www.youtube.com/watch?v=abc123def45"
     )
     assert (
@@ -24,10 +26,7 @@ def test_validate_youtube_url_rejects_invalid_url():
 
 
 def test_sanitize_filename_removes_invalid_chars():
-    assert (
-        youtube_metadata.sanitize_filename('bad/name:*?"<>|')
-        == "badname"
-    )
+    assert youtube_metadata.sanitize_filename('bad/name:*?"<>|') == "badname"
 
 
 def test_extract_video_id_patterns():
@@ -137,9 +136,7 @@ def test_extract_metadata_from_youtube_prefers_artist_track(monkeypatch):
         def extract_info(self, url, download=False):
             return info
 
-    monkeypatch.setitem(
-        sys.modules, "yt_dlp", types.SimpleNamespace(YoutubeDL=FakeYDL)
-    )
+    monkeypatch.setitem(sys.modules, "yt_dlp", types.SimpleNamespace(YoutubeDL=FakeYDL))
 
     result = youtube_metadata.extract_metadata_from_youtube(
         "https://www.youtube.com/watch?v=abc123def45"
@@ -170,9 +167,7 @@ def test_extract_metadata_from_youtube_parses_title(monkeypatch):
         def extract_info(self, url, download=False):
             return info
 
-    monkeypatch.setitem(
-        sys.modules, "yt_dlp", types.SimpleNamespace(YoutubeDL=FakeYDL)
-    )
+    monkeypatch.setitem(sys.modules, "yt_dlp", types.SimpleNamespace(YoutubeDL=FakeYDL))
 
     result = youtube_metadata.extract_metadata_from_youtube(
         "https://www.youtube.com/watch?v=abc123def45"
@@ -203,9 +198,7 @@ def test_extract_metadata_from_youtube_parses_description(monkeypatch):
         def extract_info(self, url, download=False):
             return info
 
-    monkeypatch.setitem(
-        sys.modules, "yt_dlp", types.SimpleNamespace(YoutubeDL=FakeYDL)
-    )
+    monkeypatch.setitem(sys.modules, "yt_dlp", types.SimpleNamespace(YoutubeDL=FakeYDL))
 
     result = youtube_metadata.extract_metadata_from_youtube(
         "https://www.youtube.com/watch?v=abc123def45"
@@ -235,9 +228,7 @@ def test_extract_metadata_from_youtube_fallbacks_to_uploader(monkeypatch):
         def extract_info(self, url, download=False):
             return info
 
-    monkeypatch.setitem(
-        sys.modules, "yt_dlp", types.SimpleNamespace(YoutubeDL=FakeYDL)
-    )
+    monkeypatch.setitem(sys.modules, "yt_dlp", types.SimpleNamespace(YoutubeDL=FakeYDL))
 
     result = youtube_metadata.extract_metadata_from_youtube(
         "https://www.youtube.com/watch?v=abc123def45"

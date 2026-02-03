@@ -17,9 +17,7 @@ def _features(onset_times, energy_times, energy_envelope):
 
 
 def test_correct_line_timestamps_shifts_to_onset():
-    lines = [
-        Line(words=[Word(text="hi", start_time=1.0, end_time=1.4)])
-    ]
+    lines = [Line(words=[Word(text="hi", start_time=1.0, end_time=1.4)])]
     features = _features(
         onset_times=[2.0],
         energy_times=[0.0, 1.0, 2.0, 3.0],

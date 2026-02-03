@@ -13,16 +13,17 @@ def test_normalize_string_removes_stop_words_and_punct():
 
 
 def test_strip_parentheses_removes_bracketed_text():
-    assert title_resolver._strip_parentheses("Song Title (Remastered) [Live]") == "Song Title"
+    assert (
+        title_resolver._strip_parentheses("Song Title (Remastered) [Live]")
+        == "Song Title"
+    )
 
 
 def test_guess_musicbrainz_candidates_handles_errors(monkeypatch):
     def raise_error(*args, **kwargs):
         raise RuntimeError("boom")
 
-    monkeypatch.setattr(
-        title_resolver.musicbrainzngs, "search_recordings", raise_error
-    )
+    monkeypatch.setattr(title_resolver.musicbrainzngs, "search_recordings", raise_error)
 
     candidates = title_resolver.guess_musicbrainz_candidates(
         "Artist - Song", fallback_artist="Fallback Artist", fallback_title="Fallback"
@@ -55,7 +56,9 @@ def test_guess_musicbrainz_candidates_filters_bad_results(monkeypatch):
 
 
 def test_resolve_artist_title_from_youtube_fallback(monkeypatch):
-    monkeypatch.setattr(title_resolver, "guess_musicbrainz_candidates", lambda *a, **k: [])
+    monkeypatch.setattr(
+        title_resolver, "guess_musicbrainz_candidates", lambda *a, **k: []
+    )
 
     artist, title = title_resolver.resolve_artist_title_from_youtube(
         "Unknown - Unknown",

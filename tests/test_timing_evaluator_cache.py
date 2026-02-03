@@ -11,9 +11,7 @@ def test_get_whisper_cache_path_none_for_missing(tmp_path):
 def test_save_and_load_whisper_cache(tmp_path):
     cache_path = tmp_path / "cache.json"
     word = te.TranscriptionWord(start=0.1, end=0.2, text="hello")
-    segments = [
-        te.TranscriptionSegment(start=0.0, end=1.0, text="hello", words=[word])
-    ]
+    segments = [te.TranscriptionSegment(start=0.0, end=1.0, text="hello", words=[word])]
     words = [word]
 
     te._save_whisper_cache(str(cache_path), segments, words, "en")

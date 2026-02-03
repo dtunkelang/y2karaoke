@@ -109,4 +109,6 @@ def test_evaluate_timing_builds_report():
     assert report.source_name == "test"
     assert report.total_lines == 2
     assert "Timing quality" in report.summary
-    assert any(issue.issue_type in ("early_line", "late_line") for issue in report.issues)
+    assert any(
+        issue.issue_type in ("early_line", "late_line") for issue in report.issues
+    )

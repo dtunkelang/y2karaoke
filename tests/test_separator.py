@@ -75,9 +75,7 @@ class TestSeparateVocalsFunction:
         assert "audio_path" in params
         assert "output_dir" in params
 
-    def test_separate_vocals_mixes_stems_when_missing_instrumental(
-        self, monkeypatch
-    ):
+    def test_separate_vocals_mixes_stems_when_missing_instrumental(self, monkeypatch):
         class FakeMPS:
             def __init__(self):
                 self._original = self.is_available
@@ -153,7 +151,9 @@ class TestSeparateVocalsFunction:
 
         monkeypatch.setitem(__import__("sys").modules, "torch", FakeTorch())
         fake_module = type("mod", (), {"Separator": FakeSeparator})
-        monkeypatch.setitem(__import__("sys").modules, "audio_separator.separator", fake_module)
+        monkeypatch.setitem(
+            __import__("sys").modules, "audio_separator.separator", fake_module
+        )
 
         with pytest.raises(RuntimeError, match="Failed to separate tracks"):
             separate_vocals(str(tmp_path / "track.wav"), output_dir=str(tmp_path))

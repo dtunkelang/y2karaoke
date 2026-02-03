@@ -42,9 +42,7 @@ def test_fetch_lyrics_multi_source_returns_cached(monkeypatch):
     monkeypatch.setattr(sync, "_search_with_fallback", fail_search)
 
     try:
-        lrc_text, is_synced, source = sync.fetch_lyrics_multi_source(
-            "Title", "Artist"
-        )
+        lrc_text, is_synced, source = sync.fetch_lyrics_multi_source("Title", "Artist")
         assert lrc_text == "[00:01.00]A"
         assert is_synced is True
         assert source == "cached"
@@ -86,7 +84,9 @@ def test_fetch_lyrics_multi_source_plain_when_unsynced_allowed(monkeypatch):
     sync._lrc_cache.clear()
     monkeypatch.setattr(sync, "LYRIQ_AVAILABLE", False)
     monkeypatch.setattr(sync, "SYNCEDLYRICS_AVAILABLE", True)
-    monkeypatch.setattr(sync, "_search_with_fallback", lambda *a, **k: ("plain", "Genius"))
+    monkeypatch.setattr(
+        sync, "_search_with_fallback", lambda *a, **k: ("plain", "Genius")
+    )
 
     lrc_text, is_synced, source = sync.fetch_lyrics_multi_source(
         "Title", "Artist", synced_only=False

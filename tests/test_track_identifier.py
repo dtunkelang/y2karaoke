@@ -565,7 +565,9 @@ class TestIdentifyFromSearchMocked:
         mock_fallback.assert_called_once()
 
     @patch("y2karaoke.core.sync.fetch_lyrics_for_duration")
-    @patch("y2karaoke.core.track_identifier.TrackIdentifier._search_youtube_by_duration")
+    @patch(
+        "y2karaoke.core.track_identifier.TrackIdentifier._search_youtube_by_duration"
+    )
     @patch("y2karaoke.core.track_identifier.TrackIdentifier._try_split_search")
     @patch("y2karaoke.core.track_identifier.TrackIdentifier._find_best_title_only")
     @patch("y2karaoke.core.track_identifier.TrackIdentifier._query_musicbrainz")
@@ -604,7 +606,9 @@ class TestIdentifyFromSearchMocked:
         assert mock_search_youtube.call_count == 2
 
     @patch("y2karaoke.core.sync.fetch_lyrics_for_duration")
-    @patch("y2karaoke.core.track_identifier.TrackIdentifier._search_youtube_by_duration")
+    @patch(
+        "y2karaoke.core.track_identifier.TrackIdentifier._search_youtube_by_duration"
+    )
     @patch("y2karaoke.core.track_identifier.TrackIdentifier._find_best_title_only")
     @patch("y2karaoke.core.track_identifier.TrackIdentifier._query_musicbrainz")
     @patch("y2karaoke.core.track_identifier.TrackIdentifier._parse_query")
@@ -699,7 +703,9 @@ class TestIdentifyFromUrlMocked:
     @patch("y2karaoke.core.track_identifier.TrackIdentifier._get_youtube_metadata")
     @patch("y2karaoke.core.track_identifier.TrackIdentifier._query_musicbrainz")
     @patch("y2karaoke.core.track_identifier.TrackIdentifier._find_best_lrc_by_duration")
-    @patch("y2karaoke.core.track_identifier.TrackIdentifier._search_matching_youtube_video")
+    @patch(
+        "y2karaoke.core.track_identifier.TrackIdentifier._search_matching_youtube_video"
+    )
     def test_non_studio_mismatch_uses_alternative_video(
         self, mock_alt, mock_find_lrc, mock_mb_query, mock_yt_metadata, caplog
     ):
@@ -729,7 +735,9 @@ class TestIdentifyFromUrlMocked:
     @patch("y2karaoke.core.track_identifier.TrackIdentifier._get_youtube_metadata")
     @patch("y2karaoke.core.track_identifier.TrackIdentifier._query_musicbrainz")
     @patch("y2karaoke.core.track_identifier.TrackIdentifier._find_best_lrc_by_duration")
-    @patch("y2karaoke.core.track_identifier.TrackIdentifier._search_matching_youtube_video")
+    @patch(
+        "y2karaoke.core.track_identifier.TrackIdentifier._search_matching_youtube_video"
+    )
     def test_non_studio_mismatch_returns_lrc_candidate_when_no_alt(
         self, mock_alt, mock_find_lrc, mock_mb_query, mock_yt_metadata, caplog
     ):

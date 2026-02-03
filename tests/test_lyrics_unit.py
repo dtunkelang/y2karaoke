@@ -5,9 +5,7 @@ from y2karaoke.core.models import SongMetadata
 
 
 def test_detect_and_apply_offset_applies_delta(monkeypatch):
-    monkeypatch.setattr(
-        "y2karaoke.core.alignment.detect_song_start", lambda *_: 1.0
-    )
+    monkeypatch.setattr("y2karaoke.core.alignment.detect_song_start", lambda *_: 1.0)
     line_timings = [(0.0, "line one"), (2.0, "line two")]
 
     updated, offset = lyrics._detect_and_apply_offset(
@@ -20,9 +18,7 @@ def test_detect_and_apply_offset_applies_delta(monkeypatch):
 
 
 def test_detect_and_apply_offset_respects_manual(monkeypatch):
-    monkeypatch.setattr(
-        "y2karaoke.core.alignment.detect_song_start", lambda *_: 2.0
-    )
+    monkeypatch.setattr("y2karaoke.core.alignment.detect_song_start", lambda *_: 2.0)
     line_timings = [(1.0, "line one")]
 
     updated, offset = lyrics._detect_and_apply_offset(

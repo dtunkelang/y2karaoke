@@ -28,9 +28,7 @@ def test_fetch_lrc_text_and_timings_uses_best_source(monkeypatch):
         "y2karaoke.core.timing_evaluator.select_best_source",
         lambda *a, **k: ("[00:01.00]hi", "best", Report()),
     )
-    monkeypatch.setattr(
-        lyrics, "parse_lrc_with_timing", lambda *a, **k: [(1.0, "hi")]
-    )
+    monkeypatch.setattr(lyrics, "parse_lrc_with_timing", lambda *a, **k: [(1.0, "hi")])
 
     lrc_text, timings, source = lyrics._fetch_lrc_text_and_timings(
         "Title",

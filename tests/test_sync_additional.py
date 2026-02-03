@@ -15,9 +15,7 @@ def test_search_single_provider_skips_after_failures(monkeypatch):
     monkeypatch.setattr(sync, "syncedlyrics", FakeSyncedLyrics())
 
     try:
-        assert (
-            sync._search_single_provider("term", "Musixmatch", max_retries=0) is None
-        )
+        assert sync._search_single_provider("term", "Musixmatch", max_retries=0) is None
         assert called["count"] == 0
     finally:
         sync._failed_providers.pop("Musixmatch", None)

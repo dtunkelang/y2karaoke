@@ -85,7 +85,9 @@ def test_find_best_title_only_fallbacks_to_consensus_artist(monkeypatch):
         },
     ]
 
-    monkeypatch.setattr(identifier, "_check_lrc_and_duration", lambda *a, **k: (False, None))
+    monkeypatch.setattr(
+        identifier, "_check_lrc_and_duration", lambda *a, **k: (False, None)
+    )
 
     result = identifier._find_best_title_only(recordings, "My Song")
 

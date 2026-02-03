@@ -26,7 +26,9 @@ def test_parse_youtube_title_removes_suffix_and_metadata(monkeypatch):
         ti.TrackIdentifier, "_try_parse_artist_from_title", lambda *_: None
     )
 
-    artist, title = identifier._parse_youtube_title("Artist - Song (Live) (Official Video)")
+    artist, title = identifier._parse_youtube_title(
+        "Artist - Song (Live) (Official Video)"
+    )
     assert artist == "Artist"
     assert title == "Song"
 

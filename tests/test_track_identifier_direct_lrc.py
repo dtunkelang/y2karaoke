@@ -90,7 +90,9 @@ def test_extract_lrc_metadata_parses_tags():
     assert title == "Test Title"
 
 
-def test_try_direct_lrc_search_falls_back_to_query_when_artist_search_fails(monkeypatch):
+def test_try_direct_lrc_search_falls_back_to_query_when_artist_search_fails(
+    monkeypatch,
+):
     identifier = TrackIdentifier()
 
     monkeypatch.setattr(
@@ -101,7 +103,9 @@ def test_try_direct_lrc_search_falls_back_to_query_when_artist_search_fails(monk
         "y2karaoke.core.sync.get_lrc_duration",
         lambda *_: 180,
     )
-    monkeypatch.setattr(identifier, "_extract_lrc_metadata", lambda *_: ("Artist", "Title"))
+    monkeypatch.setattr(
+        identifier, "_extract_lrc_metadata", lambda *_: ("Artist", "Title")
+    )
 
     calls = []
 
@@ -130,7 +134,9 @@ def test_try_direct_lrc_search_returns_none_when_no_youtube_match(monkeypatch):
         "y2karaoke.core.sync.get_lrc_duration",
         lambda *_: 180,
     )
-    monkeypatch.setattr(identifier, "_extract_lrc_metadata", lambda *_: ("Artist", "Title"))
+    monkeypatch.setattr(
+        identifier, "_extract_lrc_metadata", lambda *_: ("Artist", "Title")
+    )
     monkeypatch.setattr(identifier, "_search_youtube_verified", lambda *a, **k: None)
 
     assert identifier._try_direct_lrc_search("query") is None
@@ -149,8 +155,12 @@ def test_try_direct_lrc_search_infers_artist_when_missing(monkeypatch):
     )
     monkeypatch.setattr(identifier, "_extract_lrc_metadata", lambda *_: (None, None))
     monkeypatch.setattr(identifier, "_parse_query", lambda *_: (None, None))
-    monkeypatch.setattr(identifier, "_lookup_musicbrainz_for_query", lambda *a, **k: (None, None))
-    monkeypatch.setattr(identifier, "_infer_artist_from_query", lambda *a, **k: "Guessed Artist")
+    monkeypatch.setattr(
+        identifier, "_lookup_musicbrainz_for_query", lambda *a, **k: (None, None)
+    )
+    monkeypatch.setattr(
+        identifier, "_infer_artist_from_query", lambda *a, **k: "Guessed Artist"
+    )
     monkeypatch.setattr(
         identifier,
         "_search_youtube_verified",
