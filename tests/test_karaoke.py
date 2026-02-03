@@ -56,8 +56,8 @@ class TestKaraokeGenerator:
         assert scaled_lines[0].words[0].start_time == pytest.approx(1.0, abs=1e-6)
         assert scaled_lines[0].words[0].end_time == pytest.approx(1.5, abs=1e-6)
 
-    def test_download_audio_success(self):
-        generator = KaraokeGenerator()
+    def test_download_audio_success(self, tmp_path):
+        generator = KaraokeGenerator(cache_dir=tmp_path)
 
         # Mock the downloader
         generator.downloader = MagicMock()
@@ -77,8 +77,8 @@ class TestKaraokeGenerator:
         assert result["duration"] == 180
         generator.downloader.download_audio.assert_called_once()
 
-    def test_download_video_success(self):
-        generator = KaraokeGenerator()
+    def test_download_video_success(self, tmp_path):
+        generator = KaraokeGenerator(cache_dir=tmp_path)
 
         # Mock the downloader
         generator.downloader = MagicMock()

@@ -4,6 +4,7 @@ from y2karaoke.core.genius import parse_genius_html, fetch_html
 
 
 @pytest.mark.network
+@pytest.mark.integration
 def test_fetch_genius_duet_fast():
     # Hardcoded Genius URL for the duet
     song_url = "https://genius.com/Linkin-park-in-the-end-lyrics"

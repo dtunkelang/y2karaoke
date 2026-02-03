@@ -34,13 +34,13 @@ def parse_resolution(resolution: str) -> tuple[int, int]:
         )
 
 
-def identify_track(logger, identifier, url_or_query, lyrics_artist, lyrics_title):
+def identify_track(logger, identifier, url_or_query, artist, title):
     if url_or_query.startswith("http"):
         logger.info(f"Identifying track from URL: {url_or_query}")
         track_info = identifier.identify_from_url(
             url_or_query,
-            artist_hint=lyrics_artist,
-            title_hint=lyrics_title,
+            artist_hint=artist,
+            title_hint=title,
         )
     else:
         logger.info(f"Identifying track from search: {url_or_query}")
@@ -50,6 +50,18 @@ def identify_track(logger, identifier, url_or_query, lyrics_artist, lyrics_title
         f"Identified: {track_info.artist} - {track_info.title} (source: {track_info.source})"
     )
     return track_info
+
+
+def resolve_url_or_query(url_or_query, artist, title):
+    if url_or_query:
+        return url_or_query
+    if not title:
+        raise click.BadParameter(
+            "Missing URL or search query. Provide url_or_query or --title."
+        )
+    if artist:
+        return f"{artist} - {title}"
+    return title
 
 
 def build_video_settings(resolution, fps, font_size, no_progress):
@@ -120,7 +132,7 @@ def cli(ctx, verbose, log_file):
 
 
 @cli.command()
-@click.argument("url_or_query")
+@click.argument("url_or_query", required=False)
 @click.option("-o", "--output", help="Output video path")
 @click.option(
     "--offset",
@@ -143,8 +155,8 @@ def cli(ctx, verbose, log_file):
     default=0.0,
     help="Start audio processing from this many seconds (skip intro)",
 )
-@click.option("--lyrics-title", help="Override song title for lyrics search")
-@click.option("--lyrics-artist", help="Override artist for lyrics search")
+@click.option("--title", "--lyrics-title", help="Override song title for lyrics search")
+@click.option("--artist", "--lyrics-artist", help="Override artist for lyrics search")
 @click.option(
     "--lyrics-offset",
     type=float,
@@ -224,8 +236,8 @@ def generate(
     key,
     tempo,
     audio_start,
-    lyrics_title,
-    lyrics_artist,
+    title,
+    artist,
     lyrics_offset,
     backgrounds,
     force,
@@ -246,9 +258,17 @@ def generate(
     logger = ctx.obj["logger"]
 
     try:
+        if not url_or_query:
+            resolved = resolve_url_or_query(url_or_query, artist, title)
+            logger.info(
+                f"No url_or_query provided; using title for search: {resolved}"
+            )
+            url_or_query = resolved
+        else:
+            url_or_query = resolve_url_or_query(url_or_query, artist, title)
         identifier = TrackIdentifier()
         track_info = identify_track(
-            logger, identifier, url_or_query, lyrics_artist, lyrics_title
+            logger, identifier, url_or_query, artist, title
         )
 
         url = validate_youtube_url(track_info.youtube_url)
@@ -276,8 +296,8 @@ def generate(
             key_shift=key,
             tempo_multiplier=tempo,
             audio_start=audio_start,
-            lyrics_title=lyrics_title or track_info.title,
-            lyrics_artist=lyrics_artist or track_info.artist,
+            lyrics_title=title or track_info.title,
+            lyrics_artist=artist or track_info.artist,
             lyrics_offset=lyrics_offset,
             use_backgrounds=backgrounds,
             force_reprocess=force,
@@ -361,13 +381,13 @@ def clear(video_id, cache_dir):
 
 
 @cli.command()
-@click.argument("url_or_query")
-@click.option("--lyrics-title", help="Override song title for lyrics search")
-@click.option("--lyrics-artist", help="Override artist for lyrics search")
+@click.argument("url_or_query", required=False)
+@click.option("--title", "--lyrics-title", help="Override song title for lyrics search")
+@click.option("--artist", "--lyrics-artist", help="Override artist for lyrics search")
 @click.option("--work-dir", type=click.Path(), help="Working directory")
 @click.option("--force", is_flag=True, help="Force re-download cached files")
 @click.pass_context
-def evaluate_timing(ctx, url_or_query, lyrics_title, lyrics_artist, work_dir, force):
+def evaluate_timing(ctx, url_or_query, title, artist, work_dir, force):
     """Evaluate lyrics timing quality against audio analysis.
 
     Compares timing from all available lyrics sources (lyriq, Musixmatch,
@@ -382,6 +402,15 @@ def evaluate_timing(ctx, url_or_query, lyrics_title, lyrics_artist, work_dir, fo
         from .core.separator import separate_vocals
         from .core.timing_evaluator import print_comparison_report
 
+        if not url_or_query:
+            resolved = resolve_url_or_query(url_or_query, artist, title)
+            logger.info(
+                f"No url_or_query provided; using title for search: {resolved}"
+            )
+            url_or_query = resolved
+        else:
+            url_or_query = resolve_url_or_query(url_or_query, artist, title)
+
         # Identify track
         identifier = TrackIdentifier()
         if url_or_query.startswith("http"):
@@ -389,8 +418,8 @@ def evaluate_timing(ctx, url_or_query, lyrics_title, lyrics_artist, work_dir, fo
         else:
             track_info = identifier.identify_from_search(url_or_query)
 
-        effective_title = lyrics_title or track_info.title
-        effective_artist = lyrics_artist or track_info.artist
+        effective_title = title or track_info.title
+        effective_artist = artist or track_info.artist
 
         logger.info(f"Evaluating: {effective_artist} - {effective_title}")
 

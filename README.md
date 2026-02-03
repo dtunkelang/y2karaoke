@@ -86,7 +86,7 @@ y2karaoke generate "https://youtube.com/watch?v=VIDEO_ID" -o output.mp4 --backgr
 
 # Use lyrics from a different title/artist (e.g., cover of an original)
 y2karaoke generate "https://youtube.com/watch?v=VIDEO_ID" -o output.mp4 \
-  --lyrics-title "Song Title" --lyrics-artist "Artist Name"
+  --title "Song Title" --artist "Artist Name"
 
 # Combine options: shift key up, slow down, adjust timing
 y2karaoke generate "https://youtube.com/watch?v=VIDEO_ID" -o output.mp4 --key +2 --tempo 0.9 --offset -0.5
@@ -118,12 +118,27 @@ y2karaoke cache clear VIDEO_ID
 | `--key` | Shift key by N semitones (-12 to +12, default: 0) |
 | `--tempo` | Tempo multiplier (0.5 = half speed, 2.0 = double, default: 1.0) |
 | `--audio-start` | Start audio processing from this many seconds into the track (skip intro; default: 0.0) |
-| `--lyrics-title` | Override song title used when searching for lyrics (useful for covers) |
-| `--lyrics-artist` | Override artist used when searching for lyrics (useful for covers) |
+| `--title` | Override song title used when searching for lyrics (useful for covers) |
+| `--artist` | Override artist used when searching for lyrics (useful for covers) |
 | `--backgrounds` | Use video backgrounds extracted from the original YouTube video |
 | `--work-dir` | Working directory for intermediate files (default: `~/.cache/karaoke/{video_id}`) |
 | `--keep-files` | Keep intermediate files (audio, stems, etc.) |
 | `--force` | Force re-download and re-process even if cached files exist |
+
+## Testing
+
+```bash
+source venv/bin/activate
+pytest tests -v
+```
+
+Network/integration tests are skipped by default. To run them:
+
+```bash
+RUN_INTEGRATION_TESTS=1 pytest tests -v
+# or
+pytest tests -v --run-network
+```
 
 ## Advanced: module-level CLIs
 

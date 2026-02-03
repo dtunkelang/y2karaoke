@@ -8,11 +8,36 @@ Provides reusable fixtures for:
 - TrackInfo objects for testing
 """
 
+import os
 import pytest
 import tempfile
 from pathlib import Path
 from unittest.mock import Mock, patch, MagicMock
 from typing import Dict, List, Optional
+
+
+def pytest_addoption(parser):
+    parser.addoption(
+        "--run-network",
+        action="store_true",
+        default=False,
+        help="Run tests that require network access",
+    )
+
+
+def pytest_collection_modifyitems(config, items):
+    run_network = config.getoption("--run-network") or os.getenv(
+        "RUN_INTEGRATION_TESTS"
+    ) == "1"
+    if run_network:
+        return
+
+    skip_network = pytest.mark.skip(
+        reason="requires network access (use --run-network or RUN_INTEGRATION_TESTS=1)"
+    )
+    for item in items:
+        if "network" in item.keywords or "integration" in item.keywords:
+            item.add_marker(skip_network)
 
 # =============================================================================
 # Basic Fixtures
