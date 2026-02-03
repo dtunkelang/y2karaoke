@@ -61,6 +61,50 @@ def test_fetch_lrc_text_and_timings_returns_none_when_no_duration_match(
     assert source == ""
 
 
+def test_fetch_lrc_text_and_timings_eval_sources_falls_back(monkeypatch):
+    monkeypatch.setattr(
+        "y2karaoke.core.timing_evaluator.select_best_source",
+        lambda *a, **k: (None, None, None),
+    )
+    monkeypatch.setattr(
+        "y2karaoke.core.sync.fetch_lyrics_for_duration",
+        lambda *a, **k: ("[00:01.00]hi", True, "provider", 120),
+    )
+    monkeypatch.setattr(lyrics, "parse_lrc_with_timing", lambda *a, **k: [(1.0, "hi")])
+
+    lrc_text, timings, source = lyrics._fetch_lrc_text_and_timings(
+        "Title",
+        "Artist",
+        target_duration=120,
+        vocals_path="vocals.wav",
+        evaluate_sources=True,
+    )
+
+    assert lrc_text == "[00:01.00]hi"
+    assert timings == [(1.0, "hi")]
+    assert source == "provider"
+
+
+def test_fetch_lrc_text_and_timings_eval_sources_needs_vocals(monkeypatch):
+    monkeypatch.setattr(
+        "y2karaoke.core.sync.fetch_lyrics_for_duration",
+        lambda *a, **k: ("[00:02.00]hey", True, "provider", 200),
+    )
+    monkeypatch.setattr(lyrics, "parse_lrc_with_timing", lambda *a, **k: [(2.0, "hey")])
+
+    lrc_text, timings, source = lyrics._fetch_lrc_text_and_timings(
+        "Title",
+        "Artist",
+        target_duration=200,
+        evaluate_sources=True,
+        vocals_path=None,
+    )
+
+    assert lrc_text == "[00:02.00]hey"
+    assert timings == [(2.0, "hey")]
+    assert source == "provider"
+
+
 def test_fetch_lrc_text_and_timings_filters_promos(monkeypatch):
     lrc_text = "\n".join(
         [
