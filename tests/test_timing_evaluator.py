@@ -31,7 +31,7 @@ class TestTimingIssue:
             audio_time=9.5,
             delta=0.5,
             severity="minor",
-            description="Test issue"
+            description="Test issue",
         )
         assert issue.issue_type == "early_line"
         assert issue.line_index == 0
@@ -47,7 +47,7 @@ class TestAudioFeatures:
             vocal_end=10.0,
             duration=10.0,
             energy_envelope=np.array([0.1, 0.2, 0.3]),
-            energy_times=np.array([0.0, 1.0, 2.0])
+            energy_times=np.array([0.0, 1.0, 2.0]),
         )
         assert len(features.onset_times) == 3
         assert len(features.silence_regions) == 2
@@ -66,7 +66,7 @@ class TestTimingReport:
             avg_line_offset=0.1,
             std_line_offset=0.2,
             matched_onsets=5,
-            total_lines=6
+            total_lines=6,
         )
         assert report.overall_score == 85.0
         assert report.matched_onsets == 5
@@ -74,25 +74,17 @@ class TestTimingReport:
 
 class TestTranscriptionModels:
     def test_transcription_word(self):
-        word = TranscriptionWord(
-            start=1.0,
-            end=1.5,
-            text="hello",
-            probability=0.95
-        )
+        word = TranscriptionWord(start=1.0, end=1.5, text="hello", probability=0.95)
         assert word.text == "hello"
         assert word.start == 1.0
 
     def test_transcription_segment(self):
         words = [
             TranscriptionWord(start=1.0, end=1.5, text="hello", probability=0.95),
-            TranscriptionWord(start=1.6, end=2.0, text="world", probability=0.90)
+            TranscriptionWord(start=1.6, end=2.0, text="world", probability=0.90),
         ]
         segment = TranscriptionSegment(
-            start=1.0,
-            end=2.0,
-            text="hello world",
-            words=words
+            start=1.0, end=2.0, text="hello world", words=words
         )
         assert segment.text == "hello world"
         assert len(segment.words) == 2
@@ -102,27 +94,27 @@ class TestFindClosestOnset:
     def test_finds_closest_onset(self):
         onsets = np.array([1.0, 2.0, 3.0, 5.0])
         target_time = 2.1
-        
+
         closest, delta = _find_closest_onset(target_time, onsets)
-        
+
         assert closest == 2.0
         assert delta == pytest.approx(0.1, abs=1e-6)
 
     def test_empty_onsets_returns_none(self):
         onsets = np.array([])
         target_time = 2.0
-        
+
         closest, delta = _find_closest_onset(target_time, onsets)
-        
+
         assert closest is None
         assert delta == 0.0
 
     def test_finds_earliest_when_tied(self):
         onsets = np.array([1.0, 3.0])
         target_time = 2.0
-        
+
         closest, delta = _find_closest_onset(target_time, onsets)
-        
+
         assert closest == 1.0
         assert delta == 1.0  # target - closest = 2.0 - 1.0 = 1.0
 
@@ -137,11 +129,11 @@ class TestEvaluateTiming:
             vocal_end=10.0,
             duration=10.0,
             energy_envelope=np.array([0.1, 0.2]),
-            energy_times=np.array([0.0, 1.0])
+            energy_times=np.array([0.0, 1.0]),
         )
-        
+
         report = evaluate_timing(lines, features)
-        
+
         # Empty lines gives 0% line alignment but 100% pause alignment (no gaps to check)
         # Overall score is weighted: 0.7 * 0 + 0.3 * 100 = 30.0
         assert report.overall_score == 30.0
@@ -158,11 +150,11 @@ class TestEvaluateTiming:
             vocal_end=10.0,
             duration=10.0,
             energy_envelope=np.array([0.1, 0.2, 0.3]),
-            energy_times=np.array([0.0, 1.0, 2.0])
+            energy_times=np.array([0.0, 1.0, 2.0]),
         )
-        
+
         report = evaluate_timing(lines, features)
-        
+
         assert report.overall_score > 50.0
         assert report.matched_onsets == 1
         assert report.total_lines == 1
@@ -177,11 +169,11 @@ class TestEvaluateTiming:
             vocal_end=10.0,
             duration=10.0,
             energy_envelope=np.array([0.1, 0.2]),
-            energy_times=np.array([0.0, 1.0])
+            energy_times=np.array([0.0, 1.0]),
         )
-        
+
         report = evaluate_timing(lines, features)
-        
+
         assert len(report.issues) > 0
         assert report.issues[0].severity in ["moderate", "severe"]
 
@@ -228,12 +220,12 @@ class TestAudioFeaturesCache:
             vocal_end=10.0,
             duration=10.0,
             energy_envelope=np.array([0.1, 0.2]),
-            energy_times=np.array([0.0, 1.0])
+            energy_times=np.array([0.0, 1.0]),
         )
-        
+
         _save_audio_features_cache(str(cache_file), features)
         loaded = _load_audio_features_cache(str(cache_file))
-        
+
         assert loaded is not None
         assert np.array_equal(loaded.onset_times, features.onset_times)
         # Check silence regions length and content
@@ -248,8 +240,8 @@ class TestAudioFeaturesCache:
 
 
 class TestExtractAudioFeatures:
-    @patch('y2karaoke.core.timing_evaluator._load_audio_features_cache')
-    @patch('y2karaoke.core.timing_evaluator._get_audio_features_cache_path')
+    @patch("y2karaoke.core.timing_evaluator._load_audio_features_cache")
+    @patch("y2karaoke.core.timing_evaluator._get_audio_features_cache_path")
     def test_uses_cached_features(self, mock_get_path, mock_load_cache):
         cached_features = AudioFeatures(
             onset_times=np.array([1.0, 2.0]),
@@ -258,21 +250,21 @@ class TestExtractAudioFeatures:
             vocal_end=10.0,
             duration=10.0,
             energy_envelope=np.array([0.1, 0.2]),
-            energy_times=np.array([0.0, 1.0])
+            energy_times=np.array([0.0, 1.0]),
         )
         mock_get_path.return_value = "/fake/cache/path.npz"
         mock_load_cache.return_value = cached_features
-        
+
         features = extract_audio_features("vocals.wav")
-        
+
         assert features == cached_features
 
-    @patch('y2karaoke.core.timing_evaluator._load_audio_features_cache')
-    @patch('librosa.load')
+    @patch("y2karaoke.core.timing_evaluator._load_audio_features_cache")
+    @patch("librosa.load")
     def test_handles_audio_load_error(self, mock_load, mock_load_cache):
         mock_load_cache.return_value = None
         mock_load.side_effect = Exception("Audio load failed")
-        
+
         features = extract_audio_features("nonexistent.wav")
-        
+
         assert features is None
