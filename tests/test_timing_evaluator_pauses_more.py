@@ -55,6 +55,22 @@ def test_check_for_silence_in_range_false():
     assert te._check_for_silence_in_range(0.5, 2.5, features, 0.5) is False
 
 
+def test_check_for_silence_in_range_short_range_returns_false():
+    features = _features(
+        energy_times=[0, 1, 2, 3],
+        energy_envelope=[0.0, 0.0, 0.0, 0.0],
+    )
+    assert te._check_for_silence_in_range(3.5, 3.6, features, 0.5) is False
+
+
+def test_check_for_silence_in_range_detects_mid_range_silence():
+    features = _features(
+        energy_times=[0, 1, 2, 3, 4],
+        energy_envelope=[1.0, 0.0, 0.0, 1.0, 1.0],
+    )
+    assert te._check_for_silence_in_range(0.0, 3.5, features, 1.0) is True
+
+
 def test_calculate_pause_score_matches_silence():
     lines = [
         Line(words=[Word(text="a", start_time=0.0, end_time=1.0)]),
