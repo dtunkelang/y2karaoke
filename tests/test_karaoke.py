@@ -148,7 +148,8 @@ class TestKaraokeGenerator:
         generator._temp_files = []
 
         # Should not raise any errors
-        generator.cleanup_temp_files()
+        assert generator.cleanup_temp_files() is None
+        assert generator._temp_files == []
 
     def test_separator_integration(self):
         generator = KaraokeGenerator()

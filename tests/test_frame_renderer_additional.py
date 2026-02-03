@@ -22,16 +22,22 @@ def _line(text, start, end, singer=None):
 
 def test_draw_cue_indicator_inactive_dots():
     image = Image.new("RGB", (200, 100), "black")
+    before = np.array(image)
     draw = ImageDraw.Draw(image)
 
     _draw_cue_indicator(draw, x=100, y=50, time_until_start=0.2, font_size=24)
+    after = np.array(image)
+    assert np.any(after != before)
 
 
 def test_draw_cue_indicator_multiple_active_dots():
     image = Image.new("RGB", (200, 100), "black")
+    before = np.array(image)
     draw = ImageDraw.Draw(image)
 
     _draw_cue_indicator(draw, x=100, y=50, time_until_start=1.2, font_size=24)
+    after = np.array(image)
+    assert np.any(after != before)
 
 
 def test_check_mid_song_progress_no_break():
@@ -156,6 +162,7 @@ def test_draw_highlight_sweep_partial_word(monkeypatch):
         highlight_width=10,
         is_duet=False,
     )
+    assert draw.text.call_count > 0
 
 
 def test_draw_highlight_sweep_no_highlight():

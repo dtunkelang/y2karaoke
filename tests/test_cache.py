@@ -214,8 +214,15 @@ class TestCacheManager:
         manager = CacheManager(temp_dir)
 
         monkeypatch.setattr(manager, "get_cache_size", lambda: 0.0)
+        called = {"cleanup": False}
+
+        def fake_cleanup(_days):
+            called["cleanup"] = True
+
+        monkeypatch.setattr(manager, "cleanup_old_files", fake_cleanup)
 
         manager.auto_cleanup()
+        assert called["cleanup"] is False
 
     def test_auto_cleanup_runs_two_passes_when_still_large(self, temp_dir, monkeypatch):
         """Auto cleanup performs multiple passes if needed."""

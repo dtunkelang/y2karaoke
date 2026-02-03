@@ -85,6 +85,7 @@ def test_save_audio_features_cache_handles_exception(tmp_path, monkeypatch):
 
     monkeypatch.setattr("numpy.savez", raise_error)
     _save_audio_features_cache(str(cache_path), features)
+    assert not cache_path.exists()
 
 
 def test_find_silence_regions_handles_trailing_silence():

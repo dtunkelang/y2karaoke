@@ -34,7 +34,7 @@ class TestWord:
 
     def test_word_validate_success(self):
         word = Word(text="hello", start_time=0.0, end_time=0.5)
-        word.validate()  # Should not raise
+        assert word.validate() is None
 
     def test_word_validate_negative_start(self):
         word = Word(text="hello", start_time=-1.0, end_time=0.5)

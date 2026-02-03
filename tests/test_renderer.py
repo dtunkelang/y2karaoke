@@ -147,27 +147,33 @@ class TestDrawProgressBar:
         from PIL import Image, ImageDraw
 
         img = Image.new("RGB", (VIDEO_WIDTH, VIDEO_HEIGHT))
+        before = np.array(img)
         draw = ImageDraw.Draw(img)
         draw_progress_bar(draw, 0.0)
-        # Should not raise
+        after = np.array(img)
+        assert np.any(after != before)
 
     def test_full_progress(self):
         """Progress bar at 100% should render without error."""
         from PIL import Image, ImageDraw
 
         img = Image.new("RGB", (VIDEO_WIDTH, VIDEO_HEIGHT))
+        before = np.array(img)
         draw = ImageDraw.Draw(img)
         draw_progress_bar(draw, 1.0)
-        # Should not raise
+        after = np.array(img)
+        assert np.any(after != before)
 
     def test_half_progress(self):
         """Progress bar at 50% should render without error."""
         from PIL import Image, ImageDraw
 
         img = Image.new("RGB", (VIDEO_WIDTH, VIDEO_HEIGHT))
+        before = np.array(img)
         draw = ImageDraw.Draw(img)
         draw_progress_bar(draw, 0.5)
-        # Should not raise
+        after = np.array(img)
+        assert np.any(after != before)
 
 
 class TestDrawSplashScreen:
@@ -178,19 +184,23 @@ class TestDrawSplashScreen:
         from PIL import Image, ImageDraw
 
         img = Image.new("RGB", (VIDEO_WIDTH, VIDEO_HEIGHT))
+        before = np.array(img)
         draw = ImageDraw.Draw(img)
         draw_splash_screen(draw, "Test Song", "Test Artist")
-        # Should not raise
+        after = np.array(img)
+        assert np.any(after != before)
 
     def test_handles_long_title(self):
         """Splash screen should handle long titles gracefully."""
         from PIL import Image, ImageDraw
 
         img = Image.new("RGB", (VIDEO_WIDTH, VIDEO_HEIGHT))
+        before = np.array(img)
         draw = ImageDraw.Draw(img)
         long_title = "This is a very long song title that exceeds the maximum character limit for display"
         draw_splash_screen(draw, long_title, "Artist")
-        # Should not raise
+        after = np.array(img)
+        assert np.any(after != before)
 
 
 class TestDrawLogoScreen:
@@ -202,7 +212,9 @@ class TestDrawLogoScreen:
         from y2karaoke.utils.fonts import get_font
 
         img = Image.new("RGB", (VIDEO_WIDTH, VIDEO_HEIGHT))
+        before = np.array(img)
         draw = ImageDraw.Draw(img)
         font = get_font()
         draw_logo_screen(draw, font)
-        # Should not raise
+        after = np.array(img)
+        assert np.any(after != before)
