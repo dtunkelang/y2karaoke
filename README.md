@@ -226,6 +226,8 @@ For detailed technical architecture, see [CLAUDE.md](CLAUDE.md). This document c
 - Alignment algorithms and audio analysis
 - Timing quality evaluation
 
+For a concise summary of the selection logic and test coverage across the three core pillars, see [docs/logic-audit.md](docs/logic-audit.md).
+
 ## License
 
 MIT
