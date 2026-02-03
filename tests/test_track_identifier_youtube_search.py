@@ -53,6 +53,29 @@ def test_search_youtube_verified_scores_and_filters(monkeypatch):
     assert result["duration"] == 301
 
 
+def test_search_youtube_verified_prefers_audio_title(monkeypatch):
+    identifier = TrackIdentifier()
+
+    response_text = "\n".join(
+        [
+            _youtube_snippet("vid11122233", "Artist - Song (Official Video)", "3:30"),
+            _youtube_snippet("aud11122233", "Artist - Song (Official Audio)", "3:30"),
+        ]
+    )
+
+    def fake_get(*_args, **_kwargs):
+        return _make_response(response_text)
+
+    monkeypatch.setattr("requests.get", fake_get)
+
+    result = identifier._search_youtube_verified(
+        "Artist Song", 210, expected_artist="Artist", expected_title="Song"
+    )
+
+    assert result is not None
+    assert result["url"].endswith("aud11122233")
+
+
 def test_search_youtube_verified_returns_none_for_no_match(monkeypatch):
     identifier = TrackIdentifier()
 
@@ -179,6 +202,32 @@ def test_search_youtube_single_keeps_non_studio_when_query_requests(monkeypatch)
 
     assert result["url"].endswith("abc123def45")
     assert result["duration"] == 300
+
+
+def test_search_youtube_single_prefers_official_audio(monkeypatch):
+    identifier = TrackIdentifier()
+
+    candidates = [
+        {"video_id": "vid11122233", "title": "Song (Official Video)", "duration": 210},
+        {
+            "video_id": "aud11122233",
+            "title": "Song (Official Audio)",
+            "duration": 210,
+        },
+    ]
+
+    def fake_get(*_args, **_kwargs):
+        return _make_response("ignored")
+
+    monkeypatch.setattr("requests.get", fake_get)
+    monkeypatch.setattr(
+        identifier, "_extract_youtube_candidates", lambda _text: candidates
+    )
+
+    result = identifier._search_youtube_single("Song", 210)
+
+    assert result["url"].endswith("aud11122233")
+    assert result["duration"] == 210
 
 
 def test_search_youtube_single_warns_on_large_mismatch(monkeypatch, caplog):

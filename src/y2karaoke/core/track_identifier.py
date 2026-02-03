@@ -1765,6 +1765,32 @@ class TrackIdentifier:
 
         return False
 
+    def _is_preferred_audio_title(self, title: str) -> bool:
+        """Check if a title explicitly indicates an audio-only upload."""
+        title_lower = title.lower()
+        audio_terms = [
+            "official audio",
+            "audio only",
+            "full audio",
+            "audio version",
+        ]
+        if any(term in title_lower for term in audio_terms):
+            return True
+        # Catch common suffix/prefix patterns like "Artist - Song (Audio)"
+        if re.search(r"\b(audio)\b", title_lower):
+            video_terms = [
+                "official video",
+                "music video",
+                "mv",
+                "lyric video",
+                "lyrics",
+                "visualizer",
+                "visualiser",
+            ]
+            if not any(term in title_lower for term in video_terms):
+                return True
+        return False
+
     def _search_youtube_verified(
         self,
         query: str,
@@ -1845,6 +1871,8 @@ class TrackIdentifier:
 
                 # Score: higher match is better, lower duration diff is better
                 score = (total_match * 10) - duration_diff
+                if self._is_preferred_audio_title(c["title"]):
+                    score += 5
                 scored.append((score, c))
                 logger.debug(
                     f"YouTube candidate: {c['title']} (match={total_match}, diff={duration_diff}s, score={score})"
@@ -1999,6 +2027,7 @@ class TrackIdentifier:
             # Sort by duration difference from target
             with_duration.sort(key=lambda c: abs(c["duration"] - target_duration))
 
+            scored_candidates = []
             for candidate in with_duration:
                 diff = abs(candidate["duration"] - target_duration)
                 logger.debug(
@@ -2006,10 +2035,18 @@ class TrackIdentifier:
                 )
 
                 if diff <= tolerance:
-                    return {
-                        "url": f"https://www.youtube.com/watch?v={candidate['video_id']}",
-                        "duration": candidate["duration"],
-                    }
+                    audio_bonus = (
+                        5 if self._is_preferred_audio_title(candidate["title"]) else 0
+                    )
+                    scored_candidates.append((diff - audio_bonus, candidate))
+
+            if scored_candidates:
+                scored_candidates.sort(key=lambda item: item[0])
+                best = scored_candidates[0][1]
+                return {
+                    "url": f"https://www.youtube.com/watch?v={best['video_id']}",
+                    "duration": best["duration"],
+                }
 
             # No good duration match found - take the best available from filtered list
             # but warn about the mismatch
