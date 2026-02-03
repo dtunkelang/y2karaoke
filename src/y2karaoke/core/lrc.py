@@ -118,6 +118,27 @@ _METADATA_PATTERNS = [
     "[hook]",
 ]
 
+# Promo/CTA patterns commonly found in synced lyric dumps
+_PROMO_PATTERNS = [
+    r"https?://",
+    r"www\.",
+    r"@\w",
+    r"\bmp3\b",
+    r"\bsms\b",
+    r"\bdownload\b",
+    r"\bsubscribe\b",
+    r"\bmember\b",
+    r"\bring( ?)?tone\b",
+    r"\bmobile\b",
+    r"\bphone\b",
+    r"\btext\b",
+]
+
+_PROMO_RE = re.compile("|".join(_PROMO_PATTERNS), re.IGNORECASE)
+
+# Simple phone/shortcode pattern (e.g., "12345", "+33 6 12 34 56 78")
+_PHONE_RE = re.compile(r"\+?\d[\d\s\-().]{4,}\d")
+
 
 def _is_empty_or_symbols(text: str) -> bool:
     """Check if line is empty or contains only musical symbols."""
@@ -152,6 +173,43 @@ def _is_credit_pattern(text: str) -> bool:
 
     match = re.match(r"^(\w+)\s*:\s*([A-Z][a-z]+(\s+[A-Z][a-z]+)*)\s*$", text.strip())
     return match is not None and len(match.group(1)) <= 15
+
+
+def _is_promo_line(text: str) -> bool:
+    """Check for common promo/CTA patterns in early LRC lines."""
+    if not text:
+        return False
+    text_lower = text.lower()
+    if _PROMO_RE.search(text_lower):
+        return True
+    if _PHONE_RE.search(text_lower):
+        return True
+    return False
+
+
+def _is_promo_like_title_line(text: str, title: str) -> bool:
+    """Heuristic: early full-sentence line that repeats the song title."""
+    if not text or not title:
+        return False
+    text_lower = text.lower()
+    title_lower = title.lower()
+
+    if title_lower not in text_lower:
+        return False
+    if text_lower.count(title_lower) > 1:
+        return True
+
+    stripped = text_lower.lstrip(" \"'“”‘’(")
+    starts_with_title = stripped.startswith(title_lower)
+    has_quoted_title = re.search(
+        rf"[\"“”].*{re.escape(title_lower)}.*[\"“”]", text_lower
+    )
+    has_sentence_punct = re.search(r"[.!?]$", text.strip()) is not None
+    long_enough = len(text_lower) >= max(24, len(title_lower) + 8)
+
+    if not starts_with_title and (has_quoted_title or has_sentence_punct) and long_enough:
+        return True
+    return False
 
 
 def _normalize_for_comparison(text: str) -> str:
@@ -229,6 +287,12 @@ def _is_metadata_line(
     if title and is_header_time and _is_title_header(text_lower, title, artist):
         return True
     if artist and is_header_time and _is_artist_header(text_lower, artist):
+        return True
+
+    # Filter obvious promo/CTA lines only at the very beginning.
+    if timestamp <= 12.0 and _is_promo_line(text):
+        return True
+    if timestamp <= 15.0 and _is_promo_like_title_line(text, title):
         return True
 
     return False

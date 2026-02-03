@@ -269,6 +269,27 @@ class TestMetadataFiltering:
             _is_metadata_line("Yesterday, all my troubles seemed so far away") is False
         )
 
+    def test_promo_lines_filtered_early(self):
+        assert (
+            _is_metadata_line("Download the song at https://example.com", timestamp=5.0)
+            is True
+        )
+        assert _is_metadata_line("SMS 12345 to get ringtone", timestamp=6.0) is True
+        assert (
+            _is_metadata_line(
+                'Get the "My Song" video now.', title="My Song", timestamp=8.0
+            )
+            is True
+        )
+
+    def test_promo_lines_not_filtered_late(self):
+        assert (
+            _is_metadata_line(
+                "Download the song at https://example.com", timestamp=20.0
+            )
+            is False
+        )
+
 
 # ------------------------------
 # create_lines_from_lrc Tests
