@@ -498,3 +498,65 @@ def test_find_best_onset_proximity_applies_early_penalty():
     )
 
     assert onset == 4.0
+
+
+def test_correct_line_timestamps_prefers_phrase_end_when_silence_after(monkeypatch):
+    features = AudioFeatures(
+        onset_times=np.array([2.0]),
+        silence_regions=[],
+        vocal_start=0.0,
+        vocal_end=4.0,
+        duration=4.0,
+        energy_envelope=np.array([1.0, 1.0, 1.0, 1.0]),
+        energy_times=np.array([0.0, 1.0, 2.0, 3.0]),
+    )
+    line = Line(words=[Word(text="hi", start_time=1.0, end_time=1.2)])
+
+    responses = iter([1.0, 0.0, 1.0])
+
+    monkeypatch.setattr(
+        te, "_check_vocal_activity_in_range", lambda *_a, **_k: next(responses)
+    )
+
+    called = {"phrase_end": 0}
+
+    def fake_phrase_end(*_args, **_kwargs):
+        called["phrase_end"] += 1
+        return 2.0
+
+    monkeypatch.setattr(te, "_find_best_onset_for_phrase_end", lambda *_a, **_k: 2.0)
+    monkeypatch.setattr(te, "_find_best_onset_proximity", lambda *_a, **_k: None)
+    monkeypatch.setattr(te, "_find_phrase_end", fake_phrase_end)
+
+    corrected, corrections = correct_line_timestamps([line], features)
+
+    assert corrected[0].words[0].start_time == 2.0
+    assert corrections
+    assert called["phrase_end"] > 0
+
+
+def test_correct_line_timestamps_uses_proximity_when_silence_before(monkeypatch):
+    features = AudioFeatures(
+        onset_times=np.array([1.5]),
+        silence_regions=[],
+        vocal_start=0.0,
+        vocal_end=4.0,
+        duration=4.0,
+        energy_envelope=np.array([1.0, 1.0, 1.0, 1.0]),
+        energy_times=np.array([0.0, 1.0, 2.0, 3.0]),
+    )
+    line = Line(words=[Word(text="hi", start_time=1.0, end_time=1.2)])
+
+    responses = iter([1.0, 1.0, 0.0])
+
+    monkeypatch.setattr(
+        te, "_check_vocal_activity_in_range", lambda *_a, **_k: next(responses)
+    )
+    monkeypatch.setattr(te, "_find_best_onset_for_phrase_end", lambda *_a, **_k: None)
+    monkeypatch.setattr(te, "_find_best_onset_proximity", lambda *_a, **_k: 1.5)
+    monkeypatch.setattr(te, "_find_phrase_end", lambda *_a, **_k: 2.0)
+
+    corrected, corrections = correct_line_timestamps([line], features)
+
+    assert corrected[0].words[0].start_time == 1.5
+    assert corrections
