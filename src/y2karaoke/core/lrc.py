@@ -223,11 +223,12 @@ def _is_metadata_line(
     if _is_credit_pattern(text):
         return True
 
-    # Only filter title/artist if appearing early (< 15s)
-    is_early = timestamp < 15.0
-    if title and is_early and _is_title_header(text_lower, title, artist):
+    # Only filter title/artist headers if they appear extremely early (<= 1s).
+    # Song titles often appear in real lyrics, so avoid dropping them by default.
+    is_header_time = timestamp <= 1.0
+    if title and is_header_time and _is_title_header(text_lower, title, artist):
         return True
-    if artist and is_early and _is_artist_header(text_lower, artist):
+    if artist and is_header_time and _is_artist_header(text_lower, artist):
         return True
 
     return False
