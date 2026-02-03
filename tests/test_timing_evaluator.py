@@ -180,6 +180,42 @@ class TestEvaluateTiming:
         assert len(report.issues) > 0
         assert report.issues[0].severity in ["moderate", "severe"]
 
+    def test_low_onset_coverage_reduces_score(self):
+        words = [Word("hello", 1.0, 1.5)]
+        lines = [Line(words)]
+        features = AudioFeatures(
+            onset_times=np.array([]),
+            silence_regions=[],
+            vocal_start=0.0,
+            vocal_end=10.0,
+            duration=10.0,
+            energy_envelope=np.array([0.1, 0.2]),
+            energy_times=np.array([0.0, 1.0]),
+        )
+
+        report = evaluate_timing(lines, features)
+
+        assert report.overall_score == pytest.approx(9.0, abs=1e-6)
+
+    def test_partial_onset_coverage_scales_score(self):
+        lines = [
+            Line(words=[Word("first", 1.0, 1.5)]),
+            Line(words=[Word("second", 20.0, 20.5)]),
+        ]
+        features = AudioFeatures(
+            onset_times=np.array([1.0]),
+            silence_regions=[],
+            vocal_start=0.0,
+            vocal_end=25.0,
+            duration=25.0,
+            energy_envelope=np.array([0.1, 0.2, 0.3]),
+            energy_times=np.array([0.0, 1.0, 2.0]),
+        )
+
+        report = evaluate_timing(lines, features)
+
+        assert report.overall_score == pytest.approx(42.25, abs=1e-6)
+
 
 class TestTextSimilarity:
     def test_identical_texts_perfect_score(self):

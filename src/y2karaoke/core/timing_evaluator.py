@@ -349,11 +349,21 @@ def evaluate_timing(
     # Line alignment score: based on how many lines match onsets within tolerance
     line_alignment_score = (matched_count / total_lines * 100) if total_lines > 0 else 0
 
-    # Pause alignment score
-    pause_score = _calculate_pause_score(lines, audio_features)
+    # Pause alignment score and coverage
+    pause_score, matched_silences, total_silences = _calculate_pause_score_with_stats(
+        lines, audio_features
+    )
+
+    # Confidence weighting based on coverage
+    line_confidence = (len(line_offsets) / total_lines) if total_lines > 0 else 1.0
+    if total_silences > 0:
+        pause_confidence = matched_silences / total_silences
+    else:
+        pause_confidence = 1.0
+    confidence = 0.7 * line_confidence + 0.3 * pause_confidence
 
     # Overall score: weighted combination
-    overall_score = 0.7 * line_alignment_score + 0.3 * pause_score
+    overall_score = (0.7 * line_alignment_score + 0.3 * pause_score) * confidence
 
     # Calculate statistics
     avg_offset = np.mean(line_offsets) if line_offsets else 0.0
@@ -613,13 +623,13 @@ def _check_for_silence_in_range(
     return False
 
 
-def _calculate_pause_score(
+def _calculate_pause_score_with_stats(
     lines: List[Line],
     audio_features: AudioFeatures,
-) -> float:
-    """Calculate how well lyrics pauses align with audio silence."""
+) -> Tuple[float, int, int]:
+    """Calculate pause score and return matching stats."""
     if len(audio_features.silence_regions) == 0:
-        return 100.0  # No silence to match
+        return 100.0, 0, 0  # No silence to match
 
     matched_silences = 0
     total_silences = len(
@@ -631,7 +641,7 @@ def _calculate_pause_score(
     )
 
     if total_silences == 0:
-        return 100.0
+        return 100.0, 0, 0
 
     for silence_start, silence_end in audio_features.silence_regions:
         if silence_end - silence_start < 2.0:
@@ -651,7 +661,17 @@ def _calculate_pause_score(
                 matched_silences += 1
                 break
 
-    return (matched_silences / total_silences * 100) if total_silences > 0 else 100.0
+    score = (matched_silences / total_silences * 100) if total_silences > 0 else 100.0
+    return score, matched_silences, total_silences
+
+
+def _calculate_pause_score(
+    lines: List[Line],
+    audio_features: AudioFeatures,
+) -> float:
+    """Calculate how well lyrics pauses align with audio silence."""
+    score, _matched, _total = _calculate_pause_score_with_stats(lines, audio_features)
+    return score
 
 
 def _generate_summary(
