@@ -26,9 +26,9 @@ def pytest_addoption(parser):
 
 
 def pytest_collection_modifyitems(config, items):
-    run_network = config.getoption("--run-network") or os.getenv(
-        "RUN_INTEGRATION_TESTS"
-    ) == "1"
+    run_network = (
+        config.getoption("--run-network") or os.getenv("RUN_INTEGRATION_TESTS") == "1"
+    )
     if run_network:
         return
 
@@ -38,6 +38,7 @@ def pytest_collection_modifyitems(config, items):
     for item in items:
         if "network" in item.keywords or "integration" in item.keywords:
             item.add_marker(skip_network)
+
 
 # =============================================================================
 # Basic Fixtures

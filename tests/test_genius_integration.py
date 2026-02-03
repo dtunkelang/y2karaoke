@@ -6,7 +6,6 @@ from functools import wraps
 import pytest
 from y2karaoke.core.genius import fetch_genius_lyrics_with_singers as original_fetch
 
-
 pytestmark = [pytest.mark.network, pytest.mark.integration]
 
 # ------------------------------

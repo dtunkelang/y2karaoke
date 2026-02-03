@@ -260,16 +260,12 @@ def generate(
     try:
         if not url_or_query:
             resolved = resolve_url_or_query(url_or_query, artist, title)
-            logger.info(
-                f"No url_or_query provided; using title for search: {resolved}"
-            )
+            logger.info(f"No url_or_query provided; using title for search: {resolved}")
             url_or_query = resolved
         else:
             url_or_query = resolve_url_or_query(url_or_query, artist, title)
         identifier = TrackIdentifier()
-        track_info = identify_track(
-            logger, identifier, url_or_query, artist, title
-        )
+        track_info = identify_track(logger, identifier, url_or_query, artist, title)
 
         url = validate_youtube_url(track_info.youtube_url)
         key = validate_key_shift(key)
@@ -404,9 +400,7 @@ def evaluate_timing(ctx, url_or_query, title, artist, work_dir, force):
 
         if not url_or_query:
             resolved = resolve_url_or_query(url_or_query, artist, title)
-            logger.info(
-                f"No url_or_query provided; using title for search: {resolved}"
-            )
+            logger.info(f"No url_or_query provided; using title for search: {resolved}")
             url_or_query = resolved
         else:
             url_or_query = resolve_url_or_query(url_or_query, artist, title)
