@@ -1065,8 +1065,8 @@ class TestExtractYoutubeCandidates:
 
         candidates = identifier._extract_youtube_candidates(response)
 
-        # Duration parsing may or may not work depending on exact format
-        # This tests the extraction logic exists
+        assert len(candidates) == 1
+        assert candidates[0]["duration"] == 212
 
 
 class TestSearchYoutubeByDuration:
@@ -1080,14 +1080,18 @@ class TestSearchYoutubeByDuration:
         # Mock response with both studio and live versions
         mock_response = Mock()
         mock_response.text = """
-        "videoRenderer":{"videoId":"abc123","title":{"runs":[{"text":"Song - Official Audio"}]},"simpleText":"3:30"}
-        "videoRenderer":{"videoId":"def456","title":{"runs":[{"text":"Song Live at Concert"}]},"simpleText":"3:30"}
+        "videoRenderer":{"videoId":"abc123def45","title":{"runs":[{"text":"Song - Official Audio"}]},"simpleText":"3:30"}
+        "videoRenderer":{"videoId":"def456ghi78","title":{"runs":[{"text":"Song Live at Concert"}]},"simpleText":"3:30"}
         """
         mock_response.raise_for_status = Mock()
         mock_get.return_value = mock_response
 
         # The search should prefer the studio version
         # This tests the filtering logic
+        result = identifier._search_youtube_single("Song", 210)
+        assert result is not None
+        assert result["url"].endswith("abc123def45")
+        assert result["duration"] == 210
 
 
 @pytest.mark.network
