@@ -1,7 +1,13 @@
 import numpy as np
+import pytest
 
 from y2karaoke.core.timing_evaluator import (
     AudioFeatures,
+    correct_line_timestamps,
+    _find_best_onset_during_silence,
+    _find_best_onset_for_phrase_end,
+    _find_best_onset_proximity,
+    _find_phrase_end,
     _find_silence_regions,
     _find_vocal_end,
     _find_vocal_start,
@@ -9,6 +15,8 @@ from y2karaoke.core.timing_evaluator import (
     _load_audio_features_cache,
     _save_audio_features_cache,
 )
+from y2karaoke.core.models import Line, Word
+import y2karaoke.core.timing_evaluator as te
 
 
 def test_get_audio_features_cache_path(tmp_path):
@@ -142,3 +150,222 @@ def test_find_vocal_end_empty_rms():
     rms = np.array([])
     end = _find_vocal_end(rms, rms_times, threshold=0.5, min_silence=0.3)
     assert end == 0.0
+
+
+def test_find_best_onset_for_phrase_end_returns_onset():
+    features = AudioFeatures(
+        onset_times=np.array([]),
+        silence_regions=[],
+        vocal_start=0.0,
+        vocal_end=4.0,
+        duration=4.0,
+        energy_envelope=np.array([0.0, 0.0, 0.0, 0.0]),
+        energy_times=np.array([0.0, 1.0, 2.0, 3.0]),
+    )
+    onset_times = np.array([1.0, 2.0, 3.0])
+
+    onset = _find_best_onset_for_phrase_end(
+        onset_times, line_start=2.5, prev_line_audio_end=0.5, audio_features=features
+    )
+
+    assert onset == 1.0
+
+
+def test_find_best_onset_proximity_prefers_closest():
+    features = AudioFeatures(
+        onset_times=np.array([]),
+        silence_regions=[],
+        vocal_start=0.0,
+        vocal_end=4.0,
+        duration=4.0,
+        energy_envelope=np.array([0.0, 0.0, 0.0, 0.0, 0.0]),
+        energy_times=np.array([0.0, 1.0, 2.0, 3.0, 4.0]),
+    )
+    onset_times = np.array([1.0, 2.0, 3.0])
+
+    onset = _find_best_onset_proximity(
+        onset_times, line_start=2.4, max_correction=1.5, audio_features=features
+    )
+
+    assert onset == 2.0
+
+
+def test_find_best_onset_during_silence_returns_none_when_no_candidates():
+    features = AudioFeatures(
+        onset_times=np.array([]),
+        silence_regions=[],
+        vocal_start=0.0,
+        vocal_end=4.0,
+        duration=4.0,
+        energy_envelope=np.array([0.0, 0.0, 0.0, 0.0]),
+        energy_times=np.array([0.0, 1.0, 2.0, 3.0]),
+    )
+    onset_times = np.array([0.5])
+
+    onset = _find_best_onset_during_silence(
+        onset_times,
+        line_start=3.0,
+        prev_line_audio_end=2.8,
+        max_correction=0.1,
+        audio_features=features,
+    )
+
+    assert onset is None
+
+
+def test_correct_line_timestamps_applies_offset(monkeypatch):
+    features = AudioFeatures(
+        onset_times=np.array([2.0]),
+        silence_regions=[],
+        vocal_start=0.0,
+        vocal_end=4.0,
+        duration=4.0,
+        energy_envelope=np.array([1.0, 1.0, 1.0, 1.0]),
+        energy_times=np.array([0.0, 1.0, 2.0, 3.0]),
+    )
+    line = Line(words=[Word(text="hi", start_time=1.0, end_time=1.2)])
+
+    responses = iter([1.0, 0.0, 1.0])
+
+    def fake_activity(*_args, **_kwargs):
+        return next(responses, 1.0)
+
+    monkeypatch.setattr(te, "_check_vocal_activity_in_range", fake_activity)
+    monkeypatch.setattr(
+        te, "_find_best_onset_for_phrase_end", lambda *_a, **_k: 2.0
+    )
+    monkeypatch.setattr(te, "_find_phrase_end", lambda *_a, **_k: 5.0)
+
+    corrected, corrections = correct_line_timestamps([line], features, max_correction=3.0)
+
+    assert corrected[0].words[0].start_time == pytest.approx(2.0)
+    assert corrections
+
+
+def test_correct_line_timestamps_handles_empty_lines():
+    features = AudioFeatures(
+        onset_times=np.array([]),
+        silence_regions=[],
+        vocal_start=0.0,
+        vocal_end=0.0,
+        duration=0.0,
+        energy_envelope=np.array([]),
+        energy_times=np.array([]),
+    )
+
+    corrected, corrections = correct_line_timestamps([], features)
+
+    assert corrected == []
+    assert corrections == []
+
+
+def test_correct_line_timestamps_skips_empty_word_line():
+    features = AudioFeatures(
+        onset_times=np.array([]),
+        silence_regions=[],
+        vocal_start=0.0,
+        vocal_end=1.0,
+        duration=1.0,
+        energy_envelope=np.array([1.0]),
+        energy_times=np.array([0.0]),
+    )
+    line = Line(words=[])
+
+    corrected, corrections = correct_line_timestamps([line], features)
+
+    assert corrected[0] is line
+    assert corrections == []
+
+
+def test_correct_line_timestamps_no_singing_uses_silence_path(monkeypatch):
+    features = AudioFeatures(
+        onset_times=np.array([1.0]),
+        silence_regions=[],
+        vocal_start=0.0,
+        vocal_end=2.0,
+        duration=2.0,
+        energy_envelope=np.array([0.0, 0.0]),
+        energy_times=np.array([0.0, 1.0]),
+    )
+    line = Line(words=[Word(text="hi", start_time=1.0, end_time=1.2)])
+
+    monkeypatch.setattr(te, "_check_vocal_activity_in_range", lambda *_a, **_k: 0.0)
+    monkeypatch.setattr(te, "_find_best_onset_during_silence", lambda *_a, **_k: None)
+    monkeypatch.setattr(te, "_find_phrase_end", lambda *_a, **_k: 2.0)
+
+    corrected, corrections = correct_line_timestamps([line], features, max_correction=1.0)
+
+    assert corrected[0] is line
+    assert corrections == []
+
+
+def test_correct_line_timestamps_skips_small_offset(monkeypatch):
+    features = AudioFeatures(
+        onset_times=np.array([1.1]),
+        silence_regions=[],
+        vocal_start=0.0,
+        vocal_end=2.0,
+        duration=2.0,
+        energy_envelope=np.array([1.0, 1.0]),
+        energy_times=np.array([0.0, 1.0]),
+    )
+    line = Line(words=[Word(text="hi", start_time=1.0, end_time=1.2)])
+
+    responses = iter([1.0, 1.0, 1.0])
+
+    monkeypatch.setattr(te, "_check_vocal_activity_in_range", lambda *_a, **_k: next(responses, 1.0))
+    monkeypatch.setattr(te, "_find_best_onset_proximity", lambda *_a, **_k: 1.1)
+    monkeypatch.setattr(te, "_find_phrase_end", lambda *_a, **_k: 2.0)
+
+    corrected, corrections = correct_line_timestamps([line], features, max_correction=1.0)
+
+    assert corrected[0] is line
+    assert corrections == []
+
+
+def test_find_phrase_end_returns_silence_start():
+    features = AudioFeatures(
+        onset_times=np.array([]),
+        silence_regions=[],
+        vocal_start=0.0,
+        vocal_end=4.0,
+        duration=4.0,
+        energy_envelope=np.array([1.0, 0.0, 0.0, 1.0, 1.0]),
+        energy_times=np.array([0.0, 1.0, 2.0, 3.0, 4.0]),
+    )
+
+    end = _find_phrase_end(0.0, 4.0, features, min_silence_duration=1.0)
+
+    assert end == 1.0
+
+
+def test_find_phrase_end_uses_max_when_no_silence():
+    features = AudioFeatures(
+        onset_times=np.array([]),
+        silence_regions=[],
+        vocal_start=0.0,
+        vocal_end=4.0,
+        duration=4.0,
+        energy_envelope=np.array([1.0, 1.0, 1.0, 1.0]),
+        energy_times=np.array([0.0, 1.0, 2.0, 3.0]),
+    )
+
+    end = _find_phrase_end(0.0, 3.0, features, min_silence_duration=1.0)
+
+    assert end == 3.0
+
+
+def test_find_phrase_end_handles_trailing_silence():
+    features = AudioFeatures(
+        onset_times=np.array([]),
+        silence_regions=[],
+        vocal_start=0.0,
+        vocal_end=3.0,
+        duration=3.0,
+        energy_envelope=np.array([1.0, 0.0, 0.0, 0.0]),
+        energy_times=np.array([0.0, 1.0, 2.0, 3.0]),
+    )
+
+    end = _find_phrase_end(0.0, 3.0, features, min_silence_duration=1.0)
+
+    assert end == 1.0

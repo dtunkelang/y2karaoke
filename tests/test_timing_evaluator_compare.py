@@ -60,6 +60,74 @@ def test_compare_sources_builds_reports(monkeypatch):
     assert reports["source1"].summary == "ok"
 
 
+def test_compare_sources_skips_source_on_error(monkeypatch):
+    features = AudioFeatures(
+        onset_times=[],
+        silence_regions=[],
+        vocal_start=0.0,
+        vocal_end=1.0,
+        duration=1.0,
+        energy_envelope=[],
+        energy_times=[],
+    )
+    monkeypatch.setattr(te, "extract_audio_features", lambda _path: features)
+
+    monkeypatch.setattr(
+        "y2karaoke.core.sync.fetch_from_all_sources",
+        lambda _title, _artist: {"bad": ("[00:00.00]hello", 3.0)},
+    )
+
+    monkeypatch.setattr(
+        "y2karaoke.core.lrc.create_lines_from_lrc",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(ValueError("bad lrc")),
+    )
+
+    reports = te.compare_sources("Song", "Artist", "vocals.wav")
+    assert reports == {}
+
+
+def test_compare_sources_handles_empty_timings(monkeypatch):
+    features = AudioFeatures(
+        onset_times=[],
+        silence_regions=[],
+        vocal_start=0.0,
+        vocal_end=1.0,
+        duration=1.0,
+        energy_envelope=[],
+        energy_times=[],
+    )
+    monkeypatch.setattr(te, "extract_audio_features", lambda _path: features)
+
+    monkeypatch.setattr(
+        "y2karaoke.core.sync.fetch_from_all_sources",
+        lambda _title, _artist: {"source": ("[00:00.00]hello", 3.0)},
+    )
+
+    monkeypatch.setattr(
+        "y2karaoke.core.lrc.create_lines_from_lrc",
+        lambda *_args, **_kwargs: [Line(words=[])],
+    )
+    monkeypatch.setattr(
+        "y2karaoke.core.lrc.parse_lrc_with_timing",
+        lambda *_args, **_kwargs: [],
+    )
+
+    monkeypatch.setattr(
+        te,
+        "evaluate_timing",
+        lambda _lines, _features, source_name: TimingReport(
+            source_name=source_name,
+            overall_score=50.0,
+            line_alignment_score=50.0,
+            pause_alignment_score=50.0,
+            summary="ok",
+        ),
+    )
+
+    reports = te.compare_sources("Song", "Artist", "vocals.wav")
+    assert "source" in reports
+
+
 def test_select_best_source_prefers_highest_score(monkeypatch):
     reports = {
         "a": TimingReport(

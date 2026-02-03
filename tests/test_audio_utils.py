@@ -62,6 +62,20 @@ class TestTrimAudioIfNeeded:
         assert result == "/trimmed_audio.wav"
         mock_from_wav.assert_called_once_with("/audio.wav")
 
+    @patch("y2karaoke.core.audio_utils.AudioSegment.from_wav")
+    def test_trim_audio_start_beyond_length_returns_original(self, mock_from_wav):
+        """Test that start time beyond audio length returns original."""
+        mock_cache = Mock()
+        mock_cache.file_exists.return_value = False
+
+        mock_audio = Mock()
+        mock_audio.__len__ = Mock(return_value=1000)  # 1 second in ms
+        mock_from_wav.return_value = mock_audio
+
+        result = trim_audio_if_needed("/audio.wav", 5.0, "video123", mock_cache)
+
+        assert result == "/audio.wav"
+
     def test_uses_cached_result_when_available(self):
         """Test that cached result is used when available and not forced."""
         mock_cache = Mock()
@@ -239,6 +253,39 @@ class TestSeparateVocals:
             "instrumental_path": "/cached_instrumental.wav",
         }
         assert result == expected
+
+    def test_uses_existing_split_files_when_named(self, tmp_path):
+        """Test using pre-separated files when audio filename indicates splits."""
+        cache_dir = tmp_path / "cache"
+        cache_dir.mkdir()
+        vocals_path = cache_dir / "Song (Vocals).wav"
+        instrumental_path = cache_dir / "Song (Instrumental).wav"
+        vocals_path.write_text("v")
+        instrumental_path.write_text("i")
+
+        mock_cache = Mock()
+        mock_cache.get_video_cache_dir.return_value = str(cache_dir)
+
+        result = separate_vocals(
+            str(cache_dir / "song_vocals.wav"), "video123", Mock(), mock_cache
+        )
+
+        assert result["vocals_path"] == str(vocals_path)
+        assert result["instrumental_path"] == str(instrumental_path)
+
+    def test_missing_split_files_raises(self, tmp_path):
+        """Test error when expected split files are missing."""
+        cache_dir = tmp_path / "cache"
+        cache_dir.mkdir()
+        (cache_dir / "Song (Vocals).wav").write_text("v")
+
+        mock_cache = Mock()
+        mock_cache.get_video_cache_dir.return_value = str(cache_dir)
+
+        with pytest.raises(RuntimeError):
+            separate_vocals(
+                str(cache_dir / "song_vocals.wav"), "video123", Mock(), mock_cache
+            )
 
     def test_force_reseparate_ignores_cache(self):
         """Test that force=True ignores cached result."""
