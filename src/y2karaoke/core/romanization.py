@@ -13,6 +13,7 @@ try:
     KOREAN_ROMANIZER_AVAILABLE = True
 except ImportError:
     KOREAN_ROMANIZER_AVAILABLE = False
+    Romanizer = None
 
 # Chinese
 try:
@@ -21,6 +22,8 @@ try:
     CHINESE_ROMANIZER_AVAILABLE = True
 except ImportError:
     CHINESE_ROMANIZER_AVAILABLE = False
+    lazy_pinyin = None
+    Style = None
 
 # Japanese
 try:

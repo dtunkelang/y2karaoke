@@ -149,6 +149,66 @@ def test_correct_timing_with_whisper_uses_dtw(monkeypatch):
     assert corrections == ["dtw"]
 
 
+def test_correct_timing_with_whisper_quality_good_uses_hybrid(monkeypatch):
+    lines = [Line(words=[Word(text="hello", start_time=0.0, end_time=0.5)])]
+    transcription = [
+        te.TranscriptionSegment(start=0.0, end=0.5, text="hello", words=[])
+    ]
+    all_words = [
+        te.TranscriptionWord(start=0.0, end=0.5, text="hello", probability=0.9)
+    ]
+
+    monkeypatch.setattr(
+        te,
+        "transcribe_vocals",
+        lambda *_args, **_kwargs: (transcription, all_words, "en"),
+    )
+    monkeypatch.setattr(te, "_whisper_lang_to_epitran", lambda *_a, **_k: "eng-Latn")
+    monkeypatch.setattr(te, "_get_ipa", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(te, "_assess_lrc_quality", lambda *_a, **_k: (0.8, []))
+    monkeypatch.setattr(
+        te, "align_hybrid_lrc_whisper", lambda *_a, **_k: (lines, ["hybrid"])
+    )
+    monkeypatch.setattr(te, "_fix_ordering_violations", lambda o, n, a: (n, a))
+
+    aligned, corrections = te.correct_timing_with_whisper(
+        lines, "vocals.wav", language="en"
+    )
+
+    assert aligned == lines
+    assert corrections == ["hybrid"]
+
+
+def test_correct_timing_with_whisper_quality_mixed_uses_hybrid(monkeypatch):
+    lines = [Line(words=[Word(text="hello", start_time=0.0, end_time=0.5)])]
+    transcription = [
+        te.TranscriptionSegment(start=0.0, end=0.5, text="hello", words=[])
+    ]
+    all_words = [
+        te.TranscriptionWord(start=0.0, end=0.5, text="hello", probability=0.9)
+    ]
+
+    monkeypatch.setattr(
+        te,
+        "transcribe_vocals",
+        lambda *_args, **_kwargs: (transcription, all_words, "en"),
+    )
+    monkeypatch.setattr(te, "_whisper_lang_to_epitran", lambda *_a, **_k: "eng-Latn")
+    monkeypatch.setattr(te, "_get_ipa", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(te, "_assess_lrc_quality", lambda *_a, **_k: (0.5, []))
+    monkeypatch.setattr(
+        te, "align_hybrid_lrc_whisper", lambda *_a, **_k: (lines, ["hybrid"])
+    )
+    monkeypatch.setattr(te, "_fix_ordering_violations", lambda o, n, a: (n, a))
+
+    aligned, corrections = te.correct_timing_with_whisper(
+        lines, "vocals.wav", language="en"
+    )
+
+    assert aligned == lines
+    assert corrections == ["hybrid"]
+
+
 def test_transcribe_vocals_success(monkeypatch):
     class FakeWord:
         def __init__(self, start, end, word, probability):

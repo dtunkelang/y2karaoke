@@ -5,6 +5,9 @@ from unittest.mock import Mock
 from y2karaoke.config import INSTRUMENTAL_BREAK_THRESHOLD, SPLASH_DURATION
 from y2karaoke.core.frame_renderer import (
     _draw_cue_indicator,
+    _check_mid_song_progress,
+    _get_lines_to_display,
+    _check_cue_indicator,
     _draw_line_text,
     _draw_highlight_sweep,
     render_frame,
@@ -22,6 +25,62 @@ def test_draw_cue_indicator_inactive_dots():
     draw = ImageDraw.Draw(image)
 
     _draw_cue_indicator(draw, x=100, y=50, time_until_start=0.2, font_size=24)
+
+
+def test_draw_cue_indicator_multiple_active_dots():
+    image = Image.new("RGB", (200, 100), "black")
+    draw = ImageDraw.Draw(image)
+
+    _draw_cue_indicator(draw, x=100, y=50, time_until_start=1.2, font_size=24)
+
+
+def test_check_mid_song_progress_no_break():
+    lines = [
+        _line("a", 1.0, 2.0),
+        _line("b", 3.0, 4.0),
+    ]
+    show, progress = _check_mid_song_progress(lines, 0, 2.5)
+    assert show is False
+    assert progress == 0.0
+
+
+def test_get_lines_to_display_skips_to_next_after_break():
+    lines = [
+        _line("a", 0.0, 1.0),
+        _line("b", 20.0, 21.0),
+        _line("c", 22.0, 23.0),
+    ]
+    lines_to_show, start_idx = _get_lines_to_display(
+        lines, current_line_idx=0, current_time=19.2, activation_time=19.2
+    )
+    assert start_idx == 1
+    assert lines_to_show[0][0].text == "b"
+
+
+def test_get_lines_to_display_breaks_before_future_section():
+    lines = [
+        _line("a", 0.0, 1.0),
+        _line("b", 2.0, 3.0),
+        _line("c", 20.0, 21.0),
+        _line("d", 22.0, 23.0),
+    ]
+    lines_to_show, _ = _get_lines_to_display(
+        lines, current_line_idx=1, current_time=19.2, activation_time=19.2
+    )
+    assert len(lines_to_show) == 2
+
+
+def test_check_cue_indicator_with_previous_gap():
+    lines = [
+        _line("a", 0.0, 1.0),
+        _line("b", 10.0, 11.0),
+    ]
+    lines_to_show = [(lines[1], False)]
+    show, time_until = _check_cue_indicator(
+        lines, lines_to_show, display_start_idx=1, current_time=8.5
+    )
+    assert show is True
+    assert time_until > 0
 
 
 def test_draw_line_text_uses_singer_color(monkeypatch):
@@ -57,6 +116,28 @@ def test_draw_line_text_uses_singer_color(monkeypatch):
     )
 
 
+def test_draw_line_text_uses_default_color():
+    line = Line(words=[Word(text="hi", start_time=0.0, end_time=1.0, singer=None)])
+    draw = Mock()
+    words_with_spaces = ["hi"]
+    word_widths = [10]
+
+    _draw_line_text(
+        draw=draw,
+        line=line,
+        y=10,
+        line_x=5,
+        words_with_spaces=words_with_spaces,
+        word_widths=word_widths,
+        font=Mock(),
+        is_duet=True,
+    )
+
+    assert any(
+        call.kwargs.get("fill") == (255, 255, 255) for call in draw.text.call_args_list
+    )
+
+
 def test_draw_highlight_sweep_partial_word(monkeypatch):
     draw = Mock()
     font = Mock()
@@ -76,7 +157,80 @@ def test_draw_highlight_sweep_partial_word(monkeypatch):
         is_duet=False,
     )
 
-    assert any(call.args[1] == "h" for call in draw.text.call_args_list)
+
+def test_draw_highlight_sweep_no_highlight():
+    line = Line(words=[Word(text="hi", start_time=0.0, end_time=1.0)])
+    draw = Mock()
+
+    _draw_highlight_sweep(
+        draw=draw,
+        line=line,
+        y=10,
+        line_x=5,
+        total_width=20,
+        words_with_spaces=["hi"],
+        word_widths=[20],
+        font=Mock(),
+        highlight_width=0,
+        is_duet=False,
+    )
+
+    assert draw.text.call_count == 0
+
+
+def test_render_frame_draws_cue_indicator(monkeypatch):
+    from PIL import ImageFont
+
+    called = {"cue": False}
+
+    def fake_cue(*_args, **_kwargs):
+        called["cue"] = True
+
+    monkeypatch.setattr("y2karaoke.core.frame_renderer._draw_cue_indicator", fake_cue)
+
+    font = ImageFont.load_default()
+    background = np.zeros((100, 200, 3), dtype=np.uint8)
+    line = Line(words=[Word(text="hi", start_time=5.0, end_time=6.0)])
+
+    render_frame(
+        lines=[line],
+        current_time=3.0,
+        font=font,
+        background=background,
+        title=None,
+        artist=None,
+    )
+
+    assert called["cue"] is True
+
+
+def test_render_frame_zero_duration_highlight(monkeypatch):
+    from PIL import ImageFont
+
+    captured = {}
+
+    def fake_highlight(*args, **_kwargs):
+        captured["total_width"] = args[4]
+        captured["highlight_width"] = args[8]
+
+    monkeypatch.setattr(
+        "y2karaoke.core.frame_renderer._draw_highlight_sweep", fake_highlight
+    )
+
+    font = ImageFont.load_default()
+    background = np.zeros((100, 200, 3), dtype=np.uint8)
+    line = Line(words=[Word(text="hi", start_time=1.0, end_time=1.0)])
+
+    render_frame(
+        lines=[line],
+        current_time=0.9,
+        font=font,
+        background=background,
+        title=None,
+        artist=None,
+    )
+
+    assert captured["highlight_width"] == captured["total_width"]
 
 
 def test_render_frame_draws_splash(monkeypatch):

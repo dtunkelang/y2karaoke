@@ -1,0 +1,129 @@
+import types
+
+import pytest
+
+from y2karaoke.core import sync
+
+
+@pytest.fixture(autouse=True)
+def _clear_sync_caches():
+    sync._failed_providers.clear()
+    sync._search_cache.clear()
+    sync._lyriq_cache.clear()
+    sync._lrc_cache.clear()
+    yield
+    sync._failed_providers.clear()
+    sync._search_cache.clear()
+    sync._lyriq_cache.clear()
+    sync._lrc_cache.clear()
+
+
+class FakeLyrics:
+    def __init__(self, synced=None, plain=None):
+        self.synced_lyrics = synced
+        self.plain_lyrics = plain
+
+
+def test_fetch_from_lyriq_disabled(monkeypatch):
+    monkeypatch.setattr(sync, "LYRIQ_AVAILABLE", False)
+    assert sync._fetch_from_lyriq("Title", "Artist") is None
+
+
+def test_fetch_from_lyriq_returns_synced(monkeypatch):
+    monkeypatch.setattr(sync, "LYRIQ_AVAILABLE", True)
+    monkeypatch.setattr(
+        sync,
+        "lyriq_get_lyrics",
+        lambda *_a, **_k: FakeLyrics(synced="[00:00.00]hi"),
+    )
+
+    result = sync._fetch_from_lyriq("Title", "Artist")
+
+    assert result == "[00:00.00]hi"
+
+
+def test_fetch_from_lyriq_plain_only_returns_none(monkeypatch):
+    monkeypatch.setattr(sync, "LYRIQ_AVAILABLE", True)
+    monkeypatch.setattr(
+        sync,
+        "lyriq_get_lyrics",
+        lambda *_a, **_k: FakeLyrics(synced=None, plain="plain"),
+    )
+
+    result = sync._fetch_from_lyriq("Title", "Artist")
+
+    assert result is None
+
+
+def test_fetch_from_lyriq_no_results(monkeypatch):
+    monkeypatch.setattr(sync, "LYRIQ_AVAILABLE", True)
+    monkeypatch.setattr(sync, "lyriq_get_lyrics", lambda *_a, **_k: None)
+
+    result = sync._fetch_from_lyriq("Title", "Artist")
+
+    assert result is None
+
+
+def test_fetch_from_lyriq_retries_transient(monkeypatch):
+    monkeypatch.setattr(sync, "LYRIQ_AVAILABLE", True)
+
+    calls = {"count": 0}
+
+    def fake_get(*_args, **_kwargs):
+        calls["count"] += 1
+        if calls["count"] == 1:
+            raise RuntimeError("timeout")
+        return FakeLyrics(synced="[00:00.00]hi")
+
+    monkeypatch.setattr(sync, "lyriq_get_lyrics", fake_get)
+    monkeypatch.setattr(sync.time, "sleep", lambda *_a, **_k: None)
+
+    result = sync._fetch_from_lyriq("Title", "Artist", max_retries=1, retry_delay=0)
+
+    assert result == "[00:00.00]hi"
+    assert calls["count"] == 2
+
+
+def test_search_single_provider_skips_failed(monkeypatch):
+    sync._failed_providers["Provider"] = sync._FAILURE_THRESHOLD
+    monkeypatch.setattr(
+        sync, "syncedlyrics", types.SimpleNamespace(search=lambda *_a, **_k: "LRC")
+    )
+
+    result = sync._search_single_provider("term", "Provider")
+
+    assert result is None
+
+
+def test_search_single_provider_retries_transient(monkeypatch):
+    calls = {"count": 0}
+
+    def fake_search(*_args, **_kwargs):
+        calls["count"] += 1
+        if calls["count"] == 1:
+            raise RuntimeError("timeout")
+        return "[00:00.00]hi"
+
+    monkeypatch.setattr(sync, "syncedlyrics", types.SimpleNamespace(search=fake_search))
+
+    result = sync._search_single_provider(
+        "term",
+        "Provider",
+        max_retries=1,
+        retry_delay=0,
+    )
+
+    assert result == "[00:00.00]hi"
+    assert calls["count"] == 2
+
+
+def test_search_single_provider_permanent_error_tracks_failure(monkeypatch):
+    def fake_search(*_args, **_kwargs):
+        raise RuntimeError("boom")
+
+    monkeypatch.setattr(sync, "syncedlyrics", types.SimpleNamespace(search=fake_search))
+
+    result = sync._search_single_provider("term", "Provider", max_retries=0)
+
+    assert result is None
+    assert sync._failed_providers["Provider"] == 1

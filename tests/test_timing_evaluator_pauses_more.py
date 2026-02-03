@@ -71,6 +71,14 @@ def test_check_for_silence_in_range_detects_mid_range_silence():
     assert te._check_for_silence_in_range(0.0, 3.5, features, 1.0) is True
 
 
+def test_check_for_silence_in_range_detects_at_end():
+    features = _features(
+        energy_times=[0, 1, 2, 3, 4],
+        energy_envelope=[1.0, 1.0, 0.0, 0.0, 0.0],
+    )
+    assert te._check_for_silence_in_range(1.5, 4.0, features, 1.0) is True
+
+
 def test_calculate_pause_score_matches_silence():
     lines = [
         Line(words=[Word(text="a", start_time=0.0, end_time=1.0)]),
@@ -84,6 +92,40 @@ def test_calculate_pause_score_matches_silence():
     )
     score = te._calculate_pause_score(lines, features)
     assert score == 100.0
+
+
+def test_calculate_pause_score_skips_short_and_pre_vocal_silences():
+    lines = [
+        Line(words=[Word(text="a", start_time=3.5, end_time=4.0)]),
+        Line(words=[Word(text="b", start_time=8.0, end_time=9.0)]),
+    ]
+    features = _features(
+        energy_times=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+        energy_envelope=[1.0] * 10,
+        silence_regions=[(0.0, 1.5), (1.0, 3.5), (5.0, 7.5)],
+        vocal_start=3.0,
+    )
+
+    score = te._calculate_pause_score(lines, features)
+    assert score == 100.0
+
+
+def test_calculate_pause_score_skips_empty_lines():
+    lines = [
+        Line(words=[]),
+        Line(words=[Word(text="a", start_time=0.0, end_time=1.0)]),
+        Line(words=[]),
+        Line(words=[Word(text="b", start_time=4.0, end_time=5.0)]),
+    ]
+    features = _features(
+        energy_times=[0, 1, 2, 3, 4, 5],
+        energy_envelope=[1.0] * 6,
+        silence_regions=[(1.5, 3.8)],
+        vocal_start=0.0,
+    )
+
+    score = te._calculate_pause_score(lines, features)
+    assert score == 0.0
 
 
 def test_check_pause_alignment_flags_spurious_gap():
@@ -113,6 +155,73 @@ def test_check_pause_alignment_flags_unexpected_pause():
     )
     issues = te._check_pause_alignment(lines, features)
     assert any(issue.issue_type == "unexpected_pause" for issue in issues)
+
+
+def test_check_pause_alignment_flags_missing_pause(monkeypatch):
+    lines = [
+        Line(words=[Word(text="a", start_time=0.0, end_time=1.0)]),
+        Line(words=[Word(text="b", start_time=4.0, end_time=5.0)]),
+    ]
+    features = _features(
+        energy_times=[0, 1, 2, 3, 4, 5],
+        energy_envelope=[1.0, 1.0, 1.0, 1.0, 1.0, 1.0],
+        silence_regions=[],
+        vocal_start=0.0,
+    )
+
+    monkeypatch.setattr(te, "_check_vocal_activity_in_range", lambda *_a, **_k: 0.0)
+    issues = te._check_pause_alignment(lines, features)
+
+    assert any(issue.issue_type == "missing_pause" for issue in issues)
+
+
+def test_check_pause_alignment_silence_covered_by_gap():
+    lines = [
+        Line(words=[Word(text="a", start_time=0.0, end_time=4.0)]),
+        Line(words=[Word(text="b", start_time=7.0, end_time=8.0)]),
+    ]
+    features = _features(
+        energy_times=[0, 1, 2, 3, 4, 5, 6, 7, 8],
+        energy_envelope=[1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0],
+        silence_regions=[(5.0, 6.0)],
+        vocal_start=0.0,
+    )
+
+    issues = te._check_pause_alignment(lines, features)
+    assert not any(issue.issue_type == "unexpected_pause" for issue in issues)
+    assert not any(issue.issue_type == "missing_pause" for issue in issues)
+
+
+def test_check_pause_alignment_silence_covered_with_empty_lines(monkeypatch):
+    lines = [
+        Line(words=[]),
+        Line(words=[Word(text="a", start_time=0.0, end_time=1.0)]),
+        Line(words=[Word(text="b", start_time=5.0, end_time=6.0)]),
+    ]
+    features = _features(
+        energy_times=[0, 1, 2, 3, 4, 5, 6],
+        energy_envelope=[1.0, 1.0, 0.0, 0.0, 0.0, 1.0, 1.0],
+        silence_regions=[(2.0, 4.5)],
+        vocal_start=0.0,
+    )
+
+    monkeypatch.setattr(te, "_check_vocal_activity_in_range", lambda *_a, **_k: 0.0)
+    issues = te._check_pause_alignment(lines, features)
+    assert not any(issue.issue_type == "unexpected_pause" for issue in issues)
+
+
+def test_check_pause_alignment_skips_empty_lines():
+    lines = [
+        Line(words=[]),
+        Line(words=[Word(text="a", start_time=1.0, end_time=2.0)]),
+        Line(words=[]),
+    ]
+    features = _features(
+        energy_times=[0, 1, 2, 3],
+        energy_envelope=[1.0, 1.0, 1.0, 1.0],
+    )
+    issues = te._check_pause_alignment(lines, features)
+    assert issues == []
 
 
 def test_generate_summary_includes_issue_count():

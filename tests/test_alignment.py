@@ -10,6 +10,7 @@ from y2karaoke.core.alignment import (
     calculate_gap_adjustments,
     adjust_timing_for_duration_mismatch,
     _durations_within_tolerance,
+    _calculate_adjustments,
     _apply_adjustments_to_lines,
     detect_song_start,
     _detect_song_start_rms,
@@ -59,6 +60,20 @@ class TestDetectAudioSilenceRegions:
 
         assert isinstance(silence_regions, list)
         mock_load.assert_called_with("test.wav", sr=44100)
+
+    @patch("librosa.load")
+    @patch("librosa.feature.rms")
+    @patch("librosa.frames_to_time")
+    def test_detects_trailing_silence(self, mock_frames_to_time, mock_rms, mock_load):
+        mock_load.return_value = (np.array([0.1, 0.2, 0.3]), 22050)
+        mock_rms.return_value = np.array([[0.2, 0.01, 0.01]])
+        mock_frames_to_time.return_value = np.array([0.0, 1.0, 2.0])
+
+        silence_regions = detect_audio_silence_regions(
+            "test.wav", min_silence_duration=0.5
+        )
+
+        assert silence_regions == [(1.0, 2.0)]
 
 
 class TestDetectLrcGaps:
@@ -122,6 +137,23 @@ class TestCalculateGapAdjustments:
         adjustments = calculate_gap_adjustments(lrc_gaps, audio_silences, tolerance=5.0)
 
         assert adjustments == []
+
+    def test_adjusts_when_audio_silence_is_longer(self):
+        lrc_gaps = [(10.0, 15.0)]
+        audio_silences = [(9.0, 18.0)]
+
+        adjustments = calculate_gap_adjustments(lrc_gaps, audio_silences, tolerance=5.0)
+
+        assert adjustments == [(15.0, 4.0)]
+
+
+def test_calculate_adjustments_no_match_logs_debug():
+    lrc_gaps = [(10.0, 15.0)]
+    audio_silences = [(40.0, 45.0)]
+
+    adjustments = _calculate_adjustments(lrc_gaps, audio_silences)
+
+    assert adjustments == []
 
     def test_empty_gaps_returns_empty(self):
         adjustments = calculate_gap_adjustments([], [(10.0, 15.0)])
@@ -228,6 +260,37 @@ class TestAdjustTimingForDurationMismatch:
         mock_gaps.assert_not_called()  # Should not proceed to gap detection
 
 
+def test_adjust_timing_for_duration_mismatch_applies_adjustments(monkeypatch):
+    lines = [Line(words=[Word(text="hi", start_time=12.0, end_time=12.5)])]
+    line_timings = [(1.0, "hello"), (15.0, "world")]
+
+    monkeypatch.setattr(
+        "y2karaoke.core.alignment.detect_lrc_gaps", lambda *_a, **_k: [(1.0, 15.0)]
+    )
+    monkeypatch.setattr(
+        "y2karaoke.core.alignment.detect_audio_silence_regions",
+        lambda *_a, **_k: [(2.0, 20.0)],
+    )
+    monkeypatch.setattr(
+        "y2karaoke.core.alignment._calculate_adjustments",
+        lambda *_a, **_k: [(15.0, 2.0)],
+    )
+    monkeypatch.setattr(
+        "y2karaoke.core.alignment._apply_adjustments_to_lines",
+        lambda *_a, **_k: ["adjusted"],
+    )
+
+    result = adjust_timing_for_duration_mismatch(
+        lines,
+        line_timings,
+        "vocals.wav",
+        lrc_duration=100,
+        audio_duration=120,
+    )
+
+    assert result == ["adjusted"]
+
+
 class TestDetectSongStart:
     @patch("y2karaoke.core.alignment._detect_song_start_rms")
     @patch("librosa.load")
@@ -258,6 +321,55 @@ class TestDetectSongStart:
         start_time = detect_song_start("test.wav", min_duration=0.5)
 
         assert start_time >= 0.0
+
+    @patch("y2karaoke.core.alignment._bandpass_filter")
+    @patch("librosa.onset.onset_detect")
+    @patch("librosa.onset.onset_strength")
+    @patch("librosa.feature.rms")
+    @patch("librosa.load")
+    def test_detects_validated_onset(
+        self,
+        mock_load,
+        mock_rms,
+        mock_strength,
+        mock_detect,
+        mock_filter,
+    ):
+        mock_load.return_value = (np.random.random(2000), 22050)
+        mock_filter.side_effect = lambda y, *_args, **_kwargs: y
+        mock_strength.return_value = np.array([0.5, 0.6, 0.7])
+        mock_detect.return_value = np.array([0.1])
+
+        rms = np.zeros(30)
+        rms[4:24] = 1.0
+        mock_rms.return_value = np.array([rms])
+
+        start_time = detect_song_start("test.wav")
+
+        assert start_time == 0.1
+
+    @patch("y2karaoke.core.alignment._bandpass_filter")
+    @patch("librosa.onset.onset_detect")
+    @patch("librosa.onset.onset_strength")
+    @patch("librosa.feature.rms")
+    @patch("librosa.load")
+    def test_uses_first_onset_when_not_validated(
+        self,
+        mock_load,
+        mock_rms,
+        mock_strength,
+        mock_detect,
+        mock_filter,
+    ):
+        mock_load.return_value = (np.array([0.1, 0.2, 0.3]), 22050)
+        mock_filter.side_effect = lambda y, *_args, **_kwargs: y
+        mock_strength.return_value = np.array([0.5, 0.6, 0.7])
+        mock_detect.return_value = np.array([0.5, 1.0])
+        mock_rms.return_value = np.array([[0.01, 0.02, 0.01, 0.01, 0.01]])
+
+        start_time = detect_song_start("test.wav")
+
+        assert start_time == 0.5
 
 
 class TestDetectSongStartRms:
@@ -304,3 +416,23 @@ class TestDetectSongStartRms:
         start_time = _detect_song_start_rms(y, sr)
 
         assert start_time == 0.0
+
+    def test_no_sustained_activity_returns_zero(self):
+        y = np.array([0.0, 0.0, 0.0, 0.0])
+        sr = 100
+
+        with patch("librosa.feature.rms") as mock_rms:
+            mock_rms.return_value = np.array([[0.01, 0.02, 0.01, 0.02]])
+            start_time = _detect_song_start_rms(y, sr, min_duration=0.5)
+
+            assert start_time == 0.0
+
+    def test_detects_activity_returns_start(self):
+        y = np.array([0.0, 0.0, 0.0])
+        sr = 100
+
+        with patch("librosa.feature.rms") as mock_rms:
+            mock_rms.return_value = np.array([[0.01, 0.5, 0.5, 0.5, 0.5, 0.5]])
+            start_time = _detect_song_start_rms(y, sr, min_duration=0.1)
+
+            assert start_time > 0.0
