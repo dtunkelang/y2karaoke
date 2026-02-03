@@ -97,7 +97,9 @@ def test_get_lyrics_quality_report_no_timestamps():
 def test_get_lyrics_quality_report_too_few_lines(monkeypatch):
     lrc = "[00:00.00]Line"
     monkeypatch.setattr(sync, "_has_timestamps", lambda *_a, **_k: True)
-    monkeypatch.setattr("y2karaoke.core.lrc.parse_lrc_with_timing", lambda *_a, **_k: [])
+    monkeypatch.setattr(
+        "y2karaoke.core.lrc.parse_lrc_with_timing", lambda *_a, **_k: []
+    )
 
     report = sync.get_lyrics_quality_report(lrc, source="Test")
 
@@ -140,7 +142,11 @@ def test_fetch_lyrics_for_duration_returns_match(monkeypatch):
 def test_fetch_from_all_sources_skips_genius_and_handles_errors(monkeypatch):
     monkeypatch.setattr(sync, "LYRIQ_AVAILABLE", True)
     monkeypatch.setattr(sync, "SYNCEDLYRICS_AVAILABLE", True)
-    monkeypatch.setattr(sync, "lyriq_get_lyrics", lambda *_a, **_k: (_ for _ in ()).throw(RuntimeError("boom")))
+    monkeypatch.setattr(
+        sync,
+        "lyriq_get_lyrics",
+        lambda *_a, **_k: (_ for _ in ()).throw(RuntimeError("boom")),
+    )
 
     providers = ["Genius", "A"]
     monkeypatch.setattr(sync, "PROVIDER_ORDER", providers)
