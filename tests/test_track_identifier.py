@@ -926,7 +926,9 @@ class TestFindBestLrcByDuration:
             )
 
             assert result is not None
-            # Should prefer the closer duration match
+            assert result[0] == "Artist2"
+            assert result[1] == "Song"
+            assert result[2] == 205
 
     def test_prefers_better_title_match(self):
         """Prefers candidate with better title similarity."""
