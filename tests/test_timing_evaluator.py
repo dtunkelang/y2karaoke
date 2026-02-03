@@ -216,6 +216,25 @@ class TestEvaluateTiming:
 
         assert report.overall_score == pytest.approx(42.25, abs=1e-6)
 
+    def test_missing_pause_coverage_reduces_score(self):
+        lines = [
+            Line(words=[Word("first", 0.0, 1.0)]),
+            Line(words=[Word("second", 1.5, 2.0)]),
+        ]
+        features = AudioFeatures(
+            onset_times=np.array([0.0, 1.5]),
+            silence_regions=[(2.0, 5.0)],
+            vocal_start=0.0,
+            vocal_end=6.0,
+            duration=6.0,
+            energy_envelope=np.array([0.1, 0.2, 0.3]),
+            energy_times=np.array([0.0, 1.0, 2.0]),
+        )
+
+        report = evaluate_timing(lines, features)
+
+        assert report.overall_score == pytest.approx(49.0, abs=1e-6)
+
 
 class TestTextSimilarity:
     def test_identical_texts_perfect_score(self):
