@@ -436,7 +436,7 @@ class TestScoreRecordingStudioLikelihood:
             ],
         }
         score = identifier._score_recording_studio_likelihood(recording)
-        # Should be lower than album release
+        assert score == 70
 
     def test_demo_penalized(self):
         """Demo recordings get lower scores."""
