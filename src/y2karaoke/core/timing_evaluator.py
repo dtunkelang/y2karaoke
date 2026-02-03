@@ -783,11 +783,13 @@ def select_best_source(
     best_source = None
     best_score = -1.0
     best_report = None
+    best_duration_diff: Optional[float] = None
 
     sources = fetch_from_all_sources(title, artist)
 
     for source_name, report in reports.items():
         score = report.overall_score
+        duration_diff = None
 
         # Bonus for matching target duration
         if target_duration:
@@ -803,6 +805,28 @@ def select_best_source(
             best_score = score
             best_source = source_name
             best_report = report
+            best_duration_diff = duration_diff
+        elif score == best_score:
+            if duration_diff is not None and best_duration_diff is not None:
+                if duration_diff < best_duration_diff:
+                    best_source = source_name
+                    best_report = report
+                    best_duration_diff = duration_diff
+            elif duration_diff is not None and best_duration_diff is None:
+                best_source = source_name
+                best_report = report
+                best_duration_diff = duration_diff
+            elif duration_diff is None and best_duration_diff is None and best_report:
+                best_alignment = (
+                    best_report.line_alignment_score + best_report.pause_alignment_score
+                )
+                current_alignment = (
+                    report.line_alignment_score + report.pause_alignment_score
+                )
+                if current_alignment > best_alignment:
+                    best_source = source_name
+                    best_report = report
+                    best_duration_diff = duration_diff
 
     if best_source and best_source in sources:
         lrc_text, _ = sources[best_source]
