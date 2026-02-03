@@ -266,6 +266,9 @@ def test_fix_spurious_gaps_merges_large_gap_with_activity(monkeypatch):
         Line(words=[Word(text="b", start_time=6.0, end_time=7.0)]),
     ]
 
+    monkeypatch.setattr(te, "_check_vocal_activity_in_range", lambda *_a, **_k: 0.9)
+    monkeypatch.setattr(te, "_check_for_silence_in_range", lambda *_a, **_k: False)
+
     merged, fixes = te.fix_spurious_gaps(lines, features)
 
     assert len(merged) == 1

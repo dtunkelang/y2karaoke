@@ -71,7 +71,7 @@ def test_fix_spurious_gaps_merges_continuous_lines():
     assert fixed[0].words[1].start_time == 1.0
 
 
-def test_fix_spurious_gaps_skips_large_gap():
+def test_fix_spurious_gaps_skips_large_gap(monkeypatch):
     lines = [
         Line(words=[Word(text="hello", start_time=0.0, end_time=0.5)]),
         Line(words=[Word(text="world", start_time=3.0, end_time=3.5)]),
@@ -79,8 +79,11 @@ def test_fix_spurious_gaps_skips_large_gap():
     features = _features(
         onset_times=[],
         energy_times=[0.0, 1.0, 2.0, 3.0, 4.0],
-        energy_envelope=[1.0, 1.0, 0.0, 1.0, 1.0],
+        energy_envelope=[1.0, 1.0, 1.0, 1.0, 1.0],
     )
+
+    monkeypatch.setattr(te, "_check_vocal_activity_in_range", lambda *_a, **_k: 0.9)
+    monkeypatch.setattr(te, "_check_for_silence_in_range", lambda *_a, **_k: True)
 
     fixed, fixes = te.fix_spurious_gaps(lines, features)
 
@@ -134,10 +137,15 @@ def test_fix_spurious_gaps_merge_uses_next_line_start_and_min_duration(monkeypat
     features = _features(
         onset_times=[],
         energy_times=[0.0, 1.0, 2.0, 3.0, 4.0, 5.0],
-        energy_envelope=[1.0, 1.0, 1.0, 0.0, 1.0, 1.0],
+        energy_envelope=[1.0, 1.0, 1.0, 1.0, 1.0, 1.0],
     )
 
-    monkeypatch.setattr(te, "_check_vocal_activity_in_range", lambda *_a, **_k: 0.8)
+    def _activity_for_range(start, end, *_a, **_k):
+        # Encourage merge for the short gap (0.4 -> 0.9) and discourage long gaps.
+        return 0.8 if end - start <= 2.0 else 0.2
+
+    monkeypatch.setattr(te, "_check_vocal_activity_in_range", _activity_for_range)
+    monkeypatch.setattr(te, "_check_for_silence_in_range", lambda *_a, **_k: True)
     monkeypatch.setattr(te, "_find_phrase_end", lambda *_a, **_k: 0.1)
 
     fixed, fixes = te.fix_spurious_gaps(lines, features)
