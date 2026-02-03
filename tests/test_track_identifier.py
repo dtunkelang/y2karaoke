@@ -337,7 +337,7 @@ class TestParseYoutubeTitle:
             "Blue Öyster Cult - (Don't Fear) The Reaper"
         )
         assert artist == "Blue Öyster Cult"
-        # The title cleaning may or may not preserve this, but shouldn't break
+        assert title == "(Don't Fear) The Reaper"
 
 
 class TestTrackInfo:
@@ -718,8 +718,9 @@ class TestIdentifyFromUrlMocked:
         )
 
         # Should use provided artist/title for search, not YouTube metadata
-        mock_mb_query.assert_called()
-        # The search query should contain "The Beatles Yesterday"
+        mock_mb_query.assert_called_once_with(
+            "The Beatles Yesterday", "The Beatles", "Yesterday"
+        )
 
     @patch("y2karaoke.core.track_identifier.TrackIdentifier._get_youtube_metadata")
     @patch("y2karaoke.core.track_identifier.TrackIdentifier._query_musicbrainz")
