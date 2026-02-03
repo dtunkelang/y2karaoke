@@ -14,6 +14,8 @@ from y2karaoke.core.timing_evaluator import (
     _get_audio_features_cache_path,
     _load_audio_features_cache,
     _save_audio_features_cache,
+    _check_pause_alignment,
+    _calculate_pause_score,
 )
 from y2karaoke.core.models import Line, Word
 import y2karaoke.core.timing_evaluator as te
@@ -140,6 +142,79 @@ def test_find_vocal_start_no_onsets_returns_zero():
         onset_times, rms, rms_times, threshold=0.5, min_duration=0.2
     )
     assert start == 0.0
+
+
+def _line(text: str, start: float, end: float) -> Line:
+    return Line(words=[Word(text=text, start_time=start, end_time=end)])
+
+
+def test_check_pause_alignment_spurious_gap_detected():
+    lines = [_line("a", 0.0, 1.0), _line("b", 3.0, 4.0)]
+    features = AudioFeatures(
+        onset_times=np.array([]),
+        silence_regions=[],
+        vocal_start=0.0,
+        vocal_end=4.0,
+        duration=4.0,
+        energy_envelope=np.ones(9),
+        energy_times=np.linspace(0.0, 4.0, 9),
+    )
+
+    issues = _check_pause_alignment(lines, features)
+
+    assert any(issue.issue_type == "spurious_gap" for issue in issues)
+    assert any(issue.severity == "severe" for issue in issues)
+
+
+def test_check_pause_alignment_unexpected_pause_detected():
+    lines = [_line("a", 0.0, 1.0)]
+    features = AudioFeatures(
+        onset_times=np.array([]),
+        silence_regions=[(5.0, 7.5)],
+        vocal_start=0.0,
+        vocal_end=8.0,
+        duration=8.0,
+        energy_envelope=np.array([0.1]),
+        energy_times=np.array([0.0]),
+    )
+
+    issues = _check_pause_alignment(lines, features)
+
+    assert any(issue.issue_type == "unexpected_pause" for issue in issues)
+
+
+def test_calculate_pause_score_matches_silence_with_gap():
+    lines = [_line("a", 0.0, 1.5), _line("b", 5.2, 6.0)]
+    features = AudioFeatures(
+        onset_times=np.array([]),
+        silence_regions=[(2.0, 5.0)],
+        vocal_start=0.0,
+        vocal_end=6.0,
+        duration=6.0,
+        energy_envelope=np.array([0.1]),
+        energy_times=np.array([0.0]),
+    )
+
+    score = _calculate_pause_score(lines, features)
+
+    assert score == 100.0
+
+
+def test_calculate_pause_score_no_gap_for_silence():
+    lines = [_line("a", 0.0, 4.0), _line("b", 4.1, 5.0)]
+    features = AudioFeatures(
+        onset_times=np.array([]),
+        silence_regions=[(2.0, 5.0)],
+        vocal_start=0.0,
+        vocal_end=5.0,
+        duration=5.0,
+        energy_envelope=np.array([0.1]),
+        energy_times=np.array([0.0]),
+    )
+
+    score = _calculate_pause_score(lines, features)
+
+    assert score == 0.0
 
 
 def test_find_best_onset_for_phrase_end_returns_none_when_not_silent(monkeypatch):
