@@ -76,6 +76,81 @@ def test_create_background_segments_empty_on_error(monkeypatch):
     assert segments == []
 
 
+def test_create_background_segments_handles_exception(monkeypatch):
+    processor = backgrounds.BackgroundProcessor()
+
+    def raise_error(*args, **kwargs):
+        raise RuntimeError("boom")
+
+    monkeypatch.setattr(processor, "_extract_scene_frames", raise_error)
+
+    segments = processor.create_background_segments(
+        "video.mp4", [_make_line()], duration=12.0
+    )
+
+    assert segments == []
+
+
+def test_extract_scene_frames_uses_fallback_when_no_scenes(monkeypatch):
+    processor = backgrounds.BackgroundProcessor()
+    monkeypatch.setattr(processor, "_detect_scenes_subprocess", lambda *a, **k: [])
+    monkeypatch.setattr(processor, "_is_valid_frame", lambda *a, **k: True)
+
+    class FakeCap:
+        def __init__(self):
+            self._fps = 30.0
+
+        def isOpened(self):
+            return True
+
+        def get(self, prop):
+            return self._fps
+
+        def set(self, prop, value):
+            return None
+
+        def read(self):
+            frame = np.full((5, 5, 3), 200, dtype=np.uint8)
+            return True, frame
+
+        def release(self):
+            return None
+
+    monkeypatch.setattr(backgrounds.cv2, "VideoCapture", lambda *_: FakeCap())
+
+    frames = processor._extract_scene_frames("video.mp4")
+
+    assert frames
+    assert frames[0][0] == 0.0
+
+
+def test_detect_scenes_subprocess_parses_stdout(monkeypatch):
+    processor = backgrounds.BackgroundProcessor()
+
+    class Result:
+        returncode = 0
+        stdout = "0.0,1.5,3.0"
+
+    monkeypatch.setattr(backgrounds.subprocess, "run", lambda *a, **k: Result())
+
+    scenes = processor._detect_scenes_subprocess("video.mp4")
+
+    assert scenes == [0.0, 1.5, 3.0]
+
+
+def test_detect_scenes_subprocess_handles_exception(monkeypatch):
+    processor = backgrounds.BackgroundProcessor()
+
+    def raise_error(*args, **kwargs):
+        raise RuntimeError("boom")
+
+    monkeypatch.setattr(backgrounds.subprocess, "run", raise_error)
+
+    scenes = processor._detect_scenes_subprocess("video.mp4")
+
+    assert scenes == []
+
+
 def test_create_background_segments_function_wrapper(monkeypatch):
     frame = np.full((20, 30, 3), 200, dtype=np.uint8)
 

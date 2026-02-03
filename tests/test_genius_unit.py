@@ -13,6 +13,15 @@ def test_extract_genius_title_artist():
     assert "Song" in title
 
 
+def test_extract_genius_title_artist_handles_en_dash():
+    html = "<html><head><title>Artist – Song | Genius Lyrics</title></head></html>"
+    title, artist = genius._extract_genius_title_artist(
+        BeautifulSoup(html, "html.parser"), "Fallback"
+    )
+    assert artist == "Artist"
+    assert title == "Song"
+
+
 def test_parse_genius_html_extracts_lines_and_singers():
     html = """
     <div data-lyrics-container="true">
@@ -97,3 +106,56 @@ def test_fetch_genius_lyrics_with_singers_search_fallback(monkeypatch):
     assert lines is not None
     assert metadata is not None
     assert len(lines) == 1
+
+
+def test_fetch_genius_lyrics_with_singers_returns_none_when_no_url(monkeypatch):
+    monkeypatch.setattr(genius, "fetch_html", lambda *a, **k: None)
+    monkeypatch.setattr(genius, "fetch_json", lambda *a, **k: None)
+
+    lines, metadata = genius.fetch_genius_lyrics_with_singers("Song", "Artist")
+    assert lines is None
+    assert metadata is None
+
+
+def test_fetch_genius_lyrics_with_singers_search_skips_non_song(monkeypatch):
+    monkeypatch.setattr(genius, "fetch_html", lambda *a, **k: None)
+
+    def fake_fetch_json(*args, **kwargs):
+        return {
+            "response": {
+                "sections": [
+                    {"type": "album", "hits": []},
+                    {
+                        "type": "song",
+                        "hits": [
+                            {"result": {"url": "https://genius.com/artists/Artist"}},
+                            {"result": {"url": "https://genius.com/artist-song-translation"}},
+                            {"result": {"url": "https://genius.com/artist-song"}},
+                        ],
+                    },
+                ]
+            }
+        }
+
+    monkeypatch.setattr(genius, "fetch_json", fake_fetch_json)
+
+    lines, metadata = genius.fetch_genius_lyrics_with_singers("Song", "Artist")
+    assert lines is None
+    assert metadata is None
+
+
+def test_fetch_genius_lyrics_with_singers_handles_missing_html(monkeypatch):
+    calls = {"count": 0}
+
+    def fake_fetch_html(url, headers=None, timeout=5):
+        calls["count"] += 1
+        if calls["count"] == 1:
+            return "<html></html>"
+        return None
+
+    monkeypatch.setattr(genius, "fetch_html", fake_fetch_html)
+    monkeypatch.setattr(genius, "fetch_json", lambda *a, **k: None)
+
+    lines, metadata = genius.fetch_genius_lyrics_with_singers("Song", "Artist")
+    assert lines is None
+    assert metadata is None

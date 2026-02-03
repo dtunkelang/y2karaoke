@@ -60,3 +60,65 @@ def test_fetch_lyrics_multi_source_handles_no_providers(monkeypatch):
     assert lrc_text is None
     assert is_synced is False
     assert source == ""
+
+
+def test_fetch_lyrics_multi_source_uses_enhanced(monkeypatch):
+    sync._lrc_cache.clear()
+    monkeypatch.setattr(sync, "LYRIQ_AVAILABLE", False)
+    monkeypatch.setattr(sync, "SYNCEDLYRICS_AVAILABLE", True)
+
+    def fake_search(term, synced_only=True, enhanced=False):
+        if enhanced:
+            return ("[00:01.00]Hi", "Provider")
+        return (None, "")
+
+    monkeypatch.setattr(sync, "_search_with_fallback", fake_search)
+
+    lrc_text, is_synced, source = sync.fetch_lyrics_multi_source(
+        "Title", "Artist", enhanced=True
+    )
+    assert lrc_text == "[00:01.00]Hi"
+    assert is_synced is True
+    assert "enhanced" in source
+
+
+def test_fetch_lyrics_multi_source_plain_when_unsynced_allowed(monkeypatch):
+    sync._lrc_cache.clear()
+    monkeypatch.setattr(sync, "LYRIQ_AVAILABLE", False)
+    monkeypatch.setattr(sync, "SYNCEDLYRICS_AVAILABLE", True)
+    monkeypatch.setattr(sync, "_search_with_fallback", lambda *a, **k: ("plain", "Genius"))
+
+    lrc_text, is_synced, source = sync.fetch_lyrics_multi_source(
+        "Title", "Artist", synced_only=False
+    )
+    assert lrc_text == "plain"
+    assert is_synced is False
+    assert source == "Genius"
+
+
+def test_fetch_lyrics_multi_source_returns_none_when_not_found(monkeypatch):
+    sync._lrc_cache.clear()
+    monkeypatch.setattr(sync, "LYRIQ_AVAILABLE", False)
+    monkeypatch.setattr(sync, "SYNCEDLYRICS_AVAILABLE", True)
+    monkeypatch.setattr(sync, "_search_with_fallback", lambda *a, **k: (None, ""))
+
+    lrc_text, is_synced, source = sync.fetch_lyrics_multi_source("Title", "Artist")
+    assert lrc_text is None
+    assert is_synced is False
+    assert source == ""
+
+
+def test_fetch_lyrics_multi_source_handles_exception(monkeypatch):
+    sync._lrc_cache.clear()
+    monkeypatch.setattr(sync, "LYRIQ_AVAILABLE", False)
+    monkeypatch.setattr(sync, "SYNCEDLYRICS_AVAILABLE", True)
+
+    def raise_error(*args, **kwargs):
+        raise RuntimeError("boom")
+
+    monkeypatch.setattr(sync, "_search_with_fallback", raise_error)
+
+    lrc_text, is_synced, source = sync.fetch_lyrics_multi_source("Title", "Artist")
+    assert lrc_text is None
+    assert is_synced is False
+    assert source == ""

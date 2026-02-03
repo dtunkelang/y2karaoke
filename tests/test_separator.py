@@ -1,5 +1,9 @@
 """Tests for separator.py - vocal separation functionality (minimal)."""
 
+from pathlib import Path
+import shutil
+import tempfile
+
 import pytest
 from unittest.mock import patch, MagicMock
 
@@ -46,6 +50,18 @@ class TestAudioSeparator:
         assert result["instrumental_path"] == "/test/instrumental.wav"
         assert mock_find.call_count == 2
 
+    def test_separate_vocals_rejects_already_separated_file(self):
+        separator = AudioSeparator()
+        with pytest.raises(Exception, match="already-separated"):
+            separator.separate_vocals("/test/audio_vocals.wav", "/test")
+
+    @patch("y2karaoke.core.separator.separate_vocals")
+    def test_separate_vocals_wraps_errors(self, mock_separate):
+        mock_separate.side_effect = Exception("boom")
+        separator = AudioSeparator()
+        with pytest.raises(Exception, match="Vocal separation failed"):
+            separator.separate_vocals("/test/audio.wav", "/test")
+
 
 class TestSeparateVocalsFunction:
     def test_separate_vocals_function_exists(self):
@@ -58,6 +74,89 @@ class TestSeparateVocalsFunction:
         params = list(sig.parameters.keys())
         assert "audio_path" in params
         assert "output_dir" in params
+
+    def test_separate_vocals_mixes_stems_when_missing_instrumental(
+        self, monkeypatch
+    ):
+        class FakeMPS:
+            def __init__(self):
+                self._original = self.is_available
+
+            def is_available(self):
+                return True
+
+        class FakeBackends:
+            def __init__(self):
+                self.mps = FakeMPS()
+
+        class FakeTorch:
+            def __init__(self):
+                self.backends = FakeBackends()
+
+        class FakeSeparator:
+            def __init__(self, **kwargs):
+                self.kwargs = kwargs
+
+            def load_model(self, model_filename=None):
+                self.model_filename = model_filename
+
+            def separate(self, audio_path):
+                return [
+                    str(out_dir / "track_vocals.wav"),
+                    str(out_dir / "track_drums.wav"),
+                    str(out_dir / "track_bass.wav"),
+                ]
+
+        def fake_mix(stems, output_path):
+            Path(output_path).write_bytes(b"mix")
+            return output_path
+
+        out_dir = Path(tempfile.mkdtemp(prefix="sep_"))
+        try:
+            monkeypatch.setitem(__import__("sys").modules, "torch", FakeTorch())
+            fake_module = type("mod", (), {"Separator": FakeSeparator})
+            monkeypatch.setitem(
+                __import__("sys").modules, "audio_separator.separator", fake_module
+            )
+            monkeypatch.setattr("y2karaoke.core.separator.mix_stems", fake_mix)
+
+            result = separate_vocals(
+                str(out_dir / "track.wav"), output_dir=str(out_dir)
+            )
+            assert "vocals" in result["vocals_path"].lower()
+            assert result["instrumental_path"].endswith("_instrumental.wav")
+        finally:
+            shutil.rmtree(out_dir, ignore_errors=True)
+
+    def test_separate_vocals_raises_when_missing_tracks(self, monkeypatch, tmp_path):
+        class FakeMPS:
+            def is_available(self):
+                return True
+
+        class FakeBackends:
+            def __init__(self):
+                self.mps = FakeMPS()
+
+        class FakeTorch:
+            def __init__(self):
+                self.backends = FakeBackends()
+
+        class FakeSeparator:
+            def __init__(self, **kwargs):
+                self.kwargs = kwargs
+
+            def load_model(self, model_filename=None):
+                self.model_filename = model_filename
+
+            def separate(self, audio_path):
+                return [str(tmp_path / "track_drums.wav")]
+
+        monkeypatch.setitem(__import__("sys").modules, "torch", FakeTorch())
+        fake_module = type("mod", (), {"Separator": FakeSeparator})
+        monkeypatch.setitem(__import__("sys").modules, "audio_separator.separator", fake_module)
+
+        with pytest.raises(RuntimeError, match="Failed to separate tracks"):
+            separate_vocals(str(tmp_path / "track.wav"), output_dir=str(tmp_path))
 
 
 class TestMixStems:

@@ -115,6 +115,77 @@ class TestDownloadAudio:
         mock_validate.assert_called_once_with("https://youtube.com/watch?v=test")
         mock_extract_id.assert_called_once_with("https://youtube.com/watch?v=test")
 
+    @patch("y2karaoke.core.downloader.extract_metadata_from_youtube")
+    @patch("y2karaoke.core.downloader.sanitize_filename")
+    @patch("y2karaoke.core.downloader.yt_dlp.YoutubeDL")
+    @patch("y2karaoke.core.downloader.extract_video_id")
+    @patch("y2karaoke.core.downloader.validate_youtube_url")
+    def test_download_audio_falls_back_to_any_wav(
+        self,
+        mock_validate,
+        mock_extract_id,
+        mock_ytdl,
+        mock_sanitize,
+        mock_extract_metadata,
+        tmp_path,
+    ):
+        """Fallback to any wav if sanitized title path missing."""
+        mock_validate.return_value = "https://youtube.com/watch?v=test"
+        mock_extract_id.return_value = "video123"
+        mock_sanitize.return_value = "Expected"
+        mock_extract_metadata.return_value = {"artist": "Artist", "title": "Clean"}
+
+        mock_instance = Mock()
+        mock_instance.extract_info.return_value = {"title": "Original Title"}
+        mock_ytdl.return_value.__enter__.return_value = mock_instance
+
+        fallback_audio = tmp_path / "fallback.wav"
+        fallback_audio.write_text("audio")
+
+        downloader = YouTubeDownloader()
+        result = downloader.download_audio(
+            "https://youtube.com/watch?v=test",
+            output_dir=tmp_path,
+        )
+
+        assert result["audio_path"] == str(fallback_audio)
+        assert result["title"] == "Clean"
+        assert result["artist"] == "Artist"
+        assert result["video_id"] == "video123"
+        mock_instance.download.assert_called_once_with(
+            ["https://youtube.com/watch?v=test"]
+        )
+
+    @patch("y2karaoke.core.downloader.sanitize_filename")
+    @patch("y2karaoke.core.downloader.yt_dlp.YoutubeDL")
+    @patch("y2karaoke.core.downloader.extract_video_id")
+    @patch("y2karaoke.core.downloader.validate_youtube_url")
+    def test_download_audio_raises_when_no_wav(
+        self,
+        mock_validate,
+        mock_extract_id,
+        mock_ytdl,
+        mock_sanitize,
+        tmp_path,
+    ):
+        """Raise DownloadError when no wav output exists."""
+        mock_validate.return_value = "https://youtube.com/watch?v=test"
+        mock_extract_id.return_value = "video123"
+        mock_sanitize.return_value = "Expected"
+
+        mock_instance = Mock()
+        mock_instance.extract_info.return_value = {"title": "Original Title"}
+        mock_ytdl.return_value.__enter__.return_value = mock_instance
+
+        downloader = YouTubeDownloader()
+        with pytest.raises(DownloadError) as excinfo:
+            downloader.download_audio(
+                "https://youtube.com/watch?v=test",
+                output_dir=tmp_path,
+            )
+
+        assert "Downloaded audio file not found" in str(excinfo.value)
+
 
 class TestDownloadVideo:
     """Test video download functionality."""
@@ -135,6 +206,76 @@ class TestDownloadVideo:
             downloader.download_video("invalid_url")
 
         mock_validate.assert_called_once_with("invalid_url")
+
+    @patch("y2karaoke.core.downloader.extract_metadata_from_youtube")
+    @patch("y2karaoke.core.downloader.yt_dlp.YoutubeDL")
+    @patch("y2karaoke.core.downloader.extract_video_id")
+    @patch("y2karaoke.core.downloader.validate_youtube_url")
+    def test_download_video_returns_metadata_when_available(
+        self,
+        mock_validate,
+        mock_extract_id,
+        mock_ytdl,
+        mock_extract_metadata,
+        tmp_path,
+    ):
+        """Return cleaned metadata when available."""
+        mock_validate.return_value = "https://youtube.com/watch?v=test"
+        mock_extract_id.return_value = "video123"
+        mock_extract_metadata.return_value = {"artist": "Artist", "title": "Clean"}
+
+        mock_instance = Mock()
+        mock_instance.extract_info.return_value = {"title": "Original Title"}
+        mock_ytdl.return_value.__enter__.return_value = mock_instance
+
+        video_file = tmp_path / "clip_video.mp4"
+        video_file.write_text("video")
+
+        downloader = YouTubeDownloader()
+        result = downloader.download_video(
+            "https://youtube.com/watch?v=test",
+            output_dir=tmp_path,
+        )
+
+        assert result["video_path"] == str(video_file)
+        assert result["title"] == "Clean"
+        assert result["artist"] == "Artist"
+        assert result["video_id"] == "video123"
+
+    @patch("y2karaoke.core.downloader.extract_metadata_from_youtube")
+    @patch("y2karaoke.core.downloader.yt_dlp.YoutubeDL")
+    @patch("y2karaoke.core.downloader.extract_video_id")
+    @patch("y2karaoke.core.downloader.validate_youtube_url")
+    def test_download_video_falls_back_to_info_title_and_unknown_artist(
+        self,
+        mock_validate,
+        mock_extract_id,
+        mock_ytdl,
+        mock_extract_metadata,
+        tmp_path,
+    ):
+        """Fall back to info title and Unknown artist when metadata empty."""
+        mock_validate.return_value = "https://youtube.com/watch?v=test"
+        mock_extract_id.return_value = "video123"
+        mock_extract_metadata.return_value = {"artist": "", "title": ""}
+
+        mock_instance = Mock()
+        mock_instance.extract_info.return_value = {"title": "Original Title"}
+        mock_ytdl.return_value.__enter__.return_value = mock_instance
+
+        video_file = tmp_path / "clip_video.webm"
+        video_file.write_text("video")
+
+        downloader = YouTubeDownloader()
+        result = downloader.download_video(
+            "https://youtube.com/watch?v=test",
+            output_dir=tmp_path,
+        )
+
+        assert result["video_path"] == str(video_file)
+        assert result["title"] == "Original Title"
+        assert result["artist"] == "Unknown"
+        assert result["video_id"] == "video123"
 
 
 class TestConvenienceFunctions:

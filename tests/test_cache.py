@@ -2,6 +2,7 @@
 
 import json
 import pytest
+import os
 from pathlib import Path
 from y2karaoke.utils.cache import CacheManager
 
@@ -112,3 +113,62 @@ class TestCacheManager:
         assert stats["file_count"] == 3
         assert stats["total_size_gb"] > 0
         assert stats["cache_dir"] == str(temp_dir)
+
+    def test_load_metadata_invalid_json(self, temp_dir):
+        """Invalid metadata should return None."""
+        manager = CacheManager(temp_dir)
+        cache_dir = manager.get_video_cache_dir("video")
+        metadata_file = cache_dir / "metadata.json"
+        metadata_file.write_text("{invalid json")
+
+        assert manager.load_metadata("video") is None
+
+    def test_get_cache_size_counts_files(self, temp_dir):
+        """Get cache size sums file sizes."""
+        manager = CacheManager(temp_dir)
+        cache_dir = manager.get_video_cache_dir("video")
+        (cache_dir / "file1.bin").write_bytes(b"a" * 1024)
+        (cache_dir / "file2.bin").write_bytes(b"b" * 2048)
+
+        size_gb = manager.get_cache_size()
+        assert size_gb > 0
+
+    def test_cleanup_old_files_removes_stale(self, temp_dir):
+        """Cleanup removes old files and empty directories."""
+        manager = CacheManager(temp_dir)
+        cache_dir = manager.get_video_cache_dir("video")
+        stale_file = cache_dir / "old.txt"
+        stale_file.write_text("old")
+
+        old_time = 0
+        os.utime(stale_file, (old_time, old_time))
+
+        manager.cleanup_old_files(max_age_days=1)
+
+        assert not stale_file.exists()
+        assert not cache_dir.exists()
+
+    def test_auto_cleanup_runs_two_passes_when_still_large(
+        self, temp_dir, monkeypatch
+    ):
+        """Auto cleanup performs multiple passes if needed."""
+        manager = CacheManager(temp_dir)
+
+        calls = []
+
+        def fake_cleanup(days):
+            calls.append(days)
+
+        sizes = [1.0, 1.0, 0.0]
+
+        def fake_size():
+            return sizes.pop(0)
+
+        monkeypatch.setattr(manager, "cleanup_old_files", fake_cleanup)
+        monkeypatch.setattr(manager, "get_cache_size", fake_size)
+        monkeypatch.setattr("y2karaoke.utils.cache.MAX_CACHE_SIZE_GB", 0.1)
+        monkeypatch.setattr("y2karaoke.utils.cache.CACHE_CLEANUP_THRESHOLD", 0.5)
+
+        manager.auto_cleanup()
+
+        assert calls == [7, 1]

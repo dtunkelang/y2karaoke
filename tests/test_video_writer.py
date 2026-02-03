@@ -130,6 +130,51 @@ class TestRenderKaraokeVideo:
 
         mock_video_clip.assert_called_once()
 
+    @patch("builtins.print")
+    @patch("y2karaoke.core.video_writer.render_frame")
+    @patch("y2karaoke.core.video_writer.AudioFileClip")
+    @patch("y2karaoke.core.video_writer.VideoClip")
+    def test_make_frame_progress_and_background(
+        self, mock_video_clip, mock_audio_clip, mock_render_frame, mock_print
+    ):
+        """Covers make_frame progress output and background selection."""
+        mock_audio = Mock()
+        mock_audio.duration = 1.0
+        mock_audio_clip.return_value = mock_audio
+
+        captured = {}
+
+        def fake_video_clip(make_frame, duration):
+            captured["make_frame"] = make_frame
+            mock_video = Mock()
+            mock_video.with_audio.return_value = mock_video
+            mock_video.with_fps.return_value = mock_video
+            mock_video.write_videofile = Mock()
+            return mock_video
+
+        mock_video_clip.side_effect = fake_video_clip
+        mock_render_frame.return_value = "frame"
+
+        lines = [Line(words=[Word(text="test", start_time=0.0, end_time=1.0)])]
+
+        segment = Mock()
+        segment.start_time = 0.0
+        segment.end_time = 1.0
+        segment.image = "bg"
+
+        render_karaoke_video(
+            lines=lines,
+            audio_path="/test/audio.wav",
+            output_path="/test/output.mp4",
+            background_segments=[segment],
+            show_progress=True,
+        )
+
+        frame = captured["make_frame"](0.5)
+        assert frame == "frame"
+        assert mock_render_frame.call_args[0][3] == "bg"
+        assert mock_print.called
+
 
 class TestGetBackgroundAtTime:
     """Test get_background_at_time function."""

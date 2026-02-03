@@ -4,10 +4,12 @@ Tests cover both Path A (search string) and Path B (YouTube URL) identification,
 as well as helper methods for parsing, normalization, and scoring.
 """
 
+import logging
 import pytest
 from unittest.mock import Mock, patch, MagicMock
 
 from y2karaoke.core.track_identifier import TrackIdentifier, TrackInfo
+from y2karaoke.exceptions import Y2KaraokeError
 
 
 class TestParseQuery:
@@ -562,6 +564,73 @@ class TestIdentifyFromSearchMocked:
         assert result.source == "youtube"
         mock_fallback.assert_called_once()
 
+    @patch("y2karaoke.core.sync.fetch_lyrics_for_duration")
+    @patch("y2karaoke.core.track_identifier.TrackIdentifier._search_youtube_by_duration")
+    @patch("y2karaoke.core.track_identifier.TrackIdentifier._try_split_search")
+    @patch("y2karaoke.core.track_identifier.TrackIdentifier._find_best_title_only")
+    @patch("y2karaoke.core.track_identifier.TrackIdentifier._query_musicbrainz")
+    @patch("y2karaoke.core.track_identifier.TrackIdentifier._parse_query")
+    @patch("y2karaoke.core.track_identifier.TrackIdentifier._try_direct_lrc_search")
+    def test_title_only_split_search_and_youtube_fallback(
+        self,
+        mock_direct_lrc,
+        mock_parse,
+        mock_mb_query,
+        mock_find_title,
+        mock_try_split,
+        mock_search_youtube,
+        mock_fetch_lyrics,
+        caplog,
+    ):
+        """Falls back to split search and query-based YouTube lookup."""
+        mock_direct_lrc.return_value = None
+        mock_parse.return_value = (None, "Some Title")
+        mock_mb_query.return_value = [{"dummy": True}]
+        mock_find_title.return_value = None
+        mock_try_split.return_value = (200, "Artist", "Some Title")
+        mock_fetch_lyrics.return_value = (None, None, None, 250)
+        mock_search_youtube.side_effect = [
+            None,
+            {"url": "https://youtube.com/watch?v=abc123", "duration": 200},
+        ]
+
+        identifier = TrackIdentifier()
+        with caplog.at_level(logging.WARNING):
+            result = identifier.identify_from_search("Some Title")
+
+        assert result.source == "musicbrainz"
+        assert result.lrc_validated is False
+        assert "doesn't match canonical" in caplog.text.lower()
+        assert mock_search_youtube.call_count == 2
+
+    @patch("y2karaoke.core.sync.fetch_lyrics_for_duration")
+    @patch("y2karaoke.core.track_identifier.TrackIdentifier._search_youtube_by_duration")
+    @patch("y2karaoke.core.track_identifier.TrackIdentifier._find_best_title_only")
+    @patch("y2karaoke.core.track_identifier.TrackIdentifier._query_musicbrainz")
+    @patch("y2karaoke.core.track_identifier.TrackIdentifier._parse_query")
+    @patch("y2karaoke.core.track_identifier.TrackIdentifier._try_direct_lrc_search")
+    def test_raises_when_no_youtube_results(
+        self,
+        mock_direct_lrc,
+        mock_parse,
+        mock_mb_query,
+        mock_find_title,
+        mock_search_youtube,
+        mock_fetch_lyrics,
+    ):
+        """Raises when no YouTube results can be found."""
+        mock_direct_lrc.return_value = None
+        mock_parse.return_value = (None, "Some Title")
+        mock_mb_query.return_value = [{"dummy": True}]
+        mock_find_title.return_value = (200, "Artist", "Some Title")
+        mock_fetch_lyrics.return_value = (None, None, None, None)
+        mock_search_youtube.return_value = None
+
+        identifier = TrackIdentifier()
+
+        with pytest.raises(Y2KaraokeError):
+            identifier.identify_from_search("Some Title")
+
 
 class TestIdentifyFromUrlMocked:
     """Tests for identify_from_url with mocked external services."""
@@ -626,6 +695,57 @@ class TestIdentifyFromUrlMocked:
 
         assert result.source == "youtube"
         assert result.youtube_duration == 180
+
+    @patch("y2karaoke.core.track_identifier.TrackIdentifier._get_youtube_metadata")
+    @patch("y2karaoke.core.track_identifier.TrackIdentifier._query_musicbrainz")
+    @patch("y2karaoke.core.track_identifier.TrackIdentifier._find_best_lrc_by_duration")
+    @patch("y2karaoke.core.track_identifier.TrackIdentifier._search_matching_youtube_video")
+    def test_non_studio_mismatch_uses_alternative_video(
+        self, mock_alt, mock_find_lrc, mock_mb_query, mock_yt_metadata, caplog
+    ):
+        """Uses alternative YouTube video when non-studio duration mismatches."""
+        mock_yt_metadata.return_value = ("Artist - Song (Live)", "Uploader", 200)
+        mock_mb_query.return_value = []
+        mock_find_lrc.return_value = ("Artist", "Song", 240)
+        mock_alt.return_value = TrackInfo(
+            artist="Artist",
+            title="Song",
+            duration=200,
+            youtube_url="https://youtube.com/watch?v=alt123",
+            youtube_duration=200,
+            source="youtube",
+            lrc_duration=240,
+            lrc_validated=False,
+        )
+
+        identifier = TrackIdentifier()
+        with caplog.at_level(logging.WARNING):
+            result = identifier.identify_from_url("https://youtube.com/watch?v=xyz789")
+
+        assert result.youtube_url == "https://youtube.com/watch?v=alt123"
+        assert "non-studio" in caplog.text.lower()
+        mock_alt.assert_called_once()
+
+    @patch("y2karaoke.core.track_identifier.TrackIdentifier._get_youtube_metadata")
+    @patch("y2karaoke.core.track_identifier.TrackIdentifier._query_musicbrainz")
+    @patch("y2karaoke.core.track_identifier.TrackIdentifier._find_best_lrc_by_duration")
+    @patch("y2karaoke.core.track_identifier.TrackIdentifier._search_matching_youtube_video")
+    def test_non_studio_mismatch_returns_lrc_candidate_when_no_alt(
+        self, mock_alt, mock_find_lrc, mock_mb_query, mock_yt_metadata, caplog
+    ):
+        """Returns LRC candidate when no alternative YouTube match is found."""
+        mock_yt_metadata.return_value = ("Artist - Song (Live)", "Uploader", 200)
+        mock_mb_query.return_value = []
+        mock_find_lrc.return_value = ("Artist", "Song", 240)
+        mock_alt.return_value = None
+
+        identifier = TrackIdentifier()
+        with caplog.at_level(logging.WARNING):
+            result = identifier.identify_from_url("https://youtube.com/watch?v=xyz789")
+
+        assert result.source == "syncedlyrics"
+        assert result.lrc_validated is False
+        assert "non-studio" in caplog.text.lower()
 
 
 class TestCheckLrcAndDuration:
@@ -797,6 +917,45 @@ class TestFindBestLrcByDuration:
             )
 
             assert result is None
+
+    def test_falls_back_when_duration_unknown(self, caplog):
+        """Falls back to candidate when LRC duration is unknown."""
+        identifier = TrackIdentifier()
+        candidates = [
+            {"artist": "Artist", "title": "Song"},
+        ]
+
+        with patch.object(identifier, "_check_lrc_and_duration") as mock_check:
+            mock_check.return_value = (True, None)
+
+            with caplog.at_level(logging.WARNING):
+                result = identifier._find_best_lrc_by_duration(
+                    candidates, target_duration=200, title_hint="Song"
+                )
+
+        assert result == ("Artist", "Song", 200)
+        assert "unknown duration" in caplog.text.lower()
+
+    def test_warns_on_low_title_similarity(self, caplog):
+        """Warns when best match has low title similarity."""
+        identifier = TrackIdentifier()
+        candidates = [
+            {"artist": "Artist", "title": "Completely Different"},
+        ]
+
+        with patch.object(identifier, "_check_lrc_and_duration") as mock_check:
+            mock_check.return_value = (True, 230)
+
+            with caplog.at_level(logging.WARNING):
+                result = identifier._find_best_lrc_by_duration(
+                    candidates,
+                    target_duration=200,
+                    title_hint="Unrelated Title",
+                    tolerance=40,
+                )
+
+        assert result == ("Artist", "Completely Different", 230)
+        assert "low title similarity" in caplog.text.lower()
 
 
 class TestExtractYoutubeCandidates:
