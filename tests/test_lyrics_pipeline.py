@@ -61,6 +61,43 @@ def test_fetch_lrc_text_and_timings_returns_none_when_no_duration_match(
     assert source == ""
 
 
+def test_fetch_lrc_text_and_timings_filters_promos(monkeypatch):
+    lrc_text = "\n".join(
+        [
+            "[00:02.00]Download the song at https://example.com",
+            "[00:06.00]Aucun Express, je reviens encore",
+            "[00:12.00]Et puis je pars demain",
+        ]
+    )
+
+    monkeypatch.setattr(
+        "y2karaoke.core.sync.fetch_lyrics_for_duration",
+        lambda *a, **k: (lrc_text, True, "provider", 180),
+    )
+
+    lrc_text_out, timings, _source = lyrics._fetch_lrc_text_and_timings(
+        "Aucun Express",
+        "Alain Bashung",
+        target_duration=180,
+        filter_promos=True,
+    )
+
+    assert lrc_text_out == lrc_text
+    assert [text for _ts, text in timings] == [
+        "Aucun Express, je reviens encore",
+        "Et puis je pars demain",
+    ]
+
+    _, timings_unfiltered, _ = lyrics._fetch_lrc_text_and_timings(
+        "Aucun Express",
+        "Alain Bashung",
+        target_duration=180,
+        filter_promos=False,
+    )
+
+    assert len(timings_unfiltered) == 3
+
+
 def test_get_lyrics_simple_falls_back_to_genius(monkeypatch):
     monkeypatch.setattr(
         lyrics, "_fetch_lrc_text_and_timings", lambda *a, **k: (None, None, "")

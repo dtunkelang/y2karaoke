@@ -159,6 +159,28 @@ def test_search_youtube_single_filters_non_studio_when_no_duration(monkeypatch):
     assert result["duration"] is None
 
 
+def test_search_youtube_single_keeps_non_studio_when_query_requests(monkeypatch):
+    identifier = TrackIdentifier()
+
+    candidates = [
+        {"video_id": "abc123def45", "title": "Song Live at Wembley", "duration": 300},
+        {"video_id": "ghi456jkl78", "title": "Song Official Audio", "duration": 305},
+    ]
+
+    def fake_get(*_args, **_kwargs):
+        return _make_response("ignored")
+
+    monkeypatch.setattr("requests.get", fake_get)
+    monkeypatch.setattr(
+        identifier, "_extract_youtube_candidates", lambda _text: candidates
+    )
+
+    result = identifier._search_youtube_single("Song live", 300)
+
+    assert result["url"].endswith("abc123def45")
+    assert result["duration"] == 300
+
+
 def test_search_youtube_single_warns_on_large_mismatch(monkeypatch, caplog):
     identifier = TrackIdentifier()
 

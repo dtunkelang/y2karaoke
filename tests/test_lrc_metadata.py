@@ -19,6 +19,11 @@ def test_is_promo_like_title_line_repeated_title():
     assert lrc._is_promo_like_title_line("just a line", "hello") is False
 
 
+def test_is_promo_like_title_line_allows_title_start():
+    text = "Aucun Express, je reviens encore."
+    assert lrc._is_promo_like_title_line(text, "Aucun Express") is False
+
+
 def test_create_lines_from_lrc_timings_caps_long_gap():
     lines = lrc.create_lines_from_lrc_timings(
         lrc_timings=[(0.0, "hello"), (20.0, "world")],
