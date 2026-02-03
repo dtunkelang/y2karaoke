@@ -26,7 +26,7 @@ from .models import Line
 
 
 def _draw_cue_indicator(
-    draw: ImageDraw.Draw, x: int, y: int, time_until_start: float, font_size: int
+    draw: ImageDraw.ImageDraw, x: int, y: int, time_until_start: float, font_size: int
 ) -> None:
     """Draw animated cue indicator (pulsing dots) to prepare singer.
 
@@ -218,17 +218,17 @@ def _check_cue_indicator(
 
 
 def _draw_line_text(
-    draw: ImageDraw.Draw,
+    draw: ImageDraw.ImageDraw,
     line: Line,
     y: int,
-    line_x: int,
+    line_x: float,
     words_with_spaces: list[str],
-    word_widths: list[int],
-    font: ImageFont.FreeTypeFont,
+    word_widths: list[float],
+    font: ImageFont.ImageFont | ImageFont.FreeTypeFont,
     is_duet: bool,
 ) -> None:
     """Draw unhighlighted line text."""
-    x = line_x
+    x = float(line_x)
     word_idx = 0
     for i, text in enumerate(words_with_spaces):
         if text == " ":
@@ -245,14 +245,14 @@ def _draw_line_text(
 
 
 def _draw_highlight_sweep(
-    draw: ImageDraw.Draw,
+    draw: ImageDraw.ImageDraw,
     line: Line,
     y: int,
-    line_x: int,
-    total_width: int,
+    line_x: float,
+    total_width: float,
     words_with_spaces: list[str],
-    word_widths: list[int],
-    font: ImageFont.FreeTypeFont,
+    word_widths: list[float],
+    font: ImageFont.ImageFont | ImageFont.FreeTypeFont,
     highlight_width: int,
     is_duet: bool,
 ) -> None:
@@ -261,7 +261,7 @@ def _draw_highlight_sweep(
         return
 
     highlight_boundary = line_x + highlight_width
-    x = line_x
+    x = float(line_x)
     word_idx = 0
 
     for i, text in enumerate(words_with_spaces):
@@ -297,7 +297,7 @@ def _draw_highlight_sweep(
 def render_frame(
     lines: list[Line],
     current_time: float,
-    font: ImageFont.FreeTypeFont,
+    font: ImageFont.ImageFont | ImageFont.FreeTypeFont,
     background: np.ndarray,
     title: Optional[str] = None,
     artist: Optional[str] = None,
@@ -355,20 +355,20 @@ def render_frame(
             if i < len(line.words) - 1:
                 words_with_spaces.append(" ")
 
-        total_width = 0
-        word_widths = []
+        total_width = 0.0
+        word_widths: list[float] = []
         for text in words_with_spaces:
             bbox = font.getbbox(text)
-            w = bbox[2] - bbox[0]
+            w = float(bbox[2] - bbox[0])
             word_widths.append(w)
             total_width += w
 
-        line_x = (video_width - total_width) // 2
+        line_x = (video_width - total_width) / 2.0
 
         if idx == 0 and show_cue:
             font_size = LINE_SPACING * 3 // 4
             _draw_cue_indicator(
-                draw, line_x, y + font_size // 2, cue_time_until, font_size
+                draw, int(line_x), y + font_size // 2, cue_time_until, font_size
             )
 
         _draw_line_text(

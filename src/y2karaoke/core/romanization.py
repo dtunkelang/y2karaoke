@@ -1,29 +1,36 @@
 """Multilingual romanization for lyrics display."""
 
 import re
+from typing import Any, Callable, Optional
 
 # ----------------------
 # Language library imports
 # ----------------------
 
 # Korean
-try:
-    from korean_romanizer.romanizer import Romanizer
+Romanizer: Optional[type] = None
 
+try:
+    from korean_romanizer.romanizer import Romanizer as _Romanizer
+
+    Romanizer = _Romanizer
     KOREAN_ROMANIZER_AVAILABLE = True
 except ImportError:
     KOREAN_ROMANIZER_AVAILABLE = False
-    Romanizer = None
 
 # Chinese
-try:
-    from pypinyin import lazy_pinyin, Style
+lazy_pinyin: Optional[Callable[..., list[str]]] = None
+Style: Any = None
 
+try:
+    from pypinyin import Style as _Style
+    from pypinyin import lazy_pinyin as _lazy_pinyin
+
+    lazy_pinyin = _lazy_pinyin
+    Style = _Style
     CHINESE_ROMANIZER_AVAILABLE = True
 except ImportError:
     CHINESE_ROMANIZER_AVAILABLE = False
-    lazy_pinyin = None
-    Style = None
 
 # Japanese
 try:
@@ -150,7 +157,7 @@ _JAPANESE_CONVERTER = None
 
 def romanize_korean(text: str) -> str:
     """Romanize Korean text using korean_romanizer."""
-    if not KOREAN_ROMANIZER_AVAILABLE:
+    if not KOREAN_ROMANIZER_AVAILABLE or Romanizer is None:
         return text
     try:
         return str(Romanizer(text).romanize())
@@ -160,7 +167,7 @@ def romanize_korean(text: str) -> str:
 
 def romanize_chinese(text: str) -> str:
     """Romanize Chinese text using pypinyin."""
-    if not CHINESE_ROMANIZER_AVAILABLE:
+    if not CHINESE_ROMANIZER_AVAILABLE or lazy_pinyin is None or Style is None:
         return text
     try:
         return " ".join(lazy_pinyin(text, style=Style.NORMAL))

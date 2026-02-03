@@ -12,7 +12,7 @@ No parsing. No heuristics. No Genius-specific semantics.
 import time
 import random
 from typing import Optional
-import requests
+import requests  # type: ignore[import-untyped]
 
 DEFAULT_TIMEOUT = 10
 DEFAULT_MAX_RETRIES = 3

@@ -316,9 +316,10 @@ def detect_song_start(audio_path: str, min_duration: float = 0.3) -> float:
         # Load at 22050Hz for better frequency resolution
         y, sr = librosa.load(audio_path, sr=22050)
 
+        sr_int = int(sr)
         # Focus on vocal frequency range (100Hz - 4kHz) to filter out
         # low bass/drums and high-frequency artifacts
-        y_vocal_band = _bandpass_filter(y, sr, low_freq=100, high_freq=4000)
+        y_vocal_band = _bandpass_filter(y, sr_int, low_freq=100, high_freq=4000)
 
         # Onset detection with backtracking for precise timing
         hop_length = 512
@@ -340,7 +341,7 @@ def detect_song_start(audio_path: str, min_duration: float = 0.3) -> float:
 
         if len(onsets) == 0:
             logger.warning("No onsets detected, falling back to RMS method")
-            return _detect_song_start_rms(y, sr, min_duration)
+            return _detect_song_start_rms(y, sr_int, min_duration)
 
         # Validate onset with sustained energy check
         # The first onset should be followed by sustained vocal activity

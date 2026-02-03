@@ -1813,7 +1813,7 @@ class TrackIdentifier:
             Dict with 'url', 'duration', and 'title' keys, or None if not found
         """
         try:
-            import requests
+            import requests  # type: ignore[import-untyped]
         except ImportError:
             return self._search_youtube_by_duration(query, target_duration)
 
@@ -1994,7 +1994,7 @@ class TrackIdentifier:
         self, search_url: str, headers: Dict[str, str]
     ) -> List[Dict[str, Any]]:
         try:
-            import requests
+            import requests  # type: ignore[import-untyped]
         except ImportError:
             raise Y2KaraokeError("requests required for YouTube search")
 

@@ -10,7 +10,7 @@ from ..utils.logging import get_logger
 logger = get_logger(__name__)
 
 
-def get_font(size: int = FONT_SIZE) -> ImageFont.FreeTypeFont:
+def get_font(size: int = FONT_SIZE) -> ImageFont.ImageFont | ImageFont.FreeTypeFont:
     """Get font for rendering text."""
 
     # Font search paths (macOS, Linux, Windows)

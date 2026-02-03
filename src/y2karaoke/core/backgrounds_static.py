@@ -29,7 +29,7 @@ def create_gradient_background(
 
 
 def draw_splash_screen(
-    draw: ImageDraw.Draw,
+    draw: ImageDraw.ImageDraw,
     title: str,
     artist: str,
     width: Optional[int] = None,
@@ -72,8 +72,8 @@ def draw_splash_screen(
 
 
 def draw_logo_screen(
-    draw: ImageDraw.Draw,
-    font: Optional[ImageFont.FreeTypeFont] = None,
+    draw: ImageDraw.ImageDraw,
+    font: Optional[ImageFont.ImageFont | ImageFont.FreeTypeFont] = None,
     width: Optional[int] = None,
     height: Optional[int] = None,
 ) -> None:

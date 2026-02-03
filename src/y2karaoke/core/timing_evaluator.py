@@ -382,7 +382,9 @@ def evaluate_timing(
     total_lines = len([line for line in lines if line.words])
 
     # Line alignment score: based on how many lines match onsets within tolerance
-    line_alignment_score = (matched_count / total_lines * 100) if total_lines > 0 else 0
+    line_alignment_score = (
+        (matched_count / total_lines * 100) if total_lines > 0 else 0.0
+    )
 
     # Pause alignment score and coverage
     pause_score, matched_silences, total_silences = _calculate_pause_score_with_stats(
@@ -401,29 +403,29 @@ def evaluate_timing(
     overall_score = (0.7 * line_alignment_score + 0.3 * pause_score) * confidence
 
     # Calculate statistics
-    avg_offset = np.mean(line_offsets) if line_offsets else 0.0
-    std_offset = np.std(line_offsets) if len(line_offsets) > 1 else 0.0
+    avg_offset = float(np.mean(line_offsets)) if line_offsets else 0.0
+    std_offset = float(np.std(line_offsets)) if len(line_offsets) > 1 else 0.0
 
     # Generate summary
     summary = _generate_summary(
-        overall_score,
-        line_alignment_score,
-        pause_score,
-        avg_offset,
-        std_offset,
+        float(overall_score),
+        float(line_alignment_score),
+        float(pause_score),
+        float(avg_offset),
+        float(std_offset),
         len(issues),
         total_lines,
     )
 
     return TimingReport(
         source_name=source_name,
-        overall_score=overall_score,
-        line_alignment_score=line_alignment_score,
-        pause_alignment_score=pause_score,
+        overall_score=float(overall_score),
+        line_alignment_score=float(line_alignment_score),
+        pause_alignment_score=float(pause_score),
         issues=issues,
         summary=summary,
-        avg_line_offset=avg_offset,
-        std_line_offset=std_offset,
+        avg_line_offset=float(avg_offset),
+        std_line_offset=float(std_offset),
         matched_onsets=matched_count,
         total_lines=total_lines,
     )
@@ -682,8 +684,8 @@ def _check_for_silence_in_range(
     silence_threshold = 0.02 * peak_level
 
     # Find indices for the range
-    start_idx = np.searchsorted(times, start_time)
-    end_idx = np.searchsorted(times, end_time)
+    start_idx = int(np.searchsorted(times, start_time))
+    end_idx = int(np.searchsorted(times, end_time))
 
     if start_idx >= end_idx or start_idx >= len(energy):
         return False
