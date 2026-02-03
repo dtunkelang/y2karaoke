@@ -231,12 +231,12 @@ def test_correct_line_timestamps_applies_offset(monkeypatch):
         return next(responses, 1.0)
 
     monkeypatch.setattr(te, "_check_vocal_activity_in_range", fake_activity)
-    monkeypatch.setattr(
-        te, "_find_best_onset_for_phrase_end", lambda *_a, **_k: 2.0
-    )
+    monkeypatch.setattr(te, "_find_best_onset_for_phrase_end", lambda *_a, **_k: 2.0)
     monkeypatch.setattr(te, "_find_phrase_end", lambda *_a, **_k: 5.0)
 
-    corrected, corrections = correct_line_timestamps([line], features, max_correction=3.0)
+    corrected, corrections = correct_line_timestamps(
+        [line], features, max_correction=3.0
+    )
 
     assert corrected[0].words[0].start_time == pytest.approx(2.0)
     assert corrections
@@ -293,7 +293,9 @@ def test_correct_line_timestamps_no_singing_uses_silence_path(monkeypatch):
     monkeypatch.setattr(te, "_find_best_onset_during_silence", lambda *_a, **_k: None)
     monkeypatch.setattr(te, "_find_phrase_end", lambda *_a, **_k: 2.0)
 
-    corrected, corrections = correct_line_timestamps([line], features, max_correction=1.0)
+    corrected, corrections = correct_line_timestamps(
+        [line], features, max_correction=1.0
+    )
 
     assert corrected[0] is line
     assert corrections == []
@@ -313,11 +315,15 @@ def test_correct_line_timestamps_skips_small_offset(monkeypatch):
 
     responses = iter([1.0, 1.0, 1.0])
 
-    monkeypatch.setattr(te, "_check_vocal_activity_in_range", lambda *_a, **_k: next(responses, 1.0))
+    monkeypatch.setattr(
+        te, "_check_vocal_activity_in_range", lambda *_a, **_k: next(responses, 1.0)
+    )
     monkeypatch.setattr(te, "_find_best_onset_proximity", lambda *_a, **_k: 1.1)
     monkeypatch.setattr(te, "_find_phrase_end", lambda *_a, **_k: 2.0)
 
-    corrected, corrections = correct_line_timestamps([line], features, max_correction=1.0)
+    corrected, corrections = correct_line_timestamps(
+        [line], features, max_correction=1.0
+    )
 
     assert corrected[0] is line
     assert corrections == []
