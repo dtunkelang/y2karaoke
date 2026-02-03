@@ -121,3 +121,92 @@ def test_lookup_musicbrainz_for_query_skips_too_long(monkeypatch):
 
     assert artist is None
     assert title is None
+
+
+def test_query_musicbrainz_prioritizes_title_match(monkeypatch):
+    identifier = ti.TrackIdentifier()
+
+    def fake_search_recordings(recording, artist=None, limit=25):
+        return {
+            "recording-list": [
+                {"title": "Other", "artist-credit": [{"artist": {"name": "Artist"}}]},
+                {"title": "Song", "artist-credit": [{"artist": {"name": "Artist"}}]},
+            ]
+        }
+
+    monkeypatch.setattr(ti.musicbrainzngs, "search_recordings", fake_search_recordings)
+    monkeypatch.setattr(identifier, "_score_recording_studio_likelihood", lambda rec: 0)
+
+    results = identifier._query_musicbrainz(
+        query="Artist Song",
+        artist_hint="Artist",
+        title_hint="The Song",
+    )
+
+    assert results[0]["title"] == "Song"
+
+
+def test_query_musicbrainz_exact_title_match_beats_partial(monkeypatch):
+    identifier = ti.TrackIdentifier()
+
+    def fake_search_recordings(recording, artist=None, limit=25):
+        return {
+            "recording-list": [
+                {"title": "Song Extended", "artist-credit": [{"artist": {"name": "Artist"}}]},
+                {"title": "Song", "artist-credit": [{"artist": {"name": "Artist"}}]},
+            ]
+        }
+
+    monkeypatch.setattr(ti.musicbrainzngs, "search_recordings", fake_search_recordings)
+    monkeypatch.setattr(identifier, "_score_recording_studio_likelihood", lambda rec: 0)
+
+    results = identifier._query_musicbrainz(
+        query="Artist Song",
+        artist_hint="Artist",
+        title_hint="Song",
+    )
+
+    assert results[0]["title"] == "Song"
+
+
+def test_query_musicbrainz_retries_on_transient_error(monkeypatch):
+    identifier = ti.TrackIdentifier()
+    calls = {"count": 0}
+
+    def fake_search_recordings(recording, artist=None, limit=25):
+        calls["count"] += 1
+        if calls["count"] == 1:
+            raise RuntimeError("connection reset")
+        return {"recording-list": [{"title": "Song"}]}
+
+    monkeypatch.setattr(ti.musicbrainzngs, "search_recordings", fake_search_recordings)
+    monkeypatch.setattr(identifier, "_score_recording_studio_likelihood", lambda rec: 0)
+    monkeypatch.setattr("time.sleep", lambda *_: None)
+
+    results = identifier._query_musicbrainz(
+        query="Artist Song",
+        artist_hint=None,
+        title_hint="Song",
+        max_retries=1,
+    )
+
+    assert calls["count"] == 2
+    assert results
+
+
+def test_query_musicbrainz_returns_empty_on_non_transient(monkeypatch):
+    identifier = ti.TrackIdentifier()
+
+    def fake_search_recordings(recording, artist=None, limit=25):
+        raise RuntimeError("bad request")
+
+    monkeypatch.setattr(ti.musicbrainzngs, "search_recordings", fake_search_recordings)
+
+    results = identifier._query_musicbrainz(
+        query="Artist Song",
+        artist_hint=None,
+        title_hint="Song",
+        max_retries=0,
+    )
+
+    assert results == []

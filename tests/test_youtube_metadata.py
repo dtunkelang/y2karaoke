@@ -23,6 +23,13 @@ def test_validate_youtube_url_rejects_invalid_url():
         youtube_metadata.validate_youtube_url("https://example.com/video")
 
 
+def test_sanitize_filename_removes_invalid_chars():
+    assert (
+        youtube_metadata.sanitize_filename('bad/name:*?"<>|')
+        == "badname"
+    )
+
+
 def test_extract_video_id_patterns():
     assert (
         youtube_metadata.extract_video_id("https://www.youtube.com/watch?v=abc123def45")
@@ -58,8 +65,29 @@ def test_parse_artist_title_from_video_title():
     assert title == "Song"
 
 
+def test_parse_artist_title_empty_and_no_match():
+    artist, title = youtube_metadata._parse_artist_title_from_video_title("")
+    assert artist == ""
+    assert title == ""
+
+    artist, title = youtube_metadata._parse_artist_title_from_video_title(
+        "Unrelated Title"
+    )
+    assert artist == ""
+    assert title == ""
+
+
 def test_parse_metadata_from_description():
     description = "Song · Artist\nAlbum · 2020\n"
+    artist, title = youtube_metadata._parse_metadata_from_description(
+        description, "Fallback"
+    )
+    assert artist == "Artist"
+    assert title == "Song"
+
+
+def test_parse_metadata_from_description_skips_links():
+    description = "http://example.com\n@user\nSong · Artist\n"
     artist, title = youtube_metadata._parse_metadata_from_description(
         description, "Fallback"
     )
@@ -75,6 +103,13 @@ def test_clean_uploader_name():
 def test_clean_title_strips_artist():
     assert (
         youtube_metadata.clean_title("Artist - Song Title", artist="Artist")
+        == "Song Title"
+    )
+
+
+def test_clean_title_strips_artist_from_second_part():
+    assert (
+        youtube_metadata.clean_title("Song Title - Artist", artist="Artist")
         == "Song Title"
     )
 
@@ -145,3 +180,67 @@ def test_extract_metadata_from_youtube_parses_title(monkeypatch):
     assert result["artist"] == "Artist"
     assert result["title"] == "Song"
     assert result["video_id"] == "abc123def45"
+
+
+def test_extract_metadata_from_youtube_parses_description(monkeypatch):
+    info = {
+        "title": "Random Title",
+        "uploader": "Uploader",
+        "description": "Song · Artist\nAlbum · 2020\n",
+        "id": "abc123def45",
+    }
+
+    class FakeYDL:
+        def __init__(self, opts):
+            self.opts = opts
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc, tb):
+            return False
+
+        def extract_info(self, url, download=False):
+            return info
+
+    monkeypatch.setitem(
+        sys.modules, "yt_dlp", types.SimpleNamespace(YoutubeDL=FakeYDL)
+    )
+
+    result = youtube_metadata.extract_metadata_from_youtube(
+        "https://www.youtube.com/watch?v=abc123def45"
+    )
+    assert result["artist"] == "Artist"
+    assert result["title"] == "Song"
+
+
+def test_extract_metadata_from_youtube_fallbacks_to_uploader(monkeypatch):
+    info = {
+        "title": "Random Title",
+        "uploader": "Official Artist VEVO",
+        "description": "",
+        "id": "abc123def45",
+    }
+
+    class FakeYDL:
+        def __init__(self, opts):
+            self.opts = opts
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc, tb):
+            return False
+
+        def extract_info(self, url, download=False):
+            return info
+
+    monkeypatch.setitem(
+        sys.modules, "yt_dlp", types.SimpleNamespace(YoutubeDL=FakeYDL)
+    )
+
+    result = youtube_metadata.extract_metadata_from_youtube(
+        "https://www.youtube.com/watch?v=abc123def45"
+    )
+    assert result["artist"] == "Artist"
+    assert result["title"] == "Random Title"

@@ -49,11 +49,48 @@ def test_load_audio_features_cache_missing_file(tmp_path):
     assert _load_audio_features_cache(str(missing)) is None
 
 
+def test_load_audio_features_cache_handles_exception(tmp_path, monkeypatch):
+    cache_path = tmp_path / "features.npz"
+    cache_path.write_bytes(b"invalid")
+
+    def raise_error(*_args, **_kwargs):
+        raise ValueError("bad npz")
+
+    monkeypatch.setattr("numpy.load", raise_error)
+    assert _load_audio_features_cache(str(cache_path)) is None
+
+
+def test_save_audio_features_cache_handles_exception(tmp_path, monkeypatch):
+    cache_path = tmp_path / "features.npz"
+    features = AudioFeatures(
+        onset_times=np.array([0.1]),
+        silence_regions=[],
+        vocal_start=0.1,
+        vocal_end=0.2,
+        duration=1.0,
+        energy_envelope=np.array([0.1]),
+        energy_times=np.array([0.0]),
+    )
+
+    def raise_error(*_args, **_kwargs):
+        raise ValueError("bad save")
+
+    monkeypatch.setattr("numpy.savez", raise_error)
+    _save_audio_features_cache(str(cache_path), features)
+
+
 def test_find_silence_regions_handles_trailing_silence():
     is_silent = np.array([False, True, True, False, True, True])
     times = np.array([0.0, 0.5, 1.0, 1.5, 2.0, 2.5])
     regions = _find_silence_regions(is_silent, times, min_duration=0.4)
     assert regions == [(0.5, 1.5), (2.0, 2.5)]
+
+
+def test_find_silence_regions_skips_short_silence():
+    is_silent = np.array([False, True, False])
+    times = np.array([0.0, 0.2, 0.4])
+    regions = _find_silence_regions(is_silent, times, min_duration=0.5)
+    assert regions == []
 
 
 def test_find_vocal_start_prefers_sustained_energy():
@@ -64,6 +101,26 @@ def test_find_vocal_start_prefers_sustained_energy():
         onset_times, rms, rms_times, threshold=0.5, min_duration=0.2
     )
     assert start == 1.0
+
+
+def test_find_vocal_start_handles_onset_out_of_range():
+    onset_times = np.array([5.0, 6.0])
+    rms_times = np.array([0.0, 1.0, 2.0])
+    rms = np.array([0.1, 0.2, 0.3])
+    start = _find_vocal_start(
+        onset_times, rms, rms_times, threshold=0.5, min_duration=0.2
+    )
+    assert start == 5.0
+
+
+def test_find_vocal_start_handles_single_rms_frame():
+    onset_times = np.array([0.1])
+    rms_times = np.array([0.0])
+    rms = np.array([1.0])
+    start = _find_vocal_start(
+        onset_times, rms, rms_times, threshold=0.5, min_duration=0.2
+    )
+    assert start == 0.1
 
 
 def test_find_vocal_end_uses_last_activity():
@@ -78,3 +135,10 @@ def test_find_vocal_end_falls_back_to_end_time():
     rms = np.array([0.1, 0.2, 0.2])
     end = _find_vocal_end(rms, rms_times, threshold=0.5, min_silence=0.3)
     assert end == 1.0
+
+
+def test_find_vocal_end_empty_rms():
+    rms_times = np.array([])
+    rms = np.array([])
+    end = _find_vocal_end(rms, rms_times, threshold=0.5, min_silence=0.3)
+    assert end == 0.0

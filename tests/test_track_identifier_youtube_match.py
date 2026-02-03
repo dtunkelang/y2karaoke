@@ -45,3 +45,21 @@ def test_search_matching_youtube_video_uses_radio_edit_when_needed(monkeypatch):
     assert result is not None
     assert result.youtube_url == "http://radio"
     assert any("radio edit" in q for q in calls)
+
+
+def test_search_matching_youtube_video_skips_missing_duration(monkeypatch):
+    identifier = ti.TrackIdentifier()
+
+    def fake_search(query, lrc_duration, artist, title):
+        return {"url": "http://youtube", "duration": None}
+
+    monkeypatch.setattr(identifier, "_search_youtube_verified", fake_search)
+
+    result = identifier._search_matching_youtube_video(
+        artist="Artist",
+        title="Title",
+        lrc_duration=200,
+        yt_duration=190,
+    )
+
+    assert result is None

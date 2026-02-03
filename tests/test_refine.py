@@ -319,3 +319,35 @@ class TestRefineWordTiming:
         # With empty lines, it should return empty even if it tries to load audio
         result = refine_word_timing([], "/nonexistent/path.wav")
         assert result == []
+
+    def test_refine_word_timing_success_path(self, monkeypatch):
+        words = [
+            Word(text="hello", start_time=0.0, end_time=0.5),
+            Word(text="world", start_time=0.5, end_time=1.0),
+        ]
+        lines = [Line(words=words)]
+
+        class FakeLibrosa:
+            @staticmethod
+            def load(_path, sr=22050):
+                return np.zeros(2048), sr
+
+            class onset:
+                @staticmethod
+                def onset_detect(*_args, **_kwargs):
+                    return np.array([0, 512])
+
+            @staticmethod
+            def frames_to_time(frames, sr=22050, hop_length=512):
+                return np.array(frames) * (hop_length / sr)
+
+            class feature:
+                @staticmethod
+                def rms(*_args, **_kwargs):
+                    return np.array([[0.1, 0.4, 0.2, 0.05]])
+
+        monkeypatch.setitem(__import__("sys").modules, "librosa", FakeLibrosa)
+
+        refined = refine_word_timing(lines, "/tmp/vocals.wav")
+        assert len(refined) == 1
+        assert len(refined[0].words) == 2

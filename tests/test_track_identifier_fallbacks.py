@@ -43,6 +43,23 @@ def test_build_url_candidates_skips_duplicate_uploader_artist():
     assert candidates == [{"artist": "Artist", "title": "Song"}]
 
 
+def test_build_url_candidates_skips_invalid_recordings():
+    identifier = ti.TrackIdentifier()
+    recordings = [
+        {"title": None, "artist-credit": [{"artist": {"name": "Artist"}}]},
+        {"title": "Song", "artist-credit": []},
+    ]
+
+    candidates = identifier._build_url_candidates(
+        yt_uploader="Uploader",
+        parsed_artist=None,
+        parsed_title="Song",
+        recordings=recordings,
+    )
+
+    assert candidates == [{"artist": "Uploader", "title": "Song"}]
+
+
 def test_find_fallback_artist_title_prefers_non_uploader_candidate():
     identifier = ti.TrackIdentifier()
     unique_candidates = [
@@ -110,3 +127,34 @@ def test_find_fallback_artist_title_uses_uploader_or_unknown():
 
     assert artist == "Unknown"
     assert title == "YT Title"
+
+
+def test_find_fallback_artist_title_uses_parsed_artist():
+    identifier = ti.TrackIdentifier()
+    artist, title = identifier._find_fallback_artist_title(
+        unique_candidates=[{"artist": "Uploader", "title": "Song"}],
+        yt_uploader="Uploader",
+        parsed_artist="Parsed Artist",
+        parsed_title="Parsed Title",
+        yt_title="YT Title",
+    )
+
+    assert artist == "Parsed Artist"
+    assert title == "Parsed Title"
+
+
+def test_find_fallback_artist_title_split_no_lrc(monkeypatch):
+    identifier = ti.TrackIdentifier()
+    monkeypatch.setattr(identifier, "_try_artist_title_splits", lambda *_: [("Split", "Title")])
+    monkeypatch.setattr(identifier, "_check_lrc_and_duration", lambda *a, **k: (False, None))
+
+    artist, title = identifier._find_fallback_artist_title(
+        unique_candidates=[],
+        yt_uploader="Uploader",
+        parsed_artist=None,
+        parsed_title="Split - Title",
+        yt_title="YT Title",
+    )
+
+    assert artist == "Uploader"
+    assert title == "Split - Title"

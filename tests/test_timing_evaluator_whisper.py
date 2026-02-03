@@ -150,3 +150,63 @@ def test_correct_timing_with_whisper_uses_dtw(monkeypatch):
     )
     assert aligned == lines
     assert corrections == ["dtw"]
+
+
+def test_transcribe_vocals_success(monkeypatch):
+    class FakeWord:
+        def __init__(self, start, end, word, probability):
+            self.start = start
+            self.end = end
+            self.word = word
+            self.probability = probability
+
+    class FakeSegment:
+        def __init__(self):
+            self.start = 0.0
+            self.end = 1.0
+            self.text = " Hello "
+            self.words = [FakeWord(0.0, 0.5, " hello ", 0.9)]
+
+    class FakeInfo:
+        language = "en"
+
+    class FakeModel:
+        def __init__(self, *args, **kwargs):
+            pass
+
+        def transcribe(self, *args, **kwargs):
+            return [FakeSegment()], FakeInfo()
+
+    class FakeWhisperModule:
+        WhisperModel = FakeModel
+
+    monkeypatch.setattr(te, "_get_whisper_cache_path", lambda *_: None)
+    monkeypatch.setattr(te, "_save_whisper_cache", lambda *_: None)
+    monkeypatch.setitem(__import__("sys").modules, "faster_whisper", FakeWhisperModule())
+
+    segments, words, language = te.transcribe_vocals("vocals.wav", language="en")
+    assert language == "en"
+    assert len(segments) == 1
+    assert len(words) == 1
+    assert segments[0].text == "Hello"
+    assert words[0].text == "hello"
+
+
+def test_transcribe_vocals_handles_transcribe_error(monkeypatch):
+    class FakeModel:
+        def __init__(self, *args, **kwargs):
+            pass
+
+        def transcribe(self, *args, **kwargs):
+            raise RuntimeError("boom")
+
+    class FakeWhisperModule:
+        WhisperModel = FakeModel
+
+    monkeypatch.setattr(te, "_get_whisper_cache_path", lambda *_: None)
+    monkeypatch.setitem(__import__("sys").modules, "faster_whisper", FakeWhisperModule())
+
+    segments, words, language = te.transcribe_vocals("vocals.wav", language="en")
+    assert segments == []
+    assert words == []
+    assert language == ""

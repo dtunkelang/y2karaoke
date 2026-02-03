@@ -957,6 +957,40 @@ class TestFindBestLrcByDuration:
         assert result == ("Artist", "Completely Different", 230)
         assert "low title similarity" in caplog.text.lower()
 
+    def test_handles_empty_title_hint(self):
+        """Handles empty title hint without word overlap."""
+        identifier = TrackIdentifier()
+        candidates = [
+            {"artist": "Artist", "title": "Song"},
+        ]
+
+        with patch.object(identifier, "_check_lrc_and_duration") as mock_check:
+            mock_check.return_value = (True, 200)
+
+            result = identifier._find_best_lrc_by_duration(
+                candidates, target_duration=200, title_hint=""
+            )
+
+        assert result == ("Artist", "Song", 200)
+
+    def test_warns_on_large_duration_difference(self, caplog):
+        """Warns when best duration difference exceeds tolerance."""
+        identifier = TrackIdentifier()
+        candidates = [
+            {"artist": "Artist", "title": "Song"},
+        ]
+
+        with patch.object(identifier, "_check_lrc_and_duration") as mock_check:
+            mock_check.return_value = (True, 260)
+
+            with caplog.at_level(logging.WARNING):
+                result = identifier._find_best_lrc_by_duration(
+                    candidates, target_duration=200, title_hint="Song", tolerance=10
+                )
+
+        assert result == ("Artist", "Song", 260)
+        assert "duration difference" in caplog.text.lower()
+
 
 class TestExtractYoutubeCandidates:
     """Tests for _extract_youtube_candidates - parsing YouTube search results."""
