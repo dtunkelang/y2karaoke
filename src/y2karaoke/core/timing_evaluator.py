@@ -302,6 +302,41 @@ def evaluate_timing(
 
     onset_times = audio_features.onset_times
 
+    # Enforce ordering constraints
+    prev_start: Optional[float] = None
+    for i, line in enumerate(lines):
+        if not line.words:
+            continue
+        if line.end_time < line.start_time:
+            issues.append(
+                TimingIssue(
+                    issue_type="negative_line_duration",
+                    line_index=i,
+                    lyrics_time=line.start_time,
+                    audio_time=None,
+                    delta=line.end_time - line.start_time,
+                    severity="severe",
+                    description=(
+                        f"Line {i+1} has end before start ({line.start_time:.2f}s -> {line.end_time:.2f}s)"
+                    ),
+                )
+            )
+        if prev_start is not None and line.start_time < prev_start:
+            issues.append(
+                TimingIssue(
+                    issue_type="out_of_order_line",
+                    line_index=i,
+                    lyrics_time=line.start_time,
+                    audio_time=None,
+                    delta=line.start_time - prev_start,
+                    severity="severe",
+                    description=(
+                        f"Line {i+1} starts before previous line ({line.start_time:.2f}s < {prev_start:.2f}s)"
+                    ),
+                )
+            )
+        prev_start = line.start_time
+
     for i, line in enumerate(lines):
         if not line.words:
             continue
@@ -417,25 +452,17 @@ def _find_closest_onset(
     return None, 0.0
 
 
-def _check_pause_alignment(
+def _append_line_spans_silence_issues(
     lines: List[Line],
     audio_features: AudioFeatures,
-) -> List[TimingIssue]:
-    """Check if gaps in lyrics align with silence/pauses in audio.
-
-    Detects two types of issues:
-    1. Spurious gaps: Lyrics have a gap but audio shows continuous singing
-    2. Missing gaps: Audio has silence but lyrics don't reflect it
-    """
-    issues = []
-
+    issues: List[TimingIssue],
+) -> None:
     for i, line in enumerate(lines):
         if not line.words:
             continue
         line_start = line.start_time
         line_end = line.end_time
 
-        # Flag lines that span a significant silence region
         for silence_start, silence_end in audio_features.silence_regions:
             silence_duration = silence_end - silence_start
             if silence_duration < 1.0:
@@ -456,6 +483,12 @@ def _check_pause_alignment(
                     )
                 )
 
+
+def _append_gap_issues(
+    lines: List[Line],
+    audio_features: AudioFeatures,
+    issues: List[TimingIssue],
+) -> None:
     for i in range(len(lines) - 1):
         if not lines[i].words or not lines[i + 1].words:
             continue
@@ -464,85 +497,88 @@ def _check_pause_alignment(
         next_start = lines[i + 1].start_time
         gap_duration = next_start - line_end
 
-        # Check any gap > 0.5 seconds for spurious pauses
-        # (shorter gaps are normal between lines)
-        if gap_duration > 0.5:
-            # Check if there's vocal activity during this gap
-            vocal_activity = _check_vocal_activity_in_range(
-                line_end, next_start, audio_features
-            )
+        if gap_duration <= 0.5:
+            continue
 
-            if vocal_activity > 0.5:  # More than 50% of gap has vocal activity
-                # If the gap is large but vocals are continuous, it's likely a split phrase
-                if gap_duration > 1.0:
-                    has_silence = _check_for_silence_in_range(
-                        line_end, next_start, audio_features, min_silence_duration=0.5
-                    )
-                    if not has_silence:
-                        issues.append(
-                            TimingIssue(
-                                issue_type="split_phrase",
-                                line_index=i,
-                                lyrics_time=line_end,
-                                audio_time=None,
-                                delta=gap_duration,
-                                severity="severe",
-                                description=(
-                                    f"Gap of {gap_duration:.1f}s between lines {i+1} and {i+2} "
-                                    "has continuous vocals with no silence - likely a split phrase"
-                                ),
-                            )
-                        )
-                # This is a spurious gap - lyrics say pause but audio shows singing
-                severity = (
-                    "severe"
-                    if vocal_activity > 0.8
-                    else ("moderate" if vocal_activity > 0.6 else "minor")
-                )
-                line_text = " ".join(w.text for w in lines[i].words)[:30]
-                next_text = " ".join(w.text for w in lines[i + 1].words)[:30]
-                issues.append(
-                    TimingIssue(
-                        issue_type="spurious_gap",
-                        line_index=i,
-                        lyrics_time=line_end,
-                        audio_time=None,
-                        delta=gap_duration,
-                        severity=severity,
-                        description=(
-                            f"Gap of {gap_duration:.1f}s between lines {i+1} and {i+2} "
-                            f"has {vocal_activity*100:.0f}% vocal activity - likely continuous singing. "
-                            f'Lines: "{line_text}..." → "{next_text}..."'
-                        ),
-                    )
-                )
-            elif gap_duration > 2.0:
-                # Large gap - check if there's corresponding silence
-                has_silence = any(
-                    silence_start < next_start and silence_end > line_end
-                    for silence_start, silence_end in audio_features.silence_regions
+        vocal_activity = _check_vocal_activity_in_range(
+            line_end, next_start, audio_features
+        )
+
+        if vocal_activity > 0.5:
+            if gap_duration > 1.0:
+                has_silence = _check_for_silence_in_range(
+                    line_end, next_start, audio_features, min_silence_duration=0.5
                 )
                 if not has_silence:
                     issues.append(
                         TimingIssue(
-                            issue_type="missing_pause",
+                            issue_type="split_phrase",
                             line_index=i,
                             lyrics_time=line_end,
                             audio_time=None,
                             delta=gap_duration,
-                            severity="moderate",
-                            description=f"Gap of {gap_duration:.1f}s between lines"
-                            " {i+1} and {i+2} has no corresponding silence in audio",
+                            severity="severe",
+                            description=(
+                                f"Gap of {gap_duration:.1f}s between lines {i+1} and {i+2} "
+                                "has continuous vocals with no silence - likely a split phrase"
+                            ),
                         )
                     )
 
-    # Check for silence regions not covered by lyrics gaps
+            severity = (
+                "severe"
+                if vocal_activity > 0.8
+                else ("moderate" if vocal_activity > 0.6 else "minor")
+            )
+            line_text = " ".join(w.text for w in lines[i].words)[:30]
+            next_text = " ".join(w.text for w in lines[i + 1].words)[:30]
+            issues.append(
+                TimingIssue(
+                    issue_type="spurious_gap",
+                    line_index=i,
+                    lyrics_time=line_end,
+                    audio_time=None,
+                    delta=gap_duration,
+                    severity=severity,
+                    description=(
+                        f"Gap of {gap_duration:.1f}s between lines {i+1} and {i+2} "
+                        f"has {vocal_activity*100:.0f}% vocal activity - likely continuous singing. "
+                        f'Lines: "{line_text}..." → "{next_text}..."'
+                    ),
+                )
+            )
+            continue
+
+        if gap_duration > 2.0:
+            has_silence = any(
+                silence_start < next_start and silence_end > line_end
+                for silence_start, silence_end in audio_features.silence_regions
+            )
+            if not has_silence:
+                issues.append(
+                    TimingIssue(
+                        issue_type="missing_pause",
+                        line_index=i,
+                        lyrics_time=line_end,
+                        audio_time=None,
+                        delta=gap_duration,
+                        severity="moderate",
+                        description=f"Gap of {gap_duration:.1f}s between lines"
+                        " {i+1} and {i+2} has no corresponding silence in audio",
+                    )
+                )
+
+
+def _append_unexpected_pause_issues(
+    lines: List[Line],
+    audio_features: AudioFeatures,
+    issues: List[TimingIssue],
+) -> None:
     for silence_start, silence_end in audio_features.silence_regions:
         silence_duration = silence_end - silence_start
         if silence_duration < 2.0:
             continue
 
-        # Check if any lyrics gap covers this silence
         covered = False
         for i in range(len(lines) - 1):
             if not lines[i].words or not lines[i + 1].words:
@@ -567,6 +603,16 @@ def _check_pause_alignment(
                 )
             )
 
+
+def _check_pause_alignment(
+    lines: List[Line],
+    audio_features: AudioFeatures,
+) -> List[TimingIssue]:
+    """Check if gaps in lyrics align with silence/pauses in audio."""
+    issues: List[TimingIssue] = []
+    _append_line_spans_silence_issues(lines, audio_features, issues)
+    _append_gap_issues(lines, audio_features, issues)
+    _append_unexpected_pause_issues(lines, audio_features, issues)
     return issues
 
 
@@ -1204,7 +1250,7 @@ def fix_spurious_gaps(
     Returns:
         Tuple of (fixed_lines, list of fix descriptions)
     """
-    from .models import Line, Word
+    from .models import Line
 
     if not lines:
         return lines, []
@@ -1221,120 +1267,137 @@ def fix_spurious_gaps(
             i += 1
             continue
 
-        # Collect all lines that should be merged (may be more than 2)
-        lines_to_merge = [current_line]
-        j = i + 1
-
-        while j < len(lines) and lines[j].words:
-            next_line = lines[j]
-            prev_line = lines_to_merge[-1]
-            line_end = prev_line.end_time
-            next_start = next_line.start_time
-
-            # Find where the current phrase ACTUALLY ends using audio
-            phrase_start = lines_to_merge[0].start_time
-
-            # Only merge if there's truly continuous vocal activity through the gap
-            # Be conservative - good LRC timing shouldn't be "fixed"
-            gap_start = line_end
-            gap_end = next_start
-            gap_duration = gap_end - gap_start
-
-            # If the gap is long, only merge when there's strong evidence
-            # of continuous vocals and no meaningful silence.
-            if gap_duration > 2.0:
-                mid_activity = _check_vocal_activity_in_range(
-                    gap_start, gap_end, audio_features
-                )
-                has_silence = _check_for_silence_in_range(
-                    gap_start, gap_end, audio_features, min_silence_duration=0.5
-                )
-                if mid_activity > 0.6 and not has_silence:
-                    lines_to_merge.append(next_line)
-                    j += 1
-                    continue
-                break
-
-            # Check if there's actual singing THROUGH the gap
-            # (not just at the boundaries, but in the middle)
-            if gap_duration > 0.3:
-                # Check middle portion of gap for vocal activity
-                mid_start = gap_start + 0.15
-                mid_end = gap_end - 0.15
-                if mid_end > mid_start:
-                    mid_activity = _check_vocal_activity_in_range(
-                        mid_start, mid_end, audio_features
-                    )
-                    # Only merge if there's strong continuous singing (>70% activity)
-                    if mid_activity > 0.7:
-                        lines_to_merge.append(next_line)
-                        j += 1
-                        continue
-
-            # Gap has no continuous vocal activity - stop merging
-            break
+        lines_to_merge, j = _collect_lines_to_merge(
+            lines, i, audio_features, activity_threshold
+        )
 
         if len(lines_to_merge) > 1:
-            # Merge all collected lines
-            merged_words = []
-            for line in lines_to_merge:
-                merged_words.extend(list(line.words))
+            next_line_start = (
+                lines[j].start_time if j < len(lines) and lines[j].words else None
+            )
+            merged_line, phrase_end = _merge_lines_with_audio(
+                lines_to_merge, next_line_start, audio_features
+            )
+            fixed_lines.append(merged_line)
 
-            # Find actual phrase end using audio analysis
             phrase_start = lines_to_merge[0].start_time
-            # Look for silence up to the next unmerged line's start (or +30s max)
-            if j < len(lines) and lines[j].words:
-                search_end = lines[j].start_time
-            else:
-                search_end = phrase_start + 30.0
-
-            phrase_end = _find_phrase_end(
-                phrase_start, search_end, audio_features, min_silence_duration=0.3
+            merged_texts = [
+                " ".join(w.text for w in line.words)[:20] for line in lines_to_merge
+            ]
+            fixes.append(
+                f"Merged {len(lines_to_merge)} lines ({i+1}-{i+len(lines_to_merge)}): "
+                f"duration {phrase_end - phrase_start:.1f}s - "
+                f"\"{' + '.join(merged_texts)}...\""
             )
 
-            # Sanity check: phrase should be at least 0.5s per word
-            min_duration = len(merged_words) * 0.3
-            if phrase_end - phrase_start < min_duration:
-                phrase_end = phrase_start + min_duration
-
-            total_duration = phrase_end - phrase_start
-            word_count = len(merged_words)
-
-            if word_count > 0:
-                word_spacing = total_duration / word_count
-                new_words = []
-                for k, word in enumerate(merged_words):
-                    new_start = phrase_start + k * word_spacing
-                    new_end = new_start + (word_spacing * 0.9)
-                    new_words.append(
-                        Word(
-                            text=word.text,
-                            start_time=new_start,
-                            end_time=new_end,
-                            singer=word.singer,
-                        )
-                    )
-
-                merged_line = Line(words=new_words, singer=lines_to_merge[0].singer)
-                fixed_lines.append(merged_line)
-
-                merged_texts = [
-                    " ".join(w.text for w in line.words)[:20] for line in lines_to_merge
-                ]
-                fixes.append(
-                    f"Merged {len(lines_to_merge)} lines ({i+1}-{i+len(lines_to_merge)}): "
-                    f"duration {phrase_end - phrase_start:.1f}s - "
-                    f"\"{' + '.join(merged_texts)}...\""
-                )
-
-                i = j  # Skip all merged lines
-                continue
+            i = j  # Skip all merged lines
+            continue
 
         # No merge needed, keep original
         fixed_lines.append(current_line)
         i += 1
 
     return fixed_lines, fixes
+
+
+def _collect_lines_to_merge(
+    lines: List["Line"],
+    start_idx: int,
+    audio_features: AudioFeatures,
+    activity_threshold: float,
+) -> Tuple[List["Line"], int]:
+    current_line = lines[start_idx]
+    lines_to_merge = [current_line]
+    j = start_idx + 1
+
+    while j < len(lines) and lines[j].words:
+        next_line = lines[j]
+        prev_line = lines_to_merge[-1]
+        gap_start = prev_line.end_time
+        gap_end = next_line.start_time
+
+        if _should_merge_gap(gap_start, gap_end, audio_features, activity_threshold):
+            lines_to_merge.append(next_line)
+            j += 1
+            continue
+        break
+
+    return lines_to_merge, j
+
+
+def _should_merge_gap(
+    gap_start: float,
+    gap_end: float,
+    audio_features: AudioFeatures,
+    activity_threshold: float,
+) -> bool:
+    gap_duration = gap_end - gap_start
+    if gap_duration <= 0:
+        return False
+
+    if gap_duration > 2.0:
+        mid_activity = _check_vocal_activity_in_range(
+            gap_start, gap_end, audio_features
+        )
+        has_silence = _check_for_silence_in_range(
+            gap_start, gap_end, audio_features, min_silence_duration=0.5
+        )
+        return mid_activity > max(0.6, activity_threshold) and not has_silence
+
+    if gap_duration > 0.3:
+        mid_start = gap_start + 0.15
+        mid_end = gap_end - 0.15
+        if mid_end > mid_start:
+            mid_activity = _check_vocal_activity_in_range(
+                mid_start, mid_end, audio_features
+            )
+            return mid_activity > max(0.7, activity_threshold)
+
+    return False
+
+
+def _merge_lines_with_audio(
+    lines_to_merge: List["Line"],
+    next_line_start: Optional[float],
+    audio_features: AudioFeatures,
+) -> Tuple["Line", float]:
+    from .models import Line, Word
+
+    merged_words = []
+    for line in lines_to_merge:
+        merged_words.extend(list(line.words))
+
+    phrase_start = lines_to_merge[0].start_time
+    search_end = next_line_start if next_line_start is not None else phrase_start + 30.0
+    phrase_end = _find_phrase_end(
+        phrase_start, search_end, audio_features, min_silence_duration=0.3
+    )
+
+    min_duration = len(merged_words) * 0.3
+    if phrase_end - phrase_start < min_duration:
+        phrase_end = phrase_start + min_duration
+
+    total_duration = phrase_end - phrase_start
+    word_count = len(merged_words)
+
+    if word_count <= 0:
+        return Line(words=[], singer=lines_to_merge[0].singer), phrase_end
+
+    word_spacing = total_duration / word_count
+    new_words = []
+    for k, word in enumerate(merged_words):
+        new_start = phrase_start + k * word_spacing
+        new_end = new_start + (word_spacing * 0.9)
+        new_words.append(
+            Word(
+                text=word.text,
+                start_time=new_start,
+                end_time=new_end,
+                singer=word.singer,
+            )
+        )
+
+    return Line(words=new_words, singer=lines_to_merge[0].singer), phrase_end
 
 
 # ============================================================================

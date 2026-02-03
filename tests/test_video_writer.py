@@ -342,6 +342,20 @@ class TestVideoWriterErrorHandling:
                 output_path="/test/output.mp4",
             )
 
+    def test_rejects_out_of_order_lines(self):
+        """Out-of-order lines should fail validation."""
+        lines = [
+            Line(words=[Word(text="late", start_time=2.0, end_time=2.5)]),
+            Line(words=[Word(text="early", start_time=1.0, end_time=1.5)]),
+        ]
+
+        with pytest.raises(Exception):
+            render_karaoke_video(
+                lines=lines,
+                audio_path="/test/audio.wav",
+                output_path="/test/output.mp4",
+            )
+
     def test_empty_lines_handling(self):
         """Test handling of empty lines list."""
         # This should test how the function handles empty input

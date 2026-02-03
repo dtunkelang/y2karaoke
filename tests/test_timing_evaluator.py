@@ -235,6 +235,43 @@ class TestEvaluateTiming:
 
         assert report.overall_score == pytest.approx(49.0, abs=1e-6)
 
+    def test_out_of_order_lines_flagged(self):
+        lines = [
+            Line(words=[Word("a", 2.0, 2.5)]),
+            Line(words=[Word("b", 1.0, 1.5)]),
+        ]
+        features = AudioFeatures(
+            onset_times=np.array([1.0, 2.0]),
+            silence_regions=[],
+            vocal_start=0.0,
+            vocal_end=3.0,
+            duration=3.0,
+            energy_envelope=np.array([0.1, 0.2, 0.3]),
+            energy_times=np.array([0.0, 1.0, 2.0]),
+        )
+
+        report = evaluate_timing(lines, features)
+
+        assert any(issue.issue_type == "out_of_order_line" for issue in report.issues)
+
+    def test_negative_line_duration_flagged(self):
+        lines = [Line(words=[Word("a", 2.0, 1.5)])]
+        features = AudioFeatures(
+            onset_times=np.array([1.0, 2.0]),
+            silence_regions=[],
+            vocal_start=0.0,
+            vocal_end=3.0,
+            duration=3.0,
+            energy_envelope=np.array([0.1, 0.2, 0.3]),
+            energy_times=np.array([0.0, 1.0, 2.0]),
+        )
+
+        report = evaluate_timing(lines, features)
+
+        assert any(
+            issue.issue_type == "negative_line_duration" for issue in report.issues
+        )
+
 
 class TestTextSimilarity:
     def test_identical_texts_perfect_score(self):

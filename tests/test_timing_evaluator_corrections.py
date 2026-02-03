@@ -79,7 +79,7 @@ def test_fix_spurious_gaps_skips_large_gap():
     features = _features(
         onset_times=[],
         energy_times=[0.0, 1.0, 2.0, 3.0, 4.0],
-        energy_envelope=[1.0, 1.0, 1.0, 1.0, 1.0],
+        energy_envelope=[1.0, 1.0, 0.0, 1.0, 1.0],
     )
 
     fixed, fixes = te.fix_spurious_gaps(lines, features)
@@ -134,7 +134,7 @@ def test_fix_spurious_gaps_merge_uses_next_line_start_and_min_duration(monkeypat
     features = _features(
         onset_times=[],
         energy_times=[0.0, 1.0, 2.0, 3.0, 4.0, 5.0],
-        energy_envelope=[1.0, 1.0, 1.0, 1.0, 1.0, 1.0],
+        energy_envelope=[1.0, 1.0, 1.0, 0.0, 1.0, 1.0],
     )
 
     monkeypatch.setattr(te, "_check_vocal_activity_in_range", lambda *_a, **_k: 0.8)

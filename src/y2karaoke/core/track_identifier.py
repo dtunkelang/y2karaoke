@@ -1958,11 +1958,6 @@ class TrackIdentifier:
         Returns:
             Dict with 'url' and 'duration' keys, or None if not found
         """
-        try:
-            import requests
-        except ImportError:
-            raise Y2KaraokeError("requests required for YouTube search")
-
         search_query = query.replace(" ", "+")
         search_url = f"https://www.youtube.com/results?search_query={search_query}"
 
@@ -1971,102 +1966,135 @@ class TrackIdentifier:
         }
 
         try:
-            response = requests.get(search_url, headers=headers, timeout=10)
-            response.raise_for_status()
-
-            candidates = self._extract_youtube_candidates(response.text)
-
+            candidates = self._fetch_youtube_candidates(
+                search_url=search_url, headers=headers
+            )
             if not candidates:
                 return None
 
-            # Check if query explicitly asks for a non-studio version
-            query_lower = query.lower()
-            query_wants_non_studio = any(
-                term in query_lower
-                for term in ["live", "concert", "acoustic", "remix", "cover", "karaoke"]
-            )
-
-            # Filter candidates with duration info
+            query_wants_non_studio = self._query_wants_non_studio(query)
             with_duration = [c for c in candidates if c["duration"] is not None]
 
             if not with_duration:
-                # No duration info available, just filter out non-studio and take first
-                if not query_wants_non_studio:
-                    filtered = [
-                        c
-                        for c in candidates
-                        if not self._is_likely_non_studio(c["title"])
-                    ]
-                    if filtered:
-                        candidates = filtered
-                if candidates:
-                    return {
-                        "url": f"https://www.youtube.com/watch?v={candidates[0]['video_id']}",
-                        "duration": None,
-                    }
-                return None
+                return self._pick_first_candidate(candidates, query_wants_non_studio)
 
-            # Filter out non-studio versions first (unless query asks for them)
             if not query_wants_non_studio:
-                studio_candidates = [
-                    c
-                    for c in with_duration
-                    if not self._is_likely_non_studio(c["title"])
-                ]
-                if studio_candidates:
-                    with_duration = studio_candidates
-                    logger.debug(
-                        f"Filtered to {len(studio_candidates)} studio version candidates"
-                    )
+                with_duration = self._filter_studio_candidates(with_duration)
 
-            # Use proportional tolerance: max of 20s or 15% of target duration
-            tolerance = (
-                max(20, int(target_duration * 0.15)) if target_duration > 0 else 30
+            tolerance = self._youtube_duration_tolerance(target_duration)
+            return self._pick_best_duration_candidate(
+                with_duration, target_duration, tolerance
             )
-
-            # Sort by duration difference from target
-            with_duration.sort(key=lambda c: abs(c["duration"] - target_duration))
-
-            scored_candidates = []
-            for candidate in with_duration:
-                diff = abs(candidate["duration"] - target_duration)
-                logger.debug(
-                    f"YouTube candidate: '{candidate['title']}' duration={candidate['duration']}s, diff={diff}s"
-                )
-
-                if diff <= tolerance:
-                    audio_bonus = (
-                        5 if self._is_preferred_audio_title(candidate["title"]) else 0
-                    )
-                    scored_candidates.append((diff - audio_bonus, candidate))
-
-            if scored_candidates:
-                scored_candidates.sort(key=lambda item: item[0])
-                best = scored_candidates[0][1]
-                return {
-                    "url": f"https://www.youtube.com/watch?v={best['video_id']}",
-                    "duration": best["duration"],
-                }
-
-            # No good duration match found - take the best available from filtered list
-            # but warn about the mismatch
-            if with_duration:
-                best = with_duration[0]
-                diff = abs(best["duration"] - target_duration) if target_duration else 0
-                logger.warning(
-                    f"No YouTube video within {tolerance}s of target ({target_duration}s). "
-                    f"Best match: '{best['title']}' ({best['duration']}s, diff={diff}s)"
-                )
-                return {
-                    "url": f"https://www.youtube.com/watch?v={best['video_id']}",
-                    "duration": best["duration"],
-                }
-
-            return None
 
         except Exception as e:
             logger.warning(f"YouTube search failed: {e}")
             return None
+
+    def _fetch_youtube_candidates(
+        self, search_url: str, headers: Dict[str, str]
+    ) -> List[Dict[str, Any]]:
+        try:
+            import requests
+        except ImportError:
+            raise Y2KaraokeError("requests required for YouTube search")
+
+        response = requests.get(search_url, headers=headers, timeout=10)
+        response.raise_for_status()
+        return self._extract_youtube_candidates(response.text)
+
+    def _query_wants_non_studio(self, query: str) -> bool:
+        query_lower = query.lower()
+        return any(
+            term in query_lower
+            for term in ["live", "concert", "acoustic", "remix", "cover", "karaoke"]
+        )
+
+    def _pick_first_candidate(
+        self, candidates: List[Dict[str, Any]], query_wants_non_studio: bool
+    ) -> Optional[Dict[str, Any]]:
+        if not query_wants_non_studio:
+            filtered = [
+                c for c in candidates if not self._is_likely_non_studio(c["title"])
+            ]
+            if filtered:
+                candidates = filtered
+
+        if not candidates:
+            return None
+
+        return {
+            "url": f"https://www.youtube.com/watch?v={candidates[0]['video_id']}",
+            "duration": None,
+        }
+
+    def _filter_studio_candidates(
+        self, candidates: List[Dict[str, Any]]
+    ) -> List[Dict[str, Any]]:
+        studio_candidates = [
+            c for c in candidates if not self._is_likely_non_studio(c["title"])
+        ]
+        if studio_candidates:
+            logger.debug(
+                f"Filtered to {len(studio_candidates)} studio version candidates"
+            )
+            return studio_candidates
+        return candidates
+
+    def _youtube_duration_tolerance(self, target_duration: int) -> int:
+        return max(20, int(target_duration * 0.15)) if target_duration > 0 else 30
+
+    def _pick_best_duration_candidate(
+        self,
+        with_duration: List[Dict[str, Any]],
+        target_duration: int,
+        tolerance: int,
+    ) -> Optional[Dict[str, Any]]:
+        with_duration.sort(key=lambda c: abs(c["duration"] - target_duration))
+        scored_candidates = self._score_duration_candidates(
+            with_duration, target_duration, tolerance
+        )
+        if scored_candidates:
+            scored_candidates.sort(key=lambda item: item[0])
+            best = scored_candidates[0][1]
+            return {
+                "url": f"https://www.youtube.com/watch?v={best['video_id']}",
+                "duration": best["duration"],
+            }
+
+        if with_duration:
+            best = with_duration[0]
+            diff = abs(best["duration"] - target_duration) if target_duration else 0
+            logger.warning(
+                f"No YouTube video within {tolerance}s of target ({target_duration}s). "
+                f"Best match: '{best['title']}' ({best['duration']}s, diff={diff}s)"
+            )
+            return {
+                "url": f"https://www.youtube.com/watch?v={best['video_id']}",
+                "duration": best["duration"],
+            }
+
+        return None
+
+    def _score_duration_candidates(
+        self,
+        with_duration: List[Dict[str, Any]],
+        target_duration: int,
+        tolerance: int,
+    ) -> List[Tuple[float, Dict[str, Any]]]:
+        scored_candidates = []
+        for candidate in with_duration:
+            diff = abs(candidate["duration"] - target_duration)
+            logger.debug(
+                f"YouTube candidate: '{candidate['title']}' duration={candidate['duration']}s, diff={diff}s"
+            )
+
+            if diff <= tolerance:
+                audio_bonus = (
+                    5 if self._is_preferred_audio_title(candidate["title"]) else 0
+                )
+                scored_candidates.append((diff - audio_bonus, candidate))
+
+        return scored_candidates
 
     def _extract_youtube_candidates(self, response_text: str) -> List[Dict]:
         """Extract video candidates from YouTube response."""

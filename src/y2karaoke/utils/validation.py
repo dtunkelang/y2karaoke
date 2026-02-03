@@ -64,6 +64,25 @@ def validate_output_path(path: str) -> Path:
     return output_path
 
 
+def validate_line_order(lines) -> None:
+    """Validate that lines are monotonic and have non-negative durations."""
+    prev_start = None
+    for idx, line in enumerate(lines):
+        if not getattr(line, "words", None):
+            continue
+        start = line.start_time
+        end = line.end_time
+        if end < start:
+            raise ValidationError(
+                f"Line {idx + 1} has end before start ({start:.2f}s -> {end:.2f}s)"
+            )
+        if prev_start is not None and start < prev_start:
+            raise ValidationError(
+                f"Line {idx + 1} starts before previous line ({start:.2f}s < {prev_start:.2f}s)"
+            )
+        prev_start = start
+
+
 def sanitize_filename(name: str) -> str:
     """Remove invalid characters from filename."""
     # Remove invalid characters

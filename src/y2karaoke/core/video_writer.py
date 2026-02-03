@@ -7,6 +7,7 @@ from moviepy import AudioFileClip, VideoClip
 from ..config import VIDEO_WIDTH, VIDEO_HEIGHT, FPS, FONT_SIZE
 from ..utils.logging import get_logger
 from ..utils.fonts import get_font
+from ..utils.validation import validate_line_order
 from .frame_renderer import render_frame
 from .models import Line, SongMetadata
 from .backgrounds_static import create_gradient_background
@@ -34,6 +35,7 @@ def render_karaoke_video(
     font_size: Optional[int] = None,
 ) -> str:
     """Render karaoke video using MoviePy (frame-by-frame)."""
+    validate_line_order(lines)
 
     video_width = width or VIDEO_WIDTH
     video_height = height or VIDEO_HEIGHT
