@@ -235,26 +235,26 @@ class TestMetadataFiltering:
         assert _is_metadata_line("Lyricist: Jane Doe") is True
 
     def test_title_header_filtering(self):
-        # Title-only line at start should be filtered
+        # Title-only line at very start should be filtered
         assert (
             _is_metadata_line("My Song Title", title="My Song Title", timestamp=0.0)
             is True
         )
-        # But not after 15 seconds
+        # But not after 1 second
         assert (
-            _is_metadata_line("My Song Title", title="My Song Title", timestamp=20.0)
+            _is_metadata_line("My Song Title", title="My Song Title", timestamp=5.0)
             is False
         )
 
     def test_artist_header_filtering(self):
-        # Artist-only line at start should be filtered
+        # Artist-only line at very start should be filtered
         assert (
-            _is_metadata_line("The Beatles", artist="The Beatles", timestamp=5.0)
+            _is_metadata_line("The Beatles", artist="The Beatles", timestamp=0.5)
             is True
         )
-        # But not after 15 seconds
+        # But not after 1 second
         assert (
-            _is_metadata_line("The Beatles", artist="The Beatles", timestamp=20.0)
+            _is_metadata_line("The Beatles", artist="The Beatles", timestamp=5.0)
             is False
         )
 
@@ -303,7 +303,7 @@ class TestCreateLinesFromLrc:
         assert lines[0].text == "Actual lyrics here"
 
     def test_title_artist_header_filtered(self):
-        lrc_text = "[00:01.00]My Song\n[00:03.00]The Artist\n[00:10.00]Actual lyrics"
+        lrc_text = "[00:00.50]My Song\n[00:00.80]The Artist\n[00:10.00]Actual lyrics"
         lines = create_lines_from_lrc(
             lrc_text, romanize=False, title="My Song", artist="The Artist"
         )

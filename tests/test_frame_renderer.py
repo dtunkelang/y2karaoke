@@ -14,6 +14,7 @@ from y2karaoke.core.frame_renderer import (
     _draw_line_text,
     _draw_highlight_sweep,
 )
+from y2karaoke.config import INSTRUMENTAL_BREAK_THRESHOLD
 from y2karaoke.core.models import Line, Word
 
 
@@ -124,6 +125,63 @@ class TestGetLinesToDisplay:
         ]
         for param in expected_params:
             assert param in params
+
+    def test_break_keeps_current_line_on_top(self):
+        """After a long break, current line should stay at top of display."""
+        gap = INSTRUMENTAL_BREAK_THRESHOLD + 1.0
+        lines = [
+            Line(words=[Word(text="prev", start_time=1.0, end_time=2.0)]),
+            Line(words=[Word(text="next", start_time=2.0 + gap, end_time=3.0 + gap)]),
+            Line(words=[Word(text="after", start_time=4.0 + gap, end_time=5.0 + gap)]),
+        ]
+
+        current_time = lines[1].start_time + 0.1
+        activation_time = current_time
+        lines_to_show, display_start_idx = _get_lines_to_display(
+            lines, 1, current_time, activation_time
+        )
+
+        assert display_start_idx == 1
+        assert lines_to_show[0][0] == lines[1]
+
+    def test_break_anchors_display_for_following_lines(self):
+        """Lines after a break should keep the break-start line at the top."""
+        gap = INSTRUMENTAL_BREAK_THRESHOLD + 1.0
+        lines = [
+            Line(words=[Word(text="prev", start_time=1.0, end_time=2.0)]),
+            Line(words=[Word(text="first", start_time=2.0 + gap, end_time=3.0 + gap)]),
+            Line(words=[Word(text="second", start_time=4.0 + gap, end_time=5.0 + gap)]),
+        ]
+
+        current_time = lines[2].start_time + 0.1
+        activation_time = current_time
+        lines_to_show, display_start_idx = _get_lines_to_display(
+            lines, 2, current_time, activation_time
+        )
+
+        assert display_start_idx == 1
+        assert lines_to_show[0][0] == lines[1]
+
+    def test_break_window_advances_after_three_lines(self):
+        """Display window advances in blocks after a break, without showing pre-break lines."""
+        gap = INSTRUMENTAL_BREAK_THRESHOLD + 1.0
+        lines = [
+            Line(words=[Word(text="prev", start_time=1.0, end_time=2.0)]),
+            Line(words=[Word(text="l1", start_time=2.0 + gap, end_time=3.0 + gap)]),
+            Line(words=[Word(text="l2", start_time=4.0 + gap, end_time=5.0 + gap)]),
+            Line(words=[Word(text="l3", start_time=6.0 + gap, end_time=7.0 + gap)]),
+            Line(words=[Word(text="l4", start_time=8.0 + gap, end_time=9.0 + gap)]),
+            Line(words=[Word(text="l5", start_time=10.0 + gap, end_time=11.0 + gap)]),
+        ]
+
+        current_time = lines[4].start_time + 0.1
+        activation_time = current_time
+        lines_to_show, display_start_idx = _get_lines_to_display(
+            lines, 4, current_time, activation_time
+        )
+
+        assert display_start_idx == 4
+        assert lines_to_show[0][0] == lines[4]
 
 
 class TestCheckCueIndicator:

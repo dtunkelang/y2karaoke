@@ -143,6 +143,19 @@ def _get_lines_to_display(
 ) -> tuple[list[tuple[Line, bool]], int]:
     """Determine which lines to display and which is current."""
     display_start_idx = (current_line_idx // 3) * 3
+    break_floor_idx = None
+
+    for idx in range(current_line_idx, 0, -1):
+        prev_line = lines[idx - 1]
+        curr_line = lines[idx]
+        gap = curr_line.start_time - prev_line.end_time
+        if gap >= INSTRUMENTAL_BREAK_THRESHOLD:
+            break_floor_idx = idx
+            break
+
+    if break_floor_idx is not None:
+        offset = (current_line_idx - break_floor_idx) // 3
+        display_start_idx = break_floor_idx + offset * 3
 
     next_line_idx = current_line_idx + 1
     if next_line_idx < len(lines):
