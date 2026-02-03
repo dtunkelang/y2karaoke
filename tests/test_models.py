@@ -11,6 +11,8 @@ from y2karaoke.core.models import (
     LyricsQuality,
     TimingAlignmentQuality,
     PipelineQualityReport,
+    SeparationQuality,
+    BreakShorteningQuality,
 )
 
 # ------------------------------
@@ -92,6 +94,15 @@ class TestLine:
     def test_line_validate_empty(self):
         line = Line(words=[])
         with pytest.raises(ValueError, match="at least one word"):
+            line.validate()
+
+    def test_line_validate_word_outside_bounds(self):
+        words = [
+            Word(text="hello", start_time=1.0, end_time=1.2),
+            Word(text="world", start_time=0.5, end_time=1.4),
+        ]
+        line = Line(words=words)
+        with pytest.raises(ValueError, match="outside line bounds"):
             line.validate()
 
     def test_line_with_singer(self):
@@ -192,6 +203,16 @@ class TestStepQuality:
         assert step.cached is False
         assert step.issues == []
         assert step.details == {}
+
+
+class TestQualityPostInit:
+    def test_separation_quality_sets_step_name(self):
+        quality = SeparationQuality(step_name="", quality_score=80)
+        assert quality.step_name == "vocal_separation"
+
+    def test_break_shortening_quality_sets_step_name(self):
+        quality = BreakShorteningQuality(step_name="", quality_score=80)
+        assert quality.step_name == "break_shortening"
 
 
 # ------------------------------
@@ -318,6 +339,22 @@ class TestPipelineQualityReport:
         report = PipelineQualityReport.from_steps([step])
         assert len(report.warnings) > 0
         assert any("degraded" in w.lower() for w in report.warnings)
+
+    def test_summary_includes_warnings_and_recommendations(self):
+        steps = [
+            TrackIdentificationQuality(
+                step_name="track_identification", quality_score=30, status="failed"
+            ),
+            TimingAlignmentQuality(
+                step_name="timing_alignment", quality_score=40, status="degraded"
+            ),
+        ]
+        report = PipelineQualityReport.from_steps(steps)
+
+        summary = report.summary()
+
+        assert "Warnings:" in summary
+        assert "Recommendations:" in summary
 
     def test_from_steps_recommendations_for_low_quality(self):
         steps = [

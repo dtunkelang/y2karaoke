@@ -142,6 +142,17 @@ def test_try_direct_lrc_search_returns_none_when_no_youtube_match(monkeypatch):
     assert identifier._try_direct_lrc_search("query") is None
 
 
+def test_try_direct_lrc_search_returns_none_when_no_lrc(monkeypatch):
+    identifier = TrackIdentifier()
+
+    monkeypatch.setattr(
+        "y2karaoke.core.sync.fetch_lyrics_multi_source",
+        lambda *a, **k: (None, False, ""),
+    )
+
+    assert identifier._try_direct_lrc_search("artist title") is None
+
+
 def test_try_direct_lrc_search_infers_artist_when_missing(monkeypatch):
     identifier = TrackIdentifier()
 

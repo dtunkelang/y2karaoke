@@ -86,3 +86,67 @@ def test_fix_spurious_gaps_skips_large_gap():
 
     assert fixed == lines
     assert fixes == []
+
+
+def test_fix_spurious_gaps_keeps_empty_line():
+    lines = [
+        Line(words=[]),
+        Line(words=[Word(text="hi", start_time=1.0, end_time=1.5)]),
+    ]
+    features = _features(
+        onset_times=[],
+        energy_times=[0.0, 1.0, 2.0],
+        energy_envelope=[1.0, 1.0, 1.0],
+    )
+
+    fixed, fixes = te.fix_spurious_gaps(lines, features)
+
+    assert fixed[0] is lines[0]
+    assert fixed[1] is lines[1]
+    assert fixes == []
+
+
+def test_fix_spurious_gaps_breaks_on_low_mid_activity(monkeypatch):
+    lines = [
+        Line(words=[Word(text="hello", start_time=0.0, end_time=0.5)]),
+        Line(words=[Word(text="world", start_time=1.0, end_time=1.5)]),
+    ]
+    features = _features(
+        onset_times=[],
+        energy_times=[0.0, 0.5, 1.0, 1.5],
+        energy_envelope=[1.0, 1.0, 1.0, 1.0],
+    )
+
+    monkeypatch.setattr(te, "_check_vocal_activity_in_range", lambda *_a, **_k: 0.5)
+
+    fixed, fixes = te.fix_spurious_gaps(lines, features)
+
+    assert fixed == lines
+    assert fixes == []
+
+
+def test_fix_spurious_gaps_merge_uses_next_line_start_and_min_duration(monkeypatch):
+    lines = [
+        Line(words=[Word(text="a", start_time=0.0, end_time=0.4)]),
+        Line(words=[Word(text="b", start_time=0.9, end_time=1.3)]),
+        Line(words=[Word(text="c", start_time=5.0, end_time=5.4)]),
+    ]
+    features = _features(
+        onset_times=[],
+        energy_times=[0.0, 1.0, 2.0, 3.0, 4.0, 5.0],
+        energy_envelope=[1.0, 1.0, 1.0, 1.0, 1.0, 1.0],
+    )
+
+    monkeypatch.setattr(te, "_check_vocal_activity_in_range", lambda *_a, **_k: 0.8)
+    monkeypatch.setattr(te, "_find_phrase_end", lambda *_a, **_k: 0.1)
+
+    fixed, fixes = te.fix_spurious_gaps(lines, features)
+
+    assert len(fixed) == 2
+    assert len(fixes) == 1
+    assert len(fixed[0].words) == 2
+
+
+def test_transcription_segment_defaults_words_to_empty_list():
+    segment = te.TranscriptionSegment(start=0.0, end=1.0, text="hi", words=None)
+    assert segment.words == []

@@ -79,6 +79,22 @@ def test_check_for_silence_in_range_detects_at_end():
     assert te._check_for_silence_in_range(1.5, 4.0, features, 1.0) is True
 
 
+def test_check_for_silence_in_range_short_silence_resets():
+    features = _features(
+        energy_times=[0, 1, 2, 3],
+        energy_envelope=[1.0, 0.0, 1.0, 1.0],
+    )
+    assert te._check_for_silence_in_range(0.0, 3.0, features, 1.5) is False
+
+
+def test_check_for_silence_in_range_end_short_silence_returns_false():
+    features = _features(
+        energy_times=[0, 1, 2, 3],
+        energy_envelope=[1.0, 1.0, 0.0, 0.0],
+    )
+    assert te._check_for_silence_in_range(0.0, 3.0, features, 1.5) is False
+
+
 def test_calculate_pause_score_matches_silence():
     lines = [
         Line(words=[Word(text="a", start_time=0.0, end_time=1.0)]),
@@ -121,6 +137,22 @@ def test_calculate_pause_score_skips_empty_lines():
         energy_times=[0, 1, 2, 3, 4, 5],
         energy_envelope=[1.0] * 6,
         silence_regions=[(1.5, 3.8)],
+        vocal_start=0.0,
+    )
+
+    score = te._calculate_pause_score(lines, features)
+    assert score == 0.0
+
+
+def test_calculate_pause_score_no_gap_match_returns_zero():
+    lines = [
+        Line(words=[Word(text="a", start_time=0.0, end_time=1.0)]),
+        Line(words=[Word(text="b", start_time=3.0, end_time=3.5)]),
+    ]
+    features = _features(
+        energy_times=[0, 1, 2, 3, 4, 5, 6, 7],
+        energy_envelope=[1.0] * 8,
+        silence_regions=[(4.0, 7.0)],
         vocal_start=0.0,
     )
 

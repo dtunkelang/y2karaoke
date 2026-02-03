@@ -38,3 +38,20 @@ def test_select_best_source_applies_duration_bonus(monkeypatch):
     assert lrc_text == "lrcA"
     assert source == "A"
     assert report is report_a
+
+
+def test_select_best_source_returns_none_when_best_source_missing(monkeypatch):
+    report = te.TimingReport(
+        source_name="A",
+        overall_score=80.0,
+        line_alignment_score=80.0,
+        pause_alignment_score=80.0,
+    )
+    monkeypatch.setattr(te, "compare_sources", lambda *a, **k: {"A": report})
+    monkeypatch.setattr(
+        "y2karaoke.core.sync.fetch_from_all_sources", lambda *a, **k: {}
+    )
+
+    result = te.select_best_source("Title", "Artist", "vocals.wav")
+
+    assert result == (None, None, None)

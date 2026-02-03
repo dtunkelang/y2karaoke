@@ -131,6 +131,61 @@ def test_find_vocal_start_handles_single_rms_frame():
     assert start == 0.1
 
 
+def test_find_vocal_start_no_onsets_returns_zero():
+    onset_times = np.array([])
+    rms_times = np.array([0.0, 1.0])
+    rms = np.array([0.2, 0.3])
+    start = _find_vocal_start(
+        onset_times, rms, rms_times, threshold=0.5, min_duration=0.2
+    )
+    assert start == 0.0
+
+
+def test_find_best_onset_for_phrase_end_returns_none_when_not_silent(monkeypatch):
+    features = AudioFeatures(
+        onset_times=np.array([1.0, 2.0]),
+        silence_regions=[],
+        vocal_start=0.0,
+        vocal_end=3.0,
+        duration=3.0,
+        energy_envelope=np.array([1.0, 1.0, 1.0]),
+        energy_times=np.array([0.0, 1.0, 2.0]),
+    )
+    monkeypatch.setattr(te, "_check_vocal_activity_in_range", lambda *_a, **_k: 0.9)
+
+    onset = _find_best_onset_for_phrase_end(
+        onset_times=np.array([1.0, 2.0]),
+        line_start=2.5,
+        prev_line_audio_end=0.0,
+        audio_features=features,
+    )
+
+    assert onset is None
+
+
+def test_find_best_onset_during_silence_requires_silence(monkeypatch):
+    features = AudioFeatures(
+        onset_times=np.array([1.5]),
+        silence_regions=[],
+        vocal_start=0.0,
+        vocal_end=3.0,
+        duration=3.0,
+        energy_envelope=np.array([1.0, 1.0, 1.0]),
+        energy_times=np.array([0.0, 1.0, 2.0]),
+    )
+    monkeypatch.setattr(te, "_check_vocal_activity_in_range", lambda *_a, **_k: 0.9)
+
+    onset = _find_best_onset_during_silence(
+        onset_times=np.array([1.5]),
+        line_start=2.0,
+        prev_line_audio_end=0.0,
+        max_correction=2.0,
+        audio_features=features,
+    )
+
+    assert onset is None
+
+
 def test_find_vocal_end_uses_last_activity():
     rms_times = np.array([0.0, 0.5, 1.0])
     rms = np.array([0.1, 0.6, 0.2])
@@ -375,3 +430,71 @@ def test_find_phrase_end_handles_trailing_silence():
     end = _find_phrase_end(0.0, 3.0, features, min_silence_duration=1.0)
 
     assert end == 1.0
+
+
+def test_find_phrase_end_stops_at_max_end_time():
+    features = AudioFeatures(
+        onset_times=np.array([]),
+        silence_regions=[],
+        vocal_start=0.0,
+        vocal_end=2.0,
+        duration=2.0,
+        energy_envelope=np.array([1.0, 1.0, 1.0]),
+        energy_times=np.array([0.0, 1.0, 2.0]),
+    )
+
+    end = _find_phrase_end(0.0, 0.5, features, min_silence_duration=1.0)
+
+    assert end == 0.5
+
+
+def test_find_phrase_end_ignores_short_silence():
+    features = AudioFeatures(
+        onset_times=np.array([]),
+        silence_regions=[],
+        vocal_start=0.0,
+        vocal_end=3.0,
+        duration=3.0,
+        energy_envelope=np.array([1.0, 0.0, 1.0, 1.0]),
+        energy_times=np.array([0.0, 1.0, 2.0, 3.0]),
+    )
+
+    end = _find_phrase_end(0.0, 3.0, features, min_silence_duration=2.0)
+
+    assert end == 3.0
+
+
+def test_find_phrase_end_trailing_silence_too_short_returns_max():
+    features = AudioFeatures(
+        onset_times=np.array([]),
+        silence_regions=[],
+        vocal_start=0.0,
+        vocal_end=2.0,
+        duration=2.0,
+        energy_envelope=np.array([1.0, 0.0, 0.0]),
+        energy_times=np.array([0.0, 1.0, 2.0]),
+    )
+
+    end = _find_phrase_end(0.0, 2.0, features, min_silence_duration=2.0)
+
+    assert end == 2.0
+
+
+def test_find_best_onset_proximity_applies_early_penalty():
+    features = AudioFeatures(
+        onset_times=np.array([]),
+        silence_regions=[],
+        vocal_start=0.0,
+        vocal_end=6.0,
+        duration=6.0,
+        energy_envelope=np.array([0.0, 0.0, 0.0, 0.0]),
+        energy_times=np.array([0.0, 1.0, 2.0, 3.0]),
+    )
+    onset = _find_best_onset_proximity(
+        onset_times=np.array([2.0, 4.0]),
+        line_start=4.0,
+        max_correction=3.0,
+        audio_features=features,
+    )
+
+    assert onset == 4.0

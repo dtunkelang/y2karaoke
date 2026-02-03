@@ -564,6 +564,42 @@ class TestIdentifyFromSearchMocked:
         assert result.source == "youtube"
         mock_fallback.assert_called_once()
 
+    @patch("y2karaoke.core.track_identifier.TrackIdentifier._try_direct_lrc_search")
+    @patch("y2karaoke.core.track_identifier.TrackIdentifier._query_musicbrainz")
+    @patch("y2karaoke.core.track_identifier.TrackIdentifier._parse_query")
+    @patch("y2karaoke.core.track_identifier.TrackIdentifier._find_best_title_only")
+    @patch("y2karaoke.core.track_identifier.TrackIdentifier._try_split_search")
+    @patch("y2karaoke.core.track_identifier.TrackIdentifier._fallback_youtube_search")
+    def test_fallback_to_youtube_when_no_candidate(
+        self,
+        mock_fallback,
+        mock_try_split,
+        mock_find_title,
+        mock_parse_query,
+        mock_mb_query,
+        mock_direct_lrc,
+    ):
+        """Falls back to YouTube when no suitable candidate is found."""
+        mock_direct_lrc.return_value = None
+        mock_parse_query.return_value = (None, "Some Title")
+        mock_mb_query.return_value = [{"dummy": True}]
+        mock_find_title.return_value = None
+        mock_try_split.return_value = None
+        mock_fallback.return_value = TrackInfo(
+            artist="Unknown",
+            title="Some Song",
+            duration=200,
+            youtube_url="https://youtube.com/watch?v=abc123",
+            youtube_duration=200,
+            source="youtube",
+        )
+
+        identifier = TrackIdentifier()
+        result = identifier.identify_from_search("some obscure song")
+
+        assert result.source == "youtube"
+        mock_fallback.assert_called_once()
+
     @patch("y2karaoke.core.sync.fetch_lyrics_for_duration")
     @patch(
         "y2karaoke.core.track_identifier.TrackIdentifier._search_youtube_by_duration"

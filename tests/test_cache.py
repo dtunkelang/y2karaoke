@@ -1,9 +1,12 @@
 """Test cache management."""
 
 import json
-import pytest
 import os
 from pathlib import Path
+
+import pytest
+
+from y2karaoke.exceptions import CacheError
 from y2karaoke.utils.cache import CacheManager
 
 
@@ -123,6 +126,17 @@ class TestCacheManager:
 
         assert manager.load_metadata("video") is None
 
+    def test_save_metadata_raises_cache_error(self, temp_dir, monkeypatch):
+        manager = CacheManager(temp_dir)
+
+        def raise_error(*_args, **_kwargs):
+            raise OSError("disk full")
+
+        monkeypatch.setattr("builtins.open", raise_error)
+
+        with pytest.raises(CacheError):
+            manager.save_metadata("video", {"title": "x"})
+
     def test_get_cache_size_counts_files(self, temp_dir):
         """Get cache size sums file sizes."""
         manager = CacheManager(temp_dir)
@@ -148,6 +162,61 @@ class TestCacheManager:
         assert not stale_file.exists()
         assert not cache_dir.exists()
 
+    def test_cleanup_old_files_handles_unlink_error(self, temp_dir, monkeypatch):
+        manager = CacheManager(temp_dir)
+        cache_dir = manager.get_video_cache_dir("video")
+        stale_file = cache_dir / "old.txt"
+        stale_file.write_text("old")
+        os.utime(stale_file, (0, 0))
+
+        original_unlink = Path.unlink
+
+        def fake_unlink(self, *args, **kwargs):
+            if self == stale_file:
+                raise OSError("fail")
+            return original_unlink(self, *args, **kwargs)
+
+        monkeypatch.setattr(Path, "unlink", fake_unlink)
+
+        manager.cleanup_old_files(max_age_days=1)
+
+        assert stale_file.exists()
+
+    def test_cleanup_old_files_handles_rmdir_error(self, temp_dir, monkeypatch):
+        manager = CacheManager(temp_dir)
+        cache_dir = manager.get_video_cache_dir("video")
+        empty_dir = cache_dir / "empty"
+        empty_dir.mkdir(parents=True)
+
+        original_rmdir = Path.rmdir
+
+        def fake_rmdir(self, *args, **kwargs):
+            if self == empty_dir:
+                raise OSError("fail")
+            return original_rmdir(self, *args, **kwargs)
+
+        monkeypatch.setattr(Path, "rmdir", fake_rmdir)
+
+        manager.cleanup_old_files(max_age_days=1)
+
+        assert empty_dir.exists()
+
+    def test_clear_video_cache_noop_when_missing(self, temp_dir, monkeypatch):
+        manager = CacheManager(temp_dir)
+        missing = temp_dir / "missing"
+
+        monkeypatch.setattr(manager, "get_video_cache_dir", lambda _vid: missing)
+
+        manager.clear_video_cache("missing")
+        assert not missing.exists()
+
+    def test_auto_cleanup_noop_when_below_threshold(self, temp_dir, monkeypatch):
+        manager = CacheManager(temp_dir)
+
+        monkeypatch.setattr(manager, "get_cache_size", lambda: 0.0)
+
+        manager.auto_cleanup()
+
     def test_auto_cleanup_runs_two_passes_when_still_large(self, temp_dir, monkeypatch):
         """Auto cleanup performs multiple passes if needed."""
         manager = CacheManager(temp_dir)
@@ -170,3 +239,11 @@ class TestCacheManager:
         manager.auto_cleanup()
 
         assert calls == [7, 1]
+
+    def test_get_cache_stats_skips_non_dir_entries(self, temp_dir):
+        manager = CacheManager(temp_dir)
+        (temp_dir / "loose.txt").write_text("x")
+
+        stats = manager.get_cache_stats()
+
+        assert stats["video_count"] == 0

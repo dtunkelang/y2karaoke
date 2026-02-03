@@ -1,7 +1,13 @@
+import sys
+import types
+
+import numpy as np
+
 from y2karaoke.core.break_shortener import (
     BreakEdit,
     InstrumentalBreak,
     adjust_lyrics_timing,
+    find_beat_near,
     shorten_instrumental_breaks,
 )
 from y2karaoke.core.models import Line, Word
@@ -150,3 +156,39 @@ def test_adjust_lyrics_timing_respects_cut_start_override():
     adjusted = adjust_lyrics_timing(lines, edits, keep_start=5.0)
     assert adjusted[0].words[0].start_time == 10.0
     assert adjusted[1].words[0].start_time == 9.0
+
+
+def _fake_librosa(beat_frames, beat_times):
+    fake = types.SimpleNamespace()
+
+    def load(_path, sr, offset, duration):
+        return np.zeros(int(sr * duration)), sr
+
+    def beat_track(y, sr):
+        return 120.0, beat_frames
+
+    fake.load = load
+    fake.frames_to_time = lambda _frames, sr: beat_times
+    fake.beat = types.SimpleNamespace(beat_track=beat_track)
+    return fake
+
+
+def test_find_beat_near_returns_target_when_no_beats(monkeypatch):
+    fake_librosa = _fake_librosa(
+        beat_frames=np.array([]),
+        beat_times=np.array([]),
+    )
+    monkeypatch.setitem(sys.modules, "librosa", fake_librosa)
+
+    target = 12.3
+    assert find_beat_near("instrumental.wav", target) == target
+
+
+def test_find_beat_near_returns_nearest_beat(monkeypatch):
+    fake_librosa = _fake_librosa(
+        beat_frames=np.array([0, 1, 2]),
+        beat_times=np.array([0.2, 1.2, 2.2]),
+    )
+    monkeypatch.setitem(sys.modules, "librosa", fake_librosa)
+
+    assert find_beat_near("instrumental.wav", 5.0) == 5.2
