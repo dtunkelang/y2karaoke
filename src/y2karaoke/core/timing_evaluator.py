@@ -429,6 +429,33 @@ def _check_pause_alignment(
     """
     issues = []
 
+    for i, line in enumerate(lines):
+        if not line.words:
+            continue
+        line_start = line.start_time
+        line_end = line.end_time
+
+        # Flag lines that span a significant silence region
+        for silence_start, silence_end in audio_features.silence_regions:
+            silence_duration = silence_end - silence_start
+            if silence_duration < 1.0:
+                continue
+            if silence_start > line_start + 0.5 and silence_end < line_end - 0.5:
+                issues.append(
+                    TimingIssue(
+                        issue_type="line_spans_silence",
+                        line_index=i,
+                        lyrics_time=line_start,
+                        audio_time=silence_start,
+                        delta=silence_duration,
+                        severity="severe",
+                        description=(
+                            f"Line {i+1} spans {silence_duration:.1f}s silence "
+                            f"({silence_start:.1f}-{silence_end:.1f}s) - likely timing drift"
+                        ),
+                    )
+                )
+
     for i in range(len(lines) - 1):
         if not lines[i].words or not lines[i + 1].words:
             continue
@@ -446,6 +473,26 @@ def _check_pause_alignment(
             )
 
             if vocal_activity > 0.5:  # More than 50% of gap has vocal activity
+                # If the gap is large but vocals are continuous, it's likely a split phrase
+                if gap_duration > 1.0:
+                    has_silence = _check_for_silence_in_range(
+                        line_end, next_start, audio_features, min_silence_duration=0.5
+                    )
+                    if not has_silence:
+                        issues.append(
+                            TimingIssue(
+                                issue_type="split_phrase",
+                                line_index=i,
+                                lyrics_time=line_end,
+                                audio_time=None,
+                                delta=gap_duration,
+                                severity="severe",
+                                description=(
+                                    f"Gap of {gap_duration:.1f}s between lines {i+1} and {i+2} "
+                                    "has continuous vocals with no silence - likely a split phrase"
+                                ),
+                            )
+                        )
                 # This is a spurious gap - lyrics say pause but audio shows singing
                 severity = (
                     "severe"
@@ -964,6 +1011,33 @@ def correct_line_timestamps(
     onset_times = audio_features.onset_times
     prev_line_audio_end = 0.0
 
+    # Global shift if lyrics start well before detected vocals
+    first_line = next((line for line in lines if line.words), None)
+    if first_line is not None:
+        first_start = first_line.start_time
+        vocal_start = audio_features.vocal_start
+        if vocal_start > 0 and first_start < vocal_start - 0.5:
+            global_offset = vocal_start - first_start
+            shifted_lines: List[Line] = []
+            for line in lines:
+                if not line.words:
+                    shifted_lines.append(line)
+                    continue
+                new_words = [
+                    Word(
+                        text=word.text,
+                        start_time=word.start_time + global_offset,
+                        end_time=word.end_time + global_offset,
+                        singer=word.singer,
+                    )
+                    for word in line.words
+                ]
+                shifted_lines.append(Line(words=new_words, singer=line.singer))
+            lines = shifted_lines
+            corrections.append(
+                f"Global shift {global_offset:+.1f}s to align with vocal start"
+            )
+
     for i, line in enumerate(lines):
         if not line.words:
             corrected_lines.append(line)
@@ -1166,9 +1240,19 @@ def fix_spurious_gaps(
             gap_end = next_start
             gap_duration = gap_end - gap_start
 
-            # Don't even consider merging if the gap is more than 2 seconds
-            # That's a real pause in almost any song
+            # If the gap is long, only merge when there's strong evidence
+            # of continuous vocals and no meaningful silence.
             if gap_duration > 2.0:
+                mid_activity = _check_vocal_activity_in_range(
+                    gap_start, gap_end, audio_features
+                )
+                has_silence = _check_for_silence_in_range(
+                    gap_start, gap_end, audio_features, min_silence_duration=0.5
+                )
+                if mid_activity > 0.6 and not has_silence:
+                    lines_to_merge.append(next_line)
+                    j += 1
+                    continue
                 break
 
             # Check if there's actual singing THROUGH the gap

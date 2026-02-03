@@ -166,6 +166,40 @@ def test_check_pause_alignment_spurious_gap_detected():
     assert any(issue.severity == "severe" for issue in issues)
 
 
+def test_check_pause_alignment_split_phrase_detected():
+    lines = [_line("a", 0.0, 1.0), _line("b", 4.0, 5.0)]
+    features = AudioFeatures(
+        onset_times=np.array([]),
+        silence_regions=[],
+        vocal_start=0.0,
+        vocal_end=6.0,
+        duration=6.0,
+        energy_envelope=np.ones(13),
+        energy_times=np.linspace(0.0, 6.0, 13),
+    )
+
+    issues = _check_pause_alignment(lines, features)
+
+    assert any(issue.issue_type == "split_phrase" for issue in issues)
+
+
+def test_check_pause_alignment_line_spans_silence_detected():
+    lines = [_line("a", 0.0, 5.0)]
+    features = AudioFeatures(
+        onset_times=np.array([]),
+        silence_regions=[(2.0, 3.5)],
+        vocal_start=0.0,
+        vocal_end=6.0,
+        duration=6.0,
+        energy_envelope=np.ones(13),
+        energy_times=np.linspace(0.0, 6.0, 13),
+    )
+
+    issues = _check_pause_alignment(lines, features)
+
+    assert any(issue.issue_type == "line_spans_silence" for issue in issues)
+
+
 def test_check_pause_alignment_unexpected_pause_detected():
     lines = [_line("a", 0.0, 1.0)]
     features = AudioFeatures(
@@ -215,6 +249,27 @@ def test_calculate_pause_score_no_gap_for_silence():
     score = _calculate_pause_score(lines, features)
 
     assert score == 0.0
+
+
+def test_fix_spurious_gaps_merges_large_gap_with_activity(monkeypatch):
+    features = AudioFeatures(
+        onset_times=np.array([]),
+        silence_regions=[],
+        vocal_start=0.0,
+        vocal_end=10.0,
+        duration=10.0,
+        energy_envelope=np.ones(11),
+        energy_times=np.linspace(0.0, 10.0, 11),
+    )
+    lines = [
+        Line(words=[Word(text="a", start_time=0.0, end_time=1.0)]),
+        Line(words=[Word(text="b", start_time=6.0, end_time=7.0)]),
+    ]
+
+    merged, fixes = te.fix_spurious_gaps(lines, features)
+
+    assert len(merged) == 1
+    assert fixes
 
 
 def test_find_best_onset_for_phrase_end_returns_none_when_not_silent(monkeypatch):
@@ -636,3 +691,25 @@ def test_correct_line_timestamps_uses_proximity_when_silence_before(monkeypatch)
 
     assert corrected[0].words[0].start_time == 1.5
     assert corrections
+
+
+def test_correct_line_timestamps_applies_global_shift():
+    features = AudioFeatures(
+        onset_times=np.array([]),
+        silence_regions=[],
+        vocal_start=9.0,
+        vocal_end=20.0,
+        duration=20.0,
+        energy_envelope=np.array([1.0]),
+        energy_times=np.array([0.0]),
+    )
+    lines = [
+        Line(words=[Word(text="first", start_time=0.0, end_time=1.0)]),
+        Line(words=[Word(text="second", start_time=5.0, end_time=6.0)]),
+    ]
+
+    corrected, corrections = correct_line_timestamps(lines, features)
+
+    assert corrected[0].words[0].start_time == pytest.approx(9.0)
+    assert corrected[1].words[0].start_time == pytest.approx(14.0)
+    assert any("Global shift" in note for note in corrections)
