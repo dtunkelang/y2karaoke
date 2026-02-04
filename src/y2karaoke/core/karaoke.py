@@ -69,8 +69,9 @@ class KaraokeGenerator:
         whisper_map_lrc_dtw: bool = False,
         lyrics_file: Optional[Path] = None,
         whisper_language: Optional[str] = None,
-        whisper_model: str = "base",
+        whisper_model: Optional[str] = None,
         whisper_force_dtw: bool = False,
+        whisper_aggressive: bool = False,
         outro_line: Optional[str] = None,
         offline: bool = False,
         filter_promos: bool = True,
@@ -119,6 +120,7 @@ class KaraokeGenerator:
             whisper_language=whisper_language,
             whisper_model=whisper_model,
             whisper_force_dtw=whisper_force_dtw,
+            whisper_aggressive=whisper_aggressive,
             offline=offline,
             filter_promos=filter_promos,
         )
@@ -276,6 +278,7 @@ class KaraokeGenerator:
                 cache_dir = self.cache_manager.get_video_cache_dir(video_id)
                 whisper_files = list(cache_dir.glob("*_whisper_*.json"))
                 if whisper_files:
+                    whisper_files.sort(key=lambda p: p.stat().st_mtime, reverse=True)
                     whisper_data = json.loads(
                         whisper_files[0].read_text(encoding="utf-8")
                     )
@@ -288,6 +291,58 @@ class KaraokeGenerator:
                         }
                         for seg in segments[:50]
                     ]
+                    all_words = []
+                    for seg in segments:
+                        for w in seg.get("words", []) or []:
+                            if w.get("start") is None:
+                                continue
+                            all_words.append(w)
+                    all_words.sort(key=lambda w: w.get("start", 0.0))
+                    report["whisper_word_count"] = len(all_words)
+                    report["whisper_window_low_conf_threshold"] = 0.5
+                    for idx, line in enumerate(report["lines"]):
+                        next_start = (
+                            report["lines"][idx + 1]["start"]
+                            if idx + 1 < len(report["lines"])
+                            else line["end"] + 2.0
+                        )
+                        window_start = line["start"] - 1.0
+                        window_words = [
+                            w
+                            for w in all_words
+                            if window_start <= w.get("start", 0.0) < next_start
+                        ]
+                        probs = [
+                            w.get("probability")
+                            for w in window_words
+                            if w.get("probability") is not None
+                        ]
+                        low_conf = sum(
+                            1
+                            for w in window_words
+                            if w.get("probability") is not None
+                            and w.get("probability") < 0.5
+                        )
+                        line["whisper_window_start"] = round(window_start, 2)
+                        line["whisper_window_end"] = round(next_start, 2)
+                        line["whisper_window_word_count"] = len(window_words)
+                        line["whisper_window_low_conf_count"] = low_conf
+                        line["whisper_window_avg_prob"] = (
+                            round(sum(probs) / len(probs), 3) if probs else None
+                        )
+                        line["whisper_window_words"] = [
+                            {
+                                "text": w.get("text", ""),
+                                "start": round(w.get("start", 0.0), 2),
+                                "end": round(w.get("end", 0.0), 2),
+                                "probability": (
+                                    round(w.get("probability", 0.0), 3)
+                                    if w.get("probability") is not None
+                                    else None
+                                ),
+                            }
+                            for w in window_words
+                        ]
                     for line in report["lines"]:
                         nearest_start = None
                         nearest_end = None
@@ -645,8 +700,9 @@ class KaraokeGenerator:
         whisper_map_lrc_dtw: bool = False,
         lyrics_file: Optional[Path] = None,
         whisper_language: Optional[str] = None,
-        whisper_model: str = "base",
+        whisper_model: Optional[str] = None,
         whisper_force_dtw: bool = False,
+        whisper_aggressive: bool = False,
         offline: bool = False,
         filter_promos: bool = True,
     ) -> Dict[str, Any]:
@@ -670,6 +726,7 @@ class KaraokeGenerator:
             whisper_language=whisper_language,
             whisper_model=whisper_model,
             whisper_force_dtw=whisper_force_dtw,
+            whisper_aggressive=whisper_aggressive,
             offline=offline,
         )
         return {"lines": lines, "metadata": metadata, "quality": quality_report}

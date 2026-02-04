@@ -1434,7 +1434,10 @@ class TranscriptionSegment:
 
 
 def _get_whisper_cache_path(
-    vocals_path: str, model_size: str, language: Optional[str]
+    vocals_path: str,
+    model_size: str,
+    language: Optional[str],
+    aggressive: bool = False,
 ) -> Optional[str]:
     """Get the cache file path for Whisper transcription results.
 
@@ -1449,7 +1452,8 @@ def _get_whisper_cache_path(
 
     # Create cache filename with model and language info
     lang_suffix = f"_{language}" if language else "_auto"
-    cache_name = f"{vocals_file.stem}_whisper_{model_size}{lang_suffix}.json"
+    mode_suffix = "_aggr" if aggressive else ""
+    cache_name = f"{vocals_file.stem}_whisper_{model_size}{lang_suffix}{mode_suffix}.json"
     return str(vocals_file.parent / cache_name)
 
 
@@ -1546,6 +1550,7 @@ def transcribe_vocals(
     vocals_path: str,
     language: Optional[str] = None,
     model_size: str = "base",
+    aggressive: bool = False,
 ) -> Tuple[List[TranscriptionSegment], List[TranscriptionWord], str]:
     """Transcribe vocals using Whisper.
 
@@ -1561,7 +1566,9 @@ def transcribe_vocals(
         Tuple of (list of TranscriptionSegment, list of all TranscriptionWord, detected language code)
     """
     # Check cache first
-    cache_path = _get_whisper_cache_path(vocals_path, model_size, language)
+    cache_path = _get_whisper_cache_path(
+        vocals_path, model_size, language, aggressive
+    )
     if cache_path:
         cached = _load_whisper_cache(cache_path)
         if cached:
@@ -1578,12 +1585,20 @@ def transcribe_vocals(
         model = WhisperModel(model_size, device="cpu", compute_type="int8")
 
         logger.info(f"Transcribing vocals{f' in {language}' if language else ''}...")
-        segments, info = model.transcribe(
-            vocals_path,
-            language=language,
-            word_timestamps=True,
-            vad_filter=True,  # Filter out non-speech
-        )
+        transcribe_kwargs: Dict[str, object] = {
+            "language": language,
+            "word_timestamps": True,
+            "vad_filter": True,
+        }
+        if aggressive:
+            transcribe_kwargs.update(
+                {
+                    "vad_filter": False,
+                    "no_speech_threshold": 1.0,
+                    "log_prob_threshold": -2.0,
+                }
+            )
+        segments, info = model.transcribe(vocals_path, **transcribe_kwargs)
 
         # Convert to list of TranscriptionSegment with words
         result = []
@@ -2542,6 +2557,7 @@ def align_lrc_text_to_whisper_timings(  # noqa: C901
     vocals_path: str,
     language: Optional[str] = None,
     model_size: str = "base",
+    aggressive: bool = False,
     min_similarity: float = 0.15,
 ) -> Tuple[List[Line], List[str], Dict[str, float]]:
     """Align LRC text to Whisper timings using phonetic DTW (timings fixed).
@@ -2550,7 +2566,7 @@ def align_lrc_text_to_whisper_timings(  # noqa: C901
     the Whisper timing. The alignment is purely phonetic and monotonic.
     """
     transcription, all_words, detected_lang = transcribe_vocals(
-        vocals_path, language, model_size
+        vocals_path, language, model_size, aggressive
     )
 
     if not transcription or not all_words:
@@ -2907,6 +2923,7 @@ def correct_timing_with_whisper(  # noqa: C901
     vocals_path: str,
     language: Optional[str] = None,
     model_size: str = "base",
+    aggressive: bool = False,
     trust_lrc_threshold: float = 1.0,
     correct_lrc_threshold: float = 1.5,
     force_dtw: bool = False,
@@ -2933,7 +2950,7 @@ def correct_timing_with_whisper(  # noqa: C901
     """
     # Transcribe vocals (returns segments, all_words, and language)
     transcription, all_words, detected_lang = transcribe_vocals(
-        vocals_path, language, model_size
+        vocals_path, language, model_size, aggressive
     )
 
     if not transcription:

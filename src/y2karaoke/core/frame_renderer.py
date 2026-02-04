@@ -14,7 +14,6 @@ from ..config import (
     OUTRO_DELAY,
     INSTRUMENTAL_BREAK_THRESHOLD,
     LYRICS_LEAD_TIME,
-    HIGHLIGHT_LEAD_TIME,
     LYRICS_ACTIVATION_LEAD,
     CUE_INDICATOR_DURATION,
     CUE_INDICATOR_MIN_GAP,
@@ -419,9 +418,16 @@ def render_frame(  # noqa: C901
             draw, line, y, line_x, words_with_spaces, word_widths, font, is_duet
         )
 
-        if is_current:
-            highlight_time = activation_time + HIGHLIGHT_LEAD_TIME
-            line_duration = line.end_time - line.start_time
+        line_duration = line.end_time - line.start_time
+        highlight_ready = current_time >= line.start_time
+        if line_duration <= 0:
+            highlight_ready = current_time + LYRICS_ACTIVATION_LEAD >= line.start_time
+        if line.words and highlight_ready:
+            highlight_time = current_time
+            if highlight_time >= line.end_time:
+                highlight_time = line.end_time
+            if line_duration <= 0:
+                highlight_time = line.end_time
             if line.words and all(
                 w.start_time is not None and w.end_time is not None for w in line.words
             ):

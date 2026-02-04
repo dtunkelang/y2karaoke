@@ -279,13 +279,18 @@ def cli(ctx, verbose, log_file):
 @click.option(
     "--whisper-model",
     type=click.Choice(["tiny", "base", "small", "medium", "large"]),
-    default="base",
-    help="Whisper model size (default: base)",
+    default=None,
+    help="Whisper model size (default: base, or small for --whisper-map-lrc)",
 )
 @click.option(
     "--whisper-force-dtw",
     is_flag=True,
     help="Force DTW-based Whisper alignment even if LRC quality seems acceptable",
+)
+@click.option(
+    "--whisper-aggressive",
+    is_flag=True,
+    help="Use more aggressive Whisper settings to reduce dropped words",
 )
 @click.option(
     "--outro-line",
@@ -342,6 +347,7 @@ def generate(
     whisper_language,
     whisper_model,
     whisper_force_dtw,
+    whisper_aggressive,
     filter_promos,
     outro_line,
     shorten_breaks,
@@ -423,6 +429,7 @@ def generate(
             whisper_language=whisper_language,
             whisper_model=whisper_model,
             whisper_force_dtw=whisper_force_dtw,
+            whisper_aggressive=whisper_aggressive,
             outro_line=outro_line,
             offline=offline,
             filter_promos=filter_promos,
