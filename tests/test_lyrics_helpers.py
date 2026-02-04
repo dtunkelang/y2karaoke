@@ -158,3 +158,46 @@ def test_map_lrc_lines_uses_whisper_pause_for_word_slots():
     assert gap_1 > gap_2 * 1.5
     assert gap_1 > gap_3 * 1.5
     assert adjusted_line.end_time <= 9.0
+
+
+def test_map_lrc_lines_falls_back_to_window_words_on_large_offset():
+    line = Line(
+        words=[
+            Word(text="Yesterday", start_time=0.0, end_time=0.5),
+            Word(text="all", start_time=0.5, end_time=1.0),
+        ]
+    )
+    # Segment with matching text but far away in time.
+    seg_early = TranscriptionSegment(
+        start=0.0,
+        end=1.0,
+        text="Yesterday all",
+        words=[
+            TranscriptionWord(start=0.1, end=0.2, text="Yesterday"),
+            TranscriptionWord(start=0.3, end=0.4, text="all"),
+        ],
+    )
+    # Later segment provides window words aligned to LRC timing.
+    seg_window = TranscriptionSegment(
+        start=10.0,
+        end=11.5,
+        text="Yesterday all",
+        words=[
+            TranscriptionWord(start=10.0, end=10.3, text="Yesterday"),
+            TranscriptionWord(start=11.0, end=11.2, text="all"),
+        ],
+    )
+
+    adjusted, fixes, issues = lyrics._map_lrc_lines_to_whisper_segments(
+        [line],
+        [seg_early, seg_window],
+        language="eng-Latn",
+        lrc_line_starts=[10.0, 12.0],
+    )
+
+    assert fixes == 1
+    assert any("window-only mapping" in issue for issue in issues)
+    adjusted_line = adjusted[0]
+    assert adjusted_line.words[0].start_time == pytest.approx(10.0, abs=0.05)
+    gap = adjusted_line.words[1].start_time - adjusted_line.words[0].start_time
+    assert gap > 0.5

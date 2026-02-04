@@ -851,7 +851,9 @@ def _apply_lrc_weighted_timing(
             and last_start is not None
             and last_start > first_start
         ):
-            direct_offsets = [t_word.start - first_start for t_word in window_words]  # type: ignore[operator]
+            offsets = [t_word.start - first_start for t_word in window_words]  # type: ignore[operator]
+            if all(b > a for a, b in zip(offsets, offsets[1:])):
+                direct_offsets = offsets
 
     if direct_offsets and next_lrc_start is not None:
         line_duration = max(next_lrc_start - desired_start, 0.5)
@@ -1042,7 +1044,41 @@ def _map_lrc_lines_to_whisper_segments(  # noqa: C901
                 > max_time_offset
             )
         ):
-            new_words = list(line.words)
+            new_words: List[Word]
+            window_fallback = False
+            if desired_start is not None and next_lrc_start is not None and all_words:
+                window_words = _select_window_words_for_line(
+                    all_words,
+                    line,
+                    desired_start,
+                    next_lrc_start,
+                    language,
+                    _phonetic_similarity,
+                )
+                if window_words:
+                    window_text = " ".join(w.text for w in window_words)
+                    window_sim = _phonetic_similarity(line.text, window_text, language)
+                    if window_sim >= min_similarity_fallback:
+                        new_words = _apply_lrc_weighted_timing(
+                            line,
+                            desired_start,
+                            next_lrc_start,
+                            lrc_line_starts,
+                            line_idx,
+                            all_words,
+                            None,
+                            language,
+                            _phonetic_similarity,
+                        )
+                        window_fallback = True
+                        issues.append(
+                            f"Used window-only mapping for line '{line.text[:30]}...' "
+                            f"(segment offset {sorted_segments[best_idx].start - desired_start:+.2f}s)"
+                            if best_idx is not None and desired_start is not None
+                            else f"Used window-only mapping for line '{line.text[:30]}...'"
+                        )
+            if not window_fallback:
+                new_words = list(line.words)
             if desired_start is not None and new_words:
                 shift = desired_start - new_words[0].start_time
                 new_words = _shift_words(new_words, shift)
@@ -1053,24 +1089,27 @@ def _map_lrc_lines_to_whisper_segments(  # noqa: C901
             if new_words:
                 adjusted.append(Line(words=new_words, singer=line.singer))
                 last_end = new_words[-1].end_time
+                if window_fallback:
+                    fixes += 1
             else:
                 adjusted.append(line)
                 last_end = line.end_time
-            if best_sim < min_similarity_fallback and best_idx is not None:
-                issues.append(
-                    f"Skipped Whisper mapping for line '{line.text[:30]}...' "
-                    f"(sim={best_sim:.2f})"
-                )
-            if (
-                desired_start is not None
-                and best_idx is not None
-                and abs(sorted_segments[best_idx].start - desired_start)
-                > max_time_offset
-            ):
-                issues.append(
-                    f"Skipped Whisper mapping for line '{line.text[:30]}...' "
-                    f"(segment offset {sorted_segments[best_idx].start - desired_start:+.2f}s)"
-                )
+            if not window_fallback:
+                if best_sim < min_similarity_fallback and best_idx is not None:
+                    issues.append(
+                        f"Skipped Whisper mapping for line '{line.text[:30]}...' "
+                        f"(sim={best_sim:.2f})"
+                    )
+                if (
+                    desired_start is not None
+                    and best_idx is not None
+                    and abs(sorted_segments[best_idx].start - desired_start)
+                    > max_time_offset
+                ):
+                    issues.append(
+                        f"Skipped Whisper mapping for line '{line.text[:30]}...' "
+                        f"(segment offset {sorted_segments[best_idx].start - desired_start:+.2f}s)"
+                    )
             prev_text = text_norm
             continue
 
