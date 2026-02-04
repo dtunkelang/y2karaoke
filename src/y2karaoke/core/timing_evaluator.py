@@ -1646,6 +1646,97 @@ def _normalize_text_for_matching(text: str) -> str:
     return text
 
 
+def _normalize_text_for_phonetic(text: str, language: str) -> str:
+    """Normalize text for phonetic matching with light English heuristics."""
+    base = _normalize_text_for_matching(text)
+    if not base:
+        return base
+
+    if not language.startswith("eng") and not language.startswith("en"):
+        return base
+
+    tokens = base.split()
+    if not tokens:
+        return base
+
+    contractions = {
+        "im": ["i", "am"],
+        "ive": ["i", "have"],
+        "ill": ["i", "will"],
+        "id": ["i", "would"],
+        "youre": ["you", "are"],
+        "youve": ["you", "have"],
+        "youll": ["you", "will"],
+        "youd": ["you", "would"],
+        "theyre": ["they", "are"],
+        "theyve": ["they", "have"],
+        "theyll": ["they", "will"],
+        "theyd": ["they", "would"],
+        "were": ["we", "are"],
+        "weve": ["we", "have"],
+        "well": ["we", "will"],
+        "wed": ["we", "would"],
+        "cant": ["can", "not"],
+        "wont": ["will", "not"],
+        "dont": ["do", "not"],
+        "didnt": ["did", "not"],
+        "doesnt": ["does", "not"],
+        "isnt": ["is", "not"],
+        "arent": ["are", "not"],
+        "wasnt": ["was", "not"],
+        "werent": ["were", "not"],
+        "shouldnt": ["should", "not"],
+        "couldnt": ["could", "not"],
+        "wouldnt": ["would", "not"],
+        "theres": ["there", "is"],
+        "thats": ["that", "is"],
+        "whats": ["what", "is"],
+        "lets": ["let", "us"],
+    }
+
+    homophones = {
+        "youre": "your",
+        "your": "your",
+        "theyre": "their",
+        "their": "their",
+        "there": "their",
+        "to": "to",
+        "too": "to",
+        "two": "to",
+        "for": "for",
+        "four": "for",
+        "its": "its",
+    }
+
+    filler_map = {
+        "mmm": "mm",
+        "mm": "mm",
+        "mhm": "mm",
+        "hmm": "mm",
+        "uh": "uh",
+        "uhh": "uh",
+        "um": "um",
+        "umm": "um",
+    }
+
+    expanded: List[str] = []
+    for token in tokens:
+        if token in contractions:
+            expanded.extend(contractions[token])
+            continue
+        token = homophones.get(token, token)
+        token = filler_map.get(token, token)
+        expanded.append(token)
+
+    return " ".join(expanded)
+
+
+def _consonant_skeleton(text: str) -> str:
+    """Create a consonant skeleton for quick approximate matching."""
+    vowels = set("aeiouy")
+    return "".join(ch for ch in text if ch not in vowels)
+
+
 # Cache for epitran instances (they're expensive to create)
 _epitran_cache: Dict[str, Any] = {}
 _panphon_distance = None
@@ -1697,14 +1788,14 @@ def _get_panphon_ft():
 
 def _get_ipa(text: str, language: str = "fra-Latn") -> Optional[str]:
     """Get IPA transliteration with caching."""
-    cache_key = f"{language}:{text}"
+    norm = _normalize_text_for_phonetic(text, language)
+    cache_key = f"{language}:{norm}"
     epi = _get_epitran(language)
     if epi is None:
         return None
     if cache_key in _ipa_cache:
         return _ipa_cache[cache_key]
 
-    norm = _normalize_text_for_matching(text)
     ipa = epi.transliterate(norm)
     _ipa_cache[cache_key] = ipa
     return ipa
@@ -1745,7 +1836,7 @@ def _phonetic_similarity(text1: str, text2: str, language: str = "fra-Latn") -> 
     dst = _get_panphon_distance()
 
     if dst is None:
-        return _text_similarity_basic(text1, text2)
+        return _text_similarity_basic(text1, text2, language)
 
     try:
         # Get cached IPA transliterations
@@ -1753,14 +1844,14 @@ def _phonetic_similarity(text1: str, text2: str, language: str = "fra-Latn") -> 
         ipa2 = _get_ipa(text2, language)
 
         if not ipa1 or not ipa2:
-            return _text_similarity_basic(text1, text2)
+            return _text_similarity_basic(text1, text2, language)
 
         # Get cached IPA segments
         segs1 = _get_ipa_segs(ipa1)
         segs2 = _get_ipa_segs(ipa2)
 
         if not segs1 or not segs2:
-            return _text_similarity_basic(text1, text2)
+            return _text_similarity_basic(text1, text2, language)
 
         # Calculate feature edit distance (weighted Levenshtein)
         fed = dst.feature_edit_distance(ipa1, ipa2)
@@ -1775,19 +1866,44 @@ def _phonetic_similarity(text1: str, text2: str, language: str = "fra-Latn") -> 
         normalized_distance = fed / max_segs
         similarity = max(0.0, 1.0 - normalized_distance)
 
-        return similarity
+        norm1 = _normalize_text_for_phonetic(text1, language)
+        norm2 = _normalize_text_for_phonetic(text2, language)
+        if norm1 and norm2 and norm1 == norm2:
+            return max(similarity, 0.98)
+        basic_sim = _text_similarity_basic(text1, text2, language)
+        blended = max(similarity, basic_sim * 0.9)
+        if (
+            (language.startswith("eng") or language.startswith("en"))
+            and " " not in norm1
+            and " " not in norm2
+        ):
+            sk1 = _consonant_skeleton(norm1)
+            sk2 = _consonant_skeleton(norm2)
+            if sk1 and sk2:
+                from difflib import SequenceMatcher
+
+                sk_sim = SequenceMatcher(None, sk1, sk2).ratio()
+                blended = max(blended, sk_sim * 0.95)
+
+        return blended
 
     except Exception as e:
         logger.debug(f"Phonetic similarity failed: {e}")
-        return _text_similarity_basic(text1, text2)
+        return _text_similarity_basic(text1, text2, language)
 
 
-def _text_similarity_basic(text1: str, text2: str) -> float:
+def _text_similarity_basic(
+    text1: str, text2: str, language: Optional[str] = None
+) -> float:
     """Basic text similarity using SequenceMatcher."""
     from difflib import SequenceMatcher
 
-    norm1 = _normalize_text_for_matching(text1)
-    norm2 = _normalize_text_for_matching(text2)
+    if language:
+        norm1 = _normalize_text_for_phonetic(text1, language)
+        norm2 = _normalize_text_for_phonetic(text2, language)
+    else:
+        norm1 = _normalize_text_for_matching(text1)
+        norm2 = _normalize_text_for_matching(text2)
 
     if not norm1 or not norm2:
         return 0.0
@@ -1976,7 +2092,7 @@ def _find_best_whisper_match(
                 break
             continue
 
-        basic_sim = _text_similarity_basic(lrc_text, ww.text)
+        basic_sim = _text_similarity_basic(lrc_text, ww.text, language)
         if basic_sim < 0.25:
             continue
 

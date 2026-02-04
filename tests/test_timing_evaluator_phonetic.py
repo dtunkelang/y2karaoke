@@ -33,7 +33,7 @@ def test_get_ipa_returns_none_without_epitran(monkeypatch):
 
 def test_phonetic_similarity_falls_back(monkeypatch):
     monkeypatch.setattr(te, "_get_panphon_distance", lambda: None)
-    monkeypatch.setattr(te, "_text_similarity_basic", lambda a, b: 0.42)
+    monkeypatch.setattr(te, "_text_similarity_basic", lambda *args, **kwargs: 0.42)
     assert te._phonetic_similarity("a", "b") == 0.42
 
 
@@ -61,7 +61,7 @@ def test_find_best_whisper_match_picks_candidate(monkeypatch):
     word = te.TranscriptionWord(start=1.0, end=1.2, text="hello", probability=1.0)
     whisper_words = [word]
 
-    monkeypatch.setattr(te, "_text_similarity_basic", lambda a, b: 0.3)
+    monkeypatch.setattr(te, "_text_similarity_basic", lambda *args, **kwargs: 0.3)
     monkeypatch.setattr(te, "_phonetic_similarity", lambda a, b, language: 0.6)
 
     match, idx, sim = te._find_best_whisper_match(
@@ -77,3 +77,13 @@ def test_find_best_whisper_match_picks_candidate(monkeypatch):
     assert match is word
     assert idx == 0
     assert sim == 0.6
+
+
+def test_normalize_text_for_phonetic_expands_contractions():
+    normalized = te._normalize_text_for_phonetic("You're here", "eng-Latn")
+    assert normalized == "you are here"
+
+
+def test_normalize_text_for_phonetic_keeps_non_english():
+    normalized = te._normalize_text_for_phonetic("tu es", "fra-Latn")
+    assert normalized == "tu es"
