@@ -173,3 +173,35 @@ def test_get_lyrics_simple_whisper_only(monkeypatch):
     assert lines
     assert lines[0].words[0].text == "hello"
     assert lines[0].words[0].start_time == 1.0
+
+
+def test_get_lyrics_simple_whisper_map_lrc(monkeypatch):
+    from y2karaoke.core import timing_evaluator as te
+
+    lrc_lines = [_make_line("bonjour", 0.0, 0.5)]
+
+    def fake_fetch(*_a, **_k):
+        return "[00:00.00]bonjour", [(0.0, "bonjour")], "source"
+
+    monkeypatch.setattr(lyrics, "_fetch_lrc_text_and_timings", fake_fetch)
+    monkeypatch.setattr(lyrics, "_detect_and_apply_offset", lambda v, t, o: (t, 0.0))
+    monkeypatch.setattr(lyrics, "create_lines_from_lrc", lambda *a, **k: lrc_lines)
+    monkeypatch.setattr(
+        lyrics, "_refine_timing_with_audio", lambda lines, *_a, **_k: lines
+    )
+
+    word = te.TranscriptionWord(start=2.0, end=2.4, text="bonjour", probability=0.9)
+    segment = te.TranscriptionSegment(start=2.0, end=2.6, text="bonjour", words=[word])
+    monkeypatch.setattr(
+        te, "transcribe_vocals", lambda *_a, **_k: ([segment], [word], "fr")
+    )
+    monkeypatch.setattr(te, "_whisper_lang_to_epitran", lambda *_a, **_k: "fra-Latn")
+
+    lines, _ = lyrics.get_lyrics_simple(
+        title="Song",
+        artist="Artist",
+        vocals_path="vocals.wav",
+        whisper_map_lrc=True,
+    )
+
+    assert lines[0].start_time == pytest.approx(2.0)

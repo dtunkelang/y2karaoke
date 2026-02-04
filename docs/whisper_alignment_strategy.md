@@ -9,6 +9,7 @@ Improve timing for tracks where LRC timings are clearly broken by relying more o
 - **Hybrid alignment** (`--whisper`): Uses Whisper to fix LRC timing when it looks broken.
 - **Forced DTW** (`--whisper --whisper-force-dtw`): Always run DTW alignment, even if LRC looks acceptable.
 - **Whisper-only** (`--whisper-only`): Skip LRC/Genius and build lines directly from Whisper transcription.
+- **Whisper map LRC** (`--whisper-map-lrc`): Keep LRC text but assign timing from Whisper segments.
 
 ## Proposed Approach (Pragmatic Hybrid)
 1. **Transcribe vocals with Whisper** to get segments + word timings.

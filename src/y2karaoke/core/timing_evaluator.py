@@ -1698,12 +1698,11 @@ def _get_panphon_ft():
 def _get_ipa(text: str, language: str = "fra-Latn") -> Optional[str]:
     """Get IPA transliteration with caching."""
     cache_key = f"{language}:{text}"
-    if cache_key in _ipa_cache:
-        return _ipa_cache[cache_key]
-
     epi = _get_epitran(language)
     if epi is None:
         return None
+    if cache_key in _ipa_cache:
+        return _ipa_cache[cache_key]
 
     norm = _normalize_text_for_matching(text)
     ipa = epi.transliterate(norm)

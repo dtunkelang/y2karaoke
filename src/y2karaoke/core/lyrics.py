@@ -450,6 +450,71 @@ def _create_lines_from_whisper(
     return lines
 
 
+def _map_lrc_lines_to_whisper_segments(
+    lines: List[Line],
+    transcription: List["TranscriptionSegment"],
+    language: str,
+    min_similarity: float = 0.35,
+    lookahead: int = 6,
+) -> Tuple[List[Line], int, List[str]]:
+    """Map LRC lines onto Whisper segment timing without reordering."""
+    from .models import Line, Word
+    from .timing_evaluator import _phonetic_similarity
+
+    if not lines or not transcription:
+        return lines, 0, []
+
+    sorted_segments = sorted(transcription, key=lambda s: s.start)
+    adjusted: List[Line] = []
+    fixes = 0
+    issues: List[str] = []
+    seg_idx = 0
+
+    for line in lines:
+        if not line.words:
+            adjusted.append(line)
+            continue
+
+        best_idx = None
+        best_sim = 0.0
+        window_end = min(seg_idx + lookahead, len(sorted_segments))
+        for idx in range(seg_idx, window_end):
+            seg = sorted_segments[idx]
+            sim = _phonetic_similarity(line.text, seg.text, language)
+            if sim > best_sim:
+                best_sim = sim
+                best_idx = idx
+
+        if best_idx is None:
+            adjusted.append(line)
+            continue
+
+        seg = sorted_segments[best_idx]
+        duration = max(seg.end - seg.start, 0.2)
+        spacing = duration / max(len(line.words), 1)
+        new_words = []
+        for i, word in enumerate(line.words):
+            start = seg.start + i * spacing
+            end = start + spacing * 0.9
+            new_words.append(
+                Word(
+                    text=word.text,
+                    start_time=start,
+                    end_time=end,
+                    singer=word.singer,
+                )
+            )
+        adjusted.append(Line(words=new_words, singer=line.singer))
+        fixes += 1
+        if best_sim < min_similarity:
+            issues.append(
+                f"Low similarity mapping for line '{line.text[:30]}...' (sim={best_sim:.2f})"
+            )
+        seg_idx = best_idx + 1
+
+    return adjusted, fixes, issues
+
+
 def _apply_singer_info(
     lines: List[Line],
     genius_lines: List[Tuple[str, str]],
@@ -649,6 +714,7 @@ def get_lyrics_simple(
     evaluate_sources: bool = False,
     use_whisper: bool = False,
     whisper_only: bool = False,
+    whisper_map_lrc: bool = False,
     whisper_language: Optional[str] = None,
     whisper_model: str = "base",
     whisper_force_dtw: bool = False,
@@ -676,6 +742,7 @@ def get_lyrics_simple(
                          based on timing alignment with audio
         use_whisper: If True, use Whisper transcription to align lyrics timing
         whisper_only: If True, generate lines directly from Whisper (no LRC/Genius)
+        whisper_map_lrc: If True, map LRC text onto Whisper timing without shifting segments
         whisper_language: Language code for Whisper (auto-detected if None)
         whisper_model: Whisper model size ('tiny', 'base', 'small', 'medium', 'large')
 
@@ -757,18 +824,39 @@ def get_lyrics_simple(
                 lines, vocals_path, line_timings, lrc_text, target_duration
             )
 
-            # 5b. Optionally use Whisper for more accurate alignment
-            if use_whisper:
-                try:
-                    lines, _, _ = _apply_whisper_alignment(
-                        lines,
-                        vocals_path,
-                        whisper_language,
-                        whisper_model,
-                        whisper_force_dtw,
+        # 5b. Optionally use Whisper for more accurate alignment
+        if vocals_path and use_whisper:
+            try:
+                lines, _, _ = _apply_whisper_alignment(
+                    lines,
+                    vocals_path,
+                    whisper_language,
+                    whisper_model,
+                    whisper_force_dtw,
+                )
+            except Exception as e:
+                logger.warning(f"Whisper alignment failed: {e}")
+        elif vocals_path and whisper_map_lrc:
+            try:
+                from .timing_evaluator import (
+                    _whisper_lang_to_epitran,
+                    transcribe_vocals,
+                )
+
+                transcription, _, detected_lang = transcribe_vocals(
+                    vocals_path, whisper_language, whisper_model
+                )
+                if transcription:
+                    lang = _whisper_lang_to_epitran(detected_lang)
+                    lines, mapped, issues = _map_lrc_lines_to_whisper_segments(
+                        lines, transcription, lang
                     )
-                except Exception as e:
-                    logger.warning(f"Whisper alignment failed: {e}")
+                    if mapped:
+                        logger.info(f"Mapped {mapped} LRC line(s) onto Whisper timing")
+                    for issue in issues:
+                        logger.debug(issue)
+            except Exception as e:
+                logger.warning(f"Whisper LRC mapping failed: {e}")
     else:
         # Fallback: use Genius text with evenly spaced lines
         if genius_lines:
@@ -808,6 +896,7 @@ def get_lyrics_with_quality(
     evaluate_sources: bool = False,
     use_whisper: bool = False,
     whisper_only: bool = False,
+    whisper_map_lrc: bool = False,
     whisper_language: Optional[str] = None,
     whisper_model: str = "base",
     whisper_force_dtw: bool = False,
@@ -834,7 +923,7 @@ def get_lyrics_with_quality(
         "alignment_method": "none",
         "whisper_used": False,
         "whisper_corrections": 0,
-        "whisper_requested": use_whisper or whisper_only,
+        "whisper_requested": use_whisper or whisper_only or whisper_map_lrc,
         "whisper_force_dtw": whisper_force_dtw,
         "total_lines": 0,
         "overall_score": 0.0,
@@ -855,6 +944,7 @@ def get_lyrics_with_quality(
             evaluate_sources=evaluate_sources,
             use_whisper=use_whisper,
             whisper_only=True,
+            whisper_map_lrc=whisper_map_lrc,
             whisper_language=whisper_language,
             whisper_model=whisper_model,
             whisper_force_dtw=whisper_force_dtw,
@@ -866,6 +956,9 @@ def get_lyrics_with_quality(
         if not lines:
             quality_report["issues"].append("Whisper-only mode produced no lines")
         return lines, metadata, quality_report
+
+    if whisper_map_lrc:
+        quality_report["alignment_method"] = "whisper_map_lrc"
 
     # 1. Try LRC first
     logger.debug(
@@ -935,6 +1028,30 @@ def get_lyrics_with_quality(
                     whisper_force_dtw,
                     quality_report,
                 )
+            elif whisper_map_lrc:
+                try:
+                    from .timing_evaluator import (
+                        _whisper_lang_to_epitran,
+                        transcribe_vocals,
+                    )
+
+                    transcription, _, detected_lang = transcribe_vocals(
+                        vocals_path, whisper_language, whisper_model
+                    )
+                    if transcription:
+                        lang = _whisper_lang_to_epitran(detected_lang)
+                        lines, mapped, issues = _map_lrc_lines_to_whisper_segments(
+                            lines, transcription, lang
+                        )
+                        if mapped:
+                            quality_report["alignment_method"] = "whisper_map_lrc"
+                            quality_report["whisper_used"] = True
+                            quality_report["whisper_corrections"] = mapped
+                        for issue in issues:
+                            issues_list.append(issue)
+                except Exception as e:
+                    logger.warning(f"Whisper LRC mapping failed: {e}")
+                    issues_list.append(f"Whisper LRC mapping failed: {e}")
     else:
         # Fallback: use Genius text
         if genius_lines:
