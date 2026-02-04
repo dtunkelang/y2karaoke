@@ -178,6 +178,7 @@ class TrackIdentifier:
 
         # Try to extract artist/title from LRC metadata tags
         artist, title = self._extract_lrc_metadata(lrc_text)
+        derived_from_lrc = bool(artist or title)
 
         # Fall back to parsing the query
         if not artist or not title:
@@ -203,7 +204,9 @@ class TrackIdentifier:
 
         # Try split-based search to resolve artist/title when LRC metadata looks like a cover
         # or doesn't clearly match the query.
-        split_best = self._try_split_search(query)
+        split_best = None
+        if derived_from_lrc or not artist or not title or artist == "Unknown":
+            split_best = self._try_split_search(query)
         if split_best:
             _, split_artist, split_title = split_best
             query_words = set(
