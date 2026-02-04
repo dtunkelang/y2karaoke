@@ -2330,10 +2330,11 @@ def align_lrc_text_to_whisper_timings(  # noqa: C901
 
         new_words: List[Word] = []
         for word_idx, word in enumerate(line.words):
-            lrc_idx = lrc_index_by_loc.get((line_idx, word_idx))
-            if lrc_idx is None:
+            lrc_idx_opt = lrc_index_by_loc.get((line_idx, word_idx))
+            if lrc_idx_opt is None:
                 new_words.append(word)
                 continue
+            lrc_idx = lrc_idx_opt
             assigned = lrc_assignments.get(lrc_idx)
             if not assigned:
                 new_words.append(word)
@@ -2382,11 +2383,11 @@ def align_lrc_text_to_whisper_timings(  # noqa: C901
                     None,
                 )
                 if start_idx is not None:
-                    new_words: List[Word] = []
+                    adjusted_words: List[Word] = []
                     for word_idx, w in enumerate(line.words):
                         new_idx = min(start_idx + word_idx, len(all_words) - 1)
                         ww = all_words[new_idx]
-                        new_words.append(
+                        adjusted_words.append(
                             Word(
                                 text=w.text,
                                 start_time=ww.start,
@@ -2394,7 +2395,7 @@ def align_lrc_text_to_whisper_timings(  # noqa: C901
                                 singer=w.singer,
                             )
                         )
-                    line = Line(words=new_words, singer=line.singer)
+                    line = Line(words=adjusted_words, singer=line.singer)
         adjusted_lines.append(line)
         if line.words:
             prev_text = text_norm
@@ -2422,11 +2423,11 @@ def align_lrc_text_to_whisper_timings(  # noqa: C901
                 None,
             )
             if start_idx is not None:
-                new_words: List[Word] = []
+                adjusted_words_2: List[Word] = []
                 for word_idx, w in enumerate(line.words):
                     new_idx = min(start_idx + word_idx, len(all_words) - 1)
                     ww = all_words[new_idx]
-                    new_words.append(
+                    adjusted_words_2.append(
                         Word(
                             text=w.text,
                             start_time=ww.start,
@@ -2434,7 +2435,7 @@ def align_lrc_text_to_whisper_timings(  # noqa: C901
                             singer=w.singer,
                         )
                     )
-                line = Line(words=new_words, singer=line.singer)
+                line = Line(words=adjusted_words_2, singer=line.singer)
 
         monotonic_lines.append(line)
         if line.words:

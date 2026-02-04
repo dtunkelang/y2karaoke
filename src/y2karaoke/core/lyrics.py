@@ -551,9 +551,9 @@ def _map_lrc_lines_to_whisper_segments(  # noqa: C901
     all_words: List[TranscriptionWord] = []
     for seg in sorted_segments:
         if seg.words:
-            for w in seg.words:
-                if w.start is not None:
-                    all_words.append(w)
+            for t_word in seg.words:
+                if t_word.start is not None:
+                    all_words.append(t_word)
     all_words.sort(key=lambda w: w.start)
     adjusted: List[Line] = []
     fixes = 0
@@ -821,12 +821,16 @@ def _map_lrc_lines_to_whisper_segments(  # noqa: C901
             prev_text = text_norm
             continue
 
+        if best_idx is None:
+            adjusted.append(line)
+            prev_text = text_norm
+            continue
         seg = sorted_segments[best_idx]
         forced_fallback = False
         if last_end is not None and seg.start < last_end + gap_required:
-            next_idx = None
-            best_future_idx = None
-            best_future_sim = None
+            next_idx: Optional[int] = None
+            best_future_idx: Optional[int] = None
+            best_future_sim: Optional[float] = None
             for idx in range(best_idx, window_end):
                 seg_candidate = sorted_segments[idx]
                 if seg_candidate.start < last_end + gap_required:
@@ -843,6 +847,10 @@ def _map_lrc_lines_to_whisper_segments(  # noqa: C901
                     best_idx = best_future_idx
                     seg = sorted_segments[best_idx]
                 else:
+                    if next_idx is None:
+                        adjusted.append(line)
+                        prev_text = text_norm
+                        continue
                     best_idx = next_idx
                     seg = sorted_segments[best_idx]
                     forced_fallback = True
@@ -895,54 +903,69 @@ def _map_lrc_lines_to_whisper_segments(  # noqa: C901
                     line.words[-1].end_time - line.words[0].start_time, 0.5
                 )
 
-            window_words = None
-            window_end = None
+            window_words: Optional[List[TranscriptionWord]] = None
             if desired_start is not None and next_lrc_start is not None and all_words:
-                window_end = next_lrc_start
+                next_start = next_lrc_start
                 window_start = desired_start - 1.0
                 window_words = [
-                    w for w in all_words if window_start <= w.start < window_end
+                    w for w in all_words if window_start <= w.start < next_start
                 ]
                 if window_words:
                     first_token = line.words[0].text if line.words else None
                     window_words = _select_window_sequence(
                         window_words, line.text, language, len(line.words), first_token
                     )
-            direct_offsets = None
+            direct_offsets: Optional[List[float]] = None
             use_direct_offsets = False
             if (
-                window_words
+                window_words is not None
                 and len(window_words) == len(line.words)
                 and desired_start is not None
                 and next_lrc_start is not None
             ):
                 first_start = window_words[0].start
                 last_start = window_words[-1].start
-                if first_start is not None and last_start is not None and last_start > first_start:
-                    direct_offsets = [w.start - first_start for w in window_words]  # type: ignore[operator]
+                if (
+                    first_start is not None
+                    and last_start is not None
+                    and last_start > first_start
+                ):
+                    direct_offsets = [t_word.start - first_start for t_word in window_words]  # type: ignore[operator]
             if direct_offsets:
-                line_duration = max(next_lrc_start - desired_start, 0.5)
-                whisper_total = max(direct_offsets[-1], 0.01)
-                mapped_words = []
-                for i, (w, offset) in enumerate(zip(line.words, direct_offsets)):
-                    start = desired_start + (offset / whisper_total) * line_duration
-                    if i + 1 < len(direct_offsets):
-                        next_offset = direct_offsets[i + 1]
-                        slot = (next_offset - offset) / whisper_total * line_duration
-                    else:
-                        slot = line_duration - (offset / whisper_total) * line_duration
-                    spoken_ratio = 0.85
-                    ww = window_words[i]
-                    if ww.end is not None and ww.start is not None and ww.end > ww.start:
-                        spoken_ratio = min(
-                            max((ww.end - ww.start) / max(slot, 0.02), 0.5), 1.0
+                if next_lrc_start is None:
+                    direct_offsets = None
+                else:
+                    next_start = next_lrc_start
+                    line_duration = max(next_start - desired_start, 0.5)
+                    whisper_total = max(direct_offsets[-1], 0.01)
+                    mapped_words: List[Word] = []
+                    for i, (word_obj, offset) in enumerate(
+                        zip(line.words, direct_offsets)
+                    ):
+                        start = desired_start + (offset / whisper_total) * line_duration
+                        if i + 1 < len(direct_offsets):
+                            next_offset = direct_offsets[i + 1]
+                            slot = (next_offset - offset) / whisper_total * line_duration
+                        else:
+                            slot = line_duration - (offset / whisper_total) * line_duration
+                        spoken_ratio = 0.85
+                        if window_words is not None:
+                            ww = window_words[i]
+                            if ww.end is not None and ww.start is not None and ww.end > ww.start:
+                                spoken_ratio = min(
+                                    max((ww.end - ww.start) / max(slot, 0.02), 0.5), 1.0
+                                )
+                        end = start + max(slot * spoken_ratio, 0.02)
+                        mapped_words.append(
+                            Word(
+                                text=word_obj.text,
+                                start_time=start,
+                                end_time=end,
+                                singer=word_obj.singer,
+                            )
                         )
-                    end = start + max(slot * spoken_ratio, 0.02)
-                    mapped_words.append(
-                        Word(text=w.text, start_time=start, end_time=end, singer=w.singer)
-                    )
-                new_words = mapped_words
-                use_direct_offsets = True
+                    new_words = mapped_words
+                    use_direct_offsets = True
 
             if not use_direct_offsets:
                 if window_words and len(window_words) == len(line.words):
@@ -967,7 +990,7 @@ def _map_lrc_lines_to_whisper_segments(  # noqa: C901
 
                 cursor = desired_start
                 weighted_words = []
-                for i, (w, weight) in enumerate(zip(line.words, weights)):
+                for i, (word_obj, weight) in enumerate(zip(line.words, weights)):
                     seg_dur = line_duration * weight
                     spoken_ratio = 0.85
                     if whisper_timing:
@@ -978,10 +1001,10 @@ def _map_lrc_lines_to_whisper_segments(  # noqa: C901
                     end = start + max(seg_dur * spoken_ratio, 0.02)
                     weighted_words.append(
                         Word(
-                            text=w.text,
+                            text=word_obj.text,
                             start_time=start,
                             end_time=end,
-                            singer=w.singer,
+                            singer=word_obj.singer,
                         )
                     )
                     cursor += seg_dur
@@ -1046,7 +1069,7 @@ def _map_lrc_lines_to_whisper_segments(  # noqa: C901
                 f"Forced forward mapping for line '{line.text[:30]}...' to avoid overlap"
             )
         last_end = new_words[-1].end_time if new_words else last_end
-        seg_idx = best_idx + 1
+        seg_idx = best_idx + 1 if best_idx is not None else seg_idx
         prev_text = text_norm
 
     return adjusted, fixes, issues
@@ -1314,7 +1337,7 @@ def get_lyrics_simple(  # noqa: C901
             )
             return _create_no_lyrics_placeholder(title, artist)
         lines = _create_lines_from_whisper(transcription)
-        metadata = SongMetadata(
+        whisper_metadata = SongMetadata(
             singers=[],
             is_duet=False,
             title=title,
@@ -1323,7 +1346,7 @@ def get_lyrics_simple(  # noqa: C901
         if romanize:
             _romanize_lines(lines)
         logger.debug(f"Returning {len(lines)} lines from Whisper-only mode")
-        return lines, metadata
+        return lines, whisper_metadata
 
     file_lines: List[str] = []
     file_lrc_text: Optional[str] = None
@@ -1363,7 +1386,8 @@ def get_lyrics_simple(  # noqa: C901
             line_timings = None
 
     # 2. Fetch Genius as fallback or for singer info
-    genius_lines, metadata = None, None
+    genius_lines: Optional[List[Tuple[str, str]]] = None
+    metadata: Optional[SongMetadata] = None
     if not line_timings and not lrc_text and not file_lines:
         if offline:
             logger.warning("Offline mode: no cached lyrics available")
@@ -1403,7 +1427,7 @@ def get_lyrics_simple(  # noqa: C901
         # 5. Refine word timing using audio
         if vocals_path and line_timings and len(line_timings) > 1:
             lines = _refine_timing_with_audio(
-                lines, vocals_path, line_timings, lrc_text, target_duration
+                lines, vocals_path, line_timings, lrc_text or "", target_duration
             )
 
         # 5b. Optionally use Whisper for more accurate alignment
@@ -1532,6 +1556,7 @@ def get_lyrics_with_quality(  # noqa: C901
         "issues": [],
         "source": "",
     }
+    issues_list: List[str] = quality_report["issues"]  # type: ignore[assignment]
 
     if whisper_only:
         lines, metadata = get_lyrics_simple(
@@ -1559,7 +1584,7 @@ def get_lyrics_with_quality(  # noqa: C901
         quality_report["total_lines"] = len(lines)
         quality_report["overall_score"] = 50.0 if lines else 0.0
         if not lines:
-            quality_report["issues"].append("Whisper-only mode produced no lines")
+            issues_list.append("Whisper-only mode produced no lines")
         return lines, metadata, quality_report
 
     if whisper_map_lrc:
@@ -1602,7 +1627,6 @@ def get_lyrics_with_quality(  # noqa: C901
 
         lrc_duration = get_lrc_duration(lrc_text)
         if lrc_duration and abs(target_duration - lrc_duration) > 8:
-            issues_list: List[str] = quality_report["issues"]  # type: ignore[assignment]
             issues_list.append(
                 "LRC duration mismatch: keeping text but ignoring LRC timings"
             )
@@ -1634,9 +1658,6 @@ def get_lyrics_with_quality(  # noqa: C901
         quality_report["lyrics_quality"] = get_lyrics_quality_report(
             lrc_text, source, target_duration
         )
-
-    # Cast issues to the expected type for helper functions
-    issues_list: List[str] = quality_report["issues"]  # type: ignore[assignment]
 
     # 3. Apply vocal offset if available
     if vocals_path and line_timings:
@@ -1674,7 +1695,7 @@ def get_lyrics_with_quality(  # noqa: C901
                 lines,
                 vocals_path,
                 line_timings,
-                lrc_text,
+                lrc_text or "",
                 target_duration,
                 issues_list,
             )
