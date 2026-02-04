@@ -206,7 +206,9 @@ class TrackIdentifier:
         split_best = self._try_split_search(query)
         if split_best:
             _, split_artist, split_title = split_best
-            query_words = set(self._normalize_title(query, remove_stopwords=True).split())
+            query_words = set(
+                self._normalize_title(query, remove_stopwords=True).split()
+            )
             lrc_artist_words = set(
                 self._normalize_title(artist or "", remove_stopwords=True).split()
             )

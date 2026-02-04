@@ -291,7 +291,7 @@ def cli(ctx, verbose, log_file):
     "--outro-line",
     type=str,
     default=None,
-    help="Append a final lyric line at the end of the song (e.g., \"Mm mm mm mm mm mm mm\")",
+    help='Append a final lyric line at the end of the song (e.g., "Mm mm mm mm mm mm mm")',
 )
 @click.option(
     "--shorten-breaks",

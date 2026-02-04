@@ -2263,7 +2263,9 @@ def align_lrc_text_to_whisper_timings(  # noqa: C901
     if not lrc_words:
         return lines, [], {}
 
-    logger.debug(f"DTW-phonetic: Pre-computing IPA for {len(all_words)} Whisper words...")
+    logger.debug(
+        f"DTW-phonetic: Pre-computing IPA for {len(all_words)} Whisper words..."
+    )
     for ww in all_words:
         _get_ipa(ww.text, epitran_lang)
     for lw in lrc_words:
@@ -2415,11 +2417,7 @@ def align_lrc_text_to_whisper_timings(  # noqa: C901
         if prev_start is not None and line.start_time < prev_start:
             required_time = (prev_end or line.start_time) + 0.01
             start_idx = next(
-                (
-                    idx
-                    for idx, ww in enumerate(all_words)
-                    if ww.start >= required_time
-                ),
+                (idx for idx, ww in enumerate(all_words) if ww.start >= required_time),
                 None,
             )
             if start_idx is not None:
@@ -2447,9 +2445,7 @@ def align_lrc_text_to_whisper_timings(  # noqa: C901
     matched_ratio = mapped_count / len(lrc_words) if lrc_words else 0.0
     avg_similarity = total_similarity / mapped_count if mapped_count else 0.0
     line_coverage = (
-        len(mapped_lines_set) / sum(1 for line in lines if line.words)
-        if lines
-        else 0.0
+        len(mapped_lines_set) / sum(1 for line in lines if line.words) if lines else 0.0
     )
 
     metrics = {

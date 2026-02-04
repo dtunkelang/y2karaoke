@@ -430,9 +430,7 @@ class KaraokeGenerator:
                 logger.info("📁 Using cached video")
                 return {"video_path": str(video_files[0])}
         if offline:
-            raise Y2KaraokeError(
-                "Offline mode requires cached video for backgrounds."
-            )
+            raise Y2KaraokeError("Offline mode requires cached video for backgrounds.")
         cache_dir = self.cache_manager.get_video_cache_dir(video_id)
         return self.downloader.download_video(url, cache_dir)
 

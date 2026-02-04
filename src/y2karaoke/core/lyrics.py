@@ -592,7 +592,9 @@ def _map_lrc_lines_to_whisper_segments(  # noqa: C901
                     anchor_sim = sim
                     anchor_idx = idx
             if anchor_idx is not None and anchor_sim >= 0.6:
-                start_candidates = range(max(anchor_idx - 1, 0), min(anchor_idx + 1, max_start - 1) + 1)
+                start_candidates = range(
+                    max(anchor_idx - 1, 0), min(anchor_idx + 1, max_start - 1) + 1
+                )
         for start_idx in start_candidates:
             for length in lengths:
                 end_idx = start_idx + length
@@ -812,7 +814,8 @@ def _map_lrc_lines_to_whisper_segments(  # noqa: C901
             if (
                 desired_start is not None
                 and best_idx is not None
-                and abs(sorted_segments[best_idx].start - desired_start) > max_time_offset
+                and abs(sorted_segments[best_idx].start - desired_start)
+                > max_time_offset
             ):
                 issues.append(
                     f"Skipped Whisper mapping for line '{line.text[:30]}...' "
@@ -895,9 +898,7 @@ def _map_lrc_lines_to_whisper_segments(  # noqa: C901
         # line's total duration.
         if desired_start is not None and line.words:
             if lrc_line_starts and line_idx + 1 < len(lrc_line_starts):
-                line_duration = max(
-                    lrc_line_starts[line_idx + 1] - desired_start, 0.5
-                )
+                line_duration = max(lrc_line_starts[line_idx + 1] - desired_start, 0.5)
             else:
                 line_duration = max(
                     line.words[-1].end_time - line.words[0].start_time, 0.5
@@ -945,13 +946,21 @@ def _map_lrc_lines_to_whisper_segments(  # noqa: C901
                         start = desired_start + (offset / whisper_total) * line_duration
                         if i + 1 < len(direct_offsets):
                             next_offset = direct_offsets[i + 1]
-                            slot = (next_offset - offset) / whisper_total * line_duration
+                            slot = (
+                                (next_offset - offset) / whisper_total * line_duration
+                            )
                         else:
-                            slot = line_duration - (offset / whisper_total) * line_duration
+                            slot = (
+                                line_duration - (offset / whisper_total) * line_duration
+                            )
                         spoken_ratio = 0.85
                         if window_words is not None:
                             ww = window_words[i]
-                            if ww.end is not None and ww.start is not None and ww.end > ww.start:
+                            if (
+                                ww.end is not None
+                                and ww.start is not None
+                                and ww.end > ww.start
+                            ):
                                 spoken_ratio = min(
                                     max((ww.end - ww.start) / max(slot, 0.02), 0.5), 1.0
                                 )
@@ -976,9 +985,11 @@ def _map_lrc_lines_to_whisper_segments(  # noqa: C901
                     whisper_timing = _whisper_durations_for_line(
                         line.words,
                         window_words if window_words else (seg.words if seg else None),
-                        (window_words[-1].end if window_words else None)
-                        if window_words
-                        else (seg.end if seg else None),
+                        (
+                            (window_words[-1].end if window_words else None)
+                            if window_words
+                            else (seg.end if seg else None)
+                        ),
                         language,
                     )
                 if whisper_timing:
@@ -1738,7 +1749,9 @@ def get_lyrics_with_quality(  # noqa: C901
                     )
                     if transcription:
                         lang = _whisper_lang_to_epitran(detected_lang)
-                        lrc_starts = [ts for ts, _ in line_timings] if line_timings else None
+                        lrc_starts = (
+                            [ts for ts, _ in line_timings] if line_timings else None
+                        )
                         lines, mapped, issues = _map_lrc_lines_to_whisper_segments(
                             lines, transcription, lang, lrc_line_starts=lrc_starts
                         )
