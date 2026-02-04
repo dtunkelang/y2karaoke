@@ -33,3 +33,5 @@ tests/.genius_cache
 
 # Coverage
 .coverage
+# Codex local data
+.codex/
