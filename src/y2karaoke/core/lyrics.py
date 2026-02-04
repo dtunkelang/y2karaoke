@@ -469,6 +469,9 @@ def _map_lrc_lines_to_whisper_segments(
     fixes = 0
     issues: List[str] = []
     seg_idx = 0
+    last_end = None
+    min_gap = 0.01
+    prev_text = None
 
     for line in lines:
         if not line.words:
@@ -485,11 +488,41 @@ def _map_lrc_lines_to_whisper_segments(
                 best_sim = sim
                 best_idx = idx
 
+        text_norm = line.text.strip().lower() if line.text else ""
+        gap_required = 0.21 if prev_text and text_norm == prev_text else min_gap
+
         if best_idx is None:
-            adjusted.append(line)
+            if last_end is not None and line.start_time < last_end + gap_required:
+                duration = max(line.end_time - line.start_time, 0.2)
+                offset = (last_end + gap_required) - line.start_time
+                new_words = [
+                    Word(
+                        text=w.text,
+                        start_time=w.start_time + offset,
+                        end_time=w.end_time + offset,
+                        singer=w.singer,
+                    )
+                    for w in line.words
+                ]
+                adjusted.append(Line(words=new_words, singer=line.singer))
+                last_end = new_words[-1].end_time if new_words else last_end
+            else:
+                adjusted.append(line)
+                last_end = line.end_time
+            prev_text = text_norm
             continue
 
         seg = sorted_segments[best_idx]
+        if last_end is not None and seg.start < last_end + gap_required:
+            next_idx = None
+            for idx in range(best_idx, window_end):
+                if sorted_segments[idx].start >= last_end + gap_required:
+                    next_idx = idx
+                    break
+            if next_idx is not None:
+                best_idx = next_idx
+                seg = sorted_segments[best_idx]
+
         duration = max(seg.end - seg.start, 0.2)
         spacing = duration / max(len(line.words), 1)
         new_words = []
@@ -504,13 +537,30 @@ def _map_lrc_lines_to_whisper_segments(
                     singer=word.singer,
                 )
             )
+        if (
+            last_end is not None
+            and new_words
+            and new_words[0].start_time < last_end + gap_required
+        ):
+            shift = (last_end + gap_required) - new_words[0].start_time
+            new_words = [
+                Word(
+                    text=w.text,
+                    start_time=w.start_time + shift,
+                    end_time=w.end_time + shift,
+                    singer=w.singer,
+                )
+                for w in new_words
+            ]
         adjusted.append(Line(words=new_words, singer=line.singer))
         fixes += 1
         if best_sim < min_similarity:
             issues.append(
                 f"Low similarity mapping for line '{line.text[:30]}...' (sim={best_sim:.2f})"
             )
+        last_end = new_words[-1].end_time if new_words else last_end
         seg_idx = best_idx + 1
+        prev_text = text_norm
 
     return adjusted, fixes, issues
 
