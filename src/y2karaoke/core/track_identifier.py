@@ -201,6 +201,15 @@ class TrackIdentifier:
         if not artist:
             artist = self._infer_artist_from_query(query, title)
 
+        # If we still don't have a confident artist/title, try split-based search.
+        # This helps queries like "yesterday the beatles" where LRC metadata is missing.
+        if (not artist or artist == "Unknown") or (not title or title == query):
+            split_best = self._try_split_search(query)
+            if split_best:
+                _, split_artist, split_title = split_best
+                artist = split_artist or artist
+                title = split_title or title
+
         logger.info(f"Identified from LRC: {artist or 'Unknown'} - {title}")
 
         # Search YouTube for matching video using identified artist/title
@@ -510,10 +519,10 @@ class TrackIdentifier:
         from .sync import fetch_lyrics_for_duration
 
         _, _, _, lrc_duration = fetch_lyrics_for_duration(
-            canonical_title, canonical_artist, canonical_duration, tolerance=20
+            canonical_title, canonical_artist, canonical_duration, tolerance=8
         )
         lrc_validated = (
-            lrc_duration is not None and abs(lrc_duration - canonical_duration) <= 20
+            lrc_duration is not None and abs(lrc_duration - canonical_duration) <= 8
         )
 
         if lrc_duration and not lrc_validated:
@@ -601,7 +610,7 @@ class TrackIdentifier:
                 search_query, lrc_duration, artist, title
             )
             if alt_youtube and alt_youtube["duration"]:
-                if abs(alt_youtube["duration"] - lrc_duration) <= 15:
+                if abs(alt_youtube["duration"] - lrc_duration) <= 8:
                     logger.info(
                         f"Found matching YouTube video: {alt_youtube['url']} ({alt_youtube['duration']}s)"
                     )
@@ -627,7 +636,7 @@ class TrackIdentifier:
             if (
                 alt_youtube
                 and alt_youtube["duration"]
-                and abs(alt_youtube["duration"] - lrc_duration) <= 15
+                and abs(alt_youtube["duration"] - lrc_duration) <= 8
             ):
                 logger.info(
                     f"Found radio edit: {alt_youtube['url']} ({alt_youtube['duration']}s)"
@@ -756,7 +765,7 @@ class TrackIdentifier:
 
         if best_match:
             artist, title, lrc_duration = best_match
-            lrc_validated = abs(lrc_duration - yt_duration) <= 15
+            lrc_validated = abs(lrc_duration - yt_duration) <= 8
 
             if self._is_likely_non_studio(yt_title) and not lrc_validated:
                 logger.warning(
@@ -764,7 +773,7 @@ class TrackIdentifier:
                     f"(YT: {yt_duration}s, LRC: {lrc_duration}s)"
                 )
 
-            if not lrc_validated and abs(lrc_duration - yt_duration) > 15:
+            if not lrc_validated and abs(lrc_duration - yt_duration) > 8:
                 alt_result = self._search_matching_youtube_video(
                     artist, title, lrc_duration, yt_duration
                 )
@@ -2200,6 +2209,32 @@ class TrackIdentifier:
 
             uploader = artist if artist != "Unknown" else "Unknown"
             return title, uploader, duration
+        except Exception:
+            return None
+
+    def get_cached_youtube_metadata(self, url: str) -> Optional[tuple[str, str, int]]:
+        """Public wrapper for cached metadata lookup (offline support)."""
+        cached = self._get_cached_youtube_metadata(url)
+        if cached is not None:
+            return cached
+        try:
+            from ..config import get_cache_dir
+            from .youtube_metadata import extract_video_id
+
+            video_id = extract_video_id(url)
+            cache_dir = get_cache_dir() / video_id
+            if not cache_dir.exists():
+                return None
+
+            candidates = [
+                p
+                for p in cache_dir.glob("*.wav")
+                if "Vocals" not in p.stem and "instrumental" not in p.stem
+            ]
+            wav_path = candidates[0] if candidates else None
+            if not wav_path:
+                return None
+            return "Unknown", "Unknown", 0
         except Exception:
             return None
 

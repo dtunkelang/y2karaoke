@@ -380,6 +380,7 @@ def fetch_lyrics_multi_source(
     enhanced: bool = False,
     target_duration: Optional[int] = None,
     duration_tolerance: int = 20,
+    offline: bool = False,
 ) -> Tuple[Optional[str], bool, str]:
     """
     Fetch lyrics from multiple sources using lyriq and syncedlyrics.
@@ -441,6 +442,10 @@ def fetch_lyrics_multi_source(
                 _lrc_cache[cache_key] = tuple(cached)
                 logger.debug(f"Using cached LRC result for {artist} - {title}")
                 return (cached[0], cached[1], cached[2])
+
+    if offline:
+        logger.info("Offline mode: skipping lyrics providers (cache only)")
+        return (None, False, "")
 
     search_term = f"{artist} {title}"
     logger.debug(f"Searching for synced lyrics: {search_term}")
@@ -623,7 +628,8 @@ def fetch_lyrics_for_duration(
     title: str,
     artist: str,
     target_duration: int,
-    tolerance: int = 20,
+    tolerance: int = 8,
+    offline: bool = False,
 ) -> Tuple[Optional[str], bool, str, Optional[int]]:
     """
     Fetch synced lyrics that match a target duration.
@@ -644,6 +650,10 @@ def fetch_lyrics_for_duration(
         - source_name: Name of the source that provided lyrics
         - lrc_duration: Duration implied by the LRC timestamps
     """
+    if offline:
+        logger.info("Offline mode: skipping lyrics providers (cache only)")
+        return None, False, "", None
+
     if not SYNCEDLYRICS_AVAILABLE and not LYRIQ_AVAILABLE:
         logger.warning("Neither syncedlyrics nor lyriq installed")
         return None, False, "", None
@@ -656,6 +666,7 @@ def fetch_lyrics_for_duration(
         synced_only=True,
         target_duration=target_duration,
         duration_tolerance=tolerance,
+        offline=offline,
     )
 
     if is_synced and lrc_text:
@@ -673,7 +684,7 @@ def fetch_lyrics_for_duration(
                 )
 
     # Strategy 2: Try searching with different terms (syncedlyrics only)
-    if SYNCEDLYRICS_AVAILABLE:
+    if SYNCEDLYRICS_AVAILABLE and not offline:
         alternative_searches = [
             f"{title} {artist}",  # Swap order
             f"{artist} {title} official",
@@ -811,7 +822,7 @@ def get_lyrics_quality_report(
     # Duration match check
     if target_duration and lrc_duration:
         diff = abs(lrc_duration - target_duration)
-        report["duration_match"] = diff <= 20
+        report["duration_match"] = diff <= 8
         if diff > 20:
             issues.append(
                 f"Duration mismatch: LRC={lrc_duration}s, target={target_duration}s"

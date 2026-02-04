@@ -9,7 +9,7 @@ from . import __version__
 from .config import get_cache_dir
 from .exceptions import Y2KaraokeError
 from .core.karaoke import KaraokeGenerator
-from .core.track_identifier import TrackIdentifier
+from .core.track_identifier import TrackIdentifier, TrackInfo
 from .utils.logging import setup_logging
 from .utils.validation import (
     validate_youtube_url,
@@ -48,6 +48,34 @@ def identify_track(logger, identifier, url_or_query, artist, title):
         logger.info(f"Found: {track_info.youtube_url}")
     logger.info(
         f"Identified: {track_info.artist} - {track_info.title} (source: {track_info.source})"
+    )
+    return track_info
+
+
+def identify_track_offline(logger, identifier, url, artist, title):
+    cached = identifier.get_cached_youtube_metadata(url)
+    if not cached:
+        raise click.BadParameter(
+            "Offline mode requires cached audio for the YouTube URL."
+        )
+    cached_title, cached_uploader, duration = cached
+    final_title = title or cached_title or "Unknown"
+    final_artist = artist or cached_uploader or "Unknown"
+    if duration <= 0:
+        logger.warning("Cached audio duration is unknown; proceeding without it.")
+    track_info = TrackInfo(
+        artist=final_artist,
+        title=final_title,
+        duration=duration,
+        youtube_url=url,
+        youtube_duration=duration,
+        source="cache",
+        identification_quality=60.0,
+        quality_issues=["offline cache used"],
+        fallback_used=True,
+    )
+    logger.info(
+        f"Offline: using cached metadata for {track_info.artist} - {track_info.title}"
     )
     return track_info
 
@@ -176,6 +204,11 @@ def cli(ctx, verbose, log_file):
     "--work-dir", type=click.Path(), help="Working directory for intermediate files"
 )
 @click.option(
+    "--offline",
+    is_flag=True,
+    help="Run using cached media only (no network). Requires a cached YouTube URL.",
+)
+@click.option(
     "--resolution",
     type=str,
     default=None,
@@ -223,6 +256,17 @@ def cli(ctx, verbose, log_file):
     "--whisper-map-lrc",
     is_flag=True,
     help="Map LRC lyrics onto Whisper timing without shifting segments",
+)
+@click.option(
+    "--whisper-map-lrc-dtw",
+    is_flag=True,
+    help="Map LRC lyrics onto Whisper timing using phonetic DTW",
+)
+@click.option(
+    "--lyrics-file",
+    type=click.Path(exists=True, dir_okay=False, path_type=Path),
+    default=None,
+    help="Use lyrics from a local text or .lrc file as the text source",
 )
 @click.option(
     "--whisper-language",
@@ -274,6 +318,7 @@ def generate(
     force,
     keep_files,
     work_dir,
+    offline,
     resolution,
     fps,
     font_size,
@@ -284,6 +329,8 @@ def generate(
     whisper,
     whisper_only,
     whisper_map_lrc,
+    whisper_map_lrc_dtw,
+    lyrics_file,
     whisper_language,
     whisper_model,
     whisper_force_dtw,
@@ -302,7 +349,16 @@ def generate(
         else:
             url_or_query = resolve_url_or_query(url_or_query, artist, title)
         identifier = TrackIdentifier()
-        track_info = identify_track(logger, identifier, url_or_query, artist, title)
+        if offline:
+            if not url_or_query.startswith("http"):
+                raise click.BadParameter(
+                    "Offline mode requires a YouTube URL (search is not available)."
+                )
+            track_info = identify_track_offline(
+                logger, identifier, url_or_query, artist, title
+            )
+        else:
+            track_info = identify_track(logger, identifier, url_or_query, artist, title)
 
         url = validate_youtube_url(track_info.youtube_url)
         key = validate_key_shift(key)
@@ -322,6 +378,8 @@ def generate(
             logger, shorten_breaks, track_info
         )
 
+        target_duration = track_info.duration if track_info.duration > 0 else None
+
         result = generator.generate(
             url=url,
             output_path=output_path,
@@ -336,14 +394,17 @@ def generate(
             force_reprocess=force,
             video_settings=video_settings,
             original_prompt=url_or_query,
-            target_duration=track_info.duration,
+            target_duration=target_duration,
             evaluate_lyrics_sources=evaluate_lyrics,
             use_whisper=whisper,
             whisper_only=whisper_only,
             whisper_map_lrc=whisper_map_lrc,
+            whisper_map_lrc_dtw=whisper_map_lrc_dtw,
+            lyrics_file=lyrics_file,
             whisper_language=whisper_language,
             whisper_model=whisper_model,
             whisper_force_dtw=whisper_force_dtw,
+            offline=offline,
             filter_promos=filter_promos,
             shorten_breaks=effective_shorten_breaks,
             max_break_duration=max_break,
