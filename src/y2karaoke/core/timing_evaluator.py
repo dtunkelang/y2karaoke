@@ -2232,53 +2232,13 @@ def _extract_lrc_words_all(lines: List[Line]) -> List[Dict]:
     return lrc_words
 
 
-def align_lrc_text_to_whisper_timings(  # noqa: C901
-    lines: List[Line],
-    vocals_path: str,
-    language: Optional[str] = None,
-    model_size: str = "base",
-    min_similarity: float = 0.15,
-) -> Tuple[List[Line], List[str], Dict[str, float]]:
-    """Align LRC text to Whisper timings using phonetic DTW (timings fixed).
-
-    This maps each LRC word onto a Whisper word timestamp without changing
-    the Whisper timing. The alignment is purely phonetic and monotonic.
-    """
-    from .models import Line, Word
-
-    transcription, all_words, detected_lang = transcribe_vocals(
-        vocals_path, language, model_size
-    )
-
-    if not transcription or not all_words:
-        logger.warning("No transcription available, skipping Whisper timing map")
-        return lines, [], {}
-
-    epitran_lang = _whisper_lang_to_epitran(detected_lang)
-    logger.debug(
-        f"Using epitran language: {epitran_lang} (from Whisper: {detected_lang})"
-    )
-
-    lrc_words = _extract_lrc_words_all(lines)
-    if not lrc_words:
-        return lines, [], {}
-
-    logger.debug(
-        f"DTW-phonetic: Pre-computing IPA for {len(all_words)} Whisper words..."
-    )
-    for ww in all_words:
-        _get_ipa(ww.text, epitran_lang)
-    for lw in lrc_words:
-        _get_ipa(lw["text"], epitran_lang)
-
-    logger.debug(
-        f"DTW-phonetic: Building cost matrix ({len(lrc_words)} x {len(all_words)})..."
-    )
-    phonetic_costs = _compute_phonetic_costs_unbounded(
-        lrc_words, all_words, epitran_lang, min_similarity
-    )
-
-    logger.debug("DTW-phonetic: Running alignment...")
+def _build_dtw_path(
+    lrc_words: List[Dict],
+    all_words: List[TranscriptionWord],
+    phonetic_costs: Dict[Tuple[int, int], float],
+    language: str,
+) -> List[Tuple[int, int]]:
+    """Build a DTW path between LRC words and Whisper words."""
     try:
         from fastdtw import fastdtw
 
@@ -2291,6 +2251,7 @@ def align_lrc_text_to_whisper_timings(  # noqa: C901
             return phonetic_costs[(i, j)]
 
         _distance, path = fastdtw(lrc_seq, whisper_seq, dist=dtw_dist)
+        return path
     except ImportError:
         logger.warning("fastdtw not available, falling back to greedy alignment")
         path = []
@@ -2300,27 +2261,31 @@ def align_lrc_text_to_whisper_timings(  # noqa: C901
             best_sim = -1.0
             for j in range(whisper_idx, min(whisper_idx + 6, len(all_words))):
                 sim = _phonetic_similarity(
-                    lrc_words[lrc_idx]["text"], all_words[j].text, epitran_lang
+                    lrc_words[lrc_idx]["text"], all_words[j].text, language
                 )
                 if sim > best_sim:
                     best_sim = sim
                     best_idx = j
             path.append((lrc_idx, best_idx))
             whisper_idx = best_idx
+        return path
 
-    # Build LRC->Whisper assignments from DTW path (use Whisper timings directly)
-    lrc_assignments: Dict[int, List[int]] = {}
-    for lrc_idx, whisper_idx in path:
-        lrc_assignments.setdefault(lrc_idx, []).append(whisper_idx)
 
-    # Build mapped lines with whisper timings
-    corrections: List[str] = []
+def _map_lrc_words_to_whisper(
+    lines: List[Line],
+    lrc_words: List[Dict],
+    all_words: List[TranscriptionWord],
+    lrc_assignments: Dict[int, List[int]],
+    language: str,
+) -> Tuple[List[Line], int, float, set]:
+    """Build mapped lines using Whisper timings based on LRC assignments."""
+    from .models import Line, Word
+
     mapped_lines: List[Line] = []
     mapped_count = 0
     total_similarity = 0.0
     mapped_lines_set = set()
 
-    # Precompute index mapping for lookup
     lrc_index_by_loc = {
         (lw["line_idx"], lw["word_idx"]): idx for idx, lw in enumerate(lrc_words)
     }
@@ -2336,8 +2301,7 @@ def align_lrc_text_to_whisper_timings(  # noqa: C901
             if lrc_idx_opt is None:
                 new_words.append(word)
                 continue
-            lrc_idx = lrc_idx_opt
-            assigned = lrc_assignments.get(lrc_idx)
+            assigned = lrc_assignments.get(lrc_idx_opt)
             if not assigned:
                 new_words.append(word)
                 continue
@@ -2354,16 +2318,24 @@ def align_lrc_text_to_whisper_timings(  # noqa: C901
             )
             mapped_count += 1
             mapped_lines_set.add(line_idx)
-            # Track similarity using best match among assigned words
             best_sim = max(
-                _phonetic_similarity(word.text, ww.text, epitran_lang)
+                _phonetic_similarity(word.text, ww.text, language)
                 for ww in whisper_words
             )
             total_similarity += best_sim
 
         mapped_lines.append(Line(words=new_words, singer=line.singer))
 
-    # Enforce no-overlap for repeated lines by shifting to later Whisper words
+    return mapped_lines, mapped_count, total_similarity, mapped_lines_set
+
+
+def _shift_repeated_lines_to_next_whisper(
+    mapped_lines: List[Line],
+    all_words: List[TranscriptionWord],
+) -> List[Line]:
+    """Ensure repeated lines don't overlap by shifting to later Whisper words."""
+    from .models import Line, Word
+
     prev_text = None
     prev_end = None
     adjusted_lines: List[Line] = []
@@ -2402,10 +2374,16 @@ def align_lrc_text_to_whisper_timings(  # noqa: C901
         if line.words:
             prev_text = text_norm
             prev_end = line.end_time
+    return adjusted_lines
 
-    mapped_lines = adjusted_lines
 
-    # Enforce monotonic line starts by shifting any backwards lines forward
+def _enforce_monotonic_line_starts_whisper(
+    mapped_lines: List[Line],
+    all_words: List[TranscriptionWord],
+) -> List[Line]:
+    """Ensure line starts are monotonic by shifting backwards lines forward."""
+    from .models import Line, Word
+
     prev_start = None
     prev_end = None
     monotonic_lines: List[Line] = []
@@ -2440,7 +2418,71 @@ def align_lrc_text_to_whisper_timings(  # noqa: C901
             prev_start = line.start_time
             prev_end = line.end_time
 
-    mapped_lines = monotonic_lines
+    return monotonic_lines
+
+
+def align_lrc_text_to_whisper_timings(  # noqa: C901
+    lines: List[Line],
+    vocals_path: str,
+    language: Optional[str] = None,
+    model_size: str = "base",
+    min_similarity: float = 0.15,
+) -> Tuple[List[Line], List[str], Dict[str, float]]:
+    """Align LRC text to Whisper timings using phonetic DTW (timings fixed).
+
+    This maps each LRC word onto a Whisper word timestamp without changing
+    the Whisper timing. The alignment is purely phonetic and monotonic.
+    """
+    transcription, all_words, detected_lang = transcribe_vocals(
+        vocals_path, language, model_size
+    )
+
+    if not transcription or not all_words:
+        logger.warning("No transcription available, skipping Whisper timing map")
+        return lines, [], {}
+
+    epitran_lang = _whisper_lang_to_epitran(detected_lang)
+    logger.debug(
+        f"Using epitran language: {epitran_lang} (from Whisper: {detected_lang})"
+    )
+
+    lrc_words = _extract_lrc_words_all(lines)
+    if not lrc_words:
+        return lines, [], {}
+
+    logger.debug(
+        f"DTW-phonetic: Pre-computing IPA for {len(all_words)} Whisper words..."
+    )
+    for ww in all_words:
+        _get_ipa(ww.text, epitran_lang)
+    for lw in lrc_words:
+        _get_ipa(lw["text"], epitran_lang)
+
+    logger.debug(
+        f"DTW-phonetic: Building cost matrix ({len(lrc_words)} x {len(all_words)})..."
+    )
+    phonetic_costs = _compute_phonetic_costs_unbounded(
+        lrc_words, all_words, epitran_lang, min_similarity
+    )
+
+    logger.debug("DTW-phonetic: Running alignment...")
+    path = _build_dtw_path(lrc_words, all_words, phonetic_costs, epitran_lang)
+
+    # Build LRC->Whisper assignments from DTW path (use Whisper timings directly)
+    lrc_assignments: Dict[int, List[int]] = {}
+    for lrc_idx, whisper_idx in path:
+        lrc_assignments.setdefault(lrc_idx, []).append(whisper_idx)
+
+    # Build mapped lines with whisper timings
+    corrections: List[str] = []
+    mapped_lines, mapped_count, total_similarity, mapped_lines_set = (
+        _map_lrc_words_to_whisper(
+            lines, lrc_words, all_words, lrc_assignments, epitran_lang
+        )
+    )
+
+    mapped_lines = _shift_repeated_lines_to_next_whisper(mapped_lines, all_words)
+    mapped_lines = _enforce_monotonic_line_starts_whisper(mapped_lines, all_words)
 
     matched_ratio = mapped_count / len(lrc_words) if lrc_words else 0.0
     avg_similarity = total_similarity / mapped_count if mapped_count else 0.0

@@ -58,6 +58,17 @@ class Line:
                 raise ValueError("Word timing outside line bounds")
 
 
+def compute_word_slots(words: List[Word], line_end: float) -> List[float]:
+    """Compute per-word slot durations based on start-to-start gaps."""
+    slots: List[float] = []
+    for i, w in enumerate(words):
+        if i + 1 < len(words):
+            slots.append(max(words[i + 1].start_time - w.start_time, 0.0))
+        else:
+            slots.append(max(line_end - w.start_time, 0.0))
+    return slots
+
+
 @dataclass
 class SongMetadata:
     """Metadata about a song including singer information."""

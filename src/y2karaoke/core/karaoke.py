@@ -16,11 +16,12 @@ from .downloader import YouTubeDownloader, extract_video_id
 from .separator import AudioSeparator
 from .audio_effects import AudioProcessor
 from .audio_utils import trim_audio_if_needed, apply_audio_effects, separate_vocals
+from .models import compute_word_slots
 
 logger = get_logger(__name__)
 
 if TYPE_CHECKING:
-    from .models import Line, Word
+    from .models import Line
 
 # Initialize MusicBrainz
 musicbrainzngs.set_useragent(
@@ -221,15 +222,6 @@ class KaraokeGenerator:
         """Write a JSON timing report for downstream inspection."""
         import json
 
-        def _word_slots(words: List[Word], line_end: float) -> List[float]:
-            slots: List[float] = []
-            for i, w in enumerate(words):
-                if i + 1 < len(words):
-                    slots.append(round(words[i + 1].start_time - w.start_time, 3))
-                else:
-                    slots.append(round(max(line_end - w.start_time, 0.0), 3))
-            return slots
-
         report = {
             "title": title,
             "artist": artist,
@@ -264,7 +256,10 @@ class KaraokeGenerator:
                         }
                         for w in line.words
                     ],
-                    "word_slots": _word_slots(line.words, line.end_time),
+                    "word_slots": [
+                        round(slot, 3)
+                        for slot in compute_word_slots(line.words, line.end_time)
+                    ],
                     "word_spoken": [
                         round(w.end_time - w.start_time, 3) for w in line.words
                     ],

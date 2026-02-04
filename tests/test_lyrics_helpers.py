@@ -2,6 +2,7 @@ import pytest
 
 from y2karaoke.core import lyrics
 from y2karaoke.core.models import Line, Word, SongMetadata
+from y2karaoke.core.timing_evaluator import TranscriptionSegment, TranscriptionWord
 
 
 def _line_with_words(texts):
@@ -117,3 +118,43 @@ def test_detect_offset_with_issues_tracks_large_delta(monkeypatch):
     assert offset == pytest.approx(14.0)
     assert issues
     assert updated[0][0] == pytest.approx(15.0)
+
+
+def test_map_lrc_lines_uses_whisper_pause_for_word_slots():
+    line = Line(
+        words=[
+            Word(text="Yesterday", start_time=0.0, end_time=0.5),
+            Word(text="all", start_time=0.5, end_time=1.0),
+            Word(text="my", start_time=1.0, end_time=1.5),
+            Word(text="troubles", start_time=1.5, end_time=2.0),
+        ]
+    )
+    segment_words = [
+        TranscriptionWord(start=5.0, end=5.4, text="Yesterday"),
+        TranscriptionWord(start=7.5, end=7.7, text="all"),
+        TranscriptionWord(start=7.8, end=8.0, text="my"),
+        TranscriptionWord(start=8.1, end=8.5, text="troubles"),
+    ]
+    segment = TranscriptionSegment(
+        start=5.0,
+        end=8.6,
+        text="Yesterday all my troubles",
+        words=segment_words,
+    )
+
+    adjusted, fixes, _issues = lyrics._map_lrc_lines_to_whisper_segments(
+        [line],
+        [segment],
+        language="eng-Latn",
+        lrc_line_starts=[5.0, 9.0],
+    )
+
+    assert fixes == 1
+    adjusted_line = adjusted[0]
+    assert adjusted_line.words[0].start_time == pytest.approx(5.0, abs=0.05)
+    gap_1 = adjusted_line.words[1].start_time - adjusted_line.words[0].start_time
+    gap_2 = adjusted_line.words[2].start_time - adjusted_line.words[1].start_time
+    gap_3 = adjusted_line.words[3].start_time - adjusted_line.words[2].start_time
+    assert gap_1 > gap_2 * 1.5
+    assert gap_1 > gap_3 * 1.5
+    assert adjusted_line.end_time <= 9.0
