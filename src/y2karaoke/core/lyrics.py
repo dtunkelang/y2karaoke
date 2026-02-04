@@ -9,6 +9,8 @@ This module provides the main interface for lyrics fetching and processing:
 
 import logging
 import re
+from difflib import SequenceMatcher
+from statistics import median
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
@@ -529,8 +531,10 @@ def _map_lrc_lines_to_whisper_segments(
     lines: List[Line],
     transcription: List["TranscriptionSegment"],
     language: str,
+    lrc_line_starts: Optional[List[float]] = None,
     min_similarity: float = 0.35,
     min_similarity_fallback: float = 0.2,
+    max_time_offset: float = 4.0,
     lookahead: int = 6,
 ) -> Tuple[List[Line], int, List[str]]:
     """Map LRC lines onto Whisper segment timing without reordering."""
@@ -541,6 +545,13 @@ def _map_lrc_lines_to_whisper_segments(
         return lines, 0, []
 
     sorted_segments = sorted(transcription, key=lambda s: s.start)
+    all_words: List["TranscriptionWord"] = []
+    for seg in sorted_segments:
+        if seg.words:
+            for w in seg.words:
+                if w.start is not None:
+                    all_words.append(w)
+    all_words.sort(key=lambda w: w.start)
     adjusted: List[Line] = []
     fixes = 0
     issues: List[str] = []
@@ -549,7 +560,180 @@ def _map_lrc_lines_to_whisper_segments(
     min_gap = 0.01
     prev_text = None
 
-    for line in lines:
+    def _norm_token(text: str) -> str:
+        text = text.lower().strip()
+        text = re.sub(r"[^\w']+", "", text)
+        return text
+
+    def _select_window_sequence(
+        window_words: List["TranscriptionWord"],
+        line_text: str,
+        language: str,
+        target_len: int,
+        first_token: Optional[str],
+    ) -> List["TranscriptionWord"]:
+        if not window_words:
+            return []
+        best_seq = window_words
+        best_sim = -1.0
+        lengths = [target_len - 1, target_len, target_len + 1]
+        lengths = [l for l in lengths if l > 0]
+        max_start = len(window_words)
+        start_candidates = range(max_start)
+        if first_token:
+            anchor_idx = None
+            anchor_sim = 0.0
+            for idx, w in enumerate(window_words):
+                sim = _phonetic_similarity(first_token, w.text, language)
+                if sim > anchor_sim:
+                    anchor_sim = sim
+                    anchor_idx = idx
+            if anchor_idx is not None and anchor_sim >= 0.6:
+                start_candidates = range(max(anchor_idx - 1, 0), min(anchor_idx + 1, max_start - 1) + 1)
+        for start_idx in start_candidates:
+            for length in lengths:
+                end_idx = start_idx + length
+                if end_idx > len(window_words):
+                    continue
+                seq = window_words[start_idx:end_idx]
+                seq_text = " ".join(w.text for w in seq)
+                sim = _phonetic_similarity(line_text, seq_text, language)
+                if sim > best_sim:
+                    best_sim = sim
+                    best_seq = seq
+        if best_sim < 0.2:
+            return window_words
+        return best_seq
+
+    def _whisper_durations_for_line(
+        line_words: List["Word"],
+        seg_words: Optional[List["TranscriptionWord"]],
+        seg_end: Optional[float],
+        language: str,
+    ) -> Optional[Tuple[List[float], List[float]]]:
+        if not seg_words:
+            return None
+        seg_tokens = [_norm_token(w.text) for w in seg_words]
+        seg_starts = [w.start for w in seg_words if w.start is not None]
+        if not seg_starts:
+            return None
+        seg_slots: List[float] = []
+        seg_spoken: List[float] = []
+        for i, w in enumerate(seg_words):
+            if w.start is None:
+                continue
+            if i + 1 < len(seg_words) and seg_words[i + 1].start is not None:
+                slot = seg_words[i + 1].start - w.start
+            elif w.end is not None and w.end > w.start:
+                slot = w.end - w.start
+            elif seg_end is not None and seg_end > w.start:
+                slot = seg_end - w.start
+            else:
+                slot = 0.02
+            slot = max(slot, 0.02)
+            if w.end is not None and w.end > w.start:
+                spoken = min(w.end - w.start, slot)
+            else:
+                spoken = slot * 0.85
+            seg_slots.append(slot)
+            seg_spoken.append(max(spoken, 0.02))
+        if not seg_slots:
+            return None
+        default_slot = median(seg_slots) if seg_slots else 0.1
+        default_spoken = median(seg_spoken) if seg_spoken else default_slot * 0.85
+        slots: List[float] = []
+        spokens: List[float] = []
+        matched = 0
+        seg_idx = 0
+        lookahead_words = 4
+        min_word_sim = 0.5
+        for word in line_words:
+            token = _norm_token(word.text)
+            match_idx = None
+            best_sim = 0.0
+            if token:
+                window_end = min(seg_idx + lookahead_words, len(seg_tokens))
+                for j in range(seg_idx, window_end):
+                    seg_token = seg_tokens[j]
+                    if not seg_token:
+                        continue
+                    if (
+                        seg_token == token
+                        or seg_token.startswith(token)
+                        or token.startswith(seg_token)
+                    ):
+                        match_idx = j
+                        best_sim = 1.0
+                        break
+                    sim = _phonetic_similarity(token, seg_token, language)
+                    if sim > best_sim:
+                        best_sim = sim
+                        match_idx = j
+            if match_idx is None or best_sim < min_word_sim:
+                if seg_idx < len(seg_slots):
+                    match_idx = seg_idx
+            if match_idx is None:
+                slots.append(default_slot)
+                spokens.append(default_spoken)
+            else:
+                slots.append(max(seg_slots[match_idx], 0.02))
+                spokens.append(max(seg_spoken[match_idx], 0.02))
+                seg_idx = match_idx + 1
+                if best_sim >= min_word_sim:
+                    matched += 1
+        match_ratio = matched / max(len(line_words), 1)
+        if match_ratio < 0.4:
+            # Resample Whisper word durations across the line length to preserve
+            # Whisper's speed variation even when text matching is weak.
+            seg_count = len(seg_slots)
+            if seg_count == 0:
+                return slots, spokens
+            if len(line_words) == 1:
+                slot = median(seg_slots)
+                spoken = median(seg_spoken)
+                return [slot], [spoken]
+            resampled: List[float] = []
+            resampled_spoken: List[float] = []
+            for i in range(len(line_words)):
+                pos = i * (seg_count - 1) / (len(line_words) - 1)
+                lo = int(pos)
+                hi = min(lo + 1, seg_count - 1)
+                frac = pos - lo
+                slot = seg_slots[lo] * (1 - frac) + seg_slots[hi] * frac
+                spoken = seg_spoken[lo] * (1 - frac) + seg_spoken[hi] * frac
+                resampled.append(max(slot, 0.02))
+                resampled_spoken.append(max(spoken, 0.02))
+            return resampled, resampled_spoken
+        return slots, spokens
+
+    def _slots_from_sequence(
+        seq_words: List["TranscriptionWord"], seq_end: Optional[float]
+    ) -> Optional[Tuple[List[float], List[float]]]:
+        if not seq_words:
+            return None
+        slots: List[float] = []
+        spokens: List[float] = []
+        for i, w in enumerate(seq_words):
+            if w.start is None:
+                return None
+            if i + 1 < len(seq_words) and seq_words[i + 1].start is not None:
+                slot = seq_words[i + 1].start - w.start
+            elif w.end is not None and w.end > w.start:
+                slot = w.end - w.start
+            elif seq_end is not None and seq_end > w.start:
+                slot = seq_end - w.start
+            else:
+                slot = 0.02
+            slot = max(slot, 0.02)
+            if w.end is not None and w.end > w.start:
+                spoken = min(w.end - w.start, slot)
+            else:
+                spoken = slot * 0.85
+            slots.append(slot)
+            spokens.append(max(spoken, 0.02))
+        return slots, spokens
+
+    for line_idx, line in enumerate(lines):
         if not line.words:
             adjusted.append(line)
             continue
@@ -567,24 +751,70 @@ def _map_lrc_lines_to_whisper_segments(
         text_norm = line.text.strip().lower() if line.text else ""
         gap_required = 0.21 if prev_text and text_norm == prev_text else min_gap
 
-        if best_idx is None:
-            if last_end is not None and line.start_time < last_end + gap_required:
-                duration = max(line.end_time - line.start_time, 0.2)
-                offset = (last_end + gap_required) - line.start_time
+        desired_start = (
+            lrc_line_starts[line_idx]
+            if lrc_line_starts and line_idx < len(lrc_line_starts)
+            else None
+        )
+        next_lrc_start = (
+            lrc_line_starts[line_idx + 1]
+            if lrc_line_starts and line_idx + 1 < len(lrc_line_starts)
+            else None
+        )
+        if (
+            best_idx is None
+            or best_sim < min_similarity_fallback
+            or (
+                desired_start is not None
+                and best_idx is not None
+                and abs(sorted_segments[best_idx].start - desired_start)
+                > max_time_offset
+            )
+        ):
+            new_words = list(line.words)
+            if desired_start is not None and new_words:
+                shift = desired_start - new_words[0].start_time
                 new_words = [
                     Word(
                         text=w.text,
-                        start_time=w.start_time + offset,
-                        end_time=w.end_time + offset,
+                        start_time=w.start_time + shift,
+                        end_time=w.end_time + shift,
                         singer=w.singer,
                     )
-                    for w in line.words
+                    for w in new_words
                 ]
+            if last_end is not None and new_words:
+                if new_words[0].start_time < last_end + gap_required:
+                    shift = (last_end + gap_required) - new_words[0].start_time
+                    new_words = [
+                        Word(
+                            text=w.text,
+                            start_time=w.start_time + shift,
+                            end_time=w.end_time + shift,
+                            singer=w.singer,
+                        )
+                        for w in new_words
+                    ]
+            if new_words:
                 adjusted.append(Line(words=new_words, singer=line.singer))
-                last_end = new_words[-1].end_time if new_words else last_end
+                last_end = new_words[-1].end_time
             else:
                 adjusted.append(line)
                 last_end = line.end_time
+            if best_sim < min_similarity_fallback and best_idx is not None:
+                issues.append(
+                    f"Skipped Whisper mapping for line '{line.text[:30]}...' "
+                    f"(sim={best_sim:.2f})"
+                )
+            if (
+                desired_start is not None
+                and best_idx is not None
+                and abs(sorted_segments[best_idx].start - desired_start) > max_time_offset
+            ):
+                issues.append(
+                    f"Skipped Whisper mapping for line '{line.text[:30]}...' "
+                    f"(segment offset {sorted_segments[best_idx].start - desired_start:+.2f}s)"
+                )
             prev_text = text_norm
             continue
 
@@ -615,19 +845,178 @@ def _map_lrc_lines_to_whisper_segments(
                     forced_fallback = True
 
         duration = max(seg.end - seg.start, 0.2)
-        spacing = duration / max(len(line.words), 1)
+        orig_start = line.words[0].start_time
+        orig_end = line.words[-1].end_time
+        orig_duration = max(orig_end - orig_start, 0.2)
+        mapped_duration = duration
+
         new_words = []
-        for i, word in enumerate(line.words):
-            start = seg.start + i * spacing
-            end = start + spacing * 0.9
-            new_words.append(
-                Word(
-                    text=word.text,
-                    start_time=start,
-                    end_time=end,
-                    singer=word.singer,
+        if orig_duration > 0 and len(line.words) > 0:
+            for word in line.words:
+                rel_start = (word.start_time - orig_start) / orig_duration
+                rel_end = (word.end_time - orig_start) / orig_duration
+                start = seg.start + rel_start * mapped_duration
+                end = seg.start + rel_end * mapped_duration
+                new_words.append(
+                    Word(
+                        text=word.text,
+                        start_time=start,
+                        end_time=max(end, start + 0.02),
+                        singer=word.singer,
+                    )
                 )
-            )
+        else:
+            spacing = mapped_duration / max(len(line.words), 1)
+            for i, word in enumerate(line.words):
+                start = seg.start + i * spacing
+                end = start + spacing * 0.9
+                new_words.append(
+                    Word(
+                        text=word.text,
+                        start_time=start,
+                        end_time=end,
+                        singer=word.singer,
+                    )
+                )
+
+        # If we have an LRC line start, redistribute timing within the line
+        # using Whisper word durations as proportions, while preserving the
+        # line's total duration.
+        if desired_start is not None and line.words:
+            if lrc_line_starts and line_idx + 1 < len(lrc_line_starts):
+                line_duration = max(
+                    lrc_line_starts[line_idx + 1] - desired_start, 0.5
+                )
+            else:
+                line_duration = max(
+                    line.words[-1].end_time - line.words[0].start_time, 0.5
+                )
+
+            window_words = None
+            window_end = None
+            if desired_start is not None and next_lrc_start is not None and all_words:
+                window_end = next_lrc_start
+                window_start = desired_start - 1.0
+                window_words = [
+                    w for w in all_words if window_start <= w.start < window_end
+                ]
+                if window_words:
+                    first_token = line.words[0].text if line.words else None
+                    window_words = _select_window_sequence(
+                        window_words, line.text, language, len(line.words), first_token
+                    )
+            direct_offsets = None
+            use_direct_offsets = False
+            if (
+                window_words
+                and len(window_words) == len(line.words)
+                and desired_start is not None
+                and next_lrc_start is not None
+            ):
+                first_start = window_words[0].start
+                last_start = window_words[-1].start
+                if first_start is not None and last_start is not None and last_start > first_start:
+                    direct_offsets = [w.start - first_start for w in window_words]  # type: ignore[operator]
+            if direct_offsets:
+                line_duration = max(next_lrc_start - desired_start, 0.5)
+                whisper_total = max(direct_offsets[-1], 0.01)
+                mapped_words = []
+                for i, (w, offset) in enumerate(zip(line.words, direct_offsets)):
+                    start = desired_start + (offset / whisper_total) * line_duration
+                    if i + 1 < len(direct_offsets):
+                        next_offset = direct_offsets[i + 1]
+                        slot = (next_offset - offset) / whisper_total * line_duration
+                    else:
+                        slot = line_duration - (offset / whisper_total) * line_duration
+                    spoken_ratio = 0.85
+                    ww = window_words[i]
+                    if ww.end is not None and ww.start is not None and ww.end > ww.start:
+                        spoken_ratio = min(
+                            max((ww.end - ww.start) / max(slot, 0.02), 0.5), 1.0
+                        )
+                    end = start + max(slot * spoken_ratio, 0.02)
+                    mapped_words.append(
+                        Word(text=w.text, start_time=start, end_time=end, singer=w.singer)
+                    )
+                new_words = mapped_words
+                use_direct_offsets = True
+
+            if not use_direct_offsets:
+                if window_words and len(window_words) == len(line.words):
+                    whisper_timing = _slots_from_sequence(
+                        window_words, window_words[-1].end if window_words else None
+                    )
+                else:
+                    whisper_timing = _whisper_durations_for_line(
+                        line.words,
+                        window_words if window_words else (seg.words if seg else None),
+                        (window_words[-1].end if window_words else None)
+                        if window_words
+                        else (seg.end if seg else None),
+                        language,
+                    )
+                if whisper_timing:
+                    slot_durations, spoken_durations = whisper_timing
+                    total = sum(slot_durations) or 1.0
+                    weights = [d / total for d in slot_durations]
+                else:
+                    weights = [1.0 / len(line.words)] * len(line.words)
+
+                cursor = desired_start
+                weighted_words = []
+                for i, (w, weight) in enumerate(zip(line.words, weights)):
+                    seg_dur = line_duration * weight
+                    spoken_ratio = 0.85
+                    if whisper_timing:
+                        slot = slot_durations[i]
+                        spoken = spoken_durations[i]
+                        spoken_ratio = min(max(spoken / max(slot, 0.02), 0.5), 1.0)
+                    start = cursor
+                    end = start + max(seg_dur * spoken_ratio, 0.02)
+                    weighted_words.append(
+                        Word(
+                            text=w.text,
+                            start_time=start,
+                            end_time=end,
+                            singer=w.singer,
+                        )
+                    )
+                    cursor += seg_dur
+                new_words = weighted_words
+
+        if desired_start is not None and new_words:
+            shift = desired_start - new_words[0].start_time
+            new_words = [
+                Word(
+                    text=w.text,
+                    start_time=w.start_time + shift,
+                    end_time=w.end_time + shift,
+                    singer=w.singer,
+                )
+                for w in new_words
+            ]
+
+        # Clamp line duration so it doesn't explode far past the next line.
+        if new_words:
+            line_start = new_words[0].start_time
+            orig_duration = max(line.words[-1].end_time - line.words[0].start_time, 0.5)
+            max_end = line_start + max(1.5, orig_duration * 1.5)
+            if lrc_line_starts and line_idx + 1 < len(lrc_line_starts):
+                next_start = lrc_line_starts[line_idx + 1]
+                max_end = min(max_end, next_start - 0.1)
+            if new_words[-1].end_time > max_end and max_end > line_start:
+                span = new_words[-1].end_time - line_start
+                scale = (max_end - line_start) / span if span > 0 else 1.0
+                new_words = [
+                    Word(
+                        text=w.text,
+                        start_time=line_start + (w.start_time - line_start) * scale,
+                        end_time=line_start + (w.end_time - line_start) * scale,
+                        singer=w.singer,
+                    )
+                    for w in new_words
+                ]
+
         if (
             last_end is not None
             and new_words
@@ -1277,7 +1666,12 @@ def get_lyrics_with_quality(
             lines = _create_lines_from_plain_text(text_lines)
 
         # 5. Refine word timing using audio
-        if vocals_path and line_timings and len(line_timings) > 1:
+        if (
+            vocals_path
+            and line_timings
+            and len(line_timings) > 1
+            and not whisper_map_lrc
+        ):
             lines, method = _refine_timing_with_quality(
                 lines,
                 vocals_path,
@@ -1325,8 +1719,9 @@ def get_lyrics_with_quality(
                     )
                     if transcription:
                         lang = _whisper_lang_to_epitran(detected_lang)
+                        lrc_starts = [ts for ts, _ in line_timings] if line_timings else None
                         lines, mapped, issues = _map_lrc_lines_to_whisper_segments(
-                            lines, transcription, lang
+                            lines, transcription, lang, lrc_line_starts=lrc_starts
                         )
                         if mapped:
                             quality_report["alignment_method"] = "whisper_map_lrc"

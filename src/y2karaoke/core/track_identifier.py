@@ -201,12 +201,24 @@ class TrackIdentifier:
         if not artist:
             artist = self._infer_artist_from_query(query, title)
 
-        # If we still don't have a confident artist/title, try split-based search.
-        # This helps queries like "yesterday the beatles" where LRC metadata is missing.
-        if (not artist or artist == "Unknown") or (not title or title == query):
-            split_best = self._try_split_search(query)
-            if split_best:
-                _, split_artist, split_title = split_best
+        # Try split-based search to resolve artist/title when LRC metadata looks like a cover
+        # or doesn't clearly match the query.
+        split_best = self._try_split_search(query)
+        if split_best:
+            _, split_artist, split_title = split_best
+            query_words = set(self._normalize_title(query, remove_stopwords=True).split())
+            lrc_artist_words = set(
+                self._normalize_title(artist or "", remove_stopwords=True).split()
+            )
+            split_artist_words = set(
+                self._normalize_title(split_artist or "", remove_stopwords=True).split()
+            )
+
+            lrc_artist_overlap = len(query_words & lrc_artist_words)
+            split_artist_overlap = len(query_words & split_artist_words)
+
+            # Prefer split result when it better matches the query's artist tokens
+            if split_artist_overlap > lrc_artist_overlap:
                 artist = split_artist or artist
                 title = split_title or title
 

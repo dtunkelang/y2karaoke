@@ -7,6 +7,8 @@ import click
 
 from . import __version__
 from .config import get_cache_dir
+from dataclasses import replace
+
 from .exceptions import Y2KaraokeError
 from .core.karaoke import KaraokeGenerator
 from .core.track_identifier import TrackIdentifier, TrackInfo
@@ -286,6 +288,12 @@ def cli(ctx, verbose, log_file):
     help="Force DTW-based Whisper alignment even if LRC quality seems acceptable",
 )
 @click.option(
+    "--outro-line",
+    type=str,
+    default=None,
+    help="Append a final lyric line at the end of the song (e.g., \"Mm mm mm mm mm mm mm\")",
+)
+@click.option(
     "--shorten-breaks",
     is_flag=True,
     help="Shorten long instrumental breaks for better karaoke flow",
@@ -335,6 +343,7 @@ def generate(
     whisper_model,
     whisper_force_dtw,
     filter_promos,
+    outro_line,
     shorten_breaks,
     max_break,
     debug_audio,
@@ -342,6 +351,8 @@ def generate(
     logger = ctx.obj["logger"]
 
     try:
+        if whisper_map_lrc_dtw:
+            whisper_map_lrc = True
         if not url_or_query:
             resolved = resolve_url_or_query(url_or_query, artist, title)
             logger.info(f"No url_or_query provided; using title for search: {resolved}")
@@ -359,6 +370,14 @@ def generate(
             )
         else:
             track_info = identify_track(logger, identifier, url_or_query, artist, title)
+
+        # If user explicitly provided metadata, force it for display/lyrics.
+        if title or artist:
+            track_info = replace(
+                track_info,
+                title=title or track_info.title,
+                artist=artist or track_info.artist,
+            )
 
         url = validate_youtube_url(track_info.youtube_url)
         key = validate_key_shift(key)
@@ -404,6 +423,7 @@ def generate(
             whisper_language=whisper_language,
             whisper_model=whisper_model,
             whisper_force_dtw=whisper_force_dtw,
+            outro_line=outro_line,
             offline=offline,
             filter_promos=filter_promos,
             shorten_breaks=effective_shorten_breaks,

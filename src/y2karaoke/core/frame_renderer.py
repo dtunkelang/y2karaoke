@@ -11,6 +11,7 @@ from ..config import (
     VIDEO_HEIGHT,
     LINE_SPACING,
     SPLASH_DURATION,
+    OUTRO_DELAY,
     INSTRUMENTAL_BREAK_THRESHOLD,
     LYRICS_LEAD_TIME,
     HIGHLIGHT_LEAD_TIME,
@@ -294,6 +295,45 @@ def _draw_highlight_sweep(
         word_idx += 1
 
 
+def _compute_word_highlight_width(
+    line: "Line",
+    words_with_spaces: list[str],
+    word_widths: list[float],
+    highlight_time: float,
+) -> int:
+    """Compute highlight width using word-level timing."""
+    if not line.words:
+        return 0
+
+    # Build per-word spans (word width + trailing space, if any).
+    word_spans: list[float] = []
+    width_idx = 0
+    for i, _word in enumerate(line.words):
+        if width_idx >= len(word_widths):
+            break
+        span = word_widths[width_idx]
+        width_idx += 1
+        if i < len(line.words) - 1 and width_idx < len(word_widths):
+            span += word_widths[width_idx]
+            width_idx += 1
+        word_spans.append(span)
+
+    highlight_width = 0.0
+    for word, span in zip(line.words, word_spans):
+        if highlight_time >= word.end_time:
+            highlight_width += span
+            continue
+        if highlight_time <= word.start_time:
+            break
+        duration = max(word.end_time - word.start_time, 0.01)
+        fraction = (highlight_time - word.start_time) / duration
+        fraction = max(0.0, min(1.0, fraction))
+        highlight_width += span * fraction
+        break
+
+    return int(highlight_width)
+
+
 def render_frame(
     lines: list[Line],
     current_time: float,
@@ -304,6 +344,7 @@ def render_frame(
     is_duet: bool = False,
     width: Optional[int] = None,
     height: Optional[int] = None,
+    audio_duration: Optional[float] = None,
 ) -> np.ndarray:
     """Render a single frame at the given time."""
     video_width = width or VIDEO_WIDTH
@@ -320,7 +361,10 @@ def render_frame(
         if line.start_time <= activation_time:
             current_line_idx = i
 
-    if lines and current_time >= lines[-1].end_time:
+    outro_start = lines[-1].end_time + OUTRO_DELAY if lines else OUTRO_DELAY
+    if audio_duration:
+        outro_start = max(outro_start, audio_duration - OUTRO_DELAY)
+    if lines and current_time >= outro_start:
         draw_logo_screen(draw, font, video_width, video_height)
         return np.array(img)
 
@@ -378,12 +422,19 @@ def render_frame(
         if is_current:
             highlight_time = activation_time + HIGHLIGHT_LEAD_TIME
             line_duration = line.end_time - line.start_time
-            if line_duration > 0:
-                line_progress = (highlight_time - line.start_time) / line_duration
-                line_progress = max(0.0, min(1.0, line_progress))
+            if line.words and all(
+                w.start_time is not None and w.end_time is not None for w in line.words
+            ):
+                highlight_width = _compute_word_highlight_width(
+                    line, words_with_spaces, word_widths, highlight_time
+                )
             else:
-                line_progress = 1.0
-            highlight_width = int(total_width * line_progress)
+                if line_duration > 0:
+                    line_progress = (highlight_time - line.start_time) / line_duration
+                    line_progress = max(0.0, min(1.0, line_progress))
+                else:
+                    line_progress = 1.0
+                highlight_width = int(total_width * line_progress)
             _draw_highlight_sweep(
                 draw,
                 line,

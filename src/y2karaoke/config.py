@@ -55,6 +55,7 @@ TEMPO_RANGE = (0.1, 3.0)
 
 # Video timing
 SPLASH_DURATION = 4.0
+OUTRO_DELAY = 1.0  # Seconds to wait after last lyric before showing logo
 INSTRUMENTAL_BREAK_THRESHOLD = (
     8.0  # Show instrumental break screen for gaps >= 8 seconds
 )

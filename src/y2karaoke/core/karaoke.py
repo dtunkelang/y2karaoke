@@ -65,6 +65,7 @@ class KaraokeGenerator:
         whisper_language: Optional[str] = None,
         whisper_model: str = "base",
         whisper_force_dtw: bool = False,
+        outro_line: Optional[str] = None,
         offline: bool = False,
         filter_promos: bool = True,
         shorten_breaks: bool = False,
@@ -127,6 +128,13 @@ class KaraokeGenerator:
             shorten_breaks,
             max_break_duration,
         )
+
+        if outro_line:
+            self._append_outro_line(
+                lines=lyrics_result["lines"],
+                outro_line=outro_line,
+                audio_path=processed_audio,
+            )
 
         scaled_lines = self._scale_lyrics_timing(
             lyrics_result["lines"], tempo_multiplier
@@ -234,6 +242,14 @@ class KaraokeGenerator:
                     "start": round(line.start_time, 2),
                     "end": round(line.end_time, 2),
                     "text": line.text,
+                    "words": [
+                        {
+                            "text": w.text,
+                            "start": round(w.start_time, 3),
+                            "end": round(w.end_time, 3),
+                        }
+                        for w in line.words
+                    ],
                 }
                 for idx, line in enumerate(lines)
                 if line.words
@@ -531,6 +547,42 @@ class KaraokeGenerator:
             ]
             offset_lines.append(Line(words=offset_words, singer=line.singer))
         return offset_lines
+
+    def _append_outro_line(
+        self,
+        lines: List["Line"],
+        outro_line: str,
+        audio_path: str,
+        min_tail: float = 0.5,
+    ) -> None:
+        """Append a final lyric line near the end of the audio."""
+        if not lines or not outro_line.strip():
+            return
+
+        from moviepy import AudioFileClip
+        from ..config import OUTRO_DELAY
+        from ..core.lyrics import Line, Word
+
+        with AudioFileClip(audio_path) as clip:
+            audio_duration = clip.duration
+
+        last_end = lines[-1].end_time
+        end_time = max(last_end + min_tail, audio_duration - OUTRO_DELAY)
+        duration = min(3.0, max(1.5, end_time - last_end))
+        start_time = max(last_end + min_tail, end_time - duration)
+        if end_time <= start_time + 0.2:
+            return
+
+        tokens = [t for t in outro_line.strip().split() if t]
+        if not tokens:
+            return
+        spacing = duration / len(tokens)
+        words = []
+        for i, token in enumerate(tokens):
+            start = start_time + i * spacing
+            end = start + spacing * 0.9
+            words.append(Word(text=token, start_time=start, end_time=end))
+        lines.append(Line(words=words))
 
     def _build_output_path(self, title: str) -> Path:
         safe_title = sanitize_filename(title)

@@ -95,6 +95,7 @@ def render_karaoke_video(
             is_duet,
             video_width,
             video_height,
+            audio_duration,
         )
 
     logger.info(
