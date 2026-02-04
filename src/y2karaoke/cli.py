@@ -215,6 +215,11 @@ def cli(ctx, verbose, log_file):
     help="Use Whisper transcription to improve lyrics timing alignment",
 )
 @click.option(
+    "--whisper-only",
+    is_flag=True,
+    help="Generate lyrics directly from Whisper transcription (no LRC/Genius)",
+)
+@click.option(
     "--whisper-language",
     type=str,
     default=None,
@@ -272,6 +277,7 @@ def generate(
     timing_report,
     evaluate_lyrics,
     whisper,
+    whisper_only,
     whisper_language,
     whisper_model,
     whisper_force_dtw,
@@ -327,6 +333,7 @@ def generate(
             target_duration=track_info.duration,
             evaluate_lyrics_sources=evaluate_lyrics,
             use_whisper=whisper,
+            whisper_only=whisper_only,
             whisper_language=whisper_language,
             whisper_model=whisper_model,
             whisper_force_dtw=whisper_force_dtw,

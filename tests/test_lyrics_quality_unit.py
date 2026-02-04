@@ -150,3 +150,26 @@ def test_fetch_genius_with_quality_tracking_no_lrc(monkeypatch):
     assert report["alignment_method"] == "genius_fallback"
     assert report["overall_score"] == 0.0
     assert any("No lyrics found" in issue for issue in report["issues"])
+
+
+def test_get_lyrics_simple_whisper_only(monkeypatch):
+    from y2karaoke.core import timing_evaluator as te
+
+    word = te.TranscriptionWord(start=1.0, end=1.2, text="hello", probability=0.9)
+    segment = te.TranscriptionSegment(start=1.0, end=1.4, text="hello", words=[word])
+
+    monkeypatch.setattr(
+        te, "transcribe_vocals", lambda *_a, **_k: ([segment], [word], "en")
+    )
+
+    lines, metadata = lyrics.get_lyrics_simple(
+        title="Song",
+        artist="Artist",
+        vocals_path="vocals.wav",
+        whisper_only=True,
+    )
+
+    assert metadata is not None
+    assert lines
+    assert lines[0].words[0].text == "hello"
+    assert lines[0].words[0].start_time == 1.0

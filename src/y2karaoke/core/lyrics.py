@@ -409,6 +409,47 @@ def _romanize_lines(lines: List[Line]) -> None:
                 word.text = romanize_line(word.text)
 
 
+def _create_lines_from_whisper(
+    transcription: List["TranscriptionSegment"],
+) -> List[Line]:
+    """Create Line objects directly from Whisper transcription."""
+    from .models import Line, Word
+
+    lines: List[Line] = []
+    for segment in transcription:
+        if segment is None:
+            continue
+        words: List[Word] = []
+        if segment.words:
+            for w in segment.words:
+                text = (w.text or "").strip()
+                if not text:
+                    continue
+                words.append(
+                    Word(
+                        text=text,
+                        start_time=float(w.start),
+                        end_time=float(w.end),
+                        singer="",
+                    )
+                )
+        else:
+            tokens = [t for t in segment.text.strip().split() if t]
+            if tokens:
+                duration = max(segment.end - segment.start, 0.2)
+                spacing = duration / len(tokens)
+                for i, token in enumerate(tokens):
+                    start = segment.start + i * spacing
+                    end = start + spacing * 0.9
+                    words.append(
+                        Word(text=token, start_time=start, end_time=end, singer="")
+                    )
+        if not words:
+            continue
+        lines.append(Line(words=words))
+    return lines
+
+
 def _apply_singer_info(
     lines: List[Line],
     genius_lines: List[Tuple[str, str]],
@@ -607,6 +648,7 @@ def get_lyrics_simple(
     target_duration: Optional[int] = None,
     evaluate_sources: bool = False,
     use_whisper: bool = False,
+    whisper_only: bool = False,
     whisper_language: Optional[str] = None,
     whisper_model: str = "base",
     whisper_force_dtw: bool = False,
@@ -633,6 +675,7 @@ def get_lyrics_simple(
         evaluate_sources: If True, compare all lyrics sources and select best
                          based on timing alignment with audio
         use_whisper: If True, use Whisper transcription to align lyrics timing
+        whisper_only: If True, generate lines directly from Whisper (no LRC/Genius)
         whisper_language: Language code for Whisper (auto-detected if None)
         whisper_model: Whisper model size ('tiny', 'base', 'small', 'medium', 'large')
 
@@ -640,6 +683,35 @@ def get_lyrics_simple(
         Tuple of (lines, metadata)
     """
     from .genius import fetch_genius_lyrics_with_singers
+
+    # Whisper-only mode: generate lines directly from transcription.
+    if whisper_only:
+        if not vocals_path:
+            logger.warning(
+                "Whisper-only mode requires vocals; using placeholder lyrics"
+            )
+            return _create_no_lyrics_placeholder(title, artist)
+        from .timing_evaluator import transcribe_vocals
+
+        transcription, _, detected_lang = transcribe_vocals(
+            vocals_path, whisper_language, whisper_model
+        )
+        if not transcription:
+            logger.warning(
+                "No Whisper transcription available; using placeholder lyrics"
+            )
+            return _create_no_lyrics_placeholder(title, artist)
+        lines = _create_lines_from_whisper(transcription)
+        metadata = SongMetadata(
+            singers=[],
+            is_duet=False,
+            title=title,
+            artist=artist,
+        )
+        if romanize:
+            _romanize_lines(lines)
+        logger.debug(f"Returning {len(lines)} lines from Whisper-only mode")
+        return lines, metadata
 
     # 1. Try LRC first (preferred source), with duration validation if provided
     logger.debug(
@@ -735,6 +807,7 @@ def get_lyrics_with_quality(
     target_duration: Optional[int] = None,
     evaluate_sources: bool = False,
     use_whisper: bool = False,
+    whisper_only: bool = False,
     whisper_language: Optional[str] = None,
     whisper_model: str = "base",
     whisper_force_dtw: bool = False,
@@ -761,13 +834,38 @@ def get_lyrics_with_quality(
         "alignment_method": "none",
         "whisper_used": False,
         "whisper_corrections": 0,
-        "whisper_requested": use_whisper,
+        "whisper_requested": use_whisper or whisper_only,
         "whisper_force_dtw": whisper_force_dtw,
         "total_lines": 0,
         "overall_score": 0.0,
         "issues": [],
         "source": "",
     }
+
+    if whisper_only:
+        lines, metadata = get_lyrics_simple(
+            title=title,
+            artist=artist,
+            vocals_path=vocals_path,
+            cache_dir=cache_dir,
+            lyrics_offset=lyrics_offset,
+            romanize=romanize,
+            filter_promos=filter_promos,
+            target_duration=target_duration,
+            evaluate_sources=evaluate_sources,
+            use_whisper=use_whisper,
+            whisper_only=True,
+            whisper_language=whisper_language,
+            whisper_model=whisper_model,
+            whisper_force_dtw=whisper_force_dtw,
+        )
+        quality_report["alignment_method"] = "whisper_only"
+        quality_report["whisper_used"] = bool(lines)
+        quality_report["total_lines"] = len(lines)
+        quality_report["overall_score"] = 50.0 if lines else 0.0
+        if not lines:
+            quality_report["issues"].append("Whisper-only mode produced no lines")
+        return lines, metadata, quality_report
 
     # 1. Try LRC first
     logger.debug(

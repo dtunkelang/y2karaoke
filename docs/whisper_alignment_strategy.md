@@ -5,6 +5,11 @@ Improve timing for tracks where LRC timings are clearly broken by relying more o
 - Line order must be preserved.
 - No line should appear more than once (no duplicates).
 
+## Modes
+- **Hybrid alignment** (`--whisper`): Uses Whisper to fix LRC timing when it looks broken.
+- **Forced DTW** (`--whisper --whisper-force-dtw`): Always run DTW alignment, even if LRC looks acceptable.
+- **Whisper-only** (`--whisper-only`): Skip LRC/Genius and build lines directly from Whisper transcription.
+
 ## Proposed Approach (Pragmatic Hybrid)
 1. **Transcribe vocals with Whisper** to get segments + word timings.
 2. **Assess LRC quality** using current `_assess_lrc_quality`.
