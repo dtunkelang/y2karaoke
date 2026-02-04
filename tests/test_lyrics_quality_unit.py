@@ -65,13 +65,22 @@ def test_apply_whisper_alignment_records_fixes(monkeypatch):
     lines = [_make_line("hello", 0.0, 0.5)]
     monkeypatch.setattr(
         "y2karaoke.core.timing_evaluator.correct_timing_with_whisper",
-        lambda l, v, language=None, model_size="base": (l, ["fix1", "fix2"]),
+        lambda l, v, language=None, model_size="base", force_dtw=False: (
+            l,
+            ["fix1", "fix2"],
+            {},
+        ),
     )
-    aligned, fixes = lyrics._apply_whisper_alignment(
-        lines, "vocals.wav", whisper_language="en", whisper_model="base"
+    aligned, fixes, metrics = lyrics._apply_whisper_alignment(
+        lines,
+        "vocals.wav",
+        whisper_language="en",
+        whisper_model="base",
+        whisper_force_dtw=False,
     )
     assert aligned is lines
     assert fixes == ["fix1", "fix2"]
+    assert metrics == {}
 
 
 def test_refine_timing_with_quality_sets_method(monkeypatch):
@@ -113,6 +122,7 @@ def test_apply_whisper_with_quality_handles_error(monkeypatch):
         vocals_path="vocals.wav",
         whisper_language="en",
         whisper_model="base",
+        whisper_force_dtw=False,
         quality_report=report,
     )
 

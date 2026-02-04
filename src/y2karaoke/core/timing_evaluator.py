@@ -606,7 +606,7 @@ def _append_unexpected_pause_issues(
             )
 
 
-def _check_pause_alignment(
+def _check_pause_alignment(  # noqa: C901
     lines: List[Line],
     audio_features: AudioFeatures,
 ) -> List[TimingIssue]:
@@ -1032,7 +1032,7 @@ def _find_best_onset_during_silence(
 
 def correct_line_timestamps(
     lines: List[Line],
-    audio_features: AudioFeatures,
+    audio_features: Optional[AudioFeatures],
     max_correction: float = 3.0,
 ) -> Tuple[List[Line], List[str]]:
     """Correct line timestamps to align with detected vocal onsets.
@@ -1053,6 +1053,8 @@ def correct_line_timestamps(
 
     if not lines:
         return lines, []
+    if audio_features is None:
+        return lines, ["Audio features unavailable; skipping onset corrections"]
 
     corrected_lines: List[Line] = []
     corrections: List[str] = []
@@ -1232,7 +1234,7 @@ def _find_phrase_end(
     return max_end_time
 
 
-def fix_spurious_gaps(
+def fix_spurious_gaps(  # noqa: C901
     lines: List[Line],
     audio_features: AudioFeatures,
     activity_threshold: float = 0.5,
@@ -2251,32 +2253,127 @@ def _apply_dtw_alignments(
     return aligned_lines, corrections
 
 
-def align_dtw_whisper(
+def _compute_dtw_alignment_metrics(
+    lines: List[Line],
+    lrc_words: List[Dict],
+    alignments_map: Dict[int, Tuple[TranscriptionWord, float]],
+) -> Dict[str, float]:
+    if not lrc_words:
+        return {"matched_ratio": 0.0, "avg_similarity": 0.0, "line_coverage": 0.0}
+
+    total_words = len(lrc_words)
+    matched_words = len(alignments_map)
+    matched_ratio = matched_words / total_words if total_words else 0.0
+
+    total_similarity = 0.0
+    for _, (_ww, sim) in alignments_map.items():
+        total_similarity += sim
+    avg_similarity = total_similarity / matched_words if matched_words else 0.0
+
+    total_lines = sum(1 for line in lines if line.words)
+    matched_lines = {
+        lrc_words[lrc_idx]["line_idx"] for lrc_idx in alignments_map.keys()
+    }
+    line_coverage = len(matched_lines) / total_lines if total_lines > 0 else 0.0
+
+    return {
+        "matched_ratio": matched_ratio,
+        "avg_similarity": avg_similarity,
+        "line_coverage": line_coverage,
+    }
+
+
+def _retime_lines_from_dtw_alignments(
+    lines: List[Line],
+    lrc_words: List[Dict],
+    alignments_map: Dict[int, Tuple[TranscriptionWord, float]],
+    min_word_duration: float = 0.05,
+) -> Tuple[List[Line], List[str]]:
+    from .models import Line, Word
+
+    aligned_by_line: Dict[int, List[Tuple[int, TranscriptionWord]]] = {}
+    for lrc_idx, (ww, _sim) in alignments_map.items():
+        lw = lrc_words[lrc_idx]
+        aligned_by_line.setdefault(lw["line_idx"], []).append((lw["word_idx"], ww))
+
+    retimed_lines: List[Line] = []
+    corrections: List[str] = []
+
+    for line_idx, line in enumerate(lines):
+        if not line.words:
+            retimed_lines.append(line)
+            continue
+
+        matches = aligned_by_line.get(line_idx, [])
+        if not matches:
+            retimed_lines.append(line)
+            continue
+
+        matches.sort(key=lambda item: item[0])
+        min_start = min(ww.start for _i, ww in matches)
+        max_end = max(ww.end for _i, ww in matches)
+        if max_end - min_start < min_word_duration:
+            max_end = min_start + min_word_duration
+
+        old_start = line.start_time
+        old_end = line.end_time
+        old_duration = max(old_end - old_start, min_word_duration)
+        target_duration = max(max_end - min_start, min_word_duration)
+
+        new_words: List[Word] = []
+        for word in line.words:
+            rel_start = (word.start_time - old_start) / old_duration
+            rel_end = (word.end_time - old_start) / old_duration
+            new_start = min_start + rel_start * target_duration
+            new_end = min_start + rel_end * target_duration
+            if new_end < new_start + min_word_duration:
+                new_end = new_start + min_word_duration
+            new_words.append(
+                Word(
+                    text=word.text,
+                    start_time=new_start,
+                    end_time=new_end,
+                    singer=word.singer,
+                )
+            )
+
+        retimed_lines.append(Line(words=new_words, singer=line.singer))
+        corrections.append(f"DTW retimed line {line_idx} from matched words")
+
+    return retimed_lines, corrections
+
+
+def _align_dtw_whisper_with_data(
     lines: List[Line],
     whisper_words: List[TranscriptionWord],
     language: str = "fra-Latn",
     min_similarity: float = 0.4,
-) -> Tuple[List[Line], List[str]]:
-    """Align LRC to Whisper using Dynamic Time Warping.
-
-    DTW finds globally optimal alignment, which handles cases where
-    LRC timing errors compound over time.
-
-    Args:
-        lines: LRC lines with word-level timing
-        whisper_words: Whisper words with timestamps
-        language: Epitran language code
-        min_similarity: Minimum similarity for valid alignment
-
-    Returns:
-        Tuple of (aligned lines, list of corrections)
-    """
+) -> Tuple[
+    List[Line],
+    List[str],
+    Dict[str, float],
+    List[Dict],
+    Dict[int, Tuple[TranscriptionWord, float]],
+]:
+    """Align LRC to Whisper using DTW and return alignment data for confidence gating."""
     if not lines or not whisper_words:
-        return lines, []
+        return (
+            lines,
+            [],
+            {"matched_ratio": 0.0, "avg_similarity": 0.0, "line_coverage": 0.0},
+            [],
+            {},
+        )
 
     lrc_words = _extract_lrc_words(lines)
     if not lrc_words:
-        return lines, []
+        return (
+            lines,
+            [],
+            {"matched_ratio": 0.0, "avg_similarity": 0.0, "line_coverage": 0.0},
+            [],
+            {},
+        )
 
     # Pre-compute IPA
     logger.debug(f"DTW: Pre-computing IPA for {len(whisper_words)} Whisper words...")
@@ -2311,20 +2408,55 @@ def align_dtw_whisper(
             time_penalty = min(time_diff / 20.0, 1.0)
             return 0.7 * phon_cost + 0.3 * time_penalty
 
-        distance, path = fastdtw(lrc_seq, whisper_seq, dist=dtw_dist)
+        _distance, path = fastdtw(lrc_seq, whisper_seq, dist=dtw_dist)
 
     except ImportError:
         logger.warning("fastdtw not available, falling back to greedy alignment")
-        return lines, []
+        return (
+            lines,
+            [],
+            {"matched_ratio": 0.0, "avg_similarity": 0.0, "line_coverage": 0.0},
+            lrc_words,
+            {},
+        )
 
     alignments_map = _extract_alignments_from_path(
         path, lrc_words, whisper_words, language, min_similarity
     )
 
     aligned_lines, corrections = _apply_dtw_alignments(lines, lrc_words, alignments_map)
+    metrics = _compute_dtw_alignment_metrics(lines, lrc_words, alignments_map)
 
     logger.info(f"DTW alignment complete: {len(corrections)} lines modified")
-    return aligned_lines, corrections
+    return aligned_lines, corrections, metrics, lrc_words, alignments_map
+
+
+def align_dtw_whisper(
+    lines: List[Line],
+    whisper_words: List[TranscriptionWord],
+    language: str = "fra-Latn",
+    min_similarity: float = 0.4,
+) -> Tuple[List[Line], List[str], Dict[str, float]]:
+    """Align LRC to Whisper using Dynamic Time Warping.
+
+    DTW finds globally optimal alignment, which handles cases where
+    LRC timing errors compound over time.
+
+    Args:
+        lines: LRC lines with word-level timing
+        whisper_words: Whisper words with timestamps
+        language: Epitran language code
+        min_similarity: Minimum similarity for valid alignment
+
+    Returns:
+        Tuple of (aligned lines, list of corrections, metrics)
+    """
+    aligned_lines, corrections, metrics, _lrc_words, _alignments = (
+        _align_dtw_whisper_with_data(
+            lines, whisper_words, language=language, min_similarity=min_similarity
+        )
+    )
+    return aligned_lines, corrections, metrics
 
 
 def correct_timing_with_whisper(
@@ -2334,7 +2466,8 @@ def correct_timing_with_whisper(
     model_size: str = "base",
     trust_lrc_threshold: float = 1.0,
     correct_lrc_threshold: float = 1.5,
-) -> Tuple[List[Line], List[str]]:
+    force_dtw: bool = False,
+) -> Tuple[List[Line], List[str], Dict[str, float]]:
     """Correct lyrics timing using Whisper transcription (adaptive approach).
 
     Strategy:
@@ -2353,7 +2486,7 @@ def correct_timing_with_whisper(
         correct_lrc_threshold: If timing error > this, use Whisper (default: 1.5s)
 
     Returns:
-        Tuple of (corrected lines, list of corrections)
+        Tuple of (corrected lines, list of corrections, metrics)
     """
     # Transcribe vocals (returns segments, all_words, and language)
     transcription, all_words, detected_lang = transcribe_vocals(
@@ -2362,7 +2495,7 @@ def correct_timing_with_whisper(
 
     if not transcription:
         logger.warning("No transcription available, skipping Whisper alignment")
-        return lines, []
+        return lines, [], {}
 
     # Map to epitran language code for phonetic matching
     epitran_lang = _whisper_lang_to_epitran(detected_lang)
@@ -2381,7 +2514,8 @@ def correct_timing_with_whisper(
     )
     logger.info(f"LRC timing quality: {quality:.0%} of lines within 1.5s of Whisper")
 
-    if quality >= 0.7:
+    metrics: Dict[str, float] = {}
+    if not force_dtw and quality >= 0.7:
         # LRC is mostly good - only fix individual bad lines using hybrid approach
         logger.info("LRC timing is good, using targeted corrections only")
         aligned_lines, alignments = align_hybrid_lrc_whisper(
@@ -2392,7 +2526,7 @@ def correct_timing_with_whisper(
             trust_threshold=trust_lrc_threshold,
             correct_threshold=correct_lrc_threshold,
         )
-    elif quality >= 0.4:
+    elif not force_dtw and quality >= 0.4:
         # Mixed quality - use hybrid approach
         logger.info("LRC timing is mixed, using hybrid Whisper alignment")
         aligned_lines, alignments = align_hybrid_lrc_whisper(
@@ -2406,21 +2540,1485 @@ def correct_timing_with_whisper(
     else:
         # LRC is broken - use DTW for global alignment
         logger.info("LRC timing is poor, using DTW global alignment")
-        aligned_lines, alignments = align_dtw_whisper(
-            lines,
-            all_words,
-            language=epitran_lang,
+        aligned_lines, alignments, metrics, lrc_words, alignments_map = (
+            _align_dtw_whisper_with_data(
+                lines,
+                all_words,
+                language=epitran_lang,
+            )
         )
+        metrics["dtw_used"] = 1.0
+
+        matched_ratio = metrics.get("matched_ratio", 0.0)
+        avg_similarity = metrics.get("avg_similarity", 0.0)
+        line_coverage = metrics.get("line_coverage", 0.0)
+        confidence_ok = (
+            matched_ratio >= 0.6 and avg_similarity >= 0.5 and line_coverage >= 0.6
+        )
+
+        if confidence_ok and lrc_words and alignments_map:
+            dtw_lines, dtw_fixes = _retime_lines_from_dtw_alignments(
+                lines, lrc_words, alignments_map
+            )
+            aligned_lines = dtw_lines
+            alignments.extend(dtw_fixes)
+            metrics["dtw_confidence_passed"] = 1.0
+        else:
+            metrics["dtw_confidence_passed"] = 0.0
+            alignments.append(
+                "DTW confidence gating failed; keeping conservative word shifts"
+            )
+
+    # Post-process: tighten/merge to Whisper segment boundaries for broken LRC
+    if quality < 0.4 or force_dtw:
+        aligned_lines, merged_first = _merge_first_two_lines_if_segment_matches(
+            aligned_lines, transcription, epitran_lang
+        )
+        if merged_first:
+            alignments.append("Merged first two lines via Whisper segment")
+        aligned_lines, pair_retimed = _retime_adjacent_lines_to_whisper_window(
+            aligned_lines, transcription, epitran_lang
+        )
+        if pair_retimed:
+            alignments.append(
+                f"Retimed {pair_retimed} adjacent line pair(s) to Whisper window"
+            )
+        aligned_lines, pair_windowed = _retime_adjacent_lines_to_segment_window(
+            aligned_lines, transcription, epitran_lang
+        )
+        if pair_windowed:
+            alignments.append(
+                f"Retimed {pair_windowed} adjacent line pair(s) to Whisper segment window"
+            )
+        aligned_lines, pulled_next = _pull_next_line_into_segment_window(
+            aligned_lines, transcription, epitran_lang
+        )
+        if pulled_next:
+            alignments.append(
+                f"Pulled {pulled_next} line(s) into adjacent segment window"
+            )
+        aligned_lines, pulled_near_end = _pull_lines_near_segment_end(
+            aligned_lines, transcription, epitran_lang
+        )
+        if pulled_near_end:
+            alignments.append(f"Pulled {pulled_near_end} line(s) near segment ends")
+        aligned_lines, pulled_same = _pull_next_line_into_same_segment(
+            aligned_lines, transcription
+        )
+        if pulled_same:
+            alignments.append(f"Pulled {pulled_same} line(s) into same segment")
+        # Re-apply adjacent retiming to keep pairs together after pulls.
+        aligned_lines, pair_retimed_after = _retime_adjacent_lines_to_whisper_window(
+            aligned_lines,
+            transcription,
+            epitran_lang,
+            max_window_duration=4.5,
+            max_start_offset=1.0,
+        )
+        if pair_retimed_after:
+            alignments.append(
+                f"Retimed {pair_retimed_after} adjacent line pair(s) after pulls"
+            )
+        aligned_lines, merged = _merge_lines_to_whisper_segments(
+            aligned_lines, transcription, epitran_lang
+        )
+        if merged:
+            alignments.append(f"Merged {merged} line pair(s) via Whisper segments")
+        aligned_lines, tightened = _tighten_lines_to_whisper_segments(
+            aligned_lines, transcription, epitran_lang
+        )
+        if tightened:
+            alignments.append(f"Tightened {tightened} line(s) to Whisper segments")
+        aligned_lines, pulled = _pull_lines_to_best_segments(
+            aligned_lines, transcription, epitran_lang
+        )
+        if pulled:
+            alignments.append(f"Pulled {pulled} line(s) to Whisper segments")
 
     # Post-process: reject corrections that break line ordering
     aligned_lines, alignments = _fix_ordering_violations(
         lines, aligned_lines, alignments
     )
+    aligned_lines = _normalize_line_word_timings(aligned_lines)
+    aligned_lines = _enforce_monotonic_line_starts(aligned_lines)
+    if force_dtw:
+        aligned_lines, pulled_near_end = _pull_lines_near_segment_end(
+            aligned_lines, transcription, epitran_lang
+        )
+        if pulled_near_end:
+            alignments.append(
+                f"Pulled {pulled_near_end} line(s) near segment ends (post-order)"
+            )
+        aligned_lines, merged_short = _merge_short_following_line_into_segment(
+            aligned_lines, transcription
+        )
+        if merged_short:
+            alignments.append(
+                f"Merged {merged_short} short line(s) into prior segments"
+            )
+        aligned_lines, clamped_repeat = _clamp_repeated_line_duration(aligned_lines)
+        if clamped_repeat:
+            alignments.append(f"Clamped {clamped_repeat} repeated line(s) duration")
+    aligned_lines, deduped = _drop_duplicate_lines(
+        aligned_lines, transcription, epitran_lang
+    )
+    if deduped:
+        alignments.append(f"Dropped {deduped} duplicate line(s)")
+    before_drop = len(aligned_lines)
+    aligned_lines = [line for line in aligned_lines if line.words]
+    if len(aligned_lines) != before_drop:
+        alignments.append("Dropped empty lines after Whisper merges")
+    aligned_lines, timing_deduped = _drop_duplicate_lines_by_timing(aligned_lines)
+    if timing_deduped:
+        alignments.append(
+            f"Dropped {timing_deduped} duplicate line(s) by timing overlap"
+        )
 
     if alignments:
         logger.info(f"Whisper hybrid alignment: {len(alignments)} lines corrected")
 
-    return aligned_lines, alignments
+    return aligned_lines, alignments, metrics
+
+
+def _enforce_monotonic_line_starts(
+    lines: List[Line], min_gap: float = 0.01
+) -> List[Line]:
+    """Shift lines forward so start times are non-decreasing."""
+    from .models import Line, Word
+
+    adjusted: List[Line] = []
+    prev_start = None
+    for line in lines:
+        if not line.words:
+            adjusted.append(line)
+            continue
+
+        start = line.start_time
+        if prev_start is not None and start < prev_start:
+            shift = (prev_start - start) + min_gap
+            new_words = [
+                Word(
+                    text=w.text,
+                    start_time=w.start_time + shift,
+                    end_time=w.end_time + shift,
+                    singer=w.singer,
+                )
+                for w in line.words
+            ]
+            line = Line(words=new_words, singer=line.singer)
+
+        adjusted.append(line)
+        prev_start = line.start_time
+
+    return adjusted
+
+
+def _merge_lines_to_whisper_segments(
+    lines: List[Line],
+    segments: List[TranscriptionSegment],
+    language: str,
+    min_similarity: float = 0.55,
+) -> Tuple[List[Line], int]:
+    """Merge consecutive lines that map to the same Whisper segment."""
+    from .models import Line, Word
+
+    if not lines or not segments:
+        return lines, 0
+
+    merged_lines: List[Line] = []
+    merged_count = 0
+    sorted_segments = sorted(segments, key=lambda s: s.start)
+
+    idx = 0
+    while idx < len(lines):
+        line = lines[idx]
+        if not line.words:
+            merged_lines.append(line)
+            idx += 1
+            continue
+
+        if idx + 1 >= len(lines):
+            merged_lines.append(line)
+            break
+
+        next_line = lines[idx + 1]
+        if not next_line.words:
+            merged_lines.append(line)
+            idx += 1
+            continue
+
+        seg, sim, _ = _find_best_whisper_segment(
+            line.text, line.start_time, sorted_segments, language, min_similarity
+        )
+        next_seg, next_sim, _ = _find_best_whisper_segment(
+            next_line.text,
+            next_line.start_time,
+            sorted_segments,
+            language,
+            min_similarity,
+        )
+
+        if seg is None:
+            merged_lines.append(line)
+            idx += 1
+            continue
+
+        if next_line.text and next_line.text in line.text and sim >= 0.8:
+            merged_words = list(line.words)
+            word_count = max(len(merged_words), 1)
+            total_duration = max(seg.end - seg.start, 0.2)
+            spacing = total_duration / word_count
+            new_words = []
+            for i, word in enumerate(merged_words):
+                start = seg.start + i * spacing
+                end = start + spacing * 0.9
+                new_words.append(
+                    Word(
+                        text=word.text,
+                        start_time=start,
+                        end_time=end,
+                        singer=word.singer,
+                    )
+                )
+            merged_lines.append(Line(words=new_words, singer=line.singer))
+            merged_count += 1
+            idx += 2
+            continue
+
+        combined_text = f"{line.text} {next_line.text}".strip()
+        combined_seg, combined_sim, _ = _find_best_whisper_segment(
+            combined_text, line.start_time, sorted_segments, language, min_similarity
+        )
+        if combined_seg is None:
+            combined_sim = _phonetic_similarity(combined_text, seg.text, language)
+
+        same_segment = next_seg is seg and next_sim >= min_similarity
+
+        should_merge = False
+        if same_segment and sim >= min_similarity:
+            should_merge = True
+        elif combined_sim >= min_similarity and sim >= min_similarity:
+            # Accept merge when the combined line matches the segment better.
+            if combined_sim >= max(sim, next_sim) + 0.05:
+                should_merge = True
+        elif (
+            combined_sim >= min_similarity
+            and seg.start <= line.start_time + 2.0
+            and seg.end >= line.end_time
+        ):
+            should_merge = True
+        elif (
+            combined_seg is not None
+            and combined_sim >= 0.8
+            and combined_seg.start <= line.start_time + 3.0
+            and (next_line.start_time - line.end_time) > 2.0
+        ):
+            seg = combined_seg
+            should_merge = True
+
+        if should_merge:
+            merged_words = list(line.words) + list(next_line.words)
+            word_count = max(len(merged_words), 1)
+            total_duration = max(seg.end - seg.start, 0.2)
+            spacing = total_duration / word_count
+            new_words = []
+            for i, word in enumerate(merged_words):
+                start = seg.start + i * spacing
+                end = start + spacing * 0.9
+                new_words.append(
+                    Word(
+                        text=word.text,
+                        start_time=start,
+                        end_time=end,
+                        singer=word.singer,
+                    )
+                )
+            merged_lines.append(Line(words=new_words, singer=line.singer))
+            merged_count += 1
+            idx += 2
+            continue
+
+        merged_lines.append(line)
+        idx += 1
+
+    return merged_lines, merged_count
+
+
+def _retime_adjacent_lines_to_whisper_window(
+    lines: List[Line],
+    segments: List[TranscriptionSegment],
+    language: str,
+    min_similarity: float = 0.35,
+    max_gap: float = 2.5,
+    min_similarity_late: float = 0.25,
+    max_late: float = 3.0,
+    max_late_short: float = 6.0,
+    max_time_window: float = 15.0,
+    max_window_duration: Optional[float] = None,
+    max_start_offset: Optional[float] = None,
+) -> Tuple[List[Line], int]:
+    """Retune adjacent lines into a single Whisper window without merging them."""
+    from .models import Line, Word
+
+    if not lines or not segments:
+        return lines, 0
+
+    adjusted = list(lines)
+    fixes = 0
+    sorted_segments = sorted(segments, key=lambda s: s.start)
+
+    for idx in range(len(adjusted) - 1):
+        line = adjusted[idx]
+        next_line = adjusted[idx + 1]
+        if not line.words or not next_line.words:
+            continue
+
+        combined_text = f"{line.text} {next_line.text}".strip()
+        prev_end = None
+        if idx > 0 and adjusted[idx - 1].words:
+            prev_end = adjusted[idx - 1].end_time
+
+        seg, combined_sim, _ = _find_best_whisper_segment(
+            combined_text, line.start_time, sorted_segments, language, min_similarity
+        )
+        if seg is None or combined_sim < min_similarity:
+            # Fallback: if the pair is late, try the nearest segment by time.
+            nearest = None
+            nearest_gap = None
+            for cand in sorted_segments:
+                gap = abs(cand.start - line.start_time)
+                if gap > max_time_window:
+                    continue
+                if nearest_gap is None or gap < nearest_gap:
+                    nearest_gap = gap
+                    nearest = cand
+            if nearest is None:
+                continue
+            if line.start_time - nearest.start < max_late:
+                continue
+
+            combined_sim = _phonetic_similarity(combined_text, nearest.text, language)
+            seg = nearest
+
+            # If the nearest segment is after the line start, try the prior segment instead.
+            prior = None
+            prior_gap = None
+            for cand in sorted_segments:
+                if (
+                    cand.end <= line.start_time
+                    and cand.start >= line.start_time - max_time_window
+                ):
+                    gap = line.start_time - cand.end
+                    if prior_gap is None or gap < prior_gap:
+                        prior_gap = gap
+                        prior = cand
+            if prior is not None and prior_gap is not None:
+                prior_sim = _phonetic_similarity(combined_text, prior.text, language)
+                if (
+                    prior_gap <= max_late_short
+                    and (line.start_time - prior.start) > max_late
+                    and prior_sim >= min_similarity_late
+                ):
+                    seg = prior
+                    combined_sim = prior_sim
+
+            if combined_sim < min_similarity_late:
+                continue
+        if (
+            max_window_duration is not None
+            and (seg.end - seg.start) > max_window_duration
+        ):
+            continue
+        if (
+            max_start_offset is not None
+            and abs(line.start_time - seg.start) > max_start_offset
+        ):
+            continue
+
+        total_words = len(line.words) + len(next_line.words)
+        if total_words <= 0:
+            continue
+
+        window_start = seg.start
+        if prev_end is not None:
+            window_start = max(window_start, prev_end + 0.01)
+        if window_start >= seg.end:
+            continue
+        if (
+            max_window_duration is not None
+            and (seg.end - window_start) > max_window_duration
+        ):
+            continue
+
+        total_duration = max(seg.end - window_start, 0.2)
+        spacing = total_duration / total_words
+        new_line_words = []
+        new_next_words = []
+
+        for i, word in enumerate(line.words):
+            start = window_start + i * spacing
+            end = start + spacing * 0.9
+            new_line_words.append(
+                Word(
+                    text=word.text,
+                    start_time=start,
+                    end_time=end,
+                    singer=word.singer,
+                )
+            )
+
+        for j, word in enumerate(next_line.words):
+            idx_in_seg = len(line.words) + j
+            start = window_start + idx_in_seg * spacing
+            end = start + spacing * 0.9
+            new_next_words.append(
+                Word(
+                    text=word.text,
+                    start_time=start,
+                    end_time=end,
+                    singer=word.singer,
+                )
+            )
+
+        gap = new_next_words[0].start_time - new_line_words[-1].end_time
+        if gap > max_gap:
+            continue
+
+        adjusted[idx] = Line(words=new_line_words, singer=line.singer)
+        adjusted[idx + 1] = Line(words=new_next_words, singer=next_line.singer)
+        fixes += 1
+
+    return adjusted, fixes
+
+
+def _retime_adjacent_lines_to_segment_window(
+    lines: List[Line],
+    segments: List[TranscriptionSegment],
+    language: str,
+    min_similarity: float = 0.35,
+    max_gap: float = 2.5,
+    max_time_window: float = 15.0,
+) -> Tuple[List[Line], int]:
+    """Retune adjacent lines into a two-segment Whisper window."""
+    from .models import Line, Word
+
+    if not lines or len(segments) < 2:
+        return lines, 0
+
+    adjusted = list(lines)
+    fixes = 0
+    sorted_segments = sorted(segments, key=lambda s: s.start)
+
+    for idx in range(len(adjusted) - 1):
+        line = adjusted[idx]
+        next_line = adjusted[idx + 1]
+        if not line.words or not next_line.words:
+            continue
+
+        combined_text = f"{line.text} {next_line.text}".strip()
+
+        for s_idx in range(len(sorted_segments) - 1):
+            seg_a = sorted_segments[s_idx]
+            seg_b = sorted_segments[s_idx + 1]
+            if seg_b.start - seg_a.end > 1.0:
+                continue
+            if abs(seg_a.start - line.start_time) > max_time_window:
+                continue
+
+            window_text = f"{seg_a.text} {seg_b.text}".strip()
+            combined_sim = _phonetic_similarity(combined_text, window_text, language)
+            if combined_sim < min_similarity:
+                continue
+
+            total_words = len(line.words) + len(next_line.words)
+            if total_words <= 0:
+                continue
+
+            window_start = seg_a.start
+            window_end = seg_b.end
+            total_duration = max(window_end - window_start, 0.2)
+            spacing = total_duration / total_words
+
+            new_line_words = []
+            new_next_words = []
+            for i, word in enumerate(line.words):
+                start = window_start + i * spacing
+                end = start + spacing * 0.9
+                new_line_words.append(
+                    Word(
+                        text=word.text,
+                        start_time=start,
+                        end_time=end,
+                        singer=word.singer,
+                    )
+                )
+            for j, word in enumerate(next_line.words):
+                idx_in_seg = len(line.words) + j
+                start = window_start + idx_in_seg * spacing
+                end = start + spacing * 0.9
+                new_next_words.append(
+                    Word(
+                        text=word.text,
+                        start_time=start,
+                        end_time=end,
+                        singer=word.singer,
+                    )
+                )
+
+            gap = new_next_words[0].start_time - new_line_words[-1].end_time
+            if gap > max_gap:
+                continue
+
+            adjusted[idx] = Line(words=new_line_words, singer=line.singer)
+            adjusted[idx + 1] = Line(words=new_next_words, singer=next_line.singer)
+            fixes += 1
+            break
+
+    return adjusted, fixes
+
+
+def _pull_next_line_into_segment_window(
+    lines: List[Line],
+    segments: List[TranscriptionSegment],
+    language: str,
+    min_similarity: float = 0.2,
+    max_late: float = 6.0,
+    min_gap: float = 0.05,
+    max_time_window: float = 15.0,
+) -> Tuple[List[Line], int]:
+    """Pull a late-following line into the second segment of a window."""
+    if not lines or len(segments) < 2:
+        return lines, 0
+
+    adjusted = list(lines)
+    fixes = 0
+    sorted_segments = sorted(segments, key=lambda s: s.start)
+
+    for idx in range(len(adjusted) - 1):
+        line = adjusted[idx]
+        next_line = adjusted[idx + 1]
+        if not line.words or not next_line.words:
+            continue
+
+        nearest = None
+        nearest_gap = None
+        for cand in sorted_segments:
+            gap = abs(cand.start - line.start_time)
+            if gap > max_time_window:
+                continue
+            if nearest_gap is None or gap < nearest_gap:
+                nearest_gap = gap
+                nearest = cand
+        seg_a = nearest
+        if seg_a is None:
+            continue
+
+        seg_idx = sorted_segments.index(seg_a)
+        if seg_idx + 1 >= len(sorted_segments):
+            continue
+
+        seg_b = sorted_segments[seg_idx + 1]
+        if seg_b.start - seg_a.end > 1.0:
+            continue
+
+        if next_line.start_time < seg_b.end:
+            continue
+
+        late_by = next_line.start_time - seg_b.end
+        if late_by > max_late:
+            continue
+        if 0 <= late_by <= 0.5:
+            adjusted[idx + 1] = _retime_line_to_segment(next_line, seg_b)
+            fixes += 1
+            continue
+
+        next_start = None
+        if idx + 2 < len(adjusted) and adjusted[idx + 2].words:
+            next_start = adjusted[idx + 2].start_time
+
+        if next_start is not None and seg_b.end >= next_start - min_gap:
+            continue
+
+        nearest_next = None
+        nearest_next_gap = None
+        for cand in sorted_segments:
+            gap = abs(cand.start - next_line.start_time)
+            if gap > max_time_window:
+                continue
+            if nearest_next_gap is None or gap < nearest_next_gap:
+                nearest_next_gap = gap
+                nearest_next = cand
+        if (
+            nearest_next is not None
+            and abs(nearest_next.start - seg_b.start) < 1e-6
+            and abs(nearest_next.end - seg_b.end) < 1e-6
+            and next_line.start_time > seg_b.end
+        ):
+            adjusted[idx + 1] = _retime_line_to_segment(next_line, seg_b)
+            fixes += 1
+            continue
+
+        word_count = len(next_line.words)
+        sim_b = _phonetic_similarity(next_line.text, seg_b.text, language)
+        if sim_b < min_similarity and word_count > 4:
+            continue
+
+        adjusted[idx + 1] = _retime_line_to_segment(next_line, seg_b)
+        fixes += 1
+
+    return adjusted, fixes
+
+
+def _pull_next_line_into_same_segment(
+    lines: List[Line],
+    segments: List[TranscriptionSegment],
+    max_late: float = 6.0,
+    max_time_window: float = 15.0,
+) -> Tuple[List[Line], int]:
+    """Pull the next line into the same segment as the current line when late."""
+    from .models import Line, Word
+
+    if not lines or not segments:
+        return lines, 0
+
+    adjusted = list(lines)
+    fixes = 0
+    sorted_segments = sorted(segments, key=lambda s: s.start)
+
+    for idx in range(len(adjusted) - 1):
+        line = adjusted[idx]
+        next_line = adjusted[idx + 1]
+        if not line.words or not next_line.words:
+            continue
+
+        nearest = None
+        nearest_gap = None
+        for cand in sorted_segments:
+            gap = abs(cand.start - line.start_time)
+            if gap > max_time_window:
+                continue
+            if nearest_gap is None or gap < nearest_gap:
+                nearest_gap = gap
+                nearest = cand
+        if nearest is None:
+            continue
+
+        late_by = next_line.start_time - nearest.end
+        if late_by < 0 or late_by > max_late:
+            continue
+
+        min_start = line.end_time + 0.01
+        # If the next line is short and starts late, retime both into the same segment.
+        if len(next_line.words) <= 3 and late_by > 0:
+            total_words = len(line.words) + len(next_line.words)
+            if total_words <= 0:
+                continue
+            window_start = nearest.start
+            if idx > 0 and adjusted[idx - 1].words:
+                window_start = max(window_start, adjusted[idx - 1].end_time + 0.01)
+            if window_start >= nearest.end:
+                continue
+            total_duration = max(nearest.end - window_start, 0.2)
+            spacing = total_duration / total_words
+            new_line_words = []
+            new_next_words = []
+            for i, word in enumerate(line.words):
+                start = window_start + i * spacing
+                end = start + spacing * 0.9
+                new_line_words.append(
+                    Word(
+                        text=word.text,
+                        start_time=start,
+                        end_time=end,
+                        singer=word.singer,
+                    )
+                )
+            for j, word in enumerate(next_line.words):
+                idx_in_seg = len(line.words) + j
+                start = window_start + idx_in_seg * spacing
+                end = start + spacing * 0.9
+                new_next_words.append(
+                    Word(
+                        text=word.text,
+                        start_time=start,
+                        end_time=end,
+                        singer=word.singer,
+                    )
+                )
+            adjusted[idx] = Line(words=new_line_words, singer=line.singer)
+            adjusted[idx + 1] = Line(words=new_next_words, singer=next_line.singer)
+        elif min_start >= nearest.end:
+            # Not enough room: retime both lines into the segment window.
+            total_words = len(line.words) + len(next_line.words)
+            if total_words <= 0:
+                continue
+            window_start = nearest.start
+            total_duration = max(nearest.end - window_start, 0.2)
+            spacing = total_duration / total_words
+            new_line_words = []
+            new_next_words = []
+            for i, word in enumerate(line.words):
+                start = window_start + i * spacing
+                end = start + spacing * 0.9
+                new_line_words.append(
+                    Word(
+                        text=word.text,
+                        start_time=start,
+                        end_time=end,
+                        singer=word.singer,
+                    )
+                )
+            for j, word in enumerate(next_line.words):
+                idx_in_seg = len(line.words) + j
+                start = window_start + idx_in_seg * spacing
+                end = start + spacing * 0.9
+                new_next_words.append(
+                    Word(
+                        text=word.text,
+                        start_time=start,
+                        end_time=end,
+                        singer=word.singer,
+                    )
+                )
+            adjusted[idx] = Line(words=new_line_words, singer=line.singer)
+            adjusted[idx + 1] = Line(words=new_next_words, singer=next_line.singer)
+        else:
+            adjusted[idx + 1] = _retime_line_to_segment_with_min_start(
+                next_line, nearest, min_start
+            )
+        fixes += 1
+
+    return adjusted, fixes
+
+
+def _merge_short_following_line_into_segment(
+    lines: List[Line],
+    segments: List[TranscriptionSegment],
+    max_late: float = 6.0,
+    max_time_window: float = 15.0,
+) -> Tuple[List[Line], int]:
+    """Merge a short following line into the same segment window as the current line."""
+    from .models import Line, Word
+
+    if not lines or not segments:
+        return lines, 0
+
+    adjusted = list(lines)
+    fixes = 0
+    sorted_segments = sorted(segments, key=lambda s: s.start)
+
+    for idx in range(len(adjusted) - 1):
+        line = adjusted[idx]
+        next_line = adjusted[idx + 1]
+        if not line.words or not next_line.words:
+            continue
+
+        if len(next_line.words) > 3:
+            continue
+
+        nearest = None
+        nearest_gap = None
+        for cand in sorted_segments:
+            gap = abs(cand.start - line.start_time)
+            if gap > max_time_window:
+                continue
+            if nearest_gap is None or gap < nearest_gap:
+                nearest_gap = gap
+                nearest = cand
+        if nearest is None:
+            continue
+
+        late_by = next_line.start_time - nearest.end
+        if late_by < 0 or late_by > max_late:
+            continue
+
+        total_words = len(line.words) + len(next_line.words)
+        if total_words <= 0:
+            continue
+
+        window_start = nearest.start
+        if idx > 0 and adjusted[idx - 1].words:
+            window_start = max(window_start, adjusted[idx - 1].end_time + 0.01)
+        if window_start >= nearest.end:
+            continue
+
+        total_duration = max(nearest.end - window_start, 0.2)
+        spacing = total_duration / total_words
+        new_line_words = []
+        new_next_words = []
+        for i, word in enumerate(line.words):
+            start = window_start + i * spacing
+            end = start + spacing * 0.9
+            new_line_words.append(
+                Word(
+                    text=word.text,
+                    start_time=start,
+                    end_time=end,
+                    singer=word.singer,
+                )
+            )
+        for j, word in enumerate(next_line.words):
+            idx_in_seg = len(line.words) + j
+            start = window_start + idx_in_seg * spacing
+            end = start + spacing * 0.9
+            new_next_words.append(
+                Word(
+                    text=word.text,
+                    start_time=start,
+                    end_time=end,
+                    singer=word.singer,
+                )
+            )
+
+        adjusted[idx] = Line(words=new_line_words, singer=line.singer)
+        adjusted[idx + 1] = Line(words=new_next_words, singer=next_line.singer)
+        fixes += 1
+
+    return adjusted, fixes
+
+
+def _pull_lines_near_segment_end(
+    lines: List[Line],
+    segments: List[TranscriptionSegment],
+    language: str,
+    max_late: float = 0.5,
+    max_late_short: float = 6.0,
+    min_similarity: float = 0.35,
+    min_short_duration: float = 0.35,
+    max_time_window: float = 15.0,
+) -> Tuple[List[Line], int]:
+    """Pull lines that start just after a nearby segment end back into it."""
+    if not lines or not segments:
+        return lines, 0
+
+    adjusted = list(lines)
+    fixes = 0
+    sorted_segments = sorted(segments, key=lambda s: s.start)
+
+    for idx, line in enumerate(adjusted):
+        if not line.words:
+            continue
+        prev_end = None
+        if idx > 0 and adjusted[idx - 1].words:
+            prev_end = adjusted[idx - 1].end_time
+        next_start = None
+        if idx + 1 < len(adjusted) and adjusted[idx + 1].words:
+            next_start = adjusted[idx + 1].start_time
+        nearest = None
+        nearest_late = None
+        for cand in sorted_segments:
+            if abs(cand.start - line.start_time) > max_time_window:
+                continue
+            late_by = line.start_time - cand.end
+            if late_by < 0:
+                continue
+            if nearest_late is None or late_by < nearest_late:
+                nearest_late = late_by
+                nearest = cand
+        if nearest is None:
+            continue
+
+        late_by = line.start_time - nearest.end
+        if late_by < 0:
+            continue
+
+        allow_late = late_by <= max_late
+        if not allow_late:
+            word_count = len(line.words)
+            # Short lines can be pulled if they're only modestly late.
+            if word_count <= 6 and late_by <= max_late_short:
+                allow_late = True
+            else:
+                sim = _phonetic_similarity(line.text, nearest.text, language)
+                if (
+                    word_count <= 3
+                    and sim >= min_similarity
+                    and late_by <= max_late_short
+                ):
+                    allow_late = True
+
+        if not allow_late:
+            continue
+
+        min_start = (prev_end + 0.01) if prev_end is not None else nearest.start
+        if len(line.words) <= 2:
+            target_end = max(nearest.end, min_start + min_short_duration)
+            if next_start is not None:
+                target_end = min(target_end, next_start - 0.01)
+            adjusted[idx] = _retime_line_to_window(line, min_start, target_end)
+        else:
+            adjusted[idx] = _retime_line_to_segment_with_min_start(
+                line, nearest, min_start
+            )
+        fixes += 1
+
+    return adjusted, fixes
+
+
+def _clamp_repeated_line_duration(
+    lines: List[Line],
+    max_duration: float = 1.5,
+    min_gap: float = 0.01,
+) -> Tuple[List[Line], int]:
+    """Clamp duration for immediately repeated lines so they don't hang too long."""
+    from .models import Line, Word
+
+    if not lines:
+        return lines, 0
+
+    adjusted = list(lines)
+    fixes = 0
+
+    for idx in range(1, len(adjusted)):
+        prev = adjusted[idx - 1]
+        line = adjusted[idx]
+        if not prev.words or not line.words:
+            continue
+
+        if prev.text.strip() != line.text.strip():
+            continue
+
+        duration = line.end_time - line.start_time
+        if duration <= max_duration:
+            continue
+
+        new_end = line.start_time + max_duration
+        if idx + 1 < len(adjusted) and adjusted[idx + 1].words:
+            next_start = adjusted[idx + 1].start_time
+            new_end = min(new_end, next_start - min_gap)
+        if new_end <= line.start_time:
+            continue
+
+        total_duration = max(new_end - line.start_time, 0.2)
+        word_count = max(len(line.words), 1)
+        spacing = total_duration / word_count
+        new_words = []
+        for i, word in enumerate(line.words):
+            start = line.start_time + i * spacing
+            end = start + spacing * 0.9
+            new_words.append(
+                Word(
+                    text=word.text,
+                    start_time=start,
+                    end_time=end,
+                    singer=word.singer,
+                )
+            )
+        adjusted[idx] = Line(words=new_words, singer=line.singer)
+        fixes += 1
+
+    return adjusted, fixes
+
+
+def _merge_first_two_lines_if_segment_matches(
+    lines: List[Line],
+    segments: List[TranscriptionSegment],
+    language: str,
+    min_similarity: float = 0.8,
+) -> Tuple[List[Line], bool]:
+    """Merge the first two non-empty lines if Whisper sees them as one phrase."""
+    from .models import Line, Word
+
+    if not lines or not segments:
+        return lines, False
+
+    first_idx = None
+    second_idx = None
+    for idx, line in enumerate(lines):
+        if line.words:
+            if first_idx is None:
+                first_idx = idx
+            else:
+                second_idx = idx
+                break
+
+    if first_idx is None or second_idx is None:
+        return lines, False
+
+    first_line = lines[first_idx]
+    second_line = lines[second_idx]
+    combined_text = f"{first_line.text} {second_line.text}".strip()
+
+    seg, sim, _ = _find_best_whisper_segment(
+        combined_text,
+        first_line.start_time,
+        sorted(segments, key=lambda s: s.start),
+        language,
+        min_similarity,
+    )
+
+    if seg is None or sim < min_similarity:
+        return lines, False
+
+    merged_words = list(first_line.words) + list(second_line.words)
+    word_count = max(len(merged_words), 1)
+    total_duration = max(seg.end - seg.start, 0.2)
+    spacing = total_duration / word_count
+    new_words = []
+    for i, word in enumerate(merged_words):
+        start = seg.start + i * spacing
+        end = start + spacing * 0.9
+        new_words.append(
+            Word(
+                text=word.text,
+                start_time=start,
+                end_time=end,
+                singer=word.singer,
+            )
+        )
+
+    lines[first_idx] = Line(words=new_words, singer=first_line.singer)
+    lines[second_idx] = Line(words=[], singer=second_line.singer)
+    return lines, True
+
+
+def _tighten_lines_to_whisper_segments(
+    lines: List[Line],
+    segments: List[TranscriptionSegment],
+    language: str,
+    min_similarity: float = 0.5,
+) -> Tuple[List[Line], int]:
+    """Pull consecutive lines to Whisper segment boundaries when phrased as one."""
+    from .models import Line, Word
+
+    if not lines or not segments:
+        return lines, 0
+
+    adjusted = list(lines)
+    fixes = 0
+    sorted_segments = sorted(segments, key=lambda s: s.start)
+
+    for idx in range(1, len(adjusted)):
+        prev_line = adjusted[idx - 1]
+        line = adjusted[idx]
+        if not prev_line.words or not line.words:
+            continue
+
+        line_text = line.text.strip()
+        if not line_text:
+            continue
+
+        prev_seg, prev_sim, _ = _find_best_whisper_segment(
+            prev_line.text,
+            prev_line.start_time,
+            sorted_segments,
+            language,
+            min_similarity,
+        )
+        seg, sim, _ = _find_best_whisper_segment(
+            line_text, line.start_time, sorted_segments, language, min_similarity
+        )
+
+        if seg is None or prev_seg is None:
+            continue
+
+        # If both lines map to the same segment, pull line start to segment end.
+        if seg is prev_seg:
+            shift = seg.end - line.start_time
+        else:
+            # If line maps to next segment but starts far after it, pull to segment start.
+            if line.start_time - seg.start <= 0:
+                continue
+            if seg.start - prev_seg.end > 2.5:
+                continue
+            if sim < min_similarity:
+                continue
+            shift = seg.start - line.start_time
+
+        if shift >= -0.2:
+            continue
+
+        new_words = [
+            Word(
+                text=w.text,
+                start_time=w.start_time + shift,
+                end_time=w.end_time + shift,
+                singer=w.singer,
+            )
+            for w in line.words
+        ]
+        adjusted[idx] = Line(words=new_words, singer=line.singer)
+        fixes += 1
+
+    return adjusted, fixes
+
+
+def _retime_line_to_segment(line: Line, seg: TranscriptionSegment) -> Line:
+    """Retime a line's words evenly within a Whisper segment."""
+    from .models import Line, Word
+
+    if not line.words:
+        return line
+
+    word_count = max(len(line.words), 1)
+    total_duration = max(seg.end - seg.start, 0.2)
+    spacing = total_duration / word_count
+    new_words = []
+    for i, word in enumerate(line.words):
+        start = seg.start + i * spacing
+        end = start + spacing * 0.9
+        new_words.append(
+            Word(
+                text=word.text,
+                start_time=start,
+                end_time=end,
+                singer=word.singer,
+            )
+        )
+    return Line(words=new_words, singer=line.singer)
+
+
+def _retime_line_to_segment_with_min_start(
+    line: Line, seg: TranscriptionSegment, min_start: float
+) -> Line:
+    """Retime a line within a segment, respecting a minimum start time."""
+    from .models import Line, Word
+
+    if not line.words:
+        return line
+
+    start_base = max(seg.start, min_start)
+    if start_base >= seg.end:
+        return line
+
+    word_count = max(len(line.words), 1)
+    total_duration = max(seg.end - start_base, 0.2)
+    spacing = total_duration / word_count
+    new_words = []
+    for i, word in enumerate(line.words):
+        start = start_base + i * spacing
+        end = start + spacing * 0.9
+        new_words.append(
+            Word(
+                text=word.text,
+                start_time=start,
+                end_time=end,
+                singer=word.singer,
+            )
+        )
+    return Line(words=new_words, singer=line.singer)
+
+
+def _retime_line_to_window(line: Line, window_start: float, window_end: float) -> Line:
+    """Retime a line's words evenly within a custom window."""
+    from .models import Line, Word
+
+    if not line.words:
+        return line
+
+    if window_end <= window_start:
+        return line
+
+    word_count = max(len(line.words), 1)
+    total_duration = max(window_end - window_start, 0.2)
+    spacing = total_duration / word_count
+    new_words = []
+    for i, word in enumerate(line.words):
+        start = window_start + i * spacing
+        end = start + spacing * 0.9
+        new_words.append(
+            Word(
+                text=word.text,
+                start_time=start,
+                end_time=end,
+                singer=word.singer,
+            )
+        )
+    return Line(words=new_words, singer=line.singer)
+
+
+def _pull_lines_to_best_segments(
+    lines: List[Line],
+    segments: List[TranscriptionSegment],
+    language: str,
+    min_similarity: float = 0.7,
+    min_shift: float = 0.75,
+    max_shift: float = 12.0,
+    min_gap: float = 0.05,
+) -> Tuple[List[Line], int]:
+    """Pull lines toward their best Whisper segment when alignment drift is large."""
+    from .models import Line
+
+    if not lines or not segments:
+        return lines, 0
+
+    adjusted = list(lines)
+    fixed = 0
+    sorted_segments = sorted(segments, key=lambda s: s.start)
+
+    for idx, line in enumerate(adjusted):
+        if not line.words:
+            continue
+
+        word_count = len(line.words)
+        local_min_similarity = min_similarity
+        if word_count <= 6:
+            local_min_similarity = min(0.6, min_similarity)
+
+        prev_end = None
+        if idx > 0 and adjusted[idx - 1].words:
+            prev_end = adjusted[idx - 1].end_time
+        next_start = None
+        if idx + 1 < len(adjusted) and adjusted[idx + 1].words:
+            next_start = adjusted[idx + 1].start_time
+
+        if word_count <= 6:
+            nearest_start_seg = None
+            nearest_start_gap = None
+            for cand in sorted_segments:
+                gap = abs(cand.start - line.start_time)
+                if gap > 6.0:
+                    continue
+                if prev_end is not None and cand.start <= prev_end + min_gap:
+                    continue
+                if next_start is not None and cand.end >= next_start - min_gap:
+                    continue
+                if nearest_start_gap is None or gap < nearest_start_gap:
+                    nearest_start_gap = gap
+                    nearest_start_seg = cand
+            if (
+                nearest_start_seg is not None
+                and nearest_start_seg.start <= line.start_time - 1.0
+            ):
+                adjusted[idx] = _retime_line_to_segment(line, nearest_start_seg)
+                fixed += 1
+                continue
+
+        if word_count <= 4:
+            end_aligned = None
+            end_gap = None
+            for cand in sorted_segments:
+                gap_to_end = line.start_time - cand.end
+                if gap_to_end < 0 or gap_to_end > 0.75:
+                    continue
+                if line.start_time - cand.start < 2.5:
+                    continue
+                if prev_end is not None and cand.start <= prev_end + min_gap:
+                    if abs(cand.start - prev_end) > 0.1:
+                        continue
+                if next_start is not None and cand.end >= next_start - min_gap:
+                    continue
+                if end_gap is None or gap_to_end < end_gap:
+                    end_gap = gap_to_end
+                    end_aligned = cand
+            if end_aligned is not None:
+                adjusted[idx] = _retime_line_to_segment(line, end_aligned)
+                fixed += 1
+                continue
+
+        seg, sim, _ = _find_best_whisper_segment(
+            line.text,
+            line.start_time,
+            sorted_segments,
+            language,
+            local_min_similarity,
+        )
+        if seg is None or sim < local_min_similarity:
+            # Fallback: allow weaker match if line is significantly late
+            seg, sim, _ = _find_best_whisper_segment(
+                line.text,
+                line.start_time,
+                sorted_segments,
+                language,
+                min_similarity=0.3,
+            )
+            if seg is None:
+                # Secondary fallback: align to a segment that ends right at the line start
+                if word_count > 4:
+                    continue
+                nearest = None
+                nearest_gap = None
+                for cand in sorted_segments:
+                    gap_to_end = line.start_time - cand.end
+                    if gap_to_end < 0 or gap_to_end > 0.75:
+                        continue
+                    if line.start_time - cand.start < 2.5:
+                        continue
+                    if nearest_gap is None or gap_to_end < nearest_gap:
+                        nearest_gap = gap_to_end
+                        nearest = cand
+                if nearest is None:
+                    continue
+                seg = nearest
+                sim = 0.0
+
+        start_delta = seg.start - line.start_time
+        end_delta = seg.end - line.end_time
+        if abs(start_delta) < min_shift and abs(end_delta) < min_shift:
+            continue
+
+        late_and_ordered = (
+            sim >= 0.3
+            and start_delta <= -1.0
+            and (prev_end is None or seg.start >= prev_end + min_gap)
+            and (next_start is None or seg.end <= next_start - min_gap)
+        )
+
+        if sim < local_min_similarity:
+            if word_count > 4 and not late_and_ordered:
+                continue
+            if start_delta > -3.0:
+                continue
+
+        if sim < local_min_similarity and word_count <= 6:
+            if -3.0 <= start_delta <= -1.0:
+                if prev_end is not None and seg.start <= prev_end + min_gap:
+                    continue
+                if next_start is not None and seg.end >= next_start - min_gap:
+                    continue
+                adjusted[idx] = _retime_line_to_segment(line, seg)
+                fixed += 1
+                continue
+
+        if abs(start_delta) > max_shift:
+            continue
+
+        if sim < local_min_similarity:
+            if prev_end is not None and seg.start <= prev_end + min_gap:
+                continue
+            if next_start is not None and seg.end >= next_start - min_gap:
+                continue
+
+        if prev_end is not None and seg.start <= prev_end + min_gap:
+            continue
+        if next_start is not None and seg.end >= next_start - min_gap:
+            continue
+
+        adjusted[idx] = _retime_line_to_segment(line, seg)
+        fixed += 1
+
+    return adjusted, fixed
+
+
+def _drop_duplicate_lines(
+    lines: List[Line],
+    segments: List[TranscriptionSegment],
+    language: str,
+    min_similarity: float = 0.7,
+) -> Tuple[List[Line], int]:
+    """Drop adjacent duplicate lines when they map to the same Whisper segment."""
+    if not lines:
+        return lines, 0
+
+    sorted_segments = sorted(segments, key=lambda s: s.start) if segments else []
+    deduped: List[Line] = []
+    dropped = 0
+
+    for line in lines:
+        if not deduped:
+            deduped.append(line)
+            continue
+
+        prev = deduped[-1]
+        if not prev.words or not line.words:
+            deduped.append(line)
+            continue
+
+        if prev.text.strip() != line.text.strip():
+            deduped.append(line)
+            continue
+
+        prev_seg, prev_sim, _ = _find_best_whisper_segment(
+            prev.text, prev.start_time, sorted_segments, language, min_similarity
+        )
+        seg, sim, _ = _find_best_whisper_segment(
+            line.text, line.start_time, sorted_segments, language, min_similarity
+        )
+
+        if (
+            prev_seg is not None
+            and seg is not None
+            and prev_seg is seg
+            and prev_sim >= min_similarity
+            and sim >= min_similarity
+        ):
+            dropped += 1
+            continue
+
+        deduped.append(line)
+
+    return deduped, dropped
+
+
+def _drop_duplicate_lines_by_timing(
+    lines: List[Line],
+    max_gap: float = 0.2,
+) -> Tuple[List[Line], int]:
+    """Drop adjacent duplicate lines that overlap or are nearly contiguous."""
+    if not lines:
+        return lines, 0
+
+    deduped: List[Line] = []
+    dropped = 0
+
+    for line in lines:
+        if not deduped:
+            deduped.append(line)
+            continue
+
+        prev = deduped[-1]
+        if not prev.words or not line.words:
+            deduped.append(line)
+            continue
+
+        if prev.text.strip() != line.text.strip():
+            deduped.append(line)
+            continue
+
+        gap = line.start_time - prev.end_time
+        if gap <= max_gap:
+            dropped += 1
+            continue
+
+        deduped.append(line)
+
+    return deduped, dropped
+
+
+def _normalize_line_word_timings(
+    lines: List[Line],
+    min_word_duration: float = 0.05,
+    min_gap: float = 0.01,
+) -> List[Line]:
+    """Ensure each line has monotonic word timings with valid durations."""
+    from .models import Line, Word
+
+    normalized: List[Line] = []
+    for line in lines:
+        if not line.words:
+            normalized.append(line)
+            continue
+
+        new_words = []
+        last_end = None
+        for word in line.words:
+            start = float(word.start_time)
+            end = float(word.end_time)
+
+            if end < start:
+                end = start + min_word_duration
+
+            if last_end is not None and start < last_end:
+                shift = (last_end - start) + min_gap
+                start += shift
+                end += shift
+
+            if end < start:
+                end = start + min_word_duration
+
+            new_words.append(
+                Word(
+                    text=word.text,
+                    start_time=start,
+                    end_time=end,
+                    singer=word.singer,
+                )
+            )
+            last_end = end
+
+        normalized.append(Line(words=new_words, singer=line.singer))
+
+    return normalized
 
 
 def _find_best_whisper_segment(
@@ -2606,6 +4204,7 @@ def _fix_ordering_violations(
     fixed_lines: List[Line] = []
     fixed_alignments: List[str] = []
     prev_end_time = 0.0
+    prev_start_time = 0.0
     reverted_count = 0
 
     for i, (orig, aligned) in enumerate(zip(original_lines, aligned_lines)):
@@ -2615,17 +4214,22 @@ def _fix_ordering_violations(
 
         aligned_start = aligned.start_time
 
-        # Check if this line would start before previous line ended
-        if aligned_start < prev_end_time - 0.1:  # Small tolerance
+        # Check if this line would start before previous line (or end) with tolerance
+        if (
+            aligned_start < prev_start_time - 0.01
+            or aligned_start < prev_end_time - 0.1
+        ):
             # Revert to original timing
             fixed_lines.append(orig)
             if orig.words:
                 prev_end_time = orig.end_time
+                prev_start_time = orig.start_time
             reverted_count += 1
         else:
             # Keep the aligned timing
             fixed_lines.append(aligned)
             prev_end_time = aligned.end_time
+            prev_start_time = aligned.start_time
 
     # Update alignments list (remove reverted ones)
     if reverted_count > 0:

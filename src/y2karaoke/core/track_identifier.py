@@ -1946,7 +1946,7 @@ class TrackIdentifier:
         logger.debug("Initial search found no results, trying 'audio' search")
         return self._search_youtube_single(f"{query} audio", target_duration)
 
-    def _search_youtube_single(
+    def _search_youtube_single(  # noqa: C901
         self, query: str, target_duration: int
     ) -> Optional[Dict[str, Any]]:
         """Execute a single YouTube search and return the best match.
@@ -2155,8 +2155,53 @@ class TrackIdentifier:
                 return title, uploader, duration
 
         except Exception as e:
+            logger.warning(f"Failed to get YouTube metadata: {e}")
+            cached = self._get_cached_youtube_metadata(url)
+            if cached is not None:
+                logger.info("Using cached YouTube metadata")
+                return cached
             logger.error(f"Failed to get YouTube metadata: {e}")
             raise Y2KaraokeError(f"Failed to get YouTube metadata: {e}")
+
+    def _get_cached_youtube_metadata(self, url: str) -> Optional[tuple[str, str, int]]:
+        """Fallback to cached metadata/audio when YouTube is unreachable."""
+        try:
+            import json
+            import wave
+
+            from ..config import get_cache_dir
+            from .youtube_metadata import extract_video_id
+
+            video_id = extract_video_id(url)
+            cache_dir = get_cache_dir() / video_id
+            if not cache_dir.exists():
+                return None
+
+            title = "Unknown"
+            artist = "Unknown"
+            metadata_path = cache_dir / "metadata.json"
+            if metadata_path.exists():
+                data = json.loads(metadata_path.read_text(encoding="utf-8"))
+                title = data.get("title", title) or title
+                artist = data.get("artist", artist) or artist
+
+            duration = 0
+            candidates = [
+                p
+                for p in cache_dir.glob("*.wav")
+                if "Vocals" not in p.stem and "instrumental" not in p.stem
+            ]
+            wav_path = candidates[0] if candidates else None
+            if wav_path and wav_path.exists():
+                with wave.open(str(wav_path), "rb") as wav_file:
+                    frames = wav_file.getnframes()
+                    rate = wav_file.getframerate()
+                    duration = int(frames / rate) if rate else 0
+
+            uploader = artist if artist != "Unknown" else "Unknown"
+            return title, uploader, duration
+        except Exception:
+            return None
 
     def _fallback_youtube_search(self, query: str) -> TrackInfo:
         """Fallback when MusicBrainz fails: just search YouTube."""

@@ -7,8 +7,10 @@ from y2karaoke.utils.validation import (
     validate_tempo,
     validate_offset,
     sanitize_filename,
+    validate_line_order,
 )
 from y2karaoke.exceptions import ValidationError
+from y2karaoke.core.models import Line, Word
 
 
 class TestValidation:
@@ -99,3 +101,24 @@ class TestValidation:
         result = sanitize_filename(long_name)
         assert len(result) <= 100
         assert result.startswith("very_long_filename_")
+
+    def test_validate_line_order_duplicate_overlap(self):
+        """Duplicate adjacent lines with overlap should fail."""
+        line1 = Line(
+            words=[Word(text="hello", start_time=0.0, end_time=1.0, singer="")]
+        )
+        line2 = Line(
+            words=[Word(text="hello", start_time=1.1, end_time=2.0, singer="")]
+        )
+        with pytest.raises(ValidationError):
+            validate_line_order([line1, line2])
+
+    def test_validate_line_order_duplicate_separated(self):
+        """Duplicate text later in song should be allowed."""
+        line1 = Line(
+            words=[Word(text="hello", start_time=0.0, end_time=1.0, singer="")]
+        )
+        line2 = Line(
+            words=[Word(text="hello", start_time=3.0, end_time=4.0, singer="")]
+        )
+        validate_line_order([line1, line2])

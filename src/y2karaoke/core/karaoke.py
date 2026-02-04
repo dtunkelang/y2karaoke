@@ -8,7 +8,7 @@ import musicbrainzngs
 from ..config import get_cache_dir
 from ..utils.cache import CacheManager
 from ..utils.logging import get_logger
-from ..utils.validation import sanitize_filename
+from ..utils.validation import sanitize_filename, validate_line_order
 from .downloader import YouTubeDownloader, extract_video_id
 from .separator import AudioSeparator
 from .audio_effects import AudioProcessor
@@ -59,10 +59,13 @@ class KaraokeGenerator:
         use_whisper: bool = False,
         whisper_language: Optional[str] = None,
         whisper_model: str = "base",
+        whisper_force_dtw: bool = False,
         filter_promos: bool = True,
         shorten_breaks: bool = False,
         max_break_duration: float = 30.0,
         debug_audio: str = "instrumental",
+        skip_render: bool = False,
+        timing_report_path: Optional[str] = None,
     ) -> Dict[str, Any]:
 
         self._original_prompt = original_prompt
@@ -118,6 +121,7 @@ class KaraokeGenerator:
             use_whisper=use_whisper,
             whisper_language=whisper_language,
             whisper_model=whisper_model,
+            whisper_force_dtw=whisper_force_dtw,
             filter_promos=filter_promos,
         )
 
@@ -188,6 +192,18 @@ class KaraokeGenerator:
                 offset_lines.append(Line(words=offset_words, singer=line.singer))
             scaled_lines = offset_lines
 
+        validate_line_order(scaled_lines)
+
+        if timing_report_path:
+            self._write_timing_report(
+                scaled_lines,
+                timing_report_path,
+                final_title,
+                final_artist,
+                lyrics_result,
+                video_id=video_id,
+            )
+
         # Step 10: Generate output path
         if output_path is None:
             safe_title = sanitize_filename(final_title)
@@ -201,17 +217,20 @@ class KaraokeGenerator:
             )
 
         # Step 12: Render video
-        self._render_video(
-            lines=scaled_lines,
-            audio_path=processed_audio,
-            output_path=output_path,
-            title=final_title,
-            artist=final_artist,
-            timing_offset=offset,
-            background_segments=background_segments,
-            song_metadata=lyrics_result.get("metadata"),
-            video_settings=video_settings,
-        )
+        if not skip_render:
+            self._render_video(
+                lines=scaled_lines,
+                audio_path=processed_audio,
+                output_path=output_path,
+                title=final_title,
+                artist=final_artist,
+                timing_offset=offset,
+                background_segments=background_segments,
+                song_metadata=lyrics_result.get("metadata"),
+                video_settings=video_settings,
+            )
+        else:
+            logger.info("Skipping video rendering (--no-render)")
 
         total_time = time() - total_start
 
@@ -244,6 +263,7 @@ class KaraokeGenerator:
             "title": final_title,
             "artist": final_artist,
             "video_id": video_id,
+            "rendered": not skip_render,
             "quality_score": quality_score,
             "quality_level": quality_level,
             "quality_issues": quality_issues,
@@ -254,6 +274,159 @@ class KaraokeGenerator:
     # ------------------------
     # Helper methods
     # ------------------------
+    def _write_timing_report(
+        self,
+        lines: List["Line"],
+        report_path: str,
+        title: str,
+        artist: str,
+        lyrics_result: Dict[str, Any],
+        video_id: Optional[str] = None,
+    ) -> None:
+        """Write a JSON timing report for downstream inspection."""
+        import json
+
+        report = {
+            "title": title,
+            "artist": artist,
+            "lyrics_source": lyrics_result.get("quality", {}).get("source", ""),
+            "alignment_method": lyrics_result.get("quality", {}).get(
+                "alignment_method", ""
+            ),
+            "whisper_requested": lyrics_result.get("quality", {}).get(
+                "whisper_requested", False
+            ),
+            "whisper_force_dtw": lyrics_result.get("quality", {}).get(
+                "whisper_force_dtw", False
+            ),
+            "whisper_used": lyrics_result.get("quality", {}).get("whisper_used", False),
+            "whisper_corrections": lyrics_result.get("quality", {}).get(
+                "whisper_corrections", 0
+            ),
+            "issues": lyrics_result.get("quality", {}).get("issues", []),
+            "dtw_metrics": lyrics_result.get("quality", {}).get("dtw_metrics", {}),
+            "line_count": len(lines),
+            "lines": [
+                {
+                    "index": idx + 1,
+                    "start": round(line.start_time, 2),
+                    "end": round(line.end_time, 2),
+                    "text": line.text,
+                }
+                for idx, line in enumerate(lines)
+                if line.words
+            ],
+        }
+
+        if video_id:
+            try:
+                from .timing_evaluator import _phonetic_similarity
+
+                cache_dir = self.cache_manager.get_video_cache_dir(video_id)
+                whisper_files = list(cache_dir.glob("*_whisper_*.json"))
+                if whisper_files:
+                    whisper_data = json.loads(
+                        whisper_files[0].read_text(encoding="utf-8")
+                    )
+                    segments = whisper_data.get("segments", whisper_data)
+                    report["whisper_segments"] = [
+                        {
+                            "start": round(seg.get("start", 0.0), 2),
+                            "end": round(seg.get("end", 0.0), 2),
+                            "text": seg.get("text", ""),
+                        }
+                        for seg in segments[:50]
+                    ]
+                    for line in report["lines"]:
+                        nearest_start = None
+                        nearest_end = None
+                        best_start_delta = None
+                        best_end_delta = None
+                        prior_seg = None
+                        prior_late = None
+                        for seg in segments:
+                            s_start = seg.get("start", 0.0)
+                            s_end = seg.get("end", 0.0)
+                            start_delta = abs(s_start - line["start"])
+                            end_delta = abs(s_end - line["start"])
+                            late_by = line["start"] - s_end
+                            if 0 <= late_by <= 15.0:
+                                if prior_late is None or late_by < prior_late:
+                                    prior_late = late_by
+                                    prior_seg = seg
+                            if (
+                                best_start_delta is None
+                                or start_delta < best_start_delta
+                            ):
+                                best_start_delta = start_delta
+                                nearest_start = seg
+                            if best_end_delta is None or end_delta < best_end_delta:
+                                best_end_delta = end_delta
+                                nearest_end = seg
+                        best_seg = None
+                        best_sim = 0.0
+                        for seg in segments:
+                            if abs(seg.get("start", 0.0) - line["start"]) > 15.0:
+                                continue
+                            sim = 0.0
+                            try:
+                                sim = _phonetic_similarity(
+                                    line["text"],
+                                    seg.get("text", ""),
+                                    "fra-Latn",
+                                )
+                            except Exception:
+                                sim = 0.0
+                            if sim > best_sim:
+                                best_sim = sim
+                                best_seg = seg
+                        if nearest_start:
+                            line["nearest_segment_start"] = round(
+                                nearest_start.get("start", 0.0), 2
+                            )
+                            line["nearest_segment_start_end"] = round(
+                                nearest_start.get("end", 0.0), 2
+                            )
+                            line["nearest_segment_start_text"] = nearest_start.get(
+                                "text", ""
+                            )
+                        if nearest_end:
+                            line["nearest_segment_end"] = round(
+                                nearest_end.get("end", 0.0), 2
+                            )
+                            line["nearest_segment_end_start"] = round(
+                                nearest_end.get("start", 0.0), 2
+                            )
+                            line["nearest_segment_end_text"] = nearest_end.get(
+                                "text", ""
+                            )
+                        if best_seg:
+                            line["best_segment_start"] = round(
+                                best_seg.get("start", 0.0), 2
+                            )
+                            line["best_segment_end"] = round(
+                                best_seg.get("end", 0.0), 2
+                            )
+                            line["best_segment_text"] = best_seg.get("text", "")
+                        if prior_seg is not None:
+                            line["prior_segment_start"] = round(
+                                prior_seg.get("start", 0.0), 2
+                            )
+                            line["prior_segment_end"] = round(
+                                prior_seg.get("end", 0.0), 2
+                            )
+                            line["prior_segment_late_by"] = round(
+                                line["start"] - prior_seg.get("end", 0.0), 2
+                            )
+            except Exception:
+                pass
+
+        path = Path(report_path)
+        path.write_text(
+            json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8"
+        )
+        logger.info(f"Wrote timing report to {path}")
+
     def _download_audio(self, video_id: str, url: str, force: bool) -> Dict[str, str]:
         metadata = self.cache_manager.load_metadata(video_id)
         if metadata and not force:
@@ -305,6 +478,7 @@ class KaraokeGenerator:
         use_whisper: bool = False,
         whisper_language: Optional[str] = None,
         whisper_model: str = "base",
+        whisper_force_dtw: bool = False,
         filter_promos: bool = True,
     ) -> Dict[str, Any]:
         logger.info("📝 Fetching lyrics...")
@@ -322,6 +496,7 @@ class KaraokeGenerator:
             use_whisper=use_whisper,
             whisper_language=whisper_language,
             whisper_model=whisper_model,
+            whisper_force_dtw=whisper_force_dtw,
         )
         return {"lines": lines, "metadata": metadata, "quality": quality_report}
 

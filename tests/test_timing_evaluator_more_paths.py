@@ -24,12 +24,13 @@ def test_align_dtw_whisper_uses_fastdtw(monkeypatch):
     fake_module = types.SimpleNamespace(fastdtw=fake_fastdtw)
     monkeypatch.setitem(sys.modules, "fastdtw", fake_module)
 
-    aligned, corrections = te.align_dtw_whisper(
+    aligned, corrections, metrics = te.align_dtw_whisper(
         [line], whisper_words, language="eng-Latn", min_similarity=0.1
     )
 
     assert aligned[0].words[0].start_time == 2.0
     assert corrections
+    assert metrics["matched_ratio"] > 0.0
 
 
 def test_print_comparison_report_formats_output(monkeypatch, capsys):

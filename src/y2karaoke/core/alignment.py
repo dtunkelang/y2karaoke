@@ -268,6 +268,7 @@ def _calculate_adjustments(lrc_gaps, audio_silences, max_match_distance=20.0):
 def _apply_adjustments_to_lines(lines: list, adjustments: list) -> list:
     """Apply cumulative adjustments to Line objects."""
     adjusted_lines = []
+    last_end = 0.0
 
     for line in lines:
         if not line.words:
@@ -281,7 +282,27 @@ def _apply_adjustments_to_lines(lines: list, adjustments: list) -> list:
                 adjustment = adj
 
         if adjustment == 0.0:
-            adjusted_lines.append(line)
+            if line.words and line.start_time < last_end:
+                shift = (last_end - line.start_time) + 0.01
+                new_words = [
+                    Word(
+                        text=w.text,
+                        start_time=w.start_time + shift,
+                        end_time=w.end_time + shift,
+                        singer=w.singer,
+                    )
+                    for w in line.words
+                ]
+                adjusted_line = Line(words=new_words, singer=line.singer)
+                adjusted_lines.append(adjusted_line)
+                last_end = adjusted_line.end_time
+                logger.warning(
+                    "Adjusted line forward to preserve ordering after gap correction"
+                )
+            else:
+                adjusted_lines.append(line)
+                if line.words:
+                    last_end = max(last_end, line.end_time)
             continue
 
         # Apply adjustment to all words
@@ -294,7 +315,25 @@ def _apply_adjustments_to_lines(lines: list, adjustments: list) -> list:
             )
             for w in line.words
         ]
-        adjusted_lines.append(Line(words=new_words, singer=line.singer))
+        adjusted_line = Line(words=new_words, singer=line.singer)
+        if adjusted_line.start_time < last_end:
+            shift = (last_end - adjusted_line.start_time) + 0.01
+            new_words = [
+                Word(
+                    text=w.text,
+                    start_time=w.start_time + shift,
+                    end_time=w.end_time + shift,
+                    singer=w.singer,
+                )
+                for w in adjusted_line.words
+            ]
+            adjusted_line = Line(words=new_words, singer=line.singer)
+            logger.warning(
+                "Adjusted line forward to preserve ordering after gap correction"
+            )
+        adjusted_lines.append(adjusted_line)
+        if adjusted_line.words:
+            last_end = adjusted_line.end_time
 
         line_text = " ".join(w.text for w in line.words[:3])
         logger.debug(f"Adjusted '{line_text}...' by {adjustment:+.1f}s")

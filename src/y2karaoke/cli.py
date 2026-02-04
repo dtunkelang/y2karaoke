@@ -189,6 +189,17 @@ def cli(ctx, verbose, log_file):
     "--no-progress", is_flag=True, help="Disable progress bar during rendering"
 )
 @click.option(
+    "--no-render",
+    is_flag=True,
+    help="Skip video rendering (run timing/lyrics pipeline only)",
+)
+@click.option(
+    "--timing-report",
+    type=click.Path(),
+    default=None,
+    help="Write timing report JSON to this path",
+)
+@click.option(
     "--evaluate-lyrics",
     is_flag=True,
     help="Compare all lyrics sources and select best based on timing",
@@ -214,6 +225,11 @@ def cli(ctx, verbose, log_file):
     type=click.Choice(["tiny", "base", "small", "medium", "large"]),
     default="base",
     help="Whisper model size (default: base)",
+)
+@click.option(
+    "--whisper-force-dtw",
+    is_flag=True,
+    help="Force DTW-based Whisper alignment even if LRC quality seems acceptable",
 )
 @click.option(
     "--shorten-breaks",
@@ -252,10 +268,13 @@ def generate(
     fps,
     font_size,
     no_progress,
+    no_render,
+    timing_report,
     evaluate_lyrics,
     whisper,
     whisper_language,
     whisper_model,
+    whisper_force_dtw,
     filter_promos,
     shorten_breaks,
     max_break,
@@ -310,13 +329,19 @@ def generate(
             use_whisper=whisper,
             whisper_language=whisper_language,
             whisper_model=whisper_model,
+            whisper_force_dtw=whisper_force_dtw,
             filter_promos=filter_promos,
             shorten_breaks=effective_shorten_breaks,
             max_break_duration=max_break,
             debug_audio=debug_audio,
+            skip_render=no_render,
+            timing_report_path=timing_report,
         )
 
-        logger.info(f"✅ Karaoke video generated: {result['output_path']}")
+        if result.get("rendered", True):
+            logger.info(f"✅ Karaoke video generated: {result['output_path']}")
+        else:
+            logger.info("✅ Karaoke pipeline complete (render skipped)")
         log_quality_summary(logger, result)
 
         if not keep_files:

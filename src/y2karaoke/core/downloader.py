@@ -3,8 +3,6 @@
 from pathlib import Path
 from typing import Dict, Optional
 
-import yt_dlp
-
 from ..config import get_cache_dir
 from ..exceptions import DownloadError
 from ..utils.logging import get_logger
@@ -16,6 +14,17 @@ from .youtube_metadata import (
 )
 
 logger = get_logger(__name__)
+
+try:
+    import yt_dlp
+except Exception:  # pragma: no cover - exercised by optional dependency tests
+    yt_dlp = None
+
+
+def _require_yt_dlp() -> "yt_dlp":
+    if yt_dlp is None:
+        raise DownloadError("yt_dlp is required for YouTube operations")
+    return yt_dlp
 
 
 class YouTubeDownloader:
@@ -29,6 +38,7 @@ class YouTubeDownloader:
     # ------------------------
     def get_video_title(self, url: str) -> str:
         """Return the title of a YouTube video without downloading the full video."""
+        ytdl = _require_yt_dlp()
         ydl_opts = {
             "quiet": True,
             "no_warnings": True,
@@ -36,7 +46,7 @@ class YouTubeDownloader:
             "forcejson": True,
             "extract_flat": True,
         }
-        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+        with ytdl.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=False)
             return info.get("title", url)
 
@@ -49,7 +59,8 @@ class YouTubeDownloader:
             "extract_flat": True,
         }
         try:
-            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            ytdl = _require_yt_dlp()
+            with ytdl.YoutubeDL(ydl_opts) as ydl:
                 info = ydl.extract_info(url, download=False)
                 return info.get("uploader", "Unknown")
         except Exception:
@@ -61,6 +72,8 @@ class YouTubeDownloader:
     def download_audio(
         self, url: str, output_dir: Optional[Path] = None
     ) -> Dict[str, str]:
+        ytdl = _require_yt_dlp()
+
         url = validate_youtube_url(url)
         video_id = extract_video_id(url)
         output_dir = Path(output_dir or self.cache_dir / video_id)
@@ -83,7 +96,7 @@ class YouTubeDownloader:
         }
 
         try:
-            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            with ytdl.YoutubeDL(ydl_opts) as ydl:
                 info = ydl.extract_info(url, download=False)
                 ydl.download([url])
 
@@ -115,6 +128,8 @@ class YouTubeDownloader:
     def download_video(
         self, url: str, output_dir: Optional[Path] = None
     ) -> Dict[str, str]:
+        ytdl = _require_yt_dlp()
+
         url = validate_youtube_url(url)
         video_id = extract_video_id(url)
         output_dir = Path(output_dir or self.cache_dir / video_id)
@@ -130,7 +145,7 @@ class YouTubeDownloader:
         }
 
         try:
-            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            with ytdl.YoutubeDL(ydl_opts) as ydl:
                 info = ydl.extract_info(url, download=False)
                 ydl.download([url])
 

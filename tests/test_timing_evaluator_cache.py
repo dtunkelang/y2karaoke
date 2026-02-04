@@ -87,6 +87,7 @@ def test_align_dtw_whisper_falls_back_without_fastdtw(monkeypatch):
     monkeypatch.setattr(builtins, "__import__", fake_import)
     monkeypatch.setattr(te, "_get_ipa", lambda *a, **k: None)
 
-    aligned, corrections = te.align_dtw_whisper(lines, whisper_words)
+    aligned, corrections, metrics = te.align_dtw_whisper(lines, whisper_words)
     assert aligned == lines
     assert corrections == []
+    assert metrics["matched_ratio"] == 0.0

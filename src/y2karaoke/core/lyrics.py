@@ -9,7 +9,7 @@ This module provides the main interface for lyrics fetching and processing:
 
 import logging
 from pathlib import Path
-from typing import List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
 from .models import Word, Line, SongMetadata
 from .romanization import romanize_line
@@ -170,8 +170,18 @@ def _refine_timing_with_audio(
 ) -> List[Line]:
     """Refine word timing using audio onset detection and handle duration mismatch."""
     from .refine import refine_word_timing
-    from .alignment import adjust_timing_for_duration_mismatch
+    from .alignment import (
+        _apply_adjustments_to_lines,
+        adjust_timing_for_duration_mismatch,
+    )
     from .sync import get_lrc_duration
+    from .timing_evaluator import (
+        _check_for_silence_in_range,
+        _check_vocal_activity_in_range,
+        correct_line_timestamps,
+        extract_audio_features,
+        fix_spurious_gaps,
+    )
 
     lines = refine_word_timing(lines, vocals_path)
     logger.debug("Word-level timing refined using vocals")
@@ -190,7 +200,174 @@ def _refine_timing_with_audio(
             audio_duration=target_duration,
         )
 
+    audio_features = extract_audio_features(vocals_path)
+    if audio_features is None:
+        logger.warning("Audio feature extraction failed; skipping onset-based fixes")
+        return lines
+
+    lines, spurious_gap_fixes = _compress_spurious_lrc_gaps(
+        lines,
+        line_timings,
+        audio_features,
+        _apply_adjustments_to_lines,
+        _check_vocal_activity_in_range,
+        _check_for_silence_in_range,
+    )
+    if spurious_gap_fixes:
+        logger.info(
+            f"Compressed {spurious_gap_fixes} large LRC gap(s) with vocals present"
+        )
+
+    needs_aggressive_correction = False
+    for prev_line, next_line in zip(lines, lines[1:]):
+        if not prev_line.words or not next_line.words:
+            continue
+        gap = next_line.start_time - prev_line.end_time
+        if gap <= 4.0:
+            continue
+        activity = _check_vocal_activity_in_range(
+            prev_line.end_time, next_line.start_time, audio_features
+        )
+        has_silence = _check_for_silence_in_range(
+            prev_line.end_time,
+            next_line.start_time,
+            audio_features,
+            min_silence_duration=0.5,
+        )
+        if activity > 0.6 and not has_silence:
+            needs_aggressive_correction = True
+            break
+
+    max_correction = 15.0 if needs_aggressive_correction else 3.0
+    lines, corrections = correct_line_timestamps(
+        lines, audio_features, max_correction=max_correction
+    )
+    if corrections:
+        logger.info(
+            f"Adjusted {len(corrections)} line start(s) using audio onsets "
+            f"(max_correction={max_correction:.1f}s)"
+        )
+
+    lines, pull_fixes = _pull_lines_forward_for_continuous_vocals(
+        lines,
+        audio_features,
+        _check_vocal_activity_in_range,
+        _check_for_silence_in_range,
+    )
+    if pull_fixes:
+        logger.info(
+            f"Pulled {pull_fixes} line(s) forward due to continuous vocals in gap"
+        )
+
+    lines, gap_fixes = fix_spurious_gaps(lines, audio_features)
+    if gap_fixes:
+        logger.info(f"Merged {len(gap_fixes)} spurious gap(s) based on vocals")
+
     return lines
+
+
+def _pull_lines_forward_for_continuous_vocals(
+    lines: List[Line], audio_features, check_activity, check_silence
+) -> Tuple[List[Line], int]:
+    """Pull lines earlier when a long gap contains continuous vocal activity."""
+    fixes = 0
+    if len(lines) < 2:
+        return lines, fixes
+
+    onset_times = audio_features.onset_times
+    if onset_times is None or len(onset_times) == 0:
+        return lines, fixes
+
+    for idx in range(1, len(lines)):
+        prev_line = lines[idx - 1]
+        line = lines[idx]
+        if not prev_line.words or not line.words:
+            continue
+
+        gap = line.start_time - prev_line.end_time
+        if gap <= 4.0:
+            continue
+
+        activity = check_activity(prev_line.end_time, line.start_time, audio_features)
+        has_silence = check_silence(
+            prev_line.end_time,
+            line.start_time,
+            audio_features,
+            min_silence_duration=0.5,
+        )
+        if activity <= 0.6 or has_silence:
+            continue
+
+        candidate_onsets = onset_times[
+            (onset_times >= prev_line.end_time) & (onset_times <= line.start_time)
+        ]
+        if len(candidate_onsets) == 0:
+            continue
+
+        new_start = float(candidate_onsets[0])
+        new_start = max(new_start, prev_line.end_time + 0.05)
+        shift = new_start - line.start_time
+        if shift > -0.3:
+            continue
+
+        new_words = [
+            Word(
+                text=w.text,
+                start_time=w.start_time + shift,
+                end_time=w.end_time + shift,
+                singer=w.singer,
+            )
+            for w in line.words
+        ]
+        lines[idx] = Line(words=new_words, singer=line.singer)
+        fixes += 1
+
+    return lines, fixes
+
+
+def _compress_spurious_lrc_gaps(
+    lines: List[Line],
+    line_timings: List[Tuple[float, str]],
+    audio_features,
+    apply_adjustments,
+    check_activity,
+    check_silence,
+) -> Tuple[List[Line], int]:
+    """Compress large LRC gaps that contain continuous vocals."""
+    if len(line_timings) < 2:
+        return lines, 0
+
+    adjustments = []
+    cumulative_adj = 0.0
+    fixes = 0
+
+    for (start, _), (next_start, _) in zip(line_timings, line_timings[1:]):
+        gap_start = start + cumulative_adj
+        gap_end = next_start + cumulative_adj
+        gap_duration = gap_end - gap_start
+        if gap_duration < 8.0:
+            continue
+
+        activity = check_activity(gap_start, gap_end, audio_features)
+        has_silence = check_silence(
+            gap_start, gap_end, audio_features, min_silence_duration=0.5
+        )
+        if activity <= 0.6 or has_silence:
+            continue
+
+        target_gap = 0.5
+        shift = gap_duration - target_gap
+        if shift <= 0.5:
+            continue
+
+        cumulative_adj -= shift
+        adjustments.append((next_start, cumulative_adj))
+        fixes += 1
+
+    if not adjustments:
+        return lines, 0
+
+    return apply_adjustments(lines, adjustments), fixes
 
 
 def _apply_whisper_alignment(
@@ -198,21 +375,30 @@ def _apply_whisper_alignment(
     vocals_path: str,
     whisper_language: Optional[str],
     whisper_model: str,
-) -> Tuple[List[Line], List[str]]:
+    whisper_force_dtw: bool,
+) -> Tuple[List[Line], List[str], Dict[str, float]]:
     """Apply Whisper alignment to lines. Returns (lines, fixes_list)."""
     from .timing_evaluator import correct_timing_with_whisper
 
-    lines, whisper_fixes = correct_timing_with_whisper(
+    lines, whisper_fixes, whisper_metrics = correct_timing_with_whisper(
         lines,
         vocals_path,
         language=whisper_language,
         model_size=whisper_model,
+        force_dtw=whisper_force_dtw,
     )
     if whisper_fixes:
         logger.info(f"Whisper aligned {len(whisper_fixes)} line(s)")
         for fix in whisper_fixes:
             logger.debug(f"  {fix}")
-    return lines, whisper_fixes
+    if whisper_metrics:
+        logger.info(
+            "Whisper DTW metrics: "
+            f"matched_ratio={whisper_metrics.get('matched_ratio', 0.0):.2f}, "
+            f"avg_similarity={whisper_metrics.get('avg_similarity', 0.0):.2f}, "
+            f"line_coverage={whisper_metrics.get('line_coverage', 0.0):.2f}"
+        )
+    return lines, whisper_fixes, whisper_metrics
 
 
 def _romanize_lines(lines: List[Line]) -> None:
@@ -423,6 +609,7 @@ def get_lyrics_simple(
     use_whisper: bool = False,
     whisper_language: Optional[str] = None,
     whisper_model: str = "base",
+    whisper_force_dtw: bool = False,
 ) -> Tuple[List[Line], Optional[SongMetadata]]:
     """Simplified lyrics pipeline favoring LRC over Genius.
 
@@ -501,8 +688,12 @@ def get_lyrics_simple(
             # 5b. Optionally use Whisper for more accurate alignment
             if use_whisper:
                 try:
-                    lines, _ = _apply_whisper_alignment(
-                        lines, vocals_path, whisper_language, whisper_model
+                    lines, _, _ = _apply_whisper_alignment(
+                        lines,
+                        vocals_path,
+                        whisper_language,
+                        whisper_model,
+                        whisper_force_dtw,
                     )
                 except Exception as e:
                     logger.warning(f"Whisper alignment failed: {e}")
@@ -546,6 +737,7 @@ def get_lyrics_with_quality(
     use_whisper: bool = False,
     whisper_language: Optional[str] = None,
     whisper_model: str = "base",
+    whisper_force_dtw: bool = False,
 ) -> Tuple[List[Line], Optional[SongMetadata], dict]:
     """Get lyrics with quality report.
 
@@ -569,6 +761,8 @@ def get_lyrics_with_quality(
         "alignment_method": "none",
         "whisper_used": False,
         "whisper_corrections": 0,
+        "whisper_requested": use_whisper,
+        "whisper_force_dtw": whisper_force_dtw,
         "total_lines": 0,
         "overall_score": 0.0,
         "issues": [],
@@ -636,7 +830,12 @@ def get_lyrics_with_quality(
             # 5b. Apply Whisper if requested
             if use_whisper:
                 lines, quality_report = _apply_whisper_with_quality(
-                    lines, vocals_path, whisper_language, whisper_model, quality_report
+                    lines,
+                    vocals_path,
+                    whisper_language,
+                    whisper_model,
+                    whisper_force_dtw,
+                    quality_report,
                 )
     else:
         # Fallback: use Genius text
@@ -700,15 +899,18 @@ def _apply_whisper_with_quality(
     vocals_path: str,
     whisper_language: Optional[str],
     whisper_model: str,
+    whisper_force_dtw: bool,
     quality_report: dict,
 ) -> Tuple[List[Line], dict]:
     """Apply Whisper alignment and update quality report."""
     try:
-        lines, whisper_fixes = _apply_whisper_alignment(
-            lines, vocals_path, whisper_language, whisper_model
+        lines, whisper_fixes, whisper_metrics = _apply_whisper_alignment(
+            lines, vocals_path, whisper_language, whisper_model, whisper_force_dtw
         )
         quality_report["whisper_used"] = True
         quality_report["whisper_corrections"] = len(whisper_fixes)
+        if whisper_metrics:
+            quality_report["dtw_metrics"] = whisper_metrics
         if whisper_fixes:
             quality_report["alignment_method"] = "whisper_hybrid"
     except Exception as e:
