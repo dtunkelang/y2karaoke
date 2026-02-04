@@ -1,7 +1,9 @@
 """Main karaoke generator orchestrating all components."""
 
+from __future__ import annotations
+
 from pathlib import Path
-from typing import Dict, List, Optional, Any, Tuple
+from typing import Dict, List, Optional, Any, Tuple, TYPE_CHECKING
 from time import time
 import musicbrainzngs
 
@@ -16,6 +18,9 @@ from .audio_effects import AudioProcessor
 from .audio_utils import trim_audio_if_needed, apply_audio_effects, separate_vocals
 
 logger = get_logger(__name__)
+
+if TYPE_CHECKING:
+    from .models import Line
 
 # Initialize MusicBrainz
 musicbrainzngs.set_useragent(
@@ -204,9 +209,9 @@ class KaraokeGenerator:
     # ------------------------
     # Helper methods
     # ------------------------
-    def _write_timing_report(
+    def _write_timing_report(  # noqa: C901
         self,
-        lines: List["Line"],
+        lines: List[Line],
         report_path: str,
         title: str,
         artist: str,
@@ -550,7 +555,7 @@ class KaraokeGenerator:
 
     def _append_outro_line(
         self,
-        lines: List["Line"],
+        lines: List[Line],
         outro_line: str,
         audio_path: str,
         min_tail: float = 0.5,

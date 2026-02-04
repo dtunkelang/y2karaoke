@@ -5,6 +5,7 @@ import sys
 import os
 import time
 import json
+from pathlib import Path
 from contextlib import contextmanager
 from typing import Optional, Tuple, Dict, List, Any
 
@@ -259,7 +260,7 @@ def _set_lrc_cache(
         _save_disk_cache()
 
 
-def _fetch_from_lyriq(
+def _fetch_from_lyriq(  # noqa: C901
     title: str,
     artist: str,
     max_retries: int = 2,
@@ -373,7 +374,7 @@ def _fetch_from_lyriq(
     return None
 
 
-def fetch_lyrics_multi_source(
+def fetch_lyrics_multi_source(  # noqa: C901
     title: str,
     artist: str,
     synced_only: bool = True,

@@ -334,7 +334,7 @@ def _compute_word_highlight_width(
     return int(highlight_width)
 
 
-def render_frame(
+def render_frame(  # noqa: C901
     lines: list[Line],
     current_time: float,
     font: ImageFont.ImageFont | ImageFont.FreeTypeFont,

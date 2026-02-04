@@ -135,7 +135,7 @@ class TrackIdentifier:
     def __init__(self):
         self._lrc_cache: Dict[tuple, tuple] = {}
 
-    def _try_direct_lrc_search(self, query: str) -> Optional[TrackInfo]:
+    def _try_direct_lrc_search(self, query: str) -> Optional[TrackInfo]:  # noqa: C901
         """Try to find track by searching LRC providers directly.
 
         This is the simplest approach - just search for the query and see if

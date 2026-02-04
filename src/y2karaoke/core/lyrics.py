@@ -7,15 +7,15 @@ This module provides the main interface for lyrics fetching and processing:
 - Applies romanization for non-Latin scripts
 """
 
+from __future__ import annotations
+
 import logging
 import re
-from difflib import SequenceMatcher
 from statistics import median
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple, TYPE_CHECKING
 
 from .models import Word, Line, SongMetadata
-from ..config import get_cache_dir
 from .romanization import romanize_line
 from .lrc import (
     parse_lrc_timestamp,
@@ -26,6 +26,9 @@ from .lrc import (
 )
 
 logger = logging.getLogger(__name__)
+
+if TYPE_CHECKING:
+    from .timing_evaluator import TranscriptionSegment, TranscriptionWord
 
 
 def _estimate_singing_duration(text: str, word_count: int) -> float:
@@ -487,7 +490,7 @@ def _romanize_lines(lines: List[Line]) -> None:
 
 
 def _create_lines_from_whisper(
-    transcription: List["TranscriptionSegment"],
+    transcription: List[TranscriptionSegment],
 ) -> List[Line]:
     """Create Line objects directly from Whisper transcription."""
     from .models import Line, Word
@@ -527,16 +530,16 @@ def _create_lines_from_whisper(
     return lines
 
 
-def _map_lrc_lines_to_whisper_segments(
+def _map_lrc_lines_to_whisper_segments(  # noqa: C901
     lines: List[Line],
-    transcription: List["TranscriptionSegment"],
+    transcription: List[TranscriptionSegment],
     language: str,
     lrc_line_starts: Optional[List[float]] = None,
     min_similarity: float = 0.35,
     min_similarity_fallback: float = 0.2,
     max_time_offset: float = 4.0,
     lookahead: int = 6,
-) -> Tuple[List[Line], int, List[str]]:
+) -> Tuple[List[Line], int, List[str]]:  # noqa: C901
     """Map LRC lines onto Whisper segment timing without reordering."""
     from .models import Line, Word
     from .timing_evaluator import _phonetic_similarity
@@ -545,7 +548,7 @@ def _map_lrc_lines_to_whisper_segments(
         return lines, 0, []
 
     sorted_segments = sorted(transcription, key=lambda s: s.start)
-    all_words: List["TranscriptionWord"] = []
+    all_words: List[TranscriptionWord] = []
     for seg in sorted_segments:
         if seg.words:
             for w in seg.words:
@@ -566,18 +569,18 @@ def _map_lrc_lines_to_whisper_segments(
         return text
 
     def _select_window_sequence(
-        window_words: List["TranscriptionWord"],
+        window_words: List[TranscriptionWord],
         line_text: str,
         language: str,
         target_len: int,
         first_token: Optional[str],
-    ) -> List["TranscriptionWord"]:
+    ) -> List[TranscriptionWord]:
         if not window_words:
             return []
         best_seq = window_words
         best_sim = -1.0
         lengths = [target_len - 1, target_len, target_len + 1]
-        lengths = [l for l in lengths if l > 0]
+        lengths = [length for length in lengths if length > 0]
         max_start = len(window_words)
         start_candidates = range(max_start)
         if first_token:
@@ -606,8 +609,8 @@ def _map_lrc_lines_to_whisper_segments(
         return best_seq
 
     def _whisper_durations_for_line(
-        line_words: List["Word"],
-        seg_words: Optional[List["TranscriptionWord"]],
+        line_words: List[Word],
+        seg_words: Optional[List[TranscriptionWord]],
         seg_end: Optional[float],
         language: str,
     ) -> Optional[Tuple[List[float], List[float]]]:
@@ -707,7 +710,7 @@ def _map_lrc_lines_to_whisper_segments(
         return slots, spokens
 
     def _slots_from_sequence(
-        seq_words: List["TranscriptionWord"], seq_end: Optional[float]
+        seq_words: List[TranscriptionWord], seq_end: Optional[float]
     ) -> Optional[Tuple[List[float], List[float]]]:
         if not seq_words:
             return None
@@ -1239,7 +1242,7 @@ def _fetch_lrc_text_and_timings(
         return None, None, ""
 
 
-def get_lyrics_simple(
+def get_lyrics_simple(  # noqa: C901
     title: str,
     artist: str,
     vocals_path: Optional[str] = None,
@@ -1337,7 +1340,7 @@ def get_lyrics_simple(
         f"Fetching LRC lyrics... (target_duration={target_duration}, "
         f"evaluate={evaluate_sources})"
     )
-    lrc_text, line_timings, source = _fetch_lrc_text_and_timings(
+    lrc_text, line_timings, _source = _fetch_lrc_text_and_timings(
         title=title,
         artist=artist,
         target_duration=target_duration,
@@ -1349,14 +1352,11 @@ def get_lyrics_simple(
     if file_lrc_text and file_line_timings:
         lrc_text = file_lrc_text
         line_timings = file_line_timings
-        source = "lyrics_file_lrc"
-    duration_mismatch = False
     if target_duration and lrc_text:
         from .sync import get_lrc_duration
 
         lrc_duration = get_lrc_duration(lrc_text)
         if lrc_duration and abs(target_duration - lrc_duration) > 8:
-            duration_mismatch = True
             logger.warning(
                 "LRC duration mismatch: keeping text but ignoring LRC timings"
             )
@@ -1483,7 +1483,7 @@ def get_lyrics_simple(
     return lines, metadata
 
 
-def get_lyrics_with_quality(
+def get_lyrics_with_quality(  # noqa: C901
     title: str,
     artist: str,
     vocals_path: Optional[str] = None,
@@ -1597,13 +1597,11 @@ def get_lyrics_with_quality(
         source = "lyrics_file_lrc"
     if not quality_report["source"]:
         quality_report["source"] = source
-    duration_mismatch = False
     if target_duration and lrc_text:
         from .sync import get_lrc_duration
 
         lrc_duration = get_lrc_duration(lrc_text)
         if lrc_duration and abs(target_duration - lrc_duration) > 8:
-            duration_mismatch = True
             issues_list: List[str] = quality_report["issues"]  # type: ignore[assignment]
             issues_list.append(
                 "LRC duration mismatch: keeping text but ignoring LRC timings"

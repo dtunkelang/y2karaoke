@@ -6,7 +6,6 @@ characteristics to evaluate timing quality and identify inconsistencies.
 
 from dataclasses import dataclass, field
 from typing import List, Optional, Tuple, Dict, Any
-import re
 import numpy as np
 
 from ..utils.logging import get_logger
@@ -2233,7 +2232,7 @@ def _extract_lrc_words_all(lines: List[Line]) -> List[Dict]:
     return lrc_words
 
 
-def align_lrc_text_to_whisper_timings(
+def align_lrc_text_to_whisper_timings(  # noqa: C901
     lines: List[Line],
     vocals_path: str,
     language: Optional[str] = None,
@@ -2748,7 +2747,7 @@ def align_dtw_whisper(
     return aligned_lines, corrections, metrics
 
 
-def correct_timing_with_whisper(
+def correct_timing_with_whisper(  # noqa: C901
     lines: List[Line],
     vocals_path: str,
     language: Optional[str] = None,
@@ -3002,7 +3001,7 @@ def _enforce_monotonic_line_starts(
     return adjusted
 
 
-def _merge_lines_to_whisper_segments(
+def _merge_lines_to_whisper_segments(  # noqa: C901
     lines: List[Line],
     segments: List[TranscriptionSegment],
     language: str,
@@ -3133,7 +3132,7 @@ def _merge_lines_to_whisper_segments(
     return merged_lines, merged_count
 
 
-def _retime_adjacent_lines_to_whisper_window(
+def _retime_adjacent_lines_to_whisper_window(  # noqa: C901
     lines: List[Line],
     segments: List[TranscriptionSegment],
     language: str,
@@ -3366,7 +3365,7 @@ def _retime_adjacent_lines_to_segment_window(
     return adjusted, fixes
 
 
-def _pull_next_line_into_segment_window(
+def _pull_next_line_into_segment_window(  # noqa: C901
     lines: List[Line],
     segments: List[TranscriptionSegment],
     language: str,
@@ -3458,7 +3457,7 @@ def _pull_next_line_into_segment_window(
     return adjusted, fixes
 
 
-def _pull_next_line_into_same_segment(
+def _pull_next_line_into_same_segment(  # noqa: C901
     lines: List[Line],
     segments: List[TranscriptionSegment],
     max_late: float = 6.0,
@@ -3666,7 +3665,7 @@ def _merge_short_following_line_into_segment(
     return adjusted, fixes
 
 
-def _pull_lines_near_segment_end(
+def _pull_lines_near_segment_end(  # noqa: C901
     lines: List[Line],
     segments: List[TranscriptionSegment],
     language: str,
@@ -4016,7 +4015,7 @@ def _retime_line_to_window(line: Line, window_start: float, window_end: float) -
     return Line(words=new_words, singer=line.singer)
 
 
-def _pull_lines_to_best_segments(
+def _pull_lines_to_best_segments(  # noqa: C901
     lines: List[Line],
     segments: List[TranscriptionSegment],
     language: str,
@@ -4026,8 +4025,6 @@ def _pull_lines_to_best_segments(
     min_gap: float = 0.05,
 ) -> Tuple[List[Line], int]:
     """Pull lines toward their best Whisper segment when alignment drift is large."""
-    from .models import Line
-
     if not lines or not segments:
         return lines, 0
 
