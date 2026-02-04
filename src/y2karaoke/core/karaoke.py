@@ -20,7 +20,7 @@ from .audio_utils import trim_audio_if_needed, apply_audio_effects, separate_voc
 logger = get_logger(__name__)
 
 if TYPE_CHECKING:
-    from .models import Line
+    from .models import Line, Word
 
 # Initialize MusicBrainz
 musicbrainzngs.set_useragent(
@@ -221,6 +221,15 @@ class KaraokeGenerator:
         """Write a JSON timing report for downstream inspection."""
         import json
 
+        def _word_slots(words: List[Word], line_end: float) -> List[float]:
+            slots: List[float] = []
+            for i, w in enumerate(words):
+                if i + 1 < len(words):
+                    slots.append(round(words[i + 1].start_time - w.start_time, 3))
+                else:
+                    slots.append(round(max(line_end - w.start_time, 0.0), 3))
+            return slots
+
         report = {
             "title": title,
             "artist": artist,
@@ -254,6 +263,10 @@ class KaraokeGenerator:
                             "end": round(w.end_time, 3),
                         }
                         for w in line.words
+                    ],
+                    "word_slots": _word_slots(line.words, line.end_time),
+                    "word_spoken": [
+                        round(w.end_time - w.start_time, 3) for w in line.words
                     ],
                 }
                 for idx, line in enumerate(lines)
