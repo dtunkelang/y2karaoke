@@ -854,16 +854,12 @@ def _select_window_words_for_line(
             first_token,
             phonetic_similarity,
         )
-        sim = phonetic_similarity(
-            line.text, " ".join(w.text for w in seq), language
-        )
+        sim = phonetic_similarity(line.text, " ".join(w.text for w in seq), language)
         return seq, sim
 
     def _preferred_sequence(candidates: List[TranscriptionWord]):
         filtered = [
-            w
-            for w in candidates
-            if w.probability is None or w.probability >= min_prob
+            w for w in candidates if w.probability is None or w.probability >= min_prob
         ]
         seq_all, sim_all = _pick_sequence(candidates)
         if len(filtered) >= min_count:
@@ -934,7 +930,9 @@ def _apply_lrc_weighted_timing(  # noqa: C901
     ) -> float:
         if not window_words or not offsets_scaled:
             return desired_start
-        window_start = window_words[0].start if window_words[0].start is not None else None
+        window_start = (
+            window_words[0].start if window_words[0].start is not None else None
+        )
         require_forward = (
             window_start is not None and desired_start + 0.2 < window_start
         )
@@ -974,8 +972,7 @@ def _apply_lrc_weighted_timing(  # noqa: C901
                     if candidate_start - desired_start > 0.8:
                         continue
                 allow_early_anchor = (
-                    len(window_words) <= 3
-                    and offsets_scaled[i] >= line_duration * 0.5
+                    len(window_words) <= 3 and offsets_scaled[i] >= line_duration * 0.5
                 )
                 if not allow_early_anchor and i == len(line.words) - 1:
                     allow_early_anchor = len(window_words) <= 3
@@ -1005,6 +1002,7 @@ def _apply_lrc_weighted_timing(  # noqa: C901
         if abs(shift) > max_shift:
             best_start = desired_start + max_shift * (1 if shift > 0 else -1)
         return max(best_start, 0.0)
+
     direct_offsets: Optional[List[float]] = None
     if (
         window_words is not None
@@ -1147,9 +1145,7 @@ def _apply_lrc_weighted_timing(  # noqa: C901
             ):
                 tightened = max(whisper_span * 1.05, 0.5)
                 if next_lrc_start is not None:
-                    tightened = min(
-                        tightened, max(next_lrc_start - desired_start, 0.5)
-                    )
+                    tightened = min(tightened, max(next_lrc_start - desired_start, 0.5))
                 line_duration = min(line_duration, tightened)
     if slot_durations:
         total = sum(slot_durations) or 1.0

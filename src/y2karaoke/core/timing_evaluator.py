@@ -1453,7 +1453,9 @@ def _get_whisper_cache_path(
     # Create cache filename with model and language info
     lang_suffix = f"_{language}" if language else "_auto"
     mode_suffix = "_aggr" if aggressive else ""
-    cache_name = f"{vocals_file.stem}_whisper_{model_size}{lang_suffix}{mode_suffix}.json"
+    cache_name = (
+        f"{vocals_file.stem}_whisper_{model_size}{lang_suffix}{mode_suffix}.json"
+    )
     return str(vocals_file.parent / cache_name)
 
 
@@ -1566,9 +1568,7 @@ def transcribe_vocals(
         Tuple of (list of TranscriptionSegment, list of all TranscriptionWord, detected language code)
     """
     # Check cache first
-    cache_path = _get_whisper_cache_path(
-        vocals_path, model_size, language, aggressive
-    )
+    cache_path = _get_whisper_cache_path(vocals_path, model_size, language, aggressive)
     if cache_path:
         cached = _load_whisper_cache(cache_path)
         if cached:
