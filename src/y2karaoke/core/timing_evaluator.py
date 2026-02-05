@@ -9,7 +9,7 @@ from typing import List, Optional, Tuple, Dict, Any
 import numpy as np
 
 from ..utils.logging import get_logger
-from .models import Line
+from .models import Line, Word
 
 logger = get_logger(__name__)
 
@@ -2432,6 +2432,7 @@ def _map_lrc_words_to_whisper(
             continue
 
         new_words: List[Word] = []
+        line_matches: List[Tuple[int, Tuple[float, float]]] = []
         for word_idx, word in enumerate(line.words):
             lrc_idx_opt = lrc_index_by_loc.get((line_idx, word_idx))
             if lrc_idx_opt is None:
@@ -2444,6 +2445,7 @@ def _map_lrc_words_to_whisper(
             whisper_words = [all_words[i] for i in assigned]
             start = min(w.start for w in whisper_words)
             end = max(w.end for w in whisper_words)
+            line_matches.append((word_idx, (start, end)))
             new_words.append(
                 Word(
                     text=word.text,
@@ -2460,7 +2462,22 @@ def _map_lrc_words_to_whisper(
             )
             total_similarity += best_sim
 
-        mapped_lines.append(Line(words=new_words, singer=line.singer))
+        mapped_line = Line(words=new_words, singer=line.singer)
+        if line_matches:
+            actual_start = min(interval[0] for _, interval in line_matches)
+            actual_end = max(interval[1] for _, interval in line_matches)
+        else:
+            actual_start = line.start_time
+            actual_end = line.end_time
+        target_duration = max(actual_end - actual_start, 0.0)
+        mapped_line = _redistribute_word_timings_to_line(
+            mapped_line,
+            line_matches,
+            target_duration=target_duration,
+            min_word_duration=0.05,
+            line_start=actual_start,
+        )
+        mapped_lines.append(mapped_line)
 
     return mapped_lines, mapped_count, total_similarity, mapped_lines_set
 
@@ -2469,47 +2486,70 @@ def _shift_repeated_lines_to_next_whisper(
     mapped_lines: List[Line],
     all_words: List[TranscriptionWord],
 ) -> List[Line]:
-    """Ensure repeated lines don't overlap by shifting to later Whisper words."""
+    """Ensure repeated lines reserve later Whisper words when they reappear."""
     from .models import Line, Word
 
-    prev_text = None
-    prev_end = None
     adjusted_lines: List[Line] = []
+    last_idx_by_text: Dict[str, int] = {}
+    last_end_time: Dict[str, float] = {}
+
     for line in mapped_lines:
         if not line.words:
             adjusted_lines.append(line)
             continue
 
         text_norm = line.text.strip().lower() if getattr(line, "text", "") else ""
-        if prev_text and text_norm == prev_text and prev_end is not None:
-            if line.start_time <= prev_end + 0.2:
-                required_time = prev_end + 0.21
+        prev_idx = last_idx_by_text.get(text_norm)
+        prev_end = last_end_time.get(text_norm)
+        assigned_end_idx: Optional[int] = None
+
+        if prev_idx is not None and prev_end is not None:
+            required_time = max(prev_end + 0.4, line.start_time)
+            start_idx = next(
+                (
+                    idx
+                    for idx, ww in enumerate(all_words)
+                    if idx > prev_idx and ww.start >= required_time
+                ),
+                None,
+            )
+            if start_idx is None:
                 start_idx = next(
+                    (idx for idx, _ww in enumerate(all_words) if idx > prev_idx),
+                    None,
+                )
+            if start_idx is not None:
+                adjusted_words: List[Word] = []
+                for word_idx, w in enumerate(line.words):
+                    new_idx = min(start_idx + word_idx, len(all_words) - 1)
+                    ww = all_words[new_idx]
+                    adjusted_words.append(
+                        Word(
+                            text=w.text,
+                            start_time=ww.start,
+                            end_time=ww.end,
+                            singer=w.singer,
+                        )
+                    )
+                line = Line(words=adjusted_words, singer=line.singer)
+                assigned_end_idx = min(
+                    start_idx + len(line.words) - 1, len(all_words) - 1
+                )
+
+        adjusted_lines.append(line)
+        if line.words:
+            if assigned_end_idx is None:
+                assigned_end_idx = next(
                     (
                         idx
                         for idx, ww in enumerate(all_words)
-                        if ww.start >= required_time
+                        if abs(ww.start - line.words[-1].start_time) < 0.05
                     ),
-                    None,
+                    len(all_words) - 1,
                 )
-                if start_idx is not None:
-                    adjusted_words: List[Word] = []
-                    for word_idx, w in enumerate(line.words):
-                        new_idx = min(start_idx + word_idx, len(all_words) - 1)
-                        ww = all_words[new_idx]
-                        adjusted_words.append(
-                            Word(
-                                text=w.text,
-                                start_time=ww.start,
-                                end_time=ww.end,
-                                singer=w.singer,
-                            )
-                        )
-                    line = Line(words=adjusted_words, singer=line.singer)
-        adjusted_lines.append(line)
-        if line.words:
-            prev_text = text_norm
-            prev_end = line.end_time
+            last_idx_by_text[text_norm] = assigned_end_idx
+            last_end_time[text_norm] = line.end_time
+
     return adjusted_lines
 
 
@@ -2753,7 +2793,6 @@ def _retime_lines_from_dtw_alignments(
     alignments_map: Dict[int, Tuple[TranscriptionWord, float]],
     min_word_duration: float = 0.05,
 ) -> Tuple[List[Line], List[str]]:
-    from .models import Line, Word
 
     aligned_by_line: Dict[int, List[Tuple[int, TranscriptionWord]]] = {}
     for lrc_idx, (ww, _sim) in alignments_map.items():
@@ -2774,37 +2813,155 @@ def _retime_lines_from_dtw_alignments(
             continue
 
         matches.sort(key=lambda item: item[0])
-        min_start = min(ww.start for _i, ww in matches)
-        max_end = max(ww.end for _i, ww in matches)
-        if max_end - min_start < min_word_duration:
-            max_end = min_start + min_word_duration
-
-        old_start = line.start_time
-        old_end = line.end_time
-        old_duration = max(old_end - old_start, min_word_duration)
-        target_duration = max(max_end - min_start, min_word_duration)
-
-        new_words: List[Word] = []
-        for word in line.words:
-            rel_start = (word.start_time - old_start) / old_duration
-            rel_end = (word.end_time - old_start) / old_duration
-            new_start = min_start + rel_start * target_duration
-            new_end = min_start + rel_end * target_duration
-            if new_end < new_start + min_word_duration:
-                new_end = new_start + min_word_duration
-            new_words.append(
-                Word(
-                    text=word.text,
-                    start_time=new_start,
-                    end_time=new_end,
-                    singer=word.singer,
-                )
-            )
-
-        retimed_lines.append(Line(words=new_words, singer=line.singer))
+        target_duration = max(line.end_time - line.start_time, min_word_duration)
+        tuple_matches = [(word_idx, (ww.start, ww.end)) for word_idx, ww in matches]
+        retimed_line = _redistribute_word_timings_to_line(
+            line,
+            tuple_matches,
+            target_duration=target_duration,
+            min_word_duration=min_word_duration,
+        )
+        retimed_lines.append(retimed_line)
         corrections.append(f"DTW retimed line {line_idx} from matched words")
 
     return retimed_lines, corrections
+
+
+def _redistribute_word_timings_to_line(
+    line: Line,
+    matches: List[Tuple[int, Tuple[float, float]]],
+    target_duration: float,
+    min_word_duration: float,
+    line_start: Optional[float] = None,
+    max_gap: float = 0.4,
+) -> Line:
+    """Redistribute word timings based on Whisper durations within the line."""
+    from .models import Line, Word
+
+    if not line.words:
+        return line
+
+    min_word_duration = max(min_word_duration, 0.0)
+    match_map = {
+        word_idx: (start, end)
+        for word_idx, (start, end) in matches
+        if start is not None and end is not None
+    }
+
+    max_line_duration = min(max(4.0, len(line.words) * 0.6), 8.0)
+    target_duration = min(target_duration, max_line_duration)
+    min_weight = max(min_word_duration, 0.01)
+    weights: List[float] = []
+    for word_idx in range(len(line.words)):
+        interval = match_map.get(word_idx)
+        if interval:
+            start, end = interval
+            weight = max(end - start, min_weight)
+        else:
+            weight = min_weight
+        weights.append(weight)
+
+    total_weight = sum(weights) or 1.0
+    durations = [
+        (weights[i] / total_weight) * target_duration for i in range(len(line.words))
+    ]
+    duration_sum = sum(durations)
+    if durations:
+        durations[-1] += target_duration - duration_sum
+
+    max_word_duration = min(3.0, target_duration * 0.5)
+    durations = _cap_word_durations(durations, target_duration, max_word_duration)
+
+    current = line_start if line_start is not None else line.start_time
+    new_words: List[Word] = []
+    for idx, word in enumerate(line.words):
+        duration = durations[idx]
+        start_time = current
+        end_time = start_time + duration
+        if idx == len(line.words) - 1:
+            end_time = line.start_time + target_duration
+            if end_time <= start_time:
+                end_time = start_time + max(min_word_duration, 0.01)
+        new_words.append(
+            Word(
+                text=word.text,
+                start_time=start_time,
+                end_time=end_time,
+                singer=word.singer,
+            )
+        )
+        current = end_time
+
+    adjusted_words = _clamp_word_gaps(new_words, max_gap)
+    clamped_line = Line(words=adjusted_words, singer=line.singer)
+    scaled_line = _scale_line_to_duration(
+        clamped_line,
+        target_duration=target_duration,
+    )
+    target_start = line_start if line_start is not None else scaled_line.start_time
+    offset = target_start - scaled_line.start_time
+    adjusted_scaled_words = [
+        Word(
+            text=w.text,
+            start_time=w.start_time + offset,
+            end_time=w.end_time + offset,
+            singer=w.singer,
+        )
+        for w in scaled_line.words
+    ]
+    return Line(words=adjusted_scaled_words, singer=line.singer)
+
+
+def _clamp_word_gaps(words: List[Word], max_gap: float) -> List[Word]:
+    if not words or max_gap is None:
+        return words
+    adjusted: List[Word] = []
+    total_shift = 0.0
+    adjusted.append(
+        Word(
+            text=words[0].text,
+            start_time=words[0].start_time,
+            end_time=words[0].end_time,
+            singer=words[0].singer,
+        )
+    )
+    for current in words[1:]:
+        prev = adjusted[-1]
+        shifted_start = current.start_time - total_shift
+        gap = shifted_start - prev.end_time
+        shift = 0.0
+        if gap > max_gap:
+            shift = gap - max_gap
+        total_shift += shift
+        duration = current.end_time - current.start_time
+        new_start = shifted_start - shift
+        new_end = new_start + duration
+        adjusted.append(
+            Word(
+                text=current.text,
+                start_time=new_start,
+                end_time=new_end,
+                singer=current.singer,
+            )
+        )
+    return adjusted
+
+
+def _cap_word_durations(
+    durations: List[float], total_duration: float, max_word_duration: float
+) -> List[float]:
+    if not durations:
+        return durations
+    capped = []
+    remainder = total_duration
+    for duration in durations:
+        limit = min(max_word_duration, remainder - 0.01 * len(durations))
+        capped_value = min(duration, limit)
+        capped.append(capped_value)
+        remainder -= capped_value
+    if remainder > 0 and capped:
+        capped[-1] += remainder
+    return capped
 
 
 def _align_dtw_whisper_with_data(
@@ -3106,6 +3263,7 @@ def correct_timing_with_whisper(  # noqa: C901
     )
     aligned_lines = _normalize_line_word_timings(aligned_lines)
     aligned_lines = _enforce_monotonic_line_starts(aligned_lines)
+    aligned_lines = _enforce_non_overlapping_lines(aligned_lines)
     if force_dtw:
         aligned_lines, pulled_near_end = _pull_lines_near_segment_end(
             aligned_lines, transcription, epitran_lang
@@ -3174,6 +3332,87 @@ def _enforce_monotonic_line_starts(
 
         adjusted.append(line)
         prev_start = line.start_time
+
+    return adjusted
+
+
+def _scale_line_to_duration(line: Line, target_duration: float) -> Line:
+    """Scale word timings so the line fits within target_duration."""
+    from .models import Line, Word
+
+    if not line.words:
+        return line
+
+    start = line.start_time
+    end = line.end_time
+    duration = end - start
+    if duration <= 0 or target_duration <= 0:
+        return line
+
+    scale = target_duration / duration
+    new_words: List[Word] = []
+    for w in line.words:
+        rel_start = w.start_time - start
+        rel_end = w.end_time - start
+        new_start = start + rel_start * scale
+        new_end = start + rel_end * scale
+        new_words.append(
+            Word(
+                text=w.text,
+                start_time=new_start,
+                end_time=new_end,
+                singer=w.singer,
+            )
+        )
+    return Line(words=new_words, singer=line.singer)
+
+
+def _enforce_non_overlapping_lines(
+    lines: List[Line], min_gap: float = 0.02, min_duration: float = 0.2
+) -> List[Line]:
+    """Shift/scale lines to avoid overlaps while preserving order."""
+    from .models import Line, Word
+
+    if not lines:
+        return lines
+
+    adjusted: List[Line] = []
+    prev_end: Optional[float] = None
+    # Precompute next starts for lookahead
+    next_starts: List[Optional[float]] = [None] * len(lines)
+    next_start = None
+    for i in range(len(lines) - 1, -1, -1):
+        next_starts[i] = next_start
+        if lines[i].words:
+            next_start = lines[i].start_time
+
+    for i, line in enumerate(lines):
+        if not line.words:
+            adjusted.append(line)
+            continue
+
+        start = line.start_time
+        if prev_end is not None and start < prev_end + min_gap:
+            shift = (prev_end + min_gap) - start
+            new_words = [
+                Word(
+                    text=w.text,
+                    start_time=w.start_time + shift,
+                    end_time=w.end_time + shift,
+                    singer=w.singer,
+                )
+                for w in line.words
+            ]
+            line = Line(words=new_words, singer=line.singer)
+
+        next_start = next_starts[i]
+        if next_start is not None and line.end_time >= next_start - min_gap:
+            target = max(next_start - min_gap - line.start_time, min_duration)
+            if target < (line.end_time - line.start_time):
+                line = _scale_line_to_duration(line, target)
+
+        adjusted.append(line)
+        prev_end = line.end_time
 
     return adjusted
 

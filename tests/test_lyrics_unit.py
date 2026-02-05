@@ -97,3 +97,17 @@ def test_calculate_quality_score_bounds():
         "issues": ["a", "b"],
     }
     assert lyrics._calculate_quality_score(report) == 0.0
+
+
+def test_calculate_quality_score_from_dtw_metrics():
+    report = {
+        "lyrics_quality": {},
+        "alignment_method": "whisper_hybrid",
+        "dtw_metrics": {
+            "matched_ratio": 1.0,
+            "avg_similarity": 0.85,
+            "line_coverage": 1.0,
+        },
+        "issues": [],
+    }
+    assert lyrics._calculate_quality_score(report) == 100.0

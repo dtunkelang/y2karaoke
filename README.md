@@ -55,6 +55,25 @@ python --version  # Should show Python 3.12.x
 
 If not, recreate the virtual environment with `python3.12 -m venv venv`.
 
+### Improve Phonetic Matching with FLite
+
+`epitran` can plug into FLite’s `lex_lookup` dictionary, which dramatically improves phonetic similarity scores when aligning Whisper output to lyrics, especially for phonetic DTW. Without `lex_lookup`, you’ll continue to see warnings like `WARNING: epitran:lex_lookup (from flite) is not installed.` and phonetic matching is slightly fuzzier.
+
+Install FLite once (feel free to pick the package manager that fits your OS):
+
+```bash
+# macOS (Homebrew)
+brew install flite
+
+# Debian/Ubuntu
+sudo apt install flite
+
+# Fedora / RHEL
+sudo dnf install flite
+```
+
+If you build from source, make sure the `flite` binary and its `lex` data directory are on your `PATH`, because `epitran` looks for `lex_lookup` via those `flite` tools. Once `lex_lookup` is available, rerun the pipeline and the noisy warnings disappear while the phonetic matching becomes noticeably stronger.
+
 ## Usage
 
 ### New CLI Interface (Recommended)

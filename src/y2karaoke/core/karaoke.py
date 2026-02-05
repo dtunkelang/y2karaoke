@@ -300,130 +300,169 @@ class KaraokeGenerator:
                     all_words.sort(key=lambda w: w.get("start", 0.0))
                     report["whisper_word_count"] = len(all_words)
                     report["whisper_window_low_conf_threshold"] = 0.5
-                    for idx, line in enumerate(report["lines"]):
-                        next_start = (
-                            report["lines"][idx + 1]["start"]
-                            if idx + 1 < len(report["lines"])
-                            else line["end"] + 2.0
-                        )
-                        window_start = line["start"] - 1.0
-                        window_words = [
-                            w
-                            for w in all_words
-                            if window_start <= w.get("start", 0.0) < next_start
-                        ]
-                        probs = [
-                            w.get("probability")
-                            for w in window_words
-                            if w.get("probability") is not None
-                        ]
-                        low_conf = sum(
-                            1
-                            for w in window_words
-                            if w.get("probability") is not None
-                            and w.get("probability") < 0.5
-                        )
-                        line["whisper_window_start"] = round(window_start, 2)
-                        line["whisper_window_end"] = round(next_start, 2)
-                        line["whisper_window_word_count"] = len(window_words)
-                        line["whisper_window_low_conf_count"] = low_conf
-                        line["whisper_window_avg_prob"] = (
-                            round(sum(probs) / len(probs), 3) if probs else None
-                        )
-                        line["whisper_window_words"] = [
+                for idx, line in enumerate(report["lines"]):
+                    next_start = (
+                        report["lines"][idx + 1]["start"]
+                        if idx + 1 < len(report["lines"])
+                        else line["end"] + 2.0
+                    )
+                    window_start = line["start"] - 1.0
+                    window_words = [
+                        w
+                        for w in all_words
+                        if window_start <= w.get("start", 0.0) < next_start
+                    ]
+                    probs = [
+                        w.get("probability")
+                        for w in window_words
+                        if w.get("probability") is not None
+                    ]
+                    low_conf = sum(
+                        1
+                        for w in window_words
+                        if w.get("probability") is not None
+                        and w.get("probability") < 0.5
+                    )
+                    line["whisper_window_start"] = round(window_start, 2)
+                    line["whisper_window_end"] = round(next_start, 2)
+                    line["whisper_window_word_count"] = len(window_words)
+                    line["whisper_window_low_conf_count"] = low_conf
+                    line["whisper_window_avg_prob"] = (
+                        round(sum(probs) / len(probs), 3) if probs else None
+                    )
+                    line["whisper_window_words"] = [
+                        {
+                            "text": w.get("text", ""),
+                            "start": round(w.get("start", 0.0), 2),
+                            "end": round(w.get("end", 0.0), 2),
+                            "probability": (
+                                round(w.get("probability", 0.0), 3)
+                                if w.get("probability") is not None
+                                else None
+                            ),
+                        }
+                        for w in window_words
+                    ]
+                low_conf_lines: List[Dict[str, Any]] = []
+                for line_entry in report["lines"]:
+                    avg_prob = line_entry.get("whisper_window_avg_prob")
+                    low_conf_count = line_entry.get("whisper_window_low_conf_count", 0)
+                    total_words = line_entry.get("whisper_window_word_count", 0)
+                    low_conf_ratio = (
+                        (low_conf_count / total_words) if total_words else 0.0
+                    )
+                    if avg_prob is not None and (
+                        avg_prob < 0.35 or low_conf_ratio >= 0.5
+                    ):
+                        low_conf_lines.append(
                             {
-                                "text": w.get("text", ""),
-                                "start": round(w.get("start", 0.0), 2),
-                                "end": round(w.get("end", 0.0), 2),
-                                "probability": (
-                                    round(w.get("probability", 0.0), 3)
-                                    if w.get("probability") is not None
-                                    else None
-                                ),
+                                "index": line_entry["index"],
+                                "text": line_entry["text"],
+                                "whisper_window_avg_prob": avg_prob,
+                                "low_conf_ratio": round(low_conf_ratio, 2),
                             }
-                            for w in window_words
-                        ]
-                    for line in report["lines"]:
-                        nearest_start = None
-                        nearest_end = None
-                        best_start_delta = None
-                        best_end_delta = None
-                        prior_seg = None
-                        prior_late = None
-                        for seg in segments:
-                            s_start = seg.get("start", 0.0)
-                            s_end = seg.get("end", 0.0)
-                            start_delta = abs(s_start - line["start"])
-                            end_delta = abs(s_end - line["start"])
-                            late_by = line["start"] - s_end
-                            if 0 <= late_by <= 15.0:
-                                if prior_late is None or late_by < prior_late:
-                                    prior_late = late_by
-                                    prior_seg = seg
-                            if (
-                                best_start_delta is None
-                                or start_delta < best_start_delta
-                            ):
-                                best_start_delta = start_delta
-                                nearest_start = seg
-                            if best_end_delta is None or end_delta < best_end_delta:
-                                best_end_delta = end_delta
-                                nearest_end = seg
-                        best_seg = None
-                        best_sim = 0.0
-                        for seg in segments:
-                            if abs(seg.get("start", 0.0) - line["start"]) > 15.0:
-                                continue
+                        )
+                report["low_confidence_lines"] = low_conf_lines
+                if low_conf_lines:
+                    quality = lyrics_result.get("quality")
+                    if quality is not None:
+                        issues = quality.setdefault("issues", [])
+                        issue_msg = (
+                            f"{len(low_conf_lines)} line(s) had low Whisper confidence"
+                        )
+                        if issue_msg not in issues:
+                            issues.append(issue_msg)
+                last_used_segment_idx: Dict[str, int] = {}
+                for line in report["lines"]:
+                    text_norm = (
+                        line.get("text", "").strip().lower() if line.get("text") else ""
+                    )
+                    nearest_start = None
+                    nearest_end = None
+                    best_start_delta = None
+                    best_end_delta = None
+                    prior_seg = None
+                    prior_late = None
+                    for seg in segments:
+                        s_start = seg.get("start", 0.0)
+                        s_end = seg.get("end", 0.0)
+                        start_delta = abs(s_start - line["start"])
+                        end_delta = abs(s_end - line["start"])
+                        late_by = line["start"] - s_end
+                        if 0 <= late_by <= 15.0:
+                            if prior_late is None or late_by < prior_late:
+                                prior_late = late_by
+                                prior_seg = seg
+                        if best_start_delta is None or start_delta < best_start_delta:
+                            best_start_delta = start_delta
+                            nearest_start = seg
+                        if best_end_delta is None or end_delta < best_end_delta:
+                            best_end_delta = end_delta
+                            nearest_end = seg
+                    best_seg = None
+                    best_delta = None
+                    best_sim = -1.0
+                    best_seg_idx = None
+                    prev_segment_idx = last_used_segment_idx.get(text_norm)
+                    for seg_idx, seg in enumerate(segments):
+                        if prev_segment_idx is not None and seg_idx <= prev_segment_idx:
+                            continue
+                        seg_start = seg.get("start", 0.0)
+                        delta = abs(seg_start - line["start"])
+                        if delta > 15.0:
+                            continue
+                        sim = 0.0
+                        try:
+                            sim = _phonetic_similarity(
+                                line["text"],
+                                seg.get("text", ""),
+                                "fra-Latn",
+                            )
+                        except Exception:
                             sim = 0.0
-                            try:
-                                sim = _phonetic_similarity(
-                                    line["text"],
-                                    seg.get("text", ""),
-                                    "fra-Latn",
-                                )
-                            except Exception:
-                                sim = 0.0
-                            if sim > best_sim:
-                                best_sim = sim
-                                best_seg = seg
-                        if nearest_start:
-                            line["nearest_segment_start"] = round(
-                                nearest_start.get("start", 0.0), 2
-                            )
-                            line["nearest_segment_start_end"] = round(
-                                nearest_start.get("end", 0.0), 2
-                            )
-                            line["nearest_segment_start_text"] = nearest_start.get(
-                                "text", ""
-                            )
-                        if nearest_end:
-                            line["nearest_segment_end"] = round(
-                                nearest_end.get("end", 0.0), 2
-                            )
-                            line["nearest_segment_end_start"] = round(
-                                nearest_end.get("start", 0.0), 2
-                            )
-                            line["nearest_segment_end_text"] = nearest_end.get(
-                                "text", ""
-                            )
-                        if best_seg:
-                            line["best_segment_start"] = round(
-                                best_seg.get("start", 0.0), 2
-                            )
-                            line["best_segment_end"] = round(
-                                best_seg.get("end", 0.0), 2
-                            )
-                            line["best_segment_text"] = best_seg.get("text", "")
-                        if prior_seg is not None:
-                            line["prior_segment_start"] = round(
-                                prior_seg.get("start", 0.0), 2
-                            )
-                            line["prior_segment_end"] = round(
-                                prior_seg.get("end", 0.0), 2
-                            )
-                            line["prior_segment_late_by"] = round(
-                                line["start"] - prior_seg.get("end", 0.0), 2
-                            )
+                        if (
+                            best_delta is None
+                            or delta < best_delta
+                            or (delta == best_delta and sim > best_sim)
+                        ):
+                            best_delta = delta
+                            best_sim = sim
+                            best_seg = seg
+                            best_seg_idx = seg_idx
+                    if nearest_start:
+                        line["nearest_segment_start"] = round(
+                            nearest_start.get("start", 0.0), 2
+                        )
+                        line["nearest_segment_start_end"] = round(
+                            nearest_start.get("end", 0.0), 2
+                        )
+                        line["nearest_segment_start_text"] = nearest_start.get(
+                            "text", ""
+                        )
+                    if nearest_end:
+                        line["nearest_segment_end"] = round(
+                            nearest_end.get("end", 0.0), 2
+                        )
+                        line["nearest_segment_end_start"] = round(
+                            nearest_end.get("start", 0.0), 2
+                        )
+                        line["nearest_segment_end_text"] = nearest_end.get("text", "")
+                    if best_seg:
+                        line["best_segment_start"] = round(
+                            best_seg.get("start", 0.0), 2
+                        )
+                        line["best_segment_end"] = round(best_seg.get("end", 0.0), 2)
+                        line["best_segment_text"] = best_seg.get("text", "")
+                        if text_norm:
+                            last_used_segment_idx[text_norm] = best_seg_idx or 0
+                    if prior_seg is not None:
+                        line["prior_segment_start"] = round(
+                            prior_seg.get("start", 0.0), 2
+                        )
+                        line["prior_segment_end"] = round(prior_seg.get("end", 0.0), 2)
+                        line["prior_segment_late_by"] = round(
+                            line["start"] - prior_seg.get("end", 0.0), 2
+                        )
             except Exception:
                 pass
 

@@ -457,28 +457,50 @@ def _apply_whisper_alignment(
     whisper_model: Optional[str],
     whisper_force_dtw: bool,
     whisper_aggressive: bool = False,
+    prefer_whisper_timing_map: bool = False,
 ) -> Tuple[List[Line], List[str], Dict[str, float]]:
     """Apply Whisper alignment to lines. Returns (lines, fixes_list)."""
-    from .timing_evaluator import correct_timing_with_whisper
+    from .timing_evaluator import (
+        align_lrc_text_to_whisper_timings,
+        correct_timing_with_whisper,
+    )
 
     model_size = whisper_model or "base"
     try:
-        lines, whisper_fixes, whisper_metrics = correct_timing_with_whisper(
-            lines,
-            vocals_path,
-            language=whisper_language,
-            model_size=model_size,
-            aggressive=whisper_aggressive,
-            force_dtw=whisper_force_dtw,
-        )
+        if prefer_whisper_timing_map:
+            lines, whisper_fixes, whisper_metrics = align_lrc_text_to_whisper_timings(
+                lines,
+                vocals_path,
+                language=whisper_language,
+                model_size=model_size,
+                aggressive=whisper_aggressive,
+            )
+        else:
+            lines, whisper_fixes, whisper_metrics = correct_timing_with_whisper(
+                lines,
+                vocals_path,
+                language=whisper_language,
+                model_size=model_size,
+                aggressive=whisper_aggressive,
+                force_dtw=whisper_force_dtw,
+            )
     except TypeError:
-        lines, whisper_fixes, whisper_metrics = correct_timing_with_whisper(
-            lines,
-            vocals_path,
-            language=whisper_language,
-            model_size=model_size,
-            force_dtw=whisper_force_dtw,
-        )
+        if prefer_whisper_timing_map:
+            lines, whisper_fixes, whisper_metrics = align_lrc_text_to_whisper_timings(
+                lines,
+                vocals_path,
+                language=whisper_language,
+                model_size=model_size,
+                aggressive=whisper_aggressive,
+            )
+        else:
+            lines, whisper_fixes, whisper_metrics = correct_timing_with_whisper(
+                lines,
+                vocals_path,
+                language=whisper_language,
+                model_size=model_size,
+                force_dtw=whisper_force_dtw,
+            )
     if whisper_fixes:
         logger.info(f"Whisper aligned {len(whisper_fixes)} line(s)")
         for fix in whisper_fixes:
@@ -1581,6 +1603,8 @@ def _calculate_quality_score(quality_report: dict) -> float:
     # Base score on lyrics quality if available
     if quality_report["lyrics_quality"]:
         base_score = quality_report["lyrics_quality"].get("quality_score", 50.0)
+    elif quality_report.get("dtw_metrics"):
+        base_score = _score_from_dtw_metrics(quality_report["dtw_metrics"])
     else:
         base_score = 30.0  # Genius fallback
 
@@ -1598,6 +1622,19 @@ def _calculate_quality_score(quality_report: dict) -> float:
     base_score -= len(quality_report["issues"]) * 5
 
     return max(0.0, min(100.0, base_score))
+
+
+def _score_from_dtw_metrics(metrics: dict) -> float:
+    """Heuristic score derived from Whisper/DTW alignment metrics."""
+    matched_ratio = float(metrics.get("matched_ratio", 0.0))
+    avg_similarity = float(metrics.get("avg_similarity", 0.0))
+    line_coverage = float(metrics.get("line_coverage", 0.0))
+
+    score = 40.0
+    score += matched_ratio * 25.0
+    score += avg_similarity * 20.0
+    score += line_coverage * 10.0
+    return max(20.0, min(100.0, score))
 
 
 def _fetch_lrc_text_and_timings(
@@ -1822,6 +1859,7 @@ def get_lyrics_simple(  # noqa: C901
         )
 
     # 4. Create Line objects
+    has_lrc_timing = bool(line_timings)
     if lrc_text or file_lines:
         if line_timings and file_lines:
             lines = create_lines_from_lrc_timings(line_timings, file_lines)
@@ -1854,6 +1892,7 @@ def get_lyrics_simple(  # noqa: C901
                     whisper_model,
                     whisper_force_dtw,
                     whisper_aggressive,
+                    prefer_whisper_timing_map=not has_lrc_timing,
                 )
             except Exception as e:
                 logger.warning(f"Whisper alignment failed: {e}")
@@ -2085,6 +2124,7 @@ def get_lyrics_with_quality(  # noqa: C901
             vocals_path, line_timings, lyrics_offset, issues_list
         )
 
+    has_lrc_timing = bool(line_timings)
     # 4. Create Line objects and apply timing
     if lrc_text or file_lines:
         if line_timings and file_lines:
@@ -2131,6 +2171,7 @@ def get_lyrics_with_quality(  # noqa: C901
                 whisper_force_dtw,
                 whisper_aggressive,
                 quality_report,
+                prefer_whisper_timing_map=not has_lrc_timing,
             )
         elif vocals_path and whisper_map_lrc:
             try:
@@ -2177,6 +2218,17 @@ def get_lyrics_with_quality(  # noqa: C901
             except Exception as e:
                 logger.warning(f"Whisper LRC mapping failed: {e}")
                 issues_list.append(f"Whisper LRC mapping failed: {e}")
+        elif vocals_path and not has_lrc_timing:
+            lines, quality_report = _apply_whisper_with_quality(
+                lines,
+                vocals_path,
+                whisper_language,
+                whisper_model,
+                whisper_force_dtw,
+                whisper_aggressive,
+                quality_report,
+                prefer_whisper_timing_map=True,
+            )
     else:
         # Fallback: use Genius text
         if genius_lines:
@@ -2242,6 +2294,7 @@ def _apply_whisper_with_quality(
     whisper_force_dtw: bool,
     whisper_aggressive: bool = False,
     quality_report: Optional[dict] = None,
+    prefer_whisper_timing_map: bool = False,
 ) -> Tuple[List[Line], dict]:
     """Apply Whisper alignment and update quality report."""
     if quality_report is None:
@@ -2254,6 +2307,7 @@ def _apply_whisper_with_quality(
             whisper_model,
             whisper_force_dtw,
             whisper_aggressive,
+            prefer_whisper_timing_map=prefer_whisper_timing_map,
         )
         quality_report["whisper_used"] = True
         quality_report["whisper_corrections"] = len(whisper_fixes)
