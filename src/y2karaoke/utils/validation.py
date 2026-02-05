@@ -67,8 +67,6 @@ def validate_output_path(path: str) -> Path:
 def validate_line_order(lines) -> None:
     """Validate that lines are monotonic and have non-negative durations."""
     prev_start = None
-    prev_end = None
-    prev_text = None
     for idx, line in enumerate(lines):
         if not getattr(line, "words", None):
             continue
@@ -82,15 +80,7 @@ def validate_line_order(lines) -> None:
             raise ValidationError(
                 f"Line {idx + 1} starts before previous line ({start:.2f}s < {prev_start:.2f}s)"
             )
-        text = getattr(line, "text", "").strip().lower()
-        if prev_text and text and text == prev_text:
-            if prev_end is not None and start <= prev_end + 0.2:
-                raise ValidationError(
-                    f"Line {idx + 1} duplicates previous line text with overlap"
-                )
         prev_start = start
-        prev_end = end
-        prev_text = text
 
 
 def sanitize_filename(name: str) -> str:

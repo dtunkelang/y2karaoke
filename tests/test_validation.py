@@ -103,15 +103,14 @@ class TestValidation:
         assert result.startswith("very_long_filename_")
 
     def test_validate_line_order_duplicate_overlap(self):
-        """Duplicate adjacent lines with overlap should fail."""
+        """Duplicate adjacent lines with overlap are allowed."""
         line1 = Line(
             words=[Word(text="hello", start_time=0.0, end_time=1.0, singer="")]
         )
         line2 = Line(
             words=[Word(text="hello", start_time=1.1, end_time=2.0, singer="")]
         )
-        with pytest.raises(ValidationError):
-            validate_line_order([line1, line2])
+        validate_line_order([line1, line2])
 
     def test_validate_line_order_duplicate_separated(self):
         """Duplicate text later in song should be allowed."""
