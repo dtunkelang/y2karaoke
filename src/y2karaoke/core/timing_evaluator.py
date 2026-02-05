@@ -1756,7 +1756,7 @@ def _consonant_skeleton(text: str) -> str:
 _epitran_cache: Dict[str, Any] = {}
 _panphon_distance = None
 _panphon_ft = None
-_ipa_cache: Dict[str, str] = {}  # Cache for IPA transliterations
+_ipa_cache: Dict[str, Optional[str]] = {}  # Cache for IPA transliterations
 _ipa_segs_cache: Dict[str, List[str]] = {}  # Cache for IPA segments
 
 
@@ -1811,7 +1811,12 @@ def _get_ipa(text: str, language: str = "fra-Latn") -> Optional[str]:
     if cache_key in _ipa_cache:
         return _ipa_cache[cache_key]
 
-    ipa = epi.transliterate(norm)
+    try:
+        ipa = epi.transliterate(norm)
+    except Exception as exc:
+        logger.debug(f"IPA transliteration failed for '{text}': {exc}")
+        _ipa_cache[cache_key] = None
+        return None
     _ipa_cache[cache_key] = ipa
     return ipa
 
