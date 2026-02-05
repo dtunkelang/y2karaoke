@@ -2640,6 +2640,19 @@ def _build_syllable_dtw_path(
         return path
 
 
+def _dedupe_whisper_words(words: List[TranscriptionWord]) -> List[TranscriptionWord]:
+    """Remove Whisper words that share the same start time and text."""
+    deduped: List[TranscriptionWord] = []
+    seen: Set[Tuple[int, str]] = set()
+    for word in words:
+        key = (round(word.start * 1000), word.text.strip().lower())
+        if key in seen:
+            continue
+        seen.add(key)
+        deduped.append(word)
+    return deduped
+
+
 def _build_word_assignments_from_syllable_path(
     path: List[Tuple[int, int]],
     lrc_syllables: List[Dict],
@@ -2884,6 +2897,8 @@ def align_lrc_text_to_whisper_timings(  # noqa: C901
     if not transcription or not all_words:
         logger.warning("No transcription available, skipping Whisper timing map")
         return lines, [], {}
+
+    all_words = _dedupe_whisper_words(all_words)
 
     epitran_lang = _whisper_lang_to_epitran(detected_lang)
     logger.debug(
