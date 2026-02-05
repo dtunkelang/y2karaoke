@@ -5,7 +5,8 @@ characteristics to evaluate timing quality and identify inconsistencies.
 """
 
 from dataclasses import dataclass, field
-from typing import List, Optional, Tuple, Dict, Any, Set
+from difflib import SequenceMatcher
+from typing import Iterable, Sequence, List, Optional, Tuple, Dict, Any, Set
 import numpy as np
 import re
 
@@ -2653,6 +2654,137 @@ def _dedupe_whisper_words(words: List[TranscriptionWord]) -> List[TranscriptionW
     return deduped
 
 
+def _segment_start(segment: Any) -> float:
+    if hasattr(segment, "start"):
+        return segment.start
+    return segment.get("start", 0.0)
+
+
+def _segment_end(segment: Any) -> float:
+    if hasattr(segment, "end"):
+        return segment.end
+    return segment.get("end", 0.0)
+
+
+def _build_word_to_segment_index(
+    all_words: List[TranscriptionWord], segments: Sequence[Any]
+) -> Dict[int, int]:
+    """Map each Whisper word index to its enclosing segment."""
+    mapping: Dict[int, int] = {}
+    if not segments:
+        return mapping
+    seg_idx = 0
+    for idx, word in enumerate(all_words):
+        while seg_idx + 1 < len(segments) and word.start > _segment_end(
+            segments[seg_idx]
+        ):
+            seg_idx += 1
+        seg = segments[seg_idx]
+        if _segment_start(seg) <= word.start <= _segment_end(seg):
+            mapping[idx] = seg_idx
+    return mapping
+
+
+def _find_segment_for_time(
+    time: float, segments: Sequence[Any], start_idx: int = 0
+) -> Optional[int]:
+    """Find the segment index whose start is closest to the given time."""
+    if not segments:
+        return None
+    best_idx = None
+    best_diff = float("inf")
+    for idx in range(start_idx, len(segments)):
+        seg = segments[idx]
+        diff = abs(_segment_start(seg) - time)
+        if diff < best_diff:
+            best_diff = diff
+            best_idx = idx
+        if _segment_start(seg) > time and diff > best_diff:
+            break
+    return best_idx
+
+
+def _word_match_score(
+    word_start: float,
+    target_start: float,
+    word_seg: Optional[int],
+    target_seg: Optional[int],
+    segments: Sequence[Any],
+) -> float:
+    """Score a word match by time difference with a small segment penalty."""
+    score = abs(word_start - target_start)
+    if target_seg is None or word_seg is None:
+        return score
+    if word_seg != target_seg:
+        seg_diff = abs(
+            _segment_start(segments[word_seg]) - _segment_start(segments[target_seg])
+        )
+        score += 0.4 + 0.01 * seg_diff
+    return score
+
+
+def _find_nearest_word_in_segment(
+    candidates: Iterable[Tuple[TranscriptionWord, int]],
+    target_start: float,
+    segment_idx: Optional[int],
+    word_segment_idx: Dict[int, int],
+) -> Optional[Tuple[TranscriptionWord, int]]:
+    if segment_idx is None:
+        return None
+    best = None
+    best_diff = float("inf")
+    for word, idx in candidates:
+        if word_segment_idx.get(idx) != segment_idx:
+            continue
+        diff = abs(word.start - target_start)
+        if diff < best_diff:
+            best_diff = diff
+            best = (word, idx)
+    return best
+
+
+def _normalize_line_text(text: str) -> str:
+    return re.sub(r"[^a-z0-9\\s]", "", text.lower())
+
+
+def _find_best_segment_by_text(
+    line_text: str, segments: Sequence[Any], start_idx: int = 0
+) -> Optional[int]:
+    """Prefer a segment whose text matches the provided line."""
+    norm_line = _normalize_line_text(line_text)
+    best_idx = None
+    best_score = 0.0
+    for idx, segment in enumerate(segments):
+        if idx < start_idx:
+            continue
+        seg_text = getattr(segment, "text", None)
+        if seg_text is None and isinstance(segment, dict):
+            seg_text = segment.get("text", "")
+        if not seg_text:
+            continue
+        norm_seg = _normalize_line_text(seg_text)
+        score = SequenceMatcher(None, norm_line, norm_seg).ratio()
+        if score > best_score:
+            best_score = score
+            best_idx = idx
+        if score >= 0.6:
+            break
+    return best_idx if best_score >= 0.3 else None
+
+
+def _segment_word_indices(
+    all_words: List[TranscriptionWord],
+    word_segment_idx: Dict[int, int],
+    segment_idx: int,
+) -> List[int]:
+    """Return word indices belonging to the given Whisper segment."""
+    indices = [idx for idx, seg in word_segment_idx.items() if seg == segment_idx]
+    return sorted(indices, key=lambda i: all_words[i].start)
+
+
+_TIME_DRIFT_THRESHOLD = 0.8
+
+
 def _build_word_assignments_from_syllable_path(
     path: List[Tuple[int, int]],
     lrc_syllables: List[Dict],
@@ -2675,6 +2807,7 @@ def _map_lrc_words_to_whisper(
     all_words: List[TranscriptionWord],
     lrc_assignments: Dict[int, List[int]],
     language: str,
+    segments: Sequence[Any],
 ) -> Tuple[List[Line], int, float, set]:
     """Build mapped lines using Whisper timings based on LRC assignments."""
     from .models import Line, Word
@@ -2688,6 +2821,10 @@ def _map_lrc_words_to_whisper(
         (lw["line_idx"], lw["word_idx"]): idx for idx, lw in enumerate(lrc_words)
     }
 
+    segments = segments or []
+    word_segment_idx = _build_word_to_segment_index(all_words, segments)
+    current_segment = 0
+
     for line_idx, line in enumerate(lines):
         if not line.words:
             mapped_lines.append(line)
@@ -2695,6 +2832,15 @@ def _map_lrc_words_to_whisper(
 
         new_words: List[Word] = []
         line_matches: List[Tuple[int, Tuple[float, float]]] = []
+        line_segment_time = _find_segment_for_time(
+            line.start_time, segments, current_segment
+        )
+        line_segment_text = _find_best_segment_by_text(
+            line.text, segments, current_segment
+        )
+        line_segment = (
+            line_segment_text if line_segment_text is not None else line_segment_time
+        )
         for word_idx, word in enumerate(line.words):
             lrc_idx_opt = lrc_index_by_loc.get((line_idx, word_idx))
             if lrc_idx_opt is None:
@@ -2704,9 +2850,38 @@ def _map_lrc_words_to_whisper(
             if not assigned:
                 new_words.append(word)
                 continue
-            whisper_words = [all_words[i] for i in assigned]
-            start = min(w.start for w in whisper_words)
-            end = max(w.end for w in whisper_words)
+            candidate_indices = set(assigned)
+            if line_segment is not None:
+                candidate_indices.update(
+                    _segment_word_indices(all_words, word_segment_idx, line_segment)
+                )
+            whisper_candidates = [
+                (all_words[i], i)
+                for i in sorted(candidate_indices, key=lambda idx: all_words[idx].start)
+            ]
+            whisper_words = [pair[0] for pair in whisper_candidates]
+            best_word, best_idx = min(
+                whisper_candidates,
+                key=lambda pair: _word_match_score(
+                    pair[0].start,
+                    word.start_time,
+                    word_segment_idx.get(pair[1]),
+                    line_segment,
+                    segments,
+                ),
+            )
+            drift = abs(best_word.start - word.start_time)
+            if drift > _TIME_DRIFT_THRESHOLD:
+                fallback = _find_nearest_word_in_segment(
+                    whisper_candidates,
+                    word.start_time,
+                    line_segment,
+                    word_segment_idx,
+                )
+                if fallback and abs(fallback[0].start - word.start_time) < drift:
+                    best_word, best_idx = fallback
+            start = best_word.start
+            end = best_word.end
             line_matches.append((word_idx, (start, end)))
             new_words.append(
                 Word(
@@ -2723,6 +2898,11 @@ def _map_lrc_words_to_whisper(
                 for ww in whisper_words
             )
             total_similarity += best_sim
+            best_seg = word_segment_idx.get(best_idx)
+            if best_seg is not None:
+                current_segment = max(current_segment, best_seg)
+            elif line_segment is not None:
+                current_segment = max(current_segment, line_segment)
 
         mapped_line = Line(words=new_words, singer=line.singer)
         if line_matches:
@@ -2949,7 +3129,12 @@ def align_lrc_text_to_whisper_timings(  # noqa: C901
     corrections: List[str] = []
     mapped_lines, mapped_count, total_similarity, mapped_lines_set = (
         _map_lrc_words_to_whisper(
-            lines, lrc_words, all_words, lrc_assignments, epitran_lang
+            lines,
+            lrc_words,
+            all_words,
+            lrc_assignments,
+            epitran_lang,
+            transcription,
         )
     )
 
