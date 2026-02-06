@@ -3175,7 +3175,6 @@ def _run_per_block_dtw(
     """Run DTW within each speech block and merge into global assignments."""
     combined_assignments: Dict[int, Set[int]] = {}
 
-
     for blk_idx in range(len(speech_blocks)):
         blk_lrc_syl_idxs = block_lrc_syls.get(blk_idx, [])
         blk_whi_syl_idxs = block_whisper_syls.get(blk_idx, [])
