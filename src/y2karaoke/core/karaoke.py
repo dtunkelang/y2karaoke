@@ -364,7 +364,10 @@ class KaraokeGenerator:
                         first_line_word = _normalize_word_text(line["words"][0]["text"])
                         target_start = None
                         for w in window_words:
-                            if _normalize_word_text(w.get("text", "")) == first_line_word:
+                            if (
+                                _normalize_word_text(w.get("text", ""))
+                                == first_line_word
+                            ):
                                 target_start = w.get("start")
                                 break
                         if target_start is not None:
@@ -374,8 +377,12 @@ class KaraokeGenerator:
                                 line["start"] = round(line["start"] + delta, 2)
                                 line["end"] = round(line["end"] + delta, 2)
                                 for word_entry in line["words"]:
-                                    word_entry["start"] = round(word_entry["start"] + delta, 3)
-                                    word_entry["end"] = round(word_entry["end"] + delta, 3)
+                                    word_entry["start"] = round(
+                                        word_entry["start"] + delta, 3
+                                    )
+                                    word_entry["end"] = round(
+                                        word_entry["end"] + delta, 3
+                                    )
                     line["whisper_line_start_delta"] = line_delta
                 low_conf_lines: List[Dict[str, Any]] = []
                 for line_entry in report["lines"]:
@@ -439,9 +446,7 @@ class KaraokeGenerator:
                     best_seg_idx = None
                     prev_segment_idx = last_used_segment_idx.get(text_norm)
                 prev_line_end = (
-                    report["lines"][idx - 1]["end"]
-                    if idx > 0
-                    else line["start"] - 0.01
+                    report["lines"][idx - 1]["end"] if idx > 0 else line["start"] - 0.01
                 )
                 for seg_idx, seg in enumerate(segments):
                     if prev_segment_idx is not None and seg_idx <= prev_segment_idx:

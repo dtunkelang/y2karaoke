@@ -141,7 +141,9 @@ def test_find_best_cached_rejects_wrong_explicit_language(tmp_path):
     # Save a cache with explicit language "fr"
     cache_path = te._get_whisper_cache_path(str(audio), "large", "fr", aggressive=False)
     word = te.TranscriptionWord(start=0.1, end=0.2, text="bonjour")
-    segments = [te.TranscriptionSegment(start=0.0, end=1.0, text="bonjour", words=[word])]
+    segments = [
+        te.TranscriptionSegment(start=0.0, end=1.0, text="bonjour", words=[word])
+    ]
     te._save_whisper_cache(cache_path, segments, [word], "fr", "large", False)
 
     # Search with language="en" should NOT find the "fr" cache

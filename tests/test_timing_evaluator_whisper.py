@@ -579,9 +579,7 @@ def test_transcribe_vocals_success(monkeypatch):
         __import__("sys").modules, "faster_whisper", FakeWhisperModule()
     )
 
-    segments, words, language, model = te.transcribe_vocals(
-        "vocals.wav", language="en"
-    )
+    segments, words, language, model = te.transcribe_vocals("vocals.wav", language="en")
     assert language == "en"
     assert len(segments) == 1
     assert len(words) == 1
@@ -606,9 +604,7 @@ def test_transcribe_vocals_handles_transcribe_error(monkeypatch):
         __import__("sys").modules, "faster_whisper", FakeWhisperModule()
     )
 
-    segments, words, language, model = te.transcribe_vocals(
-        "vocals.wav", language="en"
-    )
+    segments, words, language, model = te.transcribe_vocals("vocals.wav", language="en")
     assert segments == []
     assert words == []
     assert language == ""

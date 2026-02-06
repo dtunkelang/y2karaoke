@@ -22,8 +22,7 @@ _lex_lookup_added = False
 
 def _build_script_content(python_executable: str) -> str:
     return (
-        "#!/bin/sh\n"
-        f"\"{python_executable}\" -m y2karaoke.utils.lex_lookup_stub \"$@\"\n"
+        "#!/bin/sh\n" f'"{python_executable}" -m y2karaoke.utils.lex_lookup_stub "$@"\n'
     )
 
 
