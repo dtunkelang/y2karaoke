@@ -145,8 +145,9 @@ y2karaoke cache clear VIDEO_ID
 | `--key` | Shift key by N semitones (-12 to +12, default: 0) |
 | `--tempo` | Tempo multiplier (0.5 = half speed, 2.0 = double, default: 1.0) |
 | `--audio-start` | Start audio processing from this many seconds into the track (skip intro; default: 0.0) |
-| `--title` | Override song title used when searching for lyrics (useful for covers) |
+| `--title` | Override song title used when searching for lyrics |
 | `--artist` | Override artist used when searching for lyrics (useful for covers) |
+| `--lyrics-file"` | Use lyrics from a local text or .lrc file as the text source |
 | `--backgrounds` | Use video backgrounds extracted from the original YouTube video |
 | `--work-dir` | Working directory for intermediate files (default: `~/.cache/karaoke/{video_id}`) |
 | `--keep-files` | Keep intermediate files (audio, stems, etc.) |
