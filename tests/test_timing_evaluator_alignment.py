@@ -54,10 +54,11 @@ def test_transcribe_vocals_returns_empty_without_dependency(monkeypatch):
         return original_import(name, *args, **kwargs)
 
     monkeypatch.setattr(builtins, "__import__", fake_import)
-    segments, words, language = te.transcribe_vocals("vocals.wav")
+    segments, words, language, model = te.transcribe_vocals("vocals.wav")
     assert segments == []
     assert words == []
     assert language == ""
+    assert model == "base"
 
 
 def test_text_similarity_phonetic_falls_back(monkeypatch):

@@ -20,7 +20,7 @@ def test_whisper_cache_round_trip(tmp_path):
 
     words = [TranscriptionWord(start=0.0, end=0.5, text="bonjour", probability=0.9)]
     segments = [TranscriptionSegment(start=0.0, end=0.6, text="bonjour", words=words)]
-    _save_whisper_cache(cache_path, segments, words, "fr")
+    _save_whisper_cache(cache_path, segments, words, "fr", "base", False)
 
     loaded = _load_whisper_cache(cache_path)
     assert loaded is not None

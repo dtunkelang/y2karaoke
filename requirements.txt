@@ -26,6 +26,7 @@ google-auth-httplib2>=0.1.0
 # Web scraping for lyrics
 requests>=2.31.0
 beautifulsoup4>=4.12.0
+pronouncing>=0.2.0
 musicbrainzngs>=0.7
 
 # CLI framework

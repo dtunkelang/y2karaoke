@@ -258,6 +258,7 @@ def _refine_timing_with_audio(
     from .timing_evaluator import (
         _check_for_silence_in_range,
         _check_vocal_activity_in_range,
+        _pull_lines_forward_for_continuous_vocals,
         correct_line_timestamps,
         extract_audio_features,
         fix_spurious_gaps,
@@ -344,65 +345,6 @@ def _refine_timing_with_audio(
         logger.info(f"Merged {len(gap_fixes)} spurious gap(s) based on vocals")
 
     return lines
-
-
-def _pull_lines_forward_for_continuous_vocals(
-    lines: List[Line], audio_features, check_activity, check_silence
-) -> Tuple[List[Line], int]:
-    """Pull lines earlier when a long gap contains continuous vocal activity."""
-    fixes = 0
-    if len(lines) < 2:
-        return lines, fixes
-
-    onset_times = audio_features.onset_times
-    if onset_times is None or len(onset_times) == 0:
-        return lines, fixes
-
-    for idx in range(1, len(lines)):
-        prev_line = lines[idx - 1]
-        line = lines[idx]
-        if not prev_line.words or not line.words:
-            continue
-
-        gap = line.start_time - prev_line.end_time
-        if gap <= 4.0:
-            continue
-
-        activity = check_activity(prev_line.end_time, line.start_time, audio_features)
-        has_silence = check_silence(
-            prev_line.end_time,
-            line.start_time,
-            audio_features,
-            min_silence_duration=0.5,
-        )
-        if activity <= 0.6 or has_silence:
-            continue
-
-        candidate_onsets = onset_times[
-            (onset_times >= prev_line.end_time) & (onset_times <= line.start_time)
-        ]
-        if len(candidate_onsets) == 0:
-            continue
-
-        new_start = float(candidate_onsets[0])
-        new_start = max(new_start, prev_line.end_time + 0.05)
-        shift = new_start - line.start_time
-        if shift > -0.3:
-            continue
-
-        new_words = [
-            Word(
-                text=w.text,
-                start_time=w.start_time + shift,
-                end_time=w.end_time + shift,
-                singer=w.singer,
-            )
-            for w in line.words
-        ]
-        lines[idx] = Line(words=new_words, singer=line.singer)
-        fixes += 1
-
-    return lines, fixes
 
 
 def _compress_spurious_lrc_gaps(
@@ -1779,7 +1721,7 @@ def get_lyrics_simple(  # noqa: C901
         from .timing_evaluator import transcribe_vocals
 
         model_size = whisper_model or "base"
-        transcription, _, detected_lang = transcribe_vocals(
+        transcription, _, detected_lang, _model = transcribe_vocals(
             vocals_path, whisper_language, model_size, whisper_aggressive
         )
         if not transcription:
@@ -1921,7 +1863,7 @@ def get_lyrics_simple(  # noqa: C901
                     )
 
                     model_size = whisper_model or "small"
-                    transcription, _, detected_lang = transcribe_vocals(
+                    transcription, _, detected_lang, _model = transcribe_vocals(
                         vocals_path, whisper_language, model_size, whisper_aggressive
                     )
                     if transcription:
@@ -2198,7 +2140,7 @@ def get_lyrics_with_quality(  # noqa: C901
                     )
 
                     model_size = whisper_model or "small"
-                    transcription, _, detected_lang = transcribe_vocals(
+                    transcription, _, detected_lang, _model = transcribe_vocals(
                         vocals_path, whisper_language, model_size, whisper_aggressive
                     )
                     if transcription:

@@ -20,6 +20,12 @@ from .models import compute_word_slots
 
 logger = get_logger(__name__)
 
+
+def _normalize_word_text(raw: str) -> str:
+    """Normalize a word for comparison (lowercase alpha + apostrophes)."""
+    normalized = "".join(ch for ch in (raw or "").lower() if ch.isalpha() or ch == "'")
+    return normalized
+
 if TYPE_CHECKING:
     from .models import Line
 
@@ -271,6 +277,15 @@ class KaraokeGenerator:
             ],
         }
 
+        dtw_metrics = lyrics_result.get("quality", {}).get("dtw_metrics", {})
+        if dtw_metrics:
+            report["dtw_word_coverage"] = round(
+                dtw_metrics.get("word_coverage", 0.0), 3
+            )
+            report["dtw_line_coverage"] = round(
+                dtw_metrics.get("line_coverage", 0.0), 3
+            )
+
         if video_id:
             try:
                 from .timing_evaluator import _phonetic_similarity
@@ -297,9 +312,9 @@ class KaraokeGenerator:
                             if w.get("start") is None:
                                 continue
                             all_words.append(w)
-                    all_words.sort(key=lambda w: w.get("start", 0.0))
-                    report["whisper_word_count"] = len(all_words)
-                    report["whisper_window_low_conf_threshold"] = 0.5
+                all_words.sort(key=lambda w: w.get("start", 0.0))
+                report["whisper_word_count"] = len(all_words)
+                report["whisper_window_low_conf_threshold"] = 0.5
                 for idx, line in enumerate(report["lines"]):
                     next_start = (
                         report["lines"][idx + 1]["start"]
@@ -341,8 +356,26 @@ class KaraokeGenerator:
                                 else None
                             ),
                         }
-                        for w in window_words
+                    for w in window_words
                     ]
+                    line_delta = None
+                    if line.get("words") and window_words:
+                        first_line_word = _normalize_word_text(line["words"][0]["text"])
+                        target_start = None
+                        for w in window_words:
+                            if _normalize_word_text(w.get("text", "")) == first_line_word:
+                                target_start = w.get("start")
+                                break
+                        if target_start is not None:
+                            delta = target_start - line["start"]
+                            line_delta = round(delta, 3)
+                            if delta > 0:
+                                line["start"] = round(line["start"] + delta, 2)
+                                line["end"] = round(line["end"] + delta, 2)
+                                for word_entry in line["words"]:
+                                    word_entry["start"] = round(word_entry["start"] + delta, 3)
+                                    word_entry["end"] = round(word_entry["end"] + delta, 3)
+                    line["whisper_line_start_delta"] = line_delta
                 low_conf_lines: List[Dict[str, Any]] = []
                 for line_entry in report["lines"]:
                     avg_prob = line_entry.get("whisper_window_avg_prob")
@@ -404,13 +437,22 @@ class KaraokeGenerator:
                     best_sim = -1.0
                     best_seg_idx = None
                     prev_segment_idx = last_used_segment_idx.get(text_norm)
-                    for seg_idx, seg in enumerate(segments):
-                        if prev_segment_idx is not None and seg_idx <= prev_segment_idx:
-                            continue
-                        seg_start = seg.get("start", 0.0)
-                        delta = abs(seg_start - line["start"])
-                        if delta > 15.0:
-                            continue
+                prev_line_end = (
+                    report["lines"][idx - 1]["end"]
+                    if idx > 0
+                    else line["start"] - 0.01
+                )
+                for seg_idx, seg in enumerate(segments):
+                    if prev_segment_idx is not None and seg_idx <= prev_segment_idx:
+                        continue
+                    seg_start = seg.get("start", 0.0)
+                    if seg_start < line["start"] - 0.6:
+                        continue
+                    if seg_start < prev_line_end - 0.15:
+                        continue
+                    delta = abs(seg_start - line["start"])
+                    if delta > 15.0:
+                        continue
                         sim = 0.0
                         try:
                             sim = _phonetic_similarity(
@@ -476,37 +518,31 @@ class KaraokeGenerator:
         self, video_id: str, url: str, force: bool, offline: bool = False
     ) -> Dict[str, str]:
         metadata = self.cache_manager.load_metadata(video_id)
-        if metadata and not force:
-            audio_files = self.cache_manager.find_files(video_id, "*.wav")
-            # Filter out separated stems (audio-separator uses parentheses like "(Vocals)")
-            separated_stems = ["vocals", "bass", "drums", "other", "instrumental"]
-            original_audio = [
-                f
-                for f in audio_files
-                if not any(stem in f.name.lower() for stem in separated_stems)
-            ]
-            if original_audio:
-                logger.info("📁 Using cached audio")
-                return {
-                    "audio_path": str(original_audio[0]),
-                    "title": metadata["title"],
-                    "artist": metadata["artist"],
-                }
-        elif not force:
-            audio_files = self.cache_manager.find_files(video_id, "*.wav")
-            separated_stems = ["vocals", "bass", "drums", "other", "instrumental"]
-            original_audio = [
-                f
-                for f in audio_files
-                if not any(stem in f.name.lower() for stem in separated_stems)
-            ]
-            if original_audio and offline:
-                logger.warning("Cached audio found without metadata; using defaults.")
-                return {
-                    "audio_path": str(original_audio[0]),
-                    "title": "Unknown",
-                    "artist": "Unknown",
-                }
+        audio_files = self.cache_manager.find_files(video_id, "*.wav")
+        # Filter out separated stems (audio-separator uses parentheses like "(Vocals)")
+        separated_stems = ["vocals", "bass", "drums", "other", "instrumental"]
+        original_audio = [
+            f
+            for f in audio_files
+            if not any(stem in f.name.lower() for stem in separated_stems)
+        ]
+        metadata_title = metadata["title"] if metadata else "Unknown"
+        metadata_artist = metadata["artist"] if metadata else "Unknown"
+
+        if metadata and not force and original_audio:
+            logger.info("📁 Using cached audio")
+            return {
+                "audio_path": str(original_audio[0]),
+                "title": metadata_title,
+                "artist": metadata_artist,
+            }
+        if offline and original_audio:
+            logger.warning("📁 Using cached audio in offline mode")
+            return {
+                "audio_path": str(original_audio[0]),
+                "title": metadata_title,
+                "artist": metadata_artist,
+            }
 
         if offline:
             raise Y2KaraokeError(

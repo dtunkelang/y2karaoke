@@ -55,7 +55,8 @@ Improve timing for tracks where LRC timings are clearly broken by relying more o
   5. Always enforce hard invariants: order, no duplicates
 
 ## Diagnostics to Add
-- Report: `dtw_matched_ratio`, `dtw_avg_similarity`, `dtw_line_coverage` in timing report
+- Report: `dtw_matched_ratio`, `dtw_word_coverage`, `dtw_line_coverage` in timing report
+- Report coverage in `dtw_word_coverage` so the matched whisper-to-provider word ratio surfaces in diagnostics
 - Debug list of lines with 0 matched words
 - Count of lines adjusted via DTW vs segments
 

@@ -159,7 +159,7 @@ def test_get_lyrics_simple_whisper_only(monkeypatch):
     segment = te.TranscriptionSegment(start=1.0, end=1.4, text="hello", words=[word])
 
     monkeypatch.setattr(
-        te, "transcribe_vocals", lambda *_a, **_k: ([segment], [word], "en")
+        te, "transcribe_vocals", lambda *_a, **_k: ([segment], [word], "en", "base")
     )
 
     lines, metadata = lyrics.get_lyrics_simple(
@@ -193,7 +193,7 @@ def test_get_lyrics_simple_whisper_map_lrc(monkeypatch):
     word = te.TranscriptionWord(start=2.0, end=2.4, text="bonjour", probability=0.9)
     segment = te.TranscriptionSegment(start=2.0, end=2.6, text="bonjour", words=[word])
     monkeypatch.setattr(
-        te, "transcribe_vocals", lambda *_a, **_k: ([segment], [word], "fr")
+        te, "transcribe_vocals", lambda *_a, **_k: ([segment], [word], "fr", "base")
     )
     monkeypatch.setattr(te, "_whisper_lang_to_epitran", lambda *_a, **_k: "fra-Latn")
 

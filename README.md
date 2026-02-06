@@ -55,11 +55,16 @@ python --version  # Should show Python 3.12.x
 
 If not, recreate the virtual environment with `python3.12 -m venv venv`.
 
-### Improve Phonetic Matching with FLite
+### Phonetic matching and the FLite fallback
 
-`epitran` can plug into FLite’s `lex_lookup` dictionary, which dramatically improves phonetic similarity scores when aligning Whisper output to lyrics, especially for phonetic DTW. Without `lex_lookup`, you’ll continue to see warnings like `WARNING: epitran:lex_lookup (from flite) is not installed.` and phonetic matching is slightly fuzzier.
+To keep Epitran’s phonetic DTW as accurate as possible we ship a lightweight `lex_lookup`
+shim that is installed automatically via the cache directory, so you generally no longer see
+`lex_lookup (from flite) is not installed` warnings. Under the hood the shim uses the
+`pronouncing` package (headers for which are pulled in via `requirements.txt`) to
+emulate a CMU-style dictionary whenever the real `lex_lookup` binary is absent.
 
-Install FLite once (feel free to pick the package manager that fits your OS):
+If you need the absolute best phonetic coverage (and prefer upstream FLite), feel free to
+install the real `flite` package for your OS:
 
 ```bash
 # macOS (Homebrew)
@@ -72,7 +77,10 @@ sudo apt install flite
 sudo dnf install flite
 ```
 
-If you build from source, make sure the `flite` binary and its `lex` data directory are on your `PATH`, because `epitran` looks for `lex_lookup` via those `flite` tools. Once `lex_lookup` is available, rerun the pipeline and the noisy warnings disappear while the phonetic matching becomes noticeably stronger.
+If you build from source, make sure the `flite` binary and its `lex` data directory are on
+your `PATH`. Epitran will defer to the real binary when it is available, so rerunning the
+pipeline after installing FLite gives you the noise-free warning and the most accurate
+lexical pronunciations.
 
 ## Usage
 
@@ -143,6 +151,7 @@ y2karaoke cache clear VIDEO_ID
 | `--work-dir` | Working directory for intermediate files (default: `~/.cache/karaoke/{video_id}`) |
 | `--keep-files` | Keep intermediate files (audio, stems, etc.) |
 | `--force` | Force re-download and re-process even if cached files exist |
+| `--offline` | Run entirely from cached metadata/audio. When provided alongside `--force`, downloads are still skipped but processing (Whisper, lyrics alignment, rendering) reruns over the cached stems |
 
 ## Testing
 

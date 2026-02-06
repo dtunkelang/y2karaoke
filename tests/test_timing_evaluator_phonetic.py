@@ -79,6 +79,30 @@ def test_find_best_whisper_match_picks_candidate(monkeypatch):
     assert sim == 0.6
 
 
+def test_find_best_whisper_match_respects_min_index(monkeypatch):
+    early = te.TranscriptionWord(start=1.0, end=1.2, text="alpha", probability=1.0)
+    later = te.TranscriptionWord(start=5.0, end=5.2, text="beta", probability=1.0)
+    whisper_words = [early, later]
+
+    monkeypatch.setattr(te, "_text_similarity_basic", lambda *args, **kwargs: 0.3)
+    monkeypatch.setattr(te, "_phonetic_similarity", lambda a, b, language: 0.6)
+
+    match, idx, sim = te._find_best_whisper_match(
+        lrc_text="beta",
+        lrc_start=5.1,
+        sorted_whisper=whisper_words,
+        used_indices=set(),
+        min_similarity=0.5,
+        max_time_shift=2.0,
+        language="eng-Latn",
+        min_index=1,
+    )
+
+    assert match is later
+    assert idx == 1
+    assert sim == 0.6
+
+
 def test_normalize_text_for_phonetic_expands_contractions():
     normalized = te._normalize_text_for_phonetic("You're here", "eng-Latn")
     assert normalized == "you are here"

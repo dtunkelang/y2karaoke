@@ -111,7 +111,9 @@ def test_align_dtw_whisper_falls_back_without_fastdtw(monkeypatch):
 
 
 def test_correct_timing_with_whisper_no_transcription(monkeypatch):
-    monkeypatch.setattr(te, "transcribe_vocals", lambda *_args, **_kwargs: ([], [], ""))
+    monkeypatch.setattr(
+        te, "transcribe_vocals", lambda *_args, **_kwargs: ([], [], "", "base")
+    )
     lines = [Line(words=[Word(text="hello", start_time=0.0, end_time=0.5)])]
     aligned, corrections, metrics = te.correct_timing_with_whisper(
         lines, "vocals.wav", language="en"
@@ -133,7 +135,7 @@ def test_correct_timing_with_whisper_uses_dtw(monkeypatch):
     monkeypatch.setattr(
         te,
         "transcribe_vocals",
-        lambda *_args, **_kwargs: (transcription, all_words, "en"),
+        lambda *_args, **_kwargs: (transcription, all_words, "en", "base"),
     )
     monkeypatch.setattr(te, "_get_ipa", lambda *_args, **_kwargs: None)
     monkeypatch.setattr(te, "_assess_lrc_quality", lambda *_args, **_kwargs: (0.2, []))
@@ -165,7 +167,7 @@ def test_correct_timing_with_whisper_quality_good_uses_hybrid(monkeypatch):
     monkeypatch.setattr(
         te,
         "transcribe_vocals",
-        lambda *_args, **_kwargs: (transcription, all_words, "en"),
+        lambda *_args, **_kwargs: (transcription, all_words, "en", "base"),
     )
     monkeypatch.setattr(te, "_whisper_lang_to_epitran", lambda *_a, **_k: "eng-Latn")
     monkeypatch.setattr(te, "_get_ipa", lambda *_args, **_kwargs: None)
@@ -196,7 +198,7 @@ def test_correct_timing_with_whisper_quality_mixed_uses_hybrid(monkeypatch):
     monkeypatch.setattr(
         te,
         "transcribe_vocals",
-        lambda *_args, **_kwargs: (transcription, all_words, "en"),
+        lambda *_args, **_kwargs: (transcription, all_words, "en", "base"),
     )
     monkeypatch.setattr(te, "_whisper_lang_to_epitran", lambda *_a, **_k: "eng-Latn")
     monkeypatch.setattr(te, "_get_ipa", lambda *_args, **_kwargs: None)
@@ -227,7 +229,7 @@ def test_correct_timing_with_whisper_uses_dtw_retime_when_confident(monkeypatch)
     monkeypatch.setattr(
         te,
         "transcribe_vocals",
-        lambda *_args, **_kwargs: (transcription, all_words, "en"),
+        lambda *_args, **_kwargs: (transcription, all_words, "en", "base"),
     )
     monkeypatch.setattr(te, "_whisper_lang_to_epitran", lambda *_a, **_k: "eng-Latn")
     monkeypatch.setattr(te, "_get_ipa", lambda *_args, **_kwargs: None)
@@ -242,7 +244,12 @@ def test_correct_timing_with_whisper_uses_dtw_retime_when_confident(monkeypatch)
         lambda *_a, **_k: (
             lines,
             [],
-            {"matched_ratio": 0.9, "avg_similarity": 0.9, "line_coverage": 1.0},
+            {
+                "matched_ratio": 0.9,
+                "word_coverage": 0.9,
+                "avg_similarity": 0.9,
+                "line_coverage": 1.0,
+            },
             lrc_words,
             alignments_map,
         ),
@@ -263,6 +270,7 @@ def test_correct_timing_with_whisper_uses_dtw_retime_when_confident(monkeypatch)
     assert aligned[0].start_time == pytest.approx(1.0)
     assert any("DTW retimed" in c for c in corrections)
     assert metrics.get("dtw_confidence_passed") == 1.0
+    assert metrics.get("word_coverage") == pytest.approx(0.9)
 
 
 def test_pull_lines_allows_low_similarity_when_late_and_ordered(monkeypatch):
@@ -571,12 +579,15 @@ def test_transcribe_vocals_success(monkeypatch):
         __import__("sys").modules, "faster_whisper", FakeWhisperModule()
     )
 
-    segments, words, language = te.transcribe_vocals("vocals.wav", language="en")
+    segments, words, language, model = te.transcribe_vocals(
+        "vocals.wav", language="en"
+    )
     assert language == "en"
     assert len(segments) == 1
     assert len(words) == 1
     assert segments[0].text == "Hello"
     assert words[0].text == "hello"
+    assert model == "base"
 
 
 def test_transcribe_vocals_handles_transcribe_error(monkeypatch):
@@ -595,7 +606,10 @@ def test_transcribe_vocals_handles_transcribe_error(monkeypatch):
         __import__("sys").modules, "faster_whisper", FakeWhisperModule()
     )
 
-    segments, words, language = te.transcribe_vocals("vocals.wav", language="en")
+    segments, words, language, model = te.transcribe_vocals(
+        "vocals.wav", language="en"
+    )
     assert segments == []
     assert words == []
     assert language == ""
+    assert model == "base"
