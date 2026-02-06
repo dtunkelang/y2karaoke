@@ -3043,6 +3043,7 @@ def _find_nearest_word_in_segment(
 def _normalize_line_text(text: str) -> str:
     return re.sub(r"[^a-z0-9\\s]", "", text.lower())
 
+
 def _trim_whisper_transcription_by_lyrics(
     segments: List[TranscriptionSegment],
     words: List[TranscriptionWord],
@@ -5945,7 +5946,11 @@ def _interpolate_unmatched_lines(
             continue
         start_anchor = prev_end if prev_end is not None else mapped_lines[run_start].start_time
         next_anchor = (
-            mapped_lines[run_end].start_time if run_end < total else start_anchor + sum(_line_duration(mapped_lines[i]) for i in run_indices) + 0.5
+            mapped_lines[run_end].start_time
+            if run_end < total
+            else start_anchor + sum(
+                _line_duration(mapped_lines[i]) for i in run_indices
+            ) + 0.5
         )
         total_duration = sum(_line_duration(mapped_lines[i]) for i in run_indices)
         total_duration = max(total_duration, 0.5 * len(run_indices))
@@ -5960,6 +5965,8 @@ def _interpolate_unmatched_lines(
             current += duration + 0.01
         prev_end = current
     return mapped_lines
+
+
 def align_hybrid_lrc_whisper(
     lines: List[Line],
     segments: List[TranscriptionSegment],

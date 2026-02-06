@@ -26,6 +26,7 @@ def _normalize_word_text(raw: str) -> str:
     normalized = "".join(ch for ch in (raw or "").lower() if ch.isalpha() or ch == "'")
     return normalized
 
+
 if TYPE_CHECKING:
     from .models import Line
 
@@ -356,7 +357,7 @@ class KaraokeGenerator:
                                 else None
                             ),
                         }
-                    for w in window_words
+                        for w in window_words
                     ]
                     line_delta = None
                     if line.get("words") and window_words:
