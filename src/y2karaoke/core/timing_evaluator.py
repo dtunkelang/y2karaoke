@@ -2922,8 +2922,7 @@ def _assign_lrc_lines_to_blocks(
     lrc_line_block: List[int] = []
     for li in range(lrc_line_count):
         line_words_text = [
-            _normalize_word(lw["text"]) for lw in lrc_words
-            if lw["line_idx"] == li
+            _normalize_word(lw["text"]) for lw in lrc_words if lw["line_idx"] == li
         ]
         if not line_words_text:
             lrc_line_block.append(lrc_line_block[-1] if lrc_line_block else 0)
@@ -2947,7 +2946,8 @@ def _assign_lrc_lines_to_blocks(
 
 
 def _text_overlap_score(
-    line_words: List[str], seg_bag: List[str],
+    line_words: List[str],
+    seg_bag: List[str],
 ) -> float:
     """Score how many content words in *line_words* appear in *seg_bag*."""
     if not line_words or not seg_bag:
@@ -2987,8 +2987,10 @@ def _build_segment_word_info(
         seg_word_ranges.append((first_idx, last_idx))
         if first_idx >= 0:
             seg_word_bags.append(
-                [_normalize_word(all_words[i].text)
-                 for i in range(first_idx, last_idx + 1)]
+                [
+                    _normalize_word(all_words[i].text)
+                    for i in range(first_idx, last_idx + 1)
+                ]
             )
         else:
             seg_word_bags.append([])
@@ -3034,8 +3036,12 @@ def _assign_lrc_lines_to_segments(
         # When a line maps to the same segment as the previous line,
         # check if the next segment has a comparable score.  If so,
         # advance — repeated/similar lines should use consecutive segs.
-        if (li > 0 and best_seg == line_to_seg[li - 1]
-                and best_seg + 1 < n_segs and best_score > 0):
+        if (
+            li > 0
+            and best_seg == line_to_seg[li - 1]
+            and best_seg + 1 < n_segs
+            and best_score > 0
+        ):
             nxt = _text_overlap_score(words, seg_word_bags[best_seg + 1])
             if nxt >= best_score * 0.7:
                 best_seg = best_seg + 1
@@ -3091,30 +3097,30 @@ def _build_segment_text_overlap_assignments(
         return {}
 
     seg_word_ranges, seg_word_bags = _build_segment_word_info(
-        all_words, segments,
+        all_words,
+        segments,
     )
 
-    lrc_line_count = max(
-        (lw["line_idx"] for lw in lrc_words), default=-1
-    ) + 1
-    lrc_lines_words: List[List[Tuple[int, str]]] = [
-        [] for _ in range(lrc_line_count)
-    ]
+    lrc_line_count = max((lw["line_idx"] for lw in lrc_words), default=-1) + 1
+    lrc_lines_words: List[List[Tuple[int, str]]] = [[] for _ in range(lrc_line_count)]
     for idx, lw in enumerate(lrc_words):
-        lrc_lines_words[lw["line_idx"]].append(
-            (idx, _normalize_word(lw["text"]))
-        )
+        lrc_lines_words[lw["line_idx"]].append((idx, _normalize_word(lw["text"])))
 
     line_to_seg = _assign_lrc_lines_to_segments(
-        lrc_lines_words, seg_word_bags,
+        lrc_lines_words,
+        seg_word_bags,
     )
     assignments = _distribute_words_within_segments(
-        line_to_seg, lrc_lines_words, seg_word_ranges,
+        line_to_seg,
+        lrc_lines_words,
+        seg_word_ranges,
     )
 
     logger.debug(
         "Segment text-overlap: %d/%d LRC words assigned to %d segments",
-        len(assignments), len(lrc_words), len(segments),
+        len(assignments),
+        len(lrc_words),
+        len(segments),
     )
     return assignments
 
@@ -3135,7 +3141,9 @@ def _build_block_word_bags(
     return bags
 
 
-def _syl_to_block(syl_parent_idxs: Set[int], speech_blocks: List[Tuple[int, int]]) -> int:
+def _syl_to_block(
+    syl_parent_idxs: Set[int], speech_blocks: List[Tuple[int, int]]
+) -> int:
     """Return the speech block for a syllable (using its first parent word)."""
     if not syl_parent_idxs:
         return -1
@@ -3176,9 +3184,7 @@ def _run_per_block_dtw(
         blk_lrc_syls_list = [lrc_syllables[i] for i in blk_lrc_syl_idxs]
         blk_whi_syls_list = [whisper_syllables[i] for i in blk_whi_syl_idxs]
 
-        path = _build_syllable_dtw_path(
-            blk_lrc_syls_list, blk_whi_syls_list, language
-        )
+        path = _build_syllable_dtw_path(blk_lrc_syls_list, blk_whi_syls_list, language)
 
         for local_li, local_wi in path:
             global_li = blk_lrc_syl_idxs[local_li]
@@ -3225,9 +3231,7 @@ def _build_block_segmented_syllable_assignments(
     speech_blocks = _compute_speech_blocks(all_words)
     if len(speech_blocks) <= 1:
         # No silence gaps – fall back to a single global DTW
-        path = _build_syllable_dtw_path(
-            lrc_syllables, whisper_syllables, language
-        )
+        path = _build_syllable_dtw_path(lrc_syllables, whisper_syllables, language)
         return _build_word_assignments_from_syllable_path(
             path, lrc_syllables, whisper_syllables
         )
@@ -3240,19 +3244,26 @@ def _build_block_segmented_syllable_assignments(
 
     # ---- build syllable-index → word-index mappings ----
     whisper_syl_word_idxs: List[Set[int]] = [
-        s["parent_idxs"] if isinstance(s.get("parent_idxs"), set)
-        else set(s.get("parent_idxs", set()))
+        (
+            s["parent_idxs"]
+            if isinstance(s.get("parent_idxs"), set)
+            else set(s.get("parent_idxs", set()))
+        )
         for s in whisper_syllables
     ]
     lrc_syl_word_idxs: List[Set[int]] = [
-        s["word_idxs"] if isinstance(s.get("word_idxs"), set)
-        else set(s.get("word_idxs", set()))
+        (
+            s["word_idxs"]
+            if isinstance(s.get("word_idxs"), set)
+            else set(s.get("word_idxs", set()))
+        )
         for s in lrc_syllables
     ]
 
     # Group Whisper syllables by block
     block_whisper_syls = _group_syllables_by_block(
-        whisper_syl_word_idxs, speech_blocks,
+        whisper_syl_word_idxs,
+        speech_blocks,
     )
 
     # Assign LRC lines → blocks via text overlap, then map to syllables
@@ -3271,8 +3282,10 @@ def _build_block_segmented_syllable_assignments(
     lrc_syl_to_block: List[int] = []
     for _sidx, wids in enumerate(lrc_syl_word_idxs):
         first_word = min(wids) if wids else 0
-        blk = lrc_word_block[first_word] if first_word < total_lrc_words else (
-            n_blocks - 1
+        blk = (
+            lrc_word_block[first_word]
+            if first_word < total_lrc_words
+            else (n_blocks - 1)
         )
         lrc_syl_to_block.append(blk)
 
@@ -3281,8 +3294,13 @@ def _build_block_segmented_syllable_assignments(
         block_lrc_syls.setdefault(blk, []).append(si)
 
     return _run_per_block_dtw(
-        speech_blocks, block_lrc_syls, block_whisper_syls,
-        lrc_syllables, whisper_syllables, all_words, language,
+        speech_blocks,
+        block_lrc_syls,
+        block_whisper_syls,
+        lrc_syllables,
+        whisper_syllables,
+        all_words,
+        language,
     )
 
 
@@ -3616,9 +3634,7 @@ def _compute_speech_blocks(
     return blocks
 
 
-def _word_idx_to_block(
-    word_idx: int, speech_blocks: List[Tuple[int, int]]
-) -> int:
+def _word_idx_to_block(word_idx: int, speech_blocks: List[Tuple[int, int]]) -> int:
     """Return the speech-block index that contains *word_idx*, or -1."""
     for i, (start, end) in enumerate(speech_blocks):
         if start <= word_idx <= end:
@@ -3775,7 +3791,9 @@ def _filter_and_order_candidates(
     # block boundaries to prevent jumping backwards to a previous block.
     if ctx.speech_blocks:
         cur_blk = ctx.current_block
-        cur_blk_start = ctx.speech_blocks[cur_blk][0] if cur_blk < len(ctx.speech_blocks) else 0
+        cur_blk_start = (
+            ctx.speech_blocks[cur_blk][0] if cur_blk < len(ctx.speech_blocks) else 0
+        )
         min_idx = min(ctx.next_word_idx_start, cur_blk_start)
     else:
         min_idx = ctx.next_word_idx_start
@@ -4460,7 +4478,9 @@ def align_lrc_text_to_whisper_timings(  # noqa: C901
     # Use segment-level text overlap for robust line→segment mapping,
     # then fall back to syllable DTW only if segment overlap is poor.
     lrc_assignments = _build_segment_text_overlap_assignments(
-        lrc_words, all_words, transcription,
+        lrc_words,
+        all_words,
+        transcription,
     )
     seg_coverage = len(lrc_assignments) / len(lrc_words) if lrc_words else 0
     if seg_coverage < 0.3:
@@ -4473,15 +4493,20 @@ def align_lrc_text_to_whisper_timings(  # noqa: C901
                 logger.warning("No phoneme/syllable data; skipping mapping")
                 return lines, [], {}
             path = _build_phoneme_dtw_path(
-                lrc_phonemes, whisper_phonemes, epitran_lang,
+                lrc_phonemes,
+                whisper_phonemes,
+                epitran_lang,
             )
             lrc_assignments = _build_word_assignments_from_phoneme_path(
                 path, lrc_phonemes, whisper_phonemes
             )
         else:
             lrc_assignments = _build_block_segmented_syllable_assignments(
-                lrc_words, all_words,
-                lrc_syllables, whisper_syllables, epitran_lang,
+                lrc_words,
+                all_words,
+                lrc_syllables,
+                whisper_syllables,
+                epitran_lang,
             )
 
     # Build mapped lines with whisper timings
@@ -4506,7 +4531,9 @@ def align_lrc_text_to_whisper_timings(  # noqa: C901
     # These lines have correct segment-anchored timing but evenly-spaced
     # words; onsets give better word boundaries even without text matching.
     mapped_lines = _refine_unmatched_lines_with_onsets(
-        mapped_lines, mapped_lines_set, vocals_path,
+        mapped_lines,
+        mapped_lines_set,
+        vocals_path,
     )
 
     matched_ratio = mapped_count / len(lrc_words) if lrc_words else 0.0
@@ -6759,7 +6786,8 @@ def _refine_unmatched_lines_with_onsets(
     boundaries even when Whisper can't identify the text.
     """
     unmatched = [
-        i for i in range(len(mapped_lines))
+        i
+        for i in range(len(mapped_lines))
         if i not in matched_lines and mapped_lines[i].words
     ]
     if not unmatched:
@@ -6777,7 +6805,8 @@ def _refine_unmatched_lines_with_onsets(
     for idx, line_idx in enumerate(unmatched):
         mapped_lines[line_idx] = refined[idx]
     logger.debug(
-        "Onset-refined %d unmatched line(s)", len(unmatched),
+        "Onset-refined %d unmatched line(s)",
+        len(unmatched),
     )
     return mapped_lines
 
