@@ -11,6 +11,7 @@ import numpy as np
 import re
 
 from ..utils.logging import get_logger
+from ..utils.lex_lookup_installer import ensure_local_lex_lookup
 from .models import Line, Word
 
 logger = get_logger(__name__)
@@ -231,6 +232,29 @@ def _find_silence_regions(
             regions.append((silence_start, silence_end))
 
     return regions
+
+
+def _compute_silence_overlap(
+    start: float, end: float, silence_regions: List[Tuple[float, float]]
+) -> float:
+    """Compute total silence duration between two timestamps."""
+    if start >= end or not silence_regions:
+        return 0.0
+
+    overlap = 0.0
+    for silence_start, silence_end in silence_regions:
+        if silence_end <= start or silence_start >= end:
+            continue
+        overlap += min(end, silence_end) - max(start, silence_start)
+    return max(overlap, 0.0)
+
+
+def _is_time_in_silence(time: float, silence_regions: List[Tuple[float, float]]) -> bool:
+    """Return True if the given time falls inside any silence region."""
+    for silence_start, silence_end in silence_regions:
+        if silence_start <= time <= silence_end:
+            return True
+    return False
 
 
 def _find_vocal_start(
@@ -1175,6 +1199,70 @@ def correct_line_timestamps(
     return corrected_lines, corrections
 
 
+def _pull_lines_forward_for_continuous_vocals(
+    lines: List[Line],
+    audio_features: Optional[AudioFeatures],
+    max_gap: float = 4.0,
+) -> Tuple[List[Line], int]:
+    """Pull lines earlier when a long gap contains continuous vocal activity."""
+    fixes = 0
+    if not lines or audio_features is None:
+        return lines, fixes
+
+    onset_times = audio_features.onset_times
+    if onset_times is None or len(onset_times) == 0:
+        return lines, fixes
+
+    for idx in range(1, len(lines)):
+        prev_line = lines[idx - 1]
+        line = lines[idx]
+        if not prev_line.words or not line.words:
+            continue
+
+        gap = line.start_time - prev_line.end_time
+        if gap <= max_gap:
+            continue
+
+        activity = _check_vocal_activity_in_range(
+            prev_line.end_time, line.start_time, audio_features
+        )
+        has_silence = _check_for_silence_in_range(
+            prev_line.end_time,
+            line.start_time,
+            audio_features,
+            min_silence_duration=0.5,
+        )
+        if activity <= 0.6 or has_silence:
+            continue
+
+        candidate_onsets = onset_times[
+            (onset_times >= prev_line.end_time) & (onset_times <= line.start_time)
+        ]
+        if len(candidate_onsets) == 0:
+            continue
+
+        new_start = float(candidate_onsets[0])
+        new_start = max(new_start, prev_line.end_time + 0.05)
+        shift = new_start - line.start_time
+        if shift > -0.3:
+            continue
+
+        new_words = [
+            Word(
+                text=w.text,
+                start_time=w.start_time + shift,
+                end_time=w.end_time + shift,
+                singer=w.singer,
+            )
+            for w in line.words
+        ]
+
+        lines[idx] = Line(words=new_words, singer=line.singer)
+        fixes += 1
+
+    return lines, fixes
+
+
 def _find_phrase_end(
     start_time: float,
     max_end_time: float,
@@ -1437,6 +1525,16 @@ class TranscriptionSegment:
             self.words = []
 
 
+_MODEL_ORDER = ["tiny", "base", "small", "medium", "large"]
+
+
+def _model_index(model_size: str) -> int:
+    try:
+        return _MODEL_ORDER.index(model_size)
+    except ValueError:
+        return -1
+
+
 def _get_whisper_cache_path(
     vocals_path: str,
     model_size: str,
@@ -1461,6 +1559,80 @@ def _get_whisper_cache_path(
         f"{vocals_file.stem}_whisper_{model_size}{lang_suffix}{mode_suffix}.json"
     )
     return str(vocals_file.parent / cache_name)
+
+
+def _find_best_cached_whisper_model(
+    vocals_path: str,
+    language: Optional[str],
+    aggressive: bool,
+    target_model: str,
+) -> Optional[Tuple[str, str]]:
+    """Return the cache path and model name for the best cached model ≥ target.
+
+    Language matching is flexible:
+    - If language is None (auto-detect), any cached language is accepted.
+    - If language is explicit (e.g. "en"), both exact matches and "auto" caches
+      are accepted, since auto-detect caches contain valid transcriptions.
+    Among matches, prefer exact language match over cross-language match.
+    """
+    from pathlib import Path
+
+    vocals_file = Path(vocals_path)
+    if not vocals_file.exists():
+        return None
+
+    lang_token = language or "auto"
+    mode_suffix = "_aggr" if aggressive else ""
+    best_idx = _model_index(target_model)
+    best_path = None
+    best_model = None
+    best_lang_exact = False  # prefer exact language matches
+
+    pattern = f"{vocals_file.stem}_whisper_*{mode_suffix}.json"
+    for cache_file in vocals_file.parent.glob(pattern):
+        stem = cache_file.stem
+        if "_whisper_" not in stem:
+            continue
+        tail = stem.split("_whisper_", 1)[1]
+        if tail.endswith("_aggr"):
+            tail = tail[: -len("_aggr")]
+        if "_" not in tail:
+            continue
+        model_part, lang_part = tail.rsplit("_", 1)
+
+        # Language matching:
+        # - auto request: accept any cached language
+        # - explicit request: accept exact match or "auto" caches
+        lang_exact = lang_part == lang_token
+        if not lang_exact:
+            if language is None:
+                # Auto-detect: accept any cached language
+                pass
+            elif lang_part == "auto":
+                # Explicit language requested but auto cache available
+                pass
+            else:
+                # Mismatch (e.g. requested "en" but found "fr")
+                continue
+
+        model_idx = _model_index(model_part)
+        if model_idx < 0:
+            continue
+        # Prefer: higher model index, then exact language match
+        if model_idx > best_idx or (
+            model_idx == best_idx and lang_exact and not best_lang_exact
+        ):
+            best_idx = model_idx
+            best_path = cache_file
+            best_model = model_part
+            best_lang_exact = lang_exact
+        elif model_idx == best_idx and not best_path:
+            best_path = cache_file
+            best_model = model_part
+            best_lang_exact = lang_exact
+    if best_path and best_model:
+        return str(best_path), best_model
+    return None
 
 
 def _load_whisper_cache(
@@ -1502,8 +1674,10 @@ def _load_whisper_cache(
             )
 
         detected_lang = data.get("language", "")
+        cached_model = data.get("model_size", "unknown")
         logger.info(
-            f"Loaded cached Whisper transcription: {len(segments)} segments, {len(all_words)} words"
+            f"Loaded cached Whisper transcription ({cached_model}): "
+            f"{len(segments)} segments, {len(all_words)} words"
         )
         return segments, all_words, detected_lang
 
@@ -1517,6 +1691,8 @@ def _save_whisper_cache(
     segments: List[TranscriptionSegment],
     all_words: List[TranscriptionWord],
     language: str,
+    model_size: str,
+    aggressive: bool,
 ) -> None:
     """Save Whisper transcription to cache."""
     import json
@@ -1524,6 +1700,8 @@ def _save_whisper_cache(
     try:
         data = {
             "language": language,
+            "model_size": model_size,
+            "aggressive": aggressive,
             "segments": [
                 {
                     "start": seg.start,
@@ -1557,7 +1735,7 @@ def transcribe_vocals(
     language: Optional[str] = None,
     model_size: str = "base",
     aggressive: bool = False,
-) -> Tuple[List[TranscriptionSegment], List[TranscriptionWord], str]:
+) -> Tuple[List[TranscriptionSegment], List[TranscriptionWord], str, str]:
     """Transcribe vocals using Whisper.
 
     Results are cached to disk alongside the vocals file to avoid
@@ -1569,20 +1747,28 @@ def transcribe_vocals(
         model_size: Whisper model size ('tiny', 'base', 'small', 'medium', 'large')
 
     Returns:
-        Tuple of (list of TranscriptionSegment, list of all TranscriptionWord, detected language code)
+        Tuple of (list of TranscriptionSegment, list of all TranscriptionWord,
+        detected language code, whisper model size used)
     """
     # Check cache first
     cache_path = _get_whisper_cache_path(vocals_path, model_size, language, aggressive)
+    cached_model = model_size
     if cache_path:
+        best_cached = _find_best_cached_whisper_model(
+            vocals_path, language, aggressive, model_size
+        )
+        if best_cached:
+            cache_path, cached_model = best_cached
         cached = _load_whisper_cache(cache_path)
         if cached:
-            return cached
+            segments, all_words, detected_lang = cached
+            return segments, all_words, detected_lang, cached_model
 
     try:
         from faster_whisper import WhisperModel
     except ImportError:
         logger.warning("faster-whisper not installed, cannot transcribe")
-        return [], [], ""
+        return [], [], "", model_size
 
     try:
         logger.info(f"Loading Whisper model ({model_size})...")
@@ -1635,13 +1821,15 @@ def transcribe_vocals(
 
         # Save to cache
         if cache_path:
-            _save_whisper_cache(cache_path, result, all_words, detected_lang)
+            _save_whisper_cache(
+                cache_path, result, all_words, detected_lang, model_size, aggressive
+            )
 
-        return result, all_words, detected_lang
+        return result, all_words, detected_lang, model_size
 
     except Exception as e:
         logger.error(f"Transcription failed: {e}")
-        return [], [], ""
+        return [], [], "", model_size
 
 
 def _normalize_text_for_matching(text: str) -> str:
@@ -2190,17 +2378,31 @@ def _find_best_whisper_match(
     min_similarity: float,
     max_time_shift: float,
     language: str,
+    min_index: int = 0,
+    whisper_percentiles: Optional[List[float]] = None,
+    expected_percentile: float = 0.0,
+    order_weight: float = 0.35,
+    time_weight: float = 0.25,
 ) -> Tuple[Optional[TranscriptionWord], Optional[int], float]:
     """Find the best matching Whisper word for an LRC word.
 
     Returns:
         Tuple of (best_match, best_match_index, best_similarity)
+
+    Args:
+        min_index: Whisper index to start searching from so matches stay in order.
+        whisper_percentiles: Optional percentile list used for ordering constraints.
+        expected_percentile: Expected percentile of the current LRC word to guide ordering.
+        order_weight: Weight for penalizing distant percentile matches.
+        time_weight: Weight for penalizing long time offsets.
     """
     best_match = None
     best_match_idx = None
     best_similarity = 0.0
+    best_score = float("-inf")
 
-    for i, ww in enumerate(sorted_whisper):
+    for i in range(min_index, len(sorted_whisper)):
+        ww = sorted_whisper[i]
         if i in used_indices:
             continue
 
@@ -2215,10 +2417,22 @@ def _find_best_whisper_match(
             continue
 
         similarity = _phonetic_similarity(lrc_text, ww.text, language)
-        if similarity > best_similarity and similarity >= min_similarity:
-            best_similarity = similarity
+
+        if similarity < min_similarity:
+            continue
+
+        position_penalty = 0.0
+        if whisper_percentiles and i < len(whisper_percentiles):
+            position_penalty = abs(expected_percentile - whisper_percentiles[i])
+
+        time_penalty = min(time_diff / max_time_shift, 1.0)
+        score = similarity - position_penalty * order_weight - time_penalty * time_weight
+
+        if score > best_score:
+            best_score = score
             best_match = ww
             best_match_idx = i
+            best_similarity = similarity
 
     return best_match, best_match_idx, best_similarity
 
@@ -2253,9 +2467,18 @@ def align_words_to_whisper(
         _get_ipa(ww.text, language)
 
     sorted_whisper = sorted(whisper_words, key=lambda w: w.start)
+    total_whisper = len(sorted_whisper)
+    whisper_percentiles = [
+        i / max(1, total_whisper - 1) for i in range(total_whisper)
+    ]
     used_whisper_indices: set = set()
     aligned_lines: List[Line] = []
     corrections: List[str] = []
+    min_whisper_index = 0
+    total_lrc_words = sum(
+        1 for line in lines for word in line.words if len(word.text.strip()) >= 2
+    )
+    lrc_word_index = 0
 
     for line in lines:
         if not line.words:
@@ -2271,6 +2494,11 @@ def align_words_to_whisper(
                 new_words.append(word)
                 continue
 
+            expected_percentile = (
+                lrc_word_index / max(1, total_lrc_words - 1)
+                if total_lrc_words > 1
+                else 0.0
+            )
             best_match, best_idx, _ = _find_best_whisper_match(
                 lrc_text,
                 word.start_time,
@@ -2279,11 +2507,15 @@ def align_words_to_whisper(
                 min_similarity,
                 max_time_shift,
                 language,
+                min_index=min_whisper_index,
+                whisper_percentiles=whisper_percentiles,
+                expected_percentile=expected_percentile,
             )
 
             if best_match is not None:
                 used_whisper_indices.add(best_idx)
                 time_shift = best_match.start - word.start_time
+                min_whisper_index = max(min_whisper_index, best_idx + 1)
                 if abs(time_shift) > 0.15:
                     new_words.append(
                         Word(
@@ -2298,6 +2530,8 @@ def align_words_to_whisper(
                     new_words.append(word)
             else:
                 new_words.append(word)
+
+            lrc_word_index += 1
 
         aligned_lines.append(Line(words=new_words, singer=line.singer))
         if line_corrections > 0:
@@ -2720,14 +2954,20 @@ def _build_word_to_segment_index(
 
 
 def _find_segment_for_time(
-    time: float, segments: Sequence[Any], start_idx: int = 0
+    time: float,
+    segments: Sequence[Any],
+    start_idx: int = 0,
+    excluded_segments: Optional[Set[int]] = None,
 ) -> Optional[int]:
     """Find the segment index whose start is closest to the given time."""
     if not segments:
         return None
     best_idx = None
     best_diff = float("inf")
+    excluded_segments = excluded_segments or set()
     for idx in range(start_idx, len(segments)):
+        if idx in excluded_segments:
+            continue
         seg = segments[idx]
         diff = abs(_segment_start(seg) - time)
         if diff < best_diff:
@@ -2738,22 +2978,45 @@ def _find_segment_for_time(
     return best_idx
 
 
+_BACKWARD_START_PENALTY = 0.5
+
+
 def _word_match_score(
     word_start: float,
     target_start: float,
     word_seg: Optional[int],
     target_seg: Optional[int],
     segments: Sequence[Any],
+    line_anchor: Optional[float] = None,
+    lrc_idx: Optional[int] = None,
+    candidate_idx: Optional[int] = None,
+    total_lrc_words: Optional[int] = None,
+    total_whisper_words: Optional[int] = None,
 ) -> float:
     """Score a word match by time difference with a small segment penalty."""
     score = abs(word_start - target_start)
     if target_seg is None or word_seg is None:
+        if line_anchor is not None and word_start < line_anchor:
+            score += (line_anchor - word_start) * _BACKWARD_START_PENALTY
         return score
     if word_seg != target_seg:
         seg_diff = abs(
             _segment_start(segments[word_seg]) - _segment_start(segments[target_seg])
         )
         score += 0.4 + 0.01 * seg_diff
+    if line_anchor is not None and word_start < line_anchor:
+        score += (line_anchor - word_start) * _BACKWARD_START_PENALTY
+
+    if (
+        lrc_idx is not None
+        and candidate_idx is not None
+        and total_lrc_words
+        and total_whisper_words
+    ):
+        lrc_pct = lrc_idx / max(1, total_lrc_words - 1)
+        cand_pct = candidate_idx / max(1, total_whisper_words - 1)
+        score += abs(lrc_pct - cand_pct) * _ORDER_POSITION_WEIGHT
+
     return score
 
 
@@ -2780,12 +3043,45 @@ def _find_nearest_word_in_segment(
 def _normalize_line_text(text: str) -> str:
     return re.sub(r"[^a-z0-9\\s]", "", text.lower())
 
+def _trim_whisper_transcription_by_lyrics(
+    segments: List[TranscriptionSegment],
+    words: List[TranscriptionWord],
+    lyric_texts: List[str],
+    min_similarity: float = 0.45,
+) -> Tuple[List[TranscriptionSegment], List[TranscriptionWord], Optional[float]]:
+    """Keep only the portion of the Whisper transcript that matches the provided lyrics."""
+    normalized_lyrics = [
+        _normalize_line_text(text) for text in lyric_texts if text.strip()
+    ]
+    if not normalized_lyrics or not segments:
+        return segments, words, None
+
+    last_match_end: Optional[float] = None
+    for seg in reversed(segments):
+        seg_norm = _normalize_line_text(seg.text)
+        if not seg_norm:
+            continue
+        best_ratio = max(
+            SequenceMatcher(None, seg_norm, lyric).ratio() for lyric in normalized_lyrics
+        )
+        if best_ratio >= min_similarity:
+            last_match_end = seg.end
+            break
+
+    if last_match_end is None:
+        return segments, words, None
+
+    trimmed_segments = [seg for seg in segments if seg.end <= last_match_end]
+    trimmed_words = [word for word in words if word.start <= last_match_end]
+    return trimmed_segments, trimmed_words, last_match_end
+
 
 def _choose_segment_for_line(
     line: Line,
     segments: Sequence[Any],
     start_idx: int = 0,
     min_start: float = 0.0,
+    excluded_segments: Optional[Set[int]] = None,
 ) -> Optional[int]:
     """Greedily pick the best future segment that matches the line text."""
     if not segments:
@@ -2793,7 +3089,10 @@ def _choose_segment_for_line(
     norm_line = _normalize_line_text(line.text)
     best_idx = None
     best_score = float("-inf")
+    excluded_segments = excluded_segments or set()
     for idx in range(start_idx, len(segments)):
+        if idx in excluded_segments:
+            continue
         segment = segments[idx]
         seg_text = _get_segment_text(segment)
         if not seg_text:
@@ -2831,12 +3130,62 @@ def _segment_word_indices(
     return sorted(indices, key=lambda i: all_words[i].start)
 
 
+def _collect_unused_words_near_line(
+    all_words: List[TranscriptionWord],
+    line: Line,
+    used_indices: Set[int],
+    start_idx: int,
+    min_start: float = 0.0,
+    lookahead: float = 1.0,
+) -> List[int]:
+    """Return unused Whisper word indices near the given line timing."""
+    window_start = max(min_start, line.start_time - 0.5)
+    window_end = line.end_time + lookahead
+    collected: List[int] = []
+    for idx in range(start_idx, len(all_words)):
+        if idx in used_indices:
+            continue
+        word = all_words[idx]
+        if word.start < window_start:
+            continue
+        if word.start > window_end:
+            break
+        collected.append(idx)
+        if len(collected) >= max(1, len(line.words)):
+            break
+    return collected
+
+
+def _collect_unused_words_in_window(
+    all_words: List[TranscriptionWord],
+    used_indices: Set[int],
+    start_idx: int,
+    window_start: float,
+    window_end: float,
+) -> List[int]:
+    """Return unused Whisper word indices within the specified time window."""
+    if window_end <= window_start:
+        return []
+    collected: List[int] = []
+    for idx in range(start_idx, len(all_words)):
+        if idx in used_indices:
+            continue
+        word = all_words[idx]
+        if word.start < window_start:
+            continue
+        if word.start > window_end:
+            break
+        collected.append(idx)
+    return collected
+
+
 _TIME_DRIFT_THRESHOLD = 0.8
 _SEGMENT_TIME_WEIGHT = 0.18
 _SEGMENT_INDEX_WEIGHT = 0.01
 _SEGMENT_MAX_TIME_DIFF = 5.0
 _SEGMENT_MIN_TEXT_SCORE = 0.25
 _MAX_SEGMENT_LOOKAHEAD = 4.0
+_ORDER_POSITION_WEIGHT = 0.35
 
 
 def _build_word_assignments_from_syllable_path(
@@ -2870,6 +3219,12 @@ def _map_lrc_words_to_whisper(
     mapped_count = 0
     total_similarity = 0.0
     mapped_lines_set = set()
+    used_word_indices: Set[int] = set()
+    used_segments: Set[int] = set()
+    next_word_idx_start = 0
+    prev_line_end = float("-inf")
+    total_lrc_words = len(lrc_words)
+    total_whisper_words = len(all_words)
 
     lrc_index_by_loc = {
         (lw["line_idx"], lw["word_idx"]): idx for idx, lw in enumerate(lrc_words)
@@ -2885,14 +3240,21 @@ def _map_lrc_words_to_whisper(
             mapped_lines.append(line)
             continue
 
-        new_words: List[Word] = []
         line_matches: List[Tuple[int, Tuple[float, float]]] = []
+        line_match_intervals: Dict[int, Tuple[float, float]] = {}
         line_segment = _choose_segment_for_line(
-            line, segments, current_segment, min_start=last_line_start
+            line,
+            segments,
+            current_segment,
+            min_start=last_line_start,
+            excluded_segments=used_segments,
         )
         if line_segment is None:
             line_segment = _find_segment_for_time(
-                line.start_time, segments, current_segment
+                line.start_time,
+                segments,
+                current_segment,
+                excluded_segments=used_segments,
             )
         if (
             line_segment is not None
@@ -2900,41 +3262,87 @@ def _map_lrc_words_to_whisper(
             and _segment_start(segments[line_segment]) < last_line_start
         ):
             line_segment = None
+        line_anchor_time = max(line.start_time, last_line_start, prev_line_end)
+        line_shift = line_anchor_time - line.start_time
+
+        line_last_idx: Optional[int] = None
+
+        def _register_match(
+            word_idx: int,
+            word: Word,
+            best_word: TranscriptionWord,
+            best_idx: int,
+            candidates: List[Tuple[TranscriptionWord, int]],
+        ) -> None:
+            nonlocal mapped_count, total_similarity, line_last_idx, current_segment
+            start, end = best_word.start, best_word.end
+            line_matches.append((word_idx, (start, end)))
+            line_match_intervals[word_idx] = (start, end)
+            mapped_count += 1
+            mapped_lines_set.add(line_idx)
+            best_sim = max(
+                _phonetic_similarity(word.text, ww.text, language)
+                for ww, _ in candidates
+            )
+            total_similarity += best_sim
+            used_word_indices.add(best_idx)
+            best_seg = word_segment_idx.get(best_idx)
+            if best_seg is not None:
+                current_segment = max(current_segment, best_seg)
+            elif line_segment is not None:
+                current_segment = max(current_segment, line_segment)
+            if line_last_idx is None or best_idx > line_last_idx:
+                line_last_idx = best_idx
+
+        # Phase 1: match the highest-confidence words while respecting ordering.
         for word_idx, word in enumerate(line.words):
             lrc_idx_opt = lrc_index_by_loc.get((line_idx, word_idx))
             if lrc_idx_opt is None:
-                new_words.append(word)
                 continue
             assigned = lrc_assignments.get(lrc_idx_opt)
             if not assigned:
-                new_words.append(word)
                 continue
             candidate_indices = set(assigned)
             if line_segment is not None:
                 candidate_indices.update(
                     _segment_word_indices(all_words, word_segment_idx, line_segment)
                 )
-            whisper_candidates = [
-                (all_words[i], i)
-                for i in sorted(candidate_indices, key=lambda idx: all_words[idx].start)
+            sorted_indices = [
+                idx
+                for idx in sorted(
+                    candidate_indices, key=lambda idx: all_words[idx].start
+                )
+                if idx >= next_word_idx_start and idx not in used_word_indices
             ]
+            if not sorted_indices:
+                sorted_indices = _collect_unused_words_near_line(
+                    all_words,
+                    line,
+                    used_word_indices,
+                    next_word_idx_start,
+                    prev_line_end,
+                )
+            whisper_candidates = [(all_words[i], i) for i in sorted_indices]
             ordered_candidates = [
                 pair for pair in whisper_candidates if pair[0].start >= last_line_start
             ]
             if ordered_candidates:
                 whisper_candidates = ordered_candidates
             if not whisper_candidates:
-                new_words.append(word)
                 continue
-            whisper_words = [pair[0] for pair in whisper_candidates]
             best_word, best_idx = min(
                 whisper_candidates,
                 key=lambda pair: _word_match_score(
                     pair[0].start,
-                    word.start_time,
+                    word.start_time + line_shift,
                     word_segment_idx.get(pair[1]),
                     line_segment,
                     segments,
+                    line_anchor_time,
+                    lrc_idx=lrc_idx_opt,
+                    candidate_idx=pair[1],
+                    total_lrc_words=total_lrc_words,
+                    total_whisper_words=total_whisper_words,
                 ),
             )
             drift = abs(best_word.start - word.start_time)
@@ -2947,10 +3355,109 @@ def _map_lrc_words_to_whisper(
                 )
                 if fallback and abs(fallback[0].start - word.start_time) < drift:
                     best_word, best_idx = fallback
-            start = best_word.start
-            end = best_word.end
-            line_matches.append((word_idx, (start, end)))
-            new_words.append(
+            _register_match(word_idx, word, best_word, best_idx, whisper_candidates)
+
+        # Phase 2: fill gaps by matching remaining words within their surrounding window.
+        unmatched_indices = [
+            idx for idx in range(len(line.words)) if idx not in line_match_intervals
+        ]
+        if unmatched_indices:
+            for word_idx in unmatched_indices:
+                word = line.words[word_idx]
+                prev_matches = [
+                    idx for idx in line_match_intervals if idx < word_idx
+                ]
+                next_matches = [
+                    idx for idx in line_match_intervals if idx > word_idx
+                ]
+                gap_start = line.start_time
+                if prev_matches:
+                    gap_start = max(
+                        gap_start, line_match_intervals[max(prev_matches)][1]
+                    )
+                gap_start = max(gap_start, prev_line_end)
+                gap_end = line.end_time
+                if next_matches:
+                    gap_end = min(
+                        gap_end, line_match_intervals[min(next_matches)][0]
+                    )
+                if gap_end <= gap_start:
+                    continue
+                lrc_idx_opt = lrc_index_by_loc.get((line_idx, word_idx))
+                assigned = lrc_assignments.get(lrc_idx_opt, [])
+                candidate_indices = set(assigned)
+                if line_segment is not None:
+                    candidate_indices.update(
+                        _segment_word_indices(all_words, word_segment_idx, line_segment)
+                    )
+                window_start = max(gap_start - 0.25, 0.0)
+                window_end = gap_end + 0.25
+                window_candidates = _collect_unused_words_in_window(
+                    all_words,
+                    used_word_indices,
+                    next_word_idx_start,
+                    window_start,
+                    window_end,
+                )
+                candidate_indices.update(window_candidates)
+                sorted_indices = [
+                    idx
+                    for idx in sorted(
+                        candidate_indices, key=lambda idx: all_words[idx].start
+                    )
+                    if idx >= next_word_idx_start and idx not in used_word_indices
+                ]
+                filtered_indices = [
+                    idx
+                    for idx in sorted_indices
+                    if all_words[idx].start >= gap_start
+                    and all_words[idx].start <= window_end
+                ]
+                whisper_candidates = [
+                    (all_words[idx], idx) for idx in filtered_indices
+                ]
+                ordered_candidates = [
+                    pair for pair in whisper_candidates if pair[0].start >= last_line_start
+                ]
+                if ordered_candidates:
+                    whisper_candidates = ordered_candidates
+                if not whisper_candidates:
+                    continue
+                best_word, best_idx = min(
+                    whisper_candidates,
+                    key=lambda pair: _word_match_score(
+                        pair[0].start,
+                        word.start_time + line_shift,
+                        word_segment_idx.get(pair[1]),
+                        line_segment,
+                        segments,
+                        line_anchor_time,
+                        lrc_idx=lrc_idx_opt,
+                        candidate_idx=pair[1],
+                        total_lrc_words=total_lrc_words,
+                        total_whisper_words=total_whisper_words,
+                    ),
+                )
+                drift = abs(best_word.start - word.start_time)
+                if drift > _TIME_DRIFT_THRESHOLD:
+                    fallback = _find_nearest_word_in_segment(
+                        whisper_candidates,
+                        word.start_time,
+                        line_segment,
+                        word_segment_idx,
+                    )
+                    if fallback and abs(fallback[0].start - word.start_time) < drift:
+                        best_word, best_idx = fallback
+                _register_match(word_idx, word, best_word, best_idx, whisper_candidates)
+
+        mapped_words: List[Word] = []
+        for word_idx, word in enumerate(line.words):
+            interval = line_match_intervals.get(word_idx)
+            if interval:
+                start, end = interval
+            else:
+                start, end = word.start_time, word.end_time
+            mapped_words.append(
                 Word(
                     text=word.text,
                     start_time=start,
@@ -2958,26 +3465,17 @@ def _map_lrc_words_to_whisper(
                     singer=word.singer,
                 )
             )
-            mapped_count += 1
-            mapped_lines_set.add(line_idx)
-            best_sim = max(
-                _phonetic_similarity(word.text, ww.text, language)
-                for ww in whisper_words
-            )
-            total_similarity += best_sim
-            best_seg = word_segment_idx.get(best_idx)
-            if best_seg is not None:
-                current_segment = max(current_segment, best_seg)
-            elif line_segment is not None:
-                current_segment = max(current_segment, line_segment)
 
-        mapped_line = Line(words=new_words, singer=line.singer)
+        mapped_line = Line(words=mapped_words, singer=line.singer)
         if line_matches:
             actual_start = min(interval[0] for _, interval in line_matches)
             actual_end = max(interval[1] for _, interval in line_matches)
         else:
-            actual_start = line.start_time
-            actual_end = line.end_time
+            original_duration = line.end_time - line.start_time
+            if original_duration <= 0:
+                original_duration = len(line.words) * 0.6
+            actual_start = line_anchor_time
+            actual_end = actual_start + original_duration
         target_duration = max(actual_end - actual_start, 0.0)
         mapped_line = _redistribute_word_timings_to_line(
             mapped_line,
@@ -2987,8 +3485,20 @@ def _map_lrc_words_to_whisper(
             line_start=actual_start,
         )
         mapped_lines.append(mapped_line)
+        logger.debug(
+            "Mapped line %d start=%.2f end=%.2f matches=%d",
+            line_idx + 1,
+            mapped_line.start_time,
+            mapped_line.end_time,
+            len(line_matches),
+        )
         if mapped_line.words:
             last_line_start = mapped_line.start_time
+            prev_line_end = mapped_line.end_time
+        if line_segment is not None:
+            used_segments.add(line_segment)
+        if line_last_idx is not None:
+            next_word_idx_start = line_last_idx + 1
 
     return mapped_lines, mapped_count, total_similarity, mapped_lines_set
 
@@ -3139,11 +3649,20 @@ def align_lrc_text_to_whisper_timings(  # noqa: C901
     This maps each LRC word onto a Whisper word timestamp without changing
     the Whisper timing. The alignment is purely phonetic and monotonic.
     """
-    transcription, all_words, detected_lang = transcribe_vocals(
+    ensure_local_lex_lookup()
+    transcription, all_words, detected_lang, used_model = transcribe_vocals(
         vocals_path, language, model_size, aggressive
     )
     transcription = _dedupe_whisper_segments(transcription)
     transcription = _dedupe_whisper_segments(transcription)
+    line_texts = [line.text for line in lines if line.text.strip()]
+    transcription, all_words, trimmed_end = _trim_whisper_transcription_by_lyrics(
+        transcription, all_words, line_texts
+    )
+    if trimmed_end:
+        logger.info(
+            "Truncated Whisper transcript to %.2f s (last matching lyric).", trimmed_end
+        )
 
     if not transcription or not all_words:
         logger.warning("No transcription available, skipping Whisper timing map")
@@ -3211,6 +3730,7 @@ def align_lrc_text_to_whisper_timings(  # noqa: C901
 
     mapped_lines = _shift_repeated_lines_to_next_whisper(mapped_lines, all_words)
     mapped_lines = _enforce_monotonic_line_starts_whisper(mapped_lines, all_words)
+    mapped_lines = _interpolate_unmatched_lines(mapped_lines, mapped_lines_set)
 
     matched_ratio = mapped_count / len(lrc_words) if lrc_words else 0.0
     avg_similarity = total_similarity / mapped_count if mapped_count else 0.0
@@ -3220,11 +3740,13 @@ def align_lrc_text_to_whisper_timings(  # noqa: C901
 
     metrics = {
         "matched_ratio": matched_ratio,
+        "word_coverage": matched_ratio,
         "avg_similarity": avg_similarity,
         "line_coverage": line_coverage,
         "dtw_used": 1.0,
         "dtw_mode": 1.0,
     }
+    metrics["whisper_model"] = used_model
 
     if mapped_count:
         corrections.append(f"DTW-phonetic mapped {mapped_count} word(s) to Whisper")
@@ -3333,6 +3855,7 @@ def _compute_dtw_alignment_metrics(
 
     return {
         "matched_ratio": matched_ratio,
+        "word_coverage": matched_ratio,
         "avg_similarity": avg_similarity,
         "line_coverage": line_coverage,
     }
@@ -3520,6 +4043,8 @@ def _align_dtw_whisper_with_data(
     whisper_words: List[TranscriptionWord],
     language: str = "fra-Latn",
     min_similarity: float = 0.4,
+    silence_regions: Optional[List[Tuple[float, float]]] = None,
+    audio_features: Optional[AudioFeatures] = None,
 ) -> Tuple[
     List[Line],
     List[str],
@@ -3563,6 +4088,7 @@ def _align_dtw_whisper_with_data(
 
     # Run DTW
     logger.debug("DTW: Running alignment...")
+    use_silence = silence_regions or []
     try:
         from fastdtw import fastdtw
 
@@ -3578,7 +4104,26 @@ def _align_dtw_whisper_with_data(
             phon_cost = phonetic_costs[(i, j)]
             time_diff = abs(whisper_t - lrc_t)
             time_penalty = min(time_diff / 20.0, 1.0)
-            return 0.7 * phon_cost + 0.3 * time_penalty
+            gap_start = min(lrc_t, whisper_t)
+            gap_end = max(lrc_t, whisper_t)
+            silence_overlap = _compute_silence_overlap(gap_start, gap_end, use_silence)
+            silence_penalty = min(silence_overlap / 2.0, 1.0)
+            if _is_time_in_silence(whisper_t, use_silence):
+                silence_penalty = max(silence_penalty, 0.8)
+            activity_penalty = 0.0
+            if audio_features and gap_end - gap_start > 0.5:
+                activity = _check_vocal_activity_in_range(
+                    gap_start, gap_end, audio_features
+                )
+                non_silent = max(gap_end - gap_start - silence_overlap, 0.0)
+                if activity > 0.5 and non_silent > 0.5:
+                    activity_penalty = min(activity, 1.0)
+            return (
+                0.5 * phon_cost
+                + 0.2 * time_penalty
+                + 0.2 * silence_penalty
+                + 0.1 * activity_penalty
+            )
 
         _distance, path = fastdtw(lrc_seq, whisper_seq, dist=dtw_dist)
 
@@ -3608,6 +4153,8 @@ def align_dtw_whisper(
     whisper_words: List[TranscriptionWord],
     language: str = "fra-Latn",
     min_similarity: float = 0.4,
+    silence_regions: Optional[List[Tuple[float, float]]] = None,
+    audio_features: Optional[AudioFeatures] = None,
 ) -> Tuple[List[Line], List[str], Dict[str, float]]:
     """Align LRC to Whisper using Dynamic Time Warping.
 
@@ -3625,7 +4172,11 @@ def align_dtw_whisper(
     """
     aligned_lines, corrections, metrics, _lrc_words, _alignments = (
         _align_dtw_whisper_with_data(
-            lines, whisper_words, language=language, min_similarity=min_similarity
+            lines,
+            whisper_words,
+            language=language,
+            min_similarity=min_similarity,
+            silence_regions=silence_regions,
         )
     )
     return aligned_lines, corrections, metrics
@@ -3662,9 +4213,19 @@ def correct_timing_with_whisper(  # noqa: C901
         Tuple of (corrected lines, list of corrections, metrics)
     """
     # Transcribe vocals (returns segments, all_words, and language)
-    transcription, all_words, detected_lang = transcribe_vocals(
+    transcription, all_words, detected_lang, _model = transcribe_vocals(
         vocals_path, language, model_size, aggressive
     )
+    audio_features = extract_audio_features(vocals_path)
+
+    line_texts = [line.text for line in lines if line.text.strip()]
+    transcription, all_words, trimmed_end = _trim_whisper_transcription_by_lyrics(
+        transcription, all_words, line_texts
+    )
+    if trimmed_end:
+        logger.info(
+            "Truncated Whisper transcript to %.2f s (last matching lyric).", trimmed_end
+        )
 
     if not transcription:
         logger.warning("No transcription available, skipping Whisper alignment")
@@ -3718,6 +4279,7 @@ def correct_timing_with_whisper(  # noqa: C901
                 lines,
                 all_words,
                 language=epitran_lang,
+                silence_regions=audio_features.silence_regions if audio_features else None,
             )
         )
         metrics["dtw_used"] = 1.0
@@ -3847,6 +4409,15 @@ def correct_timing_with_whisper(  # noqa: C901
         alignments.append(
             f"Dropped {timing_deduped} duplicate line(s) by timing overlap"
         )
+
+    if audio_features is not None:
+        aligned_lines, continuous_fixes = _pull_lines_forward_for_continuous_vocals(
+            aligned_lines, audio_features
+        )
+        if continuous_fixes:
+            alignments.append(
+                f"Pulled {continuous_fixes} line(s) forward for continuous vocals"
+            )
 
     if alignments:
         logger.info(f"Whisper hybrid alignment: {len(alignments)} lines corrected")
@@ -5331,6 +5902,64 @@ def _calculate_drift_correction(
     return None
 
 
+def _shift_line(line: Line, shift: float) -> Line:
+    from .models import Line, Word
+
+    if not line.words:
+        return line
+    shifted_words = [
+        Word(
+            text=w.text,
+            start_time=w.start_time + shift,
+            end_time=w.end_time + shift,
+            singer=w.singer,
+        )
+        for w in line.words
+    ]
+    return Line(words=shifted_words, singer=line.singer)
+
+
+def _line_duration(line: Line) -> float:
+    duration = line.end_time - line.start_time
+    return duration if duration > 0.01 else 0.5
+
+
+def _interpolate_unmatched_lines(
+    mapped_lines: List[Line], matched_lines: Set[int]
+) -> List[Line]:
+    """Spread lines without matches between their nearest matched neighbors."""
+    total = len(mapped_lines)
+    prev_end = None
+    idx = 0
+    while idx < total:
+        if idx in matched_lines:
+            prev_end = mapped_lines[idx].end_time
+            idx += 1
+            continue
+        run_start = idx
+        while idx < total and idx not in matched_lines:
+            idx += 1
+        run_end = idx
+        run_indices = list(range(run_start, run_end))
+        if not run_indices:
+            continue
+        start_anchor = prev_end if prev_end is not None else mapped_lines[run_start].start_time
+        next_anchor = (
+            mapped_lines[run_end].start_time if run_end < total else start_anchor + sum(_line_duration(mapped_lines[i]) for i in run_indices) + 0.5
+        )
+        total_duration = sum(_line_duration(mapped_lines[i]) for i in run_indices)
+        total_duration = max(total_duration, 0.5 * len(run_indices))
+        available_gap = max(next_anchor - start_anchor, total_duration)
+        duration_scale = available_gap / total_duration if total_duration > 0 else 1.0
+        current = start_anchor
+        for line_idx in run_indices:
+            line = mapped_lines[line_idx]
+            duration = _line_duration(line) * duration_scale
+            line_shift = current - line.start_time
+            mapped_lines[line_idx] = _shift_line(line, line_shift)
+            current += duration + 0.01
+        prev_end = current
+    return mapped_lines
 def align_hybrid_lrc_whisper(
     lines: List[Line],
     segments: List[TranscriptionSegment],
