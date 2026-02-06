@@ -2512,7 +2512,7 @@ def align_words_to_whisper(
                 expected_percentile=expected_percentile,
             )
 
-            if best_match is not None:
+            if best_match is not None and best_idx is not None:
                 used_whisper_indices.add(best_idx)
                 time_shift = best_match.start - word.start_time
                 min_whisper_index = max(min_whisper_index, best_idx + 1)
@@ -3434,7 +3434,7 @@ def _fill_unmatched_gaps(
         if gap_end <= gap_start:
             continue
         lrc_idx_opt = lrc_index_by_loc.get((line_idx, word_idx))
-        assigned = lrc_assignments.get(lrc_idx_opt, [])
+        assigned = lrc_assignments.get(lrc_idx_opt, []) if lrc_idx_opt is not None else []
         candidate_indices = set(assigned)
         if line_segment is not None:
             candidate_indices.update(
@@ -3862,15 +3862,15 @@ def align_lrc_text_to_whisper_timings(  # noqa: C901
         len(mapped_lines_set) / sum(1 for line in lines if line.words) if lines else 0.0
     )
 
-    metrics = {
+    metrics: Dict[str, Any] = {
         "matched_ratio": matched_ratio,
         "word_coverage": matched_ratio,
         "avg_similarity": avg_similarity,
         "line_coverage": line_coverage,
         "dtw_used": 1.0,
         "dtw_mode": 1.0,
+        "whisper_model": used_model,
     }
-    metrics["whisper_model"] = used_model
 
     if mapped_count:
         corrections.append(f"DTW-phonetic mapped {mapped_count} word(s) to Whisper")

@@ -332,8 +332,6 @@ def _refine_timing_with_audio(
     lines, pull_fixes = _pull_lines_forward_for_continuous_vocals(
         lines,
         audio_features,
-        _check_vocal_activity_in_range,
-        _check_for_silence_in_range,
     )
     if pull_fixes:
         logger.info(

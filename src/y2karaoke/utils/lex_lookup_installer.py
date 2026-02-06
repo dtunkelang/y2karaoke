@@ -30,12 +30,13 @@ def _build_script_content(python_executable: str) -> str:
 def ensure_local_lex_lookup() -> Optional[Path]:
     """Ensure a lex_lookup shim exists on PATH for this environment."""
     global _lex_lookup_added
-    if _lex_lookup_added and shutil.which(_LEX_LOOKUP_BIN_NAME):
-        return Path(shutil.which(_LEX_LOOKUP_BIN_NAME))
+    found = shutil.which(_LEX_LOOKUP_BIN_NAME)
+    if _lex_lookup_added and found:
+        return Path(found)
 
-    if shutil.which(_LEX_LOOKUP_BIN_NAME):
+    if found:
         _lex_lookup_added = True
-        return Path(shutil.which(_LEX_LOOKUP_BIN_NAME))
+        return Path(found)
 
     cache_dir = get_cache_dir()
     shim_dir = cache_dir / "lex_lookup"
