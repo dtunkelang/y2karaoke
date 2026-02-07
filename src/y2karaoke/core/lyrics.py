@@ -405,7 +405,10 @@ def _apply_whisper_alignment(
         correct_timing_with_whisper,
     )
 
-    model_size = whisper_model or "base"
+    # When we have no LRC timings, we lean heavily on Whisper for all timing
+    # so using "large" is worth the extra compute (and results get cached).
+    default_model = "large" if prefer_whisper_timing_map else "base"
+    model_size = whisper_model or default_model
     try:
         if prefer_whisper_timing_map:
             lines, whisper_fixes, whisper_metrics = align_lrc_text_to_whisper_timings(

@@ -11,7 +11,7 @@ from ..config import get_cache_dir
 from ..exceptions import Y2KaraokeError
 from ..utils.cache import CacheManager
 from ..utils.logging import get_logger
-from ..utils.validation import sanitize_filename, validate_line_order
+from ..utils.validation import fix_line_order, sanitize_filename, validate_line_order
 from .downloader import YouTubeDownloader, extract_video_id
 from .separator import AudioSeparator
 from .audio_effects import AudioProcessor
@@ -156,6 +156,7 @@ class KaraokeGenerator:
         )
         scaled_lines = self._apply_break_edits(scaled_lines, break_edits)
         scaled_lines = self._apply_splash_offset(scaled_lines, min_start=3.5)
+        scaled_lines = fix_line_order(scaled_lines)
         validate_line_order(scaled_lines)
 
         if timing_report_path:

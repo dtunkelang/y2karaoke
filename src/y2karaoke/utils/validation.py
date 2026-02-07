@@ -1,10 +1,13 @@
 """Validation utilities."""
 
+import logging
 import re
 from pathlib import Path
 
 from ..config import KEY_SHIFT_RANGE, TEMPO_RANGE
 from ..exceptions import ValidationError
+
+logger = logging.getLogger(__name__)
 
 
 def validate_youtube_url(url: str) -> str:
@@ -62,6 +65,43 @@ def validate_output_path(path: str) -> Path:
         raise ValidationError("Output file must have .mp4, .avi, or .mov extension")
 
     return output_path
+
+
+def fix_line_order(lines):
+    """Fix non-monotonic line ordering by shifting lines forward.
+
+    Returns the (possibly modified) list of lines.
+    """
+    from ..core.models import Line, Word
+
+    prev_start = None
+    fixed = list(lines)
+    for idx, line in enumerate(fixed):
+        if not getattr(line, "words", None):
+            continue
+        start = line.start_time
+        if prev_start is not None and start < prev_start:
+            shift = (prev_start - start) + 0.01
+            logger.warning(
+                "Line %d starts before previous line (%.2fs < %.2fs), shifting +%.2fs",
+                idx + 1,
+                start,
+                prev_start,
+                shift,
+            )
+            new_words = [
+                Word(
+                    text=w.text,
+                    start_time=w.start_time + shift,
+                    end_time=w.end_time + shift,
+                    singer=w.singer,
+                )
+                for w in line.words
+            ]
+            fixed[idx] = Line(words=new_words, singer=line.singer)
+            start = fixed[idx].start_time
+        prev_start = start
+    return fixed
 
 
 def validate_line_order(lines) -> None:

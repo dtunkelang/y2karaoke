@@ -28,7 +28,7 @@ def lex_lookup_main(argv: Sequence[str] | None = None) -> int:
     for token in tokens:
         phones = pronouncing.phones_for_word(token.lower())
         if phones:
-            phonemes.extend(phones[0].split())
+            phonemes.extend(p.lower() for p in phones[0].split())
         else:
             logger.debug("No pronunciation for %s; emitting text literal", token)
             phonemes.extend([token.upper()])
@@ -42,3 +42,7 @@ def lex_lookup_main(argv: Sequence[str] | None = None) -> int:
 
 def _tokenize(text: str) -> list[str]:
     return re.findall(r"[A-Za-z']+", text)
+
+
+if __name__ == "__main__":
+    sys.exit(lex_lookup_main())

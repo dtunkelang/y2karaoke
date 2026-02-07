@@ -3036,6 +3036,9 @@ def _assign_lrc_lines_to_segments(
         # When a line maps to the same segment as the previous line,
         # check if the next segment has a comparable score.  If so,
         # advance — repeated/similar lines should use consecutive segs.
+        # Require a minimum absolute score (0.5) for the next segment to
+        # prevent spurious advancement on low-overlap matches (e.g. a
+        # single common word like "où" matching many unrelated segments).
         if (
             li > 0
             and best_seg == line_to_seg[li - 1]
@@ -3043,7 +3046,7 @@ def _assign_lrc_lines_to_segments(
             and best_score > 0
         ):
             nxt = _text_overlap_score(words, seg_word_bags[best_seg + 1])
-            if nxt >= best_score * 0.7:
+            if nxt >= best_score * 0.7 and nxt > 0.5:
                 best_seg = best_seg + 1
                 best_score = nxt
         line_to_seg[li] = best_seg
@@ -4291,6 +4294,12 @@ def _shift_repeated_lines_to_next_whisper(
                     (idx for idx, _ww in enumerate(all_words) if idx > prev_idx),
                     None,
                 )
+            # If the next Whisper word is far from the previous occurrence,
+            # the audio likely has an instrumental break or the lyrics don't
+            # match the audio structure.  Skip the shift and let
+            # _interpolate_unmatched_lines distribute the line instead.
+            if start_idx is not None and (all_words[start_idx].start - prev_end > 10.0):
+                start_idx = None
             if start_idx is not None:
                 adjusted_words: List[Word] = []
                 for word_idx, w in enumerate(line.words):
@@ -4347,7 +4356,12 @@ def _enforce_monotonic_line_starts_whisper(
                 (idx for idx, ww in enumerate(all_words) if ww.start >= required_time),
                 None,
             )
-            if start_idx is not None:
+            # Only snap to Whisper words if they're nearby; otherwise
+            # just shift the line forward to avoid jumping across large
+            # instrumental gaps.
+            if start_idx is not None and (
+                all_words[start_idx].start - required_time <= 10.0
+            ):
                 adjusted_words_2: List[Word] = []
                 for word_idx, w in enumerate(line.words):
                     new_idx = min(start_idx + word_idx, len(all_words) - 1)
@@ -4361,6 +4375,18 @@ def _enforce_monotonic_line_starts_whisper(
                         )
                     )
                 line = Line(words=adjusted_words_2, singer=line.singer)
+            else:
+                shift = required_time - line.start_time
+                shifted_words: List[Word] = [
+                    Word(
+                        text=w.text,
+                        start_time=w.start_time + shift,
+                        end_time=w.end_time + shift,
+                        singer=w.singer,
+                    )
+                    for w in line.words
+                ]
+                line = Line(words=shifted_words, singer=line.singer)
 
         monotonic_lines.append(line)
         if line.words:
@@ -4535,6 +4561,11 @@ def align_lrc_text_to_whisper_timings(  # noqa: C901
         mapped_lines_set,
         vocals_path,
     )
+
+    # Onset refinement may move lines to positions that violate monotonicity,
+    # so re-enforce ordering constraints.
+    mapped_lines = _enforce_monotonic_line_starts_whisper(mapped_lines, all_words)
+    mapped_lines = _resolve_line_overlaps(mapped_lines)
 
     matched_ratio = mapped_count / len(lrc_words) if lrc_words else 0.0
     avg_similarity = total_similarity / mapped_count if mapped_count else 0.0
@@ -5224,6 +5255,10 @@ def correct_timing_with_whisper(  # noqa: C901
             alignments.append(
                 f"Pulled {continuous_fixes} line(s) forward for continuous vocals"
             )
+
+    # Final safety: enforce monotonicity after all post-processing.
+    aligned_lines = _enforce_monotonic_line_starts(aligned_lines)
+    aligned_lines = _enforce_non_overlapping_lines(aligned_lines)
 
     if alignments:
         logger.info(f"Whisper hybrid alignment: {len(alignments)} lines corrected")
@@ -6763,6 +6798,10 @@ def _interpolate_unmatched_lines(
         total_duration = max(total_duration, 0.5 * len(run_indices))
         available_gap = max(next_anchor - start_anchor, total_duration)
         duration_scale = available_gap / total_duration if total_duration > 0 else 1.0
+        # Don't spread unmatched lines across a large instrumental gap;
+        # keep them compact near the previous anchor.
+        if duration_scale > 2.0:
+            duration_scale = 2.0
         current = start_anchor
         for line_idx in run_indices:
             line = mapped_lines[line_idx]
