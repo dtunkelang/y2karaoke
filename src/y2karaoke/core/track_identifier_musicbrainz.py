@@ -11,10 +11,13 @@ if TYPE_CHECKING:
     from typing import Protocol
 
     class _TrackIdentifierMixin(Protocol):
-        def _is_likely_non_studio(self, title: str) -> bool: ...
+        def _is_likely_non_studio(self, title: str) -> bool:
+            ...
+
         def _check_lrc_and_duration(
             self, title: str, artist: str, expected_duration: Optional[int] = None
-        ) -> tuple[bool, Optional[int]]: ...
+        ) -> tuple[bool, Optional[int]]:
+            ...
 
     _Base = _TrackIdentifierMixin
 else:
