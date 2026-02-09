@@ -64,7 +64,7 @@ def test_find_best_whisper_match_picks_candidate(monkeypatch):
     whisper_words = [word]
 
     monkeypatch.setattr(pu, "_text_similarity_basic", lambda *args, **kwargs: 0.3)
-    monkeypatch.setattr(wi, "_phonetic_similarity", lambda a, b, language: 0.6)
+    monkeypatch.setattr(pu, "_phonetic_similarity", lambda a, b, language: 0.6)
 
     match, idx, sim = te._find_best_whisper_match(
         lrc_text="hello",
@@ -87,7 +87,7 @@ def test_find_best_whisper_match_respects_min_index(monkeypatch):
     whisper_words = [early, later]
 
     monkeypatch.setattr(pu, "_text_similarity_basic", lambda *args, **kwargs: 0.3)
-    monkeypatch.setattr(wi, "_phonetic_similarity", lambda a, b, language: 0.6)
+    monkeypatch.setattr(pu, "_phonetic_similarity", lambda a, b, language: 0.6)
 
     match, idx, sim = te._find_best_whisper_match(
         lrc_text="beta",

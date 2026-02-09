@@ -57,7 +57,7 @@ def test_compute_phonetic_costs_includes_matches(monkeypatch):
         te.TranscriptionWord(start=1.2, end=1.6, text="hello", probability=0.9)
     ]
 
-    monkeypatch.setattr(wi, "_phonetic_similarity", lambda *_args, **_kwargs: 0.8)
+    monkeypatch.setattr(pu, "_phonetic_similarity", lambda *_args, **_kwargs: 0.8)
     costs = te._compute_phonetic_costs(lrc_words, whisper_words, "eng-Latn", 0.5)
     assert costs[(0, 0)] == pytest.approx(0.2)
 
@@ -69,7 +69,7 @@ def test_extract_alignments_from_path_filters_by_similarity(monkeypatch):
     whisper_words = [
         te.TranscriptionWord(start=1.2, end=1.6, text="hello", probability=0.9)
     ]
-    monkeypatch.setattr(wi, "_phonetic_similarity", lambda *_args, **_kwargs: 0.6)
+    monkeypatch.setattr(pu, "_phonetic_similarity", lambda *_args, **_kwargs: 0.6)
     alignments = te._extract_alignments_from_path(
         [(0, 0)], lrc_words, whisper_words, "eng-Latn", 0.5
     )

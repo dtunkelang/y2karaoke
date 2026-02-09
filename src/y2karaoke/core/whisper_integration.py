@@ -2,78 +2,145 @@
 
 import re
 from typing import List, Optional, Tuple, Dict, Any, Set, Sequence, Iterable
-from collections import defaultdict
 from difflib import SequenceMatcher
 
 import numpy as np
 
 from ..utils.logging import get_logger
-from .models import Line, Word
-from .timing_models import AudioFeatures, TranscriptionWord, TranscriptionSegment
-from .phonetic_utils import (
-    _get_ipa,
-    _get_ipa_segs,
-    _phonetic_similarity,
-    _text_similarity_basic,
-    _text_similarity,
-    _whisper_lang_to_epitran,
-    _get_panphon_distance,
-    _is_vowel,
-)
 from ..utils.lex_lookup_installer import ensure_local_lex_lookup
 from .audio_analysis import (
+    extract_audio_features,
     _check_vocal_activity_in_range,
     _compute_silence_overlap,
     _is_time_in_silence,
-    extract_audio_features,
 )
-from .whisper_cache import (
-    _get_whisper_cache_path,
-    _find_best_cached_whisper_model,
-    _load_whisper_cache,
-    _save_whisper_cache,
-    _model_index,
-    _MODEL_ORDER,
+from . import models
+from . import timing_models
+from . import phonetic_utils
+from . import whisper_cache
+from . import whisper_dtw
+from .whisper_dtw import _LineMappingContext
+from . import whisper_alignment
+from . import whisper_phonetic_dtw
+from . import whisper_utils
+from . import whisper_blocks
+
+_extract_alignments_from_path = whisper_dtw._extract_alignments_from_path_base
+_apply_dtw_alignments = whisper_dtw._apply_dtw_alignments_base
+_extract_lrc_words_base = whisper_dtw._extract_lrc_words_base
+_compute_phonetic_costs_base = whisper_dtw._compute_phonetic_costs_base
+_extract_alignments_from_path_base = whisper_dtw._extract_alignments_from_path_base
+_apply_dtw_alignments_base = whisper_dtw._apply_dtw_alignments_base
+align_dtw_whisper_base = whisper_dtw.align_dtw_whisper_base
+
+# Re-export functions for compatibility with other modules
+_get_whisper_cache_path = whisper_cache._get_whisper_cache_path
+_find_best_cached_whisper_model = whisper_cache._find_best_cached_whisper_model
+_load_whisper_cache = whisper_cache._load_whisper_cache
+_save_whisper_cache = whisper_cache._save_whisper_cache
+_model_index = whisper_cache._model_index
+_MODEL_ORDER = whisper_cache._MODEL_ORDER
+
+_find_best_whisper_match = whisper_phonetic_dtw._find_best_whisper_match
+align_lyrics_to_transcription = whisper_phonetic_dtw.align_lyrics_to_transcription
+align_words_to_whisper = whisper_phonetic_dtw.align_words_to_whisper
+_assess_lrc_quality = whisper_phonetic_dtw._assess_lrc_quality
+_extract_lrc_words = whisper_phonetic_dtw._extract_lrc_words
+_compute_phonetic_costs = whisper_phonetic_dtw._compute_phonetic_costs
+_compute_phonetic_costs_unbounded = (
+    whisper_phonetic_dtw._compute_phonetic_costs_unbounded
 )
-from .whisper_dtw import (
-    _LineMappingContext,
-    _extract_lrc_words_base,
-    _compute_phonetic_costs_base,
-    _extract_alignments_from_path_base,
-    _apply_dtw_alignments_base,
-    align_dtw_whisper_base,
+_extract_best_alignment_map = whisper_phonetic_dtw._extract_best_alignment_map
+_extract_lrc_words_all = whisper_phonetic_dtw._extract_lrc_words_all
+_build_dtw_path = whisper_phonetic_dtw._build_dtw_path
+_build_phoneme_dtw_path = whisper_phonetic_dtw._build_phoneme_dtw_path
+_build_syllable_tokens_from_phonemes = (
+    whisper_phonetic_dtw._build_syllable_tokens_from_phonemes
 )
-from .whisper_alignment import (
-    _enforce_monotonic_line_starts,
-    _scale_line_to_duration,
-    _enforce_non_overlapping_lines,
-    _merge_lines_to_whisper_segments,
-    _retime_adjacent_lines_to_whisper_window,
-    _retime_adjacent_lines_to_segment_window,
-    _pull_next_line_into_segment_window,
-    _pull_next_line_into_same_segment,
-    _merge_short_following_line_into_segment,
-    _pull_lines_near_segment_end,
-    _clamp_repeated_line_duration,
-    _merge_first_two_lines_if_segment_matches,
-    _tighten_lines_to_whisper_segments,
-    _pull_lines_to_best_segments,
-    _drop_duplicate_lines,
-    _drop_duplicate_lines_by_timing,
-    _normalize_line_word_timings,
-    _find_best_whisper_segment,
-    _apply_offset_to_line,
-    _calculate_drift_correction,
-    _interpolate_unmatched_lines,
-    _refine_unmatched_lines_with_onsets,
-    align_hybrid_lrc_whisper,
-    _fix_ordering_violations,
-    _pull_lines_forward_for_continuous_vocals,
-    _fill_vocal_activity_gaps,
+_make_syllable_from_tokens = whisper_phonetic_dtw._make_syllable_from_tokens
+_build_syllable_dtw_path = whisper_phonetic_dtw._build_syllable_dtw_path
+_build_phoneme_tokens_from_lrc_words = (
+    whisper_phonetic_dtw._build_phoneme_tokens_from_lrc_words
+)
+_build_phoneme_tokens_from_whisper_words = (
+    whisper_phonetic_dtw._build_phoneme_tokens_from_whisper_words
 )
 
-_extract_alignments_from_path = _extract_alignments_from_path_base
-_apply_dtw_alignments = _apply_dtw_alignments_base
+_assign_lrc_lines_to_blocks = whisper_blocks._assign_lrc_lines_to_blocks
+_text_overlap_score = whisper_blocks._text_overlap_score
+_build_segment_word_info = whisper_blocks._build_segment_word_info
+_assign_lrc_lines_to_segments = whisper_blocks._assign_lrc_lines_to_segments
+_distribute_words_within_segments = whisper_blocks._distribute_words_within_segments
+_build_segment_text_overlap_assignments = (
+    whisper_blocks._build_segment_text_overlap_assignments
+)
+_build_block_word_bags = whisper_blocks._build_block_word_bags
+_syl_to_block = whisper_blocks._syl_to_block
+_group_syllables_by_block = whisper_blocks._group_syllables_by_block
+_run_per_block_dtw = whisper_blocks._run_per_block_dtw
+_build_block_segmented_syllable_assignments = (
+    whisper_blocks._build_block_segmented_syllable_assignments
+)
+
+_normalize_word = whisper_utils._normalize_word
+_normalize_words_expanded = whisper_utils._normalize_words_expanded
+_segment_start = whisper_utils._segment_start
+_segment_end = whisper_utils._segment_end
+_get_segment_text = whisper_utils._get_segment_text
+_compute_speech_blocks = whisper_utils._compute_speech_blocks
+_word_idx_to_block = whisper_utils._word_idx_to_block
+_block_time_range = whisper_utils._block_time_range
+_SPEECH_BLOCK_GAP = whisper_utils._SPEECH_BLOCK_GAP
+_build_word_assignments_from_syllable_path = (
+    whisper_utils._build_word_assignments_from_syllable_path
+)
+
+align_hybrid_lrc_whisper = whisper_alignment.align_hybrid_lrc_whisper
+_enforce_monotonic_line_starts = whisper_alignment._enforce_monotonic_line_starts
+_scale_line_to_duration = whisper_alignment._scale_line_to_duration
+_enforce_non_overlapping_lines = whisper_alignment._enforce_non_overlapping_lines
+_merge_lines_to_whisper_segments = whisper_alignment._merge_lines_to_whisper_segments
+_retime_adjacent_lines_to_whisper_window = (
+    whisper_alignment._retime_adjacent_lines_to_whisper_window
+)
+_retime_adjacent_lines_to_segment_window = (
+    whisper_alignment._retime_adjacent_lines_to_segment_window
+)
+_pull_next_line_into_segment_window = (
+    whisper_alignment._pull_next_line_into_segment_window
+)
+_pull_next_line_into_same_segment = whisper_alignment._pull_next_line_into_same_segment
+_merge_short_following_line_into_segment = (
+    whisper_alignment._merge_short_following_line_into_segment
+)
+_pull_lines_near_segment_end = whisper_alignment._pull_lines_near_segment_end
+_clamp_repeated_line_duration = whisper_alignment._clamp_repeated_line_duration
+_merge_first_two_lines_if_segment_matches = (
+    whisper_alignment._merge_first_two_lines_if_segment_matches
+)
+_tighten_lines_to_whisper_segments = (
+    whisper_alignment._tighten_lines_to_whisper_segments
+)
+_pull_lines_to_best_segments = whisper_alignment._pull_lines_to_best_segments
+_drop_duplicate_lines = whisper_alignment._drop_duplicate_lines
+_drop_duplicate_lines_by_timing = whisper_alignment._drop_duplicate_lines_by_timing
+_normalize_line_word_timings = whisper_alignment._normalize_line_word_timings
+_find_best_whisper_segment = whisper_alignment._find_best_whisper_segment
+_apply_offset_to_line = whisper_alignment._apply_offset_to_line
+_calculate_drift_correction = whisper_alignment._calculate_drift_correction
+_interpolate_unmatched_lines = whisper_alignment._interpolate_unmatched_lines
+_refine_unmatched_lines_with_onsets = (
+    whisper_alignment._refine_unmatched_lines_with_onsets
+)
+_fix_ordering_violations = whisper_alignment._fix_ordering_violations
+_pull_lines_forward_for_continuous_vocals = (
+    whisper_alignment._pull_lines_forward_for_continuous_vocals
+)
+_fill_vocal_activity_gaps = whisper_alignment._fill_vocal_activity_gaps
+
+_whisper_lang_to_epitran = phonetic_utils._whisper_lang_to_epitran
+_get_ipa = phonetic_utils._get_ipa
+_phonetic_similarity = phonetic_utils._phonetic_similarity
 
 logger = get_logger(__name__)
 
@@ -122,6 +189,9 @@ __all__ = [
     "_fill_vocal_activity_gaps",
     "_pull_lines_forward_for_continuous_vocals",
     "_merge_first_two_lines_if_segment_matches",
+    "_whisper_lang_to_epitran",
+    "_get_ipa",
+    "_phonetic_similarity",
 ]
 
 
@@ -131,7 +201,12 @@ def transcribe_vocals(
     model_size: str = "base",
     aggressive: bool = False,
     temperature: float = 0.0,
-) -> Tuple[List[TranscriptionSegment], List[TranscriptionWord], str, str]:
+) -> Tuple[
+    List[timing_models.TranscriptionSegment],
+    List[timing_models.TranscriptionWord],
+    str,
+    str,
+]:
     """Transcribe vocals using Whisper.
 
     Results are cached to disk alongside the vocals file to avoid
@@ -144,7 +219,7 @@ def transcribe_vocals(
         temperature: Temperature for transcription (default: 0.0)
 
     Returns:
-        Tuple of (list of TranscriptionSegment, list of all TranscriptionWord,
+        Tuple of (list of timing_models.TranscriptionSegment, list of all timing_models.TranscriptionWord,
         detected language code, whisper model size used)
     """
     # Check cache first
@@ -190,14 +265,14 @@ def transcribe_vocals(
             )
         segments, info = model.transcribe(vocals_path, **transcribe_kwargs)
 
-        # Convert to list of TranscriptionSegment with words
+        # Convert to list of timing_models.TranscriptionSegment with words
         result = []
         all_words = []
         for seg in segments:
             seg_words = []
             if seg.words:
                 for w in seg.words:
-                    tw = TranscriptionWord(
+                    tw = timing_models.TranscriptionWord(
                         start=w.start,
                         end=w.end,
                         text=w.word.strip(),
@@ -206,7 +281,7 @@ def transcribe_vocals(
                     seg_words.append(tw)
                     all_words.append(tw)
             result.append(
-                TranscriptionSegment(
+                timing_models.TranscriptionSegment(
                     start=seg.start,
                     end=seg.end,
                     text=seg.text.strip(),
@@ -221,7 +296,7 @@ def transcribe_vocals(
 
         # Save to cache
         if cache_path:
-            _save_whisper_cache(
+            whisper_cache._save_whisper_cache(
                 cache_path,
                 result,
                 all_words,
@@ -238,1144 +313,11 @@ def transcribe_vocals(
         return [], [], "", model_size
 
 
-def _build_phoneme_tokens_from_lrc_words(
-    lrc_words: List[Dict], language: str
-) -> List[Dict]:
-    """Build phoneme-level tokens from LRC words for DTW."""
-    tokens: List[Dict] = []
-    for idx, word in enumerate(lrc_words):
-        text = word.get("text", "")
-        word_start = word.get("start", 0.0)
-        word_end = word.get("end", 0.0)
-        duration = max(word_end - word_start, 0.01)
-        ipa = _get_ipa(text, language) or text
-        segs = _get_ipa_segs(ipa) or [ipa]
-        portion = duration / len(segs)
-        for seg_idx, seg in enumerate(segs):
-            start = word_start + portion * seg_idx
-            end = start + portion
-            if seg_idx == len(segs) - 1:
-                end = word_end if word_end >= word_start else start + portion
-            tokens.append(
-                {
-                    "word_idx": idx,
-                    "parent_idx": idx,
-                    "ipa": seg,
-                    "start": start,
-                    "end": end,
-                }
-            )
-    return tokens
-
-
-def _build_phoneme_tokens_from_whisper_words(
-    whisper_words: List[TranscriptionWord], language: str
-) -> List[Dict]:
-    """Build phoneme-level tokens from Whisper words for DTW."""
-    tokens: List[Dict] = []
-    for idx, word in enumerate(whisper_words):
-        text = word.text
-        word_start = word.start
-        word_end = word.end
-        duration = max(word_end - word_start, 0.01)
-        ipa = _get_ipa(text, language) or text
-        segs = _get_ipa_segs(ipa) or [ipa]
-        portion = duration / len(segs)
-        for seg_idx, seg in enumerate(segs):
-            start = word_start + portion * seg_idx
-            end = start + portion
-            if seg_idx == len(segs) - 1:
-                end = word_end if word_end >= word_start else start + portion
-            tokens.append(
-                {
-                    "word_idx": idx,
-                    "parent_idx": idx,
-                    "ipa": seg,
-                    "start": start,
-                    "end": end,
-                }
-            )
-    return tokens
-
-
-def _phoneme_similarity_from_ipa(
-    ipa1: str, ipa2: str, language: str = "fra-Latn"
-) -> float:
-    """Compute phonetic similarity between two IPA segments."""
-    if not ipa1 or not ipa2:
-        return 0.0
-    dst = _get_panphon_distance()
-    if dst is None:
-        return 1.0 if ipa1 == ipa2 else 0.0
-    segs1 = _get_ipa_segs(ipa1)
-    segs2 = _get_ipa_segs(ipa2)
-    if not segs1 or not segs2:
-        return 1.0 if ipa1 == ipa2 else 0.0
-    fed = dst.feature_edit_distance(ipa1, ipa2)
-    max_segs = max(len(segs1), len(segs2))
-    if max_segs == 0:
-        return 0.0
-    normalized_distance = fed / max_segs
-    return max(0.0, 1.0 - normalized_distance)
-
-
-def align_lyrics_to_transcription(
-    lines: List[Line],
-    transcription: List[TranscriptionSegment],
-    min_similarity: float = 0.4,
-    max_time_shift: float = 10.0,
-    language: str = "fra-Latn",
-) -> Tuple[List[Line], List[str]]:
-    """Align lyrics lines to Whisper transcription using fuzzy matching.
-
-    For each lyrics line, finds the best matching transcription segment
-    and adjusts timing accordingly. Only applies corrections that are
-    within a reasonable time range to avoid catastrophic misalignment.
-
-    Args:
-        lines: Lyrics lines with potentially wrong timing
-        transcription: Whisper transcription segments with correct timing
-        min_similarity: Minimum text similarity to consider a match
-        max_time_shift: Maximum time shift to apply (seconds)
-
-    Returns:
-        Tuple of (aligned lines, list of alignment descriptions)
-    """
-    from .models import Line, Word
-
-    if not lines or not transcription:
-        return lines, []
-
-    aligned_lines: List[Line] = []
-    alignments: List[str] = []
-
-    # Track used segments to avoid double-matching
-    used_segments: set = set()
-
-    for i, line in enumerate(lines):
-        if not line.words:
-            aligned_lines.append(line)
-            continue
-
-        line_text = " ".join(w.text for w in line.words)
-        line_start = line.start_time
-
-        # Find best matching transcription segment within reasonable time range
-        best_match_idx = None
-        best_score = -float("inf")
-        best_segment = None
-        best_similarity = 0.0
-
-        for j, seg in enumerate(transcription):
-            if j in used_segments:
-                continue
-
-            # Only consider segments within max_time_shift of current position
-            time_diff = abs(seg.start - line_start)
-            if time_diff > max_time_shift:
-                continue
-
-            similarity = _text_similarity(
-                line_text, seg.text, use_phonetic=True, language=language
-            )
-
-            if similarity < min_similarity:
-                continue
-
-            # Score: prioritize similarity, with small time bonus
-            time_bonus = max(0, (max_time_shift - time_diff) / max_time_shift) * 0.1
-            score = similarity + time_bonus
-
-            if score > best_score:
-                best_score = score
-                best_similarity = similarity
-                best_match_idx = j
-                best_segment = seg
-
-        if best_segment is not None and best_similarity >= min_similarity:
-            used_segments.add(best_match_idx)
-
-            # Calculate timing adjustment
-            offset = best_segment.start - line_start
-            new_duration = best_segment.end - best_segment.start
-
-            # Only adjust if offset is significant but not too large
-            if 0.3 < abs(offset) <= max_time_shift:
-                # Redistribute words across the new duration
-                word_count = len(line.words)
-                word_spacing = new_duration / word_count if word_count > 0 else 0
-
-                new_words = []
-                for k, word in enumerate(line.words):
-                    new_start = best_segment.start + k * word_spacing
-                    new_end = new_start + (word_spacing * 0.9)
-                    new_words.append(
-                        Word(
-                            text=word.text,
-                            start_time=new_start,
-                            end_time=new_end,
-                            singer=word.singer,
-                        )
-                    )
-
-                aligned_line = Line(words=new_words, singer=line.singer)
-                aligned_lines.append(aligned_line)
-
-                alignments.append(
-                    f"Line {i+1} aligned to transcription: {offset:+.1f}s "
-                    f'(similarity: {best_similarity:.0%}) "{line_text[:30]}..."'
-                )
-                continue
-
-        # No good match found or no adjustment needed
-        aligned_lines.append(line)
-
-    return aligned_lines, alignments
-
-
-def _find_best_whisper_match(
-    lrc_text: str,
-    lrc_start: float,
-    sorted_whisper: List[TranscriptionWord],
-    used_indices: set,
-    min_similarity: float,
-    max_time_shift: float,
-    language: str,
-    min_index: int = 0,
-    whisper_percentiles: Optional[List[float]] = None,
-    expected_percentile: float = 0.0,
-    order_weight: float = 0.35,
-    time_weight: float = 0.25,
-) -> Tuple[Optional[TranscriptionWord], Optional[int], float]:
-    """Find the best matching Whisper word for an LRC word.
-
-    Returns:
-        Tuple of (best_match, best_match_index, best_similarity)
-
-    Args:
-        min_index: Whisper index to start searching from so matches stay in order.
-        whisper_percentiles: Optional percentile list used for ordering constraints.
-        expected_percentile: Expected percentile of the current LRC word to guide ordering.
-        order_weight: Weight for penalizing distant percentile matches.
-        time_weight: Weight for penalizing long time offsets.
-    """
-    best_match = None
-    best_match_idx = None
-    best_similarity = 0.0
-    best_score = float("-inf")
-
-    for i in range(min_index, len(sorted_whisper)):
-        ww = sorted_whisper[i]
-        if i in used_indices:
-            continue
-
-        time_diff = abs(ww.start - lrc_start)
-        if time_diff > max_time_shift:
-            if ww.start > lrc_start + max_time_shift:
-                break
-            continue
-
-        basic_sim = _text_similarity_basic(lrc_text, ww.text, language)
-        if basic_sim < 0.25:
-            continue
-
-        similarity = _phonetic_similarity(lrc_text, ww.text, language)
-
-        if similarity < min_similarity:
-            continue
-
-        position_penalty = 0.0
-        if whisper_percentiles and i < len(whisper_percentiles):
-            position_penalty = abs(expected_percentile - whisper_percentiles[i])
-
-        time_penalty = min(time_diff / max_time_shift, 1.0)
-        score = (
-            similarity - position_penalty * order_weight - time_penalty * time_weight
-        )
-
-        if score > best_score:
-            best_score = score
-            best_match = ww
-            best_match_idx = i
-            best_similarity = similarity
-
-    return best_match, best_match_idx, best_similarity
-
-
-def align_words_to_whisper(
-    lines: List[Line],
-    whisper_words: List[TranscriptionWord],
-    min_similarity: float = 0.5,
-    max_time_shift: float = 5.0,
-    language: str = "fra-Latn",
-) -> Tuple[List[Line], List[str]]:
-    """Align individual LRC words to Whisper word timestamps using phonetic matching.
-
-    Args:
-        lines: Lyrics lines with word-level timing
-        whisper_words: All Whisper transcription words with timestamps
-        min_similarity: Minimum phonetic similarity to consider a match
-        max_time_shift: Maximum time difference to search for matches
-        language: Epitran language code for phonetic matching
-
-    Returns:
-        Tuple of (aligned lines, list of correction descriptions)
-    """
-    from .models import Line, Word
-
-    if not lines or not whisper_words:
-        return lines, []
-
-    # Pre-compute IPA for all Whisper words
-    logger.debug(f"Pre-computing IPA for {len(whisper_words)} Whisper words...")
-    for ww in whisper_words:
-        _get_ipa(ww.text, language)
-
-    sorted_whisper = sorted(whisper_words, key=lambda w: w.start)
-    total_whisper = len(sorted_whisper)
-    whisper_percentiles = [i / max(1, total_whisper - 1) for i in range(total_whisper)]
-    used_whisper_indices: set = set()
-    aligned_lines: List[Line] = []
-    corrections: List[str] = []
-    min_whisper_index = 0
-    total_lrc_words = sum(
-        1 for line in lines for word in line.words if len(word.text.strip()) >= 2
-    )
-    lrc_word_index = 0
-
-    for line in lines:
-        if not line.words:
-            aligned_lines.append(line)
-            continue
-
-        new_words: List[Word] = []
-        line_corrections = 0
-
-        for word in line.words:
-            lrc_text = word.text.strip()
-            if len(lrc_text) < 2:
-                new_words.append(word)
-                continue
-
-            expected_percentile = (
-                lrc_word_index / max(1, total_lrc_words - 1)
-                if total_lrc_words > 1
-                else 0.0
-            )
-            best_match, best_idx, _ = _find_best_whisper_match(
-                lrc_text,
-                word.start_time,
-                sorted_whisper,
-                used_whisper_indices,
-                min_similarity,
-                max_time_shift,
-                language,
-                min_index=min_whisper_index,
-                whisper_percentiles=whisper_percentiles,
-                expected_percentile=expected_percentile,
-            )
-
-            if best_match is not None and best_idx is not None:
-                used_whisper_indices.add(best_idx)
-                time_shift = best_match.start - word.start_time
-                min_whisper_index = max(min_whisper_index, best_idx + 1)
-                if abs(time_shift) > 0.15:
-                    new_words.append(
-                        Word(
-                            text=word.text,
-                            start_time=best_match.start,
-                            end_time=best_match.end,
-                            singer=word.singer,
-                        )
-                    )
-                    line_corrections += 1
-                else:
-                    new_words.append(word)
-            else:
-                new_words.append(word)
-
-            lrc_word_index += 1
-
-        aligned_lines.append(Line(words=new_words, singer=line.singer))
-        if line_corrections > 0:
-            line_text = " ".join(w.text for w in line.words)[:40]
-            corrections.append(
-                f'Line aligned {line_corrections} word(s): "{line_text}..."'
-            )
-
-    return aligned_lines, corrections
-
-
-def _assess_lrc_quality(
-    lines: List[Line],
-    whisper_words: List[TranscriptionWord],
-    language: str = "fra-Latn",
-    tolerance: float = 1.5,
-) -> Tuple[float, List[Tuple[int, float, float]]]:
-    """Assess LRC timing quality by comparing against Whisper.
-
-    Returns:
-        Tuple of (quality_score 0-1, list of (line_idx, lrc_time, best_whisper_time))
-    """
-    if not lines or not whisper_words:
-        return 1.0, []
-
-    assessments = []
-    good_count = 0
-
-    for line_idx, line in enumerate(lines):
-        if not line.words:
-            continue
-
-        # Get first significant word in line
-        first_word = None
-        for w in line.words:
-            if len(w.text.strip()) >= 2:
-                first_word = w
-                break
-        if not first_word:
-            continue
-
-        lrc_time = first_word.start_time
-        lrc_text = first_word.text
-
-        # Find best matching Whisper word
-        best_whisper_time = None
-        best_similarity = 0.0
-
-        for ww in whisper_words:
-            # Only consider words within 20s
-            if abs(ww.start - lrc_time) > 20:
-                continue
-
-            sim = _phonetic_similarity(lrc_text, ww.text, language)
-            if sim > best_similarity:
-                best_similarity = sim
-                best_whisper_time = ww.start
-
-        if best_whisper_time is not None and best_similarity >= 0.5:
-            time_diff = abs(best_whisper_time - lrc_time)
-            assessments.append((line_idx, lrc_time, best_whisper_time))
-            if time_diff <= tolerance:
-                good_count += 1
-
-    quality = good_count / len(assessments) if assessments else 1.0
-    return quality, assessments
-
-
-def _extract_lrc_words(lines: List[Line]) -> List[Dict]:
-    """Extract all LRC words with their line/word indices."""
-    lrc_words = []
-    for line_idx, line in enumerate(lines):
-        for word_idx, word in enumerate(line.words):
-            if len(word.text.strip()) >= 2:
-                lrc_words.append(
-                    {
-                        "line_idx": line_idx,
-                        "word_idx": word_idx,
-                        "text": word.text,
-                        "start": word.start_time,
-                        "end": word.end_time,
-                        "word": word,
-                    }
-                )
-    return lrc_words
-
-
-def _compute_phonetic_costs(
-    lrc_words: List[Dict],
-    whisper_words: List[TranscriptionWord],
-    language: str,
-    min_similarity: float,
-) -> Dict[Tuple[int, int], float]:
-    """Compute sparse phonetic cost matrix for DTW."""
-
-    phonetic_costs = defaultdict(lambda: 1.0)
-
-    for i, lw in enumerate(lrc_words):
-        lrc_time = lw["start"]
-        for j, ww in enumerate(whisper_words):
-            if ww.text == "[VOCAL]":
-                # Give a reasonable cost that is still better than no match
-                phonetic_costs[(i, j)] = 0.5
-                continue
-            time_diff = abs(ww.start - lrc_time)
-            if time_diff > 20:
-                continue
-            sim = _phonetic_similarity(lw["text"], ww.text, language)
-            if sim >= min_similarity:
-                phonetic_costs[(i, j)] = 1.0 - sim
-
-    return phonetic_costs
-
-
-def _compute_phonetic_costs_unbounded(
-    lrc_words: List[Dict],
-    whisper_words: List[TranscriptionWord],
-    language: str,
-    min_similarity: float,
-) -> Dict[Tuple[int, int], float]:
-    """Compute phonetic costs without time-window constraints."""
-
-    phonetic_costs = defaultdict(lambda: 1.0)
-
-    for i, lw in enumerate(lrc_words):
-        for j, ww in enumerate(whisper_words):
-            if ww.text == "[VOCAL]":
-                phonetic_costs[(i, j)] = 0.5
-                continue
-            sim = _phonetic_similarity(lw["text"], ww.text, language)
-            if sim >= min_similarity:
-                phonetic_costs[(i, j)] = 1.0 - sim
-
-    return phonetic_costs
-
-
-def _extract_best_alignment_map(
-    path: List[Tuple[int, int]],
-    lrc_words: List[Dict],
-    whisper_words: List[TranscriptionWord],
-    language: str,
-) -> Dict[int, Tuple[int, float]]:
-    """Extract best whisper index per LRC word index from a DTW path."""
-    alignments: Dict[int, Tuple[int, float]] = {}
-    for lrc_idx, whisper_idx in path:
-        lw = lrc_words[lrc_idx]
-        ww = whisper_words[whisper_idx]
-        sim = _phonetic_similarity(lw["text"], ww.text, language)
-        if lrc_idx not in alignments or sim > alignments[lrc_idx][1]:
-            alignments[lrc_idx] = (whisper_idx, sim)
-    return alignments
-
-
-def _extract_lrc_words_all(lines: List[Line]) -> List[Dict]:
-    """Extract all LRC words (including short tokens) with line/word indices."""
-    lrc_words = []
-    for line_idx, line in enumerate(lines):
-        for word_idx, word in enumerate(line.words):
-            if not word.text.strip():
-                continue
-            lrc_words.append(
-                {
-                    "line_idx": line_idx,
-                    "word_idx": word_idx,
-                    "text": word.text,
-                    "start": word.start_time,
-                    "end": word.end_time,
-                    "word": word,
-                }
-            )
-    return lrc_words
-
-
-def _build_dtw_path(
-    lrc_words: List[Dict],
-    all_words: List[TranscriptionWord],
-    phonetic_costs: Dict[Tuple[int, int], float],
-    language: str,
-) -> List[Tuple[int, int]]:
-    """Build a DTW path between LRC words and Whisper words."""
-    try:
-        from fastdtw import fastdtw  # type: ignore
-
-        lrc_seq = np.arange(len(lrc_words)).reshape(-1, 1)
-        whisper_seq = np.arange(len(all_words)).reshape(-1, 1)
-
-        def dtw_dist(a, b):
-            i = int(a[0])
-            j = int(b[0])
-            return phonetic_costs[(i, j)]
-
-        _distance, path = fastdtw(lrc_seq, whisper_seq, dist=dtw_dist)
-        return path
-    except ImportError:
-        logger.warning("fastdtw not available, falling back to greedy alignment")
-        path = []
-        whisper_idx = 0
-        for lrc_idx in range(len(lrc_words)):
-            best_idx = whisper_idx
-            best_sim = -1.0
-            for j in range(whisper_idx, min(whisper_idx + 6, len(all_words))):
-                sim = _phonetic_similarity(
-                    lrc_words[lrc_idx]["text"], all_words[j].text, language
-                )
-                if sim > best_sim:
-                    best_sim = sim
-                    best_idx = j
-            path.append((lrc_idx, best_idx))
-            whisper_idx = best_idx
-        return path
-
-
-def _build_phoneme_dtw_path(
-    lrc_phonemes: List[Dict],
-    whisper_phonemes: List[Dict],
-    language: str,
-) -> List[Tuple[int, int]]:
-    """Build DTW path between phoneme tokens."""
-    cost_cache: Dict[Tuple[int, int], float] = {}
-    n_lrc = max(len(lrc_phonemes), 1)
-    n_whisper = max(len(whisper_phonemes), 1)
-
-    def phoneme_cost(i: int, j: int) -> float:
-        key = (i, j)
-        if key in cost_cache:
-            return cost_cache[key]
-        ipa1 = lrc_phonemes[i]["ipa"]
-        ipa2 = whisper_phonemes[j]["ipa"]
-        sim = _phoneme_similarity_from_ipa(ipa1, ipa2, language)
-        phon_cost = 1.0 - sim
-        pos_penalty = abs(i / n_lrc - j / n_whisper)
-        cost_cache[key] = 0.85 * phon_cost + 0.15 * pos_penalty
-        return cost_cache[key]
-
-    try:
-        from fastdtw import fastdtw  # type: ignore
-
-        lrc_seq = np.arange(len(lrc_phonemes)).reshape(-1, 1)
-        whisper_seq = np.arange(len(whisper_phonemes)).reshape(-1, 1)
-
-        def dtw_dist(a, b):
-            i = int(a[0])
-            j = int(b[0])
-            return phoneme_cost(i, j)
-
-        _distance, path = fastdtw(lrc_seq, whisper_seq, dist=dtw_dist)
-        return path
-    except ImportError:
-        logger.warning(
-            "fastdtw not available, falling back to phoneme greedy alignment"
-        )
-        path = []
-        whisper_idx = 0
-        for lrc_idx in range(len(lrc_phonemes)):
-            best_idx = whisper_idx
-            best_cost = float("inf")
-            for j in range(whisper_idx, min(whisper_idx + 12, len(whisper_phonemes))):
-                cost = phoneme_cost(lrc_idx, j)
-                if cost < best_cost:
-                    best_cost = cost
-                    best_idx = j
-        path.append((lrc_idx, best_idx))
-        whisper_idx = best_idx
-    return path
-
-
-def _build_syllable_tokens_from_phonemes(phoneme_tokens: List[Dict]) -> List[Dict]:
-    """Group phoneme tokens into syllable-level units."""
-    syllables: List[Dict] = []
-    current: List[Dict] = []
-    for token in phoneme_tokens:
-        current.append(token)
-        if _is_vowel(token["ipa"]):
-            syllables.append(_make_syllable_from_tokens(current))
-            current = []
-        elif (
-            current
-            and token["parent_idx"] != current[-1]["parent_idx"]
-            and all(_is_vowel(t["ipa"]) for t in current)
-        ):
-            syllables.append(_make_syllable_from_tokens(current))
-            current = []
-    if current:
-        syllables.append(_make_syllable_from_tokens(current))
-    return syllables
-
-
-def _make_syllable_from_tokens(tokens: List[Dict]) -> Dict:
-    start = min(t["start"] for t in tokens)
-    end = max(t["end"] for t in tokens)
-    ipa = "".join(t["ipa"] for t in tokens)
-    parent_idxs = {t["parent_idx"] for t in tokens}
-    word_idxs = {t["word_idx"] for t in tokens}
-    return {
-        "ipa": ipa,
-        "start": start,
-        "end": end,
-        "parent_idxs": parent_idxs,
-        "word_idxs": word_idxs,
-    }
-
-
-def _build_syllable_dtw_path(
-    lrc_syllables: List[Dict],
-    whisper_syllables: List[Dict],
-    language: str,
-) -> List[Tuple[int, int]]:
-    """Build DTW path between syllable units.
-
-    Uses phonetic similarity as the primary cost and adds a small positional
-    penalty so that repeated phrases are matched to the temporally closest
-    occurrence rather than an arbitrary one.
-    """
-    cost_cache: Dict[Tuple[int, int], float] = {}
-    n_lrc = max(len(lrc_syllables), 1)
-    n_whisper = max(len(whisper_syllables), 1)
-
-    def syllable_cost(i: int, j: int) -> float:
-        key = (i, j)
-        if key in cost_cache:
-            return cost_cache[key]
-        ipa1 = lrc_syllables[i]["ipa"]
-        ipa2 = whisper_syllables[j]["ipa"]
-        sim = _phoneme_similarity_from_ipa(ipa1, ipa2, language)
-        phon_cost = 1.0 - sim
-        # Positional penalty: discourage matching syllables at very
-        # different relative positions in their respective sequences.
-        pos_lrc = i / n_lrc
-        pos_whisper = j / n_whisper
-        pos_penalty = abs(pos_lrc - pos_whisper)
-        cost_cache[key] = 0.85 * phon_cost + 0.15 * pos_penalty
-        return cost_cache[key]
-
-    try:
-        from fastdtw import fastdtw  # type: ignore
-
-        lrc_seq = np.arange(len(lrc_syllables)).reshape(-1, 1)
-        whisper_seq = np.arange(len(whisper_syllables)).reshape(-1, 1)
-
-        def dtw_dist(a, b):
-            i = int(a[0])
-            j = int(b[0])
-            return syllable_cost(i, j)
-
-        _distance, path = fastdtw(lrc_seq, whisper_seq, dist=dtw_dist)
-        return path
-    except ImportError:
-        logger.warning(
-            "fastdtw not available, falling back to syllable greedy alignment"
-        )
-        path = []
-        whisper_idx = 0
-        for lrc_idx in range(len(lrc_syllables)):
-            best_idx = whisper_idx
-            best_cost = float("inf")
-            for j in range(whisper_idx, min(whisper_idx + 12, len(whisper_syllables))):
-                cost = syllable_cost(lrc_idx, j)
-                if cost < best_cost:
-                    best_cost = cost
-                    best_idx = j
-            path.append((lrc_idx, best_idx))
-            whisper_idx = best_idx
-        return path
-
-
-def _normalize_word(w: str) -> str:
-    """Lowercase and strip punctuation for bag-of-words comparison."""
-    return w.strip(".,!?;:'\"()- ").lower()
-
-
-def _normalize_words_expanded(w: str) -> List[str]:
-    """Normalize and split hyphenated/compound words for overlap matching."""
-    base = w.strip(".,!?;:'\"()- ").lower()
-    if not base:
-        return []
-    parts = [p for p in base.split("-") if p]
-    return parts if len(parts) > 1 else [base]
-
-
-def _assign_lrc_lines_to_blocks(
-    lrc_words: List[Dict],
-    block_word_bags: List[Set[str]],
-) -> List[int]:
-    """Assign each LRC line to a speech block using text-overlap scoring.
-
-    For each LRC line, count how many of its content words appear in each
-    block's word bag.  Normalise by line length, pick the best block, then
-    enforce monotonicity (blocks never go backwards).
-    """
-    lrc_line_count = max((lw["line_idx"] for lw in lrc_words), default=-1) + 1
-    lrc_line_block: List[int] = []
-    for li in range(lrc_line_count):
-        line_words_text = [
-            _normalize_word(lw["text"]) for lw in lrc_words if lw["line_idx"] == li
-        ]
-        if not line_words_text:
-            lrc_line_block.append(lrc_line_block[-1] if lrc_line_block else 0)
-            continue
-        best_blk = 0
-        best_score = -1.0
-        for bi, bag in enumerate(block_word_bags):
-            hits = sum(1 for w in line_words_text if len(w) > 1 and w in bag)
-            score = hits / len(line_words_text) if line_words_text else 0.0
-            if score > best_score:
-                best_score = score
-                best_blk = bi
-        lrc_line_block.append(best_blk)
-
-    # Enforce monotonic block assignment (lines only advance to later blocks)
-    for i in range(1, lrc_line_count):
-        if lrc_line_block[i] < lrc_line_block[i - 1]:
-            lrc_line_block[i] = lrc_line_block[i - 1]
-
-    return lrc_line_block
-
-
-def _text_overlap_score(
-    line_words: List[str],
-    seg_bag: List[str],
-) -> float:
-    """Score how many content words in *line_words* appear in *seg_bag*."""
-    if not line_words or not seg_bag:
-        return 0.0
-    seg_expanded: Set[str] = set()
-    for w in seg_bag:
-        seg_expanded.update(_normalize_words_expanded(w))
-    hits = 0
-    total = 0
-    for w in line_words:
-        parts = _normalize_words_expanded(w)
-        for p in parts:
-            if len(p) > 1:
-                total += 1
-                if p in seg_expanded:
-                    hits += 1
-    return hits / max(total, 1)
-
-
-def _build_segment_word_info(
-    all_words: List[TranscriptionWord],
-    segments: List[TranscriptionSegment],
-) -> Tuple[List[Tuple[int, int]], List[List[str]]]:
-    """Return (word-index ranges, word-bags) for each Whisper segment."""
-    seg_word_ranges: List[Tuple[int, int]] = []
-    seg_word_bags: List[List[str]] = []
-    for seg in segments:
-        seg_start = _segment_start(seg)
-        seg_end = _segment_end(seg)
-        first_idx = -1
-        last_idx = -1
-        for wi, w in enumerate(all_words):
-            if w.start >= seg_start - 0.05 and w.end <= seg_end + 0.05:
-                if first_idx < 0:
-                    first_idx = wi
-                last_idx = wi
-        seg_word_ranges.append((first_idx, last_idx))
-        if first_idx >= 0:
-            seg_word_bags.append(
-                [
-                    _normalize_word(all_words[i].text)
-                    for i in range(first_idx, last_idx + 1)
-                ]
-            )
-        else:
-            seg_word_bags.append([])
-    return seg_word_ranges, seg_word_bags
-
-
-def _assign_lrc_lines_to_segments(
-    lrc_lines_words: List[List[Tuple[int, str]]],
-    seg_word_bags: List[List[str]],
-) -> List[int]:
-    """Assign each LRC line to a Whisper segment using text overlap."""
-    lrc_line_count = len(lrc_lines_words)
-    n_segs = len(seg_word_bags)
-    line_to_seg: List[int] = [-1] * lrc_line_count
-    seg_cursor = 0
-    for li in range(lrc_line_count):
-        words = [w for _, w in lrc_lines_words[li]]
-        if not words:
-            line_to_seg[li] = line_to_seg[li - 1] if li > 0 else 0
-            continue
-        best_seg = seg_cursor
-        best_score = -1.0
-        search_end = min(seg_cursor + max(10, n_segs // 4), n_segs)
-        for si in range(seg_cursor, search_end):
-            score = _text_overlap_score(words, seg_word_bags[si])
-            if score > best_score:
-                best_score = score
-                best_seg = si
-            if si + 1 < n_segs:
-                merged = seg_word_bags[si] + seg_word_bags[si + 1]
-                mscore = _text_overlap_score(words, merged)
-                if mscore > best_score:
-                    best_score = mscore
-                    s1 = _text_overlap_score(words, seg_word_bags[si])
-                    # Prefer the earlier segment — karaoke lines should
-                    # appear when the first word is sung.  Only use the
-                    # later segment if the earlier has zero overlap.
-                    best_seg = si if s1 > 0 else si + 1
-        # Zero-score lines (e.g. "Oooh") have no text match; advance
-        # past the cursor so subsequent lines don't cascade early.
-        if best_score <= 0 and best_seg <= seg_cursor:
-            best_seg = min(seg_cursor + 1, n_segs - 1)
-        # When a line maps to the same segment as the previous line,
-        # check if the next segment has a comparable score.  If so,
-        # advance — repeated/similar lines should use consecutive segs.
-        # Require a minimum absolute score (0.5) for the next segment to
-        # prevent spurious advancement on low-overlap matches (e.g. a
-        # single common word like "où" matching many unrelated segments).
-        if (
-            li > 0
-            and best_seg == line_to_seg[li - 1]
-            and best_seg + 1 < n_segs
-            and best_score > 0
-        ):
-            nxt = _text_overlap_score(words, seg_word_bags[best_seg + 1])
-            if nxt >= best_score * 0.7 and nxt > 0.5:
-                best_seg = best_seg + 1
-                best_score = nxt
-        line_to_seg[li] = best_seg
-        seg_cursor = max(seg_cursor, best_seg)
-    return line_to_seg
-
-
-def _distribute_words_within_segments(
-    line_to_seg: List[int],
-    lrc_lines_words: List[List[Tuple[int, str]]],
-    seg_word_ranges: List[Tuple[int, int]],
-) -> Dict[int, List[int]]:
-    """Positionally map LRC words to Whisper words within each segment."""
-    seg_to_lines: Dict[int, List[int]] = {}
-    for li, si in enumerate(line_to_seg):
-        if si >= 0:
-            seg_to_lines.setdefault(si, []).append(li)
-
-    assignments: Dict[int, List[int]] = {}
-    for si, line_indices in seg_to_lines.items():
-        first_wi, last_wi = seg_word_ranges[si]
-        if first_wi < 0:
-            continue
-        seg_wc = last_wi - first_wi + 1
-        all_lrc: List[int] = []
-        for li in line_indices:
-            for idx, _ in lrc_lines_words[li]:
-                all_lrc.append(idx)
-        total = len(all_lrc)
-        if total == 0:
-            continue
-        for j, lrc_idx in enumerate(all_lrc):
-            pos = j / max(total, 1)
-            offset = min(int(pos * seg_wc), seg_wc - 1)
-            assignments[lrc_idx] = [first_wi + offset]
-    return assignments
-
-
-def _build_segment_text_overlap_assignments(
-    lrc_words: List[Dict],
-    all_words: List[TranscriptionWord],
-    segments: List[TranscriptionSegment],
-) -> Dict[int, List[int]]:
-    """Assign LRC words to Whisper words via segment-level text overlap.
-
-    Uses the Whisper segment structure as temporal anchors instead of
-    syllable DTW, which drifts when word counts differ between LRC and
-    Whisper.
-    """
-    if not segments or not lrc_words:
-        return {}
-
-    seg_word_ranges, seg_word_bags = _build_segment_word_info(
-        all_words,
-        segments,
-    )
-
-    lrc_line_count = max((lw["line_idx"] for lw in lrc_words), default=-1) + 1
-    lrc_lines_words: List[List[Tuple[int, str]]] = [[] for _ in range(lrc_line_count)]
-    for idx, lw in enumerate(lrc_words):
-        lrc_lines_words[lw["line_idx"]].append((idx, _normalize_word(lw["text"])))
-
-    line_to_seg = _assign_lrc_lines_to_segments(
-        lrc_lines_words,
-        seg_word_bags,
-    )
-    assignments = _distribute_words_within_segments(
-        line_to_seg,
-        lrc_lines_words,
-        seg_word_ranges,
-    )
-
-    logger.debug(
-        "Segment text-overlap: %d/%d LRC words assigned to %d segments",
-        len(assignments),
-        len(lrc_words),
-        len(segments),
-    )
-    return assignments
-
-
-def _build_block_word_bags(
-    all_words: List[TranscriptionWord],
-    speech_blocks: List[Tuple[int, int]],
-) -> List[Set[str]]:
-    """Build a bag-of-words set for each speech block."""
-    bags: List[Set[str]] = []
-    for blk_start, blk_end in speech_blocks:
-        bag: Set[str] = set()
-        for wi in range(blk_start, blk_end + 1):
-            nw = _normalize_word(all_words[wi].text)
-            if nw:
-                bag.add(nw)
-        bags.append(bag)
-    return bags
-
-
-def _syl_to_block(
-    syl_parent_idxs: Set[int], speech_blocks: List[Tuple[int, int]]
-) -> int:
-    """Return the speech block for a syllable (using its first parent word)."""
-    if not syl_parent_idxs:
-        return -1
-    first_word = min(syl_parent_idxs)
-    return _word_idx_to_block(first_word, speech_blocks)
-
-
-def _group_syllables_by_block(
-    syl_word_idxs: List[Set[int]],
-    speech_blocks: List[Tuple[int, int]],
-) -> Dict[int, List[int]]:
-    """Group syllable indices by their speech block."""
-    block_syls: Dict[int, List[int]] = {}
-    for si, pidxs in enumerate(syl_word_idxs):
-        blk = _syl_to_block(pidxs, speech_blocks)
-        block_syls.setdefault(blk, []).append(si)
-    return block_syls
-
-
-def _run_per_block_dtw(
-    speech_blocks: List[Tuple[int, int]],
-    block_lrc_syls: Dict[int, List[int]],
-    block_whisper_syls: Dict[int, List[int]],
-    lrc_syllables: List[Dict],
-    whisper_syllables: List[Dict],
-    all_words: List[TranscriptionWord],
-    language: str,
-) -> Dict[int, List[int]]:
-    """Run DTW within each speech block and merge into global assignments."""
-    combined_assignments: Dict[int, Set[int]] = {}
-
-    for blk_idx in range(len(speech_blocks)):
-        blk_lrc_syl_idxs = block_lrc_syls.get(blk_idx, [])
-        blk_whi_syl_idxs = block_whisper_syls.get(blk_idx, [])
-        if not blk_lrc_syl_idxs or not blk_whi_syl_idxs:
-            continue
-
-        blk_lrc_syls_list = [lrc_syllables[i] for i in blk_lrc_syl_idxs]
-        blk_whi_syls_list = [whisper_syllables[i] for i in blk_whi_syl_idxs]
-
-        path = _build_syllable_dtw_path(blk_lrc_syls_list, blk_whi_syls_list, language)
-
-        for local_li, local_wi in path:
-            global_li = blk_lrc_syl_idxs[local_li]
-            global_wi = blk_whi_syl_idxs[local_wi]
-            lrc_token = lrc_syllables[global_li]
-            whisper_token = whisper_syllables[global_wi]
-            for word_idx in lrc_token.get("word_idxs", set()):
-                combined_assignments.setdefault(word_idx, set()).update(
-                    whisper_token.get("parent_idxs", set())
-                )
-
-        blk_start, blk_end = speech_blocks[blk_idx]
-        logger.debug(
-            "  Block %d: %d LRC syls -> %d Whisper syls (words %d-%d, %.1f-%.1fs)",
-            blk_idx,
-            len(blk_lrc_syls_list),
-            len(blk_whi_syls_list),
-            blk_start,
-            blk_end,
-            all_words[blk_start].start,
-            all_words[blk_end].end,
-        )
-
-    return {
-        word_idx: sorted(list(indices))
-        for word_idx, indices in combined_assignments.items()
-    }
-
-
-def _build_block_segmented_syllable_assignments(
-    lrc_words: List[Dict],
-    all_words: List[TranscriptionWord],
-    lrc_syllables: List[Dict],
-    whisper_syllables: List[Dict],
-    language: str,
-) -> Dict[int, List[int]]:
-    """Run syllable DTW within each speech block and merge assignments.
-
-    Instead of a single global DTW (which can match repeated phrases to the
-    wrong temporal region), this partitions Whisper words into contiguous
-    speech blocks separated by silence, assigns LRC words to blocks
-    proportionally, and runs an independent DTW within each block.
-    """
-    speech_blocks = _compute_speech_blocks(all_words)
-    if len(speech_blocks) <= 1:
-        # No silence gaps – fall back to a single global DTW
-        path = _build_syllable_dtw_path(lrc_syllables, whisper_syllables, language)
-        return _build_word_assignments_from_syllable_path(
-            path, lrc_syllables, whisper_syllables
-        )
-
-    logger.debug(
-        "Block-segmented DTW: %d speech blocks across %d Whisper words",
-        len(speech_blocks),
-        len(all_words),
-    )
-
-    # ---- build syllable-index → word-index mappings ----
-    whisper_syl_word_idxs: List[Set[int]] = [
-        (
-            s["parent_idxs"]
-            if isinstance(s.get("parent_idxs"), set)
-            else set(s.get("parent_idxs", set()))
-        )
-        for s in whisper_syllables
-    ]
-    lrc_syl_word_idxs: List[Set[int]] = [
-        (
-            s["word_idxs"]
-            if isinstance(s.get("word_idxs"), set)
-            else set(s.get("word_idxs", set()))
-        )
-        for s in lrc_syllables
-    ]
-
-    # Group Whisper syllables by block
-    block_whisper_syls = _group_syllables_by_block(
-        whisper_syl_word_idxs,
-        speech_blocks,
-    )
-
-    # Assign LRC lines → blocks via text overlap, then map to syllables
-    total_lrc_words = len(lrc_words)
-    block_word_bags = _build_block_word_bags(all_words, speech_blocks)
-    lrc_line_block = _assign_lrc_lines_to_blocks(lrc_words, block_word_bags)
-    lrc_word_block = [lrc_line_block[lw["line_idx"]] for lw in lrc_words]
-
-    n_blocks = len(speech_blocks)
-    logger.debug(
-        "Text-overlap block assignment: %s",
-        {bi: sum(1 for b in lrc_line_block if b == bi) for bi in range(n_blocks)},
-    )
-
-    # Build LRC syllable ranges per block
-    lrc_syl_to_block: List[int] = []
-    for _sidx, wids in enumerate(lrc_syl_word_idxs):
-        first_word = min(wids) if wids else 0
-        blk = (
-            lrc_word_block[first_word]
-            if first_word < total_lrc_words
-            else (n_blocks - 1)
-        )
-        lrc_syl_to_block.append(blk)
-
-    block_lrc_syls: Dict[int, List[int]] = {}
-    for si, blk in enumerate(lrc_syl_to_block):
-        block_lrc_syls.setdefault(blk, []).append(si)
-
-    return _run_per_block_dtw(
-        speech_blocks,
-        block_lrc_syls,
-        block_whisper_syls,
-        lrc_syllables,
-        whisper_syllables,
-        all_words,
-        language,
-    )
-
-
-def _dedupe_whisper_words(words: List[TranscriptionWord]) -> List[TranscriptionWord]:
+def _dedupe_whisper_words(
+    words: List[timing_models.TranscriptionWord],
+) -> List[timing_models.TranscriptionWord]:
     """Remove Whisper words that share the same start time and text."""
-    deduped: List[TranscriptionWord] = []
+    deduped: List[timing_models.TranscriptionWord] = []
     seen: Set[Tuple[int, str]] = set()
     for word in words:
         key = (round(word.start * 1000), word.text.strip().lower())
@@ -1386,54 +328,34 @@ def _dedupe_whisper_words(words: List[TranscriptionWord]) -> List[TranscriptionW
     return deduped
 
 
-def _segment_start(segment: Any) -> float:
-    if hasattr(segment, "start"):
-        return segment.start
-    return segment.get("start", 0.0)
-
-
-def _segment_end(segment: Any) -> float:
-    if hasattr(segment, "end"):
-        return segment.end
-    return segment.get("end", 0.0)
-
-
-def _get_segment_text(segment: Any) -> str:
-    if hasattr(segment, "text"):
-        return segment.text or ""
-    if isinstance(segment, dict):
-        return segment.get("text", "") or ""
-    return ""
-
-
 _MIN_DUPLICATE_SEGMENT_DURATION = 0.25
 
 
 def _dedupe_whisper_segments(
-    segments: List[TranscriptionSegment],
-) -> List[TranscriptionSegment]:
+    segments: List[timing_models.TranscriptionSegment],
+) -> List[timing_models.TranscriptionSegment]:
     if not segments:
         return segments
-    cleaned: List[TranscriptionSegment] = []
+    cleaned: List[timing_models.TranscriptionSegment] = []
     for seg in segments:
-        duration = _segment_end(seg) - _segment_start(seg)
-        norm_text = _normalize_line_text(_get_segment_text(seg))
+        duration = whisper_utils._segment_end(seg) - whisper_utils._segment_start(seg)
+        norm_text = _normalize_line_text(whisper_utils._get_segment_text(seg))
         if cleaned:
             prev = cleaned[-1]
-            prev_norm = _normalize_line_text(_get_segment_text(prev))
+            prev_norm = _normalize_line_text(whisper_utils._get_segment_text(prev))
             if (
                 duration <= _MIN_DUPLICATE_SEGMENT_DURATION
                 and norm_text
                 and prev_norm == norm_text
             ):
-                prev.end = max(prev.end, _segment_end(seg))
+                prev.end = max(prev.end, whisper_utils._segment_end(seg))
                 continue
         cleaned.append(seg)
     return cleaned
 
 
 def _build_word_to_segment_index(
-    all_words: List[TranscriptionWord], segments: Sequence[Any]
+    all_words: List[timing_models.TranscriptionWord], segments: Sequence[Any]
 ) -> Dict[int, int]:
     """Map each Whisper word index to its enclosing segment."""
     mapping: Dict[int, int] = {}
@@ -1441,12 +363,16 @@ def _build_word_to_segment_index(
         return mapping
     seg_idx = 0
     for idx, word in enumerate(all_words):
-        while seg_idx + 1 < len(segments) and word.start > _segment_end(
+        while seg_idx + 1 < len(segments) and word.start > whisper_utils._segment_end(
             segments[seg_idx]
         ):
             seg_idx += 1
         seg = segments[seg_idx]
-        if _segment_start(seg) <= word.start <= _segment_end(seg):
+        if (
+            whisper_utils._segment_start(seg)
+            <= word.start
+            <= whisper_utils._segment_end(seg)
+        ):
             mapping[idx] = seg_idx
     return mapping
 
@@ -1467,11 +393,11 @@ def _find_segment_for_time(
         if idx in excluded_segments:
             continue
         seg = segments[idx]
-        diff = abs(_segment_start(seg) - time)
+        diff = abs(whisper_utils._segment_start(seg) - time)
         if diff < best_diff:
             best_diff = diff
             best_idx = idx
-        if _segment_start(seg) > time and diff > best_diff:
+        if whisper_utils._segment_start(seg) > time and diff > best_diff:
             break
     return best_idx
 
@@ -1499,7 +425,8 @@ def _word_match_score(
         return score
     if word_seg != target_seg:
         seg_diff = abs(
-            _segment_start(segments[word_seg]) - _segment_start(segments[target_seg])
+            whisper_utils._segment_start(segments[word_seg])
+            - whisper_utils._segment_start(segments[target_seg])
         )
         score += 0.4 + 0.01 * seg_diff
     if line_anchor is not None and word_start < line_anchor:
@@ -1519,11 +446,11 @@ def _word_match_score(
 
 
 def _find_nearest_word_in_segment(
-    candidates: Iterable[Tuple[TranscriptionWord, int]],
+    candidates: Iterable[Tuple[timing_models.TranscriptionWord, int]],
     target_start: float,
     segment_idx: Optional[int],
     word_segment_idx: Dict[int, int],
-) -> Optional[Tuple[TranscriptionWord, int]]:
+) -> Optional[Tuple[timing_models.TranscriptionWord, int]]:
     if segment_idx is None:
         return None
     best = None
@@ -1543,11 +470,15 @@ def _normalize_line_text(text: str) -> str:
 
 
 def _trim_whisper_transcription_by_lyrics(
-    segments: List[TranscriptionSegment],
-    words: List[TranscriptionWord],
+    segments: List[timing_models.TranscriptionSegment],
+    words: List[timing_models.TranscriptionWord],
     lyric_texts: List[str],
     min_similarity: float = 0.45,
-) -> Tuple[List[TranscriptionSegment], List[TranscriptionWord], Optional[float]]:
+) -> Tuple[
+    List[timing_models.TranscriptionSegment],
+    List[timing_models.TranscriptionWord],
+    Optional[float],
+]:
     """Keep only the portion of the Whisper transcript that matches the provided lyrics."""
     normalized_lyrics = [
         _normalize_line_text(text) for text in lyric_texts if text.strip()
@@ -1577,7 +508,7 @@ def _trim_whisper_transcription_by_lyrics(
 
 
 def _choose_segment_for_line(
-    line: Line,
+    line: models.Line,
     segments: Sequence[Any],
     start_idx: int = 0,
     min_start: float = 0.0,
@@ -1594,14 +525,14 @@ def _choose_segment_for_line(
         if idx in excluded_segments:
             continue
         segment = segments[idx]
-        seg_text = _get_segment_text(segment)
+        seg_text = whisper_utils._get_segment_text(segment)
         if not seg_text:
             continue
         norm_seg = _normalize_line_text(seg_text)
         text_score = SequenceMatcher(None, norm_line, norm_seg).ratio()
         if text_score < _SEGMENT_MIN_TEXT_SCORE:
             continue
-        seg_start = _segment_start(segment)
+        seg_start = whisper_utils._segment_start(segment)
         if seg_start < min_start:
             continue
         if seg_start - line.start_time > _MAX_SEGMENT_LOOKAHEAD:
@@ -1621,7 +552,7 @@ def _choose_segment_for_line(
 
 
 def _segment_word_indices(
-    all_words: List[TranscriptionWord],
+    all_words: List[timing_models.TranscriptionWord],
     word_segment_idx: Dict[int, int],
     segment_idx: int,
 ) -> List[int]:
@@ -1631,8 +562,8 @@ def _segment_word_indices(
 
 
 def _collect_unused_words_near_line(
-    all_words: List[TranscriptionWord],
-    line: Line,
+    all_words: List[timing_models.TranscriptionWord],
+    line: models.Line,
     used_indices: Set[int],
     start_idx: int,
     min_start: float = 0.0,
@@ -1657,7 +588,7 @@ def _collect_unused_words_near_line(
 
 
 def _collect_unused_words_in_window(
-    all_words: List[TranscriptionWord],
+    all_words: List[timing_models.TranscriptionWord],
     used_indices: Set[int],
     start_idx: int,
     window_start: float,
@@ -1679,48 +610,6 @@ def _collect_unused_words_in_window(
     return collected
 
 
-_SPEECH_BLOCK_GAP = 5.0  # seconds – gap between Whisper words that defines a new block
-
-
-def _compute_speech_blocks(
-    all_words: List[TranscriptionWord],
-    min_gap: float = _SPEECH_BLOCK_GAP,
-) -> List[Tuple[int, int]]:
-    """Group Whisper words into speech blocks separated by gaps >= *min_gap*.
-
-    Returns a list of ``(first_word_idx, last_word_idx)`` inclusive tuples.
-    """
-    if not all_words:
-        return []
-    blocks: List[Tuple[int, int]] = []
-    block_start = 0
-    for i in range(1, len(all_words)):
-        gap = all_words[i].start - all_words[i - 1].end
-        if gap >= min_gap:
-            blocks.append((block_start, i - 1))
-            block_start = i
-    blocks.append((block_start, len(all_words) - 1))
-    return blocks
-
-
-def _word_idx_to_block(word_idx: int, speech_blocks: List[Tuple[int, int]]) -> int:
-    """Return the speech-block index that contains *word_idx*, or -1."""
-    for i, (start, end) in enumerate(speech_blocks):
-        if start <= word_idx <= end:
-            return i
-    return -1
-
-
-def _block_time_range(
-    block_idx: int,
-    speech_blocks: List[Tuple[int, int]],
-    all_words: List[TranscriptionWord],
-) -> Tuple[float, float]:
-    """Return (start_time, end_time) for the given speech block."""
-    first, last = speech_blocks[block_idx]
-    return all_words[first].start, all_words[last].end
-
-
 _TIME_DRIFT_THRESHOLD = 0.8
 _SEGMENT_TIME_WEIGHT = 0.18
 _SEGMENT_INDEX_WEIGHT = 0.01
@@ -1730,29 +619,13 @@ _MAX_SEGMENT_LOOKAHEAD = 4.0
 _ORDER_POSITION_WEIGHT = 0.35
 
 
-def _build_word_assignments_from_syllable_path(
-    path: List[Tuple[int, int]],
-    lrc_syllables: List[Dict],
-    whisper_syllables: List[Dict],
-) -> Dict[int, List[int]]:
-    assignments: Dict[int, Set[int]] = {}
-    for lrc_idx, whisper_idx in path:
-        lrc_token = lrc_syllables[lrc_idx]
-        whisper_token = whisper_syllables[whisper_idx]
-        for word_idx in lrc_token["word_idxs"]:
-            assignments.setdefault(word_idx, set()).update(whisper_token["parent_idxs"])
-    return {
-        word_idx: sorted(list(indices)) for word_idx, indices in assignments.items()
-    }
-
-
 def _register_word_match(
     ctx: _LineMappingContext,
     line_idx: int,
-    word: "Word",
-    best_word: TranscriptionWord,
+    word: "models.Word",
+    best_word: timing_models.TranscriptionWord,
     best_idx: int,
-    candidates: List[Tuple[TranscriptionWord, int]],
+    candidates: List[Tuple[timing_models.TranscriptionWord, int]],
     line_segment: Optional[int],
     line_matches: List[Tuple[int, Tuple[float, float]]],
     line_match_intervals: Dict[int, Tuple[float, float]],
@@ -1766,7 +639,8 @@ def _register_word_match(
     ctx.mapped_count += 1
     ctx.mapped_lines_set.add(line_idx)
     best_sim = max(
-        _phonetic_similarity(word.text, ww.text, ctx.language) for ww, _ in candidates
+        phonetic_utils._phonetic_similarity(word.text, ww.text, ctx.language)
+        for ww, _ in candidates
     )
     ctx.total_similarity += best_sim
     ctx.used_word_indices.add(best_idx)
@@ -1777,7 +651,7 @@ def _register_word_match(
         ctx.current_segment = max(ctx.current_segment, line_segment)
     # Advance speech block tracker when a match lands in a later block
     if ctx.speech_blocks:
-        match_blk = _word_idx_to_block(best_idx, ctx.speech_blocks)
+        match_blk = whisper_utils._word_idx_to_block(best_idx, ctx.speech_blocks)
         if match_blk > ctx.current_block:
             ctx.current_block = match_blk
     if line_last_idx_ref[0] is None or best_idx > line_last_idx_ref[0]:
@@ -1786,13 +660,13 @@ def _register_word_match(
 
 def _select_best_candidate(
     ctx: _LineMappingContext,
-    whisper_candidates: List[Tuple[TranscriptionWord, int]],
-    word: "Word",
+    whisper_candidates: List[Tuple[timing_models.TranscriptionWord, int]],
+    word: "models.Word",
     line_shift: float,
     line_segment: Optional[int],
     line_anchor_time: float,
     lrc_idx_opt: Optional[int],
-) -> Tuple[TranscriptionWord, int]:
+) -> Tuple[timing_models.TranscriptionWord, int]:
     """Score candidates, pick the best, and apply drift fallback."""
     best_word, best_idx = min(
         whisper_candidates,
@@ -1825,7 +699,7 @@ def _select_best_candidate(
 def _filter_and_order_candidates(
     ctx: _LineMappingContext,
     candidate_indices: Set[int],
-) -> List[Tuple[TranscriptionWord, int]]:
+) -> List[Tuple[timing_models.TranscriptionWord, int]]:
     """Sort candidates by time, filter used, and prefer ordered ones.
 
     Speech-block awareness: candidates in the current block are preferred.
@@ -1861,7 +735,7 @@ def _filter_and_order_candidates(
         in_block = [
             (w, idx)
             for w, idx in whisper_candidates
-            if _word_idx_to_block(idx, ctx.speech_blocks) == cur_blk
+            if whisper_utils._word_idx_to_block(idx, ctx.speech_blocks) == cur_blk
         ]
         if in_block:
             whisper_candidates = in_block
@@ -1871,7 +745,7 @@ def _filter_and_order_candidates(
             in_next = [
                 (w, idx)
                 for w, idx in whisper_candidates
-                if _word_idx_to_block(idx, ctx.speech_blocks) == next_blk
+                if whisper_utils._word_idx_to_block(idx, ctx.speech_blocks) == next_blk
             ]
             if in_next:
                 whisper_candidates = in_next
@@ -1881,7 +755,7 @@ def _filter_and_order_candidates(
 
 def _prepare_line_context(
     ctx: _LineMappingContext,
-    line: "Line",
+    line: "models.Line",
 ) -> Tuple[Optional[int], float, float]:
     """Determine segment, anchor time, and shift for a line."""
     line_segment = _choose_segment_for_line(
@@ -1901,7 +775,8 @@ def _prepare_line_context(
     if (
         line_segment is not None
         and ctx.segments
-        and _segment_start(ctx.segments[line_segment]) < ctx.last_line_start
+        and whisper_utils._segment_start(ctx.segments[line_segment])
+        < ctx.last_line_start
     ):
         line_segment = None
     line_anchor_time = max(line.start_time, ctx.last_line_start, ctx.prev_line_end)
@@ -1912,7 +787,7 @@ def _prepare_line_context(
 def _match_assigned_words(
     ctx: _LineMappingContext,
     line_idx: int,
-    line: "Line",
+    line: "models.Line",
     lrc_index_by_loc: Dict[Tuple[int, int], int],
     lrc_assignments: Dict[int, List[int]],
     line_segment: Optional[int],
@@ -1976,7 +851,7 @@ def _match_assigned_words(
 def _fill_unmatched_gaps(
     ctx: _LineMappingContext,
     line_idx: int,
-    line: "Line",
+    line: "models.Line",
     lrc_index_by_loc: Dict[Tuple[int, int], int],
     lrc_assignments: Dict[int, List[int]],
     line_segment: Optional[int],
@@ -2010,7 +885,7 @@ def _fill_unmatched_gaps(
         window_end = gap_end + 0.25
         # Clip window to current speech block so we don't reach across silence
         if ctx.speech_blocks and ctx.current_block < len(ctx.speech_blocks):
-            blk_start_t, blk_end_t = _block_time_range(
+            blk_start_t, blk_end_t = whisper_utils._block_time_range(
                 ctx.current_block, ctx.speech_blocks, ctx.all_words
             )
             window_start = max(window_start, blk_start_t - 0.25)
@@ -2057,7 +932,7 @@ def _fill_unmatched_gaps(
             in_block = [
                 (w, idx)
                 for w, idx in whisper_candidates
-                if _word_idx_to_block(idx, ctx.speech_blocks) == cur_blk
+                if whisper_utils._word_idx_to_block(idx, ctx.speech_blocks) == cur_blk
             ]
             if in_block:
                 whisper_candidates = in_block
@@ -2065,7 +940,8 @@ def _fill_unmatched_gaps(
                 in_next = [
                     (w, idx)
                     for w, idx in whisper_candidates
-                    if _word_idx_to_block(idx, ctx.speech_blocks) == cur_blk + 1
+                    if whisper_utils._word_idx_to_block(idx, ctx.speech_blocks)
+                    == cur_blk + 1
                 ]
                 if in_next:
                     whisper_candidates = in_next
@@ -2096,7 +972,7 @@ def _fill_unmatched_gaps(
 
 
 def _compute_gap_window(
-    line: "Line",
+    line: "models.Line",
     word_idx: int,
     line_match_intervals: Dict[int, Tuple[float, float]],
     prev_line_end: float,
@@ -2117,17 +993,17 @@ def _compute_gap_window(
 def _assemble_mapped_line(
     ctx: _LineMappingContext,
     line_idx: int,
-    line: "Line",
+    line: "models.Line",
     line_matches: List[Tuple[int, Tuple[float, float]]],
     line_match_intervals: Dict[int, Tuple[float, float]],
     line_anchor_time: float,
     line_segment: Optional[int],
     line_last_idx_ref: List[Optional[int]],
-) -> "Line":
-    """Build a mapped Line from match intervals and update tracking state."""
-    from .models import Line as LineModel, Word
+) -> "models.Line":
+    """Build a mapped models.Line from match intervals and update tracking state."""
+    from .models import Line as LineModel
 
-    mapped_words: List[Word] = []
+    mapped_words: List[models.Word] = []
     for word_idx, word in enumerate(line.words):
         interval = line_match_intervals.get(word_idx)
         if interval:
@@ -2135,7 +1011,7 @@ def _assemble_mapped_line(
         else:
             start, end = word.start_time, word.end_time
         mapped_words.append(
-            Word(
+            models.Word(
                 text=word.text,
                 start_time=start,
                 end_time=end,
@@ -2179,16 +1055,16 @@ def _assemble_mapped_line(
 
 
 def _map_lrc_words_to_whisper(
-    lines: List[Line],
+    lines: List[models.Line],
     lrc_words: List[Dict],
-    all_words: List[TranscriptionWord],
+    all_words: List[timing_models.TranscriptionWord],
     lrc_assignments: Dict[int, List[int]],
     language: str,
     segments: Sequence[Any],
-) -> Tuple[List[Line], int, float, set]:
+) -> Tuple[List[models.Line], int, float, set]:
     """Build mapped lines using Whisper timings based on LRC assignments."""
     segments = segments or []
-    speech_blocks = _compute_speech_blocks(all_words)
+    speech_blocks = whisper_utils._compute_speech_blocks(all_words)
     if speech_blocks:
         logger.debug(
             "Speech blocks: %d (gaps >= %.1fs)",
@@ -2207,7 +1083,7 @@ def _map_lrc_words_to_whisper(
     lrc_index_by_loc = {
         (lw["line_idx"], lw["word_idx"]): idx for idx, lw in enumerate(lrc_words)
     }
-    mapped_lines: List[Line] = []
+    mapped_lines: List[models.Line] = []
 
     for line_idx, line in enumerate(lines):
         if not line.words:
@@ -2234,7 +1110,7 @@ def _map_lrc_words_to_whisper(
             if line_segment != override_seg:
                 line_segment = override_seg
                 if ctx.segments and override_seg < len(ctx.segments):
-                    seg_start = _segment_start(ctx.segments[override_seg])
+                    seg_start = whisper_utils._segment_start(ctx.segments[override_seg])
                     line_anchor_time = max(seg_start, ctx.prev_line_end)
                     line_shift = line_anchor_time - line.start_time
 
@@ -2302,13 +1178,12 @@ def _build_word_assignments_from_phoneme_path(
 
 
 def _shift_repeated_lines_to_next_whisper(
-    mapped_lines: List[Line],
-    all_words: List[TranscriptionWord],
-) -> List[Line]:
+    mapped_lines: List[models.Line],
+    all_words: List[timing_models.TranscriptionWord],
+) -> List[models.Line]:
     """Ensure repeated lines reserve later Whisper words when they reappear."""
-    from .models import Line, Word
 
-    adjusted_lines: List[Line] = []
+    adjusted_lines: List[models.Line] = []
     last_idx_by_text: Dict[str, int] = {}
     last_end_time: Dict[str, float] = {}
 
@@ -2344,19 +1219,19 @@ def _shift_repeated_lines_to_next_whisper(
             if start_idx is not None and (all_words[start_idx].start - prev_end > 10.0):
                 start_idx = None
             if start_idx is not None:
-                adjusted_words: List[Word] = []
+                adjusted_words: List[models.Word] = []
                 for word_idx, w in enumerate(line.words):
                     new_idx = min(start_idx + word_idx, len(all_words) - 1)
                     ww = all_words[new_idx]
                     adjusted_words.append(
-                        Word(
+                        models.Word(
                             text=w.text,
                             start_time=ww.start,
                             end_time=ww.end,
                             singer=w.singer,
                         )
                     )
-                line = Line(words=adjusted_words, singer=line.singer)
+                line = models.Line(words=adjusted_words, singer=line.singer)
                 assigned_end_idx = min(
                     start_idx + len(line.words) - 1, len(all_words) - 1
                 )
@@ -2379,15 +1254,14 @@ def _shift_repeated_lines_to_next_whisper(
 
 
 def _enforce_monotonic_line_starts_whisper(
-    mapped_lines: List[Line],
-    all_words: List[TranscriptionWord],
-) -> List[Line]:
+    mapped_lines: List[models.Line],
+    all_words: List[timing_models.TranscriptionWord],
+) -> List[models.Line]:
     """Ensure line starts are monotonic by shifting backwards lines forward."""
-    from .models import Line, Word
 
     prev_start = None
     prev_end = None
-    monotonic_lines: List[Line] = []
+    monotonic_lines: List[models.Line] = []
     for line in mapped_lines:
         if not line.words:
             monotonic_lines.append(line)
@@ -2405,23 +1279,23 @@ def _enforce_monotonic_line_starts_whisper(
             if start_idx is not None and (
                 all_words[start_idx].start - required_time <= 10.0
             ):
-                adjusted_words_2: List[Word] = []
+                adjusted_words_2: List[models.Word] = []
                 for word_idx, w in enumerate(line.words):
                     new_idx = min(start_idx + word_idx, len(all_words) - 1)
                     ww = all_words[new_idx]
                     adjusted_words_2.append(
-                        Word(
+                        models.Word(
                             text=w.text,
                             start_time=ww.start,
                             end_time=ww.end,
                             singer=w.singer,
                         )
                     )
-                line = Line(words=adjusted_words_2, singer=line.singer)
+                line = models.Line(words=adjusted_words_2, singer=line.singer)
             else:
                 shift = required_time - line.start_time
-                shifted_words: List[Word] = [
-                    Word(
+                shifted_words: List[models.Word] = [
+                    models.Word(
                         text=w.text,
                         start_time=w.start_time + shift,
                         end_time=w.end_time + shift,
@@ -2429,7 +1303,7 @@ def _enforce_monotonic_line_starts_whisper(
                     )
                     for w in line.words
                 ]
-                line = Line(words=shifted_words, singer=line.singer)
+                line = models.Line(words=shifted_words, singer=line.singer)
 
         monotonic_lines.append(line)
         if line.words:
@@ -2439,15 +1313,15 @@ def _enforce_monotonic_line_starts_whisper(
     return monotonic_lines
 
 
-def _resolve_line_overlaps(lines: List[Line]) -> List[Line]:
+def _resolve_line_overlaps(lines: List[models.Line]) -> List[models.Line]:
     """Ensure consecutive lines never overlap in time.
 
     When line *i* ends after line *i+1* starts, the last word of line *i* is
     trimmed so that line *i* ends exactly when line *i+1* begins.
     """
-    from .models import Line as LineModel, Word
+    from .models import Line as LineModel
 
-    resolved: List[Line] = list(lines)
+    resolved: List[models.Line] = list(lines)
     for i in range(len(resolved) - 1):
         cur = resolved[i]
         nxt = resolved[i + 1]
@@ -2456,12 +1330,12 @@ def _resolve_line_overlaps(lines: List[Line]) -> List[Line]:
         if cur.end_time > nxt.start_time:
             gap_point = nxt.start_time
             # Trim the current line's last word(s) so it ends at gap_point
-            new_words: List[Word] = []
+            new_words: List[models.Word] = []
             for w in cur.words:
                 if w.start_time >= gap_point:
                     # This word starts at or after the next line – shrink it
                     new_words.append(
-                        Word(
+                        models.Word(
                             text=w.text,
                             start_time=gap_point - 0.01,
                             end_time=gap_point,
@@ -2470,7 +1344,7 @@ def _resolve_line_overlaps(lines: List[Line]) -> List[Line]:
                     )
                 elif w.end_time > gap_point:
                     new_words.append(
-                        Word(
+                        models.Word(
                             text=w.text,
                             start_time=w.start_time,
                             end_time=gap_point,
@@ -2484,18 +1358,18 @@ def _resolve_line_overlaps(lines: List[Line]) -> List[Line]:
 
 
 def align_lrc_text_to_whisper_timings(  # noqa: C901
-    lines: List[Line],
+    lines: List[models.Line],
     vocals_path: str,
     language: Optional[str] = None,
     model_size: str = "base",
     aggressive: bool = False,
     temperature: float = 0.0,
     min_similarity: float = 0.15,
-    audio_features: Optional[AudioFeatures] = None,
+    audio_features: Optional[timing_models.AudioFeatures] = None,
     lenient_vocal_activity_threshold: float = 0.3,
     lenient_activity_bonus: float = 0.4,
     low_word_confidence_threshold: float = 0.5,
-) -> Tuple[List[Line], List[str], Dict[str, float]]:
+) -> Tuple[List[models.Line], List[str], Dict[str, float]]:
     """Align LRC text to Whisper timings using phonetic DTW (timings fixed).
 
     This maps each LRC word onto a Whisper word timestamp without changing
@@ -2534,7 +1408,7 @@ def align_lrc_text_to_whisper_timings(  # noqa: C901
 
     all_words = _dedupe_whisper_words(all_words)
 
-    epitran_lang = _whisper_lang_to_epitran(detected_lang)
+    epitran_lang = phonetic_utils._whisper_lang_to_epitran(detected_lang)
     logger.debug(
         f"Using epitran language: {epitran_lang} (from Whisper: {detected_lang})"
     )
@@ -2547,9 +1421,9 @@ def align_lrc_text_to_whisper_timings(  # noqa: C901
         f"DTW-phonetic: Pre-computing IPA for {len(all_words)} Whisper words..."
     )
     for ww in all_words:
-        _get_ipa(ww.text, epitran_lang)
+        phonetic_utils._get_ipa(ww.text, epitran_lang)
     for lw in lrc_words:
-        _get_ipa(lw["text"], epitran_lang)
+        phonetic_utils._get_ipa(lw["text"], epitran_lang)
 
     logger.debug(
         f"DTW-phonetic: Preparing phoneme sequences for {len(lrc_words)} lyrics "
@@ -2563,7 +1437,7 @@ def align_lrc_text_to_whisper_timings(  # noqa: C901
 
     # Use segment-level text overlap for robust line→segment mapping,
     # then fall back to syllable DTW only if segment overlap is poor.
-    lrc_assignments = _build_segment_text_overlap_assignments(
+    lrc_assignments = whisper_blocks._build_segment_text_overlap_assignments(
         lrc_words,
         all_words,
         transcription,
@@ -2587,12 +1461,14 @@ def align_lrc_text_to_whisper_timings(  # noqa: C901
                 path, lrc_phonemes, whisper_phonemes
             )
         else:
-            lrc_assignments = _build_block_segmented_syllable_assignments(
-                lrc_words,
-                all_words,
-                lrc_syllables,
-                whisper_syllables,
-                epitran_lang,
+            lrc_assignments = (
+                whisper_blocks._build_block_segmented_syllable_assignments(
+                    lrc_words,
+                    all_words,
+                    lrc_syllables,
+                    whisper_syllables,
+                    epitran_lang,
+                )
             )
 
     # Build mapped lines with whisper timings
@@ -2649,9 +1525,9 @@ def align_lrc_text_to_whisper_timings(  # noqa: C901
 
 
 def _compute_dtw_alignment_metrics(
-    lines: List[Line],
+    lines: List[models.Line],
     lrc_words: List[Dict],
-    alignments_map: Dict[int, Tuple[TranscriptionWord, float]],
+    alignments_map: Dict[int, Tuple[timing_models.TranscriptionWord, float]],
 ) -> Dict[str, float]:
     if not lrc_words:
         return {"matched_ratio": 0.0, "avg_similarity": 0.0, "line_coverage": 0.0}
@@ -2680,18 +1556,18 @@ def _compute_dtw_alignment_metrics(
 
 
 def _retime_lines_from_dtw_alignments(
-    lines: List[Line],
+    lines: List[models.Line],
     lrc_words: List[Dict],
-    alignments_map: Dict[int, Tuple[TranscriptionWord, float]],
+    alignments_map: Dict[int, Tuple[timing_models.TranscriptionWord, float]],
     min_word_duration: float = 0.05,
-) -> Tuple[List[Line], List[str]]:
+) -> Tuple[List[models.Line], List[str]]:
 
-    aligned_by_line: Dict[int, List[Tuple[int, TranscriptionWord]]] = {}
+    aligned_by_line: Dict[int, List[Tuple[int, timing_models.TranscriptionWord]]] = {}
     for lrc_idx, (ww, _sim) in alignments_map.items():
         lw = lrc_words[lrc_idx]
         aligned_by_line.setdefault(lw["line_idx"], []).append((lw["word_idx"], ww))
 
-    retimed_lines: List[Line] = []
+    retimed_lines: List[models.Line] = []
     corrections: List[str] = []
 
     for line_idx, line in enumerate(lines):
@@ -2720,15 +1596,14 @@ def _retime_lines_from_dtw_alignments(
 
 
 def _redistribute_word_timings_to_line(
-    line: Line,
+    line: models.Line,
     matches: List[Tuple[int, Tuple[float, float]]],
     target_duration: float,
     min_word_duration: float,
     line_start: Optional[float] = None,
     max_gap: float = 0.4,
-) -> Line:
+) -> models.Line:
     """Redistribute word timings based on Whisper durations within the line."""
-    from .models import Line, Word
 
     if not line.words:
         return line
@@ -2765,7 +1640,7 @@ def _redistribute_word_timings_to_line(
     durations = _cap_word_durations(durations, target_duration, max_word_duration)
 
     current = line_start if line_start is not None else line.start_time
-    new_words: List[Word] = []
+    new_words: List[models.Word] = []
     for idx, word in enumerate(line.words):
         duration = durations[idx]
         start_time = current
@@ -2775,7 +1650,7 @@ def _redistribute_word_timings_to_line(
             if end_time <= start_time:
                 end_time = start_time + max(min_word_duration, 0.01)
         new_words.append(
-            Word(
+            models.Word(
                 text=word.text,
                 start_time=start_time,
                 end_time=end_time,
@@ -2785,7 +1660,7 @@ def _redistribute_word_timings_to_line(
         current = end_time
 
     adjusted_words = _clamp_word_gaps(new_words, max_gap)
-    clamped_line = Line(words=adjusted_words, singer=line.singer)
+    clamped_line = models.Line(words=adjusted_words, singer=line.singer)
     scaled_line = _scale_line_to_duration(
         clamped_line,
         target_duration=target_duration,
@@ -2793,7 +1668,7 @@ def _redistribute_word_timings_to_line(
     target_start = line_start if line_start is not None else scaled_line.start_time
     offset = target_start - scaled_line.start_time
     adjusted_scaled_words = [
-        Word(
+        models.Word(
             text=w.text,
             start_time=w.start_time + offset,
             end_time=w.end_time + offset,
@@ -2801,16 +1676,16 @@ def _redistribute_word_timings_to_line(
         )
         for w in scaled_line.words
     ]
-    return Line(words=adjusted_scaled_words, singer=line.singer)
+    return models.Line(words=adjusted_scaled_words, singer=line.singer)
 
 
-def _clamp_word_gaps(words: List[Word], max_gap: float) -> List[Word]:
+def _clamp_word_gaps(words: List[models.Word], max_gap: float) -> List[models.Word]:
     if not words or max_gap is None:
         return words
-    adjusted: List[Word] = []
+    adjusted: List[models.Word] = []
     total_shift = 0.0
     adjusted.append(
-        Word(
+        models.Word(
             text=words[0].text,
             start_time=words[0].start_time,
             end_time=words[0].end_time,
@@ -2829,7 +1704,7 @@ def _clamp_word_gaps(words: List[Word], max_gap: float) -> List[Word]:
         new_start = shifted_start - shift
         new_end = new_start + duration
         adjusted.append(
-            Word(
+            models.Word(
                 text=current.text,
                 start_time=new_start,
                 end_time=new_end,
@@ -2857,21 +1732,21 @@ def _cap_word_durations(
 
 
 def _align_dtw_whisper_with_data(
-    lines: List[Line],
-    whisper_words: List[TranscriptionWord],
+    lines: List[models.Line],
+    whisper_words: List[timing_models.TranscriptionWord],
     language: str = "fra-Latn",
     min_similarity: float = 0.4,
     silence_regions: Optional[List[Tuple[float, float]]] = None,
-    audio_features: Optional[AudioFeatures] = None,
+    audio_features: Optional[timing_models.AudioFeatures] = None,
     lenient_vocal_activity_threshold: float = 0.3,
     lenient_activity_bonus: float = 0.4,
     low_word_confidence_threshold: float = 0.5,
 ) -> Tuple[
-    List[Line],
+    List[models.Line],
     List[str],
     Dict[str, float],
     List[Dict],
-    Dict[int, Tuple[TranscriptionWord, float]],
+    Dict[int, Tuple[timing_models.TranscriptionWord, float]],
 ]:
     """Align LRC to Whisper using DTW and return alignment data for confidence gating."""
     if not lines or not whisper_words:
@@ -2888,7 +1763,7 @@ def _align_dtw_whisper_with_data(
             whisper_words, audio_features, lenient_vocal_activity_threshold
         )
 
-    lrc_words = _extract_lrc_words(lines)
+    lrc_words = whisper_phonetic_dtw._extract_lrc_words(lines)
     if not lrc_words:
         return (
             lines,
@@ -2901,14 +1776,14 @@ def _align_dtw_whisper_with_data(
     # Pre-compute IPA
     logger.debug(f"DTW: Pre-computing IPA for {len(whisper_words)} Whisper words...")
     for ww in whisper_words:
-        _get_ipa(ww.text, language)
+        phonetic_utils._get_ipa(ww.text, language)
     for lw in lrc_words:
-        _get_ipa(lw["text"], language)
+        phonetic_utils._get_ipa(lw["text"], language)
 
     logger.debug(
         f"DTW: Building cost matrix ({len(lrc_words)} x {len(whisper_words)})..."
     )
-    phonetic_costs = _compute_phonetic_costs(
+    phonetic_costs = whisper_phonetic_dtw._compute_phonetic_costs(
         lrc_words, whisper_words, language, min_similarity
     )
 
@@ -2993,11 +1868,11 @@ def _align_dtw_whisper_with_data(
 
 
 def align_dtw_whisper(
-    lines: List[Line],
-    whisper_words: List[TranscriptionWord],
+    lines: List[models.Line],
+    whisper_words: List[timing_models.TranscriptionWord],
     language: str = "fra-Latn",
     min_similarity: float = 0.4,
-) -> Tuple[List[Line], List[str], Dict[str, float]]:
+) -> Tuple[List[models.Line], List[str], Dict[str, float]]:
     """Align LRC to Whisper using Dynamic Time Warping."""
     lrc_words = _extract_lrc_words_base(lines)
     if not lrc_words:
@@ -3009,9 +1884,9 @@ def align_dtw_whisper(
 
     # Pre-compute IPA
     for ww in whisper_words:
-        _get_ipa(ww.text, language)
+        phonetic_utils._get_ipa(ww.text, language)
     for lw in lrc_words:
-        _get_ipa(lw["text"], language)
+        phonetic_utils._get_ipa(lw["text"], language)
 
     phonetic_costs = _compute_phonetic_costs_base(
         lrc_words, whisper_words, language, min_similarity
@@ -3056,7 +1931,7 @@ def align_dtw_whisper(
 
 
 def correct_timing_with_whisper(  # noqa: C901
-    lines: List[Line],
+    lines: List[models.Line],
     vocals_path: str,
     language: Optional[str] = None,
     model_size: str = "base",
@@ -3065,11 +1940,11 @@ def correct_timing_with_whisper(  # noqa: C901
     trust_lrc_threshold: float = 1.0,
     correct_lrc_threshold: float = 1.5,
     force_dtw: bool = False,
-    audio_features: Optional[AudioFeatures] = None,
+    audio_features: Optional[timing_models.AudioFeatures] = None,
     lenient_vocal_activity_threshold: float = 0.3,
     lenient_activity_bonus: float = 0.4,
     low_word_confidence_threshold: float = 0.5,
-) -> Tuple[List[Line], List[str], Dict[str, float]]:
+) -> Tuple[List[models.Line], List[str], Dict[str, float]]:
     """Correct lyrics timing using Whisper transcription (adaptive approach).
 
     Strategy:
@@ -3128,7 +2003,7 @@ def correct_timing_with_whisper(  # noqa: C901
             transcription = filled_segments
 
     # Map to epitran language code for phonetic matching
-    epitran_lang = _whisper_lang_to_epitran(detected_lang)
+    epitran_lang = phonetic_utils._whisper_lang_to_epitran(detected_lang)
     logger.debug(
         f"Using epitran language: {epitran_lang} (from Whisper: {detected_lang})"
     )
@@ -3136,7 +2011,7 @@ def correct_timing_with_whisper(  # noqa: C901
     # Pre-compute IPA for Whisper words
     logger.debug(f"Pre-computing IPA for {len(all_words)} Whisper words...")
     for w in all_words:
-        _get_ipa(w.text, epitran_lang)
+        phonetic_utils._get_ipa(w.text, epitran_lang)
 
     # Assess LRC quality
     quality, assessments = _assess_lrc_quality(
@@ -3273,7 +2148,7 @@ def correct_timing_with_whisper(  # noqa: C901
             alignments.append(f"Pulled {pulled} line(s) to Whisper segments")
 
     # Post-process: reject corrections that break line ordering
-    aligned_lines, alignments = _fix_ordering_violations(
+    aligned_lines, alignments = whisper_alignment._fix_ordering_violations(
         lines, aligned_lines, alignments
     )
     aligned_lines = _normalize_line_word_timings(aligned_lines)

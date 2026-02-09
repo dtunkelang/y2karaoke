@@ -3,11 +3,13 @@ from y2karaoke.core.models import Line, Word
 import y2karaoke.core.whisper_integration as wi
 from y2karaoke.core.timing_models import TranscriptionWord, TranscriptionSegment
 
+
 def test_whisper_lang_to_epitran():
     assert wi._whisper_lang_to_epitran("en") == "eng-Latn"
     assert wi._whisper_lang_to_epitran("fr") == "fra-Latn"
     assert wi._whisper_lang_to_epitran("zh") == "cmn-Hans"
     assert wi._whisper_lang_to_epitran("unknown") == "eng-Latn"
+
 
 def test_assess_lrc_quality():
     lines = [
