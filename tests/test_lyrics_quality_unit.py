@@ -186,9 +186,7 @@ def test_get_lyrics_simple_whisper_map_lrc(monkeypatch):
     monkeypatch.setattr(lw, "_fetch_lrc_text_and_timings", fake_fetch)
     monkeypatch.setattr(lh, "_detect_and_apply_offset", lambda v, t, o: (t, 0.0))
     monkeypatch.setattr(lw, "create_lines_from_lrc", lambda *a, **k: lrc_lines)
-    monkeypatch.setattr(
-        lh, "_refine_timing_with_audio", lambda lines, *_a, **_k: lines
-    )
+    monkeypatch.setattr(lh, "_refine_timing_with_audio", lambda lines, *_a, **_k: lines)
 
     word = te.TranscriptionWord(start=2.0, end=2.4, text="bonjour", probability=0.9)
     segment = te.TranscriptionSegment(start=2.0, end=2.6, text="bonjour", words=[word])
@@ -197,9 +195,7 @@ def test_get_lyrics_simple_whisper_map_lrc(monkeypatch):
     )
     monkeypatch.setattr(te, "_whisper_lang_to_epitran", lambda *_a, **_k: "fra-Latn")
 
-    monkeypatch.setattr(
-        "y2karaoke.core.alignment.detect_song_start", lambda *_: 0.0
-    )
+    monkeypatch.setattr("y2karaoke.core.alignment.detect_song_start", lambda *_: 0.0)
     lines, _ = lw.get_lyrics_simple(
         title="Song",
         artist="Artist",

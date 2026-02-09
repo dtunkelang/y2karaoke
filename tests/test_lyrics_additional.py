@@ -250,9 +250,7 @@ def test_get_lyrics_with_quality_fallback_to_genius(monkeypatch):
             SongMetadata(singers=["Singer"], is_duet=False),
         ),
     )
-    monkeypatch.setattr(
-        lw, "create_lines_from_lrc", lambda *a, **k: [_line("Hello")]
-    )
+    monkeypatch.setattr(lw, "create_lines_from_lrc", lambda *a, **k: [_line("Hello")])
 
     lines, meta, report = lw.get_lyrics_with_quality(
         "Title",

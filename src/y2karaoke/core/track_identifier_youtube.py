@@ -10,6 +10,7 @@ from .text_utils import normalize_title
 
 if TYPE_CHECKING:
     from .track_identifier_parser import QueryParser
+
     _Base = QueryParser
 else:
     _Base = object

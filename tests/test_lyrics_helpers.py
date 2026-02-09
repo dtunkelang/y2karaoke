@@ -87,7 +87,9 @@ def test_apply_timing_to_lines():
 
 def test_romanize_lines_only_non_ascii(monkeypatch):
     line = _line_with_words(["hello", "café"])
-    monkeypatch.setattr("y2karaoke.core.lyrics_helpers.romanize_line", lambda text: "cafe")
+    monkeypatch.setattr(
+        "y2karaoke.core.lyrics_helpers.romanize_line", lambda text: "cafe"
+    )
 
     lh._romanize_lines([line])
 
