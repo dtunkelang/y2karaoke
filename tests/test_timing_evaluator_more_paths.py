@@ -1,8 +1,6 @@
 import sys
 import types
 
-import numpy as np
-
 import y2karaoke.core.timing_evaluator as te
 import y2karaoke.core.whisper_integration as wi
 from y2karaoke.core.models import Line, Word
@@ -90,6 +88,7 @@ def test_find_best_whisper_segment_picks_highest_similarity(monkeypatch):
 
     monkeypatch.setattr(wi, "_phonetic_similarity", fake_similarity)
     import y2karaoke.core.whisper_alignment as wa
+
     monkeypatch.setattr(wa, "_phonetic_similarity", fake_similarity)
 
     best_segment, similarity, offset = wi._find_best_whisper_segment(
