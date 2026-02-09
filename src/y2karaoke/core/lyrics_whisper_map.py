@@ -3,13 +3,14 @@
 import logging
 import re
 from statistics import median
-from typing import List, Optional, Tuple, Dict, Any
+from typing import List, Optional, Tuple
 
 from .models import Line, Word
 from .timing_models import TranscriptionSegment, TranscriptionWord
 from .phonetic_utils import _phonetic_similarity
 
 logger = logging.getLogger(__name__)
+
 
 def _norm_token(text: str) -> str:
     text = text.lower().strip()

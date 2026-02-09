@@ -13,6 +13,7 @@ from .lrc import (
 
 logger = logging.getLogger(__name__)
 
+
 def _estimate_singing_duration(text: str, word_count: int) -> float:
     """
     Estimate how long it takes to sing a line based on text content.

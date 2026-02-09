@@ -2,11 +2,12 @@
 
 import re
 import musicbrainzngs
-from typing import Optional, List, Dict, Any, Tuple
+from typing import Optional, List, Dict
 from ..utils.logging import get_logger
 from .text_utils import normalize_title
 
 logger = get_logger(__name__)
+
 
 class QueryParser:
     """Handles parsing track metadata from queries and titles."""

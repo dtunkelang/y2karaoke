@@ -2,12 +2,13 @@
 
 import re
 from collections import Counter
-from typing import Optional, List, Dict, Any, Tuple
+from typing import Optional, List, Dict
 import musicbrainzngs
 from ..utils.logging import get_logger
-from .text_utils import STOP_WORDS, normalize_title
+from .text_utils import normalize_title
 
 logger = get_logger(__name__)
+
 
 # Initialize MusicBrainz
 musicbrainzngs.set_useragent(

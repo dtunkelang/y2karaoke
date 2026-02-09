@@ -9,6 +9,7 @@ from .models import TrackInfo
 
 logger = get_logger(__name__)
 
+
 class YouTubeSearcher:
     """Handles searching YouTube and extracting track metadata."""
     
@@ -556,7 +557,6 @@ class YouTubeSearcher:
     def _get_cached_youtube_metadata(self, url: str) -> Optional[tuple[str, str, int]]:
         """Fallback to cached metadata/audio when YouTube is unreachable."""
         try:
-            import json
             import wave
 
             from ..config import get_cache_dir

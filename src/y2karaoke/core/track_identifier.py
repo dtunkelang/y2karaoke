@@ -11,13 +11,23 @@ import musicbrainzngs
 
 from ..utils.logging import get_logger
 from ..exceptions import Y2KaraokeError
-from .text_utils import STOP_WORDS, normalize_title
+from .text_utils import normalize_title
 from .models import TrackInfo
 from .track_identifier_youtube import YouTubeSearcher
 from .track_identifier_musicbrainz import MusicBrainzClient
 from .track_identifier_parser import QueryParser
 
 logger = get_logger(__name__)
+
+__all__ = [
+    "TrackIdentifier",
+    "TrackInfo",
+    "YouTubeSearcher",
+    "MusicBrainzClient",
+    "QueryParser",
+    "normalize_title",
+    "Y2KaraokeError",
+]
 
 
 class TrackIdentifier(YouTubeSearcher, MusicBrainzClient, QueryParser):

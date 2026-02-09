@@ -2,7 +2,7 @@
 
 import logging
 from pathlib import Path
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, Dict, Any
 
 from .models import Line, SongMetadata
 from .lrc import (
@@ -19,9 +19,10 @@ from .lyrics_helpers import (
     _apply_whisper_alignment,
     _create_no_lyrics_placeholder,
     _load_lyrics_file,
+    _extract_text_lines_from_lrc,
+    _create_lines_from_plain_text,
 )
-from .lyrics_whisper_map import *  # noqa: F401, F403
-from .lyrics_whisper_map import (  # noqa: F401
+from .lyrics_whisper_map import (
     _norm_token,
     _build_whisper_word_list,
     _select_window_sequence,
@@ -41,6 +42,9 @@ from .lyrics_whisper_map import (  # noqa: F401
 )
 
 logger = logging.getLogger(__name__)
+
+__all__ = ["get_lyrics_simple", "get_lyrics_with_quality"]
+
 
 def _apply_singer_info(
     lines: List[Line],
@@ -483,8 +487,11 @@ def get_lyrics_simple(  # noqa: C901
                     )
                     if transcription:
                         lang = _whisper_lang_to_epitran(detected_lang)
+                        lrc_starts = (
+                            [ts for ts, _ in line_timings] if line_timings else None
+                        )
                         lines, mapped, issues = _map_lrc_lines_to_whisper_segments(
-                            lines, transcription, lang
+                            lines, transcription, lang, lrc_line_starts=lrc_starts
                         )
                         if mapped:
                             logger.info(
@@ -908,5 +915,3 @@ def _apply_whisper_with_quality(
         logger.warning(f"Whisper alignment failed: {e}")
         quality_report["issues"].append(f"Whisper alignment failed: {e}")
     return lines, quality_report
-
-

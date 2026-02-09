@@ -1,7 +1,6 @@
 """Whisper-based transcription and alignment for lyrics."""
 
 import json
-import logging
 import re
 from dataclasses import dataclass, field
 from typing import List, Optional, Tuple, Dict, Any, Set, Sequence, Iterable
