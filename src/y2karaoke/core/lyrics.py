@@ -190,3 +190,4 @@ def get_lyrics(
         vocals_path=vocals_path,
         cache_dir=cache_dir,
     )
+

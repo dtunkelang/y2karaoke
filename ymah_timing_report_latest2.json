@@ -1,0 +1,6602 @@
+{
+  "title": "Young Man in America",
+  "artist": "Anais Mitchell",
+  "lyrics_source": "lyrics_file:ymah-lyrics.txt",
+  "alignment_method": "whisper_hybrid",
+  "whisper_requested": true,
+  "whisper_force_dtw": false,
+  "whisper_used": true,
+  "whisper_corrections": 1,
+  "issues": [
+    "8 line(s) had low Whisper confidence"
+  ],
+  "dtw_metrics": {
+    "matched_ratio": 0.8328358208955224,
+    "word_coverage": 0.8328358208955224,
+    "avg_similarity": 0.8893721225508863,
+    "line_coverage": 0.9242424242424242,
+    "dtw_used": 1.0,
+    "dtw_mode": 1.0,
+    "whisper_model": "large"
+  },
+  "line_count": 66,
+  "lines": [
+    {
+      "index": 1,
+      "start": 23.52,
+      "end": 26.14,
+      "text": "My mother gave a mighty shout",
+      "words": [
+        {
+          "text": "My",
+          "start": 23.52,
+          "end": 24.2
+        },
+        {
+          "text": "mother",
+          "start": 24.2,
+          "end": 24.6
+        },
+        {
+          "text": "gave",
+          "start": 24.6,
+          "end": 24.98
+        },
+        {
+          "text": "a",
+          "start": 24.98,
+          "end": 25.36
+        },
+        {
+          "text": "mighty",
+          "start": 25.36,
+          "end": 25.64
+        },
+        {
+          "text": "shout",
+          "start": 25.64,
+          "end": 26.14
+        }
+      ],
+      "word_slots": [
+        0.68,
+        0.4,
+        0.38,
+        0.38,
+        0.28,
+        0.5
+      ],
+      "word_spoken": [
+        0.68,
+        0.4,
+        0.38,
+        0.38,
+        0.28,
+        0.5
+      ],
+      "whisper_window_start": 22.52,
+      "whisper_window_end": 26.14,
+      "whisper_window_word_count": 6,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.926,
+      "whisper_window_words": [
+        {
+          "text": "My",
+          "start": 23.52,
+          "end": 24.2,
+          "probability": 0.674
+        },
+        {
+          "text": "mother",
+          "start": 24.2,
+          "end": 24.6,
+          "probability": 0.941
+        },
+        {
+          "text": "gave",
+          "start": 24.6,
+          "end": 24.98,
+          "probability": 0.997
+        },
+        {
+          "text": "a",
+          "start": 24.98,
+          "end": 25.36,
+          "probability": 0.959
+        },
+        {
+          "text": "mighty",
+          "start": 25.36,
+          "end": 25.64,
+          "probability": 0.999
+        },
+        {
+          "text": "shout",
+          "start": 25.64,
+          "end": 26.14,
+          "probability": 0.986
+        }
+      ],
+      "whisper_line_start_delta": 0.0
+    },
+    {
+      "index": 2,
+      "start": 26.14,
+      "end": 28.38,
+      "text": "Opened her legs and let me out",
+      "words": [
+        {
+          "text": "Opened",
+          "start": 26.14,
+          "end": 27.215
+        },
+        {
+          "text": "her",
+          "start": 27.215,
+          "end": 27.265
+        },
+        {
+          "text": "legs",
+          "start": 27.265,
+          "end": 27.603
+        },
+        {
+          "text": "and",
+          "start": 27.603,
+          "end": 27.803
+        },
+        {
+          "text": "let",
+          "start": 27.803,
+          "end": 27.922
+        },
+        {
+          "text": "me",
+          "start": 27.922,
+          "end": 28.101
+        },
+        {
+          "text": "out",
+          "start": 28.101,
+          "end": 28.38
+        }
+      ],
+      "word_slots": [
+        1.075,
+        0.05,
+        0.338,
+        0.199,
+        0.119,
+        0.179,
+        0.279
+      ],
+      "word_spoken": [
+        1.075,
+        0.05,
+        0.338,
+        0.199,
+        0.119,
+        0.179,
+        0.279
+      ],
+      "whisper_window_start": 25.14,
+      "whisper_window_end": 29.14,
+      "whisper_window_word_count": 10,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.915,
+      "whisper_window_words": [
+        {
+          "text": "mighty",
+          "start": 25.36,
+          "end": 25.64,
+          "probability": 0.999
+        },
+        {
+          "text": "shout",
+          "start": 25.64,
+          "end": 26.14,
+          "probability": 0.986
+        },
+        {
+          "text": "Opened",
+          "start": 26.14,
+          "end": 27.22,
+          "probability": 0.666
+        },
+        {
+          "text": "her",
+          "start": 27.22,
+          "end": 27.26,
+          "probability": 0.994
+        },
+        {
+          "text": "legs",
+          "start": 27.26,
+          "end": 27.6,
+          "probability": 0.999
+        },
+        {
+          "text": "and",
+          "start": 27.6,
+          "end": 27.8,
+          "probability": 0.988
+        },
+        {
+          "text": "let",
+          "start": 27.8,
+          "end": 27.92,
+          "probability": 0.952
+        },
+        {
+          "text": "me",
+          "start": 27.92,
+          "end": 28.1,
+          "probability": 0.999
+        },
+        {
+          "text": "out",
+          "start": 28.1,
+          "end": 28.38,
+          "probability": 1.0
+        },
+        {
+          "text": "Hungry",
+          "start": 29.14,
+          "end": 29.86,
+          "probability": 0.565
+        }
+      ],
+      "whisper_line_start_delta": 0.0
+    },
+    {
+      "index": 3,
+      "start": 29.14,
+      "end": 30.86,
+      "text": "Hungry as a prairie dog",
+      "words": [
+        {
+          "text": "Hungry",
+          "start": 29.14,
+          "end": 29.86
+        },
+        {
+          "text": "as",
+          "start": 29.86,
+          "end": 30.12
+        },
+        {
+          "text": "a",
+          "start": 30.12,
+          "end": 30.26
+        },
+        {
+          "text": "prairie",
+          "start": 30.26,
+          "end": 30.6
+        },
+        {
+          "text": "dog",
+          "start": 30.6,
+          "end": 30.86
+        }
+      ],
+      "word_slots": [
+        0.72,
+        0.26,
+        0.14,
+        0.34,
+        0.26
+      ],
+      "word_spoken": [
+        0.72,
+        0.26,
+        0.14,
+        0.34,
+        0.26
+      ],
+      "whisper_window_start": 28.14,
+      "whisper_window_end": 30.86,
+      "whisper_window_word_count": 5,
+      "whisper_window_low_conf_count": 1,
+      "whisper_window_avg_prob": 0.803,
+      "whisper_window_words": [
+        {
+          "text": "Hungry",
+          "start": 29.14,
+          "end": 29.86,
+          "probability": 0.565
+        },
+        {
+          "text": "as",
+          "start": 29.86,
+          "end": 30.12,
+          "probability": 0.463
+        },
+        {
+          "text": "a",
+          "start": 30.12,
+          "end": 30.26,
+          "probability": 0.997
+        },
+        {
+          "text": "prairie",
+          "start": 30.26,
+          "end": 30.6,
+          "probability": 0.993
+        },
+        {
+          "text": "dog",
+          "start": 30.6,
+          "end": 30.86,
+          "probability": 0.998
+        }
+      ],
+      "whisper_line_start_delta": -0.0
+    },
+    {
+      "index": 4,
+      "start": 30.86,
+      "end": 33.18,
+      "text": "Young man in America",
+      "words": [
+        {
+          "text": "Young",
+          "start": 30.86,
+          "end": 32.02
+        },
+        {
+          "text": "man",
+          "start": 32.02,
+          "end": 32.34
+        },
+        {
+          "text": "in",
+          "start": 32.34,
+          "end": 32.72
+        },
+        {
+          "text": "America",
+          "start": 32.72,
+          "end": 33.18
+        }
+      ],
+      "word_slots": [
+        1.16,
+        0.32,
+        0.38,
+        0.46
+      ],
+      "word_spoken": [
+        1.16,
+        0.32,
+        0.38,
+        0.46
+      ],
+      "whisper_window_start": 29.86,
+      "whisper_window_end": 34.04,
+      "whisper_window_word_count": 9,
+      "whisper_window_low_conf_count": 1,
+      "whisper_window_avg_prob": 0.867,
+      "whisper_window_words": [
+        {
+          "text": "as",
+          "start": 29.86,
+          "end": 30.12,
+          "probability": 0.463
+        },
+        {
+          "text": "a",
+          "start": 30.12,
+          "end": 30.26,
+          "probability": 0.997
+        },
+        {
+          "text": "prairie",
+          "start": 30.26,
+          "end": 30.6,
+          "probability": 0.993
+        },
+        {
+          "text": "dog",
+          "start": 30.6,
+          "end": 30.86,
+          "probability": 0.998
+        },
+        {
+          "text": "Young",
+          "start": 30.86,
+          "end": 32.02,
+          "probability": 0.568
+        },
+        {
+          "text": "man",
+          "start": 32.02,
+          "end": 32.34,
+          "probability": 0.989
+        },
+        {
+          "text": "in",
+          "start": 32.34,
+          "end": 32.72,
+          "probability": 0.997
+        },
+        {
+          "text": "America",
+          "start": 32.72,
+          "end": 33.18,
+          "probability": 0.991
+        },
+        {
+          "text": "Young",
+          "start": 33.18,
+          "end": 34.04,
+          "probability": 0.803
+        }
+      ],
+      "whisper_line_start_delta": 0.0
+    },
+    {
+      "index": 5,
+      "start": 34.04,
+      "end": 36.98,
+      "text": "Young man in America",
+      "words": [
+        {
+          "text": "Young",
+          "start": 34.04,
+          "end": 34.36
+        },
+        {
+          "text": "man",
+          "start": 34.36,
+          "end": 34.74
+        },
+        {
+          "text": "in",
+          "start": 34.74,
+          "end": 35.14
+        },
+        {
+          "text": "America",
+          "start": 36.26,
+          "end": 36.98
+        }
+      ],
+      "word_slots": [
+        0.32,
+        0.38,
+        1.52,
+        0.72
+      ],
+      "word_spoken": [
+        0.32,
+        0.38,
+        0.4,
+        0.72
+      ],
+      "whisper_window_start": 33.04,
+      "whisper_window_end": 36.26,
+      "whisper_window_word_count": 4,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.95,
+      "whisper_window_words": [
+        {
+          "text": "Young",
+          "start": 33.18,
+          "end": 34.04,
+          "probability": 0.803
+        },
+        {
+          "text": "man",
+          "start": 34.04,
+          "end": 34.36,
+          "probability": 0.999
+        },
+        {
+          "text": "in",
+          "start": 34.36,
+          "end": 34.74,
+          "probability": 0.999
+        },
+        {
+          "text": "America",
+          "start": 34.74,
+          "end": 35.14,
+          "probability": 0.997
+        }
+      ],
+      "whisper_line_start_delta": -0.86
+    },
+    {
+      "index": 6,
+      "start": 36.26,
+      "end": 40.18,
+      "text": "Hungry, hungry, running every which way",
+      "words": [
+        {
+          "text": "Hungry,",
+          "start": 36.26,
+          "end": 36.98
+        },
+        {
+          "text": "hungry,",
+          "start": 36.98,
+          "end": 37.7
+        },
+        {
+          "text": "running",
+          "start": 37.7,
+          "end": 38.92
+        },
+        {
+          "text": "every",
+          "start": 38.92,
+          "end": 39.46
+        },
+        {
+          "text": "which",
+          "start": 39.46,
+          "end": 39.82
+        },
+        {
+          "text": "way",
+          "start": 39.82,
+          "end": 40.18
+        }
+      ],
+      "word_slots": [
+        0.72,
+        0.72,
+        1.22,
+        0.54,
+        0.36,
+        0.36
+      ],
+      "word_spoken": [
+        0.72,
+        0.72,
+        1.22,
+        0.54,
+        0.36,
+        0.36
+      ],
+      "whisper_window_start": 35.26,
+      "whisper_window_end": 40.18,
+      "whisper_window_word_count": 6,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.968,
+      "whisper_window_words": [
+        {
+          "text": "Hungry,",
+          "start": 36.26,
+          "end": 36.98,
+          "probability": 0.989
+        },
+        {
+          "text": "hungry",
+          "start": 36.98,
+          "end": 37.7,
+          "probability": 0.986
+        },
+        {
+          "text": "Running",
+          "start": 37.7,
+          "end": 38.92,
+          "probability": 0.848
+        },
+        {
+          "text": "every",
+          "start": 38.92,
+          "end": 39.46,
+          "probability": 0.992
+        },
+        {
+          "text": "which",
+          "start": 39.46,
+          "end": 39.82,
+          "probability": 0.998
+        },
+        {
+          "text": "way",
+          "start": 39.82,
+          "end": 40.18,
+          "probability": 0.998
+        }
+      ],
+      "whisper_line_start_delta": 0.0
+    },
+    {
+      "index": 7,
+      "start": 40.18,
+      "end": 42.34,
+      "text": "Young man in Americay",
+      "words": [
+        {
+          "text": "Young",
+          "start": 40.18,
+          "end": 41.26
+        },
+        {
+          "text": "man",
+          "start": 41.26,
+          "end": 41.54
+        },
+        {
+          "text": "in",
+          "start": 41.54,
+          "end": 41.98
+        },
+        {
+          "text": "Americay",
+          "start": 41.98,
+          "end": 42.34
+        }
+      ],
+      "word_slots": [
+        1.08,
+        0.28,
+        0.44,
+        0.36
+      ],
+      "word_spoken": [
+        1.08,
+        0.28,
+        0.44,
+        0.36
+      ],
+      "whisper_window_start": 39.18,
+      "whisper_window_end": 45.12,
+      "whisper_window_word_count": 6,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.992,
+      "whisper_window_words": [
+        {
+          "text": "which",
+          "start": 39.46,
+          "end": 39.82,
+          "probability": 0.998
+        },
+        {
+          "text": "way",
+          "start": 39.82,
+          "end": 40.18,
+          "probability": 0.998
+        },
+        {
+          "text": "Young",
+          "start": 40.18,
+          "end": 41.32,
+          "probability": 0.998
+        },
+        {
+          "text": "man",
+          "start": 41.32,
+          "end": 41.6,
+          "probability": 1.0
+        },
+        {
+          "text": "in",
+          "start": 41.6,
+          "end": 42.04,
+          "probability": 0.993
+        },
+        {
+          "text": "America",
+          "start": 42.04,
+          "end": 42.34,
+          "probability": 0.967
+        }
+      ],
+      "whisper_line_start_delta": 0.0
+    },
+    {
+      "index": 8,
+      "start": 45.12,
+      "end": 48.3,
+      "text": "I come out like a cannonball",
+      "words": [
+        {
+          "text": "I",
+          "start": 45.12,
+          "end": 45.84
+        },
+        {
+          "text": "come",
+          "start": 45.84,
+          "end": 46.56
+        },
+        {
+          "text": "out",
+          "start": 46.56,
+          "end": 46.94
+        },
+        {
+          "text": "like",
+          "start": 46.94,
+          "end": 47.3
+        },
+        {
+          "text": "a",
+          "start": 47.3,
+          "end": 47.56
+        },
+        {
+          "text": "cannonball",
+          "start": 47.56,
+          "end": 48.3
+        }
+      ],
+      "word_slots": [
+        0.72,
+        0.72,
+        0.38,
+        0.36,
+        0.26,
+        0.74
+      ],
+      "word_spoken": [
+        0.72,
+        0.72,
+        0.38,
+        0.36,
+        0.26,
+        0.74
+      ],
+      "whisper_window_start": 44.12,
+      "whisper_window_end": 48.3,
+      "whisper_window_word_count": 6,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.995,
+      "whisper_window_words": [
+        {
+          "text": "I",
+          "start": 45.12,
+          "end": 45.84,
+          "probability": 0.984
+        },
+        {
+          "text": "come",
+          "start": 45.84,
+          "end": 46.56,
+          "probability": 0.999
+        },
+        {
+          "text": "out",
+          "start": 46.56,
+          "end": 46.94,
+          "probability": 1.0
+        },
+        {
+          "text": "like",
+          "start": 46.94,
+          "end": 47.3,
+          "probability": 0.995
+        },
+        {
+          "text": "a",
+          "start": 47.3,
+          "end": 47.56,
+          "probability": 0.999
+        },
+        {
+          "text": "cannonball",
+          "start": 47.56,
+          "end": 48.3,
+          "probability": 0.994
+        }
+      ],
+      "whisper_line_start_delta": 0.0
+    },
+    {
+      "index": 9,
+      "start": 48.3,
+      "end": 50.18,
+      "text": "Come of age of alcohol",
+      "words": [
+        {
+          "text": "Come",
+          "start": 48.3,
+          "end": 49.24
+        },
+        {
+          "text": "of",
+          "start": 49.24,
+          "end": 49.415
+        },
+        {
+          "text": "age",
+          "start": 49.415,
+          "end": 49.688
+        },
+        {
+          "text": "of",
+          "start": 49.688,
+          "end": 50.039
+        },
+        {
+          "text": "alcohol",
+          "start": 50.039,
+          "end": 50.18
+        }
+      ],
+      "word_slots": [
+        0.94,
+        0.175,
+        0.273,
+        0.351,
+        0.141
+      ],
+      "word_spoken": [
+        0.94,
+        0.175,
+        0.273,
+        0.351,
+        0.141
+      ],
+      "whisper_window_start": 47.3,
+      "whisper_window_end": 50.18,
+      "whisper_window_word_count": 6,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.994,
+      "whisper_window_words": [
+        {
+          "text": "a",
+          "start": 47.3,
+          "end": 47.56,
+          "probability": 0.999
+        },
+        {
+          "text": "cannonball",
+          "start": 47.56,
+          "end": 48.3,
+          "probability": 0.994
+        },
+        {
+          "text": "Come",
+          "start": 48.3,
+          "end": 49.36,
+          "probability": 0.994
+        },
+        {
+          "text": "of",
+          "start": 49.36,
+          "end": 49.54,
+          "probability": 0.996
+        },
+        {
+          "text": "age",
+          "start": 49.54,
+          "end": 49.82,
+          "probability": 0.998
+        },
+        {
+          "text": "of",
+          "start": 49.82,
+          "end": 50.18,
+          "probability": 0.982
+        }
+      ],
+      "whisper_line_start_delta": 0.0
+    },
+    {
+      "index": 10,
+      "start": 50.18,
+      "end": 51.8,
+      "text": "Raven in a field of rye",
+      "words": [
+        {
+          "text": "Raven",
+          "start": 50.18,
+          "end": 50.518
+        },
+        {
+          "text": "in",
+          "start": 50.518,
+          "end": 51.328
+        },
+        {
+          "text": "a",
+          "start": 51.328,
+          "end": 51.373
+        },
+        {
+          "text": "field",
+          "start": 51.373,
+          "end": 51.417
+        },
+        {
+          "text": "of",
+          "start": 51.417,
+          "end": 51.462
+        },
+        {
+          "text": "rye",
+          "start": 51.462,
+          "end": 51.8
+        }
+      ],
+      "word_slots": [
+        0.338,
+        0.81,
+        0.045,
+        0.045,
+        0.045,
+        0.338
+      ],
+      "word_spoken": [
+        0.338,
+        0.81,
+        0.045,
+        0.045,
+        0.045,
+        0.338
+      ],
+      "whisper_window_start": 49.18,
+      "whisper_window_end": 51.8,
+      "whisper_window_word_count": 5,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.946,
+      "whisper_window_words": [
+        {
+          "text": "of",
+          "start": 49.36,
+          "end": 49.54,
+          "probability": 0.996
+        },
+        {
+          "text": "age",
+          "start": 49.54,
+          "end": 49.82,
+          "probability": 0.998
+        },
+        {
+          "text": "of",
+          "start": 49.82,
+          "end": 50.18,
+          "probability": 0.982
+        },
+        {
+          "text": "alcohol",
+          "start": 50.18,
+          "end": 50.56,
+          "probability": 1.0
+        },
+        {
+          "text": "Raving",
+          "start": 50.56,
+          "end": 51.8,
+          "probability": 0.755
+        }
+      ],
+      "whisper_line_start_delta": null
+    },
+    {
+      "index": 11,
+      "start": 52.9,
+      "end": 55.34,
+      "text": "With a black and roving eye",
+      "words": [
+        {
+          "text": "With",
+          "start": 52.9,
+          "end": 53.14
+        },
+        {
+          "text": "a",
+          "start": 53.14,
+          "end": 53.2
+        },
+        {
+          "text": "black",
+          "start": 53.2,
+          "end": 53.52
+        },
+        {
+          "text": "and",
+          "start": 53.52,
+          "end": 53.72
+        },
+        {
+          "text": "roving",
+          "start": 53.72,
+          "end": 54.0
+        },
+        {
+          "text": "eye",
+          "start": 54.0,
+          "end": 55.34
+        }
+      ],
+      "word_slots": [
+        0.24,
+        0.06,
+        0.32,
+        0.2,
+        0.28,
+        1.34
+      ],
+      "word_spoken": [
+        0.24,
+        0.06,
+        0.32,
+        0.2,
+        0.28,
+        1.34
+      ],
+      "whisper_window_start": 50.8,
+      "whisper_window_end": 54.24,
+      "whisper_window_word_count": 6,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.964,
+      "whisper_window_words": [
+        {
+          "text": "in",
+          "start": 51.8,
+          "end": 52.04,
+          "probability": 0.985
+        },
+        {
+          "text": "a",
+          "start": 52.04,
+          "end": 52.1,
+          "probability": 0.839
+        },
+        {
+          "text": "field",
+          "start": 52.1,
+          "end": 52.42,
+          "probability": 0.999
+        },
+        {
+          "text": "of",
+          "start": 52.42,
+          "end": 52.62,
+          "probability": 0.979
+        },
+        {
+          "text": "rye",
+          "start": 52.62,
+          "end": 52.9,
+          "probability": 0.985
+        },
+        {
+          "text": "With",
+          "start": 52.9,
+          "end": 54.24,
+          "probability": 0.998
+        }
+      ],
+      "whisper_line_start_delta": 1.1
+    },
+    {
+      "index": 12,
+      "start": 54.36,
+      "end": 55.54,
+      "text": "Black and roving eye",
+      "words": [
+        {
+          "text": "Black",
+          "start": 54.36,
+          "end": 54.48
+        },
+        {
+          "text": "and",
+          "start": 54.48,
+          "end": 54.78
+        },
+        {
+          "text": "roving",
+          "start": 54.78,
+          "end": 55.02
+        },
+        {
+          "text": "eye",
+          "start": 55.02,
+          "end": 55.54
+        }
+      ],
+      "word_slots": [
+        0.12,
+        0.3,
+        0.24,
+        0.52
+      ],
+      "word_spoken": [
+        0.12,
+        0.3,
+        0.24,
+        0.52
+      ],
+      "whisper_window_start": 53.24,
+      "whisper_window_end": 55.42,
+      "whisper_window_word_count": 4,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.879,
+      "whisper_window_words": [
+        {
+          "text": "a",
+          "start": 54.24,
+          "end": 54.36,
+          "probability": 0.996
+        },
+        {
+          "text": "black",
+          "start": 54.36,
+          "end": 54.66,
+          "probability": 0.999
+        },
+        {
+          "text": "and",
+          "start": 54.66,
+          "end": 54.9,
+          "probability": 0.547
+        },
+        {
+          "text": "roving",
+          "start": 54.9,
+          "end": 55.42,
+          "probability": 0.972
+        }
+      ],
+      "whisper_line_start_delta": 0.12
+    },
+    {
+      "index": 13,
+      "start": 55.42,
+      "end": 56.72,
+      "text": "Ravenous, ravenous",
+      "words": [
+        {
+          "text": "Ravenous,",
+          "start": 55.42,
+          "end": 56.07
+        },
+        {
+          "text": "ravenous",
+          "start": 56.07,
+          "end": 56.72
+        }
+      ],
+      "word_slots": [
+        0.65,
+        0.65
+      ],
+      "word_spoken": [
+        0.65,
+        0.65
+      ],
+      "whisper_window_start": 54.42,
+      "whisper_window_end": 56.72,
+      "whisper_window_word_count": 5,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.901,
+      "whisper_window_words": [
+        {
+          "text": "and",
+          "start": 54.66,
+          "end": 54.9,
+          "probability": 0.547
+        },
+        {
+          "text": "roving",
+          "start": 54.9,
+          "end": 55.42,
+          "probability": 0.972
+        },
+        {
+          "text": "eye",
+          "start": 55.42,
+          "end": 55.76,
+          "probability": 0.999
+        },
+        {
+          "text": "Black",
+          "start": 55.76,
+          "end": 56.46,
+          "probability": 0.99
+        },
+        {
+          "text": "and",
+          "start": 56.46,
+          "end": 56.72,
+          "probability": 1.0
+        }
+      ],
+      "whisper_line_start_delta": null
+    },
+    {
+      "index": 14,
+      "start": 60.3,
+      "end": 64.3,
+      "text": "What you got, it's not enough",
+      "words": [
+        {
+          "text": "What",
+          "start": 60.3,
+          "end": 60.933
+        },
+        {
+          "text": "you",
+          "start": 60.933,
+          "end": 61.968
+        },
+        {
+          "text": "got,",
+          "start": 61.968,
+          "end": 62.284
+        },
+        {
+          "text": "it's",
+          "start": 62.284,
+          "end": 63.741
+        },
+        {
+          "text": "not",
+          "start": 63.741,
+          "end": 64.24
+        },
+        {
+          "text": "enough",
+          "start": 64.24,
+          "end": 64.3
+        }
+      ],
+      "word_slots": [
+        0.633,
+        1.034,
+        0.317,
+        1.456,
+        0.499,
+        0.06
+      ],
+      "word_spoken": [
+        0.633,
+        1.034,
+        0.317,
+        1.456,
+        0.499,
+        0.06
+      ],
+      "whisper_window_start": 55.72,
+      "whisper_window_end": 60.78,
+      "whisper_window_word_count": 7,
+      "whisper_window_low_conf_count": 1,
+      "whisper_window_avg_prob": 0.846,
+      "whisper_window_words": [
+        {
+          "text": "Black",
+          "start": 55.76,
+          "end": 56.46,
+          "probability": 0.99
+        },
+        {
+          "text": "and",
+          "start": 56.46,
+          "end": 56.72,
+          "probability": 1.0
+        },
+        {
+          "text": "roving",
+          "start": 56.72,
+          "end": 57.32,
+          "probability": 1.0
+        },
+        {
+          "text": "eye",
+          "start": 57.32,
+          "end": 57.62,
+          "probability": 0.996
+        },
+        {
+          "text": "Ravenous,",
+          "start": 57.62,
+          "end": 59.0,
+          "probability": 0.561
+        },
+        {
+          "text": "ravenous",
+          "start": 59.32,
+          "end": 60.3,
+          "probability": 0.908
+        },
+        {
+          "text": "What",
+          "start": 60.3,
+          "end": 60.78,
+          "probability": 0.466
+        }
+      ],
+      "whisper_line_start_delta": 3.58
+    },
+    {
+      "index": 15,
+      "start": 62.48,
+      "end": 63.74,
+      "text": "Young man in America",
+      "words": [
+        {
+          "text": "Young",
+          "start": 62.48,
+          "end": 62.68
+        },
+        {
+          "text": "man",
+          "start": 62.68,
+          "end": 63.06
+        },
+        {
+          "text": "in",
+          "start": 63.06,
+          "end": 63.48
+        },
+        {
+          "text": "America",
+          "start": 63.48,
+          "end": 63.74
+        }
+      ],
+      "word_slots": [
+        0.2,
+        0.38,
+        0.42,
+        0.26
+      ],
+      "word_spoken": [
+        0.2,
+        0.38,
+        0.42,
+        0.26
+      ],
+      "whisper_window_start": 59.78,
+      "whisper_window_end": 63.26,
+      "whisper_window_word_count": 7,
+      "whisper_window_low_conf_count": 2,
+      "whisper_window_avg_prob": 0.769,
+      "whisper_window_words": [
+        {
+          "text": "What",
+          "start": 60.3,
+          "end": 60.78,
+          "probability": 0.466
+        },
+        {
+          "text": "you",
+          "start": 60.78,
+          "end": 60.98,
+          "probability": 0.89
+        },
+        {
+          "text": "got",
+          "start": 60.98,
+          "end": 61.36,
+          "probability": 0.992
+        },
+        {
+          "text": "is",
+          "start": 61.36,
+          "end": 61.78,
+          "probability": 0.348
+        },
+        {
+          "text": "not",
+          "start": 61.78,
+          "end": 62.04,
+          "probability": 0.996
+        },
+        {
+          "text": "enough",
+          "start": 62.04,
+          "end": 62.48,
+          "probability": 0.999
+        },
+        {
+          "text": "Young",
+          "start": 62.48,
+          "end": 63.26,
+          "probability": 0.695
+        }
+      ],
+      "whisper_line_start_delta": 1.7
+    },
+    {
+      "index": 16,
+      "start": 68.58,
+      "end": 69.92,
+      "text": "Oh, shelter, mother shelter,",
+      "words": [
+        {
+          "text": "Oh,",
+          "start": 68.58,
+          "end": 68.888
+        },
+        {
+          "text": "shelter,",
+          "start": 68.888,
+          "end": 69.332
+        },
+        {
+          "text": "mother",
+          "start": 69.332,
+          "end": 69.872
+        },
+        {
+          "text": "shelter,",
+          "start": 69.872,
+          "end": 69.92
+        }
+      ],
+      "word_slots": [
+        0.308,
+        0.443,
+        0.54,
+        0.048
+      ],
+      "word_spoken": [
+        0.308,
+        0.443,
+        0.54,
+        0.048
+      ],
+      "whisper_window_start": 62.26,
+      "whisper_window_end": 68.58,
+      "whisper_window_word_count": 5,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.865,
+      "whisper_window_words": [
+        {
+          "text": "Young",
+          "start": 62.48,
+          "end": 63.26,
+          "probability": 0.695
+        },
+        {
+          "text": "man",
+          "start": 63.26,
+          "end": 63.58,
+          "probability": 0.924
+        },
+        {
+          "text": "in",
+          "start": 63.58,
+          "end": 64.04,
+          "probability": 0.962
+        },
+        {
+          "text": "America",
+          "start": 64.04,
+          "end": 64.6,
+          "probability": 0.982
+        },
+        {
+          "text": "Oh,",
+          "start": 68.58,
+          "end": 69.38,
+          "probability": 0.762
+        }
+      ],
+      "whisper_line_start_delta": 5.32
+    },
+    {
+      "index": 17,
+      "start": 71.26,
+      "end": 74.74,
+      "text": "Mother shelter us",
+      "words": [
+        {
+          "text": "Mother",
+          "start": 71.26,
+          "end": 72.06
+        },
+        {
+          "text": "shelter",
+          "start": 72.06,
+          "end": 72.86
+        },
+        {
+          "text": "us",
+          "start": 73.94,
+          "end": 74.74
+        }
+      ],
+      "word_slots": [
+        0.8,
+        1.88,
+        0.8
+      ],
+      "word_spoken": [
+        0.8,
+        0.8,
+        0.8
+      ],
+      "whisper_window_start": 67.58,
+      "whisper_window_end": 71.26,
+      "whisper_window_word_count": 3,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.729,
+      "whisper_window_words": [
+        {
+          "text": "Oh,",
+          "start": 68.58,
+          "end": 69.38,
+          "probability": 0.762
+        },
+        {
+          "text": "shelter",
+          "start": 69.38,
+          "end": 70.18,
+          "probability": 0.856
+        },
+        {
+          "text": "Mother,",
+          "start": 71.26,
+          "end": 72.06,
+          "probability": 0.568
+        }
+      ],
+      "whisper_line_start_delta": 2.68
+    },
+    {
+      "index": 18,
+      "start": 71.26,
+      "end": 72.06,
+      "text": "Oooh",
+      "words": [
+        {
+          "text": "Oooh",
+          "start": 71.26,
+          "end": 72.06
+        }
+      ],
+      "word_slots": [
+        0.8
+      ],
+      "word_spoken": [
+        0.8
+      ],
+      "whisper_window_start": 70.26,
+      "whisper_window_end": 72.1,
+      "whisper_window_word_count": 1,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.568,
+      "whisper_window_words": [
+        {
+          "text": "Mother,",
+          "start": 71.26,
+          "end": 72.06,
+          "probability": 0.568
+        }
+      ],
+      "whisper_line_start_delta": null
+    },
+    {
+      "index": 19,
+      "start": 72.1,
+      "end": 76.14,
+      "text": "My father was a lord of land",
+      "words": [
+        {
+          "text": "My",
+          "start": 72.1,
+          "end": 72.912
+        },
+        {
+          "text": "father",
+          "start": 72.912,
+          "end": 73.481
+        },
+        {
+          "text": "was",
+          "start": 73.481,
+          "end": 74.09
+        },
+        {
+          "text": "a",
+          "start": 74.09,
+          "end": 74.141
+        },
+        {
+          "text": "lord",
+          "start": 74.141,
+          "end": 74.192
+        },
+        {
+          "text": "of",
+          "start": 74.192,
+          "end": 74.243
+        },
+        {
+          "text": "land",
+          "start": 74.243,
+          "end": 76.14
+        }
+      ],
+      "word_slots": [
+        0.812,
+        0.569,
+        0.609,
+        0.051,
+        0.051,
+        0.051,
+        1.897
+      ],
+      "word_spoken": [
+        0.812,
+        0.569,
+        0.609,
+        0.051,
+        0.051,
+        0.051,
+        1.897
+      ],
+      "whisper_window_start": 71.1,
+      "whisper_window_end": 77.46,
+      "whisper_window_word_count": 5,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.881,
+      "whisper_window_words": [
+        {
+          "text": "Mother,",
+          "start": 71.26,
+          "end": 72.06,
+          "probability": 0.568
+        },
+        {
+          "text": "shelter",
+          "start": 72.1,
+          "end": 72.8,
+          "probability": 0.997
+        },
+        {
+          "text": "Mother,",
+          "start": 73.78,
+          "end": 74.58,
+          "probability": 0.843
+        },
+        {
+          "text": "shelter",
+          "start": 74.98,
+          "end": 75.54,
+          "probability": 0.998
+        },
+        {
+          "text": "us",
+          "start": 75.54,
+          "end": 76.14,
+          "probability": 0.999
+        }
+      ],
+      "whisper_line_start_delta": null
+    },
+    {
+      "index": 20,
+      "start": 79.54,
+      "end": 83.54,
+      "text": "My daddy was a repo man",
+      "words": [
+        {
+          "text": "My",
+          "start": 79.54,
+          "end": 80.516
+        },
+        {
+          "text": "daddy",
+          "start": 80.516,
+          "end": 81.491
+        },
+        {
+          "text": "was",
+          "start": 81.491,
+          "end": 82.467
+        },
+        {
+          "text": "a",
+          "start": 82.467,
+          "end": 82.93
+        },
+        {
+          "text": "repo",
+          "start": 82.93,
+          "end": 83.174
+        },
+        {
+          "text": "man",
+          "start": 83.174,
+          "end": 83.54
+        }
+      ],
+      "word_slots": [
+        0.976,
+        0.976,
+        0.976,
+        0.463,
+        0.244,
+        0.366
+      ],
+      "word_spoken": [
+        0.976,
+        0.976,
+        0.976,
+        0.463,
+        0.244,
+        0.366
+      ],
+      "whisper_window_start": 76.46,
+      "whisper_window_end": 82.02,
+      "whisper_window_word_count": 6,
+      "whisper_window_low_conf_count": 2,
+      "whisper_window_avg_prob": 0.741,
+      "whisper_window_words": [
+        {
+          "text": "Ooh",
+          "start": 77.46,
+          "end": 78.26,
+          "probability": 0.307
+        },
+        {
+          "text": "My",
+          "start": 79.54,
+          "end": 80.34,
+          "probability": 0.461
+        },
+        {
+          "text": "father",
+          "start": 80.34,
+          "end": 81.14,
+          "probability": 0.989
+        },
+        {
+          "text": "was",
+          "start": 81.14,
+          "end": 81.52,
+          "probability": 0.998
+        },
+        {
+          "text": "a",
+          "start": 81.52,
+          "end": 81.72,
+          "probability": 0.952
+        },
+        {
+          "text": "lord",
+          "start": 81.72,
+          "end": 82.02,
+          "probability": 0.737
+        }
+      ],
+      "whisper_line_start_delta": 2.08
+    },
+    {
+      "index": 21,
+      "start": 85.2,
+      "end": 89.2,
+      "text": "Put me out onto the street",
+      "words": [
+        {
+          "text": "Put",
+          "start": 85.2,
+          "end": 85.498
+        },
+        {
+          "text": "me",
+          "start": 85.498,
+          "end": 85.96
+        },
+        {
+          "text": "out",
+          "start": 85.96,
+          "end": 87.745
+        },
+        {
+          "text": "onto",
+          "start": 87.745,
+          "end": 88.142
+        },
+        {
+          "text": "the",
+          "start": 88.142,
+          "end": 88.539
+        },
+        {
+          "text": "street",
+          "start": 88.539,
+          "end": 89.2
+        }
+      ],
+      "word_slots": [
+        0.298,
+        0.463,
+        1.785,
+        0.397,
+        0.397,
+        0.661
+      ],
+      "word_spoken": [
+        0.298,
+        0.463,
+        1.785,
+        0.397,
+        0.397,
+        0.661
+      ],
+      "whisper_window_start": 81.02,
+      "whisper_window_end": 86.08,
+      "whisper_window_word_count": 12,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.849,
+      "whisper_window_words": [
+        {
+          "text": "was",
+          "start": 81.14,
+          "end": 81.52,
+          "probability": 0.998
+        },
+        {
+          "text": "a",
+          "start": 81.52,
+          "end": 81.72,
+          "probability": 0.952
+        },
+        {
+          "text": "lord",
+          "start": 81.72,
+          "end": 82.02,
+          "probability": 0.737
+        },
+        {
+          "text": "of",
+          "start": 82.02,
+          "end": 82.2,
+          "probability": 0.867
+        },
+        {
+          "text": "land",
+          "start": 82.2,
+          "end": 82.48,
+          "probability": 0.542
+        },
+        {
+          "text": "My",
+          "start": 82.48,
+          "end": 83.56,
+          "probability": 0.988
+        },
+        {
+          "text": "dad",
+          "start": 83.56,
+          "end": 83.9,
+          "probability": 0.85
+        },
+        {
+          "text": "was",
+          "start": 83.9,
+          "end": 84.22,
+          "probability": 0.595
+        },
+        {
+          "text": "a",
+          "start": 84.22,
+          "end": 84.4,
+          "probability": 0.991
+        },
+        {
+          "text": "meatball",
+          "start": 84.4,
+          "end": 84.88,
+          "probability": 0.7
+        },
+        {
+          "text": "man",
+          "start": 84.88,
+          "end": 85.2,
+          "probability": 0.992
+        },
+        {
+          "text": "Put",
+          "start": 85.2,
+          "end": 86.08,
+          "probability": 0.976
+        }
+      ],
+      "whisper_line_start_delta": 3.18
+    },
+    {
+      "index": 22,
+      "start": 86.08,
+      "end": 89.98,
+      "text": "Didn't give a damn for me",
+      "words": [
+        {
+          "text": "Didn't",
+          "start": 86.08,
+          "end": 86.513
+        },
+        {
+          "text": "give",
+          "start": 86.513,
+          "end": 87.476
+        },
+        {
+          "text": "a",
+          "start": 87.476,
+          "end": 87.669
+        },
+        {
+          "text": "damn",
+          "start": 87.669,
+          "end": 88.536
+        },
+        {
+          "text": "for",
+          "start": 88.536,
+          "end": 89.402
+        },
+        {
+          "text": "me",
+          "start": 89.402,
+          "end": 89.98
+        }
+      ],
+      "word_slots": [
+        0.433,
+        0.963,
+        0.193,
+        0.867,
+        0.867,
+        0.578
+      ],
+      "word_spoken": [
+        0.433,
+        0.963,
+        0.193,
+        0.867,
+        0.867,
+        0.578
+      ],
+      "whisper_window_start": 85.08,
+      "whisper_window_end": 87.62,
+      "whisper_window_word_count": 6,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.928,
+      "whisper_window_words": [
+        {
+          "text": "Put",
+          "start": 85.2,
+          "end": 86.08,
+          "probability": 0.976
+        },
+        {
+          "text": "me",
+          "start": 86.08,
+          "end": 86.26,
+          "probability": 0.998
+        },
+        {
+          "text": "out",
+          "start": 86.26,
+          "end": 86.5,
+          "probability": 0.996
+        },
+        {
+          "text": "onto",
+          "start": 86.5,
+          "end": 86.9,
+          "probability": 0.831
+        },
+        {
+          "text": "the",
+          "start": 86.9,
+          "end": 87.14,
+          "probability": 0.998
+        },
+        {
+          "text": "street",
+          "start": 87.14,
+          "end": 87.54,
+          "probability": 0.766
+        }
+      ],
+      "whisper_line_start_delta": null
+    },
+    {
+      "index": 23,
+      "start": 89.98,
+      "end": 93.98,
+      "text": "Did not give a damn",
+      "words": [
+        {
+          "text": "Did",
+          "start": 89.98,
+          "end": 91.664
+        },
+        {
+          "text": "not",
+          "start": 91.664,
+          "end": 91.965
+        },
+        {
+          "text": "give",
+          "start": 91.965,
+          "end": 92.897
+        },
+        {
+          "text": "a",
+          "start": 92.897,
+          "end": 93.228
+        },
+        {
+          "text": "damn",
+          "start": 93.228,
+          "end": 93.98
+        }
+      ],
+      "word_slots": [
+        1.684,
+        0.301,
+        0.932,
+        0.331,
+        0.752
+      ],
+      "word_spoken": [
+        1.684,
+        0.301,
+        0.932,
+        0.331,
+        0.752
+      ],
+      "whisper_window_start": 86.62,
+      "whisper_window_end": 90.6,
+      "whisper_window_word_count": 9,
+      "whisper_window_low_conf_count": 1,
+      "whisper_window_avg_prob": 0.855,
+      "whisper_window_words": [
+        {
+          "text": "the",
+          "start": 86.9,
+          "end": 87.14,
+          "probability": 0.998
+        },
+        {
+          "text": "street",
+          "start": 87.14,
+          "end": 87.54,
+          "probability": 0.766
+        },
+        {
+          "text": "Didn't",
+          "start": 87.62,
+          "end": 88.74,
+          "probability": 0.713
+        },
+        {
+          "text": "give",
+          "start": 88.74,
+          "end": 88.82,
+          "probability": 0.998
+        },
+        {
+          "text": "a",
+          "start": 88.82,
+          "end": 89.02,
+          "probability": 0.999
+        },
+        {
+          "text": "damn",
+          "start": 89.02,
+          "end": 89.38,
+          "probability": 0.998
+        },
+        {
+          "text": "for",
+          "start": 89.38,
+          "end": 89.74,
+          "probability": 0.996
+        },
+        {
+          "text": "me",
+          "start": 89.74,
+          "end": 89.98,
+          "probability": 1.0
+        },
+        {
+          "text": "Did",
+          "start": 89.98,
+          "end": 90.6,
+          "probability": 0.23
+        }
+      ],
+      "whisper_line_start_delta": 2.36
+    },
+    {
+      "index": 24,
+      "start": 92.12,
+      "end": 96.92,
+      "text": "Daddy, daddy, gonna wish you never had me",
+      "words": [
+        {
+          "text": "Daddy,",
+          "start": 92.12,
+          "end": 92.592
+        },
+        {
+          "text": "daddy,",
+          "start": 92.592,
+          "end": 93.169
+        },
+        {
+          "text": "gonna",
+          "start": 93.169,
+          "end": 94.638
+        },
+        {
+          "text": "wish",
+          "start": 94.638,
+          "end": 95.005
+        },
+        {
+          "text": "you",
+          "start": 95.005,
+          "end": 95.215
+        },
+        {
+          "text": "never",
+          "start": 95.215,
+          "end": 95.661
+        },
+        {
+          "text": "had",
+          "start": 95.661,
+          "end": 96.343
+        },
+        {
+          "text": "me",
+          "start": 96.343,
+          "end": 96.92
+        }
+      ],
+      "word_slots": [
+        0.472,
+        0.577,
+        1.469,
+        0.367,
+        0.21,
+        0.446,
+        0.682,
+        0.577
+      ],
+      "word_spoken": [
+        0.472,
+        0.577,
+        1.469,
+        0.367,
+        0.21,
+        0.446,
+        0.682,
+        0.577
+      ],
+      "whisper_window_start": 89.6,
+      "whisper_window_end": 94.86,
+      "whisper_window_word_count": 8,
+      "whisper_window_low_conf_count": 1,
+      "whisper_window_avg_prob": 0.874,
+      "whisper_window_words": [
+        {
+          "text": "me",
+          "start": 89.74,
+          "end": 89.98,
+          "probability": 1.0
+        },
+        {
+          "text": "Did",
+          "start": 89.98,
+          "end": 90.6,
+          "probability": 0.23
+        },
+        {
+          "text": "not",
+          "start": 90.6,
+          "end": 90.96,
+          "probability": 0.993
+        },
+        {
+          "text": "give",
+          "start": 90.96,
+          "end": 91.4,
+          "probability": 0.999
+        },
+        {
+          "text": "a",
+          "start": 91.4,
+          "end": 91.62,
+          "probability": 0.999
+        },
+        {
+          "text": "damn",
+          "start": 91.62,
+          "end": 92.12,
+          "probability": 0.999
+        },
+        {
+          "text": "Daddy,",
+          "start": 92.12,
+          "end": 93.24,
+          "probability": 0.966
+        },
+        {
+          "text": "daddy",
+          "start": 93.6,
+          "end": 94.2,
+          "probability": 0.807
+        }
+      ],
+      "whisper_line_start_delta": 1.52
+    },
+    {
+      "index": 25,
+      "start": 97.08,
+      "end": 100.66,
+      "text": "I'm a young man",
+      "words": [
+        {
+          "text": "I'm",
+          "start": 97.08,
+          "end": 98.014
+        },
+        {
+          "text": "a",
+          "start": 98.014,
+          "end": 99.454
+        },
+        {
+          "text": "young",
+          "start": 99.454,
+          "end": 99.921
+        },
+        {
+          "text": "man",
+          "start": 99.921,
+          "end": 100.66
+        }
+      ],
+      "word_slots": [
+        0.934,
+        1.44,
+        0.467,
+        0.739
+      ],
+      "word_spoken": [
+        0.934,
+        1.44,
+        0.467,
+        0.739
+      ],
+      "whisper_window_start": 93.86,
+      "whisper_window_end": 97.82,
+      "whisper_window_word_count": 7,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.986,
+      "whisper_window_words": [
+        {
+          "text": "Gonna",
+          "start": 94.86,
+          "end": 95.34,
+          "probability": 0.913
+        },
+        {
+          "text": "wish",
+          "start": 95.34,
+          "end": 95.62,
+          "probability": 0.999
+        },
+        {
+          "text": "you",
+          "start": 95.62,
+          "end": 95.78,
+          "probability": 0.996
+        },
+        {
+          "text": "never",
+          "start": 95.78,
+          "end": 96.12,
+          "probability": 0.997
+        },
+        {
+          "text": "had",
+          "start": 96.12,
+          "end": 96.64,
+          "probability": 1.0
+        },
+        {
+          "text": "me",
+          "start": 96.64,
+          "end": 97.08,
+          "probability": 1.0
+        },
+        {
+          "text": "I'm",
+          "start": 97.08,
+          "end": 97.82,
+          "probability": 0.995
+        }
+      ],
+      "whisper_line_start_delta": 2.22
+    },
+    {
+      "index": 26,
+      "start": 97.82,
+      "end": 101.82,
+      "text": "I'm growing right before your eyes",
+      "words": [
+        {
+          "text": "I'm",
+          "start": 97.82,
+          "end": 97.907
+        },
+        {
+          "text": "growing",
+          "start": 97.907,
+          "end": 99.235
+        },
+        {
+          "text": "right",
+          "start": 99.235,
+          "end": 99.759
+        },
+        {
+          "text": "before",
+          "start": 99.759,
+          "end": 100.667
+        },
+        {
+          "text": "your",
+          "start": 100.667,
+          "end": 101.156
+        },
+        {
+          "text": "eyes",
+          "start": 101.156,
+          "end": 101.82
+        }
+      ],
+      "word_slots": [
+        0.087,
+        1.328,
+        0.524,
+        0.908,
+        0.489,
+        0.664
+      ],
+      "word_spoken": [
+        0.087,
+        1.328,
+        0.524,
+        0.908,
+        0.489,
+        0.664
+      ],
+      "whisper_window_start": 96.82,
+      "whisper_window_end": 103.64,
+      "whisper_window_word_count": 9,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.989,
+      "whisper_window_words": [
+        {
+          "text": "I'm",
+          "start": 97.08,
+          "end": 97.82,
+          "probability": 0.995
+        },
+        {
+          "text": "a",
+          "start": 97.82,
+          "end": 97.82,
+          "probability": 0.991
+        },
+        {
+          "text": "young",
+          "start": 97.82,
+          "end": 98.06,
+          "probability": 1.0
+        },
+        {
+          "text": "man",
+          "start": 98.06,
+          "end": 98.44,
+          "probability": 1.0
+        },
+        {
+          "text": "I'm",
+          "start": 101.4,
+          "end": 102.16,
+          "probability": 0.996
+        },
+        {
+          "text": "growing",
+          "start": 102.16,
+          "end": 102.46,
+          "probability": 0.92
+        },
+        {
+          "text": "right",
+          "start": 102.46,
+          "end": 102.98,
+          "probability": 0.999
+        },
+        {
+          "text": "before",
+          "start": 102.98,
+          "end": 103.26,
+          "probability": 0.999
+        },
+        {
+          "text": "your",
+          "start": 103.26,
+          "end": 103.64,
+          "probability": 0.999
+        }
+      ],
+      "whisper_line_start_delta": -0.74
+    },
+    {
+      "index": 27,
+      "start": 104.14,
+      "end": 107.5,
+      "text": "I might grow to such a size",
+      "words": [
+        {
+          "text": "I",
+          "start": 104.14,
+          "end": 104.708
+        },
+        {
+          "text": "might",
+          "start": 104.708,
+          "end": 105.82
+        },
+        {
+          "text": "grow",
+          "start": 105.82,
+          "end": 106.024
+        },
+        {
+          "text": "to",
+          "start": 106.024,
+          "end": 106.433
+        },
+        {
+          "text": "such",
+          "start": 106.433,
+          "end": 106.728
+        },
+        {
+          "text": "a",
+          "start": 106.728,
+          "end": 106.932
+        },
+        {
+          "text": "size",
+          "start": 106.932,
+          "end": 107.5
+        }
+      ],
+      "word_slots": [
+        0.568,
+        1.112,
+        0.204,
+        0.409,
+        0.295,
+        0.204,
+        0.568
+      ],
+      "word_spoken": [
+        0.568,
+        1.112,
+        0.204,
+        0.409,
+        0.295,
+        0.204,
+        0.568
+      ],
+      "whisper_window_start": 102.64,
+      "whisper_window_end": 105.66,
+      "whisper_window_word_count": 6,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.991,
+      "whisper_window_words": [
+        {
+          "text": "before",
+          "start": 102.98,
+          "end": 103.26,
+          "probability": 0.999
+        },
+        {
+          "text": "your",
+          "start": 103.26,
+          "end": 103.64,
+          "probability": 0.999
+        },
+        {
+          "text": "eyes",
+          "start": 103.64,
+          "end": 104.14,
+          "probability": 1.0
+        },
+        {
+          "text": "I",
+          "start": 104.14,
+          "end": 105.12,
+          "probability": 0.995
+        },
+        {
+          "text": "might",
+          "start": 105.12,
+          "end": 105.3,
+          "probability": 0.954
+        },
+        {
+          "text": "grow",
+          "start": 105.3,
+          "end": 105.66,
+          "probability": 0.998
+        }
+      ],
+      "whisper_line_start_delta": 0.5
+    },
+    {
+      "index": 28,
+      "start": 105.66,
+      "end": 109.22,
+      "text": "Blow in like a hurricane",
+      "words": [
+        {
+          "text": "Blow",
+          "start": 105.66,
+          "end": 106.204
+        },
+        {
+          "text": "in",
+          "start": 106.204,
+          "end": 107.834
+        },
+        {
+          "text": "like",
+          "start": 107.834,
+          "end": 108.16
+        },
+        {
+          "text": "a",
+          "start": 108.16,
+          "end": 108.486
+        },
+        {
+          "text": "hurricane",
+          "start": 108.486,
+          "end": 109.22
+        }
+      ],
+      "word_slots": [
+        0.544,
+        1.631,
+        0.326,
+        0.326,
+        0.734
+      ],
+      "word_spoken": [
+        0.544,
+        1.631,
+        0.326,
+        0.326,
+        0.734
+      ],
+      "whisper_window_start": 104.66,
+      "whisper_window_end": 110.0,
+      "whisper_window_word_count": 10,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.981,
+      "whisper_window_words": [
+        {
+          "text": "might",
+          "start": 105.12,
+          "end": 105.3,
+          "probability": 0.954
+        },
+        {
+          "text": "grow",
+          "start": 105.3,
+          "end": 105.66,
+          "probability": 0.998
+        },
+        {
+          "text": "to",
+          "start": 105.66,
+          "end": 106.06,
+          "probability": 0.986
+        },
+        {
+          "text": "such",
+          "start": 106.06,
+          "end": 106.32,
+          "probability": 0.996
+        },
+        {
+          "text": "a",
+          "start": 106.32,
+          "end": 106.5,
+          "probability": 0.999
+        },
+        {
+          "text": "size",
+          "start": 106.5,
+          "end": 107.0,
+          "probability": 1.0
+        },
+        {
+          "text": "Blowing",
+          "start": 107.0,
+          "end": 108.2,
+          "probability": 0.88
+        },
+        {
+          "text": "like",
+          "start": 108.2,
+          "end": 108.44,
+          "probability": 1.0
+        },
+        {
+          "text": "a",
+          "start": 108.44,
+          "end": 108.68,
+          "probability": 1.0
+        },
+        {
+          "text": "hurricane",
+          "start": 108.68,
+          "end": 109.22,
+          "probability": 1.0
+        }
+      ],
+      "whisper_line_start_delta": null
+    },
+    {
+      "index": 29,
+      "start": 110.0,
+      "end": 112.1,
+      "text": "Everyone will know my name",
+      "words": [
+        {
+          "text": "Everyone",
+          "start": 110.0,
+          "end": 110.76
+        },
+        {
+          "text": "will",
+          "start": 110.76,
+          "end": 111.12
+        },
+        {
+          "text": "know",
+          "start": 111.12,
+          "end": 111.38
+        },
+        {
+          "text": "my",
+          "start": 111.38,
+          "end": 111.66
+        },
+        {
+          "text": "name",
+          "start": 111.66,
+          "end": 112.1
+        }
+      ],
+      "word_slots": [
+        0.76,
+        0.36,
+        0.26,
+        0.28,
+        0.44
+      ],
+      "word_spoken": [
+        0.76,
+        0.36,
+        0.26,
+        0.28,
+        0.44
+      ],
+      "whisper_window_start": 109.0,
+      "whisper_window_end": 112.1,
+      "whisper_window_word_count": 5,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.953,
+      "whisper_window_words": [
+        {
+          "text": "Everyone",
+          "start": 110.0,
+          "end": 110.76,
+          "probability": 0.997
+        },
+        {
+          "text": "will",
+          "start": 110.76,
+          "end": 111.12,
+          "probability": 0.769
+        },
+        {
+          "text": "know",
+          "start": 111.12,
+          "end": 111.38,
+          "probability": 1.0
+        },
+        {
+          "text": "my",
+          "start": 111.38,
+          "end": 111.66,
+          "probability": 1.0
+        },
+        {
+          "text": "name",
+          "start": 111.66,
+          "end": 112.1,
+          "probability": 1.0
+        }
+      ],
+      "whisper_line_start_delta": 0.0
+    },
+    {
+      "index": 30,
+      "start": 112.1,
+      "end": 113.76,
+      "text": "Everyone'll know my name",
+      "words": [
+        {
+          "text": "Everyone'll",
+          "start": 112.1,
+          "end": 112.86
+        },
+        {
+          "text": "know",
+          "start": 112.86,
+          "end": 113.18
+        },
+        {
+          "text": "my",
+          "start": 113.18,
+          "end": 113.46
+        },
+        {
+          "text": "name",
+          "start": 113.46,
+          "end": 113.76
+        }
+      ],
+      "word_slots": [
+        0.76,
+        0.32,
+        0.28,
+        0.3
+      ],
+      "word_spoken": [
+        0.76,
+        0.32,
+        0.28,
+        0.3
+      ],
+      "whisper_window_start": 111.1,
+      "whisper_window_end": 113.76,
+      "whisper_window_word_count": 7,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.998,
+      "whisper_window_words": [
+        {
+          "text": "know",
+          "start": 111.12,
+          "end": 111.38,
+          "probability": 1.0
+        },
+        {
+          "text": "my",
+          "start": 111.38,
+          "end": 111.66,
+          "probability": 1.0
+        },
+        {
+          "text": "name",
+          "start": 111.66,
+          "end": 112.1,
+          "probability": 1.0
+        },
+        {
+          "text": "Everyone",
+          "start": 112.1,
+          "end": 112.86,
+          "probability": 0.985
+        },
+        {
+          "text": "will",
+          "start": 112.86,
+          "end": 113.18,
+          "probability": 0.999
+        },
+        {
+          "text": "know",
+          "start": 113.18,
+          "end": 113.46,
+          "probability": 1.0
+        },
+        {
+          "text": "my",
+          "start": 113.46,
+          "end": 113.76,
+          "probability": 1.0
+        }
+      ],
+      "whisper_line_start_delta": null
+    },
+    {
+      "index": 31,
+      "start": 114.26,
+      "end": 116.62,
+      "text": "Blowing in, blowing up",
+      "words": [
+        {
+          "text": "Blowing",
+          "start": 114.26,
+          "end": 114.778
+        },
+        {
+          "text": "in,",
+          "start": 114.778,
+          "end": 115.688
+        },
+        {
+          "text": "blowing",
+          "start": 115.688,
+          "end": 116.102
+        },
+        {
+          "text": "up",
+          "start": 116.102,
+          "end": 116.62
+        }
+      ],
+      "word_slots": [
+        0.518,
+        0.911,
+        0.414,
+        0.518
+      ],
+      "word_spoken": [
+        0.518,
+        0.911,
+        0.414,
+        0.518
+      ],
+      "whisper_window_start": 112.76,
+      "whisper_window_end": 116.12,
+      "whisper_window_word_count": 7,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.978,
+      "whisper_window_words": [
+        {
+          "text": "will",
+          "start": 112.86,
+          "end": 113.18,
+          "probability": 0.999
+        },
+        {
+          "text": "know",
+          "start": 113.18,
+          "end": 113.46,
+          "probability": 1.0
+        },
+        {
+          "text": "my",
+          "start": 113.46,
+          "end": 113.76,
+          "probability": 1.0
+        },
+        {
+          "text": "name",
+          "start": 113.76,
+          "end": 114.26,
+          "probability": 1.0
+        },
+        {
+          "text": "Blowing",
+          "start": 114.26,
+          "end": 115.14,
+          "probability": 0.975
+        },
+        {
+          "text": "in,",
+          "start": 115.14,
+          "end": 115.54,
+          "probability": 0.874
+        },
+        {
+          "text": "blowing",
+          "start": 115.62,
+          "end": 116.12,
+          "probability": 0.999
+        }
+      ],
+      "whisper_line_start_delta": 0.5
+    },
+    {
+      "index": 32,
+      "start": 116.12,
+      "end": 119.22,
+      "text": "Shadow on the mountaintop",
+      "words": [
+        {
+          "text": "Shadow",
+          "start": 116.12,
+          "end": 116.667
+        },
+        {
+          "text": "on",
+          "start": 116.667,
+          "end": 117.807
+        },
+        {
+          "text": "the",
+          "start": 117.807,
+          "end": 118.012
+        },
+        {
+          "text": "mountaintop",
+          "start": 118.012,
+          "end": 119.22
+        }
+      ],
+      "word_slots": [
+        0.547,
+        1.14,
+        0.205,
+        1.208
+      ],
+      "word_spoken": [
+        0.547,
+        1.14,
+        0.205,
+        1.208
+      ],
+      "whisper_window_start": 115.12,
+      "whisper_window_end": 117.8,
+      "whisper_window_word_count": 6,
+      "whisper_window_low_conf_count": 2,
+      "whisper_window_avg_prob": 0.7,
+      "whisper_window_words": [
+        {
+          "text": "in,",
+          "start": 115.14,
+          "end": 115.54,
+          "probability": 0.874
+        },
+        {
+          "text": "blowing",
+          "start": 115.62,
+          "end": 116.12,
+          "probability": 0.999
+        },
+        {
+          "text": "out",
+          "start": 116.12,
+          "end": 116.6,
+          "probability": 0.896
+        },
+        {
+          "text": "Shadowing,",
+          "start": 116.6,
+          "end": 117.6,
+          "probability": 0.481
+        },
+        {
+          "text": "shadowing",
+          "start": 117.6,
+          "end": 117.6,
+          "probability": 0.667
+        },
+        {
+          "text": "I'm",
+          "start": 117.62,
+          "end": 117.8,
+          "probability": 0.282
+        }
+      ],
+      "whisper_line_start_delta": null
+    },
+    {
+      "index": 33,
+      "start": 119.22,
+      "end": 120.64,
+      "text": "Young man in America",
+      "words": [
+        {
+          "text": "Young",
+          "start": 119.22,
+          "end": 119.22
+        },
+        {
+          "text": "man",
+          "start": 119.22,
+          "end": 119.36
+        },
+        {
+          "text": "in",
+          "start": 119.36,
+          "end": 119.58
+        },
+        {
+          "text": "America",
+          "start": 119.58,
+          "end": 120.64
+        }
+      ],
+      "word_slots": [
+        0.0,
+        0.14,
+        0.22,
+        1.06
+      ],
+      "word_spoken": [
+        0.0,
+        0.14,
+        0.22,
+        1.06
+      ],
+      "whisper_window_start": 116.8,
+      "whisper_window_end": 119.76,
+      "whisper_window_word_count": 7,
+      "whisper_window_low_conf_count": 4,
+      "whisper_window_avg_prob": 0.479,
+      "whisper_window_words": [
+        {
+          "text": "shadowing",
+          "start": 117.6,
+          "end": 117.6,
+          "probability": 0.667
+        },
+        {
+          "text": "I'm",
+          "start": 117.62,
+          "end": 117.8,
+          "probability": 0.282
+        },
+        {
+          "text": "raw",
+          "start": 117.8,
+          "end": 117.8,
+          "probability": 0.0
+        },
+        {
+          "text": "on",
+          "start": 117.8,
+          "end": 117.94,
+          "probability": 0.418
+        },
+        {
+          "text": "the",
+          "start": 117.94,
+          "end": 118.16,
+          "probability": 0.831
+        },
+        {
+          "text": "mountaintop",
+          "start": 118.16,
+          "end": 119.22,
+          "probability": 0.816
+        },
+        {
+          "text": "Young",
+          "start": 119.22,
+          "end": 119.76,
+          "probability": 0.339
+        }
+      ],
+      "whisper_line_start_delta": 1.42
+    },
+    {
+      "index": 34,
+      "start": 124.98,
+      "end": 128.98,
+      "text": "Oh, shepherd, father shepherd,",
+      "words": [
+        {
+          "text": "Oh,",
+          "start": 124.98,
+          "end": 125.515
+        },
+        {
+          "text": "shepherd,",
+          "start": 125.515,
+          "end": 125.91
+        },
+        {
+          "text": "father",
+          "start": 125.91,
+          "end": 126.726
+        },
+        {
+          "text": "shepherd,",
+          "start": 126.726,
+          "end": 128.98
+        }
+      ],
+      "word_slots": [
+        0.535,
+        0.394,
+        0.817,
+        2.254
+      ],
+      "word_spoken": [
+        0.535,
+        0.394,
+        0.817,
+        2.254
+      ],
+      "whisper_window_start": 118.76,
+      "whisper_window_end": 127.62,
+      "whisper_window_word_count": 7,
+      "whisper_window_low_conf_count": 1,
+      "whisper_window_avg_prob": 0.719,
+      "whisper_window_words": [
+        {
+          "text": "Young",
+          "start": 119.22,
+          "end": 119.76,
+          "probability": 0.339
+        },
+        {
+          "text": "man",
+          "start": 119.76,
+          "end": 120.14,
+          "probability": 0.907
+        },
+        {
+          "text": "in",
+          "start": 120.14,
+          "end": 120.42,
+          "probability": 0.813
+        },
+        {
+          "text": "America",
+          "start": 120.42,
+          "end": 121.0,
+          "probability": 0.983
+        },
+        {
+          "text": "Oh,",
+          "start": 124.98,
+          "end": 125.78,
+          "probability": 0.548
+        },
+        {
+          "text": "shepherd",
+          "start": 125.78,
+          "end": 126.58,
+          "probability": 0.695
+        },
+        {
+          "text": "Father,",
+          "start": 127.62,
+          "end": 128.42,
+          "probability": 0.748
+        }
+      ],
+      "whisper_line_start_delta": 5.22
+    },
+    {
+      "index": 35,
+      "start": 127.62,
+      "end": 129.3,
+      "text": "Father shepherd us",
+      "words": [
+        {
+          "text": "Father",
+          "start": 127.62,
+          "end": 128.46
+        },
+        {
+          "text": "shepherd",
+          "start": 128.46,
+          "end": 129.048
+        },
+        {
+          "text": "us",
+          "start": 129.048,
+          "end": 129.3
+        }
+      ],
+      "word_slots": [
+        0.84,
+        0.588,
+        0.252
+      ],
+      "word_spoken": [
+        0.84,
+        0.588,
+        0.252
+      ],
+      "whisper_window_start": 126.62,
+      "whisper_window_end": 131.18,
+      "whisper_window_word_count": 4,
+      "whisper_window_low_conf_count": 2,
+      "whisper_window_avg_prob": 0.402,
+      "whisper_window_words": [
+        {
+          "text": "Father,",
+          "start": 127.62,
+          "end": 128.42,
+          "probability": 0.748
+        },
+        {
+          "text": "stir",
+          "start": 128.5,
+          "end": 129.06,
+          "probability": 0.0
+        },
+        {
+          "text": "me",
+          "start": 129.06,
+          "end": 129.3,
+          "probability": 0.013
+        },
+        {
+          "text": "Father,",
+          "start": 129.3,
+          "end": 130.9,
+          "probability": 0.846
+        }
+      ],
+      "whisper_line_start_delta": -0.0
+    },
+    {
+      "index": 36,
+      "start": 131.18,
+      "end": 131.76,
+      "text": "Oooh",
+      "words": [
+        {
+          "text": "Oooh",
+          "start": 131.18,
+          "end": 131.76
+        }
+      ],
+      "word_slots": [
+        0.58
+      ],
+      "word_spoken": [
+        0.58
+      ],
+      "whisper_window_start": 130.18,
+      "whisper_window_end": 134.26,
+      "whisper_window_word_count": 3,
+      "whisper_window_low_conf_count": 2,
+      "whisper_window_avg_prob": 0.303,
+      "whisper_window_words": [
+        {
+          "text": "stir",
+          "start": 131.18,
+          "end": 131.76,
+          "probability": 0.075
+        },
+        {
+          "text": "me",
+          "start": 131.76,
+          "end": 131.96,
+          "probability": 0.832
+        },
+        {
+          "text": "yourself",
+          "start": 131.96,
+          "end": 132.52,
+          "probability": 0.0
+        }
+      ],
+      "whisper_line_start_delta": null
+    },
+    {
+      "index": 37,
+      "start": 136.14,
+      "end": 138.28,
+      "text": "In my feathers and furs",
+      "words": [
+        {
+          "text": "In",
+          "start": 136.14,
+          "end": 137.21
+        },
+        {
+          "text": "my",
+          "start": 137.21,
+          "end": 137.798
+        },
+        {
+          "text": "feathers",
+          "start": 137.798,
+          "end": 137.865
+        },
+        {
+          "text": "and",
+          "start": 137.865,
+          "end": 137.932
+        },
+        {
+          "text": "furs",
+          "start": 137.932,
+          "end": 138.28
+        }
+      ],
+      "word_slots": [
+        1.07,
+        0.588,
+        0.067,
+        0.067,
+        0.348
+      ],
+      "word_spoken": [
+        1.07,
+        0.588,
+        0.067,
+        0.067,
+        0.348
+      ],
+      "whisper_window_start": 133.26,
+      "whisper_window_end": 136.4,
+      "whisper_window_word_count": 5,
+      "whisper_window_low_conf_count": 2,
+      "whisper_window_avg_prob": 0.475,
+      "whisper_window_words": [
+        {
+          "text": "Father,",
+          "start": 134.26,
+          "end": 135.06,
+          "probability": 0.0
+        },
+        {
+          "text": "stir",
+          "start": 135.7,
+          "end": 135.7,
+          "probability": 0.776
+        },
+        {
+          "text": "me",
+          "start": 135.7,
+          "end": 135.7,
+          "probability": 0.947
+        },
+        {
+          "text": "yourself",
+          "start": 135.7,
+          "end": 136.14,
+          "probability": 0.054
+        },
+        {
+          "text": "In",
+          "start": 136.14,
+          "end": 136.4,
+          "probability": 0.596
+        }
+      ],
+      "whisper_line_start_delta": 1.88
+    },
+    {
+      "index": 38,
+      "start": 136.4,
+      "end": 138.92,
+      "text": "Clothes of many colors",
+      "words": [
+        {
+          "text": "Clothes",
+          "start": 136.4,
+          "end": 137.2
+        },
+        {
+          "text": "of",
+          "start": 137.2,
+          "end": 137.86
+        },
+        {
+          "text": "many",
+          "start": 137.86,
+          "end": 138.26
+        },
+        {
+          "text": "colors",
+          "start": 138.26,
+          "end": 138.92
+        }
+      ],
+      "word_slots": [
+        0.8,
+        0.66,
+        0.4,
+        0.66
+      ],
+      "word_spoken": [
+        0.8,
+        0.66,
+        0.4,
+        0.66
+      ],
+      "whisper_window_start": 135.4,
+      "whisper_window_end": 139.64,
+      "whisper_window_word_count": 8,
+      "whisper_window_low_conf_count": 1,
+      "whisper_window_avg_prob": 0.789,
+      "whisper_window_words": [
+        {
+          "text": "stir",
+          "start": 135.7,
+          "end": 135.7,
+          "probability": 0.776
+        },
+        {
+          "text": "me",
+          "start": 135.7,
+          "end": 135.7,
+          "probability": 0.947
+        },
+        {
+          "text": "yourself",
+          "start": 135.7,
+          "end": 136.14,
+          "probability": 0.054
+        },
+        {
+          "text": "In",
+          "start": 136.14,
+          "end": 136.4,
+          "probability": 0.596
+        },
+        {
+          "text": "my",
+          "start": 136.4,
+          "end": 137.2,
+          "probability": 0.997
+        },
+        {
+          "text": "feathers",
+          "start": 137.2,
+          "end": 137.86,
+          "probability": 0.991
+        },
+        {
+          "text": "and",
+          "start": 137.86,
+          "end": 138.26,
+          "probability": 0.966
+        },
+        {
+          "text": "furs",
+          "start": 138.26,
+          "end": 138.92,
+          "probability": 0.99
+        }
+      ],
+      "whisper_line_start_delta": null
+    },
+    {
+      "index": 39,
+      "start": 140.44,
+      "end": 144.44,
+      "text": "Many men will envy me",
+      "words": [
+        {
+          "text": "Many",
+          "start": 140.44,
+          "end": 141.831
+        },
+        {
+          "text": "men",
+          "start": 141.831,
+          "end": 142.179
+        },
+        {
+          "text": "will",
+          "start": 142.179,
+          "end": 142.527
+        },
+        {
+          "text": "envy",
+          "start": 142.527,
+          "end": 143.57
+        },
+        {
+          "text": "me",
+          "start": 143.57,
+          "end": 144.44
+        }
+      ],
+      "word_slots": [
+        1.391,
+        0.348,
+        0.348,
+        1.043,
+        0.87
+      ],
+      "word_spoken": [
+        1.391,
+        0.348,
+        0.348,
+        1.043,
+        0.87
+      ],
+      "whisper_window_start": 138.64,
+      "whisper_window_end": 142.48,
+      "whisper_window_word_count": 5,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.948,
+      "whisper_window_words": [
+        {
+          "text": "Clothes",
+          "start": 139.64,
+          "end": 140.28,
+          "probability": 0.977
+        },
+        {
+          "text": "of",
+          "start": 140.28,
+          "end": 140.44,
+          "probability": 0.826
+        },
+        {
+          "text": "many",
+          "start": 140.44,
+          "end": 140.6,
+          "probability": 0.998
+        },
+        {
+          "text": "colors",
+          "start": 140.6,
+          "end": 141.08,
+          "probability": 0.951
+        },
+        {
+          "text": "Many",
+          "start": 142.08,
+          "end": 142.48,
+          "probability": 0.986
+        }
+      ],
+      "whisper_line_start_delta": 0.8
+    },
+    {
+      "index": 40,
+      "start": 143.78,
+      "end": 146.66,
+      "text": "When I'm in my finery",
+      "words": [
+        {
+          "text": "When",
+          "start": 143.78,
+          "end": 144.203
+        },
+        {
+          "text": "I'm",
+          "start": 144.203,
+          "end": 144.546
+        },
+        {
+          "text": "in",
+          "start": 144.546,
+          "end": 144.969
+        },
+        {
+          "text": "my",
+          "start": 144.969,
+          "end": 146.409
+        },
+        {
+          "text": "finery",
+          "start": 146.409,
+          "end": 146.66
+        }
+      ],
+      "word_slots": [
+        0.423,
+        0.343,
+        0.423,
+        1.44,
+        0.251
+      ],
+      "word_spoken": [
+        0.423,
+        0.343,
+        0.423,
+        1.44,
+        0.251
+      ],
+      "whisper_window_start": 141.48,
+      "whisper_window_end": 144.88,
+      "whisper_window_word_count": 6,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.98,
+      "whisper_window_words": [
+        {
+          "text": "Many",
+          "start": 142.08,
+          "end": 142.48,
+          "probability": 0.986
+        },
+        {
+          "text": "men",
+          "start": 142.48,
+          "end": 142.8,
+          "probability": 0.997
+        },
+        {
+          "text": "will",
+          "start": 142.8,
+          "end": 143.06,
+          "probability": 0.913
+        },
+        {
+          "text": "envy",
+          "start": 143.06,
+          "end": 143.38,
+          "probability": 1.0
+        },
+        {
+          "text": "me",
+          "start": 143.38,
+          "end": 143.78,
+          "probability": 0.999
+        },
+        {
+          "text": "When",
+          "start": 143.78,
+          "end": 144.88,
+          "probability": 0.984
+        }
+      ],
+      "whisper_line_start_delta": 1.3
+    },
+    {
+      "index": 41,
+      "start": 146.04,
+      "end": 148.2,
+      "text": "Me in my finery",
+      "words": [
+        {
+          "text": "Me",
+          "start": 146.04,
+          "end": 146.28
+        },
+        {
+          "text": "in",
+          "start": 146.28,
+          "end": 146.367
+        },
+        {
+          "text": "my",
+          "start": 146.367,
+          "end": 147.109
+        },
+        {
+          "text": "finery",
+          "start": 147.109,
+          "end": 148.2
+        }
+      ],
+      "word_slots": [
+        0.24,
+        0.087,
+        0.742,
+        1.091
+      ],
+      "word_spoken": [
+        0.24,
+        0.087,
+        0.742,
+        1.091
+      ],
+      "whisper_window_start": 143.88,
+      "whisper_window_end": 147.04,
+      "whisper_window_word_count": 5,
+      "whisper_window_low_conf_count": 1,
+      "whisper_window_avg_prob": 0.891,
+      "whisper_window_words": [
+        {
+          "text": "I'm",
+          "start": 144.88,
+          "end": 145.1,
+          "probability": 0.997
+        },
+        {
+          "text": "in",
+          "start": 145.1,
+          "end": 145.18,
+          "probability": 0.984
+        },
+        {
+          "text": "my",
+          "start": 145.18,
+          "end": 145.36,
+          "probability": 0.994
+        },
+        {
+          "text": "finery",
+          "start": 145.36,
+          "end": 146.04,
+          "probability": 0.997
+        },
+        {
+          "text": "Me",
+          "start": 146.04,
+          "end": 147.04,
+          "probability": 0.484
+        }
+      ],
+      "whisper_line_start_delta": 1.16
+    },
+    {
+      "index": 42,
+      "start": 147.04,
+      "end": 148.84,
+      "text": "Envy me, envy me",
+      "words": [
+        {
+          "text": "Envy",
+          "start": 147.04,
+          "end": 147.16
+        },
+        {
+          "text": "me,",
+          "start": 147.16,
+          "end": 147.34
+        },
+        {
+          "text": "envy",
+          "start": 147.34,
+          "end": 147.6
+        },
+        {
+          "text": "me",
+          "start": 147.6,
+          "end": 148.84
+        }
+      ],
+      "word_slots": [
+        0.12,
+        0.18,
+        0.26,
+        1.24
+      ],
+      "word_spoken": [
+        0.12,
+        0.18,
+        0.26,
+        1.24
+      ],
+      "whisper_window_start": 146.04,
+      "whisper_window_end": 148.84,
+      "whisper_window_word_count": 5,
+      "whisper_window_low_conf_count": 3,
+      "whisper_window_avg_prob": 0.553,
+      "whisper_window_words": [
+        {
+          "text": "Me",
+          "start": 146.04,
+          "end": 147.04,
+          "probability": 0.484
+        },
+        {
+          "text": "and",
+          "start": 147.04,
+          "end": 147.16,
+          "probability": 0.864
+        },
+        {
+          "text": "my",
+          "start": 147.16,
+          "end": 147.34,
+          "probability": 0.997
+        },
+        {
+          "text": "father's",
+          "start": 147.34,
+          "end": 147.6,
+          "probability": 0.165
+        },
+        {
+          "text": "And",
+          "start": 147.6,
+          "end": 148.84,
+          "probability": 0.253
+        }
+      ],
+      "whisper_line_start_delta": null
+    },
+    {
+      "index": 43,
+      "start": 150.94,
+      "end": 153.04,
+      "text": "Spending all my bright money",
+      "words": [
+        {
+          "text": "Spending",
+          "start": 150.94,
+          "end": 151.378
+        },
+        {
+          "text": "all",
+          "start": 151.378,
+          "end": 151.859
+        },
+        {
+          "text": "my",
+          "start": 151.859,
+          "end": 152.296
+        },
+        {
+          "text": "bright",
+          "start": 152.296,
+          "end": 152.668
+        },
+        {
+          "text": "money",
+          "start": 152.668,
+          "end": 153.04
+        }
+      ],
+      "word_slots": [
+        0.438,
+        0.481,
+        0.437,
+        0.372,
+        0.372
+      ],
+      "word_spoken": [
+        0.438,
+        0.481,
+        0.437,
+        0.372,
+        0.372
+      ],
+      "whisper_window_start": 147.84,
+      "whisper_window_end": 153.18,
+      "whisper_window_word_count": 10,
+      "whisper_window_low_conf_count": 1,
+      "whisper_window_avg_prob": 0.874,
+      "whisper_window_words": [
+        {
+          "text": "big",
+          "start": 148.84,
+          "end": 149.24,
+          "probability": 0.495
+        },
+        {
+          "text": "me,",
+          "start": 149.24,
+          "end": 149.68,
+          "probability": 0.952
+        },
+        {
+          "text": "and",
+          "start": 149.86,
+          "end": 150.26,
+          "probability": 0.659
+        },
+        {
+          "text": "big",
+          "start": 150.26,
+          "end": 150.6,
+          "probability": 0.876
+        },
+        {
+          "text": "me",
+          "start": 150.6,
+          "end": 150.94,
+          "probability": 0.998
+        },
+        {
+          "text": "Spending",
+          "start": 150.94,
+          "end": 151.68,
+          "probability": 0.79
+        },
+        {
+          "text": "all",
+          "start": 151.68,
+          "end": 152.08,
+          "probability": 0.999
+        },
+        {
+          "text": "my",
+          "start": 152.08,
+          "end": 152.36,
+          "probability": 0.983
+        },
+        {
+          "text": "bright",
+          "start": 152.36,
+          "end": 152.7,
+          "probability": 0.989
+        },
+        {
+          "text": "money",
+          "start": 152.7,
+          "end": 153.18,
+          "probability": 0.997
+        }
+      ],
+      "whisper_line_start_delta": 2.1
+    },
+    {
+      "index": 44,
+      "start": 153.18,
+      "end": 154.98,
+      "text": "Young man in Americay",
+      "words": [
+        {
+          "text": "Young",
+          "start": 153.18,
+          "end": 154.06
+        },
+        {
+          "text": "man",
+          "start": 154.06,
+          "end": 154.38
+        },
+        {
+          "text": "in",
+          "start": 154.38,
+          "end": 154.84
+        },
+        {
+          "text": "Americay",
+          "start": 154.84,
+          "end": 154.98
+        }
+      ],
+      "word_slots": [
+        0.88,
+        0.32,
+        0.46,
+        0.14
+      ],
+      "word_spoken": [
+        0.88,
+        0.32,
+        0.46,
+        0.14
+      ],
+      "whisper_window_start": 152.18,
+      "whisper_window_end": 155.36,
+      "whisper_window_word_count": 7,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.937,
+      "whisper_window_words": [
+        {
+          "text": "bright",
+          "start": 152.36,
+          "end": 152.7,
+          "probability": 0.989
+        },
+        {
+          "text": "money",
+          "start": 152.7,
+          "end": 153.18,
+          "probability": 0.997
+        },
+        {
+          "text": "Young",
+          "start": 153.18,
+          "end": 154.06,
+          "probability": 0.948
+        },
+        {
+          "text": "man",
+          "start": 154.06,
+          "end": 154.38,
+          "probability": 0.983
+        },
+        {
+          "text": "in",
+          "start": 154.38,
+          "end": 154.84,
+          "probability": 0.982
+        },
+        {
+          "text": "a",
+          "start": 154.84,
+          "end": 154.98,
+          "probability": 0.967
+        },
+        {
+          "text": "married",
+          "start": 154.98,
+          "end": 155.36,
+          "probability": 0.696
+        }
+      ],
+      "whisper_line_start_delta": 0.0
+    },
+    {
+      "index": 45,
+      "start": 158.88,
+      "end": 162.88,
+      "text": "Maybe I climb the stairs",
+      "words": [
+        {
+          "text": "Maybe",
+          "start": 158.88,
+          "end": 159.626
+        },
+        {
+          "text": "I",
+          "start": 159.626,
+          "end": 160.846
+        },
+        {
+          "text": "climb",
+          "start": 160.846,
+          "end": 161.761
+        },
+        {
+          "text": "the",
+          "start": 161.761,
+          "end": 162.27
+        },
+        {
+          "text": "stairs",
+          "start": 162.27,
+          "end": 162.88
+        }
+      ],
+      "word_slots": [
+        0.746,
+        1.22,
+        0.915,
+        0.508,
+        0.61
+      ],
+      "word_spoken": [
+        0.746,
+        1.22,
+        0.915,
+        0.508,
+        0.61
+      ],
+      "whisper_window_start": 154.36,
+      "whisper_window_end": 160.8,
+      "whisper_window_word_count": 8,
+      "whisper_window_low_conf_count": 1,
+      "whisper_window_avg_prob": 0.83,
+      "whisper_window_words": [
+        {
+          "text": "in",
+          "start": 154.38,
+          "end": 154.84,
+          "probability": 0.982
+        },
+        {
+          "text": "a",
+          "start": 154.84,
+          "end": 154.98,
+          "probability": 0.967
+        },
+        {
+          "text": "married",
+          "start": 154.98,
+          "end": 155.36,
+          "probability": 0.696
+        },
+        {
+          "text": "cave",
+          "start": 155.36,
+          "end": 155.8,
+          "probability": 0.329
+        },
+        {
+          "text": "Maybe",
+          "start": 158.88,
+          "end": 159.6,
+          "probability": 0.954
+        },
+        {
+          "text": "I'd",
+          "start": 159.6,
+          "end": 160.14,
+          "probability": 0.735
+        },
+        {
+          "text": "climb",
+          "start": 160.14,
+          "end": 160.44,
+          "probability": 0.977
+        },
+        {
+          "text": "the",
+          "start": 160.44,
+          "end": 160.8,
+          "probability": 0.998
+        }
+      ],
+      "whisper_line_start_delta": 3.52
+    },
+    {
+      "index": 46,
+      "start": 161.24,
+      "end": 164.88,
+      "text": "With a girl of golden hair",
+      "words": [
+        {
+          "text": "With",
+          "start": 161.24,
+          "end": 161.913
+        },
+        {
+          "text": "a",
+          "start": 161.913,
+          "end": 162.127
+        },
+        {
+          "text": "girl",
+          "start": 162.127,
+          "end": 162.616
+        },
+        {
+          "text": "of",
+          "start": 162.616,
+          "end": 163.259
+        },
+        {
+          "text": "golden",
+          "start": 163.259,
+          "end": 164.605
+        },
+        {
+          "text": "hair",
+          "start": 164.605,
+          "end": 164.88
+        }
+      ],
+      "word_slots": [
+        0.673,
+        0.214,
+        0.489,
+        0.642,
+        1.346,
+        0.275
+      ],
+      "word_spoken": [
+        0.673,
+        0.214,
+        0.489,
+        0.642,
+        1.346,
+        0.275
+      ],
+      "whisper_window_start": 159.8,
+      "whisper_window_end": 164.44,
+      "whisper_window_word_count": 11,
+      "whisper_window_low_conf_count": 1,
+      "whisper_window_avg_prob": 0.93,
+      "whisper_window_words": [
+        {
+          "text": "climb",
+          "start": 160.14,
+          "end": 160.44,
+          "probability": 0.977
+        },
+        {
+          "text": "the",
+          "start": 160.44,
+          "end": 160.8,
+          "probability": 0.998
+        },
+        {
+          "text": "stairs",
+          "start": 160.8,
+          "end": 161.24,
+          "probability": 0.999
+        },
+        {
+          "text": "With",
+          "start": 161.24,
+          "end": 162.02,
+          "probability": 0.974
+        },
+        {
+          "text": "a",
+          "start": 162.02,
+          "end": 162.14,
+          "probability": 0.993
+        },
+        {
+          "text": "girl",
+          "start": 162.14,
+          "end": 162.5,
+          "probability": 0.999
+        },
+        {
+          "text": "of",
+          "start": 162.5,
+          "end": 162.64,
+          "probability": 0.956
+        },
+        {
+          "text": "golden",
+          "start": 162.64,
+          "end": 162.96,
+          "probability": 0.999
+        },
+        {
+          "text": "hair",
+          "start": 162.96,
+          "end": 163.38,
+          "probability": 1.0
+        },
+        {
+          "text": "Hold",
+          "start": 163.38,
+          "end": 164.26,
+          "probability": 0.374
+        },
+        {
+          "text": "her",
+          "start": 164.26,
+          "end": 164.44,
+          "probability": 0.965
+        }
+      ],
+      "whisper_line_start_delta": 0.44
+    },
+    {
+      "index": 47,
+      "start": 164.44,
+      "end": 168.64,
+      "text": "Hold her like a sword and shield",
+      "words": [
+        {
+          "text": "Hold",
+          "start": 164.44,
+          "end": 164.814
+        },
+        {
+          "text": "her",
+          "start": 164.814,
+          "end": 165.217
+        },
+        {
+          "text": "like",
+          "start": 165.217,
+          "end": 165.648
+        },
+        {
+          "text": "a",
+          "start": 165.648,
+          "end": 166.166
+        },
+        {
+          "text": "sword",
+          "start": 166.166,
+          "end": 166.684
+        },
+        {
+          "text": "and",
+          "start": 166.684,
+          "end": 168.208
+        },
+        {
+          "text": "shield",
+          "start": 168.208,
+          "end": 168.64
+        }
+      ],
+      "word_slots": [
+        0.374,
+        0.403,
+        0.432,
+        0.518,
+        0.518,
+        1.525,
+        0.432
+      ],
+      "word_spoken": [
+        0.374,
+        0.403,
+        0.432,
+        0.518,
+        0.518,
+        1.525,
+        0.432
+      ],
+      "whisper_window_start": 163.44,
+      "whisper_window_end": 167.2,
+      "whisper_window_word_count": 8,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.982,
+      "whisper_window_words": [
+        {
+          "text": "her",
+          "start": 164.26,
+          "end": 164.44,
+          "probability": 0.965
+        },
+        {
+          "text": "like",
+          "start": 164.44,
+          "end": 164.7,
+          "probability": 0.999
+        },
+        {
+          "text": "a",
+          "start": 164.7,
+          "end": 164.9,
+          "probability": 0.998
+        },
+        {
+          "text": "sword",
+          "start": 164.9,
+          "end": 165.18,
+          "probability": 0.942
+        },
+        {
+          "text": "and",
+          "start": 165.18,
+          "end": 165.48,
+          "probability": 0.998
+        },
+        {
+          "text": "shield",
+          "start": 165.48,
+          "end": 165.84,
+          "probability": 0.956
+        },
+        {
+          "text": "Up",
+          "start": 165.84,
+          "end": 166.9,
+          "probability": 0.998
+        },
+        {
+          "text": "against",
+          "start": 166.9,
+          "end": 167.2,
+          "probability": 0.999
+        }
+      ],
+      "whisper_line_start_delta": null
+    },
+    {
+      "index": 48,
+      "start": 167.2,
+      "end": 171.2,
+      "text": "Up against this lonely world",
+      "words": [
+        {
+          "text": "Up",
+          "start": 167.2,
+          "end": 167.297
+        },
+        {
+          "text": "against",
+          "start": 167.297,
+          "end": 167.588
+        },
+        {
+          "text": "this",
+          "start": 167.588,
+          "end": 167.863
+        },
+        {
+          "text": "lonely",
+          "start": 167.863,
+          "end": 168.17
+        },
+        {
+          "text": "world",
+          "start": 168.17,
+          "end": 171.2
+        }
+      ],
+      "word_slots": [
+        0.097,
+        0.291,
+        0.275,
+        0.307,
+        3.03
+      ],
+      "word_spoken": [
+        0.097,
+        0.291,
+        0.275,
+        0.307,
+        3.03
+      ],
+      "whisper_window_start": 166.2,
+      "whisper_window_end": 167.9,
+      "whisper_window_word_count": 3,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.999,
+      "whisper_window_words": [
+        {
+          "text": "against",
+          "start": 166.9,
+          "end": 167.2,
+          "probability": 0.999
+        },
+        {
+          "text": "this",
+          "start": 167.2,
+          "end": 167.56,
+          "probability": 0.998
+        },
+        {
+          "text": "lonely",
+          "start": 167.56,
+          "end": 167.9,
+          "probability": 0.999
+        }
+      ],
+      "whisper_line_start_delta": null
+    },
+    {
+      "index": 49,
+      "start": 168.5,
+      "end": 172.5,
+      "text": "Up against the world",
+      "words": [
+        {
+          "text": "Up",
+          "start": 168.5,
+          "end": 169.777
+        },
+        {
+          "text": "against",
+          "start": 169.777,
+          "end": 170.457
+        },
+        {
+          "text": "the",
+          "start": 170.457,
+          "end": 171.947
+        },
+        {
+          "text": "world",
+          "start": 171.947,
+          "end": 172.5
+        }
+      ],
+      "word_slots": [
+        1.277,
+        0.681,
+        1.489,
+        0.553
+      ],
+      "word_spoken": [
+        1.277,
+        0.681,
+        1.489,
+        0.553
+      ],
+      "whisper_window_start": 166.9,
+      "whisper_window_end": 211.02,
+      "whisper_window_word_count": 34,
+      "whisper_window_low_conf_count": 1,
+      "whisper_window_avg_prob": 0.94,
+      "whisper_window_words": [
+        {
+          "text": "against",
+          "start": 166.9,
+          "end": 167.2,
+          "probability": 0.999
+        },
+        {
+          "text": "this",
+          "start": 167.2,
+          "end": 167.56,
+          "probability": 0.998
+        },
+        {
+          "text": "lonely",
+          "start": 167.56,
+          "end": 167.9,
+          "probability": 0.999
+        },
+        {
+          "text": "world",
+          "start": 167.9,
+          "end": 168.5,
+          "probability": 1.0
+        },
+        {
+          "text": "Up",
+          "start": 168.5,
+          "end": 169.14,
+          "probability": 0.989
+        },
+        {
+          "text": "against",
+          "start": 169.14,
+          "end": 169.5,
+          "probability": 0.999
+        },
+        {
+          "text": "the",
+          "start": 169.5,
+          "end": 169.82,
+          "probability": 0.995
+        },
+        {
+          "text": "world",
+          "start": 169.82,
+          "end": 170.24,
+          "probability": 0.999
+        },
+        {
+          "text": "It's",
+          "start": 170.24,
+          "end": 171.0,
+          "probability": 0.995
+        },
+        {
+          "text": "a",
+          "start": 171.0,
+          "end": 171.06,
+          "probability": 0.997
+        },
+        {
+          "text": "lonely,",
+          "start": 171.06,
+          "end": 171.78,
+          "probability": 1.0
+        },
+        {
+          "text": "lonely",
+          "start": 172.02,
+          "end": 172.28,
+          "probability": 1.0
+        },
+        {
+          "text": "world",
+          "start": 172.28,
+          "end": 173.18,
+          "probability": 1.0
+        },
+        {
+          "text": "For",
+          "start": 173.18,
+          "end": 173.96,
+          "probability": 0.82
+        },
+        {
+          "text": "a",
+          "start": 173.96,
+          "end": 174.08,
+          "probability": 0.98
+        },
+        {
+          "text": "yellow",
+          "start": 174.08,
+          "end": 174.46,
+          "probability": 0.99
+        },
+        {
+          "text": "-headed",
+          "start": 174.46,
+          "end": 174.92,
+          "probability": 0.75
+        },
+        {
+          "text": "girl",
+          "start": 174.92,
+          "end": 175.32,
+          "probability": 0.998
+        },
+        {
+          "text": "and",
+          "start": 175.32,
+          "end": 176.16,
+          "probability": 0.736
+        },
+        {
+          "text": "young",
+          "start": 176.16,
+          "end": 176.48,
+          "probability": 0.889
+        },
+        {
+          "text": "man",
+          "start": 176.48,
+          "end": 176.96,
+          "probability": 0.996
+        },
+        {
+          "text": "Like",
+          "start": 204.48,
+          "end": 205.18,
+          "probability": 0.66
+        },
+        {
+          "text": "the",
+          "start": 205.18,
+          "end": 205.44,
+          "probability": 0.994
+        },
+        {
+          "text": "wind,",
+          "start": 205.44,
+          "end": 205.84,
+          "probability": 0.988
+        },
+        {
+          "text": "I",
+          "start": 205.84,
+          "end": 206.14,
+          "probability": 0.996
+        },
+        {
+          "text": "make",
+          "start": 206.14,
+          "end": 206.48,
+          "probability": 0.994
+        },
+        {
+          "text": "my",
+          "start": 206.48,
+          "end": 206.7,
+          "probability": 0.998
+        },
+        {
+          "text": "moan",
+          "start": 206.7,
+          "end": 207.2,
+          "probability": 0.996
+        },
+        {
+          "text": "A",
+          "start": 207.2,
+          "end": 208.22,
+          "probability": 0.237
+        },
+        {
+          "text": "howl",
+          "start": 208.22,
+          "end": 208.78,
+          "probability": 0.999
+        },
+        {
+          "text": "in",
+          "start": 208.78,
+          "end": 209.08,
+          "probability": 0.998
+        },
+        {
+          "text": "the",
+          "start": 209.08,
+          "end": 209.2,
+          "probability": 0.988
+        },
+        {
+          "text": "canyon",
+          "start": 209.2,
+          "end": 209.72,
+          "probability": 0.994
+        },
+        {
+          "text": "There's",
+          "start": 209.72,
+          "end": 211.02,
+          "probability": 0.975
+        }
+      ],
+      "whisper_line_start_delta": 0.6
+    },
+    {
+      "index": 50,
+      "start": 211.02,
+      "end": 212.36,
+      "text": "It's a lonely, lonely world",
+      "words": [
+        {
+          "text": "It's",
+          "start": 211.02,
+          "end": 211.07
+        },
+        {
+          "text": "a",
+          "start": 211.07,
+          "end": 211.506
+        },
+        {
+          "text": "lonely,",
+          "start": 211.506,
+          "end": 211.804
+        },
+        {
+          "text": "lonely",
+          "start": 211.804,
+          "end": 211.943
+        },
+        {
+          "text": "world",
+          "start": 211.943,
+          "end": 212.36
+        }
+      ],
+      "word_slots": [
+        0.05,
+        0.437,
+        0.298,
+        0.139,
+        0.417
+      ],
+      "word_spoken": [
+        0.05,
+        0.437,
+        0.298,
+        0.139,
+        0.417
+      ],
+      "whisper_window_start": 210.02,
+      "whisper_window_end": 216.26,
+      "whisper_window_word_count": 12,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.982,
+      "whisper_window_words": [
+        {
+          "text": "a",
+          "start": 211.02,
+          "end": 211.06,
+          "probability": 0.999
+        },
+        {
+          "text": "hollow",
+          "start": 211.06,
+          "end": 211.5,
+          "probability": 0.987
+        },
+        {
+          "text": "in",
+          "start": 211.5,
+          "end": 211.8,
+          "probability": 0.999
+        },
+        {
+          "text": "my",
+          "start": 211.8,
+          "end": 211.94,
+          "probability": 0.999
+        },
+        {
+          "text": "bones",
+          "start": 211.94,
+          "end": 212.36,
+          "probability": 0.999
+        },
+        {
+          "text": "Make",
+          "start": 212.36,
+          "end": 213.5,
+          "probability": 0.837
+        },
+        {
+          "text": "me",
+          "start": 213.5,
+          "end": 213.68,
+          "probability": 1.0
+        },
+        {
+          "text": "cry",
+          "start": 213.68,
+          "end": 213.98,
+          "probability": 0.999
+        },
+        {
+          "text": "and",
+          "start": 213.98,
+          "end": 214.56,
+          "probability": 0.972
+        },
+        {
+          "text": "carry",
+          "start": 214.56,
+          "end": 214.88,
+          "probability": 0.999
+        },
+        {
+          "text": "on",
+          "start": 214.88,
+          "end": 215.46,
+          "probability": 1.0
+        },
+        {
+          "text": "Make",
+          "start": 215.46,
+          "end": 216.26,
+          "probability": 0.994
+        }
+      ],
+      "whisper_line_start_delta": null
+    },
+    {
+      "index": 51,
+      "start": 216.26,
+      "end": 217.58,
+      "text": "For a yellow-headed girl",
+      "words": [
+        {
+          "text": "For",
+          "start": 216.26,
+          "end": 216.44
+        },
+        {
+          "text": "a",
+          "start": 216.44,
+          "end": 216.72
+        },
+        {
+          "text": "yellow-headed",
+          "start": 216.72,
+          "end": 217.06
+        },
+        {
+          "text": "girl",
+          "start": 217.06,
+          "end": 217.58
+        }
+      ],
+      "word_slots": [
+        0.18,
+        0.28,
+        0.34,
+        0.52
+      ],
+      "word_spoken": [
+        0.18,
+        0.28,
+        0.34,
+        0.52
+      ],
+      "whisper_window_start": 215.26,
+      "whisper_window_end": 221.34,
+      "whisper_window_word_count": 14,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.984,
+      "whisper_window_words": [
+        {
+          "text": "Make",
+          "start": 215.46,
+          "end": 216.26,
+          "probability": 0.994
+        },
+        {
+          "text": "the",
+          "start": 216.26,
+          "end": 216.44,
+          "probability": 0.998
+        },
+        {
+          "text": "foam",
+          "start": 216.44,
+          "end": 216.72,
+          "probability": 0.945
+        },
+        {
+          "text": "fly",
+          "start": 216.72,
+          "end": 217.06,
+          "probability": 0.998
+        },
+        {
+          "text": "from",
+          "start": 217.06,
+          "end": 217.58,
+          "probability": 0.998
+        },
+        {
+          "text": "my",
+          "start": 217.58,
+          "end": 217.86,
+          "probability": 0.999
+        },
+        {
+          "text": "tongue",
+          "start": 217.86,
+          "end": 218.2,
+          "probability": 0.999
+        },
+        {
+          "text": "Make",
+          "start": 218.2,
+          "end": 218.92,
+          "probability": 0.996
+        },
+        {
+          "text": "me",
+          "start": 218.92,
+          "end": 219.12,
+          "probability": 0.999
+        },
+        {
+          "text": "want",
+          "start": 219.12,
+          "end": 219.36,
+          "probability": 0.866
+        },
+        {
+          "text": "what",
+          "start": 219.36,
+          "end": 219.86,
+          "probability": 0.999
+        },
+        {
+          "text": "I",
+          "start": 219.86,
+          "end": 220.08,
+          "probability": 0.999
+        },
+        {
+          "text": "want",
+          "start": 220.08,
+          "end": 220.44,
+          "probability": 0.999
+        },
+        {
+          "text": "Another",
+          "start": 220.44,
+          "end": 221.34,
+          "probability": 0.986
+        }
+      ],
+      "whisper_line_start_delta": null
+    },
+    {
+      "index": 52,
+      "start": 221.34,
+      "end": 224.1,
+      "text": "And a young man",
+      "words": [
+        {
+          "text": "And",
+          "start": 221.34,
+          "end": 222.12
+        },
+        {
+          "text": "a",
+          "start": 222.12,
+          "end": 222.44
+        },
+        {
+          "text": "young",
+          "start": 222.44,
+          "end": 223.62
+        },
+        {
+          "text": "man",
+          "start": 223.62,
+          "end": 224.1
+        }
+      ],
+      "word_slots": [
+        0.78,
+        0.32,
+        1.18,
+        0.48
+      ],
+      "word_spoken": [
+        0.78,
+        0.32,
+        1.18,
+        0.48
+      ],
+      "whisper_window_start": 220.34,
+      "whisper_window_end": 226.06,
+      "whisper_window_word_count": 7,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.938,
+      "whisper_window_words": [
+        {
+          "text": "Another",
+          "start": 220.44,
+          "end": 221.34,
+          "probability": 0.986
+        },
+        {
+          "text": "wayward",
+          "start": 221.34,
+          "end": 222.12,
+          "probability": 0.995
+        },
+        {
+          "text": "son",
+          "start": 222.12,
+          "end": 222.44,
+          "probability": 0.967
+        },
+        {
+          "text": "Waiting",
+          "start": 222.44,
+          "end": 223.62,
+          "probability": 0.642
+        },
+        {
+          "text": "on",
+          "start": 223.62,
+          "end": 224.1,
+          "probability": 0.999
+        },
+        {
+          "text": "oblivion",
+          "start": 224.1,
+          "end": 225.1,
+          "probability": 0.989
+        },
+        {
+          "text": "Waiting",
+          "start": 225.1,
+          "end": 226.06,
+          "probability": 0.99
+        }
+      ],
+      "whisper_line_start_delta": null
+    },
+    {
+      "index": 53,
+      "start": 226.06,
+      "end": 228.18,
+      "text": "Like the wind I make my moan",
+      "words": [
+        {
+          "text": "Like",
+          "start": 226.06,
+          "end": 226.34
+        },
+        {
+          "text": "the",
+          "start": 226.34,
+          "end": 226.42
+        },
+        {
+          "text": "wind",
+          "start": 226.42,
+          "end": 226.74
+        },
+        {
+          "text": "I",
+          "start": 226.74,
+          "end": 227.26
+        },
+        {
+          "text": "make",
+          "start": 227.26,
+          "end": 227.64
+        },
+        {
+          "text": "my",
+          "start": 227.64,
+          "end": 227.92
+        },
+        {
+          "text": "moan",
+          "start": 227.92,
+          "end": 228.18
+        }
+      ],
+      "word_slots": [
+        0.28,
+        0.08,
+        0.32,
+        0.52,
+        0.38,
+        0.28,
+        0.26
+      ],
+      "word_spoken": [
+        0.28,
+        0.08,
+        0.32,
+        0.52,
+        0.38,
+        0.28,
+        0.26
+      ],
+      "whisper_window_start": 225.06,
+      "whisper_window_end": 230.16,
+      "whisper_window_word_count": 12,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.957,
+      "whisper_window_words": [
+        {
+          "text": "Waiting",
+          "start": 225.1,
+          "end": 226.06,
+          "probability": 0.99
+        },
+        {
+          "text": "on",
+          "start": 226.06,
+          "end": 226.34,
+          "probability": 0.998
+        },
+        {
+          "text": "a",
+          "start": 226.34,
+          "end": 226.42,
+          "probability": 0.99
+        },
+        {
+          "text": "kingdom",
+          "start": 226.42,
+          "end": 226.74,
+          "probability": 0.999
+        },
+        {
+          "text": "Come",
+          "start": 226.74,
+          "end": 227.26,
+          "probability": 0.603
+        },
+        {
+          "text": "to",
+          "start": 227.26,
+          "end": 227.64,
+          "probability": 0.994
+        },
+        {
+          "text": "meet",
+          "start": 227.64,
+          "end": 227.92,
+          "probability": 0.998
+        },
+        {
+          "text": "me",
+          "start": 227.92,
+          "end": 228.18,
+          "probability": 1.0
+        },
+        {
+          "text": "in",
+          "start": 228.18,
+          "end": 228.38,
+          "probability": 0.994
+        },
+        {
+          "text": "my",
+          "start": 228.38,
+          "end": 228.54,
+          "probability": 0.999
+        },
+        {
+          "text": "sin",
+          "start": 228.54,
+          "end": 228.94,
+          "probability": 0.928
+        },
+        {
+          "text": "Waiting",
+          "start": 228.94,
+          "end": 230.16,
+          "probability": 0.993
+        }
+      ],
+      "whisper_line_start_delta": null
+    },
+    {
+      "index": 54,
+      "start": 230.16,
+      "end": 231.48,
+      "text": "Howl in the canyon",
+      "words": [
+        {
+          "text": "Howl",
+          "start": 230.16,
+          "end": 230.58
+        },
+        {
+          "text": "in",
+          "start": 230.58,
+          "end": 230.72
+        },
+        {
+          "text": "the",
+          "start": 230.72,
+          "end": 231.0
+        },
+        {
+          "text": "canyon",
+          "start": 231.0,
+          "end": 231.48
+        }
+      ],
+      "word_slots": [
+        0.42,
+        0.14,
+        0.28,
+        0.48
+      ],
+      "word_spoken": [
+        0.42,
+        0.14,
+        0.28,
+        0.48
+      ],
+      "whisper_window_start": 229.16,
+      "whisper_window_end": 233.18,
+      "whisper_window_word_count": 7,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.999,
+      "whisper_window_words": [
+        {
+          "text": "to",
+          "start": 230.16,
+          "end": 230.58,
+          "probability": 1.0
+        },
+        {
+          "text": "be",
+          "start": 230.58,
+          "end": 230.72,
+          "probability": 1.0
+        },
+        {
+          "text": "born",
+          "start": 230.72,
+          "end": 231.0,
+          "probability": 1.0
+        },
+        {
+          "text": "again",
+          "start": 231.0,
+          "end": 231.48,
+          "probability": 1.0
+        },
+        {
+          "text": "Mother,",
+          "start": 231.48,
+          "end": 232.42,
+          "probability": 0.993
+        },
+        {
+          "text": "kiss",
+          "start": 232.42,
+          "end": 232.7,
+          "probability": 0.998
+        },
+        {
+          "text": "me",
+          "start": 232.7,
+          "end": 233.06,
+          "probability": 1.0
+        }
+      ],
+      "whisper_line_start_delta": null
+    },
+    {
+      "index": 55,
+      "start": 233.18,
+      "end": 236.14,
+      "text": "There's a hollow in my bones",
+      "words": [
+        {
+          "text": "There's",
+          "start": 233.18,
+          "end": 233.619
+        },
+        {
+          "text": "a",
+          "start": 233.619,
+          "end": 233.706
+        },
+        {
+          "text": "hollow",
+          "start": 233.706,
+          "end": 234.101
+        },
+        {
+          "text": "in",
+          "start": 234.101,
+          "end": 234.824
+        },
+        {
+          "text": "my",
+          "start": 234.824,
+          "end": 235.745
+        },
+        {
+          "text": "bones",
+          "start": 235.745,
+          "end": 236.14
+        }
+      ],
+      "word_slots": [
+        0.439,
+        0.088,
+        0.395,
+        0.724,
+        0.921,
+        0.395
+      ],
+      "word_spoken": [
+        0.439,
+        0.088,
+        0.395,
+        0.724,
+        0.921,
+        0.395
+      ],
+      "whisper_window_start": 232.18,
+      "whisper_window_end": 238.48,
+      "whisper_window_word_count": 11,
+      "whisper_window_low_conf_count": 2,
+      "whisper_window_avg_prob": 0.804,
+      "whisper_window_words": [
+        {
+          "text": "kiss",
+          "start": 232.42,
+          "end": 232.7,
+          "probability": 0.998
+        },
+        {
+          "text": "me",
+          "start": 232.7,
+          "end": 233.06,
+          "probability": 1.0
+        },
+        {
+          "text": "Cheek",
+          "start": 233.18,
+          "end": 233.58,
+          "probability": 0.549
+        },
+        {
+          "text": "and",
+          "start": 233.58,
+          "end": 233.66,
+          "probability": 0.967
+        },
+        {
+          "text": "chin,",
+          "start": 233.66,
+          "end": 234.02,
+          "probability": 0.982
+        },
+        {
+          "text": "mmm",
+          "start": 234.28,
+          "end": 234.94,
+          "probability": 0.484
+        },
+        {
+          "text": "A",
+          "start": 234.94,
+          "end": 235.78,
+          "probability": 0.568
+        },
+        {
+          "text": "little",
+          "start": 235.78,
+          "end": 236.14,
+          "probability": 0.995
+        },
+        {
+          "text": "medicine,",
+          "start": 236.14,
+          "end": 236.84,
+          "probability": 0.995
+        },
+        {
+          "text": "mmm",
+          "start": 237.16,
+          "end": 237.8,
+          "probability": 0.981
+        },
+        {
+          "text": "I",
+          "start": 237.8,
+          "end": 238.48,
+          "probability": 0.327
+        }
+      ],
+      "whisper_line_start_delta": null
+    },
+    {
+      "index": 56,
+      "start": 238.48,
+      "end": 240.96,
+      "text": "Make me cry and carry on",
+      "words": [
+        {
+          "text": "Make",
+          "start": 238.48,
+          "end": 238.941
+        },
+        {
+          "text": "me",
+          "start": 238.941,
+          "end": 239.314
+        },
+        {
+          "text": "cry",
+          "start": 239.314,
+          "end": 239.819
+        },
+        {
+          "text": "and",
+          "start": 239.819,
+          "end": 240.214
+        },
+        {
+          "text": "carry",
+          "start": 240.214,
+          "end": 240.741
+        },
+        {
+          "text": "on",
+          "start": 240.741,
+          "end": 240.96
+        }
+      ],
+      "word_slots": [
+        0.461,
+        0.373,
+        0.505,
+        0.395,
+        0.527,
+        0.219
+      ],
+      "word_spoken": [
+        0.461,
+        0.373,
+        0.505,
+        0.395,
+        0.527,
+        0.219
+      ],
+      "whisper_window_start": 237.48,
+      "whisper_window_end": 241.16,
+      "whisper_window_word_count": 8,
+      "whisper_window_low_conf_count": 1,
+      "whisper_window_avg_prob": 0.846,
+      "whisper_window_words": [
+        {
+          "text": "I",
+          "start": 237.8,
+          "end": 238.48,
+          "probability": 0.327
+        },
+        {
+          "text": "shed",
+          "start": 238.48,
+          "end": 238.9,
+          "probability": 0.686
+        },
+        {
+          "text": "my",
+          "start": 238.9,
+          "end": 239.24,
+          "probability": 0.999
+        },
+        {
+          "text": "skin,",
+          "start": 239.24,
+          "end": 239.7,
+          "probability": 0.999
+        },
+        {
+          "text": "mmm",
+          "start": 239.92,
+          "end": 240.28,
+          "probability": 0.98
+        },
+        {
+          "text": "And",
+          "start": 240.28,
+          "end": 240.76,
+          "probability": 0.796
+        },
+        {
+          "text": "let",
+          "start": 240.76,
+          "end": 240.96,
+          "probability": 0.984
+        },
+        {
+          "text": "me",
+          "start": 240.96,
+          "end": 241.16,
+          "probability": 0.999
+        }
+      ],
+      "whisper_line_start_delta": null
+    },
+    {
+      "index": 57,
+      "start": 241.16,
+      "end": 244.16,
+      "text": "Make the foam fly from my tongue",
+      "words": [
+        {
+          "text": "Make",
+          "start": 241.16,
+          "end": 241.46
+        },
+        {
+          "text": "the",
+          "start": 241.46,
+          "end": 241.92
+        },
+        {
+          "text": "foam",
+          "start": 241.92,
+          "end": 242.36
+        },
+        {
+          "text": "fly",
+          "start": 242.36,
+          "end": 242.92
+        },
+        {
+          "text": "from",
+          "start": 242.92,
+          "end": 243.28
+        },
+        {
+          "text": "my",
+          "start": 243.28,
+          "end": 243.8
+        },
+        {
+          "text": "tongue",
+          "start": 243.8,
+          "end": 244.16
+        }
+      ],
+      "word_slots": [
+        0.3,
+        0.46,
+        0.44,
+        0.56,
+        0.36,
+        0.52,
+        0.36
+      ],
+      "word_spoken": [
+        0.3,
+        0.46,
+        0.44,
+        0.56,
+        0.36,
+        0.52,
+        0.36
+      ],
+      "whisper_window_start": 240.16,
+      "whisper_window_end": 244.54,
+      "whisper_window_word_count": 11,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.953,
+      "whisper_window_words": [
+        {
+          "text": "And",
+          "start": 240.28,
+          "end": 240.76,
+          "probability": 0.796
+        },
+        {
+          "text": "let",
+          "start": 240.76,
+          "end": 240.96,
+          "probability": 0.984
+        },
+        {
+          "text": "me",
+          "start": 240.96,
+          "end": 241.16,
+          "probability": 0.999
+        },
+        {
+          "text": "climb",
+          "start": 241.16,
+          "end": 241.46,
+          "probability": 0.996
+        },
+        {
+          "text": "back",
+          "start": 241.46,
+          "end": 241.92,
+          "probability": 0.999
+        },
+        {
+          "text": "in",
+          "start": 241.92,
+          "end": 242.36,
+          "probability": 0.962
+        },
+        {
+          "text": "The",
+          "start": 242.36,
+          "end": 242.92,
+          "probability": 0.784
+        },
+        {
+          "text": "bed",
+          "start": 242.92,
+          "end": 243.28,
+          "probability": 0.999
+        },
+        {
+          "text": "you",
+          "start": 243.28,
+          "end": 243.8,
+          "probability": 0.973
+        },
+        {
+          "text": "made",
+          "start": 243.8,
+          "end": 244.16,
+          "probability": 0.997
+        },
+        {
+          "text": "me",
+          "start": 244.16,
+          "end": 244.54,
+          "probability": 0.999
+        }
+      ],
+      "whisper_line_start_delta": null
+    },
+    {
+      "index": 58,
+      "start": 244.54,
+      "end": 293.14,
+      "text": "Make me want what I want",
+      "words": [
+        {
+          "text": "Make",
+          "start": 244.54,
+          "end": 245.42
+        },
+        {
+          "text": "me",
+          "start": 269.3,
+          "end": 270.7
+        },
+        {
+          "text": "want",
+          "start": 270.7,
+          "end": 272.1
+        },
+        {
+          "text": "what",
+          "start": 272.1,
+          "end": 287.14
+        },
+        {
+          "text": "I",
+          "start": 287.14,
+          "end": 288.18
+        },
+        {
+          "text": "want",
+          "start": 291.74,
+          "end": 293.14
+        }
+      ],
+      "word_slots": [
+        24.76,
+        1.4,
+        1.4,
+        15.04,
+        4.6,
+        1.4
+      ],
+      "word_spoken": [
+        0.88,
+        1.4,
+        1.4,
+        15.04,
+        1.04,
+        1.4
+      ],
+      "whisper_window_start": 243.54,
+      "whisper_window_end": 291.74,
+      "whisper_window_word_count": 7,
+      "whisper_window_low_conf_count": 4,
+      "whisper_window_avg_prob": 0.443,
+      "whisper_window_words": [
+        {
+          "text": "made",
+          "start": 243.8,
+          "end": 244.16,
+          "probability": 0.997
+        },
+        {
+          "text": "me",
+          "start": 244.16,
+          "end": 244.54,
+          "probability": 0.999
+        },
+        {
+          "text": "in",
+          "start": 244.54,
+          "end": 245.42,
+          "probability": 0.995
+        },
+        {
+          "text": "Then",
+          "start": 269.3,
+          "end": 270.7,
+          "probability": 0.0
+        },
+        {
+          "text": "I",
+          "start": 270.7,
+          "end": 272.1,
+          "probability": 0.071
+        },
+        {
+          "text": "got",
+          "start": 272.1,
+          "end": 287.14,
+          "probability": 0.009
+        },
+        {
+          "text": "my",
+          "start": 287.14,
+          "end": 288.18,
+          "probability": 0.029
+        }
+      ],
+      "whisper_line_start_delta": null
+    },
+    {
+      "index": 59,
+      "start": 291.74,
+      "end": 293.16,
+      "text": "Another wayward son",
+      "words": [
+        {
+          "text": "Another",
+          "start": 291.74,
+          "end": 292.45
+        },
+        {
+          "text": "wayward",
+          "start": 292.45,
+          "end": 292.497
+        },
+        {
+          "text": "son",
+          "start": 292.497,
+          "end": 293.16
+        }
+      ],
+      "word_slots": [
+        0.71,
+        0.047,
+        0.663
+      ],
+      "word_spoken": [
+        0.71,
+        0.047,
+        0.663
+      ],
+      "whisper_window_start": 290.74,
+      "whisper_window_end": 304.7,
+      "whisper_window_word_count": 2,
+      "whisper_window_low_conf_count": 2,
+      "whisper_window_avg_prob": 0.0,
+      "whisper_window_words": [
+        {
+          "text": "Blue",
+          "start": 291.74,
+          "end": 293.14,
+          "probability": 0.0
+        },
+        {
+          "text": "Blue",
+          "start": 293.14,
+          "end": 293.16,
+          "probability": 0.001
+        }
+      ],
+      "whisper_line_start_delta": null
+    },
+    {
+      "index": 60,
+      "start": 304.7,
+      "end": 306.46,
+      "text": "Waiting on oblivion",
+      "words": [
+        {
+          "text": "Waiting",
+          "start": 304.7,
+          "end": 305.58
+        },
+        {
+          "text": "on",
+          "start": 305.58,
+          "end": 305.93
+        },
+        {
+          "text": "oblivion",
+          "start": 305.93,
+          "end": 306.46
+        }
+      ],
+      "word_slots": [
+        0.88,
+        0.35,
+        0.53
+      ],
+      "word_spoken": [
+        0.88,
+        0.35,
+        0.53
+      ],
+      "whisper_window_start": 303.7,
+      "whisper_window_end": 323.18,
+      "whisper_window_word_count": 2,
+      "whisper_window_low_conf_count": 1,
+      "whisper_window_avg_prob": 0.532,
+      "whisper_window_words": [
+        {
+          "text": "Thank",
+          "start": 304.7,
+          "end": 306.1,
+          "probability": 0.078
+        },
+        {
+          "text": "you.",
+          "start": 306.1,
+          "end": 306.46,
+          "probability": 0.987
+        }
+      ],
+      "whisper_line_start_delta": null
+    },
+    {
+      "index": 61,
+      "start": 323.18,
+      "end": 324.48,
+      "text": "Waiting on the kingdom come to meet me in my sin",
+      "words": [
+        {
+          "text": "Waiting",
+          "start": 323.18,
+          "end": 323.83
+        },
+        {
+          "text": "on",
+          "start": 323.83,
+          "end": 323.866
+        },
+        {
+          "text": "the",
+          "start": 323.866,
+          "end": 323.902
+        },
+        {
+          "text": "kingdom",
+          "start": 323.902,
+          "end": 323.938
+        },
+        {
+          "text": "come",
+          "start": 323.938,
+          "end": 323.974
+        },
+        {
+          "text": "to",
+          "start": 323.974,
+          "end": 324.011
+        },
+        {
+          "text": "meet",
+          "start": 324.011,
+          "end": 324.047
+        },
+        {
+          "text": "me",
+          "start": 324.047,
+          "end": 324.083
+        },
+        {
+          "text": "in",
+          "start": 324.083,
+          "end": 324.119
+        },
+        {
+          "text": "my",
+          "start": 324.119,
+          "end": 324.155
+        },
+        {
+          "text": "sin",
+          "start": 324.155,
+          "end": 324.48
+        }
+      ],
+      "word_slots": [
+        0.65,
+        0.036,
+        0.036,
+        0.036,
+        0.036,
+        0.036,
+        0.036,
+        0.036,
+        0.036,
+        0.036,
+        0.325
+      ],
+      "word_spoken": [
+        0.65,
+        0.036,
+        0.036,
+        0.036,
+        0.036,
+        0.036,
+        0.036,
+        0.036,
+        0.036,
+        0.036,
+        0.325
+      ],
+      "whisper_window_start": 322.18,
+      "whisper_window_end": 324.48,
+      "whisper_window_word_count": 1,
+      "whisper_window_low_conf_count": 1,
+      "whisper_window_avg_prob": 0.017,
+      "whisper_window_words": [
+        {
+          "text": "Thank",
+          "start": 323.18,
+          "end": 324.48,
+          "probability": 0.017
+        }
+      ],
+      "whisper_line_start_delta": null
+    },
+    {
+      "index": 62,
+      "start": 324.48,
+      "end": 326.46,
+      "text": "Waiting to be born again",
+      "words": [
+        {
+          "text": "Waiting",
+          "start": 324.48,
+          "end": 324.96
+        },
+        {
+          "text": "to",
+          "start": 324.96,
+          "end": 325.44
+        },
+        {
+          "text": "be",
+          "start": 325.44,
+          "end": 325.92
+        },
+        {
+          "text": "born",
+          "start": 325.92,
+          "end": 326.399
+        },
+        {
+          "text": "again",
+          "start": 326.399,
+          "end": 326.46
+        }
+      ],
+      "word_slots": [
+        0.48,
+        0.48,
+        0.48,
+        0.48,
+        0.061
+      ],
+      "word_spoken": [
+        0.48,
+        0.48,
+        0.48,
+        0.48,
+        0.061
+      ],
+      "whisper_window_start": 323.48,
+      "whisper_window_end": 326.56,
+      "whisper_window_word_count": 1,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.982,
+      "whisper_window_words": [
+        {
+          "text": "you.",
+          "start": 324.48,
+          "end": 324.48,
+          "probability": 0.982
+        }
+      ],
+      "whisper_line_start_delta": null
+    },
+    {
+      "index": 63,
+      "start": 326.56,
+      "end": 328.54,
+      "text": "Mother kiss me cheek and chin",
+      "words": [
+        {
+          "text": "Mother",
+          "start": 326.561,
+          "end": 326.946
+        },
+        {
+          "text": "kiss",
+          "start": 326.946,
+          "end": 327.331
+        },
+        {
+          "text": "me",
+          "start": 327.331,
+          "end": 327.716
+        },
+        {
+          "text": "cheek",
+          "start": 327.716,
+          "end": 328.101
+        },
+        {
+          "text": "and",
+          "start": 328.101,
+          "end": 328.486
+        },
+        {
+          "text": "chin",
+          "start": 328.486,
+          "end": 328.544
+        }
+      ],
+      "word_slots": [
+        0.385,
+        0.385,
+        0.385,
+        0.385,
+        0.385,
+        0.058
+      ],
+      "word_spoken": [
+        0.385,
+        0.385,
+        0.385,
+        0.385,
+        0.385,
+        0.058
+      ],
+      "whisper_window_start": 325.56,
+      "whisper_window_end": 328.64,
+      "whisper_window_word_count": 0,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": null,
+      "whisper_window_words": [],
+      "whisper_line_start_delta": null
+    },
+    {
+      "index": 64,
+      "start": 328.64,
+      "end": 330.62,
+      "text": "Mmm, a little medicine",
+      "words": [
+        {
+          "text": "Mmm,",
+          "start": 328.645,
+          "end": 329.282
+        },
+        {
+          "text": "a",
+          "start": 329.282,
+          "end": 329.919
+        },
+        {
+          "text": "little",
+          "start": 329.919,
+          "end": 330.555
+        },
+        {
+          "text": "medicine",
+          "start": 330.555,
+          "end": 330.62
+        }
+      ],
+      "word_slots": [
+        0.637,
+        0.637,
+        0.637,
+        0.064
+      ],
+      "word_spoken": [
+        0.637,
+        0.637,
+        0.637,
+        0.064
+      ],
+      "whisper_window_start": 327.64,
+      "whisper_window_end": 330.72,
+      "whisper_window_word_count": 0,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": null,
+      "whisper_window_words": [],
+      "whisper_line_start_delta": null
+    },
+    {
+      "index": 65,
+      "start": 330.72,
+      "end": 332.71,
+      "text": "Mmm, and then I shed my skin",
+      "words": [
+        {
+          "text": "Mmm,",
+          "start": 330.72,
+          "end": 331.042
+        },
+        {
+          "text": "and",
+          "start": 331.042,
+          "end": 331.363
+        },
+        {
+          "text": "then",
+          "start": 331.363,
+          "end": 331.685
+        },
+        {
+          "text": "I",
+          "start": 331.685,
+          "end": 332.006
+        },
+        {
+          "text": "shed",
+          "start": 332.006,
+          "end": 332.328
+        },
+        {
+          "text": "my",
+          "start": 332.328,
+          "end": 332.649
+        },
+        {
+          "text": "skin",
+          "start": 332.649,
+          "end": 332.706
+        }
+      ],
+      "word_slots": [
+        0.322,
+        0.322,
+        0.322,
+        0.322,
+        0.322,
+        0.322,
+        0.057
+      ],
+      "word_spoken": [
+        0.322,
+        0.322,
+        0.322,
+        0.322,
+        0.322,
+        0.322,
+        0.057
+      ],
+      "whisper_window_start": 329.72,
+      "whisper_window_end": 332.81,
+      "whisper_window_word_count": 0,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": null,
+      "whisper_window_words": [],
+      "whisper_line_start_delta": null
+    },
+    {
+      "index": 66,
+      "start": 332.81,
+      "end": 335.79,
+      "text": "Mmm, and lemme climb back in the bed you made me in",
+      "words": [
+        {
+          "text": "Mmm,",
+          "start": 332.807,
+          "end": 333.074
+        },
+        {
+          "text": "and",
+          "start": 333.074,
+          "end": 333.341
+        },
+        {
+          "text": "lemme",
+          "start": 333.341,
+          "end": 333.607
+        },
+        {
+          "text": "climb",
+          "start": 333.607,
+          "end": 333.874
+        },
+        {
+          "text": "back",
+          "start": 333.874,
+          "end": 334.141
+        },
+        {
+          "text": "in",
+          "start": 334.141,
+          "end": 334.407
+        },
+        {
+          "text": "the",
+          "start": 334.407,
+          "end": 334.674
+        },
+        {
+          "text": "bed",
+          "start": 334.674,
+          "end": 334.941
+        },
+        {
+          "text": "you",
+          "start": 334.941,
+          "end": 335.208
+        },
+        {
+          "text": "made",
+          "start": 335.208,
+          "end": 335.474
+        },
+        {
+          "text": "me",
+          "start": 335.474,
+          "end": 335.741
+        },
+        {
+          "text": "in",
+          "start": 335.741,
+          "end": 335.795
+        }
+      ],
+      "word_slots": [
+        0.267,
+        0.267,
+        0.267,
+        0.267,
+        0.267,
+        0.267,
+        0.267,
+        0.267,
+        0.267,
+        0.267,
+        0.267,
+        0.054
+      ],
+      "word_spoken": [
+        0.267,
+        0.267,
+        0.267,
+        0.267,
+        0.267,
+        0.267,
+        0.267,
+        0.267,
+        0.267,
+        0.267,
+        0.267,
+        0.054
+      ],
+      "whisper_window_start": 331.81,
+      "whisper_window_end": 337.79,
+      "whisper_window_word_count": 0,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": null,
+      "whisper_window_words": [],
+      "whisper_line_start_delta": null
+    }
+  ],
+  "dtw_word_coverage": 0.833,
+  "dtw_line_coverage": 0.924,
+  "whisper_segments": [
+    {
+      "start": 23.52,
+      "end": 26.14,
+      "text": "My mother gave a mighty shout"
+    },
+    {
+      "start": 26.14,
+      "end": 28.38,
+      "text": "Opened her legs and let me out"
+    },
+    {
+      "start": 29.14,
+      "end": 30.86,
+      "text": "Hungry as a prairie dog"
+    },
+    {
+      "start": 30.86,
+      "end": 33.18,
+      "text": "Young man in America"
+    },
+    {
+      "start": 33.18,
+      "end": 35.14,
+      "text": "Young man in America"
+    },
+    {
+      "start": 36.26,
+      "end": 37.7,
+      "text": "Hungry, hungry"
+    },
+    {
+      "start": 37.7,
+      "end": 40.18,
+      "text": "Running every which way"
+    },
+    {
+      "start": 40.18,
+      "end": 42.34,
+      "text": "Young man in America"
+    },
+    {
+      "start": 45.12,
+      "end": 48.3,
+      "text": "I come out like a cannonball"
+    },
+    {
+      "start": 48.3,
+      "end": 50.56,
+      "text": "Come of age of alcohol"
+    },
+    {
+      "start": 50.56,
+      "end": 52.9,
+      "text": "Raving in a field of rye"
+    },
+    {
+      "start": 52.9,
+      "end": 55.76,
+      "text": "With a black and roving eye"
+    },
+    {
+      "start": 55.76,
+      "end": 57.62,
+      "text": "Black and roving eye"
+    },
+    {
+      "start": 57.62,
+      "end": 60.3,
+      "text": "Ravenous, ravenous"
+    },
+    {
+      "start": 60.3,
+      "end": 62.48,
+      "text": "What you got is not enough"
+    },
+    {
+      "start": 62.48,
+      "end": 64.6,
+      "text": "Young man in America"
+    },
+    {
+      "start": 68.58,
+      "end": 70.18,
+      "text": "Oh, shelter"
+    },
+    {
+      "start": 71.26,
+      "end": 72.8,
+      "text": "Mother, shelter"
+    },
+    {
+      "start": 73.78,
+      "end": 76.14,
+      "text": "Mother, shelter us"
+    },
+    {
+      "start": 77.46,
+      "end": 78.26,
+      "text": "Ooh"
+    },
+    {
+      "start": 79.54,
+      "end": 82.48,
+      "text": "My father was a lord of land"
+    },
+    {
+      "start": 82.48,
+      "end": 85.2,
+      "text": "My dad was a meatball man"
+    },
+    {
+      "start": 85.2,
+      "end": 87.54,
+      "text": "Put me out onto the street"
+    },
+    {
+      "start": 87.62,
+      "end": 89.98,
+      "text": "Didn't give a damn for me"
+    },
+    {
+      "start": 89.98,
+      "end": 92.12,
+      "text": "Did not give a damn"
+    },
+    {
+      "start": 92.12,
+      "end": 94.2,
+      "text": "Daddy, daddy"
+    },
+    {
+      "start": 94.86,
+      "end": 97.08,
+      "text": "Gonna wish you never had me"
+    },
+    {
+      "start": 97.08,
+      "end": 98.44,
+      "text": "I'm a young man"
+    },
+    {
+      "start": 101.4,
+      "end": 104.14,
+      "text": "I'm growing right before your eyes"
+    },
+    {
+      "start": 104.14,
+      "end": 107.0,
+      "text": "I might grow to such a size"
+    },
+    {
+      "start": 107.0,
+      "end": 109.22,
+      "text": "Blowing like a hurricane"
+    },
+    {
+      "start": 110.0,
+      "end": 112.1,
+      "text": "Everyone will know my name"
+    },
+    {
+      "start": 112.1,
+      "end": 114.26,
+      "text": "Everyone will know my name"
+    },
+    {
+      "start": 114.26,
+      "end": 116.6,
+      "text": "Blowing in, blowing out"
+    },
+    {
+      "start": 116.6,
+      "end": 117.6,
+      "text": "Shadowing, shadowing"
+    },
+    {
+      "start": 117.62,
+      "end": 119.22,
+      "text": "I'm raw on the mountaintop"
+    },
+    {
+      "start": 119.22,
+      "end": 121.0,
+      "text": "Young man in America"
+    },
+    {
+      "start": 124.98,
+      "end": 126.58,
+      "text": "Oh, shepherd"
+    },
+    {
+      "start": 127.62,
+      "end": 129.3,
+      "text": "Father, stir me"
+    },
+    {
+      "start": 129.3,
+      "end": 132.52,
+      "text": "Father, stir me yourself"
+    },
+    {
+      "start": 134.26,
+      "end": 136.14,
+      "text": "Father, stir me yourself"
+    },
+    {
+      "start": 136.14,
+      "end": 138.92,
+      "text": "In my feathers and furs"
+    },
+    {
+      "start": 139.64,
+      "end": 141.08,
+      "text": "Clothes of many colors"
+    },
+    {
+      "start": 142.12,
+      "end": 143.78,
+      "text": "Many men will envy me"
+    },
+    {
+      "start": 143.78,
+      "end": 146.04,
+      "text": "When I'm in my finery"
+    },
+    {
+      "start": 146.04,
+      "end": 147.6,
+      "text": "Me and my father's"
+    },
+    {
+      "start": 147.6,
+      "end": 153.18,
+      "text": "And big me, and big me Spending all my bright money"
+    },
+    {
+      "start": 153.18,
+      "end": 155.8,
+      "text": "Young man in a married cave"
+    },
+    {
+      "start": 158.88,
+      "end": 163.38,
+      "text": "Maybe I'd climb the stairs With a girl of golden hair"
+    },
+    {
+      "start": 163.38,
+      "end": 168.5,
+      "text": "Hold her like a sword and shield Up against this lonely world"
+    }
+  ],
+  "whisper_word_count": 357,
+  "whisper_window_low_conf_threshold": 0.5,
+  "low_confidence_lines": [
+    {
+      "index": 33,
+      "text": "Young man in America",
+      "whisper_window_avg_prob": 0.479,
+      "low_conf_ratio": 0.57
+    },
+    {
+      "index": 35,
+      "text": "Father shepherd us",
+      "whisper_window_avg_prob": 0.402,
+      "low_conf_ratio": 0.5
+    },
+    {
+      "index": 36,
+      "text": "Oooh",
+      "whisper_window_avg_prob": 0.303,
+      "low_conf_ratio": 0.67
+    },
+    {
+      "index": 42,
+      "text": "Envy me, envy me",
+      "whisper_window_avg_prob": 0.553,
+      "low_conf_ratio": 0.6
+    },
+    {
+      "index": 58,
+      "text": "Make me want what I want",
+      "whisper_window_avg_prob": 0.443,
+      "low_conf_ratio": 0.57
+    },
+    {
+      "index": 59,
+      "text": "Another wayward son",
+      "whisper_window_avg_prob": 0.0,
+      "low_conf_ratio": 1.0
+    },
+    {
+      "index": 60,
+      "text": "Waiting on oblivion",
+      "whisper_window_avg_prob": 0.532,
+      "low_conf_ratio": 0.5
+    },
+    {
+      "index": 61,
+      "text": "Waiting on the kingdom come to meet me in my sin",
+      "whisper_window_avg_prob": 0.017,
+      "low_conf_ratio": 1.0
+    }
+  ]
+}

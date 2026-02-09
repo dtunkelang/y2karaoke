@@ -1,0 +1,7438 @@
+{
+  "title": "Papaoutai (Afro Soul AI Cover)",
+  "artist": "Stromae",
+  "lyrics_source": "lyrics_file:papaoutai.txt",
+  "alignment_method": "whisper_hybrid",
+  "whisper_requested": true,
+  "whisper_force_dtw": false,
+  "whisper_used": true,
+  "whisper_corrections": 1,
+  "issues": [
+    "5 line(s) had low Whisper confidence"
+  ],
+  "dtw_metrics": {
+    "matched_ratio": 0.8230337078651685,
+    "word_coverage": 0.8230337078651685,
+    "avg_similarity": 0.897896623427767,
+    "line_coverage": 0.8493150684931506,
+    "dtw_used": 1.0,
+    "dtw_mode": 1.0,
+    "whisper_model": "large"
+  },
+  "line_count": 73,
+  "lines": [
+    {
+      "index": 1,
+      "start": 19.11,
+      "end": 20.35,
+      "text": "Dites-moi d'où il vient",
+      "words": [
+        {
+          "text": "Dites-moi",
+          "start": 19.11,
+          "end": 19.71
+        },
+        {
+          "text": "d'où",
+          "start": 19.71,
+          "end": 19.99
+        },
+        {
+          "text": "il",
+          "start": 19.99,
+          "end": 20.29
+        },
+        {
+          "text": "vient",
+          "start": 20.29,
+          "end": 20.35
+        }
+      ],
+      "word_slots": [
+        0.6,
+        0.28,
+        0.3,
+        0.06
+      ],
+      "word_spoken": [
+        0.6,
+        0.28,
+        0.3,
+        0.06
+      ],
+      "whisper_window_start": 18.11,
+      "whisper_window_end": 20.35,
+      "whisper_window_word_count": 4,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.874,
+      "whisper_window_words": [
+        {
+          "text": "Dites",
+          "start": 19.11,
+          "end": 19.71,
+          "probability": 0.57
+        },
+        {
+          "text": "-moi",
+          "start": 19.71,
+          "end": 19.99,
+          "probability": 0.93
+        },
+        {
+          "text": "d",
+          "start": 19.99,
+          "end": 20.29,
+          "probability": 0.995
+        },
+        {
+          "text": "'où",
+          "start": 20.29,
+          "end": 20.35,
+          "probability": 0.999
+        }
+      ],
+      "whisper_line_start_delta": null
+    },
+    {
+      "index": 2,
+      "start": 20.93,
+      "end": 23.23,
+      "text": "Enfin, je saurai où je vais",
+      "words": [
+        {
+          "text": "Enfin,",
+          "start": 20.93,
+          "end": 21.118
+        },
+        {
+          "text": "je",
+          "start": 21.118,
+          "end": 21.432
+        },
+        {
+          "text": "saurai",
+          "start": 21.432,
+          "end": 22.08
+        },
+        {
+          "text": "où",
+          "start": 22.08,
+          "end": 22.456
+        },
+        {
+          "text": "je",
+          "start": 22.456,
+          "end": 22.916
+        },
+        {
+          "text": "vais",
+          "start": 22.916,
+          "end": 23.23
+        }
+      ],
+      "word_slots": [
+        0.188,
+        0.314,
+        0.648,
+        0.376,
+        0.46,
+        0.314
+      ],
+      "word_spoken": [
+        0.188,
+        0.314,
+        0.648,
+        0.376,
+        0.46,
+        0.314
+      ],
+      "whisper_window_start": 19.35,
+      "whisper_window_end": 23.15,
+      "whisper_window_word_count": 11,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.973,
+      "whisper_window_words": [
+        {
+          "text": "-moi",
+          "start": 19.71,
+          "end": 19.99,
+          "probability": 0.93
+        },
+        {
+          "text": "d",
+          "start": 19.99,
+          "end": 20.29,
+          "probability": 0.995
+        },
+        {
+          "text": "'où",
+          "start": 20.29,
+          "end": 20.35,
+          "probability": 0.999
+        },
+        {
+          "text": "il",
+          "start": 20.35,
+          "end": 20.53,
+          "probability": 0.997
+        },
+        {
+          "text": "vient,",
+          "start": 20.53,
+          "end": 20.83,
+          "probability": 0.999
+        },
+        {
+          "text": "enfin",
+          "start": 20.93,
+          "end": 21.55,
+          "probability": 0.991
+        },
+        {
+          "text": "je",
+          "start": 21.55,
+          "end": 21.91,
+          "probability": 0.986
+        },
+        {
+          "text": "saurai",
+          "start": 21.91,
+          "end": 22.35,
+          "probability": 0.811
+        },
+        {
+          "text": "où",
+          "start": 22.35,
+          "end": 22.65,
+          "probability": 0.999
+        },
+        {
+          "text": "je",
+          "start": 22.65,
+          "end": 22.79,
+          "probability": 0.999
+        },
+        {
+          "text": "vais",
+          "start": 22.79,
+          "end": 23.15,
+          "probability": 0.999
+        }
+      ],
+      "whisper_line_start_delta": 0.58
+    },
+    {
+      "index": 3,
+      "start": 23.15,
+      "end": 25.27,
+      "text": "Maman dit que lorsqu'on cherche bien",
+      "words": [
+        {
+          "text": "Maman",
+          "start": 23.15,
+          "end": 23.99
+        },
+        {
+          "text": "dit",
+          "start": 23.99,
+          "end": 24.33
+        },
+        {
+          "text": "que",
+          "start": 24.33,
+          "end": 24.55
+        },
+        {
+          "text": "lorsqu'on",
+          "start": 24.55,
+          "end": 24.81
+        },
+        {
+          "text": "cherche",
+          "start": 24.81,
+          "end": 25.03
+        },
+        {
+          "text": "bien",
+          "start": 25.03,
+          "end": 25.27
+        }
+      ],
+      "word_slots": [
+        0.84,
+        0.34,
+        0.22,
+        0.26,
+        0.22,
+        0.24
+      ],
+      "word_spoken": [
+        0.84,
+        0.34,
+        0.22,
+        0.26,
+        0.22,
+        0.24
+      ],
+      "whisper_window_start": 22.15,
+      "whisper_window_end": 25.27,
+      "whisper_window_word_count": 9,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.97,
+      "whisper_window_words": [
+        {
+          "text": "où",
+          "start": 22.35,
+          "end": 22.65,
+          "probability": 0.999
+        },
+        {
+          "text": "je",
+          "start": 22.65,
+          "end": 22.79,
+          "probability": 0.999
+        },
+        {
+          "text": "vais",
+          "start": 22.79,
+          "end": 23.15,
+          "probability": 0.999
+        },
+        {
+          "text": "Maman",
+          "start": 23.15,
+          "end": 23.99,
+          "probability": 0.741
+        },
+        {
+          "text": "dit",
+          "start": 23.99,
+          "end": 24.33,
+          "probability": 0.998
+        },
+        {
+          "text": "que",
+          "start": 24.33,
+          "end": 24.55,
+          "probability": 1.0
+        },
+        {
+          "text": "lorsqu",
+          "start": 24.55,
+          "end": 24.81,
+          "probability": 0.997
+        },
+        {
+          "text": "'on",
+          "start": 24.81,
+          "end": 25.03,
+          "probability": 1.0
+        },
+        {
+          "text": "cherche",
+          "start": 25.03,
+          "end": 25.27,
+          "probability": 1.0
+        }
+      ],
+      "whisper_line_start_delta": 0.0
+    },
+    {
+      "index": 4,
+      "start": 25.67,
+      "end": 27.75,
+      "text": "On finit toujours par trouver",
+      "words": [
+        {
+          "text": "On",
+          "start": 25.67,
+          "end": 25.949
+        },
+        {
+          "text": "finit",
+          "start": 25.949,
+          "end": 26.399
+        },
+        {
+          "text": "toujours",
+          "start": 26.399,
+          "end": 27.042
+        },
+        {
+          "text": "par",
+          "start": 27.042,
+          "end": 27.364
+        },
+        {
+          "text": "trouver",
+          "start": 27.364,
+          "end": 27.75
+        }
+      ],
+      "word_slots": [
+        0.279,
+        0.45,
+        0.643,
+        0.322,
+        0.386
+      ],
+      "word_spoken": [
+        0.279,
+        0.45,
+        0.643,
+        0.322,
+        0.386
+      ],
+      "whisper_window_start": 24.27,
+      "whisper_window_end": 27.67,
+      "whisper_window_word_count": 10,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.999,
+      "whisper_window_words": [
+        {
+          "text": "que",
+          "start": 24.33,
+          "end": 24.55,
+          "probability": 1.0
+        },
+        {
+          "text": "lorsqu",
+          "start": 24.55,
+          "end": 24.81,
+          "probability": 0.997
+        },
+        {
+          "text": "'on",
+          "start": 24.81,
+          "end": 25.03,
+          "probability": 1.0
+        },
+        {
+          "text": "cherche",
+          "start": 25.03,
+          "end": 25.27,
+          "probability": 1.0
+        },
+        {
+          "text": "bien,",
+          "start": 25.27,
+          "end": 25.53,
+          "probability": 1.0
+        },
+        {
+          "text": "on",
+          "start": 25.67,
+          "end": 26.09,
+          "probability": 1.0
+        },
+        {
+          "text": "finit",
+          "start": 26.09,
+          "end": 26.69,
+          "probability": 0.999
+        },
+        {
+          "text": "toujours",
+          "start": 26.69,
+          "end": 26.99,
+          "probability": 1.0
+        },
+        {
+          "text": "par",
+          "start": 26.99,
+          "end": 27.35,
+          "probability": 0.998
+        },
+        {
+          "text": "trouver",
+          "start": 27.35,
+          "end": 27.67,
+          "probability": 1.0
+        }
+      ],
+      "whisper_line_start_delta": 0.4
+    },
+    {
+      "index": 5,
+      "start": 27.67,
+      "end": 29.55,
+      "text": "Elle dit qu'il n'est jamais très loin",
+      "words": [
+        {
+          "text": "Elle",
+          "start": 27.67,
+          "end": 28.43
+        },
+        {
+          "text": "dit",
+          "start": 28.43,
+          "end": 28.73
+        },
+        {
+          "text": "qu'il",
+          "start": 28.73,
+          "end": 28.99
+        },
+        {
+          "text": "n'est",
+          "start": 28.99,
+          "end": 29.05
+        },
+        {
+          "text": "jamais",
+          "start": 29.05,
+          "end": 29.17
+        },
+        {
+          "text": "très",
+          "start": 29.17,
+          "end": 29.29
+        },
+        {
+          "text": "loin",
+          "start": 29.29,
+          "end": 29.55
+        }
+      ],
+      "word_slots": [
+        0.76,
+        0.3,
+        0.26,
+        0.06,
+        0.12,
+        0.12,
+        0.26
+      ],
+      "word_spoken": [
+        0.76,
+        0.3,
+        0.26,
+        0.06,
+        0.12,
+        0.12,
+        0.26
+      ],
+      "whisper_window_start": 26.67,
+      "whisper_window_end": 29.55,
+      "whisper_window_word_count": 10,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 1.0,
+      "whisper_window_words": [
+        {
+          "text": "toujours",
+          "start": 26.69,
+          "end": 26.99,
+          "probability": 1.0
+        },
+        {
+          "text": "par",
+          "start": 26.99,
+          "end": 27.35,
+          "probability": 0.998
+        },
+        {
+          "text": "trouver",
+          "start": 27.35,
+          "end": 27.67,
+          "probability": 1.0
+        },
+        {
+          "text": "Elle",
+          "start": 27.67,
+          "end": 28.43,
+          "probability": 0.999
+        },
+        {
+          "text": "dit",
+          "start": 28.43,
+          "end": 28.73,
+          "probability": 1.0
+        },
+        {
+          "text": "qu",
+          "start": 28.73,
+          "end": 28.99,
+          "probability": 1.0
+        },
+        {
+          "text": "'il",
+          "start": 28.99,
+          "end": 29.05,
+          "probability": 1.0
+        },
+        {
+          "text": "n",
+          "start": 29.05,
+          "end": 29.17,
+          "probability": 1.0
+        },
+        {
+          "text": "'est",
+          "start": 29.17,
+          "end": 29.29,
+          "probability": 1.0
+        },
+        {
+          "text": "jamais",
+          "start": 29.29,
+          "end": 29.55,
+          "probability": 1.0
+        }
+      ],
+      "whisper_line_start_delta": 0.0
+    },
+    {
+      "index": 6,
+      "start": 29.55,
+      "end": 31.11,
+      "text": "Qu'il part très souvent travailler",
+      "words": [
+        {
+          "text": "Qu'il",
+          "start": 29.55,
+          "end": 29.953
+        },
+        {
+          "text": "part",
+          "start": 29.953,
+          "end": 30.355
+        },
+        {
+          "text": "très",
+          "start": 30.355,
+          "end": 30.682
+        },
+        {
+          "text": "souvent",
+          "start": 30.682,
+          "end": 30.783
+        },
+        {
+          "text": "travailler",
+          "start": 30.783,
+          "end": 31.11
+        }
+      ],
+      "word_slots": [
+        0.403,
+        0.403,
+        0.327,
+        0.101,
+        0.327
+      ],
+      "word_spoken": [
+        0.403,
+        0.403,
+        0.327,
+        0.101,
+        0.327
+      ],
+      "whisper_window_start": 28.55,
+      "whisper_window_end": 32.85,
+      "whisper_window_word_count": 13,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.959,
+      "whisper_window_words": [
+        {
+          "text": "qu",
+          "start": 28.73,
+          "end": 28.99,
+          "probability": 1.0
+        },
+        {
+          "text": "'il",
+          "start": 28.99,
+          "end": 29.05,
+          "probability": 1.0
+        },
+        {
+          "text": "n",
+          "start": 29.05,
+          "end": 29.17,
+          "probability": 1.0
+        },
+        {
+          "text": "'est",
+          "start": 29.17,
+          "end": 29.29,
+          "probability": 1.0
+        },
+        {
+          "text": "jamais",
+          "start": 29.29,
+          "end": 29.55,
+          "probability": 1.0
+        },
+        {
+          "text": "très",
+          "start": 29.55,
+          "end": 29.87,
+          "probability": 0.999
+        },
+        {
+          "text": "loin,",
+          "start": 29.87,
+          "end": 30.19,
+          "probability": 1.0
+        },
+        {
+          "text": "qu",
+          "start": 30.51,
+          "end": 30.77,
+          "probability": 1.0
+        },
+        {
+          "text": "'il",
+          "start": 30.77,
+          "end": 30.85,
+          "probability": 1.0
+        },
+        {
+          "text": "part",
+          "start": 30.85,
+          "end": 31.11,
+          "probability": 0.555
+        },
+        {
+          "text": "très",
+          "start": 31.11,
+          "end": 31.39,
+          "probability": 0.918
+        },
+        {
+          "text": "souvent",
+          "start": 31.39,
+          "end": 31.79,
+          "probability": 1.0
+        },
+        {
+          "text": "travailler",
+          "start": 31.79,
+          "end": 32.23,
+          "probability": 0.995
+        }
+      ],
+      "whisper_line_start_delta": null
+    },
+    {
+      "index": 7,
+      "start": 32.85,
+      "end": 34.65,
+      "text": "Maman dit \"travailler, c'est bien\"",
+      "words": [
+        {
+          "text": "Maman",
+          "start": 32.85,
+          "end": 33.45
+        },
+        {
+          "text": "dit",
+          "start": 33.45,
+          "end": 33.75
+        },
+        {
+          "text": "\"travailler,",
+          "start": 33.75,
+          "end": 34.17
+        },
+        {
+          "text": "c'est",
+          "start": 34.17,
+          "end": 34.53
+        },
+        {
+          "text": "bien\"",
+          "start": 34.53,
+          "end": 34.65
+        }
+      ],
+      "word_slots": [
+        0.6,
+        0.3,
+        0.42,
+        0.36,
+        0.12
+      ],
+      "word_spoken": [
+        0.6,
+        0.3,
+        0.42,
+        0.36,
+        0.12
+      ],
+      "whisper_window_start": 31.85,
+      "whisper_window_end": 34.65,
+      "whisper_window_word_count": 5,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.984,
+      "whisper_window_words": [
+        {
+          "text": "Maman",
+          "start": 32.85,
+          "end": 33.45,
+          "probability": 0.999
+        },
+        {
+          "text": "dit",
+          "start": 33.45,
+          "end": 33.75,
+          "probability": 1.0
+        },
+        {
+          "text": "travailler",
+          "start": 33.75,
+          "end": 34.17,
+          "probability": 0.943
+        },
+        {
+          "text": "c",
+          "start": 34.17,
+          "end": 34.53,
+          "probability": 0.98
+        },
+        {
+          "text": "'est",
+          "start": 34.53,
+          "end": 34.65,
+          "probability": 1.0
+        }
+      ],
+      "whisper_line_start_delta": 0.0
+    },
+    {
+      "index": 8,
+      "start": 34.65,
+      "end": 36.13,
+      "text": "Bien mieux qu'être mal accompagné",
+      "words": [
+        {
+          "text": "Bien",
+          "start": 34.65,
+          "end": 34.893
+        },
+        {
+          "text": "mieux",
+          "start": 34.893,
+          "end": 35.467
+        },
+        {
+          "text": "qu'être",
+          "start": 35.467,
+          "end": 35.799
+        },
+        {
+          "text": "mal",
+          "start": 35.799,
+          "end": 36.042
+        },
+        {
+          "text": "accompagné",
+          "start": 36.042,
+          "end": 36.13
+        }
+      ],
+      "word_slots": [
+        0.243,
+        0.574,
+        0.331,
+        0.243,
+        0.088
+      ],
+      "word_spoken": [
+        0.243,
+        0.574,
+        0.331,
+        0.243,
+        0.088
+      ],
+      "whisper_window_start": 33.65,
+      "whisper_window_end": 36.13,
+      "whisper_window_word_count": 8,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.987,
+      "whisper_window_words": [
+        {
+          "text": "travailler",
+          "start": 33.75,
+          "end": 34.17,
+          "probability": 0.943
+        },
+        {
+          "text": "c",
+          "start": 34.17,
+          "end": 34.53,
+          "probability": 0.98
+        },
+        {
+          "text": "'est",
+          "start": 34.53,
+          "end": 34.65,
+          "probability": 1.0
+        },
+        {
+          "text": "bien,",
+          "start": 34.65,
+          "end": 34.87,
+          "probability": 1.0
+        },
+        {
+          "text": "bien",
+          "start": 35.01,
+          "end": 35.53,
+          "probability": 0.978
+        },
+        {
+          "text": "mieux",
+          "start": 35.53,
+          "end": 35.83,
+          "probability": 1.0
+        },
+        {
+          "text": "qu",
+          "start": 35.83,
+          "end": 36.05,
+          "probability": 0.999
+        },
+        {
+          "text": "'être",
+          "start": 36.05,
+          "end": 36.13,
+          "probability": 1.0
+        }
+      ],
+      "whisper_line_start_delta": 0.0
+    },
+    {
+      "index": 9,
+      "start": 37.49,
+      "end": 38.85,
+      "text": "Pas vrai?",
+      "words": [
+        {
+          "text": "Pas",
+          "start": 37.49,
+          "end": 37.75
+        },
+        {
+          "text": "vrai?",
+          "start": 37.75,
+          "end": 38.85
+        }
+      ],
+      "word_slots": [
+        0.26,
+        1.1
+      ],
+      "word_spoken": [
+        0.26,
+        1.1
+      ],
+      "whisper_window_start": 35.13,
+      "whisper_window_end": 38.83,
+      "whisper_window_word_count": 9,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.964,
+      "whisper_window_words": [
+        {
+          "text": "mieux",
+          "start": 35.53,
+          "end": 35.83,
+          "probability": 1.0
+        },
+        {
+          "text": "qu",
+          "start": 35.83,
+          "end": 36.05,
+          "probability": 0.999
+        },
+        {
+          "text": "'être",
+          "start": 36.05,
+          "end": 36.13,
+          "probability": 1.0
+        },
+        {
+          "text": "mal",
+          "start": 36.13,
+          "end": 36.39,
+          "probability": 1.0
+        },
+        {
+          "text": "accompagné,",
+          "start": 36.39,
+          "end": 37.49,
+          "probability": 0.997
+        },
+        {
+          "text": "pas",
+          "start": 37.49,
+          "end": 37.83,
+          "probability": 0.997
+        },
+        {
+          "text": "vrai",
+          "start": 37.83,
+          "end": 38.15,
+          "probability": 1.0
+        },
+        {
+          "text": "?",
+          "start": 38.15,
+          "end": 38.41,
+          "probability": 0.689
+        },
+        {
+          "text": "Où",
+          "start": 38.41,
+          "end": 38.83,
+          "probability": 0.996
+        }
+      ],
+      "whisper_line_start_delta": 1.36
+    },
+    {
+      "index": 10,
+      "start": 38.83,
+      "end": 39.85,
+      "text": "Où est ton papa?",
+      "words": [
+        {
+          "text": "Où",
+          "start": 38.83,
+          "end": 38.95
+        },
+        {
+          "text": "est",
+          "start": 38.95,
+          "end": 39.15
+        },
+        {
+          "text": "ton",
+          "start": 39.15,
+          "end": 39.49
+        },
+        {
+          "text": "papa?",
+          "start": 39.49,
+          "end": 39.85
+        }
+      ],
+      "word_slots": [
+        0.12,
+        0.2,
+        0.34,
+        0.36
+      ],
+      "word_spoken": [
+        0.12,
+        0.2,
+        0.34,
+        0.36
+      ],
+      "whisper_window_start": 37.83,
+      "whisper_window_end": 39.85,
+      "whisper_window_word_count": 7,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.944,
+      "whisper_window_words": [
+        {
+          "text": "vrai",
+          "start": 37.83,
+          "end": 38.15,
+          "probability": 1.0
+        },
+        {
+          "text": "?",
+          "start": 38.15,
+          "end": 38.41,
+          "probability": 0.689
+        },
+        {
+          "text": "Où",
+          "start": 38.41,
+          "end": 38.83,
+          "probability": 0.996
+        },
+        {
+          "text": "est",
+          "start": 38.83,
+          "end": 38.95,
+          "probability": 0.999
+        },
+        {
+          "text": "ton",
+          "start": 38.95,
+          "end": 39.15,
+          "probability": 0.998
+        },
+        {
+          "text": "papa",
+          "start": 39.15,
+          "end": 39.49,
+          "probability": 0.998
+        },
+        {
+          "text": "?",
+          "start": 39.49,
+          "end": 39.85,
+          "probability": 0.928
+        }
+      ],
+      "whisper_line_start_delta": -0.42
+    },
+    {
+      "index": 11,
+      "start": 39.85,
+      "end": 41.47,
+      "text": "Dis-moi, où est ton papa?",
+      "words": [
+        {
+          "text": "Dis-moi,",
+          "start": 39.85,
+          "end": 40.66
+        },
+        {
+          "text": "où",
+          "start": 40.66,
+          "end": 40.94
+        },
+        {
+          "text": "est",
+          "start": 40.94,
+          "end": 41.04
+        },
+        {
+          "text": "ton",
+          "start": 41.04,
+          "end": 41.16
+        },
+        {
+          "text": "papa?",
+          "start": 41.16,
+          "end": 41.47
+        }
+      ],
+      "word_slots": [
+        0.81,
+        0.28,
+        0.1,
+        0.12,
+        0.31
+      ],
+      "word_spoken": [
+        0.81,
+        0.28,
+        0.1,
+        0.12,
+        0.31
+      ],
+      "whisper_window_start": 38.85,
+      "whisper_window_end": 42.89,
+      "whisper_window_word_count": 10,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.981,
+      "whisper_window_words": [
+        {
+          "text": "ton",
+          "start": 38.95,
+          "end": 39.15,
+          "probability": 0.998
+        },
+        {
+          "text": "papa",
+          "start": 39.15,
+          "end": 39.49,
+          "probability": 0.998
+        },
+        {
+          "text": "?",
+          "start": 39.49,
+          "end": 39.85,
+          "probability": 0.928
+        },
+        {
+          "text": "Dis",
+          "start": 39.85,
+          "end": 40.83,
+          "probability": 0.981
+        },
+        {
+          "text": "-moi",
+          "start": 40.83,
+          "end": 41.11,
+          "probability": 1.0
+        },
+        {
+          "text": "où",
+          "start": 41.11,
+          "end": 41.21,
+          "probability": 0.924
+        },
+        {
+          "text": "est",
+          "start": 41.21,
+          "end": 41.33,
+          "probability": 1.0
+        },
+        {
+          "text": "ton",
+          "start": 41.33,
+          "end": 41.47,
+          "probability": 1.0
+        },
+        {
+          "text": "papa",
+          "start": 41.47,
+          "end": 41.85,
+          "probability": 1.0
+        },
+        {
+          "text": "?",
+          "start": 41.85,
+          "end": 42.33,
+          "probability": 0.983
+        }
+      ],
+      "whisper_line_start_delta": null
+    },
+    {
+      "index": 12,
+      "start": 42.89,
+      "end": 44.75,
+      "text": "Sans même devoir lui parler",
+      "words": [
+        {
+          "text": "Sans",
+          "start": 42.89,
+          "end": 43.19
+        },
+        {
+          "text": "même",
+          "start": 43.19,
+          "end": 43.57
+        },
+        {
+          "text": "devoir",
+          "start": 43.57,
+          "end": 43.97
+        },
+        {
+          "text": "lui",
+          "start": 43.97,
+          "end": 44.29
+        },
+        {
+          "text": "parler",
+          "start": 44.29,
+          "end": 44.75
+        }
+      ],
+      "word_slots": [
+        0.3,
+        0.38,
+        0.4,
+        0.32,
+        0.46
+      ],
+      "word_spoken": [
+        0.3,
+        0.38,
+        0.4,
+        0.32,
+        0.46
+      ],
+      "whisper_window_start": 41.89,
+      "whisper_window_end": 45.01,
+      "whisper_window_word_count": 5,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.998,
+      "whisper_window_words": [
+        {
+          "text": "Sans",
+          "start": 42.89,
+          "end": 43.19,
+          "probability": 0.997
+        },
+        {
+          "text": "même",
+          "start": 43.19,
+          "end": 43.57,
+          "probability": 0.999
+        },
+        {
+          "text": "devoir",
+          "start": 43.57,
+          "end": 43.97,
+          "probability": 0.992
+        },
+        {
+          "text": "lui",
+          "start": 43.97,
+          "end": 44.29,
+          "probability": 1.0
+        },
+        {
+          "text": "parler,",
+          "start": 44.29,
+          "end": 44.75,
+          "probability": 1.0
+        }
+      ],
+      "whisper_line_start_delta": 0.0
+    },
+    {
+      "index": 13,
+      "start": 45.01,
+      "end": 46.73,
+      "text": "Il sait ce qui ne va pas",
+      "words": [
+        {
+          "text": "Il",
+          "start": 45.01,
+          "end": 45.27
+        },
+        {
+          "text": "sait",
+          "start": 45.27,
+          "end": 45.45
+        },
+        {
+          "text": "ce",
+          "start": 45.45,
+          "end": 45.71
+        },
+        {
+          "text": "qui",
+          "start": 45.71,
+          "end": 45.91
+        },
+        {
+          "text": "ne",
+          "start": 45.91,
+          "end": 46.13
+        },
+        {
+          "text": "va",
+          "start": 46.13,
+          "end": 46.39
+        },
+        {
+          "text": "pas",
+          "start": 46.39,
+          "end": 46.73
+        }
+      ],
+      "word_slots": [
+        0.26,
+        0.18,
+        0.26,
+        0.2,
+        0.22,
+        0.26,
+        0.34
+      ],
+      "word_spoken": [
+        0.26,
+        0.18,
+        0.26,
+        0.2,
+        0.22,
+        0.26,
+        0.34
+      ],
+      "whisper_window_start": 44.01,
+      "whisper_window_end": 46.73,
+      "whisper_window_word_count": 8,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.974,
+      "whisper_window_words": [
+        {
+          "text": "parler,",
+          "start": 44.29,
+          "end": 44.75,
+          "probability": 1.0
+        },
+        {
+          "text": "il",
+          "start": 45.01,
+          "end": 45.27,
+          "probability": 0.992
+        },
+        {
+          "text": "sait",
+          "start": 45.27,
+          "end": 45.45,
+          "probability": 0.989
+        },
+        {
+          "text": "ce",
+          "start": 45.45,
+          "end": 45.71,
+          "probability": 0.999
+        },
+        {
+          "text": "qui",
+          "start": 45.71,
+          "end": 45.91,
+          "probability": 0.816
+        },
+        {
+          "text": "ne",
+          "start": 45.91,
+          "end": 46.13,
+          "probability": 1.0
+        },
+        {
+          "text": "va",
+          "start": 46.13,
+          "end": 46.39,
+          "probability": 1.0
+        },
+        {
+          "text": "pas",
+          "start": 46.39,
+          "end": 46.73,
+          "probability": 1.0
+        }
+      ],
+      "whisper_line_start_delta": 0.0
+    },
+    {
+      "index": 14,
+      "start": 46.73,
+      "end": 48.81,
+      "text": "Ah, sacré papa",
+      "words": [
+        {
+          "text": "Ah,",
+          "start": 46.73,
+          "end": 47.47
+        },
+        {
+          "text": "sacré",
+          "start": 47.47,
+          "end": 48.51
+        },
+        {
+          "text": "papa",
+          "start": 48.51,
+          "end": 48.81
+        }
+      ],
+      "word_slots": [
+        0.74,
+        1.04,
+        0.3
+      ],
+      "word_spoken": [
+        0.74,
+        1.04,
+        0.3
+      ],
+      "whisper_window_start": 45.73,
+      "whisper_window_end": 49.15,
+      "whisper_window_word_count": 6,
+      "whisper_window_low_conf_count": 1,
+      "whisper_window_avg_prob": 0.789,
+      "whisper_window_words": [
+        {
+          "text": "ne",
+          "start": 45.91,
+          "end": 46.13,
+          "probability": 1.0
+        },
+        {
+          "text": "va",
+          "start": 46.13,
+          "end": 46.39,
+          "probability": 1.0
+        },
+        {
+          "text": "pas",
+          "start": 46.39,
+          "end": 46.73,
+          "probability": 1.0
+        },
+        {
+          "text": "Ah",
+          "start": 46.73,
+          "end": 47.47,
+          "probability": 0.112
+        },
+        {
+          "text": "sacré",
+          "start": 47.47,
+          "end": 48.61,
+          "probability": 0.74
+        },
+        {
+          "text": "papa,",
+          "start": 48.61,
+          "end": 48.81,
+          "probability": 0.883
+        }
+      ],
+      "whisper_line_start_delta": 0.0
+    },
+    {
+      "index": 15,
+      "start": 49.15,
+      "end": 50.77,
+      "text": "Dis-moi, où es-tu caché?",
+      "words": [
+        {
+          "text": "Dis-moi,",
+          "start": 49.15,
+          "end": 49.96
+        },
+        {
+          "text": "où",
+          "start": 49.96,
+          "end": 50.3
+        },
+        {
+          "text": "es-tu",
+          "start": 50.3,
+          "end": 50.46
+        },
+        {
+          "text": "caché?",
+          "start": 50.46,
+          "end": 50.77
+        }
+      ],
+      "word_slots": [
+        0.81,
+        0.34,
+        0.16,
+        0.31
+      ],
+      "word_spoken": [
+        0.81,
+        0.34,
+        0.16,
+        0.31
+      ],
+      "whisper_window_start": 48.15,
+      "whisper_window_end": 52.59,
+      "whisper_window_word_count": 8,
+      "whisper_window_low_conf_count": 1,
+      "whisper_window_avg_prob": 0.853,
+      "whisper_window_words": [
+        {
+          "text": "papa,",
+          "start": 48.61,
+          "end": 48.81,
+          "probability": 0.883
+        },
+        {
+          "text": "dis",
+          "start": 49.15,
+          "end": 50.17,
+          "probability": 0.977
+        },
+        {
+          "text": "-moi",
+          "start": 50.17,
+          "end": 50.51,
+          "probability": 0.988
+        },
+        {
+          "text": "où",
+          "start": 50.51,
+          "end": 50.67,
+          "probability": 0.725
+        },
+        {
+          "text": "es",
+          "start": 50.67,
+          "end": 50.77,
+          "probability": 0.999
+        },
+        {
+          "text": "-tu",
+          "start": 50.77,
+          "end": 50.81,
+          "probability": 1.0
+        },
+        {
+          "text": "caché",
+          "start": 50.81,
+          "end": 51.61,
+          "probability": 0.979
+        },
+        {
+          "text": "?",
+          "start": 51.61,
+          "end": 51.69,
+          "probability": 0.27
+        }
+      ],
+      "whisper_line_start_delta": null
+    },
+    {
+      "index": 16,
+      "start": 52.59,
+      "end": 55.71,
+      "text": "Ça doit faire au moins mille fois que j'ai",
+      "words": [
+        {
+          "text": "Ça",
+          "start": 52.59,
+          "end": 53.11
+        },
+        {
+          "text": "doit",
+          "start": 53.11,
+          "end": 53.27
+        },
+        {
+          "text": "faire",
+          "start": 53.27,
+          "end": 53.53
+        },
+        {
+          "text": "au",
+          "start": 53.53,
+          "end": 53.89
+        },
+        {
+          "text": "moins",
+          "start": 53.89,
+          "end": 54.07
+        },
+        {
+          "text": "mille",
+          "start": 54.07,
+          "end": 54.33
+        },
+        {
+          "text": "fois",
+          "start": 54.33,
+          "end": 54.61
+        },
+        {
+          "text": "que",
+          "start": 54.61,
+          "end": 54.71
+        },
+        {
+          "text": "j'ai",
+          "start": 54.71,
+          "end": 55.71
+        }
+      ],
+      "word_slots": [
+        0.52,
+        0.16,
+        0.26,
+        0.36,
+        0.18,
+        0.26,
+        0.28,
+        0.1,
+        1.0
+      ],
+      "word_spoken": [
+        0.52,
+        0.16,
+        0.26,
+        0.36,
+        0.18,
+        0.26,
+        0.28,
+        0.1,
+        1.0
+      ],
+      "whisper_window_start": 51.59,
+      "whisper_window_end": 55.71,
+      "whisper_window_word_count": 10,
+      "whisper_window_low_conf_count": 1,
+      "whisper_window_avg_prob": 0.876,
+      "whisper_window_words": [
+        {
+          "text": "?",
+          "start": 51.61,
+          "end": 51.69,
+          "probability": 0.27
+        },
+        {
+          "text": "Fais",
+          "start": 52.59,
+          "end": 53.11,
+          "probability": 0.945
+        },
+        {
+          "text": "au",
+          "start": 53.11,
+          "end": 53.27,
+          "probability": 0.677
+        },
+        {
+          "text": "moins",
+          "start": 53.27,
+          "end": 53.53,
+          "probability": 0.998
+        },
+        {
+          "text": "mille",
+          "start": 53.53,
+          "end": 53.89,
+          "probability": 0.993
+        },
+        {
+          "text": "fois",
+          "start": 53.89,
+          "end": 54.07,
+          "probability": 1.0
+        },
+        {
+          "text": "que",
+          "start": 54.07,
+          "end": 54.33,
+          "probability": 0.991
+        },
+        {
+          "text": "j",
+          "start": 54.33,
+          "end": 54.61,
+          "probability": 0.994
+        },
+        {
+          "text": "'ai",
+          "start": 54.61,
+          "end": 54.71,
+          "probability": 0.954
+        },
+        {
+          "text": "compté",
+          "start": 54.71,
+          "end": 55.71,
+          "probability": 0.943
+        }
+      ],
+      "whisper_line_start_delta": null
+    },
+    {
+      "index": 17,
+      "start": 55.71,
+      "end": 56.35,
+      "text": "Compté mes doigts, hé",
+      "words": [
+        {
+          "text": "Compté",
+          "start": 55.71,
+          "end": 55.814
+        },
+        {
+          "text": "mes",
+          "start": 55.814,
+          "end": 56.134
+        },
+        {
+          "text": "doigts,",
+          "start": 56.134,
+          "end": 56.177
+        },
+        {
+          "text": "hé",
+          "start": 56.177,
+          "end": 56.35
+        }
+      ],
+      "word_slots": [
+        0.104,
+        0.32,
+        0.043,
+        0.173
+      ],
+      "word_spoken": [
+        0.104,
+        0.32,
+        0.043,
+        0.173
+      ],
+      "whisper_window_start": 54.71,
+      "whisper_window_end": 57.49,
+      "whisper_window_word_count": 3,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.947,
+      "whisper_window_words": [
+        {
+          "text": "compté",
+          "start": 54.71,
+          "end": 55.71,
+          "probability": 0.943
+        },
+        {
+          "text": "mes",
+          "start": 55.71,
+          "end": 55.83,
+          "probability": 1.0
+        },
+        {
+          "text": "doigts",
+          "start": 55.83,
+          "end": 56.35,
+          "probability": 0.899
+        }
+      ],
+      "whisper_line_start_delta": -1.0
+    },
+    {
+      "index": 18,
+      "start": 57.49,
+      "end": 58.29,
+      "text": "Où t'es, papaoutai?",
+      "words": [
+        {
+          "text": "Où",
+          "start": 57.49,
+          "end": 57.89
+        },
+        {
+          "text": "t'es,",
+          "start": 57.89,
+          "end": 57.939
+        },
+        {
+          "text": "papaoutai?",
+          "start": 57.939,
+          "end": 58.29
+        }
+      ],
+      "word_slots": [
+        0.4,
+        0.049,
+        0.351
+      ],
+      "word_spoken": [
+        0.4,
+        0.049,
+        0.351
+      ],
+      "whisper_window_start": 56.49,
+      "whisper_window_end": 94.54,
+      "whisper_window_word_count": 8,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.931,
+      "whisper_window_words": [
+        {
+          "text": "Où",
+          "start": 57.49,
+          "end": 58.01,
+          "probability": 0.589
+        },
+        {
+          "text": "t",
+          "start": 58.01,
+          "end": 58.05,
+          "probability": 0.956
+        },
+        {
+          "text": "'es",
+          "start": 58.05,
+          "end": 58.29,
+          "probability": 0.998
+        },
+        {
+          "text": "papa,",
+          "start": 58.29,
+          "end": 58.61,
+          "probability": 0.924
+        },
+        {
+          "text": "où",
+          "start": 58.87,
+          "end": 59.09,
+          "probability": 0.996
+        },
+        {
+          "text": "t",
+          "start": 59.09,
+          "end": 59.23,
+          "probability": 1.0
+        },
+        {
+          "text": "'es",
+          "start": 59.23,
+          "end": 59.49,
+          "probability": 0.999
+        },
+        {
+          "text": "?",
+          "start": 59.49,
+          "end": 60.19,
+          "probability": 0.989
+        }
+      ],
+      "whisper_line_start_delta": 0.0
+    },
+    {
+      "index": 19,
+      "start": 94.54,
+      "end": 95.6,
+      "text": "Où t'es, papaoutai?",
+      "words": [
+        {
+          "text": "Où",
+          "start": 94.54,
+          "end": 94.922
+        },
+        {
+          "text": "t'es,",
+          "start": 94.922,
+          "end": 94.97
+        },
+        {
+          "text": "papaoutai?",
+          "start": 94.97,
+          "end": 95.6
+        }
+      ],
+      "word_slots": [
+        0.382,
+        0.048,
+        0.63
+      ],
+      "word_spoken": [
+        0.382,
+        0.048,
+        0.63
+      ],
+      "whisper_window_start": 93.54,
+      "whisper_window_end": 96.03,
+      "whisper_window_word_count": 6,
+      "whisper_window_low_conf_count": 1,
+      "whisper_window_avg_prob": 0.893,
+      "whisper_window_words": [
+        {
+          "text": "Quoi",
+          "start": 94.54,
+          "end": 94.94,
+          "probability": 0.495
+        },
+        {
+          "text": "?",
+          "start": 94.94,
+          "end": 94.94,
+          "probability": 0.884
+        },
+        {
+          "text": "Qu",
+          "start": 94.94,
+          "end": 95.6,
+          "probability": 0.991
+        },
+        {
+          "text": "'on",
+          "start": 95.6,
+          "end": 95.68,
+          "probability": 0.999
+        },
+        {
+          "text": "y",
+          "start": 95.68,
+          "end": 95.8,
+          "probability": 0.998
+        },
+        {
+          "text": "croit",
+          "start": 95.8,
+          "end": 96.04,
+          "probability": 0.992
+        }
+      ],
+      "whisper_line_start_delta": null
+    },
+    {
+      "index": 20,
+      "start": 96.03,
+      "end": 96.04,
+      "text": "Où t'es, papaoutai?",
+      "words": [
+        {
+          "text": "Où",
+          "start": 96.03,
+          "end": 96.04
+        },
+        {
+          "text": "t'es,",
+          "start": 96.03,
+          "end": 96.04
+        },
+        {
+          "text": "papaoutai?",
+          "start": 96.03,
+          "end": 96.04
+        }
+      ],
+      "word_slots": [
+        0.0,
+        0.0,
+        0.01
+      ],
+      "word_spoken": [
+        0.01,
+        0.01,
+        0.01
+      ],
+      "whisper_window_start": 95.03,
+      "whisper_window_end": 96.04,
+      "whisper_window_word_count": 3,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.996,
+      "whisper_window_words": [
+        {
+          "text": "'on",
+          "start": 95.6,
+          "end": 95.68,
+          "probability": 0.999
+        },
+        {
+          "text": "y",
+          "start": 95.68,
+          "end": 95.8,
+          "probability": 0.998
+        },
+        {
+          "text": "croit",
+          "start": 95.8,
+          "end": 96.04,
+          "probability": 0.992
+        }
+      ],
+      "whisper_line_start_delta": null
+    },
+    {
+      "index": 21,
+      "start": 96.04,
+      "end": 97.18,
+      "text": "Où t'es, où t'es, où, papaoutai?",
+      "words": [
+        {
+          "text": "Où",
+          "start": 96.04,
+          "end": 96.172
+        },
+        {
+          "text": "t'es,",
+          "start": 96.172,
+          "end": 96.435
+        },
+        {
+          "text": "où",
+          "start": 96.435,
+          "end": 96.61
+        },
+        {
+          "text": "t'es,",
+          "start": 96.61,
+          "end": 96.676
+        },
+        {
+          "text": "où,",
+          "start": 96.676,
+          "end": 96.785
+        },
+        {
+          "text": "papaoutai?",
+          "start": 96.785,
+          "end": 97.18
+        }
+      ],
+      "word_slots": [
+        0.132,
+        0.263,
+        0.175,
+        0.066,
+        0.11,
+        0.395
+      ],
+      "word_spoken": [
+        0.132,
+        0.263,
+        0.175,
+        0.066,
+        0.11,
+        0.395
+      ],
+      "whisper_window_start": 95.04,
+      "whisper_window_end": 97.18,
+      "whisper_window_word_count": 9,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.978,
+      "whisper_window_words": [
+        {
+          "text": "'on",
+          "start": 95.6,
+          "end": 95.68,
+          "probability": 0.999
+        },
+        {
+          "text": "y",
+          "start": 95.68,
+          "end": 95.8,
+          "probability": 0.998
+        },
+        {
+          "text": "croit",
+          "start": 95.8,
+          "end": 96.04,
+          "probability": 0.992
+        },
+        {
+          "text": "ou",
+          "start": 96.04,
+          "end": 96.16,
+          "probability": 0.999
+        },
+        {
+          "text": "pas,",
+          "start": 96.16,
+          "end": 96.4,
+          "probability": 1.0
+        },
+        {
+          "text": "il",
+          "start": 96.5,
+          "end": 96.66,
+          "probability": 0.816
+        },
+        {
+          "text": "y",
+          "start": 96.66,
+          "end": 96.72,
+          "probability": 1.0
+        },
+        {
+          "text": "aura",
+          "start": 96.72,
+          "end": 96.82,
+          "probability": 0.999
+        },
+        {
+          "text": "bien",
+          "start": 96.82,
+          "end": 97.18,
+          "probability": 0.999
+        }
+      ],
+      "whisper_line_start_delta": null
+    },
+    {
+      "index": 22,
+      "start": 97.64,
+      "end": 98.34,
+      "text": "Où t'es, papaoutai?",
+      "words": [
+        {
+          "text": "Où",
+          "start": 97.64,
+          "end": 97.82
+        },
+        {
+          "text": "t'es,",
+          "start": 97.82,
+          "end": 98.1
+        },
+        {
+          "text": "papaoutai?",
+          "start": 98.1,
+          "end": 98.34
+        }
+      ],
+      "word_slots": [
+        0.18,
+        0.28,
+        0.24
+      ],
+      "word_spoken": [
+        0.18,
+        0.28,
+        0.24
+      ],
+      "whisper_window_start": 96.18,
+      "whisper_window_end": 98.42,
+      "whisper_window_word_count": 11,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.959,
+      "whisper_window_words": [
+        {
+          "text": "il",
+          "start": 96.5,
+          "end": 96.66,
+          "probability": 0.816
+        },
+        {
+          "text": "y",
+          "start": 96.66,
+          "end": 96.72,
+          "probability": 1.0
+        },
+        {
+          "text": "aura",
+          "start": 96.72,
+          "end": 96.82,
+          "probability": 0.999
+        },
+        {
+          "text": "bien",
+          "start": 96.82,
+          "end": 97.18,
+          "probability": 0.999
+        },
+        {
+          "text": "un",
+          "start": 97.18,
+          "end": 97.36,
+          "probability": 0.989
+        },
+        {
+          "text": "jour",
+          "start": 97.36,
+          "end": 97.64,
+          "probability": 1.0
+        },
+        {
+          "text": "où",
+          "start": 97.64,
+          "end": 97.88,
+          "probability": 0.938
+        },
+        {
+          "text": "on",
+          "start": 97.88,
+          "end": 98.04,
+          "probability": 0.998
+        },
+        {
+          "text": "n",
+          "start": 98.04,
+          "end": 98.16,
+          "probability": 0.814
+        },
+        {
+          "text": "'y",
+          "start": 98.16,
+          "end": 98.18,
+          "probability": 1.0
+        },
+        {
+          "text": "croira",
+          "start": 98.18,
+          "end": 98.42,
+          "probability": 0.999
+        }
+      ],
+      "whisper_line_start_delta": 0.46
+    },
+    {
+      "index": 23,
+      "start": 98.42,
+      "end": 99.54,
+      "text": "Où t'es, papaoutai?",
+      "words": [
+        {
+          "text": "Où",
+          "start": 98.42,
+          "end": 98.78
+        },
+        {
+          "text": "t'es,",
+          "start": 98.78,
+          "end": 99.2
+        },
+        {
+          "text": "papaoutai?",
+          "start": 99.2,
+          "end": 99.54
+        }
+      ],
+      "word_slots": [
+        0.36,
+        0.42,
+        0.34
+      ],
+      "word_spoken": [
+        0.36,
+        0.42,
+        0.34
+      ],
+      "whisper_window_start": 97.42,
+      "whisper_window_end": 100.18,
+      "whisper_window_word_count": 11,
+      "whisper_window_low_conf_count": 1,
+      "whisper_window_avg_prob": 0.91,
+      "whisper_window_words": [
+        {
+          "text": "où",
+          "start": 97.64,
+          "end": 97.88,
+          "probability": 0.938
+        },
+        {
+          "text": "on",
+          "start": 97.88,
+          "end": 98.04,
+          "probability": 0.998
+        },
+        {
+          "text": "n",
+          "start": 98.04,
+          "end": 98.16,
+          "probability": 0.814
+        },
+        {
+          "text": "'y",
+          "start": 98.16,
+          "end": 98.18,
+          "probability": 1.0
+        },
+        {
+          "text": "croira",
+          "start": 98.18,
+          "end": 98.42,
+          "probability": 0.999
+        },
+        {
+          "text": "plus",
+          "start": 98.42,
+          "end": 98.78,
+          "probability": 1.0
+        },
+        {
+          "text": "Un",
+          "start": 98.78,
+          "end": 99.2,
+          "probability": 0.273
+        },
+        {
+          "text": "jour",
+          "start": 99.2,
+          "end": 99.54,
+          "probability": 1.0
+        },
+        {
+          "text": "ou",
+          "start": 99.54,
+          "end": 99.74,
+          "probability": 0.991
+        },
+        {
+          "text": "l",
+          "start": 99.74,
+          "end": 99.92,
+          "probability": 1.0
+        },
+        {
+          "text": "'autre,",
+          "start": 99.92,
+          "end": 100.08,
+          "probability": 1.0
+        }
+      ],
+      "whisper_line_start_delta": -0.78
+    },
+    {
+      "index": 24,
+      "start": 100.18,
+      "end": 100.76,
+      "text": "Où t'es, papaoutai?",
+      "words": [
+        {
+          "text": "Où",
+          "start": 100.18,
+          "end": 100.3
+        },
+        {
+          "text": "t'es,",
+          "start": 100.3,
+          "end": 100.46
+        },
+        {
+          "text": "papaoutai?",
+          "start": 100.46,
+          "end": 100.76
+        }
+      ],
+      "word_slots": [
+        0.12,
+        0.16,
+        0.3
+      ],
+      "word_spoken": [
+        0.12,
+        0.16,
+        0.3
+      ],
+      "whisper_window_start": 99.18,
+      "whisper_window_end": 100.76,
+      "whisper_window_word_count": 7,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.999,
+      "whisper_window_words": [
+        {
+          "text": "jour",
+          "start": 99.2,
+          "end": 99.54,
+          "probability": 1.0
+        },
+        {
+          "text": "ou",
+          "start": 99.54,
+          "end": 99.74,
+          "probability": 0.991
+        },
+        {
+          "text": "l",
+          "start": 99.74,
+          "end": 99.92,
+          "probability": 1.0
+        },
+        {
+          "text": "'autre,",
+          "start": 99.92,
+          "end": 100.08,
+          "probability": 1.0
+        },
+        {
+          "text": "on",
+          "start": 100.18,
+          "end": 100.3,
+          "probability": 1.0
+        },
+        {
+          "text": "sera",
+          "start": 100.3,
+          "end": 100.46,
+          "probability": 1.0
+        },
+        {
+          "text": "tous",
+          "start": 100.46,
+          "end": 100.76,
+          "probability": 1.0
+        }
+      ],
+      "whisper_line_start_delta": null
+    },
+    {
+      "index": 25,
+      "start": 100.76,
+      "end": 100.84,
+      "text": "Où t'es, où t'es, où, papaoutai?",
+      "words": [
+        {
+          "text": "Où",
+          "start": 100.76,
+          "end": 100.773
+        },
+        {
+          "text": "t'es,",
+          "start": 100.774,
+          "end": 100.786
+        },
+        {
+          "text": "où",
+          "start": 100.788,
+          "end": 100.8
+        },
+        {
+          "text": "t'es,",
+          "start": 100.802,
+          "end": 100.814
+        },
+        {
+          "text": "où,",
+          "start": 100.816,
+          "end": 100.828
+        },
+        {
+          "text": "papaoutai?",
+          "start": 100.829,
+          "end": 100.843
+        }
+      ],
+      "word_slots": [
+        0.014,
+        0.014,
+        0.014,
+        0.014,
+        0.014,
+        0.014
+      ],
+      "word_spoken": [
+        0.013,
+        0.013,
+        0.013,
+        0.013,
+        0.013,
+        0.014
+      ],
+      "whisper_window_start": 99.76,
+      "whisper_window_end": 100.87,
+      "whisper_window_word_count": 5,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.943,
+      "whisper_window_words": [
+        {
+          "text": "'autre,",
+          "start": 99.92,
+          "end": 100.08,
+          "probability": 1.0
+        },
+        {
+          "text": "on",
+          "start": 100.18,
+          "end": 100.3,
+          "probability": 1.0
+        },
+        {
+          "text": "sera",
+          "start": 100.3,
+          "end": 100.46,
+          "probability": 1.0
+        },
+        {
+          "text": "tous",
+          "start": 100.46,
+          "end": 100.76,
+          "probability": 1.0
+        },
+        {
+          "text": "papa",
+          "start": 100.76,
+          "end": 101.1,
+          "probability": 0.714
+        }
+      ],
+      "whisper_line_start_delta": null
+    },
+    {
+      "index": 26,
+      "start": 100.87,
+      "end": 102.89,
+      "text": "Quoi? Qu'on y croit ou pas",
+      "words": [
+        {
+          "text": "Quoi?",
+          "start": 100.869,
+          "end": 101.265
+        },
+        {
+          "text": "Qu'on",
+          "start": 101.285,
+          "end": 101.591
+        },
+        {
+          "text": "y",
+          "start": 101.611,
+          "end": 102.008
+        },
+        {
+          "text": "croit",
+          "start": 102.028,
+          "end": 102.31
+        },
+        {
+          "text": "ou",
+          "start": 102.33,
+          "end": 102.775
+        },
+        {
+          "text": "pas",
+          "start": 102.795,
+          "end": 102.895
+        }
+      ],
+      "word_slots": [
+        0.416,
+        0.325,
+        0.418,
+        0.302,
+        0.464,
+        0.1
+      ],
+      "word_spoken": [
+        0.396,
+        0.305,
+        0.398,
+        0.282,
+        0.444,
+        0.1
+      ],
+      "whisper_window_start": 99.87,
+      "whisper_window_end": 103.24,
+      "whisper_window_word_count": 15,
+      "whisper_window_low_conf_count": 1,
+      "whisper_window_avg_prob": 0.928,
+      "whisper_window_words": [
+        {
+          "text": "'autre,",
+          "start": 99.92,
+          "end": 100.08,
+          "probability": 1.0
+        },
+        {
+          "text": "on",
+          "start": 100.18,
+          "end": 100.3,
+          "probability": 1.0
+        },
+        {
+          "text": "sera",
+          "start": 100.3,
+          "end": 100.46,
+          "probability": 1.0
+        },
+        {
+          "text": "tous",
+          "start": 100.46,
+          "end": 100.76,
+          "probability": 1.0
+        },
+        {
+          "text": "papa",
+          "start": 100.76,
+          "end": 101.1,
+          "probability": 0.714
+        },
+        {
+          "text": "et",
+          "start": 101.1,
+          "end": 101.44,
+          "probability": 0.208
+        },
+        {
+          "text": "d",
+          "start": 101.44,
+          "end": 101.6,
+          "probability": 0.999
+        },
+        {
+          "text": "'un",
+          "start": 101.6,
+          "end": 101.66,
+          "probability": 1.0
+        },
+        {
+          "text": "jour",
+          "start": 101.66,
+          "end": 101.92,
+          "probability": 1.0
+        },
+        {
+          "text": "à",
+          "start": 101.92,
+          "end": 102.1,
+          "probability": 1.0
+        },
+        {
+          "text": "l",
+          "start": 102.1,
+          "end": 102.26,
+          "probability": 1.0
+        },
+        {
+          "text": "'autre,",
+          "start": 102.26,
+          "end": 102.5,
+          "probability": 1.0
+        },
+        {
+          "text": "on",
+          "start": 102.62,
+          "end": 102.7,
+          "probability": 1.0
+        },
+        {
+          "text": "aura",
+          "start": 102.7,
+          "end": 102.86,
+          "probability": 0.999
+        },
+        {
+          "text": "disparu",
+          "start": 102.86,
+          "end": 103.62,
+          "probability": 1.0
+        }
+      ],
+      "whisper_line_start_delta": null
+    },
+    {
+      "index": 27,
+      "start": 103.24,
+      "end": 106.1,
+      "text": "Y aura bien un jour où on n'y croira plus",
+      "words": [
+        {
+          "text": "Y",
+          "start": 103.24,
+          "end": 103.982
+        },
+        {
+          "text": "aura",
+          "start": 104.002,
+          "end": 104.33
+        },
+        {
+          "text": "bien",
+          "start": 104.35,
+          "end": 104.772
+        },
+        {
+          "text": "un",
+          "start": 104.792,
+          "end": 105.12
+        },
+        {
+          "text": "jour",
+          "start": 105.14,
+          "end": 105.584
+        },
+        {
+          "text": "où",
+          "start": 105.604,
+          "end": 105.704
+        },
+        {
+          "text": "on",
+          "start": 105.704,
+          "end": 105.804
+        },
+        {
+          "text": "n'y",
+          "start": 105.804,
+          "end": 105.904
+        },
+        {
+          "text": "croira",
+          "start": 105.904,
+          "end": 106.004
+        },
+        {
+          "text": "plus",
+          "start": 106.004,
+          "end": 106.104
+        }
+      ],
+      "word_slots": [
+        0.763,
+        0.348,
+        0.441,
+        0.348,
+        0.464,
+        0.1,
+        0.1,
+        0.1,
+        0.1,
+        0.1
+      ],
+      "word_spoken": [
+        0.743,
+        0.328,
+        0.421,
+        0.328,
+        0.444,
+        0.1,
+        0.1,
+        0.1,
+        0.1,
+        0.1
+      ],
+      "whisper_window_start": 102.24,
+      "whisper_window_end": 106.18,
+      "whisper_window_word_count": 7,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.999,
+      "whisper_window_words": [
+        {
+          "text": "'autre,",
+          "start": 102.26,
+          "end": 102.5,
+          "probability": 1.0
+        },
+        {
+          "text": "on",
+          "start": 102.62,
+          "end": 102.7,
+          "probability": 1.0
+        },
+        {
+          "text": "aura",
+          "start": 102.7,
+          "end": 102.86,
+          "probability": 0.999
+        },
+        {
+          "text": "disparu",
+          "start": 102.86,
+          "end": 103.62,
+          "probability": 1.0
+        },
+        {
+          "text": "Serons",
+          "start": 104.36,
+          "end": 104.76,
+          "probability": 0.993
+        },
+        {
+          "text": "-nous",
+          "start": 104.76,
+          "end": 104.98,
+          "probability": 1.0
+        },
+        {
+          "text": "détestables",
+          "start": 104.98,
+          "end": 106.18,
+          "probability": 0.999
+        }
+      ],
+      "whisper_line_start_delta": null
+    },
+    {
+      "index": 28,
+      "start": 106.18,
+      "end": 109.8,
+      "text": "Un jour ou l'autre, on sera tous papa",
+      "words": [
+        {
+          "text": "Un",
+          "start": 106.18,
+          "end": 106.38
+        },
+        {
+          "text": "jour",
+          "start": 106.38,
+          "end": 107.1
+        },
+        {
+          "text": "ou",
+          "start": 107.1,
+          "end": 107.36
+        },
+        {
+          "text": "l'autre,",
+          "start": 107.36,
+          "end": 108.58
+        },
+        {
+          "text": "on",
+          "start": 108.58,
+          "end": 108.62
+        },
+        {
+          "text": "sera",
+          "start": 108.62,
+          "end": 108.74
+        },
+        {
+          "text": "tous",
+          "start": 108.74,
+          "end": 109.72
+        },
+        {
+          "text": "papa",
+          "start": 109.72,
+          "end": 109.8
+        }
+      ],
+      "word_slots": [
+        0.2,
+        0.72,
+        0.26,
+        1.22,
+        0.04,
+        0.12,
+        0.98,
+        0.08
+      ],
+      "word_spoken": [
+        0.2,
+        0.72,
+        0.26,
+        1.22,
+        0.04,
+        0.12,
+        0.98,
+        0.08
+      ],
+      "whisper_window_start": 105.18,
+      "whisper_window_end": 109.92,
+      "whisper_window_word_count": 9,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.988,
+      "whisper_window_words": [
+        {
+          "text": "?",
+          "start": 106.18,
+          "end": 106.38,
+          "probability": 0.98
+        },
+        {
+          "text": "Serons",
+          "start": 106.38,
+          "end": 107.1,
+          "probability": 0.999
+        },
+        {
+          "text": "-nous",
+          "start": 107.1,
+          "end": 107.36,
+          "probability": 1.0
+        },
+        {
+          "text": "admirables",
+          "start": 107.36,
+          "end": 108.58,
+          "probability": 1.0
+        },
+        {
+          "text": "?",
+          "start": 108.58,
+          "end": 108.62,
+          "probability": 0.923
+        },
+        {
+          "text": "Des",
+          "start": 108.62,
+          "end": 108.74,
+          "probability": 0.995
+        },
+        {
+          "text": "géniteurs",
+          "start": 108.74,
+          "end": 109.72,
+          "probability": 0.996
+        },
+        {
+          "text": "ou",
+          "start": 109.72,
+          "end": 109.8,
+          "probability": 1.0
+        },
+        {
+          "text": "des",
+          "start": 109.8,
+          "end": 109.92,
+          "probability": 1.0
+        }
+      ],
+      "whisper_line_start_delta": null
+    },
+    {
+      "index": 29,
+      "start": 109.92,
+      "end": 112.34,
+      "text": "Et d'un jour à l'autre, on aura disparu",
+      "words": [
+        {
+          "text": "Et",
+          "start": 109.92,
+          "end": 110.46
+        },
+        {
+          "text": "d'un",
+          "start": 110.46,
+          "end": 110.52
+        },
+        {
+          "text": "jour",
+          "start": 110.52,
+          "end": 110.94
+        },
+        {
+          "text": "à",
+          "start": 110.94,
+          "end": 111.14
+        },
+        {
+          "text": "l'autre,",
+          "start": 111.14,
+          "end": 111.38
+        },
+        {
+          "text": "on",
+          "start": 111.38,
+          "end": 111.64
+        },
+        {
+          "text": "aura",
+          "start": 111.64,
+          "end": 112.04
+        },
+        {
+          "text": "disparu",
+          "start": 112.04,
+          "end": 112.34
+        }
+      ],
+      "word_slots": [
+        0.54,
+        0.06,
+        0.42,
+        0.2,
+        0.24,
+        0.26,
+        0.4,
+        0.3
+      ],
+      "word_spoken": [
+        0.54,
+        0.06,
+        0.42,
+        0.2,
+        0.24,
+        0.26,
+        0.4,
+        0.3
+      ],
+      "whisper_window_start": 108.92,
+      "whisper_window_end": 113.5,
+      "whisper_window_word_count": 11,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.988,
+      "whisper_window_words": [
+        {
+          "text": "ou",
+          "start": 109.72,
+          "end": 109.8,
+          "probability": 1.0
+        },
+        {
+          "text": "des",
+          "start": 109.8,
+          "end": 109.92,
+          "probability": 1.0
+        },
+        {
+          "text": "génies",
+          "start": 109.92,
+          "end": 110.46,
+          "probability": 0.983
+        },
+        {
+          "text": "?",
+          "start": 110.46,
+          "end": 110.52,
+          "probability": 0.98
+        },
+        {
+          "text": "Dites",
+          "start": 110.52,
+          "end": 110.94,
+          "probability": 0.999
+        },
+        {
+          "text": "-nous",
+          "start": 110.94,
+          "end": 111.14,
+          "probability": 1.0
+        },
+        {
+          "text": "qui",
+          "start": 111.14,
+          "end": 111.38,
+          "probability": 0.981
+        },
+        {
+          "text": "donne",
+          "start": 111.38,
+          "end": 111.64,
+          "probability": 0.934
+        },
+        {
+          "text": "naissance",
+          "start": 111.64,
+          "end": 112.04,
+          "probability": 0.997
+        },
+        {
+          "text": "aux",
+          "start": 112.04,
+          "end": 112.34,
+          "probability": 1.0
+        },
+        {
+          "text": "irresponsables",
+          "start": 112.34,
+          "end": 113.5,
+          "probability": 0.999
+        }
+      ],
+      "whisper_line_start_delta": null
+    },
+    {
+      "index": 30,
+      "start": 113.5,
+      "end": 114.42,
+      "text": "Serons-nous détestables?",
+      "words": [
+        {
+          "text": "Serons-nous",
+          "start": 113.5,
+          "end": 113.94
+        },
+        {
+          "text": "détestables?",
+          "start": 113.94,
+          "end": 114.42
+        }
+      ],
+      "word_slots": [
+        0.44,
+        0.48
+      ],
+      "word_spoken": [
+        0.44,
+        0.48
+      ],
+      "whisper_window_start": 112.5,
+      "whisper_window_end": 114.76,
+      "whisper_window_word_count": 3,
+      "whisper_window_low_conf_count": 2,
+      "whisper_window_avg_prob": 0.386,
+      "whisper_window_words": [
+        {
+          "text": "Ah",
+          "start": 113.5,
+          "end": 113.94,
+          "probability": 0.093
+        },
+        {
+          "text": "dites",
+          "start": 113.94,
+          "end": 114.42,
+          "probability": 0.066
+        },
+        {
+          "text": "-nous",
+          "start": 114.42,
+          "end": 114.76,
+          "probability": 0.999
+        }
+      ],
+      "whisper_line_start_delta": null
+    },
+    {
+      "index": 31,
+      "start": 114.76,
+      "end": 115.2,
+      "text": "Serons-nous admirables?",
+      "words": [
+        {
+          "text": "Serons-nous",
+          "start": 114.76,
+          "end": 115.02
+        },
+        {
+          "text": "admirables?",
+          "start": 115.02,
+          "end": 115.2
+        }
+      ],
+      "word_slots": [
+        0.26,
+        0.18
+      ],
+      "word_spoken": [
+        0.26,
+        0.18
+      ],
+      "whisper_window_start": 113.76,
+      "whisper_window_end": 115.74,
+      "whisper_window_word_count": 5,
+      "whisper_window_low_conf_count": 2,
+      "whisper_window_avg_prob": 0.679,
+      "whisper_window_words": [
+        {
+          "text": "dites",
+          "start": 113.94,
+          "end": 114.42,
+          "probability": 0.066
+        },
+        {
+          "text": "-nous",
+          "start": 114.42,
+          "end": 114.76,
+          "probability": 0.999
+        },
+        {
+          "text": "qui",
+          "start": 114.76,
+          "end": 115.02,
+          "probability": 0.999
+        },
+        {
+          "text": "?",
+          "start": 115.02,
+          "end": 115.2,
+          "probability": 0.349
+        },
+        {
+          "text": "Tiens,",
+          "start": 115.2,
+          "end": 115.72,
+          "probability": 0.982
+        }
+      ],
+      "whisper_line_start_delta": null
+    },
+    {
+      "index": 32,
+      "start": 115.74,
+      "end": 116.94,
+      "text": "Des géniteurs ou des génies?",
+      "words": [
+        {
+          "text": "Des",
+          "start": 115.74,
+          "end": 116.0
+        },
+        {
+          "text": "géniteurs",
+          "start": 116.0,
+          "end": 116.14
+        },
+        {
+          "text": "ou",
+          "start": 116.14,
+          "end": 116.4
+        },
+        {
+          "text": "des",
+          "start": 116.4,
+          "end": 116.6
+        },
+        {
+          "text": "génies?",
+          "start": 116.6,
+          "end": 116.94
+        }
+      ],
+      "word_slots": [
+        0.26,
+        0.14,
+        0.26,
+        0.2,
+        0.34
+      ],
+      "word_spoken": [
+        0.26,
+        0.14,
+        0.26,
+        0.2,
+        0.34
+      ],
+      "whisper_window_start": 114.74,
+      "whisper_window_end": 117.08,
+      "whisper_window_word_count": 9,
+      "whisper_window_low_conf_count": 1,
+      "whisper_window_avg_prob": 0.924,
+      "whisper_window_words": [
+        {
+          "text": "qui",
+          "start": 114.76,
+          "end": 115.02,
+          "probability": 0.999
+        },
+        {
+          "text": "?",
+          "start": 115.02,
+          "end": 115.2,
+          "probability": 0.349
+        },
+        {
+          "text": "Tiens,",
+          "start": 115.2,
+          "end": 115.72,
+          "probability": 0.982
+        },
+        {
+          "text": "tout",
+          "start": 115.74,
+          "end": 116.0,
+          "probability": 0.999
+        },
+        {
+          "text": "le",
+          "start": 116.0,
+          "end": 116.14,
+          "probability": 1.0
+        },
+        {
+          "text": "monde",
+          "start": 116.14,
+          "end": 116.4,
+          "probability": 1.0
+        },
+        {
+          "text": "sait",
+          "start": 116.4,
+          "end": 116.6,
+          "probability": 0.999
+        },
+        {
+          "text": "comment",
+          "start": 116.6,
+          "end": 116.94,
+          "probability": 0.998
+        },
+        {
+          "text": "on",
+          "start": 116.94,
+          "end": 117.08,
+          "probability": 0.989
+        }
+      ],
+      "whisper_line_start_delta": null
+    },
+    {
+      "index": 33,
+      "start": 117.08,
+      "end": 118.88,
+      "text": "Dites-nous, qui donne naissance aux irresponsables?",
+      "words": [
+        {
+          "text": "Dites-nous,",
+          "start": 117.08,
+          "end": 117.24
+        },
+        {
+          "text": "qui",
+          "start": 117.24,
+          "end": 117.44
+        },
+        {
+          "text": "donne",
+          "start": 117.44,
+          "end": 117.88
+        },
+        {
+          "text": "naissance",
+          "start": 117.88,
+          "end": 118.24
+        },
+        {
+          "text": "aux",
+          "start": 118.24,
+          "end": 118.7
+        },
+        {
+          "text": "irresponsables?",
+          "start": 118.7,
+          "end": 118.88
+        }
+      ],
+      "word_slots": [
+        0.16,
+        0.2,
+        0.44,
+        0.36,
+        0.46,
+        0.18
+      ],
+      "word_spoken": [
+        0.16,
+        0.2,
+        0.44,
+        0.36,
+        0.46,
+        0.18
+      ],
+      "whisper_window_start": 116.08,
+      "whisper_window_end": 119.04,
+      "whisper_window_word_count": 11,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.955,
+      "whisper_window_words": [
+        {
+          "text": "monde",
+          "start": 116.14,
+          "end": 116.4,
+          "probability": 1.0
+        },
+        {
+          "text": "sait",
+          "start": 116.4,
+          "end": 116.6,
+          "probability": 0.999
+        },
+        {
+          "text": "comment",
+          "start": 116.6,
+          "end": 116.94,
+          "probability": 0.998
+        },
+        {
+          "text": "on",
+          "start": 116.94,
+          "end": 117.08,
+          "probability": 0.989
+        },
+        {
+          "text": "fait",
+          "start": 117.08,
+          "end": 117.24,
+          "probability": 1.0
+        },
+        {
+          "text": "des",
+          "start": 117.24,
+          "end": 117.44,
+          "probability": 0.999
+        },
+        {
+          "text": "bébés",
+          "start": 117.44,
+          "end": 117.88,
+          "probability": 0.997
+        },
+        {
+          "text": "Mais",
+          "start": 117.88,
+          "end": 118.24,
+          "probability": 0.945
+        },
+        {
+          "text": "personne",
+          "start": 118.24,
+          "end": 118.7,
+          "probability": 1.0
+        },
+        {
+          "text": "ne",
+          "start": 118.7,
+          "end": 118.88,
+          "probability": 0.574
+        },
+        {
+          "text": "sait",
+          "start": 118.88,
+          "end": 119.04,
+          "probability": 1.0
+        }
+      ],
+      "whisper_line_start_delta": null
+    },
+    {
+      "index": 34,
+      "start": 119.04,
+      "end": 119.8,
+      "text": "Ah, dites-nous qui, tiens",
+      "words": [
+        {
+          "text": "Ah,",
+          "start": 119.04,
+          "end": 119.32
+        },
+        {
+          "text": "dites-nous",
+          "start": 119.32,
+          "end": 119.46
+        },
+        {
+          "text": "qui,",
+          "start": 119.46,
+          "end": 119.64
+        },
+        {
+          "text": "tiens",
+          "start": 119.64,
+          "end": 119.8
+        }
+      ],
+      "word_slots": [
+        0.28,
+        0.14,
+        0.18,
+        0.16
+      ],
+      "word_spoken": [
+        0.28,
+        0.14,
+        0.18,
+        0.16
+      ],
+      "whisper_window_start": 118.04,
+      "whisper_window_end": 120.3,
+      "whisper_window_word_count": 8,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.942,
+      "whisper_window_words": [
+        {
+          "text": "personne",
+          "start": 118.24,
+          "end": 118.7,
+          "probability": 1.0
+        },
+        {
+          "text": "ne",
+          "start": 118.7,
+          "end": 118.88,
+          "probability": 0.574
+        },
+        {
+          "text": "sait",
+          "start": 118.88,
+          "end": 119.04,
+          "probability": 1.0
+        },
+        {
+          "text": "comment",
+          "start": 119.04,
+          "end": 119.32,
+          "probability": 1.0
+        },
+        {
+          "text": "on",
+          "start": 119.32,
+          "end": 119.46,
+          "probability": 1.0
+        },
+        {
+          "text": "fait",
+          "start": 119.46,
+          "end": 119.64,
+          "probability": 1.0
+        },
+        {
+          "text": "des",
+          "start": 119.64,
+          "end": 119.8,
+          "probability": 1.0
+        },
+        {
+          "text": "papas",
+          "start": 119.8,
+          "end": 120.3,
+          "probability": 0.961
+        }
+      ],
+      "whisper_line_start_delta": null
+    },
+    {
+      "index": 35,
+      "start": 121.44,
+      "end": 124.24,
+      "text": "Tout le monde sait comment on fait des bébés",
+      "words": [
+        {
+          "text": "Tout",
+          "start": 121.44,
+          "end": 122.16
+        },
+        {
+          "text": "le",
+          "start": 122.22,
+          "end": 122.36
+        },
+        {
+          "text": "monde",
+          "start": 122.36,
+          "end": 122.58
+        },
+        {
+          "text": "sait",
+          "start": 122.58,
+          "end": 122.76
+        },
+        {
+          "text": "comment",
+          "start": 122.76,
+          "end": 122.9
+        },
+        {
+          "text": "on",
+          "start": 122.9,
+          "end": 123.12
+        },
+        {
+          "text": "fait",
+          "start": 123.12,
+          "end": 123.88
+        },
+        {
+          "text": "des",
+          "start": 123.88,
+          "end": 124.12
+        },
+        {
+          "text": "bébés",
+          "start": 124.12,
+          "end": 124.24
+        }
+      ],
+      "word_slots": [
+        0.78,
+        0.14,
+        0.22,
+        0.18,
+        0.14,
+        0.22,
+        0.76,
+        0.24,
+        0.12
+      ],
+      "word_spoken": [
+        0.72,
+        0.14,
+        0.22,
+        0.18,
+        0.14,
+        0.22,
+        0.76,
+        0.24,
+        0.12
+      ],
+      "whisper_window_start": 119.3,
+      "whisper_window_end": 123.2,
+      "whisper_window_word_count": 14,
+      "whisper_window_low_conf_count": 1,
+      "whisper_window_avg_prob": 0.917,
+      "whisper_window_words": [
+        {
+          "text": "on",
+          "start": 119.32,
+          "end": 119.46,
+          "probability": 1.0
+        },
+        {
+          "text": "fait",
+          "start": 119.46,
+          "end": 119.64,
+          "probability": 1.0
+        },
+        {
+          "text": "des",
+          "start": 119.64,
+          "end": 119.8,
+          "probability": 1.0
+        },
+        {
+          "text": "papas",
+          "start": 119.8,
+          "end": 120.3,
+          "probability": 0.961
+        },
+        {
+          "text": "Monsieur,",
+          "start": 120.3,
+          "end": 121.02,
+          "probability": 0.989
+        },
+        {
+          "text": "je",
+          "start": 121.08,
+          "end": 121.22,
+          "probability": 1.0
+        },
+        {
+          "text": "sais",
+          "start": 121.22,
+          "end": 121.44,
+          "probability": 0.999
+        },
+        {
+          "text": "tout,",
+          "start": 121.44,
+          "end": 121.62,
+          "probability": 0.472
+        },
+        {
+          "text": "on",
+          "start": 121.62,
+          "end": 121.76,
+          "probability": 0.696
+        },
+        {
+          "text": "aurait",
+          "start": 121.76,
+          "end": 121.98,
+          "probability": 0.791
+        },
+        {
+          "text": "hérité,",
+          "start": 121.98,
+          "end": 122.74,
+          "probability": 0.982
+        },
+        {
+          "text": "c",
+          "start": 122.74,
+          "end": 122.98,
+          "probability": 0.998
+        },
+        {
+          "text": "'est",
+          "start": 122.98,
+          "end": 123.1,
+          "probability": 1.0
+        },
+        {
+          "text": "ça",
+          "start": 123.1,
+          "end": 123.2,
+          "probability": 0.953
+        }
+      ],
+      "whisper_line_start_delta": 1.14
+    },
+    {
+      "index": 36,
+      "start": 123.2,
+      "end": 124.86,
+      "text": "Mais personne sait comment on fait des papas",
+      "words": [
+        {
+          "text": "Mais",
+          "start": 123.2,
+          "end": 123.28
+        },
+        {
+          "text": "personne",
+          "start": 123.4,
+          "end": 123.58
+        },
+        {
+          "text": "sait",
+          "start": 123.58,
+          "end": 123.64
+        },
+        {
+          "text": "comment",
+          "start": 123.64,
+          "end": 123.94
+        },
+        {
+          "text": "on",
+          "start": 123.94,
+          "end": 124.08
+        },
+        {
+          "text": "fait",
+          "start": 124.08,
+          "end": 124.28
+        },
+        {
+          "text": "des",
+          "start": 124.28,
+          "end": 124.68
+        },
+        {
+          "text": "papas",
+          "start": 124.68,
+          "end": 124.86
+        }
+      ],
+      "word_slots": [
+        0.2,
+        0.18,
+        0.06,
+        0.3,
+        0.14,
+        0.2,
+        0.4,
+        0.18
+      ],
+      "word_spoken": [
+        0.08,
+        0.18,
+        0.06,
+        0.3,
+        0.14,
+        0.2,
+        0.4,
+        0.18
+      ],
+      "whisper_window_start": 122.2,
+      "whisper_window_end": 125.04,
+      "whisper_window_word_count": 12,
+      "whisper_window_low_conf_count": 1,
+      "whisper_window_avg_prob": 0.833,
+      "whisper_window_words": [
+        {
+          "text": "c",
+          "start": 122.74,
+          "end": 122.98,
+          "probability": 0.998
+        },
+        {
+          "text": "'est",
+          "start": 122.98,
+          "end": 123.1,
+          "probability": 1.0
+        },
+        {
+          "text": "ça",
+          "start": 123.1,
+          "end": 123.2,
+          "probability": 0.953
+        },
+        {
+          "text": "?",
+          "start": 123.2,
+          "end": 123.28,
+          "probability": 0.951
+        },
+        {
+          "text": "Faut",
+          "start": 123.4,
+          "end": 123.58,
+          "probability": 0.542
+        },
+        {
+          "text": "le",
+          "start": 123.58,
+          "end": 123.64,
+          "probability": 0.711
+        },
+        {
+          "text": "sucer",
+          "start": 123.64,
+          "end": 123.94,
+          "probability": 0.63
+        },
+        {
+          "text": "de",
+          "start": 123.94,
+          "end": 124.08,
+          "probability": 0.456
+        },
+        {
+          "text": "son",
+          "start": 124.08,
+          "end": 124.28,
+          "probability": 0.914
+        },
+        {
+          "text": "pouce",
+          "start": 124.28,
+          "end": 124.68,
+          "probability": 0.923
+        },
+        {
+          "text": "ou",
+          "start": 124.68,
+          "end": 124.86,
+          "probability": 0.926
+        },
+        {
+          "text": "quoi",
+          "start": 124.86,
+          "end": 125.04,
+          "probability": 0.996
+        }
+      ],
+      "whisper_line_start_delta": null
+    },
+    {
+      "index": 37,
+      "start": 125.04,
+      "end": 127.06,
+      "text": "Monsieur j'sais-tout en aurait hérité, c'est ça?",
+      "words": [
+        {
+          "text": "Monsieur",
+          "start": 125.04,
+          "end": 125.16
+        },
+        {
+          "text": "j'sais-tout",
+          "start": 125.66,
+          "end": 125.88
+        },
+        {
+          "text": "en",
+          "start": 125.88,
+          "end": 126.06
+        },
+        {
+          "text": "aurait",
+          "start": 126.06,
+          "end": 126.22
+        },
+        {
+          "text": "hérité,",
+          "start": 126.22,
+          "end": 126.4
+        },
+        {
+          "text": "c'est",
+          "start": 126.4,
+          "end": 126.52
+        },
+        {
+          "text": "ça?",
+          "start": 126.52,
+          "end": 127.06
+        }
+      ],
+      "word_slots": [
+        0.62,
+        0.22,
+        0.18,
+        0.16,
+        0.18,
+        0.12,
+        0.54
+      ],
+      "word_spoken": [
+        0.12,
+        0.22,
+        0.18,
+        0.16,
+        0.18,
+        0.12,
+        0.54
+      ],
+      "whisper_window_start": 124.04,
+      "whisper_window_end": 127.44,
+      "whisper_window_word_count": 12,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.904,
+      "whisper_window_words": [
+        {
+          "text": "son",
+          "start": 124.08,
+          "end": 124.28,
+          "probability": 0.914
+        },
+        {
+          "text": "pouce",
+          "start": 124.28,
+          "end": 124.68,
+          "probability": 0.923
+        },
+        {
+          "text": "ou",
+          "start": 124.68,
+          "end": 124.86,
+          "probability": 0.926
+        },
+        {
+          "text": "quoi",
+          "start": 124.86,
+          "end": 125.04,
+          "probability": 0.996
+        },
+        {
+          "text": "?",
+          "start": 125.04,
+          "end": 125.16,
+          "probability": 0.696
+        },
+        {
+          "text": "Dites",
+          "start": 125.66,
+          "end": 125.88,
+          "probability": 0.815
+        },
+        {
+          "text": "-nous",
+          "start": 125.88,
+          "end": 126.06,
+          "probability": 0.907
+        },
+        {
+          "text": "où",
+          "start": 126.06,
+          "end": 126.22,
+          "probability": 0.959
+        },
+        {
+          "text": "c",
+          "start": 126.22,
+          "end": 126.4,
+          "probability": 0.927
+        },
+        {
+          "text": "'est",
+          "start": 126.4,
+          "end": 126.52,
+          "probability": 1.0
+        },
+        {
+          "text": "caché,",
+          "start": 126.52,
+          "end": 127.06,
+          "probability": 0.861
+        },
+        {
+          "text": "ça",
+          "start": 127.06,
+          "end": 127.44,
+          "probability": 0.927
+        }
+      ],
+      "whisper_line_start_delta": null
+    },
+    {
+      "index": 38,
+      "start": 127.44,
+      "end": 129.68,
+      "text": "Faut l'sucer d'son pouce où quoi?",
+      "words": [
+        {
+          "text": "Faut",
+          "start": 127.44,
+          "end": 127.86
+        },
+        {
+          "text": "l'sucer",
+          "start": 127.86,
+          "end": 128.62
+        },
+        {
+          "text": "d'son",
+          "start": 128.62,
+          "end": 128.84
+        },
+        {
+          "text": "pouce",
+          "start": 128.84,
+          "end": 129.1
+        },
+        {
+          "text": "où",
+          "start": 129.1,
+          "end": 129.46
+        },
+        {
+          "text": "quoi?",
+          "start": 129.46,
+          "end": 129.68
+        }
+      ],
+      "word_slots": [
+        0.42,
+        0.76,
+        0.22,
+        0.26,
+        0.36,
+        0.22
+      ],
+      "word_spoken": [
+        0.42,
+        0.76,
+        0.22,
+        0.26,
+        0.36,
+        0.22
+      ],
+      "whisper_window_start": 126.44,
+      "whisper_window_end": 129.92,
+      "whisper_window_word_count": 9,
+      "whisper_window_low_conf_count": 1,
+      "whisper_window_avg_prob": 0.884,
+      "whisper_window_words": [
+        {
+          "text": "caché,",
+          "start": 126.52,
+          "end": 127.06,
+          "probability": 0.861
+        },
+        {
+          "text": "ça",
+          "start": 127.06,
+          "end": 127.44,
+          "probability": 0.927
+        },
+        {
+          "text": "doit",
+          "start": 127.44,
+          "end": 127.86,
+          "probability": 0.996
+        },
+        {
+          "text": "faire",
+          "start": 127.86,
+          "end": 128.62,
+          "probability": 0.344
+        },
+        {
+          "text": "au",
+          "start": 128.62,
+          "end": 128.84,
+          "probability": 0.954
+        },
+        {
+          "text": "moins",
+          "start": 128.84,
+          "end": 129.1,
+          "probability": 0.999
+        },
+        {
+          "text": "mille",
+          "start": 129.1,
+          "end": 129.46,
+          "probability": 0.924
+        },
+        {
+          "text": "fois",
+          "start": 129.46,
+          "end": 129.68,
+          "probability": 0.999
+        },
+        {
+          "text": "qu",
+          "start": 129.68,
+          "end": 129.92,
+          "probability": 0.956
+        }
+      ],
+      "whisper_line_start_delta": null
+    },
+    {
+      "index": 39,
+      "start": 129.92,
+      "end": 131.44,
+      "text": "Dites-nous où c'est caché",
+      "words": [
+        {
+          "text": "Dites-nous",
+          "start": 129.92,
+          "end": 130.0
+        },
+        {
+          "text": "où",
+          "start": 130.0,
+          "end": 130.34
+        },
+        {
+          "text": "c'est",
+          "start": 130.34,
+          "end": 131.34
+        },
+        {
+          "text": "caché",
+          "start": 131.34,
+          "end": 131.44
+        }
+      ],
+      "word_slots": [
+        0.08,
+        0.34,
+        1.0,
+        0.1
+      ],
+      "word_spoken": [
+        0.08,
+        0.34,
+        1.0,
+        0.1
+      ],
+      "whisper_window_start": 128.92,
+      "whisper_window_end": 133.3,
+      "whisper_window_word_count": 8,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.975,
+      "whisper_window_words": [
+        {
+          "text": "mille",
+          "start": 129.1,
+          "end": 129.46,
+          "probability": 0.924
+        },
+        {
+          "text": "fois",
+          "start": 129.46,
+          "end": 129.68,
+          "probability": 0.999
+        },
+        {
+          "text": "qu",
+          "start": 129.68,
+          "end": 129.92,
+          "probability": 0.956
+        },
+        {
+          "text": "'on",
+          "start": 129.92,
+          "end": 130.0,
+          "probability": 0.999
+        },
+        {
+          "text": "a",
+          "start": 130.0,
+          "end": 130.34,
+          "probability": 0.992
+        },
+        {
+          "text": "bouffé",
+          "start": 130.34,
+          "end": 131.34,
+          "probability": 0.963
+        },
+        {
+          "text": "nos",
+          "start": 131.34,
+          "end": 131.44,
+          "probability": 0.97
+        },
+        {
+          "text": "doigts",
+          "start": 131.44,
+          "end": 131.9,
+          "probability": 0.999
+        }
+      ],
+      "whisper_line_start_delta": null
+    },
+    {
+      "index": 40,
+      "start": 133.3,
+      "end": 135.66,
+      "text": "Ça doit faire au moins mille fois qu'on a",
+      "words": [
+        {
+          "text": "Ça",
+          "start": 133.3,
+          "end": 133.74
+        },
+        {
+          "text": "doit",
+          "start": 133.74,
+          "end": 133.74
+        },
+        {
+          "text": "faire",
+          "start": 133.74,
+          "end": 133.94
+        },
+        {
+          "text": "au",
+          "start": 133.94,
+          "end": 134.12
+        },
+        {
+          "text": "moins",
+          "start": 134.12,
+          "end": 134.44
+        },
+        {
+          "text": "mille",
+          "start": 134.56,
+          "end": 134.74
+        },
+        {
+          "text": "fois",
+          "start": 134.74,
+          "end": 134.9
+        },
+        {
+          "text": "qu'on",
+          "start": 134.9,
+          "end": 135.16
+        },
+        {
+          "text": "a",
+          "start": 135.16,
+          "end": 135.66
+        }
+      ],
+      "word_slots": [
+        0.44,
+        0.0,
+        0.2,
+        0.18,
+        0.44,
+        0.18,
+        0.16,
+        0.26,
+        0.5
+      ],
+      "word_spoken": [
+        0.44,
+        0.0,
+        0.2,
+        0.18,
+        0.32,
+        0.18,
+        0.16,
+        0.26,
+        0.5
+      ],
+      "whisper_window_start": 132.3,
+      "whisper_window_end": 135.94,
+      "whisper_window_word_count": 10,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.91,
+      "whisper_window_words": [
+        {
+          "text": "Où",
+          "start": 133.3,
+          "end": 133.74,
+          "probability": 0.534
+        },
+        {
+          "text": "t",
+          "start": 133.74,
+          "end": 133.74,
+          "probability": 0.949
+        },
+        {
+          "text": "'es",
+          "start": 133.74,
+          "end": 133.94,
+          "probability": 0.994
+        },
+        {
+          "text": "?",
+          "start": 133.94,
+          "end": 134.12,
+          "probability": 0.951
+        },
+        {
+          "text": "Papa,",
+          "start": 134.12,
+          "end": 134.44,
+          "probability": 0.731
+        },
+        {
+          "text": "où",
+          "start": 134.56,
+          "end": 134.74,
+          "probability": 0.98
+        },
+        {
+          "text": "t",
+          "start": 134.74,
+          "end": 134.9,
+          "probability": 0.999
+        },
+        {
+          "text": "'es",
+          "start": 134.9,
+          "end": 135.16,
+          "probability": 0.999
+        },
+        {
+          "text": "?",
+          "start": 135.16,
+          "end": 135.66,
+          "probability": 0.997
+        },
+        {
+          "text": "Où",
+          "start": 135.66,
+          "end": 135.94,
+          "probability": 0.961
+        }
+      ],
+      "whisper_line_start_delta": null
+    },
+    {
+      "index": 41,
+      "start": 135.94,
+      "end": 136.82,
+      "text": "Bouffé nos doigts, hé",
+      "words": [
+        {
+          "text": "Bouffé",
+          "start": 135.94,
+          "end": 136.12
+        },
+        {
+          "text": "nos",
+          "start": 136.12,
+          "end": 136.32
+        },
+        {
+          "text": "doigts,",
+          "start": 136.32,
+          "end": 136.5
+        },
+        {
+          "text": "hé",
+          "start": 136.5,
+          "end": 136.82
+        }
+      ],
+      "word_slots": [
+        0.18,
+        0.2,
+        0.18,
+        0.32
+      ],
+      "word_spoken": [
+        0.18,
+        0.2,
+        0.18,
+        0.32
+      ],
+      "whisper_window_start": 134.94,
+      "whisper_window_end": 136.88,
+      "whisper_window_word_count": 6,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.952,
+      "whisper_window_words": [
+        {
+          "text": "?",
+          "start": 135.16,
+          "end": 135.66,
+          "probability": 0.997
+        },
+        {
+          "text": "Où",
+          "start": 135.66,
+          "end": 135.94,
+          "probability": 0.961
+        },
+        {
+          "text": "t",
+          "start": 135.94,
+          "end": 136.12,
+          "probability": 0.905
+        },
+        {
+          "text": "'es",
+          "start": 136.12,
+          "end": 136.32,
+          "probability": 0.999
+        },
+        {
+          "text": "?",
+          "start": 136.32,
+          "end": 136.5,
+          "probability": 0.993
+        },
+        {
+          "text": "Papa,",
+          "start": 136.5,
+          "end": 136.82,
+          "probability": 0.855
+        }
+      ],
+      "whisper_line_start_delta": null
+    },
+    {
+      "index": 42,
+      "start": 136.88,
+      "end": 137.62,
+      "text": "Où t'es, papaoutai?",
+      "words": [
+        {
+          "text": "Où",
+          "start": 136.88,
+          "end": 137.14
+        },
+        {
+          "text": "t'es,",
+          "start": 137.14,
+          "end": 137.34
+        },
+        {
+          "text": "papaoutai?",
+          "start": 137.34,
+          "end": 137.62
+        }
+      ],
+      "word_slots": [
+        0.26,
+        0.2,
+        0.28
+      ],
+      "word_spoken": [
+        0.26,
+        0.2,
+        0.28
+      ],
+      "whisper_window_start": 135.88,
+      "whisper_window_end": 137.96,
+      "whisper_window_word_count": 8,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.968,
+      "whisper_window_words": [
+        {
+          "text": "t",
+          "start": 135.94,
+          "end": 136.12,
+          "probability": 0.905
+        },
+        {
+          "text": "'es",
+          "start": 136.12,
+          "end": 136.32,
+          "probability": 0.999
+        },
+        {
+          "text": "?",
+          "start": 136.32,
+          "end": 136.5,
+          "probability": 0.993
+        },
+        {
+          "text": "Papa,",
+          "start": 136.5,
+          "end": 136.82,
+          "probability": 0.855
+        },
+        {
+          "text": "où",
+          "start": 136.88,
+          "end": 137.14,
+          "probability": 0.996
+        },
+        {
+          "text": "t",
+          "start": 137.14,
+          "end": 137.34,
+          "probability": 1.0
+        },
+        {
+          "text": "'es",
+          "start": 137.34,
+          "end": 137.62,
+          "probability": 1.0
+        },
+        {
+          "text": "?",
+          "start": 137.62,
+          "end": 137.96,
+          "probability": 0.996
+        }
+      ],
+      "whisper_line_start_delta": 0.0
+    },
+    {
+      "index": 43,
+      "start": 137.96,
+      "end": 138.34,
+      "text": "Où t'es, papaoutai?",
+      "words": [
+        {
+          "text": "Où",
+          "start": 137.96,
+          "end": 138.34
+        },
+        {
+          "text": "t'es,",
+          "start": 138.33,
+          "end": 138.34
+        },
+        {
+          "text": "papaoutai?",
+          "start": 138.33,
+          "end": 138.34
+        }
+      ],
+      "word_slots": [
+        0.37,
+        0.0,
+        0.01
+      ],
+      "word_spoken": [
+        0.38,
+        0.01,
+        0.01
+      ],
+      "whisper_window_start": 136.96,
+      "whisper_window_end": 138.34,
+      "whisper_window_word_count": 4,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.985,
+      "whisper_window_words": [
+        {
+          "text": "t",
+          "start": 137.14,
+          "end": 137.34,
+          "probability": 1.0
+        },
+        {
+          "text": "'es",
+          "start": 137.34,
+          "end": 137.62,
+          "probability": 1.0
+        },
+        {
+          "text": "?",
+          "start": 137.62,
+          "end": 137.96,
+          "probability": 0.996
+        },
+        {
+          "text": "Où",
+          "start": 137.96,
+          "end": 138.34,
+          "probability": 0.947
+        }
+      ],
+      "whisper_line_start_delta": 0.0
+    },
+    {
+      "index": 44,
+      "start": 138.34,
+      "end": 138.76,
+      "text": "Où t'es, papaoutai?",
+      "words": [
+        {
+          "text": "Où",
+          "start": 138.34,
+          "end": 138.5
+        },
+        {
+          "text": "t'es,",
+          "start": 138.5,
+          "end": 138.7
+        },
+        {
+          "text": "papaoutai?",
+          "start": 138.7,
+          "end": 138.76
+        }
+      ],
+      "word_slots": [
+        0.16,
+        0.2,
+        0.06
+      ],
+      "word_spoken": [
+        0.16,
+        0.2,
+        0.06
+      ],
+      "whisper_window_start": 137.34,
+      "whisper_window_end": 142.8,
+      "whisper_window_word_count": 25,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.959,
+      "whisper_window_words": [
+        {
+          "text": "'es",
+          "start": 137.34,
+          "end": 137.62,
+          "probability": 1.0
+        },
+        {
+          "text": "?",
+          "start": 137.62,
+          "end": 137.96,
+          "probability": 0.996
+        },
+        {
+          "text": "Où",
+          "start": 137.96,
+          "end": 138.34,
+          "probability": 0.947
+        },
+        {
+          "text": "t",
+          "start": 138.34,
+          "end": 138.5,
+          "probability": 0.997
+        },
+        {
+          "text": "'es",
+          "start": 138.5,
+          "end": 138.7,
+          "probability": 0.999
+        },
+        {
+          "text": "?",
+          "start": 138.7,
+          "end": 138.76,
+          "probability": 0.995
+        },
+        {
+          "text": "Papa,",
+          "start": 138.76,
+          "end": 139.18,
+          "probability": 0.855
+        },
+        {
+          "text": "où",
+          "start": 139.28,
+          "end": 139.5,
+          "probability": 0.996
+        },
+        {
+          "text": "t",
+          "start": 139.5,
+          "end": 139.68,
+          "probability": 0.999
+        },
+        {
+          "text": "'es",
+          "start": 139.68,
+          "end": 139.88,
+          "probability": 0.999
+        },
+        {
+          "text": "?",
+          "start": 139.88,
+          "end": 139.9,
+          "probability": 0.987
+        },
+        {
+          "text": "Où",
+          "start": 139.9,
+          "end": 140.28,
+          "probability": 0.996
+        },
+        {
+          "text": "t",
+          "start": 140.28,
+          "end": 140.28,
+          "probability": 0.995
+        },
+        {
+          "text": "'es",
+          "start": 140.28,
+          "end": 140.48,
+          "probability": 0.999
+        },
+        {
+          "text": "?",
+          "start": 140.48,
+          "end": 140.66,
+          "probability": 0.928
+        },
+        {
+          "text": "Où",
+          "start": 140.66,
+          "end": 140.74,
+          "probability": 0.925
+        },
+        {
+          "text": "t",
+          "start": 140.74,
+          "end": 140.96,
+          "probability": 0.957
+        },
+        {
+          "text": "'es",
+          "start": 140.96,
+          "end": 141.1,
+          "probability": 0.999
+        },
+        {
+          "text": "?",
+          "start": 141.1,
+          "end": 141.1,
+          "probability": 0.976
+        },
+        {
+          "text": "Où",
+          "start": 141.1,
+          "end": 141.32,
+          "probability": 0.863
+        },
+        {
+          "text": "papa,",
+          "start": 141.32,
+          "end": 141.34,
+          "probability": 0.598
+        },
+        {
+          "text": "où",
+          "start": 141.72,
+          "end": 141.88,
+          "probability": 0.985
+        },
+        {
+          "text": "t",
+          "start": 141.88,
+          "end": 142.02,
+          "probability": 0.998
+        },
+        {
+          "text": "'es",
+          "start": 142.02,
+          "end": 142.3,
+          "probability": 0.993
+        },
+        {
+          "text": "?",
+          "start": 142.3,
+          "end": 142.3,
+          "probability": 0.991
+        }
+      ],
+      "whisper_line_start_delta": -0.38
+    },
+    {
+      "index": 45,
+      "start": 142.8,
+      "end": 171.32,
+      "text": "Où t'es, où t'es, où, papaoutai?",
+      "words": [
+        {
+          "text": "Où",
+          "start": 142.8,
+          "end": 143.02
+        },
+        {
+          "text": "t'es,",
+          "start": 143.02,
+          "end": 143.22
+        },
+        {
+          "text": "où",
+          "start": 143.22,
+          "end": 143.42
+        },
+        {
+          "text": "t'es,",
+          "start": 143.42,
+          "end": 143.5
+        },
+        {
+          "text": "où,",
+          "start": 143.5,
+          "end": 143.96
+        },
+        {
+          "text": "papaoutai?",
+          "start": 171.32,
+          "end": 171.32
+        }
+      ],
+      "word_slots": [
+        0.22,
+        0.2,
+        0.2,
+        0.08,
+        27.82,
+        0.0
+      ],
+      "word_spoken": [
+        0.22,
+        0.2,
+        0.2,
+        0.08,
+        0.46,
+        0.0
+      ],
+      "whisper_window_start": 141.8,
+      "whisper_window_end": 171.32,
+      "whisper_window_word_count": 8,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.988,
+      "whisper_window_words": [
+        {
+          "text": "t",
+          "start": 141.88,
+          "end": 142.02,
+          "probability": 0.998
+        },
+        {
+          "text": "'es",
+          "start": 142.02,
+          "end": 142.3,
+          "probability": 0.993
+        },
+        {
+          "text": "?",
+          "start": 142.3,
+          "end": 142.3,
+          "probability": 0.991
+        },
+        {
+          "text": "Où",
+          "start": 142.8,
+          "end": 143.02,
+          "probability": 0.99
+        },
+        {
+          "text": "t",
+          "start": 143.02,
+          "end": 143.22,
+          "probability": 0.95
+        },
+        {
+          "text": "'es",
+          "start": 143.22,
+          "end": 143.42,
+          "probability": 0.995
+        },
+        {
+          "text": "?",
+          "start": 143.42,
+          "end": 143.5,
+          "probability": 0.996
+        },
+        {
+          "text": "Où",
+          "start": 143.5,
+          "end": 143.96,
+          "probability": 0.987
+        }
+      ],
+      "whisper_line_start_delta": 0.0
+    },
+    {
+      "index": 46,
+      "start": 171.32,
+      "end": 172.0,
+      "text": "Où t'es, papaoutai?",
+      "words": [
+        {
+          "text": "Où",
+          "start": 171.32,
+          "end": 171.32
+        },
+        {
+          "text": "t'es,",
+          "start": 171.32,
+          "end": 171.64
+        },
+        {
+          "text": "papaoutai?",
+          "start": 171.64,
+          "end": 172.0
+        }
+      ],
+      "word_slots": [
+        0.0,
+        0.32,
+        0.36
+      ],
+      "word_spoken": [
+        0.0,
+        0.32,
+        0.36
+      ],
+      "whisper_window_start": 170.32,
+      "whisper_window_end": 173.36,
+      "whisper_window_word_count": 5,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.919,
+      "whisper_window_words": [
+        {
+          "text": "est",
+          "start": 171.32,
+          "end": 171.32,
+          "probability": 0.63
+        },
+        {
+          "text": "ton",
+          "start": 171.32,
+          "end": 171.64,
+          "probability": 0.998
+        },
+        {
+          "text": "papa",
+          "start": 171.64,
+          "end": 172.0,
+          "probability": 0.998
+        },
+        {
+          "text": "?",
+          "start": 172.0,
+          "end": 172.32,
+          "probability": 0.982
+        },
+        {
+          "text": "Dis",
+          "start": 172.32,
+          "end": 173.36,
+          "probability": 0.987
+        }
+      ],
+      "whisper_line_start_delta": null
+    },
+    {
+      "index": 47,
+      "start": 173.62,
+      "end": 174.16,
+      "text": "Où t'es, papaoutai?",
+      "words": [
+        {
+          "text": "Où",
+          "start": 173.62,
+          "end": 173.88
+        },
+        {
+          "text": "t'es,",
+          "start": 173.88,
+          "end": 174.04
+        },
+        {
+          "text": "papaoutai?",
+          "start": 174.04,
+          "end": 174.16
+        }
+      ],
+      "word_slots": [
+        0.26,
+        0.16,
+        0.12
+      ],
+      "word_spoken": [
+        0.26,
+        0.16,
+        0.12
+      ],
+      "whisper_window_start": 172.36,
+      "whisper_window_end": 174.44,
+      "whisper_window_word_count": 5,
+      "whisper_window_low_conf_count": 1,
+      "whisper_window_avg_prob": 0.85,
+      "whisper_window_words": [
+        {
+          "text": "-moi",
+          "start": 173.36,
+          "end": 173.62,
+          "probability": 0.999
+        },
+        {
+          "text": "où",
+          "start": 173.62,
+          "end": 173.78,
+          "probability": 0.25
+        },
+        {
+          "text": "est",
+          "start": 173.78,
+          "end": 173.9,
+          "probability": 1.0
+        },
+        {
+          "text": "ton",
+          "start": 173.9,
+          "end": 174.08,
+          "probability": 1.0
+        },
+        {
+          "text": "papa",
+          "start": 174.08,
+          "end": 174.44,
+          "probability": 0.999
+        }
+      ],
+      "whisper_line_start_delta": 0.26
+    },
+    {
+      "index": 48,
+      "start": 174.44,
+      "end": 176.24,
+      "text": "Où t'es, papaoutai?",
+      "words": [
+        {
+          "text": "Où",
+          "start": 174.44,
+          "end": 174.82
+        },
+        {
+          "text": "t'es,",
+          "start": 175.36,
+          "end": 175.8
+        },
+        {
+          "text": "papaoutai?",
+          "start": 175.8,
+          "end": 176.24
+        }
+      ],
+      "word_slots": [
+        0.92,
+        0.44,
+        0.44
+      ],
+      "word_spoken": [
+        0.38,
+        0.44,
+        0.44
+      ],
+      "whisper_window_start": 173.44,
+      "whisper_window_end": 176.64,
+      "whisper_window_word_count": 8,
+      "whisper_window_low_conf_count": 1,
+      "whisper_window_avg_prob": 0.894,
+      "whisper_window_words": [
+        {
+          "text": "où",
+          "start": 173.62,
+          "end": 173.78,
+          "probability": 0.25
+        },
+        {
+          "text": "est",
+          "start": 173.78,
+          "end": 173.9,
+          "probability": 1.0
+        },
+        {
+          "text": "ton",
+          "start": 173.9,
+          "end": 174.08,
+          "probability": 1.0
+        },
+        {
+          "text": "papa",
+          "start": 174.08,
+          "end": 174.44,
+          "probability": 0.999
+        },
+        {
+          "text": "?",
+          "start": 174.44,
+          "end": 174.82,
+          "probability": 0.916
+        },
+        {
+          "text": "Sans",
+          "start": 175.36,
+          "end": 175.8,
+          "probability": 0.998
+        },
+        {
+          "text": "même",
+          "start": 175.8,
+          "end": 176.24,
+          "probability": 0.999
+        },
+        {
+          "text": "devoir",
+          "start": 176.24,
+          "end": 176.64,
+          "probability": 0.988
+        }
+      ],
+      "whisper_line_start_delta": -0.82
+    },
+    {
+      "index": 49,
+      "start": 176.64,
+      "end": 178.64,
+      "text": "Où t'es, où t'es, où, papaoutai?",
+      "words": [
+        {
+          "text": "Où",
+          "start": 176.64,
+          "end": 176.94
+        },
+        {
+          "text": "t'es,",
+          "start": 176.94,
+          "end": 177.44
+        },
+        {
+          "text": "où",
+          "start": 177.6,
+          "end": 178.0
+        },
+        {
+          "text": "t'es,",
+          "start": 178.0,
+          "end": 178.24
+        },
+        {
+          "text": "où,",
+          "start": 178.24,
+          "end": 178.4
+        },
+        {
+          "text": "papaoutai?",
+          "start": 178.4,
+          "end": 178.64
+        }
+      ],
+      "word_slots": [
+        0.3,
+        0.66,
+        0.4,
+        0.24,
+        0.16,
+        0.24
+      ],
+      "word_spoken": [
+        0.3,
+        0.5,
+        0.4,
+        0.24,
+        0.16,
+        0.24
+      ],
+      "whisper_window_start": 175.64,
+      "whisper_window_end": 178.65,
+      "whisper_window_word_count": 9,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.992,
+      "whisper_window_words": [
+        {
+          "text": "même",
+          "start": 175.8,
+          "end": 176.24,
+          "probability": 0.999
+        },
+        {
+          "text": "devoir",
+          "start": 176.24,
+          "end": 176.64,
+          "probability": 0.988
+        },
+        {
+          "text": "lui",
+          "start": 176.64,
+          "end": 176.94,
+          "probability": 1.0
+        },
+        {
+          "text": "parler,",
+          "start": 176.94,
+          "end": 177.44,
+          "probability": 1.0
+        },
+        {
+          "text": "il",
+          "start": 177.6,
+          "end": 178.0,
+          "probability": 0.998
+        },
+        {
+          "text": "sait",
+          "start": 178.0,
+          "end": 178.24,
+          "probability": 0.994
+        },
+        {
+          "text": "ce",
+          "start": 178.24,
+          "end": 178.4,
+          "probability": 0.997
+        },
+        {
+          "text": "qui",
+          "start": 178.4,
+          "end": 178.64,
+          "probability": 0.951
+        },
+        {
+          "text": "ne",
+          "start": 178.64,
+          "end": 178.88,
+          "probability": 1.0
+        }
+      ],
+      "whisper_line_start_delta": null
+    },
+    {
+      "index": 50,
+      "start": 178.65,
+      "end": 181.24,
+      "text": "Où est ton papa?",
+      "words": [
+        {
+          "text": "Où",
+          "start": 178.654,
+          "end": 179.145
+        },
+        {
+          "text": "est",
+          "start": 179.165,
+          "end": 180.771
+        },
+        {
+          "text": "ton",
+          "start": 180.791,
+          "end": 181.119
+        },
+        {
+          "text": "papa?",
+          "start": 181.139,
+          "end": 181.239
+        }
+      ],
+      "word_slots": [
+        0.511,
+        1.625,
+        0.348,
+        0.1
+      ],
+      "word_spoken": [
+        0.491,
+        1.605,
+        0.328,
+        0.1
+      ],
+      "whisper_window_start": 177.65,
+      "whisper_window_end": 182.15,
+      "whisper_window_word_count": 10,
+      "whisper_window_low_conf_count": 1,
+      "whisper_window_avg_prob": 0.893,
+      "whisper_window_words": [
+        {
+          "text": "sait",
+          "start": 178.0,
+          "end": 178.24,
+          "probability": 0.994
+        },
+        {
+          "text": "ce",
+          "start": 178.24,
+          "end": 178.4,
+          "probability": 0.997
+        },
+        {
+          "text": "qui",
+          "start": 178.4,
+          "end": 178.64,
+          "probability": 0.951
+        },
+        {
+          "text": "ne",
+          "start": 178.64,
+          "end": 178.88,
+          "probability": 1.0
+        },
+        {
+          "text": "va",
+          "start": 178.88,
+          "end": 179.16,
+          "probability": 1.0
+        },
+        {
+          "text": "pas",
+          "start": 179.16,
+          "end": 179.48,
+          "probability": 1.0
+        },
+        {
+          "text": "Ah",
+          "start": 180.76,
+          "end": 180.86,
+          "probability": 0.41
+        },
+        {
+          "text": "sacré",
+          "start": 180.86,
+          "end": 181.46,
+          "probability": 0.677
+        },
+        {
+          "text": "papa,",
+          "start": 181.46,
+          "end": 181.74,
+          "probability": 0.921
+        },
+        {
+          "text": "dis",
+          "start": 182.02,
+          "end": 183.14,
+          "probability": 0.978
+        }
+      ],
+      "whisper_line_start_delta": null
+    },
+    {
+      "index": 51,
+      "start": 182.15,
+      "end": 183.29,
+      "text": "Dis-moi, où est ton papa?",
+      "words": [
+        {
+          "text": "Dis-moi,",
+          "start": 182.145,
+          "end": 182.351
+        },
+        {
+          "text": "où",
+          "start": 182.374,
+          "end": 182.579
+        },
+        {
+          "text": "est",
+          "start": 182.602,
+          "end": 182.807
+        },
+        {
+          "text": "ton",
+          "start": 182.83,
+          "end": 183.035
+        },
+        {
+          "text": "papa?",
+          "start": 183.058,
+          "end": 183.286
+        }
+      ],
+      "word_slots": [
+        0.228,
+        0.228,
+        0.228,
+        0.228,
+        0.228
+      ],
+      "word_spoken": [
+        0.205,
+        0.205,
+        0.205,
+        0.205,
+        0.228
+      ],
+      "whisper_window_start": 181.15,
+      "whisper_window_end": 184.52,
+      "whisper_window_word_count": 7,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.97,
+      "whisper_window_words": [
+        {
+          "text": "papa,",
+          "start": 181.46,
+          "end": 181.74,
+          "probability": 0.921
+        },
+        {
+          "text": "dis",
+          "start": 182.02,
+          "end": 183.14,
+          "probability": 0.978
+        },
+        {
+          "text": "-moi",
+          "start": 183.14,
+          "end": 183.44,
+          "probability": 0.968
+        },
+        {
+          "text": "où",
+          "start": 183.44,
+          "end": 183.62,
+          "probability": 0.962
+        },
+        {
+          "text": "es",
+          "start": 183.62,
+          "end": 183.72,
+          "probability": 0.984
+        },
+        {
+          "text": "-tu",
+          "start": 183.72,
+          "end": 183.78,
+          "probability": 0.999
+        },
+        {
+          "text": "caché,",
+          "start": 183.78,
+          "end": 184.52,
+          "probability": 0.981
+        }
+      ],
+      "whisper_line_start_delta": null
+    },
+    {
+      "index": 52,
+      "start": 184.52,
+      "end": 186.62,
+      "text": "Sans même devoir lui parler",
+      "words": [
+        {
+          "text": "Sans",
+          "start": 184.52,
+          "end": 184.92
+        },
+        {
+          "text": "même",
+          "start": 184.92,
+          "end": 185.34
+        },
+        {
+          "text": "devoir",
+          "start": 185.34,
+          "end": 186.04
+        },
+        {
+          "text": "lui",
+          "start": 186.04,
+          "end": 186.34
+        },
+        {
+          "text": "parler",
+          "start": 186.34,
+          "end": 186.62
+        }
+      ],
+      "word_slots": [
+        0.4,
+        0.42,
+        0.7,
+        0.3,
+        0.28
+      ],
+      "word_spoken": [
+        0.4,
+        0.42,
+        0.7,
+        0.3,
+        0.28
+      ],
+      "whisper_window_start": 183.52,
+      "whisper_window_end": 186.98,
+      "whisper_window_word_count": 9,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.99,
+      "whisper_window_words": [
+        {
+          "text": "es",
+          "start": 183.62,
+          "end": 183.72,
+          "probability": 0.984
+        },
+        {
+          "text": "-tu",
+          "start": 183.72,
+          "end": 183.78,
+          "probability": 0.999
+        },
+        {
+          "text": "caché,",
+          "start": 183.78,
+          "end": 184.52,
+          "probability": 0.981
+        },
+        {
+          "text": "ça",
+          "start": 184.52,
+          "end": 184.92,
+          "probability": 0.996
+        },
+        {
+          "text": "doit",
+          "start": 184.92,
+          "end": 185.34,
+          "probability": 0.995
+        },
+        {
+          "text": "faire",
+          "start": 185.34,
+          "end": 186.04,
+          "probability": 0.959
+        },
+        {
+          "text": "au",
+          "start": 186.04,
+          "end": 186.34,
+          "probability": 0.998
+        },
+        {
+          "text": "moins",
+          "start": 186.34,
+          "end": 186.62,
+          "probability": 1.0
+        },
+        {
+          "text": "mille",
+          "start": 186.62,
+          "end": 186.98,
+          "probability": 0.999
+        }
+      ],
+      "whisper_line_start_delta": null
+    },
+    {
+      "index": 53,
+      "start": 186.98,
+      "end": 189.58,
+      "text": "Il sait ce qui ne va pas",
+      "words": [
+        {
+          "text": "Il",
+          "start": 186.98,
+          "end": 187.16
+        },
+        {
+          "text": "sait",
+          "start": 187.16,
+          "end": 187.42
+        },
+        {
+          "text": "ce",
+          "start": 187.42,
+          "end": 187.62
+        },
+        {
+          "text": "qui",
+          "start": 187.62,
+          "end": 187.8
+        },
+        {
+          "text": "ne",
+          "start": 187.8,
+          "end": 188.88
+        },
+        {
+          "text": "va",
+          "start": 188.88,
+          "end": 189.0
+        },
+        {
+          "text": "pas",
+          "start": 189.0,
+          "end": 189.58
+        }
+      ],
+      "word_slots": [
+        0.18,
+        0.26,
+        0.2,
+        0.18,
+        1.08,
+        0.12,
+        0.58
+      ],
+      "word_spoken": [
+        0.18,
+        0.26,
+        0.2,
+        0.18,
+        1.08,
+        0.12,
+        0.58
+      ],
+      "whisper_window_start": 185.98,
+      "whisper_window_end": 190.36,
+      "whisper_window_word_count": 10,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.996,
+      "whisper_window_words": [
+        {
+          "text": "au",
+          "start": 186.04,
+          "end": 186.34,
+          "probability": 0.998
+        },
+        {
+          "text": "moins",
+          "start": 186.34,
+          "end": 186.62,
+          "probability": 1.0
+        },
+        {
+          "text": "mille",
+          "start": 186.62,
+          "end": 186.98,
+          "probability": 0.999
+        },
+        {
+          "text": "fois",
+          "start": 186.98,
+          "end": 187.16,
+          "probability": 1.0
+        },
+        {
+          "text": "que",
+          "start": 187.16,
+          "end": 187.42,
+          "probability": 0.999
+        },
+        {
+          "text": "j",
+          "start": 187.42,
+          "end": 187.62,
+          "probability": 0.999
+        },
+        {
+          "text": "'ai",
+          "start": 187.62,
+          "end": 187.8,
+          "probability": 0.998
+        },
+        {
+          "text": "compté",
+          "start": 187.8,
+          "end": 188.88,
+          "probability": 0.993
+        },
+        {
+          "text": "mes",
+          "start": 188.88,
+          "end": 189.0,
+          "probability": 1.0
+        },
+        {
+          "text": "doigts",
+          "start": 189.0,
+          "end": 189.58,
+          "probability": 0.978
+        }
+      ],
+      "whisper_line_start_delta": null
+    },
+    {
+      "index": 54,
+      "start": 190.36,
+      "end": 191.34,
+      "text": "Ah, sacré papa",
+      "words": [
+        {
+          "text": "Ah,",
+          "start": 190.36,
+          "end": 190.96
+        },
+        {
+          "text": "sacré",
+          "start": 190.96,
+          "end": 191.1
+        },
+        {
+          "text": "papa",
+          "start": 191.1,
+          "end": 191.34
+        }
+      ],
+      "word_slots": [
+        0.6,
+        0.14,
+        0.24
+      ],
+      "word_spoken": [
+        0.6,
+        0.14,
+        0.24
+      ],
+      "whisper_window_start": 189.36,
+      "whisper_window_end": 191.72,
+      "whisper_window_word_count": 4,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.911,
+      "whisper_window_words": [
+        {
+          "text": "Où",
+          "start": 190.36,
+          "end": 190.96,
+          "probability": 0.671
+        },
+        {
+          "text": "est",
+          "start": 190.96,
+          "end": 191.1,
+          "probability": 0.973
+        },
+        {
+          "text": "ton",
+          "start": 191.1,
+          "end": 191.34,
+          "probability": 0.999
+        },
+        {
+          "text": "papa",
+          "start": 191.34,
+          "end": 191.72,
+          "probability": 1.0
+        }
+      ],
+      "whisper_line_start_delta": null
+    },
+    {
+      "index": 55,
+      "start": 191.72,
+      "end": 193.46,
+      "text": "Dis-moi, où es-tu caché?",
+      "words": [
+        {
+          "text": "Dis-moi,",
+          "start": 191.72,
+          "end": 191.98
+        },
+        {
+          "text": "où",
+          "start": 191.98,
+          "end": 192.94
+        },
+        {
+          "text": "es-tu",
+          "start": 192.94,
+          "end": 193.32
+        },
+        {
+          "text": "caché?",
+          "start": 193.32,
+          "end": 193.46
+        }
+      ],
+      "word_slots": [
+        0.26,
+        0.96,
+        0.38,
+        0.14
+      ],
+      "word_spoken": [
+        0.26,
+        0.96,
+        0.38,
+        0.14
+      ],
+      "whisper_window_start": 190.72,
+      "whisper_window_end": 193.66,
+      "whisper_window_word_count": 8,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.964,
+      "whisper_window_words": [
+        {
+          "text": "est",
+          "start": 190.96,
+          "end": 191.1,
+          "probability": 0.973
+        },
+        {
+          "text": "ton",
+          "start": 191.1,
+          "end": 191.34,
+          "probability": 0.999
+        },
+        {
+          "text": "papa",
+          "start": 191.34,
+          "end": 191.72,
+          "probability": 1.0
+        },
+        {
+          "text": "?",
+          "start": 191.72,
+          "end": 191.98,
+          "probability": 0.76
+        },
+        {
+          "text": "Dis",
+          "start": 191.98,
+          "end": 192.94,
+          "probability": 0.985
+        },
+        {
+          "text": "-moi",
+          "start": 192.94,
+          "end": 193.32,
+          "probability": 1.0
+        },
+        {
+          "text": "où",
+          "start": 193.32,
+          "end": 193.46,
+          "probability": 0.999
+        },
+        {
+          "text": "est",
+          "start": 193.46,
+          "end": 193.66,
+          "probability": 1.0
+        }
+      ],
+      "whisper_line_start_delta": null
+    },
+    {
+      "index": 56,
+      "start": 193.66,
+      "end": 197.68,
+      "text": "Ça doit faire au moins mille fois que j'ai",
+      "words": [
+        {
+          "text": "Ça",
+          "start": 193.66,
+          "end": 193.78
+        },
+        {
+          "text": "doit",
+          "start": 193.78,
+          "end": 194.18
+        },
+        {
+          "text": "faire",
+          "start": 194.18,
+          "end": 194.48
+        },
+        {
+          "text": "au",
+          "start": 195.14,
+          "end": 195.44
+        },
+        {
+          "text": "moins",
+          "start": 195.44,
+          "end": 196.0
+        },
+        {
+          "text": "mille",
+          "start": 196.0,
+          "end": 196.34
+        },
+        {
+          "text": "fois",
+          "start": 196.34,
+          "end": 196.68
+        },
+        {
+          "text": "que",
+          "start": 196.68,
+          "end": 197.16
+        },
+        {
+          "text": "j'ai",
+          "start": 197.34,
+          "end": 197.68
+        }
+      ],
+      "word_slots": [
+        0.12,
+        0.4,
+        0.96,
+        0.3,
+        0.56,
+        0.34,
+        0.34,
+        0.66,
+        0.34
+      ],
+      "word_spoken": [
+        0.12,
+        0.4,
+        0.3,
+        0.3,
+        0.56,
+        0.34,
+        0.34,
+        0.48,
+        0.34
+      ],
+      "whisper_window_start": 192.66,
+      "whisper_window_end": 197.94,
+      "whisper_window_word_count": 13,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.966,
+      "whisper_window_words": [
+        {
+          "text": "-moi",
+          "start": 192.94,
+          "end": 193.32,
+          "probability": 1.0
+        },
+        {
+          "text": "où",
+          "start": 193.32,
+          "end": 193.46,
+          "probability": 0.999
+        },
+        {
+          "text": "est",
+          "start": 193.46,
+          "end": 193.66,
+          "probability": 1.0
+        },
+        {
+          "text": "ton",
+          "start": 193.66,
+          "end": 193.78,
+          "probability": 1.0
+        },
+        {
+          "text": "papa",
+          "start": 193.78,
+          "end": 194.18,
+          "probability": 1.0
+        },
+        {
+          "text": "?",
+          "start": 194.18,
+          "end": 194.48,
+          "probability": 0.617
+        },
+        {
+          "text": "Sans",
+          "start": 195.14,
+          "end": 195.44,
+          "probability": 0.992
+        },
+        {
+          "text": "même",
+          "start": 195.44,
+          "end": 196.0,
+          "probability": 0.995
+        },
+        {
+          "text": "devoir",
+          "start": 196.0,
+          "end": 196.34,
+          "probability": 0.961
+        },
+        {
+          "text": "lui",
+          "start": 196.34,
+          "end": 196.68,
+          "probability": 1.0
+        },
+        {
+          "text": "parler,",
+          "start": 196.68,
+          "end": 197.16,
+          "probability": 1.0
+        },
+        {
+          "text": "il",
+          "start": 197.34,
+          "end": 197.68,
+          "probability": 1.0
+        },
+        {
+          "text": "sait",
+          "start": 197.68,
+          "end": 197.94,
+          "probability": 0.997
+        }
+      ],
+      "whisper_line_start_delta": null
+    },
+    {
+      "index": 57,
+      "start": 197.94,
+      "end": 198.84,
+      "text": "Compté mes doigts, eh",
+      "words": [
+        {
+          "text": "Compté",
+          "start": 197.94,
+          "end": 198.14
+        },
+        {
+          "text": "mes",
+          "start": 198.14,
+          "end": 198.36
+        },
+        {
+          "text": "doigts,",
+          "start": 198.36,
+          "end": 198.6
+        },
+        {
+          "text": "eh",
+          "start": 198.6,
+          "end": 198.84
+        }
+      ],
+      "word_slots": [
+        0.2,
+        0.22,
+        0.24,
+        0.24
+      ],
+      "word_spoken": [
+        0.2,
+        0.22,
+        0.24,
+        0.24
+      ],
+      "whisper_window_start": 196.94,
+      "whisper_window_end": 199.24,
+      "whisper_window_word_count": 7,
+      "whisper_window_low_conf_count": 1,
+      "whisper_window_avg_prob": 0.924,
+      "whisper_window_words": [
+        {
+          "text": "il",
+          "start": 197.34,
+          "end": 197.68,
+          "probability": 1.0
+        },
+        {
+          "text": "sait",
+          "start": 197.68,
+          "end": 197.94,
+          "probability": 0.997
+        },
+        {
+          "text": "ce",
+          "start": 197.94,
+          "end": 198.14,
+          "probability": 0.997
+        },
+        {
+          "text": "qui",
+          "start": 198.14,
+          "end": 198.36,
+          "probability": 0.474
+        },
+        {
+          "text": "ne",
+          "start": 198.36,
+          "end": 198.6,
+          "probability": 1.0
+        },
+        {
+          "text": "va",
+          "start": 198.6,
+          "end": 198.84,
+          "probability": 1.0
+        },
+        {
+          "text": "pas",
+          "start": 198.84,
+          "end": 199.24,
+          "probability": 1.0
+        }
+      ],
+      "whisper_line_start_delta": null
+    },
+    {
+      "index": 58,
+      "start": 199.24,
+      "end": 202.9,
+      "text": "Où est ton papa?",
+      "words": [
+        {
+          "text": "Où",
+          "start": 199.24,
+          "end": 199.78
+        },
+        {
+          "text": "est",
+          "start": 199.78,
+          "end": 201.14
+        },
+        {
+          "text": "ton",
+          "start": 201.14,
+          "end": 201.48
+        },
+        {
+          "text": "papa?",
+          "start": 201.86,
+          "end": 202.9
+        }
+      ],
+      "word_slots": [
+        0.54,
+        1.36,
+        0.72,
+        1.04
+      ],
+      "word_spoken": [
+        0.54,
+        1.36,
+        0.34,
+        1.04
+      ],
+      "whisper_window_start": 198.24,
+      "whisper_window_end": 203.14,
+      "whisper_window_word_count": 8,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 1.0,
+      "whisper_window_words": [
+        {
+          "text": "ne",
+          "start": 198.36,
+          "end": 198.6,
+          "probability": 1.0
+        },
+        {
+          "text": "va",
+          "start": 198.6,
+          "end": 198.84,
+          "probability": 1.0
+        },
+        {
+          "text": "pas",
+          "start": 198.84,
+          "end": 199.24,
+          "probability": 1.0
+        },
+        {
+          "text": "Ah",
+          "start": 199.24,
+          "end": 199.78,
+          "probability": 0.999
+        },
+        {
+          "text": "sacré",
+          "start": 199.78,
+          "end": 201.14,
+          "probability": 1.0
+        },
+        {
+          "text": "papa,",
+          "start": 201.14,
+          "end": 201.48,
+          "probability": 1.0
+        },
+        {
+          "text": "dis",
+          "start": 201.86,
+          "end": 202.9,
+          "probability": 1.0
+        },
+        {
+          "text": "-moi",
+          "start": 202.9,
+          "end": 203.14,
+          "probability": 1.0
+        }
+      ],
+      "whisper_line_start_delta": null
+    },
+    {
+      "index": 59,
+      "start": 203.14,
+      "end": 204.6,
+      "text": "Dis-moi, où est ton papa?",
+      "words": [
+        {
+          "text": "Dis-moi,",
+          "start": 203.14,
+          "end": 203.26
+        },
+        {
+          "text": "où",
+          "start": 203.26,
+          "end": 203.4
+        },
+        {
+          "text": "est",
+          "start": 203.4,
+          "end": 203.48
+        },
+        {
+          "text": "ton",
+          "start": 203.48,
+          "end": 204.22
+        },
+        {
+          "text": "papa?",
+          "start": 204.22,
+          "end": 204.6
+        }
+      ],
+      "word_slots": [
+        0.12,
+        0.14,
+        0.08,
+        0.74,
+        0.38
+      ],
+      "word_spoken": [
+        0.12,
+        0.14,
+        0.08,
+        0.74,
+        0.38
+      ],
+      "whisper_window_start": 202.14,
+      "whisper_window_end": 205.1,
+      "whisper_window_word_count": 7,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.995,
+      "whisper_window_words": [
+        {
+          "text": "-moi",
+          "start": 202.9,
+          "end": 203.14,
+          "probability": 1.0
+        },
+        {
+          "text": "où",
+          "start": 203.14,
+          "end": 203.26,
+          "probability": 1.0
+        },
+        {
+          "text": "es",
+          "start": 203.26,
+          "end": 203.4,
+          "probability": 0.995
+        },
+        {
+          "text": "-tu",
+          "start": 203.4,
+          "end": 203.48,
+          "probability": 1.0
+        },
+        {
+          "text": "caché,",
+          "start": 203.48,
+          "end": 204.22,
+          "probability": 1.0
+        },
+        {
+          "text": "ça",
+          "start": 204.22,
+          "end": 204.6,
+          "probability": 0.981
+        },
+        {
+          "text": "doit",
+          "start": 204.6,
+          "end": 205.1,
+          "probability": 0.991
+        }
+      ],
+      "whisper_line_start_delta": null
+    },
+    {
+      "index": 60,
+      "start": 205.1,
+      "end": 206.8,
+      "text": "Sans même devoir lui parler",
+      "words": [
+        {
+          "text": "Sans",
+          "start": 205.1,
+          "end": 205.78
+        },
+        {
+          "text": "même",
+          "start": 205.78,
+          "end": 206.06
+        },
+        {
+          "text": "devoir",
+          "start": 206.06,
+          "end": 206.26
+        },
+        {
+          "text": "lui",
+          "start": 206.26,
+          "end": 206.6
+        },
+        {
+          "text": "parler",
+          "start": 206.6,
+          "end": 206.8
+        }
+      ],
+      "word_slots": [
+        0.68,
+        0.28,
+        0.2,
+        0.34,
+        0.2
+      ],
+      "word_spoken": [
+        0.68,
+        0.28,
+        0.2,
+        0.34,
+        0.2
+      ],
+      "whisper_window_start": 204.1,
+      "whisper_window_end": 207.08,
+      "whisper_window_word_count": 8,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.996,
+      "whisper_window_words": [
+        {
+          "text": "ça",
+          "start": 204.22,
+          "end": 204.6,
+          "probability": 0.981
+        },
+        {
+          "text": "doit",
+          "start": 204.6,
+          "end": 205.1,
+          "probability": 0.991
+        },
+        {
+          "text": "faire",
+          "start": 205.1,
+          "end": 205.78,
+          "probability": 0.999
+        },
+        {
+          "text": "au",
+          "start": 205.78,
+          "end": 206.06,
+          "probability": 1.0
+        },
+        {
+          "text": "moins",
+          "start": 206.06,
+          "end": 206.26,
+          "probability": 1.0
+        },
+        {
+          "text": "mille",
+          "start": 206.26,
+          "end": 206.6,
+          "probability": 1.0
+        },
+        {
+          "text": "fois",
+          "start": 206.6,
+          "end": 206.8,
+          "probability": 1.0
+        },
+        {
+          "text": "que",
+          "start": 206.8,
+          "end": 207.08,
+          "probability": 1.0
+        }
+      ],
+      "whisper_line_start_delta": null
+    },
+    {
+      "index": 61,
+      "start": 207.08,
+      "end": 210.98,
+      "text": "Il sait ce qui ne va pas",
+      "words": [
+        {
+          "text": "Il",
+          "start": 207.08,
+          "end": 207.28
+        },
+        {
+          "text": "sait",
+          "start": 207.28,
+          "end": 207.5
+        },
+        {
+          "text": "ce",
+          "start": 207.5,
+          "end": 208.48
+        },
+        {
+          "text": "qui",
+          "start": 208.48,
+          "end": 208.7
+        },
+        {
+          "text": "ne",
+          "start": 208.7,
+          "end": 209.16
+        },
+        {
+          "text": "va",
+          "start": 210.76,
+          "end": 210.92
+        },
+        {
+          "text": "pas",
+          "start": 210.92,
+          "end": 210.98
+        }
+      ],
+      "word_slots": [
+        0.2,
+        0.22,
+        0.98,
+        0.22,
+        2.06,
+        0.16,
+        0.06
+      ],
+      "word_spoken": [
+        0.2,
+        0.22,
+        0.98,
+        0.22,
+        0.46,
+        0.16,
+        0.06
+      ],
+      "whisper_window_start": 206.08,
+      "whisper_window_end": 207.09,
+      "whisper_window_word_count": 4,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 1.0,
+      "whisper_window_words": [
+        {
+          "text": "mille",
+          "start": 206.26,
+          "end": 206.6,
+          "probability": 1.0
+        },
+        {
+          "text": "fois",
+          "start": 206.6,
+          "end": 206.8,
+          "probability": 1.0
+        },
+        {
+          "text": "que",
+          "start": 206.8,
+          "end": 207.08,
+          "probability": 1.0
+        },
+        {
+          "text": "j",
+          "start": 207.08,
+          "end": 207.28,
+          "probability": 1.0
+        }
+      ],
+      "whisper_line_start_delta": null
+    },
+    {
+      "index": 62,
+      "start": 207.09,
+      "end": 207.1,
+      "text": "Ah, sacré papa",
+      "words": [
+        {
+          "text": "Ah,",
+          "start": 207.09,
+          "end": 207.1
+        },
+        {
+          "text": "sacré",
+          "start": 207.09,
+          "end": 207.1
+        },
+        {
+          "text": "papa",
+          "start": 207.09,
+          "end": 207.1
+        }
+      ],
+      "word_slots": [
+        0.0,
+        0.0,
+        0.01
+      ],
+      "word_spoken": [
+        0.01,
+        0.01,
+        0.01
+      ],
+      "whisper_window_start": 206.09,
+      "whisper_window_end": 207.1,
+      "whisper_window_word_count": 4,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 1.0,
+      "whisper_window_words": [
+        {
+          "text": "mille",
+          "start": 206.26,
+          "end": 206.6,
+          "probability": 1.0
+        },
+        {
+          "text": "fois",
+          "start": 206.6,
+          "end": 206.8,
+          "probability": 1.0
+        },
+        {
+          "text": "que",
+          "start": 206.8,
+          "end": 207.08,
+          "probability": 1.0
+        },
+        {
+          "text": "j",
+          "start": 207.08,
+          "end": 207.28,
+          "probability": 1.0
+        }
+      ],
+      "whisper_line_start_delta": null
+    },
+    {
+      "index": 63,
+      "start": 207.1,
+      "end": 208.64,
+      "text": "Dis-moi, où es-tu caché?",
+      "words": [
+        {
+          "text": "Dis-moi,",
+          "start": 207.1,
+          "end": 208.14
+        },
+        {
+          "text": "où",
+          "start": 208.14,
+          "end": 208.38
+        },
+        {
+          "text": "es-tu",
+          "start": 208.38,
+          "end": 208.5
+        },
+        {
+          "text": "caché?",
+          "start": 208.5,
+          "end": 208.64
+        }
+      ],
+      "word_slots": [
+        1.04,
+        0.24,
+        0.12,
+        0.14
+      ],
+      "word_spoken": [
+        1.04,
+        0.24,
+        0.12,
+        0.14
+      ],
+      "whisper_window_start": 206.1,
+      "whisper_window_end": 207.11,
+      "whisper_window_word_count": 4,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 1.0,
+      "whisper_window_words": [
+        {
+          "text": "mille",
+          "start": 206.26,
+          "end": 206.6,
+          "probability": 1.0
+        },
+        {
+          "text": "fois",
+          "start": 206.6,
+          "end": 206.8,
+          "probability": 1.0
+        },
+        {
+          "text": "que",
+          "start": 206.8,
+          "end": 207.08,
+          "probability": 1.0
+        },
+        {
+          "text": "j",
+          "start": 207.08,
+          "end": 207.28,
+          "probability": 1.0
+        }
+      ],
+      "whisper_line_start_delta": null
+    },
+    {
+      "index": 64,
+      "start": 207.11,
+      "end": 210.51,
+      "text": "Ça doit faire au moins mille fois que j'ai",
+      "words": [
+        {
+          "text": "Ça",
+          "start": 207.11,
+          "end": 207.19
+        },
+        {
+          "text": "doit",
+          "start": 207.19,
+          "end": 207.93
+        },
+        {
+          "text": "faire",
+          "start": 207.93,
+          "end": 208.31
+        },
+        {
+          "text": "au",
+          "start": 208.31,
+          "end": 208.81
+        },
+        {
+          "text": "moins",
+          "start": 208.81,
+          "end": 209.49
+        },
+        {
+          "text": "mille",
+          "start": 209.49,
+          "end": 209.77
+        },
+        {
+          "text": "fois",
+          "start": 209.77,
+          "end": 209.97
+        },
+        {
+          "text": "que",
+          "start": 209.97,
+          "end": 210.31
+        },
+        {
+          "text": "j'ai",
+          "start": 210.31,
+          "end": 210.51
+        }
+      ],
+      "word_slots": [
+        0.08,
+        0.74,
+        0.38,
+        0.5,
+        0.68,
+        0.28,
+        0.2,
+        0.34,
+        0.2
+      ],
+      "word_spoken": [
+        0.08,
+        0.74,
+        0.38,
+        0.5,
+        0.68,
+        0.28,
+        0.2,
+        0.34,
+        0.2
+      ],
+      "whisper_window_start": 206.11,
+      "whisper_window_end": 207.12,
+      "whisper_window_word_count": 4,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 1.0,
+      "whisper_window_words": [
+        {
+          "text": "mille",
+          "start": 206.26,
+          "end": 206.6,
+          "probability": 1.0
+        },
+        {
+          "text": "fois",
+          "start": 206.6,
+          "end": 206.8,
+          "probability": 1.0
+        },
+        {
+          "text": "que",
+          "start": 206.8,
+          "end": 207.08,
+          "probability": 1.0
+        },
+        {
+          "text": "j",
+          "start": 207.08,
+          "end": 207.28,
+          "probability": 1.0
+        }
+      ],
+      "whisper_line_start_delta": null
+    },
+    {
+      "index": 65,
+      "start": 207.5,
+      "end": 209.18,
+      "text": "Compté mes doigts, hé",
+      "words": [
+        {
+          "text": "Compté",
+          "start": 207.5,
+          "end": 207.78
+        },
+        {
+          "text": "mes",
+          "start": 207.78,
+          "end": 207.98
+        },
+        {
+          "text": "doigts,",
+          "start": 207.98,
+          "end": 208.2
+        },
+        {
+          "text": "hé",
+          "start": 208.2,
+          "end": 209.18
+        }
+      ],
+      "word_slots": [
+        0.28,
+        0.2,
+        0.22,
+        0.98
+      ],
+      "word_spoken": [
+        0.28,
+        0.2,
+        0.22,
+        0.98
+      ],
+      "whisper_window_start": 206.12,
+      "whisper_window_end": 210.76,
+      "whisper_window_word_count": 8,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 1.0,
+      "whisper_window_words": [
+        {
+          "text": "mille",
+          "start": 206.26,
+          "end": 206.6,
+          "probability": 1.0
+        },
+        {
+          "text": "fois",
+          "start": 206.6,
+          "end": 206.8,
+          "probability": 1.0
+        },
+        {
+          "text": "que",
+          "start": 206.8,
+          "end": 207.08,
+          "probability": 1.0
+        },
+        {
+          "text": "j",
+          "start": 207.08,
+          "end": 207.28,
+          "probability": 1.0
+        },
+        {
+          "text": "'ai",
+          "start": 207.28,
+          "end": 207.5,
+          "probability": 1.0
+        },
+        {
+          "text": "compté",
+          "start": 207.5,
+          "end": 208.48,
+          "probability": 1.0
+        },
+        {
+          "text": "mes",
+          "start": 208.48,
+          "end": 208.7,
+          "probability": 0.999
+        },
+        {
+          "text": "doigts",
+          "start": 208.7,
+          "end": 209.16,
+          "probability": 1.0
+        }
+      ],
+      "whisper_line_start_delta": 0.38
+    },
+    {
+      "index": 66,
+      "start": 210.76,
+      "end": 211.28,
+      "text": "Où t'es, papaoutai?",
+      "words": [
+        {
+          "text": "Où",
+          "start": 210.76,
+          "end": 210.92
+        },
+        {
+          "text": "t'es,",
+          "start": 210.92,
+          "end": 210.98
+        },
+        {
+          "text": "papaoutai?",
+          "start": 210.98,
+          "end": 211.28
+        }
+      ],
+      "word_slots": [
+        0.16,
+        0.06,
+        0.3
+      ],
+      "word_spoken": [
+        0.16,
+        0.06,
+        0.3
+      ],
+      "whisper_window_start": 209.76,
+      "whisper_window_end": 211.28,
+      "whisper_window_word_count": 3,
+      "whisper_window_low_conf_count": 2,
+      "whisper_window_avg_prob": 0.555,
+      "whisper_window_words": [
+        {
+          "text": "Où",
+          "start": 210.76,
+          "end": 210.92,
+          "probability": 0.221
+        },
+        {
+          "text": "t",
+          "start": 210.92,
+          "end": 210.98,
+          "probability": 0.452
+        },
+        {
+          "text": "'es",
+          "start": 210.98,
+          "end": 211.28,
+          "probability": 0.993
+        }
+      ],
+      "whisper_line_start_delta": 0.0
+    },
+    {
+      "index": 67,
+      "start": 211.28,
+      "end": 211.54,
+      "text": "Où t'es, papaoutai?",
+      "words": [
+        {
+          "text": "Où",
+          "start": 211.28,
+          "end": 211.36
+        },
+        {
+          "text": "t'es,",
+          "start": 211.36,
+          "end": 211.54
+        },
+        {
+          "text": "papaoutai?",
+          "start": 211.36,
+          "end": 211.54
+        }
+      ],
+      "word_slots": [
+        0.08,
+        0.0,
+        0.18
+      ],
+      "word_spoken": [
+        0.08,
+        0.18,
+        0.18
+      ],
+      "whisper_window_start": 210.28,
+      "whisper_window_end": 211.54,
+      "whisper_window_word_count": 5,
+      "whisper_window_low_conf_count": 3,
+      "whisper_window_avg_prob": 0.483,
+      "whisper_window_words": [
+        {
+          "text": "Où",
+          "start": 210.76,
+          "end": 210.92,
+          "probability": 0.221
+        },
+        {
+          "text": "t",
+          "start": 210.92,
+          "end": 210.98,
+          "probability": 0.452
+        },
+        {
+          "text": "'es",
+          "start": 210.98,
+          "end": 211.28,
+          "probability": 0.993
+        },
+        {
+          "text": "?",
+          "start": 211.28,
+          "end": 211.36,
+          "probability": 0.739
+        },
+        {
+          "text": "Papa",
+          "start": 211.36,
+          "end": 211.54,
+          "probability": 0.011
+        }
+      ],
+      "whisper_line_start_delta": -0.52
+    },
+    {
+      "index": 68,
+      "start": 211.54,
+      "end": 211.55,
+      "text": "Où t'es, papaoutai?",
+      "words": [
+        {
+          "text": "Où",
+          "start": 211.54,
+          "end": 211.543
+        },
+        {
+          "text": "t'es,",
+          "start": 211.543,
+          "end": 211.546
+        },
+        {
+          "text": "papaoutai?",
+          "start": 211.547,
+          "end": 211.55
+        }
+      ],
+      "word_slots": [
+        0.003,
+        0.003,
+        0.003
+      ],
+      "word_spoken": [
+        0.003,
+        0.003,
+        0.003
+      ],
+      "whisper_window_start": 210.54,
+      "whisper_window_end": 212.11,
+      "whisper_window_word_count": 5,
+      "whisper_window_low_conf_count": 3,
+      "whisper_window_avg_prob": 0.483,
+      "whisper_window_words": [
+        {
+          "text": "Où",
+          "start": 210.76,
+          "end": 210.92,
+          "probability": 0.221
+        },
+        {
+          "text": "t",
+          "start": 210.92,
+          "end": 210.98,
+          "probability": 0.452
+        },
+        {
+          "text": "'es",
+          "start": 210.98,
+          "end": 211.28,
+          "probability": 0.993
+        },
+        {
+          "text": "?",
+          "start": 211.28,
+          "end": 211.36,
+          "probability": 0.739
+        },
+        {
+          "text": "Papa",
+          "start": 211.36,
+          "end": 211.54,
+          "probability": 0.011
+        }
+      ],
+      "whisper_line_start_delta": -0.78
+    },
+    {
+      "index": 69,
+      "start": 212.11,
+      "end": 214.46,
+      "text": "Où t'es, où t'es, où, papaoutai?",
+      "words": [
+        {
+          "text": "Où",
+          "start": 212.114,
+          "end": 213.139
+        },
+        {
+          "text": "t'es,",
+          "start": 213.159,
+          "end": 213.859
+        },
+        {
+          "text": "où",
+          "start": 213.879,
+          "end": 214.161
+        },
+        {
+          "text": "t'es,",
+          "start": 214.181,
+          "end": 214.281
+        },
+        {
+          "text": "où,",
+          "start": 214.281,
+          "end": 214.381
+        },
+        {
+          "text": "papaoutai?",
+          "start": 214.381,
+          "end": 214.46
+        }
+      ],
+      "word_slots": [
+        1.045,
+        0.72,
+        0.302,
+        0.1,
+        0.1,
+        0.079
+      ],
+      "word_spoken": [
+        1.025,
+        0.7,
+        0.282,
+        0.1,
+        0.1,
+        0.079
+      ],
+      "whisper_window_start": 211.11,
+      "whisper_window_end": 214.46,
+      "whisper_window_word_count": 2,
+      "whisper_window_low_conf_count": 1,
+      "whisper_window_avg_prob": 0.375,
+      "whisper_window_words": [
+        {
+          "text": "?",
+          "start": 211.28,
+          "end": 211.36,
+          "probability": 0.739
+        },
+        {
+          "text": "Papa",
+          "start": 211.36,
+          "end": 211.54,
+          "probability": 0.011
+        }
+      ],
+      "whisper_line_start_delta": null
+    },
+    {
+      "index": 70,
+      "start": 214.46,
+      "end": 216.35,
+      "text": "Où t'es, papaoutai?",
+      "words": [
+        {
+          "text": "Où",
+          "start": 214.46,
+          "end": 215.531
+        },
+        {
+          "text": "t'es,",
+          "start": 215.551,
+          "end": 216.227
+        },
+        {
+          "text": "papaoutai?",
+          "start": 216.247,
+          "end": 216.347
+        }
+      ],
+      "word_slots": [
+        1.091,
+        0.697,
+        0.1
+      ],
+      "word_spoken": [
+        1.071,
+        0.677,
+        0.1
+      ],
+      "whisper_window_start": 213.46,
+      "whisper_window_end": 216.53,
+      "whisper_window_word_count": 0,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": null,
+      "whisper_window_words": [],
+      "whisper_line_start_delta": null
+    },
+    {
+      "index": 71,
+      "start": 216.53,
+      "end": 218.39,
+      "text": "Où t'es, papaoutai?",
+      "words": [
+        {
+          "text": "Où",
+          "start": 216.526,
+          "end": 216.97
+        },
+        {
+          "text": "t'es,",
+          "start": 216.99,
+          "end": 217.37
+        },
+        {
+          "text": "papaoutai?",
+          "start": 217.39,
+          "end": 218.391
+        }
+      ],
+      "word_slots": [
+        0.464,
+        0.4,
+        1.001
+      ],
+      "word_spoken": [
+        0.444,
+        0.38,
+        1.001
+      ],
+      "whisper_window_start": 215.53,
+      "whisper_window_end": 218.5,
+      "whisper_window_word_count": 0,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": null,
+      "whisper_window_words": [],
+      "whisper_line_start_delta": null
+    },
+    {
+      "index": 72,
+      "start": 218.5,
+      "end": 218.51,
+      "text": "Où t'es, papaoutai?",
+      "words": [
+        {
+          "text": "Où",
+          "start": 218.498,
+          "end": 218.501
+        },
+        {
+          "text": "t'es,",
+          "start": 218.501,
+          "end": 218.504
+        },
+        {
+          "text": "papaoutai?",
+          "start": 218.505,
+          "end": 218.508
+        }
+      ],
+      "word_slots": [
+        0.003,
+        0.003,
+        0.003
+      ],
+      "word_spoken": [
+        0.003,
+        0.003,
+        0.003
+      ],
+      "whisper_window_start": 217.5,
+      "whisper_window_end": 219.03,
+      "whisper_window_word_count": 0,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": null,
+      "whisper_window_words": [],
+      "whisper_line_start_delta": null
+    },
+    {
+      "index": 73,
+      "start": 219.03,
+      "end": 222.09,
+      "text": "Où t'es, où t'es, où, papaoutai?",
+      "words": [
+        {
+          "text": "Où",
+          "start": 219.033,
+          "end": 219.339
+        },
+        {
+          "text": "t'es,",
+          "start": 219.359,
+          "end": 220.221
+        },
+        {
+          "text": "où",
+          "start": 220.241,
+          "end": 220.988
+        },
+        {
+          "text": "t'es,",
+          "start": 221.008,
+          "end": 221.568
+        },
+        {
+          "text": "où,",
+          "start": 221.588,
+          "end": 221.808
+        },
+        {
+          "text": "papaoutai?",
+          "start": 221.828,
+          "end": 222.093
+        }
+      ],
+      "word_slots": [
+        0.326,
+        0.882,
+        0.766,
+        0.58,
+        0.24,
+        0.265
+      ],
+      "word_spoken": [
+        0.306,
+        0.862,
+        0.746,
+        0.56,
+        0.22,
+        0.265
+      ],
+      "whisper_window_start": 218.03,
+      "whisper_window_end": 224.09,
+      "whisper_window_word_count": 0,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": null,
+      "whisper_window_words": [],
+      "whisper_line_start_delta": null
+    }
+  ],
+  "dtw_word_coverage": 0.823,
+  "dtw_line_coverage": 0.849,
+  "whisper_segments": [
+    {
+      "start": 19.11,
+      "end": 23.15,
+      "text": "Dites-moi d'où il vient, enfin je saurai où je vais"
+    },
+    {
+      "start": 23.15,
+      "end": 27.67,
+      "text": "Maman dit que lorsqu'on cherche bien, on finit toujours par trouver"
+    },
+    {
+      "start": 27.67,
+      "end": 32.23,
+      "text": "Elle dit qu'il n'est jamais très loin, qu'il part très souvent travailler"
+    },
+    {
+      "start": 32.85,
+      "end": 38.41,
+      "text": "Maman dit travailler c'est bien, bien mieux qu'être mal accompagné, pas vrai ?"
+    },
+    {
+      "start": 38.41,
+      "end": 42.33,
+      "text": "Où est ton papa ? Dis-moi où est ton papa ?"
+    },
+    {
+      "start": 42.89,
+      "end": 46.73,
+      "text": "Sans même devoir lui parler, il sait ce qui ne va pas"
+    },
+    {
+      "start": 46.73,
+      "end": 51.69,
+      "text": "Ah sacré papa, dis-moi où es-tu caché ?"
+    },
+    {
+      "start": 52.59,
+      "end": 56.35,
+      "text": "Fais au moins mille fois que j'ai compté mes doigts"
+    },
+    {
+      "start": 57.49,
+      "end": 60.19,
+      "text": "Où t'es papa, où t'es ?"
+    },
+    {
+      "start": 94.54,
+      "end": 98.78,
+      "text": "Quoi ? Qu'on y croit ou pas, il y aura bien un jour où on n'y croira plus"
+    },
+    {
+      "start": 98.78,
+      "end": 103.62,
+      "text": "Un jour ou l'autre, on sera tous papa et d'un jour à l'autre, on aura disparu"
+    },
+    {
+      "start": 104.36,
+      "end": 108.62,
+      "text": "Serons-nous détestables ? Serons-nous admirables ?"
+    },
+    {
+      "start": 108.62,
+      "end": 113.5,
+      "text": "Des géniteurs ou des génies ? Dites-nous qui donne naissance aux irresponsables"
+    },
+    {
+      "start": 113.5,
+      "end": 117.88,
+      "text": "Ah dites-nous qui ? Tiens, tout le monde sait comment on fait des bébés"
+    },
+    {
+      "start": 117.88,
+      "end": 120.3,
+      "text": "Mais personne ne sait comment on fait des papas"
+    },
+    {
+      "start": 120.3,
+      "end": 123.28,
+      "text": "Monsieur, je sais tout, on aurait hérité, c'est ça ?"
+    },
+    {
+      "start": 123.4,
+      "end": 125.16,
+      "text": "Faut le sucer de son pouce ou quoi ?"
+    },
+    {
+      "start": 125.66,
+      "end": 131.9,
+      "text": "Dites-nous où c'est caché, ça doit faire au moins mille fois qu'on a bouffé nos doigts"
+    },
+    {
+      "start": 133.3,
+      "end": 135.66,
+      "text": "Où t'es ? Papa, où t'es ?"
+    },
+    {
+      "start": 135.66,
+      "end": 137.96,
+      "text": "Où t'es ? Papa, où t'es ?"
+    },
+    {
+      "start": 137.96,
+      "end": 142.3,
+      "text": "Où t'es ? Papa, où t'es ? Où t'es ? Où t'es ? Où papa, où t'es ?"
+    },
+    {
+      "start": 142.8,
+      "end": 143.5,
+      "text": "Où t'es ?"
+    },
+    {
+      "start": 143.5,
+      "end": 174.82,
+      "text": "Où est ton papa ? Dis-moi où est ton papa ?"
+    },
+    {
+      "start": 175.36,
+      "end": 179.48,
+      "text": "Sans même devoir lui parler, il sait ce qui ne va pas"
+    },
+    {
+      "start": 180.76,
+      "end": 189.58,
+      "text": "Ah sacré papa, dis-moi où es-tu caché, ça doit faire au moins mille fois que j'ai compté mes doigts"
+    },
+    {
+      "start": 190.36,
+      "end": 194.48,
+      "text": "Où est ton papa ? Dis-moi où est ton papa ?"
+    },
+    {
+      "start": 195.14,
+      "end": 199.24,
+      "text": "Sans même devoir lui parler, il sait ce qui ne va pas"
+    },
+    {
+      "start": 199.24,
+      "end": 209.16,
+      "text": "Ah sacré papa, dis-moi où es-tu caché, ça doit faire au moins mille fois que j'ai compté mes doigts"
+    },
+    {
+      "start": 210.76,
+      "end": 211.54,
+      "text": "Où t'es ? Papa"
+    }
+  ],
+  "whisper_word_count": 372,
+  "whisper_window_low_conf_threshold": 0.5,
+  "low_confidence_lines": [
+    {
+      "index": 30,
+      "text": "Serons-nous détestables?",
+      "whisper_window_avg_prob": 0.386,
+      "low_conf_ratio": 0.67
+    },
+    {
+      "index": 66,
+      "text": "Où t'es, papaoutai?",
+      "whisper_window_avg_prob": 0.555,
+      "low_conf_ratio": 0.67
+    },
+    {
+      "index": 67,
+      "text": "Où t'es, papaoutai?",
+      "whisper_window_avg_prob": 0.483,
+      "low_conf_ratio": 0.6
+    },
+    {
+      "index": 68,
+      "text": "Où t'es, papaoutai?",
+      "whisper_window_avg_prob": 0.483,
+      "low_conf_ratio": 0.6
+    },
+    {
+      "index": 69,
+      "text": "Où t'es, où t'es, où, papaoutai?",
+      "whisper_window_avg_prob": 0.375,
+      "low_conf_ratio": 0.5
+    }
+  ]
+}
