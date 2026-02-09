@@ -1,10 +1,11 @@
 from y2karaoke.core.models import Line, Word
 from y2karaoke.core.timing_evaluator import AudioFeatures, TimingReport
 import y2karaoke.core.timing_evaluator as te
+import y2karaoke.core.timing_evaluator_comparison as te_comp
 
 
 def test_compare_sources_returns_empty_on_audio_failure(monkeypatch):
-    monkeypatch.setattr(te, "extract_audio_features", lambda _path: None)
+    monkeypatch.setattr(te_comp, "extract_audio_features", lambda _path: None)
     assert te.compare_sources("Song", "Artist", "vocals.wav") == {}
 
 
@@ -18,7 +19,7 @@ def test_compare_sources_builds_reports(monkeypatch):
         energy_envelope=[],
         energy_times=[],
     )
-    monkeypatch.setattr(te, "extract_audio_features", lambda _path: features)
+    monkeypatch.setattr(te_comp, "extract_audio_features", lambda _path: features)
 
     monkeypatch.setattr(
         "y2karaoke.core.sync.fetch_from_all_sources",
@@ -53,7 +54,7 @@ def test_compare_sources_builds_reports(monkeypatch):
             summary="ok",
         )
 
-    monkeypatch.setattr(te, "evaluate_timing", fake_evaluate_timing)
+    monkeypatch.setattr(te_comp, "evaluate_timing", fake_evaluate_timing)
 
     reports = te.compare_sources("Song", "Artist", "vocals.wav")
     assert "source1" in reports
@@ -70,7 +71,7 @@ def test_compare_sources_skips_source_on_error(monkeypatch):
         energy_envelope=[],
         energy_times=[],
     )
-    monkeypatch.setattr(te, "extract_audio_features", lambda _path: features)
+    monkeypatch.setattr(te_comp, "extract_audio_features", lambda _path: features)
 
     monkeypatch.setattr(
         "y2karaoke.core.sync.fetch_from_all_sources",
@@ -96,7 +97,7 @@ def test_compare_sources_handles_empty_timings(monkeypatch):
         energy_envelope=[],
         energy_times=[],
     )
-    monkeypatch.setattr(te, "extract_audio_features", lambda _path: features)
+    monkeypatch.setattr(te_comp, "extract_audio_features", lambda _path: features)
 
     monkeypatch.setattr(
         "y2karaoke.core.sync.fetch_from_all_sources",
@@ -113,7 +114,7 @@ def test_compare_sources_handles_empty_timings(monkeypatch):
     )
 
     monkeypatch.setattr(
-        te,
+        te_comp,
         "evaluate_timing",
         lambda _lines, _features, source_name: TimingReport(
             source_name=source_name,
@@ -145,7 +146,7 @@ def test_select_best_source_prefers_highest_score(monkeypatch):
             summary="b",
         ),
     }
-    monkeypatch.setattr(te, "compare_sources", lambda *_args: reports)
+    monkeypatch.setattr(te_comp, "compare_sources", lambda *_args: reports)
     monkeypatch.setattr(
         "y2karaoke.core.sync.fetch_from_all_sources",
         lambda _title, _artist: {
@@ -163,7 +164,7 @@ def test_select_best_source_prefers_highest_score(monkeypatch):
 
 
 def test_select_best_source_handles_no_reports(monkeypatch):
-    monkeypatch.setattr(te, "compare_sources", lambda *_args: {})
+    monkeypatch.setattr(te_comp, "compare_sources", lambda *_args: {})
     lrc_text, source, report = te.select_best_source("Song", "Artist", "vocals.wav")
     assert lrc_text is None
     assert source is None

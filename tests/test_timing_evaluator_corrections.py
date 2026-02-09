@@ -1,6 +1,7 @@
 import numpy as np
 
 import y2karaoke.core.timing_evaluator as te
+import y2karaoke.core.timing_evaluator_correction as te_corr
 from y2karaoke.core.models import Line, Word
 
 
@@ -82,8 +83,8 @@ def test_fix_spurious_gaps_skips_large_gap(monkeypatch):
         energy_envelope=[1.0, 1.0, 1.0, 1.0, 1.0],
     )
 
-    monkeypatch.setattr(te, "_check_vocal_activity_in_range", lambda *_a, **_k: 0.9)
-    monkeypatch.setattr(te, "_check_for_silence_in_range", lambda *_a, **_k: True)
+    monkeypatch.setattr(te_corr, "_check_vocal_activity_in_range", lambda *_a, **_k: 0.9)
+    monkeypatch.setattr(te_corr, "_check_for_silence_in_range", lambda *_a, **_k: True)
 
     fixed, fixes = te.fix_spurious_gaps(lines, features)
 
@@ -120,7 +121,7 @@ def test_fix_spurious_gaps_breaks_on_low_mid_activity(monkeypatch):
         energy_envelope=[1.0, 1.0, 1.0, 1.0],
     )
 
-    monkeypatch.setattr(te, "_check_vocal_activity_in_range", lambda *_a, **_k: 0.5)
+    monkeypatch.setattr(te_corr, "_check_vocal_activity_in_range", lambda *_a, **_k: 0.5)
 
     fixed, fixes = te.fix_spurious_gaps(lines, features)
 
@@ -144,9 +145,9 @@ def test_fix_spurious_gaps_merge_uses_next_line_start_and_min_duration(monkeypat
         # Encourage merge for the short gap (0.4 -> 0.9) and discourage long gaps.
         return 0.8 if end - start <= 2.0 else 0.2
 
-    monkeypatch.setattr(te, "_check_vocal_activity_in_range", _activity_for_range)
-    monkeypatch.setattr(te, "_check_for_silence_in_range", lambda *_a, **_k: True)
-    monkeypatch.setattr(te, "_find_phrase_end", lambda *_a, **_k: 0.1)
+    monkeypatch.setattr(te_corr, "_check_vocal_activity_in_range", _activity_for_range)
+    monkeypatch.setattr(te_corr, "_check_for_silence_in_range", lambda *_a, **_k: True)
+    monkeypatch.setattr(te_corr, "_find_phrase_end", lambda *_a, **_k: 0.1)
 
     fixed, fixes = te.fix_spurious_gaps(lines, features)
 

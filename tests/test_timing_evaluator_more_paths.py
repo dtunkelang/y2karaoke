@@ -2,7 +2,9 @@ import sys
 import types
 
 import y2karaoke.core.timing_evaluator as te
+import y2karaoke.core.timing_evaluator_comparison as te_comp
 import y2karaoke.core.whisper_integration as wi
+import y2karaoke.core.whisper_alignment_segments as wa_seg
 from y2karaoke.core.models import Line, Word
 
 
@@ -61,7 +63,7 @@ def test_print_comparison_report_formats_output(monkeypatch, capsys):
     )
 
     monkeypatch.setattr(
-        te,
+        te_comp,
         "compare_sources",
         lambda *_args, **_kwargs: {
             "source-a": report_a,
@@ -87,9 +89,7 @@ def test_find_best_whisper_segment_picks_highest_similarity(monkeypatch):
         return 0.2 if text2 == "alpha" else 0.8
 
     monkeypatch.setattr(wi, "_phonetic_similarity", fake_similarity)
-    import y2karaoke.core.whisper_alignment as wa
-
-    monkeypatch.setattr(wa, "_phonetic_similarity", fake_similarity)
+    monkeypatch.setattr(wa_seg, "_phonetic_similarity", fake_similarity)
 
     best_segment, similarity, offset = wi._find_best_whisper_segment(
         "target",

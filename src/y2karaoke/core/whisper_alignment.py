@@ -9,6 +9,7 @@ from .audio_analysis import (
     _check_vocal_activity_in_range,
     _check_for_silence_in_range,
 )
+from .phonetic_utils import _phonetic_similarity
 
 logger = logging.getLogger(__name__)
 
@@ -42,9 +43,7 @@ _merge_short_following_line_into_segment = (
     whisper_alignment_segments._merge_short_following_line_into_segment
 )
 _pull_lines_near_segment_end = whisper_alignment_segments._pull_lines_near_segment_end
-_clamp_repeated_line_duration = (
-    whisper_alignment_segments._clamp_repeated_line_duration
-)
+_clamp_repeated_line_duration = whisper_alignment_segments._clamp_repeated_line_duration
 _merge_first_two_lines_if_segment_matches = (
     whisper_alignment_segments._merge_first_two_lines_if_segment_matches
 )
@@ -79,6 +78,4 @@ _drop_duplicate_lines_by_timing = (
 _check_vocal_activity_in_range = (
     whisper_alignment_refinement._check_vocal_activity_in_range
 )
-_check_for_silence_in_range = (
-    whisper_alignment_refinement._check_for_silence_in_range
-)
+_check_for_silence_in_range = whisper_alignment_refinement._check_for_silence_in_range

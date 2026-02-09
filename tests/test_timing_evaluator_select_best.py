@@ -1,8 +1,9 @@
 import y2karaoke.core.timing_evaluator as te
+import y2karaoke.core.timing_evaluator_comparison as te_comp
 
 
 def test_select_best_source_returns_none_when_no_reports(monkeypatch):
-    monkeypatch.setattr(te, "compare_sources", lambda *a, **k: {})
+    monkeypatch.setattr(te_comp, "compare_sources", lambda *a, **k: {})
 
     result = te.select_best_source("Title", "Artist", "vocals.wav")
 
@@ -24,7 +25,7 @@ def test_select_best_source_applies_duration_bonus(monkeypatch):
     )
 
     monkeypatch.setattr(
-        te, "compare_sources", lambda *a, **k: {"A": report_a, "B": report_b}
+        te_comp, "compare_sources", lambda *a, **k: {"A": report_a, "B": report_b}
     )
     monkeypatch.setattr(
         "y2karaoke.core.sync.fetch_from_all_sources",
@@ -47,7 +48,7 @@ def test_select_best_source_returns_none_when_best_source_missing(monkeypatch):
         line_alignment_score=80.0,
         pause_alignment_score=80.0,
     )
-    monkeypatch.setattr(te, "compare_sources", lambda *a, **k: {"A": report})
+    monkeypatch.setattr(te_comp, "compare_sources", lambda *a, **k: {"A": report})
     monkeypatch.setattr(
         "y2karaoke.core.sync.fetch_from_all_sources", lambda *a, **k: {}
     )
@@ -72,7 +73,7 @@ def test_select_best_source_tie_breaks_on_duration_diff(monkeypatch):
     )
 
     monkeypatch.setattr(
-        te, "compare_sources", lambda *a, **k: {"A": report_a, "B": report_b}
+        te_comp, "compare_sources", lambda *a, **k: {"A": report_a, "B": report_b}
     )
     monkeypatch.setattr(
         "y2karaoke.core.sync.fetch_from_all_sources",
@@ -103,7 +104,7 @@ def test_select_best_source_tie_breaks_on_duration_presence(monkeypatch):
     )
 
     monkeypatch.setattr(
-        te, "compare_sources", lambda *a, **k: {"A": report_a, "B": report_b}
+        te_comp, "compare_sources", lambda *a, **k: {"A": report_a, "B": report_b}
     )
     monkeypatch.setattr(
         "y2karaoke.core.sync.fetch_from_all_sources",
