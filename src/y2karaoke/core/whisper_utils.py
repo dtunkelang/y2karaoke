@@ -1,7 +1,8 @@
 """Utility functions for Whisper integration."""
 
-from typing import List, Any, Tuple, Dict, Set
+from typing import List, Any, Tuple, Dict, Set, Optional
 from .timing_models import TranscriptionWord
+from . import models
 
 _SPEECH_BLOCK_GAP = 5.0  # seconds - gap between Whisper words that defines a new block
 
@@ -81,6 +82,146 @@ def _block_time_range(
     """Return (start_time, end_time) for the given speech block."""
     first, last = speech_blocks[block_idx]
     return all_words[first].start, all_words[last].end
+
+
+def _redistribute_word_timings_to_line(
+    line: "models.Line",
+    matches: List[Tuple[int, Tuple[float, float]]],
+    target_duration: float,
+    min_word_duration: float,
+    line_start: Optional[float] = None,
+    max_gap: float = 0.4,
+) -> "models.Line":
+    """Redistribute word timings based on Whisper durations within the line."""
+    from .whisper_alignment import _scale_line_to_duration
+    from . import models
+
+    if not line.words:
+        return line
+
+    min_word_duration = max(min_word_duration, 0.0)
+    match_map = {
+        word_idx: (start, end)
+        for word_idx, (start, end) in matches
+        if start is not None and end is not None
+    }
+
+    max_line_duration = min(max(4.0, len(line.words) * 0.6), 8.0)
+    target_duration = min(target_duration, max_line_duration)
+    min_weight = max(min_word_duration, 0.01)
+    weights: List[float] = []
+    for word_idx in range(len(line.words)):
+        interval = match_map.get(word_idx)
+        if interval:
+            start, end = interval
+            weight = max(end - start, min_weight)
+        else:
+            weight = min_weight
+        weights.append(weight)
+
+    total_weight = sum(weights) or 1.0
+    durations = [
+        (weights[i] / total_weight) * target_duration for i in range(len(line.words))
+    ]
+    duration_sum = sum(durations)
+    if durations:
+        durations[-1] += target_duration - duration_sum
+
+    max_word_duration = min(3.0, target_duration * 0.5)
+    durations = _cap_word_durations(durations, target_duration, max_word_duration)
+
+    current = line_start if line_start is not None else line.start_time
+    new_words: List[models.Word] = []
+    for idx, word in enumerate(line.words):
+        duration = durations[idx]
+        start_time = current
+        end_time = start_time + duration
+        if idx == len(line.words) - 1:
+            end_time = line.start_time + target_duration
+            if end_time <= start_time:
+                end_time = start_time + max(min_word_duration, 0.01)
+        new_words.append(
+            models.Word(
+                text=word.text,
+                start_time=start_time,
+                end_time=end_time,
+                singer=word.singer,
+            )
+        )
+        current = end_time
+
+    adjusted_words = _clamp_word_gaps(new_words, max_gap)
+    clamped_line = models.Line(words=adjusted_words, singer=line.singer)
+    scaled_line = _scale_line_to_duration(
+        clamped_line,
+        target_duration=target_duration,
+    )
+    target_start = line_start if line_start is not None else scaled_line.start_time
+    offset = target_start - scaled_line.start_time
+    adjusted_scaled_words = [
+        models.Word(
+            text=w.text,
+            start_time=w.start_time + offset,
+            end_time=w.end_time + offset,
+            singer=w.singer,
+        )
+        for w in scaled_line.words
+    ]
+    return models.Line(words=adjusted_scaled_words, singer=line.singer)
+
+
+def _clamp_word_gaps(words: List["models.Word"], max_gap: float) -> List["models.Word"]:
+    from . import models
+
+    if not words or max_gap is None:
+        return words
+    adjusted: List[models.Word] = []
+    total_shift = 0.0
+    adjusted.append(
+        models.Word(
+            text=words[0].text,
+            start_time=words[0].start_time,
+            end_time=words[0].end_time,
+            singer=words[0].singer,
+        )
+    )
+    for current in words[1:]:
+        prev = adjusted[-1]
+        shifted_start = current.start_time - total_shift
+        gap = shifted_start - prev.end_time
+        shift = 0.0
+        if gap > max_gap:
+            shift = gap - max_gap
+        total_shift += shift
+        duration = current.end_time - current.start_time
+        new_start = shifted_start - shift
+        new_end = new_start + duration
+        adjusted.append(
+            models.Word(
+                text=current.text,
+                start_time=new_start,
+                end_time=new_end,
+                singer=current.singer,
+            )
+        )
+    return adjusted
+
+
+def _cap_word_durations(
+    durations: List[float], total_duration: float, max_word_duration: float
+) -> List[float]:
+    if not durations:
+        return durations
+    capped = []
+    remainder = total_duration
+    for duration in durations:
+        limit = min(max_word_duration, remainder - 0.01 * len(durations))
+        capped_value = min(duration, limit)
+        capped.append(capped_value)
+        remainder -= capped_value
+    if remainder > 0 and capped:
+        capped[-1] += remainder
+    return capped
 
 
 def _build_word_assignments_from_syllable_path(

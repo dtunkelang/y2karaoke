@@ -2,13 +2,15 @@
 
 import logging
 from dataclasses import dataclass, field
-from typing import List, Tuple, Dict, Any, Set, Sequence
+from typing import List, Tuple, Dict, Any, Set, Sequence, Optional
 from collections import defaultdict
 
 import numpy as np
 
 from .models import Line, Word
-from .timing_models import TranscriptionWord, TranscriptionSegment
+from .timing_models import TranscriptionWord
+from . import timing_models
+from . import phonetic_utils
 from .phonetic_utils import (
     _get_ipa,
     _get_ipa_segs,
@@ -434,44 +436,6 @@ def _apply_dtw_alignments_base(
     return aligned_lines, corrections
 
 
-def _normalize_word(w: str) -> str:
-    """Lowercase and strip punctuation for bag-of-words comparison."""
-    return w.strip(".,!?;:'\"()- ").lower()
-
-
-def _normalize_words_expanded(w: str) -> List[str]:
-    """Normalize and split hyphenated/compound words for overlap matching."""
-    base = w.strip(".,!?;:'\"()- ").lower()
-    if not base:
-        return []
-    parts = [p for p in base.split("-") if p]
-    return parts if len(parts) > 1 else [base]
-
-
-def _segment_start(segment: Any) -> float:
-    if hasattr(segment, "start"):
-        return float(segment.start)
-    if isinstance(segment, dict) and "start" in segment:
-        return float(segment["start"])
-    return 0.0
-
-
-def _segment_end(segment: Any) -> float:
-    if hasattr(segment, "end"):
-        return float(segment.end)
-    if isinstance(segment, dict) and "end" in segment:
-        return float(segment["end"])
-    return 0.0
-
-
-def _get_segment_text(segment: Any) -> str:
-    if hasattr(segment, "text"):
-        return str(segment.text)
-    if isinstance(segment, dict) and "text" in segment:
-        return str(segment["text"])
-    return ""
-
-
 def align_dtw_whisper_base(
     lines: List[Line],
     whisper_words: List[TranscriptionWord],
@@ -537,237 +501,280 @@ def align_dtw_whisper_base(
     return aligned_lines, corrections
 
 
-def _assign_lrc_lines_to_blocks(
+def _compute_dtw_alignment_metrics(
+    lines: List[Line],
     lrc_words: List[Dict],
-    block_word_bags: List[Set[str]],
-) -> List[int]:
-    """Assign each LRC line to a speech block using text-overlap scoring.
+    alignments_map: Dict[int, Tuple[TranscriptionWord, float]],
+) -> Dict[str, float]:
+    if not lrc_words:
+        return {"matched_ratio": 0.0, "avg_similarity": 0.0, "line_coverage": 0.0}
 
-    For each LRC line, count how many of its content words appear in each
-    block's word bag.  Normalise by line length, pick the best block, then
-    enforce monotonicity (blocks never go backwards).
-    """
-    lrc_line_count = max((lw["line_idx"] for lw in lrc_words), default=-1) + 1
-    lrc_line_block: List[int] = []
-    for li in range(lrc_line_count):
-        line_words_text = [
-            _normalize_word(lw["text"]) for lw in lrc_words if lw["line_idx"] == li
-        ]
-        if not line_words_text:
-            lrc_line_block.append(lrc_line_block[-1] if lrc_line_block else 0)
-            continue
-        best_blk = 0
-        best_score = -1.0
-        for bi, bag in enumerate(block_word_bags):
-            hits = sum(1 for w in line_words_text if len(w) > 1 and w in bag)
-            score = hits / len(line_words_text) if line_words_text else 0.0
-            if score > best_score:
-                best_score = score
-                best_blk = bi
-        lrc_line_block.append(best_blk)
+    total_words = len(lrc_words)
+    matched_words = len(alignments_map)
+    matched_ratio = matched_words / total_words if total_words else 0.0
 
-    # Enforce monotonic block assignment (lines only advance to later blocks)
-    for i in range(1, lrc_line_count):
-        if lrc_line_block[i] < lrc_line_block[i - 1]:
-            lrc_line_block[i] = lrc_line_block[i - 1]
+    total_similarity = 0.0
+    for _, (_ww, sim) in alignments_map.items():
+        total_similarity += sim
+    avg_similarity = total_similarity / matched_words if matched_words else 0.0
 
-    return lrc_line_block
+    total_lines = sum(1 for line in lines if line.words)
+    matched_lines = {
+        lrc_words[lrc_idx]["line_idx"] for lrc_idx in alignments_map.keys()
+    }
+    line_coverage = len(matched_lines) / total_lines if total_lines > 0 else 0.0
+
+    return {
+        "matched_ratio": matched_ratio,
+        "word_coverage": matched_ratio,
+        "avg_similarity": avg_similarity,
+        "line_coverage": line_coverage,
+    }
 
 
-def _text_overlap_score(
-    line_words: List[str],
-    seg_bag: List[str],
-) -> float:
-    """Score how many content words in *line_words* appear in *seg_bag*."""
-    if not line_words or not seg_bag:
-        return 0.0
-    seg_expanded: Set[str] = set()
-    for w in seg_bag:
-        seg_expanded.update(_normalize_words_expanded(w))
-    hits = 0
-    total = 0
-    for w in line_words:
-        parts = _normalize_words_expanded(w)
-        for p in parts:
-            if len(p) > 1:
-                total += 1
-                if p in seg_expanded:
-                    hits += 1
-    return hits / max(total, 1)
-
-
-def _build_segment_word_info(
-    all_words: List[TranscriptionWord],
-    segments: List[TranscriptionSegment],
-) -> Tuple[List[Tuple[int, int]], List[List[str]]]:
-    """Return (word-index ranges, word-bags) for each Whisper segment."""
-    seg_word_ranges: List[Tuple[int, int]] = []
-    seg_word_bags: List[List[str]] = []
-    for seg in segments:
-        seg_start = _segment_start(seg)
-        seg_end = _segment_end(seg)
-        first_idx = -1
-        last_idx = -1
-        for wi, w in enumerate(all_words):
-            if w.start >= seg_start - 0.05 and w.end <= seg_end + 0.05:
-                if first_idx < 0:
-                    first_idx = wi
-                last_idx = wi
-        seg_word_ranges.append((first_idx, last_idx))
-        if first_idx >= 0:
-            seg_word_bags.append(
-                [
-                    _normalize_word(all_words[i].text)
-                    for i in range(first_idx, last_idx + 1)
-                ]
-            )
-        else:
-            seg_word_bags.append([])
-    return seg_word_ranges, seg_word_bags
-
-
-def _assign_lrc_lines_to_segments(
-    lrc_lines_words: List[List[Tuple[int, str]]],
-    seg_word_bags: List[List[str]],
-) -> List[int]:
-    """Assign each LRC line to a Whisper segment using text overlap."""
-    lrc_line_count = len(lrc_lines_words)
-    n_segs = len(seg_word_bags)
-    line_to_seg: List[int] = [-1] * lrc_line_count
-    seg_cursor = 0
-    for li in range(lrc_line_count):
-        words = [w for _, w in lrc_lines_words[li]]
-        if not words:
-            line_to_seg[li] = line_to_seg[li - 1] if li > 0 else 0
-            continue
-        best_seg = seg_cursor
-        best_score = -1.0
-        search_end = min(seg_cursor + max(10, n_segs // 4), n_segs)
-        for si in range(seg_cursor, search_end):
-            score = _text_overlap_score(words, seg_word_bags[si])
-            if score > best_score:
-                best_score = score
-                best_seg = si
-            if si + 1 < n_segs:
-                merged = seg_word_bags[si] + seg_word_bags[si + 1]
-                mscore = _text_overlap_score(words, merged)
-                if mscore > best_score:
-                    best_score = mscore
-                    s1 = _text_overlap_score(words, seg_word_bags[si])
-                    # Prefer the earlier segment — karaoke lines should
-                    # appear when the first word is sung.  Only use the
-                    # later segment if the earlier has zero overlap.
-                    best_seg = si if s1 > 0 else si + 1
-        # Zero-score lines (e.g. "Oooh") have no text match; advance
-        # past the cursor so subsequent lines don't cascade early.
-        if best_score <= 0 and best_seg <= seg_cursor:
-            best_seg = min(seg_cursor + 1, n_segs - 1)
-        # When a line maps to the same segment as the previous line,
-        # check if the next segment has a comparable score.  If so,
-        # advance — repeated/similar lines should use consecutive segs.
-        # Require a minimum absolute score (0.5) for the next segment to
-        # prevent spurious advancement on low-overlap matches (e.g. a
-        # single common word like "où" matching many unrelated segments).
-        if (
-            li > 0
-            and best_seg == line_to_seg[li - 1]
-            and best_seg + 1 < n_segs
-            and best_score > 0
-        ):
-            nxt = _text_overlap_score(words, seg_word_bags[best_seg + 1])
-            if nxt >= best_score * 0.7 and nxt > 0.5:
-                best_seg = best_seg + 1
-                best_score = nxt
-        line_to_seg[li] = best_seg
-        seg_cursor = max(seg_cursor, best_seg)
-    return line_to_seg
-
-
-def _distribute_words_within_segments(
-    line_to_seg: List[int],
-    lrc_lines_words: List[List[Tuple[int, str]]],
-    seg_word_ranges: List[Tuple[int, int]],
-) -> Dict[int, List[int]]:
-    """Positionally map LRC words to Whisper words within each segment."""
-    seg_to_lines: Dict[int, List[int]] = {}
-    for li, si in enumerate(line_to_seg):
-        if si >= 0:
-            seg_to_lines.setdefault(si, []).append(li)
-
-    assignments: Dict[int, List[int]] = {}
-    for si, line_indices in seg_to_lines.items():
-        first_wi, last_wi = seg_word_ranges[si]
-        if first_wi < 0:
-            continue
-        seg_wc = last_wi - first_wi + 1
-        all_lrc: List[int] = []
-        for li in line_indices:
-            for idx, _ in lrc_lines_words[li]:
-                all_lrc.append(idx)
-        total = len(all_lrc)
-        if total == 0:
-            continue
-        for j, lrc_idx in enumerate(all_lrc):
-            pos = j / max(total, 1)
-            offset = min(int(pos * seg_wc), seg_wc - 1)
-            assignments[lrc_idx] = [first_wi + offset]
-    return assignments
-
-
-def _build_segment_text_overlap_assignments(
+def _retime_lines_from_dtw_alignments(
+    lines: List[Line],
     lrc_words: List[Dict],
-    all_words: List[TranscriptionWord],
-    segments: List[TranscriptionSegment],
-) -> Dict[int, List[int]]:
-    """Assign LRC words to Whisper words via segment-level text overlap.
+    alignments_map: Dict[int, Tuple[TranscriptionWord, float]],
+    min_word_duration: float = 0.05,
+) -> Tuple[List[Line], List[str]]:
+    from .whisper_utils import _redistribute_word_timings_to_line
 
-    Uses the Whisper segment structure as temporal anchors instead of
-    syllable DTW, which drifts when word counts differ between LRC and
-    Whisper.
-    """
-    if not segments or not lrc_words:
-        return {}
+    aligned_by_line: Dict[int, List[Tuple[int, TranscriptionWord]]] = {}
+    for lrc_idx, (ww, _sim) in alignments_map.items():
+        lw = lrc_words[lrc_idx]
+        aligned_by_line.setdefault(lw["line_idx"], []).append((lw["word_idx"], ww))
 
-    seg_word_ranges, seg_word_bags = _build_segment_word_info(
-        all_words,
-        segments,
+    retimed_lines: List[Line] = []
+    corrections: List[str] = []
+
+    for line_idx, line in enumerate(lines):
+        if not line.words:
+            retimed_lines.append(line)
+            continue
+
+        matches = aligned_by_line.get(line_idx, [])
+        if not matches:
+            retimed_lines.append(line)
+            continue
+
+        matches.sort(key=lambda item: item[0])
+        target_duration = max(line.end_time - line.start_time, min_word_duration)
+        tuple_matches = [(word_idx, (ww.start, ww.end)) for word_idx, ww in matches]
+        retimed_line = _redistribute_word_timings_to_line(
+            line,
+            tuple_matches,
+            target_duration=target_duration,
+            min_word_duration=min_word_duration,
+        )
+        retimed_lines.append(retimed_line)
+        corrections.append(f"DTW retimed line {line_idx} from matched words")
+
+    return retimed_lines, corrections
+
+
+def _align_dtw_whisper_with_data(
+    lines: List[Line],
+    whisper_words: List[TranscriptionWord],
+    language: str = "fra-Latn",
+    min_similarity: float = 0.4,
+    silence_regions: Optional[List[Tuple[float, float]]] = None,
+    audio_features: Optional[timing_models.AudioFeatures] = None,
+    lenient_vocal_activity_threshold: float = 0.3,
+    lenient_activity_bonus: float = 0.4,
+    low_word_confidence_threshold: float = 0.5,
+) -> Tuple[
+    List[Line],
+    List[str],
+    Dict[str, float],
+    List[Dict],
+    Dict[int, Tuple[TranscriptionWord, float]],
+]:
+    """Align LRC to Whisper using DTW and return alignment data for confidence gating."""
+    from .whisper_integration import _fill_vocal_activity_gaps
+    from .audio_analysis import (
+        _check_vocal_activity_in_range,
+        _compute_silence_overlap,
+        _is_time_in_silence,
     )
+    from . import whisper_phonetic_dtw
 
-    lrc_line_count = max((lw["line_idx"] for lw in lrc_words), default=-1) + 1
-    lrc_lines_words: List[List[Tuple[int, str]]] = [[] for _ in range(lrc_line_count)]
-    for idx, lw in enumerate(lrc_words):
-        lrc_lines_words[lw["line_idx"]].append((idx, _normalize_word(lw["text"])))
+    if not lines or not whisper_words:
+        return (
+            lines,
+            [],
+            {"matched_ratio": 0.0, "avg_similarity": 0.0, "line_coverage": 0.0},
+            [],
+            {},
+        )
 
-    line_to_seg = _assign_lrc_lines_to_segments(
-        lrc_lines_words,
-        seg_word_bags,
-    )
-    assignments = _distribute_words_within_segments(
-        line_to_seg,
-        lrc_lines_words,
-        seg_word_ranges,
-    )
+    if audio_features:
+        whisper_words, _ = _fill_vocal_activity_gaps(
+            whisper_words, audio_features, lenient_vocal_activity_threshold
+        )
+
+    lrc_words = whisper_phonetic_dtw._extract_lrc_words(lines)
+    if not lrc_words:
+        return (
+            lines,
+            [],
+            {"matched_ratio": 0.0, "avg_similarity": 0.0, "line_coverage": 0.0},
+            [],
+            {},
+        )
+
+    # Pre-compute IPA
+    logger.debug(f"DTW: Pre-computing IPA for {len(whisper_words)} Whisper words...")
+    for ww in whisper_words:
+        phonetic_utils._get_ipa(ww.text, language)
+    for lw in lrc_words:
+        phonetic_utils._get_ipa(lw["text"], language)
 
     logger.debug(
-        "Segment text-overlap: %d/%d LRC words assigned to %d segments",
-        len(assignments),
-        len(lrc_words),
-        len(segments),
+        f"DTW: Building cost matrix ({len(lrc_words)} x {len(whisper_words)})..."
     )
-    return assignments
+    phonetic_costs = whisper_phonetic_dtw._compute_phonetic_costs(
+        lrc_words, whisper_words, language, min_similarity
+    )
+
+    # Run DTW
+    logger.debug("DTW: Running alignment...")
+    use_silence = silence_regions or []
+    try:
+        from fastdtw import fastdtw  # type: ignore
+
+        lrc_times = np.array([lw["start"] for lw in lrc_words])
+        whisper_times = np.array([ww.start for ww in whisper_words])
+
+        lrc_seq = np.column_stack([np.arange(len(lrc_words)), lrc_times])
+        whisper_seq = np.column_stack([np.arange(len(whisper_words)), whisper_times])
+
+        def dtw_dist(a, b):
+            i, lrc_t = int(a[0]), a[1]
+            j, whisper_t = int(b[0]), b[1]
+            phon_cost = phonetic_costs[(i, j)]
+
+            # Leniency mechanism: if Whisper word has low confidence but there is vocal activity,
+            # be more lenient about phonetic mismatch.
+            if (
+                audio_features
+                and whisper_words[j].probability < low_word_confidence_threshold
+            ):
+                # Check activity around the whisper word
+                w_start = whisper_words[j].start
+                w_end = whisper_words[j].end
+                vocal_activity = _check_vocal_activity_in_range(
+                    w_start, w_end, audio_features
+                )
+                if vocal_activity > lenient_vocal_activity_threshold:
+                    phon_cost = max(0.0, phon_cost - lenient_activity_bonus)
+
+            time_diff = abs(whisper_t - lrc_t)
+            time_penalty = min(time_diff / 20.0, 1.0)
+            gap_start = min(lrc_t, whisper_t)
+            gap_end = max(lrc_t, whisper_t)
+            silence_overlap = _compute_silence_overlap(gap_start, gap_end, use_silence)
+            silence_penalty = min(silence_overlap / 2.0, 1.0)
+            if _is_time_in_silence(whisper_t, use_silence):
+                silence_penalty = max(silence_penalty, 0.8)
+            activity_penalty = 0.0
+            if audio_features and gap_end - gap_start > 0.5:
+                activity = _check_vocal_activity_in_range(
+                    gap_start, gap_end, audio_features
+                )
+                non_silent = max(gap_end - gap_start - silence_overlap, 0.0)
+                if activity > 0.5 and non_silent > 0.5:
+                    activity_penalty = min(activity, 1.0)
+            return (
+                0.5 * phon_cost
+                + 0.2 * time_penalty
+                + 0.2 * silence_penalty
+                + 0.1 * activity_penalty
+            )
+
+        _distance, path = fastdtw(lrc_seq, whisper_seq, dist=dtw_dist)
+
+    except ImportError:
+        logger.warning("fastdtw not available, falling back to greedy alignment")
+        return (
+            lines,
+            [],
+            {"matched_ratio": 0.0, "avg_similarity": 0.0, "line_coverage": 0.0},
+            lrc_words,
+            {},
+        )
+
+    alignments_map = _extract_alignments_from_path_base(
+        path, lrc_words, whisper_words, language, min_similarity
+    )
+
+    aligned_lines, corrections = _apply_dtw_alignments_base(
+        lines, lrc_words, alignments_map
+    )
+    metrics = _compute_dtw_alignment_metrics(lines, lrc_words, alignments_map)
+
+    logger.info(f"DTW alignment complete: {len(corrections)} lines modified")
+    return aligned_lines, corrections, metrics, lrc_words, alignments_map
 
 
-def _build_block_word_bags(
-    all_words: List[TranscriptionWord],
-    speech_blocks: List[Tuple[int, int]],
-) -> List[Set[str]]:
-    """Build a bag-of-words set for each speech block."""
-    bags: List[Set[str]] = []
-    for blk_start, blk_end in speech_blocks:
-        bag: Set[str] = set()
-        for wi in range(blk_start, blk_end + 1):
-            nw = _normalize_word(all_words[wi].text)
-            if nw:
-                bag.add(nw)
-        bags.append(bag)
-    return bags
+def align_dtw_whisper(
+    lines: List[Line],
+    whisper_words: List[TranscriptionWord],
+    language: str = "fra-Latn",
+    min_similarity: float = 0.4,
+) -> Tuple[List[Line], List[str], Dict[str, float]]:
+    """Align LRC to Whisper using Dynamic Time Warping."""
+    lrc_words = _extract_lrc_words_base(lines)
+    if not lrc_words:
+        return (
+            lines,
+            [],
+            {"matched_ratio": 0.0, "avg_similarity": 0.0, "line_coverage": 0.0},
+        )
+
+    # Pre-compute IPA
+    for ww in whisper_words:
+        phonetic_utils._get_ipa(ww.text, language)
+    for lw in lrc_words:
+        phonetic_utils._get_ipa(lw["text"], language)
+
+    phonetic_costs = _compute_phonetic_costs_base(
+        lrc_words, whisper_words, language, min_similarity
+    )
+
+    # Simple greedy alignment if fastdtw missing
+    try:
+        from fastdtw import fastdtw  # type: ignore
+
+        lrc_times = np.array([lw["start"] for lw in lrc_words])
+        whisper_times = np.array([ww.start for ww in whisper_words])
+        lrc_seq = np.column_stack([np.arange(len(lrc_words)), lrc_times])
+        whisper_seq = np.column_stack([np.arange(len(whisper_words)), whisper_times])
+
+        def dtw_dist(a, b):
+            i, lrc_t = int(a[0]), a[1]
+            j, whisper_t = int(b[0]), b[1]
+            phon_cost = phonetic_costs[(i, j)]
+            time_diff = abs(whisper_t - lrc_t)
+            time_penalty = min(time_diff / 20.0, 1.0)
+            return 0.7 * phon_cost + 0.3 * time_penalty
+
+        _distance, path = fastdtw(lrc_seq, whisper_seq, dist=dtw_dist)
+    except ImportError:
+        logger.warning("fastdtw not available, falling back to greedy alignment")
+        return (
+            lines,
+            [],
+            {"matched_ratio": 0.0, "avg_similarity": 0.0, "line_coverage": 0.0},
+        )
+
+    alignments_map = _extract_alignments_from_path_base(
+        path, lrc_words, whisper_words, language, min_similarity
+    )
+
+    aligned_lines, corrections = _apply_dtw_alignments_base(
+        lines, lrc_words, alignments_map
+    )
+    metrics = _compute_dtw_alignment_metrics(lines, lrc_words, alignments_map)
+
+    return aligned_lines, corrections, metrics
