@@ -994,5 +994,3 @@ def _map_lrc_lines_to_whisper_segments(  # noqa: C901
         prev_text = text_norm
 
     return adjusted, fixes, issues
-
-

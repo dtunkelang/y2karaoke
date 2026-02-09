@@ -10,9 +10,9 @@ This module provides the main interface for lyrics fetching and processing:
 from __future__ import annotations
 
 from pathlib import Path
-from typing import List, Optional, Tuple, TYPE_CHECKING
+from typing import List, Optional, Tuple
 
-from .models import Line, SongMetadata
+from .models import Line, SongMetadata, Word
 from .lrc import (
     parse_lrc_timestamp,
     parse_lrc_with_timing,
@@ -23,6 +23,16 @@ from .lrc import (
 from .lyrics_whisper import (
     get_lyrics_simple,
     get_lyrics_with_quality,
+    _apply_singer_info,
+    _detect_offset_with_issues,
+    _refine_timing_with_quality,
+    _calculate_quality_score,
+    _score_from_dtw_metrics,
+    _fetch_lrc_text_and_timings,
+    _fetch_genius_with_quality_tracking,
+    _apply_whisper_with_quality,
+)
+from .lyrics_whisper_map import (
     _norm_token,
     _build_whisper_word_list,
     _select_window_sequence,
@@ -39,14 +49,6 @@ from .lyrics_whisper import (
     _clamp_line_end_to_next_start,
     _create_lines_from_whisper,
     _map_lrc_lines_to_whisper_segments,
-    _apply_singer_info,
-    _detect_offset_with_issues,
-    _refine_timing_with_quality,
-    _calculate_quality_score,
-    _score_from_dtw_metrics,
-    _fetch_lrc_text_and_timings,
-    _fetch_genius_with_quality_tracking,
-    _apply_whisper_with_quality,
 )
 from .lyrics_helpers import (
     _estimate_singing_duration,
@@ -62,10 +64,8 @@ from .lyrics_helpers import (
     _compress_spurious_lrc_gaps,
     _apply_whisper_alignment,
     _romanize_lines,
+    romanize_line,
 )
-
-if TYPE_CHECKING:
-    from .timing_models import TranscriptionSegment, TranscriptionWord
 
 __all__ = [
     "LyricsProcessor",
@@ -77,6 +77,10 @@ __all__ = [
     "create_lines_from_lrc",
     "create_lines_from_lrc_timings",
     "split_long_lines",
+    "Word",
+    "Line",
+    "SongMetadata",
+    "romanize_line",
     "_norm_token",
     "_build_whisper_word_list",
     "_select_window_sequence",

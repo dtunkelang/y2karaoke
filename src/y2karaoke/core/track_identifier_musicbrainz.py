@@ -15,9 +15,10 @@ musicbrainzngs.set_useragent(
     "y2karaoke", "1.0", "https://github.com/dtunkelang/y2karaoke"
 )
 
+
 class MusicBrainzClient:
     """Handles querying MusicBrainz and scoring track matches."""
-    
+
     def _query_musicbrainz(
         self,
         query: str,
@@ -313,9 +314,7 @@ class MusicBrainzClient:
         the caller should also try artist/title splits.
         """
         title_normalized = normalize_title(title_hint)
-        title_normalized_no_stop = normalize_title(
-            title_hint, remove_stopwords=True
-        )
+        title_normalized_no_stop = normalize_title(title_hint, remove_stopwords=True)
         query_words = set(title_hint.lower().split())
         candidates = []
 

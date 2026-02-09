@@ -2,7 +2,7 @@
 
 import logging
 from pathlib import Path
-from typing import List, Optional, Tuple, Dict, Any
+from typing import List, Optional, Tuple
 
 from .models import Line, SongMetadata
 from .lrc import (
@@ -10,7 +10,6 @@ from .lrc import (
     create_lines_from_lrc,
     create_lines_from_lrc_timings,
 )
-from .timing_models import TranscriptionSegment, TranscriptionWord
 from .lyrics_helpers import (
     _romanize_lines,
     _detect_and_apply_offset,
@@ -23,20 +22,6 @@ from .lyrics_helpers import (
     _create_lines_from_plain_text,
 )
 from .lyrics_whisper_map import (
-    _norm_token,
-    _build_whisper_word_list,
-    _select_window_sequence,
-    _slots_from_sequence,
-    _resample_slots_to_line,
-    _whisper_durations_for_line,
-    _apply_weighted_slots_to_line,
-    _shift_words,
-    _find_best_segment_for_line,
-    _map_line_words_to_segment,
-    _select_window_words_for_line,
-    _line_duration_from_lrc,
-    _apply_lrc_weighted_timing,
-    _clamp_line_end_to_next_start,
     _create_lines_from_whisper,
     _map_lrc_lines_to_whisper_segments,
 )
@@ -488,7 +473,9 @@ def get_lyrics_simple(  # noqa: C901
                     if transcription:
                         lang = _whisper_lang_to_epitran(detected_lang)
                         lrc_starts = (
-                            [ts for ts, _ in line_timings] if line_timings else None
+                            [ts for ts, _ in line_timings]
+                            if line_timings and not whisper_map_lrc
+                            else None
                         )
                         lines, mapped, issues = _map_lrc_lines_to_whisper_segments(
                             lines, transcription, lang, lrc_line_starts=lrc_starts
@@ -788,7 +775,9 @@ def get_lyrics_with_quality(  # noqa: C901
                     if transcription:
                         lang = _whisper_lang_to_epitran(detected_lang)
                         lrc_starts = (
-                            [ts for ts, _ in line_timings] if line_timings else None
+                            [ts for ts, _ in line_timings]
+                            if line_timings and not whisper_map_lrc
+                            else None
                         )
                         lines, mapped, issues = _map_lrc_lines_to_whisper_segments(
                             lines, transcription, lang, lrc_line_starts=lrc_starts

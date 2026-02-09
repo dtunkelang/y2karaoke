@@ -197,6 +197,9 @@ def test_get_lyrics_simple_whisper_map_lrc(monkeypatch):
     )
     monkeypatch.setattr(te, "_whisper_lang_to_epitran", lambda *_a, **_k: "fra-Latn")
 
+    monkeypatch.setattr(
+        "y2karaoke.core.alignment.detect_song_start", lambda *_: 0.0
+    )
     lines, _ = lw.get_lyrics_simple(
         title="Song",
         artist="Artist",

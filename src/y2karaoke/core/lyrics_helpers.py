@@ -9,9 +9,16 @@ from .models import Word, Line, SongMetadata
 from .romanization import romanize_line
 from .lrc import (
     parse_lrc_with_timing,
+    create_lines_from_lrc,
+    create_lines_from_lrc_timings,
 )
 
 logger = logging.getLogger(__name__)
+
+__all__ = [
+    "create_lines_from_lrc",
+    "create_lines_from_lrc_timings",
+]
 
 
 def _estimate_singing_duration(text: str, word_count: int) -> float:
@@ -114,7 +121,6 @@ def _load_lyrics_file(
 
     text_lines = _clean_text_lines(raw.splitlines())
     return None, None, text_lines
-
 
 
 def _create_no_lyrics_placeholder(

@@ -25,7 +25,7 @@ class QueryParser:
     ) -> List[Dict]:
         """Delegate to MusicBrainzClient (implemented via multiple inheritance)."""
         raise NotImplementedError("Subclasses must implement _query_musicbrainz")
-    
+
     def _parse_query(self, query: str) -> tuple[Optional[str], str]:
         """Parse a search query for artist/title hints.
 
@@ -202,4 +202,3 @@ class QueryParser:
                 continue
 
         return None
-

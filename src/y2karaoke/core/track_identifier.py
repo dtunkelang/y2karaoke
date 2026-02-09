@@ -110,9 +110,7 @@ class TrackIdentifier(YouTubeSearcher, MusicBrainzClient, QueryParser):
             split_best = self._try_split_search(query)
         if split_best:
             _, split_artist, split_title = split_best
-            query_words = set(
-                normalize_title(query, remove_stopwords=True).split()
-            )
+            query_words = set(normalize_title(query, remove_stopwords=True).split())
             lrc_artist_words = set(
                 normalize_title(artist or "", remove_stopwords=True).split()
             )
@@ -842,9 +840,7 @@ class TrackIdentifier(YouTubeSearcher, MusicBrainzClient, QueryParser):
             duration_diff = abs(lrc_duration - target_duration)
 
             # Title similarity: check word overlap and sequence match
-            candidate_title_normalized = normalize_title(
-                title, remove_stopwords=True
-            )
+            candidate_title_normalized = normalize_title(title, remove_stopwords=True)
             candidate_title_words = set(candidate_title_normalized.split())
 
             # Word overlap score (0-1)
@@ -906,4 +902,3 @@ class TrackIdentifier(YouTubeSearcher, MusicBrainzClient, QueryParser):
                 f"Best LRC match has {duration_diff}s duration difference (tolerance: {tolerance}s)"
             )
             return (artist, title, lrc_duration)
-

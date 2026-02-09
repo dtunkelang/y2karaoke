@@ -12,7 +12,7 @@ logger = get_logger(__name__)
 
 class YouTubeSearcher:
     """Handles searching YouTube and extracting track metadata."""
-    
+
     def _is_likely_non_studio(self, title: str) -> bool:
         """Check if a title suggests a non-studio version.
 

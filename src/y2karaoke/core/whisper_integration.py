@@ -44,7 +44,6 @@ def _model_index(model_size: str) -> int:
         return -1
 
 
-
 def _get_whisper_cache_path(
     vocals_path: str,
     model_size: str,
@@ -5467,5 +5466,3 @@ def _fill_vocal_activity_gaps(
             filled_segments.sort(key=lambda s: s.start)
 
     return filled_words, filled_segments
-
-
