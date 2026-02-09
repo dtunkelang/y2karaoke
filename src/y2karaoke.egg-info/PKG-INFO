@@ -21,7 +21,9 @@ Requires-Dist: scenedetect[opencv]>=0.6.0
 Requires-Dist: audio-separator>=0.17.0
 Requires-Dist: onnxruntime>=1.16.0
 Requires-Dist: syncedlyrics>=0.10.0
+Requires-Dist: lyriq>=1.4.0
 Requires-Dist: whisperx>=3.1.0
+Requires-Dist: epitran>=1.24.0
 Requires-Dist: moviepy>=2.0.0
 Requires-Dist: numpy<2.0.0,>=1.24.0
 Requires-Dist: Pillow>=10.0.0
@@ -31,6 +33,7 @@ Requires-Dist: soundfile>=0.12.0
 Requires-Dist: requests>=2.31.0
 Requires-Dist: beautifulsoup4>=4.12.0
 Requires-Dist: click>=8.0.0
+Requires-Dist: musicbrainzngs>=0.7.1
 Provides-Extra: romanization
 Requires-Dist: korean-romanizer>=0.28.0; extra == "romanization"
 Requires-Dist: pypinyin>=0.50.0; extra == "romanization"
@@ -45,6 +48,8 @@ Requires-Dist: pytest-cov>=4.0.0; extra == "dev"
 Requires-Dist: black>=23.0.0; extra == "dev"
 Requires-Dist: flake8>=6.0.0; extra == "dev"
 Requires-Dist: mypy>=1.0.0; extra == "dev"
+Requires-Dist: pre-commit>=3.0.0; extra == "dev"
+Requires-Dist: types-requests>=2.31.0; extra == "dev"
 
 # y2karaoke
 
@@ -63,7 +68,6 @@ Generate karaoke videos from YouTube URLs or song titles with word-by-word highl
 - Duet-friendly visuals with singer-specific coloring and instrumental-break progress bar
 - **Key shifting** (-12 to +12 semitones) to match your vocal range
 - **Tempo control** (speed up or slow down) with synchronized lyrics
-- **YouTube upload** with unlisted/shareable link
 - Caches intermediate files so expensive steps (separation, transcription) are reused across runs
 
 ## Installation
@@ -94,14 +98,6 @@ pip install -r requirements.txt
 pip install korean-romanizer pypinyin pykakasi pyarabic
 ```
 
-### Migration from Old Version
-
-If you have an existing installation, run the migration script:
-
-```bash
-python migrate.py
-```
-
 ### Troubleshooting
 
 If you see `ModuleNotFoundError: No module named 'onnxruntime'`, your Python version is likely too new. Verify you're using Python 3.12:
@@ -111,6 +107,33 @@ python --version  # Should show Python 3.12.x
 ```
 
 If not, recreate the virtual environment with `python3.12 -m venv venv`.
+
+### Phonetic matching and the FLite fallback
+
+To keep Epitran’s phonetic DTW as accurate as possible we ship a lightweight `lex_lookup`
+shim that is installed automatically via the cache directory, so you generally no longer see
+`lex_lookup (from flite) is not installed` warnings. Under the hood the shim uses the
+`pronouncing` package (headers for which are pulled in via `requirements.txt`) to
+emulate a CMU-style dictionary whenever the real `lex_lookup` binary is absent.
+
+If you need the absolute best phonetic coverage (and prefer upstream FLite), feel free to
+install the real `flite` package for your OS:
+
+```bash
+# macOS (Homebrew)
+brew install flite
+
+# Debian/Ubuntu
+sudo apt install flite
+
+# Fedora / RHEL
+sudo dnf install flite
+```
+
+If you build from source, make sure the `flite` binary and its `lex` data directory are on
+your `PATH`. Epitran will defer to the real binary when it is available, so rerunning the
+pipeline after installing FLite gives you the noise-free warning and the most accurate
+lexical pronunciations.
 
 ## Usage
 
@@ -143,7 +166,7 @@ y2karaoke generate "https://youtube.com/watch?v=VIDEO_ID" -o output.mp4 --backgr
 
 # Use lyrics from a different title/artist (e.g., cover of an original)
 y2karaoke generate "https://youtube.com/watch?v=VIDEO_ID" -o output.mp4 \
-  --lyrics-title "Song Title" --lyrics-artist "Artist Name"
+  --title "Song Title" --artist "Artist Name"
 
 # Combine options: shift key up, slow down, adjust timing
 y2karaoke generate "https://youtube.com/watch?v=VIDEO_ID" -o output.mp4 --key +2 --tempo 0.9 --offset -0.5
@@ -151,11 +174,6 @@ y2karaoke generate "https://youtube.com/watch?v=VIDEO_ID" -o output.mp4 --key +2
 # Force reprocess (ignore cache)
 y2karaoke generate "https://youtube.com/watch?v=VIDEO_ID" -o output.mp4 --force
 
-# Upload to YouTube after rendering (unlisted link)
-y2karaoke generate "https://youtube.com/watch?v=VIDEO_ID" -o output.mp4 --upload
-
-# Skip the upload prompt (for scripts/batch mode)
-y2karaoke generate "https://youtube.com/watch?v=VIDEO_ID" -o output.mp4 --no-upload
 ```
 
 ### Cache Management
@@ -171,16 +189,6 @@ y2karaoke cache cleanup --days 30
 y2karaoke cache clear VIDEO_ID
 ```
 
-### Legacy Interface (Backward Compatible)
-
-```bash
-# Basic usage (same as before)
-python karaoke.py "https://youtube.com/watch?v=VIDEO_ID" -o output.mp4
-
-# All old options still work
-python karaoke.py "https://youtube.com/watch?v=VIDEO_ID" -o output.mp4 --offset -0.5 --key -3 --tempo 0.8
-```
-
 ### Options
 
 | Option | Description |
@@ -190,14 +198,29 @@ python karaoke.py "https://youtube.com/watch?v=VIDEO_ID" -o output.mp4 --offset 
 | `--key` | Shift key by N semitones (-12 to +12, default: 0) |
 | `--tempo` | Tempo multiplier (0.5 = half speed, 2.0 = double, default: 1.0) |
 | `--audio-start` | Start audio processing from this many seconds into the track (skip intro; default: 0.0) |
-| `--lyrics-title` | Override song title used when searching for lyrics (useful for covers) |
-| `--lyrics-artist` | Override artist used when searching for lyrics (useful for covers) |
-| `--upload` | Upload to YouTube as unlisted video after rendering |
-| `--no-upload` | Skip the upload prompt (for batch/script mode) |
+| `--title` | Override song title used when searching for lyrics |
+| `--artist` | Override artist used when searching for lyrics (useful for covers) |
+| `--lyrics-file"` | Use lyrics from a local text or .lrc file as the text source |
 | `--backgrounds` | Use video backgrounds extracted from the original YouTube video |
 | `--work-dir` | Working directory for intermediate files (default: `~/.cache/karaoke/{video_id}`) |
 | `--keep-files` | Keep intermediate files (audio, stems, etc.) |
 | `--force` | Force re-download and re-process even if cached files exist |
+| `--offline` | Run entirely from cached metadata/audio. When provided alongside `--force`, downloads are still skipped but processing (Whisper, lyrics alignment, rendering) reruns over the cached stems |
+
+## Testing
+
+```bash
+source venv/bin/activate
+pytest tests -v
+```
+
+Network/integration tests are skipped by default. To run them:
+
+```bash
+RUN_INTEGRATION_TESTS=1 pytest tests -v
+# or
+pytest tests -v --run-network
+```
 
 ## Advanced: module-level CLIs
 
@@ -232,12 +255,6 @@ For debugging or experimenting with individual steps, you can run the core modul
   python -m y2karaoke.core.renderer
   ```
   Renders a sample frame to `test_frame.png` for quickly checking fonts/layout.
-
-- **Upload an existing MP4 to YouTube**
-  ```bash
-  python -m y2karaoke.core.uploader output.mp4 [title] [artist]
-  ```
-  Uses your saved OAuth credentials to upload as an unlisted video.
 
 - **Inspect video backgrounds / scene detection**
   ```bash
@@ -281,19 +298,17 @@ Romanization is **best-effort** and only applied when the corresponding librarie
 
 Intermediate files are cached in `~/.cache/karaoke/{video_id}/` by default, including downloaded audio, separated stems, processed instrumentals for particular key/tempo settings, and lyrics/timing metadata. This allows fast re-runs when adjusting timing offsets, key, or tempo without repeating the expensive separation and transcription steps.
 
-## YouTube Upload Setup
+## Technical Documentation
 
-To enable YouTube uploads, you need to set up Google OAuth credentials:
+For detailed technical architecture, see [CLAUDE.md](CLAUDE.md). This document covers:
+- Overall pipeline and orchestration
+- Track identification (artist/title) from URLs and search queries
+- Lyrics and timing fetching from multiple providers
+- Audio retrieval and vocal separation
+- Alignment algorithms and audio analysis
+- Timing quality evaluation
 
-1. Go to [Google Cloud Console](https://console.cloud.google.com/)
-2. Create a new project (or select existing)
-3. Enable the **YouTube Data API v3**
-4. Go to **Credentials** → **Create Credentials** → **OAuth client ID**
-5. Select **Desktop app** as application type
-6. Download the JSON file
-7. Save it as `~/.cache/karaoke/client_secrets.json`
-
-On first upload, a browser window will open for authentication. Credentials are cached for future use.
+For a concise summary of the selection logic and test coverage across the three core pillars, see [docs/logic-audit.md](docs/logic-audit.md).
 
 ## License
 

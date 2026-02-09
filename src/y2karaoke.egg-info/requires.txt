@@ -3,7 +3,9 @@ scenedetect[opencv]>=0.6.0
 audio-separator>=0.17.0
 onnxruntime>=1.16.0
 syncedlyrics>=0.10.0
+lyriq>=1.4.0
 whisperx>=3.1.0
+epitran>=1.24.0
 moviepy>=2.0.0
 numpy<2.0.0,>=1.24.0
 Pillow>=10.0.0
@@ -13,6 +15,7 @@ soundfile>=0.12.0
 requests>=2.31.0
 beautifulsoup4>=4.12.0
 click>=8.0.0
+musicbrainzngs>=0.7.1
 
 [dev]
 pytest>=7.0.0
@@ -20,6 +23,8 @@ pytest-cov>=4.0.0
 black>=23.0.0
 flake8>=6.0.0
 mypy>=1.0.0
+pre-commit>=3.0.0
+types-requests>=2.31.0
 
 [romanization]
 korean-romanizer>=0.28.0
