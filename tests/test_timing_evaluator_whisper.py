@@ -3,11 +3,12 @@ import builtins
 import pytest
 
 import y2karaoke.core.timing_evaluator as te
+import y2karaoke.core.phonetic_utils as pu
 from y2karaoke.core.models import Line, Word
 
 
 def test_align_words_to_whisper_adjusts_word():
-    te._ipa_cache.clear()
+    pu._ipa_cache.clear()
     lines = [Line(words=[Word(text="hello", start_time=0.0, end_time=0.5)])]
     whisper_words = [
         te.TranscriptionWord(start=2.0, end=2.4, text="hello", probability=0.9)

@@ -14,89 +14,9 @@ import musicbrainzngs
 
 from ..utils.logging import get_logger
 from ..exceptions import Y2KaraokeError
+from .text_utils import STOP_WORDS
 
 logger = get_logger(__name__)
-
-# Stopwords for multiple languages - filtered during title/artist matching
-STOP_WORDS = {
-    # English
-    "the",
-    "a",
-    "an",
-    "and",
-    "or",
-    "of",
-    "with",
-    "in",
-    "to",
-    "for",
-    "by",
-    "&",
-    "+",
-    # Spanish
-    "el",
-    "la",
-    "los",
-    "las",
-    "un",
-    "una",
-    "unos",
-    "unas",
-    "y",
-    "de",
-    "del",
-    "con",
-    # French
-    "le",
-    "la",
-    "les",
-    "un",
-    "une",
-    "des",
-    "et",
-    "de",
-    "du",
-    "au",
-    "aux",
-    # German
-    "der",
-    "die",
-    "das",
-    "ein",
-    "eine",
-    "und",
-    "von",
-    "mit",
-    # Italian
-    "il",
-    "lo",
-    "la",
-    "i",
-    "gli",
-    "le",
-    "un",
-    "uno",
-    "una",
-    "e",
-    "di",
-    "del",
-    "della",
-    # Portuguese
-    "o",
-    "a",
-    "os",
-    "as",
-    "um",
-    "uma",
-    "uns",
-    "umas",
-    "e",
-    "de",
-    "do",
-    "da",
-    "dos",
-    "das",
-}
 
 # Initialize MusicBrainz
 musicbrainzngs.set_useragent(

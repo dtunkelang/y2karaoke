@@ -7,20 +7,26 @@ from unittest.mock import Mock, patch
 import numpy as np
 import pytest
 
-from y2karaoke.core.timing_evaluator import (
+from y2karaoke.core.timing_models import (
     TimingIssue,
     AudioFeatures,
     TimingReport,
     TranscriptionWord,
     TranscriptionSegment,
+)
+from y2karaoke.core.audio_analysis import (
     extract_audio_features,
-    evaluate_timing,
-    _find_closest_onset,
-    _normalize_text_for_matching,
-    _text_similarity_basic,
     _get_audio_features_cache_path,
     _load_audio_features_cache,
     _save_audio_features_cache,
+)
+from y2karaoke.core.phonetic_utils import (
+    _normalize_text_for_matching,
+    _text_similarity_basic,
+)
+from y2karaoke.core.timing_evaluator import (
+    evaluate_timing,
+    _find_closest_onset,
 )
 from y2karaoke.core.models import Word, Line
 
@@ -335,8 +341,8 @@ class TestAudioFeaturesCache:
 
 
 class TestExtractAudioFeatures:
-    @patch("y2karaoke.core.timing_evaluator._load_audio_features_cache")
-    @patch("y2karaoke.core.timing_evaluator._get_audio_features_cache_path")
+    @patch("y2karaoke.core.audio_analysis._load_audio_features_cache")
+    @patch("y2karaoke.core.audio_analysis._get_audio_features_cache_path")
     def test_uses_cached_features(self, mock_get_path, mock_load_cache):
         cached_features = AudioFeatures(
             onset_times=np.array([1.0, 2.0]),
@@ -354,7 +360,7 @@ class TestExtractAudioFeatures:
 
         assert features == cached_features
 
-    @patch("y2karaoke.core.timing_evaluator._load_audio_features_cache")
+    @patch("y2karaoke.core.audio_analysis._load_audio_features_cache")
     @patch("librosa.load")
     def test_handles_audio_load_error(self, mock_load, mock_load_cache):
         mock_load_cache.return_value = None
@@ -368,11 +374,11 @@ class TestExtractAudioFeatures:
         cache_path = tmp_path / "vocals.audio.npz"
 
         monkeypatch.setattr(
-            "y2karaoke.core.timing_evaluator._get_audio_features_cache_path",
+            "y2karaoke.core.audio_analysis._get_audio_features_cache_path",
             lambda _path: str(cache_path),
         )
         monkeypatch.setattr(
-            "y2karaoke.core.timing_evaluator._load_audio_features_cache",
+            "y2karaoke.core.audio_analysis._load_audio_features_cache",
             lambda _path: None,
         )
 
@@ -383,7 +389,7 @@ class TestExtractAudioFeatures:
             saved["features"] = features
 
         monkeypatch.setattr(
-            "y2karaoke.core.timing_evaluator._save_audio_features_cache",
+            "y2karaoke.core.audio_analysis._save_audio_features_cache",
             fake_save,
         )
 

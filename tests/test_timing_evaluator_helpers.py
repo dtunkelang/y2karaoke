@@ -1,19 +1,21 @@
 import numpy as np
 import pytest
 
-from y2karaoke.core.timing_evaluator import (
-    AudioFeatures,
-    correct_line_timestamps,
-    _find_best_onset_during_silence,
-    _find_best_onset_for_phrase_end,
-    _find_best_onset_proximity,
-    _find_phrase_end,
+from y2karaoke.core.timing_models import AudioFeatures
+from y2karaoke.core.audio_analysis import (
     _find_silence_regions,
     _find_vocal_end,
     _find_vocal_start,
     _get_audio_features_cache_path,
     _load_audio_features_cache,
     _save_audio_features_cache,
+)
+from y2karaoke.core.timing_evaluator import (
+    correct_line_timestamps,
+    _find_best_onset_during_silence,
+    _find_best_onset_for_phrase_end,
+    _find_best_onset_proximity,
+    _find_phrase_end,
     _check_pause_alignment,
     _calculate_pause_score,
 )

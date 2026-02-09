@@ -298,7 +298,7 @@ class KaraokeGenerator:
 
         if video_id:
             try:
-                from .timing_evaluator import _phonetic_similarity
+                from .phonetic_utils import _phonetic_similarity
 
                 cache_dir = self.cache_manager.get_video_cache_dir(video_id)
                 whisper_files = list(cache_dir.glob("*_whisper_*.json"))

@@ -28,7 +28,7 @@ from .lrc import (
 logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
-    from .timing_evaluator import TranscriptionSegment, TranscriptionWord
+    from .timing_models import TranscriptionSegment, TranscriptionWord
 
 
 def _estimate_singing_duration(text: str, word_count: int) -> float:
@@ -255,12 +255,12 @@ def _refine_timing_with_audio(
         adjust_timing_for_duration_mismatch,
     )
     from .sync import get_lrc_duration
+    from .audio_analysis import extract_audio_features
     from .timing_evaluator import (
         _check_for_silence_in_range,
         _check_vocal_activity_in_range,
         _pull_lines_forward_for_continuous_vocals,
         correct_line_timestamps,
-        extract_audio_features,
         fix_spurious_gaps,
     )
 
@@ -404,10 +404,10 @@ def _apply_whisper_alignment(
     low_word_confidence_threshold: float = 0.5,
 ) -> Tuple[List[Line], List[str], Dict[str, float]]:
     """Apply Whisper alignment to lines. Returns (lines, fixes_list)."""
+    from .audio_analysis import extract_audio_features
     from .timing_evaluator import (
         align_lrc_text_to_whisper_timings,
         correct_timing_with_whisper,
-        extract_audio_features,
     )
 
     audio_features = extract_audio_features(vocals_path)
@@ -1216,7 +1216,7 @@ def _map_lrc_lines_to_whisper_segments(  # noqa: C901
     lookahead: int = 6,
 ) -> Tuple[List[Line], int, List[str]]:  # noqa: C901
     """Map LRC lines onto Whisper segment timing without reordering."""
-    from .timing_evaluator import _phonetic_similarity
+    from .phonetic_utils import _phonetic_similarity
 
     if not lines or not transcription:
         return lines, 0, []

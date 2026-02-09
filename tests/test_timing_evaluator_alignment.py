@@ -1,6 +1,9 @@
 import builtins
 
 import y2karaoke.core.timing_evaluator as te
+import y2karaoke.core.phonetic_utils as pu
+import y2karaoke.core.audio_analysis as aa
+import y2karaoke.core.timing_models as tm
 from y2karaoke.core.models import Line, Word
 
 
@@ -67,5 +70,5 @@ def test_text_similarity_phonetic_falls_back(monkeypatch):
 
 
 def test_get_ipa_returns_none_without_epitran(monkeypatch):
-    monkeypatch.setattr(te, "_get_epitran", lambda _lang="fra-Latn": None)
-    assert te._get_ipa("bonjour", language="fra-Latn") is None
+    monkeypatch.setattr(pu, "_get_epitran", lambda _lang="fra-Latn": None)
+    assert pu._get_ipa("bonjour", language="fra-Latn") is None

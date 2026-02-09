@@ -13,299 +13,45 @@ import re
 from ..utils.logging import get_logger
 from ..utils.lex_lookup_installer import ensure_local_lex_lookup
 from .models import Line, Word
+from .timing_models import (  # noqa: F401
+    TimingIssue,
+    AudioFeatures,
+    TimingReport,
+    TranscriptionWord,
+    TranscriptionSegment,
+)
+from .phonetic_utils import (  # noqa: F401
+    _VOWEL_REGEX,
+    _normalize_text_for_matching,
+    _normalize_text_for_phonetic,
+    _consonant_skeleton,
+    _get_epitran,
+    _get_panphon_distance,
+    _get_panphon_ft,
+    _is_vowel,
+    _get_ipa,
+    _get_ipa_segs,
+    _phonetic_similarity,
+    _text_similarity_basic,
+    _text_similarity,
+    _whisper_lang_to_epitran,
+    _epitran_cache,
+    _ipa_cache,
+    _ipa_segs_cache,
+)
+from .audio_analysis import (  # noqa: F401
+    extract_audio_features,
+    _get_audio_features_cache_path,
+    _load_audio_features_cache,
+    _save_audio_features_cache,
+    _find_silence_regions,
+    _compute_silence_overlap,
+    _is_time_in_silence,
+    _find_vocal_start,
+    _find_vocal_end,
+)
 
 logger = get_logger(__name__)
-
-_VOWEL_REGEX = re.compile("[aeiouæøɪʊɔɛɑɐəœɜɞʌɒɨɯʉøɤɚɝ]", re.IGNORECASE)
-
-
-@dataclass
-class TimingIssue:
-    """Represents a timing inconsistency between lyrics and audio."""
-
-    issue_type: str  # "early_line", "late_line", "missing_pause", "unexpected_pause"
-    line_index: int
-    lyrics_time: float
-    audio_time: Optional[float]
-    delta: float  # positive = lyrics ahead of audio
-    severity: str  # "minor", "moderate", "severe"
-    description: str
-
-
-@dataclass
-class AudioFeatures:
-    """Extracted audio features for timing evaluation."""
-
-    onset_times: np.ndarray  # Detected onset times
-    silence_regions: List[Tuple[float, float]]  # (start, end) of silent regions
-    vocal_start: float  # First vocal onset
-    vocal_end: float  # Last vocal activity
-    duration: float  # Total audio duration
-    energy_envelope: np.ndarray  # RMS energy over time
-    energy_times: np.ndarray  # Time axis for energy envelope
-
-
-@dataclass
-class TimingReport:
-    """Comprehensive timing evaluation report."""
-
-    source_name: str
-    overall_score: float  # 0-100, higher is better
-    line_alignment_score: float  # How well line starts match onsets
-    pause_alignment_score: float  # How well pauses match silence
-    issues: List[TimingIssue] = field(default_factory=list)
-    summary: str = ""
-
-    # Detailed metrics
-    avg_line_offset: float = 0.0  # Average offset between lyrics and audio
-    std_line_offset: float = 0.0  # Standard deviation of offsets
-    matched_onsets: int = 0  # Lines that matched an onset
-    total_lines: int = 0
-
-
-def _get_audio_features_cache_path(vocals_path: str) -> Optional[str]:
-    """Get the cache file path for audio features."""
-    from pathlib import Path
-
-    vocals_file = Path(vocals_path)
-    if not vocals_file.exists():
-        return None
-
-    cache_name = f"{vocals_file.stem}_audio_features.npz"
-    return str(vocals_file.parent / cache_name)
-
-
-def _load_audio_features_cache(cache_path: str) -> Optional[AudioFeatures]:
-    """Load cached audio features if available."""
-    from pathlib import Path
-
-    cache_file = Path(cache_path)
-    if not cache_file.exists():
-        return None
-
-    try:
-        data = np.load(cache_file, allow_pickle=True)
-
-        # Reconstruct AudioFeatures
-        features = AudioFeatures(
-            onset_times=data["onset_times"],
-            silence_regions=list(data["silence_regions"]),
-            vocal_start=float(data["vocal_start"]),
-            vocal_end=float(data["vocal_end"]),
-            duration=float(data["duration"]),
-            energy_envelope=data["energy_envelope"],
-            energy_times=data["energy_times"],
-        )
-
-        logger.debug(
-            f"Loaded cached audio features: {len(features.onset_times)} onsets"
-        )
-        return features
-
-    except Exception as e:
-        logger.debug(f"Failed to load audio features cache: {e}")
-        return None
-
-
-def _save_audio_features_cache(cache_path: str, features: AudioFeatures) -> None:
-    """Save audio features to cache."""
-    try:
-        np.savez(
-            cache_path,
-            onset_times=features.onset_times,
-            silence_regions=np.array(features.silence_regions, dtype=object),
-            vocal_start=features.vocal_start,
-            vocal_end=features.vocal_end,
-            duration=features.duration,
-            energy_envelope=features.energy_envelope,
-            energy_times=features.energy_times,
-        )
-        logger.debug(f"Saved audio features to cache: {cache_path}")
-
-    except Exception as e:
-        logger.debug(f"Failed to save audio features cache: {e}")
-
-
-def extract_audio_features(
-    vocals_path: str,
-    min_silence_duration: float = 0.5,
-) -> Optional[AudioFeatures]:
-    """Extract audio features for timing evaluation.
-
-    Results are cached to disk alongside the vocals file to avoid
-    expensive re-extraction on subsequent runs.
-
-    Args:
-        vocals_path: Path to vocals audio file
-        min_silence_duration: Minimum duration (seconds) to consider as silence
-
-    Returns:
-        AudioFeatures object or None if extraction fails
-    """
-    # Check cache first
-    cache_path = _get_audio_features_cache_path(vocals_path)
-    if cache_path:
-        cached = _load_audio_features_cache(cache_path)
-        if cached:
-            return cached
-
-    try:
-        import librosa
-
-        # Load audio
-        y, sr = librosa.load(vocals_path, sr=22050)
-        duration = len(y) / sr
-        hop_length = 512
-
-        # Onset detection
-        onset_frames = librosa.onset.onset_detect(
-            y=y, sr=sr, hop_length=hop_length, backtrack=True, units="frames"
-        )
-        onset_times = librosa.frames_to_time(onset_frames, sr=sr, hop_length=hop_length)
-
-        # RMS energy for silence detection
-        rms = librosa.feature.rms(y=y, frame_length=2048, hop_length=hop_length)[0]
-        rms_times = librosa.frames_to_time(
-            np.arange(len(rms)), sr=sr, hop_length=hop_length
-        )
-
-        # Compute silence threshold
-        noise_floor = np.percentile(rms, 10)
-        peak_level = np.percentile(rms, 90)
-        silence_threshold = noise_floor + 0.15 * (peak_level - noise_floor)
-
-        # Find silence regions
-        is_silent = rms < silence_threshold
-        silence_regions = _find_silence_regions(
-            is_silent, rms_times, min_silence_duration
-        )
-
-        # Find vocal start and end
-        vocal_start = _find_vocal_start(onset_times, rms, rms_times, silence_threshold)
-        vocal_end = _find_vocal_end(rms, rms_times, silence_threshold)
-
-        features = AudioFeatures(
-            onset_times=onset_times,
-            silence_regions=silence_regions,
-            vocal_start=vocal_start,
-            vocal_end=vocal_end,
-            duration=duration,
-            energy_envelope=rms,
-            energy_times=rms_times,
-        )
-
-        # Save to cache
-        if cache_path:
-            _save_audio_features_cache(cache_path, features)
-
-        return features
-
-    except Exception as e:
-        logger.error(f"Failed to extract audio features: {e}")
-        return None
-
-
-def _find_silence_regions(
-    is_silent: np.ndarray,
-    times: np.ndarray,
-    min_duration: float,
-) -> List[Tuple[float, float]]:
-    """Find regions of sustained silence."""
-    regions = []
-    in_silence = False
-    silence_start = 0.0
-
-    for i, silent in enumerate(is_silent):
-        if silent and not in_silence:
-            in_silence = True
-            silence_start = times[i]
-        elif not silent and in_silence:
-            in_silence = False
-            silence_end = times[i]
-            if silence_end - silence_start >= min_duration:
-                regions.append((silence_start, silence_end))
-
-    # Handle trailing silence
-    if in_silence:
-        silence_end = times[-1]
-        if silence_end - silence_start >= min_duration:
-            regions.append((silence_start, silence_end))
-
-    return regions
-
-
-def _compute_silence_overlap(
-    start: float, end: float, silence_regions: List[Tuple[float, float]]
-) -> float:
-    """Compute total silence duration between two timestamps."""
-    if start >= end or not silence_regions:
-        return 0.0
-
-    overlap = 0.0
-    for silence_start, silence_end in silence_regions:
-        if silence_end <= start or silence_start >= end:
-            continue
-        overlap += min(end, silence_end) - max(start, silence_start)
-    return max(overlap, 0.0)
-
-
-def _is_time_in_silence(
-    time: float, silence_regions: List[Tuple[float, float]]
-) -> bool:
-    """Return True if the given time falls inside any silence region."""
-    for silence_start, silence_end in silence_regions:
-        if silence_start <= time <= silence_end:
-            return True
-    return False
-
-
-def _find_vocal_start(
-    onset_times: np.ndarray,
-    rms: np.ndarray,
-    rms_times: np.ndarray,
-    threshold: float,
-    min_duration: float = 0.3,
-) -> float:
-    """Find where vocals actually start."""
-    if len(onset_times) == 0:
-        return 0.0
-
-    # Validate onsets with sustained energy
-    for onset_time in onset_times:
-        onset_idx = np.searchsorted(rms_times, onset_time)
-        if onset_idx >= len(rms):
-            continue
-
-        # Check for sustained energy after onset
-        min_frames = int(
-            min_duration / (rms_times[1] - rms_times[0]) if len(rms_times) > 1 else 10
-        )
-        end_idx = min(onset_idx + min_frames, len(rms))
-
-        if end_idx > onset_idx:
-            frames_above = rms[onset_idx:end_idx] > threshold
-            if np.mean(frames_above) > 0.5:
-                return onset_time
-
-    return onset_times[0] if len(onset_times) > 0 else 0.0
-
-
-def _find_vocal_end(
-    rms: np.ndarray,
-    rms_times: np.ndarray,
-    threshold: float,
-    min_silence: float = 0.5,
-) -> float:
-    """Find where vocals end (last sustained activity)."""
-    if len(rms) == 0:
-        return 0.0
-
-    # Find last frame above threshold with sustained activity before it
-    for i in range(len(rms) - 1, -1, -1):
-        if rms[i] > threshold:
-            return rms_times[i]
-
-    return rms_times[-1]
 
 
 def evaluate_timing(
@@ -1504,30 +1250,6 @@ def _merge_lines_with_audio(
 # ============================================================================
 
 
-@dataclass
-class TranscriptionWord:
-    """A word from Whisper transcription with timing."""
-
-    start: float
-    end: float
-    text: str
-    probability: float = 1.0
-
-
-@dataclass
-class TranscriptionSegment:
-    """A segment from Whisper transcription."""
-
-    start: float
-    end: float
-    text: str
-    words: Optional[List[TranscriptionWord]] = None
-
-    def __post_init__(self) -> None:
-        if self.words is None:
-            self.words = []
-
-
 def _fill_vocal_activity_gaps(
     whisper_words: List[TranscriptionWord],
     audio_features: AudioFeatures,
@@ -1976,200 +1698,6 @@ def transcribe_vocals(
         return [], [], "", model_size
 
 
-def _normalize_text_for_matching(text: str) -> str:
-    """Normalize text for fuzzy matching (basic normalization)."""
-    import re
-    import unicodedata
-
-    # Convert to lowercase
-    text = text.lower()
-
-    # Normalize unicode (é -> e, etc.)
-    text = unicodedata.normalize("NFD", text)
-    text = "".join(c for c in text if unicodedata.category(c) != "Mn")
-
-    # Remove punctuation
-    text = re.sub(r"[^\w\s]", "", text)
-
-    # Collapse whitespace
-    text = re.sub(r"\s+", " ", text).strip()
-
-    return text
-
-
-def _normalize_text_for_phonetic(text: str, language: str) -> str:
-    """Normalize text for phonetic matching with light English heuristics."""
-    base = _normalize_text_for_matching(text)
-    if not base:
-        return base
-
-    if not language.startswith("eng") and not language.startswith("en"):
-        return base
-
-    tokens = base.split()
-    if not tokens:
-        return base
-
-    contractions = {
-        "im": ["i", "am"],
-        "ive": ["i", "have"],
-        "ill": ["i", "will"],
-        "id": ["i", "would"],
-        "youre": ["you", "are"],
-        "youve": ["you", "have"],
-        "youll": ["you", "will"],
-        "youd": ["you", "would"],
-        "theyre": ["they", "are"],
-        "theyve": ["they", "have"],
-        "theyll": ["they", "will"],
-        "theyd": ["they", "would"],
-        "were": ["we", "are"],
-        "weve": ["we", "have"],
-        "well": ["we", "will"],
-        "wed": ["we", "would"],
-        "cant": ["can", "not"],
-        "wont": ["will", "not"],
-        "dont": ["do", "not"],
-        "didnt": ["did", "not"],
-        "doesnt": ["does", "not"],
-        "isnt": ["is", "not"],
-        "arent": ["are", "not"],
-        "wasnt": ["was", "not"],
-        "werent": ["were", "not"],
-        "shouldnt": ["should", "not"],
-        "couldnt": ["could", "not"],
-        "wouldnt": ["would", "not"],
-        "theres": ["there", "is"],
-        "thats": ["that", "is"],
-        "whats": ["what", "is"],
-        "lets": ["let", "us"],
-    }
-
-    homophones = {
-        "youre": "your",
-        "your": "your",
-        "theyre": "their",
-        "their": "their",
-        "there": "their",
-        "to": "to",
-        "too": "to",
-        "two": "to",
-        "for": "for",
-        "four": "for",
-        "its": "its",
-    }
-
-    filler_map = {
-        "mmm": "mm",
-        "mm": "mm",
-        "mhm": "mm",
-        "hmm": "mm",
-        "uh": "uh",
-        "uhh": "uh",
-        "um": "um",
-        "umm": "um",
-    }
-
-    expanded: List[str] = []
-    for token in tokens:
-        if token in contractions:
-            expanded.extend(contractions[token])
-            continue
-        token = homophones.get(token, token)
-        token = filler_map.get(token, token)
-        expanded.append(token)
-
-    return " ".join(expanded)
-
-
-def _consonant_skeleton(text: str) -> str:
-    """Create a consonant skeleton for quick approximate matching."""
-    vowels = set("aeiouy")
-    return "".join(ch for ch in text if ch not in vowels)
-
-
-# Cache for epitran instances (they're expensive to create)
-_epitran_cache: Dict[str, Any] = {}
-_panphon_distance = None
-_panphon_ft = None
-_ipa_cache: Dict[str, Optional[str]] = {}  # Cache for IPA transliterations
-_ipa_segs_cache: Dict[str, List[str]] = {}  # Cache for IPA segments
-
-
-def _get_epitran(language: str = "fra-Latn"):
-    """Get or create an epitran instance for a language."""
-    if language not in _epitran_cache:
-        try:
-            import epitran
-
-            _epitran_cache[language] = epitran.Epitran(language)
-        except ImportError:
-            return None
-        except Exception as e:
-            logger.debug(f"Could not create epitran for {language}: {e}")
-            return None
-    return _epitran_cache[language]
-
-
-def _get_panphon_distance():
-    """Get or create a panphon distance calculator."""
-    global _panphon_distance
-    if _panphon_distance is None:
-        try:
-            import panphon.distance
-
-            _panphon_distance = panphon.distance.Distance()
-        except ImportError:
-            return None
-    return _panphon_distance
-
-
-def _get_panphon_ft():
-    """Get or create a panphon FeatureTable."""
-    global _panphon_ft
-    if _panphon_ft is None:
-        try:
-            import panphon.featuretable
-
-            _panphon_ft = panphon.featuretable.FeatureTable()
-        except ImportError:
-            return None
-    return _panphon_ft
-
-
-def _is_vowel(ipa: str) -> bool:
-    """Simple heuristic to determine if an IPA segment contains a vowel."""
-    if not ipa:
-        return False
-    ft = _get_panphon_ft()
-    if ft and hasattr(ft, "is_vowel"):
-        try:
-            return ft.is_vowel(ipa)
-        except Exception:
-            pass
-    return bool(_VOWEL_REGEX.search(ipa))
-
-
-def _get_ipa(text: str, language: str = "fra-Latn") -> Optional[str]:
-    """Get IPA transliteration with caching."""
-    norm = _normalize_text_for_phonetic(text, language)
-    cache_key = f"{language}:{norm}"
-    epi = _get_epitran(language)
-    if epi is None:
-        return None
-    if cache_key in _ipa_cache:
-        return _ipa_cache[cache_key]
-
-    try:
-        ipa = epi.transliterate(norm)
-    except Exception as exc:
-        logger.debug(f"IPA transliteration failed for '{text}': {exc}")
-        _ipa_cache[cache_key] = None
-        return None
-    _ipa_cache[cache_key] = ipa
-    return ipa
-
-
 def _build_phoneme_tokens_from_lrc_words(
     lrc_words: List[Dict], language: str
 ) -> List[Dict]:
@@ -2249,136 +1777,6 @@ def _phoneme_similarity_from_ipa(
         return 0.0
     normalized_distance = fed / max_segs
     return max(0.0, 1.0 - normalized_distance)
-
-
-def _get_ipa_segs(ipa: str) -> List[str]:
-    """Get IPA segments with caching."""
-    if ipa in _ipa_segs_cache:
-        return _ipa_segs_cache[ipa]
-
-    ft = _get_panphon_ft()
-    if ft is None:
-        return []
-
-    segs = ft.ipa_segs(ipa)
-    _ipa_segs_cache[ipa] = segs
-    return segs
-
-
-def _phonetic_similarity(text1: str, text2: str, language: str = "fra-Latn") -> float:
-    """Calculate phonetic similarity using epitran and panphon.
-
-    Strategy:
-    1. Normalize text and convert to IPA via epitran (cached)
-    2. Tokenize IPA into phonetic segments via panphon (cached)
-    3. Compute weighted Levenshtein distance using panphon's feature_edit_distance
-       (substitution cost = phonetic feature distance between segments)
-    4. Normalize by segment count to get similarity score
-
-    Args:
-        text1: First text
-        text2: Second text
-        language: Epitran language code (default: French)
-
-    Returns:
-        Similarity score from 0.0 to 1.0
-    """
-    dst = _get_panphon_distance()
-
-    if dst is None:
-        return _text_similarity_basic(text1, text2, language)
-
-    try:
-        # Get cached IPA transliterations
-        ipa1 = _get_ipa(text1, language)
-        ipa2 = _get_ipa(text2, language)
-
-        if not ipa1 or not ipa2:
-            return _text_similarity_basic(text1, text2, language)
-
-        # Get cached IPA segments
-        segs1 = _get_ipa_segs(ipa1)
-        segs2 = _get_ipa_segs(ipa2)
-
-        if not segs1 or not segs2:
-            return _text_similarity_basic(text1, text2, language)
-
-        # Calculate feature edit distance (weighted Levenshtein)
-        fed = dst.feature_edit_distance(ipa1, ipa2)
-
-        # Normalize by max segment count
-        # Feature distance is typically 0-1 per substitution, with
-        # insertions/deletions costing ~1.0
-        max_segs = max(len(segs1), len(segs2))
-
-        # Convert normalized distance to similarity
-        # Distance of 0 = identical, distance of max_segs = completely different
-        normalized_distance = fed / max_segs
-        similarity = max(0.0, 1.0 - normalized_distance)
-
-        norm1 = _normalize_text_for_phonetic(text1, language)
-        norm2 = _normalize_text_for_phonetic(text2, language)
-        if norm1 and norm2 and norm1 == norm2:
-            return max(similarity, 0.98)
-        basic_sim = _text_similarity_basic(text1, text2, language)
-        blended = max(similarity, basic_sim * 0.9)
-        if (
-            (language.startswith("eng") or language.startswith("en"))
-            and " " not in norm1
-            and " " not in norm2
-        ):
-            sk1 = _consonant_skeleton(norm1)
-            sk2 = _consonant_skeleton(norm2)
-            if sk1 and sk2:
-                from difflib import SequenceMatcher
-
-                sk_sim = SequenceMatcher(None, sk1, sk2).ratio()
-                blended = max(blended, sk_sim * 0.95)
-
-        return blended
-
-    except Exception as e:
-        logger.debug(f"Phonetic similarity failed: {e}")
-        return _text_similarity_basic(text1, text2, language)
-
-
-def _text_similarity_basic(
-    text1: str, text2: str, language: Optional[str] = None
-) -> float:
-    """Basic text similarity using SequenceMatcher."""
-    from difflib import SequenceMatcher
-
-    if language:
-        norm1 = _normalize_text_for_phonetic(text1, language)
-        norm2 = _normalize_text_for_phonetic(text2, language)
-    else:
-        norm1 = _normalize_text_for_matching(text1)
-        norm2 = _normalize_text_for_matching(text2)
-
-    if not norm1 or not norm2:
-        return 0.0
-
-    return SequenceMatcher(None, norm1, norm2).ratio()
-
-
-def _text_similarity(
-    text1: str, text2: str, use_phonetic: bool = True, language: str = "fra-Latn"
-) -> float:
-    """Calculate similarity between two text strings.
-
-    Args:
-        text1: First text
-        text2: Second text
-        use_phonetic: If True, use phonetic similarity (epitran/panphon)
-        language: Language code for phonetic comparison
-
-    Returns:
-        Similarity score from 0.0 to 1.0
-    """
-    if use_phonetic:
-        return _phonetic_similarity(text1, text2, language)
-    else:
-        return _text_similarity_basic(text1, text2)
 
 
 def align_lyrics_to_transcription(
@@ -2493,25 +1891,6 @@ def align_lyrics_to_transcription(
         aligned_lines.append(line)
 
     return aligned_lines, alignments
-
-
-def _whisper_lang_to_epitran(lang: str) -> str:
-    """Map Whisper language code to epitran language code."""
-    mapping = {
-        "fr": "fra-Latn",
-        "en": "eng-Latn",
-        "es": "spa-Latn",
-        "de": "deu-Latn",
-        "it": "ita-Latn",
-        "pt": "por-Latn",
-        "nl": "nld-Latn",
-        "pl": "pol-Latn",
-        "ru": "rus-Cyrl",
-        "ja": "jpn-Hira",
-        "ko": "kor-Hang",
-        "zh": "cmn-Hans",
-    }
-    return mapping.get(lang, "eng-Latn")  # Default to English
 
 
 def _find_best_whisper_match(
