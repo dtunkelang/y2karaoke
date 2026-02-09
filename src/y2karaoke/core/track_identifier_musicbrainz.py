@@ -2,10 +2,23 @@
 
 import re
 from collections import Counter
-from typing import Optional, List, Dict
+from typing import Optional, List, Dict, TYPE_CHECKING
 import musicbrainzngs
 from ..utils.logging import get_logger
 from .text_utils import normalize_title
+
+if TYPE_CHECKING:
+    from typing import Protocol
+
+    class _TrackIdentifierMixin(Protocol):
+        def _is_likely_non_studio(self, title: str) -> bool: ...
+        def _check_lrc_and_duration(
+            self, title: str, artist: str, expected_duration: Optional[int] = None
+        ) -> tuple[bool, Optional[int]]: ...
+
+    _Base = _TrackIdentifierMixin
+else:
+    _Base = object
 
 logger = get_logger(__name__)
 
@@ -16,7 +29,7 @@ musicbrainzngs.set_useragent(
 )
 
 
-class MusicBrainzClient:
+class MusicBrainzClient(_Base):
     """Handles querying MusicBrainz and scoring track matches."""
 
     def _query_musicbrainz(

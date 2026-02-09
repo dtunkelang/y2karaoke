@@ -2,16 +2,27 @@
 
 import re
 import json
-from typing import Optional, List, Dict, Any, Tuple
+from typing import Optional, List, Dict, Any, Tuple, TYPE_CHECKING
 from ..utils.logging import get_logger
 from ..exceptions import Y2KaraokeError
 from .models import TrackInfo
+from .text_utils import normalize_title
+
+if TYPE_CHECKING:
+    from .track_identifier_parser import QueryParser
+    _Base = QueryParser
+else:
+    _Base = object
 
 logger = get_logger(__name__)
 
 
-class YouTubeSearcher:
+class YouTubeSearcher(_Base):
     """Handles searching YouTube and extracting track metadata."""
+
+    def _normalize_title(self, title: str, remove_stopwords: bool = False) -> str:
+        """Delegate to text_utils.normalize_title."""
+        return normalize_title(title, remove_stopwords=remove_stopwords)
 
     def _is_likely_non_studio(self, title: str) -> bool:
         """Check if a title suggests a non-studio version.
