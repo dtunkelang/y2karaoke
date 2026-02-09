@@ -293,6 +293,30 @@ def cli(ctx, verbose, log_file):
     help="Use more aggressive Whisper settings to reduce dropped words",
 )
 @click.option(
+    "--whisper-temperature",
+    type=float,
+    default=0.0,
+    help="Temperature for Whisper transcription (0.0 for greedy, up to 1.0 for more diverse results)",
+)
+@click.option(
+    "--lenient-vocal-activity-threshold",
+    type=float,
+    default=0.3,
+    help="Threshold for vocal activity to trigger leniency in DTW alignment.",
+)
+@click.option(
+    "--lenient-activity-bonus",
+    type=float,
+    default=0.4,
+    help="Bonus applied to phonetic cost during DTW alignment under lenient conditions.",
+)
+@click.option(
+    "--low-word-confidence-threshold",
+    type=float,
+    default=0.5,
+    help="Whisper word probability threshold to trigger leniency in DTW alignment.",
+)
+@click.option(
     "--outro-line",
     type=str,
     default=None,
@@ -348,6 +372,10 @@ def generate(
     whisper_model,
     whisper_force_dtw,
     whisper_aggressive,
+    whisper_temperature,
+    lenient_vocal_activity_threshold,
+    lenient_activity_bonus,
+    low_word_confidence_threshold,
     filter_promos,
     outro_line,
     shorten_breaks,
@@ -430,6 +458,10 @@ def generate(
             whisper_model=whisper_model,
             whisper_force_dtw=whisper_force_dtw,
             whisper_aggressive=whisper_aggressive,
+            whisper_temperature=whisper_temperature,
+            lenient_vocal_activity_threshold=lenient_vocal_activity_threshold,
+            lenient_activity_bonus=lenient_activity_bonus,
+            low_word_confidence_threshold=low_word_confidence_threshold,
             outro_line=outro_line,
             offline=offline,
             filter_promos=filter_promos,

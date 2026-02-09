@@ -683,7 +683,8 @@ def _check_vocal_activity_in_range(
 
     # Count frames above silence threshold (i.e., frames with any vocal activity)
     active_frames = np.sum(range_energy_norm > silence_threshold)
-    return active_frames / len(range_energy)
+    activity_ratio = active_frames / len(range_energy) if len(range_energy) > 0 else 0.0
+    return float(activity_ratio)
 
 
 def _check_for_silence_in_range(
@@ -1527,6 +1528,97 @@ class TranscriptionSegment:
             self.words = []
 
 
+def _fill_vocal_activity_gaps(
+    whisper_words: List[TranscriptionWord],
+    audio_features: AudioFeatures,
+    threshold: float = 0.3,
+    min_gap: float = 1.0,
+    chunk_duration: float = 0.5,
+    segments: Optional[List[TranscriptionSegment]] = None,
+) -> Tuple[List[TranscriptionWord], Optional[List[TranscriptionSegment]]]:
+    """Inject pseudo-words and segments where vocal activity is high but transcription missing.
+
+    This helps DTW and hybrid alignment when Whisper misses words but vocals are audible.
+    """
+    if not whisper_words:
+        return whisper_words, segments
+
+    filled_words = list(whisper_words)
+    filled_words.sort(key=lambda w: w.start)
+
+    filled_segments = list(segments) if segments is not None else None
+    if filled_segments:
+        filled_segments.sort(key=lambda s: s.start)
+
+    new_words = []
+    new_segments = []
+
+    def add_vocal_block(start, end):
+        curr = start
+        seg_words = []
+        while curr + chunk_duration <= end:
+            w = TranscriptionWord(
+                start=curr,
+                end=curr + chunk_duration,
+                text="[VOCAL]",
+                probability=0.0,
+            )
+            new_words.append(w)
+            seg_words.append(w)
+            curr += chunk_duration
+
+        if seg_words and filled_segments is not None:
+            new_segments.append(
+                TranscriptionSegment(
+                    start=seg_words[0].start,
+                    end=seg_words[-1].end,
+                    text="[VOCAL]",
+                    words=seg_words,
+                )
+            )
+
+    # 1. Check gap before first word
+    vocal_start = audio_features.vocal_start
+    if filled_words[0].start - vocal_start >= min_gap:
+        activity = _check_vocal_activity_in_range(
+            vocal_start, filled_words[0].start, audio_features
+        )
+        if activity > threshold:
+            add_vocal_block(vocal_start, filled_words[0].start)
+
+    # 2. Check gaps between words
+    for i in range(len(filled_words) - 1):
+        gap_start = filled_words[i].end
+        gap_end = filled_words[i + 1].start
+
+        if gap_end - gap_start >= min_gap:
+            activity = _check_vocal_activity_in_range(
+                gap_start, gap_end, audio_features
+            )
+            if activity > threshold:
+                add_vocal_block(gap_start, gap_end)
+
+    # 3. Check gap after last word
+    vocal_end = audio_features.vocal_end
+    if vocal_end - filled_words[-1].end >= min_gap:
+        activity = _check_vocal_activity_in_range(
+            filled_words[-1].end, vocal_end, audio_features
+        )
+        if activity > threshold:
+            add_vocal_block(filled_words[-1].end, vocal_end)
+
+    if new_words:
+        logger.info(f"Vocal gap filler: injected {len(new_words)} [VOCAL] pseudo-words")
+        filled_words.extend(new_words)
+        filled_words.sort(key=lambda w: w.start)
+
+        if filled_segments is not None and new_segments:
+            filled_segments.extend(new_segments)
+            filled_segments.sort(key=lambda s: s.start)
+
+    return filled_words, filled_segments
+
+
 _MODEL_ORDER = ["tiny", "base", "small", "medium", "large"]
 
 
@@ -1542,6 +1634,7 @@ def _get_whisper_cache_path(
     model_size: str,
     language: Optional[str],
     aggressive: bool = False,
+    temperature: float = 0.0,
 ) -> Optional[str]:
     """Get the cache file path for Whisper transcription results.
 
@@ -1557,17 +1650,17 @@ def _get_whisper_cache_path(
     # Create cache filename with model and language info
     lang_suffix = f"_{language}" if language else "_auto"
     mode_suffix = "_aggr" if aggressive else ""
-    cache_name = (
-        f"{vocals_file.stem}_whisper_{model_size}{lang_suffix}{mode_suffix}.json"
-    )
+    temp_suffix = f"_temp{temperature}" if temperature > 0 else ""
+    cache_name = f"{vocals_file.stem}_whisper_{model_size}{lang_suffix}{mode_suffix}{temp_suffix}.json"
     return str(vocals_file.parent / cache_name)
 
 
-def _find_best_cached_whisper_model(
+def _find_best_cached_whisper_model(  # noqa: C901
     vocals_path: str,
     language: Optional[str],
     aggressive: bool,
     target_model: str,
+    temperature: float = 0.0,
 ) -> Optional[Tuple[str, str]]:
     """Return the cache path and model name for the best cached model ≥ target.
 
@@ -1576,6 +1669,10 @@ def _find_best_cached_whisper_model(
     - If language is explicit (e.g. "en"), both exact matches and "auto" caches
       are accepted, since auto-detect caches contain valid transcriptions.
     Among matches, prefer exact language match over cross-language match.
+
+    Temperature matching:
+    - Prefer exact temperature match.
+    - If no exact temperature match, temperature 0 is accepted as fallback.
     """
     from pathlib import Path
 
@@ -1589,6 +1686,7 @@ def _find_best_cached_whisper_model(
     best_path = None
     best_model = None
     best_lang_exact = False  # prefer exact language matches
+    best_temp_exact = False
 
     pattern = f"{vocals_file.stem}_whisper_*{mode_suffix}.json"
     for cache_file in vocals_file.parent.glob(pattern):
@@ -1598,6 +1696,17 @@ def _find_best_cached_whisper_model(
         tail = stem.split("_whisper_", 1)[1]
         if tail.endswith("_aggr"):
             tail = tail[: -len("_aggr")]
+
+        # Parse temperature from filename if present
+        file_temp = 0.0
+        if "_temp" in tail:
+            temp_parts = tail.split("_temp")
+            try:
+                file_temp = float(temp_parts[1])
+            except (ValueError, IndexError):
+                pass
+            tail = temp_parts[0]
+
         if "_" not in tail:
             continue
         model_part, lang_part = tail.rsplit("_", 1)
@@ -1617,21 +1726,41 @@ def _find_best_cached_whisper_model(
                 # Mismatch (e.g. requested "en" but found "fr")
                 continue
 
+        # Temperature matching
+        temp_exact = abs(file_temp - temperature) < 1e-6
+        if not temp_exact and file_temp != 0.0:
+            # If not exact match and not 0.0 (baseline), skip it
+            continue
+
         model_idx = _model_index(model_part)
         if model_idx < 0:
             continue
-        # Prefer: higher model index, then exact language match
-        if model_idx > best_idx or (
-            model_idx == best_idx and lang_exact and not best_lang_exact
-        ):
+
+        # Preference logic:
+        # 1. Exact temperature match
+        # 2. Higher model index
+        # 3. Exact language match
+
+        better = False
+        if not best_path:
+            better = True
+        else:
+            if temp_exact and not best_temp_exact:
+                better = True
+            elif temp_exact == best_temp_exact:
+                if model_idx > best_idx:
+                    better = True
+                elif model_idx == best_idx:
+                    if lang_exact and not best_lang_exact:
+                        better = True
+
+        if better:
             best_idx = model_idx
             best_path = cache_file
             best_model = model_part
             best_lang_exact = lang_exact
-        elif model_idx == best_idx and not best_path:
-            best_path = cache_file
-            best_model = model_part
-            best_lang_exact = lang_exact
+            best_temp_exact = temp_exact
+
     if best_path and best_model:
         return str(best_path), best_model
     return None
@@ -1695,6 +1824,7 @@ def _save_whisper_cache(
     language: str,
     model_size: str,
     aggressive: bool,
+    temperature: float = 0.0,
 ) -> None:
     """Save Whisper transcription to cache."""
     import json
@@ -1704,6 +1834,7 @@ def _save_whisper_cache(
             "language": language,
             "model_size": model_size,
             "aggressive": aggressive,
+            "temperature": temperature,
             "segments": [
                 {
                     "start": seg.start,
@@ -1737,6 +1868,7 @@ def transcribe_vocals(
     language: Optional[str] = None,
     model_size: str = "base",
     aggressive: bool = False,
+    temperature: float = 0.0,
 ) -> Tuple[List[TranscriptionSegment], List[TranscriptionWord], str, str]:
     """Transcribe vocals using Whisper.
 
@@ -1747,17 +1879,20 @@ def transcribe_vocals(
         vocals_path: Path to vocals audio file
         language: Language code (e.g., 'fr', 'en'). Auto-detected if None.
         model_size: Whisper model size ('tiny', 'base', 'small', 'medium', 'large')
+        temperature: Temperature for transcription (default: 0.0)
 
     Returns:
         Tuple of (list of TranscriptionSegment, list of all TranscriptionWord,
         detected language code, whisper model size used)
     """
     # Check cache first
-    cache_path = _get_whisper_cache_path(vocals_path, model_size, language, aggressive)
+    cache_path = _get_whisper_cache_path(
+        vocals_path, model_size, language, aggressive, temperature
+    )
     cached_model = model_size
     if cache_path:
         best_cached = _find_best_cached_whisper_model(
-            vocals_path, language, aggressive, model_size
+            vocals_path, language, aggressive, model_size, temperature
         )
         if best_cached:
             cache_path, cached_model = best_cached
@@ -1781,6 +1916,7 @@ def transcribe_vocals(
             "language": language,
             "word_timestamps": True,
             "vad_filter": True,
+            "temperature": temperature,
         }
         if aggressive:
             transcribe_kwargs.update(
@@ -1824,7 +1960,13 @@ def transcribe_vocals(
         # Save to cache
         if cache_path:
             _save_whisper_cache(
-                cache_path, result, all_words, detected_lang, model_size, aggressive
+                cache_path,
+                result,
+                all_words,
+                detected_lang,
+                model_size,
+                aggressive,
+                temperature,
             )
 
         return result, all_words, detected_lang, model_size
@@ -2635,6 +2777,10 @@ def _compute_phonetic_costs(
     for i, lw in enumerate(lrc_words):
         lrc_time = lw["start"]
         for j, ww in enumerate(whisper_words):
+            if ww.text == "[VOCAL]":
+                # Give a reasonable cost that is still better than no match
+                phonetic_costs[(i, j)] = 0.5
+                continue
             time_diff = abs(ww.start - lrc_time)
             if time_diff > 20:
                 continue
@@ -2658,6 +2804,9 @@ def _compute_phonetic_costs_unbounded(
 
     for i, lw in enumerate(lrc_words):
         for j, ww in enumerate(whisper_words):
+            if ww.text == "[VOCAL]":
+                phonetic_costs[(i, j)] = 0.5
+                continue
             sim = _phonetic_similarity(lw["text"], ww.text, language)
             if sim >= min_similarity:
                 phonetic_costs[(i, j)] = 1.0 - sim
@@ -4446,7 +4595,12 @@ def align_lrc_text_to_whisper_timings(  # noqa: C901
     language: Optional[str] = None,
     model_size: str = "base",
     aggressive: bool = False,
+    temperature: float = 0.0,
     min_similarity: float = 0.15,
+    audio_features: Optional[AudioFeatures] = None,
+    lenient_vocal_activity_threshold: float = 0.3,
+    lenient_activity_bonus: float = 0.4,
+    low_word_confidence_threshold: float = 0.5,
 ) -> Tuple[List[Line], List[str], Dict[str, float]]:
     """Align LRC text to Whisper timings using phonetic DTW (timings fixed).
 
@@ -4455,8 +4609,10 @@ def align_lrc_text_to_whisper_timings(  # noqa: C901
     """
     ensure_local_lex_lookup()
     transcription, all_words, detected_lang, used_model = transcribe_vocals(
-        vocals_path, language, model_size, aggressive
+        vocals_path, language, model_size, aggressive, temperature
     )
+    if not audio_features:
+        audio_features = extract_audio_features(vocals_path)
     transcription = _dedupe_whisper_segments(transcription)
     transcription = _dedupe_whisper_segments(transcription)
     line_texts = [line.text for line in lines if line.text.strip()]
@@ -4471,6 +4627,16 @@ def align_lrc_text_to_whisper_timings(  # noqa: C901
     if not transcription or not all_words:
         logger.warning("No transcription available, skipping Whisper timing map")
         return lines, [], {}
+
+    if audio_features:
+        all_words, filled_segments = _fill_vocal_activity_gaps(
+            all_words,
+            audio_features,
+            lenient_vocal_activity_threshold,
+            segments=transcription,
+        )
+        if filled_segments is not None:
+            transcription = filled_segments
 
     all_words = _dedupe_whisper_words(all_words)
 
@@ -4880,6 +5046,9 @@ def _align_dtw_whisper_with_data(
     min_similarity: float = 0.4,
     silence_regions: Optional[List[Tuple[float, float]]] = None,
     audio_features: Optional[AudioFeatures] = None,
+    lenient_vocal_activity_threshold: float = 0.3,
+    lenient_activity_bonus: float = 0.4,
+    low_word_confidence_threshold: float = 0.5,
 ) -> Tuple[
     List[Line],
     List[str],
@@ -4895,6 +5064,11 @@ def _align_dtw_whisper_with_data(
             {"matched_ratio": 0.0, "avg_similarity": 0.0, "line_coverage": 0.0},
             [],
             {},
+        )
+
+    if audio_features:
+        whisper_words, _ = _fill_vocal_activity_gaps(
+            whisper_words, audio_features, lenient_vocal_activity_threshold
         )
 
     lrc_words = _extract_lrc_words(lines)
@@ -4937,6 +5111,22 @@ def _align_dtw_whisper_with_data(
             i, lrc_t = int(a[0]), a[1]
             j, whisper_t = int(b[0]), b[1]
             phon_cost = phonetic_costs[(i, j)]
+
+            # Leniency mechanism: if Whisper word has low confidence but there is vocal activity,
+            # be more lenient about phonetic mismatch.
+            if (
+                audio_features
+                and whisper_words[j].probability < low_word_confidence_threshold
+            ):
+                # Check activity around the whisper word
+                w_start = whisper_words[j].start
+                w_end = whisper_words[j].end
+                vocal_activity = _check_vocal_activity_in_range(
+                    w_start, w_end, audio_features
+                )
+                if vocal_activity > lenient_vocal_activity_threshold:
+                    phon_cost = max(0.0, phon_cost - lenient_activity_bonus)
+
             time_diff = abs(whisper_t - lrc_t)
             time_penalty = min(time_diff / 20.0, 1.0)
             gap_start = min(lrc_t, whisper_t)
@@ -4990,6 +5180,9 @@ def align_dtw_whisper(
     min_similarity: float = 0.4,
     silence_regions: Optional[List[Tuple[float, float]]] = None,
     audio_features: Optional[AudioFeatures] = None,
+    lenient_vocal_activity_threshold: float = 0.3,
+    lenient_activity_bonus: float = 0.4,
+    low_word_confidence_threshold: float = 0.5,
 ) -> Tuple[List[Line], List[str], Dict[str, float]]:
     """Align LRC to Whisper using Dynamic Time Warping.
 
@@ -5001,6 +5194,11 @@ def align_dtw_whisper(
         whisper_words: Whisper words with timestamps
         language: Epitran language code
         min_similarity: Minimum similarity for valid alignment
+        silence_regions: Optional list of silent regions
+        audio_features: Optional pre-extracted audio features
+        lenient_vocal_activity_threshold: Threshold for vocal activity
+        lenient_activity_bonus: Bonus for phonetic cost under leniency
+        low_word_confidence_threshold: Threshold for whisper word confidence
 
     Returns:
         Tuple of (aligned lines, list of corrections, metrics)
@@ -5012,6 +5210,10 @@ def align_dtw_whisper(
             language=language,
             min_similarity=min_similarity,
             silence_regions=silence_regions,
+            audio_features=audio_features,
+            lenient_vocal_activity_threshold=lenient_vocal_activity_threshold,
+            lenient_activity_bonus=lenient_activity_bonus,
+            low_word_confidence_threshold=low_word_confidence_threshold,
         )
     )
     return aligned_lines, corrections, metrics
@@ -5023,9 +5225,14 @@ def correct_timing_with_whisper(  # noqa: C901
     language: Optional[str] = None,
     model_size: str = "base",
     aggressive: bool = False,
+    temperature: float = 0.0,
     trust_lrc_threshold: float = 1.0,
     correct_lrc_threshold: float = 1.5,
     force_dtw: bool = False,
+    audio_features: Optional[AudioFeatures] = None,
+    lenient_vocal_activity_threshold: float = 0.3,
+    lenient_activity_bonus: float = 0.4,
+    low_word_confidence_threshold: float = 0.5,
 ) -> Tuple[List[Line], List[str], Dict[str, float]]:
     """Correct lyrics timing using Whisper transcription (adaptive approach).
 
@@ -5041,17 +5248,25 @@ def correct_timing_with_whisper(  # noqa: C901
         vocals_path: Path to vocals audio
         language: Language code (auto-detected if None)
         model_size: Whisper model size ('tiny', 'base', 'small', 'medium', 'large')
+        aggressive: Use aggressive Whisper settings
+        temperature: Temperature for Whisper transcription
         trust_lrc_threshold: If timing error < this, trust LRC (default: 1.0s)
         correct_lrc_threshold: If timing error > this, use Whisper (default: 1.5s)
+        force_dtw: Force DTW alignment regardless of quality
+        audio_features: Optional pre-extracted audio features
+        lenient_vocal_activity_threshold: Threshold for vocal activity
+        lenient_activity_bonus: Bonus for phonetic cost under leniency
+        low_word_confidence_threshold: Threshold for whisper word confidence
 
     Returns:
         Tuple of (corrected lines, list of corrections, metrics)
     """
     # Transcribe vocals (returns segments, all_words, and language)
     transcription, all_words, detected_lang, _model = transcribe_vocals(
-        vocals_path, language, model_size, aggressive
+        vocals_path, language, model_size, aggressive, temperature
     )
-    audio_features = extract_audio_features(vocals_path)
+    if not audio_features:
+        audio_features = extract_audio_features(vocals_path)
 
     line_texts = [line.text for line in lines if line.text.strip()]
     transcription, all_words, trimmed_end = _trim_whisper_transcription_by_lyrics(
@@ -5065,6 +5280,16 @@ def correct_timing_with_whisper(  # noqa: C901
     if not transcription:
         logger.warning("No transcription available, skipping Whisper alignment")
         return lines, [], {}
+
+    if audio_features:
+        all_words, filled_segments = _fill_vocal_activity_gaps(
+            all_words,
+            audio_features,
+            lenient_vocal_activity_threshold,
+            segments=transcription,
+        )
+        if filled_segments is not None:
+            transcription = filled_segments
 
     # Map to epitran language code for phonetic matching
     epitran_lang = _whisper_lang_to_epitran(detected_lang)
@@ -5117,6 +5342,10 @@ def correct_timing_with_whisper(  # noqa: C901
                 silence_regions=(
                     audio_features.silence_regions if audio_features else None
                 ),
+                audio_features=audio_features,
+                lenient_vocal_activity_threshold=lenient_vocal_activity_threshold,
+                lenient_activity_bonus=lenient_activity_bonus,
+                low_word_confidence_threshold=low_word_confidence_threshold,
             )
         )
         metrics["dtw_used"] = 1.0

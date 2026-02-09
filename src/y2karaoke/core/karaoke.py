@@ -79,6 +79,10 @@ class KaraokeGenerator:
         whisper_model: Optional[str] = None,
         whisper_force_dtw: bool = False,
         whisper_aggressive: bool = False,
+        whisper_temperature: float = 0.0,
+        lenient_vocal_activity_threshold: float = 0.3,
+        lenient_activity_bonus: float = 0.4,
+        low_word_confidence_threshold: float = 0.5,
         outro_line: Optional[str] = None,
         offline: bool = False,
         filter_promos: bool = True,
@@ -128,6 +132,10 @@ class KaraokeGenerator:
             whisper_model=whisper_model,
             whisper_force_dtw=whisper_force_dtw,
             whisper_aggressive=whisper_aggressive,
+            whisper_temperature=whisper_temperature,
+            lenient_vocal_activity_threshold=lenient_vocal_activity_threshold,
+            lenient_activity_bonus=lenient_activity_bonus,
+            low_word_confidence_threshold=low_word_confidence_threshold,
             offline=offline,
             filter_promos=filter_promos,
         )
@@ -785,6 +793,10 @@ class KaraokeGenerator:
         whisper_model: Optional[str] = None,
         whisper_force_dtw: bool = False,
         whisper_aggressive: bool = False,
+        whisper_temperature: float = 0.0,
+        lenient_vocal_activity_threshold: float = 0.3,
+        lenient_activity_bonus: float = 0.4,
+        low_word_confidence_threshold: float = 0.5,
         offline: bool = False,
         filter_promos: bool = True,
     ) -> Dict[str, Any]:
@@ -809,6 +821,10 @@ class KaraokeGenerator:
             whisper_model=whisper_model,
             whisper_force_dtw=whisper_force_dtw,
             whisper_aggressive=whisper_aggressive,
+            whisper_temperature=whisper_temperature,
+            lenient_vocal_activity_threshold=lenient_vocal_activity_threshold,
+            lenient_activity_bonus=lenient_activity_bonus,
+            low_word_confidence_threshold=low_word_confidence_threshold,
             offline=offline,
         )
         return {"lines": lines, "metadata": metadata, "quality": quality_report}

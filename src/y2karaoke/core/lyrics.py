@@ -397,53 +397,52 @@ def _apply_whisper_alignment(
     whisper_model: Optional[str],
     whisper_force_dtw: bool,
     whisper_aggressive: bool = False,
+    whisper_temperature: float = 0.0,
     prefer_whisper_timing_map: bool = False,
+    lenient_vocal_activity_threshold: float = 0.3,
+    lenient_activity_bonus: float = 0.4,
+    low_word_confidence_threshold: float = 0.5,
 ) -> Tuple[List[Line], List[str], Dict[str, float]]:
     """Apply Whisper alignment to lines. Returns (lines, fixes_list)."""
     from .timing_evaluator import (
         align_lrc_text_to_whisper_timings,
         correct_timing_with_whisper,
+        extract_audio_features,
     )
+
+    audio_features = extract_audio_features(vocals_path)
 
     # When we have no LRC timings, we lean heavily on Whisper for all timing
     # so using "large" is worth the extra compute (and results get cached).
     default_model = "large" if prefer_whisper_timing_map else "base"
     model_size = whisper_model or default_model
-    try:
-        if prefer_whisper_timing_map:
-            lines, whisper_fixes, whisper_metrics = align_lrc_text_to_whisper_timings(
-                lines,
-                vocals_path,
-                language=whisper_language,
-                model_size=model_size,
-                aggressive=whisper_aggressive,
-            )
-        else:
-            lines, whisper_fixes, whisper_metrics = correct_timing_with_whisper(
-                lines,
-                vocals_path,
-                language=whisper_language,
-                model_size=model_size,
-                aggressive=whisper_aggressive,
-                force_dtw=whisper_force_dtw,
-            )
-    except TypeError:
-        if prefer_whisper_timing_map:
-            lines, whisper_fixes, whisper_metrics = align_lrc_text_to_whisper_timings(
-                lines,
-                vocals_path,
-                language=whisper_language,
-                model_size=model_size,
-                aggressive=whisper_aggressive,
-            )
-        else:
-            lines, whisper_fixes, whisper_metrics = correct_timing_with_whisper(
-                lines,
-                vocals_path,
-                language=whisper_language,
-                model_size=model_size,
-                force_dtw=whisper_force_dtw,
-            )
+    if prefer_whisper_timing_map:
+        lines, whisper_fixes, whisper_metrics = align_lrc_text_to_whisper_timings(
+            lines,
+            vocals_path,
+            language=whisper_language,
+            model_size=model_size,
+            aggressive=whisper_aggressive,
+            temperature=whisper_temperature,
+            audio_features=audio_features,
+            lenient_vocal_activity_threshold=lenient_vocal_activity_threshold,
+            lenient_activity_bonus=lenient_activity_bonus,
+            low_word_confidence_threshold=low_word_confidence_threshold,
+        )
+    else:
+        lines, whisper_fixes, whisper_metrics = correct_timing_with_whisper(
+            lines,
+            vocals_path,
+            language=whisper_language,
+            model_size=model_size,
+            aggressive=whisper_aggressive,
+            temperature=whisper_temperature,
+            force_dtw=whisper_force_dtw,
+            audio_features=audio_features,
+            lenient_vocal_activity_threshold=lenient_vocal_activity_threshold,
+            lenient_activity_bonus=lenient_activity_bonus,
+            low_word_confidence_threshold=low_word_confidence_threshold,
+        )
     if whisper_fixes:
         logger.info(f"Whisper aligned {len(whisper_fixes)} line(s)")
         for fix in whisper_fixes:
@@ -1676,6 +1675,10 @@ def get_lyrics_simple(  # noqa: C901
     whisper_model: Optional[str] = None,
     whisper_force_dtw: bool = False,
     whisper_aggressive: bool = False,
+    whisper_temperature: float = 0.0,
+    lenient_vocal_activity_threshold: float = 0.3,
+    lenient_activity_bonus: float = 0.4,
+    low_word_confidence_threshold: float = 0.5,
     offline: bool = False,
 ) -> Tuple[List[Line], Optional[SongMetadata]]:
     """Simplified lyrics pipeline favoring LRC over Genius.
@@ -1706,6 +1709,10 @@ def get_lyrics_simple(  # noqa: C901
         lyrics_file: Optional local lyrics file (plain text or .lrc)
         whisper_language: Language code for Whisper (auto-detected if None)
         whisper_model: Whisper model size ('tiny', 'base', 'small', 'medium', 'large')
+        whisper_temperature: Temperature for Whisper transcription
+        lenient_vocal_activity_threshold: Threshold for vocal activity
+        lenient_activity_bonus: Bonus for phonetic cost under leniency
+        low_word_confidence_threshold: Threshold for whisper word confidence
 
     Returns:
         Tuple of (lines, metadata)
@@ -1723,7 +1730,11 @@ def get_lyrics_simple(  # noqa: C901
 
         model_size = whisper_model or "base"
         transcription, _, detected_lang, _model = transcribe_vocals(
-            vocals_path, whisper_language, model_size, whisper_aggressive
+            vocals_path,
+            whisper_language,
+            model_size,
+            whisper_aggressive,
+            whisper_temperature,
         )
         if not transcription:
             logger.warning(
@@ -1835,7 +1846,11 @@ def get_lyrics_simple(  # noqa: C901
                     whisper_model,
                     whisper_force_dtw,
                     whisper_aggressive,
+                    whisper_temperature=whisper_temperature,
                     prefer_whisper_timing_map=not has_lrc_timing,
+                    lenient_vocal_activity_threshold=lenient_vocal_activity_threshold,
+                    lenient_activity_bonus=lenient_activity_bonus,
+                    low_word_confidence_threshold=low_word_confidence_threshold,
                 )
             except Exception as e:
                 logger.warning(f"Whisper alignment failed: {e}")
@@ -1851,6 +1866,10 @@ def get_lyrics_simple(  # noqa: C901
                         language=whisper_language,
                         model_size=model_size,
                         aggressive=whisper_aggressive,
+                        temperature=whisper_temperature,
+                        lenient_vocal_activity_threshold=lenient_vocal_activity_threshold,
+                        lenient_activity_bonus=lenient_activity_bonus,
+                        low_word_confidence_threshold=low_word_confidence_threshold,
                     )
                     logger.info(
                         f"DTW-mapped {len(alignments)} LRC line(s) onto Whisper timing"
@@ -1865,7 +1884,11 @@ def get_lyrics_simple(  # noqa: C901
 
                     model_size = whisper_model or "small"
                     transcription, _, detected_lang, _model = transcribe_vocals(
-                        vocals_path, whisper_language, model_size, whisper_aggressive
+                        vocals_path,
+                        whisper_language,
+                        model_size,
+                        whisper_aggressive,
+                        whisper_temperature,
                     )
                     if transcription:
                         lang = _whisper_lang_to_epitran(detected_lang)
@@ -1926,6 +1949,10 @@ def get_lyrics_with_quality(  # noqa: C901
     whisper_model: Optional[str] = None,
     whisper_force_dtw: bool = False,
     whisper_aggressive: bool = False,
+    whisper_temperature: float = 0.0,
+    lenient_vocal_activity_threshold: float = 0.3,
+    lenient_activity_bonus: float = 0.4,
+    low_word_confidence_threshold: float = 0.5,
     offline: bool = False,
 ) -> Tuple[List[Line], Optional[SongMetadata], dict]:
     """Get lyrics with quality report.
@@ -1979,6 +2006,10 @@ def get_lyrics_with_quality(  # noqa: C901
             whisper_model=whisper_model,
             whisper_force_dtw=whisper_force_dtw,
             whisper_aggressive=whisper_aggressive,
+            whisper_temperature=whisper_temperature,
+            lenient_vocal_activity_threshold=lenient_vocal_activity_threshold,
+            lenient_activity_bonus=lenient_activity_bonus,
+            low_word_confidence_threshold=low_word_confidence_threshold,
             offline=offline,
         )
         quality_report["alignment_method"] = "whisper_only"
@@ -2114,7 +2145,11 @@ def get_lyrics_with_quality(  # noqa: C901
                 whisper_force_dtw,
                 whisper_aggressive,
                 quality_report,
+                whisper_temperature=whisper_temperature,
                 prefer_whisper_timing_map=not has_lrc_timing,
+                lenient_vocal_activity_threshold=lenient_vocal_activity_threshold,
+                lenient_activity_bonus=lenient_activity_bonus,
+                low_word_confidence_threshold=low_word_confidence_threshold,
             )
         elif vocals_path and whisper_map_lrc:
             try:
@@ -2128,6 +2163,10 @@ def get_lyrics_with_quality(  # noqa: C901
                         language=whisper_language,
                         model_size=model_size,
                         aggressive=whisper_aggressive,
+                        temperature=whisper_temperature,
+                        lenient_vocal_activity_threshold=lenient_vocal_activity_threshold,
+                        lenient_activity_bonus=lenient_activity_bonus,
+                        low_word_confidence_threshold=low_word_confidence_threshold,
                     )
                     quality_report["alignment_method"] = "whisper_map_lrc_dtw"
                     quality_report["whisper_used"] = True
@@ -2142,7 +2181,11 @@ def get_lyrics_with_quality(  # noqa: C901
 
                     model_size = whisper_model or "small"
                     transcription, _, detected_lang, _model = transcribe_vocals(
-                        vocals_path, whisper_language, model_size, whisper_aggressive
+                        vocals_path,
+                        whisper_language,
+                        model_size,
+                        whisper_aggressive,
+                        whisper_temperature,
                     )
                     if transcription:
                         lang = _whisper_lang_to_epitran(detected_lang)
@@ -2170,7 +2213,11 @@ def get_lyrics_with_quality(  # noqa: C901
                 whisper_force_dtw,
                 whisper_aggressive,
                 quality_report,
+                whisper_temperature=whisper_temperature,
                 prefer_whisper_timing_map=True,
+                lenient_vocal_activity_threshold=lenient_vocal_activity_threshold,
+                lenient_activity_bonus=lenient_activity_bonus,
+                low_word_confidence_threshold=low_word_confidence_threshold,
             )
     else:
         # Fallback: use Genius text
@@ -2237,7 +2284,11 @@ def _apply_whisper_with_quality(
     whisper_force_dtw: bool,
     whisper_aggressive: bool = False,
     quality_report: Optional[dict] = None,
+    whisper_temperature: float = 0.0,
     prefer_whisper_timing_map: bool = False,
+    lenient_vocal_activity_threshold: float = 0.3,
+    lenient_activity_bonus: float = 0.4,
+    low_word_confidence_threshold: float = 0.5,
 ) -> Tuple[List[Line], dict]:
     """Apply Whisper alignment and update quality report."""
     if quality_report is None:
@@ -2250,7 +2301,11 @@ def _apply_whisper_with_quality(
             whisper_model,
             whisper_force_dtw,
             whisper_aggressive,
+            whisper_temperature=whisper_temperature,
             prefer_whisper_timing_map=prefer_whisper_timing_map,
+            lenient_vocal_activity_threshold=lenient_vocal_activity_threshold,
+            lenient_activity_bonus=lenient_activity_bonus,
+            low_word_confidence_threshold=low_word_confidence_threshold,
         )
         quality_report["whisper_used"] = True
         quality_report["whisper_corrections"] = len(whisper_fixes)

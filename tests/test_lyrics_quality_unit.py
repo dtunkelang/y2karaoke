@@ -65,8 +65,8 @@ def test_apply_whisper_alignment_records_fixes(monkeypatch):
     lines = [_make_line("hello", 0.0, 0.5)]
     monkeypatch.setattr(
         "y2karaoke.core.timing_evaluator.correct_timing_with_whisper",
-        lambda l, v, language=None, model_size="base", force_dtw=False: (
-            l,
+        lambda *args, **kwargs: (
+            args[0],
             ["fix1", "fix2"],
             {},
         ),

@@ -67,6 +67,8 @@ Output: karaoke_video.mp4
 - `--backgrounds`: Use YouTube video frames
 - `--shorten-breaks`: Compress long instrumental sections
 - `--whisper`: Use Whisper for severely broken LRC timing
+- `--whisper-temperature`: Adjust Whisper creativity (0.0-1.0)
+- `--lenient-vocal-activity-threshold`: Vocal energy required for DTW leniency
 - `--evaluate-lyrics`: Score all LRC sources and select best
 
 ## 2. Track Identification (Title & Artist)
@@ -258,9 +260,10 @@ class TimingReport:
 - Enabled with `--evaluate-lyrics` flag
 
 ### Whisper Fallback
-`correct_timing_with_whisper(lines, vocals_path)`:
+`correct_timing_with_whisper(lines, vocals_path, temperature=0.0, **kwargs)`:
 - Transcribes vocals using Whisper model
 - Aligns transcription to LRC text via DTW (Dynamic Time Warping)
+- Supports phonetic leniency based on vocal activity energy
 - Returns adjusted line timings
 - Enabled with `--whisper` flag
 
@@ -370,7 +373,7 @@ TEMPO_RANGE = (0.1, 3.0)
 | Audio trimming | File | `trimmed_from_{N}s.wav` | Start time in filename |
 | Break shortening | File | `shortened_breaks_{N}s{suffix}.wav` | Duration and track suffix |
 | LRC lyrics | In-memory | `(artist, title)` + duration validation | Checks cached duration matches target |
-| Whisper transcription | File | `{stem}_whisper_{model}_{lang}.json` | Stored alongside vocals |
+| Whisper transcription | File | `{stem}_whisper_{model}_{lang}{_aggr}{_tempN}.json` | Stored alongside vocals |
 | Audio features | File | `{stem}_audio_features.npz` | Onsets, silence regions, energy |
 | IPA transliteration | In-memory | `{language}:{text}` | For phonetic matching |
 
