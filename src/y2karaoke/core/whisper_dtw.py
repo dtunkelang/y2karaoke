@@ -2,17 +2,16 @@
 
 import logging
 from dataclasses import dataclass, field
-from typing import List, Optional, Tuple, Dict, Any, Set, Sequence, Iterable
+from typing import List, Tuple, Dict, Any, Set, Sequence
 from collections import defaultdict
 
 import numpy as np
 
 from .models import Line, Word
-from .timing_models import TranscriptionWord, TranscriptionSegment
+from .timing_models import TranscriptionWord
 from .phonetic_utils import (
     _get_ipa,
     _phonetic_similarity,
-    _text_similarity_basic,
 )
 
 logger = logging.getLogger(__name__)
@@ -20,19 +19,25 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class _LineMappingContext:
+    """Shared mutable state for _map_lrc_words_to_whisper and its helpers."""
+
     all_words: List[TranscriptionWord]
     segments: Sequence[Any]
     word_segment_idx: Dict[int, int]
     language: str
     total_lrc_words: int
     total_whisper_words: int
+    mapped_count: int = 0
+    total_similarity: float = 0.0
+    mapped_lines_set: Set[int] = field(default_factory=set)
     used_word_indices: Set[int] = field(default_factory=set)
     used_segments: Set[int] = field(default_factory=set)
-    next_word_idx_start: int = 0
-    prev_line_end: float = 0.0
-    last_line_start: float = 0.0
-    current_block: int = 0
     speech_blocks: List[Tuple[int, int]] = field(default_factory=list)
+    next_word_idx_start: int = 0
+    current_segment: int = 0
+    current_block: int = 0
+    last_line_start: float = float("-inf")
+    prev_line_end: float = float("-inf")
 
 
 def _extract_lrc_words_base(lines: List[Line]) -> List[Dict]:
@@ -107,8 +112,6 @@ def _apply_dtw_alignments_base(
     alignments_map: Dict[int, Tuple[TranscriptionWord, float]],
 ) -> Tuple[List[Line], List[str]]:
     """Apply DTW alignments to create corrected lines (base version)."""
-    from .models import Word
-
     corrections = []
     aligned_lines = []
 

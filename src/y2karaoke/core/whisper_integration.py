@@ -1,7 +1,6 @@
 """Whisper-based transcription and alignment for lyrics."""
 
 import re
-from dataclasses import dataclass, field
 from typing import List, Optional, Tuple, Dict, Any, Set, Sequence, Iterable
 from collections import defaultdict
 from difflib import SequenceMatcher
@@ -1720,29 +1719,6 @@ def _build_word_assignments_from_syllable_path(
     }
 
 
-@dataclass
-class _LineMappingContext:
-    """Shared mutable state for _map_lrc_words_to_whisper and its helpers."""
-
-    all_words: List[TranscriptionWord]
-    segments: Sequence[Any]
-    word_segment_idx: Dict[int, int]
-    language: str
-    total_lrc_words: int
-    total_whisper_words: int
-    mapped_count: int = 0
-    total_similarity: float = 0.0
-    mapped_lines_set: Set[int] = field(default_factory=set)
-    used_word_indices: Set[int] = field(default_factory=set)
-    used_segments: Set[int] = field(default_factory=set)
-    speech_blocks: List[Tuple[int, int]] = field(default_factory=list)
-    next_word_idx_start: int = 0
-    current_segment: int = 0
-    current_block: int = 0
-    last_line_start: float = float("-inf")
-    prev_line_end: float = float("-inf")
-
-
 def _register_word_match(
     ctx: _LineMappingContext,
     line_idx: int,
@@ -2998,7 +2974,11 @@ def align_dtw_whisper(
     """Align LRC to Whisper using Dynamic Time Warping."""
     lrc_words = _extract_lrc_words_base(lines)
     if not lrc_words:
-        return lines, [], {"matched_ratio": 0.0, "avg_similarity": 0.0, "line_coverage": 0.0}
+        return (
+            lines,
+            [],
+            {"matched_ratio": 0.0, "avg_similarity": 0.0, "line_coverage": 0.0},
+        )
 
     # Pre-compute IPA
     for ww in whisper_words:
@@ -3013,6 +2993,7 @@ def align_dtw_whisper(
     # Simple greedy alignment if fastdtw missing
     try:
         from fastdtw import fastdtw
+
         lrc_times = np.array([lw["start"] for lw in lrc_words])
         whisper_times = np.array([ww.start for ww in whisper_words])
         lrc_seq = np.column_stack([np.arange(len(lrc_words)), lrc_times])
@@ -3029,7 +3010,11 @@ def align_dtw_whisper(
         distance, path = fastdtw(lrc_seq, whisper_seq, dist=dtw_dist)
     except ImportError:
         logger.warning("fastdtw not available, falling back to greedy alignment")
-        return lines, [], {"matched_ratio": 0.0, "avg_similarity": 0.0, "line_coverage": 0.0}
+        return (
+            lines,
+            [],
+            {"matched_ratio": 0.0, "avg_similarity": 0.0, "line_coverage": 0.0},
+        )
 
     alignments_map = _extract_alignments_from_path_base(
         path, lrc_words, whisper_words, language, min_similarity
