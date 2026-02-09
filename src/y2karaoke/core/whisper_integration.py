@@ -37,6 +37,17 @@ from .whisper_cache import (
     _model_index,
     _MODEL_ORDER,
 )
+from .whisper_dtw import (
+    _LineMappingContext,
+    _extract_lrc_words_base,
+    _compute_phonetic_costs_base,
+    _extract_alignments_from_path_base,
+    _apply_dtw_alignments_base,
+    align_dtw_whisper_base,
+)
+
+_extract_alignments_from_path = _extract_alignments_from_path_base
+_apply_dtw_alignments = _apply_dtw_alignments_base
 
 logger = get_logger(__name__)
 
@@ -56,9 +67,14 @@ __all__ = [
     "_MODEL_ORDER",
     "_find_best_whisper_match",
     "_extract_lrc_words",
+    "_extract_lrc_words_base",
     "_compute_phonetic_costs",
+    "_compute_phonetic_costs_base",
     "_extract_alignments_from_path",
+    "_extract_alignments_from_path_base",
     "_apply_dtw_alignments",
+    "_apply_dtw_alignments_base",
+    "align_dtw_whisper_base",
     "_align_dtw_whisper_with_data",
     "_compute_dtw_alignment_metrics",
     "_retime_lines_from_dtw_alignments",
@@ -2629,83 +2645,6 @@ def align_lrc_text_to_whisper_timings(  # noqa: C901
     return mapped_lines, corrections, metrics
 
 
-def _extract_alignments_from_path(
-    path: List[Tuple[int, int]],
-    lrc_words: List[Dict],
-    whisper_words: List[TranscriptionWord],
-    language: str,
-    min_similarity: float,
-) -> Dict[int, Tuple[TranscriptionWord, float]]:
-    """Extract validated alignments from DTW path."""
-    alignments_map = {}
-
-    for lrc_idx, whisper_idx in path:
-        if lrc_idx not in alignments_map:
-            ww = whisper_words[whisper_idx]
-            lw = lrc_words[lrc_idx]
-            sim = _phonetic_similarity(lw["text"], ww.text, language)
-            if sim >= min_similarity:
-                alignments_map[lrc_idx] = (ww, sim)
-
-    return alignments_map
-
-
-def _apply_dtw_alignments(
-    lines: List[Line],
-    lrc_words: List[Dict],
-    alignments_map: Dict[int, Tuple[TranscriptionWord, float]],
-) -> Tuple[List[Line], List[str]]:
-    """Apply DTW alignments to create corrected lines."""
-    from .models import Line, Word
-
-    corrections = []
-    aligned_lines = []
-
-    for line_idx, line in enumerate(lines):
-        if not line.words:
-            aligned_lines.append(line)
-            continue
-
-        new_words = []
-        line_corrections = 0
-
-        for word_idx, word in enumerate(line.words):
-            lrc_word_idx = None
-            for i, lw in enumerate(lrc_words):
-                if lw["line_idx"] == line_idx and lw["word_idx"] == word_idx:
-                    lrc_word_idx = i
-                    break
-
-            if lrc_word_idx is not None and lrc_word_idx in alignments_map:
-                ww, sim = alignments_map[lrc_word_idx]
-                time_shift = ww.start - word.start_time
-
-                if abs(time_shift) > 1.0:
-                    new_words.append(
-                        Word(
-                            text=word.text,
-                            start_time=ww.start,
-                            end_time=ww.end,
-                            singer=word.singer,
-                        )
-                    )
-                    line_corrections += 1
-                else:
-                    new_words.append(word)
-            else:
-                new_words.append(word)
-
-        aligned_lines.append(Line(words=new_words, singer=line.singer))
-
-        if line_corrections > 0:
-            line_text = " ".join(w.text for w in line.words)[:40]
-            corrections.append(
-                f'DTW aligned {line_corrections} word(s) in line {line_idx}: "{line_text}..."'
-            )
-
-    return aligned_lines, corrections
-
-
 def _compute_dtw_alignment_metrics(
     lines: List[Line],
     lrc_words: List[Dict],
@@ -3037,11 +2976,13 @@ def _align_dtw_whisper_with_data(
             {},
         )
 
-    alignments_map = _extract_alignments_from_path(
+    alignments_map = _extract_alignments_from_path_base(
         path, lrc_words, whisper_words, language, min_similarity
     )
 
-    aligned_lines, corrections = _apply_dtw_alignments(lines, lrc_words, alignments_map)
+    aligned_lines, corrections = _apply_dtw_alignments_base(
+        lines, lrc_words, alignments_map
+    )
     metrics = _compute_dtw_alignment_metrics(lines, lrc_words, alignments_map)
 
     logger.info(f"DTW alignment complete: {len(corrections)} lines modified")
@@ -3053,44 +2994,52 @@ def align_dtw_whisper(
     whisper_words: List[TranscriptionWord],
     language: str = "fra-Latn",
     min_similarity: float = 0.4,
-    silence_regions: Optional[List[Tuple[float, float]]] = None,
-    audio_features: Optional[AudioFeatures] = None,
-    lenient_vocal_activity_threshold: float = 0.3,
-    lenient_activity_bonus: float = 0.4,
-    low_word_confidence_threshold: float = 0.5,
 ) -> Tuple[List[Line], List[str], Dict[str, float]]:
-    """Align LRC to Whisper using Dynamic Time Warping.
+    """Align LRC to Whisper using Dynamic Time Warping."""
+    lrc_words = _extract_lrc_words_base(lines)
+    if not lrc_words:
+        return lines, [], {"matched_ratio": 0.0, "avg_similarity": 0.0, "line_coverage": 0.0}
 
-    DTW finds globally optimal alignment, which handles cases where
-    LRC timing errors compound over time.
+    # Pre-compute IPA
+    for ww in whisper_words:
+        _get_ipa(ww.text, language)
+    for lw in lrc_words:
+        _get_ipa(lw["text"], language)
 
-    Args:
-        lines: LRC lines with word-level timing
-        whisper_words: Whisper words with timestamps
-        language: Epitran language code
-        min_similarity: Minimum similarity for valid alignment
-        silence_regions: Optional list of silent regions
-        audio_features: Optional pre-extracted audio features
-        lenient_vocal_activity_threshold: Threshold for vocal activity
-        lenient_activity_bonus: Bonus for phonetic cost under leniency
-        low_word_confidence_threshold: Threshold for whisper word confidence
-
-    Returns:
-        Tuple of (aligned lines, list of corrections, metrics)
-    """
-    aligned_lines, corrections, metrics, _lrc_words, _alignments = (
-        _align_dtw_whisper_with_data(
-            lines,
-            whisper_words,
-            language=language,
-            min_similarity=min_similarity,
-            silence_regions=silence_regions,
-            audio_features=audio_features,
-            lenient_vocal_activity_threshold=lenient_vocal_activity_threshold,
-            lenient_activity_bonus=lenient_activity_bonus,
-            low_word_confidence_threshold=low_word_confidence_threshold,
-        )
+    phonetic_costs = _compute_phonetic_costs_base(
+        lrc_words, whisper_words, language, min_similarity
     )
+
+    # Simple greedy alignment if fastdtw missing
+    try:
+        from fastdtw import fastdtw
+        lrc_times = np.array([lw["start"] for lw in lrc_words])
+        whisper_times = np.array([ww.start for ww in whisper_words])
+        lrc_seq = np.column_stack([np.arange(len(lrc_words)), lrc_times])
+        whisper_seq = np.column_stack([np.arange(len(whisper_words)), whisper_times])
+
+        def dtw_dist(a, b):
+            i, lrc_t = int(a[0]), a[1]
+            j, whisper_t = int(b[0]), b[1]
+            phon_cost = phonetic_costs[(i, j)]
+            time_diff = abs(whisper_t - lrc_t)
+            time_penalty = min(time_diff / 20.0, 1.0)
+            return 0.7 * phon_cost + 0.3 * time_penalty
+
+        distance, path = fastdtw(lrc_seq, whisper_seq, dist=dtw_dist)
+    except ImportError:
+        logger.warning("fastdtw not available, falling back to greedy alignment")
+        return lines, [], {"matched_ratio": 0.0, "avg_similarity": 0.0, "line_coverage": 0.0}
+
+    alignments_map = _extract_alignments_from_path_base(
+        path, lrc_words, whisper_words, language, min_similarity
+    )
+
+    aligned_lines, corrections = _apply_dtw_alignments_base(
+        lines, lrc_words, alignments_map
+    )
+    metrics = _compute_dtw_alignment_metrics(lines, lrc_words, alignments_map)
+
     return aligned_lines, corrections, metrics
 
 
