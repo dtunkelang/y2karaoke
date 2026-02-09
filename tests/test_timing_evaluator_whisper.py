@@ -376,6 +376,7 @@ def test_retime_adjacent_lines_to_whisper_window_uses_prior_segment(monkeypatch)
     monkeypatch.setattr(wi, "_phonetic_similarity", lambda *_a, **_k: 0.3)
     # Also patch in whisper_alignment where the function was moved
     import y2karaoke.core.whisper_alignment as wa
+
     monkeypatch.setattr(wa, "_phonetic_similarity", lambda *_a, **_k: 0.3)
     adjusted, fixes = te._retime_adjacent_lines_to_whisper_window(
         lines,
