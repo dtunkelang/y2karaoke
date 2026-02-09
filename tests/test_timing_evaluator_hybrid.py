@@ -32,6 +32,8 @@ def test_align_hybrid_lrc_whisper_applies_offsets(monkeypatch):
         return segments[1], 0.6, 2.0
 
     monkeypatch.setattr(wi, "_find_best_whisper_segment", fake_find_best)
+    import y2karaoke.core.whisper_alignment as wa
+    monkeypatch.setattr(wa, "_find_best_whisper_segment", fake_find_best)
     monkeypatch.setattr(wi, "_get_ipa", lambda *_args, **_kwargs: None)
 
     aligned, corrections = te.align_hybrid_lrc_whisper(
@@ -66,6 +68,8 @@ def test_align_hybrid_lrc_whisper_drift_correction(monkeypatch):
         return segments[0], 0.7, offset
 
     monkeypatch.setattr(wi, "_find_best_whisper_segment", fake_find_best)
+    import y2karaoke.core.whisper_alignment as wa
+    monkeypatch.setattr(wa, "_find_best_whisper_segment", fake_find_best)
     monkeypatch.setattr(wi, "_get_ipa", lambda *_args, **_kwargs: None)
 
     aligned, corrections = te.align_hybrid_lrc_whisper(
@@ -101,6 +105,8 @@ def test_align_hybrid_lrc_whisper_no_match_uses_drift(monkeypatch):
         return None, 0.0, 0.0
 
     monkeypatch.setattr(wi, "_find_best_whisper_segment", fake_find_best)
+    import y2karaoke.core.whisper_alignment as wa
+    monkeypatch.setattr(wa, "_find_best_whisper_segment", fake_find_best)
     monkeypatch.setattr(wi, "_get_ipa", lambda *_args, **_kwargs: None)
 
     aligned, corrections = te.align_hybrid_lrc_whisper(

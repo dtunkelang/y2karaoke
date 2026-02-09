@@ -89,6 +89,8 @@ def test_find_best_whisper_segment_picks_highest_similarity(monkeypatch):
         return 0.2 if text2 == "alpha" else 0.8
 
     monkeypatch.setattr(wi, "_phonetic_similarity", fake_similarity)
+    import y2karaoke.core.whisper_alignment as wa
+    monkeypatch.setattr(wa, "_phonetic_similarity", fake_similarity)
 
     best_segment, similarity, offset = wi._find_best_whisper_segment(
         "target",
