@@ -249,3 +249,104 @@ def _find_vocal_end(
             return rms_times[i]
 
     return rms_times[-1]
+
+
+def _check_vocal_activity_in_range(
+    start_time: float,
+    end_time: float,
+    audio_features: AudioFeatures,
+) -> float:
+    """Check how much vocal activity exists in a time range.
+
+    Looks for TRUE SILENCE (energy near zero) vs any vocal activity.
+    True silence has energy < 2% of peak. Anything above that is activity.
+
+    Returns:
+        Fraction of the time range that has vocal activity (0.0 to 1.0)
+    """
+    # Find frames in this range
+    mask = (audio_features.energy_times >= start_time) & (
+        audio_features.energy_times <= end_time
+    )
+    range_energy = audio_features.energy_envelope[mask]
+
+    if len(range_energy) == 0:
+        return 0.0
+
+    # Normalize to peak energy
+    peak_level = np.percentile(audio_features.energy_envelope, 99)
+    if peak_level == 0:
+        return 0.0
+
+    range_energy_norm = range_energy / peak_level
+
+    # True silence threshold: < 2% of peak energy
+    # This catches actual pauses but not quiet singing
+    silence_threshold = 0.02
+
+    # Count frames above silence threshold (i.e., frames with any vocal activity)
+    active_frames = np.sum(range_energy_norm > silence_threshold)
+    activity_ratio = active_frames / len(range_energy) if len(range_energy) > 0 else 0.0
+    return float(activity_ratio)
+
+
+def _check_for_silence_in_range(
+    start_time: float,
+    end_time: float,
+    audio_features: AudioFeatures,
+    min_silence_duration: float = 0.5,
+) -> bool:
+    """Check if there's a significant silence region within a time range.
+
+    Even if there's some vocal activity in the range, if there's also
+    a sustained silence period, it indicates a real phrase boundary.
+
+    Args:
+        start_time: Start of range to check
+        end_time: End of range to check
+        audio_features: Audio features with energy envelope
+        min_silence_duration: Minimum silence duration to detect
+
+    Returns:
+        True if there's a silence region >= min_silence_duration
+    """
+    times = audio_features.energy_times
+    energy = audio_features.energy_envelope
+
+    # Use 2% of peak as silence threshold
+    peak_level = np.max(energy) if len(energy) > 0 else 1.0
+    silence_threshold = 0.02 * peak_level
+
+    # Find indices for the range
+    start_idx = int(np.searchsorted(times, start_time))
+    end_idx = int(np.searchsorted(times, end_time))
+
+    if start_idx >= end_idx or start_idx >= len(energy):
+        return False
+
+    # Scan for silence regions
+    in_silence = False
+    silence_start_time = 0.0
+
+    for i in range(start_idx, min(end_idx, len(times))):
+        t = times[i]
+        is_silent = energy[i] < silence_threshold
+
+        if is_silent and not in_silence:
+            in_silence = True
+            silence_start_time = t
+        elif not is_silent and in_silence:
+            silence_duration = t - silence_start_time
+            if silence_duration >= min_silence_duration:
+                return True
+            in_silence = False
+
+    # Check if still in silence at end of range
+    if in_silence:
+        silence_duration = (
+            min(end_time, times[min(end_idx, len(times) - 1)]) - silence_start_time
+        )
+        if silence_duration >= min_silence_duration:
+            return True
+
+    return False

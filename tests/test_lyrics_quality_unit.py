@@ -1,6 +1,6 @@
 import pytest
 
-from y2karaoke.core import lyrics
+from y2karaoke.core import lyrics, lyrics_whisper as lw, lyrics_helpers as lh
 from y2karaoke.core.models import Line, Word
 
 
@@ -26,7 +26,7 @@ def test_refine_timing_with_audio_adjusts_on_duration_mismatch(monkeypatch):
         "y2karaoke.core.alignment.adjust_timing_for_duration_mismatch", fake_adjust
     )
 
-    result = lyrics._refine_timing_with_audio(
+    result = lh._refine_timing_with_audio(
         lines,
         vocals_path="vocals.wav",
         line_timings=line_timings,
@@ -51,7 +51,7 @@ def test_refine_timing_with_audio_no_adjust_when_close(monkeypatch):
         lambda *a, **k: (_ for _ in ()).throw(AssertionError("should not adjust")),
     )
 
-    result = lyrics._refine_timing_with_audio(
+    result = lh._refine_timing_with_audio(
         lines,
         vocals_path="vocals.wav",
         line_timings=line_timings,
@@ -95,7 +95,7 @@ def test_refine_timing_with_quality_sets_method(monkeypatch):
     )
 
     issues = []
-    refined, method = lyrics._refine_timing_with_quality(
+    refined, method = lw._refine_timing_with_quality(
         lines,
         vocals_path="vocals.wav",
         line_timings=line_timings,
@@ -114,10 +114,10 @@ def test_apply_whisper_with_quality_handles_error(monkeypatch):
     def raise_error(*args, **kwargs):
         raise RuntimeError("whisper down")
 
-    monkeypatch.setattr(lyrics, "_apply_whisper_alignment", raise_error)
+    monkeypatch.setattr(lw, "_apply_whisper_alignment", raise_error)
     report = {"whisper_used": False, "whisper_corrections": 0, "issues": []}
 
-    updated, report = lyrics._apply_whisper_with_quality(
+    updated, report = lw._apply_whisper_with_quality(
         lines,
         vocals_path="vocals.wav",
         whisper_language="en",
@@ -138,7 +138,7 @@ def test_fetch_genius_with_quality_tracking_no_lrc(monkeypatch):
     )
     report = {"alignment_method": "none", "issues": [], "overall_score": 100.0}
 
-    lines, metadata = lyrics._fetch_genius_with_quality_tracking(
+    lines, metadata = lw._fetch_genius_with_quality_tracking(
         line_timings=None,
         title="Song",
         artist="Artist",
@@ -162,7 +162,7 @@ def test_get_lyrics_simple_whisper_only(monkeypatch):
         te, "transcribe_vocals", lambda *_a, **_k: ([segment], [word], "en", "base")
     )
 
-    lines, metadata = lyrics.get_lyrics_simple(
+    lines, metadata = lw.get_lyrics_simple(
         title="Song",
         artist="Artist",
         vocals_path="vocals.wav",
@@ -183,11 +183,11 @@ def test_get_lyrics_simple_whisper_map_lrc(monkeypatch):
     def fake_fetch(*_a, **_k):
         return "[00:00.00]bonjour", [(0.0, "bonjour")], "source"
 
-    monkeypatch.setattr(lyrics, "_fetch_lrc_text_and_timings", fake_fetch)
-    monkeypatch.setattr(lyrics, "_detect_and_apply_offset", lambda v, t, o: (t, 0.0))
-    monkeypatch.setattr(lyrics, "create_lines_from_lrc", lambda *a, **k: lrc_lines)
+    monkeypatch.setattr(lw, "_fetch_lrc_text_and_timings", fake_fetch)
+    monkeypatch.setattr(lh, "_detect_and_apply_offset", lambda v, t, o: (t, 0.0))
+    monkeypatch.setattr(lw, "create_lines_from_lrc", lambda *a, **k: lrc_lines)
     monkeypatch.setattr(
-        lyrics, "_refine_timing_with_audio", lambda lines, *_a, **_k: lines
+        lh, "_refine_timing_with_audio", lambda lines, *_a, **_k: lines
     )
 
     word = te.TranscriptionWord(start=2.0, end=2.4, text="bonjour", probability=0.9)
@@ -197,7 +197,7 @@ def test_get_lyrics_simple_whisper_map_lrc(monkeypatch):
     )
     monkeypatch.setattr(te, "_whisper_lang_to_epitran", lambda *_a, **_k: "fra-Latn")
 
-    lines, _ = lyrics.get_lyrics_simple(
+    lines, _ = lw.get_lyrics_simple(
         title="Song",
         artist="Artist",
         vocals_path="vocals.wav",

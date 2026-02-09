@@ -1,6 +1,7 @@
 import json
 
 from y2karaoke.core import timing_evaluator as te
+from y2karaoke.core import whisper_integration as wi
 
 
 def test_get_whisper_cache_path_none_for_missing(tmp_path):
@@ -39,7 +40,7 @@ def test_transcribe_vocals_uses_cache(monkeypatch, tmp_path):
     words = [te.TranscriptionWord(start=0.1, end=0.2, text="cached")]
     te._save_whisper_cache(cache_path, segments, words, "en", "base", False)
 
-    monkeypatch.setattr(te, "_load_whisper_cache", lambda *_: (segments, words, "en"))
+    monkeypatch.setattr(wi, "_load_whisper_cache", lambda *_: (segments, words, "en"))
 
     got_segments, got_words, lang, model = te.transcribe_vocals(str(audio_path))
     assert got_segments[0].text == "cached"
@@ -62,7 +63,7 @@ def test_transcribe_vocals_handles_missing_whisper(monkeypatch, tmp_path):
         return orig_import(name, *args, **kwargs)
 
     monkeypatch.setattr(builtins, "__import__", fake_import)
-    monkeypatch.setattr(te, "_load_whisper_cache", lambda *_: None)
+    monkeypatch.setattr(wi, "_load_whisper_cache", lambda *_: None)
 
     segments, words, lang, model = te.transcribe_vocals(str(audio_path))
     assert segments == []
@@ -167,7 +168,7 @@ def test_align_dtw_whisper_falls_back_without_fastdtw(monkeypatch):
         return orig_import(name, *args, **kwargs)
 
     monkeypatch.setattr(builtins, "__import__", fake_import)
-    monkeypatch.setattr(te, "_get_ipa", lambda *a, **k: None)
+    monkeypatch.setattr(wi, "_get_ipa", lambda *a, **k: None)
 
     aligned, corrections, metrics = te.align_dtw_whisper(lines, whisper_words)
     assert aligned == lines

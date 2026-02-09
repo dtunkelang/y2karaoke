@@ -4,6 +4,7 @@ import types
 import numpy as np
 
 import y2karaoke.core.timing_evaluator as te
+import y2karaoke.core.whisper_integration as wi
 from y2karaoke.core.models import Line, Word
 
 
@@ -13,8 +14,8 @@ def test_align_dtw_whisper_uses_fastdtw(monkeypatch):
         te.TranscriptionWord(start=2.0, end=2.5, text="hello", probability=0.9)
     ]
 
-    monkeypatch.setattr(te, "_get_ipa", lambda *_args, **_kwargs: None)
-    monkeypatch.setattr(te, "_phonetic_similarity", lambda *_a, **_k: 1.0)
+    monkeypatch.setattr(wi, "_get_ipa", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(wi, "_phonetic_similarity", lambda *_a, **_k: 1.0)
 
     def fake_fastdtw(lrc_seq, whisper_seq, dist):
         # Exercise the distance function at least once
@@ -87,9 +88,9 @@ def test_find_best_whisper_segment_picks_highest_similarity(monkeypatch):
     def fake_similarity(text1, text2, *_args, **_kwargs):
         return 0.2 if text2 == "alpha" else 0.8
 
-    monkeypatch.setattr(te, "_phonetic_similarity", fake_similarity)
+    monkeypatch.setattr(wi, "_phonetic_similarity", fake_similarity)
 
-    best_segment, similarity, offset = te._find_best_whisper_segment(
+    best_segment, similarity, offset = wi._find_best_whisper_segment(
         "target",
         5.2,
         segments,

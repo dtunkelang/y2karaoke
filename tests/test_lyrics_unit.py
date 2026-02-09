@@ -1,6 +1,8 @@
 import pytest
 
 from y2karaoke.core import lyrics
+from y2karaoke.core import lyrics_helpers as lh
+from y2karaoke.core import lyrics_whisper as lw
 from y2karaoke.core.models import SongMetadata
 
 
@@ -8,7 +10,7 @@ def test_detect_and_apply_offset_applies_delta(monkeypatch):
     monkeypatch.setattr("y2karaoke.core.alignment.detect_song_start", lambda *_: 1.0)
     line_timings = [(0.0, "line one"), (2.0, "line two")]
 
-    updated, offset = lyrics._detect_and_apply_offset(
+    updated, offset = lh._detect_and_apply_offset(
         "vocals.wav", line_timings, lyrics_offset=None
     )
 
@@ -21,7 +23,7 @@ def test_detect_and_apply_offset_respects_manual(monkeypatch):
     monkeypatch.setattr("y2karaoke.core.alignment.detect_song_start", lambda *_: 2.0)
     line_timings = [(1.0, "line one")]
 
-    updated, offset = lyrics._detect_and_apply_offset(
+    updated, offset = lh._detect_and_apply_offset(
         "vocals.wav", line_timings, lyrics_offset=5.0
     )
 
@@ -42,12 +44,12 @@ def test_get_lyrics_simple_uses_lrc_and_singer_info(monkeypatch):
         )
         return [("First", "A"), ("Second", "B")], metadata
 
-    monkeypatch.setattr(lyrics, "_fetch_lrc_text_and_timings", fake_fetch_lrc)
+    monkeypatch.setattr(lw, "_fetch_lrc_text_and_timings", fake_fetch_lrc)
     monkeypatch.setattr(
         "y2karaoke.core.genius.fetch_genius_lyrics_with_singers", fake_genius
     )
 
-    lines, metadata = lyrics.get_lyrics_simple(
+    lines, metadata = lw.get_lyrics_simple(
         title="Hello",
         artist="Tester",
         vocals_path=None,
@@ -65,14 +67,14 @@ def test_get_lyrics_simple_uses_lrc_and_singer_info(monkeypatch):
 
 def test_get_lyrics_simple_fallback_placeholder(monkeypatch):
     monkeypatch.setattr(
-        lyrics, "_fetch_lrc_text_and_timings", lambda *a, **k: (None, None, "")
+        lw, "_fetch_lrc_text_and_timings", lambda *a, **k: (None, None, "")
     )
     monkeypatch.setattr(
         "y2karaoke.core.genius.fetch_genius_lyrics_with_singers",
         lambda *a, **k: (None, None),
     )
 
-    lines, metadata = lyrics.get_lyrics_simple(
+    lines, metadata = lw.get_lyrics_simple(
         title="Missing",
         artist="Artist",
         vocals_path=None,
@@ -89,14 +91,14 @@ def test_calculate_quality_score_bounds():
         "alignment_method": "lrc_only",
         "issues": [],
     }
-    assert lyrics._calculate_quality_score(report) == 80
+    assert lw._calculate_quality_score(report) == 80
 
     report = {
         "lyrics_quality": {"quality_score": 10},
         "alignment_method": "none",
         "issues": ["a", "b"],
     }
-    assert lyrics._calculate_quality_score(report) == 0.0
+    assert lw._calculate_quality_score(report) == 0.0
 
 
 def test_calculate_quality_score_from_dtw_metrics():
@@ -110,4 +112,4 @@ def test_calculate_quality_score_from_dtw_metrics():
         },
         "issues": [],
     }
-    assert lyrics._calculate_quality_score(report) == 100.0
+    assert lw._calculate_quality_score(report) == 100.0

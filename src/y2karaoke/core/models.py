@@ -99,6 +99,31 @@ class SongMetadata:
 
 
 @dataclass
+class TrackInfo:
+    """Canonical track information from identification pipeline."""
+
+    artist: str
+    title: str
+    duration: int  # canonical duration in seconds
+    youtube_url: str
+    youtube_duration: int  # actual YouTube video duration
+    source: str  # "musicbrainz", "syncedlyrics", "youtube"
+    lrc_duration: Optional[int] = None  # duration implied by LRC lyrics (if found)
+    lrc_validated: bool = False  # True if LRC duration matches canonical duration
+    # Quality reporting fields
+    identification_quality: float = 100.0  # 0-100 confidence score
+    quality_issues: Optional[List[str]] = None  # List of quality concerns
+    sources_tried: Optional[List[str]] = None  # List of sources attempted
+    fallback_used: bool = False  # True if had to fall back from primary source
+
+    def __post_init__(self):
+        if self.quality_issues is None:
+            object.__setattr__(self, "quality_issues", [])
+        if self.sources_tried is None:
+            object.__setattr__(self, "sources_tried", [])
+
+
+@dataclass
 class StepQuality:
     """Quality report for a single pipeline step."""
 

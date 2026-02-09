@@ -57,6 +57,23 @@ def filter_singer_only_lines(
     return filtered
 
 
+def normalize_title(title: str, remove_stopwords: bool = False) -> str:
+    """Normalize title for comparison.
+
+    Args:
+        title: Title string to normalize
+        remove_stopwords: If True, remove common stopwords (the, el, los, etc.)
+    """
+    normalized = re.sub(r"[,.\-:;\'\"!?()]", " ", title.lower())
+    normalized = re.sub(r"\s+", " ", normalized).strip()
+
+    if remove_stopwords:
+        words = [w for w in normalized.split() if w not in STOP_WORDS]
+        normalized = " ".join(words)
+
+    return normalized
+
+
 STOP_WORDS = {
     # English
     "the",

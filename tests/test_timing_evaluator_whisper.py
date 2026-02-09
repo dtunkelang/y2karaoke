@@ -4,6 +4,7 @@ import pytest
 
 import y2karaoke.core.timing_evaluator as te
 import y2karaoke.core.phonetic_utils as pu
+import y2karaoke.core.whisper_integration as wi
 from y2karaoke.core.models import Line, Word
 
 
@@ -13,7 +14,7 @@ def test_align_words_to_whisper_adjusts_word():
     whisper_words = [
         te.TranscriptionWord(start=2.0, end=2.4, text="hello", probability=0.9)
     ]
-    te._get_ipa = lambda *_args, **_kwargs: None
+    wi._get_ipa = lambda *_args, **_kwargs: None
     aligned, corrections = te.align_words_to_whisper(
         lines,
         whisper_words,
@@ -30,7 +31,7 @@ def test_assess_lrc_quality_reports_good_match():
     whisper_words = [
         te.TranscriptionWord(start=1.2, end=1.6, text="hello", probability=0.9)
     ]
-    quality, assessments = te._assess_lrc_quality(
+    quality, assessments = wi._assess_lrc_quality(
         lines, whisper_words, language="eng-Latn", tolerance=1.5
     )
     assert quality == 1.0
@@ -56,7 +57,7 @@ def test_compute_phonetic_costs_includes_matches(monkeypatch):
         te.TranscriptionWord(start=1.2, end=1.6, text="hello", probability=0.9)
     ]
 
-    monkeypatch.setattr(te, "_phonetic_similarity", lambda *_args, **_kwargs: 0.8)
+    monkeypatch.setattr(wi, "_phonetic_similarity", lambda *_args, **_kwargs: 0.8)
     costs = te._compute_phonetic_costs(lrc_words, whisper_words, "eng-Latn", 0.5)
     assert costs[(0, 0)] == pytest.approx(0.2)
 
@@ -68,7 +69,7 @@ def test_extract_alignments_from_path_filters_by_similarity(monkeypatch):
     whisper_words = [
         te.TranscriptionWord(start=1.2, end=1.6, text="hello", probability=0.9)
     ]
-    monkeypatch.setattr(te, "_phonetic_similarity", lambda *_args, **_kwargs: 0.6)
+    monkeypatch.setattr(wi, "_phonetic_similarity", lambda *_args, **_kwargs: 0.6)
     alignments = te._extract_alignments_from_path(
         [(0, 0)], lrc_words, whisper_words, "eng-Latn", 0.5
     )
@@ -134,18 +135,19 @@ def test_correct_timing_with_whisper_uses_dtw(monkeypatch):
     ]
 
     monkeypatch.setattr(
-        te,
+        wi,
         "transcribe_vocals",
         lambda *_args, **_kwargs: (transcription, all_words, "en", "base"),
     )
-    monkeypatch.setattr(te, "_get_ipa", lambda *_args, **_kwargs: None)
-    monkeypatch.setattr(te, "_assess_lrc_quality", lambda *_args, **_kwargs: (0.2, []))
+    monkeypatch.setattr(wi, "extract_audio_features", lambda *_a, **_k: None)
+    monkeypatch.setattr(wi, "_get_ipa", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(wi, "_assess_lrc_quality", lambda *_args, **_kwargs: (0.2, []))
     monkeypatch.setattr(
-        te,
+        wi,
         "_align_dtw_whisper_with_data",
         lambda *_args, **_kwargs: (lines, ["dtw"], {}, [], {}),
     )
-    monkeypatch.setattr(te, "_fix_ordering_violations", lambda o, n, a: (n, a))
+    monkeypatch.setattr(wi, "_fix_ordering_violations", lambda o, n, a: (n, a))
 
     aligned, corrections, metrics = te.correct_timing_with_whisper(
         lines, "vocals.wav", language="en"
@@ -166,17 +168,18 @@ def test_correct_timing_with_whisper_quality_good_uses_hybrid(monkeypatch):
     ]
 
     monkeypatch.setattr(
-        te,
+        wi,
         "transcribe_vocals",
         lambda *_args, **_kwargs: (transcription, all_words, "en", "base"),
     )
-    monkeypatch.setattr(te, "_whisper_lang_to_epitran", lambda *_a, **_k: "eng-Latn")
-    monkeypatch.setattr(te, "_get_ipa", lambda *_args, **_kwargs: None)
-    monkeypatch.setattr(te, "_assess_lrc_quality", lambda *_a, **_k: (0.8, []))
+    monkeypatch.setattr(wi, "extract_audio_features", lambda *_a, **_k: None)
+    monkeypatch.setattr(wi, "_whisper_lang_to_epitran", lambda *_a, **_k: "eng-Latn")
+    monkeypatch.setattr(wi, "_get_ipa", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(wi, "_assess_lrc_quality", lambda *_a, **_k: (0.8, []))
     monkeypatch.setattr(
-        te, "align_hybrid_lrc_whisper", lambda *_a, **_k: (lines, ["hybrid"])
+        wi, "align_hybrid_lrc_whisper", lambda *_a, **_k: (lines, ["hybrid"])
     )
-    monkeypatch.setattr(te, "_fix_ordering_violations", lambda o, n, a: (n, a))
+    monkeypatch.setattr(wi, "_fix_ordering_violations", lambda o, n, a: (n, a))
 
     aligned, corrections, metrics = te.correct_timing_with_whisper(
         lines, "vocals.wav", language="en"
@@ -197,17 +200,18 @@ def test_correct_timing_with_whisper_quality_mixed_uses_hybrid(monkeypatch):
     ]
 
     monkeypatch.setattr(
-        te,
+        wi,
         "transcribe_vocals",
         lambda *_args, **_kwargs: (transcription, all_words, "en", "base"),
     )
-    monkeypatch.setattr(te, "_whisper_lang_to_epitran", lambda *_a, **_k: "eng-Latn")
-    monkeypatch.setattr(te, "_get_ipa", lambda *_args, **_kwargs: None)
-    monkeypatch.setattr(te, "_assess_lrc_quality", lambda *_a, **_k: (0.5, []))
+    monkeypatch.setattr(wi, "extract_audio_features", lambda *_a, **_k: None)
+    monkeypatch.setattr(wi, "_whisper_lang_to_epitran", lambda *_a, **_k: "eng-Latn")
+    monkeypatch.setattr(wi, "_get_ipa", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(wi, "_assess_lrc_quality", lambda *_a, **_k: (0.5, []))
     monkeypatch.setattr(
-        te, "align_hybrid_lrc_whisper", lambda *_a, **_k: (lines, ["hybrid"])
+        wi, "align_hybrid_lrc_whisper", lambda *_a, **_k: (lines, ["hybrid"])
     )
-    monkeypatch.setattr(te, "_fix_ordering_violations", lambda o, n, a: (n, a))
+    monkeypatch.setattr(wi, "_fix_ordering_violations", lambda o, n, a: (n, a))
 
     aligned, corrections, metrics = te.correct_timing_with_whisper(
         lines, "vocals.wav", language="en"
@@ -228,19 +232,20 @@ def test_correct_timing_with_whisper_uses_dtw_retime_when_confident(monkeypatch)
     ]
 
     monkeypatch.setattr(
-        te,
+        wi,
         "transcribe_vocals",
         lambda *_args, **_kwargs: (transcription, all_words, "en", "base"),
     )
-    monkeypatch.setattr(te, "_whisper_lang_to_epitran", lambda *_a, **_k: "eng-Latn")
-    monkeypatch.setattr(te, "_get_ipa", lambda *_args, **_kwargs: None)
-    monkeypatch.setattr(te, "_assess_lrc_quality", lambda *_a, **_k: (0.0, []))
+    monkeypatch.setattr(wi, "extract_audio_features", lambda *_a, **_k: None)
+    monkeypatch.setattr(wi, "_whisper_lang_to_epitran", lambda *_a, **_k: "eng-Latn")
+    monkeypatch.setattr(wi, "_get_ipa", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(wi, "_assess_lrc_quality", lambda *_a, **_k: (0.0, []))
 
     alignments_map = {0: (all_words[0], 0.9)}
     lrc_words = [{"line_idx": 0, "word_idx": 0, "text": "hello", "start": 5.0}]
 
     monkeypatch.setattr(
-        te,
+        wi,
         "_align_dtw_whisper_with_data",
         lambda *_a, **_k: (
             lines,
@@ -258,11 +263,11 @@ def test_correct_timing_with_whisper_uses_dtw_retime_when_confident(monkeypatch)
 
     retimed = [Line(words=[Word(text="hello", start_time=1.0, end_time=1.5)])]
     monkeypatch.setattr(
-        te,
+        wi,
         "_retime_lines_from_dtw_alignments",
         lambda *_a, **_k: (retimed, ["DTW retimed line 0 from matched words"]),
     )
-    monkeypatch.setattr(te, "_fix_ordering_violations", lambda o, n, a: (n, a))
+    monkeypatch.setattr(wi, "_fix_ordering_violations", lambda o, n, a: (n, a))
 
     aligned, corrections, metrics = te.correct_timing_with_whisper(
         lines, "vocals.wav", language="en"
@@ -309,8 +314,8 @@ def test_pull_lines_allows_low_similarity_when_late_and_ordered(monkeypatch):
             return 0.4
         return 0.1
 
-    monkeypatch.setattr(te, "_phonetic_similarity", fake_similarity)
-    adjusted, fixed = te._pull_lines_to_best_segments(
+    monkeypatch.setattr(wi, "_phonetic_similarity", fake_similarity)
+    adjusted, fixed = wi._pull_lines_to_best_segments(
         lines, segments, language="fra-Latn", min_similarity=0.7
     )
 
@@ -328,7 +333,7 @@ def test_retime_adjacent_lines_to_whisper_window(monkeypatch):
         te.TranscriptionSegment(start=9.0, end=13.0, text="aucun express", words=[]),
     ]
 
-    monkeypatch.setattr(te, "_phonetic_similarity", lambda *_a, **_k: 0.6)
+    monkeypatch.setattr(wi, "_phonetic_similarity", lambda *_a, **_k: 0.6)
     adjusted, fixes = te._retime_adjacent_lines_to_whisper_window(
         lines, segments, language="fra-Latn", min_similarity=0.3
     )
@@ -348,7 +353,7 @@ def test_retime_adjacent_lines_to_segment_window(monkeypatch):
         te.TranscriptionSegment(start=11.0, end=13.0, text="express", words=[]),
     ]
 
-    monkeypatch.setattr(te, "_phonetic_similarity", lambda *_a, **_k: 0.6)
+    monkeypatch.setattr(wi, "_phonetic_similarity", lambda *_a, **_k: 0.6)
     adjusted, fixes = te._retime_adjacent_lines_to_segment_window(
         lines, segments, language="fra-Latn", min_similarity=0.3
     )
@@ -368,7 +373,7 @@ def test_retime_adjacent_lines_to_whisper_window_uses_prior_segment(monkeypatch)
         te.TranscriptionSegment(start=18.0, end=22.0, text="trolley", words=[]),
     ]
 
-    monkeypatch.setattr(te, "_phonetic_similarity", lambda *_a, **_k: 0.3)
+    monkeypatch.setattr(wi, "_phonetic_similarity", lambda *_a, **_k: 0.3)
     adjusted, fixes = te._retime_adjacent_lines_to_whisper_window(
         lines,
         segments,
@@ -457,7 +462,7 @@ def test_pull_next_line_into_segment_window(monkeypatch):
         te.TranscriptionSegment(start=11.0, end=14.0, text="navire", words=[]),
     ]
 
-    monkeypatch.setattr(te, "_phonetic_similarity", lambda *_a, **_k: 0.25)
+    monkeypatch.setattr(wi, "_phonetic_similarity", lambda *_a, **_k: 0.25)
     adjusted, fixes = te._pull_next_line_into_segment_window(
         lines, segments, language="fra-Latn", min_similarity=0.2
     )
@@ -477,7 +482,7 @@ def test_pull_next_line_into_segment_window_uses_nearest_segment(monkeypatch):
         te.TranscriptionSegment(start=44.0, end=46.0, text="later", words=[]),
     ]
 
-    monkeypatch.setattr(te, "_phonetic_similarity", lambda *_a, **_k: 0.0)
+    monkeypatch.setattr(wi, "_phonetic_similarity", lambda *_a, **_k: 0.0)
     adjusted, fixes = te._pull_next_line_into_segment_window(
         lines, segments, language="fra-Latn", min_similarity=0.2
     )
@@ -507,7 +512,7 @@ def test_pull_lines_near_segment_end_allows_short_line_with_similarity(monkeypat
         te.TranscriptionSegment(start=12.0, end=14.0, text="si non toi", words=[]),
     ]
 
-    monkeypatch.setattr(te, "_phonetic_similarity", lambda *_a, **_k: 0.5)
+    monkeypatch.setattr(wi, "_phonetic_similarity", lambda *_a, **_k: 0.5)
     adjusted, fixes = te._pull_lines_near_segment_end(
         lines,
         segments,
@@ -574,8 +579,8 @@ def test_transcribe_vocals_success(monkeypatch):
     class FakeWhisperModule:
         WhisperModel = FakeModel
 
-    monkeypatch.setattr(te, "_get_whisper_cache_path", lambda *_: None)
-    monkeypatch.setattr(te, "_save_whisper_cache", lambda *_: None)
+    monkeypatch.setattr(wi, "_get_whisper_cache_path", lambda *_: None)
+    monkeypatch.setattr(wi, "_save_whisper_cache", lambda *_: None)
     monkeypatch.setitem(
         __import__("sys").modules, "faster_whisper", FakeWhisperModule()
     )
@@ -600,7 +605,7 @@ def test_transcribe_vocals_handles_transcribe_error(monkeypatch):
     class FakeWhisperModule:
         WhisperModel = FakeModel
 
-    monkeypatch.setattr(te, "_get_whisper_cache_path", lambda *_: None)
+    monkeypatch.setattr(wi, "_get_whisper_cache_path", lambda *_: None)
     monkeypatch.setitem(
         __import__("sys").modules, "faster_whisper", FakeWhisperModule()
     )

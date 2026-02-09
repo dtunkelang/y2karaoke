@@ -1,6 +1,8 @@
 import pytest
 
 from y2karaoke.core import lyrics
+from y2karaoke.core import lyrics_helpers as lh
+from y2karaoke.core import lyrics_whisper as lw
 from y2karaoke.core.models import Line, Word, SongMetadata
 
 
@@ -15,7 +17,7 @@ def test_calculate_quality_score_applies_method_and_issues():
         "issues": ["a", "b"],
     }
 
-    score = lyrics._calculate_quality_score(report)
+    score = lw._calculate_quality_score(report)
 
     assert score == pytest.approx(80.0)
 
@@ -28,9 +30,9 @@ def test_fetch_lrc_text_and_timings_uses_best_source(monkeypatch):
         "y2karaoke.core.timing_evaluator.select_best_source",
         lambda *a, **k: ("[00:01.00]hi", "best", Report()),
     )
-    monkeypatch.setattr(lyrics, "parse_lrc_with_timing", lambda *a, **k: [(1.0, "hi")])
+    monkeypatch.setattr(lh, "parse_lrc_with_timing", lambda *a, **k: [(1.0, "hi")])
 
-    lrc_text, timings, source = lyrics._fetch_lrc_text_and_timings(
+    lrc_text, timings, source = lw._fetch_lrc_text_and_timings(
         "Title",
         "Artist",
         vocals_path="vocals.wav",
@@ -50,7 +52,7 @@ def test_fetch_lrc_text_and_timings_returns_none_when_no_duration_match(
         lambda *a, **k: (None, False, "", None),
     )
 
-    lrc_text, timings, source = lyrics._fetch_lrc_text_and_timings(
+    lrc_text, timings, source = lw._fetch_lrc_text_and_timings(
         "Title",
         "Artist",
         target_duration=120,
@@ -70,9 +72,9 @@ def test_fetch_lrc_text_and_timings_eval_sources_falls_back(monkeypatch):
         "y2karaoke.core.sync.fetch_lyrics_for_duration",
         lambda *a, **k: ("[00:01.00]hi", True, "provider", 120),
     )
-    monkeypatch.setattr(lyrics, "parse_lrc_with_timing", lambda *a, **k: [(1.0, "hi")])
+    monkeypatch.setattr(lh, "parse_lrc_with_timing", lambda *a, **k: [(1.0, "hi")])
 
-    lrc_text, timings, source = lyrics._fetch_lrc_text_and_timings(
+    lrc_text, timings, source = lw._fetch_lrc_text_and_timings(
         "Title",
         "Artist",
         target_duration=120,
@@ -90,9 +92,9 @@ def test_fetch_lrc_text_and_timings_eval_sources_needs_vocals(monkeypatch):
         "y2karaoke.core.sync.fetch_lyrics_for_duration",
         lambda *a, **k: ("[00:02.00]hey", True, "provider", 200),
     )
-    monkeypatch.setattr(lyrics, "parse_lrc_with_timing", lambda *a, **k: [(2.0, "hey")])
+    monkeypatch.setattr(lh, "parse_lrc_with_timing", lambda *a, **k: [(2.0, "hey")])
 
-    lrc_text, timings, source = lyrics._fetch_lrc_text_and_timings(
+    lrc_text, timings, source = lw._fetch_lrc_text_and_timings(
         "Title",
         "Artist",
         target_duration=200,
@@ -119,7 +121,7 @@ def test_fetch_lrc_text_and_timings_filters_promos(monkeypatch):
         lambda *a, **k: (lrc_text, True, "provider", 180),
     )
 
-    lrc_text_out, timings, _source = lyrics._fetch_lrc_text_and_timings(
+    lrc_text_out, timings, _source = lw._fetch_lrc_text_and_timings(
         "Aucun Express",
         "Alain Bashung",
         target_duration=180,
@@ -132,7 +134,7 @@ def test_fetch_lrc_text_and_timings_filters_promos(monkeypatch):
         "Et puis je pars demain",
     ]
 
-    _, timings_unfiltered, _ = lyrics._fetch_lrc_text_and_timings(
+    _, timings_unfiltered, _ = lw._fetch_lrc_text_and_timings(
         "Aucun Express",
         "Alain Bashung",
         target_duration=180,
@@ -144,7 +146,7 @@ def test_fetch_lrc_text_and_timings_filters_promos(monkeypatch):
 
 def test_get_lyrics_simple_falls_back_to_genius(monkeypatch):
     monkeypatch.setattr(
-        lyrics, "_fetch_lrc_text_and_timings", lambda *a, **k: (None, None, "")
+        lw, "_fetch_lrc_text_and_timings", lambda *a, **k: (None, None, "")
     )
 
     metadata = SongMetadata(singers=["Singer"], is_duet=False)
@@ -153,12 +155,12 @@ def test_get_lyrics_simple_falls_back_to_genius(monkeypatch):
         lambda *a, **k: ([("hello world", "Singer")], metadata),
     )
     monkeypatch.setattr(
-        lyrics,
+        lw,
         "create_lines_from_lrc",
         lambda *a, **k: [_line("hello", 0.0, 1.0)],
     )
 
-    lines, meta = lyrics.get_lyrics_simple("Title", "Artist", vocals_path=None)
+    lines, meta = lw.get_lyrics_simple("Title", "Artist", vocals_path=None)
 
     assert meta == metadata
     assert lines[0].words[0].text == "hello"
@@ -169,7 +171,7 @@ def test_detect_offset_with_issues_skips_huge_delta(monkeypatch):
 
     issues = []
     line_timings = [(1.0, "Line")]
-    updated, offset = lyrics._detect_offset_with_issues(
+    updated, offset = lw._detect_offset_with_issues(
         "vocals.wav", line_timings, lyrics_offset=None, issues=issues
     )
 

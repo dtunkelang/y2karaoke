@@ -1,6 +1,8 @@
 import pytest
 
 from y2karaoke.core import lyrics
+from y2karaoke.core import lyrics_helpers as lh
+from y2karaoke.core import lyrics_whisper as lw
 from y2karaoke.core.models import Line, Word, SongMetadata
 from y2karaoke.core.timing_evaluator import TranscriptionSegment, TranscriptionWord
 
@@ -10,11 +12,11 @@ def _line_with_words(texts):
 
 
 def test_estimate_singing_duration_clamps_min_and_max():
-    short = lyrics._estimate_singing_duration("hi", 1)
+    short = lh._estimate_singing_duration("hi", 1)
     assert short == pytest.approx(0.5)
 
     long_text = "a" * 300
-    long = lyrics._estimate_singing_duration(long_text, 50)
+    long = lh._estimate_singing_duration(long_text, 50)
     assert long == pytest.approx(8.0)
 
 
@@ -31,7 +33,7 @@ def test_detect_and_apply_offset_auto_applies(monkeypatch):
     monkeypatch.setattr("y2karaoke.core.alignment.detect_song_start", lambda _: 5.0)
 
     line_timings = [(1.0, "Line")]
-    updated, offset = lyrics._detect_and_apply_offset(
+    updated, offset = lh._detect_and_apply_offset(
         "vocals.wav", line_timings, lyrics_offset=None
     )
 
@@ -43,7 +45,7 @@ def test_detect_and_apply_offset_respects_manual(monkeypatch):
     monkeypatch.setattr("y2karaoke.core.alignment.detect_song_start", lambda _: 5.0)
 
     line_timings = [(1.0, "Line")]
-    updated, offset = lyrics._detect_and_apply_offset(
+    updated, offset = lh._detect_and_apply_offset(
         "vocals.wav", line_timings, lyrics_offset=-1.0
     )
 
@@ -55,7 +57,7 @@ def test_detect_and_apply_offset_skips_large_delta(monkeypatch):
     monkeypatch.setattr("y2karaoke.core.alignment.detect_song_start", lambda _: 100.0)
 
     line_timings = [(1.0, "Line")]
-    updated, offset = lyrics._detect_and_apply_offset(
+    updated, offset = lh._detect_and_apply_offset(
         "vocals.wav", line_timings, lyrics_offset=None
     )
 
@@ -66,7 +68,7 @@ def test_detect_and_apply_offset_skips_large_delta(monkeypatch):
 def test_distribute_word_timing_in_line():
     line = _line_with_words(["hello", "world"])
 
-    lyrics._distribute_word_timing_in_line(line, line_start=0.0, next_line_start=4.0)
+    lh._distribute_word_timing_in_line(line, line_start=0.0, next_line_start=4.0)
 
     assert line.words[0].start_time == pytest.approx(0.0)
     assert line.words[1].start_time > line.words[0].start_time
@@ -77,7 +79,7 @@ def test_apply_timing_to_lines():
     lines = [_line_with_words(["a", "b"]), _line_with_words(["c"])]
     line_timings = [(1.0, "a b"), (3.0, "c")]
 
-    lyrics._apply_timing_to_lines(lines, line_timings)
+    lh._apply_timing_to_lines(lines, line_timings)
 
     assert lines[0].words[0].start_time == pytest.approx(1.0)
     assert lines[1].words[0].start_time == pytest.approx(3.0)
@@ -85,9 +87,9 @@ def test_apply_timing_to_lines():
 
 def test_romanize_lines_only_non_ascii(monkeypatch):
     line = _line_with_words(["hello", "café"])
-    monkeypatch.setattr("y2karaoke.core.lyrics.romanize_line", lambda text: "cafe")
+    monkeypatch.setattr("y2karaoke.core.lyrics_helpers.romanize_line", lambda text: "cafe")
 
-    lyrics._romanize_lines([line])
+    lh._romanize_lines([line])
 
     assert line.words[0].text == "hello"
     assert line.words[1].text == "cafe"
@@ -98,7 +100,7 @@ def test_apply_singer_info_sets_word_and_line_singers():
     genius_lines = [("a b", "Singer A"), ("c", "Singer B")]
     metadata = SongMetadata(singers=["Singer A", "Singer B"], is_duet=True)
 
-    lyrics._apply_singer_info(lines, genius_lines, metadata)
+    lw._apply_singer_info(lines, genius_lines, metadata)
 
     assert lines[0].singer is not None
     assert lines[0].words[0].singer == lines[0].singer
@@ -111,7 +113,7 @@ def test_detect_offset_with_issues_tracks_large_delta(monkeypatch):
 
     issues = []
     line_timings = [(1.0, "Line")]
-    updated, offset = lyrics._detect_offset_with_issues(
+    updated, offset = lw._detect_offset_with_issues(
         "vocals.wav", line_timings, lyrics_offset=None, issues=issues
     )
 
@@ -142,7 +144,7 @@ def test_map_lrc_lines_uses_whisper_pause_for_word_slots():
         words=segment_words,
     )
 
-    adjusted, fixes, _issues = lyrics._map_lrc_lines_to_whisper_segments(
+    adjusted, fixes, _issues = lw._map_lrc_lines_to_whisper_segments(
         [line],
         [segment],
         language="eng-Latn",
@@ -188,7 +190,7 @@ def test_map_lrc_lines_falls_back_to_window_words_on_large_offset():
         ],
     )
 
-    adjusted, fixes, issues = lyrics._map_lrc_lines_to_whisper_segments(
+    adjusted, fixes, issues = lw._map_lrc_lines_to_whisper_segments(
         [line],
         [seg_early, seg_window],
         language="eng-Latn",
