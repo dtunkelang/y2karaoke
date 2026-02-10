@@ -329,7 +329,7 @@ class TrackIdentifierHelpers:
         if cache_key in self._lrc_cache:
             return self._lrc_cache[cache_key]
         try:
-            from ...sync import (
+            from ..lyrics.sync import (
                 SYNCEDLYRICS_AVAILABLE,
                 fetch_lyrics_multi_source,
                 get_lrc_duration,

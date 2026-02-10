@@ -19,7 +19,9 @@ def test_refine_timing_with_audio_adjusts_on_duration_mismatch(monkeypatch):
         "y2karaoke.core.refine.refine_word_timing",
         lambda lines_in, _vocals: lines_in,
     )
-    monkeypatch.setattr("y2karaoke.core.sync.get_lrc_duration", lambda *_: 120)
+    monkeypatch.setattr(
+        "y2karaoke.core.components.lyrics.sync.get_lrc_duration", lambda *_: 120
+    )
 
     called = {}
 
@@ -53,7 +55,9 @@ def test_refine_timing_with_audio_no_adjust_when_close(monkeypatch):
         "y2karaoke.core.refine.refine_word_timing",
         lambda lines_in, _vocals: lines_in,
     )
-    monkeypatch.setattr("y2karaoke.core.sync.get_lrc_duration", lambda *_: 100)
+    monkeypatch.setattr(
+        "y2karaoke.core.components.lyrics.sync.get_lrc_duration", lambda *_: 100
+    )
 
     monkeypatch.setattr(
         "y2karaoke.core.components.alignment.alignment.adjust_timing_for_duration_mismatch",
@@ -74,7 +78,7 @@ def test_apply_whisper_alignment_records_fixes(monkeypatch):
     lines = [_make_line("hello", 0.0, 0.5)]
     # Patch where it's imported in lyrics_helpers
     monkeypatch.setattr(
-        "y2karaoke.core.whisper_integration.correct_timing_with_whisper",
+        "y2karaoke.core.components.whisper.whisper_integration.correct_timing_with_whisper",
         lambda *args, **kwargs: (
             args[0],
             ["fix1", "fix2"],
@@ -105,7 +109,9 @@ def test_refine_timing_with_quality_sets_method(monkeypatch):
         "y2karaoke.core.refine.refine_word_timing",
         lambda lines_in, _vocals: lines_in,
     )
-    monkeypatch.setattr("y2karaoke.core.sync.get_lrc_duration", lambda *_: 120)
+    monkeypatch.setattr(
+        "y2karaoke.core.components.lyrics.sync.get_lrc_duration", lambda *_: 120
+    )
     monkeypatch.setattr(
         "y2karaoke.core.components.alignment.alignment.adjust_timing_for_duration_mismatch",
         lambda *a, **k: lines,
@@ -150,7 +156,7 @@ def test_apply_whisper_with_quality_handles_error(monkeypatch):
 
 def test_fetch_genius_with_quality_tracking_no_lrc(monkeypatch):
     monkeypatch.setattr(
-        "y2karaoke.core.genius.fetch_genius_lyrics_with_singers",
+        "y2karaoke.core.components.lyrics.genius.fetch_genius_lyrics_with_singers",
         lambda *a, **k: (None, None),
     )
     report = {"alignment_method": "none", "issues": [], "overall_score": 100.0}
@@ -171,7 +177,7 @@ def test_fetch_genius_with_quality_tracking_no_lrc(monkeypatch):
 
 def test_get_lyrics_simple_whisper_only(monkeypatch):
     from y2karaoke.core import timing_evaluator as te
-    from y2karaoke.core import whisper_integration as wi
+    from y2karaoke.core.components.whisper import whisper_integration as wi
 
     word = te.TranscriptionWord(start=1.0, end=1.2, text="hello", probability=0.9)
     segment = te.TranscriptionSegment(start=1.0, end=1.4, text="hello", words=[word])
@@ -196,7 +202,7 @@ def test_get_lyrics_simple_whisper_only(monkeypatch):
 
 def test_get_lyrics_simple_whisper_map_lrc(monkeypatch):
     from y2karaoke.core import timing_evaluator as te
-    from y2karaoke.core import whisper_integration as wi
+    from y2karaoke.core.components.whisper import whisper_integration as wi
     from y2karaoke.core import phonetic_utils as pu
     from y2karaoke.core import genius
 

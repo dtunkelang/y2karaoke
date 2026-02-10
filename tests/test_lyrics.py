@@ -10,7 +10,7 @@ from y2karaoke.core.components.lyrics.api import (
     parse_lrc_with_timing,
     romanize_line,
 )
-from y2karaoke.core.lrc import (
+from y2karaoke.core.components.lyrics.lrc import (
     create_lines_from_lrc,
     create_lines_from_lrc_timings,
     _is_empty_or_symbols,

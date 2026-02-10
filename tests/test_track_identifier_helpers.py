@@ -1,4 +1,4 @@
-import y2karaoke.core.sync as sync
+import y2karaoke.core.components.lyrics.sync as sync
 import y2karaoke.core.components.identify.implementation as ti
 
 

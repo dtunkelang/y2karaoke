@@ -7,6 +7,8 @@ from .components.audio.downloader import (
 )
 from .components.audio.separator import AudioSeparator, separate_vocals
 from .components.audio.audio_effects import AudioProcessor, process_audio
+from .components.alignment import timing_evaluator
+from .components.lyrics import genius, lrc, lyrics_whisper, sync
 from .models import SingerID, Word, Line, SongMetadata
 from .components.lyrics.api import LyricsProcessor, get_lyrics
 from .components.render.video_writer import render_karaoke_video
@@ -25,6 +27,11 @@ __all__ = [
     "separate_vocals",
     "AudioProcessor",
     "process_audio",
+    "sync",
+    "genius",
+    "lrc",
+    "lyrics_whisper",
+    "timing_evaluator",
     "SingerID",
     "Word",
     "Line",

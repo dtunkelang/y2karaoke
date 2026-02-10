@@ -13,14 +13,14 @@ from pathlib import Path
 from typing import List, Optional, Tuple
 
 from ...models import Line, SongMetadata, Word
-from ...lrc import (
+from .lrc import (
     parse_lrc_timestamp,
     parse_lrc_with_timing,
     create_lines_from_lrc,
     create_lines_from_lrc_timings,
     split_long_lines,
 )
-from ...lyrics_whisper import (
+from .lyrics_whisper import (
     get_lyrics_simple,
     get_lyrics_with_quality,
     _apply_singer_info,
@@ -32,7 +32,7 @@ from ...lyrics_whisper import (
     _fetch_genius_with_quality_tracking,
     _apply_whisper_with_quality,
 )
-from ...lyrics_whisper_map import (
+from .lyrics_whisper_map import (
     _norm_token,
     _build_whisper_word_list,
     _select_window_sequence,

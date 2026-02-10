@@ -1,7 +1,10 @@
 from y2karaoke.core.models import Line, Word
-from y2karaoke.core.timing_models import AudioFeatures, TimingReport
-import y2karaoke.core.timing_evaluator as te
-import y2karaoke.core.timing_evaluator_comparison as te_comp
+from y2karaoke.core.components.alignment.timing_models import (
+    AudioFeatures,
+    TimingReport,
+)
+import y2karaoke.core.components.alignment.timing_evaluator as te
+import y2karaoke.core.components.alignment.timing_evaluator_comparison as te_comp
 
 
 def test_compare_sources_returns_empty_on_audio_failure(monkeypatch):
@@ -22,7 +25,7 @@ def test_compare_sources_builds_reports(monkeypatch):
     monkeypatch.setattr(te_comp, "extract_audio_features", lambda _path: features)
 
     monkeypatch.setattr(
-        "y2karaoke.core.sync.fetch_from_all_sources",
+        "y2karaoke.core.components.lyrics.sync.fetch_from_all_sources",
         lambda _title, _artist: {
             "empty": ("", None),
             "source1": ("[00:00.00]hello world", 3.0),
@@ -30,7 +33,7 @@ def test_compare_sources_builds_reports(monkeypatch):
     )
 
     monkeypatch.setattr(
-        "y2karaoke.core.lrc.create_lines_from_lrc",
+        "y2karaoke.core.components.lyrics.lrc.create_lines_from_lrc",
         lambda _text, romanize=False, title=None, artist=None: [
             Line(
                 words=[
@@ -41,7 +44,7 @@ def test_compare_sources_builds_reports(monkeypatch):
         ],
     )
     monkeypatch.setattr(
-        "y2karaoke.core.lrc.parse_lrc_with_timing",
+        "y2karaoke.core.components.lyrics.lrc.parse_lrc_with_timing",
         lambda _text, _title, _artist: [(0.0, "hello world")],
     )
 
@@ -74,12 +77,12 @@ def test_compare_sources_skips_source_on_error(monkeypatch):
     monkeypatch.setattr(te_comp, "extract_audio_features", lambda _path: features)
 
     monkeypatch.setattr(
-        "y2karaoke.core.sync.fetch_from_all_sources",
+        "y2karaoke.core.components.lyrics.sync.fetch_from_all_sources",
         lambda _title, _artist: {"bad": ("[00:00.00]hello", 3.0)},
     )
 
     monkeypatch.setattr(
-        "y2karaoke.core.lrc.create_lines_from_lrc",
+        "y2karaoke.core.components.lyrics.lrc.create_lines_from_lrc",
         lambda *_args, **_kwargs: (_ for _ in ()).throw(ValueError("bad lrc")),
     )
 
@@ -100,16 +103,16 @@ def test_compare_sources_handles_empty_timings(monkeypatch):
     monkeypatch.setattr(te_comp, "extract_audio_features", lambda _path: features)
 
     monkeypatch.setattr(
-        "y2karaoke.core.sync.fetch_from_all_sources",
+        "y2karaoke.core.components.lyrics.sync.fetch_from_all_sources",
         lambda _title, _artist: {"source": ("[00:00.00]hello", 3.0)},
     )
 
     monkeypatch.setattr(
-        "y2karaoke.core.lrc.create_lines_from_lrc",
+        "y2karaoke.core.components.lyrics.lrc.create_lines_from_lrc",
         lambda *_args, **_kwargs: [Line(words=[])],
     )
     monkeypatch.setattr(
-        "y2karaoke.core.lrc.parse_lrc_with_timing",
+        "y2karaoke.core.components.lyrics.lrc.parse_lrc_with_timing",
         lambda *_args, **_kwargs: [],
     )
 
@@ -148,7 +151,7 @@ def test_select_best_source_prefers_highest_score(monkeypatch):
     }
     monkeypatch.setattr(te_comp, "compare_sources", lambda *_args: reports)
     monkeypatch.setattr(
-        "y2karaoke.core.sync.fetch_from_all_sources",
+        "y2karaoke.core.components.lyrics.sync.fetch_from_all_sources",
         lambda _title, _artist: {
             "a": ("lrc a", 100),
             "b": ("lrc b", 100),

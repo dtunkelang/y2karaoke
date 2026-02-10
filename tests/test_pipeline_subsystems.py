@@ -2,13 +2,15 @@ from y2karaoke.pipeline import alignment, audio, identify, lyrics, render
 
 
 def test_lyrics_subsystem_exposes_core_entrypoints():
-    from y2karaoke.core.lyrics_whisper import get_lyrics_with_quality
+    from y2karaoke.core.components.lyrics.lyrics_whisper import get_lyrics_with_quality
 
     assert lyrics.get_lyrics_with_quality is get_lyrics_with_quality
 
 
 def test_alignment_subsystem_exposes_timing_report_entrypoint():
-    from y2karaoke.core.timing_evaluator import print_comparison_report
+    from y2karaoke.core.components.alignment.timing_evaluator import (
+        print_comparison_report,
+    )
 
     assert alignment.print_comparison_report is print_comparison_report
 

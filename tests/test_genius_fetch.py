@@ -1,6 +1,6 @@
 # test_genius_fetch.py
 import pytest
-from y2karaoke.core.genius import fetch_genius_lyrics_with_singers
+from y2karaoke.core.components.lyrics.genius import fetch_genius_lyrics_with_singers
 
 
 @pytest.mark.network

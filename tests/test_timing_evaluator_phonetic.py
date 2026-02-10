@@ -2,7 +2,7 @@ import pytest
 
 from y2karaoke.core import timing_evaluator as te
 from y2karaoke.core import phonetic_utils as pu
-from y2karaoke.core import whisper_integration as wi
+from y2karaoke.core.components.whisper import whisper_integration as wi
 
 
 def test_whisper_lang_to_epitran_mapping():

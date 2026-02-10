@@ -3,7 +3,7 @@ import types
 
 import pytest
 
-from y2karaoke.core import youtube_metadata
+from y2karaoke.core.components.identify import youtube_metadata
 
 
 def test_validate_youtube_url_accepts_valid_urls():

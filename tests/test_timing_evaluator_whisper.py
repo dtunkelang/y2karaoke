@@ -1,18 +1,18 @@
 import pytest
 
-import y2karaoke.core.timing_evaluator as te
+import y2karaoke.core.components.alignment.timing_evaluator as te
 import y2karaoke.core.phonetic_utils as pu
-import y2karaoke.core.whisper_integration as wi
-import y2karaoke.core.whisper_dtw as w_dtw
-import y2karaoke.core.whisper_alignment as wa
+import y2karaoke.core.components.whisper.whisper_integration as wi
+import y2karaoke.core.components.whisper.whisper_dtw as w_dtw
+import y2karaoke.core.components.whisper.whisper_alignment as wa
 from y2karaoke.core.models import Line, Word
 
 
 def _patch_alignment_similarity(monkeypatch, fn):
     monkeypatch.setattr(wa, "_phonetic_similarity", fn)
-    import y2karaoke.core.whisper_alignment_utils as wa_utils
-    import y2karaoke.core.whisper_alignment_retime as wa_retime
-    import y2karaoke.core.whisper_alignment_pull as wa_pull
+    import y2karaoke.core.components.whisper.whisper_alignment_utils as wa_utils
+    import y2karaoke.core.components.whisper.whisper_alignment_retime as wa_retime
+    import y2karaoke.core.components.whisper.whisper_alignment_pull as wa_pull
 
     monkeypatch.setattr(wa_utils, "_phonetic_similarity", fn)
     monkeypatch.setattr(wa_retime, "_phonetic_similarity", fn)

@@ -1,6 +1,7 @@
 import pytest
 
-from y2karaoke.core import sync, youtube_metadata
+from y2karaoke.core import sync
+from y2karaoke.core.components.identify import youtube_metadata
 
 
 @pytest.mark.network

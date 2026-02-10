@@ -1,6 +1,6 @@
 from y2karaoke.core import timing_evaluator as te
-from y2karaoke.core import whisper_integration as wi
-from y2karaoke.core import whisper_dtw as wdtw
+from y2karaoke.core.components.whisper import whisper_dtw as wdtw
+from y2karaoke.core.components.whisper import whisper_integration as wi
 
 
 def test_get_whisper_cache_path_none_for_missing(tmp_path):

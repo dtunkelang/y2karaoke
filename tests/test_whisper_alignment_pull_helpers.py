@@ -1,6 +1,6 @@
 from y2karaoke.core.models import Line, Word
-from y2karaoke.core.timing_models import TranscriptionSegment
-from y2karaoke.core.whisper_alignment_pull_helpers import (
+from y2karaoke.core.components.alignment.timing_models import TranscriptionSegment
+from y2karaoke.core.components.whisper.whisper_alignment_pull_helpers import (
     line_neighbors,
     nearest_prior_segment_by_end,
     nearest_segment_by_start,

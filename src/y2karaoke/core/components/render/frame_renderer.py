@@ -20,7 +20,7 @@ from ....config import (
     Colors,
 )
 from .backgrounds_static import draw_logo_screen, draw_splash_screen
-from ...progress import draw_progress_bar
+from .progress import draw_progress_bar
 from .lyrics_renderer import get_singer_colors
 from ...models import Line
 

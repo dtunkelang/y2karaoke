@@ -27,7 +27,7 @@ def test_fetch_lrc_text_and_timings_uses_best_source(monkeypatch):
         overall_score = 91.2
 
     monkeypatch.setattr(
-        "y2karaoke.core.timing_evaluator.select_best_source",
+        "y2karaoke.core.components.alignment.timing_evaluator.select_best_source",
         lambda *a, **k: ("[00:01.00]hi", "best", Report()),
     )
     monkeypatch.setattr(lh, "parse_lrc_with_timing", lambda *a, **k: [(1.0, "hi")])
@@ -48,7 +48,7 @@ def test_fetch_lrc_text_and_timings_returns_none_when_no_duration_match(
     monkeypatch,
 ):
     monkeypatch.setattr(
-        "y2karaoke.core.sync.fetch_lyrics_for_duration",
+        "y2karaoke.core.components.lyrics.sync.fetch_lyrics_for_duration",
         lambda *a, **k: (None, False, "", None),
     )
 
@@ -65,11 +65,11 @@ def test_fetch_lrc_text_and_timings_returns_none_when_no_duration_match(
 
 def test_fetch_lrc_text_and_timings_eval_sources_falls_back(monkeypatch):
     monkeypatch.setattr(
-        "y2karaoke.core.timing_evaluator.select_best_source",
+        "y2karaoke.core.components.alignment.timing_evaluator.select_best_source",
         lambda *a, **k: (None, None, None),
     )
     monkeypatch.setattr(
-        "y2karaoke.core.sync.fetch_lyrics_for_duration",
+        "y2karaoke.core.components.lyrics.sync.fetch_lyrics_for_duration",
         lambda *a, **k: ("[00:01.00]hi", True, "provider", 120),
     )
     monkeypatch.setattr(lh, "parse_lrc_with_timing", lambda *a, **k: [(1.0, "hi")])
@@ -89,7 +89,7 @@ def test_fetch_lrc_text_and_timings_eval_sources_falls_back(monkeypatch):
 
 def test_fetch_lrc_text_and_timings_eval_sources_needs_vocals(monkeypatch):
     monkeypatch.setattr(
-        "y2karaoke.core.sync.fetch_lyrics_for_duration",
+        "y2karaoke.core.components.lyrics.sync.fetch_lyrics_for_duration",
         lambda *a, **k: ("[00:02.00]hey", True, "provider", 200),
     )
     monkeypatch.setattr(lh, "parse_lrc_with_timing", lambda *a, **k: [(2.0, "hey")])
@@ -117,7 +117,7 @@ def test_fetch_lrc_text_and_timings_filters_promos(monkeypatch):
     )
 
     monkeypatch.setattr(
-        "y2karaoke.core.sync.fetch_lyrics_for_duration",
+        "y2karaoke.core.components.lyrics.sync.fetch_lyrics_for_duration",
         lambda *a, **k: (lrc_text, True, "provider", 180),
     )
 
@@ -151,7 +151,7 @@ def test_get_lyrics_simple_falls_back_to_genius(monkeypatch):
 
     metadata = SongMetadata(singers=["Singer"], is_duet=False)
     monkeypatch.setattr(
-        "y2karaoke.core.genius.fetch_genius_lyrics_with_singers",
+        "y2karaoke.core.components.lyrics.genius.fetch_genius_lyrics_with_singers",
         lambda *a, **k: ([("hello world", "Singer")], metadata),
     )
     monkeypatch.setattr(

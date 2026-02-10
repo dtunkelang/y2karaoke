@@ -91,7 +91,8 @@ def test_get_lyrics_quality_report_too_few_lines(monkeypatch, isolated_sync_stat
     lrc = "[00:00.00]Line"
     monkeypatch.setattr(sync, "_has_timestamps", lambda *_a, **_k: True)
     monkeypatch.setattr(
-        "y2karaoke.core.lrc.parse_lrc_with_timing", lambda *_a, **_k: []
+        "y2karaoke.core.components.lyrics.lrc.parse_lrc_with_timing",
+        lambda *_a, **_k: [],
     )
 
     report = sync.get_lyrics_quality_report(lrc, source="Test")

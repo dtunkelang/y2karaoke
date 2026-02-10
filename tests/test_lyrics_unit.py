@@ -52,7 +52,8 @@ def test_get_lyrics_simple_uses_lrc_and_singer_info(monkeypatch):
 
     monkeypatch.setattr(lw, "_fetch_lrc_text_and_timings", fake_fetch_lrc)
     monkeypatch.setattr(
-        "y2karaoke.core.genius.fetch_genius_lyrics_with_singers", fake_genius
+        "y2karaoke.core.components.lyrics.genius.fetch_genius_lyrics_with_singers",
+        fake_genius,
     )
 
     lines, metadata = lw.get_lyrics_simple(
@@ -76,7 +77,7 @@ def test_get_lyrics_simple_fallback_placeholder(monkeypatch):
         lw, "_fetch_lrc_text_and_timings", lambda *a, **k: (None, None, "")
     )
     monkeypatch.setattr(
-        "y2karaoke.core.genius.fetch_genius_lyrics_with_singers",
+        "y2karaoke.core.components.lyrics.genius.fetch_genius_lyrics_with_singers",
         lambda *a, **k: (None, None),
     )
 

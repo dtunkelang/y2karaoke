@@ -1,10 +1,10 @@
 import types
 
-import y2karaoke.core.timing_evaluator as te
-import y2karaoke.core.timing_evaluator_comparison as te_comp
-import y2karaoke.core.whisper_integration as wi
-import y2karaoke.core.whisper_dtw as w_dtw
-import y2karaoke.core.whisper_alignment_utils as wa_utils
+import y2karaoke.core.components.alignment.timing_evaluator as te
+import y2karaoke.core.components.alignment.timing_evaluator_comparison as te_comp
+import y2karaoke.core.components.whisper.whisper_integration as wi
+import y2karaoke.core.components.whisper.whisper_dtw as w_dtw
+import y2karaoke.core.components.whisper.whisper_alignment_utils as wa_utils
 from y2karaoke.core.models import Line, Word
 
 

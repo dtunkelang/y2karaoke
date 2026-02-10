@@ -46,9 +46,9 @@ Pipeline facade note:
 **Primary code paths**
 - `src/y2karaoke/core/components/lyrics/api.py`
 - `src/y2karaoke/core/components/lyrics/helpers.py`
-- `src/y2karaoke/core/timing_evaluator.py::select_best_source`
-- `src/y2karaoke/core/timing_evaluator.py::compare_sources`
-- `src/y2karaoke/core/sync_search.py`
+- `src/y2karaoke/core/components/alignment/timing_evaluator.py::select_best_source`
+- `src/y2karaoke/core/components/alignment/timing_evaluator.py::compare_sources`
+- `src/y2karaoke/core/components/lyrics/sync_search.py`
   - provider retry/backoff and fallback search orchestration
 
 **Decision rules (summary)**
@@ -68,18 +68,18 @@ Pipeline facade note:
 ## 3) Alignment Quality
 
 **Primary code paths**
-- `src/y2karaoke/core/timing_evaluator.py`
+- `src/y2karaoke/core/components/alignment/timing_evaluator.py`
   - `evaluate_timing`
   - `_check_pause_alignment`
   - `_calculate_pause_score`
   - `_find_closest_onset`
-- `src/y2karaoke/core/whisper_phonetic_tokens.py`
+- `src/y2karaoke/core/components/whisper/whisper_phonetic_tokens.py`
   - phoneme and syllable tokenization for DTW
-- `src/y2karaoke/core/whisper_phonetic_paths.py`
+- `src/y2karaoke/core/components/whisper/whisper_phonetic_paths.py`
   - DTW path/cost construction helpers
-- `src/y2karaoke/core/whisper_alignment_pull_rules.py`
+- `src/y2karaoke/core/components/whisper/whisper_alignment_pull_rules.py`
   - segment pull/merge adjustments used by Whisper alignment
-- `src/y2karaoke/core/whisper_alignment_pull_helpers.py`
+- `src/y2karaoke/core/components/whisper/whisper_alignment_pull_helpers.py`
   - shared nearest-segment and word-reflow helpers
 
 **Decision rules (summary)**

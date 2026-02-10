@@ -1,12 +1,12 @@
 """Alignment component facade."""
 
-from ...timing_evaluator import (
+from .timing_evaluator import (
     compare_sources,
     evaluate_timing,
     print_comparison_report,
     select_best_source,
 )
-from ...whisper_integration import (
+from ..whisper.whisper_integration import (
     align_lrc_text_to_whisper_timings,
     correct_timing_with_whisper,
     transcribe_vocals,

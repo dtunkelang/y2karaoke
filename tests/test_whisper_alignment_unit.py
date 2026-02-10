@@ -1,7 +1,7 @@
 import pytest
 from y2karaoke.core.models import Line, Word
-import y2karaoke.core.whisper_alignment as wa
-from y2karaoke.core.timing_models import (
+import y2karaoke.core.components.whisper.whisper_alignment as wa
+from y2karaoke.core.components.alignment.timing_models import (
     TranscriptionWord,
     TranscriptionSegment,
     AudioFeatures,
@@ -126,7 +126,7 @@ def test_merge_first_two_lines_if_segment_matches(monkeypatch):
         TranscriptionSegment(start=10.0, end=13.5, text="one two", words=[]),
     ]
 
-    import y2karaoke.core.whisper_alignment_segments as was
+    import y2karaoke.core.components.whisper.whisper_alignment_segments as was
 
     monkeypatch.setattr(
         was, "_find_best_whisper_segment", lambda *args: (segments[0], 0.9, 0.0)
@@ -149,7 +149,7 @@ def test_drop_duplicate_lines(monkeypatch):
         TranscriptionSegment(start=10.0, end=13.0, text="hello", words=[]),
     ]
 
-    import y2karaoke.core.whisper_alignment_segments as was
+    import y2karaoke.core.components.whisper.whisper_alignment_segments as was
 
     # Both lines map to same segment
     monkeypatch.setattr(
@@ -184,7 +184,7 @@ def test_pull_lines_forward_for_continuous_vocals(monkeypatch):
 
     af = MockAF()
 
-    import y2karaoke.core.whisper_alignment_refinement as war
+    import y2karaoke.core.components.whisper.whisper_alignment_refinement as war
 
     monkeypatch.setattr(war, "_check_vocal_activity_in_range", lambda *args: 0.8)
     monkeypatch.setattr(war, "_check_for_silence_in_range", lambda *args, **kw: False)
@@ -243,11 +243,11 @@ def test_fill_vocal_activity_gaps():
     af = MockAudioFeatures()
 
     # We need to monkeypatch _check_vocal_activity_in_range in whisper_alignment
-    import y2karaoke.core.whisper_alignment as wa_mod
+    import y2karaoke.core.components.whisper.whisper_alignment as wa_mod
     from unittest.mock import patch
 
     with patch(
-        "y2karaoke.core.whisper_alignment_refinement._check_vocal_activity_in_range",
+        "y2karaoke.core.components.whisper.whisper_alignment_refinement._check_vocal_activity_in_range",
         return_value=0.8,
     ):
         filled_words, filled_segs = wa._fill_vocal_activity_gaps(

@@ -1,5 +1,5 @@
-import y2karaoke.core.sync as sync
-import y2karaoke.core.sync_quality as sync_quality
+import y2karaoke.core.components.lyrics.sync as sync
+import y2karaoke.core.components.lyrics.sync_quality as sync_quality
 import y2karaoke.core.components.identify.implementation as ti
 import y2karaoke.core.components.identify.implementation as ti_impl
 

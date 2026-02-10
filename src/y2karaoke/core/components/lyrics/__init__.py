@@ -1,7 +1,7 @@
 """Lyrics component facade."""
 
 from .api import LyricsProcessor, get_lyrics
-from ...lyrics_whisper import get_lyrics_simple, get_lyrics_with_quality
+from .lyrics_whisper import get_lyrics_simple, get_lyrics_with_quality
 
 __all__ = [
     "LyricsProcessor",

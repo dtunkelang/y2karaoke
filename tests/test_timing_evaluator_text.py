@@ -1,9 +1,9 @@
-from y2karaoke.core.timing_models import (
+from y2karaoke.core.components.alignment.timing_models import (
     TranscriptionSegment,
     TranscriptionWord,
 )
 
-from y2karaoke.core.whisper_cache import (
+from y2karaoke.core.components.whisper.whisper_cache import (
     _get_whisper_cache_path,
     _load_whisper_cache,
     _save_whisper_cache,

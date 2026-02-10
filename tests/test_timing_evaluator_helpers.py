@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from y2karaoke.core.timing_models import AudioFeatures
+from y2karaoke.core.components.alignment.timing_models import AudioFeatures
 from y2karaoke.core.audio_analysis import (
     _find_silence_regions,
     _find_vocal_end,
@@ -10,9 +10,9 @@ from y2karaoke.core.audio_analysis import (
     _load_audio_features_cache,
     _save_audio_features_cache,
 )
-import y2karaoke.core.timing_evaluator_correction as te_corr
-import y2karaoke.core.timing_evaluator_core as te_core
-from y2karaoke.core.timing_evaluator import (
+import y2karaoke.core.components.alignment.timing_evaluator_correction as te_corr
+import y2karaoke.core.components.alignment.timing_evaluator_core as te_core
+from y2karaoke.core.components.alignment.timing_evaluator import (
     correct_line_timestamps,
     _find_best_onset_during_silence,
     _find_best_onset_for_phrase_end,
@@ -22,7 +22,7 @@ from y2karaoke.core.timing_evaluator import (
     _calculate_pause_score,
 )
 from y2karaoke.core.models import Line, Word
-import y2karaoke.core.timing_evaluator as te
+import y2karaoke.core.components.alignment.timing_evaluator as te
 
 
 def test_get_audio_features_cache_path(tmp_path):

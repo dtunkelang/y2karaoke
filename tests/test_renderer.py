@@ -14,7 +14,7 @@ from y2karaoke.core.components.render.frame_renderer import (
     render_frame,
     get_singer_colors,
 )
-from y2karaoke.core.progress import draw_progress_bar
+from y2karaoke.core.components.render.progress import draw_progress_bar
 from y2karaoke.config import VIDEO_WIDTH, VIDEO_HEIGHT, Colors
 
 

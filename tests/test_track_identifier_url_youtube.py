@@ -166,13 +166,19 @@ class TestCheckLrcAndDuration:
         """Results are cached to avoid redundant lookups."""
         identifier = TrackIdentifier()
 
-        with patch("y2karaoke.core.sync.fetch_lyrics_multi_source") as mock_fetch:
+        with patch(
+            "y2karaoke.core.components.lyrics.sync.fetch_lyrics_multi_source"
+        ) as mock_fetch:
             mock_fetch.return_value = ("[00:00.00]Line\n[03:30.00]End", True, "lyriq")
 
-            with patch("y2karaoke.core.sync.get_lrc_duration") as mock_duration:
+            with patch(
+                "y2karaoke.core.components.lyrics.sync.get_lrc_duration"
+            ) as mock_duration:
                 mock_duration.return_value = 210
 
-                with patch("y2karaoke.core.sync.validate_lrc_quality") as mock_validate:
+                with patch(
+                    "y2karaoke.core.components.lyrics.sync.validate_lrc_quality"
+                ) as mock_validate:
                     mock_validate.return_value = (True, None)
 
                     # First call
@@ -188,13 +194,19 @@ class TestCheckLrcAndDuration:
         """Cache key is case-insensitive."""
         identifier = TrackIdentifier()
 
-        with patch("y2karaoke.core.sync.fetch_lyrics_multi_source") as mock_fetch:
+        with patch(
+            "y2karaoke.core.components.lyrics.sync.fetch_lyrics_multi_source"
+        ) as mock_fetch:
             mock_fetch.return_value = ("[00:00.00]Line", True, "lyriq")
 
-            with patch("y2karaoke.core.sync.get_lrc_duration") as mock_duration:
+            with patch(
+                "y2karaoke.core.components.lyrics.sync.get_lrc_duration"
+            ) as mock_duration:
                 mock_duration.return_value = 210
 
-                with patch("y2karaoke.core.sync.validate_lrc_quality") as mock_validate:
+                with patch(
+                    "y2karaoke.core.components.lyrics.sync.validate_lrc_quality"
+                ) as mock_validate:
                     mock_validate.return_value = (True, None)
 
                     # Different cases should hit same cache entry

@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 
 from y2karaoke.core.models import Line, Word
-import y2karaoke.core.timing_evaluator as te
+import y2karaoke.core.components.alignment.timing_evaluator as te
 
 
 def _line(text, start, end):

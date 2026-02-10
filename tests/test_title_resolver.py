@@ -2,7 +2,7 @@ import types
 
 import pytest
 
-from y2karaoke.core import title_resolver
+from y2karaoke.core.components.identify import title_resolver
 
 
 def test_normalize_string_removes_stop_words_and_punct():

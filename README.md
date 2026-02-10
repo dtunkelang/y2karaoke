@@ -197,12 +197,6 @@ For debugging or experimenting with individual steps, you can run the core modul
   ```
   Example: `python -m y2karaoke.core.components.audio.audio_effects input.wav output_key-3_tempo0.8.wav -3 0.8`
 
-- **Test rendering (single preview frame)**
-  ```bash
-  python -m y2karaoke.core.renderer
-  ```
-  Renders a sample frame to `test_frame.png` for quickly checking fonts/layout.
-
 - **Inspect video backgrounds / scene detection**
   ```bash
   python -m y2karaoke.core.components.render.backgrounds path/to/video.mp4

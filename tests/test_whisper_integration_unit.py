@@ -1,7 +1,10 @@
 import pytest
 from y2karaoke.core.models import Line, Word
-import y2karaoke.core.whisper_integration as wi
-from y2karaoke.core.timing_models import TranscriptionWord, TranscriptionSegment
+import y2karaoke.core.components.whisper.whisper_integration as wi
+from y2karaoke.core.components.alignment.timing_models import (
+    TranscriptionWord,
+    TranscriptionSegment,
+)
 
 
 def test_whisper_lang_to_epitran():

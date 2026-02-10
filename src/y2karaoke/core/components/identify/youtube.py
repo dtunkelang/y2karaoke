@@ -381,7 +381,7 @@ class YouTubeSearcher(_Base):
         try:
             import wave
 
-            from ..config import get_cache_dir
+            from ....config import get_cache_dir
             from .youtube_metadata import extract_video_id
 
             video_id = extract_video_id(url)
@@ -422,7 +422,7 @@ class YouTubeSearcher(_Base):
         if cached is not None:
             return cached
         try:
-            from ..config import get_cache_dir
+            from ....config import get_cache_dir
             from .youtube_metadata import extract_video_id
 
             video_id = extract_video_id(url)

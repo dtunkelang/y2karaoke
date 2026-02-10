@@ -1,6 +1,6 @@
 import pytest
 
-from y2karaoke.core import fetch
+from y2karaoke.core.components.lyrics import fetch
 
 
 class FakeResponse:

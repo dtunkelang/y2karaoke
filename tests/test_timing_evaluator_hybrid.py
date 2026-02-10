@@ -1,6 +1,6 @@
-import y2karaoke.core.timing_evaluator as te
-import y2karaoke.core.whisper_integration as wi
-import y2karaoke.core.whisper_alignment_refinement as wa_ref
+import y2karaoke.core.components.alignment.timing_evaluator as te
+import y2karaoke.core.components.whisper.whisper_integration as wi
+import y2karaoke.core.components.whisper.whisper_alignment_refinement as wa_ref
 from y2karaoke.core.models import Line, Word
 
 

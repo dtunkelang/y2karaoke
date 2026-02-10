@@ -45,7 +45,7 @@ def test_detect_offset_with_issues_respects_manual(monkeypatch):
 
 def test_fetch_lrc_text_and_timings_duration_match(monkeypatch):
     monkeypatch.setattr(
-        "y2karaoke.core.sync.fetch_lyrics_for_duration",
+        "y2karaoke.core.components.lyrics.sync.fetch_lyrics_for_duration",
         lambda *a, **k: ("[00:01.00]hi", True, "src", 120),
     )
     monkeypatch.setattr(lw, "parse_lrc_with_timing", lambda *a, **k: [(1.0, "hi")])
@@ -63,7 +63,7 @@ def test_fetch_lrc_text_and_timings_duration_match(monkeypatch):
 
 def test_fetch_lrc_text_and_timings_standard_fetch(monkeypatch):
     monkeypatch.setattr(
-        "y2karaoke.core.sync.fetch_lyrics_multi_source",
+        "y2karaoke.core.components.lyrics.sync.fetch_lyrics_multi_source",
         lambda *a, **k: ("[00:01.00]hi", True, "src"),
     )
     monkeypatch.setattr(lw, "parse_lrc_with_timing", lambda *a, **k: [(1.0, "hi")])
@@ -80,7 +80,7 @@ def test_fetch_lrc_text_and_timings_standard_fetch(monkeypatch):
 
 def test_fetch_lrc_text_and_timings_standard_fetch_not_synced(monkeypatch):
     monkeypatch.setattr(
-        "y2karaoke.core.sync.fetch_lyrics_multi_source",
+        "y2karaoke.core.components.lyrics.sync.fetch_lyrics_multi_source",
         lambda *a, **k: (None, False, "src"),
     )
 
@@ -98,7 +98,9 @@ def test_fetch_lrc_text_and_timings_handles_exception(monkeypatch):
     def raise_error(*args, **kwargs):
         raise RuntimeError("boom")
 
-    monkeypatch.setattr("y2karaoke.core.sync.fetch_lyrics_multi_source", raise_error)
+    monkeypatch.setattr(
+        "y2karaoke.core.components.lyrics.sync.fetch_lyrics_multi_source", raise_error
+    )
 
     lrc_text, timings, source = lw._fetch_lrc_text_and_timings(
         "Title",
@@ -135,7 +137,7 @@ def test_get_lyrics_simple_whisper_failure(monkeypatch):
         lambda *a, **k: (lrc_text, line_timings, "src"),
     )
     monkeypatch.setattr(
-        "y2karaoke.core.genius.fetch_genius_lyrics_with_singers",
+        "y2karaoke.core.components.lyrics.genius.fetch_genius_lyrics_with_singers",
         lambda *a, **k: ([], SongMetadata(singers=[], is_duet=False)),
     )
     monkeypatch.setattr(
@@ -177,7 +179,7 @@ def test_get_lyrics_simple_whisper_success(monkeypatch):
         lambda *a, **k: (lrc_text, line_timings, "src"),
     )
     monkeypatch.setattr(
-        "y2karaoke.core.genius.fetch_genius_lyrics_with_singers",
+        "y2karaoke.core.components.lyrics.genius.fetch_genius_lyrics_with_singers",
         lambda *a, **k: ([], SongMetadata(singers=[], is_duet=False)),
     )
     monkeypatch.setattr(
@@ -282,7 +284,7 @@ def test_get_lyrics_with_quality_fallback_to_genius(monkeypatch):
 
 def test_fetch_genius_with_quality_tracking_lrc_present(monkeypatch):
     monkeypatch.setattr(
-        "y2karaoke.core.genius.fetch_genius_lyrics_with_singers",
+        "y2karaoke.core.components.lyrics.genius.fetch_genius_lyrics_with_singers",
         lambda *a, **k: (
             [("Hello", "Singer")],
             SongMetadata(singers=["Singer"], is_duet=False),

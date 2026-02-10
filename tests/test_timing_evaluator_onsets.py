@@ -1,6 +1,6 @@
 import numpy as np
 
-import y2karaoke.core.timing_evaluator as te
+import y2karaoke.core.components.alignment.timing_evaluator as te
 
 
 def _features():

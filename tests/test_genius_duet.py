@@ -1,6 +1,6 @@
 # test_genius_duet.py
 import pytest
-from y2karaoke.core.genius import parse_genius_html, fetch_html
+from y2karaoke.core.components.lyrics.genius import parse_genius_html, fetch_html
 
 
 @pytest.mark.network

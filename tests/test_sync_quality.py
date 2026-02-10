@@ -1,6 +1,6 @@
 import pytest
 
-import y2karaoke.core.sync as sync
+import y2karaoke.core.components.lyrics.sync as sync
 
 pytestmark = pytest.mark.usefixtures("isolated_sync_state")
 
@@ -30,7 +30,7 @@ def test_get_lrc_duration_returns_none_without_timestamps():
 
 def test_get_lrc_duration_from_timings(monkeypatch):
     monkeypatch.setattr(
-        "y2karaoke.core.lrc.parse_lrc_with_timing",
+        "y2karaoke.core.components.lyrics.lrc.parse_lrc_with_timing",
         lambda _text, _title, _artist: [(0.0, ""), (10.0, ""), (40.0, "")],
     )
     duration = sync.get_lrc_duration("[00:00.00]a\n[00:10.00]b\n[00:40.00]c")
@@ -39,7 +39,7 @@ def test_get_lrc_duration_from_timings(monkeypatch):
 
 def test_validate_lrc_quality_rejects_low_line_count(monkeypatch):
     monkeypatch.setattr(
-        "y2karaoke.core.lrc.parse_lrc_with_timing",
+        "y2karaoke.core.components.lyrics.lrc.parse_lrc_with_timing",
         lambda _text, _title, _artist: [(0.0, ""), (5.0, ""), (10.0, ""), (15.0, "")],
     )
     ok, reason = sync.validate_lrc_quality("[00:00.00]a\n[00:05.00]b")
@@ -49,7 +49,7 @@ def test_validate_lrc_quality_rejects_low_line_count(monkeypatch):
 
 def test_validate_lrc_quality_rejects_short_span(monkeypatch):
     monkeypatch.setattr(
-        "y2karaoke.core.lrc.parse_lrc_with_timing",
+        "y2karaoke.core.components.lyrics.lrc.parse_lrc_with_timing",
         lambda _text, _title, _artist: [
             (0.0, ""),
             (5.0, ""),
@@ -65,7 +65,7 @@ def test_validate_lrc_quality_rejects_short_span(monkeypatch):
 
 def test_validate_lrc_quality_rejects_low_density(monkeypatch):
     monkeypatch.setattr(
-        "y2karaoke.core.lrc.parse_lrc_with_timing",
+        "y2karaoke.core.components.lyrics.lrc.parse_lrc_with_timing",
         lambda _text, _title, _artist: [
             (0.0, ""),
             (30.0, ""),
@@ -81,7 +81,7 @@ def test_validate_lrc_quality_rejects_low_density(monkeypatch):
 
 def test_validate_lrc_quality_rejects_low_coverage(monkeypatch):
     monkeypatch.setattr(
-        "y2karaoke.core.lrc.parse_lrc_with_timing",
+        "y2karaoke.core.components.lyrics.lrc.parse_lrc_with_timing",
         lambda _text, _title, _artist: [
             (0.0, ""),
             (10.0, ""),
@@ -122,7 +122,7 @@ def test_fetch_lyrics_for_duration_mismatch_returns_anyway(monkeypatch):
 
 def test_get_lyrics_quality_report_flags_mismatch_and_gaps(monkeypatch):
     monkeypatch.setattr(
-        "y2karaoke.core.lrc.parse_lrc_with_timing",
+        "y2karaoke.core.components.lyrics.lrc.parse_lrc_with_timing",
         lambda _text, _title, _artist: [
             (0.0, ""),
             (40.0, ""),

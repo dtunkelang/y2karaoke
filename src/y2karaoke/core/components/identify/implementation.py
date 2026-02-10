@@ -51,7 +51,7 @@ class TrackIdentifier(
         Returns:
             TrackInfo if found, None otherwise
         """
-        from ...sync import fetch_lyrics_multi_source, get_lrc_duration
+        from ..lyrics.sync import fetch_lyrics_multi_source, get_lrc_duration
 
         logger.debug(f"Trying direct LRC search: {query}")
 
@@ -216,7 +216,7 @@ class TrackIdentifier(
             f"Canonical track: {canonical_artist} - {canonical_title} ({canonical_duration}s)"
         )
 
-        from ...sync import fetch_lyrics_for_duration
+        from ..lyrics.sync import fetch_lyrics_for_duration
 
         _, _, _, lrc_duration = fetch_lyrics_for_duration(
             canonical_title, canonical_artist, canonical_duration, tolerance=8

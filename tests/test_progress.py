@@ -1,6 +1,6 @@
 import types
 
-import y2karaoke.core.progress as progress
+import y2karaoke.core.components.render.progress as progress
 
 
 def test_render_progress_bar_prints_every_5_percent(capsys):

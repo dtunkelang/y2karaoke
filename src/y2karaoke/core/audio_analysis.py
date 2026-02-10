@@ -5,7 +5,7 @@ import numpy as np
 from pathlib import Path
 
 from ..utils.logging import get_logger
-from .timing_models import AudioFeatures
+from .components.alignment.timing_models import AudioFeatures
 
 logger = get_logger(__name__)
 

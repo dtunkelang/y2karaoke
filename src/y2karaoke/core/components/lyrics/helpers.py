@@ -7,7 +7,7 @@ from typing import List, Optional, Tuple, Dict
 
 from ...models import Word, Line, SongMetadata
 from ...romanization import romanize_line
-from ...lrc import (
+from .lrc import (
     parse_lrc_with_timing,
     create_lines_from_lrc,
     create_lines_from_lrc_timings,
@@ -142,7 +142,7 @@ def _detect_and_apply_offset(
 
     Returns updated line_timings and the offset that was applied.
     """
-    from ...components.alignment.alignment import detect_song_start
+    from ..alignment.alignment import detect_song_start
 
     detected_vocal_start = detect_song_start(vocals_path)
     first_lrc_time = line_timings[0][0]
@@ -223,20 +223,20 @@ def _refine_timing_with_audio(
 ) -> List[Line]:
     """Refine word timing using audio onset detection and handle duration mismatch."""
     from ...refine import refine_word_timing
-    from ...components.alignment.alignment import (
+    from ..alignment.alignment import (
         _apply_adjustments_to_lines,
         adjust_timing_for_duration_mismatch,
     )
-    from ...sync import get_lrc_duration
+    from .sync import get_lrc_duration
     from ...audio_analysis import (
         extract_audio_features,
         _check_for_silence_in_range,
         _check_vocal_activity_in_range,
     )
-    from ...whisper_alignment_refinement import (
+    from ..whisper.whisper_alignment_refinement import (
         _pull_lines_forward_for_continuous_vocals,
     )
-    from ...timing_evaluator_correction import (
+    from ..alignment.timing_evaluator_correction import (
         correct_line_timestamps,
         fix_spurious_gaps,
     )
@@ -382,7 +382,7 @@ def _apply_whisper_alignment(
 ) -> Tuple[List[Line], List[str], Dict[str, float]]:
     """Apply Whisper alignment to lines. Returns (lines, fixes_list)."""
     from ...audio_analysis import extract_audio_features
-    from ...whisper_integration import (
+    from ..whisper.whisper_integration import (
         align_lrc_text_to_whisper_timings,
         correct_timing_with_whisper,
     )

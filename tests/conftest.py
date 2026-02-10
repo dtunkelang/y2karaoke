@@ -323,7 +323,9 @@ def lrc_no_metadata():
 @pytest.fixture
 def mock_lrc_provider(lrc_bohemian_rhapsody):
     """Mock syncedlyrics/lyriq for testing LRC fetching."""
-    with patch("y2karaoke.core.sync.fetch_lyrics_multi_source") as mock_fetch:
+    with patch(
+        "y2karaoke.core.components.lyrics.sync.fetch_lyrics_multi_source"
+    ) as mock_fetch:
         mock_fetch.return_value = (lrc_bohemian_rhapsody, True, "lyriq")
         yield mock_fetch
 
@@ -331,7 +333,9 @@ def mock_lrc_provider(lrc_bohemian_rhapsody):
 @pytest.fixture
 def mock_lrc_provider_not_found():
     """Mock LRC provider that returns no results."""
-    with patch("y2karaoke.core.sync.fetch_lyrics_multi_source") as mock_fetch:
+    with patch(
+        "y2karaoke.core.components.lyrics.sync.fetch_lyrics_multi_source"
+    ) as mock_fetch:
         mock_fetch.return_value = (None, False, None)
         yield mock_fetch
 
@@ -428,9 +432,15 @@ def mock_track_identifier_dependencies():
     with patch(
         "y2karaoke.core.components.identify.implementation.musicbrainzngs"
     ) as mock_mb:
-        with patch("y2karaoke.core.sync.fetch_lyrics_multi_source") as mock_lrc:
-            with patch("y2karaoke.core.sync.get_lrc_duration") as mock_duration:
-                with patch("y2karaoke.core.sync.validate_lrc_quality") as mock_validate:
+        with patch(
+            "y2karaoke.core.components.lyrics.sync.fetch_lyrics_multi_source"
+        ) as mock_lrc:
+            with patch(
+                "y2karaoke.core.components.lyrics.sync.get_lrc_duration"
+            ) as mock_duration:
+                with patch(
+                    "y2karaoke.core.components.lyrics.sync.validate_lrc_quality"
+                ) as mock_validate:
                     with patch("requests.get") as mock_requests:
                         # Set up default returns
                         mock_mb.search_recordings.return_value = {"recording-list": []}

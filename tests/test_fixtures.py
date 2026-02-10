@@ -160,7 +160,7 @@ class TestMockProviderFixtures:
 
     def test_mock_lrc_provider_returns_lyrics(self, mock_lrc_provider):
         """Mock LRC provider should return synced lyrics."""
-        from y2karaoke.core.sync import fetch_lyrics_multi_source
+        from y2karaoke.core.components.lyrics.sync import fetch_lyrics_multi_source
 
         lrc_text, is_synced, source = fetch_lyrics_multi_source("test", "test")
 
@@ -170,7 +170,7 @@ class TestMockProviderFixtures:
 
     def test_mock_lrc_provider_not_found(self, mock_lrc_provider_not_found):
         """Mock LRC provider should return no results when configured."""
-        from y2karaoke.core.sync import fetch_lyrics_multi_source
+        from y2karaoke.core.components.lyrics.sync import fetch_lyrics_multi_source
 
         lrc_text, is_synced, source = fetch_lyrics_multi_source("test", "test")
 

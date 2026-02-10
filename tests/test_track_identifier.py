@@ -487,7 +487,7 @@ class TestIdentifyFromSearchMocked:
     @patch(
         "y2karaoke.core.components.identify.implementation.TrackIdentifier._search_youtube_by_duration"
     )
-    @patch("y2karaoke.core.sync.fetch_lyrics_for_duration")
+    @patch("y2karaoke.core.components.lyrics.sync.fetch_lyrics_for_duration")
     def test_successful_identification_with_artist(
         self,
         mock_fetch_lyrics,
@@ -619,7 +619,7 @@ class TestIdentifyFromSearchMocked:
         assert result.source == "youtube"
         mock_fallback.assert_called_once()
 
-    @patch("y2karaoke.core.sync.fetch_lyrics_for_duration")
+    @patch("y2karaoke.core.components.lyrics.sync.fetch_lyrics_for_duration")
     @patch(
         "y2karaoke.core.components.identify.implementation.TrackIdentifier._search_youtube_by_duration"
     )
@@ -670,7 +670,7 @@ class TestIdentifyFromSearchMocked:
         assert "doesn't match canonical" in caplog.text.lower()
         assert mock_search_youtube.call_count == 2
 
-    @patch("y2karaoke.core.sync.fetch_lyrics_for_duration")
+    @patch("y2karaoke.core.components.lyrics.sync.fetch_lyrics_for_duration")
     @patch(
         "y2karaoke.core.components.identify.implementation.TrackIdentifier._search_youtube_by_duration"
     )

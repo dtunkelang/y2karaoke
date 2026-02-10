@@ -12,11 +12,11 @@ def test_try_direct_lrc_search_swaps_query(monkeypatch):
         return "[00:01.00]hi", True, "provider"
 
     monkeypatch.setattr(
-        "y2karaoke.core.sync.fetch_lyrics_multi_source",
+        "y2karaoke.core.components.lyrics.sync.fetch_lyrics_multi_source",
         fake_fetch,
     )
     monkeypatch.setattr(
-        "y2karaoke.core.sync.get_lrc_duration",
+        "y2karaoke.core.components.lyrics.sync.get_lrc_duration",
         lambda *_: 180,
     )
     monkeypatch.setattr(identifier, "_extract_lrc_metadata", lambda *_: (None, None))
@@ -38,11 +38,11 @@ def test_try_direct_lrc_search_rejects_short_lrc(monkeypatch):
     identifier = TrackIdentifier()
 
     monkeypatch.setattr(
-        "y2karaoke.core.sync.fetch_lyrics_multi_source",
+        "y2karaoke.core.components.lyrics.sync.fetch_lyrics_multi_source",
         lambda *a, **k: ("[00:01.00]hi", True, "provider"),
     )
     monkeypatch.setattr(
-        "y2karaoke.core.sync.get_lrc_duration",
+        "y2karaoke.core.components.lyrics.sync.get_lrc_duration",
         lambda *_: 30,
     )
 
@@ -53,11 +53,11 @@ def test_try_direct_lrc_search_uses_musicbrainz_when_unknown(monkeypatch):
     identifier = TrackIdentifier()
 
     monkeypatch.setattr(
-        "y2karaoke.core.sync.fetch_lyrics_multi_source",
+        "y2karaoke.core.components.lyrics.sync.fetch_lyrics_multi_source",
         lambda *a, **k: ("[00:01.00]hi", True, "provider"),
     )
     monkeypatch.setattr(
-        "y2karaoke.core.sync.get_lrc_duration",
+        "y2karaoke.core.components.lyrics.sync.get_lrc_duration",
         lambda *_: 180,
     )
     monkeypatch.setattr(identifier, "_extract_lrc_metadata", lambda *_: (None, None))
@@ -96,11 +96,11 @@ def test_try_direct_lrc_search_falls_back_to_query_when_artist_search_fails(
     identifier = TrackIdentifier()
 
     monkeypatch.setattr(
-        "y2karaoke.core.sync.fetch_lyrics_multi_source",
+        "y2karaoke.core.components.lyrics.sync.fetch_lyrics_multi_source",
         lambda *a, **k: ("[00:01.00]hi", True, "provider"),
     )
     monkeypatch.setattr(
-        "y2karaoke.core.sync.get_lrc_duration",
+        "y2karaoke.core.components.lyrics.sync.get_lrc_duration",
         lambda *_: 180,
     )
     monkeypatch.setattr(
@@ -127,11 +127,11 @@ def test_try_direct_lrc_search_returns_none_when_no_youtube_match(monkeypatch):
     identifier = TrackIdentifier()
 
     monkeypatch.setattr(
-        "y2karaoke.core.sync.fetch_lyrics_multi_source",
+        "y2karaoke.core.components.lyrics.sync.fetch_lyrics_multi_source",
         lambda *a, **k: ("[00:01.00]hi", True, "provider"),
     )
     monkeypatch.setattr(
-        "y2karaoke.core.sync.get_lrc_duration",
+        "y2karaoke.core.components.lyrics.sync.get_lrc_duration",
         lambda *_: 180,
     )
     monkeypatch.setattr(
@@ -146,7 +146,7 @@ def test_try_direct_lrc_search_returns_none_when_no_lrc(monkeypatch):
     identifier = TrackIdentifier()
 
     monkeypatch.setattr(
-        "y2karaoke.core.sync.fetch_lyrics_multi_source",
+        "y2karaoke.core.components.lyrics.sync.fetch_lyrics_multi_source",
         lambda *a, **k: (None, False, ""),
     )
 
@@ -157,11 +157,11 @@ def test_try_direct_lrc_search_infers_artist_when_missing(monkeypatch):
     identifier = TrackIdentifier()
 
     monkeypatch.setattr(
-        "y2karaoke.core.sync.fetch_lyrics_multi_source",
+        "y2karaoke.core.components.lyrics.sync.fetch_lyrics_multi_source",
         lambda *a, **k: ("[00:01.00]hi", True, "provider"),
     )
     monkeypatch.setattr(
-        "y2karaoke.core.sync.get_lrc_duration",
+        "y2karaoke.core.components.lyrics.sync.get_lrc_duration",
         lambda *_: 180,
     )
     monkeypatch.setattr(identifier, "_extract_lrc_metadata", lambda *_: (None, None))

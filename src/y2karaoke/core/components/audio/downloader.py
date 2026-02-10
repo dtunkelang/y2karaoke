@@ -6,7 +6,7 @@ from typing import Dict, Optional
 from ....config import get_cache_dir
 from ....exceptions import DownloadError
 from ....utils.logging import get_logger
-from ...youtube_metadata import (
+from ..identify.youtube_metadata import (
     sanitize_filename,
     validate_youtube_url,
     extract_video_id,

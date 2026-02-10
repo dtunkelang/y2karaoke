@@ -6,7 +6,7 @@ from unittest.mock import patch
 import numpy as np
 import pytest
 
-from y2karaoke.core.timing_models import (
+from y2karaoke.core.components.alignment.timing_models import (
     TimingIssue,
     AudioFeatures,
     TimingReport,
@@ -23,7 +23,7 @@ from y2karaoke.core.phonetic_utils import (
     _normalize_text_for_matching,
     _text_similarity_basic,
 )
-from y2karaoke.core.timing_evaluator import (
+from y2karaoke.core.components.alignment.timing_evaluator import (
     evaluate_timing,
     _find_closest_onset,
 )
