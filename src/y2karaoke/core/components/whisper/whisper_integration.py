@@ -111,17 +111,30 @@ def use_whisper_integration_hooks(
     assess_lrc_quality_fn=None,
     align_hybrid_lrc_whisper_fn=None,
     align_dtw_whisper_with_data_fn=None,
+    load_whisper_model_class_fn=None,
+    get_whisper_cache_path_fn=None,
+    load_whisper_cache_fn=None,
+    save_whisper_cache_fn=None,
+    retime_lines_from_dtw_alignments_fn=None,
 ):
     """Temporarily override integration collaborators for tests."""
     global transcribe_vocals, extract_audio_features
     global _assess_lrc_quality, align_hybrid_lrc_whisper
     global _align_dtw_whisper_with_data
+    global _load_whisper_model_class
+    global _get_whisper_cache_path, _load_whisper_cache, _save_whisper_cache
+    global _retime_lines_from_dtw_alignments
 
     prev_transcribe_vocals = transcribe_vocals
     prev_extract_audio_features = extract_audio_features
     prev_assess_lrc_quality = _assess_lrc_quality
     prev_align_hybrid = align_hybrid_lrc_whisper
     prev_align_dtw_data = _align_dtw_whisper_with_data
+    prev_load_model = _load_whisper_model_class
+    prev_get_cache_path = _get_whisper_cache_path
+    prev_load_cache = _load_whisper_cache
+    prev_save_cache = _save_whisper_cache
+    prev_retime_from_dtw = _retime_lines_from_dtw_alignments
 
     if transcribe_vocals_fn is not None:
         transcribe_vocals = transcribe_vocals_fn
@@ -133,6 +146,16 @@ def use_whisper_integration_hooks(
         align_hybrid_lrc_whisper = align_hybrid_lrc_whisper_fn
     if align_dtw_whisper_with_data_fn is not None:
         _align_dtw_whisper_with_data = align_dtw_whisper_with_data_fn
+    if load_whisper_model_class_fn is not None:
+        _load_whisper_model_class = load_whisper_model_class_fn
+    if get_whisper_cache_path_fn is not None:
+        _get_whisper_cache_path = get_whisper_cache_path_fn
+    if load_whisper_cache_fn is not None:
+        _load_whisper_cache = load_whisper_cache_fn
+    if save_whisper_cache_fn is not None:
+        _save_whisper_cache = save_whisper_cache_fn
+    if retime_lines_from_dtw_alignments_fn is not None:
+        _retime_lines_from_dtw_alignments = retime_lines_from_dtw_alignments_fn
 
     try:
         yield
@@ -142,6 +165,11 @@ def use_whisper_integration_hooks(
         _assess_lrc_quality = prev_assess_lrc_quality
         align_hybrid_lrc_whisper = prev_align_hybrid
         _align_dtw_whisper_with_data = prev_align_dtw_data
+        _load_whisper_model_class = prev_load_model
+        _get_whisper_cache_path = prev_get_cache_path
+        _load_whisper_cache = prev_load_cache
+        _save_whisper_cache = prev_save_cache
+        _retime_lines_from_dtw_alignments = prev_retime_from_dtw
 
 
 def _load_whisper_model_class():

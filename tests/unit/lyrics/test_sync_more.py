@@ -13,8 +13,8 @@ def test_fetch_lyrics_multi_source_cached_duration_mismatch_refetch(
     cache_key = ("artist", "title")
     sync._lrc_cache[cache_key] = ("[00:00.00]A", True, "cached", 100)
 
-    monkeypatch.setattr(sync, "LYRIQ_AVAILABLE", False)
-    monkeypatch.setattr(sync, "SYNCEDLYRICS_AVAILABLE", True)
+    isolated_sync_state.lyriq_available = False
+    isolated_sync_state.syncedlyrics_available = True
 
     called = {"count": 0}
 
@@ -35,8 +35,8 @@ def test_fetch_lyrics_multi_source_cached_duration_mismatch_refetch(
 def test_fetch_lyrics_multi_source_enhanced_plain_allowed(
     monkeypatch, isolated_sync_state
 ):
-    monkeypatch.setattr(sync, "LYRIQ_AVAILABLE", False)
-    monkeypatch.setattr(sync, "SYNCEDLYRICS_AVAILABLE", True)
+    isolated_sync_state.lyriq_available = False
+    isolated_sync_state.syncedlyrics_available = True
 
     calls = {"count": 0}
 
@@ -89,7 +89,7 @@ def test_get_lyrics_quality_report_no_timestamps():
 
 def test_get_lyrics_quality_report_too_few_lines(monkeypatch, isolated_sync_state):
     lrc = "[00:00.00]Line"
-    monkeypatch.setattr(sync, "_has_timestamps", lambda *_a, **_k: True)
+    isolated_sync_state.has_timestamps_fn = lambda *_a, **_k: True
     monkeypatch.setattr(
         "y2karaoke.core.components.lyrics.lrc.parse_lrc_with_timing",
         lambda *_a, **_k: [],
@@ -166,8 +166,8 @@ def test_fetch_from_lyriq_no_synced_or_plain(monkeypatch, isolated_sync_state):
         synced_lyrics = None
         plain_lyrics = None
 
-    monkeypatch.setattr(sync, "LYRIQ_AVAILABLE", True)
-    monkeypatch.setattr(sync, "lyriq_get_lyrics", lambda *_a, **_k: EmptyLyrics())
+    isolated_sync_state.lyriq_available = True
+    isolated_sync_state.lyriq_get_lyrics_fn = lambda *_a, **_k: EmptyLyrics()
 
     assert sync._fetch_from_lyriq("Title", "Artist") is None
 
@@ -178,8 +178,8 @@ def test_fetch_lyrics_multi_source_cache_hit_duration_match(
     cache_key = ("artist", "title")
     sync._lrc_cache[cache_key] = ("[00:00.00]A", True, "cached", 120)
 
-    monkeypatch.setattr(sync, "LYRIQ_AVAILABLE", False)
-    monkeypatch.setattr(sync, "SYNCEDLYRICS_AVAILABLE", True)
+    isolated_sync_state.lyriq_available = False
+    isolated_sync_state.syncedlyrics_available = True
 
     result = sync.fetch_lyrics_multi_source(
         "Title", "Artist", target_duration=125, duration_tolerance=10
@@ -191,8 +191,8 @@ def test_fetch_lyrics_multi_source_cache_hit_duration_match(
 def test_fetch_lyrics_multi_source_returns_synced_provider(
     monkeypatch, isolated_sync_state
 ):
-    monkeypatch.setattr(sync, "LYRIQ_AVAILABLE", False)
-    monkeypatch.setattr(sync, "SYNCEDLYRICS_AVAILABLE", True)
+    isolated_sync_state.lyriq_available = False
+    isolated_sync_state.syncedlyrics_available = True
     isolated_sync_state.search_with_fallback_fn = lambda *_a, **_k: (
         "[00:00.00]A",
         "Provider",
@@ -206,8 +206,8 @@ def test_fetch_lyrics_multi_source_returns_synced_provider(
 def test_fetch_lyrics_multi_source_returns_plain_when_allowed(
     monkeypatch, isolated_sync_state
 ):
-    monkeypatch.setattr(sync, "LYRIQ_AVAILABLE", False)
-    monkeypatch.setattr(sync, "SYNCEDLYRICS_AVAILABLE", True)
+    isolated_sync_state.lyriq_available = False
+    isolated_sync_state.syncedlyrics_available = True
     isolated_sync_state.search_with_fallback_fn = lambda *_a, **_k: (
         "Plain lyrics",
         "Provider",
@@ -238,8 +238,8 @@ def test_validate_lrc_quality_large_gap_and_low_coverage():
 
 
 def test_fetch_lyrics_for_duration_returns_match(monkeypatch, isolated_sync_state):
-    monkeypatch.setattr(sync, "SYNCEDLYRICS_AVAILABLE", True)
-    monkeypatch.setattr(sync, "LYRIQ_AVAILABLE", False)
+    isolated_sync_state.syncedlyrics_available = True
+    isolated_sync_state.lyriq_available = False
 
     lrc_text = "[00:00.00]Line\n[00:10.00]Next"
 
@@ -248,7 +248,7 @@ def test_fetch_lyrics_for_duration_returns_match(monkeypatch, isolated_sync_stat
         "fetch_lyrics_multi_source",
         lambda *_a, **_k: (lrc_text, True, "source"),
     )
-    monkeypatch.setattr(sync, "get_lrc_duration", lambda *_a, **_k: 200)
+    isolated_sync_state.get_lrc_duration_fn = lambda *_a, **_k: 200
 
     result = sync.fetch_lyrics_for_duration("Title", "Artist", 200, tolerance=10)
 
@@ -258,8 +258,8 @@ def test_fetch_lyrics_for_duration_returns_match(monkeypatch, isolated_sync_stat
 def test_fetch_lyrics_for_duration_alternative_search_match(
     monkeypatch, isolated_sync_state
 ):
-    monkeypatch.setattr(sync, "SYNCEDLYRICS_AVAILABLE", True)
-    monkeypatch.setattr(sync, "LYRIQ_AVAILABLE", False)
+    isolated_sync_state.syncedlyrics_available = True
+    isolated_sync_state.lyriq_available = False
 
     lrc_text = "[00:00.00]Line\n[00:10.00]Next"
     alt_lrc = "[00:00.00]Alt\n[00:20.00]Next"
@@ -288,8 +288,8 @@ def test_fetch_lyrics_for_duration_alternative_search_match(
 def test_fetch_lyrics_for_duration_returns_mismatch_when_no_alternatives(
     monkeypatch, isolated_sync_state
 ):
-    monkeypatch.setattr(sync, "SYNCEDLYRICS_AVAILABLE", True)
-    monkeypatch.setattr(sync, "LYRIQ_AVAILABLE", False)
+    isolated_sync_state.syncedlyrics_available = True
+    isolated_sync_state.lyriq_available = False
 
     lrc_text = "[00:00.00]Line\n[00:10.00]Next"
 
@@ -298,8 +298,8 @@ def test_fetch_lyrics_for_duration_returns_mismatch_when_no_alternatives(
         "fetch_lyrics_multi_source",
         lambda *_a, **_k: (lrc_text, True, "source"),
     )
-    monkeypatch.setattr(sync, "_search_with_fallback", lambda *_a, **_k: (None, ""))
-    monkeypatch.setattr(sync, "get_lrc_duration", lambda *_a, **_k: 100)
+    isolated_sync_state.search_with_fallback_fn = lambda *_a, **_k: (None, "")
+    isolated_sync_state.get_lrc_duration_fn = lambda *_a, **_k: 100
 
     result = sync.fetch_lyrics_for_duration("Title", "Artist", 200, tolerance=10)
 
@@ -309,8 +309,8 @@ def test_fetch_lyrics_for_duration_returns_mismatch_when_no_alternatives(
 def test_fetch_lyrics_for_duration_returns_none_when_no_results(
     monkeypatch, isolated_sync_state
 ):
-    monkeypatch.setattr(sync, "SYNCEDLYRICS_AVAILABLE", False)
-    monkeypatch.setattr(sync, "LYRIQ_AVAILABLE", False)
+    isolated_sync_state.syncedlyrics_available = False
+    isolated_sync_state.lyriq_available = False
 
     monkeypatch.setattr(
         sync,
@@ -326,8 +326,8 @@ def test_fetch_lyrics_for_duration_returns_none_when_no_results(
 def test_fetch_from_all_sources_skips_genius_and_handles_errors(
     monkeypatch, isolated_sync_state
 ):
-    monkeypatch.setattr(sync, "LYRIQ_AVAILABLE", True)
-    monkeypatch.setattr(sync, "SYNCEDLYRICS_AVAILABLE", True)
+    isolated_sync_state.lyriq_available = True
+    isolated_sync_state.syncedlyrics_available = True
     monkeypatch.setattr(
         sync,
         "lyriq_get_lyrics",
@@ -343,7 +343,7 @@ def test_fetch_from_all_sources_skips_genius_and_handles_errors(
         calls["providers"].append(providers[0])
         raise RuntimeError("fail")
 
-    monkeypatch.setattr(sync, "syncedlyrics", types.SimpleNamespace(search=fake_search))
+    isolated_sync_state.syncedlyrics_mod = types.SimpleNamespace(search=fake_search)
 
     results = sync.fetch_from_all_sources("Title", "Artist")
 

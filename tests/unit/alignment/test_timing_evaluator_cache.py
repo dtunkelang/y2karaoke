@@ -39,9 +39,10 @@ def test_transcribe_vocals_uses_cache(monkeypatch, tmp_path):
     words = [te.TranscriptionWord(start=0.1, end=0.2, text="cached")]
     te._save_whisper_cache(cache_path, segments, words, "en", "base", False)
 
-    monkeypatch.setattr(wi, "_load_whisper_cache", lambda *_: (segments, words, "en"))
-
-    got_segments, got_words, lang, model = te.transcribe_vocals(str(audio_path))
+    with wi.use_whisper_integration_hooks(
+        load_whisper_cache_fn=lambda *_: (segments, words, "en")
+    ):
+        got_segments, got_words, lang, model = te.transcribe_vocals(str(audio_path))
     assert got_segments[0].text == "cached"
     assert got_words[0].text == "cached"
     assert lang == "en"
@@ -55,10 +56,11 @@ def test_transcribe_vocals_handles_missing_whisper(monkeypatch, tmp_path):
     def missing_whisper():
         raise ImportError("no whisper")
 
-    monkeypatch.setattr(wi, "_load_whisper_model_class", missing_whisper)
-    monkeypatch.setattr(wi, "_load_whisper_cache", lambda *_: None)
-
-    segments, words, lang, model = te.transcribe_vocals(str(audio_path))
+    with wi.use_whisper_integration_hooks(
+        load_whisper_model_class_fn=missing_whisper,
+        load_whisper_cache_fn=lambda *_: None,
+    ):
+        segments, words, lang, model = te.transcribe_vocals(str(audio_path))
     assert segments == []
     assert words == []
     assert lang == ""

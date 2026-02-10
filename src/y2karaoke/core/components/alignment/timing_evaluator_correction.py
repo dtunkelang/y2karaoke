@@ -1,7 +1,9 @@
 """Functions for correcting lyrics timing based on audio analysis."""
 
+from contextlib import contextmanager
+from dataclasses import dataclass
 import logging
-from typing import List, Optional, Tuple
+from typing import Callable, Iterator, List, Optional, Tuple
 import numpy as np
 
 from ...models import Line, Word
@@ -12,6 +14,164 @@ from ...audio_analysis import (
 )
 
 logger = logging.getLogger(__name__)
+
+
+@dataclass
+class TimingCorrectionHooks:
+    """Optional runtime overrides for timing correction collaborators."""
+
+    check_vocal_activity_in_range_fn: Optional[Callable[..., float]] = None
+    check_for_silence_in_range_fn: Optional[Callable[..., bool]] = None
+    find_phrase_end_fn: Optional[Callable[..., float]] = None
+    find_best_onset_for_phrase_end_fn: Optional[Callable[..., Optional[float]]] = None
+    find_best_onset_proximity_fn: Optional[Callable[..., Optional[float]]] = None
+    find_best_onset_during_silence_fn: Optional[Callable[..., Optional[float]]] = None
+
+
+_ACTIVE_HOOKS = TimingCorrectionHooks()
+
+
+@contextmanager
+def use_timing_correction_hooks(
+    *,
+    check_vocal_activity_in_range_fn: Optional[Callable[..., float]] = None,
+    check_for_silence_in_range_fn: Optional[Callable[..., bool]] = None,
+    find_phrase_end_fn: Optional[Callable[..., float]] = None,
+    find_best_onset_for_phrase_end_fn: Optional[Callable[..., Optional[float]]] = None,
+    find_best_onset_proximity_fn: Optional[Callable[..., Optional[float]]] = None,
+    find_best_onset_during_silence_fn: Optional[Callable[..., Optional[float]]] = None,
+) -> Iterator[None]:
+    """Temporarily override timing correction collaborators for tests."""
+    global _ACTIVE_HOOKS
+
+    previous = _ACTIVE_HOOKS
+    _ACTIVE_HOOKS = TimingCorrectionHooks(
+        check_vocal_activity_in_range_fn=(
+            check_vocal_activity_in_range_fn
+            if check_vocal_activity_in_range_fn is not None
+            else previous.check_vocal_activity_in_range_fn
+        ),
+        check_for_silence_in_range_fn=(
+            check_for_silence_in_range_fn
+            if check_for_silence_in_range_fn is not None
+            else previous.check_for_silence_in_range_fn
+        ),
+        find_phrase_end_fn=(
+            find_phrase_end_fn
+            if find_phrase_end_fn is not None
+            else previous.find_phrase_end_fn
+        ),
+        find_best_onset_for_phrase_end_fn=(
+            find_best_onset_for_phrase_end_fn
+            if find_best_onset_for_phrase_end_fn is not None
+            else previous.find_best_onset_for_phrase_end_fn
+        ),
+        find_best_onset_proximity_fn=(
+            find_best_onset_proximity_fn
+            if find_best_onset_proximity_fn is not None
+            else previous.find_best_onset_proximity_fn
+        ),
+        find_best_onset_during_silence_fn=(
+            find_best_onset_during_silence_fn
+            if find_best_onset_during_silence_fn is not None
+            else previous.find_best_onset_during_silence_fn
+        ),
+    )
+    try:
+        yield
+    finally:
+        _ACTIVE_HOOKS = previous
+
+
+def _check_vocal_activity(
+    start: float, end: float, audio_features: AudioFeatures
+) -> float:
+    fn = (
+        _ACTIVE_HOOKS.check_vocal_activity_in_range_fn or _check_vocal_activity_in_range
+    )
+    return fn(start, end, audio_features)
+
+
+def _check_silence(
+    start: float, end: float, audio_features: AudioFeatures, min_silence_duration: float
+) -> bool:
+    fn = _ACTIVE_HOOKS.check_for_silence_in_range_fn or _check_for_silence_in_range
+    return fn(start, end, audio_features, min_silence_duration=min_silence_duration)
+
+
+def _find_phrase_end_for_state(
+    start_time: float,
+    max_end_time: float,
+    audio_features: AudioFeatures,
+    min_silence_duration: float = 0.3,
+) -> float:
+    fn = _ACTIVE_HOOKS.find_phrase_end_fn
+    if fn is not None:
+        return fn(
+            start_time,
+            max_end_time,
+            audio_features,
+            min_silence_duration=min_silence_duration,
+        )
+    return _find_phrase_end(
+        start_time,
+        max_end_time,
+        audio_features,
+        min_silence_duration=min_silence_duration,
+    )
+
+
+def _find_best_onset_for_phrase_end_for_state(
+    onset_times: np.ndarray,
+    line_start: float,
+    prev_line_audio_end: float,
+    audio_features: AudioFeatures,
+) -> Optional[float]:
+    fn = _ACTIVE_HOOKS.find_best_onset_for_phrase_end_fn
+    if fn is not None:
+        return fn(onset_times, line_start, prev_line_audio_end, audio_features)
+    return _find_best_onset_for_phrase_end(
+        onset_times, line_start, prev_line_audio_end, audio_features
+    )
+
+
+def _find_best_onset_proximity_for_state(
+    onset_times: np.ndarray,
+    line_start: float,
+    max_correction: float,
+    audio_features: AudioFeatures,
+) -> Optional[float]:
+    fn = _ACTIVE_HOOKS.find_best_onset_proximity_fn
+    if fn is not None:
+        return fn(onset_times, line_start, max_correction, audio_features)
+    return _find_best_onset_proximity(
+        onset_times, line_start, max_correction, audio_features
+    )
+
+
+def _find_best_onset_during_silence_for_state(
+    onset_times: np.ndarray,
+    line_start: float,
+    prev_line_audio_end: float,
+    max_correction: float,
+    audio_features: AudioFeatures,
+) -> Optional[float]:
+    fn = _ACTIVE_HOOKS.find_best_onset_during_silence_fn
+    if fn is not None:
+        return fn(
+            onset_times,
+            line_start,
+            prev_line_audio_end,
+            max_correction,
+            audio_features,
+        )
+    return _find_best_onset_during_silence(
+        onset_times,
+        line_start,
+        prev_line_audio_end,
+        max_correction,
+        audio_features,
+    )
 
 
 def _find_best_onset_for_phrase_end(
@@ -27,7 +187,7 @@ def _find_best_onset_for_phrase_end(
     ]
 
     for onset in candidate_onsets:
-        onset_silence_before = _check_vocal_activity_in_range(
+        onset_silence_before = _check_vocal_activity(
             max(0, onset - 0.5), onset - 0.1, audio_features
         )
         if onset_silence_before < 0.3:
@@ -53,7 +213,7 @@ def _find_best_onset_proximity(
 
     for onset in candidate_onsets:
         distance = abs(onset - line_start)
-        onset_silence_before = _check_vocal_activity_in_range(
+        onset_silence_before = _check_vocal_activity(
             max(0, onset - 0.5), onset - 0.1, audio_features
         )
 
@@ -85,7 +245,7 @@ def _find_best_onset_during_silence(
     ]
 
     for onset in candidate_onsets:
-        silence_before = _check_vocal_activity_in_range(
+        silence_before = _check_vocal_activity(
             max(0, onset - 0.5), onset - 0.1, audio_features
         )
         if silence_before < 0.3:
@@ -158,9 +318,7 @@ def correct_line_timestamps(
 
         line_start = line.start_time
         singing_at_lrc_time = (
-            _check_vocal_activity_in_range(
-                line_start - 0.5, line_start + 0.5, audio_features
-            )
+            _check_vocal_activity(line_start - 0.5, line_start + 0.5, audio_features)
             > 0.3
         )
 
@@ -169,28 +327,28 @@ def correct_line_timestamps(
         if len(onset_times) > 0:
             if singing_at_lrc_time:
                 silence_after = (
-                    _check_vocal_activity_in_range(
+                    _check_vocal_activity(
                         line_start + 0.1, line_start + 0.6, audio_features
                     )
                     < 0.3
                 )
                 silence_before = (
-                    _check_vocal_activity_in_range(
+                    _check_vocal_activity(
                         max(0, line_start - 0.6), line_start - 0.1, audio_features
                     )
                     < 0.3
                 )
 
                 if silence_after and not silence_before:
-                    best_onset = _find_best_onset_for_phrase_end(
+                    best_onset = _find_best_onset_for_phrase_end_for_state(
                         onset_times, line_start, prev_line_audio_end, audio_features
                     )
                 else:
-                    best_onset = _find_best_onset_proximity(
+                    best_onset = _find_best_onset_proximity_for_state(
                         onset_times, line_start, max_correction, audio_features
                     )
             else:
-                best_onset = _find_best_onset_during_silence(
+                best_onset = _find_best_onset_during_silence_for_state(
                     onset_times,
                     line_start,
                     prev_line_audio_end,
@@ -213,7 +371,7 @@ def correct_line_timestamps(
                     ]
 
                     corrected_lines.append(Line(words=new_words, singer=line.singer))
-                    prev_line_audio_end = _find_phrase_end(
+                    prev_line_audio_end = _find_phrase_end_for_state(
                         best_onset,
                         best_onset + 30.0,
                         audio_features,
@@ -227,7 +385,7 @@ def correct_line_timestamps(
                     continue
 
         corrected_lines.append(line)
-        prev_line_audio_end = _find_phrase_end(
+        prev_line_audio_end = _find_phrase_end_for_state(
             line_start, line_start + 30.0, audio_features, min_silence_duration=0.3
         )
 
@@ -403,10 +561,8 @@ def _should_merge_gap(
         return False
 
     if gap_duration > 2.0:
-        mid_activity = _check_vocal_activity_in_range(
-            gap_start, gap_end, audio_features
-        )
-        has_silence = _check_for_silence_in_range(
+        mid_activity = _check_vocal_activity(gap_start, gap_end, audio_features)
+        has_silence = _check_silence(
             gap_start, gap_end, audio_features, min_silence_duration=0.5
         )
         return mid_activity > max(0.6, activity_threshold) and not has_silence
@@ -415,9 +571,7 @@ def _should_merge_gap(
         mid_start = gap_start + 0.15
         mid_end = gap_end - 0.15
         if mid_end > mid_start:
-            mid_activity = _check_vocal_activity_in_range(
-                mid_start, mid_end, audio_features
-            )
+            mid_activity = _check_vocal_activity(mid_start, mid_end, audio_features)
             return mid_activity > max(0.7, activity_threshold)
 
     return False
@@ -434,7 +588,7 @@ def _merge_lines_with_audio(
 
     phrase_start = lines_to_merge[0].start_time
     search_end = next_line_start if next_line_start is not None else phrase_start + 30.0
-    phrase_end = _find_phrase_end(
+    phrase_end = _find_phrase_end_for_state(
         phrase_start, search_end, audio_features, min_silence_duration=0.3
     )
 

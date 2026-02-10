@@ -42,6 +42,11 @@ class SyncState:
     search_with_fallback_fn: Optional[Callable[..., Tuple[Optional[str], str]]] = None
     lyriq_get_lyrics_fn: Optional[Callable[..., Any]] = None
     sleep_fn: Callable[[float], None] = time.sleep
+    syncedlyrics_mod: Any = None
+    syncedlyrics_available: Optional[bool] = None
+    lyriq_available: Optional[bool] = None
+    has_timestamps_fn: Optional[Callable[[str], bool]] = None
+    get_lrc_duration_fn: Optional[Callable[[str], Optional[int]]] = None
 
 
 def create_sync_state(*, disk_cache_enabled: bool = True) -> SyncState:
@@ -100,6 +105,43 @@ def _state_or_default(state: Optional[SyncState]) -> SyncState:
     return state or _DEFAULT_SYNC_STATE
 
 
+def _get_syncedlyrics_module(state: Optional[SyncState] = None):
+    runtime_state = _state_or_default(state)
+    return (
+        runtime_state.syncedlyrics_mod
+        if runtime_state.syncedlyrics_mod is not None
+        else syncedlyrics
+    )
+
+
+def _is_syncedlyrics_available(state: Optional[SyncState] = None) -> bool:
+    runtime_state = _state_or_default(state)
+    if runtime_state.syncedlyrics_available is not None:
+        return runtime_state.syncedlyrics_available
+    return SYNCEDLYRICS_AVAILABLE
+
+
+def _is_lyriq_available(state: Optional[SyncState] = None) -> bool:
+    runtime_state = _state_or_default(state)
+    if runtime_state.lyriq_available is not None:
+        return runtime_state.lyriq_available
+    return LYRIQ_AVAILABLE
+
+
+def _has_timestamps_for_state(lrc_text: str, state: Optional[SyncState] = None) -> bool:
+    runtime_state = _state_or_default(state)
+    fn = runtime_state.has_timestamps_fn or _has_timestamps
+    return fn(lrc_text)
+
+
+def _get_lrc_duration_for_state(
+    lrc_text: str, state: Optional[SyncState] = None
+) -> Optional[int]:
+    runtime_state = _state_or_default(state)
+    fn = runtime_state.get_lrc_duration_fn or get_lrc_duration
+    return fn(lrc_text)
+
+
 def _search_single_provider(
     search_term: str,
     provider: str,
@@ -143,10 +185,11 @@ def _search_single_provider(
         if last_error is not None:
             raise last_error
         return None
-    if syncedlyrics is None:
+    syncedlyrics_mod = _get_syncedlyrics_module(runtime_state)
+    if syncedlyrics_mod is None:
         return None
     return sync_search.search_single_provider(
-        syncedlyrics.search,
+        syncedlyrics_mod.search,
         search_term=search_term,
         provider=provider,
         failed_providers=runtime_state.failed_providers,
@@ -369,7 +412,7 @@ def _fetch_from_lyriq(  # noqa: C901
     disk_cache_enabled = _disk_cache_enabled(runtime_state)
     if disk_cache_enabled:
         _load_disk_cache(runtime_state)
-    if not LYRIQ_AVAILABLE:
+    if not _is_lyriq_available(runtime_state):
         return None
 
     cache_key = (artist.lower().strip(), title.lower().strip())
@@ -398,7 +441,7 @@ def _fetch_from_lyriq(  # noqa: C901
                 return None
 
             synced = getattr(lyrics_obj, "synced_lyrics", None)
-            if synced and _has_timestamps(synced):
+            if synced and _has_timestamps_for_state(synced, runtime_state):
                 logger.debug("Found synced lyrics from lyriq (LRCLib)")
                 runtime_state.lyriq_cache[cache_key] = synced
                 if disk_cache_enabled:
@@ -523,17 +566,17 @@ def fetch_lyrics_multi_source(  # noqa: C901
     logger.debug(f"Searching for synced lyrics: {search_term}")
 
     try:
-        if LYRIQ_AVAILABLE:
+        if _is_lyriq_available(runtime_state):
             logger.debug(f"Trying lyriq for: {title} - {artist}")
             lrc = _fetch_from_lyriq(title, artist, state=runtime_state)
-            if lrc and _has_timestamps(lrc):
+            if lrc and _has_timestamps_for_state(lrc, runtime_state):
                 logger.debug("Found synced lyrics from lyriq (LRCLib)")
-                lrc_duration = get_lrc_duration(lrc)
+                lrc_duration = _get_lrc_duration_for_state(lrc, runtime_state)
                 result = (lrc, True, "lyriq (LRCLib)", lrc_duration)
                 _set_lrc_cache(cache_key, result, state=runtime_state)
                 return (lrc, True, "lyriq (LRCLib)")
 
-        if not SYNCEDLYRICS_AVAILABLE:
+        if not _is_syncedlyrics_available(runtime_state):
             logger.warning("syncedlyrics not installed")
             no_sync_result: Tuple[Optional[str], bool, str, Optional[int]] = (
                 None,
@@ -551,11 +594,11 @@ def fetch_lyrics_multi_source(  # noqa: C901
                 enhanced=True,
                 state=runtime_state,
             )
-            if lrc and _has_timestamps(lrc):
+            if lrc and _has_timestamps_for_state(lrc, runtime_state):
                 logger.debug(
                     f"Found enhanced (word-level) synced lyrics from {provider}"
                 )
-                lrc_duration = get_lrc_duration(lrc)
+                lrc_duration = _get_lrc_duration_for_state(lrc, runtime_state)
                 result = (lrc, True, f"{provider} (enhanced)", lrc_duration)
                 _set_lrc_cache(cache_key, result, state=runtime_state)
                 return (lrc, True, f"{provider} (enhanced)")
@@ -568,10 +611,10 @@ def fetch_lyrics_multi_source(  # noqa: C901
         )
 
         if lrc:
-            is_synced = _has_timestamps(lrc)
+            is_synced = _has_timestamps_for_state(lrc, runtime_state)
             if is_synced:
                 logger.debug(f"Found synced lyrics from {provider}")
-                lrc_duration = get_lrc_duration(lrc)
+                lrc_duration = _get_lrc_duration_for_state(lrc, runtime_state)
                 result = (lrc, True, provider, lrc_duration)
                 _set_lrc_cache(cache_key, result, state=runtime_state)
                 return (lrc, True, provider)
@@ -617,7 +660,9 @@ def fetch_lyrics_for_duration(
         logger.info("Offline mode: skipping lyrics providers (cache only)")
         return None, False, "", None
 
-    if not SYNCEDLYRICS_AVAILABLE and not LYRIQ_AVAILABLE:
+    if not _is_syncedlyrics_available(runtime_state) and not _is_lyriq_available(
+        runtime_state
+    ):
         logger.warning("Neither syncedlyrics nor lyriq installed")
         return None, False, "", None
 
@@ -632,7 +677,7 @@ def fetch_lyrics_for_duration(
     )
 
     if is_synced and lrc_text:
-        lrc_duration = get_lrc_duration(lrc_text)
+        lrc_duration = _get_lrc_duration_for_state(lrc_text, runtime_state)
         if lrc_duration:
             diff = abs(lrc_duration - target_duration)
             if diff <= tolerance:
@@ -644,7 +689,7 @@ def fetch_lyrics_for_duration(
                 f"LRC duration mismatch: LRC={lrc_duration}s, target={target_duration}s, diff={diff}s"
             )
 
-    if SYNCEDLYRICS_AVAILABLE and not offline:
+    if _is_syncedlyrics_available(runtime_state) and not offline:
         alternative_searches = [
             f"{title} {artist}",
             f"{artist} {title} official",
@@ -659,8 +704,8 @@ def fetch_lyrics_for_duration(
                 enhanced=False,
                 state=runtime_state,
             )
-            if lrc and _has_timestamps(lrc):
-                alt_duration = get_lrc_duration(lrc)
+            if lrc and _has_timestamps_for_state(lrc, runtime_state):
+                alt_duration = _get_lrc_duration_for_state(lrc, runtime_state)
                 if alt_duration:
                     diff = abs(alt_duration - target_duration)
                     if diff <= tolerance:
@@ -670,7 +715,7 @@ def fetch_lyrics_for_duration(
                         return lrc, True, f"{provider} ({search_term})", alt_duration
 
     if is_synced and lrc_text:
-        lrc_duration = get_lrc_duration(lrc_text)
+        lrc_duration = _get_lrc_duration_for_state(lrc_text, runtime_state)
         logger.warning("Using LRC despite duration mismatch. LRC timing may be off.")
         return lrc_text, is_synced, source, lrc_duration
 
@@ -684,32 +729,37 @@ def fetch_from_all_sources(
     """Fetch lyrics from all available sources for comparison."""
     results: Dict[str, Tuple[Optional[str], Optional[int]]] = {}
 
-    if LYRIQ_AVAILABLE:
+    runtime_state = _state_or_default(None)
+    if _is_lyriq_available(runtime_state):
         try:
             with _suppress_stderr():
-                lyrics_obj = lyriq_get_lyrics(title, artist)
+                lyriq_get = runtime_state.lyriq_get_lyrics_fn or lyriq_get_lyrics
+                lyrics_obj = lyriq_get(title, artist) if lyriq_get else None
             if lyrics_obj:
                 synced = getattr(lyrics_obj, "synced_lyrics", None)
-                if synced and _has_timestamps(synced):
-                    duration = get_lrc_duration(synced)
+                if synced and _has_timestamps_for_state(synced, runtime_state):
+                    duration = _get_lrc_duration_for_state(synced, runtime_state)
                     results["lyriq (LRCLib)"] = (synced, duration)
         except Exception as e:
             logger.debug(f"lyriq fetch failed for comparison: {e}")
 
-    if SYNCEDLYRICS_AVAILABLE:
+    if _is_syncedlyrics_available(runtime_state):
+        syncedlyrics_mod = _get_syncedlyrics_module(runtime_state)
+        if syncedlyrics_mod is None:
+            return results
         search_term = f"{artist} {title}"
         for provider in PROVIDER_ORDER:
             if provider == "Genius":
                 continue
             try:
                 with _suppress_stderr():
-                    lrc = syncedlyrics.search(
+                    lrc = syncedlyrics_mod.search(
                         search_term,
                         providers=[provider],
                         synced_only=True,
                     )
-                if lrc and _has_timestamps(lrc):
-                    duration = get_lrc_duration(lrc)
+                if lrc and _has_timestamps_for_state(lrc, runtime_state):
+                    duration = _get_lrc_duration_for_state(lrc, runtime_state)
                     results[provider] = (lrc, duration)
             except Exception as e:
                 logger.debug(f"{provider} fetch failed for comparison: {e}")

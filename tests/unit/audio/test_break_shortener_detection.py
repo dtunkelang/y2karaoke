@@ -21,7 +21,7 @@ def test_detect_instrumental_breaks_finds_silent_regions(monkeypatch):
     fake_librosa.feature = types.SimpleNamespace(rms=fake_rms)
     fake_librosa.frames_to_time = fake_frames_to_time
 
-    monkeypatch.setitem(__import__("sys").modules, "librosa", fake_librosa)
+    monkeypatch.setattr(bs, "_load_librosa", lambda: fake_librosa)
 
     breaks = bs.detect_instrumental_breaks("vocals.wav", min_break_duration=2.0)
 

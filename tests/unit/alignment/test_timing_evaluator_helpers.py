@@ -11,7 +11,6 @@ from y2karaoke.core.audio_analysis import (
     _save_audio_features_cache,
 )
 import y2karaoke.core.components.alignment.timing_evaluator_correction as te_corr
-import y2karaoke.core.components.alignment.timing_evaluator_core as te_core
 from y2karaoke.core.components.alignment.timing_evaluator import (
     correct_line_timestamps,
     _find_best_onset_during_silence,
@@ -270,12 +269,11 @@ def test_fix_spurious_gaps_merges_large_gap_with_activity(monkeypatch):
         Line(words=[Word(text="b", start_time=6.0, end_time=7.0)]),
     ]
 
-    monkeypatch.setattr(
-        te_corr, "_check_vocal_activity_in_range", lambda *_a, **_k: 0.9
-    )
-    monkeypatch.setattr(te_corr, "_check_for_silence_in_range", lambda *_a, **_k: False)
-
-    merged, fixes = te.fix_spurious_gaps(lines, features)
+    with te_corr.use_timing_correction_hooks(
+        check_vocal_activity_in_range_fn=lambda *_a, **_k: 0.9,
+        check_for_silence_in_range_fn=lambda *_a, **_k: False,
+    ):
+        merged, fixes = te.fix_spurious_gaps(lines, features)
 
     assert len(merged) == 1
     assert fixes
@@ -291,16 +289,15 @@ def test_find_best_onset_for_phrase_end_returns_none_when_not_silent(monkeypatch
         energy_envelope=np.array([1.0, 1.0, 1.0]),
         energy_times=np.array([0.0, 1.0, 2.0]),
     )
-    monkeypatch.setattr(
-        te_corr, "_check_vocal_activity_in_range", lambda *_a, **_k: 0.9
-    )
-
-    onset = _find_best_onset_for_phrase_end(
-        onset_times=np.array([1.0, 2.0]),
-        line_start=2.5,
-        prev_line_audio_end=0.0,
-        audio_features=features,
-    )
+    with te_corr.use_timing_correction_hooks(
+        check_vocal_activity_in_range_fn=lambda *_a, **_k: 0.9
+    ):
+        onset = _find_best_onset_for_phrase_end(
+            onset_times=np.array([1.0, 2.0]),
+            line_start=2.5,
+            prev_line_audio_end=0.0,
+            audio_features=features,
+        )
 
     assert onset is None
 
@@ -315,17 +312,16 @@ def test_find_best_onset_during_silence_requires_silence(monkeypatch):
         energy_envelope=np.array([1.0, 1.0, 1.0]),
         energy_times=np.array([0.0, 1.0, 2.0]),
     )
-    monkeypatch.setattr(
-        te_corr, "_check_vocal_activity_in_range", lambda *_a, **_k: 0.9
-    )
-
-    onset = _find_best_onset_during_silence(
-        onset_times=np.array([1.5]),
-        line_start=2.0,
-        prev_line_audio_end=0.0,
-        max_correction=2.0,
-        audio_features=features,
-    )
+    with te_corr.use_timing_correction_hooks(
+        check_vocal_activity_in_range_fn=lambda *_a, **_k: 0.9
+    ):
+        onset = _find_best_onset_during_silence(
+            onset_times=np.array([1.5]),
+            line_start=2.0,
+            prev_line_audio_end=0.0,
+            max_correction=2.0,
+            audio_features=features,
+        )
 
     assert onset is None
 
@@ -429,15 +425,14 @@ def test_correct_line_timestamps_applies_offset(monkeypatch):
     def fake_activity(*_args, **_kwargs):
         return next(responses, 1.0)
 
-    monkeypatch.setattr(te_corr, "_check_vocal_activity_in_range", fake_activity)
-    monkeypatch.setattr(
-        te_corr, "_find_best_onset_for_phrase_end", lambda *_a, **_k: 2.0
-    )
-    monkeypatch.setattr(te_corr, "_find_phrase_end", lambda *_a, **_k: 5.0)
-
-    corrected, corrections = correct_line_timestamps(
-        [line], features, max_correction=3.0
-    )
+    with te_corr.use_timing_correction_hooks(
+        check_vocal_activity_in_range_fn=fake_activity,
+        find_best_onset_for_phrase_end_fn=lambda *_a, **_k: 2.0,
+        find_phrase_end_fn=lambda *_a, **_k: 5.0,
+    ):
+        corrected, corrections = correct_line_timestamps(
+            [line], features, max_correction=3.0
+        )
 
     assert corrected[0].words[0].start_time == pytest.approx(2.0)
     assert corrections
@@ -490,17 +485,14 @@ def test_correct_line_timestamps_no_singing_uses_silence_path(monkeypatch):
     )
     line = Line(words=[Word(text="hi", start_time=1.0, end_time=1.2)])
 
-    monkeypatch.setattr(
-        te_corr, "_check_vocal_activity_in_range", lambda *_a, **_k: 0.0
-    )
-    monkeypatch.setattr(
-        te_corr, "_find_best_onset_during_silence", lambda *_a, **_k: None
-    )
-    monkeypatch.setattr(te_corr, "_find_phrase_end", lambda *_a, **_k: 2.0)
-
-    corrected, corrections = correct_line_timestamps(
-        [line], features, max_correction=1.0
-    )
+    with te_corr.use_timing_correction_hooks(
+        check_vocal_activity_in_range_fn=lambda *_a, **_k: 0.0,
+        find_best_onset_during_silence_fn=lambda *_a, **_k: None,
+        find_phrase_end_fn=lambda *_a, **_k: 2.0,
+    ):
+        corrected, corrections = correct_line_timestamps(
+            [line], features, max_correction=1.0
+        )
 
     assert corrected[0] is line
     assert corrections == []
@@ -520,15 +512,14 @@ def test_correct_line_timestamps_skips_small_offset(monkeypatch):
 
     responses = iter([1.0, 1.0, 1.0])
 
-    monkeypatch.setattr(
-        te, "_check_vocal_activity_in_range", lambda *_a, **_k: next(responses, 1.0)
-    )
-    monkeypatch.setattr(te_corr, "_find_best_onset_proximity", lambda *_a, **_k: 1.1)
-    monkeypatch.setattr(te_corr, "_find_phrase_end", lambda *_a, **_k: 2.0)
-
-    corrected, corrections = correct_line_timestamps(
-        [line], features, max_correction=1.0
-    )
+    with te_corr.use_timing_correction_hooks(
+        check_vocal_activity_in_range_fn=lambda *_a, **_k: next(responses, 1.0),
+        find_best_onset_proximity_fn=lambda *_a, **_k: 1.1,
+        find_phrase_end_fn=lambda *_a, **_k: 2.0,
+    ):
+        corrected, corrections = correct_line_timestamps(
+            [line], features, max_correction=1.0
+        )
 
     assert corrected[0] is line
     assert corrections == []
@@ -664,23 +655,19 @@ def test_correct_line_timestamps_prefers_phrase_end_when_silence_after(monkeypat
 
     responses = iter([1.0, 0.0, 1.0])
 
-    monkeypatch.setattr(
-        te_corr, "_check_vocal_activity_in_range", lambda *_a, **_k: next(responses)
-    )
-
     called = {"phrase_end": 0}
 
     def fake_phrase_end(*_args, **_kwargs):
         called["phrase_end"] += 1
         return 2.0
 
-    monkeypatch.setattr(
-        te_corr, "_find_best_onset_for_phrase_end", lambda *_a, **_k: 2.0
-    )
-    monkeypatch.setattr(te_corr, "_find_best_onset_proximity", lambda *_a, **_k: None)
-    monkeypatch.setattr(te_corr, "_find_phrase_end", fake_phrase_end)
-
-    corrected, corrections = correct_line_timestamps([line], features)
+    with te_corr.use_timing_correction_hooks(
+        check_vocal_activity_in_range_fn=lambda *_a, **_k: next(responses),
+        find_best_onset_for_phrase_end_fn=lambda *_a, **_k: 2.0,
+        find_best_onset_proximity_fn=lambda *_a, **_k: None,
+        find_phrase_end_fn=fake_phrase_end,
+    ):
+        corrected, corrections = correct_line_timestamps([line], features)
 
     assert corrected[0].words[0].start_time == 2.0
     assert corrections
@@ -701,16 +688,13 @@ def test_correct_line_timestamps_uses_proximity_when_silence_before(monkeypatch)
 
     responses = iter([1.0, 1.0, 0.0])
 
-    monkeypatch.setattr(
-        te_corr, "_check_vocal_activity_in_range", lambda *_a, **_k: next(responses)
-    )
-    monkeypatch.setattr(
-        te_corr, "_find_best_onset_for_phrase_end", lambda *_a, **_k: None
-    )
-    monkeypatch.setattr(te_corr, "_find_best_onset_proximity", lambda *_a, **_k: 1.5)
-    monkeypatch.setattr(te_corr, "_find_phrase_end", lambda *_a, **_k: 2.0)
-
-    corrected, corrections = correct_line_timestamps([line], features)
+    with te_corr.use_timing_correction_hooks(
+        check_vocal_activity_in_range_fn=lambda *_a, **_k: next(responses),
+        find_best_onset_for_phrase_end_fn=lambda *_a, **_k: None,
+        find_best_onset_proximity_fn=lambda *_a, **_k: 1.5,
+        find_phrase_end_fn=lambda *_a, **_k: 2.0,
+    ):
+        corrected, corrections = correct_line_timestamps([line], features)
 
     assert corrected[0].words[0].start_time == 1.5
     assert corrections

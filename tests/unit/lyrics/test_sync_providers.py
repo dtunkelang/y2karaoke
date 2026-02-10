@@ -26,7 +26,7 @@ def test_search_with_fallback_caches_empty_result(monkeypatch, isolated_sync_sta
 
     monkeypatch.setattr(sync, "PROVIDER_ORDER", ["A", "B"])
     isolated_sync_state.search_single_provider_fn = lambda *_a, **_k: None
-    monkeypatch.setattr(sync.time, "sleep", lambda *_a, **_k: None)
+    isolated_sync_state.sleep_fn = lambda *_a, **_k: None
 
     result = sync._search_with_fallback("Artist - Song")
 
@@ -46,8 +46,10 @@ def test_search_single_provider_retries_transient_error(monkeypatch):
             raise RuntimeError("timeout")
         return "[00:01.00]Line"
 
-    monkeypatch.setattr(sync, "syncedlyrics", types.SimpleNamespace(search=fake_search))
-    monkeypatch.setattr(sync.time, "sleep", lambda *_a, **_k: None)
+    sync._DEFAULT_SYNC_STATE.syncedlyrics_mod = types.SimpleNamespace(
+        search=fake_search
+    )
+    sync._DEFAULT_SYNC_STATE.sleep_fn = lambda *_a, **_k: None
 
     result = sync._search_single_provider("Artist - Song", "Provider")
 
@@ -61,7 +63,9 @@ def test_search_single_provider_counts_failure(monkeypatch):
     def fake_search(*_args, **_kwargs):
         raise RuntimeError("bad request")
 
-    monkeypatch.setattr(sync, "syncedlyrics", types.SimpleNamespace(search=fake_search))
+    sync._DEFAULT_SYNC_STATE.syncedlyrics_mod = types.SimpleNamespace(
+        search=fake_search
+    )
 
     result = sync._search_single_provider("Artist - Song", "Provider", max_retries=0)
 
@@ -71,7 +75,7 @@ def test_search_single_provider_counts_failure(monkeypatch):
 
 def test_fetch_from_lyriq_returns_synced_and_caches(monkeypatch):
     sync._lyriq_cache.clear()
-    monkeypatch.setattr(sync, "LYRIQ_AVAILABLE", True)
+    sync._DEFAULT_SYNC_STATE.lyriq_available = True
 
     class Lyrics:
         synced_lyrics = "[00:01.00]Line"
@@ -96,7 +100,7 @@ def test_fetch_from_lyriq_returns_synced_and_caches(monkeypatch):
 
 def test_fetch_from_lyriq_plain_only_returns_none(monkeypatch):
     sync._lyriq_cache.clear()
-    monkeypatch.setattr(sync, "LYRIQ_AVAILABLE", True)
+    sync._DEFAULT_SYNC_STATE.lyriq_available = True
 
     class Lyrics:
         synced_lyrics = None
@@ -111,7 +115,7 @@ def test_fetch_from_lyriq_plain_only_returns_none(monkeypatch):
 
 def test_fetch_from_lyriq_retries_on_transient_error(monkeypatch):
     sync._lyriq_cache.clear()
-    monkeypatch.setattr(sync, "LYRIQ_AVAILABLE", True)
+    sync._DEFAULT_SYNC_STATE.lyriq_available = True
 
     calls = {"count": 0}
 

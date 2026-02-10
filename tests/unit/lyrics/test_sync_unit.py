@@ -53,8 +53,8 @@ def test_fetch_lyrics_multi_source_returns_cached(isolated_sync_state):
 
 
 def test_fetch_lyrics_multi_source_handles_no_providers(monkeypatch):
-    monkeypatch.setattr(sync, "SYNCEDLYRICS_AVAILABLE", False)
-    monkeypatch.setattr(sync, "LYRIQ_AVAILABLE", False)
+    sync._DEFAULT_SYNC_STATE.syncedlyrics_available = False
+    sync._DEFAULT_SYNC_STATE.lyriq_available = False
 
     lrc_text, is_synced, source = sync.fetch_lyrics_multi_source("Title", "Artist")
     assert lrc_text is None
@@ -64,8 +64,8 @@ def test_fetch_lyrics_multi_source_handles_no_providers(monkeypatch):
 
 def test_fetch_lyrics_multi_source_uses_enhanced(monkeypatch):
     sync._lrc_cache.clear()
-    monkeypatch.setattr(sync, "LYRIQ_AVAILABLE", False)
-    monkeypatch.setattr(sync, "SYNCEDLYRICS_AVAILABLE", True)
+    sync._DEFAULT_SYNC_STATE.lyriq_available = False
+    sync._DEFAULT_SYNC_STATE.syncedlyrics_available = True
 
     def fake_search(term, synced_only=True, enhanced=False):
         if enhanced:
@@ -85,8 +85,8 @@ def test_fetch_lyrics_multi_source_uses_enhanced(monkeypatch):
 
 def test_fetch_lyrics_multi_source_plain_when_unsynced_allowed(monkeypatch):
     sync._lrc_cache.clear()
-    monkeypatch.setattr(sync, "LYRIQ_AVAILABLE", False)
-    monkeypatch.setattr(sync, "SYNCEDLYRICS_AVAILABLE", True)
+    sync._DEFAULT_SYNC_STATE.lyriq_available = False
+    sync._DEFAULT_SYNC_STATE.syncedlyrics_available = True
     sync._DEFAULT_SYNC_STATE.search_with_fallback_fn = lambda *a, **k: (
         "plain",
         "Genius",
@@ -102,8 +102,8 @@ def test_fetch_lyrics_multi_source_plain_when_unsynced_allowed(monkeypatch):
 
 def test_fetch_lyrics_multi_source_returns_none_when_not_found(monkeypatch):
     sync._lrc_cache.clear()
-    monkeypatch.setattr(sync, "LYRIQ_AVAILABLE", False)
-    monkeypatch.setattr(sync, "SYNCEDLYRICS_AVAILABLE", True)
+    sync._DEFAULT_SYNC_STATE.lyriq_available = False
+    sync._DEFAULT_SYNC_STATE.syncedlyrics_available = True
     sync._DEFAULT_SYNC_STATE.search_with_fallback_fn = lambda *a, **k: (None, "")
 
     lrc_text, is_synced, source = sync.fetch_lyrics_multi_source("Title", "Artist")
@@ -114,8 +114,8 @@ def test_fetch_lyrics_multi_source_returns_none_when_not_found(monkeypatch):
 
 def test_fetch_lyrics_multi_source_handles_exception(monkeypatch):
     sync._lrc_cache.clear()
-    monkeypatch.setattr(sync, "LYRIQ_AVAILABLE", False)
-    monkeypatch.setattr(sync, "SYNCEDLYRICS_AVAILABLE", True)
+    sync._DEFAULT_SYNC_STATE.lyriq_available = False
+    sync._DEFAULT_SYNC_STATE.syncedlyrics_available = True
 
     def raise_error(*args, **kwargs):
         raise RuntimeError("boom")
