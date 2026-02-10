@@ -256,7 +256,9 @@ For detailed technical architecture, see [CLAUDE.md](CLAUDE.md). This document c
 - Timing quality evaluation
 
 Subsystem facades now live under `src/y2karaoke/pipeline/`:
+- `pipeline/identify` for track metadata resolution and candidate selection
 - `pipeline/lyrics` for lyrics acquisition + quality-aware timing flows
+- `pipeline/audio` for media download, separation, and audio transforms
 - `pipeline/alignment` for timing evaluation + Whisper alignment orchestration
 
 For a concise summary of the selection logic and test coverage across the three core pillars, see [docs/logic-audit.md](docs/logic-audit.md).

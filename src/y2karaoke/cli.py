@@ -11,7 +11,7 @@ from dataclasses import replace
 
 from .exceptions import Y2KaraokeError
 from .core.karaoke import KaraokeGenerator
-from .core.track_identifier import TrackIdentifier, TrackInfo
+from .pipeline.identify import TrackIdentifier, TrackInfo
 from .utils.logging import setup_logging
 from .utils.validation import (
     validate_youtube_url,
@@ -559,9 +559,8 @@ def evaluate_timing(ctx, url_or_query, title, artist, work_dir, force):
     logger = ctx.obj["logger"]
 
     try:
-        from .core.track_identifier import TrackIdentifier
-        from .core.downloader import YouTubeDownloader
-        from .core.separator import separate_vocals
+        from .pipeline.identify import TrackIdentifier
+        from .pipeline.audio import YouTubeDownloader, separate_vocals
         from .pipeline.alignment import print_comparison_report
 
         if not url_or_query:

@@ -170,12 +170,10 @@ def test_evaluate_timing_uses_title_search(monkeypatch, tmp_path):
         captured["artist"] = artist
         captured["vocals_path"] = vocals_path
 
+    monkeypatch.setattr("y2karaoke.pipeline.identify.TrackIdentifier", DummyIdentifier)
+    monkeypatch.setattr("y2karaoke.pipeline.audio.YouTubeDownloader", DummyDownloader)
     monkeypatch.setattr(
-        "y2karaoke.core.track_identifier.TrackIdentifier", DummyIdentifier
-    )
-    monkeypatch.setattr("y2karaoke.core.downloader.YouTubeDownloader", DummyDownloader)
-    monkeypatch.setattr(
-        "y2karaoke.core.separator.separate_vocals", fake_separate_vocals
+        "y2karaoke.pipeline.audio.separate_vocals", fake_separate_vocals
     )
     monkeypatch.setattr(
         "y2karaoke.pipeline.alignment.print_comparison_report", fake_report
@@ -225,9 +223,7 @@ def test_evaluate_timing_handles_error(monkeypatch):
         def identify_from_search(self, _query):
             raise RuntimeError("nope")
 
-    monkeypatch.setattr(
-        "y2karaoke.core.track_identifier.TrackIdentifier", BadIdentifier
-    )
+    monkeypatch.setattr("y2karaoke.pipeline.identify.TrackIdentifier", BadIdentifier)
 
     runner = CliRunner()
     result = runner.invoke(cli.cli, ["evaluate-timing", "query"])

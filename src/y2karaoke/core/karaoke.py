@@ -18,10 +18,15 @@ from ..utils.validation import (
 )
 from . import karaoke_utils
 from . import karaoke_timing_report
-from .downloader import YouTubeDownloader, extract_video_id
-from .separator import AudioSeparator
-from .audio_effects import AudioProcessor
-from .audio_utils import trim_audio_if_needed, apply_audio_effects, separate_vocals
+from ..pipeline.audio import (
+    YouTubeDownloader,
+    extract_video_id,
+    AudioSeparator,
+    AudioProcessor,
+    trim_audio_if_needed,
+    apply_audio_effects,
+    separate_vocals_cached as separate_vocals,
+)
 
 logger = get_logger(__name__)
 

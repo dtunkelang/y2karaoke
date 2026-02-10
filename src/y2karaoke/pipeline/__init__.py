@@ -4,6 +4,6 @@ These packages expose stable orchestration boundaries while core modules
 continue to host the implementation details.
 """
 
-from . import lyrics, alignment
+from . import alignment, audio, identify, lyrics
 
-__all__ = ["lyrics", "alignment"]
+__all__ = ["alignment", "audio", "identify", "lyrics"]
