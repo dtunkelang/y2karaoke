@@ -1,16 +1,15 @@
 """Synced lyrics fetching using syncedlyrics and lyriq libraries."""
 
-import sys
 import os
 import time
 import json
 from pathlib import Path
-from contextlib import contextmanager
 from typing import Optional, Tuple, Dict, Any
 
 from ..utils.logging import get_logger
 from ..config import get_cache_dir
 from . import sync_quality
+from . import sync_search
 
 logger = get_logger(__name__)
 
@@ -53,16 +52,8 @@ _failed_providers: Dict[str, int] = {}
 _FAILURE_THRESHOLD = 3  # Skip provider after this many consecutive failures
 
 
-@contextmanager
 def _suppress_stderr():
-    """Temporarily suppress stderr to hide noisy library output."""
-    original_stderr = sys.stderr
-    try:
-        sys.stderr = open(os.devnull, "w")
-        yield
-    finally:
-        sys.stderr.close()
-        sys.stderr = original_stderr
+    return sync_search.suppress_stderr()
 
 
 def _search_single_provider(
@@ -73,71 +64,21 @@ def _search_single_provider(
     max_retries: int = 2,
     retry_delay: float = 1.0,
 ) -> Optional[str]:
-    """Search a single provider with retry logic.
-
-    Args:
-        search_term: Search query
-        provider: Provider name
-        synced_only: Only return synced lyrics
-        enhanced: Try word-level timing
-        max_retries: Number of retries on failure
-        retry_delay: Base delay between retries (exponential backoff)
-
-    Returns:
-        LRC text if found, None otherwise
-    """
-    # Skip providers that have failed too many times
-    if _failed_providers.get(provider, 0) >= _FAILURE_THRESHOLD:
-        logger.debug(f"Skipping {provider} due to repeated failures")
+    """Search a single provider with retry logic."""
+    if syncedlyrics is None:
         return None
-
-    for attempt in range(max_retries + 1):
-        try:
-            with _suppress_stderr():
-                lrc = syncedlyrics.search(
-                    search_term,
-                    providers=[provider],
-                    synced_only=synced_only,
-                    enhanced=enhanced,
-                )
-            if lrc:
-                # Success - reset failure count
-                _failed_providers[provider] = 0
-                return lrc
-            # No result but no error - don't count as failure
-            return None
-
-        except Exception as e:
-            error_msg = str(e).lower()
-            # Check for transient vs permanent errors
-            is_transient = any(
-                x in error_msg
-                for x in [
-                    "connection",
-                    "timeout",
-                    "temporarily",
-                    "rate limit",
-                    "remote end closed",
-                    "429",
-                    "503",
-                    "502",
-                ]
-            )
-
-            if is_transient and attempt < max_retries:
-                delay = retry_delay * (2**attempt)  # Exponential backoff
-                logger.debug(
-                    f"{provider} transient error, retrying in {delay:.1f}s: {e}"
-                )
-                time.sleep(delay)
-                continue
-            else:
-                # Permanent error or retries exhausted
-                _failed_providers[provider] = _failed_providers.get(provider, 0) + 1
-                logger.debug(f"{provider} failed (attempt {attempt + 1}): {e}")
-                return None
-
-    return None
+    return sync_search.search_single_provider(
+        syncedlyrics.search,
+        search_term=search_term,
+        provider=provider,
+        failed_providers=_failed_providers,
+        failure_threshold=_FAILURE_THRESHOLD,
+        logger=logger,
+        synced_only=synced_only,
+        enhanced=enhanced,
+        max_retries=max_retries,
+        retry_delay=retry_delay,
+    )
 
 
 # Cache for search term results
@@ -151,61 +92,20 @@ def _search_with_fallback(
     synced_only: bool = True,
     enhanced: bool = False,
 ) -> Tuple[Optional[str], str]:
-    """Search across providers with fallback.
-
-    Tries each provider in order until one succeeds.
-    Results are cached by search term.
-
-    Returns:
-        Tuple of (lrc_text, provider_name)
-    """
-    disk_cache_enabled = _disk_cache_enabled()
-    if disk_cache_enabled:
-        _load_disk_cache()
-    cache_key = f"{search_term.lower()}:{synced_only}:{enhanced}"
-    if cache_key in _search_cache:
-        logger.debug(f"Using cached search result for: {search_term}")
-        return _search_cache[cache_key]
-    if disk_cache_enabled:
-        disk_search = _disk_cache.get("search_cache", {})
-        if cache_key in disk_search:
-            cached = tuple(disk_search[cache_key])
-            _search_cache[cache_key] = cached
-            logger.debug(f"Using cached search result for: {search_term}")
-            return cached
-
-    for provider in PROVIDER_ORDER:
-        logger.debug(f"Trying {provider} for: {search_term}")
-        lrc = _search_single_provider(
-            search_term,
-            provider,
-            synced_only=synced_only,
-            enhanced=enhanced,
-        )
-        if lrc:
-            logger.debug(f"Found lyrics from {provider}")
-            found_result: Tuple[Optional[str], str] = (lrc, provider)
-            _search_cache[cache_key] = found_result
-            if disk_cache_enabled:
-                _disk_cache.setdefault("search_cache", {})[cache_key] = [
-                    found_result[0],
-                    found_result[1],
-                ]
-                _save_disk_cache()
-            return found_result
-
-        # Small delay between providers to be nice to services
-        time.sleep(0.3)
-
-    empty_result: Tuple[Optional[str], str] = (None, "")
-    _search_cache[cache_key] = empty_result
-    if disk_cache_enabled:
-        _disk_cache.setdefault("search_cache", {})[cache_key] = [
-            empty_result[0],
-            empty_result[1],
-        ]
-        _save_disk_cache()
-    return empty_result
+    """Search across providers with fallback."""
+    return sync_search.search_with_fallback(
+        search_term=search_term,
+        provider_order=PROVIDER_ORDER,
+        search_single_provider_fn=_search_single_provider,
+        search_cache=_search_cache,
+        disk_cache=_disk_cache,
+        disk_cache_enabled=_disk_cache_enabled(),
+        load_disk_cache_fn=_load_disk_cache,
+        save_disk_cache_fn=_save_disk_cache,
+        logger=logger,
+        synced_only=synced_only,
+        enhanced=enhanced,
+    )
 
 
 # Cache for LRC results to avoid duplicate fetches

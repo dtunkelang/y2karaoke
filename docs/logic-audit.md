@@ -38,6 +38,8 @@ This document summarizes the core decision logic and the main test coverage for 
 - `src/y2karaoke/core/lyrics.py::_fetch_lrc_text_and_timings`
 - `src/y2karaoke/core/timing_evaluator.py::select_best_source`
 - `src/y2karaoke/core/timing_evaluator.py::compare_sources`
+- `src/y2karaoke/core/sync_search.py`
+  - provider retry/backoff and fallback search orchestration
 
 **Decision rules (summary)**
 - If `evaluate_sources=True` and `vocals_path` is available, compare all sources
@@ -61,6 +63,10 @@ This document summarizes the core decision logic and the main test coverage for 
   - `_check_pause_alignment`
   - `_calculate_pause_score`
   - `_find_closest_onset`
+- `src/y2karaoke/core/whisper_phonetic_tokens.py`
+  - phoneme and syllable tokenization for DTW
+- `src/y2karaoke/core/whisper_phonetic_paths.py`
+  - DTW path/cost construction helpers
 - `src/y2karaoke/core/whisper_alignment_pull_rules.py`
   - segment pull/merge adjustments used by Whisper alignment
 - `src/y2karaoke/core/whisper_alignment_pull_helpers.py`

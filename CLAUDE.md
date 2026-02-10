@@ -401,11 +401,15 @@ y2karaoke/
 │   │   ├── lyrics.py             # Main lyrics pipeline
 │   │   ├── sync.py               # LRC provider integration
 │   │   ├── sync_quality.py       # LRC quality scoring helpers
+│   │   ├── sync_search.py        # Provider search/retry helpers
 │   │   ├── lrc.py                # LRC format parsing
 │   │   ├── genius.py             # Genius lyrics + singer detection
 │   │   ├── alignment.py          # Audio analysis for timing
 │   │   ├── refine.py             # Word-level timing refinement
 │   │   ├── timing_evaluator.py   # LRC quality scoring + Whisper
+│   │   ├── whisper_phonetic_dtw.py # Public phonetic DTW alignment APIs
+│   │   ├── whisper_phonetic_tokens.py # Phoneme/syllable token builders
+│   │   ├── whisper_phonetic_paths.py # DTW/cost path helpers
 │   │   ├── downloader.py         # YouTube audio/video download
 │   │   ├── separator.py          # Vocal separation (demucs)
 │   │   ├── audio_effects.py      # Key shift and tempo

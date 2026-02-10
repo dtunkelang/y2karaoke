@@ -1,96 +1,22 @@
 """Phonetic and DTW-based alignment logic for Whisper integration."""
 
 from typing import List, Optional, Tuple, Dict
-from collections import defaultdict
-import numpy as np
 
 from ..utils.logging import get_logger
 from . import models
 from . import timing_models
 from . import phonetic_utils
+from . import whisper_phonetic_paths as _paths
+from . import whisper_phonetic_tokens as _tokens
 
 logger = get_logger(__name__)
 
 
-def _build_phoneme_tokens_from_lrc_words(
-    lrc_words: List[Dict], language: str
-) -> List[Dict]:
-    """Build phoneme-level tokens from LRC words for DTW."""
-    tokens: List[Dict] = []
-    for idx, word in enumerate(lrc_words):
-        text = word.get("text", "")
-        word_start = word.get("start", 0.0)
-        word_end = word.get("end", 0.0)
-        duration = max(word_end - word_start, 0.01)
-        ipa = phonetic_utils._get_ipa(text, language) or text
-        segs = phonetic_utils._get_ipa_segs(ipa) or [ipa]
-        portion = duration / len(segs)
-        for seg_idx, seg in enumerate(segs):
-            start = word_start + portion * seg_idx
-            end = start + portion
-            if seg_idx == len(segs) - 1:
-                end = word_end if word_end >= word_start else start + portion
-            tokens.append(
-                {
-                    "word_idx": idx,
-                    "parent_idx": idx,
-                    "ipa": seg,
-                    "start": start,
-                    "end": end,
-                }
-            )
-    return tokens
-
-
-def _build_phoneme_tokens_from_whisper_words(
-    whisper_words: List[timing_models.TranscriptionWord], language: str
-) -> List[Dict]:
-    """Build phoneme-level tokens from Whisper words for DTW."""
-    tokens: List[Dict] = []
-    for idx, word in enumerate(whisper_words):
-        text = word.text
-        word_start = word.start
-        word_end = word.end
-        duration = max(word_end - word_start, 0.01)
-        ipa = phonetic_utils._get_ipa(text, language) or text
-        segs = phonetic_utils._get_ipa_segs(ipa) or [ipa]
-        portion = duration / len(segs)
-        for seg_idx, seg in enumerate(segs):
-            start = word_start + portion * seg_idx
-            end = start + portion
-            if seg_idx == len(segs) - 1:
-                end = word_end if word_end >= word_start else start + portion
-            tokens.append(
-                {
-                    "word_idx": idx,
-                    "parent_idx": idx,
-                    "ipa": seg,
-                    "start": start,
-                    "end": end,
-                }
-            )
-    return tokens
-
-
-def _phoneme_similarity_from_ipa(
-    ipa1: str, ipa2: str, language: str = "fra-Latn"
-) -> float:
-    """Compute phonetic similarity between two IPA segments."""
-    if not ipa1 or not ipa2:
-        return 0.0
-    dst = phonetic_utils._get_panphon_distance()
-    if dst is None:
-        return 1.0 if ipa1 == ipa2 else 0.0
-    segs1 = phonetic_utils._get_ipa_segs(ipa1)
-    segs2 = phonetic_utils._get_ipa_segs(ipa2)
-    if not segs1 or not segs2:
-        return 1.0 if ipa1 == ipa2 else 0.0
-    fed = dst.feature_edit_distance(ipa1, ipa2)
-    max_segs = max(len(segs1), len(segs2))
-    if max_segs == 0:
-        return 0.0
-    normalized_distance = fed / max_segs
-    return max(0.0, 1.0 - normalized_distance)
+_build_phoneme_tokens_from_lrc_words = _tokens._build_phoneme_tokens_from_lrc_words
+_build_phoneme_tokens_from_whisper_words = (
+    _tokens._build_phoneme_tokens_from_whisper_words
+)
+_phoneme_similarity_from_ipa = _tokens._phoneme_similarity_from_ipa
 
 
 def align_lyrics_to_transcription(
@@ -412,68 +338,9 @@ def _extract_lrc_words(lines: List[models.Line]) -> List[Dict]:
     return lrc_words
 
 
-def _compute_phonetic_costs(
-    lrc_words: List[Dict],
-    whisper_words: List[timing_models.TranscriptionWord],
-    language: str,
-    min_similarity: float,
-) -> Dict[Tuple[int, int], float]:
-    """Compute sparse phonetic cost matrix for DTW."""
-    phonetic_costs = defaultdict(lambda: 1.0)
-
-    for i, lw in enumerate(lrc_words):
-        lrc_time = lw["start"]
-        for j, ww in enumerate(whisper_words):
-            if ww.text == "[VOCAL]":
-                # Give a reasonable cost that is still better than no match
-                phonetic_costs[(i, j)] = 0.5
-                continue
-            time_diff = abs(ww.start - lrc_time)
-            if time_diff > 20:
-                continue
-            sim = phonetic_utils._phonetic_similarity(lw["text"], ww.text, language)
-            if sim >= min_similarity:
-                phonetic_costs[(i, j)] = 1.0 - sim
-
-    return phonetic_costs
-
-
-def _compute_phonetic_costs_unbounded(
-    lrc_words: List[Dict],
-    whisper_words: List[timing_models.TranscriptionWord],
-    language: str,
-    min_similarity: float,
-) -> Dict[Tuple[int, int], float]:
-    """Compute phonetic costs without time-window constraints."""
-    phonetic_costs = defaultdict(lambda: 1.0)
-
-    for i, lw in enumerate(lrc_words):
-        for j, ww in enumerate(whisper_words):
-            if ww.text == "[VOCAL]":
-                phonetic_costs[(i, j)] = 0.5
-                continue
-            sim = phonetic_utils._phonetic_similarity(lw["text"], ww.text, language)
-            if sim >= min_similarity:
-                phonetic_costs[(i, j)] = 1.0 - sim
-
-    return phonetic_costs
-
-
-def _extract_best_alignment_map(
-    path: List[Tuple[int, int]],
-    lrc_words: List[Dict],
-    whisper_words: List[timing_models.TranscriptionWord],
-    language: str,
-) -> Dict[int, Tuple[int, float]]:
-    """Extract best whisper index per LRC word index from a DTW path."""
-    alignments: Dict[int, Tuple[int, float]] = {}
-    for lrc_idx, whisper_idx in path:
-        lw = lrc_words[lrc_idx]
-        ww = whisper_words[whisper_idx]
-        sim = phonetic_utils._phonetic_similarity(lw["text"], ww.text, language)
-        if lrc_idx not in alignments or sim > alignments[lrc_idx][1]:
-            alignments[lrc_idx] = (whisper_idx, sim)
-    return alignments
+_compute_phonetic_costs = _paths._compute_phonetic_costs
+_compute_phonetic_costs_unbounded = _paths._compute_phonetic_costs_unbounded
+_extract_best_alignment_map = _paths._extract_best_alignment_map
 
 
 def _extract_lrc_words_all(lines: List[models.Line]) -> List[Dict]:
@@ -496,43 +363,7 @@ def _extract_lrc_words_all(lines: List[models.Line]) -> List[Dict]:
     return lrc_words
 
 
-def _build_dtw_path(
-    lrc_words: List[Dict],
-    all_words: List[timing_models.TranscriptionWord],
-    phonetic_costs: Dict[Tuple[int, int], float],
-    language: str,
-) -> List[Tuple[int, int]]:
-    """Build a DTW path between LRC words and Whisper words."""
-    try:
-        from fastdtw import fastdtw  # type: ignore
-
-        lrc_seq = np.arange(len(lrc_words)).reshape(-1, 1)
-        whisper_seq = np.arange(len(all_words)).reshape(-1, 1)
-
-        def dtw_dist(a, b):
-            i = int(a[0])
-            j = int(b[0])
-            return phonetic_costs[(i, j)]
-
-        _distance, path = fastdtw(lrc_seq, whisper_seq, dist=dtw_dist)
-        return path
-    except ImportError:
-        logger.warning("fastdtw not available, falling back to greedy alignment")
-        path = []
-        whisper_idx = 0
-        for lrc_idx in range(len(lrc_words)):
-            best_idx = whisper_idx
-            best_sim = -1.0
-            for j in range(whisper_idx, min(whisper_idx + 6, len(all_words))):
-                sim = phonetic_utils._phonetic_similarity(
-                    lrc_words[lrc_idx]["text"], all_words[j].text, language
-                )
-                if sim > best_sim:
-                    best_sim = sim
-                    best_idx = j
-            path.append((lrc_idx, best_idx))
-            whisper_idx = best_idx
-        return path
+_build_dtw_path = _paths._build_dtw_path
 
 
 def _build_phoneme_dtw_path(
@@ -541,88 +372,16 @@ def _build_phoneme_dtw_path(
     language: str,
 ) -> List[Tuple[int, int]]:
     """Build DTW path between phoneme tokens."""
-    cost_cache: Dict[Tuple[int, int], float] = {}
-    n_lrc = max(len(lrc_phonemes), 1)
-    n_whisper = max(len(whisper_phonemes), 1)
-
-    def phoneme_cost(i: int, j: int) -> float:
-        key = (i, j)
-        if key in cost_cache:
-            return cost_cache[key]
-        ipa1 = lrc_phonemes[i]["ipa"]
-        ipa2 = whisper_phonemes[j]["ipa"]
-        sim = _phoneme_similarity_from_ipa(ipa1, ipa2, language)
-        phon_cost = 1.0 - sim
-        pos_penalty = abs(i / n_lrc - j / n_whisper)
-        cost_cache[key] = 0.85 * phon_cost + 0.15 * pos_penalty
-        return cost_cache[key]
-
-    try:
-        from fastdtw import fastdtw  # type: ignore
-
-        lrc_seq = np.arange(len(lrc_phonemes)).reshape(-1, 1)
-        whisper_seq = np.arange(len(whisper_phonemes)).reshape(-1, 1)
-
-        def dtw_dist(a, b):
-            i = int(a[0])
-            j = int(b[0])
-            return phoneme_cost(i, j)
-
-        _distance, path = fastdtw(lrc_seq, whisper_seq, dist=dtw_dist)
-        return path
-    except ImportError:
-        logger.warning(
-            "fastdtw not available, falling back to phoneme greedy alignment"
-        )
-        path = []
-        whisper_idx = 0
-        for lrc_idx in range(len(lrc_phonemes)):
-            best_idx = whisper_idx
-            best_cost = float("inf")
-            for j in range(whisper_idx, min(whisper_idx + 12, len(whisper_phonemes))):
-                cost = phoneme_cost(lrc_idx, j)
-                if cost < best_cost:
-                    best_cost = cost
-                    best_idx = j
-        path.append((lrc_idx, best_idx))
-        whisper_idx = best_idx
-    return path
+    return _paths._build_phoneme_dtw_path(
+        lrc_phonemes,
+        whisper_phonemes,
+        language,
+        _phoneme_similarity_from_ipa,
+    )
 
 
-def _build_syllable_tokens_from_phonemes(phoneme_tokens: List[Dict]) -> List[Dict]:
-    """Group phoneme tokens into syllable-level units."""
-    syllables: List[Dict] = []
-    current: List[Dict] = []
-    for token in phoneme_tokens:
-        current.append(token)
-        if phonetic_utils._is_vowel(token["ipa"]):
-            syllables.append(_make_syllable_from_tokens(current))
-            current = []
-        elif (
-            current
-            and token["parent_idx"] != current[-1]["parent_idx"]
-            and all(phonetic_utils._is_vowel(t["ipa"]) for t in current)
-        ):
-            syllables.append(_make_syllable_from_tokens(current))
-            current = []
-    if current:
-        syllables.append(_make_syllable_from_tokens(current))
-    return syllables
-
-
-def _make_syllable_from_tokens(tokens: List[Dict]) -> Dict:
-    start = min(t["start"] for t in tokens)
-    end = max(t["end"] for t in tokens)
-    ipa = "".join(t["ipa"] for t in tokens)
-    parent_idxs = {t["parent_idx"] for t in tokens}
-    word_idxs = {t["word_idx"] for t in tokens}
-    return {
-        "ipa": ipa,
-        "start": start,
-        "end": end,
-        "parent_idxs": parent_idxs,
-        "word_idxs": word_idxs,
-    }
+_build_syllable_tokens_from_phonemes = _tokens._build_syllable_tokens_from_phonemes
+_make_syllable_from_tokens = _tokens._make_syllable_from_tokens
 
 
 def _build_syllable_dtw_path(
@@ -631,53 +390,9 @@ def _build_syllable_dtw_path(
     language: str,
 ) -> List[Tuple[int, int]]:
     """Build DTW path between syllable units."""
-    cost_cache: Dict[Tuple[int, int], float] = {}
-    n_lrc = max(len(lrc_syllables), 1)
-    n_whisper = max(len(whisper_syllables), 1)
-
-    def syllable_cost(i: int, j: int) -> float:
-        key = (i, j)
-        if key in cost_cache:
-            return cost_cache[key]
-        ipa1 = lrc_syllables[i]["ipa"]
-        ipa2 = whisper_syllables[j]["ipa"]
-        sim = _phoneme_similarity_from_ipa(ipa1, ipa2, language)
-        phon_cost = 1.0 - sim
-        # Positional penalty: discourage matching syllables at very
-        # different relative positions in their respective sequences.
-        pos_lrc = i / n_lrc
-        pos_whisper = j / n_whisper
-        pos_penalty = abs(pos_lrc - pos_whisper)
-        cost_cache[key] = 0.85 * phon_cost + 0.15 * pos_penalty
-        return cost_cache[key]
-
-    try:
-        from fastdtw import fastdtw  # type: ignore
-
-        lrc_seq = np.arange(len(lrc_syllables)).reshape(-1, 1)
-        whisper_seq = np.arange(len(whisper_syllables)).reshape(-1, 1)
-
-        def dtw_dist(a, b):
-            i = int(a[0])
-            j = int(b[0])
-            return syllable_cost(i, j)
-
-        _distance, path = fastdtw(lrc_seq, whisper_seq, dist=dtw_dist)
-        return path
-    except ImportError:
-        logger.warning(
-            "fastdtw not available, falling back to syllable greedy alignment"
-        )
-        path = []
-        whisper_idx = 0
-        for lrc_idx in range(len(lrc_syllables)):
-            best_idx = whisper_idx
-            best_cost = float("inf")
-            for j in range(whisper_idx, min(whisper_idx + 12, len(whisper_syllables))):
-                cost = syllable_cost(lrc_idx, j)
-                if cost < best_cost:
-                    best_cost = cost
-                    best_idx = j
-            path.append((lrc_idx, best_idx))
-            whisper_idx = best_idx
-        return path
+    return _paths._build_syllable_dtw_path(
+        lrc_syllables,
+        whisper_syllables,
+        language,
+        _phoneme_similarity_from_ipa,
+    )
