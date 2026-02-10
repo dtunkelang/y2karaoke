@@ -38,8 +38,8 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
 # Install in development mode
 pip install -e .
 
-# Or install from requirements.txt
-pip install -r requirements.txt
+# Install with development tooling (pytest/black/flake8/mypy)
+pip install -e ".[dev]"
 
 # Optional: Install romanization libraries for non-Latin scripts
 pip install korean-romanizer pypinyin pykakasi pyarabic
@@ -60,7 +60,7 @@ If not, recreate the virtual environment with `python3.12 -m venv venv`.
 To keep Epitran’s phonetic DTW as accurate as possible we ship a lightweight `lex_lookup`
 shim that is installed automatically via the cache directory, so you generally no longer see
 `lex_lookup (from flite) is not installed` warnings. Under the hood the shim uses the
-`pronouncing` package (headers for which are pulled in via `requirements.txt`) to
+`pronouncing` package (installed from project dependencies) to
 emulate a CMU-style dictionary whenever the real `lex_lookup` binary is absent.
 
 If you need the absolute best phonetic coverage (and prefer upstream FLite), feel free to
@@ -158,6 +158,7 @@ y2karaoke cache clear VIDEO_ID
 
 ```bash
 source venv/bin/activate
+pip install -e ".[dev]"
 pytest tests -v
 ```
 

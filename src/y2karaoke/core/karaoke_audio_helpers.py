@@ -82,7 +82,13 @@ def shorten_breaks_impl(
                     f"📁 Using cached shortened audio ({len(edits)} break edits)"
                 )
                 return str(cache_manager.get_file_path(video_id, shortened_name)), edits
-            except Exception as e:
+            except (
+                OSError,
+                json.JSONDecodeError,
+                KeyError,
+                TypeError,
+                ValueError,
+            ) as e:
                 logger.debug(f"Could not load cached edits: {e}")
         else:
             logger.info("📁 Using cached shortened audio (no edits)")

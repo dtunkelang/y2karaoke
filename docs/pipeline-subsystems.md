@@ -39,7 +39,10 @@ modules are cross-cutting/shared utilities or orchestration entrypoints.
   - `pipeline/*` may import `y2karaoke.core.*`.
   - `pipeline/*` should not contain heavy business logic.
 - `core/*` should not import `pipeline/*`.
-  - Current explicit orchestration exception: `core/karaoke.py` (main pipeline coordinator).
+  - Current explicit orchestration exceptions:
+    - `core/karaoke.py` (main pipeline coordinator facade)
+    - `core/karaoke_generate.py` (generate flow implementation)
+    - `core/karaoke_audio_helpers.py` (audio-side karaoke helpers)
 - `cli.py` should use `pipeline/*` facades for orchestration-level flows.
 
 ## Why This Helps

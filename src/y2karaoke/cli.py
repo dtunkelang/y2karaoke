@@ -1,25 +1,15 @@
 """Command-line interface using Click."""
 
-import sys
 from pathlib import Path
 
 import click
 
 from . import __version__
 from .config import get_cache_dir
-from dataclasses import replace
 
-from .exceptions import Y2KaraokeError
-from .core.karaoke import KaraokeGenerator
-from .pipeline.identify import TrackIdentifier, TrackInfo
+from .pipeline.identify import TrackInfo
+from .cli_commands import run_evaluate_timing_command, run_generate_command
 from .utils.logging import setup_logging
-from .utils.validation import (
-    validate_youtube_url,
-    validate_key_shift,
-    validate_tempo,
-    validate_offset,
-    validate_output_path,
-)
 
 # --- module-level helpers ---
 
@@ -30,7 +20,7 @@ def parse_resolution(resolution: str) -> tuple[int, int]:
         width_str, height_str = resolution.lower().split("x")
         width, height = int(width_str), int(height_str)
         return width, height
-    except Exception:
+    except ValueError:
         raise ValueError(
             f"Invalid resolution format: {resolution}. Expected 'WIDTHxHEIGHT'."
         )
@@ -383,114 +373,55 @@ def generate(
     debug_audio,
 ):
     logger = ctx.obj["logger"]
-
-    try:
-        if whisper_map_lrc_dtw:
-            whisper_map_lrc = True
-        if not url_or_query:
-            resolved = resolve_url_or_query(url_or_query, artist, title)
-            logger.info(f"No url_or_query provided; using title for search: {resolved}")
-            url_or_query = resolved
-        else:
-            url_or_query = resolve_url_or_query(url_or_query, artist, title)
-        identifier = TrackIdentifier()
-        if offline:
-            if not url_or_query.startswith("http"):
-                raise click.BadParameter(
-                    "Offline mode requires a YouTube URL (search is not available)."
-                )
-            track_info = identify_track_offline(
-                logger, identifier, url_or_query, artist, title
-            )
-        else:
-            track_info = identify_track(logger, identifier, url_or_query, artist, title)
-
-        # If user explicitly provided metadata, force it for display/lyrics.
-        if title or artist:
-            track_info = replace(
-                track_info,
-                title=title or track_info.title,
-                artist=artist or track_info.artist,
-            )
-
-        url = validate_youtube_url(track_info.youtube_url)
-        key = validate_key_shift(key)
-        tempo = validate_tempo(tempo)
-        offset = validate_offset(offset)
-
-        if audio_start < 0:
-            raise click.BadParameter("--audio-start must be non-negative")
-
-        video_settings = build_video_settings(resolution, fps, font_size, no_progress)
-
-        cache_dir = Path(work_dir) if work_dir else get_cache_dir()
-        generator = KaraokeGenerator(cache_dir=cache_dir)
-
-        output_path = validate_output_path(output) if output else None
-        effective_shorten_breaks = resolve_shorten_breaks(
-            logger, shorten_breaks, track_info
-        )
-
-        target_duration = track_info.duration if track_info.duration > 0 else None
-
-        result = generator.generate(
-            url=url,
-            output_path=output_path,
-            offset=offset,
-            key_shift=key,
-            tempo_multiplier=tempo,
-            audio_start=audio_start,
-            lyrics_title=title or track_info.title,
-            lyrics_artist=artist or track_info.artist,
-            lyrics_offset=lyrics_offset,
-            use_backgrounds=backgrounds,
-            force_reprocess=force,
-            video_settings=video_settings,
-            original_prompt=url_or_query,
-            target_duration=target_duration,
-            evaluate_lyrics_sources=evaluate_lyrics,
-            use_whisper=whisper,
-            whisper_only=whisper_only,
-            whisper_map_lrc=whisper_map_lrc,
-            whisper_map_lrc_dtw=whisper_map_lrc_dtw,
-            lyrics_file=lyrics_file,
-            whisper_language=whisper_language,
-            whisper_model=whisper_model,
-            whisper_force_dtw=whisper_force_dtw,
-            whisper_aggressive=whisper_aggressive,
-            whisper_temperature=whisper_temperature,
-            lenient_vocal_activity_threshold=lenient_vocal_activity_threshold,
-            lenient_activity_bonus=lenient_activity_bonus,
-            low_word_confidence_threshold=low_word_confidence_threshold,
-            outro_line=outro_line,
-            offline=offline,
-            filter_promos=filter_promos,
-            shorten_breaks=effective_shorten_breaks,
-            max_break_duration=max_break,
-            debug_audio=debug_audio,
-            skip_render=no_render,
-            timing_report_path=timing_report,
-        )
-
-        if result.get("rendered", True):
-            logger.info(f"✅ Karaoke video generated: {result['output_path']}")
-        else:
-            logger.info("✅ Karaoke pipeline complete (render skipped)")
-        log_quality_summary(logger, result)
-
-        if not keep_files:
-            generator.cleanup_temp_files()
-
-    except Y2KaraokeError as e:
-        logger.error(f"❌ {e}")
-        sys.exit(1)
-    except Exception as e:
-        logger.error(f"❌ Unexpected error: {e}")
-        if ctx.obj.get("verbose"):
-            import traceback
-
-            traceback.print_exc()
-        sys.exit(1)
+    run_generate_command(
+        ctx=ctx,
+        logger=logger,
+        url_or_query=url_or_query,
+        output=output,
+        offset=offset,
+        key=key,
+        tempo=tempo,
+        audio_start=audio_start,
+        title=title,
+        artist=artist,
+        lyrics_offset=lyrics_offset,
+        backgrounds=backgrounds,
+        force=force,
+        keep_files=keep_files,
+        work_dir=work_dir,
+        offline=offline,
+        resolution=resolution,
+        fps=fps,
+        font_size=font_size,
+        no_progress=no_progress,
+        no_render=no_render,
+        timing_report=timing_report,
+        evaluate_lyrics=evaluate_lyrics,
+        whisper=whisper,
+        whisper_only=whisper_only,
+        whisper_map_lrc=whisper_map_lrc,
+        whisper_map_lrc_dtw=whisper_map_lrc_dtw,
+        lyrics_file=lyrics_file,
+        whisper_language=whisper_language,
+        whisper_model=whisper_model,
+        whisper_force_dtw=whisper_force_dtw,
+        whisper_aggressive=whisper_aggressive,
+        whisper_temperature=whisper_temperature,
+        lenient_vocal_activity_threshold=lenient_vocal_activity_threshold,
+        lenient_activity_bonus=lenient_activity_bonus,
+        low_word_confidence_threshold=low_word_confidence_threshold,
+        filter_promos=filter_promos,
+        outro_line=outro_line,
+        shorten_breaks=shorten_breaks,
+        max_break=max_break,
+        debug_audio=debug_audio,
+        resolve_url_or_query_fn=resolve_url_or_query,
+        identify_track_fn=identify_track,
+        identify_track_offline_fn=identify_track_offline,
+        build_video_settings_fn=build_video_settings,
+        resolve_shorten_breaks_fn=resolve_shorten_breaks,
+        log_quality_summary_fn=log_quality_summary,
+    )
 
 
 @cli.group()
@@ -557,53 +488,16 @@ def evaluate_timing(ctx, url_or_query, title, artist, work_dir, force):
     the audio to identify the most accurate source.
     """
     logger = ctx.obj["logger"]
-
-    try:
-        from .pipeline.identify import TrackIdentifier
-        from .pipeline.audio import YouTubeDownloader, separate_vocals
-        from .pipeline.alignment import print_comparison_report
-
-        if not url_or_query:
-            resolved = resolve_url_or_query(url_or_query, artist, title)
-            logger.info(f"No url_or_query provided; using title for search: {resolved}")
-            url_or_query = resolved
-        else:
-            url_or_query = resolve_url_or_query(url_or_query, artist, title)
-
-        # Identify track
-        identifier = TrackIdentifier()
-        if url_or_query.startswith("http"):
-            track_info = identifier.identify_from_url(url_or_query)
-        else:
-            track_info = identifier.identify_from_search(url_or_query)
-
-        effective_title = title or track_info.title
-        effective_artist = artist or track_info.artist
-
-        logger.info(f"Evaluating: {effective_artist} - {effective_title}")
-
-        # Download audio
-        cache_dir = Path(work_dir) if work_dir else get_cache_dir()
-        downloader = YouTubeDownloader(cache_dir=cache_dir)
-        result = downloader.download_audio(track_info.youtube_url)
-        audio_path = result["audio_path"]
-        logger.info(f"Downloaded audio: {audio_path}")
-
-        # Separate vocals
-        sep_result = separate_vocals(audio_path, output_dir=str(cache_dir))
-        vocals_path = sep_result["vocals_path"]
-        logger.info(f"Separated vocals: {vocals_path}")
-
-        # Run comparison
-        print_comparison_report(effective_title, effective_artist, vocals_path)
-
-    except Exception as e:
-        logger.error(f"❌ Evaluation failed: {e}")
-        if ctx.obj.get("verbose"):
-            import traceback
-
-            traceback.print_exc()
-        sys.exit(1)
+    _ = force
+    run_evaluate_timing_command(
+        ctx=ctx,
+        logger=logger,
+        url_or_query=url_or_query,
+        title=title,
+        artist=artist,
+        work_dir=work_dir,
+        resolve_url_or_query_fn=resolve_url_or_query,
+    )
 
 
 if __name__ == "__main__":

@@ -365,7 +365,7 @@ def _load_disk_cache(state: Optional[SyncState] = None) -> None:
         return
     try:
         runtime_state.disk_cache = json.loads(cache_path.read_text(encoding="utf-8"))
-    except Exception:
+    except (OSError, ValueError, TypeError):
         runtime_state.disk_cache = _empty_disk_cache()
 
 
@@ -380,7 +380,7 @@ def _save_disk_cache(state: Optional[SyncState] = None) -> None:
             json.dumps(runtime_state.disk_cache, ensure_ascii=False, indent=2),
             encoding="utf-8",
         )
-    except Exception:
+    except (OSError, ValueError, TypeError):
         logger.debug("Failed to write lyrics cache to disk")
 
 
