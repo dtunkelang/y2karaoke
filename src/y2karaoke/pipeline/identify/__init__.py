@@ -1,5 +1,5 @@
 """Track identification subsystem facade."""
 
-from ...core.track_identifier import TrackIdentifier, TrackInfo
+from ...core.components.identify import TrackIdentifier, TrackInfo
 
 __all__ = ["TrackIdentifier", "TrackInfo"]

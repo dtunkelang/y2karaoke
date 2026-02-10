@@ -615,7 +615,7 @@ class KaraokeGenerator:
 
     def _create_background_segments(self, video_path: str, lines, audio_path: str):
         logger.info("🎨 Creating background segments...")
-        from ..core.backgrounds import BackgroundProcessor
+        from ..pipeline.render import BackgroundProcessor
         from moviepy import AudioFileClip
 
         with AudioFileClip(audio_path) as clip:
@@ -625,7 +625,7 @@ class KaraokeGenerator:
 
     def _render_video(self, video_settings: Optional[Dict[str, Any]] = None, **kwargs):
         logger.info("🎬 Rendering karaoke video...")
-        from .video_writer import render_karaoke_video
+        from ..pipeline.render import render_karaoke_video
 
         if video_settings:
             kwargs.update(video_settings)

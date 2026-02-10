@@ -1,16 +1,14 @@
-"""Alignment subsystem facade.
+"""Alignment component facade."""
 
-Public orchestration entrypoints for timing evaluation and Whisper-based
-alignment.
-"""
-
-from ...core.components.alignment import (
-    align_lrc_text_to_whisper_timings,
+from ...timing_evaluator import (
     compare_sources,
-    correct_timing_with_whisper,
     evaluate_timing,
     print_comparison_report,
     select_best_source,
+)
+from ...whisper_integration import (
+    align_lrc_text_to_whisper_timings,
+    correct_timing_with_whisper,
     transcribe_vocals,
 )
 

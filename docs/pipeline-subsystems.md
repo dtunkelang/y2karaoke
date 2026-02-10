@@ -6,6 +6,19 @@ This project uses a **subsystem facade** layout under `src/y2karaoke/pipeline/`.
 
 Keep orchestration boundaries explicit while allowing `core/` modules to remain implementation-focused.
 
+## Core Component Layer
+
+Component-organized core facades now live under `src/y2karaoke/core/components/`:
+
+- `core/components/identify`
+- `core/components/lyrics`
+- `core/components/audio`
+- `core/components/alignment`
+- `core/components/render`
+
+These facades provide stable component-level imports over the existing
+implementation modules in `core/`.
+
 ## Subsystems
 
 - `pipeline/identify`
@@ -16,6 +29,8 @@ Keep orchestration boundaries explicit while allowing `core/` modules to remain 
   Exposes media download, vocal separation, and audio transform entrypoints.
 - `pipeline/alignment`
   Exposes timing evaluation and Whisper alignment entrypoints.
+- `pipeline/render`
+  Exposes rendering entrypoints (background segmentation and final video render).
 
 ## Dependency Rules
 

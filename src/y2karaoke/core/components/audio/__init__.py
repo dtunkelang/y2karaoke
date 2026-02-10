@@ -1,15 +1,13 @@
-"""Audio/media subsystem facade."""
+"""Audio component facade."""
 
-from ...core.components.audio import (
-    AudioProcessor,
-    AudioSeparator,
-    YouTubeDownloader,
+from ...audio_effects import AudioProcessor
+from ...audio_utils import (
     apply_audio_effects,
-    extract_video_id,
-    separate_vocals,
-    separate_vocals_cached,
+    separate_vocals as separate_vocals_cached,
     trim_audio_if_needed,
 )
+from ...downloader import YouTubeDownloader, extract_video_id
+from ...separator import AudioSeparator, separate_vocals
 
 __all__ = [
     "YouTubeDownloader",

@@ -8,8 +8,9 @@ This document summarizes the core decision logic and the main test coverage for 
 
 Pipeline facade note:
 - `src/y2karaoke/pipeline/identify/`, `src/y2karaoke/pipeline/lyrics/`,
-  `src/y2karaoke/pipeline/audio/`, and `src/y2karaoke/pipeline/alignment/`
-  provide subsystem entrypoints over the underlying `core/` implementations.
+  `src/y2karaoke/pipeline/audio/`, `src/y2karaoke/pipeline/alignment/`, and
+  `src/y2karaoke/pipeline/render/` provide subsystem entrypoints over the
+  underlying `core/` implementations.
 
 ## 1) YouTube Track Selection (Prefer Audio-Only)
 

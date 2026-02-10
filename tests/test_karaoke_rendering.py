@@ -12,7 +12,7 @@ def test_render_video_passes_video_settings(monkeypatch, tmp_path):
         captured.update(kwargs)
 
     monkeypatch.setattr(
-        "y2karaoke.core.video_writer.render_karaoke_video", fake_render_karaoke_video
+        "y2karaoke.pipeline.render.render_karaoke_video", fake_render_karaoke_video
     )
 
     generator._render_video(
@@ -53,7 +53,7 @@ def test_create_background_segments_uses_audio_duration(monkeypatch, tmp_path):
             }
 
     monkeypatch.setattr("moviepy.AudioFileClip", FakeClip)
-    monkeypatch.setattr("y2karaoke.core.backgrounds.BackgroundProcessor", FakeProcessor)
+    monkeypatch.setattr("y2karaoke.pipeline.render.BackgroundProcessor", FakeProcessor)
 
     lines = []
     result = generator._create_background_segments("video.mp4", lines, "audio.wav")

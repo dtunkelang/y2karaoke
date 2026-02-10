@@ -260,6 +260,7 @@ Subsystem facades now live under `src/y2karaoke/pipeline/`:
 - `pipeline/lyrics` for lyrics acquisition + quality-aware timing flows
 - `pipeline/audio` for media download, separation, and audio transforms
 - `pipeline/alignment` for timing evaluation + Whisper alignment orchestration
+- `pipeline/render` for video/background rendering entrypoints
 
 For a concise summary of the selection logic and test coverage across the three core pillars, see [docs/logic-audit.md](docs/logic-audit.md).
 For subsystem boundaries and dependency rules, see [docs/pipeline-subsystems.md](docs/pipeline-subsystems.md).
