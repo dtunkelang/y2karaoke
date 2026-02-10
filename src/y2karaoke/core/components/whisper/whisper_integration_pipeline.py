@@ -1,0 +1,566 @@
+"""Pipeline implementations for Whisper integration entry points."""
+
+from typing import Any, Callable, Dict, List, Optional, Tuple
+
+from ....utils.lex_lookup_installer import ensure_local_lex_lookup
+from ... import models
+from ... import phonetic_utils
+from ..alignment import timing_models
+
+
+def transcribe_vocals_impl(
+    vocals_path: str,
+    language: Optional[str],
+    model_size: str,
+    aggressive: bool,
+    temperature: float,
+    *,
+    get_whisper_cache_path_fn: Callable[..., Optional[str]],
+    find_best_cached_whisper_model_fn: Callable[..., Optional[Tuple[str, str]]],
+    load_whisper_cache_fn: Callable[..., Optional[Tuple[Any, Any, str]]],
+    save_whisper_cache_fn: Callable[..., None],
+    load_whisper_model_class_fn: Callable[[], Any],
+    logger,
+) -> Tuple[
+    List[timing_models.TranscriptionSegment],
+    List[timing_models.TranscriptionWord],
+    str,
+    str,
+]:
+    """Transcribe vocals with disk cache and return timing models."""
+    cache_path = get_whisper_cache_path_fn(
+        vocals_path, model_size, language, aggressive, temperature
+    )
+    cached_model = model_size
+    if cache_path:
+        best_cached = find_best_cached_whisper_model_fn(
+            vocals_path, language, aggressive, model_size, temperature
+        )
+        if best_cached:
+            cache_path, cached_model = best_cached
+        cached = load_whisper_cache_fn(cache_path)
+        if cached:
+            segments, all_words, detected_lang = cached
+            return segments, all_words, detected_lang, cached_model
+
+    try:
+        whisper_model_class = load_whisper_model_class_fn()
+    except ImportError:
+        logger.warning("faster-whisper not installed, cannot transcribe")
+        return [], [], "", model_size
+
+    try:
+        logger.info(f"Loading Whisper model ({model_size})...")
+        model = whisper_model_class(model_size, device="cpu", compute_type="int8")
+
+        logger.info(f"Transcribing vocals{f' in {language}' if language else ''}...")
+        transcribe_kwargs: Dict[str, object] = {
+            "language": language,
+            "word_timestamps": True,
+            "vad_filter": True,
+            "temperature": temperature,
+        }
+        if aggressive:
+            transcribe_kwargs.update(
+                {
+                    "vad_filter": False,
+                    "no_speech_threshold": 1.0,
+                    "log_prob_threshold": -2.0,
+                }
+            )
+        segments, info = model.transcribe(vocals_path, **transcribe_kwargs)
+
+        result = []
+        all_words = []
+        for seg in segments:
+            seg_words = []
+            if seg.words:
+                for w in seg.words:
+                    tw = timing_models.TranscriptionWord(
+                        start=w.start,
+                        end=w.end,
+                        text=w.word.strip(),
+                        probability=w.probability,
+                    )
+                    seg_words.append(tw)
+                    all_words.append(tw)
+            result.append(
+                timing_models.TranscriptionSegment(
+                    start=seg.start,
+                    end=seg.end,
+                    text=seg.text.strip(),
+                    words=seg_words,
+                )
+            )
+
+        detected_lang = info.language
+        logger.info(
+            f"Transcribed {len(result)} segments, {len(all_words)} words (language: {detected_lang})"
+        )
+
+        if cache_path:
+            save_whisper_cache_fn(
+                cache_path,
+                result,
+                all_words,
+                detected_lang,
+                model_size,
+                aggressive,
+                temperature,
+            )
+
+        return result, all_words, detected_lang, model_size
+
+    except Exception as e:
+        logger.error(f"Transcription failed: {e}")
+        return [], [], "", model_size
+
+
+def align_lrc_text_to_whisper_timings_impl(
+    lines: List[models.Line],
+    vocals_path: str,
+    language: Optional[str],
+    model_size: str,
+    aggressive: bool,
+    temperature: float,
+    min_similarity: float,
+    audio_features: Optional[timing_models.AudioFeatures],
+    lenient_vocal_activity_threshold: float,
+    lenient_activity_bonus: float,
+    low_word_confidence_threshold: float,
+    *,
+    transcribe_vocals_fn: Callable[..., Tuple[Any, Any, str, str]],
+    extract_audio_features_fn: Callable[[str], timing_models.AudioFeatures],
+    dedupe_whisper_segments_fn: Callable[..., Any],
+    trim_whisper_transcription_by_lyrics_fn: Callable[..., Any],
+    fill_vocal_activity_gaps_fn: Callable[..., Any],
+    dedupe_whisper_words_fn: Callable[..., Any],
+    extract_lrc_words_all_fn: Callable[..., Any],
+    build_phoneme_tokens_from_lrc_words_fn: Callable[..., Any],
+    build_phoneme_tokens_from_whisper_words_fn: Callable[..., Any],
+    build_syllable_tokens_from_phonemes_fn: Callable[..., Any],
+    build_segment_text_overlap_assignments_fn: Callable[..., Any],
+    build_phoneme_dtw_path_fn: Callable[..., Any],
+    build_word_assignments_from_phoneme_path_fn: Callable[..., Any],
+    build_block_segmented_syllable_assignments_fn: Callable[..., Any],
+    map_lrc_words_to_whisper_fn: Callable[..., Any],
+    shift_repeated_lines_to_next_whisper_fn: Callable[..., Any],
+    enforce_monotonic_line_starts_whisper_fn: Callable[..., Any],
+    resolve_line_overlaps_fn: Callable[..., Any],
+    interpolate_unmatched_lines_fn: Callable[..., Any],
+    refine_unmatched_lines_with_onsets_fn: Callable[..., Any],
+    logger,
+) -> Tuple[List[models.Line], List[str], Dict[str, float]]:
+    """Align LRC text to Whisper timings using phonetic DTW (timings fixed)."""
+    _ = min_similarity
+    _ = lenient_activity_bonus
+    _ = low_word_confidence_threshold
+
+    ensure_local_lex_lookup()
+    transcription, all_words, detected_lang, used_model = transcribe_vocals_fn(
+        vocals_path, language, model_size, aggressive, temperature
+    )
+    if not audio_features:
+        audio_features = extract_audio_features_fn(vocals_path)
+    transcription = dedupe_whisper_segments_fn(transcription)
+    transcription = dedupe_whisper_segments_fn(transcription)
+    line_texts = [line.text for line in lines if line.text.strip()]
+    transcription, all_words, trimmed_end = trim_whisper_transcription_by_lyrics_fn(
+        transcription, all_words, line_texts
+    )
+    if trimmed_end:
+        logger.info(
+            "Truncated Whisper transcript to %.2f s (last matching lyric).", trimmed_end
+        )
+
+    if not transcription or not all_words:
+        logger.warning("No transcription available, skipping Whisper timing map")
+        return lines, [], {}
+
+    if audio_features:
+        all_words, filled_segments = fill_vocal_activity_gaps_fn(
+            all_words,
+            audio_features,
+            lenient_vocal_activity_threshold,
+            segments=transcription,
+        )
+        if filled_segments is not None:
+            transcription = filled_segments
+
+    all_words = dedupe_whisper_words_fn(all_words)
+
+    epitran_lang = phonetic_utils._whisper_lang_to_epitran(detected_lang)
+    logger.debug(
+        f"Using epitran language: {epitran_lang} (from Whisper: {detected_lang})"
+    )
+
+    lrc_words = extract_lrc_words_all_fn(lines)
+    if not lrc_words:
+        return lines, [], {}
+
+    logger.debug(
+        f"DTW-phonetic: Pre-computing IPA for {len(all_words)} Whisper words..."
+    )
+    for ww in all_words:
+        phonetic_utils._get_ipa(ww.text, epitran_lang)
+    for lw in lrc_words:
+        phonetic_utils._get_ipa(lw["text"], epitran_lang)
+
+    logger.debug(
+        f"DTW-phonetic: Preparing phoneme sequences for {len(lrc_words)} lyrics "
+        f"words and {len(all_words)} Whisper words..."
+    )
+    lrc_phonemes = build_phoneme_tokens_from_lrc_words_fn(lrc_words, epitran_lang)
+    whisper_phonemes = build_phoneme_tokens_from_whisper_words_fn(
+        all_words, epitran_lang
+    )
+
+    lrc_syllables = build_syllable_tokens_from_phonemes_fn(lrc_phonemes)
+    whisper_syllables = build_syllable_tokens_from_phonemes_fn(whisper_phonemes)
+
+    lrc_assignments = build_segment_text_overlap_assignments_fn(
+        lrc_words,
+        all_words,
+        transcription,
+    )
+    seg_coverage = len(lrc_assignments) / len(lrc_words) if lrc_words else 0
+    if seg_coverage < 0.3:
+        logger.debug(
+            "Segment overlap coverage %.0f%% too low, falling back to DTW",
+            seg_coverage * 100,
+        )
+        if not lrc_syllables or not whisper_syllables:
+            if not lrc_phonemes or not whisper_phonemes:
+                logger.warning("No phoneme/syllable data; skipping mapping")
+                return lines, [], {}
+            path = build_phoneme_dtw_path_fn(
+                lrc_phonemes,
+                whisper_phonemes,
+                epitran_lang,
+            )
+            lrc_assignments = build_word_assignments_from_phoneme_path_fn(
+                path, lrc_phonemes, whisper_phonemes
+            )
+        else:
+            lrc_assignments = build_block_segmented_syllable_assignments_fn(
+                lrc_words,
+                all_words,
+                lrc_syllables,
+                whisper_syllables,
+                epitran_lang,
+            )
+
+    corrections: List[str] = []
+    mapped_lines, mapped_count, total_similarity, mapped_lines_set = (
+        map_lrc_words_to_whisper_fn(
+            lines,
+            lrc_words,
+            all_words,
+            lrc_assignments,
+            epitran_lang,
+            transcription,
+        )
+    )
+
+    mapped_lines = shift_repeated_lines_to_next_whisper_fn(mapped_lines, all_words)
+    mapped_lines = enforce_monotonic_line_starts_whisper_fn(mapped_lines, all_words)
+    mapped_lines = resolve_line_overlaps_fn(mapped_lines)
+    mapped_lines = interpolate_unmatched_lines_fn(mapped_lines, mapped_lines_set)
+
+    mapped_lines = refine_unmatched_lines_with_onsets_fn(
+        mapped_lines,
+        mapped_lines_set,
+        vocals_path,
+    )
+
+    mapped_lines = enforce_monotonic_line_starts_whisper_fn(mapped_lines, all_words)
+    mapped_lines = resolve_line_overlaps_fn(mapped_lines)
+
+    matched_ratio = mapped_count / len(lrc_words) if lrc_words else 0.0
+    avg_similarity = total_similarity / mapped_count if mapped_count else 0.0
+    line_coverage = (
+        len(mapped_lines_set) / sum(1 for line in lines if line.words) if lines else 0.0
+    )
+
+    metrics: Dict[str, Any] = {
+        "matched_ratio": matched_ratio,
+        "word_coverage": matched_ratio,
+        "avg_similarity": avg_similarity,
+        "line_coverage": line_coverage,
+        "dtw_used": 1.0,
+        "dtw_mode": 1.0,
+        "whisper_model": used_model,
+    }
+
+    if mapped_count:
+        corrections.append(f"DTW-phonetic mapped {mapped_count} word(s) to Whisper")
+    return mapped_lines, corrections, metrics
+
+
+def correct_timing_with_whisper_impl(  # noqa: C901
+    lines: List[models.Line],
+    vocals_path: str,
+    language: Optional[str],
+    model_size: str,
+    aggressive: bool,
+    temperature: float,
+    trust_lrc_threshold: float,
+    correct_lrc_threshold: float,
+    force_dtw: bool,
+    audio_features: Optional[timing_models.AudioFeatures],
+    lenient_vocal_activity_threshold: float,
+    lenient_activity_bonus: float,
+    low_word_confidence_threshold: float,
+    *,
+    transcribe_vocals_fn: Callable[..., Tuple[Any, Any, str, str]],
+    extract_audio_features_fn: Callable[[str], timing_models.AudioFeatures],
+    trim_whisper_transcription_by_lyrics_fn: Callable[..., Any],
+    fill_vocal_activity_gaps_fn: Callable[..., Any],
+    assess_lrc_quality_fn: Callable[..., Any],
+    align_hybrid_lrc_whisper_fn: Callable[..., Any],
+    align_dtw_whisper_with_data_fn: Callable[..., Any],
+    retime_lines_from_dtw_alignments_fn: Callable[..., Any],
+    merge_first_two_lines_if_segment_matches_fn: Callable[..., Any],
+    retime_adjacent_lines_to_whisper_window_fn: Callable[..., Any],
+    retime_adjacent_lines_to_segment_window_fn: Callable[..., Any],
+    pull_next_line_into_segment_window_fn: Callable[..., Any],
+    pull_lines_near_segment_end_fn: Callable[..., Any],
+    pull_next_line_into_same_segment_fn: Callable[..., Any],
+    merge_lines_to_whisper_segments_fn: Callable[..., Any],
+    tighten_lines_to_whisper_segments_fn: Callable[..., Any],
+    pull_lines_to_best_segments_fn: Callable[..., Any],
+    fix_ordering_violations_fn: Callable[..., Any],
+    normalize_line_word_timings_fn: Callable[..., Any],
+    enforce_monotonic_line_starts_fn: Callable[..., Any],
+    enforce_non_overlapping_lines_fn: Callable[..., Any],
+    merge_short_following_line_into_segment_fn: Callable[..., Any],
+    clamp_repeated_line_duration_fn: Callable[..., Any],
+    drop_duplicate_lines_fn: Callable[..., Any],
+    drop_duplicate_lines_by_timing_fn: Callable[..., Any],
+    pull_lines_forward_for_continuous_vocals_fn: Callable[..., Any],
+    logger,
+) -> Tuple[List[models.Line], List[str], Dict[str, float]]:
+    """Correct lyric timing by combining quality gates and Whisper alignments."""
+    transcription, all_words, detected_lang, _model = transcribe_vocals_fn(
+        vocals_path, language, model_size, aggressive, temperature
+    )
+    if not audio_features:
+        audio_features = extract_audio_features_fn(vocals_path)
+
+    line_texts = [line.text for line in lines if line.text.strip()]
+    transcription, all_words, trimmed_end = trim_whisper_transcription_by_lyrics_fn(
+        transcription, all_words, line_texts
+    )
+    if trimmed_end:
+        logger.info(
+            "Truncated Whisper transcript to %.2f s (last matching lyric).", trimmed_end
+        )
+
+    if not transcription:
+        logger.warning("No transcription available, skipping Whisper alignment")
+        return lines, [], {}
+
+    if audio_features:
+        all_words, filled_segments = fill_vocal_activity_gaps_fn(
+            all_words,
+            audio_features,
+            lenient_vocal_activity_threshold,
+            segments=transcription,
+        )
+        if filled_segments is not None:
+            transcription = filled_segments
+
+    epitran_lang = phonetic_utils._whisper_lang_to_epitran(detected_lang)
+    logger.debug(
+        f"Using epitran language: {epitran_lang} (from Whisper: {detected_lang})"
+    )
+
+    logger.debug(f"Pre-computing IPA for {len(all_words)} Whisper words...")
+    for w in all_words:
+        phonetic_utils._get_ipa(w.text, epitran_lang)
+
+    quality, assessments = assess_lrc_quality_fn(
+        lines, all_words, epitran_lang, tolerance=1.5
+    )
+    logger.info(f"LRC timing quality: {quality:.0%} of lines within 1.5s of Whisper")
+    _ = assessments
+
+    metrics: Dict[str, float] = {}
+    if not force_dtw and quality >= 0.7:
+        logger.info("LRC timing is good, using targeted corrections only")
+        aligned_lines, alignments = align_hybrid_lrc_whisper_fn(
+            lines,
+            transcription,
+            all_words,
+            language=epitran_lang,
+            trust_threshold=trust_lrc_threshold,
+            correct_threshold=correct_lrc_threshold,
+        )
+    elif not force_dtw and quality >= 0.4:
+        logger.info("LRC timing is mixed, using hybrid Whisper alignment")
+        aligned_lines, alignments = align_hybrid_lrc_whisper_fn(
+            lines,
+            transcription,
+            all_words,
+            language=epitran_lang,
+            trust_threshold=trust_lrc_threshold,
+            correct_threshold=correct_lrc_threshold,
+        )
+    else:
+        logger.info("LRC timing is poor, using DTW global alignment")
+        aligned_lines, alignments, metrics, lrc_words, alignments_map = (
+            align_dtw_whisper_with_data_fn(
+                lines,
+                all_words,
+                language=epitran_lang,
+                silence_regions=(
+                    audio_features.silence_regions if audio_features else None
+                ),
+                audio_features=audio_features,
+                lenient_vocal_activity_threshold=lenient_vocal_activity_threshold,
+                lenient_activity_bonus=lenient_activity_bonus,
+                low_word_confidence_threshold=low_word_confidence_threshold,
+            )
+        )
+        metrics["dtw_used"] = 1.0
+
+        matched_ratio = metrics.get("matched_ratio", 0.0)
+        avg_similarity = metrics.get("avg_similarity", 0.0)
+        line_coverage = metrics.get("line_coverage", 0.0)
+        confidence_ok = (
+            matched_ratio >= 0.6 and avg_similarity >= 0.5 and line_coverage >= 0.6
+        )
+
+        if confidence_ok and lrc_words and alignments_map:
+            dtw_lines, dtw_fixes = retime_lines_from_dtw_alignments_fn(
+                lines, lrc_words, alignments_map
+            )
+            aligned_lines = dtw_lines
+            alignments.extend(dtw_fixes)
+            metrics["dtw_confidence_passed"] = 1.0
+        else:
+            metrics["dtw_confidence_passed"] = 0.0
+            alignments.append(
+                "DTW confidence gating failed; keeping conservative word shifts"
+            )
+
+    if quality < 0.4 or force_dtw:
+        aligned_lines, merged_first = merge_first_two_lines_if_segment_matches_fn(
+            aligned_lines, transcription, epitran_lang
+        )
+        if merged_first:
+            alignments.append("Merged first two lines via Whisper segment")
+        aligned_lines, pair_retimed = retime_adjacent_lines_to_whisper_window_fn(
+            aligned_lines, transcription, epitran_lang
+        )
+        if pair_retimed:
+            alignments.append(
+                f"Retimed {pair_retimed} adjacent line pair(s) to Whisper window"
+            )
+        aligned_lines, pair_windowed = retime_adjacent_lines_to_segment_window_fn(
+            aligned_lines, transcription, epitran_lang
+        )
+        if pair_windowed:
+            alignments.append(
+                f"Retimed {pair_windowed} adjacent line pair(s) to Whisper segment window"
+            )
+        aligned_lines, pulled_next = pull_next_line_into_segment_window_fn(
+            aligned_lines, transcription, epitran_lang
+        )
+        if pulled_next:
+            alignments.append(
+                f"Pulled {pulled_next} line(s) into adjacent segment window"
+            )
+        aligned_lines, pulled_near_end = pull_lines_near_segment_end_fn(
+            aligned_lines, transcription, epitran_lang
+        )
+        if pulled_near_end:
+            alignments.append(f"Pulled {pulled_near_end} line(s) near segment ends")
+        aligned_lines, pulled_same = pull_next_line_into_same_segment_fn(
+            aligned_lines, transcription
+        )
+        if pulled_same:
+            alignments.append(f"Pulled {pulled_same} line(s) into same segment")
+        aligned_lines, pair_retimed_after = retime_adjacent_lines_to_whisper_window_fn(
+            aligned_lines,
+            transcription,
+            epitran_lang,
+            max_window_duration=4.5,
+            max_start_offset=1.0,
+        )
+        if pair_retimed_after:
+            alignments.append(
+                f"Retimed {pair_retimed_after} adjacent line pair(s) after pulls"
+            )
+        aligned_lines, merged = merge_lines_to_whisper_segments_fn(
+            aligned_lines, transcription, epitran_lang
+        )
+        if merged:
+            alignments.append(f"Merged {merged} line pair(s) via Whisper segments")
+        aligned_lines, tightened = tighten_lines_to_whisper_segments_fn(
+            aligned_lines, transcription, epitran_lang
+        )
+        if tightened:
+            alignments.append(f"Tightened {tightened} line(s) to Whisper segments")
+        aligned_lines, pulled = pull_lines_to_best_segments_fn(
+            aligned_lines, transcription, epitran_lang
+        )
+        if pulled:
+            alignments.append(f"Pulled {pulled} line(s) to Whisper segments")
+
+    aligned_lines, alignments = fix_ordering_violations_fn(
+        lines, aligned_lines, alignments
+    )
+    aligned_lines = normalize_line_word_timings_fn(aligned_lines)
+    aligned_lines = enforce_monotonic_line_starts_fn(aligned_lines)
+    aligned_lines = enforce_non_overlapping_lines_fn(aligned_lines)
+    if force_dtw:
+        aligned_lines, pulled_near_end = pull_lines_near_segment_end_fn(
+            aligned_lines, transcription, epitran_lang
+        )
+        if pulled_near_end:
+            alignments.append(
+                f"Pulled {pulled_near_end} line(s) near segment ends (post-order)"
+            )
+        aligned_lines, merged_short = merge_short_following_line_into_segment_fn(
+            aligned_lines, transcription
+        )
+        if merged_short:
+            alignments.append(
+                f"Merged {merged_short} short line(s) into prior segments"
+            )
+        aligned_lines, clamped_repeat = clamp_repeated_line_duration_fn(aligned_lines)
+        if clamped_repeat:
+            alignments.append(f"Clamped {clamped_repeat} repeated line(s) duration")
+
+    aligned_lines, deduped = drop_duplicate_lines_fn(
+        aligned_lines, transcription, epitran_lang
+    )
+    if deduped:
+        alignments.append(f"Dropped {deduped} duplicate line(s)")
+    before_drop = len(aligned_lines)
+    aligned_lines = [line for line in aligned_lines if line.words]
+    if len(aligned_lines) != before_drop:
+        alignments.append("Dropped empty lines after Whisper merges")
+    aligned_lines, timing_deduped = drop_duplicate_lines_by_timing_fn(aligned_lines)
+    if timing_deduped:
+        alignments.append(
+            f"Dropped {timing_deduped} duplicate line(s) by timing overlap"
+        )
+
+    if audio_features is not None:
+        aligned_lines, continuous_fixes = pull_lines_forward_for_continuous_vocals_fn(
+            aligned_lines, audio_features
+        )
+        if continuous_fixes:
+            alignments.append(
+                f"Pulled {continuous_fixes} line(s) forward for continuous vocals"
+            )
+
+    aligned_lines = enforce_monotonic_line_starts_fn(aligned_lines)
+    aligned_lines = enforce_non_overlapping_lines_fn(aligned_lines)
+
+    if alignments:
+        logger.info(f"Whisper hybrid alignment: {len(alignments)} lines corrected")
+
+    return aligned_lines, alignments, metrics
