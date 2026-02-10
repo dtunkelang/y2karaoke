@@ -13,6 +13,7 @@ from ....utils.logging import get_logger
 from . import sync_quality
 from . import sync_search
 from . import sync_providers
+from .sync_pipeline import fetch_lyrics_multi_source_impl
 
 logger = get_logger(__name__)
 
@@ -435,134 +436,26 @@ def fetch_lyrics_multi_source(  # noqa: C901
 ) -> Tuple[Optional[str], bool, str]:
     """Fetch lyrics from multiple sources using lyriq and syncedlyrics."""
     runtime_state = _state_or_default(state)
-    disk_cache_enabled = _disk_cache_enabled(runtime_state)
-    if disk_cache_enabled:
-        _load_disk_cache(runtime_state)
-
-    cache_key = (artist.lower().strip(), title.lower().strip())
-    if cache_key in runtime_state.lrc_cache:
-        cached = runtime_state.lrc_cache[cache_key]
-        cached_duration = cached[3] if len(cached) > 3 else None
-        if target_duration and cached_duration:
-            if abs(cached_duration - target_duration) <= duration_tolerance:
-                logger.debug(f"Using cached LRC result for {artist} - {title}")
-                return (cached[0], cached[1], cached[2])
-            logger.debug(
-                "Cached LRC duration (%ss) doesn't match target (%ss), re-fetching",
-                cached_duration,
-                target_duration,
-            )
-        else:
-            logger.debug(f"Using cached LRC result for {artist} - {title}")
-            return (cached[0], cached[1], cached[2])
-
-    if disk_cache_enabled:
-        disk_key = f"{cache_key[0]}|{cache_key[1]}"
-        disk_lrc = runtime_state.disk_cache.get("lrc_cache", {})
-        if disk_key in disk_lrc:
-            cached = disk_lrc[disk_key]
-            cached_duration = cached[3] if len(cached) > 3 else None
-            if target_duration and cached_duration:
-                if abs(cached_duration - target_duration) <= duration_tolerance:
-                    runtime_state.lrc_cache[cache_key] = tuple(cached)
-                    logger.debug(f"Using cached LRC result for {artist} - {title}")
-                    return (cached[0], cached[1], cached[2])
-                logger.debug(
-                    "Cached LRC duration (%ss) doesn't match target (%ss), re-fetching",
-                    cached_duration,
-                    target_duration,
-                )
-            else:
-                runtime_state.lrc_cache[cache_key] = tuple(cached)
-                logger.debug(f"Using cached LRC result for {artist} - {title}")
-                return (cached[0], cached[1], cached[2])
-
-    if offline:
-        logger.info("Offline mode: skipping lyrics providers (cache only)")
-        return (None, False, "")
-
-    search_term = f"{artist} {title}"
-    logger.debug(f"Searching for synced lyrics: {search_term}")
-
-    try:
-        if _is_lyriq_available(runtime_state):
-            logger.debug(f"Trying lyriq for: {title} - {artist}")
-            lrc = _fetch_from_lyriq(title, artist, state=runtime_state)
-            if lrc and _has_timestamps_for_state(lrc, runtime_state):
-                logger.debug("Found synced lyrics from lyriq (LRCLib)")
-                lrc_duration = _get_lrc_duration_for_state(lrc, runtime_state)
-                result = (lrc, True, "lyriq (LRCLib)", lrc_duration)
-                _set_lrc_cache(cache_key, result, state=runtime_state)
-                return (lrc, True, "lyriq (LRCLib)")
-
-        if not _is_syncedlyrics_available(runtime_state):
-            logger.warning("syncedlyrics not installed")
-            no_sync_result: Tuple[Optional[str], bool, str, Optional[int]] = (
-                None,
-                False,
-                "",
-                None,
-            )
-            _set_lrc_cache(cache_key, no_sync_result, state=runtime_state)
-            return (None, False, "")
-
-        if enhanced:
-            lrc, provider = _search_with_state_fallback(
-                search_term,
-                synced_only=True,
-                enhanced=True,
-                state=runtime_state,
-            )
-            if lrc and _has_timestamps_for_state(lrc, runtime_state):
-                logger.debug(
-                    f"Found enhanced (word-level) synced lyrics from {provider}"
-                )
-                lrc_duration = _get_lrc_duration_for_state(lrc, runtime_state)
-                result = (lrc, True, f"{provider} (enhanced)", lrc_duration)
-                _set_lrc_cache(cache_key, result, state=runtime_state)
-                return (lrc, True, f"{provider} (enhanced)")
-
-        lrc, provider = _search_with_state_fallback(
-            search_term,
-            synced_only=synced_only,
-            enhanced=False,
-            state=runtime_state,
-        )
-
-        if lrc:
-            is_synced = _has_timestamps_for_state(lrc, runtime_state)
-            if is_synced:
-                logger.debug(f"Found synced lyrics from {provider}")
-                lrc_duration = _get_lrc_duration_for_state(lrc, runtime_state)
-                result = (lrc, True, provider, lrc_duration)
-                _set_lrc_cache(cache_key, result, state=runtime_state)
-                return (lrc, True, provider)
-            if not synced_only:
-                logger.debug(f"Found plain lyrics from {provider}")
-                result = (lrc, False, provider, None)
-                _set_lrc_cache(cache_key, result, state=runtime_state)
-                return (lrc, False, provider)
-
-        logger.warning("No synced lyrics found from any provider")
-        not_found: Tuple[Optional[str], bool, str, Optional[int]] = (
-            None,
-            False,
-            "",
-            None,
-        )
-        _set_lrc_cache(cache_key, not_found, state=runtime_state)
-        return (None, False, "")
-
-    except Exception as e:
-        logger.error(f"Error fetching synced lyrics: {e}")
-        error_result: Tuple[Optional[str], bool, str, Optional[int]] = (
-            None,
-            False,
-            "",
-            None,
-        )
-        _set_lrc_cache(cache_key, error_result, state=runtime_state)
-        return (None, False, "")
+    return fetch_lyrics_multi_source_impl(
+        title,
+        artist,
+        synced_only,
+        enhanced,
+        target_duration,
+        duration_tolerance,
+        offline,
+        runtime_state,
+        disk_cache_enabled_fn=_disk_cache_enabled,
+        load_disk_cache_fn=_load_disk_cache,
+        is_lyriq_available_fn=_is_lyriq_available,
+        fetch_from_lyriq_fn=_fetch_from_lyriq,
+        has_timestamps_fn=_has_timestamps_for_state,
+        get_lrc_duration_fn=_get_lrc_duration_for_state,
+        set_lrc_cache_fn=_set_lrc_cache,
+        is_syncedlyrics_available_fn=_is_syncedlyrics_available,
+        search_with_state_fallback_fn=_search_with_state_fallback,
+        logger=logger,
+    )
 
 
 def fetch_lyrics_for_duration(

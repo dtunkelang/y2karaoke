@@ -5,7 +5,6 @@ from __future__ import annotations
 from contextlib import contextmanager
 from pathlib import Path
 from typing import Dict, Iterator, List, Optional, Any, Tuple, TYPE_CHECKING
-from time import time
 import musicbrainzngs
 
 from ..config import get_cache_dir
@@ -13,15 +12,14 @@ from ..exceptions import Y2KaraokeError
 from ..utils.cache import CacheManager
 from ..utils.logging import get_logger
 from ..utils.validation import (
-    fix_line_order,
     sanitize_filename,  # noqa: F401 - retained for monkeypatch-based tests
-    validate_line_order,
 )
 from . import karaoke_utils
 from . import karaoke_timing_report
+from .karaoke_audio_helpers import append_outro_line_impl, shorten_breaks_impl
+from .karaoke_generate import generate_karaoke
 from ..pipeline.audio import (
     YouTubeDownloader,
-    extract_video_id,
     AudioSeparator,
     AudioProcessor,
     trim_audio_if_needed,
@@ -134,37 +132,19 @@ class KaraokeGenerator:
         skip_render: bool = False,
         timing_report_path: Optional[str] = None,
     ) -> Dict[str, Any]:
-
-        self._original_prompt = original_prompt
-        total_start = time()
-
-        video_id = extract_video_id(url)
-        logger.info(f"Video ID: {video_id}")
-
-        self.cache_manager.auto_cleanup()
-
-        audio_result, video_path, separation_result = self._prepare_media(
-            url,
-            video_id,
-            audio_start,
-            use_backgrounds,
-            force_reprocess,
-            offline,
-        )
-
-        final_title, final_artist = self._resolve_final_metadata(
-            audio_result, lyrics_title, lyrics_artist
-        )
-
-        lyrics_result = self._get_lyrics(
-            final_title,
-            final_artist,
-            separation_result["vocals_path"],
-            video_id,
-            force_reprocess,
+        return generate_karaoke(
+            self,
+            url=url,
+            output_path=output_path,
+            offset=offset,
+            key_shift=key_shift,
+            tempo_multiplier=tempo_multiplier,
+            audio_start=audio_start,
+            lyrics_title=lyrics_title,
+            lyrics_artist=lyrics_artist,
             lyrics_offset=lyrics_offset,
             target_duration=target_duration,
-            evaluate_sources=evaluate_lyrics_sources,
+            evaluate_lyrics_sources=evaluate_lyrics_sources,
             use_whisper=use_whisper,
             whisper_only=whisper_only,
             whisper_map_lrc=whisper_map_lrc,
@@ -178,94 +158,19 @@ class KaraokeGenerator:
             lenient_vocal_activity_threshold=lenient_vocal_activity_threshold,
             lenient_activity_bonus=lenient_activity_bonus,
             low_word_confidence_threshold=low_word_confidence_threshold,
+            outro_line=outro_line,
             offline=offline,
             filter_promos=filter_promos,
+            use_backgrounds=use_backgrounds,
+            force_reprocess=force_reprocess,
+            video_settings=video_settings,
+            original_prompt=original_prompt,
+            shorten_breaks=shorten_breaks,
+            max_break_duration=max_break_duration,
+            debug_audio=debug_audio,
+            skip_render=skip_render,
+            timing_report_path=timing_report_path,
         )
-
-        processed_audio, break_edits = self._process_audio_track(
-            debug_audio,
-            separation_result,
-            audio_result,
-            key_shift,
-            tempo_multiplier,
-            video_id,
-            force_reprocess,
-            shorten_breaks,
-            max_break_duration,
-        )
-
-        if outro_line:
-            self._append_outro_line(
-                lines=lyrics_result["lines"],
-                outro_line=outro_line,
-                audio_path=processed_audio,
-            )
-
-        scaled_lines = self._scale_lyrics_timing(
-            lyrics_result["lines"], tempo_multiplier
-        )
-        scaled_lines = self._apply_break_edits(scaled_lines, break_edits)
-        scaled_lines = self._apply_splash_offset(scaled_lines, min_start=3.5)
-        scaled_lines = fix_line_order(scaled_lines)
-        validate_line_order(scaled_lines)
-
-        if timing_report_path:
-            self._write_timing_report(
-                scaled_lines,
-                timing_report_path,
-                final_title,
-                final_artist,
-                lyrics_result,
-                video_id=video_id,
-            )
-
-        output_path = output_path or self._build_output_path(final_title)
-        background_segments = self._build_background_segments(
-            use_backgrounds, video_path, scaled_lines, processed_audio
-        )
-
-        if not skip_render:
-            self._render_video(
-                lines=scaled_lines,
-                audio_path=processed_audio,
-                output_path=output_path,
-                title=final_title,
-                artist=final_artist,
-                timing_offset=offset,
-                background_segments=background_segments,
-                song_metadata=lyrics_result.get("metadata"),
-                video_settings=video_settings,
-            )
-        else:
-            logger.info("Skipping video rendering (--no-render)")
-
-        total_time = time() - total_start
-
-        quality_score, quality_issues, quality_level, quality_emoji = (
-            self._summarize_quality(lyrics_result)
-        )
-        lyrics_quality = lyrics_result.get("quality", {})
-
-        logger.info(
-            f"{quality_emoji} Karaoke generation complete: {output_path} ({total_time:.1f}s)"
-        )
-        logger.info(f"   Quality: {quality_score:.0f}/100 ({quality_level} confidence)")
-        if quality_issues:
-            for issue in quality_issues[:3]:
-                logger.info(f"   - {issue}")
-
-        return {
-            "output_path": str(output_path),
-            "title": final_title,
-            "artist": final_artist,
-            "video_id": video_id,
-            "rendered": not skip_render,
-            "quality_score": quality_score,
-            "quality_level": quality_level,
-            "quality_issues": quality_issues,
-            "lyrics_source": lyrics_quality.get("source", ""),
-            "alignment_method": lyrics_quality.get("alignment_method", ""),
-        }
 
     # ------------------------
     # Helper methods
@@ -455,34 +360,12 @@ class KaraokeGenerator:
         audio_path: str,
         min_tail: float = 0.5,
     ) -> None:
-        """Append a final lyric line near the end of the audio."""
-        if not lines or not outro_line.strip():
-            return
-
-        from moviepy import AudioFileClip
-        from ..config import OUTRO_DELAY
-        from .models import Line, Word
-
-        with AudioFileClip(audio_path) as clip:
-            audio_duration = clip.duration
-
-        last_end = lines[-1].end_time
-        end_time = max(last_end + min_tail, audio_duration - OUTRO_DELAY)
-        duration = min(3.0, max(1.5, end_time - last_end))
-        start_time = max(last_end + min_tail, end_time - duration)
-        if end_time <= start_time + 0.2:
-            return
-
-        tokens = [t for t in outro_line.strip().split() if t]
-        if not tokens:
-            return
-        spacing = duration / len(tokens)
-        words = []
-        for i, token in enumerate(tokens):
-            start = start_time + i * spacing
-            end = start + spacing * 0.9
-            words.append(Word(text=token, start_time=start, end_time=end))
-        lines.append(Line(words=words))
+        append_outro_line_impl(
+            lines,
+            outro_line,
+            audio_path,
+            min_tail=min_tail,
+        )
 
     def _build_output_path(self, title: str) -> Path:
         safe_title = sanitize_filename(title)
@@ -574,82 +457,17 @@ class KaraokeGenerator:
         force: bool = False,
         cache_suffix: str = "",
     ):
-        """Shorten long instrumental breaks in the given audio track.
-
-        Break detection always uses vocals, and beat alignment always uses instrumental
-        to ensure consistent cuts across different audio tracks.
-        """
-        import json
-        from .break_shortener import shorten_instrumental_breaks, BreakEdit
-
-        # Check cache (both audio and edits)
-        shortened_name = f"shortened_breaks_{max_break_duration:.0f}s{cache_suffix}.wav"
-        edits_name = f"shortened_breaks_{max_break_duration:.0f}s_edits.json"  # Edits are same for all tracks
-
-        if not force and self.cache_manager.file_exists(video_id, shortened_name):
-            # Try to load cached edits
-            edits_path = self.cache_manager.get_file_path(video_id, edits_name)
-            if edits_path.exists():
-                try:
-                    with open(edits_path) as f:
-                        edits_data = json.load(f)
-                    edits = [
-                        BreakEdit(
-                            original_start=e["original_start"],
-                            original_end=e["original_end"],
-                            new_end=e["new_end"],
-                            time_removed=e["time_removed"],
-                            cut_start=e.get("cut_start", 0.0),
-                        )
-                        for e in edits_data
-                    ]
-                    logger.info(
-                        f"📁 Using cached shortened audio ({len(edits)} break edits)"
-                    )
-                    return (
-                        str(self.cache_manager.get_file_path(video_id, shortened_name)),
-                        edits,
-                    )
-                except Exception as e:
-                    logger.debug(f"Could not load cached edits: {e}")
-            else:
-                logger.info("📁 Using cached shortened audio (no edits)")
-                return (
-                    str(self.cache_manager.get_file_path(video_id, shortened_name)),
-                    [],
-                )
-
-        logger.info(
-            f"✂️ Shortening instrumental breaks longer than {max_break_duration:.0f}s..."
-        )
-        output_path = self.cache_manager.get_file_path(video_id, shortened_name)
-
-        shortened_path, edits = shorten_instrumental_breaks(
+        """Shorten long instrumental breaks in the given audio track."""
+        return shorten_breaks_impl(
             audio_path,
             vocals_path,
-            str(output_path),
-            max_break_duration=max_break_duration,
-            beat_reference_path=instrumental_path,
+            instrumental_path,
+            video_id,
+            max_break_duration,
+            cache_manager=self.cache_manager,
+            force=force,
+            cache_suffix=cache_suffix,
         )
-
-        # Cache the edits for future runs (only once, not per audio track)
-        if edits:
-            edits_path = self.cache_manager.get_file_path(video_id, edits_name)
-            if not edits_path.exists():
-                edits_data = [
-                    {
-                        "original_start": e.original_start,
-                        "original_end": e.original_end,
-                        "new_end": e.new_end,
-                        "time_removed": e.time_removed,
-                        "cut_start": e.cut_start,
-                    }
-                    for e in edits
-                ]
-                with open(edits_path, "w") as f:
-                    json.dump(edits_data, f)
-
-        return shortened_path, edits
 
     def _create_background_segments(self, video_path: str, lines, audio_path: str):
         logger.info("🎨 Creating background segments...")

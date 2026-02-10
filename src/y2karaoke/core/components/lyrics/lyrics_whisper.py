@@ -27,6 +27,7 @@ from .lyrics_whisper_map import (
     _create_lines_from_whisper,
     _map_lrc_lines_to_whisper_segments,
 )
+from .lyrics_whisper_pipeline import get_lyrics_simple_impl
 
 logger = logging.getLogger(__name__)
 
@@ -430,255 +431,59 @@ def get_lyrics_simple(  # noqa: C901
     low_word_confidence_threshold: float = 0.5,
     offline: bool = False,
 ) -> Tuple[List[Line], Optional[SongMetadata]]:
-    """Simplified lyrics pipeline favoring LRC over Genius.
+    """Simplified lyrics pipeline favoring LRC over Genius."""
+    from .sync import get_lrc_duration
 
-    Pipeline:
-    1. Try to fetch LRC lyrics with timing (preferred source)
-    2. If no LRC, fall back to Genius lyrics
-    3. Detect vocal offset and align timing
-    4. Create Line objects with word-level timing
-    5. Refine timing using audio onset detection
-    6. Optionally align to Whisper transcription for severely broken LRC
-    7. Apply romanization if needed
-
-    Args:
-        title: Song title
-        artist: Artist name
-        vocals_path: Path to vocals audio (for timing refinement)
-        cache_dir: Cache directory (unused, for API compatibility)
-        lyrics_offset: Manual timing offset in seconds (auto-detected if None)
-        romanize: Whether to romanize non-Latin scripts
-        target_duration: Expected track duration in seconds (for LRC validation)
-        evaluate_sources: If True, compare all lyrics sources and select best
-                         based on timing alignment with audio
-        use_whisper: If True, use Whisper transcription to align lyrics timing
-        whisper_only: If True, generate lines directly from Whisper (no LRC/Genius)
-        whisper_map_lrc: If True, map LRC text onto Whisper timing without shifting segments
-        whisper_map_lrc_dtw: If True, map LRC text onto Whisper timing using phonetic DTW
-        lyrics_file: Optional local lyrics file (plain text or .lrc)
-        whisper_language: Language code for Whisper (auto-detected if None)
-        whisper_model: Whisper model size ('tiny', 'base', 'small', 'medium', 'large')
-        whisper_temperature: Temperature for Whisper transcription
-        lenient_vocal_activity_threshold: Threshold for vocal activity
-        lenient_activity_bonus: Bonus for phonetic cost under leniency
-        low_word_confidence_threshold: Threshold for whisper word confidence
-
-    Returns:
-        Tuple of (lines, metadata)
-    """
-    # Whisper-only mode: generate lines directly from transcription.
-    if whisper_only:
-        if not vocals_path:
-            logger.warning(
-                "Whisper-only mode requires vocals; using placeholder lyrics"
-            )
-            return _create_no_lyrics_placeholder(title, artist)
-        model_size = whisper_model or "base"
-        transcription, _, detected_lang, _model = _transcribe_vocals_for_state(
-            vocals_path,
-            whisper_language,
-            model_size,
-            whisper_aggressive,
-            whisper_temperature,
-        )
-        if not transcription:
-            logger.warning(
-                "No Whisper transcription available; using placeholder lyrics"
-            )
-            return _create_no_lyrics_placeholder(title, artist)
-        lines = _create_lines_from_whisper(transcription)
-        whisper_metadata = SongMetadata(
-            singers=[],
-            is_duet=False,
-            title=title,
-            artist=artist,
-        )
-        if romanize:
-            _romanize_lines(lines)
-        logger.debug(f"Returning {len(lines)} lines from Whisper-only mode")
-        return lines, whisper_metadata
-
-    file_lines: List[str] = []
-    file_lrc_text: Optional[str] = None
-    file_line_timings: Optional[List[Tuple[float, str]]] = None
-    if lyrics_file:
-        file_lrc_text, file_line_timings, file_lines = _load_lyrics_file(
-            lyrics_file, filter_promos
-        )
-        if file_lines or file_lrc_text:
-            logger.info(f"Using lyrics from file: {lyrics_file}")
-
-    # 1. Try LRC first (preferred source), with duration validation if provided
-    logger.debug(
-        f"Fetching LRC lyrics... (target_duration={target_duration}, "
-        f"evaluate={evaluate_sources})"
+    _ = cache_dir
+    return get_lyrics_simple_impl(
+        title,
+        artist,
+        vocals_path,
+        lyrics_offset,
+        romanize,
+        filter_promos,
+        target_duration,
+        evaluate_sources,
+        use_whisper,
+        whisper_only,
+        whisper_map_lrc,
+        whisper_map_lrc_dtw,
+        lyrics_file,
+        whisper_language,
+        whisper_model,
+        whisper_force_dtw,
+        whisper_aggressive,
+        whisper_temperature,
+        lenient_vocal_activity_threshold,
+        lenient_activity_bonus,
+        low_word_confidence_threshold,
+        offline,
+        create_no_lyrics_placeholder_fn=_create_no_lyrics_placeholder,
+        transcribe_vocals_for_state_fn=_transcribe_vocals_for_state,
+        create_lines_from_whisper_fn=_create_lines_from_whisper,
+        romanize_lines_fn=_romanize_lines,
+        load_lyrics_file_fn=_load_lyrics_file,
+        fetch_lrc_text_and_timings_for_state_fn=_fetch_lrc_text_and_timings_for_state,
+        get_lrc_duration_fn=get_lrc_duration,
+        fetch_genius_lyrics_with_singers_for_state_fn=(
+            _fetch_genius_lyrics_with_singers_for_state
+        ),
+        detect_and_apply_offset_for_state_fn=_detect_and_apply_offset_for_state,
+        create_lines_from_lrc_timings_fn=create_lines_from_lrc_timings,
+        create_lines_from_lrc_fn=create_lines_from_lrc,
+        apply_timing_to_lines_fn=_apply_timing_to_lines,
+        extract_text_lines_from_lrc_fn=_extract_text_lines_from_lrc,
+        create_lines_from_plain_text_fn=_create_lines_from_plain_text,
+        refine_timing_with_audio_for_state_fn=_refine_timing_with_audio_for_state,
+        apply_whisper_alignment_for_state_fn=_apply_whisper_alignment_for_state,
+        align_lrc_text_to_whisper_timings_for_state_fn=(
+            _align_lrc_text_to_whisper_timings_for_state
+        ),
+        whisper_lang_to_epitran_for_state_fn=_whisper_lang_to_epitran_for_state,
+        map_lrc_lines_to_whisper_segments_fn=_map_lrc_lines_to_whisper_segments,
+        apply_singer_info_fn=_apply_singer_info,
+        logger=logger,
     )
-    lrc_text, line_timings, _source = _fetch_lrc_text_and_timings_for_state(
-        title=title,
-        artist=artist,
-        target_duration=target_duration,
-        vocals_path=vocals_path,
-        evaluate_sources=evaluate_sources,
-        filter_promos=filter_promos,
-        offline=offline,
-    )
-    if file_lrc_text and file_line_timings:
-        lrc_text = file_lrc_text
-        line_timings = file_line_timings
-    if target_duration and lrc_text:
-        from .sync import get_lrc_duration
-
-        lrc_duration = get_lrc_duration(lrc_text)
-        if lrc_duration and abs(target_duration - lrc_duration) > 8:
-            logger.warning(
-                "LRC duration mismatch: keeping text but ignoring LRC timings"
-            )
-            line_timings = None
-
-    # 2. Fetch Genius as fallback or for singer info
-    genius_lines: Optional[List[Tuple[str, str]]] = None
-    metadata: Optional[SongMetadata] = None
-    if not line_timings and not lrc_text and not file_lines:
-        if offline:
-            logger.warning("Offline mode: no cached lyrics available")
-            return _create_no_lyrics_placeholder(title, artist)
-        logger.debug("No LRC found, fetching lyrics from Genius...")
-        genius_lines, metadata = _fetch_genius_lyrics_with_singers_for_state(
-            title, artist
-        )
-        if not genius_lines:
-            logger.warning("No lyrics found from any source, using placeholder")
-            return _create_no_lyrics_placeholder(title, artist)
-    else:
-        # Fetch Genius for singer/duet metadata only
-        genius_lines, metadata = _fetch_genius_lyrics_with_singers_for_state(
-            title, artist
-        )
-
-    # 3. Apply vocal offset if available
-    if vocals_path and line_timings:
-        line_timings, _ = _detect_and_apply_offset_for_state(
-            vocals_path, line_timings, lyrics_offset
-        )
-
-    # 4. Create Line objects
-    has_lrc_timing = bool(line_timings)
-    if lrc_text or file_lines:
-        if line_timings and file_lines:
-            lines = create_lines_from_lrc_timings(line_timings, file_lines)
-        elif line_timings and lrc_text:
-            lines = create_lines_from_lrc(
-                lrc_text,
-                romanize=False,
-                title=title,
-                artist=artist,
-                filter_promos=filter_promos,
-            )
-            _apply_timing_to_lines(lines, line_timings)
-        else:
-            text_lines = file_lines or _extract_text_lines_from_lrc(lrc_text or "")
-            lines = _create_lines_from_plain_text(text_lines)
-
-        # 5. Refine word timing using audio
-        if vocals_path and line_timings and len(line_timings) > 1:
-            lines = _refine_timing_with_audio_for_state(
-                lines, vocals_path, line_timings, lrc_text or "", target_duration
-            )
-
-        # 5b. Optionally use Whisper for more accurate alignment
-        if vocals_path and use_whisper:
-            try:
-                lines, _, _ = _apply_whisper_alignment_for_state(
-                    lines,
-                    vocals_path,
-                    whisper_language,
-                    whisper_model,
-                    whisper_force_dtw,
-                    whisper_aggressive,
-                    whisper_temperature=whisper_temperature,
-                    prefer_whisper_timing_map=not has_lrc_timing,
-                    lenient_vocal_activity_threshold=lenient_vocal_activity_threshold,
-                    lenient_activity_bonus=lenient_activity_bonus,
-                    low_word_confidence_threshold=low_word_confidence_threshold,
-                )
-            except Exception as e:
-                logger.warning(f"Whisper alignment failed: {e}")
-        elif vocals_path and whisper_map_lrc:
-            try:
-                if whisper_map_lrc_dtw:
-                    model_size = whisper_model or "small"
-                    lines, alignments, metrics = (
-                        _align_lrc_text_to_whisper_timings_for_state(
-                            lines,
-                            vocals_path,
-                            language=whisper_language,
-                            model_size=model_size,
-                            aggressive=whisper_aggressive,
-                            temperature=whisper_temperature,
-                            lenient_vocal_activity_threshold=lenient_vocal_activity_threshold,
-                            lenient_activity_bonus=lenient_activity_bonus,
-                            low_word_confidence_threshold=low_word_confidence_threshold,
-                        )
-                    )
-                    logger.info(
-                        f"DTW-mapped {len(alignments)} LRC line(s) onto Whisper timing"
-                    )
-                    if metrics:
-                        logger.debug(f"DTW metrics: {metrics}")
-                else:
-                    model_size = whisper_model or "small"
-                    transcription, _, detected_lang, _model = (
-                        _transcribe_vocals_for_state(
-                            vocals_path,
-                            whisper_language,
-                            model_size,
-                            whisper_aggressive,
-                            whisper_temperature,
-                        )
-                    )
-                    if transcription:
-                        lang = _whisper_lang_to_epitran_for_state(detected_lang)
-                        lrc_starts = (
-                            [ts for ts, _ in line_timings]
-                            if line_timings and not whisper_map_lrc
-                            else None
-                        )
-                        lines, mapped, issues = _map_lrc_lines_to_whisper_segments(
-                            lines, transcription, lang, lrc_line_starts=lrc_starts
-                        )
-                        if mapped:
-                            logger.info(
-                                f"Mapped {mapped} LRC line(s) onto Whisper timing"
-                            )
-                        for issue in issues:
-                            logger.debug(issue)
-            except Exception as e:
-                logger.warning(f"Whisper LRC mapping failed: {e}")
-    else:
-        # Fallback: use Genius text with evenly spaced lines
-        if genius_lines:
-            text_lines = [text for text, _ in genius_lines if text.strip()]
-            lrc_text = "\n".join(text_lines)
-        else:
-            lrc_text = ""
-        lines = create_lines_from_lrc(
-            lrc_text,
-            romanize=romanize,
-            title=title,
-            artist=artist,
-            filter_promos=filter_promos,
-        )
-
-    # 6. Romanize
-    if romanize:
-        _romanize_lines(lines)
-
-    # Apply singer info for duets (from Genius metadata)
-    if metadata and metadata.is_duet and genius_lines:
-        _apply_singer_info(lines, genius_lines, metadata)
-
-    logger.debug(f"Returning {len(lines)} lines")
-    return lines, metadata
 
 
 def get_lyrics_with_quality(*args, **kwargs):
