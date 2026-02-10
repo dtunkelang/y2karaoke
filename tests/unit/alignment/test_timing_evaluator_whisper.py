@@ -116,9 +116,13 @@ def test_align_dtw_whisper_falls_back_without_fastdtw(monkeypatch):
 
 
 def test_correct_timing_with_whisper_no_transcription(monkeypatch):
-    monkeypatch.setattr(wi, "transcribe_vocals", lambda *_: ([], [], "en", "base"))
     lines = [Line(words=[Word(text="a", start_time=0, end_time=1)])]
-    aligned, corrections, metrics = te.correct_timing_with_whisper(lines, "vocals.wav")
+    with wi.use_whisper_integration_hooks(
+        transcribe_vocals_fn=lambda *_: ([], [], "en", "base")
+    ):
+        aligned, corrections, metrics = te.correct_timing_with_whisper(
+            lines, "vocals.wav"
+        )
     assert aligned == lines
     assert not corrections
 
@@ -130,27 +134,21 @@ def test_correct_timing_with_whisper_uses_dtw(monkeypatch):
         te.TranscriptionSegment(start=20.0, end=21.0, text="hello", words=words)
     ]
 
-    monkeypatch.setattr(
-        wi, "transcribe_vocals", lambda *_: (segments, words, "en", "base")
-    )
-    monkeypatch.setattr(wi, "extract_audio_features", lambda *_: None)
-    # Force low quality to trigger DTW
-    monkeypatch.setattr(wi, "_assess_lrc_quality", lambda *_, **__: (0.1, []))
-
-    # Mock DTW alignment result
-    monkeypatch.setattr(
-        wi,
-        "_align_dtw_whisper_with_data",
-        lambda *_, **__: (
+    with wi.use_whisper_integration_hooks(
+        transcribe_vocals_fn=lambda *_: (segments, words, "en", "base"),
+        extract_audio_features_fn=lambda *_: None,
+        assess_lrc_quality_fn=lambda *_, **__: (0.1, []),
+        align_dtw_whisper_with_data_fn=lambda *_, **__: (
             [Line(words=[Word(text="hello", start_time=20.0, end_time=21.0)])],
             ["dtw"],
             {"matched_ratio": 0.8, "avg_similarity": 0.8, "line_coverage": 0.8},
             [],
             {0: (words[0], 0.9)},
         ),
-    )
-
-    aligned, corrections, metrics = te.correct_timing_with_whisper(lines, "vocals.wav")
+    ):
+        aligned, corrections, metrics = te.correct_timing_with_whisper(
+            lines, "vocals.wav"
+        )
     assert aligned[0].start_time == 20.0
     assert "dtw" in corrections or any("DTW" in c for c in corrections)
 
@@ -162,23 +160,18 @@ def test_correct_timing_with_whisper_quality_good_uses_hybrid(monkeypatch):
         te.TranscriptionSegment(start=10.0, end=11.5, text="hello", words=words)
     ]
 
-    monkeypatch.setattr(
-        wi, "transcribe_vocals", lambda *_: (segments, words, "en", "base")
-    )
-    monkeypatch.setattr(wi, "extract_audio_features", lambda *_: None)
-    monkeypatch.setattr(wi, "_assess_lrc_quality", lambda *_, **__: (0.9, []))
-
-    # Mock hybrid result
-    monkeypatch.setattr(
-        wi,
-        "align_hybrid_lrc_whisper",
-        lambda *_, **__: (
+    with wi.use_whisper_integration_hooks(
+        transcribe_vocals_fn=lambda *_: (segments, words, "en", "base"),
+        extract_audio_features_fn=lambda *_: None,
+        assess_lrc_quality_fn=lambda *_, **__: (0.9, []),
+        align_hybrid_lrc_whisper_fn=lambda *_, **__: (
             [Line(words=[Word(text="hello", start_time=10.1, end_time=11.1)])],
             ["hybrid"],
         ),
-    )
-
-    aligned, corrections, metrics = te.correct_timing_with_whisper(lines, "vocals.wav")
+    ):
+        aligned, corrections, metrics = te.correct_timing_with_whisper(
+            lines, "vocals.wav"
+        )
     assert "hybrid" in corrections
 
 
@@ -189,22 +182,18 @@ def test_correct_timing_with_whisper_quality_mixed_uses_hybrid(monkeypatch):
         te.TranscriptionSegment(start=10.0, end=11.5, text="hello", words=words)
     ]
 
-    monkeypatch.setattr(
-        wi, "transcribe_vocals", lambda *_: (segments, words, "en", "base")
-    )
-    monkeypatch.setattr(wi, "extract_audio_features", lambda *_: None)
-    monkeypatch.setattr(wi, "_assess_lrc_quality", lambda *_, **__: (0.5, []))
-
-    monkeypatch.setattr(
-        wi,
-        "align_hybrid_lrc_whisper",
-        lambda *_, **__: (
+    with wi.use_whisper_integration_hooks(
+        transcribe_vocals_fn=lambda *_: (segments, words, "en", "base"),
+        extract_audio_features_fn=lambda *_: None,
+        assess_lrc_quality_fn=lambda *_, **__: (0.5, []),
+        align_hybrid_lrc_whisper_fn=lambda *_, **__: (
             [Line(words=[Word(text="hello", start_time=10.1, end_time=11.1)])],
             ["hybrid"],
         ),
-    )
-
-    aligned, corrections, metrics = te.correct_timing_with_whisper(lines, "vocals.wav")
+    ):
+        aligned, corrections, metrics = te.correct_timing_with_whisper(
+            lines, "vocals.wav"
+        )
     assert "hybrid" in corrections
 
 
@@ -215,24 +204,10 @@ def test_correct_timing_with_whisper_uses_dtw_retime_when_confident(monkeypatch)
         te.TranscriptionSegment(start=20.0, end=21.0, text="hello", words=words)
     ]
 
-    monkeypatch.setattr(
-        wi, "transcribe_vocals", lambda *_: (segments, words, "en", "base")
-    )
-    monkeypatch.setattr(wi, "extract_audio_features", lambda *_: None)
-    monkeypatch.setattr(wi, "_assess_lrc_quality", lambda *_, **__: (0.1, []))
-
     # High confidence metrics
     metrics_high = {"matched_ratio": 0.9, "avg_similarity": 0.9, "line_coverage": 0.9}
     lrc_words = [{"line_idx": 0, "word_idx": 0, "text": "hello"}]
     align_map = {0: (words[0], 0.9)}
-
-    monkeypatch.setattr(
-        wi,
-        "_align_dtw_whisper_with_data",
-        lambda *_, **__: (lines, ["dtw_data"], metrics_high, lrc_words, align_map),
-    )
-
-    # Mock retime result
     monkeypatch.setattr(
         wi,
         "_retime_lines_from_dtw_alignments",
@@ -242,7 +217,21 @@ def test_correct_timing_with_whisper_uses_dtw_retime_when_confident(monkeypatch)
         ),
     )
 
-    aligned, corrections, metrics = te.correct_timing_with_whisper(lines, "vocals.wav")
+    with wi.use_whisper_integration_hooks(
+        transcribe_vocals_fn=lambda *_: (segments, words, "en", "base"),
+        extract_audio_features_fn=lambda *_: None,
+        assess_lrc_quality_fn=lambda *_, **__: (0.1, []),
+        align_dtw_whisper_with_data_fn=lambda *_, **__: (
+            lines,
+            ["dtw_data"],
+            metrics_high,
+            lrc_words,
+            align_map,
+        ),
+    ):
+        aligned, corrections, metrics = te.correct_timing_with_whisper(
+            lines, "vocals.wav"
+        )
     assert "retimed" in corrections
 
 
@@ -547,14 +536,9 @@ def test_transcribe_vocals_success(monkeypatch):
         def transcribe(self, *args, **kwargs):
             return [FakeSegment()], FakeInfo()
 
-    class FakeWhisperModule:
-        WhisperModel = FakeModel
-
     monkeypatch.setattr(wi, "_get_whisper_cache_path", lambda *_: None)
     monkeypatch.setattr(wi, "_save_whisper_cache", lambda *_: None)
-    monkeypatch.setitem(
-        __import__("sys").modules, "faster_whisper", FakeWhisperModule()
-    )
+    monkeypatch.setattr(wi, "_load_whisper_model_class", lambda: FakeModel)
 
     segments, words, language, model = te.transcribe_vocals("vocals.wav", language="en")
     assert language == "en"
@@ -573,13 +557,8 @@ def test_transcribe_vocals_handles_transcribe_error(monkeypatch):
         def transcribe(self, *args, **kwargs):
             raise RuntimeError("boom")
 
-    class FakeWhisperModule:
-        WhisperModel = FakeModel
-
     monkeypatch.setattr(wi, "_get_whisper_cache_path", lambda *_: None)
-    monkeypatch.setitem(
-        __import__("sys").modules, "faster_whisper", FakeWhisperModule()
-    )
+    monkeypatch.setattr(wi, "_load_whisper_model_class", lambda: FakeModel)
 
     segments, words, language, model = te.transcribe_vocals("vocals.wav", language="en")
     assert segments == []

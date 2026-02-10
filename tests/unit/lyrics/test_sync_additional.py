@@ -56,14 +56,14 @@ def test_search_single_provider_permanent_error_increments_failure(monkeypatch):
     sync._failed_providers.pop("Megalobiz", None)
 
 
-def test_search_with_fallback_uses_cache(monkeypatch):
+def test_search_with_fallback_uses_cache(isolated_sync_state):
     cache_key = "term:True:False"
     sync._search_cache[cache_key] = ("[00:01.00]Hi", "Cached")
 
     def fail_search(*args, **kwargs):
         raise AssertionError("_search_single_provider should not be called")
 
-    monkeypatch.setattr(sync, "_search_single_provider", fail_search)
+    isolated_sync_state.search_single_provider_fn = fail_search
 
     try:
         lrc, provider = sync._search_with_fallback("term")
@@ -73,7 +73,7 @@ def test_search_with_fallback_uses_cache(monkeypatch):
         sync._search_cache.pop(cache_key, None)
 
 
-def test_search_with_fallback_caches_first_success(monkeypatch):
+def test_search_with_fallback_caches_first_success(monkeypatch, isolated_sync_state):
     calls = {"count": 0}
 
     def fake_search(term, provider, synced_only=True, enhanced=False):
@@ -82,7 +82,7 @@ def test_search_with_fallback_caches_first_success(monkeypatch):
             return None
         return "[00:01.00]Hi"
 
-    monkeypatch.setattr(sync, "_search_single_provider", fake_search)
+    isolated_sync_state.search_single_provider_fn = fake_search
     monkeypatch.setattr(sync.time, "sleep", lambda *_: None)
 
     lrc, provider = sync._search_with_fallback("term")
@@ -99,7 +99,7 @@ def test_fetch_from_lyriq_returns_synced(monkeypatch):
         synced_lyrics = "[00:01.00]Hi"
         plain_lyrics = None
 
-    monkeypatch.setattr(sync, "lyriq_get_lyrics", lambda *a, **k: LyricsObj())
+    sync._DEFAULT_SYNC_STATE.lyriq_get_lyrics_fn = lambda *a, **k: LyricsObj()
 
     result = sync._fetch_from_lyriq("Title", "Artist", max_retries=0)
 
@@ -114,7 +114,7 @@ def test_fetch_from_lyriq_plain_returns_none(monkeypatch):
         synced_lyrics = None
         plain_lyrics = "plain"
 
-    monkeypatch.setattr(sync, "lyriq_get_lyrics", lambda *a, **k: LyricsObj())
+    sync._DEFAULT_SYNC_STATE.lyriq_get_lyrics_fn = lambda *a, **k: LyricsObj()
 
     result = sync._fetch_from_lyriq("Title", "Artist", max_retries=0)
 
@@ -136,8 +136,8 @@ def test_fetch_from_lyriq_transient_retry(monkeypatch):
             raise RuntimeError("timeout")
         return LyricsObj()
 
-    monkeypatch.setattr(sync, "lyriq_get_lyrics", fake_get)
-    monkeypatch.setattr(sync.time, "sleep", lambda *_: None)
+    sync._DEFAULT_SYNC_STATE.lyriq_get_lyrics_fn = fake_get
+    sync._DEFAULT_SYNC_STATE.sleep_fn = lambda *_: None
 
     result = sync._fetch_from_lyriq("Title", "Artist", max_retries=1)
 

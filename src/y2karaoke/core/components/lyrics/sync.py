@@ -4,8 +4,9 @@ import json
 import os
 import time
 from dataclasses import dataclass, field
+from contextlib import contextmanager
 from pathlib import Path
-from typing import Any, Dict, Optional, Tuple, List
+from typing import Any, Callable, Dict, Optional, Tuple, List
 
 from ....config import get_cache_dir
 from ....utils.logging import get_logger
@@ -37,6 +38,10 @@ class SyncState:
     )
     disk_cache_loaded: bool = False
     disk_cache_enabled: bool = True
+    search_single_provider_fn: Optional[Callable[..., Optional[str]]] = None
+    search_with_fallback_fn: Optional[Callable[..., Tuple[Optional[str], str]]] = None
+    lyriq_get_lyrics_fn: Optional[Callable[..., Any]] = None
+    sleep_fn: Callable[[float], None] = time.sleep
 
 
 def create_sync_state(*, disk_cache_enabled: bool = True) -> SyncState:
@@ -106,6 +111,38 @@ def _search_single_provider(
 ) -> Optional[str]:
     """Search a single provider with retry logic."""
     runtime_state = _state_or_default(state)
+    if runtime_state.search_single_provider_fn is not None:
+        attempts: List[Dict[str, Any]] = [
+            {
+                "synced_only": synced_only,
+                "enhanced": enhanced,
+                "max_retries": max_retries,
+                "retry_delay": retry_delay,
+                "state": runtime_state,
+            },
+            {
+                "synced_only": synced_only,
+                "enhanced": enhanced,
+                "state": runtime_state,
+            },
+            {"synced_only": synced_only, "enhanced": enhanced},
+        ]
+        last_error: Optional[Exception] = None
+        for kwargs in attempts:
+            try:
+                return runtime_state.search_single_provider_fn(
+                    search_term,
+                    provider,
+                    **kwargs,
+                )
+            except TypeError as e:
+                if "unexpected keyword argument" not in str(e):
+                    raise
+                last_error = e
+                continue
+        if last_error is not None:
+            raise last_error
+        return None
     if syncedlyrics is None:
         return None
     return sync_search.search_single_provider(
@@ -130,6 +167,37 @@ _lrc_cache = _DEFAULT_SYNC_STATE.lrc_cache
 _lyriq_cache = _DEFAULT_SYNC_STATE.lyriq_cache
 
 
+def _bind_default_state(state: SyncState) -> None:
+    """Bind module-level back-compat aliases to a new default state."""
+    global _DEFAULT_SYNC_STATE
+    global _failed_providers, _search_cache, _disk_cache, _disk_cache_loaded
+    global _lrc_cache, _lyriq_cache
+
+    _DEFAULT_SYNC_STATE = state
+    _failed_providers = state.failed_providers
+    _search_cache = state.search_cache
+    _disk_cache = state.disk_cache
+    _disk_cache_loaded = state.disk_cache_loaded
+    _lrc_cache = state.lrc_cache
+    _lyriq_cache = state.lyriq_cache
+
+
+def set_default_sync_state(state: SyncState) -> None:
+    """Set the process-wide default sync state."""
+    _bind_default_state(state)
+
+
+@contextmanager
+def use_sync_state(state: SyncState):
+    """Temporarily use a sync state as the module default."""
+    previous_state = _DEFAULT_SYNC_STATE
+    _bind_default_state(state)
+    try:
+        yield state
+    finally:
+        _bind_default_state(previous_state)
+
+
 def _search_with_fallback(
     search_term: str,
     synced_only: bool = True,
@@ -138,6 +206,24 @@ def _search_with_fallback(
 ) -> Tuple[Optional[str], str]:
     """Search across providers with fallback."""
     runtime_state = _state_or_default(state)
+    if runtime_state.search_with_fallback_fn is not None:
+        attempts: List[Dict[str, Any]] = [
+            {"synced_only": synced_only, "enhanced": enhanced, "state": runtime_state},
+            {"synced_only": synced_only, "enhanced": enhanced},
+            {"synced_only": synced_only},
+        ]
+        last_error: Optional[Exception] = None
+        for kwargs in attempts:
+            try:
+                return runtime_state.search_with_fallback_fn(search_term, **kwargs)
+            except TypeError as e:
+                if "unexpected keyword argument" not in str(e):
+                    raise
+                last_error = e
+                continue
+        if last_error is not None:
+            raise last_error
+        return None, ""
 
     def _search_single(
         search_term_inner: str,
@@ -279,6 +365,7 @@ def _fetch_from_lyriq(  # noqa: C901
     Lrclib provider, so it may find different results.
     """
     runtime_state = _state_or_default(state)
+    lyriq_get = runtime_state.lyriq_get_lyrics_fn or lyriq_get_lyrics
     disk_cache_enabled = _disk_cache_enabled(runtime_state)
     if disk_cache_enabled:
         _load_disk_cache(runtime_state)
@@ -299,7 +386,7 @@ def _fetch_from_lyriq(  # noqa: C901
     for attempt in range(max_retries + 1):
         try:
             with _suppress_stderr():
-                lyrics_obj = lyriq_get_lyrics(title, artist)
+                lyrics_obj = lyriq_get(title, artist) if lyriq_get else None
 
             if lyrics_obj is None:
                 runtime_state.lyriq_cache[cache_key] = None
@@ -357,7 +444,7 @@ def _fetch_from_lyriq(  # noqa: C901
             if is_transient and attempt < max_retries:
                 delay = retry_delay * (2**attempt)
                 logger.debug(f"lyriq transient error, retrying in {delay:.1f}s: {e}")
-                time.sleep(delay)
+                runtime_state.sleep_fn(delay)
                 continue
 
             logger.debug(f"lyriq failed (attempt {attempt + 1}): {e}")

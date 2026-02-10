@@ -346,7 +346,10 @@ class TestRefineWordTiming:
                 def rms(*_args, **_kwargs):
                     return np.array([[0.1, 0.4, 0.2, 0.05]])
 
-        monkeypatch.setitem(__import__("sys").modules, "librosa", FakeLibrosa)
+        monkeypatch.setattr(
+            "y2karaoke.core.refine._load_librosa",
+            lambda: FakeLibrosa,
+        )
 
         refined = refine_word_timing(lines, "/tmp/vocals.wav")
         assert len(refined) == 1

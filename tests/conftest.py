@@ -83,19 +83,13 @@ def mock_video_file(temp_dir):
 
 
 @pytest.fixture
-def isolated_sync_state(monkeypatch):
-    """Provide an isolated sync state and bind module aliases to it."""
+def isolated_sync_state():
+    """Provide an isolated default sync state for the duration of a test."""
     from y2karaoke.core import sync
 
     state = sync.create_sync_state(disk_cache_enabled=False)
-    monkeypatch.setattr(sync, "_DEFAULT_SYNC_STATE", state)
-    monkeypatch.setattr(sync, "_failed_providers", state.failed_providers)
-    monkeypatch.setattr(sync, "_search_cache", state.search_cache)
-    monkeypatch.setattr(sync, "_lrc_cache", state.lrc_cache)
-    monkeypatch.setattr(sync, "_lyriq_cache", state.lyriq_cache)
-    monkeypatch.setattr(sync, "_disk_cache", state.disk_cache)
-    monkeypatch.setattr(sync, "_disk_cache_loaded", state.disk_cache_loaded)
-    return state
+    with sync.use_sync_state(state):
+        yield state
 
 
 # =============================================================================

@@ -12,6 +12,18 @@ from ....utils.logging import get_logger
 logger = get_logger(__name__)
 
 
+def _load_torch_module():
+    import torch
+
+    return torch
+
+
+def _load_separator_class():
+    from audio_separator.separator import Separator
+
+    return Separator
+
+
 class AudioSeparator:
     """Audio separator with caching and error handling."""
 
@@ -98,7 +110,7 @@ def separate_vocals(audio_path: str, output_dir: str = ".") -> dict:
     Returns:
         dict with keys: vocals_path, instrumental_path
     """
-    import torch
+    torch = _load_torch_module()
 
     # Temporarily force Torch to report MPS as unavailable so that
     # audio-separator uses CPU instead of MPS. This avoids the
@@ -111,7 +123,7 @@ def separate_vocals(audio_path: str, output_dir: str = ".") -> dict:
         mps.is_available = lambda: False
 
     try:
-        from audio_separator.separator import Separator
+        Separator = _load_separator_class()
 
         os.makedirs(output_dir, exist_ok=True)
 

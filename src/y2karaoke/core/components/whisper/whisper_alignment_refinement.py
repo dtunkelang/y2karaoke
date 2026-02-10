@@ -1,6 +1,7 @@
 """High-level refinement and hybrid alignment logic."""
 
 import logging
+from contextlib import contextmanager
 from typing import List, Optional, Tuple, Set
 
 from ...models import Line, Word
@@ -22,6 +23,30 @@ _check_vocal_activity_in_range = audio_analysis._check_vocal_activity_in_range
 _check_for_silence_in_range = audio_analysis._check_for_silence_in_range
 
 logger = logging.getLogger(__name__)
+
+
+@contextmanager
+def use_alignment_refinement_hooks(
+    *,
+    find_best_whisper_segment_fn=None,
+    get_ipa_fn=None,
+):
+    """Temporarily override hybrid-alignment collaborators for tests."""
+    global _find_best_whisper_segment, _get_ipa
+
+    prev_find_best = _find_best_whisper_segment
+    prev_get_ipa = _get_ipa
+
+    if find_best_whisper_segment_fn is not None:
+        _find_best_whisper_segment = find_best_whisper_segment_fn
+    if get_ipa_fn is not None:
+        _get_ipa = get_ipa_fn
+
+    try:
+        yield
+    finally:
+        _find_best_whisper_segment = prev_find_best
+        _get_ipa = prev_get_ipa
 
 
 def _calculate_drift_correction(

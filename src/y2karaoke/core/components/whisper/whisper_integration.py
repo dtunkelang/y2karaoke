@@ -1,5 +1,6 @@
 """Whisper-based transcription and alignment for lyrics."""
 
+from contextlib import contextmanager
 from typing import List, Optional, Tuple, Dict, Any
 
 from ....utils.logging import get_logger
@@ -100,6 +101,47 @@ __all__ = [
     "correct_timing_with_whisper",
     "align_lrc_text_to_whisper_timings",
 ] + ALIAS_EXPORTS
+
+
+@contextmanager
+def use_whisper_integration_hooks(
+    *,
+    transcribe_vocals_fn=None,
+    extract_audio_features_fn=None,
+    assess_lrc_quality_fn=None,
+    align_hybrid_lrc_whisper_fn=None,
+    align_dtw_whisper_with_data_fn=None,
+):
+    """Temporarily override integration collaborators for tests."""
+    global transcribe_vocals, extract_audio_features
+    global _assess_lrc_quality, align_hybrid_lrc_whisper
+    global _align_dtw_whisper_with_data
+
+    prev_transcribe_vocals = transcribe_vocals
+    prev_extract_audio_features = extract_audio_features
+    prev_assess_lrc_quality = _assess_lrc_quality
+    prev_align_hybrid = align_hybrid_lrc_whisper
+    prev_align_dtw_data = _align_dtw_whisper_with_data
+
+    if transcribe_vocals_fn is not None:
+        transcribe_vocals = transcribe_vocals_fn
+    if extract_audio_features_fn is not None:
+        extract_audio_features = extract_audio_features_fn
+    if assess_lrc_quality_fn is not None:
+        _assess_lrc_quality = assess_lrc_quality_fn
+    if align_hybrid_lrc_whisper_fn is not None:
+        align_hybrid_lrc_whisper = align_hybrid_lrc_whisper_fn
+    if align_dtw_whisper_with_data_fn is not None:
+        _align_dtw_whisper_with_data = align_dtw_whisper_with_data_fn
+
+    try:
+        yield
+    finally:
+        transcribe_vocals = prev_transcribe_vocals
+        extract_audio_features = prev_extract_audio_features
+        _assess_lrc_quality = prev_assess_lrc_quality
+        align_hybrid_lrc_whisper = prev_align_hybrid
+        _align_dtw_whisper_with_data = prev_align_dtw_data
 
 
 def _load_whisper_model_class():

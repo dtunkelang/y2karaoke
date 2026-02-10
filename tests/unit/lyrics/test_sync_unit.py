@@ -34,14 +34,14 @@ def test_get_lyrics_quality_report_includes_issues():
     assert report["quality_score"] >= 0.0
 
 
-def test_fetch_lyrics_multi_source_returns_cached(monkeypatch):
+def test_fetch_lyrics_multi_source_returns_cached(isolated_sync_state):
     cache_key = ("artist", "title")
     sync._lrc_cache[cache_key] = ("[00:01.00]A", True, "cached", 100)
 
     def fail_search(*args, **kwargs):
         raise AssertionError("_search_with_fallback should not be called")
 
-    monkeypatch.setattr(sync, "_search_with_fallback", fail_search)
+    isolated_sync_state.search_with_fallback_fn = fail_search
 
     try:
         lrc_text, is_synced, source = sync.fetch_lyrics_multi_source("Title", "Artist")
@@ -72,7 +72,8 @@ def test_fetch_lyrics_multi_source_uses_enhanced(monkeypatch):
             return ("[00:01.00]Hi", "Provider")
         return (None, "")
 
-    monkeypatch.setattr(sync, "_search_with_fallback", fake_search)
+    isolated_sync_state = sync._DEFAULT_SYNC_STATE
+    isolated_sync_state.search_with_fallback_fn = fake_search
 
     lrc_text, is_synced, source = sync.fetch_lyrics_multi_source(
         "Title", "Artist", enhanced=True
@@ -86,8 +87,9 @@ def test_fetch_lyrics_multi_source_plain_when_unsynced_allowed(monkeypatch):
     sync._lrc_cache.clear()
     monkeypatch.setattr(sync, "LYRIQ_AVAILABLE", False)
     monkeypatch.setattr(sync, "SYNCEDLYRICS_AVAILABLE", True)
-    monkeypatch.setattr(
-        sync, "_search_with_fallback", lambda *a, **k: ("plain", "Genius")
+    sync._DEFAULT_SYNC_STATE.search_with_fallback_fn = lambda *a, **k: (
+        "plain",
+        "Genius",
     )
 
     lrc_text, is_synced, source = sync.fetch_lyrics_multi_source(
@@ -102,7 +104,7 @@ def test_fetch_lyrics_multi_source_returns_none_when_not_found(monkeypatch):
     sync._lrc_cache.clear()
     monkeypatch.setattr(sync, "LYRIQ_AVAILABLE", False)
     monkeypatch.setattr(sync, "SYNCEDLYRICS_AVAILABLE", True)
-    monkeypatch.setattr(sync, "_search_with_fallback", lambda *a, **k: (None, ""))
+    sync._DEFAULT_SYNC_STATE.search_with_fallback_fn = lambda *a, **k: (None, "")
 
     lrc_text, is_synced, source = sync.fetch_lyrics_multi_source("Title", "Artist")
     assert lrc_text is None
@@ -118,7 +120,7 @@ def test_fetch_lyrics_multi_source_handles_exception(monkeypatch):
     def raise_error(*args, **kwargs):
         raise RuntimeError("boom")
 
-    monkeypatch.setattr(sync, "_search_with_fallback", raise_error)
+    sync._DEFAULT_SYNC_STATE.search_with_fallback_fn = raise_error
 
     lrc_text, is_synced, source = sync.fetch_lyrics_multi_source("Title", "Artist")
     assert lrc_text is None

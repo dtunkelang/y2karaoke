@@ -1,5 +1,4 @@
 import y2karaoke.core.components.alignment.timing_evaluator as te
-import y2karaoke.core.components.whisper.whisper_integration as wi
 import y2karaoke.core.components.whisper.whisper_alignment_refinement as wa_ref
 from y2karaoke.core.models import Line, Word
 
@@ -17,7 +16,7 @@ def test_calculate_drift_correction_requires_consistency():
     assert drift is not None and drift < 0
 
 
-def test_align_hybrid_lrc_whisper_applies_offsets(monkeypatch):
+def test_align_hybrid_lrc_whisper_applies_offsets():
     lines = [
         Line(words=[Word(text="hello", start_time=0.0, end_time=0.5)]),
         Line(words=[Word(text="world", start_time=5.0, end_time=5.5)]),
@@ -32,25 +31,24 @@ def test_align_hybrid_lrc_whisper_applies_offsets(monkeypatch):
             return segments[0], 0.9, 0.2
         return segments[1], 0.6, 2.0
 
-    monkeypatch.setattr(wi, "_find_best_whisper_segment", fake_find_best)
-
-    monkeypatch.setattr(wa_ref, "_find_best_whisper_segment", fake_find_best)
-    monkeypatch.setattr(wi, "_get_ipa", lambda *_args, **_kwargs: None)
-
-    aligned, corrections = te.align_hybrid_lrc_whisper(
-        lines,
-        segments,
-        [],
-        language="eng-Latn",
-        trust_threshold=0.5,
-        correct_threshold=1.0,
-    )
+    with wa_ref.use_alignment_refinement_hooks(
+        find_best_whisper_segment_fn=fake_find_best,
+        get_ipa_fn=lambda *_args, **_kwargs: None,
+    ):
+        aligned, corrections = te.align_hybrid_lrc_whisper(
+            lines,
+            segments,
+            [],
+            language="eng-Latn",
+            trust_threshold=0.5,
+            correct_threshold=1.0,
+        )
     assert aligned[0].words[0].start_time == 0.0
     assert aligned[1].words[0].start_time == 7.0
     assert corrections
 
 
-def test_align_hybrid_lrc_whisper_drift_correction(monkeypatch):
+def test_align_hybrid_lrc_whisper_drift_correction():
     lines = [
         Line(words=[Word(text="one", start_time=0.0, end_time=0.5)]),
         Line(words=[Word(text="two", start_time=2.0, end_time=2.5)]),
@@ -68,25 +66,24 @@ def test_align_hybrid_lrc_whisper_drift_correction(monkeypatch):
         offset = offsets.pop(0)
         return segments[0], 0.7, offset
 
-    monkeypatch.setattr(wi, "_find_best_whisper_segment", fake_find_best)
-
-    monkeypatch.setattr(wa_ref, "_find_best_whisper_segment", fake_find_best)
-    monkeypatch.setattr(wi, "_get_ipa", lambda *_args, **_kwargs: None)
-
-    aligned, corrections = te.align_hybrid_lrc_whisper(
-        lines,
-        segments,
-        [],
-        language="eng-Latn",
-        trust_threshold=0.5,
-        correct_threshold=2.0,
-    )
+    with wa_ref.use_alignment_refinement_hooks(
+        find_best_whisper_segment_fn=fake_find_best,
+        get_ipa_fn=lambda *_args, **_kwargs: None,
+    ):
+        aligned, corrections = te.align_hybrid_lrc_whisper(
+            lines,
+            segments,
+            [],
+            language="eng-Latn",
+            trust_threshold=0.5,
+            correct_threshold=2.0,
+        )
     # Third line should be drift-corrected to ~+2.5s
     assert aligned[2].words[0].start_time == 6.5
     assert any("drift-corrected" in c for c in corrections)
 
 
-def test_align_hybrid_lrc_whisper_no_match_uses_drift(monkeypatch):
+def test_align_hybrid_lrc_whisper_no_match_uses_drift():
     lines = [
         Line(words=[Word(text="one", start_time=0.0, end_time=0.5)]),
         Line(words=[Word(text="two", start_time=2.0, end_time=2.5)]),
@@ -105,19 +102,18 @@ def test_align_hybrid_lrc_whisper_no_match_uses_drift(monkeypatch):
             return segments[0], 0.7, offset
         return None, 0.0, 0.0
 
-    monkeypatch.setattr(wi, "_find_best_whisper_segment", fake_find_best)
-
-    monkeypatch.setattr(wa_ref, "_find_best_whisper_segment", fake_find_best)
-    monkeypatch.setattr(wi, "_get_ipa", lambda *_args, **_kwargs: None)
-
-    aligned, corrections = te.align_hybrid_lrc_whisper(
-        lines,
-        segments,
-        [],
-        language="eng-Latn",
-        trust_threshold=0.5,
-        correct_threshold=2.0,
-    )
+    with wa_ref.use_alignment_refinement_hooks(
+        find_best_whisper_segment_fn=fake_find_best,
+        get_ipa_fn=lambda *_args, **_kwargs: None,
+    ):
+        aligned, corrections = te.align_hybrid_lrc_whisper(
+            lines,
+            segments,
+            [],
+            language="eng-Latn",
+            trust_threshold=0.5,
+            correct_threshold=2.0,
+        )
     # Third line should be drift-corrected using previous offsets
     assert aligned[2].words[0].start_time == 6.5
     assert any("no match" in c for c in corrections)

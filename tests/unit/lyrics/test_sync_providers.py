@@ -6,7 +6,7 @@ from y2karaoke.core import sync
 pytestmark = pytest.mark.usefixtures("isolated_sync_state")
 
 
-def test_search_with_fallback_uses_cache(monkeypatch):
+def test_search_with_fallback_uses_cache(isolated_sync_state):
     sync._search_cache.clear()
     cache_key = "artist - song:True:False"
     sync._search_cache[cache_key] = ("[00:01.00]Line", "Provider")
@@ -14,18 +14,18 @@ def test_search_with_fallback_uses_cache(monkeypatch):
     def fail_search(*_args, **_kwargs):
         raise AssertionError("_search_single_provider should not be called")
 
-    monkeypatch.setattr(sync, "_search_single_provider", fail_search)
+    isolated_sync_state.search_single_provider_fn = fail_search
 
     result = sync._search_with_fallback("Artist - Song")
 
     assert result == ("[00:01.00]Line", "Provider")
 
 
-def test_search_with_fallback_caches_empty_result(monkeypatch):
+def test_search_with_fallback_caches_empty_result(monkeypatch, isolated_sync_state):
     sync._search_cache.clear()
 
     monkeypatch.setattr(sync, "PROVIDER_ORDER", ["A", "B"])
-    monkeypatch.setattr(sync, "_search_single_provider", lambda *_a, **_k: None)
+    isolated_sync_state.search_single_provider_fn = lambda *_a, **_k: None
     monkeypatch.setattr(sync.time, "sleep", lambda *_a, **_k: None)
 
     result = sync._search_with_fallback("Artist - Song")
@@ -83,7 +83,7 @@ def test_fetch_from_lyriq_returns_synced_and_caches(monkeypatch):
         calls["count"] += 1
         return Lyrics()
 
-    monkeypatch.setattr(sync, "lyriq_get_lyrics", fake_get_lyrics)
+    sync._DEFAULT_SYNC_STATE.lyriq_get_lyrics_fn = fake_get_lyrics
 
     result = sync._fetch_from_lyriq("Song", "Artist")
     assert result == "[00:01.00]Line"
@@ -102,7 +102,7 @@ def test_fetch_from_lyriq_plain_only_returns_none(monkeypatch):
         synced_lyrics = None
         plain_lyrics = "Line"
 
-    monkeypatch.setattr(sync, "lyriq_get_lyrics", lambda *_a, **_k: Lyrics())
+    sync._DEFAULT_SYNC_STATE.lyriq_get_lyrics_fn = lambda *_a, **_k: Lyrics()
 
     result = sync._fetch_from_lyriq("Song", "Artist")
 
@@ -121,8 +121,8 @@ def test_fetch_from_lyriq_retries_on_transient_error(monkeypatch):
             raise RuntimeError("timeout")
         return None
 
-    monkeypatch.setattr(sync, "lyriq_get_lyrics", fake_get_lyrics)
-    monkeypatch.setattr(sync.time, "sleep", lambda *_a, **_k: None)
+    sync._DEFAULT_SYNC_STATE.lyriq_get_lyrics_fn = fake_get_lyrics
+    sync._DEFAULT_SYNC_STATE.sleep_fn = lambda *_a, **_k: None
 
     result = sync._fetch_from_lyriq("Song", "Artist", max_retries=1)
 

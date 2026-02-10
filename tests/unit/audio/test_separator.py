@@ -117,10 +117,13 @@ class TestSeparateVocalsFunction:
 
         out_dir = Path(tempfile.mkdtemp(prefix="sep_"))
         try:
-            monkeypatch.setitem(__import__("sys").modules, "torch", FakeTorch())
-            fake_module = type("mod", (), {"Separator": FakeSeparator})
-            monkeypatch.setitem(
-                __import__("sys").modules, "audio_separator.separator", fake_module
+            monkeypatch.setattr(
+                "y2karaoke.core.components.audio.separator._load_torch_module",
+                lambda: FakeTorch(),
+            )
+            monkeypatch.setattr(
+                "y2karaoke.core.components.audio.separator._load_separator_class",
+                lambda: FakeSeparator,
             )
             monkeypatch.setattr(
                 "y2karaoke.core.components.audio.separator.mix_stems", fake_mix
@@ -157,10 +160,13 @@ class TestSeparateVocalsFunction:
             def separate(self, audio_path):
                 return [str(tmp_path / "track_drums.wav")]
 
-        monkeypatch.setitem(__import__("sys").modules, "torch", FakeTorch())
-        fake_module = type("mod", (), {"Separator": FakeSeparator})
-        monkeypatch.setitem(
-            __import__("sys").modules, "audio_separator.separator", fake_module
+        monkeypatch.setattr(
+            "y2karaoke.core.components.audio.separator._load_torch_module",
+            lambda: FakeTorch(),
+        )
+        monkeypatch.setattr(
+            "y2karaoke.core.components.audio.separator._load_separator_class",
+            lambda: FakeSeparator,
         )
 
         with pytest.raises(RuntimeError, match="Failed to separate tracks"):

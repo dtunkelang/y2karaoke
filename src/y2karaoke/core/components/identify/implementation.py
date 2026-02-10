@@ -5,7 +5,7 @@ This module handles two distinct paths for identifying track information:
 - Path B (YouTube URL): URL -> YouTube duration -> best LRC match by duration
 """
 
-from typing import Optional, Dict
+from typing import Optional, Dict, Callable, Any
 import musicbrainzngs  # noqa: F401 - re-exported for compatibility tests
 
 from ....utils.logging import get_logger
@@ -35,11 +35,30 @@ class TrackIdentifier(
 ):
     """Identifies track information from search queries or YouTube URLs."""
 
-    def __init__(self):
+    def __init__(
+        self,
+        *,
+        fetch_lyrics_multi_source_fn: Optional[Callable[..., Any]] = None,
+        get_lrc_duration_fn: Optional[Callable[..., Any]] = None,
+        extract_lrc_metadata_fn: Optional[Callable[..., Any]] = None,
+        parse_query_fn: Optional[Callable[..., Any]] = None,
+        lookup_musicbrainz_for_query_fn: Optional[Callable[..., Any]] = None,
+        infer_artist_from_query_fn: Optional[Callable[..., Any]] = None,
+        search_youtube_verified_fn: Optional[Callable[..., Any]] = None,
+        try_split_search_fn: Optional[Callable[..., Any]] = None,
+    ):
         self._lrc_cache: Dict[tuple, tuple] = {}
         self._http_get = None
         self._mb_search_recordings = None
         self._sleep = None
+        self._fetch_lyrics_multi_source_fn = fetch_lyrics_multi_source_fn
+        self._get_lrc_duration_fn = get_lrc_duration_fn
+        self._extract_lrc_metadata_fn = extract_lrc_metadata_fn
+        self._parse_query_fn = parse_query_fn
+        self._lookup_musicbrainz_for_query_fn = lookup_musicbrainz_for_query_fn
+        self._infer_artist_from_query_fn = infer_artist_from_query_fn
+        self._search_youtube_verified_fn = search_youtube_verified_fn
+        self._try_split_search_fn = try_split_search_fn
 
     def _try_direct_lrc_search(self, query: str) -> Optional[TrackInfo]:  # noqa: C901
         """Try to find track by searching LRC providers directly.
@@ -53,10 +72,25 @@ class TrackIdentifier(
         """
         from ..lyrics.sync import fetch_lyrics_multi_source, get_lrc_duration
 
+        fetch_lyrics = self._fetch_lyrics_multi_source_fn or fetch_lyrics_multi_source
+        lrc_duration_fn = self._get_lrc_duration_fn or get_lrc_duration
+        extract_lrc_metadata = (
+            self._extract_lrc_metadata_fn or self._extract_lrc_metadata
+        )
+        parse_query = self._parse_query_fn or self._parse_query
+        lookup_mb = (
+            self._lookup_musicbrainz_for_query_fn or self._lookup_musicbrainz_for_query
+        )
+        infer_artist = self._infer_artist_from_query_fn or self._infer_artist_from_query
+        search_youtube = (
+            self._search_youtube_verified_fn or self._search_youtube_verified
+        )
+        try_split = self._try_split_search_fn or self._try_split_search
+
         logger.debug(f"Trying direct LRC search: {query}")
 
         # Try searching with the query as-is
-        lrc_text, is_synced, source = fetch_lyrics_multi_source(
+        lrc_text, is_synced, source = fetch_lyrics(
             query, "", synced_only=True  # Empty artist, let provider search freely
         )
 
@@ -66,7 +100,7 @@ class TrackIdentifier(
             if len(parts) >= 2:
                 # Try "last_part first_parts"
                 swapped = f"{parts[-1]} {' '.join(parts[:-1])}"
-                lrc_text, is_synced, source = fetch_lyrics_multi_source(
+                lrc_text, is_synced, source = fetch_lyrics(
                     swapped, "", synced_only=True
                 )
 
@@ -74,7 +108,7 @@ class TrackIdentifier(
             return None
 
         # Get duration from LRC
-        lrc_duration = get_lrc_duration(lrc_text)
+        lrc_duration = lrc_duration_fn(lrc_text)
         if not lrc_duration or lrc_duration < 60:
             return None
 
@@ -83,12 +117,12 @@ class TrackIdentifier(
         )
 
         # Try to extract artist/title from LRC metadata tags
-        artist, title = self._extract_lrc_metadata(lrc_text)
+        artist, title = extract_lrc_metadata(lrc_text)
         derived_from_lrc = bool(artist or title)
 
         # Fall back to parsing the query
         if not artist or not title:
-            artist_hint, title_hint = self._parse_query(query)
+            artist_hint, title_hint = parse_query(query)
             if not artist:
                 artist = artist_hint
             if not title:
@@ -96,9 +130,7 @@ class TrackIdentifier(
 
         # If still no artist, try MusicBrainz to identify properly
         if not artist or artist == "Unknown":
-            mb_artist, mb_title = self._lookup_musicbrainz_for_query(
-                query, lrc_duration
-            )
+            mb_artist, mb_title = lookup_mb(query, lrc_duration)
             if mb_artist:
                 artist = mb_artist
             if mb_title:
@@ -106,13 +138,13 @@ class TrackIdentifier(
 
         # Last resort: try to infer from query
         if not artist:
-            artist = self._infer_artist_from_query(query, title)
+            artist = infer_artist(query, title)
 
         # Try split-based search to resolve artist/title when LRC metadata looks like a cover
         # or doesn't clearly match the query.
         split_best = None
         if derived_from_lrc or not artist or not title or artist == "Unknown":
-            split_best = self._try_split_search(query)
+            split_best = try_split(query)
         if split_best:
             _, split_artist, split_title = split_best
             query_words = set(normalize_title(query, remove_stopwords=True).split())
@@ -136,14 +168,10 @@ class TrackIdentifier(
         # Search YouTube for matching video using identified artist/title
         # This ensures we find the right version, not a cover/tribute
         search_query = f"{artist} {title}" if artist and artist != "Unknown" else query
-        youtube_result = self._search_youtube_verified(
-            search_query, lrc_duration, artist, title
-        )
+        youtube_result = search_youtube(search_query, lrc_duration, artist, title)
         if not youtube_result:
             # Fallback to original query if artist-specific search fails
-            youtube_result = self._search_youtube_verified(
-                query, lrc_duration, artist, title
-            )
+            youtube_result = search_youtube(query, lrc_duration, artist, title)
         if not youtube_result:
             return None
 

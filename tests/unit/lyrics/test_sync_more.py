@@ -22,7 +22,7 @@ def test_fetch_lyrics_multi_source_cached_duration_mismatch_refetch(
         called["count"] += 1
         return (None, "")
 
-    monkeypatch.setattr(sync, "_search_with_fallback", fake_search)
+    isolated_sync_state.search_with_fallback_fn = fake_search
 
     result = sync.fetch_lyrics_multi_source(
         "Title", "Artist", target_duration=200, duration_tolerance=10
@@ -46,7 +46,7 @@ def test_fetch_lyrics_multi_source_enhanced_plain_allowed(
             return ("plain lyrics", "Provider")
         return ("plain lyrics", "Provider")
 
-    monkeypatch.setattr(sync, "_search_with_fallback", fake_search)
+    isolated_sync_state.search_with_fallback_fn = fake_search
 
     lrc, is_synced, source = sync.fetch_lyrics_multi_source(
         "Title", "Artist", synced_only=False, enhanced=True
@@ -193,8 +193,9 @@ def test_fetch_lyrics_multi_source_returns_synced_provider(
 ):
     monkeypatch.setattr(sync, "LYRIQ_AVAILABLE", False)
     monkeypatch.setattr(sync, "SYNCEDLYRICS_AVAILABLE", True)
-    monkeypatch.setattr(
-        sync, "_search_with_fallback", lambda *_a, **_k: ("[00:00.00]A", "Provider")
+    isolated_sync_state.search_with_fallback_fn = lambda *_a, **_k: (
+        "[00:00.00]A",
+        "Provider",
     )
 
     result = sync.fetch_lyrics_multi_source("Title", "Artist")
@@ -207,8 +208,9 @@ def test_fetch_lyrics_multi_source_returns_plain_when_allowed(
 ):
     monkeypatch.setattr(sync, "LYRIQ_AVAILABLE", False)
     monkeypatch.setattr(sync, "SYNCEDLYRICS_AVAILABLE", True)
-    monkeypatch.setattr(
-        sync, "_search_with_fallback", lambda *_a, **_k: ("Plain lyrics", "Provider")
+    isolated_sync_state.search_with_fallback_fn = lambda *_a, **_k: (
+        "Plain lyrics",
+        "Provider",
     )
 
     result = sync.fetch_lyrics_multi_source("Title", "Artist", synced_only=False)

@@ -8,12 +8,18 @@ from .models import Word, Line
 logger = get_logger(__name__)
 
 
+def _load_librosa():
+    import librosa
+
+    return librosa
+
+
 def refine_word_timing(
     lines: List[Line], vocals_path: str, respect_line_boundaries: bool = True
 ) -> List[Line]:
     """Refine word timing using audio onset detection."""
     try:
-        import librosa
+        librosa = _load_librosa()
 
         # Load vocals audio
         y, sr = librosa.load(vocals_path, sr=22050)

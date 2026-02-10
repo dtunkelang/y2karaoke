@@ -65,7 +65,7 @@ def test_search_with_fallback_caches_result(monkeypatch, isolated_sync_state):
         return "LRC" if provider == "A" else None
 
     monkeypatch.setattr(sync, "PROVIDER_ORDER", ["A", "B"])
-    monkeypatch.setattr(sync, "_search_single_provider", fake_search)
+    isolated_sync_state.search_single_provider_fn = fake_search
     monkeypatch.setattr(sync.time, "sleep", lambda *_: None)
 
     first = sync._search_with_fallback("Song Artist")
@@ -155,7 +155,7 @@ def test_fetch_lyrics_for_duration_uses_alternative_search(
     def fake_search(term, **kwargs):
         return (LRC_TEXT, "Provider")
 
-    monkeypatch.setattr(sync, "_search_with_fallback", fake_search)
+    isolated_sync_state.search_with_fallback_fn = fake_search
 
     lrc, is_synced, source, duration = sync.fetch_lyrics_for_duration(
         "Title",
