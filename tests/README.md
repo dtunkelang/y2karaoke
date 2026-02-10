@@ -32,8 +32,20 @@ Run fast unit tests only:
 PYTHONPATH=src pytest tests/unit -v
 ```
 
+Or via marker:
+
+```bash
+PYTHONPATH=src pytest -m unit -v
+```
+
 Run integration tests (normally skipped unless opted in):
 
 ```bash
 PYTHONPATH=src pytest tests/integration -v --run-network
+```
+
+Run end-to-end tests only:
+
+```bash
+PYTHONPATH=src pytest -m e2e -v
 ```

@@ -25,6 +25,15 @@ def pytest_addoption(parser):
 
 
 def pytest_collection_modifyitems(config, items):
+    for item in items:
+        item_path = str(item.fspath).replace("\\", "/")
+        if "/tests/unit/" in item_path:
+            item.add_marker(pytest.mark.unit)
+        elif "/tests/integration/" in item_path:
+            item.add_marker(pytest.mark.integration)
+        elif "/tests/e2e/" in item_path:
+            item.add_marker(pytest.mark.e2e)
+
     run_network = (
         config.getoption("--run-network") or os.getenv("RUN_INTEGRATION_TESTS") == "1"
     )
