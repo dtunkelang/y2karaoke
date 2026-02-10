@@ -262,5 +262,5 @@ def test_check_pause_alignment_skips_empty_lines():
 
 
 def test_generate_summary_includes_issue_count():
-    summary = te._generate_summary(55.0, 60.0, 50.0, 0.1, 0.2, 3, 10)
+    summary = te._generate_summary(55.0, 60.0, 50.0, 45.0, 0.1, 0.2, 3, 10)
     assert "Issues found: 3" in summary

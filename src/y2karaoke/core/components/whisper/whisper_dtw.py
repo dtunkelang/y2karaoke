@@ -72,6 +72,19 @@ def _load_fastdtw():
     return fastdtw
 
 
+def _empty_dtw_metrics() -> Dict[str, float]:
+    return {
+        "matched_ratio": 0.0,
+        "word_coverage": 0.0,
+        "avg_similarity": 0.0,
+        "line_coverage": 0.0,
+        "phonetic_similarity_coverage": 0.0,
+        "high_similarity_ratio": 0.0,
+        "exact_match_ratio": 0.0,
+        "unmatched_ratio": 1.0,
+    }
+
+
 def _extract_lrc_words_base(lines: List[Line]) -> List[Dict]:
     """Extract all LRC words with their line indices (base version)."""
     lrc_words = []
@@ -261,7 +274,7 @@ def _compute_dtw_alignment_metrics(
     alignments_map: Dict[int, Tuple[TranscriptionWord, float]],
 ) -> Dict[str, float]:
     if not lrc_words:
-        return {"matched_ratio": 0.0, "avg_similarity": 0.0, "line_coverage": 0.0}
+        return _empty_dtw_metrics()
 
     total_words = len(lrc_words)
     matched_words = len(alignments_map)
@@ -278,11 +291,33 @@ def _compute_dtw_alignment_metrics(
     }
     line_coverage = len(matched_lines) / total_lines if total_lines > 0 else 0.0
 
+    high_similarity_matches = 0
+    exact_matches = 0
+    for lrc_idx, (ww, sim) in alignments_map.items():
+        if sim >= 0.75:
+            high_similarity_matches += 1
+        lrc_norm = "".join(
+            ch for ch in lrc_words[lrc_idx]["text"].lower() if ch.isalpha()
+        )
+        whisper_norm = "".join(ch for ch in ww.text.lower() if ch.isalpha())
+        if lrc_norm and whisper_norm and lrc_norm == whisper_norm:
+            exact_matches += 1
+
+    high_similarity_ratio = (
+        high_similarity_matches / matched_words if matched_words else 0.0
+    )
+    exact_match_ratio = exact_matches / matched_words if matched_words else 0.0
+    phonetic_similarity_coverage = matched_ratio * avg_similarity
+
     return {
         "matched_ratio": matched_ratio,
         "word_coverage": matched_ratio,
         "avg_similarity": avg_similarity,
         "line_coverage": line_coverage,
+        "phonetic_similarity_coverage": phonetic_similarity_coverage,
+        "high_similarity_ratio": high_similarity_ratio,
+        "exact_match_ratio": exact_match_ratio,
+        "unmatched_ratio": 1.0 - matched_ratio,
     }
 
 
@@ -357,7 +392,7 @@ def _align_dtw_whisper_with_data(
         return (
             lines,
             [],
-            {"matched_ratio": 0.0, "avg_similarity": 0.0, "line_coverage": 0.0},
+            _empty_dtw_metrics(),
             [],
             {},
         )
@@ -372,7 +407,7 @@ def _align_dtw_whisper_with_data(
         return (
             lines,
             [],
-            {"matched_ratio": 0.0, "avg_similarity": 0.0, "line_coverage": 0.0},
+            _empty_dtw_metrics(),
             [],
             {},
         )
@@ -453,7 +488,7 @@ def _align_dtw_whisper_with_data(
         return (
             lines,
             [],
-            {"matched_ratio": 0.0, "avg_similarity": 0.0, "line_coverage": 0.0},
+            _empty_dtw_metrics(),
             lrc_words,
             {},
         )
@@ -483,7 +518,7 @@ def align_dtw_whisper(
         return (
             lines,
             [],
-            {"matched_ratio": 0.0, "avg_similarity": 0.0, "line_coverage": 0.0},
+            _empty_dtw_metrics(),
         )
 
     # Pre-compute IPA
@@ -519,7 +554,7 @@ def align_dtw_whisper(
         return (
             lines,
             [],
-            {"matched_ratio": 0.0, "avg_similarity": 0.0, "line_coverage": 0.0},
+            _empty_dtw_metrics(),
         )
 
     alignments_map = _extract_alignments_from_path_base(

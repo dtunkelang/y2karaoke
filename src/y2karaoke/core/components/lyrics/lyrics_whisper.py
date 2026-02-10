@@ -321,11 +321,19 @@ def _score_from_dtw_metrics(metrics: dict) -> float:
     matched_ratio = float(metrics.get("matched_ratio", 0.0))
     avg_similarity = float(metrics.get("avg_similarity", 0.0))
     line_coverage = float(metrics.get("line_coverage", 0.0))
+    phonetic_similarity_coverage = float(
+        metrics.get("phonetic_similarity_coverage", matched_ratio * avg_similarity)
+    )
+    high_similarity_ratio = float(metrics.get("high_similarity_ratio", avg_similarity))
+    exact_match_ratio = float(metrics.get("exact_match_ratio", 0.0))
 
     score = 40.0
-    score += matched_ratio * 25.0
-    score += avg_similarity * 20.0
+    score += matched_ratio * 20.0
+    score += avg_similarity * 15.0
     score += line_coverage * 10.0
+    score += phonetic_similarity_coverage * 10.0
+    score += high_similarity_ratio * 3.0
+    score += exact_match_ratio * 2.0
     return max(20.0, min(100.0, score))
 
 

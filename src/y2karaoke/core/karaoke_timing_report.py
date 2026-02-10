@@ -69,6 +69,18 @@ def _build_base_report(
     if dtw_metrics:
         report["dtw_word_coverage"] = round(dtw_metrics.get("word_coverage", 0.0), 3)
         report["dtw_line_coverage"] = round(dtw_metrics.get("line_coverage", 0.0), 3)
+        report["dtw_phonetic_similarity_coverage"] = round(
+            dtw_metrics.get("phonetic_similarity_coverage", 0.0), 3
+        )
+        report["dtw_high_similarity_ratio"] = round(
+            dtw_metrics.get("high_similarity_ratio", 0.0), 3
+        )
+        report["dtw_exact_match_ratio"] = round(
+            dtw_metrics.get("exact_match_ratio", 0.0), 3
+        )
+        report["dtw_unmatched_ratio"] = round(
+            dtw_metrics.get("unmatched_ratio", 0.0), 3
+        )
     return report
 
 

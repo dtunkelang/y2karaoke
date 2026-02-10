@@ -47,6 +47,9 @@ class TimingReport:
     std_line_offset: float = 0.0  # Standard deviation of offsets
     matched_onsets: int = 0  # Lines that matched an onset
     total_lines: int = 0
+    lyric_on_vocal_ratio: float = 0.0  # Lyric duration overlapping non-silent audio
+    vocal_covered_by_lyrics_ratio: float = 0.0  # Non-silent audio covered by lyrics
+    lyric_in_silence_ratio: float = 0.0  # Lyric duration placed over silence
 
 
 @dataclass

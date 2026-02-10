@@ -29,6 +29,9 @@ def test_align_dtw_whisper_uses_fastdtw():
     assert aligned[0].words[0].start_time == 2.0
     assert corrections
     assert metrics["matched_ratio"] > 0.0
+    assert "phonetic_similarity_coverage" in metrics
+    assert "high_similarity_ratio" in metrics
+    assert "exact_match_ratio" in metrics
 
 
 def test_print_comparison_report_formats_output(monkeypatch, capsys):

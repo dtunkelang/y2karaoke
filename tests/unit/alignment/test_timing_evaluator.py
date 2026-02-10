@@ -142,9 +142,8 @@ class TestEvaluateTiming:
 
         report = evaluate_timing(lines, features)
 
-        # Empty lines gives 0% line alignment but 100% pause alignment (no gaps to check)
-        # Overall score is weighted: 0.7 * 0 + 0.3 * 100 = 30.0
-        assert report.overall_score == 30.0
+        # Empty lines have no line coverage and no lyric-to-vocal overlap.
+        assert report.overall_score == 20.0
         assert report.matched_onsets == 0
         assert report.total_lines == 0
 
@@ -166,6 +165,9 @@ class TestEvaluateTiming:
         assert report.overall_score > 50.0
         assert report.matched_onsets == 1
         assert report.total_lines == 1
+        assert 0.0 <= report.lyric_on_vocal_ratio <= 1.0
+        assert 0.0 <= report.vocal_covered_by_lyrics_ratio <= 1.0
+        assert 0.0 <= report.lyric_in_silence_ratio <= 1.0
 
     def test_poor_alignment_creates_issues(self):
         words = [Word("hello", 1.0, 1.5)]
@@ -200,7 +202,7 @@ class TestEvaluateTiming:
 
         report = evaluate_timing(lines, features)
 
-        assert report.overall_score == pytest.approx(9.0, abs=1e-6)
+        assert report.overall_score == pytest.approx(11.4, abs=1e-6)
 
     def test_partial_onset_coverage_scales_score(self):
         lines = [
@@ -219,7 +221,7 @@ class TestEvaluateTiming:
 
         report = evaluate_timing(lines, features)
 
-        assert report.overall_score == pytest.approx(42.25, abs=1e-6)
+        assert report.overall_score == pytest.approx(39.45348837209302, abs=1e-6)
 
     def test_missing_pause_coverage_reduces_score(self):
         lines = [
@@ -238,7 +240,7 @@ class TestEvaluateTiming:
 
         report = evaluate_timing(lines, features)
 
-        assert report.overall_score == pytest.approx(49.0, abs=1e-6)
+        assert report.overall_score == pytest.approx(53.375, abs=1e-6)
 
     def test_out_of_order_lines_flagged(self):
         lines = [

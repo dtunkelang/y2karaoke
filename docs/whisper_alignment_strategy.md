@@ -57,6 +57,8 @@ Improve timing for tracks where LRC timings are clearly broken by relying more o
 ## Diagnostics to Add
 - Report: `dtw_matched_ratio`, `dtw_word_coverage`, `dtw_line_coverage` in timing report
 - Report coverage in `dtw_word_coverage` so the matched whisper-to-provider word ratio surfaces in diagnostics
+- Report phonetic agreement metrics: `dtw_phonetic_similarity_coverage`,
+  `dtw_high_similarity_ratio`, `dtw_exact_match_ratio`, `dtw_unmatched_ratio`
 - Debug list of lines with 0 matched words
 - Count of lines adjusted via DTW vs segments
 
