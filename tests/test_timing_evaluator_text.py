@@ -1,10 +1,16 @@
-from y2karaoke.core.timing_evaluator import (
+from y2karaoke.core.timing_models import (
     TranscriptionSegment,
     TranscriptionWord,
+)
+
+from y2karaoke.core.whisper_cache import (
     _get_whisper_cache_path,
     _load_whisper_cache,
-    _normalize_text_for_matching,
     _save_whisper_cache,
+)
+
+from y2karaoke.core.phonetic_utils import (
+    _normalize_text_for_matching,
     _text_similarity,
     _text_similarity_basic,
     _whisper_lang_to_epitran,

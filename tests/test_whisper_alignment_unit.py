@@ -187,9 +187,7 @@ def test_pull_lines_forward_for_continuous_vocals(monkeypatch):
     import y2karaoke.core.whisper_alignment_refinement as war
 
     monkeypatch.setattr(war, "_check_vocal_activity_in_range", lambda *args: 0.8)
-    monkeypatch.setattr(
-        war, "_check_for_silence_in_range", lambda *args, **kw: False
-    )
+    monkeypatch.setattr(war, "_check_for_silence_in_range", lambda *args, **kw: False)
 
     pulled, count = wa._pull_lines_forward_for_continuous_vocals(lines, af, max_gap=4.0)
     # gap is 9.0 > 4.0. Activity 0.8 > 0.6. No silence.

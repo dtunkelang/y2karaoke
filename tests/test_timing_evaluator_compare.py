@@ -1,5 +1,5 @@
 from y2karaoke.core.models import Line, Word
-from y2karaoke.core.timing_evaluator import AudioFeatures, TimingReport
+from y2karaoke.core.timing_models import AudioFeatures, TimingReport
 import y2karaoke.core.timing_evaluator as te
 import y2karaoke.core.timing_evaluator_comparison as te_comp
 

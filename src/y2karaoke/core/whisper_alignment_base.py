@@ -62,7 +62,7 @@ def _scale_line_to_duration(line: Line, target_duration: float) -> Line:
                 text=word_text if (word_text := getattr(w, "text", None)) else "",
                 start_time=new_start,
                 end_time=new_end,
-                singer=getattr(w, "singer", None),
+                singer=getattr(w, "singer", ""),
             )
         )
     return Line(words=new_words, singer=line.singer)

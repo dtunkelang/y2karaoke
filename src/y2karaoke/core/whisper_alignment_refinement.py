@@ -11,15 +11,15 @@ from .timing_models import (
 )
 from .phonetic_utils import _get_ipa
 from . import audio_analysis
-
-_check_vocal_activity_in_range = audio_analysis._check_vocal_activity_in_range
-_check_for_silence_in_range = audio_analysis._check_for_silence_in_range
 from .whisper_alignment_base import (
     _apply_offset_to_line,
     _line_duration,
     _shift_line,
 )
 from .whisper_alignment_segments import _find_best_whisper_segment
+
+_check_vocal_activity_in_range = audio_analysis._check_vocal_activity_in_range
+_check_for_silence_in_range = audio_analysis._check_for_silence_in_range
 
 logger = logging.getLogger(__name__)
 

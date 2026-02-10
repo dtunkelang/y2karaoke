@@ -306,7 +306,7 @@ def get_lyrics_simple(  # noqa: C901
                 "Whisper-only mode requires vocals; using placeholder lyrics"
             )
             return _create_no_lyrics_placeholder(title, artist)
-        from .timing_evaluator import transcribe_vocals
+        from .whisper_integration import transcribe_vocals
 
         model_size = whisper_model or "base"
         transcription, _, detected_lang, _model = transcribe_vocals(
@@ -437,7 +437,7 @@ def get_lyrics_simple(  # noqa: C901
         elif vocals_path and whisper_map_lrc:
             try:
                 if whisper_map_lrc_dtw:
-                    from .timing_evaluator import align_lrc_text_to_whisper_timings
+                    from .whisper_integration import align_lrc_text_to_whisper_timings
 
                     model_size = whisper_model or "small"
                     lines, alignments, metrics = align_lrc_text_to_whisper_timings(
@@ -457,10 +457,8 @@ def get_lyrics_simple(  # noqa: C901
                     if metrics:
                         logger.debug(f"DTW metrics: {metrics}")
                 else:
-                    from .timing_evaluator import (
-                        _whisper_lang_to_epitran,
-                        transcribe_vocals,
-                    )
+                    from .phonetic_utils import _whisper_lang_to_epitran
+                    from .whisper_integration import transcribe_vocals
 
                     model_size = whisper_model or "small"
                     transcription, _, detected_lang, _model = transcribe_vocals(
@@ -739,7 +737,7 @@ def get_lyrics_with_quality(  # noqa: C901
         elif vocals_path and whisper_map_lrc:
             try:
                 if whisper_map_lrc_dtw:
-                    from .timing_evaluator import align_lrc_text_to_whisper_timings
+                    from .whisper_integration import align_lrc_text_to_whisper_timings
 
                     model_size = whisper_model or "small"
                     lines, alignments, metrics = align_lrc_text_to_whisper_timings(
@@ -759,10 +757,8 @@ def get_lyrics_with_quality(  # noqa: C901
                     if metrics:
                         quality_report["dtw_metrics"] = metrics
                 else:
-                    from .timing_evaluator import (
-                        _whisper_lang_to_epitran,
-                        transcribe_vocals,
-                    )
+                    from .phonetic_utils import _whisper_lang_to_epitran
+                    from .whisper_integration import transcribe_vocals
 
                     model_size = whisper_model or "small"
                     transcription, _, detected_lang, _model = transcribe_vocals(

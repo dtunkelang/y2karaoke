@@ -83,7 +83,9 @@ def test_fix_spurious_gaps_skips_large_gap(monkeypatch):
         energy_envelope=[1.0, 1.0, 1.0, 1.0, 1.0],
     )
 
-    monkeypatch.setattr(te_corr, "_check_vocal_activity_in_range", lambda *_a, **_k: 0.9)
+    monkeypatch.setattr(
+        te_corr, "_check_vocal_activity_in_range", lambda *_a, **_k: 0.9
+    )
     monkeypatch.setattr(te_corr, "_check_for_silence_in_range", lambda *_a, **_k: True)
 
     fixed, fixes = te.fix_spurious_gaps(lines, features)
@@ -121,7 +123,9 @@ def test_fix_spurious_gaps_breaks_on_low_mid_activity(monkeypatch):
         energy_envelope=[1.0, 1.0, 1.0, 1.0],
     )
 
-    monkeypatch.setattr(te_corr, "_check_vocal_activity_in_range", lambda *_a, **_k: 0.5)
+    monkeypatch.setattr(
+        te_corr, "_check_vocal_activity_in_range", lambda *_a, **_k: 0.5
+    )
 
     fixed, fixes = te.fix_spurious_gaps(lines, features)
 

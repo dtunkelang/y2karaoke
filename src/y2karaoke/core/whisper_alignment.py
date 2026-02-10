@@ -5,11 +5,6 @@ import logging
 from . import whisper_alignment_base
 from . import whisper_alignment_segments
 from . import whisper_alignment_refinement
-from .audio_analysis import (
-    _check_vocal_activity_in_range,
-    _check_for_silence_in_range,
-)
-from .phonetic_utils import _phonetic_similarity
 
 logger = logging.getLogger(__name__)
 

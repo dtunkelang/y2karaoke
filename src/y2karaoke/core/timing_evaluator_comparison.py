@@ -1,6 +1,5 @@
 """Lyrics source comparison and selection based on timing quality."""
 
-import logging
 from typing import Optional, Tuple, Dict
 
 from ..utils.logging import get_logger

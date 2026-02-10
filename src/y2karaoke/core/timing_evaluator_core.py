@@ -4,7 +4,7 @@ import logging
 from typing import List, Optional, Tuple
 import numpy as np
 
-from .models import Line, Word
+from .models import Line
 from .timing_models import (
     TimingIssue,
     AudioFeatures,

@@ -1,6 +1,7 @@
 import numpy as np
 
 import y2karaoke.core.timing_evaluator as te
+import y2karaoke.core.timing_evaluator_core as te_core
 from y2karaoke.core.models import Line, Word
 
 
@@ -201,7 +202,9 @@ def test_check_pause_alignment_flags_missing_pause(monkeypatch):
         vocal_start=0.0,
     )
 
-    monkeypatch.setattr(te, "_check_vocal_activity_in_range", lambda *_a, **_k: 0.0)
+    monkeypatch.setattr(
+        te_core, "_check_vocal_activity_in_range", lambda *_a, **_k: 0.0
+    )
     issues = te._check_pause_alignment(lines, features)
 
     assert any(issue.issue_type == "missing_pause" for issue in issues)
@@ -237,7 +240,9 @@ def test_check_pause_alignment_silence_covered_with_empty_lines(monkeypatch):
         vocal_start=0.0,
     )
 
-    monkeypatch.setattr(te, "_check_vocal_activity_in_range", lambda *_a, **_k: 0.0)
+    monkeypatch.setattr(
+        te_core, "_check_vocal_activity_in_range", lambda *_a, **_k: 0.0
+    )
     issues = te._check_pause_alignment(lines, features)
     assert not any(issue.issue_type == "unexpected_pause" for issue in issues)
 
