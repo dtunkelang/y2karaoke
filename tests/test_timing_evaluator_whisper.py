@@ -4,10 +4,19 @@ import y2karaoke.core.timing_evaluator as te
 import y2karaoke.core.phonetic_utils as pu
 import y2karaoke.core.whisper_integration as wi
 import y2karaoke.core.whisper_dtw as w_dtw
-import y2karaoke.core.whisper_alignment_utils as wa_utils
-import y2karaoke.core.whisper_alignment_retime as wa_retime
-import y2karaoke.core.whisper_alignment_pull as wa_pull
+import y2karaoke.core.whisper_alignment as wa
 from y2karaoke.core.models import Line, Word
+
+
+def _patch_alignment_similarity(monkeypatch, fn):
+    monkeypatch.setattr(wa, "_phonetic_similarity", fn)
+    import y2karaoke.core.whisper_alignment_utils as wa_utils
+    import y2karaoke.core.whisper_alignment_retime as wa_retime
+    import y2karaoke.core.whisper_alignment_pull as wa_pull
+
+    monkeypatch.setattr(wa_utils, "_phonetic_similarity", fn)
+    monkeypatch.setattr(wa_retime, "_phonetic_similarity", fn)
+    monkeypatch.setattr(wa_pull, "_phonetic_similarity", fn)
 
 
 def test_align_words_to_whisper_adjusts_word():
@@ -268,9 +277,7 @@ def test_pull_lines_allows_low_similarity_when_late_and_ordered(monkeypatch):
             return 0.4
         return 0.1
 
-    monkeypatch.setattr(wa_utils, "_phonetic_similarity", fake_similarity)
-    monkeypatch.setattr(wa_retime, "_phonetic_similarity", fake_similarity)
-    monkeypatch.setattr(wa_pull, "_phonetic_similarity", fake_similarity)
+    _patch_alignment_similarity(monkeypatch, fake_similarity)
 
     adjusted, fixed = te._pull_lines_to_best_segments(
         lines, segments, language="fra-Latn", min_similarity=0.7
@@ -290,9 +297,7 @@ def test_retime_adjacent_lines_to_whisper_window(monkeypatch):
         te.TranscriptionSegment(start=9.0, end=13.0, text="aucun express", words=[]),
     ]
 
-    monkeypatch.setattr(wa_utils, "_phonetic_similarity", lambda *_a, **_k: 0.6)
-    monkeypatch.setattr(wa_retime, "_phonetic_similarity", lambda *_a, **_k: 0.6)
-    monkeypatch.setattr(wa_pull, "_phonetic_similarity", lambda *_a, **_k: 0.6)
+    _patch_alignment_similarity(monkeypatch, lambda *_a, **_k: 0.6)
 
     adjusted, fixes = te._retime_adjacent_lines_to_whisper_window(
         lines, segments, language="fra-Latn", min_similarity=0.3
@@ -313,9 +318,7 @@ def test_retime_adjacent_lines_to_segment_window(monkeypatch):
         te.TranscriptionSegment(start=11.0, end=13.0, text="express", words=[]),
     ]
 
-    monkeypatch.setattr(wa_utils, "_phonetic_similarity", lambda *_a, **_k: 0.6)
-    monkeypatch.setattr(wa_retime, "_phonetic_similarity", lambda *_a, **_k: 0.6)
-    monkeypatch.setattr(wa_pull, "_phonetic_similarity", lambda *_a, **_k: 0.6)
+    _patch_alignment_similarity(monkeypatch, lambda *_a, **_k: 0.6)
 
     adjusted, fixes = te._retime_adjacent_lines_to_segment_window(
         lines, segments, language="fra-Latn", min_similarity=0.3
@@ -336,9 +339,7 @@ def test_retime_adjacent_lines_to_whisper_window_uses_prior_segment(monkeypatch)
         te.TranscriptionSegment(start=18.0, end=22.0, text="trolley", words=[]),
     ]
 
-    monkeypatch.setattr(wa_utils, "_phonetic_similarity", lambda *_a, **_k: 0.3)
-    monkeypatch.setattr(wa_retime, "_phonetic_similarity", lambda *_a, **_k: 0.3)
-    monkeypatch.setattr(wa_pull, "_phonetic_similarity", lambda *_a, **_k: 0.3)
+    _patch_alignment_similarity(monkeypatch, lambda *_a, **_k: 0.3)
 
     adjusted, fixes = te._retime_adjacent_lines_to_whisper_window(
         lines,
@@ -428,9 +429,7 @@ def test_pull_next_line_into_segment_window(monkeypatch):
         te.TranscriptionSegment(start=11.0, end=14.0, text="navire", words=[]),
     ]
 
-    monkeypatch.setattr(wa_utils, "_phonetic_similarity", lambda *_a, **_k: 0.25)
-    monkeypatch.setattr(wa_retime, "_phonetic_similarity", lambda *_a, **_k: 0.25)
-    monkeypatch.setattr(wa_pull, "_phonetic_similarity", lambda *_a, **_k: 0.25)
+    _patch_alignment_similarity(monkeypatch, lambda *_a, **_k: 0.25)
 
     adjusted, fixes = te._pull_next_line_into_segment_window(
         lines, segments, language="fra-Latn", min_similarity=0.2
@@ -451,9 +450,7 @@ def test_pull_next_line_into_segment_window_uses_nearest_segment(monkeypatch):
         te.TranscriptionSegment(start=44.0, end=46.0, text="later", words=[]),
     ]
 
-    monkeypatch.setattr(wa_utils, "_phonetic_similarity", lambda *_a, **_k: 0.0)
-    monkeypatch.setattr(wa_retime, "_phonetic_similarity", lambda *_a, **_k: 0.0)
-    monkeypatch.setattr(wa_pull, "_phonetic_similarity", lambda *_a, **_k: 0.0)
+    _patch_alignment_similarity(monkeypatch, lambda *_a, **_k: 0.0)
 
     adjusted, fixes = te._pull_next_line_into_segment_window(
         lines, segments, language="fra-Latn", min_similarity=0.2
@@ -484,9 +481,7 @@ def test_pull_lines_near_segment_end_allows_short_line_with_similarity(monkeypat
         te.TranscriptionSegment(start=12.0, end=14.0, text="si non toi", words=[]),
     ]
 
-    monkeypatch.setattr(wa_utils, "_phonetic_similarity", lambda *_a, **_k: 0.5)
-    monkeypatch.setattr(wa_retime, "_phonetic_similarity", lambda *_a, **_k: 0.5)
-    monkeypatch.setattr(wa_pull, "_phonetic_similarity", lambda *_a, **_k: 0.5)
+    _patch_alignment_similarity(monkeypatch, lambda *_a, **_k: 0.5)
 
     adjusted, fixes = te._pull_lines_near_segment_end(
         lines,

@@ -1,5 +1,3 @@
-import pytest
-
 import y2karaoke.core.sync as sync
 
 

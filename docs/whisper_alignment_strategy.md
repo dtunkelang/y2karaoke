@@ -60,6 +60,17 @@ Improve timing for tracks where LRC timings are clearly broken by relying more o
 - Debug list of lines with 0 matched words
 - Count of lines adjusted via DTW vs segments
 
+## Current Implementation Notes
+- Alignment logic is now split across focused modules:
+  - `whisper_alignment_utils.py`
+  - `whisper_alignment_retime.py`
+  - `whisper_alignment_pull.py`
+  - `whisper_alignment_pull_rules.py`
+- `whisper_alignment.py` acts as the façade and patch seam for tests.
+- Tests that need phonetic-sim overrides should patch through the façade helper in
+  `tests/test_timing_evaluator_whisper.py` rather than mutating module globals directly,
+  to avoid cross-test leakage.
+
 ## Next Steps
 - Implement confidence metrics in `align_dtw_whisper` and return them.
 - Add a `build_lines_from_dtw_alignments` helper.

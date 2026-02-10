@@ -5,8 +5,24 @@ import logging
 from . import whisper_alignment_base
 from . import whisper_alignment_segments
 from . import whisper_alignment_refinement
+from . import whisper_alignment_utils
+from . import whisper_alignment_retime
+from . import whisper_alignment_pull
+from .phonetic_utils import _phonetic_similarity as _default_phonetic_similarity
 
 logger = logging.getLogger(__name__)
+
+_phonetic_similarity = _default_phonetic_similarity
+
+
+def _sync_patchables() -> None:
+    """Propagate local patchable phonetic similarity to alignment submodules."""
+    whisper_alignment_utils._phonetic_similarity = _phonetic_similarity
+    whisper_alignment_retime._phonetic_similarity = _phonetic_similarity
+    whisper_alignment_pull._phonetic_similarity = _phonetic_similarity
+
+
+_sync_patchables()
 
 # Basic timing adjustments
 _enforce_monotonic_line_starts = whisper_alignment_base._enforce_monotonic_line_starts
