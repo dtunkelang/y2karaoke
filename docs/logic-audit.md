@@ -61,6 +61,10 @@ This document summarizes the core decision logic and the main test coverage for 
   - `_check_pause_alignment`
   - `_calculate_pause_score`
   - `_find_closest_onset`
+- `src/y2karaoke/core/whisper_alignment_pull_rules.py`
+  - segment pull/merge adjustments used by Whisper alignment
+- `src/y2karaoke/core/whisper_alignment_pull_helpers.py`
+  - shared nearest-segment and word-reflow helpers
 
 **Decision rules (summary)**
 - Line alignment: onsets within 0.5s are counted as matched.
@@ -74,6 +78,7 @@ This document summarizes the core decision logic and the main test coverage for 
 - `tests/test_timing_evaluator.py`
 - `tests/test_timing_evaluator_helpers.py`
 - `tests/test_timing_evaluator_pauses_more.py`
+- `tests/test_whisper_alignment_pull_helpers.py`
 
 ## Notes / Follow-ups
 

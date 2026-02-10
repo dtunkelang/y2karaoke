@@ -3,7 +3,7 @@
 import logging
 from typing import List, Tuple
 
-from .models import Line, Word
+from .models import Line
 from .timing_models import TranscriptionSegment
 from .phonetic_utils import _phonetic_similarity
 from .whisper_alignment_utils import _find_best_whisper_segment
@@ -11,6 +11,13 @@ from .whisper_alignment_retime import (
     _retime_line_to_segment,
     _retime_line_to_segment_with_min_start,
     _retime_line_to_window,
+)
+from .whisper_alignment_pull_helpers import (
+    line_neighbors,
+    nearest_prior_segment_by_end,
+    nearest_segment_by_start,
+    reflow_two_lines_to_segment,
+    reflow_words_to_window,
 )
 
 logger = logging.getLogger(__name__)
@@ -66,21 +73,7 @@ def _merge_lines_to_whisper_segments(  # noqa: C901
 
         if next_line.text and next_line.text in line.text and sim >= 0.8:
             merged_words = list(line.words)
-            word_count = max(len(merged_words), 1)
-            total_duration = max(seg.end - seg.start, 0.2)
-            spacing = total_duration / word_count
-            new_words = []
-            for i, word in enumerate(merged_words):
-                start = seg.start + i * spacing
-                end = start + spacing * 0.9
-                new_words.append(
-                    Word(
-                        text=word.text,
-                        start_time=start,
-                        end_time=end,
-                        singer=word.singer,
-                    )
-                )
+            new_words = reflow_words_to_window(merged_words, seg.start, seg.end)
             merged_lines.append(Line(words=new_words, singer=line.singer))
             merged_count += 1
             idx += 2
@@ -119,21 +112,7 @@ def _merge_lines_to_whisper_segments(  # noqa: C901
 
         if should_merge:
             merged_words = list(line.words) + list(next_line.words)
-            word_count = max(len(merged_words), 1)
-            total_duration = max(seg.end - seg.start, 0.2)
-            spacing = total_duration / word_count
-            new_words = []
-            for i, word in enumerate(merged_words):
-                start = seg.start + i * spacing
-                end = start + spacing * 0.9
-                new_words.append(
-                    Word(
-                        text=word.text,
-                        start_time=start,
-                        end_time=end,
-                        singer=word.singer,
-                    )
-                )
+            new_words = reflow_words_to_window(merged_words, seg.start, seg.end)
             merged_lines.append(Line(words=new_words, singer=line.singer))
             merged_count += 1
             idx += 2
@@ -168,16 +147,9 @@ def _pull_next_line_into_segment_window(  # noqa: C901
         if not line.words or not next_line.words:
             continue
 
-        nearest = None
-        nearest_gap = None
-        for cand in sorted_segments:
-            gap = abs(cand.start - line.start_time)
-            if gap > max_time_window:
-                continue
-            if nearest_gap is None or gap < nearest_gap:
-                nearest_gap = gap
-                nearest = cand
-        seg_a = nearest
+        seg_a = nearest_segment_by_start(
+            line.start_time, sorted_segments, max_time_window
+        )
         if seg_a is None:
             continue
 
@@ -207,15 +179,9 @@ def _pull_next_line_into_segment_window(  # noqa: C901
         if next_start is not None and seg_b.end >= next_start - min_gap:
             continue
 
-        nearest_next = None
-        nearest_next_gap = None
-        for cand in sorted_segments:
-            gap = abs(cand.start - next_line.start_time)
-            if gap > max_time_window:
-                continue
-            if nearest_next_gap is None or gap < nearest_next_gap:
-                nearest_next_gap = gap
-                nearest_next = cand
+        nearest_next = nearest_segment_by_start(
+            next_line.start_time, sorted_segments, max_time_window
+        )
         if (
             nearest_next is not None
             and abs(nearest_next.start - seg_b.start) < 1e-6
@@ -257,15 +223,9 @@ def _pull_next_line_into_same_segment(  # noqa: C901
         if not line.words or not next_line.words:
             continue
 
-        nearest = None
-        nearest_gap = None
-        for cand in sorted_segments:
-            gap = abs(cand.start - line.start_time)
-            if gap > max_time_window:
-                continue
-            if nearest_gap is None or gap < nearest_gap:
-                nearest_gap = gap
-                nearest = cand
+        nearest = nearest_segment_by_start(
+            line.start_time, sorted_segments, max_time_window
+        )
         if nearest is None:
             continue
 
@@ -276,78 +236,17 @@ def _pull_next_line_into_same_segment(  # noqa: C901
         min_start = line.end_time + 0.01
         # If the next line is short and starts late, retime both into the same segment.
         if len(next_line.words) <= 3 and late_by > 0:
-            total_words = len(line.words) + len(next_line.words)
-            if total_words <= 0:
+            prev_end, _ = line_neighbors(adjusted, idx)
+            reflowed = reflow_two_lines_to_segment(line, next_line, nearest, prev_end)
+            if reflowed is None:
                 continue
-            window_start = nearest.start
-            if idx > 0 and adjusted[idx - 1].words:
-                window_start = max(window_start, adjusted[idx - 1].end_time + 0.01)
-            if window_start >= nearest.end:
-                continue
-            total_duration = max(nearest.end - window_start, 0.2)
-            spacing = total_duration / total_words
-            new_line_words = []
-            new_next_words = []
-            for i, word in enumerate(line.words):
-                start = window_start + i * spacing
-                end = start + spacing * 0.9
-                new_line_words.append(
-                    Word(
-                        text=word.text,
-                        start_time=start,
-                        end_time=end,
-                        singer=word.singer,
-                    )
-                )
-            for j, word in enumerate(next_line.words):
-                idx_in_seg = len(line.words) + j
-                start = window_start + idx_in_seg * spacing
-                end = start + spacing * 0.9
-                new_next_words.append(
-                    Word(
-                        text=word.text,
-                        start_time=start,
-                        end_time=end,
-                        singer=word.singer,
-                    )
-                )
-            adjusted[idx] = Line(words=new_line_words, singer=line.singer)
-            adjusted[idx + 1] = Line(words=new_next_words, singer=next_line.singer)
+            adjusted[idx], adjusted[idx + 1] = reflowed
         elif min_start >= nearest.end:
             # Not enough room: retime both lines into the segment window.
-            total_words = len(line.words) + len(next_line.words)
-            if total_words <= 0:
+            reflowed = reflow_two_lines_to_segment(line, next_line, nearest, None)
+            if reflowed is None:
                 continue
-            window_start = nearest.start
-            total_duration = max(nearest.end - window_start, 0.2)
-            spacing = total_duration / total_words
-            new_line_words = []
-            new_next_words = []
-            for i, word in enumerate(line.words):
-                start = window_start + i * spacing
-                end = start + spacing * 0.9
-                new_line_words.append(
-                    Word(
-                        text=word.text,
-                        start_time=start,
-                        end_time=end,
-                        singer=word.singer,
-                    )
-                )
-            for j, word in enumerate(next_line.words):
-                idx_in_seg = len(line.words) + j
-                start = window_start + idx_in_seg * spacing
-                end = start + spacing * 0.9
-                new_next_words.append(
-                    Word(
-                        text=word.text,
-                        start_time=start,
-                        end_time=end,
-                        singer=word.singer,
-                    )
-                )
-            adjusted[idx] = Line(words=new_line_words, singer=line.singer)
-            adjusted[idx + 1] = Line(words=new_next_words, singer=next_line.singer)
+            adjusted[idx], adjusted[idx + 1] = reflowed
         else:
             adjusted[idx + 1] = _retime_line_to_segment_with_min_start(
                 next_line, nearest, min_start
@@ -380,15 +279,9 @@ def _merge_short_following_line_into_segment(
         if len(next_line.words) > 3:
             continue
 
-        nearest = None
-        nearest_gap = None
-        for cand in sorted_segments:
-            gap = abs(cand.start - line.start_time)
-            if gap > max_time_window:
-                continue
-            if nearest_gap is None or gap < nearest_gap:
-                nearest_gap = gap
-                nearest = cand
+        nearest = nearest_segment_by_start(
+            line.start_time, sorted_segments, max_time_window
+        )
         if nearest is None:
             continue
 
@@ -396,46 +289,11 @@ def _merge_short_following_line_into_segment(
         if late_by < 0 or late_by > max_late:
             continue
 
-        total_words = len(line.words) + len(next_line.words)
-        if total_words <= 0:
+        prev_end, _ = line_neighbors(adjusted, idx)
+        reflowed = reflow_two_lines_to_segment(line, next_line, nearest, prev_end)
+        if reflowed is None:
             continue
-
-        window_start = nearest.start
-        if idx > 0 and adjusted[idx - 1].words:
-            window_start = max(window_start, adjusted[idx - 1].end_time + 0.01)
-        if window_start >= nearest.end:
-            continue
-
-        total_duration = max(nearest.end - window_start, 0.2)
-        spacing = total_duration / total_words
-        new_line_words = []
-        new_next_words = []
-        for i, word in enumerate(line.words):
-            start = window_start + i * spacing
-            end = start + spacing * 0.9
-            new_line_words.append(
-                Word(
-                    text=word.text,
-                    start_time=start,
-                    end_time=end,
-                    singer=word.singer,
-                )
-            )
-        for j, word in enumerate(next_line.words):
-            idx_in_seg = len(line.words) + j
-            start = window_start + idx_in_seg * spacing
-            end = start + spacing * 0.9
-            new_next_words.append(
-                Word(
-                    text=word.text,
-                    start_time=start,
-                    end_time=end,
-                    singer=word.singer,
-                )
-            )
-
-        adjusted[idx] = Line(words=new_line_words, singer=line.singer)
-        adjusted[idx + 1] = Line(words=new_next_words, singer=next_line.singer)
+        adjusted[idx], adjusted[idx + 1] = reflowed
         fixes += 1
 
     return adjusted, fixes
@@ -462,29 +320,13 @@ def _pull_lines_near_segment_end(  # noqa: C901
     for idx, line in enumerate(adjusted):
         if not line.words:
             continue
-        prev_end = None
-        if idx > 0 and adjusted[idx - 1].words:
-            prev_end = adjusted[idx - 1].end_time
-        next_start = None
-        if idx + 1 < len(adjusted) and adjusted[idx + 1].words:
-            next_start = adjusted[idx + 1].start_time
-        nearest = None
-        nearest_late = None
-        for cand in sorted_segments:
-            if abs(cand.start - line.start_time) > max_time_window:
-                continue
-            late_by = line.start_time - cand.end
-            if late_by < 0:
-                continue
-            if nearest_late is None or late_by < nearest_late:
-                nearest_late = late_by
-                nearest = cand
-        if nearest is None:
+        prev_end, next_start = line_neighbors(adjusted, idx)
+        nearest_pair = nearest_prior_segment_by_end(
+            line.start_time, sorted_segments, max_time_window
+        )
+        if nearest_pair is None:
             continue
-
-        late_by = line.start_time - nearest.end
-        if late_by < 0:
-            continue
+        nearest, late_by = nearest_pair
 
         allow_late = late_by <= max_late
         if not allow_late:
@@ -545,12 +387,7 @@ def _pull_lines_to_best_segments(  # noqa: C901
         if word_count <= 6:
             local_min_similarity = min(0.6, min_similarity)
 
-        prev_end = None
-        if idx > 0 and adjusted[idx - 1].words:
-            prev_end = adjusted[idx - 1].end_time
-        next_start = None
-        if idx + 1 < len(adjusted) and adjusted[idx + 1].words:
-            next_start = adjusted[idx + 1].start_time
+        prev_end, next_start = line_neighbors(adjusted, idx)
 
         if word_count <= 6:
             nearest_start_seg = None
