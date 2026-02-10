@@ -138,7 +138,7 @@ def _refine_unmatched_lines_with_onsets(
     if not unmatched:
         return mapped_lines
 
-    from .refine import refine_word_timing
+    from ...refine import refine_word_timing
 
     # Build a list of just the unmatched lines and refine them.
     subset = [mapped_lines[i] for i in unmatched]
