@@ -1,12 +1,9 @@
-import builtins
-
 import pytest
 
 import y2karaoke.core.timing_evaluator as te
 import y2karaoke.core.phonetic_utils as pu
 import y2karaoke.core.whisper_integration as wi
 import y2karaoke.core.whisper_dtw as w_dtw
-import y2karaoke.core.whisper_alignment_segments as wa_seg
 import y2karaoke.core.whisper_alignment_utils as wa_utils
 import y2karaoke.core.whisper_alignment_retime as wa_retime
 import y2karaoke.core.whisper_alignment_pull as wa_pull
@@ -239,49 +236,49 @@ def test_correct_timing_with_whisper_uses_dtw_retime_when_confident(monkeypatch)
     assert "retimed" in corrections
 
 
-# def test_pull_lines_allows_low_similarity_when_late_and_ordered(monkeypatch):
-#    lines = [
-#        Line(words=[Word(text="oh", start_time=10.0, end_time=10.2)]),
-#        Line(
-#           words=[
-#               Word(text="qu'un", start_time=36.0, end_time=36.2),
-#               Word(text="concorde", start_time=36.3, end_time=36.5),
-#            ]
-#        ),
-#        Line(
-#            words=[
-#                Word(text="qu'un", start_time=36.6, end_time=36.7),
-#                Word(text="navire", start_time=36.6, end_time=36.8),
-#                Word(text="n'y", start_time=36.9, end_time=37.0),
-#                Word(text="va", start_time=37.1, end_time=37.2),
-#            ]
-#        ),
-#    ]
-#    segments = [
-#        te.TranscriptionSegment(
-#            start=23.0, end=27.0, text="oh qu'un concorde", words=[]
-#        ),
-#        te.TranscriptionSegment(
-#            start=27.0, end=36.0, text="oh qu'un avion ira", words=[]
-#        ),
-#    ]
-#
-#    def fake_similarity(line_text, seg_text, _language):
-#        if "concorde" in line_text and "concorde" in seg_text:
-#            return 0.4
-#        return 0.1
-#
-#    monkeypatch.setattr(wa_utils, "_phonetic_similarity", fake_similarity)
-#    monkeypatch.setattr(wa_retime, "_phonetic_similarity", fake_similarity)
-#    monkeypatch.setattr(wa_pull, "_phonetic_similarity", fake_similarity)
-#
-#    adjusted, fixed = te._pull_lines_to_best_segments(
-#        lines, segments, language="fra-Latn", min_similarity=0.7
-#    )
-#
-#    assert adjusted[1].start_time == pytest.approx(23.0)
-#    assert adjusted[2].start_time == pytest.approx(27.0)
-#    assert fixed >= 1
+def test_pull_lines_allows_low_similarity_when_late_and_ordered(monkeypatch):
+    lines = [
+        Line(words=[Word(text="oh", start_time=10.0, end_time=10.2)]),
+        Line(
+            words=[
+                Word(text="qu'un", start_time=36.0, end_time=36.2),
+                Word(text="concorde", start_time=36.3, end_time=36.5),
+            ]
+        ),
+        Line(
+            words=[
+                Word(text="qu'un", start_time=36.6, end_time=36.7),
+                Word(text="navire", start_time=36.6, end_time=36.8),
+                Word(text="n'y", start_time=36.9, end_time=37.0),
+                Word(text="va", start_time=37.1, end_time=37.2),
+            ]
+        ),
+    ]
+    segments = [
+        te.TranscriptionSegment(
+            start=23.0, end=27.0, text="oh qu'un concorde", words=[]
+        ),
+        te.TranscriptionSegment(
+            start=27.0, end=36.0, text="oh qu'un avion ira", words=[]
+        ),
+    ]
+
+    def fake_similarity(line_text, seg_text, _language):
+        if "concorde" in line_text and "concorde" in seg_text:
+            return 0.4
+        return 0.1
+
+    monkeypatch.setattr(wa_utils, "_phonetic_similarity", fake_similarity)
+    monkeypatch.setattr(wa_retime, "_phonetic_similarity", fake_similarity)
+    monkeypatch.setattr(wa_pull, "_phonetic_similarity", fake_similarity)
+
+    adjusted, fixed = te._pull_lines_to_best_segments(
+        lines, segments, language="fra-Latn", min_similarity=0.7
+    )
+
+    assert adjusted[1].start_time == pytest.approx(23.0)
+    assert adjusted[2].start_time == pytest.approx(27.0)
+    assert fixed >= 1
 
 
 def test_retime_adjacent_lines_to_whisper_window(monkeypatch):

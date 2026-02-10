@@ -592,7 +592,33 @@ def _pull_lines_to_best_segments(  # noqa: C901
                     end_gap = gap_to_end
                     end_aligned = cand
             if end_aligned is not None:
-                adjusted[idx] = _retime_line_to_segment(line, end_aligned)
+                # If a prior segment is a meaningfully better phonetic match, prefer
+                # that segment over the "just-ended" one.
+                chosen_seg = end_aligned
+                end_aligned_sim = _phonetic_similarity(
+                    line.text, end_aligned.text, language
+                )
+                best_prior = None
+                best_prior_sim = end_aligned_sim
+                for cand in sorted_segments:
+                    if cand is end_aligned or cand.end > line.start_time:
+                        continue
+                    if cand.start >= end_aligned.start:
+                        continue
+                    if prev_end is not None and cand.start <= prev_end + min_gap:
+                        continue
+                    if next_start is not None and cand.end >= next_start - min_gap:
+                        continue
+                    cand_sim = _phonetic_similarity(line.text, cand.text, language)
+                    if cand_sim > best_prior_sim:
+                        best_prior_sim = cand_sim
+                        best_prior = cand
+                if best_prior is not None and best_prior_sim >= max(
+                    0.3, end_aligned_sim + 0.2
+                ):
+                    chosen_seg = best_prior
+
+                adjusted[idx] = _retime_line_to_segment(line, chosen_seg)
                 fixed += 1
                 continue
 
