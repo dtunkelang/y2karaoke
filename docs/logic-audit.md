@@ -12,6 +12,7 @@ This document summarizes the core decision logic and the main test coverage for 
 - `src/y2karaoke/core/track_identifier.py`
   - facade to `src/y2karaoke/core/track_identifier_impl.py`
   - helper logic in `src/y2karaoke/core/track_identifier_helpers.py`
+  - pure YouTube heuristics in `src/y2karaoke/core/track_identifier_youtube_rules.py`
   - `_search_youtube_single`
   - `_search_youtube_verified`
   - `_is_likely_non_studio`

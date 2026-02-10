@@ -57,8 +57,11 @@ class TrackIdentifierHelpers:
     ) -> tuple[Optional[str], Optional[str]]:
         """Look up MusicBrainz to identify artist/title from a query."""
         query_words = set(normalize_title(query).split())
+        search_recordings = getattr(self, "_mb_search_recordings", None)
+        if not callable(search_recordings):
+            search_recordings = musicbrainzngs.search_recordings
         try:
-            results = musicbrainzngs.search_recordings(recording=query, limit=15)
+            results = search_recordings(recording=query, limit=15)
             recordings = results.get("recording-list", [])
             best_match = None
             best_score = 0

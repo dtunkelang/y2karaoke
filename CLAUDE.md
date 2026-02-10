@@ -73,7 +73,7 @@ Output: karaoke_video.mp4
 
 ## 2. Track Identification (Title & Artist)
 
-**Files:** `src/y2karaoke/core/track_identifier.py` (facade), `src/y2karaoke/core/track_identifier_impl.py` (entry workflow), `src/y2karaoke/core/track_identifier_helpers.py` (shared split/LRC/url helpers)
+**Files:** `src/y2karaoke/core/track_identifier.py` (facade), `src/y2karaoke/core/track_identifier_impl.py` (entry workflow), `src/y2karaoke/core/track_identifier_helpers.py` (shared split/LRC/url helpers), `src/y2karaoke/core/track_identifier_youtube_rules.py` (pure YouTube title/duration heuristics)
 
 Two identification paths:
 
@@ -397,6 +397,7 @@ y2karaoke/
 │   │   ├── track_identifier.py   # Track identifier facade
 │   │   ├── track_identifier_impl.py # Track identification flow entry points
 │   │   ├── track_identifier_helpers.py # Shared scoring/LRC helper logic
+│   │   ├── track_identifier_youtube_rules.py # Pure YouTube matching heuristics
 │   │   ├── lyrics.py             # Main lyrics pipeline
 │   │   ├── sync.py               # LRC provider integration
 │   │   ├── sync_quality.py       # LRC quality scoring helpers

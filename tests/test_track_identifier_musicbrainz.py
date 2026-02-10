@@ -39,7 +39,7 @@ def test_lookup_musicbrainz_for_query_selects_best(monkeypatch):
             ]
         }
 
-    monkeypatch.setattr(ti.musicbrainzngs, "search_recordings", fake_search_recordings)
+    identifier._mb_search_recordings = fake_search_recordings
 
     artist, title = identifier._lookup_musicbrainz_for_query(
         "Good Artist Good Title", 205
@@ -55,7 +55,7 @@ def test_lookup_musicbrainz_for_query_handles_exception(monkeypatch):
     def fake_search_recordings(recording, limit):
         raise RuntimeError("boom")
 
-    monkeypatch.setattr(ti.musicbrainzngs, "search_recordings", fake_search_recordings)
+    identifier._mb_search_recordings = fake_search_recordings
 
     artist, title = identifier._lookup_musicbrainz_for_query("Query", 200)
 
@@ -97,7 +97,7 @@ def test_lookup_musicbrainz_for_query_skips_invalid_records(monkeypatch):
             ]
         }
 
-    monkeypatch.setattr(ti.musicbrainzngs, "search_recordings", fake_search_recordings)
+    identifier._mb_search_recordings = fake_search_recordings
 
     artist, title = identifier._lookup_musicbrainz_for_query("Query Words", 200)
 
@@ -119,7 +119,7 @@ def test_lookup_musicbrainz_for_query_skips_too_long(monkeypatch):
             ]
         }
 
-    monkeypatch.setattr(ti.musicbrainzngs, "search_recordings", fake_search_recordings)
+    identifier._mb_search_recordings = fake_search_recordings
 
     artist, title = identifier._lookup_musicbrainz_for_query("Artist Title", 740)
 
@@ -138,7 +138,7 @@ def test_query_musicbrainz_prioritizes_title_match(monkeypatch):
             ]
         }
 
-    monkeypatch.setattr(ti.musicbrainzngs, "search_recordings", fake_search_recordings)
+    identifier._mb_search_recordings = fake_search_recordings
     monkeypatch.setattr(identifier, "_score_recording_studio_likelihood", lambda rec: 0)
 
     results = identifier._query_musicbrainz(
@@ -164,7 +164,7 @@ def test_query_musicbrainz_exact_title_match_beats_partial(monkeypatch):
             ]
         }
 
-    monkeypatch.setattr(ti.musicbrainzngs, "search_recordings", fake_search_recordings)
+    identifier._mb_search_recordings = fake_search_recordings
     monkeypatch.setattr(identifier, "_score_recording_studio_likelihood", lambda rec: 0)
 
     results = identifier._query_musicbrainz(
@@ -186,9 +186,9 @@ def test_query_musicbrainz_retries_on_transient_error(monkeypatch):
             raise RuntimeError("connection reset")
         return {"recording-list": [{"title": "Song"}]}
 
-    monkeypatch.setattr(ti.musicbrainzngs, "search_recordings", fake_search_recordings)
+    identifier._mb_search_recordings = fake_search_recordings
     monkeypatch.setattr(identifier, "_score_recording_studio_likelihood", lambda rec: 0)
-    monkeypatch.setattr("time.sleep", lambda *_: None)
+    identifier._sleep = lambda *_: None
 
     results = identifier._query_musicbrainz(
         query="Artist Song",
@@ -207,7 +207,7 @@ def test_query_musicbrainz_returns_empty_on_non_transient(monkeypatch):
     def fake_search_recordings(recording, artist=None, limit=25):
         raise RuntimeError("bad request")
 
-    monkeypatch.setattr(ti.musicbrainzngs, "search_recordings", fake_search_recordings)
+    identifier._mb_search_recordings = fake_search_recordings
 
     results = identifier._query_musicbrainz(
         query="Artist Song",

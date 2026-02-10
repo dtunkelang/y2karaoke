@@ -53,17 +53,22 @@ class MusicBrainzClient(_Base):
         """
         import time
 
+        search_recordings = getattr(self, "_mb_search_recordings", None)
+        if not callable(search_recordings):
+            search_recordings = musicbrainzngs.search_recordings
+        sleep_fn = getattr(self, "_sleep", None)
+        if not callable(sleep_fn):
+            sleep_fn = time.sleep
+
         for attempt in range(max_retries + 1):
             try:
                 # Include release info to check release type
                 if artist_hint:
-                    results = musicbrainzngs.search_recordings(
+                    results = search_recordings(
                         recording=title_hint, artist=artist_hint, limit=25
                     )
                 else:
-                    results = musicbrainzngs.search_recordings(
-                        recording=query, limit=25
-                    )
+                    results = search_recordings(recording=query, limit=25)
 
                 recordings = results.get("recording-list", [])
 
@@ -129,7 +134,7 @@ class MusicBrainzClient(_Base):
                     logger.debug(
                         f"MusicBrainz transient error, retrying in {delay:.1f}s: {e}"
                     )
-                    time.sleep(delay)
+                    sleep_fn(delay)
                     continue
                 else:
                     logger.warning(f"MusicBrainz search failed: {e}")

@@ -1,12 +1,12 @@
 """YouTube search and metadata extraction logic."""
 
-import re
 import json
 from typing import Optional, List, Dict, Any, Tuple, TYPE_CHECKING
 from ..utils.logging import get_logger
 from ..exceptions import Y2KaraokeError
 from .models import TrackInfo
 from .text_utils import normalize_title
+from . import track_identifier_youtube_rules as yt_rules
 
 if TYPE_CHECKING:
     from .track_identifier_parser import QueryParser
@@ -26,173 +26,10 @@ class YouTubeSearcher(_Base):
         return normalize_title(title, remove_stopwords=remove_stopwords)
 
     def _is_likely_non_studio(self, title: str) -> bool:
-        """Check if a title suggests a non-studio version.
-
-        Comprehensive detection of live, remix, acoustic, cover, and other
-        non-canonical versions to help select studio recordings.
-
-        Note: "single edit", "radio edit", "album version" etc. ARE studio
-        recordings - they're just different cuts of the studio recording.
-        """
-        title_lower = title.lower()
-
-        # First check for studio edit/version indicators - these are NOT non-studio
-        # Patterns like "single edit", "radio version", "album edit" indicate official releases
-        studio_edit_pattern = r"\b(single|radio|album)\s*(edit|version)?\b"
-        if re.search(studio_edit_pattern, title_lower):
-            # Check if this is actually a radio SHOW (non-studio) vs radio EDIT (studio)
-            # "radio edit" = studio, "radio 1 session" = non-studio
-            if "radio" in title_lower:
-                # Radio show indicators
-                radio_show_patterns = [
-                    r"radio\s*\d",  # "radio 1", "radio 2"
-                    r"radio\s+session",
-                    r"bbc\s+radio",
-                    r"radio\s+show",
-                ]
-                is_radio_show = any(
-                    re.search(p, title_lower) for p in radio_show_patterns
-                )
-                if not is_radio_show:
-                    # This looks like "radio edit" or "radio version" - it's studio
-                    return False
-            else:
-                # "single edit", "album version" etc. - definitely studio
-                return False
-
-        # Terms that indicate live/alternate versions
-        non_studio_terms = [
-            # Live performances
-            "live",
-            "concert",
-            "performance",
-            "performs",
-            "performing",
-            "tour",
-            "in concert",
-            # Alternate versions (but NOT radio/single/album edits - handled above)
-            "acoustic",
-            "unplugged",
-            "stripped",
-            "piano version",
-            "remix",
-            "extended",
-            "extended mix",
-            "demo",
-            "rehearsal",
-            "bootleg",
-            "outtake",
-            "alternate take",
-            # Other artists
-            "cover",
-            "tribute",
-            "karaoke",
-            "instrumental",
-            # Not music
-            "reaction",
-            "tutorial",
-            "lesson",
-            "how to play",
-            "guitar lesson",
-            # Audio effects
-            "slowed",
-            "sped up",
-            "reverb",
-            "8d audio",
-            "nightcore",
-            "bass boosted",
-            # Sessions (these are typically live/alternate recordings)
-            "session",
-            "sessions",
-            "bbc session",
-            "peel session",
-            "maida vale",
-            # Parody
-            "parody",
-            "weird al",
-        ]
-
-        # Check for any of these terms
-        for term in non_studio_terms:
-            if term in title_lower:
-                return True
-
-        # Check for common live venue patterns
-        live_patterns = [
-            # General venue patterns
-            r"\bat\b.*\b(show|festival|arena|stadium|hall|theater|theatre|club|center|centre)\b",
-            r"\blive\s+(at|from|in)\b",
-            # TV shows
-            r"\b(snl|saturday night live|letterman|fallon|kimmel|conan|ellen|tonight show)\b",
-            r"\b(jools holland|later with|top of the pops|totp|graham norton)\b",
-            r"\b(tiny desk|npr|kexp|colors?\s*show|a]colors)\b",
-            # Festivals
-            r"\b(glastonbury|coachella|lollapalooza|reading|leeds|bonnaroo)\b",
-            r"\b(rock am ring|download|download festival|wacken|hellfest)\b",
-            r"\b(south by southwest|sxsw|austin city limits|acl)\b",
-            # Awards shows
-            r"\b(mtv|vma|grammy|grammys|brit awards?|ama|american music)\b",
-            r"\b(billboard|bet awards|iheartradio)\b",
-            # Unplugged/session series
-            r"\b(unplugged|stripped|acoustic sessions?)\b",
-            r"\b(spotify\s*sessions?|apple\s*music\s*sessions?)\b",
-            # Year indicators often mean live recordings
-            r"\b(19|20)\d{2}\s+(tour|live|concert|performance)\b",
-        ]
-        for pattern in live_patterns:
-            if re.search(pattern, title_lower):
-                return True
-
-        # Check for parenthetical indicators - but allow studio edits
-        paren_match = re.search(r"\(([^)]+)\)", title_lower)
-        if paren_match:
-            paren_content = paren_match.group(1)
-            # Skip if it's a studio edit indicator
-            if re.search(r"\b(single|radio|album)\s*(edit|version)?\b", paren_content):
-                return False
-            # Check for non-studio indicators
-            if any(
-                term in paren_content
-                for term in [
-                    "live",
-                    "acoustic",
-                    "remix",
-                    "demo",
-                    "cover",
-                    "session",
-                    "unplugged",
-                    "stripped",
-                ]
-            ):
-                return True
-
-        return False
+        return yt_rules.is_likely_non_studio(title)
 
     def _is_preferred_audio_title(self, title: str) -> bool:
-        """Check if a title explicitly indicates an audio-only upload."""
-        title_lower = title.lower()
-        audio_terms = [
-            "official audio",
-            "audio only",
-            "full audio",
-            "audio version",
-        ]
-        if any(term in title_lower for term in audio_terms):
-            return True
-        # Catch common suffix/prefix patterns like "Artist - Song (Audio)"
-        if re.search(r"\b(audio)\b", title_lower):
-            video_terms = [
-                "official video",
-                "music video",
-                "mv",
-                "lyric video",
-                "lyrics",
-                "visualizer",
-                "visualiser",
-            ]
-            if not any(term in title_lower for term in video_terms):
-                return True
-        return False
+        return yt_rules.is_preferred_audio_title(title)
 
     def _search_youtube_verified(
         self,
@@ -215,11 +52,6 @@ class YouTubeSearcher(_Base):
         Returns:
             Dict with 'url', 'duration', and 'title' keys, or None if not found
         """
-        try:
-            import requests  # type: ignore[import-untyped]
-        except ImportError:
-            return self._search_youtube_by_duration(query, target_duration)
-
         search_query = query.replace(" ", "+")
         search_url = f"https://www.youtube.com/results?search_query={search_query}"
 
@@ -228,10 +60,9 @@ class YouTubeSearcher(_Base):
         }
 
         try:
-            response = requests.get(search_url, headers=headers, timeout=10)
-            response.raise_for_status()
-
-            candidates = self._extract_youtube_candidates(response.text)
+            candidates = self._fetch_youtube_candidates(
+                search_url=search_url, headers=headers
+            )
 
             if not candidates:
                 return None
@@ -293,6 +124,8 @@ class YouTubeSearcher(_Base):
                     "title": best["title"],
                 }
 
+        except Y2KaraokeError:
+            return self._search_youtube_by_duration(query, target_duration)
         except Exception as e:
             logger.warning(f"YouTube verified search failed: {e}")
 
@@ -401,16 +234,15 @@ class YouTubeSearcher(_Base):
         except ImportError:
             raise Y2KaraokeError("requests required for YouTube search")
 
-        response = requests.get(search_url, headers=headers, timeout=10)
+        http_get = getattr(self, "_http_get", None)
+        if not callable(http_get):
+            http_get = requests.get
+        response = http_get(search_url, headers=headers, timeout=10)
         response.raise_for_status()
         return self._extract_youtube_candidates(response.text)
 
     def _query_wants_non_studio(self, query: str) -> bool:
-        query_lower = query.lower()
-        return any(
-            term in query_lower
-            for term in ["live", "concert", "acoustic", "remix", "cover", "karaoke"]
-        )
+        return yt_rules.query_wants_non_studio(query)
 
     def _pick_first_candidate(
         self, candidates: List[Dict[str, Any]], query_wants_non_studio: bool
@@ -444,7 +276,7 @@ class YouTubeSearcher(_Base):
         return candidates
 
     def _youtube_duration_tolerance(self, target_duration: int) -> int:
-        return max(20, int(target_duration * 0.15)) if target_duration > 0 else 30
+        return yt_rules.youtube_duration_tolerance(target_duration)
 
     def _pick_best_duration_candidate(
         self,
@@ -500,37 +332,7 @@ class YouTubeSearcher(_Base):
         return scored_candidates
 
     def _extract_youtube_candidates(self, response_text: str) -> List[Dict]:
-        """Extract video candidates from YouTube response."""
-        candidates = []
-
-        video_pattern = re.compile(
-            r'"videoRenderer":\{"videoId":"([^"]{11})".{0,800}?"title":\{"runs":\[\{"text":"([^"]+)"',
-            re.DOTALL,
-        )
-
-        for match in video_pattern.finditer(response_text):
-            video_id = match.group(1)
-            title = match.group(2)
-
-            duration_pattern = rf'"videoRenderer":\{{"videoId":"{video_id}".{{0,2000}}?"simpleText":"(\d+:\d+(?::\d+)?)"'
-            duration_match = re.search(duration_pattern, response_text, re.DOTALL)
-
-            duration_sec = None
-            if duration_match:
-                time_str = duration_match.group(1)
-                parts = time_str.split(":")
-                if len(parts) == 2:
-                    duration_sec = int(parts[0]) * 60 + int(parts[1])
-                elif len(parts) == 3:
-                    duration_sec = (
-                        int(parts[0]) * 3600 + int(parts[1]) * 60 + int(parts[2])
-                    )
-
-            candidates.append(
-                {"video_id": video_id, "title": title, "duration": duration_sec}
-            )
-
-        return candidates
+        return yt_rules.extract_youtube_candidates(response_text)
 
     def _get_youtube_metadata(self, url: str) -> tuple[str, str, int]:
         """Get YouTube video metadata without downloading.

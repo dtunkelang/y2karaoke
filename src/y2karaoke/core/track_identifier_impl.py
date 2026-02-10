@@ -37,6 +37,9 @@ class TrackIdentifier(
 
     def __init__(self):
         self._lrc_cache: Dict[tuple, tuple] = {}
+        self._http_get = None
+        self._mb_search_recordings = None
+        self._sleep = None
 
     def _try_direct_lrc_search(self, query: str) -> Optional[TrackInfo]:  # noqa: C901
         """Try to find track by searching LRC providers directly.
