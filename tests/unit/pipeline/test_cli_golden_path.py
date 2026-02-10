@@ -51,7 +51,7 @@ class _DummyGenerator:
 
 def test_cli_generate_golden_path_wiring(monkeypatch):
     monkeypatch.setattr(cli_commands, "TrackIdentifier", _DummyIdentifier)
-    monkeypatch.setattr(cli_commands, "KaraokeGenerator", _DummyGenerator)
+    monkeypatch.setattr(cli, "KaraokeGenerator", _DummyGenerator)
 
     runner = CliRunner()
     result = runner.invoke(

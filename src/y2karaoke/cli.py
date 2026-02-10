@@ -6,6 +6,7 @@ import click
 
 from . import __version__
 from .config import get_cache_dir
+from .core.karaoke import KaraokeGenerator
 
 from .pipeline.identify import TrackInfo
 from .cli_commands import run_evaluate_timing_command, run_generate_command
@@ -421,6 +422,7 @@ def generate(
         build_video_settings_fn=build_video_settings,
         resolve_shorten_breaks_fn=resolve_shorten_breaks,
         log_quality_summary_fn=log_quality_summary,
+        karaoke_generator_cls=KaraokeGenerator,
     )
 
 

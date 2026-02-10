@@ -68,6 +68,7 @@ def run_generate_command(
     build_video_settings_fn,
     resolve_shorten_breaks_fn,
     log_quality_summary_fn,
+    karaoke_generator_cls=KaraokeGenerator,
 ):
     """Execute the `generate` command implementation."""
     try:
@@ -114,7 +115,7 @@ def run_generate_command(
         )
 
         cache_dir = Path(work_dir) if work_dir else get_cache_dir()
-        generator = KaraokeGenerator(cache_dir=cache_dir)
+        generator = karaoke_generator_cls(cache_dir=cache_dir)
 
         output_path = validate_output_path(output) if output else None
         effective_shorten_breaks = resolve_shorten_breaks_fn(

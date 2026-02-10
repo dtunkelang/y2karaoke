@@ -280,6 +280,8 @@ def test_get_youtube_metadata_error():
 
     dummy_module = SimpleNamespace(YoutubeDL=DummyYDL)
     identifier = TrackIdentifier(load_yt_dlp_module_fn=lambda: dummy_module)
+    # Ensure this test is deterministic even if local cache exists.
+    identifier._get_cached_youtube_metadata = lambda _url: None
 
     with pytest.raises(Y2KaraokeError):
         identifier._get_youtube_metadata("https://www.youtube.com/watch?v=abc123def45")
