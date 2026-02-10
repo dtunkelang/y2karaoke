@@ -32,3 +32,15 @@ make perf-smoke
 
 - Fast lane: formatting/linting/types + fast unit tests + perf smoke.
 - Full lane: full non-network test suite with coverage.
+
+## Generated Artifacts
+
+- `src/y2karaoke.egg-info/` is generated packaging metadata.
+- Keep it out of version control; it is ignored via `.gitignore`.
+- If you need to refresh metadata locally, reinstall with `pip install -e .`.
+
+## Perf Smoke Thresholds
+
+- `tools/perf_smoke.py` has conservative per-test time budgets.
+- Tune thresholds only after reviewing at least a week of CI runtimes.
+- Prefer widening by small increments (for example, `+0.5s`) to avoid masking regressions.

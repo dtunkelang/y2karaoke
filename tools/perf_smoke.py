@@ -17,6 +17,7 @@ class PerfCase:
     max_seconds: float
 
 
+# Keep budgets conservative and adjust only after observing CI trends over time.
 CASES = [
     PerfCase(
         "tests/unit/alignment/test_timing_evaluator_corrections.py::"
