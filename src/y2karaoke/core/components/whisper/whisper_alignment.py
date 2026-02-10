@@ -1,6 +1,8 @@
 """Whisper-based alignment and timing correction logic."""
 
+from contextlib import contextmanager
 import logging
+from typing import Callable, Iterator, Optional
 
 from . import whisper_alignment_base
 from . import whisper_alignment_segments
@@ -23,6 +25,26 @@ def _sync_patchables() -> None:
 
 
 _sync_patchables()
+
+
+@contextmanager
+def use_whisper_alignment_hooks(
+    *,
+    phonetic_similarity_fn: Optional[Callable[..., float]] = None,
+) -> Iterator[None]:
+    """Temporarily override whisper alignment collaborators for tests."""
+    global _phonetic_similarity
+
+    prev_similarity = _phonetic_similarity
+    if phonetic_similarity_fn is not None:
+        _phonetic_similarity = phonetic_similarity_fn
+        _sync_patchables()
+    try:
+        yield
+    finally:
+        _phonetic_similarity = prev_similarity
+        _sync_patchables()
+
 
 # Basic timing adjustments
 _enforce_monotonic_line_starts = whisper_alignment_base._enforce_monotonic_line_starts

@@ -48,7 +48,7 @@ def get_lyrics_with_quality(  # noqa: C901
         _calculate_quality_score,
         _detect_offset_with_issues,
         _fetch_genius_with_quality_tracking,
-        _fetch_lrc_text_and_timings,
+        _fetch_lrc_text_and_timings_for_state,
         _refine_timing_with_quality,
         create_lines_from_lrc,
         create_lines_from_lrc_timings,
@@ -119,7 +119,7 @@ def get_lyrics_with_quality(  # noqa: C901
         if file_lrc_text or file_lines:
             quality_report["source"] = f"lyrics_file:{lyrics_file}"
 
-    lrc_text, line_timings, source = _fetch_lrc_text_and_timings(
+    lrc_text, line_timings, source = _fetch_lrc_text_and_timings_for_state(
         title=title,
         artist=artist,
         target_duration=target_duration,
@@ -375,7 +375,7 @@ def _apply_whisper_with_quality(
     if quality_report is None:
         quality_report = {"issues": []}
     try:
-        lines, whisper_fixes, whisper_metrics = lw._apply_whisper_alignment(
+        lines, whisper_fixes, whisper_metrics = lw._apply_whisper_alignment_for_state(
             lines,
             vocals_path,
             whisper_language,

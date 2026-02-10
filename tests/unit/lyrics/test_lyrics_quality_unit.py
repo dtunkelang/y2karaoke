@@ -137,17 +137,16 @@ def test_apply_whisper_with_quality_handles_error(monkeypatch):
     def raise_error(*args, **kwargs):
         raise RuntimeError("whisper down")
 
-    monkeypatch.setattr(lw, "_apply_whisper_alignment", raise_error)
     report = {"whisper_used": False, "whisper_corrections": 0, "issues": []}
-
-    updated, report = lw._apply_whisper_with_quality(
-        lines,
-        vocals_path="vocals.wav",
-        whisper_language="en",
-        whisper_model="base",
-        whisper_force_dtw=False,
-        quality_report=report,
-    )
+    with lw.use_lyrics_whisper_hooks(apply_whisper_alignment_fn=raise_error):
+        updated, report = lw._apply_whisper_with_quality(
+            lines,
+            vocals_path="vocals.wav",
+            whisper_language="en",
+            whisper_model="base",
+            whisper_force_dtw=False,
+            quality_report=report,
+        )
 
     assert updated is lines
     assert report["whisper_used"] is False
@@ -202,8 +201,6 @@ def test_get_lyrics_simple_whisper_only(monkeypatch):
 
 def test_get_lyrics_simple_whisper_map_lrc(monkeypatch):
     from y2karaoke.core import timing_evaluator as te
-    from y2karaoke.core.components.whisper import whisper_integration as wi
-    from y2karaoke.core import phonetic_utils as pu
     from y2karaoke.core import genius
 
     lrc_lines = [_make_line("bonjour", 0.0, 0.5)]
@@ -211,31 +208,25 @@ def test_get_lyrics_simple_whisper_map_lrc(monkeypatch):
     def fake_fetch(*_a, **_k):
         return "[00:00.00]bonjour", [(0.0, "bonjour")], "source"
 
-    monkeypatch.setattr(lw, "_fetch_lrc_text_and_timings", fake_fetch)
-    monkeypatch.setattr(lh, "_detect_and_apply_offset", lambda v, t, o: (t, 0.0))
+    word = te.TranscriptionWord(start=2.0, end=2.4, text="bonjour", probability=0.9)
+    segment = te.TranscriptionSegment(start=2.0, end=2.6, text="bonjour", words=[word])
+
     monkeypatch.setattr(lw, "create_lines_from_lrc", lambda *a, **k: lrc_lines)
-    monkeypatch.setattr(lh, "_refine_timing_with_audio", lambda lines, *_a, **_k: lines)
     monkeypatch.setattr(
         genius, "fetch_genius_lyrics_with_singers", lambda *_a, **_k: (None, None)
     )
-
-    word = te.TranscriptionWord(start=2.0, end=2.4, text="bonjour", probability=0.9)
-    segment = te.TranscriptionSegment(start=2.0, end=2.6, text="bonjour", words=[word])
-    # Patch where it's actually imported in lyrics_whisper (from whisper_integration)
-    monkeypatch.setattr(
-        wi, "transcribe_vocals", lambda *_a, **_k: ([segment], [word], "fr", "base")
-    )
-    monkeypatch.setattr(pu, "_whisper_lang_to_epitran", lambda *_a, **_k: "fra-Latn")
-
-    monkeypatch.setattr(
-        "y2karaoke.core.components.alignment.alignment.detect_song_start",
-        lambda *_: 0.0,
-    )
-    lines, _ = lw.get_lyrics_simple(
-        title="Song",
-        artist="Artist",
-        vocals_path="vocals.wav",
-        whisper_map_lrc=True,
-    )
+    with lw.use_lyrics_whisper_hooks(
+        fetch_lrc_text_and_timings_fn=fake_fetch,
+        detect_and_apply_offset_fn=lambda v, t, o: (t, 0.0),
+        refine_timing_with_audio_fn=lambda lines, *_a, **_k: lines,
+        transcribe_vocals_fn=lambda *_a, **_k: ([segment], [word], "fr", "base"),
+        whisper_lang_to_epitran_fn=lambda *_a, **_k: "fra-Latn",
+    ):
+        lines, _ = lw.get_lyrics_simple(
+            title="Song",
+            artist="Artist",
+            vocals_path="vocals.wav",
+            whisper_map_lrc=True,
+        )
 
     assert lines[0].start_time == pytest.approx(2.0)

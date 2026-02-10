@@ -1,8 +1,10 @@
 """Whisper-related lyrics processing and refinement."""
 
+from contextlib import contextmanager
+from dataclasses import dataclass
 import logging
 from pathlib import Path
-from typing import List, Optional, Tuple
+from typing import Callable, Iterator, List, Optional, Tuple
 
 from ...models import Line, SongMetadata
 from .lrc import (
@@ -29,6 +31,173 @@ from .lyrics_whisper_map import (
 logger = logging.getLogger(__name__)
 
 __all__ = ["get_lyrics_simple", "get_lyrics_with_quality"]
+
+
+@dataclass
+class LyricsWhisperHooks:
+    """Optional runtime overrides for lyrics-whisper collaborators."""
+
+    fetch_lrc_text_and_timings_fn: Optional[
+        Callable[..., Tuple[Optional[str], Optional[List[Tuple[float, str]]], str]]
+    ] = None
+    detect_and_apply_offset_fn: Optional[
+        Callable[..., Tuple[List[Tuple[float, str]], float]]
+    ] = None
+    refine_timing_with_audio_fn: Optional[Callable[..., List[Line]]] = None
+    apply_whisper_alignment_fn: Optional[
+        Callable[..., Tuple[List[Line], List[str], dict]]
+    ] = None
+    fetch_genius_lyrics_with_singers_fn: Optional[
+        Callable[..., Tuple[Optional[List[Tuple[str, str]]], Optional[SongMetadata]]]
+    ] = None
+    transcribe_vocals_fn: Optional[Callable[..., Tuple[list, list, str, str]]] = None
+    whisper_lang_to_epitran_fn: Optional[Callable[..., str]] = None
+    align_lrc_text_to_whisper_timings_fn: Optional[
+        Callable[..., Tuple[List[Line], list, dict]]
+    ] = None
+
+
+_ACTIVE_HOOKS = LyricsWhisperHooks()
+
+
+@contextmanager
+def use_lyrics_whisper_hooks(
+    *,
+    fetch_lrc_text_and_timings_fn: Optional[
+        Callable[..., Tuple[Optional[str], Optional[List[Tuple[float, str]]], str]]
+    ] = None,
+    detect_and_apply_offset_fn: Optional[
+        Callable[..., Tuple[List[Tuple[float, str]], float]]
+    ] = None,
+    refine_timing_with_audio_fn: Optional[Callable[..., List[Line]]] = None,
+    apply_whisper_alignment_fn: Optional[
+        Callable[..., Tuple[List[Line], List[str], dict]]
+    ] = None,
+    fetch_genius_lyrics_with_singers_fn: Optional[
+        Callable[..., Tuple[Optional[List[Tuple[str, str]]], Optional[SongMetadata]]]
+    ] = None,
+    transcribe_vocals_fn: Optional[Callable[..., Tuple[list, list, str, str]]] = None,
+    whisper_lang_to_epitran_fn: Optional[Callable[..., str]] = None,
+    align_lrc_text_to_whisper_timings_fn: Optional[
+        Callable[..., Tuple[List[Line], list, dict]]
+    ] = None,
+) -> Iterator[None]:
+    """Temporarily override lyrics-whisper collaborators for tests."""
+    global _ACTIVE_HOOKS
+
+    previous = _ACTIVE_HOOKS
+    _ACTIVE_HOOKS = LyricsWhisperHooks(
+        fetch_lrc_text_and_timings_fn=(
+            fetch_lrc_text_and_timings_fn
+            if fetch_lrc_text_and_timings_fn is not None
+            else previous.fetch_lrc_text_and_timings_fn
+        ),
+        detect_and_apply_offset_fn=(
+            detect_and_apply_offset_fn
+            if detect_and_apply_offset_fn is not None
+            else previous.detect_and_apply_offset_fn
+        ),
+        refine_timing_with_audio_fn=(
+            refine_timing_with_audio_fn
+            if refine_timing_with_audio_fn is not None
+            else previous.refine_timing_with_audio_fn
+        ),
+        apply_whisper_alignment_fn=(
+            apply_whisper_alignment_fn
+            if apply_whisper_alignment_fn is not None
+            else previous.apply_whisper_alignment_fn
+        ),
+        fetch_genius_lyrics_with_singers_fn=(
+            fetch_genius_lyrics_with_singers_fn
+            if fetch_genius_lyrics_with_singers_fn is not None
+            else previous.fetch_genius_lyrics_with_singers_fn
+        ),
+        transcribe_vocals_fn=(
+            transcribe_vocals_fn
+            if transcribe_vocals_fn is not None
+            else previous.transcribe_vocals_fn
+        ),
+        whisper_lang_to_epitran_fn=(
+            whisper_lang_to_epitran_fn
+            if whisper_lang_to_epitran_fn is not None
+            else previous.whisper_lang_to_epitran_fn
+        ),
+        align_lrc_text_to_whisper_timings_fn=(
+            align_lrc_text_to_whisper_timings_fn
+            if align_lrc_text_to_whisper_timings_fn is not None
+            else previous.align_lrc_text_to_whisper_timings_fn
+        ),
+    )
+    try:
+        yield
+    finally:
+        _ACTIVE_HOOKS = previous
+
+
+def _fetch_lrc_text_and_timings_for_state(*args, **kwargs):
+    fn = _ACTIVE_HOOKS.fetch_lrc_text_and_timings_fn
+    if fn is not None:
+        return fn(*args, **kwargs)
+    return _fetch_lrc_text_and_timings(*args, **kwargs)
+
+
+def _detect_and_apply_offset_for_state(*args, **kwargs):
+    fn = _ACTIVE_HOOKS.detect_and_apply_offset_fn
+    if fn is not None:
+        return fn(*args, **kwargs)
+    return _detect_and_apply_offset(*args, **kwargs)
+
+
+def _refine_timing_with_audio_for_state(*args, **kwargs):
+    fn = _ACTIVE_HOOKS.refine_timing_with_audio_fn
+    if fn is not None:
+        return fn(*args, **kwargs)
+    return _refine_timing_with_audio(*args, **kwargs)
+
+
+def _apply_whisper_alignment_for_state(*args, **kwargs):
+    fn = _ACTIVE_HOOKS.apply_whisper_alignment_fn
+    if fn is not None:
+        return fn(*args, **kwargs)
+    return _apply_whisper_alignment(*args, **kwargs)
+
+
+def _fetch_genius_lyrics_with_singers_for_state(
+    title: str, artist: str
+) -> Tuple[Optional[List[Tuple[str, str]]], Optional[SongMetadata]]:
+    fn = _ACTIVE_HOOKS.fetch_genius_lyrics_with_singers_fn
+    if fn is not None:
+        return fn(title, artist)
+    from .genius import fetch_genius_lyrics_with_singers
+
+    return fetch_genius_lyrics_with_singers(title, artist)
+
+
+def _transcribe_vocals_for_state(*args, **kwargs):
+    fn = _ACTIVE_HOOKS.transcribe_vocals_fn
+    if fn is not None:
+        return fn(*args, **kwargs)
+    from ..whisper.whisper_integration import transcribe_vocals
+
+    return transcribe_vocals(*args, **kwargs)
+
+
+def _whisper_lang_to_epitran_for_state(detected_lang: str) -> str:
+    fn = _ACTIVE_HOOKS.whisper_lang_to_epitran_fn
+    if fn is not None:
+        return fn(detected_lang)
+    from ...phonetic_utils import _whisper_lang_to_epitran
+
+    return _whisper_lang_to_epitran(detected_lang)
+
+
+def _align_lrc_text_to_whisper_timings_for_state(*args, **kwargs):
+    fn = _ACTIVE_HOOKS.align_lrc_text_to_whisper_timings_fn
+    if fn is not None:
+        return fn(*args, **kwargs)
+    from ..whisper.whisper_integration import align_lrc_text_to_whisper_timings
+
+    return align_lrc_text_to_whisper_timings(*args, **kwargs)
 
 
 def _apply_singer_info(
@@ -297,8 +466,6 @@ def get_lyrics_simple(  # noqa: C901
     Returns:
         Tuple of (lines, metadata)
     """
-    from .genius import fetch_genius_lyrics_with_singers
-
     # Whisper-only mode: generate lines directly from transcription.
     if whisper_only:
         if not vocals_path:
@@ -306,10 +473,8 @@ def get_lyrics_simple(  # noqa: C901
                 "Whisper-only mode requires vocals; using placeholder lyrics"
             )
             return _create_no_lyrics_placeholder(title, artist)
-        from ..whisper.whisper_integration import transcribe_vocals
-
         model_size = whisper_model or "base"
-        transcription, _, detected_lang, _model = transcribe_vocals(
+        transcription, _, detected_lang, _model = _transcribe_vocals_for_state(
             vocals_path,
             whisper_language,
             model_size,
@@ -348,7 +513,7 @@ def get_lyrics_simple(  # noqa: C901
         f"Fetching LRC lyrics... (target_duration={target_duration}, "
         f"evaluate={evaluate_sources})"
     )
-    lrc_text, line_timings, _source = _fetch_lrc_text_and_timings(
+    lrc_text, line_timings, _source = _fetch_lrc_text_and_timings_for_state(
         title=title,
         artist=artist,
         target_duration=target_duration,
@@ -378,17 +543,21 @@ def get_lyrics_simple(  # noqa: C901
             logger.warning("Offline mode: no cached lyrics available")
             return _create_no_lyrics_placeholder(title, artist)
         logger.debug("No LRC found, fetching lyrics from Genius...")
-        genius_lines, metadata = fetch_genius_lyrics_with_singers(title, artist)
+        genius_lines, metadata = _fetch_genius_lyrics_with_singers_for_state(
+            title, artist
+        )
         if not genius_lines:
             logger.warning("No lyrics found from any source, using placeholder")
             return _create_no_lyrics_placeholder(title, artist)
     else:
         # Fetch Genius for singer/duet metadata only
-        genius_lines, metadata = fetch_genius_lyrics_with_singers(title, artist)
+        genius_lines, metadata = _fetch_genius_lyrics_with_singers_for_state(
+            title, artist
+        )
 
     # 3. Apply vocal offset if available
     if vocals_path and line_timings:
-        line_timings, _ = _detect_and_apply_offset(
+        line_timings, _ = _detect_and_apply_offset_for_state(
             vocals_path, line_timings, lyrics_offset
         )
 
@@ -412,14 +581,14 @@ def get_lyrics_simple(  # noqa: C901
 
         # 5. Refine word timing using audio
         if vocals_path and line_timings and len(line_timings) > 1:
-            lines = _refine_timing_with_audio(
+            lines = _refine_timing_with_audio_for_state(
                 lines, vocals_path, line_timings, lrc_text or "", target_duration
             )
 
         # 5b. Optionally use Whisper for more accurate alignment
         if vocals_path and use_whisper:
             try:
-                lines, _, _ = _apply_whisper_alignment(
+                lines, _, _ = _apply_whisper_alignment_for_state(
                     lines,
                     vocals_path,
                     whisper_language,
@@ -437,21 +606,19 @@ def get_lyrics_simple(  # noqa: C901
         elif vocals_path and whisper_map_lrc:
             try:
                 if whisper_map_lrc_dtw:
-                    from ..whisper.whisper_integration import (
-                        align_lrc_text_to_whisper_timings,
-                    )
-
                     model_size = whisper_model or "small"
-                    lines, alignments, metrics = align_lrc_text_to_whisper_timings(
-                        lines,
-                        vocals_path,
-                        language=whisper_language,
-                        model_size=model_size,
-                        aggressive=whisper_aggressive,
-                        temperature=whisper_temperature,
-                        lenient_vocal_activity_threshold=lenient_vocal_activity_threshold,
-                        lenient_activity_bonus=lenient_activity_bonus,
-                        low_word_confidence_threshold=low_word_confidence_threshold,
+                    lines, alignments, metrics = (
+                        _align_lrc_text_to_whisper_timings_for_state(
+                            lines,
+                            vocals_path,
+                            language=whisper_language,
+                            model_size=model_size,
+                            aggressive=whisper_aggressive,
+                            temperature=whisper_temperature,
+                            lenient_vocal_activity_threshold=lenient_vocal_activity_threshold,
+                            lenient_activity_bonus=lenient_activity_bonus,
+                            low_word_confidence_threshold=low_word_confidence_threshold,
+                        )
                     )
                     logger.info(
                         f"DTW-mapped {len(alignments)} LRC line(s) onto Whisper timing"
@@ -459,19 +626,18 @@ def get_lyrics_simple(  # noqa: C901
                     if metrics:
                         logger.debug(f"DTW metrics: {metrics}")
                 else:
-                    from ...phonetic_utils import _whisper_lang_to_epitran
-                    from ..whisper.whisper_integration import transcribe_vocals
-
                     model_size = whisper_model or "small"
-                    transcription, _, detected_lang, _model = transcribe_vocals(
-                        vocals_path,
-                        whisper_language,
-                        model_size,
-                        whisper_aggressive,
-                        whisper_temperature,
+                    transcription, _, detected_lang, _model = (
+                        _transcribe_vocals_for_state(
+                            vocals_path,
+                            whisper_language,
+                            model_size,
+                            whisper_aggressive,
+                            whisper_temperature,
+                        )
                     )
                     if transcription:
-                        lang = _whisper_lang_to_epitran(detected_lang)
+                        lang = _whisper_lang_to_epitran_for_state(detected_lang)
                         lrc_starts = (
                             [ts for ts, _ in line_timings]
                             if line_timings and not whisper_map_lrc

@@ -95,6 +95,7 @@ _drop_duplicate_lines_by_timing = _ALIASES["_drop_duplicate_lines_by_timing"]
 _pull_lines_forward_for_continuous_vocals = _ALIASES[
     "_pull_lines_forward_for_continuous_vocals"
 ]
+_get_ipa = _ALIASES["_get_ipa"]
 
 __all__ = [
     "transcribe_vocals",
@@ -116,6 +117,7 @@ def use_whisper_integration_hooks(
     load_whisper_cache_fn=None,
     save_whisper_cache_fn=None,
     retime_lines_from_dtw_alignments_fn=None,
+    get_ipa_fn=None,
 ):
     """Temporarily override integration collaborators for tests."""
     global transcribe_vocals, extract_audio_features
@@ -124,6 +126,7 @@ def use_whisper_integration_hooks(
     global _load_whisper_model_class
     global _get_whisper_cache_path, _load_whisper_cache, _save_whisper_cache
     global _retime_lines_from_dtw_alignments
+    global _get_ipa
 
     prev_transcribe_vocals = transcribe_vocals
     prev_extract_audio_features = extract_audio_features
@@ -135,6 +138,7 @@ def use_whisper_integration_hooks(
     prev_load_cache = _load_whisper_cache
     prev_save_cache = _save_whisper_cache
     prev_retime_from_dtw = _retime_lines_from_dtw_alignments
+    prev_get_ipa = _get_ipa
 
     if transcribe_vocals_fn is not None:
         transcribe_vocals = transcribe_vocals_fn
@@ -156,6 +160,8 @@ def use_whisper_integration_hooks(
         _save_whisper_cache = save_whisper_cache_fn
     if retime_lines_from_dtw_alignments_fn is not None:
         _retime_lines_from_dtw_alignments = retime_lines_from_dtw_alignments_fn
+    if get_ipa_fn is not None:
+        _get_ipa = get_ipa_fn
 
     try:
         yield
@@ -170,6 +176,7 @@ def use_whisper_integration_hooks(
         _load_whisper_cache = prev_load_cache
         _save_whisper_cache = prev_save_cache
         _retime_lines_from_dtw_alignments = prev_retime_from_dtw
+        _get_ipa = prev_get_ipa
 
 
 def _load_whisper_model_class():

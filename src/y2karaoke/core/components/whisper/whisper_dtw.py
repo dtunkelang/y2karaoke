@@ -1,7 +1,8 @@
 """Dynamic Time Warping (DTW) alignment for Whisper and LRC."""
 
+from contextlib import contextmanager
 import logging
-from typing import List, Tuple, Dict, Optional
+from typing import Callable, Iterator, List, Tuple, Dict, Optional
 from collections import defaultdict
 
 import numpy as np
@@ -17,6 +18,41 @@ from ...phonetic_utils import (
 from .whisper_dtw_tokens import _LineMappingContext  # noqa: F401
 
 logger = logging.getLogger(__name__)
+
+_ACTIVE_PHONETIC_SIMILARITY: Optional[Callable[..., float]] = None
+_ACTIVE_GET_IPA: Optional[Callable[..., Optional[str]]] = None
+
+
+@contextmanager
+def use_whisper_dtw_hooks(
+    *,
+    phonetic_similarity_fn: Optional[Callable[..., float]] = None,
+    get_ipa_fn: Optional[Callable[..., Optional[str]]] = None,
+) -> Iterator[None]:
+    """Temporarily override DTW collaborators for tests."""
+    global _ACTIVE_PHONETIC_SIMILARITY, _ACTIVE_GET_IPA
+
+    prev_similarity = _ACTIVE_PHONETIC_SIMILARITY
+    prev_get_ipa = _ACTIVE_GET_IPA
+    if phonetic_similarity_fn is not None:
+        _ACTIVE_PHONETIC_SIMILARITY = phonetic_similarity_fn
+    if get_ipa_fn is not None:
+        _ACTIVE_GET_IPA = get_ipa_fn
+    try:
+        yield
+    finally:
+        _ACTIVE_PHONETIC_SIMILARITY = prev_similarity
+        _ACTIVE_GET_IPA = prev_get_ipa
+
+
+def _phonetic_similarity_for_state(*args, **kwargs) -> float:
+    fn = _ACTIVE_PHONETIC_SIMILARITY or _phonetic_similarity
+    return fn(*args, **kwargs)
+
+
+def _get_ipa_for_state(*args, **kwargs) -> Optional[str]:
+    fn = _ACTIVE_GET_IPA or _get_ipa
+    return fn(*args, **kwargs)
 
 
 def _load_fastdtw():
@@ -61,7 +97,7 @@ def _compute_phonetic_costs_base(
             if time_diff > 20:
                 continue
 
-            sim = _phonetic_similarity(lw["text"], ww.text, language)
+            sim = _phonetic_similarity_for_state(lw["text"], ww.text, language)
             if sim >= min_similarity:
                 phonetic_costs[(i, j)] = 1.0 - sim
 
@@ -84,7 +120,7 @@ def _extract_alignments_from_path_base(
             ww = whisper_words[whisper_idx]
             lw = lrc_words[lrc_idx]
             # Verify it's a reasonable match
-            sim = _phonetic_similarity(lw["text"], ww.text, language)
+            sim = _phonetic_similarity_for_state(lw["text"], ww.text, language)
             if sim >= min_similarity:
                 alignments_map[lrc_idx] = (ww, sim)
 
@@ -160,9 +196,9 @@ def align_dtw_whisper_base(
     # Pre-compute IPA
     logger.debug(f"DTW: Pre-computing IPA for {len(whisper_words)} Whisper words...")
     for ww in whisper_words:
-        _get_ipa(ww.text, language)
+        _get_ipa_for_state(ww.text, language)
     for lw in lrc_words:
-        _get_ipa(lw["text"], language)
+        _get_ipa_for_state(lw["text"], language)
 
     logger.debug(
         f"DTW: Building cost matrix ({len(lrc_words)} x {len(whisper_words)})..."

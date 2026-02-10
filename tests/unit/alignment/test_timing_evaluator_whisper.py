@@ -1,36 +1,27 @@
 import pytest
 
 import y2karaoke.core.components.alignment.timing_evaluator as te
-import y2karaoke.core.phonetic_utils as pu
 import y2karaoke.core.components.whisper.whisper_integration as wi
 import y2karaoke.core.components.whisper.whisper_dtw as w_dtw
 import y2karaoke.core.components.whisper.whisper_alignment as wa
 from y2karaoke.core.models import Line, Word
 
 
-def _patch_alignment_similarity(monkeypatch, fn):
-    monkeypatch.setattr(wa, "_phonetic_similarity", fn)
-    import y2karaoke.core.components.whisper.whisper_alignment_utils as wa_utils
-    import y2karaoke.core.components.whisper.whisper_alignment_retime as wa_retime
-    import y2karaoke.core.components.whisper.whisper_alignment_pull as wa_pull
-
-    monkeypatch.setattr(wa_utils, "_phonetic_similarity", fn)
-    monkeypatch.setattr(wa_retime, "_phonetic_similarity", fn)
-    monkeypatch.setattr(wa_pull, "_phonetic_similarity", fn)
+def _alignment_similarity_hook(fn):
+    return wa.use_whisper_alignment_hooks(phonetic_similarity_fn=fn)
 
 
 def test_align_words_to_whisper_adjusts_word():
-    pu._ipa_cache.clear()
     lines = [Line(words=[Word(text="hello", start_time=0.0, end_time=0.5)])]
     whisper_words = [
         te.TranscriptionWord(start=2.0, end=2.4, text="hello", probability=0.9)
     ]
-    wi._get_ipa = lambda *_args, **_kwargs: None
-    aligned, corrections = te.align_words_to_whisper(
-        lines,
-        whisper_words,
-        language="eng-Latn",
-    )
+    with wi.use_whisper_integration_hooks(get_ipa_fn=lambda *_args, **_kwargs: None):
+        aligned, corrections = te.align_words_to_whisper(
+            lines,
+            whisper_words,
+            language="eng-Latn",
+        )
     assert aligned[0].words[0].start_time == 2.0
     assert corrections
 
@@ -39,9 +30,10 @@ def test_assess_lrc_quality_reports_good_match(monkeypatch):
     lines = [Line(words=[Word(text="hello", start_time=1.0, end_time=1.5)])]
     words = [te.TranscriptionWord(start=1.1, end=1.6, text="hello", probability=0.9)]
 
-    monkeypatch.setattr(pu, "_phonetic_similarity", lambda *_args, **_kwargs: 0.8)
-
-    quality, assessments = te._assess_lrc_quality(lines, words, "eng-Latn")
+    with w_dtw.use_whisper_dtw_hooks(
+        phonetic_similarity_fn=lambda *_args, **_kwargs: 0.8
+    ):
+        quality, assessments = te._assess_lrc_quality(lines, words, "eng-Latn")
     assert quality >= 0.9
     assert assessments
 
@@ -60,9 +52,10 @@ def test_compute_phonetic_costs_includes_matches(monkeypatch):
         te.TranscriptionWord(start=1.1, end=1.6, text="hello", probability=0.9)
     ]
 
-    monkeypatch.setattr(pu, "_phonetic_similarity", lambda *_args, **_kwargs: 0.6)
-
-    costs = te._compute_phonetic_costs(lrc_words, whisper_words, "eng-Latn", 0.5)
+    with w_dtw.use_whisper_dtw_hooks(
+        phonetic_similarity_fn=lambda *_args, **_kwargs: 0.6
+    ):
+        costs = te._compute_phonetic_costs(lrc_words, whisper_words, "eng-Latn", 0.5)
     assert (0, 0) in costs
     assert costs[(0, 0)] < 0.5
 
@@ -74,11 +67,12 @@ def test_extract_alignments_from_path_filters_by_similarity(monkeypatch):
         te.TranscriptionWord(start=1.1, end=1.6, text="hello", probability=0.9)
     ]
 
-    # Mock phonetic similarity to fail filter - patch where it's imported
-    monkeypatch.setattr(w_dtw, "_phonetic_similarity", lambda *_args, **_kwargs: 0.1)
-    alignments = te._extract_alignments_from_path(
-        path, lrc_words, whisper_words, "eng-Latn", 0.5
-    )
+    with w_dtw.use_whisper_dtw_hooks(
+        phonetic_similarity_fn=lambda *_args, **_kwargs: 0.1
+    ):
+        alignments = te._extract_alignments_from_path(
+            path, lrc_words, whisper_words, "eng-Latn", 0.5
+        )
     assert len(alignments) == 0
 
 
@@ -262,11 +256,10 @@ def test_pull_lines_allows_low_similarity_when_late_and_ordered(monkeypatch):
             return 0.4
         return 0.1
 
-    _patch_alignment_similarity(monkeypatch, fake_similarity)
-
-    adjusted, fixed = te._pull_lines_to_best_segments(
-        lines, segments, language="fra-Latn", min_similarity=0.7
-    )
+    with _alignment_similarity_hook(fake_similarity):
+        adjusted, fixed = te._pull_lines_to_best_segments(
+            lines, segments, language="fra-Latn", min_similarity=0.7
+        )
 
     assert adjusted[1].start_time == pytest.approx(23.0)
     assert adjusted[2].start_time == pytest.approx(27.0)
@@ -282,11 +275,10 @@ def test_retime_adjacent_lines_to_whisper_window(monkeypatch):
         te.TranscriptionSegment(start=9.0, end=13.0, text="aucun express", words=[]),
     ]
 
-    _patch_alignment_similarity(monkeypatch, lambda *_a, **_k: 0.6)
-
-    adjusted, fixes = te._retime_adjacent_lines_to_whisper_window(
-        lines, segments, language="fra-Latn", min_similarity=0.3
-    )
+    with _alignment_similarity_hook(lambda *_a, **_k: 0.6):
+        adjusted, fixes = te._retime_adjacent_lines_to_whisper_window(
+            lines, segments, language="fra-Latn", min_similarity=0.3
+        )
 
     assert fixes == 1
     assert adjusted[0].start_time == pytest.approx(9.0)
@@ -303,11 +295,10 @@ def test_retime_adjacent_lines_to_segment_window(monkeypatch):
         te.TranscriptionSegment(start=11.0, end=13.0, text="express", words=[]),
     ]
 
-    _patch_alignment_similarity(monkeypatch, lambda *_a, **_k: 0.6)
-
-    adjusted, fixes = te._retime_adjacent_lines_to_segment_window(
-        lines, segments, language="fra-Latn", min_similarity=0.3
-    )
+    with _alignment_similarity_hook(lambda *_a, **_k: 0.6):
+        adjusted, fixes = te._retime_adjacent_lines_to_segment_window(
+            lines, segments, language="fra-Latn", min_similarity=0.3
+        )
 
     assert fixes == 1
     assert adjusted[0].start_time == pytest.approx(9.0)
@@ -324,18 +315,17 @@ def test_retime_adjacent_lines_to_whisper_window_uses_prior_segment(monkeypatch)
         te.TranscriptionSegment(start=18.0, end=22.0, text="trolley", words=[]),
     ]
 
-    _patch_alignment_similarity(monkeypatch, lambda *_a, **_k: 0.3)
-
-    adjusted, fixes = te._retime_adjacent_lines_to_whisper_window(
-        lines,
-        segments,
-        language="fra-Latn",
-        min_similarity=0.5,
-        min_similarity_late=0.25,
-        max_late=1.0,
-        max_late_short=6.0,
-        max_time_window=15.0,
-    )
+    with _alignment_similarity_hook(lambda *_a, **_k: 0.3):
+        adjusted, fixes = te._retime_adjacent_lines_to_whisper_window(
+            lines,
+            segments,
+            language="fra-Latn",
+            min_similarity=0.5,
+            min_similarity_late=0.25,
+            max_late=1.0,
+            max_late_short=6.0,
+            max_time_window=15.0,
+        )
 
     assert fixes == 1
     assert adjusted[0].start_time == pytest.approx(12.0)
@@ -404,7 +394,7 @@ def test_clamp_repeated_line_duration():
     assert adjusted[1].end_time - adjusted[1].start_time <= 1.5
 
 
-def test_pull_next_line_into_segment_window(monkeypatch):
+def test_pull_next_line_into_segment_window():
     lines = [
         Line(words=[Word(text="Aucun", start_time=9.0, end_time=10.0)]),
         Line(words=[Word(text="navire", start_time=20.0, end_time=20.4)]),
@@ -414,17 +404,16 @@ def test_pull_next_line_into_segment_window(monkeypatch):
         te.TranscriptionSegment(start=11.0, end=14.0, text="navire", words=[]),
     ]
 
-    _patch_alignment_similarity(monkeypatch, lambda *_a, **_k: 0.25)
-
-    adjusted, fixes = te._pull_next_line_into_segment_window(
-        lines, segments, language="fra-Latn", min_similarity=0.2
-    )
+    with _alignment_similarity_hook(lambda *_a, **_k: 0.25):
+        adjusted, fixes = te._pull_next_line_into_segment_window(
+            lines, segments, language="fra-Latn", min_similarity=0.2
+        )
 
     assert fixes == 1
     assert adjusted[1].start_time == pytest.approx(11.0)
 
 
-def test_pull_next_line_into_segment_window_uses_nearest_segment(monkeypatch):
+def test_pull_next_line_into_segment_window_uses_nearest_segment():
     lines = [
         Line(words=[Word(text="Aucun", start_time=9.0, end_time=10.0)]),
         Line(words=[Word(text="navire", start_time=20.0, end_time=20.4)]),
@@ -435,11 +424,10 @@ def test_pull_next_line_into_segment_window_uses_nearest_segment(monkeypatch):
         te.TranscriptionSegment(start=44.0, end=46.0, text="later", words=[]),
     ]
 
-    _patch_alignment_similarity(monkeypatch, lambda *_a, **_k: 0.0)
-
-    adjusted, fixes = te._pull_next_line_into_segment_window(
-        lines, segments, language="fra-Latn", min_similarity=0.2
-    )
+    with _alignment_similarity_hook(lambda *_a, **_k: 0.0):
+        adjusted, fixes = te._pull_next_line_into_segment_window(
+            lines, segments, language="fra-Latn", min_similarity=0.2
+        )
 
     assert fixes == 1
     assert adjusted[1].start_time == pytest.approx(11.0)
@@ -460,23 +448,22 @@ def test_pull_lines_near_segment_end_prefers_prior_segment():
     assert adjusted[0].start_time == pytest.approx(8.0)
 
 
-def test_pull_lines_near_segment_end_allows_short_line_with_similarity(monkeypatch):
+def test_pull_lines_near_segment_end_allows_short_line_with_similarity():
     lines = [Line(words=[Word(text="sinon toi", start_time=20.0, end_time=20.4)])]
     segments = [
         te.TranscriptionSegment(start=12.0, end=14.0, text="si non toi", words=[]),
     ]
 
-    _patch_alignment_similarity(monkeypatch, lambda *_a, **_k: 0.5)
-
-    adjusted, fixes = te._pull_lines_near_segment_end(
-        lines,
-        segments,
-        language="fra-Latn",
-        max_late=0.5,
-        max_late_short=6.0,
-        min_similarity=0.35,
-        max_time_window=15.0,
-    )
+    with _alignment_similarity_hook(lambda *_a, **_k: 0.5):
+        adjusted, fixes = te._pull_lines_near_segment_end(
+            lines,
+            segments,
+            language="fra-Latn",
+            max_late=0.5,
+            max_late_short=6.0,
+            min_similarity=0.35,
+            max_time_window=15.0,
+        )
 
     assert fixes == 1
     assert adjusted[0].start_time == pytest.approx(12.0)

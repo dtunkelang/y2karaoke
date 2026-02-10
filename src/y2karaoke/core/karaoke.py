@@ -2,8 +2,9 @@
 
 from __future__ import annotations
 
+from contextlib import contextmanager
 from pathlib import Path
-from typing import Dict, List, Optional, Any, Tuple, TYPE_CHECKING
+from typing import Dict, Iterator, List, Optional, Any, Tuple, TYPE_CHECKING
 from time import time
 import musicbrainzngs
 
@@ -53,6 +54,43 @@ class KaraokeGenerator:
         self.audio_processor = AudioProcessor()
         self._temp_files: List[str] = []
         self._original_prompt: Optional[str] = None
+
+    @contextmanager
+    def use_test_hooks(
+        self,
+        *,
+        download_audio_fn=None,
+        download_video_fn=None,
+        get_lyrics_fn=None,
+        scale_lyrics_timing_fn=None,
+        shorten_breaks_fn=None,
+        create_background_segments_fn=None,
+        render_video_fn=None,
+    ) -> Iterator[None]:
+        """Temporarily override internal collaborators for tests."""
+        overrides = {
+            "_download_audio": download_audio_fn,
+            "_download_video": download_video_fn,
+            "_get_lyrics": get_lyrics_fn,
+            "_scale_lyrics_timing": scale_lyrics_timing_fn,
+            "_shorten_breaks": shorten_breaks_fn,
+            "_create_background_segments": create_background_segments_fn,
+            "_render_video": render_video_fn,
+        }
+        previous = {
+            name: getattr(self, name)
+            for name, value in overrides.items()
+            if value is not None
+        }
+        for name, value in overrides.items():
+            if value is not None:
+                setattr(self, name, value)
+
+        try:
+            yield
+        finally:
+            for name, value in previous.items():
+                setattr(self, name, value)
 
     # ------------------------
     # Main generate method
