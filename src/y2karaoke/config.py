@@ -107,11 +107,6 @@ MAX_CACHE_SIZE_GB = 10
 CACHE_CLEANUP_THRESHOLD = 0.8
 
 
-def get_credentials_dir() -> Path:
-    """Get credentials directory."""
-    return get_cache_dir()
-
-
 def parse_resolution(resolution_str: str) -> Tuple[int, int]:
     """
     Parse resolution string into (width, height) tuple.

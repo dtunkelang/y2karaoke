@@ -1,9 +1,7 @@
 """Utility helpers used by KaraokeGenerator."""
 
-from pathlib import Path
 from typing import Any, Dict, List, Tuple
 
-from ..utils.validation import sanitize_filename
 from .models import Line, Word
 
 
@@ -65,9 +63,3 @@ def summarize_quality(
         quality_level = "low"
 
     return quality_score, quality_issues, quality_level, quality_emoji
-
-
-def build_output_path(title: str) -> Path:
-    """Build default output path for rendered karaoke video."""
-    safe_title = sanitize_filename(title)
-    return Path.cwd() / f"{safe_title}_karaoke.mp4"

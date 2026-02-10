@@ -227,11 +227,6 @@ def _bind_default_state(state: SyncState) -> None:
     _lyriq_cache = state.lyriq_cache
 
 
-def set_default_sync_state(state: SyncState) -> None:
-    """Set the process-wide default sync state."""
-    _bind_default_state(state)
-
-
 @contextmanager
 def use_sync_state(state: SyncState):
     """Temporarily use a sync state as the module default."""
