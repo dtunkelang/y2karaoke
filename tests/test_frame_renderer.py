@@ -4,7 +4,7 @@ import pytest
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 from unittest.mock import Mock, patch, MagicMock
-from y2karaoke.core.frame_renderer import (
+from y2karaoke.core.components.render.frame_renderer import (
     render_frame,
     _draw_cue_indicator,
     _check_intro_progress,
@@ -234,8 +234,8 @@ class TestRenderFrame:
         for param in required_params:
             assert param in params
 
-    @patch("y2karaoke.core.frame_renderer._draw_line_text")
-    @patch("y2karaoke.core.frame_renderer._draw_highlight_sweep")
+    @patch("y2karaoke.core.components.render.frame_renderer._draw_line_text")
+    @patch("y2karaoke.core.components.render.frame_renderer._draw_highlight_sweep")
     def test_basic_frame_rendering(self, mock_highlight, mock_draw_text):
         """Test basic frame rendering with mocked drawing functions."""
         lines = [Line(words=[Word(text="test", start_time=1.0, end_time=2.0)])]
@@ -267,20 +267,23 @@ class TestFrameRendererIntegration:
 
     def test_module_imports(self):
         """Test that all required functions can be imported."""
-        from y2karaoke.core.frame_renderer import render_frame
+        from y2karaoke.core.components.render.frame_renderer import render_frame
 
         assert render_frame is not None
 
     def test_config_imports(self):
         """Test that configuration constants are properly imported."""
-        from y2karaoke.core.frame_renderer import VIDEO_WIDTH, VIDEO_HEIGHT
+        from y2karaoke.core.components.render.frame_renderer import (
+            VIDEO_WIDTH,
+            VIDEO_HEIGHT,
+        )
 
         assert isinstance(VIDEO_WIDTH, int)
         assert isinstance(VIDEO_HEIGHT, int)
 
     def test_models_integration(self):
         """Test integration with core models."""
-        from y2karaoke.core.frame_renderer import Line
+        from y2karaoke.core.components.render.frame_renderer import Line
 
         assert Line is not None
 
@@ -296,9 +299,9 @@ class TestFrameRendererIntegration:
 class TestFrameRendererErrorHandling:
     """Test error handling in frame_renderer module."""
 
-    @patch("y2karaoke.core.frame_renderer.draw_logo_screen")
-    @patch("y2karaoke.core.frame_renderer._draw_line_text")
-    @patch("y2karaoke.core.frame_renderer._draw_highlight_sweep")
+    @patch("y2karaoke.core.components.render.frame_renderer.draw_logo_screen")
+    @patch("y2karaoke.core.components.render.frame_renderer._draw_line_text")
+    @patch("y2karaoke.core.components.render.frame_renderer._draw_highlight_sweep")
     def test_invalid_time_handling(self, mock_highlight, mock_draw_text, mock_logo):
         """Test handling of invalid time values."""
         lines = [Line(words=[Word(text="test", start_time=1.0, end_time=2.0)])]

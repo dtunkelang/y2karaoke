@@ -26,7 +26,8 @@ def test_refine_timing_with_audio_adjusts_on_duration_mismatch(monkeypatch):
         return lines_in
 
     monkeypatch.setattr(
-        "y2karaoke.core.alignment.adjust_timing_for_duration_mismatch", fake_adjust
+        "y2karaoke.core.components.alignment.alignment.adjust_timing_for_duration_mismatch",
+        fake_adjust,
     )
 
     result = lh._refine_timing_with_audio(
@@ -53,7 +54,7 @@ def test_refine_timing_with_audio_no_adjust_when_close(monkeypatch):
     monkeypatch.setattr("y2karaoke.core.sync.get_lrc_duration", lambda *_: 100)
 
     monkeypatch.setattr(
-        "y2karaoke.core.alignment.adjust_timing_for_duration_mismatch",
+        "y2karaoke.core.components.alignment.alignment.adjust_timing_for_duration_mismatch",
         lambda *a, **k: (_ for _ in ()).throw(AssertionError("should not adjust")),
     )
 
@@ -104,7 +105,7 @@ def test_refine_timing_with_quality_sets_method(monkeypatch):
     )
     monkeypatch.setattr("y2karaoke.core.sync.get_lrc_duration", lambda *_: 120)
     monkeypatch.setattr(
-        "y2karaoke.core.alignment.adjust_timing_for_duration_mismatch",
+        "y2karaoke.core.components.alignment.alignment.adjust_timing_for_duration_mismatch",
         lambda *a, **k: lines,
     )
 
@@ -218,7 +219,10 @@ def test_get_lyrics_simple_whisper_map_lrc(monkeypatch):
     )
     monkeypatch.setattr(pu, "_whisper_lang_to_epitran", lambda *_a, **_k: "fra-Latn")
 
-    monkeypatch.setattr("y2karaoke.core.alignment.detect_song_start", lambda *_: 0.0)
+    monkeypatch.setattr(
+        "y2karaoke.core.components.alignment.alignment.detect_song_start",
+        lambda *_: 0.0,
+    )
     lines, _ = lw.get_lyrics_simple(
         title="Song",
         artist="Artist",

@@ -3,7 +3,7 @@
 import pytest
 from pathlib import Path
 from unittest.mock import Mock, patch, MagicMock
-from y2karaoke.core.audio_utils import (
+from y2karaoke.core.components.audio.audio_utils import (
     trim_audio_if_needed,
     apply_audio_effects,
     separate_vocals,
@@ -44,7 +44,7 @@ class TestTrimAudioIfNeeded:
         result = trim_audio_if_needed("/audio.wav", -1.0, "video123", mock_cache)
         assert result == "/audio.wav"
 
-    @patch("y2karaoke.core.audio_utils.AudioSegment.from_wav")
+    @patch("y2karaoke.core.components.audio.audio_utils.AudioSegment.from_wav")
     def test_trim_audio_with_positive_start_time(self, mock_from_wav):
         """Test trimming audio with positive start time."""
         mock_cache = Mock()
@@ -62,7 +62,7 @@ class TestTrimAudioIfNeeded:
         assert result == "/trimmed_audio.wav"
         mock_from_wav.assert_called_once_with("/audio.wav")
 
-    @patch("y2karaoke.core.audio_utils.AudioSegment.from_wav")
+    @patch("y2karaoke.core.components.audio.audio_utils.AudioSegment.from_wav")
     def test_trim_audio_start_beyond_length_returns_original(self, mock_from_wav):
         """Test that start time beyond audio length returns original."""
         mock_cache = Mock()
@@ -88,7 +88,7 @@ class TestTrimAudioIfNeeded:
 
         assert result == "/cached_trimmed.wav"
 
-    @patch("y2karaoke.core.audio_utils.AudioSegment.from_wav")
+    @patch("y2karaoke.core.components.audio.audio_utils.AudioSegment.from_wav")
     def test_force_retrim_ignores_cache(self, mock_from_wav):
         """Test that force=True ignores cached result."""
         mock_cache = Mock()
@@ -323,7 +323,7 @@ class TestAudioUtilsIntegration:
 
     def test_module_imports(self):
         """Test that all required functions can be imported."""
-        from y2karaoke.core.audio_utils import (
+        from y2karaoke.core.components.audio.audio_utils import (
             trim_audio_if_needed,
             apply_audio_effects,
             separate_vocals,
@@ -335,14 +335,14 @@ class TestAudioUtilsIntegration:
 
     def test_pydub_integration(self):
         """Test integration with pydub AudioSegment."""
-        from y2karaoke.core.audio_utils import AudioSegment
+        from y2karaoke.core.components.audio.audio_utils import AudioSegment
 
         assert AudioSegment is not None
 
     def test_logging_integration(self):
         """Test that logging is properly integrated."""
         # Test that logger is available
-        from y2karaoke.core.audio_utils import logger
+        from y2karaoke.core.components.audio.audio_utils import logger
 
         assert logger is not None
 
@@ -372,7 +372,9 @@ class TestAudioUtilsErrorHandling:
         mock_cache.get_file_path.return_value = "/trimmed.wav"
         mock_cache.file_exists.return_value = False
 
-        with patch("y2karaoke.core.audio_utils.AudioSegment.from_wav") as mock_from_wav:
+        with patch(
+            "y2karaoke.core.components.audio.audio_utils.AudioSegment.from_wav"
+        ) as mock_from_wav:
             mock_from_wav.side_effect = Exception("File not found")
 
             with pytest.raises(Exception):

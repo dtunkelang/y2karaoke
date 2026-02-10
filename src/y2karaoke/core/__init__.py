@@ -1,12 +1,16 @@
 """Core functionality modules."""
 
-from .downloader import YouTubeDownloader, download_audio, download_video
-from .separator import AudioSeparator, separate_vocals
-from .audio_effects import AudioProcessor, process_audio
+from .components.audio.downloader import (
+    YouTubeDownloader,
+    download_audio,
+    download_video,
+)
+from .components.audio.separator import AudioSeparator, separate_vocals
+from .components.audio.audio_effects import AudioProcessor, process_audio
 from .models import SingerID, Word, Line, SongMetadata
 from .lyrics import LyricsProcessor, get_lyrics
-from .video_writer import render_karaoke_video
-from .backgrounds import (
+from .components.render.video_writer import render_karaoke_video
+from .components.render.backgrounds import (
     BackgroundProcessor,
     BackgroundSegment,
     create_background_segments,

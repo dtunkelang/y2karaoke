@@ -8,7 +8,10 @@ from pathlib import Path
 src_path = Path(__file__).parent / "src"
 sys.path.insert(0, str(src_path))
 
-from y2karaoke.core.downloader import YouTubeDownloader, extract_video_id
+from y2karaoke.core.components.audio.downloader import (
+    YouTubeDownloader,
+    extract_video_id,
+)
 from y2karaoke.utils.cache import CacheManager
 from y2karaoke.utils.logging import setup_logging
 

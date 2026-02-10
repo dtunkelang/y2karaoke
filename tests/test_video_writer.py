@@ -3,7 +3,10 @@
 import pytest
 from pathlib import Path
 from unittest.mock import Mock, patch, MagicMock
-from y2karaoke.core.video_writer import render_karaoke_video, get_background_at_time
+from y2karaoke.core.components.render.video_writer import (
+    render_karaoke_video,
+    get_background_at_time,
+)
 from y2karaoke.core.models import Line, Word, SongMetadata
 
 
@@ -26,8 +29,8 @@ class TestRenderKaraokeVideo:
         for param in required_params:
             assert param in params
 
-    @patch("y2karaoke.core.video_writer.AudioFileClip")
-    @patch("y2karaoke.core.video_writer.VideoClip")
+    @patch("y2karaoke.core.components.render.video_writer.AudioFileClip")
+    @patch("y2karaoke.core.components.render.video_writer.VideoClip")
     def test_basic_video_creation(self, mock_video_clip, mock_audio_clip):
         """Test basic video creation workflow."""
         # Mock audio clip
@@ -51,8 +54,8 @@ class TestRenderKaraokeVideo:
         mock_audio_clip.assert_called_once_with("/test/audio.wav")
         mock_video_clip.assert_called_once()
 
-    @patch("y2karaoke.core.video_writer.AudioFileClip")
-    @patch("y2karaoke.core.video_writer.VideoClip")
+    @patch("y2karaoke.core.components.render.video_writer.AudioFileClip")
+    @patch("y2karaoke.core.components.render.video_writer.VideoClip")
     def test_with_timing_offset(self, mock_video_clip, mock_audio_clip):
         """Test video creation with timing offset."""
         mock_audio = Mock()
@@ -75,8 +78,8 @@ class TestRenderKaraokeVideo:
 
         mock_video_clip.assert_called_once()
 
-    @patch("y2karaoke.core.video_writer.AudioFileClip")
-    @patch("y2karaoke.core.video_writer.VideoClip")
+    @patch("y2karaoke.core.components.render.video_writer.AudioFileClip")
+    @patch("y2karaoke.core.components.render.video_writer.VideoClip")
     def test_with_metadata(self, mock_video_clip, mock_audio_clip):
         """Test video creation with song metadata."""
         mock_audio = Mock()
@@ -103,8 +106,8 @@ class TestRenderKaraokeVideo:
 
         mock_video_clip.assert_called_once()
 
-    @patch("y2karaoke.core.video_writer.AudioFileClip")
-    @patch("y2karaoke.core.video_writer.VideoClip")
+    @patch("y2karaoke.core.components.render.video_writer.AudioFileClip")
+    @patch("y2karaoke.core.components.render.video_writer.VideoClip")
     def test_with_background_segments(self, mock_video_clip, mock_audio_clip):
         """Test video creation with background segments."""
         mock_audio = Mock()
@@ -131,9 +134,9 @@ class TestRenderKaraokeVideo:
         mock_video_clip.assert_called_once()
 
     @patch("builtins.print")
-    @patch("y2karaoke.core.video_writer.render_frame")
-    @patch("y2karaoke.core.video_writer.AudioFileClip")
-    @patch("y2karaoke.core.video_writer.VideoClip")
+    @patch("y2karaoke.core.components.render.video_writer.render_frame")
+    @patch("y2karaoke.core.components.render.video_writer.AudioFileClip")
+    @patch("y2karaoke.core.components.render.video_writer.VideoClip")
     def test_make_frame_progress_and_background(
         self, mock_video_clip, mock_audio_clip, mock_render_frame, mock_print
     ):
@@ -257,7 +260,7 @@ class TestVideoWriterIntegration:
 
     def test_module_imports(self):
         """Test that all required functions can be imported."""
-        from y2karaoke.core.video_writer import (
+        from y2karaoke.core.components.render.video_writer import (
             render_karaoke_video,
             get_background_at_time,
         )
@@ -265,29 +268,35 @@ class TestVideoWriterIntegration:
         assert render_karaoke_video is not None
         assert get_background_at_time is not None
 
-    @patch("y2karaoke.core.video_writer.render_frame")
+    @patch("y2karaoke.core.components.render.video_writer.render_frame")
     def test_render_frame_integration(self, mock_render_frame):
         """Test that video writer integrates with frame renderer."""
         mock_render_frame.return_value = Mock()
 
         # This tests that render_frame is available for import
-        from y2karaoke.core.video_writer import render_frame
+        from y2karaoke.core.components.render.video_writer import render_frame
 
         assert render_frame is not None
 
-    @patch("y2karaoke.core.video_writer.create_gradient_background")
+    @patch("y2karaoke.core.components.render.video_writer.create_gradient_background")
     def test_background_integration(self, mock_create_gradient):
         """Test that video writer integrates with background creation."""
         mock_create_gradient.return_value = Mock()
 
         # This tests that create_gradient_background is available for import
-        from y2karaoke.core.video_writer import create_gradient_background
+        from y2karaoke.core.components.render.video_writer import (
+            create_gradient_background,
+        )
 
         assert create_gradient_background is not None
 
     def test_config_imports(self):
         """Test that video configuration is properly imported."""
-        from y2karaoke.core.video_writer import VIDEO_WIDTH, VIDEO_HEIGHT, FPS
+        from y2karaoke.core.components.render.video_writer import (
+            VIDEO_WIDTH,
+            VIDEO_HEIGHT,
+            FPS,
+        )
 
         assert isinstance(VIDEO_WIDTH, int)
         assert isinstance(VIDEO_HEIGHT, int)
@@ -295,13 +304,13 @@ class TestVideoWriterIntegration:
 
     def test_models_integration(self):
         """Test integration with core models."""
-        from y2karaoke.core.video_writer import Line, SongMetadata
+        from y2karaoke.core.components.render.video_writer import Line, SongMetadata
 
         assert Line is not None
         assert SongMetadata is not None
 
-    @patch("y2karaoke.core.video_writer.AudioFileClip")
-    @patch("y2karaoke.core.video_writer.VideoClip")
+    @patch("y2karaoke.core.components.render.video_writer.AudioFileClip")
+    @patch("y2karaoke.core.components.render.video_writer.VideoClip")
     def test_moviepy_integration(self, mock_video_clip, mock_audio_clip):
         """Test integration with MoviePy library."""
         # Test that MoviePy classes are properly imported and used
@@ -328,7 +337,7 @@ class TestVideoWriterIntegration:
 class TestVideoWriterErrorHandling:
     """Test error handling in video_writer module."""
 
-    @patch("y2karaoke.core.video_writer.AudioFileClip")
+    @patch("y2karaoke.core.components.render.video_writer.AudioFileClip")
     def test_handles_audio_file_error(self, mock_audio_clip):
         """Test handling of audio file loading errors."""
         mock_audio_clip.side_effect = Exception("Audio file not found")
@@ -365,8 +374,12 @@ class TestVideoWriterErrorHandling:
         # Test that function can be called with empty lines
         # (may raise exception or handle gracefully depending on implementation)
         try:
-            with patch("y2karaoke.core.video_writer.AudioFileClip") as mock_audio:
-                with patch("y2karaoke.core.video_writer.VideoClip") as mock_video:
+            with patch(
+                "y2karaoke.core.components.render.video_writer.AudioFileClip"
+            ) as mock_audio:
+                with patch(
+                    "y2karaoke.core.components.render.video_writer.VideoClip"
+                ) as mock_video:
                     mock_audio_instance = Mock()
                     mock_audio_instance.duration = 1.0
                     mock_audio.return_value = mock_audio_instance

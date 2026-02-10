@@ -20,12 +20,12 @@ def test_identify_subsystem_exposes_track_identifier():
 
 
 def test_audio_subsystem_exposes_downloader():
-    from y2karaoke.core.downloader import YouTubeDownloader
+    from y2karaoke.core.components.audio.downloader import YouTubeDownloader
 
     assert audio.YouTubeDownloader is YouTubeDownloader
 
 
 def test_render_subsystem_exposes_video_renderer():
-    from y2karaoke.core.video_writer import render_karaoke_video
+    from y2karaoke.core.components.render.video_writer import render_karaoke_video
 
     assert render.render_karaoke_video is render_karaoke_video

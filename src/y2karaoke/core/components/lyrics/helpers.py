@@ -142,7 +142,7 @@ def _detect_and_apply_offset(
 
     Returns updated line_timings and the offset that was applied.
     """
-    from ...alignment import detect_song_start
+    from ...components.alignment.alignment import detect_song_start
 
     detected_vocal_start = detect_song_start(vocals_path)
     first_lrc_time = line_timings[0][0]
@@ -223,7 +223,7 @@ def _refine_timing_with_audio(
 ) -> List[Line]:
     """Refine word timing using audio onset detection and handle duration mismatch."""
     from ...refine import refine_word_timing
-    from ...alignment import (
+    from ...components.alignment.alignment import (
         _apply_adjustments_to_lines,
         adjust_timing_for_duration_mismatch,
     )
@@ -436,12 +436,7 @@ def _apply_whisper_alignment(
 
 def _romanize_lines(lines: List[Line]) -> None:
     """Apply romanization to non-Latin characters in lines."""
-    # Resolve through compatibility module so monkeypatches on
-    # y2karaoke.core.lyrics_helpers.romanize_line remain effective.
-    from ... import lyrics_helpers as lyrics_helpers_compat
-
-    romanize_line_fn = getattr(lyrics_helpers_compat, "romanize_line", romanize_line)
     for line in lines:
         for word in line.words:
             if any(ord(c) > 127 for c in word.text):
-                word.text = romanize_line_fn(word.text)
+                word.text = romanize_line(word.text)

@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 from unittest.mock import patch, MagicMock
 
-from y2karaoke.core.alignment import (
+from y2karaoke.core.components.alignment.alignment import (
     detect_audio_silence_regions,
     detect_lrc_gaps,
     calculate_gap_adjustments,
@@ -236,13 +236,15 @@ class TestAdjustTimingForDurationMismatch:
     def test_function_exists(self):
         # Just test that the function exists and can be called
         # The actual function requires line_timings and vocals_path parameters
-        from y2karaoke.core.alignment import adjust_timing_for_duration_mismatch
+        from y2karaoke.core.components.alignment.alignment import (
+            adjust_timing_for_duration_mismatch,
+        )
 
         assert callable(adjust_timing_for_duration_mismatch)
 
-    @patch("y2karaoke.core.alignment.detect_lrc_gaps")
-    @patch("y2karaoke.core.alignment.detect_audio_silence_regions")
-    @patch("y2karaoke.core.alignment._durations_within_tolerance")
+    @patch("y2karaoke.core.components.alignment.alignment.detect_lrc_gaps")
+    @patch("y2karaoke.core.components.alignment.alignment.detect_audio_silence_regions")
+    @patch("y2karaoke.core.components.alignment.alignment._durations_within_tolerance")
     def test_early_exit_when_durations_match(
         self, mock_tolerance, mock_silence, mock_gaps
     ):
@@ -265,18 +267,19 @@ def test_adjust_timing_for_duration_mismatch_applies_adjustments(monkeypatch):
     line_timings = [(1.0, "hello"), (15.0, "world")]
 
     monkeypatch.setattr(
-        "y2karaoke.core.alignment.detect_lrc_gaps", lambda *_a, **_k: [(1.0, 15.0)]
+        "y2karaoke.core.components.alignment.alignment.detect_lrc_gaps",
+        lambda *_a, **_k: [(1.0, 15.0)],
     )
     monkeypatch.setattr(
-        "y2karaoke.core.alignment.detect_audio_silence_regions",
+        "y2karaoke.core.components.alignment.alignment.detect_audio_silence_regions",
         lambda *_a, **_k: [(2.0, 20.0)],
     )
     monkeypatch.setattr(
-        "y2karaoke.core.alignment._calculate_adjustments",
+        "y2karaoke.core.components.alignment.alignment._calculate_adjustments",
         lambda *_a, **_k: [(15.0, 2.0)],
     )
     monkeypatch.setattr(
-        "y2karaoke.core.alignment._apply_adjustments_to_lines",
+        "y2karaoke.core.components.alignment.alignment._apply_adjustments_to_lines",
         lambda *_a, **_k: ["adjusted"],
     )
 
@@ -292,7 +295,7 @@ def test_adjust_timing_for_duration_mismatch_applies_adjustments(monkeypatch):
 
 
 class TestDetectSongStart:
-    @patch("y2karaoke.core.alignment._detect_song_start_rms")
+    @patch("y2karaoke.core.components.alignment.alignment._detect_song_start_rms")
     @patch("librosa.load")
     @patch("librosa.onset.onset_detect")
     def test_detects_song_start_with_onsets(self, mock_onset, mock_load, mock_rms):
@@ -322,7 +325,7 @@ class TestDetectSongStart:
 
         assert start_time >= 0.0
 
-    @patch("y2karaoke.core.alignment._bandpass_filter")
+    @patch("y2karaoke.core.components.alignment.alignment._bandpass_filter")
     @patch("librosa.onset.onset_detect")
     @patch("librosa.onset.onset_strength")
     @patch("librosa.feature.rms")
@@ -348,7 +351,7 @@ class TestDetectSongStart:
 
         assert start_time == 0.1
 
-    @patch("y2karaoke.core.alignment._bandpass_filter")
+    @patch("y2karaoke.core.components.alignment.alignment._bandpass_filter")
     @patch("librosa.onset.onset_detect")
     @patch("librosa.onset.onset_strength")
     @patch("librosa.feature.rms")

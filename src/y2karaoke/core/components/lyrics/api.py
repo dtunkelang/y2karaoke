@@ -156,12 +156,7 @@ class LyricsProcessor:
             )
             return [placeholder_line], placeholder_metadata
 
-        # Resolve through the compatibility module so monkeypatches on
-        # y2karaoke.core.lyrics.get_lyrics_simple remain effective.
-        from ... import lyrics as lyrics_compat
-
-        get_lyrics_simple_fn = getattr(lyrics_compat, "get_lyrics_simple")
-        lines, metadata = get_lyrics_simple_fn(
+        lines, metadata = get_lyrics_simple(
             title=title,
             artist=artist,
             vocals_path=kwargs.get("vocals_path"),
@@ -189,12 +184,7 @@ def get_lyrics(
     Returns:
         Tuple of (lines, metadata)
     """
-    # Resolve through the compatibility module so monkeypatches on
-    # y2karaoke.core.lyrics.get_lyrics_simple remain effective.
-    from ... import lyrics as lyrics_compat
-
-    get_lyrics_simple_fn = getattr(lyrics_compat, "get_lyrics_simple")
-    return get_lyrics_simple_fn(
+    return get_lyrics_simple(
         title=title,
         artist=artist,
         vocals_path=vocals_path,

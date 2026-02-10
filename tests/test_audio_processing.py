@@ -6,8 +6,8 @@ import numpy as np
 import tempfile
 import os
 
-from y2karaoke.core.audio_effects import AudioProcessor, process_audio
-from y2karaoke.core.alignment import (
+from y2karaoke.core.components.audio.audio_effects import AudioProcessor, process_audio
+from y2karaoke.core.components.alignment.alignment import (
     detect_lrc_gaps,
     calculate_gap_adjustments,
     _durations_within_tolerance,
@@ -72,9 +72,9 @@ class TestAudioProcessor:
         finally:
             os.unlink(temp_path)
 
-    @patch("y2karaoke.core.audio_effects.sf.write")
-    @patch("y2karaoke.core.audio_effects.librosa.effects.pitch_shift")
-    @patch("y2karaoke.core.audio_effects.librosa.load")
+    @patch("y2karaoke.core.components.audio.audio_effects.sf.write")
+    @patch("y2karaoke.core.components.audio.audio_effects.librosa.effects.pitch_shift")
+    @patch("y2karaoke.core.components.audio.audio_effects.librosa.load")
     def test_process_audio_pitch_shift(self, mock_load, mock_pitch_shift, mock_write):
         mock_load.return_value = (np.zeros(44100), 44100)
         mock_pitch_shift.return_value = np.zeros(44100)
@@ -91,9 +91,9 @@ class TestAudioProcessor:
         finally:
             os.unlink(temp_path)
 
-    @patch("y2karaoke.core.audio_effects.sf.write")
-    @patch("y2karaoke.core.audio_effects.librosa.effects.time_stretch")
-    @patch("y2karaoke.core.audio_effects.librosa.load")
+    @patch("y2karaoke.core.components.audio.audio_effects.sf.write")
+    @patch("y2karaoke.core.components.audio.audio_effects.librosa.effects.time_stretch")
+    @patch("y2karaoke.core.components.audio.audio_effects.librosa.load")
     def test_process_audio_tempo_change(self, mock_load, mock_time_stretch, mock_write):
         mock_load.return_value = (np.zeros(44100), 44100)
         mock_time_stretch.return_value = np.zeros(44100)
@@ -132,7 +132,7 @@ class TestAudioProcessor:
 
 
 class TestAudioEffectsConvenienceFunctions:
-    @patch("y2karaoke.core.audio_effects.AudioProcessor.process_audio")
+    @patch("y2karaoke.core.components.audio.audio_effects.AudioProcessor.process_audio")
     def test_process_audio_function(self, mock_process):
         mock_process.return_value = "/output.wav"
         result = process_audio("/input.wav", "/output.wav", semitones=2)

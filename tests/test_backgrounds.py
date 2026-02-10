@@ -5,7 +5,7 @@ import numpy as np
 from dataclasses import dataclass
 from unittest.mock import patch, MagicMock
 
-from y2karaoke.core.backgrounds import (
+from y2karaoke.core.components.render.backgrounds import (
     BackgroundSegment,
     BackgroundProcessor,
     create_background_segments,

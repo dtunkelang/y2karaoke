@@ -167,7 +167,10 @@ def test_get_lyrics_simple_falls_back_to_genius(monkeypatch):
 
 
 def test_detect_offset_with_issues_skips_huge_delta(monkeypatch):
-    monkeypatch.setattr("y2karaoke.core.alignment.detect_song_start", lambda _: 100.0)
+    monkeypatch.setattr(
+        "y2karaoke.core.components.alignment.alignment.detect_song_start",
+        lambda _: 100.0,
+    )
 
     issues = []
     line_timings = [(1.0, "Line")]

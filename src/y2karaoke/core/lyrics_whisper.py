@@ -56,7 +56,7 @@ def _detect_offset_with_issues(
 
     Returns (updated_line_timings, offset_applied).
     """
-    from .alignment import detect_song_start
+    from .components.alignment.alignment import detect_song_start
 
     detected_vocal_start = detect_song_start(vocals_path)
     first_lrc_time = line_timings[0][0]
@@ -96,7 +96,7 @@ def _refine_timing_with_quality(
 ) -> Tuple[List[Line], str]:
     """Refine timing and track issues. Returns (lines, alignment_method)."""
     from .refine import refine_word_timing
-    from .alignment import adjust_timing_for_duration_mismatch
+    from .components.alignment.alignment import adjust_timing_for_duration_mismatch
     from .sync import get_lrc_duration
 
     lines = refine_word_timing(lines, vocals_path)

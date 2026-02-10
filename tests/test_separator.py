@@ -7,7 +7,11 @@ import tempfile
 import pytest
 from unittest.mock import patch, MagicMock
 
-from y2karaoke.core.separator import AudioSeparator, separate_vocals, mix_stems
+from y2karaoke.core.components.audio.separator import (
+    AudioSeparator,
+    separate_vocals,
+    mix_stems,
+)
 
 
 class TestAudioSeparator:
@@ -39,7 +43,9 @@ class TestAudioSeparator:
 
         assert result is None
 
-    @patch("y2karaoke.core.separator.AudioSeparator._find_existing_file")
+    @patch(
+        "y2karaoke.core.components.audio.separator.AudioSeparator._find_existing_file"
+    )
     def test_separate_vocals_uses_existing_files(self, mock_find):
         mock_find.side_effect = ["/test/vocals.wav", "/test/instrumental.wav"]
 
@@ -55,7 +61,7 @@ class TestAudioSeparator:
         with pytest.raises(Exception, match="already-separated"):
             separator.separate_vocals("/test/audio_vocals.wav", "/test")
 
-    @patch("y2karaoke.core.separator.separate_vocals")
+    @patch("y2karaoke.core.components.audio.separator.separate_vocals")
     def test_separate_vocals_wraps_errors(self, mock_separate):
         mock_separate.side_effect = Exception("boom")
         separator = AudioSeparator()
@@ -116,7 +122,9 @@ class TestSeparateVocalsFunction:
             monkeypatch.setitem(
                 __import__("sys").modules, "audio_separator.separator", fake_module
             )
-            monkeypatch.setattr("y2karaoke.core.separator.mix_stems", fake_mix)
+            monkeypatch.setattr(
+                "y2karaoke.core.components.audio.separator.mix_stems", fake_mix
+            )
 
             result = separate_vocals(
                 str(out_dir / "track.wav"), output_dir=str(out_dir)
@@ -205,7 +213,11 @@ class TestMixStems:
 class TestModuleIntegration:
     def test_module_imports(self):
         # Test that all required classes and functions can be imported
-        from y2karaoke.core.separator import AudioSeparator, separate_vocals, mix_stems
+        from y2karaoke.core.components.audio.separator import (
+            AudioSeparator,
+            separate_vocals,
+            mix_stems,
+        )
 
         assert AudioSeparator is not None
         assert separate_vocals is not None
@@ -225,7 +237,9 @@ class TestModuleIntegration:
         assert callable(separator._find_existing_file)
         assert callable(separator._setup_torch)
 
-    @patch("y2karaoke.core.separator.AudioSeparator._find_existing_file")
+    @patch(
+        "y2karaoke.core.components.audio.separator.AudioSeparator._find_existing_file"
+    )
     def test_separate_vocals_return_format(self, mock_find):
         mock_find.side_effect = ["/vocals.wav", "/instrumental.wav"]
 

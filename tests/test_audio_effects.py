@@ -3,7 +3,7 @@
 import pytest
 from pathlib import Path
 from unittest.mock import Mock, patch, MagicMock
-from y2karaoke.core.audio_effects import (
+from y2karaoke.core.components.audio.audio_effects import (
     AudioProcessor,
     process_audio,
     shift_key,
@@ -35,7 +35,9 @@ class TestAudioProcessor:
 
     def test_process_audio_validates_key_shift(self):
         """Test that process_audio validates key shift parameter."""
-        with patch("y2karaoke.core.audio_effects.validate_key_shift") as mock_validate:
+        with patch(
+            "y2karaoke.core.components.audio.audio_effects.validate_key_shift"
+        ) as mock_validate:
             mock_validate.side_effect = ValidationError("Invalid key shift")
 
             processor = AudioProcessor()
@@ -45,7 +47,9 @@ class TestAudioProcessor:
 
     def test_process_audio_validates_tempo(self):
         """Test that process_audio validates tempo parameter."""
-        with patch("y2karaoke.core.audio_effects.validate_tempo") as mock_validate:
+        with patch(
+            "y2karaoke.core.components.audio.audio_effects.validate_tempo"
+        ) as mock_validate:
             mock_validate.side_effect = ValidationError("Invalid tempo")
 
             processor = AudioProcessor()
@@ -56,7 +60,7 @@ class TestAudioProcessor:
                 )
 
     @patch("shutil.copy")
-    @patch("y2karaoke.core.audio_effects.Path")
+    @patch("y2karaoke.core.components.audio.audio_effects.Path")
     def test_process_audio_no_effects_copies_file(self, mock_path, mock_copy):
         """Test process_audio with no effects just copies the file."""
         mock_path_instance = Mock()
@@ -69,10 +73,10 @@ class TestAudioProcessor:
         mock_copy.assert_called_once()
         assert isinstance(result, str)
 
-    @patch("y2karaoke.core.audio_effects.librosa.effects.pitch_shift")
-    @patch("y2karaoke.core.audio_effects.sf.write")
-    @patch("y2karaoke.core.audio_effects.librosa.load")
-    @patch("y2karaoke.core.audio_effects.Path")
+    @patch("y2karaoke.core.components.audio.audio_effects.librosa.effects.pitch_shift")
+    @patch("y2karaoke.core.components.audio.audio_effects.sf.write")
+    @patch("y2karaoke.core.components.audio.audio_effects.librosa.load")
+    @patch("y2karaoke.core.components.audio.audio_effects.Path")
     def test_process_audio_pitch_shift(
         self, mock_path, mock_load, mock_write, mock_pitch_shift
     ):
@@ -89,10 +93,10 @@ class TestAudioProcessor:
         mock_pitch_shift.assert_called_once()
         assert isinstance(result, str)
 
-    @patch("y2karaoke.core.audio_effects.librosa.effects.time_stretch")
-    @patch("y2karaoke.core.audio_effects.sf.write")
-    @patch("y2karaoke.core.audio_effects.librosa.load")
-    @patch("y2karaoke.core.audio_effects.Path")
+    @patch("y2karaoke.core.components.audio.audio_effects.librosa.effects.time_stretch")
+    @patch("y2karaoke.core.components.audio.audio_effects.sf.write")
+    @patch("y2karaoke.core.components.audio.audio_effects.librosa.load")
+    @patch("y2karaoke.core.components.audio.audio_effects.Path")
     def test_process_audio_tempo_change(
         self, mock_path, mock_load, mock_write, mock_time_stretch
     ):
@@ -143,7 +147,7 @@ class TestAudioProcessor:
 class TestAudioEffectsConvenienceFunctions:
     """Test module-level convenience functions."""
 
-    @patch("y2karaoke.core.audio_effects.AudioProcessor")
+    @patch("y2karaoke.core.components.audio.audio_effects.AudioProcessor")
     def test_process_audio_function(self, mock_processor_class):
         """Test process_audio convenience function."""
         mock_processor = Mock()
@@ -160,7 +164,7 @@ class TestAudioEffectsConvenienceFunctions:
             "/input.wav", "/output.wav", 2, 1.2
         )
 
-    @patch("y2karaoke.core.audio_effects.AudioProcessor")
+    @patch("y2karaoke.core.components.audio.audio_effects.AudioProcessor")
     def test_shift_key_function(self, mock_processor_class):
         """Test shift_key convenience function."""
         mock_processor = Mock()
@@ -173,7 +177,7 @@ class TestAudioEffectsConvenienceFunctions:
         mock_processor_class.assert_called_once()
         mock_processor.shift_key.assert_called_once_with("/input.wav", "/output.wav", 5)
 
-    @patch("y2karaoke.core.audio_effects.AudioProcessor")
+    @patch("y2karaoke.core.components.audio.audio_effects.AudioProcessor")
     def test_change_tempo_function(self, mock_processor_class):
         """Test change_tempo convenience function."""
         mock_processor = Mock()
@@ -218,7 +222,7 @@ class TestAudioEffectsIntegration:
 
     def test_module_imports(self):
         """Test that all required classes and functions can be imported."""
-        from y2karaoke.core.audio_effects import (
+        from y2karaoke.core.components.audio.audio_effects import (
             AudioProcessor,
             process_audio,
             shift_key,
@@ -247,13 +251,16 @@ class TestAudioEffectsIntegration:
 
     def test_config_imports(self):
         """Test that configuration constants are properly imported."""
-        from y2karaoke.core.audio_effects import AUDIO_SAMPLE_RATE
+        from y2karaoke.core.components.audio.audio_effects import AUDIO_SAMPLE_RATE
 
         assert isinstance(AUDIO_SAMPLE_RATE, int)
 
     def test_validation_integration(self):
         """Test integration with validation functions."""
-        from y2karaoke.core.audio_effects import validate_key_shift, validate_tempo
+        from y2karaoke.core.components.audio.audio_effects import (
+            validate_key_shift,
+            validate_tempo,
+        )
 
         assert validate_key_shift is not None
         assert validate_tempo is not None
@@ -279,7 +286,9 @@ class TestAudioEffectsErrorHandling:
         """Test handling of invalid key shift values."""
         processor = AudioProcessor()
 
-        with patch("y2karaoke.core.audio_effects.validate_key_shift") as mock_validate:
+        with patch(
+            "y2karaoke.core.components.audio.audio_effects.validate_key_shift"
+        ) as mock_validate:
             mock_validate.side_effect = ValidationError("Invalid key shift")
 
             with pytest.raises(ValidationError):
@@ -289,7 +298,9 @@ class TestAudioEffectsErrorHandling:
         """Test handling of invalid tempo values."""
         processor = AudioProcessor()
 
-        with patch("y2karaoke.core.audio_effects.validate_tempo") as mock_validate:
+        with patch(
+            "y2karaoke.core.components.audio.audio_effects.validate_tempo"
+        ) as mock_validate:
             mock_validate.side_effect = ValidationError("Invalid tempo")
 
             with pytest.raises(ValidationError):
@@ -297,8 +308,8 @@ class TestAudioEffectsErrorHandling:
                     "/input.wav", "/output.wav", tempo_multiplier=10.0
                 )
 
-    @patch("y2karaoke.core.audio_effects.librosa.load")
-    @patch("y2karaoke.core.audio_effects.Path")
+    @patch("y2karaoke.core.components.audio.audio_effects.librosa.load")
+    @patch("y2karaoke.core.components.audio.audio_effects.Path")
     def test_audio_loading_error_handling(self, mock_path, mock_load):
         """Test handling of audio loading errors."""
         mock_path.return_value.exists.return_value = True
@@ -309,9 +320,9 @@ class TestAudioEffectsErrorHandling:
         with pytest.raises(Exception):
             processor.process_audio("/input.wav", "/output.wav")
 
-    @patch("y2karaoke.core.audio_effects.sf.write")
-    @patch("y2karaoke.core.audio_effects.librosa.load")
-    @patch("y2karaoke.core.audio_effects.Path")
+    @patch("y2karaoke.core.components.audio.audio_effects.sf.write")
+    @patch("y2karaoke.core.components.audio.audio_effects.librosa.load")
+    @patch("y2karaoke.core.components.audio.audio_effects.Path")
     def test_audio_writing_error_handling(self, mock_path, mock_load, mock_write):
         """Test handling of audio writing errors."""
         mock_path.return_value.exists.return_value = True
@@ -332,7 +343,10 @@ class TestAudioEffectsValidation:
         processor = AudioProcessor()
 
         # Test that validation functions are available
-        from y2karaoke.core.audio_effects import validate_key_shift, validate_tempo
+        from y2karaoke.core.components.audio.audio_effects import (
+            validate_key_shift,
+            validate_tempo,
+        )
 
         assert validate_key_shift is not None
         assert validate_tempo is not None
@@ -344,7 +358,7 @@ class TestAudioEffectsValidation:
     def test_convenience_functions_use_processor(self):
         """Test that convenience functions properly use AudioProcessor."""
         with patch(
-            "y2karaoke.core.audio_effects.AudioProcessor"
+            "y2karaoke.core.components.audio.audio_effects.AudioProcessor"
         ) as mock_processor_class:
             mock_processor = Mock()
             mock_processor_class.return_value = mock_processor

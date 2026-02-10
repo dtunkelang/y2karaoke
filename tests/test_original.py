@@ -3,10 +3,10 @@
 
 import pytest
 
-from y2karaoke.core.downloader import download_audio
-from y2karaoke.core.separator import separate_vocals
+from y2karaoke.core.components.audio.downloader import download_audio
+from y2karaoke.core.components.audio.separator import separate_vocals
 from y2karaoke.core.lyrics import get_lyrics
-from y2karaoke.core.video_writer import render_karaoke_video
+from y2karaoke.core.components.render.video_writer import render_karaoke_video
 
 
 @pytest.mark.skip(reason="Requires cached audio files - run manually if available")

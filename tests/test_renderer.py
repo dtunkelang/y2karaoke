@@ -5,12 +5,15 @@ import numpy as np
 from dataclasses import dataclass
 from unittest.mock import patch, MagicMock
 
-from y2karaoke.core.backgrounds_static import (
+from y2karaoke.core.components.render.backgrounds_static import (
     create_gradient_background,
     draw_splash_screen,
     draw_logo_screen,
 )
-from y2karaoke.core.frame_renderer import render_frame, get_singer_colors
+from y2karaoke.core.components.render.frame_renderer import (
+    render_frame,
+    get_singer_colors,
+)
 from y2karaoke.core.progress import draw_progress_bar
 from y2karaoke.config import VIDEO_WIDTH, VIDEO_HEIGHT, Colors
 

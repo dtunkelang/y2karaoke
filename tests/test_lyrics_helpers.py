@@ -30,7 +30,9 @@ def test_create_no_lyrics_placeholder():
 
 
 def test_detect_and_apply_offset_auto_applies(monkeypatch):
-    monkeypatch.setattr("y2karaoke.core.alignment.detect_song_start", lambda _: 5.0)
+    monkeypatch.setattr(
+        "y2karaoke.core.components.alignment.alignment.detect_song_start", lambda _: 5.0
+    )
 
     line_timings = [(1.0, "Line")]
     updated, offset = lh._detect_and_apply_offset(
@@ -42,7 +44,9 @@ def test_detect_and_apply_offset_auto_applies(monkeypatch):
 
 
 def test_detect_and_apply_offset_respects_manual(monkeypatch):
-    monkeypatch.setattr("y2karaoke.core.alignment.detect_song_start", lambda _: 5.0)
+    monkeypatch.setattr(
+        "y2karaoke.core.components.alignment.alignment.detect_song_start", lambda _: 5.0
+    )
 
     line_timings = [(1.0, "Line")]
     updated, offset = lh._detect_and_apply_offset(
@@ -54,7 +58,10 @@ def test_detect_and_apply_offset_respects_manual(monkeypatch):
 
 
 def test_detect_and_apply_offset_skips_large_delta(monkeypatch):
-    monkeypatch.setattr("y2karaoke.core.alignment.detect_song_start", lambda _: 100.0)
+    monkeypatch.setattr(
+        "y2karaoke.core.components.alignment.alignment.detect_song_start",
+        lambda _: 100.0,
+    )
 
     line_timings = [(1.0, "Line")]
     updated, offset = lh._detect_and_apply_offset(
@@ -88,7 +95,7 @@ def test_apply_timing_to_lines():
 def test_romanize_lines_only_non_ascii(monkeypatch):
     line = _line_with_words(["hello", "café"])
     monkeypatch.setattr(
-        "y2karaoke.core.lyrics_helpers.romanize_line", lambda text: "cafe"
+        "y2karaoke.core.components.lyrics.helpers.romanize_line", lambda text: "cafe"
     )
 
     lh._romanize_lines([line])
@@ -111,7 +118,10 @@ def test_apply_singer_info_sets_word_and_line_singers():
 
 
 def test_detect_offset_with_issues_tracks_large_delta(monkeypatch):
-    monkeypatch.setattr("y2karaoke.core.alignment.detect_song_start", lambda _: 15.0)
+    monkeypatch.setattr(
+        "y2karaoke.core.components.alignment.alignment.detect_song_start",
+        lambda _: 15.0,
+    )
 
     issues = []
     line_timings = [(1.0, "Line")]

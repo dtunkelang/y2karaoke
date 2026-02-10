@@ -7,6 +7,7 @@ from unittest.mock import Mock, patch
 from y2karaoke.core.track_identifier import TrackIdentifier, TrackInfo
 from y2karaoke.exceptions import Y2KaraokeError
 
+
 class TestIdentifyFromUrlMocked:
     """Tests for identify_from_url with mocked external services."""
 

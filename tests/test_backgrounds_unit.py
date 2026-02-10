@@ -1,6 +1,6 @@
 import numpy as np
 
-from y2karaoke.core import backgrounds
+from y2karaoke.core.components.render import backgrounds
 from y2karaoke.core.models import Line, Word
 
 

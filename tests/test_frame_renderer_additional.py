@@ -3,7 +3,7 @@ from PIL import Image, ImageDraw
 from unittest.mock import Mock
 
 from y2karaoke.config import INSTRUMENTAL_BREAK_THRESHOLD, SPLASH_DURATION
-from y2karaoke.core.frame_renderer import (
+from y2karaoke.core.components.render.frame_renderer import (
     _draw_cue_indicator,
     _check_mid_song_progress,
     _get_lines_to_display,
@@ -102,7 +102,7 @@ def test_draw_line_text_uses_singer_color(monkeypatch):
     word_widths = [10, 5, 20]
 
     monkeypatch.setattr(
-        "y2karaoke.core.frame_renderer.get_singer_colors",
+        "y2karaoke.core.components.render.frame_renderer.get_singer_colors",
         lambda *_: ((1, 2, 3), (4, 5, 6)),
     )
 
@@ -193,7 +193,9 @@ def test_render_frame_draws_cue_indicator(monkeypatch):
     def fake_cue(*_args, **_kwargs):
         called["cue"] = True
 
-    monkeypatch.setattr("y2karaoke.core.frame_renderer._draw_cue_indicator", fake_cue)
+    monkeypatch.setattr(
+        "y2karaoke.core.components.render.frame_renderer._draw_cue_indicator", fake_cue
+    )
 
     font = ImageFont.load_default()
     background = np.zeros((100, 200, 3), dtype=np.uint8)
@@ -221,7 +223,8 @@ def test_render_frame_zero_duration_highlight(monkeypatch):
         captured["highlight_width"] = args[8]
 
     monkeypatch.setattr(
-        "y2karaoke.core.frame_renderer._draw_highlight_sweep", fake_highlight
+        "y2karaoke.core.components.render.frame_renderer._draw_highlight_sweep",
+        fake_highlight,
     )
 
     font = ImageFont.load_default()
@@ -246,9 +249,13 @@ def test_render_frame_draws_splash(monkeypatch):
     def fake_splash(*args, **kwargs):
         called["splash"] = True
 
-    monkeypatch.setattr("y2karaoke.core.frame_renderer.draw_splash_screen", fake_splash)
     monkeypatch.setattr(
-        "y2karaoke.core.frame_renderer.draw_progress_bar", lambda *a, **k: None
+        "y2karaoke.core.components.render.frame_renderer.draw_splash_screen",
+        fake_splash,
+    )
+    monkeypatch.setattr(
+        "y2karaoke.core.components.render.frame_renderer.draw_progress_bar",
+        lambda *a, **k: None,
     )
 
     lines = [_line("hi", start=1.0, end=2.0)]
@@ -275,10 +282,12 @@ def test_render_frame_draws_progress_bar(monkeypatch):
         called["progress"] = True
 
     monkeypatch.setattr(
-        "y2karaoke.core.frame_renderer.draw_progress_bar", fake_progress
+        "y2karaoke.core.components.render.frame_renderer.draw_progress_bar",
+        fake_progress,
     )
     monkeypatch.setattr(
-        "y2karaoke.core.frame_renderer.draw_splash_screen", lambda *a, **k: None
+        "y2karaoke.core.components.render.frame_renderer.draw_splash_screen",
+        lambda *a, **k: None,
     )
 
     start = INSTRUMENTAL_BREAK_THRESHOLD + 5.0

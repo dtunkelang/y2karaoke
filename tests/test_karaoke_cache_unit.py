@@ -52,7 +52,8 @@ def test_get_lyrics_passes_arguments(monkeypatch, tmp_path):
         return ([], None, {"overall_score": 80.0, "issues": [], "source": "test"})
 
     monkeypatch.setattr(
-        "y2karaoke.core.lyrics.get_lyrics_with_quality", fake_get_lyrics_with_quality
+        "y2karaoke.pipeline.lyrics.get_lyrics_with_quality",
+        fake_get_lyrics_with_quality,
     )
 
     result = generator._get_lyrics(
