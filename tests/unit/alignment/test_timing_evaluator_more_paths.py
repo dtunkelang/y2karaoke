@@ -1,33 +1,30 @@
-import types
-
 import y2karaoke.core.components.alignment.timing_evaluator as te
 import y2karaoke.core.components.alignment.timing_evaluator_comparison as te_comp
 import y2karaoke.core.components.whisper.whisper_integration as wi
 import y2karaoke.core.components.whisper.whisper_dtw as w_dtw
-import y2karaoke.core.components.whisper.whisper_alignment_utils as wa_utils
+import y2karaoke.core.components.whisper.whisper_alignment as wa
 from y2karaoke.core.models import Line, Word
 
 
-def test_align_dtw_whisper_uses_fastdtw(monkeypatch):
+def test_align_dtw_whisper_uses_fastdtw():
     line = Line(words=[Word(text="hello", start_time=0.0, end_time=0.5)])
     whisper_words = [
         te.TranscriptionWord(start=2.0, end=2.5, text="hello", probability=0.9)
     ]
-
-    monkeypatch.setattr(wi, "_get_ipa", lambda *_args, **_kwargs: None)
-    monkeypatch.setattr(wi, "_phonetic_similarity", lambda *_a, **_k: 1.0)
 
     def fake_fastdtw(lrc_seq, whisper_seq, dist):
         # Exercise the distance function at least once
         _ = dist(lrc_seq[0], whisper_seq[0])
         return 0.0, [(0, 0)]
 
-    fake_module = types.SimpleNamespace(fastdtw=fake_fastdtw)
-    monkeypatch.setattr(w_dtw, "_load_fastdtw", lambda: fake_module.fastdtw)
-
-    aligned, corrections, metrics = te.align_dtw_whisper(
-        [line], whisper_words, language="eng-Latn", min_similarity=0.1
-    )
+    with wi.use_whisper_integration_hooks(get_ipa_fn=lambda *_args, **_kwargs: None):
+        with w_dtw.use_whisper_dtw_hooks(
+            phonetic_similarity_fn=lambda *_a, **_k: 1.0,
+            load_fastdtw_fn=lambda: fake_fastdtw,
+        ):
+            aligned, corrections, metrics = te.align_dtw_whisper(
+                [line], whisper_words, language="eng-Latn", min_similarity=0.1
+            )
 
     assert aligned[0].words[0].start_time == 2.0
     assert corrections
@@ -79,7 +76,7 @@ def test_print_comparison_report_formats_output(monkeypatch, capsys):
     assert "[SEVERE] Line early" in out
 
 
-def test_find_best_whisper_segment_picks_highest_similarity(monkeypatch):
+def test_find_best_whisper_segment_picks_highest_similarity():
     segments = [
         te.TranscriptionSegment(start=5.0, end=6.0, text="alpha", words=[]),
         te.TranscriptionSegment(start=5.5, end=6.5, text="beta", words=[]),
@@ -88,16 +85,14 @@ def test_find_best_whisper_segment_picks_highest_similarity(monkeypatch):
     def fake_similarity(text1, text2, *_args, **_kwargs):
         return 0.2 if text2 == "alpha" else 0.8
 
-    monkeypatch.setattr(wi, "_phonetic_similarity", fake_similarity)
-    monkeypatch.setattr(wa_utils, "_phonetic_similarity", fake_similarity)
-
-    best_segment, similarity, offset = wi._find_best_whisper_segment(
-        "target",
-        5.2,
-        segments,
-        language="eng-Latn",
-        min_similarity=0.3,
-    )
+    with wa.use_whisper_alignment_hooks(phonetic_similarity_fn=fake_similarity):
+        best_segment, similarity, offset = wi._find_best_whisper_segment(
+            "target",
+            5.2,
+            segments,
+            language="eng-Latn",
+            min_similarity=0.3,
+        )
 
     assert best_segment is segments[1]
     assert similarity == 0.8

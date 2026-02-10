@@ -46,6 +46,8 @@ class TrackIdentifier(
         infer_artist_from_query_fn: Optional[Callable[..., Any]] = None,
         search_youtube_verified_fn: Optional[Callable[..., Any]] = None,
         try_split_search_fn: Optional[Callable[..., Any]] = None,
+        search_youtube_single_fn: Optional[Callable[..., Any]] = None,
+        load_yt_dlp_module_fn: Optional[Callable[..., Any]] = None,
     ):
         self._lrc_cache: Dict[tuple, tuple] = {}
         self._http_get = None
@@ -59,6 +61,8 @@ class TrackIdentifier(
         self._infer_artist_from_query_fn = infer_artist_from_query_fn
         self._search_youtube_verified_fn = search_youtube_verified_fn
         self._try_split_search_fn = try_split_search_fn
+        self._search_youtube_single_fn = search_youtube_single_fn
+        self._load_yt_dlp_module_fn = load_yt_dlp_module_fn
 
     def _try_direct_lrc_search(self, query: str) -> Optional[TrackInfo]:  # noqa: C901
         """Try to find track by searching LRC providers directly.

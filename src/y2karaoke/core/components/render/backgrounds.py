@@ -1,9 +1,10 @@
 """Background processing for dynamic video backgrounds."""
 
+from contextlib import contextmanager
 import subprocess
 import sys
 from dataclasses import dataclass
-from typing import List, TYPE_CHECKING
+from typing import Iterator, List, TYPE_CHECKING
 
 import cv2
 import numpy as np
@@ -34,6 +35,37 @@ class BackgroundProcessor:
     def __init__(self):
         self.width = VIDEO_WIDTH
         self.height = VIDEO_HEIGHT
+
+    @contextmanager
+    def use_test_hooks(
+        self,
+        *,
+        extract_scene_frames_fn=None,
+        detect_scenes_subprocess_fn=None,
+        is_valid_frame_fn=None,
+        process_frame_fn=None,
+    ) -> Iterator[None]:
+        """Temporarily override internal collaborators for tests."""
+        overrides = {
+            "_extract_scene_frames": extract_scene_frames_fn,
+            "_detect_scenes_subprocess": detect_scenes_subprocess_fn,
+            "_is_valid_frame": is_valid_frame_fn,
+            "_process_frame": process_frame_fn,
+        }
+        previous = {
+            name: getattr(self, name)
+            for name, value in overrides.items()
+            if value is not None
+        }
+        for name, value in overrides.items():
+            if value is not None:
+                setattr(self, name, value)
+
+        try:
+            yield
+        finally:
+            for name, value in previous.items():
+                setattr(self, name, value)
 
     def create_background_segments(
         self, video_path: str, lines: List["Line"], duration: float

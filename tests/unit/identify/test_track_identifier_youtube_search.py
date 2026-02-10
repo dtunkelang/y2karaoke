@@ -92,9 +92,7 @@ def test_search_youtube_verified_returns_none_for_no_match():
     assert result is None
 
 
-def test_search_youtube_by_duration_prefers_audio_fallback(monkeypatch):
-    identifier = TrackIdentifier()
-
+def test_search_youtube_by_duration_prefers_audio_fallback():
     results = [
         {"url": "https://www.youtube.com/watch?v=first", "duration": 400},
         {"url": "https://www.youtube.com/watch?v=audio", "duration": 305},
@@ -103,16 +101,14 @@ def test_search_youtube_by_duration_prefers_audio_fallback(monkeypatch):
     def fake_single(*_args, **_kwargs):
         return results.pop(0)
 
-    monkeypatch.setattr(identifier, "_search_youtube_single", fake_single)
+    identifier = TrackIdentifier(search_youtube_single_fn=fake_single)
 
     result = identifier._search_youtube_by_duration("Artist Song", 300)
 
     assert result["url"].endswith("audio")
 
 
-def test_search_youtube_by_duration_uses_audio_when_no_results(monkeypatch):
-    identifier = TrackIdentifier()
-
+def test_search_youtube_by_duration_uses_audio_when_no_results():
     calls = []
 
     def fake_single(query, *_args, **_kwargs):
@@ -121,7 +117,7 @@ def test_search_youtube_by_duration_uses_audio_when_no_results(monkeypatch):
             return {"url": "https://www.youtube.com/watch?v=audio", "duration": 123}
         return None
 
-    monkeypatch.setattr(identifier, "_search_youtube_single", fake_single)
+    identifier = TrackIdentifier(search_youtube_single_fn=fake_single)
 
     result = identifier._search_youtube_by_duration("Artist Song", 0)
 
@@ -245,9 +241,7 @@ def test_extract_youtube_candidates_parses_hours():
     assert candidates[0]["duration"] == 3723
 
 
-def test_get_youtube_metadata_success(monkeypatch):
-    identifier = TrackIdentifier()
-
+def test_get_youtube_metadata_success():
     class DummyYDL:
         def __init__(self, _opts):
             pass
@@ -262,7 +256,7 @@ def test_get_youtube_metadata_success(monkeypatch):
             return {"title": "Test Song", "uploader": "Uploader", "duration": 123}
 
     dummy_module = SimpleNamespace(YoutubeDL=DummyYDL)
-    monkeypatch.setattr(identifier, "_load_yt_dlp_module", lambda: dummy_module)
+    identifier = TrackIdentifier(load_yt_dlp_module_fn=lambda: dummy_module)
 
     title, uploader, duration = identifier._get_youtube_metadata(
         "https://www.youtube.com/watch?v=abc123def45"
@@ -273,9 +267,7 @@ def test_get_youtube_metadata_success(monkeypatch):
     assert duration == 123
 
 
-def test_get_youtube_metadata_error(monkeypatch):
-    identifier = TrackIdentifier()
-
+def test_get_youtube_metadata_error():
     class DummyYDL:
         def __init__(self, _opts):
             pass
@@ -287,7 +279,7 @@ def test_get_youtube_metadata_error(monkeypatch):
             return False
 
     dummy_module = SimpleNamespace(YoutubeDL=DummyYDL)
-    monkeypatch.setattr(identifier, "_load_yt_dlp_module", lambda: dummy_module)
+    identifier = TrackIdentifier(load_yt_dlp_module_fn=lambda: dummy_module)
 
     with pytest.raises(Y2KaraokeError):
         identifier._get_youtube_metadata("https://www.youtube.com/watch?v=abc123def45")

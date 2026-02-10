@@ -146,8 +146,12 @@ class YouTubeSearcher(_Base):
         Returns:
             Dict with 'url' and 'duration' keys, or None if not found
         """
+        search_single = getattr(self, "_search_youtube_single_fn", None)
+        if not callable(search_single):
+            search_single = self._search_youtube_single
+
         # First try without "lyrics"
-        result = self._search_youtube_single(query, target_duration)
+        result = search_single(query, target_duration)
 
         if result:
             # Check if this is a good duration match
@@ -161,9 +165,7 @@ class YouTubeSearcher(_Base):
                 logger.debug(
                     f"Initial search found video with duration diff={diff}s, trying 'audio' search"
                 )
-                audio_result = self._search_youtube_single(
-                    f"{query} audio", target_duration
-                )
+                audio_result = search_single(f"{query} audio", target_duration)
 
                 if audio_result and audio_result["duration"]:
                     audio_diff = abs(audio_result["duration"] - target_duration)
@@ -180,7 +182,7 @@ class YouTubeSearcher(_Base):
 
         # First search found nothing, try with "audio"
         logger.debug("Initial search found no results, trying 'audio' search")
-        return self._search_youtube_single(f"{query} audio", target_duration)
+        return search_single(f"{query} audio", target_duration)
 
     def _search_youtube_single(  # noqa: C901
         self, query: str, target_duration: int
@@ -349,7 +351,10 @@ class YouTubeSearcher(_Base):
             Tuple of (title, uploader, duration_seconds)
         """
         try:
-            yt_dlp = self._load_yt_dlp_module()
+            load_yt_dlp_module = getattr(self, "_load_yt_dlp_module_fn", None)
+            if not callable(load_yt_dlp_module):
+                load_yt_dlp_module = self._load_yt_dlp_module
+            yt_dlp = load_yt_dlp_module()
 
             ydl_opts = {
                 "quiet": True,

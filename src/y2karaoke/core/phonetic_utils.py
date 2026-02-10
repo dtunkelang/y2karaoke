@@ -1,8 +1,9 @@
 """Phonetic and text similarity utilities for lyrics alignment."""
 
+from contextlib import contextmanager
 import re
 import unicodedata
-from typing import Dict, List, Optional, Any
+from typing import Callable, Dict, Iterator, List, Optional, Any
 from difflib import SequenceMatcher
 
 from ..utils.logging import get_logger
@@ -17,6 +18,50 @@ _panphon_distance = None
 _panphon_ft = None
 _ipa_cache: Dict[str, Optional[str]] = {}  # Cache for IPA transliterations
 _ipa_segs_cache: Dict[str, List[str]] = {}  # Cache for IPA segments
+
+
+@contextmanager
+def use_phonetic_utils_hooks(
+    *,
+    get_epitran_fn: Optional[Callable[..., Any]] = None,
+    get_panphon_distance_fn: Optional[Callable[..., Any]] = None,
+    get_panphon_ft_fn: Optional[Callable[..., Any]] = None,
+    get_ipa_fn: Optional[Callable[..., Optional[str]]] = None,
+    text_similarity_basic_fn: Optional[Callable[..., float]] = None,
+    phonetic_similarity_fn: Optional[Callable[..., float]] = None,
+) -> Iterator[None]:
+    """Temporarily override phonetic utility collaborators for tests."""
+    global _get_epitran, _get_panphon_distance, _get_panphon_ft
+    global _get_ipa, _text_similarity_basic, _phonetic_similarity
+
+    prev_get_epitran = _get_epitran
+    prev_get_panphon_distance = _get_panphon_distance
+    prev_get_panphon_ft = _get_panphon_ft
+    prev_get_ipa = _get_ipa
+    prev_text_similarity_basic = _text_similarity_basic
+    prev_phonetic_similarity = _phonetic_similarity
+
+    if get_epitran_fn is not None:
+        _get_epitran = get_epitran_fn
+    if get_panphon_distance_fn is not None:
+        _get_panphon_distance = get_panphon_distance_fn
+    if get_panphon_ft_fn is not None:
+        _get_panphon_ft = get_panphon_ft_fn
+    if get_ipa_fn is not None:
+        _get_ipa = get_ipa_fn
+    if text_similarity_basic_fn is not None:
+        _text_similarity_basic = text_similarity_basic_fn
+    if phonetic_similarity_fn is not None:
+        _phonetic_similarity = phonetic_similarity_fn
+    try:
+        yield
+    finally:
+        _get_epitran = prev_get_epitran
+        _get_panphon_distance = prev_get_panphon_distance
+        _get_panphon_ft = prev_get_panphon_ft
+        _get_ipa = prev_get_ipa
+        _text_similarity_basic = prev_text_similarity_basic
+        _phonetic_similarity = prev_phonetic_similarity
 
 
 def _whisper_lang_to_epitran(lang: str) -> str:

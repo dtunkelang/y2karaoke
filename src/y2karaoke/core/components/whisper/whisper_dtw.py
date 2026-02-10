@@ -21,6 +21,7 @@ logger = logging.getLogger(__name__)
 
 _ACTIVE_PHONETIC_SIMILARITY: Optional[Callable[..., float]] = None
 _ACTIVE_GET_IPA: Optional[Callable[..., Optional[str]]] = None
+_ACTIVE_LOAD_FASTDTW: Optional[Callable[..., Callable[..., tuple]]] = None
 
 
 @contextmanager
@@ -28,21 +29,26 @@ def use_whisper_dtw_hooks(
     *,
     phonetic_similarity_fn: Optional[Callable[..., float]] = None,
     get_ipa_fn: Optional[Callable[..., Optional[str]]] = None,
+    load_fastdtw_fn: Optional[Callable[..., Callable[..., tuple]]] = None,
 ) -> Iterator[None]:
     """Temporarily override DTW collaborators for tests."""
-    global _ACTIVE_PHONETIC_SIMILARITY, _ACTIVE_GET_IPA
+    global _ACTIVE_PHONETIC_SIMILARITY, _ACTIVE_GET_IPA, _ACTIVE_LOAD_FASTDTW
 
     prev_similarity = _ACTIVE_PHONETIC_SIMILARITY
     prev_get_ipa = _ACTIVE_GET_IPA
+    prev_load_fastdtw = _ACTIVE_LOAD_FASTDTW
     if phonetic_similarity_fn is not None:
         _ACTIVE_PHONETIC_SIMILARITY = phonetic_similarity_fn
     if get_ipa_fn is not None:
         _ACTIVE_GET_IPA = get_ipa_fn
+    if load_fastdtw_fn is not None:
+        _ACTIVE_LOAD_FASTDTW = load_fastdtw_fn
     try:
         yield
     finally:
         _ACTIVE_PHONETIC_SIMILARITY = prev_similarity
         _ACTIVE_GET_IPA = prev_get_ipa
+        _ACTIVE_LOAD_FASTDTW = prev_load_fastdtw
 
 
 def _phonetic_similarity_for_state(*args, **kwargs) -> float:
@@ -53,6 +59,11 @@ def _phonetic_similarity_for_state(*args, **kwargs) -> float:
 def _get_ipa_for_state(*args, **kwargs) -> Optional[str]:
     fn = _ACTIVE_GET_IPA or _get_ipa
     return fn(*args, **kwargs)
+
+
+def _load_fastdtw_for_state():
+    fn = _ACTIVE_LOAD_FASTDTW or _load_fastdtw
+    return fn()
 
 
 def _load_fastdtw():
@@ -210,7 +221,7 @@ def align_dtw_whisper_base(
     # Run DTW
     logger.debug("DTW: Running alignment...")
     try:
-        fastdtw = _load_fastdtw()
+        fastdtw = _load_fastdtw_for_state()
 
         lrc_times = np.array([lw["start"] for lw in lrc_words])
         whisper_times = np.array([ww.start for ww in whisper_words])
@@ -384,7 +395,7 @@ def _align_dtw_whisper_with_data(
     logger.debug("DTW: Running alignment...")
     use_silence = silence_regions or []
     try:
-        fastdtw = _load_fastdtw()
+        fastdtw = _load_fastdtw_for_state()
 
         lrc_times = np.array([lw["start"] for lw in lrc_words])
         whisper_times = np.array([ww.start for ww in whisper_words])
@@ -487,7 +498,7 @@ def align_dtw_whisper(
 
     # Simple greedy alignment if fastdtw missing
     try:
-        fastdtw = _load_fastdtw()
+        fastdtw = _load_fastdtw_for_state()
 
         lrc_times = np.array([lw["start"] for lw in lrc_words])
         whisper_times = np.array([ww.start for ww in whisper_words])
