@@ -16,8 +16,9 @@ Component-organized core facades now live under `src/y2karaoke/core/components/`
 - `core/components/alignment`
 - `core/components/render`
 
-These facades provide stable component-level imports over the existing
-implementation modules in `core/`.
+These facades provide stable component-level imports while implementation
+modules are progressively being moved under each component package. Legacy
+`core/*.py` paths remain as compatibility facades where needed.
 
 ## Subsystems
 
