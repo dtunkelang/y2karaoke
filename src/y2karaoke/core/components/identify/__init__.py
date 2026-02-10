@@ -1,7 +1,10 @@
 """Identify component facade."""
 
-from ...track_identifier import TrackIdentifier, TrackInfo
-from ...track_identifier_impl import MusicBrainzClient, QueryParser, YouTubeSearcher
+from ...models import TrackInfo
+from .implementation import TrackIdentifier
+from .musicbrainz import MusicBrainzClient
+from .parser import QueryParser
+from .youtube import YouTubeSearcher
 
 __all__ = [
     "TrackIdentifier",

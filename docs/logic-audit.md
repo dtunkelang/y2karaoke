@@ -15,10 +15,14 @@ Pipeline facade note:
 ## 1) YouTube Track Selection (Prefer Audio-Only)
 
 **Primary code paths**
+- `src/y2karaoke/core/components/identify/implementation.py`
+  - main `TrackIdentifier` implementation
+- `src/y2karaoke/core/components/identify/helpers.py`
+  - helper logic shared by identification flows
+- `src/y2karaoke/core/components/identify/youtube_rules.py`
+  - pure YouTube heuristics
 - `src/y2karaoke/core/track_identifier.py`
-  - facade to `src/y2karaoke/core/track_identifier_impl.py`
-  - helper logic in `src/y2karaoke/core/track_identifier_helpers.py`
-  - pure YouTube heuristics in `src/y2karaoke/core/track_identifier_youtube_rules.py`
+  - compatibility facade that re-exports identify entrypoints
   - `_search_youtube_single`
   - `_search_youtube_verified`
   - `_is_likely_non_studio`
@@ -41,7 +45,9 @@ Pipeline facade note:
 ## 2) Best Lyrics/Timing Source Selection
 
 **Primary code paths**
-- `src/y2karaoke/core/lyrics.py::_fetch_lrc_text_and_timings`
+- `src/y2karaoke/core/components/lyrics/api.py`
+- `src/y2karaoke/core/components/lyrics/helpers.py`
+- `src/y2karaoke/core/lyrics.py` (compatibility facade)
 - `src/y2karaoke/core/timing_evaluator.py::select_best_source`
 - `src/y2karaoke/core/timing_evaluator.py::compare_sources`
 - `src/y2karaoke/core/sync_search.py`
