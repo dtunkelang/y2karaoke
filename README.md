@@ -161,6 +161,11 @@ source venv/bin/activate
 pytest tests -v
 ```
 
+Test organization:
+- `tests/unit/` for subsystem unit tests
+- `tests/integration/` for network/integration coverage
+- `tests/e2e/` for end-to-end checks
+
 Network/integration tests are skipped by default. To run them:
 
 ```bash
