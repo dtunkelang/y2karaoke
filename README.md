@@ -262,6 +262,7 @@ Subsystem facades now live under `src/y2karaoke/pipeline/`:
 - `pipeline/alignment` for timing evaluation + Whisper alignment orchestration
 
 For a concise summary of the selection logic and test coverage across the three core pillars, see [docs/logic-audit.md](docs/logic-audit.md).
+For subsystem boundaries and dependency rules, see [docs/pipeline-subsystems.md](docs/pipeline-subsystems.md).
 
 ## License
 
