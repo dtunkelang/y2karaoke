@@ -178,7 +178,7 @@ def test_evaluate_timing_uses_title_search(monkeypatch, tmp_path):
         "y2karaoke.core.separator.separate_vocals", fake_separate_vocals
     )
     monkeypatch.setattr(
-        "y2karaoke.core.timing_evaluator.print_comparison_report", fake_report
+        "y2karaoke.pipeline.alignment.print_comparison_report", fake_report
     )
 
     runner = CliRunner()

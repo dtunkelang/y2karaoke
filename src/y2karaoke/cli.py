@@ -562,7 +562,7 @@ def evaluate_timing(ctx, url_or_query, title, artist, work_dir, force):
         from .core.track_identifier import TrackIdentifier
         from .core.downloader import YouTubeDownloader
         from .core.separator import separate_vocals
-        from .core.timing_evaluator import print_comparison_report
+        from .pipeline.alignment import print_comparison_report
 
         if not url_or_query:
             resolved = resolve_url_or_query(url_or_query, artist, title)

@@ -6,6 +6,10 @@ This document summarizes the core decision logic and the main test coverage for 
 - Best lyrics/timing source selection across providers
 - Alignment quality (onsets, pauses, timing issues)
 
+Pipeline facade note:
+- `src/y2karaoke/pipeline/lyrics/` and `src/y2karaoke/pipeline/alignment/` provide
+  subsystem entrypoints over the underlying `core/` implementations.
+
 ## 1) YouTube Track Selection (Prefer Audio-Only)
 
 **Primary code paths**

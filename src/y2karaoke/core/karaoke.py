@@ -418,7 +418,7 @@ class KaraokeGenerator:
 
         from moviepy import AudioFileClip
         from ..config import OUTRO_DELAY
-        from ..core.lyrics import Line, Word
+        from .models import Line, Word
 
         with AudioFileClip(audio_path) as clip:
             audio_duration = clip.duration
@@ -488,7 +488,7 @@ class KaraokeGenerator:
         filter_promos: bool = True,
     ) -> Dict[str, Any]:
         logger.info("📝 Fetching lyrics...")
-        from ..core.lyrics import get_lyrics_with_quality
+        from ..pipeline.lyrics import get_lyrics_with_quality
 
         lines, metadata, quality_report = get_lyrics_with_quality(
             title=title,
