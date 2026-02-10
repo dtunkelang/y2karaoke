@@ -1,9 +1,8 @@
 """Tests for frame_renderer.py module."""
 
-import pytest
 import numpy as np
-from PIL import Image, ImageDraw, ImageFont
-from unittest.mock import Mock, patch, MagicMock
+from PIL import Image, ImageDraw
+from unittest.mock import Mock, patch
 from y2karaoke.core.components.render.frame_renderer import (
     render_frame,
     _draw_cue_indicator,
@@ -11,8 +10,8 @@ from y2karaoke.core.components.render.frame_renderer import (
     _check_mid_song_progress,
     _get_lines_to_display,
     _check_cue_indicator,
-    _draw_line_text,
-    _draw_highlight_sweep,
+    _carryover_handoff_delay,
+    _compute_word_highlight_width,
 )
 from y2karaoke.config import INSTRUMENTAL_BREAK_THRESHOLD
 from y2karaoke.core.models import Line, Word
@@ -216,6 +215,61 @@ class TestCheckCueIndicator:
             assert param in params
 
 
+class TestCarryoverHandoffDelay:
+    """Test carryover handoff delay for phrase-continuation lines."""
+
+    def test_returns_positive_delay_for_comma_carryover(self):
+        prev = Line(
+            words=[
+                Word(text="Oh,", start_time=68.58, end_time=69.0),
+                Word(text="shelter,", start_time=69.0, end_time=69.8),
+                Word(text="mother", start_time=69.8, end_time=70.2),
+                Word(text="shelter,", start_time=70.2, end_time=70.68),
+            ]
+        )
+        nxt = Line(
+            words=[
+                Word(text="Mother", start_time=71.0, end_time=71.5),
+                Word(text="shelter", start_time=71.5, end_time=72.0),
+            ]
+        )
+
+        assert _carryover_handoff_delay(prev, nxt) > 0
+
+    def test_returns_zero_without_comma_or_large_gap(self):
+        prev = Line(
+            words=[
+                Word(text="Simple", start_time=10.0, end_time=10.4),
+                Word(text="line", start_time=10.4, end_time=10.8),
+                Word(text="without", start_time=10.8, end_time=11.2),
+                Word(text="comma", start_time=11.2, end_time=11.6),
+            ]
+        )
+        nxt = Line(words=[Word(text="Next", start_time=13.0, end_time=13.4)])
+
+        assert _carryover_handoff_delay(prev, nxt) == 0.0
+
+    def test_overlap_suffix_prefix_gets_larger_delay(self):
+        prev = Line(
+            words=[
+                Word(text="Oh,", start_time=68.58, end_time=69.0),
+                Word(text="shelter,", start_time=69.0, end_time=69.8),
+                Word(text="mother", start_time=69.8, end_time=70.2),
+                Word(text="shelter,", start_time=70.2, end_time=70.68),
+            ]
+        )
+        nxt = Line(
+            words=[
+                Word(text="Mother", start_time=71.26, end_time=72.0),
+                Word(text="shelter", start_time=72.0, end_time=72.6),
+                Word(text="us", start_time=72.6, end_time=72.8),
+            ]
+        )
+
+        delay = _carryover_handoff_delay(prev, nxt)
+        assert delay >= 1.0
+
+
 class TestRenderFrame:
     """Test render_frame function."""
 
@@ -250,6 +304,52 @@ class TestRenderFrame:
 
         assert isinstance(result, np.ndarray)
         assert result.shape == (1080, 1920, 3)
+
+    def test_first_word_highlight_delay_applies(self, monkeypatch):
+        """First word should not begin highlighting immediately when delay is enabled."""
+        import y2karaoke.core.components.render.frame_renderer as fr
+
+        monkeypatch.setattr(fr, "FIRST_WORD_HIGHLIGHT_DELAY", 0.2)
+        line = Line(
+            words=[
+                Word(text="Hello", start_time=1.0, end_time=1.5),
+                Word(text="world", start_time=1.5, end_time=2.0),
+            ]
+        )
+        words_with_spaces = ["Hello", " ", "world"]
+        word_widths = [100.0, 20.0, 100.0]
+
+        width = _compute_word_highlight_width(
+            line,
+            words_with_spaces,
+            word_widths,
+            highlight_time=1.1,
+        )
+
+        assert width == 0
+
+    def test_later_word_highlight_progress_unchanged(self, monkeypatch):
+        """Delay should not block highlighting once playback is into later words."""
+        import y2karaoke.core.components.render.frame_renderer as fr
+
+        monkeypatch.setattr(fr, "FIRST_WORD_HIGHLIGHT_DELAY", 0.2)
+        line = Line(
+            words=[
+                Word(text="Hello", start_time=1.0, end_time=1.5),
+                Word(text="world", start_time=1.5, end_time=2.0),
+            ]
+        )
+        words_with_spaces = ["Hello", " ", "world"]
+        word_widths = [100.0, 20.0, 100.0]
+
+        width = _compute_word_highlight_width(
+            line,
+            words_with_spaces,
+            word_widths,
+            highlight_time=1.8,
+        )
+
+        assert width > 120
 
     def test_empty_lines_handling(self):
         """Test handling of empty lines."""

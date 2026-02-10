@@ -10,9 +10,10 @@ import re
 import sys
 from typing import Sequence
 
-import pronouncing
+import cmudict
 
 logger = logging.getLogger(__name__)
+_CMU_DICT = cmudict.dict()
 
 
 def lex_lookup_main(argv: Sequence[str] | None = None) -> int:
@@ -26,9 +27,11 @@ def lex_lookup_main(argv: Sequence[str] | None = None) -> int:
     tokens = _tokenize(text)
     phonemes: list[str] = []
     for token in tokens:
-        phones = pronouncing.phones_for_word(token.lower())
+        phones = _CMU_DICT.get(token.lower())
         if phones:
-            phonemes.extend(p.lower() for p in phones[0].split())
+            # cmudict returns a list of pronunciations where each pronunciation is
+            # already split into phones.
+            phonemes.extend(p.lower() for p in phones[0])
         else:
             logger.debug("No pronunciation for %s; emitting text literal", token)
             phonemes.extend([token.upper()])

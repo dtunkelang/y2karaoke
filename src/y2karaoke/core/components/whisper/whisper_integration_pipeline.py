@@ -116,7 +116,7 @@ def transcribe_vocals_impl(
         return [], [], "", model_size
 
 
-def align_lrc_text_to_whisper_timings_impl(
+def align_lrc_text_to_whisper_timings_impl(  # noqa: C901
     lines: List[models.Line],
     vocals_path: str,
     language: Optional[str],
@@ -147,8 +147,13 @@ def align_lrc_text_to_whisper_timings_impl(
     shift_repeated_lines_to_next_whisper_fn: Callable[..., Any],
     enforce_monotonic_line_starts_whisper_fn: Callable[..., Any],
     resolve_line_overlaps_fn: Callable[..., Any],
+    extend_line_to_trailing_whisper_matches_fn: Callable[..., Any],
+    pull_late_lines_to_matching_segments_fn: Callable[..., Any],
+    retime_short_interjection_lines_fn: Callable[..., Any],
+    snap_first_word_to_whisper_onset_fn: Callable[..., Any],
     interpolate_unmatched_lines_fn: Callable[..., Any],
     refine_unmatched_lines_with_onsets_fn: Callable[..., Any],
+    pull_lines_forward_for_continuous_vocals_fn: Callable[..., Any],
     logger,
 ) -> Tuple[List[models.Line], List[str], Dict[str, float]]:
     """Align LRC text to Whisper timings using phonetic DTW (timings fixed)."""
@@ -262,19 +267,57 @@ def align_lrc_text_to_whisper_timings_impl(
         )
     )
 
-    mapped_lines = shift_repeated_lines_to_next_whisper_fn(mapped_lines, all_words)
-    mapped_lines = enforce_monotonic_line_starts_whisper_fn(mapped_lines, all_words)
-    mapped_lines = resolve_line_overlaps_fn(mapped_lines)
+    def enforce_stage_invariants(lines_in: List[models.Line]) -> List[models.Line]:
+        # Run twice to settle chained neighbor constraints in dense/repeated sections.
+        out = lines_in
+        for _ in range(2):
+            out = enforce_monotonic_line_starts_whisper_fn(out, all_words)
+            out = resolve_line_overlaps_fn(out)
+        return out
+
     mapped_lines = interpolate_unmatched_lines_fn(mapped_lines, mapped_lines_set)
+    mapped_lines = enforce_stage_invariants(mapped_lines)
 
     mapped_lines = refine_unmatched_lines_with_onsets_fn(
         mapped_lines,
         mapped_lines_set,
         vocals_path,
     )
+    mapped_lines = enforce_stage_invariants(mapped_lines)
 
-    mapped_lines = enforce_monotonic_line_starts_whisper_fn(mapped_lines, all_words)
-    mapped_lines = resolve_line_overlaps_fn(mapped_lines)
+    mapped_lines = shift_repeated_lines_to_next_whisper_fn(mapped_lines, all_words)
+    mapped_lines = enforce_stage_invariants(mapped_lines)
+    mapped_lines = extend_line_to_trailing_whisper_matches_fn(
+        mapped_lines,
+        all_words,
+    )
+    mapped_lines = enforce_stage_invariants(mapped_lines)
+    mapped_lines = pull_late_lines_to_matching_segments_fn(
+        mapped_lines,
+        transcription,
+        epitran_lang,
+    )
+    mapped_lines = enforce_stage_invariants(mapped_lines)
+    mapped_lines = retime_short_interjection_lines_fn(
+        mapped_lines,
+        transcription,
+    )
+    mapped_lines = enforce_stage_invariants(mapped_lines)
+    mapped_lines = snap_first_word_to_whisper_onset_fn(
+        mapped_lines,
+        all_words,
+    )
+    mapped_lines = enforce_stage_invariants(mapped_lines)
+    if audio_features is not None:
+        mapped_lines, continuous_fixes = pull_lines_forward_for_continuous_vocals_fn(
+            mapped_lines,
+            audio_features,
+        )
+        if continuous_fixes:
+            corrections.append(
+                f"Pulled {continuous_fixes} line(s) forward for continuous vocals"
+            )
+    mapped_lines = enforce_stage_invariants(mapped_lines)
 
     matched_ratio = mapped_count / len(lrc_words) if lrc_words else 0.0
     avg_similarity = total_similarity / mapped_count if mapped_count else 0.0

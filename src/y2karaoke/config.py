@@ -62,6 +62,12 @@ INSTRUMENTAL_BREAK_THRESHOLD = (
 LYRICS_LEAD_TIME = 1.0
 HIGHLIGHT_LEAD_TIME = 0.15  # Seconds to advance highlight sweep within a line
 HIGHLIGHT_END_EARLY = 0.1  # Finish highlight slightly before line end
+FIRST_WORD_HIGHLIGHT_DELAY = float(
+    os.getenv("Y2KARAOKE_FIRST_WORD_HIGHLIGHT_DELAY", "0.2")
+)
+CARRYOVER_HANDOFF_DELAY_MAX = float(
+    os.getenv("Y2KARAOKE_CARRYOVER_HANDOFF_DELAY_MAX", "1.4")
+)
 LYRICS_ACTIVATION_LEAD = (
     0.2  # Seconds to activate a line early (compensate for timing lag)
 )

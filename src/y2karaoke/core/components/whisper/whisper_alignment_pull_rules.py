@@ -23,6 +23,45 @@ from .whisper_alignment_pull_helpers import (
 logger = logging.getLogger(__name__)
 
 
+def _segment_window_available(
+    seg: TranscriptionSegment,
+    prev_end: float | None,
+    next_start: float | None,
+    min_gap: float,
+) -> bool:
+    min_start = seg.start
+    if prev_end is not None:
+        min_start = max(min_start, prev_end + min_gap)
+
+    max_end = seg.end
+    if next_start is not None:
+        max_end = min(max_end, next_start - min_gap)
+
+    return (max_end - min_start) > 0.05
+
+
+def _retime_line_to_segment_with_neighbors(
+    line: Line,
+    seg: TranscriptionSegment,
+    prev_end: float | None,
+    next_start: float | None,
+    min_gap: float,
+) -> Line | None:
+    """Retime into a segment while respecting neighboring line boundaries."""
+    min_start = seg.start
+    if prev_end is not None:
+        min_start = max(min_start, prev_end + min_gap)
+
+    max_end = seg.end
+    if next_start is not None:
+        max_end = min(max_end, next_start - min_gap)
+
+    if max_end - min_start <= 0.05:
+        return None
+
+    return _retime_line_to_window(line, min_start, max_end)
+
+
 def _merge_lines_to_whisper_segments(  # noqa: C901
     lines: List[Line],
     segments: List[TranscriptionSegment],
@@ -396,9 +435,7 @@ def _pull_lines_to_best_segments(  # noqa: C901
                 gap = abs(cand.start - line.start_time)
                 if gap > 6.0:
                     continue
-                if prev_end is not None and cand.start <= prev_end + min_gap:
-                    continue
-                if next_start is not None and cand.end >= next_start - min_gap:
+                if not _segment_window_available(cand, prev_end, next_start, min_gap):
                     continue
                 if nearest_start_gap is None or gap < nearest_start_gap:
                     nearest_start_gap = gap
@@ -407,8 +444,12 @@ def _pull_lines_to_best_segments(  # noqa: C901
                 nearest_start_seg is not None
                 and nearest_start_seg.start <= line.start_time - 1.0
             ):
-                adjusted[idx] = _retime_line_to_segment(line, nearest_start_seg)
-                fixed += 1
+                retimed = _retime_line_to_segment_with_neighbors(
+                    line, nearest_start_seg, prev_end, next_start, min_gap
+                )
+                if retimed is not None:
+                    adjusted[idx] = retimed
+                    fixed += 1
                 continue
 
         if word_count <= 4:
@@ -420,10 +461,7 @@ def _pull_lines_to_best_segments(  # noqa: C901
                     continue
                 if line.start_time - cand.start < 2.5:
                     continue
-                if prev_end is not None and cand.start <= prev_end + min_gap:
-                    if abs(cand.start - prev_end) > 0.1:
-                        continue
-                if next_start is not None and cand.end >= next_start - min_gap:
+                if not _segment_window_available(cand, prev_end, next_start, min_gap):
                     continue
                 if end_gap is None or gap_to_end < end_gap:
                     end_gap = gap_to_end
@@ -442,9 +480,9 @@ def _pull_lines_to_best_segments(  # noqa: C901
                         continue
                     if cand.start >= end_aligned.start:
                         continue
-                    if prev_end is not None and cand.start <= prev_end + min_gap:
-                        continue
-                    if next_start is not None and cand.end >= next_start - min_gap:
+                    if not _segment_window_available(
+                        cand, prev_end, next_start, min_gap
+                    ):
                         continue
                     cand_sim = _phonetic_similarity(line.text, cand.text, language)
                     if cand_sim > best_prior_sim:
@@ -455,8 +493,12 @@ def _pull_lines_to_best_segments(  # noqa: C901
                 ):
                     chosen_seg = best_prior
 
-                adjusted[idx] = _retime_line_to_segment(line, chosen_seg)
-                fixed += 1
+                retimed = _retime_line_to_segment_with_neighbors(
+                    line, chosen_seg, prev_end, next_start, min_gap
+                )
+                if retimed is not None:
+                    adjusted[idx] = retimed
+                    fixed += 1
                 continue
 
         seg, sim, _ = _find_best_whisper_segment(
@@ -503,14 +545,16 @@ def _pull_lines_to_best_segments(  # noqa: C901
         late_and_ordered = (
             sim >= 0.3
             and start_delta <= -1.0
-            and (prev_end is None or seg.start >= prev_end + min_gap)
-            and (next_start is None or seg.end <= next_start - min_gap)
+            and _segment_window_available(seg, prev_end, next_start, min_gap)
         )
 
         if sim < local_min_similarity:
             if word_count > 4 and not late_and_ordered:
                 continue
-            if start_delta > -3.0:
+            if late_and_ordered:
+                if start_delta > -1.0:
+                    continue
+            elif start_delta > -3.0:
                 continue
 
         if sim < local_min_similarity and word_count <= 6:
@@ -527,17 +571,15 @@ def _pull_lines_to_best_segments(  # noqa: C901
             continue
 
         if sim < local_min_similarity:
-            if prev_end is not None and seg.start <= prev_end + min_gap:
-                continue
-            if next_start is not None and seg.end >= next_start - min_gap:
+            if not _segment_window_available(seg, prev_end, next_start, min_gap):
                 continue
 
-        if prev_end is not None and seg.start <= prev_end + min_gap:
+        retimed = _retime_line_to_segment_with_neighbors(
+            line, seg, prev_end, next_start, min_gap
+        )
+        if retimed is None:
             continue
-        if next_start is not None and seg.end >= next_start - min_gap:
-            continue
-
-        adjusted[idx] = _retime_line_to_segment(line, seg)
+        adjusted[idx] = retimed
         fixed += 1
 
     return adjusted, fixed

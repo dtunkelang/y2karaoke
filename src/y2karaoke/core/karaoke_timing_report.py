@@ -165,12 +165,6 @@ def _adjust_lines_from_whisper_word_windows(
             if target_start is not None:
                 delta = target_start - line["start"]
                 line_delta = round(delta, 3)
-                if delta > 0:
-                    line["start"] = round(line["start"] + delta, 2)
-                    line["end"] = round(line["end"] + delta, 2)
-                    for word_entry in line["words"]:
-                        word_entry["start"] = round(word_entry["start"] + delta, 3)
-                        word_entry["end"] = round(word_entry["end"] + delta, 3)
         line["whisper_line_start_delta"] = line_delta
 
 

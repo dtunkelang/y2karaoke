@@ -64,8 +64,8 @@ If not, recreate the virtual environment with `python3.12 -m venv venv`.
 To keep Epitran’s phonetic DTW as accurate as possible we ship a lightweight `lex_lookup`
 shim that is installed automatically via the cache directory, so you generally no longer see
 `lex_lookup (from flite) is not installed` warnings. Under the hood the shim uses the
-`pronouncing` package (installed from project dependencies) to
-emulate a CMU-style dictionary whenever the real `lex_lookup` binary is absent.
+`cmudict` package (installed from project dependencies) to emulate a CMU-style
+dictionary whenever the real `lex_lookup` binary is absent.
 
 If you need the absolute best phonetic coverage (and prefer upstream FLite), feel free to
 install the real `flite` package for your OS:

@@ -52,21 +52,20 @@ def _find_best_cached_whisper_model(  # noqa: C901
         return None
 
     lang_token = language or "auto"
-    mode_suffix = "_aggr" if aggressive else ""
-    best_idx = _model_index(target_model)
     best_path = None
     best_model = None
-    best_lang_exact = False  # prefer exact language matches
-    best_temp_exact = False
+    best_score: Tuple[int, int, int, int, int] = (-1, -1, -1, -1, -1)
 
-    pattern = f"{vocals_file.stem}_whisper_*{mode_suffix}.json"
+    pattern = f"{vocals_file.stem}_whisper_*.json"
     for cache_file in vocals_file.parent.glob(pattern):
         stem = cache_file.stem
         if "_whisper_" not in stem:
             continue
         tail = stem.split("_whisper_", 1)[1]
-        if tail.endswith("_aggr"):
+        file_aggressive = tail.endswith("_aggr")
+        if file_aggressive:
             tail = tail[: -len("_aggr")]
+        mode_exact = file_aggressive == aggressive
 
         # Parse temperature from filename if present
         file_temp = 0.0
@@ -101,25 +100,17 @@ def _find_best_cached_whisper_model(  # noqa: C901
         if model_idx < 0:
             continue
 
-        better = False
-        if not best_path:
-            better = True
-        else:
-            if temp_exact and not best_temp_exact:
-                better = True
-            elif temp_exact == best_temp_exact:
-                if model_idx > best_idx:
-                    better = True
-                elif model_idx == best_idx:
-                    if lang_exact and not best_lang_exact:
-                        better = True
-
-        if better:
-            best_idx = model_idx
+        score = (
+            model_idx,
+            int(model_idx >= _model_index(target_model)),
+            int(temp_exact),
+            int(mode_exact),
+            int(lang_exact),
+        )
+        if score > best_score:
             best_path = cache_file
             best_model = model_part
-            best_lang_exact = lang_exact
-            best_temp_exact = temp_exact
+            best_score = score
 
     if best_path and best_model:
         return str(best_path), best_model

@@ -35,6 +35,7 @@ def test_transcribe_vocals_uses_cache(monkeypatch, tmp_path):
     audio_path.write_bytes(b"fake")
 
     cache_path = te._get_whisper_cache_path(str(audio_path), "base", None)
+    assert cache_path is not None
     segments = [te.TranscriptionSegment(start=0.0, end=1.0, text="cached", words=[])]
     words = [te.TranscriptionWord(start=0.1, end=0.2, text="cached")]
     te._save_whisper_cache(cache_path, segments, words, "en", "base", False)
@@ -74,6 +75,7 @@ def test_find_best_cached_auto_accepts_explicit_language(tmp_path):
 
     # Save a cache with explicit language "en"
     cache_path = te._get_whisper_cache_path(str(audio), "large", "en", aggressive=True)
+    assert cache_path is not None
     word = te.TranscriptionWord(start=0.1, end=0.2, text="hello")
     segments = [te.TranscriptionSegment(start=0.0, end=1.0, text="hello", words=[word])]
     te._save_whisper_cache(cache_path, segments, [word], "en", "large", True)
@@ -93,6 +95,7 @@ def test_find_best_cached_explicit_accepts_auto_cache(tmp_path):
 
     # Save a cache with auto-detect
     cache_path = te._get_whisper_cache_path(str(audio), "large", None, aggressive=False)
+    assert cache_path is not None
     word = te.TranscriptionWord(start=0.1, end=0.2, text="hello")
     segments = [te.TranscriptionSegment(start=0.0, end=1.0, text="hello", words=[word])]
     te._save_whisper_cache(cache_path, segments, [word], "en", "large", False)
@@ -115,10 +118,12 @@ def test_find_best_cached_prefers_exact_language_match(tmp_path):
 
     # Save auto cache
     auto_path = te._get_whisper_cache_path(str(audio), "large", None, aggressive=False)
+    assert auto_path is not None
     te._save_whisper_cache(auto_path, segments, [word], "en", "large", False)
 
     # Save explicit "en" cache
     en_path = te._get_whisper_cache_path(str(audio), "large", "en", aggressive=False)
+    assert en_path is not None
     te._save_whisper_cache(en_path, segments, [word], "en", "large", False)
 
     # Search with language="en" should prefer the exact "en" cache
@@ -136,6 +141,7 @@ def test_find_best_cached_rejects_wrong_explicit_language(tmp_path):
 
     # Save a cache with explicit language "fr"
     cache_path = te._get_whisper_cache_path(str(audio), "large", "fr", aggressive=False)
+    assert cache_path is not None
     word = te.TranscriptionWord(start=0.1, end=0.2, text="bonjour")
     segments = [
         te.TranscriptionSegment(start=0.0, end=1.0, text="bonjour", words=[word])
@@ -145,6 +151,75 @@ def test_find_best_cached_rejects_wrong_explicit_language(tmp_path):
     # Search with language="en" should NOT find the "fr" cache
     result = te._find_best_cached_whisper_model(str(audio), "en", False, "large")
     assert result is None
+
+
+def test_find_best_cached_prefers_non_aggressive_when_requested(tmp_path):
+    audio = tmp_path / "vocals.wav"
+    audio.write_bytes(b"fake")
+
+    word = te.TranscriptionWord(start=0.1, end=0.2, text="hello")
+    segments = [te.TranscriptionSegment(start=0.0, end=1.0, text="hello", words=[word])]
+
+    non_aggr = te._get_whisper_cache_path(str(audio), "large", "en", aggressive=False)
+    aggr = te._get_whisper_cache_path(str(audio), "large", "en", aggressive=True)
+    assert non_aggr is not None
+    assert aggr is not None
+    te._save_whisper_cache(non_aggr, segments, [word], "en", "large", False)
+    te._save_whisper_cache(aggr, segments, [word], "en", "large", True)
+
+    result = te._find_best_cached_whisper_model(str(audio), "en", False, "large")
+    assert result is not None
+    found_path, _ = result
+    assert "_aggr" not in found_path
+
+
+def test_find_best_cached_prefers_aggressive_when_requested(tmp_path):
+    audio = tmp_path / "vocals.wav"
+    audio.write_bytes(b"fake")
+
+    word = te.TranscriptionWord(start=0.1, end=0.2, text="hello")
+    segments = [te.TranscriptionSegment(start=0.0, end=1.0, text="hello", words=[word])]
+
+    non_aggr = te._get_whisper_cache_path(str(audio), "large", "en", aggressive=False)
+    aggr = te._get_whisper_cache_path(str(audio), "large", "en", aggressive=True)
+    assert non_aggr is not None
+    assert aggr is not None
+    te._save_whisper_cache(non_aggr, segments, [word], "en", "large", False)
+    te._save_whisper_cache(aggr, segments, [word], "en", "large", True)
+
+    result = te._find_best_cached_whisper_model(str(audio), "en", True, "large")
+    assert result is not None
+    found_path, _ = result
+    assert "_aggr" in found_path
+
+
+def test_find_best_cached_prefers_higher_model_over_mode_match(tmp_path):
+    audio = tmp_path / "vocals.wav"
+    audio.write_bytes(b"fake")
+
+    word = te.TranscriptionWord(start=0.1, end=0.2, text="hello")
+    segments = [te.TranscriptionSegment(start=0.0, end=1.0, text="hello", words=[word])]
+
+    # Non-aggressive lower model cache
+    medium_path = te._get_whisper_cache_path(
+        str(audio), "medium", None, aggressive=False
+    )
+    assert medium_path is not None
+    te._save_whisper_cache(medium_path, segments, [word], "en", "medium", False)
+
+    # Aggressive requested-model cache
+    large_aggr_path = te._get_whisper_cache_path(
+        str(audio), "large", "en", aggressive=True
+    )
+    assert large_aggr_path is not None
+    te._save_whisper_cache(large_aggr_path, segments, [word], "en", "large", True)
+
+    # Requesting non-aggressive large should still prefer large over medium.
+    result = te._find_best_cached_whisper_model(str(audio), "en", False, "large")
+    assert result is not None
+    found_path, found_model = result
+    assert found_model == "large"
+    assert "_aggr" in found_path
 
 
 def test_align_dtw_whisper_falls_back_without_fastdtw():

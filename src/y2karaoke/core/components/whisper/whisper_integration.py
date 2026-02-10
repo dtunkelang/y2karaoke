@@ -56,6 +56,14 @@ _enforce_monotonic_line_starts_whisper = _ALIASES[
     "_enforce_monotonic_line_starts_whisper"
 ]
 _resolve_line_overlaps = _ALIASES["_resolve_line_overlaps"]
+_extend_line_to_trailing_whisper_matches = _ALIASES[
+    "_extend_line_to_trailing_whisper_matches"
+]
+_pull_late_lines_to_matching_segments = _ALIASES[
+    "_pull_late_lines_to_matching_segments"
+]
+_retime_short_interjection_lines = _ALIASES["_retime_short_interjection_lines"]
+_snap_first_word_to_whisper_onset = _ALIASES["_snap_first_word_to_whisper_onset"]
 _interpolate_unmatched_lines = _ALIASES["_interpolate_unmatched_lines"]
 _refine_unmatched_lines_with_onsets = _ALIASES["_refine_unmatched_lines_with_onsets"]
 _assess_lrc_quality = _ALIASES["_assess_lrc_quality"]
@@ -271,8 +279,17 @@ def align_lrc_text_to_whisper_timings(
             _enforce_monotonic_line_starts_whisper
         ),
         resolve_line_overlaps_fn=_resolve_line_overlaps,
+        extend_line_to_trailing_whisper_matches_fn=(
+            _extend_line_to_trailing_whisper_matches
+        ),
+        pull_late_lines_to_matching_segments_fn=(_pull_late_lines_to_matching_segments),
+        retime_short_interjection_lines_fn=_retime_short_interjection_lines,
+        snap_first_word_to_whisper_onset_fn=_snap_first_word_to_whisper_onset,
         interpolate_unmatched_lines_fn=_interpolate_unmatched_lines,
         refine_unmatched_lines_with_onsets_fn=_refine_unmatched_lines_with_onsets,
+        pull_lines_forward_for_continuous_vocals_fn=(
+            _pull_lines_forward_for_continuous_vocals
+        ),
         logger=logger,
     )
 

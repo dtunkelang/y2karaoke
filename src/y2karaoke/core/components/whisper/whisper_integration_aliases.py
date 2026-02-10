@@ -106,6 +106,18 @@ def build_aliases() -> Dict[str, Any]:
         whisper_mapping._enforce_monotonic_line_starts_whisper
     )
     aliases["_resolve_line_overlaps"] = whisper_mapping._resolve_line_overlaps
+    aliases["_extend_line_to_trailing_whisper_matches"] = (
+        whisper_mapping._extend_line_to_trailing_whisper_matches
+    )
+    aliases["_pull_late_lines_to_matching_segments"] = (
+        whisper_mapping._pull_late_lines_to_matching_segments
+    )
+    aliases["_retime_short_interjection_lines"] = (
+        whisper_mapping._retime_short_interjection_lines
+    )
+    aliases["_snap_first_word_to_whisper_onset"] = (
+        whisper_mapping._snap_first_word_to_whisper_onset
+    )
 
     aliases["_redistribute_word_timings_to_line"] = (
         whisper_utils._redistribute_word_timings_to_line

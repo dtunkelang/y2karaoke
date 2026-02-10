@@ -15,6 +15,8 @@ from ....config import (
     INSTRUMENTAL_BREAK_THRESHOLD,
     LYRICS_LEAD_TIME,
     LYRICS_ACTIVATION_LEAD,
+    FIRST_WORD_HIGHLIGHT_DELAY,
+    CARRYOVER_HANDOFF_DELAY_MAX,
     CUE_INDICATOR_DURATION,
     CUE_INDICATOR_MIN_GAP,
     Colors,
@@ -217,6 +219,37 @@ def _check_cue_indicator(
     return False, 0.0
 
 
+def _carryover_handoff_delay(prev_line: Line, next_line: Line) -> float:
+    """Compute extra time to keep previous line highlighted for carryover phrases."""
+    if not prev_line.words or not next_line.words:
+        return 0.0
+    if "," not in prev_line.text:
+        return 0.0
+    if len(prev_line.words) < 4:
+        return 0.0
+
+    gap = next_line.start_time - prev_line.end_time
+    if gap >= 0.8:
+        return 0.0
+
+    def _norm_tokens(text: str) -> list[str]:
+        return ["".join(ch for ch in t.lower() if ch.isalpha()) for t in text.split()]
+
+    prev_tokens = [t for t in _norm_tokens(prev_line.text) if t]
+    next_tokens = [t for t in _norm_tokens(next_line.text) if t]
+    overlap = 0
+    max_n = min(len(prev_tokens), len(next_tokens), 3)
+    for n in range(max_n, 0, -1):
+        if prev_tokens[-n:] == next_tokens[:n]:
+            overlap = n
+            break
+
+    # Smaller inter-line gap implies stronger chance this is a carried phrase.
+    boost = max(0.0, 0.8 - max(gap, 0.0)) * 0.3
+    overlap_boost = 0.5 * overlap
+    return min(CARRYOVER_HANDOFF_DELAY_MAX, 0.2 + boost + overlap_boost)
+
+
 def _draw_line_text(
     draw: ImageDraw.ImageDraw,
     line: Line,
@@ -318,14 +351,21 @@ def _compute_word_highlight_width(
         word_spans.append(span)
 
     highlight_width = 0.0
-    for word, span in zip(line.words, word_spans):
-        if highlight_time >= word.end_time:
+    for word_idx, (word, span) in enumerate(zip(line.words, word_spans)):
+        start_time = word.start_time
+        end_time = word.end_time
+        # Zero-duration words should still highlight immediately.
+        if word_idx == 0 and FIRST_WORD_HIGHLIGHT_DELAY > 0 and end_time > start_time:
+            start_time += FIRST_WORD_HIGHLIGHT_DELAY
+            end_time += FIRST_WORD_HIGHLIGHT_DELAY
+
+        if highlight_time >= end_time:
             highlight_width += span
             continue
-        if highlight_time <= word.start_time:
+        if highlight_time <= start_time:
             break
-        duration = max(word.end_time - word.start_time, 0.01)
-        fraction = (highlight_time - word.start_time) / duration
+        duration = max(end_time - start_time, 0.01)
+        fraction = (highlight_time - start_time) / duration
         fraction = max(0.0, min(1.0, fraction))
         highlight_width += span * fraction
         break
@@ -359,6 +399,12 @@ def render_frame(  # noqa: C901
     for i, line in enumerate(lines):
         if line.start_time <= activation_time:
             current_line_idx = i
+    if 0 < current_line_idx < len(lines):
+        prev_line = lines[current_line_idx - 1]
+        curr_line = lines[current_line_idx]
+        handoff_delay = _carryover_handoff_delay(prev_line, curr_line)
+        if handoff_delay > 0 and activation_time < prev_line.end_time + handoff_delay:
+            current_line_idx -= 1
 
     outro_start = lines[-1].end_time + OUTRO_DELAY if lines else OUTRO_DELAY
     if audio_duration:

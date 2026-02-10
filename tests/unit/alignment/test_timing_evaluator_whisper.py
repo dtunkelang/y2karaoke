@@ -266,6 +266,70 @@ def test_pull_lines_allows_low_similarity_when_late_and_ordered(monkeypatch):
     assert fixed >= 1
 
 
+def test_pull_lines_to_best_segments_allows_small_prev_overlap():
+    lines = [
+        Line(words=[Word(text="lead", start_time=64.0, end_time=64.85)]),
+        Line(
+            words=[
+                Word(text="mother", start_time=68.58, end_time=69.0),
+                Word(text="shelter", start_time=69.0, end_time=69.5),
+                Word(text="mother", start_time=69.5, end_time=70.0),
+                Word(text="shelter", start_time=70.0, end_time=70.68),
+            ]
+        ),
+        Line(words=[Word(text="next", start_time=71.5, end_time=72.0)]),
+    ]
+    segments = [
+        te.TranscriptionSegment(
+            start=64.61, end=76.06, text="mother shelter mother shelter us", words=[]
+        ),
+        te.TranscriptionSegment(start=78.04, end=85.2, text="father line", words=[]),
+    ]
+
+    adjusted, fixed = te._pull_lines_to_best_segments(
+        lines, segments, language="eng-Latn"
+    )
+
+    assert fixed >= 1
+    assert adjusted[1].start_time == pytest.approx(64.9, abs=0.05)
+    assert adjusted[1].end_time < lines[2].start_time
+
+
+def test_pull_lines_to_best_segments_allows_late_low_similarity_when_window_fits():
+    lines = [
+        Line(words=[Word(text="anchor", start_time=74.0, end_time=74.5)]),
+        Line(
+            words=[
+                Word(text="my", start_time=79.54, end_time=79.8),
+                Word(text="father", start_time=79.8, end_time=80.2),
+                Word(text="was", start_time=80.2, end_time=80.4),
+                Word(text="a", start_time=80.4, end_time=80.5),
+                Word(text="lord", start_time=80.5, end_time=81.0),
+                Word(text="of", start_time=81.0, end_time=81.2),
+                Word(text="land", start_time=81.2, end_time=82.48),
+            ]
+        ),
+        Line(words=[Word(text="next", start_time=82.72, end_time=83.1)]),
+    ]
+    segments = [
+        te.TranscriptionSegment(
+            start=78.04,
+            end=85.2,
+            text="my father was a lord of land my daddy was a repo man",
+            words=[],
+        )
+    ]
+
+    with _alignment_similarity_hook(lambda *_a, **_k: 0.4):
+        adjusted, fixed = te._pull_lines_to_best_segments(
+            lines, segments, language="eng-Latn", min_similarity=0.7
+        )
+
+    assert fixed >= 1
+    assert adjusted[1].start_time == pytest.approx(78.04, abs=0.05)
+    assert adjusted[1].end_time < lines[2].start_time
+
+
 def test_retime_adjacent_lines_to_whisper_window(monkeypatch):
     lines = [
         Line(words=[Word(text="Aucun", start_time=10.0, end_time=10.3)]),

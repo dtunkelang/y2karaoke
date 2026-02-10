@@ -30,6 +30,7 @@ dependencies = [
     "lyriq>=1.4.0",
     "whisperx>=3.1.0",
     "epitran>=1.24.0",
+    "cmudict>=1.0.0",
     "moviepy>=2.0.0",
     "numpy>=1.24.0,<2.0.0",
     "Pillow>=10.0.0",
@@ -90,7 +91,6 @@ ignore_missing_imports = true
 [[tool.mypy.overrides]]
 module = [
     "yt_dlp",
-    "pronouncing",
     "musicbrainzngs",
     "epitran",
     "panphon",

@@ -32,6 +32,10 @@ from .whisper_mapping_pipeline import (
 from .whisper_mapping_post import (
     _build_word_assignments_from_phoneme_path,
     _enforce_monotonic_line_starts_whisper,
+    _extend_line_to_trailing_whisper_matches,
+    _pull_late_lines_to_matching_segments,
+    _retime_short_interjection_lines,
+    _snap_first_word_to_whisper_onset,
     _resolve_line_overlaps,
     _shift_repeated_lines_to_next_whisper,
 )
@@ -63,4 +67,8 @@ __all__ = [
     "_shift_repeated_lines_to_next_whisper",
     "_enforce_monotonic_line_starts_whisper",
     "_resolve_line_overlaps",
+    "_extend_line_to_trailing_whisper_matches",
+    "_pull_late_lines_to_matching_segments",
+    "_retime_short_interjection_lines",
+    "_snap_first_word_to_whisper_onset",
 ]
