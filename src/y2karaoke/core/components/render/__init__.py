@@ -1,11 +1,11 @@
 """Render component facade."""
 
-from ...backgrounds import (
+from .backgrounds import (
     BackgroundProcessor,
     BackgroundSegment,
     create_background_segments,
 )
-from ...video_writer import render_karaoke_video
+from .video_writer import render_karaoke_video
 
 __all__ = [
     "BackgroundProcessor",

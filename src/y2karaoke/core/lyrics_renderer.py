@@ -1,18 +1,6 @@
-"""Lyrics rendering utilities for karaoke videos."""
+"""Compatibility module alias for lyrics rendering helpers."""
 
-from ..config import Colors
+from .components.render import lyrics_renderer as _impl
+import sys as _sys
 
-
-def get_singer_colors(
-    singer: str, is_highlighted: bool
-) -> tuple[tuple[int, int, int], tuple[int, int, int]]:
-    """Get text and highlight colors for a singer."""
-    if singer == "singer1":
-        return (Colors.SINGER1, Colors.SINGER1_HIGHLIGHT)
-    elif singer == "singer2":
-        return (Colors.SINGER2, Colors.SINGER2_HIGHLIGHT)
-    elif singer == "both":
-        return (Colors.BOTH, Colors.BOTH_HIGHLIGHT)
-    else:
-        # Default colors (gold highlight, white text)
-        return (Colors.TEXT, Colors.HIGHLIGHT)
+_sys.modules[__name__] = _impl
