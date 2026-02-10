@@ -73,7 +73,7 @@ Output: karaoke_video.mp4
 
 ## 2. Track Identification (Title & Artist)
 
-**Files:** `src/y2karaoke/core/track_identifier.py` (facade), `src/y2karaoke/core/track_identifier_impl.py` (implementation)
+**Files:** `src/y2karaoke/core/track_identifier.py` (facade), `src/y2karaoke/core/track_identifier_impl.py` (entry workflow), `src/y2karaoke/core/track_identifier_helpers.py` (shared split/LRC/url helpers)
 
 Two identification paths:
 
@@ -393,8 +393,10 @@ y2karaoke/
 │   ├── exceptions.py             # Custom exceptions
 │   ├── core/
 │   │   ├── karaoke.py            # KaraokeGenerator orchestrator
+│   │   ├── karaoke_timing_report.py # JSON timing report helpers
 │   │   ├── track_identifier.py   # Track identifier facade
-│   │   ├── track_identifier_impl.py # Artist/title identification
+│   │   ├── track_identifier_impl.py # Track identification flow entry points
+│   │   ├── track_identifier_helpers.py # Shared scoring/LRC helper logic
 │   │   ├── lyrics.py             # Main lyrics pipeline
 │   │   ├── sync.py               # LRC provider integration
 │   │   ├── sync_quality.py       # LRC quality scoring helpers
@@ -442,7 +444,7 @@ The pipeline includes comprehensive quality evaluation and reporting at each ste
 - `get_lyrics_with_quality(...)`: Returns (lines, metadata, quality_report)
 - Reports: lyrics source, alignment method, whisper usage, issues
 
-**Pipeline Output** (`karaoke.py`):
+**Pipeline Output** (`karaoke.py`, timing report writer in `karaoke_timing_report.py`):
 The `generate()` method returns quality information:
 ```python
 {
