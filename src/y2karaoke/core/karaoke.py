@@ -11,7 +11,12 @@ from ..config import get_cache_dir
 from ..exceptions import Y2KaraokeError
 from ..utils.cache import CacheManager
 from ..utils.logging import get_logger
-from ..utils.validation import fix_line_order, sanitize_filename, validate_line_order
+from ..utils.validation import (
+    fix_line_order,
+    sanitize_filename,  # noqa: F401 - retained for monkeypatch-based tests
+    validate_line_order,
+)
+from . import karaoke_utils
 from .downloader import YouTubeDownloader, extract_video_id
 from .separator import AudioSeparator
 from .audio_effects import AudioProcessor
@@ -685,24 +690,7 @@ class KaraokeGenerator:
         return adjust_lyrics_timing(lines, break_edits)
 
     def _apply_splash_offset(self, lines, min_start: float = 3.5):
-        if not lines or lines[0].start_time >= min_start:
-            return lines
-        splash_offset = min_start - lines[0].start_time
-        from ..core.lyrics import Line, Word
-
-        offset_lines = []
-        for line in lines:
-            offset_words = [
-                Word(
-                    text=w.text,
-                    start_time=w.start_time + splash_offset,
-                    end_time=w.end_time + splash_offset,
-                    singer=w.singer,
-                )
-                for w in line.words
-            ]
-            offset_lines.append(Line(words=offset_words, singer=line.singer))
-        return offset_lines
+        return karaoke_utils.apply_splash_offset(lines, min_start=min_start)
 
     def _append_outro_line(
         self,
@@ -758,21 +746,7 @@ class KaraokeGenerator:
     def _summarize_quality(
         self, lyrics_result: Dict[str, Any]
     ) -> Tuple[float, List[str], str, str]:
-        lyrics_quality = lyrics_result.get("quality", {})
-        quality_score = lyrics_quality.get("overall_score", 50.0)
-        quality_issues = lyrics_quality.get("issues", [])
-
-        if quality_score >= 80:
-            quality_emoji = "✅"
-            quality_level = "high"
-        elif quality_score >= 50:
-            quality_emoji = "⚠️"
-            quality_level = "medium"
-        else:
-            quality_emoji = "❌"
-            quality_level = "low"
-
-        return quality_score, quality_issues, quality_level, quality_emoji
+        return karaoke_utils.summarize_quality(lyrics_result)
 
     def _get_lyrics(
         self,
@@ -830,24 +804,9 @@ class KaraokeGenerator:
         return {"lines": lines, "metadata": metadata, "quality": quality_report}
 
     def _scale_lyrics_timing(self, lines, tempo_multiplier: float):
-        if tempo_multiplier == 1.0:
-            return lines
-        logger.info(f"⏱️ Scaling lyrics timing for {tempo_multiplier:.2f}x tempo")
-        from ..core.lyrics import Line, Word
-
-        scaled_lines = []
-        for line in lines:
-            scaled_words = [
-                Word(
-                    text=w.text,
-                    start_time=w.start_time / tempo_multiplier,
-                    end_time=w.end_time / tempo_multiplier,
-                    singer=w.singer,
-                )
-                for w in line.words
-            ]
-            scaled_lines.append(Line(words=scaled_words, singer=line.singer))
-        return scaled_lines
+        if tempo_multiplier != 1.0:
+            logger.info(f"⏱️ Scaling lyrics timing for {tempo_multiplier:.2f}x tempo")
+        return karaoke_utils.scale_lyrics_timing(lines, tempo_multiplier)
 
     def _shorten_breaks(
         self,

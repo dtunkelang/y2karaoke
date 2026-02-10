@@ -602,7 +602,8 @@ class YouTubeSearcher(_Base):
 
             uploader = artist if artist != "Unknown" else "Unknown"
             return title, uploader, duration
-        except Exception:
+        except Exception as e:
+            logger.debug(f"Cached YouTube metadata lookup failed: {e}")
             return None
 
     def get_cached_youtube_metadata(self, url: str) -> Optional[tuple[str, str, int]]:
@@ -628,7 +629,8 @@ class YouTubeSearcher(_Base):
             if not wav_path:
                 return None
             return "Unknown", "Unknown", 0
-        except Exception:
+        except Exception as e:
+            logger.debug(f"Public cached metadata lookup failed: {e}")
             return None
 
     def _fallback_youtube_search(self, query: str) -> TrackInfo:

@@ -73,7 +73,7 @@ Output: karaoke_video.mp4
 
 ## 2. Track Identification (Title & Artist)
 
-**File:** `src/y2karaoke/core/track_identifier.py` (~1,760 lines)
+**Files:** `src/y2karaoke/core/track_identifier.py` (facade), `src/y2karaoke/core/track_identifier_impl.py` (implementation)
 
 Two identification paths:
 
@@ -121,7 +121,7 @@ class TrackInfo:
 ## 3. Lyrics and Timing from Providers
 
 ### Synced Lyrics (LRC Format)
-**File:** `src/y2karaoke/core/sync.py` (~300 lines)
+**Files:** `src/y2karaoke/core/sync.py` (provider/cache orchestration), `src/y2karaoke/core/sync_quality.py` (timestamp/duration/quality helpers)
 
 **Main functions:**
 - `fetch_lyrics_multi_source(title, artist, synced_only=True)`: Tries providers in order
@@ -393,9 +393,11 @@ y2karaoke/
 │   ├── exceptions.py             # Custom exceptions
 │   ├── core/
 │   │   ├── karaoke.py            # KaraokeGenerator orchestrator
-│   │   ├── track_identifier.py   # Artist/title identification
+│   │   ├── track_identifier.py   # Track identifier facade
+│   │   ├── track_identifier_impl.py # Artist/title identification
 │   │   ├── lyrics.py             # Main lyrics pipeline
 │   │   ├── sync.py               # LRC provider integration
+│   │   ├── sync_quality.py       # LRC quality scoring helpers
 │   │   ├── lrc.py                # LRC format parsing
 │   │   ├── genius.py             # Genius lyrics + singer detection
 │   │   ├── alignment.py          # Audio analysis for timing
@@ -433,7 +435,7 @@ The pipeline includes comprehensive quality evaluation and reporting at each ste
 
 ### Quality Reporting Functions
 
-**LRC Quality** (`sync.py`):
+**LRC Quality** (`sync_quality.py`, re-exported from `sync.py`):
 - `get_lyrics_quality_report(lrc_text, source, target_duration)`: Returns quality metrics
 
 **Lyrics with Quality** (`lyrics.py`):

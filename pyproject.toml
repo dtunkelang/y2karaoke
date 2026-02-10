@@ -85,6 +85,28 @@ warn_unused_configs = true
 disallow_untyped_defs = false
 disallow_incomplete_defs = false
 check_untyped_defs = true
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = [
+    "yt_dlp",
+    "pronouncing",
+    "musicbrainzngs",
+    "epitran",
+    "panphon",
+    "panphon.*",
+    "pydub",
+    "syncedlyrics",
+    "lyriq",
+    "soundfile",
+    "moviepy",
+    "audio_separator.separator",
+    "korean_romanizer.romanizer",
+    "pyarabic",
+    "pyarabic.*",
+    "scipy",
+]
+ignore_missing_imports = true
 
 [tool.flake8]
 max-line-length = 88

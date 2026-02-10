@@ -10,6 +10,7 @@ This document summarizes the core decision logic and the main test coverage for 
 
 **Primary code paths**
 - `src/y2karaoke/core/track_identifier.py`
+  - facade to `src/y2karaoke/core/track_identifier_impl.py`
   - `_search_youtube_single`
   - `_search_youtube_verified`
   - `_is_likely_non_studio`
