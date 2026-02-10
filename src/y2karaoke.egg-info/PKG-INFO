@@ -240,7 +240,7 @@ For debugging or experimenting with individual steps, you can run the core modul
 
 - **Fetch and inspect lyrics/timing**
   ```bash
-  python -m y2karaoke.core.lyrics "Song Title" "Artist Name" [optional_vocals.wav]
+  python -m y2karaoke.core.components.lyrics.api "Song Title" "Artist Name" [optional_vocals.wav]
   ```
   Prints detected lines (and duet information when available). If you provide a vocals WAV, it can fall back to WhisperX transcription.
 

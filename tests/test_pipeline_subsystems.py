@@ -14,7 +14,7 @@ def test_alignment_subsystem_exposes_timing_report_entrypoint():
 
 
 def test_identify_subsystem_exposes_track_identifier():
-    from y2karaoke.core.track_identifier import TrackIdentifier
+    from y2karaoke.core.components.identify.implementation import TrackIdentifier
 
     assert identify.TrackIdentifier is TrackIdentifier
 

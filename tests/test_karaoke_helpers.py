@@ -1,7 +1,7 @@
 import json
 
 from y2karaoke.core.karaoke import KaraokeGenerator
-from y2karaoke.core.lyrics import Line, Word
+from y2karaoke.core.components.lyrics.api import Line, Word
 from y2karaoke.core.break_shortener import BreakEdit
 
 

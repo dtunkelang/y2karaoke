@@ -1,7 +1,7 @@
 import y2karaoke.core.sync as sync
 import y2karaoke.core.sync_quality as sync_quality
-import y2karaoke.core.track_identifier as ti
-import y2karaoke.core.track_identifier_impl as ti_impl
+import y2karaoke.core.components.identify.implementation as ti
+import y2karaoke.core.components.identify.implementation as ti_impl
 
 
 def test_sync_reexports_quality_helpers():

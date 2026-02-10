@@ -4,7 +4,7 @@ import logging
 from pathlib import Path
 from typing import List, Optional, Tuple
 
-from .lyrics_helpers import (
+from .components.lyrics.helpers import (
     _apply_timing_to_lines,
     _create_lines_from_plain_text,
     _create_no_lyrics_placeholder,

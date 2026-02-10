@@ -1,7 +1,7 @@
 """Comprehensive tests for lyrics processing, including LRC parsing, line splitting, and romanization."""
 
 import pytest
-from y2karaoke.core.lyrics import (
+from y2karaoke.core.components.lyrics.api import (
     Word,
     Line,
     SongMetadata,

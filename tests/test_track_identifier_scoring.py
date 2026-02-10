@@ -1,4 +1,4 @@
-import y2karaoke.core.track_identifier as ti
+import y2karaoke.core.components.identify.implementation as ti
 
 
 def test_score_split_candidate_rejects_long_duration(monkeypatch):

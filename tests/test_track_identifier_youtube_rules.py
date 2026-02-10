@@ -1,4 +1,4 @@
-from y2karaoke.core import track_identifier_youtube_rules as rules
+from y2karaoke.core.components.identify import youtube_rules as rules
 
 
 def test_is_likely_non_studio_handles_live_and_radio_edit():

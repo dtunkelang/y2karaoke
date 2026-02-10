@@ -202,7 +202,7 @@ class TestCombinedMockFixtures:
         mocks["validate_quality"].return_value = (True, None)
 
         # Now we can test TrackIdentifier without network calls
-        from y2karaoke.core.track_identifier import TrackIdentifier
+        from y2karaoke.core.components.identify.implementation import TrackIdentifier
 
         identifier = TrackIdentifier()
 

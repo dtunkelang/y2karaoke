@@ -21,8 +21,7 @@ Pipeline facade note:
   - helper logic shared by identification flows
 - `src/y2karaoke/core/components/identify/youtube_rules.py`
   - pure YouTube heuristics
-- `src/y2karaoke/core/track_identifier.py`
-  - compatibility facade that re-exports identify entrypoints
+- `src/y2karaoke/core/components/identify/youtube.py`
   - `_search_youtube_single`
   - `_search_youtube_verified`
   - `_is_likely_non_studio`
@@ -47,7 +46,6 @@ Pipeline facade note:
 **Primary code paths**
 - `src/y2karaoke/core/components/lyrics/api.py`
 - `src/y2karaoke/core/components/lyrics/helpers.py`
-- `src/y2karaoke/core/lyrics.py` (compatibility facade)
 - `src/y2karaoke/core/timing_evaluator.py::select_best_source`
 - `src/y2karaoke/core/timing_evaluator.py::compare_sources`
 - `src/y2karaoke/core/sync_search.py`

@@ -4,16 +4,22 @@ import logging
 import pytest
 from unittest.mock import Mock, patch
 
-from y2karaoke.core.track_identifier import TrackIdentifier, TrackInfo
+from y2karaoke.core.components.identify.implementation import TrackIdentifier, TrackInfo
 from y2karaoke.exceptions import Y2KaraokeError
 
 
 class TestIdentifyFromUrlMocked:
     """Tests for identify_from_url with mocked external services."""
 
-    @patch("y2karaoke.core.track_identifier.TrackIdentifier._get_youtube_metadata")
-    @patch("y2karaoke.core.track_identifier.TrackIdentifier._query_musicbrainz")
-    @patch("y2karaoke.core.track_identifier.TrackIdentifier._find_best_lrc_by_duration")
+    @patch(
+        "y2karaoke.core.components.identify.implementation.TrackIdentifier._get_youtube_metadata"
+    )
+    @patch(
+        "y2karaoke.core.components.identify.implementation.TrackIdentifier._query_musicbrainz"
+    )
+    @patch(
+        "y2karaoke.core.components.identify.implementation.TrackIdentifier._find_best_lrc_by_duration"
+    )
     def test_successful_identification(
         self, mock_find_lrc, mock_mb_query, mock_yt_metadata
     ):
@@ -35,9 +41,15 @@ class TestIdentifyFromUrlMocked:
         assert result.title == "Bohemian Rhapsody"
         assert result.youtube_duration == 354
 
-    @patch("y2karaoke.core.track_identifier.TrackIdentifier._get_youtube_metadata")
-    @patch("y2karaoke.core.track_identifier.TrackIdentifier._query_musicbrainz")
-    @patch("y2karaoke.core.track_identifier.TrackIdentifier._find_best_lrc_by_duration")
+    @patch(
+        "y2karaoke.core.components.identify.implementation.TrackIdentifier._get_youtube_metadata"
+    )
+    @patch(
+        "y2karaoke.core.components.identify.implementation.TrackIdentifier._query_musicbrainz"
+    )
+    @patch(
+        "y2karaoke.core.components.identify.implementation.TrackIdentifier._find_best_lrc_by_duration"
+    )
     def test_explicit_artist_title_override(
         self, mock_find_lrc, mock_mb_query, mock_yt_metadata
     ):
@@ -58,9 +70,15 @@ class TestIdentifyFromUrlMocked:
             "The Beatles Yesterday", "The Beatles", "Yesterday"
         )
 
-    @patch("y2karaoke.core.track_identifier.TrackIdentifier._get_youtube_metadata")
-    @patch("y2karaoke.core.track_identifier.TrackIdentifier._query_musicbrainz")
-    @patch("y2karaoke.core.track_identifier.TrackIdentifier._find_best_lrc_by_duration")
+    @patch(
+        "y2karaoke.core.components.identify.implementation.TrackIdentifier._get_youtube_metadata"
+    )
+    @patch(
+        "y2karaoke.core.components.identify.implementation.TrackIdentifier._query_musicbrainz"
+    )
+    @patch(
+        "y2karaoke.core.components.identify.implementation.TrackIdentifier._find_best_lrc_by_duration"
+    )
     def test_fallback_when_no_lrc(self, mock_find_lrc, mock_mb_query, mock_yt_metadata):
         """Falls back to parsed info when no LRC found."""
         mock_yt_metadata.return_value = ("Artist - Song Title", "ArtistChannel", 180)
@@ -73,11 +91,17 @@ class TestIdentifyFromUrlMocked:
         assert result.source == "youtube"
         assert result.youtube_duration == 180
 
-    @patch("y2karaoke.core.track_identifier.TrackIdentifier._get_youtube_metadata")
-    @patch("y2karaoke.core.track_identifier.TrackIdentifier._query_musicbrainz")
-    @patch("y2karaoke.core.track_identifier.TrackIdentifier._find_best_lrc_by_duration")
     @patch(
-        "y2karaoke.core.track_identifier.TrackIdentifier._search_matching_youtube_video"
+        "y2karaoke.core.components.identify.implementation.TrackIdentifier._get_youtube_metadata"
+    )
+    @patch(
+        "y2karaoke.core.components.identify.implementation.TrackIdentifier._query_musicbrainz"
+    )
+    @patch(
+        "y2karaoke.core.components.identify.implementation.TrackIdentifier._find_best_lrc_by_duration"
+    )
+    @patch(
+        "y2karaoke.core.components.identify.implementation.TrackIdentifier._search_matching_youtube_video"
     )
     def test_non_studio_mismatch_uses_alternative_video(
         self, mock_alt, mock_find_lrc, mock_mb_query, mock_yt_metadata, caplog
@@ -105,11 +129,17 @@ class TestIdentifyFromUrlMocked:
         assert "non-studio" in caplog.text.lower()
         mock_alt.assert_called_once()
 
-    @patch("y2karaoke.core.track_identifier.TrackIdentifier._get_youtube_metadata")
-    @patch("y2karaoke.core.track_identifier.TrackIdentifier._query_musicbrainz")
-    @patch("y2karaoke.core.track_identifier.TrackIdentifier._find_best_lrc_by_duration")
     @patch(
-        "y2karaoke.core.track_identifier.TrackIdentifier._search_matching_youtube_video"
+        "y2karaoke.core.components.identify.implementation.TrackIdentifier._get_youtube_metadata"
+    )
+    @patch(
+        "y2karaoke.core.components.identify.implementation.TrackIdentifier._query_musicbrainz"
+    )
+    @patch(
+        "y2karaoke.core.components.identify.implementation.TrackIdentifier._find_best_lrc_by_duration"
+    )
+    @patch(
+        "y2karaoke.core.components.identify.implementation.TrackIdentifier._search_matching_youtube_video"
     )
     def test_non_studio_mismatch_returns_lrc_candidate_when_no_alt(
         self, mock_alt, mock_find_lrc, mock_mb_query, mock_yt_metadata, caplog

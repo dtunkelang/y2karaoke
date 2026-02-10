@@ -3,7 +3,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from y2karaoke.core.track_identifier import TrackIdentifier
+from y2karaoke.core.components.identify.implementation import TrackIdentifier
 from y2karaoke.exceptions import Y2KaraokeError
 
 

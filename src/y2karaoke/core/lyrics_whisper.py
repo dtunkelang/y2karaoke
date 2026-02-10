@@ -10,7 +10,7 @@ from .lrc import (
     create_lines_from_lrc,
     create_lines_from_lrc_timings,
 )
-from .lyrics_helpers import (
+from .components.lyrics.helpers import (
     _romanize_lines,
     _detect_and_apply_offset,
     _refine_timing_with_audio,

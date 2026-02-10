@@ -8,7 +8,7 @@ import logging
 import pytest
 from unittest.mock import patch
 
-from y2karaoke.core.track_identifier import TrackIdentifier, TrackInfo
+from y2karaoke.core.components.identify.implementation import TrackIdentifier, TrackInfo
 from y2karaoke.exceptions import Y2KaraokeError
 
 
@@ -475,13 +475,17 @@ class TestInferArtistFromQuery:
 class TestIdentifyFromSearchMocked:
     """Tests for identify_from_search with mocked external services."""
 
-    @patch("y2karaoke.core.track_identifier.TrackIdentifier._try_direct_lrc_search")
-    @patch("y2karaoke.core.track_identifier.TrackIdentifier._query_musicbrainz")
     @patch(
-        "y2karaoke.core.track_identifier.TrackIdentifier._find_best_with_artist_hint"
+        "y2karaoke.core.components.identify.implementation.TrackIdentifier._try_direct_lrc_search"
     )
     @patch(
-        "y2karaoke.core.track_identifier.TrackIdentifier._search_youtube_by_duration"
+        "y2karaoke.core.components.identify.implementation.TrackIdentifier._query_musicbrainz"
+    )
+    @patch(
+        "y2karaoke.core.components.identify.implementation.TrackIdentifier._find_best_with_artist_hint"
+    )
+    @patch(
+        "y2karaoke.core.components.identify.implementation.TrackIdentifier._search_youtube_by_duration"
     )
     @patch("y2karaoke.core.sync.fetch_lyrics_for_duration")
     def test_successful_identification_with_artist(
@@ -516,7 +520,9 @@ class TestIdentifyFromSearchMocked:
         assert result.duration == 354
         assert result.source == "musicbrainz"
 
-    @patch("y2karaoke.core.track_identifier.TrackIdentifier._try_direct_lrc_search")
+    @patch(
+        "y2karaoke.core.components.identify.implementation.TrackIdentifier._try_direct_lrc_search"
+    )
     def test_direct_lrc_success(self, mock_direct_lrc):
         """Uses direct LRC search when successful."""
         mock_direct_lrc.return_value = TrackInfo(
@@ -537,9 +543,15 @@ class TestIdentifyFromSearchMocked:
         assert result.title == "Bohemian Rhapsody"
         assert result.source == "syncedlyrics"
 
-    @patch("y2karaoke.core.track_identifier.TrackIdentifier._try_direct_lrc_search")
-    @patch("y2karaoke.core.track_identifier.TrackIdentifier._query_musicbrainz")
-    @patch("y2karaoke.core.track_identifier.TrackIdentifier._fallback_youtube_search")
+    @patch(
+        "y2karaoke.core.components.identify.implementation.TrackIdentifier._try_direct_lrc_search"
+    )
+    @patch(
+        "y2karaoke.core.components.identify.implementation.TrackIdentifier._query_musicbrainz"
+    )
+    @patch(
+        "y2karaoke.core.components.identify.implementation.TrackIdentifier._fallback_youtube_search"
+    )
     def test_fallback_to_youtube(self, mock_fallback, mock_mb_query, mock_direct_lrc):
         """Falls back to YouTube when MusicBrainz returns no results."""
         mock_direct_lrc.return_value = None
@@ -559,12 +571,24 @@ class TestIdentifyFromSearchMocked:
         assert result.source == "youtube"
         mock_fallback.assert_called_once()
 
-    @patch("y2karaoke.core.track_identifier.TrackIdentifier._try_direct_lrc_search")
-    @patch("y2karaoke.core.track_identifier.TrackIdentifier._query_musicbrainz")
-    @patch("y2karaoke.core.track_identifier.TrackIdentifier._parse_query")
-    @patch("y2karaoke.core.track_identifier.TrackIdentifier._find_best_title_only")
-    @patch("y2karaoke.core.track_identifier.TrackIdentifier._try_split_search")
-    @patch("y2karaoke.core.track_identifier.TrackIdentifier._fallback_youtube_search")
+    @patch(
+        "y2karaoke.core.components.identify.implementation.TrackIdentifier._try_direct_lrc_search"
+    )
+    @patch(
+        "y2karaoke.core.components.identify.implementation.TrackIdentifier._query_musicbrainz"
+    )
+    @patch(
+        "y2karaoke.core.components.identify.implementation.TrackIdentifier._parse_query"
+    )
+    @patch(
+        "y2karaoke.core.components.identify.implementation.TrackIdentifier._find_best_title_only"
+    )
+    @patch(
+        "y2karaoke.core.components.identify.implementation.TrackIdentifier._try_split_search"
+    )
+    @patch(
+        "y2karaoke.core.components.identify.implementation.TrackIdentifier._fallback_youtube_search"
+    )
     def test_fallback_to_youtube_when_no_candidate(
         self,
         mock_fallback,
@@ -597,13 +621,23 @@ class TestIdentifyFromSearchMocked:
 
     @patch("y2karaoke.core.sync.fetch_lyrics_for_duration")
     @patch(
-        "y2karaoke.core.track_identifier.TrackIdentifier._search_youtube_by_duration"
+        "y2karaoke.core.components.identify.implementation.TrackIdentifier._search_youtube_by_duration"
     )
-    @patch("y2karaoke.core.track_identifier.TrackIdentifier._try_split_search")
-    @patch("y2karaoke.core.track_identifier.TrackIdentifier._find_best_title_only")
-    @patch("y2karaoke.core.track_identifier.TrackIdentifier._query_musicbrainz")
-    @patch("y2karaoke.core.track_identifier.TrackIdentifier._parse_query")
-    @patch("y2karaoke.core.track_identifier.TrackIdentifier._try_direct_lrc_search")
+    @patch(
+        "y2karaoke.core.components.identify.implementation.TrackIdentifier._try_split_search"
+    )
+    @patch(
+        "y2karaoke.core.components.identify.implementation.TrackIdentifier._find_best_title_only"
+    )
+    @patch(
+        "y2karaoke.core.components.identify.implementation.TrackIdentifier._query_musicbrainz"
+    )
+    @patch(
+        "y2karaoke.core.components.identify.implementation.TrackIdentifier._parse_query"
+    )
+    @patch(
+        "y2karaoke.core.components.identify.implementation.TrackIdentifier._try_direct_lrc_search"
+    )
     def test_title_only_split_search_and_youtube_fallback(
         self,
         mock_direct_lrc,
@@ -638,12 +672,20 @@ class TestIdentifyFromSearchMocked:
 
     @patch("y2karaoke.core.sync.fetch_lyrics_for_duration")
     @patch(
-        "y2karaoke.core.track_identifier.TrackIdentifier._search_youtube_by_duration"
+        "y2karaoke.core.components.identify.implementation.TrackIdentifier._search_youtube_by_duration"
     )
-    @patch("y2karaoke.core.track_identifier.TrackIdentifier._find_best_title_only")
-    @patch("y2karaoke.core.track_identifier.TrackIdentifier._query_musicbrainz")
-    @patch("y2karaoke.core.track_identifier.TrackIdentifier._parse_query")
-    @patch("y2karaoke.core.track_identifier.TrackIdentifier._try_direct_lrc_search")
+    @patch(
+        "y2karaoke.core.components.identify.implementation.TrackIdentifier._find_best_title_only"
+    )
+    @patch(
+        "y2karaoke.core.components.identify.implementation.TrackIdentifier._query_musicbrainz"
+    )
+    @patch(
+        "y2karaoke.core.components.identify.implementation.TrackIdentifier._parse_query"
+    )
+    @patch(
+        "y2karaoke.core.components.identify.implementation.TrackIdentifier._try_direct_lrc_search"
+    )
     def test_raises_when_no_youtube_results(
         self,
         mock_direct_lrc,

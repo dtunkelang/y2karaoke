@@ -1,4 +1,4 @@
-import y2karaoke.core.track_identifier as ti
+import y2karaoke.core.components.identify.implementation as ti
 
 
 def test_search_matching_youtube_video_finds_close_match(monkeypatch):

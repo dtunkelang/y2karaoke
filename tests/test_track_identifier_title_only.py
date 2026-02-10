@@ -1,4 +1,4 @@
-import y2karaoke.core.track_identifier as ti
+import y2karaoke.core.components.identify.implementation as ti
 
 
 def test_is_likely_cover_recording_detects_cover():

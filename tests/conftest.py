@@ -344,7 +344,7 @@ def mock_lrc_provider_not_found():
 @pytest.fixture
 def track_info_queen():
     """TrackInfo for Queen - Bohemian Rhapsody."""
-    from y2karaoke.core.track_identifier import TrackInfo
+    from y2karaoke.core.components.identify.implementation import TrackInfo
 
     return TrackInfo(
         artist="Queen",
@@ -365,7 +365,7 @@ def track_info_queen():
 @pytest.fixture
 def track_info_beatles():
     """TrackInfo for The Beatles - Yesterday."""
-    from y2karaoke.core.track_identifier import TrackInfo
+    from y2karaoke.core.components.identify.implementation import TrackInfo
 
     return TrackInfo(
         artist="The Beatles",
@@ -386,7 +386,7 @@ def track_info_beatles():
 @pytest.fixture
 def track_info_youtube_fallback():
     """TrackInfo from YouTube fallback (no LRC found)."""
-    from y2karaoke.core.track_identifier import TrackInfo
+    from y2karaoke.core.components.identify.implementation import TrackInfo
 
     return TrackInfo(
         artist="Unknown Artist",
@@ -425,7 +425,9 @@ def mock_all_external_services(
 @pytest.fixture
 def mock_track_identifier_dependencies():
     """Mock all dependencies for TrackIdentifier testing."""
-    with patch("y2karaoke.core.track_identifier.musicbrainzngs") as mock_mb:
+    with patch(
+        "y2karaoke.core.components.identify.implementation.musicbrainzngs"
+    ) as mock_mb:
         with patch("y2karaoke.core.sync.fetch_lyrics_multi_source") as mock_lrc:
             with patch("y2karaoke.core.sync.get_lrc_duration") as mock_duration:
                 with patch("y2karaoke.core.sync.validate_lrc_quality") as mock_validate:
@@ -456,7 +458,7 @@ def mock_track_identifier_dependencies():
 @pytest.fixture
 def sample_lyrics_lines():
     """Sample parsed lyrics lines for testing."""
-    from y2karaoke.core.lyrics import Line, Word
+    from y2karaoke.core.components.lyrics.api import Line, Word
 
     return [
         Line(
@@ -482,7 +484,7 @@ def sample_lyrics_lines():
 @pytest.fixture
 def sample_lyrics_lines_with_break():
     """Sample lyrics lines with a long instrumental break."""
-    from y2karaoke.core.lyrics import Line, Word
+    from y2karaoke.core.components.lyrics.api import Line, Word
 
     return [
         Line(

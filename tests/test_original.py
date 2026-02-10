@@ -5,7 +5,7 @@ import pytest
 
 from y2karaoke.core.components.audio.downloader import download_audio
 from y2karaoke.core.components.audio.separator import separate_vocals
-from y2karaoke.core.lyrics import get_lyrics
+from y2karaoke.core.components.lyrics.api import get_lyrics
 from y2karaoke.core.components.render.video_writer import render_karaoke_video
 
 

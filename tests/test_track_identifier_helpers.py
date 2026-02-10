@@ -1,5 +1,5 @@
 import y2karaoke.core.sync as sync
-import y2karaoke.core.track_identifier as ti
+import y2karaoke.core.components.identify.implementation as ti
 
 
 def test_parse_query_separators_and_by():

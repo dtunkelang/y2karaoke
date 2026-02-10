@@ -3,7 +3,7 @@ from pathlib import Path
 import pytest
 
 from y2karaoke.core.karaoke import KaraokeGenerator
-from y2karaoke.core.lyrics import Line, Word
+from y2karaoke.core.components.lyrics.api import Line, Word
 
 
 def _line(text, start, end):

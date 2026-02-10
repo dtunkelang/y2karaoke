@@ -1,6 +1,6 @@
 import types
 
-from y2karaoke.core.track_identifier import TrackIdentifier
+from y2karaoke.core.components.identify.implementation import TrackIdentifier
 
 
 def test_try_direct_lrc_search_swaps_query(monkeypatch):

@@ -1,4 +1,4 @@
-import y2karaoke.core.track_identifier as ti
+import y2karaoke.core.components.identify.implementation as ti
 
 
 def test_build_url_candidates_dedup_and_order():

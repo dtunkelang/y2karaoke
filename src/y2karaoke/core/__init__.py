@@ -8,7 +8,7 @@ from .components.audio.downloader import (
 from .components.audio.separator import AudioSeparator, separate_vocals
 from .components.audio.audio_effects import AudioProcessor, process_audio
 from .models import SingerID, Word, Line, SongMetadata
-from .lyrics import LyricsProcessor, get_lyrics
+from .components.lyrics.api import LyricsProcessor, get_lyrics
 from .components.render.video_writer import render_karaoke_video
 from .components.render.backgrounds import (
     BackgroundProcessor,

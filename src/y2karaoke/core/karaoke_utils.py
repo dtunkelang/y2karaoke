@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Tuple
 
 from ..utils.validation import sanitize_filename
+from .models import Line, Word
 
 
 def apply_splash_offset(lines, min_start: float = 3.5):
@@ -11,8 +12,6 @@ def apply_splash_offset(lines, min_start: float = 3.5):
     if not lines or lines[0].start_time >= min_start:
         return lines
     splash_offset = min_start - lines[0].start_time
-    from ..core.lyrics import Line, Word
-
     offset_lines = []
     for line in lines:
         offset_words = [
@@ -32,8 +31,6 @@ def scale_lyrics_timing(lines, tempo_multiplier: float):
     """Scale all line/word timings to match tempo changes."""
     if tempo_multiplier == 1.0:
         return lines
-    from ..core.lyrics import Line, Word
-
     scaled_lines = []
     for line in lines:
         scaled_words = [
