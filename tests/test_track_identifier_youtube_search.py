@@ -1,5 +1,4 @@
 import logging
-import sys
 from types import SimpleNamespace
 
 import pytest
@@ -263,7 +262,7 @@ def test_get_youtube_metadata_success(monkeypatch):
             return {"title": "Test Song", "uploader": "Uploader", "duration": 123}
 
     dummy_module = SimpleNamespace(YoutubeDL=DummyYDL)
-    monkeypatch.setitem(sys.modules, "yt_dlp", dummy_module)
+    monkeypatch.setattr(identifier, "_load_yt_dlp_module", lambda: dummy_module)
 
     title, uploader, duration = identifier._get_youtube_metadata(
         "https://www.youtube.com/watch?v=abc123def45"
@@ -288,7 +287,7 @@ def test_get_youtube_metadata_error(monkeypatch):
             return False
 
     dummy_module = SimpleNamespace(YoutubeDL=DummyYDL)
-    monkeypatch.setitem(sys.modules, "yt_dlp", dummy_module)
+    monkeypatch.setattr(identifier, "_load_yt_dlp_module", lambda: dummy_module)
 
     with pytest.raises(Y2KaraokeError):
         identifier._get_youtube_metadata("https://www.youtube.com/watch?v=abc123def45")

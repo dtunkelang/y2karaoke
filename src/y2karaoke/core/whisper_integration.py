@@ -102,6 +102,12 @@ __all__ = [
 ] + ALIAS_EXPORTS
 
 
+def _load_whisper_model_class():
+    from faster_whisper import WhisperModel  # type: ignore
+
+    return WhisperModel
+
+
 def transcribe_vocals(
     vocals_path: str,
     language: Optional[str] = None,
@@ -146,14 +152,14 @@ def transcribe_vocals(
             return segments, all_words, detected_lang, cached_model
 
     try:
-        from faster_whisper import WhisperModel  # type: ignore
+        whisper_model_class = _load_whisper_model_class()
     except ImportError:
         logger.warning("faster-whisper not installed, cannot transcribe")
         return [], [], "", model_size
 
     try:
         logger.info(f"Loading Whisper model ({model_size})...")
-        model = WhisperModel(model_size, device="cpu", compute_type="int8")
+        model = whisper_model_class(model_size, device="cpu", compute_type="int8")
 
         logger.info(f"Transcribing vocals{f' in {language}' if language else ''}...")
         transcribe_kwargs: Dict[str, object] = {

@@ -13,7 +13,10 @@ def test_refine_timing_with_audio_adjusts_on_duration_mismatch(monkeypatch):
     lines = [_make_line("hello", 0.0, 0.5)]
     line_timings = [(0.0, "hello"), (2.0, "world")]
 
-    monkeypatch.setattr("y2karaoke.core.refine.refine_word_timing", lambda l, v: l)
+    monkeypatch.setattr(
+        "y2karaoke.core.refine.refine_word_timing",
+        lambda lines_in, _vocals: lines_in,
+    )
     monkeypatch.setattr("y2karaoke.core.sync.get_lrc_duration", lambda *_: 120)
 
     called = {}
@@ -43,7 +46,10 @@ def test_refine_timing_with_audio_no_adjust_when_close(monkeypatch):
     lines = [_make_line("hello", 0.0, 0.5)]
     line_timings = [(0.0, "hello"), (2.0, "world")]
 
-    monkeypatch.setattr("y2karaoke.core.refine.refine_word_timing", lambda l, v: l)
+    monkeypatch.setattr(
+        "y2karaoke.core.refine.refine_word_timing",
+        lambda lines_in, _vocals: lines_in,
+    )
     monkeypatch.setattr("y2karaoke.core.sync.get_lrc_duration", lambda *_: 100)
 
     monkeypatch.setattr(
@@ -92,7 +98,10 @@ def test_refine_timing_with_quality_sets_method(monkeypatch):
     lines = [_make_line("hello", 0.0, 0.5)]
     line_timings = [(0.0, "hello"), (2.0, "world")]
 
-    monkeypatch.setattr("y2karaoke.core.refine.refine_word_timing", lambda l, v: l)
+    monkeypatch.setattr(
+        "y2karaoke.core.refine.refine_word_timing",
+        lambda lines_in, _vocals: lines_in,
+    )
     monkeypatch.setattr("y2karaoke.core.sync.get_lrc_duration", lambda *_: 120)
     monkeypatch.setattr(
         "y2karaoke.core.alignment.adjust_timing_for_duration_mismatch",

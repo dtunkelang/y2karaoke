@@ -10,6 +10,12 @@ from .timing_models import AudioFeatures
 logger = get_logger(__name__)
 
 
+def _load_librosa():
+    import librosa
+
+    return librosa
+
+
 def _get_audio_features_cache_path(vocals_path: str) -> Optional[str]:
     """Get the cache file path for audio features."""
     vocals_file = Path(vocals_path)
@@ -93,7 +99,7 @@ def extract_audio_features(
             return cached
 
     try:
-        import librosa
+        librosa = _load_librosa()
 
         # Load audio
         y, sr = librosa.load(vocals_path, sr=22050)

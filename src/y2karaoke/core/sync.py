@@ -1,13 +1,14 @@
 """Synced lyrics fetching using syncedlyrics and lyriq libraries."""
 
+import json
 import os
 import time
-import json
+from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Optional, Tuple, Dict, Any
+from typing import Any, Dict, Optional, Tuple, List
 
-from ..utils.logging import get_logger
 from ..config import get_cache_dir
+from ..utils.logging import get_logger
 from . import sync_quality
 from . import sync_search
 
@@ -20,22 +21,55 @@ _count_large_gaps = sync_quality._count_large_gaps
 _calculate_quality_score = sync_quality._calculate_quality_score
 get_lyrics_quality_report = sync_quality.get_lyrics_quality_report
 
-try:
-    import syncedlyrics
 
-    SYNCEDLYRICS_AVAILABLE = True
-except ImportError:
-    syncedlyrics = None
-    SYNCEDLYRICS_AVAILABLE = False
+@dataclass
+class SyncState:
+    """In-memory state for sync provider retries and caches."""
 
-try:
-    from lyriq import get_lyrics as lyriq_get_lyrics
+    failed_providers: Dict[str, int] = field(default_factory=dict)
+    search_cache: Dict[str, Tuple[Optional[str], str]] = field(default_factory=dict)
+    lrc_cache: Dict[Tuple[str, str], Tuple[Optional[str], bool, str, Optional[int]]] = (
+        field(default_factory=dict)
+    )
+    lyriq_cache: Dict[Tuple[str, str], Optional[str]] = field(default_factory=dict)
+    disk_cache: Dict[str, Any] = field(
+        default_factory=lambda: {"search_cache": {}, "lrc_cache": {}, "lyriq_cache": {}}
+    )
+    disk_cache_loaded: bool = False
+    disk_cache_enabled: bool = True
 
-    LYRIQ_AVAILABLE = True
-except ImportError:
-    lyriq_get_lyrics = None
-    LYRIQ_AVAILABLE = False
 
+def create_sync_state(*, disk_cache_enabled: bool = True) -> SyncState:
+    """Create a fresh sync state container for isolated calls/tests."""
+    return SyncState(disk_cache_enabled=disk_cache_enabled)
+
+
+def _resolve_sync_dependencies(import_fn=__import__):
+    """Resolve optional providers via an injectable import function."""
+    synced_mod = None
+    lyriq_get = None
+    synced_available = False
+    lyriq_available = False
+
+    try:
+        synced_mod = import_fn("syncedlyrics")
+        synced_available = True
+    except ImportError:
+        synced_mod = None
+
+    try:
+        lyriq_mod = import_fn("lyriq", fromlist=["get_lyrics"])
+        lyriq_get = getattr(lyriq_mod, "get_lyrics", None)
+        lyriq_available = lyriq_get is not None
+    except ImportError:
+        lyriq_get = None
+
+    return synced_mod, synced_available, lyriq_get, lyriq_available
+
+
+syncedlyrics, SYNCEDLYRICS_AVAILABLE, lyriq_get_lyrics, LYRIQ_AVAILABLE = (
+    _resolve_sync_dependencies()
+)
 
 # Provider order for syncedlyrics: prioritize more reliable sources
 # Note: lyriq (LRCLib) is tried first before syncedlyrics providers
@@ -48,12 +82,17 @@ PROVIDER_ORDER = ["Musixmatch", "NetEase", "Megalobiz", "Lrclib", "Genius"]
 
 
 # Providers that have shown persistent failures (skip after repeated errors)
-_failed_providers: Dict[str, int] = {}
+_DEFAULT_SYNC_STATE = create_sync_state()
+_failed_providers = _DEFAULT_SYNC_STATE.failed_providers
 _FAILURE_THRESHOLD = 3  # Skip provider after this many consecutive failures
 
 
 def _suppress_stderr():
     return sync_search.suppress_stderr()
+
+
+def _state_or_default(state: Optional[SyncState]) -> SyncState:
+    return state or _DEFAULT_SYNC_STATE
 
 
 def _search_single_provider(
@@ -63,15 +102,17 @@ def _search_single_provider(
     enhanced: bool = False,
     max_retries: int = 2,
     retry_delay: float = 1.0,
+    state: Optional[SyncState] = None,
 ) -> Optional[str]:
     """Search a single provider with retry logic."""
+    runtime_state = _state_or_default(state)
     if syncedlyrics is None:
         return None
     return sync_search.search_single_provider(
         syncedlyrics.search,
         search_term=search_term,
         provider=provider,
-        failed_providers=_failed_providers,
+        failed_providers=runtime_state.failed_providers,
         failure_threshold=_FAILURE_THRESHOLD,
         logger=logger,
         synced_only=synced_only,
@@ -81,76 +122,132 @@ def _search_single_provider(
     )
 
 
-# Cache for search term results
-_search_cache: Dict[str, Tuple[Optional[str], str]] = {}
-_disk_cache: Dict[str, Any] = {}
-_disk_cache_loaded = False
+# Back-compat aliases of default in-memory state
+_search_cache = _DEFAULT_SYNC_STATE.search_cache
+_disk_cache = _DEFAULT_SYNC_STATE.disk_cache
+_disk_cache_loaded = _DEFAULT_SYNC_STATE.disk_cache_loaded
+_lrc_cache = _DEFAULT_SYNC_STATE.lrc_cache
+_lyriq_cache = _DEFAULT_SYNC_STATE.lyriq_cache
 
 
 def _search_with_fallback(
     search_term: str,
     synced_only: bool = True,
     enhanced: bool = False,
+    state: Optional[SyncState] = None,
 ) -> Tuple[Optional[str], str]:
     """Search across providers with fallback."""
+    runtime_state = _state_or_default(state)
+
+    def _search_single(
+        search_term_inner: str,
+        provider_inner: str,
+        synced_only: bool = True,
+        enhanced: bool = False,
+    ) -> Optional[str]:
+        try:
+            return _search_single_provider(
+                search_term_inner,
+                provider_inner,
+                synced_only=synced_only,
+                enhanced=enhanced,
+                state=runtime_state,
+            )
+        except TypeError as e:
+            if "unexpected keyword argument 'state'" not in str(e):
+                raise
+            return _search_single_provider(
+                search_term_inner,
+                provider_inner,
+                synced_only=synced_only,
+                enhanced=enhanced,
+            )
+
     return sync_search.search_with_fallback(
         search_term=search_term,
         provider_order=PROVIDER_ORDER,
-        search_single_provider_fn=_search_single_provider,
-        search_cache=_search_cache,
-        disk_cache=_disk_cache,
-        disk_cache_enabled=_disk_cache_enabled(),
-        load_disk_cache_fn=_load_disk_cache,
-        save_disk_cache_fn=_save_disk_cache,
+        search_single_provider_fn=_search_single,
+        search_cache=runtime_state.search_cache,
+        disk_cache=runtime_state.disk_cache,
+        disk_cache_enabled=_disk_cache_enabled(runtime_state),
+        load_disk_cache_fn=lambda: _load_disk_cache(runtime_state),
+        save_disk_cache_fn=lambda: _save_disk_cache(runtime_state),
         logger=logger,
         synced_only=synced_only,
         enhanced=enhanced,
     )
 
 
-# Cache for LRC results to avoid duplicate fetches
-# Key: (artist.lower(), title.lower()), Value: (lrc_text, is_synced, source_name, lrc_duration)
-_lrc_cache: Dict[Tuple[str, str], Tuple[Optional[str], bool, str, Optional[int]]] = {}
-
-# Cache for lyriq results
-_lyriq_cache: Dict[Tuple[str, str], Optional[str]] = {}
+def _search_with_state_fallback(
+    search_term: str,
+    *,
+    synced_only: bool,
+    enhanced: bool,
+    state: SyncState,
+) -> Tuple[Optional[str], str]:
+    """Call _search_with_fallback with state, tolerating monkeypatched signatures."""
+    attempts: List[Dict[str, Any]] = [
+        {"synced_only": synced_only, "enhanced": enhanced, "state": state},
+        {"synced_only": synced_only, "enhanced": enhanced},
+        {"synced_only": synced_only, "state": state},
+        {"synced_only": synced_only},
+    ]
+    last_error: Optional[Exception] = None
+    for kwargs in attempts:
+        try:
+            return _search_with_fallback(search_term, **kwargs)
+        except TypeError as e:
+            if "unexpected keyword argument" not in str(e):
+                raise
+            last_error = e
+            continue
+    if last_error is not None:
+        raise last_error
+    return None, ""
 
 
 def _get_disk_cache_path() -> "Path":
     return get_cache_dir() / "lyrics_cache.json"
 
 
-def _disk_cache_enabled() -> bool:
+def _disk_cache_enabled(state: Optional[SyncState] = None) -> bool:
     # Disable caches for tests to keep results deterministic and isolated.
-    return "PYTEST_CURRENT_TEST" not in os.environ
+    runtime_state = _state_or_default(state)
+    return runtime_state.disk_cache_enabled and "PYTEST_CURRENT_TEST" not in os.environ
 
 
-def _load_disk_cache() -> None:
-    global _disk_cache_loaded, _disk_cache
-    if _disk_cache_loaded:
+def _empty_disk_cache() -> Dict[str, Any]:
+    return {"search_cache": {}, "lrc_cache": {}, "lyriq_cache": {}}
+
+
+def _load_disk_cache(state: Optional[SyncState] = None) -> None:
+    runtime_state = _state_or_default(state)
+    if runtime_state.disk_cache_loaded:
         return
-    _disk_cache_loaded = True
-    if not _disk_cache_enabled():
-        _disk_cache = {"search_cache": {}, "lrc_cache": {}, "lyriq_cache": {}}
+    runtime_state.disk_cache_loaded = True
+    if not _disk_cache_enabled(runtime_state):
+        runtime_state.disk_cache = _empty_disk_cache()
         return
     cache_path = _get_disk_cache_path()
     if not cache_path.exists():
-        _disk_cache = {"search_cache": {}, "lrc_cache": {}, "lyriq_cache": {}}
+        runtime_state.disk_cache = _empty_disk_cache()
         return
     try:
-        _disk_cache = json.loads(cache_path.read_text(encoding="utf-8"))
+        runtime_state.disk_cache = json.loads(cache_path.read_text(encoding="utf-8"))
     except Exception:
-        _disk_cache = {"search_cache": {}, "lrc_cache": {}, "lyriq_cache": {}}
+        runtime_state.disk_cache = _empty_disk_cache()
 
 
-def _save_disk_cache() -> None:
-    if not _disk_cache_enabled():
+def _save_disk_cache(state: Optional[SyncState] = None) -> None:
+    runtime_state = _state_or_default(state)
+    if not _disk_cache_enabled(runtime_state):
         return
     cache_path = _get_disk_cache_path()
     cache_path.parent.mkdir(parents=True, exist_ok=True)
     try:
         cache_path.write_text(
-            json.dumps(_disk_cache, ensure_ascii=False, indent=2), encoding="utf-8"
+            json.dumps(runtime_state.disk_cache, ensure_ascii=False, indent=2),
+            encoding="utf-8",
         )
     except Exception:
         logger.debug("Failed to write lyrics cache to disk")
@@ -159,12 +256,14 @@ def _save_disk_cache() -> None:
 def _set_lrc_cache(
     cache_key: Tuple[str, str],
     value: Tuple[Optional[str], bool, str, Optional[int]],
+    state: Optional[SyncState] = None,
 ) -> None:
-    _lrc_cache[cache_key] = value
-    if _disk_cache_enabled():
+    runtime_state = _state_or_default(state)
+    runtime_state.lrc_cache[cache_key] = value
+    if _disk_cache_enabled(runtime_state):
         disk_key = f"{cache_key[0]}|{cache_key[1]}"
-        _disk_cache.setdefault("lrc_cache", {})[disk_key] = list(value)
-        _save_disk_cache()
+        runtime_state.disk_cache.setdefault("lrc_cache", {})[disk_key] = list(value)
+        _save_disk_cache(runtime_state)
 
 
 def _fetch_from_lyriq(  # noqa: C901
@@ -172,77 +271,71 @@ def _fetch_from_lyriq(  # noqa: C901
     artist: str,
     max_retries: int = 2,
     retry_delay: float = 1.0,
+    state: Optional[SyncState] = None,
 ) -> Optional[str]:
     """Fetch lyrics from lyriq (LRCLib API).
 
     lyriq provides a different search/matching algorithm than syncedlyrics'
     Lrclib provider, so it may find different results.
-
-    Args:
-        title: Song title
-        artist: Artist name
-        max_retries: Number of retries on failure
-        retry_delay: Base delay between retries (exponential backoff)
-
-    Returns:
-        LRC text if found, None otherwise
     """
-    disk_cache_enabled = _disk_cache_enabled()
+    runtime_state = _state_or_default(state)
+    disk_cache_enabled = _disk_cache_enabled(runtime_state)
     if disk_cache_enabled:
-        _load_disk_cache()
+        _load_disk_cache(runtime_state)
     if not LYRIQ_AVAILABLE:
         return None
 
-    # Check cache
     cache_key = (artist.lower().strip(), title.lower().strip())
     disk_key = f"{cache_key[0]}|{cache_key[1]}"
-    if cache_key in _lyriq_cache:
-        return _lyriq_cache[cache_key]
+    if cache_key in runtime_state.lyriq_cache:
+        return runtime_state.lyriq_cache[cache_key]
     if disk_cache_enabled:
-        disk_lyriq = _disk_cache.get("lyriq_cache", {})
+        disk_lyriq = runtime_state.disk_cache.get("lyriq_cache", {})
         if disk_key in disk_lyriq:
             cached = disk_lyriq[disk_key]
-            _lyriq_cache[cache_key] = cached
+            runtime_state.lyriq_cache[cache_key] = cached
             return cached
 
     for attempt in range(max_retries + 1):
         try:
             with _suppress_stderr():
-                # lyriq.get_lyrics returns a Lyrics object or None
                 lyrics_obj = lyriq_get_lyrics(title, artist)
 
             if lyrics_obj is None:
-                _lyriq_cache[cache_key] = None
+                runtime_state.lyriq_cache[cache_key] = None
                 if disk_cache_enabled:
-                    _disk_cache.setdefault("lyriq_cache", {})[disk_key] = None
-                    _save_disk_cache()
+                    runtime_state.disk_cache.setdefault("lyriq_cache", {})[
+                        disk_key
+                    ] = None
+                    _save_disk_cache(runtime_state)
                 return None
 
-            # lyriq returns a Lyrics object with synced_lyrics and plain_lyrics attributes
             synced = getattr(lyrics_obj, "synced_lyrics", None)
             if synced and _has_timestamps(synced):
                 logger.debug("Found synced lyrics from lyriq (LRCLib)")
-                _lyriq_cache[cache_key] = synced
+                runtime_state.lyriq_cache[cache_key] = synced
                 if disk_cache_enabled:
-                    _disk_cache.setdefault("lyriq_cache", {})[disk_key] = synced
-                    _save_disk_cache()
+                    runtime_state.disk_cache.setdefault("lyriq_cache", {})[
+                        disk_key
+                    ] = synced
+                    _save_disk_cache(runtime_state)
                 return synced
 
-            # Fall back to plain lyrics if no synced available
             plain = getattr(lyrics_obj, "plain_lyrics", None)
             if plain:
                 logger.debug("Found plain lyrics from lyriq (no timestamps)")
-                # Don't cache plain for synced requests
-                _lyriq_cache[cache_key] = None
+                runtime_state.lyriq_cache[cache_key] = None
                 if disk_cache_enabled:
-                    _disk_cache.setdefault("lyriq_cache", {})[disk_key] = None
-                    _save_disk_cache()
+                    runtime_state.disk_cache.setdefault("lyriq_cache", {})[
+                        disk_key
+                    ] = None
+                    _save_disk_cache(runtime_state)
                 return None
 
-            _lyriq_cache[cache_key] = None
+            runtime_state.lyriq_cache[cache_key] = None
             if disk_cache_enabled:
-                _disk_cache.setdefault("lyriq_cache", {})[disk_key] = None
-                _save_disk_cache()
+                runtime_state.disk_cache.setdefault("lyriq_cache", {})[disk_key] = None
+                _save_disk_cache(runtime_state)
             return None
 
         except Exception as e:
@@ -266,18 +359,18 @@ def _fetch_from_lyriq(  # noqa: C901
                 logger.debug(f"lyriq transient error, retrying in {delay:.1f}s: {e}")
                 time.sleep(delay)
                 continue
-            else:
-                logger.debug(f"lyriq failed (attempt {attempt + 1}): {e}")
-                _lyriq_cache[cache_key] = None
-                if disk_cache_enabled:
-                    _disk_cache.setdefault("lyriq_cache", {})[disk_key] = None
-                    _save_disk_cache()
-                return None
 
-    _lyriq_cache[cache_key] = None
+            logger.debug(f"lyriq failed (attempt {attempt + 1}): {e}")
+            runtime_state.lyriq_cache[cache_key] = None
+            if disk_cache_enabled:
+                runtime_state.disk_cache.setdefault("lyriq_cache", {})[disk_key] = None
+                _save_disk_cache(runtime_state)
+            return None
+
+    runtime_state.lyriq_cache[cache_key] = None
     if disk_cache_enabled:
-        _disk_cache.setdefault("lyriq_cache", {})[disk_key] = None
-        _save_disk_cache()
+        runtime_state.disk_cache.setdefault("lyriq_cache", {})[disk_key] = None
+        _save_disk_cache(runtime_state)
     return None
 
 
@@ -289,65 +382,49 @@ def fetch_lyrics_multi_source(  # noqa: C901
     target_duration: Optional[int] = None,
     duration_tolerance: int = 20,
     offline: bool = False,
+    state: Optional[SyncState] = None,
 ) -> Tuple[Optional[str], bool, str]:
-    """
-    Fetch lyrics from multiple sources using lyriq and syncedlyrics.
-
-    Tries lyriq first (LRCLib with potentially better search matching),
-    then falls back to syncedlyrics providers in order with retries.
-    Results are cached to avoid duplicate network requests.
-
-    Args:
-        title: Song title
-        artist: Artist name
-        synced_only: Only return synced (timestamped) lyrics
-        enhanced: Try to get word-level timing (Musixmatch only)
-        target_duration: Expected track duration in seconds (for cache validation)
-        duration_tolerance: Maximum acceptable duration difference (seconds)
-
-    Returns:
-        Tuple of (lrc_text, is_synced, source_name)
-        - lrc_text: LRC formatted lyrics or None if not found
-        - is_synced: True if lyrics have timestamps
-        - source_name: Name of the source that provided lyrics
-    """
-    disk_cache_enabled = _disk_cache_enabled()
+    """Fetch lyrics from multiple sources using lyriq and syncedlyrics."""
+    runtime_state = _state_or_default(state)
+    disk_cache_enabled = _disk_cache_enabled(runtime_state)
     if disk_cache_enabled:
-        _load_disk_cache()
+        _load_disk_cache(runtime_state)
+
     cache_key = (artist.lower().strip(), title.lower().strip())
-    if cache_key in _lrc_cache:
-        cached = _lrc_cache[cache_key]
+    if cache_key in runtime_state.lrc_cache:
+        cached = runtime_state.lrc_cache[cache_key]
         cached_duration = cached[3] if len(cached) > 3 else None
-        # If target_duration specified, validate cached duration matches
         if target_duration and cached_duration:
-            if abs(cached_duration - target_duration) > duration_tolerance:
-                logger.debug(
-                    f"Cached LRC duration ({cached_duration}s) doesn't match target ({target_duration}s), re-fetching"
-                )
-            else:
+            if abs(cached_duration - target_duration) <= duration_tolerance:
                 logger.debug(f"Using cached LRC result for {artist} - {title}")
                 return (cached[0], cached[1], cached[2])
+            logger.debug(
+                "Cached LRC duration (%ss) doesn't match target (%ss), re-fetching",
+                cached_duration,
+                target_duration,
+            )
         else:
             logger.debug(f"Using cached LRC result for {artist} - {title}")
             return (cached[0], cached[1], cached[2])
 
     if disk_cache_enabled:
         disk_key = f"{cache_key[0]}|{cache_key[1]}"
-        disk_lrc = _disk_cache.get("lrc_cache", {})
+        disk_lrc = runtime_state.disk_cache.get("lrc_cache", {})
         if disk_key in disk_lrc:
             cached = disk_lrc[disk_key]
             cached_duration = cached[3] if len(cached) > 3 else None
             if target_duration and cached_duration:
-                if abs(cached_duration - target_duration) > duration_tolerance:
-                    logger.debug(
-                        f"Cached LRC duration ({cached_duration}s) doesn't match target ({target_duration}s), re-fetching"
-                    )
-                else:
-                    _lrc_cache[cache_key] = tuple(cached)
+                if abs(cached_duration - target_duration) <= duration_tolerance:
+                    runtime_state.lrc_cache[cache_key] = tuple(cached)
                     logger.debug(f"Using cached LRC result for {artist} - {title}")
                     return (cached[0], cached[1], cached[2])
+                logger.debug(
+                    "Cached LRC duration (%ss) doesn't match target (%ss), re-fetching",
+                    cached_duration,
+                    target_duration,
+                )
             else:
-                _lrc_cache[cache_key] = tuple(cached)
+                runtime_state.lrc_cache[cache_key] = tuple(cached)
                 logger.debug(f"Using cached LRC result for {artist} - {title}")
                 return (cached[0], cached[1], cached[2])
 
@@ -359,15 +436,14 @@ def fetch_lyrics_multi_source(  # noqa: C901
     logger.debug(f"Searching for synced lyrics: {search_term}")
 
     try:
-        # Try lyriq first (LRCLib with potentially better search matching)
         if LYRIQ_AVAILABLE:
             logger.debug(f"Trying lyriq for: {title} - {artist}")
-            lrc = _fetch_from_lyriq(title, artist)
+            lrc = _fetch_from_lyriq(title, artist, state=runtime_state)
             if lrc and _has_timestamps(lrc):
                 logger.debug("Found synced lyrics from lyriq (LRCLib)")
                 lrc_duration = get_lrc_duration(lrc)
                 result = (lrc, True, "lyriq (LRCLib)", lrc_duration)
-                _set_lrc_cache(cache_key, result)
+                _set_lrc_cache(cache_key, result, state=runtime_state)
                 return (lrc, True, "lyriq (LRCLib)")
 
         if not SYNCEDLYRICS_AVAILABLE:
@@ -378,15 +454,15 @@ def fetch_lyrics_multi_source(  # noqa: C901
                 "",
                 None,
             )
-            _set_lrc_cache(cache_key, no_sync_result)
+            _set_lrc_cache(cache_key, no_sync_result, state=runtime_state)
             return (None, False, "")
 
-        # Try enhanced (word-level) first if requested
         if enhanced:
-            lrc, provider = _search_with_fallback(
+            lrc, provider = _search_with_state_fallback(
                 search_term,
                 synced_only=True,
                 enhanced=True,
+                state=runtime_state,
             )
             if lrc and _has_timestamps(lrc):
                 logger.debug(
@@ -394,13 +470,14 @@ def fetch_lyrics_multi_source(  # noqa: C901
                 )
                 lrc_duration = get_lrc_duration(lrc)
                 result = (lrc, True, f"{provider} (enhanced)", lrc_duration)
-                _set_lrc_cache(cache_key, result)
+                _set_lrc_cache(cache_key, result, state=runtime_state)
                 return (lrc, True, f"{provider} (enhanced)")
 
-        # Try synced lyrics with provider fallback
-        lrc, provider = _search_with_fallback(
+        lrc, provider = _search_with_state_fallback(
             search_term,
             synced_only=synced_only,
+            enhanced=False,
+            state=runtime_state,
         )
 
         if lrc:
@@ -409,12 +486,12 @@ def fetch_lyrics_multi_source(  # noqa: C901
                 logger.debug(f"Found synced lyrics from {provider}")
                 lrc_duration = get_lrc_duration(lrc)
                 result = (lrc, True, provider, lrc_duration)
-                _set_lrc_cache(cache_key, result)
+                _set_lrc_cache(cache_key, result, state=runtime_state)
                 return (lrc, True, provider)
-            elif not synced_only:
+            if not synced_only:
                 logger.debug(f"Found plain lyrics from {provider}")
                 result = (lrc, False, provider, None)
-                _set_lrc_cache(cache_key, result)
+                _set_lrc_cache(cache_key, result, state=runtime_state)
                 return (lrc, False, provider)
 
         logger.warning("No synced lyrics found from any provider")
@@ -424,7 +501,7 @@ def fetch_lyrics_multi_source(  # noqa: C901
             "",
             None,
         )
-        _set_lrc_cache(cache_key, not_found)
+        _set_lrc_cache(cache_key, not_found, state=runtime_state)
         return (None, False, "")
 
     except Exception as e:
@@ -435,7 +512,7 @@ def fetch_lyrics_multi_source(  # noqa: C901
             "",
             None,
         )
-        _set_lrc_cache(cache_key, error_result)
+        _set_lrc_cache(cache_key, error_result, state=runtime_state)
         return (None, False, "")
 
 
@@ -445,26 +522,10 @@ def fetch_lyrics_for_duration(
     target_duration: int,
     tolerance: int = 8,
     offline: bool = False,
+    state: Optional[SyncState] = None,
 ) -> Tuple[Optional[str], bool, str, Optional[int]]:
-    """
-    Fetch synced lyrics that match a target duration.
-
-    Tries multiple search strategies to find LRC with timing that matches
-    the expected track duration.
-
-    Args:
-        title: Song title
-        artist: Artist name
-        target_duration: Expected track duration in seconds
-        tolerance: Maximum acceptable duration difference in seconds
-
-    Returns:
-        Tuple of (lrc_text, is_synced, source_name, lrc_duration)
-        - lrc_text: LRC formatted lyrics or None if not found
-        - is_synced: True if lyrics have timestamps
-        - source_name: Name of the source that provided lyrics
-        - lrc_duration: Duration implied by the LRC timestamps
-    """
+    """Fetch synced lyrics that match a target duration."""
+    runtime_state = _state_or_default(state)
     if offline:
         logger.info("Offline mode: skipping lyrics providers (cache only)")
         return None, False, "", None
@@ -473,8 +534,6 @@ def fetch_lyrics_for_duration(
         logger.warning("Neither syncedlyrics nor lyriq installed")
         return None, False, "", None
 
-    # Strategy 1: Try the standard search (tries lyriq first, then syncedlyrics providers)
-    # Pass target_duration to enable cache validation
     lrc_text, is_synced, source = fetch_lyrics_multi_source(
         title,
         artist,
@@ -482,6 +541,7 @@ def fetch_lyrics_for_duration(
         target_duration=target_duration,
         duration_tolerance=tolerance,
         offline=offline,
+        state=runtime_state,
     )
 
     if is_synced and lrc_text:
@@ -493,22 +553,25 @@ def fetch_lyrics_for_duration(
                     f"Found LRC with matching duration: {lrc_duration}s (target: {target_duration}s)"
                 )
                 return lrc_text, is_synced, source, lrc_duration
-            else:
-                logger.warning(
-                    f"LRC duration mismatch: LRC={lrc_duration}s, target={target_duration}s, diff={diff}s"
-                )
+            logger.warning(
+                f"LRC duration mismatch: LRC={lrc_duration}s, target={target_duration}s, diff={diff}s"
+            )
 
-    # Strategy 2: Try searching with different terms (syncedlyrics only)
     if SYNCEDLYRICS_AVAILABLE and not offline:
         alternative_searches = [
-            f"{title} {artist}",  # Swap order
+            f"{title} {artist}",
             f"{artist} {title} official",
             f"{artist} {title} album version",
         ]
 
         for search_term in alternative_searches:
             logger.debug(f"Trying alternative LRC search: {search_term}")
-            lrc, provider = _search_with_fallback(search_term, synced_only=True)
+            lrc, provider = _search_with_state_fallback(
+                search_term,
+                synced_only=True,
+                enhanced=False,
+                state=runtime_state,
+            )
             if lrc and _has_timestamps(lrc):
                 alt_duration = get_lrc_duration(lrc)
                 if alt_duration:
@@ -519,8 +582,6 @@ def fetch_lyrics_for_duration(
                         )
                         return lrc, True, f"{provider} ({search_term})", alt_duration
 
-    # Strategy 3: If we found LRC but duration doesn't match, return it anyway
-    # with a warning - better than nothing
     if is_synced and lrc_text:
         lrc_duration = get_lrc_duration(lrc_text)
         logger.warning("Using LRC despite duration mismatch. LRC timing may be off.")
@@ -533,22 +594,9 @@ def fetch_from_all_sources(
     title: str,
     artist: str,
 ) -> Dict[str, Tuple[Optional[str], Optional[int]]]:
-    """
-    Fetch lyrics from all available sources for comparison.
-
-    This function fetches lyrics from all providers without caching,
-    useful for comparing timing quality across sources.
-
-    Args:
-        title: Song title
-        artist: Artist name
-
-    Returns:
-        Dict mapping source name to (lrc_text, lrc_duration) tuple
-    """
+    """Fetch lyrics from all available sources for comparison."""
     results: Dict[str, Tuple[Optional[str], Optional[int]]] = {}
 
-    # Try lyriq
     if LYRIQ_AVAILABLE:
         try:
             with _suppress_stderr():
@@ -561,11 +609,10 @@ def fetch_from_all_sources(
         except Exception as e:
             logger.debug(f"lyriq fetch failed for comparison: {e}")
 
-    # Try each syncedlyrics provider individually
     if SYNCEDLYRICS_AVAILABLE:
         search_term = f"{artist} {title}"
         for provider in PROVIDER_ORDER:
-            if provider == "Genius":  # Skip Genius as it only provides plain text
+            if provider == "Genius":
                 continue
             try:
                 with _suppress_stderr():

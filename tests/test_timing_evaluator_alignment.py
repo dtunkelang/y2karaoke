@@ -1,9 +1,6 @@
-import builtins
-
 import y2karaoke.core.timing_evaluator as te
 import y2karaoke.core.phonetic_utils as pu
-import y2karaoke.core.audio_analysis as aa
-import y2karaoke.core.timing_models as tm
+import y2karaoke.core.whisper_integration as wi
 from y2karaoke.core.models import Line, Word
 
 
@@ -49,14 +46,11 @@ def test_align_lyrics_to_transcription_skips_when_out_of_range():
 
 
 def test_transcribe_vocals_returns_empty_without_dependency(monkeypatch):
-    original_import = builtins.__import__
-
-    def fake_import(name, *args, **kwargs):
-        if name == "faster_whisper":
-            raise ImportError("missing")
-        return original_import(name, *args, **kwargs)
-
-    monkeypatch.setattr(builtins, "__import__", fake_import)
+    monkeypatch.setattr(
+        wi,
+        "_load_whisper_model_class",
+        lambda: (_ for _ in ()).throw(ImportError("missing")),
+    )
     segments, words, language, model = te.transcribe_vocals("vocals.wav")
     assert segments == []
     assert words == []

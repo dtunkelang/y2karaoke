@@ -13,7 +13,6 @@ import pytest
 import tempfile
 from pathlib import Path
 from unittest.mock import Mock, patch, MagicMock
-from typing import Dict, List, Optional
 
 
 def pytest_addoption(parser):
@@ -72,6 +71,22 @@ def mock_video_file(temp_dir):
     video_file = temp_dir / "test_video.mp4"
     video_file.write_bytes(b"fake video data")
     return video_file
+
+
+@pytest.fixture
+def isolated_sync_state(monkeypatch):
+    """Provide an isolated sync state and bind module aliases to it."""
+    from y2karaoke.core import sync
+
+    state = sync.create_sync_state(disk_cache_enabled=False)
+    monkeypatch.setattr(sync, "_DEFAULT_SYNC_STATE", state)
+    monkeypatch.setattr(sync, "_failed_providers", state.failed_providers)
+    monkeypatch.setattr(sync, "_search_cache", state.search_cache)
+    monkeypatch.setattr(sync, "_lrc_cache", state.lrc_cache)
+    monkeypatch.setattr(sync, "_lyriq_cache", state.lyriq_cache)
+    monkeypatch.setattr(sync, "_disk_cache", state.disk_cache)
+    monkeypatch.setattr(sync, "_disk_cache_loaded", state.disk_cache_loaded)
+    return state
 
 
 # =============================================================================
@@ -203,11 +218,18 @@ def youtube_metadata_cover():
 @pytest.fixture
 def youtube_search_response_queen():
     """Mock YouTube search HTML response containing Queen videos."""
-    return """
-    "videoRenderer":{"videoId":"fJ9rUzIMcZQ","title":{"runs":[{"text":"Queen - Bohemian Rhapsody (Official Video)"}]},"simpleText":"5:54"}
-    "videoRenderer":{"videoId":"abc123def","title":{"runs":[{"text":"Queen - Bohemian Rhapsody (Live at Wembley)"}]},"simpleText":"7:00"}
-    "videoRenderer":{"videoId":"xyz789ghi","title":{"runs":[{"text":"Bohemian Rhapsody Cover"}]},"simpleText":"5:50"}
-    """
+    parts = [
+        (
+            '"videoRenderer":{"videoId":"fJ9rUzIMcZQ","title":{"runs":[{"text":"'
+            'Queen - Bohemian Rhapsody (Official Video)"}]},"simpleText":"5:54"}'
+        ),
+        (
+            '"videoRenderer":{"videoId":"abc123def","title":{"runs":[{"text":"'
+            'Queen - Bohemian Rhapsody (Live at Wembley)"}]},"simpleText":"7:00"}'
+        ),
+        '"videoRenderer":{"videoId":"xyz789ghi","title":{"runs":[{"text":"Bohemian Rhapsody Cover"}]},"simpleText":"5:50"}',
+    ]
+    return "\n".join(parts)
 
 
 @pytest.fixture

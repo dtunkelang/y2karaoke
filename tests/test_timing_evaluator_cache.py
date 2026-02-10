@@ -1,7 +1,6 @@
-import json
-
 from y2karaoke.core import timing_evaluator as te
 from y2karaoke.core import whisper_integration as wi
+from y2karaoke.core import whisper_dtw as wdtw
 
 
 def test_get_whisper_cache_path_none_for_missing(tmp_path):
@@ -53,16 +52,10 @@ def test_transcribe_vocals_handles_missing_whisper(monkeypatch, tmp_path):
     audio_path = tmp_path / "audio.wav"
     audio_path.write_bytes(b"fake")
 
-    import builtins
+    def missing_whisper():
+        raise ImportError("no whisper")
 
-    orig_import = builtins.__import__
-
-    def fake_import(name, *args, **kwargs):
-        if name == "faster_whisper":
-            raise ImportError("no whisper")
-        return orig_import(name, *args, **kwargs)
-
-    monkeypatch.setattr(builtins, "__import__", fake_import)
+    monkeypatch.setattr(wi, "_load_whisper_model_class", missing_whisper)
     monkeypatch.setattr(wi, "_load_whisper_cache", lambda *_: None)
 
     segments, words, lang, model = te.transcribe_vocals(str(audio_path))
@@ -158,16 +151,11 @@ def test_align_dtw_whisper_falls_back_without_fastdtw(monkeypatch):
     lines = [Line(words=[Word(text="hello", start_time=0.0, end_time=0.5)])]
     whisper_words = [te.TranscriptionWord(start=0.1, end=0.2, text="hello")]
 
-    import builtins
-
-    orig_import = builtins.__import__
-
-    def fake_import(name, *args, **kwargs):
-        if name == "fastdtw":
-            raise ImportError("no fastdtw")
-        return orig_import(name, *args, **kwargs)
-
-    monkeypatch.setattr(builtins, "__import__", fake_import)
+    monkeypatch.setattr(
+        wdtw,
+        "_load_fastdtw",
+        lambda: (_ for _ in ()).throw(ImportError("no fastdtw")),
+    )
     monkeypatch.setattr(wi, "_get_ipa", lambda *a, **k: None)
 
     aligned, corrections, metrics = te.align_dtw_whisper(lines, whisper_words)

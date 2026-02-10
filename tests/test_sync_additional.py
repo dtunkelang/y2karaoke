@@ -1,4 +1,8 @@
+import pytest
+
 from y2karaoke.core import sync
+
+pytestmark = pytest.mark.usefixtures("isolated_sync_state")
 
 
 def test_search_single_provider_skips_after_failures(monkeypatch):

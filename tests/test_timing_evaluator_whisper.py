@@ -98,10 +98,11 @@ def test_apply_dtw_alignments_shifts_large_offsets():
 
 
 def test_align_dtw_whisper_falls_back_without_fastdtw(monkeypatch):
-    import sys
-
-    # Hide fastdtw if present
-    monkeypatch.setitem(sys.modules, "fastdtw", None)
+    monkeypatch.setattr(
+        w_dtw,
+        "_load_fastdtw",
+        lambda: (_ for _ in ()).throw(ImportError("missing fastdtw")),
+    )
 
     lines = [Line(words=[Word(text="hello", start_time=1.0, end_time=1.5)])]
     words = [te.TranscriptionWord(start=1.1, end=1.6, text="hello", probability=0.9)]

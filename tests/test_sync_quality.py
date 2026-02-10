@@ -1,4 +1,8 @@
+import pytest
+
 import y2karaoke.core.sync as sync
+
+pytestmark = pytest.mark.usefixtures("isolated_sync_state")
 
 
 def test_count_large_gaps():

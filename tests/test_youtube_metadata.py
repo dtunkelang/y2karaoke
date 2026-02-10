@@ -1,5 +1,4 @@
 import hashlib
-import sys
 import types
 
 import pytest
@@ -136,7 +135,11 @@ def test_extract_metadata_from_youtube_prefers_artist_track(monkeypatch):
         def extract_info(self, url, download=False):
             return info
 
-    monkeypatch.setitem(sys.modules, "yt_dlp", types.SimpleNamespace(YoutubeDL=FakeYDL))
+    monkeypatch.setattr(
+        youtube_metadata,
+        "_load_yt_dlp_module",
+        lambda: types.SimpleNamespace(YoutubeDL=FakeYDL),
+    )
 
     result = youtube_metadata.extract_metadata_from_youtube(
         "https://www.youtube.com/watch?v=abc123def45"
@@ -167,7 +170,11 @@ def test_extract_metadata_from_youtube_parses_title(monkeypatch):
         def extract_info(self, url, download=False):
             return info
 
-    monkeypatch.setitem(sys.modules, "yt_dlp", types.SimpleNamespace(YoutubeDL=FakeYDL))
+    monkeypatch.setattr(
+        youtube_metadata,
+        "_load_yt_dlp_module",
+        lambda: types.SimpleNamespace(YoutubeDL=FakeYDL),
+    )
 
     result = youtube_metadata.extract_metadata_from_youtube(
         "https://www.youtube.com/watch?v=abc123def45"
@@ -198,7 +205,11 @@ def test_extract_metadata_from_youtube_parses_description(monkeypatch):
         def extract_info(self, url, download=False):
             return info
 
-    monkeypatch.setitem(sys.modules, "yt_dlp", types.SimpleNamespace(YoutubeDL=FakeYDL))
+    monkeypatch.setattr(
+        youtube_metadata,
+        "_load_yt_dlp_module",
+        lambda: types.SimpleNamespace(YoutubeDL=FakeYDL),
+    )
 
     result = youtube_metadata.extract_metadata_from_youtube(
         "https://www.youtube.com/watch?v=abc123def45"
@@ -228,7 +239,11 @@ def test_extract_metadata_from_youtube_fallbacks_to_uploader(monkeypatch):
         def extract_info(self, url, download=False):
             return info
 
-    monkeypatch.setitem(sys.modules, "yt_dlp", types.SimpleNamespace(YoutubeDL=FakeYDL))
+    monkeypatch.setattr(
+        youtube_metadata,
+        "_load_yt_dlp_module",
+        lambda: types.SimpleNamespace(YoutubeDL=FakeYDL),
+    )
 
     result = youtube_metadata.extract_metadata_from_youtube(
         "https://www.youtube.com/watch?v=abc123def45"

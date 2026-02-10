@@ -1,9 +1,9 @@
-import sys
 import types
 
 import y2karaoke.core.timing_evaluator as te
 import y2karaoke.core.timing_evaluator_comparison as te_comp
 import y2karaoke.core.whisper_integration as wi
+import y2karaoke.core.whisper_dtw as w_dtw
 import y2karaoke.core.whisper_alignment_utils as wa_utils
 from y2karaoke.core.models import Line, Word
 
@@ -23,7 +23,7 @@ def test_align_dtw_whisper_uses_fastdtw(monkeypatch):
         return 0.0, [(0, 0)]
 
     fake_module = types.SimpleNamespace(fastdtw=fake_fastdtw)
-    monkeypatch.setitem(sys.modules, "fastdtw", fake_module)
+    monkeypatch.setattr(w_dtw, "_load_fastdtw", lambda: fake_module.fastdtw)
 
     aligned, corrections, metrics = te.align_dtw_whisper(
         [line], whisper_words, language="eng-Latn", min_similarity=0.1

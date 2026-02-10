@@ -1,8 +1,7 @@
 """Tests for timing_evaluator module - focused on core functionality."""
 
-import sys
 from types import SimpleNamespace
-from unittest.mock import Mock, patch
+from unittest.mock import patch
 
 import numpy as np
 import pytest
@@ -413,7 +412,9 @@ class TestExtractAudioFeatures:
             feature=SimpleNamespace(rms=fake_rms),
         )
 
-        monkeypatch.setitem(sys.modules, "librosa", fake_librosa)
+        monkeypatch.setattr(
+            "y2karaoke.core.audio_analysis._load_librosa", lambda: fake_librosa
+        )
 
         features = extract_audio_features("vocals.wav", min_silence_duration=0.1)
 

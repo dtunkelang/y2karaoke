@@ -1,4 +1,3 @@
-import sys
 import types
 
 import numpy as np
@@ -178,7 +177,9 @@ def test_find_beat_near_returns_target_when_no_beats(monkeypatch):
         beat_frames=np.array([]),
         beat_times=np.array([]),
     )
-    monkeypatch.setitem(sys.modules, "librosa", fake_librosa)
+    monkeypatch.setattr(
+        "y2karaoke.core.break_shortener._load_librosa", lambda: fake_librosa
+    )
 
     target = 12.3
     assert find_beat_near("instrumental.wav", target) == target
@@ -189,6 +190,8 @@ def test_find_beat_near_returns_nearest_beat(monkeypatch):
         beat_frames=np.array([0, 1, 2]),
         beat_times=np.array([0.2, 1.2, 2.2]),
     )
-    monkeypatch.setitem(sys.modules, "librosa", fake_librosa)
+    monkeypatch.setattr(
+        "y2karaoke.core.break_shortener._load_librosa", lambda: fake_librosa
+    )
 
     assert find_beat_near("instrumental.wav", 5.0) == 5.2

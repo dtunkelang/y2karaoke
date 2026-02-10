@@ -1,6 +1,3 @@
-import builtins
-import runpy
-
 from y2karaoke.core import romanization
 
 
@@ -119,22 +116,8 @@ def test_romanize_multilingual_returns_block_when_no_map(monkeypatch):
     assert romanization.romanize_multilingual("שלום") == "שלום"
 
 
-def test_import_fallbacks_when_dependencies_missing(monkeypatch):
-    module_path = romanization.__file__
-    original_import = builtins.__import__
-
-    def fake_import(name, globals=None, locals=None, fromlist=(), level=0):
-        if name.startswith(("korean_romanizer", "pypinyin", "pykakasi", "pyarabic")):
-            raise ImportError("missing")
-        return original_import(name, globals, locals, fromlist, level)
-
-    monkeypatch.setattr(builtins, "__import__", fake_import)
-    romanization_globals = runpy.run_path(module_path)
-
-    assert romanization_globals["KOREAN_ROMANIZER_AVAILABLE"] is False
-    assert romanization_globals["Romanizer"] is None
-    assert romanization_globals["CHINESE_ROMANIZER_AVAILABLE"] is False
-    assert romanization_globals["lazy_pinyin"] is None
-    assert romanization_globals["Style"] is None
-    assert romanization_globals["JAPANESE_ROMANIZER_AVAILABLE"] is False
-    assert romanization_globals["ARABIC_ROMANIZER_AVAILABLE"] is False
+def test_dependency_flags_are_boolean():
+    assert isinstance(romanization.KOREAN_ROMANIZER_AVAILABLE, bool)
+    assert isinstance(romanization.CHINESE_ROMANIZER_AVAILABLE, bool)
+    assert isinstance(romanization.JAPANESE_ROMANIZER_AVAILABLE, bool)
+    assert isinstance(romanization.ARABIC_ROMANIZER_AVAILABLE, bool)

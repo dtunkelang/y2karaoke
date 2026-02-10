@@ -1,8 +1,12 @@
+import pytest
+
 from y2karaoke.core import sync
+
+pytestmark = pytest.mark.usefixtures("isolated_sync_state")
 
 
 def test_search_single_provider_tracks_failures(monkeypatch):
-    monkeypatch.setattr(sync, "_failed_providers", {})
+    sync._failed_providers.clear()
 
     class FakeSync:
         def search(self, *args, **kwargs):
@@ -17,12 +21,13 @@ def test_search_single_provider_tracks_failures(monkeypatch):
 
 
 def test_search_single_provider_skips_after_threshold(monkeypatch):
-    monkeypatch.setattr(sync, "_failed_providers", {"Provider": 3})
+    sync._failed_providers.clear()
+    sync._failed_providers["Provider"] = 3
     assert sync._search_single_provider("term", "Provider") is None
 
 
 def test_search_with_fallback_caches_result(monkeypatch):
-    monkeypatch.setattr(sync, "_search_cache", {})
+    sync._search_cache.clear()
     monkeypatch.setattr(sync, "PROVIDER_ORDER", ["Provider"])
     monkeypatch.setattr(sync, "_search_single_provider", lambda *a, **k: "[00:01.00]A")
     monkeypatch.setattr(sync.time, "sleep", lambda *_: None)
@@ -43,7 +48,7 @@ def test_search_with_fallback_caches_result(monkeypatch):
 
 
 def test_fetch_from_lyriq_caches_result(monkeypatch):
-    monkeypatch.setattr(sync, "_lyriq_cache", {})
+    sync._lyriq_cache.clear()
     monkeypatch.setattr(sync, "LYRIQ_AVAILABLE", True)
 
     class Lyrics:

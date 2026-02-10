@@ -1,8 +1,9 @@
 import types
-
 import pytest
 
 from y2karaoke.core import sync
+
+pytestmark = pytest.mark.usefixtures("isolated_sync_state")
 
 LRC_TEXT = "\n".join(
     [
@@ -15,20 +16,7 @@ LRC_TEXT = "\n".join(
 )
 
 
-@pytest.fixture(autouse=True)
-def _clear_sync_caches():
-    sync._failed_providers.clear()
-    sync._search_cache.clear()
-    sync._lyriq_cache.clear()
-    sync._lrc_cache.clear()
-    yield
-    sync._failed_providers.clear()
-    sync._search_cache.clear()
-    sync._lyriq_cache.clear()
-    sync._lrc_cache.clear()
-
-
-def test_search_single_provider_skips_after_failures(monkeypatch):
+def test_search_single_provider_skips_after_failures(monkeypatch, isolated_sync_state):
     sync._failed_providers["Test"] = sync._FAILURE_THRESHOLD
 
     called = {"count": 0}
@@ -43,7 +31,9 @@ def test_search_single_provider_skips_after_failures(monkeypatch):
     assert called["count"] == 0
 
 
-def test_search_single_provider_retries_on_transient_error(monkeypatch):
+def test_search_single_provider_retries_on_transient_error(
+    monkeypatch, isolated_sync_state
+):
     calls = {"count": 0}
 
     def fake_search(*args, **kwargs):
@@ -67,7 +57,7 @@ def test_search_single_provider_retries_on_transient_error(monkeypatch):
     assert calls["count"] == 2
 
 
-def test_search_with_fallback_caches_result(monkeypatch):
+def test_search_with_fallback_caches_result(monkeypatch, isolated_sync_state):
     calls = {"providers": []}
 
     def fake_search(search_term, provider, **kwargs):
@@ -86,7 +76,7 @@ def test_search_with_fallback_caches_result(monkeypatch):
     assert calls["providers"] == ["A"]
 
 
-def test_fetch_from_lyriq_returns_synced(monkeypatch):
+def test_fetch_from_lyriq_returns_synced(monkeypatch, isolated_sync_state):
     class Lyrics:
         synced_lyrics = LRC_TEXT
         plain_lyrics = None
@@ -98,7 +88,7 @@ def test_fetch_from_lyriq_returns_synced(monkeypatch):
     assert result == LRC_TEXT
 
 
-def test_fetch_from_lyriq_returns_none_for_plain(monkeypatch):
+def test_fetch_from_lyriq_returns_none_for_plain(monkeypatch, isolated_sync_state):
     class Lyrics:
         synced_lyrics = None
         plain_lyrics = "plain lyrics"
@@ -110,7 +100,7 @@ def test_fetch_from_lyriq_returns_none_for_plain(monkeypatch):
     assert result is None
 
 
-def test_fetch_lyrics_multi_source_uses_lyriq_first(monkeypatch):
+def test_fetch_lyrics_multi_source_uses_lyriq_first(monkeypatch, isolated_sync_state):
     monkeypatch.setattr(sync, "LYRIQ_AVAILABLE", True)
     monkeypatch.setattr(sync, "SYNCEDLYRICS_AVAILABLE", False)
     monkeypatch.setattr(sync, "_fetch_from_lyriq", lambda *a, **k: LRC_TEXT)
@@ -132,7 +122,7 @@ def test_count_large_gaps_counts_only_big_gaps():
     assert sync._count_large_gaps(timings, threshold=30.0) == 2
 
 
-def test_get_lyrics_quality_report_flags_mismatch(monkeypatch):
+def test_get_lyrics_quality_report_flags_mismatch(monkeypatch, isolated_sync_state):
     monkeypatch.setattr(sync, "get_lrc_duration", lambda *_: 90)
 
     report = sync.get_lyrics_quality_report(
@@ -146,7 +136,9 @@ def test_get_lyrics_quality_report_flags_mismatch(monkeypatch):
     assert any("Duration mismatch" in issue for issue in report["issues"])
 
 
-def test_fetch_lyrics_for_duration_uses_alternative_search(monkeypatch):
+def test_fetch_lyrics_for_duration_uses_alternative_search(
+    monkeypatch, isolated_sync_state
+):
     monkeypatch.setattr(sync, "SYNCEDLYRICS_AVAILABLE", True)
     monkeypatch.setattr(sync, "LYRIQ_AVAILABLE", False)
     monkeypatch.setattr(
@@ -178,7 +170,7 @@ def test_fetch_lyrics_for_duration_uses_alternative_search(monkeypatch):
     assert duration == 120
 
 
-def test_fetch_from_all_sources_collects_results(monkeypatch):
+def test_fetch_from_all_sources_collects_results(monkeypatch, isolated_sync_state):
     class Lyrics:
         synced_lyrics = LRC_TEXT
         plain_lyrics = None

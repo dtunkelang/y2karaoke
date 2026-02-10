@@ -334,6 +334,14 @@ class YouTubeSearcher(_Base):
     def _extract_youtube_candidates(self, response_text: str) -> List[Dict]:
         return yt_rules.extract_youtube_candidates(response_text)
 
+    def _load_yt_dlp_module(self):
+        try:
+            import yt_dlp
+
+            return yt_dlp
+        except ImportError as e:
+            raise Y2KaraokeError("yt_dlp required for YouTube metadata") from e
+
     def _get_youtube_metadata(self, url: str) -> tuple[str, str, int]:
         """Get YouTube video metadata without downloading.
 
@@ -341,7 +349,7 @@ class YouTubeSearcher(_Base):
             Tuple of (title, uploader, duration_seconds)
         """
         try:
-            import yt_dlp
+            yt_dlp = self._load_yt_dlp_module()
 
             ydl_opts = {
                 "quiet": True,

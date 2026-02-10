@@ -1,26 +1,15 @@
 import builtins
-import importlib.util
 import types
-
 import pytest
 
 from y2karaoke.core import sync
 
-
-@pytest.fixture(autouse=True)
-def _clear_sync_caches():
-    sync._failed_providers.clear()
-    sync._search_cache.clear()
-    sync._lyriq_cache.clear()
-    sync._lrc_cache.clear()
-    yield
-    sync._failed_providers.clear()
-    sync._search_cache.clear()
-    sync._lyriq_cache.clear()
-    sync._lrc_cache.clear()
+pytestmark = pytest.mark.usefixtures("isolated_sync_state")
 
 
-def test_fetch_lyrics_multi_source_cached_duration_mismatch_refetch(monkeypatch):
+def test_fetch_lyrics_multi_source_cached_duration_mismatch_refetch(
+    monkeypatch, isolated_sync_state
+):
     cache_key = ("artist", "title")
     sync._lrc_cache[cache_key] = ("[00:00.00]A", True, "cached", 100)
 
@@ -43,7 +32,9 @@ def test_fetch_lyrics_multi_source_cached_duration_mismatch_refetch(monkeypatch)
     assert called["count"] == 1
 
 
-def test_fetch_lyrics_multi_source_enhanced_plain_allowed(monkeypatch):
+def test_fetch_lyrics_multi_source_enhanced_plain_allowed(
+    monkeypatch, isolated_sync_state
+):
     monkeypatch.setattr(sync, "LYRIQ_AVAILABLE", False)
     monkeypatch.setattr(sync, "SYNCEDLYRICS_AVAILABLE", True)
 
@@ -96,7 +87,7 @@ def test_get_lyrics_quality_report_no_timestamps():
     assert "No synced lyrics" in report["issues"][0]
 
 
-def test_get_lyrics_quality_report_too_few_lines(monkeypatch):
+def test_get_lyrics_quality_report_too_few_lines(monkeypatch, isolated_sync_state):
     lrc = "[00:00.00]Line"
     monkeypatch.setattr(sync, "_has_timestamps", lambda *_a, **_k: True)
     monkeypatch.setattr(
@@ -123,31 +114,25 @@ def test_calculate_quality_score_mid_density_and_few_lines():
     assert any("Only 9 lines" in issue for issue in report["issues"])
 
 
-def test_sync_import_fallbacks_when_dependencies_missing(monkeypatch):
-    module_path = sync.__file__
-    original_import = builtins.__import__
-
+def test_sync_import_fallbacks_when_dependencies_missing(isolated_sync_state):
     def fake_import(name, globals=None, locals=None, fromlist=(), level=0):
         if name.startswith(("syncedlyrics", "lyriq")):
             raise ImportError("missing")
-        return original_import(name, globals, locals, fromlist, level)
+        return builtins.__import__(name, globals, locals, fromlist, level)
 
-    monkeypatch.setattr(builtins, "__import__", fake_import)
-    spec = importlib.util.spec_from_file_location(
-        "y2karaoke.core.sync_temp", module_path
+    synced_mod, synced_ok, lyriq_get, lyriq_ok = sync._resolve_sync_dependencies(
+        fake_import
     )
-    module = importlib.util.module_from_spec(spec)
-    module.__package__ = "y2karaoke.core"
-    spec.loader.exec_module(module)
-    sync_globals = module.__dict__
 
-    assert sync_globals["SYNCEDLYRICS_AVAILABLE"] is False
-    assert sync_globals["syncedlyrics"] is None
-    assert sync_globals["LYRIQ_AVAILABLE"] is False
-    assert sync_globals["lyriq_get_lyrics"] is None
+    assert synced_ok is False
+    assert synced_mod is None
+    assert lyriq_ok is False
+    assert lyriq_get is None
 
 
-def test_search_single_provider_returns_none_on_empty_result(monkeypatch):
+def test_search_single_provider_returns_none_on_empty_result(
+    monkeypatch, isolated_sync_state
+):
     monkeypatch.setattr(
         sync, "syncedlyrics", types.SimpleNamespace(search=lambda *_a, **_k: None)
     )
@@ -156,7 +141,7 @@ def test_search_single_provider_returns_none_on_empty_result(monkeypatch):
     assert sync._failed_providers.get("Provider", 0) == 0
 
 
-def test_search_single_provider_skips_after_failures(monkeypatch):
+def test_search_single_provider_skips_after_failures(monkeypatch, isolated_sync_state):
     sync._failed_providers["Provider"] = sync._FAILURE_THRESHOLD
     monkeypatch.setattr(
         sync, "syncedlyrics", types.SimpleNamespace(search=lambda *_a, **_k: "hit")
@@ -165,7 +150,9 @@ def test_search_single_provider_skips_after_failures(monkeypatch):
     assert result is None
 
 
-def test_search_single_provider_returns_none_when_no_attempts(monkeypatch):
+def test_search_single_provider_returns_none_when_no_attempts(
+    monkeypatch, isolated_sync_state
+):
     monkeypatch.setattr(
         sync, "syncedlyrics", types.SimpleNamespace(search=lambda *_a, **_k: "hit")
     )
@@ -173,7 +160,7 @@ def test_search_single_provider_returns_none_when_no_attempts(monkeypatch):
     assert result is None
 
 
-def test_fetch_from_lyriq_no_synced_or_plain(monkeypatch):
+def test_fetch_from_lyriq_no_synced_or_plain(monkeypatch, isolated_sync_state):
     class EmptyLyrics:
         synced_lyrics = None
         plain_lyrics = None
@@ -184,7 +171,9 @@ def test_fetch_from_lyriq_no_synced_or_plain(monkeypatch):
     assert sync._fetch_from_lyriq("Title", "Artist") is None
 
 
-def test_fetch_lyrics_multi_source_cache_hit_duration_match(monkeypatch):
+def test_fetch_lyrics_multi_source_cache_hit_duration_match(
+    monkeypatch, isolated_sync_state
+):
     cache_key = ("artist", "title")
     sync._lrc_cache[cache_key] = ("[00:00.00]A", True, "cached", 120)
 
@@ -198,7 +187,9 @@ def test_fetch_lyrics_multi_source_cache_hit_duration_match(monkeypatch):
     assert result == ("[00:00.00]A", True, "cached")
 
 
-def test_fetch_lyrics_multi_source_returns_synced_provider(monkeypatch):
+def test_fetch_lyrics_multi_source_returns_synced_provider(
+    monkeypatch, isolated_sync_state
+):
     monkeypatch.setattr(sync, "LYRIQ_AVAILABLE", False)
     monkeypatch.setattr(sync, "SYNCEDLYRICS_AVAILABLE", True)
     monkeypatch.setattr(
@@ -210,7 +201,9 @@ def test_fetch_lyrics_multi_source_returns_synced_provider(monkeypatch):
     assert result == ("[00:00.00]A", True, "Provider")
 
 
-def test_fetch_lyrics_multi_source_returns_plain_when_allowed(monkeypatch):
+def test_fetch_lyrics_multi_source_returns_plain_when_allowed(
+    monkeypatch, isolated_sync_state
+):
     monkeypatch.setattr(sync, "LYRIQ_AVAILABLE", False)
     monkeypatch.setattr(sync, "SYNCEDLYRICS_AVAILABLE", True)
     monkeypatch.setattr(
@@ -241,7 +234,7 @@ def test_validate_lrc_quality_large_gap_and_low_coverage():
     assert "covers only" in reason
 
 
-def test_fetch_lyrics_for_duration_returns_match(monkeypatch):
+def test_fetch_lyrics_for_duration_returns_match(monkeypatch, isolated_sync_state):
     monkeypatch.setattr(sync, "SYNCEDLYRICS_AVAILABLE", True)
     monkeypatch.setattr(sync, "LYRIQ_AVAILABLE", False)
 
@@ -259,7 +252,9 @@ def test_fetch_lyrics_for_duration_returns_match(monkeypatch):
     assert result == (lrc_text, True, "source", 200)
 
 
-def test_fetch_lyrics_for_duration_alternative_search_match(monkeypatch):
+def test_fetch_lyrics_for_duration_alternative_search_match(
+    monkeypatch, isolated_sync_state
+):
     monkeypatch.setattr(sync, "SYNCEDLYRICS_AVAILABLE", True)
     monkeypatch.setattr(sync, "LYRIQ_AVAILABLE", False)
 
@@ -287,7 +282,9 @@ def test_fetch_lyrics_for_duration_alternative_search_match(monkeypatch):
     assert result == (alt_lrc, True, "Provider (Title Artist)", 205)
 
 
-def test_fetch_lyrics_for_duration_returns_mismatch_when_no_alternatives(monkeypatch):
+def test_fetch_lyrics_for_duration_returns_mismatch_when_no_alternatives(
+    monkeypatch, isolated_sync_state
+):
     monkeypatch.setattr(sync, "SYNCEDLYRICS_AVAILABLE", True)
     monkeypatch.setattr(sync, "LYRIQ_AVAILABLE", False)
 
@@ -306,7 +303,9 @@ def test_fetch_lyrics_for_duration_returns_mismatch_when_no_alternatives(monkeyp
     assert result == (lrc_text, True, "source", 100)
 
 
-def test_fetch_lyrics_for_duration_returns_none_when_no_results(monkeypatch):
+def test_fetch_lyrics_for_duration_returns_none_when_no_results(
+    monkeypatch, isolated_sync_state
+):
     monkeypatch.setattr(sync, "SYNCEDLYRICS_AVAILABLE", False)
     monkeypatch.setattr(sync, "LYRIQ_AVAILABLE", False)
 
@@ -321,7 +320,9 @@ def test_fetch_lyrics_for_duration_returns_none_when_no_results(monkeypatch):
     assert result == (None, False, "", None)
 
 
-def test_fetch_from_all_sources_skips_genius_and_handles_errors(monkeypatch):
+def test_fetch_from_all_sources_skips_genius_and_handles_errors(
+    monkeypatch, isolated_sync_state
+):
     monkeypatch.setattr(sync, "LYRIQ_AVAILABLE", True)
     monkeypatch.setattr(sync, "SYNCEDLYRICS_AVAILABLE", True)
     monkeypatch.setattr(

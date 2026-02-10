@@ -15,6 +15,12 @@ from ..utils.logging import get_logger
 logger = get_logger(__name__)
 
 
+def _load_librosa():
+    import librosa
+
+    return librosa
+
+
 @dataclass
 class InstrumentalBreak:
     """Represents an instrumental break in the audio."""
@@ -63,7 +69,7 @@ def detect_instrumental_breaks(
     Returns:
         List of InstrumentalBreak objects
     """
-    import librosa
+    librosa = _load_librosa()
 
     # Load vocals
     y, sr = librosa.load(vocals_path, sr=sample_rate)
@@ -126,7 +132,7 @@ def find_beat_near(
     Returns:
         Time of nearest beat (seconds)
     """
-    import librosa
+    librosa = _load_librosa()
 
     # Load a portion of the audio around the target time
     start_time = max(0, target_time - search_window)

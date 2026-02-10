@@ -19,6 +19,12 @@ from .whisper_dtw_tokens import _LineMappingContext  # noqa: F401
 logger = logging.getLogger(__name__)
 
 
+def _load_fastdtw():
+    from fastdtw import fastdtw  # type: ignore
+
+    return fastdtw
+
+
 def _extract_lrc_words_base(lines: List[Line]) -> List[Dict]:
     """Extract all LRC words with their line indices (base version)."""
     lrc_words = []
@@ -168,7 +174,7 @@ def align_dtw_whisper_base(
     # Run DTW
     logger.debug("DTW: Running alignment...")
     try:
-        from fastdtw import fastdtw
+        fastdtw = _load_fastdtw()
 
         lrc_times = np.array([lw["start"] for lw in lrc_words])
         whisper_times = np.array([ww.start for ww in whisper_words])
@@ -342,7 +348,7 @@ def _align_dtw_whisper_with_data(
     logger.debug("DTW: Running alignment...")
     use_silence = silence_regions or []
     try:
-        from fastdtw import fastdtw  # type: ignore
+        fastdtw = _load_fastdtw()
 
         lrc_times = np.array([lw["start"] for lw in lrc_words])
         whisper_times = np.array([ww.start for ww in whisper_words])
@@ -445,7 +451,7 @@ def align_dtw_whisper(
 
     # Simple greedy alignment if fastdtw missing
     try:
-        from fastdtw import fastdtw  # type: ignore
+        fastdtw = _load_fastdtw()
 
         lrc_times = np.array([lw["start"] for lw in lrc_words])
         whisper_times = np.array([ww.start for ww in whisper_words])

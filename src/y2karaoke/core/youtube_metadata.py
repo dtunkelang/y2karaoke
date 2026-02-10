@@ -135,9 +135,15 @@ def clean_title(title: str, artist: str = "") -> str:
     return cleaned.strip()
 
 
+def _load_yt_dlp_module():
+    import yt_dlp
+
+    return yt_dlp
+
+
 def extract_metadata_from_youtube(url: str) -> Dict[str, str]:
     """Unified metadata extraction (artist/title) for YouTube URL."""
-    import yt_dlp
+    yt_dlp = _load_yt_dlp_module()
 
     ydl_opts = {
         "quiet": True,
