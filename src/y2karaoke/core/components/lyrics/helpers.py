@@ -436,7 +436,12 @@ def _apply_whisper_alignment(
 
 def _romanize_lines(lines: List[Line]) -> None:
     """Apply romanization to non-Latin characters in lines."""
+    # Resolve through compatibility module so monkeypatches on
+    # y2karaoke.core.lyrics_helpers.romanize_line remain effective.
+    from ... import lyrics_helpers as lyrics_helpers_compat
+
+    romanize_line_fn = getattr(lyrics_helpers_compat, "romanize_line", romanize_line)
     for line in lines:
         for word in line.words:
             if any(ord(c) > 127 for c in word.text):
-                word.text = romanize_line(word.text)
+                word.text = romanize_line_fn(word.text)
