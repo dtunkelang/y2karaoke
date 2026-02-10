@@ -26,6 +26,12 @@ Run all tests:
 PYTHONPATH=src pytest tests -v
 ```
 
+Run the fast local gate (format/lint/type/unit+perf smoke):
+
+```bash
+make check
+```
+
 Run fast unit tests only:
 
 ```bash

@@ -1,2 +1,0 @@
-[console_scripts]
-y2karaoke = y2karaoke.cli:cli

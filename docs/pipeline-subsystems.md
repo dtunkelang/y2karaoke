@@ -33,6 +33,11 @@ modules are cross-cutting/shared utilities or orchestration entrypoints.
 - `pipeline/render`
   Exposes rendering entrypoints (background segmentation and final video render).
 
+Detailed flow docs:
+- `docs/pipelines/karaoke.md`
+- `docs/pipelines/lyrics.md`
+- `docs/pipelines/whisper.md`
+
 ## Dependency Rules
 
 - `pipeline/*` is a facade layer over `core/*`.

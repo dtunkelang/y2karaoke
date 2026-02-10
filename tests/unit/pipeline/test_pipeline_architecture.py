@@ -6,7 +6,7 @@ import ast
 from pathlib import Path
 from typing import Iterable
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[3]
 SRC = ROOT / "src" / "y2karaoke"
 
 
@@ -54,9 +54,10 @@ def _iter_import_targets(path: Path) -> Iterable[str]:
 
 
 def test_core_modules_do_not_depend_on_pipeline_except_karaoke() -> None:
+    allowed = {"karaoke.py", "karaoke_generate.py", "__init__.py"}
     violations: list[str] = []
     for path in sorted((SRC / "core").glob("*.py")):
-        if path.name in {"karaoke.py", "__init__.py"}:
+        if path.name in allowed:
             continue
         for imported in _iter_import_targets(path):
             if imported.startswith("y2karaoke.pipeline"):
@@ -76,5 +77,24 @@ def test_pipeline_modules_only_depend_on_core_or_pipeline_within_project() -> No
             if imported.startswith("y2karaoke.pipeline"):
                 continue
             violations.append(f"{path.relative_to(ROOT)} imports {imported}")
+
+    assert not violations, "\n".join(violations)
+
+
+def test_cli_commands_only_use_pipeline_or_karaoke_entrypoints() -> None:
+    path = SRC / "cli_commands.py"
+    violations: list[str] = []
+    for imported in _iter_import_targets(path):
+        if not imported.startswith("y2karaoke"):
+            continue
+        if imported.startswith("y2karaoke.pipeline"):
+            continue
+        if imported == "y2karaoke.core.karaoke":
+            continue
+        if imported.startswith("y2karaoke.utils"):
+            continue
+        if imported in {"y2karaoke.config", "y2karaoke.exceptions"}:
+            continue
+        violations.append(f"{path.relative_to(ROOT)} imports {imported}")
 
     assert not violations, "\n".join(violations)

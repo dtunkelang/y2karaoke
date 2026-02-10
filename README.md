@@ -41,6 +41,9 @@ pip install -e .
 # Install with development tooling (pytest/black/flake8/mypy)
 pip install -e ".[dev]"
 
+# Or bootstrap everything in one step
+./tools/bootstrap_dev.sh
+
 # Optional: Install romanization libraries for non-Latin scripts
 pip install korean-romanizer pypinyin pykakasi pyarabic
 ```
@@ -162,6 +165,12 @@ pip install -e ".[dev]"
 pytest tests -v
 ```
 
+Preferred local workflow:
+
+```bash
+make check
+```
+
 Test organization:
 - `tests/unit/` for subsystem unit tests
 - `tests/integration/` for network/integration coverage
@@ -263,6 +272,12 @@ Subsystem facades now live under `src/y2karaoke/pipeline/`:
 - `pipeline/render` for video/background rendering entrypoints
 
 For a concise summary of the selection logic and test coverage across the three core pillars, see [docs/logic-audit.md](docs/logic-audit.md).
+For subsystem documentation and development workflow, see:
+- [docs/pipeline-subsystems.md](docs/pipeline-subsystems.md)
+- [docs/pipelines/karaoke.md](docs/pipelines/karaoke.md)
+- [docs/pipelines/lyrics.md](docs/pipelines/lyrics.md)
+- [docs/pipelines/whisper.md](docs/pipelines/whisper.md)
+- [docs/development.md](docs/development.md)
 For subsystem boundaries and dependency rules, see [docs/pipeline-subsystems.md](docs/pipeline-subsystems.md).
 
 ## License

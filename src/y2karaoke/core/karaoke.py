@@ -20,6 +20,7 @@ from .karaoke_audio_helpers import append_outro_line_impl, shorten_breaks_impl
 from .karaoke_generate import generate_karaoke
 from ..pipeline.audio import (
     YouTubeDownloader,
+    extract_video_id,
     AudioSeparator,
     AudioProcessor,
     trim_audio_if_needed,
@@ -28,6 +29,7 @@ from ..pipeline.audio import (
 )
 
 logger = get_logger(__name__)
+_ = extract_video_id  # retained for monkeypatch-based tests
 
 
 if TYPE_CHECKING:

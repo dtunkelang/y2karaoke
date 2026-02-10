@@ -33,5 +33,7 @@ tests/.genius_cache
 
 # Coverage
 .coverage
+# Packaging artifacts
+*.egg-info/
 # Codex local data
 .codex/
