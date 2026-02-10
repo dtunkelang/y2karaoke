@@ -1,7 +1,8 @@
 """Multilingual romanization for lyrics display."""
 
+from contextlib import contextmanager
 import re
-from typing import Any, Callable, Optional
+from typing import Any, Callable, Iterator, Optional
 
 # ----------------------
 # Language library imports
@@ -153,6 +154,19 @@ HEBREW_TO_LATIN = {
 # Language-specific romanizers
 # ----------------------
 _JAPANESE_CONVERTER = None
+
+
+@contextmanager
+def use_romanization_hooks(*, japanese_converter=None) -> Iterator[None]:
+    """Temporarily override romanization collaborators for tests."""
+    global _JAPANESE_CONVERTER
+    prev_converter = _JAPANESE_CONVERTER
+    if japanese_converter is not None:
+        _JAPANESE_CONVERTER = japanese_converter
+    try:
+        yield
+    finally:
+        _JAPANESE_CONVERTER = prev_converter
 
 
 def romanize_korean(text: str) -> str:

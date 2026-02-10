@@ -1,10 +1,8 @@
-import pytest
 from y2karaoke.core.models import Line, Word
 import y2karaoke.core.components.whisper.whisper_alignment as wa
 from y2karaoke.core.components.alignment.timing_models import (
     TranscriptionWord,
     TranscriptionSegment,
-    AudioFeatures,
 )
 import numpy as np
 
@@ -172,7 +170,7 @@ def test_drop_duplicate_lines_by_timing():
     assert len(deduped) == 1
 
 
-def test_pull_lines_forward_for_continuous_vocals(monkeypatch):
+def test_pull_lines_forward_for_continuous_vocals():
     lines = [
         Line(words=[Word(text="one", start_time=10.0, end_time=11.0)]),
         Line(words=[Word(text="two", start_time=20.0, end_time=21.0)]),
@@ -186,10 +184,13 @@ def test_pull_lines_forward_for_continuous_vocals(monkeypatch):
 
     import y2karaoke.core.components.whisper.whisper_alignment_refinement as war
 
-    monkeypatch.setattr(war, "_check_vocal_activity_in_range", lambda *args: 0.8)
-    monkeypatch.setattr(war, "_check_for_silence_in_range", lambda *args, **kw: False)
-
-    pulled, count = wa._pull_lines_forward_for_continuous_vocals(lines, af, max_gap=4.0)
+    with war.use_alignment_refinement_hooks(
+        check_vocal_activity_in_range_fn=lambda *args: 0.8,
+        check_for_silence_in_range_fn=lambda *args, **kw: False,
+    ):
+        pulled, count = wa._pull_lines_forward_for_continuous_vocals(
+            lines, af, max_gap=4.0
+        )
     # gap is 9.0 > 4.0. Activity 0.8 > 0.6. No silence.
     # Should pull to first onset after prev end: 12.0
     assert count == 1
@@ -242,8 +243,6 @@ def test_fill_vocal_activity_gaps():
 
     af = MockAudioFeatures()
 
-    # We need to monkeypatch _check_vocal_activity_in_range in whisper_alignment
-    import y2karaoke.core.components.whisper.whisper_alignment as wa_mod
     from unittest.mock import patch
 
     with patch(

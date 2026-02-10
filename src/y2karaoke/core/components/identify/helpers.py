@@ -160,25 +160,38 @@ class TrackIdentifierHelpers:
 
     def _try_split_search(self, query: str) -> Optional[tuple]:
         """Try artist/title splits to find best candidate."""
-        splits = self._try_artist_title_splits(query)  # type: ignore[attr-defined]
+        try_splits = getattr(self, "_try_artist_title_splits_fn", None)
+        if not callable(try_splits):
+            try_splits = self._try_artist_title_splits  # type: ignore[attr-defined]
+        query_musicbrainz = getattr(self, "_query_musicbrainz_fn", None)
+        if not callable(query_musicbrainz):
+            query_musicbrainz = self._query_musicbrainz  # type: ignore[attr-defined]
+        find_best_with_artist_hint = getattr(
+            self, "_find_best_with_artist_hint_fn", None
+        )
+        if not callable(find_best_with_artist_hint):
+            find_best_with_artist_hint = self._find_best_with_artist_hint  # type: ignore[attr-defined]
+        score_split_candidate = getattr(self, "_score_split_candidate_fn", None)
+        if not callable(score_split_candidate):
+            score_split_candidate = self._score_split_candidate
+
+        splits = try_splits(query)
         split_candidates = []
         for split_artist, split_title in splits:
             logger.debug(
                 f"Trying split: artist='{split_artist}', title='{split_title}'"
             )
-            split_recordings = self._query_musicbrainz(  # type: ignore[attr-defined]
+            split_recordings = query_musicbrainz(
                 f"{split_artist} {split_title}", split_artist, split_title
             )
             if not split_recordings:
                 continue
-            candidate = self._find_best_with_artist_hint(  # type: ignore[attr-defined]
+            candidate = find_best_with_artist_hint(
                 split_recordings, query, split_artist
             )
             if not candidate:
                 continue
-            score = self._score_split_candidate(
-                candidate, split_artist, split_title, query
-            )
+            score = score_split_candidate(candidate, split_artist, split_title, query)
             if score is None:
                 continue
             duration, artist, title = candidate
@@ -229,6 +242,10 @@ class TrackIdentifierHelpers:
         self, artist: str, title: str, lrc_duration: int, yt_duration: int
     ) -> Optional[TrackInfo]:
         """Search for a YouTube video matching LRC duration."""
+        search_youtube_verified = getattr(self, "_search_youtube_verified_fn", None)
+        if not callable(search_youtube_verified):
+            search_youtube_verified = self._search_youtube_verified  # type: ignore[attr-defined]
+
         logger.info(
             f"LRC duration ({lrc_duration}s) differs from YouTube ({yt_duration}s)"
         )
@@ -238,7 +255,7 @@ class TrackIdentifierHelpers:
             f"{artist} {title} audio",
             f"{artist} {title}",
         ]:
-            alt_youtube = self._search_youtube_verified(  # type: ignore[attr-defined]
+            alt_youtube = search_youtube_verified(
                 search_query, lrc_duration, artist, title
             )
             if alt_youtube and alt_youtube["duration"]:
@@ -260,7 +277,7 @@ class TrackIdentifierHelpers:
             f"Could not find clean YouTube video matching LRC duration ({lrc_duration}s)"
         )
         if abs(lrc_duration - yt_duration) > 20:
-            alt_youtube = self._search_youtube_verified(  # type: ignore[attr-defined]
+            alt_youtube = search_youtube_verified(
                 f"{artist} {title} radio edit", lrc_duration, artist, title
             )
             if (
@@ -304,7 +321,10 @@ class TrackIdentifierHelpers:
             fallback_artist = parsed_artist
             fallback_title = parsed_title
         if not fallback_artist and parsed_title:
-            splits = self._try_artist_title_splits(parsed_title)  # type: ignore[attr-defined]
+            try_splits = getattr(self, "_try_artist_title_splits_fn", None)
+            if not callable(try_splits):
+                try_splits = self._try_artist_title_splits  # type: ignore[attr-defined]
+            splits = try_splits(parsed_title)
             for split_artist, split_title in splits[:3]:
                 has_lrc, _ = self._check_lrc_and_duration(split_title, split_artist)
                 if has_lrc:

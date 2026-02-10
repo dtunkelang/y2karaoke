@@ -74,8 +74,13 @@ class MusicBrainzClient(_Base):
 
                 # Score and sort recordings to prioritize studio versions and title matches
                 scored = []
+                score_recording = getattr(
+                    self, "_score_recording_studio_likelihood_fn", None
+                )
+                if not callable(score_recording):
+                    score_recording = self._score_recording_studio_likelihood
                 for rec in recordings:
-                    score = self._score_recording_studio_likelihood(rec)
+                    score = score_recording(rec)
 
                     # Bonus for title match (when user explicitly provides title)
                     if title_hint:

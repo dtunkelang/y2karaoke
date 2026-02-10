@@ -24,9 +24,7 @@ def test_select_best_from_artist_matches_prefers_mb_consensus():
     assert best == (310, "Artist", "Song")
 
 
-def test_find_best_title_only_prefers_lrc_available(monkeypatch):
-    identifier = ti.TrackIdentifier()
-
+def test_find_best_title_only_prefers_lrc_available():
     recordings = [
         {
             "title": "My Song",
@@ -43,7 +41,7 @@ def test_find_best_title_only_prefers_lrc_available(monkeypatch):
     def fake_check(title, artist):
         return (artist == "Artist B"), 205
 
-    monkeypatch.setattr(identifier, "_check_lrc_and_duration", fake_check)
+    identifier = ti.TrackIdentifier(check_lrc_and_duration_fn=fake_check)
 
     result = identifier._find_best_title_only(recordings, "My Song")
 
@@ -64,8 +62,10 @@ def test_find_best_title_only_returns_none_for_no_match():
     assert identifier._find_best_title_only(recordings, "My Song") is None
 
 
-def test_find_best_title_only_fallbacks_to_consensus_artist(monkeypatch):
-    identifier = ti.TrackIdentifier()
+def test_find_best_title_only_fallbacks_to_consensus_artist():
+    identifier = ti.TrackIdentifier(
+        check_lrc_and_duration_fn=lambda *a, **k: (False, None)
+    )
 
     recordings = [
         {
@@ -84,10 +84,6 @@ def test_find_best_title_only_fallbacks_to_consensus_artist(monkeypatch):
             "artist-credit": [{"artist": {"name": "Artist B"}}],
         },
     ]
-
-    monkeypatch.setattr(
-        identifier, "_check_lrc_and_duration", lambda *a, **k: (False, None)
-    )
 
     result = identifier._find_best_title_only(recordings, "My Song")
 

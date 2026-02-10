@@ -1,13 +1,11 @@
 import y2karaoke.core.components.identify.implementation as ti
 
 
-def test_search_matching_youtube_video_finds_close_match(monkeypatch):
-    identifier = ti.TrackIdentifier()
-
+def test_search_matching_youtube_video_finds_close_match():
     def fake_search(query, lrc_duration, artist, title):
         return {"url": "http://youtube", "duration": lrc_duration}
 
-    monkeypatch.setattr(identifier, "_search_youtube_verified", fake_search)
+    identifier = ti.TrackIdentifier(search_youtube_verified_fn=fake_search)
 
     result = identifier._search_matching_youtube_video(
         artist="Artist",
@@ -22,9 +20,7 @@ def test_search_matching_youtube_video_finds_close_match(monkeypatch):
     assert result.duration == 200
 
 
-def test_search_matching_youtube_video_uses_radio_edit_when_needed(monkeypatch):
-    identifier = ti.TrackIdentifier()
-
+def test_search_matching_youtube_video_uses_radio_edit_when_needed():
     calls = []
 
     def fake_search(query, lrc_duration, artist, title):
@@ -33,7 +29,7 @@ def test_search_matching_youtube_video_uses_radio_edit_when_needed(monkeypatch):
             return {"url": "http://radio", "duration": lrc_duration - 1}
         return None
 
-    monkeypatch.setattr(identifier, "_search_youtube_verified", fake_search)
+    identifier = ti.TrackIdentifier(search_youtube_verified_fn=fake_search)
 
     result = identifier._search_matching_youtube_video(
         artist="Artist",
@@ -47,13 +43,11 @@ def test_search_matching_youtube_video_uses_radio_edit_when_needed(monkeypatch):
     assert any("radio edit" in q for q in calls)
 
 
-def test_search_matching_youtube_video_skips_missing_duration(monkeypatch):
-    identifier = ti.TrackIdentifier()
-
+def test_search_matching_youtube_video_skips_missing_duration():
     def fake_search(query, lrc_duration, artist, title):
         return {"url": "http://youtube", "duration": None}
 
-    monkeypatch.setattr(identifier, "_search_youtube_verified", fake_search)
+    identifier = ti.TrackIdentifier(search_youtube_verified_fn=fake_search)
 
     result = identifier._search_matching_youtube_video(
         artist="Artist",

@@ -6,13 +6,27 @@ and creates smooth transitions.
 """
 
 import numpy as np
+from contextlib import contextmanager
 from dataclasses import dataclass
-from typing import List, Tuple, Optional
+from typing import Iterator, List, Tuple, Optional
 from pydub import AudioSegment
 
 from ..utils.logging import get_logger
 
 logger = get_logger(__name__)
+
+
+@contextmanager
+def use_break_shortener_hooks(*, load_librosa_fn=None) -> Iterator[None]:
+    """Temporarily override break-shortener collaborators for tests."""
+    global _load_librosa
+    prev_load_librosa = _load_librosa
+    if load_librosa_fn is not None:
+        _load_librosa = load_librosa_fn
+    try:
+        yield
+    finally:
+        _load_librosa = prev_load_librosa
 
 
 def _load_librosa():

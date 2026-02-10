@@ -46,6 +46,12 @@ class TrackIdentifier(
         infer_artist_from_query_fn: Optional[Callable[..., Any]] = None,
         search_youtube_verified_fn: Optional[Callable[..., Any]] = None,
         try_split_search_fn: Optional[Callable[..., Any]] = None,
+        try_artist_title_splits_fn: Optional[Callable[..., Any]] = None,
+        check_lrc_and_duration_fn: Optional[Callable[..., Any]] = None,
+        query_musicbrainz_fn: Optional[Callable[..., Any]] = None,
+        find_best_with_artist_hint_fn: Optional[Callable[..., Any]] = None,
+        score_split_candidate_fn: Optional[Callable[..., Any]] = None,
+        score_recording_studio_likelihood_fn: Optional[Callable[..., Any]] = None,
         search_youtube_single_fn: Optional[Callable[..., Any]] = None,
         load_yt_dlp_module_fn: Optional[Callable[..., Any]] = None,
     ):
@@ -61,6 +67,14 @@ class TrackIdentifier(
         self._infer_artist_from_query_fn = infer_artist_from_query_fn
         self._search_youtube_verified_fn = search_youtube_verified_fn
         self._try_split_search_fn = try_split_search_fn
+        self._try_artist_title_splits_fn = try_artist_title_splits_fn
+        self._check_lrc_and_duration_fn = check_lrc_and_duration_fn
+        self._query_musicbrainz_fn = query_musicbrainz_fn
+        self._find_best_with_artist_hint_fn = find_best_with_artist_hint_fn
+        self._score_split_candidate_fn = score_split_candidate_fn
+        self._score_recording_studio_likelihood_fn = (
+            score_recording_studio_likelihood_fn
+        )
         self._search_youtube_single_fn = search_youtube_single_fn
         self._load_yt_dlp_module_fn = load_yt_dlp_module_fn
 
@@ -403,6 +417,14 @@ class TrackIdentifier(
     def _check_lrc_and_duration(
         self, title: str, artist: str, expected_duration: Optional[int] = None
     ) -> tuple[bool, Optional[int]]:
+        check_fn = self._check_lrc_and_duration_fn
+        if callable(check_fn):
+            try:
+                return check_fn(title, artist, expected_duration)
+            except TypeError as e:
+                if "positional argument" not in str(e):
+                    raise
+                return check_fn(title, artist)
         return TrackIdentifierHelpers._check_lrc_and_duration(
             self, title, artist, expected_duration
         )

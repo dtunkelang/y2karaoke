@@ -147,20 +147,17 @@ def test_find_best_cached_rejects_wrong_explicit_language(tmp_path):
     assert result is None
 
 
-def test_align_dtw_whisper_falls_back_without_fastdtw(monkeypatch):
+def test_align_dtw_whisper_falls_back_without_fastdtw():
     from y2karaoke.core.models import Line, Word
 
     lines = [Line(words=[Word(text="hello", start_time=0.0, end_time=0.5)])]
     whisper_words = [te.TranscriptionWord(start=0.1, end=0.2, text="hello")]
 
-    monkeypatch.setattr(
-        wdtw,
-        "_load_fastdtw",
-        lambda: (_ for _ in ()).throw(ImportError("no fastdtw")),
-    )
-    monkeypatch.setattr(wi, "_get_ipa", lambda *a, **k: None)
-
-    aligned, corrections, metrics = te.align_dtw_whisper(lines, whisper_words)
+    with wi.use_whisper_integration_hooks(get_ipa_fn=lambda *a, **k: None):
+        with wdtw.use_whisper_dtw_hooks(
+            load_fastdtw_fn=lambda: (_ for _ in ()).throw(ImportError("no fastdtw"))
+        ):
+            aligned, corrections, metrics = te.align_dtw_whisper(lines, whisper_words)
     assert aligned == lines
     assert corrections == []
     assert metrics["matched_ratio"] == 0.0

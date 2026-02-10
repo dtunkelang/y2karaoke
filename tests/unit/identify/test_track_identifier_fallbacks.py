@@ -79,17 +79,17 @@ def test_find_fallback_artist_title_prefers_non_uploader_candidate():
     assert title == "Alt"
 
 
-def test_find_fallback_artist_title_uses_split_with_lrc(monkeypatch):
-    identifier = ti.TrackIdentifier()
-
+def test_find_fallback_artist_title_uses_split_with_lrc():
     def fake_try_splits(_):
         return [("Split Artist", "Split Title"), ("Alt", "Alt Title")]
 
     def fake_check_lrc(title, artist):
         return True, 200
 
-    monkeypatch.setattr(identifier, "_try_artist_title_splits", fake_try_splits)
-    monkeypatch.setattr(identifier, "_check_lrc_and_duration", fake_check_lrc)
+    identifier = ti.TrackIdentifier(
+        try_artist_title_splits_fn=fake_try_splits,
+        check_lrc_and_duration_fn=fake_check_lrc,
+    )
 
     artist, title = identifier._find_fallback_artist_title(
         unique_candidates=[],
@@ -143,13 +143,10 @@ def test_find_fallback_artist_title_uses_parsed_artist():
     assert title == "Parsed Title"
 
 
-def test_find_fallback_artist_title_split_no_lrc(monkeypatch):
-    identifier = ti.TrackIdentifier()
-    monkeypatch.setattr(
-        identifier, "_try_artist_title_splits", lambda *_: [("Split", "Title")]
-    )
-    monkeypatch.setattr(
-        identifier, "_check_lrc_and_duration", lambda *a, **k: (False, None)
+def test_find_fallback_artist_title_split_no_lrc():
+    identifier = ti.TrackIdentifier(
+        try_artist_title_splits_fn=lambda *_: [("Split", "Title")],
+        check_lrc_and_duration_fn=lambda *a, **k: (False, None),
     )
 
     artist, title = identifier._find_fallback_artist_title(

@@ -1,6 +1,5 @@
 import pytest
 
-from y2karaoke.core.components.lyrics import api as lyrics
 from y2karaoke.core.components.lyrics import helpers as lh
 from y2karaoke.core import lyrics_whisper as lw
 from y2karaoke.core.models import SongMetadata
@@ -50,19 +49,17 @@ def test_get_lyrics_simple_uses_lrc_and_singer_info(monkeypatch):
         )
         return [("First", "A"), ("Second", "B")], metadata
 
-    monkeypatch.setattr(lw, "_fetch_lrc_text_and_timings", fake_fetch_lrc)
-    monkeypatch.setattr(
-        "y2karaoke.core.components.lyrics.genius.fetch_genius_lyrics_with_singers",
-        fake_genius,
-    )
-
-    lines, metadata = lw.get_lyrics_simple(
-        title="Hello",
-        artist="Tester",
-        vocals_path=None,
-        romanize=False,
-        filter_promos=False,
-    )
+    with lw.use_lyrics_whisper_hooks(
+        fetch_lrc_text_and_timings_fn=fake_fetch_lrc,
+        fetch_genius_lyrics_with_singers_fn=fake_genius,
+    ):
+        lines, metadata = lw.get_lyrics_simple(
+            title="Hello",
+            artist="Tester",
+            vocals_path=None,
+            romanize=False,
+            filter_promos=False,
+        )
 
     assert metadata is not None
     assert metadata.is_duet is True
@@ -73,19 +70,15 @@ def test_get_lyrics_simple_uses_lrc_and_singer_info(monkeypatch):
 
 
 def test_get_lyrics_simple_fallback_placeholder(monkeypatch):
-    monkeypatch.setattr(
-        lw, "_fetch_lrc_text_and_timings", lambda *a, **k: (None, None, "")
-    )
-    monkeypatch.setattr(
-        "y2karaoke.core.components.lyrics.genius.fetch_genius_lyrics_with_singers",
-        lambda *a, **k: (None, None),
-    )
-
-    lines, metadata = lw.get_lyrics_simple(
-        title="Missing",
-        artist="Artist",
-        vocals_path=None,
-    )
+    with lw.use_lyrics_whisper_hooks(
+        fetch_lrc_text_and_timings_fn=lambda *a, **k: (None, None, ""),
+        fetch_genius_lyrics_with_singers_fn=lambda *a, **k: (None, None),
+    ):
+        lines, metadata = lw.get_lyrics_simple(
+            title="Missing",
+            artist="Artist",
+            vocals_path=None,
+        )
 
     assert metadata is not None
     assert len(lines) == 1

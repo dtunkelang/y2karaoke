@@ -76,8 +76,8 @@ def test_romanize_japanese_exception_returns_original(monkeypatch):
         def convert(self, text):
             raise RuntimeError("boom")
 
-    monkeypatch.setattr(romanization, "_JAPANESE_CONVERTER", BrokenConverter())
-    assert romanization.romanize_japanese("こんにちは") == "こんにちは"
+    with romanization.use_romanization_hooks(japanese_converter=BrokenConverter()):
+        assert romanization.romanize_japanese("こんにちは") == "こんにちは"
 
 
 def test_romanize_arabic_unavailable_returns_original(monkeypatch):

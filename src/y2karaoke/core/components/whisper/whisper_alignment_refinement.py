@@ -30,23 +30,34 @@ def use_alignment_refinement_hooks(
     *,
     find_best_whisper_segment_fn=None,
     get_ipa_fn=None,
+    check_vocal_activity_in_range_fn=None,
+    check_for_silence_in_range_fn=None,
 ):
     """Temporarily override hybrid-alignment collaborators for tests."""
     global _find_best_whisper_segment, _get_ipa
+    global _check_vocal_activity_in_range, _check_for_silence_in_range
 
     prev_find_best = _find_best_whisper_segment
     prev_get_ipa = _get_ipa
+    prev_check_activity = _check_vocal_activity_in_range
+    prev_check_silence = _check_for_silence_in_range
 
     if find_best_whisper_segment_fn is not None:
         _find_best_whisper_segment = find_best_whisper_segment_fn
     if get_ipa_fn is not None:
         _get_ipa = get_ipa_fn
+    if check_vocal_activity_in_range_fn is not None:
+        _check_vocal_activity_in_range = check_vocal_activity_in_range_fn
+    if check_for_silence_in_range_fn is not None:
+        _check_for_silence_in_range = check_for_silence_in_range_fn
 
     try:
         yield
     finally:
         _find_best_whisper_segment = prev_find_best
         _get_ipa = prev_get_ipa
+        _check_vocal_activity_in_range = prev_check_activity
+        _check_for_silence_in_range = prev_check_silence
 
 
 def _calculate_drift_correction(

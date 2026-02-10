@@ -128,7 +128,7 @@ def test_lookup_musicbrainz_for_query_skips_too_long(monkeypatch):
 
 
 def test_query_musicbrainz_prioritizes_title_match(monkeypatch):
-    identifier = ti.TrackIdentifier()
+    identifier = ti.TrackIdentifier(score_recording_studio_likelihood_fn=lambda rec: 0)
 
     def fake_search_recordings(recording, artist=None, limit=25):
         return {
@@ -139,8 +139,6 @@ def test_query_musicbrainz_prioritizes_title_match(monkeypatch):
         }
 
     identifier._mb_search_recordings = fake_search_recordings
-    monkeypatch.setattr(identifier, "_score_recording_studio_likelihood", lambda rec: 0)
-
     results = identifier._query_musicbrainz(
         query="Artist Song",
         artist_hint="Artist",
@@ -151,7 +149,7 @@ def test_query_musicbrainz_prioritizes_title_match(monkeypatch):
 
 
 def test_query_musicbrainz_exact_title_match_beats_partial(monkeypatch):
-    identifier = ti.TrackIdentifier()
+    identifier = ti.TrackIdentifier(score_recording_studio_likelihood_fn=lambda rec: 0)
 
     def fake_search_recordings(recording, artist=None, limit=25):
         return {
@@ -165,8 +163,6 @@ def test_query_musicbrainz_exact_title_match_beats_partial(monkeypatch):
         }
 
     identifier._mb_search_recordings = fake_search_recordings
-    monkeypatch.setattr(identifier, "_score_recording_studio_likelihood", lambda rec: 0)
-
     results = identifier._query_musicbrainz(
         query="Artist Song",
         artist_hint="Artist",
@@ -177,7 +173,7 @@ def test_query_musicbrainz_exact_title_match_beats_partial(monkeypatch):
 
 
 def test_query_musicbrainz_retries_on_transient_error(monkeypatch):
-    identifier = ti.TrackIdentifier()
+    identifier = ti.TrackIdentifier(score_recording_studio_likelihood_fn=lambda rec: 0)
     calls = {"count": 0}
 
     def fake_search_recordings(recording, artist=None, limit=25):
@@ -187,7 +183,6 @@ def test_query_musicbrainz_retries_on_transient_error(monkeypatch):
         return {"recording-list": [{"title": "Song"}]}
 
     identifier._mb_search_recordings = fake_search_recordings
-    monkeypatch.setattr(identifier, "_score_recording_studio_likelihood", lambda rec: 0)
     identifier._sleep = lambda *_: None
 
     results = identifier._query_musicbrainz(
