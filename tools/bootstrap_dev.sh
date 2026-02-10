@@ -14,6 +14,7 @@ fi
 
 ./venv/bin/python -m pip install --upgrade pip
 ./venv/bin/python -m pip install -e ".[dev]"
+./venv/bin/python -m pip check
 
 cat <<'EOF'
 Development environment bootstrapped.

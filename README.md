@@ -40,6 +40,7 @@ pip install -e .
 
 # Install with development tooling (pytest/black/flake8/mypy)
 pip install -e ".[dev]"
+pip check
 
 # Or bootstrap everything in one step
 ./tools/bootstrap_dev.sh

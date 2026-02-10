@@ -17,10 +17,13 @@ Run the standard checks:
 make check
 ```
 
+`make check` now starts with `pip check` to catch dependency conflicts early.
+
 Run individual steps:
 
 ```bash
 make fmt
+make dep-check
 make lint
 make type
 make test-fast
