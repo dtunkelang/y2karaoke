@@ -37,6 +37,18 @@ def test_get_lrc_duration_from_timings(monkeypatch):
     assert duration == 44
 
 
+def test_get_lrc_duration_caps_tail_buffer_for_long_spans(monkeypatch):
+    monkeypatch.setattr(
+        "y2karaoke.core.components.lyrics.lrc.parse_lrc_with_timing",
+        lambda _text, _title, _artist: [
+            (7.89, "first"),
+            (189.52, "last"),
+        ],
+    )
+    duration = sync.get_lrc_duration("[00:07.89]first\n[03:09.52]last")
+    assert duration == 195
+
+
 def test_validate_lrc_quality_rejects_low_line_count(monkeypatch):
     monkeypatch.setattr(
         "y2karaoke.core.components.lyrics.lrc.parse_lrc_with_timing",
@@ -98,6 +110,27 @@ def test_validate_lrc_quality_rejects_low_coverage(monkeypatch):
     )
     assert ok is False
     assert "covers only 40%" in reason
+
+
+def test_validate_lrc_quality_rejects_last_timestamp_past_expected(monkeypatch):
+    monkeypatch.setattr(
+        "y2karaoke.core.components.lyrics.lrc.parse_lrc_with_timing",
+        lambda _text, _title, _artist: [
+            (10.0, ""),
+            (40.0, ""),
+            (70.0, ""),
+            (100.0, ""),
+            (130.0, ""),
+            (160.0, ""),
+            (190.0, ""),
+            (201.0, ""),
+        ],
+    )
+    ok, reason = sync.validate_lrc_quality(
+        "[00:10.00]a\n[03:21.00]b", expected_duration=197
+    )
+    assert ok is False
+    assert "exceeds expected duration" in reason
 
 
 def test_fetch_lyrics_for_duration_no_providers(monkeypatch):

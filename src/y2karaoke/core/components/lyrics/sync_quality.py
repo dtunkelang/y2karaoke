@@ -26,7 +26,9 @@ def get_lrc_duration(lrc_text: str) -> Optional[int]:
     first_ts = timings[0][0]
     last_ts = timings[-1][0]
     lyrics_span = last_ts - first_ts
-    buffer = max(3, int(lyrics_span * 0.1))
+    # Keep a modest tail buffer for outro syllables, but cap it so long songs
+    # don't get inflated by 10%+ and drift away from real track duration.
+    buffer = max(3, min(6, int(lyrics_span * 0.1)))
 
     return int(last_ts + buffer)
 
@@ -51,6 +53,15 @@ def validate_lrc_quality(
 
     if lyrics_span < 30:
         return False, f"Lyrics span too short ({lyrics_span:.0f}s)"
+
+    if expected_duration and expected_duration > 0:
+        # Hard contradiction: if the final lyric timestamp is meaningfully after
+        # the known track duration, this LRC cannot belong to this audio.
+        if last_ts > expected_duration + 3:
+            return (
+                False,
+                f"Last lyric timestamp ({last_ts:.0f}s) exceeds expected duration ({expected_duration}s)",
+            )
 
     density = len(timings) / (lyrics_span / 15) if lyrics_span > 0 else 0
     if density < 1.0:
