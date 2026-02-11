@@ -1,0 +1,104 @@
+version: 1
+name: timing_core_v1
+description: >
+  Curated songs with stable LRC availability for timing-quality benchmarking.
+  This set favors clean audio sources and broad musical/language coverage.
+default_lrc_duration_tolerance_sec: 20
+songs:
+  - artist: "Queen"
+    title: "Bohemian Rhapsody"
+    youtube_id: "fJ9rUzIMcZQ"
+    youtube_url: "https://www.youtube.com/watch?v=fJ9rUzIMcZQ"
+    preferred_lyrics_provider: "lyriq"
+    fallback_lyrics_provider: "syncedlyrics"
+    lrc_duration_tolerance_sec: 12
+
+  - artist: "Billie Eilish"
+    title: "bad guy"
+    youtube_id: "ayxYgDgBD3g"
+    youtube_url: "https://www.youtube.com/watch?v=ayxYgDgBD3g"
+    preferred_lyrics_provider: "lyriq"
+    fallback_lyrics_provider: "syncedlyrics"
+    lrc_duration_tolerance_sec: 8
+    notes: "Uses lyric video source to avoid official-video intro material."
+
+  - artist: "Ed Sheeran"
+    title: "Shape of You"
+    youtube_id: "liTfD88dbCo"
+    youtube_url: "https://www.youtube.com/watch?v=liTfD88dbCo"
+    preferred_lyrics_provider: "lyriq"
+    fallback_lyrics_provider: "syncedlyrics"
+    lrc_duration_tolerance_sec: 8
+    notes: "Uses lyric video source for cleaner alignment target."
+
+  - artist: "Dua Lipa"
+    title: "Levitating"
+    youtube_id: "TUVcZfQe-Kw"
+    youtube_url: "https://www.youtube.com/watch?v=TUVcZfQe-Kw"
+    preferred_lyrics_provider: "lyriq"
+    fallback_lyrics_provider: "syncedlyrics"
+    lrc_duration_tolerance_sec: 30
+
+  - artist: "Bruno Mars"
+    title: "Uptown Funk"
+    youtube_id: "OPf0YbXqDm0"
+    youtube_url: "https://www.youtube.com/watch?v=OPf0YbXqDm0"
+    preferred_lyrics_provider: "lyriq"
+    fallback_lyrics_provider: "syncedlyrics"
+    lrc_duration_tolerance_sec: 20
+
+  - artist: "OneRepublic"
+    title: "Counting Stars"
+    youtube_id: "hT_nvWreIhg"
+    youtube_url: "https://www.youtube.com/watch?v=hT_nvWreIhg"
+    preferred_lyrics_provider: "lyriq"
+    fallback_lyrics_provider: "syncedlyrics"
+    lrc_duration_tolerance_sec: 35
+
+  - artist: "Coldplay"
+    title: "Viva La Vida"
+    youtube_id: "dvgZkm1xWPE"
+    youtube_url: "https://www.youtube.com/watch?v=dvgZkm1xWPE"
+    preferred_lyrics_provider: "lyriq"
+    fallback_lyrics_provider: "syncedlyrics"
+    lrc_duration_tolerance_sec: 25
+
+  - artist: "Imagine Dragons"
+    title: "Believer"
+    youtube_id: "7wtfhZwyrcc"
+    youtube_url: "https://www.youtube.com/watch?v=7wtfhZwyrcc"
+    preferred_lyrics_provider: "syncedlyrics"
+    fallback_lyrics_provider: "lyriq"
+    lrc_duration_tolerance_sec: 20
+
+  - artist: "Stromae"
+    title: "Papaoutai"
+    youtube_id: "oiKj0Z_Xnjc"
+    youtube_url: "https://www.youtube.com/watch?v=oiKj0Z_Xnjc"
+    preferred_lyrics_provider: "lyriq"
+    fallback_lyrics_provider: "syncedlyrics"
+    lrc_duration_tolerance_sec: 25
+
+  - artist: "Indila"
+    title: "Derniere danse"
+    youtube_id: "K5KAc5CoCuk"
+    youtube_url: "https://www.youtube.com/watch?v=K5KAc5CoCuk"
+    preferred_lyrics_provider: "lyriq"
+    fallback_lyrics_provider: "syncedlyrics"
+    lrc_duration_tolerance_sec: 22
+
+  - artist: "ROSALIA"
+    title: "DESPECHA"
+    youtube_id: "5g2hT4GmAGU"
+    youtube_url: "https://www.youtube.com/watch?v=5g2hT4GmAGU"
+    preferred_lyrics_provider: "lyriq"
+    fallback_lyrics_provider: "syncedlyrics"
+    lrc_duration_tolerance_sec: 10
+
+  - artist: "J Balvin"
+    title: "Mi Gente"
+    youtube_id: "wnJ6LuUFpMo"
+    youtube_url: "https://www.youtube.com/watch?v=wnJ6LuUFpMo"
+    preferred_lyrics_provider: "lyriq"
+    fallback_lyrics_provider: "syncedlyrics"
+    lrc_duration_tolerance_sec: 18
