@@ -54,7 +54,6 @@ class TestIdentifyFromUrlMocked:
     ):
         """Uses explicit artist/title when provided."""
         mock_yt_metadata.return_value = ("Some Random Title", "RandomUser", 200)
-        mock_mb_query.return_value = []
         mock_find_lrc.return_value = ("The Beatles", "Yesterday", 200)
 
         identifier = TrackIdentifier()
@@ -64,12 +63,11 @@ class TestIdentifyFromUrlMocked:
             title_hint="Yesterday",
         )
 
-        # Should use provided artist/title for search, not YouTube metadata
-        mock_mb_query.assert_called_once_with(
-            "The Beatles Yesterday", "The Beatles", "Yesterday"
-        )
+        # Should stay strict on provided artist/title (no candidate expansion).
+        mock_mb_query.assert_not_called()
         assert mock_find_lrc.call_count == 1
-        _, kwargs = mock_find_lrc.call_args
+        args, kwargs = mock_find_lrc.call_args
+        assert args[0] == [{"artist": "The Beatles", "title": "Yesterday"}]
         assert kwargs["artist_hint"] == "The Beatles"
 
     @patch(

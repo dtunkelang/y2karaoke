@@ -338,8 +338,17 @@ class TrackIdentifier(
 
         if artist_hint and title_hint:
             logger.info(f"Using provided artist/title: {artist_hint} - {title_hint}")
-            parsed_artist = artist_hint
-            parsed_title = title_hint
+            parsed_artist = artist_hint.strip()
+            parsed_title = title_hint.strip()
+            logger.info(
+                "Strict provided metadata mode: skipping candidate expansion for URL identify"
+            )
+            unique_candidates = [
+                {
+                    "artist": parsed_artist,
+                    "title": parsed_title,
+                }
+            ]
         else:
             if self._is_likely_non_studio(yt_title):
                 logger.warning(
@@ -354,15 +363,16 @@ class TrackIdentifier(
                 f"Parsed from title: artist='{parsed_artist}', title='{parsed_title}'"
             )
 
-        search_query = (
-            f"{parsed_artist} {parsed_title}" if parsed_artist else parsed_title
-        )
-        recordings = self._query_musicbrainz(search_query, parsed_artist, parsed_title)
-
-        unique_candidates = self._build_url_candidates(
-            yt_uploader, parsed_artist, parsed_title, recordings
-        )
-        logger.debug(f"Found {len(unique_candidates)} unique candidates to check")
+            search_query = (
+                f"{parsed_artist} {parsed_title}" if parsed_artist else parsed_title
+            )
+            recordings = self._query_musicbrainz(
+                search_query, parsed_artist, parsed_title
+            )
+            unique_candidates = self._build_url_candidates(
+                yt_uploader, parsed_artist, parsed_title, recordings
+            )
+            logger.debug(f"Found {len(unique_candidates)} unique candidates to check")
 
         best_match = self._find_best_lrc_by_duration(
             unique_candidates,
