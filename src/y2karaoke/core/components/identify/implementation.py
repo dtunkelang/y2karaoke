@@ -362,7 +362,10 @@ class TrackIdentifier(
         logger.debug(f"Found {len(unique_candidates)} unique candidates to check")
 
         best_match = self._find_best_lrc_by_duration(
-            unique_candidates, yt_duration, parsed_title or yt_title
+            unique_candidates,
+            yt_duration,
+            parsed_title or yt_title,
+            artist_hint=parsed_artist,
         )
 
         if best_match:

@@ -5,7 +5,6 @@ import pytest
 from unittest.mock import Mock, patch
 
 from y2karaoke.core.components.identify.implementation import TrackIdentifier, TrackInfo
-from y2karaoke.exceptions import Y2KaraokeError
 
 
 class TestIdentifyFromUrlMocked:
@@ -59,7 +58,7 @@ class TestIdentifyFromUrlMocked:
         mock_find_lrc.return_value = ("The Beatles", "Yesterday", 200)
 
         identifier = TrackIdentifier()
-        result = identifier.identify_from_url(
+        identifier.identify_from_url(
             "https://youtube.com/watch?v=abc123",
             artist_hint="The Beatles",
             title_hint="Yesterday",
@@ -69,6 +68,9 @@ class TestIdentifyFromUrlMocked:
         mock_mb_query.assert_called_once_with(
             "The Beatles Yesterday", "The Beatles", "Yesterday"
         )
+        assert mock_find_lrc.call_count == 1
+        _, kwargs = mock_find_lrc.call_args
+        assert kwargs["artist_hint"] == "The Beatles"
 
     @patch(
         "y2karaoke.core.components.identify.implementation.TrackIdentifier._get_youtube_metadata"
@@ -415,6 +417,30 @@ class TestFindBestLrcByDuration:
 
         assert result == ("Artist", "Song", 260)
         assert "duration difference" in caplog.text.lower()
+
+    def test_prefers_artist_hint_over_small_duration_advantage(self):
+        """Artist hint should break ties between same-title candidates."""
+        identifier = TrackIdentifier()
+        candidates = [
+            {"artist": "Other Artist", "title": "Gabriela"},
+            {"artist": "KATSEYE", "title": "Gabriela"},
+        ]
+
+        with patch.object(identifier, "_check_lrc_and_duration") as mock_check:
+            # Slightly better duration for wrong artist; correct artist should win.
+            mock_check.side_effect = [
+                (True, 198),
+                (True, 205),
+            ]
+
+            result = identifier._find_best_lrc_by_duration(
+                candidates,
+                target_duration=200,
+                title_hint="Gabriela",
+                artist_hint="KATSEYE",
+            )
+
+        assert result == ("KATSEYE", "Gabriela", 205)
 
 
 class TestExtractYoutubeCandidates:

@@ -388,6 +388,7 @@ class TrackIdentifierHelpers:
         candidates: List[Dict],
         target_duration: int,
         title_hint: str = "",
+        artist_hint: Optional[str] = None,
         tolerance: int = 15,
     ) -> Optional[tuple[str, str, int]]:
         """Find candidate whose LRC duration and title best match."""
@@ -396,6 +397,7 @@ class TrackIdentifierHelpers:
         title_hint_words = set(
             normalize_title(title_hint, remove_stopwords=True).split()
         )
+        artist_hint_norm = normalize_title(artist_hint or "", remove_stopwords=True)
         for candidate in candidates:
             artist = candidate["artist"]
             title = candidate["title"]
@@ -423,8 +425,37 @@ class TrackIdentifierHelpers:
                 None, title_hint_norm, candidate_title_normalized
             ).ratio()
             title_score = (word_overlap * 0.6) + (seq_similarity * 0.4)
+
+            candidate_artist_norm = normalize_title(artist, remove_stopwords=True)
+            artist_score = 0.0
+            if artist_hint_norm:
+                if candidate_artist_norm == artist_hint_norm:
+                    artist_score = 1.0
+                elif (
+                    artist_hint_norm in candidate_artist_norm
+                    or candidate_artist_norm in artist_hint_norm
+                ):
+                    artist_score = 0.9
+                else:
+                    hint_words = set(artist_hint_norm.split())
+                    cand_words = set(candidate_artist_norm.split())
+                    word_overlap = 0.0
+                    if hint_words:
+                        word_overlap = len(hint_words & cand_words) / len(hint_words)
+                    seq_overlap = SequenceMatcher(
+                        None, artist_hint_norm, candidate_artist_norm
+                    ).ratio()
+                    artist_score = (word_overlap * 0.7) + (seq_overlap * 0.3)
+
             duration_score = max(0, 1 - (duration_diff / 60))
-            combined_score = (title_score * 0.7) + (duration_score * 0.3)
+            if artist_hint_norm:
+                combined_score = (
+                    (title_score * 0.55)
+                    + (artist_score * 0.25)
+                    + (duration_score * 0.2)
+                )
+            else:
+                combined_score = (title_score * 0.7) + (duration_score * 0.3)
             logger.debug(
                 f"LRC candidate: {artist} - {title}, "
                 f"duration={lrc_duration}s (diff={duration_diff}s), "
