@@ -26,6 +26,23 @@ _MAX_MATCHED_START_DRIFT_FORWARD = 8.0
 _MAX_MATCHED_START_DRIFT_BACKWARD = 4.0
 _MAX_LINE_FORWARD_SHIFT_FROM_LRC = 10.0
 _MAX_LINE_BACKWARD_SHIFT_FROM_LRC = 5.0
+_MAX_LINE_DURATION_SCALE_FROM_LRC = 1.6
+
+
+def _fallback_unmatched_line_duration(line: "models.Line") -> float:
+    """Estimate a reasonable fallback duration when no Whisper words match a line."""
+    original_duration = line.end_time - line.start_time
+    if original_duration <= 0:
+        return max(len(line.words) * 0.6, 0.25)
+
+    if not line.words:
+        return max(original_duration, 0.2)
+
+    if len(line.words) == 1:
+        min_duration = 0.22
+    else:
+        min_duration = max(0.35, len(line.words) * 0.16)
+    return max(original_duration, min_duration)
 
 
 def _register_word_match(
@@ -289,6 +306,48 @@ def _clamp_line_shift_vs_original(
     return models.Line(words=shifted_words, singer=mapped_line.singer)
 
 
+def _clamp_line_duration_vs_original(
+    mapped_line: "models.Line",
+    original_line: "models.Line",
+    next_original_start: Optional[float],
+    *,
+    max_scale: float = _MAX_LINE_DURATION_SCALE_FROM_LRC,
+    slack_seconds: float = 0.9,
+) -> "models.Line":
+    """Prevent mapped line durations from bleeding far past expected LRC span."""
+    if not mapped_line.words or not original_line.words:
+        return mapped_line
+
+    mapped_duration = mapped_line.end_time - mapped_line.start_time
+    original_duration = max(0.2, original_line.end_time - original_line.start_time)
+    cap = max(original_duration * max_scale, original_duration + 0.8)
+
+    if next_original_start is not None:
+        expected_span = max(0.2, next_original_start - original_line.start_time)
+        cap = min(cap, expected_span + slack_seconds)
+
+    if mapped_duration <= cap:
+        return mapped_line
+
+    scale = cap / max(mapped_duration, 0.01)
+    start = mapped_line.start_time
+    new_words = []
+    for w in mapped_line.words:
+        ws = start + (w.start_time - start) * scale
+        we = start + (w.end_time - start) * scale
+        if we < ws:
+            we = ws
+        new_words.append(
+            models.Word(
+                text=w.text,
+                start_time=ws,
+                end_time=we,
+                singer=w.singer,
+            )
+        )
+    return models.Line(words=new_words, singer=mapped_line.singer)
+
+
 def _match_assigned_words(
     ctx: _LineMappingContext,
     line_idx: int,
@@ -501,6 +560,7 @@ def _assemble_mapped_line(
     line_anchor_time: float,
     line_segment: Optional[int],
     line_last_idx_ref: List[Optional[int]],
+    next_original_start: Optional[float],
 ) -> "models.Line":
     """Build a mapped models.Line from match intervals and update tracking state."""
     from ...models import Line as LineModel
@@ -531,9 +591,7 @@ def _assemble_mapped_line(
             line_anchor_time,
         )
     else:
-        original_duration = line.end_time - line.start_time
-        if original_duration <= 0:
-            original_duration = len(line.words) * 0.6
+        original_duration = _fallback_unmatched_line_duration(line)
         actual_start = line_anchor_time
         actual_end = actual_start + original_duration
     target_duration = max(actual_end - actual_start, 0.0)
@@ -545,6 +603,9 @@ def _assemble_mapped_line(
         line_start=actual_start,
     )
     mapped_line = _clamp_line_shift_vs_original(mapped_line, line)
+    mapped_line = _clamp_line_duration_vs_original(
+        mapped_line, line, next_original_start
+    )
     logger.debug(
         "Mapped line %d start=%.2f end=%.2f matches=%d",
         line_idx + 1,
@@ -663,6 +724,7 @@ def _map_lrc_words_to_whisper(
             line_anchor_time,
             line_segment,
             line_last_idx_ref,
+            lines[line_idx + 1].start_time if line_idx + 1 < len(lines) else None,
         )
         mapped_lines.append(mapped_line)
 

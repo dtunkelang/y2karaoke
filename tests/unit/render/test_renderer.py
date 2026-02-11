@@ -1,9 +1,7 @@
 """Tests for the renderer module."""
 
-import pytest
 import numpy as np
 from dataclasses import dataclass
-from unittest.mock import patch, MagicMock
 
 from y2karaoke.core.components.render.backgrounds_static import (
     create_gradient_background,
@@ -96,6 +94,13 @@ class TestGetSingerColors:
     def test_unknown_singer_uses_default(self):
         """Unknown singer should get default colors."""
         text_color, highlight_color = get_singer_colors("unknown", False)
+        assert text_color == Colors.TEXT
+        assert highlight_color == Colors.HIGHLIGHT
+
+    def test_single_color_mode_disables_singer_variation(self, monkeypatch):
+        """Single color mode should ignore singer-specific colors."""
+        monkeypatch.setenv("Y2KARAOKE_SINGER_COLOR_MODE", "single")
+        text_color, highlight_color = get_singer_colors("singer2", False)
         assert text_color == Colors.TEXT
         assert highlight_color == Colors.HIGHLIGHT
 

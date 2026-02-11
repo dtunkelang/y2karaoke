@@ -36,12 +36,13 @@ class Colors:
     CUE_INDICATOR = (255, 215, 0)  # Gold color for cue indicator
 
     # Duet colors
-    SINGER1 = (100, 180, 255)
-    SINGER1_HIGHLIGHT = (50, 150, 255)
-    SINGER2 = (255, 150, 200)
-    SINGER2_HIGHLIGHT = (255, 100, 180)
-    BOTH = (200, 150, 255)
-    BOTH_HIGHLIGHT = (180, 100, 255)
+    # Use high luminance contrast between base and highlight so active words pop.
+    SINGER1 = (60, 140, 190)  # Deep cyan-blue
+    SINGER1_HIGHLIGHT = (195, 245, 255)  # Ice cyan
+    SINGER2 = (175, 105, 35)  # Burnt amber
+    SINGER2_HIGHLIGHT = (255, 230, 170)  # Warm light amber
+    BOTH = (70, 145, 85)  # Deep green
+    BOTH_HIGHLIGHT = (205, 255, 205)  # Mint
 
 
 # Font settings (can be overridden via environment variables)

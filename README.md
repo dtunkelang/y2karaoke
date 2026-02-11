@@ -161,6 +161,7 @@ y2karaoke cache clear VIDEO_ID
 Whisper timing refinement notes:
 - `Y2K_WHISPER_SILENCE_REFINEMENT=1` (default) enables silence-aware short-line retiming in the Whisper pipeline.
 - Set `Y2K_WHISPER_SILENCE_REFINEMENT=0` to disable that pass for debugging/regression checks.
+- `Y2KARAOKE_SINGER_COLOR_MODE=single` disables singer-specific line colors and uses one consistent text/highlight palette.
 
 ## Testing
 

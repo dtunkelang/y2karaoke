@@ -2,6 +2,7 @@ import numpy as np
 from typing import Any, cast
 from y2karaoke.core.models import Line, Word
 import y2karaoke.core.components.whisper.whisper_integration as wi
+import y2karaoke.core.components.whisper.whisper_integration_pipeline as wip
 from y2karaoke.core.components.whisper.whisper_integration_pipeline import (
     align_lrc_text_to_whisper_timings_impl,
 )
@@ -285,3 +286,70 @@ def test_align_lrc_text_pipeline_enforces_monotonic_non_overlapping_invariants()
     for line in non_empty:
         for word in line.words:
             assert word.end_time - word.start_time >= 0.06
+
+
+def test_should_rollback_short_line_degradation_triggers():
+    original = [
+        Line(
+            words=[
+                Word(text="a", start_time=0.0, end_time=0.4),
+                Word(text="b", start_time=0.4, end_time=0.8),
+                Word(text="c", start_time=0.8, end_time=1.2),
+            ]
+        )
+        for _ in range(12)
+    ]
+    degraded = [
+        Line(
+            words=[
+                Word(text="a", start_time=0.0, end_time=0.05),
+                Word(text="b", start_time=0.05, end_time=0.1),
+                Word(text="c", start_time=0.1, end_time=0.15),
+            ]
+        )
+        for _ in range(12)
+    ]
+
+    rollback, before, after = wip._should_rollback_short_line_degradation(
+        original, degraded
+    )
+
+    assert rollback
+    assert before == 0
+    assert after == 12
+
+
+def test_should_rollback_short_line_degradation_ignores_small_change():
+    original = [
+        Line(
+            words=[
+                Word(text="a", start_time=0.0, end_time=0.2),
+                Word(text="b", start_time=0.2, end_time=0.4),
+                Word(text="c", start_time=0.4, end_time=0.6),
+            ]
+        )
+        for _ in range(20)
+    ]
+    slightly_worse = list(original)
+    slightly_worse[0] = Line(
+        words=[
+            Word(text="a", start_time=0.0, end_time=0.05),
+            Word(text="b", start_time=0.05, end_time=0.1),
+            Word(text="c", start_time=0.1, end_time=0.15),
+        ]
+    )
+    slightly_worse[1] = Line(
+        words=[
+            Word(text="a", start_time=0.7, end_time=0.75),
+            Word(text="b", start_time=0.75, end_time=0.8),
+            Word(text="c", start_time=0.8, end_time=0.85),
+        ]
+    )
+
+    rollback, before, after = wip._should_rollback_short_line_degradation(
+        original, slightly_worse
+    )
+
+    assert not rollback
+    assert before == 0
+    assert after == 2

@@ -8,6 +8,54 @@ from ... import phonetic_utils
 from ..alignment import timing_models
 
 
+def _clone_lines_for_fallback(lines: List[models.Line]) -> List[models.Line]:
+    """Deep-copy lines so rollback logic can safely restore original timing."""
+    return [
+        models.Line(
+            words=[
+                models.Word(
+                    text=w.text,
+                    start_time=w.start_time,
+                    end_time=w.end_time,
+                    singer=w.singer,
+                )
+                for w in line.words
+            ],
+            singer=line.singer,
+        )
+        for line in lines
+    ]
+
+
+def _implausibly_short_multiword_count(lines: List[models.Line]) -> int:
+    """Count suspiciously compressed multi-word lines."""
+    count = 0
+    for line in lines:
+        word_count = len(line.words)
+        if word_count < 3:
+            continue
+        duration = line.end_time - line.start_time
+        if duration <= 0:
+            count += 1
+            continue
+        if duration < 0.5 and (duration / max(word_count, 1)) < 0.14:
+            count += 1
+    return count
+
+
+def _should_rollback_short_line_degradation(
+    original_lines: List[models.Line],
+    aligned_lines: List[models.Line],
+) -> Tuple[bool, int, int]:
+    """Detect when Whisper introduces widespread short-line compression artifacts."""
+    before = _implausibly_short_multiword_count(original_lines)
+    after = _implausibly_short_multiword_count(aligned_lines)
+    added = after - before
+    min_added = max(3, int(0.06 * max(len(aligned_lines), 1)))
+    should_rollback = added >= min_added and after >= max(4, before * 2)
+    return should_rollback, before, after
+
+
 def transcribe_vocals_impl(
     vocals_path: str,
     language: Optional[str],
@@ -160,6 +208,7 @@ def align_lrc_text_to_whisper_timings_impl(  # noqa: C901
     _ = min_similarity
     _ = lenient_activity_bonus
     _ = low_word_confidence_threshold
+    baseline_lines = _clone_lines_for_fallback(lines)
 
     ensure_local_lex_lookup()
     transcription, all_words, detected_lang, used_model = transcribe_vocals_fn(
@@ -370,6 +419,19 @@ def align_lrc_text_to_whisper_timings_impl(  # noqa: C901
 
     if mapped_count:
         corrections.append(f"DTW-phonetic mapped {mapped_count} word(s) to Whisper")
+    rollback, short_before, short_after = _should_rollback_short_line_degradation(
+        baseline_lines, mapped_lines
+    )
+    if rollback:
+        logger.warning(
+            "Rolling back Whisper map: implausibly short multi-word lines worsened (%d -> %d)",
+            short_before,
+            short_after,
+        )
+        corrections.append(
+            "Ignored Whisper timing map due to short-line compression artifacts"
+        )
+        return baseline_lines, corrections, metrics
     return mapped_lines, corrections, metrics
 
 
@@ -417,6 +479,7 @@ def correct_timing_with_whisper_impl(  # noqa: C901
     logger,
 ) -> Tuple[List[models.Line], List[str], Dict[str, float]]:
     """Correct lyric timing by combining quality gates and Whisper alignments."""
+    baseline_lines = _clone_lines_for_fallback(lines)
     transcription, all_words, detected_lang, _model = transcribe_vocals_fn(
         vocals_path, language, model_size, aggressive, temperature
     )
@@ -635,6 +698,19 @@ def correct_timing_with_whisper_impl(  # noqa: C901
 
     aligned_lines = enforce_monotonic_line_starts_fn(aligned_lines)
     aligned_lines = enforce_non_overlapping_lines_fn(aligned_lines)
+    rollback, short_before, short_after = _should_rollback_short_line_degradation(
+        baseline_lines, aligned_lines
+    )
+    if rollback:
+        logger.warning(
+            "Rolling back Whisper corrections: implausibly short multi-word lines worsened (%d -> %d)",
+            short_before,
+            short_after,
+        )
+        alignments.append(
+            "Rolled back Whisper timing due to short-line compression artifacts"
+        )
+        aligned_lines = baseline_lines
 
     if alignments:
         logger.info(f"Whisper hybrid alignment: {len(alignments)} lines corrected")
