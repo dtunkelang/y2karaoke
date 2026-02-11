@@ -158,6 +158,10 @@ y2karaoke cache clear VIDEO_ID
 | `--force` | Force re-download and re-process even if cached files exist |
 | `--offline` | Run entirely from cached metadata/audio. When provided alongside `--force`, downloads are still skipped but processing (Whisper, lyrics alignment, rendering) reruns over the cached stems |
 
+Whisper timing refinement notes:
+- `Y2K_WHISPER_SILENCE_REFINEMENT=1` (default) enables silence-aware short-line retiming in the Whisper pipeline.
+- Set `Y2K_WHISPER_SILENCE_REFINEMENT=0` to disable that pass for debugging/regression checks.
+
 ## Testing
 
 ```bash

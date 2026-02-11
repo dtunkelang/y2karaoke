@@ -318,6 +318,35 @@ def align_lrc_text_to_whisper_timings_impl(  # noqa: C901
                 f"Pulled {continuous_fixes} line(s) forward for continuous vocals"
             )
     mapped_lines = enforce_stage_invariants(mapped_lines)
+    # Re-anchor to segment-consistent starts after continuous-vocals pulling,
+    # which can over-advance repetitive refrain lines.
+    mapped_lines = pull_late_lines_to_matching_segments_fn(
+        mapped_lines,
+        transcription,
+        epitran_lang,
+    )
+    mapped_lines = enforce_stage_invariants(mapped_lines)
+    # Final onset snap with a larger shift cap helps late-song repeated refrains
+    # land on actual Whisper onsets after segment retiming.
+    try:
+        mapped_lines = snap_first_word_to_whisper_onset_fn(
+            mapped_lines,
+            all_words,
+            max_shift=2.5,
+        )
+    except TypeError:
+        mapped_lines = snap_first_word_to_whisper_onset_fn(mapped_lines, all_words)
+    mapped_lines = enforce_stage_invariants(mapped_lines)
+    if audio_features is not None:
+        mapped_lines, late_audio_fixes = pull_lines_forward_for_continuous_vocals_fn(
+            mapped_lines,
+            audio_features,
+        )
+        if late_audio_fixes:
+            corrections.append(
+                f"Applied {late_audio_fixes} late audio onset/silence adjustment(s)"
+            )
+        mapped_lines = enforce_stage_invariants(mapped_lines)
 
     matched_ratio = mapped_count / len(lrc_words) if lrc_words else 0.0
     avg_similarity = total_similarity / mapped_count if mapped_count else 0.0

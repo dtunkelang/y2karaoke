@@ -1,5 +1,6 @@
 """High-level refinement and hybrid alignment logic."""
 
+import os
 import logging
 from contextlib import contextmanager
 from typing import List, Optional, Tuple, Set
@@ -296,12 +297,31 @@ def _fix_ordering_violations(
     return fixed_lines, alignments
 
 
-def _pull_lines_forward_for_continuous_vocals(
+def _pull_lines_forward_for_continuous_vocals(  # noqa: C901
     lines: List[Line],
     audio_features: Optional[AudioFeatures],
     max_gap: float = 4.0,
+    enable_silence_short_line_refinement: bool = True,
 ) -> Tuple[List[Line], int]:
-    """Pull lines earlier when a long gap contains continuous vocal activity."""
+    """Refine short-line placement from audio continuity/silence cues."""
+
+    def _line_tokens(text: str) -> List[str]:
+        out = []
+        for raw in text.lower().split():
+            tok = "".join(ch for ch in raw if ch.isalpha())
+            if tok:
+                out.append(tok)
+        return out
+
+    def _token_overlap(a: str, b: str) -> float:
+        ta = _line_tokens(a)
+        tb = _line_tokens(b)
+        if not ta or not tb:
+            return 0.0
+        sa = set(ta)
+        sb = set(tb)
+        return len(sa & sb) / max(len(sa), len(sb))
+
     fixes = 0
     if not lines or audio_features is None:
         return lines, fixes
@@ -355,6 +375,347 @@ def _pull_lines_forward_for_continuous_vocals(
         ]
 
         lines[idx] = Line(words=new_words, singer=line.singer)
+        fixes += 1
+
+    env_flag = os.getenv("Y2K_WHISPER_SILENCE_REFINEMENT", "1").strip().lower()
+    env_enabled = env_flag not in {"0", "false", "off", "no"}
+    if not (enable_silence_short_line_refinement and env_enabled):
+        return lines, fixes
+
+    silence_regions = getattr(audio_features, "silence_regions", None) or []
+    normalized_silences = [
+        (float(s), float(e)) for s, e in silence_regions if float(e) - float(s) >= 0.8
+    ]
+    if not normalized_silences:
+        return lines, fixes
+
+    shifted_indices = set()
+    idx = 1
+    while idx < len(lines) - 1:
+        if idx in shifted_indices:
+            idx += 1
+            continue
+        line = lines[idx]
+        if not line.words or len(line.words) > 4:
+            idx += 1
+            continue
+
+        line_start = line.start_time
+        line_end = line.end_time
+        if line_end <= line_start + 0.2:
+            idx += 1
+            continue
+
+        internal_silences = [
+            (s, e)
+            for s, e in normalized_silences
+            if s >= line_start and e <= (line_end + 2.0)
+        ]
+        if not internal_silences:
+            idx += 1
+            continue
+        near_start_silence = any(
+            s <= line_start + 0.7 and e >= line_start - 0.1
+            for s, e in internal_silences
+        )
+        if not near_start_silence:
+            idx += 1
+            continue
+
+        silence_start, silence_end = internal_silences[-1]
+        candidate_onsets = onset_times[
+            (onset_times >= silence_end) & (onset_times <= silence_end + 1.8)
+        ]
+        if len(candidate_onsets) == 0:
+            idx += 1
+            continue
+
+        target_start = float(candidate_onsets[0])
+        desired_shift = target_start - line_start
+        if desired_shift < 0.8:
+            idx += 1
+            continue
+
+        run_end = idx + 1
+        while run_end < len(lines):
+            prev_line = lines[run_end - 1]
+            run_line = lines[run_end]
+            if not prev_line.words or not run_line.words:
+                break
+            if len(run_line.words) > 4:
+                break
+            if run_line.start_time - prev_line.end_time > 2.2:
+                break
+            if run_end - idx >= 2:
+                break
+            run_end += 1
+
+        available = desired_shift
+        if run_end < len(lines) and lines[run_end].words:
+            available = min(
+                available,
+                max(
+                    0.0, lines[run_end].start_time - 0.05 - lines[run_end - 1].end_time
+                ),
+            )
+        if available < 0.4:
+            idx += 1
+            continue
+
+        for run_idx in range(idx, run_end):
+            run_line = lines[run_idx]
+            shifted_words = [
+                Word(
+                    text=w.text,
+                    start_time=w.start_time + available,
+                    end_time=w.end_time + available,
+                    singer=w.singer,
+                )
+                for w in run_line.words
+            ]
+            shifted_line = Line(words=shifted_words, singer=run_line.singer)
+            if (
+                len(run_line.words) <= 4
+                and shifted_line.end_time > shifted_line.start_time
+            ):
+                max_duration = 1.25 if len(run_line.words) <= 3 else 1.6
+                duration = shifted_line.end_time - shifted_line.start_time
+                if duration > max_duration:
+                    next_start = None
+                    if run_idx + 1 < run_end and lines[run_idx + 1].words:
+                        next_start = lines[run_idx + 1].start_time + available
+                    elif run_idx + 1 < len(lines) and lines[run_idx + 1].words:
+                        next_start = lines[run_idx + 1].start_time
+                    target_end = shifted_line.start_time + max_duration
+                    if next_start is not None:
+                        target_end = min(target_end, next_start - 0.05)
+                    if target_end > shifted_line.start_time + 0.2:
+                        spacing = (target_end - shifted_line.start_time) / len(
+                            run_line.words
+                        )
+                        compact_words = []
+                        for w_idx, w in enumerate(run_line.words):
+                            ws = shifted_line.start_time + w_idx * spacing
+                            we = ws + spacing * 0.9
+                            if w_idx == len(run_line.words) - 1:
+                                we = target_end
+                            compact_words.append(
+                                Word(
+                                    text=w.text,
+                                    start_time=ws,
+                                    end_time=we,
+                                    singer=w.singer,
+                                )
+                            )
+                        shifted_line = Line(words=compact_words, singer=run_line.singer)
+            lines[run_idx] = shifted_line
+            shifted_indices.add(run_idx)
+        fixes += 1
+        idx += 1
+
+    # Single-line follow-up pass: after block shifts, refine short lines
+    # again when they still start before a long near-start silence.
+    for idx in range(1, len(lines) - 1):
+        line = lines[idx]
+        if not line.words or len(line.words) > 4:
+            continue
+        next_line = lines[idx + 1]
+        if not next_line.words:
+            continue
+        line_start = line.start_time
+        line_end = line.end_time
+        internal_silences = [
+            (s, e)
+            for s, e in normalized_silences
+            if s >= line_start and e <= (line_end + 2.0)
+        ]
+        if not internal_silences:
+            continue
+        near_start_silence = any(
+            s <= line_start + 0.7 and e >= line_start - 0.1
+            for s, e in internal_silences
+        )
+        if not near_start_silence:
+            continue
+        _, silence_end = internal_silences[-1]
+        candidate_onsets = onset_times[
+            (onset_times >= silence_end) & (onset_times <= silence_end + 1.8)
+        ]
+        if len(candidate_onsets) == 0:
+            continue
+        desired_shift = float(candidate_onsets[0]) - line_start
+        if desired_shift < 0.8:
+            continue
+        available = max(0.0, next_line.start_time - 0.05 - line_end)
+        shift = min(desired_shift, available)
+        if shift < 0.4:
+            continue
+        shifted_words = [
+            Word(
+                text=w.text,
+                start_time=w.start_time + shift,
+                end_time=w.end_time + shift,
+                singer=w.singer,
+            )
+            for w in line.words
+        ]
+        shifted_line = Line(words=shifted_words, singer=line.singer)
+        if len(line.words) <= 4 and shifted_line.end_time > shifted_line.start_time:
+            max_duration = 1.25 if len(line.words) <= 3 else 1.6
+            duration = shifted_line.end_time - shifted_line.start_time
+            if duration > max_duration:
+                target_end = min(
+                    shifted_line.start_time + max_duration,
+                    next_line.start_time - 0.05,
+                )
+                if target_end > shifted_line.start_time + 0.2:
+                    spacing = (target_end - shifted_line.start_time) / len(line.words)
+                    compact_words = []
+                    for w_idx, w in enumerate(line.words):
+                        ws = shifted_line.start_time + w_idx * spacing
+                        we = ws + spacing * 0.9
+                        if w_idx == len(line.words) - 1:
+                            we = target_end
+                        compact_words.append(
+                            Word(
+                                text=w.text,
+                                start_time=ws,
+                                end_time=we,
+                                singer=w.singer,
+                            )
+                        )
+                    shifted_line = Line(words=compact_words, singer=line.singer)
+        lines[idx] = shifted_line
+        fixes += 1
+
+    # Even when no additional shift is needed, keep short lines concise after
+    # near-start silence alignment to avoid overlong lingering highlights.
+    for idx in range(1, len(lines) - 1):
+        line = lines[idx]
+        if not line.words or len(line.words) > 4:
+            continue
+        next_line = lines[idx + 1]
+        if not next_line.words:
+            continue
+        line_start = line.start_time
+        line_end = line.end_time
+        internal_silences = [
+            (s, e)
+            for s, e in normalized_silences
+            if s >= line_start and e <= (line_end + 2.0)
+        ]
+        if not internal_silences:
+            continue
+        near_start_silence = any(
+            s <= line_start + 0.7 and e >= line_start - 0.1
+            for s, e in internal_silences
+        )
+        if not near_start_silence:
+            continue
+        max_duration = 1.25 if len(line.words) <= 3 else 1.6
+        duration = line_end - line_start
+        if duration <= max_duration:
+            continue
+        target_end = min(line_start + max_duration, next_line.start_time - 0.05)
+        if target_end <= line_start + 0.2:
+            continue
+        spacing = (target_end - line_start) / len(line.words)
+        compact_words = []
+        for w_idx, w in enumerate(line.words):
+            ws = line_start + w_idx * spacing
+            we = ws + spacing * 0.9
+            if w_idx == len(line.words) - 1:
+                we = target_end
+            compact_words.append(
+                Word(
+                    text=w.text,
+                    start_time=ws,
+                    end_time=we,
+                    singer=w.singer,
+                )
+            )
+        lines[idx] = Line(words=compact_words, singer=line.singer)
+        fixes += 1
+
+    # When two adjacent short lines are lexically similar but separated by a
+    # large gap, stretch the first line toward the next detected silence.
+    for idx in range(1, len(lines)):
+        prev_line = lines[idx - 1]
+        line = lines[idx]
+        if not prev_line.words or not line.words:
+            continue
+        if len(prev_line.words) > 5 or len(line.words) > 4:
+            continue
+        if _token_overlap(prev_line.text, line.text) < 0.25:
+            continue
+        gap = line.start_time - prev_line.end_time
+        if gap <= 1.0:
+            continue
+        target_end = line.start_time - 0.05
+        latest_silence_start = None
+        for s, e in normalized_silences:
+            if s >= prev_line.end_time and e <= line.start_time:
+                latest_silence_start = s
+        if latest_silence_start is not None:
+            target_end = min(target_end, latest_silence_start - 0.05)
+        if target_end <= prev_line.end_time + 0.6:
+            continue
+        span = target_end - prev_line.start_time
+        if span <= 0.4:
+            continue
+        spacing = span / len(prev_line.words)
+        stretched_words = []
+        for w_idx, w in enumerate(prev_line.words):
+            ws = prev_line.start_time + w_idx * spacing
+            we = ws + spacing * 0.9
+            if w_idx == len(prev_line.words) - 1:
+                we = target_end
+            stretched_words.append(
+                Word(
+                    text=w.text,
+                    start_time=ws,
+                    end_time=we,
+                    singer=w.singer,
+                )
+            )
+        lines[idx - 1] = Line(words=stretched_words, singer=prev_line.singer)
+        fixes += 1
+
+    # Cap isolated short lines that still linger too long.
+    for idx in range(1, len(lines) - 1):
+        line = lines[idx]
+        prev_line = lines[idx - 1]
+        next_line = lines[idx + 1]
+        if not line.words or len(line.words) > 3:
+            continue
+        if not prev_line.words or not next_line.words:
+            continue
+        duration = line.end_time - line.start_time
+        if duration <= 1.25:
+            continue
+        prev_gap = line.start_time - prev_line.end_time
+        next_gap = next_line.start_time - line.end_time
+        if prev_gap <= 0.5 or next_gap <= 1.0:
+            continue
+        target_end = min(line.start_time + 1.25, next_line.start_time - 0.05)
+        if target_end <= line.start_time + 0.2:
+            continue
+        spacing = (target_end - line.start_time) / len(line.words)
+        compact_words = []
+        for w_idx, w in enumerate(line.words):
+            ws = line.start_time + w_idx * spacing
+            we = ws + spacing * 0.9
+            if w_idx == len(line.words) - 1:
+                we = target_end
+            compact_words.append(
+                Word(
+                    text=w.text,
+                    start_time=ws,
+                    end_time=we,
+                    singer=w.singer,
+                )
+            )
+        lines[idx] = Line(words=compact_words, singer=line.singer)
         fixes += 1
 
     return lines, fixes
