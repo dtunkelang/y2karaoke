@@ -28,7 +28,8 @@ def test_fetch_lyrics_multi_source_cached_duration_mismatch_refetch(
         "Title", "Artist", target_duration=200, duration_tolerance=10
     )
 
-    assert result == (None, False, "")
+    # If refetch fails, reuse cached LRC even when duration is outside tolerance.
+    assert result == ("[00:00.00]A", True, "cached")
     assert called["count"] == 1
 
 
