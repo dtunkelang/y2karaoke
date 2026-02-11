@@ -1,155 +1,32 @@
 """Post-processing helpers for Whisper mapping output."""
 
-import re
 from typing import Dict, List, Optional, Set, Tuple
 
 from ... import models
 from ..alignment import timing_models
+from .whisper_mapping_post_text import (
+    _contains_token_sequence,
+    _interjection_similarity,
+    _is_interjection_line,
+    _is_placeholder_whisper_token,
+    _light_text_similarity,
+    _max_contiguous_soft_match_run,
+    _normalize_interjection_token,
+    _normalize_match_token,
+    _normalize_text_tokens,
+    _overlap_suffix_prefix,
+    _soft_text_similarity,
+    _soft_token_match,
+    _soft_token_overlap_ratio,
+)
 from .whisper_mapping_post_repetition import (
     _extend_line_to_trailing_whisper_matches,
-    _normalize_match_token,
-    _overlap_suffix_prefix,
     _pull_adjacent_similar_lines_across_long_gaps,
     _realign_repetitive_runs_to_matching_segments,
     _rebalance_short_question_pairs,
     _retime_repetitive_question_runs_to_segment_windows,
     _smooth_adjacent_duplicate_line_cadence,
-    _soft_token_match,
-    _soft_token_overlap_ratio,
 )
-
-_INTERJECTION_TOKENS = {
-    "ooh",
-    "oh",
-    "ah",
-    "aah",
-    "mmm",
-    "mm",
-    "uh",
-    "uhh",
-    "la",
-    "na",
-}
-
-
-def _normalize_interjection_token(token: str) -> str:
-    cleaned = "".join(ch for ch in token.lower() if ch.isalpha())
-    if not cleaned:
-        return ""
-    return re.sub(r"(.)\1{2,}", r"\1\1", cleaned)
-
-
-def _is_interjection_line(text: str, max_tokens: int = 3) -> bool:
-    tokens = [_normalize_interjection_token(t) for t in text.split()]
-    tokens = [t for t in tokens if t]
-    if not tokens or len(tokens) > max_tokens:
-        return False
-    return all(t in _INTERJECTION_TOKENS for t in tokens)
-
-
-def _interjection_similarity(line_text: str, seg_text: str) -> float:
-    line_tokens = [_normalize_interjection_token(t) for t in line_text.split()]
-    seg_tokens = [_normalize_interjection_token(t) for t in seg_text.split()]
-    line_tokens = [t for t in line_tokens if t]
-    seg_tokens = [t for t in seg_tokens if t]
-    if not line_tokens or not seg_tokens:
-        return 0.0
-    if len(line_tokens) == 1 and len(seg_tokens) == 1:
-        if line_tokens[0] == seg_tokens[0]:
-            return 1.0
-        if line_tokens[0] in seg_tokens[0] or seg_tokens[0] in line_tokens[0]:
-            return 0.9
-    overlap = len(set(line_tokens) & set(seg_tokens))
-    return overlap / max(len(set(line_tokens)), len(set(seg_tokens)))
-
-
-def _normalize_text_tokens(text: str) -> List[str]:
-    tokens = []
-    for raw in text.lower().split():
-        tok = "".join(ch for ch in raw if ch.isalpha())
-        if tok:
-            tokens.append(re.sub(r"(.)\1{2,}", r"\1\1", tok))
-    return tokens
-
-
-def _light_text_similarity(a: str, b: str) -> float:
-    a_tokens = _normalize_text_tokens(a)
-    b_tokens = _normalize_text_tokens(b)
-    if not a_tokens or not b_tokens:
-        return 0.0
-    a_set = set(a_tokens)
-    b_set = set(b_tokens)
-    inter = len(a_set & b_set)
-    union = len(a_set | b_set)
-    return inter / union if union else 0.0
-
-
-def _soft_text_similarity(a: str, b: str) -> float:
-    a_tokens = _normalize_text_tokens(a)
-    b_tokens = _normalize_text_tokens(b)
-    if not a_tokens or not b_tokens:
-        return 0.0
-    used = [False] * len(b_tokens)
-    matched = 0
-    for at in a_tokens:
-        best_idx = None
-        for idx, bt in enumerate(b_tokens):
-            if used[idx]:
-                continue
-            if _soft_token_match(at, bt):
-                best_idx = idx
-                if at == bt:
-                    break
-        if best_idx is not None:
-            used[best_idx] = True
-            matched += 1
-    return matched / max(len(a_tokens), len(b_tokens))
-
-
-def _contains_token_sequence(
-    needle_text: str,
-    haystack_text: str,
-    *,
-    min_tokens: int = 3,
-) -> bool:
-    needle = _normalize_text_tokens(needle_text)
-    haystack = _normalize_text_tokens(haystack_text)
-    if len(needle) < min_tokens or len(haystack) < len(needle):
-        return False
-    for start in range(0, len(haystack) - len(needle) + 1):
-        ok = True
-        for offset, tok in enumerate(needle):
-            if not _soft_token_match(tok, haystack[start + offset]):
-                ok = False
-                break
-        if ok:
-            return True
-    return False
-
-
-def _max_contiguous_soft_match_run(needle_text: str, haystack_text: str) -> int:
-    needle = _normalize_text_tokens(needle_text)
-    haystack = _normalize_text_tokens(haystack_text)
-    if not needle or not haystack:
-        return 0
-    best = 0
-    for ni in range(len(needle)):
-        for hi in range(len(haystack)):
-            run = 0
-            while (
-                ni + run < len(needle)
-                and hi + run < len(haystack)
-                and _soft_token_match(needle[ni + run], haystack[hi + run])
-            ):
-                run += 1
-            if run > best:
-                best = run
-    return best
-
-
-def _is_placeholder_whisper_token(text: str) -> bool:
-    cleaned = "".join(ch for ch in text.lower() if ch.isalpha())
-    return cleaned in {"vocal", "silence", "gap"}
 
 
 def _build_word_assignments_from_phoneme_path(

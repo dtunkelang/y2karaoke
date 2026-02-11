@@ -6,6 +6,9 @@ on:
   pull_request:
     branches: [main]
 
+permissions:
+  contents: read
+
 jobs:
   fast:
     runs-on: ubuntu-latest
@@ -64,6 +67,9 @@ jobs:
   full:
     runs-on: ubuntu-latest
     needs: fast
+    permissions:
+      contents: read
+      id-token: write
 
     steps:
       - uses: actions/checkout@v4
@@ -96,11 +102,10 @@ jobs:
           PYTHONPATH=src pytest tests/ -v -m "not network" --cov=src/y2karaoke --cov-report=xml --cov-report=term-missing
 
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v4
-        env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+        uses: codecov/codecov-action@v5
         with:
           files: ./coverage.xml
+          use_oidc: true
           fail_ci_if_error: false
           verbose: true
 

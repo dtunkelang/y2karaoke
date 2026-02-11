@@ -1,112 +1,17 @@
 """Post-processing helpers for repetitive Whisper mapping patterns."""
 
-import re
 from typing import List, Optional, Tuple
 
 from ... import models
 from ..alignment import timing_models
-
-
-def _normalize_interjection_token(token: str) -> str:
-    cleaned = "".join(ch for ch in token.lower() if ch.isalpha())
-    if not cleaned:
-        return ""
-    return re.sub(r"(.)\1{2,}", r"\1\1", cleaned)
-
-
-def _normalize_text_tokens(text: str) -> List[str]:
-    tokens = []
-    for raw in text.lower().split():
-        tok = "".join(ch for ch in raw if ch.isalpha())
-        if tok:
-            tokens.append(re.sub(r"(.)\1{2,}", r"\1\1", tok))
-    return tokens
-
-
-def _light_text_similarity(a: str, b: str) -> float:
-    a_tokens = _normalize_text_tokens(a)
-    b_tokens = _normalize_text_tokens(b)
-    if not a_tokens or not b_tokens:
-        return 0.0
-    a_set = set(a_tokens)
-    b_set = set(b_tokens)
-    inter = len(a_set & b_set)
-    union = len(a_set | b_set)
-    return inter / union if union else 0.0
-
-
-def _soft_text_similarity(a: str, b: str) -> float:
-    a_tokens = _normalize_text_tokens(a)
-    b_tokens = _normalize_text_tokens(b)
-    if not a_tokens or not b_tokens:
-        return 0.0
-    used = [False] * len(b_tokens)
-    matched = 0
-    for at in a_tokens:
-        best_idx = None
-        for idx, bt in enumerate(b_tokens):
-            if used[idx]:
-                continue
-            if _soft_token_match(at, bt):
-                best_idx = idx
-                if at == bt:
-                    break
-        if best_idx is not None:
-            used[best_idx] = True
-            matched += 1
-    return matched / max(len(a_tokens), len(b_tokens))
-
-
-def _normalize_match_token(token: str) -> str:
-    base = _normalize_interjection_token(token)
-    if not base:
-        base = "".join(ch for ch in token.lower() if ch.isalpha())
-    if base.endswith("s") and len(base) > 3:
-        base = base[:-1]
-    return base
-
-
-def _soft_token_match(a: str, b: str) -> bool:
-    if not a or not b:
-        return False
-    if a == b:
-        return True
-    return a in b or b in a
-
-
-def _overlap_suffix_prefix(
-    left_tokens: List[str],
-    right_tokens: List[str],
-    max_overlap: int = 3,
-) -> int:
-    if not left_tokens or not right_tokens:
-        return 0
-    upper = min(max_overlap, len(left_tokens), len(right_tokens))
-    for size in range(upper, 0, -1):
-        ok = True
-        for i in range(size):
-            if not _soft_token_match(left_tokens[-size + i], right_tokens[i]):
-                ok = False
-                break
-        if ok:
-            return size
-    return 0
-
-
-def _soft_token_overlap_ratio(left_tokens: List[str], right_tokens: List[str]) -> float:
-    if not left_tokens or not right_tokens:
-        return 0.0
-    matched = 0
-    used = [False] * len(right_tokens)
-    for lt in left_tokens:
-        for idx, rt in enumerate(right_tokens):
-            if used[idx]:
-                continue
-            if _soft_token_match(lt, rt):
-                used[idx] = True
-                matched += 1
-                break
-    return matched / max(len(left_tokens), len(right_tokens))
+from .whisper_mapping_post_text import (
+    _light_text_similarity,
+    _normalize_match_token,
+    _normalize_text_tokens,
+    _soft_text_similarity,
+    _soft_token_match,
+    _soft_token_overlap_ratio,
+)
 
 
 def _realign_repetitive_runs_to_matching_segments(  # noqa: C901
