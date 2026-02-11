@@ -4,6 +4,7 @@ from y2karaoke.core.components.lyrics import api as lyrics
 from y2karaoke.core import lyrics_whisper as lw
 from y2karaoke.core.components.lyrics import helpers as lh
 from y2karaoke.core.components.lyrics import api as lyrics_api
+from y2karaoke.core.components.lyrics import lyrics_whisper_quality as lwq
 from y2karaoke.core.models import Line, SongMetadata, Word
 
 
@@ -324,3 +325,25 @@ def test_get_lyrics_convenience_calls_simple(monkeypatch):
 
     assert lines
     assert metadata is not None
+
+
+def test_clip_lines_to_target_duration_trims_and_drops():
+    issues = []
+    lines = [
+        Line(
+            words=[
+                Word("ok", start_time=10.0, end_time=10.6),
+                Word("trim", start_time=10.6, end_time=12.8),
+            ]
+        ),
+        Line(words=[Word("drop", start_time=12.6, end_time=13.0)]),
+    ]
+
+    clipped = lwq._clip_lines_to_target_duration(
+        lines, target_duration=12, issues=issues
+    )
+
+    assert len(clipped) == 1
+    assert clipped[0].words[-1].end_time == pytest.approx(12.4)
+    assert any("Dropped 1 line(s)" in issue for issue in issues)
+    assert any("Trimmed 1 word timing(s)" in issue for issue in issues)

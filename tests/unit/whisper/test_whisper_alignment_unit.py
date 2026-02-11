@@ -115,6 +115,37 @@ def test_interpolate_unmatched_lines():
     assert interpolated[1].start_time == 11.0
 
 
+def test_interpolate_unmatched_lines_caps_large_spread_for_long_runs():
+    lines = [
+        Line(words=[Word(text="m1", start_time=0.0, end_time=1.0)]),
+        Line(words=[Word(text="u1", start_time=10.0, end_time=11.0)]),
+        Line(words=[Word(text="u2", start_time=12.0, end_time=13.0)]),
+        Line(words=[Word(text="u3", start_time=14.0, end_time=15.0)]),
+        Line(words=[Word(text="m2", start_time=40.0, end_time=41.0)]),
+    ]
+    matched_indices = {0, 4}
+
+    interpolated = wa._interpolate_unmatched_lines(lines, matched_indices)
+
+    # Long unmatched runs should not be stretched to fill huge anchor gaps.
+    assert interpolated[3].end_time <= 5.0
+
+
+def test_interpolate_unmatched_lines_preserves_trailing_tail_timing():
+    lines = [
+        Line(words=[Word(text="m1", start_time=10.0, end_time=11.0)]),
+        Line(words=[Word(text="m2", start_time=12.0, end_time=13.0)]),
+        Line(words=[Word(text="u1", start_time=20.0, end_time=21.0)]),
+        Line(words=[Word(text="u2", start_time=22.0, end_time=23.0)]),
+    ]
+    matched_indices = {0, 1}
+
+    interpolated = wa._interpolate_unmatched_lines(lines, matched_indices)
+
+    assert interpolated[2].start_time == 20.0
+    assert interpolated[3].start_time == 22.0
+
+
 def test_merge_first_two_lines_if_segment_matches(monkeypatch):
     lines = [
         Line(words=[Word(text="one", start_time=10.0, end_time=11.0)]),
@@ -256,6 +287,42 @@ def test_pull_lines_forward_for_continuous_vocals_can_disable_silence_refinement
 
     assert pulled[1].start_time == lines[1].start_time
     assert pulled[2].start_time == lines[2].start_time
+
+
+def test_pull_lines_forward_for_continuous_vocals_reverts_when_long_gaps_worsen(
+    monkeypatch,
+):
+    lines = [
+        Line(words=[Word(text="a", start_time=10.0, end_time=11.0)]),
+        Line(words=[Word(text="b", start_time=12.0, end_time=13.0)]),
+        Line(words=[Word(text="c", start_time=14.0, end_time=15.0)]),
+    ]
+
+    class MockAF:
+        def __init__(self):
+            self.onset_times = np.array([10.5, 11.5, 12.5])
+            self.silence_regions = [(10.2, 10.9)]
+
+    af = MockAF()
+
+    import y2karaoke.core.components.whisper.whisper_alignment_refinement as war
+
+    def fake_shift_runs(lines_in, _silences, _onsets):
+        # Introduce a large new gap that should trigger rollback.
+        lines_in[2] = Line(words=[Word(text="c", start_time=50.0, end_time=51.0)])
+        return 1
+
+    monkeypatch.setattr(war, "_shift_lines_across_long_activity_gaps", lambda *_: 0)
+    monkeypatch.setattr(war, "_shift_short_line_runs_after_silence", fake_shift_runs)
+    monkeypatch.setattr(war, "_shift_single_short_lines_after_silence", lambda *_: 0)
+    monkeypatch.setattr(war, "_compact_short_lines_near_silence", lambda *_: 0)
+    monkeypatch.setattr(war, "_stretch_similar_adjacent_short_lines", lambda *_: 0)
+    monkeypatch.setattr(war, "_cap_isolated_short_lines", lambda *_: 0)
+
+    pulled, count = wa._pull_lines_forward_for_continuous_vocals(lines, af, max_gap=4.0)
+
+    assert count == 0
+    assert pulled[2].start_time == 14.0
 
 
 def test_retime_line_to_segment():

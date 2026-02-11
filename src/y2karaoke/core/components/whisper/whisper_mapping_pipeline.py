@@ -21,6 +21,11 @@ from .whisper_mapping_helpers import (
 
 logger = get_logger(__name__)
 _TIME_DRIFT_THRESHOLD = 0.8
+_MAX_ANCHOR_DRIFT_FROM_LRC = 6.0
+_MAX_MATCHED_START_DRIFT_FORWARD = 8.0
+_MAX_MATCHED_START_DRIFT_BACKWARD = 4.0
+_MAX_LINE_FORWARD_SHIFT_FROM_LRC = 10.0
+_MAX_LINE_BACKWARD_SHIFT_FROM_LRC = 5.0
 
 
 def _register_word_match(
@@ -172,9 +177,116 @@ def _prepare_line_context(
         < ctx.last_line_start
     ):
         line_segment = None
-    line_anchor_time = max(line.start_time, ctx.last_line_start, ctx.prev_line_end)
+    prior_anchor = max(ctx.last_line_start, ctx.prev_line_end)
+    if prior_anchor == float("-inf"):
+        line_anchor_time = line.start_time
+    else:
+        line_anchor_time = max(
+            line.start_time,
+            min(prior_anchor, line.start_time + _MAX_ANCHOR_DRIFT_FROM_LRC),
+        )
     line_shift = line_anchor_time - line.start_time
     return line_segment, line_anchor_time, line_shift
+
+
+def _should_override_line_segment(
+    *,
+    current_segment: Optional[int],
+    override_segment: int,
+    override_hits: int,
+    line_word_count: int,
+    line_anchor_time: float,
+    segments: Sequence[Any],
+    max_local_jump_seconds: float = 8.0,
+    max_strong_jump_seconds: float = 18.0,
+    max_anchor_jump_seconds: float = 14.0,
+    max_anchor_strong_jump_seconds: float = 20.0,
+) -> bool:
+    """Decide whether assignment-based segment override is trustworthy."""
+    if current_segment is None:
+        if not segments:
+            return True
+        override_start = whisper_utils._segment_start(segments[override_segment])
+        anchor_jump = abs(override_start - line_anchor_time)
+        strong_hits = override_hits >= max(2, int(0.6 * max(1, line_word_count)))
+        if anchor_jump <= max_anchor_jump_seconds:
+            return True
+        return strong_hits and anchor_jump <= max_anchor_strong_jump_seconds
+
+    if not segments:
+        return abs(override_segment - current_segment) <= 2
+
+    current_start = whisper_utils._segment_start(segments[current_segment])
+    override_start = whisper_utils._segment_start(segments[override_segment])
+    jump_seconds = abs(override_start - current_start)
+    anchor_jump = abs(override_start - line_anchor_time)
+
+    if (
+        jump_seconds <= max_local_jump_seconds
+        and anchor_jump <= max_anchor_jump_seconds
+    ):
+        return True
+
+    strong_hits = override_hits >= max(2, int(0.6 * max(1, line_word_count)))
+    return (
+        strong_hits
+        and jump_seconds <= max_strong_jump_seconds
+        and anchor_jump <= max_anchor_strong_jump_seconds
+    )
+
+
+def _clamp_match_window_to_anchor(
+    actual_start: float,
+    actual_end: float,
+    line_anchor_time: float,
+    *,
+    max_forward: float = _MAX_MATCHED_START_DRIFT_FORWARD,
+    max_backward: float = _MAX_MATCHED_START_DRIFT_BACKWARD,
+) -> Tuple[float, float]:
+    """Keep mapped line windows from drifting implausibly far from anchor time."""
+    if actual_end <= actual_start:
+        actual_end = actual_start + 0.2
+    if line_anchor_time == float("-inf"):
+        return actual_start, actual_end
+
+    min_start = line_anchor_time - max_backward
+    max_start = line_anchor_time + max_forward
+    clamped_start = min(max(actual_start, min_start), max_start)
+    if clamped_start == actual_start:
+        return actual_start, actual_end
+
+    shift = clamped_start - actual_start
+    clamped_end = max(clamped_start + 0.2, actual_end + shift)
+    return clamped_start, clamped_end
+
+
+def _clamp_line_shift_vs_original(
+    mapped_line: "models.Line",
+    original_line: "models.Line",
+    *,
+    max_forward: float = _MAX_LINE_FORWARD_SHIFT_FROM_LRC,
+    max_backward: float = _MAX_LINE_BACKWARD_SHIFT_FROM_LRC,
+) -> "models.Line":
+    """Clamp per-line timing drift relative to original LRC timing."""
+    if not mapped_line.words or not original_line.words:
+        return mapped_line
+
+    delta = mapped_line.start_time - original_line.start_time
+    if -max_backward <= delta <= max_forward:
+        return mapped_line
+
+    clamped_delta = min(max(delta, -max_backward), max_forward)
+    shift = clamped_delta - delta
+    shifted_words = [
+        models.Word(
+            text=w.text,
+            start_time=w.start_time + shift,
+            end_time=w.end_time + shift,
+            singer=w.singer,
+        )
+        for w in mapped_line.words
+    ]
+    return models.Line(words=shifted_words, singer=mapped_line.singer)
 
 
 def _match_assigned_words(
@@ -413,6 +525,11 @@ def _assemble_mapped_line(
     if line_matches:
         actual_start = min(iv[0] for _, iv in line_matches)
         actual_end = max(iv[1] for _, iv in line_matches)
+        actual_start, actual_end = _clamp_match_window_to_anchor(
+            actual_start,
+            actual_end,
+            line_anchor_time,
+        )
     else:
         original_duration = line.end_time - line.start_time
         if original_duration <= 0:
@@ -427,6 +544,7 @@ def _assemble_mapped_line(
         min_word_duration=0.05,
         line_start=actual_start,
     )
+    mapped_line = _clamp_line_shift_vs_original(mapped_line, line)
     logger.debug(
         "Mapped line %d start=%.2f end=%.2f matches=%d",
         line_idx + 1,
@@ -492,7 +610,14 @@ def _map_lrc_words_to_whisper(
                         assigned_segs[si] = assigned_segs.get(si, 0) + 1
         if assigned_segs:
             override_seg = max(assigned_segs, key=assigned_segs.get)  # type: ignore[arg-type]
-            if line_segment != override_seg:
+            if line_segment != override_seg and _should_override_line_segment(
+                current_segment=line_segment,
+                override_segment=override_seg,
+                override_hits=assigned_segs[override_seg],
+                line_word_count=len(line.words),
+                line_anchor_time=line_anchor_time,
+                segments=ctx.segments,
+            ):
                 line_segment = override_seg
                 if ctx.segments and override_seg < len(ctx.segments):
                     seg_start = whisper_utils._segment_start(ctx.segments[override_seg])

@@ -18,6 +18,63 @@ from ...models import Line, SongMetadata
 logger = logging.getLogger(__name__)
 
 
+def _clip_lines_to_target_duration(
+    lines: List[Line],
+    target_duration: Optional[int],
+    issues: List[str],
+    grace_seconds: float = 0.4,
+) -> List[Line]:
+    """Trim/drop lines that extend beyond known track duration."""
+    if not target_duration or target_duration <= 0:
+        return lines
+
+    max_time = float(target_duration) + grace_seconds
+    clipped_lines: List[Line] = []
+    dropped_lines = 0
+    trimmed_words = 0
+
+    for line in lines:
+        if not line.words:
+            continue
+        if line.words[0].start_time >= max_time:
+            dropped_lines += 1
+            continue
+
+        new_words = []
+        for word in line.words:
+            if word.start_time >= max_time:
+                trimmed_words += 1
+                break
+            capped_end = min(word.end_time, max_time)
+            if capped_end < word.start_time:
+                capped_end = word.start_time
+            if capped_end < word.end_time:
+                trimmed_words += 1
+            new_words.append(
+                type(word)(
+                    text=word.text,
+                    start_time=word.start_time,
+                    end_time=capped_end,
+                    singer=word.singer,
+                )
+            )
+
+        if not new_words:
+            dropped_lines += 1
+            continue
+        clipped_lines.append(Line(words=new_words, singer=line.singer))
+
+    if dropped_lines:
+        issues.append(
+            f"Dropped {dropped_lines} line(s) beyond track duration ({target_duration}s)"
+        )
+    if trimmed_words:
+        issues.append(
+            f"Trimmed {trimmed_words} word timing(s) past track duration ({target_duration}s)"
+        )
+    return clipped_lines
+
+
 def get_lyrics_with_quality(  # noqa: C901
     title: str,
     artist: str,
@@ -311,6 +368,8 @@ def get_lyrics_with_quality(  # noqa: C901
 
     if metadata and metadata.is_duet and genius_lines:
         _apply_singer_info(lines, genius_lines, metadata)
+
+    lines = _clip_lines_to_target_duration(lines, target_duration, issues_list)
 
     quality_report["total_lines"] = len(lines)
     quality_report["overall_score"] = _calculate_quality_score(quality_report)

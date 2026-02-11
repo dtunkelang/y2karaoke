@@ -96,6 +96,19 @@ def _interpolate_unmatched_lines(
         run_indices = list(range(run_start, run_end))
         if not run_indices:
             continue
+        if run_end == total:
+            # Trailing unmatched tail: preserve existing timing if already
+            # monotonic, rather than stretching to synthetic anchors.
+            tail_start = mapped_lines[run_start].start_time
+            if prev_end is not None and tail_start < prev_end + 0.01:
+                shift = (prev_end + 0.01) - tail_start
+                for line_idx in run_indices:
+                    line = mapped_lines[line_idx]
+                    mapped_lines[line_idx] = _shift_line(line, shift)
+                prev_end = mapped_lines[run_indices[-1]].end_time
+            elif mapped_lines[run_indices[-1]].words:
+                prev_end = mapped_lines[run_indices[-1]].end_time
+            continue
         start_anchor = (
             prev_end if prev_end is not None else mapped_lines[run_start].start_time
         )
@@ -110,9 +123,11 @@ def _interpolate_unmatched_lines(
         total_duration = max(total_duration, 0.5 * len(run_indices))
         available_gap = max(next_anchor - start_anchor, total_duration)
         duration_scale = available_gap / total_duration if total_duration > 0 else 1.0
-        # Don't spread unmatched lines across a large instrumental gap;
-        # keep them compact near the previous anchor.
-        if duration_scale > 2.0:
+        # Don't spread unmatched runs too aggressively; this can explode
+        # timings in repeated/refrain-heavy songs when one late anchor is wrong.
+        if len(run_indices) >= 3 and duration_scale > 1.2:
+            duration_scale = 1.2
+        elif duration_scale > 2.0:
             duration_scale = 2.0
         current = start_anchor
         for line_idx in run_indices:
@@ -670,6 +685,41 @@ def _cap_isolated_short_lines(lines: List[Line]) -> int:
     return fixes
 
 
+def _clone_lines(lines: List[Line]) -> List[Line]:
+    return [
+        Line(
+            words=[
+                Word(
+                    text=w.text,
+                    start_time=w.start_time,
+                    end_time=w.end_time,
+                    singer=w.singer,
+                )
+                for w in line.words
+            ],
+            singer=line.singer,
+        )
+        for line in lines
+    ]
+
+
+def _long_gap_stats(lines: List[Line], threshold: float = 20.0) -> Tuple[int, float]:
+    prev_end: Optional[float] = None
+    long_count = 0
+    max_gap = 0.0
+    for line in lines:
+        if not line.words:
+            continue
+        if prev_end is not None:
+            gap = line.start_time - prev_end
+            if gap > threshold:
+                long_count += 1
+            if gap > max_gap:
+                max_gap = gap
+        prev_end = line.end_time
+    return long_count, max_gap
+
+
 def _pull_lines_forward_for_continuous_vocals(
     lines: List[Line],
     audio_features: Optional[AudioFeatures],
@@ -683,6 +733,9 @@ def _pull_lines_forward_for_continuous_vocals(
     onset_times = audio_features.onset_times
     if onset_times is None or len(onset_times) == 0:
         return lines, 0
+
+    original_lines = _clone_lines(lines)
+    before_long_count, before_max_gap = _long_gap_stats(lines)
 
     fixes = _shift_lines_across_long_activity_gaps(
         lines, audio_features, max_gap, onset_times
@@ -711,6 +764,19 @@ def _pull_lines_forward_for_continuous_vocals(
     fixes += _compact_short_lines_near_silence(lines, normalized_silences)
     fixes += _stretch_similar_adjacent_short_lines(lines, normalized_silences)
     fixes += _cap_isolated_short_lines(lines)
+
+    after_long_count, after_max_gap = _long_gap_stats(lines)
+    if after_long_count > before_long_count or after_max_gap > max(
+        before_max_gap + 8.0, 20.0
+    ):
+        logger.debug(
+            "Reverting continuous-vocals refinement: long gaps worsened (%d→%d, %.2fs→%.2fs)",
+            before_long_count,
+            after_long_count,
+            before_max_gap,
+            after_max_gap,
+        )
+        return original_lines, 0
     return lines, fixes
 
 
