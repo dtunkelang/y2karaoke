@@ -306,6 +306,7 @@ class TrackIdentifier(
         url: str,
         artist_hint: Optional[str] = None,
         title_hint: Optional[str] = None,
+        allow_alternate_video: bool = False,
     ) -> TrackInfo:
         """Identify track from a YouTube URL.
 
@@ -321,6 +322,8 @@ class TrackIdentifier(
             url: YouTube URL
             artist_hint: Explicit artist name (overrides YouTube metadata parsing)
             title_hint: Explicit song title (overrides YouTube metadata parsing)
+            allow_alternate_video: If True, allow switching to a different YouTube URL
+                when LRC duration strongly mismatches the provided URL.
 
         Returns:
             TrackInfo with canonical artist, title, and the given YouTube URL
@@ -378,7 +381,11 @@ class TrackIdentifier(
                     f"(YT: {yt_duration}s, LRC: {lrc_duration}s)"
                 )
 
-            if not lrc_validated and abs(lrc_duration - yt_duration) > 8:
+            if (
+                allow_alternate_video
+                and not lrc_validated
+                and abs(lrc_duration - yt_duration) > 8
+            ):
                 alt_result = self._search_matching_youtube_video(
                     artist, title, lrc_duration, yt_duration
                 )

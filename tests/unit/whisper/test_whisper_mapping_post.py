@@ -353,3 +353,30 @@ def test_snap_first_word_suffix_shift_does_not_trigger_for_question_line() -> No
     assert adjusted[3].start_time == lines[3].start_time
     assert adjusted[4].start_time == lines[4].start_time
     assert adjusted[5].start_time == lines[5].start_time
+
+
+def test_pull_late_lines_handles_code_switch_with_accented_spanish() -> None:
+    lines = [
+        Line(words=[Word(text="prev", start_time=46.0, end_time=46.4)]),
+        Line(
+            words=[
+                Word(text="Dímelo", start_time=50.5, end_time=50.9),
+                Word(text="baby", start_time=50.9, end_time=51.3),
+            ]
+        ),
+        Line(words=[Word(text="next", start_time=52.2, end_time=52.6)]),
+    ]
+    segments = [
+        TranscriptionSegment(
+            start=48.0,
+            end=51.8,
+            text="dimelo baby",
+            words=[],
+        )
+    ]
+
+    adjusted = wm._pull_late_lines_to_matching_segments(
+        lines, segments, language="spa-Latn"
+    )
+
+    assert adjusted[1].start_time == 48.0

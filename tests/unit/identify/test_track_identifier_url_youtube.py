@@ -125,7 +125,10 @@ class TestIdentifyFromUrlMocked:
 
         identifier = TrackIdentifier()
         with caplog.at_level(logging.WARNING):
-            result = identifier.identify_from_url("https://youtube.com/watch?v=xyz789")
+            result = identifier.identify_from_url(
+                "https://youtube.com/watch?v=xyz789",
+                allow_alternate_video=True,
+            )
 
         assert result.youtube_url == "https://youtube.com/watch?v=alt123"
         assert "non-studio" in caplog.text.lower()
@@ -159,6 +162,42 @@ class TestIdentifyFromUrlMocked:
         assert result.source == "syncedlyrics"
         assert result.lrc_validated is False
         assert "non-studio" in caplog.text.lower()
+
+    @patch(
+        "y2karaoke.core.components.identify.implementation.TrackIdentifier._get_youtube_metadata"
+    )
+    @patch(
+        "y2karaoke.core.components.identify.implementation.TrackIdentifier._query_musicbrainz"
+    )
+    @patch(
+        "y2karaoke.core.components.identify.implementation.TrackIdentifier._find_best_lrc_by_duration"
+    )
+    @patch(
+        "y2karaoke.core.components.identify.implementation.TrackIdentifier._search_matching_youtube_video"
+    )
+    def test_mismatch_keeps_original_url_by_default(
+        self, mock_alt, mock_find_lrc, mock_mb_query, mock_yt_metadata
+    ):
+        """Default URL flow should not switch away from the provided URL."""
+        mock_yt_metadata.return_value = ("Artist - Song", "Uploader", 200)
+        mock_mb_query.return_value = []
+        mock_find_lrc.return_value = ("Artist", "Song", 240)
+        mock_alt.return_value = TrackInfo(
+            artist="Artist",
+            title="Song",
+            duration=200,
+            youtube_url="https://youtube.com/watch?v=alt123",
+            youtube_duration=200,
+            source="youtube",
+            lrc_duration=240,
+            lrc_validated=False,
+        )
+
+        identifier = TrackIdentifier()
+        result = identifier.identify_from_url("https://youtube.com/watch?v=xyz789")
+
+        assert result.youtube_url == "https://youtube.com/watch?v=xyz789"
+        mock_alt.assert_not_called()
 
 
 class TestCheckLrcAndDuration:
