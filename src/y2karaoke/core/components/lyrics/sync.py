@@ -311,25 +311,13 @@ def _search_with_state_fallback(
     enhanced: bool,
     state: SyncState,
 ) -> Tuple[Optional[str], str]:
-    """Call _search_with_fallback with state, tolerating monkeypatched signatures."""
-    attempts: List[Dict[str, Any]] = [
-        {"synced_only": synced_only, "enhanced": enhanced, "state": state},
-        {"synced_only": synced_only, "enhanced": enhanced},
-        {"synced_only": synced_only, "state": state},
-        {"synced_only": synced_only},
-    ]
-    last_error: Optional[Exception] = None
-    for kwargs in attempts:
-        try:
-            return _search_with_fallback(search_term, **kwargs)
-        except TypeError as e:
-            if "unexpected keyword argument" not in str(e):
-                raise
-            last_error = e
-            continue
-    if last_error is not None:
-        raise last_error
-    return None, ""
+    """Call _search_with_fallback with explicit sync state."""
+    return _search_with_fallback(
+        search_term,
+        synced_only=synced_only,
+        enhanced=enhanced,
+        state=state,
+    )
 
 
 def _get_disk_cache_path() -> "Path":

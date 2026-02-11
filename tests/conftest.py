@@ -11,6 +11,7 @@ Provides reusable fixtures for:
 import os
 import pytest
 import tempfile
+from contextlib import ExitStack
 from pathlib import Path
 from unittest.mock import Mock, patch, MagicMock
 
@@ -432,35 +433,35 @@ def mock_all_external_services(
 @pytest.fixture
 def mock_track_identifier_dependencies():
     """Mock all dependencies for TrackIdentifier testing."""
-    with patch(
-        "y2karaoke.core.components.identify.implementation.musicbrainzngs"
-    ) as mock_mb:
-        with patch(
-            "y2karaoke.core.components.lyrics.sync.fetch_lyrics_multi_source"
-        ) as mock_lrc:
-            with patch(
-                "y2karaoke.core.components.lyrics.sync.get_lrc_duration"
-            ) as mock_duration:
-                with patch(
-                    "y2karaoke.core.components.lyrics.sync.validate_lrc_quality"
-                ) as mock_validate:
-                    with patch("requests.get") as mock_requests:
-                        # Set up default returns
-                        mock_mb.search_recordings.return_value = {"recording-list": []}
-                        mock_lrc.return_value = (None, False, None)
-                        mock_duration.return_value = None
-                        mock_validate.return_value = (True, None)
-                        mock_requests.return_value = Mock(
-                            text="", raise_for_status=Mock()
-                        )
+    with ExitStack() as stack:
+        mock_mb = stack.enter_context(
+            patch("y2karaoke.core.components.identify.implementation.musicbrainzngs")
+        )
+        mock_lrc = stack.enter_context(
+            patch("y2karaoke.core.components.lyrics.sync.fetch_lyrics_multi_source")
+        )
+        mock_duration = stack.enter_context(
+            patch("y2karaoke.core.components.lyrics.sync.get_lrc_duration")
+        )
+        mock_validate = stack.enter_context(
+            patch("y2karaoke.core.components.lyrics.sync.validate_lrc_quality")
+        )
+        mock_requests = stack.enter_context(patch("requests.get"))
 
-                        yield {
-                            "musicbrainz": mock_mb,
-                            "fetch_lyrics": mock_lrc,
-                            "get_duration": mock_duration,
-                            "validate_quality": mock_validate,
-                            "requests": mock_requests,
-                        }
+        # Set up default returns
+        mock_mb.search_recordings.return_value = {"recording-list": []}
+        mock_lrc.return_value = (None, False, None)
+        mock_duration.return_value = None
+        mock_validate.return_value = (True, None)
+        mock_requests.return_value = Mock(text="", raise_for_status=Mock())
+
+        yield {
+            "musicbrainz": mock_mb,
+            "fetch_lyrics": mock_lrc,
+            "get_duration": mock_duration,
+            "validate_quality": mock_validate,
+            "requests": mock_requests,
+        }
 
 
 # =============================================================================

@@ -12,7 +12,6 @@ def _line(text, start, end):
 
 def test_generate_offsets_lines_and_uses_vocals_debug(monkeypatch, tmp_path):
     generator = KaraokeGenerator(cache_dir=tmp_path)
-    monkeypatch.setattr("y2karaoke.core.karaoke.extract_video_id", lambda _: "vid")
     monkeypatch.setattr(generator.cache_manager, "auto_cleanup", lambda: None)
 
     monkeypatch.setattr(
@@ -71,7 +70,6 @@ def test_generate_offsets_lines_and_uses_vocals_debug(monkeypatch, tmp_path):
 
 def test_generate_uses_original_audio_debug(monkeypatch, tmp_path):
     generator = KaraokeGenerator(cache_dir=tmp_path)
-    monkeypatch.setattr("y2karaoke.core.karaoke.extract_video_id", lambda _: "vid")
     monkeypatch.setattr(generator.cache_manager, "auto_cleanup", lambda: None)
 
     monkeypatch.setattr(
@@ -116,7 +114,6 @@ def test_generate_uses_original_audio_debug(monkeypatch, tmp_path):
 
 def test_generate_instrumental_backgrounds_and_breaks(monkeypatch, tmp_path):
     generator = KaraokeGenerator(cache_dir=tmp_path)
-    monkeypatch.setattr("y2karaoke.core.karaoke.extract_video_id", lambda _: "vid")
     monkeypatch.setattr(generator.cache_manager, "auto_cleanup", lambda: None)
 
     monkeypatch.setattr(

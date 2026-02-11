@@ -11,16 +11,13 @@ from ..config import get_cache_dir
 from ..exceptions import Y2KaraokeError
 from ..utils.cache import CacheManager
 from ..utils.logging import get_logger
-from ..utils.validation import (
-    sanitize_filename,  # noqa: F401 - retained for monkeypatch-based tests
-)
+from ..utils.validation import sanitize_filename
 from . import karaoke_utils
 from . import karaoke_timing_report
 from .karaoke_audio_helpers import append_outro_line_impl, shorten_breaks_impl
 from .karaoke_generate import generate_karaoke
 from ..pipeline.audio import (
     YouTubeDownloader,
-    extract_video_id,
     AudioSeparator,
     AudioProcessor,
     trim_audio_if_needed,
@@ -29,7 +26,6 @@ from ..pipeline.audio import (
 )
 
 logger = get_logger(__name__)
-_ = extract_video_id  # retained for monkeypatch-based tests
 
 
 if TYPE_CHECKING:

@@ -1,11 +1,5 @@
 from y2karaoke.core.components.lyrics import lyrics_whisper as lw
 from y2karaoke.core.components.whisper import whisper_integration as wi
-import y2karaoke.core.karaoke as karaoke_mod
-
-
-def test_karaoke_extract_video_id_alias_is_preserved():
-    assert hasattr(karaoke_mod, "extract_video_id")
-    assert callable(karaoke_mod.extract_video_id)
 
 
 def test_whisper_integration_hooks_restore_transcribe():

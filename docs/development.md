@@ -29,11 +29,14 @@ make type
 make test-fast
 make test-full
 make perf-smoke
+make quality-guardrails
 ```
 
 ## CI Lanes
 
 - Fast lane: formatting/linting/types + fast unit tests + perf smoke.
+- Fast lane also enforces `tools/quality_guardrails.py` to prevent oversized files
+  and monkeypatch-specific production seams.
 - Full lane: full non-network test suite with coverage.
 
 ## Generated Artifacts

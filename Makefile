@@ -2,7 +2,7 @@ PYTHON ?= ./venv/bin/python
 PIP := $(PYTHON) -m pip
 PYTEST := PYTHONPATH=src $(PYTHON) -m pytest
 
-.PHONY: bootstrap dep-check fmt fmt-check lint type test-fast test-full perf-smoke check ci-fast ci-full
+.PHONY: bootstrap dep-check fmt fmt-check lint type test-fast test-full perf-smoke quality-guardrails check ci-fast ci-full
 
 bootstrap:
 	./tools/bootstrap_dev.sh
@@ -31,8 +31,11 @@ test-full:
 perf-smoke:
 	$(PYTHON) tools/perf_smoke.py
 
-check: dep-check fmt-check lint type test-fast perf-smoke
+quality-guardrails:
+	$(PYTHON) tools/quality_guardrails.py
 
-ci-fast: dep-check fmt-check lint type test-fast perf-smoke
+check: dep-check fmt-check lint type test-fast perf-smoke quality-guardrails
+
+ci-fast: dep-check fmt-check lint type test-fast perf-smoke quality-guardrails
 
 ci-full: test-full
