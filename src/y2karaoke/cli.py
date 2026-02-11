@@ -176,8 +176,8 @@ def cli(ctx, verbose, log_file):
     default=0.0,
     help="Start audio processing from this many seconds (skip intro)",
 )
-@click.option("--title", "--lyrics-title", help="Override song title for lyrics search")
-@click.option("--artist", "--lyrics-artist", help="Override artist for lyrics search")
+@click.option("--title", help="Override song title for lyrics search")
+@click.option("--artist", help="Override artist for lyrics search")
 @click.option(
     "--lyrics-offset",
     type=float,
@@ -477,12 +477,11 @@ def clear(video_id, cache_dir):
 
 @cli.command()
 @click.argument("url_or_query", required=False)
-@click.option("--title", "--lyrics-title", help="Override song title for lyrics search")
-@click.option("--artist", "--lyrics-artist", help="Override artist for lyrics search")
+@click.option("--title", help="Override song title for lyrics search")
+@click.option("--artist", help="Override artist for lyrics search")
 @click.option("--work-dir", type=click.Path(), help="Working directory")
-@click.option("--force", is_flag=True, help="Force re-download cached files")
 @click.pass_context
-def evaluate_timing(ctx, url_or_query, title, artist, work_dir, force):
+def evaluate_timing(ctx, url_or_query, title, artist, work_dir):
     """Evaluate lyrics timing quality against audio analysis.
 
     Compares timing from all available lyrics sources (lyriq, Musixmatch,
@@ -490,7 +489,6 @@ def evaluate_timing(ctx, url_or_query, title, artist, work_dir, force):
     the audio to identify the most accurate source.
     """
     logger = ctx.obj["logger"]
-    _ = force
     run_evaluate_timing_command(
         ctx=ctx,
         logger=logger,
