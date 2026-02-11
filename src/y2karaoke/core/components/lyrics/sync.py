@@ -1,5 +1,6 @@
 """Synced lyrics fetching using syncedlyrics and lyriq libraries."""
 
+import logging
 import json
 import os
 import time
@@ -23,6 +24,39 @@ validate_lrc_quality = sync_quality.validate_lrc_quality
 _count_large_gaps = sync_quality._count_large_gaps
 _calculate_quality_score = sync_quality._calculate_quality_score
 get_lyrics_quality_report = sync_quality.get_lyrics_quality_report
+
+
+class _OncePerMessageFilter(logging.Filter):
+    """Allow only the first occurrence of each unique log message."""
+
+    def __init__(self, max_entries: int = 512):
+        super().__init__()
+        self.max_entries = max_entries
+        self._seen: set[tuple[str, int, str]] = set()
+
+    def filter(self, record: logging.LogRecord) -> bool:
+        signature = (record.name, record.levelno, record.getMessage())
+        if signature in self._seen:
+            return False
+        self._seen.add(signature)
+        if len(self._seen) > self.max_entries:
+            self._seen.clear()
+            self._seen.add(signature)
+        return True
+
+
+def _configure_third_party_lyrics_loggers() -> None:
+    dedupe_filter = _OncePerMessageFilter()
+    for logger_name in ("lyriq", "lyriq.lyriq", "syncedlyrics"):
+        third_party_logger = logging.getLogger(logger_name)
+        if not any(
+            isinstance(existing_filter, _OncePerMessageFilter)
+            for existing_filter in third_party_logger.filters
+        ):
+            third_party_logger.addFilter(dedupe_filter)
+
+
+_configure_third_party_lyrics_loggers()
 
 
 @dataclass
@@ -49,6 +83,7 @@ class SyncState:
     lyriq_available: Optional[bool] = None
     has_timestamps_fn: Optional[Callable[[str], bool]] = None
     get_lrc_duration_fn: Optional[Callable[[str], Optional[int]]] = None
+    warning_once_keys: set[str] = field(default_factory=set)
 
 
 def create_sync_state(*, disk_cache_enabled: bool = True) -> SyncState:

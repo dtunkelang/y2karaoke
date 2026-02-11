@@ -151,7 +151,7 @@ y2karaoke cache clear VIDEO_ID
 | `--audio-start` | Start audio processing from this many seconds into the track (skip intro; default: 0.0) |
 | `--title` | Override song title used when searching for lyrics |
 | `--artist` | Override artist used when searching for lyrics (useful for covers) |
-| `--lyrics-file"` | Use lyrics from a local text or .lrc file as the text source |
+| `--lyrics-file` | Use lyrics from a local text or .lrc file as the text source |
 | `--backgrounds` | Use video backgrounds extracted from the original YouTube video |
 | `--work-dir` | Working directory for intermediate files (default: `~/.cache/karaoke/{video_id}`) |
 | `--keep-files` | Keep intermediate files (audio, stems, etc.) |
@@ -170,6 +170,42 @@ source venv/bin/activate
 pip install -e ".[dev]"
 pytest tests -v
 ```
+
+Benchmark seed set for timing quality work:
+- `benchmarks/benchmark_songs.yaml` contains a curated core list (IDs, provider preference, tolerance hints).
+- Validate it with: `make benchmark-validate`
+- Run the benchmark suite and aggregate report:
+  - `make benchmark-run`
+  - Outputs are written to `benchmarks/results/<timestamp>/benchmark_report.{json,md}`
+  - `benchmarks/results/latest.json` points to the latest JSON report path.
+- Resume support (interruption-friendly):
+  - The runner writes per-song checkpoints (`*_result.json`) and `benchmark_progress.json` after each song.
+  - The runner writes per-song command logs (`*_generate.log`) in the run directory.
+  - Resume the most recent run: `./venv/bin/python tools/run_benchmark_suite.py --resume-latest`
+  - Resume a specific run directory: `./venv/bin/python tools/run_benchmark_suite.py --resume-run-dir benchmarks/results/<run_id>`
+  - Safety: cached per-song results are reused only when core run options match (`offline/force/DTW mode/cache-dir/manifest`).
+  - Override only if intentional: `--reuse-mismatched-results`
+  - By default, resumed runs skip already-completed songs; use `--rerun-failed` or `--rerun-completed` to override.
+- Background helper script (recommended for long runs):
+  - `make benchmark-run-bg` (or `tools/run_benchmark_suite_bg.sh`)
+  - This starts a nohup run with `--resume-latest` and prints a log file path to follow.
+  - Heartbeat interval is configurable: `--heartbeat-sec 30` (default), and each heartbeat includes an inferred current stage when available.
+  - Heartbeats also include CPU-aware hints; if logs are stale but CPU is high, they infer `separation` / `whisper` / `alignment` when possible.
+  - Per-song output now includes phase transitions (`phase_start ...`), phase totals (`phase_summary ...`), and cache decisions (`cache_decisions ...`).
+  - Quick status snapshot: `make benchmark-status` (or `./venv/bin/python tools/benchmark_status.py`)
+  - Stop running benchmark suites: `make benchmark-kill` (preview only: `tools/kill_benchmark_suites.sh --dry-run`)
+- Useful benchmark flags:
+  - Offline cached-only run: `./venv/bin/python tools/run_benchmark_suite.py --offline`
+  - Run one song for debugging: `./venv/bin/python tools/run_benchmark_suite.py --match "Papaoutai" --max-songs 1`
+  - Disable DTW mapping for A/B checks: `./venv/bin/python tools/run_benchmark_suite.py --no-whisper-map-lrc-dtw`
+
+Benchmark metric interpretation:
+- `dtw_line_coverage`: fraction of lyric lines with usable DTW anchor/match. Lower values often mean noisy or duration-mismatched LRC.
+- `dtw_word_coverage`: fraction of words matched through DTW/Whisper alignment. This is typically lower than line coverage.
+- `dtw_phonetic_similarity_coverage`: matched words with sufficiently strong phonetic similarity; useful for cross-language or misspelling-heavy cases.
+- `start_delta_mean_abs_sec` and `start_delta_p95_abs_sec`: average and tail absolute line start error (vs. reference where available); p95 is the better regression guard.
+- `low_confidence_lines`: lines where Whisper confidence is weak; inspect these first during debugging.
+- `null` metrics: expected when a song path used onset/LRC timing without DTW-based reference comparisons.
 
 Preferred local workflow:
 
