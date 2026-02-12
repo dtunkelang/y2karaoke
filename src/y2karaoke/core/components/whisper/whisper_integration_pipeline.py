@@ -7,6 +7,8 @@ from ... import models
 from ... import phonetic_utils
 from ..alignment import timing_models
 
+_MIN_SEGMENT_OVERLAP_COVERAGE = 0.45
+
 
 def _clone_lines_for_fallback(lines: List[models.Line]) -> List[models.Line]:
     """Deep-copy lines so rollback logic can safely restore original timing."""
@@ -278,10 +280,11 @@ def align_lrc_text_to_whisper_timings_impl(  # noqa: C901
         transcription,
     )
     seg_coverage = len(lrc_assignments) / len(lrc_words) if lrc_words else 0
-    if seg_coverage < 0.3:
+    if seg_coverage < _MIN_SEGMENT_OVERLAP_COVERAGE:
         logger.debug(
-            "Segment overlap coverage %.0f%% too low, falling back to DTW",
+            "Segment overlap coverage %.0f%% below %.0f%% threshold, falling back to DTW",
             seg_coverage * 100,
+            _MIN_SEGMENT_OVERLAP_COVERAGE * 100,
         )
         if not lrc_syllables or not whisper_syllables:
             if not lrc_phonemes or not whisper_phonemes:
