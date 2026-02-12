@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+from difflib import SequenceMatcher
 import json
 import os
 from dataclasses import dataclass
@@ -22,6 +23,7 @@ import yaml  # type: ignore[import-untyped]
 REPO_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_MANIFEST = REPO_ROOT / "benchmarks" / "benchmark_songs.yaml"
 DEFAULT_RESULTS_ROOT = REPO_ROOT / "benchmarks" / "results"
+DEFAULT_GOLD_ROOT = REPO_ROOT / "benchmarks" / "gold_set"
 
 
 @dataclass(frozen=True)
@@ -83,6 +85,78 @@ def _mean(values: Iterable[float]) -> float | None:
     return float(statistics.fmean(data))
 
 
+def _normalize_agreement_text(text: Any) -> str:
+    if not isinstance(text, str):
+        return ""
+    return re.sub(r"[^a-z0-9\s]", "", text.lower()).strip()
+
+
+def _agreement_text_similarity(left: Any, right: Any) -> float:
+    a = _normalize_agreement_text(left)
+    b = _normalize_agreement_text(right)
+    if not a or not b:
+        return 0.0
+    return SequenceMatcher(None, a, b).ratio()
+
+
+def _normalize_word_text(raw: Any) -> str:
+    if not isinstance(raw, str):
+        return ""
+    return re.sub(r"\s+", " ", raw.strip().lower())
+
+
+def _flatten_words_from_timing_doc(doc: dict[str, Any]) -> list[dict[str, Any]]:
+    words: list[dict[str, Any]] = []
+    lines = doc.get("lines", [])
+    if not isinstance(lines, list):
+        return words
+    for line in lines:
+        if not isinstance(line, dict):
+            continue
+        line_words = line.get("words", [])
+        if not isinstance(line_words, list):
+            continue
+        for w in line_words:
+            if not isinstance(w, dict):
+                continue
+            start = w.get("start")
+            end = w.get("end")
+            if not isinstance(start, (int, float)) or not isinstance(end, (int, float)):
+                continue
+            words.append(
+                {
+                    "text": str(w.get("text", "")),
+                    "start": float(start),
+                    "end": float(end),
+                }
+            )
+    return words
+
+
+def _gold_path_for_song(index: int, song: BenchmarkSong, gold_root: Path) -> Path | None:
+    candidates = [
+        gold_root / f"{index:02d}_{song.slug}.gold.json",
+        gold_root / f"{song.slug}.gold.json",
+    ]
+    for path in candidates:
+        if path.exists():
+            return path
+    return None
+
+
+def _load_gold_doc(index: int, song: BenchmarkSong, gold_root: Path) -> dict[str, Any] | None:
+    gold_path = _gold_path_for_song(index=index, song=song, gold_root=gold_root)
+    if gold_path is None:
+        return None
+    try:
+        loaded = json.loads(gold_path.read_text(encoding="utf-8"))
+    except Exception:
+        return None
+    if not isinstance(loaded, dict):
+        return None
+    return loaded
+
+
 def _build_generate_command(
     *,
     python_bin: str,
@@ -118,19 +192,46 @@ def _build_generate_command(
     return cmd
 
 
-def _extract_song_metrics(report: dict[str, Any]) -> dict[str, Any]:
+def _extract_song_metrics(
+    report: dict[str, Any], gold_doc: dict[str, Any] | None = None
+) -> dict[str, Any]:
     lines = report.get("lines", [])
     line_count = len(lines)
     low_conf = report.get("low_confidence_lines", [])
-
-    start_deltas = [
-        float(line["whisper_line_start_delta"])
-        for line in lines
-        if line.get("whisper_line_start_delta") is not None
+    agreement_min_text_similarity = 0.7
+    agreement_good_start_sec = 0.35
+    agreement_warn_start_sec = 0.8
+    agreement_start_abs_deltas: list[float] = []
+    agreement_text_sims: list[float] = []
+    for line in lines:
+        line_start = line.get("start")
+        whisper_anchor_start = line.get("nearest_segment_start")
+        line_text = line.get("text")
+        whisper_anchor_text = line.get("nearest_segment_start_text")
+        if not isinstance(line_start, (int, float)):
+            continue
+        if not isinstance(whisper_anchor_start, (int, float)):
+            continue
+        sim = _agreement_text_similarity(line_text, whisper_anchor_text)
+        if sim < agreement_min_text_similarity:
+            continue
+        agreement_text_sims.append(sim)
+        agreement_start_abs_deltas.append(
+            abs(float(line_start) - float(whisper_anchor_start))
+        )
+    agreement_good_lines = [
+        v for v in agreement_start_abs_deltas if v <= agreement_good_start_sec
     ]
+    agreement_warn_lines = [
+        v
+        for v in agreement_start_abs_deltas
+        if agreement_good_start_sec < v <= agreement_warn_start_sec
+    ]
+    agreement_bad_lines = [v for v in agreement_start_abs_deltas if v > agreement_warn_start_sec]
+    agreement_severe_lines = [v for v in agreement_start_abs_deltas if v > 1.5]
 
     low_conf_ratio = (len(low_conf) / line_count) if line_count else 0.0
-    return {
+    metrics = {
         "alignment_method": report.get("alignment_method"),
         "line_count": line_count,
         "low_confidence_lines": len(low_conf),
@@ -140,18 +241,77 @@ def _extract_song_metrics(report: dict[str, Any]) -> dict[str, Any]:
         "dtw_phonetic_similarity_coverage": report.get(
             "dtw_phonetic_similarity_coverage"
         ),
-        "start_delta_count": len(start_deltas),
-        "start_delta_mean_sec": round(_mean(start_deltas) or 0.0, 4),
-        "start_delta_mean_abs_sec": round(
-            _mean(abs(v) for v in start_deltas) or 0.0, 4
+        "agreement_min_text_similarity": agreement_min_text_similarity,
+        "agreement_count": len(agreement_start_abs_deltas),
+        "agreement_coverage_ratio": round(
+            (len(agreement_start_abs_deltas) / line_count) if line_count else 0.0, 4
         ),
-        "start_delta_max_abs_sec": round(
-            max((abs(v) for v in start_deltas), default=0.0), 4
+        "agreement_text_similarity_mean": round(_mean(agreement_text_sims) or 0.0, 4),
+        "agreement_start_mean_abs_sec": round(
+            _mean(agreement_start_abs_deltas) or 0.0, 4
         ),
-        "start_delta_p95_abs_sec": round(
-            _pctile([abs(v) for v in start_deltas], 0.95), 4
+        "agreement_start_p95_abs_sec": round(
+            _pctile(agreement_start_abs_deltas, 0.95), 4
+        ),
+        "agreement_start_max_abs_sec": round(
+            max(agreement_start_abs_deltas, default=0.0), 4
+        ),
+        "agreement_good_lines": len(agreement_good_lines),
+        "agreement_warn_lines": len(agreement_warn_lines),
+        "agreement_bad_lines": len(agreement_bad_lines),
+        "agreement_severe_lines": len(agreement_severe_lines),
+        "agreement_good_ratio": round(
+            (len(agreement_good_lines) / line_count) if line_count else 0.0, 4
+        ),
+        "agreement_warn_ratio": round(
+            (len(agreement_warn_lines) / line_count) if line_count else 0.0, 4
+        ),
+        "agreement_bad_ratio": round(
+            (len(agreement_bad_lines) / line_count) if line_count else 0.0, 4
+        ),
+        "agreement_severe_ratio": round(
+            (len(agreement_severe_lines) / line_count) if line_count else 0.0, 4
         ),
     }
+
+    generated_words = _flatten_words_from_timing_doc(report)
+    gold_words = _flatten_words_from_timing_doc(gold_doc or {})
+    comparable = min(len(generated_words), len(gold_words))
+    start_abs_deltas: list[float] = []
+    end_abs_deltas: list[float] = []
+    text_matches = 0
+
+    for idx in range(comparable):
+        gen = generated_words[idx]
+        gold = gold_words[idx]
+        start_abs_deltas.append(abs(gen["start"] - gold["start"]))
+        end_abs_deltas.append(abs(gen["end"] - gold["end"]))
+        if _normalize_word_text(gen["text"]) == _normalize_word_text(gold["text"]):
+            text_matches += 1
+
+    metrics.update(
+        {
+            "gold_available": bool(gold_words),
+            "generated_word_count": len(generated_words),
+            "gold_word_count": len(gold_words),
+            "gold_comparable_word_count": comparable,
+            "gold_word_coverage_ratio": round(
+                (comparable / len(gold_words)) if gold_words else 0.0, 4
+            ),
+            "gold_word_text_match_ratio": round(
+                (text_matches / comparable) if comparable else 0.0, 4
+            ),
+            "avg_abs_word_start_delta_sec": round(_mean(start_abs_deltas) or 0.0, 4),
+            "gold_start_mean_abs_sec": round(_mean(start_abs_deltas) or 0.0, 4),
+            "gold_start_p95_abs_sec": round(_pctile(start_abs_deltas, 0.95), 4),
+            "gold_start_max_abs_sec": round(max(start_abs_deltas, default=0.0), 4),
+            "gold_end_mean_abs_sec": round(_mean(end_abs_deltas) or 0.0, 4),
+            "gold_end_p95_abs_sec": round(_pctile(end_abs_deltas, 0.95), 4),
+            "gold_end_max_abs_sec": round(max(end_abs_deltas, default=0.0), 4),
+        }
+    )
+
+    return metrics
 
 
 def _aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:
@@ -185,7 +345,21 @@ def _aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:
 
     total_lines = int(sum(metric_values("line_count")))
     low_conf_total = int(sum(metric_values("low_confidence_lines")))
+    agreement_count_total = int(sum(metric_values("agreement_count")))
+    agreement_good_total = int(sum(metric_values("agreement_good_lines")))
+    agreement_warn_total = int(sum(metric_values("agreement_warn_lines")))
+    agreement_bad_total = int(sum(metric_values("agreement_bad_lines")))
+    agreement_severe_total = int(sum(metric_values("agreement_severe_lines")))
     low_conf_ratio = (low_conf_total / total_lines) if total_lines else 0.0
+    agreement_coverage_ratio = (
+        agreement_count_total / total_lines if total_lines else 0.0
+    )
+    agreement_good_ratio = (agreement_good_total / total_lines) if total_lines else 0.0
+    agreement_warn_ratio = (agreement_warn_total / total_lines) if total_lines else 0.0
+    agreement_bad_ratio = (agreement_bad_total / total_lines) if total_lines else 0.0
+    agreement_severe_ratio = (
+        agreement_severe_total / total_lines if total_lines else 0.0
+    )
     measured_dtw_songs = [
         r
         for r in succeeded
@@ -198,6 +372,22 @@ def _aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:
             for r in measured_dtw_songs
             if isinstance(r.get("metrics", {}).get("line_count"), (int, float))
         )
+    )
+    gold_measured_songs = [
+        r
+        for r in succeeded
+        if isinstance(
+            r.get("metrics", {}).get("avg_abs_word_start_delta_sec"), (int, float)
+        )
+        and int(r.get("metrics", {}).get("gold_comparable_word_count", 0) or 0) > 0
+    ]
+    gold_metric_song_count = len(gold_measured_songs)
+    gold_word_count_total = int(sum(metric_values("gold_word_count")))
+    gold_comparable_word_count_total = int(sum(metric_values("gold_comparable_word_count")))
+    gold_word_coverage_ratio_total = (
+        (gold_comparable_word_count_total / gold_word_count_total)
+        if gold_word_count_total
+        else 0.0
     )
     sum_song_elapsed = round(
         sum(
@@ -308,6 +498,16 @@ def _aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:
         "line_count_total": total_lines,
         "low_confidence_lines_total": low_conf_total,
         "low_confidence_ratio_total": round(low_conf_ratio, 4),
+        "agreement_count_total": agreement_count_total,
+        "agreement_coverage_ratio_total": round(agreement_coverage_ratio, 4),
+        "agreement_good_lines_total": agreement_good_total,
+        "agreement_warn_lines_total": agreement_warn_total,
+        "agreement_bad_lines_total": agreement_bad_total,
+        "agreement_severe_lines_total": agreement_severe_total,
+        "agreement_good_ratio_total": round(agreement_good_ratio, 4),
+        "agreement_warn_ratio_total": round(agreement_warn_ratio, 4),
+        "agreement_bad_ratio_total": round(agreement_bad_ratio, 4),
+        "agreement_severe_ratio_total": round(agreement_severe_ratio, 4),
         "dtw_line_coverage_mean": round(
             _mean(metric_values("dtw_line_coverage")) or 0.0, 4
         ),
@@ -326,14 +526,26 @@ def _aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:
         "dtw_phonetic_similarity_coverage_line_weighted_mean": round(
             weighted_metric_mean("dtw_phonetic_similarity_coverage"), 4
         ),
-        "start_delta_mean_abs_sec_mean": round(
-            _mean(metric_values("start_delta_mean_abs_sec")) or 0.0, 4
+        "agreement_coverage_ratio_mean": round(
+            _mean(metric_values("agreement_coverage_ratio")) or 0.0, 4
         ),
-        "start_delta_max_abs_sec_mean": round(
-            _mean(metric_values("start_delta_max_abs_sec")) or 0.0, 4
+        "agreement_text_similarity_mean": round(
+            _mean(metric_values("agreement_text_similarity_mean")) or 0.0, 4
         ),
-        "start_delta_p95_abs_sec_mean": round(
-            _mean(metric_values("start_delta_p95_abs_sec")) or 0.0, 4
+        "agreement_start_mean_abs_sec_mean": round(
+            _mean(metric_values("agreement_start_mean_abs_sec")) or 0.0, 4
+        ),
+        "agreement_start_max_abs_sec_mean": round(
+            _mean(metric_values("agreement_start_max_abs_sec")) or 0.0, 4
+        ),
+        "agreement_start_p95_abs_sec_mean": round(
+            _mean(metric_values("agreement_start_p95_abs_sec")) or 0.0, 4
+        ),
+        "agreement_bad_ratio_mean": round(
+            _mean(metric_values("agreement_bad_ratio")) or 0.0, 4
+        ),
+        "agreement_severe_ratio_mean": round(
+            _mean(metric_values("agreement_severe_ratio")) or 0.0, 4
         ),
         "dtw_metric_song_count": measured_dtw_song_count,
         "dtw_metric_song_coverage_ratio": round(
@@ -343,10 +555,43 @@ def _aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:
         "dtw_metric_line_coverage_ratio": round(
             (measured_dtw_line_count / total_lines) if total_lines else 0.0, 4
         ),
+        "gold_metric_song_count": gold_metric_song_count,
+        "gold_metric_song_coverage_ratio": round(
+            (gold_metric_song_count / len(succeeded)) if succeeded else 0.0, 4
+        ),
+        "gold_word_count_total": gold_word_count_total,
+        "gold_comparable_word_count_total": gold_comparable_word_count_total,
+        "gold_word_coverage_ratio_total": round(gold_word_coverage_ratio_total, 4),
+        "avg_abs_word_start_delta_sec_mean": round(
+            _mean(metric_values("avg_abs_word_start_delta_sec")) or 0.0, 4
+        ),
+        "avg_abs_word_start_delta_sec_word_weighted_mean": round(
+            weighted_metric_mean(
+                "avg_abs_word_start_delta_sec", weight_key="gold_comparable_word_count"
+            ),
+            4,
+        ),
+        "gold_start_p95_abs_sec_mean": round(
+            _mean(metric_values("gold_start_p95_abs_sec")) or 0.0, 4
+        ),
+        "gold_end_mean_abs_sec_mean": round(
+            _mean(metric_values("gold_end_mean_abs_sec")) or 0.0, 4
+        ),
+        "gold_end_p95_abs_sec_mean": round(
+            _mean(metric_values("gold_end_p95_abs_sec")) or 0.0, 4
+        ),
         "songs_without_dtw_metrics": [
             f"{r['artist']} - {r['title']}"
             for r in succeeded
             if not isinstance(r.get("metrics", {}).get("dtw_line_coverage"), (int, float))
+        ],
+        "songs_without_gold_metrics": [
+            f"{r['artist']} - {r['title']}"
+            for r in succeeded
+            if not isinstance(
+                r.get("metrics", {}).get("avg_abs_word_start_delta_sec"), (int, float)
+            )
+            or int(r.get("metrics", {}).get("gold_comparable_word_count", 0) or 0) <= 0
         ],
         "sum_song_elapsed_sec": sum_song_elapsed,
         "phase_totals_sec": phase_totals,
@@ -358,11 +603,23 @@ def _aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:
             "highest_low_confidence_ratio": _hotspot_records(
                 key="low_confidence_ratio", top_n=3, reverse=True
             ),
-            "highest_start_delta_mean_abs_sec": _hotspot_records(
-                key="start_delta_mean_abs_sec", top_n=3, reverse=True
+            "lowest_agreement_coverage_ratio": _hotspot_records(
+                key="agreement_coverage_ratio", top_n=3, reverse=False
             ),
-            "highest_start_delta_max_abs_sec": _hotspot_records(
-                key="start_delta_max_abs_sec", top_n=3, reverse=True
+            "highest_agreement_start_p95_abs_sec": _hotspot_records(
+                key="agreement_start_p95_abs_sec", top_n=3, reverse=True
+            ),
+            "highest_agreement_bad_ratio": _hotspot_records(
+                key="agreement_bad_ratio", top_n=3, reverse=True
+            ),
+            "highest_agreement_severe_ratio": _hotspot_records(
+                key="agreement_severe_ratio", top_n=3, reverse=True
+            ),
+            "highest_avg_abs_word_start_delta_sec": _hotspot_records(
+                key="avg_abs_word_start_delta_sec", top_n=3, reverse=True
+            ),
+            "lowest_gold_word_coverage_ratio": _hotspot_records(
+                key="gold_word_coverage_ratio", top_n=3, reverse=False
             ),
         },
         "cache_summary": cache_summary,
@@ -395,6 +652,59 @@ def _quality_coverage_warnings(
             "DTW line coverage below threshold: "
             f"{line_cov:.3f} < {min_line_coverage_ratio:.3f}"
         )
+    agreement_cov = float(aggregate.get("agreement_coverage_ratio_mean", 0.0) or 0.0)
+    if agreement_cov < 0.4:
+        warnings.append(
+            "LRC-Whisper agreement coverage is low: "
+            f"{agreement_cov:.3f} < 0.400 (not enough lexically comparable lines)"
+        )
+    agreement_p95 = float(
+        aggregate.get("agreement_start_p95_abs_sec_mean", 0.0) or 0.0
+    )
+    if agreement_p95 > 0.8:
+        warnings.append(
+            "Line-start agreement p95 is high on comparable lines: "
+            f"{agreement_p95:.3f}s > 0.800s"
+        )
+    agreement_bad_ratio = float(
+        aggregate.get("agreement_bad_ratio_total", 0.0) or 0.0
+    )
+    if agreement_bad_ratio > 0.1:
+        warnings.append(
+            "Too many comparable lines have poor start agreement (>0.8s): "
+            f"{agreement_bad_ratio:.3f} > 0.100"
+        )
+    agreement_severe_ratio = float(
+        aggregate.get("agreement_severe_ratio_total", 0.0) or 0.0
+    )
+    if agreement_severe_ratio > 0.03:
+        warnings.append(
+            "Comparable lines with severe agreement error (>1.5s) are high: "
+            f"{agreement_severe_ratio:.3f} > 0.030"
+        )
+    gold_metric_song_count = int(aggregate.get("gold_metric_song_count", 0) or 0)
+    if gold_metric_song_count > 0:
+        gold_song_cov = float(aggregate.get("gold_metric_song_coverage_ratio", 0.0) or 0.0)
+        if gold_song_cov < 0.5:
+            warnings.append(
+                "Gold-set metric song coverage is low: "
+                f"{gold_song_cov:.3f} < 0.500"
+            )
+        gold_word_cov = float(aggregate.get("gold_word_coverage_ratio_total", 0.0) or 0.0)
+        if gold_word_cov < 0.8:
+            warnings.append(
+                "Gold-set comparable word coverage is low: "
+                f"{gold_word_cov:.3f} < 0.800"
+            )
+        gold_start_mean = float(
+            aggregate.get("avg_abs_word_start_delta_sec_word_weighted_mean", 0.0)
+            or 0.0
+        )
+        if gold_start_mean > 0.35:
+            warnings.append(
+                "Gold-set avg abs word-start delta is high: "
+                f"{gold_start_mean:.3f}s > 0.350s"
+            )
 
     sum_song_elapsed = float(aggregate.get("sum_song_elapsed_sec", 0.0) or 0.0)
     if suite_wall_elapsed_sec > 0 and sum_song_elapsed > suite_wall_elapsed_sec:
@@ -494,6 +804,23 @@ def _write_markdown_summary(
         f"- Mean DTW line coverage: `{aggregate['dtw_line_coverage_mean']:.3f}`"
     )
     lines.append(
+        "- Gold metric coverage: "
+        f"`{aggregate.get('gold_metric_song_count', 0)}/{aggregate.get('songs_succeeded', 0)}` songs, "
+        f"`{aggregate.get('gold_comparable_word_count_total', 0)}/{aggregate.get('gold_word_count_total', 0)}` words"
+    )
+    lines.append(
+        "- Gold comparable word coverage ratio: "
+        f"`{aggregate.get('gold_word_coverage_ratio_total', 0.0):.3f}`"
+    )
+    lines.append(
+        "- Primary metric (avg abs word-start delta): "
+        f"`{aggregate.get('avg_abs_word_start_delta_sec_word_weighted_mean', 0.0):.3f}s` (word-weighted)"
+    )
+    lines.append(
+        "- Secondary metric (avg abs word-end delta): "
+        f"`{aggregate.get('gold_end_mean_abs_sec_mean', 0.0):.3f}s`"
+    )
+    lines.append(
         f"- Mean DTW word coverage: `{aggregate['dtw_word_coverage_mean']:.3f}`"
     )
     lines.append(
@@ -504,13 +831,28 @@ def _write_markdown_summary(
         f"- Low-confidence line ratio: `{aggregate['low_confidence_ratio_total']:.3f}`"
     )
     lines.append(
-        f"- Mean abs line-start delta: `{aggregate['start_delta_mean_abs_sec_mean']:.3f}s`"
+        "- Agreement coverage ratio: "
+        f"`{aggregate.get('agreement_coverage_ratio_total', 0.0):.3f}`"
     )
     lines.append(
-        f"- Mean abs line-start p95 delta: `{aggregate['start_delta_p95_abs_sec_mean']:.3f}s`"
+        "- Mean agreement text similarity: "
+        f"`{aggregate.get('agreement_text_similarity_mean', 0.0):.3f}`"
     )
     lines.append(
-        f"- Mean max abs line-start delta: `{aggregate.get('start_delta_max_abs_sec_mean', 0.0):.3f}s`"
+        "- Mean abs line-start agreement error (comparable lines): "
+        f"`{aggregate.get('agreement_start_mean_abs_sec_mean', 0.0):.3f}s`"
+    )
+    lines.append(
+        "- p95 abs line-start agreement error (comparable lines): "
+        f"`{aggregate.get('agreement_start_p95_abs_sec_mean', 0.0):.3f}s`"
+    )
+    lines.append(
+        "- Poor agreement ratio (>0.8s): "
+        f"`{aggregate.get('agreement_bad_ratio_total', 0.0):.3f}`"
+    )
+    lines.append(
+        "- Severe agreement ratio (>1.5s): "
+        f"`{aggregate.get('agreement_severe_ratio_total', 0.0):.3f}`"
     )
     lines.append(
         "- DTW metric coverage: "
@@ -541,28 +883,30 @@ def _write_markdown_summary(
     lines.append("## Per-song")
     lines.append("")
     lines.append(
-        "| Song | Status | Alignment | DTW line | DTW word | Phonetic cov | Low conf ratio | Start delta abs mean | Start delta abs max | Elapsed |"
+        "| Song | Status | Gold words | Gold cov | Word start abs mean | Word start p95 | Word end abs mean | Alignment | DTW line | DTW word | Elapsed |"
     )
-    lines.append("|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|")
+    lines.append("|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|")
     for song in songs:
         metrics = song.get("metrics", {})
         lines.append(
             "| "
             + f"{song['artist']} - {song['title']} | "
             + f"{song['status']} | "
+            + f"{metrics.get('gold_comparable_word_count', '-')}/{metrics.get('gold_word_count', '-')}"
+            + " | "
+            + f"{metrics.get('gold_word_coverage_ratio', '-')}"
+            + " | "
+            + f"{metrics.get('avg_abs_word_start_delta_sec', '-')}"
+            + " | "
+            + f"{metrics.get('gold_start_p95_abs_sec', '-')}"
+            + " | "
+            + f"{metrics.get('gold_end_mean_abs_sec', '-')}"
+            + " | "
             + f"{metrics.get('alignment_method', '-')}"
             + " | "
             + f"{metrics.get('dtw_line_coverage', '-')}"
             + " | "
             + f"{metrics.get('dtw_word_coverage', '-')}"
-            + " | "
-            + f"{metrics.get('dtw_phonetic_similarity_coverage', '-')}"
-            + " | "
-            + f"{metrics.get('low_confidence_ratio', '-')}"
-            + " | "
-            + f"{metrics.get('start_delta_mean_abs_sec', '-')}"
-            + " | "
-            + f"{metrics.get('start_delta_max_abs_sec', '-')}"
             + " | "
             + f"{song.get('elapsed_sec', '-')}"
             + "s |"
@@ -572,9 +916,22 @@ def _write_markdown_summary(
     if isinstance(hotspots, dict):
         low_dtw = hotspots.get("lowest_dtw_line_coverage", [])
         high_low_conf = hotspots.get("highest_low_confidence_ratio", [])
-        high_delta = hotspots.get("highest_start_delta_mean_abs_sec", [])
-        high_delta_max = hotspots.get("highest_start_delta_max_abs_sec", [])
-        if low_dtw or high_low_conf or high_delta or high_delta_max:
+        low_agree_cov = hotspots.get("lowest_agreement_coverage_ratio", [])
+        high_agree_p95 = hotspots.get("highest_agreement_start_p95_abs_sec", [])
+        high_agree_bad = hotspots.get("highest_agreement_bad_ratio", [])
+        high_agree_severe = hotspots.get("highest_agreement_severe_ratio", [])
+        high_gold_start = hotspots.get("highest_avg_abs_word_start_delta_sec", [])
+        low_gold_cov = hotspots.get("lowest_gold_word_coverage_ratio", [])
+        if (
+            low_dtw
+            or high_low_conf
+            or low_agree_cov
+            or high_agree_p95
+            or high_agree_bad
+            or high_agree_severe
+            or high_gold_start
+            or low_gold_cov
+        ):
             lines.append("## Hotspots")
             lines.append("")
             if low_dtw:
@@ -587,16 +944,36 @@ def _write_markdown_summary(
                 for item in high_low_conf:
                     if isinstance(item, dict):
                         lines.append(f"  - {item.get('song')}: {item.get('value')}")
-            if high_delta:
-                lines.append("- Highest mean abs start delta:")
-                for item in high_delta:
+            if low_agree_cov:
+                lines.append("- Lowest agreement coverage ratio:")
+                for item in low_agree_cov:
+                    if isinstance(item, dict):
+                        lines.append(f"  - {item.get('song')}: {item.get('value')}")
+            if high_agree_p95:
+                lines.append("- Highest agreement start p95 error:")
+                for item in high_agree_p95:
                     if isinstance(item, dict):
                         lines.append(f"  - {item.get('song')}: {item.get('value')}s")
-            if high_delta_max:
-                lines.append("- Highest max abs start delta:")
-                for item in high_delta_max:
+            if high_agree_bad:
+                lines.append("- Highest poor agreement ratio (>0.8s):")
+                for item in high_agree_bad:
+                    if isinstance(item, dict):
+                        lines.append(f"  - {item.get('song')}: {item.get('value')}")
+            if high_agree_severe:
+                lines.append("- Highest severe agreement ratio (>1.5s):")
+                for item in high_agree_severe:
+                    if isinstance(item, dict):
+                        lines.append(f"  - {item.get('song')}: {item.get('value')}")
+            if high_gold_start:
+                lines.append("- Highest avg abs word-start delta (gold):")
+                for item in high_gold_start:
                     if isinstance(item, dict):
                         lines.append(f"  - {item.get('song')}: {item.get('value')}s")
+            if low_gold_cov:
+                lines.append("- Lowest gold comparable word coverage ratio:")
+                for item in low_gold_cov:
+                    if isinstance(item, dict):
+                        lines.append(f"  - {item.get('song')}: {item.get('value')}")
             lines.append("")
     if aggregate["failed_songs"]:
         lines.append("## Failures")
@@ -645,7 +1022,13 @@ def _load_song_result(path: Path) -> dict[str, Any] | None:
     return data if isinstance(data, dict) else None
 
 
-def _refresh_cached_metrics(record: dict[str, Any]) -> dict[str, Any]:
+def _refresh_cached_metrics(
+    record: dict[str, Any],
+    *,
+    index: int | None = None,
+    song: BenchmarkSong | None = None,
+    gold_root: Path = DEFAULT_GOLD_ROOT,
+) -> dict[str, Any]:
     """Backfill metrics from timing report for legacy cached result files."""
     if str(record.get("status", "")) != "ok":
         return record
@@ -661,7 +1044,10 @@ def _refresh_cached_metrics(record: dict[str, Any]) -> dict[str, Any]:
         return record
     if not isinstance(report, dict):
         return record
-    record["metrics"] = _extract_song_metrics(report)
+    gold_doc = None
+    if index is not None and song is not None:
+        gold_doc = _load_gold_doc(index=index, song=song, gold_root=gold_root)
+    record["metrics"] = _extract_song_metrics(report, gold_doc=gold_doc)
     return record
 
 
@@ -705,6 +1091,7 @@ def _write_checkpoint(
             "expect_cached_separation": args.expect_cached_separation,
             "expect_cached_whisper": args.expect_cached_whisper,
             "strict_cache_expectations": args.strict_cache_expectations,
+            "gold_root": str(args.gold_root.resolve()),
         },
         "aggregate": aggregate,
         "songs": song_results,
@@ -715,12 +1102,14 @@ def _write_checkpoint(
 def _build_run_signature(
     args: argparse.Namespace, manifest_path: Path
 ) -> dict[str, Any]:
+    gold_root = getattr(args, "gold_root", None)
     return {
         "manifest_path": str(manifest_path),
         "offline": bool(args.offline),
         "force": bool(args.force),
         "whisper_map_lrc_dtw": not bool(args.no_whisper_map_lrc_dtw),
         "cache_dir": str(args.cache_dir.resolve()) if args.cache_dir else None,
+        "gold_root": str(gold_root.resolve()) if gold_root else None,
     }
 
 
@@ -743,6 +1132,12 @@ def _parse_args() -> argparse.Namespace:
         type=Path,
         default=None,
         help="Optional cache dir passed to y2karaoke via --work-dir",
+    )
+    parser.add_argument(
+        "--gold-root",
+        type=Path,
+        default=DEFAULT_GOLD_ROOT,
+        help="Directory containing per-song *.gold.json files",
     )
     parser.add_argument(
         "--run-id",
@@ -1364,6 +1759,7 @@ def _run_song_command(
     timeout_sec: int,
     heartbeat_sec: int,
     run_signature: dict[str, Any],
+    gold_doc: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     record: dict[str, Any] = {
         "artist": song.artist,
@@ -1421,7 +1817,7 @@ def _run_song_command(
             record["error"] = "timing report was not produced"
         else:
             report = json.loads(report_path.read_text(encoding="utf-8"))
-            record["metrics"] = _extract_song_metrics(report)
+            record["metrics"] = _extract_song_metrics(report, gold_doc=gold_doc)
             record["status"] = "ok"
     except subprocess.TimeoutExpired as exc:
         elapsed = round(time.monotonic() - start, 2)
@@ -1499,6 +1895,7 @@ def main() -> int:
         else str(REPO_ROOT / "src")
     )
     run_signature = _build_run_signature(args, manifest_path)
+    gold_root = args.gold_root.resolve()
 
     song_results: list[dict[str, Any]] = []
     suite_start = time.monotonic()
@@ -1516,7 +1913,9 @@ def main() -> int:
             else:
                 prior_status = str(prior.get("status", ""))
                 if prior_status == "ok" and not args.rerun_completed:
-                    prior = _refresh_cached_metrics(prior)
+                    prior = _refresh_cached_metrics(
+                        prior, index=index, song=song, gold_root=gold_root
+                    )
                     prior["result_reused"] = True
                     song_results.append(prior)
                     print(f"[{index}/{len(songs)}] {song.artist} - {song.title}")
@@ -1557,6 +1956,7 @@ def main() -> int:
         print(f"[{index}/{len(songs)}] {song.artist} - {song.title}")
         start = time.monotonic()
         song_log_path = run_dir / f"{index:02d}_{song.slug}_generate.log"
+        gold_doc = _load_gold_doc(index=index, song=song, gold_root=gold_root)
         record = _run_song_command(
             cmd=cmd,
             env=env,
@@ -1567,7 +1967,12 @@ def main() -> int:
             timeout_sec=args.timeout_sec,
             heartbeat_sec=args.heartbeat_sec,
             run_signature=run_signature,
+            gold_doc=gold_doc,
         )
+        if gold_doc is not None:
+            gold_path = _gold_path_for_song(index=index, song=song, gold_root=gold_root)
+            if gold_path is not None:
+                record["gold_path"] = str(gold_path)
 
         song_results.append(record)
         _write_json(result_path, record)
@@ -1622,6 +2027,7 @@ def main() -> int:
             "expect_cached_separation": args.expect_cached_separation,
             "expect_cached_whisper": args.expect_cached_whisper,
             "strict_cache_expectations": args.strict_cache_expectations,
+            "gold_root": str(args.gold_root.resolve()),
         },
         "status": "finished_with_warnings" if run_warnings else "finished",
         "quality_warnings": quality_warnings,
@@ -1662,13 +2068,26 @@ def main() -> int:
     )
     print(
         "- mean metrics: "
+        f"gold_start_abs_mean_weighted={aggregate.get('avg_abs_word_start_delta_sec_word_weighted_mean', 0.0):.3f}s, "
+        f"gold_start_p95_mean={aggregate.get('gold_start_p95_abs_sec_mean', 0.0):.3f}s, "
+        f"gold_end_abs_mean={aggregate.get('gold_end_mean_abs_sec_mean', 0.0):.3f}s, "
+        f"gold_cov={aggregate.get('gold_word_coverage_ratio_total', 0.0):.3f}, "
         f"dtw_line={aggregate['dtw_line_coverage_mean']:.3f}, "
         f"dtw_line_weighted={aggregate['dtw_line_coverage_line_weighted_mean']:.3f}, "
         f"dtw_word={aggregate['dtw_word_coverage_mean']:.3f}, "
         f"phonetic={aggregate['dtw_phonetic_similarity_coverage_mean']:.3f}, "
         f"low_conf_ratio={aggregate['low_confidence_ratio_total']:.3f}, "
-        f"start_delta_abs_mean={aggregate['start_delta_mean_abs_sec_mean']:.3f}s, "
-        f"start_delta_abs_max_mean={aggregate.get('start_delta_max_abs_sec_mean', 0.0):.3f}s"
+        f"agreement_cov={aggregate.get('agreement_coverage_ratio_total', 0.0):.3f}, "
+        f"agreement_text_sim={aggregate.get('agreement_text_similarity_mean', 0.0):.3f}, "
+        f"agreement_start_abs_mean={aggregate.get('agreement_start_mean_abs_sec_mean', 0.0):.3f}s, "
+        f"agreement_start_p95={aggregate.get('agreement_start_p95_abs_sec_mean', 0.0):.3f}s, "
+        f"agreement_bad_ratio={aggregate.get('agreement_bad_ratio_total', 0.0):.3f}, "
+        f"agreement_severe_ratio={aggregate.get('agreement_severe_ratio_total', 0.0):.3f}"
+    )
+    print(
+        "- gold coverage: "
+        f"songs={aggregate.get('gold_metric_song_coverage_ratio', 0.0):.3f}, "
+        f"words={aggregate.get('gold_comparable_word_count_total', 0)}/{aggregate.get('gold_word_count_total', 0)}"
     )
     print(
         "- dtw coverage: "

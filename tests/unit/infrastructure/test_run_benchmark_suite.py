@@ -28,9 +28,30 @@ def test_extract_song_metrics():
         "dtw_phonetic_similarity_coverage": 0.75,
         "low_confidence_lines": [{"index": 2}],
         "lines": [
-            {"whisper_line_start_delta": -0.2},
-            {"whisper_line_start_delta": 0.1},
-            {"whisper_line_start_delta": None},
+            {
+                "whisper_line_start_delta": -0.2,
+                "start": 10.0,
+                "end": 12.0,
+                "nearest_segment_start": 9.8,
+                "text": "hello world",
+                "nearest_segment_start_text": "hello world",
+            },
+            {
+                "whisper_line_start_delta": 0.1,
+                "start": 20.0,
+                "end": 21.0,
+                "nearest_segment_start": 20.7,
+                "text": "foo bar",
+                "nearest_segment_start_text": "foo bar",
+            },
+            {
+                "whisper_line_start_delta": None,
+                "start": 30.0,
+                "end": 31.0,
+                "nearest_segment_start": 33.6,
+                "text": "third line",
+                "nearest_segment_start_text": "mumble mumble",
+            },
         ],
     }
     metrics = module._extract_song_metrics(report)
@@ -38,9 +59,68 @@ def test_extract_song_metrics():
     assert metrics["low_confidence_lines"] == 1
     assert metrics["low_confidence_ratio"] == 0.3333
     assert metrics["dtw_line_coverage"] == 0.8
-    assert metrics["start_delta_count"] == 2
-    assert metrics["start_delta_mean_abs_sec"] == 0.15
-    assert metrics["start_delta_max_abs_sec"] == 0.2
+    assert metrics["agreement_count"] == 2
+    assert metrics["agreement_coverage_ratio"] == 0.6667
+    assert metrics["agreement_text_similarity_mean"] == 1.0
+    assert metrics["agreement_start_mean_abs_sec"] == 0.45
+    assert metrics["agreement_start_p95_abs_sec"] == 0.675
+    assert metrics["agreement_start_max_abs_sec"] == 0.7
+    assert metrics["agreement_good_lines"] == 1
+    assert metrics["agreement_warn_lines"] == 1
+    assert metrics["agreement_bad_lines"] == 0
+    assert metrics["agreement_severe_lines"] == 0
+    assert metrics["agreement_good_ratio"] == 0.3333
+    assert metrics["agreement_warn_ratio"] == 0.3333
+    assert metrics["agreement_bad_ratio"] == 0.0
+    assert metrics["agreement_severe_ratio"] == 0.0
+
+
+def test_extract_song_metrics_with_gold_word_deltas():
+    module = _load_module()
+    report = {
+        "lines": [
+            {
+                "words": [
+                    {"text": "hello", "start": 1.0, "end": 1.5},
+                    {"text": "world", "start": 2.0, "end": 2.7},
+                ]
+            }
+        ]
+    }
+    gold = {
+        "lines": [
+            {
+                "words": [
+                    {"text": "hello", "start": 1.2, "end": 1.6},
+                    {"text": "world", "start": 2.4, "end": 2.9},
+                ]
+            }
+        ]
+    }
+    metrics = module._extract_song_metrics(report, gold_doc=gold)
+    assert metrics["gold_available"] is True
+    assert metrics["gold_word_count"] == 2
+    assert metrics["gold_comparable_word_count"] == 2
+    assert metrics["gold_word_coverage_ratio"] == 1.0
+    assert metrics["avg_abs_word_start_delta_sec"] == 0.3
+    assert metrics["gold_start_p95_abs_sec"] == 0.39
+    assert metrics["gold_end_mean_abs_sec"] == 0.15
+
+
+def test_gold_path_for_song_prefers_indexed_filename(tmp_path):
+    module = _load_module()
+    song = module.BenchmarkSong(
+        artist="Billie Eilish",
+        title="bad guy",
+        youtube_id="ayxYgDgBD3g",
+        youtube_url="https://www.youtube.com/watch?v=ayxYgDgBD3g",
+    )
+    indexed = tmp_path / f"02_{song.slug}.gold.json"
+    fallback = tmp_path / f"{song.slug}.gold.json"
+    fallback.write_text("{}", encoding="utf-8")
+    indexed.write_text("{}", encoding="utf-8")
+    found = module._gold_path_for_song(index=2, song=song, gold_root=tmp_path)
+    assert found == indexed
 
 
 def test_aggregate_results():
@@ -56,9 +136,18 @@ def test_aggregate_results():
                 "dtw_line_coverage": 0.9,
                 "dtw_word_coverage": 0.8,
                 "dtw_phonetic_similarity_coverage": 0.85,
-                "start_delta_mean_abs_sec": 0.11,
-                "start_delta_max_abs_sec": 0.24,
-                "start_delta_p95_abs_sec": 0.24,
+                "agreement_count": 8,
+                "agreement_good_lines": 5,
+                "agreement_warn_lines": 2,
+                "agreement_bad_lines": 1,
+                "agreement_severe_lines": 0,
+                "agreement_coverage_ratio": 0.8,
+                "agreement_text_similarity_mean": 0.92,
+                "agreement_start_mean_abs_sec": 0.31,
+                "agreement_start_max_abs_sec": 0.72,
+                "agreement_start_p95_abs_sec": 0.69,
+                "agreement_bad_ratio": 0.1,
+                "agreement_severe_ratio": 0.0,
             },
         },
         {"artist": "B", "title": "T2", "status": "failed"},
@@ -75,7 +164,9 @@ def test_aggregate_results():
     assert agg["dtw_metric_song_coverage_ratio"] == 1.0
     assert agg["dtw_metric_line_count"] == 10
     assert agg["dtw_metric_line_coverage_ratio"] == 1.0
-    assert agg["start_delta_max_abs_sec_mean"] == 0.24
+    assert agg["agreement_start_max_abs_sec_mean"] == 0.72
+    assert agg["agreement_coverage_ratio_total"] == 0.8
+    assert agg["agreement_bad_ratio_total"] == 0.1
     assert agg["sum_song_elapsed_sec"] == 0.0
     assert agg["failed_songs"] == ["B - T2"]
 
@@ -185,8 +276,18 @@ def test_aggregate_tracks_missing_dtw_and_weighted_means():
                 "dtw_line_coverage": 0.5,
                 "dtw_word_coverage": 0.4,
                 "dtw_phonetic_similarity_coverage": 0.3,
-                "start_delta_mean_abs_sec": 0.2,
-                "start_delta_max_abs_sec": 0.4,
+                "agreement_count": 60,
+                "agreement_good_lines": 30,
+                "agreement_warn_lines": 20,
+                "agreement_bad_lines": 10,
+                "agreement_severe_lines": 4,
+                "agreement_coverage_ratio": 0.6,
+                "agreement_text_similarity_mean": 0.8,
+                "agreement_start_mean_abs_sec": 0.55,
+                "agreement_start_max_abs_sec": 1.8,
+                "agreement_start_p95_abs_sec": 1.4,
+                "agreement_bad_ratio": 0.1,
+                "agreement_severe_ratio": 0.04,
             },
         },
         {
@@ -199,7 +300,18 @@ def test_aggregate_tracks_missing_dtw_and_weighted_means():
                 "line_count": 50,
                 "low_confidence_lines": 1,
                 "low_confidence_ratio": 0.02,
-                "start_delta_mean_abs_sec": 0.1,
+                "agreement_count": 10,
+                "agreement_good_lines": 8,
+                "agreement_warn_lines": 1,
+                "agreement_bad_lines": 1,
+                "agreement_severe_lines": 0,
+                "agreement_coverage_ratio": 0.2,
+                "agreement_text_similarity_mean": 0.75,
+                "agreement_start_mean_abs_sec": 0.4,
+                "agreement_start_max_abs_sec": 1.0,
+                "agreement_start_p95_abs_sec": 0.9,
+                "agreement_bad_ratio": 0.02,
+                "agreement_severe_ratio": 0.0,
             },
         },
     ]
@@ -211,7 +323,7 @@ def test_aggregate_tracks_missing_dtw_and_weighted_means():
     assert agg["songs_without_dtw_metrics"] == ["B - T2"]
     assert agg["dtw_line_coverage_mean"] == 0.5
     assert agg["dtw_line_coverage_line_weighted_mean"] == 0.5
-    assert agg["start_delta_max_abs_sec_mean"] == 0.4
+    assert agg["agreement_start_max_abs_sec_mean"] == 1.4
     assert agg["sum_song_elapsed_sec"] == 20.0
     assert agg["phase_totals_sec"]["separation"] == 16.0
     assert agg["cache_summary"]["separation"]["miss_count"] == 0
@@ -223,6 +335,10 @@ def test_quality_coverage_warnings():
     aggregate = {
         "dtw_metric_song_coverage_ratio": 0.5,
         "dtw_metric_line_coverage_ratio": 0.4,
+        "agreement_coverage_ratio_mean": 0.2,
+        "agreement_start_p95_abs_sec_mean": 1.2,
+        "agreement_bad_ratio_total": 0.2,
+        "agreement_severe_ratio_total": 0.05,
         "sum_song_elapsed_sec": 12.0,
     }
     warnings = module._quality_coverage_warnings(
@@ -232,7 +348,9 @@ def test_quality_coverage_warnings():
         min_line_coverage_ratio=0.9,
         suite_wall_elapsed_sec=10.0,
     )
-    assert len(warnings) == 4
+    assert len(warnings) == 8
+    assert any("LRC-Whisper agreement coverage is low" in item for item in warnings)
+    assert any("poor start agreement" in item for item in warnings)
 
 
 def test_cache_expectation_warnings():
