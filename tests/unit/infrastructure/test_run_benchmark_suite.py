@@ -68,6 +68,12 @@ def test_aggregate_results():
     assert agg["line_count_total"] == 10
     assert agg["low_confidence_lines_total"] == 1
     assert agg["dtw_line_coverage_mean"] == 0.9
+    assert agg["dtw_line_coverage_line_weighted_mean"] == 0.9
+    assert agg["dtw_metric_song_count"] == 1
+    assert agg["dtw_metric_song_coverage_ratio"] == 1.0
+    assert agg["dtw_metric_line_count"] == 10
+    assert agg["dtw_metric_line_coverage_ratio"] == 1.0
+    assert agg["sum_song_elapsed_sec"] == 0.0
     assert agg["failed_songs"] == ["B - T2"]
 
 
@@ -125,6 +131,26 @@ def test_load_song_result(tmp_path):
     assert loaded["status"] == "ok"
 
 
+def test_refresh_cached_metrics(tmp_path):
+    module = _load_module()
+    report_path = tmp_path / "timing_report.json"
+    report_path.write_text(
+        (
+            '{"alignment_method":"whisper_hybrid","dtw_line_coverage":0.9,'
+            '"dtw_word_coverage":0.8,"dtw_phonetic_similarity_coverage":0.7,'
+            '"low_confidence_lines":[],"lines":[{"whisper_line_start_delta":0.1}]}'
+        ),
+        encoding="utf-8",
+    )
+    record = {
+        "status": "ok",
+        "report_path": str(report_path),
+    }
+    refreshed = module._refresh_cached_metrics(record)
+    assert refreshed["metrics"]["alignment_method"] == "whisper_hybrid"
+    assert refreshed["metrics"]["dtw_line_coverage"] == 0.9
+
+
 def test_build_run_signature(tmp_path):
     module = _load_module()
     args = module.argparse.Namespace(
@@ -138,6 +164,104 @@ def test_build_run_signature(tmp_path):
     assert sig["offline"] is True
     assert sig["whisper_map_lrc_dtw"] is False
     assert sig["cache_dir"] == str(tmp_path.resolve())
+
+
+def test_aggregate_tracks_missing_dtw_and_weighted_means():
+    module = _load_module()
+    results = [
+        {
+            "artist": "A",
+            "title": "T1",
+            "status": "ok",
+            "elapsed_sec": 12.0,
+            "phase_durations_sec": {"separation": 10.0, "alignment": 1.0},
+            "metrics": {
+                "line_count": 100,
+                "low_confidence_lines": 5,
+                "low_confidence_ratio": 0.05,
+                "dtw_line_coverage": 0.5,
+                "dtw_word_coverage": 0.4,
+                "dtw_phonetic_similarity_coverage": 0.3,
+                "start_delta_mean_abs_sec": 0.2,
+            },
+        },
+        {
+            "artist": "B",
+            "title": "T2",
+            "status": "ok",
+            "elapsed_sec": 8.0,
+            "phase_durations_sec": {"separation": 6.0, "whisper": 1.0},
+            "metrics": {
+                "line_count": 50,
+                "low_confidence_lines": 1,
+                "low_confidence_ratio": 0.02,
+                "start_delta_mean_abs_sec": 0.1,
+            },
+        },
+    ]
+    agg = module._aggregate(results)
+    assert agg["dtw_metric_song_count"] == 1
+    assert agg["dtw_metric_song_coverage_ratio"] == 0.5
+    assert agg["dtw_metric_line_count"] == 100
+    assert agg["dtw_metric_line_coverage_ratio"] == 0.6667
+    assert agg["songs_without_dtw_metrics"] == ["B - T2"]
+    assert agg["dtw_line_coverage_mean"] == 0.5
+    assert agg["dtw_line_coverage_line_weighted_mean"] == 0.5
+    assert agg["sum_song_elapsed_sec"] == 20.0
+    assert agg["phase_totals_sec"]["separation"] == 16.0
+    assert agg["cache_summary"]["separation"]["miss_count"] == 0
+    assert agg["cache_summary"]["separation"]["total"] == 0
+
+
+def test_quality_coverage_warnings():
+    module = _load_module()
+    aggregate = {
+        "dtw_metric_song_coverage_ratio": 0.5,
+        "dtw_metric_line_coverage_ratio": 0.4,
+        "sum_song_elapsed_sec": 12.0,
+    }
+    warnings = module._quality_coverage_warnings(
+        aggregate=aggregate,
+        dtw_enabled=False,
+        min_song_coverage_ratio=0.8,
+        min_line_coverage_ratio=0.9,
+        suite_wall_elapsed_sec=10.0,
+    )
+    assert len(warnings) == 4
+
+
+def test_cache_expectation_warnings():
+    module = _load_module()
+    aggregate = {
+        "cache_summary": {
+            "separation": {"total": 2, "miss_count": 1, "cached_ratio": 0.5},
+            "whisper": {"total": 2, "miss_count": 0, "cached_ratio": 1.0},
+        }
+    }
+    warnings = module._cache_expectation_warnings(
+        aggregate=aggregate,
+        expect_cached_separation=True,
+        expect_cached_whisper=True,
+    )
+    assert len(warnings) == 1
+    assert "Expected cached separation" in warnings[0]
+
+
+def test_cache_expectation_warnings_no_executed_song_data():
+    module = _load_module()
+    aggregate = {
+        "cache_summary": {
+            "separation": {"total": 0, "miss_count": 0, "cached_ratio": 0.0},
+            "whisper": {"total": 0, "miss_count": 0, "cached_ratio": 0.0},
+        }
+    }
+    warnings = module._cache_expectation_warnings(
+        aggregate=aggregate,
+        expect_cached_separation=True,
+        expect_cached_whisper=True,
+    )
+    assert len(warnings) == 2
+    assert "no executed-song cache data was available" in warnings[0]
 
 
 def test_extract_stage_hint_prefers_y2karaoke_line():

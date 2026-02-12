@@ -131,6 +131,7 @@ def _extract_song_metrics(report: dict[str, Any]) -> dict[str, Any]:
 
     low_conf_ratio = (len(low_conf) / line_count) if line_count else 0.0
     return {
+        "alignment_method": report.get("alignment_method"),
         "line_count": line_count,
         "low_confidence_lines": len(low_conf),
         "low_confidence_ratio": round(low_conf_ratio, 4),
@@ -163,9 +164,138 @@ def _aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:
                 vals.append(float(value))
         return vals
 
+    def weighted_metric_mean(key: str, *, weight_key: str = "line_count") -> float:
+        weighted_sum = 0.0
+        total_weight = 0.0
+        for m in metrics:
+            value = m.get(key)
+            weight = m.get(weight_key)
+            if not isinstance(value, (int, float)):
+                continue
+            if not isinstance(weight, (int, float)) or float(weight) <= 0:
+                continue
+            weighted_sum += float(value) * float(weight)
+            total_weight += float(weight)
+        if total_weight <= 0:
+            return 0.0
+        return weighted_sum / total_weight
+
     total_lines = int(sum(metric_values("line_count")))
     low_conf_total = int(sum(metric_values("low_confidence_lines")))
     low_conf_ratio = (low_conf_total / total_lines) if total_lines else 0.0
+    measured_dtw_songs = [
+        r
+        for r in succeeded
+        if isinstance(r.get("metrics", {}).get("dtw_line_coverage"), (int, float))
+    ]
+    measured_dtw_song_count = len(measured_dtw_songs)
+    measured_dtw_line_count = int(
+        sum(
+            float(r.get("metrics", {}).get("line_count", 0))
+            for r in measured_dtw_songs
+            if isinstance(r.get("metrics", {}).get("line_count"), (int, float))
+        )
+    )
+    sum_song_elapsed = round(
+        sum(
+            float(r.get("elapsed_sec", 0.0))
+            for r in results
+            if isinstance(r.get("elapsed_sec"), (int, float))
+        ),
+        2,
+    )
+    phase_totals: dict[str, float] = {}
+    for r in results:
+        phase_map = r.get("phase_durations_sec")
+        if not isinstance(phase_map, dict):
+            continue
+        for phase_name, raw_val in phase_map.items():
+            if not isinstance(raw_val, (int, float)):
+                continue
+            phase_totals[phase_name] = phase_totals.get(phase_name, 0.0) + float(raw_val)
+    phase_totals = {k: round(v, 2) for k, v in sorted(phase_totals.items())}
+    phase_shares = (
+        {k: round(v / sum_song_elapsed, 4) for k, v in phase_totals.items()}
+        if sum_song_elapsed > 0
+        else {}
+    )
+
+    def _hotspot_records(
+        *,
+        key: str,
+        top_n: int = 3,
+        reverse: bool = False,
+    ) -> list[dict[str, Any]]:
+        rows: list[dict[str, Any]] = []
+        for r in succeeded:
+            m = r.get("metrics", {})
+            if not isinstance(m, dict):
+                continue
+            value = m.get(key)
+            if not isinstance(value, (int, float)):
+                continue
+            rows.append(
+                {
+                    "song": f"{r['artist']} - {r['title']}",
+                    "value": round(float(value), 4),
+                    "line_count": int(m.get("line_count", 0))
+                    if isinstance(m.get("line_count"), (int, float))
+                    else 0,
+                }
+            )
+        rows.sort(key=lambda row: float(row["value"]), reverse=reverse)
+        return rows[:top_n]
+
+    def _cache_bucket(decision: Any) -> str:
+        if not isinstance(decision, str):
+            return "unknown"
+        normalized = decision.strip().lower()
+        if normalized.startswith("hit"):
+            return "hit"
+        if normalized.startswith("likely_hit"):
+            return "likely_hit"
+        if normalized.startswith("miss"):
+            return "miss"
+        if normalized.startswith("computed"):
+            return "computed"
+        return "unknown"
+
+    cache_summary: dict[str, dict[str, Any]] = {}
+    for phase_name in ("audio", "separation", "whisper", "alignment"):
+        decisions: list[str] = []
+        for r in succeeded:
+            if bool(r.get("result_reused", False)):
+                continue
+            cache = r.get("cache_decisions", {})
+            if not isinstance(cache, dict):
+                continue
+            value = cache.get(phase_name)
+            if isinstance(value, str):
+                decisions.append(value)
+        counts = {
+            "hit": 0,
+            "likely_hit": 0,
+            "miss": 0,
+            "computed": 0,
+            "unknown": 0,
+        }
+        for item in decisions:
+            counts[_cache_bucket(item)] += 1
+        total = len(decisions)
+        cache_summary[phase_name] = {
+            "total": total,
+            "hit_count": counts["hit"],
+            "likely_hit_count": counts["likely_hit"],
+            "miss_count": counts["miss"],
+            "computed_count": counts["computed"],
+            "unknown_count": counts["unknown"],
+            "cached_count": counts["hit"] + counts["likely_hit"],
+            "cached_ratio": round(
+                ((counts["hit"] + counts["likely_hit"]) / total) if total else 0.0,
+                4,
+            ),
+            "miss_ratio": round((counts["miss"] / total) if total else 0.0, 4),
+        }
 
     return {
         "songs_total": len(results),
@@ -184,14 +314,133 @@ def _aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:
         "dtw_phonetic_similarity_coverage_mean": round(
             _mean(metric_values("dtw_phonetic_similarity_coverage")) or 0.0, 4
         ),
+        "dtw_line_coverage_line_weighted_mean": round(
+            weighted_metric_mean("dtw_line_coverage"), 4
+        ),
+        "dtw_word_coverage_line_weighted_mean": round(
+            weighted_metric_mean("dtw_word_coverage"), 4
+        ),
+        "dtw_phonetic_similarity_coverage_line_weighted_mean": round(
+            weighted_metric_mean("dtw_phonetic_similarity_coverage"), 4
+        ),
         "start_delta_mean_abs_sec_mean": round(
             _mean(metric_values("start_delta_mean_abs_sec")) or 0.0, 4
         ),
         "start_delta_p95_abs_sec_mean": round(
             _mean(metric_values("start_delta_p95_abs_sec")) or 0.0, 4
         ),
+        "dtw_metric_song_count": measured_dtw_song_count,
+        "dtw_metric_song_coverage_ratio": round(
+            (measured_dtw_song_count / len(succeeded)) if succeeded else 0.0, 4
+        ),
+        "dtw_metric_line_count": measured_dtw_line_count,
+        "dtw_metric_line_coverage_ratio": round(
+            (measured_dtw_line_count / total_lines) if total_lines else 0.0, 4
+        ),
+        "songs_without_dtw_metrics": [
+            f"{r['artist']} - {r['title']}"
+            for r in succeeded
+            if not isinstance(r.get("metrics", {}).get("dtw_line_coverage"), (int, float))
+        ],
+        "sum_song_elapsed_sec": sum_song_elapsed,
+        "phase_totals_sec": phase_totals,
+        "phase_shares_of_song_elapsed": phase_shares,
+        "quality_hotspots": {
+            "lowest_dtw_line_coverage": _hotspot_records(
+                key="dtw_line_coverage", top_n=3, reverse=False
+            ),
+            "highest_low_confidence_ratio": _hotspot_records(
+                key="low_confidence_ratio", top_n=3, reverse=True
+            ),
+            "highest_start_delta_mean_abs_sec": _hotspot_records(
+                key="start_delta_mean_abs_sec", top_n=3, reverse=True
+            ),
+        },
+        "cache_summary": cache_summary,
         "failed_songs": [f"{r['artist']} - {r['title']}" for r in failed],
     }
+
+
+def _quality_coverage_warnings(
+    *,
+    aggregate: dict[str, Any],
+    dtw_enabled: bool,
+    min_song_coverage_ratio: float,
+    min_line_coverage_ratio: float,
+    suite_wall_elapsed_sec: float,
+) -> list[str]:
+    warnings: list[str] = []
+    song_cov = float(aggregate.get("dtw_metric_song_coverage_ratio", 0.0) or 0.0)
+    line_cov = float(aggregate.get("dtw_metric_line_coverage_ratio", 0.0) or 0.0)
+    if not dtw_enabled:
+        warnings.append(
+            "DTW mapping is disabled (--no-whisper-map-lrc-dtw); quality metrics may be partially unmeasured."
+        )
+    if song_cov < min_song_coverage_ratio:
+        warnings.append(
+            "DTW song coverage below threshold: "
+            f"{song_cov:.3f} < {min_song_coverage_ratio:.3f}"
+        )
+    if line_cov < min_line_coverage_ratio:
+        warnings.append(
+            "DTW line coverage below threshold: "
+            f"{line_cov:.3f} < {min_line_coverage_ratio:.3f}"
+        )
+
+    sum_song_elapsed = float(aggregate.get("sum_song_elapsed_sec", 0.0) or 0.0)
+    if suite_wall_elapsed_sec > 0 and sum_song_elapsed > suite_wall_elapsed_sec:
+        warnings.append(
+            "Per-song elapsed sum exceeds suite wall elapsed; compare runs using "
+            "suite_wall_elapsed_sec and sum_song_elapsed_sec explicitly."
+        )
+    return warnings
+
+
+def _cache_expectation_warnings(
+    *,
+    aggregate: dict[str, Any],
+    expect_cached_separation: bool,
+    expect_cached_whisper: bool,
+) -> list[str]:
+    warnings: list[str] = []
+    cache_summary = aggregate.get("cache_summary", {})
+    if not isinstance(cache_summary, dict):
+        return warnings
+
+    if expect_cached_separation:
+        sep = cache_summary.get("separation", {})
+        if isinstance(sep, dict):
+            miss = int(sep.get("miss_count", 0) or 0)
+            total = int(sep.get("total", 0) or 0)
+            cached_ratio = float(sep.get("cached_ratio", 0.0) or 0.0)
+            if total == 0:
+                warnings.append(
+                    "Expected cached separation but no executed-song cache data was available "
+                    "(results likely reused). Re-run with --rerun-completed."
+                )
+            elif miss > 0 or cached_ratio < 1.0:
+                warnings.append(
+                    "Expected cached separation but misses were observed: "
+                    f"{miss}/{total} miss, cached_ratio={cached_ratio:.3f}"
+                )
+
+    if expect_cached_whisper:
+        whisper = cache_summary.get("whisper", {})
+        if isinstance(whisper, dict):
+            miss = int(whisper.get("miss_count", 0) or 0)
+            total = int(whisper.get("total", 0) or 0)
+            cached_ratio = float(whisper.get("cached_ratio", 0.0) or 0.0)
+            if total == 0:
+                warnings.append(
+                    "Expected cached whisper but no executed-song cache data was available "
+                    "(results likely reused). Re-run with --rerun-completed."
+                )
+            elif miss > 0 or cached_ratio < 1.0:
+                warnings.append(
+                    "Expected cached whisper but misses were observed: "
+                    f"{miss}/{total} miss, cached_ratio={cached_ratio:.3f}"
+                )
+    return warnings
 
 
 def _write_markdown_summary(
@@ -229,19 +478,46 @@ def _write_markdown_summary(
     lines.append(
         f"- Mean abs line-start p95 delta: `{aggregate['start_delta_p95_abs_sec_mean']:.3f}s`"
     )
+    lines.append(
+        "- DTW metric coverage: "
+        f"`{aggregate.get('dtw_metric_song_count', 0)}/{aggregate.get('songs_succeeded', 0)}` "
+        f"songs, `{aggregate.get('dtw_metric_line_count', 0)}/{aggregate.get('line_count_total', 0)}` lines"
+    )
+    lines.append(
+        "- Mean DTW line coverage (line-weighted): "
+        f"`{aggregate.get('dtw_line_coverage_line_weighted_mean', 0.0):.3f}`"
+    )
+    cache_summary = aggregate.get("cache_summary", {})
+    if isinstance(cache_summary, dict):
+        sep = cache_summary.get("separation")
+        if isinstance(sep, dict):
+            lines.append(
+                "- Separation cache ratio: "
+                f"`{float(sep.get('cached_ratio', 0.0)):.3f}` "
+                f"({int(sep.get('cached_count', 0) or 0)}/{int(sep.get('total', 0) or 0)})"
+            )
+    phase_totals = aggregate.get("phase_totals_sec", {})
+    if isinstance(phase_totals, dict) and phase_totals:
+        top_phase = max(phase_totals, key=lambda key: float(phase_totals.get(key, 0.0)))
+        lines.append(
+            "- Slowest phase by summed song time: "
+            f"`{top_phase}` (`{float(phase_totals[top_phase]):.2f}s`)"
+        )
     lines.append("")
     lines.append("## Per-song")
     lines.append("")
     lines.append(
-        "| Song | Status | DTW line | DTW word | Phonetic cov | Low conf ratio | Start delta abs mean | Elapsed |"
+        "| Song | Status | Alignment | DTW line | DTW word | Phonetic cov | Low conf ratio | Start delta abs mean | Elapsed |"
     )
-    lines.append("|---|---:|---:|---:|---:|---:|---:|---:|")
+    lines.append("|---|---:|---:|---:|---:|---:|---:|---:|---:|")
     for song in songs:
         metrics = song.get("metrics", {})
         lines.append(
             "| "
             + f"{song['artist']} - {song['title']} | "
             + f"{song['status']} | "
+            + f"{metrics.get('alignment_method', '-')}"
+            + " | "
             + f"{metrics.get('dtw_line_coverage', '-')}"
             + " | "
             + f"{metrics.get('dtw_word_coverage', '-')}"
@@ -256,6 +532,30 @@ def _write_markdown_summary(
             + "s |"
         )
     lines.append("")
+    hotspots = aggregate.get("quality_hotspots", {})
+    if isinstance(hotspots, dict):
+        low_dtw = hotspots.get("lowest_dtw_line_coverage", [])
+        high_low_conf = hotspots.get("highest_low_confidence_ratio", [])
+        high_delta = hotspots.get("highest_start_delta_mean_abs_sec", [])
+        if low_dtw or high_low_conf or high_delta:
+            lines.append("## Hotspots")
+            lines.append("")
+            if low_dtw:
+                lines.append("- Lowest DTW line coverage:")
+                for item in low_dtw:
+                    if isinstance(item, dict):
+                        lines.append(f"  - {item.get('song')}: {item.get('value')}")
+            if high_low_conf:
+                lines.append("- Highest low-confidence ratio:")
+                for item in high_low_conf:
+                    if isinstance(item, dict):
+                        lines.append(f"  - {item.get('song')}: {item.get('value')}")
+            if high_delta:
+                lines.append("- Highest mean abs start delta:")
+                for item in high_delta:
+                    if isinstance(item, dict):
+                        lines.append(f"  - {item.get('song')}: {item.get('value')}s")
+            lines.append("")
     if aggregate["failed_songs"]:
         lines.append("## Failures")
         lines.append("")
@@ -303,6 +603,26 @@ def _load_song_result(path: Path) -> dict[str, Any] | None:
     return data if isinstance(data, dict) else None
 
 
+def _refresh_cached_metrics(record: dict[str, Any]) -> dict[str, Any]:
+    """Backfill metrics from timing report for legacy cached result files."""
+    if str(record.get("status", "")) != "ok":
+        return record
+    report_path_raw = record.get("report_path")
+    if not isinstance(report_path_raw, str) or not report_path_raw:
+        return record
+    report_path = Path(report_path_raw)
+    if not report_path.exists():
+        return record
+    try:
+        report = json.loads(report_path.read_text(encoding="utf-8"))
+    except Exception:
+        return record
+    if not isinstance(report, dict):
+        return record
+    record["metrics"] = _extract_song_metrics(report)
+    return record
+
+
 def _write_json(path: Path, payload: dict[str, Any]) -> None:
     path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
 
@@ -317,12 +637,17 @@ def _write_checkpoint(
     suite_elapsed: float,
 ) -> None:
     aggregate = _aggregate(song_results)
+    suite_wall_elapsed = round(suite_elapsed, 2)
+    sum_song_elapsed = float(aggregate.get("sum_song_elapsed_sec", 0.0) or 0.0)
     report_json = {
         "run_id": run_id,
         "manifest_path": str(manifest_path),
         "repo_root": str(REPO_ROOT),
         "started_at_utc": run_id,
-        "elapsed_sec": round(suite_elapsed, 2),
+        "elapsed_sec": suite_wall_elapsed,
+        "suite_wall_elapsed_sec": suite_wall_elapsed,
+        "sum_song_elapsed_sec": round(sum_song_elapsed, 2),
+        "scheduler_overhead_sec": round(suite_wall_elapsed - sum_song_elapsed, 2),
         "status": "running",
         "options": {
             "offline": args.offline,
@@ -332,6 +657,12 @@ def _write_checkpoint(
             "heartbeat_sec": args.heartbeat_sec,
             "match": args.match,
             "max_songs": args.max_songs,
+            "min_dtw_song_coverage_ratio": args.min_dtw_song_coverage_ratio,
+            "min_dtw_line_coverage_ratio": args.min_dtw_line_coverage_ratio,
+            "strict_quality_coverage": args.strict_quality_coverage,
+            "expect_cached_separation": args.expect_cached_separation,
+            "expect_cached_whisper": args.expect_cached_whisper,
+            "strict_cache_expectations": args.strict_cache_expectations,
         },
         "aggregate": aggregate,
         "songs": song_results,
@@ -451,6 +782,38 @@ def _parse_args() -> argparse.Namespace:
         "--reuse-mismatched-results",
         action="store_true",
         help="Reuse cached per-song results even when run options differ",
+    )
+    parser.add_argument(
+        "--min-dtw-song-coverage-ratio",
+        type=float,
+        default=0.9,
+        help="Warn if successful-song DTW coverage ratio is below this threshold",
+    )
+    parser.add_argument(
+        "--min-dtw-line-coverage-ratio",
+        type=float,
+        default=0.9,
+        help="Warn if benchmark-line DTW coverage ratio is below this threshold",
+    )
+    parser.add_argument(
+        "--strict-quality-coverage",
+        action="store_true",
+        help="Return non-zero if quality coverage warnings are present",
+    )
+    parser.add_argument(
+        "--expect-cached-separation",
+        action="store_true",
+        help="Warn if separation phase is not fully cache-hit across successful songs",
+    )
+    parser.add_argument(
+        "--expect-cached-whisper",
+        action="store_true",
+        help="Warn if whisper phase is not fully cache-hit across successful songs",
+    )
+    parser.add_argument(
+        "--strict-cache-expectations",
+        action="store_true",
+        help="Return non-zero if cache expectation warnings are present",
     )
     return parser.parse_args()
 
@@ -1054,6 +1417,11 @@ def _run_song_command(
 
 def main() -> int:
     args = _parse_args()
+    if not 0.0 <= args.min_dtw_song_coverage_ratio <= 1.0:
+        raise ValueError("--min-dtw-song-coverage-ratio must be between 0 and 1")
+    if not 0.0 <= args.min_dtw_line_coverage_ratio <= 1.0:
+        raise ValueError("--min-dtw-line-coverage-ratio must be between 0 and 1")
+
     manifest_path = args.manifest.resolve()
     songs = _parse_manifest(manifest_path)
 
@@ -1101,6 +1469,8 @@ def main() -> int:
             else:
                 prior_status = str(prior.get("status", ""))
                 if prior_status == "ok" and not args.rerun_completed:
+                    prior = _refresh_cached_metrics(prior)
+                    prior["result_reused"] = True
                     song_results.append(prior)
                     print(f"[{index}/{len(songs)}] {song.artist} - {song.title}")
                     print("  -> ok (cached result)")
@@ -1114,6 +1484,7 @@ def main() -> int:
                     )
                     continue
                 if prior_status == "failed" and not args.rerun_failed:
+                    prior["result_reused"] = True
                     song_results.append(prior)
                     print(f"[{index}/{len(songs)}] {song.artist} - {song.title}")
                     print("  -> failed (cached result)")
@@ -1167,12 +1538,29 @@ def main() -> int:
 
     aggregate = _aggregate(song_results)
     suite_elapsed = round(time.monotonic() - suite_start, 2)
+    quality_warnings = _quality_coverage_warnings(
+        aggregate=aggregate,
+        dtw_enabled=not args.no_whisper_map_lrc_dtw,
+        min_song_coverage_ratio=args.min_dtw_song_coverage_ratio,
+        min_line_coverage_ratio=args.min_dtw_line_coverage_ratio,
+        suite_wall_elapsed_sec=suite_elapsed,
+    )
+    cache_warnings = _cache_expectation_warnings(
+        aggregate=aggregate,
+        expect_cached_separation=args.expect_cached_separation,
+        expect_cached_whisper=args.expect_cached_whisper,
+    )
+    run_warnings = quality_warnings + cache_warnings
+    sum_song_elapsed = float(aggregate.get("sum_song_elapsed_sec", 0.0) or 0.0)
     report_json = {
         "run_id": run_id,
         "manifest_path": str(manifest_path),
         "repo_root": str(REPO_ROOT),
         "started_at_utc": run_id,
         "elapsed_sec": suite_elapsed,
+        "suite_wall_elapsed_sec": suite_elapsed,
+        "sum_song_elapsed_sec": round(sum_song_elapsed, 2),
+        "scheduler_overhead_sec": round(suite_elapsed - sum_song_elapsed, 2),
         "options": {
             "offline": args.offline,
             "force": args.force,
@@ -1181,8 +1569,17 @@ def main() -> int:
             "heartbeat_sec": args.heartbeat_sec,
             "match": args.match,
             "max_songs": args.max_songs,
+            "min_dtw_song_coverage_ratio": args.min_dtw_song_coverage_ratio,
+            "min_dtw_line_coverage_ratio": args.min_dtw_line_coverage_ratio,
+            "strict_quality_coverage": args.strict_quality_coverage,
+            "expect_cached_separation": args.expect_cached_separation,
+            "expect_cached_whisper": args.expect_cached_whisper,
+            "strict_cache_expectations": args.strict_cache_expectations,
         },
-        "status": "finished",
+        "status": "finished_with_warnings" if run_warnings else "finished",
+        "quality_warnings": quality_warnings,
+        "cache_warnings": cache_warnings,
+        "warnings": run_warnings,
         "aggregate": aggregate,
         "songs": song_results,
     }
@@ -1204,6 +1601,8 @@ def main() -> int:
     latest.write_text(str(json_path) + "\n", encoding="utf-8")
 
     status = "OK" if aggregate["songs_failed"] == 0 else "FAIL"
+    if status == "OK" and run_warnings:
+        status = "WARN"
     print(f"benchmark_suite: {status}")
     print(f"- run_dir: {run_dir}")
     print(f"- json: {json_path}")
@@ -1216,12 +1615,44 @@ def main() -> int:
     print(
         "- mean metrics: "
         f"dtw_line={aggregate['dtw_line_coverage_mean']:.3f}, "
+        f"dtw_line_weighted={aggregate['dtw_line_coverage_line_weighted_mean']:.3f}, "
         f"dtw_word={aggregate['dtw_word_coverage_mean']:.3f}, "
         f"phonetic={aggregate['dtw_phonetic_similarity_coverage_mean']:.3f}, "
         f"low_conf_ratio={aggregate['low_confidence_ratio_total']:.3f}, "
         f"start_delta_abs_mean={aggregate['start_delta_mean_abs_sec_mean']:.3f}s"
     )
-    return 0 if aggregate["songs_failed"] == 0 else 2
+    print(
+        "- dtw coverage: "
+        f"songs={aggregate['dtw_metric_song_coverage_ratio']:.3f}, "
+        f"lines={aggregate['dtw_metric_line_coverage_ratio']:.3f}"
+    )
+    print(
+        "- elapsed: "
+        f"suite_wall={suite_elapsed:.2f}s, "
+        f"sum_song={sum_song_elapsed:.2f}s, "
+        f"overhead={suite_elapsed - sum_song_elapsed:.2f}s"
+    )
+    cache_summary = aggregate.get("cache_summary", {})
+    if isinstance(cache_summary, dict):
+        sep = cache_summary.get("separation")
+        if isinstance(sep, dict):
+            print(
+                "- separation cache: "
+                f"cached_ratio={float(sep.get('cached_ratio', 0.0) or 0.0):.3f}, "
+                f"miss_count={int(sep.get('miss_count', 0) or 0)}"
+            )
+    if run_warnings:
+        print("- warnings:")
+        for item in run_warnings:
+            print(f"  - {item}")
+
+    if aggregate["songs_failed"] > 0:
+        return 2
+    if quality_warnings and args.strict_quality_coverage:
+        return 3
+    if cache_warnings and args.strict_cache_expectations:
+        return 4
+    return 0
 
 
 if __name__ == "__main__":
