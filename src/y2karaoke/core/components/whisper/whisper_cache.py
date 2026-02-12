@@ -52,6 +52,7 @@ def _find_best_cached_whisper_model(  # noqa: C901
         return None
 
     lang_token = language or "auto"
+    target_idx = _model_index(target_model)
     best_path = None
     best_model = None
     best_score: Tuple[int, int, int, int, int] = (-1, -1, -1, -1, -1)
@@ -99,10 +100,12 @@ def _find_best_cached_whisper_model(  # noqa: C901
         model_idx = _model_index(model_part)
         if model_idx < 0:
             continue
+        if target_idx >= 0 and model_idx < target_idx:
+            continue
 
         score = (
             model_idx,
-            int(model_idx >= _model_index(target_model)),
+            int(target_idx < 0 or model_idx >= target_idx),
             int(temp_exact),
             int(mode_exact),
             int(lang_exact),

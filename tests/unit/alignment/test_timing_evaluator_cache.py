@@ -222,6 +222,22 @@ def test_find_best_cached_prefers_higher_model_over_mode_match(tmp_path):
     assert "_aggr" in found_path
 
 
+def test_find_best_cached_requires_model_at_least_target(tmp_path):
+    audio = tmp_path / "vocals.wav"
+    audio.write_bytes(b"fake")
+
+    word = te.TranscriptionWord(start=0.1, end=0.2, text="hello")
+    segments = [te.TranscriptionSegment(start=0.0, end=1.0, text="hello", words=[word])]
+
+    # Only a lower-than-target cache exists.
+    small_path = te._get_whisper_cache_path(str(audio), "small", "en", aggressive=False)
+    assert small_path is not None
+    te._save_whisper_cache(small_path, segments, [word], "en", "small", False)
+
+    result = te._find_best_cached_whisper_model(str(audio), "en", False, "large")
+    assert result is None
+
+
 def test_align_dtw_whisper_falls_back_without_fastdtw():
     from y2karaoke.core.models import Line, Word
 
