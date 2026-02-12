@@ -174,6 +174,7 @@ def _trim_whisper_transcription_by_lyrics(
     words: List[timing_models.TranscriptionWord],
     lyric_texts: List[str],
     min_similarity: float = 0.45,
+    max_trim_from_tail_sec: float = 20.0,
 ) -> Tuple[
     List[timing_models.TranscriptionSegment],
     List[timing_models.TranscriptionWord],
@@ -200,6 +201,13 @@ def _trim_whisper_transcription_by_lyrics(
             break
 
     if last_match_end is None:
+        return segments, words, None
+
+    # If the detected "last matching lyric" is far from transcript tail, this is
+    # usually a false positive match (e.g., repeated phrase in the middle).
+    # Keep full transcript to avoid discarding valid late-song timing anchors.
+    transcript_end = max((seg.end for seg in segments), default=last_match_end)
+    if transcript_end - last_match_end > max_trim_from_tail_sec:
         return segments, words, None
 
     trimmed_segments = [seg for seg in segments if seg.end <= last_match_end]

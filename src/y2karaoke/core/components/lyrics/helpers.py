@@ -153,9 +153,7 @@ def _detect_and_apply_offset(
         f"LRC_start={first_lrc_time:.2f}s, delta={delta:+.2f}s"
     )
 
-    # Large auto offsets are often false positives from intro/noise detection.
-    # Keep auto-correction conservative; callers can still force with --lyrics-offset.
-    AUTO_OFFSET_MAX_ABS_SEC = 5.0
+    AUTO_OFFSET_MAX_ABS_SEC = 30.0
 
     offset = 0.0
     if lyrics_offset is not None:
@@ -168,11 +166,7 @@ def _detect_and_apply_offset(
         offset = delta
         logger.info(f"Auto-applying vocal offset: {offset:+.2f}s")
     elif abs(delta) > AUTO_OFFSET_MAX_ABS_SEC:
-        logger.warning(
-            f"Large timing delta ({delta:+.2f}s) exceeds auto-offset clamp "
-            f"({AUTO_OFFSET_MAX_ABS_SEC:.1f}s) - not auto-applying. "
-            "Use --lyrics-offset to adjust manually."
-        )
+        logger.warning(f"Large timing delta ({delta:+.2f}s) - not auto-applying.")
 
     if offset != 0.0:
         line_timings = [(ts + offset, text) for ts, text in line_timings]
