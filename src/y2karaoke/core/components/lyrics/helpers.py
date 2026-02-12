@@ -153,19 +153,24 @@ def _detect_and_apply_offset(
         f"LRC_start={first_lrc_time:.2f}s, delta={delta:+.2f}s"
     )
 
+    # Large auto offsets are often false positives from intro/noise detection.
+    # Keep auto-correction conservative; callers can still force with --lyrics-offset.
+    AUTO_OFFSET_MAX_ABS_SEC = 5.0
+
     offset = 0.0
     if lyrics_offset is not None:
         offset = lyrics_offset
-    elif abs(delta) > 0.3 and abs(delta) <= 30.0:
+    elif abs(delta) > 0.3 and abs(delta) <= AUTO_OFFSET_MAX_ABS_SEC:
         if abs(delta) > 10.0:
             logger.warning(
                 f"Large vocal offset ({delta:+.2f}s) - audio may have intro/speech not in LRC"
             )
         offset = delta
         logger.info(f"Auto-applying vocal offset: {offset:+.2f}s")
-    elif abs(delta) > 30.0:
+    elif abs(delta) > AUTO_OFFSET_MAX_ABS_SEC:
         logger.warning(
-            f"Large timing delta ({delta:+.2f}s) - not auto-applying. "
+            f"Large timing delta ({delta:+.2f}s) exceeds auto-offset clamp "
+            f"({AUTO_OFFSET_MAX_ABS_SEC:.1f}s) - not auto-applying. "
             "Use --lyrics-offset to adjust manually."
         )
 
@@ -389,9 +394,9 @@ def _apply_whisper_alignment(
 
     audio_features = extract_audio_features(vocals_path)
 
-    # When we have no LRC timings, we lean heavily on Whisper for all timing
-    # so using "large" is worth the extra compute (and results get cached).
-    default_model = "large" if prefer_whisper_timing_map else "base"
+    # Quality-first default: use Whisper large for alignment paths and rely on
+    # cache reuse to keep iterative benchmark runs practical.
+    default_model = "large"
     model_size = whisper_model or default_model
     if prefer_whisper_timing_map:
         lines, whisper_fixes, whisper_metrics = align_lrc_text_to_whisper_timings(

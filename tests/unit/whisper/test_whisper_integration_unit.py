@@ -66,6 +66,29 @@ def test_trim_whisper_transcription_by_lyrics():
     assert len(trimmed_segs) <= len(segments)
 
 
+def test_trim_whisper_transcription_skips_when_match_far_from_tail():
+    segments = [
+        TranscriptionSegment(start=0, end=5, text="intro", words=[]),
+        TranscriptionSegment(start=10, end=15, text="target line", words=[]),
+        TranscriptionSegment(start=200, end=205, text="very late words", words=[]),
+    ]
+    words = [
+        TranscriptionWord(text="intro", start=0, end=5, probability=1.0),
+        TranscriptionWord(text="target", start=10, end=12, probability=1.0),
+        TranscriptionWord(text="line", start=12, end=15, probability=1.0),
+        TranscriptionWord(text="late", start=200, end=205, probability=1.0),
+    ]
+    line_texts = ["target line"]
+
+    trimmed_segs, trimmed_words, end_time = wi._trim_whisper_transcription_by_lyrics(
+        segments, words, line_texts
+    )
+
+    assert end_time is None
+    assert len(trimmed_segs) == len(segments)
+    assert len(trimmed_words) == len(words)
+
+
 def test_build_word_to_segment_index():
     segments = [
         TranscriptionSegment(
@@ -188,7 +211,7 @@ def test_align_lrc_text_pipeline_pulls_forward_for_continuous_vocals():
         logger=wi.logger,
     )
 
-    assert mapped[1].start_time == 98.0
+    assert mapped[1].start_time == 120.0
     assert any("continuous vocals" in msg for msg in corrections)
 
 

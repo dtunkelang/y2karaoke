@@ -286,7 +286,7 @@ def get_lyrics_with_quality(  # noqa: C901
                         align_lrc_text_to_whisper_timings,
                     )
 
-                    model_size = whisper_model or "small"
+                    model_size = whisper_model or "large"
                     lines, alignments, metrics = align_lrc_text_to_whisper_timings(
                         lines,
                         vocals_path,
@@ -307,7 +307,7 @@ def get_lyrics_with_quality(  # noqa: C901
                     from ...phonetic_utils import _whisper_lang_to_epitran
                     from ..whisper.whisper_integration import transcribe_vocals
 
-                    model_size = whisper_model or "small"
+                    model_size = whisper_model or "large"
                     transcription, _, detected_lang, _model = transcribe_vocals(
                         vocals_path,
                         whisper_language,

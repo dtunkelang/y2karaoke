@@ -58,6 +58,71 @@ def _should_rollback_short_line_degradation(
     return should_rollback, before, after
 
 
+def _constrain_line_starts_to_baseline(
+    mapped_lines: List[models.Line],
+    baseline_lines: List[models.Line],
+    *,
+    min_gap: float = 0.01,
+) -> List[models.Line]:
+    """Force mapped line starts to baseline (LRC) starts while preserving within-line shape."""
+    constrained: List[models.Line] = []
+    for idx, line in enumerate(mapped_lines):
+        if idx >= len(baseline_lines) or not line.words:
+            constrained.append(line)
+            continue
+
+        baseline = baseline_lines[idx]
+        if not baseline.words:
+            constrained.append(line)
+            continue
+
+        target_start = baseline.start_time
+        shift = target_start - line.start_time
+        shifted_words = [
+            models.Word(
+                text=w.text,
+                start_time=w.start_time + shift,
+                end_time=w.end_time + shift,
+                singer=w.singer,
+            )
+            for w in line.words
+        ]
+        shifted_line = models.Line(words=shifted_words, singer=line.singer)
+
+        next_baseline_start = None
+        for nxt in baseline_lines[idx + 1 :]:
+            if nxt.words:
+                next_baseline_start = nxt.start_time
+                break
+
+        if (
+            next_baseline_start is not None
+            and shifted_line.end_time > (next_baseline_start - min_gap)
+        ):
+            available = max(0.1, (next_baseline_start - min_gap) - target_start)
+            current = max(0.1, shifted_line.end_time - target_start)
+            scale = min(1.0, available / current)
+            compressed_words = []
+            for w in shifted_line.words:
+                ws = target_start + (w.start_time - target_start) * scale
+                we = target_start + (w.end_time - target_start) * scale
+                if we < ws:
+                    we = ws
+                compressed_words.append(
+                    models.Word(
+                        text=w.text,
+                        start_time=ws,
+                        end_time=we,
+                        singer=w.singer,
+                    )
+                )
+            shifted_line = models.Line(words=compressed_words, singer=line.singer)
+
+        constrained.append(shifted_line)
+
+    return constrained
+
+
 def _filter_low_confidence_whisper_words(
     words: List[timing_models.TranscriptionWord],
     threshold: float,
@@ -464,6 +529,9 @@ def align_lrc_text_to_whisper_timings_impl(  # noqa: C901
                 f"Applied {late_audio_fixes} late audio onset/silence adjustment(s)"
             )
         mapped_lines = enforce_stage_invariants(mapped_lines)
+
+    # Policy constraint: keep line starts anchored to LRC timings.
+    mapped_lines = _constrain_line_starts_to_baseline(mapped_lines, baseline_lines)
 
     matched_ratio = mapped_count / len(lrc_words) if lrc_words else 0.0
     avg_similarity = total_similarity / mapped_count if mapped_count else 0.0

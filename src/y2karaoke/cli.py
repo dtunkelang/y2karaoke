@@ -271,7 +271,7 @@ def cli(ctx, verbose, log_file):
     "--whisper-model",
     type=click.Choice(["tiny", "base", "small", "medium", "large"]),
     default=None,
-    help="Whisper model size (default: base, or small for --whisper-map-lrc)",
+    help="Whisper model size (default: large for alignment paths)",
 )
 @click.option(
     "--whisper-force-dtw",

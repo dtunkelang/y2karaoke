@@ -197,7 +197,7 @@ def _load_whisper_model_class():
 def transcribe_vocals(
     vocals_path: str,
     language: Optional[str] = None,
-    model_size: str = "base",
+    model_size: str = "large",
     aggressive: bool = False,
     temperature: float = 0.0,
 ) -> Tuple[
@@ -229,7 +229,7 @@ def align_lrc_text_to_whisper_timings(
     lines: List[models.Line],
     vocals_path: str,
     language: Optional[str] = None,
-    model_size: str = "base",
+    model_size: str = "large",
     aggressive: bool = False,
     temperature: float = 0.0,
     min_similarity: float = 0.15,
@@ -298,7 +298,7 @@ def correct_timing_with_whisper(
     lines: List[models.Line],
     vocals_path: str,
     language: Optional[str] = None,
-    model_size: str = "base",
+    model_size: str = "large",
     aggressive: bool = False,
     temperature: float = 0.0,
     trust_lrc_threshold: float = 1.0,

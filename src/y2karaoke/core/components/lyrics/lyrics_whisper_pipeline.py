@@ -199,7 +199,7 @@ def get_lyrics_simple_impl(  # noqa: C901
         elif vocals_path and whisper_map_lrc:
             try:
                 if whisper_map_lrc_dtw:
-                    model_size = whisper_model or "small"
+                    model_size = whisper_model or "large"
                     lines, alignments, metrics = (
                         align_lrc_text_to_whisper_timings_for_state_fn(
                             lines,
@@ -219,7 +219,7 @@ def get_lyrics_simple_impl(  # noqa: C901
                     if metrics:
                         logger.debug(f"DTW metrics: {metrics}")
                 else:
-                    model_size = whisper_model or "small"
+                    model_size = whisper_model or "large"
                     transcription, _, detected_lang, _model = (
                         transcribe_vocals_for_state_fn(
                             vocals_path,
