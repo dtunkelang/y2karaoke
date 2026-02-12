@@ -371,6 +371,84 @@ def test_align_lrc_text_pipeline_falls_back_to_block_dtw_for_moderate_overlap():
     assert len(mapped) == 5
 
 
+def test_align_lrc_text_pipeline_filters_low_confidence_whisper_words():
+    lines = [Line(words=[Word(text="hello", start_time=1.0, end_time=1.2)])]
+    whisper_words = []
+    for idx in range(30):
+        prob = 0.2 if idx < 8 else 0.95
+        whisper_words.append(
+            TranscriptionWord(
+                text=f"w{idx}",
+                start=1.0 + idx * 0.1,
+                end=1.05 + idx * 0.1,
+                probability=prob,
+            )
+        )
+    segments = [
+        TranscriptionSegment(start=1.0, end=4.0, text="s", words=whisper_words),
+    ]
+    audio_features = AudioFeatures(
+        onset_times=np.array([], dtype=float),
+        silence_regions=[],
+        vocal_start=0.0,
+        vocal_end=10.0,
+        duration=10.0,
+        energy_envelope=np.array([], dtype=float),
+        energy_times=np.array([], dtype=float),
+    )
+    observed = {"word_count": None}
+
+    def capture_map(_lines, _lrc_words, all_words, *_rest):
+        observed["word_count"] = len(all_words)
+        return _lines, 1, 1.0, {0}
+
+    _mapped, _corrections, _metrics = align_lrc_text_to_whisper_timings_impl(
+        lines,
+        vocals_path="vocals.wav",
+        language="en",
+        model_size="base",
+        aggressive=False,
+        temperature=0.0,
+        min_similarity=0.15,
+        audio_features=audio_features,
+        lenient_vocal_activity_threshold=0.3,
+        lenient_activity_bonus=0.4,
+        low_word_confidence_threshold=0.5,
+        transcribe_vocals_fn=lambda *_a, **_k: (segments, whisper_words, "en", "base"),
+        extract_audio_features_fn=lambda *_a, **_k: audio_features,
+        dedupe_whisper_segments_fn=lambda s: s,
+        trim_whisper_transcription_by_lyrics_fn=lambda s, w, _t: (s, w, None),
+        fill_vocal_activity_gaps_fn=lambda w, _a, _t, segments=None: (w, segments),
+        dedupe_whisper_words_fn=lambda w: w,
+        extract_lrc_words_all_fn=lambda in_lines: [
+            {"text": wd.text, "line_idx": li, "word_idx": wi}
+            for li, line in enumerate(in_lines)
+            for wi, wd in enumerate(line.words)
+        ],
+        build_phoneme_tokens_from_lrc_words_fn=lambda _w, _l: [1],
+        build_phoneme_tokens_from_whisper_words_fn=lambda _w, _l: [1],
+        build_syllable_tokens_from_phonemes_fn=lambda _p: [1],
+        build_segment_text_overlap_assignments_fn=lambda _lw, _aw, _s: {0: [0]},
+        build_phoneme_dtw_path_fn=lambda *_a, **_k: [],
+        build_word_assignments_from_phoneme_path_fn=lambda *_a, **_k: {0: [0]},
+        build_block_segmented_syllable_assignments_fn=lambda *_a, **_k: {0: [0]},
+        map_lrc_words_to_whisper_fn=capture_map,
+        shift_repeated_lines_to_next_whisper_fn=lambda ml, _aw: ml,
+        enforce_monotonic_line_starts_whisper_fn=lambda ml, _aw: ml,
+        resolve_line_overlaps_fn=lambda ml: ml,
+        extend_line_to_trailing_whisper_matches_fn=lambda ml, _aw: ml,
+        pull_late_lines_to_matching_segments_fn=lambda ml, _s, _lang: ml,
+        retime_short_interjection_lines_fn=lambda ml, _s: ml,
+        snap_first_word_to_whisper_onset_fn=lambda ml, _aw, **_kw: ml,
+        interpolate_unmatched_lines_fn=lambda ml, _set: ml,
+        refine_unmatched_lines_with_onsets_fn=lambda ml, _set, _vp: ml,
+        pull_lines_forward_for_continuous_vocals_fn=lambda ml, _af: (ml, 0),
+        logger=wi.logger,
+    )
+
+    assert observed["word_count"] == 22
+
+
 def test_should_rollback_short_line_degradation_triggers():
     original = [
         Line(

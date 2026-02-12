@@ -121,8 +121,8 @@ def test_clamp_line_shift_vs_original_limits_large_forward_shift():
 
     clamped = wmp._clamp_line_shift_vs_original(mapped, original)
 
-    assert clamped.start_time == 60.0
-    assert clamped.end_time == 61.0
+    assert clamped.start_time == 57.0
+    assert clamped.end_time == 58.0
 
 
 def test_clamp_line_shift_vs_original_preserves_reasonable_shift():

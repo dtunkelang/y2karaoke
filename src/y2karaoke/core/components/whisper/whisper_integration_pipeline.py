@@ -58,6 +58,33 @@ def _should_rollback_short_line_degradation(
     return should_rollback, before, after
 
 
+def _filter_low_confidence_whisper_words(
+    words: List[timing_models.TranscriptionWord],
+    threshold: float,
+    *,
+    min_keep_ratio: float = 0.6,
+    min_keep_words: int = 20,
+) -> List[timing_models.TranscriptionWord]:
+    """Drop low-confidence Whisper words when enough confident words remain."""
+    if not words:
+        return words
+    if threshold <= 0.0:
+        return words
+
+    filtered = [
+        w
+        for w in words
+        if w.text == "[VOCAL]" or float(getattr(w, "probability", 1.0)) >= threshold
+    ]
+    if not filtered:
+        return words
+    if len(filtered) < min_keep_words:
+        return words
+    if (len(filtered) / len(words)) < min_keep_ratio:
+        return words
+    return filtered
+
+
 def transcribe_vocals_impl(
     vocals_path: str,
     language: Optional[str],
@@ -209,7 +236,6 @@ def align_lrc_text_to_whisper_timings_impl(  # noqa: C901
     """Align LRC text to Whisper timings using phonetic DTW (timings fixed)."""
     _ = min_similarity
     _ = lenient_activity_bonus
-    _ = low_word_confidence_threshold
     baseline_lines = _clone_lines_for_fallback(lines)
 
     ensure_local_lex_lookup()
@@ -242,6 +268,19 @@ def align_lrc_text_to_whisper_timings_impl(  # noqa: C901
         )
         if filled_segments is not None:
             transcription = filled_segments
+
+    before_low_conf_filter = len(all_words)
+    all_words = _filter_low_confidence_whisper_words(
+        all_words,
+        low_word_confidence_threshold,
+    )
+    if len(all_words) != before_low_conf_filter:
+        logger.debug(
+            "Filtered low-confidence Whisper words: %d -> %d (threshold=%.2f)",
+            before_low_conf_filter,
+            len(all_words),
+            low_word_confidence_threshold,
+        )
 
     all_words = dedupe_whisper_words_fn(all_words)
 
