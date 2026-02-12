@@ -211,6 +211,23 @@ Benchmark metric interpretation:
 - `low_confidence_lines`: lines where Whisper confidence is weak; inspect these first during debugging.
 - `null` metrics: expected when a song path used onset/LRC timing without DTW-based reference comparisons.
 
+## Gold timing editor
+
+For benchmark ground-truth curation, use the local gold timing editor:
+
+```bash
+python tools/gold_timing_editor.py --host 127.0.0.1 --port 8765
+```
+
+Then open `http://127.0.0.1:8765`.
+
+- Canonical format: `*.gold.json` (human-readable JSON with word-level `start`/`end` timings).
+- Input: existing timing report JSON or existing `*.gold.json`.
+- Editing: drag intervals/handles plus keyboard nudging at 0.1s increments.
+- Validation: forbids word overlaps and allows gaps.
+
+See `docs/gold_timing_editor.md` for schema and workflow details.
+
 Preferred local workflow:
 
 ```bash

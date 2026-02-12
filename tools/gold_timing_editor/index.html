@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Gold Timing Editor</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <header>
+      <h1>Gold Timing Editor</h1>
+      <div id="status">Load timing + audio to start.</div>
+    </header>
+
+    <section class="controls">
+      <label>
+        Timing JSON path
+        <input id="timingPath" type="text" placeholder="/absolute/path/to/timing_report.json" />
+      </label>
+      <button id="loadTimingBtn">Load Timing</button>
+
+      <label>
+        Audio path
+        <input id="audioPath" type="text" placeholder="/absolute/path/to/song.wav" />
+      </label>
+      <button id="loadAudioBtn">Load Audio</button>
+
+      <label>
+        Save path
+        <input id="savePath" type="text" placeholder="/absolute/path/to/song.gold.json" />
+      </label>
+      <button id="saveBtn">Save Gold JSON</button>
+    </section>
+
+    <section class="controls compact">
+      <button id="playPauseBtn">Play</button>
+      <div class="mode-toggle" role="group" aria-label="Edit mode">
+        <button id="wordModeBtn" class="active" type="button">Word Mode</button>
+        <button id="lineModeBtn" type="button">Line Mode</button>
+      </div>
+      <label>
+        Zoom
+        <input id="zoomRange" type="range" min="20" max="300" step="10" value="90" />
+      </label>
+      <div id="playbackInfo">t=0.0s</div>
+      <div id="selectionInfo">No word selected</div>
+    </section>
+
+    <audio id="audio" controls preload="metadata"></audio>
+
+    <main>
+      <div id="timeline"></div>
+    </main>
+
+    <footer>
+      <div>
+        Keyboard: Left/Right move selected word by 0.1s. Shift+Arrow adjusts end only. Alt+Arrow adjusts start only. Ctrl/Cmd+Z undo.
+      </div>
+      <div>Line mode: drag a line ruler/bar (or use Left/Right) to shift the entire line while preserving word durations and intraline gaps.</div>
+      <div>Drag bar to move whole interval. Drag left/right handles to resize.</div>
+      <div>Editing is permissive: overlaps are allowed while adjusting and validated only on save.</div>
+    </footer>
+
+    <script src="/app.js" defer></script>
+  </body>
+</html>
