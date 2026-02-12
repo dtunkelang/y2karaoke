@@ -5,7 +5,9 @@ from pathlib import Path
 import pytest
 
 _MODULE_PATH = Path(__file__).resolve().parents[3] / "tools" / "gold_timing_editor.py"
-_SPEC = importlib.util.spec_from_file_location("gold_timing_editor_module", _MODULE_PATH)
+_SPEC = importlib.util.spec_from_file_location(
+    "gold_timing_editor_module", _MODULE_PATH
+)
 assert _SPEC and _SPEC.loader
 _MODULE = importlib.util.module_from_spec(_SPEC)
 sys.modules[_SPEC.name] = _MODULE
