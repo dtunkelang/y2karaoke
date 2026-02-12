@@ -394,3 +394,20 @@ def test_infer_cache_decisions():
     assert decisions["separation"].startswith("miss")
     assert decisions["whisper"].startswith("miss")
     assert decisions["alignment"].startswith("computed")
+
+
+def test_infer_cache_decisions_uses_logged_cache_hits():
+    module = _load_module()
+    decisions = module._infer_cache_decisions(
+        before={"audio_files": 0, "stem_files": 0, "whisper_files": 0},
+        after={"audio_files": 0, "stem_files": 0, "whisper_files": 0},
+        combined_output=(
+            "INFO:y2karaoke: Using cached audio\n"
+            "INFO:y2karaoke: Using cached vocal separation\n"
+            "INFO:y2karaoke: Loaded cached Whisper transcription (large)"
+        ),
+        report_exists=True,
+    )
+    assert decisions["audio"].startswith("hit")
+    assert decisions["separation"].startswith("hit")
+    assert decisions["whisper"].startswith("hit")

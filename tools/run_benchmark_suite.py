@@ -1139,6 +1139,8 @@ def _infer_cache_decisions(
 
     if after.get("stem_files", 0) > before.get("stem_files", 0):
         decisions["separation"] = "miss (generated stems)"
+    elif "using cached vocal separation" in out_lower:
+        decisions["separation"] = "hit (logged cached vocal separation)"
     elif before.get("stem_files", 0) > 0:
         decisions["separation"] = "likely_hit (stems already present)"
     else:
@@ -1146,6 +1148,8 @@ def _infer_cache_decisions(
 
     if after.get("whisper_files", 0) > before.get("whisper_files", 0):
         decisions["whisper"] = "miss (generated whisper output)"
+    elif "loaded cached whisper transcription" in out_lower:
+        decisions["whisper"] = "hit (logged cached whisper transcription)"
     elif before.get("whisper_files", 0) > 0:
         decisions["whisper"] = "likely_hit (whisper output already present)"
     else:
@@ -1351,6 +1355,7 @@ def _run_song_command(
         "run_signature": run_signature,
     }
     before_cache_state = _collect_cache_state(cmd, report_path)
+    combined_output_for_cache = ""
     try:
         execution = _execute_song_process(
             cmd=cmd,
@@ -1362,6 +1367,7 @@ def _run_song_command(
         )
         out_accum = str(execution["out_accum"])
         err_accum = str(execution["err_accum"])
+        combined_output_for_cache = out_accum + "\n" + err_accum
         record["elapsed_sec"] = float(execution["elapsed"])
         phase_durations = execution.get("phase_durations_sec", {})
         if phase_durations:
@@ -1404,6 +1410,7 @@ def _run_song_command(
         record["error"] = f"timeout after {timeout_sec}s"
         out = _coerce_text(exc.stdout)
         err = _coerce_text(exc.stderr)
+        combined_output_for_cache = out + "\n" + err
         stage_hint = _extract_stage_hint(out, err)
         if stage_hint:
             record["last_stage_hint"] = stage_hint
@@ -1424,9 +1431,7 @@ def _run_song_command(
     cache_decisions = _infer_cache_decisions(
         before=before_cache_state,
         after=after_cache_state,
-        combined_output=(
-            record.get("stdout_tail", "") + "\n" + record.get("stderr_tail", "")
-        ),
+        combined_output=combined_output_for_cache,
         report_exists=bool(report_path.exists()),
     )
     record["cache_decisions"] = cache_decisions
