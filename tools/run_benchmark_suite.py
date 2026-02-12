@@ -145,6 +145,9 @@ def _extract_song_metrics(report: dict[str, Any]) -> dict[str, Any]:
         "start_delta_mean_abs_sec": round(
             _mean(abs(v) for v in start_deltas) or 0.0, 4
         ),
+        "start_delta_max_abs_sec": round(
+            max((abs(v) for v in start_deltas), default=0.0), 4
+        ),
         "start_delta_p95_abs_sec": round(
             _pctile([abs(v) for v in start_deltas], 0.95), 4
         ),
@@ -326,6 +329,9 @@ def _aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:
         "start_delta_mean_abs_sec_mean": round(
             _mean(metric_values("start_delta_mean_abs_sec")) or 0.0, 4
         ),
+        "start_delta_max_abs_sec_mean": round(
+            _mean(metric_values("start_delta_max_abs_sec")) or 0.0, 4
+        ),
         "start_delta_p95_abs_sec_mean": round(
             _mean(metric_values("start_delta_p95_abs_sec")) or 0.0, 4
         ),
@@ -354,6 +360,9 @@ def _aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:
             ),
             "highest_start_delta_mean_abs_sec": _hotspot_records(
                 key="start_delta_mean_abs_sec", top_n=3, reverse=True
+            ),
+            "highest_start_delta_max_abs_sec": _hotspot_records(
+                key="start_delta_max_abs_sec", top_n=3, reverse=True
             ),
         },
         "cache_summary": cache_summary,
@@ -501,6 +510,9 @@ def _write_markdown_summary(
         f"- Mean abs line-start p95 delta: `{aggregate['start_delta_p95_abs_sec_mean']:.3f}s`"
     )
     lines.append(
+        f"- Mean max abs line-start delta: `{aggregate.get('start_delta_max_abs_sec_mean', 0.0):.3f}s`"
+    )
+    lines.append(
         "- DTW metric coverage: "
         f"`{aggregate.get('dtw_metric_song_count', 0)}/{aggregate.get('songs_succeeded', 0)}` "
         f"songs, `{aggregate.get('dtw_metric_line_count', 0)}/{aggregate.get('line_count_total', 0)}` lines"
@@ -529,9 +541,9 @@ def _write_markdown_summary(
     lines.append("## Per-song")
     lines.append("")
     lines.append(
-        "| Song | Status | Alignment | DTW line | DTW word | Phonetic cov | Low conf ratio | Start delta abs mean | Elapsed |"
+        "| Song | Status | Alignment | DTW line | DTW word | Phonetic cov | Low conf ratio | Start delta abs mean | Start delta abs max | Elapsed |"
     )
-    lines.append("|---|---:|---:|---:|---:|---:|---:|---:|---:|")
+    lines.append("|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|")
     for song in songs:
         metrics = song.get("metrics", {})
         lines.append(
@@ -550,6 +562,8 @@ def _write_markdown_summary(
             + " | "
             + f"{metrics.get('start_delta_mean_abs_sec', '-')}"
             + " | "
+            + f"{metrics.get('start_delta_max_abs_sec', '-')}"
+            + " | "
             + f"{song.get('elapsed_sec', '-')}"
             + "s |"
         )
@@ -559,7 +573,8 @@ def _write_markdown_summary(
         low_dtw = hotspots.get("lowest_dtw_line_coverage", [])
         high_low_conf = hotspots.get("highest_low_confidence_ratio", [])
         high_delta = hotspots.get("highest_start_delta_mean_abs_sec", [])
-        if low_dtw or high_low_conf or high_delta:
+        high_delta_max = hotspots.get("highest_start_delta_max_abs_sec", [])
+        if low_dtw or high_low_conf or high_delta or high_delta_max:
             lines.append("## Hotspots")
             lines.append("")
             if low_dtw:
@@ -575,6 +590,11 @@ def _write_markdown_summary(
             if high_delta:
                 lines.append("- Highest mean abs start delta:")
                 for item in high_delta:
+                    if isinstance(item, dict):
+                        lines.append(f"  - {item.get('song')}: {item.get('value')}s")
+            if high_delta_max:
+                lines.append("- Highest max abs start delta:")
+                for item in high_delta_max:
                     if isinstance(item, dict):
                         lines.append(f"  - {item.get('song')}: {item.get('value')}s")
             lines.append("")
@@ -1647,7 +1667,8 @@ def main() -> int:
         f"dtw_word={aggregate['dtw_word_coverage_mean']:.3f}, "
         f"phonetic={aggregate['dtw_phonetic_similarity_coverage_mean']:.3f}, "
         f"low_conf_ratio={aggregate['low_confidence_ratio_total']:.3f}, "
-        f"start_delta_abs_mean={aggregate['start_delta_mean_abs_sec_mean']:.3f}s"
+        f"start_delta_abs_mean={aggregate['start_delta_mean_abs_sec_mean']:.3f}s, "
+        f"start_delta_abs_max_mean={aggregate.get('start_delta_max_abs_sec_mean', 0.0):.3f}s"
     )
     print(
         "- dtw coverage: "

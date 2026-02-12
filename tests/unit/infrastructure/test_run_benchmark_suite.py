@@ -40,6 +40,7 @@ def test_extract_song_metrics():
     assert metrics["dtw_line_coverage"] == 0.8
     assert metrics["start_delta_count"] == 2
     assert metrics["start_delta_mean_abs_sec"] == 0.15
+    assert metrics["start_delta_max_abs_sec"] == 0.2
 
 
 def test_aggregate_results():
@@ -56,6 +57,7 @@ def test_aggregate_results():
                 "dtw_word_coverage": 0.8,
                 "dtw_phonetic_similarity_coverage": 0.85,
                 "start_delta_mean_abs_sec": 0.11,
+                "start_delta_max_abs_sec": 0.24,
                 "start_delta_p95_abs_sec": 0.24,
             },
         },
@@ -73,6 +75,7 @@ def test_aggregate_results():
     assert agg["dtw_metric_song_coverage_ratio"] == 1.0
     assert agg["dtw_metric_line_count"] == 10
     assert agg["dtw_metric_line_coverage_ratio"] == 1.0
+    assert agg["start_delta_max_abs_sec_mean"] == 0.24
     assert agg["sum_song_elapsed_sec"] == 0.0
     assert agg["failed_songs"] == ["B - T2"]
 
@@ -183,6 +186,7 @@ def test_aggregate_tracks_missing_dtw_and_weighted_means():
                 "dtw_word_coverage": 0.4,
                 "dtw_phonetic_similarity_coverage": 0.3,
                 "start_delta_mean_abs_sec": 0.2,
+                "start_delta_max_abs_sec": 0.4,
             },
         },
         {
@@ -207,6 +211,7 @@ def test_aggregate_tracks_missing_dtw_and_weighted_means():
     assert agg["songs_without_dtw_metrics"] == ["B - T2"]
     assert agg["dtw_line_coverage_mean"] == 0.5
     assert agg["dtw_line_coverage_line_weighted_mean"] == 0.5
+    assert agg["start_delta_max_abs_sec_mean"] == 0.4
     assert agg["sum_song_elapsed_sec"] == 20.0
     assert agg["phase_totals_sec"]["separation"] == 16.0
     assert agg["cache_summary"]["separation"]["miss_count"] == 0
