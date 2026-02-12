@@ -412,16 +412,27 @@ def _cache_expectation_warnings(
         if isinstance(sep, dict):
             miss = int(sep.get("miss_count", 0) or 0)
             total = int(sep.get("total", 0) or 0)
+            unknown = int(sep.get("unknown_count", 0) or 0)
             cached_ratio = float(sep.get("cached_ratio", 0.0) or 0.0)
             if total == 0:
                 warnings.append(
                     "Expected cached separation but no executed-song cache data was available "
                     "(results likely reused). Re-run with --rerun-completed."
                 )
-            elif miss > 0 or cached_ratio < 1.0:
+            elif miss > 0:
                 warnings.append(
                     "Expected cached separation but misses were observed: "
                     f"{miss}/{total} miss, cached_ratio={cached_ratio:.3f}"
+                )
+            elif unknown > 0:
+                warnings.append(
+                    "Expected cached separation but cache state was unknown for "
+                    f"{unknown}/{total} song(s)."
+                )
+            elif cached_ratio < 1.0:
+                warnings.append(
+                    "Expected cached separation but cached_ratio was below 1.0: "
+                    f"{cached_ratio:.3f}"
                 )
 
     if expect_cached_whisper:
@@ -429,16 +440,27 @@ def _cache_expectation_warnings(
         if isinstance(whisper, dict):
             miss = int(whisper.get("miss_count", 0) or 0)
             total = int(whisper.get("total", 0) or 0)
+            unknown = int(whisper.get("unknown_count", 0) or 0)
             cached_ratio = float(whisper.get("cached_ratio", 0.0) or 0.0)
             if total == 0:
                 warnings.append(
                     "Expected cached whisper but no executed-song cache data was available "
                     "(results likely reused). Re-run with --rerun-completed."
                 )
-            elif miss > 0 or cached_ratio < 1.0:
+            elif miss > 0:
                 warnings.append(
                     "Expected cached whisper but misses were observed: "
                     f"{miss}/{total} miss, cached_ratio={cached_ratio:.3f}"
+                )
+            elif unknown > 0:
+                warnings.append(
+                    "Expected cached whisper but cache state was unknown for "
+                    f"{unknown}/{total} song(s)."
+                )
+            elif cached_ratio < 1.0:
+                warnings.append(
+                    "Expected cached whisper but cached_ratio was below 1.0: "
+                    f"{cached_ratio:.3f}"
                 )
     return warnings
 

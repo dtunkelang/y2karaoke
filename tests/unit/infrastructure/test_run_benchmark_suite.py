@@ -234,8 +234,18 @@ def test_cache_expectation_warnings():
     module = _load_module()
     aggregate = {
         "cache_summary": {
-            "separation": {"total": 2, "miss_count": 1, "cached_ratio": 0.5},
-            "whisper": {"total": 2, "miss_count": 0, "cached_ratio": 1.0},
+            "separation": {
+                "total": 2,
+                "miss_count": 1,
+                "unknown_count": 0,
+                "cached_ratio": 0.5,
+            },
+            "whisper": {
+                "total": 2,
+                "miss_count": 0,
+                "unknown_count": 0,
+                "cached_ratio": 1.0,
+            },
         }
     }
     warnings = module._cache_expectation_warnings(
@@ -251,8 +261,18 @@ def test_cache_expectation_warnings_no_executed_song_data():
     module = _load_module()
     aggregate = {
         "cache_summary": {
-            "separation": {"total": 0, "miss_count": 0, "cached_ratio": 0.0},
-            "whisper": {"total": 0, "miss_count": 0, "cached_ratio": 0.0},
+            "separation": {
+                "total": 0,
+                "miss_count": 0,
+                "unknown_count": 0,
+                "cached_ratio": 0.0,
+            },
+            "whisper": {
+                "total": 0,
+                "miss_count": 0,
+                "unknown_count": 0,
+                "cached_ratio": 0.0,
+            },
         }
     }
     warnings = module._cache_expectation_warnings(
@@ -262,6 +282,33 @@ def test_cache_expectation_warnings_no_executed_song_data():
     )
     assert len(warnings) == 2
     assert "no executed-song cache data was available" in warnings[0]
+
+
+def test_cache_expectation_warnings_unknown_state():
+    module = _load_module()
+    aggregate = {
+        "cache_summary": {
+            "separation": {
+                "total": 3,
+                "miss_count": 0,
+                "unknown_count": 3,
+                "cached_ratio": 0.0,
+            },
+            "whisper": {
+                "total": 3,
+                "miss_count": 0,
+                "unknown_count": 2,
+                "cached_ratio": 0.3333,
+            },
+        }
+    }
+    warnings = module._cache_expectation_warnings(
+        aggregate=aggregate,
+        expect_cached_separation=True,
+        expect_cached_whisper=True,
+    )
+    assert len(warnings) == 2
+    assert "cache state was unknown" in warnings[0]
 
 
 def test_extract_stage_hint_prefers_y2karaoke_line():
