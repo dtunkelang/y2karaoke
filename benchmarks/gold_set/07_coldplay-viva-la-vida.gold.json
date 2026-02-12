@@ -1,0 +1,2047 @@
+{
+  "schema_version": "1.0",
+  "title": "Viva La Vida",
+  "artist": "Coldplay",
+  "audio_path": "",
+  "source_timing_path": "/Users/dtunkelang/y2karaoke/benchmarks/results/preliminary_gold_seed_20260212/07_coldplay-viva-la-vida_timing_report.json",
+  "lines": [
+    {
+      "line_index": 1,
+      "text": "I used to rule the world",
+      "start": 0.5,
+      "end": 2.7,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "I",
+          "start": 0.5,
+          "end": 0.6
+        },
+        {
+          "word_index": 2,
+          "text": "used",
+          "start": 0.6,
+          "end": 0.9
+        },
+        {
+          "word_index": 3,
+          "text": "to",
+          "start": 0.9,
+          "end": 1.2
+        },
+        {
+          "word_index": 4,
+          "text": "rule",
+          "start": 1.2,
+          "end": 1.7
+        },
+        {
+          "word_index": 5,
+          "text": "the",
+          "start": 1.7,
+          "end": 2.7
+        },
+        {
+          "word_index": 6,
+          "text": "world",
+          "start": 2.7,
+          "end": 2.7
+        }
+      ]
+    },
+    {
+      "line_index": 2,
+      "text": "Seas would rise when I gave the word",
+      "start": 2.7,
+      "end": 4.9,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Seas",
+          "start": 2.7,
+          "end": 3.0
+        },
+        {
+          "word_index": 2,
+          "text": "would",
+          "start": 3.0,
+          "end": 3.3
+        },
+        {
+          "word_index": 3,
+          "text": "rise",
+          "start": 3.3,
+          "end": 3.5
+        },
+        {
+          "word_index": 4,
+          "text": "when",
+          "start": 3.5,
+          "end": 3.8
+        },
+        {
+          "word_index": 5,
+          "text": "I",
+          "start": 3.8,
+          "end": 4.1
+        },
+        {
+          "word_index": 6,
+          "text": "gave",
+          "start": 4.1,
+          "end": 4.4
+        },
+        {
+          "word_index": 7,
+          "text": "the",
+          "start": 4.4,
+          "end": 4.6
+        },
+        {
+          "word_index": 8,
+          "text": "word",
+          "start": 4.6,
+          "end": 4.9
+        }
+      ]
+    },
+    {
+      "line_index": 3,
+      "text": "Now in the morning, I sleep alone",
+      "start": 4.9,
+      "end": 7.1,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Now",
+          "start": 4.9,
+          "end": 5.1
+        },
+        {
+          "word_index": 2,
+          "text": "in",
+          "start": 5.1,
+          "end": 5.3
+        },
+        {
+          "word_index": 3,
+          "text": "the",
+          "start": 5.3,
+          "end": 5.7
+        },
+        {
+          "word_index": 4,
+          "text": "morning,",
+          "start": 5.7,
+          "end": 6.0
+        },
+        {
+          "word_index": 5,
+          "text": "I",
+          "start": 6.0,
+          "end": 6.1
+        },
+        {
+          "word_index": 6,
+          "text": "sleep",
+          "start": 6.1,
+          "end": 6.4
+        },
+        {
+          "word_index": 7,
+          "text": "alone",
+          "start": 6.4,
+          "end": 7.1
+        }
+      ]
+    },
+    {
+      "line_index": 4,
+      "text": "Sweep the streets I used to own",
+      "start": 7.1,
+      "end": 9.3,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Sweep",
+          "start": 7.1,
+          "end": 7.4
+        },
+        {
+          "word_index": 2,
+          "text": "the",
+          "start": 7.4,
+          "end": 7.5
+        },
+        {
+          "word_index": 3,
+          "text": "streets",
+          "start": 7.5,
+          "end": 7.7
+        },
+        {
+          "word_index": 4,
+          "text": "I",
+          "start": 7.7,
+          "end": 7.8
+        },
+        {
+          "word_index": 5,
+          "text": "used",
+          "start": 7.8,
+          "end": 7.9
+        },
+        {
+          "word_index": 6,
+          "text": "to",
+          "start": 7.9,
+          "end": 8.1
+        },
+        {
+          "word_index": 7,
+          "text": "own",
+          "start": 8.1,
+          "end": 9.3
+        }
+      ]
+    },
+    {
+      "line_index": 5,
+      "text": "I used to roll the dice",
+      "start": 9.3,
+      "end": 11.5,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "I",
+          "start": 9.3,
+          "end": 9.4
+        },
+        {
+          "word_index": 2,
+          "text": "used",
+          "start": 9.4,
+          "end": 10.4
+        },
+        {
+          "word_index": 3,
+          "text": "to",
+          "start": 10.4,
+          "end": 10.9
+        },
+        {
+          "word_index": 4,
+          "text": "roll",
+          "start": 10.9,
+          "end": 11.5
+        },
+        {
+          "word_index": 5,
+          "text": "the",
+          "start": 11.5,
+          "end": 11.5
+        },
+        {
+          "word_index": 6,
+          "text": "dice",
+          "start": 11.5,
+          "end": 11.5
+        }
+      ]
+    },
+    {
+      "line_index": 6,
+      "text": "Feel the fear in my enemy's eyes",
+      "start": 11.5,
+      "end": 13.7,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Feel",
+          "start": 11.5,
+          "end": 11.6
+        },
+        {
+          "word_index": 2,
+          "text": "the",
+          "start": 11.6,
+          "end": 11.6
+        },
+        {
+          "word_index": 3,
+          "text": "fear",
+          "start": 11.6,
+          "end": 11.7
+        },
+        {
+          "word_index": 4,
+          "text": "in",
+          "start": 11.7,
+          "end": 11.7
+        },
+        {
+          "word_index": 5,
+          "text": "my",
+          "start": 11.7,
+          "end": 11.8
+        },
+        {
+          "word_index": 6,
+          "text": "enemy's",
+          "start": 11.8,
+          "end": 11.9
+        },
+        {
+          "word_index": 7,
+          "text": "eyes",
+          "start": 11.9,
+          "end": 13.7
+        }
+      ]
+    },
+    {
+      "line_index": 7,
+      "text": "Listened as the crowd would sing",
+      "start": 13.7,
+      "end": 15.9,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Listened",
+          "start": 13.7,
+          "end": 13.9
+        },
+        {
+          "word_index": 2,
+          "text": "as",
+          "start": 13.9,
+          "end": 13.9
+        },
+        {
+          "word_index": 3,
+          "text": "the",
+          "start": 13.9,
+          "end": 13.9
+        },
+        {
+          "word_index": 4,
+          "text": "crowd",
+          "start": 13.9,
+          "end": 14.0
+        },
+        {
+          "word_index": 5,
+          "text": "would",
+          "start": 14.0,
+          "end": 14.1
+        },
+        {
+          "word_index": 6,
+          "text": "sing",
+          "start": 14.1,
+          "end": 15.9
+        }
+      ]
+    },
+    {
+      "line_index": 8,
+      "text": "\"Now the old king is dead, long live the king\"",
+      "start": 15.9,
+      "end": 18.7,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "\"Now",
+          "start": 15.9,
+          "end": 16.0
+        },
+        {
+          "word_index": 2,
+          "text": "the",
+          "start": 16.0,
+          "end": 16.0
+        },
+        {
+          "word_index": 3,
+          "text": "old",
+          "start": 16.0,
+          "end": 16.1
+        },
+        {
+          "word_index": 4,
+          "text": "king",
+          "start": 16.1,
+          "end": 16.1
+        },
+        {
+          "word_index": 5,
+          "text": "is",
+          "start": 16.1,
+          "end": 16.1
+        },
+        {
+          "word_index": 6,
+          "text": "dead,",
+          "start": 16.1,
+          "end": 16.2
+        },
+        {
+          "word_index": 7,
+          "text": "long",
+          "start": 16.2,
+          "end": 16.2
+        },
+        {
+          "word_index": 8,
+          "text": "live",
+          "start": 16.2,
+          "end": 16.2
+        },
+        {
+          "word_index": 9,
+          "text": "the",
+          "start": 16.2,
+          "end": 16.3
+        },
+        {
+          "word_index": 10,
+          "text": "king\"",
+          "start": 16.3,
+          "end": 18.7
+        }
+      ]
+    },
+    {
+      "line_index": 9,
+      "text": "One minute I held the key",
+      "start": 18.7,
+      "end": 20.9,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "One",
+          "start": 18.7,
+          "end": 18.8
+        },
+        {
+          "word_index": 2,
+          "text": "minute",
+          "start": 18.8,
+          "end": 18.8
+        },
+        {
+          "word_index": 3,
+          "text": "I",
+          "start": 18.8,
+          "end": 18.8
+        },
+        {
+          "word_index": 4,
+          "text": "held",
+          "start": 18.8,
+          "end": 18.9
+        },
+        {
+          "word_index": 5,
+          "text": "the",
+          "start": 18.9,
+          "end": 19.0
+        },
+        {
+          "word_index": 6,
+          "text": "key",
+          "start": 19.0,
+          "end": 20.9
+        }
+      ]
+    },
+    {
+      "line_index": 10,
+      "text": "Next, the walls were closed on me",
+      "start": 20.9,
+      "end": 23.1,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Next,",
+          "start": 20.9,
+          "end": 21.0
+        },
+        {
+          "word_index": 2,
+          "text": "the",
+          "start": 21.0,
+          "end": 21.0
+        },
+        {
+          "word_index": 3,
+          "text": "walls",
+          "start": 21.0,
+          "end": 21.1
+        },
+        {
+          "word_index": 4,
+          "text": "were",
+          "start": 21.1,
+          "end": 21.1
+        },
+        {
+          "word_index": 5,
+          "text": "closed",
+          "start": 21.1,
+          "end": 21.2
+        },
+        {
+          "word_index": 6,
+          "text": "on",
+          "start": 21.2,
+          "end": 21.2
+        },
+        {
+          "word_index": 7,
+          "text": "me",
+          "start": 21.2,
+          "end": 23.1
+        }
+      ]
+    },
+    {
+      "line_index": 11,
+      "text": "And I discovered that my castles stand",
+      "start": 23.1,
+      "end": 25.6,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "And",
+          "start": 23.1,
+          "end": 23.1
+        },
+        {
+          "word_index": 2,
+          "text": "I",
+          "start": 23.1,
+          "end": 23.1
+        },
+        {
+          "word_index": 3,
+          "text": "discovered",
+          "start": 23.1,
+          "end": 23.2
+        },
+        {
+          "word_index": 4,
+          "text": "that",
+          "start": 23.2,
+          "end": 23.2
+        },
+        {
+          "word_index": 5,
+          "text": "my",
+          "start": 23.2,
+          "end": 23.3
+        },
+        {
+          "word_index": 6,
+          "text": "castles",
+          "start": 23.3,
+          "end": 23.4
+        },
+        {
+          "word_index": 7,
+          "text": "stand",
+          "start": 23.4,
+          "end": 25.6
+        }
+      ]
+    },
+    {
+      "line_index": 12,
+      "text": "Upon pillars of salt and pillars of sand",
+      "start": 25.6,
+      "end": 28.1,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Upon",
+          "start": 25.6,
+          "end": 25.6
+        },
+        {
+          "word_index": 2,
+          "text": "pillars",
+          "start": 25.6,
+          "end": 25.7
+        },
+        {
+          "word_index": 3,
+          "text": "of",
+          "start": 25.7,
+          "end": 25.7
+        },
+        {
+          "word_index": 4,
+          "text": "salt",
+          "start": 25.7,
+          "end": 25.8
+        },
+        {
+          "word_index": 5,
+          "text": "and",
+          "start": 25.8,
+          "end": 25.8
+        },
+        {
+          "word_index": 6,
+          "text": "pillars",
+          "start": 25.8,
+          "end": 25.9
+        },
+        {
+          "word_index": 7,
+          "text": "of",
+          "start": 25.9,
+          "end": 25.9
+        },
+        {
+          "word_index": 8,
+          "text": "sand",
+          "start": 25.9,
+          "end": 28.1
+        }
+      ]
+    },
+    {
+      "line_index": 13,
+      "text": "I hear Jerusalem bells a-ringing",
+      "start": 28.1,
+      "end": 30.3,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "I",
+          "start": 28.1,
+          "end": 28.1
+        },
+        {
+          "word_index": 2,
+          "text": "hear",
+          "start": 28.1,
+          "end": 28.8
+        },
+        {
+          "word_index": 3,
+          "text": "Jerusalem",
+          "start": 28.8,
+          "end": 29.3
+        },
+        {
+          "word_index": 4,
+          "text": "bells",
+          "start": 29.3,
+          "end": 30.3
+        },
+        {
+          "word_index": 5,
+          "text": "a-ringing",
+          "start": 30.3,
+          "end": 30.3
+        }
+      ]
+    },
+    {
+      "line_index": 14,
+      "text": "Roman cavalry choirs are singing",
+      "start": 30.3,
+      "end": 32.5,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Roman",
+          "start": 30.3,
+          "end": 30.3
+        },
+        {
+          "word_index": 2,
+          "text": "cavalry",
+          "start": 30.3,
+          "end": 30.4
+        },
+        {
+          "word_index": 3,
+          "text": "choirs",
+          "start": 30.4,
+          "end": 30.5
+        },
+        {
+          "word_index": 4,
+          "text": "are",
+          "start": 30.5,
+          "end": 30.5
+        },
+        {
+          "word_index": 5,
+          "text": "singing",
+          "start": 30.5,
+          "end": 32.5
+        }
+      ]
+    },
+    {
+      "line_index": 15,
+      "text": "Be my mirror, my sword and shield",
+      "start": 32.5,
+      "end": 34.7,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Be",
+          "start": 32.5,
+          "end": 32.5
+        },
+        {
+          "word_index": 2,
+          "text": "my",
+          "start": 32.5,
+          "end": 32.6
+        },
+        {
+          "word_index": 3,
+          "text": "mirror,",
+          "start": 32.6,
+          "end": 32.6
+        },
+        {
+          "word_index": 4,
+          "text": "my",
+          "start": 32.6,
+          "end": 32.6
+        },
+        {
+          "word_index": 5,
+          "text": "sword",
+          "start": 32.6,
+          "end": 32.7
+        },
+        {
+          "word_index": 6,
+          "text": "and",
+          "start": 32.7,
+          "end": 32.7
+        },
+        {
+          "word_index": 7,
+          "text": "shield",
+          "start": 32.7,
+          "end": 34.7
+        }
+      ]
+    },
+    {
+      "line_index": 16,
+      "text": "My missionaries in a foreign field",
+      "start": 34.7,
+      "end": 36.9,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "My",
+          "start": 34.7,
+          "end": 34.7
+        },
+        {
+          "word_index": 2,
+          "text": "missionaries",
+          "start": 34.7,
+          "end": 34.8
+        },
+        {
+          "word_index": 3,
+          "text": "in",
+          "start": 34.8,
+          "end": 34.8
+        },
+        {
+          "word_index": 4,
+          "text": "a",
+          "start": 34.8,
+          "end": 34.8
+        },
+        {
+          "word_index": 5,
+          "text": "foreign",
+          "start": 34.8,
+          "end": 34.8
+        },
+        {
+          "word_index": 6,
+          "text": "field",
+          "start": 34.8,
+          "end": 36.9
+        }
+      ]
+    },
+    {
+      "line_index": 17,
+      "text": "For some reason, I can't explain",
+      "start": 36.9,
+      "end": 38.5,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "For",
+          "start": 36.9,
+          "end": 36.9
+        },
+        {
+          "word_index": 2,
+          "text": "some",
+          "start": 36.9,
+          "end": 37.0
+        },
+        {
+          "word_index": 3,
+          "text": "reason,",
+          "start": 37.0,
+          "end": 37.0
+        },
+        {
+          "word_index": 4,
+          "text": "I",
+          "start": 37.0,
+          "end": 37.0
+        },
+        {
+          "word_index": 5,
+          "text": "can't",
+          "start": 37.0,
+          "end": 37.0
+        },
+        {
+          "word_index": 6,
+          "text": "explain",
+          "start": 37.0,
+          "end": 38.5
+        }
+      ]
+    },
+    {
+      "line_index": 18,
+      "text": "Once you'd gone, there was never",
+      "start": 39.1,
+      "end": 41.3,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Once",
+          "start": 39.1,
+          "end": 39.1
+        },
+        {
+          "word_index": 2,
+          "text": "you'd",
+          "start": 39.1,
+          "end": 39.1
+        },
+        {
+          "word_index": 3,
+          "text": "gone,",
+          "start": 39.1,
+          "end": 39.1
+        },
+        {
+          "word_index": 4,
+          "text": "there",
+          "start": 39.1,
+          "end": 39.2
+        },
+        {
+          "word_index": 5,
+          "text": "was",
+          "start": 39.2,
+          "end": 39.2
+        },
+        {
+          "word_index": 6,
+          "text": "never",
+          "start": 39.2,
+          "end": 41.3
+        }
+      ]
+    },
+    {
+      "line_index": 19,
+      "text": "Never an honest word",
+      "start": 41.3,
+      "end": 42.7,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Never",
+          "start": 41.3,
+          "end": 41.3
+        },
+        {
+          "word_index": 2,
+          "text": "an",
+          "start": 41.3,
+          "end": 41.3
+        },
+        {
+          "word_index": 3,
+          "text": "honest",
+          "start": 41.3,
+          "end": 41.3
+        },
+        {
+          "word_index": 4,
+          "text": "word",
+          "start": 41.3,
+          "end": 42.7
+        }
+      ]
+    },
+    {
+      "line_index": 20,
+      "text": "And that was when I ruled the world",
+      "start": 43.5,
+      "end": 45.7,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "And",
+          "start": 43.5,
+          "end": 43.5
+        },
+        {
+          "word_index": 2,
+          "text": "that",
+          "start": 43.5,
+          "end": 43.6
+        },
+        {
+          "word_index": 3,
+          "text": "was",
+          "start": 43.6,
+          "end": 43.6
+        },
+        {
+          "word_index": 4,
+          "text": "when",
+          "start": 43.6,
+          "end": 43.6
+        },
+        {
+          "word_index": 5,
+          "text": "I",
+          "start": 43.6,
+          "end": 43.6
+        },
+        {
+          "word_index": 6,
+          "text": "ruled",
+          "start": 43.6,
+          "end": 43.6
+        },
+        {
+          "word_index": 7,
+          "text": "the",
+          "start": 43.6,
+          "end": 43.6
+        },
+        {
+          "word_index": 8,
+          "text": "world",
+          "start": 43.6,
+          "end": 45.7
+        }
+      ]
+    },
+    {
+      "line_index": 21,
+      "text": "It was a wicked and wild wind",
+      "start": 45.7,
+      "end": 47.9,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "It",
+          "start": 45.7,
+          "end": 45.7
+        },
+        {
+          "word_index": 2,
+          "text": "was",
+          "start": 45.7,
+          "end": 45.8
+        },
+        {
+          "word_index": 3,
+          "text": "a",
+          "start": 45.8,
+          "end": 45.8
+        },
+        {
+          "word_index": 4,
+          "text": "wicked",
+          "start": 45.8,
+          "end": 45.8
+        },
+        {
+          "word_index": 5,
+          "text": "and",
+          "start": 45.8,
+          "end": 45.8
+        },
+        {
+          "word_index": 6,
+          "text": "wild",
+          "start": 45.8,
+          "end": 45.9
+        },
+        {
+          "word_index": 7,
+          "text": "wind",
+          "start": 45.9,
+          "end": 47.9
+        }
+      ]
+    },
+    {
+      "line_index": 22,
+      "text": "Blew down the doors to let me in",
+      "start": 47.9,
+      "end": 50.1,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Blew",
+          "start": 47.9,
+          "end": 47.9
+        },
+        {
+          "word_index": 2,
+          "text": "down",
+          "start": 47.9,
+          "end": 47.9
+        },
+        {
+          "word_index": 3,
+          "text": "the",
+          "start": 47.9,
+          "end": 47.9
+        },
+        {
+          "word_index": 4,
+          "text": "doors",
+          "start": 47.9,
+          "end": 48.0
+        },
+        {
+          "word_index": 5,
+          "text": "to",
+          "start": 48.0,
+          "end": 48.0
+        },
+        {
+          "word_index": 6,
+          "text": "let",
+          "start": 48.0,
+          "end": 48.0
+        },
+        {
+          "word_index": 7,
+          "text": "me",
+          "start": 48.0,
+          "end": 48.0
+        },
+        {
+          "word_index": 8,
+          "text": "in",
+          "start": 48.0,
+          "end": 50.1
+        }
+      ]
+    },
+    {
+      "line_index": 23,
+      "text": "Shattered windows and the sound of drums",
+      "start": 50.1,
+      "end": 52.7,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Shattered",
+          "start": 50.1,
+          "end": 50.1
+        },
+        {
+          "word_index": 2,
+          "text": "windows",
+          "start": 50.1,
+          "end": 50.2
+        },
+        {
+          "word_index": 3,
+          "text": "and",
+          "start": 50.2,
+          "end": 50.2
+        },
+        {
+          "word_index": 4,
+          "text": "the",
+          "start": 50.2,
+          "end": 50.2
+        },
+        {
+          "word_index": 5,
+          "text": "sound",
+          "start": 50.2,
+          "end": 50.2
+        },
+        {
+          "word_index": 6,
+          "text": "of",
+          "start": 50.2,
+          "end": 50.3
+        },
+        {
+          "word_index": 7,
+          "text": "drums",
+          "start": 50.3,
+          "end": 52.7
+        }
+      ]
+    },
+    {
+      "line_index": 24,
+      "text": "People couldn't believe what I'd become",
+      "start": 52.7,
+      "end": 55.2,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "People",
+          "start": 52.7,
+          "end": 52.8
+        },
+        {
+          "word_index": 2,
+          "text": "couldn't",
+          "start": 52.8,
+          "end": 52.8
+        },
+        {
+          "word_index": 3,
+          "text": "believe",
+          "start": 52.8,
+          "end": 52.8
+        },
+        {
+          "word_index": 4,
+          "text": "what",
+          "start": 52.8,
+          "end": 52.9
+        },
+        {
+          "word_index": 5,
+          "text": "I'd",
+          "start": 52.9,
+          "end": 52.9
+        },
+        {
+          "word_index": 6,
+          "text": "become",
+          "start": 52.9,
+          "end": 55.2
+        }
+      ]
+    },
+    {
+      "line_index": 25,
+      "text": "Revolutionaries wait",
+      "start": 55.3,
+      "end": 57.4,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Revolutionaries",
+          "start": 55.3,
+          "end": 55.3
+        },
+        {
+          "word_index": 2,
+          "text": "wait",
+          "start": 55.3,
+          "end": 57.4
+        }
+      ]
+    },
+    {
+      "line_index": 26,
+      "text": "For my head on a silver plate",
+      "start": 57.5,
+      "end": 59.6,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "For",
+          "start": 57.5,
+          "end": 57.5
+        },
+        {
+          "word_index": 2,
+          "text": "my",
+          "start": 57.5,
+          "end": 57.6
+        },
+        {
+          "word_index": 3,
+          "text": "head",
+          "start": 57.6,
+          "end": 57.6
+        },
+        {
+          "word_index": 4,
+          "text": "on",
+          "start": 57.6,
+          "end": 57.6
+        },
+        {
+          "word_index": 5,
+          "text": "a",
+          "start": 57.6,
+          "end": 57.6
+        },
+        {
+          "word_index": 6,
+          "text": "silver",
+          "start": 57.6,
+          "end": 57.7
+        },
+        {
+          "word_index": 7,
+          "text": "plate",
+          "start": 57.7,
+          "end": 59.6
+        }
+      ]
+    },
+    {
+      "line_index": 27,
+      "text": "Just a puppet on a lonely string",
+      "start": 59.7,
+      "end": 61.3,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Just",
+          "start": 59.7,
+          "end": 59.7
+        },
+        {
+          "word_index": 2,
+          "text": "a",
+          "start": 59.7,
+          "end": 59.7
+        },
+        {
+          "word_index": 3,
+          "text": "puppet",
+          "start": 59.7,
+          "end": 59.7
+        },
+        {
+          "word_index": 4,
+          "text": "on",
+          "start": 59.7,
+          "end": 59.7
+        },
+        {
+          "word_index": 5,
+          "text": "a",
+          "start": 59.7,
+          "end": 59.7
+        },
+        {
+          "word_index": 6,
+          "text": "lonely",
+          "start": 59.7,
+          "end": 59.7
+        },
+        {
+          "word_index": 7,
+          "text": "string",
+          "start": 59.7,
+          "end": 61.3
+        }
+      ]
+    },
+    {
+      "line_index": 28,
+      "text": "Oh, who would ever want to be king?",
+      "start": 61.9,
+      "end": 64.0,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Oh,",
+          "start": 61.9,
+          "end": 62.1
+        },
+        {
+          "word_index": 2,
+          "text": "who",
+          "start": 62.1,
+          "end": 62.4
+        },
+        {
+          "word_index": 3,
+          "text": "would",
+          "start": 62.4,
+          "end": 62.7
+        },
+        {
+          "word_index": 4,
+          "text": "ever",
+          "start": 62.7,
+          "end": 63.0
+        },
+        {
+          "word_index": 5,
+          "text": "want",
+          "start": 63.0,
+          "end": 63.2
+        },
+        {
+          "word_index": 6,
+          "text": "to",
+          "start": 63.2,
+          "end": 63.5
+        },
+        {
+          "word_index": 7,
+          "text": "be",
+          "start": 63.5,
+          "end": 63.8
+        },
+        {
+          "word_index": 8,
+          "text": "king?",
+          "start": 63.8,
+          "end": 64.0
+        }
+      ]
+    },
+    {
+      "line_index": 29,
+      "text": "I hear Jerusalem bells a-ringing",
+      "start": 64.1,
+      "end": 66.2,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "I",
+          "start": 64.1,
+          "end": 64.5
+        },
+        {
+          "word_index": 2,
+          "text": "hear",
+          "start": 64.5,
+          "end": 64.9
+        },
+        {
+          "word_index": 3,
+          "text": "Jerusalem",
+          "start": 64.9,
+          "end": 65.4
+        },
+        {
+          "word_index": 4,
+          "text": "bells",
+          "start": 65.4,
+          "end": 65.8
+        },
+        {
+          "word_index": 5,
+          "text": "a-ringing",
+          "start": 65.8,
+          "end": 66.2
+        }
+      ]
+    },
+    {
+      "line_index": 30,
+      "text": "Roman cavalry choirs are singing",
+      "start": 66.3,
+      "end": 68.4,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Roman",
+          "start": 66.3,
+          "end": 66.3
+        },
+        {
+          "word_index": 2,
+          "text": "cavalry",
+          "start": 66.3,
+          "end": 66.3
+        },
+        {
+          "word_index": 3,
+          "text": "choirs",
+          "start": 66.3,
+          "end": 66.4
+        },
+        {
+          "word_index": 4,
+          "text": "are",
+          "start": 66.4,
+          "end": 66.4
+        },
+        {
+          "word_index": 5,
+          "text": "singing",
+          "start": 66.4,
+          "end": 68.4
+        }
+      ]
+    },
+    {
+      "line_index": 31,
+      "text": "Be my mirror, my sword and shield",
+      "start": 68.5,
+      "end": 70.6,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Be",
+          "start": 68.5,
+          "end": 68.5
+        },
+        {
+          "word_index": 2,
+          "text": "my",
+          "start": 68.5,
+          "end": 68.5
+        },
+        {
+          "word_index": 3,
+          "text": "mirror,",
+          "start": 68.5,
+          "end": 68.5
+        },
+        {
+          "word_index": 4,
+          "text": "my",
+          "start": 68.5,
+          "end": 68.5
+        },
+        {
+          "word_index": 5,
+          "text": "sword",
+          "start": 68.5,
+          "end": 68.6
+        },
+        {
+          "word_index": 6,
+          "text": "and",
+          "start": 68.6,
+          "end": 68.6
+        },
+        {
+          "word_index": 7,
+          "text": "shield",
+          "start": 68.6,
+          "end": 70.6
+        }
+      ]
+    },
+    {
+      "line_index": 32,
+      "text": "My missionaries in a foreign field",
+      "start": 70.7,
+      "end": 72.8,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "My",
+          "start": 70.7,
+          "end": 70.7
+        },
+        {
+          "word_index": 2,
+          "text": "missionaries",
+          "start": 70.7,
+          "end": 70.7
+        },
+        {
+          "word_index": 3,
+          "text": "in",
+          "start": 70.7,
+          "end": 70.8
+        },
+        {
+          "word_index": 4,
+          "text": "a",
+          "start": 70.8,
+          "end": 70.8
+        },
+        {
+          "word_index": 5,
+          "text": "foreign",
+          "start": 70.8,
+          "end": 70.8
+        },
+        {
+          "word_index": 6,
+          "text": "field",
+          "start": 70.8,
+          "end": 72.8
+        }
+      ]
+    },
+    {
+      "line_index": 33,
+      "text": "For some reason, I can't explain",
+      "start": 72.9,
+      "end": 75.1,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "For",
+          "start": 72.9,
+          "end": 72.9
+        },
+        {
+          "word_index": 2,
+          "text": "some",
+          "start": 72.9,
+          "end": 72.9
+        },
+        {
+          "word_index": 3,
+          "text": "reason,",
+          "start": 72.9,
+          "end": 73.0
+        },
+        {
+          "word_index": 4,
+          "text": "I",
+          "start": 73.0,
+          "end": 73.0
+        },
+        {
+          "word_index": 5,
+          "text": "can't",
+          "start": 73.0,
+          "end": 73.0
+        },
+        {
+          "word_index": 6,
+          "text": "explain",
+          "start": 73.0,
+          "end": 75.1
+        }
+      ]
+    },
+    {
+      "line_index": 34,
+      "text": "I know Saint Peter won't call my name",
+      "start": 75.1,
+      "end": 77.4,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "I",
+          "start": 75.1,
+          "end": 75.4
+        },
+        {
+          "word_index": 2,
+          "text": "know",
+          "start": 75.4,
+          "end": 75.7
+        },
+        {
+          "word_index": 3,
+          "text": "Saint",
+          "start": 75.7,
+          "end": 75.9
+        },
+        {
+          "word_index": 4,
+          "text": "Peter",
+          "start": 75.9,
+          "end": 76.2
+        },
+        {
+          "word_index": 5,
+          "text": "won't",
+          "start": 76.2,
+          "end": 76.5
+        },
+        {
+          "word_index": 6,
+          "text": "call",
+          "start": 76.5,
+          "end": 76.8
+        },
+        {
+          "word_index": 7,
+          "text": "my",
+          "start": 76.8,
+          "end": 77.1
+        },
+        {
+          "word_index": 8,
+          "text": "name",
+          "start": 77.1,
+          "end": 77.4
+        }
+      ]
+    },
+    {
+      "line_index": 35,
+      "text": "Never an honest word",
+      "start": 77.4,
+      "end": 79.6,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Never",
+          "start": 77.4,
+          "end": 77.4
+        },
+        {
+          "word_index": 2,
+          "text": "an",
+          "start": 77.4,
+          "end": 77.4
+        },
+        {
+          "word_index": 3,
+          "text": "honest",
+          "start": 77.4,
+          "end": 77.5
+        },
+        {
+          "word_index": 4,
+          "text": "word",
+          "start": 77.5,
+          "end": 79.6
+        }
+      ]
+    },
+    {
+      "line_index": 36,
+      "text": "But that was when I ruled the world",
+      "start": 79.6,
+      "end": 81.8,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "But",
+          "start": 79.6,
+          "end": 79.6
+        },
+        {
+          "word_index": 2,
+          "text": "that",
+          "start": 79.6,
+          "end": 79.6
+        },
+        {
+          "word_index": 3,
+          "text": "was",
+          "start": 79.6,
+          "end": 79.6
+        },
+        {
+          "word_index": 4,
+          "text": "when",
+          "start": 79.6,
+          "end": 79.7
+        },
+        {
+          "word_index": 5,
+          "text": "I",
+          "start": 79.7,
+          "end": 79.7
+        },
+        {
+          "word_index": 6,
+          "text": "ruled",
+          "start": 79.7,
+          "end": 79.7
+        },
+        {
+          "word_index": 7,
+          "text": "the",
+          "start": 79.7,
+          "end": 79.7
+        },
+        {
+          "word_index": 8,
+          "text": "world",
+          "start": 79.7,
+          "end": 81.8
+        }
+      ]
+    },
+    {
+      "line_index": 37,
+      "text": "Hear Jerusalem bells a-ringing",
+      "start": 81.8,
+      "end": 84.0,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Hear",
+          "start": 81.8,
+          "end": 81.8
+        },
+        {
+          "word_index": 2,
+          "text": "Jerusalem",
+          "start": 81.8,
+          "end": 81.8
+        },
+        {
+          "word_index": 3,
+          "text": "bells",
+          "start": 81.8,
+          "end": 81.8
+        },
+        {
+          "word_index": 4,
+          "text": "a-ringing",
+          "start": 81.8,
+          "end": 84.0
+        }
+      ]
+    },
+    {
+      "line_index": 38,
+      "text": "Roman cavalry choirs are singing",
+      "start": 84.0,
+      "end": 86.2,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Roman",
+          "start": 84.0,
+          "end": 84.0
+        },
+        {
+          "word_index": 2,
+          "text": "cavalry",
+          "start": 84.0,
+          "end": 84.0
+        },
+        {
+          "word_index": 3,
+          "text": "choirs",
+          "start": 84.0,
+          "end": 84.0
+        },
+        {
+          "word_index": 4,
+          "text": "are",
+          "start": 84.0,
+          "end": 84.0
+        },
+        {
+          "word_index": 5,
+          "text": "singing",
+          "start": 84.0,
+          "end": 86.2
+        }
+      ]
+    },
+    {
+      "line_index": 39,
+      "text": "Be my mirror, my sword and shield",
+      "start": 86.2,
+      "end": 87.6,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Be",
+          "start": 86.2,
+          "end": 86.4
+        },
+        {
+          "word_index": 2,
+          "text": "my",
+          "start": 86.4,
+          "end": 86.6
+        },
+        {
+          "word_index": 3,
+          "text": "mirror,",
+          "start": 86.6,
+          "end": 86.8
+        },
+        {
+          "word_index": 4,
+          "text": "my",
+          "start": 86.8,
+          "end": 87.0
+        },
+        {
+          "word_index": 5,
+          "text": "sword",
+          "start": 87.0,
+          "end": 87.2
+        },
+        {
+          "word_index": 6,
+          "text": "and",
+          "start": 87.2,
+          "end": 87.4
+        },
+        {
+          "word_index": 7,
+          "text": "shield",
+          "start": 87.4,
+          "end": 87.6
+        }
+      ]
+    },
+    {
+      "line_index": 40,
+      "text": "My missionaries in a foreign field",
+      "start": 88.4,
+      "end": 89.4,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "My",
+          "start": 88.4,
+          "end": 88.4
+        },
+        {
+          "word_index": 2,
+          "text": "missionaries",
+          "start": 88.4,
+          "end": 88.9
+        },
+        {
+          "word_index": 3,
+          "text": "in",
+          "start": 88.9,
+          "end": 88.9
+        },
+        {
+          "word_index": 4,
+          "text": "a",
+          "start": 88.9,
+          "end": 88.9
+        },
+        {
+          "word_index": 5,
+          "text": "foreign",
+          "start": 88.9,
+          "end": 89.3
+        },
+        {
+          "word_index": 6,
+          "text": "field",
+          "start": 89.3,
+          "end": 89.4
+        }
+      ]
+    },
+    {
+      "line_index": 41,
+      "text": "For some reason, I can't explain",
+      "start": 90.6,
+      "end": 92.3,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "For",
+          "start": 90.6,
+          "end": 91.0
+        },
+        {
+          "word_index": 2,
+          "text": "some",
+          "start": 91.0,
+          "end": 91.3
+        },
+        {
+          "word_index": 3,
+          "text": "reason,",
+          "start": 91.4,
+          "end": 91.7
+        },
+        {
+          "word_index": 4,
+          "text": "I",
+          "start": 91.7,
+          "end": 92.0
+        },
+        {
+          "word_index": 5,
+          "text": "can't",
+          "start": 92.1,
+          "end": 92.3
+        },
+        {
+          "word_index": 6,
+          "text": "explain",
+          "start": 92.3,
+          "end": 92.3
+        }
+      ]
+    },
+    {
+      "line_index": 42,
+      "text": "I know Saint Peter won't call my name",
+      "start": 92.8,
+      "end": 94.3,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "I",
+          "start": 92.8,
+          "end": 93.0
+        },
+        {
+          "word_index": 2,
+          "text": "know",
+          "start": 93.0,
+          "end": 93.2
+        },
+        {
+          "word_index": 3,
+          "text": "Saint",
+          "start": 93.2,
+          "end": 93.4
+        },
+        {
+          "word_index": 4,
+          "text": "Peter",
+          "start": 93.4,
+          "end": 93.6
+        },
+        {
+          "word_index": 5,
+          "text": "won't",
+          "start": 93.6,
+          "end": 93.8
+        },
+        {
+          "word_index": 6,
+          "text": "call",
+          "start": 93.8,
+          "end": 93.9
+        },
+        {
+          "word_index": 7,
+          "text": "my",
+          "start": 93.9,
+          "end": 94.1
+        },
+        {
+          "word_index": 8,
+          "text": "name",
+          "start": 94.1,
+          "end": 94.3
+        }
+      ]
+    },
+    {
+      "line_index": 43,
+      "text": "Never an honest word",
+      "start": 95.1,
+      "end": 96.1,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Never",
+          "start": 95.1,
+          "end": 95.1
+        },
+        {
+          "word_index": 2,
+          "text": "an",
+          "start": 95.1,
+          "end": 95.1
+        },
+        {
+          "word_index": 3,
+          "text": "honest",
+          "start": 95.1,
+          "end": 95.1
+        },
+        {
+          "word_index": 4,
+          "text": "word",
+          "start": 95.1,
+          "end": 96.1
+        }
+      ]
+    },
+    {
+      "line_index": 44,
+      "text": "But that was when I ruled the world",
+      "start": 97.3,
+      "end": 99.3,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "But",
+          "start": 97.3,
+          "end": 97.3
+        },
+        {
+          "word_index": 2,
+          "text": "that",
+          "start": 97.3,
+          "end": 97.3
+        },
+        {
+          "word_index": 3,
+          "text": "was",
+          "start": 97.3,
+          "end": 97.3
+        },
+        {
+          "word_index": 4,
+          "text": "when",
+          "start": 97.3,
+          "end": 97.3
+        },
+        {
+          "word_index": 5,
+          "text": "I",
+          "start": 97.3,
+          "end": 97.3
+        },
+        {
+          "word_index": 6,
+          "text": "ruled",
+          "start": 97.3,
+          "end": 97.3
+        },
+        {
+          "word_index": 7,
+          "text": "the",
+          "start": 97.3,
+          "end": 97.3
+        },
+        {
+          "word_index": 8,
+          "text": "world",
+          "start": 97.3,
+          "end": 99.3
+        }
+      ]
+    }
+  ]
+}

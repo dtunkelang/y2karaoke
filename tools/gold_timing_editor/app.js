@@ -7,6 +7,7 @@ const state = {
   drag: null,
   undoStack: [],
 };
+const MIN_WORD_DURATION = 0.1;
 
 const els = {
   status: document.getElementById("status"),
@@ -177,7 +178,7 @@ function enforceNonOverlapCascade(anchorLi) {
   updateLineBounds();
 }
 
-function startLineDrag(li, ev) {
+function startLineDrag(li, ev, pxPerSec = state.secondsToPx) {
   const line = state.doc.lines[li];
   if (!line || !line.words?.length) return;
   ev.preventDefault();
@@ -188,33 +189,86 @@ function startLineDrag(li, ev) {
     mode: "line-move",
     li,
     startX: ev.clientX,
+    moved: false,
+    pxPerSec,
     originalAll: snapshotAllLineWords(),
   };
 }
 
+function _allWordRefs() {
+  const refs = [];
+  for (let lineIdx = 0; lineIdx < state.doc.lines.length; lineIdx += 1) {
+    const words = state.doc.lines[lineIdx].words;
+    for (let wordIdx = 0; wordIdx < words.length; wordIdx += 1) {
+      refs.push({ li: lineIdx, wi: wordIdx, word: words[wordIdx] });
+    }
+  }
+  return refs;
+}
+
 function setWordTiming(li, wi, nextStart, nextEnd) {
-  const word = state.doc.lines[li].words[wi];
-  const prevWord = findPrevWord(li, wi);
-  const nextWord = findNextWord(li, wi);
+  const refs = _allWordRefs();
+  const editedIndex = refs.findIndex((r) => r.li === li && r.wi === wi);
+  if (editedIndex < 0) return;
+
+  const starts = refs.map((r) => snap(r.word.start));
+  const ends = refs.map((r) => snap(r.word.end));
+  const durations = refs.map((r) =>
+    Math.max(snap(r.word.end - r.word.start), MIN_WORD_DURATION)
+  );
 
   let start = snap(nextStart);
   let end = snap(nextEnd);
-
   if (start < 0) start = 0;
-  if (end < start) end = start;
+  if (end < start + MIN_WORD_DURATION) end = start + MIN_WORD_DURATION;
+  starts[editedIndex] = start;
+  ends[editedIndex] = end;
+  durations[editedIndex] = Math.max(snap(end - start), MIN_WORD_DURATION);
 
-  if (prevWord && start < prevWord.end) {
-    start = prevWord.end;
-    if (end < start) end = start;
+  // Cascade backward across song words.
+  for (let j = editedIndex - 1; j >= 0; j -= 1) {
+    if (ends[j] > starts[j + 1]) {
+      ends[j] = starts[j + 1];
+      starts[j] = ends[j] - durations[j];
+    } else if (ends[j] < starts[j] + MIN_WORD_DURATION) {
+      ends[j] = starts[j] + MIN_WORD_DURATION;
+    }
   }
 
-  if (nextWord && end > nextWord.start) {
-    end = nextWord.start;
-    if (start > end) start = end;
+  // Shift entire song forward if any word fell below zero.
+  if (starts[0] < 0) {
+    const shift = -starts[0];
+    for (let j = 0; j < refs.length; j += 1) {
+      starts[j] += shift;
+      ends[j] += shift;
+    }
   }
 
-  word.start = snap(start);
-  word.end = snap(end);
+  // Cascade forward across song words.
+  for (let j = editedIndex + 1; j < refs.length; j += 1) {
+    if (starts[j] < ends[j - 1]) {
+      starts[j] = ends[j - 1];
+      ends[j] = starts[j] + durations[j];
+    } else if (ends[j] < starts[j] + MIN_WORD_DURATION) {
+      ends[j] = starts[j] + MIN_WORD_DURATION;
+    }
+  }
+
+  // Final defensive pass.
+  for (let j = 0; j < refs.length; j += 1) {
+    starts[j] = snap(Math.max(starts[j], 0));
+    ends[j] = snap(Math.max(ends[j], starts[j] + MIN_WORD_DURATION));
+    if (j > 0 && starts[j] < ends[j - 1]) {
+      const push = ends[j - 1] - starts[j];
+      starts[j] = snap(starts[j] + push);
+      ends[j] = snap(ends[j] + push);
+    }
+  }
+
+  for (let j = 0; j < refs.length; j += 1) {
+    refs[j].word.start = snap(starts[j]);
+    refs[j].word.end = snap(ends[j]);
+  }
   updateLineBounds();
 }
 
@@ -250,38 +304,59 @@ function getLineViewWindow(line) {
   return { start, end, duration: end - start };
 }
 
-function buildTrack(line, li, viewWindow) {
+function buildTrack(line, li, viewWindow, pxPerSec) {
   const track = document.createElement("div");
   track.className = "track";
-  track.style.width = `${Math.max(viewWindow.duration * state.secondsToPx, 300)}px`;
+  track.style.width = `${Math.max(viewWindow.duration * pxPerSec, 300)}px`;
 
-  for (let wi = 0; wi < line.words.length; wi += 1) {
-    const w = line.words[wi];
+  const lineBounds = getLineBounds(line);
+  const allRefs = _allWordRefs();
+  const contextRefs = allRefs.filter((ref) => {
+    if (ref.li === li) return false;
+    const ws = ref.word.start;
+    const we = ref.word.end;
+    return we > viewWindow.start && ws < viewWindow.end;
+  });
+
+  function appendWordBlock(w, wordLi, wordWi, opts = {}) {
+    const {
+      isContext = false,
+      clipStart = viewWindow.start,
+      clipEnd = viewWindow.end,
+    } = opts;
+    const blockLeftSec = Math.max(w.start, viewWindow.start, clipStart);
+    const blockRightSec = Math.min(w.end, viewWindow.end, clipEnd);
+    if (blockRightSec <= blockLeftSec) return;
+
     const word = document.createElement("div");
-    word.className = "word";
-    if (state.selected && state.selected.li === li && state.selected.wi === wi) {
+    word.className = isContext ? "word word-context" : "word";
+    if (!isContext && state.selected && state.selected.li === wordLi && state.selected.wi === wordWi) {
       word.classList.add("selected");
     }
-    word.style.left = `${(w.start - viewWindow.start) * state.secondsToPx}px`;
-    word.style.width = `${Math.max((w.end - w.start) * state.secondsToPx, 8)}px`;
+    word.style.left = `${(blockLeftSec - viewWindow.start) * pxPerSec}px`;
+    word.style.width = `${Math.max((blockRightSec - blockLeftSec) * pxPerSec, 8)}px`;
     word.textContent = w.text;
     word.title = `${w.text}  [${w.start.toFixed(1)} - ${w.end.toFixed(1)}]`;
-    if (els.audio.currentTime >= w.end) {
-      word.classList.add("sung");
-    } else if (els.audio.currentTime >= w.start && els.audio.currentTime <= w.end) {
-      word.classList.add("playing");
+    if (!isContext) {
+      if (els.audio.currentTime >= w.end) {
+        word.classList.add("sung");
+      } else if (els.audio.currentTime >= w.start && els.audio.currentTime <= w.end) {
+        word.classList.add("playing");
+      }
     }
 
-    if (state.editMode === "word") {
+    if (!isContext && state.editMode === "word") {
       word.addEventListener("mousedown", (ev) => {
         ev.preventDefault();
         snapshotForUndo();
-        selectWord(li, wi);
+        selectWord(wordLi, wordWi);
         state.drag = {
           mode: "move",
-          li,
-          wi,
+          li: wordLi,
+          wi: wordWi,
           startX: ev.clientX,
+          moved: false,
+          pxPerSec,
           startStart: w.start,
           startEnd: w.end,
         };
@@ -293,12 +368,14 @@ function buildTrack(line, li, viewWindow) {
         ev.preventDefault();
         ev.stopPropagation();
         snapshotForUndo();
-        selectWord(li, wi);
+        selectWord(wordLi, wordWi);
         state.drag = {
           mode: "resize-left",
-          li,
-          wi,
+          li: wordLi,
+          wi: wordWi,
           startX: ev.clientX,
+          moved: false,
+          pxPerSec,
           startStart: w.start,
         };
       });
@@ -309,12 +386,14 @@ function buildTrack(line, li, viewWindow) {
         ev.preventDefault();
         ev.stopPropagation();
         snapshotForUndo();
-        selectWord(li, wi);
+        selectWord(wordLi, wordWi);
         state.drag = {
           mode: "resize-right",
-          li,
-          wi,
+          li: wordLi,
+          wi: wordWi,
           startX: ev.clientX,
+          moved: false,
+          pxPerSec,
           startEnd: w.end,
         };
       });
@@ -325,6 +404,29 @@ function buildTrack(line, li, viewWindow) {
     track.appendChild(word);
   }
 
+  const contextZones = [
+    { start: viewWindow.start, end: lineBounds.start },
+    { start: lineBounds.end, end: viewWindow.end },
+  ].filter((z) => z.end > z.start);
+
+  for (const ref of contextRefs) {
+    for (const zone of contextZones) {
+      if (ref.word.end <= zone.start || ref.word.start >= zone.end) {
+        continue;
+      }
+      appendWordBlock(ref.word, ref.li, ref.wi, {
+        isContext: true,
+        clipStart: zone.start,
+        clipEnd: zone.end,
+      });
+    }
+  }
+
+  for (let wi = 0; wi < line.words.length; wi += 1) {
+    const w = line.words[wi];
+    appendWordBlock(w, li, wi, { isContext: false });
+  }
+
   if (state.editMode === "line") {
     const bounds = getLineBounds(line);
     const box = document.createElement("div");
@@ -332,19 +434,19 @@ function buildTrack(line, li, viewWindow) {
     if (state.selectedLine === li) {
       box.classList.add("selected");
     }
-    box.style.left = `${(bounds.start - viewWindow.start) * state.secondsToPx}px`;
-    box.style.width = `${Math.max((bounds.end - bounds.start) * state.secondsToPx, 18)}px`;
+    box.style.left = `${(bounds.start - viewWindow.start) * pxPerSec}px`;
+    box.style.width = `${Math.max((bounds.end - bounds.start) * pxPerSec, 18)}px`;
     box.title = `Line ${li + 1}: drag to shift entire line`;
-    box.addEventListener("mousedown", (ev) => startLineDrag(li, ev));
+    box.addEventListener("mousedown", (ev) => startLineDrag(li, ev, pxPerSec));
     track.appendChild(box);
   }
 
   return track;
 }
 
-function buildLineRuler(line, viewWindow) {
+function buildLineRuler(line, viewWindow, pxPerSec) {
   const bounds = getLineBounds(line);
-  const width = Math.max(viewWindow.duration * state.secondsToPx, 300);
+  const width = Math.max(viewWindow.duration * pxPerSec, 300);
   const whole = Math.ceil(viewWindow.duration);
 
   const ruler = document.createElement("div");
@@ -355,7 +457,7 @@ function buildLineRuler(line, viewWindow) {
   const clampedRel = Math.max(0, Math.min(rel, viewWindow.duration));
   const progress = document.createElement("div");
   progress.className = "ruler-progress";
-  progress.style.width = `${clampedRel * state.secondsToPx}px`;
+  progress.style.width = `${clampedRel * pxPerSec}px`;
   ruler.appendChild(progress);
 
   if (els.audio.currentTime >= bounds.start && els.audio.currentTime <= bounds.end) {
@@ -363,7 +465,7 @@ function buildLineRuler(line, viewWindow) {
   }
 
   for (let t = 0; t <= whole; t += 1) {
-    const leftPx = t * state.secondsToPx;
+    const leftPx = t * pxPerSec;
 
     const major = document.createElement("div");
     major.className = "tick major";
@@ -379,14 +481,14 @@ function buildLineRuler(line, viewWindow) {
     if (t < whole) {
       const minor = document.createElement("div");
       minor.className = "tick minor";
-      minor.style.left = `${(t + 0.5) * state.secondsToPx}px`;
+      minor.style.left = `${(t + 0.5) * pxPerSec}px`;
       ruler.appendChild(minor);
     }
   }
 
   const playhead = document.createElement("div");
   playhead.className = "ruler-playhead";
-  playhead.style.left = `${clampedRel * state.secondsToPx}px`;
+  playhead.style.left = `${clampedRel * pxPerSec}px`;
   ruler.appendChild(playhead);
 
   return ruler;
@@ -394,10 +496,15 @@ function buildLineRuler(line, viewWindow) {
 
 function buildLineLane(line, li) {
   const viewWindow = getLineViewWindow(line);
+  const laneMinWidth = Math.max(800, els.timeline.clientWidth - 360);
+  const pxPerSec = Math.max(
+    state.secondsToPx,
+    laneMinWidth / Math.max(viewWindow.duration, 0.1)
+  );
   const lane = document.createElement("div");
   lane.className = "line-lane";
-  lane.appendChild(buildLineRuler(line, viewWindow));
-  lane.appendChild(buildTrack(line, li, viewWindow));
+  lane.appendChild(buildLineRuler(line, viewWindow, pxPerSec));
+  lane.appendChild(buildTrack(line, li, viewWindow, pxPerSec));
   return lane;
 }
 
@@ -407,7 +514,12 @@ function buildGapLane(gapStart, gapEnd) {
     end: gapEnd + 1.0,
     duration: Math.max(2.0, gapEnd - gapStart + 2.0),
   };
-  const width = Math.max(viewWindow.duration * state.secondsToPx, 300);
+  const laneMinWidth = Math.max(800, els.timeline.clientWidth - 360);
+  const pxPerSec = Math.max(
+    state.secondsToPx,
+    laneMinWidth / Math.max(viewWindow.duration, 0.1)
+  );
+  const width = Math.max(viewWindow.duration * pxPerSec, 300);
   const whole = Math.ceil(viewWindow.duration);
 
   const lane = document.createElement("div");
@@ -417,7 +529,7 @@ function buildGapLane(gapStart, gapEnd) {
   ruler.className = "line-ruler gap-ruler";
   ruler.style.width = `${width}px`;
   for (let t = 0; t <= whole; t += 1) {
-    const leftPx = t * state.secondsToPx;
+    const leftPx = t * pxPerSec;
     const major = document.createElement("div");
     major.className = "tick major";
     major.style.left = `${leftPx}px`;
@@ -433,7 +545,7 @@ function buildGapLane(gapStart, gapEnd) {
   const playhead = document.createElement("div");
   playhead.className = "ruler-playhead";
   const rel = Math.max(0, Math.min(els.audio.currentTime - viewWindow.start, viewWindow.duration));
-  playhead.style.left = `${rel * state.secondsToPx}px`;
+  playhead.style.left = `${rel * pxPerSec}px`;
   ruler.appendChild(playhead);
 
   const track = document.createElement("div");
@@ -442,8 +554,8 @@ function buildGapLane(gapStart, gapEnd) {
 
   const bar = document.createElement("div");
   bar.className = "gap-bar";
-  bar.style.left = `${(gapStart - viewWindow.start) * state.secondsToPx}px`;
-  bar.style.width = `${Math.max((gapEnd - gapStart) * state.secondsToPx, 8)}px`;
+  bar.style.left = `${(gapStart - viewWindow.start) * pxPerSec}px`;
+  bar.style.width = `${Math.max((gapEnd - gapStart) * pxPerSec, 8)}px`;
   track.appendChild(bar);
 
   lane.appendChild(ruler);
@@ -607,7 +719,10 @@ els.zoomRange.addEventListener("input", () => {
 document.addEventListener("mousemove", (ev) => {
   if (!state.drag || !state.doc) return;
   const dx = ev.clientX - state.drag.startX;
-  const dt = snap(dx / state.secondsToPx);
+  if (Math.abs(dx) >= 2) {
+    state.drag.moved = true;
+  }
+  const dt = snap(dx / (state.drag.pxPerSec || state.secondsToPx));
   const { li, wi } = state.drag;
 
   if (state.drag.mode === "move") {
@@ -628,6 +743,19 @@ document.addEventListener("mousemove", (ev) => {
 });
 
 document.addEventListener("mouseup", () => {
+  if (
+    state.drag &&
+    !state.drag.moved &&
+    state.editMode === "word" &&
+    typeof state.drag.li === "number" &&
+    typeof state.drag.wi === "number"
+  ) {
+    const word = state.doc?.lines?.[state.drag.li]?.words?.[state.drag.wi];
+    if (word && typeof word.start === "number") {
+      els.audio.currentTime = Math.max(0, word.start);
+      els.playbackInfo.textContent = `t=${els.audio.currentTime.toFixed(1)}s`;
+    }
+  }
   state.drag = null;
 });
 

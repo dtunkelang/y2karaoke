@@ -1,0 +1,2641 @@
+{
+  "schema_version": "1.0",
+  "title": "Bohemian Rhapsody",
+  "artist": "Queen",
+  "audio_path": "",
+  "source_timing_path": "/Users/dtunkelang/y2karaoke/benchmarks/results/preliminary_gold_seed_20260212/01_queen-bohemian-rhapsody_timing_report.json",
+  "lines": [
+    {
+      "line_index": 1,
+      "text": "Is this the real life? Is this just fantasy?",
+      "start": 0.5,
+      "end": 3.2,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Is",
+          "start": 0.5,
+          "end": 0.9
+        },
+        {
+          "word_index": 2,
+          "text": "this",
+          "start": 0.9,
+          "end": 1.1
+        },
+        {
+          "word_index": 3,
+          "text": "the",
+          "start": 1.1,
+          "end": 1.3
+        },
+        {
+          "word_index": 4,
+          "text": "real",
+          "start": 1.3,
+          "end": 1.7
+        },
+        {
+          "word_index": 5,
+          "text": "life?",
+          "start": 1.7,
+          "end": 2.0
+        },
+        {
+          "word_index": 6,
+          "text": "Is",
+          "start": 2.0,
+          "end": 2.3
+        },
+        {
+          "word_index": 7,
+          "text": "this",
+          "start": 2.3,
+          "end": 2.7
+        },
+        {
+          "word_index": 8,
+          "text": "just",
+          "start": 2.7,
+          "end": 3.0
+        },
+        {
+          "word_index": 9,
+          "text": "fantasy?",
+          "start": 3.0,
+          "end": 3.2
+        }
+      ]
+    },
+    {
+      "line_index": 2,
+      "text": "Caught in a landslide, no escape from reality",
+      "start": 3.2,
+      "end": 6.1,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Caught",
+          "start": 3.2,
+          "end": 3.6
+        },
+        {
+          "word_index": 2,
+          "text": "in",
+          "start": 3.6,
+          "end": 3.8
+        },
+        {
+          "word_index": 3,
+          "text": "a",
+          "start": 3.8,
+          "end": 3.8
+        },
+        {
+          "word_index": 4,
+          "text": "landslide,",
+          "start": 3.8,
+          "end": 4.0
+        },
+        {
+          "word_index": 5,
+          "text": "no",
+          "start": 4.0,
+          "end": 5.1
+        },
+        {
+          "word_index": 6,
+          "text": "escape",
+          "start": 5.1,
+          "end": 5.3
+        },
+        {
+          "word_index": 7,
+          "text": "from",
+          "start": 5.3,
+          "end": 5.6
+        },
+        {
+          "word_index": 8,
+          "text": "reality",
+          "start": 5.6,
+          "end": 6.1
+        }
+      ]
+    },
+    {
+      "line_index": 3,
+      "text": "Open your eyes, look up to the skies and see",
+      "start": 6.1,
+      "end": 8.8,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Open",
+          "start": 6.1,
+          "end": 6.7
+        },
+        {
+          "word_index": 2,
+          "text": "your",
+          "start": 6.7,
+          "end": 7.0
+        },
+        {
+          "word_index": 3,
+          "text": "eyes,",
+          "start": 7.0,
+          "end": 7.5
+        },
+        {
+          "word_index": 4,
+          "text": "look",
+          "start": 7.5,
+          "end": 7.8
+        },
+        {
+          "word_index": 5,
+          "text": "up",
+          "start": 7.8,
+          "end": 8.1
+        },
+        {
+          "word_index": 6,
+          "text": "to",
+          "start": 8.1,
+          "end": 8.2
+        },
+        {
+          "word_index": 7,
+          "text": "the",
+          "start": 8.2,
+          "end": 8.4
+        },
+        {
+          "word_index": 8,
+          "text": "skies",
+          "start": 8.4,
+          "end": 8.8
+        },
+        {
+          "word_index": 9,
+          "text": "and",
+          "start": 8.8,
+          "end": 8.8
+        },
+        {
+          "word_index": 10,
+          "text": "see",
+          "start": 8.8,
+          "end": 8.8
+        }
+      ]
+    },
+    {
+      "line_index": 4,
+      "text": "I'm just a poor boy, I need no sympathy",
+      "start": 8.8,
+      "end": 11.2,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "I'm",
+          "start": 8.8,
+          "end": 9.1
+        },
+        {
+          "word_index": 2,
+          "text": "just",
+          "start": 9.1,
+          "end": 9.5
+        },
+        {
+          "word_index": 3,
+          "text": "a",
+          "start": 9.5,
+          "end": 9.5
+        },
+        {
+          "word_index": 4,
+          "text": "poor",
+          "start": 9.5,
+          "end": 9.8
+        },
+        {
+          "word_index": 5,
+          "text": "boy,",
+          "start": 9.8,
+          "end": 10.2
+        },
+        {
+          "word_index": 6,
+          "text": "I",
+          "start": 10.2,
+          "end": 10.2
+        },
+        {
+          "word_index": 7,
+          "text": "need",
+          "start": 10.2,
+          "end": 10.5
+        },
+        {
+          "word_index": 8,
+          "text": "no",
+          "start": 10.5,
+          "end": 10.8
+        },
+        {
+          "word_index": 9,
+          "text": "sympathy",
+          "start": 10.8,
+          "end": 11.2
+        }
+      ]
+    },
+    {
+      "line_index": 5,
+      "text": "Because I'm easy come, easy go, little high, little low",
+      "start": 11.2,
+      "end": 14.6,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Because",
+          "start": 11.2,
+          "end": 11.7
+        },
+        {
+          "word_index": 2,
+          "text": "I'm",
+          "start": 11.7,
+          "end": 12.1
+        },
+        {
+          "word_index": 3,
+          "text": "easy",
+          "start": 12.1,
+          "end": 12.5
+        },
+        {
+          "word_index": 4,
+          "text": "come,",
+          "start": 12.5,
+          "end": 13.0
+        },
+        {
+          "word_index": 5,
+          "text": "easy",
+          "start": 13.0,
+          "end": 13.4
+        },
+        {
+          "word_index": 6,
+          "text": "go,",
+          "start": 13.4,
+          "end": 13.8
+        },
+        {
+          "word_index": 7,
+          "text": "little",
+          "start": 13.8,
+          "end": 14.2
+        },
+        {
+          "word_index": 8,
+          "text": "high,",
+          "start": 14.2,
+          "end": 14.6
+        },
+        {
+          "word_index": 9,
+          "text": "little",
+          "start": 14.6,
+          "end": 14.6
+        },
+        {
+          "word_index": 10,
+          "text": "low",
+          "start": 14.6,
+          "end": 14.6
+        }
+      ]
+    },
+    {
+      "line_index": 6,
+      "text": "Any way the wind blows doesn't really matter to me, to me",
+      "start": 14.6,
+      "end": 18.1,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Any",
+          "start": 14.6,
+          "end": 14.9
+        },
+        {
+          "word_index": 2,
+          "text": "way",
+          "start": 14.9,
+          "end": 15.2
+        },
+        {
+          "word_index": 3,
+          "text": "the",
+          "start": 15.2,
+          "end": 15.5
+        },
+        {
+          "word_index": 4,
+          "text": "wind",
+          "start": 15.5,
+          "end": 15.8
+        },
+        {
+          "word_index": 5,
+          "text": "blows",
+          "start": 15.8,
+          "end": 16.1
+        },
+        {
+          "word_index": 6,
+          "text": "doesn't",
+          "start": 16.1,
+          "end": 16.4
+        },
+        {
+          "word_index": 7,
+          "text": "really",
+          "start": 16.4,
+          "end": 16.6
+        },
+        {
+          "word_index": 8,
+          "text": "matter",
+          "start": 16.6,
+          "end": 16.9
+        },
+        {
+          "word_index": 9,
+          "text": "to",
+          "start": 16.9,
+          "end": 17.2
+        },
+        {
+          "word_index": 10,
+          "text": "me,",
+          "start": 17.2,
+          "end": 17.5
+        },
+        {
+          "word_index": 11,
+          "text": "to",
+          "start": 17.5,
+          "end": 17.8
+        },
+        {
+          "word_index": 12,
+          "text": "me",
+          "start": 17.8,
+          "end": 18.1
+        }
+      ]
+    },
+    {
+      "line_index": 7,
+      "text": "Mama, just killed a man",
+      "start": 18.1,
+      "end": 20.1,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Mama,",
+          "start": 18.1,
+          "end": 18.1
+        },
+        {
+          "word_index": 2,
+          "text": "just",
+          "start": 18.1,
+          "end": 18.2
+        },
+        {
+          "word_index": 3,
+          "text": "killed",
+          "start": 18.2,
+          "end": 18.2
+        },
+        {
+          "word_index": 4,
+          "text": "a",
+          "start": 18.2,
+          "end": 18.2
+        },
+        {
+          "word_index": 5,
+          "text": "man",
+          "start": 18.2,
+          "end": 20.1
+        }
+      ]
+    },
+    {
+      "line_index": 8,
+      "text": "Put a gun against his head, pulled my trigger, now he's dead",
+      "start": 20.3,
+      "end": 23.9,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Put",
+          "start": 20.3,
+          "end": 20.4
+        },
+        {
+          "word_index": 2,
+          "text": "a",
+          "start": 20.4,
+          "end": 20.4
+        },
+        {
+          "word_index": 3,
+          "text": "gun",
+          "start": 20.4,
+          "end": 20.6
+        },
+        {
+          "word_index": 4,
+          "text": "against",
+          "start": 20.6,
+          "end": 20.7
+        },
+        {
+          "word_index": 5,
+          "text": "his",
+          "start": 20.7,
+          "end": 20.8
+        },
+        {
+          "word_index": 6,
+          "text": "head,",
+          "start": 20.8,
+          "end": 20.9
+        },
+        {
+          "word_index": 7,
+          "text": "pulled",
+          "start": 20.9,
+          "end": 21.0
+        },
+        {
+          "word_index": 8,
+          "text": "my",
+          "start": 21.0,
+          "end": 21.1
+        },
+        {
+          "word_index": 9,
+          "text": "trigger,",
+          "start": 21.1,
+          "end": 21.1
+        },
+        {
+          "word_index": 10,
+          "text": "now",
+          "start": 21.1,
+          "end": 21.2
+        },
+        {
+          "word_index": 11,
+          "text": "he's",
+          "start": 21.2,
+          "end": 21.3
+        },
+        {
+          "word_index": 12,
+          "text": "dead",
+          "start": 21.3,
+          "end": 23.9
+        }
+      ]
+    },
+    {
+      "line_index": 9,
+      "text": "Mama, life had just begun",
+      "start": 23.9,
+      "end": 26.1,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Mama,",
+          "start": 23.9,
+          "end": 23.9
+        },
+        {
+          "word_index": 2,
+          "text": "life",
+          "start": 23.9,
+          "end": 24.0
+        },
+        {
+          "word_index": 3,
+          "text": "had",
+          "start": 24.0,
+          "end": 24.1
+        },
+        {
+          "word_index": 4,
+          "text": "just",
+          "start": 24.1,
+          "end": 24.2
+        },
+        {
+          "word_index": 5,
+          "text": "begun",
+          "start": 24.2,
+          "end": 26.1
+        }
+      ]
+    },
+    {
+      "line_index": 10,
+      "text": "But now I've gone and thrown it all away",
+      "start": 26.1,
+      "end": 28.5,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "But",
+          "start": 26.1,
+          "end": 26.1
+        },
+        {
+          "word_index": 2,
+          "text": "now",
+          "start": 26.1,
+          "end": 26.2
+        },
+        {
+          "word_index": 3,
+          "text": "I've",
+          "start": 26.2,
+          "end": 26.2
+        },
+        {
+          "word_index": 4,
+          "text": "gone",
+          "start": 26.2,
+          "end": 26.2
+        },
+        {
+          "word_index": 5,
+          "text": "and",
+          "start": 26.2,
+          "end": 26.3
+        },
+        {
+          "word_index": 6,
+          "text": "thrown",
+          "start": 26.3,
+          "end": 26.3
+        },
+        {
+          "word_index": 7,
+          "text": "it",
+          "start": 26.3,
+          "end": 26.3
+        },
+        {
+          "word_index": 8,
+          "text": "all",
+          "start": 26.3,
+          "end": 26.3
+        },
+        {
+          "word_index": 9,
+          "text": "away",
+          "start": 26.3,
+          "end": 28.5
+        }
+      ]
+    },
+    {
+      "line_index": 11,
+      "text": "Mama, ooh, didn't mean to make you cry",
+      "start": 28.6,
+      "end": 30.5,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Mama,",
+          "start": 28.6,
+          "end": 28.8
+        },
+        {
+          "word_index": 2,
+          "text": "ooh,",
+          "start": 28.8,
+          "end": 29.0
+        },
+        {
+          "word_index": 3,
+          "text": "didn't",
+          "start": 29.0,
+          "end": 29.3
+        },
+        {
+          "word_index": 4,
+          "text": "mean",
+          "start": 29.3,
+          "end": 29.5
+        },
+        {
+          "word_index": 5,
+          "text": "to",
+          "start": 29.5,
+          "end": 29.8
+        },
+        {
+          "word_index": 6,
+          "text": "make",
+          "start": 29.8,
+          "end": 30.0
+        },
+        {
+          "word_index": 7,
+          "text": "you",
+          "start": 30.0,
+          "end": 30.2
+        },
+        {
+          "word_index": 8,
+          "text": "cry",
+          "start": 30.3,
+          "end": 30.5
+        }
+      ]
+    },
+    {
+      "line_index": 12,
+      "text": "If I'm not back again this time tomorrow",
+      "start": 30.9,
+      "end": 33.4,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "If",
+          "start": 30.9,
+          "end": 31.0
+        },
+        {
+          "word_index": 2,
+          "text": "I'm",
+          "start": 31.0,
+          "end": 31.0
+        },
+        {
+          "word_index": 3,
+          "text": "not",
+          "start": 31.0,
+          "end": 31.1
+        },
+        {
+          "word_index": 4,
+          "text": "back",
+          "start": 31.1,
+          "end": 31.1
+        },
+        {
+          "word_index": 5,
+          "text": "again",
+          "start": 31.1,
+          "end": 31.2
+        },
+        {
+          "word_index": 6,
+          "text": "this",
+          "start": 31.2,
+          "end": 31.2
+        },
+        {
+          "word_index": 7,
+          "text": "time",
+          "start": 31.2,
+          "end": 31.3
+        },
+        {
+          "word_index": 8,
+          "text": "tomorrow",
+          "start": 31.3,
+          "end": 33.4
+        }
+      ]
+    },
+    {
+      "line_index": 13,
+      "text": "Carry on, carry on as if nothing really matters",
+      "start": 33.4,
+      "end": 36.4,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Carry",
+          "start": 33.4,
+          "end": 33.8
+        },
+        {
+          "word_index": 2,
+          "text": "on,",
+          "start": 33.8,
+          "end": 34.1
+        },
+        {
+          "word_index": 3,
+          "text": "carry",
+          "start": 34.1,
+          "end": 34.4
+        },
+        {
+          "word_index": 4,
+          "text": "on",
+          "start": 34.4,
+          "end": 34.7
+        },
+        {
+          "word_index": 5,
+          "text": "as",
+          "start": 34.7,
+          "end": 35.1
+        },
+        {
+          "word_index": 6,
+          "text": "if",
+          "start": 35.1,
+          "end": 35.4
+        },
+        {
+          "word_index": 7,
+          "text": "nothing",
+          "start": 35.4,
+          "end": 35.7
+        },
+        {
+          "word_index": 8,
+          "text": "really",
+          "start": 35.7,
+          "end": 36.0
+        },
+        {
+          "word_index": 9,
+          "text": "matters",
+          "start": 36.0,
+          "end": 36.4
+        }
+      ]
+    },
+    {
+      "line_index": 14,
+      "text": "Too late, my time has come",
+      "start": 36.4,
+      "end": 38.5,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Too",
+          "start": 36.4,
+          "end": 36.4
+        },
+        {
+          "word_index": 2,
+          "text": "late,",
+          "start": 36.4,
+          "end": 36.4
+        },
+        {
+          "word_index": 3,
+          "text": "my",
+          "start": 36.4,
+          "end": 36.4
+        },
+        {
+          "word_index": 4,
+          "text": "time",
+          "start": 36.4,
+          "end": 36.5
+        },
+        {
+          "word_index": 5,
+          "text": "has",
+          "start": 36.5,
+          "end": 36.5
+        },
+        {
+          "word_index": 6,
+          "text": "come",
+          "start": 36.5,
+          "end": 38.5
+        }
+      ]
+    },
+    {
+      "line_index": 15,
+      "text": "Sends shivers down my spine, body's aching all the time",
+      "start": 38.6,
+      "end": 41.6,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Sends",
+          "start": 38.6,
+          "end": 38.6
+        },
+        {
+          "word_index": 2,
+          "text": "shivers",
+          "start": 38.6,
+          "end": 38.6
+        },
+        {
+          "word_index": 3,
+          "text": "down",
+          "start": 38.6,
+          "end": 38.6
+        },
+        {
+          "word_index": 4,
+          "text": "my",
+          "start": 38.6,
+          "end": 38.6
+        },
+        {
+          "word_index": 5,
+          "text": "spine,",
+          "start": 38.6,
+          "end": 38.7
+        },
+        {
+          "word_index": 6,
+          "text": "body's",
+          "start": 38.7,
+          "end": 38.7
+        },
+        {
+          "word_index": 7,
+          "text": "aching",
+          "start": 38.7,
+          "end": 38.7
+        },
+        {
+          "word_index": 8,
+          "text": "all",
+          "start": 38.7,
+          "end": 38.7
+        },
+        {
+          "word_index": 9,
+          "text": "the",
+          "start": 38.7,
+          "end": 38.7
+        },
+        {
+          "word_index": 10,
+          "text": "time",
+          "start": 38.7,
+          "end": 41.6
+        }
+      ]
+    },
+    {
+      "line_index": 16,
+      "text": "Goodbye, everybody, I've got to go",
+      "start": 42.0,
+      "end": 44.2,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Goodbye,",
+          "start": 42.0,
+          "end": 42.0
+        },
+        {
+          "word_index": 2,
+          "text": "everybody,",
+          "start": 42.0,
+          "end": 42.1
+        },
+        {
+          "word_index": 3,
+          "text": "I've",
+          "start": 42.1,
+          "end": 42.1
+        },
+        {
+          "word_index": 4,
+          "text": "got",
+          "start": 42.1,
+          "end": 42.1
+        },
+        {
+          "word_index": 5,
+          "text": "to",
+          "start": 42.1,
+          "end": 42.1
+        },
+        {
+          "word_index": 6,
+          "text": "go",
+          "start": 42.1,
+          "end": 44.2
+        }
+      ]
+    },
+    {
+      "line_index": 17,
+      "text": "Gotta leave you all behind and face the truth",
+      "start": 44.2,
+      "end": 45.5,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Gotta",
+          "start": 44.2,
+          "end": 44.2
+        },
+        {
+          "word_index": 2,
+          "text": "leave",
+          "start": 44.2,
+          "end": 44.2
+        },
+        {
+          "word_index": 3,
+          "text": "you",
+          "start": 44.2,
+          "end": 44.2
+        },
+        {
+          "word_index": 4,
+          "text": "all",
+          "start": 44.2,
+          "end": 44.2
+        },
+        {
+          "word_index": 5,
+          "text": "behind",
+          "start": 44.2,
+          "end": 44.2
+        },
+        {
+          "word_index": 6,
+          "text": "and",
+          "start": 44.2,
+          "end": 44.2
+        },
+        {
+          "word_index": 7,
+          "text": "face",
+          "start": 44.2,
+          "end": 44.2
+        },
+        {
+          "word_index": 8,
+          "text": "the",
+          "start": 44.2,
+          "end": 44.2
+        },
+        {
+          "word_index": 9,
+          "text": "truth",
+          "start": 44.2,
+          "end": 45.5
+        }
+      ]
+    },
+    {
+      "line_index": 18,
+      "text": "Mama, ooh (any way the wind blows)",
+      "start": 47.0,
+      "end": 47.5,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Mama,",
+          "start": 47.0,
+          "end": 47.0
+        },
+        {
+          "word_index": 2,
+          "text": "ooh",
+          "start": 47.0,
+          "end": 47.0
+        },
+        {
+          "word_index": 3,
+          "text": "(any",
+          "start": 47.0,
+          "end": 47.0
+        },
+        {
+          "word_index": 4,
+          "text": "way",
+          "start": 47.0,
+          "end": 47.0
+        },
+        {
+          "word_index": 5,
+          "text": "the",
+          "start": 47.0,
+          "end": 47.0
+        },
+        {
+          "word_index": 6,
+          "text": "wind",
+          "start": 47.0,
+          "end": 47.0
+        },
+        {
+          "word_index": 7,
+          "text": "blows)",
+          "start": 47.0,
+          "end": 47.5
+        }
+      ]
+    },
+    {
+      "line_index": 19,
+      "text": "I don't wanna die",
+      "start": 49.2,
+      "end": 49.7,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "I",
+          "start": 49.2,
+          "end": 49.3
+        },
+        {
+          "word_index": 2,
+          "text": "don't",
+          "start": 49.3,
+          "end": 49.6
+        },
+        {
+          "word_index": 3,
+          "text": "wanna",
+          "start": 49.6,
+          "end": 49.7
+        },
+        {
+          "word_index": 4,
+          "text": "die",
+          "start": 49.7,
+          "end": 49.7
+        }
+      ]
+    },
+    {
+      "line_index": 20,
+      "text": "I sometimes wish I'd never been born at all",
+      "start": 51.4,
+      "end": 52.4,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "I",
+          "start": 51.4,
+          "end": 51.4
+        },
+        {
+          "word_index": 2,
+          "text": "sometimes",
+          "start": 51.4,
+          "end": 51.7
+        },
+        {
+          "word_index": 3,
+          "text": "wish",
+          "start": 51.7,
+          "end": 51.7
+        },
+        {
+          "word_index": 4,
+          "text": "I'd",
+          "start": 51.7,
+          "end": 51.9
+        },
+        {
+          "word_index": 5,
+          "text": "never",
+          "start": 51.9,
+          "end": 52.0
+        },
+        {
+          "word_index": 6,
+          "text": "been",
+          "start": 52.0,
+          "end": 52.1
+        },
+        {
+          "word_index": 7,
+          "text": "born",
+          "start": 52.1,
+          "end": 52.3
+        },
+        {
+          "word_index": 8,
+          "text": "at",
+          "start": 52.3,
+          "end": 52.4
+        },
+        {
+          "word_index": 9,
+          "text": "all",
+          "start": 52.4,
+          "end": 52.4
+        }
+      ]
+    },
+    {
+      "line_index": 21,
+      "text": "I see a little silhouetto of a man",
+      "start": 54.0,
+      "end": 54.8,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "I",
+          "start": 54.0,
+          "end": 54.1
+        },
+        {
+          "word_index": 2,
+          "text": "see",
+          "start": 54.1,
+          "end": 54.3
+        },
+        {
+          "word_index": 3,
+          "text": "a",
+          "start": 54.3,
+          "end": 54.4
+        },
+        {
+          "word_index": 4,
+          "text": "little",
+          "start": 54.4,
+          "end": 54.4
+        },
+        {
+          "word_index": 5,
+          "text": "silhouetto",
+          "start": 54.4,
+          "end": 54.6
+        },
+        {
+          "word_index": 6,
+          "text": "of",
+          "start": 54.6,
+          "end": 54.7
+        },
+        {
+          "word_index": 7,
+          "text": "a",
+          "start": 54.7,
+          "end": 54.7
+        },
+        {
+          "word_index": 8,
+          "text": "man",
+          "start": 54.7,
+          "end": 54.8
+        }
+      ]
+    },
+    {
+      "line_index": 22,
+      "text": "Scaramouche, Scaramouche, will you do the Fandango?",
+      "start": 56.2,
+      "end": 57.7,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Scaramouche,",
+          "start": 56.2,
+          "end": 56.3
+        },
+        {
+          "word_index": 2,
+          "text": "Scaramouche,",
+          "start": 56.3,
+          "end": 56.3
+        },
+        {
+          "word_index": 3,
+          "text": "will",
+          "start": 56.3,
+          "end": 56.3
+        },
+        {
+          "word_index": 4,
+          "text": "you",
+          "start": 56.3,
+          "end": 56.3
+        },
+        {
+          "word_index": 5,
+          "text": "do",
+          "start": 56.3,
+          "end": 56.3
+        },
+        {
+          "word_index": 6,
+          "text": "the",
+          "start": 56.3,
+          "end": 56.3
+        },
+        {
+          "word_index": 7,
+          "text": "Fandango?",
+          "start": 56.3,
+          "end": 57.7
+        }
+      ]
+    },
+    {
+      "line_index": 23,
+      "text": "Thunderbolt and lightning, very, very frightening me",
+      "start": 59.6,
+      "end": 63.0,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Thunderbolt",
+          "start": 59.6,
+          "end": 59.6
+        },
+        {
+          "word_index": 2,
+          "text": "and",
+          "start": 59.6,
+          "end": 59.6
+        },
+        {
+          "word_index": 3,
+          "text": "lightning,",
+          "start": 59.6,
+          "end": 59.6
+        },
+        {
+          "word_index": 4,
+          "text": "very,",
+          "start": 59.6,
+          "end": 59.7
+        },
+        {
+          "word_index": 5,
+          "text": "very",
+          "start": 59.7,
+          "end": 59.7
+        },
+        {
+          "word_index": 6,
+          "text": "frightening",
+          "start": 59.7,
+          "end": 59.7
+        },
+        {
+          "word_index": 7,
+          "text": "me",
+          "start": 59.7,
+          "end": 63.0
+        }
+      ]
+    },
+    {
+      "line_index": 24,
+      "text": "(Galileo) Galileo, (Galileo) Galileo, Galileo Figaro, magnifico",
+      "start": 63.0,
+      "end": 64.0,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "(Galileo)",
+          "start": 63.0,
+          "end": 63.0
+        },
+        {
+          "word_index": 2,
+          "text": "Galileo,",
+          "start": 63.0,
+          "end": 63.0
+        },
+        {
+          "word_index": 3,
+          "text": "(Galileo)",
+          "start": 63.0,
+          "end": 63.0
+        },
+        {
+          "word_index": 4,
+          "text": "Galileo,",
+          "start": 63.0,
+          "end": 63.0
+        },
+        {
+          "word_index": 5,
+          "text": "Galileo",
+          "start": 63.0,
+          "end": 63.0
+        },
+        {
+          "word_index": 6,
+          "text": "Figaro,",
+          "start": 63.0,
+          "end": 63.0
+        },
+        {
+          "word_index": 7,
+          "text": "magnifico",
+          "start": 63.0,
+          "end": 64.0
+        }
+      ]
+    },
+    {
+      "line_index": 25,
+      "text": "But I'm just a poor boy, nobody loves me",
+      "start": 67.2,
+      "end": 67.8,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "But",
+          "start": 67.2,
+          "end": 67.2
+        },
+        {
+          "word_index": 2,
+          "text": "I'm",
+          "start": 67.2,
+          "end": 67.2
+        },
+        {
+          "word_index": 3,
+          "text": "just",
+          "start": 67.2,
+          "end": 67.2
+        },
+        {
+          "word_index": 4,
+          "text": "a",
+          "start": 67.2,
+          "end": 67.2
+        },
+        {
+          "word_index": 5,
+          "text": "poor",
+          "start": 67.2,
+          "end": 67.2
+        },
+        {
+          "word_index": 6,
+          "text": "boy,",
+          "start": 67.2,
+          "end": 67.2
+        },
+        {
+          "word_index": 7,
+          "text": "nobody",
+          "start": 67.2,
+          "end": 67.2
+        },
+        {
+          "word_index": 8,
+          "text": "loves",
+          "start": 67.2,
+          "end": 67.2
+        },
+        {
+          "word_index": 9,
+          "text": "me",
+          "start": 67.2,
+          "end": 67.8
+        }
+      ]
+    },
+    {
+      "line_index": 26,
+      "text": "He's just a poor boy from a poor family",
+      "start": 69.7,
+      "end": 70.1,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "He's",
+          "start": 69.7,
+          "end": 69.7
+        },
+        {
+          "word_index": 2,
+          "text": "just",
+          "start": 69.7,
+          "end": 69.7
+        },
+        {
+          "word_index": 3,
+          "text": "a",
+          "start": 69.7,
+          "end": 69.7
+        },
+        {
+          "word_index": 4,
+          "text": "poor",
+          "start": 69.7,
+          "end": 69.7
+        },
+        {
+          "word_index": 5,
+          "text": "boy",
+          "start": 69.7,
+          "end": 69.7
+        },
+        {
+          "word_index": 6,
+          "text": "from",
+          "start": 69.7,
+          "end": 69.7
+        },
+        {
+          "word_index": 7,
+          "text": "a",
+          "start": 69.7,
+          "end": 69.7
+        },
+        {
+          "word_index": 8,
+          "text": "poor",
+          "start": 69.7,
+          "end": 69.7
+        },
+        {
+          "word_index": 9,
+          "text": "family",
+          "start": 69.7,
+          "end": 70.1
+        }
+      ]
+    },
+    {
+      "line_index": 27,
+      "text": "Spare him his life from this monstrosity",
+      "start": 72.1,
+      "end": 73.0,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Spare",
+          "start": 72.1,
+          "end": 72.1
+        },
+        {
+          "word_index": 2,
+          "text": "him",
+          "start": 72.1,
+          "end": 72.1
+        },
+        {
+          "word_index": 3,
+          "text": "his",
+          "start": 72.1,
+          "end": 72.1
+        },
+        {
+          "word_index": 4,
+          "text": "life",
+          "start": 72.1,
+          "end": 72.1
+        },
+        {
+          "word_index": 5,
+          "text": "from",
+          "start": 72.1,
+          "end": 72.1
+        },
+        {
+          "word_index": 6,
+          "text": "this",
+          "start": 72.1,
+          "end": 72.1
+        },
+        {
+          "word_index": 7,
+          "text": "monstrosity",
+          "start": 72.1,
+          "end": 73.0
+        }
+      ]
+    },
+    {
+      "line_index": 28,
+      "text": "Easy come, easy go, will you let me go?",
+      "start": 74.7,
+      "end": 77.1,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Easy",
+          "start": 74.7,
+          "end": 74.7
+        },
+        {
+          "word_index": 2,
+          "text": "come,",
+          "start": 74.7,
+          "end": 74.7
+        },
+        {
+          "word_index": 3,
+          "text": "easy",
+          "start": 74.7,
+          "end": 74.7
+        },
+        {
+          "word_index": 4,
+          "text": "go,",
+          "start": 74.7,
+          "end": 74.7
+        },
+        {
+          "word_index": 5,
+          "text": "will",
+          "start": 74.7,
+          "end": 74.8
+        },
+        {
+          "word_index": 6,
+          "text": "you",
+          "start": 74.8,
+          "end": 74.8
+        },
+        {
+          "word_index": 7,
+          "text": "let",
+          "start": 74.8,
+          "end": 74.8
+        },
+        {
+          "word_index": 8,
+          "text": "me",
+          "start": 74.8,
+          "end": 74.8
+        },
+        {
+          "word_index": 9,
+          "text": "go?",
+          "start": 74.8,
+          "end": 77.1
+        }
+      ]
+    },
+    {
+      "line_index": 29,
+      "text": "bismi ٱllaٰhi",
+      "start": 77.1,
+      "end": 78.5,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "bismi",
+          "start": 77.1,
+          "end": 77.1
+        },
+        {
+          "word_index": 2,
+          "text": "ٱllaٰhi",
+          "start": 77.1,
+          "end": 78.5
+        }
+      ]
+    },
+    {
+      "line_index": 30,
+      "text": "No, we will not let you go (let him go)",
+      "start": 79.3,
+      "end": 80.6,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "No,",
+          "start": 79.3,
+          "end": 79.4
+        },
+        {
+          "word_index": 2,
+          "text": "we",
+          "start": 79.4,
+          "end": 79.4
+        },
+        {
+          "word_index": 3,
+          "text": "will",
+          "start": 79.4,
+          "end": 79.5
+        },
+        {
+          "word_index": 4,
+          "text": "not",
+          "start": 79.5,
+          "end": 79.5
+        },
+        {
+          "word_index": 5,
+          "text": "let",
+          "start": 79.5,
+          "end": 79.5
+        },
+        {
+          "word_index": 6,
+          "text": "you",
+          "start": 79.5,
+          "end": 79.6
+        },
+        {
+          "word_index": 7,
+          "text": "go",
+          "start": 79.6,
+          "end": 80.2
+        },
+        {
+          "word_index": 8,
+          "text": "(let",
+          "start": 80.2,
+          "end": 80.5
+        },
+        {
+          "word_index": 9,
+          "text": "him",
+          "start": 80.5,
+          "end": 80.5
+        },
+        {
+          "word_index": 10,
+          "text": "go)",
+          "start": 80.5,
+          "end": 80.6
+        }
+      ]
+    },
+    {
+      "line_index": 31,
+      "text": "bismi ٱllaٰhi",
+      "start": 82.0,
+      "end": 82.5,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "bismi",
+          "start": 82.0,
+          "end": 82.0
+        },
+        {
+          "word_index": 2,
+          "text": "ٱllaٰhi",
+          "start": 82.0,
+          "end": 82.5
+        }
+      ]
+    },
+    {
+      "line_index": 32,
+      "text": "We will not let you go (let him go)",
+      "start": 84.2,
+      "end": 85.4,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "We",
+          "start": 84.2,
+          "end": 84.2
+        },
+        {
+          "word_index": 2,
+          "text": "will",
+          "start": 84.2,
+          "end": 84.2
+        },
+        {
+          "word_index": 3,
+          "text": "not",
+          "start": 84.2,
+          "end": 84.2
+        },
+        {
+          "word_index": 4,
+          "text": "let",
+          "start": 84.2,
+          "end": 84.2
+        },
+        {
+          "word_index": 5,
+          "text": "you",
+          "start": 84.2,
+          "end": 84.2
+        },
+        {
+          "word_index": 6,
+          "text": "go",
+          "start": 84.2,
+          "end": 84.2
+        },
+        {
+          "word_index": 7,
+          "text": "(let",
+          "start": 84.2,
+          "end": 84.2
+        },
+        {
+          "word_index": 8,
+          "text": "him",
+          "start": 84.2,
+          "end": 84.2
+        },
+        {
+          "word_index": 9,
+          "text": "go)",
+          "start": 84.2,
+          "end": 85.4
+        }
+      ]
+    },
+    {
+      "line_index": 33,
+      "text": "bismi ٱllaٰhi",
+      "start": 86.7,
+      "end": 87.0,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "bismi",
+          "start": 86.7,
+          "end": 86.7
+        },
+        {
+          "word_index": 2,
+          "text": "ٱllaٰhi",
+          "start": 86.7,
+          "end": 87.0
+        }
+      ]
+    },
+    {
+      "line_index": 34,
+      "text": "We will not let you go (let me go)",
+      "start": 88.9,
+      "end": 91.0,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "We",
+          "start": 88.9,
+          "end": 88.9
+        },
+        {
+          "word_index": 2,
+          "text": "will",
+          "start": 88.9,
+          "end": 88.9
+        },
+        {
+          "word_index": 3,
+          "text": "not",
+          "start": 88.9,
+          "end": 88.9
+        },
+        {
+          "word_index": 4,
+          "text": "let",
+          "start": 88.9,
+          "end": 88.9
+        },
+        {
+          "word_index": 5,
+          "text": "you",
+          "start": 88.9,
+          "end": 88.9
+        },
+        {
+          "word_index": 6,
+          "text": "go",
+          "start": 88.9,
+          "end": 88.9
+        },
+        {
+          "word_index": 7,
+          "text": "(let",
+          "start": 88.9,
+          "end": 88.9
+        },
+        {
+          "word_index": 8,
+          "text": "me",
+          "start": 88.9,
+          "end": 88.9
+        },
+        {
+          "word_index": 9,
+          "text": "go)",
+          "start": 88.9,
+          "end": 91.0
+        }
+      ]
+    },
+    {
+      "line_index": 35,
+      "text": "Will not let you go (let me go)",
+      "start": 91.3,
+      "end": 92.5,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Will",
+          "start": 91.3,
+          "end": 91.3
+        },
+        {
+          "word_index": 2,
+          "text": "not",
+          "start": 91.3,
+          "end": 91.3
+        },
+        {
+          "word_index": 3,
+          "text": "let",
+          "start": 91.3,
+          "end": 91.3
+        },
+        {
+          "word_index": 4,
+          "text": "you",
+          "start": 91.3,
+          "end": 91.3
+        },
+        {
+          "word_index": 5,
+          "text": "go",
+          "start": 91.3,
+          "end": 91.3
+        },
+        {
+          "word_index": 6,
+          "text": "(let",
+          "start": 91.3,
+          "end": 91.3
+        },
+        {
+          "word_index": 7,
+          "text": "me",
+          "start": 91.3,
+          "end": 91.3
+        },
+        {
+          "word_index": 8,
+          "text": "go)",
+          "start": 91.3,
+          "end": 92.5
+        }
+      ]
+    },
+    {
+      "line_index": 36,
+      "text": "Never, never, never, never let me go",
+      "start": 93.5,
+      "end": 94.2,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Never,",
+          "start": 93.5,
+          "end": 93.5
+        },
+        {
+          "word_index": 2,
+          "text": "never,",
+          "start": 93.5,
+          "end": 93.5
+        },
+        {
+          "word_index": 3,
+          "text": "never,",
+          "start": 93.5,
+          "end": 93.5
+        },
+        {
+          "word_index": 4,
+          "text": "never",
+          "start": 93.5,
+          "end": 93.5
+        },
+        {
+          "word_index": 5,
+          "text": "let",
+          "start": 93.5,
+          "end": 93.5
+        },
+        {
+          "word_index": 6,
+          "text": "me",
+          "start": 93.5,
+          "end": 93.5
+        },
+        {
+          "word_index": 7,
+          "text": "go",
+          "start": 93.5,
+          "end": 94.2
+        }
+      ]
+    },
+    {
+      "line_index": 37,
+      "text": "No, no, no, no, no, no, no",
+      "start": 95.8,
+      "end": 97.7,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "No,",
+          "start": 95.8,
+          "end": 95.8
+        },
+        {
+          "word_index": 2,
+          "text": "no,",
+          "start": 95.8,
+          "end": 95.9
+        },
+        {
+          "word_index": 3,
+          "text": "no,",
+          "start": 95.9,
+          "end": 95.9
+        },
+        {
+          "word_index": 4,
+          "text": "no,",
+          "start": 95.9,
+          "end": 95.9
+        },
+        {
+          "word_index": 5,
+          "text": "no,",
+          "start": 95.9,
+          "end": 95.9
+        },
+        {
+          "word_index": 6,
+          "text": "no,",
+          "start": 95.9,
+          "end": 95.9
+        },
+        {
+          "word_index": 7,
+          "text": "no",
+          "start": 95.9,
+          "end": 97.7
+        }
+      ]
+    },
+    {
+      "line_index": 38,
+      "text": "Oh, mamma mia, mamma mia",
+      "start": 98.0,
+      "end": 99.7,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Oh,",
+          "start": 98.0,
+          "end": 98.1
+        },
+        {
+          "word_index": 2,
+          "text": "mamma",
+          "start": 98.1,
+          "end": 98.3
+        },
+        {
+          "word_index": 3,
+          "text": "mia,",
+          "start": 98.3,
+          "end": 98.9
+        },
+        {
+          "word_index": 4,
+          "text": "mamma",
+          "start": 98.9,
+          "end": 99.6
+        },
+        {
+          "word_index": 5,
+          "text": "mia",
+          "start": 99.6,
+          "end": 99.7
+        }
+      ]
+    },
+    {
+      "line_index": 39,
+      "text": "Mamma mia, let me go",
+      "start": 100.2,
+      "end": 102.4,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Mamma",
+          "start": 100.2,
+          "end": 100.3
+        },
+        {
+          "word_index": 2,
+          "text": "mia,",
+          "start": 100.3,
+          "end": 100.3
+        },
+        {
+          "word_index": 3,
+          "text": "let",
+          "start": 100.3,
+          "end": 100.3
+        },
+        {
+          "word_index": 4,
+          "text": "me",
+          "start": 100.3,
+          "end": 100.3
+        },
+        {
+          "word_index": 5,
+          "text": "go",
+          "start": 100.3,
+          "end": 102.4
+        }
+      ]
+    },
+    {
+      "line_index": 40,
+      "text": "Beelzebub has a devil put aside for me, for me, for me",
+      "start": 102.4,
+      "end": 105.6,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Beelzebub",
+          "start": 102.4,
+          "end": 102.5
+        },
+        {
+          "word_index": 2,
+          "text": "has",
+          "start": 102.5,
+          "end": 102.5
+        },
+        {
+          "word_index": 3,
+          "text": "a",
+          "start": 102.5,
+          "end": 102.5
+        },
+        {
+          "word_index": 4,
+          "text": "devil",
+          "start": 102.5,
+          "end": 102.5
+        },
+        {
+          "word_index": 5,
+          "text": "put",
+          "start": 102.5,
+          "end": 102.5
+        },
+        {
+          "word_index": 6,
+          "text": "aside",
+          "start": 102.5,
+          "end": 102.5
+        },
+        {
+          "word_index": 7,
+          "text": "for",
+          "start": 102.5,
+          "end": 102.5
+        },
+        {
+          "word_index": 8,
+          "text": "me,",
+          "start": 102.5,
+          "end": 102.6
+        },
+        {
+          "word_index": 9,
+          "text": "for",
+          "start": 102.6,
+          "end": 102.6
+        },
+        {
+          "word_index": 10,
+          "text": "me,",
+          "start": 102.6,
+          "end": 102.6
+        },
+        {
+          "word_index": 11,
+          "text": "for",
+          "start": 102.6,
+          "end": 102.6
+        },
+        {
+          "word_index": 12,
+          "text": "me",
+          "start": 102.6,
+          "end": 105.6
+        }
+      ]
+    },
+    {
+      "line_index": 41,
+      "text": "So you think you can stone me and spit in my eye?",
+      "start": 105.6,
+      "end": 108.8,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "So",
+          "start": 105.6,
+          "end": 105.7
+        },
+        {
+          "word_index": 2,
+          "text": "you",
+          "start": 105.7,
+          "end": 105.7
+        },
+        {
+          "word_index": 3,
+          "text": "think",
+          "start": 105.7,
+          "end": 105.7
+        },
+        {
+          "word_index": 4,
+          "text": "you",
+          "start": 105.7,
+          "end": 105.7
+        },
+        {
+          "word_index": 5,
+          "text": "can",
+          "start": 105.7,
+          "end": 105.7
+        },
+        {
+          "word_index": 6,
+          "text": "stone",
+          "start": 105.7,
+          "end": 105.7
+        },
+        {
+          "word_index": 7,
+          "text": "me",
+          "start": 105.7,
+          "end": 105.7
+        },
+        {
+          "word_index": 8,
+          "text": "and",
+          "start": 105.7,
+          "end": 105.8
+        },
+        {
+          "word_index": 9,
+          "text": "spit",
+          "start": 105.8,
+          "end": 105.8
+        },
+        {
+          "word_index": 10,
+          "text": "in",
+          "start": 105.8,
+          "end": 105.8
+        },
+        {
+          "word_index": 11,
+          "text": "my",
+          "start": 105.8,
+          "end": 105.8
+        },
+        {
+          "word_index": 12,
+          "text": "eye?",
+          "start": 105.8,
+          "end": 108.8
+        }
+      ]
+    },
+    {
+      "line_index": 42,
+      "text": "So you think you can love me and leave me to die?",
+      "start": 108.8,
+      "end": 112.0,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "So",
+          "start": 108.8,
+          "end": 108.9
+        },
+        {
+          "word_index": 2,
+          "text": "you",
+          "start": 108.9,
+          "end": 108.9
+        },
+        {
+          "word_index": 3,
+          "text": "think",
+          "start": 108.9,
+          "end": 108.9
+        },
+        {
+          "word_index": 4,
+          "text": "you",
+          "start": 108.9,
+          "end": 108.9
+        },
+        {
+          "word_index": 5,
+          "text": "can",
+          "start": 108.9,
+          "end": 108.9
+        },
+        {
+          "word_index": 6,
+          "text": "love",
+          "start": 108.9,
+          "end": 108.9
+        },
+        {
+          "word_index": 7,
+          "text": "me",
+          "start": 108.9,
+          "end": 109.0
+        },
+        {
+          "word_index": 8,
+          "text": "and",
+          "start": 109.0,
+          "end": 109.0
+        },
+        {
+          "word_index": 9,
+          "text": "leave",
+          "start": 109.0,
+          "end": 109.0
+        },
+        {
+          "word_index": 10,
+          "text": "me",
+          "start": 109.0,
+          "end": 109.0
+        },
+        {
+          "word_index": 11,
+          "text": "to",
+          "start": 109.0,
+          "end": 109.0
+        },
+        {
+          "word_index": 12,
+          "text": "die?",
+          "start": 109.0,
+          "end": 112.0
+        }
+      ]
+    },
+    {
+      "line_index": 43,
+      "text": "Oh, baby, can't do this to me, baby",
+      "start": 112.0,
+      "end": 114.2,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Oh,",
+          "start": 112.0,
+          "end": 112.3
+        },
+        {
+          "word_index": 2,
+          "text": "baby,",
+          "start": 112.3,
+          "end": 112.6
+        },
+        {
+          "word_index": 3,
+          "text": "can't",
+          "start": 112.6,
+          "end": 112.9
+        },
+        {
+          "word_index": 4,
+          "text": "do",
+          "start": 112.9,
+          "end": 113.1
+        },
+        {
+          "word_index": 5,
+          "text": "this",
+          "start": 113.1,
+          "end": 113.4
+        },
+        {
+          "word_index": 6,
+          "text": "to",
+          "start": 113.4,
+          "end": 113.7
+        },
+        {
+          "word_index": 7,
+          "text": "me,",
+          "start": 113.7,
+          "end": 114.0
+        },
+        {
+          "word_index": 8,
+          "text": "baby",
+          "start": 114.0,
+          "end": 114.2
+        }
+      ]
+    },
+    {
+      "line_index": 44,
+      "text": "Just gotta get out, just gotta get right outta here",
+      "start": 114.2,
+      "end": 117.4,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Just",
+          "start": 114.2,
+          "end": 114.3
+        },
+        {
+          "word_index": 2,
+          "text": "gotta",
+          "start": 114.3,
+          "end": 114.3
+        },
+        {
+          "word_index": 3,
+          "text": "get",
+          "start": 114.3,
+          "end": 114.3
+        },
+        {
+          "word_index": 4,
+          "text": "out,",
+          "start": 114.3,
+          "end": 114.3
+        },
+        {
+          "word_index": 5,
+          "text": "just",
+          "start": 114.3,
+          "end": 114.3
+        },
+        {
+          "word_index": 6,
+          "text": "gotta",
+          "start": 114.3,
+          "end": 114.3
+        },
+        {
+          "word_index": 7,
+          "text": "get",
+          "start": 114.3,
+          "end": 114.3
+        },
+        {
+          "word_index": 8,
+          "text": "right",
+          "start": 114.3,
+          "end": 114.4
+        },
+        {
+          "word_index": 9,
+          "text": "outta",
+          "start": 114.4,
+          "end": 114.4
+        },
+        {
+          "word_index": 10,
+          "text": "here",
+          "start": 114.4,
+          "end": 117.4
+        }
+      ]
+    },
+    {
+      "line_index": 45,
+      "text": "Ooh",
+      "start": 117.4,
+      "end": 119.5,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Ooh",
+          "start": 117.4,
+          "end": 119.5
+        }
+      ]
+    },
+    {
+      "line_index": 46,
+      "text": "Ooh, yeah, ooh, yeah",
+      "start": 119.6,
+      "end": 120.1,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Ooh,",
+          "start": 119.6,
+          "end": 119.7
+        },
+        {
+          "word_index": 2,
+          "text": "yeah,",
+          "start": 119.7,
+          "end": 119.8
+        },
+        {
+          "word_index": 3,
+          "text": "ooh,",
+          "start": 119.8,
+          "end": 119.9
+        },
+        {
+          "word_index": 4,
+          "text": "yeah",
+          "start": 119.9,
+          "end": 120.1
+        }
+      ]
+    },
+    {
+      "line_index": 47,
+      "text": "Nothing really matters, anyone can see",
+      "start": 121.8,
+      "end": 124.3,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Nothing",
+          "start": 121.8,
+          "end": 121.8
+        },
+        {
+          "word_index": 2,
+          "text": "really",
+          "start": 121.8,
+          "end": 121.8
+        },
+        {
+          "word_index": 3,
+          "text": "matters,",
+          "start": 121.8,
+          "end": 121.8
+        },
+        {
+          "word_index": 4,
+          "text": "anyone",
+          "start": 121.8,
+          "end": 121.8
+        },
+        {
+          "word_index": 5,
+          "text": "can",
+          "start": 121.8,
+          "end": 121.9
+        },
+        {
+          "word_index": 6,
+          "text": "see",
+          "start": 121.9,
+          "end": 124.3
+        }
+      ]
+    },
+    {
+      "line_index": 48,
+      "text": "Nothing really matters",
+      "start": 124.3,
+      "end": 125.6,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Nothing",
+          "start": 124.3,
+          "end": 124.7
+        },
+        {
+          "word_index": 2,
+          "text": "really",
+          "start": 124.7,
+          "end": 125.1
+        },
+        {
+          "word_index": 3,
+          "text": "matters",
+          "start": 125.1,
+          "end": 125.6
+        }
+      ]
+    },
+    {
+      "line_index": 49,
+      "text": "Nothing really matters to me",
+      "start": 126.5,
+      "end": 128.7,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Nothing",
+          "start": 126.5,
+          "end": 126.9
+        },
+        {
+          "word_index": 2,
+          "text": "really",
+          "start": 126.9,
+          "end": 127.3
+        },
+        {
+          "word_index": 3,
+          "text": "matters",
+          "start": 127.4,
+          "end": 127.8
+        },
+        {
+          "word_index": 4,
+          "text": "to",
+          "start": 127.8,
+          "end": 128.2
+        },
+        {
+          "word_index": 5,
+          "text": "me",
+          "start": 128.3,
+          "end": 128.7
+        }
+      ]
+    },
+    {
+      "line_index": 50,
+      "text": "(Any way the wind blows)",
+      "start": 128.7,
+      "end": 131.9,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "(Any",
+          "start": 128.7,
+          "end": 128.7
+        },
+        {
+          "word_index": 2,
+          "text": "way",
+          "start": 128.7,
+          "end": 128.7
+        },
+        {
+          "word_index": 3,
+          "text": "the",
+          "start": 128.7,
+          "end": 128.7
+        },
+        {
+          "word_index": 4,
+          "text": "wind",
+          "start": 128.7,
+          "end": 128.8
+        },
+        {
+          "word_index": 5,
+          "text": "blows)",
+          "start": 128.8,
+          "end": 131.9
+        }
+      ]
+    }
+  ]
+}

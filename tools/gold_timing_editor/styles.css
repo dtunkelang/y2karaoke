@@ -25,7 +25,7 @@ section,
 main,
 footer,
 audio {
-  width: min(1300px, 96vw);
+  width: min(1800px, 99vw);
   margin: 0.7rem auto;
 }
 
@@ -253,6 +253,16 @@ button:hover {
   background: #328e65;
   color: #ffffff;
   border-color: #1f6847;
+}
+
+.word.word-context {
+  background: #d5ddd8;
+  border-color: #bcc8c1;
+  color: #4f5f56;
+  opacity: 0.62;
+  font-weight: 500;
+  z-index: 1;
+  pointer-events: none;
 }
 
 .line-drag-box {

@@ -1,0 +1,3721 @@
+{
+  "schema_version": "1.0",
+  "title": "Counting Stars",
+  "artist": "OneRepublic",
+  "audio_path": "",
+  "source_timing_path": "/Users/dtunkelang/y2karaoke/benchmarks/results/preliminary_gold_seed_20260212/06_onerepublic-counting-stars_timing_report.json",
+  "lines": [
+    {
+      "line_index": 1,
+      "text": "Counting Stars - OneRepublic",
+      "start": 0.5,
+      "end": 1.8,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Counting",
+          "start": 0.5,
+          "end": 0.9
+        },
+        {
+          "word_index": 2,
+          "text": "Stars",
+          "start": 0.9,
+          "end": 1.2
+        },
+        {
+          "word_index": 3,
+          "text": "-",
+          "start": 1.2,
+          "end": 1.2
+        },
+        {
+          "word_index": 4,
+          "text": "OneRepublic",
+          "start": 1.2,
+          "end": 1.8
+        }
+      ]
+    },
+    {
+      "line_index": 2,
+      "text": "Lately, I've been, I've been losing sleep",
+      "start": 2.7,
+      "end": 5.3,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Lately,",
+          "start": 2.7,
+          "end": 3.2
+        },
+        {
+          "word_index": 2,
+          "text": "I've",
+          "start": 3.2,
+          "end": 3.7
+        },
+        {
+          "word_index": 3,
+          "text": "been,",
+          "start": 3.7,
+          "end": 4.0
+        },
+        {
+          "word_index": 4,
+          "text": "I've",
+          "start": 4.0,
+          "end": 4.5
+        },
+        {
+          "word_index": 5,
+          "text": "been",
+          "start": 4.5,
+          "end": 4.7
+        },
+        {
+          "word_index": 6,
+          "text": "losing",
+          "start": 4.7,
+          "end": 5.0
+        },
+        {
+          "word_index": 7,
+          "text": "sleep",
+          "start": 5.0,
+          "end": 5.3
+        }
+      ]
+    },
+    {
+      "line_index": 3,
+      "text": "Dreaming about the things that we could be",
+      "start": 5.3,
+      "end": 8.0,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Dreaming",
+          "start": 5.3,
+          "end": 5.4
+        },
+        {
+          "word_index": 2,
+          "text": "about",
+          "start": 5.4,
+          "end": 5.5
+        },
+        {
+          "word_index": 3,
+          "text": "the",
+          "start": 5.5,
+          "end": 5.5
+        },
+        {
+          "word_index": 4,
+          "text": "things",
+          "start": 5.5,
+          "end": 5.5
+        },
+        {
+          "word_index": 5,
+          "text": "that",
+          "start": 5.5,
+          "end": 5.6
+        },
+        {
+          "word_index": 6,
+          "text": "we",
+          "start": 5.6,
+          "end": 5.6
+        },
+        {
+          "word_index": 7,
+          "text": "could",
+          "start": 5.6,
+          "end": 5.6
+        },
+        {
+          "word_index": 8,
+          "text": "be",
+          "start": 5.6,
+          "end": 8.0
+        }
+      ]
+    },
+    {
+      "line_index": 4,
+      "text": "But baby, I've been, I've been praying hard",
+      "start": 8.0,
+      "end": 10.7,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "But",
+          "start": 8.0,
+          "end": 8.1
+        },
+        {
+          "word_index": 2,
+          "text": "baby,",
+          "start": 8.1,
+          "end": 8.1
+        },
+        {
+          "word_index": 3,
+          "text": "I've",
+          "start": 8.1,
+          "end": 8.1
+        },
+        {
+          "word_index": 4,
+          "text": "been,",
+          "start": 8.1,
+          "end": 8.2
+        },
+        {
+          "word_index": 5,
+          "text": "I've",
+          "start": 8.2,
+          "end": 8.2
+        },
+        {
+          "word_index": 6,
+          "text": "been",
+          "start": 8.2,
+          "end": 8.2
+        },
+        {
+          "word_index": 7,
+          "text": "praying",
+          "start": 8.2,
+          "end": 8.2
+        },
+        {
+          "word_index": 8,
+          "text": "hard",
+          "start": 8.2,
+          "end": 10.7
+        }
+      ]
+    },
+    {
+      "line_index": 5,
+      "text": "Said, \"No more counting dollars, we'll be counting stars\"",
+      "start": 10.7,
+      "end": 14.3,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Said,",
+          "start": 10.7,
+          "end": 10.8
+        },
+        {
+          "word_index": 2,
+          "text": "\"No",
+          "start": 10.8,
+          "end": 10.8
+        },
+        {
+          "word_index": 3,
+          "text": "more",
+          "start": 10.8,
+          "end": 10.9
+        },
+        {
+          "word_index": 4,
+          "text": "counting",
+          "start": 10.9,
+          "end": 10.9
+        },
+        {
+          "word_index": 5,
+          "text": "dollars,",
+          "start": 10.9,
+          "end": 10.9
+        },
+        {
+          "word_index": 6,
+          "text": "we'll",
+          "start": 10.9,
+          "end": 11.0
+        },
+        {
+          "word_index": 7,
+          "text": "be",
+          "start": 11.0,
+          "end": 11.0
+        },
+        {
+          "word_index": 8,
+          "text": "counting",
+          "start": 11.0,
+          "end": 11.0
+        },
+        {
+          "word_index": 9,
+          "text": "stars\"",
+          "start": 11.0,
+          "end": 14.3
+        }
+      ]
+    },
+    {
+      "line_index": 6,
+      "text": "Yeah, we'll be counting stars",
+      "start": 14.4,
+      "end": 16.5,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Yeah,",
+          "start": 14.4,
+          "end": 14.8
+        },
+        {
+          "word_index": 2,
+          "text": "we'll",
+          "start": 14.8,
+          "end": 15.2
+        },
+        {
+          "word_index": 3,
+          "text": "be",
+          "start": 15.2,
+          "end": 15.7
+        },
+        {
+          "word_index": 4,
+          "text": "counting",
+          "start": 15.7,
+          "end": 16.1
+        },
+        {
+          "word_index": 5,
+          "text": "stars",
+          "start": 16.1,
+          "end": 16.5
+        }
+      ]
+    },
+    {
+      "line_index": 7,
+      "text": "I see this life, like a swinging vine",
+      "start": 16.6,
+      "end": 18.8,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "I",
+          "start": 16.6,
+          "end": 16.6
+        },
+        {
+          "word_index": 2,
+          "text": "see",
+          "start": 16.6,
+          "end": 17.2
+        },
+        {
+          "word_index": 3,
+          "text": "this",
+          "start": 17.2,
+          "end": 17.5
+        },
+        {
+          "word_index": 4,
+          "text": "life,",
+          "start": 17.5,
+          "end": 17.8
+        },
+        {
+          "word_index": 5,
+          "text": "like",
+          "start": 17.8,
+          "end": 18.3
+        },
+        {
+          "word_index": 6,
+          "text": "a",
+          "start": 18.3,
+          "end": 18.4
+        },
+        {
+          "word_index": 7,
+          "text": "swinging",
+          "start": 18.4,
+          "end": 18.8
+        },
+        {
+          "word_index": 8,
+          "text": "vine",
+          "start": 18.8,
+          "end": 18.8
+        }
+      ]
+    },
+    {
+      "line_index": 8,
+      "text": "Swing my heart across the line",
+      "start": 18.8,
+      "end": 21.0,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Swing",
+          "start": 18.8,
+          "end": 18.9
+        },
+        {
+          "word_index": 2,
+          "text": "my",
+          "start": 18.9,
+          "end": 18.9
+        },
+        {
+          "word_index": 3,
+          "text": "heart",
+          "start": 18.9,
+          "end": 18.9
+        },
+        {
+          "word_index": 4,
+          "text": "across",
+          "start": 18.9,
+          "end": 18.9
+        },
+        {
+          "word_index": 5,
+          "text": "the",
+          "start": 18.9,
+          "end": 18.9
+        },
+        {
+          "word_index": 6,
+          "text": "line",
+          "start": 18.9,
+          "end": 21.0
+        }
+      ]
+    },
+    {
+      "line_index": 9,
+      "text": "And in my face is flashing signs",
+      "start": 21.0,
+      "end": 23.2,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "And",
+          "start": 21.0,
+          "end": 21.1
+        },
+        {
+          "word_index": 2,
+          "text": "in",
+          "start": 21.1,
+          "end": 21.1
+        },
+        {
+          "word_index": 3,
+          "text": "my",
+          "start": 21.1,
+          "end": 21.1
+        },
+        {
+          "word_index": 4,
+          "text": "face",
+          "start": 21.1,
+          "end": 21.1
+        },
+        {
+          "word_index": 5,
+          "text": "is",
+          "start": 21.1,
+          "end": 21.1
+        },
+        {
+          "word_index": 6,
+          "text": "flashing",
+          "start": 21.1,
+          "end": 21.1
+        },
+        {
+          "word_index": 7,
+          "text": "signs",
+          "start": 21.1,
+          "end": 23.2
+        }
+      ]
+    },
+    {
+      "line_index": 10,
+      "text": "Seek it out and ye shall find",
+      "start": 23.2,
+      "end": 25.4,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Seek",
+          "start": 23.2,
+          "end": 23.3
+        },
+        {
+          "word_index": 2,
+          "text": "it",
+          "start": 23.3,
+          "end": 23.3
+        },
+        {
+          "word_index": 3,
+          "text": "out",
+          "start": 23.3,
+          "end": 23.3
+        },
+        {
+          "word_index": 4,
+          "text": "and",
+          "start": 23.3,
+          "end": 23.3
+        },
+        {
+          "word_index": 5,
+          "text": "ye",
+          "start": 23.3,
+          "end": 23.3
+        },
+        {
+          "word_index": 6,
+          "text": "shall",
+          "start": 23.3,
+          "end": 23.3
+        },
+        {
+          "word_index": 7,
+          "text": "find",
+          "start": 23.3,
+          "end": 25.4
+        }
+      ]
+    },
+    {
+      "line_index": 11,
+      "text": "Old, but I'm not that old",
+      "start": 25.4,
+      "end": 27.3,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Old,",
+          "start": 25.4,
+          "end": 25.5
+        },
+        {
+          "word_index": 2,
+          "text": "but",
+          "start": 25.5,
+          "end": 25.5
+        },
+        {
+          "word_index": 3,
+          "text": "I'm",
+          "start": 25.5,
+          "end": 25.5
+        },
+        {
+          "word_index": 4,
+          "text": "not",
+          "start": 25.5,
+          "end": 25.5
+        },
+        {
+          "word_index": 5,
+          "text": "that",
+          "start": 25.5,
+          "end": 25.5
+        },
+        {
+          "word_index": 6,
+          "text": "old",
+          "start": 25.5,
+          "end": 27.3
+        }
+      ]
+    },
+    {
+      "line_index": 12,
+      "text": "Young, but I'm not that bold",
+      "start": 27.6,
+      "end": 29.8,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Young,",
+          "start": 27.6,
+          "end": 27.7
+        },
+        {
+          "word_index": 2,
+          "text": "but",
+          "start": 27.7,
+          "end": 27.7
+        },
+        {
+          "word_index": 3,
+          "text": "I'm",
+          "start": 27.7,
+          "end": 27.7
+        },
+        {
+          "word_index": 4,
+          "text": "not",
+          "start": 27.7,
+          "end": 27.7
+        },
+        {
+          "word_index": 5,
+          "text": "that",
+          "start": 27.7,
+          "end": 27.7
+        },
+        {
+          "word_index": 6,
+          "text": "bold",
+          "start": 27.7,
+          "end": 29.8
+        }
+      ]
+    },
+    {
+      "line_index": 13,
+      "text": "And I don't think the world is sold",
+      "start": 29.8,
+      "end": 32.0,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "And",
+          "start": 29.8,
+          "end": 29.9
+        },
+        {
+          "word_index": 2,
+          "text": "I",
+          "start": 29.9,
+          "end": 29.9
+        },
+        {
+          "word_index": 3,
+          "text": "don't",
+          "start": 29.9,
+          "end": 29.9
+        },
+        {
+          "word_index": 4,
+          "text": "think",
+          "start": 29.9,
+          "end": 29.9
+        },
+        {
+          "word_index": 5,
+          "text": "the",
+          "start": 29.9,
+          "end": 29.9
+        },
+        {
+          "word_index": 6,
+          "text": "world",
+          "start": 29.9,
+          "end": 29.9
+        },
+        {
+          "word_index": 7,
+          "text": "is",
+          "start": 29.9,
+          "end": 29.9
+        },
+        {
+          "word_index": 8,
+          "text": "sold",
+          "start": 29.9,
+          "end": 32.0
+        }
+      ]
+    },
+    {
+      "line_index": 14,
+      "text": "On just doing what we're told",
+      "start": 32.0,
+      "end": 34.2,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "On",
+          "start": 32.0,
+          "end": 32.1
+        },
+        {
+          "word_index": 2,
+          "text": "just",
+          "start": 32.1,
+          "end": 32.1
+        },
+        {
+          "word_index": 3,
+          "text": "doing",
+          "start": 32.1,
+          "end": 32.1
+        },
+        {
+          "word_index": 4,
+          "text": "what",
+          "start": 32.1,
+          "end": 32.1
+        },
+        {
+          "word_index": 5,
+          "text": "we're",
+          "start": 32.1,
+          "end": 32.1
+        },
+        {
+          "word_index": 6,
+          "text": "told",
+          "start": 32.1,
+          "end": 34.2
+        }
+      ]
+    },
+    {
+      "line_index": 15,
+      "text": "I feel something so right, doing the wrong thing",
+      "start": 34.2,
+      "end": 35.8,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "I",
+          "start": 34.2,
+          "end": 34.4
+        },
+        {
+          "word_index": 2,
+          "text": "feel",
+          "start": 34.4,
+          "end": 34.6
+        },
+        {
+          "word_index": 3,
+          "text": "something",
+          "start": 34.6,
+          "end": 34.8
+        },
+        {
+          "word_index": 4,
+          "text": "so",
+          "start": 34.8,
+          "end": 34.9
+        },
+        {
+          "word_index": 5,
+          "text": "right,",
+          "start": 34.9,
+          "end": 35.1
+        },
+        {
+          "word_index": 6,
+          "text": "doing",
+          "start": 35.1,
+          "end": 35.3
+        },
+        {
+          "word_index": 7,
+          "text": "the",
+          "start": 35.3,
+          "end": 35.5
+        },
+        {
+          "word_index": 8,
+          "text": "wrong",
+          "start": 35.5,
+          "end": 35.6
+        },
+        {
+          "word_index": 9,
+          "text": "thing",
+          "start": 35.6,
+          "end": 35.8
+        }
+      ]
+    },
+    {
+      "line_index": 16,
+      "text": "And I feel something so wrong, doing the right thing",
+      "start": 37.2,
+      "end": 39.4,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "And",
+          "start": 37.2,
+          "end": 37.4
+        },
+        {
+          "word_index": 2,
+          "text": "I",
+          "start": 37.5,
+          "end": 37.7
+        },
+        {
+          "word_index": 3,
+          "text": "feel",
+          "start": 37.7,
+          "end": 37.9
+        },
+        {
+          "word_index": 4,
+          "text": "something",
+          "start": 37.9,
+          "end": 38.1
+        },
+        {
+          "word_index": 5,
+          "text": "so",
+          "start": 38.1,
+          "end": 38.3
+        },
+        {
+          "word_index": 6,
+          "text": "wrong,",
+          "start": 38.4,
+          "end": 38.5
+        },
+        {
+          "word_index": 7,
+          "text": "doing",
+          "start": 38.6,
+          "end": 38.8
+        },
+        {
+          "word_index": 8,
+          "text": "the",
+          "start": 38.8,
+          "end": 39.0
+        },
+        {
+          "word_index": 9,
+          "text": "right",
+          "start": 39.0,
+          "end": 39.2
+        },
+        {
+          "word_index": 10,
+          "text": "thing",
+          "start": 39.2,
+          "end": 39.4
+        }
+      ]
+    },
+    {
+      "line_index": 17,
+      "text": "I couldn't lie, couldn't lie, couldn't lie",
+      "start": 40.5,
+      "end": 40.7,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "I",
+          "start": 40.5,
+          "end": 40.5
+        },
+        {
+          "word_index": 2,
+          "text": "couldn't",
+          "start": 40.5,
+          "end": 40.5
+        },
+        {
+          "word_index": 3,
+          "text": "lie,",
+          "start": 40.5,
+          "end": 40.6
+        },
+        {
+          "word_index": 4,
+          "text": "couldn't",
+          "start": 40.6,
+          "end": 40.6
+        },
+        {
+          "word_index": 5,
+          "text": "lie,",
+          "start": 40.6,
+          "end": 40.6
+        },
+        {
+          "word_index": 6,
+          "text": "couldn't",
+          "start": 40.6,
+          "end": 40.6
+        },
+        {
+          "word_index": 7,
+          "text": "lie",
+          "start": 40.6,
+          "end": 40.7
+        }
+      ]
+    },
+    {
+      "line_index": 18,
+      "text": "Everything that kills me makes me feel alive",
+      "start": 43.2,
+      "end": 44.2,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Everything",
+          "start": 43.2,
+          "end": 43.2
+        },
+        {
+          "word_index": 2,
+          "text": "that",
+          "start": 43.2,
+          "end": 43.2
+        },
+        {
+          "word_index": 3,
+          "text": "kills",
+          "start": 43.2,
+          "end": 43.2
+        },
+        {
+          "word_index": 4,
+          "text": "me",
+          "start": 43.2,
+          "end": 43.2
+        },
+        {
+          "word_index": 5,
+          "text": "makes",
+          "start": 43.2,
+          "end": 43.2
+        },
+        {
+          "word_index": 6,
+          "text": "me",
+          "start": 43.2,
+          "end": 43.2
+        },
+        {
+          "word_index": 7,
+          "text": "feel",
+          "start": 43.2,
+          "end": 43.2
+        },
+        {
+          "word_index": 8,
+          "text": "alive",
+          "start": 43.2,
+          "end": 44.2
+        }
+      ]
+    },
+    {
+      "line_index": 19,
+      "text": "Lately, I've been, I've been losing sleep",
+      "start": 46.0,
+      "end": 48.6,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Lately,",
+          "start": 46.0,
+          "end": 46.0
+        },
+        {
+          "word_index": 2,
+          "text": "I've",
+          "start": 46.0,
+          "end": 46.0
+        },
+        {
+          "word_index": 3,
+          "text": "been,",
+          "start": 46.0,
+          "end": 46.0
+        },
+        {
+          "word_index": 4,
+          "text": "I've",
+          "start": 46.0,
+          "end": 46.0
+        },
+        {
+          "word_index": 5,
+          "text": "been",
+          "start": 46.0,
+          "end": 46.1
+        },
+        {
+          "word_index": 6,
+          "text": "losing",
+          "start": 46.1,
+          "end": 46.1
+        },
+        {
+          "word_index": 7,
+          "text": "sleep",
+          "start": 46.1,
+          "end": 48.6
+        }
+      ]
+    },
+    {
+      "line_index": 20,
+      "text": "Dreaming about the things that we could be",
+      "start": 48.6,
+      "end": 51.3,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Dreaming",
+          "start": 48.6,
+          "end": 48.7
+        },
+        {
+          "word_index": 2,
+          "text": "about",
+          "start": 48.7,
+          "end": 48.7
+        },
+        {
+          "word_index": 3,
+          "text": "the",
+          "start": 48.7,
+          "end": 48.7
+        },
+        {
+          "word_index": 4,
+          "text": "things",
+          "start": 48.7,
+          "end": 48.7
+        },
+        {
+          "word_index": 5,
+          "text": "that",
+          "start": 48.7,
+          "end": 48.7
+        },
+        {
+          "word_index": 6,
+          "text": "we",
+          "start": 48.7,
+          "end": 48.7
+        },
+        {
+          "word_index": 7,
+          "text": "could",
+          "start": 48.7,
+          "end": 48.8
+        },
+        {
+          "word_index": 8,
+          "text": "be",
+          "start": 48.8,
+          "end": 51.3
+        }
+      ]
+    },
+    {
+      "line_index": 21,
+      "text": "But baby, I've been, I've been praying hard",
+      "start": 51.3,
+      "end": 53.8,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "But",
+          "start": 51.3,
+          "end": 51.3
+        },
+        {
+          "word_index": 2,
+          "text": "baby,",
+          "start": 51.3,
+          "end": 51.3
+        },
+        {
+          "word_index": 3,
+          "text": "I've",
+          "start": 51.3,
+          "end": 51.3
+        },
+        {
+          "word_index": 4,
+          "text": "been,",
+          "start": 51.3,
+          "end": 51.3
+        },
+        {
+          "word_index": 5,
+          "text": "I've",
+          "start": 51.3,
+          "end": 51.3
+        },
+        {
+          "word_index": 6,
+          "text": "been",
+          "start": 51.3,
+          "end": 51.3
+        },
+        {
+          "word_index": 7,
+          "text": "praying",
+          "start": 51.3,
+          "end": 51.3
+        },
+        {
+          "word_index": 8,
+          "text": "hard",
+          "start": 51.3,
+          "end": 53.8
+        }
+      ]
+    },
+    {
+      "line_index": 22,
+      "text": "Said, \"No more counting dollars, we'll be counting stars\"",
+      "start": 54.0,
+      "end": 57.5,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Said,",
+          "start": 54.0,
+          "end": 54.1
+        },
+        {
+          "word_index": 2,
+          "text": "\"No",
+          "start": 54.1,
+          "end": 54.1
+        },
+        {
+          "word_index": 3,
+          "text": "more",
+          "start": 54.1,
+          "end": 54.8
+        },
+        {
+          "word_index": 4,
+          "text": "counting",
+          "start": 54.8,
+          "end": 55.4
+        },
+        {
+          "word_index": 5,
+          "text": "dollars,",
+          "start": 55.4,
+          "end": 56.1
+        },
+        {
+          "word_index": 6,
+          "text": "we'll",
+          "start": 56.1,
+          "end": 56.1
+        },
+        {
+          "word_index": 7,
+          "text": "be",
+          "start": 56.1,
+          "end": 56.8
+        },
+        {
+          "word_index": 8,
+          "text": "counting",
+          "start": 56.8,
+          "end": 57.4
+        },
+        {
+          "word_index": 9,
+          "text": "stars\"",
+          "start": 57.4,
+          "end": 57.5
+        }
+      ]
+    },
+    {
+      "line_index": 23,
+      "text": "Lately, I've been, I've been losing sleep",
+      "start": 57.6,
+      "end": 59.6,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Lately,",
+          "start": 57.6,
+          "end": 57.6
+        },
+        {
+          "word_index": 2,
+          "text": "I've",
+          "start": 57.6,
+          "end": 57.6
+        },
+        {
+          "word_index": 3,
+          "text": "been,",
+          "start": 57.6,
+          "end": 57.6
+        },
+        {
+          "word_index": 4,
+          "text": "I've",
+          "start": 57.6,
+          "end": 57.6
+        },
+        {
+          "word_index": 5,
+          "text": "been",
+          "start": 57.6,
+          "end": 57.6
+        },
+        {
+          "word_index": 6,
+          "text": "losing",
+          "start": 57.6,
+          "end": 57.6
+        },
+        {
+          "word_index": 7,
+          "text": "sleep",
+          "start": 57.6,
+          "end": 59.6
+        }
+      ]
+    },
+    {
+      "line_index": 24,
+      "text": "Dreaming about the things we could be",
+      "start": 60.3,
+      "end": 62.6,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Dreaming",
+          "start": 60.3,
+          "end": 60.3
+        },
+        {
+          "word_index": 2,
+          "text": "about",
+          "start": 60.3,
+          "end": 60.3
+        },
+        {
+          "word_index": 3,
+          "text": "the",
+          "start": 60.3,
+          "end": 60.3
+        },
+        {
+          "word_index": 4,
+          "text": "things",
+          "start": 60.3,
+          "end": 60.3
+        },
+        {
+          "word_index": 5,
+          "text": "we",
+          "start": 60.3,
+          "end": 60.3
+        },
+        {
+          "word_index": 6,
+          "text": "could",
+          "start": 60.3,
+          "end": 60.4
+        },
+        {
+          "word_index": 7,
+          "text": "be",
+          "start": 60.4,
+          "end": 62.6
+        }
+      ]
+    },
+    {
+      "line_index": 25,
+      "text": "But baby, I've been, I've been praying hard",
+      "start": 62.6,
+      "end": 65.3,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "But",
+          "start": 62.6,
+          "end": 62.7
+        },
+        {
+          "word_index": 2,
+          "text": "baby,",
+          "start": 62.7,
+          "end": 62.7
+        },
+        {
+          "word_index": 3,
+          "text": "I've",
+          "start": 62.7,
+          "end": 62.7
+        },
+        {
+          "word_index": 4,
+          "text": "been,",
+          "start": 62.7,
+          "end": 62.7
+        },
+        {
+          "word_index": 5,
+          "text": "I've",
+          "start": 62.7,
+          "end": 62.8
+        },
+        {
+          "word_index": 6,
+          "text": "been",
+          "start": 62.8,
+          "end": 62.8
+        },
+        {
+          "word_index": 7,
+          "text": "praying",
+          "start": 62.8,
+          "end": 62.8
+        },
+        {
+          "word_index": 8,
+          "text": "hard",
+          "start": 62.8,
+          "end": 65.3
+        }
+      ]
+    },
+    {
+      "line_index": 26,
+      "text": "Said, \"No more counting dollars, we'll be, we'll be counting stars\"",
+      "start": 65.4,
+      "end": 66.4,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Said,",
+          "start": 65.4,
+          "end": 65.5
+        },
+        {
+          "word_index": 2,
+          "text": "\"No",
+          "start": 65.5,
+          "end": 65.5
+        },
+        {
+          "word_index": 3,
+          "text": "more",
+          "start": 65.5,
+          "end": 65.6
+        },
+        {
+          "word_index": 4,
+          "text": "counting",
+          "start": 65.6,
+          "end": 65.7
+        },
+        {
+          "word_index": 5,
+          "text": "dollars,",
+          "start": 65.7,
+          "end": 65.8
+        },
+        {
+          "word_index": 6,
+          "text": "we'll",
+          "start": 65.8,
+          "end": 65.9
+        },
+        {
+          "word_index": 7,
+          "text": "be,",
+          "start": 65.9,
+          "end": 66.0
+        },
+        {
+          "word_index": 8,
+          "text": "we'll",
+          "start": 66.0,
+          "end": 66.1
+        },
+        {
+          "word_index": 9,
+          "text": "be",
+          "start": 66.1,
+          "end": 66.2
+        },
+        {
+          "word_index": 10,
+          "text": "counting",
+          "start": 66.2,
+          "end": 66.3
+        },
+        {
+          "word_index": 11,
+          "text": "stars\"",
+          "start": 66.3,
+          "end": 66.4
+        }
+      ]
+    },
+    {
+      "line_index": 27,
+      "text": "Yeah",
+      "start": 69.5,
+      "end": 70.0,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Yeah",
+          "start": 69.5,
+          "end": 70.0
+        }
+      ]
+    },
+    {
+      "line_index": 28,
+      "text": "I feel your love, and I feel it burn",
+      "start": 71.8,
+      "end": 72.3,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "I",
+          "start": 71.8,
+          "end": 71.8
+        },
+        {
+          "word_index": 2,
+          "text": "feel",
+          "start": 71.8,
+          "end": 71.9
+        },
+        {
+          "word_index": 3,
+          "text": "your",
+          "start": 71.9,
+          "end": 71.9
+        },
+        {
+          "word_index": 4,
+          "text": "love,",
+          "start": 71.9,
+          "end": 72.0
+        },
+        {
+          "word_index": 5,
+          "text": "and",
+          "start": 72.0,
+          "end": 72.0
+        },
+        {
+          "word_index": 6,
+          "text": "I",
+          "start": 72.0,
+          "end": 72.1
+        },
+        {
+          "word_index": 7,
+          "text": "feel",
+          "start": 72.1,
+          "end": 72.1
+        },
+        {
+          "word_index": 8,
+          "text": "it",
+          "start": 72.1,
+          "end": 72.2
+        },
+        {
+          "word_index": 9,
+          "text": "burn",
+          "start": 72.2,
+          "end": 72.3
+        }
+      ]
+    },
+    {
+      "line_index": 29,
+      "text": "Down this river, every turn",
+      "start": 74.2,
+      "end": 75.7,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Down",
+          "start": 74.2,
+          "end": 74.2
+        },
+        {
+          "word_index": 2,
+          "text": "this",
+          "start": 74.2,
+          "end": 74.2
+        },
+        {
+          "word_index": 3,
+          "text": "river,",
+          "start": 74.2,
+          "end": 74.2
+        },
+        {
+          "word_index": 4,
+          "text": "every",
+          "start": 74.2,
+          "end": 74.2
+        },
+        {
+          "word_index": 5,
+          "text": "turn",
+          "start": 74.2,
+          "end": 75.7
+        }
+      ]
+    },
+    {
+      "line_index": 30,
+      "text": "Hope is our four-letter word",
+      "start": 76.4,
+      "end": 76.9,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Hope",
+          "start": 76.4,
+          "end": 76.4
+        },
+        {
+          "word_index": 2,
+          "text": "is",
+          "start": 76.4,
+          "end": 76.4
+        },
+        {
+          "word_index": 3,
+          "text": "our",
+          "start": 76.4,
+          "end": 76.4
+        },
+        {
+          "word_index": 4,
+          "text": "four-letter",
+          "start": 76.4,
+          "end": 76.4
+        },
+        {
+          "word_index": 5,
+          "text": "word",
+          "start": 76.4,
+          "end": 76.9
+        }
+      ]
+    },
+    {
+      "line_index": 31,
+      "text": "Make that money, watch it burn",
+      "start": 78.6,
+      "end": 80.6,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Make",
+          "start": 78.6,
+          "end": 78.9
+        },
+        {
+          "word_index": 2,
+          "text": "that",
+          "start": 78.9,
+          "end": 79.2
+        },
+        {
+          "word_index": 3,
+          "text": "money,",
+          "start": 79.3,
+          "end": 79.6
+        },
+        {
+          "word_index": 4,
+          "text": "watch",
+          "start": 79.6,
+          "end": 79.9
+        },
+        {
+          "word_index": 5,
+          "text": "it",
+          "start": 79.9,
+          "end": 80.2
+        },
+        {
+          "word_index": 6,
+          "text": "burn",
+          "start": 80.3,
+          "end": 80.6
+        }
+      ]
+    },
+    {
+      "line_index": 32,
+      "text": "Old, but I'm not that old",
+      "start": 80.8,
+      "end": 83.0,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Old,",
+          "start": 80.8,
+          "end": 81.3
+        },
+        {
+          "word_index": 2,
+          "text": "but",
+          "start": 81.3,
+          "end": 81.7
+        },
+        {
+          "word_index": 3,
+          "text": "I'm",
+          "start": 81.7,
+          "end": 82.1
+        },
+        {
+          "word_index": 4,
+          "text": "not",
+          "start": 82.1,
+          "end": 82.5
+        },
+        {
+          "word_index": 5,
+          "text": "that",
+          "start": 82.6,
+          "end": 82.9
+        },
+        {
+          "word_index": 6,
+          "text": "old",
+          "start": 82.9,
+          "end": 83.0
+        }
+      ]
+    },
+    {
+      "line_index": 33,
+      "text": "Young, but I'm not that bold",
+      "start": 83.0,
+      "end": 85.0,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Young,",
+          "start": 83.0,
+          "end": 83.4
+        },
+        {
+          "word_index": 2,
+          "text": "but",
+          "start": 83.4,
+          "end": 83.9
+        },
+        {
+          "word_index": 3,
+          "text": "I'm",
+          "start": 83.9,
+          "end": 84.6
+        },
+        {
+          "word_index": 4,
+          "text": "not",
+          "start": 84.6,
+          "end": 84.7
+        },
+        {
+          "word_index": 5,
+          "text": "that",
+          "start": 84.7,
+          "end": 84.9
+        },
+        {
+          "word_index": 6,
+          "text": "bold",
+          "start": 84.9,
+          "end": 85.0
+        }
+      ]
+    },
+    {
+      "line_index": 34,
+      "text": "And I don't think the world is sold",
+      "start": 85.2,
+      "end": 87.2,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "And",
+          "start": 85.2,
+          "end": 85.4
+        },
+        {
+          "word_index": 2,
+          "text": "I",
+          "start": 85.4,
+          "end": 85.7
+        },
+        {
+          "word_index": 3,
+          "text": "don't",
+          "start": 85.7,
+          "end": 85.9
+        },
+        {
+          "word_index": 4,
+          "text": "think",
+          "start": 85.9,
+          "end": 86.2
+        },
+        {
+          "word_index": 5,
+          "text": "the",
+          "start": 86.2,
+          "end": 86.4
+        },
+        {
+          "word_index": 6,
+          "text": "world",
+          "start": 86.4,
+          "end": 86.7
+        },
+        {
+          "word_index": 7,
+          "text": "is",
+          "start": 86.7,
+          "end": 86.9
+        },
+        {
+          "word_index": 8,
+          "text": "sold",
+          "start": 86.9,
+          "end": 87.2
+        }
+      ]
+    },
+    {
+      "line_index": 35,
+      "text": "On just doing what we're told",
+      "start": 87.4,
+      "end": 89.4,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "On",
+          "start": 87.4,
+          "end": 87.7
+        },
+        {
+          "word_index": 2,
+          "text": "just",
+          "start": 87.7,
+          "end": 88.0
+        },
+        {
+          "word_index": 3,
+          "text": "doing",
+          "start": 88.1,
+          "end": 88.4
+        },
+        {
+          "word_index": 4,
+          "text": "what",
+          "start": 88.4,
+          "end": 88.7
+        },
+        {
+          "word_index": 5,
+          "text": "we're",
+          "start": 88.7,
+          "end": 89.0
+        },
+        {
+          "word_index": 6,
+          "text": "told",
+          "start": 89.1,
+          "end": 89.4
+        }
+      ]
+    },
+    {
+      "line_index": 36,
+      "text": "And I feel something so wrong, doing the right thing",
+      "start": 89.6,
+      "end": 92.6,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "And",
+          "start": 89.6,
+          "end": 89.9
+        },
+        {
+          "word_index": 2,
+          "text": "I",
+          "start": 89.9,
+          "end": 90.2
+        },
+        {
+          "word_index": 3,
+          "text": "feel",
+          "start": 90.2,
+          "end": 90.5
+        },
+        {
+          "word_index": 4,
+          "text": "something",
+          "start": 90.5,
+          "end": 90.8
+        },
+        {
+          "word_index": 5,
+          "text": "so",
+          "start": 90.8,
+          "end": 91.1
+        },
+        {
+          "word_index": 6,
+          "text": "wrong,",
+          "start": 91.1,
+          "end": 91.4
+        },
+        {
+          "word_index": 7,
+          "text": "doing",
+          "start": 91.4,
+          "end": 91.7
+        },
+        {
+          "word_index": 8,
+          "text": "the",
+          "start": 91.7,
+          "end": 92.0
+        },
+        {
+          "word_index": 9,
+          "text": "right",
+          "start": 92.0,
+          "end": 92.3
+        },
+        {
+          "word_index": 10,
+          "text": "thing",
+          "start": 92.3,
+          "end": 92.6
+        }
+      ]
+    },
+    {
+      "line_index": 37,
+      "text": "I couldn't lie, couldn't lie, couldn't lie",
+      "start": 92.8,
+      "end": 95.4,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "I",
+          "start": 92.8,
+          "end": 93.2
+        },
+        {
+          "word_index": 2,
+          "text": "couldn't",
+          "start": 93.3,
+          "end": 93.6
+        },
+        {
+          "word_index": 3,
+          "text": "lie,",
+          "start": 93.6,
+          "end": 94.0
+        },
+        {
+          "word_index": 4,
+          "text": "couldn't",
+          "start": 94.1,
+          "end": 94.4
+        },
+        {
+          "word_index": 5,
+          "text": "lie,",
+          "start": 94.5,
+          "end": 94.8
+        },
+        {
+          "word_index": 6,
+          "text": "couldn't",
+          "start": 94.8,
+          "end": 95.3
+        },
+        {
+          "word_index": 7,
+          "text": "lie",
+          "start": 95.3,
+          "end": 95.4
+        }
+      ]
+    },
+    {
+      "line_index": 38,
+      "text": "Everything that drowns me makes me wanna fly",
+      "start": 95.5,
+      "end": 98.1,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Everything",
+          "start": 95.5,
+          "end": 95.8
+        },
+        {
+          "word_index": 2,
+          "text": "that",
+          "start": 95.9,
+          "end": 96.1
+        },
+        {
+          "word_index": 3,
+          "text": "drowns",
+          "start": 96.2,
+          "end": 96.5
+        },
+        {
+          "word_index": 4,
+          "text": "me",
+          "start": 96.5,
+          "end": 96.8
+        },
+        {
+          "word_index": 5,
+          "text": "makes",
+          "start": 96.8,
+          "end": 97.1
+        },
+        {
+          "word_index": 6,
+          "text": "me",
+          "start": 97.1,
+          "end": 97.4
+        },
+        {
+          "word_index": 7,
+          "text": "wanna",
+          "start": 97.5,
+          "end": 97.8
+        },
+        {
+          "word_index": 8,
+          "text": "fly",
+          "start": 97.8,
+          "end": 98.1
+        }
+      ]
+    },
+    {
+      "line_index": 39,
+      "text": "Lately, I've been, I've been losing sleep",
+      "start": 98.3,
+      "end": 100.8,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Lately,",
+          "start": 98.3,
+          "end": 98.6
+        },
+        {
+          "word_index": 2,
+          "text": "I've",
+          "start": 98.7,
+          "end": 99.0
+        },
+        {
+          "word_index": 3,
+          "text": "been,",
+          "start": 99.0,
+          "end": 99.3
+        },
+        {
+          "word_index": 4,
+          "text": "I've",
+          "start": 99.4,
+          "end": 99.7
+        },
+        {
+          "word_index": 5,
+          "text": "been",
+          "start": 99.7,
+          "end": 100.0
+        },
+        {
+          "word_index": 6,
+          "text": "losing",
+          "start": 100.1,
+          "end": 100.4
+        },
+        {
+          "word_index": 7,
+          "text": "sleep",
+          "start": 100.4,
+          "end": 100.8
+        }
+      ]
+    },
+    {
+      "line_index": 40,
+      "text": "Dreaming about the things that we could be",
+      "start": 101.0,
+      "end": 102.8,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Dreaming",
+          "start": 101.0,
+          "end": 101.2
+        },
+        {
+          "word_index": 2,
+          "text": "about",
+          "start": 101.2,
+          "end": 101.4
+        },
+        {
+          "word_index": 3,
+          "text": "the",
+          "start": 101.4,
+          "end": 101.6
+        },
+        {
+          "word_index": 4,
+          "text": "things",
+          "start": 101.6,
+          "end": 101.8
+        },
+        {
+          "word_index": 5,
+          "text": "that",
+          "start": 101.9,
+          "end": 102.1
+        },
+        {
+          "word_index": 6,
+          "text": "we",
+          "start": 102.1,
+          "end": 102.3
+        },
+        {
+          "word_index": 7,
+          "text": "could",
+          "start": 102.3,
+          "end": 102.5
+        },
+        {
+          "word_index": 8,
+          "text": "be",
+          "start": 102.5,
+          "end": 102.8
+        }
+      ]
+    },
+    {
+      "line_index": 41,
+      "text": "But baby, I've been, I've been praying hard",
+      "start": 103.6,
+      "end": 104.1,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "But",
+          "start": 103.6,
+          "end": 103.7
+        },
+        {
+          "word_index": 2,
+          "text": "baby,",
+          "start": 103.7,
+          "end": 103.7
+        },
+        {
+          "word_index": 3,
+          "text": "I've",
+          "start": 103.7,
+          "end": 103.7
+        },
+        {
+          "word_index": 4,
+          "text": "been,",
+          "start": 103.7,
+          "end": 103.7
+        },
+        {
+          "word_index": 5,
+          "text": "I've",
+          "start": 103.7,
+          "end": 104.0
+        },
+        {
+          "word_index": 6,
+          "text": "been",
+          "start": 104.0,
+          "end": 104.0
+        },
+        {
+          "word_index": 7,
+          "text": "praying",
+          "start": 104.0,
+          "end": 104.1
+        },
+        {
+          "word_index": 8,
+          "text": "hard",
+          "start": 104.1,
+          "end": 104.1
+        }
+      ]
+    },
+    {
+      "line_index": 42,
+      "text": "Said, \"No more counting dollars, we'll be counting stars\"",
+      "start": 106.3,
+      "end": 108.1,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Said,",
+          "start": 106.3,
+          "end": 106.5
+        },
+        {
+          "word_index": 2,
+          "text": "\"No",
+          "start": 106.5,
+          "end": 106.7
+        },
+        {
+          "word_index": 3,
+          "text": "more",
+          "start": 106.7,
+          "end": 106.9
+        },
+        {
+          "word_index": 4,
+          "text": "counting",
+          "start": 106.9,
+          "end": 107.1
+        },
+        {
+          "word_index": 5,
+          "text": "dollars,",
+          "start": 107.1,
+          "end": 107.3
+        },
+        {
+          "word_index": 6,
+          "text": "we'll",
+          "start": 107.3,
+          "end": 107.5
+        },
+        {
+          "word_index": 7,
+          "text": "be",
+          "start": 107.5,
+          "end": 107.7
+        },
+        {
+          "word_index": 8,
+          "text": "counting",
+          "start": 107.7,
+          "end": 107.9
+        },
+        {
+          "word_index": 9,
+          "text": "stars\"",
+          "start": 107.9,
+          "end": 108.1
+        }
+      ]
+    },
+    {
+      "line_index": 43,
+      "text": "Lately, I've been, I've been losing sleep",
+      "start": 110.0,
+      "end": 112.2,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Lately,",
+          "start": 110.0,
+          "end": 110.3
+        },
+        {
+          "word_index": 2,
+          "text": "I've",
+          "start": 110.3,
+          "end": 110.8
+        },
+        {
+          "word_index": 3,
+          "text": "been,",
+          "start": 110.8,
+          "end": 111.3
+        },
+        {
+          "word_index": 4,
+          "text": "I've",
+          "start": 111.3,
+          "end": 111.7
+        },
+        {
+          "word_index": 5,
+          "text": "been",
+          "start": 111.7,
+          "end": 111.8
+        },
+        {
+          "word_index": 6,
+          "text": "losing",
+          "start": 111.8,
+          "end": 112.1
+        },
+        {
+          "word_index": 7,
+          "text": "sleep",
+          "start": 112.1,
+          "end": 112.2
+        }
+      ]
+    },
+    {
+      "line_index": 44,
+      "text": "Dreaming about the things that we could be",
+      "start": 112.6,
+      "end": 114.8,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Dreaming",
+          "start": 112.6,
+          "end": 113.1
+        },
+        {
+          "word_index": 2,
+          "text": "about",
+          "start": 113.1,
+          "end": 113.4
+        },
+        {
+          "word_index": 3,
+          "text": "the",
+          "start": 113.4,
+          "end": 113.8
+        },
+        {
+          "word_index": 4,
+          "text": "things",
+          "start": 113.8,
+          "end": 114.5
+        },
+        {
+          "word_index": 5,
+          "text": "that",
+          "start": 114.5,
+          "end": 114.6
+        },
+        {
+          "word_index": 6,
+          "text": "we",
+          "start": 114.6,
+          "end": 114.7
+        },
+        {
+          "word_index": 7,
+          "text": "could",
+          "start": 114.7,
+          "end": 114.8
+        },
+        {
+          "word_index": 8,
+          "text": "be",
+          "start": 114.8,
+          "end": 114.8
+        }
+      ]
+    },
+    {
+      "line_index": 45,
+      "text": "But baby, I've been, I've been praying hard",
+      "start": 115.3,
+      "end": 117.8,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "But",
+          "start": 115.3,
+          "end": 115.6
+        },
+        {
+          "word_index": 2,
+          "text": "baby,",
+          "start": 115.6,
+          "end": 116.1
+        },
+        {
+          "word_index": 3,
+          "text": "I've",
+          "start": 116.1,
+          "end": 116.5
+        },
+        {
+          "word_index": 4,
+          "text": "been,",
+          "start": 116.5,
+          "end": 117.0
+        },
+        {
+          "word_index": 5,
+          "text": "I've",
+          "start": 117.0,
+          "end": 117.4
+        },
+        {
+          "word_index": 6,
+          "text": "been",
+          "start": 117.4,
+          "end": 117.5
+        },
+        {
+          "word_index": 7,
+          "text": "praying",
+          "start": 117.5,
+          "end": 117.7
+        },
+        {
+          "word_index": 8,
+          "text": "hard",
+          "start": 117.7,
+          "end": 117.8
+        }
+      ]
+    },
+    {
+      "line_index": 46,
+      "text": "Said, \"No more counting dollars, we'll be, we'll be counting stars\"",
+      "start": 118.0,
+      "end": 122.2,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Said,",
+          "start": 118.0,
+          "end": 118.3
+        },
+        {
+          "word_index": 2,
+          "text": "\"No",
+          "start": 118.3,
+          "end": 118.9
+        },
+        {
+          "word_index": 3,
+          "text": "more",
+          "start": 118.9,
+          "end": 119.3
+        },
+        {
+          "word_index": 4,
+          "text": "counting",
+          "start": 119.3,
+          "end": 120.4
+        },
+        {
+          "word_index": 5,
+          "text": "dollars,",
+          "start": 120.4,
+          "end": 120.7
+        },
+        {
+          "word_index": 6,
+          "text": "we'll",
+          "start": 120.7,
+          "end": 121.3
+        },
+        {
+          "word_index": 7,
+          "text": "be,",
+          "start": 121.3,
+          "end": 121.8
+        },
+        {
+          "word_index": 8,
+          "text": "we'll",
+          "start": 121.8,
+          "end": 121.9
+        },
+        {
+          "word_index": 9,
+          "text": "be",
+          "start": 121.9,
+          "end": 122.0
+        },
+        {
+          "word_index": 10,
+          "text": "counting",
+          "start": 122.0,
+          "end": 122.1
+        },
+        {
+          "word_index": 11,
+          "text": "stars\"",
+          "start": 122.1,
+          "end": 122.2
+        }
+      ]
+    },
+    {
+      "line_index": 47,
+      "text": "Oh, take that money, watch it burn",
+      "start": 122.2,
+      "end": 124.1,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Oh,",
+          "start": 122.2,
+          "end": 122.6
+        },
+        {
+          "word_index": 2,
+          "text": "take",
+          "start": 122.7,
+          "end": 123.2
+        },
+        {
+          "word_index": 3,
+          "text": "that",
+          "start": 123.2,
+          "end": 123.6
+        },
+        {
+          "word_index": 4,
+          "text": "money,",
+          "start": 123.6,
+          "end": 123.7
+        },
+        {
+          "word_index": 5,
+          "text": "watch",
+          "start": 123.7,
+          "end": 123.8
+        },
+        {
+          "word_index": 6,
+          "text": "it",
+          "start": 123.8,
+          "end": 124.0
+        },
+        {
+          "word_index": 7,
+          "text": "burn",
+          "start": 124.0,
+          "end": 124.1
+        }
+      ]
+    },
+    {
+      "line_index": 48,
+      "text": "Sink in the river the lessons I've learned",
+      "start": 124.4,
+      "end": 126.6,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Sink",
+          "start": 124.4,
+          "end": 124.7
+        },
+        {
+          "word_index": 2,
+          "text": "in",
+          "start": 124.8,
+          "end": 125.2
+        },
+        {
+          "word_index": 3,
+          "text": "the",
+          "start": 125.2,
+          "end": 125.5
+        },
+        {
+          "word_index": 4,
+          "text": "river",
+          "start": 125.5,
+          "end": 125.9
+        },
+        {
+          "word_index": 5,
+          "text": "the",
+          "start": 125.9,
+          "end": 126.0
+        },
+        {
+          "word_index": 6,
+          "text": "lessons",
+          "start": 126.0,
+          "end": 126.2
+        },
+        {
+          "word_index": 7,
+          "text": "I've",
+          "start": 126.2,
+          "end": 126.5
+        },
+        {
+          "word_index": 8,
+          "text": "learned",
+          "start": 126.5,
+          "end": 126.6
+        }
+      ]
+    },
+    {
+      "line_index": 49,
+      "text": "Take that money, watch it burn",
+      "start": 127.0,
+      "end": 129.0,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Take",
+          "start": 127.0,
+          "end": 127.3
+        },
+        {
+          "word_index": 2,
+          "text": "that",
+          "start": 127.4,
+          "end": 127.7
+        },
+        {
+          "word_index": 3,
+          "text": "money,",
+          "start": 127.7,
+          "end": 128.0
+        },
+        {
+          "word_index": 4,
+          "text": "watch",
+          "start": 128.0,
+          "end": 128.3
+        },
+        {
+          "word_index": 5,
+          "text": "it",
+          "start": 128.4,
+          "end": 128.6
+        },
+        {
+          "word_index": 6,
+          "text": "burn",
+          "start": 128.7,
+          "end": 129.0
+        }
+      ]
+    },
+    {
+      "line_index": 50,
+      "text": "Sink in the river the lessons I've learned",
+      "start": 129.2,
+      "end": 131.7,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Sink",
+          "start": 129.2,
+          "end": 129.5
+        },
+        {
+          "word_index": 2,
+          "text": "in",
+          "start": 129.5,
+          "end": 129.8
+        },
+        {
+          "word_index": 3,
+          "text": "the",
+          "start": 129.8,
+          "end": 130.1
+        },
+        {
+          "word_index": 4,
+          "text": "river",
+          "start": 130.1,
+          "end": 130.4
+        },
+        {
+          "word_index": 5,
+          "text": "the",
+          "start": 130.4,
+          "end": 130.7
+        },
+        {
+          "word_index": 6,
+          "text": "lessons",
+          "start": 130.8,
+          "end": 131.0
+        },
+        {
+          "word_index": 7,
+          "text": "I've",
+          "start": 131.1,
+          "end": 131.3
+        },
+        {
+          "word_index": 8,
+          "text": "learned",
+          "start": 131.4,
+          "end": 131.7
+        }
+      ]
+    },
+    {
+      "line_index": 51,
+      "text": "Take that money, watch it burn",
+      "start": 131.9,
+      "end": 132.4,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Take",
+          "start": 131.9,
+          "end": 131.9
+        },
+        {
+          "word_index": 2,
+          "text": "that",
+          "start": 131.9,
+          "end": 132.0
+        },
+        {
+          "word_index": 3,
+          "text": "money,",
+          "start": 132.0,
+          "end": 132.0
+        },
+        {
+          "word_index": 4,
+          "text": "watch",
+          "start": 132.0,
+          "end": 132.3
+        },
+        {
+          "word_index": 5,
+          "text": "it",
+          "start": 132.3,
+          "end": 132.3
+        },
+        {
+          "word_index": 6,
+          "text": "burn",
+          "start": 132.3,
+          "end": 132.4
+        }
+      ]
+    },
+    {
+      "line_index": 52,
+      "text": "Sink in the river the lessons I've learned",
+      "start": 134.1,
+      "end": 136.5,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Sink",
+          "start": 134.1,
+          "end": 134.4
+        },
+        {
+          "word_index": 2,
+          "text": "in",
+          "start": 134.4,
+          "end": 134.7
+        },
+        {
+          "word_index": 3,
+          "text": "the",
+          "start": 134.7,
+          "end": 135.0
+        },
+        {
+          "word_index": 4,
+          "text": "river",
+          "start": 135.0,
+          "end": 135.3
+        },
+        {
+          "word_index": 5,
+          "text": "the",
+          "start": 135.3,
+          "end": 135.6
+        },
+        {
+          "word_index": 6,
+          "text": "lessons",
+          "start": 135.6,
+          "end": 135.9
+        },
+        {
+          "word_index": 7,
+          "text": "I've",
+          "start": 135.9,
+          "end": 136.2
+        },
+        {
+          "word_index": 8,
+          "text": "learned",
+          "start": 136.2,
+          "end": 136.5
+        }
+      ]
+    },
+    {
+      "line_index": 53,
+      "text": "Take that money, watch it burn",
+      "start": 136.7,
+      "end": 138.7,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Take",
+          "start": 136.7,
+          "end": 137.0
+        },
+        {
+          "word_index": 2,
+          "text": "that",
+          "start": 137.1,
+          "end": 137.4
+        },
+        {
+          "word_index": 3,
+          "text": "money,",
+          "start": 137.4,
+          "end": 137.7
+        },
+        {
+          "word_index": 4,
+          "text": "watch",
+          "start": 137.7,
+          "end": 138.0
+        },
+        {
+          "word_index": 5,
+          "text": "it",
+          "start": 138.1,
+          "end": 138.3
+        },
+        {
+          "word_index": 6,
+          "text": "burn",
+          "start": 138.4,
+          "end": 138.7
+        }
+      ]
+    },
+    {
+      "line_index": 54,
+      "text": "Sink in the river the lessons I've learned",
+      "start": 138.9,
+      "end": 141.4,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Sink",
+          "start": 138.9,
+          "end": 139.2
+        },
+        {
+          "word_index": 2,
+          "text": "in",
+          "start": 139.2,
+          "end": 139.5
+        },
+        {
+          "word_index": 3,
+          "text": "the",
+          "start": 139.5,
+          "end": 139.8
+        },
+        {
+          "word_index": 4,
+          "text": "river",
+          "start": 139.8,
+          "end": 140.1
+        },
+        {
+          "word_index": 5,
+          "text": "the",
+          "start": 140.1,
+          "end": 140.4
+        },
+        {
+          "word_index": 6,
+          "text": "lessons",
+          "start": 140.5,
+          "end": 140.7
+        },
+        {
+          "word_index": 7,
+          "text": "I've",
+          "start": 140.8,
+          "end": 141.0
+        },
+        {
+          "word_index": 8,
+          "text": "learned",
+          "start": 141.1,
+          "end": 141.4
+        }
+      ]
+    },
+    {
+      "line_index": 55,
+      "text": "Everything that kills me makes me feel alive",
+      "start": 141.6,
+      "end": 144.2,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Everything",
+          "start": 141.6,
+          "end": 141.9
+        },
+        {
+          "word_index": 2,
+          "text": "that",
+          "start": 141.9,
+          "end": 142.2
+        },
+        {
+          "word_index": 3,
+          "text": "kills",
+          "start": 142.2,
+          "end": 142.5
+        },
+        {
+          "word_index": 4,
+          "text": "me",
+          "start": 142.5,
+          "end": 142.8
+        },
+        {
+          "word_index": 5,
+          "text": "makes",
+          "start": 142.9,
+          "end": 143.2
+        },
+        {
+          "word_index": 6,
+          "text": "me",
+          "start": 143.2,
+          "end": 143.5
+        },
+        {
+          "word_index": 7,
+          "text": "feel",
+          "start": 143.5,
+          "end": 143.8
+        },
+        {
+          "word_index": 8,
+          "text": "alive",
+          "start": 143.8,
+          "end": 144.2
+        }
+      ]
+    },
+    {
+      "line_index": 56,
+      "text": "Lately, I've been, I've been losing sleep",
+      "start": 144.4,
+      "end": 146.7,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Lately,",
+          "start": 144.4,
+          "end": 145.0
+        },
+        {
+          "word_index": 2,
+          "text": "I've",
+          "start": 145.0,
+          "end": 145.3
+        },
+        {
+          "word_index": 3,
+          "text": "been,",
+          "start": 145.3,
+          "end": 145.7
+        },
+        {
+          "word_index": 4,
+          "text": "I've",
+          "start": 145.8,
+          "end": 146.4
+        },
+        {
+          "word_index": 5,
+          "text": "been",
+          "start": 146.4,
+          "end": 146.5
+        },
+        {
+          "word_index": 6,
+          "text": "losing",
+          "start": 146.5,
+          "end": 146.6
+        },
+        {
+          "word_index": 7,
+          "text": "sleep",
+          "start": 146.6,
+          "end": 146.7
+        }
+      ]
+    },
+    {
+      "line_index": 57,
+      "text": "Dreaming about the things that we could be",
+      "start": 147.0,
+      "end": 149.5,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Dreaming",
+          "start": 147.0,
+          "end": 147.5
+        },
+        {
+          "word_index": 2,
+          "text": "about",
+          "start": 147.5,
+          "end": 148.0
+        },
+        {
+          "word_index": 3,
+          "text": "the",
+          "start": 148.0,
+          "end": 148.5
+        },
+        {
+          "word_index": 4,
+          "text": "things",
+          "start": 148.5,
+          "end": 148.8
+        },
+        {
+          "word_index": 5,
+          "text": "that",
+          "start": 148.8,
+          "end": 149.2
+        },
+        {
+          "word_index": 6,
+          "text": "we",
+          "start": 149.2,
+          "end": 149.3
+        },
+        {
+          "word_index": 7,
+          "text": "could",
+          "start": 149.3,
+          "end": 149.4
+        },
+        {
+          "word_index": 8,
+          "text": "be",
+          "start": 149.4,
+          "end": 149.5
+        }
+      ]
+    },
+    {
+      "line_index": 58,
+      "text": "But baby, I've been, I've been praying hard",
+      "start": 149.7,
+      "end": 152.1,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "But",
+          "start": 149.7,
+          "end": 150.1
+        },
+        {
+          "word_index": 2,
+          "text": "baby,",
+          "start": 150.2,
+          "end": 150.6
+        },
+        {
+          "word_index": 3,
+          "text": "I've",
+          "start": 150.6,
+          "end": 151.0
+        },
+        {
+          "word_index": 4,
+          "text": "been,",
+          "start": 151.1,
+          "end": 151.4
+        },
+        {
+          "word_index": 5,
+          "text": "I've",
+          "start": 151.4,
+          "end": 151.7
+        },
+        {
+          "word_index": 6,
+          "text": "been",
+          "start": 151.7,
+          "end": 151.8
+        },
+        {
+          "word_index": 7,
+          "text": "praying",
+          "start": 151.8,
+          "end": 152.0
+        },
+        {
+          "word_index": 8,
+          "text": "hard",
+          "start": 152.0,
+          "end": 152.1
+        }
+      ]
+    },
+    {
+      "line_index": 59,
+      "text": "Said, \"No more counting dollars, we'll be counting stars\"",
+      "start": 152.4,
+      "end": 156.0,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Said,",
+          "start": 152.4,
+          "end": 152.7
+        },
+        {
+          "word_index": 2,
+          "text": "\"No",
+          "start": 152.7,
+          "end": 153.2
+        },
+        {
+          "word_index": 3,
+          "text": "more",
+          "start": 153.2,
+          "end": 153.8
+        },
+        {
+          "word_index": 4,
+          "text": "counting",
+          "start": 153.9,
+          "end": 154.2
+        },
+        {
+          "word_index": 5,
+          "text": "dollars,",
+          "start": 154.2,
+          "end": 154.7
+        },
+        {
+          "word_index": 6,
+          "text": "we'll",
+          "start": 154.7,
+          "end": 155.1
+        },
+        {
+          "word_index": 7,
+          "text": "be",
+          "start": 155.1,
+          "end": 155.4
+        },
+        {
+          "word_index": 8,
+          "text": "counting",
+          "start": 155.4,
+          "end": 155.9
+        },
+        {
+          "word_index": 9,
+          "text": "stars\"",
+          "start": 155.9,
+          "end": 156.0
+        }
+      ]
+    },
+    {
+      "line_index": 60,
+      "text": "Lately, I've been, I've been losing sleep",
+      "start": 156.0,
+      "end": 158.5,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Lately,",
+          "start": 156.0,
+          "end": 156.3
+        },
+        {
+          "word_index": 2,
+          "text": "I've",
+          "start": 156.4,
+          "end": 156.7
+        },
+        {
+          "word_index": 3,
+          "text": "been,",
+          "start": 156.7,
+          "end": 157.0
+        },
+        {
+          "word_index": 4,
+          "text": "I've",
+          "start": 157.1,
+          "end": 157.4
+        },
+        {
+          "word_index": 5,
+          "text": "been",
+          "start": 157.4,
+          "end": 157.7
+        },
+        {
+          "word_index": 6,
+          "text": "losing",
+          "start": 157.8,
+          "end": 158.1
+        },
+        {
+          "word_index": 7,
+          "text": "sleep",
+          "start": 158.1,
+          "end": 158.5
+        }
+      ]
+    },
+    {
+      "line_index": 61,
+      "text": "Dreaming about the things that we could be",
+      "start": 158.7,
+      "end": 159.2,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Dreaming",
+          "start": 158.7,
+          "end": 158.7
+        },
+        {
+          "word_index": 2,
+          "text": "about",
+          "start": 158.7,
+          "end": 158.7
+        },
+        {
+          "word_index": 3,
+          "text": "the",
+          "start": 158.7,
+          "end": 158.8
+        },
+        {
+          "word_index": 4,
+          "text": "things",
+          "start": 158.8,
+          "end": 158.8
+        },
+        {
+          "word_index": 5,
+          "text": "that",
+          "start": 158.8,
+          "end": 158.8
+        },
+        {
+          "word_index": 6,
+          "text": "we",
+          "start": 158.8,
+          "end": 158.9
+        },
+        {
+          "word_index": 7,
+          "text": "could",
+          "start": 158.9,
+          "end": 159.1
+        },
+        {
+          "word_index": 8,
+          "text": "be",
+          "start": 159.1,
+          "end": 159.2
+        }
+      ]
+    },
+    {
+      "line_index": 62,
+      "text": "But baby, I've been, I've been praying hard",
+      "start": 161.3,
+      "end": 163.8,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "But",
+          "start": 161.3,
+          "end": 161.6
+        },
+        {
+          "word_index": 2,
+          "text": "baby,",
+          "start": 161.6,
+          "end": 161.9
+        },
+        {
+          "word_index": 3,
+          "text": "I've",
+          "start": 161.9,
+          "end": 162.2
+        },
+        {
+          "word_index": 4,
+          "text": "been,",
+          "start": 162.3,
+          "end": 162.5
+        },
+        {
+          "word_index": 5,
+          "text": "I've",
+          "start": 162.6,
+          "end": 162.9
+        },
+        {
+          "word_index": 6,
+          "text": "been",
+          "start": 162.9,
+          "end": 163.2
+        },
+        {
+          "word_index": 7,
+          "text": "praying",
+          "start": 163.2,
+          "end": 163.5
+        },
+        {
+          "word_index": 8,
+          "text": "hard",
+          "start": 163.5,
+          "end": 163.8
+        }
+      ]
+    },
+    {
+      "line_index": 63,
+      "text": "Said, \"No more counting dollars, we'll be, we'll be counting stars\"",
+      "start": 164.0,
+      "end": 168.0,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Said,",
+          "start": 164.0,
+          "end": 164.4
+        },
+        {
+          "word_index": 2,
+          "text": "\"No",
+          "start": 164.4,
+          "end": 164.7
+        },
+        {
+          "word_index": 3,
+          "text": "more",
+          "start": 164.8,
+          "end": 165.1
+        },
+        {
+          "word_index": 4,
+          "text": "counting",
+          "start": 165.1,
+          "end": 165.4
+        },
+        {
+          "word_index": 5,
+          "text": "dollars,",
+          "start": 165.5,
+          "end": 165.8
+        },
+        {
+          "word_index": 6,
+          "text": "we'll",
+          "start": 165.8,
+          "end": 166.2
+        },
+        {
+          "word_index": 7,
+          "text": "be,",
+          "start": 166.2,
+          "end": 166.5
+        },
+        {
+          "word_index": 8,
+          "text": "we'll",
+          "start": 166.6,
+          "end": 166.9
+        },
+        {
+          "word_index": 9,
+          "text": "be",
+          "start": 166.9,
+          "end": 167.3
+        },
+        {
+          "word_index": 10,
+          "text": "counting",
+          "start": 167.3,
+          "end": 167.6
+        },
+        {
+          "word_index": 11,
+          "text": "stars\"",
+          "start": 167.7,
+          "end": 168.0
+        }
+      ]
+    },
+    {
+      "line_index": 64,
+      "text": "Take that money, watch it burn",
+      "start": 168.2,
+      "end": 170.0,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Take",
+          "start": 168.2,
+          "end": 168.7
+        },
+        {
+          "word_index": 2,
+          "text": "that",
+          "start": 168.7,
+          "end": 169.1
+        },
+        {
+          "word_index": 3,
+          "text": "money,",
+          "start": 169.2,
+          "end": 169.5
+        },
+        {
+          "word_index": 4,
+          "text": "watch",
+          "start": 169.5,
+          "end": 169.7
+        },
+        {
+          "word_index": 5,
+          "text": "it",
+          "start": 169.8,
+          "end": 169.9
+        },
+        {
+          "word_index": 6,
+          "text": "burn",
+          "start": 169.9,
+          "end": 170.0
+        }
+      ]
+    },
+    {
+      "line_index": 65,
+      "text": "Sink in the river the lessons I've learned",
+      "start": 170.4,
+      "end": 172.9,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Sink",
+          "start": 170.4,
+          "end": 170.7
+        },
+        {
+          "word_index": 2,
+          "text": "in",
+          "start": 170.7,
+          "end": 171.0
+        },
+        {
+          "word_index": 3,
+          "text": "the",
+          "start": 171.0,
+          "end": 171.3
+        },
+        {
+          "word_index": 4,
+          "text": "river",
+          "start": 171.3,
+          "end": 171.6
+        },
+        {
+          "word_index": 5,
+          "text": "the",
+          "start": 171.6,
+          "end": 171.9
+        },
+        {
+          "word_index": 6,
+          "text": "lessons",
+          "start": 172.0,
+          "end": 172.2
+        },
+        {
+          "word_index": 7,
+          "text": "I've",
+          "start": 172.3,
+          "end": 172.5
+        },
+        {
+          "word_index": 8,
+          "text": "learned",
+          "start": 172.6,
+          "end": 172.9
+        }
+      ]
+    },
+    {
+      "line_index": 66,
+      "text": "Take that money, watch it burn",
+      "start": 173.1,
+      "end": 175.1,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Take",
+          "start": 173.1,
+          "end": 173.4
+        },
+        {
+          "word_index": 2,
+          "text": "that",
+          "start": 173.4,
+          "end": 173.7
+        },
+        {
+          "word_index": 3,
+          "text": "money,",
+          "start": 173.7,
+          "end": 174.0
+        },
+        {
+          "word_index": 4,
+          "text": "watch",
+          "start": 174.1,
+          "end": 174.4
+        },
+        {
+          "word_index": 5,
+          "text": "it",
+          "start": 174.4,
+          "end": 174.7
+        },
+        {
+          "word_index": 6,
+          "text": "burn",
+          "start": 174.7,
+          "end": 175.1
+        }
+      ]
+    },
+    {
+      "line_index": 67,
+      "text": "Sink in the river the lessons I've learned",
+      "start": 175.3,
+      "end": 176.7,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Sink",
+          "start": 175.3,
+          "end": 175.4
+        },
+        {
+          "word_index": 2,
+          "text": "in",
+          "start": 175.5,
+          "end": 175.6
+        },
+        {
+          "word_index": 3,
+          "text": "the",
+          "start": 175.6,
+          "end": 175.8
+        },
+        {
+          "word_index": 4,
+          "text": "river",
+          "start": 175.8,
+          "end": 176.0
+        },
+        {
+          "word_index": 5,
+          "text": "the",
+          "start": 176.0,
+          "end": 176.1
+        },
+        {
+          "word_index": 6,
+          "text": "lessons",
+          "start": 176.2,
+          "end": 176.3
+        },
+        {
+          "word_index": 7,
+          "text": "I've",
+          "start": 176.3,
+          "end": 176.5
+        },
+        {
+          "word_index": 8,
+          "text": "learned",
+          "start": 176.5,
+          "end": 176.7
+        }
+      ]
+    },
+    {
+      "line_index": 68,
+      "text": "Take that money, watch it burn",
+      "start": 177.9,
+      "end": 179.5,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Take",
+          "start": 177.9,
+          "end": 178.3
+        },
+        {
+          "word_index": 2,
+          "text": "that",
+          "start": 178.3,
+          "end": 178.8
+        },
+        {
+          "word_index": 3,
+          "text": "money,",
+          "start": 178.8,
+          "end": 179.2
+        },
+        {
+          "word_index": 4,
+          "text": "watch",
+          "start": 179.3,
+          "end": 179.4
+        },
+        {
+          "word_index": 5,
+          "text": "it",
+          "start": 179.4,
+          "end": 179.4
+        },
+        {
+          "word_index": 6,
+          "text": "burn",
+          "start": 179.4,
+          "end": 179.5
+        }
+      ]
+    },
+    {
+      "line_index": 69,
+      "text": "Sink in the river the lessons I've learned",
+      "start": 180.1,
+      "end": 182.6,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Sink",
+          "start": 180.1,
+          "end": 180.4
+        },
+        {
+          "word_index": 2,
+          "text": "in",
+          "start": 180.4,
+          "end": 180.7
+        },
+        {
+          "word_index": 3,
+          "text": "the",
+          "start": 180.7,
+          "end": 181.1
+        },
+        {
+          "word_index": 4,
+          "text": "river",
+          "start": 181.1,
+          "end": 181.4
+        },
+        {
+          "word_index": 5,
+          "text": "the",
+          "start": 181.4,
+          "end": 181.7
+        },
+        {
+          "word_index": 6,
+          "text": "lessons",
+          "start": 181.7,
+          "end": 182.0
+        },
+        {
+          "word_index": 7,
+          "text": "I've",
+          "start": 182.0,
+          "end": 182.3
+        },
+        {
+          "word_index": 8,
+          "text": "learned",
+          "start": 182.3,
+          "end": 182.6
+        }
+      ]
+    },
+    {
+      "line_index": 70,
+      "text": "Take that money, watch it burn",
+      "start": 182.8,
+      "end": 184.7,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Take",
+          "start": 182.8,
+          "end": 183.1
+        },
+        {
+          "word_index": 2,
+          "text": "that",
+          "start": 183.1,
+          "end": 183.5
+        },
+        {
+          "word_index": 3,
+          "text": "money,",
+          "start": 183.5,
+          "end": 183.9
+        },
+        {
+          "word_index": 4,
+          "text": "watch",
+          "start": 184.0,
+          "end": 184.5
+        },
+        {
+          "word_index": 5,
+          "text": "it",
+          "start": 184.5,
+          "end": 184.6
+        },
+        {
+          "word_index": 6,
+          "text": "burn",
+          "start": 184.6,
+          "end": 184.7
+        }
+      ]
+    },
+    {
+      "line_index": 71,
+      "text": "Sink in the river the lessons I've learned",
+      "start": 185.0,
+      "end": 187.7,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Sink",
+          "start": 185.0,
+          "end": 185.4
+        },
+        {
+          "word_index": 2,
+          "text": "in",
+          "start": 185.4,
+          "end": 185.8
+        },
+        {
+          "word_index": 3,
+          "text": "the",
+          "start": 185.8,
+          "end": 186.3
+        },
+        {
+          "word_index": 4,
+          "text": "river",
+          "start": 186.3,
+          "end": 186.6
+        },
+        {
+          "word_index": 5,
+          "text": "the",
+          "start": 186.6,
+          "end": 186.9
+        },
+        {
+          "word_index": 6,
+          "text": "lessons",
+          "start": 186.9,
+          "end": 187.3
+        },
+        {
+          "word_index": 7,
+          "text": "I've",
+          "start": 187.3,
+          "end": 187.6
+        },
+        {
+          "word_index": 8,
+          "text": "learned",
+          "start": 187.6,
+          "end": 187.7
+        }
+      ]
+    }
+  ]
+}
