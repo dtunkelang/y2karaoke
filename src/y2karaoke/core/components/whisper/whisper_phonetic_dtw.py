@@ -345,16 +345,51 @@ _extract_best_alignment_map = _paths._extract_best_alignment_map
 
 def _extract_lrc_words_all(lines: List[models.Line]) -> List[Dict]:
     """Extract all LRC words (including short tokens) with line/word indices."""
+    noisy_short_tokens = {
+        "ah",
+        "eh",
+        "ha",
+        "hah",
+        "hey",
+        "huh",
+        "la",
+        "mm",
+        "mmm",
+        "na",
+        "ooh",
+        "oh",
+        "uh",
+        "woo",
+        "yeah",
+        "yo",
+    }
+
+    def should_skip_dtw_token(text: str) -> bool:
+        stripped = text.strip().lower()
+        normalized = "".join(ch for ch in stripped if ch.isalpha())
+        if not normalized:
+            return True
+        if normalized in noisy_short_tokens and not stripped.isalpha():
+            return True
+        # Skip stretched ad-libs like "mmmm" / "oooo" that rarely provide
+        # stable lexical anchors for DTW mapping.
+        if len(normalized) <= 4 and len(set(normalized)) == 1:
+            return True
+        return False
+
     lrc_words = []
     for line_idx, line in enumerate(lines):
         for word_idx, word in enumerate(line.words):
-            if not word.text.strip():
+            text = word.text.strip()
+            if not text:
+                continue
+            if should_skip_dtw_token(text):
                 continue
             lrc_words.append(
                 {
                     "line_idx": line_idx,
                     "word_idx": word_idx,
-                    "text": word.text,
+                    "text": text,
                     "start": word.start_time,
                     "end": word.end_time,
                     "word": word,

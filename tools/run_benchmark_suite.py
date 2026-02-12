@@ -1616,6 +1616,7 @@ def main() -> int:
     json_path.write_text(
         json.dumps(report_json, ensure_ascii=False, indent=2), encoding="utf-8"
     )
+    _write_json(run_dir / "benchmark_progress.json", report_json)
     _write_markdown_summary(
         md_path,
         run_id=run_id,

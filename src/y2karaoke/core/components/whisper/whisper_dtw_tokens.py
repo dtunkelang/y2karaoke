@@ -174,7 +174,7 @@ def _build_phoneme_dtw_path(
     def phoneme_cost(i: int, j: int) -> float:
         key = (i, j)
         if key in cost_cache:
-            return key in cost_cache
+            return cost_cache[key]
         ipa1 = lrc_phonemes[i]["ipa"]
         ipa2 = whisper_phonemes[j]["ipa"]
         sim = _phoneme_similarity_from_ipa(ipa1, ipa2, language)
