@@ -121,6 +121,24 @@ def fetch_lyrics_multi_source_impl(  # noqa: C901
 
     if offline:
         logger.info("Offline mode: skipping lyrics providers (cache only)")
+        if fallback_cached and fallback_cached[0]:
+            warn_key = (
+                "offline_fallback_cached_duration:"
+                f"{cache_key[0]}:{cache_key[1]}:{fallback_cached[3]}:"
+                f"{target_duration}:{duration_tolerance}"
+            )
+            _warn_once(
+                runtime_state,
+                warn_key,
+                logger,
+                "Offline mode: reusing cached LRC despite duration mismatch "
+                "(cached=%ss, target=%ss, tolerance=%ss)",
+                fallback_cached[3],
+                target_duration,
+                duration_tolerance,
+            )
+            set_lrc_cache_fn(cache_key, fallback_cached, state=runtime_state)
+            return (fallback_cached[0], bool(fallback_cached[1]), fallback_cached[2])
         return (None, False, "")
 
     search_terms = _build_provider_search_terms(title, artist)

@@ -95,9 +95,8 @@ def _constrain_line_starts_to_baseline(
                 next_baseline_start = nxt.start_time
                 break
 
-        if (
-            next_baseline_start is not None
-            and shifted_line.end_time > (next_baseline_start - min_gap)
+        if next_baseline_start is not None and shifted_line.end_time > (
+            next_baseline_start - min_gap
         ):
             available = max(0.1, (next_baseline_start - min_gap) - target_start)
             current = max(0.1, shifted_line.end_time - target_start)

@@ -197,7 +197,7 @@ def _load_whisper_model_class():
 def transcribe_vocals(
     vocals_path: str,
     language: Optional[str] = None,
-    model_size: str = "large",
+    model_size: str = "base",
     aggressive: bool = False,
     temperature: float = 0.0,
 ) -> Tuple[
