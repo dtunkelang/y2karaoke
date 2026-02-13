@@ -21,7 +21,7 @@ from typing import Any
 from urllib.parse import parse_qs, unquote, urlparse
 
 EDITOR_DIR = Path(__file__).resolve().parent / "gold_timing_editor"
-SNAP_SECONDS = 0.1
+SNAP_SECONDS = 0.05
 
 
 @dataclass

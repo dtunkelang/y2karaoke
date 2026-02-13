@@ -244,7 +244,9 @@ To auto-seed/refine word timings from a karaoke YouTube version (visual-only):
 
 - If `--candidate-url` is omitted, the tool picks the highest-scoring karaoke search result.
 - Line starts from `--lrc-in` are treated as hard anchors.
-- The tool detects line windows from karaoke frames via OCR and infers word timing from lyric highlight progress in those windows (no audio transcription).
+- The tool detects line windows from karaoke frames via OCR and infers word timing from lyric highlight progress in those windows using a two-pass color-transition vision model (no audio transcription).
+
+See [docs/karaoke_visual_bootstrap.md](docs/karaoke_visual_bootstrap.md) for algorithm and technical details.
 
 Preferred local workflow:
 

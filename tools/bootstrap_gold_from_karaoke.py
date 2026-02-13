@@ -22,7 +22,7 @@ from difflib import SequenceMatcher
 from pathlib import Path
 from typing import Any
 
-SNAP_SECONDS = 0.1
+SNAP_SECONDS = 0.05
 MIN_WORD_DURATION = 0.05
 _LRC_TS_RE = re.compile(r"\[(\d+):([0-5]?\d(?:\.\d{1,3})?)\]")
 
@@ -295,6 +295,192 @@ def download_karaoke_video(url: str, *, out_dir: Path) -> Path:
     return mp4_paths[0]
 
 
+def _get_fg_pixels(roi: Any) -> Any:
+    np = _np()
+    if roi.size == 0:
+        return np.array([])
+    max_c = np.max(roi, axis=2)
+    mask = max_c > 80  # Threshold to ignore black background
+    return roi[mask]
+
+
+def _cluster_colors(pixel_samples: list[Any]) -> tuple[Any, Any]:
+    cv2 = _cv2()
+    np = _np()
+    if len(pixel_samples) < 10:
+        return np.array([255, 255, 255]), np.array([0, 0, 255])  # Fallback to White/Red
+
+    samples = np.float32(pixel_samples)
+    criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 10, 1.0)
+    _, _, centers = cv2.kmeans(
+        samples, 2, None, criteria, 10, cv2.KMEANS_RANDOM_CENTERS
+    )
+    return centers[0], centers[1]
+
+
+def _classify_word_state(roi: Any, color_unselected: Any, color_selected: Any) -> str:
+    np = _np()
+    pixels = _get_fg_pixels(roi)
+    if len(pixels) < 5:
+        return "unknown"
+
+    d_un = np.linalg.norm(pixels - color_unselected, axis=1)
+    d_sel = np.linalg.norm(pixels - color_selected, axis=1)
+
+    threshold = 60
+    count_un = np.sum(d_un < threshold)
+    count_sel = np.sum(d_sel < threshold)
+
+    total = count_un + count_sel
+    if total < 5:
+        return "unknown"
+
+    ratio_un = count_un / total
+    ratio_sel = count_sel / total
+
+    if ratio_un > 0.85:
+        return "unselected"
+    if ratio_sel > 0.85:
+        return "selected"
+    if ratio_un > 0.1 and ratio_sel > 0.1:
+        return "mixed"
+    return "unselected" if ratio_un > ratio_sel else "selected"
+
+
+def _infer_lyric_colors(
+    video_path: Path,
+    *,
+    sample_interval_sec: float = 2.0,
+) -> tuple[Any, Any]:
+    cv2 = _cv2()
+    np = _np()
+    pytesseract = _pytesseract()
+    cap = cv2.VideoCapture(str(video_path))
+    if not cap.isOpened():
+        raise RuntimeError(f"Failed to open video for color inference: {video_path}")
+
+    fps = cap.get(cv2.CAP_PROP_FPS) or 30.0
+    frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+    width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+    height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+
+    y_min, y_max = height * 0.15, height * 0.85
+    x_min, x_max = width * 0.20, width * 0.80
+    min_h = height * 0.02
+
+    pixel_samples = []
+    duration = frame_count / fps
+    for t_sec in np.arange(0, duration, sample_interval_sec):
+        cap.set(cv2.CAP_PROP_POS_MSEC, t_sec * 1000.0)
+        ok, frame = cap.read()
+        if not ok:
+            break
+
+        max_c = np.max(frame, axis=2)
+        processed = cv2.bitwise_not(max_c)
+        data = pytesseract.image_to_data(processed, output_type=pytesseract.Output.DICT)
+
+        for i in range(len(data["text"])):
+            if data["level"][i] != 5 or not str(data["text"][i]).strip():
+                continue
+            x, y = data["left"][i], data["top"][i]
+            w, h = data["width"][i], data["height"][i]
+            cx, cy = x + w / 2, y + h / 2
+            if y_min < cy < y_max and h > min_h and x_min < cx < x_max:
+                pixels = _get_fg_pixels(frame[y : y + h, x : x + w])
+                if len(pixels) > 20:
+                    pixel_samples.extend(pixels[::5])
+    cap.release()
+
+    if not pixel_samples:
+        return np.array([220, 220, 220]), np.array([30, 30, 180])
+
+    c1, c2 = _cluster_colors(pixel_samples)
+    if np.sum(c1) > np.sum(c2):
+        return c1, c2
+    return c2, c1
+
+
+def _interp_cross_time(
+    times: list[float], progress: list[float], threshold: float
+) -> float | None:
+    if not times or not progress:
+        return None
+    threshold = min(max(threshold, 0.0), 1.0)
+    if progress[0] >= threshold:
+        return times[0]
+    for i in range(1, len(progress)):
+        p0 = progress[i - 1]
+        p1 = progress[i]
+        if p1 < threshold:
+            continue
+        t0 = times[i - 1]
+        t1 = times[i]
+        if p1 <= p0 + 1e-9:
+            return t1
+        frac = (threshold - p0) / (p1 - p0)
+        frac = min(max(frac, 0.0), 1.0)
+        return t0 + ((t1 - t0) * frac)
+    return None
+
+
+def _word_min_duration(word: str) -> float:
+    alnum_len = len(re.sub(r"[^a-z0-9]", "", word.lower()))
+    return max(MIN_WORD_DURATION, 0.10 + (0.03 * min(alnum_len, 8)))
+
+
+def _fill_missing_starts(
+    starts: list[float | None],
+    words: list[str],
+    line_start: float,
+    line_end: float,
+) -> list[float]:
+    n = len(words)
+    if n == 0:
+        return []
+    span = max(line_end - line_start, MIN_WORD_DURATION)
+    default_starts = [line_start + (span * s) for s, _ in _word_ratios(words)]
+    out: list[float | None] = list(starts)
+    known = [i for i, v in enumerate(out) if v is not None]
+    if not known:
+        out = list(default_starts)
+    else:
+        for i in range(n):
+            if out[i] is not None:
+                continue
+            prev_idx = max((k for k in known if k < i), default=None)
+            next_idx = min((k for k in known if k > i), default=None)
+            if prev_idx is not None and next_idx is not None:
+                left = float(out[prev_idx])  # type: ignore[arg-type]
+                right = float(out[next_idx])  # type: ignore[arg-type]
+                frac = (i - prev_idx) / max(next_idx - prev_idx, 1)
+                out[i] = left + ((right - left) * frac)
+            elif prev_idx is not None:
+                prev = float(out[prev_idx])  # type: ignore[arg-type]
+                out[i] = prev + (default_starts[i] - default_starts[prev_idx])
+            elif next_idx is not None:
+                nxt = float(out[next_idx])  # type: ignore[arg-type]
+                out[i] = nxt - (default_starts[next_idx] - default_starts[i])
+            else:
+                out[i] = default_starts[i]
+
+    min_gap = 0.02
+    numeric = [
+        min(max(v, line_start), line_end) for v in out if v is not None
+    ]  # type: ignore[arg-type]
+    for i in range(1, n):
+        numeric[i] = max(numeric[i], numeric[i - 1] + min_gap)
+    for i in range(n - 2, -1, -1):
+        numeric[i] = min(numeric[i], numeric[i + 1] - min_gap)
+    numeric[0] = max(line_start, numeric[0])
+    for i in range(1, n):
+        numeric[i] = max(numeric[i], numeric[i - 1] + min_gap)
+    numeric[-1] = min(line_end, numeric[-1])
+    for i in range(n - 2, -1, -1):
+        numeric[i] = min(numeric[i], numeric[i + 1] - min_gap)
+    return [min(max(v, line_start), line_end) for v in numeric]
+
+
 def _word_ratios(words: list[str]) -> list[tuple[float, float]]:
     if not words:
         return []
@@ -428,597 +614,183 @@ def detect_line_video_windows(
     return windows
 
 
-def _extract_line_progress(
+def _collect_raw_frames(
     video_path: Path,
-    *,
-    line_start: float,
-    line_end: float,
-    fps: float = 10.0,
-) -> tuple[list[float], list[float]]:
-    cv2 = _cv2()
-    np = _np()
-
-    if line_end <= line_start + 0.05:
-        return [], []
-
-    cap = cv2.VideoCapture(str(video_path))
-    if not cap.isOpened():
-        raise RuntimeError(f"Failed to open video: {video_path}")
-
-    src_fps = cap.get(cv2.CAP_PROP_FPS) or 30.0
-    step = max(int(round(src_fps / max(fps, 0.5))), 1)
-    cap.set(cv2.CAP_PROP_POS_MSEC, max(line_start - 0.1, 0.0) * 1000.0)
-
-    frames: list[Any] = []
-    times: list[float] = []
-    frame_idx = 0
-    while True:
-        ok, frame = cap.read()
-        if not ok:
-            break
-        t = cap.get(cv2.CAP_PROP_POS_MSEC) / 1000.0
-        if t > line_end:
-            break
-        if frame_idx % step == 0:
-            frames.append(frame)
-            times.append(t)
-        frame_idx += 1
-    cap.release()
-
-    if len(frames) < 3:
-        return times, [0.0 for _ in times]
-
-    h, w = frames[0].shape[:2]
-    y_band0 = int(0.40 * h)
-    y_band1 = int(0.94 * h)
-
-    # Build a stable lyric ROI from accumulated text-like edges.
-    edge_acc = np.zeros((y_band1 - y_band0, w), dtype=np.float32)
-    for fr in frames:
-        gray = cv2.cvtColor(fr[y_band0:y_band1, :], cv2.COLOR_BGR2GRAY)
-        edges = cv2.Canny(gray, 60, 150)
-        edge_acc += (edges > 0).astype(np.float32)
-    thr_edge = float(np.percentile(edge_acc, 96.0))
-    edge_mask = edge_acc >= thr_edge
-    ys, xs = np.where(edge_mask)
-    if len(xs) < 80:
-        x0 = int(0.08 * w)
-        x1 = int(0.92 * w)
-        y0 = int(0.55 * h)
-        y1 = int(0.87 * h)
-    else:
-        x0 = max(0, int(xs.min()) - 12)
-        x1 = min(w, int(xs.max()) + 12)
-        y0 = max(y_band0, int(ys.min() + y_band0) - 12)
-        y1 = min(y_band1, int(ys.max() + y_band0) + 12)
-        if x1 - x0 < int(0.30 * w):
-            x0 = int(0.08 * w)
-            x1 = int(0.92 * w)
-
-    progress: list[float] = []
-    prev_p = 0.0
-    text_mask = edge_acc[max(0, y0 - y_band0) : max(0, y1 - y_band0), x0:x1]
-    if text_mask.size > 0:
-        text_mask = text_mask >= float(np.percentile(text_mask, 70.0))
-    else:
-        text_mask = np.zeros((max(y1 - y0, 1), max(x1 - x0, 1)), dtype=bool)
-    for fr in frames:
-        roi = fr[y0:y1, x0:x1]
-        hsv = cv2.cvtColor(roi, cv2.COLOR_BGR2HSV)
-        sat = hsv[:, :, 1].astype(np.float32)
-        val = hsv[:, :, 2].astype(np.float32)
-        sat_thr = max(60.0, float(np.percentile(sat, 92.0)))
-        val_thr = max(70.0, float(np.percentile(val, 55.0)))
-        hot = (sat >= sat_thr) & (val >= val_thr)
-        if text_mask.shape == hot.shape:
-            hot = hot & text_mask
-        yx = np.where(hot)
-        if len(yx[1]) < 10:
-            p = prev_p
-        else:
-            qx = float(np.quantile(yx[1], 0.8))
-            p = qx / max((x1 - x0 - 1), 1)
-        p = min(max(p, 0.0), 1.0)
-        # EMA + monotonic clamp gives smoother, less jumpy progression.
-        p = max(prev_p, (0.72 * prev_p) + (0.28 * p))
-        progress.append(p)
-        prev_p = p
-
-    return times, progress
-
-
-def _interp_cross_time(
-    times: list[float], progress: list[float], threshold: float
-) -> float | None:
-    if not times or not progress:
-        return None
-    threshold = min(max(threshold, 0.0), 1.0)
-    if progress[0] >= threshold:
-        return times[0]
-    for i in range(1, len(progress)):
-        p0 = progress[i - 1]
-        p1 = progress[i]
-        if p1 < threshold:
-            continue
-        t0 = times[i - 1]
-        t1 = times[i]
-        if p1 <= p0 + 1e-9:
-            return t1
-        frac = (threshold - p0) / (p1 - p0)
-        frac = min(max(frac, 0.0), 1.0)
-        return t0 + ((t1 - t0) * frac)
-    return None
-
-
-def _interp_sustained_cross_time(
-    times: list[float], progress: list[float], threshold: float, min_frames: int = 2
-) -> float | None:
-    if min_frames <= 1:
-        return _interp_cross_time(times, progress, threshold)
-    if not times or not progress or len(times) != len(progress):
-        return None
-    n = len(progress)
-    if n < min_frames:
-        return _interp_cross_time(times, progress, threshold)
-    threshold = min(max(threshold, 0.0), 1.0)
-    for i in range(0, n - min_frames + 1):
-        if all(progress[j] >= threshold for j in range(i, i + min_frames)):
-            if i == 0:
-                return times[0]
-            seg_t = [times[i - 1], times[i]]
-            seg_p = [progress[i - 1], progress[i]]
-            return _interp_cross_time(seg_t, seg_p, threshold) or times[i]
-    return None
-
-
-def _word_min_duration(word: str) -> float:
-    alnum_len = len(re.sub(r"[^a-z0-9]", "", word.lower()))
-    return max(MIN_WORD_DURATION, 0.10 + (0.03 * min(alnum_len, 8)))
-
-
-def _fill_missing_starts(
-    starts: list[float | None],
-    words: list[str],
-    line_start: float,
-    line_end: float,
-) -> list[float]:
-    n = len(words)
-    if n == 0:
-        return []
-    span = max(line_end - line_start, MIN_WORD_DURATION)
-    default_starts = [line_start + (span * s) for s, _ in _word_ratios(words)]
-    out: list[float | None] = list(starts)
-    known = [i for i, v in enumerate(out) if v is not None]
-    if not known:
-        out = list(default_starts)
-    else:
-        for i in range(n):
-            if out[i] is not None:
-                continue
-            prev_idx = max((k for k in known if k < i), default=None)
-            next_idx = min((k for k in known if k > i), default=None)
-            if prev_idx is not None and next_idx is not None:
-                left = float(out[prev_idx])  # type: ignore[arg-type]
-                right = float(out[next_idx])  # type: ignore[arg-type]
-                frac = (i - prev_idx) / max(next_idx - prev_idx, 1)
-                out[i] = left + ((right - left) * frac)
-            elif prev_idx is not None:
-                prev = float(out[prev_idx])  # type: ignore[arg-type]
-                out[i] = prev + (default_starts[i] - default_starts[prev_idx])
-            elif next_idx is not None:
-                nxt = float(out[next_idx])  # type: ignore[arg-type]
-                out[i] = nxt - (default_starts[next_idx] - default_starts[i])
-            else:
-                out[i] = default_starts[i]
-
-    min_gap = 0.02
-    numeric = [min(max(float(v), line_start), line_end) for v in out]  # type: ignore[arg-type]
-    for i in range(1, n):
-        numeric[i] = max(numeric[i], numeric[i - 1] + min_gap)
-    for i in range(n - 2, -1, -1):
-        numeric[i] = min(numeric[i], numeric[i + 1] - min_gap)
-    numeric[0] = max(line_start, numeric[0])
-    for i in range(1, n):
-        numeric[i] = max(numeric[i], numeric[i - 1] + min_gap)
-    numeric[-1] = min(line_end, numeric[-1])
-    for i in range(n - 2, -1, -1):
-        numeric[i] = min(numeric[i], numeric[i + 1] - min_gap)
-    return [min(max(v, line_start), line_end) for v in numeric]
-
-
-def _build_default_word_boxes(words: list[str], width: int) -> list[tuple[int, int]]:
-    ratios = _word_ratios(words)
-    boxes: list[tuple[int, int]] = []
-    for s, e in ratios:
-        x0 = int(round(s * width))
-        x1 = int(round(e * width))
-        if x1 <= x0:
-            x1 = x0 + 1
-        boxes.append((x0, x1))
-    return boxes
-
-
-def _ocr_word_boxes_in_roi(roi_bgr: Any) -> list[tuple[str, int, int]]:
-    cv2 = _cv2()
-    pytesseract = _pytesseract()
-    gray = cv2.cvtColor(roi_bgr, cv2.COLOR_BGR2GRAY)
-    gray = cv2.GaussianBlur(gray, (3, 3), 0)
-    bw = cv2.adaptiveThreshold(
-        gray,
-        255,
-        cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
-        cv2.THRESH_BINARY,
-        31,
-        7,
-    )
-    data = pytesseract.image_to_data(
-        bw,
-        config="--oem 1 --psm 7",
-        output_type=pytesseract.Output.DICT,
-    )
-    out: list[tuple[str, int, int]] = []
-    n = len(data.get("text", []))
-    for i in range(n):
-        txt = str(data["text"][i]).strip()
-        if not txt:
-            continue
-        try:
-            conf = float(data["conf"][i])
-        except Exception:
-            conf = -1.0
-        if conf < 20:
-            continue
-        x = int(data["left"][i])
-        w = int(data["width"][i])
-        if w < 4:
-            continue
-        out.append((txt, x, x + w))
-    out.sort(key=lambda t: t[1])
-    return out
-
-
-def _assign_word_boxes(
-    target_words: list[str], ocr_boxes: list[tuple[str, int, int]], width: int
-) -> list[tuple[int, int]]:
-    default_boxes = _build_default_word_boxes(target_words, width)
-    if not ocr_boxes:
-        return default_boxes
-    n = len(target_words)
-    m = len(ocr_boxes)
-    if n <= 1 or m <= 1:
-        return default_boxes
-
-    # Sequence-only matching: map target word index -> OCR box index monotonically.
-    # This avoids textual OCR noise affecting alignment order.
-    boxes: list[tuple[int, int]] = []
-    for i in range(n):
-        j = int(round((i * (m - 1)) / (n - 1)))
-        _, x0, x1 = ocr_boxes[j]
-        x0 = max(0, min(width - 1, x0))
-        x1 = max(x0 + 1, min(width, x1))
-        boxes.append((x0, x1))
-
-    # Blend OCR geometry with default proportional geometry for robustness.
-    blended: list[tuple[int, int]] = []
-    for i in range(n):
-        dx0, dx1 = default_boxes[i]
-        ox0, ox1 = boxes[i]
-        x0 = int(round((0.40 * dx0) + (0.60 * ox0)))
-        x1 = int(round((0.40 * dx1) + (0.60 * ox1)))
-        if x1 <= x0:
-            x1 = x0 + 1
-        blended.append((x0, x1))
-
-    # Enforce monotonic non-overlap.
-    fixed: list[tuple[int, int]] = []
-    prev_end = 0
-    for i, (x0, x1) in enumerate(blended):
-        x0 = max(x0, prev_end)
-        if x1 <= x0:
-            x1 = x0 + 1
-        if i + 1 < len(blended):
-            max_end = max(x0 + 1, blended[i + 1][1])
-            x1 = min(x1, width if max_end > width else max_end)
-        fixed.append((x0, min(width, x1)))
-        prev_end = fixed[-1][1]
-    return fixed
-
-
-def _extract_line_word_candidates(  # noqa: C901
-    video_path: Path,
-    line: TargetLine,
-    *,
     line_start: float,
     line_end: float,
     fps: float,
-) -> list[tuple[float, float] | None]:
+    c_un: Any,
+    c_sel: Any,
+) -> list[dict[str, Any]]:
     cv2 = _cv2()
     np = _np()
-    if line_end <= line_start + 0.05 or not line.words:
-        return [None for _ in line.words]
-
+    pytesseract = _pytesseract()
     cap = cv2.VideoCapture(str(video_path))
     if not cap.isOpened():
         raise RuntimeError(f"Failed to open video: {video_path}")
+
     src_fps = cap.get(cv2.CAP_PROP_FPS) or 30.0
+    width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+    height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
     step = max(int(round(src_fps / max(fps, 0.5))), 1)
     cap.set(cv2.CAP_PROP_POS_MSEC, max(line_start - 0.1, 0.0) * 1000.0)
 
-    frames: list[Any] = []
-    times: list[float] = []
-    frame_idx = 0
+    y_min, y_max = height * 0.15, height * 0.85
+    x_min, x_max = width * 0.20, width * 0.80
+    min_h = height * 0.02
+
+    raw_frames = []
     while True:
         ok, frame = cap.read()
         if not ok:
             break
         t = cap.get(cv2.CAP_PROP_POS_MSEC) / 1000.0
-        if t > line_end:
+        if t > line_end + 0.2:
             break
-        if frame_idx % step == 0:
-            frames.append(frame)
-            times.append(t)
-        frame_idx += 1
+
+        frame_idx = int(round(t * src_fps))
+        if frame_idx % step != 0:
+            continue
+
+        max_c = np.max(frame, axis=2)
+        processed = cv2.bitwise_not(max_c)
+        data = pytesseract.image_to_data(processed, output_type=pytesseract.Output.DICT)
+
+        words_in_frame = []
+        for i in range(len(data["text"])):
+            if data["level"][i] != 5:
+                continue
+            text = str(data["text"][i]).strip()
+            if not text:
+                continue
+            x, y = data["left"][i], data["top"][i]
+            w, h = data["width"][i], data["height"][i]
+            cx, cy = x + w / 2, y + h / 2
+            if y_min < cy < y_max and h > min_h and x_min < cx < x_max:
+                color_state = _classify_word_state(
+                    frame[y : y + h, x : x + w], c_un, c_sel
+                )
+                if color_state != "unknown":
+                    words_in_frame.append(
+                        {"text": text, "color": color_state, "x": x, "y": y}
+                    )
+        if words_in_frame:
+            words_in_frame.sort(key=lambda w: (w["y"] // 30, w["x"]))
+            timestamp = f"{int(t // 60):02d}:{t % 60:05.2f}"
+            raw_frames.append(
+                {"time": t, "timestamp": timestamp, "words": words_in_frame}
+            )
     cap.release()
-    if len(frames) < 3:
-        return [None for _ in line.words]
+    return raw_frames
 
-    h, w = frames[0].shape[:2]
-    y_band0 = int(0.40 * h)
-    y_band1 = int(0.94 * h)
-    edge_acc = np.zeros((y_band1 - y_band0, w), dtype=np.float32)
-    for fr in frames:
-        gray = cv2.cvtColor(fr[y_band0:y_band1, :], cv2.COLOR_BGR2GRAY)
-        edges = cv2.Canny(gray, 60, 150)
-        edge_acc += (edges > 0).astype(np.float32)
-    thr_edge = float(np.percentile(edge_acc, 96.0))
-    edge_mask = edge_acc >= thr_edge
-    ys, xs = np.where(edge_mask)
-    if len(xs) < 80:
-        x0 = int(0.08 * w)
-        x1 = int(0.92 * w)
-        y0 = int(0.55 * h)
-        y1 = int(0.87 * h)
-    else:
-        x0 = max(0, int(xs.min()) - 12)
-        x1 = min(w, int(xs.max()) + 12)
-        y0 = max(y_band0, int(ys.min() + y_band0) - 12)
-        y1 = min(y_band1, int(ys.max() + y_band0) + 12)
-        if x1 - x0 < int(0.30 * w):
-            x0 = int(0.08 * w)
-            x1 = int(0.92 * w)
 
-    roi_width = max(1, x1 - x0)
+def _track_block_transitions(raw_frames: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    active_block: list[dict[str, Any]] = []
+    candidates: list[dict[str, Any]] = []
 
-    hot_masks: list[Any] = []
-    hot_density: list[float] = []
-    for fr in frames:
-        roi = fr[y0:y1, x0:x1]
-        hsv = cv2.cvtColor(roi, cv2.COLOR_BGR2HSV)
-        sat = hsv[:, :, 1].astype(np.float32)
-        val = hsv[:, :, 2].astype(np.float32)
-        sat_thr = max(60.0, float(np.percentile(sat, 92.0)))
-        val_thr = max(70.0, float(np.percentile(val, 55.0)))
-        hot = (sat >= sat_thr) & (val >= val_thr)
-        hot_masks.append(hot)
-        hot_density.append(float(np.mean(hot)))
+    for f in raw_frames:
+        words = f["words"]
+        t_str = f["timestamp"]
+        current_texts = [w["text"] for w in words]
+        active_texts = [w["text"] for w in active_block]
 
-    rep_idx = int(np.argmin(np.asarray(hot_density, dtype=float)))
-    rep_roi = frames[rep_idx][y0:y1, x0:x1]
-    ocr_boxes = _ocr_word_boxes_in_roi(rep_roi)
-    word_boxes = _assign_word_boxes(line.words, ocr_boxes, roi_width)
+        is_same_block = len(current_texts) == len(active_texts)
+        if is_same_block:
+            for ct, at in zip(current_texts, active_texts):
+                if _text_similarity(ct, at) < 0.7:
+                    is_same_block = False
+                    break
 
-    # Per-word highlight ratio over time.
-    per_word_ratios: list[list[float]] = [[] for _ in line.words]
-    for hot in hot_masks:
-        for wi, (bx0, bx1) in enumerate(word_boxes):
-            bx0 = max(0, min(roi_width - 1, bx0))
-            bx1 = max(bx0 + 1, min(roi_width, bx1))
-            box = hot[:, bx0:bx1]
-            per_word_ratios[wi].append(float(np.mean(box)) if box.size else 0.0)
-
-    starts: list[float | None] = []
-    fulls: list[float | None] = []
-    for wi in range(len(line.words)):
-        ratios = per_word_ratios[wi]
-        if not ratios:
-            starts.append(None)
-            fulls.append(None)
-            continue
-        rarr = np.asarray(ratios, dtype=float)
-        if rarr.size >= 5:
-            kernel = np.ones(5, dtype=float) / 5.0
-            smooth = np.convolve(rarr, kernel, mode="same").tolist()
+        if not is_same_block:
+            for w in active_block:
+                if w["start"] is not None:
+                    candidates.append(w)
+            active_block = []
+            for w in words:
+                active_block.append(
+                    {
+                        "text": w["text"],
+                        "x": w["x"],
+                        "y": w["y"],
+                        "start": None,
+                        "end": None,
+                        "last_color": w["color"],
+                    }
+                )
         else:
-            smooth = ratios
-        baseline = float(np.percentile(smooth, 12.0))
-        peak = float(np.percentile(smooth, 95.0))
-        spread = max(0.04, peak - baseline)
-        start_thr = min(0.9, baseline + (0.30 * spread))
-        full_thr = min(0.95, max(start_thr + 0.05, baseline + (0.78 * spread)))
-        t_s: float | None = _interp_sustained_cross_time(
-            times, smooth, start_thr, min_frames=2
-        )
-        if t_s is None:
-            t_s = _interp_cross_time(times, smooth, start_thr)
-        t_f: float | None = _interp_sustained_cross_time(
-            times, smooth, full_thr, min_frames=2
-        )
-        if t_f is None:
-            t_f = _interp_cross_time(times, smooth, full_thr)
-        if t_s is None:
-            starts.append(None)
-            fulls.append(None)
-            continue
-        if t_f is None:
-            t_f = min(line_end, t_s + 0.35)
-        starts.append(max(line_start, t_s))
-        fulls.append(min(line_end, t_f))
+            for i in range(len(words)):
+                cur_color = words[i]["color"]
+                prev_color = active_block[i]["last_color"]
+                if prev_color == "unselected" and cur_color in ("mixed", "selected"):
+                    active_block[i]["start"] = t_str
+                if cur_color == "selected" and prev_color != "selected":
+                    active_block[i]["end"] = t_str
+                    if active_block[i]["start"] is None:
+                        active_block[i]["start"] = t_str
+                active_block[i]["x"] = words[i]["x"]
+                active_block[i]["y"] = words[i]["y"]
+                active_block[i]["last_color"] = cur_color
 
-    start_values = _fill_missing_starts(starts, line.words, line_start, line_end)
-
-    # Finalize each word end from next-word onset whenever available.
-    candidates: list[tuple[float, float] | None] = [None] * len(line.words)
-    for i in range(len(line.words)):
-        s = start_values[i]
-        next_start = None
-        for j in range(i + 1, len(line.words)):
-            next_start = start_values[j]
-            break
-        min_dur = _word_min_duration(line.words[i])
-        if next_start is not None:
-            e = min(line_end, next_start - 0.01)
-            e = max(s + min_dur, e)
-        else:
-            f_val = fulls[i]
-            if f_val is not None:
-                e = f_val
-            else:
-                e = min(line_end, s + 0.35)
-            e = max(s + min_dur, e)
-        candidates[i] = (s, min(line_end, e))
+    for w in active_block:
+        if w["start"] is not None:
+            candidates.append(w)
     return candidates
 
 
-def _debug_line_word_detection(  # noqa: C901
+def _extract_line_word_candidates_v2(
     video_path: Path,
     line: TargetLine,
     *,
     line_start: float,
     line_end: float,
     fps: float,
-) -> dict[str, Any]:
-    """Debug helper returning internal signals for one line."""
-    cv2 = _cv2()
-    np = _np()
-    cap = cv2.VideoCapture(str(video_path))
-    if not cap.isOpened():
-        raise RuntimeError(f"Failed to open video: {video_path}")
-    src_fps = cap.get(cv2.CAP_PROP_FPS) or 30.0
-    step = max(int(round(src_fps / max(fps, 0.5))), 1)
-    cap.set(cv2.CAP_PROP_POS_MSEC, max(line_start - 0.1, 0.0) * 1000.0)
-
-    frames: list[Any] = []
-    times: list[float] = []
-    frame_idx = 0
-    while True:
-        ok, frame = cap.read()
-        if not ok:
-            break
-        t = cap.get(cv2.CAP_PROP_POS_MSEC) / 1000.0
-        if t > line_end:
-            break
-        if frame_idx % step == 0:
-            frames.append(frame)
-            times.append(t)
-        frame_idx += 1
-    cap.release()
-    if len(frames) < 3:
-        return {"times": times, "note": "too_few_frames"}
-
-    h, w = frames[0].shape[:2]
-    y_band0 = int(0.40 * h)
-    y_band1 = int(0.94 * h)
-    edge_acc = np.zeros((y_band1 - y_band0, w), dtype=np.float32)
-    for fr in frames:
-        gray = cv2.cvtColor(fr[y_band0:y_band1, :], cv2.COLOR_BGR2GRAY)
-        edges = cv2.Canny(gray, 60, 150)
-        edge_acc += (edges > 0).astype(np.float32)
-    thr_edge = float(np.percentile(edge_acc, 96.0))
-    edge_mask = edge_acc >= thr_edge
-    ys, xs = np.where(edge_mask)
-    if len(xs) < 80:
-        x0 = int(0.08 * w)
-        x1 = int(0.92 * w)
-        y0 = int(0.55 * h)
-        y1 = int(0.87 * h)
-    else:
-        x0 = max(0, int(xs.min()) - 12)
-        x1 = min(w, int(xs.max()) + 12)
-        y0 = max(y_band0, int(ys.min() + y_band0) - 12)
-        y1 = min(y_band1, int(ys.max() + y_band0) + 12)
-        if x1 - x0 < int(0.30 * w):
-            x0 = int(0.08 * w)
-            x1 = int(0.92 * w)
-
-    roi_width = max(1, x1 - x0)
-    hot_masks: list[Any] = []
-    hot_density: list[float] = []
-    for fr in frames:
-        roi = fr[y0:y1, x0:x1]
-        hsv = cv2.cvtColor(roi, cv2.COLOR_BGR2HSV)
-        sat = hsv[:, :, 1].astype(np.float32)
-        val = hsv[:, :, 2].astype(np.float32)
-        sat_thr = max(60.0, float(np.percentile(sat, 92.0)))
-        val_thr = max(70.0, float(np.percentile(val, 55.0)))
-        hot = (sat >= sat_thr) & (val >= val_thr)
-        hot_masks.append(hot)
-        hot_density.append(float(np.mean(hot)))
-
-    rep_idx = int(np.argmin(np.asarray(hot_density, dtype=float)))
-    rep_roi = frames[rep_idx][y0:y1, x0:x1]
-    ocr_boxes = _ocr_word_boxes_in_roi(rep_roi)
-    word_boxes = _assign_word_boxes(line.words, ocr_boxes, roi_width)
-
-    per_word_series: list[list[float]] = [[] for _ in line.words]
-    for hot in hot_masks:
-        for wi, (bx0, bx1) in enumerate(word_boxes):
-            bx0 = max(0, min(roi_width - 1, bx0))
-            bx1 = max(bx0 + 1, min(roi_width, bx1))
-            box = hot[:, bx0:bx1]
-            per_word_series[wi].append(float(np.mean(box)) if box.size else 0.0)
-
-    starts: list[float | None] = []
-    fulls: list[float | None] = []
-    for wi, ratios in enumerate(per_word_series):
-        if not ratios:
-            starts.append(None)
-            fulls.append(None)
-            continue
-        arr = np.asarray(ratios, dtype=float)
-        if arr.size >= 5:
-            kernel = np.ones(5, dtype=float) / 5.0
-            smooth = np.convolve(arr, kernel, mode="same").tolist()
-        else:
-            smooth = ratios
-        start_thr = max(0.06, float(np.percentile(smooth, 25.0)))
-        full_thr = max(start_thr + 0.04, float(np.percentile(smooth, 75.0)))
-        starts.append(_interp_cross_time(times, smooth, start_thr))
-        fulls.append(_interp_cross_time(times, smooth, full_thr))
-
-    return {
-        "line_text": line.text,
-        "line_start": line_start,
-        "line_end": line_end,
-        "times": times,
-        "word_boxes": word_boxes,
-        "ocr_boxes": ocr_boxes,
-        "starts": starts,
-        "fulls": fulls,
-    }
-
-
-def _progress_to_word_candidates(
-    line: TargetLine,
-    line_start: float,
-    line_end: float,
-    times: list[float],
-    progress: list[float],
+    c_un: Any,
+    c_sel: Any,
 ) -> list[tuple[float, float] | None]:
-    boundaries = _word_ratios(line.words)
-    out: list[tuple[float, float] | None] = []
-    if not times or not progress:
+    if line_end <= line_start + 0.05 or not line.words:
         return [None for _ in line.words]
 
-    for ws, we in boundaries:
-        t_s = _interp_cross_time(times, progress, max(0.0, ws - 0.012))
-        t_e = _interp_cross_time(times, progress, max(0.0, we - 0.008))
-        if t_s is None:
-            out.append(None)
-            continue
-        if t_e is None:
-            t_e = min(line_end, t_s + 0.3)
-        out.append((max(line_start, t_s), min(line_end, t_e)))
-    return out
+    raw_frames = _collect_raw_frames(video_path, line_start, line_end, fps, c_un, c_sel)
+    if not raw_frames:
+        return [None for _ in line.words]
+
+    candidates = _track_block_transitions(raw_frames)
+
+    def _ts_to_float(ts: str) -> float:
+        m, s = ts.split(":")
+        return int(m) * 60 + float(s)
+
+    merged = []
+    if candidates:
+        candidates.sort(
+            key=lambda x: (x["y"] // 30, x["x"] // 50, _ts_to_float(x["start"]))
+        )
+        curr = candidates[0]
+        for i in range(1, len(candidates)):
+            nxt = candidates[i]
+            if (
+                nxt["text"] == curr["text"]
+                and abs(nxt["x"] - curr["x"]) < 60
+                and abs(nxt["y"] - curr["y"]) < 40
+            ):
+                if nxt["end"] and (not curr["end"] or nxt["end"] > curr["end"]):
+                    curr["end"] = nxt["end"]
+            else:
+                merged.append(curr)
+                curr = nxt
+        merged.append(curr)
+
+    results: list[tuple[float, float] | None] = [None] * len(line.words)
+    target_norm = [_normalize_text(w) for w in line.words]
+    for m in merged:
+        m_norm = _normalize_text(m["text"])
+        for i, t_norm in enumerate(target_norm):
+            if results[i] is None and _text_similarity(m_norm, t_norm) > 0.8:
+                s = _ts_to_float(m["start"])
+                e = _ts_to_float(m["end"]) if m["end"] else s + 0.3
+                results[i] = (s, e)
+                break
+    return results
 
 
 def _line_limit(target_lines: list[TargetLine], idx: int) -> float:
@@ -1114,6 +886,8 @@ def build_gold_from_visual_karaoke(
     video_url: str,
     line_video_windows: list[tuple[float, float]],
     visual_fps: float,
+    c_un: Any,
+    c_sel: Any,
 ) -> dict[str, Any]:
     if len(line_video_windows) != len(target_lines):
         raise ValueError("line_video_windows length must match target_lines length")
@@ -1130,12 +904,14 @@ def build_gold_from_visual_karaoke(
         video_line_start, video_line_end = line_video_windows[i]
         if video_line_end <= video_line_start + 0.1:
             video_line_end = video_line_start + 0.1
-        cands = _extract_line_word_candidates(
+        cands = _extract_line_word_candidates_v2(
             video_path,
             line,
             line_start=video_line_start,
             line_end=video_line_end,
             fps=visual_fps,
+            c_un=c_un,
+            c_sel=c_sel,
         )
         # Convert candidate timings from video line window to audio line window
         # while keeping line starts anchored to LRC/gold timings.
@@ -1241,7 +1017,7 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     )
     parser.add_argument("--max-candidates", type=int, default=20)
     parser.add_argument("--show-candidates", action="store_true")
-    parser.add_argument("--visual-fps", type=float, default=14.0)
+    parser.add_argument("--visual-fps", type=float, default=20.0)
     parser.add_argument("--ocr-sample-fps", type=float, default=1.5)
     parser.add_argument(
         "--dry-run-search",
@@ -1287,6 +1063,9 @@ def main(argv: list[str] | None = None) -> int:
         f"{len(target_lines)}"
     )
 
+    c_un, c_sel = _infer_lyric_colors(video_path)
+    print(f"Inferred lyric colors (BGR): {c_un.astype(int)}, {c_sel.astype(int)}")
+
     doc = build_gold_from_visual_karaoke(
         base_doc=base_doc,
         target_lines=target_lines,
@@ -1295,6 +1074,8 @@ def main(argv: list[str] | None = None) -> int:
         video_url=candidate.url,
         line_video_windows=line_video_windows,
         visual_fps=args.visual_fps,
+        c_un=c_un,
+        c_sel=c_sel,
     )
 
     args.output.parent.mkdir(parents=True, exist_ok=True)

@@ -34,10 +34,10 @@ def test_from_timing_report_normalizes_and_snaps() -> None:
 
     doc = _from_timing_report(report)
     words = doc["lines"][0]["words"]
-    assert words[0]["start"] == 1.0
-    assert words[0]["end"] == 1.3
-    assert words[1]["start"] == 1.3
-    assert words[1]["end"] == 1.9
+    assert words[0]["start"] == 1.05
+    assert words[0]["end"] == 1.25
+    assert words[1]["start"] == 1.25
+    assert words[1]["end"] == 1.90
 
 
 def test_from_timing_report_clamps_overlap_forward() -> None:
