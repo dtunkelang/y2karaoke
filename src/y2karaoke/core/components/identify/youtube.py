@@ -405,7 +405,11 @@ class YouTubeSearcher(_Base):
             duration = 0
             candidates = [
                 p
-                for p in cache_dir.glob("*.wav")
+                for p in sorted(
+                    cache_dir.glob("*.wav"),
+                    key=lambda p: (p.stat().st_mtime, p.name),
+                    reverse=True,
+                )
                 if "Vocals" not in p.stem and "instrumental" not in p.stem
             ]
             wav_path = candidates[0] if candidates else None
@@ -437,7 +441,11 @@ class YouTubeSearcher(_Base):
 
             candidates = [
                 p
-                for p in cache_dir.glob("*.wav")
+                for p in sorted(
+                    cache_dir.glob("*.wav"),
+                    key=lambda p: (p.stat().st_mtime, p.name),
+                    reverse=True,
+                )
                 if "Vocals" not in p.stem and "instrumental" not in p.stem
             ]
             wav_path = candidates[0] if candidates else None

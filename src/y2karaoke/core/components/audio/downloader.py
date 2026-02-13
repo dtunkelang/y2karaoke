@@ -105,7 +105,11 @@ class YouTubeDownloader:
                 safe_title = sanitize_filename(video_title)
                 audio_path = output_dir / f"{safe_title}.wav"
                 if not audio_path.exists():
-                    wav_files = list(output_dir.glob("*.wav"))
+                    wav_files = sorted(
+                        output_dir.glob("*.wav"),
+                        key=lambda p: (p.stat().st_mtime, p.name),
+                        reverse=True,
+                    )
                     if wav_files:
                         audio_path = wav_files[0]
                     else:
@@ -149,7 +153,11 @@ class YouTubeDownloader:
                 info = ydl.extract_info(url, download=False)
                 ydl.download([url])
 
-                video_files = list(output_dir.glob("*_video.*"))
+                video_files = sorted(
+                    output_dir.glob("*_video.*"),
+                    key=lambda p: (p.stat().st_mtime, p.name),
+                    reverse=True,
+                )
                 if not video_files:
                     raise DownloadError("Downloaded video file not found")
                 video_path = video_files[0]
