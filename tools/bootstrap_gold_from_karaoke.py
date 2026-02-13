@@ -287,9 +287,9 @@ def download_karaoke_video(url: str, *, out_dir: Path) -> Path:
             url,
         ]
     )
-        mp4_paths = sorted(
-            out_dir.glob("*.mp4"), key=lambda p: (p.stat().st_mtime, p.name), reverse=True
-        )
+    mp4_paths = sorted(
+        out_dir.glob("*.mp4"), key=lambda p: (p.stat().st_mtime, p.name), reverse=True
+    )
     if not mp4_paths:
         raise RuntimeError("Failed to download karaoke video")
     return mp4_paths[0]
