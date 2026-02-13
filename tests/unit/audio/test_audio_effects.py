@@ -1,8 +1,7 @@
 """Tests for audio_effects.py module."""
 
 import pytest
-from pathlib import Path
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import Mock, patch
 from y2karaoke.core.components.audio.audio_effects import (
     AudioProcessor,
     process_audio,

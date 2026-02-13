@@ -9,6 +9,10 @@ Use the project bootstrap script to create/update `venv` and install dependencie
 source venv/bin/activate
 ```
 
+**System Dependencies:**
+- ffmpeg (for audio/video processing)
+- Tesseract OCR (required for the Karaoke bootstrap tool)
+
 ## Daily Commands
 
 Run the standard checks:

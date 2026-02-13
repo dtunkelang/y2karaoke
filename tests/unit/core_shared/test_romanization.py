@@ -1,5 +1,5 @@
 import pytest
-from y2karaoke.core.components.lyrics.api import Line, Word
+from y2karaoke.core.components.lyrics.api import Line, Word  # noqa: F401
 from y2karaoke.core.romanization import romanize_line
 
 # Skip if korean-romanizer is not installed (optional dependency)

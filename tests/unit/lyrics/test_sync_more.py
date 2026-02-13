@@ -324,6 +324,34 @@ def test_fetch_lyrics_for_duration_returns_none_when_no_results(
     assert result == (None, False, "", None)
 
 
+def test_fetch_lyrics_for_duration_offline_uses_cache_only_path(
+    monkeypatch, isolated_sync_state
+):
+    isolated_sync_state.syncedlyrics_available = False
+    isolated_sync_state.lyriq_available = False
+
+    lrc_text = "[00:00.00]Line\n[00:10.00]Next"
+    calls = {"offline": None}
+
+    def fake_fetch(*_a, **kwargs):
+        calls["offline"] = kwargs.get("offline")
+        return lrc_text, True, "cache"
+
+    monkeypatch.setattr(sync, "fetch_lyrics_multi_source", fake_fetch)
+    isolated_sync_state.get_lrc_duration_fn = lambda *_a, **_k: 200
+
+    result = sync.fetch_lyrics_for_duration(
+        "Title",
+        "Artist",
+        200,
+        tolerance=10,
+        offline=True,
+    )
+
+    assert calls["offline"] is True
+    assert result == (lrc_text, True, "cache", 200)
+
+
 def test_fetch_from_all_sources_skips_genius_and_handles_errors(
     monkeypatch, isolated_sync_state
 ):

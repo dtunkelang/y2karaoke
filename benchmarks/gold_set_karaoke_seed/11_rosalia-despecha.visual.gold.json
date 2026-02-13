@@ -1,0 +1,2908 @@
+{
+  "schema_version": "1.0",
+  "title": "DESPECHA",
+  "artist": "ROSALIA",
+  "audio_path": "",
+  "source_timing_path": "/Users/dtunkelang/y2karaoke/benchmarks/gold_set/11_rosalia-despecha.gold.json",
+  "lines": [
+    {
+      "line_index": 1,
+      "text": "Yeah-yeah",
+      "start": 1.9,
+      "end": 3.6,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Yeah-yeah",
+          "start": 1.9,
+          "end": 3.6
+        }
+      ]
+    },
+    {
+      "line_index": 2,
+      "text": "Yeah-yeah",
+      "start": 3.9,
+      "end": 4.3,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Yeah-yeah",
+          "start": 3.9,
+          "end": 4.3
+        }
+      ]
+    },
+    {
+      "line_index": 3,
+      "text": "Mmm",
+      "start": 6.0,
+      "end": 6.5,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Mmm",
+          "start": 6.0,
+          "end": 6.5
+        }
+      ]
+    },
+    {
+      "line_index": 4,
+      "text": "Baby, no me llame'",
+      "start": 8.2,
+      "end": 10.0,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Baby,",
+          "start": 8.2,
+          "end": 8.8
+        },
+        {
+          "word_index": 2,
+          "text": "no",
+          "start": 8.8,
+          "end": 9.1
+        },
+        {
+          "word_index": 3,
+          "text": "me",
+          "start": 9.1,
+          "end": 9.5
+        },
+        {
+          "word_index": 4,
+          "text": "llame'",
+          "start": 9.5,
+          "end": 10.0
+        }
+      ]
+    },
+    {
+      "line_index": 5,
+      "text": "Que yo estoy ocupá' olvidando tus male'",
+      "start": 10.6,
+      "end": 14.5,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Que",
+          "start": 10.6,
+          "end": 11.0
+        },
+        {
+          "word_index": 2,
+          "text": "yo",
+          "start": 11.0,
+          "end": 11.3
+        },
+        {
+          "word_index": 3,
+          "text": "estoy",
+          "start": 11.3,
+          "end": 11.9
+        },
+        {
+          "word_index": 4,
+          "text": "ocupá'",
+          "start": 11.9,
+          "end": 12.6
+        },
+        {
+          "word_index": 5,
+          "text": "olvidando",
+          "start": 12.6,
+          "end": 13.6
+        },
+        {
+          "word_index": 6,
+          "text": "tus",
+          "start": 13.6,
+          "end": 14.0
+        },
+        {
+          "word_index": 7,
+          "text": "male'",
+          "start": 14.0,
+          "end": 14.5
+        }
+      ]
+    },
+    {
+      "line_index": 6,
+      "text": "Ya decidí que esta noche se sale",
+      "start": 14.5,
+      "end": 16.9,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Ya",
+          "start": 14.5,
+          "end": 14.8
+        },
+        {
+          "word_index": 2,
+          "text": "decidí",
+          "start": 14.8,
+          "end": 15.2
+        },
+        {
+          "word_index": 3,
+          "text": "que",
+          "start": 15.2,
+          "end": 15.6
+        },
+        {
+          "word_index": 4,
+          "text": "esta",
+          "start": 15.6,
+          "end": 15.9
+        },
+        {
+          "word_index": 5,
+          "text": "noche",
+          "start": 15.9,
+          "end": 16.4
+        },
+        {
+          "word_index": 6,
+          "text": "se",
+          "start": 16.4,
+          "end": 16.6
+        },
+        {
+          "word_index": 7,
+          "text": "sale",
+          "start": 16.6,
+          "end": 16.9
+        }
+      ]
+    },
+    {
+      "line_index": 7,
+      "text": "Con toda' mis motomami', con toda' mis gyale'",
+      "start": 18.1,
+      "end": 20.2,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Con",
+          "start": 18.1,
+          "end": 18.4
+        },
+        {
+          "word_index": 2,
+          "text": "toda'",
+          "start": 18.4,
+          "end": 18.6
+        },
+        {
+          "word_index": 3,
+          "text": "mis",
+          "start": 18.6,
+          "end": 18.9
+        },
+        {
+          "word_index": 4,
+          "text": "motomami',",
+          "start": 18.9,
+          "end": 19.3
+        },
+        {
+          "word_index": 5,
+          "text": "con",
+          "start": 19.3,
+          "end": 19.6
+        },
+        {
+          "word_index": 6,
+          "text": "toda'",
+          "start": 19.6,
+          "end": 19.8
+        },
+        {
+          "word_index": 7,
+          "text": "mis",
+          "start": 19.8,
+          "end": 20.0
+        },
+        {
+          "word_index": 8,
+          "text": "gyale'",
+          "start": 20.0,
+          "end": 20.2
+        }
+      ]
+    },
+    {
+      "line_index": 8,
+      "text": "Y ando despechá', oah, alocá'",
+      "start": 21.7,
+      "end": 23.2,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Y",
+          "start": 21.7,
+          "end": 21.9
+        },
+        {
+          "word_index": 2,
+          "text": "ando",
+          "start": 21.9,
+          "end": 22.2
+        },
+        {
+          "word_index": 3,
+          "text": "despechá',",
+          "start": 22.2,
+          "end": 22.6
+        },
+        {
+          "word_index": 4,
+          "text": "oah,",
+          "start": 22.6,
+          "end": 22.9
+        },
+        {
+          "word_index": 5,
+          "text": "alocá'",
+          "start": 22.9,
+          "end": 23.2
+        }
+      ]
+    },
+    {
+      "line_index": 9,
+      "text": "Bajé con un flow nuevo de caja, baby, hackeá'",
+      "start": 25.3,
+      "end": 28.8,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Bajé",
+          "start": 25.3,
+          "end": 25.7
+        },
+        {
+          "word_index": 2,
+          "text": "con",
+          "start": 25.7,
+          "end": 26.0
+        },
+        {
+          "word_index": 3,
+          "text": "un",
+          "start": 26.0,
+          "end": 26.3
+        },
+        {
+          "word_index": 4,
+          "text": "flow",
+          "start": 26.3,
+          "end": 26.6
+        },
+        {
+          "word_index": 5,
+          "text": "nuevo",
+          "start": 26.6,
+          "end": 27.1
+        },
+        {
+          "word_index": 6,
+          "text": "de",
+          "start": 27.1,
+          "end": 27.3
+        },
+        {
+          "word_index": 7,
+          "text": "caja,",
+          "start": 27.3,
+          "end": 27.8
+        },
+        {
+          "word_index": 8,
+          "text": "baby,",
+          "start": 27.8,
+          "end": 28.2
+        },
+        {
+          "word_index": 9,
+          "text": "hackeá'",
+          "start": 28.3,
+          "end": 28.8
+        }
+      ]
+    },
+    {
+      "line_index": 10,
+      "text": "Lo muevo de la'o a la'o y a otro la'o",
+      "start": 28.9,
+      "end": 30.6,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Lo",
+          "start": 28.9,
+          "end": 29.3
+        },
+        {
+          "word_index": 2,
+          "text": "muevo",
+          "start": 29.3,
+          "end": 29.6
+        },
+        {
+          "word_index": 3,
+          "text": "de",
+          "start": 29.6,
+          "end": 29.8
+        },
+        {
+          "word_index": 4,
+          "text": "la'o",
+          "start": 29.8,
+          "end": 29.9
+        },
+        {
+          "word_index": 5,
+          "text": "a",
+          "start": 29.9,
+          "end": 30.0
+        },
+        {
+          "word_index": 6,
+          "text": "la'o",
+          "start": 30.0,
+          "end": 30.0
+        },
+        {
+          "word_index": 7,
+          "text": "y",
+          "start": 30.0,
+          "end": 30.0
+        },
+        {
+          "word_index": 8,
+          "text": "a",
+          "start": 30.0,
+          "end": 30.1
+        },
+        {
+          "word_index": 9,
+          "text": "otro",
+          "start": 30.1,
+          "end": 30.2
+        },
+        {
+          "word_index": 10,
+          "text": "la'o",
+          "start": 30.2,
+          "end": 30.6
+        }
+      ]
+    },
+    {
+      "line_index": 11,
+      "text": "Hoy salgo con mi baby de la disco coroná'",
+      "start": 32.8,
+      "end": 35.0,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Hoy",
+          "start": 32.8,
+          "end": 33.1
+        },
+        {
+          "word_index": 2,
+          "text": "salgo",
+          "start": 33.1,
+          "end": 33.4
+        },
+        {
+          "word_index": 3,
+          "text": "con",
+          "start": 33.4,
+          "end": 33.6
+        },
+        {
+          "word_index": 4,
+          "text": "mi",
+          "start": 33.6,
+          "end": 33.8
+        },
+        {
+          "word_index": 5,
+          "text": "baby",
+          "start": 33.8,
+          "end": 34.1
+        },
+        {
+          "word_index": 6,
+          "text": "de",
+          "start": 34.1,
+          "end": 34.2
+        },
+        {
+          "word_index": 7,
+          "text": "la",
+          "start": 34.2,
+          "end": 34.4
+        },
+        {
+          "word_index": 8,
+          "text": "disco",
+          "start": 34.4,
+          "end": 34.7
+        },
+        {
+          "word_index": 9,
+          "text": "coroná'",
+          "start": 34.7,
+          "end": 35.0
+        }
+      ]
+    },
+    {
+      "line_index": 12,
+      "text": "Y ando despechá', oah, alocá'",
+      "start": 36.2,
+      "end": 39.2,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Y",
+          "start": 36.2,
+          "end": 36.4
+        },
+        {
+          "word_index": 2,
+          "text": "ando",
+          "start": 36.4,
+          "end": 36.9
+        },
+        {
+          "word_index": 3,
+          "text": "despechá',",
+          "start": 36.9,
+          "end": 38.1
+        },
+        {
+          "word_index": 4,
+          "text": "oah,",
+          "start": 38.1,
+          "end": 38.6
+        },
+        {
+          "word_index": 5,
+          "text": "alocá'",
+          "start": 38.7,
+          "end": 39.2
+        }
+      ]
+    },
+    {
+      "line_index": 13,
+      "text": "Que Dios me libre de volver a tu la'o",
+      "start": 40.1,
+      "end": 43.5,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Que",
+          "start": 40.1,
+          "end": 40.5
+        },
+        {
+          "word_index": 2,
+          "text": "Dios",
+          "start": 40.5,
+          "end": 40.9
+        },
+        {
+          "word_index": 3,
+          "text": "me",
+          "start": 40.9,
+          "end": 41.2
+        },
+        {
+          "word_index": 4,
+          "text": "libre",
+          "start": 41.2,
+          "end": 41.7
+        },
+        {
+          "word_index": 5,
+          "text": "de",
+          "start": 41.8,
+          "end": 42.0
+        },
+        {
+          "word_index": 6,
+          "text": "volver",
+          "start": 42.0,
+          "end": 42.7
+        },
+        {
+          "word_index": 7,
+          "text": "a",
+          "start": 42.7,
+          "end": 42.9
+        },
+        {
+          "word_index": 8,
+          "text": "tu",
+          "start": 42.9,
+          "end": 43.1
+        },
+        {
+          "word_index": 9,
+          "text": "la'o",
+          "start": 43.1,
+          "end": 43.5
+        }
+      ]
+    },
+    {
+      "line_index": 14,
+      "text": "Lo muevo de la'o a la'o y a otro la'o",
+      "start": 43.8,
+      "end": 47.3,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Lo",
+          "start": 43.8,
+          "end": 44.1
+        },
+        {
+          "word_index": 2,
+          "text": "muevo",
+          "start": 44.1,
+          "end": 44.6
+        },
+        {
+          "word_index": 3,
+          "text": "de",
+          "start": 44.7,
+          "end": 44.9
+        },
+        {
+          "word_index": 4,
+          "text": "la'o",
+          "start": 44.9,
+          "end": 45.4
+        },
+        {
+          "word_index": 5,
+          "text": "a",
+          "start": 45.4,
+          "end": 45.6
+        },
+        {
+          "word_index": 6,
+          "text": "la'o",
+          "start": 45.6,
+          "end": 46.1
+        },
+        {
+          "word_index": 7,
+          "text": "y",
+          "start": 46.1,
+          "end": 46.3
+        },
+        {
+          "word_index": 8,
+          "text": "a",
+          "start": 46.3,
+          "end": 46.5
+        },
+        {
+          "word_index": 9,
+          "text": "otro",
+          "start": 46.5,
+          "end": 46.9
+        },
+        {
+          "word_index": 10,
+          "text": "la'o",
+          "start": 46.9,
+          "end": 47.3
+        }
+      ]
+    },
+    {
+      "line_index": 15,
+      "text": "Hoy salgo con mi baby de la disco coroná', coroná', yeah",
+      "start": 47.7,
+      "end": 52.6,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Hoy",
+          "start": 47.7,
+          "end": 48.0
+        },
+        {
+          "word_index": 2,
+          "text": "salgo",
+          "start": 48.0,
+          "end": 48.6
+        },
+        {
+          "word_index": 3,
+          "text": "con",
+          "start": 48.6,
+          "end": 48.9
+        },
+        {
+          "word_index": 4,
+          "text": "mi",
+          "start": 48.9,
+          "end": 49.2
+        },
+        {
+          "word_index": 5,
+          "text": "baby",
+          "start": 49.2,
+          "end": 49.6
+        },
+        {
+          "word_index": 6,
+          "text": "de",
+          "start": 49.6,
+          "end": 49.9
+        },
+        {
+          "word_index": 7,
+          "text": "la",
+          "start": 49.9,
+          "end": 50.1
+        },
+        {
+          "word_index": 8,
+          "text": "disco",
+          "start": 50.2,
+          "end": 50.7
+        },
+        {
+          "word_index": 9,
+          "text": "coroná',",
+          "start": 50.7,
+          "end": 51.4
+        },
+        {
+          "word_index": 10,
+          "text": "coroná',",
+          "start": 51.5,
+          "end": 52.2
+        },
+        {
+          "word_index": 11,
+          "text": "yeah",
+          "start": 52.2,
+          "end": 52.6
+        }
+      ]
+    },
+    {
+      "line_index": 16,
+      "text": "Voy con la falda (ah), aro' y cadena' (eh)",
+      "start": 52.6,
+      "end": 54.3,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Voy",
+          "start": 52.6,
+          "end": 52.9
+        },
+        {
+          "word_index": 2,
+          "text": "con",
+          "start": 52.9,
+          "end": 53.1
+        },
+        {
+          "word_index": 3,
+          "text": "la",
+          "start": 53.1,
+          "end": 53.2
+        },
+        {
+          "word_index": 4,
+          "text": "falda",
+          "start": 53.2,
+          "end": 53.4
+        },
+        {
+          "word_index": 5,
+          "text": "(ah),",
+          "start": 53.4,
+          "end": 53.5
+        },
+        {
+          "word_index": 6,
+          "text": "aro'",
+          "start": 53.5,
+          "end": 53.8
+        },
+        {
+          "word_index": 7,
+          "text": "y",
+          "start": 53.8,
+          "end": 53.9
+        },
+        {
+          "word_index": 8,
+          "text": "cadena'",
+          "start": 53.9,
+          "end": 54.2
+        },
+        {
+          "word_index": 9,
+          "text": "(eh)",
+          "start": 54.2,
+          "end": 54.3
+        }
+      ]
+    },
+    {
+      "line_index": 17,
+      "text": "Piña colada (sí), no tengo pena (no)",
+      "start": 54.3,
+      "end": 56.1,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Piña",
+          "start": 54.3,
+          "end": 54.6
+        },
+        {
+          "word_index": 2,
+          "text": "colada",
+          "start": 54.6,
+          "end": 55.0
+        },
+        {
+          "word_index": 3,
+          "text": "(sí),",
+          "start": 55.0,
+          "end": 55.2
+        },
+        {
+          "word_index": 4,
+          "text": "no",
+          "start": 55.2,
+          "end": 55.5
+        },
+        {
+          "word_index": 5,
+          "text": "tengo",
+          "start": 55.5,
+          "end": 55.7
+        },
+        {
+          "word_index": 6,
+          "text": "pena",
+          "start": 55.7,
+          "end": 56.0
+        },
+        {
+          "word_index": 7,
+          "text": "(no)",
+          "start": 56.0,
+          "end": 56.1
+        }
+      ]
+    },
+    {
+      "line_index": 18,
+      "text": "'Toy con la Fefa (wuh), ella es la jefa (sí)",
+      "start": 56.2,
+      "end": 58.0,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "'Toy",
+          "start": 56.2,
+          "end": 56.5
+        },
+        {
+          "word_index": 2,
+          "text": "con",
+          "start": 56.5,
+          "end": 56.7
+        },
+        {
+          "word_index": 3,
+          "text": "la",
+          "start": 56.7,
+          "end": 56.8
+        },
+        {
+          "word_index": 4,
+          "text": "Fefa",
+          "start": 56.8,
+          "end": 57.0
+        },
+        {
+          "word_index": 5,
+          "text": "(wuh),",
+          "start": 57.0,
+          "end": 57.2
+        },
+        {
+          "word_index": 6,
+          "text": "ella",
+          "start": 57.2,
+          "end": 57.5
+        },
+        {
+          "word_index": 7,
+          "text": "es",
+          "start": 57.5,
+          "end": 57.6
+        },
+        {
+          "word_index": 8,
+          "text": "la",
+          "start": 57.6,
+          "end": 57.8
+        },
+        {
+          "word_index": 9,
+          "text": "jefa",
+          "start": 57.8,
+          "end": 58.0
+        },
+        {
+          "word_index": 10,
+          "text": "(sí)",
+          "start": 58.0,
+          "end": 58.0
+        }
+      ]
+    },
+    {
+      "line_index": 19,
+      "text": "Ella lo baila (yeh), ella me enseña (yeh)",
+      "start": 58.1,
+      "end": 59.8,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Ella",
+          "start": 58.1,
+          "end": 58.5
+        },
+        {
+          "word_index": 2,
+          "text": "lo",
+          "start": 58.5,
+          "end": 58.6
+        },
+        {
+          "word_index": 3,
+          "text": "baila",
+          "start": 58.6,
+          "end": 58.8
+        },
+        {
+          "word_index": 4,
+          "text": "(yeh),",
+          "start": 58.8,
+          "end": 59.0
+        },
+        {
+          "word_index": 5,
+          "text": "ella",
+          "start": 59.0,
+          "end": 59.3
+        },
+        {
+          "word_index": 6,
+          "text": "me",
+          "start": 59.3,
+          "end": 59.4
+        },
+        {
+          "word_index": 7,
+          "text": "enseña",
+          "start": 59.4,
+          "end": 59.7
+        },
+        {
+          "word_index": 8,
+          "text": "(yeh)",
+          "start": 59.7,
+          "end": 59.8
+        }
+      ]
+    },
+    {
+      "line_index": 20,
+      "text": "Hoy no trabaja (uh) esta morena (no)",
+      "start": 59.8,
+      "end": 61.5,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Hoy",
+          "start": 59.8,
+          "end": 60.1
+        },
+        {
+          "word_index": 2,
+          "text": "no",
+          "start": 60.1,
+          "end": 60.2
+        },
+        {
+          "word_index": 3,
+          "text": "trabaja",
+          "start": 60.2,
+          "end": 60.6
+        },
+        {
+          "word_index": 4,
+          "text": "(uh)",
+          "start": 60.6,
+          "end": 60.8
+        },
+        {
+          "word_index": 5,
+          "text": "esta",
+          "start": 60.8,
+          "end": 61.1
+        },
+        {
+          "word_index": 6,
+          "text": "morena",
+          "start": 61.1,
+          "end": 61.4
+        },
+        {
+          "word_index": 7,
+          "text": "(no)",
+          "start": 61.4,
+          "end": 61.5
+        }
+      ]
+    },
+    {
+      "line_index": 21,
+      "text": "Fuck la fama (eh), fuck la faena (ja)",
+      "start": 61.8,
+      "end": 63.7,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Fuck",
+          "start": 61.8,
+          "end": 62.2
+        },
+        {
+          "word_index": 2,
+          "text": "la",
+          "start": 62.2,
+          "end": 62.3
+        },
+        {
+          "word_index": 3,
+          "text": "fama",
+          "start": 62.3,
+          "end": 62.6
+        },
+        {
+          "word_index": 4,
+          "text": "(eh),",
+          "start": 62.6,
+          "end": 62.8
+        },
+        {
+          "word_index": 5,
+          "text": "fuck",
+          "start": 62.8,
+          "end": 63.1
+        },
+        {
+          "word_index": 6,
+          "text": "la",
+          "start": 63.1,
+          "end": 63.3
+        },
+        {
+          "word_index": 7,
+          "text": "faena",
+          "start": 63.3,
+          "end": 63.6
+        },
+        {
+          "word_index": 8,
+          "text": "(ja)",
+          "start": 63.6,
+          "end": 63.7
+        }
+      ]
+    },
+    {
+      "line_index": 22,
+      "text": "La noche es larga (eh), la noche está buena (eh)",
+      "start": 63.8,
+      "end": 65.6,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "La",
+          "start": 63.8,
+          "end": 64.1
+        },
+        {
+          "word_index": 2,
+          "text": "noche",
+          "start": 64.1,
+          "end": 64.3
+        },
+        {
+          "word_index": 3,
+          "text": "es",
+          "start": 64.3,
+          "end": 64.4
+        },
+        {
+          "word_index": 4,
+          "text": "larga",
+          "start": 64.4,
+          "end": 64.6
+        },
+        {
+          "word_index": 5,
+          "text": "(eh),",
+          "start": 64.6,
+          "end": 64.7
+        },
+        {
+          "word_index": 6,
+          "text": "la",
+          "start": 64.7,
+          "end": 65.0
+        },
+        {
+          "word_index": 7,
+          "text": "noche",
+          "start": 65.0,
+          "end": 65.2
+        },
+        {
+          "word_index": 8,
+          "text": "está",
+          "start": 65.2,
+          "end": 65.3
+        },
+        {
+          "word_index": 9,
+          "text": "buena",
+          "start": 65.3,
+          "end": 65.5
+        },
+        {
+          "word_index": 10,
+          "text": "(eh)",
+          "start": 65.5,
+          "end": 65.6
+        }
+      ]
+    },
+    {
+      "line_index": 23,
+      "text": "Un mambo violento y fin del problema",
+      "start": 65.6,
+      "end": 66.9,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Un",
+          "start": 65.6,
+          "end": 65.9
+        },
+        {
+          "word_index": 2,
+          "text": "mambo",
+          "start": 65.9,
+          "end": 66.1
+        },
+        {
+          "word_index": 3,
+          "text": "violento",
+          "start": 66.1,
+          "end": 66.5
+        },
+        {
+          "word_index": 4,
+          "text": "y",
+          "start": 66.5,
+          "end": 66.5
+        },
+        {
+          "word_index": 5,
+          "text": "fin",
+          "start": 66.5,
+          "end": 66.6
+        },
+        {
+          "word_index": 6,
+          "text": "del",
+          "start": 66.6,
+          "end": 66.8
+        },
+        {
+          "word_index": 7,
+          "text": "problema",
+          "start": 66.8,
+          "end": 66.9
+        }
+      ]
+    },
+    {
+      "line_index": 24,
+      "text": "Mira qué fácil te lo v'y a decir",
+      "start": 67.0,
+      "end": 68.6,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Mira",
+          "start": 67.0,
+          "end": 67.4
+        },
+        {
+          "word_index": 2,
+          "text": "qué",
+          "start": 67.4,
+          "end": 67.5
+        },
+        {
+          "word_index": 3,
+          "text": "fácil",
+          "start": 67.5,
+          "end": 67.8
+        },
+        {
+          "word_index": 4,
+          "text": "te",
+          "start": 67.8,
+          "end": 68.0
+        },
+        {
+          "word_index": 5,
+          "text": "lo",
+          "start": 68.0,
+          "end": 68.2
+        },
+        {
+          "word_index": 6,
+          "text": "v'y",
+          "start": 68.2,
+          "end": 68.3
+        },
+        {
+          "word_index": 7,
+          "text": "a",
+          "start": 68.3,
+          "end": 68.5
+        },
+        {
+          "word_index": 8,
+          "text": "decir",
+          "start": 68.5,
+          "end": 68.6
+        }
+      ]
+    },
+    {
+      "line_index": 25,
+      "text": "A, B, C, one, two, three",
+      "start": 68.6,
+      "end": 68.8,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "A,",
+          "start": 68.6,
+          "end": 68.6
+        },
+        {
+          "word_index": 2,
+          "text": "B,",
+          "start": 68.6,
+          "end": 68.6
+        },
+        {
+          "word_index": 3,
+          "text": "C,",
+          "start": 68.6,
+          "end": 68.6
+        },
+        {
+          "word_index": 4,
+          "text": "one,",
+          "start": 68.6,
+          "end": 68.7
+        },
+        {
+          "word_index": 5,
+          "text": "two,",
+          "start": 68.7,
+          "end": 68.8
+        },
+        {
+          "word_index": 6,
+          "text": "three",
+          "start": 68.8,
+          "end": 68.8
+        }
+      ]
+    },
+    {
+      "line_index": 26,
+      "text": "Mira qué fácil te lo v'y a decir",
+      "start": 70.3,
+      "end": 71.8,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Mira",
+          "start": 70.3,
+          "end": 70.7
+        },
+        {
+          "word_index": 2,
+          "text": "qué",
+          "start": 70.7,
+          "end": 70.8
+        },
+        {
+          "word_index": 3,
+          "text": "fácil",
+          "start": 70.8,
+          "end": 71.1
+        },
+        {
+          "word_index": 4,
+          "text": "te",
+          "start": 71.1,
+          "end": 71.3
+        },
+        {
+          "word_index": 5,
+          "text": "lo",
+          "start": 71.3,
+          "end": 71.4
+        },
+        {
+          "word_index": 6,
+          "text": "v'y",
+          "start": 71.4,
+          "end": 71.5
+        },
+        {
+          "word_index": 7,
+          "text": "a",
+          "start": 71.5,
+          "end": 71.7
+        },
+        {
+          "word_index": 8,
+          "text": "decir",
+          "start": 71.7,
+          "end": 71.8
+        }
+      ]
+    },
+    {
+      "line_index": 27,
+      "text": "Que esta motomami ya no está pa' ti",
+      "start": 72.3,
+      "end": 73.9,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Que",
+          "start": 72.3,
+          "end": 72.6
+        },
+        {
+          "word_index": 2,
+          "text": "esta",
+          "start": 72.6,
+          "end": 72.8
+        },
+        {
+          "word_index": 3,
+          "text": "motomami",
+          "start": 72.8,
+          "end": 73.3
+        },
+        {
+          "word_index": 4,
+          "text": "ya",
+          "start": 73.3,
+          "end": 73.4
+        },
+        {
+          "word_index": 5,
+          "text": "no",
+          "start": 73.4,
+          "end": 73.5
+        },
+        {
+          "word_index": 6,
+          "text": "está",
+          "start": 73.5,
+          "end": 73.7
+        },
+        {
+          "word_index": 7,
+          "text": "pa'",
+          "start": 73.7,
+          "end": 73.8
+        },
+        {
+          "word_index": 8,
+          "text": "ti",
+          "start": 73.8,
+          "end": 73.9
+        }
+      ]
+    },
+    {
+      "line_index": 28,
+      "text": "Mira qué fácil te lo v'y a decir",
+      "start": 74.0,
+      "end": 75.9,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Mira",
+          "start": 74.0,
+          "end": 74.4
+        },
+        {
+          "word_index": 2,
+          "text": "qué",
+          "start": 74.4,
+          "end": 74.6
+        },
+        {
+          "word_index": 3,
+          "text": "fácil",
+          "start": 74.6,
+          "end": 74.9
+        },
+        {
+          "word_index": 4,
+          "text": "te",
+          "start": 74.9,
+          "end": 75.1
+        },
+        {
+          "word_index": 5,
+          "text": "lo",
+          "start": 75.1,
+          "end": 75.3
+        },
+        {
+          "word_index": 6,
+          "text": "v'y",
+          "start": 75.3,
+          "end": 75.5
+        },
+        {
+          "word_index": 7,
+          "text": "a",
+          "start": 75.5,
+          "end": 75.7
+        },
+        {
+          "word_index": 8,
+          "text": "decir",
+          "start": 75.7,
+          "end": 75.9
+        }
+      ]
+    },
+    {
+      "line_index": 29,
+      "text": "A, B, C, one, two, three",
+      "start": 76.0,
+      "end": 77.6,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "A,",
+          "start": 76.0,
+          "end": 76.2
+        },
+        {
+          "word_index": 2,
+          "text": "B,",
+          "start": 76.2,
+          "end": 76.4
+        },
+        {
+          "word_index": 3,
+          "text": "C,",
+          "start": 76.4,
+          "end": 76.6
+        },
+        {
+          "word_index": 4,
+          "text": "one,",
+          "start": 76.6,
+          "end": 76.9
+        },
+        {
+          "word_index": 5,
+          "text": "two,",
+          "start": 76.9,
+          "end": 77.3
+        },
+        {
+          "word_index": 6,
+          "text": "three",
+          "start": 77.3,
+          "end": 77.6
+        }
+      ]
+    },
+    {
+      "line_index": 30,
+      "text": "Mira qué fácil te lo v'y a decir",
+      "start": 77.7,
+      "end": 78.1,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Mira",
+          "start": 77.7,
+          "end": 77.8
+        },
+        {
+          "word_index": 2,
+          "text": "qué",
+          "start": 77.8,
+          "end": 77.8
+        },
+        {
+          "word_index": 3,
+          "text": "fácil",
+          "start": 77.8,
+          "end": 77.8
+        },
+        {
+          "word_index": 4,
+          "text": "te",
+          "start": 77.8,
+          "end": 77.9
+        },
+        {
+          "word_index": 5,
+          "text": "lo",
+          "start": 77.9,
+          "end": 78.0
+        },
+        {
+          "word_index": 6,
+          "text": "v'y",
+          "start": 78.0,
+          "end": 78.0
+        },
+        {
+          "word_index": 7,
+          "text": "a",
+          "start": 78.0,
+          "end": 78.0
+        },
+        {
+          "word_index": 8,
+          "text": "decir",
+          "start": 78.0,
+          "end": 78.1
+        }
+      ]
+    },
+    {
+      "line_index": 31,
+      "text": "Que esta motomami ya -",
+      "start": 79.5,
+      "end": 80.7,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Que",
+          "start": 79.5,
+          "end": 79.8
+        },
+        {
+          "word_index": 2,
+          "text": "esta",
+          "start": 79.8,
+          "end": 80.1
+        },
+        {
+          "word_index": 3,
+          "text": "motomami",
+          "start": 80.1,
+          "end": 80.5
+        },
+        {
+          "word_index": 4,
+          "text": "ya",
+          "start": 80.5,
+          "end": 80.6
+        },
+        {
+          "word_index": 5,
+          "text": "-",
+          "start": 80.6,
+          "end": 80.7
+        }
+      ]
+    },
+    {
+      "line_index": 32,
+      "text": "Y ando despechá', oah, alocá'",
+      "start": 80.7,
+      "end": 82.5,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Y",
+          "start": 80.7,
+          "end": 80.9
+        },
+        {
+          "word_index": 2,
+          "text": "ando",
+          "start": 80.9,
+          "end": 81.2
+        },
+        {
+          "word_index": 3,
+          "text": "despechá',",
+          "start": 81.2,
+          "end": 81.8
+        },
+        {
+          "word_index": 4,
+          "text": "oah,",
+          "start": 81.8,
+          "end": 82.1
+        },
+        {
+          "word_index": 5,
+          "text": "alocá'",
+          "start": 82.1,
+          "end": 82.5
+        }
+      ]
+    },
+    {
+      "line_index": 33,
+      "text": "Bajé con un flow nuevo de caja, baby, hackeá'",
+      "start": 84.2,
+      "end": 87.5,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Bajé",
+          "start": 84.2,
+          "end": 84.6
+        },
+        {
+          "word_index": 2,
+          "text": "con",
+          "start": 84.6,
+          "end": 84.9
+        },
+        {
+          "word_index": 3,
+          "text": "un",
+          "start": 84.9,
+          "end": 85.1
+        },
+        {
+          "word_index": 4,
+          "text": "flow",
+          "start": 85.1,
+          "end": 85.4
+        },
+        {
+          "word_index": 5,
+          "text": "nuevo",
+          "start": 85.4,
+          "end": 85.9
+        },
+        {
+          "word_index": 6,
+          "text": "de",
+          "start": 85.9,
+          "end": 86.1
+        },
+        {
+          "word_index": 7,
+          "text": "caja,",
+          "start": 86.1,
+          "end": 86.5
+        },
+        {
+          "word_index": 8,
+          "text": "baby,",
+          "start": 86.5,
+          "end": 87.0
+        },
+        {
+          "word_index": 9,
+          "text": "hackeá'",
+          "start": 87.0,
+          "end": 87.5
+        }
+      ]
+    },
+    {
+      "line_index": 34,
+      "text": "Lo muevo de la'o a la'o y a otro la'o",
+      "start": 87.9,
+      "end": 90.1,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Lo",
+          "start": 87.9,
+          "end": 88.2
+        },
+        {
+          "word_index": 2,
+          "text": "muevo",
+          "start": 88.2,
+          "end": 88.5
+        },
+        {
+          "word_index": 3,
+          "text": "de",
+          "start": 88.5,
+          "end": 88.7
+        },
+        {
+          "word_index": 4,
+          "text": "la'o",
+          "start": 88.7,
+          "end": 88.9
+        },
+        {
+          "word_index": 5,
+          "text": "a",
+          "start": 88.9,
+          "end": 89.1
+        },
+        {
+          "word_index": 6,
+          "text": "la'o",
+          "start": 89.1,
+          "end": 89.3
+        },
+        {
+          "word_index": 7,
+          "text": "y",
+          "start": 89.3,
+          "end": 89.5
+        },
+        {
+          "word_index": 8,
+          "text": "a",
+          "start": 89.5,
+          "end": 89.7
+        },
+        {
+          "word_index": 9,
+          "text": "otro",
+          "start": 89.7,
+          "end": 89.9
+        },
+        {
+          "word_index": 10,
+          "text": "la'o",
+          "start": 89.9,
+          "end": 90.1
+        }
+      ]
+    },
+    {
+      "line_index": 35,
+      "text": "Hoy salgo con mi baby de la disco coroná'",
+      "start": 91.8,
+      "end": 94.0,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Hoy",
+          "start": 91.8,
+          "end": 92.1
+        },
+        {
+          "word_index": 2,
+          "text": "salgo",
+          "start": 92.1,
+          "end": 92.4
+        },
+        {
+          "word_index": 3,
+          "text": "con",
+          "start": 92.4,
+          "end": 92.6
+        },
+        {
+          "word_index": 4,
+          "text": "mi",
+          "start": 92.6,
+          "end": 92.8
+        },
+        {
+          "word_index": 5,
+          "text": "baby",
+          "start": 92.8,
+          "end": 93.1
+        },
+        {
+          "word_index": 6,
+          "text": "de",
+          "start": 93.1,
+          "end": 93.2
+        },
+        {
+          "word_index": 7,
+          "text": "la",
+          "start": 93.2,
+          "end": 93.4
+        },
+        {
+          "word_index": 8,
+          "text": "disco",
+          "start": 93.4,
+          "end": 93.7
+        },
+        {
+          "word_index": 9,
+          "text": "coroná'",
+          "start": 93.7,
+          "end": 94.0
+        }
+      ]
+    },
+    {
+      "line_index": 36,
+      "text": "Y ando despechá', oah, alocá'",
+      "start": 95.5,
+      "end": 98.8,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Y",
+          "start": 95.5,
+          "end": 95.7
+        },
+        {
+          "word_index": 2,
+          "text": "ando",
+          "start": 95.7,
+          "end": 96.3
+        },
+        {
+          "word_index": 3,
+          "text": "despechá',",
+          "start": 96.3,
+          "end": 97.7
+        },
+        {
+          "word_index": 4,
+          "text": "oah,",
+          "start": 97.7,
+          "end": 98.3
+        },
+        {
+          "word_index": 5,
+          "text": "alocá'",
+          "start": 98.3,
+          "end": 98.8
+        }
+      ]
+    },
+    {
+      "line_index": 37,
+      "text": "Que Dios me libre de volver a tu la'o",
+      "start": 99.0,
+      "end": 101.0,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Que",
+          "start": 99.0,
+          "end": 99.3
+        },
+        {
+          "word_index": 2,
+          "text": "Dios",
+          "start": 99.3,
+          "end": 99.6
+        },
+        {
+          "word_index": 3,
+          "text": "me",
+          "start": 99.6,
+          "end": 99.7
+        },
+        {
+          "word_index": 4,
+          "text": "libre",
+          "start": 99.7,
+          "end": 100.0
+        },
+        {
+          "word_index": 5,
+          "text": "de",
+          "start": 100.0,
+          "end": 100.2
+        },
+        {
+          "word_index": 6,
+          "text": "volver",
+          "start": 100.2,
+          "end": 100.6
+        },
+        {
+          "word_index": 7,
+          "text": "a",
+          "start": 100.6,
+          "end": 100.7
+        },
+        {
+          "word_index": 8,
+          "text": "tu",
+          "start": 100.7,
+          "end": 100.9
+        },
+        {
+          "word_index": 9,
+          "text": "la'o",
+          "start": 100.9,
+          "end": 101.0
+        }
+      ]
+    },
+    {
+      "line_index": 38,
+      "text": "Lo muevo de la'o a la'o y a otro la'o",
+      "start": 103.1,
+      "end": 105.7,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Lo",
+          "start": 103.1,
+          "end": 103.4
+        },
+        {
+          "word_index": 2,
+          "text": "muevo",
+          "start": 103.4,
+          "end": 103.7
+        },
+        {
+          "word_index": 3,
+          "text": "de",
+          "start": 103.7,
+          "end": 104.0
+        },
+        {
+          "word_index": 4,
+          "text": "la'o",
+          "start": 104.0,
+          "end": 104.3
+        },
+        {
+          "word_index": 5,
+          "text": "a",
+          "start": 104.3,
+          "end": 104.5
+        },
+        {
+          "word_index": 6,
+          "text": "la'o",
+          "start": 104.5,
+          "end": 104.8
+        },
+        {
+          "word_index": 7,
+          "text": "y",
+          "start": 104.8,
+          "end": 105.0
+        },
+        {
+          "word_index": 8,
+          "text": "a",
+          "start": 105.0,
+          "end": 105.1
+        },
+        {
+          "word_index": 9,
+          "text": "otro",
+          "start": 105.1,
+          "end": 105.4
+        },
+        {
+          "word_index": 10,
+          "text": "la'o",
+          "start": 105.4,
+          "end": 105.7
+        }
+      ]
+    },
+    {
+      "line_index": 39,
+      "text": "Hoy salgo con mi baby de la disco coroná', coroná', yeah",
+      "start": 106.7,
+      "end": 108.4,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Hoy",
+          "start": 106.7,
+          "end": 107.0
+        },
+        {
+          "word_index": 2,
+          "text": "salgo",
+          "start": 107.0,
+          "end": 107.2
+        },
+        {
+          "word_index": 3,
+          "text": "con",
+          "start": 107.2,
+          "end": 107.3
+        },
+        {
+          "word_index": 4,
+          "text": "mi",
+          "start": 107.3,
+          "end": 107.4
+        },
+        {
+          "word_index": 5,
+          "text": "baby",
+          "start": 107.4,
+          "end": 107.6
+        },
+        {
+          "word_index": 6,
+          "text": "de",
+          "start": 107.6,
+          "end": 107.6
+        },
+        {
+          "word_index": 7,
+          "text": "la",
+          "start": 107.6,
+          "end": 107.7
+        },
+        {
+          "word_index": 8,
+          "text": "disco",
+          "start": 107.7,
+          "end": 107.9
+        },
+        {
+          "word_index": 9,
+          "text": "coroná',",
+          "start": 107.9,
+          "end": 108.1
+        },
+        {
+          "word_index": 10,
+          "text": "coroná',",
+          "start": 108.1,
+          "end": 108.4
+        },
+        {
+          "word_index": 11,
+          "text": "yeah",
+          "start": 108.4,
+          "end": 108.4
+        }
+      ]
+    },
+    {
+      "line_index": 40,
+      "text": "Mmm, voy a 180 porque soy una racineta, ¿qué, qué?",
+      "start": 111.6,
+      "end": 112.9,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Mmm,",
+          "start": 111.6,
+          "end": 111.9
+        },
+        {
+          "word_index": 2,
+          "text": "voy",
+          "start": 111.9,
+          "end": 112.0
+        },
+        {
+          "word_index": 3,
+          "text": "a",
+          "start": 112.0,
+          "end": 112.1
+        },
+        {
+          "word_index": 4,
+          "text": "180",
+          "start": 112.1,
+          "end": 112.2
+        },
+        {
+          "word_index": 5,
+          "text": "porque",
+          "start": 112.2,
+          "end": 112.4
+        },
+        {
+          "word_index": 6,
+          "text": "soy",
+          "start": 112.4,
+          "end": 112.5
+        },
+        {
+          "word_index": 7,
+          "text": "una",
+          "start": 112.5,
+          "end": 112.6
+        },
+        {
+          "word_index": 8,
+          "text": "racineta,",
+          "start": 112.6,
+          "end": 112.8
+        },
+        {
+          "word_index": 9,
+          "text": "¿qué,",
+          "start": 112.8,
+          "end": 112.8
+        },
+        {
+          "word_index": 10,
+          "text": "qué?",
+          "start": 112.8,
+          "end": 112.9
+        }
+      ]
+    },
+    {
+      "line_index": 41,
+      "text": "Te distrae' y yo te adelanto por la derecha, uh",
+      "start": 115.4,
+      "end": 116.9,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Te",
+          "start": 115.4,
+          "end": 115.7
+        },
+        {
+          "word_index": 2,
+          "text": "distrae'",
+          "start": 115.7,
+          "end": 116.0
+        },
+        {
+          "word_index": 3,
+          "text": "y",
+          "start": 116.0,
+          "end": 116.0
+        },
+        {
+          "word_index": 4,
+          "text": "yo",
+          "start": 116.0,
+          "end": 116.1
+        },
+        {
+          "word_index": 5,
+          "text": "te",
+          "start": 116.1,
+          "end": 116.2
+        },
+        {
+          "word_index": 6,
+          "text": "adelanto",
+          "start": 116.2,
+          "end": 116.6
+        },
+        {
+          "word_index": 7,
+          "text": "por",
+          "start": 116.6,
+          "end": 116.6
+        },
+        {
+          "word_index": 8,
+          "text": "la",
+          "start": 116.6,
+          "end": 116.7
+        },
+        {
+          "word_index": 9,
+          "text": "derecha,",
+          "start": 116.7,
+          "end": 116.8
+        },
+        {
+          "word_index": 10,
+          "text": "uh",
+          "start": 116.8,
+          "end": 116.9
+        }
+      ]
+    },
+    {
+      "line_index": 42,
+      "text": "Voy a 180 porque soy una racineta, ey, ey",
+      "start": 119.2,
+      "end": 121.4,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Voy",
+          "start": 119.2,
+          "end": 119.5
+        },
+        {
+          "word_index": 2,
+          "text": "a",
+          "start": 119.5,
+          "end": 119.6
+        },
+        {
+          "word_index": 3,
+          "text": "180",
+          "start": 119.6,
+          "end": 119.8
+        },
+        {
+          "word_index": 4,
+          "text": "porque",
+          "start": 119.8,
+          "end": 120.2
+        },
+        {
+          "word_index": 5,
+          "text": "soy",
+          "start": 120.2,
+          "end": 120.4
+        },
+        {
+          "word_index": 6,
+          "text": "una",
+          "start": 120.4,
+          "end": 120.6
+        },
+        {
+          "word_index": 7,
+          "text": "racineta,",
+          "start": 120.6,
+          "end": 121.1
+        },
+        {
+          "word_index": 8,
+          "text": "ey,",
+          "start": 121.1,
+          "end": 121.3
+        },
+        {
+          "word_index": 9,
+          "text": "ey",
+          "start": 121.3,
+          "end": 121.4
+        }
+      ]
+    },
+    {
+      "line_index": 43,
+      "text": "Te distrae' y yo te adelanto por la derecha, mmm, mmm, mmm",
+      "start": 122.8,
+      "end": 123.4,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Te",
+          "start": 122.8,
+          "end": 122.8
+        },
+        {
+          "word_index": 2,
+          "text": "distrae'",
+          "start": 122.8,
+          "end": 122.9
+        },
+        {
+          "word_index": 3,
+          "text": "y",
+          "start": 122.9,
+          "end": 123.0
+        },
+        {
+          "word_index": 4,
+          "text": "yo",
+          "start": 123.0,
+          "end": 123.0
+        },
+        {
+          "word_index": 5,
+          "text": "te",
+          "start": 123.0,
+          "end": 123.0
+        },
+        {
+          "word_index": 6,
+          "text": "adelanto",
+          "start": 123.0,
+          "end": 123.1
+        },
+        {
+          "word_index": 7,
+          "text": "por",
+          "start": 123.1,
+          "end": 123.2
+        },
+        {
+          "word_index": 8,
+          "text": "la",
+          "start": 123.2,
+          "end": 123.2
+        },
+        {
+          "word_index": 9,
+          "text": "derecha,",
+          "start": 123.2,
+          "end": 123.2
+        },
+        {
+          "word_index": 10,
+          "text": "mmm,",
+          "start": 123.2,
+          "end": 123.3
+        },
+        {
+          "word_index": 11,
+          "text": "mmm,",
+          "start": 123.3,
+          "end": 123.4
+        },
+        {
+          "word_index": 12,
+          "text": "mmm",
+          "start": 123.4,
+          "end": 123.4
+        }
+      ]
+    },
+    {
+      "line_index": 44,
+      "text": "Yeah-yeah-yeah-yeah-yeah-yeah",
+      "start": 126.6,
+      "end": 126.8,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Yeah-yeah-yeah-yeah-yeah-yeah",
+          "start": 126.6,
+          "end": 126.8
+        }
+      ]
+    },
+    {
+      "line_index": 45,
+      "text": "Ey",
+      "start": 128.6,
+      "end": 129.2,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Ey",
+          "start": 128.6,
+          "end": 129.2
+        }
+      ]
+    },
+    {
+      "line_index": 46,
+      "text": "Yeah-yeah-yeah-yeah",
+      "start": 130.0,
+      "end": 130.1,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Yeah-yeah-yeah-yeah",
+          "start": 130.0,
+          "end": 130.1
+        }
+      ]
+    },
+    {
+      "line_index": 47,
+      "text": "Chris Jedi",
+      "start": 132.2,
+      "end": 132.4,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Chris",
+          "start": 132.2,
+          "end": 132.3
+        },
+        {
+          "word_index": 2,
+          "text": "Jedi",
+          "start": 132.3,
+          "end": 132.4
+        }
+      ]
+    },
+    {
+      "line_index": 48,
+      "text": "Gaby, Gaby, Gaby",
+      "start": 133.9,
+      "end": 134.7,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Gaby,",
+          "start": 133.9,
+          "end": 134.3
+        },
+        {
+          "word_index": 2,
+          "text": "Gaby,",
+          "start": 134.3,
+          "end": 134.6
+        },
+        {
+          "word_index": 3,
+          "text": "Gaby",
+          "start": 134.6,
+          "end": 134.7
+        }
+      ]
+    },
+    {
+      "line_index": 49,
+      "text": "De Barcelona pa' Santo Domingo",
+      "start": 135.7,
+      "end": 138.3,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "De",
+          "start": 135.7,
+          "end": 136.0
+        },
+        {
+          "word_index": 2,
+          "text": "Barcelona",
+          "start": 136.0,
+          "end": 136.8
+        },
+        {
+          "word_index": 3,
+          "text": "pa'",
+          "start": 136.8,
+          "end": 137.2
+        },
+        {
+          "word_index": 4,
+          "text": "Santo",
+          "start": 137.2,
+          "end": 137.7
+        },
+        {
+          "word_index": 5,
+          "text": "Domingo",
+          "start": 137.7,
+          "end": 138.3
+        }
+      ]
+    },
+    {
+      "line_index": 50,
+      "text": "La ROSALÍA, mmm, jaja, je",
+      "start": 139.3,
+      "end": 140.9,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "La",
+          "start": 139.3,
+          "end": 139.6
+        },
+        {
+          "word_index": 2,
+          "text": "ROSALÍA,",
+          "start": 139.6,
+          "end": 140.1
+        },
+        {
+          "word_index": 3,
+          "text": "mmm,",
+          "start": 140.1,
+          "end": 140.4
+        },
+        {
+          "word_index": 4,
+          "text": "jaja,",
+          "start": 140.4,
+          "end": 140.8
+        },
+        {
+          "word_index": 5,
+          "text": "je",
+          "start": 140.8,
+          "end": 140.9
+        }
+      ]
+    },
+    {
+      "line_index": 51,
+      "text": "Jeje",
+      "start": 142.4,
+      "end": 142.5,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Jeje",
+          "start": 142.4,
+          "end": 142.5
+        }
+      ]
+    },
+    {
+      "line_index": 52,
+      "text": "Ey",
+      "start": 144.3,
+      "end": 144.7,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Ey",
+          "start": 144.3,
+          "end": 144.7
+        }
+      ]
+    },
+    {
+      "line_index": 53,
+      "text": "Uh, uh, uh, uh",
+      "start": 146.2,
+      "end": 147.3,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Uh,",
+          "start": 146.2,
+          "end": 146.5
+        },
+        {
+          "word_index": 2,
+          "text": "uh,",
+          "start": 146.5,
+          "end": 146.8
+        },
+        {
+          "word_index": 3,
+          "text": "uh,",
+          "start": 146.8,
+          "end": 147.1
+        },
+        {
+          "word_index": 4,
+          "text": "uh",
+          "start": 147.1,
+          "end": 147.3
+        }
+      ]
+    },
+    {
+      "line_index": 54,
+      "text": "Omega",
+      "start": 150.0,
+      "end": 150.1,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Omega",
+          "start": 150.0,
+          "end": 150.1
+        }
+      ]
+    },
+    {
+      "line_index": 55,
+      "text": "Ey, ey, ey",
+      "start": 151.2,
+      "end": 152.2,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Ey,",
+          "start": 151.2,
+          "end": 151.6
+        },
+        {
+          "word_index": 2,
+          "text": "ey,",
+          "start": 151.6,
+          "end": 152.0
+        },
+        {
+          "word_index": 3,
+          "text": "ey",
+          "start": 152.0,
+          "end": 152.2
+        }
+      ]
+    },
+    {
+      "line_index": 56,
+      "text": "Uh, uh, uh, uh",
+      "start": 153.8,
+      "end": 155.1,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Uh,",
+          "start": 153.8,
+          "end": 154.2
+        },
+        {
+          "word_index": 2,
+          "text": "uh,",
+          "start": 154.2,
+          "end": 154.5
+        },
+        {
+          "word_index": 3,
+          "text": "uh,",
+          "start": 154.5,
+          "end": 154.9
+        },
+        {
+          "word_index": 4,
+          "text": "uh",
+          "start": 154.9,
+          "end": 155.1
+        }
+      ]
+    }
+  ],
+  "karaoke_source_url": "https://www.youtube.com/watch?v=wvPZm3sCQh8",
+  "karaoke_video_path": ".cache/karaoke_bootstrap/rosalia-despecha/wvPZm3sCQh8/wvPZm3sCQh8.mp4",
+  "karaoke_line_windows": [
+    {
+      "line_index": 1,
+      "video_start": 17.0,
+      "video_end": 18.252
+    },
+    {
+      "line_index": 2,
+      "video_start": 18.252,
+      "video_end": 18.502
+    },
+    {
+      "line_index": 3,
+      "video_start": 19.566,
+      "video_end": 19.879
+    },
+    {
+      "line_index": 4,
+      "video_start": 20.943,
+      "video_end": 22.132
+    },
+    {
+      "line_index": 5,
+      "video_start": 22.445,
+      "video_end": 24.886
+    },
+    {
+      "line_index": 6,
+      "video_start": 24.886,
+      "video_end": 26.388
+    },
+    {
+      "line_index": 7,
+      "video_start": 27.139,
+      "video_end": 28.453
+    },
+    {
+      "line_index": 8,
+      "video_start": 29.392,
+      "video_end": 30.331
+    },
+    {
+      "line_index": 9,
+      "video_start": 31.645,
+      "video_end": 33.835
+    },
+    {
+      "line_index": 10,
+      "video_start": 33.898,
+      "video_end": 35.275
+    },
+    {
+      "line_index": 11,
+      "video_start": 36.339,
+      "video_end": 37.716
+    },
+    {
+      "line_index": 12,
+      "video_start": 38.467,
+      "video_end": 40.407
+    },
+    {
+      "line_index": 13,
+      "video_start": 40.907,
+      "video_end": 43.035
+    },
+    {
+      "line_index": 14,
+      "video_start": 43.223,
+      "video_end": 45.414
+    },
+    {
+      "line_index": 15,
+      "video_start": 45.664,
+      "video_end": 48.731
+    },
+    {
+      "line_index": 16,
+      "video_start": 48.731,
+      "video_end": 49.794
+    },
+    {
+      "line_index": 17,
+      "video_start": 49.794,
+      "video_end": 50.921
+    },
+    {
+      "line_index": 18,
+      "video_start": 50.984,
+      "video_end": 52.11
+    },
+    {
+      "line_index": 19,
+      "video_start": 52.173,
+      "video_end": 53.237
+    },
+    {
+      "line_index": 20,
+      "video_start": 53.237,
+      "video_end": 54.301
+    },
+    {
+      "line_index": 21,
+      "video_start": 54.488,
+      "video_end": 55.677
+    },
+    {
+      "line_index": 22,
+      "video_start": 55.74,
+      "video_end": 56.867
+    },
+    {
+      "line_index": 23,
+      "video_start": 56.867,
+      "video_end": 57.68
+    },
+    {
+      "line_index": 24,
+      "video_start": 57.743,
+      "video_end": 58.744
+    },
+    {
+      "line_index": 25,
+      "video_start": 58.744,
+      "video_end": 58.869
+    },
+    {
+      "line_index": 26,
+      "video_start": 59.808,
+      "video_end": 60.747
+    },
+    {
+      "line_index": 27,
+      "video_start": 61.06,
+      "video_end": 62.061
+    },
+    {
+      "line_index": 28,
+      "video_start": 62.124,
+      "video_end": 63.313
+    },
+    {
+      "line_index": 29,
+      "video_start": 63.375,
+      "video_end": 64.377
+    },
+    {
+      "line_index": 30,
+      "video_start": 64.439,
+      "video_end": 64.69
+    },
+    {
+      "line_index": 31,
+      "video_start": 65.566,
+      "video_end": 66.317
+    },
+    {
+      "line_index": 32,
+      "video_start": 66.317,
+      "video_end": 67.443
+    },
+    {
+      "line_index": 33,
+      "video_start": 68.507,
+      "video_end": 70.573
+    },
+    {
+      "line_index": 34,
+      "video_start": 70.823,
+      "video_end": 72.2
+    },
+    {
+      "line_index": 35,
+      "video_start": 73.264,
+      "video_end": 74.641
+    },
+    {
+      "line_index": 36,
+      "video_start": 75.579,
+      "video_end": 77.77
+    },
+    {
+      "line_index": 37,
+      "video_start": 77.77,
+      "video_end": 79.022
+    },
+    {
+      "line_index": 38,
+      "video_start": 80.336,
+      "video_end": 81.963
+    },
+    {
+      "line_index": 39,
+      "video_start": 82.589,
+      "video_end": 83.653
+    },
+    {
+      "line_index": 40,
+      "video_start": 85.656,
+      "video_end": 86.469
+    },
+    {
+      "line_index": 41,
+      "video_start": 88.034,
+      "video_end": 88.973
+    },
+    {
+      "line_index": 42,
+      "video_start": 90.412,
+      "video_end": 91.789
+    },
+    {
+      "line_index": 43,
+      "video_start": 92.79,
+      "video_end": 93.041
+    },
+    {
+      "line_index": 44,
+      "video_start": 95.043,
+      "video_end": 95.168
+    },
+    {
+      "line_index": 45,
+      "video_start": 96.295,
+      "video_end": 96.671
+    },
+    {
+      "line_index": 46,
+      "video_start": 97.171,
+      "video_end": 97.271
+    },
+    {
+      "line_index": 47,
+      "video_start": 98.548,
+      "video_end": 98.673
+    },
+    {
+      "line_index": 48,
+      "video_start": 99.612,
+      "video_end": 100.113
+    },
+    {
+      "line_index": 49,
+      "video_start": 100.739,
+      "video_end": 102.366
+    },
+    {
+      "line_index": 50,
+      "video_start": 102.992,
+      "video_end": 103.993
+    },
+    {
+      "line_index": 51,
+      "video_start": 104.932,
+      "video_end": 105.032
+    },
+    {
+      "line_index": 52,
+      "video_start": 106.121,
+      "video_end": 106.371
+    },
+    {
+      "line_index": 53,
+      "video_start": 107.31,
+      "video_end": 107.998
+    },
+    {
+      "line_index": 54,
+      "video_start": 109.688,
+      "video_end": 109.788
+    },
+    {
+      "line_index": 55,
+      "video_start": 110.439,
+      "video_end": 111.065
+    },
+    {
+      "line_index": 56,
+      "video_start": 112.066,
+      "video_end": 112.88
+    }
+  ],
+  "karaoke_timing_method": "visual_highlight_progress"
+}

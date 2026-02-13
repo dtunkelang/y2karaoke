@@ -173,6 +173,44 @@ def test_fetch_lyrics_multi_source_impl_reuses_cached_on_refetch_failure():
     assert set_calls
 
 
+def test_fetch_lyrics_multi_source_impl_offline_reuses_cached_mismatch():
+    logger = _DummyLogger()
+
+    class State:
+        lrc_cache = {
+            ("billie eilish", "bad guy"): (
+                "[00:00]Hi",
+                True,
+                "cached",
+                195,
+            )
+        }
+        disk_cache = {}
+        warning_once_keys = set()
+
+    result = fetch_lyrics_multi_source_impl(
+        "bad guy",
+        "Billie Eilish",
+        synced_only=True,
+        enhanced=False,
+        target_duration=220,
+        duration_tolerance=8,
+        offline=True,
+        runtime_state=State(),
+        disk_cache_enabled_fn=lambda _s: False,
+        load_disk_cache_fn=lambda _s: None,
+        is_lyriq_available_fn=lambda _s: False,
+        fetch_from_lyriq_fn=lambda *_a, **_k: None,
+        has_timestamps_fn=lambda *_a, **_k: False,
+        get_lrc_duration_fn=lambda *_a, **_k: None,
+        set_lrc_cache_fn=lambda *_a, **_k: None,
+        is_syncedlyrics_available_fn=lambda _s: True,
+        search_with_state_fallback_fn=lambda *_a, **_k: (None, ""),
+        logger=logger,
+    )
+    assert result == ("[00:00]Hi", True, "cached")
+
+
 def test_fetch_lyrics_multi_source_impl_logs_not_found_once_per_state():
     logger = _CollectingLogger()
 

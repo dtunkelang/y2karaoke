@@ -1,6 +1,6 @@
 import pytest
 
-from y2karaoke.core.components.lyrics import api as lyrics
+from y2karaoke.core.components.lyrics import api as lyrics  # noqa: F401
 from y2karaoke.core.components.lyrics import helpers as lh
 from y2karaoke.core import lyrics_whisper as lw
 from y2karaoke.core.models import Line, Word, SongMetadata

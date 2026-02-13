@@ -133,7 +133,9 @@ def _flatten_words_from_timing_doc(doc: dict[str, Any]) -> list[dict[str, Any]]:
     return words
 
 
-def _gold_path_for_song(index: int, song: BenchmarkSong, gold_root: Path) -> Path | None:
+def _gold_path_for_song(
+    index: int, song: BenchmarkSong, gold_root: Path
+) -> Path | None:
     candidates = [
         gold_root / f"{index:02d}_{song.slug}.gold.json",
         gold_root / f"{song.slug}.gold.json",
@@ -144,7 +146,9 @@ def _gold_path_for_song(index: int, song: BenchmarkSong, gold_root: Path) -> Pat
     return None
 
 
-def _load_gold_doc(index: int, song: BenchmarkSong, gold_root: Path) -> dict[str, Any] | None:
+def _load_gold_doc(
+    index: int, song: BenchmarkSong, gold_root: Path
+) -> dict[str, Any] | None:
     gold_path = _gold_path_for_song(index=index, song=song, gold_root=gold_root)
     if gold_path is None:
         return None
@@ -227,7 +231,9 @@ def _extract_song_metrics(
         for v in agreement_start_abs_deltas
         if agreement_good_start_sec < v <= agreement_warn_start_sec
     ]
-    agreement_bad_lines = [v for v in agreement_start_abs_deltas if v > agreement_warn_start_sec]
+    agreement_bad_lines = [
+        v for v in agreement_start_abs_deltas if v > agreement_warn_start_sec
+    ]
     agreement_severe_lines = [v for v in agreement_start_abs_deltas if v > 1.5]
 
     low_conf_ratio = (len(low_conf) / line_count) if line_count else 0.0
@@ -314,7 +320,7 @@ def _extract_song_metrics(
     return metrics
 
 
-def _aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:
+def _aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:  # noqa: C901
     succeeded = [r for r in results if r["status"] == "ok"]
     failed = [r for r in results if r["status"] != "ok"]
     metrics = [r.get("metrics", {}) for r in succeeded]
@@ -383,7 +389,9 @@ def _aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:
     ]
     gold_metric_song_count = len(gold_measured_songs)
     gold_word_count_total = int(sum(metric_values("gold_word_count")))
-    gold_comparable_word_count_total = int(sum(metric_values("gold_comparable_word_count")))
+    gold_comparable_word_count_total = int(
+        sum(metric_values("gold_comparable_word_count"))
+    )
     gold_word_coverage_ratio_total = (
         (gold_comparable_word_count_total / gold_word_count_total)
         if gold_word_count_total
@@ -405,7 +413,9 @@ def _aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:
         for phase_name, raw_val in phase_map.items():
             if not isinstance(raw_val, (int, float)):
                 continue
-            phase_totals[phase_name] = phase_totals.get(phase_name, 0.0) + float(raw_val)
+            phase_totals[phase_name] = phase_totals.get(phase_name, 0.0) + float(
+                raw_val
+            )
     phase_totals = {k: round(v, 2) for k, v in sorted(phase_totals.items())}
     phase_shares = (
         {k: round(v / sum_song_elapsed, 4) for k, v in phase_totals.items()}
@@ -431,9 +441,11 @@ def _aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:
                 {
                     "song": f"{r['artist']} - {r['title']}",
                     "value": round(float(value), 4),
-                    "line_count": int(m.get("line_count", 0))
-                    if isinstance(m.get("line_count"), (int, float))
-                    else 0,
+                    "line_count": (
+                        int(m.get("line_count", 0))
+                        if isinstance(m.get("line_count"), (int, float))
+                        else 0
+                    ),
                 }
             )
         rows.sort(key=lambda row: float(row["value"]), reverse=reverse)
@@ -583,7 +595,9 @@ def _aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:
         "songs_without_dtw_metrics": [
             f"{r['artist']} - {r['title']}"
             for r in succeeded
-            if not isinstance(r.get("metrics", {}).get("dtw_line_coverage"), (int, float))
+            if not isinstance(
+                r.get("metrics", {}).get("dtw_line_coverage"), (int, float)
+            )
         ],
         "songs_without_gold_metrics": [
             f"{r['artist']} - {r['title']}"
@@ -658,17 +672,13 @@ def _quality_coverage_warnings(
             "LRC-Whisper agreement coverage is low: "
             f"{agreement_cov:.3f} < 0.400 (not enough lexically comparable lines)"
         )
-    agreement_p95 = float(
-        aggregate.get("agreement_start_p95_abs_sec_mean", 0.0) or 0.0
-    )
+    agreement_p95 = float(aggregate.get("agreement_start_p95_abs_sec_mean", 0.0) or 0.0)
     if agreement_p95 > 0.8:
         warnings.append(
             "Line-start agreement p95 is high on comparable lines: "
             f"{agreement_p95:.3f}s > 0.800s"
         )
-    agreement_bad_ratio = float(
-        aggregate.get("agreement_bad_ratio_total", 0.0) or 0.0
-    )
+    agreement_bad_ratio = float(aggregate.get("agreement_bad_ratio_total", 0.0) or 0.0)
     if agreement_bad_ratio > 0.1:
         warnings.append(
             "Too many comparable lines have poor start agreement (>0.8s): "
@@ -684,21 +694,23 @@ def _quality_coverage_warnings(
         )
     gold_metric_song_count = int(aggregate.get("gold_metric_song_count", 0) or 0)
     if gold_metric_song_count > 0:
-        gold_song_cov = float(aggregate.get("gold_metric_song_coverage_ratio", 0.0) or 0.0)
+        gold_song_cov = float(
+            aggregate.get("gold_metric_song_coverage_ratio", 0.0) or 0.0
+        )
         if gold_song_cov < 0.5:
             warnings.append(
-                "Gold-set metric song coverage is low: "
-                f"{gold_song_cov:.3f} < 0.500"
+                "Gold-set metric song coverage is low: " f"{gold_song_cov:.3f} < 0.500"
             )
-        gold_word_cov = float(aggregate.get("gold_word_coverage_ratio_total", 0.0) or 0.0)
+        gold_word_cov = float(
+            aggregate.get("gold_word_coverage_ratio_total", 0.0) or 0.0
+        )
         if gold_word_cov < 0.8:
             warnings.append(
                 "Gold-set comparable word coverage is low: "
                 f"{gold_word_cov:.3f} < 0.800"
             )
         gold_start_mean = float(
-            aggregate.get("avg_abs_word_start_delta_sec_word_weighted_mean", 0.0)
-            or 0.0
+            aggregate.get("avg_abs_word_start_delta_sec_word_weighted_mean", 0.0) or 0.0
         )
         if gold_start_mean > 0.35:
             warnings.append(
@@ -784,7 +796,7 @@ def _cache_expectation_warnings(
     return warnings
 
 
-def _write_markdown_summary(
+def _write_markdown_summary(  # noqa: C901
     path: Path,
     *,
     run_id: str,
@@ -883,7 +895,7 @@ def _write_markdown_summary(
     lines.append("## Per-song")
     lines.append("")
     lines.append(
-        "| Song | Status | Gold words | Gold cov | Word start abs mean | Word start p95 | Word end abs mean | Alignment | DTW line | DTW word | Elapsed |"
+        "| Song | Status | Gold words | Gold cov | Word start abs mean | Word start p95 | Word end abs mean | Alignment | DTW line | DTW word | Elapsed |"  # noqa: E501
     )
     lines.append("|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|")
     for song in songs:
@@ -1858,7 +1870,7 @@ def _run_song_command(
     return record
 
 
-def main() -> int:
+def main() -> int:  # noqa: C901
     args = _parse_args()
     if not 0.0 <= args.min_dtw_song_coverage_ratio <= 1.0:
         raise ValueError("--min-dtw-song-coverage-ratio must be between 0 and 1")

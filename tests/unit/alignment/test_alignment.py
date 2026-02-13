@@ -1,8 +1,7 @@
 """Tests for alignment.py - audio analysis and timing adjustment (focused)."""
 
 import numpy as np
-import pytest
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 
 from y2karaoke.core.components.alignment.alignment import (
     detect_audio_silence_regions,
@@ -179,24 +178,24 @@ def test_calculate_adjustments_no_match_logs_debug():
 
 class TestDurationsWithinTolerance:
     def test_within_tolerance_returns_true(self):
-        assert _durations_within_tolerance(100, 105, tolerance=10) == True
-        assert _durations_within_tolerance(100, 95, tolerance=10) == True
+        assert _durations_within_tolerance(100, 105, tolerance=10)
+        assert _durations_within_tolerance(100, 95, tolerance=10)
 
     def test_outside_tolerance_returns_false(self):
-        assert _durations_within_tolerance(100, 120, tolerance=10) == False
-        assert _durations_within_tolerance(100, 80, tolerance=10) == False
+        assert not _durations_within_tolerance(100, 120, tolerance=10)
+        assert not _durations_within_tolerance(100, 80, tolerance=10)
 
     def test_none_values_return_false(self):
-        assert _durations_within_tolerance(None, 100, tolerance=10) == False
-        assert _durations_within_tolerance(100, None, tolerance=10) == False
-        assert _durations_within_tolerance(None, None, tolerance=10) == False
+        assert not _durations_within_tolerance(None, 100, tolerance=10)
+        assert not _durations_within_tolerance(100, None, tolerance=10)
+        assert not _durations_within_tolerance(None, None, tolerance=10)
 
     def test_exact_match(self):
-        assert _durations_within_tolerance(100, 100, tolerance=10) == True
+        assert _durations_within_tolerance(100, 100, tolerance=10)
 
     def test_zero_tolerance(self):
-        assert _durations_within_tolerance(100, 100, tolerance=0) == True
-        assert _durations_within_tolerance(100, 101, tolerance=0) == False
+        assert _durations_within_tolerance(100, 100, tolerance=0)
+        assert not _durations_within_tolerance(100, 101, tolerance=0)
 
 
 class TestApplyAdjustmentsToLines:

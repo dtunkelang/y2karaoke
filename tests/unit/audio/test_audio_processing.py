@@ -1,7 +1,7 @@
 """Tests for audio processing modules (audio_effects and alignment)."""
 
 import pytest
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 import numpy as np
 import tempfile
 import os

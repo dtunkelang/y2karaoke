@@ -1,6 +1,6 @@
 """Tests for text utility functions."""
 
-import pytest
+import pytest  # noqa: F401
 from y2karaoke.core.text_utils import (
     make_slug,
     clean_title_for_search,

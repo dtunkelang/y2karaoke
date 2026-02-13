@@ -2,13 +2,10 @@
 
 import pytest
 import numpy as np
-from dataclasses import dataclass
-from unittest.mock import patch, MagicMock
 
 from y2karaoke.core.components.render.backgrounds import (
     BackgroundSegment,
     BackgroundProcessor,
-    create_background_segments,
 )
 from y2karaoke.config import VIDEO_WIDTH, VIDEO_HEIGHT
 
@@ -114,13 +111,13 @@ class TestBackgroundProcessor:
         """Bright frames should be considered valid."""
         processor = BackgroundProcessor()
         bright_frame = np.ones((100, 100, 3), dtype=np.uint8) * 200
-        assert processor._is_valid_frame(bright_frame) == True
+        assert processor._is_valid_frame(bright_frame)
 
     def test_is_valid_frame_dark_frame(self):
         """Very dark frames should be considered invalid."""
         processor = BackgroundProcessor()
         dark_frame = np.zeros((100, 100, 3), dtype=np.uint8)
-        assert processor._is_valid_frame(dark_frame, min_brightness=20) == False
+        assert not processor._is_valid_frame(dark_frame, min_brightness=20)
 
     def test_is_valid_frame_threshold(self):
         """Frame validity should respect brightness threshold."""
@@ -128,11 +125,11 @@ class TestBackgroundProcessor:
 
         # Frame just below threshold
         dim_frame = np.ones((100, 100, 3), dtype=np.uint8) * 15
-        assert processor._is_valid_frame(dim_frame, min_brightness=20) == False
+        assert not processor._is_valid_frame(dim_frame, min_brightness=20)
 
         # Frame at threshold
         threshold_frame = np.ones((100, 100, 3), dtype=np.uint8) * 20
-        assert processor._is_valid_frame(threshold_frame, min_brightness=20) == True
+        assert processor._is_valid_frame(threshold_frame, min_brightness=20)
 
 
 class TestBackgroundProcessorIntegration:

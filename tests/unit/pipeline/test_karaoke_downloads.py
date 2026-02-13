@@ -1,4 +1,4 @@
-from pathlib import Path
+from pathlib import Path  # noqa: F401
 from unittest.mock import MagicMock
 
 from y2karaoke.core.karaoke import KaraokeGenerator

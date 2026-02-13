@@ -21,3 +21,8 @@ Refactor notes:
   - `lyrics_whisper_pipeline.py`
   - `sync_pipeline.py`
 - Main modules preserve compatibility wrappers and hook seams used by tests.
+
+Recent Improvements:
+- **Auto-Offset Safety:** Reduced the default auto-offset clamp from 30s to 5s. This prevents applying dangerously large offsets automatically when vocal detection peaks are ambiguous.
+- **Offline Reliability:** Enhanced offline mode to attempt resolution from local caches even when network providers are unavailable or disabled.
+- **Quality Reporting:** Improved tracking of large timing deltas and duration mismatches in the quality reports.

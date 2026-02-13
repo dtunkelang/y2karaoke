@@ -228,6 +228,24 @@ Then open `http://127.0.0.1:8765`.
 
 See `docs/gold_timing_editor.md` for schema and workflow details.
 
+## Karaoke bootstrap tool
+
+To auto-seed/refine word timings from a karaoke YouTube version (visual-only):
+
+```bash
+./venv/bin/python tools/bootstrap_gold_from_karaoke.py \
+  --artist "Billie Eilish" \
+  --title "bad guy" \
+  --gold-in benchmarks/gold_set/02_billie-eilish-bad-guy.gold.json \
+  --lrc-in /absolute/path/to/bad-guy.lrc \
+  --output benchmarks/gold_set/02_billie-eilish-bad-guy.karaoke-seed.gold.json \
+  --show-candidates
+```
+
+- If `--candidate-url` is omitted, the tool picks the highest-scoring karaoke search result.
+- Line starts from `--lrc-in` are treated as hard anchors.
+- The tool detects line windows from karaoke frames via OCR and infers word timing from lyric highlight progress in those windows (no audio transcription).
+
 Preferred local workflow:
 
 ```bash

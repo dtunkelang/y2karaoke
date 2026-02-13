@@ -1,8 +1,8 @@
 """Tests for audio_utils.py module."""
 
 import pytest
-from pathlib import Path
-from unittest.mock import Mock, patch, MagicMock
+from pathlib import Path  # noqa: F401
+from unittest.mock import Mock, patch, MagicMock  # noqa: F401
 from y2karaoke.core.components.audio.audio_utils import (
     trim_audio_if_needed,
     apply_audio_effects,
@@ -299,7 +299,7 @@ class TestSeparateVocals:
             "instrumental_path": "/instrumental.wav",
         }
 
-        result = separate_vocals(
+        _result = separate_vocals(  # noqa: F841
             "/audio.wav", "video123", mock_separator, mock_cache, force=True
         )
 

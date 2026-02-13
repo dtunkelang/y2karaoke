@@ -10,8 +10,11 @@ sys.path.insert(0, str(src_path))
 
 try:
     import click
-    from y2karaoke.utils.validation import validate_youtube_url, sanitize_filename
-    from y2karaoke.utils.logging import setup_logging, get_logger
+    from y2karaoke.utils.validation import (  # noqa: F401
+        validate_youtube_url,
+        sanitize_filename,
+    )  # noqa: F401
+    from y2karaoke.utils.logging import setup_logging, get_logger  # noqa: F401
     from y2karaoke.config import get_cache_dir
 
     @click.command()

@@ -24,6 +24,7 @@ requires-python = ">=3.12"
 dependencies = [
     "yt-dlp>=2024.0.0",
     "scenedetect[opencv]>=0.6.0",
+    "opencv-python>=4.8.0",
     "audio-separator>=0.17.0",
     "onnxruntime>=1.16.0",
     "syncedlyrics>=0.10.0",
@@ -39,6 +40,7 @@ dependencies = [
     "soundfile>=0.12.0",
     "requests>=2.31.0",
     "beautifulsoup4>=4.12.0",
+    "pytesseract>=0.3.10",
     "click>=8.0.0",
     "musicbrainzngs>=0.7.1",
 ]

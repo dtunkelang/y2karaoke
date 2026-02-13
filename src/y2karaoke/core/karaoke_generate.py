@@ -125,7 +125,10 @@ def generate_karaoke(
         lyrics_result["lines"], tempo_multiplier
     )
     scaled_lines = generator._apply_break_edits(scaled_lines, break_edits)
-    scaled_lines = generator._apply_splash_offset(scaled_lines, min_start=3.5)
+    splash_min_start = 0.5 if whisper_map_lrc_dtw else 3.5
+    scaled_lines = generator._apply_splash_offset(
+        scaled_lines, min_start=splash_min_start
+    )
     scaled_lines = fix_line_order(scaled_lines)
     validate_line_order(scaled_lines)
 

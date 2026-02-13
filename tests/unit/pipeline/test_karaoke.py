@@ -2,11 +2,11 @@
 
 import pytest
 from unittest.mock import MagicMock
-from pathlib import Path
+from pathlib import Path  # noqa: F401
 
 from y2karaoke.core.karaoke import KaraokeGenerator
 from y2karaoke.core.models import Word, Line
-from y2karaoke.exceptions import DownloadError
+from y2karaoke.exceptions import DownloadError  # noqa: F401
 
 
 class TestKaraokeGenerator:

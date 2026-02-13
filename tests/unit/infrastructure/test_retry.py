@@ -1,8 +1,8 @@
 """Tests for retry utilities with exponential backoff."""
 
 import pytest
-from unittest.mock import patch, MagicMock
-import time
+from unittest.mock import patch, MagicMock  # noqa: F401
+import time  # noqa: F401
 
 from y2karaoke.utils.retry import (
     retry_with_backoff,
@@ -151,7 +151,7 @@ class TestRetryManager:
     def test_success_no_retry(self):
         """Context manager with no errors doesn't retry."""
         attempt_count = 0
-        with RetryManager("test_op", max_retries=3) as rm:
+        with RetryManager("test_op", max_retries=3) as _rm:  # noqa: F841
             attempt_count += 1
         assert attempt_count == 1
 

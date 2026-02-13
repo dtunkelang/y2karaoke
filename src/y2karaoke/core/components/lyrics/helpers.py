@@ -153,7 +153,7 @@ def _detect_and_apply_offset(
         f"LRC_start={first_lrc_time:.2f}s, delta={delta:+.2f}s"
     )
 
-    AUTO_OFFSET_MAX_ABS_SEC = 30.0
+    AUTO_OFFSET_MAX_ABS_SEC = 5.0
 
     offset = 0.0
     if lyrics_offset is not None:
@@ -166,7 +166,12 @@ def _detect_and_apply_offset(
         offset = delta
         logger.info(f"Auto-applying vocal offset: {offset:+.2f}s")
     elif abs(delta) > AUTO_OFFSET_MAX_ABS_SEC:
-        logger.warning(f"Large timing delta ({delta:+.2f}s) - not auto-applying.")
+        logger.warning(
+            "Large timing delta (%+.2fs) exceeds auto-offset clamp (%.1fs) - "
+            "not auto-applying.",
+            delta,
+            AUTO_OFFSET_MAX_ABS_SEC,
+        )
 
     if offset != 0.0:
         line_timings = [(ts + offset, text) for ts, text in line_timings]

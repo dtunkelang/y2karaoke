@@ -1,8 +1,8 @@
 """Tests for instrumental break shortening module."""
 
 import pytest
-from unittest.mock import patch, MagicMock
-import numpy as np
+from unittest.mock import patch, MagicMock  # noqa: F401
+import numpy as np  # noqa: F401
 
 from y2karaoke.core.break_shortener import (
     InstrumentalBreak,

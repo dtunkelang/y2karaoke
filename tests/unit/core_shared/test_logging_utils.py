@@ -1,5 +1,5 @@
 import logging
-from pathlib import Path
+from pathlib import Path  # noqa: F401
 
 from y2karaoke.utils.logging import setup_logging, get_logger
 

@@ -8,12 +8,12 @@ from pathlib import Path
 src_path = Path(__file__).parent / "src"
 sys.path.insert(0, str(src_path))
 
-from y2karaoke.core.components.audio.downloader import (
+from y2karaoke.core.components.audio.downloader import (  # noqa: E402
     YouTubeDownloader,
     extract_video_id,
 )
-from y2karaoke.utils.cache import CacheManager
-from y2karaoke.utils.logging import setup_logging
+from y2karaoke.utils.cache import CacheManager  # noqa: E402
+from y2karaoke.utils.logging import setup_logging  # noqa: E402
 
 
 def test_end_to_end():
@@ -39,7 +39,7 @@ def test_end_to_end():
 
         # Test 3: Download (using cached if available)
         logger.info("🧪 Testing download...")
-        downloader = YouTubeDownloader()
+        _downloader = YouTubeDownloader()  # noqa: F841
 
         # Check if already cached
         metadata = cache.load_metadata(video_id)
@@ -51,7 +51,7 @@ def test_end_to_end():
 
         # Test 4: File operations
         logger.info("🧪 Testing file operations...")
-        cache_dir = cache.get_video_cache_dir(video_id)
+        _cache_dir = cache.get_video_cache_dir(video_id)  # noqa: F841
         audio_files = cache.find_files(video_id, "*.wav")
 
         if audio_files:

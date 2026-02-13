@@ -1,6 +1,6 @@
 """Comprehensive tests for lyrics processing, including LRC parsing, line splitting, and romanization."""
 
-import pytest
+import pytest  # noqa: F401
 from y2karaoke.core.components.lyrics.api import (
     Word,
     Line,
@@ -125,7 +125,7 @@ class TestSplitLongLines:
         ]
         line = Line(words=words)
         result = split_long_lines([line])
-        all_words = [w for l in result for w in l.words]
+        all_words = [w for line in result for w in line.words]
         assert all_words[0].start_time == 0.0
         assert all_words[0].text == "hello"
 

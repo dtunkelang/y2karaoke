@@ -2,7 +2,7 @@
 
 import pytest
 from pathlib import Path
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import Mock, patch, MagicMock  # noqa: F401
 from y2karaoke.core.components.audio.downloader import (
     YouTubeDownloader,
     download_audio,

@@ -1,0 +1,3205 @@
+{
+  "schema_version": "1.0",
+  "title": "Believer",
+  "artist": "Imagine Dragons",
+  "audio_path": "",
+  "source_timing_path": "/Users/dtunkelang/y2karaoke/benchmarks/gold_set/08_imagine-dragons-believer.gold.json",
+  "lines": [
+    {
+      "line_index": 1,
+      "text": "First things first",
+      "start": 0.5,
+      "end": 2.5,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "First",
+          "start": 0.5,
+          "end": 2.4
+        },
+        {
+          "word_index": 2,
+          "text": "things",
+          "start": 2.4,
+          "end": 2.4
+        },
+        {
+          "word_index": 3,
+          "text": "first",
+          "start": 2.4,
+          "end": 2.5
+        }
+      ]
+    },
+    {
+      "line_index": 2,
+      "text": "I'ma say all the words inside my head",
+      "start": 2.7,
+      "end": 4.5,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "I'ma",
+          "start": 2.7,
+          "end": 3.0
+        },
+        {
+          "word_index": 2,
+          "text": "say",
+          "start": 3.0,
+          "end": 3.0
+        },
+        {
+          "word_index": 3,
+          "text": "all",
+          "start": 3.0,
+          "end": 3.1
+        },
+        {
+          "word_index": 4,
+          "text": "the",
+          "start": 3.1,
+          "end": 3.2
+        },
+        {
+          "word_index": 5,
+          "text": "words",
+          "start": 3.2,
+          "end": 3.4
+        },
+        {
+          "word_index": 6,
+          "text": "inside",
+          "start": 3.4,
+          "end": 3.8
+        },
+        {
+          "word_index": 7,
+          "text": "my",
+          "start": 3.8,
+          "end": 4.1
+        },
+        {
+          "word_index": 8,
+          "text": "head",
+          "start": 4.1,
+          "end": 4.5
+        }
+      ]
+    },
+    {
+      "line_index": 3,
+      "text": "I'm fired up and tired of the way that things have been, oh-ooh",
+      "start": 5.0,
+      "end": 7.9,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "I'm",
+          "start": 5.0,
+          "end": 5.1
+        },
+        {
+          "word_index": 2,
+          "text": "fired",
+          "start": 5.1,
+          "end": 5.2
+        },
+        {
+          "word_index": 3,
+          "text": "up",
+          "start": 5.2,
+          "end": 5.3
+        },
+        {
+          "word_index": 4,
+          "text": "and",
+          "start": 5.3,
+          "end": 5.3
+        },
+        {
+          "word_index": 5,
+          "text": "tired",
+          "start": 5.3,
+          "end": 5.4
+        },
+        {
+          "word_index": 6,
+          "text": "of",
+          "start": 5.4,
+          "end": 5.4
+        },
+        {
+          "word_index": 7,
+          "text": "the",
+          "start": 5.4,
+          "end": 5.5
+        },
+        {
+          "word_index": 8,
+          "text": "way",
+          "start": 5.5,
+          "end": 5.5
+        },
+        {
+          "word_index": 9,
+          "text": "that",
+          "start": 5.5,
+          "end": 5.6
+        },
+        {
+          "word_index": 10,
+          "text": "things",
+          "start": 5.6,
+          "end": 5.6
+        },
+        {
+          "word_index": 11,
+          "text": "have",
+          "start": 5.6,
+          "end": 6.3
+        },
+        {
+          "word_index": 12,
+          "text": "been,",
+          "start": 6.4,
+          "end": 7.7
+        },
+        {
+          "word_index": 13,
+          "text": "oh-ooh",
+          "start": 7.7,
+          "end": 7.9
+        }
+      ]
+    },
+    {
+      "line_index": 4,
+      "text": "The way that things have been, oh-ooh",
+      "start": 8.8,
+      "end": 11.0,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "The",
+          "start": 8.8,
+          "end": 10.0
+        },
+        {
+          "word_index": 2,
+          "text": "way",
+          "start": 10.0,
+          "end": 10.3
+        },
+        {
+          "word_index": 3,
+          "text": "that",
+          "start": 10.3,
+          "end": 10.5
+        },
+        {
+          "word_index": 4,
+          "text": "things",
+          "start": 10.5,
+          "end": 10.8
+        },
+        {
+          "word_index": 5,
+          "text": "have",
+          "start": 10.8,
+          "end": 10.9
+        },
+        {
+          "word_index": 6,
+          "text": "been,",
+          "start": 10.9,
+          "end": 11.0
+        },
+        {
+          "word_index": 7,
+          "text": "oh-ooh",
+          "start": 11.0,
+          "end": 11.0
+        }
+      ]
+    },
+    {
+      "line_index": 5,
+      "text": "Second thing second",
+      "start": 11.1,
+      "end": 12.8,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Second",
+          "start": 11.1,
+          "end": 11.5
+        },
+        {
+          "word_index": 2,
+          "text": "thing",
+          "start": 11.5,
+          "end": 12.2
+        },
+        {
+          "word_index": 3,
+          "text": "second",
+          "start": 12.2,
+          "end": 12.8
+        }
+      ]
+    },
+    {
+      "line_index": 6,
+      "text": "Don't you tell me what you think that I could be",
+      "start": 13.3,
+      "end": 16.1,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Don't",
+          "start": 13.3,
+          "end": 14.1
+        },
+        {
+          "word_index": 2,
+          "text": "you",
+          "start": 14.1,
+          "end": 14.3
+        },
+        {
+          "word_index": 3,
+          "text": "tell",
+          "start": 14.3,
+          "end": 14.6
+        },
+        {
+          "word_index": 4,
+          "text": "me",
+          "start": 14.6,
+          "end": 14.7
+        },
+        {
+          "word_index": 5,
+          "text": "what",
+          "start": 14.7,
+          "end": 14.8
+        },
+        {
+          "word_index": 6,
+          "text": "you",
+          "start": 14.8,
+          "end": 14.8
+        },
+        {
+          "word_index": 7,
+          "text": "think",
+          "start": 14.8,
+          "end": 15.0
+        },
+        {
+          "word_index": 8,
+          "text": "that",
+          "start": 15.0,
+          "end": 15.2
+        },
+        {
+          "word_index": 9,
+          "text": "I",
+          "start": 15.2,
+          "end": 15.3
+        },
+        {
+          "word_index": 10,
+          "text": "could",
+          "start": 15.3,
+          "end": 15.8
+        },
+        {
+          "word_index": 11,
+          "text": "be",
+          "start": 15.8,
+          "end": 16.1
+        }
+      ]
+    },
+    {
+      "line_index": 7,
+      "text": "I'm the one at the sail, I'm the master of my sea, oh-ooh",
+      "start": 16.3,
+      "end": 18.4,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "I'm",
+          "start": 16.3,
+          "end": 17.5
+        },
+        {
+          "word_index": 2,
+          "text": "the",
+          "start": 17.5,
+          "end": 17.7
+        },
+        {
+          "word_index": 3,
+          "text": "one",
+          "start": 17.7,
+          "end": 17.8
+        },
+        {
+          "word_index": 4,
+          "text": "at",
+          "start": 17.8,
+          "end": 17.9
+        },
+        {
+          "word_index": 5,
+          "text": "the",
+          "start": 17.9,
+          "end": 17.9
+        },
+        {
+          "word_index": 6,
+          "text": "sail,",
+          "start": 17.9,
+          "end": 18.0
+        },
+        {
+          "word_index": 7,
+          "text": "I'm",
+          "start": 18.0,
+          "end": 18.0
+        },
+        {
+          "word_index": 8,
+          "text": "the",
+          "start": 18.0,
+          "end": 18.1
+        },
+        {
+          "word_index": 9,
+          "text": "master",
+          "start": 18.1,
+          "end": 18.2
+        },
+        {
+          "word_index": 10,
+          "text": "of",
+          "start": 18.2,
+          "end": 18.2
+        },
+        {
+          "word_index": 11,
+          "text": "my",
+          "start": 18.2,
+          "end": 18.3
+        },
+        {
+          "word_index": 12,
+          "text": "sea,",
+          "start": 18.3,
+          "end": 18.4
+        },
+        {
+          "word_index": 13,
+          "text": "oh-ooh",
+          "start": 18.4,
+          "end": 18.4
+        }
+      ]
+    },
+    {
+      "line_index": 8,
+      "text": "The master of my sea, oh-ooh",
+      "start": 19.7,
+      "end": 21.4,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "The",
+          "start": 19.7,
+          "end": 20.0
+        },
+        {
+          "word_index": 2,
+          "text": "master",
+          "start": 20.0,
+          "end": 20.2
+        },
+        {
+          "word_index": 3,
+          "text": "of",
+          "start": 20.2,
+          "end": 20.3
+        },
+        {
+          "word_index": 4,
+          "text": "my",
+          "start": 20.3,
+          "end": 20.4
+        },
+        {
+          "word_index": 5,
+          "text": "sea,",
+          "start": 20.4,
+          "end": 21.1
+        },
+        {
+          "word_index": 6,
+          "text": "oh-ooh",
+          "start": 21.1,
+          "end": 21.4
+        }
+      ]
+    },
+    {
+      "line_index": 9,
+      "text": "I was broken from a young age",
+      "start": 21.9,
+      "end": 23.9,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "I",
+          "start": 21.9,
+          "end": 23.2
+        },
+        {
+          "word_index": 2,
+          "text": "was",
+          "start": 23.2,
+          "end": 23.3
+        },
+        {
+          "word_index": 3,
+          "text": "broken",
+          "start": 23.3,
+          "end": 23.7
+        },
+        {
+          "word_index": 4,
+          "text": "from",
+          "start": 23.7,
+          "end": 23.8
+        },
+        {
+          "word_index": 5,
+          "text": "a",
+          "start": 23.8,
+          "end": 23.8
+        },
+        {
+          "word_index": 6,
+          "text": "young",
+          "start": 23.8,
+          "end": 23.8
+        },
+        {
+          "word_index": 7,
+          "text": "age",
+          "start": 23.8,
+          "end": 23.9
+        }
+      ]
+    },
+    {
+      "line_index": 10,
+      "text": "Taking my sulking to the masses",
+      "start": 24.1,
+      "end": 25.8,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Taking",
+          "start": 24.1,
+          "end": 24.8
+        },
+        {
+          "word_index": 2,
+          "text": "my",
+          "start": 24.8,
+          "end": 25.1
+        },
+        {
+          "word_index": 3,
+          "text": "sulking",
+          "start": 25.1,
+          "end": 25.2
+        },
+        {
+          "word_index": 4,
+          "text": "to",
+          "start": 25.2,
+          "end": 25.5
+        },
+        {
+          "word_index": 5,
+          "text": "the",
+          "start": 25.5,
+          "end": 25.8
+        },
+        {
+          "word_index": 6,
+          "text": "masses",
+          "start": 25.8,
+          "end": 25.8
+        }
+      ]
+    },
+    {
+      "line_index": 11,
+      "text": "Writing my poems for the few",
+      "start": 26.3,
+      "end": 27.8,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Writing",
+          "start": 26.3,
+          "end": 27.0
+        },
+        {
+          "word_index": 2,
+          "text": "my",
+          "start": 27.0,
+          "end": 27.2
+        },
+        {
+          "word_index": 3,
+          "text": "poems",
+          "start": 27.3,
+          "end": 27.5
+        },
+        {
+          "word_index": 4,
+          "text": "for",
+          "start": 27.5,
+          "end": 27.6
+        },
+        {
+          "word_index": 5,
+          "text": "the",
+          "start": 27.6,
+          "end": 27.7
+        },
+        {
+          "word_index": 6,
+          "text": "few",
+          "start": 27.7,
+          "end": 27.8
+        }
+      ]
+    },
+    {
+      "line_index": 12,
+      "text": "That look at me, took to me, shook to me, feeling me",
+      "start": 28.5,
+      "end": 31.5,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "That",
+          "start": 28.5,
+          "end": 30.9
+        },
+        {
+          "word_index": 2,
+          "text": "look",
+          "start": 30.9,
+          "end": 31.0
+        },
+        {
+          "word_index": 3,
+          "text": "at",
+          "start": 31.0,
+          "end": 31.0
+        },
+        {
+          "word_index": 4,
+          "text": "me,",
+          "start": 31.0,
+          "end": 31.1
+        },
+        {
+          "word_index": 5,
+          "text": "took",
+          "start": 31.1,
+          "end": 31.2
+        },
+        {
+          "word_index": 6,
+          "text": "to",
+          "start": 31.2,
+          "end": 31.2
+        },
+        {
+          "word_index": 7,
+          "text": "me,",
+          "start": 31.2,
+          "end": 31.2
+        },
+        {
+          "word_index": 8,
+          "text": "shook",
+          "start": 31.2,
+          "end": 31.3
+        },
+        {
+          "word_index": 9,
+          "text": "to",
+          "start": 31.3,
+          "end": 31.4
+        },
+        {
+          "word_index": 10,
+          "text": "me,",
+          "start": 31.4,
+          "end": 31.4
+        },
+        {
+          "word_index": 11,
+          "text": "feeling",
+          "start": 31.4,
+          "end": 31.4
+        },
+        {
+          "word_index": 12,
+          "text": "me",
+          "start": 31.4,
+          "end": 31.5
+        }
+      ]
+    },
+    {
+      "line_index": 13,
+      "text": "Singing from heartache from the pain",
+      "start": 31.7,
+      "end": 33.6,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Singing",
+          "start": 31.7,
+          "end": 32.4
+        },
+        {
+          "word_index": 2,
+          "text": "from",
+          "start": 32.4,
+          "end": 32.5
+        },
+        {
+          "word_index": 3,
+          "text": "heartache",
+          "start": 32.5,
+          "end": 32.6
+        },
+        {
+          "word_index": 4,
+          "text": "from",
+          "start": 32.6,
+          "end": 32.7
+        },
+        {
+          "word_index": 5,
+          "text": "the",
+          "start": 32.7,
+          "end": 33.1
+        },
+        {
+          "word_index": 6,
+          "text": "pain",
+          "start": 33.3,
+          "end": 33.6
+        }
+      ]
+    },
+    {
+      "line_index": 14,
+      "text": "Taking my message from the veins",
+      "start": 34.1,
+      "end": 36.1,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Taking",
+          "start": 34.1,
+          "end": 35.1
+        },
+        {
+          "word_index": 2,
+          "text": "my",
+          "start": 35.1,
+          "end": 35.3
+        },
+        {
+          "word_index": 3,
+          "text": "message",
+          "start": 35.3,
+          "end": 35.8
+        },
+        {
+          "word_index": 4,
+          "text": "from",
+          "start": 35.8,
+          "end": 36.0
+        },
+        {
+          "word_index": 5,
+          "text": "the",
+          "start": 36.0,
+          "end": 36.0
+        },
+        {
+          "word_index": 6,
+          "text": "veins",
+          "start": 36.0,
+          "end": 36.1
+        }
+      ]
+    },
+    {
+      "line_index": 15,
+      "text": "Speaking my lesson from the brain",
+      "start": 36.3,
+      "end": 38.0,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Speaking",
+          "start": 36.3,
+          "end": 37.6
+        },
+        {
+          "word_index": 2,
+          "text": "my",
+          "start": 37.6,
+          "end": 37.7
+        },
+        {
+          "word_index": 3,
+          "text": "lesson",
+          "start": 37.7,
+          "end": 37.8
+        },
+        {
+          "word_index": 4,
+          "text": "from",
+          "start": 37.8,
+          "end": 37.9
+        },
+        {
+          "word_index": 5,
+          "text": "the",
+          "start": 37.9,
+          "end": 37.9
+        },
+        {
+          "word_index": 6,
+          "text": "brain",
+          "start": 37.9,
+          "end": 38.0
+        }
+      ]
+    },
+    {
+      "line_index": 16,
+      "text": "Seeing the beauty through the...",
+      "start": 38.5,
+      "end": 40.4,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Seeing",
+          "start": 38.5,
+          "end": 38.9
+        },
+        {
+          "word_index": 2,
+          "text": "the",
+          "start": 38.9,
+          "end": 39.2
+        },
+        {
+          "word_index": 3,
+          "text": "beauty",
+          "start": 39.2,
+          "end": 39.6
+        },
+        {
+          "word_index": 4,
+          "text": "through",
+          "start": 39.6,
+          "end": 40.1
+        },
+        {
+          "word_index": 5,
+          "text": "the...",
+          "start": 40.1,
+          "end": 40.4
+        }
+      ]
+    },
+    {
+      "line_index": 17,
+      "text": "Pain!",
+      "start": 40.7,
+      "end": 42.3,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Pain!",
+          "start": 40.7,
+          "end": 42.3
+        }
+      ]
+    },
+    {
+      "line_index": 18,
+      "text": "You made me a, you made me a believer, believer",
+      "start": 42.9,
+      "end": 45.2,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "You",
+          "start": 42.9,
+          "end": 43.3
+        },
+        {
+          "word_index": 2,
+          "text": "made",
+          "start": 43.3,
+          "end": 43.3
+        },
+        {
+          "word_index": 3,
+          "text": "me",
+          "start": 43.3,
+          "end": 43.5
+        },
+        {
+          "word_index": 4,
+          "text": "a,",
+          "start": 43.5,
+          "end": 43.5
+        },
+        {
+          "word_index": 5,
+          "text": "you",
+          "start": 43.5,
+          "end": 43.7
+        },
+        {
+          "word_index": 6,
+          "text": "made",
+          "start": 43.7,
+          "end": 44.0
+        },
+        {
+          "word_index": 7,
+          "text": "me",
+          "start": 44.0,
+          "end": 44.4
+        },
+        {
+          "word_index": 8,
+          "text": "a",
+          "start": 44.4,
+          "end": 44.6
+        },
+        {
+          "word_index": 9,
+          "text": "believer,",
+          "start": 44.6,
+          "end": 45.0
+        },
+        {
+          "word_index": 10,
+          "text": "believer",
+          "start": 45.0,
+          "end": 45.2
+        }
+      ]
+    },
+    {
+      "line_index": 19,
+      "text": "Pain!",
+      "start": 45.8,
+      "end": 47.4,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Pain!",
+          "start": 45.8,
+          "end": 47.4
+        }
+      ]
+    },
+    {
+      "line_index": 20,
+      "text": "You break me down and build me up, believer, believer",
+      "start": 48.0,
+      "end": 50.8,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "You",
+          "start": 48.0,
+          "end": 48.4
+        },
+        {
+          "word_index": 2,
+          "text": "break",
+          "start": 48.4,
+          "end": 48.8
+        },
+        {
+          "word_index": 3,
+          "text": "me",
+          "start": 48.8,
+          "end": 48.9
+        },
+        {
+          "word_index": 4,
+          "text": "down",
+          "start": 48.9,
+          "end": 49.2
+        },
+        {
+          "word_index": 5,
+          "text": "and",
+          "start": 49.2,
+          "end": 49.4
+        },
+        {
+          "word_index": 6,
+          "text": "build",
+          "start": 49.4,
+          "end": 49.6
+        },
+        {
+          "word_index": 7,
+          "text": "me",
+          "start": 49.6,
+          "end": 49.7
+        },
+        {
+          "word_index": 8,
+          "text": "up,",
+          "start": 49.7,
+          "end": 49.9
+        },
+        {
+          "word_index": 9,
+          "text": "believer,",
+          "start": 50.0,
+          "end": 50.5
+        },
+        {
+          "word_index": 10,
+          "text": "believer",
+          "start": 50.5,
+          "end": 50.8
+        }
+      ]
+    },
+    {
+      "line_index": 21,
+      "text": "Pain!",
+      "start": 51.2,
+      "end": 52.9,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Pain!",
+          "start": 51.2,
+          "end": 52.9
+        }
+      ]
+    },
+    {
+      "line_index": 22,
+      "text": "Oh, let the bullets fly, oh, let them rain",
+      "start": 53.4,
+      "end": 55.4,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Oh,",
+          "start": 53.4,
+          "end": 53.7
+        },
+        {
+          "word_index": 2,
+          "text": "let",
+          "start": 53.7,
+          "end": 54.1
+        },
+        {
+          "word_index": 3,
+          "text": "the",
+          "start": 54.1,
+          "end": 54.2
+        },
+        {
+          "word_index": 4,
+          "text": "bullets",
+          "start": 54.2,
+          "end": 54.4
+        },
+        {
+          "word_index": 5,
+          "text": "fly,",
+          "start": 54.4,
+          "end": 54.8
+        },
+        {
+          "word_index": 6,
+          "text": "oh,",
+          "start": 54.8,
+          "end": 54.8
+        },
+        {
+          "word_index": 7,
+          "text": "let",
+          "start": 54.8,
+          "end": 55.1
+        },
+        {
+          "word_index": 8,
+          "text": "them",
+          "start": 55.1,
+          "end": 55.2
+        },
+        {
+          "word_index": 9,
+          "text": "rain",
+          "start": 55.2,
+          "end": 55.4
+        }
+      ]
+    },
+    {
+      "line_index": 23,
+      "text": "My life, my love, my drive, it came from...",
+      "start": 56.0,
+      "end": 58.2,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "My",
+          "start": 56.0,
+          "end": 56.7
+        },
+        {
+          "word_index": 2,
+          "text": "life,",
+          "start": 56.7,
+          "end": 57.1
+        },
+        {
+          "word_index": 3,
+          "text": "my",
+          "start": 57.1,
+          "end": 57.5
+        },
+        {
+          "word_index": 4,
+          "text": "love,",
+          "start": 57.5,
+          "end": 57.8
+        },
+        {
+          "word_index": 5,
+          "text": "my",
+          "start": 57.8,
+          "end": 58.0
+        },
+        {
+          "word_index": 6,
+          "text": "drive,",
+          "start": 58.0,
+          "end": 58.0
+        },
+        {
+          "word_index": 7,
+          "text": "it",
+          "start": 58.0,
+          "end": 58.1
+        },
+        {
+          "word_index": 8,
+          "text": "came",
+          "start": 58.1,
+          "end": 58.2
+        },
+        {
+          "word_index": 9,
+          "text": "from...",
+          "start": 58.2,
+          "end": 58.2
+        }
+      ]
+    },
+    {
+      "line_index": 24,
+      "text": "Pain!",
+      "start": 58.7,
+      "end": 60.3,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Pain!",
+          "start": 58.7,
+          "end": 60.3
+        }
+      ]
+    },
+    {
+      "line_index": 25,
+      "text": "You made me a, you made me a believer, believer",
+      "start": 60.9,
+      "end": 63.0,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "You",
+          "start": 60.9,
+          "end": 61.8
+        },
+        {
+          "word_index": 2,
+          "text": "made",
+          "start": 61.8,
+          "end": 62.1
+        },
+        {
+          "word_index": 3,
+          "text": "me",
+          "start": 62.1,
+          "end": 62.3
+        },
+        {
+          "word_index": 4,
+          "text": "a,",
+          "start": 62.3,
+          "end": 62.4
+        },
+        {
+          "word_index": 5,
+          "text": "you",
+          "start": 62.4,
+          "end": 62.5
+        },
+        {
+          "word_index": 6,
+          "text": "made",
+          "start": 62.5,
+          "end": 62.5
+        },
+        {
+          "word_index": 7,
+          "text": "me",
+          "start": 62.5,
+          "end": 62.6
+        },
+        {
+          "word_index": 8,
+          "text": "a",
+          "start": 62.6,
+          "end": 62.6
+        },
+        {
+          "word_index": 9,
+          "text": "believer,",
+          "start": 62.6,
+          "end": 62.7
+        },
+        {
+          "word_index": 10,
+          "text": "believer",
+          "start": 62.7,
+          "end": 63.0
+        }
+      ]
+    },
+    {
+      "line_index": 26,
+      "text": "Third things third",
+      "start": 63.7,
+      "end": 65.7,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Third",
+          "start": 63.7,
+          "end": 65.6
+        },
+        {
+          "word_index": 2,
+          "text": "things",
+          "start": 65.6,
+          "end": 65.6
+        },
+        {
+          "word_index": 3,
+          "text": "third",
+          "start": 65.6,
+          "end": 65.7
+        }
+      ]
+    },
+    {
+      "line_index": 27,
+      "text": "Send a prayer to the ones up above",
+      "start": 65.9,
+      "end": 67.5,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Send",
+          "start": 65.9,
+          "end": 66.6
+        },
+        {
+          "word_index": 2,
+          "text": "a",
+          "start": 66.6,
+          "end": 66.7
+        },
+        {
+          "word_index": 3,
+          "text": "prayer",
+          "start": 66.8,
+          "end": 67.2
+        },
+        {
+          "word_index": 4,
+          "text": "to",
+          "start": 67.2,
+          "end": 67.3
+        },
+        {
+          "word_index": 5,
+          "text": "the",
+          "start": 67.3,
+          "end": 67.3
+        },
+        {
+          "word_index": 6,
+          "text": "ones",
+          "start": 67.3,
+          "end": 67.4
+        },
+        {
+          "word_index": 7,
+          "text": "up",
+          "start": 67.4,
+          "end": 67.4
+        },
+        {
+          "word_index": 8,
+          "text": "above",
+          "start": 67.4,
+          "end": 67.5
+        }
+      ]
+    },
+    {
+      "line_index": 28,
+      "text": "All the hate that you've heard has turned your spirit to a dove, oh-ooh",
+      "start": 68.1,
+      "end": 71.6,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "All",
+          "start": 68.1,
+          "end": 68.9
+        },
+        {
+          "word_index": 2,
+          "text": "the",
+          "start": 68.9,
+          "end": 69.0
+        },
+        {
+          "word_index": 3,
+          "text": "hate",
+          "start": 69.0,
+          "end": 69.3
+        },
+        {
+          "word_index": 4,
+          "text": "that",
+          "start": 69.3,
+          "end": 69.3
+        },
+        {
+          "word_index": 5,
+          "text": "you've",
+          "start": 69.3,
+          "end": 69.6
+        },
+        {
+          "word_index": 6,
+          "text": "heard",
+          "start": 69.6,
+          "end": 69.7
+        },
+        {
+          "word_index": 7,
+          "text": "has",
+          "start": 69.7,
+          "end": 70.0
+        },
+        {
+          "word_index": 8,
+          "text": "turned",
+          "start": 70.0,
+          "end": 70.1
+        },
+        {
+          "word_index": 9,
+          "text": "your",
+          "start": 70.1,
+          "end": 70.4
+        },
+        {
+          "word_index": 10,
+          "text": "spirit",
+          "start": 70.4,
+          "end": 70.8
+        },
+        {
+          "word_index": 11,
+          "text": "to",
+          "start": 70.8,
+          "end": 70.9
+        },
+        {
+          "word_index": 12,
+          "text": "a",
+          "start": 70.9,
+          "end": 71.0
+        },
+        {
+          "word_index": 13,
+          "text": "dove,",
+          "start": 71.0,
+          "end": 71.2
+        },
+        {
+          "word_index": 14,
+          "text": "oh-ooh",
+          "start": 71.2,
+          "end": 71.6
+        }
+      ]
+    },
+    {
+      "line_index": 29,
+      "text": "Your spirit up above, oh-ooh",
+      "start": 72.4,
+      "end": 74.3,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Your",
+          "start": 72.4,
+          "end": 72.7
+        },
+        {
+          "word_index": 2,
+          "text": "spirit",
+          "start": 72.8,
+          "end": 73.2
+        },
+        {
+          "word_index": 3,
+          "text": "up",
+          "start": 73.3,
+          "end": 73.5
+        },
+        {
+          "word_index": 4,
+          "text": "above,",
+          "start": 73.5,
+          "end": 74.0
+        },
+        {
+          "word_index": 5,
+          "text": "oh-ooh",
+          "start": 74.0,
+          "end": 74.3
+        }
+      ]
+    },
+    {
+      "line_index": 30,
+      "text": "I was choking in the crowd",
+      "start": 74.6,
+      "end": 76.0,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "I",
+          "start": 74.6,
+          "end": 74.9
+        },
+        {
+          "word_index": 2,
+          "text": "was",
+          "start": 74.9,
+          "end": 75.1
+        },
+        {
+          "word_index": 3,
+          "text": "choking",
+          "start": 75.1,
+          "end": 75.5
+        },
+        {
+          "word_index": 4,
+          "text": "in",
+          "start": 75.5,
+          "end": 75.8
+        },
+        {
+          "word_index": 5,
+          "text": "the",
+          "start": 75.8,
+          "end": 75.9
+        },
+        {
+          "word_index": 6,
+          "text": "crowd",
+          "start": 75.9,
+          "end": 76.0
+        }
+      ]
+    },
+    {
+      "line_index": 31,
+      "text": "Living my brain up in the cloud",
+      "start": 76.8,
+      "end": 78.8,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Living",
+          "start": 76.8,
+          "end": 78.4
+        },
+        {
+          "word_index": 2,
+          "text": "my",
+          "start": 78.4,
+          "end": 78.5
+        },
+        {
+          "word_index": 3,
+          "text": "brain",
+          "start": 78.5,
+          "end": 78.6
+        },
+        {
+          "word_index": 4,
+          "text": "up",
+          "start": 78.6,
+          "end": 78.6
+        },
+        {
+          "word_index": 5,
+          "text": "in",
+          "start": 78.6,
+          "end": 78.7
+        },
+        {
+          "word_index": 6,
+          "text": "the",
+          "start": 78.7,
+          "end": 78.8
+        },
+        {
+          "word_index": 7,
+          "text": "cloud",
+          "start": 78.8,
+          "end": 78.8
+        }
+      ]
+    },
+    {
+      "line_index": 32,
+      "text": "Falling like ashes to the ground",
+      "start": 79.0,
+      "end": 80.8,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Falling",
+          "start": 79.0,
+          "end": 80.1
+        },
+        {
+          "word_index": 2,
+          "text": "like",
+          "start": 80.1,
+          "end": 80.3
+        },
+        {
+          "word_index": 3,
+          "text": "ashes",
+          "start": 80.3,
+          "end": 80.3
+        },
+        {
+          "word_index": 4,
+          "text": "to",
+          "start": 80.3,
+          "end": 80.5
+        },
+        {
+          "word_index": 5,
+          "text": "the",
+          "start": 80.5,
+          "end": 80.7
+        },
+        {
+          "word_index": 6,
+          "text": "ground",
+          "start": 80.7,
+          "end": 80.8
+        }
+      ]
+    },
+    {
+      "line_index": 33,
+      "text": "Hoping my feelings, they would drown",
+      "start": 81.2,
+      "end": 83.3,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Hoping",
+          "start": 81.2,
+          "end": 82.7
+        },
+        {
+          "word_index": 2,
+          "text": "my",
+          "start": 82.7,
+          "end": 82.8
+        },
+        {
+          "word_index": 3,
+          "text": "feelings,",
+          "start": 82.8,
+          "end": 82.8
+        },
+        {
+          "word_index": 4,
+          "text": "they",
+          "start": 82.8,
+          "end": 82.8
+        },
+        {
+          "word_index": 5,
+          "text": "would",
+          "start": 82.8,
+          "end": 83.0
+        },
+        {
+          "word_index": 6,
+          "text": "drown",
+          "start": 83.0,
+          "end": 83.3
+        }
+      ]
+    },
+    {
+      "line_index": 34,
+      "text": "But they never did, ever lived",
+      "start": 83.6,
+      "end": 85.3,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "But",
+          "start": 83.6,
+          "end": 84.2
+        },
+        {
+          "word_index": 2,
+          "text": "they",
+          "start": 84.2,
+          "end": 84.2
+        },
+        {
+          "word_index": 3,
+          "text": "never",
+          "start": 84.2,
+          "end": 84.5
+        },
+        {
+          "word_index": 4,
+          "text": "did,",
+          "start": 84.5,
+          "end": 84.7
+        },
+        {
+          "word_index": 5,
+          "text": "ever",
+          "start": 84.7,
+          "end": 84.8
+        },
+        {
+          "word_index": 6,
+          "text": "lived",
+          "start": 84.8,
+          "end": 85.3
+        }
+      ]
+    },
+    {
+      "line_index": 35,
+      "text": "Ebbing and flowing, inhibited, limited",
+      "start": 85.8,
+      "end": 88.0,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Ebbing",
+          "start": 85.8,
+          "end": 87.8
+        },
+        {
+          "word_index": 2,
+          "text": "and",
+          "start": 87.8,
+          "end": 87.8
+        },
+        {
+          "word_index": 3,
+          "text": "flowing,",
+          "start": 87.8,
+          "end": 87.9
+        },
+        {
+          "word_index": 4,
+          "text": "inhibited,",
+          "start": 87.9,
+          "end": 88.0
+        },
+        {
+          "word_index": 5,
+          "text": "limited",
+          "start": 88.0,
+          "end": 88.0
+        }
+      ]
+    },
+    {
+      "line_index": 36,
+      "text": "Till it broke open and it rained down",
+      "start": 88.3,
+      "end": 89.7,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Till",
+          "start": 88.3,
+          "end": 89.0
+        },
+        {
+          "word_index": 2,
+          "text": "it",
+          "start": 89.1,
+          "end": 89.2
+        },
+        {
+          "word_index": 3,
+          "text": "broke",
+          "start": 89.2,
+          "end": 89.4
+        },
+        {
+          "word_index": 4,
+          "text": "open",
+          "start": 89.4,
+          "end": 89.5
+        },
+        {
+          "word_index": 5,
+          "text": "and",
+          "start": 89.5,
+          "end": 89.5
+        },
+        {
+          "word_index": 6,
+          "text": "it",
+          "start": 89.5,
+          "end": 89.6
+        },
+        {
+          "word_index": 7,
+          "text": "rained",
+          "start": 89.6,
+          "end": 89.6
+        },
+        {
+          "word_index": 8,
+          "text": "down",
+          "start": 89.6,
+          "end": 89.7
+        }
+      ]
+    },
+    {
+      "line_index": 37,
+      "text": "It rained down, like...",
+      "start": 90.6,
+      "end": 92.5,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "It",
+          "start": 90.6,
+          "end": 91.1
+        },
+        {
+          "word_index": 2,
+          "text": "rained",
+          "start": 91.1,
+          "end": 91.7
+        },
+        {
+          "word_index": 3,
+          "text": "down,",
+          "start": 91.7,
+          "end": 92.2
+        },
+        {
+          "word_index": 4,
+          "text": "like...",
+          "start": 92.2,
+          "end": 92.5
+        }
+      ]
+    },
+    {
+      "line_index": 38,
+      "text": "Pain!",
+      "start": 92.8,
+      "end": 94.8,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Pain!",
+          "start": 92.8,
+          "end": 94.8
+        }
+      ]
+    },
+    {
+      "line_index": 39,
+      "text": "You made me a, you made me a believer, believer",
+      "start": 95.0,
+      "end": 97.3,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "You",
+          "start": 95.0,
+          "end": 95.8
+        },
+        {
+          "word_index": 2,
+          "text": "made",
+          "start": 95.8,
+          "end": 95.8
+        },
+        {
+          "word_index": 3,
+          "text": "me",
+          "start": 95.8,
+          "end": 96.1
+        },
+        {
+          "word_index": 4,
+          "text": "a,",
+          "start": 96.1,
+          "end": 96.2
+        },
+        {
+          "word_index": 5,
+          "text": "you",
+          "start": 96.2,
+          "end": 96.5
+        },
+        {
+          "word_index": 6,
+          "text": "made",
+          "start": 96.5,
+          "end": 96.6
+        },
+        {
+          "word_index": 7,
+          "text": "me",
+          "start": 96.6,
+          "end": 96.9
+        },
+        {
+          "word_index": 8,
+          "text": "a",
+          "start": 96.9,
+          "end": 97.0
+        },
+        {
+          "word_index": 9,
+          "text": "believer,",
+          "start": 97.0,
+          "end": 97.3
+        },
+        {
+          "word_index": 10,
+          "text": "believer",
+          "start": 97.3,
+          "end": 97.3
+        }
+      ]
+    },
+    {
+      "line_index": 40,
+      "text": "Pain!",
+      "start": 97.9,
+      "end": 99.5,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Pain!",
+          "start": 97.9,
+          "end": 99.5
+        }
+      ]
+    },
+    {
+      "line_index": 41,
+      "text": "You break me down, you build me up, believer, believer",
+      "start": 100.1,
+      "end": 102.7,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "You",
+          "start": 100.1,
+          "end": 100.6
+        },
+        {
+          "word_index": 2,
+          "text": "break",
+          "start": 100.6,
+          "end": 101.2
+        },
+        {
+          "word_index": 3,
+          "text": "me",
+          "start": 101.2,
+          "end": 101.3
+        },
+        {
+          "word_index": 4,
+          "text": "down,",
+          "start": 101.3,
+          "end": 102.0
+        },
+        {
+          "word_index": 5,
+          "text": "you",
+          "start": 102.0,
+          "end": 102.3
+        },
+        {
+          "word_index": 6,
+          "text": "build",
+          "start": 102.3,
+          "end": 102.3
+        },
+        {
+          "word_index": 7,
+          "text": "me",
+          "start": 102.3,
+          "end": 102.4
+        },
+        {
+          "word_index": 8,
+          "text": "up,",
+          "start": 102.4,
+          "end": 102.5
+        },
+        {
+          "word_index": 9,
+          "text": "believer,",
+          "start": 102.5,
+          "end": 102.6
+        },
+        {
+          "word_index": 10,
+          "text": "believer",
+          "start": 102.6,
+          "end": 102.7
+        }
+      ]
+    },
+    {
+      "line_index": 42,
+      "text": "Pain, oh, let the bullets fly, oh, let them rain",
+      "start": 103.5,
+      "end": 105.4,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Pain,",
+          "start": 103.5,
+          "end": 104.9
+        },
+        {
+          "word_index": 2,
+          "text": "oh,",
+          "start": 104.9,
+          "end": 105.0
+        },
+        {
+          "word_index": 3,
+          "text": "let",
+          "start": 105.0,
+          "end": 105.0
+        },
+        {
+          "word_index": 4,
+          "text": "the",
+          "start": 105.0,
+          "end": 105.1
+        },
+        {
+          "word_index": 5,
+          "text": "bullets",
+          "start": 105.1,
+          "end": 105.1
+        },
+        {
+          "word_index": 6,
+          "text": "fly,",
+          "start": 105.1,
+          "end": 105.2
+        },
+        {
+          "word_index": 7,
+          "text": "oh,",
+          "start": 105.2,
+          "end": 105.2
+        },
+        {
+          "word_index": 8,
+          "text": "let",
+          "start": 105.2,
+          "end": 105.3
+        },
+        {
+          "word_index": 9,
+          "text": "them",
+          "start": 105.3,
+          "end": 105.3
+        },
+        {
+          "word_index": 10,
+          "text": "rain",
+          "start": 105.3,
+          "end": 105.4
+        }
+      ]
+    },
+    {
+      "line_index": 43,
+      "text": "My life, my love, my drive, it came from",
+      "start": 106.4,
+      "end": 108.3,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "My",
+          "start": 106.4,
+          "end": 106.9
+        },
+        {
+          "word_index": 2,
+          "text": "life,",
+          "start": 106.9,
+          "end": 107.3
+        },
+        {
+          "word_index": 3,
+          "text": "my",
+          "start": 107.3,
+          "end": 107.6
+        },
+        {
+          "word_index": 4,
+          "text": "love,",
+          "start": 107.6,
+          "end": 107.9
+        },
+        {
+          "word_index": 5,
+          "text": "my",
+          "start": 107.9,
+          "end": 108.0
+        },
+        {
+          "word_index": 6,
+          "text": "drive,",
+          "start": 108.0,
+          "end": 108.1
+        },
+        {
+          "word_index": 7,
+          "text": "it",
+          "start": 108.1,
+          "end": 108.1
+        },
+        {
+          "word_index": 8,
+          "text": "came",
+          "start": 108.1,
+          "end": 108.2
+        },
+        {
+          "word_index": 9,
+          "text": "from",
+          "start": 108.2,
+          "end": 108.3
+        }
+      ]
+    },
+    {
+      "line_index": 44,
+      "text": "Pain!",
+      "start": 108.8,
+      "end": 110.4,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Pain!",
+          "start": 108.8,
+          "end": 110.4
+        }
+      ]
+    },
+    {
+      "line_index": 45,
+      "text": "You made me a, you made me a believer, believer",
+      "start": 111.0,
+      "end": 113.7,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "You",
+          "start": 111.0,
+          "end": 113.0
+        },
+        {
+          "word_index": 2,
+          "text": "made",
+          "start": 113.0,
+          "end": 113.2
+        },
+        {
+          "word_index": 3,
+          "text": "me",
+          "start": 113.2,
+          "end": 113.3
+        },
+        {
+          "word_index": 4,
+          "text": "a,",
+          "start": 113.3,
+          "end": 113.3
+        },
+        {
+          "word_index": 5,
+          "text": "you",
+          "start": 113.4,
+          "end": 113.4
+        },
+        {
+          "word_index": 6,
+          "text": "made",
+          "start": 113.4,
+          "end": 113.5
+        },
+        {
+          "word_index": 7,
+          "text": "me",
+          "start": 113.5,
+          "end": 113.6
+        },
+        {
+          "word_index": 8,
+          "text": "a",
+          "start": 113.6,
+          "end": 113.6
+        },
+        {
+          "word_index": 9,
+          "text": "believer,",
+          "start": 113.6,
+          "end": 113.6
+        },
+        {
+          "word_index": 10,
+          "text": "believer",
+          "start": 113.6,
+          "end": 113.7
+        }
+      ]
+    },
+    {
+      "line_index": 46,
+      "text": "Last things last, by the grace of the fire and the flames",
+      "start": 113.9,
+      "end": 117.1,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Last",
+          "start": 113.9,
+          "end": 116.6
+        },
+        {
+          "word_index": 2,
+          "text": "things",
+          "start": 116.6,
+          "end": 116.6
+        },
+        {
+          "word_index": 3,
+          "text": "last,",
+          "start": 116.6,
+          "end": 116.6
+        },
+        {
+          "word_index": 4,
+          "text": "by",
+          "start": 116.6,
+          "end": 116.7
+        },
+        {
+          "word_index": 5,
+          "text": "the",
+          "start": 116.7,
+          "end": 116.8
+        },
+        {
+          "word_index": 6,
+          "text": "grace",
+          "start": 116.8,
+          "end": 116.8
+        },
+        {
+          "word_index": 7,
+          "text": "of",
+          "start": 116.8,
+          "end": 116.8
+        },
+        {
+          "word_index": 8,
+          "text": "the",
+          "start": 116.8,
+          "end": 116.9
+        },
+        {
+          "word_index": 9,
+          "text": "fire",
+          "start": 116.9,
+          "end": 117.0
+        },
+        {
+          "word_index": 10,
+          "text": "and",
+          "start": 117.0,
+          "end": 117.0
+        },
+        {
+          "word_index": 11,
+          "text": "the",
+          "start": 117.0,
+          "end": 117.0
+        },
+        {
+          "word_index": 12,
+          "text": "flames",
+          "start": 117.0,
+          "end": 117.1
+        }
+      ]
+    },
+    {
+      "line_index": 47,
+      "text": "You're the face of the future, the blood in my veins, oh-ooh",
+      "start": 117.3,
+      "end": 120.2,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "You're",
+          "start": 117.3,
+          "end": 118.0
+        },
+        {
+          "word_index": 2,
+          "text": "the",
+          "start": 118.0,
+          "end": 118.4
+        },
+        {
+          "word_index": 3,
+          "text": "face",
+          "start": 118.4,
+          "end": 118.4
+        },
+        {
+          "word_index": 4,
+          "text": "of",
+          "start": 118.4,
+          "end": 118.7
+        },
+        {
+          "word_index": 5,
+          "text": "the",
+          "start": 118.7,
+          "end": 119.1
+        },
+        {
+          "word_index": 6,
+          "text": "future,",
+          "start": 119.1,
+          "end": 119.2
+        },
+        {
+          "word_index": 7,
+          "text": "the",
+          "start": 119.2,
+          "end": 119.2
+        },
+        {
+          "word_index": 8,
+          "text": "blood",
+          "start": 119.2,
+          "end": 119.5
+        },
+        {
+          "word_index": 9,
+          "text": "in",
+          "start": 119.5,
+          "end": 119.8
+        },
+        {
+          "word_index": 10,
+          "text": "my",
+          "start": 119.8,
+          "end": 119.9
+        },
+        {
+          "word_index": 11,
+          "text": "veins,",
+          "start": 119.9,
+          "end": 120.0
+        },
+        {
+          "word_index": 12,
+          "text": "oh-ooh",
+          "start": 120.0,
+          "end": 120.2
+        }
+      ]
+    },
+    {
+      "line_index": 48,
+      "text": "The blood in my veins, oh-ooh",
+      "start": 121.0,
+      "end": 122.8,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "The",
+          "start": 121.0,
+          "end": 121.3
+        },
+        {
+          "word_index": 2,
+          "text": "blood",
+          "start": 121.3,
+          "end": 121.6
+        },
+        {
+          "word_index": 3,
+          "text": "in",
+          "start": 121.7,
+          "end": 121.8
+        },
+        {
+          "word_index": 4,
+          "text": "my",
+          "start": 121.9,
+          "end": 122.0
+        },
+        {
+          "word_index": 5,
+          "text": "veins,",
+          "start": 122.0,
+          "end": 122.5
+        },
+        {
+          "word_index": 6,
+          "text": "oh-ooh",
+          "start": 122.5,
+          "end": 122.8
+        }
+      ]
+    },
+    {
+      "line_index": 49,
+      "text": "But they never did, ever lived, ebbin' and flowin'",
+      "start": 123.2,
+      "end": 125.7,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "But",
+          "start": 123.2,
+          "end": 124.9
+        },
+        {
+          "word_index": 2,
+          "text": "they",
+          "start": 124.9,
+          "end": 125.2
+        },
+        {
+          "word_index": 3,
+          "text": "never",
+          "start": 125.2,
+          "end": 125.4
+        },
+        {
+          "word_index": 4,
+          "text": "did,",
+          "start": 125.4,
+          "end": 125.4
+        },
+        {
+          "word_index": 5,
+          "text": "ever",
+          "start": 125.4,
+          "end": 125.5
+        },
+        {
+          "word_index": 6,
+          "text": "lived,",
+          "start": 125.5,
+          "end": 125.6
+        },
+        {
+          "word_index": 7,
+          "text": "ebbin'",
+          "start": 125.6,
+          "end": 125.6
+        },
+        {
+          "word_index": 8,
+          "text": "and",
+          "start": 125.6,
+          "end": 125.6
+        },
+        {
+          "word_index": 9,
+          "text": "flowin'",
+          "start": 125.6,
+          "end": 125.7
+        }
+      ]
+    },
+    {
+      "line_index": 50,
+      "text": "Inhibited, limited 'til it broke open and rained down",
+      "start": 126.3,
+      "end": 128.5,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Inhibited,",
+          "start": 126.3,
+          "end": 127.7
+        },
+        {
+          "word_index": 2,
+          "text": "limited",
+          "start": 127.7,
+          "end": 127.8
+        },
+        {
+          "word_index": 3,
+          "text": "'til",
+          "start": 127.8,
+          "end": 128.0
+        },
+        {
+          "word_index": 4,
+          "text": "it",
+          "start": 128.0,
+          "end": 128.1
+        },
+        {
+          "word_index": 5,
+          "text": "broke",
+          "start": 128.1,
+          "end": 128.2
+        },
+        {
+          "word_index": 6,
+          "text": "open",
+          "start": 128.2,
+          "end": 128.3
+        },
+        {
+          "word_index": 7,
+          "text": "and",
+          "start": 128.3,
+          "end": 128.4
+        },
+        {
+          "word_index": 8,
+          "text": "rained",
+          "start": 128.4,
+          "end": 128.4
+        },
+        {
+          "word_index": 9,
+          "text": "down",
+          "start": 128.4,
+          "end": 128.5
+        }
+      ]
+    },
+    {
+      "line_index": 51,
+      "text": "It rained down like",
+      "start": 129.6,
+      "end": 131.3,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "It",
+          "start": 129.6,
+          "end": 129.8
+        },
+        {
+          "word_index": 2,
+          "text": "rained",
+          "start": 129.8,
+          "end": 130.2
+        },
+        {
+          "word_index": 3,
+          "text": "down",
+          "start": 130.2,
+          "end": 130.7
+        },
+        {
+          "word_index": 4,
+          "text": "like",
+          "start": 130.7,
+          "end": 131.3
+        }
+      ]
+    },
+    {
+      "line_index": 52,
+      "text": "Pain!",
+      "start": 131.8,
+      "end": 133.5,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Pain!",
+          "start": 131.8,
+          "end": 133.5
+        }
+      ]
+    },
+    {
+      "line_index": 53,
+      "text": "You made me a, you made me a believer, believer",
+      "start": 134.0,
+      "end": 136.3,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "You",
+          "start": 134.0,
+          "end": 134.7
+        },
+        {
+          "word_index": 2,
+          "text": "made",
+          "start": 134.7,
+          "end": 134.8
+        },
+        {
+          "word_index": 3,
+          "text": "me",
+          "start": 134.8,
+          "end": 135.0
+        },
+        {
+          "word_index": 4,
+          "text": "a,",
+          "start": 135.0,
+          "end": 135.3
+        },
+        {
+          "word_index": 5,
+          "text": "you",
+          "start": 135.3,
+          "end": 135.4
+        },
+        {
+          "word_index": 6,
+          "text": "made",
+          "start": 135.4,
+          "end": 135.6
+        },
+        {
+          "word_index": 7,
+          "text": "me",
+          "start": 135.6,
+          "end": 135.7
+        },
+        {
+          "word_index": 8,
+          "text": "a",
+          "start": 135.7,
+          "end": 136.0
+        },
+        {
+          "word_index": 9,
+          "text": "believer,",
+          "start": 136.0,
+          "end": 136.0
+        },
+        {
+          "word_index": 10,
+          "text": "believer",
+          "start": 136.0,
+          "end": 136.3
+        }
+      ]
+    },
+    {
+      "line_index": 54,
+      "text": "Pain!",
+      "start": 136.9,
+      "end": 138.5,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Pain!",
+          "start": 136.9,
+          "end": 138.5
+        }
+      ]
+    },
+    {
+      "line_index": 55,
+      "text": "You break me down, you build me up, believer, believer",
+      "start": 139.1,
+      "end": 141.8,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "You",
+          "start": 139.1,
+          "end": 140.2
+        },
+        {
+          "word_index": 2,
+          "text": "break",
+          "start": 140.2,
+          "end": 140.6
+        },
+        {
+          "word_index": 3,
+          "text": "me",
+          "start": 140.6,
+          "end": 141.0
+        },
+        {
+          "word_index": 4,
+          "text": "down,",
+          "start": 141.0,
+          "end": 141.3
+        },
+        {
+          "word_index": 5,
+          "text": "you",
+          "start": 141.3,
+          "end": 141.4
+        },
+        {
+          "word_index": 6,
+          "text": "build",
+          "start": 141.4,
+          "end": 141.5
+        },
+        {
+          "word_index": 7,
+          "text": "me",
+          "start": 141.5,
+          "end": 141.6
+        },
+        {
+          "word_index": 8,
+          "text": "up,",
+          "start": 141.6,
+          "end": 141.6
+        },
+        {
+          "word_index": 9,
+          "text": "believer,",
+          "start": 141.6,
+          "end": 141.7
+        },
+        {
+          "word_index": 10,
+          "text": "believer",
+          "start": 141.7,
+          "end": 141.8
+        }
+      ]
+    },
+    {
+      "line_index": 56,
+      "text": "Pain, oh, let the bullets fly, oh, let them rain",
+      "start": 142.4,
+      "end": 144.9,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Pain,",
+          "start": 142.4,
+          "end": 143.4
+        },
+        {
+          "word_index": 2,
+          "text": "oh,",
+          "start": 143.4,
+          "end": 143.6
+        },
+        {
+          "word_index": 3,
+          "text": "let",
+          "start": 143.6,
+          "end": 143.8
+        },
+        {
+          "word_index": 4,
+          "text": "the",
+          "start": 143.8,
+          "end": 143.9
+        },
+        {
+          "word_index": 5,
+          "text": "bullets",
+          "start": 143.9,
+          "end": 144.1
+        },
+        {
+          "word_index": 6,
+          "text": "fly,",
+          "start": 144.1,
+          "end": 144.3
+        },
+        {
+          "word_index": 7,
+          "text": "oh,",
+          "start": 144.3,
+          "end": 144.4
+        },
+        {
+          "word_index": 8,
+          "text": "let",
+          "start": 144.4,
+          "end": 144.5
+        },
+        {
+          "word_index": 9,
+          "text": "them",
+          "start": 144.5,
+          "end": 144.8
+        },
+        {
+          "word_index": 10,
+          "text": "rain",
+          "start": 144.8,
+          "end": 144.9
+        }
+      ]
+    },
+    {
+      "line_index": 57,
+      "text": "My life, my love, my drive, it came from",
+      "start": 145.4,
+      "end": 147.0,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "My",
+          "start": 145.4,
+          "end": 145.8
+        },
+        {
+          "word_index": 2,
+          "text": "life,",
+          "start": 145.8,
+          "end": 146.2
+        },
+        {
+          "word_index": 3,
+          "text": "my",
+          "start": 146.2,
+          "end": 146.3
+        },
+        {
+          "word_index": 4,
+          "text": "love,",
+          "start": 146.3,
+          "end": 146.5
+        },
+        {
+          "word_index": 5,
+          "text": "my",
+          "start": 146.5,
+          "end": 146.6
+        },
+        {
+          "word_index": 6,
+          "text": "drive,",
+          "start": 146.6,
+          "end": 146.7
+        },
+        {
+          "word_index": 7,
+          "text": "it",
+          "start": 146.7,
+          "end": 146.8
+        },
+        {
+          "word_index": 8,
+          "text": "came",
+          "start": 146.8,
+          "end": 146.9
+        },
+        {
+          "word_index": 9,
+          "text": "from",
+          "start": 146.9,
+          "end": 147.0
+        }
+      ]
+    },
+    {
+      "line_index": 58,
+      "text": "Pain!",
+      "start": 147.8,
+      "end": 149.4,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Pain!",
+          "start": 147.8,
+          "end": 149.4
+        }
+      ]
+    },
+    {
+      "line_index": 59,
+      "text": "You made me a, you made me a believer, believer",
+      "start": 150.0,
+      "end": 152.7,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "You",
+          "start": 150.0,
+          "end": 152.2
+        },
+        {
+          "word_index": 2,
+          "text": "made",
+          "start": 152.2,
+          "end": 152.3
+        },
+        {
+          "word_index": 3,
+          "text": "me",
+          "start": 152.3,
+          "end": 152.4
+        },
+        {
+          "word_index": 4,
+          "text": "a,",
+          "start": 152.4,
+          "end": 152.4
+        },
+        {
+          "word_index": 5,
+          "text": "you",
+          "start": 152.4,
+          "end": 152.4
+        },
+        {
+          "word_index": 6,
+          "text": "made",
+          "start": 152.4,
+          "end": 152.5
+        },
+        {
+          "word_index": 7,
+          "text": "me",
+          "start": 152.5,
+          "end": 152.6
+        },
+        {
+          "word_index": 8,
+          "text": "a",
+          "start": 152.6,
+          "end": 152.6
+        },
+        {
+          "word_index": 9,
+          "text": "believer,",
+          "start": 152.6,
+          "end": 152.6
+        },
+        {
+          "word_index": 10,
+          "text": "believer",
+          "start": 152.6,
+          "end": 152.7
+        }
+      ]
+    }
+  ],
+  "karaoke_source_url": "https://www.youtube.com/watch?v=sfbCZw_c2Zs",
+  "karaoke_video_path": ".cache/karaoke_bootstrap/imagine-dragons-believer/sfbCZw_c2Zs/sfbCZw_c2Zs.mp4",
+  "karaoke_line_windows": [
+    {
+      "line_index": 1,
+      "video_start": 23.12,
+      "video_end": 25.515
+    },
+    {
+      "line_index": 2,
+      "video_start": 25.754,
+      "video_end": 28.269
+    },
+    {
+      "line_index": 3,
+      "video_start": 28.508,
+      "video_end": 32.819
+    },
+    {
+      "line_index": 4,
+      "video_start": 33.058,
+      "video_end": 35.573
+    },
+    {
+      "line_index": 5,
+      "video_start": 35.812,
+      "video_end": 38.207
+    },
+    {
+      "line_index": 6,
+      "video_start": 38.446,
+      "video_end": 41.799
+    },
+    {
+      "line_index": 7,
+      "video_start": 42.038,
+      "video_end": 45.87
+    },
+    {
+      "line_index": 8,
+      "video_start": 46.11,
+      "video_end": 48.504
+    },
+    {
+      "line_index": 9,
+      "video_start": 48.744,
+      "video_end": 51.139
+    },
+    {
+      "line_index": 10,
+      "video_start": 51.378,
+      "video_end": 53.773
+    },
+    {
+      "line_index": 11,
+      "video_start": 54.012,
+      "video_end": 56.407
+    },
+    {
+      "line_index": 12,
+      "video_start": 56.646,
+      "video_end": 60.239
+    },
+    {
+      "line_index": 13,
+      "video_start": 60.478,
+      "video_end": 63.112
+    },
+    {
+      "line_index": 14,
+      "video_start": 63.352,
+      "video_end": 65.746
+    },
+    {
+      "line_index": 15,
+      "video_start": 65.986,
+      "video_end": 68.381
+    },
+    {
+      "line_index": 16,
+      "video_start": 68.62,
+      "video_end": 71.015
+    },
+    {
+      "line_index": 17,
+      "video_start": 71.254,
+      "video_end": 73.529
+    },
+    {
+      "line_index": 18,
+      "video_start": 73.889,
+      "video_end": 77.121
+    },
+    {
+      "line_index": 19,
+      "video_start": 77.361,
+      "video_end": 79.636
+    },
+    {
+      "line_index": 20,
+      "video_start": 79.995,
+      "video_end": 83.587
+    },
+    {
+      "line_index": 21,
+      "video_start": 83.827,
+      "video_end": 86.221
+    },
+    {
+      "line_index": 22,
+      "video_start": 86.461,
+      "video_end": 89.335
+    },
+    {
+      "line_index": 23,
+      "video_start": 89.574,
+      "video_end": 92.568
+    },
+    {
+      "line_index": 24,
+      "video_start": 92.807,
+      "video_end": 95.082
+    },
+    {
+      "line_index": 25,
+      "video_start": 95.441,
+      "video_end": 98.554
+    },
+    {
+      "line_index": 26,
+      "video_start": 98.794,
+      "video_end": 101.189
+    },
+    {
+      "line_index": 27,
+      "video_start": 101.428,
+      "video_end": 103.823
+    },
+    {
+      "line_index": 28,
+      "video_start": 104.062,
+      "video_end": 108.972
+    },
+    {
+      "line_index": 29,
+      "video_start": 109.211,
+      "video_end": 111.606
+    },
+    {
+      "line_index": 30,
+      "video_start": 111.845,
+      "video_end": 114.24
+    },
+    {
+      "line_index": 31,
+      "video_start": 114.479,
+      "video_end": 116.874
+    },
+    {
+      "line_index": 32,
+      "video_start": 117.114,
+      "video_end": 119.508
+    },
+    {
+      "line_index": 33,
+      "video_start": 119.748,
+      "video_end": 122.382
+    },
+    {
+      "line_index": 34,
+      "video_start": 122.622,
+      "video_end": 125.016
+    },
+    {
+      "line_index": 35,
+      "video_start": 125.256,
+      "video_end": 128.01
+    },
+    {
+      "line_index": 36,
+      "video_start": 128.249,
+      "video_end": 130.764
+    },
+    {
+      "line_index": 37,
+      "video_start": 131.003,
+      "video_end": 133.398
+    },
+    {
+      "line_index": 38,
+      "video_start": 133.637,
+      "video_end": 136.032
+    },
+    {
+      "line_index": 39,
+      "video_start": 136.272,
+      "video_end": 139.505
+    },
+    {
+      "line_index": 40,
+      "video_start": 139.744,
+      "video_end": 142.019
+    },
+    {
+      "line_index": 41,
+      "video_start": 142.378,
+      "video_end": 146.09
+    },
+    {
+      "line_index": 42,
+      "video_start": 146.449,
+      "video_end": 149.682
+    },
+    {
+      "line_index": 43,
+      "video_start": 149.922,
+      "video_end": 152.556
+    },
+    {
+      "line_index": 44,
+      "video_start": 152.795,
+      "video_end": 155.07
+    },
+    {
+      "line_index": 45,
+      "video_start": 155.43,
+      "video_end": 158.662
+    },
+    {
+      "line_index": 46,
+      "video_start": 158.902,
+      "video_end": 162.734
+    },
+    {
+      "line_index": 47,
+      "video_start": 162.973,
+      "video_end": 167.044
+    },
+    {
+      "line_index": 48,
+      "video_start": 167.403,
+      "video_end": 169.678
+    },
+    {
+      "line_index": 49,
+      "video_start": 170.038,
+      "video_end": 173.51
+    },
+    {
+      "line_index": 50,
+      "video_start": 173.749,
+      "video_end": 177.461
+    },
+    {
+      "line_index": 51,
+      "video_start": 177.701,
+      "video_end": 180.095
+    },
+    {
+      "line_index": 52,
+      "video_start": 180.335,
+      "video_end": 182.61
+    },
+    {
+      "line_index": 53,
+      "video_start": 182.969,
+      "video_end": 186.202
+    },
+    {
+      "line_index": 54,
+      "video_start": 186.442,
+      "video_end": 188.717
+    },
+    {
+      "line_index": 55,
+      "video_start": 189.076,
+      "video_end": 192.788
+    },
+    {
+      "line_index": 56,
+      "video_start": 193.027,
+      "video_end": 196.38
+    },
+    {
+      "line_index": 57,
+      "video_start": 196.619,
+      "video_end": 199.253
+    },
+    {
+      "line_index": 58,
+      "video_start": 199.493,
+      "video_end": 201.768
+    },
+    {
+      "line_index": 59,
+      "video_start": 202.127,
+      "video_end": 205.36
+    }
+  ],
+  "karaoke_timing_method": "visual_highlight_progress"
+}

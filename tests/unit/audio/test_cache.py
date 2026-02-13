@@ -1,6 +1,6 @@
 """Test cache management."""
 
-import json
+import json  # noqa: F401
 import os
 from pathlib import Path
 

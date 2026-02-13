@@ -1,7 +1,6 @@
 """Tests for word timing refinement module."""
 
 import pytest
-from unittest.mock import patch, MagicMock
 import numpy as np
 
 from y2karaoke.core.refine import (

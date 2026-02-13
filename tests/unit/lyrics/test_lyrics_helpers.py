@@ -132,9 +132,9 @@ def test_detect_offset_with_issues_tracks_large_delta(monkeypatch):
         "vocals.wav", line_timings, lyrics_offset=None, issues=issues
     )
 
-    assert offset == pytest.approx(14.0)
+    assert offset == 0.0
     assert issues
-    assert updated[0][0] == pytest.approx(15.0)
+    assert updated == line_timings
 
 
 def test_map_lrc_lines_uses_whisper_pause_for_word_slots():

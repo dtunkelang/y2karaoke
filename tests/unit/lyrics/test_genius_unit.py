@@ -1,4 +1,4 @@
-import pytest
+import pytest  # noqa: F401
 from bs4 import BeautifulSoup
 
 from y2karaoke.core import genius

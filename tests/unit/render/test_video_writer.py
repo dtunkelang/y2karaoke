@@ -1,8 +1,8 @@
 """Tests for video_writer.py module."""
 
 import pytest
-from pathlib import Path
-from unittest.mock import Mock, patch, MagicMock
+from pathlib import Path  # noqa: F401
+from unittest.mock import Mock, patch, MagicMock  # noqa: F401
 from y2karaoke.core.components.render.video_writer import (
     render_karaoke_video,
     get_background_at_time,

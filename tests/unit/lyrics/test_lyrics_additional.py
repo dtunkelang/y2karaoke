@@ -12,7 +12,7 @@ def _line(text, start=0.0, end=1.0):
     return Line(words=[Word(text=text, start_time=start, end_time=end)])
 
 
-def test_detect_and_apply_offset_large_delta_applies(monkeypatch):
+def test_detect_and_apply_offset_large_delta_skips(monkeypatch):
     monkeypatch.setattr(
         "y2karaoke.core.components.alignment.alignment.detect_song_start",
         lambda *_: 20.0,
@@ -23,8 +23,8 @@ def test_detect_and_apply_offset_large_delta_applies(monkeypatch):
         "vocals.wav", line_timings, lyrics_offset=None
     )
 
-    assert offset == pytest.approx(19.0)
-    assert updated[0][0] == pytest.approx(20.0)
+    assert offset == 0.0
+    assert updated == line_timings
 
 
 def test_detect_offset_with_issues_respects_manual(monkeypatch):

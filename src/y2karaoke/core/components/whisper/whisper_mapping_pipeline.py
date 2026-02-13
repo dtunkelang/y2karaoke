@@ -24,7 +24,7 @@ _TIME_DRIFT_THRESHOLD = 0.8
 _MAX_ANCHOR_DRIFT_FROM_LRC = 6.0
 _MAX_MATCHED_START_DRIFT_FORWARD = 8.0
 _MAX_MATCHED_START_DRIFT_BACKWARD = 4.0
-_MAX_LINE_FORWARD_SHIFT_FROM_LRC = 5.0
+_MAX_LINE_FORWARD_SHIFT_FROM_LRC = 8.0
 _MAX_LINE_BACKWARD_SHIFT_FROM_LRC = 5.0
 _MAX_LINE_DURATION_SCALE_FROM_LRC = 1.6
 
@@ -220,12 +220,13 @@ def _should_override_line_segment(
     max_anchor_strong_jump_seconds: float = 20.0,
 ) -> bool:
     """Decide whether assignment-based segment override is trustworthy."""
+    strong_hits = override_hits >= max(2, int(0.6 * max(1, line_word_count)))
+
     if current_segment is None:
         if not segments:
             return True
         override_start = whisper_utils._segment_start(segments[override_segment])
         anchor_jump = abs(override_start - line_anchor_time)
-        strong_hits = override_hits >= max(2, int(0.6 * max(1, line_word_count)))
         if anchor_jump <= max_anchor_jump_seconds:
             return True
         return strong_hits and anchor_jump <= max_anchor_strong_jump_seconds
@@ -244,7 +245,6 @@ def _should_override_line_segment(
     ):
         return True
 
-    strong_hits = override_hits >= max(2, int(0.6 * max(1, line_word_count)))
     return (
         strong_hits
         and jump_seconds <= max_strong_jump_seconds

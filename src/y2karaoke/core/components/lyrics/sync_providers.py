@@ -124,13 +124,12 @@ def fetch_lyrics_for_duration(
     logger: Any,
 ) -> Tuple[Optional[str], bool, str, Optional[int]]:
     """Fetch synced lyrics that match a target duration."""
-    if offline:
-        logger.info("Offline mode: skipping lyrics providers (cache only)")
-        return None, False, "", None
-
     if not is_syncedlyrics_available_fn(state) and not is_lyriq_available_fn(state):
-        logger.warning("Neither syncedlyrics nor lyriq installed")
-        return None, False, "", None
+        if not offline:
+            logger.warning("Neither syncedlyrics nor lyriq installed")
+            return None, False, "", None
+        # Offline mode can still return from cache-only lyrics resolution.
+        logger.info("Offline mode: attempting cached lyrics only")
 
     lrc_text, is_synced, source = fetch_lyrics_multi_source_fn(
         title,

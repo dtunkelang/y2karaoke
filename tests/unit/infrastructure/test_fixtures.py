@@ -4,8 +4,8 @@ These tests ensure the fixtures work correctly and serve as examples
 for how to use them in other test files.
 """
 
-import pytest
-from unittest.mock import patch
+import pytest  # noqa: F401
+from unittest.mock import patch  # noqa: F401
 
 
 class TestMusicBrainzFixtures:
@@ -82,7 +82,9 @@ class TestLRCFixtures:
 
     def test_invalid_lrc_has_sparse_timing(self, lrc_invalid_timing):
         """Invalid LRC should have sparse timing (for testing validation)."""
-        lines = [l for l in lrc_invalid_timing.split("\n") if l.startswith("[0")]
+        lines = [
+            line for line in lrc_invalid_timing.split("\n") if line.startswith("[0")
+        ]
         assert len(lines) == 2  # Only 2 timestamped lines
 
 
@@ -204,7 +206,7 @@ class TestCombinedMockFixtures:
         # Now we can test TrackIdentifier without network calls
         from y2karaoke.core.components.identify.implementation import TrackIdentifier
 
-        identifier = TrackIdentifier()
+        _identifier = TrackIdentifier()  # noqa: F841
 
         # The mocks are active, so any calls will use mock data
         assert (
