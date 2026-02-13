@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import importlib.util
+import os
 from pathlib import Path
 import sys
 
@@ -204,6 +205,11 @@ def test_resolve_run_dir_resume_latest(tmp_path):
     newer = tmp_path / "20260102T000000Z"
     older.mkdir(parents=True)
     newer.mkdir(parents=True)
+
+    # Force identical mtimes to ensure name-based tie-breaking is tested
+    now = 1739450000.0
+    os.utime(older, (now, now))
+    os.utime(newer, (now, now))
 
     run_dir, run_id = module._resolve_run_dir(
         output_root=tmp_path,

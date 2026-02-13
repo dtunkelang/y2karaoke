@@ -1009,7 +1009,7 @@ def _resolve_run_dir(
     if resume_latest:
         candidates = sorted(
             [p for p in output_root.resolve().glob("20*") if p.is_dir()],
-            key=lambda p: p.stat().st_mtime,
+            key=lambda p: (p.stat().st_mtime, p.name),
             reverse=True,
         )
         if candidates:
