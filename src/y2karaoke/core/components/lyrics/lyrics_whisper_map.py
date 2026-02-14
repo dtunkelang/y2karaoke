@@ -140,17 +140,6 @@ def _map_lrc_lines_to_whisper_segments(  # noqa: C901
                     _phonetic_similarity,
                 )
                 if window_words:
-                    if window_words[0].start is not None:
-                        whisper_start = window_words[0].start
-                        start_delta = desired_start - whisper_start
-                        if start_delta > 0.4:
-                            desired_start = max(
-                                whisper_start, desired_start - min(start_delta, 0.8)
-                            )
-                        elif start_delta < -0.4:
-                            desired_start = min(
-                                whisper_start, desired_start + min(-start_delta, 2.5)
-                            )
                     whisper_duration = None
                     if (
                         window_words[-1].end is not None

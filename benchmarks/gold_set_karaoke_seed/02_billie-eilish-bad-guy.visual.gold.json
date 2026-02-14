@@ -9,49 +9,49 @@
       "line_index": 1,
       "text": "White shirt now red, my bloody nose",
       "start": 14.2,
-      "end": 17.8,
+      "end": 17.7,
       "words": [
         {
           "word_index": 1,
           "text": "White",
           "start": 14.2,
-          "end": 14.8
+          "end": 14.65
         },
         {
           "word_index": 2,
           "text": "shirt",
-          "start": 14.8,
-          "end": 15.4
+          "start": 14.65,
+          "end": 15.1
         },
         {
           "word_index": 3,
           "text": "now",
-          "start": 15.4,
-          "end": 15.8
+          "start": 15.1,
+          "end": 15.55
         },
         {
           "word_index": 4,
           "text": "red,",
-          "start": 15.8,
-          "end": 16.3
+          "start": 15.55,
+          "end": 16.05
         },
         {
           "word_index": 5,
           "text": "my",
-          "start": 16.4,
-          "end": 16.7
+          "start": 16.05,
+          "end": 16.55
         },
         {
           "word_index": 6,
           "text": "bloody",
-          "start": 16.7,
-          "end": 17.4
+          "start": 16.55,
+          "end": 17.05
         },
         {
           "word_index": 7,
           "text": "nose",
-          "start": 17.4,
-          "end": 17.8
+          "start": 17.05,
+          "end": 17.7
         }
       ]
     },
@@ -59,43 +59,43 @@
       "line_index": 2,
       "text": "Sleepin', you're on your tippy toes",
       "start": 17.8,
-      "end": 20.7,
+      "end": 20.6,
       "words": [
         {
           "word_index": 1,
           "text": "Sleepin',",
           "start": 17.8,
-          "end": 18.6
+          "end": 18.2
         },
         {
           "word_index": 2,
           "text": "you're",
-          "start": 18.6,
-          "end": 19.2
+          "start": 18.2,
+          "end": 18.65
         },
         {
           "word_index": 3,
           "text": "on",
-          "start": 19.2,
-          "end": 19.4
+          "start": 18.65,
+          "end": 19.05
         },
         {
           "word_index": 4,
           "text": "your",
-          "start": 19.5,
-          "end": 19.9
+          "start": 19.05,
+          "end": 19.55
         },
         {
           "word_index": 5,
           "text": "tippy",
-          "start": 19.9,
-          "end": 20.4
+          "start": 19.55,
+          "end": 20.05
         },
         {
           "word_index": 6,
           "text": "toes",
-          "start": 20.4,
-          "end": 20.7
+          "start": 20.05,
+          "end": 20.6
         }
       ]
     },
@@ -103,43 +103,43 @@
       "line_index": 3,
       "text": "Creepin' around like no one knows",
       "start": 21.4,
-      "end": 24.4,
+      "end": 24.3,
       "words": [
         {
           "word_index": 1,
           "text": "Creepin'",
           "start": 21.4,
-          "end": 22.5
+          "end": 21.8
         },
         {
           "word_index": 2,
           "text": "around",
-          "start": 22.5,
-          "end": 23.0
+          "start": 21.8,
+          "end": 22.25
         },
         {
           "word_index": 3,
           "text": "like",
-          "start": 23.1,
-          "end": 23.5
+          "start": 22.25,
+          "end": 22.7
         },
         {
           "word_index": 4,
           "text": "no",
-          "start": 23.5,
-          "end": 23.8
+          "start": 22.7,
+          "end": 23.2
         },
         {
           "word_index": 5,
           "text": "one",
-          "start": 23.8,
-          "end": 24.2
+          "start": 23.2,
+          "end": 23.7
         },
         {
           "word_index": 6,
           "text": "knows",
-          "start": 24.2,
-          "end": 24.4
+          "start": 23.7,
+          "end": 24.3
         }
       ]
     },
@@ -147,31 +147,31 @@
       "line_index": 4,
       "text": "Think you're so criminal",
       "start": 24.9,
-      "end": 27.6,
+      "end": 27.0,
       "words": [
         {
           "word_index": 1,
           "text": "Think",
           "start": 24.9,
-          "end": 25.2
+          "end": 25.55
         },
         {
           "word_index": 2,
           "text": "you're",
-          "start": 25.2,
-          "end": 26.0
+          "start": 25.55,
+          "end": 25.6
         },
         {
           "word_index": 3,
           "text": "so",
-          "start": 26.1,
-          "end": 27.2
+          "start": 25.6,
+          "end": 26.3
         },
         {
           "word_index": 4,
           "text": "criminal",
-          "start": 27.2,
-          "end": 27.6
+          "start": 26.3,
+          "end": 27.0
         }
       ]
     },
@@ -179,49 +179,49 @@
       "line_index": 5,
       "text": "Bruises on both my knees for you",
       "start": 28.5,
-      "end": 31.3,
+      "end": 31.2,
       "words": [
         {
           "word_index": 1,
           "text": "Bruises",
           "start": 28.5,
-          "end": 30.2
+          "end": 28.85
         },
         {
           "word_index": 2,
           "text": "on",
-          "start": 30.2,
-          "end": 30.5
+          "start": 28.85,
+          "end": 29.2
         },
         {
           "word_index": 3,
           "text": "both",
-          "start": 30.5,
-          "end": 30.7
+          "start": 29.2,
+          "end": 29.55
         },
         {
           "word_index": 4,
           "text": "my",
-          "start": 30.7,
-          "end": 30.9
+          "start": 29.55,
+          "end": 29.9
         },
         {
           "word_index": 5,
           "text": "knees",
-          "start": 30.9,
-          "end": 31.2
+          "start": 29.9,
+          "end": 30.3
         },
         {
           "word_index": 6,
           "text": "for",
-          "start": 31.2,
-          "end": 31.2
+          "start": 30.3,
+          "end": 30.75
         },
         {
           "word_index": 7,
           "text": "you",
-          "start": 31.2,
-          "end": 31.3
+          "start": 30.75,
+          "end": 31.2
         }
       ]
     },
@@ -229,43 +229,43 @@
       "line_index": 6,
       "text": "Don't say thank you or please",
       "start": 32.0,
-      "end": 34.3,
+      "end": 34.8,
       "words": [
         {
           "word_index": 1,
           "text": "Don't",
           "start": 32.0,
-          "end": 32.3
+          "end": 32.4
         },
         {
           "word_index": 2,
           "text": "say",
-          "start": 32.3,
-          "end": 32.3
+          "start": 32.4,
+          "end": 32.85
         },
         {
           "word_index": 3,
           "text": "thank",
-          "start": 32.3,
-          "end": 32.4
+          "start": 32.85,
+          "end": 33.25
         },
         {
           "word_index": 4,
           "text": "you",
-          "start": 32.4,
-          "end": 33.8
+          "start": 33.25,
+          "end": 33.75
         },
         {
           "word_index": 5,
           "text": "or",
-          "start": 33.8,
-          "end": 34.0
+          "start": 33.75,
+          "end": 34.25
         },
         {
           "word_index": 6,
           "text": "please",
-          "start": 34.0,
-          "end": 34.3
+          "start": 34.25,
+          "end": 34.8
         }
       ]
     },
@@ -273,61 +273,61 @@
       "line_index": 7,
       "text": "I do what I want when I'm wanting to",
       "start": 34.9,
-      "end": 38.6,
+      "end": 38.5,
       "words": [
         {
           "word_index": 1,
           "text": "I",
           "start": 34.9,
-          "end": 36.5
+          "end": 35.25
         },
         {
           "word_index": 2,
           "text": "do",
-          "start": 36.5,
-          "end": 36.8
+          "start": 35.25,
+          "end": 35.6
         },
         {
           "word_index": 3,
           "text": "what",
-          "start": 36.8,
-          "end": 37.3
+          "start": 35.6,
+          "end": 35.95
         },
         {
           "word_index": 4,
           "text": "I",
-          "start": 37.3,
-          "end": 37.6
+          "start": 35.95,
+          "end": 36.35
         },
         {
           "word_index": 5,
           "text": "want",
-          "start": 37.6,
-          "end": 37.9
+          "start": 36.35,
+          "end": 36.75
         },
         {
           "word_index": 6,
           "text": "when",
-          "start": 37.9,
-          "end": 38.3
+          "start": 36.75,
+          "end": 37.1
         },
         {
           "word_index": 7,
           "text": "I'm",
-          "start": 38.3,
-          "end": 38.5
+          "start": 37.1,
+          "end": 37.55
         },
         {
           "word_index": 8,
           "text": "wanting",
-          "start": 38.5,
-          "end": 38.6
+          "start": 37.55,
+          "end": 38.0
         },
         {
           "word_index": 9,
           "text": "to",
-          "start": 38.6,
-          "end": 38.6
+          "start": 38.0,
+          "end": 38.5
         }
       ]
     },
@@ -335,31 +335,31 @@
       "line_index": 8,
       "text": "My soul? So cynical",
       "start": 39.1,
-      "end": 40.7,
+      "end": 41.3,
       "words": [
         {
           "word_index": 1,
           "text": "My",
           "start": 39.1,
-          "end": 39.5
+          "end": 39.6
         },
         {
           "word_index": 2,
           "text": "soul?",
-          "start": 39.5,
-          "end": 40.4
+          "start": 39.6,
+          "end": 40.1
         },
         {
           "word_index": 3,
           "text": "So",
-          "start": 40.4,
-          "end": 40.5
+          "start": 40.1,
+          "end": 40.65
         },
         {
           "word_index": 4,
           "text": "cynical",
-          "start": 40.5,
-          "end": 40.7
+          "start": 40.65,
+          "end": 41.3
         }
       ]
     },
@@ -367,37 +367,37 @@
       "line_index": 9,
       "text": "So you're a tough guy",
       "start": 42.0,
-      "end": 43.3,
+      "end": 43.45,
       "words": [
         {
           "word_index": 1,
           "text": "So",
           "start": 42.0,
-          "end": 42.4
+          "end": 42.25
         },
         {
           "word_index": 2,
           "text": "you're",
-          "start": 42.4,
-          "end": 42.6
+          "start": 42.25,
+          "end": 42.5
         },
         {
           "word_index": 3,
           "text": "a",
-          "start": 42.6,
-          "end": 42.7
+          "start": 42.5,
+          "end": 42.8
         },
         {
           "word_index": 4,
           "text": "tough",
-          "start": 42.7,
-          "end": 42.8
+          "start": 42.8,
+          "end": 43.1
         },
         {
           "word_index": 5,
           "text": "guy",
-          "start": 42.8,
-          "end": 43.3
+          "start": 43.1,
+          "end": 43.45
         }
       ]
     },
@@ -405,37 +405,37 @@
       "line_index": 10,
       "text": "Like it really rough guy",
       "start": 43.6,
-      "end": 44.9,
+      "end": 45.35,
       "words": [
         {
           "word_index": 1,
           "text": "Like",
           "start": 43.6,
-          "end": 44.4
+          "end": 43.9
         },
         {
           "word_index": 2,
           "text": "it",
-          "start": 44.4,
-          "end": 44.6
+          "start": 43.9,
+          "end": 44.2
         },
         {
           "word_index": 3,
           "text": "really",
-          "start": 44.6,
-          "end": 44.8
+          "start": 44.2,
+          "end": 44.55
         },
         {
           "word_index": 4,
           "text": "rough",
-          "start": 44.8,
-          "end": 44.8
+          "start": 44.55,
+          "end": 44.9
         },
         {
           "word_index": 5,
           "text": "guy",
-          "start": 44.8,
-          "end": 44.9
+          "start": 44.9,
+          "end": 45.35
         }
       ]
     },
@@ -443,37 +443,37 @@
       "line_index": 11,
       "text": "Just can't get enough guy",
       "start": 45.4,
-      "end": 47.0,
+      "end": 47.05,
       "words": [
         {
           "word_index": 1,
           "text": "Just",
           "start": 45.4,
-          "end": 46.6
+          "end": 45.7
         },
         {
           "word_index": 2,
           "text": "can't",
-          "start": 46.6,
-          "end": 46.9
+          "start": 45.7,
+          "end": 46.0
         },
         {
           "word_index": 3,
           "text": "get",
-          "start": 46.9,
-          "end": 46.9
+          "start": 46.0,
+          "end": 46.3
         },
         {
           "word_index": 4,
           "text": "enough",
-          "start": 46.9,
-          "end": 47.0
+          "start": 46.3,
+          "end": 46.65
         },
         {
           "word_index": 5,
           "text": "guy",
-          "start": 47.0,
-          "end": 47.0
+          "start": 46.65,
+          "end": 47.05
         }
       ]
     },
@@ -487,30 +487,30 @@
           "word_index": 1,
           "text": "Chest",
           "start": 47.1,
-          "end": 47.4
+          "end": 47.45
         },
         {
           "word_index": 2,
           "text": "always",
-          "start": 47.4,
-          "end": 48.0
+          "start": 47.45,
+          "end": 47.85
         },
         {
           "word_index": 3,
           "text": "so",
-          "start": 48.0,
-          "end": 48.9
+          "start": 49.05,
+          "end": 49.1
         },
         {
           "word_index": 4,
           "text": "puffed",
-          "start": 48.9,
-          "end": 49.2
+          "start": 49.1,
+          "end": 49.15
         },
         {
           "word_index": 5,
           "text": "guy",
-          "start": 49.2,
+          "start": 49.15,
           "end": 49.2
         }
       ]
@@ -519,31 +519,31 @@
       "line_index": 13,
       "text": "I'm that bad type",
       "start": 49.4,
-      "end": 50.6,
+      "end": 50.65,
       "words": [
         {
           "word_index": 1,
           "text": "I'm",
           "start": 49.4,
-          "end": 50.0
+          "end": 49.7
         },
         {
           "word_index": 2,
           "text": "that",
-          "start": 50.0,
-          "end": 50.2
+          "start": 49.7,
+          "end": 49.95
         },
         {
           "word_index": 3,
           "text": "bad",
-          "start": 50.2,
-          "end": 50.5
+          "start": 49.95,
+          "end": 50.3
         },
         {
           "word_index": 4,
           "text": "type",
-          "start": 50.5,
-          "end": 50.6
+          "start": 50.3,
+          "end": 50.65
         }
       ]
     },
@@ -551,37 +551,37 @@
       "line_index": 14,
       "text": "Make your mama sad type",
       "start": 50.7,
-      "end": 52.5,
+      "end": 52.45,
       "words": [
         {
           "word_index": 1,
           "text": "Make",
           "start": 50.7,
-          "end": 51.6
+          "end": 51.0
         },
         {
           "word_index": 2,
           "text": "your",
-          "start": 51.6,
-          "end": 52.2
+          "start": 51.0,
+          "end": 51.3
         },
         {
           "word_index": 3,
           "text": "mama",
-          "start": 52.2,
-          "end": 52.4
+          "start": 51.3,
+          "end": 51.65
         },
         {
           "word_index": 4,
           "text": "sad",
-          "start": 52.4,
-          "end": 52.4
+          "start": 51.65,
+          "end": 52.0
         },
         {
           "word_index": 5,
           "text": "type",
-          "start": 52.4,
-          "end": 52.5
+          "start": 52.0,
+          "end": 52.45
         }
       ]
     },
@@ -589,37 +589,37 @@
       "line_index": 15,
       "text": "Make your girlfriend mad tight",
       "start": 52.5,
-      "end": 54.0,
+      "end": 54.15,
       "words": [
         {
           "word_index": 1,
           "text": "Make",
           "start": 52.5,
-          "end": 53.5
+          "end": 52.8
         },
         {
           "word_index": 2,
           "text": "your",
-          "start": 53.5,
-          "end": 53.7
+          "start": 52.8,
+          "end": 53.1
         },
         {
           "word_index": 3,
           "text": "girlfriend",
-          "start": 53.7,
-          "end": 53.9
+          "start": 53.1,
+          "end": 53.4
         },
         {
           "word_index": 4,
           "text": "mad",
-          "start": 53.9,
-          "end": 53.9
+          "start": 53.4,
+          "end": 53.75
         },
         {
           "word_index": 5,
           "text": "tight",
-          "start": 53.9,
-          "end": 54.0
+          "start": 53.75,
+          "end": 54.15
         }
       ]
     },
@@ -627,37 +627,37 @@
       "line_index": 16,
       "text": "Might seduce your dad type",
       "start": 54.2,
-      "end": 56.3,
+      "end": 56.2,
       "words": [
         {
           "word_index": 1,
           "text": "Might",
           "start": 54.2,
-          "end": 55.4
+          "end": 54.55
         },
         {
           "word_index": 2,
           "text": "seduce",
-          "start": 55.4,
-          "end": 55.9
+          "start": 54.55,
+          "end": 54.95
         },
         {
           "word_index": 3,
           "text": "your",
-          "start": 55.9,
-          "end": 56.1
+          "start": 54.95,
+          "end": 55.3
         },
         {
           "word_index": 4,
           "text": "dad",
-          "start": 56.1,
-          "end": 56.2
+          "start": 55.3,
+          "end": 55.75
         },
         {
           "word_index": 5,
           "text": "type",
-          "start": 56.2,
-          "end": 56.3
+          "start": 55.75,
+          "end": 56.2
         }
       ]
     },
@@ -665,37 +665,37 @@
       "line_index": 17,
       "text": "I'm the bad guy, duh",
       "start": 56.4,
-      "end": 58.5,
+      "end": 58.8,
       "words": [
         {
           "word_index": 1,
           "text": "I'm",
           "start": 56.4,
-          "end": 57.1
+          "end": 57.4
         },
         {
           "word_index": 2,
           "text": "the",
-          "start": 57.1,
-          "end": 57.2
+          "start": 57.4,
+          "end": 57.75
         },
         {
           "word_index": 3,
           "text": "bad",
-          "start": 57.2,
-          "end": 57.5
+          "start": 57.75,
+          "end": 58.1
         },
         {
           "word_index": 4,
           "text": "guy,",
-          "start": 57.5,
-          "end": 57.8
+          "start": 58.1,
+          "end": 58.15
         },
         {
           "word_index": 5,
           "text": "duh",
-          "start": 57.8,
-          "end": 58.5
+          "start": 58.15,
+          "end": 58.8
         }
       ]
     },
@@ -703,31 +703,31 @@
       "line_index": 18,
       "text": "I'm the bad guy",
       "start": 67.2,
-      "end": 67.9,
+      "end": 67.8,
       "words": [
         {
           "word_index": 1,
           "text": "I'm",
           "start": 67.2,
-          "end": 67.5
+          "end": 67.35
         },
         {
           "word_index": 2,
           "text": "the",
-          "start": 67.5,
-          "end": 67.6
+          "start": 67.35,
+          "end": 67.55
         },
         {
           "word_index": 3,
           "text": "bad",
-          "start": 67.6,
-          "end": 67.7
+          "start": 67.55,
+          "end": 67.75
         },
         {
           "word_index": 4,
           "text": "guy",
-          "start": 67.7,
-          "end": 67.9
+          "start": 67.75,
+          "end": 67.8
         }
       ]
     },
@@ -735,49 +735,49 @@
       "line_index": 19,
       "text": "I like it when you take control",
       "start": 74.7,
-      "end": 78.1,
+      "end": 78.0,
       "words": [
         {
           "word_index": 1,
           "text": "I",
           "start": 74.7,
-          "end": 75.7
+          "end": 75.1
         },
         {
           "word_index": 2,
           "text": "like",
-          "start": 75.7,
-          "end": 76.2
+          "start": 75.1,
+          "end": 75.55
         },
         {
           "word_index": 3,
           "text": "it",
-          "start": 76.2,
-          "end": 76.9
+          "start": 75.55,
+          "end": 75.95
         },
         {
           "word_index": 4,
           "text": "when",
-          "start": 77.0,
-          "end": 77.5
+          "start": 75.95,
+          "end": 76.4
         },
         {
           "word_index": 5,
           "text": "you",
-          "start": 77.5,
-          "end": 77.9
+          "start": 76.4,
+          "end": 76.9
         },
         {
           "word_index": 6,
           "text": "take",
-          "start": 77.9,
-          "end": 78.0
+          "start": 76.9,
+          "end": 77.4
         },
         {
           "word_index": 7,
           "text": "control",
-          "start": 78.0,
-          "end": 78.1
+          "start": 77.4,
+          "end": 78.0
         }
       ]
     },
@@ -785,49 +785,49 @@
       "line_index": 20,
       "text": "Even if you know that you don't",
       "start": 78.2,
-      "end": 79.8,
+      "end": 80.05,
       "words": [
         {
           "word_index": 1,
           "text": "Even",
           "start": 78.2,
-          "end": 78.7
+          "end": 78.45
         },
         {
           "word_index": 2,
           "text": "if",
-          "start": 78.7,
-          "end": 79.0
+          "start": 78.45,
+          "end": 78.65
         },
         {
           "word_index": 3,
           "text": "you",
-          "start": 79.0,
-          "end": 79.1
+          "start": 78.65,
+          "end": 78.9
         },
         {
           "word_index": 4,
           "text": "know",
-          "start": 79.1,
-          "end": 79.3
+          "start": 78.9,
+          "end": 79.15
         },
         {
           "word_index": 5,
           "text": "that",
-          "start": 79.3,
-          "end": 79.3
+          "start": 79.15,
+          "end": 79.45
         },
         {
           "word_index": 6,
           "text": "you",
-          "start": 79.3,
-          "end": 79.5
+          "start": 79.45,
+          "end": 79.7
         },
         {
           "word_index": 7,
           "text": "don't",
-          "start": 79.5,
-          "end": 79.8
+          "start": 79.7,
+          "end": 80.05
         }
       ]
     },
@@ -835,55 +835,55 @@
       "line_index": 21,
       "text": "Own me, I'll let you play the role",
       "start": 81.8,
-      "end": 84.2,
+      "end": 84.15,
       "words": [
         {
           "word_index": 1,
           "text": "Own",
           "start": 81.8,
-          "end": 82.1
+          "end": 82.05
         },
         {
           "word_index": 2,
           "text": "me,",
-          "start": 82.1,
-          "end": 82.4
+          "start": 82.05,
+          "end": 82.3
         },
         {
           "word_index": 3,
           "text": "I'll",
-          "start": 82.4,
-          "end": 82.7
+          "start": 82.3,
+          "end": 82.6
         },
         {
           "word_index": 4,
           "text": "let",
-          "start": 82.7,
-          "end": 83.0
+          "start": 82.6,
+          "end": 82.85
         },
         {
           "word_index": 5,
           "text": "you",
-          "start": 83.0,
-          "end": 83.3
+          "start": 82.85,
+          "end": 83.15
         },
         {
           "word_index": 6,
           "text": "play",
-          "start": 83.3,
-          "end": 83.6
+          "start": 83.15,
+          "end": 83.45
         },
         {
           "word_index": 7,
           "text": "the",
-          "start": 83.6,
-          "end": 83.9
+          "start": 83.45,
+          "end": 83.75
         },
         {
           "word_index": 8,
           "text": "role",
-          "start": 83.9,
-          "end": 84.2
+          "start": 83.75,
+          "end": 84.15
         }
       ]
     },
@@ -891,31 +891,31 @@
       "line_index": 22,
       "text": "I'll be your animal",
       "start": 85.4,
-      "end": 87.3,
+      "end": 87.15,
       "words": [
         {
           "word_index": 1,
           "text": "I'll",
           "start": 85.4,
-          "end": 86.0
+          "end": 85.9
         },
         {
           "word_index": 2,
           "text": "be",
-          "start": 86.0,
+          "start": 85.9,
           "end": 86.4
         },
         {
           "word_index": 3,
           "text": "your",
           "start": 86.4,
-          "end": 87.0
+          "end": 86.45
         },
         {
           "word_index": 4,
           "text": "animal",
-          "start": 87.0,
-          "end": 87.3
+          "start": 86.45,
+          "end": 87.15
         }
       ]
     },
@@ -923,55 +923,55 @@
       "line_index": 23,
       "text": "My mommy likes to sing along with me",
       "start": 88.9,
-      "end": 92.4,
+      "end": 92.35,
       "words": [
         {
           "word_index": 1,
           "text": "My",
           "start": 88.9,
-          "end": 91.8
+          "end": 89.3
         },
         {
           "word_index": 2,
           "text": "mommy",
-          "start": 91.9,
-          "end": 92.1
+          "start": 89.3,
+          "end": 89.75
         },
         {
           "word_index": 3,
           "text": "likes",
-          "start": 92.1,
-          "end": 92.2
+          "start": 89.75,
+          "end": 90.2
         },
         {
           "word_index": 4,
           "text": "to",
-          "start": 92.2,
-          "end": 92.2
+          "start": 90.2,
+          "end": 90.65
         },
         {
           "word_index": 5,
           "text": "sing",
-          "start": 92.2,
-          "end": 92.3
+          "start": 90.65,
+          "end": 91.15
         },
         {
           "word_index": 6,
           "text": "along",
-          "start": 92.3,
-          "end": 92.3
+          "start": 91.15,
+          "end": 91.65
         },
         {
           "word_index": 7,
           "text": "with",
-          "start": 92.3,
-          "end": 92.4
+          "start": 91.65,
+          "end": 92.15
         },
         {
           "word_index": 8,
           "text": "me",
-          "start": 92.4,
-          "end": 92.4
+          "start": 92.15,
+          "end": 92.35
         }
       ]
     },
@@ -979,43 +979,43 @@
       "line_index": 24,
       "text": "But she won't sing this song",
       "start": 93.6,
-      "end": 95.3,
+      "end": 95.9,
       "words": [
         {
           "word_index": 1,
           "text": "But",
           "start": 93.6,
-          "end": 93.8
+          "end": 93.95
         },
         {
           "word_index": 2,
           "text": "she",
-          "start": 93.8,
-          "end": 93.9
+          "start": 93.95,
+          "end": 94.3
         },
         {
           "word_index": 3,
           "text": "won't",
-          "start": 93.9,
-          "end": 94.0
+          "start": 94.3,
+          "end": 94.65
         },
         {
           "word_index": 4,
           "text": "sing",
-          "start": 94.0,
-          "end": 95.0
+          "start": 94.65,
+          "end": 95.05
         },
         {
           "word_index": 5,
           "text": "this",
-          "start": 95.0,
-          "end": 95.3
+          "start": 95.05,
+          "end": 95.45
         },
         {
           "word_index": 6,
           "text": "song",
-          "start": 95.3,
-          "end": 95.3
+          "start": 95.45,
+          "end": 95.9
         }
       ]
     },
@@ -1023,43 +1023,43 @@
       "line_index": 25,
       "text": "If she reads all the lyrics",
       "start": 96.0,
-      "end": 98.9,
+      "end": 99.1,
       "words": [
         {
           "word_index": 1,
           "text": "If",
           "start": 96.0,
-          "end": 96.3
+          "end": 96.45
         },
         {
           "word_index": 2,
           "text": "she",
-          "start": 96.4,
-          "end": 96.8
+          "start": 96.45,
+          "end": 96.9
         },
         {
           "word_index": 3,
           "text": "reads",
-          "start": 96.8,
-          "end": 97.5
+          "start": 96.9,
+          "end": 97.4
         },
         {
           "word_index": 4,
           "text": "all",
-          "start": 97.5,
-          "end": 98.0
+          "start": 97.4,
+          "end": 97.9
         },
         {
           "word_index": 5,
           "text": "the",
-          "start": 98.0,
-          "end": 98.5
+          "start": 97.9,
+          "end": 98.45
         },
         {
           "word_index": 6,
           "text": "lyrics",
-          "start": 98.5,
-          "end": 98.9
+          "start": 98.45,
+          "end": 99.1
         }
       ]
     },
@@ -1067,43 +1067,43 @@
       "line_index": 26,
       "text": "She'll pity the men I know",
       "start": 99.2,
-      "end": 101.3,
+      "end": 101.7,
       "words": [
         {
           "word_index": 1,
           "text": "She'll",
           "start": 99.2,
-          "end": 99.7
+          "end": 99.55
         },
         {
           "word_index": 2,
           "text": "pity",
-          "start": 99.7,
-          "end": 99.9
+          "start": 99.55,
+          "end": 99.95
         },
         {
           "word_index": 3,
           "text": "the",
-          "start": 99.9,
-          "end": 100.3
+          "start": 99.95,
+          "end": 100.35
         },
         {
           "word_index": 4,
           "text": "men",
-          "start": 100.3,
-          "end": 100.7
+          "start": 100.35,
+          "end": 100.75
         },
         {
           "word_index": 5,
           "text": "I",
-          "start": 100.7,
-          "end": 100.9
+          "start": 100.75,
+          "end": 101.2
         },
         {
           "word_index": 6,
           "text": "know",
-          "start": 100.9,
-          "end": 101.3
+          "start": 101.2,
+          "end": 101.7
         }
       ]
     },
@@ -1111,37 +1111,37 @@
       "line_index": 27,
       "text": "So you're a tough guy",
       "start": 102.5,
-      "end": 103.7,
+      "end": 103.95,
       "words": [
         {
           "word_index": 1,
           "text": "So",
           "start": 102.5,
-          "end": 102.7
+          "end": 102.75
         },
         {
           "word_index": 2,
           "text": "you're",
-          "start": 102.7,
-          "end": 102.9
+          "start": 102.75,
+          "end": 103.0
         },
         {
           "word_index": 3,
           "text": "a",
-          "start": 102.9,
-          "end": 103.2
+          "start": 103.0,
+          "end": 103.3
         },
         {
           "word_index": 4,
           "text": "tough",
-          "start": 103.2,
-          "end": 103.5
+          "start": 103.3,
+          "end": 103.6
         },
         {
           "word_index": 5,
           "text": "guy",
-          "start": 103.5,
-          "end": 103.7
+          "start": 103.6,
+          "end": 103.95
         }
       ]
     },
@@ -1149,37 +1149,37 @@
       "line_index": 28,
       "text": "Like it really rough guy",
       "start": 104.0,
-      "end": 105.5,
+      "end": 105.65,
       "words": [
         {
           "word_index": 1,
           "text": "Like",
           "start": 104.0,
-          "end": 104.7
+          "end": 104.3
         },
         {
           "word_index": 2,
           "text": "it",
-          "start": 104.7,
-          "end": 105.1
+          "start": 104.3,
+          "end": 104.6
         },
         {
           "word_index": 3,
           "text": "really",
-          "start": 105.1,
-          "end": 105.1
+          "start": 104.6,
+          "end": 104.9
         },
         {
           "word_index": 4,
           "text": "rough",
-          "start": 105.1,
-          "end": 105.4
+          "start": 104.9,
+          "end": 105.25
         },
         {
           "word_index": 5,
           "text": "guy",
-          "start": 105.4,
-          "end": 105.5
+          "start": 105.25,
+          "end": 105.65
         }
       ]
     },
@@ -1187,37 +1187,37 @@
       "line_index": 29,
       "text": "Just can't get enough guy",
       "start": 105.8,
-      "end": 107.4,
+      "end": 107.55,
       "words": [
         {
           "word_index": 1,
           "text": "Just",
           "start": 105.8,
-          "end": 106.6
+          "end": 106.1
         },
         {
           "word_index": 2,
           "text": "can't",
-          "start": 106.6,
-          "end": 106.9
+          "start": 106.1,
+          "end": 106.4
         },
         {
           "word_index": 3,
           "text": "get",
-          "start": 106.9,
-          "end": 107.0
+          "start": 106.4,
+          "end": 106.75
         },
         {
           "word_index": 4,
           "text": "enough",
-          "start": 107.0,
-          "end": 107.3
+          "start": 106.75,
+          "end": 107.1
         },
         {
           "word_index": 5,
           "text": "guy",
-          "start": 107.3,
-          "end": 107.4
+          "start": 107.1,
+          "end": 107.55
         }
       ]
     },
@@ -1225,37 +1225,37 @@
       "line_index": 30,
       "text": "Chest always so puffed guy",
       "start": 107.6,
-      "end": 109.3,
+      "end": 109.5,
       "words": [
         {
           "word_index": 1,
           "text": "Chest",
           "start": 107.6,
-          "end": 108.4
+          "end": 107.95
         },
         {
           "word_index": 2,
           "text": "always",
-          "start": 108.4,
-          "end": 108.9
+          "start": 107.95,
+          "end": 108.3
         },
         {
           "word_index": 3,
           "text": "so",
-          "start": 108.9,
-          "end": 109.1
+          "start": 108.3,
+          "end": 108.65
         },
         {
           "word_index": 4,
           "text": "puffed",
-          "start": 109.1,
-          "end": 109.2
+          "start": 108.65,
+          "end": 109.05
         },
         {
           "word_index": 5,
           "text": "guy",
-          "start": 109.2,
-          "end": 109.3
+          "start": 109.05,
+          "end": 109.5
         }
       ]
     },
@@ -1263,31 +1263,31 @@
       "line_index": 31,
       "text": "I'm that bad type",
       "start": 109.8,
-      "end": 110.8,
+      "end": 111.05,
       "words": [
         {
           "word_index": 1,
           "text": "I'm",
           "start": 109.8,
-          "end": 110.6
+          "end": 110.1
         },
         {
           "word_index": 2,
           "text": "that",
-          "start": 110.6,
-          "end": 110.7
+          "start": 110.1,
+          "end": 110.35
         },
         {
           "word_index": 3,
           "text": "bad",
-          "start": 110.7,
-          "end": 110.8
+          "start": 110.35,
+          "end": 110.7
         },
         {
           "word_index": 4,
           "text": "type",
-          "start": 110.8,
-          "end": 110.8
+          "start": 110.7,
+          "end": 111.05
         }
       ]
     },
@@ -1295,37 +1295,37 @@
       "line_index": 32,
       "text": "Make your mama sad type",
       "start": 111.1,
-      "end": 112.1,
+      "end": 112.05,
       "words": [
         {
           "word_index": 1,
           "text": "Make",
           "start": 111.1,
-          "end": 111.3
+          "end": 111.25
         },
         {
           "word_index": 2,
           "text": "your",
-          "start": 111.3,
-          "end": 111.4
+          "start": 111.25,
+          "end": 111.45
         },
         {
           "word_index": 3,
           "text": "mama",
-          "start": 111.4,
-          "end": 111.6
+          "start": 111.45,
+          "end": 111.65
         },
         {
           "word_index": 4,
           "text": "sad",
-          "start": 111.6,
-          "end": 111.8
+          "start": 111.65,
+          "end": 111.85
         },
         {
           "word_index": 5,
           "text": "type",
-          "start": 111.8,
-          "end": 112.1
+          "start": 111.85,
+          "end": 112.05
         }
       ]
     },
@@ -1333,37 +1333,37 @@
       "line_index": 33,
       "text": "Make your girlfriend mad tight",
       "start": 112.9,
-      "end": 114.4,
+      "end": 114.65,
       "words": [
         {
           "word_index": 1,
           "text": "Make",
           "start": 112.9,
-          "end": 113.4
+          "end": 113.2
         },
         {
           "word_index": 2,
           "text": "your",
-          "start": 113.4,
-          "end": 113.7
+          "start": 113.75,
+          "end": 113.95
         },
         {
           "word_index": 3,
           "text": "girlfriend",
-          "start": 113.7,
-          "end": 113.9
+          "start": 113.95,
+          "end": 114.15
         },
         {
           "word_index": 4,
           "text": "mad",
-          "start": 113.9,
-          "end": 114.2
+          "start": 114.15,
+          "end": 114.4
         },
         {
           "word_index": 5,
           "text": "tight",
-          "start": 114.2,
-          "end": 114.4
+          "start": 114.4,
+          "end": 114.65
         }
       ]
     },
@@ -1371,37 +1371,37 @@
       "line_index": 34,
       "text": "Might seduce your dad type",
       "start": 114.7,
-      "end": 116.2,
+      "end": 116.35,
       "words": [
         {
           "word_index": 1,
           "text": "Might",
           "start": 114.7,
-          "end": 115.8
+          "end": 115.0
         },
         {
           "word_index": 2,
           "text": "seduce",
-          "start": 115.8,
-          "end": 116.1
+          "start": 115.0,
+          "end": 115.3
         },
         {
           "word_index": 3,
           "text": "your",
-          "start": 116.1,
-          "end": 116.1
+          "start": 115.3,
+          "end": 115.6
         },
         {
           "word_index": 4,
           "text": "dad",
-          "start": 116.1,
-          "end": 116.2
+          "start": 115.6,
+          "end": 115.95
         },
         {
           "word_index": 5,
           "text": "type",
-          "start": 116.2,
-          "end": 116.2
+          "start": 115.95,
+          "end": 116.35
         }
       ]
     },
@@ -1409,37 +1409,37 @@
       "line_index": 35,
       "text": "I'm the bad guy, duh",
       "start": 116.9,
-      "end": 118.9,
+      "end": 118.75,
       "words": [
         {
           "word_index": 1,
           "text": "I'm",
           "start": 116.9,
-          "end": 117.6
+          "end": 117.25
         },
         {
           "word_index": 2,
           "text": "the",
-          "start": 117.6,
-          "end": 118.0
+          "start": 117.25,
+          "end": 117.65
         },
         {
           "word_index": 3,
           "text": "bad",
-          "start": 118.0,
-          "end": 118.6
+          "start": 117.65,
+          "end": 118.0
         },
         {
           "word_index": 4,
           "text": "guy,",
-          "start": 118.6,
-          "end": 118.8
+          "start": 118.0,
+          "end": 118.05
         },
         {
           "word_index": 5,
           "text": "duh",
-          "start": 118.8,
-          "end": 118.9
+          "start": 118.05,
+          "end": 118.75
         }
       ]
     },
@@ -1447,7 +1447,7 @@
       "line_index": 36,
       "text": "I'm the bad guy",
       "start": 127.5,
-      "end": 128.4,
+      "end": 128.35,
       "words": [
         {
           "word_index": 1,
@@ -1459,19 +1459,19 @@
           "word_index": 2,
           "text": "the",
           "start": 127.7,
-          "end": 127.8
+          "end": 127.9
         },
         {
           "word_index": 3,
           "text": "bad",
-          "start": 127.8,
+          "start": 127.9,
           "end": 128.1
         },
         {
           "word_index": 4,
           "text": "guy",
           "start": 128.1,
-          "end": 128.4
+          "end": 128.35
         }
       ]
     },
@@ -1479,13 +1479,13 @@
       "line_index": 37,
       "text": "Duh",
       "start": 134.4,
-      "end": 135.3,
+      "end": 135.35,
       "words": [
         {
           "word_index": 1,
           "text": "Duh",
           "start": 134.4,
-          "end": 135.3
+          "end": 135.35
         }
       ]
     },
@@ -1493,49 +1493,49 @@
       "line_index": 38,
       "text": "I'm only good at being bad, bad",
       "start": 140.7,
-      "end": 143.0,
+      "end": 143.25,
       "words": [
         {
           "word_index": 1,
           "text": "I'm",
           "start": 140.7,
-          "end": 140.9
+          "end": 141.05
         },
         {
           "word_index": 2,
           "text": "only",
-          "start": 140.9,
-          "end": 141.0
+          "start": 141.05,
+          "end": 141.4
         },
         {
           "word_index": 3,
           "text": "good",
-          "start": 141.0,
-          "end": 141.3
+          "start": 141.4,
+          "end": 141.75
         },
         {
           "word_index": 4,
           "text": "at",
-          "start": 141.3,
-          "end": 141.6
+          "start": 141.75,
+          "end": 142.1
         },
         {
           "word_index": 5,
           "text": "being",
-          "start": 141.6,
-          "end": 142.1
+          "start": 142.1,
+          "end": 142.5
         },
         {
           "word_index": 6,
           "text": "bad,",
-          "start": 142.2,
-          "end": 142.6
+          "start": 142.5,
+          "end": 142.55
         },
         {
           "word_index": 7,
           "text": "bad",
-          "start": 142.6,
-          "end": 143.0
+          "start": 142.55,
+          "end": 143.25
         }
       ]
     },
@@ -1543,43 +1543,43 @@
       "line_index": 39,
       "text": "I like when you get mad",
       "start": 159.5,
-      "end": 162.6,
+      "end": 162.5,
       "words": [
         {
           "word_index": 1,
           "text": "I",
           "start": 159.5,
-          "end": 159.8
+          "end": 159.95
         },
         {
           "word_index": 2,
           "text": "like",
-          "start": 159.8,
+          "start": 159.95,
           "end": 160.4
         },
         {
           "word_index": 3,
           "text": "when",
           "start": 160.4,
-          "end": 161.1
+          "end": 160.85
         },
         {
           "word_index": 4,
           "text": "you",
-          "start": 161.1,
-          "end": 161.6
+          "start": 160.85,
+          "end": 161.35
         },
         {
           "word_index": 5,
           "text": "get",
-          "start": 161.7,
-          "end": 162.2
+          "start": 161.35,
+          "end": 161.9
         },
         {
           "word_index": 6,
           "text": "mad",
-          "start": 162.2,
-          "end": 162.6
+          "start": 161.9,
+          "end": 162.5
         }
       ]
     },
@@ -1593,48 +1593,48 @@
           "word_index": 1,
           "text": "I",
           "start": 163.5,
-          "end": 163.7
+          "end": 163.9
         },
         {
           "word_index": 2,
           "text": "guess",
-          "start": 163.7,
-          "end": 164.3
+          "start": 163.9,
+          "end": 164.35
         },
         {
           "word_index": 3,
           "text": "I'm",
-          "start": 164.3,
-          "end": 164.6
+          "start": 164.35,
+          "end": 164.75
         },
         {
           "word_index": 4,
           "text": "pretty",
-          "start": 164.6,
-          "end": 165.3
+          "start": 164.75,
+          "end": 165.2
         },
         {
           "word_index": 5,
           "text": "glad",
-          "start": 165.3,
-          "end": 165.8
+          "start": 165.2,
+          "end": 165.7
         },
         {
           "word_index": 6,
           "text": "that",
-          "start": 165.8,
-          "end": 166.2
+          "start": 165.7,
+          "end": 166.15
         },
         {
           "word_index": 7,
           "text": "you're",
-          "start": 166.3,
-          "end": 166.9
+          "start": 166.15,
+          "end": 166.7
         },
         {
           "word_index": 8,
           "text": "alone",
-          "start": 166.9,
+          "start": 166.7,
           "end": 167.3
         }
       ]
@@ -1643,43 +1643,43 @@
       "line_index": 41,
       "text": "You said she's scared of me?",
       "start": 167.5,
-      "end": 169.4,
+      "end": 169.55,
       "words": [
         {
           "word_index": 1,
           "text": "You",
           "start": 167.5,
-          "end": 168.2
+          "end": 167.8
         },
         {
           "word_index": 2,
           "text": "said",
-          "start": 168.2,
-          "end": 168.6
+          "start": 167.8,
+          "end": 168.1
         },
         {
           "word_index": 3,
           "text": "she's",
-          "start": 168.6,
-          "end": 168.9
+          "start": 168.1,
+          "end": 168.4
         },
         {
           "word_index": 4,
           "text": "scared",
-          "start": 168.9,
-          "end": 169.0
+          "start": 168.4,
+          "end": 168.75
         },
         {
           "word_index": 5,
           "text": "of",
-          "start": 169.0,
-          "end": 169.3
+          "start": 168.75,
+          "end": 169.1
         },
         {
           "word_index": 6,
           "text": "me?",
-          "start": 169.3,
-          "end": 169.4
+          "start": 169.1,
+          "end": 169.55
         }
       ]
     },
@@ -1687,55 +1687,55 @@
       "line_index": 42,
       "text": "I mean, I don't see what she sees",
       "start": 169.6,
-      "end": 171.6,
+      "end": 171.75,
       "words": [
         {
           "word_index": 1,
           "text": "I",
           "start": 169.6,
-          "end": 169.9
+          "end": 169.85
         },
         {
           "word_index": 2,
           "text": "mean,",
-          "start": 169.9,
-          "end": 170.5
+          "start": 169.85,
+          "end": 170.05
         },
         {
           "word_index": 3,
           "text": "I",
-          "start": 170.5,
-          "end": 170.8
+          "start": 170.05,
+          "end": 170.3
         },
         {
           "word_index": 4,
           "text": "don't",
-          "start": 170.8,
-          "end": 170.9
+          "start": 170.3,
+          "end": 170.55
         },
         {
           "word_index": 5,
           "text": "see",
-          "start": 170.9,
-          "end": 171.2
+          "start": 170.55,
+          "end": 170.85
         },
         {
           "word_index": 6,
           "text": "what",
-          "start": 171.2,
-          "end": 171.2
+          "start": 170.85,
+          "end": 171.1
         },
         {
           "word_index": 7,
           "text": "she",
-          "start": 171.2,
-          "end": 171.5
+          "start": 171.1,
+          "end": 171.4
         },
         {
           "word_index": 8,
           "text": "sees",
-          "start": 171.5,
-          "end": 171.6
+          "start": 171.4,
+          "end": 171.75
         }
       ]
     },
@@ -1743,55 +1743,55 @@
       "line_index": 43,
       "text": "But maybe it's 'cause I'm wearing your cologne",
       "start": 172.0,
-      "end": 174.5,
+      "end": 174.45,
       "words": [
         {
           "word_index": 1,
           "text": "But",
           "start": 172.0,
-          "end": 172.2
+          "end": 172.25
         },
         {
           "word_index": 2,
           "text": "maybe",
-          "start": 172.2,
-          "end": 172.5
+          "start": 172.25,
+          "end": 172.55
         },
         {
           "word_index": 3,
           "text": "it's",
-          "start": 172.5,
+          "start": 172.55,
           "end": 172.8
         },
         {
           "word_index": 4,
           "text": "'cause",
           "start": 172.8,
-          "end": 173.2
+          "end": 173.1
         },
         {
           "word_index": 5,
           "text": "I'm",
-          "start": 173.2,
+          "start": 173.1,
           "end": 173.4
         },
         {
           "word_index": 6,
           "text": "wearing",
           "start": 173.4,
-          "end": 173.8
+          "end": 173.7
         },
         {
           "word_index": 7,
           "text": "your",
-          "start": 173.8,
-          "end": 174.1
+          "start": 173.7,
+          "end": 174.05
         },
         {
           "word_index": 8,
           "text": "cologne",
-          "start": 174.1,
-          "end": 174.5
+          "start": 174.05,
+          "end": 174.45
         }
       ]
     },
@@ -1799,31 +1799,31 @@
       "line_index": 44,
       "text": "I'm a bad guy",
       "start": 177.7,
-      "end": 178.9,
+      "end": 179.15,
       "words": [
         {
           "word_index": 1,
           "text": "I'm",
           "start": 177.7,
-          "end": 178.6
+          "end": 178.0
         },
         {
           "word_index": 2,
           "text": "a",
-          "start": 178.6,
-          "end": 178.7
+          "start": 178.0,
+          "end": 178.35
         },
         {
           "word_index": 3,
           "text": "bad",
-          "start": 178.7,
-          "end": 178.8
+          "start": 178.35,
+          "end": 178.7
         },
         {
           "word_index": 4,
           "text": "guy",
-          "start": 178.8,
-          "end": 178.9
+          "start": 178.7,
+          "end": 179.15
         }
       ]
     },
@@ -1837,30 +1837,30 @@
           "word_index": 1,
           "text": "I'm,",
           "start": 185.4,
-          "end": 186.7
+          "end": 185.75
         },
         {
           "word_index": 2,
           "text": "I'm",
-          "start": 186.7,
-          "end": 186.8
+          "start": 185.75,
+          "end": 186.1
         },
         {
           "word_index": 3,
           "text": "a",
-          "start": 186.8,
-          "end": 186.9
+          "start": 186.1,
+          "end": 186.45
         },
         {
           "word_index": 4,
           "text": "bad",
-          "start": 186.9,
-          "end": 187.0
+          "start": 186.45,
+          "end": 186.85
         },
         {
           "word_index": 5,
           "text": "guy",
-          "start": 187.0,
+          "start": 186.85,
           "end": 187.3
         }
       ]
@@ -1869,25 +1869,25 @@
       "line_index": 46,
       "text": "Bad guy, bad",
       "start": 187.7,
-      "end": 189.2,
+      "end": 189.1,
       "words": [
         {
           "word_index": 1,
           "text": "Bad",
           "start": 187.7,
-          "end": 188.7
+          "end": 188.1
         },
         {
           "word_index": 2,
           "text": "guy,",
-          "start": 188.7,
-          "end": 188.8
+          "start": 188.1,
+          "end": 188.6
         },
         {
           "word_index": 3,
           "text": "bad",
-          "start": 188.8,
-          "end": 189.2
+          "start": 188.6,
+          "end": 189.1
         }
       ]
     },

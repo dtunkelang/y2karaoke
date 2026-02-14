@@ -9,13 +9,13 @@
       "line_index": 1,
       "text": "Doh",
       "start": 0.5,
-      "end": 0.9,
+      "end": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "Doh",
           "start": 0.5,
-          "end": 0.9
+          "end": 1.0
         }
       ]
     },
@@ -23,25 +23,25 @@
       "line_index": 2,
       "text": "Doh-doh-doh, doh-doh-doh, doh-doh",
       "start": 2.5,
-      "end": 5.1,
+      "end": 4.6,
       "words": [
         {
           "word_index": 1,
           "text": "Doh-doh-doh,",
           "start": 2.5,
-          "end": 3.6
+          "end": 3.2
         },
         {
           "word_index": 2,
           "text": "doh-doh-doh,",
-          "start": 3.6,
-          "end": 4.7
+          "start": 3.2,
+          "end": 3.9
         },
         {
           "word_index": 3,
           "text": "doh-doh",
-          "start": 4.7,
-          "end": 5.1
+          "start": 3.9,
+          "end": 4.6
         }
       ]
     },
@@ -49,7 +49,7 @@
       "line_index": 3,
       "text": "Doh-doh-doh, doh-doh-doh, doh-doh",
       "start": 6.7,
-      "end": 9.1,
+      "end": 8.8,
       "words": [
         {
           "word_index": 1,
@@ -61,13 +61,13 @@
           "word_index": 2,
           "text": "doh-doh-doh,",
           "start": 7.4,
-          "end": 8.4
+          "end": 8.1
         },
         {
           "word_index": 3,
           "text": "doh-doh",
-          "start": 8.4,
-          "end": 9.1
+          "start": 8.1,
+          "end": 8.8
         }
       ]
     },
@@ -75,25 +75,25 @@
       "line_index": 4,
       "text": "Doh-doh-doh, doh-doh-doh, doh-doh",
       "start": 10.8,
-      "end": 13.4,
+      "end": 12.9,
       "words": [
         {
           "word_index": 1,
           "text": "Doh-doh-doh,",
           "start": 10.8,
-          "end": 11.9
+          "end": 11.5
         },
         {
           "word_index": 2,
           "text": "doh-doh-doh,",
-          "start": 11.9,
-          "end": 13.0
+          "start": 11.5,
+          "end": 12.2
         },
         {
           "word_index": 3,
           "text": "doh-doh",
-          "start": 13.0,
-          "end": 13.4
+          "start": 12.2,
+          "end": 12.9
         }
       ]
     },
@@ -101,31 +101,31 @@
       "line_index": 5,
       "text": "Doh-doh-doh, doh-doh (Aw, ow)",
       "start": 14.4,
-      "end": 16.8,
+      "end": 16.7,
       "words": [
         {
           "word_index": 1,
           "text": "Doh-doh-doh,",
           "start": 14.4,
-          "end": 15.5
+          "end": 14.9
         },
         {
           "word_index": 2,
           "text": "doh-doh",
-          "start": 15.5,
-          "end": 16.1
+          "start": 14.9,
+          "end": 15.45
         },
         {
           "word_index": 3,
           "text": "(Aw,",
-          "start": 16.1,
-          "end": 16.5
+          "start": 15.45,
+          "end": 16.0
         },
         {
           "word_index": 4,
           "text": "ow)",
-          "start": 16.6,
-          "end": 16.8
+          "start": 16.0,
+          "end": 16.7
         }
       ]
     },
@@ -133,37 +133,37 @@
       "line_index": 6,
       "text": "This hit, that ice cold",
       "start": 17.0,
-      "end": 18.7,
+      "end": 18.65,
       "words": [
         {
           "word_index": 1,
           "text": "This",
           "start": 17.0,
-          "end": 17.4
+          "end": 17.3
         },
         {
           "word_index": 2,
           "text": "hit,",
-          "start": 17.4,
-          "end": 17.7
+          "start": 17.3,
+          "end": 17.6
         },
         {
           "word_index": 3,
           "text": "that",
-          "start": 17.7,
-          "end": 18.1
+          "start": 17.6,
+          "end": 17.9
         },
         {
           "word_index": 4,
           "text": "ice",
-          "start": 18.1,
-          "end": 18.4
+          "start": 17.9,
+          "end": 18.25
         },
         {
           "word_index": 5,
           "text": "cold",
-          "start": 18.4,
-          "end": 18.7
+          "start": 18.25,
+          "end": 18.65
         }
       ]
     },
@@ -171,37 +171,37 @@
       "line_index": 7,
       "text": "Michelle Pfeiffer, that white gold",
       "start": 18.7,
-      "end": 20.9,
+      "end": 20.8,
       "words": [
         {
           "word_index": 1,
           "text": "Michelle",
           "start": 18.7,
-          "end": 19.3
+          "end": 19.05
         },
         {
           "word_index": 2,
           "text": "Pfeiffer,",
-          "start": 19.3,
-          "end": 19.9
+          "start": 19.05,
+          "end": 19.45
         },
         {
           "word_index": 3,
           "text": "that",
-          "start": 19.9,
-          "end": 20.2
+          "start": 19.45,
+          "end": 19.85
         },
         {
           "word_index": 4,
           "text": "white",
-          "start": 20.3,
-          "end": 20.6
+          "start": 19.85,
+          "end": 20.3
         },
         {
           "word_index": 5,
           "text": "gold",
-          "start": 20.6,
-          "end": 20.9
+          "start": 20.3,
+          "end": 20.8
         }
       ]
     },
@@ -209,7 +209,7 @@
       "line_index": 8,
       "text": "This one for them hood girls",
       "start": 20.9,
-      "end": 22.9,
+      "end": 22.85,
       "words": [
         {
           "word_index": 1,
@@ -220,7 +220,7 @@
         {
           "word_index": 2,
           "text": "one",
-          "start": 21.3,
+          "start": 21.2,
           "end": 21.5
         },
         {
@@ -233,19 +233,19 @@
           "word_index": 4,
           "text": "them",
           "start": 21.8,
-          "end": 22.2
+          "end": 22.1
         },
         {
           "word_index": 5,
           "text": "hood",
-          "start": 22.2,
-          "end": 22.5
+          "start": 22.1,
+          "end": 22.45
         },
         {
           "word_index": 6,
           "text": "girls",
-          "start": 22.5,
-          "end": 22.9
+          "start": 22.45,
+          "end": 22.85
         }
       ]
     },
@@ -253,37 +253,37 @@
       "line_index": 9,
       "text": "Them good girls straight masterpieces",
       "start": 22.9,
-      "end": 24.8,
+      "end": 24.9,
       "words": [
         {
           "word_index": 1,
           "text": "Them",
           "start": 22.9,
-          "end": 23.2
+          "end": 23.25
         },
         {
           "word_index": 2,
           "text": "good",
-          "start": 23.2,
-          "end": 23.5
+          "start": 23.25,
+          "end": 23.65
         },
         {
           "word_index": 3,
           "text": "girls",
-          "start": 23.5,
-          "end": 23.8
+          "start": 23.65,
+          "end": 24.0
         },
         {
           "word_index": 4,
           "text": "straight",
-          "start": 23.8,
-          "end": 24.3
+          "start": 24.0,
+          "end": 24.45
         },
         {
           "word_index": 5,
           "text": "masterpieces",
-          "start": 24.3,
-          "end": 24.8
+          "start": 24.45,
+          "end": 24.9
         }
       ]
     },
@@ -291,55 +291,55 @@
       "line_index": 10,
       "text": "Stylin', wilin', livin' it up in the city",
       "start": 25.0,
-      "end": 28.1,
+      "end": 28.0,
       "words": [
         {
           "word_index": 1,
           "text": "Stylin',",
           "start": 25.0,
-          "end": 25.7
+          "end": 25.35
         },
         {
           "word_index": 2,
           "text": "wilin',",
-          "start": 25.7,
-          "end": 26.3
+          "start": 25.35,
+          "end": 25.65
         },
         {
           "word_index": 3,
           "text": "livin'",
-          "start": 26.3,
-          "end": 26.8
+          "start": 25.65,
+          "end": 26.0
         },
         {
           "word_index": 4,
           "text": "it",
-          "start": 26.8,
-          "end": 27.0
+          "start": 26.0,
+          "end": 26.35
         },
         {
           "word_index": 5,
           "text": "up",
-          "start": 27.0,
-          "end": 27.3
+          "start": 26.35,
+          "end": 26.75
         },
         {
           "word_index": 6,
           "text": "in",
-          "start": 27.3,
-          "end": 27.5
+          "start": 26.75,
+          "end": 27.1
         },
         {
           "word_index": 7,
           "text": "the",
-          "start": 27.5,
-          "end": 27.8
+          "start": 27.1,
+          "end": 27.55
         },
         {
           "word_index": 8,
           "text": "city",
-          "start": 27.8,
-          "end": 28.1
+          "start": 27.55,
+          "end": 28.0
         }
       ]
     },
@@ -347,7 +347,7 @@
       "line_index": 11,
       "text": "Got Chucks on with Saint Laurent",
       "start": 29.1,
-      "end": 31.2,
+      "end": 31.15,
       "words": [
         {
           "word_index": 1,
@@ -359,31 +359,31 @@
           "word_index": 2,
           "text": "Chucks",
           "start": 29.4,
-          "end": 29.8
+          "end": 29.7
         },
         {
           "word_index": 3,
           "text": "on",
-          "start": 29.8,
+          "start": 29.7,
           "end": 30.0
         },
         {
           "word_index": 4,
           "text": "with",
           "start": 30.0,
-          "end": 30.3
+          "end": 30.35
         },
         {
           "word_index": 5,
           "text": "Saint",
-          "start": 30.3,
+          "start": 30.35,
           "end": 30.7
         },
         {
           "word_index": 6,
           "text": "Laurent",
           "start": 30.7,
-          "end": 31.2
+          "end": 31.15
         }
       ]
     },
@@ -391,43 +391,43 @@
       "line_index": 12,
       "text": "Gotta kiss myself, I'm so pretty",
       "start": 31.3,
-      "end": 33.3,
+      "end": 33.25,
       "words": [
         {
           "word_index": 1,
           "text": "Gotta",
           "start": 31.3,
-          "end": 31.7
+          "end": 31.6
         },
         {
           "word_index": 2,
           "text": "kiss",
-          "start": 31.7,
-          "end": 32.0
+          "start": 31.6,
+          "end": 31.9
         },
         {
           "word_index": 3,
           "text": "myself,",
-          "start": 32.0,
-          "end": 32.5
+          "start": 31.9,
+          "end": 32.2
         },
         {
           "word_index": 4,
           "text": "I'm",
-          "start": 32.5,
-          "end": 32.7
+          "start": 32.2,
+          "end": 32.5
         },
         {
           "word_index": 5,
           "text": "so",
-          "start": 32.7,
-          "end": 32.9
+          "start": 32.5,
+          "end": 32.85
         },
         {
           "word_index": 6,
           "text": "pretty",
-          "start": 32.9,
-          "end": 33.3
+          "start": 32.85,
+          "end": 33.25
         }
       ]
     },
@@ -435,37 +435,37 @@
       "line_index": 13,
       "text": "I'm too hot (hot damn)",
       "start": 33.4,
-      "end": 35.0,
+      "end": 34.95,
       "words": [
         {
           "word_index": 1,
           "text": "I'm",
           "start": 33.4,
-          "end": 33.7
+          "end": 33.65
         },
         {
           "word_index": 2,
           "text": "too",
-          "start": 33.7,
-          "end": 34.0
+          "start": 33.65,
+          "end": 33.95
         },
         {
           "word_index": 3,
           "text": "hot",
-          "start": 34.0,
-          "end": 34.3
+          "start": 33.95,
+          "end": 34.25
         },
         {
           "word_index": 4,
           "text": "(hot",
-          "start": 34.3,
-          "end": 34.6
+          "start": 34.25,
+          "end": 34.55
         },
         {
           "word_index": 5,
           "text": "damn)",
-          "start": 34.6,
-          "end": 35.0
+          "start": 34.55,
+          "end": 34.95
         }
       ]
     },
@@ -473,43 +473,43 @@
       "line_index": 14,
       "text": "Call the police and the fireman",
       "start": 35.5,
-      "end": 37.4,
+      "end": 37.35,
       "words": [
         {
           "word_index": 1,
           "text": "Call",
           "start": 35.5,
-          "end": 35.8
+          "end": 35.75
         },
         {
           "word_index": 2,
           "text": "the",
-          "start": 35.8,
-          "end": 36.0
+          "start": 35.75,
+          "end": 36.05
         },
         {
           "word_index": 3,
           "text": "police",
-          "start": 36.1,
-          "end": 36.5
+          "start": 36.05,
+          "end": 36.35
         },
         {
           "word_index": 4,
           "text": "and",
-          "start": 36.5,
-          "end": 36.7
+          "start": 36.35,
+          "end": 36.65
         },
         {
           "word_index": 5,
           "text": "the",
-          "start": 36.7,
-          "end": 37.0
+          "start": 36.65,
+          "end": 36.95
         },
         {
           "word_index": 6,
           "text": "fireman",
-          "start": 37.0,
-          "end": 37.4
+          "start": 36.95,
+          "end": 37.35
         }
       ]
     },
@@ -517,37 +517,37 @@
       "line_index": 15,
       "text": "I'm too hot (hot damn)",
       "start": 37.5,
-      "end": 39.1,
+      "end": 39.05,
       "words": [
         {
           "word_index": 1,
           "text": "I'm",
           "start": 37.5,
-          "end": 37.8
+          "end": 37.75
         },
         {
           "word_index": 2,
           "text": "too",
-          "start": 37.8,
-          "end": 38.1
+          "start": 37.75,
+          "end": 38.05
         },
         {
           "word_index": 3,
           "text": "hot",
-          "start": 38.1,
-          "end": 38.4
+          "start": 38.05,
+          "end": 38.35
         },
         {
           "word_index": 4,
           "text": "(hot",
-          "start": 38.4,
-          "end": 38.7
+          "start": 38.35,
+          "end": 38.65
         },
         {
           "word_index": 5,
           "text": "damn)",
-          "start": 38.7,
-          "end": 39.1
+          "start": 38.65,
+          "end": 39.05
         }
       ]
     },
@@ -555,43 +555,43 @@
       "line_index": 16,
       "text": "Make a dragon wanna retire man",
       "start": 39.7,
-      "end": 41.9,
+      "end": 41.8,
       "words": [
         {
           "word_index": 1,
           "text": "Make",
           "start": 39.7,
-          "end": 40.1
+          "end": 40.0
         },
         {
           "word_index": 2,
           "text": "a",
-          "start": 40.1,
-          "end": 40.2
+          "start": 40.0,
+          "end": 40.35
         },
         {
           "word_index": 3,
           "text": "dragon",
-          "start": 40.2,
-          "end": 40.7
+          "start": 40.35,
+          "end": 40.65
         },
         {
           "word_index": 4,
           "text": "wanna",
-          "start": 40.7,
-          "end": 41.2
+          "start": 40.65,
+          "end": 41.0
         },
         {
           "word_index": 5,
           "text": "retire",
-          "start": 41.2,
-          "end": 41.7
+          "start": 41.0,
+          "end": 41.4
         },
         {
           "word_index": 6,
           "text": "man",
-          "start": 41.7,
-          "end": 41.9
+          "start": 41.4,
+          "end": 41.8
         }
       ]
     },
@@ -599,7 +599,7 @@
       "line_index": 17,
       "text": "I'm too hot (hot damn)",
       "start": 41.9,
-      "end": 43.6,
+      "end": 43.55,
       "words": [
         {
           "word_index": 1,
@@ -623,13 +623,13 @@
           "word_index": 4,
           "text": "(hot",
           "start": 42.8,
-          "end": 43.2
+          "end": 43.15
         },
         {
           "word_index": 5,
           "text": "damn)",
-          "start": 43.2,
-          "end": 43.6
+          "start": 43.15,
+          "end": 43.55
         }
       ]
     },
@@ -637,7 +637,7 @@
       "line_index": 18,
       "text": "Say my name you know who I am",
       "start": 43.8,
-      "end": 45.6,
+      "end": 45.55,
       "words": [
         {
           "word_index": 1,
@@ -655,37 +655,37 @@
           "word_index": 3,
           "text": "name",
           "start": 44.2,
-          "end": 44.5
+          "end": 44.4
         },
         {
           "word_index": 4,
           "text": "you",
-          "start": 44.5,
-          "end": 44.8
+          "start": 44.4,
+          "end": 44.6
         },
         {
           "word_index": 5,
           "text": "know",
-          "start": 44.8,
-          "end": 45.1
+          "start": 44.6,
+          "end": 44.8
         },
         {
           "word_index": 6,
           "text": "who",
-          "start": 45.1,
-          "end": 45.3
+          "start": 44.8,
+          "end": 45.05
         },
         {
           "word_index": 7,
           "text": "I",
-          "start": 45.4,
-          "end": 45.5
+          "start": 45.05,
+          "end": 45.25
         },
         {
           "word_index": 8,
           "text": "am",
-          "start": 45.5,
-          "end": 45.6
+          "start": 45.25,
+          "end": 45.55
         }
       ]
     },
@@ -693,7 +693,7 @@
       "line_index": 19,
       "text": "I'm too hot (hot damn)",
       "start": 45.6,
-      "end": 47.3,
+      "end": 47.25,
       "words": [
         {
           "word_index": 1,
@@ -717,13 +717,13 @@
           "word_index": 4,
           "text": "(hot",
           "start": 46.5,
-          "end": 46.9
+          "end": 46.85
         },
         {
           "word_index": 5,
           "text": "damn)",
-          "start": 46.9,
-          "end": 47.3
+          "start": 46.85,
+          "end": 47.25
         }
       ]
     },
@@ -731,7 +731,7 @@
       "line_index": 20,
       "text": "And my band 'bout that money, break it down",
       "start": 48.1,
-      "end": 50.1,
+      "end": 50.05,
       "words": [
         {
           "word_index": 1,
@@ -761,31 +761,31 @@
           "word_index": 5,
           "text": "that",
           "start": 48.9,
-          "end": 49.2
+          "end": 49.1
         },
         {
           "word_index": 6,
           "text": "money,",
-          "start": 49.2,
-          "end": 49.5
+          "start": 49.1,
+          "end": 49.3
         },
         {
           "word_index": 7,
           "text": "break",
-          "start": 49.5,
-          "end": 49.8
+          "start": 49.3,
+          "end": 49.55
         },
         {
           "word_index": 8,
           "text": "it",
-          "start": 49.8,
-          "end": 50.0
+          "start": 49.55,
+          "end": 49.75
         },
         {
           "word_index": 9,
           "text": "down",
-          "start": 50.0,
-          "end": 50.1
+          "start": 49.75,
+          "end": 50.05
         }
       ]
     },
@@ -793,37 +793,37 @@
       "line_index": 21,
       "text": "Girls hit your hallelujah (whoo)",
       "start": 50.1,
-      "end": 52.2,
+      "end": 52.1,
       "words": [
         {
           "word_index": 1,
           "text": "Girls",
           "start": 50.1,
-          "end": 50.5
+          "end": 50.45
         },
         {
           "word_index": 2,
           "text": "hit",
-          "start": 50.5,
-          "end": 50.7
+          "start": 50.45,
+          "end": 50.85
         },
         {
           "word_index": 3,
           "text": "your",
-          "start": 50.8,
-          "end": 51.1
+          "start": 50.85,
+          "end": 51.2
         },
         {
           "word_index": 4,
           "text": "hallelujah",
-          "start": 51.1,
-          "end": 51.8
+          "start": 51.2,
+          "end": 51.65
         },
         {
           "word_index": 5,
           "text": "(whoo)",
-          "start": 51.8,
-          "end": 52.2
+          "start": 51.65,
+          "end": 52.1
         }
       ]
     },
@@ -831,37 +831,37 @@
       "line_index": 22,
       "text": "Girls hit your hallelujah (whoo)",
       "start": 52.3,
-      "end": 54.5,
+      "end": 54.4,
       "words": [
         {
           "word_index": 1,
           "text": "Girls",
           "start": 52.3,
-          "end": 52.7
+          "end": 52.65
         },
         {
           "word_index": 2,
           "text": "hit",
-          "start": 52.7,
-          "end": 53.0
+          "start": 52.65,
+          "end": 53.05
         },
         {
           "word_index": 3,
           "text": "your",
-          "start": 53.0,
-          "end": 53.3
+          "start": 53.05,
+          "end": 53.45
         },
         {
           "word_index": 4,
           "text": "hallelujah",
-          "start": 53.3,
-          "end": 54.1
+          "start": 53.45,
+          "end": 53.9
         },
         {
           "word_index": 5,
           "text": "(whoo)",
-          "start": 54.1,
-          "end": 54.5
+          "start": 53.9,
+          "end": 54.4
         }
       ]
     },
@@ -869,7 +869,7 @@
       "line_index": 23,
       "text": "Girls hit your hallelujah (whoo)",
       "start": 54.5,
-      "end": 56.2,
+      "end": 56.15,
       "words": [
         {
           "word_index": 1,
@@ -887,19 +887,19 @@
           "word_index": 3,
           "text": "your",
           "start": 55.1,
-          "end": 55.3
+          "end": 55.4
         },
         {
           "word_index": 4,
           "text": "hallelujah",
-          "start": 55.3,
-          "end": 55.9
+          "start": 55.4,
+          "end": 55.75
         },
         {
           "word_index": 5,
           "text": "(whoo)",
-          "start": 55.9,
-          "end": 56.2
+          "start": 55.75,
+          "end": 56.15
         }
       ]
     },
@@ -907,55 +907,55 @@
       "line_index": 24,
       "text": "'Cause uptown funk gon' give it to you",
       "start": 56.3,
-      "end": 58.3,
+      "end": 58.25,
       "words": [
         {
           "word_index": 1,
           "text": "'Cause",
           "start": 56.3,
-          "end": 56.7
+          "end": 56.5
         },
         {
           "word_index": 2,
           "text": "uptown",
-          "start": 56.7,
-          "end": 57.0
+          "start": 56.5,
+          "end": 56.75
         },
         {
           "word_index": 3,
           "text": "funk",
-          "start": 57.0,
-          "end": 57.3
+          "start": 56.75,
+          "end": 56.95
         },
         {
           "word_index": 4,
           "text": "gon'",
-          "start": 57.3,
-          "end": 57.6
+          "start": 56.95,
+          "end": 57.2
         },
         {
           "word_index": 5,
           "text": "give",
-          "start": 57.6,
-          "end": 57.8
+          "start": 57.2,
+          "end": 57.4
         },
         {
           "word_index": 6,
           "text": "it",
-          "start": 57.8,
-          "end": 58.0
+          "start": 57.4,
+          "end": 57.65
         },
         {
           "word_index": 7,
           "text": "to",
-          "start": 58.0,
-          "end": 58.2
+          "start": 57.65,
+          "end": 57.95
         },
         {
           "word_index": 8,
           "text": "you",
-          "start": 58.2,
-          "end": 58.3
+          "start": 57.95,
+          "end": 58.25
         }
       ]
     },
@@ -963,55 +963,55 @@
       "line_index": 25,
       "text": "'Cause uptown funk gon' give it to you",
       "start": 58.4,
-      "end": 60.4,
+      "end": 60.35,
       "words": [
         {
           "word_index": 1,
           "text": "'Cause",
           "start": 58.4,
-          "end": 58.8
+          "end": 58.6
         },
         {
           "word_index": 2,
           "text": "uptown",
-          "start": 58.8,
-          "end": 59.1
+          "start": 58.6,
+          "end": 58.85
         },
         {
           "word_index": 3,
           "text": "funk",
-          "start": 59.1,
-          "end": 59.4
+          "start": 58.85,
+          "end": 59.05
         },
         {
           "word_index": 4,
           "text": "gon'",
-          "start": 59.4,
-          "end": 59.7
+          "start": 59.05,
+          "end": 59.3
         },
         {
           "word_index": 5,
           "text": "give",
-          "start": 59.7,
-          "end": 59.9
+          "start": 59.3,
+          "end": 59.5
         },
         {
           "word_index": 6,
           "text": "it",
-          "start": 59.9,
-          "end": 60.1
+          "start": 59.5,
+          "end": 59.75
         },
         {
           "word_index": 7,
           "text": "to",
-          "start": 60.1,
-          "end": 60.3
+          "start": 59.75,
+          "end": 60.05
         },
         {
           "word_index": 8,
           "text": "you",
-          "start": 60.3,
-          "end": 60.4
+          "start": 60.05,
+          "end": 60.35
         }
       ]
     },
@@ -1019,55 +1019,55 @@
       "line_index": 26,
       "text": "'Cause uptown funk gon' give it to you",
       "start": 60.4,
-      "end": 63.0,
+      "end": 62.95,
       "words": [
         {
           "word_index": 1,
           "text": "'Cause",
           "start": 60.4,
-          "end": 60.9
+          "end": 60.7
         },
         {
           "word_index": 2,
           "text": "uptown",
-          "start": 60.9,
-          "end": 61.3
+          "start": 60.7,
+          "end": 60.95
         },
         {
           "word_index": 3,
           "text": "funk",
-          "start": 61.4,
-          "end": 61.7
+          "start": 60.95,
+          "end": 61.25
         },
         {
           "word_index": 4,
           "text": "gon'",
-          "start": 61.7,
-          "end": 62.0
+          "start": 61.25,
+          "end": 61.55
         },
         {
           "word_index": 5,
           "text": "give",
-          "start": 62.0,
-          "end": 62.4
+          "start": 61.55,
+          "end": 61.85
         },
         {
           "word_index": 6,
           "text": "it",
-          "start": 62.4,
-          "end": 62.6
+          "start": 61.85,
+          "end": 62.2
         },
         {
           "word_index": 7,
           "text": "to",
-          "start": 62.6,
-          "end": 62.8
+          "start": 62.2,
+          "end": 62.55
         },
         {
           "word_index": 8,
           "text": "you",
-          "start": 62.8,
-          "end": 63.0
+          "start": 62.55,
+          "end": 62.95
         }
       ]
     },
@@ -1075,49 +1075,49 @@
       "line_index": 27,
       "text": "Saturday night and we in the spot",
       "start": 63.0,
-      "end": 64.8,
+      "end": 64.75,
       "words": [
         {
           "word_index": 1,
           "text": "Saturday",
           "start": 63.0,
-          "end": 63.5
+          "end": 63.2
         },
         {
           "word_index": 2,
           "text": "night",
-          "start": 63.5,
-          "end": 63.8
+          "start": 63.2,
+          "end": 63.45
         },
         {
           "word_index": 3,
           "text": "and",
-          "start": 63.8,
-          "end": 64.1
+          "start": 63.45,
+          "end": 63.65
         },
         {
           "word_index": 4,
           "text": "we",
-          "start": 64.1,
-          "end": 64.2
+          "start": 63.65,
+          "end": 63.9
         },
         {
           "word_index": 5,
           "text": "in",
-          "start": 64.2,
-          "end": 64.4
+          "start": 63.9,
+          "end": 64.15
         },
         {
           "word_index": 6,
           "text": "the",
-          "start": 64.4,
-          "end": 64.6
+          "start": 64.15,
+          "end": 64.45
         },
         {
           "word_index": 7,
           "text": "spot",
-          "start": 64.6,
-          "end": 64.8
+          "start": 64.45,
+          "end": 64.75
         }
       ]
     },
@@ -1131,42 +1131,42 @@
           "word_index": 1,
           "text": "Don't",
           "start": 64.8,
-          "end": 65.2
+          "end": 65.15
         },
         {
           "word_index": 2,
           "text": "believe",
-          "start": 65.3,
-          "end": 65.8
+          "start": 65.15,
+          "end": 65.5
         },
         {
           "word_index": 3,
           "text": "me",
-          "start": 65.9,
-          "end": 66.1
+          "start": 67.25,
+          "end": 67.4
         },
         {
           "word_index": 4,
           "text": "just",
-          "start": 66.1,
-          "end": 66.5
+          "start": 67.4,
+          "end": 67.45
         },
         {
           "word_index": 5,
           "text": "watch",
-          "start": 66.5,
-          "end": 66.9
+          "start": 67.45,
+          "end": 67.5
         },
         {
           "word_index": 6,
           "text": "(come",
-          "start": 66.9,
-          "end": 67.4
+          "start": 67.5,
+          "end": 67.55
         },
         {
           "word_index": 7,
           "text": "on)",
-          "start": 67.4,
+          "start": 67.55,
           "end": 67.6
         }
       ]
@@ -1175,43 +1175,43 @@
       "line_index": 29,
       "text": "Don't believe me just watch uh",
       "start": 73.0,
-      "end": 75.3,
+      "end": 75.2,
       "words": [
         {
           "word_index": 1,
           "text": "Don't",
           "start": 73.0,
-          "end": 73.4
+          "end": 73.35
         },
         {
           "word_index": 2,
           "text": "believe",
-          "start": 73.5,
-          "end": 74.1
+          "start": 73.35,
+          "end": 73.65
         },
         {
           "word_index": 3,
           "text": "me",
-          "start": 74.1,
-          "end": 74.3
+          "start": 73.65,
+          "end": 74.0
         },
         {
           "word_index": 4,
           "text": "just",
-          "start": 74.3,
-          "end": 74.7
+          "start": 74.0,
+          "end": 74.4
         },
         {
           "word_index": 5,
           "text": "watch",
-          "start": 74.7,
-          "end": 75.1
+          "start": 74.4,
+          "end": 74.75
         },
         {
           "word_index": 6,
           "text": "uh",
-          "start": 75.1,
-          "end": 75.3
+          "start": 74.75,
+          "end": 75.2
         }
       ]
     },
@@ -1219,37 +1219,37 @@
       "line_index": 30,
       "text": "Don't believe me just watch",
       "start": 81.7,
-      "end": 83.6,
+      "end": 83.5,
       "words": [
         {
           "word_index": 1,
           "text": "Don't",
           "start": 81.7,
-          "end": 82.1
+          "end": 82.0
         },
         {
           "word_index": 2,
           "text": "believe",
-          "start": 82.1,
-          "end": 82.7
+          "start": 82.0,
+          "end": 82.35
         },
         {
           "word_index": 3,
           "text": "me",
-          "start": 82.7,
-          "end": 82.9
+          "start": 82.35,
+          "end": 82.7
         },
         {
           "word_index": 4,
           "text": "just",
-          "start": 82.9,
-          "end": 83.2
+          "start": 82.7,
+          "end": 83.1
         },
         {
           "word_index": 5,
           "text": "watch",
-          "start": 83.2,
-          "end": 83.6
+          "start": 83.1,
+          "end": 83.5
         }
       ]
     },
@@ -1257,37 +1257,37 @@
       "line_index": 31,
       "text": "Don't believe me just watch",
       "start": 83.7,
-      "end": 85.7,
+      "end": 85.6,
       "words": [
         {
           "word_index": 1,
           "text": "Don't",
           "start": 83.7,
-          "end": 84.1
+          "end": 84.05
         },
         {
           "word_index": 2,
           "text": "believe",
-          "start": 84.1,
-          "end": 84.7
+          "start": 84.05,
+          "end": 84.4
         },
         {
           "word_index": 3,
           "text": "me",
-          "start": 84.7,
-          "end": 84.9
+          "start": 84.4,
+          "end": 84.75
         },
         {
           "word_index": 4,
           "text": "just",
-          "start": 85.0,
-          "end": 85.3
+          "start": 84.75,
+          "end": 85.15
         },
         {
           "word_index": 5,
           "text": "watch",
-          "start": 85.3,
-          "end": 85.7
+          "start": 85.15,
+          "end": 85.6
         }
       ]
     },
@@ -1295,37 +1295,37 @@
       "line_index": 32,
       "text": "Don't believe me just watch",
       "start": 85.8,
-      "end": 87.6,
+      "end": 87.55,
       "words": [
         {
           "word_index": 1,
           "text": "Don't",
           "start": 85.8,
-          "end": 86.2
+          "end": 86.1
         },
         {
           "word_index": 2,
           "text": "believe",
-          "start": 86.2,
-          "end": 86.7
+          "start": 86.1,
+          "end": 86.4
         },
         {
           "word_index": 3,
           "text": "me",
-          "start": 86.7,
-          "end": 86.9
+          "start": 86.4,
+          "end": 86.75
         },
         {
           "word_index": 4,
           "text": "just",
-          "start": 86.9,
-          "end": 87.3
+          "start": 86.75,
+          "end": 87.1
         },
         {
           "word_index": 5,
           "text": "watch",
-          "start": 87.3,
-          "end": 87.6
+          "start": 87.1,
+          "end": 87.55
         }
       ]
     },
@@ -1333,37 +1333,37 @@
       "line_index": 33,
       "text": "Don't believe me just watch",
       "start": 87.6,
-      "end": 89.5,
+      "end": 89.4,
       "words": [
         {
           "word_index": 1,
           "text": "Don't",
           "start": 87.6,
-          "end": 88.0
+          "end": 87.9
         },
         {
           "word_index": 2,
           "text": "believe",
-          "start": 88.0,
-          "end": 88.6
+          "start": 87.9,
+          "end": 88.25
         },
         {
           "word_index": 3,
           "text": "me",
-          "start": 88.6,
-          "end": 88.8
+          "start": 88.25,
+          "end": 88.6
         },
         {
           "word_index": 4,
           "text": "just",
-          "start": 88.8,
-          "end": 89.1
+          "start": 88.6,
+          "end": 89.0
         },
         {
           "word_index": 5,
           "text": "watch",
-          "start": 89.1,
-          "end": 89.5
+          "start": 89.0,
+          "end": 89.4
         }
       ]
     },
@@ -1371,31 +1371,31 @@
       "line_index": 34,
       "text": "Hey, hey, hey, oh",
       "start": 89.5,
-      "end": 90.8,
+      "end": 90.75,
       "words": [
         {
           "word_index": 1,
           "text": "Hey,",
           "start": 89.5,
-          "end": 89.9
+          "end": 89.8
         },
         {
           "word_index": 2,
           "text": "hey,",
-          "start": 89.9,
-          "end": 90.3
+          "start": 89.8,
+          "end": 90.05
         },
         {
           "word_index": 3,
           "text": "hey,",
-          "start": 90.3,
-          "end": 90.6
+          "start": 90.05,
+          "end": 90.4
         },
         {
           "word_index": 4,
           "text": "oh",
-          "start": 90.6,
-          "end": 90.8
+          "start": 90.4,
+          "end": 90.75
         }
       ]
     },
@@ -1403,31 +1403,31 @@
       "line_index": 35,
       "text": "Stop, wait a minute",
       "start": 92.1,
-      "end": 93.5,
+      "end": 93.45,
       "words": [
         {
           "word_index": 1,
           "text": "Stop,",
           "start": 92.1,
-          "end": 92.5
+          "end": 92.4
         },
         {
           "word_index": 2,
           "text": "wait",
-          "start": 92.5,
-          "end": 92.9
+          "start": 92.4,
+          "end": 92.7
         },
         {
           "word_index": 3,
           "text": "a",
-          "start": 92.9,
-          "end": 93.1
+          "start": 92.7,
+          "end": 93.05
         },
         {
           "word_index": 4,
           "text": "minute",
-          "start": 93.1,
-          "end": 93.5
+          "start": 93.05,
+          "end": 93.45
         }
       ]
     },
@@ -1435,55 +1435,55 @@
       "line_index": 36,
       "text": "Fill my cup, put some liquor in it",
       "start": 93.8,
-      "end": 95.9,
+      "end": 95.85,
       "words": [
         {
           "word_index": 1,
           "text": "Fill",
           "start": 93.8,
-          "end": 94.1
+          "end": 94.0
         },
         {
           "word_index": 2,
           "text": "my",
-          "start": 94.1,
-          "end": 94.3
+          "start": 94.0,
+          "end": 94.25
         },
         {
           "word_index": 3,
           "text": "cup,",
-          "start": 94.3,
-          "end": 94.6
+          "start": 94.25,
+          "end": 94.5
         },
         {
           "word_index": 4,
           "text": "put",
-          "start": 94.6,
-          "end": 94.8
+          "start": 94.5,
+          "end": 94.75
         },
         {
           "word_index": 5,
           "text": "some",
-          "start": 94.8,
-          "end": 95.1
+          "start": 94.75,
+          "end": 94.95
         },
         {
           "word_index": 6,
           "text": "liquor",
-          "start": 95.2,
-          "end": 95.6
+          "start": 94.95,
+          "end": 95.25
         },
         {
           "word_index": 7,
           "text": "in",
-          "start": 95.6,
-          "end": 95.8
+          "start": 95.25,
+          "end": 95.5
         },
         {
           "word_index": 8,
           "text": "it",
-          "start": 95.8,
-          "end": 95.9
+          "start": 95.5,
+          "end": 95.85
         }
       ]
     },
@@ -1491,43 +1491,43 @@
       "line_index": 37,
       "text": "Take a sip, sign a check",
       "start": 96.0,
-      "end": 97.9,
+      "end": 97.85,
       "words": [
         {
           "word_index": 1,
           "text": "Take",
           "start": 96.0,
-          "end": 96.4
+          "end": 96.25
         },
         {
           "word_index": 2,
           "text": "a",
-          "start": 96.4,
-          "end": 96.6
+          "start": 96.25,
+          "end": 96.55
         },
         {
           "word_index": 3,
           "text": "sip,",
-          "start": 96.6,
-          "end": 96.9
+          "start": 96.55,
+          "end": 96.85
         },
         {
           "word_index": 4,
           "text": "sign",
-          "start": 97.0,
-          "end": 97.3
+          "start": 96.85,
+          "end": 97.15
         },
         {
           "word_index": 5,
           "text": "a",
-          "start": 97.3,
-          "end": 97.5
+          "start": 97.15,
+          "end": 97.45
         },
         {
           "word_index": 6,
           "text": "check",
-          "start": 97.5,
-          "end": 97.9
+          "start": 97.45,
+          "end": 97.85
         }
       ]
     },
@@ -1541,18 +1541,18 @@
           "word_index": 1,
           "text": "Julio,",
           "start": 98.1,
-          "end": 98.6
+          "end": 98.45
         },
         {
           "word_index": 2,
           "text": "get",
-          "start": 98.6,
-          "end": 98.9
+          "start": 98.45,
+          "end": 98.8
         },
         {
           "word_index": 3,
           "text": "the",
-          "start": 98.9,
+          "start": 98.8,
           "end": 99.2
         },
         {
@@ -1567,7 +1567,7 @@
       "line_index": 39,
       "text": "Ride to Harlem, Hollywood",
       "start": 99.8,
-      "end": 101.4,
+      "end": 101.6,
       "words": [
         {
           "word_index": 1,
@@ -1579,19 +1579,19 @@
           "word_index": 2,
           "text": "to",
           "start": 100.2,
-          "end": 100.4
+          "end": 100.65
         },
         {
           "word_index": 3,
           "text": "Harlem,",
-          "start": 100.4,
-          "end": 101.0
+          "start": 100.65,
+          "end": 101.1
         },
         {
           "word_index": 4,
           "text": "Hollywood",
-          "start": 101.0,
-          "end": 101.4
+          "start": 101.1,
+          "end": 101.6
         }
       ]
     },
@@ -1599,19 +1599,19 @@
       "line_index": 40,
       "text": "Jackson, Mississippi",
       "start": 102.0,
-      "end": 103.2,
+      "end": 103.4,
       "words": [
         {
           "word_index": 1,
           "text": "Jackson,",
           "start": 102.0,
-          "end": 102.8
+          "end": 102.7
         },
         {
           "word_index": 2,
           "text": "Mississippi",
-          "start": 102.8,
-          "end": 103.2
+          "start": 102.7,
+          "end": 103.4
         }
       ]
     },
@@ -1619,55 +1619,55 @@
       "line_index": 41,
       "text": "If we show up, we gon' show out",
       "start": 103.8,
-      "end": 106.4,
+      "end": 106.35,
       "words": [
         {
           "word_index": 1,
           "text": "If",
           "start": 103.8,
-          "end": 104.0
+          "end": 104.1
         },
         {
           "word_index": 2,
           "text": "we",
           "start": 104.1,
-          "end": 104.3
+          "end": 104.35
         },
         {
           "word_index": 3,
           "text": "show",
-          "start": 104.3,
-          "end": 104.7
+          "start": 104.35,
+          "end": 104.65
         },
         {
           "word_index": 4,
           "text": "up,",
-          "start": 104.7,
-          "end": 105.0
+          "start": 104.65,
+          "end": 104.95
         },
         {
           "word_index": 5,
           "text": "we",
-          "start": 105.1,
-          "end": 105.3
+          "start": 104.95,
+          "end": 105.25
         },
         {
           "word_index": 6,
           "text": "gon'",
-          "start": 105.3,
-          "end": 105.7
+          "start": 105.25,
+          "end": 105.6
         },
         {
           "word_index": 7,
           "text": "show",
-          "start": 105.7,
-          "end": 106.1
+          "start": 105.6,
+          "end": 105.95
         },
         {
           "word_index": 8,
           "text": "out",
-          "start": 106.1,
-          "end": 106.4
+          "start": 105.95,
+          "end": 106.35
         }
       ]
     },
@@ -1675,49 +1675,49 @@
       "line_index": 42,
       "text": "Smoother than a fresh jar of Skippy",
       "start": 106.4,
-      "end": 108.0,
+      "end": 107.95,
       "words": [
         {
           "word_index": 1,
           "text": "Smoother",
           "start": 106.4,
-          "end": 106.8
+          "end": 106.6
         },
         {
           "word_index": 2,
           "text": "than",
-          "start": 106.8,
-          "end": 107.1
+          "start": 106.6,
+          "end": 106.8
         },
         {
           "word_index": 3,
           "text": "a",
-          "start": 107.1,
-          "end": 107.2
+          "start": 106.8,
+          "end": 107.0
         },
         {
           "word_index": 4,
           "text": "fresh",
-          "start": 107.2,
-          "end": 107.4
+          "start": 107.0,
+          "end": 107.2
         },
         {
           "word_index": 5,
           "text": "jar",
-          "start": 107.4,
-          "end": 107.6
+          "start": 107.2,
+          "end": 107.45
         },
         {
           "word_index": 6,
           "text": "of",
-          "start": 107.6,
-          "end": 107.8
+          "start": 107.45,
+          "end": 107.7
         },
         {
           "word_index": 7,
           "text": "Skippy",
-          "start": 107.8,
-          "end": 108.0
+          "start": 107.7,
+          "end": 107.95
         }
       ]
     },
@@ -1725,7 +1725,7 @@
       "line_index": 43,
       "text": "I'm too hot (hot damn)",
       "start": 108.0,
-      "end": 109.7,
+      "end": 109.65,
       "words": [
         {
           "word_index": 1,
@@ -1749,13 +1749,13 @@
           "word_index": 4,
           "text": "(hot",
           "start": 108.9,
-          "end": 109.3
+          "end": 109.25
         },
         {
           "word_index": 5,
           "text": "damn)",
-          "start": 109.3,
-          "end": 109.7
+          "start": 109.25,
+          "end": 109.65
         }
       ]
     },
@@ -1763,43 +1763,43 @@
       "line_index": 44,
       "text": "Call the police and the fireman",
       "start": 110.3,
-      "end": 112.5,
+      "end": 112.55,
       "words": [
         {
           "word_index": 1,
           "text": "Call",
           "start": 110.3,
-          "end": 110.7
+          "end": 110.65
         },
         {
           "word_index": 2,
           "text": "the",
-          "start": 110.7,
-          "end": 111.0
+          "start": 111.5,
+          "end": 111.75
         },
         {
           "word_index": 3,
           "text": "police",
-          "start": 111.0,
-          "end": 111.5
+          "start": 111.75,
+          "end": 111.9
         },
         {
           "word_index": 4,
           "text": "and",
-          "start": 111.5,
-          "end": 111.8
+          "start": 111.9,
+          "end": 112.1
         },
         {
           "word_index": 5,
           "text": "the",
-          "start": 111.8,
-          "end": 112.1
+          "start": 112.1,
+          "end": 112.3
         },
         {
           "word_index": 6,
           "text": "fireman",
-          "start": 112.1,
-          "end": 112.5
+          "start": 112.3,
+          "end": 112.55
         }
       ]
     },
@@ -1807,37 +1807,37 @@
       "line_index": 45,
       "text": "I'm too hot (hot damn)",
       "start": 112.7,
-      "end": 114.3,
+      "end": 114.25,
       "words": [
         {
           "word_index": 1,
           "text": "I'm",
           "start": 112.7,
-          "end": 113.0
+          "end": 112.95
         },
         {
           "word_index": 2,
           "text": "too",
-          "start": 113.0,
-          "end": 113.3
+          "start": 112.95,
+          "end": 113.25
         },
         {
           "word_index": 3,
           "text": "hot",
-          "start": 113.3,
-          "end": 113.6
+          "start": 113.25,
+          "end": 113.55
         },
         {
           "word_index": 4,
           "text": "(hot",
-          "start": 113.6,
-          "end": 113.9
+          "start": 113.55,
+          "end": 113.85
         },
         {
           "word_index": 5,
           "text": "damn)",
-          "start": 113.9,
-          "end": 114.3
+          "start": 113.85,
+          "end": 114.25
         }
       ]
     },
@@ -1845,7 +1845,7 @@
       "line_index": 46,
       "text": "Make a dragon wanna retire man",
       "start": 114.8,
-      "end": 116.8,
+      "end": 116.75,
       "words": [
         {
           "word_index": 1,
@@ -1857,31 +1857,31 @@
           "word_index": 2,
           "text": "a",
           "start": 115.1,
-          "end": 115.3
+          "end": 115.4
         },
         {
           "word_index": 3,
           "text": "dragon",
-          "start": 115.3,
+          "start": 115.4,
           "end": 115.7
         },
         {
           "word_index": 4,
           "text": "wanna",
           "start": 115.7,
-          "end": 116.1
+          "end": 116.0
         },
         {
           "word_index": 5,
           "text": "retire",
-          "start": 116.1,
-          "end": 116.6
+          "start": 116.0,
+          "end": 116.35
         },
         {
           "word_index": 6,
           "text": "man",
-          "start": 116.6,
-          "end": 116.8
+          "start": 116.35,
+          "end": 116.75
         }
       ]
     },
@@ -1889,7 +1889,7 @@
       "line_index": 47,
       "text": "I'm too hot (hot damn)",
       "start": 116.8,
-      "end": 118.5,
+      "end": 118.45,
       "words": [
         {
           "word_index": 1,
@@ -1913,13 +1913,13 @@
           "word_index": 4,
           "text": "(hot",
           "start": 117.7,
-          "end": 118.1
+          "end": 118.05
         },
         {
           "word_index": 5,
           "text": "damn)",
-          "start": 118.1,
-          "end": 118.5
+          "start": 118.05,
+          "end": 118.45
         }
       ]
     },
@@ -1927,61 +1927,61 @@
       "line_index": 48,
       "text": "Bitch say my name you know who I am",
       "start": 118.8,
-      "end": 120.9,
+      "end": 120.85,
       "words": [
         {
           "word_index": 1,
           "text": "Bitch",
           "start": 118.8,
-          "end": 119.1
+          "end": 119.0
         },
         {
           "word_index": 2,
           "text": "say",
-          "start": 119.2,
-          "end": 119.4
+          "start": 119.0,
+          "end": 119.2
         },
         {
           "word_index": 3,
           "text": "my",
-          "start": 119.4,
-          "end": 119.6
+          "start": 119.2,
+          "end": 119.4
         },
         {
           "word_index": 4,
           "text": "name",
-          "start": 119.6,
-          "end": 119.9
+          "start": 119.4,
+          "end": 119.6
         },
         {
           "word_index": 5,
           "text": "you",
-          "start": 119.9,
-          "end": 120.1
+          "start": 119.6,
+          "end": 119.85
         },
         {
           "word_index": 6,
           "text": "know",
-          "start": 120.1,
-          "end": 120.4
+          "start": 119.85,
+          "end": 120.05
         },
         {
           "word_index": 7,
           "text": "who",
-          "start": 120.4,
-          "end": 120.7
+          "start": 120.05,
+          "end": 120.3
         },
         {
           "word_index": 8,
           "text": "I",
-          "start": 120.7,
-          "end": 120.8
+          "start": 120.3,
+          "end": 120.55
         },
         {
           "word_index": 9,
           "text": "am",
-          "start": 120.8,
-          "end": 120.9
+          "start": 120.55,
+          "end": 120.85
         }
       ]
     },
@@ -1989,37 +1989,37 @@
       "line_index": 49,
       "text": "I'm too hot (hot damn)",
       "start": 121.0,
-      "end": 122.6,
+      "end": 122.55,
       "words": [
         {
           "word_index": 1,
           "text": "I'm",
           "start": 121.0,
-          "end": 121.3
+          "end": 121.25
         },
         {
           "word_index": 2,
           "text": "too",
-          "start": 121.3,
-          "end": 121.6
+          "start": 121.25,
+          "end": 121.55
         },
         {
           "word_index": 3,
           "text": "hot",
-          "start": 121.6,
-          "end": 121.9
+          "start": 121.55,
+          "end": 121.85
         },
         {
           "word_index": 4,
           "text": "(hot",
-          "start": 121.9,
-          "end": 122.2
+          "start": 121.85,
+          "end": 122.15
         },
         {
           "word_index": 5,
           "text": "damn)",
-          "start": 122.2,
-          "end": 122.6
+          "start": 122.15,
+          "end": 122.55
         }
       ]
     },
@@ -2027,7 +2027,7 @@
       "line_index": 50,
       "text": "And my band 'bout that money",
       "start": 122.9,
-      "end": 124.4,
+      "end": 124.35,
       "words": [
         {
           "word_index": 1,
@@ -2039,31 +2039,31 @@
           "word_index": 2,
           "text": "my",
           "start": 123.1,
-          "end": 123.3
+          "end": 123.35
         },
         {
           "word_index": 3,
           "text": "band",
-          "start": 123.3,
-          "end": 123.5
+          "start": 123.35,
+          "end": 123.55
         },
         {
           "word_index": 4,
           "text": "'bout",
-          "start": 123.5,
-          "end": 123.9
+          "start": 123.55,
+          "end": 123.8
         },
         {
           "word_index": 5,
           "text": "that",
-          "start": 123.9,
-          "end": 124.1
+          "start": 123.8,
+          "end": 124.05
         },
         {
           "word_index": 6,
           "text": "money",
-          "start": 124.1,
-          "end": 124.4
+          "start": 124.05,
+          "end": 124.35
         }
       ]
     },
@@ -2071,25 +2071,25 @@
       "line_index": 51,
       "text": "Break it down",
       "start": 124.5,
-      "end": 125.5,
+      "end": 125.45,
       "words": [
         {
           "word_index": 1,
           "text": "Break",
           "start": 124.5,
-          "end": 124.9
+          "end": 124.8
         },
         {
           "word_index": 2,
           "text": "it",
-          "start": 125.0,
-          "end": 125.2
+          "start": 124.8,
+          "end": 125.1
         },
         {
           "word_index": 3,
           "text": "down",
-          "start": 125.2,
-          "end": 125.5
+          "start": 125.1,
+          "end": 125.45
         }
       ]
     },
@@ -2097,37 +2097,37 @@
       "line_index": 52,
       "text": "Girls hit your hallelujah (whoo)",
       "start": 125.5,
-      "end": 127.5,
+      "end": 127.4,
       "words": [
         {
           "word_index": 1,
           "text": "Girls",
           "start": 125.5,
-          "end": 125.9
+          "end": 125.85
         },
         {
           "word_index": 2,
           "text": "hit",
-          "start": 125.9,
-          "end": 126.1
+          "start": 125.85,
+          "end": 126.2
         },
         {
           "word_index": 3,
           "text": "your",
-          "start": 126.1,
-          "end": 126.4
+          "start": 126.2,
+          "end": 126.55
         },
         {
           "word_index": 4,
           "text": "hallelujah",
-          "start": 126.4,
-          "end": 127.1
+          "start": 126.55,
+          "end": 126.95
         },
         {
           "word_index": 5,
           "text": "(whoo)",
-          "start": 127.1,
-          "end": 127.5
+          "start": 126.95,
+          "end": 127.4
         }
       ]
     },
@@ -2135,37 +2135,37 @@
       "line_index": 53,
       "text": "Girls hit your hallelujah (whoo)",
       "start": 127.5,
-      "end": 129.5,
+      "end": 129.4,
       "words": [
         {
           "word_index": 1,
           "text": "Girls",
           "start": 127.5,
-          "end": 127.9
+          "end": 127.85
         },
         {
           "word_index": 2,
           "text": "hit",
-          "start": 127.9,
-          "end": 128.1
+          "start": 127.85,
+          "end": 128.2
         },
         {
           "word_index": 3,
           "text": "your",
-          "start": 128.1,
-          "end": 128.4
+          "start": 128.2,
+          "end": 128.55
         },
         {
           "word_index": 4,
           "text": "hallelujah",
-          "start": 128.4,
-          "end": 129.1
+          "start": 128.55,
+          "end": 128.95
         },
         {
           "word_index": 5,
           "text": "(whoo)",
-          "start": 129.1,
-          "end": 129.5
+          "start": 128.95,
+          "end": 129.4
         }
       ]
     },
@@ -2173,7 +2173,7 @@
       "line_index": 54,
       "text": "Girls hit your hallelujah (whoo)",
       "start": 129.6,
-      "end": 131.5,
+      "end": 131.4,
       "words": [
         {
           "word_index": 1,
@@ -2184,26 +2184,26 @@
         {
           "word_index": 2,
           "text": "hit",
-          "start": 130.0,
-          "end": 130.2
+          "start": 129.9,
+          "end": 130.25
         },
         {
           "word_index": 3,
           "text": "your",
-          "start": 130.2,
-          "end": 130.5
+          "start": 130.25,
+          "end": 130.6
         },
         {
           "word_index": 4,
           "text": "hallelujah",
-          "start": 130.5,
-          "end": 131.1
+          "start": 130.6,
+          "end": 131.0
         },
         {
           "word_index": 5,
           "text": "(whoo)",
-          "start": 131.1,
-          "end": 131.5
+          "start": 131.0,
+          "end": 131.4
         }
       ]
     },
@@ -2211,55 +2211,55 @@
       "line_index": 55,
       "text": "'Cause uptown funk gon' give it to you",
       "start": 131.5,
-      "end": 133.4,
+      "end": 133.35,
       "words": [
         {
           "word_index": 1,
           "text": "'Cause",
           "start": 131.5,
-          "end": 131.8
+          "end": 131.7
         },
         {
           "word_index": 2,
           "text": "uptown",
-          "start": 131.8,
-          "end": 132.2
+          "start": 131.7,
+          "end": 131.9
         },
         {
           "word_index": 3,
           "text": "funk",
-          "start": 132.2,
-          "end": 132.5
+          "start": 131.9,
+          "end": 132.1
         },
         {
           "word_index": 4,
           "text": "gon'",
-          "start": 132.5,
-          "end": 132.7
+          "start": 132.1,
+          "end": 132.35
         },
         {
           "word_index": 5,
           "text": "give",
-          "start": 132.7,
-          "end": 133.0
+          "start": 132.35,
+          "end": 132.55
         },
         {
           "word_index": 6,
           "text": "it",
-          "start": 133.0,
-          "end": 133.1
+          "start": 132.55,
+          "end": 132.8
         },
         {
           "word_index": 7,
           "text": "to",
-          "start": 133.1,
-          "end": 133.3
+          "start": 132.8,
+          "end": 133.05
         },
         {
           "word_index": 8,
           "text": "you",
-          "start": 133.3,
-          "end": 133.4
+          "start": 133.05,
+          "end": 133.35
         }
       ]
     },
@@ -2267,55 +2267,55 @@
       "line_index": 56,
       "text": "'Cause uptown funk gon' give it to you",
       "start": 133.5,
-      "end": 135.6,
+      "end": 135.55,
       "words": [
         {
           "word_index": 1,
           "text": "'Cause",
           "start": 133.5,
-          "end": 133.9
+          "end": 133.7
         },
         {
           "word_index": 2,
           "text": "uptown",
-          "start": 133.9,
-          "end": 134.3
+          "start": 133.7,
+          "end": 133.95
         },
         {
           "word_index": 3,
           "text": "funk",
-          "start": 134.3,
-          "end": 134.5
+          "start": 133.95,
+          "end": 134.2
         },
         {
           "word_index": 4,
           "text": "gon'",
-          "start": 134.6,
-          "end": 134.8
+          "start": 134.2,
+          "end": 134.45
         },
         {
           "word_index": 5,
           "text": "give",
-          "start": 134.8,
-          "end": 135.1
+          "start": 134.45,
+          "end": 134.65
         },
         {
           "word_index": 6,
           "text": "it",
-          "start": 135.1,
-          "end": 135.3
+          "start": 134.65,
+          "end": 134.95
         },
         {
           "word_index": 7,
           "text": "to",
-          "start": 135.3,
-          "end": 135.5
+          "start": 134.95,
+          "end": 135.2
         },
         {
           "word_index": 8,
           "text": "you",
-          "start": 135.5,
-          "end": 135.6
+          "start": 135.2,
+          "end": 135.55
         }
       ]
     },
@@ -2323,55 +2323,55 @@
       "line_index": 57,
       "text": "'Cause uptown funk gon' give it to you",
       "start": 135.6,
-      "end": 137.9,
+      "end": 137.85,
       "words": [
         {
           "word_index": 1,
           "text": "'Cause",
           "start": 135.6,
-          "end": 136.0
+          "end": 135.85
         },
         {
           "word_index": 2,
           "text": "uptown",
-          "start": 136.0,
-          "end": 136.4
+          "start": 135.85,
+          "end": 136.1
         },
         {
           "word_index": 3,
           "text": "funk",
-          "start": 136.4,
-          "end": 136.7
+          "start": 136.1,
+          "end": 136.35
         },
         {
           "word_index": 4,
           "text": "gon'",
-          "start": 136.8,
-          "end": 137.0
+          "start": 136.35,
+          "end": 136.6
         },
         {
           "word_index": 5,
           "text": "give",
-          "start": 137.1,
-          "end": 137.3
+          "start": 136.6,
+          "end": 136.9
         },
         {
           "word_index": 6,
           "text": "it",
-          "start": 137.4,
-          "end": 137.6
+          "start": 136.9,
+          "end": 137.15
         },
         {
           "word_index": 7,
           "text": "to",
-          "start": 137.6,
-          "end": 137.7
+          "start": 137.15,
+          "end": 137.5
         },
         {
           "word_index": 8,
           "text": "you",
-          "start": 137.7,
-          "end": 137.9
+          "start": 137.5,
+          "end": 137.85
         }
       ]
     },
@@ -2379,49 +2379,49 @@
       "line_index": 58,
       "text": "Saturday night and we in the spot",
       "start": 138.0,
-      "end": 139.8,
+      "end": 139.75,
       "words": [
         {
           "word_index": 1,
           "text": "Saturday",
           "start": 138.0,
-          "end": 138.5
+          "end": 138.2
         },
         {
           "word_index": 2,
           "text": "night",
-          "start": 138.5,
-          "end": 138.8
+          "start": 138.2,
+          "end": 138.45
         },
         {
           "word_index": 3,
           "text": "and",
-          "start": 138.8,
-          "end": 139.1
+          "start": 138.45,
+          "end": 138.65
         },
         {
           "word_index": 4,
           "text": "we",
-          "start": 139.1,
-          "end": 139.2
+          "start": 138.65,
+          "end": 138.9
         },
         {
           "word_index": 5,
           "text": "in",
-          "start": 139.2,
-          "end": 139.4
+          "start": 138.9,
+          "end": 139.15
         },
         {
           "word_index": 6,
           "text": "the",
-          "start": 139.4,
-          "end": 139.6
+          "start": 139.15,
+          "end": 139.45
         },
         {
           "word_index": 7,
           "text": "spot",
-          "start": 139.6,
-          "end": 139.8
+          "start": 139.45,
+          "end": 139.75
         }
       ]
     },
@@ -2429,49 +2429,49 @@
       "line_index": 59,
       "text": "Don't believe me just watch (come on)",
       "start": 139.8,
-      "end": 142.6,
+      "end": 142.5,
       "words": [
         {
           "word_index": 1,
           "text": "Don't",
           "start": 139.8,
-          "end": 140.2
+          "end": 140.15
         },
         {
           "word_index": 2,
           "text": "believe",
-          "start": 140.3,
-          "end": 140.8
+          "start": 140.15,
+          "end": 140.5
         },
         {
           "word_index": 3,
           "text": "me",
-          "start": 140.9,
-          "end": 141.1
+          "start": 140.5,
+          "end": 140.85
         },
         {
           "word_index": 4,
           "text": "just",
-          "start": 141.1,
-          "end": 141.5
+          "start": 140.85,
+          "end": 141.2
         },
         {
           "word_index": 5,
           "text": "watch",
-          "start": 141.5,
-          "end": 141.9
+          "start": 141.2,
+          "end": 141.6
         },
         {
           "word_index": 6,
           "text": "(come",
-          "start": 141.9,
-          "end": 142.4
+          "start": 141.6,
+          "end": 142.05
         },
         {
           "word_index": 7,
           "text": "on)",
-          "start": 142.4,
-          "end": 142.6
+          "start": 142.05,
+          "end": 142.5
         }
       ]
     },
@@ -2479,43 +2479,43 @@
       "line_index": 60,
       "text": "Don't believe me just watch uh",
       "start": 148.2,
-      "end": 150.4,
+      "end": 150.3,
       "words": [
         {
           "word_index": 1,
           "text": "Don't",
           "start": 148.2,
-          "end": 148.6
+          "end": 148.5
         },
         {
           "word_index": 2,
           "text": "believe",
-          "start": 148.6,
-          "end": 149.2
+          "start": 148.5,
+          "end": 148.85
         },
         {
           "word_index": 3,
           "text": "me",
-          "start": 149.2,
-          "end": 149.4
+          "start": 148.85,
+          "end": 149.15
         },
         {
           "word_index": 4,
           "text": "just",
-          "start": 149.4,
-          "end": 149.8
+          "start": 149.15,
+          "end": 149.5
         },
         {
           "word_index": 5,
           "text": "watch",
-          "start": 149.8,
-          "end": 150.2
+          "start": 149.5,
+          "end": 149.9
         },
         {
           "word_index": 6,
           "text": "uh",
-          "start": 150.3,
-          "end": 150.4
+          "start": 149.9,
+          "end": 150.3
         }
       ]
     },
@@ -2523,43 +2523,43 @@
       "line_index": 61,
       "text": "Don't believe me just watch uh",
       "start": 156.7,
-      "end": 158.7,
+      "end": 158.65,
       "words": [
         {
           "word_index": 1,
           "text": "Don't",
           "start": 156.7,
-          "end": 157.1
+          "end": 157.0
         },
         {
           "word_index": 2,
           "text": "believe",
-          "start": 157.1,
-          "end": 157.6
+          "start": 157.0,
+          "end": 157.3
         },
         {
           "word_index": 3,
           "text": "me",
-          "start": 157.6,
-          "end": 157.8
+          "start": 157.3,
+          "end": 157.6
         },
         {
           "word_index": 4,
           "text": "just",
-          "start": 157.8,
-          "end": 158.2
+          "start": 157.6,
+          "end": 157.9
         },
         {
           "word_index": 5,
           "text": "watch",
-          "start": 158.2,
-          "end": 158.6
+          "start": 157.9,
+          "end": 158.25
         },
         {
           "word_index": 6,
           "text": "uh",
-          "start": 158.6,
-          "end": 158.7
+          "start": 158.25,
+          "end": 158.65
         }
       ]
     },
@@ -2567,43 +2567,43 @@
       "line_index": 62,
       "text": "Don't believe me just watch uh",
       "start": 158.7,
-      "end": 160.9,
+      "end": 160.8,
       "words": [
         {
           "word_index": 1,
           "text": "Don't",
           "start": 158.7,
-          "end": 159.1
+          "end": 159.0
         },
         {
           "word_index": 2,
           "text": "believe",
-          "start": 159.1,
-          "end": 159.7
+          "start": 159.0,
+          "end": 159.35
         },
         {
           "word_index": 3,
           "text": "me",
-          "start": 159.7,
-          "end": 159.9
+          "start": 159.35,
+          "end": 159.65
         },
         {
           "word_index": 4,
           "text": "just",
-          "start": 159.9,
-          "end": 160.3
+          "start": 159.65,
+          "end": 160.0
         },
         {
           "word_index": 5,
           "text": "watch",
-          "start": 160.3,
-          "end": 160.7
+          "start": 160.0,
+          "end": 160.4
         },
         {
           "word_index": 6,
           "text": "uh",
-          "start": 160.8,
-          "end": 160.9
+          "start": 160.4,
+          "end": 160.8
         }
       ]
     },
@@ -2611,37 +2611,37 @@
       "line_index": 63,
       "text": "Don't believe me just watch",
       "start": 161.0,
-      "end": 162.9,
+      "end": 162.8,
       "words": [
         {
           "word_index": 1,
           "text": "Don't",
           "start": 161.0,
-          "end": 161.4
+          "end": 161.3
         },
         {
           "word_index": 2,
           "text": "believe",
-          "start": 161.4,
-          "end": 162.0
+          "start": 161.3,
+          "end": 161.65
         },
         {
           "word_index": 3,
           "text": "me",
-          "start": 162.0,
-          "end": 162.2
+          "start": 161.65,
+          "end": 162.0
         },
         {
           "word_index": 4,
           "text": "just",
-          "start": 162.2,
-          "end": 162.5
+          "start": 162.0,
+          "end": 162.4
         },
         {
           "word_index": 5,
           "text": "watch",
-          "start": 162.5,
-          "end": 162.9
+          "start": 162.4,
+          "end": 162.8
         }
       ]
     },
@@ -2649,37 +2649,37 @@
       "line_index": 64,
       "text": "Don't believe me just watch",
       "start": 163.0,
-      "end": 164.6,
+      "end": 164.55,
       "words": [
         {
           "word_index": 1,
           "text": "Don't",
           "start": 163.0,
-          "end": 163.3
+          "end": 163.25
         },
         {
           "word_index": 2,
           "text": "believe",
-          "start": 163.4,
-          "end": 163.8
+          "start": 163.25,
+          "end": 163.55
         },
         {
           "word_index": 3,
           "text": "me",
-          "start": 163.8,
-          "end": 164.0
+          "start": 163.55,
+          "end": 163.85
         },
         {
           "word_index": 4,
           "text": "just",
-          "start": 164.0,
-          "end": 164.3
+          "start": 163.85,
+          "end": 164.15
         },
         {
           "word_index": 5,
           "text": "watch",
-          "start": 164.3,
-          "end": 164.6
+          "start": 164.15,
+          "end": 164.55
         }
       ]
     },
@@ -2687,31 +2687,31 @@
       "line_index": 65,
       "text": "Hey, hey, hey, oh",
       "start": 164.6,
-      "end": 165.9,
+      "end": 165.85,
       "words": [
         {
           "word_index": 1,
           "text": "Hey,",
           "start": 164.6,
-          "end": 165.0
+          "end": 164.9
         },
         {
           "word_index": 2,
           "text": "hey,",
-          "start": 165.0,
-          "end": 165.4
+          "start": 164.9,
+          "end": 165.15
         },
         {
           "word_index": 3,
           "text": "hey,",
-          "start": 165.4,
-          "end": 165.7
+          "start": 165.15,
+          "end": 165.5
         },
         {
           "word_index": 4,
           "text": "oh",
-          "start": 165.7,
-          "end": 165.9
+          "start": 165.5,
+          "end": 165.85
         }
       ]
     },
@@ -2719,25 +2719,25 @@
       "line_index": 66,
       "text": "Before we leave",
       "start": 171.0,
-      "end": 172.2,
+      "end": 172.15,
       "words": [
         {
           "word_index": 1,
           "text": "Before",
           "start": 171.0,
-          "end": 171.5
+          "end": 171.35
         },
         {
           "word_index": 2,
           "text": "we",
-          "start": 171.6,
-          "end": 171.8
+          "start": 171.35,
+          "end": 171.7
         },
         {
           "word_index": 3,
           "text": "leave",
-          "start": 171.8,
-          "end": 172.2
+          "start": 171.7,
+          "end": 172.15
         }
       ]
     },
@@ -2745,43 +2745,43 @@
       "line_index": 67,
       "text": "Lemme tell y'all a lil' something",
       "start": 173.6,
-      "end": 175.3,
+      "end": 175.25,
       "words": [
         {
           "word_index": 1,
           "text": "Lemme",
           "start": 173.6,
-          "end": 173.9
+          "end": 173.85
         },
         {
           "word_index": 2,
           "text": "tell",
-          "start": 173.9,
-          "end": 174.2
+          "start": 173.85,
+          "end": 174.1
         },
         {
           "word_index": 3,
           "text": "y'all",
-          "start": 174.2,
-          "end": 174.5
+          "start": 174.1,
+          "end": 174.35
         },
         {
           "word_index": 4,
           "text": "a",
-          "start": 174.5,
+          "start": 174.35,
           "end": 174.6
         },
         {
           "word_index": 5,
           "text": "lil'",
           "start": 174.6,
-          "end": 174.8
+          "end": 174.9
         },
         {
           "word_index": 6,
           "text": "something",
-          "start": 174.8,
-          "end": 175.3
+          "start": 174.9,
+          "end": 175.25
         }
       ]
     },
@@ -2789,31 +2789,31 @@
       "line_index": 68,
       "text": "Uptown funk you up",
       "start": 175.3,
-      "end": 176.7,
+      "end": 176.65,
       "words": [
         {
           "word_index": 1,
           "text": "Uptown",
           "start": 175.3,
-          "end": 175.8
+          "end": 175.6
         },
         {
           "word_index": 2,
           "text": "funk",
-          "start": 175.8,
-          "end": 176.2
+          "start": 175.6,
+          "end": 175.9
         },
         {
           "word_index": 3,
           "text": "you",
-          "start": 176.2,
-          "end": 176.5
+          "start": 175.9,
+          "end": 176.25
         },
         {
           "word_index": 4,
           "text": "up",
-          "start": 176.5,
-          "end": 176.7
+          "start": 176.25,
+          "end": 176.65
         }
       ]
     },
@@ -2821,31 +2821,31 @@
       "line_index": 69,
       "text": "Uptown funk you up",
       "start": 177.6,
-      "end": 178.9,
+      "end": 178.85,
       "words": [
         {
           "word_index": 1,
           "text": "Uptown",
           "start": 177.6,
-          "end": 178.1
+          "end": 177.9
         },
         {
           "word_index": 2,
           "text": "funk",
-          "start": 178.1,
-          "end": 178.5
+          "start": 177.9,
+          "end": 178.15
         },
         {
           "word_index": 3,
           "text": "you",
-          "start": 178.5,
-          "end": 178.7
+          "start": 178.15,
+          "end": 178.5
         },
         {
           "word_index": 4,
           "text": "up",
-          "start": 178.8,
-          "end": 178.9
+          "start": 178.5,
+          "end": 178.85
         }
       ]
     },
@@ -2853,31 +2853,31 @@
       "line_index": 70,
       "text": "Uptown funk you up",
       "start": 179.7,
-      "end": 181.1,
+      "end": 181.05,
       "words": [
         {
           "word_index": 1,
           "text": "Uptown",
           "start": 179.7,
-          "end": 180.2
+          "end": 180.0
         },
         {
           "word_index": 2,
           "text": "funk",
-          "start": 180.2,
-          "end": 180.6
+          "start": 180.0,
+          "end": 180.3
         },
         {
           "word_index": 3,
           "text": "you",
-          "start": 180.6,
-          "end": 180.9
+          "start": 180.3,
+          "end": 180.65
         },
         {
           "word_index": 4,
           "text": "up",
-          "start": 180.9,
-          "end": 181.1
+          "start": 180.65,
+          "end": 181.05
         }
       ]
     },
@@ -2891,30 +2891,30 @@
           "word_index": 1,
           "text": "Uptown",
           "start": 181.8,
-          "end": 182.3
+          "end": 182.05
         },
         {
           "word_index": 2,
           "text": "funk",
-          "start": 182.3,
-          "end": 182.6
+          "start": 182.05,
+          "end": 182.3
         },
         {
           "word_index": 3,
           "text": "you",
-          "start": 182.7,
-          "end": 182.9
+          "start": 183.15,
+          "end": 183.2
         },
         {
           "word_index": 4,
           "text": "up",
-          "start": 182.9,
-          "end": 183.1
+          "start": 183.2,
+          "end": 183.25
         },
         {
           "word_index": 5,
           "text": "uh",
-          "start": 183.2,
+          "start": 183.25,
           "end": 183.3
         }
       ]
@@ -2923,43 +2923,43 @@
       "line_index": 72,
       "text": "I said uptown funk you up",
       "start": 183.3,
-      "end": 185.3,
+      "end": 185.2,
       "words": [
         {
           "word_index": 1,
           "text": "I",
           "start": 183.3,
-          "end": 183.5
+          "end": 183.6
         },
         {
           "word_index": 2,
           "text": "said",
-          "start": 183.5,
-          "end": 183.8
+          "start": 183.6,
+          "end": 183.9
         },
         {
           "word_index": 3,
           "text": "uptown",
           "start": 183.9,
-          "end": 184.4
+          "end": 184.2
         },
         {
           "word_index": 4,
           "text": "funk",
-          "start": 184.4,
-          "end": 184.8
+          "start": 184.2,
+          "end": 184.5
         },
         {
           "word_index": 5,
           "text": "you",
-          "start": 184.8,
-          "end": 185.1
+          "start": 184.5,
+          "end": 184.55
         },
         {
           "word_index": 6,
           "text": "up",
-          "start": 185.1,
-          "end": 185.3
+          "start": 184.55,
+          "end": 185.2
         }
       ]
     },
@@ -2967,31 +2967,31 @@
       "line_index": 73,
       "text": "Uptown funk you up",
       "start": 185.7,
-      "end": 187.1,
+      "end": 187.05,
       "words": [
         {
           "word_index": 1,
           "text": "Uptown",
           "start": 185.7,
-          "end": 186.2
+          "end": 186.0
         },
         {
           "word_index": 2,
           "text": "funk",
-          "start": 186.2,
-          "end": 186.6
+          "start": 186.0,
+          "end": 186.3
         },
         {
           "word_index": 3,
           "text": "you",
-          "start": 186.6,
-          "end": 186.9
+          "start": 186.3,
+          "end": 186.65
         },
         {
           "word_index": 4,
           "text": "up",
-          "start": 186.9,
-          "end": 187.1
+          "start": 186.65,
+          "end": 187.05
         }
       ]
     },
@@ -2999,31 +2999,31 @@
       "line_index": 74,
       "text": "Uptown funk you up",
       "start": 188.0,
-      "end": 189.4,
+      "end": 189.35,
       "words": [
         {
           "word_index": 1,
           "text": "Uptown",
           "start": 188.0,
-          "end": 188.5
+          "end": 188.3
         },
         {
           "word_index": 2,
           "text": "funk",
-          "start": 188.5,
-          "end": 188.9
+          "start": 188.3,
+          "end": 188.6
         },
         {
           "word_index": 3,
           "text": "you",
-          "start": 188.9,
-          "end": 189.2
+          "start": 188.6,
+          "end": 188.95
         },
         {
           "word_index": 4,
           "text": "up",
-          "start": 189.2,
-          "end": 189.4
+          "start": 188.95,
+          "end": 189.35
         }
       ]
     },
@@ -3031,31 +3031,31 @@
       "line_index": 75,
       "text": "Uptown funk you up",
       "start": 190.1,
-      "end": 191.4,
+      "end": 191.35,
       "words": [
         {
           "word_index": 1,
           "text": "Uptown",
           "start": 190.1,
-          "end": 190.6
+          "end": 190.4
         },
         {
           "word_index": 2,
           "text": "funk",
-          "start": 190.6,
-          "end": 191.0
+          "start": 190.4,
+          "end": 190.65
         },
         {
           "word_index": 3,
           "text": "you",
-          "start": 191.0,
-          "end": 191.2
+          "start": 190.65,
+          "end": 191.0
         },
         {
           "word_index": 4,
           "text": "up",
-          "start": 191.3,
-          "end": 191.4
+          "start": 191.0,
+          "end": 191.35
         }
       ]
     },
@@ -3063,43 +3063,43 @@
       "line_index": 76,
       "text": "Come on, dance, jump on it",
       "start": 191.7,
-      "end": 193.7,
+      "end": 193.65,
       "words": [
         {
           "word_index": 1,
           "text": "Come",
           "start": 191.7,
-          "end": 192.1
+          "end": 192.0
         },
         {
           "word_index": 2,
           "text": "on,",
-          "start": 192.1,
-          "end": 192.4
+          "start": 192.0,
+          "end": 192.3
         },
         {
           "word_index": 3,
           "text": "dance,",
-          "start": 192.4,
-          "end": 192.9
+          "start": 192.3,
+          "end": 192.6
         },
         {
           "word_index": 4,
           "text": "jump",
-          "start": 192.9,
-          "end": 193.3
+          "start": 192.6,
+          "end": 192.9
         },
         {
           "word_index": 5,
           "text": "on",
-          "start": 193.3,
-          "end": 193.5
+          "start": 192.9,
+          "end": 193.25
         },
         {
           "word_index": 6,
           "text": "it",
-          "start": 193.5,
-          "end": 193.7
+          "start": 193.25,
+          "end": 193.65
         }
       ]
     },
@@ -3107,43 +3107,43 @@
       "line_index": 77,
       "text": "If you sexy then flaunt it",
       "start": 193.8,
-      "end": 195.7,
+      "end": 195.65,
       "words": [
         {
           "word_index": 1,
           "text": "If",
           "start": 193.8,
-          "end": 194.0
+          "end": 194.05
         },
         {
           "word_index": 2,
           "text": "you",
-          "start": 194.0,
-          "end": 194.3
+          "start": 194.05,
+          "end": 194.35
         },
         {
           "word_index": 3,
           "text": "sexy",
-          "start": 194.3,
-          "end": 194.7
+          "start": 194.35,
+          "end": 194.65
         },
         {
           "word_index": 4,
           "text": "then",
-          "start": 194.7,
-          "end": 195.0
+          "start": 194.65,
+          "end": 194.95
         },
         {
           "word_index": 5,
           "text": "flaunt",
-          "start": 195.0,
-          "end": 195.5
+          "start": 194.95,
+          "end": 195.25
         },
         {
           "word_index": 6,
           "text": "it",
-          "start": 195.6,
-          "end": 195.7
+          "start": 195.25,
+          "end": 195.65
         }
       ]
     },
@@ -3151,43 +3151,43 @@
       "line_index": 78,
       "text": "If you freaky then own it",
       "start": 196.1,
-      "end": 198.1,
+      "end": 198.05,
       "words": [
         {
           "word_index": 1,
           "text": "If",
           "start": 196.1,
-          "end": 196.3
+          "end": 196.4
         },
         {
           "word_index": 2,
           "text": "you",
-          "start": 196.3,
-          "end": 196.6
+          "start": 196.4,
+          "end": 196.7
         },
         {
           "word_index": 3,
           "text": "freaky",
           "start": 196.7,
-          "end": 197.2
+          "end": 197.0
         },
         {
           "word_index": 4,
           "text": "then",
-          "start": 197.2,
-          "end": 197.6
+          "start": 197.0,
+          "end": 197.3
         },
         {
           "word_index": 5,
           "text": "own",
-          "start": 197.6,
-          "end": 197.9
+          "start": 197.3,
+          "end": 197.65
         },
         {
           "word_index": 6,
           "text": "it",
-          "start": 197.9,
-          "end": 198.1
+          "start": 197.65,
+          "end": 198.05
         }
       ]
     },
@@ -3195,49 +3195,49 @@
       "line_index": 79,
       "text": "Don't brag about it, come show me",
       "start": 198.2,
-      "end": 200.0,
+      "end": 199.95,
       "words": [
         {
           "word_index": 1,
           "text": "Don't",
           "start": 198.2,
-          "end": 198.5
+          "end": 198.4
         },
         {
           "word_index": 2,
           "text": "brag",
-          "start": 198.5,
-          "end": 198.8
+          "start": 198.4,
+          "end": 198.65
         },
         {
           "word_index": 3,
           "text": "about",
-          "start": 198.8,
-          "end": 199.1
+          "start": 198.65,
+          "end": 198.85
         },
         {
           "word_index": 4,
           "text": "it,",
-          "start": 199.1,
-          "end": 199.3
+          "start": 198.85,
+          "end": 199.1
         },
         {
           "word_index": 5,
           "text": "come",
-          "start": 199.3,
-          "end": 199.6
+          "start": 199.1,
+          "end": 199.35
         },
         {
           "word_index": 6,
           "text": "show",
-          "start": 199.6,
-          "end": 199.9
+          "start": 199.35,
+          "end": 199.65
         },
         {
           "word_index": 7,
           "text": "me",
-          "start": 199.9,
-          "end": 200.0
+          "start": 199.65,
+          "end": 199.95
         }
       ]
     },
@@ -3245,7 +3245,7 @@
       "line_index": 80,
       "text": "Come on, dance",
       "start": 200.1,
-      "end": 201.1,
+      "end": 201.05,
       "words": [
         {
           "word_index": 1,
@@ -3256,14 +3256,14 @@
         {
           "word_index": 2,
           "text": "on,",
-          "start": 200.5,
+          "start": 200.4,
           "end": 200.7
         },
         {
           "word_index": 3,
           "text": "dance",
           "start": 200.7,
-          "end": 201.1
+          "end": 201.05
         }
       ]
     },
@@ -3271,25 +3271,25 @@
       "line_index": 81,
       "text": "Jump on it",
       "start": 201.4,
-      "end": 202.3,
+      "end": 202.25,
       "words": [
         {
           "word_index": 1,
           "text": "Jump",
           "start": 201.4,
-          "end": 201.8
+          "end": 201.65
         },
         {
           "word_index": 2,
           "text": "on",
-          "start": 201.8,
-          "end": 202.1
+          "start": 201.65,
+          "end": 201.95
         },
         {
           "word_index": 3,
           "text": "it",
-          "start": 202.1,
-          "end": 202.3
+          "start": 201.95,
+          "end": 202.25
         }
       ]
     },
@@ -3303,36 +3303,36 @@
           "word_index": 1,
           "text": "If",
           "start": 202.3,
-          "end": 202.5
+          "end": 202.55
         },
         {
           "word_index": 2,
           "text": "you",
-          "start": 202.5,
-          "end": 202.8
+          "start": 202.55,
+          "end": 202.85
         },
         {
           "word_index": 3,
           "text": "sexy",
-          "start": 202.8,
-          "end": 203.2
+          "start": 202.85,
+          "end": 203.15
         },
         {
           "word_index": 4,
           "text": "then",
-          "start": 203.2,
-          "end": 203.5
+          "start": 204.05,
+          "end": 204.1
         },
         {
           "word_index": 5,
           "text": "flaunt",
-          "start": 203.5,
-          "end": 204.0
+          "start": 204.1,
+          "end": 204.15
         },
         {
           "word_index": 6,
           "text": "it",
-          "start": 204.1,
+          "start": 204.15,
           "end": 204.2
         }
       ]
@@ -3341,61 +3341,61 @@
       "line_index": 83,
       "text": "Well it's Saturday night and we in the spot",
       "start": 204.4,
-      "end": 206.5,
+      "end": 206.4,
       "words": [
         {
           "word_index": 1,
           "text": "Well",
           "start": 204.4,
-          "end": 204.7
+          "end": 204.6
         },
         {
           "word_index": 2,
           "text": "it's",
-          "start": 204.7,
-          "end": 204.9
+          "start": 204.6,
+          "end": 204.8
         },
         {
           "word_index": 3,
           "text": "Saturday",
-          "start": 204.9,
-          "end": 205.3
+          "start": 204.8,
+          "end": 205.0
         },
         {
           "word_index": 4,
           "text": "night",
-          "start": 205.3,
-          "end": 205.6
+          "start": 205.0,
+          "end": 205.2
         },
         {
           "word_index": 5,
           "text": "and",
-          "start": 205.6,
-          "end": 205.9
+          "start": 205.2,
+          "end": 205.45
         },
         {
           "word_index": 6,
           "text": "we",
-          "start": 205.9,
-          "end": 206.0
+          "start": 205.45,
+          "end": 205.65
         },
         {
           "word_index": 7,
           "text": "in",
-          "start": 206.0,
-          "end": 206.2
+          "start": 205.65,
+          "end": 205.9
         },
         {
           "word_index": 8,
           "text": "the",
-          "start": 206.2,
-          "end": 206.3
+          "start": 205.9,
+          "end": 205.95
         },
         {
           "word_index": 9,
           "text": "spot",
-          "start": 206.3,
-          "end": 206.5
+          "start": 205.95,
+          "end": 206.4
         }
       ]
     },
@@ -3403,49 +3403,49 @@
       "line_index": 84,
       "text": "Don't believe me just watch come on!",
       "start": 206.5,
-      "end": 209.2,
+      "end": 209.1,
       "words": [
         {
           "word_index": 1,
           "text": "Don't",
           "start": 206.5,
-          "end": 206.9
+          "end": 206.85
         },
         {
           "word_index": 2,
           "text": "believe",
-          "start": 206.9,
-          "end": 207.5
+          "start": 206.85,
+          "end": 207.15
         },
         {
           "word_index": 3,
           "text": "me",
-          "start": 207.5,
-          "end": 207.8
+          "start": 207.15,
+          "end": 207.5
         },
         {
           "word_index": 4,
           "text": "just",
-          "start": 207.8,
-          "end": 208.1
+          "start": 207.5,
+          "end": 207.85
         },
         {
           "word_index": 5,
           "text": "watch",
-          "start": 208.2,
-          "end": 208.6
+          "start": 207.85,
+          "end": 208.25
         },
         {
           "word_index": 6,
           "text": "come",
-          "start": 208.6,
-          "end": 209.0
+          "start": 208.25,
+          "end": 208.65
         },
         {
           "word_index": 7,
           "text": "on!",
-          "start": 209.0,
-          "end": 209.2
+          "start": 208.65,
+          "end": 209.1
         }
       ]
     },
@@ -3453,43 +3453,43 @@
       "line_index": 85,
       "text": "Don't believe me just watch uh",
       "start": 214.9,
-      "end": 217.2,
+      "end": 217.1,
       "words": [
         {
           "word_index": 1,
           "text": "Don't",
           "start": 214.9,
-          "end": 215.3
+          "end": 215.25
         },
         {
           "word_index": 2,
           "text": "believe",
-          "start": 215.4,
-          "end": 216.0
+          "start": 215.25,
+          "end": 215.55
         },
         {
           "word_index": 3,
           "text": "me",
-          "start": 216.0,
-          "end": 216.2
+          "start": 215.55,
+          "end": 215.9
         },
         {
           "word_index": 4,
           "text": "just",
-          "start": 216.2,
-          "end": 216.6
+          "start": 215.9,
+          "end": 216.3
         },
         {
           "word_index": 5,
           "text": "watch",
-          "start": 216.6,
-          "end": 217.0
+          "start": 216.3,
+          "end": 216.65
         },
         {
           "word_index": 6,
           "text": "uh",
-          "start": 217.0,
-          "end": 217.2
+          "start": 216.65,
+          "end": 217.1
         }
       ]
     },
@@ -3497,43 +3497,43 @@
       "line_index": 86,
       "text": "Don't believe me just watch uh",
       "start": 223.4,
-      "end": 225.4,
+      "end": 225.35,
       "words": [
         {
           "word_index": 1,
           "text": "Don't",
           "start": 223.4,
-          "end": 223.8
+          "end": 223.7
         },
         {
           "word_index": 2,
           "text": "believe",
-          "start": 223.8,
-          "end": 224.3
+          "start": 223.7,
+          "end": 224.0
         },
         {
           "word_index": 3,
           "text": "me",
-          "start": 224.3,
-          "end": 224.5
+          "start": 224.0,
+          "end": 224.3
         },
         {
           "word_index": 4,
           "text": "just",
-          "start": 224.5,
-          "end": 224.9
+          "start": 224.3,
+          "end": 224.6
         },
         {
           "word_index": 5,
           "text": "watch",
-          "start": 224.9,
-          "end": 225.3
+          "start": 224.6,
+          "end": 224.95
         },
         {
           "word_index": 6,
           "text": "uh",
-          "start": 225.3,
-          "end": 225.4
+          "start": 224.95,
+          "end": 225.35
         }
       ]
     },
@@ -3541,43 +3541,43 @@
       "line_index": 87,
       "text": "Don't believe me just watch uh",
       "start": 225.4,
-      "end": 227.7,
+      "end": 227.6,
       "words": [
         {
           "word_index": 1,
           "text": "Don't",
           "start": 225.4,
-          "end": 225.8
+          "end": 225.75
         },
         {
           "word_index": 2,
           "text": "believe",
-          "start": 225.9,
-          "end": 226.5
+          "start": 225.75,
+          "end": 226.05
         },
         {
           "word_index": 3,
           "text": "me",
-          "start": 226.5,
-          "end": 226.7
+          "start": 226.05,
+          "end": 226.4
         },
         {
           "word_index": 4,
           "text": "just",
-          "start": 226.7,
-          "end": 227.1
+          "start": 226.4,
+          "end": 226.8
         },
         {
           "word_index": 5,
           "text": "watch",
-          "start": 227.1,
-          "end": 227.5
+          "start": 226.8,
+          "end": 227.15
         },
         {
           "word_index": 6,
           "text": "uh",
-          "start": 227.5,
-          "end": 227.7
+          "start": 227.15,
+          "end": 227.6
         }
       ]
     },
@@ -3585,37 +3585,37 @@
       "line_index": 88,
       "text": "Don't believe me just watch",
       "start": 227.8,
-      "end": 229.4,
+      "end": 229.35,
       "words": [
         {
           "word_index": 1,
           "text": "Don't",
           "start": 227.8,
-          "end": 228.1
+          "end": 228.05
         },
         {
           "word_index": 2,
           "text": "believe",
-          "start": 228.2,
-          "end": 228.6
+          "start": 228.05,
+          "end": 228.35
         },
         {
           "word_index": 3,
           "text": "me",
-          "start": 228.6,
-          "end": 228.8
+          "start": 228.35,
+          "end": 228.65
         },
         {
           "word_index": 4,
           "text": "just",
-          "start": 228.8,
-          "end": 229.1
+          "start": 228.65,
+          "end": 228.95
         },
         {
           "word_index": 5,
           "text": "watch",
-          "start": 229.1,
-          "end": 229.4
+          "start": 228.95,
+          "end": 229.35
         }
       ]
     },
@@ -3623,37 +3623,37 @@
       "line_index": 89,
       "text": "Don't believe me just watch",
       "start": 229.5,
-      "end": 231.4,
+      "end": 231.3,
       "words": [
         {
           "word_index": 1,
           "text": "Don't",
           "start": 229.5,
-          "end": 229.9
+          "end": 229.8
         },
         {
           "word_index": 2,
           "text": "believe",
-          "start": 229.9,
-          "end": 230.5
+          "start": 229.8,
+          "end": 230.15
         },
         {
           "word_index": 3,
           "text": "me",
-          "start": 230.5,
-          "end": 230.7
+          "start": 230.15,
+          "end": 230.5
         },
         {
           "word_index": 4,
           "text": "just",
-          "start": 230.7,
-          "end": 231.0
+          "start": 230.5,
+          "end": 230.9
         },
         {
           "word_index": 5,
           "text": "watch",
-          "start": 231.0,
-          "end": 231.4
+          "start": 230.9,
+          "end": 231.3
         }
       ]
     },
@@ -3661,31 +3661,31 @@
       "line_index": 90,
       "text": "Hey, hey, hey, oh",
       "start": 231.4,
-      "end": 232.7,
+      "end": 232.65,
       "words": [
         {
           "word_index": 1,
           "text": "Hey,",
           "start": 231.4,
-          "end": 231.8
+          "end": 231.7
         },
         {
           "word_index": 2,
           "text": "hey,",
-          "start": 231.8,
-          "end": 232.2
+          "start": 231.7,
+          "end": 231.95
         },
         {
           "word_index": 3,
           "text": "hey,",
-          "start": 232.2,
-          "end": 232.5
+          "start": 231.95,
+          "end": 232.3
         },
         {
           "word_index": 4,
           "text": "oh",
-          "start": 232.5,
-          "end": 232.7
+          "start": 232.3,
+          "end": 232.65
         }
       ]
     },
@@ -3693,49 +3693,49 @@
       "line_index": 91,
       "text": "Uptown (woo) funk you up (come on)",
       "start": 233.8,
-      "end": 236.0,
+      "end": 235.95,
       "words": [
         {
           "word_index": 1,
           "text": "Uptown",
           "start": 233.8,
-          "end": 234.2
+          "end": 234.05
         },
         {
           "word_index": 2,
           "text": "(woo)",
-          "start": 234.3,
-          "end": 234.6
+          "start": 234.05,
+          "end": 234.35
         },
         {
           "word_index": 3,
           "text": "funk",
-          "start": 234.6,
-          "end": 235.0
+          "start": 234.35,
+          "end": 234.6
         },
         {
           "word_index": 4,
           "text": "you",
-          "start": 235.0,
-          "end": 235.2
+          "start": 234.6,
+          "end": 234.9
         },
         {
           "word_index": 5,
           "text": "up",
-          "start": 235.2,
-          "end": 235.4
+          "start": 234.9,
+          "end": 235.2
         },
         {
           "word_index": 6,
           "text": "(come",
-          "start": 235.4,
-          "end": 235.8
+          "start": 235.2,
+          "end": 235.55
         },
         {
           "word_index": 7,
           "text": "on)",
-          "start": 235.8,
-          "end": 236.0
+          "start": 235.55,
+          "end": 235.95
         }
       ]
     },
@@ -3743,43 +3743,43 @@
       "line_index": 92,
       "text": "Uptown funk you up (say what?)",
       "start": 236.0,
-      "end": 238.2,
+      "end": 238.1,
       "words": [
         {
           "word_index": 1,
           "text": "Uptown",
           "start": 236.0,
-          "end": 236.5
+          "end": 236.3
         },
         {
           "word_index": 2,
           "text": "funk",
-          "start": 236.5,
-          "end": 236.9
+          "start": 236.3,
+          "end": 236.65
         },
         {
           "word_index": 3,
           "text": "you",
-          "start": 236.9,
-          "end": 237.2
+          "start": 236.65,
+          "end": 236.95
         },
         {
           "word_index": 4,
           "text": "up",
-          "start": 237.2,
-          "end": 237.4
+          "start": 236.95,
+          "end": 237.3
         },
         {
           "word_index": 5,
           "text": "(say",
-          "start": 237.4,
+          "start": 237.3,
           "end": 237.7
         },
         {
           "word_index": 6,
           "text": "what?)",
-          "start": 237.8,
-          "end": 238.2
+          "start": 237.7,
+          "end": 238.1
         }
       ]
     },
@@ -3787,31 +3787,31 @@
       "line_index": 93,
       "text": "Uptown funk you up",
       "start": 238.3,
-      "end": 239.6,
+      "end": 239.55,
       "words": [
         {
           "word_index": 1,
           "text": "Uptown",
           "start": 238.3,
-          "end": 238.8
+          "end": 238.6
         },
         {
           "word_index": 2,
           "text": "funk",
-          "start": 238.8,
-          "end": 239.2
+          "start": 238.6,
+          "end": 238.85
         },
         {
           "word_index": 3,
           "text": "you",
-          "start": 239.2,
-          "end": 239.4
+          "start": 238.85,
+          "end": 239.2
         },
         {
           "word_index": 4,
           "text": "up",
-          "start": 239.5,
-          "end": 239.6
+          "start": 239.2,
+          "end": 239.55
         }
       ]
     },
@@ -3819,43 +3819,43 @@
       "line_index": 94,
       "text": "Uptown funk you up (come on)",
       "start": 240.1,
-      "end": 242.0,
+      "end": 241.95,
       "words": [
         {
           "word_index": 1,
           "text": "Uptown",
           "start": 240.1,
-          "end": 240.6
+          "end": 240.35
         },
         {
           "word_index": 2,
           "text": "funk",
-          "start": 240.6,
-          "end": 240.9
+          "start": 240.35,
+          "end": 240.65
         },
         {
           "word_index": 3,
           "text": "you",
-          "start": 240.9,
-          "end": 241.2
+          "start": 240.65,
+          "end": 240.95
         },
         {
           "word_index": 4,
           "text": "up",
-          "start": 241.2,
-          "end": 241.4
+          "start": 240.95,
+          "end": 241.25
         },
         {
           "word_index": 5,
           "text": "(come",
-          "start": 241.4,
-          "end": 241.8
+          "start": 241.25,
+          "end": 241.55
         },
         {
           "word_index": 6,
           "text": "on)",
-          "start": 241.8,
-          "end": 242.0
+          "start": 241.55,
+          "end": 241.95
         }
       ]
     },
@@ -3863,49 +3863,49 @@
       "line_index": 95,
       "text": "Uptown (woo) funk you up (come on)",
       "start": 242.1,
-      "end": 244.2,
+      "end": 244.15,
       "words": [
         {
           "word_index": 1,
           "text": "Uptown",
           "start": 242.1,
-          "end": 242.5
+          "end": 242.35
         },
         {
           "word_index": 2,
           "text": "(woo)",
-          "start": 242.5,
-          "end": 242.9
+          "start": 242.35,
+          "end": 242.6
         },
         {
           "word_index": 3,
           "text": "funk",
-          "start": 242.9,
-          "end": 243.2
+          "start": 242.6,
+          "end": 242.9
         },
         {
           "word_index": 4,
           "text": "you",
-          "start": 243.2,
-          "end": 243.4
+          "start": 242.9,
+          "end": 243.15
         },
         {
           "word_index": 5,
           "text": "up",
-          "start": 243.5,
-          "end": 243.7
+          "start": 243.15,
+          "end": 243.45
         },
         {
           "word_index": 6,
           "text": "(come",
-          "start": 243.7,
-          "end": 244.0
+          "start": 243.45,
+          "end": 243.75
         },
         {
           "word_index": 7,
           "text": "on)",
-          "start": 244.0,
-          "end": 244.2
+          "start": 243.75,
+          "end": 244.15
         }
       ]
     },
@@ -3913,43 +3913,43 @@
       "line_index": 96,
       "text": "Uptown funk you up (say what?)",
       "start": 244.2,
-      "end": 246.5,
+      "end": 246.4,
       "words": [
         {
           "word_index": 1,
           "text": "Uptown",
           "start": 244.2,
-          "end": 244.7
+          "end": 244.55
         },
         {
           "word_index": 2,
           "text": "funk",
-          "start": 244.7,
-          "end": 245.1
+          "start": 244.55,
+          "end": 244.85
         },
         {
           "word_index": 3,
           "text": "you",
-          "start": 245.1,
-          "end": 245.4
+          "start": 244.85,
+          "end": 245.2
         },
         {
           "word_index": 4,
           "text": "up",
-          "start": 245.4,
+          "start": 245.2,
           "end": 245.6
         },
         {
           "word_index": 5,
           "text": "(say",
-          "start": 245.7,
-          "end": 246.0
+          "start": 245.6,
+          "end": 245.95
         },
         {
           "word_index": 6,
           "text": "what?)",
-          "start": 246.0,
-          "end": 246.5
+          "start": 245.95,
+          "end": 246.4
         }
       ]
     },
@@ -3957,31 +3957,31 @@
       "line_index": 97,
       "text": "Uptown funk you up",
       "start": 246.6,
-      "end": 247.9,
+      "end": 247.85,
       "words": [
         {
           "word_index": 1,
           "text": "Uptown",
           "start": 246.6,
-          "end": 247.1
+          "end": 246.9
         },
         {
           "word_index": 2,
           "text": "funk",
-          "start": 247.1,
-          "end": 247.5
+          "start": 246.9,
+          "end": 247.15
         },
         {
           "word_index": 3,
           "text": "you",
-          "start": 247.5,
-          "end": 247.7
+          "start": 247.15,
+          "end": 247.5
         },
         {
           "word_index": 4,
           "text": "up",
-          "start": 247.8,
-          "end": 247.9
+          "start": 247.5,
+          "end": 247.85
         }
       ]
     },
@@ -3989,43 +3989,43 @@
       "line_index": 98,
       "text": "Uptown funk you up (come on)",
       "start": 248.4,
-      "end": 250.4,
+      "end": 250.3,
       "words": [
         {
           "word_index": 1,
           "text": "Uptown",
           "start": 248.4,
-          "end": 248.9
+          "end": 248.7
         },
         {
           "word_index": 2,
           "text": "funk",
-          "start": 248.9,
-          "end": 249.2
+          "start": 248.7,
+          "end": 249.0
         },
         {
           "word_index": 3,
           "text": "you",
-          "start": 249.3,
-          "end": 249.5
+          "start": 249.0,
+          "end": 249.15
         },
         {
           "word_index": 4,
           "text": "up",
-          "start": 249.5,
-          "end": 249.7
+          "start": 249.15,
+          "end": 249.5
         },
         {
           "word_index": 5,
           "text": "(come",
-          "start": 249.8,
-          "end": 250.2
+          "start": 249.5,
+          "end": 249.9
         },
         {
           "word_index": 6,
           "text": "on)",
-          "start": 250.2,
-          "end": 250.4
+          "start": 249.9,
+          "end": 250.3
         }
       ]
     },
@@ -4033,49 +4033,49 @@
       "line_index": 99,
       "text": "Uptown (woo) funk you up (come on)",
       "start": 250.6,
-      "end": 252.6,
+      "end": 252.55,
       "words": [
         {
           "word_index": 1,
           "text": "Uptown",
           "start": 250.6,
-          "end": 251.0
+          "end": 250.85
         },
         {
           "word_index": 2,
           "text": "(woo)",
-          "start": 251.0,
-          "end": 251.4
+          "start": 250.85,
+          "end": 251.1
         },
         {
           "word_index": 3,
           "text": "funk",
-          "start": 251.4,
-          "end": 251.6
+          "start": 251.1,
+          "end": 251.35
         },
         {
           "word_index": 4,
           "text": "you",
-          "start": 251.7,
-          "end": 251.9
+          "start": 251.35,
+          "end": 251.6
         },
         {
           "word_index": 5,
           "text": "up",
-          "start": 251.9,
-          "end": 252.1
+          "start": 251.6,
+          "end": 251.9
         },
         {
           "word_index": 6,
           "text": "(come",
-          "start": 252.1,
-          "end": 252.4
+          "start": 251.9,
+          "end": 252.2
         },
         {
           "word_index": 7,
           "text": "on)",
-          "start": 252.4,
-          "end": 252.6
+          "start": 252.2,
+          "end": 252.55
         }
       ]
     },
@@ -4083,43 +4083,43 @@
       "line_index": 100,
       "text": "Uptown funk you up (say what?)",
       "start": 252.6,
-      "end": 254.7,
+      "end": 254.65,
       "words": [
         {
           "word_index": 1,
           "text": "Uptown",
           "start": 252.6,
-          "end": 253.1
+          "end": 252.9
         },
         {
           "word_index": 2,
           "text": "funk",
-          "start": 253.1,
-          "end": 253.4
+          "start": 252.9,
+          "end": 253.2
         },
         {
           "word_index": 3,
           "text": "you",
-          "start": 253.4,
-          "end": 253.7
+          "start": 253.2,
+          "end": 253.5
         },
         {
           "word_index": 4,
           "text": "up",
-          "start": 253.7,
-          "end": 253.9
+          "start": 253.5,
+          "end": 253.85
         },
         {
           "word_index": 5,
           "text": "(say",
-          "start": 253.9,
-          "end": 254.3
+          "start": 253.85,
+          "end": 254.2
         },
         {
           "word_index": 6,
           "text": "what?)",
-          "start": 254.3,
-          "end": 254.7
+          "start": 254.2,
+          "end": 254.65
         }
       ]
     },
@@ -4127,31 +4127,31 @@
       "line_index": 101,
       "text": "Uptown funk you up",
       "start": 254.8,
-      "end": 256.1,
+      "end": 256.05,
       "words": [
         {
           "word_index": 1,
           "text": "Uptown",
           "start": 254.8,
-          "end": 255.3
+          "end": 255.1
         },
         {
           "word_index": 2,
           "text": "funk",
-          "start": 255.3,
-          "end": 255.7
+          "start": 255.1,
+          "end": 255.35
         },
         {
           "word_index": 3,
           "text": "you",
-          "start": 255.7,
-          "end": 255.9
+          "start": 255.35,
+          "end": 255.7
         },
         {
           "word_index": 4,
           "text": "up",
-          "start": 256.0,
-          "end": 256.1
+          "start": 255.7,
+          "end": 256.05
         }
       ]
     },
@@ -4159,43 +4159,43 @@
       "line_index": 102,
       "text": "Uptown funk you up (come on)",
       "start": 256.7,
-      "end": 258.8,
+      "end": 258.75,
       "words": [
         {
           "word_index": 1,
           "text": "Uptown",
           "start": 256.7,
-          "end": 257.2
+          "end": 257.0
         },
         {
           "word_index": 2,
           "text": "funk",
-          "start": 257.2,
-          "end": 257.6
+          "start": 257.0,
+          "end": 257.3
         },
         {
           "word_index": 3,
           "text": "you",
-          "start": 257.6,
-          "end": 257.9
+          "start": 257.3,
+          "end": 257.6
         },
         {
           "word_index": 4,
           "text": "up",
-          "start": 257.9,
-          "end": 258.1
+          "start": 257.6,
+          "end": 257.95
         },
         {
           "word_index": 5,
           "text": "(come",
-          "start": 258.1,
-          "end": 258.6
+          "start": 257.95,
+          "end": 258.3
         },
         {
           "word_index": 6,
           "text": "on)",
-          "start": 258.6,
-          "end": 258.8
+          "start": 258.3,
+          "end": 258.75
         }
       ]
     },
@@ -4203,31 +4203,31 @@
       "line_index": 103,
       "text": "Uptown funk you up",
       "start": 258.9,
-      "end": 260.3,
+      "end": 260.25,
       "words": [
         {
           "word_index": 1,
           "text": "Uptown",
           "start": 258.9,
-          "end": 259.4
+          "end": 259.2
         },
         {
           "word_index": 2,
           "text": "funk",
-          "start": 259.4,
-          "end": 259.8
+          "start": 259.2,
+          "end": 259.5
         },
         {
           "word_index": 3,
           "text": "you",
-          "start": 259.8,
-          "end": 260.1
+          "start": 259.5,
+          "end": 259.85
         },
         {
           "word_index": 4,
           "text": "up",
-          "start": 260.1,
-          "end": 260.3
+          "start": 259.85,
+          "end": 260.25
         }
       ]
     },
@@ -4235,43 +4235,43 @@
       "line_index": 104,
       "text": "Uptown funk you up (say what?)",
       "start": 261.0,
-      "end": 263.2,
+      "end": 263.1,
       "words": [
         {
           "word_index": 1,
           "text": "Uptown",
           "start": 261.0,
-          "end": 261.5
+          "end": 261.3
         },
         {
           "word_index": 2,
           "text": "funk",
-          "start": 261.5,
-          "end": 261.9
+          "start": 261.3,
+          "end": 261.65
         },
         {
           "word_index": 3,
           "text": "you",
-          "start": 261.9,
-          "end": 262.2
+          "start": 261.65,
+          "end": 261.95
         },
         {
           "word_index": 4,
           "text": "up",
-          "start": 262.2,
-          "end": 262.4
+          "start": 261.95,
+          "end": 262.3
         },
         {
           "word_index": 5,
           "text": "(say",
-          "start": 262.4,
+          "start": 262.3,
           "end": 262.7
         },
         {
           "word_index": 6,
           "text": "what?)",
-          "start": 262.8,
-          "end": 263.2
+          "start": 262.7,
+          "end": 263.1
         }
       ]
     },
@@ -4279,31 +4279,31 @@
       "line_index": 105,
       "text": "Uptown funk you up",
       "start": 263.2,
-      "end": 264.6,
+      "end": 264.55,
       "words": [
         {
           "word_index": 1,
           "text": "Uptown",
           "start": 263.2,
-          "end": 263.7
+          "end": 263.5
         },
         {
           "word_index": 2,
           "text": "funk",
-          "start": 263.7,
-          "end": 264.1
+          "start": 263.5,
+          "end": 263.8
         },
         {
           "word_index": 3,
           "text": "you",
-          "start": 264.1,
-          "end": 264.4
+          "start": 263.8,
+          "end": 264.15
         },
         {
           "word_index": 4,
           "text": "up",
-          "start": 264.4,
-          "end": 264.6
+          "start": 264.15,
+          "end": 264.55
         }
       ]
     }

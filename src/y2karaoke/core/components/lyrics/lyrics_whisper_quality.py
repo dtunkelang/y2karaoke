@@ -197,9 +197,9 @@ def get_lyrics_with_quality(  # noqa: C901
         lrc_duration = get_lrc_duration(lrc_text)
         if lrc_duration and abs(target_duration - lrc_duration) > 8:
             issues_list.append(
-                "LRC duration mismatch: keeping text but ignoring LRC timings"
+                f"LRC duration mismatch: LRC={lrc_duration}s vs audio={target_duration}s (proceeding with LRC timings)"
             )
-            line_timings = None
+            # line_timings = None  <-- Removed: Always keep timings if they exist
 
     if (lrc_text or file_lines) and not line_timings:
         if offline:

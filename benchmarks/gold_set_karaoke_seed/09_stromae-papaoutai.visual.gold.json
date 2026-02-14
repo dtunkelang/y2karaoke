@@ -9,31 +9,31 @@
       "line_index": 1,
       "text": "Dites-moi d'où il vient",
       "start": 0.5,
-      "end": 2.5,
+      "end": 2.4,
       "words": [
         {
           "word_index": 1,
           "text": "Dites-moi",
           "start": 0.5,
-          "end": 1.8
+          "end": 0.9
         },
         {
           "word_index": 2,
           "text": "d'où",
-          "start": 1.8,
-          "end": 2.1
+          "start": 0.9,
+          "end": 1.35
         },
         {
           "word_index": 3,
           "text": "il",
-          "start": 2.1,
-          "end": 2.4
+          "start": 1.35,
+          "end": 1.85
         },
         {
           "word_index": 4,
           "text": "vient",
-          "start": 2.4,
-          "end": 2.5
+          "start": 1.85,
+          "end": 2.4
         }
       ]
     },
@@ -41,43 +41,43 @@
       "line_index": 2,
       "text": "Enfin je saurai où je vais",
       "start": 2.7,
-      "end": 4.4,
+      "end": 4.65,
       "words": [
         {
           "word_index": 1,
           "text": "Enfin",
           "start": 2.7,
-          "end": 3.6
+          "end": 3.0
         },
         {
           "word_index": 2,
           "text": "je",
-          "start": 3.6,
-          "end": 3.6
+          "start": 3.0,
+          "end": 3.3
         },
         {
           "word_index": 3,
           "text": "saurai",
-          "start": 3.6,
-          "end": 3.8
+          "start": 3.3,
+          "end": 3.6
         },
         {
           "word_index": 4,
           "text": "où",
-          "start": 3.8,
+          "start": 3.6,
           "end": 3.9
         },
         {
           "word_index": 5,
           "text": "je",
           "start": 3.9,
-          "end": 4.1
+          "end": 4.25
         },
         {
           "word_index": 6,
           "text": "vais",
-          "start": 4.1,
-          "end": 4.4
+          "start": 4.25,
+          "end": 4.65
         }
       ]
     },
@@ -85,43 +85,43 @@
       "line_index": 3,
       "text": "Maman dit que lorsqu'on cherche bien",
       "start": 4.9,
-      "end": 7.1,
+      "end": 7.0,
       "words": [
         {
           "word_index": 1,
           "text": "Maman",
           "start": 4.9,
-          "end": 5.6
+          "end": 5.2
         },
         {
           "word_index": 2,
           "text": "dit",
-          "start": 5.6,
-          "end": 5.9
+          "start": 5.2,
+          "end": 5.55
         },
         {
           "word_index": 3,
           "text": "que",
-          "start": 5.9,
-          "end": 6.1
+          "start": 5.55,
+          "end": 5.85
         },
         {
           "word_index": 4,
           "text": "lorsqu'on",
-          "start": 6.1,
-          "end": 6.8
+          "start": 5.85,
+          "end": 6.2
         },
         {
           "word_index": 5,
           "text": "cherche",
-          "start": 6.8,
-          "end": 7.0
+          "start": 6.2,
+          "end": 6.6
         },
         {
           "word_index": 6,
           "text": "bien",
-          "start": 7.0,
-          "end": 7.1
+          "start": 6.6,
+          "end": 7.0
         }
       ]
     },
@@ -129,37 +129,37 @@
       "line_index": 4,
       "text": "On finit toujours par trouver",
       "start": 7.3,
-      "end": 8.9,
+      "end": 9.1,
       "words": [
         {
           "word_index": 1,
           "text": "On",
           "start": 7.3,
-          "end": 7.5
+          "end": 7.6
         },
         {
           "word_index": 2,
           "text": "finit",
-          "start": 7.5,
-          "end": 7.8
+          "start": 7.6,
+          "end": 7.95
         },
         {
           "word_index": 3,
           "text": "toujours",
-          "start": 7.8,
-          "end": 7.9
+          "start": 7.95,
+          "end": 8.3
         },
         {
           "word_index": 4,
           "text": "par",
-          "start": 7.9,
-          "end": 8.5
+          "start": 8.3,
+          "end": 8.7
         },
         {
           "word_index": 5,
           "text": "trouver",
-          "start": 8.5,
-          "end": 8.9
+          "start": 8.7,
+          "end": 9.1
         }
       ]
     },
@@ -167,49 +167,49 @@
       "line_index": 5,
       "text": "Elle dit qu'il n'est jamais très loin",
       "start": 9.5,
-      "end": 11.3,
+      "end": 11.55,
       "words": [
         {
           "word_index": 1,
           "text": "Elle",
           "start": 9.5,
-          "end": 10.1
+          "end": 9.75
         },
         {
           "word_index": 2,
           "text": "dit",
-          "start": 10.1,
-          "end": 10.4
+          "start": 9.75,
+          "end": 10.0
         },
         {
           "word_index": 3,
           "text": "qu'il",
-          "start": 10.4,
-          "end": 10.7
+          "start": 10.0,
+          "end": 10.3
         },
         {
           "word_index": 4,
           "text": "n'est",
-          "start": 10.7,
-          "end": 10.8
+          "start": 10.3,
+          "end": 10.55
         },
         {
           "word_index": 5,
           "text": "jamais",
-          "start": 10.8,
-          "end": 11.0
+          "start": 10.55,
+          "end": 10.85
         },
         {
           "word_index": 6,
           "text": "très",
-          "start": 11.0,
-          "end": 11.0
+          "start": 10.85,
+          "end": 11.15
         },
         {
           "word_index": 7,
           "text": "loin",
-          "start": 11.0,
-          "end": 11.3
+          "start": 11.15,
+          "end": 11.55
         }
       ]
     },
@@ -217,37 +217,37 @@
       "line_index": 6,
       "text": "Qu'il part très souvent travailler",
       "start": 11.8,
-      "end": 13.2,
+      "end": 13.8,
       "words": [
         {
           "word_index": 1,
           "text": "Qu'il",
           "start": 11.8,
-          "end": 12.7
+          "end": 12.15
         },
         {
           "word_index": 2,
           "text": "part",
-          "start": 12.7,
-          "end": 12.8
+          "start": 12.15,
+          "end": 12.55
         },
         {
           "word_index": 3,
           "text": "très",
-          "start": 12.8,
-          "end": 12.8
+          "start": 12.55,
+          "end": 12.9
         },
         {
           "word_index": 4,
           "text": "souvent",
-          "start": 12.8,
-          "end": 12.9
+          "start": 12.9,
+          "end": 13.35
         },
         {
           "word_index": 5,
           "text": "travailler",
-          "start": 12.9,
-          "end": 13.2
+          "start": 13.35,
+          "end": 13.8
         }
       ]
     },
@@ -255,37 +255,37 @@
       "line_index": 7,
       "text": "Maman dit \"travailler, c'est bien\"",
       "start": 14.1,
-      "end": 15.9,
+      "end": 16.1,
       "words": [
         {
           "word_index": 1,
           "text": "Maman",
           "start": 14.1,
-          "end": 14.9
+          "end": 14.45
         },
         {
           "word_index": 2,
           "text": "dit",
-          "start": 14.9,
-          "end": 15.0
+          "start": 14.45,
+          "end": 14.85
         },
         {
           "word_index": 3,
           "text": "\"travailler,",
-          "start": 15.0,
-          "end": 15.1
+          "start": 14.85,
+          "end": 15.2
         },
         {
           "word_index": 4,
           "text": "c'est",
-          "start": 15.1,
-          "end": 15.4
+          "start": 15.2,
+          "end": 15.65
         },
         {
           "word_index": 5,
           "text": "bien\"",
-          "start": 15.4,
-          "end": 15.9
+          "start": 15.65,
+          "end": 16.1
         }
       ]
     },
@@ -293,37 +293,37 @@
       "line_index": 8,
       "text": "Bien mieux qu'être mal accompagné",
       "start": 16.4,
-      "end": 17.9,
+      "end": 18.3,
       "words": [
         {
           "word_index": 1,
           "text": "Bien",
           "start": 16.4,
-          "end": 16.7
+          "end": 16.75
         },
         {
           "word_index": 2,
           "text": "mieux",
-          "start": 16.7,
-          "end": 17.0
+          "start": 16.75,
+          "end": 17.1
         },
         {
           "word_index": 3,
           "text": "qu'être",
-          "start": 17.0,
-          "end": 17.2
+          "start": 17.1,
+          "end": 17.45
         },
         {
           "word_index": 4,
           "text": "mal",
-          "start": 17.2,
-          "end": 17.5
+          "start": 17.45,
+          "end": 17.85
         },
         {
           "word_index": 5,
           "text": "accompagné",
-          "start": 17.5,
-          "end": 17.9
+          "start": 17.85,
+          "end": 18.3
         }
       ]
     },
@@ -331,25 +331,25 @@
       "line_index": 9,
       "text": "Pas vrai ?",
       "start": 18.7,
-      "end": 20.6,
+      "end": 20.5,
       "words": [
         {
           "word_index": 1,
           "text": "Pas",
           "start": 18.7,
-          "end": 19.6
+          "end": 19.25
         },
         {
           "word_index": 2,
           "text": "vrai",
-          "start": 19.6,
-          "end": 20.5
+          "start": 19.25,
+          "end": 19.8
         },
         {
           "word_index": 3,
           "text": "?",
-          "start": 20.5,
-          "end": 20.6
+          "start": 19.8,
+          "end": 20.5
         }
       ]
     },
@@ -357,37 +357,37 @@
       "line_index": 10,
       "text": "Où est ton papa ?",
       "start": 20.9,
-      "end": 22.8,
+      "end": 22.7,
       "words": [
         {
           "word_index": 1,
           "text": "Où",
           "start": 20.9,
-          "end": 21.8
+          "end": 21.2
         },
         {
           "word_index": 2,
           "text": "est",
-          "start": 21.8,
-          "end": 22.1
+          "start": 21.2,
+          "end": 21.55
         },
         {
           "word_index": 3,
           "text": "ton",
-          "start": 22.1,
-          "end": 22.2
+          "start": 21.55,
+          "end": 21.9
         },
         {
           "word_index": 4,
           "text": "papa",
-          "start": 22.2,
-          "end": 22.6
+          "start": 21.9,
+          "end": 22.3
         },
         {
           "word_index": 5,
           "text": "?",
-          "start": 22.7,
-          "end": 22.8
+          "start": 22.3,
+          "end": 22.7
         }
       ]
     },
@@ -395,43 +395,43 @@
       "line_index": 11,
       "text": "Dis-moi, où est ton papa ?",
       "start": 23.1,
-      "end": 24.8,
+      "end": 25.05,
       "words": [
         {
           "word_index": 1,
           "text": "Dis-moi,",
           "start": 23.1,
-          "end": 23.7
+          "end": 23.4
         },
         {
           "word_index": 2,
           "text": "où",
-          "start": 23.7,
-          "end": 23.9
+          "start": 23.4,
+          "end": 23.7
         },
         {
           "word_index": 3,
           "text": "est",
-          "start": 23.9,
+          "start": 23.7,
           "end": 24.0
         },
         {
           "word_index": 4,
           "text": "ton",
           "start": 24.0,
-          "end": 24.1
+          "end": 24.3
         },
         {
           "word_index": 5,
           "text": "papa",
-          "start": 24.1,
-          "end": 24.2
+          "start": 24.3,
+          "end": 24.65
         },
         {
           "word_index": 6,
           "text": "?",
-          "start": 24.2,
-          "end": 24.8
+          "start": 24.65,
+          "end": 25.05
         }
       ]
     },
@@ -439,37 +439,37 @@
       "line_index": 12,
       "text": "Sans même devoir lui parler",
       "start": 25.3,
-      "end": 26.9,
+      "end": 27.1,
       "words": [
         {
           "word_index": 1,
           "text": "Sans",
           "start": 25.3,
-          "end": 26.3
+          "end": 25.6
         },
         {
           "word_index": 2,
           "text": "même",
-          "start": 26.3,
-          "end": 26.4
+          "start": 25.6,
+          "end": 25.95
         },
         {
           "word_index": 3,
           "text": "devoir",
-          "start": 26.4,
-          "end": 26.8
+          "start": 25.95,
+          "end": 26.3
         },
         {
           "word_index": 4,
           "text": "lui",
-          "start": 26.8,
-          "end": 26.8
+          "start": 26.3,
+          "end": 26.7
         },
         {
           "word_index": 5,
           "text": "parler",
-          "start": 26.8,
-          "end": 26.9
+          "start": 26.7,
+          "end": 27.1
         }
       ]
     },
@@ -477,49 +477,49 @@
       "line_index": 13,
       "text": "Il sait ce qui ne va pas",
       "start": 27.5,
-      "end": 29.2,
+      "end": 29.45,
       "words": [
         {
           "word_index": 1,
           "text": "Il",
           "start": 27.5,
-          "end": 28.7
+          "end": 27.75
         },
         {
           "word_index": 2,
           "text": "sait",
-          "start": 28.7,
-          "end": 28.9
+          "start": 27.75,
+          "end": 28.0
         },
         {
           "word_index": 3,
           "text": "ce",
-          "start": 28.9,
-          "end": 29.0
+          "start": 28.0,
+          "end": 28.25
         },
         {
           "word_index": 4,
           "text": "qui",
-          "start": 29.0,
-          "end": 29.0
+          "start": 28.25,
+          "end": 28.5
         },
         {
           "word_index": 5,
           "text": "ne",
-          "start": 29.0,
-          "end": 29.1
+          "start": 28.5,
+          "end": 28.8
         },
         {
           "word_index": 6,
           "text": "va",
-          "start": 29.1,
-          "end": 29.2
+          "start": 28.8,
+          "end": 29.1
         },
         {
           "word_index": 7,
           "text": "pas",
-          "start": 29.2,
-          "end": 29.2
+          "start": 29.1,
+          "end": 29.45
         }
       ]
     },
@@ -527,25 +527,25 @@
       "line_index": 14,
       "text": "Ah, sacré papa",
       "start": 29.7,
-      "end": 31.2,
+      "end": 31.5,
       "words": [
         {
           "word_index": 1,
           "text": "Ah,",
           "start": 29.7,
-          "end": 30.9
+          "end": 30.25
         },
         {
           "word_index": 2,
           "text": "sacré",
-          "start": 30.9,
-          "end": 31.1
+          "start": 30.25,
+          "end": 30.8
         },
         {
           "word_index": 3,
           "text": "papa",
-          "start": 31.1,
-          "end": 31.2
+          "start": 30.8,
+          "end": 31.5
         }
       ]
     },
@@ -553,37 +553,37 @@
       "line_index": 15,
       "text": "Dis-moi, où es-tu caché ?",
       "start": 31.9,
-      "end": 33.8,
+      "end": 33.7,
       "words": [
         {
           "word_index": 1,
           "text": "Dis-moi,",
           "start": 31.9,
-          "end": 33.4
+          "end": 32.2
         },
         {
           "word_index": 2,
           "text": "où",
-          "start": 33.4,
-          "end": 33.5
+          "start": 32.2,
+          "end": 32.55
         },
         {
           "word_index": 3,
           "text": "es-tu",
-          "start": 33.5,
-          "end": 33.7
+          "start": 32.55,
+          "end": 32.9
         },
         {
           "word_index": 4,
           "text": "caché",
-          "start": 33.7,
-          "end": 33.8
+          "start": 32.9,
+          "end": 33.3
         },
         {
           "word_index": 5,
           "text": "?",
-          "start": 33.8,
-          "end": 33.8
+          "start": 33.3,
+          "end": 33.7
         }
       ]
     },
@@ -591,61 +591,61 @@
       "line_index": 16,
       "text": "Ça doit faire au moins mille fois que j'ai",
       "start": 34.1,
-      "end": 36.4,
+      "end": 36.35,
       "words": [
         {
           "word_index": 1,
           "text": "Ça",
           "start": 34.1,
-          "end": 35.6
+          "end": 34.3
         },
         {
           "word_index": 2,
           "text": "doit",
-          "start": 35.6,
-          "end": 35.9
+          "start": 34.3,
+          "end": 34.55
         },
         {
           "word_index": 3,
           "text": "faire",
-          "start": 35.9,
-          "end": 36.1
+          "start": 34.55,
+          "end": 34.75
         },
         {
           "word_index": 4,
           "text": "au",
-          "start": 36.1,
-          "end": 36.1
+          "start": 34.75,
+          "end": 35.0
         },
         {
           "word_index": 5,
           "text": "moins",
-          "start": 36.1,
-          "end": 36.2
+          "start": 35.0,
+          "end": 35.25
         },
         {
           "word_index": 6,
           "text": "mille",
-          "start": 36.2,
-          "end": 36.2
+          "start": 35.25,
+          "end": 35.5
         },
         {
           "word_index": 7,
           "text": "fois",
-          "start": 36.2,
-          "end": 36.3
+          "start": 35.5,
+          "end": 35.75
         },
         {
           "word_index": 8,
           "text": "que",
-          "start": 36.3,
-          "end": 36.3
+          "start": 35.75,
+          "end": 36.0
         },
         {
           "word_index": 9,
           "text": "j'ai",
-          "start": 36.3,
-          "end": 36.4
+          "start": 36.0,
+          "end": 36.35
         }
       ]
     },
@@ -653,25 +653,25 @@
       "line_index": 17,
       "text": "Compté mes doigts",
       "start": 36.6,
-      "end": 38.6,
+      "end": 38.5,
       "words": [
         {
           "word_index": 1,
           "text": "Compté",
           "start": 36.6,
-          "end": 38.2
+          "end": 37.15
         },
         {
           "word_index": 2,
           "text": "mes",
-          "start": 38.2,
-          "end": 38.6
+          "start": 37.15,
+          "end": 37.8
         },
         {
           "word_index": 3,
           "text": "doigts",
-          "start": 38.6,
-          "end": 38.6
+          "start": 37.8,
+          "end": 38.5
         }
       ]
     },
@@ -679,13 +679,13 @@
       "line_index": 18,
       "text": "Hey",
       "start": 38.8,
-      "end": 40.8,
+      "end": 40.5,
       "words": [
         {
           "word_index": 1,
           "text": "Hey",
           "start": 38.8,
-          "end": 40.8
+          "end": 40.5
         }
       ]
     },
@@ -693,31 +693,31 @@
       "line_index": 19,
       "text": "Où t'es, papaoutai ?",
       "start": 41.0,
-      "end": 42.7,
+      "end": 42.9,
       "words": [
         {
           "word_index": 1,
           "text": "Où",
           "start": 41.0,
-          "end": 41.7
+          "end": 41.4
         },
         {
           "word_index": 2,
           "text": "t'es,",
-          "start": 41.7,
-          "end": 42.3
+          "start": 41.4,
+          "end": 41.85
         },
         {
           "word_index": 3,
           "text": "papaoutai",
-          "start": 42.3,
-          "end": 42.6
+          "start": 41.85,
+          "end": 42.35
         },
         {
           "word_index": 4,
           "text": "?",
-          "start": 42.6,
-          "end": 42.7
+          "start": 42.35,
+          "end": 42.9
         }
       ]
     },
@@ -725,31 +725,31 @@
       "line_index": 20,
       "text": "Où t'es, papaoutai ?",
       "start": 43.2,
-      "end": 44.8,
+      "end": 45.1,
       "words": [
         {
           "word_index": 1,
           "text": "Où",
           "start": 43.2,
-          "end": 44.3
+          "end": 43.6
         },
         {
           "word_index": 2,
           "text": "t'es,",
-          "start": 44.3,
-          "end": 44.5
+          "start": 43.6,
+          "end": 44.05
         },
         {
           "word_index": 3,
           "text": "papaoutai",
-          "start": 44.5,
-          "end": 44.7
+          "start": 44.05,
+          "end": 44.55
         },
         {
           "word_index": 4,
           "text": "?",
-          "start": 44.7,
-          "end": 44.8
+          "start": 44.55,
+          "end": 45.1
         }
       ]
     },
@@ -757,31 +757,31 @@
       "line_index": 21,
       "text": "Où t'es, papaoutai ?",
       "start": 45.4,
-      "end": 47.1,
+      "end": 47.3,
       "words": [
         {
           "word_index": 1,
           "text": "Où",
           "start": 45.4,
-          "end": 45.7
+          "end": 45.8
         },
         {
           "word_index": 2,
           "text": "t'es,",
-          "start": 45.7,
-          "end": 46.1
+          "start": 45.8,
+          "end": 46.25
         },
         {
           "word_index": 3,
           "text": "papaoutai",
-          "start": 46.1,
-          "end": 46.8
+          "start": 46.25,
+          "end": 46.75
         },
         {
           "word_index": 4,
           "text": "?",
-          "start": 46.8,
-          "end": 47.1
+          "start": 46.75,
+          "end": 47.3
         }
       ]
     },
@@ -789,49 +789,49 @@
       "line_index": 22,
       "text": "Où t'es, où t'es où, papaoutai ?",
       "start": 47.6,
-      "end": 49.6,
+      "end": 49.55,
       "words": [
         {
           "word_index": 1,
           "text": "Où",
           "start": 47.6,
-          "end": 47.7
+          "end": 47.85
         },
         {
           "word_index": 2,
           "text": "t'es,",
-          "start": 47.7,
-          "end": 47.8
+          "start": 47.85,
+          "end": 48.1
         },
         {
           "word_index": 3,
           "text": "où",
-          "start": 47.8,
-          "end": 49.1
+          "start": 48.1,
+          "end": 48.35
         },
         {
           "word_index": 4,
           "text": "t'es",
-          "start": 49.1,
-          "end": 49.3
+          "start": 48.35,
+          "end": 48.6
         },
         {
           "word_index": 5,
           "text": "où,",
-          "start": 49.3,
-          "end": 49.4
+          "start": 48.6,
+          "end": 48.9
         },
         {
           "word_index": 6,
           "text": "papaoutai",
-          "start": 49.4,
-          "end": 49.6
+          "start": 48.9,
+          "end": 49.2
         },
         {
           "word_index": 7,
           "text": "?",
-          "start": 49.6,
-          "end": 49.6
+          "start": 49.2,
+          "end": 49.55
         }
       ]
     },
@@ -839,31 +839,31 @@
       "line_index": 23,
       "text": "Où t'es, papaoutai ?",
       "start": 49.8,
-      "end": 51.5,
+      "end": 51.7,
       "words": [
         {
           "word_index": 1,
           "text": "Où",
           "start": 49.8,
-          "end": 50.5
+          "end": 50.2
         },
         {
           "word_index": 2,
           "text": "t'es,",
-          "start": 50.5,
-          "end": 51.1
+          "start": 50.2,
+          "end": 50.65
         },
         {
           "word_index": 3,
           "text": "papaoutai",
-          "start": 51.1,
-          "end": 51.5
+          "start": 50.65,
+          "end": 51.15
         },
         {
           "word_index": 4,
           "text": "?",
-          "start": 51.5,
-          "end": 51.5
+          "start": 51.15,
+          "end": 51.7
         }
       ]
     },
@@ -871,31 +871,31 @@
       "line_index": 24,
       "text": "Où t'es, papaoutai ?",
       "start": 52.0,
-      "end": 53.7,
+      "end": 53.9,
       "words": [
         {
           "word_index": 1,
           "text": "Où",
           "start": 52.0,
-          "end": 52.3
+          "end": 52.4
         },
         {
           "word_index": 2,
           "text": "t'es,",
-          "start": 52.3,
-          "end": 52.7
+          "start": 52.4,
+          "end": 52.85
         },
         {
           "word_index": 3,
           "text": "papaoutai",
-          "start": 52.7,
-          "end": 53.4
+          "start": 52.85,
+          "end": 53.35
         },
         {
           "word_index": 4,
           "text": "?",
-          "start": 53.4,
-          "end": 53.7
+          "start": 53.35,
+          "end": 53.9
         }
       ]
     },
@@ -903,31 +903,31 @@
       "line_index": 25,
       "text": "Où t'es, papaoutai ?",
       "start": 54.2,
-      "end": 56.0,
+      "end": 56.1,
       "words": [
         {
           "word_index": 1,
           "text": "Où",
           "start": 54.2,
-          "end": 54.4
+          "end": 54.6
         },
         {
           "word_index": 2,
           "text": "t'es,",
-          "start": 54.4,
-          "end": 55.0
+          "start": 54.6,
+          "end": 55.05
         },
         {
           "word_index": 3,
           "text": "papaoutai",
-          "start": 55.0,
-          "end": 55.9
+          "start": 55.05,
+          "end": 55.55
         },
         {
           "word_index": 4,
           "text": "?",
-          "start": 55.9,
-          "end": 56.0
+          "start": 55.55,
+          "end": 56.1
         }
       ]
     },
@@ -935,49 +935,49 @@
       "line_index": 26,
       "text": "Où t'es, où t'es où, papaoutai ?",
       "start": 56.4,
-      "end": 57.9,
+      "end": 58.35,
       "words": [
         {
           "word_index": 1,
           "text": "Où",
           "start": 56.4,
-          "end": 56.5
+          "end": 56.65
         },
         {
           "word_index": 2,
           "text": "t'es,",
-          "start": 56.5,
-          "end": 56.6
+          "start": 56.65,
+          "end": 56.9
         },
         {
           "word_index": 3,
           "text": "où",
-          "start": 56.6,
-          "end": 56.7
+          "start": 56.9,
+          "end": 57.15
         },
         {
           "word_index": 4,
           "text": "t'es",
-          "start": 56.7,
-          "end": 56.9
+          "start": 57.15,
+          "end": 57.4
         },
         {
           "word_index": 5,
           "text": "où,",
-          "start": 56.9,
-          "end": 56.9
+          "start": 57.4,
+          "end": 57.7
         },
         {
           "word_index": 6,
           "text": "papaoutai",
-          "start": 56.9,
-          "end": 57.8
+          "start": 57.7,
+          "end": 58.0
         },
         {
           "word_index": 7,
           "text": "?",
-          "start": 57.8,
-          "end": 57.9
+          "start": 58.0,
+          "end": 58.35
         }
       ]
     },
@@ -985,73 +985,73 @@
       "line_index": 27,
       "text": "(Où t'es, où t'es, où t'es, où t'es, où t'es ?)",
       "start": 58.6,
-      "end": 60.5,
+      "end": 61.35,
       "words": [
         {
           "word_index": 1,
           "text": "(Où",
           "start": 58.6,
-          "end": 58.7
+          "end": 58.8
         },
         {
           "word_index": 2,
           "text": "t'es,",
-          "start": 58.7,
-          "end": 58.8
+          "start": 58.8,
+          "end": 59.05
         },
         {
           "word_index": 3,
           "text": "où",
-          "start": 58.8,
-          "end": 58.9
+          "start": 59.05,
+          "end": 59.25
         },
         {
           "word_index": 4,
           "text": "t'es,",
-          "start": 58.9,
-          "end": 58.9
+          "start": 59.25,
+          "end": 59.5
         },
         {
           "word_index": 5,
           "text": "où",
-          "start": 58.9,
-          "end": 59.0
+          "start": 59.5,
+          "end": 59.7
         },
         {
           "word_index": 6,
           "text": "t'es,",
-          "start": 59.0,
-          "end": 59.0
+          "start": 59.7,
+          "end": 59.95
         },
         {
           "word_index": 7,
           "text": "où",
-          "start": 59.0,
-          "end": 59.2
+          "start": 59.95,
+          "end": 60.2
         },
         {
           "word_index": 8,
           "text": "t'es,",
-          "start": 59.2,
-          "end": 60.2
+          "start": 60.2,
+          "end": 60.45
         },
         {
           "word_index": 9,
           "text": "où",
-          "start": 60.2,
-          "end": 60.4
+          "start": 60.45,
+          "end": 60.7
         },
         {
           "word_index": 10,
           "text": "t'es",
-          "start": 60.4,
-          "end": 60.5
+          "start": 60.7,
+          "end": 61.0
         },
         {
           "word_index": 11,
           "text": "?)",
-          "start": 60.5,
-          "end": 60.5
+          "start": 61.0,
+          "end": 61.35
         }
       ]
     },
@@ -1059,73 +1059,73 @@
       "line_index": 28,
       "text": "(Où t'es, où t'es, où t'es, où t'es, où t'es ?)",
       "start": 61.6,
-      "end": 64.1,
+      "end": 64.25,
       "words": [
         {
           "word_index": 1,
           "text": "(Où",
           "start": 61.6,
-          "end": 62.2
+          "end": 61.8
         },
         {
           "word_index": 2,
           "text": "t'es,",
-          "start": 62.2,
-          "end": 62.4
+          "start": 61.8,
+          "end": 62.0
         },
         {
           "word_index": 3,
           "text": "où",
-          "start": 62.4,
-          "end": 62.5
+          "start": 62.0,
+          "end": 62.25
         },
         {
           "word_index": 4,
           "text": "t'es,",
-          "start": 62.5,
-          "end": 62.6
+          "start": 62.25,
+          "end": 62.45
         },
         {
           "word_index": 5,
           "text": "où",
-          "start": 62.6,
+          "start": 62.45,
           "end": 62.7
         },
         {
           "word_index": 6,
           "text": "t'es,",
           "start": 62.7,
-          "end": 63.0
+          "end": 62.9
         },
         {
           "word_index": 7,
           "text": "où",
-          "start": 63.0,
-          "end": 63.7
+          "start": 62.9,
+          "end": 63.15
         },
         {
           "word_index": 8,
           "text": "t'es,",
-          "start": 63.7,
-          "end": 63.9
+          "start": 63.15,
+          "end": 63.4
         },
         {
           "word_index": 9,
           "text": "où",
-          "start": 63.9,
-          "end": 64.0
+          "start": 63.4,
+          "end": 63.65
         },
         {
           "word_index": 10,
           "text": "t'es",
-          "start": 64.0,
-          "end": 64.0
+          "start": 63.65,
+          "end": 63.95
         },
         {
           "word_index": 11,
           "text": "?)",
-          "start": 64.0,
-          "end": 64.1
+          "start": 63.95,
+          "end": 64.25
         }
       ]
     },
@@ -1133,49 +1133,49 @@
       "line_index": 29,
       "text": "Quoi ? Qu'on y croie ou pas",
       "start": 64.5,
-      "end": 66.1,
+      "end": 66.45,
       "words": [
         {
           "word_index": 1,
           "text": "Quoi",
           "start": 64.5,
-          "end": 64.9
+          "end": 64.75
         },
         {
           "word_index": 2,
           "text": "?",
-          "start": 65.0,
-          "end": 65.1
+          "start": 64.75,
+          "end": 65.0
         },
         {
           "word_index": 3,
           "text": "Qu'on",
-          "start": 65.1,
-          "end": 65.5
+          "start": 65.0,
+          "end": 65.25
         },
         {
           "word_index": 4,
           "text": "y",
-          "start": 65.6,
-          "end": 65.7
+          "start": 65.25,
+          "end": 65.5
         },
         {
           "word_index": 5,
           "text": "croie",
-          "start": 65.7,
-          "end": 66.0
+          "start": 65.5,
+          "end": 65.8
         },
         {
           "word_index": 6,
           "text": "ou",
-          "start": 66.0,
-          "end": 66.0
+          "start": 65.8,
+          "end": 66.1
         },
         {
           "word_index": 7,
           "text": "pas",
-          "start": 66.0,
-          "end": 66.1
+          "start": 66.1,
+          "end": 66.45
         }
       ]
     },
@@ -1183,67 +1183,67 @@
       "line_index": 30,
       "text": "Y aura bien un jour où on n'y croira plus",
       "start": 66.8,
-      "end": 69.1,
+      "end": 69.15,
       "words": [
         {
           "word_index": 1,
           "text": "Y",
           "start": 66.8,
-          "end": 68.0
+          "end": 67.0
         },
         {
           "word_index": 2,
           "text": "aura",
-          "start": 68.0,
-          "end": 68.2
+          "start": 67.0,
+          "end": 67.2
         },
         {
           "word_index": 3,
           "text": "bien",
-          "start": 68.2,
-          "end": 68.5
+          "start": 67.2,
+          "end": 67.4
         },
         {
           "word_index": 4,
           "text": "un",
-          "start": 68.5,
-          "end": 68.7
+          "start": 67.4,
+          "end": 67.65
         },
         {
           "word_index": 5,
           "text": "jour",
-          "start": 68.7,
-          "end": 68.8
+          "start": 67.65,
+          "end": 67.85
         },
         {
           "word_index": 6,
           "text": "où",
-          "start": 68.8,
-          "end": 68.9
+          "start": 67.85,
+          "end": 68.1
         },
         {
           "word_index": 7,
           "text": "on",
-          "start": 68.9,
-          "end": 69.0
+          "start": 68.1,
+          "end": 68.3
         },
         {
           "word_index": 8,
           "text": "n'y",
-          "start": 69.0,
-          "end": 69.0
+          "start": 68.3,
+          "end": 68.55
         },
         {
           "word_index": 9,
           "text": "croira",
-          "start": 69.0,
-          "end": 69.0
+          "start": 68.55,
+          "end": 68.85
         },
         {
           "word_index": 10,
           "text": "plus",
-          "start": 69.0,
-          "end": 69.1
+          "start": 68.85,
+          "end": 69.15
         }
       ]
     },
@@ -1251,55 +1251,55 @@
       "line_index": 31,
       "text": "Un jour ou l'autre on sera tous papa",
       "start": 69.4,
-      "end": 71.4,
+      "end": 71.45,
       "words": [
         {
           "word_index": 1,
           "text": "Un",
           "start": 69.4,
-          "end": 70.6
+          "end": 69.6
         },
         {
           "word_index": 2,
           "text": "jour",
-          "start": 70.6,
-          "end": 70.8
+          "start": 69.6,
+          "end": 69.85
         },
         {
           "word_index": 3,
           "text": "ou",
-          "start": 70.8,
-          "end": 70.9
+          "start": 69.85,
+          "end": 70.1
         },
         {
           "word_index": 4,
           "text": "l'autre",
-          "start": 70.9,
-          "end": 71.0
+          "start": 70.1,
+          "end": 70.35
         },
         {
           "word_index": 5,
           "text": "on",
-          "start": 71.0,
-          "end": 71.0
+          "start": 70.35,
+          "end": 70.55
         },
         {
           "word_index": 6,
           "text": "sera",
-          "start": 71.0,
-          "end": 71.0
+          "start": 70.55,
+          "end": 70.85
         },
         {
           "word_index": 7,
           "text": "tous",
-          "start": 71.0,
+          "start": 70.85,
           "end": 71.1
         },
         {
           "word_index": 8,
           "text": "papa",
           "start": 71.1,
-          "end": 71.4
+          "end": 71.45
         }
       ]
     },
@@ -1307,55 +1307,55 @@
       "line_index": 32,
       "text": "Et d'un jour à l'autre on aura disparu",
       "start": 71.7,
-      "end": 73.5,
+      "end": 73.75,
       "words": [
         {
           "word_index": 1,
           "text": "Et",
           "start": 71.7,
-          "end": 72.0
+          "end": 71.9
         },
         {
           "word_index": 2,
           "text": "d'un",
-          "start": 72.0,
-          "end": 72.1
+          "start": 71.9,
+          "end": 72.15
         },
         {
           "word_index": 3,
           "text": "jour",
-          "start": 72.1,
-          "end": 72.2
+          "start": 72.15,
+          "end": 72.4
         },
         {
           "word_index": 4,
           "text": "à",
-          "start": 72.2,
-          "end": 72.2
+          "start": 72.4,
+          "end": 72.65
         },
         {
           "word_index": 5,
           "text": "l'autre",
-          "start": 72.2,
-          "end": 72.3
+          "start": 72.65,
+          "end": 72.85
         },
         {
           "word_index": 6,
           "text": "on",
-          "start": 72.3,
-          "end": 72.3
+          "start": 72.85,
+          "end": 73.15
         },
         {
           "word_index": 7,
           "text": "aura",
-          "start": 72.3,
-          "end": 72.9
+          "start": 73.15,
+          "end": 73.4
         },
         {
           "word_index": 8,
           "text": "disparu",
-          "start": 73.0,
-          "end": 73.5
+          "start": 73.4,
+          "end": 73.75
         }
       ]
     },
@@ -1363,25 +1363,25 @@
       "line_index": 33,
       "text": "Serons-nous détestables ?",
       "start": 74.0,
-      "end": 76.0,
+      "end": 75.9,
       "words": [
         {
           "word_index": 1,
           "text": "Serons-nous",
           "start": 74.0,
-          "end": 75.9
+          "end": 74.55
         },
         {
           "word_index": 2,
           "text": "détestables",
-          "start": 75.9,
-          "end": 76.0
+          "start": 74.55,
+          "end": 75.2
         },
         {
           "word_index": 3,
           "text": "?",
-          "start": 76.0,
-          "end": 76.0
+          "start": 75.2,
+          "end": 75.9
         }
       ]
     },
@@ -1389,25 +1389,25 @@
       "line_index": 34,
       "text": "Serons-nous admirables ?",
       "start": 76.2,
-      "end": 77.9,
+      "end": 78.1,
       "words": [
         {
           "word_index": 1,
           "text": "Serons-nous",
           "start": 76.2,
-          "end": 77.5
+          "end": 76.75
         },
         {
           "word_index": 2,
           "text": "admirables",
-          "start": 77.5,
-          "end": 77.8
+          "start": 76.75,
+          "end": 77.4
         },
         {
           "word_index": 3,
           "text": "?",
-          "start": 77.8,
-          "end": 77.9
+          "start": 77.4,
+          "end": 78.1
         }
       ]
     },
@@ -1415,43 +1415,43 @@
       "line_index": 35,
       "text": "Des géniteurs ou des génies ?",
       "start": 78.4,
-      "end": 79.9,
+      "end": 80.35,
       "words": [
         {
           "word_index": 1,
           "text": "Des",
           "start": 78.4,
-          "end": 79.3
+          "end": 78.7
         },
         {
           "word_index": 2,
           "text": "géniteurs",
-          "start": 79.3,
-          "end": 79.6
+          "start": 78.7,
+          "end": 79.0
         },
         {
           "word_index": 3,
           "text": "ou",
-          "start": 79.6,
-          "end": 79.7
+          "start": 79.0,
+          "end": 79.3
         },
         {
           "word_index": 4,
           "text": "des",
-          "start": 79.7,
-          "end": 79.8
+          "start": 79.3,
+          "end": 79.6
         },
         {
           "word_index": 5,
           "text": "génies",
-          "start": 79.8,
-          "end": 79.8
+          "start": 79.6,
+          "end": 79.95
         },
         {
           "word_index": 6,
           "text": "?",
-          "start": 79.8,
-          "end": 79.9
+          "start": 79.95,
+          "end": 80.35
         }
       ]
     },
@@ -1459,49 +1459,49 @@
       "line_index": 36,
       "text": "Dites-nous qui donne naissance aux irresponsables ?",
       "start": 80.6,
-      "end": 83.3,
+      "end": 83.7,
       "words": [
         {
           "word_index": 1,
           "text": "Dites-nous",
           "start": 80.6,
-          "end": 81.6
+          "end": 81.0
         },
         {
           "word_index": 2,
           "text": "qui",
-          "start": 81.6,
-          "end": 82.5
+          "start": 81.0,
+          "end": 81.4
         },
         {
           "word_index": 3,
           "text": "donne",
-          "start": 82.5,
-          "end": 82.9
+          "start": 81.4,
+          "end": 81.8
         },
         {
           "word_index": 4,
           "text": "naissance",
-          "start": 82.9,
-          "end": 83.0
+          "start": 81.8,
+          "end": 82.2
         },
         {
           "word_index": 5,
           "text": "aux",
-          "start": 83.0,
-          "end": 83.2
+          "start": 82.2,
+          "end": 82.65
         },
         {
           "word_index": 6,
           "text": "irresponsables",
-          "start": 83.2,
-          "end": 83.2
+          "start": 82.65,
+          "end": 83.15
         },
         {
           "word_index": 7,
           "text": "?",
-          "start": 83.2,
-          "end": 83.3
+          "start": 83.15,
+          "end": 83.7
         }
       ]
     },
@@ -1509,25 +1509,25 @@
       "line_index": 37,
       "text": "Ah, dites-nous qui?",
       "start": 84.0,
-      "end": 85.4,
+      "end": 85.9,
       "words": [
         {
           "word_index": 1,
           "text": "Ah,",
           "start": 84.0,
-          "end": 85.0
+          "end": 84.55
         },
         {
           "word_index": 2,
           "text": "dites-nous",
-          "start": 85.0,
-          "end": 85.4
+          "start": 84.55,
+          "end": 85.2
         },
         {
           "word_index": 3,
           "text": "qui?",
-          "start": 85.4,
-          "end": 85.4
+          "start": 85.2,
+          "end": 85.9
         }
       ]
     },
@@ -1535,67 +1535,67 @@
       "line_index": 38,
       "text": "Tiens, tout le monde sait comment on fait des bébés",
       "start": 86.2,
-      "end": 89.1,
+      "end": 89.05,
       "words": [
         {
           "word_index": 1,
           "text": "Tiens,",
           "start": 86.2,
-          "end": 86.5
+          "end": 86.45
         },
         {
           "word_index": 2,
           "text": "tout",
-          "start": 86.5,
-          "end": 88.7
+          "start": 86.45,
+          "end": 86.7
         },
         {
           "word_index": 3,
           "text": "le",
-          "start": 88.7,
-          "end": 88.8
+          "start": 86.7,
+          "end": 86.95
         },
         {
           "word_index": 4,
           "text": "monde",
-          "start": 88.8,
-          "end": 88.8
+          "start": 86.95,
+          "end": 87.2
         },
         {
           "word_index": 5,
           "text": "sait",
-          "start": 88.8,
-          "end": 88.8
+          "start": 87.2,
+          "end": 87.5
         },
         {
           "word_index": 6,
           "text": "comment",
-          "start": 88.8,
-          "end": 88.9
+          "start": 87.5,
+          "end": 87.75
         },
         {
           "word_index": 7,
           "text": "on",
-          "start": 88.9,
-          "end": 89.0
+          "start": 87.75,
+          "end": 88.05
         },
         {
           "word_index": 8,
           "text": "fait",
-          "start": 89.0,
-          "end": 89.0
+          "start": 88.05,
+          "end": 88.35
         },
         {
           "word_index": 9,
           "text": "des",
-          "start": 89.0,
-          "end": 89.0
+          "start": 88.35,
+          "end": 88.65
         },
         {
           "word_index": 10,
           "text": "bébés",
-          "start": 89.0,
-          "end": 89.1
+          "start": 88.65,
+          "end": 89.05
         }
       ]
     },
@@ -1603,55 +1603,55 @@
       "line_index": 39,
       "text": "Mais personne sait comment on fait des papas",
       "start": 89.3,
-      "end": 91.4,
+      "end": 91.85,
       "words": [
         {
           "word_index": 1,
           "text": "Mais",
           "start": 89.3,
-          "end": 90.1
+          "end": 89.6
         },
         {
           "word_index": 2,
           "text": "personne",
-          "start": 90.1,
-          "end": 90.4
+          "start": 89.6,
+          "end": 89.85
         },
         {
           "word_index": 3,
           "text": "sait",
-          "start": 90.4,
-          "end": 90.6
+          "start": 89.85,
+          "end": 90.15
         },
         {
           "word_index": 4,
           "text": "comment",
-          "start": 90.6,
-          "end": 90.7
+          "start": 90.15,
+          "end": 90.45
         },
         {
           "word_index": 5,
           "text": "on",
-          "start": 90.7,
-          "end": 90.8
+          "start": 90.45,
+          "end": 90.75
         },
         {
           "word_index": 6,
           "text": "fait",
-          "start": 90.8,
-          "end": 90.9
+          "start": 90.75,
+          "end": 91.1
         },
         {
           "word_index": 7,
           "text": "des",
-          "start": 90.9,
-          "end": 91.1
+          "start": 91.1,
+          "end": 91.45
         },
         {
           "word_index": 8,
           "text": "papas",
-          "start": 91.1,
-          "end": 91.4
+          "start": 91.45,
+          "end": 91.85
         }
       ]
     },
@@ -1659,49 +1659,49 @@
       "line_index": 40,
       "text": "Monsieur je-sais-tout en aurait hérité, c'est ça",
       "start": 92.1,
-      "end": 94.0,
+      "end": 94.9,
       "words": [
         {
           "word_index": 1,
           "text": "Monsieur",
           "start": 92.1,
-          "end": 93.3
+          "end": 92.45
         },
         {
           "word_index": 2,
           "text": "je-sais-tout",
-          "start": 93.4,
-          "end": 93.7
+          "start": 92.45,
+          "end": 92.8
         },
         {
           "word_index": 3,
           "text": "en",
-          "start": 93.7,
-          "end": 93.8
+          "start": 92.8,
+          "end": 93.2
         },
         {
           "word_index": 4,
           "text": "aurait",
-          "start": 93.8,
-          "end": 93.8
+          "start": 93.2,
+          "end": 93.55
         },
         {
           "word_index": 5,
           "text": "hérité,",
-          "start": 93.8,
-          "end": 93.9
+          "start": 93.55,
+          "end": 94.0
         },
         {
           "word_index": 6,
           "text": "c'est",
-          "start": 93.9,
-          "end": 94.0
+          "start": 94.0,
+          "end": 94.4
         },
         {
           "word_index": 7,
           "text": "ça",
-          "start": 94.0,
-          "end": 94.0
+          "start": 94.4,
+          "end": 94.9
         }
       ]
     },
@@ -1709,49 +1709,49 @@
       "line_index": 41,
       "text": "Faut l'sucer d'son pouce ou quoi ?",
       "start": 95.3,
-      "end": 97.3,
+      "end": 97.25,
       "words": [
         {
           "word_index": 1,
           "text": "Faut",
           "start": 95.3,
-          "end": 95.5
+          "end": 95.55
         },
         {
           "word_index": 2,
           "text": "l'sucer",
-          "start": 95.5,
-          "end": 95.7
+          "start": 95.55,
+          "end": 95.8
         },
         {
           "word_index": 3,
           "text": "d'son",
-          "start": 95.7,
-          "end": 96.1
+          "start": 95.8,
+          "end": 96.05
         },
         {
           "word_index": 4,
           "text": "pouce",
-          "start": 96.1,
-          "end": 96.5
+          "start": 96.05,
+          "end": 96.3
         },
         {
           "word_index": 5,
           "text": "ou",
-          "start": 96.5,
-          "end": 96.7
+          "start": 96.3,
+          "end": 96.6
         },
         {
           "word_index": 6,
           "text": "quoi",
-          "start": 96.7,
+          "start": 96.6,
           "end": 96.9
         },
         {
           "word_index": 7,
           "text": "?",
-          "start": 97.0,
-          "end": 97.3
+          "start": 96.9,
+          "end": 97.25
         }
       ]
     },
@@ -1759,43 +1759,43 @@
       "line_index": 42,
       "text": "Dites-nous où c'est caché, ça doit",
       "start": 97.5,
-      "end": 99.2,
+      "end": 99.45,
       "words": [
         {
           "word_index": 1,
           "text": "Dites-nous",
           "start": 97.5,
-          "end": 98.2
+          "end": 97.8
         },
         {
           "word_index": 2,
           "text": "où",
-          "start": 98.2,
-          "end": 98.3
+          "start": 97.8,
+          "end": 98.1
         },
         {
           "word_index": 3,
           "text": "c'est",
-          "start": 98.3,
+          "start": 98.1,
           "end": 98.4
         },
         {
           "word_index": 4,
           "text": "caché,",
           "start": 98.4,
-          "end": 98.4
+          "end": 98.7
         },
         {
           "word_index": 5,
           "text": "ça",
-          "start": 98.4,
-          "end": 98.5
+          "start": 98.7,
+          "end": 99.05
         },
         {
           "word_index": 6,
           "text": "doit",
-          "start": 98.5,
-          "end": 99.2
+          "start": 99.05,
+          "end": 99.45
         }
       ]
     },
@@ -1803,49 +1803,49 @@
       "line_index": 43,
       "text": "Faire au moins mille fois qu'on a",
       "start": 99.7,
-      "end": 101.2,
+      "end": 101.65,
       "words": [
         {
           "word_index": 1,
           "text": "Faire",
           "start": 99.7,
-          "end": 100.1
+          "end": 99.95
         },
         {
           "word_index": 2,
           "text": "au",
-          "start": 100.1,
-          "end": 100.3
+          "start": 99.95,
+          "end": 100.2
         },
         {
           "word_index": 3,
           "text": "moins",
-          "start": 100.3,
-          "end": 100.4
+          "start": 100.2,
+          "end": 100.45
         },
         {
           "word_index": 4,
           "text": "mille",
-          "start": 100.4,
-          "end": 100.4
+          "start": 100.45,
+          "end": 100.7
         },
         {
           "word_index": 5,
           "text": "fois",
-          "start": 100.4,
-          "end": 100.5
+          "start": 100.7,
+          "end": 101.0
         },
         {
           "word_index": 6,
           "text": "qu'on",
-          "start": 100.5,
-          "end": 100.8
+          "start": 101.0,
+          "end": 101.3
         },
         {
           "word_index": 7,
           "text": "a",
-          "start": 100.9,
-          "end": 101.2
+          "start": 101.3,
+          "end": 101.65
         }
       ]
     },
@@ -1853,25 +1853,25 @@
       "line_index": 44,
       "text": "Bouffé nos doigts",
       "start": 101.9,
-      "end": 103.6,
+      "end": 103.8,
       "words": [
         {
           "word_index": 1,
           "text": "Bouffé",
           "start": 101.9,
-          "end": 102.5
+          "end": 102.45
         },
         {
           "word_index": 2,
           "text": "nos",
-          "start": 102.5,
-          "end": 103.0
+          "start": 102.45,
+          "end": 103.1
         },
         {
           "word_index": 3,
           "text": "doigts",
-          "start": 103.0,
-          "end": 103.6
+          "start": 103.1,
+          "end": 103.8
         }
       ]
     },
@@ -1893,31 +1893,31 @@
       "line_index": 46,
       "text": "Où t'es, papaoutai ?",
       "start": 106.3,
-      "end": 108.0,
+      "end": 108.2,
       "words": [
         {
           "word_index": 1,
           "text": "Où",
           "start": 106.3,
-          "end": 106.6
+          "end": 106.7
         },
         {
           "word_index": 2,
           "text": "t'es,",
-          "start": 106.6,
-          "end": 107.0
+          "start": 106.7,
+          "end": 107.15
         },
         {
           "word_index": 3,
           "text": "papaoutai",
-          "start": 107.0,
-          "end": 107.7
+          "start": 107.15,
+          "end": 107.65
         },
         {
           "word_index": 4,
           "text": "?",
-          "start": 107.7,
-          "end": 108.0
+          "start": 107.65,
+          "end": 108.2
         }
       ]
     },
@@ -1925,31 +1925,31 @@
       "line_index": 47,
       "text": "Où t'es, papaoutai ?",
       "start": 108.5,
-      "end": 110.5,
+      "end": 110.4,
       "words": [
         {
           "word_index": 1,
           "text": "Où",
           "start": 108.5,
-          "end": 109.1
+          "end": 108.9
         },
         {
           "word_index": 2,
           "text": "t'es,",
-          "start": 109.1,
-          "end": 109.7
+          "start": 108.9,
+          "end": 109.35
         },
         {
           "word_index": 3,
           "text": "papaoutai",
-          "start": 109.7,
-          "end": 110.4
+          "start": 109.35,
+          "end": 109.85
         },
         {
           "word_index": 4,
           "text": "?",
-          "start": 110.4,
-          "end": 110.5
+          "start": 109.85,
+          "end": 110.4
         }
       ]
     },
@@ -1957,31 +1957,31 @@
       "line_index": 48,
       "text": "Où t'es, papaoutai ?",
       "start": 110.7,
-      "end": 112.7,
+      "end": 112.6,
       "words": [
         {
           "word_index": 1,
           "text": "Où",
           "start": 110.7,
-          "end": 111.4
+          "end": 111.1
         },
         {
           "word_index": 2,
           "text": "t'es,",
-          "start": 111.4,
-          "end": 111.5
+          "start": 111.1,
+          "end": 111.55
         },
         {
           "word_index": 3,
           "text": "papaoutai",
-          "start": 111.5,
-          "end": 112.3
+          "start": 111.55,
+          "end": 112.05
         },
         {
           "word_index": 4,
           "text": "?",
-          "start": 112.3,
-          "end": 112.7
+          "start": 112.05,
+          "end": 112.6
         }
       ]
     },
@@ -1989,49 +1989,49 @@
       "line_index": 49,
       "text": "Où t'es, où t'es où, papaoutai ?",
       "start": 112.9,
-      "end": 114.3,
+      "end": 114.85,
       "words": [
         {
           "word_index": 1,
           "text": "Où",
           "start": 112.9,
-          "end": 113.0
+          "end": 113.15
         },
         {
           "word_index": 2,
           "text": "t'es,",
-          "start": 113.0,
+          "start": 113.15,
           "end": 113.4
         },
         {
           "word_index": 3,
           "text": "où",
           "start": 113.4,
-          "end": 113.6
+          "end": 113.65
         },
         {
           "word_index": 4,
           "text": "t'es",
-          "start": 113.6,
+          "start": 113.65,
           "end": 113.9
         },
         {
           "word_index": 5,
           "text": "où,",
           "start": 113.9,
-          "end": 114.0
+          "end": 114.2
         },
         {
           "word_index": 6,
           "text": "papaoutai",
-          "start": 114.0,
-          "end": 114.3
+          "start": 114.2,
+          "end": 114.5
         },
         {
           "word_index": 7,
           "text": "?",
-          "start": 114.3,
-          "end": 114.3
+          "start": 114.5,
+          "end": 114.85
         }
       ]
     },
@@ -2039,31 +2039,31 @@
       "line_index": 50,
       "text": "Où t'es, papaoutai ?",
       "start": 115.1,
-      "end": 116.8,
+      "end": 117.0,
       "words": [
         {
           "word_index": 1,
           "text": "Où",
           "start": 115.1,
-          "end": 116.0
+          "end": 115.5
         },
         {
           "word_index": 2,
           "text": "t'es,",
-          "start": 116.2,
-          "end": 116.5
+          "start": 115.5,
+          "end": 115.95
         },
         {
           "word_index": 3,
           "text": "papaoutai",
-          "start": 116.5,
-          "end": 116.6
+          "start": 115.95,
+          "end": 116.45
         },
         {
           "word_index": 4,
           "text": "?",
-          "start": 116.6,
-          "end": 116.8
+          "start": 116.45,
+          "end": 117.0
         }
       ]
     },
@@ -2071,31 +2071,31 @@
       "line_index": 51,
       "text": "Où t'es, papaoutai ?",
       "start": 117.3,
-      "end": 119.0,
+      "end": 119.2,
       "words": [
         {
           "word_index": 1,
           "text": "Où",
           "start": 117.3,
-          "end": 118.3
+          "end": 117.7
         },
         {
           "word_index": 2,
           "text": "t'es,",
-          "start": 118.3,
-          "end": 118.7
+          "start": 117.7,
+          "end": 118.15
         },
         {
           "word_index": 3,
           "text": "papaoutai",
-          "start": 118.7,
-          "end": 119.0
+          "start": 118.15,
+          "end": 118.65
         },
         {
           "word_index": 4,
           "text": "?",
-          "start": 119.0,
-          "end": 119.0
+          "start": 118.65,
+          "end": 119.2
         }
       ]
     },
@@ -2103,31 +2103,31 @@
       "line_index": 52,
       "text": "Où t'es, papaoutai ?",
       "start": 119.5,
-      "end": 121.5,
+      "end": 121.4,
       "words": [
         {
           "word_index": 1,
           "text": "Où",
           "start": 119.5,
-          "end": 119.8
+          "end": 119.9
         },
         {
           "word_index": 2,
           "text": "t'es,",
-          "start": 119.8,
-          "end": 120.4
+          "start": 119.9,
+          "end": 120.35
         },
         {
           "word_index": 3,
           "text": "papaoutai",
-          "start": 120.4,
-          "end": 121.4
+          "start": 120.35,
+          "end": 120.85
         },
         {
           "word_index": 4,
           "text": "?",
-          "start": 121.4,
-          "end": 121.5
+          "start": 120.85,
+          "end": 121.4
         }
       ]
     },
@@ -2135,49 +2135,49 @@
       "line_index": 53,
       "text": "Où t'es, où t'es où, papaoutai ?",
       "start": 121.7,
-      "end": 123.4,
+      "end": 123.65,
       "words": [
         {
           "word_index": 1,
           "text": "Où",
           "start": 121.7,
-          "end": 121.8
+          "end": 121.95
         },
         {
           "word_index": 2,
           "text": "t'es,",
-          "start": 121.8,
+          "start": 121.95,
           "end": 122.2
         },
         {
           "word_index": 3,
           "text": "où",
           "start": 122.2,
-          "end": 122.5
+          "end": 122.45
         },
         {
           "word_index": 4,
           "text": "t'es",
-          "start": 122.5,
-          "end": 122.9
+          "start": 122.45,
+          "end": 122.7
         },
         {
           "word_index": 5,
           "text": "où,",
-          "start": 122.9,
+          "start": 122.7,
           "end": 123.0
         },
         {
           "word_index": 6,
           "text": "papaoutai",
           "start": 123.0,
-          "end": 123.4
+          "end": 123.3
         },
         {
           "word_index": 7,
           "text": "?",
-          "start": 123.4,
-          "end": 123.4
+          "start": 123.3,
+          "end": 123.65
         }
       ]
     },
@@ -2185,7 +2185,7 @@
       "line_index": 54,
       "text": "(Où t'es, où t'es, où t'es, où t'es, où t'es ?)",
       "start": 123.9,
-      "end": 126.2,
+      "end": 126.55,
       "words": [
         {
           "word_index": 1,
@@ -2203,55 +2203,55 @@
           "word_index": 3,
           "text": "où",
           "start": 124.3,
-          "end": 124.7
+          "end": 124.55
         },
         {
           "word_index": 4,
           "text": "t'es,",
-          "start": 124.7,
-          "end": 125.2
+          "start": 124.55,
+          "end": 124.75
         },
         {
           "word_index": 5,
           "text": "où",
-          "start": 125.2,
-          "end": 125.6
+          "start": 124.75,
+          "end": 125.0
         },
         {
           "word_index": 6,
           "text": "t'es,",
-          "start": 125.6,
-          "end": 125.8
+          "start": 125.0,
+          "end": 125.2
         },
         {
           "word_index": 7,
           "text": "où",
-          "start": 125.8,
-          "end": 126.0
+          "start": 125.2,
+          "end": 125.45
         },
         {
           "word_index": 8,
           "text": "t'es,",
-          "start": 126.0,
-          "end": 126.1
+          "start": 125.45,
+          "end": 125.7
         },
         {
           "word_index": 9,
           "text": "où",
-          "start": 126.1,
-          "end": 126.1
+          "start": 125.7,
+          "end": 125.95
         },
         {
           "word_index": 10,
           "text": "t'es",
-          "start": 126.1,
-          "end": 126.2
+          "start": 125.95,
+          "end": 126.25
         },
         {
           "word_index": 11,
           "text": "?)",
-          "start": 126.2,
-          "end": 126.2
+          "start": 126.25,
+          "end": 126.55
         }
       ]
     },
@@ -2259,73 +2259,73 @@
       "line_index": 55,
       "text": "(Où t'es, où t'es, où t'es, où t'es, où t'es ?)",
       "start": 126.8,
-      "end": 129.6,
+      "end": 129.55,
       "words": [
         {
           "word_index": 1,
           "text": "(Où",
           "start": 126.8,
-          "end": 128.6
+          "end": 127.0
         },
         {
           "word_index": 2,
           "text": "t'es,",
-          "start": 128.6,
-          "end": 129.0
+          "start": 127.0,
+          "end": 127.25
         },
         {
           "word_index": 3,
           "text": "où",
-          "start": 129.0,
-          "end": 129.2
+          "start": 127.25,
+          "end": 127.45
         },
         {
           "word_index": 4,
           "text": "t'es,",
-          "start": 129.2,
-          "end": 129.2
+          "start": 127.45,
+          "end": 127.7
         },
         {
           "word_index": 5,
           "text": "où",
-          "start": 129.2,
-          "end": 129.3
+          "start": 127.7,
+          "end": 127.9
         },
         {
           "word_index": 6,
           "text": "t'es,",
-          "start": 129.3,
-          "end": 129.4
+          "start": 127.9,
+          "end": 128.15
         },
         {
           "word_index": 7,
           "text": "où",
-          "start": 129.4,
-          "end": 129.4
+          "start": 128.15,
+          "end": 128.4
         },
         {
           "word_index": 8,
           "text": "t'es,",
-          "start": 129.4,
-          "end": 129.4
+          "start": 128.4,
+          "end": 128.65
         },
         {
           "word_index": 9,
           "text": "où",
-          "start": 129.4,
-          "end": 129.5
+          "start": 128.65,
+          "end": 128.9
         },
         {
           "word_index": 10,
           "text": "t'es",
-          "start": 129.5,
-          "end": 129.6
+          "start": 128.9,
+          "end": 129.2
         },
         {
           "word_index": 11,
           "text": "?)",
-          "start": 129.6,
-          "end": 129.6
+          "start": 129.2,
+          "end": 129.55
         }
       ]
     },
@@ -2333,37 +2333,37 @@
       "line_index": 56,
       "text": "Où est ton papa ?",
       "start": 129.8,
-      "end": 131.5,
+      "end": 131.7,
       "words": [
         {
           "word_index": 1,
           "text": "Où",
           "start": 129.8,
-          "end": 129.9
+          "end": 130.15
         },
         {
           "word_index": 2,
           "text": "est",
-          "start": 129.9,
-          "end": 130.0
+          "start": 130.15,
+          "end": 130.5
         },
         {
           "word_index": 3,
           "text": "ton",
-          "start": 130.0,
-          "end": 130.1
+          "start": 130.5,
+          "end": 130.85
         },
         {
           "word_index": 4,
           "text": "papa",
-          "start": 130.2,
-          "end": 131.3
+          "start": 130.85,
+          "end": 131.25
         },
         {
           "word_index": 5,
           "text": "?",
-          "start": 131.3,
-          "end": 131.5
+          "start": 131.25,
+          "end": 131.7
         }
       ]
     },
@@ -2371,43 +2371,43 @@
       "line_index": 57,
       "text": "Dis-moi, où est ton papa ?",
       "start": 132.0,
-      "end": 133.8,
+      "end": 133.95,
       "words": [
         {
           "word_index": 1,
           "text": "Dis-moi,",
           "start": 132.0,
-          "end": 132.9
+          "end": 132.3
         },
         {
           "word_index": 2,
           "text": "où",
-          "start": 132.9,
-          "end": 133.1
+          "start": 132.3,
+          "end": 132.6
         },
         {
           "word_index": 3,
           "text": "est",
-          "start": 133.1,
-          "end": 133.2
+          "start": 132.6,
+          "end": 132.9
         },
         {
           "word_index": 4,
           "text": "ton",
-          "start": 133.2,
-          "end": 133.4
+          "start": 132.9,
+          "end": 133.2
         },
         {
           "word_index": 5,
           "text": "papa",
-          "start": 133.4,
-          "end": 133.7
+          "start": 133.2,
+          "end": 133.55
         },
         {
           "word_index": 6,
           "text": "?",
-          "start": 133.7,
-          "end": 133.8
+          "start": 133.55,
+          "end": 133.95
         }
       ]
     },
@@ -2415,37 +2415,37 @@
       "line_index": 58,
       "text": "Sans même devoir lui parler",
       "start": 134.2,
-      "end": 136.2,
+      "end": 136.1,
       "words": [
         {
           "word_index": 1,
           "text": "Sans",
           "start": 134.2,
-          "end": 135.6
+          "end": 134.55
         },
         {
           "word_index": 2,
           "text": "même",
-          "start": 135.6,
-          "end": 136.0
+          "start": 134.55,
+          "end": 134.9
         },
         {
           "word_index": 3,
           "text": "devoir",
-          "start": 136.0,
-          "end": 136.1
+          "start": 134.9,
+          "end": 135.25
         },
         {
           "word_index": 4,
           "text": "lui",
-          "start": 136.1,
-          "end": 136.2
+          "start": 135.25,
+          "end": 135.65
         },
         {
           "word_index": 5,
           "text": "parler",
-          "start": 136.2,
-          "end": 136.2
+          "start": 135.65,
+          "end": 136.1
         }
       ]
     },
@@ -2453,49 +2453,49 @@
       "line_index": 59,
       "text": "Il sait ce qui ne va pas",
       "start": 136.4,
-      "end": 138.3,
+      "end": 138.35,
       "words": [
         {
           "word_index": 1,
           "text": "Il",
           "start": 136.4,
-          "end": 137.1
+          "end": 136.65
         },
         {
           "word_index": 2,
           "text": "sait",
-          "start": 137.1,
-          "end": 137.2
+          "start": 136.65,
+          "end": 136.9
         },
         {
           "word_index": 3,
           "text": "ce",
-          "start": 137.2,
-          "end": 137.3
+          "start": 136.9,
+          "end": 137.15
         },
         {
           "word_index": 4,
           "text": "qui",
-          "start": 137.3,
+          "start": 137.15,
           "end": 137.4
         },
         {
           "word_index": 5,
           "text": "ne",
           "start": 137.4,
-          "end": 137.6
+          "end": 137.7
         },
         {
           "word_index": 6,
           "text": "va",
-          "start": 137.6,
-          "end": 137.9
+          "start": 137.7,
+          "end": 138.0
         },
         {
           "word_index": 7,
           "text": "pas",
-          "start": 137.9,
-          "end": 138.3
+          "start": 138.0,
+          "end": 138.35
         }
       ]
     },
@@ -2503,25 +2503,25 @@
       "line_index": 60,
       "text": "Ah, sacré papa",
       "start": 138.6,
-      "end": 140.0,
+      "end": 140.5,
       "words": [
         {
           "word_index": 1,
           "text": "Ah,",
           "start": 138.6,
-          "end": 139.6
+          "end": 139.15
         },
         {
           "word_index": 2,
           "text": "sacré",
-          "start": 139.7,
-          "end": 139.9
+          "start": 139.15,
+          "end": 139.8
         },
         {
           "word_index": 3,
           "text": "papa",
-          "start": 139.9,
-          "end": 140.0
+          "start": 139.8,
+          "end": 140.5
         }
       ]
     },
@@ -2529,37 +2529,37 @@
       "line_index": 61,
       "text": "Dis-moi, où es-tu caché ?",
       "start": 140.8,
-      "end": 142.4,
+      "end": 142.7,
       "words": [
         {
           "word_index": 1,
           "text": "Dis-moi,",
           "start": 140.8,
-          "end": 141.8
+          "end": 141.15
         },
         {
           "word_index": 2,
           "text": "où",
-          "start": 141.8,
-          "end": 142.0
+          "start": 141.15,
+          "end": 141.5
         },
         {
           "word_index": 3,
           "text": "es-tu",
-          "start": 142.0,
-          "end": 142.3
+          "start": 141.5,
+          "end": 141.85
         },
         {
           "word_index": 4,
           "text": "caché",
-          "start": 142.3,
-          "end": 142.4
+          "start": 141.85,
+          "end": 142.25
         },
         {
           "word_index": 5,
           "text": "?",
-          "start": 142.4,
-          "end": 142.4
+          "start": 142.25,
+          "end": 142.7
         }
       ]
     },
@@ -2567,61 +2567,61 @@
       "line_index": 62,
       "text": "Ça doit faire au moins mille fois que j'ai",
       "start": 143.0,
-      "end": 145.4,
+      "end": 145.35,
       "words": [
         {
           "word_index": 1,
           "text": "Ça",
           "start": 143.0,
-          "end": 143.7
+          "end": 143.25
         },
         {
           "word_index": 2,
           "text": "doit",
-          "start": 143.8,
-          "end": 144.0
+          "start": 143.25,
+          "end": 143.45
         },
         {
           "word_index": 3,
           "text": "faire",
-          "start": 144.0,
-          "end": 144.2
+          "start": 143.45,
+          "end": 143.7
         },
         {
           "word_index": 4,
           "text": "au",
-          "start": 144.2,
-          "end": 144.3
+          "start": 143.7,
+          "end": 143.95
         },
         {
           "word_index": 5,
           "text": "moins",
-          "start": 144.3,
-          "end": 144.5
+          "start": 143.95,
+          "end": 144.2
         },
         {
           "word_index": 6,
           "text": "mille",
-          "start": 144.5,
-          "end": 144.8
+          "start": 144.2,
+          "end": 144.45
         },
         {
           "word_index": 7,
           "text": "fois",
-          "start": 144.8,
-          "end": 145.1
+          "start": 144.45,
+          "end": 144.7
         },
         {
           "word_index": 8,
           "text": "que",
-          "start": 145.1,
-          "end": 145.2
+          "start": 144.7,
+          "end": 145.0
         },
         {
           "word_index": 9,
           "text": "j'ai",
-          "start": 145.2,
-          "end": 145.4
+          "start": 145.0,
+          "end": 145.35
         }
       ]
     },
@@ -2635,18 +2635,18 @@
           "word_index": 1,
           "text": "Compté",
           "start": 145.6,
-          "end": 147.0
+          "end": 146.15
         },
         {
           "word_index": 2,
           "text": "mes",
-          "start": 147.0,
-          "end": 147.0
+          "start": 146.15,
+          "end": 146.7
         },
         {
           "word_index": 3,
           "text": "doigts",
-          "start": 147.0,
+          "start": 146.7,
           "end": 147.4
         }
       ]
@@ -2669,37 +2669,37 @@
       "line_index": 65,
       "text": "Où est ton papa ?",
       "start": 150.0,
-      "end": 152.0,
+      "end": 151.9,
       "words": [
         {
           "word_index": 1,
           "text": "Où",
           "start": 150.0,
-          "end": 150.6
+          "end": 150.35
         },
         {
           "word_index": 2,
           "text": "est",
-          "start": 150.6,
-          "end": 150.9
+          "start": 150.35,
+          "end": 150.7
         },
         {
           "word_index": 3,
           "text": "ton",
-          "start": 151.0,
-          "end": 151.6
+          "start": 150.7,
+          "end": 151.05
         },
         {
           "word_index": 4,
           "text": "papa",
-          "start": 151.6,
-          "end": 151.9
+          "start": 151.05,
+          "end": 151.45
         },
         {
           "word_index": 5,
           "text": "?",
-          "start": 151.9,
-          "end": 152.0
+          "start": 151.45,
+          "end": 151.9
         }
       ]
     },
@@ -2707,43 +2707,43 @@
       "line_index": 66,
       "text": "Dis-moi, où est ton papa ?",
       "start": 152.2,
-      "end": 154.2,
+      "end": 154.15,
       "words": [
         {
           "word_index": 1,
           "text": "Dis-moi,",
           "start": 152.2,
-          "end": 153.6
+          "end": 152.5
         },
         {
           "word_index": 2,
           "text": "où",
-          "start": 153.6,
-          "end": 153.6
+          "start": 152.5,
+          "end": 152.8
         },
         {
           "word_index": 3,
           "text": "est",
-          "start": 153.6,
-          "end": 153.7
+          "start": 152.8,
+          "end": 153.1
         },
         {
           "word_index": 4,
           "text": "ton",
-          "start": 153.7,
-          "end": 153.8
+          "start": 153.1,
+          "end": 153.4
         },
         {
           "word_index": 5,
           "text": "papa",
-          "start": 153.8,
-          "end": 154.0
+          "start": 153.4,
+          "end": 153.75
         },
         {
           "word_index": 6,
           "text": "?",
-          "start": 154.0,
-          "end": 154.2
+          "start": 153.75,
+          "end": 154.15
         }
       ]
     },
@@ -2751,37 +2751,37 @@
       "line_index": 67,
       "text": "Sans même devoir lui parler",
       "start": 154.4,
-      "end": 156.0,
+      "end": 156.3,
       "words": [
         {
           "word_index": 1,
           "text": "Sans",
           "start": 154.4,
-          "end": 155.6
+          "end": 154.75
         },
         {
           "word_index": 2,
           "text": "même",
-          "start": 155.6,
-          "end": 155.8
+          "start": 154.75,
+          "end": 155.1
         },
         {
           "word_index": 3,
           "text": "devoir",
-          "start": 155.8,
-          "end": 155.9
+          "start": 155.1,
+          "end": 155.45
         },
         {
           "word_index": 4,
           "text": "lui",
-          "start": 155.9,
-          "end": 156.0
+          "start": 155.45,
+          "end": 155.85
         },
         {
           "word_index": 5,
           "text": "parler",
-          "start": 156.0,
-          "end": 156.0
+          "start": 155.85,
+          "end": 156.3
         }
       ]
     },
@@ -2789,49 +2789,49 @@
       "line_index": 68,
       "text": "Il sait ce qui ne va pas",
       "start": 156.6,
-      "end": 158.3,
+      "end": 158.55,
       "words": [
         {
           "word_index": 1,
           "text": "Il",
           "start": 156.6,
-          "end": 157.2
+          "end": 156.85
         },
         {
           "word_index": 2,
           "text": "sait",
-          "start": 157.2,
-          "end": 157.5
+          "start": 156.85,
+          "end": 157.1
         },
         {
           "word_index": 3,
           "text": "ce",
-          "start": 157.5,
-          "end": 157.7
+          "start": 157.1,
+          "end": 157.35
         },
         {
           "word_index": 4,
           "text": "qui",
-          "start": 157.7,
-          "end": 157.8
+          "start": 157.35,
+          "end": 157.6
         },
         {
           "word_index": 5,
           "text": "ne",
-          "start": 157.8,
-          "end": 158.0
+          "start": 157.6,
+          "end": 157.9
         },
         {
           "word_index": 6,
           "text": "va",
-          "start": 158.0,
-          "end": 158.1
+          "start": 157.9,
+          "end": 158.2
         },
         {
           "word_index": 7,
           "text": "pas",
-          "start": 158.1,
-          "end": 158.3
+          "start": 158.2,
+          "end": 158.55
         }
       ]
     },
@@ -2839,25 +2839,25 @@
       "line_index": 69,
       "text": "Ah, sacré papa",
       "start": 158.8,
-      "end": 160.7,
+      "end": 160.6,
       "words": [
         {
           "word_index": 1,
           "text": "Ah,",
           "start": 158.8,
-          "end": 159.8
+          "end": 159.35
         },
         {
           "word_index": 2,
           "text": "sacré",
-          "start": 159.8,
-          "end": 160.3
+          "start": 159.35,
+          "end": 159.9
         },
         {
           "word_index": 3,
           "text": "papa",
-          "start": 160.3,
-          "end": 160.7
+          "start": 159.9,
+          "end": 160.6
         }
       ]
     },
@@ -2865,37 +2865,37 @@
       "line_index": 70,
       "text": "Dis-moi, où es-tu caché ?",
       "start": 161.0,
-      "end": 163.0,
+      "end": 162.9,
       "words": [
         {
           "word_index": 1,
           "text": "Dis-moi,",
           "start": 161.0,
-          "end": 162.0
+          "end": 161.35
         },
         {
           "word_index": 2,
           "text": "où",
-          "start": 162.0,
-          "end": 162.3
+          "start": 161.35,
+          "end": 161.7
         },
         {
           "word_index": 3,
           "text": "es-tu",
-          "start": 162.3,
-          "end": 162.8
+          "start": 161.7,
+          "end": 162.05
         },
         {
           "word_index": 4,
           "text": "caché",
-          "start": 162.8,
-          "end": 162.9
+          "start": 162.05,
+          "end": 162.45
         },
         {
           "word_index": 5,
           "text": "?",
-          "start": 162.9,
-          "end": 163.0
+          "start": 162.45,
+          "end": 162.9
         }
       ]
     },
@@ -2903,61 +2903,61 @@
       "line_index": 71,
       "text": "Ça doit faire au moins mille fois que j'ai",
       "start": 163.2,
-      "end": 165.5,
+      "end": 165.45,
       "words": [
         {
           "word_index": 1,
           "text": "Ça",
           "start": 163.2,
-          "end": 163.8
+          "end": 163.4
         },
         {
           "word_index": 2,
           "text": "doit",
-          "start": 163.8,
-          "end": 164.1
+          "start": 163.4,
+          "end": 163.65
         },
         {
           "word_index": 3,
           "text": "faire",
-          "start": 164.1,
-          "end": 164.2
+          "start": 163.65,
+          "end": 163.85
         },
         {
           "word_index": 4,
           "text": "au",
-          "start": 164.2,
-          "end": 164.3
+          "start": 163.85,
+          "end": 164.1
         },
         {
           "word_index": 5,
           "text": "moins",
-          "start": 164.3,
-          "end": 164.5
+          "start": 164.1,
+          "end": 164.35
         },
         {
           "word_index": 6,
           "text": "mille",
-          "start": 164.5,
-          "end": 165.1
+          "start": 164.35,
+          "end": 164.6
         },
         {
           "word_index": 7,
           "text": "fois",
-          "start": 165.1,
-          "end": 165.4
+          "start": 164.6,
+          "end": 164.85
         },
         {
           "word_index": 8,
           "text": "que",
-          "start": 165.4,
-          "end": 165.4
+          "start": 164.85,
+          "end": 165.1
         },
         {
           "word_index": 9,
           "text": "j'ai",
-          "start": 165.4,
-          "end": 165.5
+          "start": 165.1,
+          "end": 165.45
         }
       ]
     },
@@ -2965,25 +2965,25 @@
       "line_index": 72,
       "text": "Compté mes doigts",
       "start": 165.8,
-      "end": 167.5,
+      "end": 167.6,
       "words": [
         {
           "word_index": 1,
           "text": "Compté",
           "start": 165.8,
-          "end": 167.0
+          "end": 166.35
         },
         {
           "word_index": 2,
           "text": "mes",
-          "start": 167.0,
-          "end": 167.4
+          "start": 166.35,
+          "end": 166.9
         },
         {
           "word_index": 3,
           "text": "doigts",
-          "start": 167.4,
-          "end": 167.5
+          "start": 166.9,
+          "end": 167.6
         }
       ]
     },
@@ -2991,13 +2991,13 @@
       "line_index": 73,
       "text": "Hey",
       "start": 168.0,
-      "end": 169.3,
+      "end": 169.6,
       "words": [
         {
           "word_index": 1,
           "text": "Hey",
           "start": 168.0,
-          "end": 169.3
+          "end": 169.6
         }
       ]
     },
@@ -3005,31 +3005,31 @@
       "line_index": 74,
       "text": "Où t'es, papaoutai ?",
       "start": 170.2,
-      "end": 172.1,
+      "end": 172.0,
       "words": [
         {
           "word_index": 1,
           "text": "Où",
           "start": 170.2,
-          "end": 170.7
+          "end": 170.6
         },
         {
           "word_index": 2,
           "text": "t'es,",
-          "start": 170.7,
-          "end": 171.3
+          "start": 170.6,
+          "end": 171.05
         },
         {
           "word_index": 3,
           "text": "papaoutai",
-          "start": 171.3,
-          "end": 172.0
+          "start": 171.05,
+          "end": 171.5
         },
         {
           "word_index": 4,
           "text": "?",
-          "start": 172.0,
-          "end": 172.1
+          "start": 171.5,
+          "end": 172.0
         }
       ]
     },
@@ -3037,31 +3037,31 @@
       "line_index": 75,
       "text": "Où t'es, papaoutai ?",
       "start": 172.4,
-      "end": 174.3,
+      "end": 174.2,
       "words": [
         {
           "word_index": 1,
           "text": "Où",
           "start": 172.4,
-          "end": 173.4
+          "end": 172.8
         },
         {
           "word_index": 2,
           "text": "t'es,",
-          "start": 173.4,
-          "end": 174.0
+          "start": 172.8,
+          "end": 173.25
         },
         {
           "word_index": 3,
           "text": "papaoutai",
-          "start": 174.0,
-          "end": 174.2
+          "start": 173.25,
+          "end": 173.7
         },
         {
           "word_index": 4,
           "text": "?",
-          "start": 174.2,
-          "end": 174.3
+          "start": 173.7,
+          "end": 174.2
         }
       ]
     },
@@ -3069,31 +3069,31 @@
       "line_index": 76,
       "text": "Où t'es, papaoutai ?",
       "start": 174.6,
-      "end": 176.1,
+      "end": 176.4,
       "words": [
         {
           "word_index": 1,
           "text": "Où",
           "start": 174.6,
-          "end": 175.1
+          "end": 175.0
         },
         {
           "word_index": 2,
           "text": "t'es,",
-          "start": 175.1,
-          "end": 175.6
+          "start": 175.0,
+          "end": 175.45
         },
         {
           "word_index": 3,
           "text": "papaoutai",
-          "start": 175.6,
-          "end": 176.0
+          "start": 175.45,
+          "end": 175.9
         },
         {
           "word_index": 4,
           "text": "?",
-          "start": 176.0,
-          "end": 176.1
+          "start": 175.9,
+          "end": 176.4
         }
       ]
     },
@@ -3101,49 +3101,49 @@
       "line_index": 77,
       "text": "Où t'es, où t'es où, papaoutai ?",
       "start": 176.8,
-      "end": 178.4,
+      "end": 178.65,
       "words": [
         {
           "word_index": 1,
           "text": "Où",
           "start": 176.8,
-          "end": 176.9
+          "end": 177.05
         },
         {
           "word_index": 2,
           "text": "t'es,",
-          "start": 176.9,
-          "end": 177.1
+          "start": 177.05,
+          "end": 177.25
         },
         {
           "word_index": 3,
           "text": "où",
-          "start": 177.1,
-          "end": 177.2
+          "start": 177.25,
+          "end": 177.5
         },
         {
           "word_index": 4,
           "text": "t'es",
-          "start": 177.2,
-          "end": 177.3
+          "start": 177.5,
+          "end": 177.75
         },
         {
           "word_index": 5,
           "text": "où,",
-          "start": 177.3,
-          "end": 177.5
+          "start": 177.75,
+          "end": 178.05
         },
         {
           "word_index": 6,
           "text": "papaoutai",
-          "start": 177.5,
-          "end": 178.1
+          "start": 178.05,
+          "end": 178.3
         },
         {
           "word_index": 7,
           "text": "?",
-          "start": 178.1,
-          "end": 178.4
+          "start": 178.3,
+          "end": 178.65
         }
       ]
     },
@@ -3151,31 +3151,31 @@
       "line_index": 78,
       "text": "Où t'es, papaoutai ?",
       "start": 179.0,
-      "end": 180.6,
+      "end": 180.8,
       "words": [
         {
           "word_index": 1,
           "text": "Où",
           "start": 179.0,
-          "end": 179.3
+          "end": 179.4
         },
         {
           "word_index": 2,
           "text": "t'es,",
-          "start": 179.3,
-          "end": 179.6
+          "start": 179.4,
+          "end": 179.85
         },
         {
           "word_index": 3,
           "text": "papaoutai",
-          "start": 179.6,
+          "start": 179.85,
           "end": 180.3
         },
         {
           "word_index": 4,
           "text": "?",
           "start": 180.3,
-          "end": 180.6
+          "end": 180.8
         }
       ]
     },
@@ -3183,31 +3183,31 @@
       "line_index": 79,
       "text": "Où t'es, papaoutai ?",
       "start": 181.2,
-      "end": 183.1,
+      "end": 183.0,
       "words": [
         {
           "word_index": 1,
           "text": "Où",
           "start": 181.2,
-          "end": 182.9
+          "end": 181.6
         },
         {
           "word_index": 2,
           "text": "t'es,",
-          "start": 182.9,
-          "end": 183.0
+          "start": 181.6,
+          "end": 182.05
         },
         {
           "word_index": 3,
           "text": "papaoutai",
-          "start": 183.0,
-          "end": 183.0
+          "start": 182.05,
+          "end": 182.5
         },
         {
           "word_index": 4,
           "text": "?",
-          "start": 183.0,
-          "end": 183.1
+          "start": 182.5,
+          "end": 183.0
         }
       ]
     },
@@ -3215,31 +3215,31 @@
       "line_index": 80,
       "text": "Où t'es, papaoutai ?",
       "start": 183.4,
-      "end": 185.1,
+      "end": 185.2,
       "words": [
         {
           "word_index": 1,
           "text": "Où",
           "start": 183.4,
-          "end": 184.1
+          "end": 183.8
         },
         {
           "word_index": 2,
           "text": "t'es,",
-          "start": 184.1,
-          "end": 184.2
+          "start": 183.8,
+          "end": 184.25
         },
         {
           "word_index": 3,
           "text": "papaoutai",
-          "start": 184.2,
-          "end": 185.0
+          "start": 184.25,
+          "end": 184.7
         },
         {
           "word_index": 4,
           "text": "?",
-          "start": 185.0,
-          "end": 185.1
+          "start": 184.7,
+          "end": 185.2
         }
       ]
     },
@@ -3247,49 +3247,49 @@
       "line_index": 81,
       "text": "Où t'es, où t'es où, papaoutai ?",
       "start": 185.6,
-      "end": 187.2,
+      "end": 187.45,
       "words": [
         {
           "word_index": 1,
           "text": "Où",
           "start": 185.6,
-          "end": 185.9
+          "end": 185.85
         },
         {
           "word_index": 2,
           "text": "t'es,",
-          "start": 185.9,
-          "end": 186.1
+          "start": 185.85,
+          "end": 186.05
         },
         {
           "word_index": 3,
           "text": "où",
-          "start": 186.1,
-          "end": 186.4
+          "start": 186.05,
+          "end": 186.3
         },
         {
           "word_index": 4,
           "text": "t'es",
-          "start": 186.4,
-          "end": 186.7
+          "start": 186.3,
+          "end": 186.55
         },
         {
           "word_index": 5,
           "text": "où,",
-          "start": 186.7,
-          "end": 186.8
+          "start": 186.55,
+          "end": 186.85
         },
         {
           "word_index": 6,
           "text": "papaoutai",
-          "start": 186.8,
-          "end": 186.9
+          "start": 186.85,
+          "end": 187.1
         },
         {
           "word_index": 7,
           "text": "?",
-          "start": 186.9,
-          "end": 187.2
+          "start": 187.1,
+          "end": 187.45
         }
       ]
     },
@@ -3297,73 +3297,73 @@
       "line_index": 82,
       "text": "(Où t'es, où t'es, où t'es, où t'es, où t'es ?)",
       "start": 187.8,
-      "end": 190.2,
+      "end": 190.45,
       "words": [
         {
           "word_index": 1,
           "text": "(Où",
           "start": 187.8,
-          "end": 189.1
+          "end": 188.0
         },
         {
           "word_index": 2,
           "text": "t'es,",
-          "start": 189.1,
-          "end": 189.4
+          "start": 188.0,
+          "end": 188.2
         },
         {
           "word_index": 3,
           "text": "où",
-          "start": 189.4,
-          "end": 189.5
+          "start": 188.2,
+          "end": 188.45
         },
         {
           "word_index": 4,
           "text": "t'es,",
-          "start": 189.5,
-          "end": 189.7
+          "start": 188.45,
+          "end": 188.65
         },
         {
           "word_index": 5,
           "text": "où",
-          "start": 189.7,
-          "end": 189.8
+          "start": 188.65,
+          "end": 188.9
         },
         {
           "word_index": 6,
           "text": "t'es,",
-          "start": 189.8,
-          "end": 189.9
+          "start": 188.9,
+          "end": 189.1
         },
         {
           "word_index": 7,
           "text": "où",
-          "start": 189.9,
-          "end": 190.0
+          "start": 189.1,
+          "end": 189.35
         },
         {
           "word_index": 8,
           "text": "t'es,",
-          "start": 190.0,
-          "end": 190.0
+          "start": 189.35,
+          "end": 189.6
         },
         {
           "word_index": 9,
           "text": "où",
-          "start": 190.0,
-          "end": 190.0
+          "start": 189.6,
+          "end": 189.85
         },
         {
           "word_index": 10,
           "text": "t'es",
-          "start": 190.0,
-          "end": 190.1
+          "start": 189.85,
+          "end": 190.15
         },
         {
           "word_index": 11,
           "text": "?)",
-          "start": 190.1,
-          "end": 190.2
+          "start": 190.15,
+          "end": 190.45
         }
       ]
     },
@@ -3371,7 +3371,7 @@
       "line_index": 83,
       "text": "(Où t'es, où t'es, où t'es, où t'es, où t'es ?)",
       "start": 190.7,
-      "end": 193.4,
+      "end": 193.35,
       "words": [
         {
           "word_index": 1,
@@ -3383,61 +3383,61 @@
           "word_index": 2,
           "text": "t'es,",
           "start": 190.9,
-          "end": 191.3
+          "end": 191.1
         },
         {
           "word_index": 3,
           "text": "où",
-          "start": 191.3,
-          "end": 191.4
+          "start": 191.1,
+          "end": 191.35
         },
         {
           "word_index": 4,
           "text": "t'es,",
-          "start": 191.4,
-          "end": 191.8
+          "start": 191.35,
+          "end": 191.55
         },
         {
           "word_index": 5,
           "text": "où",
-          "start": 191.8,
-          "end": 192.0
+          "start": 191.55,
+          "end": 191.8
         },
         {
           "word_index": 6,
           "text": "t'es,",
-          "start": 192.0,
-          "end": 192.3
+          "start": 191.8,
+          "end": 192.0
         },
         {
           "word_index": 7,
           "text": "où",
-          "start": 192.3,
-          "end": 192.5
+          "start": 192.0,
+          "end": 192.25
         },
         {
           "word_index": 8,
           "text": "t'es,",
-          "start": 192.5,
-          "end": 192.8
+          "start": 192.25,
+          "end": 192.5
         },
         {
           "word_index": 9,
           "text": "où",
-          "start": 192.8,
-          "end": 193.0
+          "start": 192.5,
+          "end": 192.75
         },
         {
           "word_index": 10,
           "text": "t'es",
-          "start": 193.0,
-          "end": 193.3
+          "start": 192.75,
+          "end": 193.05
         },
         {
           "word_index": 11,
           "text": "?)",
-          "start": 193.3,
-          "end": 193.4
+          "start": 193.05,
+          "end": 193.35
         }
       ]
     }

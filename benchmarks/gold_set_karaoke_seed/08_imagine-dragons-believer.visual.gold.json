@@ -9,25 +9,25 @@
       "line_index": 1,
       "text": "First things first",
       "start": 0.5,
-      "end": 2.5,
+      "end": 2.45,
       "words": [
         {
           "word_index": 1,
           "text": "First",
           "start": 0.5,
-          "end": 2.4
+          "end": 1.05
         },
         {
           "word_index": 2,
           "text": "things",
-          "start": 2.4,
-          "end": 2.4
+          "start": 2.15,
+          "end": 2.3
         },
         {
           "word_index": 3,
           "text": "first",
-          "start": 2.4,
-          "end": 2.5
+          "start": 2.3,
+          "end": 2.45
         }
       ]
     },
@@ -35,55 +35,55 @@
       "line_index": 2,
       "text": "I'ma say all the words inside my head",
       "start": 2.7,
-      "end": 4.5,
+      "end": 4.75,
       "words": [
         {
           "word_index": 1,
           "text": "I'ma",
           "start": 2.7,
-          "end": 3.0
+          "end": 2.9
         },
         {
           "word_index": 2,
           "text": "say",
-          "start": 3.0,
-          "end": 3.0
+          "start": 2.9,
+          "end": 3.15
         },
         {
           "word_index": 3,
           "text": "all",
-          "start": 3.0,
-          "end": 3.1
+          "start": 3.15,
+          "end": 3.4
         },
         {
           "word_index": 4,
           "text": "the",
-          "start": 3.1,
-          "end": 3.2
+          "start": 3.4,
+          "end": 3.65
         },
         {
           "word_index": 5,
           "text": "words",
-          "start": 3.2,
-          "end": 3.4
+          "start": 3.65,
+          "end": 3.85
         },
         {
           "word_index": 6,
           "text": "inside",
-          "start": 3.4,
-          "end": 3.8
+          "start": 3.85,
+          "end": 4.15
         },
         {
           "word_index": 7,
           "text": "my",
-          "start": 3.8,
-          "end": 4.1
+          "start": 4.15,
+          "end": 4.4
         },
         {
           "word_index": 8,
           "text": "head",
-          "start": 4.1,
-          "end": 4.5
+          "start": 4.4,
+          "end": 4.75
         }
       ]
     },
@@ -91,85 +91,85 @@
       "line_index": 3,
       "text": "I'm fired up and tired of the way that things have been, oh-ooh",
       "start": 5.0,
-      "end": 7.9,
+      "end": 7.7,
       "words": [
         {
           "word_index": 1,
           "text": "I'm",
           "start": 5.0,
-          "end": 5.1
+          "end": 5.25
         },
         {
           "word_index": 2,
           "text": "fired",
-          "start": 5.1,
-          "end": 5.2
+          "start": 5.25,
+          "end": 5.45
         },
         {
           "word_index": 3,
           "text": "up",
-          "start": 5.2,
-          "end": 5.3
+          "start": 5.45,
+          "end": 5.7
         },
         {
           "word_index": 4,
           "text": "and",
-          "start": 5.3,
-          "end": 5.3
+          "start": 5.7,
+          "end": 5.95
         },
         {
           "word_index": 5,
           "text": "tired",
-          "start": 5.3,
-          "end": 5.4
+          "start": 5.95,
+          "end": 6.2
         },
         {
           "word_index": 6,
           "text": "of",
-          "start": 5.4,
-          "end": 5.4
+          "start": 6.2,
+          "end": 6.45
         },
         {
           "word_index": 7,
           "text": "the",
-          "start": 5.4,
-          "end": 5.5
+          "start": 6.45,
+          "end": 6.7
         },
         {
           "word_index": 8,
           "text": "way",
-          "start": 5.5,
-          "end": 5.5
+          "start": 6.7,
+          "end": 6.75
         },
         {
           "word_index": 9,
           "text": "that",
-          "start": 5.5,
-          "end": 5.6
+          "start": 6.75,
+          "end": 6.8
         },
         {
           "word_index": 10,
           "text": "things",
-          "start": 5.6,
-          "end": 5.6
+          "start": 6.8,
+          "end": 6.85
         },
         {
           "word_index": 11,
           "text": "have",
-          "start": 5.6,
-          "end": 6.3
+          "start": 6.85,
+          "end": 6.9
         },
         {
           "word_index": 12,
           "text": "been,",
-          "start": 6.4,
-          "end": 7.7
+          "start": 6.9,
+          "end": 7.6
         },
         {
           "word_index": 13,
           "text": "oh-ooh",
-          "start": 7.7,
-          "end": 7.9
+          "start": 7.6,
+          "end": 7.7
         }
       ]
     },
@@ -177,49 +177,49 @@
       "line_index": 4,
       "text": "The way that things have been, oh-ooh",
       "start": 8.8,
-      "end": 11.0,
+      "end": 10.85,
       "words": [
         {
           "word_index": 1,
           "text": "The",
           "start": 8.8,
-          "end": 10.0
+          "end": 9.05
         },
         {
           "word_index": 2,
           "text": "way",
-          "start": 10.0,
-          "end": 10.3
+          "start": 9.05,
+          "end": 9.3
         },
         {
           "word_index": 3,
           "text": "that",
-          "start": 10.3,
-          "end": 10.5
+          "start": 9.3,
+          "end": 9.6
         },
         {
           "word_index": 4,
           "text": "things",
-          "start": 10.5,
-          "end": 10.8
+          "start": 9.6,
+          "end": 9.85
         },
         {
           "word_index": 5,
           "text": "have",
-          "start": 10.8,
-          "end": 10.9
+          "start": 9.85,
+          "end": 10.15
         },
         {
           "word_index": 6,
           "text": "been,",
-          "start": 10.9,
-          "end": 11.0
+          "start": 10.15,
+          "end": 10.45
         },
         {
           "word_index": 7,
           "text": "oh-ooh",
-          "start": 11.0,
-          "end": 11.0
+          "start": 10.45,
+          "end": 10.85
         }
       ]
     },
@@ -227,25 +227,25 @@
       "line_index": 5,
       "text": "Second thing second",
       "start": 11.1,
-      "end": 12.8,
+      "end": 13.0,
       "words": [
         {
           "word_index": 1,
           "text": "Second",
           "start": 11.1,
-          "end": 11.5
+          "end": 11.65
         },
         {
           "word_index": 2,
           "text": "thing",
-          "start": 11.5,
-          "end": 12.2
+          "start": 11.65,
+          "end": 12.3
         },
         {
           "word_index": 3,
           "text": "second",
-          "start": 12.2,
-          "end": 12.8
+          "start": 12.3,
+          "end": 13.0
         }
       ]
     },
@@ -253,73 +253,73 @@
       "line_index": 6,
       "text": "Don't you tell me what you think that I could be",
       "start": 13.3,
-      "end": 16.1,
+      "end": 16.05,
       "words": [
         {
           "word_index": 1,
           "text": "Don't",
           "start": 13.3,
-          "end": 14.1
+          "end": 13.5
         },
         {
           "word_index": 2,
           "text": "you",
-          "start": 14.1,
-          "end": 14.3
+          "start": 13.5,
+          "end": 13.75
         },
         {
           "word_index": 3,
           "text": "tell",
-          "start": 14.3,
-          "end": 14.6
+          "start": 13.75,
+          "end": 13.95
         },
         {
           "word_index": 4,
           "text": "me",
-          "start": 14.6,
-          "end": 14.7
+          "start": 13.95,
+          "end": 14.2
         },
         {
           "word_index": 5,
           "text": "what",
-          "start": 14.7,
-          "end": 14.8
+          "start": 14.2,
+          "end": 14.4
         },
         {
           "word_index": 6,
           "text": "you",
-          "start": 14.8,
-          "end": 14.8
+          "start": 14.4,
+          "end": 14.65
         },
         {
           "word_index": 7,
           "text": "think",
-          "start": 14.8,
-          "end": 15.0
+          "start": 14.65,
+          "end": 14.9
         },
         {
           "word_index": 8,
           "text": "that",
-          "start": 15.0,
-          "end": 15.2
+          "start": 14.9,
+          "end": 15.15
         },
         {
           "word_index": 9,
           "text": "I",
-          "start": 15.2,
-          "end": 15.3
+          "start": 15.15,
+          "end": 15.4
         },
         {
           "word_index": 10,
           "text": "could",
-          "start": 15.3,
-          "end": 15.8
+          "start": 15.4,
+          "end": 15.7
         },
         {
           "word_index": 11,
           "text": "be",
-          "start": 15.8,
-          "end": 16.1
+          "start": 15.7,
+          "end": 16.05
         }
       ]
     },
@@ -327,85 +327,85 @@
       "line_index": 7,
       "text": "I'm the one at the sail, I'm the master of my sea, oh-ooh",
       "start": 16.3,
-      "end": 18.4,
+      "end": 18.9,
       "words": [
         {
           "word_index": 1,
           "text": "I'm",
           "start": 16.3,
-          "end": 17.5
+          "end": 16.5
         },
         {
           "word_index": 2,
           "text": "the",
-          "start": 17.5,
-          "end": 17.7
+          "start": 16.5,
+          "end": 16.7
         },
         {
           "word_index": 3,
           "text": "one",
-          "start": 17.7,
-          "end": 17.8
+          "start": 16.7,
+          "end": 16.95
         },
         {
           "word_index": 4,
           "text": "at",
-          "start": 17.8,
-          "end": 17.9
+          "start": 16.95,
+          "end": 17.15
         },
         {
           "word_index": 5,
           "text": "the",
-          "start": 17.9,
-          "end": 17.9
+          "start": 17.15,
+          "end": 17.4
         },
         {
           "word_index": 6,
           "text": "sail,",
-          "start": 17.9,
-          "end": 18.0
+          "start": 17.4,
+          "end": 17.6
         },
         {
           "word_index": 7,
           "text": "I'm",
-          "start": 18.0,
-          "end": 18.0
+          "start": 17.6,
+          "end": 17.85
         },
         {
           "word_index": 8,
           "text": "the",
-          "start": 18.0,
-          "end": 18.1
+          "start": 17.85,
+          "end": 18.05
         },
         {
           "word_index": 9,
           "text": "master",
-          "start": 18.1,
-          "end": 18.2
+          "start": 18.05,
+          "end": 18.1
         },
         {
           "word_index": 10,
           "text": "of",
-          "start": 18.2,
-          "end": 18.2
+          "start": 18.15,
+          "end": 18.35
         },
         {
           "word_index": 11,
           "text": "my",
-          "start": 18.2,
-          "end": 18.3
+          "start": 18.4,
+          "end": 18.5
         },
         {
           "word_index": 12,
           "text": "sea,",
-          "start": 18.3,
-          "end": 18.4
+          "start": 18.65,
+          "end": 18.85
         },
         {
           "word_index": 13,
           "text": "oh-ooh",
-          "start": 18.4,
-          "end": 18.4
+          "start": 18.85,
+          "end": 18.9
         }
       ]
     },
@@ -413,7 +413,7 @@
       "line_index": 8,
       "text": "The master of my sea, oh-ooh",
       "start": 19.7,
-      "end": 21.4,
+      "end": 21.3,
       "words": [
         {
           "word_index": 1,
@@ -425,31 +425,31 @@
           "word_index": 2,
           "text": "master",
           "start": 20.0,
-          "end": 20.2
+          "end": 20.3
         },
         {
           "word_index": 3,
           "text": "of",
-          "start": 20.2,
-          "end": 20.3
+          "start": 20.3,
+          "end": 20.6
         },
         {
           "word_index": 4,
           "text": "my",
-          "start": 20.3,
-          "end": 20.4
+          "start": 20.6,
+          "end": 20.9
         },
         {
           "word_index": 5,
           "text": "sea,",
-          "start": 20.4,
-          "end": 21.1
+          "start": 20.9,
+          "end": 21.25
         },
         {
           "word_index": 6,
           "text": "oh-ooh",
-          "start": 21.1,
-          "end": 21.4
+          "start": 21.25,
+          "end": 21.3
         }
       ]
     },
@@ -457,49 +457,49 @@
       "line_index": 9,
       "text": "I was broken from a young age",
       "start": 21.9,
-      "end": 23.9,
+      "end": 23.5,
       "words": [
         {
           "word_index": 1,
           "text": "I",
           "start": 21.9,
-          "end": 23.2
+          "end": 22.15
         },
         {
           "word_index": 2,
           "text": "was",
-          "start": 23.2,
-          "end": 23.3
+          "start": 22.15,
+          "end": 22.4
         },
         {
           "word_index": 3,
           "text": "broken",
-          "start": 23.3,
-          "end": 23.7
+          "start": 22.4,
+          "end": 22.45
         },
         {
           "word_index": 4,
           "text": "from",
-          "start": 23.7,
-          "end": 23.8
+          "start": 22.45,
+          "end": 22.5
         },
         {
           "word_index": 5,
           "text": "a",
-          "start": 23.8,
-          "end": 23.8
+          "start": 22.5,
+          "end": 22.55
         },
         {
           "word_index": 6,
           "text": "young",
-          "start": 23.8,
-          "end": 23.8
+          "start": 22.6,
+          "end": 22.8
         },
         {
           "word_index": 7,
           "text": "age",
-          "start": 23.8,
-          "end": 23.9
+          "start": 22.8,
+          "end": 23.5
         }
       ]
     },
@@ -507,43 +507,43 @@
       "line_index": 10,
       "text": "Taking my sulking to the masses",
       "start": 24.1,
-      "end": 25.8,
+      "end": 25.5,
       "words": [
         {
           "word_index": 1,
           "text": "Taking",
           "start": 24.1,
-          "end": 24.8
+          "end": 24.4
         },
         {
           "word_index": 2,
           "text": "my",
           "start": 24.8,
-          "end": 25.1
+          "end": 24.9
         },
         {
           "word_index": 3,
           "text": "sulking",
-          "start": 25.1,
-          "end": 25.2
+          "start": 24.9,
+          "end": 25.15
         },
         {
           "word_index": 4,
           "text": "to",
-          "start": 25.2,
-          "end": 25.5
+          "start": 25.15,
+          "end": 25.4
         },
         {
           "word_index": 5,
           "text": "the",
-          "start": 25.5,
-          "end": 25.8
+          "start": 25.4,
+          "end": 25.45
         },
         {
           "word_index": 6,
           "text": "masses",
-          "start": 25.8,
-          "end": 25.8
+          "start": 25.45,
+          "end": 25.5
         }
       ]
     },
@@ -551,43 +551,43 @@
       "line_index": 11,
       "text": "Writing my poems for the few",
       "start": 26.3,
-      "end": 27.8,
+      "end": 28.25,
       "words": [
         {
           "word_index": 1,
           "text": "Writing",
           "start": 26.3,
-          "end": 27.0
+          "end": 26.6
         },
         {
           "word_index": 2,
           "text": "my",
-          "start": 27.0,
-          "end": 27.2
+          "start": 26.6,
+          "end": 26.9
         },
         {
           "word_index": 3,
           "text": "poems",
-          "start": 27.3,
-          "end": 27.5
+          "start": 26.9,
+          "end": 27.2
         },
         {
           "word_index": 4,
           "text": "for",
-          "start": 27.5,
-          "end": 27.6
+          "start": 27.2,
+          "end": 27.5
         },
         {
           "word_index": 5,
           "text": "the",
-          "start": 27.6,
-          "end": 27.7
+          "start": 27.5,
+          "end": 27.85
         },
         {
           "word_index": 6,
           "text": "few",
-          "start": 27.7,
-          "end": 27.8
+          "start": 27.85,
+          "end": 28.25
         }
       ]
     },
@@ -595,79 +595,79 @@
       "line_index": 12,
       "text": "That look at me, took to me, shook to me, feeling me",
       "start": 28.5,
-      "end": 31.5,
+      "end": 31.45,
       "words": [
         {
           "word_index": 1,
           "text": "That",
           "start": 28.5,
-          "end": 30.9
+          "end": 28.7
         },
         {
           "word_index": 2,
           "text": "look",
-          "start": 30.9,
-          "end": 31.0
+          "start": 28.7,
+          "end": 28.95
         },
         {
           "word_index": 3,
           "text": "at",
-          "start": 31.0,
-          "end": 31.0
+          "start": 28.95,
+          "end": 29.15
         },
         {
           "word_index": 4,
           "text": "me,",
-          "start": 31.0,
-          "end": 31.1
+          "start": 29.15,
+          "end": 29.35
         },
         {
           "word_index": 5,
           "text": "took",
-          "start": 31.1,
-          "end": 31.2
+          "start": 29.35,
+          "end": 29.6
         },
         {
           "word_index": 6,
           "text": "to",
-          "start": 31.2,
-          "end": 31.2
+          "start": 29.6,
+          "end": 29.85
         },
         {
           "word_index": 7,
           "text": "me,",
-          "start": 31.2,
-          "end": 31.2
+          "start": 29.85,
+          "end": 30.05
         },
         {
           "word_index": 8,
           "text": "shook",
-          "start": 31.2,
-          "end": 31.3
+          "start": 30.05,
+          "end": 30.3
         },
         {
           "word_index": 9,
           "text": "to",
-          "start": 31.3,
-          "end": 31.4
+          "start": 30.3,
+          "end": 30.55
         },
         {
           "word_index": 10,
           "text": "me,",
-          "start": 31.4,
-          "end": 31.4
+          "start": 30.55,
+          "end": 30.85
         },
         {
           "word_index": 11,
           "text": "feeling",
-          "start": 31.4,
-          "end": 31.4
+          "start": 30.85,
+          "end": 31.1
         },
         {
           "word_index": 12,
           "text": "me",
-          "start": 31.4,
-          "end": 31.5
+          "start": 31.1,
+          "end": 31.45
         }
       ]
     },
@@ -675,43 +675,43 @@
       "line_index": 13,
       "text": "Singing from heartache from the pain",
       "start": 31.7,
-      "end": 33.6,
+      "end": 33.65,
       "words": [
         {
           "word_index": 1,
           "text": "Singing",
           "start": 31.7,
-          "end": 32.4
+          "end": 32.0
         },
         {
           "word_index": 2,
           "text": "from",
-          "start": 32.4,
-          "end": 32.5
+          "start": 32.0,
+          "end": 32.05
         },
         {
           "word_index": 3,
           "text": "heartache",
-          "start": 32.5,
-          "end": 32.6
+          "start": 32.05,
+          "end": 32.45
         },
         {
           "word_index": 4,
           "text": "from",
-          "start": 32.6,
-          "end": 32.7
+          "start": 32.45,
+          "end": 32.85
         },
         {
           "word_index": 5,
           "text": "the",
-          "start": 32.7,
-          "end": 33.1
+          "start": 32.85,
+          "end": 32.95
         },
         {
           "word_index": 6,
           "text": "pain",
-          "start": 33.3,
-          "end": 33.6
+          "start": 32.95,
+          "end": 33.65
         }
       ]
     },
@@ -719,43 +719,43 @@
       "line_index": 14,
       "text": "Taking my message from the veins",
       "start": 34.1,
-      "end": 36.1,
+      "end": 36.05,
       "words": [
         {
           "word_index": 1,
           "text": "Taking",
           "start": 34.1,
-          "end": 35.1
+          "end": 34.4
         },
         {
           "word_index": 2,
           "text": "my",
-          "start": 35.1,
-          "end": 35.3
+          "start": 34.4,
+          "end": 34.7
         },
         {
           "word_index": 3,
           "text": "message",
-          "start": 35.3,
-          "end": 35.8
+          "start": 34.7,
+          "end": 35.0
         },
         {
           "word_index": 4,
           "text": "from",
-          "start": 35.8,
-          "end": 36.0
+          "start": 35.0,
+          "end": 35.3
         },
         {
           "word_index": 5,
           "text": "the",
-          "start": 36.0,
-          "end": 36.0
+          "start": 35.3,
+          "end": 35.65
         },
         {
           "word_index": 6,
           "text": "veins",
-          "start": 36.0,
-          "end": 36.1
+          "start": 35.65,
+          "end": 36.05
         }
       ]
     },
@@ -763,43 +763,43 @@
       "line_index": 15,
       "text": "Speaking my lesson from the brain",
       "start": 36.3,
-      "end": 38.0,
+      "end": 38.25,
       "words": [
         {
           "word_index": 1,
           "text": "Speaking",
           "start": 36.3,
-          "end": 37.6
+          "end": 36.6
         },
         {
           "word_index": 2,
           "text": "my",
-          "start": 37.6,
-          "end": 37.7
+          "start": 36.6,
+          "end": 36.9
         },
         {
           "word_index": 3,
           "text": "lesson",
-          "start": 37.7,
-          "end": 37.8
+          "start": 36.9,
+          "end": 37.2
         },
         {
           "word_index": 4,
           "text": "from",
-          "start": 37.8,
-          "end": 37.9
+          "start": 37.2,
+          "end": 37.5
         },
         {
           "word_index": 5,
           "text": "the",
-          "start": 37.9,
-          "end": 37.9
+          "start": 37.5,
+          "end": 37.85
         },
         {
           "word_index": 6,
           "text": "brain",
-          "start": 37.9,
-          "end": 38.0
+          "start": 37.85,
+          "end": 38.25
         }
       ]
     },
@@ -813,30 +813,30 @@
           "word_index": 1,
           "text": "Seeing",
           "start": 38.5,
-          "end": 38.9
+          "end": 38.85
         },
         {
           "word_index": 2,
           "text": "the",
-          "start": 38.9,
+          "start": 38.85,
           "end": 39.2
         },
         {
           "word_index": 3,
           "text": "beauty",
           "start": 39.2,
-          "end": 39.6
+          "end": 39.55
         },
         {
           "word_index": 4,
           "text": "through",
-          "start": 39.6,
-          "end": 40.1
+          "start": 39.55,
+          "end": 39.95
         },
         {
           "word_index": 5,
           "text": "the...",
-          "start": 40.1,
+          "start": 39.95,
           "end": 40.4
         }
       ]
@@ -845,13 +845,13 @@
       "line_index": 17,
       "text": "Pain!",
       "start": 40.7,
-      "end": 42.3,
+      "end": 42.35,
       "words": [
         {
           "word_index": 1,
           "text": "Pain!",
           "start": 40.7,
-          "end": 42.3
+          "end": 42.35
         }
       ]
     },
@@ -859,67 +859,67 @@
       "line_index": 18,
       "text": "You made me a, you made me a believer, believer",
       "start": 42.9,
-      "end": 45.2,
+      "end": 45.5,
       "words": [
         {
           "word_index": 1,
           "text": "You",
           "start": 42.9,
-          "end": 43.3
+          "end": 43.35
         },
         {
           "word_index": 2,
           "text": "made",
-          "start": 43.3,
-          "end": 43.3
+          "start": 43.35,
+          "end": 43.55
         },
         {
           "word_index": 3,
           "text": "me",
-          "start": 43.3,
-          "end": 43.5
+          "start": 43.55,
+          "end": 43.6
         },
         {
           "word_index": 4,
           "text": "a,",
-          "start": 43.5,
-          "end": 43.5
+          "start": 43.6,
+          "end": 43.85
         },
         {
           "word_index": 5,
           "text": "you",
-          "start": 43.5,
-          "end": 43.7
+          "start": 43.85,
+          "end": 44.1
         },
         {
           "word_index": 6,
           "text": "made",
-          "start": 43.7,
-          "end": 44.0
+          "start": 44.1,
+          "end": 44.35
         },
         {
           "word_index": 7,
           "text": "me",
-          "start": 44.0,
+          "start": 44.35,
           "end": 44.4
         },
         {
           "word_index": 8,
           "text": "a",
           "start": 44.4,
-          "end": 44.6
+          "end": 44.75
         },
         {
           "word_index": 9,
           "text": "believer,",
-          "start": 44.6,
-          "end": 45.0
+          "start": 44.75,
+          "end": 44.95
         },
         {
           "word_index": 10,
           "text": "believer",
-          "start": 45.0,
-          "end": 45.2
+          "start": 44.95,
+          "end": 45.5
         }
       ]
     },
@@ -941,67 +941,67 @@
       "line_index": 20,
       "text": "You break me down and build me up, believer, believer",
       "start": 48.0,
-      "end": 50.8,
+      "end": 50.95,
       "words": [
         {
           "word_index": 1,
           "text": "You",
           "start": 48.0,
-          "end": 48.4
+          "end": 48.25
         },
         {
           "word_index": 2,
           "text": "break",
-          "start": 48.4,
-          "end": 48.8
+          "start": 48.25,
+          "end": 48.5
         },
         {
           "word_index": 3,
           "text": "me",
-          "start": 48.8,
-          "end": 48.9
+          "start": 48.5,
+          "end": 48.8
         },
         {
           "word_index": 4,
           "text": "down",
-          "start": 48.9,
-          "end": 49.2
+          "start": 48.8,
+          "end": 49.05
         },
         {
           "word_index": 5,
           "text": "and",
-          "start": 49.2,
-          "end": 49.4
+          "start": 49.05,
+          "end": 49.3
         },
         {
           "word_index": 6,
           "text": "build",
-          "start": 49.4,
+          "start": 49.3,
           "end": 49.6
         },
         {
           "word_index": 7,
           "text": "me",
           "start": 49.6,
-          "end": 49.7
+          "end": 49.9
         },
         {
           "word_index": 8,
           "text": "up,",
-          "start": 49.7,
-          "end": 49.9
+          "start": 49.9,
+          "end": 50.2
         },
         {
           "word_index": 9,
           "text": "believer,",
-          "start": 50.0,
-          "end": 50.5
+          "start": 50.2,
+          "end": 50.55
         },
         {
           "word_index": 10,
           "text": "believer",
-          "start": 50.5,
-          "end": 50.8
+          "start": 50.55,
+          "end": 50.95
         }
       ]
     },
@@ -1023,61 +1023,61 @@
       "line_index": 22,
       "text": "Oh, let the bullets fly, oh, let them rain",
       "start": 53.4,
-      "end": 55.4,
+      "end": 55.75,
       "words": [
         {
           "word_index": 1,
           "text": "Oh,",
           "start": 53.4,
-          "end": 53.7
+          "end": 53.65
         },
         {
           "word_index": 2,
           "text": "let",
-          "start": 53.7,
-          "end": 54.1
+          "start": 53.65,
+          "end": 53.85
         },
         {
           "word_index": 3,
           "text": "the",
-          "start": 54.1,
-          "end": 54.2
+          "start": 53.85,
+          "end": 54.1
         },
         {
           "word_index": 4,
           "text": "bullets",
-          "start": 54.2,
-          "end": 54.4
+          "start": 54.1,
+          "end": 54.35
         },
         {
           "word_index": 5,
           "text": "fly,",
-          "start": 54.4,
-          "end": 54.8
+          "start": 54.35,
+          "end": 54.6
         },
         {
           "word_index": 6,
           "text": "oh,",
-          "start": 54.8,
-          "end": 54.8
+          "start": 54.6,
+          "end": 54.85
         },
         {
           "word_index": 7,
           "text": "let",
-          "start": 54.8,
+          "start": 54.85,
           "end": 55.1
         },
         {
           "word_index": 8,
           "text": "them",
           "start": 55.1,
-          "end": 55.2
+          "end": 55.4
         },
         {
           "word_index": 9,
           "text": "rain",
-          "start": 55.2,
-          "end": 55.4
+          "start": 55.4,
+          "end": 55.75
         }
       ]
     },
@@ -1085,61 +1085,61 @@
       "line_index": 23,
       "text": "My life, my love, my drive, it came from...",
       "start": 56.0,
-      "end": 58.2,
+      "end": 58.45,
       "words": [
         {
           "word_index": 1,
           "text": "My",
           "start": 56.0,
-          "end": 56.7
+          "end": 56.25
         },
         {
           "word_index": 2,
           "text": "life,",
-          "start": 56.7,
-          "end": 57.1
+          "start": 56.25,
+          "end": 56.5
         },
         {
           "word_index": 3,
           "text": "my",
-          "start": 57.1,
-          "end": 57.5
+          "start": 56.5,
+          "end": 56.7
         },
         {
           "word_index": 4,
           "text": "love,",
-          "start": 57.5,
-          "end": 57.8
+          "start": 56.7,
+          "end": 56.95
         },
         {
           "word_index": 5,
           "text": "my",
-          "start": 57.8,
-          "end": 58.0
+          "start": 56.95,
+          "end": 57.25
         },
         {
           "word_index": 6,
           "text": "drive,",
-          "start": 58.0,
-          "end": 58.0
+          "start": 57.25,
+          "end": 57.5
         },
         {
           "word_index": 7,
           "text": "it",
-          "start": 58.0,
-          "end": 58.1
+          "start": 57.5,
+          "end": 57.8
         },
         {
           "word_index": 8,
           "text": "came",
-          "start": 58.1,
-          "end": 58.2
+          "start": 57.8,
+          "end": 58.1
         },
         {
           "word_index": 9,
           "text": "from...",
-          "start": 58.2,
-          "end": 58.2
+          "start": 58.1,
+          "end": 58.45
         }
       ]
     },
@@ -1161,67 +1161,67 @@
       "line_index": 25,
       "text": "You made me a, you made me a believer, believer",
       "start": 60.9,
-      "end": 63.0,
+      "end": 63.45,
       "words": [
         {
           "word_index": 1,
           "text": "You",
           "start": 60.9,
-          "end": 61.8
+          "end": 61.1
         },
         {
           "word_index": 2,
           "text": "made",
-          "start": 61.8,
-          "end": 62.1
+          "start": 61.1,
+          "end": 61.35
         },
         {
           "word_index": 3,
           "text": "me",
-          "start": 62.1,
-          "end": 62.3
+          "start": 61.35,
+          "end": 61.55
         },
         {
           "word_index": 4,
           "text": "a,",
-          "start": 62.3,
-          "end": 62.4
+          "start": 61.75,
+          "end": 61.8
         },
         {
           "word_index": 5,
           "text": "you",
-          "start": 62.4,
-          "end": 62.5
+          "start": 61.8,
+          "end": 62.05
         },
         {
           "word_index": 6,
           "text": "made",
-          "start": 62.5,
-          "end": 62.5
+          "start": 62.05,
+          "end": 62.3
         },
         {
           "word_index": 7,
           "text": "me",
-          "start": 62.5,
-          "end": 62.6
+          "start": 62.3,
+          "end": 62.55
         },
         {
           "word_index": 8,
           "text": "a",
-          "start": 62.6,
-          "end": 62.6
+          "start": 62.55,
+          "end": 62.8
         },
         {
           "word_index": 9,
           "text": "believer,",
-          "start": 62.6,
-          "end": 62.7
+          "start": 62.8,
+          "end": 63.1
         },
         {
           "word_index": 10,
           "text": "believer",
-          "start": 62.7,
-          "end": 63.0
+          "start": 63.1,
+          "end": 63.45
         }
       ]
     },
@@ -1229,25 +1229,25 @@
       "line_index": 26,
       "text": "Third things third",
       "start": 63.7,
-      "end": 65.7,
+      "end": 65.6,
       "words": [
         {
           "word_index": 1,
           "text": "Third",
           "start": 63.7,
-          "end": 65.6
+          "end": 64.25
         },
         {
           "word_index": 2,
           "text": "things",
-          "start": 65.6,
-          "end": 65.6
+          "start": 64.25,
+          "end": 64.9
         },
         {
           "word_index": 3,
           "text": "third",
-          "start": 65.6,
-          "end": 65.7
+          "start": 64.9,
+          "end": 65.6
         }
       ]
     },
@@ -1255,55 +1255,55 @@
       "line_index": 27,
       "text": "Send a prayer to the ones up above",
       "start": 65.9,
-      "end": 67.5,
+      "end": 67.85,
       "words": [
         {
           "word_index": 1,
           "text": "Send",
           "start": 65.9,
-          "end": 66.6
+          "end": 66.1
         },
         {
           "word_index": 2,
           "text": "a",
-          "start": 66.6,
-          "end": 66.7
+          "start": 66.5,
+          "end": 66.6
         },
         {
           "word_index": 3,
           "text": "prayer",
-          "start": 66.8,
-          "end": 67.2
+          "start": 66.6,
+          "end": 66.75
         },
         {
           "word_index": 4,
           "text": "to",
-          "start": 67.2,
-          "end": 67.3
+          "start": 66.75,
+          "end": 66.8
         },
         {
           "word_index": 5,
           "text": "the",
-          "start": 67.3,
-          "end": 67.3
+          "start": 66.8,
+          "end": 67.05
         },
         {
           "word_index": 6,
           "text": "ones",
-          "start": 67.3,
-          "end": 67.4
+          "start": 67.05,
+          "end": 67.3
         },
         {
           "word_index": 7,
           "text": "up",
-          "start": 67.4,
-          "end": 67.4
+          "start": 67.3,
+          "end": 67.55
         },
         {
           "word_index": 8,
           "text": "above",
-          "start": 67.4,
-          "end": 67.5
+          "start": 67.55,
+          "end": 67.85
         }
       ]
     },
@@ -1311,91 +1311,91 @@
       "line_index": 28,
       "text": "All the hate that you've heard has turned your spirit to a dove, oh-ooh",
       "start": 68.1,
-      "end": 71.6,
+      "end": 71.65,
       "words": [
         {
           "word_index": 1,
           "text": "All",
           "start": 68.1,
-          "end": 68.9
+          "end": 68.35
         },
         {
           "word_index": 2,
           "text": "the",
-          "start": 68.9,
-          "end": 69.0
+          "start": 68.35,
+          "end": 68.6
         },
         {
           "word_index": 3,
           "text": "hate",
-          "start": 69.0,
-          "end": 69.3
+          "start": 68.6,
+          "end": 68.85
         },
         {
           "word_index": 4,
           "text": "that",
-          "start": 69.3,
-          "end": 69.3
+          "start": 68.85,
+          "end": 69.1
         },
         {
           "word_index": 5,
           "text": "you've",
-          "start": 69.3,
-          "end": 69.6
+          "start": 69.1,
+          "end": 69.4
         },
         {
           "word_index": 6,
           "text": "heard",
-          "start": 69.6,
-          "end": 69.7
+          "start": 69.4,
+          "end": 69.65
         },
         {
           "word_index": 7,
           "text": "has",
-          "start": 69.7,
-          "end": 70.0
+          "start": 69.65,
+          "end": 69.9
         },
         {
           "word_index": 8,
           "text": "turned",
-          "start": 70.0,
-          "end": 70.1
+          "start": 69.9,
+          "end": 70.2
         },
         {
           "word_index": 9,
           "text": "your",
-          "start": 70.1,
-          "end": 70.4
+          "start": 70.2,
+          "end": 70.25
         },
         {
           "word_index": 10,
           "text": "spirit",
-          "start": 70.4,
-          "end": 70.8
+          "start": 70.25,
+          "end": 70.3
         },
         {
           "word_index": 11,
           "text": "to",
-          "start": 70.8,
-          "end": 70.9
+          "start": 70.3,
+          "end": 70.7
         },
         {
           "word_index": 12,
           "text": "a",
-          "start": 70.9,
-          "end": 71.0
+          "start": 70.7,
+          "end": 71.1
         },
         {
           "word_index": 13,
           "text": "dove,",
-          "start": 71.0,
-          "end": 71.2
+          "start": 71.1,
+          "end": 71.6
         },
         {
           "word_index": 14,
           "text": "oh-ooh",
-          "start": 71.2,
-          "end": 71.6
+          "start": 71.6,
+          "end": 71.65
         }
       ]
     },
@@ -1409,30 +1409,30 @@
           "word_index": 1,
           "text": "Your",
           "start": 72.4,
-          "end": 72.7
+          "end": 72.75
         },
         {
           "word_index": 2,
           "text": "spirit",
-          "start": 72.8,
-          "end": 73.2
+          "start": 72.75,
+          "end": 73.1
         },
         {
           "word_index": 3,
           "text": "up",
-          "start": 73.3,
-          "end": 73.5
+          "start": 73.1,
+          "end": 73.45
         },
         {
           "word_index": 4,
           "text": "above,",
-          "start": 73.5,
-          "end": 74.0
+          "start": 73.45,
+          "end": 73.85
         },
         {
           "word_index": 5,
           "text": "oh-ooh",
-          "start": 74.0,
+          "start": 73.85,
           "end": 74.3
         }
       ]
@@ -1441,7 +1441,7 @@
       "line_index": 30,
       "text": "I was choking in the crowd",
       "start": 74.6,
-      "end": 76.0,
+      "end": 76.55,
       "words": [
         {
           "word_index": 1,
@@ -1453,12 +1453,12 @@
           "word_index": 2,
           "text": "was",
           "start": 74.9,
-          "end": 75.1
+          "end": 75.2
         },
         {
           "word_index": 3,
           "text": "choking",
-          "start": 75.1,
+          "start": 75.2,
           "end": 75.5
         },
         {
@@ -1471,13 +1471,13 @@
           "word_index": 5,
           "text": "the",
           "start": 75.8,
-          "end": 75.9
+          "end": 76.15
         },
         {
           "word_index": 6,
           "text": "crowd",
-          "start": 75.9,
-          "end": 76.0
+          "start": 76.15,
+          "end": 76.55
         }
       ]
     },
@@ -1485,49 +1485,49 @@
       "line_index": 31,
       "text": "Living my brain up in the cloud",
       "start": 76.8,
-      "end": 78.8,
+      "end": 78.75,
       "words": [
         {
           "word_index": 1,
           "text": "Living",
           "start": 76.8,
-          "end": 78.4
+          "end": 77.05
         },
         {
           "word_index": 2,
           "text": "my",
-          "start": 78.4,
-          "end": 78.5
+          "start": 77.75,
+          "end": 77.85
         },
         {
           "word_index": 3,
           "text": "brain",
-          "start": 78.5,
-          "end": 78.6
+          "start": 77.85,
+          "end": 78.0
         },
         {
           "word_index": 4,
           "text": "up",
-          "start": 78.6,
-          "end": 78.6
+          "start": 78.0,
+          "end": 78.15
         },
         {
           "word_index": 5,
           "text": "in",
-          "start": 78.6,
-          "end": 78.7
+          "start": 78.15,
+          "end": 78.35
         },
         {
           "word_index": 6,
           "text": "the",
-          "start": 78.7,
-          "end": 78.8
+          "start": 78.45,
+          "end": 78.5
         },
         {
           "word_index": 7,
           "text": "cloud",
-          "start": 78.8,
-          "end": 78.8
+          "start": 78.5,
+          "end": 78.75
         }
       ]
     },
@@ -1535,43 +1535,43 @@
       "line_index": 32,
       "text": "Falling like ashes to the ground",
       "start": 79.0,
-      "end": 80.8,
+      "end": 80.9,
       "words": [
         {
           "word_index": 1,
           "text": "Falling",
           "start": 79.0,
-          "end": 80.1
+          "end": 79.3
         },
         {
           "word_index": 2,
           "text": "like",
-          "start": 80.1,
-          "end": 80.3
+          "start": 79.3,
+          "end": 79.6
         },
         {
           "word_index": 3,
           "text": "ashes",
-          "start": 80.3,
-          "end": 80.3
+          "start": 79.6,
+          "end": 79.9
         },
         {
           "word_index": 4,
           "text": "to",
-          "start": 80.3,
-          "end": 80.5
+          "start": 79.9,
+          "end": 80.2
         },
         {
           "word_index": 5,
           "text": "the",
-          "start": 80.5,
-          "end": 80.7
+          "start": 80.2,
+          "end": 80.25
         },
         {
           "word_index": 6,
           "text": "ground",
-          "start": 80.7,
-          "end": 80.8
+          "start": 80.25,
+          "end": 80.9
         }
       ]
     },
@@ -1579,43 +1579,43 @@
       "line_index": 33,
       "text": "Hoping my feelings, they would drown",
       "start": 81.2,
-      "end": 83.3,
+      "end": 83.4,
       "words": [
         {
           "word_index": 1,
           "text": "Hoping",
           "start": 81.2,
-          "end": 82.7
+          "end": 81.5
         },
         {
           "word_index": 2,
           "text": "my",
-          "start": 82.7,
-          "end": 82.8
+          "start": 81.5,
+          "end": 81.85
         },
         {
           "word_index": 3,
           "text": "feelings,",
-          "start": 82.8,
-          "end": 82.8
+          "start": 81.85,
+          "end": 82.15
         },
         {
           "word_index": 4,
           "text": "they",
-          "start": 82.8,
-          "end": 82.8
+          "start": 82.15,
+          "end": 82.5
         },
         {
           "word_index": 5,
           "text": "would",
-          "start": 82.8,
-          "end": 83.0
+          "start": 82.5,
+          "end": 82.9
         },
         {
           "word_index": 6,
           "text": "drown",
-          "start": 83.0,
-          "end": 83.3
+          "start": 83.1,
+          "end": 83.4
         }
       ]
     },
@@ -1623,18 +1623,18 @@
       "line_index": 34,
       "text": "But they never did, ever lived",
       "start": 83.6,
-      "end": 85.3,
+      "end": 85.55,
       "words": [
         {
           "word_index": 1,
           "text": "But",
           "start": 83.6,
-          "end": 84.2
+          "end": 83.9
         },
         {
           "word_index": 2,
           "text": "they",
-          "start": 84.2,
+          "start": 83.9,
           "end": 84.2
         },
         {
@@ -1647,19 +1647,19 @@
           "word_index": 4,
           "text": "did,",
           "start": 84.5,
-          "end": 84.7
+          "end": 84.8
         },
         {
           "word_index": 5,
           "text": "ever",
-          "start": 84.7,
-          "end": 84.8
+          "start": 84.8,
+          "end": 85.15
         },
         {
           "word_index": 6,
           "text": "lived",
-          "start": 84.8,
-          "end": 85.3
+          "start": 85.15,
+          "end": 85.55
         }
       ]
     },
@@ -1673,30 +1673,30 @@
           "word_index": 1,
           "text": "Ebbing",
           "start": 85.8,
-          "end": 87.8
+          "end": 86.2
         },
         {
           "word_index": 2,
           "text": "and",
-          "start": 87.8,
-          "end": 87.8
+          "start": 86.2,
+          "end": 86.6
         },
         {
           "word_index": 3,
           "text": "flowing,",
-          "start": 87.8,
-          "end": 87.9
+          "start": 86.6,
+          "end": 87.0
         },
         {
           "word_index": 4,
           "text": "inhibited,",
-          "start": 87.9,
-          "end": 88.0
+          "start": 87.0,
+          "end": 87.5
         },
         {
           "word_index": 5,
           "text": "limited",
-          "start": 88.0,
+          "start": 87.5,
           "end": 88.0
         }
       ]
@@ -1705,55 +1705,55 @@
       "line_index": 36,
       "text": "Till it broke open and it rained down",
       "start": 88.3,
-      "end": 89.7,
+      "end": 90.35,
       "words": [
         {
           "word_index": 1,
           "text": "Till",
           "start": 88.3,
-          "end": 89.0
+          "end": 88.5
         },
         {
           "word_index": 2,
           "text": "it",
-          "start": 89.1,
-          "end": 89.2
+          "start": 88.5,
+          "end": 88.75
         },
         {
           "word_index": 3,
           "text": "broke",
-          "start": 89.2,
-          "end": 89.4
+          "start": 88.75,
+          "end": 89.0
         },
         {
           "word_index": 4,
           "text": "open",
-          "start": 89.4,
-          "end": 89.5
+          "start": 89.0,
+          "end": 89.25
         },
         {
           "word_index": 5,
           "text": "and",
-          "start": 89.5,
-          "end": 89.5
+          "start": 89.25,
+          "end": 89.45
         },
         {
           "word_index": 6,
           "text": "it",
-          "start": 89.5,
-          "end": 89.6
+          "start": 89.45,
+          "end": 89.75
         },
         {
           "word_index": 7,
           "text": "rained",
-          "start": 89.6,
-          "end": 89.6
+          "start": 89.75,
+          "end": 90.0
         },
         {
           "word_index": 8,
           "text": "down",
-          "start": 89.6,
-          "end": 89.7
+          "start": 90.0,
+          "end": 90.35
         }
       ]
     },
@@ -1767,24 +1767,24 @@
           "word_index": 1,
           "text": "It",
           "start": 90.6,
-          "end": 91.1
+          "end": 91.0
         },
         {
           "word_index": 2,
           "text": "rained",
-          "start": 91.1,
-          "end": 91.7
+          "start": 91.0,
+          "end": 91.45
         },
         {
           "word_index": 3,
           "text": "down,",
-          "start": 91.7,
-          "end": 92.2
+          "start": 91.45,
+          "end": 91.95
         },
         {
           "word_index": 4,
           "text": "like...",
-          "start": 92.2,
+          "start": 91.95,
           "end": 92.5
         }
       ]
@@ -1793,13 +1793,13 @@
       "line_index": 38,
       "text": "Pain!",
       "start": 92.8,
-      "end": 94.8,
+      "end": 94.5,
       "words": [
         {
           "word_index": 1,
           "text": "Pain!",
           "start": 92.8,
-          "end": 94.8
+          "end": 94.5
         }
       ]
     },
@@ -1807,67 +1807,67 @@
       "line_index": 39,
       "text": "You made me a, you made me a believer, believer",
       "start": 95.0,
-      "end": 97.3,
+      "end": 97.45,
       "words": [
         {
           "word_index": 1,
           "text": "You",
           "start": 95.0,
-          "end": 95.8
+          "end": 95.25
         },
         {
           "word_index": 2,
           "text": "made",
-          "start": 95.8,
-          "end": 95.8
+          "start": 95.25,
+          "end": 95.45
         },
         {
           "word_index": 3,
           "text": "me",
-          "start": 95.8,
-          "end": 96.1
+          "start": 95.45,
+          "end": 95.5
         },
         {
           "word_index": 4,
           "text": "a,",
-          "start": 96.1,
-          "end": 96.2
+          "start": 95.5,
+          "end": 95.8
         },
         {
           "word_index": 5,
           "text": "you",
-          "start": 96.2,
-          "end": 96.5
+          "start": 95.8,
+          "end": 96.05
         },
         {
           "word_index": 6,
           "text": "made",
-          "start": 96.5,
-          "end": 96.6
+          "start": 96.05,
+          "end": 96.35
         },
         {
           "word_index": 7,
           "text": "me",
-          "start": 96.6,
-          "end": 96.9
+          "start": 96.35,
+          "end": 96.6
         },
         {
           "word_index": 8,
           "text": "a",
-          "start": 96.9,
-          "end": 97.0
+          "start": 96.6,
+          "end": 96.95
         },
         {
           "word_index": 9,
           "text": "believer,",
-          "start": 97.0,
-          "end": 97.3
+          "start": 96.95,
+          "end": 97.0
         },
         {
           "word_index": 10,
           "text": "believer",
-          "start": 97.3,
-          "end": 97.3
+          "start": 97.2,
+          "end": 97.45
         }
       ]
     },
@@ -1889,67 +1889,67 @@
       "line_index": 41,
       "text": "You break me down, you build me up, believer, believer",
       "start": 100.1,
-      "end": 102.7,
+      "end": 103.15,
       "words": [
         {
           "word_index": 1,
           "text": "You",
           "start": 100.1,
-          "end": 100.6
+          "end": 100.35
         },
         {
           "word_index": 2,
           "text": "break",
-          "start": 100.6,
-          "end": 101.2
+          "start": 100.35,
+          "end": 100.65
         },
         {
           "word_index": 3,
           "text": "me",
-          "start": 101.2,
-          "end": 101.3
+          "start": 100.65,
+          "end": 100.9
         },
         {
           "word_index": 4,
           "text": "down,",
-          "start": 101.3,
-          "end": 102.0
+          "start": 100.9,
+          "end": 101.2
         },
         {
           "word_index": 5,
           "text": "you",
-          "start": 102.0,
-          "end": 102.3
+          "start": 101.2,
+          "end": 101.45
         },
         {
           "word_index": 6,
           "text": "build",
-          "start": 102.3,
-          "end": 102.3
+          "start": 101.45,
+          "end": 101.75
         },
         {
           "word_index": 7,
           "text": "me",
-          "start": 102.3,
-          "end": 102.4
+          "start": 101.75,
+          "end": 102.05
         },
         {
           "word_index": 8,
           "text": "up,",
-          "start": 102.4,
-          "end": 102.5
+          "start": 102.05,
+          "end": 102.4
         },
         {
           "word_index": 9,
           "text": "believer,",
-          "start": 102.5,
-          "end": 102.6
+          "start": 102.4,
+          "end": 102.75
         },
         {
           "word_index": 10,
           "text": "believer",
-          "start": 102.6,
-          "end": 102.7
+          "start": 102.75,
+          "end": 103.15
         }
       ]
     },
@@ -1957,67 +1957,67 @@
       "line_index": 42,
       "text": "Pain, oh, let the bullets fly, oh, let them rain",
       "start": 103.5,
-      "end": 105.4,
+      "end": 106.2,
       "words": [
         {
           "word_index": 1,
           "text": "Pain,",
           "start": 103.5,
-          "end": 104.9
+          "end": 105.75
         },
         {
           "word_index": 2,
           "text": "oh,",
-          "start": 104.9,
-          "end": 105.0
+          "start": 105.75,
+          "end": 105.8
         },
         {
           "word_index": 3,
           "text": "let",
-          "start": 105.0,
-          "end": 105.0
+          "start": 105.8,
+          "end": 105.85
         },
         {
           "word_index": 4,
           "text": "the",
-          "start": 105.0,
-          "end": 105.1
+          "start": 105.85,
+          "end": 105.9
         },
         {
           "word_index": 5,
           "text": "bullets",
-          "start": 105.1,
-          "end": 105.1
+          "start": 105.9,
+          "end": 105.95
         },
         {
           "word_index": 6,
           "text": "fly,",
-          "start": 105.1,
-          "end": 105.2
+          "start": 105.95,
+          "end": 106.0
         },
         {
           "word_index": 7,
           "text": "oh,",
-          "start": 105.2,
-          "end": 105.2
+          "start": 106.0,
+          "end": 106.05
         },
         {
           "word_index": 8,
           "text": "let",
-          "start": 105.2,
-          "end": 105.3
+          "start": 106.05,
+          "end": 106.1
         },
         {
           "word_index": 9,
           "text": "them",
-          "start": 105.3,
-          "end": 105.3
+          "start": 106.1,
+          "end": 106.15
         },
         {
           "word_index": 10,
           "text": "rain",
-          "start": 105.3,
-          "end": 105.4
+          "start": 106.15,
+          "end": 106.2
         }
       ]
     },
@@ -2025,61 +2025,61 @@
       "line_index": 43,
       "text": "My life, my love, my drive, it came from",
       "start": 106.4,
-      "end": 108.3,
+      "end": 108.55,
       "words": [
         {
           "word_index": 1,
           "text": "My",
           "start": 106.4,
-          "end": 106.9
+          "end": 106.6
         },
         {
           "word_index": 2,
           "text": "life,",
-          "start": 106.9,
-          "end": 107.3
+          "start": 106.6,
+          "end": 106.8
         },
         {
           "word_index": 3,
           "text": "my",
-          "start": 107.3,
-          "end": 107.6
+          "start": 106.8,
+          "end": 107.05
         },
         {
           "word_index": 4,
           "text": "love,",
-          "start": 107.6,
-          "end": 107.9
+          "start": 107.05,
+          "end": 107.25
         },
         {
           "word_index": 5,
           "text": "my",
-          "start": 107.9,
-          "end": 108.0
+          "start": 107.25,
+          "end": 107.5
         },
         {
           "word_index": 6,
           "text": "drive,",
-          "start": 108.0,
-          "end": 108.1
+          "start": 107.5,
+          "end": 107.7
         },
         {
           "word_index": 7,
           "text": "it",
-          "start": 108.1,
-          "end": 108.1
+          "start": 107.7,
+          "end": 107.95
         },
         {
           "word_index": 8,
           "text": "came",
-          "start": 108.1,
-          "end": 108.2
+          "start": 107.95,
+          "end": 108.25
         },
         {
           "word_index": 9,
           "text": "from",
-          "start": 108.2,
-          "end": 108.3
+          "start": 108.25,
+          "end": 108.55
         }
       ]
     },
@@ -2101,67 +2101,67 @@
       "line_index": 45,
       "text": "You made me a, you made me a believer, believer",
       "start": 111.0,
-      "end": 113.7,
+      "end": 113.65,
       "words": [
         {
           "word_index": 1,
           "text": "You",
           "start": 111.0,
-          "end": 113.0
+          "end": 111.25
         },
         {
           "word_index": 2,
           "text": "made",
-          "start": 113.0,
-          "end": 113.2
+          "start": 111.25,
+          "end": 111.45
         },
         {
           "word_index": 3,
           "text": "me",
-          "start": 113.2,
-          "end": 113.3
+          "start": 111.45,
+          "end": 111.7
         },
         {
           "word_index": 4,
           "text": "a,",
-          "start": 113.3,
-          "end": 113.3
+          "start": 111.7,
+          "end": 111.95
         },
         {
           "word_index": 5,
           "text": "you",
-          "start": 113.4,
-          "end": 113.4
+          "start": 111.95,
+          "end": 112.2
         },
         {
           "word_index": 6,
           "text": "made",
-          "start": 113.4,
-          "end": 113.5
+          "start": 112.2,
+          "end": 112.45
         },
         {
           "word_index": 7,
           "text": "me",
-          "start": 113.5,
-          "end": 113.6
+          "start": 112.45,
+          "end": 112.7
         },
         {
           "word_index": 8,
           "text": "a",
-          "start": 113.6,
-          "end": 113.6
+          "start": 112.7,
+          "end": 113.0
         },
         {
           "word_index": 9,
           "text": "believer,",
-          "start": 113.6,
-          "end": 113.6
+          "start": 113.0,
+          "end": 113.3
         },
         {
           "word_index": 10,
           "text": "believer",
-          "start": 113.6,
-          "end": 113.7
+          "start": 113.3,
+          "end": 113.65
         }
       ]
     },
@@ -2169,79 +2169,79 @@
       "line_index": 46,
       "text": "Last things last, by the grace of the fire and the flames",
       "start": 113.9,
-      "end": 117.1,
+      "end": 116.5,
       "words": [
         {
           "word_index": 1,
           "text": "Last",
           "start": 113.9,
-          "end": 116.6
+          "end": 114.15
         },
         {
           "word_index": 2,
           "text": "things",
-          "start": 116.6,
-          "end": 116.6
+          "start": 114.15,
+          "end": 114.35
         },
         {
           "word_index": 3,
           "text": "last,",
-          "start": 116.6,
-          "end": 116.6
+          "start": 114.35,
+          "end": 114.6
         },
         {
           "word_index": 4,
           "text": "by",
-          "start": 116.6,
-          "end": 116.7
+          "start": 114.6,
+          "end": 114.85
         },
         {
           "word_index": 5,
           "text": "the",
-          "start": 116.7,
-          "end": 116.8
+          "start": 115.4,
+          "end": 115.5
         },
         {
           "word_index": 6,
           "text": "grace",
-          "start": 116.8,
-          "end": 116.8
+          "start": 115.5,
+          "end": 115.7
         },
         {
           "word_index": 7,
           "text": "of",
-          "start": 116.8,
-          "end": 116.8
+          "start": 116.0,
+          "end": 116.15
         },
         {
           "word_index": 8,
           "text": "the",
-          "start": 116.8,
-          "end": 116.9
+          "start": 116.2,
+          "end": 116.3
         },
         {
           "word_index": 9,
           "text": "fire",
-          "start": 116.9,
-          "end": 117.0
+          "start": 116.3,
+          "end": 116.35
         },
         {
           "word_index": 10,
           "text": "and",
-          "start": 117.0,
-          "end": 117.0
+          "start": 116.35,
+          "end": 116.4
         },
         {
           "word_index": 11,
           "text": "the",
-          "start": 117.0,
-          "end": 117.0
+          "start": 116.4,
+          "end": 116.45
         },
         {
           "word_index": 12,
           "text": "flames",
-          "start": 117.0,
-          "end": 117.1
+          "start": 116.45,
+          "end": 116.5
         }
       ]
     },
@@ -2249,79 +2249,79 @@
       "line_index": 47,
       "text": "You're the face of the future, the blood in my veins, oh-ooh",
       "start": 117.3,
-      "end": 120.2,
+      "end": 119.85,
       "words": [
         {
           "word_index": 1,
           "text": "You're",
           "start": 117.3,
-          "end": 118.0
+          "end": 117.55
         },
         {
           "word_index": 2,
           "text": "the",
-          "start": 118.0,
-          "end": 118.4
+          "start": 117.55,
+          "end": 117.8
         },
         {
           "word_index": 3,
           "text": "face",
-          "start": 118.4,
-          "end": 118.4
+          "start": 117.8,
+          "end": 118.05
         },
         {
           "word_index": 4,
           "text": "of",
-          "start": 118.4,
-          "end": 118.7
+          "start": 118.05,
+          "end": 118.3
         },
         {
           "word_index": 5,
           "text": "the",
-          "start": 118.7,
-          "end": 119.1
+          "start": 118.3,
+          "end": 118.55
         },
         {
           "word_index": 6,
           "text": "future,",
-          "start": 119.1,
-          "end": 119.2
+          "start": 118.55,
+          "end": 118.8
         },
         {
           "word_index": 7,
           "text": "the",
-          "start": 119.2,
-          "end": 119.2
+          "start": 118.8,
+          "end": 119.05
         },
         {
           "word_index": 8,
           "text": "blood",
-          "start": 119.2,
-          "end": 119.5
+          "start": 119.05,
+          "end": 119.1
         },
         {
           "word_index": 9,
           "text": "in",
-          "start": 119.5,
-          "end": 119.8
+          "start": 119.1,
+          "end": 119.15
         },
         {
           "word_index": 10,
           "text": "my",
-          "start": 119.8,
-          "end": 119.9
+          "start": 119.15,
+          "end": 119.2
         },
         {
           "word_index": 11,
           "text": "veins,",
-          "start": 119.9,
-          "end": 120.0
+          "start": 119.2,
+          "end": 119.25
         },
         {
           "word_index": 12,
           "text": "oh-ooh",
-          "start": 120.0,
-          "end": 120.2
+          "start": 119.25,
+          "end": 119.85
         }
       ]
     },
@@ -2329,43 +2329,43 @@
       "line_index": 48,
       "text": "The blood in my veins, oh-ooh",
       "start": 121.0,
-      "end": 122.8,
+      "end": 122.9,
       "words": [
         {
           "word_index": 1,
           "text": "The",
           "start": 121.0,
-          "end": 121.3
+          "end": 121.25
         },
         {
           "word_index": 2,
           "text": "blood",
-          "start": 121.3,
-          "end": 121.6
+          "start": 121.25,
+          "end": 121.55
         },
         {
           "word_index": 3,
           "text": "in",
-          "start": 121.7,
-          "end": 121.8
+          "start": 121.55,
+          "end": 121.85
         },
         {
           "word_index": 4,
           "text": "my",
-          "start": 121.9,
-          "end": 122.0
+          "start": 121.85,
+          "end": 121.9
         },
         {
           "word_index": 5,
           "text": "veins,",
-          "start": 122.0,
-          "end": 122.5
+          "start": 121.9,
+          "end": 121.95
         },
         {
           "word_index": 6,
           "text": "oh-ooh",
-          "start": 122.5,
-          "end": 122.8
+          "start": 121.95,
+          "end": 122.9
         }
       ]
     },
@@ -2373,61 +2373,61 @@
       "line_index": 49,
       "text": "But they never did, ever lived, ebbin' and flowin'",
       "start": 123.2,
-      "end": 125.7,
+      "end": 125.8,
       "words": [
         {
           "word_index": 1,
           "text": "But",
           "start": 123.2,
-          "end": 124.9
+          "end": 124.25
         },
         {
           "word_index": 2,
           "text": "they",
-          "start": 124.9,
-          "end": 125.2
+          "start": 124.3,
+          "end": 124.35
         },
         {
           "word_index": 3,
           "text": "never",
-          "start": 125.2,
-          "end": 125.4
+          "start": 124.45,
+          "end": 124.6
         },
         {
           "word_index": 4,
           "text": "did,",
-          "start": 125.4,
-          "end": 125.4
+          "start": 124.65,
+          "end": 124.75
         },
         {
           "word_index": 5,
           "text": "ever",
-          "start": 125.4,
-          "end": 125.5
+          "start": 124.85,
+          "end": 124.95
         },
         {
           "word_index": 6,
           "text": "lived,",
-          "start": 125.5,
-          "end": 125.6
+          "start": 125.05,
+          "end": 125.15
         },
         {
           "word_index": 7,
           "text": "ebbin'",
-          "start": 125.6,
-          "end": 125.6
+          "start": 125.25,
+          "end": 125.45
         },
         {
           "word_index": 8,
           "text": "and",
-          "start": 125.6,
+          "start": 125.5,
           "end": 125.6
         },
         {
           "word_index": 9,
           "text": "flowin'",
-          "start": 125.6,
-          "end": 125.7
+          "start": 125.65,
+          "end": 125.8
         }
       ]
     },
@@ -2435,61 +2435,61 @@
       "line_index": 50,
       "text": "Inhibited, limited 'til it broke open and rained down",
       "start": 126.3,
-      "end": 128.5,
+      "end": 128.95,
       "words": [
         {
           "word_index": 1,
           "text": "Inhibited,",
           "start": 126.3,
-          "end": 127.7
+          "end": 126.35
         },
         {
           "word_index": 2,
           "text": "limited",
-          "start": 127.7,
-          "end": 127.8
+          "start": 126.45,
+          "end": 126.7
         },
         {
           "word_index": 3,
           "text": "'til",
-          "start": 127.8,
-          "end": 128.0
+          "start": 126.95,
+          "end": 127.1
         },
         {
           "word_index": 4,
           "text": "it",
-          "start": 128.0,
-          "end": 128.1
+          "start": 127.15,
+          "end": 127.2
         },
         {
           "word_index": 5,
           "text": "broke",
-          "start": 128.1,
-          "end": 128.2
+          "start": 127.35,
+          "end": 127.5
         },
         {
           "word_index": 6,
           "text": "open",
-          "start": 128.2,
-          "end": 128.3
+          "start": 127.5,
+          "end": 127.6
         },
         {
           "word_index": 7,
           "text": "and",
-          "start": 128.3,
-          "end": 128.4
+          "start": 127.75,
+          "end": 127.8
         },
         {
           "word_index": 8,
           "text": "rained",
-          "start": 128.4,
-          "end": 128.4
+          "start": 128.15,
+          "end": 128.35
         },
         {
           "word_index": 9,
           "text": "down",
-          "start": 128.4,
-          "end": 128.5
+          "start": 128.55,
+          "end": 128.95
         }
       ]
     },
@@ -2503,24 +2503,24 @@
           "word_index": 1,
           "text": "It",
           "start": 129.6,
-          "end": 129.8
+          "end": 130.3
         },
         {
           "word_index": 2,
           "text": "rained",
-          "start": 129.8,
-          "end": 130.2
+          "start": 130.3,
+          "end": 131.1
         },
         {
           "word_index": 3,
           "text": "down",
-          "start": 130.2,
-          "end": 130.7
+          "start": 131.1,
+          "end": 131.2
         },
         {
           "word_index": 4,
           "text": "like",
-          "start": 130.7,
+          "start": 131.2,
           "end": 131.3
         }
       ]
@@ -2529,13 +2529,13 @@
       "line_index": 52,
       "text": "Pain!",
       "start": 131.8,
-      "end": 133.5,
+      "end": 133.4,
       "words": [
         {
           "word_index": 1,
           "text": "Pain!",
           "start": 131.8,
-          "end": 133.5
+          "end": 133.4
         }
       ]
     },
@@ -2543,48 +2543,48 @@
       "line_index": 53,
       "text": "You made me a, you made me a believer, believer",
       "start": 134.0,
-      "end": 136.3,
+      "end": 136.55,
       "words": [
         {
           "word_index": 1,
           "text": "You",
           "start": 134.0,
-          "end": 134.7
+          "end": 134.25
         },
         {
           "word_index": 2,
           "text": "made",
-          "start": 134.7,
-          "end": 134.8
+          "start": 134.25,
+          "end": 134.45
         },
         {
           "word_index": 3,
           "text": "me",
-          "start": 134.8,
-          "end": 135.0
+          "start": 134.45,
+          "end": 134.7
         },
         {
           "word_index": 4,
           "text": "a,",
-          "start": 135.0,
-          "end": 135.3
+          "start": 134.7,
+          "end": 134.95
         },
         {
           "word_index": 5,
           "text": "you",
-          "start": 135.3,
-          "end": 135.4
+          "start": 134.95,
+          "end": 135.2
         },
         {
           "word_index": 6,
           "text": "made",
-          "start": 135.4,
-          "end": 135.6
+          "start": 135.2,
+          "end": 135.45
         },
         {
           "word_index": 7,
           "text": "me",
-          "start": 135.6,
+          "start": 135.45,
           "end": 135.7
         },
         {
@@ -2597,13 +2597,13 @@
           "word_index": 9,
           "text": "believer,",
           "start": 136.0,
-          "end": 136.0
+          "end": 136.05
         },
         {
           "word_index": 10,
           "text": "believer",
-          "start": 136.0,
-          "end": 136.3
+          "start": 136.05,
+          "end": 136.55
         }
       ]
     },
@@ -2611,13 +2611,13 @@
       "line_index": 54,
       "text": "Pain!",
       "start": 136.9,
-      "end": 138.5,
+      "end": 138.55,
       "words": [
         {
           "word_index": 1,
           "text": "Pain!",
           "start": 136.9,
-          "end": 138.5
+          "end": 138.55
         }
       ]
     },
@@ -2625,67 +2625,67 @@
       "line_index": 55,
       "text": "You break me down, you build me up, believer, believer",
       "start": 139.1,
-      "end": 141.8,
+      "end": 142.2,
       "words": [
         {
           "word_index": 1,
           "text": "You",
           "start": 139.1,
-          "end": 140.2
+          "end": 139.55
         },
         {
           "word_index": 2,
           "text": "break",
-          "start": 140.2,
-          "end": 140.6
+          "start": 139.55,
+          "end": 139.8
         },
         {
           "word_index": 3,
           "text": "me",
-          "start": 140.6,
-          "end": 141.0
+          "start": 139.8,
+          "end": 139.85
         },
         {
           "word_index": 4,
           "text": "down,",
-          "start": 141.0,
-          "end": 141.3
+          "start": 139.85,
+          "end": 139.9
         },
         {
           "word_index": 5,
           "text": "you",
-          "start": 141.3,
-          "end": 141.4
+          "start": 139.9,
+          "end": 140.25
         },
         {
           "word_index": 6,
           "text": "build",
-          "start": 141.4,
-          "end": 141.5
+          "start": 140.25,
+          "end": 140.6
         },
         {
           "word_index": 7,
           "text": "me",
-          "start": 141.5,
-          "end": 141.6
+          "start": 140.6,
+          "end": 140.65
         },
         {
           "word_index": 8,
           "text": "up,",
-          "start": 141.6,
-          "end": 141.6
+          "start": 140.65,
+          "end": 140.7
         },
         {
           "word_index": 9,
           "text": "believer,",
-          "start": 141.6,
-          "end": 141.7
+          "start": 140.7,
+          "end": 141.0
         },
         {
           "word_index": 10,
           "text": "believer",
-          "start": 141.7,
-          "end": 141.8
+          "start": 142.0,
+          "end": 142.2
         }
       ]
     },
@@ -2693,67 +2693,67 @@
       "line_index": 56,
       "text": "Pain, oh, let the bullets fly, oh, let them rain",
       "start": 142.4,
-      "end": 144.9,
+      "end": 145.15,
       "words": [
         {
           "word_index": 1,
           "text": "Pain,",
           "start": 142.4,
-          "end": 143.4
+          "end": 142.65
         },
         {
           "word_index": 2,
           "text": "oh,",
-          "start": 143.4,
-          "end": 143.6
+          "start": 142.65,
+          "end": 142.9
         },
         {
           "word_index": 3,
           "text": "let",
-          "start": 143.6,
-          "end": 143.8
+          "start": 142.9,
+          "end": 143.15
         },
         {
           "word_index": 4,
           "text": "the",
-          "start": 143.8,
-          "end": 143.9
+          "start": 143.15,
+          "end": 143.4
         },
         {
           "word_index": 5,
           "text": "bullets",
-          "start": 143.9,
-          "end": 144.1
+          "start": 143.4,
+          "end": 143.65
         },
         {
           "word_index": 6,
           "text": "fly,",
-          "start": 144.1,
-          "end": 144.3
+          "start": 143.65,
+          "end": 143.9
         },
         {
           "word_index": 7,
           "text": "oh,",
-          "start": 144.3,
-          "end": 144.4
+          "start": 143.9,
+          "end": 144.2
         },
         {
           "word_index": 8,
           "text": "let",
-          "start": 144.4,
-          "end": 144.5
+          "start": 144.2,
+          "end": 144.45
         },
         {
           "word_index": 9,
           "text": "them",
-          "start": 144.5,
+          "start": 144.45,
           "end": 144.8
         },
         {
           "word_index": 10,
           "text": "rain",
           "start": 144.8,
-          "end": 144.9
+          "end": 145.15
         }
       ]
     },
@@ -2761,61 +2761,61 @@
       "line_index": 57,
       "text": "My life, my love, my drive, it came from",
       "start": 145.4,
-      "end": 147.0,
+      "end": 147.55,
       "words": [
         {
           "word_index": 1,
           "text": "My",
           "start": 145.4,
-          "end": 145.8
+          "end": 145.6
         },
         {
           "word_index": 2,
           "text": "life,",
-          "start": 145.8,
-          "end": 146.2
+          "start": 145.6,
+          "end": 145.8
         },
         {
           "word_index": 3,
           "text": "my",
-          "start": 146.2,
-          "end": 146.3
+          "start": 145.8,
+          "end": 146.05
         },
         {
           "word_index": 4,
           "text": "love,",
-          "start": 146.3,
-          "end": 146.5
+          "start": 146.05,
+          "end": 146.25
         },
         {
           "word_index": 5,
           "text": "my",
-          "start": 146.5,
-          "end": 146.6
+          "start": 146.25,
+          "end": 146.5
         },
         {
           "word_index": 6,
           "text": "drive,",
-          "start": 146.6,
+          "start": 146.5,
           "end": 146.7
         },
         {
           "word_index": 7,
           "text": "it",
           "start": 146.7,
-          "end": 146.8
+          "end": 146.95
         },
         {
           "word_index": 8,
           "text": "came",
-          "start": 146.8,
-          "end": 146.9
+          "start": 146.95,
+          "end": 147.25
         },
         {
           "word_index": 9,
           "text": "from",
-          "start": 146.9,
-          "end": 147.0
+          "start": 147.25,
+          "end": 147.55
         }
       ]
     },
@@ -2843,60 +2843,60 @@
           "word_index": 1,
           "text": "You",
           "start": 150.0,
-          "end": 152.2
+          "end": 151.6
         },
         {
           "word_index": 2,
           "text": "made",
-          "start": 152.2,
-          "end": 152.3
+          "start": 151.7,
+          "end": 151.95
         },
         {
           "word_index": 3,
           "text": "me",
-          "start": 152.3,
-          "end": 152.4
+          "start": 151.95,
+          "end": 152.0
         },
         {
           "word_index": 4,
           "text": "a,",
-          "start": 152.4,
-          "end": 152.4
+          "start": 152.05,
+          "end": 152.25
         },
         {
           "word_index": 5,
           "text": "you",
           "start": 152.4,
-          "end": 152.4
+          "end": 152.45
         },
         {
           "word_index": 6,
           "text": "made",
-          "start": 152.4,
+          "start": 152.45,
           "end": 152.5
         },
         {
           "word_index": 7,
           "text": "me",
           "start": 152.5,
-          "end": 152.6
+          "end": 152.55
         },
         {
           "word_index": 8,
           "text": "a",
-          "start": 152.6,
+          "start": 152.55,
           "end": 152.6
         },
         {
           "word_index": 9,
           "text": "believer,",
           "start": 152.6,
-          "end": 152.6
+          "end": 152.65
         },
         {
           "word_index": 10,
           "text": "believer",
-          "start": 152.6,
+          "start": 152.65,
           "end": 152.7
         }
       ]

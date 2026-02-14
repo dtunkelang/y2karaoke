@@ -319,12 +319,12 @@ def _apply_lrc_weighted_timing(  # noqa: C901
         offsets_scaled = [
             (offset / whisper_total) * line_duration for offset in direct_offsets
         ]
-        desired_start = _anchor_desired_start(
-            desired_start,
-            line_duration,
-            offsets_scaled,
-            align_by_index=True,
-        )
+        # desired_start = _anchor_desired_start(  <-- Disabled: Always keep LRC start
+        #     desired_start,
+        #     line_duration,
+        #     offsets_scaled,
+        #     align_by_index=True,
+        # )
         mapped_words: List[Word] = []
         for i, (word_obj, offset) in enumerate(zip(line.words, direct_offsets)):
             start = desired_start + (offset / whisper_total) * line_duration
@@ -405,11 +405,11 @@ def _apply_lrc_weighted_timing(  # noqa: C901
         for duration in slot_durations[: len(line.words)]:
             offsets_scaled.append((cursor / total) * line_duration)
             cursor += duration
-        desired_start = _anchor_desired_start(
-            desired_start,
-            line_duration,
-            offsets_scaled,
-        )
+        # desired_start = _anchor_desired_start(  <-- Disabled: Always keep LRC start
+        #     desired_start,
+        #     line_duration,
+        #     offsets_scaled,
+        # )
     return (
         _apply_weighted_slots_to_line(
             line.words,

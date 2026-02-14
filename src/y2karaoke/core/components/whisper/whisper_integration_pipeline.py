@@ -833,6 +833,10 @@ def correct_timing_with_whisper_impl(  # noqa: C901
 
     aligned_lines = enforce_monotonic_line_starts_fn(aligned_lines)
     aligned_lines = enforce_non_overlapping_lines_fn(aligned_lines)
+
+    # Policy constraint: keep line starts anchored to LRC timings.
+    aligned_lines = _constrain_line_starts_to_baseline(aligned_lines, baseline_lines)
+
     rollback, short_before, short_after = _should_rollback_short_line_degradation(
         baseline_lines, aligned_lines
     )
