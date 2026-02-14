@@ -259,23 +259,45 @@ def _find_vocal_end(
 
 def compute_harmonic_chroma(audio_path: str) -> Optional[np.ndarray]:
     """Compute normalized chroma CQT features for harmonic comparison."""
+
     try:
+
         librosa = _load_librosa()
+
         y, sr = librosa.load(audio_path, sr=22050, mono=True)
 
         # hop_length=512, bins_per_octave=36 as requested
+
         chroma = librosa.feature.chroma_cqt(
             y=y, sr=sr, hop_length=512, bins_per_octave=36
         )
 
         # L2 normalization column-wise
-        # Adding small epsilon to avoid division by zero
-        norms = np.linalg.norm(chroma, axis=0, keepdims=True)
-        chroma = chroma / (norms + 1e-8)
+
+        # Handle zero-energy frames to avoid NaN during normalization or distance calc
+
+        energy = np.linalg.norm(chroma, axis=0, keepdims=True)
+
+        silent = energy < 1e-6
+
+        # Normalize only non-silent frames
+
+        energy[silent] = 1.0  # Avoid division by zero
+
+        chroma = chroma / energy
+
+        # Set silent frames to uniform distribution (low probability across all notes)
+
+        # This keeps cosine distance defined and prevents NaN
+
+        chroma[:, silent.flatten()] = 1.0 / np.sqrt(12)
 
         return chroma
+
     except Exception as e:
+
         logger.error(f"Failed to compute chroma for {audio_path}: {e}")
+
         return None
 
 
@@ -313,22 +335,27 @@ def calculate_harmonic_suitability(original_path: str, karaoke_path: str) -> dic
             best_shift = shift
             best_path = path
 
-    # path is a list of (orig_idx, kara_idx)
-    path_np = np.array(best_path)
+        # best_path is (frames_kara, frames_orig) based on librosa dtw(X=orig, Y=kara)
+        # Actually librosa.sequence.dtw returns (2, N) array or list of pairs
+        path_np = np.array(best_path)
 
-    # Tempo distortion: slope changes along path
-    # Ideal slope is (orig_frames / kara_frames)
-    if len(path_np) > 10:
-        dy = np.diff(path_np[:, 0])
-        dx = np.diff(path_np[:, 1])
-        # Avoid division by zero by filtering static steps
-        valid = dx > 0
-        slopes = dy[valid] / dx[valid]
-        tempo_variance = float(np.var(slopes))
-    else:
-        tempo_variance = 0.0
+        # Tempo distortion: slope changes along path
+        if len(path_np) > 10:
+            # path[:, 0] is orig indices, path[:, 1] is kara indices
+            dy = np.diff(path_np[:, 0])
+            dx = np.diff(path_np[:, 1])
 
-    # Structural errors: large jumps indicating missing/extra bars
+            # We want slope = d_kara / d_orig (how fast karaoke moves relative to original)
+            # Filter where original (x) moved to avoid division by zero
+            valid = dy > 0
+            if np.any(valid):
+                slopes = dx[valid] / dy[valid]
+                tempo_variance = float(np.var(slopes))
+            else:
+                tempo_variance = 0.0
+        else:
+            tempo_variance = 0.0
+        # Structural errors: large jumps indicating missing/extra bars
     # Discontinuity if path jumps more than 5 frames (~116ms) in one step
     structure_jump_count = 0
     if len(path_np) > 1:
