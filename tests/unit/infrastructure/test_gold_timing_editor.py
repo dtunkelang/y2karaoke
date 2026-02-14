@@ -47,5 +47,5 @@ def test_validate_and_normalize_gold_requires_numeric_times() -> None:
         "lines": [{"words": [{"text": "a", "start": "nope", "end": 1.0}]}],
     }
 
-    with pytest.raises(Exception): # Catches ValueError during float conversion
+    with pytest.raises(Exception):  # Catches ValueError during float conversion
         _validate_and_normalize_gold(doc)
