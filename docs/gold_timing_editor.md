@@ -1,72 +1,37 @@
 # Gold Timing Editor
 
-This tool lets you create and maintain a manually corrected word-level timing gold set.
+The Gold Timing Editor is a local web application for manual refinement of word-level karaoke timings.
 
-## Run
+## Features
 
-```bash
-python tools/gold_timing_editor.py --host 127.0.0.1 --port 8765
-```
+- **Interactive Timeline**: Drag words to shift their timing or use handles to resize intervals.
+- **Line Mode**: Shift entire lines while preserving relative word durations and internal gaps.
+- **High-Performance Playback**: Uses `requestAnimationFrame` for perfectly synchronized visual feedback at 60 FPS.
+- **Sticky Controls**: The play button and edit modes stay pinned to the top of the viewport during scrolling.
+- **Autoscroll**: The timeline automatically follows the current line during playback.
+- **LRC Integration**: Synchronizes with LRC files to provide a robust starting point.
 
-Then open:
+## Standard Workflow
 
-```text
-http://127.0.0.1:8765
-```
+1. **Bootstrap**: Generate a candidate gold set using `tools/bootstrap_gold_from_karaoke.py`.
+2. **Launch Editor**: Start the editor server:
+   ```bash
+   python tools/gold_timing_editor.py
+   ```
+3. **Refine**: Open the provided URL in Chrome.
+4. **Save**: Click "Save Gold JSON" to commit your changes back to the benchmark set.
 
-## Workflow
+## Hotkeys
 
-1. Generate a seed timing report with existing pipeline timing (`--timing-report ...json`).
-2. In the editor, load that timing JSON by path.
-3. Load local audio file by path.
-4. Adjust word intervals:
-- Drag word block to move entire interval.
-- Drag left/right handle to adjust start/end.
-- Keyboard arrows for 0.1s steps:
-- `Left/Right`: move whole interval
-- `Alt+Left/Right`: adjust start
-- `Shift+Left/Right`: adjust end
-- `Ctrl+Z` or `Cmd+Z`: undo
-5. Save to one gold file per song (`*.gold.json`).
+- **Arrow Left/Right**: Move selected word/line by 0.1s.
+- **Shift + Arrow**: Adjust the end timestamp only.
+- **Alt + Arrow**: Adjust the start timestamp only.
+- **Ctrl/Cmd + Z**: Undo the last edit.
+- **Space**: Play/Pause.
 
-## Canonical Gold Format
+## URL Parameters
 
-`*.gold.json` is the canonical format.
-
-```json
-{
-  "schema_version": "1.0",
-  "title": "bad guy",
-  "artist": "Billie Eilish",
-  "audio_path": "/absolute/path/to/audio.wav",
-  "source_timing_path": "/absolute/path/to/seed_timing_report.json",
-  "lines": [
-    {
-      "line_index": 1,
-      "text": "White shirt now red, my bloody nose",
-      "start": 6.1,
-      "end": 9.6,
-      "words": [
-        {"word_index": 1, "text": "White", "start": 6.1, "end": 6.6},
-        {"word_index": 2, "text": "shirt", "start": 6.6, "end": 7.1}
-      ]
-    }
-  ]
-}
-```
-
-## Rules Enforced
-
-- Word-level `start`/`end` are required.
-- Values are snapped to `0.1` seconds.
-- Overlaps are forbidden across all words.
-- Gaps are allowed.
-- Punctuation stays attached to words (no token splitting).
-- Line timing is derived from first/last word.
-
-## Input Support
-
-The editor can load either:
-
-- Existing pipeline timing report JSON (`*_timing_report.json`) with `lines[].words[].{text,start,end}`.
-- Existing canonical `*.gold.json` files.
+You can pre-load the editor by passing query parameters:
+- `timing`: Absolute path to the timing JSON.
+- `audio`: Absolute path to the audio file (wav/mp3/m4a).
+- `save`: Absolute path where changes should be saved.

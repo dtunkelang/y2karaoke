@@ -55,13 +55,13 @@ songs:
     fallback_lyrics_provider: "syncedlyrics"
     lrc_duration_tolerance_sec: 35
 
-  - artist: "Coldplay"
-    title: "Viva La Vida"
-    youtube_id: "dvgZkm1xWPE"
-    youtube_url: "https://www.youtube.com/watch?v=dvgZkm1xWPE"
+  - artist: "The Weeknd"
+    title: "Blinding Lights"
+    youtube_id: "fHI8X4OXluQ"
+    youtube_url: "https://www.youtube.com/watch?v=fHI8X4OXluQ"
     preferred_lyrics_provider: "lyriq"
     fallback_lyrics_provider: "syncedlyrics"
-    lrc_duration_tolerance_sec: 25
+    lrc_duration_tolerance_sec: 10
 
   - artist: "Imagine Dragons"
     title: "Believer"

@@ -18,9 +18,6 @@ TargetLine = _MODULE.TargetLine
 parse_lrc_lines = _MODULE.parse_lrc_lines
 score_candidate = _MODULE.score_candidate
 text_similarity = _MODULE._text_similarity
-extract_line_word_candidates = _MODULE._extract_line_word_candidates_v2
-fit_line_word_times = _MODULE._fit_line_word_times
-interp_cross_time = _MODULE._interp_cross_time
 cluster_colors = _MODULE._cluster_colors
 classify_word_state = _MODULE._classify_word_state
 
@@ -58,23 +55,6 @@ def test_text_similarity_is_case_and_punctuation_tolerant() -> None:
         "White shirt now red, my bloody nose", "white shirt now red my bloody nose"
     )
     assert s > 0.95
-
-
-def test_fit_line_word_times_respects_line_start() -> None:
-    line = TargetLine(1, 10.0, None, "hello world", ["hello", "world"])
-    cands = [(10.2, 10.4), (10.6, 11.0)]
-    fitted = fit_line_word_times(line, cands, 12.0)
-    assert fitted[0][0] == 10.0
-    assert fitted[0][1] <= fitted[1][0]
-    assert fitted[1][1] <= 12.0
-
-
-def test_interp_cross_time_is_subframe() -> None:
-    t = [0.0, 0.5, 1.0]
-    p = [0.0, 0.4, 1.0]
-    crossed = interp_cross_time(t, p, 0.7)
-    assert crossed is not None
-    assert 0.70 < crossed < 0.85
 
 
 def test_cluster_colors_finds_distinct_centers() -> None:

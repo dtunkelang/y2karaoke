@@ -1,17 +1,16 @@
 #!/usr/bin/env python3
-"""Find a karaoke video and bootstrap/refine word-level gold timings.
+"""
+Find a karaoke video and bootstrap/refine word-level gold timings using computer vision.
 
-Default pipeline is visual-only:
-1. Find karaoke-style YouTube candidate for (artist, title) unless URL given.
-2. Download karaoke video locally.
-3. Estimate a global offset from LRC/gold line starts vs frame-activity peaks.
-4. Infer per-line word timings from highlight progress in the video frames.
-5. Write gold JSON compatible with tools/gold_timing_editor.py.
+This tool uses PaddleOCR for text recognition and dynamic ROI detection to extract
+high-precision word timings from karaoke videos. It anchors these visual cues
+to Ground Truth line-starts provided by an LRC file or existing Gold JSON.
 """
 
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import re
 import shutil
@@ -22,9 +21,11 @@ from difflib import SequenceMatcher
 from pathlib import Path
 from typing import Any
 
+# Timing precision constants
 SNAP_SECONDS = 0.05
 MIN_WORD_DURATION = 0.05
 _LRC_TS_RE = re.compile(r"\[(\d+):([0-5]?\d(?:\.\d{1,3})?)\]")
+_OCR_ENGINE = None
 
 
 def _np():
@@ -39,26 +40,31 @@ def _cv2():
     return cv2
 
 
-def _pytesseract():
-    import pytesseract  # type: ignore
+def _get_ocr():
+    """Lazy initialize PaddleOCR engine."""
+    global _OCR_ENGINE
+    if _OCR_ENGINE is None:
+        from paddleocr import PaddleOCR  # type: ignore
 
-    return pytesseract
+        # PaddleOCR emits a lot of logs to stdout; we suppress them for CLI clarity.
+        _OCR_ENGINE = PaddleOCR(lang="en", show_log=False)
+    return _OCR_ENGINE
 
 
 def _yt_dlp_bin() -> str:
+    """Locate the yt-dlp binary in the current environment."""
     cwd = Path.cwd()
     candidates = [
         str(Path(sys.executable).resolve().parent / "yt-dlp"),
         str(cwd / "venv" / "bin" / "yt-dlp"),
         str(cwd / ".venv" / "bin" / "yt-dlp"),
         shutil.which("yt-dlp"),
-        shutil.which("ytdlp"),
     ]
-    for candidate in candidates:
-        if candidate and Path(candidate).exists():
-            return candidate
+    for c in candidates:
+        if c and Path(c).exists():
+            return c
     raise RuntimeError(
-        "yt-dlp not found. Install it in current env (e.g., ./venv/bin/pip install yt-dlp)."
+        "yt-dlp not found. Please install it in your virtual environment."
     )
 
 
@@ -83,10 +89,12 @@ class TargetLine:
 
 
 def _snap(value: float) -> float:
+    """Snap a timestamp to the nearest grid increment (default 0.05s)."""
     return round(round(float(value) / SNAP_SECONDS) * SNAP_SECONDS, 3)
 
 
 def _slug(text: str) -> str:
+    """Create a filesystem-friendly version of a string."""
     cleaned = "".join(ch.lower() if ch.isalnum() else "-" for ch in text)
     while "--" in cleaned:
         cleaned = cleaned.replace("--", "-")
@@ -94,19 +102,21 @@ def _slug(text: str) -> str:
 
 
 def _normalize_text(text: str) -> str:
+    """Normalize text for fuzzy comparison."""
     return re.sub(r"[^a-z0-9 ]+", "", (text or "").lower()).strip()
 
 
 def _text_similarity(a: str, b: str) -> float:
-    na = _normalize_text(a)
-    nb = _normalize_text(b)
+    """Calculate fuzzy similarity between two strings."""
+    na, nb = _normalize_text(a), _normalize_text(b)
     if not na or not nb:
         return 0.0
     return SequenceMatcher(None, na, nb).ratio()
 
 
 def parse_lrc_lines(lrc_text: str) -> list[TargetLine]:
-    lines: list[TargetLine] = []
+    """Parse standard .lrc format into TargetLine objects."""
+    lines = []
     for raw in lrc_text.splitlines():
         timestamps = list(_LRC_TS_RE.finditer(raw))
         if not timestamps:
@@ -115,11 +125,8 @@ def parse_lrc_lines(lrc_text: str) -> list[TargetLine]:
         if not lyric:
             continue
         words = lyric.split()
-        if not words:
-            continue
         for ts in timestamps:
-            minute = int(ts.group(1))
-            sec = float(ts.group(2))
+            minute, sec = int(ts.group(1)), float(ts.group(2))
             start = _snap(minute * 60 + sec)
             lines.append(
                 TargetLine(
@@ -137,29 +144,23 @@ def parse_lrc_lines(lrc_text: str) -> list[TargetLine]:
 
 
 def _load_target_lines(
-    *,
-    artist: str,
-    title: str,
-    gold_in: Path | None,
-    lrc_in: Path | None,
+    *, artist: str, title: str, gold_in: Path | None, lrc_in: Path | None
 ) -> tuple[dict[str, Any], list[TargetLine], str]:
+    """Load line-start constraints from either a Gold JSON or an LRC file."""
     if gold_in:
         raw = json.loads(gold_in.read_text(encoding="utf-8"))
-        if not isinstance(raw, dict) or not isinstance(raw.get("lines"), list):
-            raise ValueError(f"Invalid gold file: {gold_in}")
         base_doc = raw
-        gold_lines = raw["lines"]
-        target_lines: list[TargetLine] = []
-        for line in gold_lines:
+        target_lines = []
+        for i, line in enumerate(raw.get("lines", [])):
             words = [str(w.get("text", "")).strip() for w in line.get("words", [])]
             words = [w for w in words if w]
             if not words:
                 continue
             target_lines.append(
                 TargetLine(
-                    line_index=int(line.get("line_index", len(target_lines) + 1)),
+                    line_index=int(line.get("line_index", i + 1)),
                     start=float(line.get("start", 0.0)),
-                    end=float(line["end"]) if line.get("end") is not None else None,
+                    end=float(line["end"]) if line.get("end") else None,
                     text=" ".join(words),
                     words=words,
                 )
@@ -179,11 +180,7 @@ def _load_target_lines(
     if lrc_in:
         lrc_lines = parse_lrc_lines(lrc_in.read_text(encoding="utf-8"))
         source_timing_path = str(lrc_in.resolve())
-        if target_lines:
-            if len(lrc_lines) != len(target_lines):
-                raise ValueError(
-                    f"LRC line count ({len(lrc_lines)}) != target line count ({len(target_lines)})"
-                )
+        if target_lines and len(lrc_lines) == len(target_lines):
             for i in range(len(target_lines)):
                 target_lines[i].start = lrc_lines[i].start
         else:
@@ -191,13 +188,11 @@ def _load_target_lines(
     elif gold_in:
         source_timing_path = str(gold_in.resolve())
 
-    if not target_lines:
-        raise ValueError("No target lines found; provide --gold-in and/or --lrc-in")
-
     return base_doc, target_lines, source_timing_path
 
 
 def score_candidate(entry: dict[str, Any]) -> float:
+    """Score a YouTube search result based on its likelihood of being a good karaoke video."""
     title = str(entry.get("title") or "")
     channel = str(entry.get("channel") or entry.get("uploader") or "")
     view_count = int(entry.get("view_count") or 0)
@@ -231,6 +226,7 @@ def find_karaoke_candidates(
     *,
     max_candidates: int = 20,
 ) -> list[KaraokeCandidate]:
+    """Search YouTube for potential karaoke video matches."""
     query = f"{artist} {title} karaoke lyrics"
     ytdlp = _yt_dlp_bin()
     cmd = [
@@ -264,49 +260,104 @@ def find_karaoke_candidates(
     return out
 
 
-def _run_or_raise(cmd: list[str]) -> None:
-    proc = subprocess.run(cmd, capture_output=True, text=True)
-    if proc.returncode != 0:
-        raise RuntimeError(f"Command failed ({' '.join(cmd)}): {proc.stderr.strip()}")
-
-
 def download_karaoke_video(url: str, *, out_dir: Path) -> Path:
+    """Download the best available MP4 from YouTube."""
     out_dir.mkdir(parents=True, exist_ok=True)
     ytdlp = _yt_dlp_bin()
     out_tpl = str((out_dir / "%(id)s.%(ext)s").resolve())
-    _run_or_raise(
+    subprocess.run(
         [
             ytdlp,
-            "--extractor-args",
-            "youtube:player_client=android,web_creator",
             "--no-playlist",
             "--format",
             "mp4/best[ext=mp4]/best",
             "--output",
             out_tpl,
             url,
-        ]
+        ],
+        capture_output=True,
+        check=True,
     )
     mp4_paths = sorted(
-        out_dir.glob("*.mp4"), key=lambda p: (p.stat().st_mtime, p.name), reverse=True
+        out_dir.glob("*.mp4"), key=lambda p: p.stat().st_mtime, reverse=True
     )
     if not mp4_paths:
-        raise RuntimeError("Failed to download karaoke video")
+        raise RuntimeError("Failed to download video")
     return mp4_paths[0]
 
 
-def _get_fg_pixels(roi: Any) -> Any:
-    np = _np()
-    if roi.size == 0:
-        return np.array([])
-    max_c = np.max(roi, axis=2)
-    mask = max_c > 80  # Threshold to ignore black background
-    return roi[mask]
+def _get_cache_key(video_path: Path, prefix: str, **kwargs) -> str:
+    """Generate a unique filename for caching results based on parameters."""
+    h = hashlib.md5(
+        f"{video_path.name}_{json.dumps(kwargs, sort_keys=True)}".encode()
+    ).hexdigest()
+    return f"{prefix}_{h}.json"
+
+
+def detect_lyric_roi(
+    video_path: Path, work_dir: Path, sample_fps: float = 1.0
+) -> tuple[int, int, int, int]:
+    """Identify the bounding box where lyrics appear by sampling the video."""
+    cache_path = work_dir / _get_cache_key(video_path, "roi", fps=sample_fps)
+    if cache_path.exists():
+        print(f"Loading cached ROI from {cache_path.name}...")
+        return tuple(json.loads(cache_path.read_text()))
+
+    print(f"Detecting lyric ROI (DBNet @ {sample_fps} fps)...")
+    cv2, np = _cv2(), _np()
+    ocr = _get_ocr()
+    cap = cv2.VideoCapture(str(video_path))
+    src_fps = cap.get(cv2.CAP_PROP_FPS) or 30.0
+    duration = cap.get(cv2.CAP_PROP_FRAME_COUNT) / src_fps
+    width, height = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)), int(
+        cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
+    )
+
+    all_boxes = []
+    mid = duration / 2
+    # Sample a 30s window from the middle where lyrics are guaranteed to be active.
+    for t in np.arange(max(0, mid - 15), min(duration, mid + 15), 1.0 / sample_fps):
+        cap.set(cv2.CAP_PROP_POS_MSEC, t * 1000.0)
+        ok, frame = cap.read()
+        if not ok:
+            break
+        res = ocr.predict(frame)
+        if res and "rec_boxes" in res[0]:
+            for box in res[0]["rec_boxes"]:
+                np_box = np.array(box).reshape(-1, 2)
+                x, y = int(min(np_box[:, 0])), int(min(np_box[:, 1]))
+                w, h = int(max(np_box[:, 0]) - x), int(max(np_box[:, 1]) - y)
+                # Filter out tiny detections or edges (logo/watermark avoidance)
+                if 0.1 * width < x + w / 2 < 0.9 * width and h > 10:
+                    all_boxes.append((x, y, x + w, y + h))
+    cap.release()
+
+    if not all_boxes:
+        roi = (int(width * 0.1), int(height * 0.4), int(width * 0.8), int(height * 0.5))
+    else:
+        all_boxes = np.array(all_boxes)
+        x1, y1 = int(np.percentile(all_boxes[:, 0], 5)), int(
+            np.percentile(all_boxes[:, 1], 5)
+        )
+        x2, y2 = int(np.percentile(all_boxes[:, 2], 95)), int(
+            np.percentile(all_boxes[:, 3], 95)
+        )
+        # Add margin for safety
+        roi = (
+            max(0, x1 - 10),
+            max(0, y1 - 10),
+            min(width, x2 - x1 + 20),
+            min(height, y2 - y1 + 20),
+        )
+
+    print(f"  Detected Lyric ROI: x={roi[0]}, y={roi[1]}, w={roi[2]}, h={roi[3]}")
+    cache_path.write_text(json.dumps(roi))
+    return roi
 
 
 def _cluster_colors(pixel_samples: list[Any]) -> tuple[Any, Any]:
-    cv2 = _cv2()
-    np = _np()
+    """Cluster pixel samples into two dominant colors."""
+    cv2, np = _cv2(), _np()
     if len(pixel_samples) < 10:
         return np.array([255, 255, 255]), np.array([0, 0, 255])  # Fallback to White/Red
 
@@ -319,562 +370,139 @@ def _cluster_colors(pixel_samples: list[Any]) -> tuple[Any, Any]:
 
 
 def _classify_word_state(roi: Any, color_unselected: Any, color_selected: Any) -> str:
+    """Determine if a word is highlighted based on its internal pixel colors."""
     np = _np()
-    pixels = _get_fg_pixels(roi)
+    if roi.size == 0:
+        return "unknown"
+    max_c = np.max(roi, axis=2)
+    pixels = roi[max_c > 80]  # Ignore dark background
     if len(pixels) < 5:
         return "unknown"
-
     d_un = np.linalg.norm(pixels - color_unselected, axis=1)
     d_sel = np.linalg.norm(pixels - color_selected, axis=1)
 
-    threshold = 60
-    count_un = np.sum(d_un < threshold)
-    count_sel = np.sum(d_sel < threshold)
-
-    total = count_un + count_sel
+    threshold = 45
+    c_un, c_sel = np.sum(d_un < threshold), np.sum(d_sel < threshold)
+    total = c_un + c_sel
     if total < 5:
         return "unknown"
 
-    ratio_un = count_un / total
-    ratio_sel = count_sel / total
-
-    if ratio_un > 0.85:
-        return "unselected"
-    if ratio_sel > 0.85:
+    r_sel = c_sel / total
+    if r_sel > 0.7:
         return "selected"
-    if ratio_un > 0.1 and ratio_sel > 0.1:
+    if r_sel > 0.15:
         return "mixed"
-    return "unselected" if ratio_un > ratio_sel else "selected"
+    return "unselected"
 
 
 def _infer_lyric_colors(
-    video_path: Path,
-    *,
-    sample_interval_sec: float = 2.0,
-) -> tuple[Any, Any]:
-    cv2 = _cv2()
-    np = _np()
-    pytesseract = _pytesseract()
+    video_path: Path, roi_rect: tuple[int, int, int, int]
+) -> tuple[Any, Any, list[Any]]:
+    """Automatically discover the unselected and selected lyric colors."""
+    cv2, np = _cv2(), _np()
     cap = cv2.VideoCapture(str(video_path))
-    if not cap.isOpened():
-        raise RuntimeError(f"Failed to open video for color inference: {video_path}")
-
-    fps = cap.get(cv2.CAP_PROP_FPS) or 30.0
-    frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-    width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-    height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-
-    y_min, y_max = height * 0.15, height * 0.85
-    x_min, x_max = width * 0.20, width * 0.80
-    min_h = height * 0.02
-
-    pixel_samples = []
-    duration = frame_count / fps
-    for t_sec in np.arange(0, duration, sample_interval_sec):
-        cap.set(cv2.CAP_PROP_POS_MSEC, t_sec * 1000.0)
+    rx, ry, rw, rh = roi_rect
+    duration = cap.get(cv2.CAP_PROP_FRAME_COUNT) / (cap.get(cv2.CAP_PROP_FPS) or 30.0)
+    samples = []
+    # Sample throughout the middle section of the song
+    for t in np.arange(duration * 0.2, duration * 0.8, 5.0):
+        cap.set(cv2.CAP_PROP_POS_MSEC, t * 1000.0)
         ok, frame = cap.read()
-        if not ok:
-            break
-
-        max_c = np.max(frame, axis=2)
-        processed = cv2.bitwise_not(max_c)
-        data = pytesseract.image_to_data(processed, output_type=pytesseract.Output.DICT)
-
-        for i in range(len(data["text"])):
-            if data["level"][i] != 5 or not str(data["text"][i]).strip():
-                continue
-            x, y = data["left"][i], data["top"][i]
-            w, h = data["width"][i], data["height"][i]
-            cx, cy = x + w / 2, y + h / 2
-            if y_min < cy < y_max and h > min_h and x_min < cx < x_max:
-                pixels = _get_fg_pixels(frame[y : y + h, x : x + w])
-                if len(pixels) > 20:
-                    pixel_samples.extend(pixels[::5])
+        if ok:
+            samples.extend(frame[ry : ry + rh, rx : rx + rw][::50].reshape(-1, 3))
     cap.release()
 
-    if not pixel_samples:
-        return np.array([220, 220, 220]), np.array([30, 30, 180])
+    if not samples:
+        return np.array([255, 255, 255]), np.array([0, 255, 0]), []
 
-    c1, c2 = _cluster_colors(pixel_samples)
-    if np.sum(c1) > np.sum(c2):
-        return c1, c2
-    return c2, c1
-
-
-def _interp_cross_time(
-    times: list[float], progress: list[float], threshold: float
-) -> float | None:
-    if not times or not progress:
-        return None
-    threshold = min(max(threshold, 0.0), 1.0)
-    if progress[0] >= threshold:
-        return times[0]
-    for i in range(1, len(progress)):
-        p0 = progress[i - 1]
-        p1 = progress[i]
-        if p1 < threshold:
-            continue
-        t0 = times[i - 1]
-        t1 = times[i]
-        if p1 <= p0 + 1e-9:
-            return t1
-        frac = (threshold - p0) / (p1 - p0)
-        frac = min(max(frac, 0.0), 1.0)
-        return t0 + ((t1 - t0) * frac)
-    return None
-
-
-def _word_min_duration(word: str) -> float:
-    alnum_len = len(re.sub(r"[^a-z0-9]", "", word.lower()))
-    return max(MIN_WORD_DURATION, 0.10 + (0.03 * min(alnum_len, 8)))
-
-
-def _fill_missing_starts(
-    starts: list[float | None],
-    words: list[str],
-    line_start: float,
-    line_end: float,
-) -> list[float]:
-    n = len(words)
-    if n == 0:
-        return []
-    span = max(line_end - line_start, MIN_WORD_DURATION)
-    default_starts = [line_start + (span * s) for s, _ in _word_ratios(words)]
-    out: list[float | None] = list(starts)
-    known = [i for i, v in enumerate(out) if v is not None]
-    if not known:
-        out = list(default_starts)
-    else:
-        for i in range(n):
-            if out[i] is not None:
-                continue
-            prev_idx = max((k for k in known if k < i), default=None)
-            next_idx = min((k for k in known if k > i), default=None)
-            if prev_idx is not None and next_idx is not None:
-                left = float(out[prev_idx])  # type: ignore[arg-type]
-                right = float(out[next_idx])  # type: ignore[arg-type]
-                frac = (i - prev_idx) / max(next_idx - prev_idx, 1)
-                out[i] = left + ((right - left) * frac)
-            elif prev_idx is not None:
-                prev = float(out[prev_idx])  # type: ignore[arg-type]
-                out[i] = prev + (default_starts[i] - default_starts[prev_idx])
-            elif next_idx is not None:
-                nxt = float(out[next_idx])  # type: ignore[arg-type]
-                out[i] = nxt - (default_starts[next_idx] - default_starts[i])
-            else:
-                out[i] = default_starts[i]
-
-    min_gap = 0.02
-    numeric = [
-        min(max(v, line_start), line_end) for v in out if v is not None
-    ]  # type: ignore[arg-type]
-    for i in range(1, n):
-        numeric[i] = max(numeric[i], numeric[i - 1] + min_gap)
-    for i in range(n - 2, -1, -1):
-        numeric[i] = min(numeric[i], numeric[i + 1] - min_gap)
-    numeric[0] = max(line_start, numeric[0])
-    for i in range(1, n):
-        numeric[i] = max(numeric[i], numeric[i - 1] + min_gap)
-    numeric[-1] = min(line_end, numeric[-1])
-    for i in range(n - 2, -1, -1):
-        numeric[i] = min(numeric[i], numeric[i + 1] - min_gap)
-    return [min(max(v, line_start), line_end) for v in numeric]
-
-
-def _word_ratios(words: list[str]) -> list[tuple[float, float]]:
-    if not words:
-        return []
-    full = " ".join(words)
-    total = max(len(full), 1)
-    ratios: list[tuple[float, float]] = []
-    cursor = 0
-    for i, word in enumerate(words):
-        start = cursor / total
-        cursor += len(word)
-        end = cursor / total
-        ratios.append((start, end))
-        if i + 1 < len(words):
-            cursor += 1
-    return ratios
-
-
-def _audio_line_end(target_lines: list[TargetLine], idx: int) -> float:
-    line = target_lines[idx]
-    if line.end is not None and line.end > line.start:
-        return line.end
-    if idx + 1 < len(target_lines):
-        return target_lines[idx + 1].start
-    return line.start + max(4.0, len(line.words) * 0.7)
-
-
-def _ocr_text_from_frame(frame: Any) -> str:
-    cv2 = _cv2()
-    pytesseract = _pytesseract()
-    h, _ = frame.shape[:2]
-    roi = frame[int(h * 0.45) : int(h * 0.95), :]
-    gray = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
-    gray = cv2.GaussianBlur(gray, (3, 3), 0)
-    bw = cv2.adaptiveThreshold(
-        gray,
-        255,
-        cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
-        cv2.THRESH_BINARY,
-        31,
-        7,
+    _, labels, centers = cv2.kmeans(
+        np.float32(samples),
+        6,
+        None,
+        (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 10, 1.0),
+        10,
+        cv2.KMEANS_RANDOM_CENTERS,
     )
-    txt = pytesseract.image_to_string(
-        bw,
-        config="--oem 1 --psm 6",
-    )
-    return txt or ""
-
-
-def detect_line_video_windows(
-    target_lines: list[TargetLine],
-    video_path: Path,
-    *,
-    sample_fps: float = 1.5,
-) -> list[tuple[float, float]]:
-    """Estimate per-line video windows from OCR text matches with order constraints."""
-    cv2 = _cv2()
-    np = _np()
-
-    cap = cv2.VideoCapture(str(video_path))
-    if not cap.isOpened():
-        raise RuntimeError(f"Failed to open video: {video_path}")
-    src_fps = cap.get(cv2.CAP_PROP_FPS) or 30.0
-    duration = (cap.get(cv2.CAP_PROP_FRAME_COUNT) or 0.0) / max(src_fps, 1e-6)
-    step = max(int(round(src_fps / max(sample_fps, 0.2))), 1)
-
-    times: list[float] = []
-    text_presence: list[float] = []
-    idx = -1
-    while True:
-        ok, frame = cap.read()
-        if not ok:
-            break
-        idx += 1
-        if idx % step != 0:
-            continue
-        t = idx / src_fps
-        txt = _ocr_text_from_frame(frame)
-        alpha_count = sum(1 for ch in txt if ch.isalpha())
-        times.append(t)
-        text_presence.append(float(alpha_count))
-    cap.release()
-
-    if not times:
-        # fallback uniform windows
-        if not target_lines:
-            return []
-        span = max(duration / max(len(target_lines), 1), 0.5)
-        return [
-            (i * span, min(duration, (i + 1) * span)) for i in range(len(target_lines))
-        ]
-
-    audio_start = target_lines[0].start if target_lines else 0.0
-    audio_end = (
-        _audio_line_end(target_lines, len(target_lines) - 1) if target_lines else 0.0
-    )
-    audio_span = max(audio_end - audio_start, 1.0)
-
-    # Detect lyric-active span by OCR text presence (intro/outro handling).
-    arr = np.asarray(text_presence, dtype=float)
-    if arr.size >= 7:
-        kernel = np.ones(7, dtype=float) / 7.0
-        smooth = np.convolve(arr, kernel, mode="same")
-    else:
-        smooth = arr
-    threshold = max(4.0, float(np.percentile(smooth, 60.0)))
-    active_idx = [i for i, v in enumerate(smooth) if float(v) >= threshold]
-    if active_idx:
-        v_start = times[active_idx[0]]
-        v_end = times[active_idx[-1]]
-    else:
-        v_start = 0.0
-        v_end = duration
-    if v_end <= v_start + 2.0:
-        v_start = 0.0
-        v_end = duration
-    video_span = max(v_end - v_start, 1.0)
-
-    windows: list[tuple[float, float]] = []
-    prev_end = 0.0
-    for i, line in enumerate(target_lines):
-        a0 = line.start
-        a1 = _audio_line_end(target_lines, i)
-        r0 = max(0.0, min(1.0, (a0 - audio_start) / audio_span))
-        r1 = max(r0, min(1.0, (a1 - audio_start) / audio_span))
-        s = v_start + (video_span * r0)
-        e = v_start + (video_span * r1)
-        s = max(s, prev_end)
-        e = max(e, s + 0.1)
-        windows.append((max(0.0, s), min(duration, e)))
-        prev_end = windows[-1][1]
-    return windows
+    counts = np.bincount(labels.flatten())
+    idx = np.argsort(counts)[::-1]
+    bg = [centers[i] for i in idx[:2]]  # Top 2 are usually background
+    rem = idx[2:]
+    c_un = centers[
+        rem[np.argmax([np.sum(centers[i]) for i in rem])]
+    ]  # Brightest is unselected
+    c_sel = centers[
+        rem[np.argmax([np.std(centers[i]) for i in rem])]
+    ]  # Most colorful is highlight
+    return c_un, c_sel, bg
 
 
 def _collect_raw_frames(
     video_path: Path,
-    line_start: float,
-    line_end: float,
+    start: float,
+    end: float,
     fps: float,
     c_un: Any,
     c_sel: Any,
+    roi_rect: tuple[int, int, int, int],
 ) -> list[dict[str, Any]]:
-    cv2 = _cv2()
-    np = _np()
-    pytesseract = _pytesseract()
+    """Perform OCR on a specific time range and extract word states."""
+    cv2, np = _cv2(), _np()
+    ocr = _get_ocr()
     cap = cv2.VideoCapture(str(video_path))
-    if not cap.isOpened():
-        raise RuntimeError(f"Failed to open video: {video_path}")
-
     src_fps = cap.get(cv2.CAP_PROP_FPS) or 30.0
-    width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-    height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-    step = max(int(round(src_fps / max(fps, 0.5))), 1)
-    cap.set(cv2.CAP_PROP_POS_MSEC, max(line_start - 0.1, 0.0) * 1000.0)
+    cap.set(cv2.CAP_PROP_POS_MSEC, max(0, start - 0.1) * 1000.0)
+    step = max(int(round(src_fps / fps)), 1)
+    rx, ry, rw, rh = roi_rect
+    raw = []
 
-    y_min, y_max = height * 0.15, height * 0.85
-    x_min, x_max = width * 0.20, width * 0.80
-    min_h = height * 0.02
-
-    raw_frames = []
     while True:
         ok, frame = cap.read()
-        if not ok:
-            break
         t = cap.get(cv2.CAP_PROP_POS_MSEC) / 1000.0
-        if t > line_end + 0.2:
+        if not ok or t > end + 0.2:
             break
-
-        frame_idx = int(round(t * src_fps))
-        if frame_idx % step != 0:
+        if int(round(t * src_fps)) % step != 0:
             continue
 
-        max_c = np.max(frame, axis=2)
-        processed = cv2.bitwise_not(max_c)
-        data = pytesseract.image_to_data(processed, output_type=pytesseract.Output.DICT)
-
-        words_in_frame = []
-        for i in range(len(data["text"])):
-            if data["level"][i] != 5:
-                continue
-            text = str(data["text"][i]).strip()
-            if not text:
-                continue
-            x, y = data["left"][i], data["top"][i]
-            w, h = data["width"][i], data["height"][i]
-            cx, cy = x + w / 2, y + h / 2
-            if y_min < cy < y_max and h > min_h and x_min < cx < x_max:
-                color_state = _classify_word_state(
-                    frame[y : y + h, x : x + w], c_un, c_sel
-                )
-                if color_state != "unknown":
-                    words_in_frame.append(
-                        {"text": text, "color": color_state, "x": x, "y": y}
-                    )
-        if words_in_frame:
-            words_in_frame.sort(key=lambda w: (w["y"] // 30, w["x"]))
-            timestamp = f"{int(t // 60):02d}:{t % 60:05.2f}"
-            raw_frames.append(
-                {"time": t, "timestamp": timestamp, "words": words_in_frame}
-            )
-    cap.release()
-    return raw_frames
-
-
-def _track_block_transitions(raw_frames: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    active_block: list[dict[str, Any]] = []
-    candidates: list[dict[str, Any]] = []
-
-    for f in raw_frames:
-        words = f["words"]
-        t_str = f["timestamp"]
-        current_texts = [w["text"] for w in words]
-        active_texts = [w["text"] for w in active_block]
-
-        is_same_block = len(current_texts) == len(active_texts)
-        if is_same_block:
-            for ct, at in zip(current_texts, active_texts):
-                if _text_similarity(ct, at) < 0.7:
-                    is_same_block = False
-                    break
-
-        if not is_same_block:
-            for w in active_block:
-                if w["start"] is not None:
-                    candidates.append(w)
-            active_block = []
-            for w in words:
-                active_block.append(
+        roi = frame[ry : ry + rh, rx : rx + rw]
+        res = ocr.predict(roi)
+        if res and "rec_texts" in res[0]:
+            words = []
+            for txt, box in zip(res[0]["rec_texts"], res[0]["rec_boxes"]):
+                np_box = np.array(box).reshape(-1, 2)
+                x, y = int(min(np_box[:, 0])), int(min(np_box[:, 1]))
+                bw, bh = int(max(np_box[:, 0]) - x), int(max(np_box[:, 1]) - y)
+                state = _classify_word_state(roi[y : y + bh, x : x + bw], c_un, c_sel)
+                if state != "unknown":
+                    words.append({"text": txt, "color": state, "x": x, "y": y})
+            if words:
+                words.sort(key=lambda w: (w["y"] // 30, w["x"]))  # Sort by line then X
+                raw.append(
                     {
-                        "text": w["text"],
-                        "x": w["x"],
-                        "y": w["y"],
-                        "start": None,
-                        "end": None,
-                        "last_color": w["color"],
+                        "time": t,
+                        "timestamp": f"{int(t // 60):02d}:{t % 60:05.2f}",
+                        "words": words,
                     }
                 )
-        else:
-            for i in range(len(words)):
-                cur_color = words[i]["color"]
-                prev_color = active_block[i]["last_color"]
-                if prev_color == "unselected" and cur_color in ("mixed", "selected"):
-                    active_block[i]["start"] = t_str
-                if cur_color == "selected" and prev_color != "selected":
-                    active_block[i]["end"] = t_str
-                    if active_block[i]["start"] is None:
-                        active_block[i]["start"] = t_str
-                active_block[i]["x"] = words[i]["x"]
-                active_block[i]["y"] = words[i]["y"]
-                active_block[i]["last_color"] = cur_color
-
-    for w in active_block:
-        if w["start"] is not None:
-            candidates.append(w)
-    return candidates
+    cap.release()
+    return raw
 
 
-def _extract_line_word_candidates_v2(
-    video_path: Path,
-    line: TargetLine,
-    *,
-    line_start: float,
-    line_end: float,
-    fps: float,
-    c_un: Any,
-    c_sel: Any,
-) -> list[tuple[float, float] | None]:
-    if line_end <= line_start + 0.05 or not line.words:
-        return [None for _ in line.words]
-
-    raw_frames = _collect_raw_frames(video_path, line_start, line_end, fps, c_un, c_sel)
-    if not raw_frames:
-        return [None for _ in line.words]
-
-    candidates = _track_block_transitions(raw_frames)
-
-    def _ts_to_float(ts: str) -> float:
-        m, s = ts.split(":")
-        return int(m) * 60 + float(s)
-
-    merged = []
-    if candidates:
-        candidates.sort(
-            key=lambda x: (x["y"] // 30, x["x"] // 50, _ts_to_float(x["start"]))
-        )
-        curr = candidates[0]
-        for i in range(1, len(candidates)):
-            nxt = candidates[i]
-            if (
-                nxt["text"] == curr["text"]
-                and abs(nxt["x"] - curr["x"]) < 60
-                and abs(nxt["y"] - curr["y"]) < 40
-            ):
-                if nxt["end"] and (not curr["end"] or nxt["end"] > curr["end"]):
-                    curr["end"] = nxt["end"]
-            else:
-                merged.append(curr)
-                curr = nxt
-        merged.append(curr)
-
-    results: list[tuple[float, float] | None] = [None] * len(line.words)
-    target_norm = [_normalize_text(w) for w in line.words]
-    for m in merged:
-        m_norm = _normalize_text(m["text"])
-        for i, t_norm in enumerate(target_norm):
-            if results[i] is None and _text_similarity(m_norm, t_norm) > 0.8:
-                s = _ts_to_float(m["start"])
-                e = _ts_to_float(m["end"]) if m["end"] else s + 0.3
-                results[i] = (s, e)
-                break
-    return results
-
-
-def _line_limit(target_lines: list[TargetLine], idx: int) -> float:
-    return _audio_line_end(target_lines, idx)
-
-
-def _enforce_line_capacity(
-    words_count: int, line_start: float, line_end: float
-) -> None:
-    cap = max(0.0, line_end - line_start)
-    need = words_count * MIN_WORD_DURATION
-    if need > cap + 1e-9:
-        print(
-            f"WARNING: Line capacity too short ({cap:.2f}s) for {words_count} words at "
-            f"{MIN_WORD_DURATION:.2f}s minimum duration. Timings will be crowded."
-        )
-
-
-def _fit_line_word_times(
-    line: TargetLine,
-    candidate_times: list[tuple[float, float] | None],
-    line_end_limit: float,
-) -> list[tuple[float, float]]:
-    n = len(line.words)
-    _enforce_line_capacity(n, line.start, line_end_limit)
-    out: list[tuple[float, float]] = []
-    cursor = line.start
-
-    for i in range(n):
-        cand = candidate_times[i]
-        remaining = n - i
-        latest_start = line_end_limit - (remaining * MIN_WORD_DURATION)
-        if cand is None:
-            slot = (line_end_limit - cursor) / max(remaining, 1)
-            dur = max(MIN_WORD_DURATION, min(0.7, slot * 0.85))
-            start = cursor
-            end = start + dur
-        else:
-            cstart, cend = cand
-            start = min(max(cursor, cstart), latest_start)
-            end = max(start + MIN_WORD_DURATION, cend)
-
-        end = min(end, line_end_limit - ((remaining - 1) * MIN_WORD_DURATION))
-        if end < start + MIN_WORD_DURATION:
-            end = start + MIN_WORD_DURATION
-        out.append((_snap(start), _snap(end)))
-        cursor = end
-
-    out[0] = (_snap(line.start), max(_snap(line.start + MIN_WORD_DURATION), out[0][1]))
-
-    fixed: list[tuple[float, float]] = []
-    prev_end = line.start
-    for i, (start, end) in enumerate(out):
-        remaining = n - i
-        max_start = line_end_limit - (remaining * MIN_WORD_DURATION)
-        start = min(max(start, prev_end), max_start)
-        end = max(end, start + MIN_WORD_DURATION)
-        max_end = line_end_limit - ((remaining - 1) * MIN_WORD_DURATION)
-        end = min(end, max_end)
-        fixed.append((_snap(start), _snap(end)))
-        prev_end = end
-
-    line_span = max(line_end_limit - line.start, MIN_WORD_DURATION)
-    used_span = max(fixed[-1][1] - fixed[0][0], MIN_WORD_DURATION)
-    target_span = line_span * 0.85
-    if used_span < line_span * 0.65:
-        scale = target_span / used_span
-        stretched: list[tuple[float, float]] = []
-        for s, e in fixed:
-            ns = line.start + ((s - line.start) * scale)
-            ne = line.start + ((e - line.start) * scale)
-            stretched.append((ns, ne))
-        fixed = []
-        prev_end = line.start
-        for i, (s, e) in enumerate(stretched):
-            remaining = n - i
-            max_start = line_end_limit - (remaining * MIN_WORD_DURATION)
-            s = min(max(s, prev_end), max_start)
-            e = max(e, s + MIN_WORD_DURATION)
-            max_end = line_end_limit - ((remaining - 1) * MIN_WORD_DURATION)
-            e = min(e, max_end)
-            fixed.append((_snap(s), _snap(e)))
-            prev_end = e
-    return fixed
+def _get_global_visual_sequence(raw: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Convert raw frame detections into a clean sequence of highlight events."""
+    seq, last_k = [], None
+    for f in raw:
+        high = [w for w in f["words"] if w["color"] in ("mixed", "selected")]
+        if not high:
+            continue
+        # The 'leader' is the furthest word currently highlighted
+        leader = max(high, key=lambda w: (w["y"], w["x"]))
+        k = (leader["text"], leader["y"], leader["x"])
+        if k != last_k:
+            seq.append(
+                {"text": leader["text"], "start": f["time"], "end": f["time"] + 0.3}
+            )
+            last_k = k
+    return seq
 
 
 def build_gold_from_visual_karaoke(
@@ -882,209 +510,195 @@ def build_gold_from_visual_karaoke(
     base_doc: dict[str, Any],
     target_lines: list[TargetLine],
     video_path: Path,
-    source_timing_path: str,
-    video_url: str,
-    line_video_windows: list[tuple[float, float]],
-    visual_fps: float,
     c_un: Any,
     c_sel: Any,
+    roi_rect: tuple[int, int, int, int],
+    visual_fps: float,
+    work_dir: Path,
 ) -> dict[str, Any]:
-    if len(line_video_windows) != len(target_lines):
-        raise ValueError("line_video_windows length must match target_lines length")
-
-    lines_out: list[dict[str, Any]] = []
-    prev_end_global = 0.0
-
-    for i, line in enumerate(target_lines):
-        line_start = _snap(line.start)
-        line_end = _snap(_line_limit(target_lines, i))
-        if line_end <= line_start:
-            raise ValueError(f"Non-positive line span at line {i + 1}")
-
-        video_line_start, video_line_end = line_video_windows[i]
-        if video_line_end <= video_line_start + 0.1:
-            video_line_end = video_line_start + 0.1
-        cands = _extract_line_word_candidates_v2(
-            video_path,
-            line,
-            line_start=video_line_start,
-            line_end=video_line_end,
-            fps=visual_fps,
-            c_un=c_un,
-            c_sel=c_sel,
-        )
-        # Convert candidate timings from video line window to audio line window
-        # while keeping line starts anchored to LRC/gold timings.
-        video_span = max(video_line_end - video_line_start, 1e-6)
-        audio_span = max(line_end - line_start, MIN_WORD_DURATION)
-        cands_audio: list[tuple[float, float] | None] = []
-        for cand in cands:
-            if cand is None:
-                cands_audio.append(None)
-                continue
-            vs, ve = cand
-            fs = max(0.0, min(1.0, (vs - video_line_start) / video_span))
-            fe = max(fs, min(1.0, (ve - video_line_start) / video_span))
-            as_ = line_start + (audio_span * fs)
-            ae = line_start + (audio_span * fe)
-            cands_audio.append((as_, ae))
-        fitted = _fit_line_word_times(line, cands_audio, line_end)
-
-        words_out: list[dict[str, Any]] = []
-        for wi, (text, (start, end)) in enumerate(zip(line.words, fitted), start=1):
-            start = max(start, prev_end_global)
-            end = max(end, start + MIN_WORD_DURATION)
-            words_out.append(
-                {
-                    "word_index": wi,
-                    "text": text,
-                    "start": _snap(start),
-                    "end": _snap(end),
-                }
+    """Core logic to align LRC lyrics with visual evidence from OCR."""
+    cache_path = work_dir / _get_cache_key(
+        video_path, "tokens", fps=visual_fps, roi=roi_rect
+    )
+    if cache_path.exists():
+        print(f"Loading cached tokens from {cache_path.name}...")
+        global_tokens = json.loads(cache_path.read_text())
+    else:
+        print(f"Extracting tokens from line windows ({visual_fps} fps)...")
+        global_tokens = []
+        for i, ln in enumerate(target_lines):
+            start = max(0, ln.start - 2.0)
+            end = (
+                target_lines[i + 1].start
+                if i + 1 < len(target_lines)
+                else ln.start + 5.0
+            ) + 1.0
+            print(
+                f"  Line {i+1}/{len(target_lines)}: {ln.text[:30]}... ({start:.1f}s - {end:.1f}s)"
             )
-            prev_end_global = words_out[-1]["end"]
+            global_tokens.extend(
+                _collect_raw_frames(
+                    video_path, start, end, visual_fps, c_un, c_sel, roi_rect
+                )
+            )
+        cache_path.write_text(json.dumps(global_tokens))
+
+    visual_seq = _get_global_visual_sequence(global_tokens)
+    print(f"Video produced {len(visual_seq)} highlight events.")
+
+    all_t_words, word_map = [], []
+    for i, ln in enumerate(target_lines):
+        for word in ln.words:
+            all_t_words.append(word)
+            word_map.append(i)
+
+    # Global Monotonic Alignment
+    matched, v_cur = [None] * len(all_t_words), 0
+    for t_idx, t_word in enumerate(all_t_words):
+        best_v, best_s = -1, 0.0
+        for v_idx in range(v_cur, min(v_cur + 100, len(visual_seq))):
+            if visual_seq[v_idx]["start"] > target_lines[word_map[t_idx]].start + 10.0:
+                break
+            s = _text_similarity(t_word, visual_seq[v_idx]["text"])
+            if s > 0.8 and s > best_s:
+                best_s, best_v = s, v_idx
+            if s > 0.95:
+                break
+        if best_v != -1:
+            matched[t_idx] = (visual_seq[best_v]["start"], visual_seq[best_v]["end"])
+            v_cur = best_v + 1
+
+    lines_out, p_end = [], 0.0
+    for i, ln in enumerate(target_lines):
+        l_s = max(_snap(ln.start), _snap(p_end + 0.05))
+        l_lim = _snap(
+            target_lines[i + 1].start if i + 1 < len(target_lines) else ln.start + 5.0
+        )
+        l_m = [matched[j] for j, m_idx in enumerate(word_map) if m_idx == i]
+
+        anchor_wi = next((j for j, m in enumerate(l_m) if m), None)
+        fitted = []
+        if anchor_wi is not None:
+            curr_v = l_m[anchor_wi][0]
+            for j in range(anchor_wi - 1, -1, -1):
+                curr_v -= 0.4
+            off = l_s - curr_v
+            for m in l_m:
+                fitted.append(
+                    (_snap(m[0] + off), _snap(m[1] + off)) if m else (0.0, 0.0)
+                )
+        else:
+            # Uniform fallback for lines with no visual evidence
+            span = min(len(ln.words) * 0.4, l_lim - l_s - 0.1)
+            full_len = sum(len(w) for w in ln.words) + 1e-6
+            cur_rat = 0.0
+            for w in ln.words:
+                fitted.append(
+                    (
+                        _snap(l_s + span * cur_rat),
+                        _snap(l_s + span * (cur_rat + len(w) / full_len)),
+                    )
+                )
+                cur_rat += len(w) / full_len
+
+        words_out = []
+        for wi, (text, (s, e)) in enumerate(zip(ln.words, fitted), 1):
+            if wi == 1:
+                s = l_s
+            if words_out:
+                s = max(s, words_out[-1]["end"])
+            e = max(e if e > 0 else s + 0.3, s + MIN_WORD_DURATION)
+            words_out.append(
+                {"word_index": wi, "text": text, "start": _snap(s), "end": _snap(e)}
+            )
+
+        # Duration Balancing Pass
+        if len(words_out) >= 2:
+            durs = [w["end"] - w["start"] for w in words_out]
+            valid_durs = [d for d in durs if d > MIN_WORD_DURATION + 0.01]
+            if valid_durs and any(d <= MIN_WORD_DURATION + 0.01 for d in durs):
+                min_v = min(valid_durs)
+                for j, w in enumerate(words_out):
+                    if (w["end"] - w["start"]) <= MIN_WORD_DURATION + 0.01:
+                        w["end"] = _snap(w["start"] + min_v)
+                        for k in range(j + 1, len(words_out)):
+                            sh = max(0, words_out[k - 1]["end"] - words_out[k]["start"])
+                            if sh > 0:
+                                words_out[k]["start"] = _snap(
+                                    words_out[k]["start"] + sh
+                                )
+                                words_out[k]["end"] = _snap(words_out[k]["end"] + sh)
+
+        # Final Limit Check
+        if words_out[-1]["end"] > l_lim:
+            sc = (l_lim - l_s) / (words_out[-1]["end"] - l_s)
+            curr = l_s
+            for w in words_out:
+                d = (w["end"] - w["start"]) * sc
+                w["start"], w["end"] = _snap(curr), _snap(curr + d)
+                curr += d
 
         lines_out.append(
             {
                 "line_index": i + 1,
-                "text": " ".join(line.words),
+                "text": ln.text,
                 "start": words_out[0]["start"],
                 "end": words_out[-1]["end"],
                 "words": words_out,
             }
         )
+        p_end = words_out[-1]["end"]
 
     out = dict(base_doc)
-    out["schema_version"] = "1.0"
-    out["source_timing_path"] = source_timing_path
-    out["audio_path"] = str(base_doc.get("audio_path", "") or "")
-    out["karaoke_source_url"] = video_url
-    out["karaoke_video_path"] = str(video_path)
-    out["karaoke_line_windows"] = [
-        {"line_index": i + 1, "video_start": round(s, 3), "video_end": round(e, 3)}
-        for i, (s, e) in enumerate(line_video_windows)
-    ]
-    out["karaoke_timing_method"] = "visual_highlight_progress"
-    out["lines"] = lines_out
+    out.update({"lines": lines_out, "karaoke_timing_method": "paddleocr_roi_alignment"})
     return out
 
 
-def _choose_candidate(
-    *,
-    artist: str,
-    title: str,
-    explicit_url: str | None,
-    max_candidates: int,
-    print_candidates: bool,
-) -> KaraokeCandidate:
-    if explicit_url:
-        video_id = explicit_url.split("v=")[-1][:11]
-        return KaraokeCandidate(
-            video_id=video_id,
-            url=explicit_url,
-            title="explicit",
-            channel="",
-            view_count=0,
-            duration=0.0,
-            score=0.0,
-        )
-    candidates = find_karaoke_candidates(artist, title, max_candidates=max_candidates)
-    if not candidates:
-        raise RuntimeError("No karaoke candidates found")
-    if print_candidates:
-        for idx, c in enumerate(candidates[:8], start=1):
-            print(
-                f"{idx}. score={c.score:.1f} views={c.view_count} "
-                f"[{c.channel}] {c.title} -> {c.url}"
-            )
-    return candidates[0]
-
-
-def parse_args(argv: list[str]) -> argparse.Namespace:
-    parser = argparse.ArgumentParser(
-        description="Bootstrap/refine word-level gold timings from karaoke video highlights"
-    )
+def main():
+    parser = argparse.ArgumentParser()
     parser.add_argument("--artist", required=True)
     parser.add_argument("--title", required=True)
-    parser.add_argument("--gold-in", type=Path, help="Existing gold JSON to refine")
-    parser.add_argument("--lrc-in", type=Path, help="LRC with line-start constraints")
-    parser.add_argument("--output", type=Path, required=True, help="Output gold JSON")
+    parser.add_argument("--gold-in", type=Path)
+    parser.add_argument("--lrc-in", type=Path)
+    parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--candidate-url")
+    parser.add_argument("--visual-fps", type=float, default=1.0)
     parser.add_argument(
         "--work-dir", type=Path, default=Path(".cache/karaoke_bootstrap")
     )
-    parser.add_argument(
-        "--candidate-url", help="Use this karaoke URL instead of search"
-    )
-    parser.add_argument("--max-candidates", type=int, default=20)
-    parser.add_argument("--show-candidates", action="store_true")
-    parser.add_argument("--visual-fps", type=float, default=20.0)
-    parser.add_argument("--ocr-sample-fps", type=float, default=1.5)
-    parser.add_argument(
-        "--dry-run-search",
-        action="store_true",
-        help="Only find/print karaoke candidates and exit",
-    )
-    return parser.parse_args(argv)
+    args = parser.parse_args()
 
-
-def main(argv: list[str] | None = None) -> int:
-    args = parse_args(argv or sys.argv[1:])
-    candidate = _choose_candidate(
-        artist=args.artist,
-        title=args.title,
-        explicit_url=args.candidate_url,
-        max_candidates=args.max_candidates,
-        print_candidates=args.show_candidates,
-    )
-    print(f"Selected karaoke: {candidate.url}")
-    if args.dry_run_search:
-        return 0
-
-    base_doc, target_lines, source_timing_path = _load_target_lines(
-        artist=args.artist,
-        title=args.title,
-        gold_in=args.gold_in,
-        lrc_in=args.lrc_in,
+    base_doc, target_lines, _ = _load_target_lines(
+        artist=args.artist, title=args.title, gold_in=args.gold_in, lrc_in=args.lrc_in
     )
 
-    song_dir = (
-        args.work_dir / f"{_slug(args.artist)}-{_slug(args.title)}" / candidate.video_id
-    )
-    video_path = download_karaoke_video(candidate.url, out_dir=song_dir)
-    print(f"Downloaded video: {video_path}")
+    song_dir = args.work_dir / _slug(args.artist) / _slug(args.title)
+    video_path = download_karaoke_video(args.candidate_url, out_dir=song_dir / "video")
 
-    line_video_windows = detect_line_video_windows(
-        target_lines,
-        video_path,
-        sample_fps=args.ocr_sample_fps,
-    )
-    print(
-        f"Detected line windows from video OCR: {len(line_video_windows)} / "
-        f"{len(target_lines)}"
-    )
+    roi_rect = detect_lyric_roi(video_path, song_dir)
+    c_un, c_sel, _ = _infer_lyric_colors(video_path, roi_rect)
 
-    c_un, c_sel = _infer_lyric_colors(video_path)
-    print(f"Inferred lyric colors (BGR): {c_un.astype(int)}, {c_sel.astype(int)}")
+    # Manual overrides for problematic high-glare videos
+    if "LEdBLhABQRs" in str(video_path):
+        import numpy as np
+
+        c_un, c_sel = np.array([243, 249, 245]), np.array([114, 180, 26])
 
     doc = build_gold_from_visual_karaoke(
         base_doc=base_doc,
         target_lines=target_lines,
         video_path=video_path,
-        source_timing_path=source_timing_path,
-        video_url=candidate.url,
-        line_video_windows=line_video_windows,
-        visual_fps=args.visual_fps,
         c_un=c_un,
         c_sel=c_sel,
+        roi_rect=roi_rect,
+        visual_fps=args.visual_fps,
+        work_dir=song_dir,
     )
 
     args.output.parent.mkdir(parents=True, exist_ok=True)
-    args.output.write_text(
-        json.dumps(doc, ensure_ascii=False, indent=2), encoding="utf-8"
-    )
+    args.output.write_text(json.dumps(doc, indent=2), encoding="utf-8")
     print(f"Wrote gold JSON: {args.output}")
-    return 0
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    main()

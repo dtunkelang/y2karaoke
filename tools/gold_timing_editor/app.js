@@ -6,6 +6,7 @@ const state = {
   selectedLine: null,
   drag: null,
   undoStack: [],
+  lastActiveLineIndex: -1,
 };
 const MIN_WORD_DURATION = 0.1;
 
@@ -309,23 +310,9 @@ function buildTrack(line, li, viewWindow, pxPerSec) {
   track.className = "track";
   track.style.width = `${Math.max(viewWindow.duration * pxPerSec, 300)}px`;
 
-  const lineBounds = getLineBounds(line);
-  const allRefs = _allWordRefs();
-  const contextRefs = allRefs.filter((ref) => {
-    if (ref.li === li) return false;
-    const ws = ref.word.start;
-    const we = ref.word.end;
-    return we > viewWindow.start && ws < viewWindow.end;
-  });
-
-  function appendWordBlock(w, wordLi, wordWi, opts = {}) {
-    const {
-      isContext = false,
-      clipStart = viewWindow.start,
-      clipEnd = viewWindow.end,
-    } = opts;
-    const blockLeftSec = Math.max(w.start, viewWindow.start, clipStart);
-    const blockRightSec = Math.min(w.end, viewWindow.end, clipEnd);
+  function appendWordBlock(w, wordLi, wordWi, isContext) {
+    const blockLeftSec = Math.max(w.start, viewWindow.start);
+    const blockRightSec = Math.min(w.end, viewWindow.end);
     if (blockRightSec <= blockLeftSec) return;
 
     const word = document.createElement("div");
@@ -337,13 +324,6 @@ function buildTrack(line, li, viewWindow, pxPerSec) {
     word.style.width = `${Math.max((blockRightSec - blockLeftSec) * pxPerSec, 8)}px`;
     word.textContent = w.text;
     word.title = `${w.text}  [${w.start.toFixed(1)} - ${w.end.toFixed(1)}]`;
-    if (!isContext) {
-      if (els.audio.currentTime >= w.end) {
-        word.classList.add("sung");
-      } else if (els.audio.currentTime >= w.start && els.audio.currentTime <= w.end) {
-        word.classList.add("playing");
-      }
-    }
 
     if (!isContext && state.editMode === "word") {
       word.addEventListener("mousedown", (ev) => {
@@ -404,27 +384,8 @@ function buildTrack(line, li, viewWindow, pxPerSec) {
     track.appendChild(word);
   }
 
-  const contextZones = [
-    { start: viewWindow.start, end: lineBounds.start },
-    { start: lineBounds.end, end: viewWindow.end },
-  ].filter((z) => z.end > z.start);
-
-  for (const ref of contextRefs) {
-    for (const zone of contextZones) {
-      if (ref.word.end <= zone.start || ref.word.start >= zone.end) {
-        continue;
-      }
-      appendWordBlock(ref.word, ref.li, ref.wi, {
-        isContext: true,
-        clipStart: zone.start,
-        clipEnd: zone.end,
-      });
-    }
-  }
-
   for (let wi = 0; wi < line.words.length; wi += 1) {
-    const w = line.words[wi];
-    appendWordBlock(w, li, wi, { isContext: false });
+    appendWordBlock(line.words[wi], li, wi, false);
   }
 
   if (state.editMode === "line") {
@@ -445,62 +406,64 @@ function buildTrack(line, li, viewWindow, pxPerSec) {
 }
 
 function buildLineRuler(line, viewWindow, pxPerSec) {
-  const bounds = getLineBounds(line);
   const width = Math.max(viewWindow.duration * pxPerSec, 300);
-  const whole = Math.ceil(viewWindow.duration);
-
   const ruler = document.createElement("div");
   ruler.className = "line-ruler";
   ruler.style.width = `${width}px`;
 
-  const rel = els.audio.currentTime - viewWindow.start;
-  const clampedRel = Math.max(0, Math.min(rel, viewWindow.duration));
   const progress = document.createElement("div");
   progress.className = "ruler-progress";
-  progress.style.width = `${clampedRel * pxPerSec}px`;
   ruler.appendChild(progress);
 
-  if (els.audio.currentTime >= bounds.start && els.audio.currentTime <= bounds.end) {
-    ruler.classList.add("active");
-  }
+  // Place ticks at absolute integer seconds
+  const firstTick = Math.ceil(viewWindow.start);
+  const lastTick = Math.floor(viewWindow.start + viewWindow.duration);
 
-  for (let t = 0; t <= whole; t += 1) {
-    const leftPx = t * pxPerSec;
+  for (let t = firstTick; t <= lastTick; t += 1) {
+    const offsetPx = (t - viewWindow.start) * pxPerSec;
 
     const major = document.createElement("div");
     major.className = "tick major";
-    major.style.left = `${leftPx}px`;
+    major.style.left = `${offsetPx}px`;
     ruler.appendChild(major);
 
     const label = document.createElement("div");
     label.className = "tick-label";
-    label.style.left = `${leftPx}px`;
-    label.textContent = `${(viewWindow.start + t).toFixed(1)}s`;
+    label.style.left = `${offsetPx}px`;
+    label.textContent = `${t.toFixed(0)}s`;
     ruler.appendChild(label);
 
-    if (t < whole) {
+    // Minor tick at half-second
+    const minorT = t + 0.5;
+    if (minorT < lastTick) {
+      const minorPx = (minorT - viewWindow.start) * pxPerSec;
       const minor = document.createElement("div");
       minor.className = "tick minor";
-      minor.style.left = `${(t + 0.5) * pxPerSec}px`;
+      minor.style.left = `${minorPx}px`;
       ruler.appendChild(minor);
     }
   }
 
   const playhead = document.createElement("div");
   playhead.className = "ruler-playhead";
-  playhead.style.left = `${clampedRel * pxPerSec}px`;
   ruler.appendChild(playhead);
 
   return ruler;
 }
 
-function buildLineLane(line, li) {
+function buildLineLane(line, li, row) {
   const viewWindow = getLineViewWindow(line);
   const laneMinWidth = Math.max(800, els.timeline.clientWidth - 360);
   const pxPerSec = Math.max(
     state.secondsToPx,
     laneMinWidth / Math.max(viewWindow.duration, 0.1)
   );
+  
+  // Store metadata on the ROW for consistent access
+  row.dataset.start = viewWindow.start;
+  row.dataset.duration = viewWindow.duration;
+  row.dataset.pxPerSec = pxPerSec;
+
   const lane = document.createElement("div");
   lane.className = "line-lane";
   lane.appendChild(buildLineRuler(line, viewWindow, pxPerSec));
@@ -544,8 +507,6 @@ function buildGapLane(gapStart, gapEnd) {
 
   const playhead = document.createElement("div");
   playhead.className = "ruler-playhead";
-  const rel = Math.max(0, Math.min(els.audio.currentTime - viewWindow.start, viewWindow.duration));
-  playhead.style.left = `${rel * pxPerSec}px`;
   ruler.appendChild(playhead);
 
   const track = document.createElement("div");
@@ -560,7 +521,63 @@ function buildGapLane(gapStart, gapEnd) {
 
   lane.appendChild(ruler);
   lane.appendChild(track);
-  return lane;
+  return { lane, pxPerSec };
+}
+
+function updatePlaybackVisuals() {
+  if (!state.doc) return;
+  const currentTime = els.audio.currentTime;
+  els.playbackInfo.textContent = `t=${currentTime.toFixed(1)}s`;
+
+  let currentActiveLineIndex = -1;
+  const allRows = els.timeline.querySelectorAll(".lyric-line, .gap-row");
+  
+  allRows.forEach((row) => {
+    const type = row.dataset.type;
+    const vStart = parseFloat(row.dataset.start);
+    const vDuration = parseFloat(row.dataset.duration);
+    const pxPerSec = parseFloat(row.dataset.pxPerSec);
+
+    const rel = currentTime - vStart;
+    const clampedRel = Math.max(0, Math.min(rel, vDuration));
+    
+    const playhead = row.querySelector(".ruler-playhead");
+    if (playhead) playhead.style.left = `${clampedRel * pxPerSec}px`;
+
+    const progress = row.querySelector(".ruler-progress");
+    if (progress) progress.style.width = `${clampedRel * pxPerSec}px`;
+
+    if (type === "lyric") {
+      const li = parseInt(row.dataset.li);
+      const line = state.doc.lines[li];
+      const isActive = currentTime >= line.start && currentTime <= line.end;
+      row.classList.toggle("active-playing", isActive);
+      if (isActive) currentActiveLineIndex = li;
+
+      // Update Word Classes
+      const wordEls = row.querySelectorAll(".word:not(.word-context)");
+      for (let wi = 0; wi < line.words.length; wi++) {
+        const w = line.words[wi];
+        const wEl = wordEls[wi];
+        if (!wEl) continue;
+        const isSung = currentTime >= w.end;
+        const isPlaying = currentTime >= w.start && currentTime <= w.end;
+        if (wEl.classList.contains("sung") !== isSung) wEl.classList.toggle("sung", isSung);
+        if (wEl.classList.contains("playing") !== isPlaying) wEl.classList.toggle("playing", isPlaying);
+      }
+    }
+  });
+
+  // Autoscroll
+  if (currentActiveLineIndex !== -1 && currentActiveLineIndex !== state.lastActiveLineIndex) {
+    state.lastActiveLineIndex = currentActiveLineIndex;
+    const activeRow = els.timeline.querySelector(`.lyric-line[data-li="${currentActiveLineIndex}"]`);
+    if (activeRow && !state.drag && !els.audio.paused) {
+      activeRow.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  } else if (currentActiveLineIndex === -1) {
+    state.lastActiveLineIndex = -1;
+  }
 }
 
 function render() {
@@ -573,7 +590,9 @@ function render() {
   for (let li = 0; li < state.doc.lines.length; li += 1) {
     const line = state.doc.lines[li];
     const row = document.createElement("div");
-    row.className = "line-row";
+    row.className = "line-row lyric-line";
+    row.dataset.type = "lyric";
+    row.dataset.li = li;
     if (state.selectedLine === li) {
       row.classList.add("selected-line");
     }
@@ -586,7 +605,7 @@ function render() {
     });
 
     row.appendChild(label);
-    row.appendChild(buildLineLane(line, li));
+    row.appendChild(buildLineLane(line, li, row));
     els.timeline.appendChild(row);
 
     if (li + 1 < state.doc.lines.length) {
@@ -596,14 +615,19 @@ function render() {
       const gapDuration = gapEnd - gapStart;
       if (gapDuration > 1.0) {
         const gapRow = document.createElement("div");
-        gapRow.className = "line-row gap-row";
+        gapRow.className = "gap-row";
+        gapRow.dataset.type = "gap";
+        gapRow.dataset.start = Math.max(0, gapStart - 1.0);
+        gapRow.dataset.duration = Math.max(2.0, gapEnd - gapStart + 2.0);
 
         const gapLabel = document.createElement("div");
         gapLabel.className = "line-text gap-text";
         gapLabel.textContent = `Gap: ${gapDuration.toFixed(1)}s instrumental`;
 
         gapRow.appendChild(gapLabel);
-        gapRow.appendChild(buildGapLane(gapStart, gapEnd));
+        const gapLaneData = buildGapLane(gapStart, gapEnd);
+        gapRow.dataset.pxPerSec = gapLaneData.pxPerSec;
+        gapRow.appendChild(gapLaneData.lane);
         els.timeline.appendChild(gapRow);
       }
     }
@@ -618,6 +642,9 @@ function render() {
   } else {
     els.selectionInfo.textContent = "No word selected";
   }
+  
+  // Update visuals immediately after full render
+  updatePlaybackVisuals();
 }
 
 async function postJson(url, payload) {
@@ -651,7 +678,11 @@ function loadAudioPath(path) {
     setStatus("Audio path is required", true);
     return;
   }
-  els.audio.src = `/api/audio?path=${encodeURIComponent(path)}`;
+  if (path.startsWith("/") || path.includes(":\\")) {
+    els.audio.src = `/api/audio?path=${encodeURIComponent(path)}`;
+  } else {
+    els.audio.src = `/${path}`;
+  }
   if (state.doc) state.doc.audio_path = path;
   setStatus("Audio loaded.");
 }
@@ -706,9 +737,13 @@ els.audio.addEventListener("pause", () => {
   els.playPauseBtn.textContent = "Play";
 });
 
+els.audio.addEventListener("error", (e) => {
+  console.error("Audio error:", e);
+  setStatus(`Audio Error: ${els.audio.error?.message || "Unknown error"}`, true);
+});
+
 els.audio.addEventListener("timeupdate", () => {
-  els.playbackInfo.textContent = `t=${els.audio.currentTime.toFixed(1)}s`;
-  render();
+  updatePlaybackVisuals();
 });
 
 els.zoomRange.addEventListener("input", () => {
@@ -820,6 +855,15 @@ async function applyUrlParams() {
   }
 }
 
+function startAnimationLoop() {
+  function frame() {
+    updatePlaybackVisuals();
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+}
+
 setStatus("Load timing + audio to start.");
 setEditMode("word");
 applyUrlParams();
+startAnimationLoop();

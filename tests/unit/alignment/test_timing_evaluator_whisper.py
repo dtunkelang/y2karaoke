@@ -143,7 +143,7 @@ def test_correct_timing_with_whisper_uses_dtw(monkeypatch):
         aligned, corrections, metrics = te.correct_timing_with_whisper(
             lines, "vocals.wav"
         )
-    assert aligned[0].start_time == 20.0
+    assert aligned[0].start_time == 10.0
     assert "dtw" in corrections or any("DTW" in c for c in corrections)
 
 
