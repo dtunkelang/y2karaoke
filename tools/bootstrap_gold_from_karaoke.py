@@ -21,6 +21,8 @@ from difflib import SequenceMatcher
 from pathlib import Path
 from typing import Any
 
+from y2karaoke.core.audio_analysis import calculate_harmonic_suitability
+
 # Timing precision constants
 SNAP_SECONDS = 0.05
 MIN_WORD_DURATION = 0.05
@@ -662,6 +664,11 @@ def main():
     parser.add_argument("--lrc-in", type=Path)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--candidate-url")
+    parser.add_argument(
+        "--original-audio",
+        type=Path,
+        help="Path to original audio for suitability check",
+    )
     parser.add_argument("--visual-fps", type=float, default=1.0)
     parser.add_argument(
         "--work-dir", type=Path, default=Path(".cache/karaoke_bootstrap")
@@ -674,6 +681,43 @@ def main():
 
     song_dir = args.work_dir / _slug(args.artist) / _slug(args.title)
     video_path = download_karaoke_video(args.candidate_url, out_dir=song_dir / "video")
+
+    if args.original_audio and args.original_audio.exists():
+        # Extract audio from the video for comparison
+        karaoke_audio = song_dir / "video" / f"{video_path.stem}.wav"
+        if not karaoke_audio.exists():
+            print("Extracting audio for suitability check...")
+            subprocess.run(
+                [
+                    "ffmpeg",
+                    "-y",
+                    "-i",
+                    str(video_path),
+                    "-ac",
+                    "1",
+                    "-ar",
+                    "22050",
+                    str(karaoke_audio),
+                ],
+                capture_output=True,
+                check=True,
+            )
+
+        print("Checking harmonic suitability against original instrumental...")
+        suitability = calculate_harmonic_suitability(
+            str(args.original_audio), str(karaoke_audio)
+        )
+        if "error" not in suitability:
+            cost = suitability["similarity_cost"]
+            print(f"  Similarity Cost: {cost:.4f}")
+            if cost > 0.35:
+                print(
+                    f"  WARNING: High similarity cost ({cost:.4f}). This karaoke track may be a poor match."
+                )
+            if suitability["structure_jump_count"] > 0:
+                print(
+                    f"  WARNING: {suitability['structure_jump_count']} structural jumps detected. Lyrics may be out of sync."
+                )
 
     roi_rect = detect_lyric_roi(video_path, song_dir)
     c_un, c_sel, _ = _infer_lyric_colors(video_path, roi_rect)

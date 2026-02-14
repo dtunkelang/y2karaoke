@@ -257,6 +257,92 @@ def _find_vocal_end(
     return rms_times[-1]
 
 
+def compute_harmonic_chroma(audio_path: str) -> Optional[np.ndarray]:
+    """Compute normalized chroma CQT features for harmonic comparison."""
+    try:
+        librosa = _load_librosa()
+        y, sr = librosa.load(audio_path, sr=22050, mono=True)
+
+        # hop_length=512, bins_per_octave=36 as requested
+        chroma = librosa.feature.chroma_cqt(
+            y=y, sr=sr, hop_length=512, bins_per_octave=36
+        )
+
+        # L2 normalization column-wise
+        # Adding small epsilon to avoid division by zero
+        norms = np.linalg.norm(chroma, axis=0, keepdims=True)
+        chroma = chroma / (norms + 1e-8)
+
+        return chroma
+    except Exception as e:
+        logger.error(f"Failed to compute chroma for {audio_path}: {e}")
+        return None
+
+
+def calculate_harmonic_suitability(original_path: str, karaoke_path: str) -> dict:
+    """Compare two instrumental tracks using chroma DTW alignment.
+
+    Returns:
+        similarity_cost: float (lower is better)
+        best_key_shift: int (0-11)
+        tempo_variance: float
+        structure_jump_count: int
+    """
+    chroma_orig = compute_harmonic_chroma(original_path)
+    chroma_kara = compute_harmonic_chroma(karaoke_path)
+
+    if chroma_orig is None or chroma_kara is None:
+        return {"error": "Failed to extract features"}
+
+    librosa = _load_librosa()
+
+    best_cost = float("inf")
+    best_shift = 0
+    best_path = None
+
+    # Key invariance: try all 12 circular shifts
+    for shift in range(12):
+        shifted_kara = np.roll(chroma_kara, shift, axis=0)
+
+        # Use cosine distance for DTW
+        D, path = librosa.sequence.dtw(X=chroma_orig, Y=shifted_kara, metric="cosine")
+
+        cost = D[-1, -1] / len(path)
+        if cost < best_cost:
+            best_cost = cost
+            best_shift = shift
+            best_path = path
+
+    # path is a list of (orig_idx, kara_idx)
+    path_np = np.array(best_path)
+
+    # Tempo distortion: slope changes along path
+    # Ideal slope is (orig_frames / kara_frames)
+    if len(path_np) > 10:
+        dy = np.diff(path_np[:, 0])
+        dx = np.diff(path_np[:, 1])
+        # Avoid division by zero by filtering static steps
+        valid = dx > 0
+        slopes = dy[valid] / dx[valid]
+        tempo_variance = float(np.var(slopes))
+    else:
+        tempo_variance = 0.0
+
+    # Structural errors: large jumps indicating missing/extra bars
+    # Discontinuity if path jumps more than 5 frames (~116ms) in one step
+    structure_jump_count = 0
+    if len(path_np) > 1:
+        diffs = np.abs(np.diff(path_np, axis=0))
+        structure_jump_count = int(np.sum(np.any(diffs > 5, axis=1)))
+
+    return {
+        "similarity_cost": float(best_cost),
+        "best_key_shift": int(best_shift),
+        "tempo_variance": tempo_variance,
+        "structure_jump_count": structure_jump_count,
+    }
+
+
 def _check_vocal_activity_in_range(
     start_time: float,
     end_time: float,
