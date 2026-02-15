@@ -11,7 +11,7 @@ from pathlib import Path
 # Add src to path
 sys.path.append(str(Path(__file__).resolve().parents[1] / "src"))
 
-from y2karaoke.core.audio_analysis import calculate_harmonic_suitability
+from y2karaoke.core.audio_analysis import calculate_harmonic_suitability  # noqa: E402
 
 
 def main():
@@ -36,7 +36,7 @@ def main():
         print(f"Error: Karaoke track not found: {kara_path}")
         return 1
 
-    print(f"Analyzing harmonic suitability...")
+    print("Analyzing harmonic suitability...")
     print(f"  Original: {orig_path.name}")
     print(f"  Karaoke:  {kara_path.name}")
 
