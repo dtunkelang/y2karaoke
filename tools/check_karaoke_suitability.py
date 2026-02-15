@@ -57,6 +57,7 @@ def main():
     print(f"  Best Key Shift:     {metrics['best_key_shift']} half-steps")
     print(f"  Tempo Variance:     {metrics['tempo_variance']:.4f}")
     print(f"  Structure Jumps:    {metrics['structure_jump_count']}")
+    print(f"  Estimated Offset:   {metrics['offset_seconds']:+.3f}s")
 
     print("\nInterpretation:")
     if cost < 0.15:

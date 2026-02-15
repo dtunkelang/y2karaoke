@@ -21,8 +21,6 @@ from difflib import SequenceMatcher
 from pathlib import Path
 from typing import Any
 
-from y2karaoke.core.audio_analysis import calculate_harmonic_suitability
-
 # Timing precision constants
 SNAP_SECONDS = 0.05
 MIN_WORD_DURATION = 0.05
@@ -49,7 +47,7 @@ def _get_ocr():
         from paddleocr import PaddleOCR  # type: ignore
 
         # PaddleOCR emits a lot of logs to stdout; we suppress them for CLI clarity.
-        _OCR_ENGINE = PaddleOCR(lang="en", show_log=False)
+        _OCR_ENGINE = PaddleOCR(lang="en")
     return _OCR_ENGINE
 
 
@@ -265,6 +263,14 @@ def find_karaoke_candidates(
 def download_karaoke_video(url: str, *, out_dir: Path) -> Path:
     """Download the best available MP4 from YouTube."""
     out_dir.mkdir(parents=True, exist_ok=True)
+    video_id = url.split("=")[-1] if "=" in url else url.split("/")[-1]
+    
+    # Check if we already have a file for this video ID
+    existing = list(out_dir.glob(f"{video_id}.*"))
+    if existing:
+        print(f"Using existing video: {existing[0].name}")
+        return existing[0]
+
     ytdlp = _yt_dlp_bin()
     out_tpl = str((out_dir / "%(id)s.%(ext)s").resolve())
     subprocess.run(
@@ -272,7 +278,7 @@ def download_karaoke_video(url: str, *, out_dir: Path) -> Path:
             ytdlp,
             "--no-playlist",
             "--format",
-            "mp4/best[ext=mp4]/best",
+            "best[height<=1080][ext=mp4]/best[ext=mp4]/best",
             "--output",
             out_tpl,
             url,
@@ -507,6 +513,108 @@ def _get_global_visual_sequence(raw: list[dict[str, Any]]) -> list[dict[str, Any
     return seq
 
 
+def _detect_first_highlight_time(
+    video_path: Path,
+    roi_rect: tuple[int, int, int, int],
+    c_un: Any,
+    c_sel: Any,
+    work_dir: Path,
+    target_lines: list[TargetLine],
+) -> float:
+    """Scan the beginning of the video to find a highlight matching one of the first few lines."""
+    cache_path = work_dir / _get_cache_key(video_path, "v_start_v2")
+    if cache_path.exists():
+        return float(json.loads(cache_path.read_text())["v_start"])
+
+    print("Probing video for start anchor (matching first 3 lines)...")
+    cv2, np = _cv2(), _np()
+    ocr = _get_ocr()
+    cap = cv2.VideoCapture(str(video_path))
+    rx, ry, rw, rh = roi_rect
+
+    # Sample first 60 seconds at 2 FPS
+    for t in np.arange(0.0, 60.0, 0.5):
+        cap.set(cv2.CAP_PROP_POS_MSEC, t * 1000.0)
+        ok, frame = cap.read()
+        if not ok:
+            break
+
+        roi = frame[ry : ry + rh, rx : rx + rw]
+        res = ocr.predict(roi)
+        if res and "rec_texts" in res[0]:
+            for txt, box in zip(res[0]["rec_texts"], res[0]["rec_boxes"]):
+                np_box = np.array(box).reshape(-1, 2)
+                x, y = int(min(np_box[:, 0])), int(min(np_box[:, 1]))
+                bw, bh = int(max(np_box[:, 0]) - x), int(max(np_box[:, 1]) - y)
+                state = _classify_word_state(roi[y : y + bh, x : x + bw], c_un, c_sel)
+
+                if state in ("selected", "mixed"):
+                    # Check if this text matches any of the first 3 lines
+                    for i in range(min(3, len(target_lines))):
+                        sim = _text_similarity(txt, target_lines[i].words[0])
+                        if sim > 0.7:
+                            v_time = float(t)
+                            lrc_time = target_lines[i].start
+                            # v_start is the video time of the FIRST LRC line
+                            v_start = v_time - (lrc_time - target_lines[0].start)
+                            print(
+                                f"  Anchor matched line {i+1} ('{txt}') at {v_time:.2f}s (LRC: {lrc_time:.2f}s) => Video Start: {v_start:.2f}s"
+                            )
+                            cap.release()
+                            cache_path.write_text(json.dumps({"v_start": float(v_start)}))
+                            return float(v_start)
+
+    cap.release()
+    print("  WARNING: No anchor found in first 60s. Defaulting to 0.0s.")
+    return 0.0
+
+
+def _calculate_visual_suitability(raw_frames: list[dict[str, Any]]) -> dict[str, Any]:
+    """Analyze OCR tokens to detect if the video has true word-level highlighting."""
+    word_level_evidence_frames = 0
+    total_active_frames = 0
+
+    for frame in raw_frames:
+        words = frame.get("words", [])
+        if not words:
+            continue
+
+        # Group words by Y-coordinate (lines)
+        lines = {}
+        for w in words:
+            y_bin = w["y"] // 20  # Group by approximate line
+            if y_bin not in lines:
+                lines[y_bin] = []
+            lines[y_bin].append(w)
+
+        has_any_highlight = False
+        has_word_level_mix = False
+
+        for y_bin, line_words in lines.items():
+            states = [w["color"] for w in line_words]
+            has_sel = any(s in ("selected", "mixed") for s in states)
+            has_unsel = any(s == "unselected" for s in states)
+
+            if has_sel:
+                has_any_highlight = True
+            # Word-level evidence: some words highlighted, some not in the same line
+            if has_sel and has_unsel:
+                has_word_level_mix = True
+
+        if has_any_highlight:
+            total_active_frames += 1
+            if has_word_level_mix:
+                word_level_evidence_frames += 1
+
+    score = (
+        word_level_evidence_frames / total_active_frames if total_active_frames > 0 else 0.0
+    )
+    return {
+        "word_level_score": float(score),
+        "has_word_level_highlighting": score > 0.15,  # At least 15% of frames show partial highlights
+    }
+
+
 def build_gold_from_visual_karaoke(
     *,
     base_doc: dict[str, Any],
@@ -517,6 +625,7 @@ def build_gold_from_visual_karaoke(
     roi_rect: tuple[int, int, int, int],
     visual_fps: float,
     work_dir: Path,
+    global_offset: float = 0.0,
 ) -> dict[str, Any]:
     """Core logic to align LRC lyrics with visual evidence from OCR."""
     cache_path = work_dir / _get_cache_key(
@@ -529,21 +638,38 @@ def build_gold_from_visual_karaoke(
         print(f"Extracting tokens from line windows ({visual_fps} fps)...")
         global_tokens = []
         for i, ln in enumerate(target_lines):
-            start = max(0, ln.start - 2.0)
-            end = (
-                target_lines[i + 1].start
+            # The window in the VIDEO timebase
+            # If ln.start is in official time, we search at official_time - global_offset
+            v_start = max(0, ln.start - global_offset - 5.0)
+            v_end = (
+                target_lines[i + 1].start - global_offset
                 if i + 1 < len(target_lines)
-                else ln.start + 5.0
-            ) + 1.0
+                else ln.start - global_offset + 10.0
+            ) + 2.0
+            
             print(
-                f"  Line {i+1}/{len(target_lines)}: {ln.text[:30]}... ({start:.1f}s - {end:.1f}s)"
+                f"  Line {i+1}/{len(target_lines)}: {ln.text[:30]}... (video: {v_start:.1f}s - {v_end:.1f}s)"
             )
             global_tokens.extend(
                 _collect_raw_frames(
-                    video_path, start, end, visual_fps, c_un, c_sel, roi_rect
+                    video_path, v_start, v_end, visual_fps, c_un, c_sel, roi_rect
                 )
             )
         cache_path.write_text(json.dumps(global_tokens))
+
+    # All visual evidence is in VIDEO time. Convert to OFFICIAL time.
+    if global_offset != 0.0:
+        print(f"Mapping visual cues to official audio time (offset {global_offset:+.3f}s)")
+        for f in global_tokens:
+            f["time"] += global_offset
+
+    visual_suitability = _calculate_visual_suitability(global_tokens)
+    print(f"Visual Suitability Check:")
+    print(f"  Word-Level Score: {visual_suitability['word_level_score']:.4f}")
+    if not visual_suitability["has_word_level_highlighting"]:
+        print(
+            f"  WARNING: Low word-level evidence. This video may use line-level highlighting."
+        )
 
     visual_seq = _get_global_visual_sequence(global_tokens)
     print(f"Video produced {len(visual_seq)} highlight events.")
@@ -554,15 +680,21 @@ def build_gold_from_visual_karaoke(
             all_t_words.append(word)
             word_map.append(i)
 
-    # Global Monotonic Alignment
+    # Global Monotonic Alignment (all in official audio time now)
     matched, v_cur = [None] * len(all_t_words), 0
     for t_idx, t_word in enumerate(all_t_words):
         best_v, best_s = -1, 0.0
-        for v_idx in range(v_cur, min(v_cur + 100, len(visual_seq))):
-            if visual_seq[v_idx]["start"] > target_lines[word_map[t_idx]].start + 10.0:
+        # Search window for matching visual cues
+        for v_idx in range(v_cur, min(v_cur + 300, len(visual_seq))):
+            # Be very permissive: allow matching visual cues within a wide window
+            dt = visual_seq[v_idx]["start"] - target_lines[word_map[t_idx]].start
+            if dt > 60.0:
                 break
+            if dt < -60.0:
+                continue
+
             s = _text_similarity(t_word, visual_seq[v_idx]["text"])
-            if s > 0.8 and s > best_s:
+            if s > 0.75 and s > best_s:
                 best_s, best_v = s, v_idx
             if s > 0.95:
                 break
@@ -570,11 +702,14 @@ def build_gold_from_visual_karaoke(
             matched[t_idx] = (visual_seq[best_v]["start"], visual_seq[best_v]["end"])
             v_cur = best_v + 1
 
+    match_count = sum(1 for m in matched if m)
+    print(f"Alignment: Matched {match_count}/{len(all_t_words)} words to visual cues.")
+
     lines_out, p_end = [], 0.0
     for i, ln in enumerate(target_lines):
         l_s = max(_snap(ln.start), _snap(p_end + 0.05))
         l_lim = _snap(
-            target_lines[i + 1].start if i + 1 < len(target_lines) else ln.start + 5.0
+            target_lines[i + 1].start if i + 1 < len(target_lines) else ln.start + 10.0
         )
         l_m = [matched[j] for j, m_idx in enumerate(word_map) if m_idx == i]
 
@@ -582,13 +717,12 @@ def build_gold_from_visual_karaoke(
         fitted = []
         if anchor_wi is not None:
             curr_v = l_m[anchor_wi][0]
+            # Backtrack to find un-anchored words at the start of line
             for j in range(anchor_wi - 1, -1, -1):
                 curr_v -= 0.4
             off = l_s - curr_v
             for m in l_m:
-                fitted.append(
-                    (_snap(m[0] + off), _snap(m[1] + off)) if m else (0.0, 0.0)
-                )
+                fitted.append((_snap(m[0] + off), _snap(m[1] + off)) if m else (0.0, 0.0))
         else:
             # Uniform fallback for lines with no visual evidence
             span = min(len(ln.words) * 0.4, l_lim - l_s - 0.1)
@@ -626,9 +760,7 @@ def build_gold_from_visual_karaoke(
                         for k in range(j + 1, len(words_out)):
                             sh = max(0, words_out[k - 1]["end"] - words_out[k]["start"])
                             if sh > 0:
-                                words_out[k]["start"] = _snap(
-                                    words_out[k]["start"] + sh
-                                )
+                                words_out[k]["start"] = _snap(words_out[k]["start"] + sh)
                                 words_out[k]["end"] = _snap(words_out[k]["end"] + sh)
 
         # Final Limit Check
@@ -639,6 +771,13 @@ def build_gold_from_visual_karaoke(
                 d = (w["end"] - w["start"]) * sc
                 w["start"], w["end"] = _snap(curr), _snap(curr + d)
                 curr += d
+
+        # GLOBAL SAFETY PASS: Ensure non-negative and monotonic
+        for wi, w in enumerate(words_out):
+            w["start"] = max(0.0, _snap(w["start"]))
+            if wi > 0:
+                w["start"] = max(w["start"], words_out[wi - 1]["end"])
+            w["end"] = max(w["start"] + MIN_WORD_DURATION, _snap(w["end"]))
 
         lines_out.append(
             {
@@ -664,11 +803,6 @@ def main():
     parser.add_argument("--lrc-in", type=Path)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--candidate-url")
-    parser.add_argument(
-        "--original-audio",
-        type=Path,
-        help="Path to original audio for suitability check",
-    )
     parser.add_argument("--visual-fps", type=float, default=1.0)
     parser.add_argument(
         "--work-dir", type=Path, default=Path(".cache/karaoke_bootstrap")
@@ -682,45 +816,17 @@ def main():
     song_dir = args.work_dir / _slug(args.artist) / _slug(args.title)
     video_path = download_karaoke_video(args.candidate_url, out_dir=song_dir / "video")
 
-    if args.original_audio and args.original_audio.exists():
-        # Extract audio from the video for comparison
-        karaoke_audio = song_dir / "video" / f"{video_path.stem}.wav"
-        if not karaoke_audio.exists():
-            print("Extracting audio for suitability check...")
-            subprocess.run(
-                [
-                    "ffmpeg",
-                    "-y",
-                    "-i",
-                    str(video_path),
-                    "-ac",
-                    "1",
-                    "-ar",
-                    "22050",
-                    str(karaoke_audio),
-                ],
-                capture_output=True,
-                check=True,
-            )
-
-        print("Checking harmonic suitability against original instrumental...")
-        suitability = calculate_harmonic_suitability(
-            str(args.original_audio), str(karaoke_audio)
-        )
-        if "error" not in suitability:
-            cost = suitability["similarity_cost"]
-            print(f"  Similarity Cost: {cost:.4f}")
-            if cost > 0.35:
-                print(
-                    f"  WARNING: High similarity cost ({cost:.4f}). This karaoke track may be a poor match."
-                )
-            if suitability["structure_jump_count"] > 0:
-                print(
-                    f"  WARNING: {suitability['structure_jump_count']} structural jumps detected. Lyrics may be out of sync."
-                )
-
+    global_offset = 0.0
     roi_rect = detect_lyric_roi(video_path, song_dir)
     c_un, c_sel, _ = _infer_lyric_colors(video_path, roi_rect)
+
+    # Detect the very first highlight to anchor the entire video timeline to the LRC
+    v_start_time = _detect_first_highlight_time(
+        video_path, roi_rect, c_un, c_sel, song_dir, target_lines
+    )
+    lrc_start_time = target_lines[0].start
+    global_offset = lrc_start_time - v_start_time
+    print(f"Global Anchor: Video={v_start_time:.2f}s, LRC={lrc_start_time:.2f}s => Offset={global_offset:+.3f}s")
 
     # Manual overrides for problematic high-glare videos
     if "LEdBLhABQRs" in str(video_path):
@@ -737,6 +843,7 @@ def main():
         roi_rect=roi_rect,
         visual_fps=args.visual_fps,
         work_dir=song_dir,
+        global_offset=global_offset,
     )
 
     args.output.parent.mkdir(parents=True, exist_ok=True)

@@ -20,6 +20,7 @@ score_candidate = _MODULE.score_candidate
 text_similarity = _MODULE._text_similarity
 cluster_colors = _MODULE._cluster_colors
 classify_word_state = _MODULE._classify_word_state
+calculate_visual_suitability = _MODULE._calculate_visual_suitability
 
 
 def test_parse_lrc_lines_extracts_timestamps_and_words() -> None:
@@ -89,3 +90,31 @@ def test_classify_word_state() -> None:
     roi_mixed = np.full((10, 10, 3), 255, dtype=np.uint8)
     roi_mixed[:, 5:, 0:2] = 0  # Right half is red
     assert classify_word_state(roi_mixed, c_un, c_sel) == "mixed"
+
+
+def test_calculate_visual_suitability() -> None:
+    # High evidence: mixed states in lines
+    raw_high = [
+        {
+            "words": [
+                {"text": "A", "color": "selected", "y": 100, "x": 0},
+                {"text": "B", "color": "unselected", "y": 100, "x": 50},
+            ]
+        }
+    ]
+    res_high = calculate_visual_suitability(raw_high)
+    assert res_high["word_level_score"] == 1.0
+    assert res_high["has_word_level_highlighting"] is True
+
+    # Low evidence: only full line highlights
+    raw_low = [
+        {
+            "words": [
+                {"text": "A", "color": "selected", "y": 100, "x": 0},
+                {"text": "B", "color": "selected", "y": 100, "x": 50},
+            ]
+        }
+    ]
+    res_low = calculate_visual_suitability(raw_low)
+    assert res_low["word_level_score"] == 0.0
+    assert res_low["has_word_level_highlighting"] is False

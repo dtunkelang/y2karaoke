@@ -52,3 +52,33 @@ def test_calculate_harmonic_suitability_perfect_match():
         assert metrics["best_key_shift"] == 0
         assert metrics["structure_jump_count"] == 0
         assert metrics["tempo_variance"] == 0.0
+        assert "offset_seconds" in metrics
+        assert isinstance(metrics["offset_seconds"], float)
+
+
+def test_calculate_harmonic_suitability_with_offset():
+    # Mock compute_harmonic_chroma
+    mock_chroma_orig = np.random.rand(12, 100)
+    mock_chroma_kara = np.random.rand(12, 100)
+
+    # Mock librosa dtw
+    mock_librosa = MagicMock()
+    # Shifted path: (10, 0), (11, 1) ... (90, 80)
+    # This means orig is 10 frames ahead of kara
+    # offset = (orig_frame - kara_frame) * dur = 10 * (512/22050)
+    offset_frames = 10
+    mock_path = [(i + offset_frames, i) for i in range(80)]
+    mock_librosa.sequence.dtw.return_value = (np.zeros((100, 100)), mock_path)
+
+    with (
+        patch(
+            "y2karaoke.core.audio_analysis.compute_harmonic_chroma",
+            side_effect=[mock_chroma_orig, mock_chroma_kara],
+        ),
+        patch("y2karaoke.core.audio_analysis._load_librosa", return_value=mock_librosa),
+    ):
+
+        metrics = calculate_harmonic_suitability("orig.wav", "kara.wav")
+
+        expected_offset = offset_frames * (512 / 22050)
+        assert metrics["offset_seconds"] == pytest.approx(expected_offset, abs=1e-5)

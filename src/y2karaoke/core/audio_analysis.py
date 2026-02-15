@@ -309,6 +309,7 @@ def calculate_harmonic_suitability(original_path: str, karaoke_path: str) -> dic
         best_key_shift: int (0-11)
         tempo_variance: float
         structure_jump_count: int
+        offset_seconds: float
     """
     chroma_orig = compute_harmonic_chroma(original_path)
     chroma_kara = compute_harmonic_chroma(karaoke_path)
@@ -335,38 +336,55 @@ def calculate_harmonic_suitability(original_path: str, karaoke_path: str) -> dic
             best_shift = shift
             best_path = path
 
-        # best_path is (frames_kara, frames_orig) based on librosa dtw(X=orig, Y=kara)
-        # Actually librosa.sequence.dtw returns (2, N) array or list of pairs
-        path_np = np.array(best_path)
+    if best_path is None:
+        return {"error": "Failed to find alignment path"}
 
-        # Tempo distortion: slope changes along path
-        if len(path_np) > 10:
-            # path[:, 0] is orig indices, path[:, 1] is kara indices
-            dy = np.diff(path_np[:, 0])
-            dx = np.diff(path_np[:, 1])
+    # best_path is (frames_orig, frames_kara) based on librosa dtw(X=orig, Y=kara)
+    path_np = np.array(best_path)
 
-            # We want slope = d_kara / d_orig (how fast karaoke moves relative to original)
-            # Filter where original (x) moved to avoid division by zero
-            valid = dy > 0
-            if np.any(valid):
-                slopes = dx[valid] / dy[valid]
-                tempo_variance = float(np.var(slopes))
-            else:
-                tempo_variance = 0.0
+    # Tempo distortion: slope changes along path
+    if len(path_np) > 10:
+        # path[:, 0] is orig indices, path[:, 1] is kara indices
+        dy = np.diff(path_np[:, 0])
+        dx = np.diff(path_np[:, 1])
+
+        # We want slope = d_kara / d_orig (how fast karaoke moves relative to original)
+        # Filter where original (x) moved to avoid division by zero
+        valid = dy > 0
+        if np.any(valid):
+            slopes = dx[valid] / dy[valid]
+            tempo_variance = float(np.var(slopes))
         else:
             tempo_variance = 0.0
-        # Structural errors: large jumps indicating missing/extra bars
-    # Discontinuity if path jumps more than 5 frames (~116ms) in one step
+    else:
+        tempo_variance = 0.0
+
+    # Structural errors: large jumps indicating missing/extra bars
     structure_jump_count = 0
     if len(path_np) > 1:
         diffs = np.abs(np.diff(path_np, axis=0))
         structure_jump_count = int(np.sum(np.any(diffs > 5, axis=1)))
+
+    # Global time offset: median(orig_time - kara_time)
+    frame_dur = 512 / 22050
+    # Use middle 80% of the path to avoid silence/padding at ends
+    mid_start = int(len(path_np) * 0.1)
+    mid_end = int(len(path_np) * 0.9)
+    if mid_end > mid_start:
+        path_mid = path_np[mid_start:mid_end]
+        offsets = (path_mid[:, 0] - path_mid[:, 1]) * frame_dur
+        estimated_offset = float(np.median(offsets))
+        logger.debug(f"DTW Offset Debug: mid_offsets[:10] = {offsets[:10]}")
+    else:
+        offsets = (path_np[:, 0] - path_np[:, 1]) * frame_dur
+        estimated_offset = float(np.median(offsets))
 
     return {
         "similarity_cost": float(best_cost),
         "best_key_shift": int(best_shift),
         "tempo_variance": tempo_variance,
         "structure_jump_count": structure_jump_count,
+        "offset_seconds": estimated_offset,
     }
 
 
