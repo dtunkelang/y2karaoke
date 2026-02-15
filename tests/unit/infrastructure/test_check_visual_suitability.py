@@ -1,7 +1,9 @@
 import importlib.util
 import sys
 from pathlib import Path
+import pytest
 
+# Dynamic import of the tool
 _MODULE_PATH = (
     Path(__file__).resolve().parents[3] / "tools" / "check_visual_suitability.py"
 )
@@ -16,46 +18,63 @@ _SPEC.loader.exec_module(_MODULE)
 calculate_visual_suitability = _MODULE.calculate_visual_suitability
 
 
-def test_calculate_visual_suitability() -> None:
-    # High evidence: mixed states in lines
-    raw_high = [
+def test_calculate_visual_suitability_perfect_score() -> None:
+    # Simulate frames with clear word-level highlighting
+    raw_frames = [
         {
+            "time": 1.0,
             "words": [
-                {"text": "A", "color": "selected", "y": 100, "x": 0, "confidence": 0.9},
-                {
-                    "text": "B",
-                    "color": "unselected",
-                    "y": 100,
-                    "x": 50,
-                    "confidence": 0.8,
-                },
-            ]
-        }
-    ]
-    res_high = calculate_visual_suitability(raw_high)
-    assert res_high["word_level_score"] == 1.0
-    assert res_high["has_word_level_highlighting"] is True
-    import pytest
-
-    assert res_high["avg_ocr_confidence"] == pytest.approx(0.85)
-    assert res_high["detectability_score"] > 0.8
-
-    # Low evidence: only full line highlights
-    raw_low = [
+                {"text": "Hello", "color": "selected", "y": 100, "confidence": 1.0},
+                {"text": "World", "color": "unselected", "y": 100, "confidence": 1.0},
+            ],
+        },
         {
+            "time": 2.0,
             "words": [
-                {"text": "A", "color": "selected", "y": 100, "x": 0, "confidence": 0.9},
-                {
-                    "text": "B",
-                    "color": "selected",
-                    "y": 100,
-                    "x": 50,
-                    "confidence": 0.9,
-                },
-            ]
-        }
+                {"text": "Hello", "color": "selected", "y": 100, "confidence": 1.0},
+                {"text": "World", "color": "selected", "y": 100, "confidence": 1.0},
+            ],
+        },
     ]
-    res_low = calculate_visual_suitability(raw_low)
-    assert res_low["word_level_score"] == 0.0
-    assert res_low["has_word_level_highlighting"] is False
-    assert res_low["avg_ocr_confidence"] == 0.9
+    metrics = calculate_visual_suitability(raw_frames)
+
+    # 1 out of 2 active frames has mixed states (word-level evidence)
+    assert metrics["word_level_score"] == 0.5
+    assert metrics["avg_ocr_confidence"] == 1.0
+    assert metrics["has_word_level_highlighting"] is True
+    # Score = 1.0 * 0.7 + min(0.5 * 2.0, 1.0) * 0.3 = 0.7 + 0.3 = 1.0
+    assert metrics["detectability_score"] == 1.0
+
+
+def test_calculate_visual_suitability_no_word_level() -> None:
+    # Simulate line-level only highlighting (all words change at once)
+    raw_frames = [
+        {
+            "time": 1.0,
+            "words": [
+                {"text": "Line", "color": "unselected", "y": 100, "confidence": 0.8},
+                {"text": "One", "color": "unselected", "y": 100, "confidence": 0.8},
+            ],
+        },
+        {
+            "time": 2.0,
+            "words": [
+                {"text": "Line", "color": "selected", "y": 100, "confidence": 0.8},
+                {"text": "One", "color": "selected", "y": 100, "confidence": 0.8},
+            ],
+        },
+    ]
+    metrics = calculate_visual_suitability(raw_frames)
+
+    assert metrics["word_level_score"] == 0.0
+    assert metrics["avg_ocr_confidence"] == 0.8
+    assert metrics["has_word_level_highlighting"] is False
+    # Score = 0.8 * 0.7 + 0.0 * 0.3 = 0.56
+    assert pytest.approx(metrics["detectability_score"]) == 0.56
+
+
+def test_calculate_visual_suitability_empty_frames() -> None:
+    metrics = calculate_visual_suitability([])
+    assert metrics["word_level_score"] == 0.0
+    assert metrics["avg_ocr_confidence"] == 0.0
+    assert metrics["detectability_score"] == 0.0
