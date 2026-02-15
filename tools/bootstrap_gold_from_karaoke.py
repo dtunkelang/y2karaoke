@@ -264,7 +264,7 @@ def download_karaoke_video(url: str, *, out_dir: Path) -> Path:
     """Download the best available MP4 from YouTube."""
     out_dir.mkdir(parents=True, exist_ok=True)
     video_id = url.split("=")[-1] if "=" in url else url.split("/")[-1]
-    
+
     # Check if we already have a file for this video ID
     existing = list(out_dir.glob(f"{video_id}.*"))
     if existing:
@@ -558,61 +558,18 @@ def _detect_first_highlight_time(
                             # v_start is the video time of the FIRST LRC line
                             v_start = v_time - (lrc_time - target_lines[0].start)
                             print(
-                                f"  Anchor matched line {i+1} ('{txt}') at {v_time:.2f}s (LRC: {lrc_time:.2f}s) => Video Start: {v_start:.2f}s"
+                                f"  Anchor matched line {i+1} ('{txt}') at {v_time:.2f}s "
+                                f"(LRC: {lrc_time:.2f}s) => Video Start: {v_start:.2f}s"
                             )
                             cap.release()
-                            cache_path.write_text(json.dumps({"v_start": float(v_start)}))
+                            cache_path.write_text(
+                                json.dumps({"v_start": float(v_start)})
+                            )
                             return float(v_start)
 
     cap.release()
     print("  WARNING: No anchor found in first 60s. Defaulting to 0.0s.")
     return 0.0
-
-
-def _calculate_visual_suitability(raw_frames: list[dict[str, Any]]) -> dict[str, Any]:
-    """Analyze OCR tokens to detect if the video has true word-level highlighting."""
-    word_level_evidence_frames = 0
-    total_active_frames = 0
-
-    for frame in raw_frames:
-        words = frame.get("words", [])
-        if not words:
-            continue
-
-        # Group words by Y-coordinate (lines)
-        lines = {}
-        for w in words:
-            y_bin = w["y"] // 20  # Group by approximate line
-            if y_bin not in lines:
-                lines[y_bin] = []
-            lines[y_bin].append(w)
-
-        has_any_highlight = False
-        has_word_level_mix = False
-
-        for y_bin, line_words in lines.items():
-            states = [w["color"] for w in line_words]
-            has_sel = any(s in ("selected", "mixed") for s in states)
-            has_unsel = any(s == "unselected" for s in states)
-
-            if has_sel:
-                has_any_highlight = True
-            # Word-level evidence: some words highlighted, some not in the same line
-            if has_sel and has_unsel:
-                has_word_level_mix = True
-
-        if has_any_highlight:
-            total_active_frames += 1
-            if has_word_level_mix:
-                word_level_evidence_frames += 1
-
-    score = (
-        word_level_evidence_frames / total_active_frames if total_active_frames > 0 else 0.0
-    )
-    return {
-        "word_level_score": float(score),
-        "has_word_level_highlighting": score > 0.15,  # At least 15% of frames show partial highlights
-    }
 
 
 def build_gold_from_visual_karaoke(
@@ -631,6 +588,7 @@ def build_gold_from_visual_karaoke(
     cache_path = work_dir / _get_cache_key(
         video_path, "tokens", fps=visual_fps, roi=roi_rect
     )
+
     if cache_path.exists():
         print(f"Loading cached tokens from {cache_path.name}...")
         global_tokens = json.loads(cache_path.read_text())
@@ -646,7 +604,7 @@ def build_gold_from_visual_karaoke(
                 if i + 1 < len(target_lines)
                 else ln.start - global_offset + 10.0
             ) + 2.0
-            
+
             print(
                 f"  Line {i+1}/{len(target_lines)}: {ln.text[:30]}... (video: {v_start:.1f}s - {v_end:.1f}s)"
             )
@@ -659,17 +617,11 @@ def build_gold_from_visual_karaoke(
 
     # All visual evidence is in VIDEO time. Convert to OFFICIAL time.
     if global_offset != 0.0:
-        print(f"Mapping visual cues to official audio time (offset {global_offset:+.3f}s)")
+        print(
+            f"Mapping visual cues to official audio time (offset {global_offset:+.3f}s)"
+        )
         for f in global_tokens:
             f["time"] += global_offset
-
-    visual_suitability = _calculate_visual_suitability(global_tokens)
-    print(f"Visual Suitability Check:")
-    print(f"  Word-Level Score: {visual_suitability['word_level_score']:.4f}")
-    if not visual_suitability["has_word_level_highlighting"]:
-        print(
-            f"  WARNING: Low word-level evidence. This video may use line-level highlighting."
-        )
 
     visual_seq = _get_global_visual_sequence(global_tokens)
     print(f"Video produced {len(visual_seq)} highlight events.")
@@ -722,7 +674,9 @@ def build_gold_from_visual_karaoke(
                 curr_v -= 0.4
             off = l_s - curr_v
             for m in l_m:
-                fitted.append((_snap(m[0] + off), _snap(m[1] + off)) if m else (0.0, 0.0))
+                fitted.append(
+                    (_snap(m[0] + off), _snap(m[1] + off)) if m else (0.0, 0.0)
+                )
         else:
             # Uniform fallback for lines with no visual evidence
             span = min(len(ln.words) * 0.4, l_lim - l_s - 0.1)
@@ -760,7 +714,9 @@ def build_gold_from_visual_karaoke(
                         for k in range(j + 1, len(words_out)):
                             sh = max(0, words_out[k - 1]["end"] - words_out[k]["start"])
                             if sh > 0:
-                                words_out[k]["start"] = _snap(words_out[k]["start"] + sh)
+                                words_out[k]["start"] = _snap(
+                                    words_out[k]["start"] + sh
+                                )
                                 words_out[k]["end"] = _snap(words_out[k]["end"] + sh)
 
         # Final Limit Check
@@ -826,7 +782,9 @@ def main():
     )
     lrc_start_time = target_lines[0].start
     global_offset = lrc_start_time - v_start_time
-    print(f"Global Anchor: Video={v_start_time:.2f}s, LRC={lrc_start_time:.2f}s => Offset={global_offset:+.3f}s")
+    print(
+        f"Global Anchor: Video={v_start_time:.2f}s, LRC={lrc_start_time:.2f}s => Offset={global_offset:+.3f}s"
+    )
 
     # Manual overrides for problematic high-glare videos
     if "LEdBLhABQRs" in str(video_path):
