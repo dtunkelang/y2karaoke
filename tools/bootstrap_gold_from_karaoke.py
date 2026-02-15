@@ -116,7 +116,7 @@ def _text_similarity(a: str, b: str) -> float:
 
 def parse_lrc_lines(lrc_text: str) -> list[TargetLine]:
     """Parse standard .lrc format into TargetLine objects."""
-    lines = []
+    lines: list[TargetLine] = []
     for raw in lrc_text.splitlines():
         timestamps = list(_LRC_TS_RE.finditer(raw))
         if not timestamps:
@@ -572,68 +572,58 @@ def _detect_first_highlight_time(
     return 0.0
 
 
-def build_gold_from_visual_karaoke(
-    *,
-    base_doc: dict[str, Any],
-    target_lines: list[TargetLine],
+def _collect_tokens_with_cache(
     video_path: Path,
+    target_lines: list[TargetLine],
+    global_offset: float,
+    visual_fps: float,
     c_un: Any,
     c_sel: Any,
     roi_rect: tuple[int, int, int, int],
-    visual_fps: float,
     work_dir: Path,
-    global_offset: float = 0.0,
-) -> dict[str, Any]:
-    """Core logic to align LRC lyrics with visual evidence from OCR."""
+) -> list[dict[str, Any]]:
+    """Extract and cache visual tokens from video windows."""
     cache_path = work_dir / _get_cache_key(
         video_path, "tokens", fps=visual_fps, roi=roi_rect
     )
 
     if cache_path.exists():
         print(f"Loading cached tokens from {cache_path.name}...")
-        global_tokens = json.loads(cache_path.read_text())
-    else:
-        print(f"Extracting tokens from line windows ({visual_fps} fps)...")
-        global_tokens = []
-        for i, ln in enumerate(target_lines):
-            # The window in the VIDEO timebase
-            # If ln.start is in official time, we search at official_time - global_offset
-            v_start = max(0, ln.start - global_offset - 5.0)
-            v_end = (
-                target_lines[i + 1].start - global_offset
-                if i + 1 < len(target_lines)
-                else ln.start - global_offset + 10.0
-            ) + 2.0
+        return json.loads(cache_path.read_text())
 
-            print(
-                f"  Line {i+1}/{len(target_lines)}: {ln.text[:30]}... (video: {v_start:.1f}s - {v_end:.1f}s)"
-            )
-            global_tokens.extend(
-                _collect_raw_frames(
-                    video_path, v_start, v_end, visual_fps, c_un, c_sel, roi_rect
-                )
-            )
-        cache_path.write_text(json.dumps(global_tokens))
-
-    # All visual evidence is in VIDEO time. Convert to OFFICIAL time.
-    if global_offset != 0.0:
-        print(
-            f"Mapping visual cues to official audio time (offset {global_offset:+.3f}s)"
-        )
-        for f in global_tokens:
-            f["time"] += global_offset
-
-    visual_seq = _get_global_visual_sequence(global_tokens)
-    print(f"Video produced {len(visual_seq)} highlight events.")
-
-    all_t_words, word_map = [], []
+    print(f"Extracting tokens from line windows ({visual_fps} fps)...")
+    global_tokens = []
     for i, ln in enumerate(target_lines):
-        for word in ln.words:
-            all_t_words.append(word)
-            word_map.append(i)
+        # The window in the VIDEO timebase
+        # If ln.start is in official time, we search at official_time - global_offset
+        v_start = max(0, ln.start - global_offset - 5.0)
+        v_end = (
+            target_lines[i + 1].start - global_offset
+            if i + 1 < len(target_lines)
+            else ln.start - global_offset + 10.0
+        ) + 2.0
 
-    # Global Monotonic Alignment (all in official audio time now)
-    matched, v_cur = [None] * len(all_t_words), 0
+        print(
+            f"  Line {i+1}/{len(target_lines)}: {ln.text[:30]}... (video: {v_start:.1f}s - {v_end:.1f}s)"
+        )
+        global_tokens.extend(
+            _collect_raw_frames(
+                video_path, v_start, v_end, visual_fps, c_un, c_sel, roi_rect
+            )
+        )
+    cache_path.write_text(json.dumps(global_tokens))
+    return global_tokens
+
+
+def _align_words_to_visuals(
+    all_t_words: list[str],
+    word_map: list[int],
+    target_lines: list[TargetLine],
+    visual_seq: list[dict[str, Any]],
+) -> list[tuple[float, float] | None]:
+    """Perform monotonic alignment of target words to visual highlight events."""
+    matched: list[tuple[float, float] | None] = [None] * len(all_t_words)
+    v_cur = 0
     for t_idx, t_word in enumerate(all_t_words):
         best_v, best_s = -1, 0.0
         # Search window for matching visual cues
@@ -653,6 +643,138 @@ def build_gold_from_visual_karaoke(
         if best_v != -1:
             matched[t_idx] = (visual_seq[best_v]["start"], visual_seq[best_v]["end"])
             v_cur = best_v + 1
+    return matched
+
+
+def _balance_word_durations(words_out: list[dict[str, Any]]) -> None:
+    """Ensure tiny words are scaled up and subsequent words shifted."""
+    if len(words_out) < 2:
+        return
+    durs = [w["end"] - w["start"] for w in words_out]
+    valid_durs = [d for d in durs if d > MIN_WORD_DURATION + 0.01]
+    if valid_durs and any(d <= MIN_WORD_DURATION + 0.01 for d in durs):
+        min_v = min(valid_durs)
+        for j, w in enumerate(words_out):
+            if (w["end"] - w["start"]) <= MIN_WORD_DURATION + 0.01:
+                w["end"] = _snap(w["start"] + min_v)
+                for k in range(j + 1, len(words_out)):
+                    sh = max(0, words_out[k - 1]["end"] - words_out[k]["start"])
+                    if sh > 0:
+                        words_out[k]["start"] = _snap(words_out[k]["start"] + sh)
+                        words_out[k]["end"] = _snap(words_out[k]["end"] + sh)
+
+
+def _apply_safety_limits(
+    words_out: list[dict[str, Any]], l_s: float, l_lim: float
+) -> None:
+    """Scale words if they exceed line limit and apply monotonicity safety."""
+    if words_out[-1]["end"] > l_lim:
+        sc = (l_lim - l_s) / (words_out[-1]["end"] - l_s)
+        curr = l_s
+        for w in words_out:
+            d = (w["end"] - w["start"]) * sc
+            w["start"], w["end"] = _snap(curr), _snap(curr + d)
+            curr += d
+
+    for wi, w in enumerate(words_out):
+        w["start"] = max(0.0, _snap(w["start"]))
+        if wi > 0:
+            w["start"] = max(w["start"], words_out[wi - 1]["end"])
+        w["end"] = max(w["start"] + MIN_WORD_DURATION, _snap(w["end"]))
+
+
+def _fit_words_to_line(
+    ln: TargetLine,
+    l_s: float,
+    l_lim: float,
+    l_m: list[tuple[float, float] | None],
+) -> list[dict[str, Any]]:
+    """Fit word timings for a single line based on visual evidence or fallback."""
+    anchor_wi = next((j for j, m in enumerate(l_m) if m), None)
+    fitted: list[tuple[float, float]] = []
+    if anchor_wi is not None:
+        anchor_val = l_m[anchor_wi]
+        assert anchor_val is not None
+        curr_v = anchor_val[0]
+        # Backtrack to find un-anchored words at the start of line
+        for j in range(anchor_wi - 1, -1, -1):
+            curr_v -= 0.4
+        off = l_s - curr_v
+        for m in l_m:
+            fitted.append((_snap(m[0] + off), _snap(m[1] + off)) if m else (0.0, 0.0))
+    else:
+        # Uniform fallback for lines with no visual evidence
+        span = min(len(ln.words) * 0.4, l_lim - l_s - 0.1)
+        full_len = sum(len(w) for w in ln.words) + 1e-6
+        cur_rat = 0.0
+        for w in ln.words:
+            fitted.append(
+                (
+                    _snap(l_s + span * cur_rat),
+                    _snap(l_s + span * (cur_rat + len(w) / full_len)),
+                )
+            )
+            cur_rat += len(w) / full_len
+
+    words_out: list[dict[str, Any]] = []
+    for wi, (text, (s, e)) in enumerate(zip(ln.words, fitted), 1):
+        if wi == 1:
+            s = l_s
+        if words_out:
+            s = float(max(s, words_out[-1]["end"]))
+        e = max(e if e > 0 else s + 0.3, s + MIN_WORD_DURATION)
+        words_out.append(
+            {"word_index": wi, "text": text, "start": _snap(s), "end": _snap(e)}
+        )
+
+    _balance_word_durations(words_out)
+    _apply_safety_limits(words_out, l_s, l_lim)
+    return words_out
+
+
+def build_gold_from_visual_karaoke(
+    *,
+    base_doc: dict[str, Any],
+    target_lines: list[TargetLine],
+    video_path: Path,
+    c_un: Any,
+    c_sel: Any,
+    roi_rect: tuple[int, int, int, int],
+    visual_fps: float,
+    work_dir: Path,
+    global_offset: float = 0.0,
+) -> dict[str, Any]:
+    """Core logic to align LRC lyrics with visual evidence from OCR."""
+    global_tokens = _collect_tokens_with_cache(
+        video_path=video_path,
+        target_lines=target_lines,
+        global_offset=global_offset,
+        visual_fps=visual_fps,
+        c_un=c_un,
+        c_sel=c_sel,
+        roi_rect=roi_rect,
+        work_dir=work_dir,
+    )
+
+    # All visual evidence is in VIDEO time. Convert to OFFICIAL time.
+    if global_offset != 0.0:
+        print(
+            f"Mapping visual cues to official audio time (offset {global_offset:+.3f}s)"
+        )
+        for f in global_tokens:
+            f["time"] += global_offset
+
+    visual_seq = _get_global_visual_sequence(global_tokens)
+    print(f"Video produced {len(visual_seq)} highlight events.")
+
+    all_t_words, word_map = [], []
+    for i, ln in enumerate(target_lines):
+        for word in ln.words:
+            all_t_words.append(word)
+            word_map.append(i)
+
+    # Global Monotonic Alignment (all in official audio time now)
+    matched = _align_words_to_visuals(all_t_words, word_map, target_lines, visual_seq)
 
     match_count = sum(1 for m in matched if m)
     print(f"Alignment: Matched {match_count}/{len(all_t_words)} words to visual cues.")
@@ -665,75 +787,7 @@ def build_gold_from_visual_karaoke(
         )
         l_m = [matched[j] for j, m_idx in enumerate(word_map) if m_idx == i]
 
-        anchor_wi = next((j for j, m in enumerate(l_m) if m), None)
-        fitted = []
-        if anchor_wi is not None:
-            curr_v = l_m[anchor_wi][0]
-            # Backtrack to find un-anchored words at the start of line
-            for j in range(anchor_wi - 1, -1, -1):
-                curr_v -= 0.4
-            off = l_s - curr_v
-            for m in l_m:
-                fitted.append(
-                    (_snap(m[0] + off), _snap(m[1] + off)) if m else (0.0, 0.0)
-                )
-        else:
-            # Uniform fallback for lines with no visual evidence
-            span = min(len(ln.words) * 0.4, l_lim - l_s - 0.1)
-            full_len = sum(len(w) for w in ln.words) + 1e-6
-            cur_rat = 0.0
-            for w in ln.words:
-                fitted.append(
-                    (
-                        _snap(l_s + span * cur_rat),
-                        _snap(l_s + span * (cur_rat + len(w) / full_len)),
-                    )
-                )
-                cur_rat += len(w) / full_len
-
-        words_out = []
-        for wi, (text, (s, e)) in enumerate(zip(ln.words, fitted), 1):
-            if wi == 1:
-                s = l_s
-            if words_out:
-                s = max(s, words_out[-1]["end"])
-            e = max(e if e > 0 else s + 0.3, s + MIN_WORD_DURATION)
-            words_out.append(
-                {"word_index": wi, "text": text, "start": _snap(s), "end": _snap(e)}
-            )
-
-        # Duration Balancing Pass
-        if len(words_out) >= 2:
-            durs = [w["end"] - w["start"] for w in words_out]
-            valid_durs = [d for d in durs if d > MIN_WORD_DURATION + 0.01]
-            if valid_durs and any(d <= MIN_WORD_DURATION + 0.01 for d in durs):
-                min_v = min(valid_durs)
-                for j, w in enumerate(words_out):
-                    if (w["end"] - w["start"]) <= MIN_WORD_DURATION + 0.01:
-                        w["end"] = _snap(w["start"] + min_v)
-                        for k in range(j + 1, len(words_out)):
-                            sh = max(0, words_out[k - 1]["end"] - words_out[k]["start"])
-                            if sh > 0:
-                                words_out[k]["start"] = _snap(
-                                    words_out[k]["start"] + sh
-                                )
-                                words_out[k]["end"] = _snap(words_out[k]["end"] + sh)
-
-        # Final Limit Check
-        if words_out[-1]["end"] > l_lim:
-            sc = (l_lim - l_s) / (words_out[-1]["end"] - l_s)
-            curr = l_s
-            for w in words_out:
-                d = (w["end"] - w["start"]) * sc
-                w["start"], w["end"] = _snap(curr), _snap(curr + d)
-                curr += d
-
-        # GLOBAL SAFETY PASS: Ensure non-negative and monotonic
-        for wi, w in enumerate(words_out):
-            w["start"] = max(0.0, _snap(w["start"]))
-            if wi > 0:
-                w["start"] = max(w["start"], words_out[wi - 1]["end"])
-            w["end"] = max(w["start"] + MIN_WORD_DURATION, _snap(w["end"]))
+        words_out = _fit_words_to_line(ln, l_s, l_lim, l_m)
 
         lines_out.append(
             {
@@ -745,6 +799,10 @@ def build_gold_from_visual_karaoke(
             }
         )
         p_end = words_out[-1]["end"]
+
+    out = dict(base_doc)
+    out.update({"lines": lines_out, "karaoke_timing_method": "paddleocr_roi_alignment"})
+    return out
 
     out = dict(base_doc)
     out.update({"lines": lines_out, "karaoke_timing_method": "paddleocr_roi_alignment"})
