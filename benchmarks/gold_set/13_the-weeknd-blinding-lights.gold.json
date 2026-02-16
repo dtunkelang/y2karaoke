@@ -1,0 +1,1844 @@
+{
+  "schema_version": "1.0",
+  "title": "Blinding Lights",
+  "artist": "The Weeknd",
+  "audio_path": "",
+  "source_timing_path": "",
+  "lines": [
+    {
+      "line_index": 1,
+      "text": "Yeah",
+      "start": 13.4,
+      "end": 13.8,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Yeah",
+          "start": 13.4,
+          "end": 13.8
+        }
+      ]
+    },
+    {
+      "line_index": 2,
+      "text": "I've been tryna call",
+      "start": 26.95,
+      "end": 28.55,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "I've",
+          "start": 26.95,
+          "end": 27.25
+        },
+        {
+          "word_index": 2,
+          "text": "been",
+          "start": 27.35,
+          "end": 27.65
+        },
+        {
+          "word_index": 3,
+          "text": "tryna",
+          "start": 27.75,
+          "end": 28.15
+        },
+        {
+          "word_index": 4,
+          "text": "call",
+          "start": 28.25,
+          "end": 28.55
+        }
+      ]
+    },
+    {
+      "line_index": 3,
+      "text": "I've been on my own for long enough",
+      "start": 29.85,
+      "end": 33.05,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "I've",
+          "start": 29.85,
+          "end": 30.2
+        },
+        {
+          "word_index": 2,
+          "text": "been",
+          "start": 30.3,
+          "end": 30.65
+        },
+        {
+          "word_index": 3,
+          "text": "on",
+          "start": 30.75,
+          "end": 30.95
+        },
+        {
+          "word_index": 4,
+          "text": "my",
+          "start": 31.05,
+          "end": 31.2
+        },
+        {
+          "word_index": 5,
+          "text": "own",
+          "start": 31.3,
+          "end": 31.6
+        },
+        {
+          "word_index": 6,
+          "text": "for",
+          "start": 31.7,
+          "end": 31.95
+        },
+        {
+          "word_index": 7,
+          "text": "long",
+          "start": 32.05,
+          "end": 32.4
+        },
+        {
+          "word_index": 8,
+          "text": "enough",
+          "start": 32.5,
+          "end": 33.05
+        }
+      ]
+    },
+    {
+      "line_index": 4,
+      "text": "Maybe you can show me how to love, maybe",
+      "start": 33.2,
+      "end": 38.45,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Maybe",
+          "start": 33.2,
+          "end": 33.5
+        },
+        {
+          "word_index": 2,
+          "text": "you",
+          "start": 33.9,
+          "end": 34.2
+        },
+        {
+          "word_index": 3,
+          "text": "can",
+          "start": 34.6,
+          "end": 34.9
+        },
+        {
+          "word_index": 4,
+          "text": "show",
+          "start": 35.3,
+          "end": 35.6
+        },
+        {
+          "word_index": 5,
+          "text": "me",
+          "start": 36.0,
+          "end": 36.3
+        },
+        {
+          "word_index": 6,
+          "text": "how",
+          "start": 36.7,
+          "end": 37.0
+        },
+        {
+          "word_index": 7,
+          "text": "to",
+          "start": 37.4,
+          "end": 37.7
+        },
+        {
+          "word_index": 8,
+          "text": "love,",
+          "start": 38.1,
+          "end": 38.4
+        },
+        {
+          "word_index": 9,
+          "text": "maybe",
+          "start": 38.4,
+          "end": 38.45
+        }
+      ]
+    },
+    {
+      "line_index": 5,
+      "text": "I'm going through withdrawals",
+      "start": 38.9,
+      "end": 40.5,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "I'm",
+          "start": 38.9,
+          "end": 39.05
+        },
+        {
+          "word_index": 2,
+          "text": "going",
+          "start": 39.1,
+          "end": 39.4
+        },
+        {
+          "word_index": 3,
+          "text": "through",
+          "start": 39.45,
+          "end": 39.85
+        },
+        {
+          "word_index": 4,
+          "text": "withdrawals",
+          "start": 39.9,
+          "end": 40.5
+        }
+      ]
+    },
+    {
+      "line_index": 6,
+      "text": "You don't even have to do too much",
+      "start": 41.15,
+      "end": 43.9,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "You",
+          "start": 41.15,
+          "end": 41.4
+        },
+        {
+          "word_index": 2,
+          "text": "don't",
+          "start": 41.45,
+          "end": 41.9
+        },
+        {
+          "word_index": 3,
+          "text": "even",
+          "start": 41.95,
+          "end": 42.3
+        },
+        {
+          "word_index": 4,
+          "text": "have",
+          "start": 42.35,
+          "end": 42.7
+        },
+        {
+          "word_index": 5,
+          "text": "to",
+          "start": 42.75,
+          "end": 42.95
+        },
+        {
+          "word_index": 6,
+          "text": "do",
+          "start": 43.0,
+          "end": 43.15
+        },
+        {
+          "word_index": 7,
+          "text": "too",
+          "start": 43.25,
+          "end": 43.5
+        },
+        {
+          "word_index": 8,
+          "text": "much",
+          "start": 43.6,
+          "end": 43.9
+        }
+      ]
+    },
+    {
+      "line_index": 7,
+      "text": "You can turn me on with just a touch, baby",
+      "start": 44.0,
+      "end": 49.95,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "You",
+          "start": 44.0,
+          "end": 44.3
+        },
+        {
+          "word_index": 2,
+          "text": "can",
+          "start": 44.7,
+          "end": 45.0
+        },
+        {
+          "word_index": 3,
+          "text": "turn",
+          "start": 45.4,
+          "end": 45.7
+        },
+        {
+          "word_index": 4,
+          "text": "me",
+          "start": 46.1,
+          "end": 46.4
+        },
+        {
+          "word_index": 5,
+          "text": "on",
+          "start": 46.8,
+          "end": 47.1
+        },
+        {
+          "word_index": 6,
+          "text": "with",
+          "start": 47.5,
+          "end": 47.8
+        },
+        {
+          "word_index": 7,
+          "text": "just",
+          "start": 48.2,
+          "end": 48.5
+        },
+        {
+          "word_index": 8,
+          "text": "a",
+          "start": 48.9,
+          "end": 49.2
+        },
+        {
+          "word_index": 9,
+          "text": "touch,",
+          "start": 49.6,
+          "end": 49.9
+        },
+        {
+          "word_index": 10,
+          "text": "baby",
+          "start": 49.9,
+          "end": 49.95
+        }
+      ]
+    },
+    {
+      "line_index": 8,
+      "text": "I look around and",
+      "start": 50.0,
+      "end": 50.6,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "I",
+          "start": 50.0,
+          "end": 50.05
+        },
+        {
+          "word_index": 2,
+          "text": "look",
+          "start": 50.05,
+          "end": 50.2
+        },
+        {
+          "word_index": 3,
+          "text": "around",
+          "start": 50.25,
+          "end": 50.45
+        },
+        {
+          "word_index": 4,
+          "text": "and",
+          "start": 50.5,
+          "end": 50.6
+        }
+      ]
+    },
+    {
+      "line_index": 9,
+      "text": "Sin City's cold and empty (oh)",
+      "start": 50.7,
+      "end": 53.1,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Sin",
+          "start": 50.7,
+          "end": 50.95
+        },
+        {
+          "word_index": 2,
+          "text": "City's",
+          "start": 51.0,
+          "end": 51.5
+        },
+        {
+          "word_index": 3,
+          "text": "cold",
+          "start": 51.6,
+          "end": 51.9
+        },
+        {
+          "word_index": 4,
+          "text": "and",
+          "start": 52.0,
+          "end": 52.2
+        },
+        {
+          "word_index": 5,
+          "text": "empty",
+          "start": 52.3,
+          "end": 52.7
+        },
+        {
+          "word_index": 6,
+          "text": "(oh)",
+          "start": 52.8,
+          "end": 53.1
+        }
+      ]
+    },
+    {
+      "line_index": 10,
+      "text": "No one's around to judge me (oh)",
+      "start": 53.95,
+      "end": 56.45,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "No",
+          "start": 53.95,
+          "end": 54.1
+        },
+        {
+          "word_index": 2,
+          "text": "one's",
+          "start": 54.2,
+          "end": 54.6
+        },
+        {
+          "word_index": 3,
+          "text": "around",
+          "start": 54.65,
+          "end": 55.1
+        },
+        {
+          "word_index": 4,
+          "text": "to",
+          "start": 55.2,
+          "end": 55.35
+        },
+        {
+          "word_index": 5,
+          "text": "judge",
+          "start": 55.45,
+          "end": 55.8
+        },
+        {
+          "word_index": 6,
+          "text": "me",
+          "start": 55.9,
+          "end": 56.05
+        },
+        {
+          "word_index": 7,
+          "text": "(oh)",
+          "start": 56.15,
+          "end": 56.45
+        }
+      ]
+    },
+    {
+      "line_index": 11,
+      "text": "I can't see clearly when you're gone",
+      "start": 56.55,
+      "end": 59.35,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "I",
+          "start": 56.55,
+          "end": 56.65
+        },
+        {
+          "word_index": 2,
+          "text": "can't",
+          "start": 56.7,
+          "end": 57.1
+        },
+        {
+          "word_index": 3,
+          "text": "see",
+          "start": 57.15,
+          "end": 57.4
+        },
+        {
+          "word_index": 4,
+          "text": "clearly",
+          "start": 57.5,
+          "end": 58.05
+        },
+        {
+          "word_index": 5,
+          "text": "when",
+          "start": 58.1,
+          "end": 58.4
+        },
+        {
+          "word_index": 6,
+          "text": "you're",
+          "start": 58.5,
+          "end": 58.95
+        },
+        {
+          "word_index": 7,
+          "text": "gone",
+          "start": 59.05,
+          "end": 59.35
+        }
+      ]
+    },
+    {
+      "line_index": 12,
+      "text": "I said, ooh, I'm blinded by the lights",
+      "start": 60.8,
+      "end": 64.0,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "I",
+          "start": 60.8,
+          "end": 60.9
+        },
+        {
+          "word_index": 2,
+          "text": "said,",
+          "start": 60.95,
+          "end": 61.4
+        },
+        {
+          "word_index": 3,
+          "text": "ooh,",
+          "start": 61.45,
+          "end": 61.8
+        },
+        {
+          "word_index": 4,
+          "text": "I'm",
+          "start": 61.9,
+          "end": 62.15
+        },
+        {
+          "word_index": 5,
+          "text": "blinded",
+          "start": 62.25,
+          "end": 62.8
+        },
+        {
+          "word_index": 6,
+          "text": "by",
+          "start": 62.9,
+          "end": 63.05
+        },
+        {
+          "word_index": 7,
+          "text": "the",
+          "start": 63.15,
+          "end": 63.4
+        },
+        {
+          "word_index": 8,
+          "text": "lights",
+          "start": 63.5,
+          "end": 64.0
+        }
+      ]
+    },
+    {
+      "line_index": 13,
+      "text": "No, I can't sleep until I feel your touch",
+      "start": 66.6,
+      "end": 70.2,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "No,",
+          "start": 66.6,
+          "end": 66.85
+        },
+        {
+          "word_index": 2,
+          "text": "I",
+          "start": 66.95,
+          "end": 67.05
+        },
+        {
+          "word_index": 3,
+          "text": "can't",
+          "start": 67.15,
+          "end": 67.55
+        },
+        {
+          "word_index": 4,
+          "text": "sleep",
+          "start": 67.65,
+          "end": 68.1
+        },
+        {
+          "word_index": 5,
+          "text": "until",
+          "start": 68.2,
+          "end": 68.6
+        },
+        {
+          "word_index": 6,
+          "text": "I",
+          "start": 68.7,
+          "end": 68.8
+        },
+        {
+          "word_index": 7,
+          "text": "feel",
+          "start": 68.9,
+          "end": 69.25
+        },
+        {
+          "word_index": 8,
+          "text": "your",
+          "start": 69.3,
+          "end": 69.65
+        },
+        {
+          "word_index": 9,
+          "text": "touch",
+          "start": 69.75,
+          "end": 70.2
+        }
+      ]
+    },
+    {
+      "line_index": 14,
+      "text": "I said, ooh, I'm drowning in the night",
+      "start": 71.7,
+      "end": 74.9,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "I",
+          "start": 71.7,
+          "end": 71.8
+        },
+        {
+          "word_index": 2,
+          "text": "said,",
+          "start": 71.85,
+          "end": 72.3
+        },
+        {
+          "word_index": 3,
+          "text": "ooh,",
+          "start": 72.35,
+          "end": 72.7
+        },
+        {
+          "word_index": 4,
+          "text": "I'm",
+          "start": 72.8,
+          "end": 73.05
+        },
+        {
+          "word_index": 5,
+          "text": "drowning",
+          "start": 73.15,
+          "end": 73.8
+        },
+        {
+          "word_index": 6,
+          "text": "in",
+          "start": 73.9,
+          "end": 74.05
+        },
+        {
+          "word_index": 7,
+          "text": "the",
+          "start": 74.15,
+          "end": 74.4
+        },
+        {
+          "word_index": 8,
+          "text": "night",
+          "start": 74.5,
+          "end": 74.9
+        }
+      ]
+    },
+    {
+      "line_index": 15,
+      "text": "Oh, when I'm like this, you're the one I trust",
+      "start": 77.9,
+      "end": 83.85,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Oh,",
+          "start": 77.9,
+          "end": 78.2
+        },
+        {
+          "word_index": 2,
+          "text": "when",
+          "start": 78.6,
+          "end": 78.9
+        },
+        {
+          "word_index": 3,
+          "text": "I'm",
+          "start": 79.3,
+          "end": 79.6
+        },
+        {
+          "word_index": 4,
+          "text": "like",
+          "start": 80.0,
+          "end": 80.3
+        },
+        {
+          "word_index": 5,
+          "text": "this,",
+          "start": 80.7,
+          "end": 81.0
+        },
+        {
+          "word_index": 6,
+          "text": "you're",
+          "start": 81.0,
+          "end": 81.05
+        },
+        {
+          "word_index": 7,
+          "text": "the",
+          "start": 81.45,
+          "end": 81.75
+        },
+        {
+          "word_index": 8,
+          "text": "one",
+          "start": 82.15,
+          "end": 82.45
+        },
+        {
+          "word_index": 9,
+          "text": "I",
+          "start": 82.85,
+          "end": 83.15
+        },
+        {
+          "word_index": 10,
+          "text": "trust",
+          "start": 83.55,
+          "end": 83.85
+        }
+      ]
+    },
+    {
+      "line_index": 16,
+      "text": "(Hey, hey, hey)",
+      "start": 83.9,
+      "end": 85.1,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "(Hey,",
+          "start": 83.9,
+          "end": 84.3
+        },
+        {
+          "word_index": 2,
+          "text": "hey,",
+          "start": 84.4,
+          "end": 84.7
+        },
+        {
+          "word_index": 3,
+          "text": "hey)",
+          "start": 84.8,
+          "end": 85.1
+        }
+      ]
+    },
+    {
+      "line_index": 17,
+      "text": "I'm running out of time",
+      "start": 94.2,
+      "end": 96.2,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "I'm",
+          "start": 94.2,
+          "end": 94.45
+        },
+        {
+          "word_index": 2,
+          "text": "running",
+          "start": 94.55,
+          "end": 95.15
+        },
+        {
+          "word_index": 3,
+          "text": "out",
+          "start": 95.25,
+          "end": 95.5
+        },
+        {
+          "word_index": 4,
+          "text": "of",
+          "start": 95.6,
+          "end": 95.75
+        },
+        {
+          "word_index": 5,
+          "text": "time",
+          "start": 95.85,
+          "end": 96.2
+        }
+      ]
+    },
+    {
+      "line_index": 18,
+      "text": "'Cause I can see the sun light up the sky",
+      "start": 97.7,
+      "end": 100.3,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "'Cause",
+          "start": 97.7,
+          "end": 98.1
+        },
+        {
+          "word_index": 2,
+          "text": "I",
+          "start": 98.15,
+          "end": 98.2
+        },
+        {
+          "word_index": 3,
+          "text": "can",
+          "start": 98.25,
+          "end": 98.45
+        },
+        {
+          "word_index": 4,
+          "text": "see",
+          "start": 98.5,
+          "end": 98.7
+        },
+        {
+          "word_index": 5,
+          "text": "the",
+          "start": 98.8,
+          "end": 98.95
+        },
+        {
+          "word_index": 6,
+          "text": "sun",
+          "start": 99.05,
+          "end": 99.2
+        },
+        {
+          "word_index": 7,
+          "text": "light",
+          "start": 99.3,
+          "end": 99.6
+        },
+        {
+          "word_index": 8,
+          "text": "up",
+          "start": 99.65,
+          "end": 99.8
+        },
+        {
+          "word_index": 9,
+          "text": "the",
+          "start": 99.85,
+          "end": 100.05
+        },
+        {
+          "word_index": 10,
+          "text": "sky",
+          "start": 100.1,
+          "end": 100.3
+        }
+      ]
+    },
+    {
+      "line_index": 19,
+      "text": "So I hit the road in overdrive, baby, oh",
+      "start": 100.4,
+      "end": 108.1,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "So",
+          "start": 100.4,
+          "end": 100.7
+        },
+        {
+          "word_index": 2,
+          "text": "I",
+          "start": 101.1,
+          "end": 101.4
+        },
+        {
+          "word_index": 3,
+          "text": "hit",
+          "start": 101.8,
+          "end": 102.1
+        },
+        {
+          "word_index": 4,
+          "text": "the",
+          "start": 102.5,
+          "end": 102.8
+        },
+        {
+          "word_index": 5,
+          "text": "road",
+          "start": 103.2,
+          "end": 103.5
+        },
+        {
+          "word_index": 6,
+          "text": "in",
+          "start": 103.9,
+          "end": 104.2
+        },
+        {
+          "word_index": 7,
+          "text": "overdrive,",
+          "start": 104.2,
+          "end": 104.25
+        },
+        {
+          "word_index": 8,
+          "text": "baby,",
+          "start": 104.8,
+          "end": 105.1
+        },
+        {
+          "word_index": 9,
+          "text": "oh",
+          "start": 107.8,
+          "end": 108.1
+        }
+      ]
+    },
+    {
+      "line_index": 20,
+      "text": "The city's cold and empty (oh)",
+      "start": 108.15,
+      "end": 111.3,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "The",
+          "start": 108.15,
+          "end": 108.45
+        },
+        {
+          "word_index": 2,
+          "text": "city's",
+          "start": 108.85,
+          "end": 109.15
+        },
+        {
+          "word_index": 3,
+          "text": "cold",
+          "start": 109.55,
+          "end": 109.85
+        },
+        {
+          "word_index": 4,
+          "text": "and",
+          "start": 110.25,
+          "end": 110.55
+        },
+        {
+          "word_index": 5,
+          "text": "empty",
+          "start": 110.95,
+          "end": 111.25
+        },
+        {
+          "word_index": 6,
+          "text": "(oh)",
+          "start": 111.25,
+          "end": 111.3
+        }
+      ]
+    },
+    {
+      "line_index": 21,
+      "text": "No one's around to judge me (oh)",
+      "start": 111.35,
+      "end": 112.6,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "No",
+          "start": 111.35,
+          "end": 111.45
+        },
+        {
+          "word_index": 2,
+          "text": "one's",
+          "start": 111.45,
+          "end": 111.65
+        },
+        {
+          "word_index": 3,
+          "text": "around",
+          "start": 111.7,
+          "end": 111.95
+        },
+        {
+          "word_index": 4,
+          "text": "to",
+          "start": 111.95,
+          "end": 112.05
+        },
+        {
+          "word_index": 5,
+          "text": "judge",
+          "start": 112.1,
+          "end": 112.3
+        },
+        {
+          "word_index": 6,
+          "text": "me",
+          "start": 112.35,
+          "end": 112.4
+        },
+        {
+          "word_index": 7,
+          "text": "(oh)",
+          "start": 112.45,
+          "end": 112.6
+        }
+      ]
+    },
+    {
+      "line_index": 22,
+      "text": "I can't see clearly when you're gone",
+      "start": 112.7,
+      "end": 115.5,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "I",
+          "start": 112.7,
+          "end": 112.8
+        },
+        {
+          "word_index": 2,
+          "text": "can't",
+          "start": 112.85,
+          "end": 113.25
+        },
+        {
+          "word_index": 3,
+          "text": "see",
+          "start": 113.3,
+          "end": 113.55
+        },
+        {
+          "word_index": 4,
+          "text": "clearly",
+          "start": 113.65,
+          "end": 114.2
+        },
+        {
+          "word_index": 5,
+          "text": "when",
+          "start": 114.25,
+          "end": 114.55
+        },
+        {
+          "word_index": 6,
+          "text": "you're",
+          "start": 114.65,
+          "end": 115.1
+        },
+        {
+          "word_index": 7,
+          "text": "gone",
+          "start": 115.2,
+          "end": 115.5
+        }
+      ]
+    },
+    {
+      "line_index": 23,
+      "text": "I said, ooh, I'm blinded by the lights",
+      "start": 117.0,
+      "end": 120.2,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "I",
+          "start": 117.0,
+          "end": 117.1
+        },
+        {
+          "word_index": 2,
+          "text": "said,",
+          "start": 117.15,
+          "end": 117.6
+        },
+        {
+          "word_index": 3,
+          "text": "ooh,",
+          "start": 117.65,
+          "end": 118.0
+        },
+        {
+          "word_index": 4,
+          "text": "I'm",
+          "start": 118.1,
+          "end": 118.35
+        },
+        {
+          "word_index": 5,
+          "text": "blinded",
+          "start": 118.45,
+          "end": 119.0
+        },
+        {
+          "word_index": 6,
+          "text": "by",
+          "start": 119.1,
+          "end": 119.25
+        },
+        {
+          "word_index": 7,
+          "text": "the",
+          "start": 119.35,
+          "end": 119.6
+        },
+        {
+          "word_index": 8,
+          "text": "lights",
+          "start": 119.7,
+          "end": 120.2
+        }
+      ]
+    },
+    {
+      "line_index": 24,
+      "text": "No, I can't sleep until I feel your touch",
+      "start": 122.8,
+      "end": 126.4,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "No,",
+          "start": 122.8,
+          "end": 123.05
+        },
+        {
+          "word_index": 2,
+          "text": "I",
+          "start": 123.15,
+          "end": 123.25
+        },
+        {
+          "word_index": 3,
+          "text": "can't",
+          "start": 123.35,
+          "end": 123.75
+        },
+        {
+          "word_index": 4,
+          "text": "sleep",
+          "start": 123.85,
+          "end": 124.3
+        },
+        {
+          "word_index": 5,
+          "text": "until",
+          "start": 124.4,
+          "end": 124.8
+        },
+        {
+          "word_index": 6,
+          "text": "I",
+          "start": 124.9,
+          "end": 125.0
+        },
+        {
+          "word_index": 7,
+          "text": "feel",
+          "start": 125.1,
+          "end": 125.45
+        },
+        {
+          "word_index": 8,
+          "text": "your",
+          "start": 125.5,
+          "end": 125.85
+        },
+        {
+          "word_index": 9,
+          "text": "touch",
+          "start": 125.95,
+          "end": 126.4
+        }
+      ]
+    },
+    {
+      "line_index": 25,
+      "text": "I said, ooh, I'm drowning in the night",
+      "start": 128.0,
+      "end": 131.2,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "I",
+          "start": 128.0,
+          "end": 128.1
+        },
+        {
+          "word_index": 2,
+          "text": "said,",
+          "start": 128.15,
+          "end": 128.6
+        },
+        {
+          "word_index": 3,
+          "text": "ooh,",
+          "start": 128.65,
+          "end": 129.0
+        },
+        {
+          "word_index": 4,
+          "text": "I'm",
+          "start": 129.1,
+          "end": 129.35
+        },
+        {
+          "word_index": 5,
+          "text": "drowning",
+          "start": 129.45,
+          "end": 130.1
+        },
+        {
+          "word_index": 6,
+          "text": "in",
+          "start": 130.2,
+          "end": 130.35
+        },
+        {
+          "word_index": 7,
+          "text": "the",
+          "start": 130.45,
+          "end": 130.7
+        },
+        {
+          "word_index": 8,
+          "text": "night",
+          "start": 130.8,
+          "end": 131.2
+        }
+      ]
+    },
+    {
+      "line_index": 26,
+      "text": "Oh, when I'm like this, you're the one I trust",
+      "start": 134.1,
+      "end": 140.05,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Oh,",
+          "start": 134.1,
+          "end": 134.4
+        },
+        {
+          "word_index": 2,
+          "text": "when",
+          "start": 134.8,
+          "end": 135.1
+        },
+        {
+          "word_index": 3,
+          "text": "I'm",
+          "start": 135.5,
+          "end": 135.8
+        },
+        {
+          "word_index": 4,
+          "text": "like",
+          "start": 136.2,
+          "end": 136.5
+        },
+        {
+          "word_index": 5,
+          "text": "this,",
+          "start": 136.9,
+          "end": 137.2
+        },
+        {
+          "word_index": 6,
+          "text": "you're",
+          "start": 137.6,
+          "end": 137.9
+        },
+        {
+          "word_index": 7,
+          "text": "the",
+          "start": 138.3,
+          "end": 138.6
+        },
+        {
+          "word_index": 8,
+          "text": "one",
+          "start": 139.0,
+          "end": 139.3
+        },
+        {
+          "word_index": 9,
+          "text": "I",
+          "start": 139.7,
+          "end": 140.0
+        },
+        {
+          "word_index": 10,
+          "text": "trust",
+          "start": 140.0,
+          "end": 140.05
+        }
+      ]
+    },
+    {
+      "line_index": 27,
+      "text": "I'm just walking by to let you know (by to let you know)",
+      "start": 140.1,
+      "end": 142.1,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "I'm",
+          "start": 140.1,
+          "end": 140.2
+        },
+        {
+          "word_index": 2,
+          "text": "just",
+          "start": 140.25,
+          "end": 140.4
+        },
+        {
+          "word_index": 3,
+          "text": "walking",
+          "start": 140.4,
+          "end": 140.65
+        },
+        {
+          "word_index": 4,
+          "text": "by",
+          "start": 140.7,
+          "end": 140.8
+        },
+        {
+          "word_index": 5,
+          "text": "to",
+          "start": 140.8,
+          "end": 140.9
+        },
+        {
+          "word_index": 6,
+          "text": "let",
+          "start": 140.9,
+          "end": 141.05
+        },
+        {
+          "word_index": 7,
+          "text": "you",
+          "start": 141.05,
+          "end": 141.15
+        },
+        {
+          "word_index": 8,
+          "text": "know",
+          "start": 141.2,
+          "end": 141.35
+        },
+        {
+          "word_index": 9,
+          "text": "(by",
+          "start": 141.4,
+          "end": 141.5
+        },
+        {
+          "word_index": 10,
+          "text": "to",
+          "start": 141.55,
+          "end": 141.6
+        },
+        {
+          "word_index": 11,
+          "text": "let",
+          "start": 141.65,
+          "end": 141.75
+        },
+        {
+          "word_index": 12,
+          "text": "you",
+          "start": 141.8,
+          "end": 141.9
+        },
+        {
+          "word_index": 13,
+          "text": "know)",
+          "start": 141.9,
+          "end": 142.1
+        }
+      ]
+    },
+    {
+      "line_index": 28,
+      "text": "I can never say it on the phone (say it on the phone)",
+      "start": 142.2,
+      "end": 150.6,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "I",
+          "start": 142.2,
+          "end": 142.5
+        },
+        {
+          "word_index": 2,
+          "text": "can",
+          "start": 142.6,
+          "end": 142.9
+        },
+        {
+          "word_index": 3,
+          "text": "never",
+          "start": 143.3,
+          "end": 143.6
+        },
+        {
+          "word_index": 4,
+          "text": "say",
+          "start": 144.0,
+          "end": 144.3
+        },
+        {
+          "word_index": 5,
+          "text": "it",
+          "start": 144.7,
+          "end": 145.0
+        },
+        {
+          "word_index": 6,
+          "text": "on",
+          "start": 145.4,
+          "end": 145.7
+        },
+        {
+          "word_index": 7,
+          "text": "the",
+          "start": 146.1,
+          "end": 146.4
+        },
+        {
+          "word_index": 8,
+          "text": "phone",
+          "start": 146.8,
+          "end": 147.1
+        },
+        {
+          "word_index": 9,
+          "text": "(say",
+          "start": 147.5,
+          "end": 147.8
+        },
+        {
+          "word_index": 10,
+          "text": "it",
+          "start": 148.2,
+          "end": 148.5
+        },
+        {
+          "word_index": 11,
+          "text": "on",
+          "start": 148.9,
+          "end": 149.2
+        },
+        {
+          "word_index": 12,
+          "text": "the",
+          "start": 149.6,
+          "end": 149.9
+        },
+        {
+          "word_index": 13,
+          "text": "phone)",
+          "start": 150.3,
+          "end": 150.6
+        }
+      ]
+    },
+    {
+      "line_index": 29,
+      "text": "Will never let you go this time (ooh)",
+      "start": 150.65,
+      "end": 151.05,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Will",
+          "start": 150.65,
+          "end": 150.7
+        },
+        {
+          "word_index": 2,
+          "text": "never",
+          "start": 150.7,
+          "end": 150.75
+        },
+        {
+          "word_index": 3,
+          "text": "let",
+          "start": 150.75,
+          "end": 150.8
+        },
+        {
+          "word_index": 4,
+          "text": "you",
+          "start": 150.8,
+          "end": 150.85
+        },
+        {
+          "word_index": 5,
+          "text": "go",
+          "start": 150.85,
+          "end": 150.9
+        },
+        {
+          "word_index": 6,
+          "text": "this",
+          "start": 150.9,
+          "end": 150.95
+        },
+        {
+          "word_index": 7,
+          "text": "time",
+          "start": 150.95,
+          "end": 151.0
+        },
+        {
+          "word_index": 8,
+          "text": "(ooh)",
+          "start": 151.0,
+          "end": 151.05
+        }
+      ]
+    },
+    {
+      "line_index": 30,
+      "text": "I said, ooh, I'm blinded by the lights",
+      "start": 151.1,
+      "end": 154.3,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "I",
+          "start": 151.1,
+          "end": 151.2
+        },
+        {
+          "word_index": 2,
+          "text": "said,",
+          "start": 151.25,
+          "end": 151.7
+        },
+        {
+          "word_index": 3,
+          "text": "ooh,",
+          "start": 151.75,
+          "end": 152.1
+        },
+        {
+          "word_index": 4,
+          "text": "I'm",
+          "start": 152.2,
+          "end": 152.45
+        },
+        {
+          "word_index": 5,
+          "text": "blinded",
+          "start": 152.55,
+          "end": 153.1
+        },
+        {
+          "word_index": 6,
+          "text": "by",
+          "start": 153.2,
+          "end": 153.35
+        },
+        {
+          "word_index": 7,
+          "text": "the",
+          "start": 153.45,
+          "end": 153.7
+        },
+        {
+          "word_index": 8,
+          "text": "lights",
+          "start": 153.8,
+          "end": 154.3
+        }
+      ]
+    },
+    {
+      "line_index": 31,
+      "text": "No, I can't sleep until I feel your touch",
+      "start": 156.4,
+      "end": 174.3,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "No,",
+          "start": 156.4,
+          "end": 156.7
+        },
+        {
+          "word_index": 2,
+          "text": "I",
+          "start": 157.1,
+          "end": 157.4
+        },
+        {
+          "word_index": 3,
+          "text": "can't",
+          "start": 157.4,
+          "end": 157.5
+        },
+        {
+          "word_index": 4,
+          "text": "sleep",
+          "start": 157.9,
+          "end": 158.2
+        },
+        {
+          "word_index": 5,
+          "text": "until",
+          "start": 171.2,
+          "end": 171.5
+        },
+        {
+          "word_index": 6,
+          "text": "I",
+          "start": 171.9,
+          "end": 172.2
+        },
+        {
+          "word_index": 7,
+          "text": "feel",
+          "start": 172.6,
+          "end": 172.9
+        },
+        {
+          "word_index": 8,
+          "text": "your",
+          "start": 173.3,
+          "end": 173.6
+        },
+        {
+          "word_index": 9,
+          "text": "touch",
+          "start": 174.0,
+          "end": 174.3
+        }
+      ]
+    },
+    {
+      "line_index": 32,
+      "text": "(Hey, hey, hey)",
+      "start": 174.35,
+      "end": 174.5,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "(Hey,",
+          "start": 174.35,
+          "end": 174.4
+        },
+        {
+          "word_index": 2,
+          "text": "hey,",
+          "start": 174.4,
+          "end": 174.45
+        },
+        {
+          "word_index": 3,
+          "text": "hey)",
+          "start": 174.45,
+          "end": 174.5
+        }
+      ]
+    },
+    {
+      "line_index": 33,
+      "text": "(Hey, hey, hey)",
+      "start": 174.55,
+      "end": 175.75,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "(Hey,",
+          "start": 174.55,
+          "end": 174.95
+        },
+        {
+          "word_index": 2,
+          "text": "hey,",
+          "start": 175.05,
+          "end": 175.35
+        },
+        {
+          "word_index": 3,
+          "text": "hey)",
+          "start": 175.45,
+          "end": 175.75
+        }
+      ]
+    },
+    {
+      "line_index": 34,
+      "text": "I said, ooh, I'm blinded by the lights",
+      "start": 183.95,
+      "end": 190.15,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "I",
+          "start": 183.95,
+          "end": 184.25
+        },
+        {
+          "word_index": 2,
+          "text": "said,",
+          "start": 184.65,
+          "end": 184.95
+        },
+        {
+          "word_index": 3,
+          "text": "ooh,",
+          "start": 184.95,
+          "end": 185.05
+        },
+        {
+          "word_index": 4,
+          "text": "I'm",
+          "start": 185.45,
+          "end": 185.75
+        },
+        {
+          "word_index": 5,
+          "text": "blinded",
+          "start": 187.75,
+          "end": 188.05
+        },
+        {
+          "word_index": 6,
+          "text": "by",
+          "start": 188.45,
+          "end": 188.75
+        },
+        {
+          "word_index": 7,
+          "text": "the",
+          "start": 189.15,
+          "end": 189.45
+        },
+        {
+          "word_index": 8,
+          "text": "lights",
+          "start": 189.85,
+          "end": 190.15
+        }
+      ]
+    },
+    {
+      "line_index": 35,
+      "text": "No, I can't sleep until I feel your touch",
+      "start": 190.2,
+      "end": 193.8,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "No,",
+          "start": 190.2,
+          "end": 190.45
+        },
+        {
+          "word_index": 2,
+          "text": "I",
+          "start": 190.55,
+          "end": 190.65
+        },
+        {
+          "word_index": 3,
+          "text": "can't",
+          "start": 190.75,
+          "end": 191.15
+        },
+        {
+          "word_index": 4,
+          "text": "sleep",
+          "start": 191.25,
+          "end": 191.7
+        },
+        {
+          "word_index": 5,
+          "text": "until",
+          "start": 191.8,
+          "end": 192.2
+        },
+        {
+          "word_index": 6,
+          "text": "I",
+          "start": 192.3,
+          "end": 192.4
+        },
+        {
+          "word_index": 7,
+          "text": "feel",
+          "start": 192.5,
+          "end": 192.85
+        },
+        {
+          "word_index": 8,
+          "text": "your",
+          "start": 192.9,
+          "end": 193.25
+        },
+        {
+          "word_index": 9,
+          "text": "touch",
+          "start": 193.35,
+          "end": 193.8
+        }
+      ]
+    }
+  ],
+  "karaoke_timing_method": "paddleocr_roi_alignment"
+}
