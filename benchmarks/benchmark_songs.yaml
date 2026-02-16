@@ -102,3 +102,11 @@ songs:
     preferred_lyrics_provider: "lyriq"
     fallback_lyrics_provider: "syncedlyrics"
     lrc_duration_tolerance_sec: 18
+
+  - artist: "Taylor Swift"
+    title: "Anti-Hero"
+    youtube_id: "b1kbLwvqugk"
+    youtube_url: "https://www.youtube.com/watch?v=b1kbLwvqugk"
+    preferred_lyrics_provider: "lyriq"
+    fallback_lyrics_provider: "syncedlyrics"
+    lrc_duration_tolerance_sec: 15
