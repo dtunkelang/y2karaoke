@@ -5,11 +5,9 @@ from __future__ import annotations
 import logging
 import shutil
 import subprocess
-import sys
 import tempfile
 from dataclasses import dataclass
-from pathlib import Path
-from typing import List, Tuple, Optional
+from typing import List, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -61,7 +59,9 @@ class SystemDoctor:
         ffmpeg_path = shutil.which("ffmpeg")
         if not ffmpeg_path:
             self._add_result(
-                "ffmpeg", False, message="Required for audio processing. Install via brew/apt."
+                "ffmpeg",
+                False,
+                message="Required for audio processing. Install via brew/apt.",
             )
             return
 
@@ -74,13 +74,16 @@ class SystemDoctor:
             version = version_line.split()[2]
             self._add_result("ffmpeg", True, version=version)
         except Exception as e:
-            self._add_result("ffmpeg", True, message=f"Installed but failed to run: {e}")
+            self._add_result(
+                "ffmpeg", True, message=f"Installed but failed to run: {e}"
+            )
 
     def check_yt_dlp(self):
         """Check for yt-dlp availability."""
         # yt-dlp is a Python dependency, so it should be importable
         try:
             import yt_dlp
+
             version = getattr(yt_dlp, "version", {}).get("__version__", "unknown")
             self._add_result("yt-dlp", True, version=version)
         except ImportError:
@@ -92,44 +95,48 @@ class SystemDoctor:
         """Check available OCR engines."""
         # Check Apple Vision
         import platform
+
         is_mac_arm = platform.system() == "Darwin" and platform.machine() == "arm64"
-        
+
         vision_available = False
         if is_mac_arm:
             try:
                 import Vision  # noqa
                 import Quartz  # noqa
+
                 vision_available = True
             except ImportError:
                 pass
-        
+
         self._add_result(
-            "Apple Vision OCR", 
-            vision_available, 
-            message="Only available on macOS (Apple Silicon)", 
-            critical=False
+            "Apple Vision OCR",
+            vision_available,
+            message="Only available on macOS (Apple Silicon)",
+            critical=False,
         )
 
         # Check PaddleOCR
         paddle_available = False
         try:
             import paddleocr  # noqa
+
             paddle_available = True
         except ImportError:
             pass
-            
+
         self._add_result(
-            "PaddleOCR", 
-            paddle_available, 
-            message="Cross-platform fallback. pip install paddlepaddle paddleocr", 
-            critical=not vision_available
+            "PaddleOCR",
+            paddle_available,
+            message="Cross-platform fallback. pip install paddlepaddle paddleocr",
+            critical=not vision_available,
         )
 
     def check_cache_permissions(self):
         """Check if we can write to the cache directory."""
         from ..config import get_cache_dir
+
         cache_dir = get_cache_dir()
-        
+
         try:
             cache_dir.mkdir(parents=True, exist_ok=True)
             with tempfile.NamedTemporaryFile(dir=cache_dir, delete=True) as f:
@@ -137,7 +144,5 @@ class SystemDoctor:
             self._add_result("Cache Directory", True, message=f"Writable: {cache_dir}")
         except Exception as e:
             self._add_result(
-                "Cache Directory", 
-                False, 
-                message=f"Cannot write to {cache_dir}: {e}"
+                "Cache Directory", False, message=f"Cannot write to {cache_dir}: {e}"
             )
