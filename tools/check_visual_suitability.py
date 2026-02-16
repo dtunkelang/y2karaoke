@@ -1,22 +1,35 @@
+#!/usr/bin/env python3
+"""
+Check if a karaoke video has suitable visual cues for bootstrapping.
+"""
+
 import argparse
 import hashlib
 import json
+import logging
 import sys
 from pathlib import Path
 from typing import Any
 
-# Add current directory to path for sibling imports
-sys.path.append(str(Path(__file__).resolve().parent))
+# Add src to path if running from tools/
+src_path = Path(__file__).resolve().parents[1] / "src"
+if str(src_path) not in sys.path:
+    sys.path.insert(0, str(src_path))
 
-from bootstrap_gold_from_karaoke import (  # noqa: E402
-    detect_lyric_roi,
-    _infer_lyric_colors,
-    _classify_word_state,
-    _cv2,
-    _np,
-    _get_ocr,
-    download_karaoke_video,
-)
+from y2karaoke.vision.ocr import get_ocr_engine
+from y2karaoke.vision.color import infer_lyric_colors, classify_word_state
+from y2karaoke.vision.roi import detect_lyric_roi
+from y2karaoke.core.components.audio.downloader import YouTubeDownloader
+
+try:
+    import cv2
+    import numpy as np
+except ImportError:
+    print("Error: OpenCV and Numpy are required.")
+    sys.exit(1)
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
 def _get_cache_key(video_path: Path, prefix: str, **kwargs) -> str:
@@ -37,8 +50,7 @@ def _collect_raw_frames_with_confidence(
     roi_rect: tuple[int, int, int, int],
 ) -> list[dict[str, Any]]:
     """Perform OCR and extract word states including confidence."""
-    cv2, np = _cv2(), _np()
-    ocr = _get_ocr()
+    ocr = get_ocr_engine()
     cap = cv2.VideoCapture(str(video_path))
     src_fps = cap.get(cv2.CAP_PROP_FPS) or 30.0
     cap.set(cv2.CAP_PROP_POS_MSEC, max(0, start - 0.1) * 1000.0)
@@ -56,23 +68,32 @@ def _collect_raw_frames_with_confidence(
 
         roi = frame[ry : ry + rh, rx : rx + rw]
         res = ocr.predict(roi)
-        if res and "rec_texts" in res[0]:
-            words = []
-            # We assume rec_scores is available in PaddleOCR results
-            texts = res[0]["rec_texts"]
-            boxes = res[0]["rec_boxes"]
-            scores = res[0].get("rec_scores", [1.0] * len(texts))
+        if res and res[0]:
+            items = res[0]
+            rec_texts = items.get("rec_texts", [])
+            rec_boxes = items.get("rec_boxes", [])
+            rec_scores = items.get("rec_scores", [1.0] * len(rec_texts))
 
-            for txt, box, conf in zip(texts, boxes, scores):
-                np_box = np.array(box).reshape(-1, 2)
+            words = []
+            for txt, box, conf in zip(rec_texts, rec_boxes, rec_scores):
+                # box might be dict or points
+                if isinstance(box, dict):
+                    points = box["word"]
+                else:
+                    points = box
+                    
+                np_box = np.array(points).reshape(-1, 2)
                 x, y = int(min(np_box[:, 0])), int(min(np_box[:, 1]))
                 bw, bh = int(max(np_box[:, 0]) - x), int(max(np_box[:, 1]) - y)
-                state = _classify_word_state(roi[y : y + bh, x : x + bw], c_un, c_sel)
+                
+                word_roi = roi[y : y + bh, x : x + bw]
+                state, ratio = classify_word_state(word_roi, c_un, c_sel)
                 if state != "unknown":
                     words.append(
                         {
                             "text": txt,
                             "color": state,
+                            "ratio": ratio,
                             "x": x,
                             "y": y,
                             "confidence": float(conf),
@@ -175,7 +196,13 @@ def main():
     source = args.source
     if source.startswith("http"):
         print(f"Downloading video from: {source}")
-        video_path = download_karaoke_video(source, out_dir=args.work_dir / "videos")
+        downloader = YouTubeDownloader(cache_dir=args.work_dir / "videos")
+        try:
+            info = downloader.download_video(source)
+            video_path = Path(info["video_path"])
+        except Exception as e:
+            print(f"Error downloading video: {e}")
+            return 1
     else:
         video_path = Path(source)
 
@@ -186,7 +213,7 @@ def main():
     print(f"Analyzing visual suitability for: {video_path.name}")
 
     # 1. Detect ROI
-    roi_rect = detect_lyric_roi(video_path, args.work_dir)
+    roi_rect = detect_lyric_roi(video_path, sample_fps=1.0)
 
     # 2. Infer colors (with caching)
     color_cache_path = args.work_dir / _get_cache_key(
@@ -195,17 +222,15 @@ def main():
     if color_cache_path.exists():
         print(f"Loading cached colors from {color_cache_path.name}...")
         cached_colors = json.loads(color_cache_path.read_text())
-        np = _np()
         c_un = np.array(cached_colors["c_un"])
         c_sel = np.array(cached_colors["c_sel"])
     else:
-        c_un, c_sel, _ = _infer_lyric_colors(video_path, roi_rect)
+        c_un, c_sel, _ = infer_lyric_colors(video_path, roi_rect)
         color_cache_path.write_text(
             json.dumps({"c_un": c_un.tolist(), "c_sel": c_sel.tolist()})
         )
 
     # 3. Sample frames throughout the video (with caching)
-    cv2 = _cv2()
     cap = cv2.VideoCapture(str(video_path))
     duration = cap.get(cv2.CAP_PROP_FRAME_COUNT) / (cap.get(cv2.CAP_PROP_FPS) or 30.0)
     cap.release()
@@ -261,10 +286,6 @@ def main():
             print("  QUALITY: POOR - High noise or non-standard highlighting.")
 
     return 0
-
-
-if __name__ == "__main__":
-    sys.exit(main())
 
 
 if __name__ == "__main__":

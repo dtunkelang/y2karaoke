@@ -153,3 +153,92 @@ STOP_WORDS = {
     "dos",
     "das",
 }
+
+
+def normalize_text_basic(text: str) -> str:
+    """Basic normalization: lowercase, strip non-alphanumeric (except quotes/spaces)."""
+    if not text:
+        return ""
+    # Replace hyphens with spaces before regex to ensure 'anti-hero' -> 'anti hero'
+    t = text.lower().replace("-", " ")
+    return re.sub(r"[^a-z0-9' ]+", "", t).strip()
+
+
+def text_similarity(a: str, b: str) -> float:
+    """Calculate similarity ratio between two strings."""
+    from difflib import SequenceMatcher
+
+    na, nb = normalize_text_basic(a), normalize_text_basic(b)
+    if not na or not nb:
+        return 0.0
+    return SequenceMatcher(None, na, nb).ratio()
+
+
+def canon_punct(text: str) -> str:
+    """Canonicalize punctuation characters."""
+    text = unicodedata.normalize("NFKC", text)
+    trans = {
+        "’": "'",
+        "‘": "'",
+        "´": "'",
+        "`": "'",
+        "“": '"',
+        "”": '"',
+        "–": "-",
+        "—": "-",
+    }
+    text = "".join(trans.get(ch, ch) for ch in text)
+    return " ".join(text.split())
+
+
+def spell_correct(text: str) -> str:
+    """Attempt spell correction using macOS spell checker if available."""
+    if not text:
+        return text
+    try:
+        from AppKit import NSSpellChecker
+
+        checker = NSSpellChecker.sharedSpellChecker()
+        words = text.split()
+        corrected = []
+        for w in words:
+            if len(w) < 3:
+                corrected.append(w)
+                continue
+            missed = checker.checkSpellingOfString_startingAt_(w, 0)
+            if missed.length > 0:
+                guesses = checker.guessesForWordRange_inString_language_inSpellDocumentWithTag_(
+                    missed, w, "en", 0
+                )
+                if guesses:
+                    corrected.append(guesses[0])
+                    continue
+            corrected.append(w)
+        return " ".join(corrected)
+    except Exception:
+        return text
+
+
+def normalize_ocr_line(text: str) -> str:
+    """Clean up OCR output: punctuation, common typos, contractions."""
+    text = canon_punct(text)
+    if not text:
+        return text
+    if text.lower().startswith("have "):
+        text = "I " + text
+    text = text.replace("problei", "problem")
+    toks = text.split()
+    out: List[str] = []
+    contractions = {"'ll", "'re", "'ve", "'m", "'d"}
+    confusable_i = {"1", "|", "!"}
+    for i, tok in enumerate(toks):
+        prev_tok = out[-1] if out else ""
+        next_tok = toks[i + 1] if i + 1 < len(toks) else ""
+        if tok in contractions and prev_tok:
+            out[-1] = prev_tok + tok
+            continue
+        if tok in confusable_i:
+            if any(c.isalpha() for c in prev_tok) or any(c.isalpha() for c in next_tok):
+                tok = "I"
+        out.append(tok)
+    return spell_correct(" ".join(out))

@@ -1,16 +1,13 @@
-from __future__ import annotations
-
 import sys
 from pathlib import Path
 
 # Add project root to sys.path before other project imports
 sys.path.append(str(Path(__file__).resolve().parents[3]))
 
-from tools.bootstrap_gold_from_karaoke import (  # noqa: E402
-    _snap,
-    _text_similarity,
-    TargetLine,
-)
+# Updated imports to point to new locations
+from src.y2karaoke.core.refine_visual import _snap
+from src.y2karaoke.core.text_utils import text_similarity as _text_similarity
+from src.y2karaoke.core.models import TargetLine
 
 
 def test_snap():

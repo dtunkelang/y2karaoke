@@ -2,21 +2,15 @@ import importlib.util
 import sys
 from pathlib import Path
 
-_MODULE_PATH = (
-    Path(__file__).resolve().parents[3] / "tools" / "bootstrap_gold_from_karaoke.py"
-)
-_SPEC = importlib.util.spec_from_file_location(
-    "bootstrap_gold_from_karaoke_module", _MODULE_PATH
-)
-assert _SPEC and _SPEC.loader
-_MODULE = importlib.util.module_from_spec(_SPEC)
-sys.modules[_SPEC.name] = _MODULE
-_SPEC.loader.exec_module(_MODULE)
+# Add project root to sys.path before other project imports
+sys.path.append(str(Path(__file__).resolve().parents[3]))
 
-TargetLine = _MODULE.TargetLine
-text_similarity = _MODULE._text_similarity
-normalize_ocr_line = _MODULE.normalize_ocr_line
-normalize_text = _MODULE._normalize_text
+from src.y2karaoke.core.models import TargetLine
+from src.y2karaoke.core.text_utils import (
+    text_similarity,
+    normalize_ocr_line,
+    normalize_text_basic as normalize_text,
+)
 
 
 def test_text_similarity_is_case_and_punctuation_tolerant() -> None:

@@ -310,3 +310,19 @@ class PipelineQualityReport:
                 lines.append(f"  - {r}")
 
         return "\n".join(lines)
+
+
+@dataclass
+class TargetLine:
+    """A target line for visual alignment, including OCR metadata."""
+
+    line_index: int
+    start: float
+    end: Optional[float]
+    text: str
+    words: List[str]
+    y: float
+    word_starts: Optional[List[Optional[float]]] = None
+    word_ends: Optional[List[Optional[float]]] = None
+    word_rois: Optional[List[tuple[int, int, int, int]]] = None
+    char_rois: Optional[List[Optional[tuple[int, int, int, int]]]] = None
