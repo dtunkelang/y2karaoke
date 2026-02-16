@@ -32,7 +32,7 @@ def test_create_no_lyrics_placeholder():
     assert metadata.artist == "Artist"
 
 
-def test_detect_and_apply_offset_auto_applies(monkeypatch):
+def test_detect_and_apply_offset_skips_suspicious_delta(monkeypatch):
     monkeypatch.setattr(
         "y2karaoke.core.components.alignment.alignment.detect_song_start", lambda _: 5.0
     )
@@ -42,8 +42,8 @@ def test_detect_and_apply_offset_auto_applies(monkeypatch):
         "vocals.wav", line_timings, lyrics_offset=None
     )
 
-    assert offset == pytest.approx(4.0)
-    assert updated[0][0] == pytest.approx(5.0)
+    assert offset == 0.0
+    assert updated[0][0] == pytest.approx(1.0)
 
 
 def test_detect_and_apply_offset_respects_manual(monkeypatch):
