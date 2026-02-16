@@ -4,16 +4,16 @@ from __future__ import annotations
 
 import logging
 import platform
-from typing import Any, List, Optional, Dict, Union
+from typing import Any, List, Dict
 
-# Third-party imports are conditional to allow the library to load
-# even if some heavy dependencies are missing (though they'll fail at runtime)
 try:
     import cv2
     import numpy as np
 except ImportError:
     cv2 = None
     np = None
+
+from ..exceptions import OCRError
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +29,7 @@ class VisionOCR:
             from Quartz import CIImage, kCIFormatRGBA8
             import objc
         except ImportError as e:
-            raise ImportError(
+            raise OCRError(
                 "Apple Vision dependencies (pyobjc-framework-Vision, etc.) not found."
             ) from e
 
@@ -41,7 +41,7 @@ class VisionOCR:
     def predict(self, frame_nd: np.ndarray) -> List[Dict[str, Any]]:
         """Run OCR on a numpy image array (BGR)."""
         if cv2 is None or np is None:
-            raise ImportError("OpenCV and Numpy are required for OCR.")
+            raise OCRError("OpenCV and Numpy are required for OCR.")
 
         frame_rgba = cv2.cvtColor(frame_nd, cv2.COLOR_BGR2RGBA)
         h, w = frame_rgba.shape[:2]
@@ -127,7 +127,8 @@ class VisionOCR:
                     rec_boxes.append({"word": box, "first_char": char_box})
                     rec_scores.append(top_candidate.confidence())
 
-                except Exception:
+                except Exception as e:
+                    logger.debug(f"Error parsing bbox for '{word_text}': {e}")
                     continue
 
         if not rec_texts:
@@ -163,10 +164,9 @@ def get_ocr_engine() -> Any:
         _OCR_ENGINE = PaddleOCR(
             use_textline_orientation=True, lang="en", show_log=False
         )
-    except ImportError:
-        logger.error(
-            "PaddleOCR not found. Please install via `pip install paddlepaddle paddleocr`"
-        )
-        raise
+    except ImportError as e:
+        msg = "PaddleOCR not found. Please install via `pip install paddlepaddle paddleocr`"
+        logger.error(msg)
+        raise OCRError(msg) from e
 
     return _OCR_ENGINE

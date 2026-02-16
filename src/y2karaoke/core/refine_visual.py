@@ -15,7 +15,7 @@ except ImportError:
 
 from .models import TargetLine
 from .text_utils import normalize_ocr_line, normalize_text_basic, text_similarity
-from ..vision.ocr import get_ocr_engine
+from ..exceptions import VisualRefinementError
 
 logger = logging.getLogger(__name__)
 
@@ -42,6 +42,9 @@ def refine_word_timings_at_high_fps(
         raise ImportError("OpenCV and Numpy required.")
 
     cap = cv2.VideoCapture(str(video_path))
+    if not cap.isOpened():
+        raise VisualRefinementError(f"Could not open video: {video_path}")
+
     rx, ry, rw, rh = roi_rect
     logger.info("Refining timings with Departure-Onset detection...")
 

@@ -14,6 +14,7 @@ except ImportError:
     np = None
 
 from .ocr import get_ocr_engine
+from ..exceptions import VisualRefinementError
 
 logger = logging.getLogger(__name__)
 
@@ -33,7 +34,7 @@ def detect_lyric_roi(
     ocr = get_ocr_engine()
     cap = cv2.VideoCapture(str(video_path))
     if not cap.isOpened():
-        raise RuntimeError(f"Could not open video: {video_path}")
+        raise VisualRefinementError(f"Could not open video: {video_path}")
 
     src_fps = cap.get(cv2.CAP_PROP_FPS) or 30.0
     duration = cap.get(cv2.CAP_PROP_FRAME_COUNT) / src_fps

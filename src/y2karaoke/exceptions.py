@@ -53,3 +53,15 @@ class ConfigError(Y2KaraokeError):
     """Configuration error."""
 
     pass
+
+
+class OCRError(Y2KaraokeError):
+    """Error during OCR processing."""
+
+    pass
+
+
+class VisualRefinementError(Y2KaraokeError):
+    """Error during visual timing refinement."""
+
+    pass
