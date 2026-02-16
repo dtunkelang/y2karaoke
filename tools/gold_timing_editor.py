@@ -69,13 +69,6 @@ def _load_document(path: Path) -> dict[str, Any]:
     raise ValidationError("Unsupported file format")
 
 
-def _load_document(path: Path) -> dict[str, Any]:
-    raw = json.loads(path.read_text(encoding="utf-8"))
-    if isinstance(raw, dict) and isinstance(raw.get("lines"), list):
-        return _validate_and_normalize_gold(raw)
-    raise ValidationError("Unsupported file format")
-
-
 class Handler(SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory=str(EDITOR_DIR), **kwargs)
@@ -88,7 +81,7 @@ class Handler(SimpleHTTPRequestHandler):
         file_size = path.stat().st_size
         suffix = path.suffix.lower()
         ctype = (
-            "audio/wav"
+            "audio/x-wav"
             if suffix == ".wav"
             else (
                 "audio/mpeg"
@@ -102,42 +95,50 @@ class Handler(SimpleHTTPRequestHandler):
         )
 
         range_header = self.headers.get("Range")
-        if range_header and range_header.startswith("bytes="):
-            try:
-                ranges = range_header.split("=")[1].split("-")
-                start = int(ranges[0]) if ranges[0] else 0
-                end = int(ranges[1]) if len(ranges) > 1 and ranges[1] else file_size - 1
-            except Exception:
-                self.send_error(HTTPStatus.REQUESTED_RANGE_NOT_SATISFIABLE)
-                return
+        try:
+            if range_header and range_header.startswith("bytes="):
+                try:
+                    ranges = range_header.split("=")[1].split("-")
+                    start = int(ranges[0]) if ranges[0] else 0
+                    end = (
+                        int(ranges[1])
+                        if len(ranges) > 1 and ranges[1]
+                        else file_size - 1
+                    )
+                except Exception:
+                    self.send_error(HTTPStatus.REQUESTED_RANGE_NOT_SATISFIABLE)
+                    return
 
-            if start >= file_size or end >= file_size:
-                self.send_error(HTTPStatus.REQUESTED_RANGE_NOT_SATISFIABLE)
-                return
+                if start >= file_size or end >= file_size:
+                    self.send_error(HTTPStatus.REQUESTED_RANGE_NOT_SATISFIABLE)
+                    return
 
-            self.send_response(HTTPStatus.PARTIAL_CONTENT)
-            self.send_header("Content-Type", ctype)
-            self.send_header("Content-Range", f"bytes {start}-{end}/{file_size}")
-            self.send_header("Content-Length", str(end - start + 1))
-            self.send_header("Accept-Ranges", "bytes")
-            self.end_headers()
-            with path.open("rb") as f:
-                f.seek(start)
-                remaining = end - start + 1
-                while remaining > 0:
-                    chunk = f.read(min(remaining, 65536))
-                    if not chunk:
-                        break
-                    self.wfile.write(chunk)
-                    remaining -= len(chunk)
-        else:
-            self.send_response(HTTPStatus.OK)
-            self.send_header("Content-Type", ctype)
-            self.send_header("Content-Length", str(file_size))
-            self.send_header("Accept-Ranges", "bytes")
-            self.end_headers()
-            with path.open("rb") as f:
-                shutil.copyfileobj(f, self.wfile)
+                self.send_response(HTTPStatus.PARTIAL_CONTENT)
+                self.send_header("Content-Type", ctype)
+                self.send_header("Content-Range", f"bytes {start}-{end}/{file_size}")
+                self.send_header("Content-Length", str(end - start + 1))
+                self.send_header("Accept-Ranges", "bytes")
+                self.end_headers()
+                with path.open("rb") as f:
+                    f.seek(start)
+                    remaining = end - start + 1
+                    while remaining > 0:
+                        chunk = f.read(min(remaining, 65536))
+                        if not chunk:
+                            break
+                        self.wfile.write(chunk)
+                        remaining -= len(chunk)
+            else:
+                self.send_response(HTTPStatus.OK)
+                self.send_header("Content-Type", ctype)
+                self.send_header("Content-Length", str(file_size))
+                self.send_header("Accept-Ranges", "bytes")
+                self.end_headers()
+                with path.open("rb") as f:
+                    shutil.copyfileobj(f, self.wfile)
+        except (ConnectionResetError, BrokenPipeError):
+            # Client closed the connection early, which is normal for media streaming
+            pass
 
     def do_GET(self) -> None:
         parsed = urlparse(self.path)

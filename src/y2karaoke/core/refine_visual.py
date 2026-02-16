@@ -10,8 +10,8 @@ try:
     import cv2
     import numpy as np
 except ImportError:
-    cv2 = None
-    np = None
+    cv2 = None  # type: ignore
+    np = None  # type: ignore
 
 from .models import TargetLine
 from .text_utils import normalize_ocr_line, normalize_text_basic, text_similarity
@@ -24,7 +24,7 @@ def _word_fill_mask(roi_bgr: np.ndarray, c_bg: np.ndarray) -> np.ndarray:
     """Create a mask for text pixels (foreground)."""
     if cv2 is None or np is None:
         raise ImportError("OpenCV and Numpy required.")
-        
+
     dist_bg = np.linalg.norm(roi_bgr - c_bg, axis=2)
     mask = (dist_bg > 35).astype(np.uint8) * 255
     mask = cv2.medianBlur(mask, 3)
@@ -32,7 +32,7 @@ def _word_fill_mask(roi_bgr: np.ndarray, c_bg: np.ndarray) -> np.ndarray:
     return mask
 
 
-def refine_word_timings_at_high_fps(
+def refine_word_timings_at_high_fps(  # noqa: C901
     video_path: Path,
     target_lines: List[TargetLine],
     roi_rect: tuple[int, int, int, int],
@@ -55,7 +55,7 @@ def refine_word_timings_at_high_fps(
         # Handle potential None end time by defaulting to start + 5s (safe upper bound)
         line_end = ln.end if ln.end is not None else ln.start + 5.0
         v_start, v_end = max(0.0, ln.start - 1.0), line_end + 1.0
-        
+
         cap.set(cv2.CAP_PROP_POS_MSEC, v_start * 1000.0)
         line_frames = []
         while True:
@@ -67,7 +67,7 @@ def refine_word_timings_at_high_fps(
 
         if len(line_frames) < 20:
             continue
-        
+
         # Estimate background color from first few frames (assumed unlit)
         c_bg_line = np.mean(
             [np.mean(f[1], axis=(0, 1)) for f in line_frames[:10]], axis=0
@@ -75,10 +75,10 @@ def refine_word_timings_at_high_fps(
 
         new_starts: List[Optional[float]] = []
         new_ends: List[Optional[float]] = []
-        
+
         # We know word_rois is not None from check above
         assert ln.word_rois is not None
-        
+
         for wi in range(len(ln.words)):
             wx, wy, ww, wh = ln.word_rois[wi]
             # 1. Identify TEXT-ONLY frames
@@ -110,10 +110,10 @@ def refine_word_timings_at_high_fps(
                     np.ones(kernel_size) / kernel_size,
                     mode="same",
                 )
-                
+
                 idx_peak = int(np.argmax(l_smooth))
                 c_initial = word_vals[idx_peak]["avg"]
-                
+
                 # Find valley after peak
                 idx_valley = idx_peak + int(np.argmin(l_smooth[idx_peak:]))
                 c_final = word_vals[idx_valley]["avg"]
@@ -130,10 +130,12 @@ def refine_word_timings_at_high_fps(
                     start_stable = max(0, idx_peak - 5)
                     end_stable = min(len(dists_in), idx_peak + 5)
                     stable_range = dists_in[start_stable:end_stable]
-                    
+
                     noise_floor = 1.0
                     if stable_range:
-                        noise_floor = float(np.mean(stable_range) + 2 * np.std(stable_range))
+                        noise_floor = float(
+                            np.mean(stable_range) + 2 * np.std(stable_range)
+                        )
 
                     for j in range(idx_peak, len(times)):
                         # Start trigger: Consistent departure from noise floor
@@ -143,20 +145,24 @@ def refine_word_timings_at_high_fps(
                                 for k in range(1, 4)
                             ):
                                 s = times[j]
-                        
+
                         # End trigger: Closer to final state
                         if s is not None and e is None:
-                            curr_dist_final = np.linalg.norm(word_vals[j]["avg"] - c_final)
-                            curr_dist_initial = np.linalg.norm(word_vals[j]["avg"] - c_initial)
+                            curr_dist_final = np.linalg.norm(
+                                word_vals[j]["avg"] - c_final
+                            )
+                            curr_dist_initial = np.linalg.norm(
+                                word_vals[j]["avg"] - c_initial
+                            )
                             if curr_dist_final < curr_dist_initial:
                                 e = times[j]
                                 break
             new_starts.append(s)
             new_ends.append(e)
-        
+
         ln.word_starts = new_starts
         ln.word_ends = new_ends
-    
+
     cap.release()
 
 
@@ -165,22 +171,22 @@ def _snap(value: float) -> float:
     return round(round(float(value) / 0.05) * 0.05, 3)
 
 
-def reconstruct_lyrics_from_visuals(
+def reconstruct_lyrics_from_visuals(  # noqa: C901
     raw_frames: list[dict[str, Any]], visual_fps: float
 ) -> list[TargetLine]:
     """Group raw OCR words into logical lines and assign timing."""
     on_screen: Dict[str, Dict[str, Any]] = {}
     committed = []
-    
+
     for frame in raw_frames:
         words = frame.get("words", [])
         current_norms = set()
-        
+
         if words:
             # Sort by Y to process lines top-to-bottom
             words.sort(key=lambda w: w["y"])
             lines_in_frame = []
-            
+
             # Group words into lines based on Y-proximity
             if words:
                 curr = [words[0]]
@@ -197,12 +203,12 @@ def reconstruct_lyrics_from_visuals(
                 txt = normalize_ocr_line(" ".join([w["text"] for w in ln_w]))
                 if not txt:
                     continue
-                
+
                 y_pos = int(sum(w["y"] for w in ln_w) / len(ln_w))
                 # Create a key based on Y-bin and text content to track unique lines
                 norm = f"y{y_pos // 30}_{normalize_text_basic(txt)}"
                 current_norms.add(norm)
-                
+
                 if norm in on_screen:
                     on_screen[norm]["last"] = frame["time"]
                 else:
@@ -214,13 +220,13 @@ def reconstruct_lyrics_from_visuals(
                         "y": y_pos,
                         "w_rois": [(w["x"], w["y"], w["w"], w["h"]) for w in ln_w],
                     }
-        
+
         # Commit lines that have disappeared
         for nt in list(on_screen.keys()):
             # If line not seen in current frame and hasn't been seen for > 1.0s
             if nt not in current_norms and frame["time"] - on_screen[nt]["last"] > 1.0:
                 committed.append(on_screen.pop(nt))
-                
+
     # Commit remaining lines
     for ent in on_screen.values():
         committed.append(ent)
@@ -253,7 +259,7 @@ def reconstruct_lyrics_from_visuals(
             e = nxt_s if (nxt_s - s < 3.0) else _snap(float(ent["last"]) + 2.0)
         else:
             e = _snap(float(ent["last"]) + 2.0)
-            
+
         out.append(
             TargetLine(
                 line_index=i + 1,

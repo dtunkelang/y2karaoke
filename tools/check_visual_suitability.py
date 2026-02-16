@@ -16,10 +16,10 @@ src_path = Path(__file__).resolve().parents[1] / "src"
 if str(src_path) not in sys.path:
     sys.path.insert(0, str(src_path))
 
-from y2karaoke.vision.ocr import get_ocr_engine
-from y2karaoke.vision.color import infer_lyric_colors, classify_word_state
-from y2karaoke.vision.roi import detect_lyric_roi
-from y2karaoke.core.components.audio.downloader import YouTubeDownloader
+from y2karaoke.vision.ocr import get_ocr_engine  # noqa: E402
+from y2karaoke.vision.color import infer_lyric_colors, classify_word_state  # noqa: E402
+from y2karaoke.vision.roi import detect_lyric_roi  # noqa: E402
+from y2karaoke.core.components.audio.downloader import YouTubeDownloader  # noqa: E402
 
 try:
     import cv2
@@ -81,11 +81,11 @@ def _collect_raw_frames_with_confidence(
                     points = box["word"]
                 else:
                     points = box
-                    
+
                 np_box = np.array(points).reshape(-1, 2)
                 x, y = int(min(np_box[:, 0])), int(min(np_box[:, 1]))
                 bw, bh = int(max(np_box[:, 0]) - x), int(max(np_box[:, 1]) - y)
-                
+
                 word_roi = roi[y : y + bh, x : x + bw]
                 state, ratio = classify_word_state(word_roi, c_un, c_sel)
                 if state != "unknown":

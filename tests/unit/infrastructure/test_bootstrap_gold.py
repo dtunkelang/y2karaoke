@@ -5,9 +5,11 @@ from pathlib import Path
 sys.path.append(str(Path(__file__).resolve().parents[3]))
 
 # Updated imports to point to new locations
-from src.y2karaoke.core.refine_visual import _snap
-from src.y2karaoke.core.text_utils import text_similarity as _text_similarity
-from src.y2karaoke.core.models import TargetLine
+from src.y2karaoke.core.refine_visual import _snap  # noqa: E402
+from src.y2karaoke.core.text_utils import (  # noqa: E402
+    text_similarity as _text_similarity,
+)
+from src.y2karaoke.core.models import TargetLine  # noqa: E402
 
 
 def test_snap():

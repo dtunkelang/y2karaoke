@@ -10,8 +10,8 @@ try:
     import cv2
     import numpy as np
 except ImportError:
-    cv2 = None
-    np = None
+    cv2 = None  # type: ignore
+    np = None  # type: ignore
 
 from .ocr import get_ocr_engine
 from ..exceptions import VisualRefinementError
@@ -84,7 +84,7 @@ def infer_lyric_colors(
             # Handle slight differences in Paddle vs Vision output structure if needed
             # Assuming VisionOCR format from ocr.py which returns list of dicts
             rec_boxes = items.get("rec_boxes", [])
-            
+
             for box_data in rec_boxes:
                 # box_data might be a dict with 'word' key (VisionOCR) or just points
                 if isinstance(box_data, dict):
@@ -123,7 +123,7 @@ def infer_lyric_colors(
     centers = cluster_colors(pixel_samples, k=2)
     # Sort by brightness (mean channel value). Usually unselected is brighter (white).
     centers.sort(key=lambda c: np.mean(c), reverse=True)
-    
+
     # Heuristic: First is unselected (Bright), Second is selected (Dark/Color)
     # Note: This heuristic might fail for "Dark Mode" karaoke.
     return centers[0], centers[1], np.array([0, 0, 0])
@@ -134,7 +134,7 @@ def classify_word_state(
 ) -> Tuple[str, float]:
     """
     Determine if a word is 'unselected', 'selected', or 'mixed'.
-    
+
     Returns:
         (state_str, ratio_of_selected_pixels)
     """
@@ -145,7 +145,7 @@ def classify_word_state(
         return "unknown", 0.0
 
     pixels = word_roi.reshape(-1, 3).astype(np.float32)
-    
+
     # Simple Euclidean distance in BGR space
     dist_un = np.linalg.norm(pixels - c_un, axis=1)
     dist_sel = np.linalg.norm(pixels - c_sel, axis=1)

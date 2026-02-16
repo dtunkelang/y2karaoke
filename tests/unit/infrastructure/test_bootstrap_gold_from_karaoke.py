@@ -1,12 +1,11 @@
-import importlib.util
 import sys
 from pathlib import Path
 
 # Add project root to sys.path before other project imports
 sys.path.append(str(Path(__file__).resolve().parents[3]))
 
-from src.y2karaoke.core.models import TargetLine
-from src.y2karaoke.core.text_utils import (
+from src.y2karaoke.core.models import TargetLine  # noqa: E402
+from src.y2karaoke.core.text_utils import (  # noqa: E402
     text_similarity,
     normalize_ocr_line,
     normalize_text_basic as normalize_text,

@@ -10,8 +10,8 @@ try:
     import cv2
     import numpy as np
 except ImportError:
-    cv2 = None
-    np = None
+    cv2 = None  # type: ignore
+    np = None  # type: ignore
 
 from ..exceptions import OCRError
 

@@ -2,4 +2,4 @@
 max-line-length = 127
 max-complexity = 15
 ignore = E203, E226, W503
-exclude = venv, .git, __pycache__, build, dist
+exclude = venv, .venv, .codex, .git, __pycache__, build, dist
