@@ -5,14 +5,14 @@ from y2karaoke.core.models import Line, Word
 
 def test_apply_offset_to_line_shifts_words():
     line = Line(words=[Word(text="a", start_time=1.0, end_time=1.5)])
-    shifted = te._apply_offset_to_line(line, 2.0)
+    shifted = wa_ref._apply_offset_to_line(line, 2.0)
     assert shifted.words[0].start_time == 3.0
     assert shifted.words[0].end_time == 3.5
 
 
 def test_calculate_drift_correction_requires_consistency():
-    assert te._calculate_drift_correction([0.1], 0.5) is None
-    drift = te._calculate_drift_correction([-1.0, -1.2, -1.1], 0.5)
+    assert wa_ref._calculate_drift_correction([0.1], 0.5) is None
+    drift = wa_ref._calculate_drift_correction([-1.0, -1.2, -1.1], 0.5)
     assert drift is not None and drift < 0
 
 
@@ -128,7 +128,7 @@ def test_fix_ordering_violations_reverts(monkeypatch):
         Line(words=[Word(text="a", start_time=0.0, end_time=1.0)]),
         Line(words=[Word(text="b", start_time=0.5, end_time=1.0)]),
     ]
-    fixed_lines, fixed_alignments = te._fix_ordering_violations(
+    fixed_lines, fixed_alignments = wa_ref._fix_ordering_violations(
         original, aligned, ["a", "b"]
     )
     assert fixed_lines[1].start_time == 2.0

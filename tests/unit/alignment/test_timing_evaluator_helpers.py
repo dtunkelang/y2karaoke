@@ -6,10 +6,14 @@ from y2karaoke.core.audio_analysis import _find_vocal_end
 import y2karaoke.core.components.alignment.timing_evaluator_correction as te_corr
 from y2karaoke.core.components.alignment.timing_evaluator import (
     correct_line_timestamps,
+)
+from y2karaoke.core.components.alignment.timing_evaluator_correction import (
     _find_best_onset_during_silence,
     _find_best_onset_for_phrase_end,
     _find_best_onset_proximity,
     _find_phrase_end,
+)
+from y2karaoke.core.components.alignment.timing_evaluator_core import (
     _check_pause_alignment,
     _calculate_pause_score,
 )

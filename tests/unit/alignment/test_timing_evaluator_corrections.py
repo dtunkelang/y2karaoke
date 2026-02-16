@@ -38,7 +38,7 @@ def test_find_phrase_end_returns_silence_start():
         energy_times=[0.0, 1.0, 2.0, 3.0],
         energy_envelope=[1.0, 0.0, 0.0, 1.0],
     )
-    phrase_end = te._find_phrase_end(0.0, 3.0, features, min_silence_duration=0.5)
+    phrase_end = te_corr._find_phrase_end(0.0, 3.0, features, min_silence_duration=0.5)
     assert phrase_end == 1.0
 
 
@@ -48,7 +48,7 @@ def test_find_phrase_end_falls_back_to_max_end():
         energy_times=[0.0, 1.0, 2.0],
         energy_envelope=[1.0, 1.0, 1.0],
     )
-    phrase_end = te._find_phrase_end(0.0, 2.0, features, min_silence_duration=0.5)
+    phrase_end = te_corr._find_phrase_end(0.0, 2.0, features, min_silence_duration=0.5)
     assert phrase_end == 2.0
 
 

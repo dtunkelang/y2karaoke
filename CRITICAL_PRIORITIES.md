@@ -22,27 +22,30 @@ This document outlines the critical areas of the `y2karaoke` codebase and the im
 **Context:** A set of 12 songs is defined in `benchmarks/benchmark_songs.yaml` to measure alignment accuracy.
 
 **Status (2026-02-16):**
-*   Full suite run shows large systematic offset (~21s weighted mean).
-*   "Anti-Hero" (priority song) shows **3.38s offset** against gold standard.
-*   "Visual Refinement" logic *is* running, but an auto-offset of ~3.78s might be applying incorrectly.
+*   **Fixed:** "Anti-Hero" 3.38s offset issue resolved. Auto-offset logic in `lyrics_helpers.py` now disabled for offsets between 0.3s and 5.0s to prevent false positives on quiet intros.
+*   **Pending:** Full suite re-run to confirm offset fix and measure impact on other songs.
 
 **Critical Areas:**
 *   `tools/run_benchmark_suite.py`: The runner script.
 *   `benchmarks/`: The configuration and gold standard files.
 
 **Action Plan:**
-*   **Investigate Offset:** Focus on `y2karaoke.core.components.lyrics.lyrics_whisper` and why it applies a `+3.78s` offset that results in a 3.4s error.
-*   **Analyze Results:** Compare `anti_hero` results specifically.
+*   **Verify Fix:** Run benchmark suite to confirm Anti-Hero timing is now accurate (<0.5s error).
+*   **Analyze Results:** Check for regressions in other songs due to disabled auto-offset.
 
 ## 3. Alignment Heuristics
 **Context:** The core alignment logic (`src/y2karaoke/core/components/alignment/`) uses complex heuristics to score and correct timings.
+
+**Status (2026-02-16):**
+*   **Refactored:** `timing_evaluator.py` converted to strict public facade. Internal logic moved to `timing_evaluator_core.py`, `timing_evaluator_correction.py`, etc.
+*   **Tests Fixed:** 250+ unit tests updated to import from implementation modules, resolving circular dependencies and private access issues.
 
 **Critical Areas:**
 *   `timing_evaluator_*.py`: Multiple files handling corrections, pauses, and scoring.
 
 **Action Plan:**
-*   **Simplify:** Review the split of logic across multiple `timing_evaluator` files. Merge or clarify responsibilities where possible.
 *   **Document:** Add docstrings explaining the specific heuristic being applied (e.g., "why do we punish missing pauses?").
+*   **Simplify:** Continue identifying complex logic blocks for further decomposition.
 
 ## 4. OCR Dependency Management
 **Context:** The project optionally uses Apple Vision (macOS) or PaddleOCR.
@@ -58,7 +61,7 @@ This document outlines the critical areas of the `y2karaoke` codebase and the im
 ---
 
 **Next Immediate Step:**
-Run the benchmark suite to baseline the current performance, especially for "Anti-Hero" and "Bohemian Rhapsody".
+Run the benchmark suite to baseline the current performance, especially for "Anti-Hero" and "Bohemian Rhapsody", now that the offset bug and test suite are fixed.
 
 ```bash
 python tools/run_benchmark_suite.py

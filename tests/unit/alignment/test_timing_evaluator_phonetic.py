@@ -1,5 +1,6 @@
 from y2karaoke.core import timing_evaluator as te
 from y2karaoke.core import phonetic_utils as pu
+import y2karaoke.core.components.whisper.whisper_integration as wi
 
 
 def test_whisper_lang_to_epitran_mapping():
@@ -55,7 +56,7 @@ def test_phonetic_similarity_with_panphon():
 
 
 def test_text_similarity_basic_path():
-    assert te._text_similarity("hello", "hello", use_phonetic=False) == 1.0
+    assert pu._text_similarity("hello", "hello", use_phonetic=False) == 1.0
 
 
 def test_find_best_whisper_match_picks_candidate():
@@ -66,7 +67,7 @@ def test_find_best_whisper_match_picks_candidate():
         text_similarity_basic_fn=lambda *args, **kwargs: 0.3,
         phonetic_similarity_fn=lambda a, b, language: 0.6,
     ):
-        match, idx, sim = te._find_best_whisper_match(
+        match, idx, sim = wi._find_best_whisper_match(
             lrc_text="hello",
             lrc_start=1.1,
             sorted_whisper=whisper_words,
@@ -90,7 +91,7 @@ def test_find_best_whisper_match_respects_min_index():
         text_similarity_basic_fn=lambda *args, **kwargs: 0.3,
         phonetic_similarity_fn=lambda a, b, language: 0.6,
     ):
-        match, idx, sim = te._find_best_whisper_match(
+        match, idx, sim = wi._find_best_whisper_match(
             lrc_text="beta",
             lrc_start=5.1,
             sorted_whisper=whisper_words,

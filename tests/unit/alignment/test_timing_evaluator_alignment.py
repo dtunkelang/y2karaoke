@@ -60,7 +60,7 @@ def test_transcribe_vocals_returns_empty_without_dependency(monkeypatch):
 
 def test_text_similarity_phonetic_falls_back():
     with pu.use_phonetic_utils_hooks(get_panphon_distance_fn=lambda: None):
-        assert te._text_similarity("hello", "hello", use_phonetic=True) == 1.0
+        assert pu._text_similarity("hello", "hello", use_phonetic=True) == 1.0
 
 
 def test_get_ipa_returns_none_without_epitran():

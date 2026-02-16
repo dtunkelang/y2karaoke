@@ -17,7 +17,7 @@ def test_align_words_to_whisper_adjusts_word():
         te.TranscriptionWord(start=2.0, end=2.4, text="hello", probability=0.9)
     ]
     with wi.use_whisper_integration_hooks(get_ipa_fn=lambda *_args, **_kwargs: None):
-        aligned, corrections = te.align_words_to_whisper(
+        aligned, corrections = wi.align_words_to_whisper(
             lines,
             whisper_words,
             language="eng-Latn",
@@ -33,14 +33,14 @@ def test_assess_lrc_quality_reports_good_match(monkeypatch):
     with w_dtw.use_whisper_dtw_hooks(
         phonetic_similarity_fn=lambda *_args, **_kwargs: 0.8
     ):
-        quality, assessments = te._assess_lrc_quality(lines, words, "eng-Latn")
+        quality, assessments = wi._assess_lrc_quality(lines, words, "eng-Latn")
     assert quality >= 0.9
     assert assessments
 
 
 def test_extract_lrc_words_returns_indices():
     lines = [Line(words=[Word(text="one", start_time=0, end_time=1)])]
-    lrc_words = te._extract_lrc_words(lines)
+    lrc_words = w_dtw._extract_lrc_words_base(lines)
     assert len(lrc_words) == 1
     assert lrc_words[0]["text"] == "one"
     assert lrc_words[0]["line_idx"] == 0
@@ -55,7 +55,7 @@ def test_compute_phonetic_costs_includes_matches(monkeypatch):
     with w_dtw.use_whisper_dtw_hooks(
         phonetic_similarity_fn=lambda *_args, **_kwargs: 0.6
     ):
-        costs = te._compute_phonetic_costs(lrc_words, whisper_words, "eng-Latn", 0.5)
+        costs = wi._compute_phonetic_costs(lrc_words, whisper_words, "eng-Latn", 0.5)
     assert (0, 0) in costs
     assert costs[(0, 0)] < 0.5
 
@@ -70,7 +70,7 @@ def test_extract_alignments_from_path_filters_by_similarity(monkeypatch):
     with w_dtw.use_whisper_dtw_hooks(
         phonetic_similarity_fn=lambda *_args, **_kwargs: 0.1
     ):
-        alignments = te._extract_alignments_from_path(
+        alignments = wi._extract_alignments_from_path(
             path, lrc_words, whisper_words, "eng-Latn", 0.5
         )
     assert len(alignments) == 0
@@ -86,7 +86,7 @@ def test_apply_dtw_alignments_shifts_large_offsets():
         )
     }
 
-    aligned, corrections = te._apply_dtw_alignments(lines, lrc_words, alignments)
+    aligned, corrections = wi._apply_dtw_alignments(lines, lrc_words, alignments)
     assert aligned[0].words[0].start_time == 5.0
     assert corrections
 
@@ -257,7 +257,7 @@ def test_pull_lines_allows_low_similarity_when_late_and_ordered(monkeypatch):
         return 0.1
 
     with _alignment_similarity_hook(fake_similarity):
-        adjusted, fixed = te._pull_lines_to_best_segments(
+        adjusted, fixed = wi._pull_lines_to_best_segments(
             lines, segments, language="fra-Latn", min_similarity=0.7
         )
 
@@ -286,7 +286,7 @@ def test_pull_lines_to_best_segments_allows_small_prev_overlap():
         te.TranscriptionSegment(start=78.04, end=85.2, text="father line", words=[]),
     ]
 
-    adjusted, fixed = te._pull_lines_to_best_segments(
+    adjusted, fixed = wi._pull_lines_to_best_segments(
         lines, segments, language="eng-Latn"
     )
 
@@ -321,7 +321,7 @@ def test_pull_lines_to_best_segments_allows_late_low_similarity_when_window_fits
     ]
 
     with _alignment_similarity_hook(lambda *_a, **_k: 0.4):
-        adjusted, fixed = te._pull_lines_to_best_segments(
+        adjusted, fixed = wi._pull_lines_to_best_segments(
             lines, segments, language="eng-Latn", min_similarity=0.7
         )
 
@@ -340,7 +340,7 @@ def test_retime_adjacent_lines_to_whisper_window(monkeypatch):
     ]
 
     with _alignment_similarity_hook(lambda *_a, **_k: 0.6):
-        adjusted, fixes = te._retime_adjacent_lines_to_whisper_window(
+        adjusted, fixes = wi._retime_adjacent_lines_to_whisper_window(
             lines, segments, language="fra-Latn", min_similarity=0.3
         )
 
@@ -360,7 +360,7 @@ def test_retime_adjacent_lines_to_segment_window(monkeypatch):
     ]
 
     with _alignment_similarity_hook(lambda *_a, **_k: 0.6):
-        adjusted, fixes = te._retime_adjacent_lines_to_segment_window(
+        adjusted, fixes = wi._retime_adjacent_lines_to_segment_window(
             lines, segments, language="fra-Latn", min_similarity=0.3
         )
 
@@ -380,7 +380,7 @@ def test_retime_adjacent_lines_to_whisper_window_uses_prior_segment(monkeypatch)
     ]
 
     with _alignment_similarity_hook(lambda *_a, **_k: 0.3):
-        adjusted, fixes = te._retime_adjacent_lines_to_whisper_window(
+        adjusted, fixes = wi._retime_adjacent_lines_to_whisper_window(
             lines,
             segments,
             language="fra-Latn",
@@ -404,7 +404,7 @@ def test_pull_next_line_into_same_segment():
         te.TranscriptionSegment(start=9.0, end=12.0, text="first", words=[]),
     ]
 
-    adjusted, fixes = te._pull_next_line_into_same_segment(
+    adjusted, fixes = wi._pull_next_line_into_same_segment(
         lines, segments, max_late=6.0, max_time_window=15.0
     )
 
@@ -420,7 +420,7 @@ def test_pull_next_line_into_same_segment_retimes_pair_when_full():
         te.TranscriptionSegment(start=9.0, end=12.0, text="first", words=[]),
     ]
 
-    adjusted, fixes = te._pull_next_line_into_same_segment(
+    adjusted, fixes = wi._pull_next_line_into_same_segment(
         lines, segments, max_late=6.0, max_time_window=15.0
     )
 
@@ -436,7 +436,7 @@ def test_merge_short_following_line_into_segment():
         te.TranscriptionSegment(start=9.0, end=12.0, text="first", words=[]),
     ]
 
-    adjusted, fixes = te._merge_short_following_line_into_segment(
+    adjusted, fixes = wi._merge_short_following_line_into_segment(
         lines, segments, max_late=6.0, max_time_window=15.0
     )
 
@@ -450,7 +450,7 @@ def test_clamp_repeated_line_duration():
         Line(words=[Word(text="next", start_time=22.0, end_time=23.0)]),
     ]
 
-    adjusted, fixes = te._clamp_repeated_line_duration(
+    adjusted, fixes = wi._clamp_repeated_line_duration(
         lines, max_duration=1.5, min_gap=0.01
     )
 
@@ -469,7 +469,7 @@ def test_pull_next_line_into_segment_window():
     ]
 
     with _alignment_similarity_hook(lambda *_a, **_k: 0.25):
-        adjusted, fixes = te._pull_next_line_into_segment_window(
+        adjusted, fixes = wi._pull_next_line_into_segment_window(
             lines, segments, language="fra-Latn", min_similarity=0.2
         )
 
@@ -489,7 +489,7 @@ def test_pull_next_line_into_segment_window_uses_nearest_segment():
     ]
 
     with _alignment_similarity_hook(lambda *_a, **_k: 0.0):
-        adjusted, fixes = te._pull_next_line_into_segment_window(
+        adjusted, fixes = wi._pull_next_line_into_segment_window(
             lines, segments, language="fra-Latn", min_similarity=0.2
         )
 
@@ -504,7 +504,7 @@ def test_pull_lines_near_segment_end_prefers_prior_segment():
         te.TranscriptionSegment(start=12.0, end=14.0, text="later", words=[]),
     ]
 
-    adjusted, fixes = te._pull_lines_near_segment_end(
+    adjusted, fixes = wi._pull_lines_near_segment_end(
         lines, segments, language="fra-Latn", max_late=0.5, max_time_window=15.0
     )
 
@@ -519,7 +519,7 @@ def test_pull_lines_near_segment_end_allows_short_line_with_similarity():
     ]
 
     with _alignment_similarity_hook(lambda *_a, **_k: 0.5):
-        adjusted, fixes = te._pull_lines_near_segment_end(
+        adjusted, fixes = wi._pull_lines_near_segment_end(
             lines,
             segments,
             language="fra-Latn",
@@ -542,7 +542,7 @@ def test_pull_lines_near_segment_end_extends_short_line_duration():
         te.TranscriptionSegment(start=12.0, end=14.0, text="sinon", words=[]),
     ]
 
-    adjusted, fixes = te._pull_lines_near_segment_end(
+    adjusted, fixes = wi._pull_lines_near_segment_end(
         lines,
         segments,
         language="fra-Latn",

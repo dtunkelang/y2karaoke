@@ -23,8 +23,8 @@ from y2karaoke.core.phonetic_utils import (
     _normalize_text_for_matching,
     _text_similarity_basic,
 )
-from y2karaoke.core.components.alignment.timing_evaluator import (
-    evaluate_timing,
+from y2karaoke.core.components.alignment.timing_evaluator import evaluate_timing
+from y2karaoke.core.components.alignment.timing_evaluator_core import (
     _find_closest_onset,
 )
 from y2karaoke.core.models import Word, Line

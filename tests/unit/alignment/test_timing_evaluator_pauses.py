@@ -3,6 +3,8 @@ import pytest
 
 from y2karaoke.core.models import Line, Word
 import y2karaoke.core.components.alignment.timing_evaluator as te
+import y2karaoke.core.components.alignment.timing_evaluator_core as te_core
+import y2karaoke.core.audio_analysis as aa
 
 
 def _line(text, start, end):
@@ -25,7 +27,7 @@ def _audio_features(energy_times, energy_envelope, silence_regions=None):
 def test_check_vocal_activity_in_range():
     features = _audio_features([0, 1, 2, 3], [0.0, 0.5, 1.0, 0.0])
 
-    activity = te._check_vocal_activity_in_range(0.0, 2.0, features)
+    activity = aa._check_vocal_activity_in_range(0.0, 2.0, features)
 
     assert activity == pytest.approx(2 / 3)
 
@@ -33,20 +35,20 @@ def test_check_vocal_activity_in_range():
 def test_check_for_silence_in_range_detects_silence():
     features = _audio_features([0, 1, 2, 3], [0.0, 0.0, 0.5, 0.5])
 
-    assert te._check_for_silence_in_range(0.0, 2.0, features, min_silence_duration=1.0)
+    assert aa._check_for_silence_in_range(0.0, 2.0, features, min_silence_duration=1.0)
 
 
 def test_check_for_silence_in_range_trailing_silence():
     features = _audio_features([0, 1, 2, 3], [1.0, 0.0, 0.0, 0.0])
 
-    assert te._check_for_silence_in_range(1.0, 3.0, features, min_silence_duration=1.0)
+    assert aa._check_for_silence_in_range(1.0, 3.0, features, min_silence_duration=1.0)
 
 
 def test_check_pause_alignment_spurious_gap():
     lines = [_line("a", 0.0, 1.0), _line("b", 3.0, 4.0)]
     features = _audio_features([0, 1, 2, 3, 4], [1.0, 1.0, 1.0, 1.0, 1.0])
 
-    issues = te._check_pause_alignment(lines, features)
+    issues = te_core._check_pause_alignment(lines, features)
 
     assert any(issue.issue_type == "spurious_gap" for issue in issues)
 
@@ -55,7 +57,7 @@ def test_check_pause_alignment_missing_pause():
     lines = [_line("a", 0.0, 1.0), _line("b", 3.5, 4.0)]
     features = _audio_features([0, 1, 2, 3, 4], [0.0, 0.0, 0.0, 0.0, 0.0])
 
-    issues = te._check_pause_alignment(lines, features)
+    issues = te_core._check_pause_alignment(lines, features)
 
     assert any(issue.issue_type == "missing_pause" for issue in issues)
 
@@ -68,7 +70,7 @@ def test_check_pause_alignment_unexpected_pause():
         silence_regions=[(2.0, 4.5)],
     )
 
-    issues = te._check_pause_alignment(lines, features)
+    issues = te_core._check_pause_alignment(lines, features)
 
     assert any(issue.issue_type == "unexpected_pause" for issue in issues)
 
@@ -77,7 +79,7 @@ def test_calculate_pause_score_no_silence_regions():
     lines = [_line("a", 0.0, 1.0), _line("b", 1.2, 2.0)]
     features = _audio_features([0, 1, 2], [1.0, 1.0, 1.0], silence_regions=[])
 
-    assert te._calculate_pause_score(lines, features) == 100.0
+    assert te_core._calculate_pause_score(lines, features) == 100.0
 
 
 def test_calculate_pause_score_ignores_pre_vocal_silence():
@@ -89,7 +91,7 @@ def test_calculate_pause_score_ignores_pre_vocal_silence():
     )
     features.vocal_start = 2.0
 
-    assert te._calculate_pause_score(lines, features) == 100.0
+    assert te_core._calculate_pause_score(lines, features) == 100.0
 
 
 def test_evaluate_timing_builds_report():

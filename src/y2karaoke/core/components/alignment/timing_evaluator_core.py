@@ -25,12 +25,83 @@ def evaluate_timing(
 ) -> TimingReport:
     """Evaluate lyrics timing against audio features."""
     issues: List[TimingIssue] = []
-    line_offsets: List[float] = []
-    matched_count = 0
 
-    onset_times = audio_features.onset_times
+    # 1. Check logical ordering
+    issues.extend(_identify_ordering_issues(lines))
 
-    # Enforce ordering constraints
+    # 2. Check alignment with onsets
+    (
+        line_alignment_score,
+        matched_count,
+        line_issues,
+        line_offsets,
+    ) = _calculate_line_alignment_score(lines, audio_features.onset_times)
+    issues.extend(line_issues)
+
+    # 3. Check alignment with pauses
+    pause_issues = _check_pause_alignment(lines, audio_features)
+    issues.extend(pause_issues)
+    pause_score, matched_silences, total_silences = _calculate_pause_score_with_stats(
+        lines, audio_features
+    )
+
+    # 4. Check vocal coverage
+    (
+        audio_coverage_score,
+        coverage_issues,
+        lyric_on_vocal_ratio,
+        vocal_covered_by_lyrics_ratio,
+        lyric_in_silence_ratio,
+    ) = _calculate_audio_coverage_score(lines, audio_features)
+    issues.extend(coverage_issues)
+
+    # Calculate overall score
+    total_lines = len([line for line in lines if line.words])
+    line_confidence = (len(line_offsets) / total_lines) if total_lines > 0 else 1.0
+    pause_confidence = (
+        (matched_silences / total_silences) if total_silences > 0 else 1.0
+    )
+    confidence = 0.7 * line_confidence + 0.3 * pause_confidence
+
+    overall_score = (
+        0.5 * line_alignment_score + 0.2 * pause_score + 0.3 * audio_coverage_score
+    ) * confidence
+
+    # Statistics
+    avg_offset = float(np.mean(line_offsets)) if line_offsets else 0.0
+    std_offset = float(np.std(line_offsets)) if len(line_offsets) > 1 else 0.0
+
+    summary = _generate_summary(
+        float(overall_score),
+        float(line_alignment_score),
+        float(pause_score),
+        float(audio_coverage_score),
+        float(avg_offset),
+        float(std_offset),
+        len(issues),
+        total_lines,
+    )
+
+    return TimingReport(
+        source_name=source_name,
+        overall_score=float(overall_score),
+        line_alignment_score=float(line_alignment_score),
+        pause_alignment_score=float(pause_score),
+        issues=issues,
+        summary=summary,
+        avg_line_offset=float(avg_offset),
+        std_line_offset=float(std_offset),
+        matched_onsets=matched_count,
+        total_lines=total_lines,
+        lyric_on_vocal_ratio=float(lyric_on_vocal_ratio),
+        vocal_covered_by_lyrics_ratio=float(vocal_covered_by_lyrics_ratio),
+        lyric_in_silence_ratio=float(lyric_in_silence_ratio),
+    )
+
+
+def _identify_ordering_issues(lines: List[Line]) -> List[TimingIssue]:
+    """Check for lines that end before they start or are out of order."""
+    issues = []
     prev_start: Optional[float] = None
     for i, line in enumerate(lines):
         if not line.words:
@@ -64,14 +135,29 @@ def evaluate_timing(
                 )
             )
         prev_start = line.start_time
+    return issues
+
+
+def _calculate_line_alignment_score(
+    lines: List[Line], onset_times: np.ndarray
+) -> Tuple[float, int, List[TimingIssue], List[float]]:
+    """Calculate score based on line start alignment with audio onsets.
+
+    Heuristic:
+    - Finds nearest onset within 2.0s using _find_closest_onset.
+    - Matches if within 0.5s.
+    - Penalizes offsets > 0.3s.
+    """
+    issues = []
+    line_offsets = []
+    matched_count = 0
+    total_lines = len([line for line in lines if line.words])
 
     for i, line in enumerate(lines):
         if not line.words:
             continue
 
         line_start = line.start_time
-
-        # Find closest onset to line start
         closest_onset, onset_delta = _find_closest_onset(line_start, onset_times)
 
         if closest_onset is not None:
@@ -102,29 +188,27 @@ def evaluate_timing(
                     )
                 )
 
-    # Check for pause alignment
-    pause_issues = _check_pause_alignment(lines, audio_features)
-    issues.extend(pause_issues)
+    score = (matched_count / total_lines * 100) if total_lines > 0 else 0.0
+    return score, matched_count, issues, line_offsets
 
-    # Calculate scores
-    total_lines = len([line for line in lines if line.words])
 
-    # Line alignment score: based on how many lines match onsets within tolerance
-    line_alignment_score = (
-        (matched_count / total_lines * 100) if total_lines > 0 else 0.0
-    )
+def _calculate_audio_coverage_score(
+    lines: List[Line], audio_features: AudioFeatures
+) -> Tuple[float, List[TimingIssue], float, float, float]:
+    """Calculate score based on how well lyrics cover vocal activity.
 
-    # Pause alignment score and coverage
-    pause_score, matched_silences, total_silences = _calculate_pause_score_with_stats(
-        lines, audio_features
-    )
-
+    Heuristic:
+    - Lyrics should overlap with non-silent regions.
+    - Penalizes >3 uncovered vocal regions.
+    """
+    issues = []
     (
         lyric_on_vocal_ratio,
         vocal_covered_by_lyrics_ratio,
         lyric_in_silence_ratio,
         uncovered_regions,
     ) = _compute_audio_coverage_metrics(lines, audio_features)
+
     if uncovered_regions >= 3:
         issues.append(
             TimingIssue(
@@ -139,53 +223,14 @@ def evaluate_timing(
                 ),
             )
         )
-    audio_coverage_score = 100.0 * (
-        0.5 * lyric_on_vocal_ratio + 0.5 * vocal_covered_by_lyrics_ratio
-    )
 
-    # Confidence weighting based on coverage
-    line_confidence = (len(line_offsets) / total_lines) if total_lines > 0 else 1.0
-    if total_silences > 0:
-        pause_confidence = matched_silences / total_silences
-    else:
-        pause_confidence = 1.0
-    confidence = 0.7 * line_confidence + 0.3 * pause_confidence
-
-    # Overall score: weighted blend of onset, pause, and vocal coverage.
-    overall_score = (
-        0.5 * line_alignment_score + 0.2 * pause_score + 0.3 * audio_coverage_score
-    ) * confidence
-
-    # Calculate statistics
-    avg_offset = float(np.mean(line_offsets)) if line_offsets else 0.0
-    std_offset = float(np.std(line_offsets)) if len(line_offsets) > 1 else 0.0
-
-    # Generate summary
-    summary = _generate_summary(
-        float(overall_score),
-        float(line_alignment_score),
-        float(pause_score),
-        float(audio_coverage_score),
-        float(avg_offset),
-        float(std_offset),
-        len(issues),
-        total_lines,
-    )
-
-    return TimingReport(
-        source_name=source_name,
-        overall_score=float(overall_score),
-        line_alignment_score=float(line_alignment_score),
-        pause_alignment_score=float(pause_score),
-        issues=issues,
-        summary=summary,
-        avg_line_offset=float(avg_offset),
-        std_line_offset=float(std_offset),
-        matched_onsets=matched_count,
-        total_lines=total_lines,
-        lyric_on_vocal_ratio=float(lyric_on_vocal_ratio),
-        vocal_covered_by_lyrics_ratio=float(vocal_covered_by_lyrics_ratio),
-        lyric_in_silence_ratio=float(lyric_in_silence_ratio),
+    score = 100.0 * (0.5 * lyric_on_vocal_ratio + 0.5 * vocal_covered_by_lyrics_ratio)
+    return (
+        score,
+        issues,
+        lyric_on_vocal_ratio,
+        vocal_covered_by_lyrics_ratio,
+        lyric_in_silence_ratio,
     )
 
 
