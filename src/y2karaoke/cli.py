@@ -153,6 +153,37 @@ def cli(ctx, verbose, log_file):
 
 
 @cli.command()
+def doctor():
+    """Check system health and dependencies."""
+    from .core.health import SystemDoctor
+    import sys
+
+    doc = SystemDoctor()
+    results = doc.check_all()
+
+    click.echo("System Health Check:")
+    click.echo("-" * 40)
+
+    all_good = True
+    for res in results:
+        status_icon = "✅" if res.is_installed else ("❌" if res.critical else "⚠️")
+        click.echo(f"{status_icon} {res.name}")
+        if res.version:
+            click.echo(f"   Version: {res.version}")
+        if not res.is_installed and res.message:
+            click.echo(f"   Note: {res.message}")
+        if not res.is_installed and res.critical:
+            all_good = False
+
+    click.echo("-" * 40)
+    if all_good:
+        click.echo("✨ System is ready for karaoke generation!")
+    else:
+        click.echo("❌ Critical dependencies missing. Please install them to proceed.")
+        sys.exit(1)
+
+
+@cli.command()
 @click.argument("url_or_query", required=False)
 @click.option("-o", "--output", help="Output video path")
 @click.option(
