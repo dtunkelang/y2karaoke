@@ -1,10 +1,16 @@
+from __future__ import annotations
+
 import sys
 from pathlib import Path
 
+# Add project root to sys.path before other project imports
 sys.path.append(str(Path(__file__).resolve().parents[3]))
 
-import pytest
-from tools.bootstrap_gold_from_karaoke import _snap, _text_similarity, TargetLine
+from tools.bootstrap_gold_from_karaoke import (  # noqa: E402
+    _snap,
+    _text_similarity,
+    TargetLine,
+)
 
 
 def test_snap():
@@ -26,8 +32,14 @@ def test_duration_balancing_logic():
     # but we can verify the logic if we extract it.
     # For now, we'll verify basic TargetLine construction.
     line = TargetLine(
-        line_index=1, start=10.0, end=None, text="Test line", words=["Test", "line"]
+        line_index=1,
+        start=10.0,
+        end=None,
+        text="Test line",
+        words=["Test", "line"],
+        y=100.0,
     )
     assert line.text == "Test line"
     assert len(line.words) == 2
     assert line.start == 10.0
+    assert line.y == 100.0
