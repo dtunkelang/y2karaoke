@@ -1,4 +1,4 @@
-from y2karaoke.core.refine_visual import reconstruct_lyrics_from_visuals
+from y2karaoke.core.visual.reconstruction import reconstruct_lyrics_from_visuals
 from y2karaoke.core.models import TargetLine
 
 

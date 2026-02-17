@@ -5,18 +5,18 @@ from pathlib import Path
 sys.path.append(str(Path(__file__).resolve().parents[3]))
 
 # Updated imports to point to new locations
-from src.y2karaoke.core.refine_visual import _snap  # noqa: E402
-from src.y2karaoke.core.text_utils import (  # noqa: E402
+from y2karaoke.core.visual.reconstruction import snap  # noqa: E402
+from y2karaoke.core.text_utils import (  # noqa: E402
     text_similarity as _text_similarity,
 )
-from src.y2karaoke.core.models import TargetLine  # noqa: E402
+from y2karaoke.core.models import TargetLine  # noqa: E402
 
 
 def test_snap():
-    assert _snap(1.234) == 1.25
-    assert _snap(1.276) == 1.30
-    assert _snap(1.31) == 1.3
-    assert _snap(0.01) == 0.0
+    assert snap(1.234) == 1.25
+    assert snap(1.276) == 1.30
+    assert snap(1.31) == 1.3
+    assert snap(0.01) == 0.0
 
 
 def test_text_similarity():
