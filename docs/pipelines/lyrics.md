@@ -32,3 +32,4 @@ Recent Improvements:
 - **Offline Reliability:** Enhanced offline mode to attempt resolution from local caches even when network providers are unavailable or disabled.
 - **Quality Reporting:** Improved tracking of large timing deltas and duration mismatches in the quality reports.
 - **LRC Mismatch Guardrail:** When LRC duration mismatch is severe and audio/Whisper alignment is available, provider line timestamps are dropped and timing is rebuilt from audio alignment.
+- **Untimed-Lyrics Fallback:** When lyrics text exists but line-level timings are missing, Whisper alignment is auto-enabled when vocals are available.

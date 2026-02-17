@@ -157,6 +157,18 @@ def get_lyrics_simple_impl(  # noqa: C901
             vocals_path, line_timings, lyrics_offset
         )
 
+    if (
+        vocals_path
+        and not line_timings
+        and not use_whisper
+        and not whisper_only
+        and not whisper_map_lrc
+    ):
+        use_whisper = True
+        logger.info(
+            "No reliable line-level timings available; auto-enabling Whisper alignment"
+        )
+
     has_lrc_timing = bool(line_timings)
     if lrc_text or file_lines:
         if line_timings and file_lines:

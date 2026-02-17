@@ -16,7 +16,7 @@ Last updated: 2026-02-17
 - [x] Ensure timing reports and docs clearly separate trusted vs degraded timing paths.
 
 ### P1 - Lyrics Without Timings
-- [ ] Default to audio-aware alignment when lyrics exist but no reliable timings exist.
+- [x] Default to audio-aware alignment when lyrics exist but no reliable timings exist.
 - [ ] Add benchmark scenarios to isolate this path and compare cost/quality.
 
 ### P1 - No-Lyrics (Whisper-Only) Quality/Cost Tradeoff

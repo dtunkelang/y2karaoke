@@ -118,6 +118,7 @@ def get_lyrics_with_quality(  # noqa: C901
         "alignment_method": "none",
         "lrc_timing_trust": "normal",
         "whisper_used": False,
+        "whisper_auto_enabled": False,
         "whisper_corrections": 0,
         "whisper_requested": use_whisper or whisper_only or whisper_map_lrc,
         "whisper_force_dtw": whisper_force_dtw,
@@ -246,6 +247,20 @@ def get_lyrics_with_quality(  # noqa: C901
     if vocals_path and line_timings:
         line_timings, _ = _detect_offset_with_issues(
             vocals_path, line_timings, lyrics_offset, issues_list
+        )
+
+    if (
+        vocals_path
+        and not line_timings
+        and not use_whisper
+        and not whisper_only
+        and not whisper_map_lrc
+    ):
+        use_whisper = True
+        quality_report["whisper_auto_enabled"] = True
+        quality_report["whisper_requested"] = True
+        issues_list.append(
+            "No reliable line-level timings available; auto-enabling Whisper alignment"
         )
 
     has_lrc_timing = bool(line_timings)
