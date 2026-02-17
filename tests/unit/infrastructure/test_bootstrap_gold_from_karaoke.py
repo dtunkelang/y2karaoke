@@ -74,6 +74,8 @@ def test_select_candidate_requires_inputs() -> None:
 
     class Args:
         candidate_url = None
+        work_dir = Path("/tmp/demo")
+        report_json = None
         artist = None
         title = None
         max_candidates = 3
@@ -90,6 +92,8 @@ def test_select_candidate_requires_inputs() -> None:
 def test_select_candidate_prefers_best(monkeypatch, tmp_path) -> None:
     class Args:
         candidate_url = None
+        work_dir = tmp_path
+        report_json = None
         artist = "Artist"
         title = "Song"
         max_candidates = 3
@@ -144,3 +148,26 @@ def test_clamp_confidence() -> None:
     assert _MODULE._clamp_confidence(0.4) == 0.4
     assert _MODULE._clamp_confidence(1.2) == 1.0
     assert _MODULE._clamp_confidence(-0.5) == 0.0
+
+
+def test_select_candidate_with_rankings_explicit_url(tmp_path) -> None:
+    class Args:
+        candidate_url = "https://youtube.com/watch?v=abc123def45"
+        work_dir = tmp_path
+        report_json = None
+        artist = None
+        title = None
+        max_candidates = 3
+        suitability_fps = 1.0
+        show_candidates = False
+        allow_low_suitability = False
+        min_detectability = 0.45
+        min_word_level_score = 0.15
+
+    url, video_path, metrics, ranked = _MODULE._select_candidate_with_rankings(
+        Args(), object(), tmp_path
+    )
+    assert url == "https://youtube.com/watch?v=abc123def45"
+    assert video_path is None
+    assert metrics == {}
+    assert ranked == []

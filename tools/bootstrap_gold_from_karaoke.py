@@ -8,6 +8,7 @@ This tool acts as a CLI wrapper around the `y2karaoke.vision` and `y2karaoke.cor
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import sys
 from pathlib import Path
@@ -160,9 +161,21 @@ def _select_candidate(
     song_dir: Path,
 ) -> tuple[str, Optional[Path], dict[str, Any]]:
     """Resolve candidate URL and optional pre-downloaded video path."""
+    candidate_url, cached_video_path, metrics, _ = _select_candidate_with_rankings(
+        args, downloader, song_dir
+    )
+    return candidate_url, cached_video_path, metrics
+
+
+def _select_candidate_with_rankings(
+    args: argparse.Namespace,
+    downloader: YouTubeDownloader,
+    song_dir: Path,
+) -> tuple[str, Optional[Path], dict[str, Any], list[dict[str, Any]]]:
+    """Resolve candidate URL plus evaluated rankings for reporting."""
     if args.candidate_url:
         logger.info(f"Using explicit candidate URL: {args.candidate_url}")
-        return args.candidate_url, None, {}
+        return args.candidate_url, None, {}, []
 
     if not args.artist or not args.title:
         raise ValueError(
@@ -214,7 +227,7 @@ def _select_candidate(
             "Use --allow-low-suitability to override."
         )
 
-    return best["url"], Path(best["video_path"]), best_metrics
+    return best["url"], Path(best["video_path"]), best_metrics, ranked
 
 
 def _collect_raw_frames(
@@ -265,6 +278,35 @@ def _collect_raw_frames(
     return raw
 
 
+def _raw_frames_cache_path(
+    video_path: Path,
+    cache_dir: Path,
+    fps: float,
+    roi_rect: tuple[int, int, int, int],
+) -> Path:
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    sig = f"{video_path.resolve()}:{video_path.stat().st_mtime_ns}:{video_path.stat().st_size}:{fps}:{roi_rect}"
+    digest = hashlib.md5(sig.encode()).hexdigest()
+    return cache_dir / f"raw_frames_{digest}.json"
+
+
+def _collect_raw_frames_cached(
+    video_path: Path,
+    duration: float,
+    fps: float,
+    roi_rect: tuple[int, int, int, int],
+    cache_dir: Path,
+) -> list[dict]:
+    cache_path = _raw_frames_cache_path(video_path, cache_dir, fps, roi_rect)
+    if cache_path.exists():
+        logger.info(f"Loading cached OCR frames: {cache_path.name}")
+        return json.loads(cache_path.read_text())
+
+    raw = _collect_raw_frames(video_path, 0, duration, fps, roi_rect)
+    cache_path.write_text(json.dumps(raw))
+    return raw
+
+
 def _clamp_confidence(value: Optional[float], default: float = 0.0) -> float:
     if value is None:
         value = default
@@ -277,6 +319,8 @@ def main():  # noqa: C901
     p.add_argument("--artist")
     p.add_argument("--title")
     p.add_argument("--output", type=Path, required=True)
+    p.add_argument("--work-dir", type=Path, default=Path(".cache/karaoke_bootstrap"))
+    p.add_argument("--report-json", type=Path, default=None)
     p.add_argument("--candidate-url")
     p.add_argument("--visual-fps", type=float, default=2.0)
     p.add_argument("--max-candidates", type=int, default=5)
@@ -292,13 +336,16 @@ def main():  # noqa: C901
 
     slug_artist = make_slug(args.artist or "unk")
     slug_title = make_slug(args.title or "unk")
-    song_dir = Path(".cache/karaoke_bootstrap") / slug_artist / slug_title
+    song_dir = args.work_dir / slug_artist / slug_title
 
     downloader = YouTubeDownloader(cache_dir=song_dir.parent)
     try:
-        candidate_url, cached_video_path, selected_metrics = _select_candidate(
-            args, downloader, song_dir
-        )
+        (
+            candidate_url,
+            cached_video_path,
+            selected_metrics,
+            ranked_candidates,
+        ) = _select_candidate_with_rankings(args, downloader, song_dir)
     except ValueError as e:
         logger.error(str(e))
         return 1
@@ -355,7 +402,13 @@ def main():  # noqa: C901
     duration = cap.get(cv2.CAP_PROP_FRAME_COUNT) / (cap.get(cv2.CAP_PROP_FPS) or 30.0)
     cap.release()
 
-    raw_frames = _collect_raw_frames(v_path, 0, duration, args.visual_fps, roi)
+    raw_frames = _collect_raw_frames_cached(
+        v_path,
+        duration,
+        args.visual_fps,
+        roi,
+        song_dir / "cache",
+    )
     t_lines = reconstruct_lyrics_from_visuals(raw_frames, args.visual_fps)
     logger.info(f"Reconstructed {len(t_lines)} initial lines.")
 
@@ -501,6 +554,44 @@ def main():  # noqa: C901
 
     args.output.write_text(json.dumps(res, indent=2))
     logger.info(f"Saved refined gold timings to {args.output}")
+
+    if args.report_json:
+        report = {
+            "schema_version": "1.0",
+            "artist": args.artist,
+            "title": args.title,
+            "output_path": str(args.output.resolve()),
+            "candidate_url": candidate_url,
+            "selected_visual_suitability": selected_metrics,
+            "candidate_rankings": [
+                {
+                    "rank": idx + 1,
+                    "url": cand.get("url"),
+                    "title": cand.get("title"),
+                    "uploader": cand.get("uploader"),
+                    "duration": cand.get("duration"),
+                    "detectability_score": cand.get("metrics", {}).get(
+                        "detectability_score"
+                    ),
+                    "word_level_score": cand.get("metrics", {}).get("word_level_score"),
+                    "avg_ocr_confidence": cand.get("metrics", {}).get(
+                        "avg_ocr_confidence"
+                    ),
+                }
+                for idx, cand in enumerate(ranked_candidates)
+            ],
+            "settings": {
+                "visual_fps": args.visual_fps,
+                "suitability_fps": args.suitability_fps,
+                "min_detectability": args.min_detectability,
+                "min_word_level_score": args.min_word_level_score,
+                "allow_low_suitability": args.allow_low_suitability,
+            },
+        }
+        args.report_json.parent.mkdir(parents=True, exist_ok=True)
+        args.report_json.write_text(json.dumps(report, indent=2))
+        logger.info(f"Wrote bootstrap report to {args.report_json}")
+
     return 0
 
 

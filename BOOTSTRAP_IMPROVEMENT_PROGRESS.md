@@ -27,6 +27,12 @@ Status: Completed
 - [x] Add/expand unit tests for bootstrap logic and suitability decisions
 - [x] Ensure `black`, `flake8`, `mypy`, and unit tests pass
 
+### Milestone 4: Reproducibility + Runtime Caching
+Status: Completed
+- [x] Add explicit `--work-dir` control for bootstrap artifacts
+- [x] Cache coarse OCR frame extraction for fast reruns
+- [x] Add optional `--report-json` output for candidate rankings and run settings
+
 ## Notes
 - Keep changes in significant, validated commits.
 - Prefer deterministic ranking and quality decisions for reproducibility.

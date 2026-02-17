@@ -48,6 +48,8 @@ python tools/bootstrap_gold_from_karaoke.py
 Optional arguments:
 - `--candidate-url`: Specify a YouTube URL directly (skips candidate search).
 - `--visual-fps`: Frame rate for initial OCR sampling (default: 2.0).
+- `--work-dir`: Cache/work directory for downloads and OCR artifacts (default: `.cache/karaoke_bootstrap`).
+- `--report-json`: Write a structured run report with candidate rankings and selected metrics.
 - `--max-candidates`: Max YouTube candidates to evaluate when auto-searching (default: 5).
 - `--suitability-fps`: Sampling rate used for suitability scoring (default: 1.0).
 - `--min-detectability`: Minimum detectability score required by quality gate (default: 0.45).

@@ -238,6 +238,7 @@ To auto-seed/refine word timings from a karaoke YouTube version (visual-only):
   --title "bad guy" \
   --show-candidates \
   --output benchmarks/gold_set/02_billie-eilish-bad-guy.karaoke-seed.gold.json \
+  --report-json benchmarks/gold_set/02_billie-eilish-bad-guy.bootstrap-report.json \
   --min-detectability 0.45 \
   --min-word-level-score 0.15
 ```
@@ -245,6 +246,8 @@ To auto-seed/refine word timings from a karaoke YouTube version (visual-only):
 - If `--candidate-url` is omitted, the tool searches YouTube for karaoke candidates, scores each for visual suitability, and picks the best one.
 - `--show-candidates` prints ranked candidates with detectability/word-level metrics.
 - By default, the tool enforces suitability gates (`--min-detectability`, `--min-word-level-score`). Use `--allow-low-suitability` to override.
+- OCR frame sampling is cached under `--work-dir` (default `.cache/karaoke_bootstrap`) to speed reruns.
+- `--report-json` writes a structured report with candidate rankings, selected candidate metrics, and runtime settings.
 - The tool detects line windows from karaoke frames via OCR and infers word timing from lyric highlight progress in those windows (no audio transcription).
 
 See [docs/karaoke_visual_bootstrap.md](docs/karaoke_visual_bootstrap.md) for algorithm and technical details.
