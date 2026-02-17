@@ -24,7 +24,7 @@ Last updated: 2026-02-17
 - [ ] Evaluate quality gain per added runtime.
 
 ### P1 - Karaoke Video Scraping Efficiency
-- [ ] Reduce candidate ranking cost (prefilter + lightweight visual probe).
+- [x] Reduce candidate ranking cost (prefilter + lightweight visual probe).
 - [x] Improve ROI/suitability sampling to avoid expensive seek-heavy decoding.
 
 ### P2 - Architecture and Maintainability

@@ -7,6 +7,30 @@ from typing import Any, Callable, Optional
 from urllib.parse import parse_qs, urlparse
 
 
+def _metadata_prefilter_score(candidate: dict[str, Any]) -> float:
+    """Cheap metadata score used to limit expensive video downloads."""
+    title = str(candidate.get("title") or "").lower()
+    uploader = str(candidate.get("uploader") or "").lower()
+    duration_raw = candidate.get("duration")
+    duration = float(duration_raw) if isinstance(duration_raw, (int, float)) else None
+
+    score = 0.0
+    if "karaoke" in title:
+        score += 2.0
+    if any(tag in title for tag in ("instrumental", "off vocal", "minus one")):
+        score += 1.0
+    if "lyrics" in title and "karaoke" not in title:
+        score -= 0.8
+    if "topic" in uploader:
+        score -= 0.3
+    if duration is not None:
+        if 60 <= duration <= 900:
+            score += 0.5
+        else:
+            score -= 0.5
+    return score
+
+
 def search_karaoke_candidates(
     artist: str,
     title: str,
@@ -67,12 +91,26 @@ def rank_candidates_by_suitability(
     song_dir: Path,
     suitability_fps: float,
     analyze_fn: Callable[..., tuple[dict[str, Any], tuple[int, int, int, int]]],
+    prefilter_limit: int = 3,
     log_info_fn: Optional[Callable[[str], None]] = None,
     log_warning_fn: Optional[Callable[[str], None]] = None,
 ) -> list[dict[str, Any]]:
     ranked: list[dict[str, Any]] = []
 
-    for idx, cand in enumerate(candidates, start=1):
+    shortlist = list(candidates)
+    if prefilter_limit > 0 and len(candidates) > prefilter_limit:
+        shortlist = sorted(
+            candidates,
+            key=_metadata_prefilter_score,
+            reverse=True,
+        )[:prefilter_limit]
+        if log_info_fn:
+            log_info_fn(
+                "Prefiltered candidates by metadata: evaluating %d/%d video(s)"
+                % (len(shortlist), len(candidates))
+            )
+
+    for idx, cand in enumerate(shortlist, start=1):
         url = cand["url"]
         parsed = urlparse(url)
         video_id = parse_qs(parsed.query).get("v", [""])[0].strip()
