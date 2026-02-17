@@ -262,6 +262,72 @@ def test_get_lyrics_with_quality_fallback_to_genius(monkeypatch):
     assert report["total_lines"] == len(lines)
 
 
+def test_get_lyrics_with_quality_drops_severely_mismatched_lrc_timestamps(
+    monkeypatch,
+):
+    lrc_text = "[00:01.00]First\n[00:03.00]Second"
+    line_timings = [(1.0, "First"), (3.0, "Second")]
+
+    monkeypatch.setattr(
+        "y2karaoke.core.components.lyrics.sync.get_lrc_duration", lambda *_: 100
+    )
+    monkeypatch.setattr(
+        lw,
+        "_apply_whisper_with_quality",
+        lambda lines, *a, quality_report, **k: (lines, quality_report),
+    )
+
+    with lw.use_lyrics_whisper_hooks(
+        fetch_lrc_text_and_timings_fn=lambda *a, **k: (lrc_text, line_timings, "src"),
+    ):
+        lines, _meta, report = lw.get_lyrics_with_quality(
+            "Title",
+            "Artist",
+            vocals_path="vocals.wav",
+            use_whisper=True,
+            target_duration=130,
+            romanize=False,
+        )
+
+    assert lines
+    assert report["lrc_timing_trust"] == "dropped_duration_mismatch"
+    assert any(
+        "Ignoring provider LRC timestamps" in issue for issue in report["issues"]
+    )
+
+
+def test_get_lyrics_with_quality_marks_moderate_lrc_mismatch_as_degraded(monkeypatch):
+    lrc_text = "[00:01.00]First\n[00:03.00]Second"
+    line_timings = [(1.0, "First"), (3.0, "Second")]
+
+    monkeypatch.setattr(
+        "y2karaoke.core.components.lyrics.sync.get_lrc_duration", lambda *_: 100
+    )
+    monkeypatch.setattr(
+        lh, "create_lines_from_lrc", lambda *a, **k: [_line("First"), _line("Second")]
+    )
+    monkeypatch.setattr(
+        lw,
+        "_refine_timing_with_quality",
+        lambda *a, **k: ([_line("First"), _line("Second")], "onset_refined"),
+    )
+
+    with lw.use_lyrics_whisper_hooks(
+        fetch_lrc_text_and_timings_fn=lambda *a, **k: (lrc_text, line_timings, "src"),
+    ):
+        lines, _meta, report = lw.get_lyrics_with_quality(
+            "Title",
+            "Artist",
+            vocals_path="vocals.wav",
+            target_duration=109,
+            romanize=False,
+        )
+
+    assert lines
+    assert report["lrc_timing_trust"] == "degraded_duration_mismatch"
+    assert any("LRC duration mismatch" in issue for issue in report["issues"])
+
+
 def test_fetch_genius_with_quality_tracking_lrc_present(monkeypatch):
     monkeypatch.setattr(
         "y2karaoke.core.components.lyrics.genius.fetch_genius_lyrics_with_singers",

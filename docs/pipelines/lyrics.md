@@ -31,3 +31,4 @@ Recent Improvements:
 - **Auto-Offset Safety:** Reduced the default auto-offset clamp from 30s to 5s. This prevents applying dangerously large offsets automatically when vocal detection peaks are ambiguous.
 - **Offline Reliability:** Enhanced offline mode to attempt resolution from local caches even when network providers are unavailable or disabled.
 - **Quality Reporting:** Improved tracking of large timing deltas and duration mismatches in the quality reports.
+- **LRC Mismatch Guardrail:** When LRC duration mismatch is severe and audio/Whisper alignment is available, provider line timestamps are dropped and timing is rebuilt from audio alignment.

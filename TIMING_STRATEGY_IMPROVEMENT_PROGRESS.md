@@ -12,8 +12,8 @@ Last updated: 2026-02-17
 - [x] Prevent recommendation logic from over-weighting unavailable/diagnostic metrics.
 
 ### P0 - LRC Timing Robustness Guardrails
-- [ ] Add safer fallback behavior when LRC timing is clearly duration-mismatched.
-- [ ] Ensure timing reports and docs clearly separate trusted vs degraded timing paths.
+- [x] Add safer fallback behavior when LRC timing is clearly duration-mismatched.
+- [x] Ensure timing reports and docs clearly separate trusted vs degraded timing paths.
 
 ### P1 - Lyrics Without Timings
 - [ ] Default to audio-aware alignment when lyrics exist but no reliable timings exist.
@@ -39,4 +39,5 @@ Last updated: 2026-02-17
 
 - [x] Captured prioritized improvement plan in-repo.
 - [x] Completed: P0 benchmark validity fixes.
-- [ ] In progress: P0 LRC timing robustness guardrails.
+- [x] Completed: P0 LRC timing robustness guardrails.
+- [ ] In progress: P1 lyrics-without-timings strategy improvements.
