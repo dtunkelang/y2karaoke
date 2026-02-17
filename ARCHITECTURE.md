@@ -65,6 +65,14 @@ Visual bootstrap/refinement utilities live in:
 - `src/y2karaoke/core/visual/`
 - `src/y2karaoke/core/refine_visual.py`
 
+Bootstrap-specific shared helpers are split by concern:
+- `src/y2karaoke/core/visual/bootstrap_candidates.py`: candidate discovery and suitability-based ranking
+- `src/y2karaoke/core/visual/bootstrap_selection.py`: candidate selection orchestration and quality-gate enforcement
+- `src/y2karaoke/core/visual/bootstrap_media.py`: cached-video audio extraction and media path resolution
+- `src/y2karaoke/core/visual/bootstrap_ocr.py`: OCR frame sampling and cache key/load/write behavior
+- `src/y2karaoke/core/visual/bootstrap_postprocess.py`: line/word post-processing and interpolation
+- `src/y2karaoke/core/visual/bootstrap_runtime.py`: suitability validation and report payload/write helpers
+
 ## Configuration and Environment
 
 - Global settings: `src/y2karaoke/config.py`

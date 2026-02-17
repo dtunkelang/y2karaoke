@@ -180,6 +180,11 @@ Status: Completed
 - [x] Rewire tool candidate-selection wrapper to delegate to shared selector helper
 - [x] Add direct unit tests for explicit-URL and low-quality rejection selection behavior
 
+### Milestone 29: Documentation Sync
+Status: Completed
+- [x] Update `ARCHITECTURE.md` with shared bootstrap module boundaries
+- [x] Update `docs/karaoke_visual_bootstrap.md` to reflect delegated shared implementation modules
+
 ## Notes
 - Keep changes in significant, validated commits.
 - Prefer deterministic ranking and quality decisions for reproducibility.

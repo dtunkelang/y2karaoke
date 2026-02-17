@@ -61,3 +61,8 @@ Optional arguments:
 
 Runtime note:
 - When a candidate is selected from evaluated rankings, the tool attempts to extract audio from the already-downloaded candidate video before falling back to a direct audio download.
+
+Implementation note:
+- The CLI wrapper delegates core logic to shared modules under `src/y2karaoke/core/visual/`:
+  `bootstrap_candidates.py`, `bootstrap_selection.py`, `bootstrap_media.py`,
+  `bootstrap_ocr.py`, `bootstrap_postprocess.py`, and `bootstrap_runtime.py`.
