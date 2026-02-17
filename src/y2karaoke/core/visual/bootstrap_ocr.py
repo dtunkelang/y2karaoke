@@ -5,6 +5,7 @@ from __future__ import annotations
 import hashlib
 import json
 from pathlib import Path
+import re
 from typing import Any
 
 from ...vision.ocr import get_ocr_engine, normalize_ocr_items
@@ -87,6 +88,177 @@ def _append_predicted_words(
             raw.append({"time": t_val, "words": words})
 
 
+def _overlay_root(token: str) -> str:
+    compact = "".join(ch for ch in token.lower() if ch.isalnum())
+    return compact[:4]
+
+
+def _is_edge_position(x: float, y: float, *, roi_width: int, roi_height: int) -> bool:
+    return x >= roi_width * 0.75 or y >= roi_height * 0.86
+
+
+def _collect_edge_overlay_stats(
+    raw_frames: list[dict[str, Any]],
+    *,
+    roi_width: int,
+    roi_height: int,
+) -> tuple[
+    dict[tuple[str, int, int], dict[str, float]],
+    dict[str, int],
+    dict[str, set[str]],
+]:
+    bins: dict[tuple[str, int, int], dict[str, float]] = {}
+    root_edge_frame_counts: dict[str, int] = {}
+    root_variants: dict[str, set[str]] = {}
+    for frame in raw_frames:
+        seen_edge_roots: set[str] = set()
+        for w in frame.get("words", []):
+            if not isinstance(w, dict):
+                continue
+            text = str(w.get("text", ""))
+            compact = re.sub(r"[^a-z0-9]", "", text.lower())
+            if len(compact) < 4:
+                continue
+            root = _overlay_root(compact)
+            if not root:
+                continue
+            x = float(w.get("x", 0.0))
+            y = float(w.get("y", 0.0))
+            if not _is_edge_position(x, y, roi_width=roi_width, roi_height=roi_height):
+                continue
+            root_variants.setdefault(root, set()).add(compact)
+            seen_edge_roots.add(root)
+            key = (root, int(round(x / 24.0)), int(round(y / 24.0)))
+            rec = bins.setdefault(
+                key,
+                {
+                    "count": 0.0,
+                    "sum_x": 0.0,
+                    "sum_y": 0.0,
+                    "sum_x2": 0.0,
+                    "sum_y2": 0.0,
+                },
+            )
+            rec["count"] += 1.0
+            rec["sum_x"] += x
+            rec["sum_y"] += y
+            rec["sum_x2"] += x * x
+            rec["sum_y2"] += y * y
+        for root in seen_edge_roots:
+            root_edge_frame_counts[root] = root_edge_frame_counts.get(root, 0) + 1
+    return bins, root_edge_frame_counts, root_variants
+
+
+def _identify_banned_overlay(
+    bins: dict[tuple[str, int, int], dict[str, float]],
+    root_edge_frame_counts: dict[str, int],
+    root_variants: dict[str, set[str]],
+    *,
+    total_frames: int,
+    roi_width: int,
+    roi_height: int,
+) -> tuple[set[tuple[str, int, int]], set[str]]:
+    banned_keys: set[tuple[str, int, int]] = set()
+    for key, rec in bins.items():
+        root = key[0]
+        n = max(rec["count"], 1.0)
+        freq = rec["count"] / float(total_frames)
+        mean_x = rec["sum_x"] / n
+        mean_y = rec["sum_y"] / n
+        var_x = max(rec["sum_x2"] / n - mean_x * mean_x, 0.0)
+        var_y = max(rec["sum_y2"] / n - mean_y * mean_y, 0.0)
+        if (
+            freq >= 0.22
+            and (var_x**0.5) <= 18.0
+            and (var_y**0.5) <= 18.0
+            and _is_edge_position(
+                mean_x, mean_y, roi_width=roi_width, roi_height=roi_height
+            )
+            and len(root_variants.get(root, set())) >= 2
+        ):
+            banned_keys.add(key)
+
+    banned_roots = {
+        root
+        for root, count in root_edge_frame_counts.items()
+        if (count / float(total_frames)) >= 0.25
+        and len(root_variants.get(root, set())) >= 2
+    }
+    return banned_keys, banned_roots
+
+
+def _filter_banned_overlay_words(
+    raw_frames: list[dict[str, Any]],
+    *,
+    roi_width: int,
+    roi_height: int,
+    banned_keys: set[tuple[str, int, int]],
+    banned_roots: set[str],
+) -> list[dict[str, Any]]:
+    filtered: list[dict[str, Any]] = []
+    for frame in raw_frames:
+        new_words = []
+        for w in frame.get("words", []):
+            if not isinstance(w, dict):
+                continue
+            text = str(w.get("text", ""))
+            compact = re.sub(r"[^a-z0-9]", "", text.lower())
+            root = _overlay_root(compact)
+            x = float(w.get("x", 0.0))
+            y = float(w.get("y", 0.0))
+            key = (root, int(round(x / 24.0)), int(round(y / 24.0)))
+            is_edge = _is_edge_position(
+                x, y, roi_width=roi_width, roi_height=roi_height
+            )
+            is_short_extreme_edge = (
+                bool(compact)
+                and len(compact) <= 4
+                and (x >= roi_width * 0.9 or y >= roi_height * 0.9)
+            )
+            if banned_roots and is_short_extreme_edge:
+                continue
+            if root and is_edge and (key in banned_keys or root in banned_roots):
+                continue
+            new_words.append(w)
+        filtered.append({**frame, "words": new_words})
+    return filtered
+
+
+def _suppress_persistent_edge_overlay_words(
+    raw_frames: list[dict[str, Any]],
+    *,
+    roi_width: int,
+    roi_height: int,
+) -> list[dict[str, Any]]:
+    if len(raw_frames) < 20:
+        return raw_frames
+    if roi_width <= 0 or roi_height <= 0:
+        return raw_frames
+
+    total_frames = len(raw_frames)
+    bins, root_edge_frame_counts, root_variants = _collect_edge_overlay_stats(
+        raw_frames, roi_width=roi_width, roi_height=roi_height
+    )
+    banned_keys, banned_roots = _identify_banned_overlay(
+        bins,
+        root_edge_frame_counts,
+        root_variants,
+        total_frames=total_frames,
+        roi_width=roi_width,
+        roi_height=roi_height,
+    )
+    if not banned_keys and not banned_roots:
+        return raw_frames
+
+    return _filter_banned_overlay_words(
+        raw_frames,
+        roi_width=roi_width,
+        roi_height=roi_height,
+        banned_keys=banned_keys,
+        banned_roots=banned_roots,
+    )
+
+
 def collect_raw_frames(
     video_path: Path,
     start: float,
@@ -166,7 +338,7 @@ def collect_raw_frames(
 
     _flush_batch()
     cap.release()
-    return raw
+    return _suppress_persistent_edge_overlay_words(raw, roi_width=rw, roi_height=rh)
 
 
 def raw_frames_cache_path(
@@ -207,10 +379,16 @@ def collect_raw_frames_cached(
     if cache_path.exists():
         if log_fn:
             log_fn(f"Loading cached OCR frames: {cache_path.name}")
-        return json.loads(cache_path.read_text())
+        loaded = json.loads(cache_path.read_text())
+        return _suppress_persistent_edge_overlay_words(
+            loaded, roi_width=roi_rect[2], roi_height=roi_rect[3]
+        )
 
     if collect_fn is None:
         collect_fn = collect_raw_frames
     raw = collect_fn(video_path, 0, duration, fps, roi_rect)
+    raw = _suppress_persistent_edge_overlay_words(
+        raw, roi_width=roi_rect[2], roi_height=roi_rect[3]
+    )
     cache_path.write_text(json.dumps(raw))
     return raw
