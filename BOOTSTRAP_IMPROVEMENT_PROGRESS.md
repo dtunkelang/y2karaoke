@@ -1,11 +1,11 @@
 # Bootstrap Improvement Progress
 
 ## Goals
-- [ ] Candidate auto-discovery and ranking for karaoke source videos
-- [ ] Visual suitability quality gates integrated into bootstrap
-- [ ] Visual refinement efficiency improvements
-- [ ] Confidence metadata in generated gold JSON
-- [ ] Test coverage for bootstrap/suitability paths
+- [x] Candidate auto-discovery and ranking for karaoke source videos
+- [x] Visual suitability quality gates integrated into bootstrap
+- [x] Visual refinement efficiency improvements
+- [x] Confidence metadata in generated gold JSON
+- [x] Test coverage for bootstrap/suitability paths
 
 ## Milestones
 
@@ -23,7 +23,7 @@ Status: Completed
 - [x] Add per-word confidence and per-line aggregate confidence in output
 
 ### Milestone 3: Tests + Validation
-Status: In progress
+Status: Completed
 - [x] Add/expand unit tests for bootstrap logic and suitability decisions
 - [x] Ensure `black`, `flake8`, `mypy`, and unit tests pass
 
