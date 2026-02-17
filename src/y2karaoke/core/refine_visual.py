@@ -32,7 +32,7 @@ def _word_fill_mask(roi_bgr: np.ndarray, c_bg: np.ndarray) -> np.ndarray:
 
 
 def _detect_highlight_times(
-    word_vals: List[Dict[str, Any]]
+    word_vals: List[Dict[str, Any]],
 ) -> Tuple[Optional[float], Optional[float]]:
     """Detect start and end times of visual highlight from color sequence."""
     if len(word_vals) <= 10:
