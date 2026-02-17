@@ -23,7 +23,9 @@ def _filter_static_overlay_words(
     total_frames = len(raw_frames)
     if total_frames < 20:
         return raw_frames
-    all_y, stats = _collect_overlay_stats(raw_frames)
+    all_y, stats, root_frame_counts, early_root_frame_counts = _collect_overlay_stats(
+        raw_frames
+    )
 
     if not all_y:
         return raw_frames
@@ -34,8 +36,13 @@ def _filter_static_overlay_words(
     y_top_cut = y_min + 0.35 * (y_max - y_min)
 
     static_keys = _identify_static_overlay_keys(stats, total_frames, y_top_cut)
+    overlay_roots = _infer_overlay_roots(
+        root_frame_counts,
+        early_root_frame_counts,
+        total_frames=total_frames,
+    )
 
-    if not static_keys:
+    if not static_keys and not overlay_roots:
         return raw_frames
 
     out: list[dict[str, Any]] = []
@@ -52,7 +59,10 @@ def _filter_static_overlay_words(
                 int(round(float(w.get("x", 0.0)) / _OVERLAY_BIN_PX)),
                 int(round(float(w.get("y", 0.0)) / _OVERLAY_BIN_PX)),
             )
-            if key in static_keys:
+            y_val = float(w.get("y", 0.0))
+            if key in static_keys or (
+                root in overlay_roots and y_val <= y_top_cut + 24.0
+            ):
                 continue
             new_words.append(w)
         out.append({**frame, "words": new_words})
@@ -61,11 +71,22 @@ def _filter_static_overlay_words(
 
 def _collect_overlay_stats(
     raw_frames: list[dict[str, Any]],
-) -> tuple[list[float], dict[tuple[str, int, int], dict[str, float]]]:
+) -> tuple[
+    list[float],
+    dict[tuple[str, int, int], dict[str, float]],
+    dict[str, int],
+    dict[str, int],
+]:
     all_y: list[float] = []
     stats: dict[tuple[str, int, int], dict[str, float]] = {}
+    root_frame_counts: dict[str, int] = {}
+    early_root_frame_counts: dict[str, int] = {}
+    first_time = float(raw_frames[0].get("time", 0.0))
+    early_limit = first_time + 35.0
     for frame in raw_frames:
         seen: set[tuple[str, int, int]] = set()
+        seen_roots: set[str] = set()
+        frame_time = float(frame.get("time", first_time))
         for w in frame.get("words", []):
             try:
                 x = float(w["x"])
@@ -77,6 +98,7 @@ def _collect_overlay_stats(
             root = _overlay_token_root(tok)
             if root is None:
                 continue
+            seen_roots.add(root)
             key = (
                 root,
                 int(round(x / _OVERLAY_BIN_PX)),
@@ -100,7 +122,11 @@ def _collect_overlay_stats(
             rec["sum_y"] += y
             rec["sum_x2"] += x * x
             rec["sum_y2"] += y * y
-    return all_y, stats
+        for root in seen_roots:
+            root_frame_counts[root] = root_frame_counts.get(root, 0) + 1
+            if frame_time <= early_limit:
+                early_root_frame_counts[root] = early_root_frame_counts.get(root, 0) + 1
+    return all_y, stats, root_frame_counts, early_root_frame_counts
 
 
 def _overlay_token_root(token: str) -> str | None:
@@ -131,6 +157,23 @@ def _identify_static_overlay_keys(
         ):
             static_keys.add(key)
     return static_keys
+
+
+def _infer_overlay_roots(
+    root_frame_counts: dict[str, int],
+    early_root_frame_counts: dict[str, int],
+    *,
+    total_frames: int,
+) -> set[str]:
+    if total_frames <= 0:
+        return set()
+    out: set[str] = set()
+    for root, count in root_frame_counts.items():
+        total_cov = count / float(total_frames)
+        early_cov = early_root_frame_counts.get(root, 0) / float(max(1, total_frames))
+        if total_cov >= 0.2 and early_cov >= 0.12:
+            out.add(root)
+    return out
 
 
 def reconstruct_lyrics_from_visuals(  # noqa: C901
