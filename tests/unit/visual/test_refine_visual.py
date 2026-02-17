@@ -5,7 +5,10 @@ from typing import List, Dict, Any
 from y2karaoke.core.visual.refinement import (
     _detect_highlight_times,
     _detect_highlight_with_confidence,
+    _build_line_refinement_jobs,
+    _merge_line_refinement_jobs,
 )
+from y2karaoke.core.models import TargetLine
 
 
 def _create_word_vals(
@@ -125,3 +128,76 @@ def test_detect_highlight_with_confidence_reports_strength():
     assert e is not None
     assert 0.0 <= confidence <= 1.0
     assert confidence > 0.6
+
+
+def test_build_line_refinement_jobs_skips_lines_without_rois():
+    lines = [
+        TargetLine(
+            line_index=1,
+            start=5.0,
+            end=8.0,
+            text="a",
+            words=["a"],
+            y=10,
+            word_rois=[(0, 0, 2, 2)],
+        ),
+        TargetLine(
+            line_index=2,
+            start=9.0,
+            end=11.0,
+            text="b",
+            words=["b"],
+            y=20,
+            word_rois=None,
+        ),
+    ]
+    jobs = _build_line_refinement_jobs(lines)
+    assert len(jobs) == 1
+    _, v_start, v_end = jobs[0]
+    assert v_start == 4.0
+    assert v_end == 9.0
+
+
+def test_merge_line_refinement_jobs_merges_overlaps_and_splits_distance():
+    lines = [
+        TargetLine(
+            line_index=1,
+            start=10.0,
+            end=12.0,
+            text="l1",
+            words=["l1"],
+            y=10,
+            word_rois=[(0, 0, 2, 2)],
+        ),
+        TargetLine(
+            line_index=2,
+            start=12.5,
+            end=14.0,
+            text="l2",
+            words=["l2"],
+            y=20,
+            word_rois=[(0, 0, 2, 2)],
+        ),
+        TargetLine(
+            line_index=3,
+            start=30.0,
+            end=31.0,
+            text="l3",
+            words=["l3"],
+            y=30,
+            word_rois=[(0, 0, 2, 2)],
+        ),
+    ]
+    jobs = _build_line_refinement_jobs(lines)
+    groups = _merge_line_refinement_jobs(jobs)
+    assert len(groups) == 2
+
+    first_start, first_end, first_jobs = groups[0]
+    assert first_start == 9.0
+    assert first_end == 15.0
+    assert len(first_jobs) == 2
+
+    second_start, second_end, second_jobs = groups[1]
+    assert second_start == 29.0
+    assert second_end == 32.0
+    assert len(second_jobs) == 1

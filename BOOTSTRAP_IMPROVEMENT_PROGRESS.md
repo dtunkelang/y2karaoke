@@ -90,6 +90,13 @@ Status: Completed
 - [x] Preserve sampled frame outputs while reducing decode overhead during candidate ranking
 - [x] Add unit test coverage for suitability sampler decode behavior
 
+### Milestone 14: Refinement Window Reuse
+Status: Completed
+- [x] Add line refinement job/window builders in visual refinement module
+- [x] Merge overlapping line windows to avoid repeated decode passes
+- [x] Reuse decoded window frames across multiple lines while preserving per-line filtering
+- [x] Add unit tests for job/window grouping behavior
+
 ## Notes
 - Keep changes in significant, validated commits.
 - Prefer deterministic ranking and quality decisions for reproducibility.
