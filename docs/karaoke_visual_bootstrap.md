@@ -1,6 +1,6 @@
 # Karaoke Visual Bootstrap Tool
 
-The `tools/bootstrap_gold_from_karaoke.py` tool is used to generate or refine high-precision word-level "gold" timings by visually analyzing existing karaoke videos from YouTube using a **Glyph-Core Departure** strategy.
+The `tools/bootstrap_gold_from_karaoke.py` tool is used to generate or refine word-level "gold" timings by visually analyzing existing karaoke videos from YouTube using a **Glyph-Core Departure** strategy.
 
 ## Overview
 
@@ -8,7 +8,7 @@ Instead of relying on audio alignment alone, this tool uses computer vision and 
 
 ## Vision-Based Extraction Algorithm
 
-The tool uses a multi-stage process to extract timings with **0.05s precision**.
+The tool uses a multi-stage process to extract timings with **0.05s snapping precision**.
 
 ### 1. Line Identification (OCR)
 The process starts by sampling the video at **2.0 FPS** using Apple Vision OCR (on macOS) or PaddleOCR:
@@ -16,8 +16,8 @@ The process starts by sampling the video at **2.0 FPS** using Apple Vision OCR (
 - **Line Reconstruction:** Individual words are grouped into logical lines based on their vertical Y-coordinate and temporal appearance.
 - **Normalization:** Lyrics are normalized (lower-cased, punctuation stripped, hyphens resolved) to facilitate deduplication and merging of multi-line blocks.
 
-### 2. High-FPS Refinement
-Once lines are identified, the tool performs a 60 FPS scan of the video:
+### 2. Native-FPS Refinement
+Once lines are identified, the tool scans the relevant line windows at the source video's native FPS:
 - **Glyph Masking:** For every word, a dynamic mask is created to isolate the "text core" pixels that deviate significantly from the local background.
 - **Stability Anchoring:** The tool identifies the most stable "Bright" period (Unselected text) and the first stable "Dark" period (Highlighted text) within the word's visible interval to establish $C_{initial}$ and $C_{final}$ prototypes.
 - **Departure-Onset Detection:** The word's **Start Time** is triggered at the exact frame where the glyph color consistently departs from the noise floor of its initial stable state.
@@ -27,7 +27,7 @@ Once lines are identified, the tool performs a 60 FPS scan of the video:
 Reconstructed timings are subject to strict invariants:
 - **Vertical Priority:** Within simultaneous multi-line blocks, top-to-bottom vertical order is strictly preserved.
 - **Temporal Monotonicity:** A line or word $N+1$ can never start before Line/Word $N$ has finished.
-- **Duration Constraints:** Words are capped at **0.8s** for natural flow, with a minimum duration of **0.15s** to ensure visibility in timing editors.
+- **Duration Constraints:** Words are capped at **0.8s** for natural flow, with a minimum duration of **0.10s**.
 - **Gap Filling:** Any words missed by visual triggers are filled using linear interpolation within the detected line duration.
 
 ## Usage
@@ -36,10 +36,17 @@ Reconstructed timings are subject to strict invariants:
 python tools/bootstrap_gold_from_karaoke.py 
   --artist "Artist Name" 
   --title "Song Title" 
+  --show-candidates
   --output path/to/refined.gold.json
 ```
 
 Optional arguments:
-- `--candidate-url`: Specify a YouTube URL directly.
+- `--candidate-url`: Specify a YouTube URL directly (skips candidate search).
 - `--visual-fps`: Frame rate for initial OCR sampling (default: 2.0).
+- `--max-candidates`: Max YouTube candidates to evaluate when auto-searching (default: 5).
+- `--suitability-fps`: Sampling rate used for suitability scoring (default: 1.0).
+- `--min-detectability`: Minimum detectability score required by quality gate (default: 0.45).
+- `--min-word-level-score`: Minimum word-level score required by quality gate (default: 0.15).
+- `--allow-low-suitability`: Bypass suitability gates (use with caution).
+- `--show-candidates`: Print ranked candidates with suitability metrics.
 - `--strict-sequential`: Enforce that lines appearing together are processed one-by-one.

@@ -236,15 +236,16 @@ To auto-seed/refine word timings from a karaoke YouTube version (visual-only):
 ./venv/bin/python tools/bootstrap_gold_from_karaoke.py \
   --artist "Billie Eilish" \
   --title "bad guy" \
-  --gold-in benchmarks/gold_set/02_billie-eilish-bad-guy.gold.json \
-  --lrc-in /absolute/path/to/bad-guy.lrc \
+  --show-candidates \
   --output benchmarks/gold_set/02_billie-eilish-bad-guy.karaoke-seed.gold.json \
-  --show-candidates
+  --min-detectability 0.45 \
+  --min-word-level-score 0.15
 ```
 
-- If `--candidate-url` is omitted, the tool picks the highest-scoring karaoke search result.
-- Line starts from `--lrc-in` are treated as hard anchors.
-- The tool detects line windows from karaoke frames via OCR and infers word timing from lyric highlight progress in those windows using a two-pass color-transition vision model (no audio transcription).
+- If `--candidate-url` is omitted, the tool searches YouTube for karaoke candidates, scores each for visual suitability, and picks the best one.
+- `--show-candidates` prints ranked candidates with detectability/word-level metrics.
+- By default, the tool enforces suitability gates (`--min-detectability`, `--min-word-level-score`). Use `--allow-low-suitability` to override.
+- The tool detects line windows from karaoke frames via OCR and infers word timing from lyric highlight progress in those windows (no audio transcription).
 
 See [docs/karaoke_visual_bootstrap.md](docs/karaoke_visual_bootstrap.md) for algorithm and technical details.
 
@@ -339,7 +340,7 @@ Intermediate files are cached in `~/.cache/karaoke/{video_id}/` by default, incl
 
 ## Technical Documentation
 
-For detailed technical architecture, see [CLAUDE.md](CLAUDE.md). This document covers:
+For detailed technical architecture, see [ARCHITECTURE.md](ARCHITECTURE.md). This document covers:
 - Overall pipeline and orchestration
 - Track identification (artist/title) from URLs and search queries
 - Lyrics and timing fetching from multiple providers
