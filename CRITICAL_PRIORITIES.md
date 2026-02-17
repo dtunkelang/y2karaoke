@@ -15,8 +15,11 @@ This document outlines the critical areas of the `y2karaoke` codebase and the im
 
 **Action Plan:**
 *   **Test Coverage:** Ensure `refine_visual.py` has high test coverage, especially with mock video data.
+    - [x] Extracted and tested `_detect_highlight_times` (color analysis).
+    - [x] Added tests for `reconstruct_lyrics_from_visuals` (line grouping).
 *   **Benchmark:** Run benchmarks regularly (see section 2) to catch regressions in visual alignment.
 *   **Refactor:** Break down `refine_word_timings_at_high_fps` into smaller, testable components.
+    - [x] Extracted highlight detection logic.
 
 ## 2. Benchmark Execution & Validation
 **Context:** A set of 12 songs is defined in `benchmarks/benchmark_songs.yaml` to measure alignment accuracy.
@@ -62,6 +65,5 @@ This document outlines the critical areas of the `y2karaoke` codebase and the im
 ---
 
 **Next Immediate Step:**
-Begin work on **Priority #1: Visual Refinement Stability**.
-1.  Analyze `src/y2karaoke/core/refine_visual.py`.
-2.  Add unit tests for `refine_word_timings_at_high_fps`.
+Verify OCR Fallback mechanism (Priority #4) or continue Refactoring Visual Refinement (Priority #1).
+Given that Refinement is stable for now, investigating OCR robustness on Linux/Docker might be valuable next.

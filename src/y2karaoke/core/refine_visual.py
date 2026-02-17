@@ -32,6 +32,70 @@ def _word_fill_mask(roi_bgr: np.ndarray, c_bg: np.ndarray) -> np.ndarray:
     return mask
 
 
+def _detect_highlight_times(
+    word_vals: List[Dict[str, Any]]
+) -> Tuple[Optional[float], Optional[float]]:
+    """Detect start and end times of visual highlight from color sequence."""
+    if len(word_vals) <= 10:
+        return None, None
+
+    l_vals = np.array([v["avg"][0] for v in word_vals])
+    # Smooth lightness curve
+    kernel_size = min(10, len(l_vals))
+    l_smooth = np.convolve(
+        l_vals,
+        np.ones(kernel_size) / kernel_size,
+        mode="same",
+    )
+
+    idx_peak = int(np.argmax(l_smooth))
+    c_initial = word_vals[idx_peak]["avg"]
+
+    # Find valley after peak
+    if idx_peak >= len(l_smooth) - 1:
+        return None, None
+
+    idx_valley = idx_peak + int(np.argmin(l_smooth[idx_peak:]))
+    c_final = word_vals[idx_valley]["avg"]
+
+    if np.linalg.norm(c_final - c_initial) <= 2.0:
+        return None, None
+
+    times = []
+    dists_in = []
+    for v in word_vals:
+        times.append(v["t"])
+        dists_in.append(np.linalg.norm(v["avg"] - c_initial))
+
+    # 2. Departure search: find exact frame where color starts moving
+    # Calculate noise floor from stable period around peak
+    start_stable = max(0, idx_peak - 5)
+    end_stable = min(len(dists_in), idx_peak + 5)
+    stable_range = dists_in[start_stable:end_stable]
+
+    noise_floor = 1.0
+    if stable_range:
+        noise_floor = float(np.mean(stable_range) + 2 * np.std(stable_range))
+
+    s, e = None, None
+    for j in range(idx_peak, len(times)):
+        # Start trigger: Consistent departure from noise floor
+        if s is None and dists_in[j] > noise_floor:
+            if j + 3 < len(times) and all(
+                dists_in[j + k] > dists_in[j + k - 1] for k in range(1, 4)
+            ):
+                s = times[j]
+
+        # End trigger: Closer to final state
+        if s is not None and e is None:
+            curr_dist_final = np.linalg.norm(word_vals[j]["avg"] - c_final)
+            curr_dist_initial = np.linalg.norm(word_vals[j]["avg"] - c_initial)
+            if curr_dist_final < curr_dist_initial:
+                e = times[j]
+                break
+    return s, e
+
+
 def refine_word_timings_at_high_fps(  # noqa: C901
     video_path: Path,
     target_lines: List[TargetLine],
@@ -100,63 +164,7 @@ def refine_word_timings_at_high_fps(  # noqa: C901
                             }
                         )
 
-            s, e = None, None
-            if len(word_vals) > 10:
-                l_vals = np.array([v["avg"][0] for v in word_vals])
-                # Smooth lightness curve
-                kernel_size = min(10, len(l_vals))
-                l_smooth = np.convolve(
-                    l_vals,
-                    np.ones(kernel_size) / kernel_size,
-                    mode="same",
-                )
-
-                idx_peak = int(np.argmax(l_smooth))
-                c_initial = word_vals[idx_peak]["avg"]
-
-                # Find valley after peak
-                idx_valley = idx_peak + int(np.argmin(l_smooth[idx_peak:]))
-                c_final = word_vals[idx_valley]["avg"]
-
-                if np.linalg.norm(c_final - c_initial) > 2.0:
-                    times = []
-                    dists_in = []
-                    for v in word_vals:
-                        times.append(v["t"])
-                        dists_in.append(np.linalg.norm(v["avg"] - c_initial))
-
-                    # 2. Departure search: find exact frame where color starts moving
-                    # Calculate noise floor from stable period around peak
-                    start_stable = max(0, idx_peak - 5)
-                    end_stable = min(len(dists_in), idx_peak + 5)
-                    stable_range = dists_in[start_stable:end_stable]
-
-                    noise_floor = 1.0
-                    if stable_range:
-                        noise_floor = float(
-                            np.mean(stable_range) + 2 * np.std(stable_range)
-                        )
-
-                    for j in range(idx_peak, len(times)):
-                        # Start trigger: Consistent departure from noise floor
-                        if s is None and dists_in[j] > noise_floor:
-                            if j + 3 < len(times) and all(
-                                dists_in[j + k] > dists_in[j + k - 1]
-                                for k in range(1, 4)
-                            ):
-                                s = times[j]
-
-                        # End trigger: Closer to final state
-                        if s is not None and e is None:
-                            curr_dist_final = np.linalg.norm(
-                                word_vals[j]["avg"] - c_final
-                            )
-                            curr_dist_initial = np.linalg.norm(
-                                word_vals[j]["avg"] - c_initial
-                            )
-                            if curr_dist_final < curr_dist_initial:
-                                e = times[j]
-                                break
+            s, e = _detect_highlight_times(word_vals)
             new_starts.append(s)
             new_ends.append(e)
 
