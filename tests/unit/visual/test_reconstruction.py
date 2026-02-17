@@ -138,3 +138,20 @@ def test_reconstruct_lyrics_filters_static_top_overlay_tokens():
     texts = [ln.text for ln in lines]
     assert all("SingKIN" not in t and "KARAO" not in t for t in texts)
     assert any("White shirt" in t for t in texts)
+
+
+def test_reconstruct_lyrics_merges_apostrophe_fragment_tokens():
+    raw_frames = [
+        {
+            "time": 10.0,
+            "words": [
+                {"text": "you", "x": 10, "y": 100, "w": 20, "h": 20},
+                {"text": "'", "x": 34, "y": 100, "w": 5, "h": 20},
+                {"text": "re", "x": 42, "y": 100, "w": 18, "h": 20},
+                {"text": "here", "x": 66, "y": 100, "w": 35, "h": 20},
+            ],
+        }
+    ]
+    lines = reconstruct_lyrics_from_visuals(raw_frames, 1.0)
+    assert len(lines) == 1
+    assert lines[0].words == ["you're", "here"]

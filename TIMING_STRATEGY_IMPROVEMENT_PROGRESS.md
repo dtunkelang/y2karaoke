@@ -47,6 +47,7 @@ Last updated: 2026-02-17
 - [x] Completed: P1 karaoke OCR overlay filtering (top-band ignore + static watermark token suppression during reconstruction).
 - [x] Completed: P1 karaoke OCR raw-cache filtering for persistent right/bottom-edge watermark artifacts (pre-cache suppression + short edge-fragment cleanup).
 - [x] Removed fixed top-band OCR suppression in raw frame sampling; recovered valid top-line lyrics on videos where active lyrics render near the top of the ROI.
+- [x] Added contraction-aware OCR token normalization and apostrophe fragment merging in visual reconstruction output (e.g., `you ' re` -> `you're`, `don ' t` -> `don't`, `sleepin ' ` -> `sleepin'`).
 - [x] Validated on Billie Eilish - "bad guy" (`GsFlbMS7UIc`) with fresh cache versions:
   - `raw_frames_463cf7852a3083257907dae10e9b4399.json`: residual branded tokens reduced to intro cards only (`SingKING/KARAOKE/Karaoke`, 7 total).
   - Removed recurring edge fragments (`KIN/KII/KAPA/KARAO`) from sampled raw frames.

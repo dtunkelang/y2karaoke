@@ -3,7 +3,12 @@ from __future__ import annotations
 from typing import Any, Dict
 
 from ..models import TargetLine
-from ..text_utils import normalize_ocr_line, normalize_text_basic, text_similarity
+from ..text_utils import (
+    normalize_ocr_line,
+    normalize_ocr_tokens,
+    normalize_text_basic,
+    text_similarity,
+)
 
 _OVERLAY_BIN_PX = 24.0
 _OVERLAY_MAX_JITTER_PX = 20.0
@@ -231,7 +236,10 @@ def reconstruct_lyrics_from_visuals(  # noqa: C901
 
             for ln_w in lines_in_frame:
                 ln_w.sort(key=lambda w: w["x"])
-                txt = normalize_ocr_line(" ".join([w["text"] for w in ln_w]))
+                line_tokens = normalize_ocr_tokens([str(w["text"]) for w in ln_w])
+                if not line_tokens:
+                    continue
+                txt = normalize_ocr_line(" ".join(line_tokens))
                 if not txt:
                     continue
 
@@ -245,7 +253,7 @@ def reconstruct_lyrics_from_visuals(  # noqa: C901
                 else:
                     on_screen[norm] = {
                         "text": txt,
-                        "words": [w["text"] for w in ln_w],
+                        "words": line_tokens,
                         "first": frame["time"],
                         "last": frame["time"],
                         "y": y_pos,

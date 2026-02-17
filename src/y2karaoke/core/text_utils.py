@@ -242,3 +242,53 @@ def normalize_ocr_line(text: str) -> str:
                 tok = "I"
         out.append(tok)
     return spell_correct(" ".join(out))
+
+
+def normalize_ocr_tokens(tokens: List[str]) -> List[str]:
+    """Normalize OCR token list and merge common contraction fragments.
+
+    This intentionally preserves token count monotonicity (same or fewer tokens),
+    so downstream word/ROI arrays remain safely indexable.
+    """
+    if not tokens:
+        return []
+
+    suffixes = {"re", "ve", "ll", "m", "d", "s", "t"}
+    compact: List[str] = []
+    for raw in tokens:
+        tok = canon_punct(str(raw))
+        tok = re.sub(r"[^A-Za-z0-9']+", "", tok)
+        if not tok:
+            continue
+        compact.append(tok)
+
+    out: List[str] = []
+    i = 0
+    while i < len(compact):
+        tok = compact[i]
+
+        if out and tok in {"'ll", "'re", "'ve", "'m", "'d", "'s", "'t"}:
+            out[-1] = out[-1] + tok
+            i += 1
+            continue
+
+        if (
+            tok == "'"
+            and out
+            and i + 1 < len(compact)
+            and compact[i + 1].lower() in suffixes
+            and any(ch.isalpha() for ch in out[-1])
+        ):
+            out[-1] = out[-1] + "'" + compact[i + 1]
+            i += 2
+            continue
+
+        if tok == "'" and out and any(ch.isalpha() for ch in out[-1]):
+            out[-1] = out[-1] + "'"
+            i += 1
+            continue
+
+        out.append(tok)
+        i += 1
+
+    return out

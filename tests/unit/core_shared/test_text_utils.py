@@ -6,6 +6,7 @@ from y2karaoke.core.text_utils import (
     clean_title_for_search,
     strip_leading_artist_from_line,
     filter_singer_only_lines,
+    normalize_ocr_tokens,
 )
 
 
@@ -169,3 +170,19 @@ class TestFilterSingerOnlyLines:
         result = filter_singer_only_lines(lines, ["Alice"])
         assert len(result) == 1
         assert result[0][0] == "Real lyrics"
+
+
+class TestNormalizeOcrTokens:
+    def test_merges_contraction_fragments(self):
+        assert normalize_ocr_tokens(["you", "'", "re"]) == ["you're"]
+        assert normalize_ocr_tokens(["don", "'", "t"]) == ["don't"]
+        assert normalize_ocr_tokens(["I", "'", "m"]) == ["I'm"]
+        assert normalize_ocr_tokens(["sleepin", "'"]) == ["sleepin'"]
+
+    def test_preserves_regular_tokens(self):
+        assert normalize_ocr_tokens(["White", "shirt", "now", "red"]) == [
+            "White",
+            "shirt",
+            "now",
+            "red",
+        ]
