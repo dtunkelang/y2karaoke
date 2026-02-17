@@ -3,6 +3,7 @@ import pytest
 from typing import List, Dict, Any
 
 from y2karaoke.core.visual.refinement import (
+    _assign_line_level_word_timings,
     _detect_highlight_times,
     _detect_highlight_with_confidence,
     _build_line_refinement_jobs,
@@ -245,3 +246,72 @@ def test_refine_line_with_frames_populates_word_outputs(monkeypatch):
     assert line.word_starts == [1.1]
     assert line.word_ends == [1.3]
     assert line.word_confidences == [0.8]
+
+
+def test_assign_line_level_word_timings_weights_longer_words():
+    line = TargetLine(
+        line_index=1,
+        start=5.0,
+        end=7.0,
+        text="go extraordinary",
+        words=["go", "extraordinary"],
+        y=10,
+        word_rois=[(0, 0, 10, 5), (12, 0, 40, 5)],
+    )
+
+    _assign_line_level_word_timings(
+        line, line_start=5.2, line_end=6.8, line_confidence=0.7
+    )
+
+    assert line.word_starts is not None
+    assert line.word_ends is not None
+    assert line.word_confidences is not None
+    short_dur = line.word_ends[0] - line.word_starts[0]
+    long_dur = line.word_ends[1] - line.word_starts[1]
+    assert long_dur > short_dur
+    assert line.word_starts[0] == pytest.approx(5.2, abs=1e-6)
+    assert line.word_ends[-1] == pytest.approx(6.8, abs=1e-6)
+    assert 0.2 <= line.word_confidences[0] <= 0.5
+
+
+def test_refine_line_with_frames_uses_line_level_fallback(monkeypatch):
+    line = TargetLine(
+        line_index=1,
+        start=1.0,
+        end=2.5,
+        text="hello world",
+        words=["hello", "world"],
+        y=10,
+        word_rois=[(0, 0, 2, 2), (3, 0, 2, 2)],
+    )
+    roi = np.ones((6, 6, 3), dtype=np.uint8) * 120
+    roi_lab = np.ones((6, 6, 3), dtype=np.float32) * 50.0
+    frames = [(1.0 + i * 0.1, roi, roi_lab) for i in range(15)]
+
+    monkeypatch.setattr(
+        "y2karaoke.core.visual.refinement._word_fill_mask",
+        lambda word_roi, c_bg: np.ones(word_roi.shape[:2], dtype=np.uint8) * 255,
+    )
+
+    calls = {"count": 0}
+
+    def _fake_detect(vals):
+        calls["count"] += 1
+        if calls["count"] <= 2:
+            return None, None, 0.0
+        return 1.2, 2.0, 0.65
+
+    monkeypatch.setattr(
+        "y2karaoke.core.visual.refinement._detect_highlight_with_confidence",
+        _fake_detect,
+    )
+
+    _refine_line_with_frames(line, frames)
+
+    assert line.word_starts is not None
+    assert line.word_ends is not None
+    assert line.word_confidences is not None
+    assert len(line.word_starts) == 2
+    assert line.word_starts[0] == pytest.approx(1.2, abs=1e-6)
+    assert line.word_ends[-1] == pytest.approx(2.0, abs=1e-6)
+    assert all(c is not None and 0.2 <= c <= 0.5 for c in line.word_confidences)

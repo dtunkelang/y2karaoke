@@ -66,7 +66,7 @@ except ImportError:
     sys.exit(1)
 
 logger = get_logger(__name__)
-RAW_OCR_CACHE_VERSION = "2"
+RAW_OCR_CACHE_VERSION = "3"
 
 
 def _search_karaoke_candidates(

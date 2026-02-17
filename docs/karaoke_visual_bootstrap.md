@@ -22,6 +22,7 @@ Once lines are identified, the tool scans the relevant line windows at the sourc
 - **Stability Anchoring:** The tool identifies the most stable "Bright" period (Unselected text) and the first stable "Dark" period (Highlighted text) within the word's visible interval to establish $C_{initial}$ and $C_{final}$ prototypes.
 - **Departure-Onset Detection:** The word's **Start Time** is triggered at the exact frame where the glyph color consistently departs from the noise floor of its initial stable state.
 - **Midpoint Termination:** The word's **End Time** is triggered when its color becomes mathematically closer to the final highlighted state than the initial state.
+- **Line-Level Fallback:** If no per-word transitions are detected for a line (common for line-level karaoke), the tool detects a line-level transition on the union ROI and allocates per-word timings inside that line window using token-length-weighted durations.
 
 ### 3. Logical Sequence Enforcement
 Reconstructed timings are subject to strict invariants:
@@ -49,7 +50,7 @@ Optional arguments:
 - `--candidate-url`: Specify a YouTube URL directly (skips candidate search).
 - `--visual-fps`: Frame rate for initial OCR sampling (default: 2.0).
 - `--work-dir`: Cache/work directory for downloads and OCR artifacts (default: `.cache/karaoke_bootstrap`).
-- `--raw-ocr-cache-version`: Version stamp for OCR frame cache keys (default: `2`); bump to invalidate stale OCR-frame caches after logic changes.
+- `--raw-ocr-cache-version`: Version stamp for OCR frame cache keys (default: `3`); bump to invalidate stale OCR-frame caches after logic changes.
 - `--report-json`: Write a structured run report with candidate rankings and selected metrics.
 - `--max-candidates`: Max YouTube candidates to evaluate when auto-searching (default: 5).
 - `--suitability-fps`: Sampling rate used for suitability scoring (default: 1.0).
