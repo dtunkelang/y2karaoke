@@ -115,6 +115,12 @@ Status: Completed
 - [x] Preserve inclusive window semantics on start/end bounds
 - [x] Add unit test coverage for frame-window slicing behavior
 
+### Milestone 18: Bootstrap Post-Processing Separation
+Status: Completed
+- [x] Extract line/word post-processing from CLI `main` into `_build_refined_lines_output`
+- [x] Preserve existing fallback/interpolation behavior and line confidence aggregation
+- [x] Add unit tests for title/artist filtering and missing-word-start fallback behavior
+
 ## Notes
 - Keep changes in significant, validated commits.
 - Prefer deterministic ranking and quality decisions for reproducibility.

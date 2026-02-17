@@ -306,3 +306,61 @@ def test_extract_audio_from_video_uses_ffmpeg_once(tmp_path, monkeypatch) -> Non
     assert first == second
     assert first.exists()
     assert calls["n"] == 1
+
+
+def test_build_refined_lines_output_skips_artist_and_title() -> None:
+    lines = [
+        TargetLine(
+            line_index=1,
+            start=8.0,
+            end=10.0,
+            text="Song Title",
+            words=["Song", "Title"],
+            y=50,
+            word_starts=[8.1, 8.7],
+            word_ends=[8.5, 9.2],
+            word_rois=[(0, 0, 1, 1), (1, 0, 1, 1)],
+        ),
+        TargetLine(
+            line_index=2,
+            start=11.0,
+            end=13.0,
+            text="real lyric",
+            words=["real", "lyric"],
+            y=60,
+            word_starts=[11.1, 11.8],
+            word_ends=[11.5, 12.4],
+            word_rois=[(0, 0, 1, 1), (1, 0, 1, 1)],
+        ),
+    ]
+    out = _MODULE._build_refined_lines_output(
+        lines,
+        artist="Artist Name",
+        title="Song Title",
+    )
+    assert len(out) == 1
+    assert out[0]["text"] == "real lyric"
+    assert out[0]["line_index"] == 1
+
+
+def test_build_refined_lines_output_falls_back_when_word_starts_missing() -> None:
+    lines = [
+        TargetLine(
+            line_index=1,
+            start=8.0,
+            end=10.0,
+            text="hello world",
+            words=["hello", "world"],
+            y=70,
+            word_starts=None,
+            word_ends=None,
+            word_rois=[(0, 0, 1, 1), (1, 0, 1, 1)],
+        )
+    ]
+    out = _MODULE._build_refined_lines_output(lines, artist=None, title=None)
+    assert len(out) == 1
+    words = out[0]["words"]
+    assert len(words) == 2
+    assert words[0]["confidence"] == 0.0
+    assert words[0]["start"] >= 5.0
+    assert words[0]["end"] > words[0]["start"]
