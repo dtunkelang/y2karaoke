@@ -127,6 +127,11 @@ Status: Completed
 - [x] Keep group-window orchestration focused on window management only
 - [x] Add unit test coverage for per-line word timing population behavior
 
+### Milestone 20: Refined-Line Builder Cleanup
+Status: Completed
+- [x] Precompute normalized title/artist once in refined-line output builder
+- [x] Remove repeated per-line normalization of static metadata values
+
 ## Notes
 - Keep changes in significant, validated commits.
 - Prefer deterministic ranking and quality decisions for reproducibility.

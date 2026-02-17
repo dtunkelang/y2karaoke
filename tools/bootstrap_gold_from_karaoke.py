@@ -366,6 +366,8 @@ def _build_refined_lines_output(
 ) -> list[dict[str, Any]]:
     lines_out: List[dict[str, Any]] = []
     prev_line_end = 5.0
+    normalized_title = normalize_text_basic(title or "")
+    normalized_artist = normalize_text_basic(artist or "")
 
     for idx, ln in enumerate(t_lines):
         if ln.start < 7.0 and (
@@ -374,10 +376,7 @@ def _build_refined_lines_output(
             continue
 
         norm_txt = normalize_text_basic(ln.text)
-        if norm_txt in [
-            normalize_text_basic(title or ""),
-            normalize_text_basic(artist or ""),
-        ]:
+        if norm_txt in [normalized_title, normalized_artist]:
             continue
 
         w_out: List[dict[str, Any]] = []
