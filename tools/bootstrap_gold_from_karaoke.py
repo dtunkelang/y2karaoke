@@ -18,10 +18,10 @@ if str(src_path) not in sys.path:
 
 from y2karaoke.utils.logging import setup_logging, get_logger  # noqa: E402
 from y2karaoke.core.components.audio.downloader import YouTubeDownloader  # noqa: E402
-from y2karaoke.core.refine_visual import (  # noqa: E402
+from y2karaoke.core.refine_visual import refine_word_timings_at_high_fps  # noqa: E402
+from y2karaoke.core.visual.reconstruction import (  # noqa: E402
     reconstruct_lyrics_from_visuals,
-    refine_word_timings_at_high_fps,
-    _snap,  # Reuse snap from refine_visual or redefine locally
+    snap,
 )
 from y2karaoke.core.text_utils import make_slug, normalize_text_basic  # noqa: E402
 from y2karaoke.vision.ocr import get_ocr_engine  # noqa: E402
@@ -174,8 +174,8 @@ def main():
                     {
                         "word_index": j + 1,
                         "text": txt,
-                        "start": _snap(ws),
-                        "end": _snap(we),
+                        "start": snap(ws),
+                        "end": snap(we),
                     }
                 )
         else:
@@ -243,8 +243,8 @@ def main():
                     {
                         "word_index": j + 1,
                         "text": ln.words[j],
-                        "start": _snap(out_s[j]),
-                        "end": _snap(out_e[j]),
+                        "start": snap(out_s[j]),
+                        "end": snap(out_e[j]),
                     }
                 )
 
