@@ -185,6 +185,11 @@ Status: Completed
 - [x] Update `ARCHITECTURE.md` with shared bootstrap module boundaries
 - [x] Update `docs/karaoke_visual_bootstrap.md` to reflect delegated shared implementation modules
 
+### Milestone 30: Candidate Logging Severity Fix
+Status: Completed
+- [x] Split candidate ranking logging into info vs warning channels in shared candidate helper
+- [x] Restore warning-level logging for skipped candidate errors in CLI wrapper
+
 ## Notes
 - Keep changes in significant, validated commits.
 - Prefer deterministic ranking and quality decisions for reproducibility.

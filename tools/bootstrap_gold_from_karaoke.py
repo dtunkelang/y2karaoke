@@ -93,7 +93,8 @@ def _rank_candidates_by_suitability(
         song_dir=song_dir,
         suitability_fps=suitability_fps,
         analyze_fn=analyze_visual_suitability,
-        log_fn=logger.info,
+        log_info_fn=logger.info,
+        log_warning_fn=logger.warning,
     )
 
 

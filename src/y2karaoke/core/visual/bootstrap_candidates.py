@@ -66,7 +66,8 @@ def rank_candidates_by_suitability(
     song_dir: Path,
     suitability_fps: float,
     analyze_fn: Callable[..., tuple[dict[str, Any], tuple[int, int, int, int]]],
-    log_fn: Optional[Callable[[str], None]] = None,
+    log_info_fn: Optional[Callable[[str], None]] = None,
+    log_warning_fn: Optional[Callable[[str], None]] = None,
 ) -> list[dict[str, Any]]:
     ranked: list[dict[str, Any]] = []
 
@@ -90,8 +91,8 @@ def rank_candidates_by_suitability(
                     "score": float(metrics["detectability_score"]),
                 }
             )
-            if log_fn:
-                log_fn(
+            if log_info_fn:
+                log_info_fn(
                     "Candidate %d score=%.3f word_level=%.3f title=%s"
                     % (
                         idx,
@@ -101,8 +102,8 @@ def rank_candidates_by_suitability(
                     )
                 )
         except Exception as exc:
-            if log_fn:
-                log_fn(f"Skipping candidate {url}: {exc}")
+            if log_warning_fn:
+                log_warning_fn(f"Skipping candidate {url}: {exc}")
 
     ranked.sort(
         key=lambda c: (
