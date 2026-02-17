@@ -30,6 +30,11 @@ Reconstructed timings are subject to strict invariants:
 - **Duration Constraints:** Words are capped at **0.8s** for natural flow, with a minimum duration of **0.10s**.
 - **Gap Filling:** Any words missed by visual triggers are filled using linear interpolation within the detected line duration.
 
+### Output Confidence Signals
+- Each word includes a `confidence` score in `[0, 1]` based on transition strength and trigger quality.
+- Each line includes an aggregate `confidence` score (mean of its words).
+- The top-level JSON includes `visual_suitability` metrics and `candidate_url` for traceability.
+
 ## Usage
 
 ```bash

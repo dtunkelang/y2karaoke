@@ -35,8 +35,16 @@ def _detect_highlight_times(
     word_vals: List[Dict[str, Any]],
 ) -> Tuple[Optional[float], Optional[float]]:
     """Detect start and end times of visual highlight from color sequence."""
+    s, e, _ = _detect_highlight_with_confidence(word_vals)
+    return s, e
+
+
+def _detect_highlight_with_confidence(
+    word_vals: List[Dict[str, Any]],
+) -> Tuple[Optional[float], Optional[float], float]:
+    """Detect highlight transition and estimate confidence in [0, 1]."""
     if len(word_vals) <= 10:
-        return None, None
+        return None, None, 0.0
 
     l_vals = np.array([v["avg"][0] for v in word_vals])
     # Smooth lightness curve
@@ -52,13 +60,14 @@ def _detect_highlight_times(
 
     # Find valley after peak
     if idx_peak >= len(l_smooth) - 1:
-        return None, None
+        return None, None, 0.0
 
     idx_valley = idx_peak + int(np.argmin(l_smooth[idx_peak:]))
     c_final = word_vals[idx_valley]["avg"]
 
-    if np.linalg.norm(c_final - c_initial) <= 2.0:
-        return None, None
+    transition_norm = float(np.linalg.norm(c_final - c_initial))
+    if transition_norm <= 2.0:
+        return None, None, 0.0
 
     times = []
     dists_in = []
@@ -92,7 +101,15 @@ def _detect_highlight_times(
             if curr_dist_final < curr_dist_initial:
                 e = times[j]
                 break
-    return s, e
+
+    # Confidence combines transition strength, sample coverage, and trigger quality.
+    strength = min(transition_norm / 25.0, 1.0)
+    coverage = min(len(word_vals) / 40.0, 1.0)
+    trigger_quality = 1.0 if (s is not None and e is not None and e >= s) else 0.35
+    confidence = max(
+        0.0, min(1.0, 0.5 * strength + 0.3 * coverage + 0.2 * trigger_quality)
+    )
+    return s, e, float(confidence)
 
 
 def refine_word_timings_at_high_fps(  # noqa: C901
@@ -126,7 +143,9 @@ def refine_word_timings_at_high_fps(  # noqa: C901
             t = cap.get(cv2.CAP_PROP_POS_MSEC) / 1000.0
             if not ok or t > v_end:
                 break
-            line_frames.append((t, frame[ry : ry + rh, rx : rx + rw]))
+            roi_bgr = frame[ry : ry + rh, rx : rx + rw]
+            roi_lab = cv2.cvtColor(roi_bgr, cv2.COLOR_BGR2LAB).astype(np.float32)
+            line_frames.append((t, roi_bgr, roi_lab))
 
         if len(line_frames) < 20:
             continue
@@ -138,6 +157,7 @@ def refine_word_timings_at_high_fps(  # noqa: C901
 
         new_starts: List[Optional[float]] = []
         new_ends: List[Optional[float]] = []
+        new_confidences: List[Optional[float]] = []
 
         # We know word_rois is not None from check above
         assert ln.word_rois is not None
@@ -146,14 +166,12 @@ def refine_word_timings_at_high_fps(  # noqa: C901
             wx, wy, ww, wh = ln.word_rois[wi]
             # 1. Identify TEXT-ONLY frames
             word_vals = []
-            for t, roi in line_frames:
+            for t, roi, roi_lab in line_frames:
                 if wy + wh <= roi.shape[0] and wx + ww <= roi.shape[1]:
                     word_roi = roi[wy : wy + wh, wx : wx + ww]
                     mask = _word_fill_mask(word_roi, c_bg_line)
                     if np.sum(mask > 0) > 30:  # Glyph is present
-                        lab = cv2.cvtColor(word_roi, cv2.COLOR_BGR2LAB).astype(
-                            np.float32
-                        )
+                        lab = roi_lab[wy : wy + wh, wx : wx + ww]
                         word_vals.append(
                             {
                                 "t": t,
@@ -163,11 +181,13 @@ def refine_word_timings_at_high_fps(  # noqa: C901
                             }
                         )
 
-            s, e = _detect_highlight_times(word_vals)
+            s, e, conf = _detect_highlight_with_confidence(word_vals)
             new_starts.append(s)
             new_ends.append(e)
+            new_confidences.append(conf)
 
         ln.word_starts = new_starts
         ln.word_ends = new_ends
+        ln.word_confidences = new_confidences
 
     cap.release()

@@ -137,3 +137,10 @@ def test_select_candidate_prefers_best(monkeypatch, tmp_path) -> None:
     assert url.endswith("v=2")
     assert video_path and video_path.name == "b.mp4"
     assert metrics["detectability_score"] == 0.81
+
+
+def test_clamp_confidence() -> None:
+    assert _MODULE._clamp_confidence(None) == 0.0
+    assert _MODULE._clamp_confidence(0.4) == 0.4
+    assert _MODULE._clamp_confidence(1.2) == 1.0
+    assert _MODULE._clamp_confidence(-0.5) == 0.0

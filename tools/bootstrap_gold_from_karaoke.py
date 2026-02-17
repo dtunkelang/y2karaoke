@@ -265,6 +265,12 @@ def _collect_raw_frames(
     return raw
 
 
+def _clamp_confidence(value: Optional[float], default: float = 0.0) -> float:
+    if value is None:
+        value = default
+    return max(0.0, min(1.0, float(value)))
+
+
 def main():  # noqa: C901
     setup_logging(verbose=True)
     p = argparse.ArgumentParser()
@@ -387,21 +393,25 @@ def main():  # noqa: C901
                         "text": txt,
                         "start": snap(ws),
                         "end": snap(we),
+                        "confidence": 0.0,
                     }
                 )
         else:
             word_starts = ln.word_starts
             word_ends = ln.word_ends or [None] * n_words
+            word_confidences = ln.word_confidences or [None] * n_words
 
             vs = [j for j, s in enumerate(word_starts) if s is not None]
             out_s: List[float] = []
             out_e: List[float] = []
+            out_c: List[float] = []
 
             for j in range(n_words):
                 ws_val = word_starts[j]
                 if ws_val is not None:
                     out_s.append(ws_val)
                     out_e.append(word_ends[j] or ws_val + 0.1)
+                    out_c.append(_clamp_confidence(word_confidences[j], default=0.5))
                 else:
                     prev_v = max([idx for idx in vs if idx < j], default=-1)
                     next_v = min([idx for idx in vs if idx > j], default=-1)
@@ -433,6 +443,7 @@ def main():  # noqa: C901
                             out_e[prev_v] + frac * (next_vs_val - out_e[prev_v])
                         )
                     out_e.append(out_s[-1] + 0.1)
+                    out_c.append(0.25)
 
             for j in range(n_words):
                 if j == 0:
@@ -448,6 +459,7 @@ def main():  # noqa: C901
                         "text": ln.words[j],
                         "start": snap(out_s[j]),
                         "end": snap(out_e[j]),
+                        "confidence": round(out_c[j], 3),
                     }
                 )
 
@@ -464,6 +476,9 @@ def main():  # noqa: C901
                 "text": ln.text,
                 "start": line_start,
                 "end": line_end,
+                "confidence": round(
+                    sum(w["confidence"] for w in w_out) / max(len(w_out), 1), 3
+                ),
                 "words": w_out,
                 "y": ln.y,
                 "word_rois": ln.word_rois,
@@ -475,7 +490,7 @@ def main():  # noqa: C901
         line_dict["line_index"] = i + 1
 
     res: Dict[str, Any] = {
-        "schema_version": "1.1",
+        "schema_version": "1.2",
         "title": args.title,
         "artist": args.artist,
         "candidate_url": candidate_url,

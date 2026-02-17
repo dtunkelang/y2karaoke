@@ -18,9 +18,9 @@ Status: Completed
 - [x] Align docs (`README.md`, `docs/karaoke_visual_bootstrap.md`) with implemented CLI
 
 ### Milestone 2: Efficiency + Confidence
-Status: Pending
-- [ ] Refactor refinement loops to reduce repeated frame processing costs
-- [ ] Add per-word confidence and per-line aggregate confidence in output
+Status: Completed
+- [x] Refactor refinement loops to reduce repeated frame processing costs
+- [x] Add per-word confidence and per-line aggregate confidence in output
 
 ### Milestone 3: Tests + Validation
 Status: In progress

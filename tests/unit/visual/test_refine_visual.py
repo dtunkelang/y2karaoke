@@ -2,7 +2,10 @@ import numpy as np
 import pytest
 from typing import List, Dict, Any
 
-from y2karaoke.core.visual.refinement import _detect_highlight_times
+from y2karaoke.core.visual.refinement import (
+    _detect_highlight_times,
+    _detect_highlight_with_confidence,
+)
 
 
 def _create_word_vals(
@@ -98,3 +101,27 @@ def test_detect_highlight_times_handles_noisy_data():
     assert e is not None
     assert 1.0 <= s <= 1.25
     assert 1.2 <= e <= 1.45
+
+
+def test_detect_highlight_with_confidence_reports_strength():
+    times = np.linspace(0, 2.0, 41)
+    colors = []
+    color_a = np.array([95.0, 128.0, 128.0])
+    color_b = np.array([8.0, 128.0, 128.0])
+    for t in times:
+        if t <= 1.0:
+            c = color_a
+        elif t >= 1.5:
+            c = color_b
+        else:
+            ratio = (t - 1.0) / 0.5
+            c = color_a + (color_b - color_a) * ratio
+        colors.append(c)
+    vals = _create_word_vals(times, colors)
+
+    s, e, confidence = _detect_highlight_with_confidence(vals)
+
+    assert s is not None
+    assert e is not None
+    assert 0.0 <= confidence <= 1.0
+    assert confidence > 0.6
