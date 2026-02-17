@@ -7,7 +7,7 @@ import json
 from pathlib import Path
 from typing import Any
 
-from ...vision.ocr import get_ocr_engine
+from ...vision.ocr import get_ocr_engine, normalize_ocr_items
 
 try:
     import cv2
@@ -64,9 +64,9 @@ def collect_raw_frames(
         roi = frame[ry : ry + rh, rx : rx + rw]
         res = ocr.predict(roi)
         if res and res[0]:
-            items = res[0]
-            rec_texts = items.get("rec_texts", [])
-            rec_boxes = items.get("rec_boxes", [])
+            items = normalize_ocr_items(res[0])
+            rec_texts = items["rec_texts"]
+            rec_boxes = items["rec_boxes"]
             words = []
             for txt, box_data in zip(rec_texts, rec_boxes):
                 points = box_data["word"] if isinstance(box_data, dict) else box_data

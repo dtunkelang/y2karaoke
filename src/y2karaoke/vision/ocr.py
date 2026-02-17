@@ -20,6 +20,84 @@ logger = logging.getLogger(__name__)
 _OCR_ENGINE = None
 
 
+def _box_to_quad(box: Any) -> list[list[float]] | None:
+    """Normalize OCR box output to a 4-point polygon."""
+    if np is None:
+        return None
+
+    try:
+        arr = np.array(box, dtype=float)
+    except Exception:
+        return None
+
+    if arr.ndim == 2 and arr.shape == (4, 2):
+        return arr.tolist()
+
+    if arr.ndim == 1 and arr.shape[0] == 4:
+        x1, y1, x2, y2 = arr.tolist()
+        x_min, x_max = min(x1, x2), max(x1, x2)
+        y_min, y_max = min(y1, y2), max(y1, y2)
+        return [
+            [x_min, y_min],
+            [x_max, y_min],
+            [x_max, y_max],
+            [x_min, y_max],
+        ]
+
+    return None
+
+
+def normalize_ocr_items(items: dict[str, Any]) -> dict[str, Any]:
+    """
+    Normalize OCR engine output to word-level `rec_texts`/`rec_boxes`/`rec_scores`.
+
+    PaddleOCR v3 returns line-level `rec_*` plus optional token-level
+    `text_word`/`text_word_boxes` when `return_word_box=True`. This helper converts
+    token-level output into the canonical shape consumed by the visual pipeline.
+    """
+    token_lines = items.get("text_word")
+    token_boxes_lines = items.get("text_word_boxes")
+    line_scores = items.get("rec_scores", [])
+
+    if isinstance(token_lines, list) and isinstance(token_boxes_lines, list):
+        rec_texts: list[str] = []
+        rec_boxes: list[dict[str, Any]] = []
+        rec_scores: list[float] = []
+
+        for line_idx, (tokens, token_boxes) in enumerate(
+            zip(token_lines, token_boxes_lines)
+        ):
+            if not isinstance(tokens, list):
+                continue
+            score = float(line_scores[line_idx]) if line_idx < len(line_scores) else 1.0
+            for token, token_box in zip(tokens, token_boxes):
+                token_text = str(token).strip()
+                if not token_text:
+                    continue
+                quad = _box_to_quad(token_box)
+                if quad is None:
+                    continue
+                rec_texts.append(token_text)
+                rec_boxes.append({"word": quad, "first_char": None})
+                rec_scores.append(score)
+
+        if rec_texts:
+            return {
+                "rec_texts": rec_texts,
+                "rec_boxes": rec_boxes,
+                "rec_scores": rec_scores,
+            }
+
+    rec_texts = items.get("rec_texts", [])
+    rec_boxes = items.get("rec_boxes", [])
+    rec_scores = items.get("rec_scores", [1.0] * len(rec_texts))
+    return {
+        "rec_texts": rec_texts,
+        "rec_boxes": rec_boxes,
+        "rec_scores": rec_scores,
+    }
+
+
 class VisionOCR:
     """Wrapper for Apple's Vision framework OCR."""
 
@@ -160,10 +238,32 @@ def get_ocr_engine() -> Any:
         from paddleocr import PaddleOCR
 
         logger.info("Initializing PaddleOCR...")
-        # lang='en' is standard for typical western karaoke; could be configurable
-        _OCR_ENGINE = PaddleOCR(
-            use_textline_orientation=True, lang="en", show_log=False
-        )
+        # lang='en' is standard for typical western karaoke; could be configurable.
+        # Newer PaddleOCR releases may reject `show_log`, so retry without it.
+        try:
+            _OCR_ENGINE = PaddleOCR(
+                use_textline_orientation=True,
+                lang="en",
+                return_word_box=True,
+                show_log=False,
+            )
+        except Exception as e:
+            if "show_log" in str(e):
+                logger.warning(
+                    "PaddleOCR rejected show_log argument; retrying with compatible kwargs"
+                )
+                _OCR_ENGINE = PaddleOCR(
+                    use_textline_orientation=True, lang="en", return_word_box=True
+                )
+            elif "return_word_box" in str(e):
+                logger.warning(
+                    "PaddleOCR rejected return_word_box argument; retrying without it"
+                )
+                _OCR_ENGINE = PaddleOCR(
+                    use_textline_orientation=True, lang="en", show_log=False
+                )
+            else:
+                raise
     except ImportError as e:
         msg = "PaddleOCR not found. Please install via `pip install paddlepaddle paddleocr`"
         logger.error(msg)

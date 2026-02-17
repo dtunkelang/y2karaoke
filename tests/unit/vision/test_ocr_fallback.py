@@ -2,7 +2,12 @@ import pytest
 from unittest.mock import patch, MagicMock
 import sys
 
-from y2karaoke.vision.ocr import get_ocr_engine, _OCR_ENGINE, OCRError
+from y2karaoke.vision.ocr import (
+    get_ocr_engine,
+    _OCR_ENGINE,
+    OCRError,
+    normalize_ocr_items,
+)
 import y2karaoke.vision.ocr as ocr_module
 
 
@@ -94,3 +99,37 @@ def test_get_ocr_engine_raises_error_if_paddle_missing_on_linux():
 
             with pytest.raises(OCRError, match="PaddleOCR not found"):
                 get_ocr_engine()
+
+
+def test_normalize_ocr_items_prefers_token_boxes() -> None:
+    items = {
+        "rec_scores": [0.9],
+        "text_word": [["Hello", " ", "World"]],
+        "text_word_boxes": [[[10, 20, 30, 40], [31, 20, 33, 40], [34, 20, 64, 40]]],
+    }
+
+    out = normalize_ocr_items(items)
+
+    assert out["rec_texts"] == ["Hello", "World"]
+    assert out["rec_scores"] == [0.9, 0.9]
+    assert len(out["rec_boxes"]) == 2
+    assert out["rec_boxes"][0]["word"] == [
+        [10.0, 20.0],
+        [30.0, 20.0],
+        [30.0, 40.0],
+        [10.0, 40.0],
+    ]
+
+
+def test_normalize_ocr_items_falls_back_to_rec_fields() -> None:
+    items = {
+        "rec_texts": ["line text"],
+        "rec_boxes": [[[1, 2], [3, 2], [3, 4], [1, 4]]],
+        "rec_scores": [0.7],
+    }
+
+    out = normalize_ocr_items(items)
+
+    assert out["rec_texts"] == ["line text"]
+    assert out["rec_boxes"] == [[[1, 2], [3, 2], [3, 4], [1, 4]]]
+    assert out["rec_scores"] == [0.7]

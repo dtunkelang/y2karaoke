@@ -14,7 +14,7 @@ except ImportError:  # pragma: no cover - optional dependency behavior
     cv2 = None  # type: ignore
     np = None  # type: ignore
 
-from .ocr import get_ocr_engine
+from .ocr import get_ocr_engine, normalize_ocr_items
 from .color import infer_lyric_colors, classify_word_state
 from .roi import detect_lyric_roi
 from ..exceptions import VisualRefinementError
@@ -75,10 +75,10 @@ def collect_raw_frames_with_confidence(
         roi = frame[ry : ry + rh, rx : rx + rw]
         res = ocr.predict(roi)
         if res and res[0]:
-            items = res[0]
-            rec_texts = items.get("rec_texts", [])
-            rec_boxes = items.get("rec_boxes", [])
-            rec_scores = items.get("rec_scores", [1.0] * len(rec_texts))
+            items = normalize_ocr_items(res[0])
+            rec_texts = items["rec_texts"]
+            rec_boxes = items["rec_boxes"]
+            rec_scores = items["rec_scores"]
 
             words = []
             for txt, box, conf in zip(rec_texts, rec_boxes, rec_scores):

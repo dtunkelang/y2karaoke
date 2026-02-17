@@ -13,7 +13,7 @@ except ImportError:
     cv2 = None  # type: ignore
     np = None  # type: ignore
 
-from .ocr import get_ocr_engine
+from .ocr import get_ocr_engine, normalize_ocr_items
 from ..exceptions import VisualRefinementError
 
 logger = logging.getLogger(__name__)
@@ -68,10 +68,8 @@ def detect_lyric_roi(
 
         res = ocr.predict(frame)
         if res and res[0]:
-            items = res[0]
-            # Handle list-of-dicts (Vision) vs list-of-lists (Paddle)
-            # ocr.py standardizes to dict with 'rec_boxes'
-            rec_boxes = items.get("rec_boxes", [])
+            items = normalize_ocr_items(res[0])
+            rec_boxes = items["rec_boxes"]
 
             for box_data in rec_boxes:
                 # box_data might be dict with 'word' key or just points

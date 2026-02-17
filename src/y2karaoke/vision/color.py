@@ -13,7 +13,7 @@ except ImportError:
     cv2 = None  # type: ignore
     np = None  # type: ignore
 
-from .ocr import get_ocr_engine
+from .ocr import get_ocr_engine, normalize_ocr_items
 from ..exceptions import VisualRefinementError
 
 logger = logging.getLogger(__name__)
@@ -80,10 +80,8 @@ def infer_lyric_colors(
 
         res = ocr.predict(roi)
         if res and res[0]:
-            items = res[0]
-            # Handle slight differences in Paddle vs Vision output structure if needed
-            # Assuming VisionOCR format from ocr.py which returns list of dicts
-            rec_boxes = items.get("rec_boxes", [])
+            items = normalize_ocr_items(res[0])
+            rec_boxes = items["rec_boxes"]
 
             for box_data in rec_boxes:
                 # box_data might be a dict with 'word' key (VisionOCR) or just points
