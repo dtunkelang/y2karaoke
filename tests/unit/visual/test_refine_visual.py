@@ -7,6 +7,7 @@ from y2karaoke.core.visual.refinement import (
     _detect_highlight_with_confidence,
     _build_line_refinement_jobs,
     _merge_line_refinement_jobs,
+    _refine_line_with_frames,
     _slice_frames_for_window,
 )
 from y2karaoke.core.models import TargetLine
@@ -215,3 +216,32 @@ def test_slice_frames_for_window_uses_sorted_time_bounds():
 
     selected = _slice_frames_for_window(frames, times, v_start=1.0, v_end=1.5)
     assert [f[0] for f in selected] == [1.0, 1.5]
+
+
+def test_refine_line_with_frames_populates_word_outputs(monkeypatch):
+    line = TargetLine(
+        line_index=1,
+        start=1.0,
+        end=2.0,
+        text="hello",
+        words=["hello"],
+        y=10,
+        word_rois=[(0, 0, 2, 2)],
+    )
+    roi = np.ones((3, 3, 3), dtype=np.uint8) * 120
+    roi_lab = np.ones((3, 3, 3), dtype=np.float32) * 50.0
+    frames = [(1.0, roi, roi_lab) for _ in range(12)]
+
+    monkeypatch.setattr(
+        "y2karaoke.core.visual.refinement._word_fill_mask",
+        lambda word_roi, c_bg: np.ones((2, 2), dtype=np.uint8) * 255,
+    )
+    monkeypatch.setattr(
+        "y2karaoke.core.visual.refinement._detect_highlight_with_confidence",
+        lambda vals: (1.1, 1.3, 0.8),
+    )
+
+    _refine_line_with_frames(line, frames)
+    assert line.word_starts == [1.1]
+    assert line.word_ends == [1.3]
+    assert line.word_confidences == [0.8]

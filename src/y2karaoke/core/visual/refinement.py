@@ -184,7 +184,49 @@ def _slice_frames_for_window(
     return group_frames[lo:hi]
 
 
-def refine_word_timings_at_high_fps(  # noqa: C901
+def _refine_line_with_frames(
+    ln: TargetLine,
+    line_frames: List[Tuple[float, np.ndarray, np.ndarray]],
+) -> None:
+    # Estimate background color from first few frames (assumed unlit)
+    c_bg_line = np.mean([np.mean(f[1], axis=(0, 1)) for f in line_frames[:10]], axis=0)
+
+    new_starts: List[Optional[float]] = []
+    new_ends: List[Optional[float]] = []
+    new_confidences: List[Optional[float]] = []
+
+    # We know word_rois is not None from job construction
+    assert ln.word_rois is not None
+
+    for wi in range(len(ln.words)):
+        wx, wy, ww, wh = ln.word_rois[wi]
+        word_vals = []
+        for t, roi, roi_lab in line_frames:
+            if wy + wh <= roi.shape[0] and wx + ww <= roi.shape[1]:
+                word_roi = roi[wy : wy + wh, wx : wx + ww]
+                mask = _word_fill_mask(word_roi, c_bg_line)
+                if np.sum(mask > 0) > 30:  # Glyph is present
+                    lab = roi_lab[wy : wy + wh, wx : wx + ww]
+                    word_vals.append(
+                        {
+                            "t": t,
+                            "mask": mask,
+                            "lab": lab,
+                            "avg": lab[mask.astype(bool)].mean(axis=0),
+                        }
+                    )
+
+        s, e, conf = _detect_highlight_with_confidence(word_vals)
+        new_starts.append(s)
+        new_ends.append(e)
+        new_confidences.append(conf)
+
+    ln.word_starts = new_starts
+    ln.word_ends = new_ends
+    ln.word_confidences = new_confidences
+
+
+def refine_word_timings_at_high_fps(
     video_path: Path,
     target_lines: List[TargetLine],
     roi_rect: tuple[int, int, int, int],
@@ -221,45 +263,6 @@ def refine_word_timings_at_high_fps(  # noqa: C901
             )
             if len(line_frames) < 20:
                 continue
-
-            # Estimate background color from first few frames (assumed unlit)
-            c_bg_line = np.mean(
-                [np.mean(f[1], axis=(0, 1)) for f in line_frames[:10]], axis=0
-            )
-
-            new_starts: List[Optional[float]] = []
-            new_ends: List[Optional[float]] = []
-            new_confidences: List[Optional[float]] = []
-
-            # We know word_rois is not None from job construction
-            assert ln.word_rois is not None
-
-            for wi in range(len(ln.words)):
-                wx, wy, ww, wh = ln.word_rois[wi]
-                # 1. Identify TEXT-ONLY frames
-                word_vals = []
-                for t, roi, roi_lab in line_frames:
-                    if wy + wh <= roi.shape[0] and wx + ww <= roi.shape[1]:
-                        word_roi = roi[wy : wy + wh, wx : wx + ww]
-                        mask = _word_fill_mask(word_roi, c_bg_line)
-                        if np.sum(mask > 0) > 30:  # Glyph is present
-                            lab = roi_lab[wy : wy + wh, wx : wx + ww]
-                            word_vals.append(
-                                {
-                                    "t": t,
-                                    "mask": mask,
-                                    "lab": lab,
-                                    "avg": lab[mask.astype(bool)].mean(axis=0),
-                                }
-                            )
-
-                s, e, conf = _detect_highlight_with_confidence(word_vals)
-                new_starts.append(s)
-                new_ends.append(e)
-                new_confidences.append(conf)
-
-            ln.word_starts = new_starts
-            ln.word_ends = new_ends
-            ln.word_confidences = new_confidences
+            _refine_line_with_frames(ln, line_frames)
 
     cap.release()

@@ -121,6 +121,12 @@ Status: Completed
 - [x] Preserve existing fallback/interpolation behavior and line confidence aggregation
 - [x] Add unit tests for title/artist filtering and missing-word-start fallback behavior
 
+### Milestone 19: Refinement Per-Line Extraction
+Status: Completed
+- [x] Extract per-line visual refinement logic into `_refine_line_with_frames`
+- [x] Keep group-window orchestration focused on window management only
+- [x] Add unit test coverage for per-line word timing population behavior
+
 ## Notes
 - Keep changes in significant, validated commits.
 - Prefer deterministic ranking and quality decisions for reproducibility.
