@@ -84,6 +84,12 @@ Status: Completed
 - [x] Add unit test ensuring cache version changes trigger recalculation
 - [x] Update bootstrap docs with selective cache invalidation guidance
 
+### Milestone 13: Suitability Sampling Efficiency
+Status: Completed
+- [x] Replace full-frame decode loop with sampled `grab`/`retrieve` in suitability frame collection
+- [x] Preserve sampled frame outputs while reducing decode overhead during candidate ranking
+- [x] Add unit test coverage for suitability sampler decode behavior
+
 ## Notes
 - Keep changes in significant, validated commits.
 - Prefer deterministic ranking and quality decisions for reproducibility.

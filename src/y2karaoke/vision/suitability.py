@@ -49,15 +49,23 @@ def collect_raw_frames_with_confidence(
     src_fps = cap.get(cv2.CAP_PROP_FPS) or 30.0
     cap.set(cv2.CAP_PROP_POS_MSEC, max(0, start - 0.1) * 1000.0)
     step = max(int(round(src_fps / max(fps, 0.01))), 1)
+    frame_idx = max(int(round(max(0, start - 0.1) * src_fps)), 0)
     rx, ry, rw, rh = roi_rect
     raw: list[dict[str, Any]] = []
 
     while True:
-        ok, frame = cap.read()
-        t = cap.get(cv2.CAP_PROP_POS_MSEC) / 1000.0
-        if not ok or t > end + 0.2:
+        ok = cap.grab()
+        if not ok:
             break
-        if int(round(t * src_fps)) % step != 0:
+        t = frame_idx / src_fps
+        if t > end + 0.2:
+            break
+        if frame_idx % step != 0:
+            frame_idx += 1
+            continue
+        ok, frame = cap.retrieve()
+        if not ok:
+            frame_idx += 1
             continue
 
         roi = frame[ry : ry + rh, rx : rx + rw]
@@ -96,6 +104,7 @@ def collect_raw_frames_with_confidence(
                         "words": words,
                     }
                 )
+        frame_idx += 1
     cap.release()
     return raw
 
