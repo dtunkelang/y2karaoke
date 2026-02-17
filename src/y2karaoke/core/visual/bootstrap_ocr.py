@@ -53,13 +53,17 @@ def _append_predicted_words(
     times: list[float],
     *,
     top_ignore_px: int = 0,
+    roi_shapes: list[tuple[int, int]] | None = None,
 ) -> None:
     if np is None:
         raise ImportError("Numpy is required.")
 
-    for t_val, raw_item in zip(times, pred_items):
+    for idx, (t_val, raw_item) in enumerate(zip(times, pred_items)):
         if not raw_item:
             continue
+        roi_h = roi_w = None
+        if roi_shapes is not None and idx < len(roi_shapes):
+            roi_h, roi_w = roi_shapes[idx]
         items = normalize_ocr_items(raw_item)
         rec_texts = items["rec_texts"]
         rec_boxes = items["rec_boxes"]
@@ -71,6 +75,13 @@ def _append_predicted_words(
             bw, bh = int(max(nb[:, 0]) - x), int(max(nb[:, 1]) - y)
             if y < top_ignore_px:
                 continue
+            if bw <= 0 or bh <= 0:
+                continue
+            if roi_h is not None and roi_w is not None:
+                if x < -2 or y < -2:
+                    continue
+                if x > int(roi_w * 1.05) or y > int(roi_h * 1.05):
+                    continue
             words.append({"text": txt, "x": x, "y": y, "w": bw, "h": bh})
         if words:
             raw.append({"time": t_val, "words": words})
@@ -108,6 +119,7 @@ def collect_raw_frames(
     top_ignore_px = int(round(rh * 0.12))
     supports_batch: bool | None = None
     buffered_rois: list[Any] = []
+    buffered_shapes: list[tuple[int, int]] = []
     buffered_times: list[float] = []
 
     def _flush_batch() -> None:
@@ -122,8 +134,10 @@ def collect_raw_frames(
             pred_items,
             buffered_times,
             top_ignore_px=top_ignore_px,
+            roi_shapes=buffered_shapes,
         )
         buffered_rois.clear()
+        buffered_shapes.clear()
         buffered_times.clear()
 
     while True:
@@ -144,6 +158,7 @@ def collect_raw_frames(
 
         roi = frame[ry : ry + rh, rx : rx + rw]
         buffered_rois.append(roi)
+        buffered_shapes.append((roi.shape[0], roi.shape[1]))
         buffered_times.append(t)
         if len(buffered_rois) >= batch_size:
             _flush_batch()
