@@ -243,15 +243,26 @@ def _collect_raw_frames(
     step = max(int(round(src_fps / fps)), 1)
     rx, ry, rw, rh = roi_rect
     raw = []
+    if start > 0:
+        cap.set(cv2.CAP_PROP_POS_MSEC, start * 1000.0)
+    frame_idx = max(int(round(start * src_fps)), 0)
 
     logger.info(f"Sampling frames at {fps} FPS...")
     while True:
-        ok, frame = cap.read()
-        t = cap.get(cv2.CAP_PROP_POS_MSEC) / 1000.0
-        if not ok or t > end + 0.2:
+        ok = cap.grab()
+        if not ok:
+            break
+        t = frame_idx / src_fps
+        if t > end + 0.2:
             break
 
-        if int(round(t * src_fps)) % step != 0:
+        if frame_idx % step != 0:
+            frame_idx += 1
+            continue
+
+        ok, frame = cap.retrieve()
+        if not ok:
+            frame_idx += 1
             continue
 
         roi = frame[ry : ry + rh, rx : rx + rw]
@@ -273,6 +284,7 @@ def _collect_raw_frames(
 
             if words:
                 raw.append({"time": t, "words": words})
+        frame_idx += 1
 
     cap.release()
     return raw

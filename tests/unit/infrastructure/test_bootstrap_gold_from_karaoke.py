@@ -171,3 +171,74 @@ def test_select_candidate_with_rankings_explicit_url(tmp_path) -> None:
     assert video_path is None
     assert metrics == {}
     assert ranked == []
+
+
+def test_collect_raw_frames_uses_grab_retrieve_sampling(monkeypatch) -> None:
+    class FakeOCR:
+        def predict(self, roi):
+            return [
+                {
+                    "rec_texts": ["hello"],
+                    "rec_boxes": [[[0, 0], [1, 0], [1, 1], [0, 1]]],
+                }
+            ]
+
+    class FakeCap:
+        def __init__(self, total_frames: int = 10, src_fps: float = 10.0) -> None:
+            self.total_frames = total_frames
+            self.src_fps = src_fps
+            self.pos = 0
+            self.grab_calls = 0
+            self.retrieve_calls = 0
+
+        def get(self, prop):
+            if prop == _MODULE.cv2.CAP_PROP_FPS:
+                return self.src_fps
+            if prop == _MODULE.cv2.CAP_PROP_POS_MSEC:
+                return (self.pos / self.src_fps) * 1000.0
+            return 0.0
+
+        def set(self, prop, value):
+            if prop == _MODULE.cv2.CAP_PROP_POS_MSEC:
+                self.pos = int(round((value / 1000.0) * self.src_fps))
+                return True
+            return False
+
+        def grab(self):
+            if self.pos >= self.total_frames:
+                return False
+            self.pos += 1
+            self.grab_calls += 1
+            return True
+
+        def retrieve(self):
+            self.retrieve_calls += 1
+            frame = _MODULE.np.zeros((4, 4, 3), dtype=_MODULE.np.uint8)
+            return True, frame
+
+        def release(self):
+            return None
+
+    captured = {"cap": None}
+
+    def make_cap(_path):
+        cap = FakeCap()
+        captured["cap"] = cap
+        return cap
+
+    monkeypatch.setattr(_MODULE, "get_ocr_engine", lambda: FakeOCR())
+    monkeypatch.setattr(_MODULE.cv2, "VideoCapture", make_cap)
+
+    raw = _MODULE._collect_raw_frames(
+        video_path=Path("/tmp/fake.mp4"),
+        start=0.0,
+        end=0.95,
+        fps=2.0,
+        roi_rect=(0, 0, 4, 4),
+    )
+
+    cap = captured["cap"]
+    assert cap is not None
+    assert cap.grab_calls == 10
+    assert cap.retrieve_calls == 2
+    assert len(raw) == 2

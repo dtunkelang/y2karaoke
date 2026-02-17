@@ -71,6 +71,12 @@ Status: Completed
 - [x] Ignore zero/non-positive calibration thresholds in recommendation output
 - [x] Validate recommendation on real matrix artifacts (`liveforce4-20260217T071510Z-matrix`)
 
+### Milestone 11: OCR Sampling Efficiency
+Status: Completed
+- [x] Replace frame-by-frame decode loop with `grab`/`retrieve` sampling in bootstrap OCR collection
+- [x] Keep sampled timing behavior stable while reducing decode work at low visual FPS
+- [x] Add unit test coverage for decode-sparing sampling path
+
 ## Notes
 - Keep changes in significant, validated commits.
 - Prefer deterministic ranking and quality decisions for reproducibility.
