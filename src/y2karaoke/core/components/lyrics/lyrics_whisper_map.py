@@ -209,9 +209,7 @@ class _LineMapper:
                         window_words[-1].start - window_words[0].start, 0.5
                     )
                 window_text = " ".join(w.text for w in window_words)
-                window_sim = _phonetic_similarity(
-                    line.text, window_text, self.language
-                )
+                window_sim = _phonetic_similarity(line.text, window_text, self.language)
                 if window_sim >= self.min_similarity_fallback:
                     new_words, desired_start = _apply_lrc_weighted_timing(
                         line,
