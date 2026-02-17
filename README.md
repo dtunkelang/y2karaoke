@@ -264,6 +264,7 @@ To auto-seed/refine word timings from a karaoke YouTube version (visual-only):
 - `--report-json` writes a structured report with candidate rankings, selected candidate metrics, and runtime settings.
 - The tool detects line windows from karaoke frames via OCR and infers word timing from lyric highlight progress in those windows (no audio transcription).
 - When word-level highlight transitions are not observable, refinement falls back to line-level transition timing and distributes per-word timings within the detected line window.
+- For low word-level suitability candidates, the tool skips expensive native-FPS per-word refinement and relies on the line-level fallback path.
 
 See [docs/karaoke_visual_bootstrap.md](docs/karaoke_visual_bootstrap.md) for algorithm and technical details.
 

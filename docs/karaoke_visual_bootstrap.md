@@ -23,6 +23,7 @@ Once lines are identified, the tool scans the relevant line windows at the sourc
 - **Departure-Onset Detection:** The word's **Start Time** is triggered at the exact frame where the glyph color consistently departs from the noise floor of its initial stable state.
 - **Midpoint Termination:** The word's **End Time** is triggered when its color becomes mathematically closer to the final highlighted state than the initial state.
 - **Line-Level Fallback:** If no per-word transitions are detected for a line (common for line-level karaoke), the tool detects a line-level transition on the union ROI and allocates per-word timings inside that line window using token-length-weighted durations.
+- **Low-Suitability Fast Path:** If candidate suitability indicates near-zero word-level evidence, native-FPS per-word refinement is skipped to avoid high runtime on low-yield videos.
 
 ### 3. Logical Sequence Enforcement
 Reconstructed timings are subject to strict invariants:

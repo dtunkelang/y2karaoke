@@ -67,6 +67,7 @@ except ImportError:
 
 logger = get_logger(__name__)
 RAW_OCR_CACHE_VERSION = "3"
+LINE_LEVEL_REFINE_SKIP_THRESHOLD = 0.05
 
 
 def _search_karaoke_candidates(
@@ -304,7 +305,10 @@ def _ensure_selected_suitability(
 
 
 def _bootstrap_refined_lines(
-    v_path: Path, args: argparse.Namespace, song_dir: Path
+    v_path: Path,
+    args: argparse.Namespace,
+    song_dir: Path,
+    selected_metrics: Optional[dict[str, Any]] = None,
 ) -> list[dict[str, Any]]:
     roi = detect_lyric_roi(v_path, sample_fps=1.0)
     cap = cv2.VideoCapture(str(v_path))
@@ -321,7 +325,20 @@ def _bootstrap_refined_lines(
     )
     t_lines = reconstruct_lyrics_from_visuals(raw_frames, args.visual_fps)
     logger.info(f"Reconstructed {len(t_lines)} initial lines.")
-    refine_word_timings_at_high_fps(v_path, t_lines, roi)
+
+    word_level_score = 0.0
+    if selected_metrics:
+        word_level_score = float(selected_metrics.get("word_level_score", 0.0))
+
+    if word_level_score >= LINE_LEVEL_REFINE_SKIP_THRESHOLD:
+        refine_word_timings_at_high_fps(v_path, t_lines, roi)
+    else:
+        logger.info(
+            "Skipping high-FPS visual refinement due to low word-level suitability "
+            f"(word_level_score={word_level_score:.3f} < "
+            f"{LINE_LEVEL_REFINE_SKIP_THRESHOLD:.3f}); using line-level timing fallback."
+        )
+
     return _build_refined_lines_output(t_lines, artist=args.artist, title=args.title)
 
 
@@ -390,7 +407,9 @@ def main():
         logger.error(str(e))
         return 1
 
-    lines_out = _bootstrap_refined_lines(v_path, args, song_dir)
+    lines_out = _bootstrap_refined_lines(
+        v_path, args, song_dir, selected_metrics=selected_metrics
+    )
 
     res: Dict[str, Any] = {
         "schema_version": "1.2",
