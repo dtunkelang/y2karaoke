@@ -50,6 +50,9 @@ from y2karaoke.core.visual.bootstrap_media import (  # noqa: E402
     extract_audio_from_video as _extract_audio_from_video_impl,
     resolve_media_paths as _resolve_media_paths_impl,
 )
+from y2karaoke.core.visual.bootstrap_selection import (  # noqa: E402
+    select_candidate_with_rankings as _select_candidate_with_rankings_impl,
+)
 from y2karaoke.core.text_utils import make_slug  # noqa: E402
 from y2karaoke.vision.ocr import get_ocr_engine  # noqa: E402,F401
 from y2karaoke.vision.roi import detect_lyric_roi  # noqa: E402
@@ -122,61 +125,23 @@ def _select_candidate_with_rankings(
     song_dir: Path,
 ) -> tuple[str, Optional[Path], dict[str, Any], list[dict[str, Any]]]:
     """Resolve candidate URL plus evaluated rankings for reporting."""
-    if args.candidate_url:
-        logger.info(f"Using explicit candidate URL: {args.candidate_url}")
-        return args.candidate_url, None, {}, []
-
-    if not args.artist or not args.title:
-        raise ValueError(
-            "Either --candidate-url or both --artist and --title are required."
-        )
-
-    candidates = _search_karaoke_candidates(
-        args.artist, args.title, args.max_candidates
+    return _select_candidate_with_rankings_impl(
+        candidate_url=args.candidate_url,
+        artist=args.artist,
+        title=args.title,
+        max_candidates=args.max_candidates,
+        suitability_fps=args.suitability_fps,
+        show_candidates=args.show_candidates,
+        allow_low_suitability=args.allow_low_suitability,
+        min_detectability=args.min_detectability,
+        min_word_level_score=args.min_word_level_score,
+        downloader=downloader,
+        song_dir=song_dir,
+        search_fn=_search_karaoke_candidates,
+        rank_fn=_rank_candidates_by_suitability,
+        suitability_check_fn=_is_suitability_good_enough,
+        log_info_fn=logger.info,
     )
-    if not candidates:
-        raise ValueError(
-            "No candidate videos found. Provide --candidate-url to continue."
-        )
-
-    ranked = _rank_candidates_by_suitability(
-        candidates,
-        downloader,
-        song_dir,
-        args.suitability_fps,
-    )
-    if not ranked:
-        raise ValueError(
-            "Could not evaluate candidate videos. Provide --candidate-url to continue."
-        )
-
-    if args.show_candidates:
-        logger.info("Candidate ranking by visual suitability:")
-        for idx, cand in enumerate(ranked, start=1):
-            m = cand["metrics"]
-            logger.info(
-                "  %d. %.3f (word=%.3f ocr=%.3f) %s | %s",
-                idx,
-                m["detectability_score"],
-                m["word_level_score"],
-                m["avg_ocr_confidence"],
-                cand.get("title", ""),
-                cand["url"],
-            )
-
-    best = ranked[0]
-    best_metrics = best["metrics"]
-    if not args.allow_low_suitability and not _is_suitability_good_enough(
-        best_metrics,
-        args.min_detectability,
-        args.min_word_level_score,
-    ):
-        raise ValueError(
-            "Best candidate did not meet suitability thresholds. "
-            "Use --allow-low-suitability to override."
-        )
-
-    return best["url"], Path(best["video_path"]), best_metrics, ranked
 
 
 def _collect_raw_frames(

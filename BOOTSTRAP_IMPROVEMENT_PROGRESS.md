@@ -174,6 +174,12 @@ Status: Completed
 - [x] Rewire tool media wrappers to delegate to shared media helpers
 - [x] Add direct unit tests for extraction cache behavior and fallback download behavior
 
+### Milestone 28: Shared Candidate Selection
+Status: Completed
+- [x] Move candidate selection orchestration into `core.visual.bootstrap_selection`
+- [x] Rewire tool candidate-selection wrapper to delegate to shared selector helper
+- [x] Add direct unit tests for explicit-URL and low-quality rejection selection behavior
+
 ## Notes
 - Keep changes in significant, validated commits.
 - Prefer deterministic ranking and quality decisions for reproducibility.
