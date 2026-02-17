@@ -155,3 +155,68 @@ def test_reconstruct_lyrics_merges_apostrophe_fragment_tokens():
     lines = reconstruct_lyrics_from_visuals(raw_frames, 1.0)
     assert len(lines) == 1
     assert lines[0].words == ["you're", "here"]
+
+
+def test_reconstruct_lyrics_suppresses_short_duplicate_reentry_glitch():
+    raw_frames = []
+    for t in [10.0, 11.0, 12.0]:
+        raw_frames.append(
+            {
+                "time": t,
+                "words": [
+                    {"text": "White", "x": 20, "y": 80, "w": 40, "h": 20},
+                    {"text": "shirt", "x": 70, "y": 80, "w": 45, "h": 20},
+                    {"text": "now", "x": 125, "y": 80, "w": 35, "h": 20},
+                    {"text": "red", "x": 170, "y": 80, "w": 35, "h": 20},
+                ],
+            }
+        )
+    raw_frames.append({"time": 13.0, "words": []})
+    raw_frames.append(
+        {
+            "time": 16.0,
+            "words": [
+                {"text": "White", "x": 20, "y": 80, "w": 40, "h": 20},
+                {"text": "e", "x": 65, "y": 80, "w": 10, "h": 20},
+                {"text": "shirt", "x": 80, "y": 80, "w": 45, "h": 20},
+                {"text": "now", "x": 130, "y": 80, "w": 35, "h": 20},
+                {"text": "red", "x": 175, "y": 80, "w": 35, "h": 20},
+            ],
+        }
+    )
+    raw_frames.append({"time": 18.2, "words": []})
+
+    lines = reconstruct_lyrics_from_visuals(raw_frames, 1.0)
+    texts = [ln.text for ln in lines]
+    assert any("White shirt now red" in t for t in texts)
+    assert not any("White e shirt now red" in t for t in texts)
+
+
+def test_reconstruct_lyrics_keeps_legitimate_repeated_line():
+    raw_frames = []
+    for t in [10.0, 11.0, 12.0]:
+        raw_frames.append(
+            {
+                "time": t,
+                "words": [
+                    {"text": "Bad", "x": 30, "y": 120, "w": 35, "h": 20},
+                    {"text": "guy", "x": 75, "y": 120, "w": 35, "h": 20},
+                ],
+            }
+        )
+    raw_frames.append({"time": 13.5, "words": []})
+    for t in [19.0, 20.0, 21.0]:
+        raw_frames.append(
+            {
+                "time": t,
+                "words": [
+                    {"text": "Bad", "x": 30, "y": 120, "w": 35, "h": 20},
+                    {"text": "guy", "x": 75, "y": 120, "w": 35, "h": 20},
+                ],
+            }
+        )
+    raw_frames.append({"time": 22.5, "words": []})
+
+    lines = reconstruct_lyrics_from_visuals(raw_frames, 1.0)
+    bad_guy_lines = [ln for ln in lines if ln.text == "Bad guy"]
+    assert len(bad_guy_lines) == 2

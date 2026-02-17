@@ -206,6 +206,40 @@ def _infer_overlay_roots(
     return out
 
 
+def _suppress_short_duplicate_reentries(
+    entries: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    if len(entries) < 2:
+        return entries
+
+    out: list[dict[str, Any]] = []
+    for ent in entries:
+        duration = float(ent["last"]) - float(ent["first"])
+        if duration > 1.2:
+            out.append(ent)
+            continue
+
+        is_dup_reentry = False
+        for prev in reversed(out[-12:]):
+            time_gap = float(ent["first"]) - float(prev["first"])
+            if time_gap < 0:
+                continue
+            if time_gap > 20.0:
+                break
+            if abs(float(ent["y"]) - float(prev["y"])) > 40.0:
+                continue
+            if text_similarity(ent["text"], prev["text"]) < 0.9:
+                continue
+            prev_duration = float(prev["last"]) - float(prev["first"])
+            if prev_duration >= 2.0 or prev_duration >= duration + 0.8:
+                is_dup_reentry = True
+                break
+
+        if not is_dup_reentry:
+            out.append(ent)
+    return out
+
+
 def reconstruct_lyrics_from_visuals(  # noqa: C901
     raw_frames: list[dict[str, Any]], visual_fps: float
 ) -> list[TargetLine]:
@@ -287,6 +321,7 @@ def reconstruct_lyrics_from_visuals(  # noqa: C901
     # Sort: Primary by time (2.0s bins), Secondary by Y (top-to-bottom)
     # This keeps multi-line blocks together
     unique.sort(key=lambda x: (round(float(x["first"]) / 2.0) * 2.0, x["y"]))
+    unique = _suppress_short_duplicate_reentries(unique)
 
     out: list[TargetLine] = []
     for i, ent in enumerate(unique):
