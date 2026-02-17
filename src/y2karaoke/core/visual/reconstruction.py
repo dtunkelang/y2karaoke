@@ -40,8 +40,12 @@ def _filter_static_overlay_words(
         new_words = []
         for w in frame.get("words", []):
             tok = normalize_text_basic(str(w.get("text", ""))).strip()
+            root = _overlay_token_root(tok)
+            if root is None:
+                new_words.append(w)
+                continue
             key = (
-                tok,
+                root,
                 int(round(float(w.get("x", 0.0)) / 16.0)),
                 int(round(float(w.get("y", 0.0)) / 16.0)),
             )
@@ -67,9 +71,10 @@ def _collect_overlay_stats(
                 continue
             all_y.append(y)
             tok = normalize_text_basic(str(w.get("text", ""))).strip()
-            if len(tok) < 4:
+            root = _overlay_token_root(tok)
+            if root is None:
                 continue
-            key = (tok, int(round(x / 16.0)), int(round(y / 16.0)))
+            key = (root, int(round(x / 16.0)), int(round(y / 16.0)))
             if key in seen:
                 continue
             seen.add(key)
@@ -89,6 +94,13 @@ def _collect_overlay_stats(
             rec["sum_x2"] += x * x
             rec["sum_y2"] += y * y
     return all_y, stats
+
+
+def _overlay_token_root(token: str) -> str | None:
+    compact = "".join(ch for ch in token.lower() if ch.isalnum())
+    if len(compact) < 4:
+        return None
+    return compact[:4]
 
 
 def _identify_static_overlay_keys(
