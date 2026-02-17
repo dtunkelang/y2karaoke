@@ -180,6 +180,7 @@ def analyze_visual_suitability(
     *,
     fps: float = 1.0,
     work_dir: Optional[Path] = None,
+    roi_rect: Optional[tuple[int, int, int, int]] = None,
 ) -> Tuple[dict[str, Any], tuple[int, int, int, int]]:
     """Run full suitability analysis with optional caching."""
     if cv2 is None or np is None:
@@ -191,7 +192,8 @@ def analyze_visual_suitability(
     if work_dir is not None:
         work_dir.mkdir(parents=True, exist_ok=True)
 
-    roi_rect = detect_lyric_roi(video_path, sample_fps=1.0)
+    if roi_rect is None:
+        roi_rect = detect_lyric_roi(video_path, sample_fps=1.0)
 
     color_cache_path = (
         work_dir / _get_cache_key(video_path, "colors", roi=roi_rect)

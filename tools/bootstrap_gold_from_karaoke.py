@@ -285,6 +285,7 @@ def _ensure_selected_suitability(
     v_path: Path,
     song_dir: Path,
     args: argparse.Namespace,
+    roi_rect: Optional[tuple[int, int, int, int]] = None,
 ) -> dict[str, Any]:
     try:
         return _ensure_selected_suitability_impl(
@@ -295,7 +296,15 @@ def _ensure_selected_suitability(
             min_detectability=args.min_detectability,
             min_word_level_score=args.min_word_level_score,
             allow_low_suitability=args.allow_low_suitability,
-            analyze_fn=analyze_visual_suitability,
+            analyze_fn=(
+                (
+                    lambda video_path, *, fps, work_dir: analyze_visual_suitability(
+                        video_path, fps=fps, work_dir=work_dir, roi_rect=roi_rect
+                    )
+                )
+                if roi_rect is not None
+                else analyze_visual_suitability
+            ),
         )
     except Exception as e:
         if isinstance(e, ValueError):
@@ -309,8 +318,9 @@ def _bootstrap_refined_lines(
     args: argparse.Namespace,
     song_dir: Path,
     selected_metrics: Optional[dict[str, Any]] = None,
+    roi_rect: Optional[tuple[int, int, int, int]] = None,
 ) -> list[dict[str, Any]]:
-    roi = detect_lyric_roi(v_path, sample_fps=1.0)
+    roi = roi_rect if roi_rect is not None else detect_lyric_roi(v_path, sample_fps=1.0)
     cap = cv2.VideoCapture(str(v_path))
     duration = cap.get(cv2.CAP_PROP_FRAME_COUNT) / (cap.get(cv2.CAP_PROP_FPS) or 30.0)
     cap.release()
@@ -399,16 +409,26 @@ def main():
         logger.error(f"Download failed: {e}")
         return 1
 
+    roi_rect = detect_lyric_roi(v_path, sample_fps=1.0)
+
     try:
         selected_metrics = _ensure_selected_suitability(
-            selected_metrics, v_path=v_path, song_dir=song_dir, args=args
+            selected_metrics,
+            v_path=v_path,
+            song_dir=song_dir,
+            args=args,
+            roi_rect=roi_rect,
         )
     except ValueError as e:
         logger.error(str(e))
         return 1
 
     lines_out = _bootstrap_refined_lines(
-        v_path, args, song_dir, selected_metrics=selected_metrics
+        v_path,
+        args,
+        song_dir,
+        selected_metrics=selected_metrics,
+        roi_rect=roi_rect,
     )
 
     res: Dict[str, Any] = {
