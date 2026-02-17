@@ -51,6 +51,12 @@ Status: Completed
 - [x] Wire strategy into generated command flags and run-signature tracking
 - [x] Add unit tests for strategy command generation
 
+### Milestone 8: Multi-Strategy Benchmark Runner
+Status: Completed
+- [x] Add `tools/run_benchmark_strategy_matrix.py` for one-command multi-strategy runs
+- [x] Emit consolidated JSON + Markdown matrix reports
+- [x] Add unit tests and `make benchmark-matrix`
+
 ## Notes
 - Keep changes in significant, validated commits.
 - Prefer deterministic ranking and quality decisions for reproducibility.

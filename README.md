@@ -207,6 +207,7 @@ Benchmark seed set for timing quality work:
   - Offline cached-only run: `./venv/bin/python tools/run_benchmark_suite.py --offline`
   - Run one song for debugging: `./venv/bin/python tools/run_benchmark_suite.py --match "Papaoutai" --max-songs 1`
   - Disable DTW mapping for A/B checks: `./venv/bin/python tools/run_benchmark_suite.py --no-whisper-map-lrc-dtw`
+  - Run strategy matrix and emit combined report: `make benchmark-matrix`
 
 Benchmark metric interpretation:
 - `dtw_line_coverage`: fraction of lyric lines with usable DTW anchor/match. Lower values often mean noisy or duration-mismatched LRC.
