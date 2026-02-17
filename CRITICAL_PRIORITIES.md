@@ -22,16 +22,16 @@ This document outlines the critical areas of the `y2karaoke` codebase and the im
 **Context:** A set of 12 songs is defined in `benchmarks/benchmark_songs.yaml` to measure alignment accuracy.
 
 **Status (2026-02-16):**
-*   **Fixed:** "Anti-Hero" 3.38s offset issue resolved. Auto-offset logic in `lyrics_helpers.py` now disabled for offsets between 0.3s and 5.0s to prevent false positives on quiet intros.
-*   **Pending:** Full suite re-run to confirm offset fix and measure impact on other songs.
+*   **Fixed & Verified:** "Anti-Hero" 3.38s offset issue resolved. Auto-offset logic in `lyrics_helpers.py` AND `lyrics_whisper.py` now disabled for offsets between 0.3s and 5.0s. Confirmed start time ~5.39s (vs expected ~5.45s).
+*   **Pending:** Investigation of "Bohemian Rhapsody" gold file mismatch (showing 106s error).
 
 **Critical Areas:**
 *   `tools/run_benchmark_suite.py`: The runner script.
 *   `benchmarks/`: The configuration and gold standard files.
 
 **Action Plan:**
-*   **Verify Fix:** Run benchmark suite to confirm Anti-Hero timing is now accurate (<0.5s error).
-*   **Analyze Results:** Check for regressions in other songs due to disabled auto-offset.
+*   **Investigate Bohemian Rhapsody:** Determine why gold file timings differ so drastically from generated results (likely radio edit vs full album version).
+*   **Expand Verification:** Run full suite to ensure no other regressions.
 
 ## 3. Alignment Heuristics
 **Context:** The core alignment logic (`src/y2karaoke/core/components/alignment/`) uses complex heuristics to score and correct timings.
@@ -61,8 +61,4 @@ This document outlines the critical areas of the `y2karaoke` codebase and the im
 ---
 
 **Next Immediate Step:**
-Run the benchmark suite to baseline the current performance, especially for "Anti-Hero" and "Bohemian Rhapsody", now that the offset bug and test suite are fixed.
-
-```bash
-python tools/run_benchmark_suite.py
-```
+Investigate the "Bohemian Rhapsody" gold file mismatch. It seems the gold file timings (e.g., "Mama" at 18s) do not match the official video audio (where it starts at ~55s). This likely indicates a version mismatch (radio edit vs full) or a corrupted gold file.
