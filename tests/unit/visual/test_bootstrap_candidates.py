@@ -40,7 +40,11 @@ def test_search_karaoke_candidates_with_fake_ytdlp():
 
 def test_rank_candidates_by_suitability_orders_by_score(tmp_path):
     class FakeDownloader:
+        def __init__(self):
+            self.output_dirs = []
+
         def download_video(self, url, output_dir):
+            self.output_dirs.append(output_dir)
             path = output_dir / f"{url.split('=')[-1]}.mp4"
             path.write_bytes(b"v")
             return {"video_path": str(path)}
@@ -56,15 +60,18 @@ def test_rank_candidates_by_suitability_orders_by_score(tmp_path):
             (0, 0, 1, 1),
         )
 
+    downloader = FakeDownloader()
     ranked = rank_candidates_by_suitability(
         [
             {"url": "https://youtube.com/watch?v=a"},
             {"url": "https://youtube.com/watch?v=b"},
         ],
-        downloader=FakeDownloader(),
+        downloader=downloader,
         song_dir=tmp_path,
         suitability_fps=1.0,
         analyze_fn=fake_analyze,
     )
     assert ranked[0]["url"].endswith("=a")
     assert ranked[1]["url"].endswith("=b")
+    assert downloader.output_dirs[0].name == "candidate_a"
+    assert downloader.output_dirs[1].name == "candidate_b"

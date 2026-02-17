@@ -190,6 +190,12 @@ Status: Completed
 - [x] Split candidate ranking logging into info vs warning channels in shared candidate helper
 - [x] Restore warning-level logging for skipped candidate errors in CLI wrapper
 
+### Milestone 31: Stable Candidate Cache Paths
+Status: Completed
+- [x] Use per-video-id candidate work directories instead of rank-index-only paths
+- [x] Improve cache reuse across reruns when search result ordering changes
+- [x] Add unit coverage that candidate directories are keyed by YouTube video id
+
 ## Notes
 - Keep changes in significant, validated commits.
 - Prefer deterministic ranking and quality decisions for reproducibility.

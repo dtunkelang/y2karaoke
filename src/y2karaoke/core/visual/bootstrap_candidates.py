@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 from typing import Any, Callable, Optional
+from urllib.parse import parse_qs, urlparse
 
 
 def search_karaoke_candidates(
@@ -73,7 +74,10 @@ def rank_candidates_by_suitability(
 
     for idx, cand in enumerate(candidates, start=1):
         url = cand["url"]
-        eval_dir = song_dir / "candidates" / f"candidate_{idx:02d}"
+        parsed = urlparse(url)
+        video_id = parse_qs(parsed.query).get("v", [""])[0].strip()
+        dir_suffix = video_id or f"{idx:02d}"
+        eval_dir = song_dir / "candidates" / f"candidate_{dir_suffix}"
         eval_dir.mkdir(parents=True, exist_ok=True)
         try:
             vid_info = downloader.download_video(url, output_dir=eval_dir)
