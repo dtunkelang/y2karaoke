@@ -171,4 +171,3 @@ def refine_word_timings_at_high_fps(  # noqa: C901
         ln.word_ends = new_ends
 
     cap.release()
-

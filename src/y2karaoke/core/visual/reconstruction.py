@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Dict, List
+from typing import Any, Dict
 
 from ..models import TargetLine
 from ..text_utils import normalize_ocr_line, normalize_text_basic, text_similarity
