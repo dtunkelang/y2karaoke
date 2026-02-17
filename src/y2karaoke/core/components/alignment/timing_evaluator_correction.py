@@ -279,7 +279,7 @@ def correct_line_timestamps(
     Args:
         lines: Original lyrics lines with timing
         audio_features: Extracted audio features with onset times
-        max_correction: Maximum correction window (seconds)
+        max_correction: Maximum correction for normal cases (seconds)
 
     Returns:
         Tuple of (corrected_lines, list of correction descriptions)
