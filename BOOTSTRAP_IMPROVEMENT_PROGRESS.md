@@ -39,6 +39,12 @@ Status: Completed
 - [x] Add unit tests for guardrail checks
 - [x] Integrate bootstrap guardrails into `make check` / `ci-fast`
 
+### Milestone 6: Threshold Calibration
+Status: Completed
+- [x] Add `tools/bootstrap_calibrate_thresholds.py` to derive threshold suggestions from bootstrap reports
+- [x] Add unit tests for calibration utility
+- [x] Add `make bootstrap-calibrate` helper and README usage note
+
 ## Notes
 - Keep changes in significant, validated commits.
 - Prefer deterministic ranking and quality decisions for reproducibility.

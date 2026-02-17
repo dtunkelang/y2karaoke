@@ -264,6 +264,12 @@ Bootstrap quality guardrails for visual-seeded gold files:
 make bootstrap-quality-guardrails
 ```
 
+Threshold calibration from prior bootstrap reports:
+
+```bash
+make bootstrap-calibrate
+```
+
 Test organization:
 - `tests/unit/` for subsystem unit tests
 - `tests/integration/` for network/integration coverage
