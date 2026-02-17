@@ -53,7 +53,6 @@ def _append_predicted_words(
     pred_items: list[Any],
     times: list[float],
     *,
-    top_ignore_px: int = 0,
     roi_shapes: list[tuple[int, int]] | None = None,
 ) -> None:
     if np is None:
@@ -74,8 +73,6 @@ def _append_predicted_words(
             nb = np.array(points).reshape(-1, 2)
             x, y = int(min(nb[:, 0])), int(min(nb[:, 1]))
             bw, bh = int(max(nb[:, 0]) - x), int(max(nb[:, 1]) - y)
-            if y < top_ignore_px:
-                continue
             if bw <= 0 or bh <= 0:
                 continue
             if roi_h is not None and roi_w is not None:
@@ -288,7 +285,6 @@ def collect_raw_frames(
         log_fn(f"Sampling frames at {fps} FPS...")
 
     batch_size = 8
-    top_ignore_px = int(round(rh * 0.12))
     supports_batch: bool | None = None
     buffered_rois: list[Any] = []
     buffered_shapes: list[tuple[int, int]] = []
@@ -305,7 +301,6 @@ def collect_raw_frames(
             raw,
             pred_items,
             buffered_times,
-            top_ignore_px=top_ignore_px,
             roi_shapes=buffered_shapes,
         )
         buffered_rois.clear()
