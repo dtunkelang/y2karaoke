@@ -59,22 +59,25 @@ def _filter_static_overlay_words(
         new_words = []
         for w in frame.get("words", []):
             tok = normalize_text_basic(str(w.get("text", ""))).strip()
-            root = _overlay_token_root(tok)
-            if root is None:
-                new_words.append(w)
-                continue
             tok_compact = "".join(ch for ch in tok.lower() if ch.isalnum())
-            key = (
-                root,
-                int(round(float(w.get("x", 0.0)) / _OVERLAY_BIN_PX)),
-                int(round(float(w.get("y", 0.0)) / _OVERLAY_BIN_PX)),
-            )
             y_val = float(w.get("y", 0.0))
             x_val = float(w.get("x", 0.0))
             is_short_bottom_right = (
                 len(tok_compact) <= 4
                 and y_val >= y_bottom_cut
                 and x_val >= (0.55 * x_max if x_max > 0 else x_val + 1)
+            )
+            if is_short_bottom_right:
+                continue
+
+            root = _overlay_token_root(tok)
+            if root is None:
+                new_words.append(w)
+                continue
+            key = (
+                root,
+                int(round(float(w.get("x", 0.0)) / _OVERLAY_BIN_PX)),
+                int(round(float(w.get("y", 0.0)) / _OVERLAY_BIN_PX)),
             )
             if key in static_keys or root in overlay_roots or is_short_bottom_right:
                 continue
