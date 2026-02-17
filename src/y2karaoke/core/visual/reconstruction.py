@@ -34,6 +34,14 @@ def _filter_static_overlay_words(
     if (y_max - y_min) < 60.0:
         return raw_frames
     y_top_cut = y_min + 0.35 * (y_max - y_min)
+    y_bottom_cut = y_min + 0.82 * (y_max - y_min)
+    all_x = [
+        float(w.get("x", 0.0))
+        for fr in raw_frames
+        for w in fr.get("words", [])
+        if isinstance(w, dict)
+    ]
+    x_max = max(all_x) if all_x else 0.0
 
     static_keys = _identify_static_overlay_keys(stats, total_frames, y_top_cut)
     overlay_roots = _infer_overlay_roots(
@@ -55,12 +63,20 @@ def _filter_static_overlay_words(
             if root is None:
                 new_words.append(w)
                 continue
+            tok_compact = "".join(ch for ch in tok.lower() if ch.isalnum())
             key = (
                 root,
                 int(round(float(w.get("x", 0.0)) / _OVERLAY_BIN_PX)),
                 int(round(float(w.get("y", 0.0)) / _OVERLAY_BIN_PX)),
             )
-            if key in static_keys or root in overlay_roots:
+            y_val = float(w.get("y", 0.0))
+            x_val = float(w.get("x", 0.0))
+            is_short_bottom_right = (
+                len(tok_compact) <= 4
+                and y_val >= y_bottom_cut
+                and x_val >= (0.55 * x_max if x_max > 0 else x_val + 1)
+            )
+            if key in static_keys or root in overlay_roots or is_short_bottom_right:
                 continue
             new_words.append(w)
         out.append({**frame, "words": new_words})
