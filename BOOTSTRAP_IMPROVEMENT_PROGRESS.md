@@ -150,6 +150,12 @@ Status: Completed
 - [x] Keep tool-level compatibility wrappers for existing callers/tests
 - [x] Add direct unit tests for shared post-processing module behavior
 
+### Milestone 24: Shared Runtime Helpers
+Status: Completed
+- [x] Move suitability gating and report payload/write logic into `core.visual.bootstrap_runtime`
+- [x] Rewire tool wrappers to delegate to shared runtime module
+- [x] Add direct unit tests for runtime suitability/report helper behavior
+
 ## Notes
 - Keep changes in significant, validated commits.
 - Prefer deterministic ranking and quality decisions for reproducibility.

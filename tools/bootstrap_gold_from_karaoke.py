@@ -32,6 +32,12 @@ from y2karaoke.core.visual.bootstrap_postprocess import (  # noqa: E402
     build_refined_lines_output as _build_refined_lines_output_impl,
     nearest_known_word_indices as _nearest_known_word_indices_impl,
 )
+from y2karaoke.core.visual.bootstrap_runtime import (  # noqa: E402
+    build_run_report_payload as _build_run_report_payload_impl,
+    ensure_selected_suitability as _ensure_selected_suitability_impl,
+    is_suitability_good_enough as _is_suitability_good_enough_impl,
+    write_run_report as _write_run_report_impl,
+)
 from y2karaoke.core.text_utils import make_slug  # noqa: E402
 from y2karaoke.vision.ocr import get_ocr_engine  # noqa: E402
 from y2karaoke.vision.roi import detect_lyric_roi  # noqa: E402
@@ -154,9 +160,8 @@ def _is_suitability_good_enough(
     min_detectability: float,
     min_word_level_score: float,
 ) -> bool:
-    return (
-        float(metrics.get("detectability_score", 0.0)) >= min_detectability
-        and float(metrics.get("word_level_score", 0.0)) >= min_word_level_score
+    return _is_suitability_good_enough_impl(
+        metrics, min_detectability, min_word_level_score
     )
 
 
@@ -441,32 +446,22 @@ def _ensure_selected_suitability(
     song_dir: Path,
     args: argparse.Namespace,
 ) -> dict[str, Any]:
-    if not selected_metrics:
-        try:
-            selected_metrics, _ = analyze_visual_suitability(
-                v_path,
-                fps=args.suitability_fps,
-                work_dir=song_dir / "selected_suitability",
-            )
-        except Exception as e:
-            logger.warning(f"Suitability check failed for selected video: {e}")
-            selected_metrics = {}
-
-    if (
-        selected_metrics
-        and not args.allow_low_suitability
-        and not _is_suitability_good_enough(
+    try:
+        return _ensure_selected_suitability_impl(
             selected_metrics,
-            args.min_detectability,
-            args.min_word_level_score,
+            v_path=v_path,
+            song_dir=song_dir,
+            suitability_fps=args.suitability_fps,
+            min_detectability=args.min_detectability,
+            min_word_level_score=args.min_word_level_score,
+            allow_low_suitability=args.allow_low_suitability,
+            analyze_fn=analyze_visual_suitability,
         )
-    ):
-        raise ValueError(
-            "Selected candidate did not pass suitability thresholds: "
-            f"detectability={selected_metrics.get('detectability_score', 0.0):.3f}, "
-            f"word_level={selected_metrics.get('word_level_score', 0.0):.3f}"
-        )
-    return selected_metrics
+    except Exception as e:
+        if isinstance(e, ValueError):
+            raise
+        logger.warning(f"Suitability check failed for selected video: {e}")
+        return {}
 
 
 def _bootstrap_refined_lines(
@@ -500,39 +495,21 @@ def _write_run_report(
 ) -> None:
     if not args.report_json:
         return
-    report = {
-        "schema_version": "1.0",
-        "artist": args.artist,
-        "title": args.title,
-        "output_path": str(args.output.resolve()),
-        "candidate_url": candidate_url,
-        "selected_visual_suitability": selected_metrics,
-        "candidate_rankings": [
-            {
-                "rank": idx + 1,
-                "url": cand.get("url"),
-                "title": cand.get("title"),
-                "uploader": cand.get("uploader"),
-                "duration": cand.get("duration"),
-                "detectability_score": cand.get("metrics", {}).get(
-                    "detectability_score"
-                ),
-                "word_level_score": cand.get("metrics", {}).get("word_level_score"),
-                "avg_ocr_confidence": cand.get("metrics", {}).get("avg_ocr_confidence"),
-            }
-            for idx, cand in enumerate(ranked_candidates)
-        ],
-        "settings": {
-            "visual_fps": args.visual_fps,
-            "suitability_fps": args.suitability_fps,
-            "min_detectability": args.min_detectability,
-            "min_word_level_score": args.min_word_level_score,
-            "raw_ocr_cache_version": args.raw_ocr_cache_version,
-            "allow_low_suitability": args.allow_low_suitability,
-        },
-    }
-    args.report_json.parent.mkdir(parents=True, exist_ok=True)
-    args.report_json.write_text(json.dumps(report, indent=2))
+    report = _build_run_report_payload_impl(
+        artist=args.artist,
+        title=args.title,
+        output_path=args.output,
+        candidate_url=candidate_url,
+        selected_metrics=selected_metrics,
+        ranked_candidates=ranked_candidates,
+        visual_fps=args.visual_fps,
+        suitability_fps=args.suitability_fps,
+        min_detectability=args.min_detectability,
+        min_word_level_score=args.min_word_level_score,
+        raw_ocr_cache_version=args.raw_ocr_cache_version,
+        allow_low_suitability=args.allow_low_suitability,
+    )
+    _write_run_report_impl(args.report_json, report)
     logger.info(f"Wrote bootstrap report to {args.report_json}")
 
 
