@@ -22,8 +22,12 @@ from ..exceptions import VisualRefinementError
 
 def _get_cache_key(video_path: Path, prefix: str, **kwargs: Any) -> str:
     """Generate a stable cache key for suitability artifacts."""
+    stat = video_path.stat()
     digest = hashlib.md5(
-        f"{video_path.name}_{json.dumps(kwargs, sort_keys=True)}".encode()
+        (
+            f"{video_path.resolve()}:{stat.st_mtime_ns}:{stat.st_size}:"
+            f"{json.dumps(kwargs, sort_keys=True)}"
+        ).encode()
     ).hexdigest()
     return f"{prefix}_{digest}.json"
 

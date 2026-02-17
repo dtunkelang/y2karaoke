@@ -97,6 +97,12 @@ Status: Completed
 - [x] Reuse decoded window frames across multiple lines while preserving per-line filtering
 - [x] Add unit tests for job/window grouping behavior
 
+### Milestone 15: Suitability Cache Key Hardening
+Status: Completed
+- [x] Include full file identity (path + mtime + size) in suitability cache keys
+- [x] Prevent cache collisions for same-named videos in different locations
+- [x] Add unit test coverage for cache-key identity behavior
+
 ## Notes
 - Keep changes in significant, validated commits.
 - Prefer deterministic ranking and quality decisions for reproducibility.

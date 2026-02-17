@@ -3,6 +3,19 @@ from pathlib import Path
 from y2karaoke.vision import suitability as _MODULE
 
 
+def test_get_cache_key_includes_file_identity(tmp_path) -> None:
+    a = tmp_path / "same-name.mp4"
+    b_dir = tmp_path / "other"
+    b_dir.mkdir()
+    b = b_dir / "same-name.mp4"
+    a.write_bytes(b"aaa")
+    b.write_bytes(b"bbbb")
+
+    key_a = _MODULE._get_cache_key(a, "raw_frames", fps=1.0)
+    key_b = _MODULE._get_cache_key(b, "raw_frames", fps=1.0)
+    assert key_a != key_b
+
+
 def test_collect_raw_frames_with_confidence_uses_sampled_retrieve(monkeypatch) -> None:
     class FakeOCR:
         def predict(self, roi):
