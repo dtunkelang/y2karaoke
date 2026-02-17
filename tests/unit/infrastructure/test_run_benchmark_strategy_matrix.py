@@ -121,3 +121,28 @@ def test_main_writes_reports_for_successful_mock_runs(tmp_path, monkeypatch):
     assert matrix_json.exists()
     payload = json.loads(matrix_json.read_text(encoding="utf-8"))
     assert len(payload["rows"]) == 2
+    assert "recommendations" in payload
+
+
+def test_recommendations_select_expected_strategy():
+    rows = [
+        {
+            "strategy": "hybrid_dtw",
+            "agreement_start_p95_abs_sec_line_weighted_mean": 0.5,
+            "agreement_start_mean_abs_sec_line_weighted_mean": 0.2,
+            "low_confidence_ratio_line_weighted_mean": 0.1,
+            "dtw_line_coverage_line_weighted_mean": 0.8,
+        },
+        {
+            "strategy": "whisper_only",
+            "agreement_start_p95_abs_sec_line_weighted_mean": 0.7,
+            "agreement_start_mean_abs_sec_line_weighted_mean": 0.35,
+            "low_confidence_ratio_line_weighted_mean": 0.2,
+            "dtw_line_coverage_line_weighted_mean": 0.6,
+        },
+    ]
+    rec = _MODULE._recommendations(rows)
+    assert rec["best_p95_start_abs_sec"] == "hybrid_dtw"
+    assert rec["best_mean_start_abs_sec"] == "hybrid_dtw"
+    assert rec["lowest_low_confidence_ratio"] == "hybrid_dtw"
+    assert rec["highest_dtw_line_coverage"] == "hybrid_dtw"

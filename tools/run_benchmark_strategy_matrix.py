@@ -120,6 +120,43 @@ def _write_markdown(path: Path, rows: list[dict[str, Any]]) -> None:
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
+def _best_row(
+    rows: list[dict[str, Any]], key: str, *, higher_is_better: bool
+) -> dict[str, Any] | None:
+    scored = [r for r in rows if isinstance(r.get(key), (int, float))]
+    if not scored:
+        return None
+    return (
+        max(scored, key=lambda r: float(r[key]))
+        if higher_is_better
+        else min(scored, key=lambda r: float(r[key]))
+    )
+
+
+def _recommendations(rows: list[dict[str, Any]]) -> dict[str, Any]:
+    best_p95 = _best_row(
+        rows, "agreement_start_p95_abs_sec_line_weighted_mean", higher_is_better=False
+    )
+    best_mean = _best_row(
+        rows, "agreement_start_mean_abs_sec_line_weighted_mean", higher_is_better=False
+    )
+    best_low_conf = _best_row(
+        rows, "low_confidence_ratio_line_weighted_mean", higher_is_better=False
+    )
+    best_dtw = _best_row(
+        rows, "dtw_line_coverage_line_weighted_mean", higher_is_better=True
+    )
+
+    return {
+        "best_p95_start_abs_sec": best_p95.get("strategy") if best_p95 else None,
+        "best_mean_start_abs_sec": best_mean.get("strategy") if best_mean else None,
+        "lowest_low_confidence_ratio": (
+            best_low_conf.get("strategy") if best_low_conf else None
+        ),
+        "highest_dtw_line_coverage": best_dtw.get("strategy") if best_dtw else None,
+    }
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
@@ -204,7 +241,10 @@ def main() -> int:
     matrix_dir.mkdir(parents=True, exist_ok=True)
     out_json = matrix_dir / "strategy_matrix_report.json"
     out_md = matrix_dir / "strategy_matrix_report.md"
-    out_json.write_text(json.dumps({"rows": rows}, indent=2), encoding="utf-8")
+    out_json.write_text(
+        json.dumps({"rows": rows, "recommendations": _recommendations(rows)}, indent=2),
+        encoding="utf-8",
+    )
     _write_markdown(out_md, rows)
     print(f"Wrote matrix reports:\n  {out_json}\n  {out_md}")
 

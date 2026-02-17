@@ -55,6 +55,7 @@ Status: Completed
 Status: Completed
 - [x] Add `tools/run_benchmark_strategy_matrix.py` for one-command multi-strategy runs
 - [x] Emit consolidated JSON + Markdown matrix reports
+- [x] Emit recommendation hints for best strategy by key metrics
 - [x] Add unit tests and `make benchmark-matrix`
 
 ## Notes
