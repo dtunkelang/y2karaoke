@@ -361,6 +361,29 @@ def _extract_audio_from_video(video_path: Path, output_dir: Path) -> Path:
     return audio_path
 
 
+def _nearest_known_word_indices(
+    known_indices: List[int], n_words: int
+) -> tuple[List[int], List[int]]:
+    prev_known = [-1] * n_words
+    next_known = [-1] * n_words
+
+    cursor = -1
+    for i in range(n_words):
+        if cursor + 1 < len(known_indices) and known_indices[cursor + 1] == i:
+            cursor += 1
+        if cursor >= 0:
+            prev_known[i] = known_indices[cursor]
+
+    cursor = len(known_indices)
+    for i in range(n_words - 1, -1, -1):
+        if cursor - 1 >= 0 and known_indices[cursor - 1] == i:
+            cursor -= 1
+        if cursor < len(known_indices):
+            next_known[i] = known_indices[cursor]
+
+    return prev_known, next_known
+
+
 def _build_refined_lines_output(
     t_lines: list[Any], artist: Optional[str], title: Optional[str]
 ) -> list[dict[str, Any]]:
@@ -404,6 +427,7 @@ def _build_refined_lines_output(
             word_confidences = ln.word_confidences or [None] * n_words
 
             vs = [j for j, s in enumerate(word_starts) if s is not None]
+            prev_known, next_known = _nearest_known_word_indices(vs, n_words)
             out_s: List[float] = []
             out_e: List[float] = []
             out_c: List[float] = []
@@ -415,8 +439,8 @@ def _build_refined_lines_output(
                     out_e.append(word_ends[j] or ws_val + 0.1)
                     out_c.append(_clamp_confidence(word_confidences[j], default=0.5))
                 else:
-                    prev_v = max([k for k in vs if k < j], default=-1)
-                    next_v = min([k for k in vs if k > j], default=-1)
+                    prev_v = prev_known[j]
+                    next_v = next_known[j]
 
                     if prev_v == -1:
                         base = ln.start

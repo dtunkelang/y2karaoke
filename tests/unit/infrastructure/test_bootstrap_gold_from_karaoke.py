@@ -401,3 +401,9 @@ def test_ensure_selected_suitability_analyzes_when_empty(monkeypatch, tmp_path) 
         args=Args(),
     )
     assert metrics == expected
+
+
+def test_nearest_known_word_indices() -> None:
+    prev_known, next_known = _MODULE._nearest_known_word_indices([1, 4], 6)
+    assert prev_known == [-1, 1, 1, 1, 4, 4]
+    assert next_known == [1, 1, 4, 4, 4, -1]

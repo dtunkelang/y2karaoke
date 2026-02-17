@@ -138,6 +138,12 @@ Status: Completed
 - [x] Extract media resolution, suitability validation, visual bootstrap, and report writing into dedicated helpers
 - [x] Keep CLI behavior unchanged while reducing `main` complexity
 
+### Milestone 22: Word-Fill Interpolation Efficiency
+Status: Completed
+- [x] Add precomputed nearest-known-word index helper for missing word-start interpolation
+- [x] Remove per-word list scans for previous/next known timing anchors
+- [x] Add unit test coverage for nearest-known index mapping behavior
+
 ## Notes
 - Keep changes in significant, validated commits.
 - Prefer deterministic ranking and quality decisions for reproducibility.
