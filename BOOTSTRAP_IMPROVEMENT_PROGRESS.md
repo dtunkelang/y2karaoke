@@ -156,6 +156,12 @@ Status: Completed
 - [x] Rewire tool wrappers to delegate to shared runtime module
 - [x] Add direct unit tests for runtime suitability/report helper behavior
 
+### Milestone 25: Shared Candidate Discovery/Ranking
+Status: Completed
+- [x] Move candidate search/ranking logic into `core.visual.bootstrap_candidates`
+- [x] Rewire tool wrappers to delegate to shared candidate helpers
+- [x] Add direct unit tests for candidate search/ranking helper behavior
+
 ## Notes
 - Keep changes in significant, validated commits.
 - Prefer deterministic ranking and quality decisions for reproducibility.

@@ -38,6 +38,10 @@ from y2karaoke.core.visual.bootstrap_runtime import (  # noqa: E402
     is_suitability_good_enough as _is_suitability_good_enough_impl,
     write_run_report as _write_run_report_impl,
 )
+from y2karaoke.core.visual.bootstrap_candidates import (  # noqa: E402
+    rank_candidates_by_suitability as _rank_candidates_by_suitability_impl,
+    search_karaoke_candidates as _search_karaoke_candidates_impl,
+)
 from y2karaoke.core.text_utils import make_slug  # noqa: E402
 from y2karaoke.vision.ocr import get_ocr_engine  # noqa: E402
 from y2karaoke.vision.roi import detect_lyric_roi  # noqa: E402
@@ -59,50 +63,10 @@ def _search_karaoke_candidates(
     title: str,
     max_candidates: int,
 ) -> list[dict[str, Any]]:
-    """Find candidate karaoke videos from YouTube search."""
-    if not artist or not title:
-        return []
-
-    try:
-        import yt_dlp
-    except Exception:
-        logger.warning("yt_dlp not available for candidate search")
-        return []
-
-    query = f"{artist} {title} karaoke"
-    search_term = f"ytsearch{max_candidates}:{query}"
-    opts = {
-        "quiet": True,
-        "no_warnings": True,
-        "extract_flat": True,
-        "skip_download": True,
-    }
-
-    candidates: list[dict[str, Any]] = []
-    try:
-        with yt_dlp.YoutubeDL(opts) as ydl:
-            info = ydl.extract_info(search_term, download=False)
-        entries = info.get("entries", []) if isinstance(info, dict) else []
-
-        for ent in entries:
-            if not isinstance(ent, dict):
-                continue
-            video_id = ent.get("id")
-            if not video_id:
-                continue
-            url = f"https://www.youtube.com/watch?v={video_id}"
-            candidates.append(
-                {
-                    "url": url,
-                    "title": ent.get("title") or "",
-                    "uploader": ent.get("uploader") or "",
-                    "duration": ent.get("duration"),
-                }
-            )
-    except Exception as exc:
-        logger.warning(f"Candidate search failed: {exc}")
-
-    return candidates
+    """Backward-compatible wrapper around shared candidate search helper."""
+    return _search_karaoke_candidates_impl(
+        artist, title, max_candidates, log_fn=logger.warning
+    )
 
 
 def _rank_candidates_by_suitability(
@@ -111,48 +75,15 @@ def _rank_candidates_by_suitability(
     song_dir: Path,
     suitability_fps: float,
 ) -> list[dict[str, Any]]:
-    """Download and score each candidate by visual suitability."""
-    ranked: list[dict[str, Any]] = []
-
-    for idx, cand in enumerate(candidates, start=1):
-        url = cand["url"]
-        eval_dir = song_dir / "candidates" / f"candidate_{idx:02d}"
-        eval_dir.mkdir(parents=True, exist_ok=True)
-        try:
-            vid_info = downloader.download_video(url, output_dir=eval_dir)
-            video_path = Path(vid_info["video_path"])
-            metrics, _ = analyze_visual_suitability(
-                video_path,
-                fps=suitability_fps,
-                work_dir=eval_dir / "suitability",
-            )
-            ranked.append(
-                {
-                    **cand,
-                    "video_path": str(video_path),
-                    "metrics": metrics,
-                    "score": float(metrics["detectability_score"]),
-                }
-            )
-            logger.info(
-                "Candidate %d score=%.3f word_level=%.3f title=%s",
-                idx,
-                metrics["detectability_score"],
-                metrics["word_level_score"],
-                cand.get("title", ""),
-            )
-        except Exception as exc:
-            logger.warning(f"Skipping candidate {url}: {exc}")
-
-    ranked.sort(
-        key=lambda c: (
-            c["score"],
-            c["metrics"].get("word_level_score", 0.0),
-            c["metrics"].get("avg_ocr_confidence", 0.0),
-        ),
-        reverse=True,
+    """Backward-compatible wrapper around shared candidate ranking helper."""
+    return _rank_candidates_by_suitability_impl(
+        candidates,
+        downloader=downloader,
+        song_dir=song_dir,
+        suitability_fps=suitability_fps,
+        analyze_fn=analyze_visual_suitability,
+        log_fn=logger.info,
     )
-    return ranked
 
 
 def _is_suitability_good_enough(
