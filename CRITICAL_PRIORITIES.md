@@ -55,16 +55,14 @@ This document outlines the critical areas of the `y2karaoke` codebase and the im
 ## 4. OCR Dependency Management
 **Context:** The project optionally uses Apple Vision (macOS) or PaddleOCR.
 
-**Risks:**
-*   **Installation:** PaddleOCR can be difficult to install on some systems.
-*   **Fallback:** Ensure the fallback mechanism in `ocr.py` is robust and logs clearly when it switches engines.
+**Status (2026-02-17):**
+*   **Verified:** Added unit tests (`test_ocr_fallback.py`) confirming proper fallback logic from Vision to PaddleOCR on Linux/Intel-Mac or on failure. Error messages are clear.
 
 **Action Plan:**
-*   **Verify Fallback:** Test the system in an environment without `vision` framework (e.g., Linux container) to ensure PaddleOCR path works.
-*   **Error Handling:** Improve error messages when no OCR engine is available.
+*   **Maintenance:** Ensure PaddleOCR version compatibility in future.
 
 ---
 
 **Next Immediate Step:**
-Verify OCR Fallback mechanism (Priority #4).
-Check `src/y2karaoke/vision/ocr.py` logic and write a test that mocks `Vision` module absence to verify it falls back to `PaddleOCR` (or error).
+Return to Priority #3 (Alignment Heuristics) to add documentation and simplify logic, or proceed to Priority #2 full benchmark suite run if bandwidth allows.
+Recommended: Priority #3 Documentation.
