@@ -2,7 +2,7 @@ PYTHON ?= ./venv/bin/python
 PIP := $(PYTHON) -m pip
 PYTEST := PYTHONPATH=src $(PYTHON) -m pytest
 
-.PHONY: bootstrap dep-check fmt fmt-check lint type test-fast test-full perf-smoke quality-guardrails benchmark-validate benchmark-run benchmark-run-bg benchmark-status benchmark-kill check ci-fast ci-full
+.PHONY: bootstrap dep-check fmt fmt-check lint type test-fast test-full perf-smoke quality-guardrails bootstrap-quality-guardrails benchmark-validate benchmark-run benchmark-run-bg benchmark-status benchmark-kill check ci-fast ci-full
 
 bootstrap:
 	./tools/bootstrap_dev.sh
@@ -34,6 +34,9 @@ perf-smoke:
 quality-guardrails:
 	$(PYTHON) tools/quality_guardrails.py
 
+bootstrap-quality-guardrails:
+	$(PYTHON) tools/bootstrap_quality_guardrails.py
+
 benchmark-validate:
 	$(PYTHON) tools/validate_benchmark_manifest.py
 
@@ -49,8 +52,8 @@ benchmark-status:
 benchmark-kill:
 	./tools/kill_benchmark_suites.sh
 
-check: dep-check fmt-check lint type test-fast perf-smoke quality-guardrails benchmark-validate
+check: dep-check fmt-check lint type test-fast perf-smoke quality-guardrails bootstrap-quality-guardrails benchmark-validate
 
-ci-fast: dep-check fmt-check lint type test-fast perf-smoke quality-guardrails benchmark-validate
+ci-fast: dep-check fmt-check lint type test-fast perf-smoke quality-guardrails bootstrap-quality-guardrails benchmark-validate
 
 ci-full: test-full

@@ -33,6 +33,12 @@ Status: Completed
 - [x] Cache coarse OCR frame extraction for fast reruns
 - [x] Add optional `--report-json` output for candidate rankings and run settings
 
+### Milestone 5: Bootstrap Guardrails
+Status: Completed
+- [x] Add `tools/bootstrap_quality_guardrails.py` for bootstrap-output validation
+- [x] Add unit tests for guardrail checks
+- [x] Integrate bootstrap guardrails into `make check` / `ci-fast`
+
 ## Notes
 - Keep changes in significant, validated commits.
 - Prefer deterministic ranking and quality decisions for reproducibility.

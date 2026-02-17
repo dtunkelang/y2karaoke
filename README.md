@@ -258,6 +258,12 @@ Preferred local workflow:
 make check
 ```
 
+Bootstrap quality guardrails for visual-seeded gold files:
+
+```bash
+make bootstrap-quality-guardrails
+```
+
 Test organization:
 - `tests/unit/` for subsystem unit tests
 - `tests/integration/` for network/integration coverage
