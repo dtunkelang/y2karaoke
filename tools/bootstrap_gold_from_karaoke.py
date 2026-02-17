@@ -493,8 +493,7 @@ def _build_refined_lines_output(
     return lines_out
 
 
-def main():  # noqa: C901
-    setup_logging(verbose=True)
+def _parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser()
     p.add_argument("--artist")
     p.add_argument("--title")
@@ -513,55 +512,49 @@ def main():  # noqa: C901
     p.add_argument(
         "--strict-sequential", action="store_true"
     )  # Kept for API compatibility
-    args = p.parse_args()
+    return p.parse_args()
 
-    slug_artist = make_slug(args.artist or "unk")
-    slug_title = make_slug(args.title or "unk")
-    song_dir = args.work_dir / slug_artist / slug_title
 
-    downloader = YouTubeDownloader(cache_dir=song_dir.parent)
-    try:
-        (
-            candidate_url,
-            cached_video_path,
-            selected_metrics,
-            ranked_candidates,
-        ) = _select_candidate_with_rankings(args, downloader, song_dir)
-    except ValueError as e:
-        logger.error(str(e))
-        return 1
+def _resolve_media_paths(
+    downloader: YouTubeDownloader,
+    candidate_url: str,
+    cached_video_path: Optional[Path],
+    song_dir: Path,
+) -> tuple[Path, Path]:
+    if cached_video_path is None:
+        vid_info = downloader.download_video(
+            candidate_url, output_dir=song_dir / "video"
+        )
+        v_path = Path(vid_info["video_path"])
+    else:
+        v_path = cached_video_path
 
-    logger.info(f"Selected candidate URL: {candidate_url}")
-
-    try:
-        if cached_video_path is None:
-            vid_info = downloader.download_video(
-                candidate_url, output_dir=song_dir / "video"
+    a_path: Optional[Path] = None
+    if cached_video_path is not None:
+        try:
+            a_path = _extract_audio_from_video(v_path, song_dir / "video")
+            logger.info(f"Extracted audio from cached candidate video: {a_path}")
+        except Exception as e:
+            logger.warning(
+                "Could not extract audio from cached video (%s); falling back to "
+                "direct audio download.",
+                e,
             )
-            v_path = Path(vid_info["video_path"])
-        else:
-            v_path = cached_video_path
+    if a_path is None:
+        aud_info = downloader.download_audio(
+            candidate_url, output_dir=song_dir / "video"
+        )
+        a_path = Path(aud_info["audio_path"])
+    return v_path, a_path
 
-        a_path: Optional[Path] = None
-        if cached_video_path is not None:
-            try:
-                a_path = _extract_audio_from_video(v_path, song_dir / "video")
-                logger.info(f"Extracted audio from cached candidate video: {a_path}")
-            except Exception as e:
-                logger.warning(
-                    "Could not extract audio from cached video (%s); falling back to "
-                    "direct audio download.",
-                    e,
-                )
-        if a_path is None:
-            aud_info = downloader.download_audio(
-                candidate_url, output_dir=song_dir / "video"
-            )
-            a_path = Path(aud_info["audio_path"])
-    except Exception as e:
-        logger.error(f"Download failed: {e}")
-        return 1
 
+def _ensure_selected_suitability(
+    selected_metrics: dict[str, Any],
+    *,
+    v_path: Path,
+    song_dir: Path,
+    args: argparse.Namespace,
+) -> dict[str, Any]:
     if not selected_metrics:
         try:
             selected_metrics, _ = analyze_visual_suitability(
@@ -582,15 +575,18 @@ def main():  # noqa: C901
             args.min_word_level_score,
         )
     ):
-        logger.error(
+        raise ValueError(
             "Selected candidate did not pass suitability thresholds: "
             f"detectability={selected_metrics.get('detectability_score', 0.0):.3f}, "
             f"word_level={selected_metrics.get('word_level_score', 0.0):.3f}"
         )
-        return 1
+    return selected_metrics
 
+
+def _bootstrap_refined_lines(
+    v_path: Path, args: argparse.Namespace, song_dir: Path
+) -> list[dict[str, Any]]:
     roi = detect_lyric_roi(v_path, sample_fps=1.0)
-
     cap = cv2.VideoCapture(str(v_path))
     duration = cap.get(cv2.CAP_PROP_FRAME_COUNT) / (cap.get(cv2.CAP_PROP_FPS) or 30.0)
     cap.release()
@@ -605,11 +601,94 @@ def main():  # noqa: C901
     )
     t_lines = reconstruct_lyrics_from_visuals(raw_frames, args.visual_fps)
     logger.info(f"Reconstructed {len(t_lines)} initial lines.")
-
     refine_word_timings_at_high_fps(v_path, t_lines, roi)
-    lines_out = _build_refined_lines_output(
-        t_lines, artist=args.artist, title=args.title
-    )
+    return _build_refined_lines_output(t_lines, artist=args.artist, title=args.title)
+
+
+def _write_run_report(
+    args: argparse.Namespace,
+    *,
+    candidate_url: str,
+    selected_metrics: dict[str, Any],
+    ranked_candidates: list[dict[str, Any]],
+) -> None:
+    if not args.report_json:
+        return
+    report = {
+        "schema_version": "1.0",
+        "artist": args.artist,
+        "title": args.title,
+        "output_path": str(args.output.resolve()),
+        "candidate_url": candidate_url,
+        "selected_visual_suitability": selected_metrics,
+        "candidate_rankings": [
+            {
+                "rank": idx + 1,
+                "url": cand.get("url"),
+                "title": cand.get("title"),
+                "uploader": cand.get("uploader"),
+                "duration": cand.get("duration"),
+                "detectability_score": cand.get("metrics", {}).get(
+                    "detectability_score"
+                ),
+                "word_level_score": cand.get("metrics", {}).get("word_level_score"),
+                "avg_ocr_confidence": cand.get("metrics", {}).get("avg_ocr_confidence"),
+            }
+            for idx, cand in enumerate(ranked_candidates)
+        ],
+        "settings": {
+            "visual_fps": args.visual_fps,
+            "suitability_fps": args.suitability_fps,
+            "min_detectability": args.min_detectability,
+            "min_word_level_score": args.min_word_level_score,
+            "raw_ocr_cache_version": args.raw_ocr_cache_version,
+            "allow_low_suitability": args.allow_low_suitability,
+        },
+    }
+    args.report_json.parent.mkdir(parents=True, exist_ok=True)
+    args.report_json.write_text(json.dumps(report, indent=2))
+    logger.info(f"Wrote bootstrap report to {args.report_json}")
+
+
+def main():
+    setup_logging(verbose=True)
+    args = _parse_args()
+
+    slug_artist = make_slug(args.artist or "unk")
+    slug_title = make_slug(args.title or "unk")
+    song_dir = args.work_dir / slug_artist / slug_title
+
+    downloader = YouTubeDownloader(cache_dir=song_dir.parent)
+    try:
+        (
+            candidate_url,
+            cached_video_path,
+            selected_metrics,
+            ranked_candidates,
+        ) = _select_candidate_with_rankings(args, downloader, song_dir)
+    except ValueError as e:
+        logger.error(str(e))
+        return 1
+
+    logger.info(f"Selected candidate URL: {candidate_url}")
+
+    try:
+        v_path, a_path = _resolve_media_paths(
+            downloader, candidate_url, cached_video_path, song_dir
+        )
+    except Exception as e:
+        logger.error(f"Download failed: {e}")
+        return 1
+
+    try:
+        selected_metrics = _ensure_selected_suitability(
+            selected_metrics, v_path=v_path, song_dir=song_dir, args=args
+        )
+    except ValueError as e:
+        logger.error(str(e))
+        return 1
+
+    lines_out = _bootstrap_refined_lines(v_path, args, song_dir)
 
     res: Dict[str, Any] = {
         "schema_version": "1.2",
@@ -623,44 +702,12 @@ def main():  # noqa: C901
 
     args.output.write_text(json.dumps(res, indent=2))
     logger.info(f"Saved refined gold timings to {args.output}")
-
-    if args.report_json:
-        report = {
-            "schema_version": "1.0",
-            "artist": args.artist,
-            "title": args.title,
-            "output_path": str(args.output.resolve()),
-            "candidate_url": candidate_url,
-            "selected_visual_suitability": selected_metrics,
-            "candidate_rankings": [
-                {
-                    "rank": idx + 1,
-                    "url": cand.get("url"),
-                    "title": cand.get("title"),
-                    "uploader": cand.get("uploader"),
-                    "duration": cand.get("duration"),
-                    "detectability_score": cand.get("metrics", {}).get(
-                        "detectability_score"
-                    ),
-                    "word_level_score": cand.get("metrics", {}).get("word_level_score"),
-                    "avg_ocr_confidence": cand.get("metrics", {}).get(
-                        "avg_ocr_confidence"
-                    ),
-                }
-                for idx, cand in enumerate(ranked_candidates)
-            ],
-            "settings": {
-                "visual_fps": args.visual_fps,
-                "suitability_fps": args.suitability_fps,
-                "min_detectability": args.min_detectability,
-                "min_word_level_score": args.min_word_level_score,
-                "raw_ocr_cache_version": args.raw_ocr_cache_version,
-                "allow_low_suitability": args.allow_low_suitability,
-            },
-        }
-        args.report_json.parent.mkdir(parents=True, exist_ok=True)
-        args.report_json.write_text(json.dumps(report, indent=2))
-        logger.info(f"Wrote bootstrap report to {args.report_json}")
+    _write_run_report(
+        args,
+        candidate_url=candidate_url,
+        selected_metrics=selected_metrics,
+        ranked_candidates=ranked_candidates,
+    )
 
     return 0
 

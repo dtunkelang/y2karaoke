@@ -132,6 +132,12 @@ Status: Completed
 - [x] Precompute normalized title/artist once in refined-line output builder
 - [x] Remove repeated per-line normalization of static metadata values
 
+### Milestone 21: Bootstrap Main Orchestration Split
+Status: Completed
+- [x] Extract argument parsing into `_parse_args`
+- [x] Extract media resolution, suitability validation, visual bootstrap, and report writing into dedicated helpers
+- [x] Keep CLI behavior unchanged while reducing `main` complexity
+
 ## Notes
 - Keep changes in significant, validated commits.
 - Prefer deterministic ranking and quality decisions for reproducibility.

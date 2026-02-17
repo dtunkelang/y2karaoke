@@ -364,3 +364,40 @@ def test_build_refined_lines_output_falls_back_when_word_starts_missing() -> Non
     assert words[0]["confidence"] == 0.0
     assert words[0]["start"] >= 5.0
     assert words[0]["end"] > words[0]["start"]
+
+
+def test_ensure_selected_suitability_rejects_below_threshold(tmp_path) -> None:
+    class Args:
+        suitability_fps = 1.0
+        allow_low_suitability = False
+        min_detectability = 0.45
+        min_word_level_score = 0.15
+
+    with pytest.raises(ValueError):
+        _MODULE._ensure_selected_suitability(
+            {"detectability_score": 0.2, "word_level_score": 0.1},
+            v_path=tmp_path / "v.mp4",
+            song_dir=tmp_path,
+            args=Args(),
+        )
+
+
+def test_ensure_selected_suitability_analyzes_when_empty(monkeypatch, tmp_path) -> None:
+    class Args:
+        suitability_fps = 1.0
+        allow_low_suitability = False
+        min_detectability = 0.45
+        min_word_level_score = 0.15
+
+    expected = {"detectability_score": 0.9, "word_level_score": 0.8}
+    monkeypatch.setattr(
+        _MODULE, "analyze_visual_suitability", lambda *a, **k: (expected, (0, 0, 1, 1))
+    )
+
+    metrics = _MODULE._ensure_selected_suitability(
+        {},
+        v_path=tmp_path / "v.mp4",
+        song_dir=tmp_path,
+        args=Args(),
+    )
+    assert metrics == expected
