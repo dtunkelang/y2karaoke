@@ -13,6 +13,7 @@ from .helpers import (
     _romanize_lines,
 )
 from .lyrics_whisper_map import _map_lrc_lines_to_whisper_segments
+from .lyrics_whisper_pipeline import should_auto_enable_whisper
 from ...models import Line, SongMetadata
 
 logger = logging.getLogger(__name__)
@@ -276,12 +277,12 @@ def get_lyrics_with_quality(  # noqa: C901
             vocals_path, line_timings, lyrics_offset, issues_list
         )
 
-    if (
-        vocals_path
-        and not line_timings
-        and not use_whisper
-        and not whisper_only
-        and not whisper_map_lrc
+    if should_auto_enable_whisper(
+        vocals_path=vocals_path,
+        line_timings=line_timings,
+        use_whisper=use_whisper,
+        whisper_only=whisper_only,
+        whisper_map_lrc=whisper_map_lrc,
     ):
         use_whisper = True
         quality_report["whisper_auto_enabled"] = True

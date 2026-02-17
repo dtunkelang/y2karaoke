@@ -42,3 +42,4 @@ Last updated: 2026-02-17
 - [x] Completed: P0 LRC timing robustness guardrails.
 - [x] Completed: P1 lyrics-without-timings benchmark scenario isolation and runtime-aware strategy matrix reporting.
 - [x] Completed: P2 architectural cleanup step by isolating LRC timing-trust policy in lyrics quality orchestration.
+- [x] Completed: P2 boundary cleanup by centralizing Whisper auto-enable gating across simple and quality lyrics paths.

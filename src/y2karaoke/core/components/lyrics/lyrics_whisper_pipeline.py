@@ -24,6 +24,23 @@ def _average_word_probability(transcription: list) -> Optional[float]:
     return sum(probs) / len(probs)
 
 
+def should_auto_enable_whisper(
+    *,
+    vocals_path: Optional[str],
+    line_timings: Optional[List[Tuple[float, str]]],
+    use_whisper: bool,
+    whisper_only: bool,
+    whisper_map_lrc: bool,
+) -> bool:
+    return (
+        bool(vocals_path)
+        and not line_timings
+        and not use_whisper
+        and not whisper_only
+        and not whisper_map_lrc
+    )
+
+
 def get_lyrics_simple_impl(  # noqa: C901
     title: str,
     artist: str,
@@ -199,12 +216,12 @@ def get_lyrics_simple_impl(  # noqa: C901
             vocals_path, line_timings, lyrics_offset
         )
 
-    if (
-        vocals_path
-        and not line_timings
-        and not use_whisper
-        and not whisper_only
-        and not whisper_map_lrc
+    if should_auto_enable_whisper(
+        vocals_path=vocals_path,
+        line_timings=line_timings,
+        use_whisper=use_whisper,
+        whisper_only=whisper_only,
+        whisper_map_lrc=whisper_map_lrc,
     ):
         use_whisper = True
         logger.info(

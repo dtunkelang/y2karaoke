@@ -3,12 +3,38 @@ import pytest
 from y2karaoke.core.components.lyrics import api as lyrics
 from y2karaoke.core import lyrics_whisper as lw
 from y2karaoke.core.components.lyrics import helpers as lh
+from y2karaoke.core.components.lyrics.lyrics_whisper_pipeline import (
+    should_auto_enable_whisper,
+)
 from y2karaoke.core.models import Line, Word
 
 
 def _make_line(text, start=0.0, end=1.0):
     words = [Word(text=w, start_time=start, end_time=end) for w in text.split()]
     return Line(words=words)
+
+
+def test_should_auto_enable_whisper_requires_untimed_vocals_and_non_whisper_mode():
+    assert (
+        should_auto_enable_whisper(
+            vocals_path="vocals.wav",
+            line_timings=None,
+            use_whisper=False,
+            whisper_only=False,
+            whisper_map_lrc=False,
+        )
+        is True
+    )
+    assert (
+        should_auto_enable_whisper(
+            vocals_path="vocals.wav",
+            line_timings=[(1.0, "line")],
+            use_whisper=False,
+            whisper_only=False,
+            whisper_map_lrc=False,
+        )
+        is False
+    )
 
 
 def test_refine_timing_with_audio_adjusts_on_duration_mismatch(monkeypatch):
