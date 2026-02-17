@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 from typing import List, Dict, Any
 
-from y2karaoke.core.refine_visual import _detect_highlight_times
+from y2karaoke.core.visual.refinement import _detect_highlight_times
 
 
 def _create_word_vals(

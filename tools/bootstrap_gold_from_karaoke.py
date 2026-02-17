@@ -18,7 +18,7 @@ if str(src_path) not in sys.path:
 
 from y2karaoke.utils.logging import setup_logging, get_logger  # noqa: E402
 from y2karaoke.core.components.audio.downloader import YouTubeDownloader  # noqa: E402
-from y2karaoke.core.refine_visual import refine_word_timings_at_high_fps  # noqa: E402
+from y2karaoke.core.visual.refinement import refine_word_timings_at_high_fps  # noqa: E402
 from y2karaoke.core.visual.reconstruction import (  # noqa: E402
     reconstruct_lyrics_from_visuals,
     snap,

@@ -6,7 +6,8 @@ This document outlines the critical areas of the `y2karaoke` codebase and the im
 **Context:** The project recently introduced "visual refinement" (`src/y2karaoke/core/refine_visual.py`) using computer vision to align lyrics with millisecond precision. This uses "Glyph-Interval Proximity" logic (gradient-of-distance, symmetric sweep).
 
 **Critical Areas:**
-*   `src/y2karaoke/core/refine_visual.py`: specifically `refine_word_timings_at_high_fps`.
+*   `src/y2karaoke/core/visual/refinement.py`: refinement logic.
+*   `src/y2karaoke/core/visual/reconstruction.py`: reconstruction logic.
 *   `src/y2karaoke/vision/`: `ocr.py`, `roi.py`, `color.py`.
 
 **Risks:**
@@ -19,8 +20,9 @@ This document outlines the critical areas of the `y2karaoke` codebase and the im
     - [x] Added tests for `reconstruct_lyrics_from_visuals` (line grouping).
 *   **Benchmark:** Run benchmarks regularly (see section 2) to catch regressions in visual alignment.
 *   **Refactor:** Break down `refine_word_timings_at_high_fps` into smaller, testable components.
-    - [x] Extracted highlight detection logic.
+    - [x] Extracted highlight detection logic to `core/visual/refinement.py`.
     - [x] Extracted lyrics reconstruction logic to `core/visual/reconstruction.py`.
+    - [x] Converted `refine_visual.py` to a facade.
 
 ## 2. Benchmark Execution & Validation
 **Context:** A set of 12 songs is defined in `benchmarks/benchmark_songs.yaml` to measure alignment accuracy.
@@ -43,7 +45,7 @@ This document outlines the critical areas of the `y2karaoke` codebase and the im
 
 **Status (2026-02-17):**
 *   **Refactored:** `timing_evaluator.py` converted to strict public facade. Internal logic moved to `timing_evaluator_core.py`, `timing_evaluator_correction.py`, etc.
-*   **Documented:** Added docstrings to `timing_evaluator_core.py` and `timing_evaluator_correction.py` explaining the heuristics (e.g., missing pause penalties, onset snapping logic).
+*   **Documented:** Added docstrings to `timing_evaluator_core.py` and `timing_evaluator_correction.py`.
 *   **Tests Fixed:** 250+ unit tests updated to import from implementation modules.
 
 **Critical Areas:**
@@ -64,4 +66,4 @@ This document outlines the critical areas of the `y2karaoke` codebase and the im
 ---
 
 **Next Immediate Step:**
-Run the full benchmark suite to baseline the system state across all songs and ensure no regressions were introduced by the offset fix. This closes the loop on Priority #2.
+Consider improving OCR robustness tests using mock image data (testing actual OCR output parsing), or optimize alignment performance (`whisper_dtw.py`).
