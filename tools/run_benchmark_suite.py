@@ -242,6 +242,7 @@ def _build_generate_command(
     force: bool,
     whisper_map_lrc_dtw: bool,
     strategy: str = "hybrid_dtw",
+    drop_lrc_line_timings: bool = False,
 ) -> list[str]:
     cmd = [
         python_bin,
@@ -263,6 +264,8 @@ def _build_generate_command(
         cmd.append("--offline")
     if force:
         cmd.append("--force")
+    if drop_lrc_line_timings:
+        cmd.append("--drop-lrc-line-timings")
     if strategy == "hybrid_dtw":
         if whisper_map_lrc_dtw:
             cmd.append("--whisper-map-lrc-dtw")
@@ -1328,6 +1331,7 @@ def _write_checkpoint(
             "offline": args.offline,
             "force": args.force,
             "strategy": args.strategy,
+            "scenario": args.scenario,
             "whisper_map_lrc_dtw": not args.no_whisper_map_lrc_dtw,
             "timeout_sec": args.timeout_sec,
             "heartbeat_sec": args.heartbeat_sec,
@@ -1356,6 +1360,7 @@ def _build_run_signature(
         "offline": bool(args.offline),
         "force": bool(args.force),
         "strategy": str(args.strategy),
+        "scenario": str(args.scenario),
         "whisper_map_lrc_dtw": not bool(args.no_whisper_map_lrc_dtw),
         "cache_dir": str(args.cache_dir.resolve()) if args.cache_dir else None,
         "gold_root": str(gold_root.resolve()) if gold_root else None,
@@ -1450,6 +1455,16 @@ def _parse_args() -> argparse.Namespace:
         help=(
             "Benchmark strategy: hybrid_dtw (default), hybrid_whisper, "
             "whisper_only, or lrc_only."
+        ),
+    )
+    parser.add_argument(
+        "--scenario",
+        choices=["default", "lyrics_no_timing"],
+        default="default",
+        help=(
+            "Optional benchmark scenario variant. "
+            "'lyrics_no_timing' ignores provider LRC timestamps to isolate "
+            "lyrics-text + audio alignment behavior."
         ),
     )
     parser.add_argument(
@@ -2211,6 +2226,7 @@ def main() -> int:  # noqa: C901
             force=args.force,
             whisper_map_lrc_dtw=not args.no_whisper_map_lrc_dtw,
             strategy=args.strategy,
+            drop_lrc_line_timings=(args.scenario == "lyrics_no_timing"),
         )
         print(f"[{index}/{len(songs)}] {song.artist} - {song.title}")
         start = time.monotonic()
@@ -2276,6 +2292,7 @@ def main() -> int:  # noqa: C901
             "offline": args.offline,
             "force": args.force,
             "strategy": args.strategy,
+            "scenario": args.scenario,
             "whisper_map_lrc_dtw": not args.no_whisper_map_lrc_dtw,
             "timeout_sec": args.timeout_sec,
             "heartbeat_sec": args.heartbeat_sec,

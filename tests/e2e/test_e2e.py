@@ -75,7 +75,7 @@ def test_end_to_end():
         logger.info("   - audio-separator (for vocal separation)")
         logger.info("   - moviepy (for video rendering)")
         logger.info("   - librosa (for audio effects)")
-        logger.info("   - whisperx (for lyrics transcription)")
+        logger.info("   - Whisper/faster-whisper backend (for lyrics transcription)")
 
         # Use assert instead of return
         assert True

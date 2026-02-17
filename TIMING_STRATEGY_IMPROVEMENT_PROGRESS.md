@@ -17,11 +17,11 @@ Last updated: 2026-02-17
 
 ### P1 - Lyrics Without Timings
 - [x] Default to audio-aware alignment when lyrics exist but no reliable timings exist.
-- [ ] Add benchmark scenarios to isolate this path and compare cost/quality.
+- [x] Add benchmark scenarios to isolate this path and compare cost/quality.
 
 ### P1 - No-Lyrics (Whisper-Only) Quality/Cost Tradeoff
 - [x] Add adaptive Whisper strategy (fast pass + selective high-quality re-pass).
-- [ ] Evaluate quality gain per added runtime.
+- [x] Evaluate quality gain per added runtime.
 
 ### P1 - Karaoke Video Scraping Efficiency
 - [x] Reduce candidate ranking cost (prefilter + lightweight visual probe).
@@ -32,12 +32,12 @@ Last updated: 2026-02-17
 - [ ] Tighten module boundaries and contracts for easier regression isolation.
 
 ### P2 - Documentation Sync
-- [ ] Remove stale “WhisperX” references and align docs to current implementation.
-- [ ] Document independent vs diagnostic metrics in benchmark outputs.
+- [x] Remove stale “WhisperX” references and align docs to current implementation.
+- [x] Document independent vs diagnostic metrics in benchmark outputs.
 
 ## Work Log
 
 - [x] Captured prioritized improvement plan in-repo.
 - [x] Completed: P0 benchmark validity fixes.
 - [x] Completed: P0 LRC timing robustness guardrails.
-- [ ] In progress: P1 lyrics-without-timings strategy improvements.
+- [x] Completed: P1 lyrics-without-timings benchmark scenario isolation and runtime-aware strategy matrix reporting.

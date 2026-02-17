@@ -38,6 +38,7 @@ def _build_command(
     force: bool,
     max_songs: int,
     match: str,
+    scenario: str,
 ) -> list[str]:
     cmd = [
         python_bin,
@@ -52,6 +53,8 @@ def _build_command(
         str(manifest),
         "--gold-root",
         str(gold_root),
+        "--scenario",
+        scenario,
     ]
     if cache_dir is not None:
         cmd.extend(["--cache-dir", str(cache_dir)])
@@ -112,6 +115,8 @@ def _extract_summary(report_json: dict[str, Any]) -> dict[str, Any]:
             "avg_abs_word_start_delta_sec_word_weighted_mean",
             "avg_abs_word_start_delta_sec_mean",
         ),
+        "sum_song_elapsed_sec": report_json.get("sum_song_elapsed_sec"),
+        "suite_wall_elapsed_sec": report_json.get("suite_wall_elapsed_sec"),
     }
 
 
@@ -121,15 +126,15 @@ def _write_markdown(path: Path, rows: list[dict[str, Any]]) -> None:
         "",
         (
             "| strategy | status | songs ok/total | dtw line cov | dtw word cov | "
-            "mean start abs (s) | p95 start abs (s) | low-conf ratio |"
+            "mean start abs (s) | p95 start abs (s) | low-conf ratio | sum song sec |"
         ),
-        "|---|---|---:|---:|---:|---:|---:|---:|",
+        "|---|---|---:|---:|---:|---:|---:|---:|---:|",
     ]
     for row in rows:
         ok = row.get("songs_succeeded")
         total = row.get("songs_total")
         lines.append(
-            "| {strategy} | {status} | {ok}/{total} | {dl} | {dw} | {mean} | {p95} | {low} |".format(
+            "| {strategy} | {status} | {ok}/{total} | {dl} | {dw} | {mean} | {p95} | {low} | {elapsed} |".format(
                 strategy=row.get("strategy"),
                 status=row.get("status"),
                 ok=ok if ok is not None else "-",
@@ -139,6 +144,7 @@ def _write_markdown(path: Path, rows: list[dict[str, Any]]) -> None:
                 mean=row.get("agreement_start_mean_abs_sec_line_weighted_mean", "-"),
                 p95=row.get("agreement_start_p95_abs_sec_line_weighted_mean", "-"),
                 low=row.get("low_confidence_ratio_line_weighted_mean", "-"),
+                elapsed=row.get("sum_song_elapsed_sec", "-"),
             )
         )
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
@@ -170,6 +176,23 @@ def _recommendations(rows: list[dict[str, Any]]) -> dict[str, Any]:
     best_dtw = _best_row(
         rows, "dtw_line_coverage_line_weighted_mean", higher_is_better=True
     )
+    fastest = _best_row(rows, "sum_song_elapsed_sec", higher_is_better=False)
+
+    quality_runtime_candidates = [
+        r
+        for r in rows
+        if isinstance(r.get("agreement_start_p95_abs_sec_line_weighted_mean"), (int, float))
+        and isinstance(r.get("sum_song_elapsed_sec"), (int, float))
+    ]
+    quality_runtime_best: dict[str, Any] | None = None
+    if quality_runtime_candidates:
+        def _composite(row: dict[str, Any]) -> float:
+            p95 = float(row["agreement_start_p95_abs_sec_line_weighted_mean"])
+            elapsed = float(row["sum_song_elapsed_sec"])
+            # Keep quality dominant while still penalizing materially slower runs.
+            return p95 + 0.001 * elapsed
+
+        quality_runtime_best = min(quality_runtime_candidates, key=_composite)
 
     return {
         "best_p95_start_abs_sec": best_p95.get("strategy") if best_p95 else None,
@@ -178,6 +201,10 @@ def _recommendations(rows: list[dict[str, Any]]) -> dict[str, Any]:
             best_low_conf.get("strategy") if best_low_conf else None
         ),
         "highest_dtw_line_coverage": best_dtw.get("strategy") if best_dtw else None,
+        "fastest_runtime": fastest.get("strategy") if fastest else None,
+        "best_quality_runtime_balance": (
+            quality_runtime_best.get("strategy") if quality_runtime_best else None
+        ),
     }
 
 
@@ -203,6 +230,12 @@ def main() -> int:
     parser.add_argument("--force", action="store_true")
     parser.add_argument("--max-songs", type=int, default=0)
     parser.add_argument("--match", default="")
+    parser.add_argument(
+        "--scenario",
+        choices=["default", "lyrics_no_timing"],
+        default="default",
+        help="Benchmark scenario forwarded to run_benchmark_suite.py",
+    )
     parser.add_argument(
         "--matrix-id",
         default=datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ"),
@@ -234,6 +267,7 @@ def main() -> int:
             force=args.force,
             max_songs=args.max_songs,
             match=args.match,
+            scenario=args.scenario,
         )
         print(f"[{strategy}] running: {' '.join(cmd)}")
         proc = subprocess.run(cmd)

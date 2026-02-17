@@ -286,6 +286,11 @@ def doctor():
     help="Use lyrics from a local text or .lrc file as the text source",
 )
 @click.option(
+    "--drop-lrc-line-timings",
+    is_flag=True,
+    help="Ignore provider LRC line timestamps and align from lyrics text + audio",
+)
+@click.option(
     "--whisper-language",
     type=str,
     default=None,
@@ -383,6 +388,7 @@ def generate(
     whisper_map_lrc,
     whisper_map_lrc_dtw,
     lyrics_file,
+    drop_lrc_line_timings,
     whisper_language,
     whisper_model,
     whisper_force_dtw,
@@ -427,6 +433,7 @@ def generate(
         whisper_map_lrc=whisper_map_lrc,
         whisper_map_lrc_dtw=whisper_map_lrc_dtw,
         lyrics_file=lyrics_file,
+        drop_lrc_line_timings=drop_lrc_line_timings,
         whisper_language=whisper_language,
         whisper_model=whisper_model,
         whisper_force_dtw=whisper_force_dtw,

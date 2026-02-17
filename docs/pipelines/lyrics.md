@@ -33,3 +33,4 @@ Recent Improvements:
 - **Quality Reporting:** Improved tracking of large timing deltas and duration mismatches in the quality reports.
 - **LRC Mismatch Guardrail:** When LRC duration mismatch is severe and audio/Whisper alignment is available, provider line timestamps are dropped and timing is rebuilt from audio alignment.
 - **Untimed-Lyrics Fallback:** When lyrics text exists but line-level timings are missing, Whisper alignment is auto-enabled when vocals are available.
+- **Configurable Untimed-Lyrics Mode:** `--drop-lrc-line-timings` forces the same untimed-lyrics path for controlled A/B benchmarking.

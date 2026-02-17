@@ -90,6 +90,7 @@ def get_lyrics_with_quality(  # noqa: C901
     whisper_map_lrc: bool = False,
     whisper_map_lrc_dtw: bool = False,
     lyrics_file: Optional[Path] = None,
+    drop_lrc_line_timings: bool = False,
     whisper_language: Optional[str] = None,
     whisper_model: Optional[str] = None,
     whisper_force_dtw: bool = False,
@@ -191,6 +192,12 @@ def get_lyrics_with_quality(  # noqa: C901
         lrc_text = file_lrc_text
         line_timings = file_line_timings
         source = "lyrics_file_lrc"
+    if drop_lrc_line_timings and line_timings:
+        issues_list.append(
+            "Configured to ignore provider LRC line timings; deriving timing from audio"
+        )
+        quality_report["lrc_timing_trust"] = "dropped_configured"
+        line_timings = None
     if not quality_report["source"]:
         quality_report["source"] = source
     lrc_duration_mismatch_sec: Optional[float] = None

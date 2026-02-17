@@ -28,6 +28,7 @@ def test_build_command_includes_strategy_and_flags(tmp_path):
         force=False,
         max_songs=2,
         match="Hero",
+        scenario="lyrics_no_timing",
     )
     assert "--strategy" in cmd
     assert "whisper_only" in cmd
@@ -35,6 +36,8 @@ def test_build_command_includes_strategy_and_flags(tmp_path):
     assert "--max-songs" in cmd
     assert "2" in cmd
     assert "--match" in cmd
+    assert "--scenario" in cmd
+    assert "lyrics_no_timing" in cmd
 
 
 def test_extract_summary_handles_aggregate_fields():
@@ -59,6 +62,7 @@ def test_extract_summary_handles_aggregate_fields():
     assert summary["agreement_start_mean_abs_sec_line_weighted_mean"] == 0.42
     assert summary["low_confidence_ratio_line_weighted_mean"] == 0.1
     assert summary["gold_start_abs_word_weighted_mean"] == 1.23
+    assert summary["sum_song_elapsed_sec"] is None
 
 
 def test_extract_summary_preserves_missing_independent_agreement():
@@ -94,6 +98,7 @@ def test_write_markdown(tmp_path):
                 "agreement_start_mean_abs_sec_line_weighted_mean": 0.3,
                 "agreement_start_p95_abs_sec_line_weighted_mean": 0.6,
                 "low_confidence_ratio_line_weighted_mean": 0.05,
+                "sum_song_elapsed_sec": 120.0,
             }
         ],
     )
@@ -154,6 +159,7 @@ def test_recommendations_select_expected_strategy():
             "agreement_start_mean_abs_sec_line_weighted_mean": 0.2,
             "low_confidence_ratio_line_weighted_mean": 0.1,
             "dtw_line_coverage_line_weighted_mean": 0.8,
+            "sum_song_elapsed_sec": 200.0,
         },
         {
             "strategy": "whisper_only",
@@ -161,6 +167,7 @@ def test_recommendations_select_expected_strategy():
             "agreement_start_mean_abs_sec_line_weighted_mean": 0.35,
             "low_confidence_ratio_line_weighted_mean": 0.2,
             "dtw_line_coverage_line_weighted_mean": 0.6,
+            "sum_song_elapsed_sec": 100.0,
         },
     ]
     rec = _MODULE._recommendations(rows)
@@ -168,3 +175,5 @@ def test_recommendations_select_expected_strategy():
     assert rec["best_mean_start_abs_sec"] == "hybrid_dtw"
     assert rec["lowest_low_confidence_ratio"] == "hybrid_dtw"
     assert rec["highest_dtw_line_coverage"] == "hybrid_dtw"
+    assert rec["fastest_runtime"] == "whisper_only"
+    assert rec["best_quality_runtime_balance"] == "hybrid_dtw"

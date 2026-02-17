@@ -204,11 +204,14 @@ Benchmark seed set for timing quality work:
     - `--strategy hybrid_whisper`: audio + lyrics without DTW LRC mapping
     - `--strategy whisper_only`: audio-only lyrics/timing
     - `--strategy lrc_only`: synced lyrics timing only
+  - Scenario isolation:
+    - `--scenario default` (default): normal provider behavior
+    - `--scenario lyrics_no_timing`: ignore provider LRC timestamps and derive timing from lyrics text + audio
   - Offline cached-only run: `./venv/bin/python tools/run_benchmark_suite.py --offline`
   - Run one song for debugging: `./venv/bin/python tools/run_benchmark_suite.py --match "Papaoutai" --max-songs 1`
   - Disable DTW mapping for A/B checks: `./venv/bin/python tools/run_benchmark_suite.py --no-whisper-map-lrc-dtw`
   - Run strategy matrix and emit combined report: `make benchmark-matrix`
-  - Matrix JSON now includes `recommendations` (best strategy by p95/mean start error, low-confidence ratio, and DTW coverage)
+  - Matrix JSON now includes `recommendations` (best strategy by p95/mean start error, low-confidence ratio, DTW coverage, runtime, and quality/runtime balance)
   - Recommend default strategy/thresholds from prior reports: `make benchmark-recommend`
 
 Benchmark metric interpretation:
