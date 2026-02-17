@@ -242,15 +242,13 @@ def _detect_offset_with_issues(
     offset = 0.0
     if lyrics_offset is not None:
         offset = lyrics_offset
-    elif abs(delta) > 0.3 and abs(delta) <= AUTO_OFFSET_MAX_ABS_SEC:
-        if abs(delta) > 10.0:
-            logger.warning(f"Large vocal offset ({delta:+.2f}s) - audio may have intro")
-            issues.append(f"Large vocal offset ({delta:+.2f}s)")
+    elif abs(delta) > 2.5 and abs(delta) <= AUTO_OFFSET_MAX_ABS_SEC:
         logger.warning(
-            f"Detected vocal offset ({delta:+.2f}s) but treating as suspicious/artifact - NOT auto-applying."
+            f"Detected vocal offset ({delta:+.2f}s) matches suspicious range (2.5-5.0s) - NOT auto-applying."
         )
-        # offset = delta
-        # logger.info(f"Auto-applying vocal offset: {offset:+.2f}s")
+    elif abs(delta) > 0.3 and abs(delta) <= 2.5:
+        offset = delta
+        logger.info(f"Auto-applying vocal offset: {offset:+.2f}s")
     elif abs(delta) > AUTO_OFFSET_MAX_ABS_SEC:
         logger.warning(
             "Large timing delta (%+.2fs) exceeds auto-offset clamp (%.1fs) - "

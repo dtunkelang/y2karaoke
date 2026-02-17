@@ -5,7 +5,8 @@ from y2karaoke.core import lyrics_whisper as lw
 from y2karaoke.core.models import SongMetadata
 
 
-def test_detect_and_apply_offset_skips_small_delta(monkeypatch):
+def test_detect_and_apply_offset_applies_medium_delta(monkeypatch):
+    """Offsets in the 0.3s - 2.5s range should be applied (e.g. Bohemian Rhapsody)."""
     monkeypatch.setattr(
         "y2karaoke.core.components.alignment.alignment.detect_song_start",
         lambda *_: 1.0,
@@ -16,9 +17,25 @@ def test_detect_and_apply_offset_skips_small_delta(monkeypatch):
         "vocals.wav", line_timings, lyrics_offset=None
     )
 
+    assert offset == 1.0
+    assert updated[0][0] == pytest.approx(1.0)
+    assert updated[1][0] == pytest.approx(3.0)
+
+
+def test_detect_and_apply_offset_skips_suspicious_large_delta(monkeypatch):
+    """Offsets in the 2.5s - 5.0s range should be skipped (e.g. Anti-Hero)."""
+    monkeypatch.setattr(
+        "y2karaoke.core.components.alignment.alignment.detect_song_start",
+        lambda *_: 3.0,
+    )
+    line_timings = [(0.0, "line one")]
+
+    updated, offset = lh._detect_and_apply_offset(
+        "vocals.wav", line_timings, lyrics_offset=None
+    )
+
     assert offset == 0.0
     assert updated[0][0] == pytest.approx(0.0)
-    assert updated[1][0] == pytest.approx(2.0)
 
 
 def test_detect_and_apply_offset_respects_manual(monkeypatch):
