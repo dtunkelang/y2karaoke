@@ -61,6 +61,24 @@ def test_extract_summary_handles_aggregate_fields():
     assert summary["gold_start_abs_word_weighted_mean"] == 1.23
 
 
+def test_extract_summary_preserves_missing_independent_agreement():
+    report = {
+        "status": "finished_with_warnings",
+        "aggregate": {
+            "songs_total": 1,
+            "songs_succeeded": 1,
+            "agreement_start_mean_abs_sec_mean": None,
+            "agreement_start_p95_abs_sec_mean": None,
+            "whisper_anchor_start_mean_abs_sec_mean": 0.4,
+            "whisper_anchor_start_p95_abs_sec_mean": 0.9,
+        },
+    }
+    summary = _MODULE._extract_summary(report)
+    assert summary["agreement_start_mean_abs_sec_line_weighted_mean"] is None
+    assert summary["agreement_start_p95_abs_sec_line_weighted_mean"] is None
+    assert summary["whisper_anchor_start_mean_abs_sec_mean"] == 0.4
+
+
 def test_write_markdown(tmp_path):
     out = tmp_path / "report.md"
     _MODULE._write_markdown(

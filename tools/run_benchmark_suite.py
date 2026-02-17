@@ -102,7 +102,78 @@ def _agreement_text_similarity(left: Any, right: Any) -> float:
 def _normalize_word_text(raw: Any) -> str:
     if not isinstance(raw, str):
         return ""
-    return re.sub(r"\s+", " ", raw.strip().lower())
+    cleaned = re.sub(r"[^a-z0-9'\s]", " ", raw.strip().lower())
+    return re.sub(r"\s+", " ", cleaned).strip()
+
+
+def _word_similarity(left: Any, right: Any) -> float:
+    a = _normalize_word_text(left)
+    b = _normalize_word_text(right)
+    if not a or not b:
+        return 0.0
+    if a == b:
+        return 1.0
+    return SequenceMatcher(None, a, b).ratio()
+
+
+def _align_words_for_gold_comparison(
+    generated_words: list[dict[str, Any]],
+    gold_words: list[dict[str, Any]],
+    *,
+    lookahead: int = 12,
+    min_similarity: float = 0.8,
+) -> list[tuple[int, int, float]]:
+    """Monotonic text-aware matching for generated-vs-gold words."""
+    if not generated_words or not gold_words:
+        return []
+
+    matches: list[tuple[int, int, float]] = []
+    gen_idx = 0
+    gold_idx = 0
+    gen_len = len(generated_words)
+    gold_len = len(gold_words)
+
+    while gen_idx < gen_len and gold_idx < gold_len:
+        best: tuple[int, int, float, float] | None = None
+        gen_hi = min(gen_len, gen_idx + lookahead + 1)
+        gold_hi = min(gold_len, gold_idx + lookahead + 1)
+
+        for i in range(gen_idx, gen_hi):
+            for j in range(gold_idx, gold_hi):
+                sim = _word_similarity(
+                    generated_words[i].get("text", ""),
+                    gold_words[j].get("text", ""),
+                )
+                if sim < min_similarity:
+                    continue
+                start_delta = abs(
+                    float(generated_words[i].get("start", 0.0))
+                    - float(gold_words[j].get("start", 0.0))
+                )
+                # Prefer higher similarity, then minimal skip distance, then timing proximity.
+                score = (
+                    (sim * 2.0)
+                    - (0.05 * ((i - gen_idx) + (j - gold_idx)))
+                    - (0.01 * min(start_delta, 10.0))
+                )
+                if best is None or score > best[3]:
+                    best = (i, j, sim, score)
+
+        if best is not None:
+            i, j, sim, _score = best
+            matches.append((i, j, sim))
+            gen_idx = i + 1
+            gold_idx = j + 1
+            continue
+
+        gen_start = float(generated_words[gen_idx].get("start", 0.0))
+        gold_start = float(gold_words[gold_idx].get("start", 0.0))
+        if gen_start <= gold_start:
+            gen_idx += 1
+        else:
+            gold_idx += 1
+
+    return matches
 
 
 def _flatten_words_from_timing_doc(doc: dict[str, Any]) -> list[dict[str, Any]]:
@@ -214,10 +285,14 @@ def _extract_song_metrics(
     lines = report.get("lines", [])
     line_count = len(lines)
     low_conf = report.get("low_confidence_lines", [])
+    alignment_method = str(report.get("alignment_method") or "")
+    dtw_line_coverage = report.get("dtw_line_coverage")
+    has_independent_anchor = isinstance(dtw_line_coverage, (int, float))
+
     agreement_min_text_similarity = 0.7
     agreement_good_start_sec = 0.35
     agreement_warn_start_sec = 0.8
-    agreement_start_abs_deltas: list[float] = []
+    whisper_anchor_start_abs_deltas: list[float] = []
     agreement_text_sims: list[float] = []
     for line in lines:
         line_start = line.get("start")
@@ -232,29 +307,49 @@ def _extract_song_metrics(
         if sim < agreement_min_text_similarity:
             continue
         agreement_text_sims.append(sim)
-        agreement_start_abs_deltas.append(
+        whisper_anchor_start_abs_deltas.append(
             abs(float(line_start) - float(whisper_anchor_start))
         )
-    agreement_good_lines = [
-        v for v in agreement_start_abs_deltas if v <= agreement_good_start_sec
-    ]
-    agreement_warn_lines = [
-        v
-        for v in agreement_start_abs_deltas
-        if agreement_good_start_sec < v <= agreement_warn_start_sec
-    ]
-    agreement_bad_lines = [
-        v for v in agreement_start_abs_deltas if v > agreement_warn_start_sec
-    ]
-    agreement_severe_lines = [v for v in agreement_start_abs_deltas if v > 1.5]
+
+    # Independent agreement metric:
+    # only available when we have DTW-based anchors (cross-strategy comparable path).
+    agreement_start_abs_deltas = (
+        whisper_anchor_start_abs_deltas if has_independent_anchor else []
+    )
+
+    def _bucket_counts(deltas: list[float]) -> tuple[int, int, int, int]:
+        good = sum(1 for v in deltas if v <= agreement_good_start_sec)
+        warn = sum(
+            1
+            for v in deltas
+            if agreement_good_start_sec < v <= agreement_warn_start_sec
+        )
+        bad = sum(1 for v in deltas if v > agreement_warn_start_sec)
+        severe = sum(1 for v in deltas if v > 1.5)
+        return good, warn, bad, severe
+
+    (
+        agreement_good_count,
+        agreement_warn_count,
+        agreement_bad_count,
+        agreement_severe_count,
+    ) = _bucket_counts(agreement_start_abs_deltas)
+    anchor_good_count, anchor_warn_count, anchor_bad_count, anchor_severe_count = (
+        _bucket_counts(whisper_anchor_start_abs_deltas)
+    )
 
     low_conf_ratio = (len(low_conf) / line_count) if line_count else 0.0
     metrics = {
-        "alignment_method": report.get("alignment_method"),
+        "alignment_method": alignment_method,
+        "agreement_measurement_mode": (
+            "independent_dtw_anchor"
+            if has_independent_anchor
+            else "unavailable_no_dtw_anchor"
+        ),
         "line_count": line_count,
         "low_confidence_lines": len(low_conf),
         "low_confidence_ratio": round(low_conf_ratio, 4),
-        "dtw_line_coverage": report.get("dtw_line_coverage"),
+        "dtw_line_coverage": dtw_line_coverage,
         "dtw_word_coverage": report.get("dtw_word_coverage"),
         "dtw_phonetic_similarity_coverage": report.get(
             "dtw_phonetic_similarity_coverage"
@@ -274,37 +369,65 @@ def _extract_song_metrics(
         "agreement_start_max_abs_sec": round(
             max(agreement_start_abs_deltas, default=0.0), 4
         ),
-        "agreement_good_lines": len(agreement_good_lines),
-        "agreement_warn_lines": len(agreement_warn_lines),
-        "agreement_bad_lines": len(agreement_bad_lines),
-        "agreement_severe_lines": len(agreement_severe_lines),
+        "agreement_good_lines": agreement_good_count,
+        "agreement_warn_lines": agreement_warn_count,
+        "agreement_bad_lines": agreement_bad_count,
+        "agreement_severe_lines": agreement_severe_count,
         "agreement_good_ratio": round(
-            (len(agreement_good_lines) / line_count) if line_count else 0.0, 4
+            (agreement_good_count / line_count) if line_count else 0.0, 4
         ),
         "agreement_warn_ratio": round(
-            (len(agreement_warn_lines) / line_count) if line_count else 0.0, 4
+            (agreement_warn_count / line_count) if line_count else 0.0, 4
         ),
         "agreement_bad_ratio": round(
-            (len(agreement_bad_lines) / line_count) if line_count else 0.0, 4
+            (agreement_bad_count / line_count) if line_count else 0.0, 4
         ),
         "agreement_severe_ratio": round(
-            (len(agreement_severe_lines) / line_count) if line_count else 0.0, 4
+            (agreement_severe_count / line_count) if line_count else 0.0, 4
+        ),
+        # Diagnostic-only metric (self-referential to Whisper anchors) for debugging drift.
+        "whisper_anchor_count": len(whisper_anchor_start_abs_deltas),
+        "whisper_anchor_coverage_ratio": round(
+            (len(whisper_anchor_start_abs_deltas) / line_count) if line_count else 0.0,
+            4,
+        ),
+        "whisper_anchor_start_mean_abs_sec": round(
+            _mean(whisper_anchor_start_abs_deltas) or 0.0, 4
+        ),
+        "whisper_anchor_start_p95_abs_sec": round(
+            _pctile(whisper_anchor_start_abs_deltas, 0.95), 4
+        ),
+        "whisper_anchor_start_max_abs_sec": round(
+            max(whisper_anchor_start_abs_deltas, default=0.0), 4
+        ),
+        "whisper_anchor_good_ratio": round(
+            (anchor_good_count / line_count) if line_count else 0.0, 4
+        ),
+        "whisper_anchor_warn_ratio": round(
+            (anchor_warn_count / line_count) if line_count else 0.0, 4
+        ),
+        "whisper_anchor_bad_ratio": round(
+            (anchor_bad_count / line_count) if line_count else 0.0, 4
+        ),
+        "whisper_anchor_severe_ratio": round(
+            (anchor_severe_count / line_count) if line_count else 0.0, 4
         ),
     }
 
     generated_words = _flatten_words_from_timing_doc(report)
     gold_words = _flatten_words_from_timing_doc(gold_doc or {})
-    comparable = min(len(generated_words), len(gold_words))
+    aligned_pairs = _align_words_for_gold_comparison(generated_words, gold_words)
+    comparable = len(aligned_pairs)
     start_abs_deltas: list[float] = []
     end_abs_deltas: list[float] = []
     text_matches = 0
 
-    for idx in range(comparable):
-        gen = generated_words[idx]
-        gold = gold_words[idx]
+    for gen_idx, gold_idx, sim in aligned_pairs:
+        gen = generated_words[gen_idx]
+        gold = gold_words[gold_idx]
         start_abs_deltas.append(abs(gen["start"] - gold["start"]))
         end_abs_deltas.append(abs(gen["end"] - gold["end"]))
-        if _normalize_word_text(gen["text"]) == _normalize_word_text(gold["text"]):
+        if sim >= 0.999:
             text_matches += 1
 
     metrics.update(
@@ -313,6 +436,7 @@ def _extract_song_metrics(
             "generated_word_count": len(generated_words),
             "gold_word_count": len(gold_words),
             "gold_comparable_word_count": comparable,
+            "gold_alignment_mode": "monotonic_text_window",
             "gold_word_coverage_ratio": round(
                 (comparable / len(gold_words)) if gold_words else 0.0, 4
             ),
@@ -345,7 +469,9 @@ def _aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:  # noqa: C901
                 vals.append(float(value))
         return vals
 
-    def weighted_metric_mean(key: str, *, weight_key: str = "line_count") -> float:
+    def weighted_metric_mean(
+        key: str, *, weight_key: str = "line_count"
+    ) -> float | None:
         weighted_sum = 0.0
         total_weight = 0.0
         for m in metrics:
@@ -358,12 +484,17 @@ def _aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:  # noqa: C901
             weighted_sum += float(value) * float(weight)
             total_weight += float(weight)
         if total_weight <= 0:
-            return 0.0
+            return None
         return weighted_sum / total_weight
+
+    def metric_mean(key: str) -> float | None:
+        result = _mean(metric_values(key))
+        return float(result) if result is not None else None
 
     total_lines = int(sum(metric_values("line_count")))
     low_conf_total = int(sum(metric_values("low_confidence_lines")))
     agreement_count_total = int(sum(metric_values("agreement_count")))
+    whisper_anchor_count_total = int(sum(metric_values("whisper_anchor_count")))
     agreement_good_total = int(sum(metric_values("agreement_good_lines")))
     agreement_warn_total = int(sum(metric_values("agreement_warn_lines")))
     agreement_bad_total = int(sum(metric_values("agreement_bad_lines")))
@@ -371,6 +502,9 @@ def _aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:  # noqa: C901
     low_conf_ratio = (low_conf_total / total_lines) if total_lines else 0.0
     agreement_coverage_ratio = (
         agreement_count_total / total_lines if total_lines else 0.0
+    )
+    whisper_anchor_coverage_ratio = (
+        whisper_anchor_count_total / total_lines if total_lines else 0.0
     )
     agreement_good_ratio = (agreement_good_total / total_lines) if total_lines else 0.0
     agreement_warn_ratio = (agreement_warn_total / total_lines) if total_lines else 0.0
@@ -524,6 +658,8 @@ def _aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:  # noqa: C901
         "low_confidence_ratio_total": round(low_conf_ratio, 4),
         "agreement_count_total": agreement_count_total,
         "agreement_coverage_ratio_total": round(agreement_coverage_ratio, 4),
+        "whisper_anchor_count_total": whisper_anchor_count_total,
+        "whisper_anchor_coverage_ratio_total": round(whisper_anchor_coverage_ratio, 4),
         "agreement_good_lines_total": agreement_good_total,
         "agreement_warn_lines_total": agreement_warn_total,
         "agreement_bad_lines_total": agreement_bad_total,
@@ -532,44 +668,90 @@ def _aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:  # noqa: C901
         "agreement_warn_ratio_total": round(agreement_warn_ratio, 4),
         "agreement_bad_ratio_total": round(agreement_bad_ratio, 4),
         "agreement_severe_ratio_total": round(agreement_severe_ratio, 4),
-        "dtw_line_coverage_mean": round(
-            _mean(metric_values("dtw_line_coverage")) or 0.0, 4
+        "dtw_line_coverage_mean": (
+            round(metric_mean("dtw_line_coverage"), 4)
+            if metric_mean("dtw_line_coverage") is not None
+            else None
         ),
-        "dtw_word_coverage_mean": round(
-            _mean(metric_values("dtw_word_coverage")) or 0.0, 4
+        "dtw_word_coverage_mean": (
+            round(metric_mean("dtw_word_coverage"), 4)
+            if metric_mean("dtw_word_coverage") is not None
+            else None
         ),
-        "dtw_phonetic_similarity_coverage_mean": round(
-            _mean(metric_values("dtw_phonetic_similarity_coverage")) or 0.0, 4
+        "dtw_phonetic_similarity_coverage_mean": (
+            round(metric_mean("dtw_phonetic_similarity_coverage"), 4)
+            if metric_mean("dtw_phonetic_similarity_coverage") is not None
+            else None
         ),
-        "dtw_line_coverage_line_weighted_mean": round(
-            weighted_metric_mean("dtw_line_coverage"), 4
+        "dtw_line_coverage_line_weighted_mean": (
+            round(weighted_metric_mean("dtw_line_coverage"), 4)
+            if weighted_metric_mean("dtw_line_coverage") is not None
+            else None
         ),
-        "dtw_word_coverage_line_weighted_mean": round(
-            weighted_metric_mean("dtw_word_coverage"), 4
+        "dtw_word_coverage_line_weighted_mean": (
+            round(weighted_metric_mean("dtw_word_coverage"), 4)
+            if weighted_metric_mean("dtw_word_coverage") is not None
+            else None
         ),
-        "dtw_phonetic_similarity_coverage_line_weighted_mean": round(
-            weighted_metric_mean("dtw_phonetic_similarity_coverage"), 4
+        "dtw_phonetic_similarity_coverage_line_weighted_mean": (
+            round(weighted_metric_mean("dtw_phonetic_similarity_coverage"), 4)
+            if weighted_metric_mean("dtw_phonetic_similarity_coverage") is not None
+            else None
         ),
-        "agreement_coverage_ratio_mean": round(
-            _mean(metric_values("agreement_coverage_ratio")) or 0.0, 4
+        "agreement_coverage_ratio_mean": (
+            round(metric_mean("agreement_coverage_ratio"), 4)
+            if metric_mean("agreement_coverage_ratio") is not None
+            else None
         ),
-        "agreement_text_similarity_mean": round(
-            _mean(metric_values("agreement_text_similarity_mean")) or 0.0, 4
+        "agreement_text_similarity_mean": (
+            round(metric_mean("agreement_text_similarity_mean"), 4)
+            if metric_mean("agreement_text_similarity_mean") is not None
+            else None
         ),
-        "agreement_start_mean_abs_sec_mean": round(
-            _mean(metric_values("agreement_start_mean_abs_sec")) or 0.0, 4
+        "agreement_start_mean_abs_sec_mean": (
+            round(metric_mean("agreement_start_mean_abs_sec"), 4)
+            if metric_mean("agreement_start_mean_abs_sec") is not None
+            else None
         ),
-        "agreement_start_max_abs_sec_mean": round(
-            _mean(metric_values("agreement_start_max_abs_sec")) or 0.0, 4
+        "agreement_start_max_abs_sec_mean": (
+            round(metric_mean("agreement_start_max_abs_sec"), 4)
+            if metric_mean("agreement_start_max_abs_sec") is not None
+            else None
         ),
-        "agreement_start_p95_abs_sec_mean": round(
-            _mean(metric_values("agreement_start_p95_abs_sec")) or 0.0, 4
+        "agreement_start_p95_abs_sec_mean": (
+            round(metric_mean("agreement_start_p95_abs_sec"), 4)
+            if metric_mean("agreement_start_p95_abs_sec") is not None
+            else None
         ),
-        "agreement_bad_ratio_mean": round(
-            _mean(metric_values("agreement_bad_ratio")) or 0.0, 4
+        "agreement_bad_ratio_mean": (
+            round(metric_mean("agreement_bad_ratio"), 4)
+            if metric_mean("agreement_bad_ratio") is not None
+            else None
         ),
-        "agreement_severe_ratio_mean": round(
-            _mean(metric_values("agreement_severe_ratio")) or 0.0, 4
+        "agreement_severe_ratio_mean": (
+            round(metric_mean("agreement_severe_ratio"), 4)
+            if metric_mean("agreement_severe_ratio") is not None
+            else None
+        ),
+        "whisper_anchor_start_mean_abs_sec_mean": (
+            round(metric_mean("whisper_anchor_start_mean_abs_sec"), 4)
+            if metric_mean("whisper_anchor_start_mean_abs_sec") is not None
+            else None
+        ),
+        "whisper_anchor_start_p95_abs_sec_mean": (
+            round(metric_mean("whisper_anchor_start_p95_abs_sec"), 4)
+            if metric_mean("whisper_anchor_start_p95_abs_sec") is not None
+            else None
+        ),
+        "whisper_anchor_bad_ratio_mean": (
+            round(metric_mean("whisper_anchor_bad_ratio"), 4)
+            if metric_mean("whisper_anchor_bad_ratio") is not None
+            else None
+        ),
+        "whisper_anchor_severe_ratio_mean": (
+            round(metric_mean("whisper_anchor_severe_ratio"), 4)
+            if metric_mean("whisper_anchor_severe_ratio") is not None
+            else None
         ),
         "dtw_metric_song_count": measured_dtw_song_count,
         "dtw_metric_song_coverage_ratio": round(
@@ -586,23 +768,40 @@ def _aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:  # noqa: C901
         "gold_word_count_total": gold_word_count_total,
         "gold_comparable_word_count_total": gold_comparable_word_count_total,
         "gold_word_coverage_ratio_total": round(gold_word_coverage_ratio_total, 4),
-        "avg_abs_word_start_delta_sec_mean": round(
-            _mean(metric_values("avg_abs_word_start_delta_sec")) or 0.0, 4
+        "avg_abs_word_start_delta_sec_mean": (
+            round(metric_mean("avg_abs_word_start_delta_sec"), 4)
+            if metric_mean("avg_abs_word_start_delta_sec") is not None
+            else None
         ),
-        "avg_abs_word_start_delta_sec_word_weighted_mean": round(
-            weighted_metric_mean(
-                "avg_abs_word_start_delta_sec", weight_key="gold_comparable_word_count"
-            ),
-            4,
+        "avg_abs_word_start_delta_sec_word_weighted_mean": (
+            round(
+                weighted_metric_mean(
+                    "avg_abs_word_start_delta_sec",
+                    weight_key="gold_comparable_word_count",
+                ),
+                4,
+            )
+            if weighted_metric_mean(
+                "avg_abs_word_start_delta_sec",
+                weight_key="gold_comparable_word_count",
+            )
+            is not None
+            else None
         ),
-        "gold_start_p95_abs_sec_mean": round(
-            _mean(metric_values("gold_start_p95_abs_sec")) or 0.0, 4
+        "gold_start_p95_abs_sec_mean": (
+            round(metric_mean("gold_start_p95_abs_sec"), 4)
+            if metric_mean("gold_start_p95_abs_sec") is not None
+            else None
         ),
-        "gold_end_mean_abs_sec_mean": round(
-            _mean(metric_values("gold_end_mean_abs_sec")) or 0.0, 4
+        "gold_end_mean_abs_sec_mean": (
+            round(metric_mean("gold_end_mean_abs_sec"), 4)
+            if metric_mean("gold_end_mean_abs_sec") is not None
+            else None
         ),
-        "gold_end_p95_abs_sec_mean": round(
-            _mean(metric_values("gold_end_p95_abs_sec")) or 0.0, 4
+        "gold_end_p95_abs_sec_mean": (
+            round(metric_mean("gold_end_p95_abs_sec"), 4)
+            if metric_mean("gold_end_p95_abs_sec") is not None
+            else None
         ),
         "songs_without_dtw_metrics": [
             f"{r['artist']} - {r['title']}"
@@ -641,6 +840,9 @@ def _aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:  # noqa: C901
             "highest_agreement_severe_ratio": _hotspot_records(
                 key="agreement_severe_ratio", top_n=3, reverse=True
             ),
+            "highest_whisper_anchor_start_p95_abs_sec": _hotspot_records(
+                key="whisper_anchor_start_p95_abs_sec", top_n=3, reverse=True
+            ),
             "highest_avg_abs_word_start_delta_sec": _hotspot_records(
                 key="avg_abs_word_start_delta_sec", top_n=3, reverse=True
             ),
@@ -678,32 +880,44 @@ def _quality_coverage_warnings(
             "DTW line coverage below threshold: "
             f"{line_cov:.3f} < {min_line_coverage_ratio:.3f}"
         )
-    agreement_cov = float(aggregate.get("agreement_coverage_ratio_mean", 0.0) or 0.0)
-    if agreement_cov < 0.4:
+    if int(aggregate.get("agreement_count_total", 0) or 0) == 0:
         warnings.append(
-            "LRC-Whisper agreement coverage is low: "
-            f"{agreement_cov:.3f} < 0.400 (not enough lexically comparable lines)"
+            "Independent line-start agreement is unavailable for this strategy "
+            "(no DTW anchor coverage); use Whisper-anchor diagnostics only for debugging."
         )
-    agreement_p95 = float(aggregate.get("agreement_start_p95_abs_sec_mean", 0.0) or 0.0)
-    if agreement_p95 > 0.8:
-        warnings.append(
-            "Line-start agreement p95 is high on comparable lines: "
-            f"{agreement_p95:.3f}s > 0.800s"
+    else:
+        agreement_cov = float(
+            aggregate.get("agreement_coverage_ratio_mean", 0.0) or 0.0
         )
-    agreement_bad_ratio = float(aggregate.get("agreement_bad_ratio_total", 0.0) or 0.0)
-    if agreement_bad_ratio > 0.1:
-        warnings.append(
-            "Too many comparable lines have poor start agreement (>0.8s): "
-            f"{agreement_bad_ratio:.3f} > 0.100"
+        if agreement_cov < 0.4:
+            warnings.append(
+                "LRC-Whisper agreement coverage is low: "
+                f"{agreement_cov:.3f} < 0.400 (not enough lexically comparable lines)"
+            )
+        agreement_p95 = float(
+            aggregate.get("agreement_start_p95_abs_sec_mean", 0.0) or 0.0
         )
-    agreement_severe_ratio = float(
-        aggregate.get("agreement_severe_ratio_total", 0.0) or 0.0
-    )
-    if agreement_severe_ratio > 0.03:
-        warnings.append(
-            "Comparable lines with severe agreement error (>1.5s) are high: "
-            f"{agreement_severe_ratio:.3f} > 0.030"
+        if agreement_p95 > 0.8:
+            warnings.append(
+                "Line-start agreement p95 is high on comparable lines: "
+                f"{agreement_p95:.3f}s > 0.800s"
+            )
+        agreement_bad_ratio = float(
+            aggregate.get("agreement_bad_ratio_total", 0.0) or 0.0
         )
+        if agreement_bad_ratio > 0.1:
+            warnings.append(
+                "Too many comparable lines have poor start agreement (>0.8s): "
+                f"{agreement_bad_ratio:.3f} > 0.100"
+            )
+        agreement_severe_ratio = float(
+            aggregate.get("agreement_severe_ratio_total", 0.0) or 0.0
+        )
+        if agreement_severe_ratio > 0.03:
+            warnings.append(
+                "Comparable lines with severe agreement error (>1.5s) are high: "
+                f"{agreement_severe_ratio:.3f} > 0.030"
+            )
     gold_metric_song_count = int(aggregate.get("gold_metric_song_count", 0) or 0)
     if gold_metric_song_count > 0:
         gold_song_cov = float(
@@ -816,6 +1030,11 @@ def _write_markdown_summary(  # noqa: C901
     aggregate: dict[str, Any],
     songs: list[dict[str, Any]],
 ) -> None:
+    def _fmt_num(value: Any, *, unit: str = "", digits: int = 3) -> str:
+        if isinstance(value, (int, float)):
+            return f"{float(value):.{digits}f}{unit}"
+        return "-"
+
     lines: list[str] = []
     lines.append("# Benchmark Timing Quality Report")
     lines.append("")
@@ -825,7 +1044,7 @@ def _write_markdown_summary(  # noqa: C901
         f"- Songs: `{aggregate['songs_succeeded']}/{aggregate['songs_total']}` succeeded"
     )
     lines.append(
-        f"- Mean DTW line coverage: `{aggregate['dtw_line_coverage_mean']:.3f}`"
+        f"- Mean DTW line coverage: `{_fmt_num(aggregate.get('dtw_line_coverage_mean'))}`"
     )
     lines.append(
         "- Gold metric coverage: "
@@ -838,37 +1057,37 @@ def _write_markdown_summary(  # noqa: C901
     )
     lines.append(
         "- Primary metric (avg abs word-start delta): "
-        f"`{aggregate.get('avg_abs_word_start_delta_sec_word_weighted_mean', 0.0):.3f}s` (word-weighted)"
+        f"`{_fmt_num(aggregate.get('avg_abs_word_start_delta_sec_word_weighted_mean'), unit='s')}` (word-weighted)"
     )
     lines.append(
         "- Secondary metric (avg abs word-end delta): "
-        f"`{aggregate.get('gold_end_mean_abs_sec_mean', 0.0):.3f}s`"
+        f"`{_fmt_num(aggregate.get('gold_end_mean_abs_sec_mean'), unit='s')}`"
     )
     lines.append(
-        f"- Mean DTW word coverage: `{aggregate['dtw_word_coverage_mean']:.3f}`"
+        f"- Mean DTW word coverage: `{_fmt_num(aggregate.get('dtw_word_coverage_mean'))}`"
     )
     lines.append(
         "- Mean DTW phonetic similarity coverage: "
-        f"`{aggregate['dtw_phonetic_similarity_coverage_mean']:.3f}`"
+        f"`{_fmt_num(aggregate.get('dtw_phonetic_similarity_coverage_mean'))}`"
     )
     lines.append(
         f"- Low-confidence line ratio: `{aggregate['low_confidence_ratio_total']:.3f}`"
     )
     lines.append(
         "- Agreement coverage ratio: "
-        f"`{aggregate.get('agreement_coverage_ratio_total', 0.0):.3f}`"
+        f"`{_fmt_num(aggregate.get('agreement_coverage_ratio_total'))}`"
     )
     lines.append(
         "- Mean agreement text similarity: "
-        f"`{aggregate.get('agreement_text_similarity_mean', 0.0):.3f}`"
+        f"`{_fmt_num(aggregate.get('agreement_text_similarity_mean'))}`"
     )
     lines.append(
         "- Mean abs line-start agreement error (comparable lines): "
-        f"`{aggregate.get('agreement_start_mean_abs_sec_mean', 0.0):.3f}s`"
+        f"`{_fmt_num(aggregate.get('agreement_start_mean_abs_sec_mean'), unit='s')}`"
     )
     lines.append(
         "- p95 abs line-start agreement error (comparable lines): "
-        f"`{aggregate.get('agreement_start_p95_abs_sec_mean', 0.0):.3f}s`"
+        f"`{_fmt_num(aggregate.get('agreement_start_p95_abs_sec_mean'), unit='s')}`"
     )
     lines.append(
         "- Poor agreement ratio (>0.8s): "
@@ -879,13 +1098,17 @@ def _write_markdown_summary(  # noqa: C901
         f"`{aggregate.get('agreement_severe_ratio_total', 0.0):.3f}`"
     )
     lines.append(
+        "- Whisper-anchor diagnostic p95 abs line-start delta: "
+        f"`{_fmt_num(aggregate.get('whisper_anchor_start_p95_abs_sec_mean'), unit='s')}`"
+    )
+    lines.append(
         "- DTW metric coverage: "
         f"`{aggregate.get('dtw_metric_song_count', 0)}/{aggregate.get('songs_succeeded', 0)}` "
         f"songs, `{aggregate.get('dtw_metric_line_count', 0)}/{aggregate.get('line_count_total', 0)}` lines"
     )
     lines.append(
         "- Mean DTW line coverage (line-weighted): "
-        f"`{aggregate.get('dtw_line_coverage_line_weighted_mean', 0.0):.3f}`"
+        f"`{_fmt_num(aggregate.get('dtw_line_coverage_line_weighted_mean'))}`"
     )
     cache_summary = aggregate.get("cache_summary", {})
     if isinstance(cache_summary, dict):

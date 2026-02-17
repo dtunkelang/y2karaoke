@@ -106,6 +106,59 @@ def test_extract_song_metrics_with_gold_word_deltas():
     assert metrics["avg_abs_word_start_delta_sec"] == 0.3
     assert metrics["gold_start_p95_abs_sec"] == 0.39
     assert metrics["gold_end_mean_abs_sec"] == 0.15
+    assert metrics["gold_alignment_mode"] == "monotonic_text_window"
+
+
+def test_extract_song_metrics_separates_independent_and_anchor_agreement():
+    module = _load_module()
+    report = {
+        "alignment_method": "whisper_only",
+        "dtw_line_coverage": None,
+        "lines": [
+            {
+                "start": 10.0,
+                "nearest_segment_start": 9.7,
+                "text": "hello world",
+                "nearest_segment_start_text": "hello world",
+            }
+        ],
+        "low_confidence_lines": [],
+    }
+    metrics = module._extract_song_metrics(report)
+    assert metrics["agreement_measurement_mode"] == "unavailable_no_dtw_anchor"
+    assert metrics["agreement_count"] == 0
+    assert metrics["agreement_start_mean_abs_sec"] == 0.0
+    assert metrics["whisper_anchor_count"] == 1
+    assert metrics["whisper_anchor_start_mean_abs_sec"] == 0.3
+
+
+def test_extract_song_metrics_gold_matching_handles_insertions():
+    module = _load_module()
+    report = {
+        "lines": [
+            {
+                "words": [
+                    {"text": "hello", "start": 1.0, "end": 1.2},
+                    {"text": "there", "start": 1.3, "end": 1.5},
+                    {"text": "world", "start": 1.6, "end": 1.9},
+                ]
+            }
+        ]
+    }
+    gold = {
+        "lines": [
+            {
+                "words": [
+                    {"text": "hello", "start": 1.05, "end": 1.25},
+                    {"text": "world", "start": 1.65, "end": 1.95},
+                ]
+            }
+        ]
+    }
+    metrics = module._extract_song_metrics(report, gold_doc=gold)
+    assert metrics["gold_comparable_word_count"] == 2
+    assert metrics["gold_word_coverage_ratio"] == 1.0
+    assert metrics["avg_abs_word_start_delta_sec"] == 0.05
 
 
 def test_gold_path_for_song_prefers_indexed_filename(tmp_path):
@@ -394,6 +447,7 @@ def test_quality_coverage_warnings():
     aggregate = {
         "dtw_metric_song_coverage_ratio": 0.5,
         "dtw_metric_line_coverage_ratio": 0.4,
+        "agreement_count_total": 20,
         "agreement_coverage_ratio_mean": 0.2,
         "agreement_start_p95_abs_sec_mean": 1.2,
         "agreement_bad_ratio_total": 0.2,
@@ -410,6 +464,26 @@ def test_quality_coverage_warnings():
     assert len(warnings) == 8
     assert any("LRC-Whisper agreement coverage is low" in item for item in warnings)
     assert any("poor start agreement" in item for item in warnings)
+
+
+def test_quality_coverage_warnings_independent_unavailable():
+    module = _load_module()
+    aggregate = {
+        "dtw_metric_song_coverage_ratio": 0.5,
+        "dtw_metric_line_coverage_ratio": 0.4,
+        "agreement_count_total": 0,
+        "sum_song_elapsed_sec": 5.0,
+    }
+    warnings = module._quality_coverage_warnings(
+        aggregate=aggregate,
+        dtw_enabled=True,
+        min_song_coverage_ratio=0.8,
+        min_line_coverage_ratio=0.9,
+        suite_wall_elapsed_sec=10.0,
+    )
+    assert any(
+        "Independent line-start agreement is unavailable" in item for item in warnings
+    )
 
 
 def test_cache_expectation_warnings():

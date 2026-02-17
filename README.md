@@ -7,7 +7,7 @@ Generate karaoke videos from YouTube URLs or song titles with word-by-word highl
 - **Smart search**: Use YouTube URLs or just search by song title and artist
 - Downloads audio from YouTube
 - Separates vocals from instrumental using AI (demucs)
-- **Hybrid timing system**: Combines synced lyrics (line timing) with WhisperX (word timing) for maximum accuracy
+- **Hybrid timing system**: Combines synced lyrics (line timing) with Whisper-based alignment (word timing) for maximum accuracy
 - **Multi-language support**: Automatically romanizes Japanese, Korean, Chinese, Arabic, and Hebrew lyrics with proper spacing
 - Renders KaraFun-style karaoke videos with word-by-word highlighting
 - **Smart line splitting**: Automatically breaks long lines for better readability
@@ -215,7 +215,8 @@ Benchmark metric interpretation:
 - `dtw_line_coverage`: fraction of lyric lines with usable DTW anchor/match. Lower values often mean noisy or duration-mismatched LRC.
 - `dtw_word_coverage`: fraction of words matched through DTW/Whisper alignment. This is typically lower than line coverage.
 - `dtw_phonetic_similarity_coverage`: matched words with sufficiently strong phonetic similarity; useful for cross-language or misspelling-heavy cases.
-- `start_delta_mean_abs_sec` and `start_delta_p95_abs_sec`: average and tail absolute line start error (vs. reference where available); p95 is the better regression guard.
+- `agreement_start_mean_abs_sec` and `agreement_start_p95_abs_sec`: independent line-start agreement metrics (when DTW anchors are available); p95 is the better regression guard.
+- `whisper_anchor_start_mean_abs_sec` / `whisper_anchor_start_p95_abs_sec`: diagnostic-only line-start deltas against nearest Whisper segments (use for debugging, not strategy ranking).
 - `low_confidence_lines`: lines where Whisper confidence is weak; inspect these first during debugging.
 - `null` metrics: expected when a song path used onset/LRC timing without DTW-based reference comparisons.
 
@@ -313,7 +314,7 @@ For debugging or experimenting with individual steps, you can run the core modul
   ```bash
   python -m y2karaoke.core.components.lyrics.api "Song Title" "Artist Name" [optional_vocals.wav]
   ```
-  Prints detected lines (and duet information when available). If you provide a vocals WAV, it can fall back to WhisperX transcription.
+  Prints detected lines (and duet information when available). If you provide a vocals WAV, it can fall back to Whisper transcription.
 
 - **Apply audio effects (key/tempo) to an existing WAV**
   ```bash
@@ -331,7 +332,7 @@ For debugging or experimenting with individual steps, you can run the core modul
 
 1. **Download**: Downloads audio from YouTube using yt-dlp
 2. **Separate**: Removes vocals using demucs AI model, keeps instrumental
-3. **Lyrics**: Fetches synced lyrics when available and combines them with WhisperX transcription for hybrid alignment - synced lyrics provide accurate line timing, WhisperX provides precise word-level timing
+3. **Lyrics**: Fetches synced lyrics when available and combines them with Whisper transcription for hybrid alignment - synced lyrics provide accurate line timing, Whisper provides precise word-level timing
 4. **Audio Effects**: Applies key shift and/or tempo changes (if requested)
 5. **Render**: Creates video with word-by-word highlighting, lyrics timing adjusted to match tempo
 

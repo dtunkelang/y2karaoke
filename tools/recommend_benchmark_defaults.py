@@ -37,6 +37,9 @@ def _score_row(row: dict[str, Any]) -> float:
         score += 2.0 * (1.0 / (1.0 + max(p95, 0.0)))
     if mean is not None:
         score += 1.5 * (1.0 / (1.0 + max(mean, 0.0)))
+    if p95 is None and mean is None:
+        # No independent agreement signal available for this strategy.
+        score -= 0.5
     if low is not None:
         score += 1.0 * max(0.0, 1.0 - min(low, 1.0))
     if gold is not None:

@@ -96,6 +96,14 @@ def _extract_summary(report_json: dict[str, Any]) -> dict[str, Any]:
             "agreement_start_p95_abs_sec_line_weighted_mean",
             "agreement_start_p95_abs_sec_mean",
         ),
+        "whisper_anchor_start_mean_abs_sec_mean": metric(
+            "whisper_anchor_start_mean_abs_sec_line_weighted_mean",
+            "whisper_anchor_start_mean_abs_sec_mean",
+        ),
+        "whisper_anchor_start_p95_abs_sec_mean": metric(
+            "whisper_anchor_start_p95_abs_sec_line_weighted_mean",
+            "whisper_anchor_start_p95_abs_sec_mean",
+        ),
         "low_confidence_ratio_line_weighted_mean": metric(
             "low_confidence_ratio_line_weighted_mean",
             "low_confidence_ratio_total",
