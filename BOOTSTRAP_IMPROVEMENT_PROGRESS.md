@@ -144,6 +144,12 @@ Status: Completed
 - [x] Remove per-word list scans for previous/next known timing anchors
 - [x] Add unit test coverage for nearest-known index mapping behavior
 
+### Milestone 23: Shared Post-Processing Module
+Status: Completed
+- [x] Move refined-line post-processing logic into `core.visual.bootstrap_postprocess`
+- [x] Keep tool-level compatibility wrappers for existing callers/tests
+- [x] Add direct unit tests for shared post-processing module behavior
+
 ## Notes
 - Keep changes in significant, validated commits.
 - Prefer deterministic ranking and quality decisions for reproducibility.
