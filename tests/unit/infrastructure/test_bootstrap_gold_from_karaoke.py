@@ -447,11 +447,17 @@ def test_bootstrap_refined_lines_skips_high_fps_when_word_level_low(
             )
         ],
     )
-    called = {"n": 0}
+    called_high = {"n": 0}
+    called_low = {"n": 0}
     monkeypatch.setattr(
         _MODULE,
         "refine_word_timings_at_high_fps",
-        lambda *a, **k: called.__setitem__("n", called["n"] + 1),
+        lambda *a, **k: called_high.__setitem__("n", called_high["n"] + 1),
+    )
+    monkeypatch.setattr(
+        _MODULE,
+        "refine_line_timings_at_low_fps",
+        lambda *a, **k: called_low.__setitem__("n", called_low["n"] + 1),
     )
 
     out = _MODULE._bootstrap_refined_lines(
@@ -462,7 +468,8 @@ def test_bootstrap_refined_lines_skips_high_fps_when_word_level_low(
     )
 
     assert len(out) == 1
-    assert called["n"] == 0
+    assert called_high["n"] == 0
+    assert called_low["n"] == 1
 
 
 def test_bootstrap_refined_lines_runs_high_fps_when_word_level_good(
@@ -509,11 +516,17 @@ def test_bootstrap_refined_lines_runs_high_fps_when_word_level_good(
             )
         ],
     )
-    called = {"n": 0}
+    called_high = {"n": 0}
+    called_low = {"n": 0}
     monkeypatch.setattr(
         _MODULE,
         "refine_word_timings_at_high_fps",
-        lambda *a, **k: called.__setitem__("n", called["n"] + 1),
+        lambda *a, **k: called_high.__setitem__("n", called_high["n"] + 1),
+    )
+    monkeypatch.setattr(
+        _MODULE,
+        "refine_line_timings_at_low_fps",
+        lambda *a, **k: called_low.__setitem__("n", called_low["n"] + 1),
     )
 
     out = _MODULE._bootstrap_refined_lines(
@@ -524,7 +537,8 @@ def test_bootstrap_refined_lines_runs_high_fps_when_word_level_good(
     )
 
     assert len(out) == 1
-    assert called["n"] == 1
+    assert called_high["n"] == 1
+    assert called_low["n"] == 0
 
 
 def test_nearest_known_word_indices() -> None:

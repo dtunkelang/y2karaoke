@@ -173,6 +173,48 @@ def _read_window_frames(
     return window_frames
 
 
+def _read_window_frames_sampled(
+    cap: Any,
+    *,
+    v_start: float,
+    v_end: float,
+    roi_rect: tuple[int, int, int, int],
+    sample_fps: float,
+) -> List[Tuple[float, np.ndarray, np.ndarray]]:
+    if cv2 is None or np is None:
+        raise ImportError("OpenCV and Numpy required.")
+    if sample_fps <= 0:
+        return _read_window_frames(cap, v_start=v_start, v_end=v_end, roi_rect=roi_rect)
+
+    rx, ry, rw, rh = roi_rect
+    src_fps = cap.get(cv2.CAP_PROP_FPS) or 30.0
+    step = max(int(round(src_fps / max(sample_fps, 0.01))), 1)
+    cap.set(cv2.CAP_PROP_POS_MSEC, v_start * 1000.0)
+    frame_idx = max(int(round(v_start * src_fps)), 0)
+    end_frame_idx = max(int(round(v_end * src_fps)), frame_idx)
+
+    window_frames: List[Tuple[float, np.ndarray, np.ndarray]] = []
+    while frame_idx <= end_frame_idx:
+        ok = cap.grab()
+        if not ok:
+            break
+        if frame_idx % step != 0:
+            frame_idx += 1
+            continue
+
+        ok, frame = cap.retrieve()
+        if not ok:
+            frame_idx += 1
+            continue
+        t = frame_idx / src_fps
+        roi_bgr = frame[ry : ry + rh, rx : rx + rw]
+        roi_lab = cv2.cvtColor(roi_bgr, cv2.COLOR_BGR2LAB).astype(np.float32)
+        window_frames.append((t, roi_bgr, roi_lab))
+        frame_idx += 1
+
+    return window_frames
+
+
 def _slice_frames_for_window(
     group_frames: List[Tuple[float, np.ndarray, np.ndarray]],
     group_times: List[float],
@@ -375,5 +417,65 @@ def refine_word_timings_at_high_fps(
             if len(line_frames) < 20:
                 continue
             _refine_line_with_frames(ln, line_frames)
+
+    cap.release()
+
+
+def refine_line_timings_at_low_fps(
+    video_path: Path,
+    target_lines: List[TargetLine],
+    roi_rect: tuple[int, int, int, int],
+    *,
+    sample_fps: float = 6.0,
+) -> None:
+    """Refine line-level highlight timing cheaply when word-level cues are weak."""
+    if cv2 is None or np is None:
+        raise ImportError("OpenCV and Numpy required.")
+
+    cap = cv2.VideoCapture(str(video_path))
+    if not cap.isOpened():
+        raise VisualRefinementError(f"Could not open video: {video_path}")
+
+    logger.info(
+        "Refining timings with low-FPS line-level highlight detection "
+        f"(sample_fps={sample_fps:.1f})..."
+    )
+    jobs = _build_line_refinement_jobs(target_lines)
+    groups = _merge_line_refinement_jobs(jobs)
+
+    for g_start, g_end, g_jobs in groups:
+        group_frames = _read_window_frames_sampled(
+            cap,
+            v_start=g_start,
+            v_end=g_end,
+            roi_rect=roi_rect,
+            sample_fps=sample_fps,
+        )
+        if len(group_frames) < 6:
+            continue
+        group_times = [frame[0] for frame in group_frames]
+
+        for ln, v_start, v_end in g_jobs:
+            line_frames = _slice_frames_for_window(
+                group_frames,
+                group_times,
+                v_start=v_start,
+                v_end=v_end,
+            )
+            if len(line_frames) < 6:
+                continue
+            c_bg_line = np.mean(
+                [
+                    np.mean(f[1], axis=(0, 1))
+                    for f in line_frames[: min(10, len(line_frames))]
+                ],
+                axis=0,
+            )
+            line_s, line_e, line_conf = _detect_line_highlight_with_confidence(
+                ln, line_frames, c_bg_line
+            )
+            if line_s is None and line_e is None:
+                continue
+            _assign_line_level_word_timings(ln, line_s, line_e, line_conf)
 
     cap.release()

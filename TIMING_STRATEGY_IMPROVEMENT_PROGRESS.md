@@ -53,6 +53,11 @@ Last updated: 2026-02-17
   - First 39 OCR tokens align exactly with target sequence.
   - Comparable-word coverage improved to `0.9724` (247/254).
   - p95 absolute start-time delta reduced to `11.25s`.
+- [x] Added low-FPS line-level visual timing refinement fallback when word-level suitability is too low for high-FPS word refinement.
+- [x] Validation snapshot (`Billie Eilish - bad guy`, `GsFlbMS7UIc`, v21):
+  - Comparable-word coverage improved to `0.9764` (248/254).
+  - Mean absolute start-time delta improved from `7.942s` (v20) to `7.805s`.
+  - p95 absolute start-time delta improved from `11.25s` (v20) to `10.9s`.
 - [x] Validated on Billie Eilish - "bad guy" (`GsFlbMS7UIc`) with fresh cache versions:
   - `raw_frames_463cf7852a3083257907dae10e9b4399.json`: residual branded tokens reduced to intro cards only (`SingKING/KARAOKE/Karaoke`, 7 total).
   - Removed recurring edge fragments (`KIN/KII/KAPA/KARAO`) from sampled raw frames.

@@ -22,6 +22,7 @@ if str(src_path) not in sys.path:
 from y2karaoke.utils.logging import setup_logging, get_logger  # noqa: E402
 from y2karaoke.core.components.audio.downloader import YouTubeDownloader  # noqa: E402
 from y2karaoke.core.visual.refinement import (  # noqa: E402
+    refine_line_timings_at_low_fps,
     refine_word_timings_at_high_fps,
 )
 from y2karaoke.core.visual.reconstruction import (  # noqa: E402
@@ -68,6 +69,7 @@ except ImportError:
 logger = get_logger(__name__)
 RAW_OCR_CACHE_VERSION = "3"
 LINE_LEVEL_REFINE_SKIP_THRESHOLD = 0.05
+LOW_FPS_LINE_REFINE_FPS = 6.0
 
 
 def _search_karaoke_candidates(
@@ -346,7 +348,14 @@ def _bootstrap_refined_lines(
         logger.info(
             "Skipping high-FPS visual refinement due to low word-level suitability "
             f"(word_level_score={word_level_score:.3f} < "
-            f"{LINE_LEVEL_REFINE_SKIP_THRESHOLD:.3f}); using line-level timing fallback."
+            f"{LINE_LEVEL_REFINE_SKIP_THRESHOLD:.3f}); running low-FPS line-level "
+            "timing refinement."
+        )
+        refine_line_timings_at_low_fps(
+            v_path,
+            t_lines,
+            roi,
+            sample_fps=LOW_FPS_LINE_REFINE_FPS,
         )
 
     return _build_refined_lines_output(t_lines, artist=args.artist, title=args.title)
