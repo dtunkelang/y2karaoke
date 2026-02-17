@@ -5,17 +5,15 @@ This document outlines the critical areas of the `y2karaoke` codebase and the im
 ## 1. Rendering Performance (High Priority)
 **Context:** Video generation is CPU-intensive. The current `frame_renderer.py` recalculates text layouts (bounding boxes, widths) for every single frame (e.g., 30 times/sec), even though lyrics layout is static for seconds at a time.
 
+**Status (2026-02-17):**
+*   **Complete:** Implemented `layout_cache` in `frame_renderer.py` and `video_writer.py`. Verified with unit tests.
+
 **Critical Areas:**
 *   `src/y2karaoke/core/components/render/frame_renderer.py`: Main rendering loop.
 *   `src/y2karaoke/core/components/render/video_writer.py`: MoviePy integration.
 
-**Risks:**
-*   **Slow Generation:** `generate` command takes significantly longer than necessary.
-*   **Resource Usage:** High CPU usage limits parallel processing capacity.
-
 **Action Plan:**
-*   **Cache Layouts:** Implement a caching mechanism in `render_frame` (or a helper class) to store word positions and widths per `Line`. Invalidate only when visible lines change.
-*   **Refactor:** Move layout logic out of the hot loop (`make_frame`).
+*   **Monitor:** Check generation speed on longer songs.
 
 ## 2. Gold Set Quality Automation
 **Context:** Updating gold files manually (copying timing reports) is error-prone and tedious. Some songs have large errors due to version mismatches (e.g., radio edit vs album).
@@ -49,4 +47,4 @@ This document outlines the critical areas of the `y2karaoke` codebase and the im
 ---
 
 **Next Immediate Step:**
-Implement layout caching in `frame_renderer.py` to optimize rendering performance.
+Implement `Gold Set Quality Automation` (Priority #2). Add `--rebaseline` flag to `tools/run_benchmark_suite.py`.

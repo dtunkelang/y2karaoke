@@ -1,7 +1,7 @@
 """High-level karaoke video writing using MoviePy."""
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Optional, List
+from typing import TYPE_CHECKING, Optional, List, Dict, Tuple
 from moviepy import AudioFileClip, VideoClip
 
 from ....config import VIDEO_WIDTH, VIDEO_HEIGHT, FPS, FONT_SIZE
@@ -63,6 +63,7 @@ def render_karaoke_video(
     total_frames = int(duration * video_fps)
     frame_count = [0]
     last_percent = [-1]
+    layout_cache: Dict[int, Tuple[List[str], List[float], float]] = {}
 
     def make_frame(t):
         adjusted_time = t - timing_offset
@@ -96,6 +97,7 @@ def render_karaoke_video(
             video_width,
             video_height,
             audio_duration,
+            layout_cache=layout_cache,
         )
 
     logger.info(

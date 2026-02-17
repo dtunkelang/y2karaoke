@@ -1,6 +1,6 @@
 """Frame rendering for karaoke videos."""
 
-from typing import Optional
+from typing import Optional, Dict, Tuple, List
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 
@@ -384,6 +384,7 @@ def render_frame(  # noqa: C901
     width: Optional[int] = None,
     height: Optional[int] = None,
     audio_duration: Optional[float] = None,
+    layout_cache: Optional[Dict[int, Tuple[List[str], List[float], float]]] = None,
 ) -> np.ndarray:
     """Render a single frame at the given time."""
     video_width = width or VIDEO_WIDTH
@@ -438,19 +439,25 @@ def render_frame(  # noqa: C901
 
     for idx, (line, is_current) in enumerate(lines_to_show):
         y = start_y + idx * LINE_SPACING
-        words_with_spaces = []
-        for i, word in enumerate(line.words):
-            words_with_spaces.append(word.text)
-            if i < len(line.words) - 1:
-                words_with_spaces.append(" ")
 
-        total_width = 0.0
-        word_widths: list[float] = []
-        for text in words_with_spaces:
-            bbox = font.getbbox(text)
-            w = float(bbox[2] - bbox[0])
-            word_widths.append(w)
-            total_width += w
+        if layout_cache is not None and id(line) in layout_cache:
+            words_with_spaces, word_widths, total_width = layout_cache[id(line)]
+        else:
+            words_with_spaces = []
+            for i, word in enumerate(line.words):
+                words_with_spaces.append(word.text)
+                if i < len(line.words) - 1:
+                    words_with_spaces.append(" ")
+
+            total_width = 0.0
+            word_widths = []
+            for text in words_with_spaces:
+                bbox = font.getbbox(text)
+                w = float(bbox[2] - bbox[0])
+                word_widths.append(w)
+                total_width += w
+            if layout_cache is not None:
+                layout_cache[id(line)] = (words_with_spaces, word_widths, total_width)
 
         line_x = (video_width - total_width) / 2.0
 
