@@ -48,12 +48,23 @@ def detect_lyric_roi(
     mid = duration / 2
     start_t = max(0, mid - 15)
     end_t = min(duration, mid + 15)
+    step = max(int(round(src_fps / max(sample_fps, 0.01))), 1)
+    cap.set(cv2.CAP_PROP_POS_MSEC, start_t * 1000.0)
+    frame_idx = max(int(round(start_t * src_fps)), 0)
+    end_frame_idx = max(int(round(end_t * src_fps)), frame_idx)
 
-    for t in np.arange(start_t, end_t, 1.0 / sample_fps):
-        cap.set(cv2.CAP_PROP_POS_MSEC, t * 1000.0)
-        ok, frame = cap.read()
+    while frame_idx <= end_frame_idx:
+        ok = cap.grab()
         if not ok:
             break
+        if frame_idx % step != 0:
+            frame_idx += 1
+            continue
+
+        ok, frame = cap.retrieve()
+        if not ok:
+            frame_idx += 1
+            continue
 
         res = ocr.predict(frame)
         if res and res[0]:
@@ -76,6 +87,7 @@ def detect_lyric_roi(
                     all_boxes.append((x_min, y_min, x_max, y_max))
                 except Exception:
                     continue
+        frame_idx += 1
 
     cap.release()
 

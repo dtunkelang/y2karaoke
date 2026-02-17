@@ -25,7 +25,7 @@ Last updated: 2026-02-17
 
 ### P1 - Karaoke Video Scraping Efficiency
 - [ ] Reduce candidate ranking cost (prefilter + lightweight visual probe).
-- [ ] Improve ROI/suitability sampling to avoid expensive seek-heavy decoding.
+- [x] Improve ROI/suitability sampling to avoid expensive seek-heavy decoding.
 
 ### P2 - Architecture and Maintainability
 - [ ] Continue splitting high-complexity Whisper orchestration hotspots.

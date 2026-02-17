@@ -61,6 +61,7 @@ Optional arguments:
 
 Runtime note:
 - When a candidate is selected from evaluated rankings, the tool attempts to extract audio from the already-downloaded candidate video before falling back to a direct audio download.
+- ROI detection and OCR/suitability frame sampling use decode-sparing sampled `grab`/`retrieve` passes to reduce seek/decode overhead on longer videos.
 
 Implementation note:
 - The CLI wrapper delegates core logic to shared modules under `src/y2karaoke/core/visual/`:
