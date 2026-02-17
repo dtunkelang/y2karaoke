@@ -67,188 +67,256 @@ def _create_lines_from_whisper(
     return lines
 
 
-def _map_lrc_lines_to_whisper_segments(  # noqa: C901
-    lines: List[Line],
-    transcription: List[TranscriptionSegment],
-    language: str,
-    lrc_line_starts: Optional[List[float]] = None,
-    min_similarity: float = 0.35,
-    min_similarity_fallback: float = 0.2,
-    max_time_offset: float = 4.0,
-    lookahead: int = 6,
-) -> Tuple[List[Line], int, List[str]]:  # noqa: C901
-    """Map LRC lines onto Whisper segment timing without reordering."""
-    if not lines or not transcription:
-        return lines, 0, []
+class _LineMapper:
+    """Helper class to encapsulate state for LRC-to-Whisper mapping."""
 
-    sorted_segments = sorted(transcription, key=lambda s: s.start)
-    all_words = _build_whisper_word_list(transcription)
-    adjusted: List[Line] = []
-    fixes = 0
-    issues: List[str] = []
-    seg_idx = 0
-    last_end = None
-    min_gap = 0.01
-    prev_text = None
+    def __init__(
+        self,
+        transcription: List[TranscriptionSegment],
+        language: str,
+        lrc_line_starts: Optional[List[float]],
+        min_similarity: float,
+        min_similarity_fallback: float,
+        max_time_offset: float,
+        lookahead: int,
+    ):
+        self.sorted_segments = sorted(transcription, key=lambda s: s.start)
+        self.all_words = _build_whisper_word_list(transcription)
+        self.language = language
+        self.lrc_line_starts = lrc_line_starts
+        self.min_similarity = min_similarity
+        self.min_similarity_fallback = min_similarity_fallback
+        self.max_time_offset = max_time_offset
+        self.lookahead = lookahead
 
-    for line_idx, line in enumerate(lines):
+        # State
+        self.seg_idx = 0
+        self.last_end: Optional[float] = None
+        self.prev_text: Optional[str] = None
+        self.adjusted: List[Line] = []
+        self.fixes = 0
+        self.issues: List[str] = []
+        self.min_gap = 0.01
+
+    def process_line(self, line_idx: int, line: Line) -> None:  # noqa: C901
         if not line.words:
-            adjusted.append(line)
-            continue
+            self.adjusted.append(line)
+            return
 
         best_idx, best_sim, window_end = _find_best_segment_for_line(
             line,
-            sorted_segments,
-            seg_idx,
-            lookahead,
-            language,
+            self.sorted_segments,
+            self.seg_idx,
+            self.lookahead,
+            self.language,
             _phonetic_similarity,
         )
 
         text_norm = line.text.strip().lower() if line.text else ""
-        gap_required = 0.21 if prev_text and text_norm == prev_text else min_gap
+        gap_required = (
+            0.21 if self.prev_text and text_norm == self.prev_text else self.min_gap
+        )
 
         desired_start = (
-            lrc_line_starts[line_idx]
-            if lrc_line_starts and line_idx < len(lrc_line_starts)
+            self.lrc_line_starts[line_idx]
+            if self.lrc_line_starts and line_idx < len(self.lrc_line_starts)
             else None
         )
         next_lrc_start = (
-            lrc_line_starts[line_idx + 1]
-            if lrc_line_starts and line_idx + 1 < len(lrc_line_starts)
+            self.lrc_line_starts[line_idx + 1]
+            if self.lrc_line_starts and line_idx + 1 < len(self.lrc_line_starts)
             else None
         )
-        if (
+
+        should_fallback = (
             best_idx is None
-            or best_sim < min_similarity_fallback
+            or best_sim < self.min_similarity_fallback
             or (
                 desired_start is not None
                 and best_idx is not None
-                and abs(sorted_segments[best_idx].start - desired_start)
-                > max_time_offset
+                and abs(self.sorted_segments[best_idx].start - desired_start)
+                > self.max_time_offset
             )
-        ):
-            new_words: List[Word]
-            window_fallback = False
-            if desired_start is not None and next_lrc_start is not None and all_words:
-                window_words = _select_window_words_for_line(
-                    all_words,
-                    line,
-                    desired_start,
-                    next_lrc_start,
-                    language,
-                    _phonetic_similarity,
-                )
-                if window_words:
-                    whisper_duration = None
-                    if (
-                        window_words[-1].end is not None
-                        and window_words[0].start is not None
-                    ):
-                        whisper_duration = max(
-                            window_words[-1].end - window_words[0].start, 0.5
-                        )
-                    elif (
-                        window_words[-1].start is not None
-                        and window_words[0].start is not None
-                    ):
-                        whisper_duration = max(
-                            window_words[-1].start - window_words[0].start, 0.5
-                        )
-                    window_text = " ".join(w.text for w in window_words)
-                    window_sim = _phonetic_similarity(line.text, window_text, language)
-                    if window_sim >= min_similarity_fallback:
-                        new_words, desired_start = _apply_lrc_weighted_timing(
-                            line,
-                            desired_start,
-                            next_lrc_start,
-                            lrc_line_starts,
-                            line_idx,
-                            all_words,
-                            None,
-                            language,
-                            _phonetic_similarity,
-                            line_duration_override=whisper_duration,
-                        )
-                        window_fallback = True
-                        issues.append(
-                            f"Used window-only mapping for line '{line.text[:30]}...' "
-                            f"(segment offset {sorted_segments[best_idx].start - desired_start:+.2f}s)"
-                            if best_idx is not None and desired_start is not None
-                            else f"Used window-only mapping for line '{line.text[:30]}...'"
-                        )
-            if not window_fallback:
-                new_words = list(line.words)
-            if desired_start is not None and new_words:
-                shift = desired_start - new_words[0].start_time
-                new_words = _shift_words(new_words, shift)
-            new_words = _clamp_line_end_to_next_start(
-                line, new_words, lrc_line_starts, line_idx
-            )
-            if last_end is not None and new_words:
-                if new_words[0].start_time < last_end + gap_required:
-                    shift = (last_end + gap_required) - new_words[0].start_time
-                    new_words = _shift_words(new_words, shift)
-            if new_words:
-                adjusted.append(Line(words=new_words, singer=line.singer))
-                last_end = new_words[-1].end_time
-                if window_fallback:
-                    fixes += 1
-            else:
-                adjusted.append(line)
-                last_end = line.end_time
-            if not window_fallback:
-                if best_sim < min_similarity_fallback and best_idx is not None:
-                    issues.append(
-                        f"Skipped Whisper mapping for line '{line.text[:30]}...' "
-                        f"(sim={best_sim:.2f})"
-                    )
-                if (
-                    desired_start is not None
-                    and best_idx is not None
-                    and abs(sorted_segments[best_idx].start - desired_start)
-                    > max_time_offset
-                ):
-                    issues.append(
-                        f"Skipped Whisper mapping for line '{line.text[:30]}...' "
-                        f"(segment offset {sorted_segments[best_idx].start - desired_start:+.2f}s)"
-                    )
-            prev_text = text_norm
-            continue
+        )
 
+        if should_fallback:
+            self._handle_fallback(
+                line,
+                line_idx,
+                desired_start,
+                next_lrc_start,
+                best_idx,
+                best_sim,
+                gap_required,
+            )
+            self.prev_text = text_norm
+            return
+
+        # Explicit check for None best_idx to satisfy type checker, though implied by should_fallback logic
         if best_idx is None:
-            adjusted.append(line)
-            prev_text = text_norm
-            continue
-        seg = sorted_segments[best_idx]
+            self.adjusted.append(line)
+            self.prev_text = text_norm
+            return
+
+        self._handle_match(
+            line,
+            line_idx,
+            desired_start,
+            next_lrc_start,
+            best_idx,
+            best_sim,
+            window_end,
+            gap_required,
+        )
+        self.prev_text = text_norm
+
+    def _handle_fallback(
+        self,
+        line: Line,
+        line_idx: int,
+        desired_start: Optional[float],
+        next_lrc_start: Optional[float],
+        best_idx: Optional[int],
+        best_sim: float,
+        gap_required: float,
+    ) -> None:
+        new_words: List[Word] = []
+        window_fallback = False
+
+        if desired_start is not None and next_lrc_start is not None and self.all_words:
+            window_words = _select_window_words_for_line(
+                self.all_words,
+                line,
+                desired_start,
+                next_lrc_start,
+                self.language,
+                _phonetic_similarity,
+            )
+            if window_words:
+                whisper_duration = None
+                if (
+                    window_words[-1].end is not None
+                    and window_words[0].start is not None
+                ):
+                    whisper_duration = max(
+                        window_words[-1].end - window_words[0].start, 0.5
+                    )
+                elif (
+                    window_words[-1].start is not None
+                    and window_words[0].start is not None
+                ):
+                    whisper_duration = max(
+                        window_words[-1].start - window_words[0].start, 0.5
+                    )
+                window_text = " ".join(w.text for w in window_words)
+                window_sim = _phonetic_similarity(
+                    line.text, window_text, self.language
+                )
+                if window_sim >= self.min_similarity_fallback:
+                    new_words, desired_start = _apply_lrc_weighted_timing(
+                        line,
+                        desired_start,
+                        next_lrc_start,
+                        self.lrc_line_starts,
+                        line_idx,
+                        self.all_words,
+                        None,
+                        self.language,
+                        _phonetic_similarity,
+                        line_duration_override=whisper_duration,
+                    )
+                    window_fallback = True
+                    offset_msg = (
+                        f"(segment offset {self.sorted_segments[best_idx].start - desired_start:+.2f}s)"
+                        if best_idx is not None and desired_start is not None
+                        else ""
+                    )
+                    self.issues.append(
+                        f"Used window-only mapping for line '{line.text[:30]}...' {offset_msg}".strip()
+                    )
+
+        if not window_fallback:
+            new_words = list(line.words)
+
+        if desired_start is not None and new_words:
+            shift = desired_start - new_words[0].start_time
+            new_words = _shift_words(new_words, shift)
+
+        new_words = _clamp_line_end_to_next_start(
+            line, new_words, self.lrc_line_starts, line_idx
+        )
+
+        if self.last_end is not None and new_words:
+            if new_words[0].start_time < self.last_end + gap_required:
+                shift = (self.last_end + gap_required) - new_words[0].start_time
+                new_words = _shift_words(new_words, shift)
+
+        if new_words:
+            self.adjusted.append(Line(words=new_words, singer=line.singer))
+            self.last_end = new_words[-1].end_time
+            if window_fallback:
+                self.fixes += 1
+        else:
+            self.adjusted.append(line)
+            self.last_end = line.end_time
+
+        if not window_fallback:
+            if best_sim < self.min_similarity_fallback and best_idx is not None:
+                self.issues.append(
+                    f"Skipped Whisper mapping for line '{line.text[:30]}...' (sim={best_sim:.2f})"
+                )
+            if (
+                desired_start is not None
+                and best_idx is not None
+                and abs(self.sorted_segments[best_idx].start - desired_start)
+                > self.max_time_offset
+            ):
+                self.issues.append(
+                    f"Skipped Whisper mapping for line '{line.text[:30]}...' "
+                    f"(segment offset {self.sorted_segments[best_idx].start - desired_start:+.2f}s)"
+                )
+
+    def _handle_match(
+        self,
+        line: Line,
+        line_idx: int,
+        desired_start: Optional[float],
+        next_lrc_start: Optional[float],
+        best_idx: int,
+        best_sim: float,
+        window_end: int,
+        gap_required: float,
+    ) -> None:
+        seg = self.sorted_segments[best_idx]
         forced_fallback = False
-        if last_end is not None and seg.start < last_end + gap_required:
+
+        if self.last_end is not None and seg.start < self.last_end + gap_required:
             next_idx: Optional[int] = None
             best_future_idx: Optional[int] = None
             best_future_sim: Optional[float] = None
             for idx in range(best_idx, window_end):
-                seg_candidate = sorted_segments[idx]
-                if seg_candidate.start < last_end + gap_required:
+                seg_candidate = self.sorted_segments[idx]
+                if seg_candidate.start < self.last_end + gap_required:
                     continue
                 next_idx = idx
                 sim_candidate = _phonetic_similarity(
-                    line.text, seg_candidate.text, language
+                    line.text, seg_candidate.text, self.language
                 )
                 if best_future_sim is None or sim_candidate > best_future_sim:
                     best_future_sim = sim_candidate
                     best_future_idx = idx
             if best_future_idx is not None and best_future_sim is not None:
-                if best_future_sim >= min_similarity_fallback:
+                if best_future_sim >= self.min_similarity_fallback:
                     best_idx = best_future_idx
-                    seg = sorted_segments[best_idx]
+                    seg = self.sorted_segments[best_idx]
                 else:
                     if next_idx is None:
-                        adjusted.append(line)
-                        prev_text = text_norm
-                        continue
+                        self.adjusted.append(line)
+                        return
                     best_idx = next_idx
-                    seg = sorted_segments[best_idx]
+                    seg = self.sorted_segments[best_idx]
                     forced_fallback = True
+
         new_words = _map_line_words_to_segment(line, seg)
 
         if desired_start is not None and line.words:
@@ -256,11 +324,11 @@ def _map_lrc_lines_to_whisper_segments(  # noqa: C901
                 line,
                 desired_start,
                 next_lrc_start,
-                lrc_line_starts,
+                self.lrc_line_starts,
                 line_idx,
-                all_words,
+                self.all_words,
                 seg,
-                language,
+                self.language,
                 _phonetic_similarity,
             )
 
@@ -269,31 +337,59 @@ def _map_lrc_lines_to_whisper_segments(  # noqa: C901
             new_words = _shift_words(new_words, shift)
 
         new_words = _clamp_line_end_to_next_start(
-            line, new_words, lrc_line_starts, line_idx
+            line, new_words, self.lrc_line_starts, line_idx
         )
 
         if (
-            last_end is not None
+            self.last_end is not None
             and new_words
-            and new_words[0].start_time < last_end + gap_required
+            and new_words[0].start_time < self.last_end + gap_required
         ):
-            shift = (last_end + gap_required) - new_words[0].start_time
+            shift = (self.last_end + gap_required) - new_words[0].start_time
             new_words = _shift_words(new_words, shift)
-        adjusted.append(Line(words=new_words, singer=line.singer))
-        fixes += 1
-        if best_sim < min_similarity:
-            issues.append(
+
+        self.adjusted.append(Line(words=new_words, singer=line.singer))
+        self.fixes += 1
+        if best_sim < self.min_similarity:
+            self.issues.append(
                 f"Low similarity mapping for line '{line.text[:30]}...' (sim={best_sim:.2f})"
             )
         if forced_fallback:
-            issues.append(
+            self.issues.append(
                 f"Forced forward mapping for line '{line.text[:30]}...' to avoid overlap"
             )
-        last_end = new_words[-1].end_time if new_words else last_end
-        seg_idx = best_idx + 1 if best_idx is not None else seg_idx
-        prev_text = text_norm
+        self.last_end = new_words[-1].end_time if new_words else self.last_end
+        self.seg_idx = best_idx + 1
 
-    return adjusted, fixes, issues
+
+def _map_lrc_lines_to_whisper_segments(
+    lines: List[Line],
+    transcription: List[TranscriptionSegment],
+    language: str,
+    lrc_line_starts: Optional[List[float]] = None,
+    min_similarity: float = 0.35,
+    min_similarity_fallback: float = 0.2,
+    max_time_offset: float = 4.0,
+    lookahead: int = 6,
+) -> Tuple[List[Line], int, List[str]]:
+    """Map LRC lines onto Whisper segment timing without reordering."""
+    if not lines or not transcription:
+        return lines, 0, []
+
+    mapper = _LineMapper(
+        transcription,
+        language,
+        lrc_line_starts,
+        min_similarity,
+        min_similarity_fallback,
+        max_time_offset,
+        lookahead,
+    )
+
+    for line_idx, line in enumerate(lines):
+        mapper.process_line(line_idx, line)
+
+    return mapper.adjusted, mapper.fixes, mapper.issues
 
 
 __all__ = [

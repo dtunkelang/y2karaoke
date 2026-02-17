@@ -30,20 +30,21 @@ This document outlines the critical areas of the `y2karaoke` codebase and the im
 **Action Plan:**
 *   **Maintenance:** Periodically update gold files for other songs to match the current pipeline output where appropriate (assuming pipeline is ground truth for those cases).
 
-## 3. Alignment Heuristics (Current Focus)
+## 3. Alignment Heuristics
 **Context:** The core alignment logic (`src/y2karaoke/core/components/alignment/`) uses complex heuristics to score and correct timings.
 
 **Status (2026-02-17):**
 *   **Refactored:** `timing_evaluator.py` converted to strict public facade. Internal logic moved to `timing_evaluator_core.py`, `timing_evaluator_correction.py`, etc.
 *   **Documented:** Added docstrings to `timing_evaluator_core.py` and `timing_evaluator_correction.py`.
+*   **Simplified:** Refactored `lyrics_whisper_map.py` to use `_LineMapper` class, reducing complexity of the main mapping function.
 *   **Tests Fixed:** 250+ unit tests updated to import from implementation modules.
 
 **Critical Areas:**
-*   `timing_evaluator_core.py`: Main evaluation logic.
-*   `timing_evaluator_correction.py`: Timestamp correction logic.
+*   `timing_evaluator_*.py`: Multiple files handling corrections, pauses, and scoring.
+*   `lyrics_whisper_map.py`: Core mapping logic.
 
 **Action Plan:**
-*   **Simplify:** Identify complex logic blocks in `timing_evaluator_core.py` (e.g., `evaluate_timing` or `_check_pause_alignment`) and decompose them further to improve readability and maintainability.
+*   **Maintain:** Ensure new heuristics are well-documented and tested.
 
 ## 4. OCR Dependency Management
 **Context:** The project optionally uses Apple Vision (macOS) or PaddleOCR.
@@ -57,4 +58,7 @@ This document outlines the critical areas of the `y2karaoke` codebase and the im
 ---
 
 **Next Immediate Step:**
-Analyze `src/y2karaoke/core/components/alignment/timing_evaluator_core.py` for simplification opportunities. Specifically, look at `evaluate_timing` and `_check_pause_alignment` to reduce complexity and improve separation of concerns.
+The repository is currently stable and all identified critical priorities have been addressed. Future work should focus on:
+1.  **Rendering Performance:** Investigate `lyrics_renderer.py` for optimization.
+2.  **Gold Set Quality:** Audit and update gold files for songs showing high error (e.g. Indila, OneRepublic) to ensure they reflect the correct audio version.
+3.  **Visual Refinement:** Continue enhancing robustness of color-based timing refinement.
