@@ -242,3 +242,46 @@ def test_collect_raw_frames_uses_grab_retrieve_sampling(monkeypatch) -> None:
     assert cap.grab_calls == 10
     assert cap.retrieve_calls == 2
     assert len(raw) == 2
+
+
+def test_collect_raw_frames_cached_respects_cache_version(
+    tmp_path, monkeypatch
+) -> None:
+    video_path = tmp_path / "video.mp4"
+    video_path.write_bytes(b"video-bytes")
+    cache_dir = tmp_path / "cache"
+    calls = {"n": 0}
+
+    def fake_collect(video_path, start, end, fps, roi_rect):
+        calls["n"] += 1
+        return [{"time": 0.0, "words": [{"text": "x", "x": 0, "y": 0, "w": 1, "h": 1}]}]
+
+    monkeypatch.setattr(_MODULE, "_collect_raw_frames", fake_collect)
+
+    first = _MODULE._collect_raw_frames_cached(
+        video_path=video_path,
+        duration=10.0,
+        fps=2.0,
+        roi_rect=(0, 0, 10, 10),
+        cache_dir=cache_dir,
+        cache_version="vA",
+    )
+    second = _MODULE._collect_raw_frames_cached(
+        video_path=video_path,
+        duration=10.0,
+        fps=2.0,
+        roi_rect=(0, 0, 10, 10),
+        cache_dir=cache_dir,
+        cache_version="vA",
+    )
+    third = _MODULE._collect_raw_frames_cached(
+        video_path=video_path,
+        duration=10.0,
+        fps=2.0,
+        roi_rect=(0, 0, 10, 10),
+        cache_dir=cache_dir,
+        cache_version="vB",
+    )
+
+    assert first == second == third
+    assert calls["n"] == 2

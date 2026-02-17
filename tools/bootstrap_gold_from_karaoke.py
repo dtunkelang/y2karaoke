@@ -41,6 +41,7 @@ except ImportError:
     sys.exit(1)
 
 logger = get_logger(__name__)
+RAW_OCR_CACHE_VERSION = "2"
 
 
 def _search_karaoke_candidates(
@@ -295,9 +296,13 @@ def _raw_frames_cache_path(
     cache_dir: Path,
     fps: float,
     roi_rect: tuple[int, int, int, int],
+    cache_version: str = RAW_OCR_CACHE_VERSION,
 ) -> Path:
     cache_dir.mkdir(parents=True, exist_ok=True)
-    sig = f"{video_path.resolve()}:{video_path.stat().st_mtime_ns}:{video_path.stat().st_size}:{fps}:{roi_rect}"
+    sig = (
+        f"{cache_version}:{video_path.resolve()}:{video_path.stat().st_mtime_ns}:"
+        f"{video_path.stat().st_size}:{fps}:{roi_rect}"
+    )
     digest = hashlib.md5(sig.encode()).hexdigest()
     return cache_dir / f"raw_frames_{digest}.json"
 
@@ -308,8 +313,11 @@ def _collect_raw_frames_cached(
     fps: float,
     roi_rect: tuple[int, int, int, int],
     cache_dir: Path,
+    cache_version: str = RAW_OCR_CACHE_VERSION,
 ) -> list[dict]:
-    cache_path = _raw_frames_cache_path(video_path, cache_dir, fps, roi_rect)
+    cache_path = _raw_frames_cache_path(
+        video_path, cache_dir, fps, roi_rect, cache_version=cache_version
+    )
     if cache_path.exists():
         logger.info(f"Loading cached OCR frames: {cache_path.name}")
         return json.loads(cache_path.read_text())
@@ -340,6 +348,7 @@ def main():  # noqa: C901
     p.add_argument("--suitability-fps", type=float, default=1.0)
     p.add_argument("--min-detectability", type=float, default=0.45)
     p.add_argument("--min-word-level-score", type=float, default=0.15)
+    p.add_argument("--raw-ocr-cache-version", default=RAW_OCR_CACHE_VERSION)
     p.add_argument("--allow-low-suitability", action="store_true")
     p.add_argument(
         "--strict-sequential", action="store_true"
@@ -420,6 +429,7 @@ def main():  # noqa: C901
         args.visual_fps,
         roi,
         song_dir / "cache",
+        cache_version=args.raw_ocr_cache_version,
     )
     t_lines = reconstruct_lyrics_from_visuals(raw_frames, args.visual_fps)
     logger.info(f"Reconstructed {len(t_lines)} initial lines.")
@@ -597,6 +607,7 @@ def main():  # noqa: C901
                 "suitability_fps": args.suitability_fps,
                 "min_detectability": args.min_detectability,
                 "min_word_level_score": args.min_word_level_score,
+                "raw_ocr_cache_version": args.raw_ocr_cache_version,
                 "allow_low_suitability": args.allow_low_suitability,
             },
         }

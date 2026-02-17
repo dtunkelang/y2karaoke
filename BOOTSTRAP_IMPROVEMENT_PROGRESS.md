@@ -77,6 +77,13 @@ Status: Completed
 - [x] Keep sampled timing behavior stable while reducing decode work at low visual FPS
 - [x] Add unit test coverage for decode-sparing sampling path
 
+### Milestone 12: OCR Cache Invalidation Control
+Status: Completed
+- [x] Add `--raw-ocr-cache-version` to control OCR-frame cache keying
+- [x] Include cache version in cache signature to avoid stale reuse after algorithm updates
+- [x] Add unit test ensuring cache version changes trigger recalculation
+- [x] Update bootstrap docs with selective cache invalidation guidance
+
 ## Notes
 - Keep changes in significant, validated commits.
 - Prefer deterministic ranking and quality decisions for reproducibility.

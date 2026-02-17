@@ -255,6 +255,7 @@ To auto-seed/refine word timings from a karaoke YouTube version (visual-only):
 - `--show-candidates` prints ranked candidates with detectability/word-level metrics.
 - By default, the tool enforces suitability gates (`--min-detectability`, `--min-word-level-score`). Use `--allow-low-suitability` to override.
 - OCR frame sampling is cached under `--work-dir` (default `.cache/karaoke_bootstrap`) to speed reruns.
+- Use `--raw-ocr-cache-version` to invalidate only OCR-frame caches when bootstrap extraction logic changes (downloaded video/audio/LRC caches can remain reused).
 - `--report-json` writes a structured report with candidate rankings, selected candidate metrics, and runtime settings.
 - The tool detects line windows from karaoke frames via OCR and infers word timing from lyric highlight progress in those windows (no audio transcription).
 
