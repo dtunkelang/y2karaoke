@@ -58,6 +58,12 @@ Status: Completed
 - [x] Emit recommendation hints for best strategy by key metrics
 - [x] Add unit tests and `make benchmark-matrix`
 
+### Milestone 9: Default Recommendation Utility
+Status: Completed
+- [x] Add `tools/recommend_benchmark_defaults.py` to combine matrix + calibration outputs
+- [x] Add unit tests for recommendation scoring and output
+- [x] Add `make benchmark-recommend`
+
 ## Notes
 - Keep changes in significant, validated commits.
 - Prefer deterministic ranking and quality decisions for reproducibility.
