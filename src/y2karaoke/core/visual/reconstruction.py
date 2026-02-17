@@ -23,8 +23,8 @@ def _filter_static_overlay_words(
     total_frames = len(raw_frames)
     if total_frames < 20:
         return raw_frames
-    all_y, stats, root_frame_counts, early_root_frame_counts = _collect_overlay_stats(
-        raw_frames
+    all_y, stats, root_frame_counts, early_root_frame_counts, root_variant_counts = (
+        _collect_overlay_stats(raw_frames)
     )
 
     if not all_y:
@@ -39,6 +39,7 @@ def _filter_static_overlay_words(
     overlay_roots = _infer_overlay_roots(
         root_frame_counts,
         early_root_frame_counts,
+        root_variant_counts,
         total_frames=total_frames,
     )
 
@@ -59,10 +60,7 @@ def _filter_static_overlay_words(
                 int(round(float(w.get("x", 0.0)) / _OVERLAY_BIN_PX)),
                 int(round(float(w.get("y", 0.0)) / _OVERLAY_BIN_PX)),
             )
-            y_val = float(w.get("y", 0.0))
-            if key in static_keys or (
-                root in overlay_roots and y_val <= y_top_cut + 24.0
-            ):
+            if key in static_keys or root in overlay_roots:
                 continue
             new_words.append(w)
         out.append({**frame, "words": new_words})
@@ -76,11 +74,13 @@ def _collect_overlay_stats(
     dict[tuple[str, int, int], dict[str, float]],
     dict[str, int],
     dict[str, int],
+    dict[str, int],
 ]:
     all_y: list[float] = []
     stats: dict[tuple[str, int, int], dict[str, float]] = {}
     root_frame_counts: dict[str, int] = {}
     early_root_frame_counts: dict[str, int] = {}
+    root_variant_sets: dict[str, set[str]] = {}
     first_time = float(raw_frames[0].get("time", 0.0))
     early_limit = first_time + 35.0
     for frame in raw_frames:
@@ -98,6 +98,9 @@ def _collect_overlay_stats(
             root = _overlay_token_root(tok)
             if root is None:
                 continue
+            compact = "".join(ch for ch in tok.lower() if ch.isalnum())
+            if compact:
+                root_variant_sets.setdefault(root, set()).add(compact)
             seen_roots.add(root)
             key = (
                 root,
@@ -126,7 +129,8 @@ def _collect_overlay_stats(
             root_frame_counts[root] = root_frame_counts.get(root, 0) + 1
             if frame_time <= early_limit:
                 early_root_frame_counts[root] = early_root_frame_counts.get(root, 0) + 1
-    return all_y, stats, root_frame_counts, early_root_frame_counts
+    root_variant_counts = {k: len(v) for k, v in root_variant_sets.items()}
+    return all_y, stats, root_frame_counts, early_root_frame_counts, root_variant_counts
 
 
 def _overlay_token_root(token: str) -> str | None:
@@ -162,6 +166,7 @@ def _identify_static_overlay_keys(
 def _infer_overlay_roots(
     root_frame_counts: dict[str, int],
     early_root_frame_counts: dict[str, int],
+    root_variant_counts: dict[str, int],
     *,
     total_frames: int,
 ) -> set[str]:
@@ -171,7 +176,8 @@ def _infer_overlay_roots(
     for root, count in root_frame_counts.items():
         total_cov = count / float(total_frames)
         early_cov = early_root_frame_counts.get(root, 0) / float(max(1, total_frames))
-        if total_cov >= 0.2 and early_cov >= 0.12:
+        variants = root_variant_counts.get(root, 0)
+        if total_cov >= 0.2 and early_cov >= 0.12 and variants >= 3:
             out.add(root)
     return out
 
