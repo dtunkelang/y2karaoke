@@ -168,6 +168,12 @@ Status: Completed
 - [x] Rewire tool OCR wrappers to delegate to shared OCR helpers
 - [x] Add direct unit tests for OCR cache key/version and cache reuse behavior
 
+### Milestone 27: Shared Media Resolution
+Status: Completed
+- [x] Move audio extraction and media path resolution logic into `core.visual.bootstrap_media`
+- [x] Rewire tool media wrappers to delegate to shared media helpers
+- [x] Add direct unit tests for extraction cache behavior and fallback download behavior
+
 ## Notes
 - Keep changes in significant, validated commits.
 - Prefer deterministic ranking and quality decisions for reproducibility.

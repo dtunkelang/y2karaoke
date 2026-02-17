@@ -46,6 +46,10 @@ from y2karaoke.core.visual.bootstrap_ocr import (  # noqa: E402
     collect_raw_frames_cached as _collect_raw_frames_cached_impl,
     raw_frames_cache_path as _raw_frames_cache_path_impl,
 )
+from y2karaoke.core.visual.bootstrap_media import (  # noqa: E402
+    extract_audio_from_video as _extract_audio_from_video_impl,
+    resolve_media_paths as _resolve_media_paths_impl,
+)
 from y2karaoke.core.text_utils import make_slug  # noqa: E402
 from y2karaoke.vision.ocr import get_ocr_engine  # noqa: E402,F401
 from y2karaoke.vision.roi import detect_lyric_roi  # noqa: E402
@@ -233,30 +237,12 @@ def _collect_raw_frames_cached(
 
 
 def _extract_audio_from_video(video_path: Path, output_dir: Path) -> Path:
-    output_dir.mkdir(parents=True, exist_ok=True)
-    audio_path = output_dir / f"{video_path.stem}.extracted.wav"
-    if audio_path.exists():
-        return audio_path
-    subprocess.run(
-        [
-            "ffmpeg",
-            "-y",
-            "-i",
-            str(video_path),
-            "-vn",
-            "-ac",
-            "1",
-            "-ar",
-            "44100",
-            str(audio_path),
-        ],
-        check=True,
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
+    """Backward-compatible wrapper around shared media helper."""
+    return _extract_audio_from_video_impl(
+        video_path,
+        output_dir,
+        run_fn=subprocess.run,
     )
-    if not audio_path.exists():
-        raise RuntimeError(f"Audio extraction failed for {video_path}")
-    return audio_path
 
 
 def _clamp_confidence(value: Optional[float], default: float = 0.0) -> float:
@@ -308,31 +294,22 @@ def _resolve_media_paths(
     cached_video_path: Optional[Path],
     song_dir: Path,
 ) -> tuple[Path, Path]:
-    if cached_video_path is None:
-        vid_info = downloader.download_video(
-            candidate_url, output_dir=song_dir / "video"
-        )
-        v_path = Path(vid_info["video_path"])
-    else:
-        v_path = cached_video_path
+    """Backward-compatible wrapper around shared media resolver helper."""
 
-    a_path: Optional[Path] = None
-    if cached_video_path is not None:
-        try:
-            a_path = _extract_audio_from_video(v_path, song_dir / "video")
-            logger.info(f"Extracted audio from cached candidate video: {a_path}")
-        except Exception as e:
-            logger.warning(
-                "Could not extract audio from cached video (%s); falling back to "
-                "direct audio download.",
-                e,
-            )
-    if a_path is None:
-        aud_info = downloader.download_audio(
-            candidate_url, output_dir=song_dir / "video"
-        )
-        a_path = Path(aud_info["audio_path"])
-    return v_path, a_path
+    def _log_message(message: str) -> None:
+        if message.startswith("Could not extract audio"):
+            logger.warning(message)
+        else:
+            logger.info(message)
+
+    return _resolve_media_paths_impl(
+        downloader,
+        candidate_url,
+        cached_video_path,
+        song_dir,
+        extract_audio_fn=_extract_audio_from_video,
+        log_fn=_log_message,
+    )
 
 
 def _ensure_selected_suitability(
