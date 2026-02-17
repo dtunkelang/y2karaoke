@@ -144,9 +144,21 @@ def _calculate_line_alignment_score(
     """Calculate score based on line start alignment with audio onsets.
 
     Heuristic:
-    - Finds nearest onset within 2.0s using _find_closest_onset.
-    - Matches if within 0.5s.
-    - Penalizes offsets > 0.3s.
+        - Human perception of timing is anchored to onsets (beats/syllable starts).
+        - We find the nearest audio onset for each line start time.
+        - Perfect alignment is rare due to onset detection noise, so we use tolerances.
+
+    Scoring:
+        - Match: Within 0.5s of an onset.
+        - Score: Percentage of lines that match an onset.
+
+    Penalties:
+        - > 0.3s offset: 'minor' issue (perceptible lag/rush).
+        - > 0.5s offset: 'moderate' issue (clearly off).
+        - > 1.0s offset: 'severe' issue (disruptive).
+
+    Returns:
+        (score, matched_count, issues, offsets)
     """
     issues = []
     line_offsets = []
@@ -198,8 +210,21 @@ def _calculate_audio_coverage_score(
     """Calculate score based on how well lyrics cover vocal activity.
 
     Heuristic:
-    - Lyrics should overlap with non-silent regions.
-    - Penalizes >3 uncovered vocal regions.
+        - Lyrics exist to represent vocals.
+        - Ideally, 100% of vocal activity should be covered by lyric duration (ignoring short breaths).
+        - Ideally, 100% of lyric duration should overlap with vocal activity (no lyrics during silence).
+
+    Metrics:
+        - lyric_on_vocal_ratio: Fraction of lyric duration that overlaps with non-silent audio.
+        - vocal_covered_by_lyrics_ratio: Fraction of non-silent audio covered by lyrics.
+        - lyric_in_silence_ratio: Fraction of lyric duration that falls in silent regions (Bad).
+
+    Issues:
+        - 'uncovered_vocal_regions': If we detect >3 significant vocal bursts (>0.5s) with no lyrics,
+          it suggests missing lines or massive desync.
+
+    Returns:
+        (score, issues, lyric_on_vocal, vocal_covered, lyric_in_silence)
     """
     issues = []
     (
@@ -239,7 +264,10 @@ def _find_closest_onset(
     onset_times: np.ndarray,
     max_distance: float = 2.0,
 ) -> Tuple[Optional[float], float]:
-    """Find the closest onset to a target time."""
+    """Find the closest onset to a target time.
+
+    Used to anchor lyric start times to physical audio events.
+    """
     if len(onset_times) == 0:
         return None, 0.0
 
@@ -257,6 +285,14 @@ def _append_line_spans_silence_issues(
     audio_features: AudioFeatures,
     issues: List[TimingIssue],
 ) -> None:
+    """Check for lines that span across a significant silence.
+
+    Heuristic:
+        - If a line starts before a silence and ends after it, it likely
+          covers two distinct phrases and should be split.
+        - Silence threshold: > 1.0s.
+        - Buffer: 0.5s (to avoid flagging slight overlaps at edges).
+    """
     for i, line in enumerate(lines):
         if not line.words:
             continue
@@ -289,6 +325,15 @@ def _append_gap_issues(
     audio_features: AudioFeatures,
     issues: List[TimingIssue],
 ) -> None:
+    """Check inter-line gaps for consistency with audio.
+
+    Heuristics:
+    1. Spurious Gap: A large gap (>1s) in lyrics exists, but audio has continuous vocals.
+       - Implies the previous line ended too early or next starts too late.
+       - Or it's a split phrase that should be continuous.
+    2. Missing Pause: A gap > 2s exists in lyrics, but NO silence is detected in audio.
+       - Implies desync or missing lyrics.
+    """
     for i in range(len(lines) - 1):
         if not lines[i].words or not lines[i + 1].words:
             continue
@@ -374,6 +419,13 @@ def _append_unexpected_pause_issues(
     audio_features: AudioFeatures,
     issues: List[TimingIssue],
 ) -> None:
+    """Check for significant audio silences that are NOT reflected in lyrics.
+
+    Heuristic:
+        - If there is a silence > 2.0s in audio, there SHOULD be a gap in lyrics.
+        - If a lyric line spans over this silence, it's an 'unexpected_pause' issue.
+        - This often indicates the line duration is too long or offset is wrong.
+    """
     for silence_start, silence_end in audio_features.silence_regions:
         silence_duration = silence_end - silence_start
         if silence_duration < 2.0:
@@ -408,7 +460,13 @@ def _check_pause_alignment(  # noqa: C901
     lines: List[Line],
     audio_features: AudioFeatures,
 ) -> List[TimingIssue]:
-    """Check if gaps in lyrics align with silence/pauses in audio."""
+    """Check if gaps in lyrics align with silence/pauses in audio.
+
+    Delegates to specific heuristic checks:
+    - Line spanning silence (bad)
+    - Gap during vocals (spurious gap)
+    - Missing pause in lyrics where audio is silent
+    """
     issues: List[TimingIssue] = []
     _append_line_spans_silence_issues(lines, audio_features, issues)
     _append_gap_issues(lines, audio_features, issues)
@@ -420,7 +478,10 @@ def _calculate_pause_score_with_stats(
     lines: List[Line],
     audio_features: AudioFeatures,
 ) -> Tuple[float, int, int]:
-    """Calculate pause score and return matching stats."""
+    """Calculate pause score and return matching stats.
+
+    Score = Percentage of significant audio silences (>2s) that are matched by a lyric gap.
+    """
     if len(audio_features.silence_regions) == 0:
         return 100.0, 0, 0
 

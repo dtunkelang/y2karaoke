@@ -41,22 +41,22 @@ This document outlines the critical areas of the `y2karaoke` codebase and the im
 ## 3. Alignment Heuristics
 **Context:** The core alignment logic (`src/y2karaoke/core/components/alignment/`) uses complex heuristics to score and correct timings.
 
-**Status (2026-02-16):**
+**Status (2026-02-17):**
 *   **Refactored:** `timing_evaluator.py` converted to strict public facade. Internal logic moved to `timing_evaluator_core.py`, `timing_evaluator_correction.py`, etc.
-*   **Tests Fixed:** 250+ unit tests updated to import from implementation modules, resolving circular dependencies and private access issues.
+*   **Documented:** Added docstrings to `timing_evaluator_core.py` and `timing_evaluator_correction.py` explaining the heuristics (e.g., missing pause penalties, onset snapping logic).
+*   **Tests Fixed:** 250+ unit tests updated to import from implementation modules.
 
 **Critical Areas:**
 *   `timing_evaluator_*.py`: Multiple files handling corrections, pauses, and scoring.
 
 **Action Plan:**
-*   **Document:** Add docstrings explaining the specific heuristic being applied (e.g., "why do we punish missing pauses?").
-*   **Simplify:** Continue identifying complex logic blocks for further decomposition.
+*   **Simplify:** Continue identifying complex logic blocks for further decomposition if needed.
 
 ## 4. OCR Dependency Management
 **Context:** The project optionally uses Apple Vision (macOS) or PaddleOCR.
 
 **Status (2026-02-17):**
-*   **Verified:** Added unit tests (`test_ocr_fallback.py`) confirming proper fallback logic from Vision to PaddleOCR on Linux/Intel-Mac or on failure. Error messages are clear.
+*   **Verified:** Added unit tests (`test_ocr_fallback.py`) confirming proper fallback logic from Vision to PaddleOCR on Linux/Intel-Mac or on failure.
 
 **Action Plan:**
 *   **Maintenance:** Ensure PaddleOCR version compatibility in future.
@@ -64,5 +64,4 @@ This document outlines the critical areas of the `y2karaoke` codebase and the im
 ---
 
 **Next Immediate Step:**
-Return to Priority #3 (Alignment Heuristics) to add documentation and simplify logic, or proceed to Priority #2 full benchmark suite run if bandwidth allows.
-Recommended: Priority #3 Documentation.
+Run the full benchmark suite to baseline the system state across all songs and ensure no regressions were introduced by the offset fix. This closes the loop on Priority #2.

@@ -264,14 +264,22 @@ def correct_line_timestamps(
 ) -> Tuple[List[Line], List[str]]:
     """Correct line timestamps to align with detected vocal onsets.
 
-    Uses a two-tier approach:
-    1. If LRC timestamp has singing nearby, use proximity-based correction (normal case)
-    2. If LRC timestamp falls during silence, find next phrase after previous line (fallback)
+    Heuristic:
+        - Lyric start times often drift or are inaccurate in LRC files.
+        - Audio onsets (sudden energy increases) are ground truth for syllable starts.
+        - We try to snap the first word of a line to a nearby audio onset.
+
+    Strategy:
+        1. Proximity: If a strong onset is within `max_correction` window, snap to it.
+           - Penalty for snapping to onsets preceded by vocal activity (likely mid-phrase).
+           - Bonus for snapping to onsets preceded by silence (likely phrase start).
+        2. Silence Fallback: If the LRC start time falls in a silent region (impossible),
+           we search for the first valid onset *after* the previous phrase ended.
 
     Args:
         lines: Original lyrics lines with timing
         audio_features: Extracted audio features with onset times
-        max_correction: Maximum correction for normal cases (seconds)
+        max_correction: Maximum correction window (seconds)
 
     Returns:
         Tuple of (corrected_lines, list of correction descriptions)
@@ -296,8 +304,10 @@ def _find_phrase_end(
 ) -> float:
     """Find where a phrase actually ends by detecting silence.
 
-    Searches for the first silence region after start_time that lasts
-    at least min_silence_duration seconds.
+    Heuristic:
+        - Phrases end when the singer stops singing (silence).
+        - We look for the first sustained silence (> min_silence_duration) after start_time.
+        - If no silence is found before max_end_time, we assume the phrase fills the duration.
 
     Args:
         start_time: When the phrase starts
@@ -358,10 +368,11 @@ def fix_spurious_gaps(  # noqa: C901
 ) -> Tuple[List[Line], List[str]]:
     """Fix spurious gaps by merging lines that should be continuous.
 
-    When a gap between lines has significant vocal activity (indicating
-    continuous singing), merge the lines into one. Uses audio analysis
-    to find the actual end of the merged phrase rather than using
-    potentially incorrect LRC timestamps.
+    Heuristic:
+        - If two lines are separated by a gap, but the audio shows continuous singing
+          (high vocal activity, no silence), they are likely part of the same phrase.
+        - This happens when LRC splitters break lines arbitrarily or for visual layout.
+        - Merging them allows us to re-calculate word timings over the full phrase duration.
 
     Args:
         lines: Original lyrics lines
