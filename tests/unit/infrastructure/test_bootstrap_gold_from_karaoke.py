@@ -285,3 +285,24 @@ def test_collect_raw_frames_cached_respects_cache_version(
 
     assert first == second == third
     assert calls["n"] == 2
+
+
+def test_extract_audio_from_video_uses_ffmpeg_once(tmp_path, monkeypatch) -> None:
+    video_path = tmp_path / "candidate.mp4"
+    video_path.write_bytes(b"video-bytes")
+    output_dir = tmp_path / "out"
+    calls = {"n": 0}
+
+    def fake_run(cmd, check, stdout, stderr):
+        calls["n"] += 1
+        assert cmd[0] == "ffmpeg"
+        Path(cmd[-1]).write_bytes(b"wav-bytes")
+        return None
+
+    monkeypatch.setattr(_MODULE.subprocess, "run", fake_run)
+
+    first = _MODULE._extract_audio_from_video(video_path, output_dir)
+    second = _MODULE._extract_audio_from_video(video_path, output_dir)
+    assert first == second
+    assert first.exists()
+    assert calls["n"] == 1

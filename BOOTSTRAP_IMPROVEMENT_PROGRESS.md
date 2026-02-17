@@ -103,6 +103,12 @@ Status: Completed
 - [x] Prevent cache collisions for same-named videos in different locations
 - [x] Add unit test coverage for cache-key identity behavior
 
+### Milestone 16: Candidate Audio Reuse
+Status: Completed
+- [x] Add local audio extraction from already-downloaded candidate video
+- [x] Fall back to direct YouTube audio download if extraction fails
+- [x] Add unit test coverage for one-time extraction + cache reuse behavior
+
 ## Notes
 - Keep changes in significant, validated commits.
 - Prefer deterministic ranking and quality decisions for reproducibility.

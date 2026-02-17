@@ -58,3 +58,6 @@ Optional arguments:
 - `--allow-low-suitability`: Bypass suitability gates (use with caution).
 - `--show-candidates`: Print ranked candidates with suitability metrics.
 - `--strict-sequential`: Enforce that lines appearing together are processed one-by-one.
+
+Runtime note:
+- When a candidate is selected from evaluated rankings, the tool attempts to extract audio from the already-downloaded candidate video before falling back to a direct audio download.

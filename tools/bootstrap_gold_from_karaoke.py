@@ -10,6 +10,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import subprocess
 import sys
 from pathlib import Path
 from typing import Any, Dict, List, Optional
@@ -333,6 +334,33 @@ def _clamp_confidence(value: Optional[float], default: float = 0.0) -> float:
     return max(0.0, min(1.0, float(value)))
 
 
+def _extract_audio_from_video(video_path: Path, output_dir: Path) -> Path:
+    output_dir.mkdir(parents=True, exist_ok=True)
+    audio_path = output_dir / f"{video_path.stem}.extracted.wav"
+    if audio_path.exists():
+        return audio_path
+    subprocess.run(
+        [
+            "ffmpeg",
+            "-y",
+            "-i",
+            str(video_path),
+            "-vn",
+            "-ac",
+            "1",
+            "-ar",
+            "44100",
+            str(audio_path),
+        ],
+        check=True,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
+    if not audio_path.exists():
+        raise RuntimeError(f"Audio extraction failed for {video_path}")
+    return audio_path
+
+
 def main():  # noqa: C901
     setup_logging(verbose=True)
     p = argparse.ArgumentParser()
@@ -382,10 +410,22 @@ def main():  # noqa: C901
         else:
             v_path = cached_video_path
 
-        aud_info = downloader.download_audio(
-            candidate_url, output_dir=song_dir / "video"
-        )
-        a_path = Path(aud_info["audio_path"])
+        a_path: Optional[Path] = None
+        if cached_video_path is not None:
+            try:
+                a_path = _extract_audio_from_video(v_path, song_dir / "video")
+                logger.info(f"Extracted audio from cached candidate video: {a_path}")
+            except Exception as e:
+                logger.warning(
+                    "Could not extract audio from cached video (%s); falling back to "
+                    "direct audio download.",
+                    e,
+                )
+        if a_path is None:
+            aud_info = downloader.download_audio(
+                candidate_url, output_dir=song_dir / "video"
+            )
+            a_path = Path(aud_info["audio_path"])
     except Exception as e:
         logger.error(f"Download failed: {e}")
         return 1
