@@ -170,6 +170,7 @@ def _build_generate_command(
     offline: bool,
     force: bool,
     whisper_map_lrc_dtw: bool,
+    strategy: str = "hybrid_dtw",
 ) -> list[str]:
     cmd = [
         python_bin,
@@ -191,8 +192,19 @@ def _build_generate_command(
         cmd.append("--offline")
     if force:
         cmd.append("--force")
-    if whisper_map_lrc_dtw:
-        cmd.append("--whisper-map-lrc-dtw")
+    if strategy == "hybrid_dtw":
+        if whisper_map_lrc_dtw:
+            cmd.append("--whisper-map-lrc-dtw")
+        else:
+            cmd.append("--whisper")
+    elif strategy == "hybrid_whisper":
+        cmd.append("--whisper")
+    elif strategy == "whisper_only":
+        cmd.append("--whisper-only")
+    elif strategy == "lrc_only":
+        pass
+    else:
+        raise ValueError(f"Unknown strategy: {strategy}")
     return cmd
 
 
@@ -1092,6 +1104,7 @@ def _write_checkpoint(
         "options": {
             "offline": args.offline,
             "force": args.force,
+            "strategy": args.strategy,
             "whisper_map_lrc_dtw": not args.no_whisper_map_lrc_dtw,
             "timeout_sec": args.timeout_sec,
             "heartbeat_sec": args.heartbeat_sec,
@@ -1119,6 +1132,7 @@ def _build_run_signature(
         "manifest_path": str(manifest_path),
         "offline": bool(args.offline),
         "force": bool(args.force),
+        "strategy": str(args.strategy),
         "whisper_map_lrc_dtw": not bool(args.no_whisper_map_lrc_dtw),
         "cache_dir": str(args.cache_dir.resolve()) if args.cache_dir else None,
         "gold_root": str(gold_root.resolve()) if gold_root else None,
@@ -1205,6 +1219,15 @@ def _parse_args() -> argparse.Namespace:
         "--no-whisper-map-lrc-dtw",
         action="store_true",
         help="Disable --whisper-map-lrc-dtw while running benchmark songs",
+    )
+    parser.add_argument(
+        "--strategy",
+        choices=["hybrid_dtw", "hybrid_whisper", "whisper_only", "lrc_only"],
+        default="hybrid_dtw",
+        help=(
+            "Benchmark strategy: hybrid_dtw (default), hybrid_whisper, "
+            "whisper_only, or lrc_only."
+        ),
     )
     parser.add_argument(
         "--fail-fast",
@@ -1964,6 +1987,7 @@ def main() -> int:  # noqa: C901
             offline=args.offline,
             force=args.force,
             whisper_map_lrc_dtw=not args.no_whisper_map_lrc_dtw,
+            strategy=args.strategy,
         )
         print(f"[{index}/{len(songs)}] {song.artist} - {song.title}")
         start = time.monotonic()
@@ -2004,7 +2028,7 @@ def main() -> int:  # noqa: C901
     suite_elapsed = round(time.monotonic() - suite_start, 2)
     quality_warnings = _quality_coverage_warnings(
         aggregate=aggregate,
-        dtw_enabled=not args.no_whisper_map_lrc_dtw,
+        dtw_enabled=(args.strategy == "hybrid_dtw" and not args.no_whisper_map_lrc_dtw),
         min_song_coverage_ratio=args.min_dtw_song_coverage_ratio,
         min_line_coverage_ratio=args.min_dtw_line_coverage_ratio,
         suite_wall_elapsed_sec=suite_elapsed,
@@ -2028,6 +2052,7 @@ def main() -> int:  # noqa: C901
         "options": {
             "offline": args.offline,
             "force": args.force,
+            "strategy": args.strategy,
             "whisper_map_lrc_dtw": not args.no_whisper_map_lrc_dtw,
             "timeout_sec": args.timeout_sec,
             "heartbeat_sec": args.heartbeat_sec,

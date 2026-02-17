@@ -199,6 +199,11 @@ Benchmark seed set for timing quality work:
   - Quick status snapshot: `make benchmark-status` (or `./venv/bin/python tools/benchmark_status.py`)
   - Stop running benchmark suites: `make benchmark-kill` (preview only: `tools/kill_benchmark_suites.sh --dry-run`)
 - Useful benchmark flags:
+  - Strategy matrix:
+    - `--strategy hybrid_dtw` (default): audio + lyrics + LRC timing with DTW map
+    - `--strategy hybrid_whisper`: audio + lyrics without DTW LRC mapping
+    - `--strategy whisper_only`: audio-only lyrics/timing
+    - `--strategy lrc_only`: synced lyrics timing only
   - Offline cached-only run: `./venv/bin/python tools/run_benchmark_suite.py --offline`
   - Run one song for debugging: `./venv/bin/python tools/run_benchmark_suite.py --match "Papaoutai" --max-songs 1`
   - Disable DTW mapping for A/B checks: `./venv/bin/python tools/run_benchmark_suite.py --no-whisper-map-lrc-dtw`

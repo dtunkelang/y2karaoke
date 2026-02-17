@@ -45,6 +45,12 @@ Status: Completed
 - [x] Add unit tests for calibration utility
 - [x] Add `make bootstrap-calibrate` helper and README usage note
 
+### Milestone 7: Benchmark Strategy Matrix
+Status: Completed
+- [x] Add `--strategy` to benchmark runner (`hybrid_dtw`, `hybrid_whisper`, `whisper_only`, `lrc_only`)
+- [x] Wire strategy into generated command flags and run-signature tracking
+- [x] Add unit tests for strategy command generation
+
 ## Notes
 - Keep changes in significant, validated commits.
 - Prefer deterministic ranking and quality decisions for reproducibility.

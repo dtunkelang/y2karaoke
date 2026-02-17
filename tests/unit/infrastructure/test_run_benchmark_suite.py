@@ -190,6 +190,7 @@ def test_build_generate_command_includes_expected_flags(tmp_path):
         offline=True,
         force=True,
         whisper_map_lrc_dtw=True,
+        strategy="hybrid_dtw",
     )
     assert cmd[:4] == ["python", "-m", "y2karaoke.cli", "generate"]
     assert "--offline" in cmd
@@ -197,6 +198,56 @@ def test_build_generate_command_includes_expected_flags(tmp_path):
     assert "--whisper-map-lrc-dtw" in cmd
     assert "--work-dir" in cmd
     assert str(cache_dir) in cmd
+
+
+def test_build_generate_command_strategy_variants(tmp_path):
+    module = _load_module()
+    song = module.BenchmarkSong(
+        artist="X",
+        title="Y",
+        youtube_id="abcdefghijk",
+        youtube_url="https://www.youtube.com/watch?v=abcdefghijk",
+    )
+    report_path = tmp_path / "report.json"
+
+    cmd_hybrid = module._build_generate_command(
+        python_bin="python",
+        song=song,
+        report_path=report_path,
+        cache_dir=None,
+        offline=False,
+        force=False,
+        whisper_map_lrc_dtw=False,
+        strategy="hybrid_whisper",
+    )
+    assert "--whisper" in cmd_hybrid
+    assert "--whisper-map-lrc-dtw" not in cmd_hybrid
+
+    cmd_only = module._build_generate_command(
+        python_bin="python",
+        song=song,
+        report_path=report_path,
+        cache_dir=None,
+        offline=False,
+        force=False,
+        whisper_map_lrc_dtw=False,
+        strategy="whisper_only",
+    )
+    assert "--whisper-only" in cmd_only
+
+    cmd_lrc = module._build_generate_command(
+        python_bin="python",
+        song=song,
+        report_path=report_path,
+        cache_dir=None,
+        offline=False,
+        force=False,
+        whisper_map_lrc_dtw=False,
+        strategy="lrc_only",
+    )
+    assert "--whisper" not in cmd_lrc
+    assert "--whisper-only" not in cmd_lrc
+    assert "--whisper-map-lrc-dtw" not in cmd_lrc
 
 
 def test_resolve_run_dir_resume_latest(tmp_path):
@@ -256,12 +307,14 @@ def test_build_run_signature(tmp_path):
     args = module.argparse.Namespace(
         offline=True,
         force=False,
+        strategy="hybrid_whisper",
         no_whisper_map_lrc_dtw=True,
         cache_dir=tmp_path,
     )
     sig = module._build_run_signature(args, tmp_path / "manifest.yaml")
     assert sig["manifest_path"].endswith("manifest.yaml")
     assert sig["offline"] is True
+    assert sig["strategy"] == "hybrid_whisper"
     assert sig["whisper_map_lrc_dtw"] is False
     assert sig["cache_dir"] == str(tmp_path.resolve())
 
