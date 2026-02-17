@@ -28,6 +28,7 @@ def _score_row(row: dict[str, Any]) -> float:
     p95 = fnum("agreement_start_p95_abs_sec_line_weighted_mean")
     mean = fnum("agreement_start_mean_abs_sec_line_weighted_mean")
     low = fnum("low_confidence_ratio_line_weighted_mean")
+    gold = fnum("gold_start_abs_word_weighted_mean")
     dtw = fnum("dtw_line_coverage_line_weighted_mean")
     ok = fnum("songs_succeeded")
     total = fnum("songs_total")
@@ -38,6 +39,8 @@ def _score_row(row: dict[str, Any]) -> float:
         score += 1.5 * (1.0 / (1.0 + max(mean, 0.0)))
     if low is not None:
         score += 1.0 * max(0.0, 1.0 - min(low, 1.0))
+    if gold is not None:
+        score += 2.0 * (1.0 / (1.0 + max(gold, 0.0)))
     if dtw is not None:
         score += 1.0 * max(0.0, min(dtw, 1.0))
     if ok is not None and total is not None and total > 0:
@@ -117,7 +120,7 @@ def main() -> int:
                 "min_word_confidence_mean",
             ):
                 v = rec.get(k)
-                if isinstance(v, (int, float)):
+                if isinstance(v, (int, float)) and float(v) > 0.0:
                     recommended_thresholds[k] = float(v)
 
     out = {
@@ -139,6 +142,9 @@ def main() -> int:
             ),
             "low_confidence_ratio_line_weighted_mean": best.get(
                 "low_confidence_ratio_line_weighted_mean"
+            ),
+            "gold_start_abs_word_weighted_mean": best.get(
+                "gold_start_abs_word_weighted_mean"
             ),
         },
         "recommended_bootstrap_thresholds": recommended_thresholds,

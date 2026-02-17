@@ -46,15 +46,19 @@ def test_extract_summary_handles_aggregate_fields():
             "songs_failed": 1,
             "dtw_line_coverage_line_weighted_mean": 0.7,
             "dtw_word_coverage_line_weighted_mean": 0.6,
-            "agreement_start_mean_abs_sec_line_weighted_mean": 0.42,
-            "agreement_start_p95_abs_sec_line_weighted_mean": 0.9,
-            "low_confidence_ratio_line_weighted_mean": 0.1,
+            "agreement_start_mean_abs_sec_mean": 0.42,
+            "agreement_start_p95_abs_sec_mean": 0.9,
+            "low_confidence_ratio_total": 0.1,
+            "avg_abs_word_start_delta_sec_word_weighted_mean": 1.23,
         },
     }
     summary = _MODULE._extract_summary(report)
     assert summary["status"] == "finished"
     assert summary["songs_total"] == 3
     assert summary["dtw_line_coverage_line_weighted_mean"] == 0.7
+    assert summary["agreement_start_mean_abs_sec_line_weighted_mean"] == 0.42
+    assert summary["low_confidence_ratio_line_weighted_mean"] == 0.1
+    assert summary["gold_start_abs_word_weighted_mean"] == 1.23
 
 
 def test_write_markdown(tmp_path):

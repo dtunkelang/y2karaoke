@@ -68,25 +68,41 @@ def _build_command(
 
 def _extract_summary(report_json: dict[str, Any]) -> dict[str, Any]:
     aggregate = report_json.get("aggregate", {})
+
+    def metric(*keys: str):
+        for key in keys:
+            if key in aggregate and aggregate.get(key) is not None:
+                return aggregate.get(key)
+        return None
+
     return {
         "status": report_json.get("status", "unknown"),
         "songs_total": aggregate.get("songs_total"),
         "songs_succeeded": aggregate.get("songs_succeeded"),
         "songs_failed": aggregate.get("songs_failed"),
-        "dtw_line_coverage_line_weighted_mean": aggregate.get(
-            "dtw_line_coverage_line_weighted_mean"
+        "dtw_line_coverage_line_weighted_mean": metric(
+            "dtw_line_coverage_line_weighted_mean",
+            "dtw_line_coverage_mean",
         ),
-        "dtw_word_coverage_line_weighted_mean": aggregate.get(
-            "dtw_word_coverage_line_weighted_mean"
+        "dtw_word_coverage_line_weighted_mean": metric(
+            "dtw_word_coverage_line_weighted_mean",
+            "dtw_word_coverage_mean",
         ),
-        "agreement_start_mean_abs_sec_line_weighted_mean": aggregate.get(
-            "agreement_start_mean_abs_sec_line_weighted_mean"
+        "agreement_start_mean_abs_sec_line_weighted_mean": metric(
+            "agreement_start_mean_abs_sec_line_weighted_mean",
+            "agreement_start_mean_abs_sec_mean",
         ),
-        "agreement_start_p95_abs_sec_line_weighted_mean": aggregate.get(
-            "agreement_start_p95_abs_sec_line_weighted_mean"
+        "agreement_start_p95_abs_sec_line_weighted_mean": metric(
+            "agreement_start_p95_abs_sec_line_weighted_mean",
+            "agreement_start_p95_abs_sec_mean",
         ),
-        "low_confidence_ratio_line_weighted_mean": aggregate.get(
-            "low_confidence_ratio_line_weighted_mean"
+        "low_confidence_ratio_line_weighted_mean": metric(
+            "low_confidence_ratio_line_weighted_mean",
+            "low_confidence_ratio_total",
+        ),
+        "gold_start_abs_word_weighted_mean": metric(
+            "avg_abs_word_start_delta_sec_word_weighted_mean",
+            "avg_abs_word_start_delta_sec_mean",
         ),
     }
 

@@ -64,6 +64,13 @@ Status: Completed
 - [x] Add unit tests for recommendation scoring and output
 - [x] Add `make benchmark-recommend`
 
+### Milestone 10: Matrix Summary Robustness
+Status: Completed
+- [x] Add fallback extraction for agreement/low-confidence keys in matrix summary generation
+- [x] Add fallback extraction for gold word-start delta metric in matrix summaries
+- [x] Ignore zero/non-positive calibration thresholds in recommendation output
+- [x] Validate recommendation on real matrix artifacts (`liveforce4-20260217T071510Z-matrix`)
+
 ## Notes
 - Keep changes in significant, validated commits.
 - Prefer deterministic ranking and quality decisions for reproducibility.
