@@ -20,7 +20,7 @@ Last updated: 2026-02-17
 - [ ] Add benchmark scenarios to isolate this path and compare cost/quality.
 
 ### P1 - No-Lyrics (Whisper-Only) Quality/Cost Tradeoff
-- [ ] Add adaptive Whisper strategy (fast pass + selective high-quality re-pass).
+- [x] Add adaptive Whisper strategy (fast pass + selective high-quality re-pass).
 - [ ] Evaluate quality gain per added runtime.
 
 ### P1 - Karaoke Video Scraping Efficiency

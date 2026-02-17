@@ -11,6 +11,19 @@ LyricsFileLoadResult = Tuple[
 LrcFetchResult = Tuple[Optional[str], Optional[List[Tuple[float, str]]], str]
 
 
+def _average_word_probability(transcription: list) -> Optional[float]:
+    probs: list[float] = []
+    for seg in transcription:
+        words = getattr(seg, "words", None) or []
+        for word in words:
+            prob = getattr(word, "probability", None)
+            if isinstance(prob, (int, float)):
+                probs.append(float(prob))
+    if not probs:
+        return None
+    return sum(probs) / len(probs)
+
+
 def get_lyrics_simple_impl(  # noqa: C901
     title: str,
     artist: str,
@@ -84,6 +97,35 @@ def get_lyrics_simple_impl(  # noqa: C901
             whisper_aggressive,
             whisper_temperature,
         )
+        avg_prob = _average_word_probability(transcription)
+        if whisper_model is None and model_size == "base" and transcription:
+            if avg_prob is not None and avg_prob < 0.45:
+                logger.info(
+                    "Low-confidence Whisper-only transcription "
+                    "(avg_prob=%.3f); retrying with large model",
+                    avg_prob,
+                )
+                (
+                    retry_transcription,
+                    _retry_words,
+                    _retry_lang,
+                    _retry_model,
+                ) = transcribe_vocals_for_state_fn(
+                    vocals_path,
+                    whisper_language,
+                    "large",
+                    whisper_aggressive,
+                    whisper_temperature,
+                )
+                retry_avg_prob = _average_word_probability(retry_transcription)
+                if retry_transcription and (
+                    retry_avg_prob is None
+                    or avg_prob is None
+                    or retry_avg_prob >= avg_prob + 0.05
+                ):
+                    transcription = retry_transcription
+                    avg_prob = retry_avg_prob
+                    logger.info("Using large-model retry for Whisper-only output")
         if not transcription:
             logger.warning(
                 "No Whisper transcription available; using placeholder lyrics"

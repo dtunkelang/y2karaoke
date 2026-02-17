@@ -199,6 +199,39 @@ def test_get_lyrics_simple_whisper_only(monkeypatch):
     assert lines[0].words[0].start_time == 1.0
 
 
+def test_get_lyrics_simple_whisper_only_retries_large_on_low_confidence():
+    from y2karaoke.core import timing_evaluator as te
+
+    low_word = te.TranscriptionWord(start=1.0, end=1.2, text="hello", probability=0.2)
+    low_seg = te.TranscriptionSegment(
+        start=1.0, end=1.4, text="hello", words=[low_word]
+    )
+    hi_word = te.TranscriptionWord(start=1.0, end=1.3, text="better", probability=0.8)
+    hi_seg = te.TranscriptionSegment(start=1.0, end=1.5, text="better", words=[hi_word])
+
+    calls = []
+
+    def fake_transcribe(*args, **kwargs):
+        model_size = args[2]
+        calls.append(model_size)
+        if model_size == "base":
+            return [low_seg], [low_word], "en", "base"
+        return [hi_seg], [hi_word], "en", "large"
+
+    with lw.use_lyrics_whisper_hooks(transcribe_vocals_fn=fake_transcribe):
+        lines, metadata = lw.get_lyrics_simple(
+            title="Song",
+            artist="Artist",
+            vocals_path="vocals.wav",
+            whisper_only=True,
+        )
+
+    assert metadata is not None
+    assert calls == ["base", "large"]
+    assert lines
+    assert lines[0].words[0].text == "better"
+
+
 def test_get_lyrics_simple_whisper_map_lrc(monkeypatch):
     from y2karaoke.core import timing_evaluator as te
     from y2karaoke.core import genius
