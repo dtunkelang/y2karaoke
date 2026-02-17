@@ -5,7 +5,7 @@ from pathlib import Path
 import click
 
 from . import __version__
-from .config import get_cache_dir
+from .config import get_cache_dir, parse_resolution as parse_resolution_value
 from .core.karaoke import KaraokeGenerator
 
 from .pipeline.identify import TrackInfo
@@ -16,15 +16,8 @@ from .utils.logging import setup_logging
 
 
 def parse_resolution(resolution: str) -> tuple[int, int]:
-    """Parse resolution string like '1920x1080' into (width, height)."""
-    try:
-        width_str, height_str = resolution.lower().split("x")
-        width, height = int(width_str), int(height_str)
-        return width, height
-    except ValueError:
-        raise ValueError(
-            f"Invalid resolution format: {resolution}. Expected 'WIDTHxHEIGHT'."
-        )
+    """Parse resolution string like '1920x1080' or '1080p' into (width, height)."""
+    return parse_resolution_value(resolution)
 
 
 def identify_track(logger, identifier, url_or_query, artist, title):

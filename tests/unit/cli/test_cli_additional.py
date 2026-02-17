@@ -37,6 +37,10 @@ def test_parse_resolution_invalid():
         cli.parse_resolution("bad")
 
 
+def test_parse_resolution_preset():
+    assert cli.parse_resolution("720p") == (1280, 720)
+
+
 def test_identify_track_from_url(caplog):
     identifier = DummyIdentifier()
     caplog.set_level(logging.INFO)
