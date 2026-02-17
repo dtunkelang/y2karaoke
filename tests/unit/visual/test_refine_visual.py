@@ -7,6 +7,7 @@ from y2karaoke.core.visual.refinement import (
     _detect_highlight_with_confidence,
     _build_line_refinement_jobs,
     _merge_line_refinement_jobs,
+    _slice_frames_for_window,
 )
 from y2karaoke.core.models import TargetLine
 
@@ -201,3 +202,16 @@ def test_merge_line_refinement_jobs_merges_overlaps_and_splits_distance():
     assert second_start == 29.0
     assert second_end == 32.0
     assert len(second_jobs) == 1
+
+
+def test_slice_frames_for_window_uses_sorted_time_bounds():
+    frames = [
+        (0.5, None, None),
+        (1.0, None, None),
+        (1.5, None, None),
+        (2.0, None, None),
+    ]
+    times = [f[0] for f in frames]
+
+    selected = _slice_frames_for_window(frames, times, v_start=1.0, v_end=1.5)
+    assert [f[0] for f in selected] == [1.0, 1.5]

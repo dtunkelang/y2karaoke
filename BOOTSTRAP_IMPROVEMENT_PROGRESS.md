@@ -109,6 +109,12 @@ Status: Completed
 - [x] Fall back to direct YouTube audio download if extraction fails
 - [x] Add unit test coverage for one-time extraction + cache reuse behavior
 
+### Milestone 17: Refinement Window Slice Efficiency
+Status: Completed
+- [x] Replace per-line full group-frame scans with bisect-based time slicing
+- [x] Preserve inclusive window semantics on start/end bounds
+- [x] Add unit test coverage for frame-window slicing behavior
+
 ## Notes
 - Keep changes in significant, validated commits.
 - Prefer deterministic ranking and quality decisions for reproducibility.

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import bisect
 import logging
 from pathlib import Path
 from typing import List, Optional, Any, Dict, Tuple
@@ -171,6 +172,18 @@ def _read_window_frames(
     return window_frames
 
 
+def _slice_frames_for_window(
+    group_frames: List[Tuple[float, np.ndarray, np.ndarray]],
+    group_times: List[float],
+    *,
+    v_start: float,
+    v_end: float,
+) -> List[Tuple[float, np.ndarray, np.ndarray]]:
+    lo = bisect.bisect_left(group_times, v_start)
+    hi = bisect.bisect_right(group_times, v_end)
+    return group_frames[lo:hi]
+
+
 def refine_word_timings_at_high_fps(  # noqa: C901
     video_path: Path,
     target_lines: List[TargetLine],
@@ -197,11 +210,15 @@ def refine_word_timings_at_high_fps(  # noqa: C901
         )
         if not group_frames:
             continue
+        group_times = [frame[0] for frame in group_frames]
 
         for ln, v_start, v_end in g_jobs:
-            line_frames = [
-                frame for frame in group_frames if v_start <= frame[0] <= v_end
-            ]
+            line_frames = _slice_frames_for_window(
+                group_frames,
+                group_times,
+                v_start=v_start,
+                v_end=v_end,
+            )
             if len(line_frames) < 20:
                 continue
 
