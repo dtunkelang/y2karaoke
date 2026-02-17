@@ -162,6 +162,12 @@ Status: Completed
 - [x] Rewire tool wrappers to delegate to shared candidate helpers
 - [x] Add direct unit tests for candidate search/ranking helper behavior
 
+### Milestone 26: Shared OCR Sampling/Caching
+Status: Completed
+- [x] Move raw OCR frame sampling and cache-key/cache-load logic into `core.visual.bootstrap_ocr`
+- [x] Rewire tool OCR wrappers to delegate to shared OCR helpers
+- [x] Add direct unit tests for OCR cache key/version and cache reuse behavior
+
 ## Notes
 - Keep changes in significant, validated commits.
 - Prefer deterministic ranking and quality decisions for reproducibility.

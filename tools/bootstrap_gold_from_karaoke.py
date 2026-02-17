@@ -8,7 +8,6 @@ This tool acts as a CLI wrapper around the `y2karaoke.vision` and `y2karaoke.cor
 from __future__ import annotations
 
 import argparse
-import hashlib
 import json
 import subprocess
 import sys
@@ -42,14 +41,19 @@ from y2karaoke.core.visual.bootstrap_candidates import (  # noqa: E402
     rank_candidates_by_suitability as _rank_candidates_by_suitability_impl,
     search_karaoke_candidates as _search_karaoke_candidates_impl,
 )
+from y2karaoke.core.visual.bootstrap_ocr import (  # noqa: E402
+    collect_raw_frames as _collect_raw_frames_impl,
+    collect_raw_frames_cached as _collect_raw_frames_cached_impl,
+    raw_frames_cache_path as _raw_frames_cache_path_impl,
+)
 from y2karaoke.core.text_utils import make_slug  # noqa: E402
-from y2karaoke.vision.ocr import get_ocr_engine  # noqa: E402
+from y2karaoke.vision.ocr import get_ocr_engine  # noqa: E402,F401
 from y2karaoke.vision.roi import detect_lyric_roi  # noqa: E402
 from y2karaoke.vision.suitability import analyze_visual_suitability  # noqa: E402
 
 try:
     import cv2  # noqa: E402
-    import numpy as np  # noqa: E402
+    import numpy as np  # noqa: E402,F401
 except ImportError:
     print("Error: OpenCV and Numpy are required. Please install them.")
     sys.exit(1)
@@ -178,57 +182,16 @@ def _collect_raw_frames(
     fps: float,
     roi_rect: tuple[int, int, int, int],
 ) -> list[dict]:
-    ocr = get_ocr_engine()
-    cap = cv2.VideoCapture(str(video_path))
-    src_fps = cap.get(cv2.CAP_PROP_FPS) or 30.0
-    step = max(int(round(src_fps / fps)), 1)
-    rx, ry, rw, rh = roi_rect
-    raw = []
-    if start > 0:
-        cap.set(cv2.CAP_PROP_POS_MSEC, start * 1000.0)
-    frame_idx = max(int(round(start * src_fps)), 0)
-
-    logger.info(f"Sampling frames at {fps} FPS...")
-    while True:
-        ok = cap.grab()
-        if not ok:
-            break
-        t = frame_idx / src_fps
-        if t > end + 0.2:
-            break
-
-        if frame_idx % step != 0:
-            frame_idx += 1
-            continue
-
-        ok, frame = cap.retrieve()
-        if not ok:
-            frame_idx += 1
-            continue
-
-        roi = frame[ry : ry + rh, rx : rx + rw]
-        res = ocr.predict(roi)
-
-        if res and res[0]:
-            items = res[0]
-            rec_texts = items.get("rec_texts", [])
-            rec_boxes = items.get("rec_boxes", [])
-
-            words = []
-            for txt, box_data in zip(rec_texts, rec_boxes):
-                points = box_data["word"] if isinstance(box_data, dict) else box_data
-
-                nb = np.array(points).reshape(-1, 2)
-                x, y = int(min(nb[:, 0])), int(min(nb[:, 1]))
-                bw, bh = int(max(nb[:, 0]) - x), int(max(nb[:, 1]) - y)
-                words.append({"text": txt, "x": x, "y": y, "w": bw, "h": bh})
-
-            if words:
-                raw.append({"time": t, "words": words})
-        frame_idx += 1
-
-    cap.release()
-    return raw
+    """Backward-compatible wrapper around shared OCR collection helper."""
+    return _collect_raw_frames_impl(
+        video_path,
+        start,
+        end,
+        fps,
+        roi_rect,
+        log_fn=logger.info,
+        ocr_engine_fn=get_ocr_engine,
+    )
 
 
 def _raw_frames_cache_path(
@@ -238,13 +201,14 @@ def _raw_frames_cache_path(
     roi_rect: tuple[int, int, int, int],
     cache_version: str = RAW_OCR_CACHE_VERSION,
 ) -> Path:
-    cache_dir.mkdir(parents=True, exist_ok=True)
-    sig = (
-        f"{cache_version}:{video_path.resolve()}:{video_path.stat().st_mtime_ns}:"
-        f"{video_path.stat().st_size}:{fps}:{roi_rect}"
+    """Backward-compatible wrapper around shared OCR cache-key helper."""
+    return _raw_frames_cache_path_impl(
+        video_path,
+        cache_dir,
+        fps,
+        roi_rect,
+        cache_version=cache_version,
     )
-    digest = hashlib.md5(sig.encode()).hexdigest()
-    return cache_dir / f"raw_frames_{digest}.json"
 
 
 def _collect_raw_frames_cached(
@@ -255,16 +219,17 @@ def _collect_raw_frames_cached(
     cache_dir: Path,
     cache_version: str = RAW_OCR_CACHE_VERSION,
 ) -> list[dict]:
-    cache_path = _raw_frames_cache_path(
-        video_path, cache_dir, fps, roi_rect, cache_version=cache_version
+    """Backward-compatible wrapper around shared OCR cache helper."""
+    return _collect_raw_frames_cached_impl(
+        video_path,
+        duration,
+        fps,
+        roi_rect,
+        cache_dir,
+        cache_version=cache_version,
+        log_fn=logger.info,
+        collect_fn=_collect_raw_frames,
     )
-    if cache_path.exists():
-        logger.info(f"Loading cached OCR frames: {cache_path.name}")
-        return json.loads(cache_path.read_text())
-
-    raw = _collect_raw_frames(video_path, 0, duration, fps, roi_rect)
-    cache_path.write_text(json.dumps(raw))
-    return raw
 
 
 def _extract_audio_from_video(video_path: Path, output_dir: Path) -> Path:
