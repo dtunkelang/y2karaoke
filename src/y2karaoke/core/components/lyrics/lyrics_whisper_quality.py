@@ -75,6 +75,48 @@ def _clip_lines_to_target_duration(
     return clipped_lines
 
 
+def _apply_lrc_timing_trust_policy(
+    *,
+    line_timings: Optional[List[Tuple[float, str]]],
+    lrc_text: Optional[str],
+    target_duration: Optional[int],
+    drop_lrc_line_timings: bool,
+    vocals_path: Optional[str],
+    use_whisper: bool,
+    whisper_map_lrc: bool,
+    issues_list: List[str],
+    quality_report: dict,
+) -> Optional[List[Tuple[float, str]]]:
+    if drop_lrc_line_timings and line_timings:
+        issues_list.append(
+            "Configured to ignore provider LRC line timings; deriving timing from audio"
+        )
+        quality_report["lrc_timing_trust"] = "dropped_configured"
+        return None
+
+    if target_duration and lrc_text:
+        from .sync import get_lrc_duration
+
+        lrc_duration = get_lrc_duration(lrc_text)
+        if lrc_duration and abs(target_duration - lrc_duration) > 8:
+            lrc_duration_mismatch_sec = abs(target_duration - lrc_duration)
+            issues_list.append(
+                f"LRC duration mismatch: LRC={lrc_duration}s vs audio={target_duration}s"
+            )
+            quality_report["lrc_timing_trust"] = "degraded_duration_mismatch"
+            can_recover_with_audio_alignment = bool(vocals_path) and bool(
+                use_whisper or whisper_map_lrc
+            )
+            if can_recover_with_audio_alignment and lrc_duration_mismatch_sec >= 12.0:
+                issues_list.append(
+                    "Ignoring provider LRC timestamps due to severe duration mismatch; "
+                    "using audio/Whisper timing alignment instead"
+                )
+                quality_report["lrc_timing_trust"] = "dropped_duration_mismatch"
+                return None
+    return line_timings
+
+
 def get_lyrics_with_quality(  # noqa: C901
     title: str,
     artist: str,
@@ -192,41 +234,19 @@ def get_lyrics_with_quality(  # noqa: C901
         lrc_text = file_lrc_text
         line_timings = file_line_timings
         source = "lyrics_file_lrc"
-    if drop_lrc_line_timings and line_timings:
-        issues_list.append(
-            "Configured to ignore provider LRC line timings; deriving timing from audio"
-        )
-        quality_report["lrc_timing_trust"] = "dropped_configured"
-        line_timings = None
     if not quality_report["source"]:
         quality_report["source"] = source
-    lrc_duration_mismatch_sec: Optional[float] = None
-    if target_duration and lrc_text:
-        from .sync import get_lrc_duration
-
-        lrc_duration = get_lrc_duration(lrc_text)
-        if lrc_duration and abs(target_duration - lrc_duration) > 8:
-            lrc_duration_mismatch_sec = abs(target_duration - lrc_duration)
-            issues_list.append(
-                f"LRC duration mismatch: LRC={lrc_duration}s vs audio={target_duration}s"
-            )
-            quality_report["lrc_timing_trust"] = "degraded_duration_mismatch"
-            # When mismatch is severe, avoid trusting provider line timestamps if we
-            # can recover timing from audio/Whisper alignment.
-            can_recover_with_audio_alignment = bool(vocals_path) and bool(
-                use_whisper or whisper_map_lrc
-            )
-            if (
-                can_recover_with_audio_alignment
-                and lrc_duration_mismatch_sec is not None
-                and lrc_duration_mismatch_sec >= 12.0
-            ):
-                issues_list.append(
-                    "Ignoring provider LRC timestamps due to severe duration mismatch; "
-                    "using audio/Whisper timing alignment instead"
-                )
-                line_timings = None
-                quality_report["lrc_timing_trust"] = "dropped_duration_mismatch"
+    line_timings = _apply_lrc_timing_trust_policy(
+        line_timings=line_timings,
+        lrc_text=lrc_text,
+        target_duration=target_duration,
+        drop_lrc_line_timings=drop_lrc_line_timings,
+        vocals_path=vocals_path,
+        use_whisper=use_whisper,
+        whisper_map_lrc=whisper_map_lrc,
+        issues_list=issues_list,
+        quality_report=quality_report,
+    )
 
     if (lrc_text or file_lines) and not line_timings:
         if offline:
