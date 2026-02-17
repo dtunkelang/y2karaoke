@@ -17,6 +17,61 @@ except ImportError:  # pragma: no cover - optional dependency behavior
     np = None  # type: ignore
 
 
+def _predict_rois_with_fallback(
+    ocr: Any,
+    rois: list[Any],
+    supports_batch: bool | None,
+) -> tuple[list[Any], bool | None]:
+    if not rois:
+        return [], supports_batch
+
+    if supports_batch is not False:
+        try:
+            pred = ocr.predict(rois)
+            if isinstance(pred, list) and len(pred) == len(rois):
+                return pred, True
+        except Exception:
+            supports_batch = False
+
+    out: list[Any] = []
+    for roi_nd in rois:
+        try:
+            single = ocr.predict(roi_nd)
+        except Exception:
+            out.append(None)
+            continue
+        if single and isinstance(single, list):
+            out.append(single[0])
+        else:
+            out.append(None)
+    return out, supports_batch
+
+
+def _append_predicted_words(
+    raw: list[dict[str, Any]],
+    pred_items: list[Any],
+    times: list[float],
+) -> None:
+    if np is None:
+        raise ImportError("Numpy is required.")
+
+    for t_val, raw_item in zip(times, pred_items):
+        if not raw_item:
+            continue
+        items = normalize_ocr_items(raw_item)
+        rec_texts = items["rec_texts"]
+        rec_boxes = items["rec_boxes"]
+        words = []
+        for txt, box_data in zip(rec_texts, rec_boxes):
+            points = box_data["word"] if isinstance(box_data, dict) else box_data
+            nb = np.array(points).reshape(-1, 2)
+            x, y = int(min(nb[:, 0])), int(min(nb[:, 1]))
+            bw, bh = int(max(nb[:, 0]) - x), int(max(nb[:, 1]) - y)
+            words.append({"text": txt, "x": x, "y": y, "w": bw, "h": bh})
+        if words:
+            raw.append({"time": t_val, "words": words})
+
+
 def collect_raw_frames(
     video_path: Path,
     start: float,
@@ -45,6 +100,22 @@ def collect_raw_frames(
     if log_fn:
         log_fn(f"Sampling frames at {fps} FPS...")
 
+    batch_size = 8
+    supports_batch: bool | None = None
+    buffered_rois: list[Any] = []
+    buffered_times: list[float] = []
+
+    def _flush_batch() -> None:
+        nonlocal supports_batch
+        if not buffered_rois:
+            return
+        pred_items, supports_batch = _predict_rois_with_fallback(
+            ocr, buffered_rois, supports_batch
+        )
+        _append_predicted_words(raw, pred_items, buffered_times)
+        buffered_rois.clear()
+        buffered_times.clear()
+
     while True:
         ok = cap.grab()
         if not ok:
@@ -62,22 +133,13 @@ def collect_raw_frames(
             continue
 
         roi = frame[ry : ry + rh, rx : rx + rw]
-        res = ocr.predict(roi)
-        if res and res[0]:
-            items = normalize_ocr_items(res[0])
-            rec_texts = items["rec_texts"]
-            rec_boxes = items["rec_boxes"]
-            words = []
-            for txt, box_data in zip(rec_texts, rec_boxes):
-                points = box_data["word"] if isinstance(box_data, dict) else box_data
-                nb = np.array(points).reshape(-1, 2)
-                x, y = int(min(nb[:, 0])), int(min(nb[:, 1]))
-                bw, bh = int(max(nb[:, 0]) - x), int(max(nb[:, 1]) - y)
-                words.append({"text": txt, "x": x, "y": y, "w": bw, "h": bh})
-            if words:
-                raw.append({"time": t, "words": words})
+        buffered_rois.append(roi)
+        buffered_times.append(t)
+        if len(buffered_rois) >= batch_size:
+            _flush_batch()
         frame_idx += 1
 
+    _flush_batch()
     cap.release()
     return raw
 
