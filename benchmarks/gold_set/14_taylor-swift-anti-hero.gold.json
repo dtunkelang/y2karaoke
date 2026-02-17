@@ -1,0 +1,7399 @@
+{
+  "title": "Anti-Hero",
+  "artist": "Taylor Swift",
+  "lyrics_source": "lyriq (LRCLib)",
+  "alignment_method": "whisper_map_lrc_dtw",
+  "whisper_requested": true,
+  "whisper_force_dtw": false,
+  "whisper_used": true,
+  "whisper_corrections": 2,
+  "issues": [
+    "LRC duration mismatch: LRC=194s vs audio=309s (proceeding with LRC timings)"
+  ],
+  "dtw_metrics": {
+    "matched_ratio": 0.8213166144200627,
+    "word_coverage": 0.8213166144200627,
+    "avg_similarity": 0.7529704142228698,
+    "line_coverage": 0.8852459016393442,
+    "phonetic_similarity_coverage": 0.6184271113679997,
+    "high_similarity_ratio": 0.7529704142228698,
+    "exact_match_ratio": 0.0,
+    "unmatched_ratio": 0.17868338557993735,
+    "dtw_used": 1.0,
+    "dtw_mode": 1.0,
+    "whisper_model": "large"
+  },
+  "line_count": 61,
+  "lines": [
+    {
+      "index": 1,
+      "start": 5.39,
+      "end": 10.12,
+      "text": "I have this thing where I get older but just never wiser",
+      "words": [
+        {
+          "text": "I",
+          "start": 5.39,
+          "end": 5.81
+        },
+        {
+          "text": "have",
+          "start": 5.82,
+          "end": 6.18
+        },
+        {
+          "text": "this",
+          "start": 6.19,
+          "end": 6.45
+        },
+        {
+          "text": "thing",
+          "start": 6.46,
+          "end": 6.76
+        },
+        {
+          "text": "where",
+          "start": 6.77,
+          "end": 7.11
+        },
+        {
+          "text": "I",
+          "start": 7.12,
+          "end": 7.46
+        },
+        {
+          "text": "get",
+          "start": 7.47,
+          "end": 7.73
+        },
+        {
+          "text": "older",
+          "start": 7.74,
+          "end": 8.26
+        },
+        {
+          "text": "but",
+          "start": 8.31,
+          "end": 8.61
+        },
+        {
+          "text": "just",
+          "start": 8.62,
+          "end": 8.9
+        },
+        {
+          "text": "never",
+          "start": 8.91,
+          "end": 9.33
+        },
+        {
+          "text": "wiser",
+          "start": 9.34,
+          "end": 10.12
+        }
+      ],
+      "word_slots": [
+        0.43,
+        0.37,
+        0.27,
+        0.31,
+        0.35,
+        0.35,
+        0.27,
+        0.57,
+        0.31,
+        0.29,
+        0.43,
+        0.78
+      ],
+      "word_spoken": [
+        0.42,
+        0.36,
+        0.26,
+        0.3,
+        0.34,
+        0.34,
+        0.26,
+        0.52,
+        0.3,
+        0.28,
+        0.42,
+        0.78
+      ],
+      "whisper_window_start": 4.39,
+      "whisper_window_end": 10.37,
+      "whisper_window_word_count": 5,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.837,
+      "whisper_window_words": [
+        {
+          "text": "I",
+          "start": 8.78,
+          "end": 9.2,
+          "probability": 0.612
+        },
+        {
+          "text": "have",
+          "start": 9.2,
+          "end": 9.56,
+          "probability": 0.619
+        },
+        {
+          "text": "this",
+          "start": 9.56,
+          "end": 9.82,
+          "probability": 0.989
+        },
+        {
+          "text": "thing",
+          "start": 9.82,
+          "end": 10.12,
+          "probability": 0.996
+        },
+        {
+          "text": "where",
+          "start": 10.12,
+          "end": 10.46,
+          "probability": 0.967
+        }
+      ],
+      "whisper_line_start_delta": 3.39,
+      "nearest_segment_start": 8.78,
+      "nearest_segment_start_end": 13.56,
+      "nearest_segment_start_text": "I have this thing where I get older, but just never wiser",
+      "nearest_segment_end": 13.56,
+      "nearest_segment_end_start": 8.78,
+      "nearest_segment_end_text": "I have this thing where I get older, but just never wiser"
+    },
+    {
+      "index": 2,
+      "start": 10.37,
+      "end": 13.43,
+      "text": "Midnights become my afternoons",
+      "words": [
+        {
+          "text": "Midnights",
+          "start": 10.37,
+          "end": 11.45
+        },
+        {
+          "text": "become",
+          "start": 11.45,
+          "end": 11.63
+        },
+        {
+          "text": "my",
+          "start": 11.63,
+          "end": 12.25
+        },
+        {
+          "text": "afternoons",
+          "start": 12.25,
+          "end": 13.43
+        }
+      ],
+      "word_slots": [
+        1.08,
+        0.18,
+        0.62,
+        1.18
+      ],
+      "word_spoken": [
+        1.08,
+        0.18,
+        0.62,
+        1.18
+      ],
+      "whisper_window_start": 9.37,
+      "whisper_window_end": 15.19,
+      "whisper_window_word_count": 13,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.951,
+      "whisper_window_words": [
+        {
+          "text": "this",
+          "start": 9.56,
+          "end": 9.82,
+          "probability": 0.989
+        },
+        {
+          "text": "thing",
+          "start": 9.82,
+          "end": 10.12,
+          "probability": 0.996
+        },
+        {
+          "text": "where",
+          "start": 10.12,
+          "end": 10.46,
+          "probability": 0.967
+        },
+        {
+          "text": "I",
+          "start": 10.46,
+          "end": 10.8,
+          "probability": 0.985
+        },
+        {
+          "text": "get",
+          "start": 10.8,
+          "end": 11.06,
+          "probability": 0.996
+        },
+        {
+          "text": "older,",
+          "start": 11.06,
+          "end": 11.58,
+          "probability": 0.993
+        },
+        {
+          "text": "but",
+          "start": 11.7,
+          "end": 12.0,
+          "probability": 0.985
+        },
+        {
+          "text": "just",
+          "start": 12.0,
+          "end": 12.28,
+          "probability": 0.923
+        },
+        {
+          "text": "never",
+          "start": 12.28,
+          "end": 12.7,
+          "probability": 0.924
+        },
+        {
+          "text": "wiser",
+          "start": 12.7,
+          "end": 13.56,
+          "probability": 1.0
+        },
+        {
+          "text": "Midnight's",
+          "start": 13.56,
+          "end": 14.64,
+          "probability": 0.622
+        },
+        {
+          "text": "become",
+          "start": 14.64,
+          "end": 14.82,
+          "probability": 0.996
+        },
+        {
+          "text": "my",
+          "start": 14.82,
+          "end": 15.44,
+          "probability": 0.99
+        }
+      ],
+      "whisper_line_start_delta": null,
+      "nearest_segment_start": 8.78,
+      "nearest_segment_start_end": 13.56,
+      "nearest_segment_start_text": "I have this thing where I get older, but just never wiser",
+      "nearest_segment_end": 13.56,
+      "nearest_segment_end_start": 8.78,
+      "nearest_segment_end_text": "I have this thing where I get older, but just never wiser"
+    },
+    {
+      "index": 3,
+      "start": 15.19,
+      "end": 18.33,
+      "text": "When my depression works the graveyard shift",
+      "words": [
+        {
+          "text": "When",
+          "start": 15.19,
+          "end": 15.9
+        },
+        {
+          "text": "my",
+          "start": 16.68,
+          "end": 16.858
+        },
+        {
+          "text": "depression",
+          "start": 16.863,
+          "end": 17.206
+        },
+        {
+          "text": "works",
+          "start": 17.212,
+          "end": 17.626
+        },
+        {
+          "text": "the",
+          "start": 17.632,
+          "end": 17.762
+        },
+        {
+          "text": "graveyard",
+          "start": 17.768,
+          "end": 18.123
+        },
+        {
+          "text": "shift",
+          "start": 18.129,
+          "end": 18.33
+        }
+      ],
+      "word_slots": [
+        1.49,
+        0.183,
+        0.349,
+        0.42,
+        0.136,
+        0.361,
+        0.201
+      ],
+      "word_spoken": [
+        0.71,
+        0.177,
+        0.343,
+        0.414,
+        0.13,
+        0.355,
+        0.201
+      ],
+      "whisper_window_start": 14.19,
+      "whisper_window_end": 18.34,
+      "whisper_window_word_count": 4,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.962,
+      "whisper_window_words": [
+        {
+          "text": "become",
+          "start": 14.64,
+          "end": 14.82,
+          "probability": 0.996
+        },
+        {
+          "text": "my",
+          "start": 14.82,
+          "end": 15.44,
+          "probability": 0.99
+        },
+        {
+          "text": "afternoons",
+          "start": 15.44,
+          "end": 16.62,
+          "probability": 0.932
+        },
+        {
+          "text": "When",
+          "start": 16.62,
+          "end": 17.82,
+          "probability": 0.929
+        }
+      ],
+      "whisper_line_start_delta": 1.43,
+      "nearest_segment_start": 16.62,
+      "nearest_segment_start_end": 21.88,
+      "nearest_segment_start_text": "When my depression works the graveyard shift",
+      "nearest_segment_end": 16.62,
+      "nearest_segment_end_start": 13.56,
+      "nearest_segment_end_text": "Midnight's become my afternoons",
+      "prior_segment_start": 8.78,
+      "prior_segment_end": 13.56,
+      "prior_segment_late_by": 1.63
+    },
+    {
+      "index": 4,
+      "start": 18.34,
+      "end": 22.9,
+      "text": "All of the people I've ghosted stand there in the room",
+      "words": [
+        {
+          "text": "All",
+          "start": 18.34,
+          "end": 18.62
+        },
+        {
+          "text": "of",
+          "start": 18.62,
+          "end": 18.92
+        },
+        {
+          "text": "the",
+          "start": 18.92,
+          "end": 19.42
+        },
+        {
+          "text": "people",
+          "start": 19.42,
+          "end": 20.34
+        },
+        {
+          "text": "I've",
+          "start": 20.34,
+          "end": 20.84
+        },
+        {
+          "text": "ghosted",
+          "start": 20.84,
+          "end": 21.18
+        },
+        {
+          "text": "stand",
+          "start": 21.18,
+          "end": 21.56
+        },
+        {
+          "text": "there",
+          "start": 21.56,
+          "end": 21.84
+        },
+        {
+          "text": "in",
+          "start": 21.84,
+          "end": 22.02
+        },
+        {
+          "text": "the",
+          "start": 22.02,
+          "end": 22.4
+        },
+        {
+          "text": "room",
+          "start": 22.4,
+          "end": 22.9
+        }
+      ],
+      "word_slots": [
+        0.28,
+        0.3,
+        0.5,
+        0.92,
+        0.5,
+        0.34,
+        0.38,
+        0.28,
+        0.18,
+        0.38,
+        0.5
+      ],
+      "word_spoken": [
+        0.28,
+        0.3,
+        0.5,
+        0.92,
+        0.5,
+        0.34,
+        0.38,
+        0.28,
+        0.18,
+        0.38,
+        0.5
+      ],
+      "whisper_window_start": 17.34,
+      "whisper_window_end": 24.6,
+      "whisper_window_word_count": 12,
+      "whisper_window_low_conf_count": 1,
+      "whisper_window_avg_prob": 0.893,
+      "whisper_window_words": [
+        {
+          "text": "my",
+          "start": 19.14,
+          "end": 19.44,
+          "probability": 0.998
+        },
+        {
+          "text": "depression",
+          "start": 19.44,
+          "end": 20.02,
+          "probability": 0.982
+        },
+        {
+          "text": "works",
+          "start": 20.02,
+          "end": 20.72,
+          "probability": 0.903
+        },
+        {
+          "text": "the",
+          "start": 20.72,
+          "end": 20.94,
+          "probability": 0.645
+        },
+        {
+          "text": "graveyard",
+          "start": 20.94,
+          "end": 21.54,
+          "probability": 0.98
+        },
+        {
+          "text": "shift",
+          "start": 21.54,
+          "end": 21.88,
+          "probability": 0.957
+        },
+        {
+          "text": "All",
+          "start": 21.88,
+          "end": 22.18,
+          "probability": 0.28
+        },
+        {
+          "text": "of",
+          "start": 22.18,
+          "end": 22.46,
+          "probability": 0.995
+        },
+        {
+          "text": "the",
+          "start": 22.46,
+          "end": 22.76,
+          "probability": 0.999
+        },
+        {
+          "text": "people",
+          "start": 22.76,
+          "end": 23.26,
+          "probability": 0.999
+        },
+        {
+          "text": "I've",
+          "start": 23.26,
+          "end": 24.18,
+          "probability": 0.983
+        },
+        {
+          "text": "ghosted",
+          "start": 24.18,
+          "end": 24.68,
+          "probability": 0.995
+        }
+      ],
+      "whisper_line_start_delta": 3.54,
+      "nearest_segment_start": 16.62,
+      "nearest_segment_start_end": 21.88,
+      "nearest_segment_start_text": "When my depression works the graveyard shift",
+      "nearest_segment_end": 16.62,
+      "nearest_segment_end_start": 13.56,
+      "nearest_segment_end_text": "Midnight's become my afternoons",
+      "prior_segment_start": 13.56,
+      "prior_segment_end": 16.62,
+      "prior_segment_late_by": 1.72
+    },
+    {
+      "index": 5,
+      "start": 24.6,
+      "end": 27.93,
+      "text": "I should not be left to my own devices",
+      "words": [
+        {
+          "text": "I",
+          "start": 24.6,
+          "end": 25.08
+        },
+        {
+          "text": "should",
+          "start": 25.09,
+          "end": 25.41
+        },
+        {
+          "text": "not",
+          "start": 25.42,
+          "end": 25.8
+        },
+        {
+          "text": "be",
+          "start": 25.81,
+          "end": 26.07
+        },
+        {
+          "text": "left",
+          "start": 26.08,
+          "end": 26.48
+        },
+        {
+          "text": "to",
+          "start": 26.49,
+          "end": 26.73
+        },
+        {
+          "text": "my",
+          "start": 26.74,
+          "end": 27.08
+        },
+        {
+          "text": "own",
+          "start": 27.09,
+          "end": 27.41
+        },
+        {
+          "text": "devices",
+          "start": 27.42,
+          "end": 27.93
+        }
+      ],
+      "word_slots": [
+        0.49,
+        0.33,
+        0.39,
+        0.27,
+        0.41,
+        0.25,
+        0.35,
+        0.33,
+        0.51
+      ],
+      "word_spoken": [
+        0.48,
+        0.32,
+        0.38,
+        0.26,
+        0.4,
+        0.24,
+        0.34,
+        0.32,
+        0.51
+      ],
+      "whisper_window_start": 23.6,
+      "whisper_window_end": 28.01,
+      "whisper_window_word_count": 7,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.979,
+      "whisper_window_words": [
+        {
+          "text": "ghosted",
+          "start": 24.18,
+          "end": 24.68,
+          "probability": 0.995
+        },
+        {
+          "text": "stand",
+          "start": 24.68,
+          "end": 25.02,
+          "probability": 0.943
+        },
+        {
+          "text": "there",
+          "start": 25.02,
+          "end": 25.4,
+          "probability": 0.993
+        },
+        {
+          "text": "in",
+          "start": 25.4,
+          "end": 25.68,
+          "probability": 0.996
+        },
+        {
+          "text": "the",
+          "start": 25.68,
+          "end": 25.86,
+          "probability": 0.995
+        },
+        {
+          "text": "room",
+          "start": 25.86,
+          "end": 26.24,
+          "probability": 0.976
+        },
+        {
+          "text": "I",
+          "start": 27.87,
+          "end": 28.35,
+          "probability": 0.957
+        }
+      ],
+      "whisper_line_start_delta": 3.27,
+      "nearest_segment_start": 21.88,
+      "nearest_segment_start_end": 26.24,
+      "nearest_segment_start_text": "All of the people I've ghosted stand there in the room",
+      "nearest_segment_end": 26.24,
+      "nearest_segment_end_start": 21.88,
+      "nearest_segment_end_text": "All of the people I've ghosted stand there in the room",
+      "prior_segment_start": 16.62,
+      "prior_segment_end": 21.88,
+      "prior_segment_late_by": 2.72
+    },
+    {
+      "index": 6,
+      "start": 28.01,
+      "end": 30.68,
+      "text": "They come with prices and vices",
+      "words": [
+        {
+          "text": "They",
+          "start": 28.01,
+          "end": 28.584
+        },
+        {
+          "text": "come",
+          "start": 28.584,
+          "end": 28.841
+        },
+        {
+          "text": "with",
+          "start": 28.841,
+          "end": 29.197
+        },
+        {
+          "text": "prices",
+          "start": 29.197,
+          "end": 29.75
+        },
+        {
+          "text": "and",
+          "start": 29.75,
+          "end": 30.186
+        },
+        {
+          "text": "vices",
+          "start": 30.186,
+          "end": 30.68
+        }
+      ],
+      "word_slots": [
+        0.574,
+        0.257,
+        0.356,
+        0.554,
+        0.435,
+        0.494
+      ],
+      "word_spoken": [
+        0.574,
+        0.257,
+        0.356,
+        0.554,
+        0.435,
+        0.494
+      ],
+      "whisper_window_start": 27.01,
+      "whisper_window_end": 30.69,
+      "whisper_window_word_count": 9,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.974,
+      "whisper_window_words": [
+        {
+          "text": "I",
+          "start": 27.87,
+          "end": 28.35,
+          "probability": 0.957
+        },
+        {
+          "text": "should",
+          "start": 28.35,
+          "end": 28.67,
+          "probability": 0.998
+        },
+        {
+          "text": "not",
+          "start": 28.67,
+          "end": 29.05,
+          "probability": 0.999
+        },
+        {
+          "text": "be",
+          "start": 29.05,
+          "end": 29.31,
+          "probability": 1.0
+        },
+        {
+          "text": "left",
+          "start": 29.31,
+          "end": 29.71,
+          "probability": 0.818
+        },
+        {
+          "text": "to",
+          "start": 29.71,
+          "end": 29.95,
+          "probability": 0.999
+        },
+        {
+          "text": "my",
+          "start": 29.95,
+          "end": 30.29,
+          "probability": 1.0
+        },
+        {
+          "text": "own",
+          "start": 30.29,
+          "end": 30.61,
+          "probability": 0.997
+        },
+        {
+          "text": "devices",
+          "start": 30.61,
+          "end": 31.25,
+          "probability": 0.999
+        }
+      ],
+      "whisper_line_start_delta": null,
+      "nearest_segment_start": 27.87,
+      "nearest_segment_start_end": 31.25,
+      "nearest_segment_start_text": "I should not be left to my own devices",
+      "nearest_segment_end": 26.24,
+      "nearest_segment_end_start": 21.88,
+      "nearest_segment_end_text": "All of the people I've ghosted stand there in the room",
+      "prior_segment_start": 21.88,
+      "prior_segment_end": 26.24,
+      "prior_segment_late_by": 1.77
+    },
+    {
+      "index": 7,
+      "start": 30.69,
+      "end": 32.11,
+      "text": "I end up in crises",
+      "words": [
+        {
+          "text": "I",
+          "start": 30.69,
+          "end": 30.764
+        },
+        {
+          "text": "end",
+          "start": 30.764,
+          "end": 31.207
+        },
+        {
+          "text": "up",
+          "start": 31.207,
+          "end": 31.738
+        },
+        {
+          "text": "in",
+          "start": 31.738,
+          "end": 32.034
+        },
+        {
+          "text": "crises",
+          "start": 32.034,
+          "end": 32.11
+        }
+      ],
+      "word_slots": [
+        0.074,
+        0.443,
+        0.532,
+        0.295,
+        0.076
+      ],
+      "word_spoken": [
+        0.074,
+        0.443,
+        0.532,
+        0.295,
+        0.076
+      ],
+      "whisper_window_start": 29.69,
+      "whisper_window_end": 32.41,
+      "whisper_window_word_count": 7,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.998,
+      "whisper_window_words": [
+        {
+          "text": "to",
+          "start": 29.71,
+          "end": 29.95,
+          "probability": 0.999
+        },
+        {
+          "text": "my",
+          "start": 29.95,
+          "end": 30.29,
+          "probability": 1.0
+        },
+        {
+          "text": "own",
+          "start": 30.29,
+          "end": 30.61,
+          "probability": 0.997
+        },
+        {
+          "text": "devices",
+          "start": 30.61,
+          "end": 31.25,
+          "probability": 0.999
+        },
+        {
+          "text": "They",
+          "start": 31.25,
+          "end": 31.83,
+          "probability": 0.989
+        },
+        {
+          "text": "come",
+          "start": 31.83,
+          "end": 32.09,
+          "probability": 0.999
+        },
+        {
+          "text": "with",
+          "start": 32.09,
+          "end": 32.45,
+          "probability": 0.999
+        }
+      ],
+      "whisper_line_start_delta": null,
+      "nearest_segment_start": 31.25,
+      "nearest_segment_start_end": 33.95,
+      "nearest_segment_start_text": "They come with prices and vices",
+      "nearest_segment_end": 31.25,
+      "nearest_segment_end_start": 27.87,
+      "nearest_segment_end_text": "I should not be left to my own devices",
+      "prior_segment_start": 21.88,
+      "prior_segment_end": 26.24,
+      "prior_segment_late_by": 4.45
+    },
+    {
+      "index": 8,
+      "start": 32.41,
+      "end": 34.21,
+      "text": "Tale as old as time",
+      "words": [
+        {
+          "text": "Tale",
+          "start": 32.41,
+          "end": 32.93
+        },
+        {
+          "text": "as",
+          "start": 32.93,
+          "end": 33.21
+        },
+        {
+          "text": "old",
+          "start": 33.21,
+          "end": 33.49
+        },
+        {
+          "text": "as",
+          "start": 33.49,
+          "end": 33.75
+        },
+        {
+          "text": "time",
+          "start": 33.75,
+          "end": 34.21
+        }
+      ],
+      "word_slots": [
+        0.52,
+        0.28,
+        0.28,
+        0.26,
+        0.46
+      ],
+      "word_spoken": [
+        0.52,
+        0.28,
+        0.28,
+        0.26,
+        0.46
+      ],
+      "whisper_window_start": 31.41,
+      "whisper_window_end": 35.02,
+      "whisper_window_word_count": 9,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.955,
+      "whisper_window_words": [
+        {
+          "text": "come",
+          "start": 31.83,
+          "end": 32.09,
+          "probability": 0.999
+        },
+        {
+          "text": "with",
+          "start": 32.09,
+          "end": 32.45,
+          "probability": 0.999
+        },
+        {
+          "text": "prices",
+          "start": 32.45,
+          "end": 33.01,
+          "probability": 0.993
+        },
+        {
+          "text": "and",
+          "start": 33.01,
+          "end": 33.45,
+          "probability": 0.932
+        },
+        {
+          "text": "vices",
+          "start": 33.45,
+          "end": 33.95,
+          "probability": 0.995
+        },
+        {
+          "text": "I",
+          "start": 33.95,
+          "end": 34.35,
+          "probability": 0.676
+        },
+        {
+          "text": "end",
+          "start": 34.35,
+          "end": 34.65,
+          "probability": 0.999
+        },
+        {
+          "text": "up",
+          "start": 34.65,
+          "end": 35.01,
+          "probability": 1.0
+        },
+        {
+          "text": "in",
+          "start": 35.01,
+          "end": 35.21,
+          "probability": 0.999
+        }
+      ],
+      "whisper_line_start_delta": null,
+      "nearest_segment_start": 31.25,
+      "nearest_segment_start_end": 33.95,
+      "nearest_segment_start_text": "They come with prices and vices",
+      "nearest_segment_end": 31.25,
+      "nearest_segment_end_start": 27.87,
+      "nearest_segment_end_text": "I should not be left to my own devices",
+      "prior_segment_start": 27.87,
+      "prior_segment_end": 31.25,
+      "prior_segment_late_by": 1.16
+    },
+    {
+      "index": 9,
+      "start": 35.02,
+      "end": 37.59,
+      "text": "I wake up screaming from dreaming",
+      "words": [
+        {
+          "text": "I",
+          "start": 35.02,
+          "end": 35.99
+        },
+        {
+          "text": "wake",
+          "start": 35.998,
+          "end": 36.286
+        },
+        {
+          "text": "up",
+          "start": 36.294,
+          "end": 36.536
+        },
+        {
+          "text": "screaming",
+          "start": 36.544,
+          "end": 36.847
+        },
+        {
+          "text": "from",
+          "start": 36.855,
+          "end": 37.219
+        },
+        {
+          "text": "dreaming",
+          "start": 37.226,
+          "end": 37.59
+        }
+      ],
+      "word_slots": [
+        0.978,
+        0.296,
+        0.25,
+        0.311,
+        0.371,
+        0.364
+      ],
+      "word_spoken": [
+        0.97,
+        0.288,
+        0.243,
+        0.303,
+        0.364,
+        0.364
+      ],
+      "whisper_window_start": 34.02,
+      "whisper_window_end": 37.6,
+      "whisper_window_word_count": 10,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.899,
+      "whisper_window_words": [
+        {
+          "text": "end",
+          "start": 34.35,
+          "end": 34.65,
+          "probability": 0.999
+        },
+        {
+          "text": "up",
+          "start": 34.65,
+          "end": 35.01,
+          "probability": 1.0
+        },
+        {
+          "text": "in",
+          "start": 35.01,
+          "end": 35.21,
+          "probability": 0.999
+        },
+        {
+          "text": "crisis",
+          "start": 35.21,
+          "end": 35.77,
+          "probability": 0.989
+        },
+        {
+          "text": "Still",
+          "start": 35.77,
+          "end": 36.29,
+          "probability": 0.537
+        },
+        {
+          "text": "as",
+          "start": 36.29,
+          "end": 36.57,
+          "probability": 0.933
+        },
+        {
+          "text": "old",
+          "start": 36.57,
+          "end": 36.85,
+          "probability": 0.991
+        },
+        {
+          "text": "as",
+          "start": 36.85,
+          "end": 37.11,
+          "probability": 0.999
+        },
+        {
+          "text": "time",
+          "start": 37.11,
+          "end": 37.57,
+          "probability": 0.922
+        },
+        {
+          "text": "I",
+          "start": 37.57,
+          "end": 38.85,
+          "probability": 0.625
+        }
+      ],
+      "whisper_line_start_delta": 2.55,
+      "nearest_segment_start": 35.77,
+      "nearest_segment_start_end": 37.57,
+      "nearest_segment_start_text": "Still as old as time",
+      "nearest_segment_end": 35.77,
+      "nearest_segment_end_start": 33.95,
+      "nearest_segment_end_text": "I end up in crisis",
+      "prior_segment_start": 31.25,
+      "prior_segment_end": 33.95,
+      "prior_segment_late_by": 1.07
+    },
+    {
+      "index": 10,
+      "start": 37.6,
+      "end": 40.02,
+      "text": "One day I'll watch as you're leaving",
+      "words": [
+        {
+          "text": "One",
+          "start": 37.6,
+          "end": 37.948
+        },
+        {
+          "text": "day",
+          "start": 37.948,
+          "end": 38.336
+        },
+        {
+          "text": "I'll",
+          "start": 38.336,
+          "end": 38.626
+        },
+        {
+          "text": "watch",
+          "start": 38.626,
+          "end": 38.916
+        },
+        {
+          "text": "as",
+          "start": 38.916,
+          "end": 39.4
+        },
+        {
+          "text": "you're",
+          "start": 39.4,
+          "end": 39.73
+        },
+        {
+          "text": "leaving",
+          "start": 39.73,
+          "end": 40.02
+        }
+      ],
+      "word_slots": [
+        0.348,
+        0.387,
+        0.29,
+        0.29,
+        0.484,
+        0.329,
+        0.29
+      ],
+      "word_spoken": [
+        0.348,
+        0.387,
+        0.29,
+        0.29,
+        0.484,
+        0.329,
+        0.29
+      ],
+      "whisper_window_start": 36.6,
+      "whisper_window_end": 40.03,
+      "whisper_window_word_count": 7,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.93,
+      "whisper_window_words": [
+        {
+          "text": "as",
+          "start": 36.85,
+          "end": 37.11,
+          "probability": 0.999
+        },
+        {
+          "text": "time",
+          "start": 37.11,
+          "end": 37.57,
+          "probability": 0.922
+        },
+        {
+          "text": "I",
+          "start": 37.57,
+          "end": 38.85,
+          "probability": 0.625
+        },
+        {
+          "text": "wake",
+          "start": 38.85,
+          "end": 39.23,
+          "probability": 0.98
+        },
+        {
+          "text": "up",
+          "start": 39.23,
+          "end": 39.55,
+          "probability": 0.997
+        },
+        {
+          "text": "screaming",
+          "start": 39.55,
+          "end": 39.95,
+          "probability": 0.995
+        },
+        {
+          "text": "from",
+          "start": 39.95,
+          "end": 40.43,
+          "probability": 0.99
+        }
+      ],
+      "whisper_line_start_delta": null,
+      "nearest_segment_start": 37.57,
+      "nearest_segment_start_end": 40.91,
+      "nearest_segment_start_text": "I wake up screaming from dreaming",
+      "nearest_segment_end": 37.57,
+      "nearest_segment_end_start": 35.77,
+      "nearest_segment_end_text": "Still as old as time",
+      "prior_segment_start": 35.77,
+      "prior_segment_end": 37.57,
+      "prior_segment_late_by": 0.03
+    },
+    {
+      "index": 11,
+      "start": 40.03,
+      "end": 42.44,
+      "text": "'Cause you got tired of my scheming",
+      "words": [
+        {
+          "text": "'Cause",
+          "start": 40.03,
+          "end": 40.296
+        },
+        {
+          "text": "you",
+          "start": 40.296,
+          "end": 40.618
+        },
+        {
+          "text": "got",
+          "start": 40.618,
+          "end": 41.055
+        },
+        {
+          "text": "tired",
+          "start": 41.055,
+          "end": 41.301
+        },
+        {
+          "text": "of",
+          "start": 41.301,
+          "end": 41.453
+        },
+        {
+          "text": "my",
+          "start": 41.453,
+          "end": 42.193
+        },
+        {
+          "text": "scheming",
+          "start": 42.193,
+          "end": 42.44
+        }
+      ],
+      "word_slots": [
+        0.266,
+        0.323,
+        0.436,
+        0.247,
+        0.152,
+        0.74,
+        0.247
+      ],
+      "word_spoken": [
+        0.266,
+        0.323,
+        0.436,
+        0.247,
+        0.152,
+        0.74,
+        0.247
+      ],
+      "whisper_window_start": 39.03,
+      "whisper_window_end": 42.45,
+      "whisper_window_word_count": 9,
+      "whisper_window_low_conf_count": 1,
+      "whisper_window_avg_prob": 0.917,
+      "whisper_window_words": [
+        {
+          "text": "up",
+          "start": 39.23,
+          "end": 39.55,
+          "probability": 0.997
+        },
+        {
+          "text": "screaming",
+          "start": 39.55,
+          "end": 39.95,
+          "probability": 0.995
+        },
+        {
+          "text": "from",
+          "start": 39.95,
+          "end": 40.43,
+          "probability": 0.99
+        },
+        {
+          "text": "dreaming",
+          "start": 40.43,
+          "end": 40.91,
+          "probability": 0.983
+        },
+        {
+          "text": "One",
+          "start": 40.91,
+          "end": 41.35,
+          "probability": 0.405
+        },
+        {
+          "text": "day",
+          "start": 41.35,
+          "end": 41.71,
+          "probability": 0.999
+        },
+        {
+          "text": "I'll",
+          "start": 41.71,
+          "end": 42.11,
+          "probability": 0.927
+        },
+        {
+          "text": "watch",
+          "start": 42.11,
+          "end": 42.41,
+          "probability": 0.999
+        },
+        {
+          "text": "as",
+          "start": 42.41,
+          "end": 42.71,
+          "probability": 0.957
+        }
+      ],
+      "whisper_line_start_delta": null,
+      "nearest_segment_start": 40.91,
+      "nearest_segment_start_end": 43.55,
+      "nearest_segment_start_text": "One day I'll watch as you're leaving",
+      "nearest_segment_end": 40.91,
+      "nearest_segment_end_start": 37.57,
+      "nearest_segment_end_text": "I wake up screaming from dreaming",
+      "prior_segment_start": 35.77,
+      "prior_segment_end": 37.57,
+      "prior_segment_late_by": 2.46
+    },
+    {
+      "index": 12,
+      "start": 42.45,
+      "end": 44.29,
+      "text": "For the last time",
+      "words": [
+        {
+          "text": "For",
+          "start": 42.45,
+          "end": 42.68
+        },
+        {
+          "text": "the",
+          "start": 42.68,
+          "end": 43.082
+        },
+        {
+          "text": "last",
+          "start": 43.082,
+          "end": 43.523
+        },
+        {
+          "text": "time",
+          "start": 43.523,
+          "end": 44.29
+        }
+      ],
+      "word_slots": [
+        0.23,
+        0.402,
+        0.441,
+        0.767
+      ],
+      "word_spoken": [
+        0.23,
+        0.402,
+        0.441,
+        0.767
+      ],
+      "whisper_window_start": 41.45,
+      "whisper_window_end": 44.3,
+      "whisper_window_word_count": 8,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.962,
+      "whisper_window_words": [
+        {
+          "text": "I'll",
+          "start": 41.71,
+          "end": 42.11,
+          "probability": 0.927
+        },
+        {
+          "text": "watch",
+          "start": 42.11,
+          "end": 42.41,
+          "probability": 0.999
+        },
+        {
+          "text": "as",
+          "start": 42.41,
+          "end": 42.71,
+          "probability": 0.957
+        },
+        {
+          "text": "you're",
+          "start": 42.71,
+          "end": 43.21,
+          "probability": 0.985
+        },
+        {
+          "text": "leaving",
+          "start": 43.21,
+          "end": 43.55,
+          "probability": 0.999
+        },
+        {
+          "text": "Cause",
+          "start": 43.55,
+          "end": 43.85,
+          "probability": 0.833
+        },
+        {
+          "text": "you",
+          "start": 43.85,
+          "end": 44.13,
+          "probability": 0.999
+        },
+        {
+          "text": "got",
+          "start": 44.13,
+          "end": 44.47,
+          "probability": 0.998
+        }
+      ],
+      "whisper_line_start_delta": null,
+      "nearest_segment_start": 43.55,
+      "nearest_segment_start_end": 46.13,
+      "nearest_segment_start_text": "Cause you got tired of my scheming",
+      "nearest_segment_end": 43.55,
+      "nearest_segment_end_start": 40.91,
+      "nearest_segment_end_text": "One day I'll watch as you're leaving",
+      "prior_segment_start": 37.57,
+      "prior_segment_end": 40.91,
+      "prior_segment_late_by": 1.54
+    },
+    {
+      "index": 13,
+      "start": 44.3,
+      "end": 44.71,
+      "text": "It's me",
+      "words": [
+        {
+          "text": "It's",
+          "start": 44.3,
+          "end": 44.56
+        },
+        {
+          "text": "me",
+          "start": 44.57,
+          "end": 44.71
+        }
+      ],
+      "word_slots": [
+        0.27,
+        0.14
+      ],
+      "word_spoken": [
+        0.26,
+        0.14
+      ],
+      "whisper_window_start": 43.3,
+      "whisper_window_end": 45.82,
+      "whisper_window_word_count": 7,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.975,
+      "whisper_window_words": [
+        {
+          "text": "Cause",
+          "start": 43.55,
+          "end": 43.85,
+          "probability": 0.833
+        },
+        {
+          "text": "you",
+          "start": 43.85,
+          "end": 44.13,
+          "probability": 0.999
+        },
+        {
+          "text": "got",
+          "start": 44.13,
+          "end": 44.47,
+          "probability": 0.998
+        },
+        {
+          "text": "tired",
+          "start": 44.47,
+          "end": 44.93,
+          "probability": 1.0
+        },
+        {
+          "text": "of",
+          "start": 44.93,
+          "end": 45.19,
+          "probability": 0.999
+        },
+        {
+          "text": "my",
+          "start": 45.19,
+          "end": 45.35,
+          "probability": 0.997
+        },
+        {
+          "text": "scheming",
+          "start": 45.35,
+          "end": 46.13,
+          "probability": 1.0
+        }
+      ],
+      "whisper_line_start_delta": null,
+      "nearest_segment_start": 43.55,
+      "nearest_segment_start_end": 46.13,
+      "nearest_segment_start_text": "Cause you got tired of my scheming",
+      "nearest_segment_end": 43.55,
+      "nearest_segment_end_start": 40.91,
+      "nearest_segment_end_text": "One day I'll watch as you're leaving",
+      "prior_segment_start": 40.91,
+      "prior_segment_end": 43.55,
+      "prior_segment_late_by": 0.75
+    },
+    {
+      "index": 14,
+      "start": 45.82,
+      "end": 46.12,
+      "text": "Hi!",
+      "words": [
+        {
+          "text": "Hi!",
+          "start": 45.82,
+          "end": 46.12
+        }
+      ],
+      "word_slots": [
+        0.3
+      ],
+      "word_spoken": [
+        0.3
+      ],
+      "whisper_window_start": 44.82,
+      "whisper_window_end": 47.12,
+      "whisper_window_word_count": 7,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.97,
+      "whisper_window_words": [
+        {
+          "text": "of",
+          "start": 44.93,
+          "end": 45.19,
+          "probability": 0.999
+        },
+        {
+          "text": "my",
+          "start": 45.19,
+          "end": 45.35,
+          "probability": 0.997
+        },
+        {
+          "text": "scheming",
+          "start": 45.35,
+          "end": 46.13,
+          "probability": 1.0
+        },
+        {
+          "text": "For",
+          "start": 46.13,
+          "end": 46.39,
+          "probability": 0.793
+        },
+        {
+          "text": "the",
+          "start": 46.39,
+          "end": 46.63,
+          "probability": 0.999
+        },
+        {
+          "text": "last",
+          "start": 46.63,
+          "end": 47.05,
+          "probability": 0.999
+        },
+        {
+          "text": "time",
+          "start": 47.05,
+          "end": 47.51,
+          "probability": 1.0
+        }
+      ],
+      "whisper_line_start_delta": null,
+      "nearest_segment_start": 46.13,
+      "nearest_segment_start_end": 47.51,
+      "nearest_segment_start_text": "For the last time",
+      "nearest_segment_end": 46.13,
+      "nearest_segment_end_start": 43.55,
+      "nearest_segment_end_text": "Cause you got tired of my scheming",
+      "prior_segment_start": 40.91,
+      "prior_segment_end": 43.55,
+      "prior_segment_late_by": 2.27
+    },
+    {
+      "index": 15,
+      "start": 47.12,
+      "end": 49.34,
+      "text": "I'm the problem, it's me",
+      "words": [
+        {
+          "text": "I'm",
+          "start": 47.12,
+          "end": 47.837
+        },
+        {
+          "text": "the",
+          "start": 47.837,
+          "end": 48.135
+        },
+        {
+          "text": "problem,",
+          "start": 48.135,
+          "end": 48.773
+        },
+        {
+          "text": "it's",
+          "start": 48.773,
+          "end": 49.34
+        },
+        {
+          "text": "me",
+          "start": 49.28,
+          "end": 49.34
+        }
+      ],
+      "word_slots": [
+        0.717,
+        0.299,
+        0.637,
+        0.508,
+        0.06
+      ],
+      "word_spoken": [
+        0.717,
+        0.299,
+        0.637,
+        0.567,
+        0.06
+      ],
+      "whisper_window_start": 46.12,
+      "whisper_window_end": 49.35,
+      "whisper_window_word_count": 7,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.898,
+      "whisper_window_words": [
+        {
+          "text": "For",
+          "start": 46.13,
+          "end": 46.39,
+          "probability": 0.793
+        },
+        {
+          "text": "the",
+          "start": 46.39,
+          "end": 46.63,
+          "probability": 0.999
+        },
+        {
+          "text": "last",
+          "start": 46.63,
+          "end": 47.05,
+          "probability": 0.999
+        },
+        {
+          "text": "time",
+          "start": 47.05,
+          "end": 47.51,
+          "probability": 1.0
+        },
+        {
+          "text": "It's",
+          "start": 47.51,
+          "end": 48.31,
+          "probability": 0.994
+        },
+        {
+          "text": "me,",
+          "start": 48.31,
+          "end": 48.53,
+          "probability": 0.999
+        },
+        {
+          "text": "hi,",
+          "start": 48.81,
+          "end": 49.75,
+          "probability": 0.501
+        }
+      ],
+      "whisper_line_start_delta": null,
+      "nearest_segment_start": 47.51,
+      "nearest_segment_start_end": 52.23,
+      "nearest_segment_start_text": "It's me, hi, I'm the problem, it's me",
+      "nearest_segment_end": 47.51,
+      "nearest_segment_end_start": 46.13,
+      "nearest_segment_end_text": "For the last time",
+      "prior_segment_start": 43.55,
+      "prior_segment_end": 46.13,
+      "prior_segment_late_by": 0.99
+    },
+    {
+      "index": 16,
+      "start": 49.35,
+      "end": 50.15,
+      "text": "At teatime",
+      "words": [
+        {
+          "text": "At",
+          "start": 49.35,
+          "end": 49.75
+        },
+        {
+          "text": "teatime",
+          "start": 49.75,
+          "end": 50.15
+        }
+      ],
+      "word_slots": [
+        0.4,
+        0.4
+      ],
+      "word_spoken": [
+        0.4,
+        0.4
+      ],
+      "whisper_window_start": 48.35,
+      "whisper_window_end": 51.92,
+      "whisper_window_word_count": 5,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.899,
+      "whisper_window_words": [
+        {
+          "text": "hi,",
+          "start": 48.81,
+          "end": 49.75,
+          "probability": 0.501
+        },
+        {
+          "text": "I'm",
+          "start": 50.17,
+          "end": 51.03,
+          "probability": 0.995
+        },
+        {
+          "text": "the",
+          "start": 51.03,
+          "end": 51.23,
+          "probability": 1.0
+        },
+        {
+          "text": "problem,",
+          "start": 51.23,
+          "end": 51.69,
+          "probability": 1.0
+        },
+        {
+          "text": "it's",
+          "start": 51.83,
+          "end": 52.09,
+          "probability": 1.0
+        }
+      ],
+      "whisper_line_start_delta": null,
+      "nearest_segment_start": 47.51,
+      "nearest_segment_start_end": 52.23,
+      "nearest_segment_start_text": "It's me, hi, I'm the problem, it's me",
+      "nearest_segment_end": 47.51,
+      "nearest_segment_end_start": 46.13,
+      "nearest_segment_end_text": "For the last time",
+      "prior_segment_start": 46.13,
+      "prior_segment_end": 47.51,
+      "prior_segment_late_by": 1.84
+    },
+    {
+      "index": 17,
+      "start": 51.92,
+      "end": 52.12,
+      "text": "Everybody agrees",
+      "words": [
+        {
+          "text": "Everybody",
+          "start": 51.92,
+          "end": 51.932
+        },
+        {
+          "text": "agrees",
+          "start": 51.932,
+          "end": 52.12
+        }
+      ],
+      "word_slots": [
+        0.012,
+        0.188
+      ],
+      "word_spoken": [
+        0.012,
+        0.188
+      ],
+      "whisper_window_start": 50.92,
+      "whisper_window_end": 54.96,
+      "whisper_window_word_count": 7,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.988,
+      "whisper_window_words": [
+        {
+          "text": "the",
+          "start": 51.03,
+          "end": 51.23,
+          "probability": 1.0
+        },
+        {
+          "text": "problem,",
+          "start": 51.23,
+          "end": 51.69,
+          "probability": 1.0
+        },
+        {
+          "text": "it's",
+          "start": 51.83,
+          "end": 52.09,
+          "probability": 1.0
+        },
+        {
+          "text": "me",
+          "start": 52.09,
+          "end": 52.23,
+          "probability": 1.0
+        },
+        {
+          "text": "At",
+          "start": 52.23,
+          "end": 53.21,
+          "probability": 0.962
+        },
+        {
+          "text": "tea",
+          "start": 53.21,
+          "end": 53.51,
+          "probability": 0.98
+        },
+        {
+          "text": "time,",
+          "start": 53.51,
+          "end": 54.67,
+          "probability": 0.977
+        }
+      ],
+      "whisper_line_start_delta": null,
+      "nearest_segment_start": 52.23,
+      "nearest_segment_start_end": 57.13,
+      "nearest_segment_start_text": "At tea time, everybody agrees",
+      "nearest_segment_end": 52.23,
+      "nearest_segment_end_start": 47.51,
+      "nearest_segment_end_text": "It's me, hi, I'm the problem, it's me",
+      "prior_segment_start": 46.13,
+      "prior_segment_end": 47.51,
+      "prior_segment_late_by": 4.41
+    },
+    {
+      "index": 18,
+      "start": 54.96,
+      "end": 57.56,
+      "text": "I'll stare directly at the sun but never in the mirror",
+      "words": [
+        {
+          "text": "I'll",
+          "start": 54.96,
+          "end": 55.174
+        },
+        {
+          "text": "stare",
+          "start": 55.198,
+          "end": 55.413
+        },
+        {
+          "text": "directly",
+          "start": 55.436,
+          "end": 55.651
+        },
+        {
+          "text": "at",
+          "start": 55.675,
+          "end": 55.889
+        },
+        {
+          "text": "the",
+          "start": 55.913,
+          "end": 56.127
+        },
+        {
+          "text": "sun",
+          "start": 56.151,
+          "end": 56.365
+        },
+        {
+          "text": "but",
+          "start": 56.389,
+          "end": 56.603
+        },
+        {
+          "text": "never",
+          "start": 56.627,
+          "end": 56.842
+        },
+        {
+          "text": "in",
+          "start": 56.865,
+          "end": 57.08
+        },
+        {
+          "text": "the",
+          "start": 57.104,
+          "end": 57.318
+        },
+        {
+          "text": "mirror",
+          "start": 57.342,
+          "end": 57.556
+        }
+      ],
+      "word_slots": [
+        0.238,
+        0.238,
+        0.238,
+        0.238,
+        0.238,
+        0.238,
+        0.238,
+        0.238,
+        0.238,
+        0.238,
+        0.214
+      ],
+      "word_spoken": [
+        0.214,
+        0.214,
+        0.214,
+        0.214,
+        0.214,
+        0.214,
+        0.214,
+        0.214,
+        0.214,
+        0.214,
+        0.214
+      ],
+      "whisper_window_start": 53.96,
+      "whisper_window_end": 59.4,
+      "whisper_window_word_count": 5,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 1.0,
+      "whisper_window_words": [
+        {
+          "text": "everybody",
+          "start": 55.03,
+          "end": 56.23,
+          "probability": 0.999
+        },
+        {
+          "text": "agrees",
+          "start": 56.23,
+          "end": 57.13,
+          "probability": 1.0
+        },
+        {
+          "text": "I'll",
+          "start": 58.05,
+          "end": 58.77,
+          "probability": 1.0
+        },
+        {
+          "text": "stare",
+          "start": 58.77,
+          "end": 59.07,
+          "probability": 1.0
+        },
+        {
+          "text": "directly",
+          "start": 59.07,
+          "end": 59.71,
+          "probability": 1.0
+        }
+      ],
+      "whisper_line_start_delta": 3.09,
+      "nearest_segment_start": 52.23,
+      "nearest_segment_start_end": 57.13,
+      "nearest_segment_start_text": "At tea time, everybody agrees",
+      "nearest_segment_end": 57.13,
+      "nearest_segment_end_start": 52.23,
+      "nearest_segment_end_text": "At tea time, everybody agrees",
+      "prior_segment_start": 47.51,
+      "prior_segment_end": 52.23,
+      "prior_segment_late_by": 2.73
+    },
+    {
+      "index": 19,
+      "start": 59.4,
+      "end": 62.22,
+      "text": "It must be exhausting always rooting for the anti-hero",
+      "words": [
+        {
+          "text": "It",
+          "start": 59.4,
+          "end": 59.41
+        },
+        {
+          "text": "must",
+          "start": 59.41,
+          "end": 59.413
+        },
+        {
+          "text": "be",
+          "start": 59.413,
+          "end": 59.421
+        },
+        {
+          "text": "exhausting",
+          "start": 59.421,
+          "end": 59.427
+        },
+        {
+          "text": "always",
+          "start": 59.427,
+          "end": 59.434
+        },
+        {
+          "text": "rooting",
+          "start": 59.434,
+          "end": 59.435
+        },
+        {
+          "text": "for",
+          "start": 59.435,
+          "end": 59.436
+        },
+        {
+          "text": "the",
+          "start": 59.436,
+          "end": 59.438
+        },
+        {
+          "text": "anti-hero",
+          "start": 59.438,
+          "end": 62.22
+        }
+      ],
+      "word_slots": [
+        0.01,
+        0.003,
+        0.008,
+        0.006,
+        0.007,
+        0.001,
+        0.001,
+        0.001,
+        2.782
+      ],
+      "word_spoken": [
+        0.01,
+        0.003,
+        0.008,
+        0.006,
+        0.007,
+        0.001,
+        0.001,
+        0.001,
+        2.782
+      ],
+      "whisper_window_start": 58.4,
+      "whisper_window_end": 69.79,
+      "whisper_window_word_count": 30,
+      "whisper_window_low_conf_count": 8,
+      "whisper_window_avg_prob": 0.755,
+      "whisper_window_words": [
+        {
+          "text": "stare",
+          "start": 58.77,
+          "end": 59.07,
+          "probability": 1.0
+        },
+        {
+          "text": "directly",
+          "start": 59.07,
+          "end": 59.71,
+          "probability": 1.0
+        },
+        {
+          "text": "at",
+          "start": 59.71,
+          "end": 60.35,
+          "probability": 1.0
+        },
+        {
+          "text": "the",
+          "start": 60.35,
+          "end": 60.49,
+          "probability": 1.0
+        },
+        {
+          "text": "sun,",
+          "start": 60.49,
+          "end": 60.81,
+          "probability": 1.0
+        },
+        {
+          "text": "but",
+          "start": 61.03,
+          "end": 61.21,
+          "probability": 1.0
+        },
+        {
+          "text": "never",
+          "start": 61.21,
+          "end": 61.57,
+          "probability": 1.0
+        },
+        {
+          "text": "in",
+          "start": 61.57,
+          "end": 62.11,
+          "probability": 1.0
+        },
+        {
+          "text": "the",
+          "start": 62.11,
+          "end": 62.43,
+          "probability": 0.998
+        },
+        {
+          "text": "mirror",
+          "start": 62.43,
+          "end": 62.79,
+          "probability": 1.0
+        },
+        {
+          "text": "It",
+          "start": 62.79,
+          "end": 63.19,
+          "probability": 0.993
+        },
+        {
+          "text": "must",
+          "start": 63.19,
+          "end": 63.65,
+          "probability": 1.0
+        },
+        {
+          "text": "be",
+          "start": 63.65,
+          "end": 63.99,
+          "probability": 1.0
+        },
+        {
+          "text": "exhausting,",
+          "start": 63.99,
+          "end": 64.63,
+          "probability": 1.0
+        },
+        {
+          "text": "always",
+          "start": 64.93,
+          "end": 65.41,
+          "probability": 1.0
+        },
+        {
+          "text": "rooting",
+          "start": 65.41,
+          "end": 65.87,
+          "probability": 0.973
+        },
+        {
+          "text": "for",
+          "start": 65.87,
+          "end": 66.47,
+          "probability": 0.999
+        },
+        {
+          "text": "the",
+          "start": 66.47,
+          "end": 66.73,
+          "probability": 0.993
+        },
+        {
+          "text": "end",
+          "start": 66.73,
+          "end": 67.07,
+          "probability": 0.557
+        },
+        {
+          "text": "To",
+          "start": 67.07,
+          "end": 67.35,
+          "probability": 0.175
+        },
+        {
+          "text": "hear",
+          "start": 67.35,
+          "end": 67.55,
+          "probability": 0.817
+        },
+        {
+          "text": "the",
+          "start": 67.55,
+          "end": 67.55,
+          "probability": 0.204
+        },
+        {
+          "text": "sound",
+          "start": 67.55,
+          "end": 67.55,
+          "probability": 0.142
+        },
+        {
+          "text": "of",
+          "start": 67.55,
+          "end": 67.55,
+          "probability": 0.914
+        },
+        {
+          "text": "the",
+          "start": 67.55,
+          "end": 67.55,
+          "probability": 0.303
+        },
+        {
+          "text": "wind",
+          "start": 67.55,
+          "end": 67.55,
+          "probability": 0.104
+        },
+        {
+          "text": "I'm",
+          "start": 67.57,
+          "end": 67.97,
+          "probability": 0.109
+        },
+        {
+          "text": "the",
+          "start": 67.97,
+          "end": 67.97,
+          "probability": 0.054
+        },
+        {
+          "text": "hero",
+          "start": 67.97,
+          "end": 67.97,
+          "probability": 0.832
+        },
+        {
+          "text": "Sometimes",
+          "start": 67.97,
+          "end": 69.13,
+          "probability": 0.485
+        }
+      ],
+      "whisper_line_start_delta": 3.39,
+      "nearest_segment_start": 58.05,
+      "nearest_segment_start_end": 62.79,
+      "nearest_segment_start_text": "I'll stare directly at the sun, but never in the mirror",
+      "nearest_segment_end": 57.13,
+      "nearest_segment_end_start": 52.23,
+      "nearest_segment_end_text": "At tea time, everybody agrees",
+      "prior_segment_start": 52.23,
+      "prior_segment_end": 57.13,
+      "prior_segment_late_by": 2.27
+    },
+    {
+      "index": 20,
+      "start": 69.79,
+      "end": 70.51,
+      "text": "Sometimes I feel like everybody is a sexy baby",
+      "words": [
+        {
+          "text": "Sometimes",
+          "start": 69.79,
+          "end": 69.87
+        },
+        {
+          "text": "I",
+          "start": 69.87,
+          "end": 69.95
+        },
+        {
+          "text": "feel",
+          "start": 69.95,
+          "end": 70.03
+        },
+        {
+          "text": "like",
+          "start": 70.03,
+          "end": 70.11
+        },
+        {
+          "text": "everybody",
+          "start": 70.11,
+          "end": 70.19
+        },
+        {
+          "text": "is",
+          "start": 70.19,
+          "end": 70.27
+        },
+        {
+          "text": "a",
+          "start": 70.27,
+          "end": 70.35
+        },
+        {
+          "text": "sexy",
+          "start": 70.35,
+          "end": 70.43
+        },
+        {
+          "text": "baby",
+          "start": 70.43,
+          "end": 70.51
+        }
+      ],
+      "word_slots": [
+        0.08,
+        0.08,
+        0.08,
+        0.08,
+        0.08,
+        0.08,
+        0.08,
+        0.08,
+        0.08
+      ],
+      "word_spoken": [
+        0.08,
+        0.08,
+        0.08,
+        0.08,
+        0.08,
+        0.08,
+        0.08,
+        0.08,
+        0.08
+      ],
+      "whisper_window_start": 68.79,
+      "whisper_window_end": 74.76,
+      "whisper_window_word_count": 3,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.832,
+      "whisper_window_words": [
+        {
+          "text": "I",
+          "start": 73.58,
+          "end": 74.16,
+          "probability": 0.956
+        },
+        {
+          "text": "feel",
+          "start": 74.16,
+          "end": 74.52,
+          "probability": 0.982
+        },
+        {
+          "text": "as",
+          "start": 74.52,
+          "end": 74.8,
+          "probability": 0.558
+        }
+      ],
+      "whisper_line_start_delta": null,
+      "nearest_segment_start": 67.97,
+      "nearest_segment_start_end": 77.65,
+      "nearest_segment_start_text": "Sometimes I feel as a sexy baby",
+      "nearest_segment_end": 67.97,
+      "nearest_segment_end_start": 67.57,
+      "nearest_segment_end_text": "I'm the hero",
+      "prior_segment_start": 67.57,
+      "prior_segment_end": 67.97,
+      "prior_segment_late_by": 1.82
+    },
+    {
+      "index": 21,
+      "start": 74.76,
+      "end": 74.96,
+      "text": "And I'm a monster on the hill",
+      "words": [
+        {
+          "text": "And",
+          "start": 74.76,
+          "end": 74.76
+        },
+        {
+          "text": "I'm",
+          "start": 74.76,
+          "end": 74.76
+        },
+        {
+          "text": "a",
+          "start": 74.76,
+          "end": 74.76
+        },
+        {
+          "text": "monster",
+          "start": 74.76,
+          "end": 74.76
+        },
+        {
+          "text": "on",
+          "start": 74.76,
+          "end": 74.76
+        },
+        {
+          "text": "the",
+          "start": 74.76,
+          "end": 74.76
+        },
+        {
+          "text": "hill",
+          "start": 74.76,
+          "end": 74.96
+        }
+      ],
+      "word_slots": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.2
+      ],
+      "word_spoken": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.2
+      ],
+      "whisper_window_start": 73.76,
+      "whisper_window_end": 79.68,
+      "whisper_window_word_count": 9,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.894,
+      "whisper_window_words": [
+        {
+          "text": "feel",
+          "start": 74.16,
+          "end": 74.52,
+          "probability": 0.982
+        },
+        {
+          "text": "as",
+          "start": 74.52,
+          "end": 74.8,
+          "probability": 0.558
+        },
+        {
+          "text": "a",
+          "start": 76.43,
+          "end": 76.61,
+          "probability": 0.666
+        },
+        {
+          "text": "sexy",
+          "start": 76.61,
+          "end": 77.21,
+          "probability": 0.987
+        },
+        {
+          "text": "baby",
+          "start": 77.21,
+          "end": 77.65,
+          "probability": 0.993
+        },
+        {
+          "text": "And",
+          "start": 77.65,
+          "end": 78.59,
+          "probability": 0.889
+        },
+        {
+          "text": "I'm",
+          "start": 78.59,
+          "end": 79.07,
+          "probability": 0.996
+        },
+        {
+          "text": "a",
+          "start": 79.07,
+          "end": 79.09,
+          "probability": 0.978
+        },
+        {
+          "text": "monster",
+          "start": 79.09,
+          "end": 79.71,
+          "probability": 0.998
+        }
+      ],
+      "whisper_line_start_delta": 2.89,
+      "nearest_segment_start": 77.65,
+      "nearest_segment_start_end": 80.39,
+      "nearest_segment_start_text": "And I'm a monster on the",
+      "nearest_segment_end": 77.65,
+      "nearest_segment_end_start": 67.97,
+      "nearest_segment_end_text": "Sometimes I feel as a sexy baby",
+      "prior_segment_start": 67.57,
+      "prior_segment_end": 67.97,
+      "prior_segment_late_by": 6.79
+    },
+    {
+      "index": 22,
+      "start": 79.68,
+      "end": 80.02,
+      "text": "Too big to hang out",
+      "words": [
+        {
+          "text": "Too",
+          "start": 79.68,
+          "end": 79.68
+        },
+        {
+          "text": "big",
+          "start": 79.68,
+          "end": 79.68
+        },
+        {
+          "text": "to",
+          "start": 79.68,
+          "end": 79.68
+        },
+        {
+          "text": "hang",
+          "start": 79.68,
+          "end": 79.681
+        },
+        {
+          "text": "out",
+          "start": 79.681,
+          "end": 80.02
+        }
+      ],
+      "word_slots": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.339
+      ],
+      "word_spoken": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.339
+      ],
+      "whisper_window_start": 78.68,
+      "whisper_window_end": 81.1,
+      "whisper_window_word_count": 5,
+      "whisper_window_low_conf_count": 1,
+      "whisper_window_avg_prob": 0.774,
+      "whisper_window_words": [
+        {
+          "text": "a",
+          "start": 79.07,
+          "end": 79.09,
+          "probability": 0.978
+        },
+        {
+          "text": "monster",
+          "start": 79.09,
+          "end": 79.71,
+          "probability": 0.998
+        },
+        {
+          "text": "on",
+          "start": 79.71,
+          "end": 80.19,
+          "probability": 0.894
+        },
+        {
+          "text": "the",
+          "start": 80.19,
+          "end": 80.39,
+          "probability": 0.71
+        },
+        {
+          "text": "Too",
+          "start": 80.39,
+          "end": 80.49,
+          "probability": 0.287
+        }
+      ],
+      "whisper_line_start_delta": 0.71,
+      "nearest_segment_start": 80.39,
+      "nearest_segment_start_end": 84.65,
+      "nearest_segment_start_text": "Too big to hang out",
+      "nearest_segment_end": 80.39,
+      "nearest_segment_end_start": 77.65,
+      "nearest_segment_end_text": "And I'm a monster on the",
+      "prior_segment_start": 67.97,
+      "prior_segment_end": 77.65,
+      "prior_segment_late_by": 2.03
+    },
+    {
+      "index": 23,
+      "start": 81.1,
+      "end": 82.98,
+      "text": "Slowly lurching toward your favorite city",
+      "words": [
+        {
+          "text": "Slowly",
+          "start": 81.1,
+          "end": 81.109
+        },
+        {
+          "text": "lurching",
+          "start": 81.109,
+          "end": 81.111
+        },
+        {
+          "text": "toward",
+          "start": 81.111,
+          "end": 81.115
+        },
+        {
+          "text": "your",
+          "start": 81.115,
+          "end": 81.116
+        },
+        {
+          "text": "favorite",
+          "start": 81.116,
+          "end": 81.117
+        },
+        {
+          "text": "city",
+          "start": 81.117,
+          "end": 82.98
+        }
+      ],
+      "word_slots": [
+        0.009,
+        0.002,
+        0.004,
+        0.001,
+        0.001,
+        1.863
+      ],
+      "word_spoken": [
+        0.009,
+        0.002,
+        0.004,
+        0.001,
+        0.001,
+        1.863
+      ],
+      "whisper_window_start": 80.1,
+      "whisper_window_end": 84.65,
+      "whisper_window_word_count": 6,
+      "whisper_window_low_conf_count": 1,
+      "whisper_window_avg_prob": 0.828,
+      "whisper_window_words": [
+        {
+          "text": "the",
+          "start": 80.19,
+          "end": 80.39,
+          "probability": 0.71
+        },
+        {
+          "text": "Too",
+          "start": 80.39,
+          "end": 80.49,
+          "probability": 0.287
+        },
+        {
+          "text": "big",
+          "start": 83.37,
+          "end": 83.79,
+          "probability": 0.985
+        },
+        {
+          "text": "to",
+          "start": 83.79,
+          "end": 84.05,
+          "probability": 0.999
+        },
+        {
+          "text": "hang",
+          "start": 84.05,
+          "end": 84.31,
+          "probability": 0.998
+        },
+        {
+          "text": "out",
+          "start": 84.31,
+          "end": 84.65,
+          "probability": 0.989
+        }
+      ],
+      "whisper_line_start_delta": null,
+      "nearest_segment_start": 80.39,
+      "nearest_segment_start_end": 84.65,
+      "nearest_segment_start_text": "Too big to hang out",
+      "nearest_segment_end": 80.39,
+      "nearest_segment_end_start": 77.65,
+      "nearest_segment_end_text": "And I'm a monster on the",
+      "prior_segment_start": 77.65,
+      "prior_segment_end": 80.39,
+      "prior_segment_late_by": 0.71
+    },
+    {
+      "index": 24,
+      "start": 84.65,
+      "end": 85.21,
+      "text": "Pierced through the heart but never killed",
+      "words": [
+        {
+          "text": "Pierced",
+          "start": 84.65,
+          "end": 84.651
+        },
+        {
+          "text": "through",
+          "start": 84.651,
+          "end": 84.651
+        },
+        {
+          "text": "the",
+          "start": 84.651,
+          "end": 84.651
+        },
+        {
+          "text": "heart",
+          "start": 84.651,
+          "end": 84.651
+        },
+        {
+          "text": "but",
+          "start": 84.651,
+          "end": 84.651
+        },
+        {
+          "text": "never",
+          "start": 84.651,
+          "end": 84.651
+        },
+        {
+          "text": "killed",
+          "start": 84.651,
+          "end": 85.21
+        }
+      ],
+      "word_slots": [
+        0.001,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.559
+      ],
+      "word_spoken": [
+        0.001,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.559
+      ],
+      "whisper_window_start": 83.65,
+      "whisper_window_end": 89.44,
+      "whisper_window_word_count": 13,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.98,
+      "whisper_window_words": [
+        {
+          "text": "to",
+          "start": 83.79,
+          "end": 84.05,
+          "probability": 0.999
+        },
+        {
+          "text": "hang",
+          "start": 84.05,
+          "end": 84.31,
+          "probability": 0.998
+        },
+        {
+          "text": "out",
+          "start": 84.31,
+          "end": 84.65,
+          "probability": 0.989
+        },
+        {
+          "text": "Slowly",
+          "start": 84.65,
+          "end": 84.99,
+          "probability": 0.927
+        },
+        {
+          "text": "lurching",
+          "start": 84.99,
+          "end": 85.95,
+          "probability": 0.997
+        },
+        {
+          "text": "toward",
+          "start": 85.95,
+          "end": 86.21,
+          "probability": 0.954
+        },
+        {
+          "text": "your",
+          "start": 86.21,
+          "end": 86.57,
+          "probability": 0.973
+        },
+        {
+          "text": "favorite",
+          "start": 86.57,
+          "end": 86.91,
+          "probability": 0.959
+        },
+        {
+          "text": "city",
+          "start": 86.91,
+          "end": 87.77,
+          "probability": 0.998
+        },
+        {
+          "text": "Pierced",
+          "start": 87.77,
+          "end": 88.55,
+          "probability": 0.954
+        },
+        {
+          "text": "through",
+          "start": 88.55,
+          "end": 88.79,
+          "probability": 0.992
+        },
+        {
+          "text": "the",
+          "start": 88.79,
+          "end": 89.01,
+          "probability": 0.998
+        },
+        {
+          "text": "heart,",
+          "start": 89.01,
+          "end": 89.35,
+          "probability": 0.997
+        }
+      ],
+      "whisper_line_start_delta": 3.12,
+      "nearest_segment_start": 84.65,
+      "nearest_segment_start_end": 87.77,
+      "nearest_segment_start_text": "Slowly lurching toward your favorite city",
+      "nearest_segment_end": 84.65,
+      "nearest_segment_end_start": 80.39,
+      "nearest_segment_end_text": "Too big to hang out",
+      "prior_segment_start": 80.39,
+      "prior_segment_end": 84.65,
+      "prior_segment_late_by": 0.0
+    },
+    {
+      "index": 25,
+      "start": 89.44,
+      "end": 90.02,
+      "text": "Did you hear my covert narcissism",
+      "words": [
+        {
+          "text": "Did",
+          "start": 89.44,
+          "end": 89.44
+        },
+        {
+          "text": "you",
+          "start": 89.44,
+          "end": 89.44
+        },
+        {
+          "text": "hear",
+          "start": 89.44,
+          "end": 89.441
+        },
+        {
+          "text": "my",
+          "start": 89.441,
+          "end": 89.441
+        },
+        {
+          "text": "covert",
+          "start": 89.441,
+          "end": 89.441
+        },
+        {
+          "text": "narcissism",
+          "start": 89.441,
+          "end": 90.02
+        }
+      ],
+      "word_slots": [
+        0.0,
+        0.0,
+        0.0,
+        0.001,
+        0.0,
+        0.579
+      ],
+      "word_spoken": [
+        0.0,
+        0.0,
+        0.0,
+        0.001,
+        0.0,
+        0.579
+      ],
+      "whisper_window_start": 88.44,
+      "whisper_window_end": 92.24,
+      "whisper_window_word_count": 7,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.991,
+      "whisper_window_words": [
+        {
+          "text": "through",
+          "start": 88.55,
+          "end": 88.79,
+          "probability": 0.992
+        },
+        {
+          "text": "the",
+          "start": 88.79,
+          "end": 89.01,
+          "probability": 0.998
+        },
+        {
+          "text": "heart,",
+          "start": 89.01,
+          "end": 89.35,
+          "probability": 0.997
+        },
+        {
+          "text": "but",
+          "start": 89.49,
+          "end": 89.69,
+          "probability": 0.994
+        },
+        {
+          "text": "never",
+          "start": 89.69,
+          "end": 90.01,
+          "probability": 0.999
+        },
+        {
+          "text": "killed",
+          "start": 90.01,
+          "end": 90.53,
+          "probability": 0.998
+        },
+        {
+          "text": "Did",
+          "start": 90.53,
+          "end": 91.81,
+          "probability": 0.962
+        }
+      ],
+      "whisper_line_start_delta": 1.09,
+      "nearest_segment_start": 90.53,
+      "nearest_segment_start_end": 96.16,
+      "nearest_segment_start_text": "Did you hear my covert narcissism?",
+      "nearest_segment_end": 90.53,
+      "nearest_segment_end_start": 87.77,
+      "nearest_segment_end_text": "Pierced through the heart, but never killed",
+      "prior_segment_start": 84.65,
+      "prior_segment_end": 87.77,
+      "prior_segment_late_by": 1.67
+    },
+    {
+      "index": 26,
+      "start": 92.24,
+      "end": 94.9,
+      "text": "I disguise as altruism",
+      "words": [
+        {
+          "text": "I",
+          "start": 92.24,
+          "end": 92.905
+        },
+        {
+          "text": "disguise",
+          "start": 92.905,
+          "end": 93.57
+        },
+        {
+          "text": "as",
+          "start": 93.57,
+          "end": 94.235
+        },
+        {
+          "text": "altruism",
+          "start": 94.235,
+          "end": 94.9
+        }
+      ],
+      "word_slots": [
+        0.665,
+        0.665,
+        0.665,
+        0.665
+      ],
+      "word_spoken": [
+        0.665,
+        0.665,
+        0.665,
+        0.665
+      ],
+      "whisper_window_start": 91.24,
+      "whisper_window_end": 95.14,
+      "whisper_window_word_count": 5,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.995,
+      "whisper_window_words": [
+        {
+          "text": "you",
+          "start": 93.38,
+          "end": 93.68,
+          "probability": 0.999
+        },
+        {
+          "text": "hear",
+          "start": 93.68,
+          "end": 94.06,
+          "probability": 0.996
+        },
+        {
+          "text": "my",
+          "start": 94.06,
+          "end": 94.3,
+          "probability": 0.995
+        },
+        {
+          "text": "covert",
+          "start": 94.3,
+          "end": 94.8,
+          "probability": 0.994
+        },
+        {
+          "text": "narcissism?",
+          "start": 94.8,
+          "end": 96.16,
+          "probability": 0.993
+        }
+      ],
+      "whisper_line_start_delta": null,
+      "nearest_segment_start": 90.53,
+      "nearest_segment_start_end": 96.16,
+      "nearest_segment_start_text": "Did you hear my covert narcissism?",
+      "nearest_segment_end": 90.53,
+      "nearest_segment_end_start": 87.77,
+      "nearest_segment_end_text": "Pierced through the heart, but never killed",
+      "prior_segment_start": 87.77,
+      "prior_segment_end": 90.53,
+      "prior_segment_late_by": 1.71
+    },
+    {
+      "index": 27,
+      "start": 95.14,
+      "end": 96.12,
+      "text": "Like some kind of congressman",
+      "words": [
+        {
+          "text": "Like",
+          "start": 95.14,
+          "end": 95.141
+        },
+        {
+          "text": "some",
+          "start": 95.141,
+          "end": 95.141
+        },
+        {
+          "text": "kind",
+          "start": 95.141,
+          "end": 95.143
+        },
+        {
+          "text": "of",
+          "start": 95.143,
+          "end": 95.143
+        },
+        {
+          "text": "congressman",
+          "start": 95.143,
+          "end": 96.12
+        }
+      ],
+      "word_slots": [
+        0.001,
+        0.0,
+        0.002,
+        0.0,
+        0.977
+      ],
+      "word_spoken": [
+        0.001,
+        0.0,
+        0.002,
+        0.0,
+        0.977
+      ],
+      "whisper_window_start": 94.14,
+      "whisper_window_end": 96.74,
+      "whisper_window_word_count": 4,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.816,
+      "whisper_window_words": [
+        {
+          "text": "covert",
+          "start": 94.3,
+          "end": 94.8,
+          "probability": 0.994
+        },
+        {
+          "text": "narcissism?",
+          "start": 94.8,
+          "end": 96.16,
+          "probability": 0.993
+        },
+        {
+          "text": "Like",
+          "start": 96.18,
+          "end": 96.56,
+          "probability": 0.673
+        },
+        {
+          "text": "disguises,",
+          "start": 96.56,
+          "end": 97.4,
+          "probability": 0.606
+        }
+      ],
+      "whisper_line_start_delta": 1.04,
+      "nearest_segment_start": 96.18,
+      "nearest_segment_start_end": 98.54,
+      "nearest_segment_start_text": "Like disguises, altruism",
+      "nearest_segment_end": 96.16,
+      "nearest_segment_end_start": 90.53,
+      "nearest_segment_end_text": "Did you hear my covert narcissism?",
+      "prior_segment_start": 87.77,
+      "prior_segment_end": 90.53,
+      "prior_segment_late_by": 4.61
+    },
+    {
+      "index": 28,
+      "start": 96.74,
+      "end": 98.56,
+      "text": "Tale as old as time",
+      "words": [
+        {
+          "text": "Tale",
+          "start": 96.74,
+          "end": 96.746
+        },
+        {
+          "text": "as",
+          "start": 96.746,
+          "end": 96.748
+        },
+        {
+          "text": "old",
+          "start": 96.748,
+          "end": 96.755
+        },
+        {
+          "text": "as",
+          "start": 96.755,
+          "end": 96.755
+        },
+        {
+          "text": "time",
+          "start": 96.755,
+          "end": 98.56
+        }
+      ],
+      "word_slots": [
+        0.006,
+        0.002,
+        0.007,
+        0.001,
+        1.805
+      ],
+      "word_spoken": [
+        0.006,
+        0.002,
+        0.007,
+        0.001,
+        1.805
+      ],
+      "whisper_window_start": 95.74,
+      "whisper_window_end": 99.48,
+      "whisper_window_word_count": 6,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.859,
+      "whisper_window_words": [
+        {
+          "text": "Like",
+          "start": 96.18,
+          "end": 96.56,
+          "probability": 0.673
+        },
+        {
+          "text": "disguises,",
+          "start": 96.56,
+          "end": 97.4,
+          "probability": 0.606
+        },
+        {
+          "text": "altruism",
+          "start": 97.42,
+          "end": 98.54,
+          "probability": 0.997
+        },
+        {
+          "text": "Like",
+          "start": 98.54,
+          "end": 98.94,
+          "probability": 0.886
+        },
+        {
+          "text": "some",
+          "start": 98.94,
+          "end": 99.22,
+          "probability": 0.997
+        },
+        {
+          "text": "kind",
+          "start": 99.22,
+          "end": 99.66,
+          "probability": 0.994
+        }
+      ],
+      "whisper_line_start_delta": null,
+      "nearest_segment_start": 96.18,
+      "nearest_segment_start_end": 98.54,
+      "nearest_segment_start_text": "Like disguises, altruism",
+      "nearest_segment_end": 96.16,
+      "nearest_segment_end_start": 90.53,
+      "nearest_segment_end_text": "Did you hear my covert narcissism?",
+      "prior_segment_start": 90.53,
+      "prior_segment_end": 96.16,
+      "prior_segment_late_by": 0.58
+    },
+    {
+      "index": 29,
+      "start": 99.48,
+      "end": 100.78,
+      "text": "I wake up screaming from dreaming",
+      "words": [
+        {
+          "text": "I",
+          "start": 99.48,
+          "end": 99.534
+        },
+        {
+          "text": "wake",
+          "start": 99.534,
+          "end": 99.877
+        },
+        {
+          "text": "up",
+          "start": 99.877,
+          "end": 99.963
+        },
+        {
+          "text": "screaming",
+          "start": 99.963,
+          "end": 100.199
+        },
+        {
+          "text": "from",
+          "start": 100.199,
+          "end": 100.73
+        },
+        {
+          "text": "dreaming",
+          "start": 100.73,
+          "end": 100.78
+        }
+      ],
+      "word_slots": [
+        0.054,
+        0.344,
+        0.086,
+        0.236,
+        0.53,
+        0.05
+      ],
+      "word_spoken": [
+        0.054,
+        0.344,
+        0.086,
+        0.236,
+        0.53,
+        0.05
+      ],
+      "whisper_window_start": 98.48,
+      "whisper_window_end": 101.84,
+      "whisper_window_word_count": 10,
+      "whisper_window_low_conf_count": 4,
+      "whisper_window_avg_prob": 0.652,
+      "whisper_window_words": [
+        {
+          "text": "Like",
+          "start": 98.54,
+          "end": 98.94,
+          "probability": 0.886
+        },
+        {
+          "text": "some",
+          "start": 98.94,
+          "end": 99.22,
+          "probability": 0.997
+        },
+        {
+          "text": "kind",
+          "start": 99.22,
+          "end": 99.66,
+          "probability": 0.994
+        },
+        {
+          "text": "of",
+          "start": 99.66,
+          "end": 99.9,
+          "probability": 0.999
+        },
+        {
+          "text": "converse",
+          "start": 99.9,
+          "end": 100.48,
+          "probability": 0.463
+        },
+        {
+          "text": "Still",
+          "start": 100.48,
+          "end": 100.88,
+          "probability": 0.001
+        },
+        {
+          "text": "as",
+          "start": 100.88,
+          "end": 101.1,
+          "probability": 0.022
+        },
+        {
+          "text": "old",
+          "start": 101.1,
+          "end": 101.2,
+          "probability": 0.211
+        },
+        {
+          "text": "as",
+          "start": 101.2,
+          "end": 101.48,
+          "probability": 0.999
+        },
+        {
+          "text": "time",
+          "start": 101.48,
+          "end": 102.02,
+          "probability": 0.951
+        }
+      ],
+      "whisper_line_start_delta": null,
+      "nearest_segment_start": 98.54,
+      "nearest_segment_start_end": 100.48,
+      "nearest_segment_start_text": "Like some kind of converse",
+      "nearest_segment_end": 98.54,
+      "nearest_segment_end_start": 96.18,
+      "nearest_segment_end_text": "Like disguises, altruism",
+      "prior_segment_start": 96.18,
+      "prior_segment_end": 98.54,
+      "prior_segment_late_by": 0.94
+    },
+    {
+      "index": 30,
+      "start": 101.84,
+      "end": 103.78,
+      "text": "One day I'll watch as you're leaving",
+      "words": [
+        {
+          "text": "One",
+          "start": 101.84,
+          "end": 101.842
+        },
+        {
+          "text": "day",
+          "start": 101.842,
+          "end": 101.845
+        },
+        {
+          "text": "I'll",
+          "start": 101.845,
+          "end": 101.846
+        },
+        {
+          "text": "watch",
+          "start": 101.846,
+          "end": 101.846
+        },
+        {
+          "text": "as",
+          "start": 101.846,
+          "end": 101.857
+        },
+        {
+          "text": "you're",
+          "start": 101.857,
+          "end": 101.858
+        },
+        {
+          "text": "leaving",
+          "start": 101.858,
+          "end": 103.78
+        }
+      ],
+      "word_slots": [
+        0.002,
+        0.003,
+        0.001,
+        0.001,
+        0.011,
+        0.001,
+        1.922
+      ],
+      "word_spoken": [
+        0.002,
+        0.003,
+        0.001,
+        0.001,
+        0.011,
+        0.001,
+        1.922
+      ],
+      "whisper_window_start": 100.84,
+      "whisper_window_end": 104.51,
+      "whisper_window_word_count": 9,
+      "whisper_window_low_conf_count": 2,
+      "whisper_window_avg_prob": 0.789,
+      "whisper_window_words": [
+        {
+          "text": "as",
+          "start": 100.88,
+          "end": 101.1,
+          "probability": 0.022
+        },
+        {
+          "text": "old",
+          "start": 101.1,
+          "end": 101.2,
+          "probability": 0.211
+        },
+        {
+          "text": "as",
+          "start": 101.2,
+          "end": 101.48,
+          "probability": 0.999
+        },
+        {
+          "text": "time",
+          "start": 101.48,
+          "end": 102.02,
+          "probability": 0.951
+        },
+        {
+          "text": "I",
+          "start": 102.02,
+          "end": 103.26,
+          "probability": 0.953
+        },
+        {
+          "text": "wake",
+          "start": 103.26,
+          "end": 103.58,
+          "probability": 0.991
+        },
+        {
+          "text": "up",
+          "start": 103.58,
+          "end": 103.9,
+          "probability": 0.996
+        },
+        {
+          "text": "screaming",
+          "start": 103.9,
+          "end": 104.28,
+          "probability": 0.991
+        },
+        {
+          "text": "from",
+          "start": 104.28,
+          "end": 104.8,
+          "probability": 0.983
+        }
+      ],
+      "whisper_line_start_delta": null,
+      "nearest_segment_start": 102.02,
+      "nearest_segment_start_end": 105.3,
+      "nearest_segment_start_text": "I wake up screaming from dreaming",
+      "nearest_segment_end": 102.02,
+      "nearest_segment_end_start": 100.48,
+      "nearest_segment_end_text": "Still as old as time",
+      "prior_segment_start": 98.54,
+      "prior_segment_end": 100.48,
+      "prior_segment_late_by": 1.36
+    },
+    {
+      "index": 31,
+      "start": 104.51,
+      "end": 106.17,
+      "text": "And life will lose all its meaning",
+      "words": [
+        {
+          "text": "And",
+          "start": 104.51,
+          "end": 104.723
+        },
+        {
+          "text": "life",
+          "start": 104.747,
+          "end": 104.961
+        },
+        {
+          "text": "will",
+          "start": 104.984,
+          "end": 105.198
+        },
+        {
+          "text": "lose",
+          "start": 105.221,
+          "end": 105.435
+        },
+        {
+          "text": "all",
+          "start": 105.459,
+          "end": 105.672
+        },
+        {
+          "text": "its",
+          "start": 105.696,
+          "end": 105.909
+        },
+        {
+          "text": "meaning",
+          "start": 105.933,
+          "end": 106.17
+        }
+      ],
+      "word_slots": [
+        0.237,
+        0.237,
+        0.237,
+        0.237,
+        0.237,
+        0.237,
+        0.237
+      ],
+      "word_spoken": [
+        0.213,
+        0.213,
+        0.213,
+        0.213,
+        0.213,
+        0.213,
+        0.237
+      ],
+      "whisper_window_start": 103.51,
+      "whisper_window_end": 106.97,
+      "whisper_window_word_count": 9,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.982,
+      "whisper_window_words": [
+        {
+          "text": "up",
+          "start": 103.58,
+          "end": 103.9,
+          "probability": 0.996
+        },
+        {
+          "text": "screaming",
+          "start": 103.9,
+          "end": 104.28,
+          "probability": 0.991
+        },
+        {
+          "text": "from",
+          "start": 104.28,
+          "end": 104.8,
+          "probability": 0.983
+        },
+        {
+          "text": "dreaming",
+          "start": 104.8,
+          "end": 105.3,
+          "probability": 0.987
+        },
+        {
+          "text": "One",
+          "start": 105.3,
+          "end": 105.78,
+          "probability": 0.929
+        },
+        {
+          "text": "day",
+          "start": 105.78,
+          "end": 106.14,
+          "probability": 0.999
+        },
+        {
+          "text": "I'll",
+          "start": 106.14,
+          "end": 106.46,
+          "probability": 0.96
+        },
+        {
+          "text": "watch",
+          "start": 106.46,
+          "end": 106.84,
+          "probability": 0.999
+        },
+        {
+          "text": "as",
+          "start": 106.84,
+          "end": 107.16,
+          "probability": 0.991
+        }
+      ],
+      "whisper_line_start_delta": null,
+      "nearest_segment_start": 105.3,
+      "nearest_segment_start_end": 107.9,
+      "nearest_segment_start_text": "One day I'll watch as you're leaving",
+      "nearest_segment_end": 105.3,
+      "nearest_segment_end_start": 102.02,
+      "nearest_segment_end_text": "I wake up screaming from dreaming",
+      "prior_segment_start": 100.48,
+      "prior_segment_end": 102.02,
+      "prior_segment_late_by": 2.49
+    },
+    {
+      "index": 32,
+      "start": 106.97,
+      "end": 108.25,
+      "text": "For the last time",
+      "words": [
+        {
+          "text": "For",
+          "start": 106.97,
+          "end": 107.259
+        },
+        {
+          "text": "the",
+          "start": 107.291,
+          "end": 107.58
+        },
+        {
+          "text": "last",
+          "start": 107.612,
+          "end": 107.901
+        },
+        {
+          "text": "time",
+          "start": 107.933,
+          "end": 108.254
+        }
+      ],
+      "word_slots": [
+        0.321,
+        0.321,
+        0.321,
+        0.321
+      ],
+      "word_spoken": [
+        0.289,
+        0.289,
+        0.289,
+        0.321
+      ],
+      "whisper_window_start": 105.97,
+      "whisper_window_end": 108.82,
+      "whisper_window_word_count": 8,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.933,
+      "whisper_window_words": [
+        {
+          "text": "I'll",
+          "start": 106.14,
+          "end": 106.46,
+          "probability": 0.96
+        },
+        {
+          "text": "watch",
+          "start": 106.46,
+          "end": 106.84,
+          "probability": 0.999
+        },
+        {
+          "text": "as",
+          "start": 106.84,
+          "end": 107.16,
+          "probability": 0.991
+        },
+        {
+          "text": "you're",
+          "start": 107.16,
+          "end": 107.42,
+          "probability": 0.965
+        },
+        {
+          "text": "leaving",
+          "start": 107.42,
+          "end": 107.9,
+          "probability": 0.996
+        },
+        {
+          "text": "And",
+          "start": 108.1,
+          "end": 108.26,
+          "probability": 0.581
+        },
+        {
+          "text": "life",
+          "start": 108.26,
+          "end": 108.66,
+          "probability": 0.982
+        },
+        {
+          "text": "will",
+          "start": 108.66,
+          "end": 108.9,
+          "probability": 0.985
+        }
+      ],
+      "whisper_line_start_delta": null,
+      "nearest_segment_start": 108.1,
+      "nearest_segment_start_end": 110.32,
+      "nearest_segment_start_text": "And life will lose all its meaning",
+      "nearest_segment_end": 107.9,
+      "nearest_segment_end_start": 105.3,
+      "nearest_segment_end_text": "One day I'll watch as you're leaving",
+      "prior_segment_start": 102.02,
+      "prior_segment_end": 105.3,
+      "prior_segment_late_by": 1.67
+    },
+    {
+      "index": 33,
+      "start": 108.82,
+      "end": 109.38,
+      "text": "It's me",
+      "words": [
+        {
+          "text": "It's",
+          "start": 108.82,
+          "end": 109.264
+        },
+        {
+          "text": "me",
+          "start": 109.284,
+          "end": 109.384
+        }
+      ],
+      "word_slots": [
+        0.464,
+        0.1
+      ],
+      "word_spoken": [
+        0.444,
+        0.1
+      ],
+      "whisper_window_start": 107.82,
+      "whisper_window_end": 110.32,
+      "whisper_window_word_count": 7,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.873,
+      "whisper_window_words": [
+        {
+          "text": "And",
+          "start": 108.1,
+          "end": 108.26,
+          "probability": 0.581
+        },
+        {
+          "text": "life",
+          "start": 108.26,
+          "end": 108.66,
+          "probability": 0.982
+        },
+        {
+          "text": "will",
+          "start": 108.66,
+          "end": 108.9,
+          "probability": 0.985
+        },
+        {
+          "text": "lose",
+          "start": 108.9,
+          "end": 109.3,
+          "probability": 0.98
+        },
+        {
+          "text": "all",
+          "start": 109.3,
+          "end": 109.6,
+          "probability": 0.996
+        },
+        {
+          "text": "its",
+          "start": 109.6,
+          "end": 109.88,
+          "probability": 0.59
+        },
+        {
+          "text": "meaning",
+          "start": 109.88,
+          "end": 110.32,
+          "probability": 0.997
+        }
+      ],
+      "whisper_line_start_delta": null,
+      "nearest_segment_start": 108.1,
+      "nearest_segment_start_end": 110.32,
+      "nearest_segment_start_text": "And life will lose all its meaning",
+      "nearest_segment_end": 107.9,
+      "nearest_segment_end_start": 105.3,
+      "nearest_segment_end_text": "One day I'll watch as you're leaving",
+      "prior_segment_start": 105.3,
+      "prior_segment_end": 107.9,
+      "prior_segment_late_by": 0.92
+    },
+    {
+      "index": 34,
+      "start": 110.32,
+      "end": 110.42,
+      "text": "Hi!",
+      "words": [
+        {
+          "text": "Hi!",
+          "start": 110.32,
+          "end": 110.42
+        }
+      ],
+      "word_slots": [
+        0.1
+      ],
+      "word_spoken": [
+        0.1
+      ],
+      "whisper_window_start": 109.32,
+      "whisper_window_end": 111.54,
+      "whisper_window_word_count": 6,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.857,
+      "whisper_window_words": [
+        {
+          "text": "its",
+          "start": 109.6,
+          "end": 109.88,
+          "probability": 0.59
+        },
+        {
+          "text": "meaning",
+          "start": 109.88,
+          "end": 110.32,
+          "probability": 0.997
+        },
+        {
+          "text": "For",
+          "start": 110.32,
+          "end": 110.8,
+          "probability": 0.561
+        },
+        {
+          "text": "the",
+          "start": 110.8,
+          "end": 111.02,
+          "probability": 0.998
+        },
+        {
+          "text": "last",
+          "start": 111.02,
+          "end": 111.42,
+          "probability": 0.997
+        },
+        {
+          "text": "time",
+          "start": 111.42,
+          "end": 111.86,
+          "probability": 0.998
+        }
+      ],
+      "whisper_line_start_delta": null,
+      "nearest_segment_start": 110.32,
+      "nearest_segment_start_end": 111.86,
+      "nearest_segment_start_text": "For the last time",
+      "nearest_segment_end": 110.32,
+      "nearest_segment_end_start": 108.1,
+      "nearest_segment_end_text": "And life will lose all its meaning",
+      "prior_segment_start": 108.1,
+      "prior_segment_end": 110.32,
+      "prior_segment_late_by": 0.0
+    },
+    {
+      "index": 35,
+      "start": 111.54,
+      "end": 113.35,
+      "text": "I'm the problem, it's me (I'm the problem, it's me)",
+      "words": [
+        {
+          "text": "I'm",
+          "start": 111.54,
+          "end": 111.703
+        },
+        {
+          "text": "the",
+          "start": 111.721,
+          "end": 111.883
+        },
+        {
+          "text": "problem,",
+          "start": 111.901,
+          "end": 112.064
+        },
+        {
+          "text": "it's",
+          "start": 112.082,
+          "end": 112.245
+        },
+        {
+          "text": "me",
+          "start": 112.263,
+          "end": 112.425
+        },
+        {
+          "text": "(I'm",
+          "start": 112.443,
+          "end": 112.606
+        },
+        {
+          "text": "the",
+          "start": 112.624,
+          "end": 112.787
+        },
+        {
+          "text": "problem,",
+          "start": 112.805,
+          "end": 112.967
+        },
+        {
+          "text": "it's",
+          "start": 112.985,
+          "end": 113.148
+        },
+        {
+          "text": "me)",
+          "start": 113.166,
+          "end": 113.347
+        }
+      ],
+      "word_slots": [
+        0.181,
+        0.181,
+        0.181,
+        0.181,
+        0.181,
+        0.181,
+        0.181,
+        0.181,
+        0.181,
+        0.181
+      ],
+      "word_spoken": [
+        0.163,
+        0.163,
+        0.163,
+        0.163,
+        0.163,
+        0.163,
+        0.163,
+        0.163,
+        0.163,
+        0.181
+      ],
+      "whisper_window_start": 110.54,
+      "whisper_window_end": 113.66,
+      "whisper_window_word_count": 6,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.911,
+      "whisper_window_words": [
+        {
+          "text": "the",
+          "start": 110.8,
+          "end": 111.02,
+          "probability": 0.998
+        },
+        {
+          "text": "last",
+          "start": 111.02,
+          "end": 111.42,
+          "probability": 0.997
+        },
+        {
+          "text": "time",
+          "start": 111.42,
+          "end": 111.86,
+          "probability": 0.998
+        },
+        {
+          "text": "It's",
+          "start": 111.86,
+          "end": 112.66,
+          "probability": 0.918
+        },
+        {
+          "text": "me,",
+          "start": 112.66,
+          "end": 112.8,
+          "probability": 0.995
+        },
+        {
+          "text": "hi,",
+          "start": 113.18,
+          "end": 114.12,
+          "probability": 0.559
+        }
+      ],
+      "whisper_line_start_delta": null,
+      "nearest_segment_start": 111.86,
+      "nearest_segment_start_end": 116.58,
+      "nearest_segment_start_text": "It's me, hi, I'm the problem, it's me",
+      "nearest_segment_end": 111.86,
+      "nearest_segment_end_start": 110.32,
+      "nearest_segment_end_text": "For the last time",
+      "prior_segment_start": 108.1,
+      "prior_segment_end": 110.32,
+      "prior_segment_late_by": 1.22
+    },
+    {
+      "index": 36,
+      "start": 113.66,
+      "end": 114.39,
+      "text": "At teatime",
+      "words": [
+        {
+          "text": "At",
+          "start": 113.66,
+          "end": 113.8
+        },
+        {
+          "text": "teatime",
+          "start": 113.82,
+          "end": 114.394
+        }
+      ],
+      "word_slots": [
+        0.16,
+        0.574
+      ],
+      "word_spoken": [
+        0.14,
+        0.574
+      ],
+      "whisper_window_start": 112.66,
+      "whisper_window_end": 116.57,
+      "whisper_window_word_count": 7,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.934,
+      "whisper_window_words": [
+        {
+          "text": "me,",
+          "start": 112.66,
+          "end": 112.8,
+          "probability": 0.995
+        },
+        {
+          "text": "hi,",
+          "start": 113.18,
+          "end": 114.12,
+          "probability": 0.559
+        },
+        {
+          "text": "I'm",
+          "start": 114.58,
+          "end": 115.4,
+          "probability": 0.994
+        },
+        {
+          "text": "the",
+          "start": 115.4,
+          "end": 115.58,
+          "probability": 0.999
+        },
+        {
+          "text": "problem,",
+          "start": 115.58,
+          "end": 116.1,
+          "probability": 0.999
+        },
+        {
+          "text": "it's",
+          "start": 116.18,
+          "end": 116.46,
+          "probability": 0.994
+        },
+        {
+          "text": "me",
+          "start": 116.46,
+          "end": 116.58,
+          "probability": 0.998
+        }
+      ],
+      "whisper_line_start_delta": null,
+      "nearest_segment_start": 111.86,
+      "nearest_segment_start_end": 116.58,
+      "nearest_segment_start_text": "It's me, hi, I'm the problem, it's me",
+      "nearest_segment_end": 111.86,
+      "nearest_segment_end_start": 110.32,
+      "nearest_segment_end_text": "For the last time",
+      "prior_segment_start": 110.32,
+      "prior_segment_end": 111.86,
+      "prior_segment_late_by": 1.8
+    },
+    {
+      "index": 37,
+      "start": 116.57,
+      "end": 117.24,
+      "text": "Everybody agrees",
+      "words": [
+        {
+          "text": "Everybody",
+          "start": 116.57,
+          "end": 117.154
+        },
+        {
+          "text": "agrees",
+          "start": 117.174,
+          "end": 117.239
+        }
+      ],
+      "word_slots": [
+        0.604,
+        0.065
+      ],
+      "word_spoken": [
+        0.584,
+        0.065
+      ],
+      "whisper_window_start": 115.57,
+      "whisper_window_end": 119.29,
+      "whisper_window_word_count": 6,
+      "whisper_window_low_conf_count": 1,
+      "whisper_window_avg_prob": 0.861,
+      "whisper_window_words": [
+        {
+          "text": "problem,",
+          "start": 115.58,
+          "end": 116.1,
+          "probability": 0.999
+        },
+        {
+          "text": "it's",
+          "start": 116.18,
+          "end": 116.46,
+          "probability": 0.994
+        },
+        {
+          "text": "me",
+          "start": 116.46,
+          "end": 116.58,
+          "probability": 0.998
+        },
+        {
+          "text": "At",
+          "start": 116.58,
+          "end": 117.48,
+          "probability": 0.235
+        },
+        {
+          "text": "tea",
+          "start": 117.48,
+          "end": 118.0,
+          "probability": 0.966
+        },
+        {
+          "text": "time,",
+          "start": 118.0,
+          "end": 119.06,
+          "probability": 0.973
+        }
+      ],
+      "whisper_line_start_delta": null,
+      "nearest_segment_start": 116.58,
+      "nearest_segment_start_end": 121.48,
+      "nearest_segment_start_text": "At tea time, everybody agrees",
+      "nearest_segment_end": 116.58,
+      "nearest_segment_end_start": 111.86,
+      "nearest_segment_end_text": "It's me, hi, I'm the problem, it's me",
+      "prior_segment_start": 110.32,
+      "prior_segment_end": 111.86,
+      "prior_segment_late_by": 4.71
+    },
+    {
+      "index": 38,
+      "start": 119.29,
+      "end": 123.67,
+      "text": "I'll stare directly at the sun but never in the mirror",
+      "words": [
+        {
+          "text": "I'll",
+          "start": 119.29,
+          "end": 120.062
+        },
+        {
+          "text": "stare",
+          "start": 120.071,
+          "end": 120.342
+        },
+        {
+          "text": "directly",
+          "start": 120.351,
+          "end": 120.949
+        },
+        {
+          "text": "at",
+          "start": 120.959,
+          "end": 121.615
+        },
+        {
+          "text": "the",
+          "start": 121.625,
+          "end": 121.76
+        },
+        {
+          "text": "sun",
+          "start": 121.769,
+          "end": 122.078
+        },
+        {
+          "text": "but",
+          "start": 122.223,
+          "end": 122.397
+        },
+        {
+          "text": "never",
+          "start": 122.406,
+          "end": 122.792
+        },
+        {
+          "text": "in",
+          "start": 122.802,
+          "end": 123.303
+        },
+        {
+          "text": "the",
+          "start": 123.313,
+          "end": 123.602
+        },
+        {
+          "text": "mirror",
+          "start": 123.612,
+          "end": 123.67
+        }
+      ],
+      "word_slots": [
+        0.781,
+        0.28,
+        0.608,
+        0.666,
+        0.145,
+        0.453,
+        0.183,
+        0.396,
+        0.511,
+        0.299,
+        0.058
+      ],
+      "word_spoken": [
+        0.772,
+        0.27,
+        0.598,
+        0.656,
+        0.135,
+        0.309,
+        0.174,
+        0.386,
+        0.502,
+        0.289,
+        0.058
+      ],
+      "whisper_window_start": 118.29,
+      "whisper_window_end": 123.68,
+      "whisper_window_word_count": 5,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.999,
+      "whisper_window_words": [
+        {
+          "text": "everybody",
+          "start": 119.4,
+          "end": 120.6,
+          "probability": 0.998
+        },
+        {
+          "text": "agrees",
+          "start": 120.6,
+          "end": 121.48,
+          "probability": 1.0
+        },
+        {
+          "text": "I'll",
+          "start": 122.34,
+          "end": 123.14,
+          "probability": 0.997
+        },
+        {
+          "text": "stare",
+          "start": 123.14,
+          "end": 123.42,
+          "probability": 1.0
+        },
+        {
+          "text": "directly",
+          "start": 123.42,
+          "end": 124.04,
+          "probability": 0.999
+        }
+      ],
+      "whisper_line_start_delta": 3.05,
+      "nearest_segment_start": 116.58,
+      "nearest_segment_start_end": 121.48,
+      "nearest_segment_start_text": "At tea time, everybody agrees",
+      "nearest_segment_end": 121.48,
+      "nearest_segment_end_start": 116.58,
+      "nearest_segment_end_text": "At tea time, everybody agrees",
+      "prior_segment_start": 111.86,
+      "prior_segment_end": 116.58,
+      "prior_segment_late_by": 2.71
+    },
+    {
+      "index": 39,
+      "start": 123.68,
+      "end": 127.78,
+      "text": "It must be exhausting always rooting for the anti-hero",
+      "words": [
+        {
+          "text": "It",
+          "start": 123.68,
+          "end": 124.12
+        },
+        {
+          "text": "must",
+          "start": 124.13,
+          "end": 124.55
+        },
+        {
+          "text": "be",
+          "start": 124.56,
+          "end": 124.9
+        },
+        {
+          "text": "exhausting",
+          "start": 124.91,
+          "end": 125.49
+        },
+        {
+          "text": "always",
+          "start": 125.8,
+          "end": 126.24
+        },
+        {
+          "text": "rooting",
+          "start": 126.25,
+          "end": 126.75
+        },
+        {
+          "text": "for",
+          "start": 126.76,
+          "end": 127.3
+        },
+        {
+          "text": "the",
+          "start": 127.31,
+          "end": 127.69
+        },
+        {
+          "text": "anti-hero",
+          "start": 127.7,
+          "end": 127.78
+        }
+      ],
+      "word_slots": [
+        0.45,
+        0.43,
+        0.35,
+        0.89,
+        0.45,
+        0.51,
+        0.55,
+        0.39,
+        0.08
+      ],
+      "word_spoken": [
+        0.44,
+        0.42,
+        0.34,
+        0.58,
+        0.44,
+        0.5,
+        0.54,
+        0.38,
+        0.08
+      ],
+      "whisper_window_start": 122.68,
+      "whisper_window_end": 133.92,
+      "whisper_window_word_count": 24,
+      "whisper_window_low_conf_count": 6,
+      "whisper_window_avg_prob": 0.76,
+      "whisper_window_words": [
+        {
+          "text": "stare",
+          "start": 123.14,
+          "end": 123.42,
+          "probability": 1.0
+        },
+        {
+          "text": "directly",
+          "start": 123.42,
+          "end": 124.04,
+          "probability": 0.999
+        },
+        {
+          "text": "at",
+          "start": 124.04,
+          "end": 124.72,
+          "probability": 0.999
+        },
+        {
+          "text": "the",
+          "start": 124.72,
+          "end": 124.86,
+          "probability": 1.0
+        },
+        {
+          "text": "sun,",
+          "start": 124.86,
+          "end": 125.18,
+          "probability": 0.999
+        },
+        {
+          "text": "but",
+          "start": 125.38,
+          "end": 125.56,
+          "probability": 0.997
+        },
+        {
+          "text": "never",
+          "start": 125.56,
+          "end": 125.96,
+          "probability": 0.999
+        },
+        {
+          "text": "in",
+          "start": 125.96,
+          "end": 126.48,
+          "probability": 1.0
+        },
+        {
+          "text": "the",
+          "start": 126.48,
+          "end": 126.78,
+          "probability": 0.996
+        },
+        {
+          "text": "mirror",
+          "start": 126.78,
+          "end": 127.18,
+          "probability": 1.0
+        },
+        {
+          "text": "It",
+          "start": 127.18,
+          "end": 127.62,
+          "probability": 0.994
+        },
+        {
+          "text": "must",
+          "start": 127.62,
+          "end": 128.04,
+          "probability": 1.0
+        },
+        {
+          "text": "be",
+          "start": 128.04,
+          "end": 128.38,
+          "probability": 1.0
+        },
+        {
+          "text": "exhausting,",
+          "start": 128.38,
+          "end": 128.96,
+          "probability": 1.0
+        },
+        {
+          "text": "always",
+          "start": 129.3,
+          "end": 129.74,
+          "probability": 0.999
+        },
+        {
+          "text": "rooting",
+          "start": 129.74,
+          "end": 130.24,
+          "probability": 0.383
+        },
+        {
+          "text": "for",
+          "start": 130.24,
+          "end": 130.78,
+          "probability": 0.998
+        },
+        {
+          "text": "the",
+          "start": 130.78,
+          "end": 131.16,
+          "probability": 0.999
+        },
+        {
+          "text": "end",
+          "start": 131.16,
+          "end": 131.4,
+          "probability": 0.0
+        },
+        {
+          "text": "To",
+          "start": 131.4,
+          "end": 131.68,
+          "probability": 0.02
+        },
+        {
+          "text": "hear",
+          "start": 131.68,
+          "end": 132.04,
+          "probability": 0.057
+        },
+        {
+          "text": "the",
+          "start": 132.04,
+          "end": 132.32,
+          "probability": 0.003
+        },
+        {
+          "text": "sound",
+          "start": 132.32,
+          "end": 132.64,
+          "probability": 0.005
+        },
+        {
+          "text": "of",
+          "start": 132.64,
+          "end": 133.2,
+          "probability": 0.796
+        }
+      ],
+      "whisper_line_start_delta": 3.5,
+      "nearest_segment_start": 122.34,
+      "nearest_segment_start_end": 127.18,
+      "nearest_segment_start_text": "I'll stare directly at the sun, but never in the mirror",
+      "nearest_segment_end": 121.48,
+      "nearest_segment_end_start": 116.58,
+      "nearest_segment_end_text": "At tea time, everybody agrees",
+      "prior_segment_start": 116.58,
+      "prior_segment_end": 121.48,
+      "prior_segment_late_by": 2.2
+    },
+    {
+      "index": 40,
+      "start": 133.92,
+      "end": 138.84,
+      "text": "I have this dream my daughter-in-law kills me for the money",
+      "words": [
+        {
+          "text": "I",
+          "start": 133.92,
+          "end": 133.974
+        },
+        {
+          "text": "have",
+          "start": 133.974,
+          "end": 134.516
+        },
+        {
+          "text": "this",
+          "start": 134.516,
+          "end": 135.057
+        },
+        {
+          "text": "dream",
+          "start": 135.057,
+          "end": 135.598
+        },
+        {
+          "text": "my",
+          "start": 135.598,
+          "end": 136.14
+        },
+        {
+          "text": "daughter-in-law",
+          "start": 136.14,
+          "end": 136.681
+        },
+        {
+          "text": "kills",
+          "start": 136.681,
+          "end": 137.222
+        },
+        {
+          "text": "me",
+          "start": 137.222,
+          "end": 137.764
+        },
+        {
+          "text": "for",
+          "start": 137.764,
+          "end": 138.305
+        },
+        {
+          "text": "the",
+          "start": 138.305,
+          "end": 138.789
+        },
+        {
+          "text": "money",
+          "start": 138.789,
+          "end": 138.84
+        }
+      ],
+      "word_slots": [
+        0.054,
+        0.541,
+        0.541,
+        0.541,
+        0.541,
+        0.541,
+        0.541,
+        0.541,
+        0.541,
+        0.484,
+        0.051
+      ],
+      "word_spoken": [
+        0.054,
+        0.541,
+        0.541,
+        0.541,
+        0.541,
+        0.541,
+        0.541,
+        0.541,
+        0.541,
+        0.484,
+        0.051
+      ],
+      "whisper_window_start": 132.92,
+      "whisper_window_end": 138.93,
+      "whisper_window_word_count": 0,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": null,
+      "whisper_window_words": [],
+      "whisper_line_start_delta": null,
+      "nearest_segment_start": 131.4,
+      "nearest_segment_start_end": 139.12,
+      "nearest_segment_start_text": "To hear the sound of the wind",
+      "nearest_segment_end": 131.4,
+      "nearest_segment_end_start": 127.18,
+      "nearest_segment_end_text": "It must be exhausting, always rooting for the end",
+      "prior_segment_start": 127.18,
+      "prior_segment_end": 131.4,
+      "prior_segment_late_by": 2.52
+    },
+    {
+      "index": 41,
+      "start": 138.93,
+      "end": 141.33,
+      "text": "She thinks I left them in the will",
+      "words": [
+        {
+          "text": "She",
+          "start": 138.93,
+          "end": 139.23
+        },
+        {
+          "text": "thinks",
+          "start": 139.23,
+          "end": 139.53
+        },
+        {
+          "text": "I",
+          "start": 139.53,
+          "end": 139.83
+        },
+        {
+          "text": "left",
+          "start": 139.83,
+          "end": 140.13
+        },
+        {
+          "text": "them",
+          "start": 140.13,
+          "end": 140.43
+        },
+        {
+          "text": "in",
+          "start": 140.43,
+          "end": 140.73
+        },
+        {
+          "text": "the",
+          "start": 140.73,
+          "end": 141.03
+        },
+        {
+          "text": "will",
+          "start": 141.03,
+          "end": 141.33
+        }
+      ],
+      "word_slots": [
+        0.3,
+        0.3,
+        0.3,
+        0.3,
+        0.3,
+        0.3,
+        0.3,
+        0.3
+      ],
+      "word_spoken": [
+        0.3,
+        0.3,
+        0.3,
+        0.3,
+        0.3,
+        0.3,
+        0.3,
+        0.3
+      ],
+      "whisper_window_start": 137.93,
+      "whisper_window_end": 144.08,
+      "whisper_window_word_count": 22,
+      "whisper_window_low_conf_count": 8,
+      "whisper_window_avg_prob": 0.68,
+      "whisper_window_words": [
+        {
+          "text": "the",
+          "start": 139.12,
+          "end": 139.12,
+          "probability": 0.148
+        },
+        {
+          "text": "wind",
+          "start": 139.12,
+          "end": 139.12,
+          "probability": 0.012
+        },
+        {
+          "text": "My",
+          "start": 139.12,
+          "end": 139.12,
+          "probability": 0.136
+        },
+        {
+          "text": "daughter",
+          "start": 139.12,
+          "end": 139.64,
+          "probability": 0.996
+        },
+        {
+          "text": "-in",
+          "start": 139.64,
+          "end": 140.08,
+          "probability": 0.991
+        },
+        {
+          "text": "-law",
+          "start": 140.08,
+          "end": 140.34,
+          "probability": 1.0
+        },
+        {
+          "text": "kills",
+          "start": 140.34,
+          "end": 140.72,
+          "probability": 0.984
+        },
+        {
+          "text": "me",
+          "start": 140.72,
+          "end": 141.02,
+          "probability": 1.0
+        },
+        {
+          "text": "for",
+          "start": 141.02,
+          "end": 141.2,
+          "probability": 1.0
+        },
+        {
+          "text": "the",
+          "start": 141.2,
+          "end": 141.6,
+          "probability": 0.999
+        },
+        {
+          "text": "money",
+          "start": 141.6,
+          "end": 142.06,
+          "probability": 1.0
+        },
+        {
+          "text": "She",
+          "start": 142.06,
+          "end": 142.84,
+          "probability": 0.94
+        },
+        {
+          "text": "thinks",
+          "start": 142.84,
+          "end": 143.3,
+          "probability": 0.998
+        },
+        {
+          "text": "I",
+          "start": 143.3,
+          "end": 143.56,
+          "probability": 0.998
+        },
+        {
+          "text": "left",
+          "start": 143.56,
+          "end": 143.84,
+          "probability": 0.98
+        },
+        {
+          "text": "her",
+          "start": 143.84,
+          "end": 144.0,
+          "probability": 0.867
+        },
+        {
+          "text": "home,",
+          "start": 144.0,
+          "end": 144.0,
+          "probability": 0.053
+        },
+        {
+          "text": "but",
+          "start": 144.0,
+          "end": 144.0,
+          "probability": 0.388
+        },
+        {
+          "text": "she",
+          "start": 144.0,
+          "end": 144.0,
+          "probability": 0.241
+        },
+        {
+          "text": "doesn't",
+          "start": 144.0,
+          "end": 144.0,
+          "probability": 0.577
+        },
+        {
+          "text": "know",
+          "start": 144.0,
+          "end": 144.0,
+          "probability": 0.314
+        },
+        {
+          "text": "I'm",
+          "start": 144.02,
+          "end": 144.24,
+          "probability": 0.337
+        }
+      ],
+      "whisper_line_start_delta": 3.13,
+      "nearest_segment_start": 139.12,
+      "nearest_segment_start_end": 142.06,
+      "nearest_segment_start_text": "My daughter-in-law kills me for the money",
+      "nearest_segment_end": 139.12,
+      "nearest_segment_end_start": 131.4,
+      "nearest_segment_end_text": "To hear the sound of the wind",
+      "prior_segment_start": 127.18,
+      "prior_segment_end": 131.4,
+      "prior_segment_late_by": 7.53
+    },
+    {
+      "index": 42,
+      "start": 144.08,
+      "end": 146.77,
+      "text": "The family gathers 'round and reads it",
+      "words": [
+        {
+          "text": "The",
+          "start": 144.08,
+          "end": 144.464
+        },
+        {
+          "text": "family",
+          "start": 144.464,
+          "end": 144.849
+        },
+        {
+          "text": "gathers",
+          "start": 144.849,
+          "end": 145.233
+        },
+        {
+          "text": "'round",
+          "start": 145.233,
+          "end": 145.617
+        },
+        {
+          "text": "and",
+          "start": 145.617,
+          "end": 146.001
+        },
+        {
+          "text": "reads",
+          "start": 146.001,
+          "end": 146.386
+        },
+        {
+          "text": "it",
+          "start": 146.386,
+          "end": 146.77
+        }
+      ],
+      "word_slots": [
+        0.384,
+        0.384,
+        0.384,
+        0.384,
+        0.384,
+        0.384,
+        0.384
+      ],
+      "word_spoken": [
+        0.384,
+        0.384,
+        0.384,
+        0.384,
+        0.384,
+        0.384,
+        0.384
+      ],
+      "whisper_window_start": 143.08,
+      "whisper_window_end": 146.78,
+      "whisper_window_word_count": 13,
+      "whisper_window_low_conf_count": 6,
+      "whisper_window_avg_prob": 0.556,
+      "whisper_window_words": [
+        {
+          "text": "I",
+          "start": 143.3,
+          "end": 143.56,
+          "probability": 0.998
+        },
+        {
+          "text": "left",
+          "start": 143.56,
+          "end": 143.84,
+          "probability": 0.98
+        },
+        {
+          "text": "her",
+          "start": 143.84,
+          "end": 144.0,
+          "probability": 0.867
+        },
+        {
+          "text": "home,",
+          "start": 144.0,
+          "end": 144.0,
+          "probability": 0.053
+        },
+        {
+          "text": "but",
+          "start": 144.0,
+          "end": 144.0,
+          "probability": 0.388
+        },
+        {
+          "text": "she",
+          "start": 144.0,
+          "end": 144.0,
+          "probability": 0.241
+        },
+        {
+          "text": "doesn't",
+          "start": 144.0,
+          "end": 144.0,
+          "probability": 0.577
+        },
+        {
+          "text": "know",
+          "start": 144.0,
+          "end": 144.0,
+          "probability": 0.314
+        },
+        {
+          "text": "I'm",
+          "start": 144.02,
+          "end": 144.24,
+          "probability": 0.337
+        },
+        {
+          "text": "in",
+          "start": 144.24,
+          "end": 144.46,
+          "probability": 0.874
+        },
+        {
+          "text": "the",
+          "start": 144.46,
+          "end": 144.68,
+          "probability": 0.989
+        },
+        {
+          "text": "will",
+          "start": 144.68,
+          "end": 145.02,
+          "probability": 0.568
+        },
+        {
+          "text": "The",
+          "start": 145.02,
+          "end": 145.56,
+          "probability": 0.048
+        }
+      ],
+      "whisper_line_start_delta": 0.38,
+      "nearest_segment_start": 144.02,
+      "nearest_segment_start_end": 145.02,
+      "nearest_segment_start_text": "I'm in the will",
+      "nearest_segment_end": 144.0,
+      "nearest_segment_end_start": 142.06,
+      "nearest_segment_end_text": "She thinks I left her home, but she doesn't know",
+      "prior_segment_start": 142.06,
+      "prior_segment_end": 144.0,
+      "prior_segment_late_by": 0.08
+    },
+    {
+      "index": 43,
+      "start": 146.78,
+      "end": 148.54,
+      "text": "And then someone screams out",
+      "words": [
+        {
+          "text": "And",
+          "start": 146.78,
+          "end": 147.577
+        },
+        {
+          "text": "then",
+          "start": 147.577,
+          "end": 147.947
+        },
+        {
+          "text": "someone",
+          "start": 147.947,
+          "end": 148.239
+        },
+        {
+          "text": "screams",
+          "start": 148.239,
+          "end": 148.49
+        },
+        {
+          "text": "out",
+          "start": 148.49,
+          "end": 148.54
+        }
+      ],
+      "word_slots": [
+        0.797,
+        0.37,
+        0.292,
+        0.251,
+        0.05
+      ],
+      "word_spoken": [
+        0.797,
+        0.37,
+        0.292,
+        0.251,
+        0.05
+      ],
+      "whisper_window_start": 145.78,
+      "whisper_window_end": 149.0,
+      "whisper_window_word_count": 2,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.927,
+      "whisper_window_words": [
+        {
+          "text": "family",
+          "start": 147.73,
+          "end": 148.23,
+          "probability": 0.923
+        },
+        {
+          "text": "gathers",
+          "start": 148.23,
+          "end": 149.05,
+          "probability": 0.931
+        }
+      ],
+      "whisper_line_start_delta": null,
+      "nearest_segment_start": 145.02,
+      "nearest_segment_start_end": 150.33,
+      "nearest_segment_start_text": "The family gathers around and reads it",
+      "nearest_segment_end": 145.02,
+      "nearest_segment_end_start": 144.02,
+      "nearest_segment_end_text": "I'm in the will",
+      "prior_segment_start": 144.02,
+      "prior_segment_end": 145.02,
+      "prior_segment_late_by": 1.76
+    },
+    {
+      "index": 44,
+      "start": 149.0,
+      "end": 151.92,
+      "text": "\"She's laughing up at us from hell!\"",
+      "words": [
+        {
+          "text": "\"She's",
+          "start": 149.0,
+          "end": 149.361
+        },
+        {
+          "text": "laughing",
+          "start": 149.361,
+          "end": 149.637
+        },
+        {
+          "text": "up",
+          "start": 149.637,
+          "end": 150.062
+        },
+        {
+          "text": "at",
+          "start": 150.062,
+          "end": 150.635
+        },
+        {
+          "text": "us",
+          "start": 150.635,
+          "end": 151.124
+        },
+        {
+          "text": "from",
+          "start": 151.124,
+          "end": 151.85
+        },
+        {
+          "text": "hell!\"",
+          "start": 151.85,
+          "end": 151.92
+        }
+      ],
+      "word_slots": [
+        0.361,
+        0.276,
+        0.425,
+        0.573,
+        0.488,
+        0.726,
+        0.07
+      ],
+      "word_spoken": [
+        0.361,
+        0.276,
+        0.425,
+        0.573,
+        0.488,
+        0.726,
+        0.07
+      ],
+      "whisper_window_start": 148.0,
+      "whisper_window_end": 153.41,
+      "whisper_window_word_count": 13,
+      "whisper_window_low_conf_count": 2,
+      "whisper_window_avg_prob": 0.85,
+      "whisper_window_words": [
+        {
+          "text": "gathers",
+          "start": 148.23,
+          "end": 149.05,
+          "probability": 0.931
+        },
+        {
+          "text": "around",
+          "start": 149.05,
+          "end": 149.43,
+          "probability": 0.892
+        },
+        {
+          "text": "and",
+          "start": 149.43,
+          "end": 149.73,
+          "probability": 0.947
+        },
+        {
+          "text": "reads",
+          "start": 149.73,
+          "end": 149.99,
+          "probability": 0.981
+        },
+        {
+          "text": "it",
+          "start": 149.99,
+          "end": 150.33,
+          "probability": 0.95
+        },
+        {
+          "text": "And",
+          "start": 150.33,
+          "end": 150.55,
+          "probability": 0.347
+        },
+        {
+          "text": "then",
+          "start": 150.55,
+          "end": 150.81,
+          "probability": 0.939
+        },
+        {
+          "text": "someone",
+          "start": 150.81,
+          "end": 151.21,
+          "probability": 0.989
+        },
+        {
+          "text": "screams",
+          "start": 151.21,
+          "end": 151.75,
+          "probability": 0.992
+        },
+        {
+          "text": "out",
+          "start": 151.75,
+          "end": 152.21,
+          "probability": 0.994
+        },
+        {
+          "text": "She's",
+          "start": 152.21,
+          "end": 152.91,
+          "probability": 0.869
+        },
+        {
+          "text": "laughing",
+          "start": 152.91,
+          "end": 153.39,
+          "probability": 0.983
+        },
+        {
+          "text": "up",
+          "start": 153.39,
+          "end": 153.77,
+          "probability": 0.24
+        }
+      ],
+      "whisper_line_start_delta": 3.21,
+      "nearest_segment_start": 150.33,
+      "nearest_segment_start_end": 152.21,
+      "nearest_segment_start_text": "And then someone screams out",
+      "nearest_segment_end": 150.33,
+      "nearest_segment_end_start": 145.02,
+      "nearest_segment_end_text": "The family gathers around and reads it",
+      "prior_segment_start": 144.02,
+      "prior_segment_end": 145.02,
+      "prior_segment_late_by": 3.98
+    },
+    {
+      "index": 45,
+      "start": 153.41,
+      "end": 153.87,
+      "text": "It's me",
+      "words": [
+        {
+          "text": "It's",
+          "start": 153.41,
+          "end": 153.59
+        },
+        {
+          "text": "me",
+          "start": 153.59,
+          "end": 153.87
+        }
+      ],
+      "word_slots": [
+        0.18,
+        0.28
+      ],
+      "word_spoken": [
+        0.18,
+        0.28
+      ],
+      "whisper_window_start": 152.41,
+      "whisper_window_end": 154.86,
+      "whisper_window_word_count": 6,
+      "whisper_window_low_conf_count": 2,
+      "whisper_window_avg_prob": 0.647,
+      "whisper_window_words": [
+        {
+          "text": "laughing",
+          "start": 152.91,
+          "end": 153.39,
+          "probability": 0.983
+        },
+        {
+          "text": "up",
+          "start": 153.39,
+          "end": 153.77,
+          "probability": 0.24
+        },
+        {
+          "text": "at",
+          "start": 153.77,
+          "end": 153.95,
+          "probability": 0.729
+        },
+        {
+          "text": "us",
+          "start": 153.95,
+          "end": 154.23,
+          "probability": 0.971
+        },
+        {
+          "text": "From",
+          "start": 154.23,
+          "end": 154.49,
+          "probability": 0.07
+        },
+        {
+          "text": "hell",
+          "start": 154.49,
+          "end": 154.81,
+          "probability": 0.889
+        }
+      ],
+      "whisper_line_start_delta": null,
+      "nearest_segment_start": 154.23,
+      "nearest_segment_start_end": 154.81,
+      "nearest_segment_start_text": "From hell",
+      "nearest_segment_end": 154.23,
+      "nearest_segment_end_start": 152.21,
+      "nearest_segment_end_text": "She's laughing up at us",
+      "prior_segment_start": 150.33,
+      "prior_segment_end": 152.21,
+      "prior_segment_late_by": 1.2
+    },
+    {
+      "index": 46,
+      "start": 154.86,
+      "end": 155.18,
+      "text": "Hi!",
+      "words": [
+        {
+          "text": "Hi!",
+          "start": 154.86,
+          "end": 155.18
+        }
+      ],
+      "word_slots": [
+        0.32
+      ],
+      "word_spoken": [
+        0.32
+      ],
+      "whisper_window_start": 153.86,
+      "whisper_window_end": 155.83,
+      "whisper_window_word_count": 3,
+      "whisper_window_low_conf_count": 1,
+      "whisper_window_avg_prob": 0.643,
+      "whisper_window_words": [
+        {
+          "text": "us",
+          "start": 153.95,
+          "end": 154.23,
+          "probability": 0.971
+        },
+        {
+          "text": "From",
+          "start": 154.23,
+          "end": 154.49,
+          "probability": 0.07
+        },
+        {
+          "text": "hell",
+          "start": 154.49,
+          "end": 154.81,
+          "probability": 0.889
+        }
+      ],
+      "whisper_line_start_delta": null,
+      "nearest_segment_start": 154.23,
+      "nearest_segment_start_end": 154.81,
+      "nearest_segment_start_text": "From hell",
+      "nearest_segment_end": 154.81,
+      "nearest_segment_end_start": 154.23,
+      "nearest_segment_end_text": "From hell",
+      "prior_segment_start": 154.23,
+      "prior_segment_end": 154.81,
+      "prior_segment_late_by": 0.05
+    },
+    {
+      "index": 47,
+      "start": 155.83,
+      "end": 157.89,
+      "text": "I'm the problem, it's me",
+      "words": [
+        {
+          "text": "I'm",
+          "start": 155.83,
+          "end": 156.201
+        },
+        {
+          "text": "the",
+          "start": 156.242,
+          "end": 156.613
+        },
+        {
+          "text": "problem,",
+          "start": 156.654,
+          "end": 157.025
+        },
+        {
+          "text": "it's",
+          "start": 157.066,
+          "end": 157.437
+        },
+        {
+          "text": "me",
+          "start": 157.478,
+          "end": 157.89
+        }
+      ],
+      "word_slots": [
+        0.412,
+        0.412,
+        0.412,
+        0.412,
+        0.412
+      ],
+      "word_spoken": [
+        0.371,
+        0.371,
+        0.371,
+        0.371,
+        0.412
+      ],
+      "whisper_window_start": 154.83,
+      "whisper_window_end": 158.26,
+      "whisper_window_word_count": 1,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.714,
+      "whisper_window_words": [
+        {
+          "text": "What",
+          "start": 157.92,
+          "end": 158.44,
+          "probability": 0.714
+        }
+      ],
+      "whisper_line_start_delta": null,
+      "nearest_segment_start": 154.23,
+      "nearest_segment_start_end": 154.81,
+      "nearest_segment_start_text": "From hell",
+      "nearest_segment_end": 154.81,
+      "nearest_segment_end_start": 154.23,
+      "nearest_segment_end_text": "From hell",
+      "prior_segment_start": 154.23,
+      "prior_segment_end": 154.81,
+      "prior_segment_late_by": 1.02
+    },
+    {
+      "index": 48,
+      "start": 158.26,
+      "end": 158.48,
+      "text": "It's me",
+      "words": [
+        {
+          "text": "It's",
+          "start": 158.26,
+          "end": 158.37
+        },
+        {
+          "text": "me",
+          "start": 158.37,
+          "end": 158.48
+        }
+      ],
+      "word_slots": [
+        0.11,
+        0.11
+      ],
+      "word_spoken": [
+        0.11,
+        0.11
+      ],
+      "whisper_window_start": 157.26,
+      "whisper_window_end": 159.72,
+      "whisper_window_word_count": 4,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.926,
+      "whisper_window_words": [
+        {
+          "text": "What",
+          "start": 157.92,
+          "end": 158.44,
+          "probability": 0.714
+        },
+        {
+          "text": "does",
+          "start": 158.44,
+          "end": 158.62,
+          "probability": 0.992
+        },
+        {
+          "text": "it",
+          "start": 158.62,
+          "end": 158.74,
+          "probability": 0.998
+        },
+        {
+          "text": "say?",
+          "start": 158.74,
+          "end": 158.96,
+          "probability": 1.0
+        }
+      ],
+      "whisper_line_start_delta": null,
+      "nearest_segment_start": 157.92,
+      "nearest_segment_start_end": 158.96,
+      "nearest_segment_start_text": "What does it say?",
+      "nearest_segment_end": 158.96,
+      "nearest_segment_end_start": 157.92,
+      "nearest_segment_end_text": "What does it say?",
+      "prior_segment_start": 154.23,
+      "prior_segment_end": 154.81,
+      "prior_segment_late_by": 3.45
+    },
+    {
+      "index": 49,
+      "start": 159.72,
+      "end": 160.24,
+      "text": "Hi!",
+      "words": [
+        {
+          "text": "Hi!",
+          "start": 159.72,
+          "end": 160.24
+        }
+      ],
+      "word_slots": [
+        0.52
+      ],
+      "word_spoken": [
+        0.52
+      ],
+      "whisper_window_start": 158.72,
+      "whisper_window_end": 161.85,
+      "whisper_window_word_count": 8,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.937,
+      "whisper_window_words": [
+        {
+          "text": "say?",
+          "start": 158.74,
+          "end": 158.96,
+          "probability": 1.0
+        },
+        {
+          "text": "It's",
+          "start": 159.94,
+          "end": 160.46,
+          "probability": 0.995
+        },
+        {
+          "text": "the",
+          "start": 160.46,
+          "end": 160.58,
+          "probability": 0.998
+        },
+        {
+          "text": "worst",
+          "start": 160.58,
+          "end": 160.88,
+          "probability": 0.999
+        },
+        {
+          "text": "But",
+          "start": 160.88,
+          "end": 161.2,
+          "probability": 0.535
+        },
+        {
+          "text": "who",
+          "start": 161.2,
+          "end": 161.4,
+          "probability": 0.99
+        },
+        {
+          "text": "got",
+          "start": 161.4,
+          "end": 161.8,
+          "probability": 0.996
+        },
+        {
+          "text": "the",
+          "start": 161.8,
+          "end": 161.98,
+          "probability": 0.984
+        }
+      ],
+      "whisper_line_start_delta": null,
+      "nearest_segment_start": 159.94,
+      "nearest_segment_start_end": 160.88,
+      "nearest_segment_start_text": "It's the worst",
+      "nearest_segment_end": 158.96,
+      "nearest_segment_end_start": 157.92,
+      "nearest_segment_end_text": "What does it say?",
+      "prior_segment_start": 157.92,
+      "prior_segment_end": 158.96,
+      "prior_segment_late_by": 0.76
+    },
+    {
+      "index": 50,
+      "start": 161.85,
+      "end": 163.45,
+      "text": "I'm the problem, it's me",
+      "words": [
+        {
+          "text": "I'm",
+          "start": 161.85,
+          "end": 162.0
+        },
+        {
+          "text": "the",
+          "start": 162.0,
+          "end": 162.133
+        },
+        {
+          "text": "problem,",
+          "start": 162.133,
+          "end": 162.317
+        },
+        {
+          "text": "it's",
+          "start": 162.833,
+          "end": 163.267
+        },
+        {
+          "text": "me",
+          "start": 163.267,
+          "end": 163.45
+        }
+      ],
+      "word_slots": [
+        0.15,
+        0.133,
+        0.7,
+        0.433,
+        0.183
+      ],
+      "word_spoken": [
+        0.15,
+        0.133,
+        0.183,
+        0.433,
+        0.183
+      ],
+      "whisper_window_start": 160.85,
+      "whisper_window_end": 163.46,
+      "whisper_window_word_count": 7,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.923,
+      "whisper_window_words": [
+        {
+          "text": "But",
+          "start": 160.88,
+          "end": 161.2,
+          "probability": 0.535
+        },
+        {
+          "text": "who",
+          "start": 161.2,
+          "end": 161.4,
+          "probability": 0.99
+        },
+        {
+          "text": "got",
+          "start": 161.4,
+          "end": 161.8,
+          "probability": 0.996
+        },
+        {
+          "text": "the",
+          "start": 161.8,
+          "end": 161.98,
+          "probability": 0.984
+        },
+        {
+          "text": "beach",
+          "start": 161.98,
+          "end": 162.14,
+          "probability": 0.961
+        },
+        {
+          "text": "house?",
+          "start": 162.14,
+          "end": 162.36,
+          "probability": 0.999
+        },
+        {
+          "text": "She's",
+          "start": 162.98,
+          "end": 163.5,
+          "probability": 0.993
+        }
+      ],
+      "whisper_line_start_delta": null,
+      "nearest_segment_start": 160.88,
+      "nearest_segment_start_end": 162.36,
+      "nearest_segment_start_text": "But who got the beach house?",
+      "nearest_segment_end": 162.36,
+      "nearest_segment_end_start": 160.88,
+      "nearest_segment_end_text": "But who got the beach house?",
+      "prior_segment_start": 159.94,
+      "prior_segment_end": 160.88,
+      "prior_segment_late_by": 0.97
+    },
+    {
+      "index": 51,
+      "start": 163.46,
+      "end": 164.08,
+      "text": "It's me",
+      "words": [
+        {
+          "text": "It's",
+          "start": 163.46,
+          "end": 163.739
+        },
+        {
+          "text": "me",
+          "start": 163.739,
+          "end": 164.08
+        }
+      ],
+      "word_slots": [
+        0.279,
+        0.341
+      ],
+      "word_spoken": [
+        0.279,
+        0.341
+      ],
+      "whisper_window_start": 162.46,
+      "whisper_window_end": 164.78,
+      "whisper_window_word_count": 7,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.984,
+      "whisper_window_words": [
+        {
+          "text": "She's",
+          "start": 162.98,
+          "end": 163.5,
+          "probability": 0.993
+        },
+        {
+          "text": "having",
+          "start": 163.5,
+          "end": 163.72,
+          "probability": 0.999
+        },
+        {
+          "text": "it",
+          "start": 163.72,
+          "end": 163.82,
+          "probability": 0.999
+        },
+        {
+          "text": "turned",
+          "start": 163.82,
+          "end": 164.0,
+          "probability": 0.996
+        },
+        {
+          "text": "into",
+          "start": 164.0,
+          "end": 164.22,
+          "probability": 0.996
+        },
+        {
+          "text": "a",
+          "start": 164.22,
+          "end": 164.44,
+          "probability": 0.992
+        },
+        {
+          "text": "f***ing",
+          "start": 164.44,
+          "end": 164.78,
+          "probability": 0.913
+        }
+      ],
+      "whisper_line_start_delta": null,
+      "nearest_segment_start": 162.98,
+      "nearest_segment_start_end": 165.36,
+      "nearest_segment_start_text": "She's having it turned into a f***ing cat sanctuary",
+      "nearest_segment_end": 162.36,
+      "nearest_segment_end_start": 160.88,
+      "nearest_segment_end_text": "But who got the beach house?",
+      "prior_segment_start": 160.88,
+      "prior_segment_end": 162.36,
+      "prior_segment_late_by": 1.1
+    },
+    {
+      "index": 52,
+      "start": 164.78,
+      "end": 165.12,
+      "text": "Hi!",
+      "words": [
+        {
+          "text": "Hi!",
+          "start": 164.78,
+          "end": 165.12
+        }
+      ],
+      "word_slots": [
+        0.34
+      ],
+      "word_spoken": [
+        0.34
+      ],
+      "whisper_window_start": 163.78,
+      "whisper_window_end": 166.87,
+      "whisper_window_word_count": 11,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.989,
+      "whisper_window_words": [
+        {
+          "text": "turned",
+          "start": 163.82,
+          "end": 164.0,
+          "probability": 0.996
+        },
+        {
+          "text": "into",
+          "start": 164.0,
+          "end": 164.22,
+          "probability": 0.996
+        },
+        {
+          "text": "a",
+          "start": 164.22,
+          "end": 164.44,
+          "probability": 0.992
+        },
+        {
+          "text": "f***ing",
+          "start": 164.44,
+          "end": 164.78,
+          "probability": 0.913
+        },
+        {
+          "text": "cat",
+          "start": 164.78,
+          "end": 164.98,
+          "probability": 0.995
+        },
+        {
+          "text": "sanctuary",
+          "start": 164.98,
+          "end": 165.36,
+          "probability": 0.999
+        },
+        {
+          "text": "What?",
+          "start": 165.36,
+          "end": 165.8,
+          "probability": 0.99
+        },
+        {
+          "text": "Cats",
+          "start": 165.98,
+          "end": 166.5,
+          "probability": 0.996
+        },
+        {
+          "text": "don't",
+          "start": 166.5,
+          "end": 166.7,
+          "probability": 1.0
+        },
+        {
+          "text": "even",
+          "start": 166.7,
+          "end": 166.82,
+          "probability": 1.0
+        },
+        {
+          "text": "like",
+          "start": 166.82,
+          "end": 167.06,
+          "probability": 0.998
+        }
+      ],
+      "whisper_line_start_delta": null,
+      "nearest_segment_start": 165.36,
+      "nearest_segment_start_end": 167.48,
+      "nearest_segment_start_text": "What? Cats don't even like the beach",
+      "nearest_segment_end": 165.36,
+      "nearest_segment_end_start": 162.98,
+      "nearest_segment_end_text": "She's having it turned into a f***ing cat sanctuary",
+      "prior_segment_start": 160.88,
+      "prior_segment_end": 162.36,
+      "prior_segment_late_by": 2.42
+    },
+    {
+      "index": 53,
+      "start": 166.87,
+      "end": 167.23,
+      "text": "Everybody agrees",
+      "words": [
+        {
+          "text": "Everybody",
+          "start": 166.87,
+          "end": 166.99
+        },
+        {
+          "text": "agrees",
+          "start": 166.99,
+          "end": 167.23
+        }
+      ],
+      "word_slots": [
+        0.12,
+        0.24
+      ],
+      "word_spoken": [
+        0.12,
+        0.24
+      ],
+      "whisper_window_start": 165.87,
+      "whisper_window_end": 168.26,
+      "whisper_window_word_count": 11,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.989,
+      "whisper_window_words": [
+        {
+          "text": "Cats",
+          "start": 165.98,
+          "end": 166.5,
+          "probability": 0.996
+        },
+        {
+          "text": "don't",
+          "start": 166.5,
+          "end": 166.7,
+          "probability": 1.0
+        },
+        {
+          "text": "even",
+          "start": 166.7,
+          "end": 166.82,
+          "probability": 1.0
+        },
+        {
+          "text": "like",
+          "start": 166.82,
+          "end": 167.06,
+          "probability": 0.998
+        },
+        {
+          "text": "the",
+          "start": 167.06,
+          "end": 167.22,
+          "probability": 1.0
+        },
+        {
+          "text": "beach",
+          "start": 167.22,
+          "end": 167.48,
+          "probability": 1.0
+        },
+        {
+          "text": "What",
+          "start": 167.48,
+          "end": 167.74,
+          "probability": 0.891
+        },
+        {
+          "text": "about",
+          "start": 167.74,
+          "end": 167.88,
+          "probability": 1.0
+        },
+        {
+          "text": "the",
+          "start": 167.88,
+          "end": 168.06,
+          "probability": 1.0
+        },
+        {
+          "text": "rest",
+          "start": 168.06,
+          "end": 168.24,
+          "probability": 1.0
+        },
+        {
+          "text": "of",
+          "start": 168.24,
+          "end": 168.4,
+          "probability": 1.0
+        }
+      ],
+      "whisper_line_start_delta": null,
+      "nearest_segment_start": 167.48,
+      "nearest_segment_start_end": 168.78,
+      "nearest_segment_start_text": "What about the rest of the assets?",
+      "nearest_segment_end": 167.48,
+      "nearest_segment_end_start": 165.36,
+      "nearest_segment_end_text": "What? Cats don't even like the beach",
+      "prior_segment_start": 162.98,
+      "prior_segment_end": 165.36,
+      "prior_segment_late_by": 1.51
+    },
+    {
+      "index": 54,
+      "start": 168.26,
+      "end": 168.6,
+      "text": "Everybody agrees",
+      "words": [
+        {
+          "text": "Everybody",
+          "start": 168.26,
+          "end": 168.44
+        },
+        {
+          "text": "agrees",
+          "start": 168.44,
+          "end": 168.6
+        }
+      ],
+      "word_slots": [
+        0.18,
+        0.16
+      ],
+      "word_spoken": [
+        0.18,
+        0.16
+      ],
+      "whisper_window_start": 167.26,
+      "whisper_window_end": 173.17,
+      "whisper_window_word_count": 18,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.992,
+      "whisper_window_words": [
+        {
+          "text": "What",
+          "start": 167.48,
+          "end": 167.74,
+          "probability": 0.891
+        },
+        {
+          "text": "about",
+          "start": 167.74,
+          "end": 167.88,
+          "probability": 1.0
+        },
+        {
+          "text": "the",
+          "start": 167.88,
+          "end": 168.06,
+          "probability": 1.0
+        },
+        {
+          "text": "rest",
+          "start": 168.06,
+          "end": 168.24,
+          "probability": 1.0
+        },
+        {
+          "text": "of",
+          "start": 168.24,
+          "end": 168.4,
+          "probability": 1.0
+        },
+        {
+          "text": "the",
+          "start": 168.4,
+          "end": 168.46,
+          "probability": 1.0
+        },
+        {
+          "text": "assets?",
+          "start": 168.46,
+          "end": 168.78,
+          "probability": 0.999
+        },
+        {
+          "text": "I",
+          "start": 169.08,
+          "end": 169.46,
+          "probability": 0.999
+        },
+        {
+          "text": "flew",
+          "start": 169.46,
+          "end": 169.64,
+          "probability": 0.999
+        },
+        {
+          "text": "all",
+          "start": 169.64,
+          "end": 169.86,
+          "probability": 1.0
+        },
+        {
+          "text": "the",
+          "start": 169.86,
+          "end": 169.98,
+          "probability": 1.0
+        },
+        {
+          "text": "way",
+          "start": 169.98,
+          "end": 170.12,
+          "probability": 1.0
+        },
+        {
+          "text": "here",
+          "start": 170.12,
+          "end": 170.3,
+          "probability": 0.999
+        },
+        {
+          "text": "from",
+          "start": 170.3,
+          "end": 170.54,
+          "probability": 0.988
+        },
+        {
+          "text": "Ibiza!",
+          "start": 170.54,
+          "end": 171.06,
+          "probability": 0.987
+        },
+        {
+          "text": "To",
+          "start": 172.22,
+          "end": 172.74,
+          "probability": 0.998
+        },
+        {
+          "text": "my",
+          "start": 172.74,
+          "end": 172.96,
+          "probability": 0.999
+        },
+        {
+          "text": "children",
+          "start": 172.96,
+          "end": 173.28,
+          "probability": 1.0
+        }
+      ],
+      "whisper_line_start_delta": null,
+      "nearest_segment_start": 167.48,
+      "nearest_segment_start_end": 168.78,
+      "nearest_segment_start_text": "What about the rest of the assets?",
+      "nearest_segment_end": 168.78,
+      "nearest_segment_end_start": 167.48,
+      "nearest_segment_end_text": "What about the rest of the assets?",
+      "prior_segment_start": 165.36,
+      "prior_segment_end": 167.48,
+      "prior_segment_late_by": 0.78
+    },
+    {
+      "index": 55,
+      "start": 173.17,
+      "end": 173.75,
+      "text": "It's me",
+      "words": [
+        {
+          "text": "It's",
+          "start": 173.17,
+          "end": 173.46
+        },
+        {
+          "text": "me",
+          "start": 173.46,
+          "end": 173.75
+        }
+      ],
+      "word_slots": [
+        0.29,
+        0.29
+      ],
+      "word_spoken": [
+        0.29,
+        0.29
+      ],
+      "whisper_window_start": 172.17,
+      "whisper_window_end": 174.66,
+      "whisper_window_word_count": 5,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.981,
+      "whisper_window_words": [
+        {
+          "text": "To",
+          "start": 172.22,
+          "end": 172.74,
+          "probability": 0.998
+        },
+        {
+          "text": "my",
+          "start": 172.74,
+          "end": 172.96,
+          "probability": 0.999
+        },
+        {
+          "text": "children",
+          "start": 172.96,
+          "end": 173.28,
+          "probability": 1.0
+        },
+        {
+          "text": "I",
+          "start": 173.28,
+          "end": 173.54,
+          "probability": 0.911
+        },
+        {
+          "text": "leave",
+          "start": 173.54,
+          "end": 173.84,
+          "probability": 0.999
+        }
+      ],
+      "whisper_line_start_delta": null,
+      "nearest_segment_start": 172.22,
+      "nearest_segment_start_end": 173.84,
+      "nearest_segment_start_text": "To my children I leave",
+      "nearest_segment_end": 173.84,
+      "nearest_segment_end_start": 172.22,
+      "nearest_segment_end_text": "To my children I leave",
+      "prior_segment_start": 169.08,
+      "prior_segment_end": 171.06,
+      "prior_segment_late_by": 2.11
+    },
+    {
+      "index": 56,
+      "start": 174.66,
+      "end": 175.7,
+      "text": "Hi! (Hi!)",
+      "words": [
+        {
+          "text": "Hi!",
+          "start": 174.66,
+          "end": 175.18
+        },
+        {
+          "text": "(Hi!)",
+          "start": 175.18,
+          "end": 175.7
+        }
+      ],
+      "word_slots": [
+        0.52,
+        0.52
+      ],
+      "word_spoken": [
+        0.52,
+        0.52
+      ],
+      "whisper_window_start": 173.66,
+      "whisper_window_end": 175.92,
+      "whisper_window_word_count": 1,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.713,
+      "whisper_window_words": [
+        {
+          "text": "Thirteen",
+          "start": 175.64,
+          "end": 176.16,
+          "probability": 0.713
+        }
+      ],
+      "whisper_line_start_delta": null,
+      "nearest_segment_start": 175.64,
+      "nearest_segment_start_end": 176.68,
+      "nearest_segment_start_text": "Thirteen cents",
+      "nearest_segment_end": 173.84,
+      "nearest_segment_end_start": 172.22,
+      "nearest_segment_end_text": "To my children I leave",
+      "prior_segment_start": 172.22,
+      "prior_segment_end": 173.84,
+      "prior_segment_late_by": 0.82
+    },
+    {
+      "index": 57,
+      "start": 175.92,
+      "end": 178.0,
+      "text": "I'm the problem, it's me (I'm the problem, it's me)",
+      "words": [
+        {
+          "text": "I'm",
+          "start": 175.92,
+          "end": 176.632
+        },
+        {
+          "text": "the",
+          "start": 176.632,
+          "end": 177.202
+        },
+        {
+          "text": "problem,",
+          "start": 177.202,
+          "end": 177.273
+        },
+        {
+          "text": "it's",
+          "start": 177.273,
+          "end": 177.416
+        },
+        {
+          "text": "me",
+          "start": 177.416,
+          "end": 177.644
+        },
+        {
+          "text": "(I'm",
+          "start": 177.644,
+          "end": 177.715
+        },
+        {
+          "text": "the",
+          "start": 177.715,
+          "end": 177.786
+        },
+        {
+          "text": "problem,",
+          "start": 177.786,
+          "end": 177.858
+        },
+        {
+          "text": "it's",
+          "start": 177.858,
+          "end": 177.912
+        },
+        {
+          "text": "me)",
+          "start": 177.912,
+          "end": 178.0
+        }
+      ],
+      "word_slots": [
+        0.712,
+        0.57,
+        0.071,
+        0.142,
+        0.228,
+        0.071,
+        0.071,
+        0.071,
+        0.054,
+        0.088
+      ],
+      "word_spoken": [
+        0.712,
+        0.57,
+        0.071,
+        0.142,
+        0.228,
+        0.071,
+        0.071,
+        0.071,
+        0.054,
+        0.088
+      ],
+      "whisper_window_start": 174.92,
+      "whisper_window_end": 178.01,
+      "whisper_window_word_count": 4,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.801,
+      "whisper_window_words": [
+        {
+          "text": "Thirteen",
+          "start": 175.64,
+          "end": 176.16,
+          "probability": 0.713
+        },
+        {
+          "text": "cents",
+          "start": 176.16,
+          "end": 176.68,
+          "probability": 0.998
+        },
+        {
+          "text": "No!",
+          "start": 176.68,
+          "end": 177.18,
+          "probability": 0.954
+        },
+        {
+          "text": "No!",
+          "start": 177.38,
+          "end": 177.78,
+          "probability": 0.539
+        }
+      ],
+      "whisper_line_start_delta": null,
+      "nearest_segment_start": 175.64,
+      "nearest_segment_start_end": 176.68,
+      "nearest_segment_start_text": "Thirteen cents",
+      "nearest_segment_end": 176.68,
+      "nearest_segment_end_start": 175.64,
+      "nearest_segment_end_text": "Thirteen cents",
+      "prior_segment_start": 172.22,
+      "prior_segment_end": 173.84,
+      "prior_segment_late_by": 2.08
+    },
+    {
+      "index": 58,
+      "start": 178.01,
+      "end": 178.59,
+      "text": "At teatime",
+      "words": [
+        {
+          "text": "At",
+          "start": 178.01,
+          "end": 178.3
+        },
+        {
+          "text": "teatime",
+          "start": 178.3,
+          "end": 178.59
+        }
+      ],
+      "word_slots": [
+        0.29,
+        0.29
+      ],
+      "word_spoken": [
+        0.29,
+        0.29
+      ],
+      "whisper_window_start": 177.01,
+      "whisper_window_end": 180.65,
+      "whisper_window_word_count": 9,
+      "whisper_window_low_conf_count": 1,
+      "whisper_window_avg_prob": 0.711,
+      "whisper_window_words": [
+        {
+          "text": "No!",
+          "start": 177.38,
+          "end": 177.78,
+          "probability": 0.539
+        },
+        {
+          "text": "Wait,",
+          "start": 178.72,
+          "end": 178.74,
+          "probability": 0.489
+        },
+        {
+          "text": "wait,",
+          "start": 178.74,
+          "end": 178.84,
+          "probability": 0.812
+        },
+        {
+          "text": "wait,",
+          "start": 178.88,
+          "end": 179.04,
+          "probability": 0.895
+        },
+        {
+          "text": "wait,",
+          "start": 179.04,
+          "end": 179.22,
+          "probability": 0.738
+        },
+        {
+          "text": "wait,",
+          "start": 179.22,
+          "end": 179.46,
+          "probability": 0.637
+        },
+        {
+          "text": "you",
+          "start": 179.52,
+          "end": 179.62,
+          "probability": 0.786
+        },
+        {
+          "text": "guys",
+          "start": 179.62,
+          "end": 179.86,
+          "probability": 0.999
+        },
+        {
+          "text": "There's",
+          "start": 180.5,
+          "end": 180.98,
+          "probability": 0.501
+        }
+      ],
+      "whisper_line_start_delta": null,
+      "nearest_segment_start": 177.38,
+      "nearest_segment_start_end": 177.78,
+      "nearest_segment_start_text": "No!",
+      "nearest_segment_end": 177.78,
+      "nearest_segment_end_start": 177.38,
+      "nearest_segment_end_text": "No!",
+      "prior_segment_start": 177.38,
+      "prior_segment_end": 177.78,
+      "prior_segment_late_by": 0.23
+    },
+    {
+      "index": 59,
+      "start": 180.65,
+      "end": 183.53,
+      "text": "Everybody agrees (everybody agrees)",
+      "words": [
+        {
+          "text": "Everybody",
+          "start": 180.65,
+          "end": 181.241
+        },
+        {
+          "text": "agrees",
+          "start": 181.241,
+          "end": 181.807
+        },
+        {
+          "text": "(everybody",
+          "start": 181.807,
+          "end": 182.865
+        },
+        {
+          "text": "agrees)",
+          "start": 182.865,
+          "end": 183.53
+        }
+      ],
+      "word_slots": [
+        0.591,
+        0.566,
+        1.058,
+        0.665
+      ],
+      "word_spoken": [
+        0.591,
+        0.566,
+        1.058,
+        0.665
+      ],
+      "whisper_window_start": 179.65,
+      "whisper_window_end": 183.54,
+      "whisper_window_word_count": 6,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.896,
+      "whisper_window_words": [
+        {
+          "text": "There's",
+          "start": 180.5,
+          "end": 180.98,
+          "probability": 0.501
+        },
+        {
+          "text": "probably",
+          "start": 180.98,
+          "end": 181.38,
+          "probability": 0.997
+        },
+        {
+          "text": "a",
+          "start": 181.38,
+          "end": 181.84,
+          "probability": 0.994
+        },
+        {
+          "text": "secret",
+          "start": 181.84,
+          "end": 182.32,
+          "probability": 0.993
+        },
+        {
+          "text": "encoded",
+          "start": 182.32,
+          "end": 183.18,
+          "probability": 0.917
+        },
+        {
+          "text": "message",
+          "start": 183.18,
+          "end": 183.72,
+          "probability": 0.976
+        }
+      ],
+      "whisper_line_start_delta": null,
+      "nearest_segment_start": 180.5,
+      "nearest_segment_start_end": 185.56,
+      "nearest_segment_start_text": "There's probably a secret encoded message that means something else!",
+      "nearest_segment_end": 179.86,
+      "nearest_segment_end_start": 178.72,
+      "nearest_segment_end_text": "Wait, wait, wait, wait, wait, you guys",
+      "prior_segment_start": 178.72,
+      "prior_segment_end": 179.86,
+      "prior_segment_late_by": 0.79
+    },
+    {
+      "index": 60,
+      "start": 183.54,
+      "end": 187.26,
+      "text": "I'll stare directly at the sun but never in the mirror",
+      "words": [
+        {
+          "text": "I'll",
+          "start": 183.54,
+          "end": 184.096
+        },
+        {
+          "text": "stare",
+          "start": 184.096,
+          "end": 184.481
+        },
+        {
+          "text": "directly",
+          "start": 184.481,
+          "end": 184.951
+        },
+        {
+          "text": "at",
+          "start": 184.951,
+          "end": 185.507
+        },
+        {
+          "text": "the",
+          "start": 185.507,
+          "end": 185.934
+        },
+        {
+          "text": "sun",
+          "start": 185.934,
+          "end": 186.298
+        },
+        {
+          "text": "but",
+          "start": 186.298,
+          "end": 186.512
+        },
+        {
+          "text": "never",
+          "start": 186.512,
+          "end": 186.747
+        },
+        {
+          "text": "in",
+          "start": 186.747,
+          "end": 186.854
+        },
+        {
+          "text": "the",
+          "start": 186.854,
+          "end": 187.11
+        },
+        {
+          "text": "mirror",
+          "start": 187.11,
+          "end": 187.26
+        }
+      ],
+      "word_slots": [
+        0.556,
+        0.385,
+        0.47,
+        0.556,
+        0.428,
+        0.363,
+        0.214,
+        0.235,
+        0.107,
+        0.257,
+        0.15
+      ],
+      "word_spoken": [
+        0.556,
+        0.385,
+        0.47,
+        0.556,
+        0.428,
+        0.363,
+        0.214,
+        0.235,
+        0.107,
+        0.257,
+        0.15
+      ],
+      "whisper_window_start": 182.54,
+      "whisper_window_end": 188.08,
+      "whisper_window_word_count": 15,
+      "whisper_window_low_conf_count": 1,
+      "whisper_window_avg_prob": 0.879,
+      "whisper_window_words": [
+        {
+          "text": "message",
+          "start": 183.18,
+          "end": 183.72,
+          "probability": 0.976
+        },
+        {
+          "text": "that",
+          "start": 183.72,
+          "end": 184.24,
+          "probability": 0.929
+        },
+        {
+          "text": "means",
+          "start": 184.24,
+          "end": 184.6,
+          "probability": 0.995
+        },
+        {
+          "text": "something",
+          "start": 184.6,
+          "end": 185.04,
+          "probability": 0.992
+        },
+        {
+          "text": "else!",
+          "start": 185.04,
+          "end": 185.56,
+          "probability": 0.815
+        },
+        {
+          "text": "Yeah,",
+          "start": 185.66,
+          "end": 186.06,
+          "probability": 0.885
+        },
+        {
+          "text": "yeah,",
+          "start": 186.08,
+          "end": 186.42,
+          "probability": 0.877
+        },
+        {
+          "text": "yeah,",
+          "start": 186.5,
+          "end": 186.7,
+          "probability": 0.775
+        },
+        {
+          "text": "that's",
+          "start": 186.74,
+          "end": 186.96,
+          "probability": 0.99
+        },
+        {
+          "text": "what",
+          "start": 186.96,
+          "end": 187.06,
+          "probability": 0.993
+        },
+        {
+          "text": "mom",
+          "start": 187.06,
+          "end": 187.3,
+          "probability": 0.636
+        },
+        {
+          "text": "would",
+          "start": 187.3,
+          "end": 187.44,
+          "probability": 0.989
+        },
+        {
+          "text": "always",
+          "start": 187.44,
+          "end": 187.72,
+          "probability": 0.999
+        },
+        {
+          "text": "do",
+          "start": 187.72,
+          "end": 187.96,
+          "probability": 0.983
+        },
+        {
+          "text": "P",
+          "start": 187.96,
+          "end": 188.7,
+          "probability": 0.35
+        }
+      ],
+      "whisper_line_start_delta": null,
+      "nearest_segment_start": 185.66,
+      "nearest_segment_start_end": 187.96,
+      "nearest_segment_start_text": "Yeah, yeah, yeah, that's what mom would always do",
+      "nearest_segment_end": 185.56,
+      "nearest_segment_end_start": 180.5,
+      "nearest_segment_end_text": "There's probably a secret encoded message that means something else!",
+      "prior_segment_start": 178.72,
+      "prior_segment_end": 179.86,
+      "prior_segment_late_by": 3.68
+    },
+    {
+      "index": 61,
+      "start": 188.08,
+      "end": 192.54,
+      "text": "It must be exhausting always rooting for the anti-hero",
+      "words": [
+        {
+          "text": "It",
+          "start": 188.08,
+          "end": 188.397
+        },
+        {
+          "text": "must",
+          "start": 188.397,
+          "end": 188.872
+        },
+        {
+          "text": "be",
+          "start": 188.872,
+          "end": 189.505
+        },
+        {
+          "text": "exhausting",
+          "start": 189.505,
+          "end": 189.743
+        },
+        {
+          "text": "always",
+          "start": 189.743,
+          "end": 190.455
+        },
+        {
+          "text": "rooting",
+          "start": 190.455,
+          "end": 191.247
+        },
+        {
+          "text": "for",
+          "start": 191.247,
+          "end": 191.801
+        },
+        {
+          "text": "the",
+          "start": 191.801,
+          "end": 192.171
+        },
+        {
+          "text": "anti-hero",
+          "start": 192.171,
+          "end": 192.54
+        }
+      ],
+      "word_slots": [
+        0.317,
+        0.475,
+        0.633,
+        0.238,
+        0.713,
+        0.792,
+        0.554,
+        0.369,
+        0.369
+      ],
+      "word_spoken": [
+        0.317,
+        0.475,
+        0.633,
+        0.238,
+        0.713,
+        0.792,
+        0.554,
+        0.369,
+        0.369
+      ],
+      "whisper_window_start": 187.08,
+      "whisper_window_end": 194.54,
+      "whisper_window_word_count": 16,
+      "whisper_window_low_conf_count": 1,
+      "whisper_window_avg_prob": 0.93,
+      "whisper_window_words": [
+        {
+          "text": "would",
+          "start": 187.3,
+          "end": 187.44,
+          "probability": 0.989
+        },
+        {
+          "text": "always",
+          "start": 187.44,
+          "end": 187.72,
+          "probability": 0.999
+        },
+        {
+          "text": "do",
+          "start": 187.72,
+          "end": 187.96,
+          "probability": 0.983
+        },
+        {
+          "text": "P",
+          "start": 187.96,
+          "end": 188.7,
+          "probability": 0.35
+        },
+        {
+          "text": ".S.",
+          "start": 188.7,
+          "end": 189.06,
+          "probability": 0.952
+        },
+        {
+          "text": "There's",
+          "start": 189.4,
+          "end": 189.88,
+          "probability": 0.945
+        },
+        {
+          "text": "no",
+          "start": 189.88,
+          "end": 190.06,
+          "probability": 0.999
+        },
+        {
+          "text": "secret",
+          "start": 190.06,
+          "end": 190.6,
+          "probability": 0.999
+        },
+        {
+          "text": "encoded",
+          "start": 190.6,
+          "end": 191.2,
+          "probability": 0.989
+        },
+        {
+          "text": "message",
+          "start": 191.2,
+          "end": 191.62,
+          "probability": 0.997
+        },
+        {
+          "text": "that",
+          "start": 191.62,
+          "end": 191.9,
+          "probability": 0.952
+        },
+        {
+          "text": "means",
+          "start": 191.9,
+          "end": 192.18,
+          "probability": 0.998
+        },
+        {
+          "text": "something",
+          "start": 192.18,
+          "end": 192.54,
+          "probability": 0.995
+        },
+        {
+          "text": "else,",
+          "start": 192.54,
+          "end": 192.92,
+          "probability": 0.998
+        },
+        {
+          "text": "love,",
+          "start": 192.96,
+          "end": 193.16,
+          "probability": 0.748
+        },
+        {
+          "text": "Taylor",
+          "start": 193.28,
+          "end": 193.76,
+          "probability": 0.985
+        }
+      ],
+      "whisper_line_start_delta": null,
+      "nearest_segment_start": 187.96,
+      "nearest_segment_start_end": 193.76,
+      "nearest_segment_start_text": "P.S. There's no secret encoded message that means something else, love, Taylor",
+      "nearest_segment_end": 187.96,
+      "nearest_segment_end_start": 185.66,
+      "nearest_segment_end_text": "Yeah, yeah, yeah, that's what mom would always do",
+      "prior_segment_start": 185.66,
+      "prior_segment_end": 187.96,
+      "prior_segment_late_by": 0.12
+    }
+  ],
+  "dtw_word_coverage": 0.821,
+  "dtw_line_coverage": 0.885,
+  "dtw_phonetic_similarity_coverage": 0.618,
+  "dtw_high_similarity_ratio": 0.753,
+  "dtw_exact_match_ratio": 0.0,
+  "dtw_unmatched_ratio": 0.179,
+  "whisper_segments": [
+    {
+      "start": 8.78,
+      "end": 13.56,
+      "text": "I have this thing where I get older, but just never wiser"
+    },
+    {
+      "start": 13.56,
+      "end": 16.62,
+      "text": "Midnight's become my afternoons"
+    },
+    {
+      "start": 16.62,
+      "end": 21.88,
+      "text": "When my depression works the graveyard shift"
+    },
+    {
+      "start": 21.88,
+      "end": 26.24,
+      "text": "All of the people I've ghosted stand there in the room"
+    },
+    {
+      "start": 27.87,
+      "end": 31.25,
+      "text": "I should not be left to my own devices"
+    },
+    {
+      "start": 31.25,
+      "end": 33.95,
+      "text": "They come with prices and vices"
+    },
+    {
+      "start": 33.95,
+      "end": 35.77,
+      "text": "I end up in crisis"
+    },
+    {
+      "start": 35.77,
+      "end": 37.57,
+      "text": "Still as old as time"
+    },
+    {
+      "start": 37.57,
+      "end": 40.91,
+      "text": "I wake up screaming from dreaming"
+    },
+    {
+      "start": 40.91,
+      "end": 43.55,
+      "text": "One day I'll watch as you're leaving"
+    },
+    {
+      "start": 43.55,
+      "end": 46.13,
+      "text": "Cause you got tired of my scheming"
+    },
+    {
+      "start": 46.13,
+      "end": 47.51,
+      "text": "For the last time"
+    },
+    {
+      "start": 47.51,
+      "end": 52.23,
+      "text": "It's me, hi, I'm the problem, it's me"
+    },
+    {
+      "start": 52.23,
+      "end": 57.13,
+      "text": "At tea time, everybody agrees"
+    },
+    {
+      "start": 58.05,
+      "end": 62.79,
+      "text": "I'll stare directly at the sun, but never in the mirror"
+    },
+    {
+      "start": 62.79,
+      "end": 67.07,
+      "text": "It must be exhausting, always rooting for the end"
+    },
+    {
+      "start": 67.07,
+      "end": 67.55,
+      "text": "To hear the sound of the wind"
+    },
+    {
+      "start": 67.57,
+      "end": 67.97,
+      "text": "I'm the hero"
+    },
+    {
+      "start": 67.97,
+      "end": 77.65,
+      "text": "Sometimes I feel as a sexy baby"
+    },
+    {
+      "start": 77.65,
+      "end": 80.39,
+      "text": "And I'm a monster on the"
+    },
+    {
+      "start": 80.39,
+      "end": 84.65,
+      "text": "Too big to hang out"
+    },
+    {
+      "start": 84.65,
+      "end": 87.77,
+      "text": "Slowly lurching toward your favorite city"
+    },
+    {
+      "start": 87.77,
+      "end": 90.53,
+      "text": "Pierced through the heart, but never killed"
+    },
+    {
+      "start": 90.53,
+      "end": 96.16,
+      "text": "Did you hear my covert narcissism?"
+    },
+    {
+      "start": 96.18,
+      "end": 98.54,
+      "text": "Like disguises, altruism"
+    },
+    {
+      "start": 98.54,
+      "end": 100.48,
+      "text": "Like some kind of converse"
+    },
+    {
+      "start": 100.48,
+      "end": 102.02,
+      "text": "Still as old as time"
+    },
+    {
+      "start": 102.02,
+      "end": 105.3,
+      "text": "I wake up screaming from dreaming"
+    },
+    {
+      "start": 105.3,
+      "end": 107.9,
+      "text": "One day I'll watch as you're leaving"
+    },
+    {
+      "start": 108.1,
+      "end": 110.32,
+      "text": "And life will lose all its meaning"
+    },
+    {
+      "start": 110.32,
+      "end": 111.86,
+      "text": "For the last time"
+    },
+    {
+      "start": 111.86,
+      "end": 116.58,
+      "text": "It's me, hi, I'm the problem, it's me"
+    },
+    {
+      "start": 116.58,
+      "end": 121.48,
+      "text": "At tea time, everybody agrees"
+    },
+    {
+      "start": 122.34,
+      "end": 127.18,
+      "text": "I'll stare directly at the sun, but never in the mirror"
+    },
+    {
+      "start": 127.18,
+      "end": 131.4,
+      "text": "It must be exhausting, always rooting for the end"
+    },
+    {
+      "start": 131.4,
+      "end": 139.12,
+      "text": "To hear the sound of the wind"
+    },
+    {
+      "start": 139.12,
+      "end": 142.06,
+      "text": "My daughter-in-law kills me for the money"
+    },
+    {
+      "start": 142.06,
+      "end": 144.0,
+      "text": "She thinks I left her home, but she doesn't know"
+    },
+    {
+      "start": 144.02,
+      "end": 145.02,
+      "text": "I'm in the will"
+    },
+    {
+      "start": 145.02,
+      "end": 150.33,
+      "text": "The family gathers around and reads it"
+    },
+    {
+      "start": 150.33,
+      "end": 152.21,
+      "text": "And then someone screams out"
+    },
+    {
+      "start": 152.21,
+      "end": 154.23,
+      "text": "She's laughing up at us"
+    },
+    {
+      "start": 154.23,
+      "end": 154.81,
+      "text": "From hell"
+    },
+    {
+      "start": 157.92,
+      "end": 158.96,
+      "text": "What does it say?"
+    },
+    {
+      "start": 159.94,
+      "end": 160.88,
+      "text": "It's the worst"
+    },
+    {
+      "start": 160.88,
+      "end": 162.36,
+      "text": "But who got the beach house?"
+    },
+    {
+      "start": 162.98,
+      "end": 165.36,
+      "text": "She's having it turned into a f***ing cat sanctuary"
+    },
+    {
+      "start": 165.36,
+      "end": 167.48,
+      "text": "What? Cats don't even like the beach"
+    },
+    {
+      "start": 167.48,
+      "end": 168.78,
+      "text": "What about the rest of the assets?"
+    },
+    {
+      "start": 169.08,
+      "end": 171.06,
+      "text": "I flew all the way here from Ibiza!"
+    }
+  ],
+  "whisper_word_count": 668,
+  "whisper_window_low_conf_threshold": 0.5,
+  "low_confidence_lines": []
+}

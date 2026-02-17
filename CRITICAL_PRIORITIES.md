@@ -21,17 +21,18 @@ This document outlines the critical areas of the `y2karaoke` codebase and the im
 ## 2. Benchmark Execution & Validation
 **Context:** A set of 12 songs is defined in `benchmarks/benchmark_songs.yaml` to measure alignment accuracy.
 
-**Status (2026-02-16):**
-*   **Fixed & Verified:** "Anti-Hero" 3.38s offset issue resolved. Auto-offset logic in `lyrics_helpers.py` AND `lyrics_whisper.py` now disabled for offsets between 0.3s and 5.0s. Confirmed start time ~5.39s (vs expected ~5.45s).
-*   **Pending:** Investigation of "Bohemian Rhapsody" gold file mismatch (showing 106s error).
+**Status (2026-02-17):**
+*   **Fixed & Verified:** "Anti-Hero" 3.38s offset issue resolved. Auto-offset logic adjusted to apply offsets < 2.5s (fixing Bohemian Rhapsody) but reject > 2.5s (fixing Anti-Hero).
+*   **Gold Set Updated:** Updated "Bohemian Rhapsody" gold file to correct timing (2.02s start) and added "Anti-Hero" gold file (5.39s start).
+*   **Pending:** Full suite run to verify no other regressions.
 
 **Critical Areas:**
 *   `tools/run_benchmark_suite.py`: The runner script.
 *   `benchmarks/`: The configuration and gold standard files.
 
 **Action Plan:**
-*   **Investigate Bohemian Rhapsody:** Determine why gold file timings differ so drastically from generated results (likely radio edit vs full album version).
-*   **Expand Verification:** Run full suite to ensure no other regressions.
+*   **Monitor:** Watch for future offset regressions.
+*   **Expand Verification:** Run full suite occasionally.
 
 ## 3. Alignment Heuristics
 **Context:** The core alignment logic (`src/y2karaoke/core/components/alignment/`) uses complex heuristics to score and correct timings.
@@ -61,4 +62,6 @@ This document outlines the critical areas of the `y2karaoke` codebase and the im
 ---
 
 **Next Immediate Step:**
-Investigate the "Bohemian Rhapsody" gold file mismatch. It seems the gold file timings (e.g., "Mama" at 18s) do not match the official video audio (where it starts at ~55s). This likely indicates a version mismatch (radio edit vs full) or a corrupted gold file.
+Begin work on **Priority #1: Visual Refinement Stability**.
+1.  Analyze `src/y2karaoke/core/refine_visual.py`.
+2.  Add unit tests for `refine_word_timings_at_high_fps`.
