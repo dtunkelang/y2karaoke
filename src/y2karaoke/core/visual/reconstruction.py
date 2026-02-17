@@ -11,10 +11,114 @@ def snap(value: float) -> float:
     return round(round(float(value) / 0.05) * 0.05, 3)
 
 
+def _filter_static_overlay_words(
+    raw_frames: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    if not raw_frames:
+        return raw_frames
+
+    total_frames = len(raw_frames)
+    if total_frames < 20:
+        return raw_frames
+    all_y, stats = _collect_overlay_stats(raw_frames)
+
+    if not all_y:
+        return raw_frames
+    y_min = min(all_y)
+    y_max = max(all_y)
+    if (y_max - y_min) < 60.0:
+        return raw_frames
+    y_top_cut = y_min + 0.35 * (y_max - y_min)
+
+    static_keys = _identify_static_overlay_keys(stats, total_frames, y_top_cut)
+
+    if not static_keys:
+        return raw_frames
+
+    out: list[dict[str, Any]] = []
+    for frame in raw_frames:
+        new_words = []
+        for w in frame.get("words", []):
+            tok = normalize_text_basic(str(w.get("text", ""))).strip()
+            key = (
+                tok,
+                int(round(float(w.get("x", 0.0)) / 16.0)),
+                int(round(float(w.get("y", 0.0)) / 16.0)),
+            )
+            if key in static_keys:
+                continue
+            new_words.append(w)
+        out.append({**frame, "words": new_words})
+    return out
+
+
+def _collect_overlay_stats(
+    raw_frames: list[dict[str, Any]],
+) -> tuple[list[float], dict[tuple[str, int, int], dict[str, float]]]:
+    all_y: list[float] = []
+    stats: dict[tuple[str, int, int], dict[str, float]] = {}
+    for frame in raw_frames:
+        seen: set[tuple[str, int, int]] = set()
+        for w in frame.get("words", []):
+            try:
+                x = float(w["x"])
+                y = float(w["y"])
+            except Exception:
+                continue
+            all_y.append(y)
+            tok = normalize_text_basic(str(w.get("text", ""))).strip()
+            if len(tok) < 4:
+                continue
+            key = (tok, int(round(x / 16.0)), int(round(y / 16.0)))
+            if key in seen:
+                continue
+            seen.add(key)
+            rec = stats.setdefault(
+                key,
+                {
+                    "count": 0.0,
+                    "sum_x": 0.0,
+                    "sum_y": 0.0,
+                    "sum_x2": 0.0,
+                    "sum_y2": 0.0,
+                },
+            )
+            rec["count"] += 1.0
+            rec["sum_x"] += x
+            rec["sum_y"] += y
+            rec["sum_x2"] += x * x
+            rec["sum_y2"] += y * y
+    return all_y, stats
+
+
+def _identify_static_overlay_keys(
+    stats: dict[tuple[str, int, int], dict[str, float]],
+    total_frames: int,
+    y_top_cut: float,
+) -> set[tuple[str, int, int]]:
+    static_keys: set[tuple[str, int, int]] = set()
+    for key, rec in stats.items():
+        n = max(rec["count"], 1.0)
+        freq = rec["count"] / max(float(total_frames), 1.0)
+        mean_x = rec["sum_x"] / n
+        mean_y = rec["sum_y"] / n
+        var_x = max(rec["sum_x2"] / n - mean_x * mean_x, 0.0)
+        var_y = max(rec["sum_y2"] / n - mean_y * mean_y, 0.0)
+        if (
+            freq >= 0.45
+            and (var_x**0.5) <= 8.0
+            and (var_y**0.5) <= 8.0
+            and mean_y <= y_top_cut
+        ):
+            static_keys.add(key)
+    return static_keys
+
+
 def reconstruct_lyrics_from_visuals(  # noqa: C901
     raw_frames: list[dict[str, Any]], visual_fps: float
 ) -> list[TargetLine]:
     """Group raw OCR words into logical lines and assign timing."""
+    raw_frames = _filter_static_overlay_words(raw_frames)
     on_screen: Dict[str, Dict[str, Any]] = {}
     committed = []
 

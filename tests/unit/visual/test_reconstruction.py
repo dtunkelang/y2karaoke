@@ -117,3 +117,24 @@ def test_reconstruct_lyrics_deduplicates_similar_lines():
     assert lines_dup[0].start == 1.0
     # Last seen 2.5. End = 4.5.
     assert lines_dup[0].end == 4.5
+
+
+def test_reconstruct_lyrics_filters_static_top_overlay_tokens():
+    raw_frames = []
+    for i in range(24):
+        raw_frames.append(
+            {
+                "time": float(i),
+                "words": [
+                    {"text": "SingKIN", "x": 20, "y": 8, "w": 60, "h": 18},
+                    {"text": "KARAO", "x": 90, "y": 8, "w": 60, "h": 18},
+                    {"text": "White", "x": 20, "y": 120, "w": 55, "h": 20},
+                    {"text": "shirt", "x": 85, "y": 120, "w": 50, "h": 20},
+                ],
+            }
+        )
+
+    lines = reconstruct_lyrics_from_visuals(raw_frames, 1.0)
+    texts = [ln.text for ln in lines]
+    assert all("SingKIN" not in t and "KARAO" not in t for t in texts)
+    assert any("White shirt" in t for t in texts)

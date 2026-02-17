@@ -44,5 +44,6 @@ Last updated: 2026-02-17
 - [x] Completed: P1 lyrics-without-timings benchmark scenario isolation and runtime-aware strategy matrix reporting.
 - [x] Completed: P1 karaoke visual fallback for line-level highlight videos (line transition detection + weighted per-word allocation).
 - [x] Completed: P1 karaoke visual runtime guard that skips native-FPS word refinement on near-zero word-level suitability candidates.
+- [x] Completed: P1 karaoke OCR overlay filtering (top-band ignore + static watermark token suppression during reconstruction).
 - [x] Completed: P2 architectural cleanup step by isolating LRC timing-trust policy in lyrics quality orchestration.
 - [x] Completed: P2 boundary cleanup by centralizing Whisper auto-enable gating across simple and quality lyrics paths.

@@ -51,6 +51,8 @@ def _append_predicted_words(
     raw: list[dict[str, Any]],
     pred_items: list[Any],
     times: list[float],
+    *,
+    top_ignore_px: int = 0,
 ) -> None:
     if np is None:
         raise ImportError("Numpy is required.")
@@ -67,6 +69,8 @@ def _append_predicted_words(
             nb = np.array(points).reshape(-1, 2)
             x, y = int(min(nb[:, 0])), int(min(nb[:, 1]))
             bw, bh = int(max(nb[:, 0]) - x), int(max(nb[:, 1]) - y)
+            if y < top_ignore_px:
+                continue
             words.append({"text": txt, "x": x, "y": y, "w": bw, "h": bh})
         if words:
             raw.append({"time": t_val, "words": words})
@@ -101,6 +105,7 @@ def collect_raw_frames(
         log_fn(f"Sampling frames at {fps} FPS...")
 
     batch_size = 8
+    top_ignore_px = int(round(rh * 0.12))
     supports_batch: bool | None = None
     buffered_rois: list[Any] = []
     buffered_times: list[float] = []
@@ -112,7 +117,12 @@ def collect_raw_frames(
         pred_items, supports_batch = _predict_rois_with_fallback(
             ocr, buffered_rois, supports_batch
         )
-        _append_predicted_words(raw, pred_items, buffered_times)
+        _append_predicted_words(
+            raw,
+            pred_items,
+            buffered_times,
+            top_ignore_px=top_ignore_px,
+        )
         buffered_rois.clear()
         buffered_times.clear()
 
