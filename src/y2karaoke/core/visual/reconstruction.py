@@ -5,6 +5,9 @@ from typing import Any, Dict
 from ..models import TargetLine
 from ..text_utils import normalize_ocr_line, normalize_text_basic, text_similarity
 
+_OVERLAY_BIN_PX = 24.0
+_OVERLAY_MAX_JITTER_PX = 20.0
+
 
 def snap(value: float) -> float:
     # Assuming 0.05s snap from original tool
@@ -46,8 +49,8 @@ def _filter_static_overlay_words(
                 continue
             key = (
                 root,
-                int(round(float(w.get("x", 0.0)) / 16.0)),
-                int(round(float(w.get("y", 0.0)) / 16.0)),
+                int(round(float(w.get("x", 0.0)) / _OVERLAY_BIN_PX)),
+                int(round(float(w.get("y", 0.0)) / _OVERLAY_BIN_PX)),
             )
             if key in static_keys:
                 continue
@@ -74,7 +77,11 @@ def _collect_overlay_stats(
             root = _overlay_token_root(tok)
             if root is None:
                 continue
-            key = (root, int(round(x / 16.0)), int(round(y / 16.0)))
+            key = (
+                root,
+                int(round(x / _OVERLAY_BIN_PX)),
+                int(round(y / _OVERLAY_BIN_PX)),
+            )
             if key in seen:
                 continue
             seen.add(key)
@@ -118,8 +125,8 @@ def _identify_static_overlay_keys(
         var_y = max(rec["sum_y2"] / n - mean_y * mean_y, 0.0)
         if (
             freq >= 0.45
-            and (var_x**0.5) <= 8.0
-            and (var_y**0.5) <= 8.0
+            and (var_x**0.5) <= _OVERLAY_MAX_JITTER_PX
+            and (var_y**0.5) <= _OVERLAY_MAX_JITTER_PX
             and mean_y <= y_top_cut
         ):
             static_keys.add(key)
