@@ -853,6 +853,7 @@ def _assign_surrogate_cluster_timings(
     *,
     prev_end_floor: Optional[float],
     next_start_cap: Optional[float],
+    onset_hints: Optional[Dict[int, float]] = None,
 ) -> None:
     block_start = max(
         min(float(ln.start) for ln in cluster),
@@ -886,16 +887,148 @@ def _assign_surrogate_cluster_timings(
     extra = max(0.0, available - n * min_line)
     durations = [min_line + extra * (w / w_sum) for w in weights]
 
+    starts: List[float] = []
     cursor = block_start
-    for ln, dur in zip(cluster, durations):
-        line_start = cursor
-        line_end = cursor + dur
+    for dur in durations:
+        starts.append(cursor)
+        cursor += dur + line_gap
+
+    if onset_hints:
+        adjusted: List[float] = []
+        prev_end = block_start - line_gap
+        for i, (ln, dur) in enumerate(zip(cluster, durations)):
+            s = starts[i]
+            hint = onset_hints.get(id(ln))
+            if hint is not None:
+                s = max(s, float(hint))
+            s = max(s, prev_end + line_gap)
+
+            remaining = len(cluster) - i - 1
+            min_tail = remaining * min_line + max(0, remaining) * line_gap
+            max_s = block_end - min_tail - dur
+            s = min(s, max_s)
+            adjusted.append(s)
+            prev_end = s + dur
+        starts = adjusted
+
+    for ln, line_start, dur in zip(cluster, starts, durations):
+        line_end = line_start + dur
         _assign_line_level_word_timings(ln, line_start, line_end, 0.4)
-        cursor = line_end + line_gap
+
+
+def _collect_unresolved_line_onset_hints(
+    cluster: List[TargetLine],
+    group_frames: List[Tuple[float, np.ndarray, np.ndarray]],
+    group_times: List[float],
+) -> Dict[int, float]:
+    hints: Dict[int, float] = {}
+    for ln in cluster:
+        if ln.visibility_start is None or ln.visibility_end is None:
+            continue
+        v_start = max(0.0, float(ln.visibility_start) - 0.5)
+        v_end = float(ln.visibility_end) + 0.5
+        line_frames = _slice_frames_for_window(
+            group_frames,
+            group_times,
+            v_start=v_start,
+            v_end=v_end,
+        )
+        if len(line_frames) < 8:
+            continue
+        c_bg_line = np.mean(
+            [
+                np.mean(f[1], axis=(0, 1))
+                for f in line_frames[: min(10, len(line_frames))]
+            ],
+            axis=0,
+        )
+        s, _e, conf = _detect_line_highlight_with_confidence(
+            ln,
+            line_frames,
+            c_bg_line,
+            min_start_time=float(ln.visibility_start),
+            require_full_cycle=False,
+        )
+        if s is not None and conf >= 0.45:
+            hints[id(ln)] = float(s)
+            continue
+        vals = _collect_line_color_values(ln, line_frames, c_bg_line)
+        onset, onset_conf = _estimate_onset_from_visibility_progress(vals)
+        if onset is not None and onset_conf >= 0.45:
+            hints[id(ln)] = float(onset)
+    return hints
+
+
+def _estimate_line_onset_hint_in_visibility_window(
+    ln: TargetLine,
+    group_frames: List[Tuple[float, np.ndarray, np.ndarray]],
+    group_times: List[float],
+) -> Optional[float]:
+    if ln.visibility_start is None or ln.visibility_end is None:
+        return None
+    v_start = max(0.0, float(ln.visibility_start) - 0.5)
+    v_end = float(ln.visibility_end) + 0.5
+    line_frames = _slice_frames_for_window(
+        group_frames,
+        group_times,
+        v_start=v_start,
+        v_end=v_end,
+    )
+    if len(line_frames) < 8:
+        return None
+    c_bg_line = np.mean(
+        [np.mean(f[1], axis=(0, 1)) for f in line_frames[: min(10, len(line_frames))]],
+        axis=0,
+    )
+    s, _e, conf = _detect_line_highlight_with_confidence(
+        ln,
+        line_frames,
+        c_bg_line,
+        min_start_time=float(ln.visibility_start),
+        require_full_cycle=False,
+    )
+    if s is not None and conf >= 0.45:
+        return float(s)
+    vals = _collect_line_color_values(ln, line_frames, c_bg_line)
+    onset, onset_conf = _estimate_onset_from_visibility_progress(vals)
+    if onset is not None and onset_conf >= 0.45:
+        return float(onset)
+    return None
+
+
+def _maybe_adjust_detected_line_start_with_visibility_hint(
+    ln: TargetLine,
+    *,
+    detected_start: Optional[float],
+    detected_end: Optional[float],
+    detected_confidence: float,
+    group_frames: List[Tuple[float, np.ndarray, np.ndarray]],
+    group_times: List[float],
+) -> Tuple[Optional[float], Optional[float], float]:
+    if (
+        detected_start is None
+        or ln.visibility_start is None
+        or ln.visibility_end is None
+        or (float(ln.visibility_end) - float(ln.visibility_start)) < 8.0
+    ):
+        return detected_start, detected_end, detected_confidence
+
+    hint = _estimate_line_onset_hint_in_visibility_window(ln, group_frames, group_times)
+    if hint is None or hint < detected_start + 2.5:
+        return detected_start, detected_end, detected_confidence
+
+    adjusted_start = hint
+    adjusted_end = detected_end
+    if adjusted_end is not None and adjusted_end < adjusted_start + 0.2:
+        adjusted_end = None
+    adjusted_conf = max(detected_confidence, 0.45)
+    return adjusted_start, adjusted_end, adjusted_conf
 
 
 def _assign_surrogate_timings_for_unresolved_overlap_blocks(
     g_jobs: List[Tuple[TargetLine, float, float]],
+    group_frames: Optional[List[Tuple[float, np.ndarray, np.ndarray]]] = None,
+    group_times: Optional[List[float]] = None,
 ) -> None:
     unresolved = [
         ln
@@ -920,10 +1053,16 @@ def _assign_surrogate_timings_for_unresolved_overlap_blocks(
         last_idx = max(line_pos.get(id(ln), -1) for ln in cluster)
         prev_end_floor = _find_prev_end_floor(line_order, first_idx)
         next_start_cap = _find_next_start_cap(line_order, last_idx, prev_end_floor)
+        onset_hints: Optional[Dict[int, float]] = None
+        if group_frames is not None and group_times is not None:
+            onset_hints = _collect_unresolved_line_onset_hints(
+                cluster, group_frames, group_times
+            )
         _assign_surrogate_cluster_timings(
             cluster,
             prev_end_floor=prev_end_floor,
             next_start_cap=next_start_cap,
+            onset_hints=onset_hints,
         )
 
 
@@ -1043,6 +1182,16 @@ def refine_line_timings_at_low_fps(
             )
             if line_s is None and line_e is None:
                 continue
+            line_s, line_e, line_conf = (
+                _maybe_adjust_detected_line_start_with_visibility_hint(
+                    ln,
+                    detected_start=line_s,
+                    detected_end=line_e,
+                    detected_confidence=line_conf,
+                    group_frames=group_frames,
+                    group_times=group_times,
+                )
+            )
             _assign_line_level_word_timings(ln, line_s, line_e, line_conf)
             if ln.word_starts and ln.word_starts[0] is not None:
                 last_assigned_start = float(ln.word_starts[0])
@@ -1050,7 +1199,11 @@ def refine_line_timings_at_low_fps(
                 last_assigned_start = float(line_s)
 
         _apply_persistent_block_highlight_order(g_jobs, group_frames, group_times)
-        _assign_surrogate_timings_for_unresolved_overlap_blocks(g_jobs)
+        _assign_surrogate_timings_for_unresolved_overlap_blocks(
+            g_jobs,
+            group_frames=group_frames,
+            group_times=group_times,
+        )
         for ln, _, _ in g_jobs:
             if ln.word_starts and ln.word_starts[0] is not None:
                 if last_assigned_start is None:
