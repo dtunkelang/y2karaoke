@@ -538,7 +538,7 @@ def test_bootstrap_refined_lines_runs_high_fps_when_word_level_good(
         tmp_path / "v.mp4",
         Args(),
         tmp_path,
-        selected_metrics={"word_level_score": 0.2},
+        selected_metrics={"word_level_score": 0.6},
     )
 
     assert len(out) == 1

@@ -113,3 +113,7 @@ Last updated: 2026-02-18
 - [x] Validation snapshot (`Ed Sheeran - Shape of You`, `o71_MatpYV0`, diagnostic window `15s-120s`):
   - Previous behavior at `1 fps` produced `word_level_score=0.0` with no `unselected` states.
   - After foreground-mask fix at `1 fps`: `word_level_score=0.5588`, `detectability_score=0.9822`, `has_word_level_highlighting=true`.
+- [x] Hardened native-FPS refinement gating after foreground-mask rollout:
+  - Raised `LINE_LEVEL_REFINE_SKIP_THRESHOLD` from `0.05` to `0.5` to avoid routing mixed-but-not-stable videos into fragile native-FPS refinement.
+  - Regression check on `Billie Eilish - bad guy` (`GsFlbMS7UIc`) confirmed restored parity with v104 after gate hardening:
+    - `mean_abs=0.543s`, `p95=1.35s`, `max=1.70s` (same as v104 under global-offset comparison).

@@ -68,7 +68,9 @@ except ImportError:
 
 logger = get_logger(__name__)
 RAW_OCR_CACHE_VERSION = "3"
-LINE_LEVEL_REFINE_SKIP_THRESHOLD = 0.05
+# Native-FPS word refinement is only reliable when mixed-state evidence is strong.
+# Lower thresholds can route line-level videos into an expensive but lower-quality path.
+LINE_LEVEL_REFINE_SKIP_THRESHOLD = 0.5
 LOW_FPS_LINE_REFINE_FPS = 6.0
 
 
