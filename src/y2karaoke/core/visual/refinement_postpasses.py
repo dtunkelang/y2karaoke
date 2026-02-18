@@ -1,11 +1,20 @@
 from __future__ import annotations
 
 import math
+import re
 from typing import List, Optional, Tuple, cast
 
 import numpy as np
 
 from ..models import TargetLine
+
+
+def _canonical_line_text(ln: TargetLine) -> str:
+    """Light normalization for repetition guards in timing postpasses."""
+    text = ln.text if ln.text else " ".join(ln.words)
+    text = text.lower()
+    text = re.sub(r"[^a-z0-9\\s']+", " ", text)
+    return re.sub(r"\\s+", " ", text).strip()
 
 
 def _assign_line_level_word_timings(
@@ -684,6 +693,11 @@ def _shrink_overlong_leads_in_dense_shared_visibility_runs(  # noqa: C901
             starts = [_line_start(ln) for ln in run]
             ends = [_line_end(ln) for ln in run]
             if all(s is not None for s in starts) and all(e is not None for e in ends):
+                texts = [_canonical_line_text(ln) for ln in run]
+                nonempty = [t for t in texts if t]
+                if len(set(nonempty)) < len(nonempty):
+                    i = j if j > i else i + 1
+                    continue
                 starts_f = [float(s) for s in starts if s is not None]
                 ends_f = [float(e) for e in ends if e is not None]
                 vis_start = float(base.visibility_start)
@@ -803,6 +817,10 @@ def _retime_dense_runs_after_overlong_lead(
         ]
         if max(word_counts) > 1.8 * min(word_counts):
             continue
+        texts = [_canonical_line_text(x) for x in [a, b, c, d]]
+        nonempty = [t for t in texts if t]
+        if len(set(nonempty)) < len(nonempty):
+            continue
 
         target_start = max(p_ef + 0.05, a_sf - 1.2)
         block_shift = min(1.2, max(0.0, a_sf - target_start))
@@ -816,15 +834,25 @@ def _retime_dense_runs_after_overlong_lead(
             continue
 
         _assign_line_level_word_timings(a, new_a_start, new_a_end, 0.42)
-        _assign_line_level_word_timings(
-            b, b_sf - follower_shift, b_ef - follower_shift, 0.42
-        )
-        _assign_line_level_word_timings(
-            c, c_sf - follower_shift, c_ef - follower_shift, 0.42
-        )
-        _assign_line_level_word_timings(
-            d, d_sf - follower_shift, d_ef - follower_shift, 0.42
-        )
+        for ln, s_old, e_old in (
+            (b, b_sf, b_ef),
+            (c, c_sf, c_ef),
+            (d, d_sf, d_ef),
+        ):
+            dur = max(0.6, e_old - s_old)
+            proposed_start = s_old - follower_shift
+            vis_floor: Optional[float] = None
+            if ln.visibility_start is not None and ln.visibility_end is not None:
+                vis_span = float(ln.visibility_end) - float(ln.visibility_start)
+                # Long-lived lines often stay unhighlighted for a noticeable lead-in.
+                # Keep aggressive dense-run pull-forwards from snapping to appearance.
+                lead_lag_floor = 0.6 if vis_span >= 8.0 else 0.2
+                vis_floor = float(ln.visibility_start) + lead_lag_floor
+            if vis_floor is not None:
+                proposed_start = max(proposed_start, vis_floor)
+            _assign_line_level_word_timings(
+                ln, proposed_start, proposed_start + dur, 0.42
+            )
 
 
 def _pull_dense_short_runs_toward_previous_anchor(
@@ -876,6 +904,12 @@ def _pull_dense_short_runs_toward_previous_anchor(
         lengths = [max(len(x.words), 1) for x in [a, b, c, d]]
         if max(lengths) > 1.8 * min(lengths):
             continue
+        texts = [_canonical_line_text(x) for x in [a, b, c, d]]
+        nonempty = [t for t in texts if t]
+        # Repeated-text blocks (e.g. repeated chorus/outro lines) can have
+        # long on-screen dwell before highlight; avoid compressing them early.
+        if len(set(nonempty)) < len(nonempty):
+            continue
 
         shift = min(1.2, max(0.0, first_gap - 0.05))
         if shift < 0.35:
@@ -885,3 +919,69 @@ def _pull_dense_short_runs_toward_previous_anchor(
         _assign_line_level_word_timings(b, b_sf - shift, b_ef - shift, 0.42)
         _assign_line_level_word_timings(c, c_sf - shift, c_ef - shift, 0.42)
         _assign_line_level_word_timings(d, d_sf - shift, d_ef - shift, 0.42)
+
+
+def _retime_repeated_blocks_with_long_tail_gap(
+    g_jobs: List[Tuple[TargetLine, float, float]],
+) -> None:
+    """Delay repeated-line sub-blocks when a long tail gap indicates late highlights.
+
+    This targets karaoke layouts where repeated short lines stay visible for a long time
+    and only highlight near the end of the shared on-screen window.
+    """
+    line_order = [ln for ln, _, _ in g_jobs]
+    for i in range(len(line_order) - 3):
+        a = line_order[i]
+        b = line_order[i + 1]
+        c = line_order[i + 2]
+        d = line_order[i + 3]
+        a_s, a_e = _line_start(a), _line_end(a)
+        b_s, b_e = _line_start(b), _line_end(b)
+        c_s, c_e = _line_start(c), _line_end(c)
+        d_s, d_e = _line_start(d), _line_end(d)
+        if None in (a_s, a_e, b_s, b_e, c_s, c_e, d_s, d_e):
+            continue
+
+        a_sf = float(cast(float, a_s))
+        a_ef = float(cast(float, a_e))
+        b_sf = float(cast(float, b_s))
+        b_ef = float(cast(float, b_e))
+        c_sf = float(cast(float, c_s))
+        c_ef = float(cast(float, c_e))
+        d_sf = float(cast(float, d_s))
+
+        texts = [_canonical_line_text(x) for x in [a, b, c, d]]
+        if texts[0] != texts[1]:
+            continue
+        if len(set(t for t in texts if t)) >= 4:
+            continue
+        # First three are compressed early, then a large gap before last line.
+        if not ((b_sf - a_sf) <= 3.0 and (c_sf - b_sf) <= 1.5):
+            continue
+        tail_gap = d_sf - c_ef
+        if tail_gap < 6.0:
+            continue
+
+        dur_a = max(0.8, a_ef - a_sf)
+        dur_b = max(0.7, b_ef - b_sf)
+        dur_c = max(0.7, c_ef - c_sf)
+        a_target = a_sf
+        if i > 0:
+            prev = line_order[i - 1]
+            p_e = _line_end(prev)
+            if p_e is not None and (a_sf - float(p_e)) < 1.2:
+                # In long-tail repeated blocks, avoid starting the first repeated
+                # line immediately after the previous line; highlights often begin later.
+                a_target = max(a_target, float(p_e) + 2.5)
+        a_target_end = a_target + dur_a
+        b_target = max(a_target_end + 1.0, d_sf - 4.0)
+        c_target = max(b_target + 1.5, d_sf - 2.0)
+        b_target = max(b_target, a_target + 0.8)
+        c_target = min(c_target, d_sf - 0.4)
+        b_target = min(b_target, c_target - 0.8)
+        if a_target <= a_sf + 0.3 and b_target <= b_sf + 0.4 and c_target <= c_sf + 0.4:
+            continue
+
+        _assign_line_level_word_timings(a, a_target, a_target + dur_a, 0.42)
+        _assign_line_level_word_timings(b, b_target, b_target + dur_b, 0.42)
+        _assign_line_level_word_timings(c, c_target, c_target + dur_c, 0.42)

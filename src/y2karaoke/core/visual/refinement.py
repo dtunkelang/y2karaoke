@@ -28,6 +28,7 @@ from .refinement_postpasses import (
     _retime_followups_in_short_lead_shared_visibility_runs,
     _retime_large_gaps_with_early_visibility,
     _retime_late_first_lines_in_shared_visibility_blocks,
+    _retime_repeated_blocks_with_long_tail_gap,
     _shrink_overlong_leads_in_dense_shared_visibility_runs,
 )
 
@@ -1357,6 +1358,7 @@ def refine_line_timings_at_low_fps(
     _shrink_overlong_leads_in_dense_shared_visibility_runs(jobs)
     _retime_dense_runs_after_overlong_lead(jobs)
     _pull_dense_short_runs_toward_previous_anchor(jobs)
+    _retime_repeated_blocks_with_long_tail_gap(jobs)
     _clamp_line_ends_to_visibility_windows(jobs)
     _pull_lines_earlier_after_visibility_transitions(jobs)
     cap.release()

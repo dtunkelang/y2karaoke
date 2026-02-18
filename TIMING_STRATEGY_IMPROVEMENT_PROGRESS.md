@@ -96,3 +96,8 @@ Last updated: 2026-02-18
   - For the problematic block (`So you're a tough guy` -> `Chest always so puffed guy`), starts moved from `112.05/113.3/115.3/117.25` to `111.15/112.4/114.4/116.35`.
   - Against expected starts (`111/112/114/116`), mean absolute error improved from `1.225s` to `0.325s` (~73% reduction).
   - Earlier bridge/chorus lines remain stable (no regression in validated lines 31–35 and line 40+ in this run).
+- [x] Added visibility-lag floor inside `_retime_dense_runs_after_overlong_lead` so aggressive dense-run pull-forwards cannot snap long-lived lines to near-appearance times.
+- [x] Added regression coverage for long-visibility dense runs to enforce minimum lead-lag before retimed starts.
+- [x] Validation snapshot (`Billie Eilish - bad guy`, `GsFlbMS7UIc`, v91 line15 lag-floor):
+  - Line 15 (`So you're a tough guy`) moved from `49.6s` to `51.2s` (closer to observed onset).
+  - Neighboring dense-run lines shifted accordingly (`line 16: 50.8 -> 52.15`, `line 17: 52.45 -> 52.85`) while later anchor lines (18+) stayed unchanged.
