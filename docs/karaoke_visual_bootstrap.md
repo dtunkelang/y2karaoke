@@ -15,6 +15,7 @@ The process starts by sampling the video at **2.0 FPS** using Apple Vision OCR (
 - **ROI Focus:** Extraction is focused on a generous region where lyrics typically appear.
 - **Line Reconstruction:** Individual words are grouped into logical lines based on their vertical Y-coordinate and temporal appearance.
 - **Normalization:** Lyrics are normalized (lower-cased, punctuation stripped, hyphens resolved) to facilitate deduplication and merging of multi-line blocks.
+- **Intro Artifact Suppression:** Before line sequencing, non-lyric intro/title-card text is filtered using lexical and temporal heuristics (e.g., static branding/credit text such as `KAI AOK`, `SingKING KARAOKE`, metadata-like name/version cards).
 
 ### 2. Native-FPS Refinement
 Once lines are identified, the tool scans the relevant line windows at the source video's native FPS:

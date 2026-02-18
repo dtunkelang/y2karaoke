@@ -196,6 +196,12 @@ Status: Completed
 - [x] Improve cache reuse across reruns when search result ordering changes
 - [x] Add unit coverage that candidate directories are keyed by YouTube video id
 
+### Milestone 32: Intro Non-Lyric Artifact Suppression
+Status: Completed
+- [x] Add pre-lyric reconstruction filter for intro/title-card artifacts (branding and metadata-like text)
+- [x] Add regression coverage for `KAI AOK`/`SingKING`-style intro leakage
+- [x] Validate that early non-lyric entries are removed while preserving short real lyrics when no intro gap exists
+
 ## Notes
 - Keep changes in significant, validated commits.
 - Prefer deterministic ranking and quality decisions for reproducibility.

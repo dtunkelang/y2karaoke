@@ -355,3 +355,77 @@ def test_reconstruct_lyrics_merges_continuation_split_with_long_second_segment()
     lines = reconstruct_lyrics_from_visuals(raw_frames, 1.0)
     duh_lines = [ln for ln in lines if ln.text == "Duh"]
     assert len(duh_lines) == 2
+
+
+def test_reconstruct_lyrics_filters_intro_title_card_artifacts():
+    raw_frames = [
+        {
+            "time": 3.0,
+            "words": [
+                {"text": "KAI", "x": 30, "y": 120, "w": 30, "h": 20},
+                {"text": "AOK", "x": 70, "y": 120, "w": 35, "h": 20},
+            ],
+        },
+        {
+            "time": 5.0,
+            "words": [
+                {"text": "SingKING", "x": 20, "y": 20, "w": 80, "h": 18},
+                {"text": "KARAOKE", "x": 105, "y": 20, "w": 90, "h": 18},
+            ],
+        },
+        {
+            "time": 17.0,
+            "words": [
+                {"text": "White", "x": 25, "y": 130, "w": 45, "h": 20},
+                {"text": "shirt", "x": 80, "y": 130, "w": 45, "h": 20},
+                {"text": "now", "x": 130, "y": 130, "w": 35, "h": 20},
+                {"text": "red", "x": 172, "y": 130, "w": 35, "h": 20},
+            ],
+        },
+        {
+            "time": 18.0,
+            "words": [
+                {"text": "White", "x": 25, "y": 130, "w": 45, "h": 20},
+                {"text": "shirt", "x": 80, "y": 130, "w": 45, "h": 20},
+                {"text": "now", "x": 130, "y": 130, "w": 35, "h": 20},
+                {"text": "red", "x": 172, "y": 130, "w": 35, "h": 20},
+            ],
+        },
+        {"time": 19.5, "words": []},
+    ]
+
+    lines = reconstruct_lyrics_from_visuals(raw_frames, 1.0)
+    texts = [ln.text for ln in lines]
+    assert "KAI AOK" not in texts
+    assert all("SingKING" not in t and "KARAOKE" not in t for t in texts)
+    assert all("Connell" not in t for t in texts)
+    assert any("White shirt now red" == t for t in texts)
+
+
+def test_reconstruct_lyrics_keeps_early_short_real_lyric_when_no_intro_gap():
+    raw_frames = [
+        {"time": 5.0, "words": [{"text": "Duh", "x": 30, "y": 120, "w": 35, "h": 20}]},
+        {"time": 6.0, "words": [{"text": "Duh", "x": 30, "y": 120, "w": 35, "h": 20}]},
+        {"time": 7.2, "words": []},
+        {
+            "time": 8.0,
+            "words": [
+                {"text": "White", "x": 20, "y": 140, "w": 45, "h": 20},
+                {"text": "shirt", "x": 75, "y": 140, "w": 45, "h": 20},
+                {"text": "now", "x": 125, "y": 140, "w": 35, "h": 20},
+            ],
+        },
+        {
+            "time": 9.0,
+            "words": [
+                {"text": "White", "x": 20, "y": 140, "w": 45, "h": 20},
+                {"text": "shirt", "x": 75, "y": 140, "w": 45, "h": 20},
+                {"text": "now", "x": 125, "y": 140, "w": 35, "h": 20},
+            ],
+        },
+        {"time": 10.5, "words": []},
+    ]
+
+    lines = reconstruct_lyrics_from_visuals(raw_frames, 1.0)
+    texts = [ln.text for ln in lines]
+    assert any(t == "Duh" for t in texts)

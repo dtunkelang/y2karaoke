@@ -307,6 +307,131 @@ def _is_same_lane(a: dict[str, Any], b: dict[str, Any]) -> bool:
     return abs(float(a.get("y", 0.0)) - float(b.get("y", 0.0))) <= _LANE_PROXIMITY_PX
 
 
+_INTRO_META_KEYWORDS = {
+    "karaoke",
+    "singking",
+    "version",
+    "official",
+    "records",
+    "universal",
+    "lyrics",
+    "instrumental",
+}
+
+_LYRIC_FUNCTION_WORDS = {
+    "a",
+    "an",
+    "and",
+    "are",
+    "dont",
+    "for",
+    "i",
+    "im",
+    "in",
+    "is",
+    "it",
+    "me",
+    "my",
+    "of",
+    "oh",
+    "on",
+    "so",
+    "the",
+    "to",
+    "we",
+    "yeah",
+    "you",
+    "your",
+}
+
+
+def _is_intro_artifact(entry: dict[str, Any]) -> bool:
+    text = str(entry.get("text", ""))
+    words = [w for w in entry.get("words", []) if str(w).strip()]
+    duration = float(entry.get("last", 0.0)) - float(entry.get("first", 0.0))
+    cleaned = normalize_text_basic(text).strip()
+    compact_words = ["".join(ch for ch in w if ch.isalnum()) for w in cleaned.split()]
+    compact_words = [w for w in compact_words if w]
+
+    if not compact_words:
+        return True
+
+    text_l = cleaned.lower()
+    if any(k in text_l for k in _INTRO_META_KEYWORDS):
+        return True
+
+    upper_chars = sum(1 for ch in text if ch.isalpha() and ch.isupper())
+    alpha_chars = sum(1 for ch in text if ch.isalpha())
+    upper_ratio = (upper_chars / alpha_chars) if alpha_chars else 0.0
+
+    short_caps = (
+        len(compact_words) <= 2
+        and max((len(w) for w in compact_words), default=0) <= 4
+        and upper_ratio >= 0.75
+    )
+    if short_caps:
+        return True
+
+    first_t = float(entry.get("first", 0.0))
+    if first_t < 12.0 and len(compact_words) >= 4:
+        mid = len(compact_words) // 2
+        if compact_words[:mid] == compact_words[mid:]:
+            return True
+
+    all_title_case = (
+        bool(compact_words)
+        and all(
+            token[:1].isupper() and (token[1:].islower() if len(token) > 1 else True)
+            for token in text.split()
+            if any(ch.isalpha() for ch in token)
+        )
+        and len(compact_words) <= 3
+    )
+    if all_title_case and first_t < 12.0:
+        words_l = [w.lower() for w in compact_words]
+        if all(w not in _LYRIC_FUNCTION_WORDS for w in words_l):
+            return True
+
+    if len(words) <= 2 and duration < 1.1 and "'" not in text and "-" not in text:
+        return True
+
+    return False
+
+
+def _filter_intro_non_lyrics(entries: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    if len(entries) < 2:
+        return entries
+
+    anchor_idx = None
+    candidates: list[int] = []
+    for idx, ent in enumerate(entries):
+        words = [w for w in ent.get("words", []) if str(w).strip()]
+        duration = float(ent.get("last", 0.0)) - float(ent.get("first", 0.0))
+        if len(words) >= 3 and duration >= 0.8 and not _is_intro_artifact(ent):
+            candidates.append(idx)
+
+    if candidates:
+        later = [
+            idx for idx in candidates if float(entries[idx].get("first", 0.0)) >= 10.0
+        ]
+        anchor_idx = later[0] if later else candidates[0]
+
+    if anchor_idx is None or anchor_idx == 0:
+        return entries
+
+    first_t = float(entries[0].get("first", 0.0))
+    anchor_t = float(entries[anchor_idx].get("first", 0.0))
+    if anchor_t - first_t < 6.0:
+        return entries
+
+    kept: list[dict[str, Any]] = []
+    for idx, ent in enumerate(entries):
+        if idx < anchor_idx and _is_intro_artifact(ent):
+            continue
+        kept.append(ent)
+    return kept
+
+
 def reconstruct_lyrics_from_visuals(  # noqa: C901
     raw_frames: list[dict[str, Any]], visual_fps: float
 ) -> list[TargetLine]:
@@ -392,6 +517,7 @@ def reconstruct_lyrics_from_visuals(  # noqa: C901
     unique.sort(key=lambda x: (round(float(x["first"]) / 2.0) * 2.0, x["y"]))
     unique = _merge_short_same_lane_reentries(unique)
     unique = _suppress_short_duplicate_reentries(unique)
+    unique = _filter_intro_non_lyrics(unique)
 
     out: list[TargetLine] = []
     for i, ent in enumerate(unique):
