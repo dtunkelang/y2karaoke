@@ -202,6 +202,7 @@ Status: Completed
 - [x] Add regression coverage for `KAI AOK`/`SingKING`-style intro leakage
 - [x] Validate that early non-lyric entries are removed while preserving short real lyrics when no intro gap exists
 - [x] Add recurrent bottom-edge fragment-family suppression for clipped branding shards (`KIN/KIR/KAPA`-style)
+- [x] Add low-FPS overlap-block surrogate sequencing fallback for unresolved short visibility blocks (prevents early line starts when full cycle detection is absent)
 
 ## Notes
 - Keep changes in significant, validated commits.

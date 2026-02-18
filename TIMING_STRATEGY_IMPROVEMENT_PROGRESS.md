@@ -82,3 +82,4 @@ Last updated: 2026-02-18
 - [x] Increased low-FPS line-refinement merged window duration to keep persistent multi-line blocks in a single analysis window.
 - [x] Fixed low-FPS `min_start_time` gating to be start-based (not end-based) and to honor each line's visibility floor, with regression tests for overlapping-line behavior.
 - [x] Added pre-lyric intro artifact suppression in visual reconstruction (credit/title-card filtering via lexical + temporal heuristics), removing `KAI AOK`/`Billie Eilish`-style non-lyric entries from leading lines.
+- [x] Added unresolved overlap-block surrogate sequencing in low-FPS visual refinement so short multi-line visibility blocks (where full highlight cycles are not detected) no longer fall back to early coarse starts.
