@@ -41,6 +41,11 @@ def test_normalize_text_handles_hyphens() -> None:
 def test_normalize_ocr_line_fixes_typos() -> None:
     assert normalize_ocr_line("the problei") == "the problem"
     assert normalize_ocr_line("have this thing") == "I have this thing"
+    assert normalize_ocr_line("What Iwant") == "What I want"
+
+
+def test_normalize_ocr_line_avoids_over_splitting_known_words() -> None:
+    assert normalize_ocr_line("Therapist") == "Therapist"
 
 
 def test_target_line_construction() -> None:

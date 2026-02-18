@@ -6,6 +6,7 @@ These are general-purpose helpers used across the y2karaoke core modules.
 
 import re
 import unicodedata
+from functools import lru_cache
 from typing import List, Tuple
 
 
@@ -241,7 +242,112 @@ def normalize_ocr_line(text: str) -> str:
             if any(c.isalpha() for c in prev_tok) or any(c.isalpha() for c in next_tok):
                 tok = "I"
         out.append(tok)
-    return spell_correct(" ".join(out))
+    repaired = _repair_fused_ocr_words(" ".join(out))
+    return spell_correct(repaired)
+
+
+_FUSED_SPLIT_ANCHORS = {
+    "i",
+    "a",
+    "an",
+    "am",
+    "is",
+    "are",
+    "to",
+    "my",
+    "me",
+    "we",
+    "you",
+    "he",
+    "she",
+    "it",
+    "they",
+    "the",
+    "and",
+    "or",
+    "of",
+    "in",
+    "on",
+    "at",
+    "for",
+    "with",
+}
+
+
+@lru_cache(maxsize=1)
+def _lexicon_words() -> set[str]:
+    try:
+        import cmudict
+
+        return set(cmudict.dict().keys())
+    except Exception:
+        return set()
+
+
+def _case_like(source: str, token: str) -> str:
+    if token.lower() == "i":
+        return "I"
+    if source.isupper():
+        return token.upper()
+    if source[:1].isupper() and source[1:].islower():
+        return token.capitalize()
+    if source.islower():
+        return token.lower()
+    return token
+
+
+def _best_fused_split(token: str) -> Tuple[str, str] | None:
+    if not token.isalpha() or len(token) < 4:
+        return None
+
+    lower = token.lower()
+    lex = _lexicon_words()
+    if not lex or lower in lex:
+        return None
+
+    best: Tuple[int, Tuple[str, str]] | None = None
+    for i in range(1, len(lower)):
+        left = lower[:i]
+        right = lower[i:]
+        if len(right) < 2:
+            continue
+        if left not in lex or right not in lex:
+            continue
+
+        # Favor splits anchored by common short function words.
+        score = 0
+        if left in _FUSED_SPLIT_ANCHORS:
+            score += 6
+        if right in _FUSED_SPLIT_ANCHORS:
+            score += 4
+        if len(left) <= 2:
+            score += 2
+        if len(right) >= 4:
+            score += 1
+
+        if best is None or score > best[0]:
+            best = (score, (left, right))
+
+    if best is None or best[0] < 5:
+        return None
+    return best[1]
+
+
+def _repair_fused_ocr_words(text: str) -> str:
+    if not text:
+        return text
+
+    toks = text.split()
+    out: List[str] = []
+    for tok in toks:
+        split = _best_fused_split(tok)
+        if split is None:
+            out.append(tok)
+            continue
+        left, right = split
+        out.append(_case_like(tok[: len(left)], left))
+        out.append(_case_like(tok[len(left) :], right))
+    return " ".join(out)
 
 
 def normalize_ocr_tokens(tokens: List[str]) -> List[str]:
