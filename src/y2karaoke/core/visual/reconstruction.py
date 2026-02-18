@@ -432,6 +432,76 @@ def _filter_intro_non_lyrics(entries: list[dict[str, Any]]) -> list[dict[str, An
     return kept
 
 
+def _suppress_bottom_fragment_families(
+    entries: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    if len(entries) < 4:
+        return entries
+
+    ys = [float(ent.get("y", 0.0)) for ent in entries]
+    y_min = min(ys)
+    y_max = max(ys)
+    if (y_max - y_min) < 80.0:
+        return entries
+    bottom_cut = y_min + 0.84 * (y_max - y_min)
+
+    candidates: list[tuple[str, str]] = []
+    for ent in entries:
+        words = [str(w).strip() for w in ent.get("words", []) if str(w).strip()]
+        if len(words) != 1:
+            continue
+        tok = words[0]
+        compact = "".join(ch for ch in tok if ch.isalnum())
+        if not compact or len(compact) > 4:
+            continue
+        upper_chars = sum(1 for ch in tok if ch.isalpha() and ch.isupper())
+        alpha_chars = sum(1 for ch in tok if ch.isalpha())
+        upper_ratio = (upper_chars / alpha_chars) if alpha_chars else 0.0
+        if upper_ratio < 0.8:
+            continue
+        if float(ent.get("y", 0.0)) < bottom_cut:
+            continue
+        candidates.append((compact[0].lower(), compact.lower()))
+
+    if not candidates:
+        return entries
+
+    counts: dict[str, int] = {}
+    variants: dict[str, set[str]] = {}
+    for initial, token in candidates:
+        counts[initial] = counts.get(initial, 0) + 1
+        variants.setdefault(initial, set()).add(token)
+
+    noisy_initials = {
+        initial
+        for initial, count in counts.items()
+        if count >= 4 and len(variants.get(initial, set())) >= 3
+    }
+    if not noisy_initials:
+        return entries
+
+    out: list[dict[str, Any]] = []
+    for ent in entries:
+        words = [str(w).strip() for w in ent.get("words", []) if str(w).strip()]
+        if len(words) != 1:
+            out.append(ent)
+            continue
+        tok = words[0]
+        compact = "".join(ch for ch in tok if ch.isalnum())
+        if not compact or len(compact) > 4:
+            out.append(ent)
+            continue
+        initial = compact[0].lower()
+        upper_chars = sum(1 for ch in tok if ch.isalpha() and ch.isupper())
+        alpha_chars = sum(1 for ch in tok if ch.isalpha())
+        upper_ratio = (upper_chars / alpha_chars) if alpha_chars else 0.0
+        is_bottom = float(ent.get("y", 0.0)) >= bottom_cut
+        if initial in noisy_initials and upper_ratio >= 0.8 and is_bottom:
+            continue
+        out.append(ent)
+    return out
+
+
 def reconstruct_lyrics_from_visuals(  # noqa: C901
     raw_frames: list[dict[str, Any]], visual_fps: float
 ) -> list[TargetLine]:
@@ -518,6 +588,7 @@ def reconstruct_lyrics_from_visuals(  # noqa: C901
     unique = _merge_short_same_lane_reentries(unique)
     unique = _suppress_short_duplicate_reentries(unique)
     unique = _filter_intro_non_lyrics(unique)
+    unique = _suppress_bottom_fragment_families(unique)
 
     out: list[TargetLine] = []
     for i, ent in enumerate(unique):

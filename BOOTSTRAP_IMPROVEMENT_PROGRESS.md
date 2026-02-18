@@ -201,6 +201,7 @@ Status: Completed
 - [x] Add pre-lyric reconstruction filter for intro/title-card artifacts (branding and metadata-like text)
 - [x] Add regression coverage for `KAI AOK`/`SingKING`-style intro leakage
 - [x] Validate that early non-lyric entries are removed while preserving short real lyrics when no intro gap exists
+- [x] Add recurrent bottom-edge fragment-family suppression for clipped branding shards (`KIN/KIR/KAPA`-style)
 
 ## Notes
 - Keep changes in significant, validated commits.
