@@ -39,3 +39,24 @@ def test_build_refined_lines_output_filters_title_artist():
     out = build_refined_lines_output(lines, artist="Artist Name", title="Song Title")
     assert len(out) == 1
     assert out[0]["text"] == "real lyric"
+
+
+def test_build_refined_lines_output_splits_fused_word_tokens():
+    lines = [
+        TargetLine(
+            line_index=1,
+            start=45.0,
+            end=46.2,
+            text="What I want",
+            words=["What", "Iwant"],
+            y=15,
+            word_starts=[45.05, 45.6],
+            word_ends=[45.55, 46.15],
+            word_rois=[(0, 0, 1, 1), (1, 0, 1, 1)],
+            word_confidences=[0.25, 0.25],
+        )
+    ]
+
+    out = build_refined_lines_output(lines, artist=None, title=None)
+    assert len(out) == 1
+    assert [w["text"] for w in out[0]["words"]] == ["What", "I", "want"]

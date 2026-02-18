@@ -8,7 +8,7 @@ The Gold Timing Editor is a local web application for manual refinement of word-
 - **Line Mode**: Shift entire lines while preserving relative word durations and internal gaps.
 - **High-Performance Playback**: Uses `requestAnimationFrame` for perfectly synchronized visual feedback at 60 FPS.
 - **Sticky Controls**: The play button and edit modes stay pinned to the top of the viewport during scrolling.
-- **Autoscroll**: The timeline automatically follows the current line during playback.
+- **Autoscroll**: Playback and seek actions auto-scroll so the current lyric line stays visible near the top of the timeline window.
 - **LRC Integration**: Synchronizes with LRC files to provide a robust starting point.
 
 ## Standard Workflow

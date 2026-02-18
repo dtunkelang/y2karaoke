@@ -86,3 +86,13 @@ Last updated: 2026-02-18
 - [x] Added visibility-window onset-hint override for low-FPS full-cycle detections to prevent “appearance-as-onset” false positives in long visibility windows (fixes early starts like repeated "I'm the bad guy" around 1:16).
 - [x] Added derivative-aware full-visibility onset estimator and integrated it into low-FPS line-onset hinting to reduce residual line-level drift in gradual highlight transitions.
 - [x] Added short shared-visibility block correction that nudges suspiciously late first-line onsets toward block visibility start/previous-line boundary, fixing residual late-start drift (e.g., line 8 in Billie "bad guy").
+- [x] Added generalized fused-token split during visual bootstrap postprocessing (`What Iwant` -> `What I want`) so OCR compaction artifacts are corrected without song-specific rules.
+- [x] Added ultra-short same-lane duplicate-ghost suppression in reconstruction to prevent phantom repeated lines caused by brief OCR re-entry artifacts.
+- [x] Improved low-FPS tail timing robustness with new dense-run rebalancing passes:
+  - shrink overlong lead lines inside shared-visibility runs,
+  - retime dense runs after overlong leads,
+  - pull dense short runs toward the prior anchored line when a suspicious dead-gap offset appears.
+- [x] Validation snapshot (`Billie Eilish - bad guy`, `GsFlbMS7UIc`, v85 tail retime):
+  - For the problematic block (`So you're a tough guy` -> `Chest always so puffed guy`), starts moved from `112.05/113.3/115.3/117.25` to `111.15/112.4/114.4/116.35`.
+  - Against expected starts (`111/112/114/116`), mean absolute error improved from `1.225s` to `0.325s` (~73% reduction).
+  - Earlier bridge/chorus lines remain stable (no regression in validated lines 31–35 and line 40+ in this run).

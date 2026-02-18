@@ -229,9 +229,19 @@ def _suppress_short_duplicate_reentries(
                 break
             if not _is_same_lane(ent, prev):
                 continue
-            if text_similarity(ent["text"], prev["text"]) < 0.9:
-                continue
+            sim = text_similarity(ent["text"], prev["text"])
             prev_duration = float(prev["last"]) - float(prev["first"])
+            # Ultra-short one-frame same-lane reentries are usually OCR ghosts.
+            if (
+                duration <= 0.35
+                and time_gap <= 8.0
+                and prev_duration >= 0.6
+                and sim >= 0.8
+            ):
+                is_dup_reentry = True
+                break
+            if sim < 0.9:
+                continue
             if prev_duration >= 2.0 or prev_duration >= duration + 0.8:
                 is_dup_reentry = True
                 break

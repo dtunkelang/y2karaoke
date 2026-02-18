@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import Any, List, Optional
 
 from ..models import TargetLine
-from ..text_utils import normalize_text_basic
+from ..text_utils import normalize_ocr_line, normalize_text_basic
 from .reconstruction import snap
 
 
@@ -143,6 +143,7 @@ def build_refined_lines_output(
                     }
                 )
 
+        w_out = _split_fused_output_words(w_out)
         if not w_out:
             continue
 
@@ -169,3 +170,40 @@ def build_refined_lines_output(
     for i, line_dict in enumerate(lines_out):
         line_dict["line_index"] = i + 1
     return lines_out
+
+
+def _split_fused_output_words(words: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    out: list[dict[str, Any]] = []
+    for rec in words:
+        txt = str(rec.get("text", "")).strip()
+        normalized = normalize_ocr_line(txt).strip()
+        parts = [p for p in normalized.split() if p]
+        if len(parts) <= 1:
+            out.append(rec)
+            continue
+
+        start = float(rec.get("start", 0.0))
+        end = float(rec.get("end", start + 0.1))
+        span = max(0.1, end - start)
+        conf = float(rec.get("confidence", 0.0))
+
+        weights = [max(len(p), 1) for p in parts]
+        total = float(sum(weights))
+        cursor = start
+        for idx, (part, w) in enumerate(zip(parts, weights)):
+            dur = span * (float(w) / total)
+            seg_end = end if idx == len(parts) - 1 else cursor + dur
+            out.append(
+                {
+                    "word_index": 0,
+                    "text": part,
+                    "start": snap(cursor),
+                    "end": snap(seg_end),
+                    "confidence": conf,
+                }
+            )
+            cursor = seg_end
+
+    for i, rec in enumerate(out):
+        rec["word_index"] = i + 1
+    return out

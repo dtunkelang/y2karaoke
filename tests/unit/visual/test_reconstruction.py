@@ -196,6 +196,62 @@ def test_reconstruct_lyrics_suppresses_short_duplicate_reentry_glitch():
     assert not any("White e shirt now red" in t for t in texts)
 
 
+def test_reconstruct_lyrics_suppresses_ultrashort_same_lane_repeat_ghost():
+    raw_frames = [
+        {
+            "time": 95.0,
+            "words": [
+                {"text": "I'll", "x": 25, "y": 20, "w": 25, "h": 20},
+                {"text": "be", "x": 55, "y": 20, "w": 20, "h": 20},
+                {"text": "your", "x": 80, "y": 20, "w": 35, "h": 20},
+                {"text": "animal", "x": 120, "y": 20, "w": 55, "h": 20},
+            ],
+        },
+        {
+            "time": 96.0,
+            "words": [
+                {"text": "I'll", "x": 25, "y": 20, "w": 25, "h": 20},
+                {"text": "be", "x": 55, "y": 20, "w": 20, "h": 20},
+                {"text": "your", "x": 80, "y": 20, "w": 35, "h": 20},
+                {"text": "animal", "x": 120, "y": 20, "w": 55, "h": 20},
+            ],
+        },
+        {
+            "time": 97.0,
+            "words": [
+                {"text": "My", "x": 25, "y": 90, "w": 25, "h": 20},
+                {"text": "mommy", "x": 55, "y": 90, "w": 55, "h": 20},
+                {"text": "likes", "x": 115, "y": 90, "w": 45, "h": 20},
+                {"text": "to", "x": 165, "y": 90, "w": 20, "h": 20},
+            ],
+        },
+        {
+            "time": 98.0,
+            "words": [
+                {"text": "sing", "x": 25, "y": 170, "w": 35, "h": 20},
+                {"text": "along", "x": 65, "y": 170, "w": 45, "h": 20},
+                {"text": "with", "x": 115, "y": 170, "w": 35, "h": 20},
+                {"text": "me", "x": 155, "y": 170, "w": 20, "h": 20},
+            ],
+        },
+        {
+            "time": 100.0,
+            "words": [
+                {"text": "III", "x": 25, "y": 20, "w": 25, "h": 20},
+                {"text": "be", "x": 55, "y": 20, "w": 20, "h": 20},
+                {"text": "your", "x": 80, "y": 20, "w": 35, "h": 20},
+                {"text": "animal", "x": 120, "y": 20, "w": 55, "h": 20},
+            ],
+        },
+        {"time": 101.0, "words": []},
+    ]
+
+    lines = reconstruct_lyrics_from_visuals(raw_frames, 1.0)
+    texts = [ln.text for ln in lines]
+    assert "I'll be your animal" in texts
+    assert "III be your animal" not in texts
+
+
 def test_reconstruct_lyrics_keeps_legitimate_repeated_line():
     raw_frames = []
     for t in [10.0, 11.0, 12.0]:

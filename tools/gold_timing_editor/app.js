@@ -7,6 +7,7 @@ const state = {
   drag: null,
   undoStack: [],
   lastActiveLineIndex: -1,
+  pendingSeekScroll: false,
 };
 const MIN_WORD_DURATION = 0.1;
 
@@ -529,7 +530,7 @@ function updatePlaybackVisuals() {
   const currentTime = els.audio.currentTime;
   els.playbackInfo.textContent = `t=${currentTime.toFixed(1)}s`;
 
-  let currentActiveLineIndex = -1;
+  const currentActiveLineIndex = currentLineIndexForTime(currentTime);
   const allRows = els.timeline.querySelectorAll(".lyric-line, .gap-row");
   
   allRows.forEach((row) => {
@@ -550,9 +551,9 @@ function updatePlaybackVisuals() {
     if (type === "lyric") {
       const li = parseInt(row.dataset.li);
       const line = state.doc.lines[li];
-      const isActive = currentTime >= line.start && currentTime <= line.end;
-      row.classList.toggle("active-playing", isActive);
-      if (isActive) currentActiveLineIndex = li;
+      const isPlayingNow = currentTime >= line.start && currentTime <= line.end;
+      const isCurrentLine = li === currentActiveLineIndex;
+      row.classList.toggle("active-playing", isCurrentLine);
 
       // Update Word Classes
       const wordEls = row.querySelectorAll(".word:not(.word-context)");
@@ -561,23 +562,75 @@ function updatePlaybackVisuals() {
         const wEl = wordEls[wi];
         if (!wEl) continue;
         const isSung = currentTime >= w.end;
-        const isPlaying = currentTime >= w.start && currentTime <= w.end;
+        const isPlaying = isPlayingNow && currentTime >= w.start && currentTime <= w.end;
         if (wEl.classList.contains("sung") !== isSung) wEl.classList.toggle("sung", isSung);
         if (wEl.classList.contains("playing") !== isPlaying) wEl.classList.toggle("playing", isPlaying);
       }
     }
   });
 
-  // Autoscroll
-  if (currentActiveLineIndex !== -1 && currentActiveLineIndex !== state.lastActiveLineIndex) {
+  // Follow playback/seek by keeping the active row near the top of the viewport.
+  if (currentActiveLineIndex !== -1) {
+    const activeChanged = currentActiveLineIndex !== state.lastActiveLineIndex;
+    const shouldFollow = activeChanged || state.pendingSeekScroll;
     state.lastActiveLineIndex = currentActiveLineIndex;
-    const activeRow = els.timeline.querySelector(`.lyric-line[data-li="${currentActiveLineIndex}"]`);
-    if (activeRow && !state.drag && !els.audio.paused) {
-      activeRow.scrollIntoView({ behavior: "smooth", block: "center" });
+    if (!state.drag) {
+      const activeRow = els.timeline.querySelector(
+        `.lyric-line[data-li="${currentActiveLineIndex}"]`
+      );
+      if (activeRow) {
+        pinRowToPlaybackWindowTop(activeRow, {
+          behavior:
+            shouldFollow && !(state.pendingSeekScroll || els.audio.paused)
+              ? "smooth"
+              : "auto",
+          force: shouldFollow,
+        });
+      }
+      state.pendingSeekScroll = false;
     }
-  } else if (currentActiveLineIndex === -1) {
+  } else {
     state.lastActiveLineIndex = -1;
+    if (state.pendingSeekScroll) {
+      state.pendingSeekScroll = false;
+    }
   }
+}
+
+function currentLineIndexForTime(t) {
+  if (!state.doc || !state.doc.lines || !state.doc.lines.length) return -1;
+  const lines = state.doc.lines;
+  for (let i = 0; i < lines.length; i += 1) {
+    const line = lines[i];
+    if (t >= line.start && t <= line.end) return i;
+    if (t < line.start) return i;
+  }
+  return lines.length - 1;
+}
+
+function playbackViewportTopOffsetPx() {
+  const sticky = document.querySelector(".sticky-controls");
+  if (!sticky) return 12;
+  const r = sticky.getBoundingClientRect();
+  return Math.max(0, r.bottom) + 8;
+}
+
+function pinRowToPlaybackWindowTop(
+  row,
+  { behavior = "smooth", force = false } = {}
+) {
+  const rowRect = row.getBoundingClientRect();
+  const viewportTop = playbackViewportTopOffsetPx();
+  const delta = rowRect.top - viewportTop;
+  // Keep the current lyric line pinned near the top playback window.
+  if (!force && Math.abs(delta) <= 16) {
+    return;
+  }
+  const targetTop = window.scrollY + delta;
+  window.scrollTo({
+    top: Math.max(0, targetTop),
+    behavior,
+  });
 }
 
 function render() {
@@ -746,6 +799,10 @@ els.audio.addEventListener("timeupdate", () => {
   updatePlaybackVisuals();
 });
 
+els.audio.addEventListener("seeking", () => {
+  state.pendingSeekScroll = true;
+});
+
 els.zoomRange.addEventListener("input", () => {
   state.secondsToPx = Number(els.zoomRange.value);
   render();
@@ -787,6 +844,7 @@ document.addEventListener("mouseup", () => {
   ) {
     const word = state.doc?.lines?.[state.drag.li]?.words?.[state.drag.wi];
     if (word && typeof word.start === "number") {
+      state.pendingSeekScroll = true;
       els.audio.currentTime = Math.max(0, word.start);
       els.playbackInfo.textContent = `t=${els.audio.currentTime.toFixed(1)}s`;
     }

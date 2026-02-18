@@ -5,6 +5,7 @@ from typing import List, Dict, Any
 from y2karaoke.core.visual.refinement import (
     _apply_persistent_block_highlight_order,
     _cluster_persistent_lines_by_visibility,
+    _compute_line_min_start_time,
     _line_fill_mask,
     _word_fill_mask,
     _assign_line_level_word_timings,
@@ -856,4 +857,25 @@ def test_refine_line_timings_at_low_fps_honors_visibility_start_floor(
         sample_fps=6.0,
     )
 
-    assert seen_min_start_times[1] == pytest.approx(20.0, abs=1e-6)
+    assert seen_min_start_times[1] == pytest.approx(18.0, abs=1e-6)
+
+
+def test_compute_line_min_start_time_uses_bounded_visibility_lookback():
+    line = TargetLine(
+        line_index=1,
+        start=10.0,
+        end=12.0,
+        text="line",
+        words=["line"],
+        y=10,
+        word_rois=[(0, 0, 2, 2)],
+        visibility_start=20.0,
+        visibility_end=30.0,
+    )
+
+    assert _compute_line_min_start_time(
+        line, last_assigned_start=None
+    ) == pytest.approx(18.0, abs=1e-6)
+    assert _compute_line_min_start_time(
+        line, last_assigned_start=19.2
+    ) == pytest.approx(19.25, abs=1e-6)
