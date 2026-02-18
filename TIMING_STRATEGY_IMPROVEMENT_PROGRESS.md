@@ -85,3 +85,4 @@ Last updated: 2026-02-18
 - [x] Added unresolved overlap-block surrogate sequencing in low-FPS visual refinement so short multi-line visibility blocks (where full highlight cycles are not detected) no longer fall back to early coarse starts.
 - [x] Added visibility-window onset-hint override for low-FPS full-cycle detections to prevent “appearance-as-onset” false positives in long visibility windows (fixes early starts like repeated "I'm the bad guy" around 1:16).
 - [x] Added derivative-aware full-visibility onset estimator and integrated it into low-FPS line-onset hinting to reduce residual line-level drift in gradual highlight transitions.
+- [x] Added short shared-visibility block correction that nudges suspiciously late first-line onsets toward block visibility start/previous-line boundary, fixing residual late-start drift (e.g., line 8 in Billie "bad guy").

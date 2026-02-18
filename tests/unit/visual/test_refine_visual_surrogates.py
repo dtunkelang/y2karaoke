@@ -1,6 +1,7 @@
 from y2karaoke.core.models import TargetLine
 from y2karaoke.core.visual.refinement import (
     _assign_surrogate_timings_for_unresolved_overlap_blocks,
+    _retime_late_first_lines_in_shared_visibility_blocks,
 )
 
 
@@ -81,3 +82,71 @@ def test_assign_surrogate_timings_for_unresolved_overlap_blocks_sequences_lines(
     assert b.word_starts[0] > a.word_starts[0] + 1.0
     assert c.word_starts[0] > b.word_starts[0] + 1.0
     assert c.word_starts[0] < 45.0
+
+
+def test_retime_late_first_lines_in_shared_visibility_blocks_nudges_first_line():
+    prev = TargetLine(
+        line_index=1,
+        start=35.0,
+        end=37.0,
+        text="prev",
+        words=["prev"],
+        y=80,
+        word_rois=[(0, 0, 2, 2)],
+        word_starts=[35.0],
+        word_ends=[37.0],
+        visibility_start=31.0,
+        visibility_end=36.0,
+    )
+    first = TargetLine(
+        line_index=2,
+        start=37.0,
+        end=37.0,
+        text="Bruises on both",
+        words=["Bruises", "on", "both"],
+        y=100,
+        word_rois=[(0, 0, 2, 2)],
+        word_starts=[38.9],
+        word_ends=[40.6],
+        visibility_start=37.0,
+        visibility_end=44.0,
+    )
+    second = TargetLine(
+        line_index=3,
+        start=37.0,
+        end=37.0,
+        text="my knees for you",
+        words=["my", "knees", "for", "you"],
+        y=130,
+        word_rois=[(0, 0, 2, 2)],
+        word_starts=[40.8],
+        word_ends=[42.7],
+        visibility_start=37.0,
+        visibility_end=44.0,
+    )
+    third = TargetLine(
+        line_index=4,
+        start=37.0,
+        end=37.0,
+        text="Don't say thank you or please",
+        words=["Don't", "say", "thank", "you", "or", "please"],
+        y=160,
+        word_rois=[(0, 0, 2, 2)],
+        word_starts=[42.7],
+        word_ends=[44.1],
+        visibility_start=37.0,
+        visibility_end=44.0,
+    )
+
+    g_jobs = [
+        (prev, 0.0, 0.0),
+        (first, 0.0, 0.0),
+        (second, 0.0, 0.0),
+        (third, 0.0, 0.0),
+    ]
+    _retime_late_first_lines_in_shared_visibility_blocks(g_jobs)
+
+    assert first.word_starts is not None
+    assert first.word_starts[0] <= 37.2
+    assert second.word_starts is not None
+    assert second.word_starts[0] >= 40.5

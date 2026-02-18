@@ -177,8 +177,9 @@ def _detect_sustained_onset(
     threshold = max(1.8, stable_med + max(1.0, 3.5 * stable_mad))
 
     hold = max(2, min(4, len(smooth) // 8))
+    search_start = max(1, min(3, base_count // 2))
     start_idx = None
-    for i in range(base_count, len(smooth) - hold + 1):
+    for i in range(search_start, len(smooth) - hold + 1):
         t_i = float(times[i])
         if min_start_time is not None and t_i < min_start_time:
             continue
@@ -382,8 +383,18 @@ def _collect_line_color_values(
             continue
         line_roi_bgr = roi_bgr[y_lo:y_hi, x_lo:x_hi]
         line_mask = _line_fill_mask(line_roi_bgr, c_bg_line)
-        if np.sum(line_mask > 0) <= 30:
-            continue
+        mask_count = int(np.sum(line_mask > 0))
+        if mask_count <= 30:
+            # Keep visibility tracking alive with a relaxed foreground estimate.
+            dist_bg = np.linalg.norm(line_roi_bgr - c_bg_line, axis=2)
+            relaxed_mask = (dist_bg > 8).astype(np.uint8) * 255
+            relaxed_count = int(np.sum(relaxed_mask > 0))
+            if relaxed_count > 20:
+                line_mask = relaxed_mask
+                mask_count = relaxed_count
+            else:
+                line_mask = np.ones(line_roi_bgr.shape[:2], dtype=np.uint8) * 255
+                mask_count = int(np.sum(line_mask > 0))
         line_roi_lab = roi_lab[y_lo:y_hi, x_lo:x_hi]
         vals.append(
             {
@@ -391,6 +402,8 @@ def _collect_line_color_values(
                 "mask": line_mask,
                 "lab": line_roi_lab,
                 "avg": line_roi_lab[line_mask.astype(bool)].mean(axis=0),
+                "coverage": float(mask_count)
+                / float(max(1, line_mask.shape[0] * line_mask.shape[1])),
             }
         )
     return vals
@@ -419,8 +432,9 @@ def _estimate_onset_from_visibility_progress(
 
     threshold = base_level + 0.18 * dynamic
     hold = max(2, min(4, len(smooth) // 12))
+    search_start = max(1, min(3, base_count // 2))
     start_idx = None
-    for i in range(base_count, len(smooth) - hold + 1):
+    for i in range(search_start, len(smooth) - hold + 1):
         seg = smooth[i : i + hold]
         if np.all(seg >= threshold) and seg[-1] >= seg[0]:
             start_idx = i
@@ -477,9 +491,10 @@ def _estimate_onset_from_visibility_derivative(
     slope_threshold = max(0.45, d_med + max(0.3, 3.5 * d_mad))
     level_threshold = base_level + 0.15 * dynamic
     hold = max(2, min(4, len(smooth) // 12))
+    search_start = max(1, min(3, base_count // 2))
 
     start_idx = None
-    for i in range(base_count, len(smooth) - hold + 1):
+    for i in range(search_start, len(smooth) - hold + 1):
         d_seg = deriv[i : i + hold]
         s_seg = smooth[i : i + hold]
         if np.all(d_seg >= slope_threshold) and np.all(s_seg >= level_threshold):
@@ -1131,6 +1146,90 @@ def _assign_surrogate_timings_for_unresolved_overlap_blocks(
         )
 
 
+def _line_start(ln: TargetLine) -> Optional[float]:
+    if ln.word_starts and ln.word_starts[0] is not None:
+        return float(ln.word_starts[0])
+    return None
+
+
+def _line_end(ln: TargetLine) -> Optional[float]:
+    if ln.word_ends and ln.word_ends[-1] is not None:
+        return float(ln.word_ends[-1])
+    if ln.end is not None:
+        return float(ln.end)
+    return None
+
+
+def _retime_late_first_lines_in_shared_visibility_blocks(
+    g_jobs: List[Tuple[TargetLine, float, float]],
+) -> None:
+    line_order = [ln for ln, _, _ in g_jobs]
+    lines = [
+        ln
+        for ln in line_order
+        if ln.visibility_start is not None and ln.visibility_end is not None
+    ]
+    if len(lines) < 3:
+        return
+
+    clusters = _cluster_unresolved_visibility_lines(lines)
+    pos = {id(ln): i for i, ln in enumerate(line_order)}
+    for cluster in clusters:
+        if len(cluster) < 3:
+            continue
+        cluster.sort(key=lambda ln: pos.get(id(ln), 10**9))
+        first = cluster[0]
+        first_start = _line_start(first)
+        if first_start is None:
+            continue
+        block_start = min(
+            float(ln.visibility_start)
+            for ln in cluster
+            if ln.visibility_start is not None
+        )
+        block_end = max(
+            float(ln.visibility_end) for ln in cluster if ln.visibility_end is not None
+        )
+        if (block_end - block_start) > 9.0:
+            continue
+        # Only nudge when first detected onset is suspiciously late for this block.
+        if first_start <= block_start + 1.5:
+            continue
+
+        first_pos = pos.get(id(first), 10**9)
+        prev_floor: Optional[float] = None
+        for i in range(first_pos - 1, -1, -1):
+            prev_e = _line_end(line_order[i])
+            if prev_e is not None:
+                prev_floor = prev_e
+                break
+
+        anchor = (
+            block_start if prev_floor is None else max(block_start, prev_floor + 0.05)
+        )
+        if anchor >= first_start - 0.2:
+            continue
+
+        next_start: Optional[float] = None
+        for ln in cluster[1:]:
+            ns = _line_start(ln)
+            if ns is not None:
+                next_start = ns
+                break
+
+        old_end = _line_end(first)
+        old_dur = (
+            (old_end - first_start)
+            if (old_end is not None)
+            else max(0.8, 0.25 * len(first.words))
+        )
+        new_end = anchor + old_dur
+        if next_start is not None:
+            new_end = min(new_end, next_start - 0.15)
+        new_end = max(new_end, anchor + 0.7)
+        _assign_line_level_word_timings(first, anchor, new_end, 0.45)
+
+
 def refine_word_timings_at_high_fps(
     video_path: Path,
     target_lines: List[TargetLine],
@@ -1269,6 +1368,7 @@ def refine_line_timings_at_low_fps(
             group_frames=group_frames,
             group_times=group_times,
         )
+        _retime_late_first_lines_in_shared_visibility_blocks(g_jobs)
         for ln, _, _ in g_jobs:
             if ln.word_starts and ln.word_starts[0] is not None:
                 if last_assigned_start is None:
