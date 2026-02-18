@@ -18,6 +18,10 @@ The tool produces a **Detectability Score** (0.0 to 1.0) based on:
     - The raw confidence score from the PaddleOCR engine.
     - Detects issues like low contrast, blurry text, or heavy background noise.
 
+State classification is computed from **foreground text pixels** inside each OCR
+word box (not the full box). This avoids dark/bright video backgrounds
+dominating the selected/unselected decision.
+
 ## Usage
 
 You can run the tool against a local file or a YouTube URL:

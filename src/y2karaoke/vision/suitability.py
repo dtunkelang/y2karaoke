@@ -19,6 +19,9 @@ from .color import infer_lyric_colors, classify_word_state
 from .roi import detect_lyric_roi
 from ..exceptions import VisualRefinementError
 
+_COLOR_CACHE_VERSION = "2"
+_RAW_FRAMES_CACHE_VERSION = "4"
+
 
 def _get_cache_key(video_path: Path, prefix: str, **kwargs: Any) -> str:
     """Generate a stable cache key for suitability artifacts."""
@@ -196,7 +199,13 @@ def analyze_visual_suitability(
         roi_rect = detect_lyric_roi(video_path, sample_fps=1.0)
 
     color_cache_path = (
-        work_dir / _get_cache_key(video_path, "colors", roi=roi_rect)
+        work_dir
+        / _get_cache_key(
+            video_path,
+            "colors",
+            roi=roi_rect,
+            cache_version=_COLOR_CACHE_VERSION,
+        )
         if work_dir is not None
         else None
     )
@@ -220,7 +229,13 @@ def analyze_visual_suitability(
     frames_cache_path = (
         work_dir
         / _get_cache_key(
-            video_path, "raw_frames", fps=fps, roi=roi_rect, c_un=c_un.tolist()
+            video_path,
+            "raw_frames",
+            fps=fps,
+            roi=roi_rect,
+            c_un=c_un.tolist(),
+            c_sel=c_sel.tolist(),
+            cache_version=_RAW_FRAMES_CACHE_VERSION,
         )
         if work_dir is not None
         else None

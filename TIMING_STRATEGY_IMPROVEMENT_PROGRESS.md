@@ -108,3 +108,8 @@ Last updated: 2026-02-18
   - `Just can't get enough guy` improved from `52.85s` to `54.05s` (LRC residual from `-1.70s` to `-0.50s`).
   - Overall LRC residual summary improved from `mean_abs=0.70s, p95=1.70s` (v96) to `mean_abs=0.63s, p95=1.55s` (v104).
   - Non-merged-line subset residual summary at v104: `mean_abs=0.62s, p95=1.35s, max_abs=1.70s`.
+- [x] Fixed visual suitability color-state collapse on Sing King variants by switching color inference and per-word state classification to foreground-text masking (instead of full OCR box pixels).
+- [x] Added suitability cache-key version bumps (`colors` and `raw_frames`) so stale pre-fix artifacts are not reused after color/state logic changes.
+- [x] Validation snapshot (`Ed Sheeran - Shape of You`, `o71_MatpYV0`, diagnostic window `15s-120s`):
+  - Previous behavior at `1 fps` produced `word_level_score=0.0` with no `unselected` states.
+  - After foreground-mask fix at `1 fps`: `word_level_score=0.5588`, `detectability_score=0.9822`, `has_word_level_highlighting=true`.

@@ -19,6 +19,57 @@ from ..exceptions import VisualRefinementError
 logger = logging.getLogger(__name__)
 
 
+def _foreground_mask(word_roi: np.ndarray) -> np.ndarray:
+    """Estimate foreground text pixels inside a word box.
+
+    OCR word boxes include substantial background area. A simple border-color
+    model works well for karaoke overlays where text sits atop varying video
+    backgrounds.
+    """
+    h, w = word_roi.shape[:2]
+    if h <= 0 or w <= 0:
+        return np.zeros((0, 0), dtype=bool)
+
+    edge = max(1, min(h, w) // 6)
+    border = np.concatenate(
+        [
+            word_roi[:edge, :, :].reshape(-1, 3),
+            word_roi[-edge:, :, :].reshape(-1, 3),
+            word_roi[:, :edge, :].reshape(-1, 3),
+            word_roi[:, -edge:, :].reshape(-1, 3),
+        ],
+        axis=0,
+    ).astype(np.float32)
+    bg = np.median(border, axis=0)
+
+    pixels = word_roi.reshape(-1, 3).astype(np.float32)
+    dist_bg = np.linalg.norm(pixels - bg, axis=1)
+    # Keep pixels that are sufficiently distinct from the local background.
+    thresh = max(20.0, float(np.percentile(dist_bg, 72)))
+    mask = (dist_bg >= thresh).reshape(h, w)
+
+    if int(mask.sum()) < max(8, (h * w) // 40):
+        # Fallback: keep bright/saturated pixels when contrast to border is weak.
+        hsv = cv2.cvtColor(word_roi, cv2.COLOR_BGR2HSV)
+        sat = hsv[:, :, 1].astype(np.float32)
+        val = hsv[:, :, 2].astype(np.float32)
+        mask = (sat >= 30) | (val >= 150)
+    return mask
+
+
+def _sample_text_pixels(word_roi: np.ndarray, max_points: int = 24) -> np.ndarray:
+    mask = _foreground_mask(word_roi)
+    if mask.size == 0:
+        return np.empty((0, 3), dtype=np.float32)
+    pixels = word_roi[mask]
+    if pixels.size == 0:
+        return np.empty((0, 3), dtype=np.float32)
+    if len(pixels) > max_points:
+        idx = np.linspace(0, len(pixels) - 1, num=max_points, dtype=int)
+        pixels = pixels[idx]
+    return pixels.astype(np.float32)
+
+
 def cluster_colors(pixel_samples: List[np.ndarray], k: int = 2) -> List[np.ndarray]:
     """Cluster a list of pixels into k colors using K-Means."""
     if not pixel_samples:
@@ -55,7 +106,7 @@ def infer_lyric_colors(
     src_fps = cap.get(cv2.CAP_PROP_FPS) or 30.0
     duration = cap.get(cv2.CAP_PROP_FRAME_COUNT) / src_fps
     rx, ry, rw, rh = roi_rect
-    pixel_samples = []
+    pixel_samples: list[np.ndarray] = []
 
     # Sample middle 40% of the song where lyrics are dense
     start_t = duration * 0.3
@@ -103,10 +154,9 @@ def infer_lyric_colors(
                     bw = min(bw, roi.shape[1] - x)
 
                     word_roi = roi[y : y + bh, x : x + bw]
-                    # Sample center pixel
-                    cx, cy = bw // 2, bh // 2
-                    if 0 <= cy < word_roi.shape[0] and 0 <= cx < word_roi.shape[1]:
-                        pixel_samples.append(word_roi[cy, cx])
+                    sampled = _sample_text_pixels(word_roi)
+                    if sampled.size:
+                        pixel_samples.extend(sampled)
 
     cap.release()
 
@@ -142,7 +192,10 @@ def classify_word_state(
     if word_roi.size == 0:
         return "unknown", 0.0
 
-    pixels = word_roi.reshape(-1, 3).astype(np.float32)
+    mask = _foreground_mask(word_roi)
+    pixels = word_roi[mask].astype(np.float32)
+    if pixels.size == 0:
+        pixels = word_roi.reshape(-1, 3).astype(np.float32)
 
     # Simple Euclidean distance in BGR space
     dist_un = np.linalg.norm(pixels - c_un, axis=1)
