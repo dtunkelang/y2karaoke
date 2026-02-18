@@ -34,6 +34,18 @@ def _word_fill_mask(roi_bgr: np.ndarray, c_bg: np.ndarray) -> np.ndarray:
     return mask
 
 
+def _line_fill_mask(roi_bgr: np.ndarray, c_bg: np.ndarray) -> np.ndarray:
+    """Line-level text mask with lower contrast threshold for unselected text."""
+    if cv2 is None or np is None:
+        raise ImportError("OpenCV and Numpy required.")
+
+    dist_bg = np.linalg.norm(roi_bgr - c_bg, axis=2)
+    mask = (dist_bg > 15).astype(np.uint8) * 255
+    mask = cv2.medianBlur(mask, 3)
+    mask = cv2.erode(mask, np.ones((3, 3), np.uint8), iterations=2)
+    return mask
+
+
 def _detect_highlight_times(
     word_vals: List[Dict[str, Any]],
 ) -> Tuple[Optional[float], Optional[float]]:
@@ -369,7 +381,7 @@ def _collect_line_color_values(
         if x_hi <= x_lo or y_hi <= y_lo:
             continue
         line_roi_bgr = roi_bgr[y_lo:y_hi, x_lo:x_hi]
-        line_mask = _word_fill_mask(line_roi_bgr, c_bg_line)
+        line_mask = _line_fill_mask(line_roi_bgr, c_bg_line)
         if np.sum(line_mask > 0) <= 30:
             continue
         line_roi_lab = roi_lab[y_lo:y_hi, x_lo:x_hi]
@@ -435,34 +447,40 @@ def _apply_persistent_block_highlight_order(
     persistent = _select_persistent_overlap_lines(candidates)
     if len(persistent) < 3:
         return
-    onset_candidates = _collect_persistent_block_onset_candidates(
-        persistent, group_frames, group_times
-    )
-
-    # Require at least two confident onsets to avoid overriding on weak evidence.
-    if sum(1 for _, s, c in onset_candidates if s is not None and c >= 0.25) < 2:
-        return
-
-    prev_onset: Optional[float] = None
-    assigned: List[Tuple[TargetLine, float, float]] = []
-    for ln, onset, conf in onset_candidates:
-        if onset is None:
+    clusters = _cluster_persistent_lines_by_visibility(persistent)
+    for cluster in clusters:
+        if len(cluster) < 3:
             continue
-        if prev_onset is not None:
-            onset = max(onset, prev_onset + 0.2)
-        prev_onset = onset
-        assigned.append((ln, onset, conf))
-    if len(assigned) < 2:
-        return
-
-    for i, (ln, onset, conf) in enumerate(assigned):
-        next_onset = assigned[i + 1][1] if i + 1 < len(assigned) else None
-        _assign_line_level_word_timings(
-            ln,
-            onset,
-            next_onset,
-            max(0.35, min(0.75, conf)),
+        onset_candidates = _collect_persistent_block_onset_candidates(
+            cluster, group_frames, group_times
         )
+
+        # Require at least two confident onsets to avoid overriding on weak evidence.
+        if sum(1 for _, s, c in onset_candidates if s is not None and c >= 0.25) < 2:
+            continue
+
+        prev_onset: Optional[float] = None
+        assigned: List[Tuple[TargetLine, float, float]] = []
+        for ln, onset, conf in onset_candidates:
+            if onset is None:
+                continue
+            if prev_onset is not None:
+                onset = max(onset, prev_onset + 0.2)
+            prev_onset = onset
+            assigned.append((ln, onset, conf))
+        if len(assigned) < 2:
+            continue
+
+        for i, (ln, onset, conf) in enumerate(assigned):
+            next_onset = assigned[i + 1][1] if i + 1 < len(assigned) else None
+            if next_onset is not None and (next_onset - onset) > 6.0:
+                next_onset = None
+            _assign_line_level_word_timings(
+                ln,
+                onset,
+                next_onset,
+                max(0.35, min(0.75, conf)),
+            )
 
 
 def _select_persistent_overlap_lines(candidates: List[TargetLine]) -> List[TargetLine]:
@@ -487,6 +505,45 @@ def _select_persistent_overlap_lines(candidates: List[TargetLine]) -> List[Targe
             persistent.append(ln)
     persistent.sort(key=lambda ln: float(ln.y))
     return persistent
+
+
+def _cluster_persistent_lines_by_visibility(
+    lines: List[TargetLine],
+) -> List[List[TargetLine]]:
+    clusters: List[List[TargetLine]] = []
+    ordered = sorted(
+        lines, key=lambda ln: (float(ln.visibility_start or 0.0), float(ln.y))
+    )
+    for ln in ordered:
+        if ln.visibility_start is None or ln.visibility_end is None:
+            continue
+        placed = False
+        for cluster in clusters:
+            starts = [
+                float(c.visibility_start)
+                for c in cluster
+                if c.visibility_start is not None
+            ]
+            ends = [
+                float(c.visibility_end) for c in cluster if c.visibility_end is not None
+            ]
+            if not starts or not ends:
+                continue
+            c_start = float(np.median(np.array(starts, dtype=np.float32)))
+            c_end = float(np.median(np.array(ends, dtype=np.float32)))
+            if (
+                abs(float(ln.visibility_start) - c_start) <= 2.0
+                and abs(float(ln.visibility_end) - c_end) <= 3.0
+            ):
+                cluster.append(ln)
+                placed = True
+                break
+        if not placed:
+            clusters.append([ln])
+
+    for cluster in clusters:
+        cluster.sort(key=lambda ln: float(ln.y))
+    return clusters
 
 
 def _collect_persistent_block_onset_candidates(

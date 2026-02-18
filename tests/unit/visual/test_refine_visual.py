@@ -3,6 +3,9 @@ import pytest
 from typing import List, Dict, Any
 
 from y2karaoke.core.visual.refinement import (
+    _cluster_persistent_lines_by_visibility,
+    _line_fill_mask,
+    _word_fill_mask,
     _assign_line_level_word_timings,
     _detect_line_highlight_cycle,
     _detect_highlight_times,
@@ -134,6 +137,55 @@ def test_detect_highlight_with_confidence_reports_strength():
     assert e is not None
     assert 0.0 <= confidence <= 1.0
     assert confidence > 0.6
+
+
+def test_line_fill_mask_is_more_permissive_than_word_fill_mask():
+    roi = np.ones((7, 7, 3), dtype=np.uint8) * 100
+    roi[2:5, 2:5, :] = 120
+    c_bg = np.array([100.0, 100.0, 100.0], dtype=np.float32)
+
+    word_mask = _word_fill_mask(roi, c_bg)
+    line_mask = _line_fill_mask(roi, c_bg)
+    assert int(np.sum(line_mask > 0)) >= int(np.sum(word_mask > 0))
+
+
+def test_cluster_persistent_lines_by_visibility_groups_by_interval():
+    a = TargetLine(
+        line_index=1,
+        start=10.0,
+        end=11.0,
+        text="a",
+        words=["a"],
+        y=10,
+        word_rois=[(0, 0, 2, 2)],
+        visibility_start=20.0,
+        visibility_end=30.0,
+    )
+    b = TargetLine(
+        line_index=2,
+        start=10.0,
+        end=11.0,
+        text="b",
+        words=["b"],
+        y=20,
+        word_rois=[(0, 0, 2, 2)],
+        visibility_start=20.5,
+        visibility_end=30.5,
+    )
+    c = TargetLine(
+        line_index=3,
+        start=10.0,
+        end=11.0,
+        text="c",
+        words=["c"],
+        y=30,
+        word_rois=[(0, 0, 2, 2)],
+        visibility_start=45.0,
+        visibility_end=55.0,
+    )
+    clusters = _cluster_persistent_lines_by_visibility([c, b, a])
+    sizes = sorted(len(cl) for cl in clusters)
+    assert sizes == [1, 2]
 
 
 def test_detect_sustained_onset_finds_first_stable_departure():
