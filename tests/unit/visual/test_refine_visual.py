@@ -3,6 +3,7 @@ import pytest
 from typing import List, Dict, Any
 
 from y2karaoke.core.visual.refinement import (
+    _apply_persistent_block_highlight_order,
     _cluster_persistent_lines_by_visibility,
     _line_fill_mask,
     _word_fill_mask,
@@ -186,6 +187,83 @@ def test_cluster_persistent_lines_by_visibility_groups_by_interval():
     clusters = _cluster_persistent_lines_by_visibility([c, b, a])
     sizes = sorted(len(cl) for cl in clusters)
     assert sizes == [1, 2]
+
+
+def test_apply_persistent_block_highlight_order_uses_surrogate_end_for_large_gap(
+    monkeypatch,
+):
+    line1 = TargetLine(
+        line_index=1,
+        start=10.0,
+        end=12.0,
+        text="line one words here",
+        words=["line", "one", "words", "here"],
+        y=10,
+        word_rois=[(0, 0, 2, 2)],
+        visibility_start=20.0,
+        visibility_end=40.0,
+    )
+    line2 = TargetLine(
+        line_index=2,
+        start=10.0,
+        end=12.0,
+        text="line two words",
+        words=["line", "two", "words"],
+        y=20,
+        word_rois=[(0, 0, 2, 2)],
+        visibility_start=20.0,
+        visibility_end=40.0,
+    )
+    line3 = TargetLine(
+        line_index=3,
+        start=10.0,
+        end=12.0,
+        text="line three words",
+        words=["line", "three", "words"],
+        y=30,
+        word_rois=[(0, 0, 2, 2)],
+        visibility_start=20.0,
+        visibility_end=40.0,
+    )
+
+    monkeypatch.setattr(
+        "y2karaoke.core.visual.refinement._select_persistent_overlap_lines",
+        lambda cands: [line1, line2, line3],
+    )
+    monkeypatch.setattr(
+        "y2karaoke.core.visual.refinement._cluster_persistent_lines_by_visibility",
+        lambda lines: [lines],
+    )
+    monkeypatch.setattr(
+        "y2karaoke.core.visual.refinement._collect_persistent_block_onset_candidates",
+        lambda *_a, **_k: [
+            (line1, 100.0, 0.9),
+            (line2, 120.0, 0.9),
+            (line3, 122.0, 0.9),
+        ],
+    )
+
+    assigned = []
+
+    def _fake_assign(ln, line_start, line_end, line_conf):
+        assigned.append((ln, line_start, line_end, line_conf))
+
+    monkeypatch.setattr(
+        "y2karaoke.core.visual.refinement._assign_line_level_word_timings",
+        _fake_assign,
+    )
+
+    _apply_persistent_block_highlight_order(
+        [(line1, 0.0, 0.0), (line2, 0.0, 0.0), (line3, 0.0, 0.0)],
+        [],
+        [],
+    )
+    assert len(assigned) == 3
+    # First line should not stretch to the far-future second onset (gap 20s).
+    _, s1, e1, _ = assigned[0]
+    assert s1 == pytest.approx(100.0, abs=1e-6)
+    assert e1 is not None
+    assert e1 < 120.0
 
 
 def test_detect_sustained_onset_finds_first_stable_departure():

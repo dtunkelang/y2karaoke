@@ -77,6 +77,7 @@ Last updated: 2026-02-17
 - [x] Reduced line-level mask strictness for low-FPS line refinement (`_line_fill_mask`) to retain unselected-text samples in long visibility windows.
 - [x] Clustered persistent-block onset overrides by visibility interval before enforcing top-to-bottom ordering (avoids cross-section onset pushing in long merged groups).
 - [x] Added guardrail to avoid stretching a line to the next onset across large gaps (>6s), preserving instrumental breaks.
+- [x] Added surrogate line-end estimation for persistent-block lines with no nearby next onset (bounded by visibility), reducing under-duration artifacts after large-gap decoupling.
 - [x] Added visual-line visibility-span metadata (`visibility_start` / `visibility_end`) to reconstructed target lines and enforced refinement windows that are never shorter than on-screen visibility.
 - [x] Increased low-FPS line-refinement merged window duration to keep persistent multi-line blocks in a single analysis window.
 - [x] Fixed low-FPS `min_start_time` gating to be start-based (not end-based) and to honor each line's visibility floor, with regression tests for overlapping-line behavior.
