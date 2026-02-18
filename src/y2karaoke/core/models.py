@@ -327,3 +327,5 @@ class TargetLine:
     word_confidences: Optional[List[Optional[float]]] = None
     word_rois: Optional[List[tuple[int, int, int, int]]] = None
     char_rois: Optional[List[Optional[tuple[int, int, int, int]]]] = None
+    visibility_start: Optional[float] = None
+    visibility_end: Optional[float] = None

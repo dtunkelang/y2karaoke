@@ -416,6 +416,8 @@ def reconstruct_lyrics_from_visuals(  # noqa: C901
                 word_ends=None,
                 word_rois=ent["w_rois"],
                 char_rois=None,
+                visibility_start=float(ent["first"]),
+                visibility_end=float(ent["last"]),
             )
         )
     return out

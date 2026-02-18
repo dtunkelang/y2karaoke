@@ -21,6 +21,8 @@ def test_reconstruct_lyrics_single_frame_single_line():
     assert lines[0].start == 1.0
     # End time snapped from last seen (1.0) + 2.0 = 3.0
     assert lines[0].end == 3.0
+    assert lines[0].visibility_start == 1.0
+    assert lines[0].visibility_end == 1.0
 
 
 def test_reconstruct_lyrics_detects_multiple_lines():
@@ -63,6 +65,8 @@ def test_reconstruct_lyrics_tracks_duration():
     assert lines[0].start == 1.0
     # Last seen 2.0. End = 2.0 + 2.0 = 4.0
     assert lines[0].end == 4.0
+    assert lines[0].visibility_start == 1.0
+    assert lines[0].visibility_end == 2.0
 
 
 def test_reconstruct_lyrics_deduplicates_similar_lines():

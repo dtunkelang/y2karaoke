@@ -74,3 +74,6 @@ Last updated: 2026-02-17
   - Removed recurring edge fragments (`KIN/KII/KAPA/KARAO`) from sampled raw frames.
 - [x] Completed: P2 architectural cleanup step by isolating LRC timing-trust policy in lyrics quality orchestration.
 - [x] Completed: P2 boundary cleanup by centralizing Whisper auto-enable gating across simple and quality lyrics paths.
+- [x] Added visual-line visibility-span metadata (`visibility_start` / `visibility_end`) to reconstructed target lines and enforced refinement windows that are never shorter than on-screen visibility.
+- [x] Increased low-FPS line-refinement merged window duration to keep persistent multi-line blocks in a single analysis window.
+- [x] Fixed low-FPS `min_start_time` gating to be start-based (not end-based) and to honor each line's visibility floor, with regression tests for overlapping-line behavior.

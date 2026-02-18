@@ -127,8 +127,14 @@ def _build_line_refinement_jobs(
     for ln in target_lines:
         if not ln.word_rois:
             continue
+        line_start = ln.start
         line_end = ln.end if ln.end is not None else ln.start + 5.0
-        v_start, v_end = max(0.0, ln.start - lead), line_end + tail
+        # Ensure refinement window is never shorter than observed visibility span.
+        if ln.visibility_start is not None:
+            line_start = min(line_start, float(ln.visibility_start))
+        if ln.visibility_end is not None:
+            line_end = max(line_end, float(ln.visibility_end))
+        v_start, v_end = max(0.0, line_start - lead), line_end + tail
         jobs.append((ln, v_start, v_end))
     jobs.sort(key=lambda item: item[1])
     return jobs
@@ -339,6 +345,184 @@ def _slice_frames_for_window(
     return group_frames[lo:hi]
 
 
+def _collect_line_color_values(
+    ln: TargetLine,
+    line_frames: List[Tuple[float, np.ndarray, np.ndarray]],
+    c_bg_line: np.ndarray,
+) -> List[Dict[str, Any]]:
+    if cv2 is None or np is None:
+        raise ImportError("OpenCV and Numpy required.")
+    if not ln.word_rois:
+        return []
+
+    x1 = min(wx for wx, _, _, _ in ln.word_rois)
+    y1 = min(wy for _, wy, _, _ in ln.word_rois)
+    x2 = max(wx + ww for wx, _, ww, _ in ln.word_rois)
+    y2 = max(wy + wh for _, wy, _, wh in ln.word_rois)
+
+    vals: List[Dict[str, Any]] = []
+    for t, roi_bgr, roi_lab in line_frames:
+        x_lo = max(0, x1)
+        y_lo = max(0, y1)
+        x_hi = min(roi_bgr.shape[1], x2)
+        y_hi = min(roi_bgr.shape[0], y2)
+        if x_hi <= x_lo or y_hi <= y_lo:
+            continue
+        line_roi_bgr = roi_bgr[y_lo:y_hi, x_lo:x_hi]
+        line_mask = _word_fill_mask(line_roi_bgr, c_bg_line)
+        if np.sum(line_mask > 0) <= 30:
+            continue
+        line_roi_lab = roi_lab[y_lo:y_hi, x_lo:x_hi]
+        vals.append(
+            {
+                "t": t,
+                "mask": line_mask,
+                "lab": line_roi_lab,
+                "avg": line_roi_lab[line_mask.astype(bool)].mean(axis=0),
+            }
+        )
+    return vals
+
+
+def _estimate_onset_from_visibility_progress(
+    vals: List[Dict[str, Any]],
+) -> Tuple[Optional[float], float]:
+    """Estimate onset from fractional rise within full visibility window."""
+    if np is None or len(vals) < 10:
+        return None, 0.0
+
+    times = np.array([float(v["t"]) for v in vals], dtype=np.float32)
+    colors = np.array([v["avg"] for v in vals], dtype=np.float32)
+    base_count = max(4, min(12, len(colors) // 4))
+    baseline = colors[:base_count].mean(axis=0)
+    activity = np.linalg.norm(colors - baseline, axis=1)
+    kernel = min(5, len(activity))
+    smooth = np.convolve(activity, np.ones(kernel) / kernel, mode="same")
+
+    base_level = float(np.median(smooth[:base_count])) if base_count > 0 else 0.0
+    peak = float(np.max(smooth))
+    dynamic = peak - base_level
+    if dynamic < 8.0:
+        return None, 0.0
+
+    threshold = base_level + 0.18 * dynamic
+    hold = max(2, min(4, len(smooth) // 12))
+    start_idx = None
+    for i in range(base_count, len(smooth) - hold + 1):
+        seg = smooth[i : i + hold]
+        if np.all(seg >= threshold) and seg[-1] >= seg[0]:
+            start_idx = i
+            break
+
+    if start_idx is None:
+        return None, 0.0
+    confidence = max(0.0, min(1.0, dynamic / 80.0))
+    return float(times[start_idx]), confidence
+
+
+def _apply_persistent_block_highlight_order(
+    g_jobs: List[Tuple[TargetLine, float, float]],
+    group_frames: List[Tuple[float, np.ndarray, np.ndarray]],
+    group_times: List[float],
+) -> None:
+    """Override timings for persistent overlapping lines using highlight order."""
+    candidates: List[TargetLine] = []
+    for ln, _, _ in g_jobs:
+        if not ln.word_rois or ln.visibility_start is None or ln.visibility_end is None:
+            continue
+        if (float(ln.visibility_end) - float(ln.visibility_start)) >= 12.0:
+            candidates.append(ln)
+    persistent = _select_persistent_overlap_lines(candidates)
+    if len(persistent) < 3:
+        return
+    onset_candidates = _collect_persistent_block_onset_candidates(
+        persistent, group_frames, group_times
+    )
+
+    # Require at least two confident onsets to avoid overriding on weak evidence.
+    if sum(1 for _, s, c in onset_candidates if s is not None and c >= 0.25) < 2:
+        return
+
+    prev_onset: Optional[float] = None
+    assigned: List[Tuple[TargetLine, float, float]] = []
+    for ln, onset, conf in onset_candidates:
+        if onset is None:
+            continue
+        if prev_onset is not None:
+            onset = max(onset, prev_onset + 0.2)
+        prev_onset = onset
+        assigned.append((ln, onset, conf))
+    if len(assigned) < 2:
+        return
+
+    for i, (ln, onset, conf) in enumerate(assigned):
+        next_onset = assigned[i + 1][1] if i + 1 < len(assigned) else None
+        _assign_line_level_word_timings(
+            ln,
+            onset,
+            next_onset,
+            max(0.35, min(0.75, conf)),
+        )
+
+
+def _select_persistent_overlap_lines(candidates: List[TargetLine]) -> List[TargetLine]:
+    if len(candidates) < 3:
+        return []
+    persistent: List[TargetLine] = []
+    for ln in candidates:
+        if ln.visibility_start is None or ln.visibility_end is None:
+            continue
+        overlaps = 0
+        for other in candidates:
+            if other is ln:
+                continue
+            if other.visibility_start is None or other.visibility_end is None:
+                continue
+            ov = min(float(ln.visibility_end), float(other.visibility_end)) - max(
+                float(ln.visibility_start), float(other.visibility_start)
+            )
+            if ov >= 8.0:
+                overlaps += 1
+        if overlaps >= 2:
+            persistent.append(ln)
+    persistent.sort(key=lambda ln: float(ln.y))
+    return persistent
+
+
+def _collect_persistent_block_onset_candidates(
+    persistent: List[TargetLine],
+    group_frames: List[Tuple[float, np.ndarray, np.ndarray]],
+    group_times: List[float],
+) -> List[Tuple[TargetLine, Optional[float], float]]:
+    onset_candidates: List[Tuple[TargetLine, Optional[float], float]] = []
+    for ln in persistent:
+        if ln.visibility_start is None or ln.visibility_end is None:
+            onset_candidates.append((ln, None, 0.0))
+            continue
+        v_start = max(0.0, float(ln.visibility_start) - 0.5)
+        v_end = float(ln.visibility_end) + 0.5
+        line_frames = _slice_frames_for_window(
+            group_frames,
+            group_times,
+            v_start=v_start,
+            v_end=v_end,
+        )
+        if len(line_frames) < 8:
+            onset_candidates.append((ln, None, 0.0))
+            continue
+        c_bg_line = np.mean(
+            [
+                np.mean(f[1], axis=(0, 1))
+                for f in line_frames[: min(10, len(line_frames))]
+            ],
+            axis=0,
+        )
+        vals = _collect_line_color_values(ln, line_frames, c_bg_line)
+        onset, conf = _estimate_onset_from_visibility_progress(vals)
+        onset_candidates.append((ln, onset, conf))
+    return onset_candidates
+
+
 def _refine_line_with_frames(
     ln: TargetLine,
     line_frames: List[Tuple[float, np.ndarray, np.ndarray]],
@@ -403,45 +587,22 @@ def _detect_line_highlight_with_confidence(
     if not ln.word_rois:
         return None, None, 0.0
 
-    x1 = min(wx for wx, _, _, _ in ln.word_rois)
-    y1 = min(wy for _, wy, _, _ in ln.word_rois)
-    x2 = max(wx + ww for wx, _, ww, _ in ln.word_rois)
-    y2 = max(wy + wh for _, wy, _, wh in ln.word_rois)
-
-    vals: List[Dict[str, Any]] = []
+    vals = _collect_line_color_values(ln, line_frames, c_bg_line)
     frame_times: List[float] = []
     frame_present: List[bool] = []
     frame_activity: List[float] = []
     baseline_samples: List[np.ndarray] = []
 
-    for t, roi_bgr, roi_lab in line_frames:
+    val_by_time = {float(v["t"]): v for v in vals}
+    for t, _roi_bgr, _roi_lab in line_frames:
         frame_times.append(float(t))
-        x_lo = max(0, x1)
-        y_lo = max(0, y1)
-        x_hi = min(roi_bgr.shape[1], x2)
-        y_hi = min(roi_bgr.shape[0], y2)
-        if x_hi <= x_lo or y_hi <= y_lo:
+        rec = val_by_time.get(float(t))
+        if rec is None:
             frame_present.append(False)
             frame_activity.append(0.0)
             continue
 
-        line_roi_bgr = roi_bgr[y_lo:y_hi, x_lo:x_hi]
-        line_mask = _word_fill_mask(line_roi_bgr, c_bg_line)
-        if np.sum(line_mask > 0) <= 30:
-            frame_present.append(False)
-            frame_activity.append(0.0)
-            continue
-
-        line_roi_lab = roi_lab[y_lo:y_hi, x_lo:x_hi]
-        avg = line_roi_lab[line_mask.astype(bool)].mean(axis=0)
-        vals.append(
-            {
-                "t": t,
-                "mask": line_mask,
-                "lab": line_roi_lab,
-                "avg": avg,
-            }
-        )
+        avg = rec["avg"]
         frame_present.append(True)
         if len(baseline_samples) < 8:
             baseline_samples.append(avg)
@@ -558,7 +719,7 @@ def refine_word_timings_at_high_fps(
 
     logger.info("Refining timings with Departure-Onset detection...")
     jobs = _build_line_refinement_jobs(target_lines)
-    groups = _merge_line_refinement_jobs(jobs)
+    groups = _merge_line_refinement_jobs(jobs, max_group_duration_sec=90.0)
 
     for g_start, g_end, g_jobs in groups:
         group_frames = _read_window_frames(
@@ -609,8 +770,8 @@ def refine_line_timings_at_low_fps(
         lead_in_sec=10.0,
         tail_sec=1.0,
     )
-    groups = _merge_line_refinement_jobs(jobs)
-    last_assigned_end: Optional[float] = None
+    groups = _merge_line_refinement_jobs(jobs, max_group_duration_sec=90.0)
+    last_assigned_start: Optional[float] = None
 
     for g_start, g_end, g_jobs in groups:
         group_frames = _read_window_frames_sampled(
@@ -633,6 +794,16 @@ def refine_line_timings_at_low_fps(
             )
             if len(line_frames) < 6:
                 continue
+            line_min_start: Optional[float] = (
+                float(ln.visibility_start) if ln.visibility_start is not None else None
+            )
+            if last_assigned_start is not None and (
+                line_min_start is None or line_min_start >= last_assigned_start
+            ):
+                gate = float(last_assigned_start + 0.05)
+                line_min_start = (
+                    gate if line_min_start is None else max(line_min_start, gate)
+                )
             c_bg_line = np.mean(
                 [
                     np.mean(f[1], axis=(0, 1))
@@ -644,21 +815,25 @@ def refine_line_timings_at_low_fps(
                 ln,
                 line_frames,
                 c_bg_line,
-                min_start_time=(
-                    (last_assigned_end + 0.05)
-                    if last_assigned_end is not None
-                    else None
-                ),
+                min_start_time=line_min_start,
                 require_full_cycle=True,
             )
             if line_s is None and line_e is None:
                 continue
             _assign_line_level_word_timings(ln, line_s, line_e, line_conf)
-            if ln.word_ends and ln.word_ends[-1] is not None:
-                last_assigned_end = float(ln.word_ends[-1])
-            elif line_e is not None:
-                last_assigned_end = float(line_e)
+            if ln.word_starts and ln.word_starts[0] is not None:
+                last_assigned_start = float(ln.word_starts[0])
             elif line_s is not None:
-                last_assigned_end = float(line_s + max(0.4, 0.2 * len(ln.words)))
+                last_assigned_start = float(line_s)
+
+        _apply_persistent_block_highlight_order(g_jobs, group_frames, group_times)
+        for ln, _, _ in g_jobs:
+            if ln.word_starts and ln.word_starts[0] is not None:
+                if last_assigned_start is None:
+                    last_assigned_start = float(ln.word_starts[0])
+                else:
+                    last_assigned_start = max(
+                        last_assigned_start, float(ln.word_starts[0])
+                    )
 
     cap.release()
