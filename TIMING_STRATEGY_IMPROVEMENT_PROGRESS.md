@@ -84,3 +84,4 @@ Last updated: 2026-02-18
 - [x] Added pre-lyric intro artifact suppression in visual reconstruction (credit/title-card filtering via lexical + temporal heuristics), removing `KAI AOK`/`Billie Eilish`-style non-lyric entries from leading lines.
 - [x] Added unresolved overlap-block surrogate sequencing in low-FPS visual refinement so short multi-line visibility blocks (where full highlight cycles are not detected) no longer fall back to early coarse starts.
 - [x] Added visibility-window onset-hint override for low-FPS full-cycle detections to prevent “appearance-as-onset” false positives in long visibility windows (fixes early starts like repeated "I'm the bad guy" around 1:16).
+- [x] Added derivative-aware full-visibility onset estimator and integrated it into low-FPS line-onset hinting to reduce residual line-level drift in gradual highlight transitions.

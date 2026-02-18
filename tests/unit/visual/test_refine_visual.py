@@ -12,6 +12,7 @@ from y2karaoke.core.visual.refinement import (
     _detect_highlight_times,
     _detect_highlight_with_confidence,
     _detect_sustained_onset,
+    _estimate_onset_from_visibility_progress,
     _build_line_refinement_jobs,
     _merge_line_refinement_jobs,
     _refine_line_with_frames,
@@ -294,6 +295,38 @@ def test_detect_sustained_onset_respects_min_start_time():
     start, _ = _detect_sustained_onset(vals, min_start_time=2.0)
     assert start is not None
     assert start >= 2.0
+
+
+def test_estimate_onset_from_visibility_progress_prefers_derivative_rise():
+    times = np.linspace(0, 8.0, 81)
+    colors = []
+    base = np.array([82.0, 128.0, 128.0], dtype=np.float32)
+    low = np.array([60.0, 145.0, 110.0], dtype=np.float32)
+    for t in times:
+        if t < 5.0:
+            c = base
+        elif t <= 6.2:
+            ratio = (t - 5.0) / 1.2
+            c = base + (low - base) * ratio
+        else:
+            c = low
+        colors.append(c)
+    vals = _create_word_vals(times.tolist(), [c.tolist() for c in colors])
+
+    onset, conf = _estimate_onset_from_visibility_progress(vals)
+    assert onset is not None
+    assert 4.8 <= onset <= 5.6
+    assert conf >= 0.3
+
+
+def test_estimate_onset_from_visibility_progress_returns_none_for_flat_series():
+    times = np.linspace(0, 8.0, 81)
+    colors = [[82.0, 128.0, 128.0] for _ in times]
+    vals = _create_word_vals(times.tolist(), colors)
+
+    onset, conf = _estimate_onset_from_visibility_progress(vals)
+    assert onset is None
+    assert conf == 0.0
 
 
 def test_detect_line_highlight_cycle_requires_full_lifecycle():
