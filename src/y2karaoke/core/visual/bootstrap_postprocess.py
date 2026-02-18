@@ -169,7 +169,98 @@ def build_refined_lines_output(
 
     for i, line_dict in enumerate(lines_out):
         line_dict["line_index"] = i + 1
+    _retime_short_interstitial_output_lines(lines_out)
+    _rebalance_compressed_middle_four_line_sequences(lines_out)
     return lines_out
+
+
+def _retime_short_interstitial_output_lines(lines_out: list[dict[str, Any]]) -> None:
+    """Delay short bridge lines that are tightly attached to a previous long line."""
+    for i in range(1, len(lines_out) - 1):
+        prev = lines_out[i - 1]
+        cur = lines_out[i]
+        nxt = lines_out[i + 1]
+
+        prev_end = float(prev.get("end", 0.0))
+        cur_start = float(cur.get("start", 0.0))
+        cur_end = float(cur.get("end", cur_start))
+        next_start = float(nxt.get("start", cur_end))
+        cur_words = cur.get("words", [])
+        prev_words = prev.get("words", [])
+        if len(cur_words) > 2 or len(prev_words) < 4:
+            continue
+
+        cur_dur = cur_end - cur_start
+        if cur_dur > 1.2:
+            continue
+        lead_gap = cur_start - prev_end
+        tail_gap = next_start - cur_end
+        if lead_gap >= 0.45 or tail_gap <= 0.6:
+            continue
+
+        shift = min(0.85, max(0.45, 0.8 - lead_gap), tail_gap - 0.15)
+        if shift < 0.25:
+            continue
+        new_start = snap(cur_start + shift)
+        new_end = snap(cur_end + shift)
+        if new_end >= next_start - 0.1:
+            continue
+
+        cur["start"] = new_start
+        cur["end"] = new_end
+        for w in cur_words:
+            w["start"] = snap(float(w["start"]) + shift)
+            w["end"] = snap(float(w["end"]) + shift)
+
+
+def _rebalance_compressed_middle_four_line_sequences(
+    lines_out: list[dict[str, Any]],
+) -> None:
+    """Spread middle starts when a 4-line run has compressed middle gaps."""
+    for i in range(len(lines_out) - 3):
+        a = lines_out[i]
+        b = lines_out[i + 1]
+        c = lines_out[i + 2]
+        d = lines_out[i + 3]
+        sa = float(a.get("start", 0.0))
+        sb = float(b.get("start", sa))
+        sc = float(c.get("start", sb))
+        sd = float(d.get("start", sc))
+        if not (sa < sb < sc < sd):
+            continue
+        gap_ab = sb - sa
+        gap_bc = sc - sb
+        gap_cd = sd - sc
+        if gap_ab > 1.4 or gap_bc > 1.1 or gap_cd < 2.0:
+            continue
+        span = sd - sa
+        if span < 3.2:
+            continue
+
+        tb = sa + span / 3.0
+        tc = sa + 2.0 * span / 3.0
+        if tb <= sb + 0.2 and tc <= sc + 0.2:
+            continue
+
+        for rec, old_s, target_s in ((b, sb, tb), (c, sc, tc)):
+            words = rec.get("words", [])
+            if not words:
+                continue
+            old_e = float(rec.get("end", old_s))
+            dur = max(0.7, old_e - old_s)
+            new_s = max(old_s, target_s)
+            if rec is b:
+                new_s = min(new_s, float(c.get("start", sc)) - 0.15)
+            else:
+                new_s = min(new_s, sd - 0.15)
+            if new_s <= old_s + 0.2:
+                continue
+            shift = new_s - old_s
+            rec["start"] = snap(new_s)
+            rec["end"] = snap(new_s + dur)
+            for w in words:
+                w["start"] = snap(float(w["start"]) + shift)
+                w["end"] = snap(float(w["end"]) + shift)
 
 
 def _split_fused_output_words(words: list[dict[str, Any]]) -> list[dict[str, Any]]:

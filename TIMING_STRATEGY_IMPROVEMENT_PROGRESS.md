@@ -101,3 +101,10 @@ Last updated: 2026-02-18
 - [x] Validation snapshot (`Billie Eilish - bad guy`, `GsFlbMS7UIc`, v91 line15 lag-floor):
   - Line 15 (`So you're a tough guy`) moved from `49.6s` to `51.2s` (closer to observed onset).
   - Neighboring dense-run lines shifted accordingly (`line 16: 50.8 -> 52.15`, `line 17: 52.45 -> 52.85`) while later anchor lines (18+) stayed unchanged.
+- [x] Added alternating repeated-block late-first-line correction (`A/B/A/B`) for long shared-visibility runs, pulling delayed first repeated line starts back toward visibility anchor timing.
+- [x] Added compressed-middle 4-line sequence rebalancing in final output postprocessing to handle fast shared-visibility runs where middle lines are already highlighted at first observation.
+- [x] Validation snapshot (`Billie Eilish - bad guy`, `GsFlbMS7UIc`, v104):
+  - `I'm the bad guy` (late repeated block) improved from `127.85s` to `125.95s` (LRC residual from `+1.80s` to `-0.10s` under global-offset comparison).
+  - `Just can't get enough guy` improved from `52.85s` to `54.05s` (LRC residual from `-1.70s` to `-0.50s`).
+  - Overall LRC residual summary improved from `mean_abs=0.70s, p95=1.70s` (v96) to `mean_abs=0.63s, p95=1.55s` (v104).
+  - Non-merged-line subset residual summary at v104: `mean_abs=0.62s, p95=1.35s, max_abs=1.70s`.
