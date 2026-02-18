@@ -65,6 +65,10 @@ Last updated: 2026-02-17
   - Residual after global-shift correction improved from `p95=8.645s` (v21) to `p95=8.101s` (v25).
 - [x] Added lane-aware duplicate suppression in visual reconstruction so concurrent repeated text in different on-screen lyric lanes is preserved.
 - [x] Added reconstruction regression test for concurrent repeated `Duh` lines in separate lanes.
+- [x] Added lane-continuity merge for same-text near-lane segments to prevent false line splits when OCR y-jitter crosses lane-bin boundaries.
+- [x] Validation snapshot (`Billie Eilish - bad guy`, `GsFlbMS7UIc`, v30 lane continuity):
+  - Removed spurious extra same-lane `duh` in repeated chorus block (`I'm the bad guy / duh / I'm the bad guy / duh`).
+  - Reduced reconstructed initial line count in this run from `73` to `68` by collapsing boundary-jitter re-splits.
 - [x] Validated on Billie Eilish - "bad guy" (`GsFlbMS7UIc`) with fresh cache versions:
   - `raw_frames_463cf7852a3083257907dae10e9b4399.json`: residual branded tokens reduced to intro cards only (`SingKING/KARAOKE/Karaoke`, 7 total).
   - Removed recurring edge fragments (`KIN/KII/KAPA/KARAO`) from sampled raw frames.

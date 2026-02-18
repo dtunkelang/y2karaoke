@@ -251,3 +251,103 @@ def test_reconstruct_lyrics_keeps_concurrent_repeated_text_in_different_lanes():
     assert len(duh_lines) == 2
     ys = sorted(int(ln.y) for ln in duh_lines)
     assert ys == [100, 130]
+
+
+def test_reconstruct_lyrics_merges_short_same_lane_reentry_flicker():
+    raw_frames = [
+        {
+            "time": 10.0,
+            "words": [
+                {"text": "Duh", "x": 30, "y": 90, "w": 35, "h": 20},
+                {"text": "Duh", "x": 30, "y": 250, "w": 35, "h": 20},
+            ],
+        },
+        {
+            "time": 11.0,
+            "words": [
+                {"text": "Duh", "x": 30, "y": 90, "w": 35, "h": 20},
+                {"text": "Duh", "x": 30, "y": 250, "w": 35, "h": 20},
+            ],
+        },
+        {
+            "time": 12.0,
+            "words": [
+                {"text": "Duh", "x": 30, "y": 250, "w": 35, "h": 20},
+            ],
+        },
+        {
+            "time": 13.0,
+            "words": [
+                {"text": "Duh", "x": 30, "y": 90, "w": 35, "h": 20},
+            ],
+        },
+        {"time": 14.6, "words": []},
+    ]
+
+    lines = reconstruct_lyrics_from_visuals(raw_frames, 1.0)
+    duh_lines = [ln for ln in lines if ln.text == "Duh"]
+    assert len(duh_lines) == 2
+    ys = sorted(int(ln.y) for ln in duh_lines)
+    assert ys == [90, 250]
+
+
+def test_reconstruct_lyrics_merges_same_lane_reentry_across_lane_bin_boundary():
+    raw_frames = [
+        {
+            "time": 10.0,
+            "words": [
+                {"text": "Duh", "x": 30, "y": 89, "w": 35, "h": 20},
+                {"text": "Duh", "x": 30, "y": 247, "w": 35, "h": 20},
+            ],
+        },
+        {"time": 11.0, "words": [{"text": "Duh", "x": 30, "y": 247, "w": 35, "h": 20}]},
+        {"time": 13.0, "words": [{"text": "Duh", "x": 30, "y": 93, "w": 35, "h": 20}]},
+        {"time": 14.6, "words": []},
+    ]
+
+    lines = reconstruct_lyrics_from_visuals(raw_frames, 1.0)
+    duh_lines = [ln for ln in lines if ln.text == "Duh"]
+    assert len(duh_lines) == 2
+
+
+def test_reconstruct_lyrics_merges_continuation_split_with_long_second_segment():
+    raw_frames = [
+        {
+            "time": 10.0,
+            "words": [
+                {"text": "Duh", "x": 30, "y": 89, "w": 35, "h": 20},
+                {"text": "Duh", "x": 30, "y": 247, "w": 35, "h": 20},
+            ],
+        },
+        {
+            "time": 11.0,
+            "words": [
+                {"text": "Duh", "x": 30, "y": 89, "w": 35, "h": 20},
+                {"text": "Duh", "x": 30, "y": 247, "w": 35, "h": 20},
+            ],
+        },
+        {
+            "time": 12.0,
+            "words": [
+                {"text": "Duh", "x": 30, "y": 93, "w": 35, "h": 20},
+                {"text": "Duh", "x": 30, "y": 247, "w": 35, "h": 20},
+            ],
+        },
+        {
+            "time": 13.0,
+            "words": [
+                {"text": "Duh", "x": 30, "y": 93, "w": 35, "h": 20},
+            ],
+        },
+        {
+            "time": 14.0,
+            "words": [
+                {"text": "Duh", "x": 30, "y": 93, "w": 35, "h": 20},
+            ],
+        },
+        {"time": 15.6, "words": []},
+    ]
+
+    lines = reconstruct_lyrics_from_visuals(raw_frames, 1.0)
+    duh_lines = [ln for ln in lines if ln.text == "Duh"]
+    assert len(duh_lines) == 2

@@ -12,6 +12,7 @@ from ..text_utils import (
 
 _OVERLAY_BIN_PX = 24.0
 _OVERLAY_MAX_JITTER_PX = 20.0
+_LANE_PROXIMITY_PX = 18.0
 
 
 def snap(value: float) -> float:
@@ -226,9 +227,7 @@ def _suppress_short_duplicate_reentries(
                 continue
             if time_gap > 20.0:
                 break
-            ent_lane = int(ent.get("lane", int(float(ent["y"]) // 30)))
-            prev_lane = int(prev.get("lane", int(float(prev["y"]) // 30)))
-            if ent_lane != prev_lane:
+            if not _is_same_lane(ent, prev):
                 continue
             if text_similarity(ent["text"], prev["text"]) < 0.9:
                 continue
@@ -240,6 +239,72 @@ def _suppress_short_duplicate_reentries(
         if not is_dup_reentry:
             out.append(ent)
     return out
+
+
+def _merge_short_same_lane_reentries(
+    entries: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    """Merge short same-lane reentries caused by transient OCR drops."""
+    if len(entries) < 2:
+        return entries
+
+    out: list[dict[str, Any]] = []
+
+    for ent in entries:
+        tokens = [t for t in ent.get("words", []) if str(t).strip()]
+        duration = float(ent["last"]) - float(ent["first"])
+        prev_idx: int | None = None
+        for idx in range(len(out) - 1, max(-1, len(out) - 13), -1):
+            prev = out[idx]
+            if text_similarity(prev["text"], ent["text"]) < 0.9:
+                continue
+            if not _is_same_lane(prev, ent):
+                continue
+            prev_idx = idx
+            break
+
+        if prev_idx is not None and len(tokens) <= 2:
+            prev = out[prev_idx]
+            prev_tokens = [t for t in prev.get("words", []) if str(t).strip()]
+            if len(prev_tokens) <= 2:
+                gap = float(ent["first"]) - float(prev["last"])
+                if 0.0 <= gap <= 4.0:
+                    mids = out[prev_idx + 1 :]
+                    has_lane_conflict = any(
+                        _is_same_lane(mid, ent)
+                        and text_similarity(mid["text"], ent["text"]) < 0.9
+                        for mid in mids
+                    )
+                    prev_duration = float(prev["last"]) - float(prev["first"])
+                    cross_lane_same_text = any(
+                        not _is_same_lane(mid, ent)
+                        and text_similarity(mid["text"], ent["text"]) >= 0.9
+                        for mid in mids
+                    )
+                    allow_merge = prev_duration >= 1.0 or cross_lane_same_text
+                    continuation_split = gap <= 1.5
+                    if continuation_split and not has_lane_conflict:
+                        prev["last"] = max(float(prev["last"]), float(ent["last"]))
+                        if len(ent.get("w_rois", [])) > len(
+                            prev.get("w_rois", [])
+                        ) and ent.get("w_rois"):
+                            prev["w_rois"] = ent["w_rois"]
+                        continue
+                    if duration <= 1.6 and allow_merge and not has_lane_conflict:
+                        prev["last"] = max(float(prev["last"]), float(ent["last"]))
+                        if len(ent.get("w_rois", [])) > len(
+                            prev.get("w_rois", [])
+                        ) and ent.get("w_rois"):
+                            prev["w_rois"] = ent["w_rois"]
+                        continue
+
+        out.append(ent)
+
+    return out
+
+
+def _is_same_lane(a: dict[str, Any], b: dict[str, Any]) -> bool:
+    return abs(float(a.get("y", 0.0)) - float(b.get("y", 0.0))) <= _LANE_PROXIMITY_PX
 
 
 def reconstruct_lyrics_from_visuals(  # noqa: C901
@@ -325,6 +390,7 @@ def reconstruct_lyrics_from_visuals(  # noqa: C901
     # Sort: Primary by time (2.0s bins), Secondary by Y (top-to-bottom)
     # This keeps multi-line blocks together
     unique.sort(key=lambda x: (round(float(x["first"]) / 2.0) * 2.0, x["y"]))
+    unique = _merge_short_same_lane_reentries(unique)
     unique = _suppress_short_duplicate_reentries(unique)
 
     out: list[TargetLine] = []
