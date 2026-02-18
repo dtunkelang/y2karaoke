@@ -117,16 +117,128 @@ def _detect_highlight_with_confidence(
 
 def _build_line_refinement_jobs(
     target_lines: List[TargetLine],
+    *,
+    lead_in_sec: float = 1.0,
+    tail_sec: float = 1.0,
 ) -> List[Tuple[TargetLine, float, float]]:
     jobs: List[Tuple[TargetLine, float, float]] = []
+    lead = max(0.0, float(lead_in_sec))
+    tail = max(0.0, float(tail_sec))
     for ln in target_lines:
         if not ln.word_rois:
             continue
         line_end = ln.end if ln.end is not None else ln.start + 5.0
-        v_start, v_end = max(0.0, ln.start - 1.0), line_end + 1.0
+        v_start, v_end = max(0.0, ln.start - lead), line_end + tail
         jobs.append((ln, v_start, v_end))
     jobs.sort(key=lambda item: item[1])
     return jobs
+
+
+def _detect_sustained_onset(
+    vals: List[Dict[str, Any]],
+    *,
+    min_start_time: Optional[float] = None,
+) -> Tuple[Optional[float], float]:
+    """Find first sustained color departure from baseline for line-level highlights."""
+    if np is None or len(vals) < 6:
+        return None, 0.0
+
+    times = np.array([float(v["t"]) for v in vals], dtype=np.float32)
+    colors = np.array([v["avg"] for v in vals], dtype=np.float32)
+
+    base_count = max(3, min(8, len(colors) // 3))
+    baseline = colors[:base_count].mean(axis=0)
+    activity = np.linalg.norm(colors - baseline, axis=1)
+
+    kernel_size = min(5, len(activity))
+    smooth = np.convolve(activity, np.ones(kernel_size) / kernel_size, mode="same")
+
+    stable = smooth[:base_count]
+    stable_med = float(np.median(stable)) if len(stable) else 0.0
+    stable_mad = float(np.median(np.abs(stable - stable_med))) if len(stable) else 0.0
+    threshold = max(1.8, stable_med + max(1.0, 3.5 * stable_mad))
+
+    hold = max(2, min(4, len(smooth) // 8))
+    start_idx = None
+    for i in range(base_count, len(smooth) - hold + 1):
+        t_i = float(times[i])
+        if min_start_time is not None and t_i < min_start_time:
+            continue
+        segment = smooth[i : i + hold]
+        if np.all(segment > threshold):
+            start_idx = i
+            break
+
+    if start_idx is None:
+        return None, 0.0
+
+    peak = float(np.max(smooth[start_idx:])) if start_idx < len(smooth) else threshold
+    confidence = max(0.0, min(1.0, (peak - threshold) / max(threshold, 1.0)))
+    return float(times[start_idx]), confidence
+
+
+def _detect_line_highlight_cycle(
+    times: np.ndarray,
+    activities: np.ndarray,
+    present: np.ndarray,
+    *,
+    min_start_time: Optional[float] = None,
+) -> Tuple[Optional[float], Optional[float], float]:
+    """Detect inactive->active->consumed cycle for a line highlight."""
+    if np is None or len(times) < 8:
+        return None, None, 0.0
+
+    present_idx = np.where(present)[0]
+    if len(present_idx) < 6:
+        return None, None, 0.0
+
+    base_count = max(3, min(8, len(present_idx) // 3))
+    baseline_vals = activities[present_idx[:base_count]]
+    stable_med = float(np.median(baseline_vals))
+    stable_mad = float(np.median(np.abs(baseline_vals - stable_med)))
+    start_threshold = max(1.8, stable_med + max(1.0, 3.5 * stable_mad))
+    end_threshold = max(stable_med + 0.5, start_threshold * 0.55)
+
+    hold_active = max(2, min(4, len(times) // 12))
+    hold_inactive = max(2, min(5, len(times) // 10))
+
+    start_idx = None
+    for i in range(0, len(times) - hold_active + 1):
+        if min_start_time is not None and float(times[i]) < min_start_time:
+            continue
+        if not np.all(present[i : i + hold_active]):
+            continue
+        if np.all(activities[i : i + hold_active] > start_threshold):
+            start_idx = i
+            break
+
+    if start_idx is None:
+        return None, None, 0.0
+
+    end_idx = None
+    for j in range(start_idx + hold_active, len(times) - hold_inactive + 1):
+        if np.all(~present[j : j + hold_inactive]):
+            end_idx = j
+            break
+        if np.all(present[j : j + hold_inactive]) and np.all(
+            activities[j : j + hold_inactive] < end_threshold
+        ):
+            end_idx = j
+            break
+
+    if end_idx is None and np.sum(present[start_idx:]) <= hold_active + 1:
+        end_idx = len(times) - 1
+
+    peak = float(np.max(activities[start_idx:]))
+    rise_strength = max(0.0, (peak - start_threshold) / max(start_threshold, 1.0))
+    cycle_quality = 1.0 if end_idx is not None else 0.3
+    confidence = max(0.0, min(1.0, 0.65 * rise_strength + 0.35 * cycle_quality))
+
+    start_t = float(times[start_idx])
+    end_t = float(times[end_idx]) if end_idx is not None else None
+    if end_t is not None and end_t < start_t:
+        end_t = None
+    return start_t, end_t, confidence
 
 
 def _merge_line_refinement_jobs(
@@ -282,6 +394,9 @@ def _detect_line_highlight_with_confidence(
     ln: TargetLine,
     line_frames: List[Tuple[float, np.ndarray, np.ndarray]],
     c_bg_line: np.ndarray,
+    *,
+    min_start_time: Optional[float] = None,
+    require_full_cycle: bool = False,
 ) -> Tuple[Optional[float], Optional[float], float]:
     if cv2 is None or np is None:
         raise ImportError("OpenCV and Numpy required.")
@@ -294,30 +409,79 @@ def _detect_line_highlight_with_confidence(
     y2 = max(wy + wh for _, wy, _, wh in ln.word_rois)
 
     vals: List[Dict[str, Any]] = []
+    frame_times: List[float] = []
+    frame_present: List[bool] = []
+    frame_activity: List[float] = []
+    baseline_samples: List[np.ndarray] = []
+
     for t, roi_bgr, roi_lab in line_frames:
+        frame_times.append(float(t))
         x_lo = max(0, x1)
         y_lo = max(0, y1)
         x_hi = min(roi_bgr.shape[1], x2)
         y_hi = min(roi_bgr.shape[0], y2)
         if x_hi <= x_lo or y_hi <= y_lo:
+            frame_present.append(False)
+            frame_activity.append(0.0)
             continue
 
         line_roi_bgr = roi_bgr[y_lo:y_hi, x_lo:x_hi]
         line_mask = _word_fill_mask(line_roi_bgr, c_bg_line)
         if np.sum(line_mask > 0) <= 30:
+            frame_present.append(False)
+            frame_activity.append(0.0)
             continue
 
         line_roi_lab = roi_lab[y_lo:y_hi, x_lo:x_hi]
+        avg = line_roi_lab[line_mask.astype(bool)].mean(axis=0)
         vals.append(
             {
                 "t": t,
                 "mask": line_mask,
                 "lab": line_roi_lab,
-                "avg": line_roi_lab[line_mask.astype(bool)].mean(axis=0),
+                "avg": avg,
             }
         )
+        frame_present.append(True)
+        if len(baseline_samples) < 8:
+            baseline_samples.append(avg)
+        baseline = (
+            np.mean(np.array(baseline_samples, dtype=np.float32), axis=0)
+            if baseline_samples
+            else avg
+        )
+        frame_activity.append(float(np.linalg.norm(avg - baseline)))
 
-    return _detect_highlight_with_confidence(vals)
+    if not vals:
+        return None, None, 0.0
+
+    cycle_s, cycle_e, cycle_conf = _detect_line_highlight_cycle(
+        np.array(frame_times, dtype=np.float32),
+        np.array(frame_activity, dtype=np.float32),
+        np.array(frame_present, dtype=bool),
+        min_start_time=min_start_time,
+    )
+    if cycle_s is not None and (cycle_e is not None or not require_full_cycle):
+        return cycle_s, cycle_e, cycle_conf
+    if require_full_cycle:
+        return None, None, 0.0
+
+    onset_s, onset_conf = _detect_sustained_onset(vals, min_start_time=min_start_time)
+    generic_s, generic_e, generic_conf = _detect_highlight_with_confidence(vals)
+
+    if onset_s is not None and onset_conf >= 0.15:
+        end = generic_e
+        if end is not None and end < onset_s:
+            end = None
+        confidence = max(onset_conf, 0.6 * generic_conf)
+        return onset_s, end, float(max(0.0, min(1.0, confidence)))
+
+    if generic_s is not None:
+        if min_start_time is not None and generic_s < min_start_time:
+            return None, None, 0.0
+        return generic_s, generic_e, generic_conf
+
+    return None, None, 0.0
 
 
 def _assign_line_level_word_timings(
@@ -440,8 +604,13 @@ def refine_line_timings_at_low_fps(
         "Refining timings with low-FPS line-level highlight detection "
         f"(sample_fps={sample_fps:.1f})..."
     )
-    jobs = _build_line_refinement_jobs(target_lines)
+    jobs = _build_line_refinement_jobs(
+        target_lines,
+        lead_in_sec=10.0,
+        tail_sec=1.0,
+    )
     groups = _merge_line_refinement_jobs(jobs)
+    last_assigned_end: Optional[float] = None
 
     for g_start, g_end, g_jobs in groups:
         group_frames = _read_window_frames_sampled(
@@ -472,10 +641,24 @@ def refine_line_timings_at_low_fps(
                 axis=0,
             )
             line_s, line_e, line_conf = _detect_line_highlight_with_confidence(
-                ln, line_frames, c_bg_line
+                ln,
+                line_frames,
+                c_bg_line,
+                min_start_time=(
+                    (last_assigned_end + 0.05)
+                    if last_assigned_end is not None
+                    else None
+                ),
+                require_full_cycle=True,
             )
             if line_s is None and line_e is None:
                 continue
             _assign_line_level_word_timings(ln, line_s, line_e, line_conf)
+            if ln.word_ends and ln.word_ends[-1] is not None:
+                last_assigned_end = float(ln.word_ends[-1])
+            elif line_e is not None:
+                last_assigned_end = float(line_e)
+            elif line_s is not None:
+                last_assigned_end = float(line_s + max(0.4, 0.2 * len(ln.words)))
 
     cap.release()

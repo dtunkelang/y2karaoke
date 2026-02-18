@@ -58,6 +58,11 @@ Last updated: 2026-02-17
   - Comparable-word coverage improved to `0.9764` (248/254).
   - Mean absolute start-time delta improved from `7.942s` (v20) to `7.805s`.
   - p95 absolute start-time delta improved from `11.25s` (v20) to `10.9s`.
+- [x] Added strict line lifecycle gating (`inactive -> active -> consumed`) for low-FPS line-level refinement so repeated text is only reusable after a full highlight cycle.
+- [x] Validation snapshot (`Billie Eilish - bad guy`, `GsFlbMS7UIc`, v25 lifecycle gate):
+  - Mean absolute word-start delta improved from `7.819s` (v21) to `7.284s`.
+  - p95 absolute word-start delta improved from `10.9s` (v21) to `10.7s`.
+  - Residual after global-shift correction improved from `p95=8.645s` (v21) to `p95=8.101s` (v25).
 - [x] Validated on Billie Eilish - "bad guy" (`GsFlbMS7UIc`) with fresh cache versions:
   - `raw_frames_463cf7852a3083257907dae10e9b4399.json`: residual branded tokens reduced to intro cards only (`SingKING/KARAOKE/Karaoke`, 7 total).
   - Removed recurring edge fragments (`KIN/KII/KAPA/KARAO`) from sampled raw frames.

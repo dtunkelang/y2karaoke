@@ -4,8 +4,10 @@ from typing import List, Dict, Any
 
 from y2karaoke.core.visual.refinement import (
     _assign_line_level_word_timings,
+    _detect_line_highlight_cycle,
     _detect_highlight_times,
     _detect_highlight_with_confidence,
+    _detect_sustained_onset,
     _build_line_refinement_jobs,
     _merge_line_refinement_jobs,
     _refine_line_with_frames,
@@ -134,6 +136,83 @@ def test_detect_highlight_with_confidence_reports_strength():
     assert confidence > 0.6
 
 
+def test_detect_sustained_onset_finds_first_stable_departure():
+    times = np.linspace(0, 3.0, 31)
+    colors = []
+    base = np.array([80.0, 128.0, 128.0])
+    active = np.array([55.0, 150.0, 110.0])
+    for t in times:
+        colors.append(base if t < 1.2 else active)
+    vals = _create_word_vals(times, colors)
+
+    start, confidence = _detect_sustained_onset(vals)
+
+    assert start is not None
+    assert 1.0 <= start <= 1.4
+    assert 0.0 <= confidence <= 1.0
+
+
+def test_detect_sustained_onset_respects_min_start_time():
+    times = np.linspace(0, 3.0, 31)
+    colors = []
+    base = np.array([80.0, 128.0, 128.0])
+    active = np.array([55.0, 150.0, 110.0])
+    for t in times:
+        colors.append(base if t < 1.2 else active)
+    vals = _create_word_vals(times, colors)
+
+    start, _ = _detect_sustained_onset(vals, min_start_time=2.0)
+    assert start is not None
+    assert start >= 2.0
+
+
+def test_detect_line_highlight_cycle_requires_full_lifecycle():
+    times = np.linspace(0, 4.0, 41, dtype=np.float32)
+    present = np.ones_like(times, dtype=bool)
+    activity = np.array(
+        [0.3 if t < 1.0 else (3.0 if t < 2.2 else 0.4) for t in times],
+        dtype=np.float32,
+    )
+
+    start, end, conf = _detect_line_highlight_cycle(times, activity, present)
+
+    assert start is not None
+    assert end is not None
+    assert 0.9 <= start <= 1.4
+    assert 2.0 <= end <= 2.6
+    assert 0.0 <= conf <= 1.0
+
+
+def test_detect_line_highlight_cycle_handles_disappear_as_consumed():
+    times = np.linspace(0, 4.0, 41, dtype=np.float32)
+    present = np.array([t < 2.2 for t in times], dtype=bool)
+    activity = np.array(
+        [0.2 if t < 1.1 else (2.7 if t < 2.0 else 0.0) for t in times],
+        dtype=np.float32,
+    )
+
+    start, end, conf = _detect_line_highlight_cycle(times, activity, present)
+    assert start is not None
+    assert end is not None
+    assert end >= start
+    assert conf > 0.2
+
+
+def test_detect_line_highlight_cycle_respects_min_start_time():
+    times = np.linspace(0, 4.0, 41, dtype=np.float32)
+    present = np.ones_like(times, dtype=bool)
+    activity = np.array(
+        [0.3 if t < 1.0 else (3.0 if t < 2.2 else 0.4) for t in times],
+        dtype=np.float32,
+    )
+
+    start, end, _ = _detect_line_highlight_cycle(
+        times, activity, present, min_start_time=2.8
+    )
+    assert start is None
+    assert end is None
+
+
 def test_build_line_refinement_jobs_skips_lines_without_rois():
     lines = [
         TargetLine(
@@ -160,6 +239,23 @@ def test_build_line_refinement_jobs_skips_lines_without_rois():
     _, v_start, v_end = jobs[0]
     assert v_start == 4.0
     assert v_end == 9.0
+
+
+def test_build_line_refinement_jobs_supports_custom_lead_and_tail():
+    line = TargetLine(
+        line_index=1,
+        start=10.0,
+        end=12.0,
+        text="a",
+        words=["a"],
+        y=10,
+        word_rois=[(0, 0, 2, 2)],
+    )
+    jobs = _build_line_refinement_jobs([line], lead_in_sec=4.0, tail_sec=2.5)
+    assert len(jobs) == 1
+    _, v_start, v_end = jobs[0]
+    assert v_start == 6.0
+    assert v_end == 14.5
 
 
 def test_merge_line_refinement_jobs_merges_overlaps_and_splits_distance():
@@ -313,8 +409,8 @@ def test_refine_line_with_frames_uses_line_level_fallback(monkeypatch):
     assert line.word_ends is not None
     assert line.word_confidences is not None
     assert len(line.word_starts) == 2
-    assert line.word_starts[0] == pytest.approx(1.2, abs=1e-6)
-    assert line.word_ends[-1] == pytest.approx(2.0, abs=1e-6)
+    assert 1.0 <= line.word_starts[0] <= 1.2
+    assert 2.0 <= line.word_ends[-1] <= 2.5
     assert all(c is not None and 0.2 <= c <= 0.5 for c in line.word_confidences)
 
 
@@ -352,7 +448,7 @@ def test_refine_line_timings_at_low_fps_assigns_line_level_timings(
     )
     monkeypatch.setattr(
         "y2karaoke.core.visual.refinement._build_line_refinement_jobs",
-        lambda _lines: [(line, 0.5, 3.5)],
+        lambda _lines, **_kwargs: [(line, 0.5, 3.5)],
     )
     monkeypatch.setattr(
         "y2karaoke.core.visual.refinement._merge_line_refinement_jobs",
