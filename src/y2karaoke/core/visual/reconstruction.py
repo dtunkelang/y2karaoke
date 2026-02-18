@@ -226,7 +226,9 @@ def _suppress_short_duplicate_reentries(
                 continue
             if time_gap > 20.0:
                 break
-            if abs(float(ent["y"]) - float(prev["y"])) > 40.0:
+            ent_lane = int(ent.get("lane", int(float(ent["y"]) // 30)))
+            prev_lane = int(prev.get("lane", int(float(prev["y"]) // 30)))
+            if ent_lane != prev_lane:
                 continue
             if text_similarity(ent["text"], prev["text"]) < 0.9:
                 continue
@@ -285,12 +287,14 @@ def reconstruct_lyrics_from_visuals(  # noqa: C901
                 if norm in on_screen:
                     on_screen[norm]["last"] = frame["time"]
                 else:
+                    lane = y_pos // 30
                     on_screen[norm] = {
                         "text": txt,
                         "words": line_tokens,
                         "first": frame["time"],
                         "last": frame["time"],
                         "y": y_pos,
+                        "lane": lane,
                         "w_rois": [(w["x"], w["y"], w["w"], w["h"]) for w in ln_w],
                     }
 

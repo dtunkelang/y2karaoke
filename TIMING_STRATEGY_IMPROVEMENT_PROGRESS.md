@@ -63,6 +63,8 @@ Last updated: 2026-02-17
   - Mean absolute word-start delta improved from `7.819s` (v21) to `7.284s`.
   - p95 absolute word-start delta improved from `10.9s` (v21) to `10.7s`.
   - Residual after global-shift correction improved from `p95=8.645s` (v21) to `p95=8.101s` (v25).
+- [x] Added lane-aware duplicate suppression in visual reconstruction so concurrent repeated text in different on-screen lyric lanes is preserved.
+- [x] Added reconstruction regression test for concurrent repeated `Duh` lines in separate lanes.
 - [x] Validated on Billie Eilish - "bad guy" (`GsFlbMS7UIc`) with fresh cache versions:
   - `raw_frames_463cf7852a3083257907dae10e9b4399.json`: residual branded tokens reduced to intro cards only (`SingKING/KARAOKE/Karaoke`, 7 total).
   - Removed recurring edge fragments (`KIN/KII/KAPA/KARAO`) from sampled raw frames.

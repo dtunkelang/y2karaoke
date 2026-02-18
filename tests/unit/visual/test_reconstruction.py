@@ -220,3 +220,34 @@ def test_reconstruct_lyrics_keeps_legitimate_repeated_line():
     lines = reconstruct_lyrics_from_visuals(raw_frames, 1.0)
     bad_guy_lines = [ln for ln in lines if ln.text == "Bad guy"]
     assert len(bad_guy_lines) == 2
+
+
+def test_reconstruct_lyrics_keeps_concurrent_repeated_text_in_different_lanes():
+    raw_frames = [
+        {
+            "time": 10.0,
+            "words": [
+                {"text": "Duh", "x": 30, "y": 100, "w": 35, "h": 20},
+                {"text": "Duh", "x": 30, "y": 130, "w": 35, "h": 20},
+            ],
+        },
+        {
+            "time": 11.0,
+            "words": [
+                {"text": "Duh", "x": 30, "y": 100, "w": 35, "h": 20},
+            ],
+        },
+        {
+            "time": 12.0,
+            "words": [
+                {"text": "Duh", "x": 30, "y": 100, "w": 35, "h": 20},
+            ],
+        },
+        {"time": 13.5, "words": []},
+    ]
+
+    lines = reconstruct_lyrics_from_visuals(raw_frames, 1.0)
+    duh_lines = [ln for ln in lines if ln.text == "Duh"]
+    assert len(duh_lines) == 2
+    ys = sorted(int(ln.y) for ln in duh_lines)
+    assert ys == [100, 130]
