@@ -239,6 +239,109 @@ def _get_or_build_line_layout(
     return words_with_spaces, word_widths, total_width
 
 
+def _resolve_current_line_idx(lines: list[Line], activation_time: float) -> int:
+    """Resolve active line index from activation time and carryover heuristics."""
+    current_line_idx = 0
+    for i, line in enumerate(lines):
+        if line.start_time <= activation_time:
+            current_line_idx = i
+    if 0 < current_line_idx < len(lines):
+        prev_line = lines[current_line_idx - 1]
+        curr_line = lines[current_line_idx]
+        handoff_delay = _carryover_handoff_delay(prev_line, curr_line)
+        if handoff_delay > 0 and activation_time < prev_line.end_time + handoff_delay:
+            current_line_idx -= 1
+    return current_line_idx
+
+
+def _compute_line_highlight_width(
+    line: Line,
+    words_with_spaces: list[str],
+    word_widths: list[float],
+    total_width: float,
+    current_time: float,
+) -> int:
+    """Compute highlight width for the current line at frame time."""
+    line_duration = line.end_time - line.start_time
+    highlight_time = current_time
+    if highlight_time >= line.end_time:
+        highlight_time = line.end_time
+    if line_duration <= 0:
+        highlight_time = line.end_time
+    if line.words and all(
+        w.start_time is not None and w.end_time is not None for w in line.words
+    ):
+        return _compute_word_highlight_width(
+            line, words_with_spaces, word_widths, highlight_time
+        )
+    if line_duration > 0:
+        line_progress = (highlight_time - line.start_time) / line_duration
+        line_progress = max(0.0, min(1.0, line_progress))
+    else:
+        line_progress = 1.0
+    return int(total_width * line_progress)
+
+
+def _draw_visible_lines(
+    *,
+    draw: ImageDraw.ImageDraw,
+    lines_to_show: list[tuple[Line, bool]],
+    start_y: int,
+    current_time: float,
+    font: ImageFont.ImageFont | ImageFont.FreeTypeFont,
+    video_width: int,
+    is_duet: bool,
+    show_cue: bool,
+    cue_time_until: float,
+    layout_cache: Optional[Dict[int, Tuple[List[str], List[float], float]]],
+) -> None:
+    """Draw all visible lyric lines and their highlight sweeps."""
+    for idx, (line, _is_current) in enumerate(lines_to_show):
+        y = start_y + idx * LINE_SPACING
+
+        words_with_spaces, word_widths, total_width = _get_or_build_line_layout(
+            line, font, layout_cache
+        )
+        line_x = (video_width - total_width) / 2.0
+
+        if idx == 0 and show_cue:
+            font_size = LINE_SPACING * 3 // 4
+            _draw_cue_indicator(
+                draw, int(line_x), y + font_size // 2, cue_time_until, font_size
+            )
+
+        _draw_line_text(
+            draw, line, y, line_x, words_with_spaces, word_widths, font, is_duet
+        )
+
+        line_duration = line.end_time - line.start_time
+        highlight_ready = current_time >= line.start_time
+        if line_duration <= 0:
+            highlight_ready = current_time + LYRICS_ACTIVATION_LEAD >= line.start_time
+        if not (line.words and highlight_ready):
+            continue
+
+        highlight_width = _compute_line_highlight_width(
+            line,
+            words_with_spaces,
+            word_widths,
+            total_width,
+            current_time,
+        )
+        _draw_highlight_sweep(
+            draw,
+            line,
+            y,
+            line_x,
+            total_width,
+            words_with_spaces,
+            word_widths,
+            font,
+            highlight_width,
+            is_duet,
+        )
+
+
 def render_frame(  # noqa: C901
     lines: list[Line],
     current_time: float,
@@ -262,16 +365,7 @@ def render_frame(  # noqa: C901
     show_progress_bar, progress = _check_intro_progress(lines, current_time)
 
     activation_time = current_time + LYRICS_ACTIVATION_LEAD
-    current_line_idx = 0
-    for i, line in enumerate(lines):
-        if line.start_time <= activation_time:
-            current_line_idx = i
-    if 0 < current_line_idx < len(lines):
-        prev_line = lines[current_line_idx - 1]
-        curr_line = lines[current_line_idx]
-        handoff_delay = _carryover_handoff_delay(prev_line, curr_line)
-        if handoff_delay > 0 and activation_time < prev_line.end_time + handoff_delay:
-            current_line_idx -= 1
+    current_line_idx = _resolve_current_line_idx(lines, activation_time)
 
     outro_start = lines[-1].end_time + OUTRO_DELAY if lines else OUTRO_DELAY
     if audio_duration:
@@ -302,60 +396,17 @@ def render_frame(  # noqa: C901
     show_cue, cue_time_until = _check_cue_indicator(
         lines, lines_to_show, display_start_idx, current_time
     )
-
-    for idx, (line, is_current) in enumerate(lines_to_show):
-        y = start_y + idx * LINE_SPACING
-
-        words_with_spaces, word_widths, total_width = _get_or_build_line_layout(
-            line, font, layout_cache
-        )
-
-        line_x = (video_width - total_width) / 2.0
-
-        if idx == 0 and show_cue:
-            font_size = LINE_SPACING * 3 // 4
-            _draw_cue_indicator(
-                draw, int(line_x), y + font_size // 2, cue_time_until, font_size
-            )
-
-        _draw_line_text(
-            draw, line, y, line_x, words_with_spaces, word_widths, font, is_duet
-        )
-
-        line_duration = line.end_time - line.start_time
-        highlight_ready = current_time >= line.start_time
-        if line_duration <= 0:
-            highlight_ready = current_time + LYRICS_ACTIVATION_LEAD >= line.start_time
-        if line.words and highlight_ready:
-            highlight_time = current_time
-            if highlight_time >= line.end_time:
-                highlight_time = line.end_time
-            if line_duration <= 0:
-                highlight_time = line.end_time
-            if line.words and all(
-                w.start_time is not None and w.end_time is not None for w in line.words
-            ):
-                highlight_width = _compute_word_highlight_width(
-                    line, words_with_spaces, word_widths, highlight_time
-                )
-            else:
-                if line_duration > 0:
-                    line_progress = (highlight_time - line.start_time) / line_duration
-                    line_progress = max(0.0, min(1.0, line_progress))
-                else:
-                    line_progress = 1.0
-                highlight_width = int(total_width * line_progress)
-            _draw_highlight_sweep(
-                draw,
-                line,
-                y,
-                line_x,
-                total_width,
-                words_with_spaces,
-                word_widths,
-                font,
-                highlight_width,
-                is_duet,
-            )
+    _draw_visible_lines(
+        draw=draw,
+        lines_to_show=lines_to_show,
+        start_y=start_y,
+        current_time=current_time,
+        font=font,
+        video_width=video_width,
+        is_duet=is_duet,
+        show_cue=show_cue,
+        cue_time_until=cue_time_until,
+        layout_cache=layout_cache,
+    )
 
     return np.array(img)
