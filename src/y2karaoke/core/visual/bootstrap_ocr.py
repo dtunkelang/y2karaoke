@@ -607,6 +607,63 @@ def _suppress_intro_title_words(
     return out
 
 
+def _suppress_transient_digit_heavy_frames(
+    raw_frames: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    """Clear single-frame OCR glitches dominated by digit-like garbage tokens."""
+    if len(raw_frames) < 3:
+        return raw_frames
+
+    out = [dict(fr) for fr in raw_frames]
+    for i, fr in enumerate(raw_frames):
+        words = [w for w in fr.get("words", []) if isinstance(w, dict)]
+        if len(words) < 3:
+            continue
+        toks = [str(w.get("text", "")).strip() for w in words]
+        toks = [t for t in toks if t]
+        if len(toks) < 3:
+            continue
+
+        digit_heavy = sum(1 for t in toks if any(ch.isdigit() for ch in t))
+        if (digit_heavy / float(len(toks))) < 0.4:
+            continue
+
+        if i <= 0 or i >= (len(raw_frames) - 1):
+            continue
+        prev = raw_frames[i - 1]
+        nxt = raw_frames[i + 1]
+        prev_words = [w for w in prev.get("words", []) if isinstance(w, dict)]
+        next_words = [w for w in nxt.get("words", []) if isinstance(w, dict)]
+        if len(prev_words) < 6 or len(next_words) < 6:
+            continue
+
+        t_cur = float(fr.get("time", 0.0))
+        t_prev = float(prev.get("time", t_cur))
+        t_next = float(nxt.get("time", t_cur))
+        if (t_cur - t_prev) > 0.6 or (t_next - t_cur) > 0.6:
+            continue
+
+        prev_norm = {
+            re.sub(r"[^a-z0-9]+", "", str(w.get("text", "")).lower())
+            for w in prev_words
+        }
+        next_norm = {
+            re.sub(r"[^a-z0-9]+", "", str(w.get("text", "")).lower())
+            for w in next_words
+        }
+        neigh = {t for t in (prev_norm | next_norm) if t}
+        cur_norm = {re.sub(r"[^a-z0-9]+", "", t.lower()) for t in toks}
+        cur_norm = {t for t in cur_norm if t}
+        if not cur_norm:
+            continue
+        overlap = len(cur_norm & neigh) / float(len(cur_norm))
+        if overlap > 0.2:
+            continue
+
+        out[i] = {**fr, "words": []}
+    return out
+
+
 def collect_raw_frames(
     video_path: Path,
     start: float,
@@ -687,7 +744,8 @@ def collect_raw_frames(
     cap.release()
     raw = _suppress_persistent_edge_overlay_words(raw, roi_width=rw, roi_height=rh)
     raw = _suppress_early_banner_words(raw, roi_width=rw, roi_height=rh)
-    return _suppress_intro_title_words(raw)
+    raw = _suppress_intro_title_words(raw)
+    return _suppress_transient_digit_heavy_frames(raw)
 
 
 def raw_frames_cache_path(
@@ -729,9 +787,10 @@ def collect_raw_frames_cached(
         if log_fn:
             log_fn(f"Loading cached OCR frames: {cache_path.name}")
         loaded = json.loads(cache_path.read_text())
-        return _suppress_persistent_edge_overlay_words(
+        loaded = _suppress_persistent_edge_overlay_words(
             loaded, roi_width=roi_rect[2], roi_height=roi_rect[3]
         )
+        return _suppress_transient_digit_heavy_frames(loaded)
 
     if collect_fn is None:
         collect_fn = collect_raw_frames
@@ -743,5 +802,6 @@ def collect_raw_frames_cached(
         raw, roi_width=roi_rect[2], roi_height=roi_rect[3]
     )
     raw = _suppress_intro_title_words(raw)
+    raw = _suppress_transient_digit_heavy_frames(raw)
     cache_path.write_text(json.dumps(raw))
     return raw

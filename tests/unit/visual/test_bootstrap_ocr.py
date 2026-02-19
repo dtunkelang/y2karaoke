@@ -259,6 +259,50 @@ def test_collect_raw_frames_cached_filters_large_early_title_words(tmp_path):
     assert "You" in texts
 
 
+def test_suppress_transient_digit_heavy_frames_clears_single_glitch_frame():
+    frames = [
+        {
+            "time": 205.76,
+            "words": [
+                {"text": "Although"},
+                {"text": "my"},
+                {"text": "heart"},
+                {"text": "is"},
+                {"text": "falling"},
+                {"text": "too"},
+                {"text": "I'm"},
+            ],
+        },
+        {
+            "time": 206.08,
+            "words": [
+                {"text": "116"},
+                {"text": "010"},
+                {"text": "10lai"},
+                {"text": "as"},
+                {"text": "mater"},
+            ],
+        },
+        {
+            "time": 206.40,
+            "words": [
+                {"text": "Although"},
+                {"text": "my"},
+                {"text": "heart"},
+                {"text": "is"},
+                {"text": "falling"},
+                {"text": "too"},
+                {"text": "I'm"},
+                {"text": "in"},
+            ],
+        },
+    ]
+    out = _MODULE._suppress_transient_digit_heavy_frames(frames)
+    assert out[0]["words"]
+    assert out[2]["words"]
+    assert out[1]["words"] == []
+
+
 def test_build_line_boxes_groups_words_by_row():
     words = [
         {"text": "You", "x": 20, "y": 40, "w": 30, "h": 12},
