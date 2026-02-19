@@ -11,7 +11,7 @@ Instead of relying on audio alignment alone, this tool uses computer vision and 
 The tool uses a multi-stage process to extract timings with **0.05s snapping precision**.
 
 ### 1. Line Identification (OCR)
-The process starts by sampling the video at **2.0 FPS** using Apple Vision OCR (on macOS) or PaddleOCR:
+The process starts by sampling the video at **3.0 FPS** using Apple Vision OCR (on macOS) or PaddleOCR:
 - **ROI Focus:** Extraction is focused on a generous region where lyrics typically appear.
 - **Line Reconstruction:** Individual words are grouped into logical lines based on their vertical Y-coordinate and temporal appearance.
 - **Normalization:** Lyrics are normalized (lower-cased, punctuation stripped, hyphens resolved) to facilitate deduplication and merging of multi-line blocks.
@@ -50,7 +50,7 @@ python tools/bootstrap_gold_from_karaoke.py
 
 Optional arguments:
 - `--candidate-url`: Specify a YouTube URL directly (skips candidate search).
-- `--visual-fps`: Frame rate for initial OCR sampling (default: 2.0).
+- `--visual-fps`: Frame rate for initial OCR sampling (default: 3.0).
 - `--work-dir`: Cache/work directory for downloads and OCR artifacts (default: `.cache/karaoke_bootstrap`).
 - `--raw-ocr-cache-version`: Version stamp for OCR frame cache keys (default: `3`); bump to invalidate stale OCR-frame caches after logic changes.
 - `--report-json`: Write a structured run report with candidate rankings and selected metrics.

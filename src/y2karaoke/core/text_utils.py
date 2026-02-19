@@ -440,7 +440,54 @@ def normalize_ocr_tokens(tokens: List[str]) -> List[str]:
             i += 1
             continue
 
+        replacement = _contextual_ocr_token_replacement(low, prev_low, next_low)
+        if replacement is not None:
+            out.append(replacement)
+            i += 1
+            continue
+
         out.append(tok)
         i += 1
 
     return out
+
+
+def _contextual_ocr_token_replacement(
+    low: str, prev_low: str, next_low: str
+) -> str | None:
+    # Frequent OCR confusion in phrase "... doing shots drinking fast ...".
+    if low != "drinking" and re.fullmatch(r"d[a-z]{0,4}(?:inking|nking)", low):
+        return "drinking"
+
+    # Frequent OCR confusion around "... come on ...".
+    if low in {"ony", "om"} and prev_low == "come":
+        return "on"
+
+    # Short-token confusions in fast sections.
+    if low == "l" and next_low in {
+        "may",
+        "want",
+        "know",
+        "be",
+        "love",
+        "got",
+        "dont",
+        "don't",
+        "could",
+        "would",
+        "do",
+    }:
+        return "I"
+
+    if low == "loh":
+        # "in loh with your body" -> "in love with your body"
+        if prev_low == "in" and next_low == "with":
+            return "love"
+        # "with loh body" -> "with your body"
+        if prev_low == "with" and next_low == "body":
+            return "your"
+        # "your loh" often means "body" in this repeated phrase.
+        if prev_low == "your":
+            return "body"
+
+    return None

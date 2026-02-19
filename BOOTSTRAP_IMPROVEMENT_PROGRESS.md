@@ -204,6 +204,15 @@ Status: Completed
 - [x] Add recurrent bottom-edge fragment-family suppression for clipped branding shards (`KIN/KIR/KAPA`-style)
 - [x] Add low-FPS overlap-block surrogate sequencing fallback for unresolved short visibility blocks (prevents early line starts when full cycle detection is absent)
 
+### Milestone 33: Vision OCR Throughput and Shape-of-You OCR Cleanup
+Status: Completed
+- [x] Raise visual bootstrap default OCR sampling from `2.0` to `3.0` FPS (`tools/bootstrap_gold_from_karaoke.py`)
+- [x] Update visual bootstrap documentation defaults to reflect `3.0` FPS
+- [x] Improve OCR normalization for fast-phrase confusions (`dinking`/`dilnking` -> `drinking`, `come ony/om` -> `come on`, contextual `l/loh` repairs)
+- [x] Add regression tests for the new OCR token normalization repairs
+- [x] Improve bootstrap OCR artifact suppression for Shape-of-You style intro/title overlays and persistent micro-corner branding leakage
+- [x] Validate updated extraction quality on Shape of You with Apple Vision OCR and refreshed caches
+
 ## Notes
 - Keep changes in significant, validated commits.
 - Prefer deterministic ranking and quality decisions for reproducibility.

@@ -53,6 +53,7 @@ def _append_predicted_words(
     pred_items: list[Any],
     times: list[float],
     *,
+    roi_frames: list[Any] | None = None,
     roi_shapes: list[tuple[int, int]] | None = None,
 ) -> None:
     if np is None:
@@ -82,7 +83,171 @@ def _append_predicted_words(
                     continue
             words.append({"text": txt, "x": x, "y": y, "w": bw, "h": bh})
         if words:
-            raw.append({"time": t_val, "words": words})
+            roi_nd = None
+            if roi_frames is not None and idx < len(roi_frames):
+                roi_nd = roi_frames[idx]
+            line_boxes = _build_line_boxes(words, roi_nd=roi_nd)
+            raw.append({"time": t_val, "words": words, "line_boxes": line_boxes})
+
+
+def _refine_line_box_with_text_mask(
+    line_box: dict[str, Any],
+    *,
+    line_cy: float,
+    roi_gray: Any,
+) -> dict[str, Any]:
+    if np is None or cv2 is None:
+        return line_box
+    if roi_gray is None or getattr(roi_gray, "ndim", 0) != 2:
+        return line_box
+
+    rh, rw = int(roi_gray.shape[0]), int(roi_gray.shape[1])
+    x0 = int(line_box.get("x", 0))
+    y0 = int(line_box.get("y", 0))
+    w = int(line_box.get("w", 1))
+    h = int(line_box.get("h", 1))
+    x1 = x0 + max(1, w)
+    y1 = y0 + max(1, h)
+
+    sx0 = max(0, x0 - 10)
+    sy0 = max(0, y0 - 8)
+    sx1 = min(rw, x1 + 10)
+    sy1 = min(rh, y1 + 8)
+    if sx1 <= sx0 or sy1 <= sy0:
+        return line_box
+
+    sub = roi_gray[sy0:sy1, sx0:sx1]
+    if sub.size == 0:
+        return line_box
+
+    _, otsu = cv2.threshold(sub, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+    fixed = (sub >= 45).astype(np.uint8) * 255
+    mask = np.where((otsu > 0) | (fixed > 0), 1, 0).astype(np.uint8)
+    mask = cv2.morphologyEx(
+        mask, cv2.MORPH_OPEN, np.ones((2, 2), dtype=np.uint8)
+    ).astype(np.uint8)
+    if int(mask.sum()) <= 0:
+        return line_box
+
+    row_counts = mask.sum(axis=1)
+    row_gate = max(2, int(round((sx1 - sx0) * 0.012)))
+    active_rows = np.where(row_counts >= row_gate)[0]
+    if active_rows.size == 0:
+        active_rows = np.where(row_counts > 0)[0]
+        if active_rows.size == 0:
+            return line_box
+
+    splits = np.where(np.diff(active_rows) > 1)[0] + 1
+    runs = np.split(active_rows, splits)
+    center_row = int(round(line_cy)) - sy0
+    best = runs[0]
+    best_dist = float("inf")
+    for run in runs:
+        lo, hi = int(run[0]), int(run[-1])
+        if lo <= center_row <= hi:
+            best = run
+            break
+        mid = (lo + hi) * 0.5
+        dist = abs(mid - center_row)
+        if dist < best_dist:
+            best_dist = dist
+            best = run
+
+    ry0 = int(best[0])
+    ry1 = int(best[-1]) + 1
+    band = mask[ry0:ry1, :]
+    if band.size == 0 or int(band.sum()) <= 0:
+        return line_box
+    ys, xs = np.where(band > 0)
+    if xs.size == 0:
+        return line_box
+
+    tx0 = max(0, sx0 + int(xs.min()) - 2)
+    tx1 = min(rw, sx0 + int(xs.max()) + 3)
+    ty0 = max(0, sy0 + ry0 - 2)
+    # Keep a slightly larger lower margin for descenders (g/j/p/q/y).
+    ty1 = min(rh, sy0 + ry1 + 4)
+    tw = max(1, tx1 - tx0)
+    th = max(1, ty1 - ty0)
+
+    if tw < int(0.35 * w) or tw > int(2.4 * w):
+        return line_box
+    if th < int(0.5 * h) or th > int(2.0 * h):
+        return line_box
+
+    return {
+        "x": tx0,
+        "y": ty0,
+        "w": tw,
+        "h": th,
+        "tokens": line_box.get("tokens", []),
+    }
+
+
+def _build_line_boxes(
+    words: list[dict[str, Any]],
+    *,
+    roi_nd: Any | None = None,
+) -> list[dict[str, Any]]:
+    if not words:
+        return []
+    ordered = sorted(words, key=lambda w: (int(w.get("y", 0)), int(w.get("x", 0))))
+    groups: list[list[dict[str, Any]]] = []
+    for w in ordered:
+        if not groups:
+            groups.append([w])
+            continue
+        prev = groups[-1][-1]
+        if int(w.get("y", 0)) - int(prev.get("y", 0)) < 22:
+            groups[-1].append(w)
+        else:
+            groups.append([w])
+
+    roi_gray = None
+    if roi_nd is not None and cv2 is not None and np is not None:
+        try:
+            roi_gray = cv2.cvtColor(roi_nd, cv2.COLOR_BGR2GRAY)
+        except Exception:
+            roi_gray = None
+
+    out: list[dict[str, Any]] = []
+    pad_x = 8
+    pad_y = 3
+    for g in groups:
+        xs = [int(w.get("x", 0)) for w in g]
+        ys = [int(w.get("y", 0)) for w in g]
+        x2s = [int(w.get("x", 0)) + int(w.get("w", 0)) for w in g]
+        y2s = [int(w.get("y", 0)) + int(w.get("h", 0)) for w in g]
+        h_vals = [max(1, int(w.get("h", 1))) for w in g]
+        cy_vals = [int(w.get("y", 0)) + int(w.get("h", 0)) * 0.5 for w in g]
+
+        # Use robust vertical statistics so boxes stay centered on glyphs even
+        # when one token has a noisy OCR box.
+        line_cy = float(np.median(np.array(cy_vals, dtype=np.float32)))
+        line_h = float(np.percentile(np.array(h_vals, dtype=np.float32), 80))
+        line_h = max(line_h, float(np.median(np.array(h_vals, dtype=np.float32))))
+
+        x0 = min(xs) - pad_x
+        x1 = max(x2s) + pad_x
+        y0 = int(round(line_cy - 0.5 * line_h)) - pad_y
+        y1 = int(round(line_cy + 0.5 * line_h)) + pad_y
+
+        # Keep box from clipping obvious ascender/descender extremes.
+        y0 = min(y0, min(ys) - 1)
+        y1 = max(y1, max(y2s) + 1)
+        line_box = {
+            "x": x0,
+            "y": y0,
+            "w": max(1, x1 - x0),
+            "h": max(1, y1 - y0),
+            "tokens": [str(w.get("text", "")) for w in g if str(w.get("text", ""))],
+        }
+        if roi_gray is not None:
+            line_box = _refine_line_box_with_text_mask(
+                line_box, line_cy=line_cy, roi_gray=roi_gray
+            )
+        out.append(line_box)
+    return out
 
 
 def _overlay_root(token: str) -> str:
@@ -164,14 +329,22 @@ def _identify_banned_overlay(
         mean_y = rec["sum_y"] / n
         var_x = max(rec["sum_x2"] / n - mean_x * mean_x, 0.0)
         var_y = max(rec["sum_y2"] / n - mean_y * mean_y, 0.0)
+        is_extreme_corner = (
+            mean_x >= roi_width * 0.84
+            and mean_y >= roi_height * 0.76
+            and (var_x**0.5) <= 12.0
+            and (var_y**0.5) <= 12.0
+        )
+        min_variant_count = 1 if is_extreme_corner else 2
+        min_freq = 0.12 if is_extreme_corner else 0.22
         if (
-            freq >= 0.22
+            freq >= min_freq
             and (var_x**0.5) <= 18.0
             and (var_y**0.5) <= 18.0
             and _is_edge_position(
                 mean_x, mean_y, roi_width=roi_width, roi_height=roi_height
             )
-            and len(root_variants.get(root, set())) >= 2
+            and len(root_variants.get(root, set())) >= min_variant_count
         ):
             banned_keys.add(key)
 
@@ -194,6 +367,7 @@ def _filter_banned_overlay_words(
 ) -> list[dict[str, Any]]:
     filtered: list[dict[str, Any]] = []
     for frame in raw_frames:
+        frame_time = float(frame.get("time", 0.0))
         new_words = []
         for w in frame.get("words", []):
             if not isinstance(w, dict):
@@ -212,6 +386,25 @@ def _filter_banned_overlay_words(
                 and len(compact) <= 4
                 and (x >= roi_width * 0.9 or y >= roi_height * 0.9)
             )
+            is_micro_corner_text = (
+                bool(compact)
+                and len(compact) <= 10
+                and x >= roi_width * 0.82
+                and y >= roi_height * 0.84
+                and float(w.get("h", 0.0)) <= roi_height * 0.09
+                and float(w.get("w", 0.0)) <= roi_width * 0.22
+            )
+            is_early_banner_word = (
+                bool(compact)
+                and frame_time <= 30.0
+                and y <= roi_height * 0.45
+                and float(w.get("h", 0.0)) >= roi_height * 0.12
+                and float(w.get("w", 0.0)) >= roi_width * 0.16
+            )
+            if is_early_banner_word:
+                continue
+            if is_micro_corner_text:
+                continue
             if banned_roots and is_short_extreme_edge:
                 continue
             if root and is_edge and (key in banned_keys or root in banned_roots):
@@ -254,6 +447,94 @@ def _suppress_persistent_edge_overlay_words(
         banned_keys=banned_keys,
         banned_roots=banned_roots,
     )
+
+
+def _suppress_early_banner_words(
+    raw_frames: list[dict[str, Any]],
+    *,
+    roi_width: int,
+    roi_height: int,
+) -> list[dict[str, Any]]:
+    if not raw_frames:
+        return raw_frames
+    out: list[dict[str, Any]] = []
+    for frame in raw_frames:
+        frame_time = float(frame.get("time", 0.0))
+        words = frame.get("words", [])
+        if frame_time > 30.0 or not isinstance(words, list):
+            out.append(frame)
+            continue
+        new_words = []
+        for w in words:
+            if not isinstance(w, dict):
+                continue
+            text = str(w.get("text", ""))
+            compact = re.sub(r"[^a-z0-9]", "", text.lower())
+            y = float(w.get("y", 0.0))
+            ww = float(w.get("w", 0.0))
+            hh = float(w.get("h", 0.0))
+            is_early_banner_word = (
+                bool(compact)
+                and y <= roi_height * 0.45
+                and hh >= roi_height * 0.12
+                and ww >= roi_width * 0.16
+            )
+            if is_early_banner_word:
+                continue
+            new_words.append(w)
+        out.append({**frame, "words": new_words})
+    return out
+
+
+def _count_dense_line_groups(words: list[dict[str, Any]]) -> int:
+    if not words:
+        return 0
+    ys = sorted(int(w.get("y", 0)) for w in words if isinstance(w, dict))
+    if not ys:
+        return 0
+    groups: list[list[int]] = [[ys[0]]]
+    for y in ys[1:]:
+        if y - groups[-1][-1] < 22:
+            groups[-1].append(y)
+        else:
+            groups.append([y])
+    return sum(1 for g in groups if len(g) >= 2)
+
+
+def _estimate_lyrics_start_time(raw_frames: list[dict[str, Any]]) -> float | None:
+    hits: list[float] = []
+    for fr in raw_frames:
+        words = [w for w in fr.get("words", []) if isinstance(w, dict)]
+        if len(words) < 8:
+            continue
+        if _count_dense_line_groups(words) < 3:
+            continue
+        hits.append(float(fr.get("time", 0.0)))
+    if len(hits) < 3:
+        return None
+    start = min(hits)
+    if start < 8.0 or start > 45.0:
+        return None
+    return start
+
+
+def _suppress_intro_title_words(
+    raw_frames: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    if len(raw_frames) < 30:
+        return raw_frames
+    lyrics_start = _estimate_lyrics_start_time(raw_frames)
+    if lyrics_start is None:
+        return raw_frames
+    cutoff = max(0.0, lyrics_start - 0.25)
+    out: list[dict[str, Any]] = []
+    for fr in raw_frames:
+        t = float(fr.get("time", 0.0))
+        if t < cutoff:
+            out.append({**fr, "words": []})
+        else:
+            out.append(fr)
+    return out
 
 
 def collect_raw_frames(
@@ -301,6 +582,7 @@ def collect_raw_frames(
             raw,
             pred_items,
             buffered_times,
+            roi_frames=buffered_rois,
             roi_shapes=buffered_shapes,
         )
         buffered_rois.clear()
@@ -333,7 +615,9 @@ def collect_raw_frames(
 
     _flush_batch()
     cap.release()
-    return _suppress_persistent_edge_overlay_words(raw, roi_width=rw, roi_height=rh)
+    raw = _suppress_persistent_edge_overlay_words(raw, roi_width=rw, roi_height=rh)
+    raw = _suppress_early_banner_words(raw, roi_width=rw, roi_height=rh)
+    return _suppress_intro_title_words(raw)
 
 
 def raw_frames_cache_path(
@@ -385,5 +669,9 @@ def collect_raw_frames_cached(
     raw = _suppress_persistent_edge_overlay_words(
         raw, roi_width=roi_rect[2], roi_height=roi_rect[3]
     )
+    raw = _suppress_early_banner_words(
+        raw, roi_width=roi_rect[2], roi_height=roi_rect[3]
+    )
+    raw = _suppress_intro_title_words(raw)
     cache_path.write_text(json.dumps(raw))
     return raw

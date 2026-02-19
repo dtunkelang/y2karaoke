@@ -205,3 +205,35 @@ class TestNormalizeOcrTokens:
             "a",
             "conversation",
         ]
+
+    def test_repairs_common_fast_phrase_errors(self):
+        assert normalize_ocr_tokens(["doing", "shots", "dinking", "fast"]) == [
+            "doing",
+            "shots",
+            "drinking",
+            "fast",
+        ]
+        assert normalize_ocr_tokens(["doing", "shots", "dilnking", "fast"]) == [
+            "doing",
+            "shots",
+            "drinking",
+            "fast",
+        ]
+        assert normalize_ocr_tokens(["come", "ony", "now"]) == ["come", "on", "now"]
+        assert normalize_ocr_tokens(["come", "om", "baby"]) == ["come", "on", "baby"]
+
+    def test_repairs_short_token_confusions_in_context(self):
+        assert normalize_ocr_tokens(["girl", "you", "know", "l", "want"]) == [
+            "girl",
+            "you",
+            "know",
+            "I",
+            "want",
+        ]
+        assert normalize_ocr_tokens(["in", "loh", "with", "your", "loh"]) == [
+            "in",
+            "love",
+            "with",
+            "your",
+            "body",
+        ]
