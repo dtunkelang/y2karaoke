@@ -30,7 +30,7 @@ Last updated: 2026-02-18
 
 ### P2 - Architecture and Maintainability
 - [x] Continue splitting high-complexity Whisper orchestration hotspots.
-- [ ] Tighten module boundaries and contracts for easier regression isolation.
+- [x] Tighten module boundaries and contracts for easier regression isolation.
 
 ### P2 - Documentation Sync
 - [x] Remove stale “WhisperX” references and align docs to current implementation.
@@ -132,3 +132,7 @@ Last updated: 2026-02-18
   - extracted low-quality segment postpass chain into `_apply_low_quality_segment_postpasses`,
   - extracted normalization/dedupe/final-guard chain into `_finalize_whisper_line_set`,
   - preserved existing behavior while reducing top-level orchestration branching and improving separation of concerns.
+- [x] Further tightened Whisper alignment orchestration contracts in `src/y2karaoke/core/components/whisper/whisper_integration_pipeline.py`:
+  - extracted repeated monotonic/overlap stage-invariant enforcement into `_enforce_mapped_line_stage_invariants`,
+  - extracted mapped-line retime/postpass chain into `_run_mapped_line_postpasses`,
+  - removed nested orchestration closure from `align_lrc_text_to_whisper_timings_impl` and centralized sequencing in helper boundaries for easier targeted regression tests.
