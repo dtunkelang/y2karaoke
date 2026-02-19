@@ -25,12 +25,16 @@ def test_extract_audio_from_video_uses_run_once(tmp_path):
 
 def test_resolve_media_paths_falls_back_to_download(tmp_path):
     class FakeDownloader:
-        def download_video(self, url, output_dir):
+        def download_video(self, url, output_dir=None):
+            if output_dir is None:
+                output_dir = tmp_path
             path = output_dir / "video.mp4"
             path.write_bytes(b"v")
             return {"video_path": str(path)}
 
-        def download_audio(self, url, output_dir):
+        def download_audio(self, url, output_dir=None):
+            if output_dir is None:
+                output_dir = tmp_path
             path = output_dir / "audio.wav"
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_bytes(b"a")

@@ -158,9 +158,7 @@ class TestDownloadAudio:
         assert result["title"] == "Clean"
         assert result["artist"] == "Artist"
         assert result["video_id"] == "video123"
-        mock_instance.download.assert_called_once_with(
-            ["https://youtube.com/watch?v=test"]
-        )
+        mock_instance.download.assert_not_called()
 
     @patch("y2karaoke.core.components.audio.downloader.sanitize_filename")
     @patch("y2karaoke.core.components.audio.downloader.yt_dlp.YoutubeDL")
@@ -279,7 +277,7 @@ class TestDownloadVideo:
         )
 
         assert result["video_path"] == str(video_file)
-        assert result["title"] == "Original Title"
+        assert result["title"] == "clip_video"
         assert result["artist"] == "Unknown"
         assert result["video_id"] == "video123"
 

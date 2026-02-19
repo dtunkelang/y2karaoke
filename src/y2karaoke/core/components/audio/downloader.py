@@ -79,11 +79,31 @@ class YouTubeDownloader:
         output_dir = Path(output_dir or self.cache_dir / video_id)
         output_dir.mkdir(parents=True, exist_ok=True)
 
+        existing_wav = sorted(
+            output_dir.glob("*.wav"),
+            key=lambda p: (p.stat().st_mtime, p.name),
+            reverse=True,
+        )
+        if existing_wav:
+            audio_path = existing_wav[0]
+            logger.info(f"Using cached audio for {video_id}: {audio_path}")
+            try:
+                metadata = extract_metadata_from_youtube(url)
+            except Exception:
+                metadata = {"artist": "Unknown", "title": audio_path.stem}
+            return {
+                "audio_path": str(audio_path),
+                "title": metadata.get("title") or audio_path.stem,
+                "artist": metadata.get("artist") or "Unknown",
+                "video_id": video_id,
+            }
+
         logger.info(f"Downloading audio from {url}")
 
         ydl_opts = {
             "format": "bestaudio/best",
             "outtmpl": str(output_dir / "%(title)s.%(ext)s"),
+            "nooverwrites": True,
             "postprocessors": [
                 {
                     "key": "FFmpegExtractAudio",
@@ -139,11 +159,31 @@ class YouTubeDownloader:
         output_dir = Path(output_dir or self.cache_dir / video_id)
         output_dir.mkdir(parents=True, exist_ok=True)
 
+        existing_video = sorted(
+            output_dir.glob("*_video.*"),
+            key=lambda p: (p.stat().st_mtime, p.name),
+            reverse=True,
+        )
+        if existing_video:
+            video_path = existing_video[0]
+            logger.info(f"Using cached video for {video_id}: {video_path}")
+            try:
+                metadata = extract_metadata_from_youtube(url)
+            except Exception:
+                metadata = {"artist": "Unknown", "title": video_path.stem}
+            return {
+                "video_path": str(video_path),
+                "title": metadata.get("title") or video_path.stem,
+                "artist": metadata.get("artist") or "Unknown",
+                "video_id": video_id,
+            }
+
         logger.info(f"Downloading video from {url}")
 
         ydl_opts = {
             "format": "best[height<=720]",
             "outtmpl": str(output_dir / "%(title)s_video.%(ext)s"),
+            "nooverwrites": True,
             "quiet": True,
             "no_warnings": True,
         }

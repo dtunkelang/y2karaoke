@@ -231,6 +231,16 @@ Status: Completed
   - Updated (`/tmp/shape_spacing_general_v2.gold.json`): `lines=139`, `ocr_words=609`, `matched=551`, `precision=0.9048`, `recall=0.7951`.
   - Net: precision improved, recall slightly lower; overall sequence quality remains favorable with reduced duplicate/reentry noise.
 
+### Milestone 36: Bootstrap Media Cache Reuse Efficiency
+Status: Completed
+- [x] Switch visual bootstrap media resolution to downloader-managed default cache roots (video-id keyed) instead of forcing per-song output paths.
+- [x] Add downloader cached-media short-circuit for existing `*_video.*` and `*.wav` assets before invoking `yt_dlp`.
+- [x] Keep cached paths metadata-safe with graceful fallback title/artist handling when metadata lookup fails.
+- [x] Add/update unit coverage in downloader and bootstrap media tests to validate cached path behavior.
+- [x] Validate in live Shape-of-You bootstrap runs that repeated executions reuse cached media:
+  - Logs now show `Using cached video...` and `Using cached audio...` for `o71_MatpYV0`.
+  - Eliminates repeated media downloads in iterative OCR/refinement tuning loops.
+
 ## Notes
 - Keep changes in significant, validated commits.
 - Prefer deterministic ranking and quality decisions for reproducibility.

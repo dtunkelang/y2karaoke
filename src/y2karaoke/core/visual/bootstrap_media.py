@@ -49,9 +49,7 @@ def resolve_media_paths(
     log_fn: Optional[Callable[[str], None]] = None,
 ) -> tuple[Path, Path]:
     if cached_video_path is None:
-        vid_info = downloader.download_video(
-            candidate_url, output_dir=song_dir / "video"
-        )
+        vid_info = downloader.download_video(candidate_url)
         v_path = Path(vid_info["video_path"])
     else:
         v_path = cached_video_path
@@ -69,8 +67,6 @@ def resolve_media_paths(
                     "direct audio download." % e
                 )
     if a_path is None:
-        aud_info = downloader.download_audio(
-            candidate_url, output_dir=song_dir / "video"
-        )
+        aud_info = downloader.download_audio(candidate_url)
         a_path = Path(aud_info["audio_path"])
     return v_path, a_path
