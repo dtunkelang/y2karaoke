@@ -102,21 +102,32 @@ def detect_lyric_roi(
     # Convert to numpy for easy stats
     boxes_np = np.array(all_boxes)
 
-    # Find approximate bounds (10th/90th percentile to ignore outliers)
-    # We want a union of all reasonable boxes
-    x1 = int(np.percentile(boxes_np[:, 0], 5))
-    y1 = int(np.percentile(boxes_np[:, 1], 5))
-    x2 = int(np.percentile(boxes_np[:, 2], 95))
-    y2 = int(np.percentile(boxes_np[:, 3], 95))
+    # Use wider percentiles and asymmetric padding to avoid clipping leading
+    # characters on left-aligned lyric lines.
+    x1 = int(np.percentile(boxes_np[:, 0], 2))
+    y1 = int(np.percentile(boxes_np[:, 1], 3))
+    x2 = int(np.percentile(boxes_np[:, 2], 98))
+    y2 = int(np.percentile(boxes_np[:, 3], 97))
 
-    # Add padding
-    pad_x = int(width * 0.02)
+    pad_left = int(width * 0.06)
+    pad_right = int(width * 0.04)
     pad_y = int(height * 0.05)
 
-    x1 = max(0, x1 - pad_x)
+    x1 = max(0, x1 - pad_left)
     y1 = max(0, y1 - pad_y)
-    x2 = min(width, x2 + pad_x)
+    x2 = min(width, x2 + pad_right)
     y2 = min(height, y2 + pad_y)
+
+    # Guardrail: keep ROI sufficiently wide for 3-4 concurrent lyric lines.
+    min_w = int(width * 0.82)
+    cur_w = max(1, x2 - x1)
+    if cur_w < min_w:
+        expand = (min_w - cur_w) // 2 + 1
+        x1 = max(0, x1 - expand)
+        x2 = min(width, x2 + expand)
+
+    # Left-clipping protection: do not allow ROI to start too far right.
+    x1 = min(x1, int(width * 0.12))
 
     roi = (x1, y1, x2 - x1, y2 - y1)
     logger.info(f"Detected ROI: {roi}")
