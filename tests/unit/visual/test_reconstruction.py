@@ -282,6 +282,60 @@ def test_reconstruct_lyrics_keeps_legitimate_repeated_line():
     assert len(bad_guy_lines) == 2
 
 
+def test_reconstruct_lyrics_suppresses_one_frame_phrase_before_stable_repeat():
+    raw_frames = [
+        {
+            "time": 57.9,
+            "words": [
+                {"text": "Make", "x": 25, "y": 120, "w": 35, "h": 20},
+                {"text": "your", "x": 65, "y": 120, "w": 35, "h": 20},
+                {"text": "mama", "x": 105, "y": 120, "w": 45, "h": 20},
+                {"text": "sad", "x": 155, "y": 120, "w": 30, "h": 20},
+                {"text": "type", "x": 190, "y": 120, "w": 40, "h": 20},
+            ],
+        },
+        {
+            "time": 60.0,
+            "words": [],
+        },
+        {
+            "time": 118.4,
+            "words": [
+                {"text": "Make", "x": 25, "y": 120, "w": 35, "h": 20},
+                {"text": "your", "x": 65, "y": 120, "w": 35, "h": 20},
+                {"text": "mama", "x": 105, "y": 120, "w": 45, "h": 20},
+                {"text": "sad", "x": 155, "y": 120, "w": 30, "h": 20},
+                {"text": "type", "x": 190, "y": 120, "w": 40, "h": 20},
+            ],
+        },
+        {
+            "time": 121.6,
+            "words": [
+                {"text": "Make", "x": 25, "y": 120, "w": 35, "h": 20},
+                {"text": "your", "x": 65, "y": 120, "w": 35, "h": 20},
+                {"text": "mama", "x": 105, "y": 120, "w": 45, "h": 20},
+                {"text": "sad", "x": 155, "y": 120, "w": 30, "h": 20},
+                {"text": "type", "x": 190, "y": 120, "w": 40, "h": 20},
+            ],
+        },
+        {
+            "time": 122.6,
+            "words": [
+                {"text": "Make", "x": 25, "y": 120, "w": 35, "h": 20},
+                {"text": "your", "x": 65, "y": 120, "w": 35, "h": 20},
+                {"text": "mama", "x": 105, "y": 120, "w": 45, "h": 20},
+                {"text": "sad", "x": 155, "y": 120, "w": 30, "h": 20},
+                {"text": "type", "x": 190, "y": 120, "w": 40, "h": 20},
+            ],
+        },
+        {"time": 124.0, "words": []},
+    ]
+
+    lines = reconstruct_lyrics_from_visuals(raw_frames, 1.0)
+    texts = [ln.text for ln in lines]
+    assert texts.count("Make your mama sad type") == 2
+
+
 def test_reconstruct_lyrics_keeps_concurrent_repeated_text_in_different_lanes():
     raw_frames = [
         {

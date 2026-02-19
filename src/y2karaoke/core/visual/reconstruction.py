@@ -208,14 +208,14 @@ def _infer_overlay_roots(
     return out
 
 
-def _suppress_short_duplicate_reentries(
+def _suppress_short_duplicate_reentries(  # noqa: C901
     entries: list[dict[str, Any]],
 ) -> list[dict[str, Any]]:
     if len(entries) < 2:
         return entries
 
     out: list[dict[str, Any]] = []
-    for ent in entries:
+    for idx, ent in enumerate(entries):
         if bool(ent.get("_synthetic_repeat")):
             out.append(ent)
             continue
@@ -223,6 +223,28 @@ def _suppress_short_duplicate_reentries(
         if duration > 1.2:
             out.append(ent)
             continue
+
+        # Suppress one-frame same-lane phrase fragments that are immediately
+        # followed by a stable reappearance of the same text.
+        words = [str(w).strip() for w in ent.get("words", []) if str(w).strip()]
+        if duration <= 0.35 and len(words) >= 3:
+            has_near_stable_successor = False
+            for nxt in entries[idx + 1 : idx + 10]:
+                lead = float(nxt["first"]) - float(ent["first"])
+                if lead < 0:
+                    continue
+                if lead > 4.0:
+                    break
+                if not _is_same_lane(ent, nxt):
+                    continue
+                if text_similarity(ent["text"], nxt["text"]) < 0.9:
+                    continue
+                nxt_duration = float(nxt["last"]) - float(nxt["first"])
+                if nxt_duration >= 0.8:
+                    has_near_stable_successor = True
+                    break
+            if has_near_stable_successor:
+                continue
 
         is_dup_reentry = False
         for prev in reversed(out[-12:]):
