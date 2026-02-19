@@ -305,6 +305,15 @@ Status: Completed
   - dense pre-`8s` credit cards that should not set lyric-start anchors (`tests/unit/visual/test_bootstrap_ocr.py`),
   - early legal credit-line suppression while preserving real lyric lines (`tests/unit/visual/test_reconstruction.py`).
 
+### Milestone 44: Same-Lane Overlap De-duplication
+Status: Completed
+- [x] Added conservative merge pass for overlapping same-text entries in the same lyric lane to suppress Y-bin jitter duplicates (`_merge_overlapping_same_lane_duplicates` in `src/y2karaoke/core/visual/reconstruction.py`).
+- [x] Kept short-refrain entries exempt to avoid collapsing legitimate chant repetitions.
+- [x] Added regression coverage for overlapping same-lane duplicate epochs in `tests/unit/visual/test_reconstruction.py`.
+- [x] Validation snapshot:
+  - `bad guy` (`GsFlbMS7UIc`): reconstructed initial lines `70 -> 68`; sequence precision improved `0.7908 -> 0.8176` with recall unchanged (`0.9528`).
+  - `Shape of You` (`o71_MatpYV0`): no observed regression (line count and token-order precision/recall unchanged in comparison run).
+
 ## Notes
 - Keep changes in significant, validated commits.
 - Prefer deterministic ranking and quality decisions for reproducibility.

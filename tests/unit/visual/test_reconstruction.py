@@ -196,6 +196,48 @@ def test_reconstruct_lyrics_suppresses_short_duplicate_reentry_glitch():
     assert not any("White e shirt now red" in t for t in texts)
 
 
+def test_reconstruct_merges_overlapping_same_lane_same_text_epochs() -> None:
+    raw_frames = [
+        {
+            "time": 20.0,
+            "words": [
+                {"text": "My", "x": 96, "y": 91, "w": 24, "h": 18},
+                {"text": "bloody", "x": 124, "y": 91, "w": 58, "h": 18},
+                {"text": "nose", "x": 186, "y": 91, "w": 42, "h": 18},
+            ],
+        },
+        {
+            "time": 20.4,
+            "words": [
+                {"text": "My", "x": 96, "y": 91, "w": 24, "h": 18},
+                {"text": "bloody", "x": 124, "y": 91, "w": 58, "h": 18},
+                {"text": "nose", "x": 186, "y": 91, "w": 42, "h": 18},
+            ],
+        },
+        {
+            "time": 20.8,
+            "words": [
+                {"text": "My", "x": 96, "y": 89, "w": 24, "h": 18},
+                {"text": "bloody", "x": 124, "y": 89, "w": 58, "h": 18},
+                {"text": "nose", "x": 186, "y": 89, "w": 42, "h": 18},
+            ],
+        },
+        {
+            "time": 21.2,
+            "words": [
+                {"text": "My", "x": 96, "y": 91, "w": 24, "h": 18},
+                {"text": "bloody", "x": 124, "y": 91, "w": 58, "h": 18},
+                {"text": "nose", "x": 186, "y": 91, "w": 42, "h": 18},
+            ],
+        },
+        {"time": 22.8, "words": []},
+    ]
+
+    lines = reconstruct_lyrics_from_visuals(raw_frames, 3.0)
+    texts = [ln.text for ln in lines]
+    assert texts.count("My bloody nose") == 1
+
+
 def test_reconstruct_lyrics_suppresses_ultrashort_same_lane_repeat_ghost():
     raw_frames = [
         {
