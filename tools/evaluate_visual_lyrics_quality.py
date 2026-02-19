@@ -80,24 +80,99 @@ def _load_extracted_tokens(gold_path: Path) -> list[str]:
     return out
 
 
+def _load_extracted_line_keys(gold_path: Path) -> list[str]:
+    doc = json.loads(gold_path.read_text(encoding="utf-8"))
+    keys: list[str] = []
+    for line in doc.get("lines", []):
+        key = normalize_text_basic(str(line.get("text", ""))).strip()
+        if key:
+            keys.append(key)
+    return keys
+
+
+def _load_extracted_reference_lines(gold_path: Path) -> list[dict[str, Any]]:
+    doc = json.loads(gold_path.read_text(encoding="utf-8"))
+    out: list[dict[str, Any]] = []
+    for line in doc.get("lines", []):
+        line_tokens: list[str] = []
+        for word in line.get("words", []):
+            token = normalize_text_basic(str(word.get("text", "")))
+            if not token:
+                continue
+            line_tokens.extend(token.split())
+        if not line_tokens:
+            continue
+        key = normalize_text_basic(" ".join(line_tokens)).strip()
+        if not key:
+            continue
+        out.append({"line_key": key, "tokens": line_tokens})
+    return out
+
+
+def _load_lrc_reference_lines(
+    *,
+    title: str,
+    artist: str,
+    include_parenthetical: bool,
+) -> list[dict[str, Any]]:
+    lrc_text, _, _ = fetch_lyrics_multi_source(title, artist, synced_only=True)
+    if not lrc_text:
+        return []
+
+    timed_lines = parse_lrc_with_timing(lrc_text, title=title, artist=artist)
+    out: list[dict[str, Any]] = []
+    for _, text in timed_lines:
+        token_recs = _split_tokens_with_optional_flags(text)
+        line_tokens: list[str] = []
+        for rec in token_recs:
+            if not include_parenthetical and bool(rec["optional"]):
+                continue
+            line_tokens.append(str(rec["token"]))
+        if not line_tokens:
+            continue
+        key = normalize_text_basic(" ".join(line_tokens)).strip()
+        if not key:
+            continue
+        out.append({"line_key": key, "tokens": line_tokens})
+    return out
+
+
 def _load_lrc_tokens(
     *,
     title: str,
     artist: str,
     include_parenthetical: bool,
 ) -> list[str]:
-    lrc_text, _, _ = fetch_lyrics_multi_source(title, artist, synced_only=True)
-    if not lrc_text:
-        return []
-
-    timed_lines = parse_lrc_with_timing(lrc_text, title=title, artist=artist)
+    lines = _load_lrc_reference_lines(
+        title=title,
+        artist=artist,
+        include_parenthetical=include_parenthetical,
+    )
     out: list[str] = []
-    for _, text in timed_lines:
-        token_recs = _split_tokens_with_optional_flags(text)
-        for rec in token_recs:
-            if not include_parenthetical and bool(rec["optional"]):
-                continue
-            out.append(str(rec["token"]))
+    for line in lines:
+        out.extend([str(tok) for tok in line.get("tokens", [])])
+    return out
+
+
+def _build_repeat_capped_tokens(
+    reference_lines: list[dict[str, Any]],
+    cap_line_keys: list[str],
+) -> list[str]:
+    cap_counts: dict[str, int] = {}
+    for key in cap_line_keys:
+        cap_counts[key] = cap_counts.get(key, 0) + 1
+
+    seen: dict[str, int] = {}
+    out: list[str] = []
+    for line in reference_lines:
+        key = str(line.get("line_key", ""))
+        if not key:
+            continue
+        seen[key] = seen.get(key, 0) + 1
+        allowed = max(1, cap_counts.get(key, 0))
+        if seen[key] > allowed:
+            continue
+        out.extend([str(tok) for tok in line.get("tokens", [])])
     return out
 
 
@@ -174,20 +249,37 @@ def main() -> int:
         return 2
 
     extracted_tokens = _load_extracted_tokens(args.gold_json)
-    reference_tokens = _load_lrc_tokens(
+    extracted_line_keys = _load_extracted_line_keys(args.gold_json)
+    extracted_lines = _load_extracted_reference_lines(args.gold_json)
+    reference_lines = _load_lrc_reference_lines(
         title=args.title,
         artist=args.artist,
         include_parenthetical=bool(args.include_parenthetical_lrc),
     )
+    reference_tokens: list[str] = []
+    for line in reference_lines:
+        reference_tokens.extend([str(tok) for tok in line.get("tokens", [])])
     if not reference_tokens:
         print(
             f"ERROR: no synced LRC tokens found for '{args.artist}' - '{args.title}'."
         )
         return 3
 
-    summary = _summarize_alignment(
+    strict_summary = _summarize_alignment(
         reference_tokens,
         extracted_tokens,
+        max_diff_blocks=max(1, int(args.max_diff_blocks)),
+    )
+    repeat_capped_reference_tokens = _build_repeat_capped_tokens(
+        reference_lines, extracted_line_keys
+    )
+    reference_line_keys = [str(line.get("line_key", "")) for line in reference_lines]
+    repeat_capped_extracted_tokens = _build_repeat_capped_tokens(
+        extracted_lines, reference_line_keys
+    )
+    repeat_capped_summary = _summarize_alignment(
+        repeat_capped_reference_tokens,
+        repeat_capped_extracted_tokens,
         max_diff_blocks=max(1, int(args.max_diff_blocks)),
     )
     payload = {
@@ -197,7 +289,8 @@ def main() -> int:
         "lrc_mode": (
             "include_parenthetical" if args.include_parenthetical_lrc else "optional"
         ),
-        **summary,
+        "strict": strict_summary,
+        "repeat_capped": repeat_capped_summary,
     }
 
     if args.output_json is not None:
@@ -205,16 +298,24 @@ def main() -> int:
         args.output_json.write_text(json.dumps(payload, indent=2), encoding="utf-8")
 
     print(
-        f"precision={summary['precision']:.4f} "
-        f"recall={summary['recall']:.4f} "
-        f"f1={summary['f1']:.4f} "
-        f"matched={summary['matched_token_count']}/"
-        f"{summary['reference_token_count']} "
-        f"ext={summary['extracted_token_count']}"
+        f"strict: precision={strict_summary['precision']:.4f} "
+        f"recall={strict_summary['recall']:.4f} "
+        f"f1={strict_summary['f1']:.4f} "
+        f"matched={strict_summary['matched_token_count']}/"
+        f"{strict_summary['reference_token_count']} "
+        f"ext={strict_summary['extracted_token_count']}"
     )
-    if payload["largest_diffs"]:
+    print(
+        f"repeat_capped: precision={repeat_capped_summary['precision']:.4f} "
+        f"recall={repeat_capped_summary['recall']:.4f} "
+        f"f1={repeat_capped_summary['f1']:.4f} "
+        f"matched={repeat_capped_summary['matched_token_count']}/"
+        f"{repeat_capped_summary['reference_token_count']} "
+        f"ext={repeat_capped_summary['extracted_token_count']}"
+    )
+    if strict_summary["largest_diffs"]:
         print("largest_diffs:")
-        for diff in payload["largest_diffs"]:
+        for diff in strict_summary["largest_diffs"]:
             print(
                 f"- {diff['op']} ref[{diff['ref_range'][0]}:{diff['ref_range'][1]}] "
                 f"ext[{diff['ext_range'][0]}:{diff['ext_range'][1]}] "

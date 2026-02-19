@@ -294,6 +294,10 @@ Token-order quality comparison of visual extraction vs synced LRC
   --output-json /tmp/shape_nextpass.lyrics-quality.json
 ```
 
+The tool prints two scores:
+- `strict`: direct token-order comparison to LRC (parenthetical words optional by default).
+- `repeat_capped`: same comparison with excessive repeated LRC lines capped to extracted repeat counts (helps separate true extraction misses from karaoke-vs-LRC repeat-count differences).
+
 Threshold calibration from prior bootstrap reports:
 
 ```bash

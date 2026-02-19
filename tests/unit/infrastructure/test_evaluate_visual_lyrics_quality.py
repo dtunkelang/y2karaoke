@@ -37,6 +37,18 @@ def test_summarize_alignment_reports_expected_counts():
     assert summary["largest_diffs"]
 
 
+def test_build_repeat_capped_tokens_limits_excess_repeats():
+    ref_lines = [
+        {"line_key": "a b", "tokens": ["a", "b"]},
+        {"line_key": "a b", "tokens": ["a", "b"]},
+        {"line_key": "a b", "tokens": ["a", "b"]},
+        {"line_key": "c d", "tokens": ["c", "d"]},
+    ]
+    extracted_line_keys = ["a b", "c d"]
+    capped = _MODULE._build_repeat_capped_tokens(ref_lines, extracted_line_keys)
+    assert capped == ["a", "b", "c", "d"]
+
+
 def test_main_writes_output_json_and_uses_optional_parenthetical_mode(
     tmp_path, monkeypatch
 ):
@@ -57,8 +69,12 @@ def test_main_writes_output_json_and_uses_optional_parenthetical_mode(
 
     monkeypatch.setattr(
         _MODULE,
-        "_load_lrc_tokens",
-        lambda **_kwargs: ["come", "on", "im", "in", "love", "now"],
+        "_load_lrc_reference_lines",
+        lambda **_kwargs: [
+            {"line_key": "come on", "tokens": ["come", "on"]},
+            {"line_key": "im in love", "tokens": ["im", "in", "love"]},
+            {"line_key": "now", "tokens": ["now"]},
+        ],
     )
     monkeypatch.setattr(
         sys,
@@ -79,4 +95,5 @@ def test_main_writes_output_json_and_uses_optional_parenthetical_mode(
     assert code == 0
     payload = json.loads(out_path.read_text(encoding="utf-8"))
     assert payload["lrc_mode"] == "optional"
-    assert payload["matched_token_count"] == 3
+    assert payload["strict"]["matched_token_count"] == 3
+    assert "repeat_capped" in payload

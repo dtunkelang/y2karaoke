@@ -350,6 +350,18 @@ Status: Completed
     - `precision=0.9135`, `recall=0.8685`, `f1=0.8904` (from `0.9119/0.8670/0.8889`).
   - `Bad Guy` (`GsFlbMS7UIc`) remained stable (`precision=0.8176`, `recall=0.9528`, `f1=0.8800`).
 
+### Milestone 49: Repeat-Capped Evaluator Mode
+Status: Completed
+- [x] Enhanced `tools/evaluate_visual_lyrics_quality.py` to report both:
+  - `strict` token-order metrics (unchanged baseline),
+  - `repeat_capped` metrics that cap excessive repeated lines symmetrically on both reference and extracted sides.
+- [x] Added extracted-line token loading and generalized repeat-cap token builder in evaluator internals.
+- [x] Updated evaluator unit tests for the new repeat-capped path and payload schema.
+- [x] Updated README to document the two complementary score modes.
+- [x] Validation snapshot:
+  - `Shape of You`: `strict f1=0.8904`, `repeat_capped f1=0.8948`.
+  - `Bad Guy`: `strict f1=0.8800`, `repeat_capped f1=0.9105`.
+
 ## Notes
 - Keep changes in significant, validated commits.
 - Prefer deterministic ranking and quality decisions for reproducibility.
