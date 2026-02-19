@@ -41,6 +41,7 @@ This document outlines the critical areas of the `y2karaoke` codebase and the im
 *   **In progress:** Extracted frame mode/state computation (`outro` / `splash` / `progress` / `lyrics`) from `render_frame` to reduce orchestration complexity.
 *   **In progress:** Introduced explicit per-frame render plan model in `frame_renderer.py` to formalize coordinator state.
 *   **In progress:** Moved lyric text/highlight drawing primitives to `render/render_text.py` to narrow `frame_renderer.py` responsibilities.
+*   **In progress:** Moved cue-indicator drawing primitive to `render/cue_indicator.py` with compatibility wrapper in `frame_renderer.py`.
 
 **Action Plan:**
 *   **Consolidate:** Keep singer-color policy in a dedicated module and avoid duplicating it in frame drawing code.

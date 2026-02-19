@@ -5,8 +5,6 @@ from typing import Optional, Dict, Tuple, List
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 
-import math
-
 from ....config import (
     VIDEO_WIDTH,
     VIDEO_HEIGHT,
@@ -15,9 +13,9 @@ from ....config import (
     OUTRO_DELAY,
     LYRICS_ACTIVATION_LEAD,
     FIRST_WORD_HIGHLIGHT_DELAY as _FIRST_WORD_HIGHLIGHT_DELAY,
-    Colors,
 )
 from .backgrounds_static import draw_logo_screen, draw_splash_screen
+from .cue_indicator import draw_cue_indicator as _draw_cue_indicator_impl
 from .progress import draw_progress_bar
 from .lyrics_renderer import get_singer_colors as _get_singer_colors
 from .lyric_timeline import (
@@ -70,60 +68,8 @@ def _compute_word_highlight_width(
 def _draw_cue_indicator(
     draw: ImageDraw.ImageDraw, x: int, y: int, time_until_start: float, font_size: int
 ) -> None:
-    """Draw animated cue indicator (pulsing dots) to prepare singer.
-
-    Args:
-        draw: PIL ImageDraw object
-        x: X position (left side of line)
-        y: Y position (vertical center of line)
-        time_until_start: Seconds until the line starts
-        font_size: Font size for scaling the indicator
-    """
-    # Three dots that pulse in sequence as countdown
-    dot_radius = max(4, font_size // 12)
-    dot_spacing = dot_radius * 3
-    total_width = dot_spacing * 2 + dot_radius * 2
-
-    # Position dots to the left of the line
-    start_x = x - total_width - dot_spacing
-
-    # Calculate which dots to show based on countdown
-    # At 3s: 3 dots, at 2s: 2 dots, at 1s: 1 dot (pulsing)
-    dots_to_show = min(3, max(1, int(time_until_start) + 1))
-
-    # Pulse animation (sine wave for smooth pulsing)
-    pulse = 0.5 + 0.5 * math.sin(time_until_start * math.pi * 3)  # 1.5 Hz pulse
-
-    for i in range(3):
-        dot_x = start_x + i * dot_spacing
-        dot_y = y
-
-        if i < dots_to_show:
-            # Active dot - gold color with pulse on the leading dot
-            if i == dots_to_show - 1:
-                # Leading dot pulses
-                radius = int(dot_radius * (0.8 + 0.4 * pulse))
-            else:
-                # Other dots are solid
-                radius = dot_radius
-
-            color = Colors.CUE_INDICATOR
-            draw.ellipse(
-                [dot_x - radius, dot_y - radius, dot_x + radius, dot_y + radius],
-                fill=color,
-            )
-        else:
-            # Inactive dot - dim outline
-            draw.ellipse(
-                [
-                    dot_x - dot_radius,
-                    dot_y - dot_radius,
-                    dot_x + dot_radius,
-                    dot_y + dot_radius,
-                ],
-                outline=(100, 100, 100),
-                width=1,
-            )
+    """Compatibility wrapper around cue-indicator rendering primitive."""
+    _draw_cue_indicator_impl(draw, x, y, time_until_start, font_size)
 
 
 def _get_or_build_line_layout(
