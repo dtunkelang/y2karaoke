@@ -283,6 +283,17 @@ Bootstrap quality guardrails for visual-seeded gold files:
 make bootstrap-quality-guardrails
 ```
 
+Token-order quality comparison of visual extraction vs synced LRC
+(line-boundary agnostic; parenthetical LRC words treated as optional by default):
+
+```bash
+./venv/bin/python tools/evaluate_visual_lyrics_quality.py \
+  --gold-json /tmp/shape_nextpass.gold.json \
+  --title "Shape of You" \
+  --artist "Ed Sheeran" \
+  --output-json /tmp/shape_nextpass.lyrics-quality.json
+```
+
 Threshold calibration from prior bootstrap reports:
 
 ```bash

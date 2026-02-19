@@ -314,6 +314,16 @@ Status: Completed
   - `bad guy` (`GsFlbMS7UIc`): reconstructed initial lines `70 -> 68`; sequence precision improved `0.7908 -> 0.8176` with recall unchanged (`0.9528`).
   - `Shape of You` (`o71_MatpYV0`): no observed regression (line count and token-order precision/recall unchanged in comparison run).
 
+### Milestone 45: Line-Boundary-Agnostic Lyrics Quality Evaluator
+Status: Completed
+- [x] Added `tools/evaluate_visual_lyrics_quality.py` to compare extracted visual lyrics token order against synced LRC.
+- [x] Parenthetical LRC tokens are treated as optional by default (to avoid penalizing backing-vocal phrases absent in karaoke video text).
+- [x] Added unit coverage in `tests/unit/infrastructure/test_evaluate_visual_lyrics_quality.py` for:
+  - parenthetical optional-token parsing,
+  - alignment metric summarization,
+  - CLI/report generation path.
+- [x] Added README usage example for repeatable local diagnostics.
+
 ## Notes
 - Keep changes in significant, validated commits.
 - Prefer deterministic ranking and quality decisions for reproducibility.
