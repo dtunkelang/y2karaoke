@@ -237,3 +237,11 @@ class TestNormalizeOcrTokens:
             "your",
             "body",
         ]
+        assert normalize_ocr_tokens(["Oh", "I", "loh", "l", "oh", "I"]) == [
+            "Oh",
+            "I",
+            "oh",
+            "I",
+            "oh",
+            "I",
+        ]

@@ -213,6 +213,13 @@ Status: Completed
 - [x] Improve bootstrap OCR artifact suppression for Shape-of-You style intro/title overlays and persistent micro-corner branding leakage
 - [x] Validate updated extraction quality on Shape of You with Apple Vision OCR and refreshed caches
 
+### Milestone 34: Refrain Continuity Stabilization for Fast Repeated Blocks
+Status: Completed
+- [x] Add reconstruction pass to collapse overlapping same-lane short-refrain OCR variants (`oh/i`-dominant entries)
+- [x] Expand contextual OCR normalization for alternation artifacts (`oh I loh l` -> `oh I oh I`)
+- [x] Add dedicated reconstruction regression tests in `tests/unit/visual/test_reconstruction_refrain_noise.py`
+- [x] Re-validate Shape of You extraction quality after refrain continuity cleanup
+
 ## Notes
 - Keep changes in significant, validated commits.
 - Prefer deterministic ranking and quality decisions for reproducibility.

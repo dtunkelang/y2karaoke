@@ -463,6 +463,13 @@ def _contextual_ocr_token_replacement(
     if low in {"ony", "om"} and prev_low == "come":
         return "on"
 
+    if low in {"l", "loh", "loll", "lohlohlohl", "lohlohl"} and prev_low == "oh":
+        return "I"
+    if low in {"loh", "loll", "lohlohlohl", "lohlohl"} and prev_low == "i":
+        return "oh"
+    if low == "l" and prev_low in {"i", "im", "i'm"}:
+        return "oh"
+
     # Short-token confusions in fast sections.
     if low == "l" and next_low in {
         "may",
