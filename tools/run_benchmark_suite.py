@@ -176,7 +176,9 @@ def _align_words_for_gold_comparison(
     return matches
 
 
-def _flatten_words_from_timing_doc(doc: dict[str, Any]) -> list[dict[str, Any]]:
+def _flatten_words_from_timing_doc(
+    doc: dict[str, Any], *, mark_parenthetical_optional: bool = False
+) -> list[dict[str, Any]]:
     words: list[dict[str, Any]] = []
     lines = doc.get("lines", [])
     if not isinstance(lines, list):
@@ -187,6 +189,7 @@ def _flatten_words_from_timing_doc(doc: dict[str, Any]) -> list[dict[str, Any]]:
         line_words = line.get("words", [])
         if not isinstance(line_words, list):
             continue
+        paren_depth = 0
         for w in line_words:
             if not isinstance(w, dict):
                 continue
@@ -194,11 +197,20 @@ def _flatten_words_from_timing_doc(doc: dict[str, Any]) -> list[dict[str, Any]]:
             end = w.get("end")
             if not isinstance(start, (int, float)) or not isinstance(end, (int, float)):
                 continue
+            text = str(w.get("text", ""))
+            optional = False
+            if mark_parenthetical_optional:
+                open_count = text.count("(")
+                close_count = text.count(")")
+                # Parenthesized tokens are treated as optional/backing vocals.
+                optional = paren_depth > 0 or open_count > 0
+                paren_depth = max(0, paren_depth + open_count - close_count)
             words.append(
                 {
-                    "text": str(w.get("text", "")),
+                    "text": text,
                     "start": float(start),
                     "end": float(end),
+                    "optional": optional,
                 }
             )
     return words
@@ -418,7 +430,10 @@ def _extract_song_metrics(
     }
 
     generated_words = _flatten_words_from_timing_doc(report)
-    gold_words = _flatten_words_from_timing_doc(gold_doc or {})
+    gold_words_all = _flatten_words_from_timing_doc(
+        gold_doc or {}, mark_parenthetical_optional=True
+    )
+    gold_words = [w for w in gold_words_all if not bool(w.get("optional"))]
     aligned_pairs = _align_words_for_gold_comparison(generated_words, gold_words)
     comparable = len(aligned_pairs)
     start_abs_deltas: list[float] = []
@@ -435,11 +450,12 @@ def _extract_song_metrics(
 
     metrics.update(
         {
-            "gold_available": bool(gold_words),
+            "gold_available": bool(gold_words_all),
             "generated_word_count": len(generated_words),
             "gold_word_count": len(gold_words),
+            "gold_optional_word_count": len(gold_words_all) - len(gold_words),
             "gold_comparable_word_count": comparable,
-            "gold_alignment_mode": "monotonic_text_window",
+            "gold_alignment_mode": "monotonic_text_window_parenthetical_optional",
             "gold_word_coverage_ratio": round(
                 (comparable / len(gold_words)) if gold_words else 0.0, 4
             ),

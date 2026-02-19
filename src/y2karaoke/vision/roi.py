@@ -128,6 +128,8 @@ def detect_lyric_roi(
 
     # Left-clipping protection: do not allow ROI to start too far right.
     x1 = min(x1, int(width * 0.12))
+    # Top-clipping protection: ensure we keep the upper lyric row for 4-line layouts.
+    y1 = min(y1, int(height * 0.22))
 
     roi = (x1, y1, x2 - x1, y2 - y1)
     logger.info(f"Detected ROI: {roi}")

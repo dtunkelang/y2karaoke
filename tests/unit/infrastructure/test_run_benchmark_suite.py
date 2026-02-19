@@ -106,7 +106,44 @@ def test_extract_song_metrics_with_gold_word_deltas():
     assert metrics["avg_abs_word_start_delta_sec"] == 0.3
     assert metrics["gold_start_p95_abs_sec"] == 0.39
     assert metrics["gold_end_mean_abs_sec"] == 0.15
-    assert metrics["gold_alignment_mode"] == "monotonic_text_window"
+    assert (
+        metrics["gold_alignment_mode"] == "monotonic_text_window_parenthetical_optional"
+    )
+
+
+def test_extract_song_metrics_treats_parenthetical_gold_words_as_optional():
+    module = _load_module()
+    report = {
+        "lines": [
+            {
+                "words": [
+                    {"text": "Come", "start": 10.0, "end": 10.2},
+                    {"text": "on", "start": 10.2, "end": 10.4},
+                ]
+            }
+        ]
+    }
+    gold = {
+        "lines": [
+            {
+                "words": [
+                    {"text": "Come", "start": 10.0, "end": 10.2},
+                    {"text": "on", "start": 10.2, "end": 10.4},
+                    {"text": "(I'm", "start": 10.4, "end": 10.6},
+                    {"text": "in", "start": 10.6, "end": 10.8},
+                    {"text": "love", "start": 10.8, "end": 11.0},
+                    {"text": "with", "start": 11.0, "end": 11.2},
+                    {"text": "your", "start": 11.2, "end": 11.4},
+                    {"text": "body)", "start": 11.4, "end": 11.6},
+                ]
+            }
+        ]
+    }
+    metrics = module._extract_song_metrics(report, gold_doc=gold)
+    assert metrics["gold_word_count"] == 2
+    assert metrics["gold_optional_word_count"] == 6
+    assert metrics["gold_comparable_word_count"] == 2
+    assert metrics["gold_word_coverage_ratio"] == 1.0
 
 
 def test_extract_song_metrics_separates_independent_and_anchor_agreement():
