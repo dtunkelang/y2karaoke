@@ -18,6 +18,7 @@ from .backgrounds_static import draw_logo_screen, draw_splash_screen
 from .cue_indicator import draw_cue_indicator as _draw_cue_indicator_impl
 from .progress import draw_progress_bar
 from .lyrics_renderer import get_singer_colors as _get_singer_colors
+from .layout import get_or_build_line_layout as _get_or_build_line_layout_impl
 from .lyric_timeline import (
     check_intro_progress as _check_intro_progress,
     check_mid_song_progress as _check_mid_song_progress,
@@ -77,27 +78,8 @@ def _get_or_build_line_layout(
     font: ImageFont.ImageFont | ImageFont.FreeTypeFont,
     layout_cache: Optional[Dict[int, Tuple[List[str], List[float], float]]],
 ) -> tuple[list[str], list[float], float]:
-    """Return cached line text layout or compute and store it."""
-    if layout_cache is not None and id(line) in layout_cache:
-        return layout_cache[id(line)]
-
-    words_with_spaces = []
-    for i, word in enumerate(line.words):
-        words_with_spaces.append(word.text)
-        if i < len(line.words) - 1:
-            words_with_spaces.append(" ")
-
-    total_width = 0.0
-    word_widths = []
-    for text in words_with_spaces:
-        bbox = font.getbbox(text)
-        w = float(bbox[2] - bbox[0])
-        word_widths.append(w)
-        total_width += w
-
-    if layout_cache is not None:
-        layout_cache[id(line)] = (words_with_spaces, word_widths, total_width)
-    return words_with_spaces, word_widths, total_width
+    """Compatibility wrapper around line layout helper primitive."""
+    return _get_or_build_line_layout_impl(line, font, layout_cache)
 
 
 def _resolve_current_line_idx(lines: list[Line], activation_time: float) -> int:
