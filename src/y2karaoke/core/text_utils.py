@@ -385,6 +385,15 @@ def _repair_fused_ocr_words(text: str) -> str:
     return " ".join(out)
 
 
+def _normalize_confusable_i_token(tok: str, prev_tok: str, next_tok: str) -> str:
+    low = tok.lower()
+    if low not in {"1", "|", "!"}:
+        return tok
+    if any(ch.isalpha() for ch in prev_tok) or any(ch.isalpha() for ch in next_tok):
+        return "I"
+    return tok
+
+
 def normalize_ocr_tokens(tokens: List[str]) -> List[str]:
     """Normalize OCR token list and merge common contraction fragments.
 
@@ -431,6 +440,11 @@ def normalize_ocr_tokens(tokens: List[str]) -> List[str]:
             out[-1] = out[-1] + "'"
             i += 1
             continue
+
+        tok = _normalize_confusable_i_token(
+            tok, out[-1] if out else "", compact[i + 1] if i + 1 < len(compact) else ""
+        )
+        low = tok.lower()
 
         # Common OCR split for "you" at line starts: "' ou come ..."
         if tok == "'" and i + 1 < len(compact) and compact[i + 1].lower() == "ou":

@@ -256,6 +256,7 @@ class TestNormalizeOcrTokens:
             "oh",
             "I",
         ]
+        assert normalize_ocr_tokens(["Oh", "1", "oh"]) == ["Oh", "I", "oh"]
 
 
 class TestNormalizeOcrLine:

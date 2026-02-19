@@ -324,6 +324,12 @@ Status: Completed
   - CLI/report generation path.
 - [x] Added README usage example for repeatable local diagnostics.
 
+### Milestone 46: Confusable `1` -> `I` Token Normalization
+Status: Completed
+- [x] Added context-aware confusable token repair in `normalize_ocr_tokens` (`1/|/!` -> `I` when adjacent to alphabetic context) to align token-level output with line-level normalization.
+- [x] Added regression coverage in `tests/unit/core_shared/test_text_utils.py` (`Oh 1 oh` -> `Oh I oh`).
+- [x] Validation check on `Shape of You` confirms removal of `oh 1 oh`-style token artifact from largest-diff diagnostics without regressions to overall extraction metrics.
+
 ## Notes
 - Keep changes in significant, validated commits.
 - Prefer deterministic ranking and quality decisions for reproducibility.
