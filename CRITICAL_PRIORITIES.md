@@ -47,6 +47,7 @@ This document outlines the critical areas of the `y2karaoke` codebase and the im
 *   **In progress:** Moved visible-line rendering pass orchestration to `render/line_pass.py` with compatibility wrappers in `frame_renderer.py`.
 *   **In progress:** Moved unresolved overlap surrogate-timing clustering/assignment into `visual/surrogate_timing.py` with compatibility wrappers in `visual/refinement.py`.
 *   **In progress:** Moved repeated-line retiming postpasses into `visual/refinement_repetition_postpasses.py` with compatibility wrappers in `visual/refinement_postpasses.py`.
+*   **In progress:** Moved static-overlay suppression logic out of `visual/reconstruction.py` into `visual/reconstruction_overlay.py` to isolate OCR-noise filtering from line sequencing logic.
 
 **Action Plan:**
 *   **Consolidate:** Keep singer-color policy in a dedicated module and avoid duplicating it in frame drawing code.
