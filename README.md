@@ -213,6 +213,8 @@ Benchmark seed set for timing quality work:
   - Offline cached-only run: `./venv/bin/python tools/run_benchmark_suite.py --offline`
   - Run one song for debugging: `./venv/bin/python tools/run_benchmark_suite.py --match "Papaoutai" --max-songs 1`
   - Disable DTW mapping for A/B checks: `./venv/bin/python tools/run_benchmark_suite.py --no-whisper-map-lrc-dtw`
+  - Rebaseline gold from successful reports (all selected songs): `./venv/bin/python tools/run_benchmark_suite.py --rebaseline`
+  - Rebaseline one song safely: `./venv/bin/python tools/run_benchmark_suite.py --match "bad guy" --max-songs 1 --rebaseline`
   - Run strategy matrix and emit combined report: `make benchmark-matrix`
   - Matrix JSON now includes `recommendations` (best strategy by p95/mean start error, low-confidence ratio, DTW coverage, runtime, and quality/runtime balance)
   - Recommend default strategy/thresholds from prior reports: `make benchmark-recommend`

@@ -229,6 +229,46 @@ def _gold_path_for_song(
     return None
 
 
+def _default_gold_path_for_song(index: int, song: BenchmarkSong, gold_root: Path) -> Path:
+    return gold_root / f"{index:02d}_{song.slug}.gold.json"
+
+
+def _resolve_gold_rebaseline_path(
+    index: int, song: BenchmarkSong, gold_root: Path
+) -> Path:
+    existing = _gold_path_for_song(index=index, song=song, gold_root=gold_root)
+    if existing is not None:
+        return existing
+    return _default_gold_path_for_song(index=index, song=song, gold_root=gold_root)
+
+
+def _write_rebaseline_gold(target_path: Path, report_doc: dict[str, Any]) -> None:
+    target_path.parent.mkdir(parents=True, exist_ok=True)
+    target_path.write_text(
+        json.dumps(report_doc, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+
+
+def _rebaseline_song_from_report(
+    *,
+    index: int,
+    song: BenchmarkSong,
+    report_path: Path,
+    gold_root: Path,
+) -> Path | None:
+    if not report_path.exists():
+        return None
+    loaded = json.loads(report_path.read_text(encoding="utf-8"))
+    if not isinstance(loaded, dict):
+        return None
+    gold_path = _resolve_gold_rebaseline_path(
+        index=index, song=song, gold_root=gold_root
+    )
+    _write_rebaseline_gold(gold_path, loaded)
+    return gold_path
+
+
 def _load_gold_doc(
     index: int, song: BenchmarkSong, gold_root: Path
 ) -> dict[str, Any] | None:
@@ -1359,6 +1399,7 @@ def _write_checkpoint(
             "expect_cached_separation": args.expect_cached_separation,
             "expect_cached_whisper": args.expect_cached_whisper,
             "strict_cache_expectations": args.strict_cache_expectations,
+            "rebaseline": args.rebaseline,
             "gold_root": str(args.gold_root.resolve()),
         },
         "aggregate": aggregate,
@@ -1540,6 +1581,14 @@ def _parse_args() -> argparse.Namespace:
         "--strict-cache-expectations",
         action="store_true",
         help="Return non-zero if cache expectation warnings are present",
+    )
+    parser.add_argument(
+        "--rebaseline",
+        action="store_true",
+        help=(
+            "Update per-song gold files from successful timing reports. "
+            "Use --match/--max-songs to constrain scope."
+        ),
     )
     return parser.parse_args()
 
@@ -2205,6 +2254,17 @@ def main() -> int:  # noqa: C901
                     prior = _refresh_cached_metrics(
                         prior, index=index, song=song, gold_root=gold_root
                     )
+                    if args.rebaseline:
+                        rebased_path = _rebaseline_song_from_report(
+                            index=index,
+                            song=song,
+                            report_path=Path(str(prior.get("report_path", report_path))),
+                            gold_root=gold_root,
+                        )
+                        prior["gold_rebaselined"] = rebased_path is not None
+                        if rebased_path is not None:
+                            prior["gold_path"] = str(rebased_path)
+                            print(f"  -> gold rebaselined: {rebased_path}")
                     prior["result_reused"] = True
                     song_results.append(prior)
                     print(f"[{index}/{len(songs)}] {song.artist} - {song.title}")
@@ -2264,6 +2324,17 @@ def main() -> int:  # noqa: C901
             gold_path = _gold_path_for_song(index=index, song=song, gold_root=gold_root)
             if gold_path is not None:
                 record["gold_path"] = str(gold_path)
+        if args.rebaseline and record.get("status") == "ok":
+            rebased_path = _rebaseline_song_from_report(
+                index=index,
+                song=song,
+                report_path=report_path,
+                gold_root=gold_root,
+            )
+            record["gold_rebaselined"] = rebased_path is not None
+            if rebased_path is not None:
+                record["gold_path"] = str(rebased_path)
+                print(f"  -> gold rebaselined: {rebased_path}")
 
         song_results.append(record)
         _write_json(result_path, record)
@@ -2320,6 +2391,7 @@ def main() -> int:  # noqa: C901
             "expect_cached_separation": args.expect_cached_separation,
             "expect_cached_whisper": args.expect_cached_whisper,
             "strict_cache_expectations": args.strict_cache_expectations,
+            "rebaseline": args.rebaseline,
             "gold_root": str(args.gold_root.resolve()),
         },
         "status": "finished_with_warnings" if run_warnings else "finished",

@@ -362,6 +362,16 @@ Status: Completed
   - `Shape of You`: `strict f1=0.8904`, `repeat_capped f1=0.8948`.
   - `Bad Guy`: `strict f1=0.8800`, `repeat_capped f1=0.9105`.
 
+### Milestone 50: Benchmark Gold Rebaseline Automation
+Status: Completed
+- [x] Added `--rebaseline` to `tools/run_benchmark_suite.py` to update per-song `*.gold.json` from successful timing reports.
+- [x] Rebaseline writes are deterministic and path-safe:
+  - prefer existing indexed/legacy gold path if present,
+  - otherwise write to canonical indexed filename (`NN_<slug>.gold.json`).
+- [x] Rebaseline supports both fresh runs and resumed cached-success results.
+- [x] Added unit coverage in `tests/unit/infrastructure/test_run_benchmark_suite.py` for default-path and existing-path rebaseline behavior.
+- [x] Updated README benchmark usage with constrained single-song rebaseline examples.
+
 ## Notes
 - Keep changes in significant, validated commits.
 - Prefer deterministic ranking and quality decisions for reproducibility.

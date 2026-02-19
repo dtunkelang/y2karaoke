@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import importlib.util
+import json
 import os
 from pathlib import Path
 import sys
@@ -212,6 +213,58 @@ def test_gold_path_for_song_prefers_indexed_filename(tmp_path):
     indexed.write_text("{}", encoding="utf-8")
     found = module._gold_path_for_song(index=2, song=song, gold_root=tmp_path)
     assert found == indexed
+
+
+def test_rebaseline_song_from_report_writes_default_indexed_gold(tmp_path):
+    module = _load_module()
+    song = module.BenchmarkSong(
+        artist="Billie Eilish",
+        title="bad guy",
+        youtube_id="ayxYgDgBD3g",
+        youtube_url="https://www.youtube.com/watch?v=ayxYgDgBD3g",
+    )
+    report_doc = {
+        "lines": [
+            {"words": [{"text": "hello", "start": 1.0, "end": 1.2}]},
+        ]
+    }
+    report_path = tmp_path / "song_report.json"
+    report_path.write_text(json.dumps(report_doc), encoding="utf-8")
+
+    out = module._rebaseline_song_from_report(
+        index=2, song=song, report_path=report_path, gold_root=tmp_path
+    )
+    expected = tmp_path / f"02_{song.slug}.gold.json"
+    assert out == expected
+    assert expected.exists()
+    loaded = json.loads(expected.read_text(encoding="utf-8"))
+    assert loaded == report_doc
+
+
+def test_rebaseline_song_from_report_prefers_existing_gold_path(tmp_path):
+    module = _load_module()
+    song = module.BenchmarkSong(
+        artist="Billie Eilish",
+        title="bad guy",
+        youtube_id="ayxYgDgBD3g",
+        youtube_url="https://www.youtube.com/watch?v=ayxYgDgBD3g",
+    )
+    existing_gold = tmp_path / f"{song.slug}.gold.json"
+    existing_gold.write_text("{}", encoding="utf-8")
+    report_doc = {
+        "lines": [
+            {"words": [{"text": "world", "start": 2.0, "end": 2.4}]},
+        ]
+    }
+    report_path = tmp_path / "song_report.json"
+    report_path.write_text(json.dumps(report_doc), encoding="utf-8")
+
+    out = module._rebaseline_song_from_report(
+        index=2, song=song, report_path=report_path, gold_root=tmp_path
+    )
+    assert out == existing_gold
+    loaded = json.loads(existing_gold.read_text(encoding="utf-8"))
+    assert loaded == report_doc
 
 
 def test_aggregate_results():
