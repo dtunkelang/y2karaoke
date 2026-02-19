@@ -47,6 +47,9 @@ pip check
 
 # Optional: Install romanization libraries for non-Latin scripts
 pip install korean-romanizer pypinyin pykakasi pyarabic
+
+# Optional (macOS): Use fast Apple Vision OCR for visual bootstrap workflows
+pip install -e ".[vision_macos]"
 ```
 
 ### Troubleshooting

@@ -46,6 +46,11 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+vision_macos = [
+    "pyobjc-core>=12.0",
+    "pyobjc-framework-Vision>=12.0",
+    "pyobjc-framework-Quartz>=12.0",
+]
 romanization = [
     "korean-romanizer>=0.28.0",
     "pypinyin>=0.50.0",

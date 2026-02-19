@@ -108,7 +108,8 @@ class VisionOCR:
             import objc
         except ImportError as e:
             raise OCRError(
-                "Apple Vision dependencies (pyobjc-framework-Vision, etc.) not found."
+                "Apple Vision dependencies not found. "
+                "Install with: pip install -e '.[vision_macos]'"
             ) from e
 
         self.Vision = Vision
