@@ -8,7 +8,11 @@ from pathlib import Path
 import re
 from typing import Any
 
-from ...vision.ocr import get_ocr_engine, normalize_ocr_items
+from ...vision.ocr import (
+    get_ocr_cache_fingerprint,
+    get_ocr_engine,
+    normalize_ocr_items,
+)
 
 try:
     import cv2
@@ -664,6 +668,22 @@ def _suppress_transient_digit_heavy_frames(
     return out
 
 
+def _apply_post_ocr_filters(
+    raw_frames: list[dict[str, Any]],
+    *,
+    roi_width: int,
+    roi_height: int,
+) -> list[dict[str, Any]]:
+    filtered = _suppress_persistent_edge_overlay_words(
+        raw_frames, roi_width=roi_width, roi_height=roi_height
+    )
+    filtered = _suppress_early_banner_words(
+        filtered, roi_width=roi_width, roi_height=roi_height
+    )
+    filtered = _suppress_intro_title_words(filtered)
+    return _suppress_transient_digit_heavy_frames(filtered)
+
+
 def collect_raw_frames(
     video_path: Path,
     start: float,
@@ -742,10 +762,7 @@ def collect_raw_frames(
 
     _flush_batch()
     cap.release()
-    raw = _suppress_persistent_edge_overlay_words(raw, roi_width=rw, roi_height=rh)
-    raw = _suppress_early_banner_words(raw, roi_width=rw, roi_height=rh)
-    raw = _suppress_intro_title_words(raw)
-    return _suppress_transient_digit_heavy_frames(raw)
+    return _apply_post_ocr_filters(raw, roi_width=rw, roi_height=rh)
 
 
 def raw_frames_cache_path(
@@ -757,9 +774,10 @@ def raw_frames_cache_path(
     cache_version: str,
 ) -> Path:
     cache_dir.mkdir(parents=True, exist_ok=True)
+    ocr_fingerprint = get_ocr_cache_fingerprint()
     sig = (
         f"{cache_version}:{video_path.resolve()}:{video_path.stat().st_mtime_ns}:"
-        f"{video_path.stat().st_size}:{fps}:{roi_rect}"
+        f"{video_path.stat().st_size}:{fps}:{roi_rect}:{ocr_fingerprint}"
     )
     digest = hashlib.md5(sig.encode()).hexdigest()
     return cache_dir / f"raw_frames_{digest}.json"
@@ -787,21 +805,13 @@ def collect_raw_frames_cached(
         if log_fn:
             log_fn(f"Loading cached OCR frames: {cache_path.name}")
         loaded = json.loads(cache_path.read_text())
-        loaded = _suppress_persistent_edge_overlay_words(
+        return _apply_post_ocr_filters(
             loaded, roi_width=roi_rect[2], roi_height=roi_rect[3]
         )
-        return _suppress_transient_digit_heavy_frames(loaded)
 
     if collect_fn is None:
         collect_fn = collect_raw_frames
     raw = collect_fn(video_path, 0, duration, fps, roi_rect)
-    raw = _suppress_persistent_edge_overlay_words(
-        raw, roi_width=roi_rect[2], roi_height=roi_rect[3]
-    )
-    raw = _suppress_early_banner_words(
-        raw, roi_width=roi_rect[2], roi_height=roi_rect[3]
-    )
-    raw = _suppress_intro_title_words(raw)
-    raw = _suppress_transient_digit_heavy_frames(raw)
+    raw = _apply_post_ocr_filters(raw, roi_width=roi_rect[2], roi_height=roi_rect[3])
     cache_path.write_text(json.dumps(raw))
     return raw

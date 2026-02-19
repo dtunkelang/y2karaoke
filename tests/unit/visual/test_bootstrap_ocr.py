@@ -1,3 +1,5 @@
+import json
+
 from y2karaoke.core.visual import bootstrap_ocr as _MODULE
 import pytest
 
@@ -11,6 +13,21 @@ def test_raw_frames_cache_path_changes_with_version(tmp_path):
     )
     p2 = _MODULE.raw_frames_cache_path(
         video_path, cache_dir, 2.0, (0, 0, 10, 10), cache_version="b"
+    )
+    assert p1 != p2
+
+
+def test_raw_frames_cache_path_changes_with_ocr_fingerprint(tmp_path, monkeypatch):
+    video_path = tmp_path / "v.mp4"
+    video_path.write_bytes(b"v")
+    cache_dir = tmp_path / "cache"
+    monkeypatch.setattr(_MODULE, "get_ocr_cache_fingerprint", lambda: "ocr-a")
+    p1 = _MODULE.raw_frames_cache_path(
+        video_path, cache_dir, 2.0, (0, 0, 10, 10), cache_version="v1"
+    )
+    monkeypatch.setattr(_MODULE, "get_ocr_cache_fingerprint", lambda: "ocr-b")
+    p2 = _MODULE.raw_frames_cache_path(
+        video_path, cache_dir, 2.0, (0, 0, 10, 10), cache_version="v1"
     )
     assert p1 != p2
 
@@ -257,6 +274,71 @@ def test_collect_raw_frames_cached_filters_large_early_title_words(tmp_path):
     texts = [w["text"] for f in out for w in f.get("words", [])]
     assert "Shape" not in texts
     assert "You" in texts
+
+
+def test_collect_raw_frames_cached_applies_intro_filters_on_cache_load(tmp_path):
+    video_path = tmp_path / "v.mp4"
+    video_path.write_bytes(b"v")
+    cache_dir = tmp_path / "cache"
+    roi_rect = (0, 0, 560, 332)
+    cache_version = "v1"
+
+    cached_frames = []
+    for i in range(20):
+        t = i * 0.5
+        cached_frames.append(
+            {
+                "time": t,
+                "words": [
+                    {"text": "Sing", "x": 170, "y": 150, "w": 70, "h": 40},
+                    {"text": "King", "x": 245, "y": 150, "w": 90, "h": 40},
+                    {"text": "Karaoke", "x": 185, "y": 198, "w": 145, "h": 25},
+                ],
+            }
+        )
+    for i in range(20, 40):
+        t = i * 0.5
+        cached_frames.append(
+            {
+                "time": t,
+                "words": [
+                    {"text": "You", "x": 80, "y": 60, "w": 30, "h": 18},
+                    {"text": "come", "x": 118, "y": 60, "w": 48, "h": 18},
+                    {"text": "over", "x": 90, "y": 100, "w": 42, "h": 18},
+                    {"text": "and", "x": 140, "y": 100, "w": 34, "h": 18},
+                    {"text": "start", "x": 102, "y": 140, "w": 44, "h": 18},
+                    {"text": "up", "x": 154, "y": 140, "w": 22, "h": 18},
+                    {"text": "with", "x": 112, "y": 180, "w": 38, "h": 18},
+                    {"text": "me", "x": 158, "y": 180, "w": 26, "h": 18},
+                ],
+            }
+        )
+
+    cache_path = _MODULE.raw_frames_cache_path(
+        video_path, cache_dir, 2.0, roi_rect, cache_version=cache_version
+    )
+    cache_path.write_text(json.dumps(cached_frames))
+
+    calls = {"n": 0}
+
+    def fake_collect(*_args, **_kwargs):
+        calls["n"] += 1
+        return []
+
+    out = _MODULE.collect_raw_frames_cached(
+        video_path=video_path,
+        duration=20.0,
+        fps=2.0,
+        roi_rect=roi_rect,
+        cache_dir=cache_dir,
+        cache_version=cache_version,
+        collect_fn=fake_collect,
+    )
+    first_half = [w["text"] for f in out[:20] for w in f.get("words", [])]
+    second_half = [w["text"] for f in out[20:] for w in f.get("words", [])]
+    assert calls["n"] == 0
+    assert not first_half
+    assert "You" in second_half and "come" in second_half
 
 
 def test_suppress_transient_digit_heavy_frames_clears_single_glitch_frame():

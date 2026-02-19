@@ -271,3 +271,10 @@ def get_ocr_engine() -> Any:
         raise OCRError(msg) from e
 
     return _OCR_ENGINE
+
+
+def get_ocr_cache_fingerprint() -> str:
+    """Return a stable cache fingerprint for the preferred OCR backend."""
+    if platform.system() == "Darwin" and platform.machine() == "arm64":
+        return "vision_macos_arm64"
+    return "paddleocr"

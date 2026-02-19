@@ -288,6 +288,15 @@ Status: Completed
   - `Shape of You` (`o71_MatpYV0`) problematic block now emits `Come on be my baby come on` for both repeated lines.
   - `Bad guy` first-chorus repetition improvements from Milestone 40 remain intact.
 
+### Milestone 42: Cache-Robust OCR Postfiltering
+Status: Completed
+- [x] Unified OCR postfilter application into a shared helper so cached and fresh frame paths apply identical suppression passes.
+- [x] Extended cached-load filtering to include early-banner and intro-title suppression (previously only edge-overlay + transient-digit filters ran on cache hits).
+- [x] Added OCR-backend fingerprinting to raw-frame cache keys, preventing stale cross-engine cache reuse when backend selection changes (e.g., Vision vs Paddle/Tesseract-era caches).
+- [x] Added regression coverage in `tests/unit/visual/test_bootstrap_ocr.py` for:
+  - cache-key invalidation on OCR fingerprint changes,
+  - intro/title suppression behavior when reading pre-existing cache files.
+
 ## Notes
 - Keep changes in significant, validated commits.
 - Prefer deterministic ranking and quality decisions for reproducibility.
