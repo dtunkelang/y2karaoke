@@ -256,12 +256,12 @@ def _suppress_short_duplicate_reentries(  # noqa: C901
                     continue
                 sim_prev = text_similarity(ent["text"], prev["text"])
                 if (
-                    sim_prev >= 0.55
+                    sim_prev >= 0.35
                     and abs(float(prev["first"]) - float(ent["first"])) <= 0.6
                 ):
                     stable_prev = prev
                     break
-                if _is_same_lane(ent, prev) and sim_prev >= 0.55:
+                if _is_same_lane(ent, prev) and sim_prev >= 0.35:
                     stable_prev = prev
                     break
             if stable_prev is not None:
@@ -277,7 +277,7 @@ def _suppress_short_duplicate_reentries(  # noqa: C901
                     nxt_duration = float(nxt["last"]) - float(nxt["first"])
                     if nxt_duration < 1.0:
                         continue
-                    if text_similarity(ent["text"], nxt["text"]) >= 0.55:
+                    if text_similarity(ent["text"], nxt["text"]) >= 0.35:
                         stable_next = nxt
                         break
                 if (
@@ -285,6 +285,47 @@ def _suppress_short_duplicate_reentries(  # noqa: C901
                     and text_similarity(stable_prev["text"], stable_next["text"]) >= 0.9
                     and text_similarity(ent["text"], stable_prev["text"]) < 0.9
                 ):
+                    # When a distorted one-frame variant appears alongside a short
+                    # one-frame refrain token (e.g. "Duh"), preserve the refrain
+                    # repetition by remapping this ghost entry to that token.
+                    short_anchor: dict[str, Any] | None = None
+                    for cand in reversed(out[-8:]):
+                        cand_duration = float(cand["last"]) - float(cand["first"])
+                        cand_words = [
+                            str(w).strip()
+                            for w in cand.get("words", [])
+                            if str(w).strip()
+                        ]
+                        if cand_duration > 0.35 or len(cand_words) > 2:
+                            continue
+                        if abs(float(cand["first"]) - float(ent["first"])) > 0.3:
+                            continue
+                        if text_similarity(cand["text"], stable_prev["text"]) >= 0.35:
+                            continue
+                        short_anchor = cand
+                        break
+                    if short_anchor is not None:
+                        out.append(
+                            {
+                                "text": str(short_anchor["text"]),
+                                "words": list(short_anchor.get("words", [])),
+                                "first": float(ent["first"]),
+                                "last": float(ent["last"]),
+                                "y": int(ent.get("y", short_anchor.get("y", 0))),
+                                "lane": int(
+                                    ent.get(
+                                        "lane",
+                                        int(
+                                            float(
+                                                ent.get("y", short_anchor.get("y", 0.0))
+                                            )
+                                            // 30
+                                        ),
+                                    )
+                                ),
+                                "w_rois": list(short_anchor.get("w_rois", [])),
+                            }
+                        )
                     continue
 
         is_dup_reentry = False

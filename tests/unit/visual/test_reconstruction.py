@@ -345,7 +345,7 @@ def test_reconstruct_lyrics_suppresses_one_frame_distorted_between_stable_copies
                 {"text": "the", "x": 55, "y": 120, "w": 28, "h": 20},
                 {"text": "bad", "x": 88, "y": 120, "w": 30, "h": 20},
                 {"text": "guy", "x": 123, "y": 120, "w": 30, "h": 20},
-                {"text": "Duh", "x": 24, "y": 150, "w": 35, "h": 20},
+                {"text": "Duh", "x": 24, "y": 90, "w": 35, "h": 20},
                 {"text": "Ilm", "x": 20, "y": 156, "w": 30, "h": 20},
                 {"text": "dinged", "x": 55, "y": 156, "w": 55, "h": 20},
                 {"text": "guy", "x": 115, "y": 156, "w": 30, "h": 20},
@@ -358,6 +358,10 @@ def test_reconstruct_lyrics_suppresses_one_frame_distorted_between_stable_copies
                 {"text": "the", "x": 55, "y": 120, "w": 28, "h": 20},
                 {"text": "bad", "x": 88, "y": 120, "w": 30, "h": 20},
                 {"text": "guy", "x": 123, "y": 120, "w": 30, "h": 20},
+                {"text": "I'm", "x": 20, "y": 156, "w": 30, "h": 20},
+                {"text": "the", "x": 55, "y": 156, "w": 28, "h": 20},
+                {"text": "bad", "x": 88, "y": 156, "w": 30, "h": 20},
+                {"text": "guy", "x": 123, "y": 156, "w": 30, "h": 20},
             ],
         },
         {
@@ -367,6 +371,10 @@ def test_reconstruct_lyrics_suppresses_one_frame_distorted_between_stable_copies
                 {"text": "the", "x": 55, "y": 120, "w": 28, "h": 20},
                 {"text": "bad", "x": 88, "y": 120, "w": 30, "h": 20},
                 {"text": "guy", "x": 123, "y": 120, "w": 30, "h": 20},
+                {"text": "I'm", "x": 20, "y": 156, "w": 30, "h": 20},
+                {"text": "the", "x": 55, "y": 156, "w": 28, "h": 20},
+                {"text": "bad", "x": 88, "y": 156, "w": 30, "h": 20},
+                {"text": "guy", "x": 123, "y": 156, "w": 30, "h": 20},
             ],
         },
         {"time": 67.8, "words": []},
@@ -376,6 +384,7 @@ def test_reconstruct_lyrics_suppresses_one_frame_distorted_between_stable_copies
     texts = [ln.text for ln in lines]
     assert "Ilm dinged guy" not in texts
     assert any(t == "I'm the bad guy" for t in texts)
+    assert texts.count("Duh") == 2
 
 
 def test_reconstruct_lyrics_keeps_concurrent_repeated_text_in_different_lanes():

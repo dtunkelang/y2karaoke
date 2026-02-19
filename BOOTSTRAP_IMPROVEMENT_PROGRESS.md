@@ -272,6 +272,14 @@ Status: Completed
   - Removed spurious one-frame repeat of `Make your mama sad type` in the second chorus window.
   - Removed `Ilm dinged guy` artifact; corresponding slot now aligns to a repeated `I'm the bad guy` entry.
 
+### Milestone 40: Distorted Repeat Remapping for Short Refrain Recovery
+Status: Completed
+- [x] Added reconstruction logic that remaps one-frame distorted variants between stable repeated copies to nearby one-frame short-refrain anchors when present.
+- [x] Added regression coverage for distorted interstitial repeats with concurrent short-refrain anchors in `tests/unit/visual/test_reconstruction.py`.
+- [x] Validation snapshot (`Billie Eilish - bad guy`, `GsFlbMS7UIc`, refreshed cache):
+  - First chorus repeated block now emits `I'm the bad guy / Duh / I'm the bad guy / Duh`.
+  - Distorted OCR fragment is removed from final extracted lines.
+
 ## Notes
 - Keep changes in significant, validated commits.
 - Prefer deterministic ranking and quality decisions for reproducibility.
