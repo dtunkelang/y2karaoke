@@ -21,9 +21,11 @@ This document outlines the critical areas of the `y2karaoke` codebase and the im
 **Critical Areas:**
 *   `tools/run_benchmark_suite.py`: The benchmark runner.
 
+**Status (2026-02-19):**
+*   **Complete:** Added `--rebaseline` to `tools/run_benchmark_suite.py` with test coverage and README documentation.
+
 **Action Plan:**
-*   **Add --rebaseline:** Implement a CLI flag to automatically update the gold file for a specific song (or all successful songs) using the current run's output.
-*   **Audit:** Use this tool to fix the gold files for songs like "Indila - Derniere danse" that have systematic offsets.
+*   **Audit:** Use this tool to fix gold files for songs with systematic offsets.
 
 ## 3. Technical Debt & Cleanup
 **Context:** `lyrics_renderer.py` appears to be a placeholder or legacy module with unused parameters. `frame_renderer.py` mixes timing logic (`_get_lines_to_display`) with pixel drawing.
@@ -32,9 +34,13 @@ This document outlines the critical areas of the `y2karaoke` codebase and the im
 *   `src/y2karaoke/core/components/render/lyrics_renderer.py`: Unused logic?
 *   `src/y2karaoke/core/components/render/frame_renderer.py`: High complexity.
 
+**Status (2026-02-19):**
+*   **In progress:** Timing/visibility logic extracted from `frame_renderer.py` into `render/lyric_timeline.py` to separate timeline decisions from pixel drawing.
+*   **In progress:** Removed unused parameter from `lyrics_renderer.get_singer_colors` and updated callsites/tests.
+
 **Action Plan:**
-*   **Consolidate:** Merge useful logic from `lyrics_renderer.py` into `frame_renderer.py` or delete if redundant.
-*   **Decouple:** Extract timing/visibility logic into a `LyricTimeline` model to separate "what to show" from "how to draw it".
+*   **Consolidate:** Keep singer-color policy in a dedicated module and avoid duplicating it in frame drawing code.
+*   **Decouple:** Continue extracting render-time orchestration hotspots into focused helpers.
 
 ## 4. Visual Refinement Stability (Completed)
 **Status (2026-02-17):**
@@ -47,4 +53,4 @@ This document outlines the critical areas of the `y2karaoke` codebase and the im
 ---
 
 **Next Immediate Step:**
-Implement `Gold Set Quality Automation` (Priority #2). Add `--rebaseline` flag to `tools/run_benchmark_suite.py`.
+Continue render technical-debt cleanup by splitting remaining orchestration in `frame_renderer.py` into a focused coordinator model.

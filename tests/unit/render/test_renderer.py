@@ -69,38 +69,38 @@ class TestGetSingerColors:
 
     def test_singer1_colors(self):
         """Singer 1 should get blue colors."""
-        text_color, highlight_color = get_singer_colors("singer1", False)
+        text_color, highlight_color = get_singer_colors("singer1")
         assert text_color == Colors.SINGER1
         assert highlight_color == Colors.SINGER1_HIGHLIGHT
 
     def test_singer2_colors(self):
         """Singer 2 should get pink colors."""
-        text_color, highlight_color = get_singer_colors("singer2", False)
+        text_color, highlight_color = get_singer_colors("singer2")
         assert text_color == Colors.SINGER2
         assert highlight_color == Colors.SINGER2_HIGHLIGHT
 
     def test_both_singers_colors(self):
         """Both singers should get purple colors."""
-        text_color, highlight_color = get_singer_colors("both", False)
+        text_color, highlight_color = get_singer_colors("both")
         assert text_color == Colors.BOTH
         assert highlight_color == Colors.BOTH_HIGHLIGHT
 
     def test_default_colors(self):
         """Default (no singer) should get white/gold."""
-        text_color, highlight_color = get_singer_colors("", False)
+        text_color, highlight_color = get_singer_colors("")
         assert text_color == Colors.TEXT
         assert highlight_color == Colors.HIGHLIGHT
 
     def test_unknown_singer_uses_default(self):
         """Unknown singer should get default colors."""
-        text_color, highlight_color = get_singer_colors("unknown", False)
+        text_color, highlight_color = get_singer_colors("unknown")
         assert text_color == Colors.TEXT
         assert highlight_color == Colors.HIGHLIGHT
 
     def test_single_color_mode_disables_singer_variation(self, monkeypatch):
         """Single color mode should ignore singer-specific colors."""
         monkeypatch.setenv("Y2KARAOKE_SINGER_COLOR_MODE", "single")
-        text_color, highlight_color = get_singer_colors("singer2", False)
+        text_color, highlight_color = get_singer_colors("singer2")
         assert text_color == Colors.TEXT
         assert highlight_color == Colors.HIGHLIGHT
 
