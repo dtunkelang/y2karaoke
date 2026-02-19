@@ -336,6 +336,48 @@ def test_reconstruct_lyrics_suppresses_one_frame_phrase_before_stable_repeat():
     assert texts.count("Make your mama sad type") == 2
 
 
+def test_reconstruct_lyrics_suppresses_one_frame_distorted_between_stable_copies():
+    raw_frames = [
+        {
+            "time": 64.96,
+            "words": [
+                {"text": "I'm", "x": 20, "y": 120, "w": 30, "h": 20},
+                {"text": "the", "x": 55, "y": 120, "w": 28, "h": 20},
+                {"text": "bad", "x": 88, "y": 120, "w": 30, "h": 20},
+                {"text": "guy", "x": 123, "y": 120, "w": 30, "h": 20},
+                {"text": "Duh", "x": 24, "y": 150, "w": 35, "h": 20},
+                {"text": "Ilm", "x": 20, "y": 156, "w": 30, "h": 20},
+                {"text": "dinged", "x": 55, "y": 156, "w": 55, "h": 20},
+                {"text": "guy", "x": 115, "y": 156, "w": 30, "h": 20},
+            ],
+        },
+        {
+            "time": 65.28,
+            "words": [
+                {"text": "I'm", "x": 20, "y": 120, "w": 30, "h": 20},
+                {"text": "the", "x": 55, "y": 120, "w": 28, "h": 20},
+                {"text": "bad", "x": 88, "y": 120, "w": 30, "h": 20},
+                {"text": "guy", "x": 123, "y": 120, "w": 30, "h": 20},
+            ],
+        },
+        {
+            "time": 66.28,
+            "words": [
+                {"text": "I'm", "x": 20, "y": 120, "w": 30, "h": 20},
+                {"text": "the", "x": 55, "y": 120, "w": 28, "h": 20},
+                {"text": "bad", "x": 88, "y": 120, "w": 30, "h": 20},
+                {"text": "guy", "x": 123, "y": 120, "w": 30, "h": 20},
+            ],
+        },
+        {"time": 67.8, "words": []},
+    ]
+
+    lines = reconstruct_lyrics_from_visuals(raw_frames, 1.0)
+    texts = [ln.text for ln in lines]
+    assert "Ilm dinged guy" not in texts
+    assert any(t == "I'm the bad guy" for t in texts)
+
+
 def test_reconstruct_lyrics_keeps_concurrent_repeated_text_in_different_lanes():
     raw_frames = [
         {

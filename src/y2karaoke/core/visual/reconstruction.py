@@ -246,6 +246,47 @@ def _suppress_short_duplicate_reentries(  # noqa: C901
             if has_near_stable_successor:
                 continue
 
+        # Suppress one-frame distorted variants that sit between two stable
+        # same-lane copies of (roughly) the same lyric line.
+        if duration <= 0.35 and len(words) >= 3:
+            stable_prev: dict[str, Any] | None = None
+            for prev in reversed(out[-10:]):
+                prev_duration = float(prev["last"]) - float(prev["first"])
+                if prev_duration < 1.0:
+                    continue
+                sim_prev = text_similarity(ent["text"], prev["text"])
+                if (
+                    sim_prev >= 0.55
+                    and abs(float(prev["first"]) - float(ent["first"])) <= 0.6
+                ):
+                    stable_prev = prev
+                    break
+                if _is_same_lane(ent, prev) and sim_prev >= 0.55:
+                    stable_prev = prev
+                    break
+            if stable_prev is not None:
+                stable_next: dict[str, Any] | None = None
+                for nxt in entries[idx + 1 : idx + 10]:
+                    lead = float(nxt["first"]) - float(ent["first"])
+                    if lead < 0:
+                        continue
+                    if lead > 2.0:
+                        break
+                    if not _is_same_lane(ent, nxt):
+                        continue
+                    nxt_duration = float(nxt["last"]) - float(nxt["first"])
+                    if nxt_duration < 1.0:
+                        continue
+                    if text_similarity(ent["text"], nxt["text"]) >= 0.55:
+                        stable_next = nxt
+                        break
+                if (
+                    stable_next is not None
+                    and text_similarity(stable_prev["text"], stable_next["text"]) >= 0.9
+                    and text_similarity(ent["text"], stable_prev["text"]) < 0.9
+                ):
+                    continue
+
         is_dup_reentry = False
         for prev in reversed(out[-12:]):
             time_gap = float(ent["first"]) - float(prev["first"])

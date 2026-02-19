@@ -263,6 +263,15 @@ Status: Completed
   - Companion line (`Come on be my baby...`) recovered in-window at `221.60s`.
   - Shared block now emits all four expected lines in sequence: `Every day discovering`, `something brand new`, `I'm in love with your body`, `Come on be my baby...`.
 
+### Milestone 39: Repetition Artifact Suppression (One-Frame Ghosts)
+Status: Completed
+- [x] Added forward-looking suppression for one-frame same-lane phrase reentry ghosts that are immediately followed by a stable same-text line.
+- [x] Added suppression for one-frame distorted interstitial variants between stable repeated copies (prevents `Ilm dinged guy`-style artifacts).
+- [x] Added reconstruction regression coverage for both patterns in `tests/unit/visual/test_reconstruction.py`.
+- [x] Validation snapshot (`Billie Eilish - bad guy`, `GsFlbMS7UIc`, refreshed cache):
+  - Removed spurious one-frame repeat of `Make your mama sad type` in the second chorus window.
+  - Removed `Ilm dinged guy` artifact; corresponding slot now aligns to a repeated `I'm the bad guy` entry.
+
 ## Notes
 - Keep changes in significant, validated commits.
 - Prefer deterministic ranking and quality decisions for reproducibility.
