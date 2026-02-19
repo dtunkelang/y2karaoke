@@ -1,6 +1,5 @@
 """Frame rendering for karaoke videos."""
 
-from dataclasses import dataclass
 from typing import Optional, Dict, Tuple, List
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
@@ -9,22 +8,25 @@ from ....config import (
     VIDEO_WIDTH,
     VIDEO_HEIGHT,
     LINE_SPACING,
-    SPLASH_DURATION,
-    OUTRO_DELAY,
     LYRICS_ACTIVATION_LEAD,
     FIRST_WORD_HIGHLIGHT_DELAY as _FIRST_WORD_HIGHLIGHT_DELAY,
 )
 from .backgrounds_static import draw_logo_screen, draw_splash_screen
 from .cue_indicator import draw_cue_indicator as _draw_cue_indicator_impl
+from .frame_plan import (
+    RenderPlan as _RenderPlan,
+    resolve_current_line_idx as _resolve_current_line_idx_impl,
+    compute_frame_display_state as _compute_frame_display_state_impl,
+)
 from .progress import draw_progress_bar
 from .lyrics_renderer import get_singer_colors as _get_singer_colors
 from .layout import get_or_build_line_layout as _get_or_build_line_layout_impl
 from .lyric_timeline import (
-    check_intro_progress as _check_intro_progress,
-    check_mid_song_progress as _check_mid_song_progress,
+    check_intro_progress as _check_intro_progress_impl,
+    check_mid_song_progress as _check_mid_song_progress_impl,
     get_lines_to_display as _get_lines_to_display,
     check_cue_indicator as _check_cue_indicator,
-    carryover_handoff_delay as _carryover_handoff_delay,
+    carryover_handoff_delay as _carryover_handoff_delay_impl,
 )
 from .render_text import (
     draw_line_text as _draw_line_text,
@@ -38,15 +40,8 @@ get_singer_colors = _get_singer_colors
 # Backward-compatible constant export for tests.
 FIRST_WORD_HIGHLIGHT_DELAY = _FIRST_WORD_HIGHLIGHT_DELAY
 
-
-@dataclass(frozen=True)
-class RenderPlan:
-    """Per-frame render plan derived from timeline and mode decisions."""
-
-    mode: str
-    progress: float
-    current_line_idx: int
-    activation_time: float
+# Backward-compatible type export for tests and imports.
+RenderPlan = _RenderPlan
 
 
 def _compute_word_highlight_width(
@@ -82,19 +77,26 @@ def _get_or_build_line_layout(
     return _get_or_build_line_layout_impl(line, font, layout_cache)
 
 
+def _check_intro_progress(lines: list[Line], current_time: float) -> tuple[bool, float]:
+    """Compatibility wrapper around intro progress timeline helper."""
+    return _check_intro_progress_impl(lines, current_time)
+
+
+def _check_mid_song_progress(
+    lines: list[Line], current_line_idx: int, current_time: float
+) -> tuple[bool, float]:
+    """Compatibility wrapper around mid-song progress timeline helper."""
+    return _check_mid_song_progress_impl(lines, current_line_idx, current_time)
+
+
+def _carryover_handoff_delay(prev_line: Line, next_line: Line) -> float:
+    """Compatibility wrapper around carryover handoff helper."""
+    return _carryover_handoff_delay_impl(prev_line, next_line)
+
+
 def _resolve_current_line_idx(lines: list[Line], activation_time: float) -> int:
-    """Resolve active line index from activation time and carryover heuristics."""
-    current_line_idx = 0
-    for i, line in enumerate(lines):
-        if line.start_time <= activation_time:
-            current_line_idx = i
-    if 0 < current_line_idx < len(lines):
-        prev_line = lines[current_line_idx - 1]
-        curr_line = lines[current_line_idx]
-        handoff_delay = _carryover_handoff_delay(prev_line, curr_line)
-        if handoff_delay > 0 and activation_time < prev_line.end_time + handoff_delay:
-            current_line_idx -= 1
-    return current_line_idx
+    """Compatibility wrapper around frame-plan line index resolution."""
+    return _resolve_current_line_idx_impl(lines, activation_time)
 
 
 def _compute_line_highlight_width(
@@ -193,29 +195,14 @@ def _compute_frame_display_state(
     artist: Optional[str],
     audio_duration: Optional[float],
 ) -> RenderPlan:
-    """Compute render mode and timeline state for a frame."""
-    show_splash = bool(current_time < SPLASH_DURATION and title and artist)
-    show_progress_bar, progress = _check_intro_progress(lines, current_time)
-
-    activation_time = current_time + LYRICS_ACTIVATION_LEAD
-    current_line_idx = _resolve_current_line_idx(lines, activation_time)
-
-    outro_start = lines[-1].end_time + OUTRO_DELAY if lines else OUTRO_DELAY
-    if audio_duration:
-        outro_start = max(outro_start, audio_duration - OUTRO_DELAY)
-    if lines and current_time >= outro_start:
-        return RenderPlan("outro", progress, current_line_idx, activation_time)
-
-    if not show_progress_bar:
-        show_progress_bar, progress = _check_mid_song_progress(
-            lines, current_line_idx, current_time
-        )
-
-    if show_splash:
-        return RenderPlan("splash", progress, current_line_idx, activation_time)
-    if show_progress_bar:
-        return RenderPlan("progress", progress, current_line_idx, activation_time)
-    return RenderPlan("lyrics", progress, current_line_idx, activation_time)
+    """Compatibility wrapper around frame-plan display-state computation."""
+    return _compute_frame_display_state_impl(
+        lines,
+        current_time=current_time,
+        title=title,
+        artist=artist,
+        audio_duration=audio_duration,
+    )
 
 
 def render_frame(  # noqa: C901
