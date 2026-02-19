@@ -23,6 +23,10 @@ jobs:
 
       - name: Install system dependencies
         run: |
+          # Some runner images include stale Microsoft apt sources that can 403.
+          sudo rm -f /etc/apt/sources.list.d/azure-cli.list
+          sudo rm -f /etc/apt/sources.list.d/microsoft-prod.list
+          sudo find /etc/apt/sources.list.d -maxdepth 1 -type f -name '*microsoft*' -delete || true
           sudo apt-get update
           sudo apt-get install -y ffmpeg
 
@@ -81,6 +85,10 @@ jobs:
 
       - name: Install system dependencies
         run: |
+          # Some runner images include stale Microsoft apt sources that can 403.
+          sudo rm -f /etc/apt/sources.list.d/azure-cli.list
+          sudo rm -f /etc/apt/sources.list.d/microsoft-prod.list
+          sudo find /etc/apt/sources.list.d -maxdepth 1 -type f -name '*microsoft*' -delete || true
           sudo apt-get update
           sudo apt-get install -y ffmpeg
 
