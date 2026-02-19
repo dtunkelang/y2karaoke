@@ -123,3 +123,8 @@ Last updated: 2026-02-18
   - Recovered missing line in `3:36–3:43` window: `"I'm in love with your body"` now starts at `219.75s`.
   - Companion line `"Come on be my baby..."` now starts at `221.60s`.
   - Block emits all four concurrent lines in order rather than dropping/deferring the bottom lines.
+- [x] Added short-chant alternation regularization in OCR normalization to stabilize `oh/I` refrain runs from confusable glyph noise while preserving valid repeats.
+- [x] Extended reconstruction regression expectation for spacing-based confusable glyph splitting to accept the new canonicalized chant sequence (`Oh I oh I oh`).
+- [x] Validation snapshot (`Ed Sheeran - Shape of You`, refrain window around `1:18–1:31`):
+  - Normalized refrain output now recovers canonical alternation in previously noisy lane (`Oh I oh I oh I oh I` instead of duplicated-adjacent drift forms).
+  - Refrain sequencing around overlapping repeats remains intact (no regression on repeated-line preservation checks).

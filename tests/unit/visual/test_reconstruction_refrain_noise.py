@@ -76,6 +76,7 @@ def test_reconstruct_uses_spacing_to_split_confusable_glyph_runs() -> None:
     lines = reconstruct_lyrics_from_visuals(raw_frames, 1.0)
     assert len(lines) == 1
     assert lines[0].text in {
+        "Oh I oh I oh",
         "Oh I oh I",
         "Oh I oh",
         "oh I oh I",

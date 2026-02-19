@@ -248,6 +248,7 @@ def normalize_ocr_line(text: str) -> str:
             out.extend(chant_split)
             continue
         out.append(tok)
+    out = _regularize_short_chant_alternation(out)
     repaired = _repair_fused_ocr_words(" ".join(out))
     return spell_correct(repaired)
 
@@ -497,6 +498,39 @@ def normalize_ocr_tokens(tokens: List[str]) -> List[str]:
         out.append(tok)
         i += 1
 
+    return _regularize_short_chant_alternation(out)
+
+
+def _regularize_short_chant_alternation(tokens: List[str]) -> List[str]:
+    """Stabilize short chant runs made only of 'oh'/'I' atoms.
+
+    OCR can inject adjacent duplicate atoms (e.g., "oh oh") in refrain lines.
+    For short chant-only lines, regularize to an alternating pattern while
+    preserving token count.
+    """
+    if len(tokens) < 4 or len(tokens) > 10:
+        return tokens
+
+    lowered = [t.lower() for t in tokens]
+    allowed = {"oh", "i"}
+    if any(tok not in allowed for tok in lowered):
+        return tokens
+    if len(set(lowered)) < 2:
+        return tokens
+
+    has_adjacent_dup = any(lowered[i] == lowered[i - 1] for i in range(1, len(lowered)))
+    if not has_adjacent_dup:
+        return tokens
+
+    start = lowered[0]
+    other = "i" if start == "oh" else "oh"
+    out: List[str] = []
+    for i, _ in enumerate(tokens):
+        atom = start if i % 2 == 0 else other
+        if atom == "oh":
+            out.append("Oh" if i == 0 else "oh")
+        else:
+            out.append("I")
     return out
 
 

@@ -265,6 +265,7 @@ class TestNormalizeOcrLine:
             "oh I oh I oh I",
             "oh I oh I oh I oh I",
         }
+        assert normalize_ocr_line("Oh I oh oh I oh I") == "Oh I oh I oh I oh"
 
     def test_leaves_non_chant_tokens_unchanged(self):
         assert normalize_ocr_line("with your body") == "with your body"
