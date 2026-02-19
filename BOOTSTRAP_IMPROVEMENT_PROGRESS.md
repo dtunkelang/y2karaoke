@@ -251,6 +251,18 @@ Status: Completed
   - `89.35` `"I'm in love with your body"`
   - `93.60` `"I'm in love with your body"`
 
+### Milestone 38: High-FPS Shared-Visibility Drift Stabilization
+Status: Completed
+- [x] Apply shared-visibility/refinement postpasses to the high-FPS path (not only low-FPS), including repeated-line promotion and compressed-block retiming.
+- [x] Add overlap-aware global start gate behavior in low-FPS timing refinement to avoid suppressing valid starts in concurrent on-screen lyric blocks.
+- [x] Add high-FPS line-level fallback tightening: visibility-constrained full-cycle first, onset-only second.
+- [x] Add sparse overlong-line compression postpass for shared-visibility blocks to prevent long-tail drifts that delay downstream starts.
+- [x] Add regression tests for repeated-line promotion, overlap gate behavior, and sparse overlong-line compression.
+- [x] Validation snapshot (`Ed Sheeran - Shape of You`, `o71_MatpYV0`, refreshed cache):
+  - Previously missing block line (`I'm in love with your body`) in `3:36–3:43` recovered at `219.75s`.
+  - Companion line (`Come on be my baby...`) recovered in-window at `221.60s`.
+  - Shared block now emits all four expected lines in sequence: `Every day discovering`, `something brand new`, `I'm in love with your body`, `Come on be my baby...`.
+
 ## Notes
 - Keep changes in significant, validated commits.
 - Prefer deterministic ranking and quality decisions for reproducibility.

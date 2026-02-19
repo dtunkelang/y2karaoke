@@ -299,7 +299,159 @@ def _retime_compressed_shared_visibility_blocks(  # noqa: C901
         cursor = target_start
         for ln, dur in zip(cluster, durations):
             _assign_line_level_word_timings(ln, cursor, cursor + dur, 0.42)
-            cursor += dur + line_gap
+
+
+def _promote_unresolved_first_repeated_lines(  # noqa: C901
+    g_jobs: List[Tuple[TargetLine, float, float]],
+) -> None:
+    """Backfill early repeated-line starts when only later repeats were resolved."""
+    line_order = [ln for ln, _, _ in g_jobs]
+    n = len(line_order)
+    if n < 2:
+        return
+
+    for i, ln in enumerate(line_order):
+        if _line_start(ln) is not None:
+            continue
+        if ln.visibility_start is None or ln.visibility_end is None:
+            continue
+        if len(ln.words) < 3:
+            continue
+        text = _canonical_line_text(ln)
+        if not text:
+            continue
+
+        later_idx: Optional[int] = None
+        later_start: Optional[float] = None
+        later_end: Optional[float] = None
+        for j in range(i + 1, n):
+            cand = line_order[j]
+            if _canonical_line_text(cand) != text:
+                continue
+            s = _line_start(cand)
+            if s is None:
+                continue
+            later_idx = j
+            later_start = float(s)
+            e = _line_end(cand)
+            later_end = float(e) if e is not None else None
+            break
+        if later_idx is None or later_start is None:
+            continue
+
+        vis_start = float(ln.visibility_start)
+        vis_end = float(ln.visibility_end)
+        if (later_start - vis_start) < 3.0:
+            continue
+
+        later_line = line_order[later_idx]
+        later_vis_start = (
+            float(later_line.visibility_start)
+            if later_line.visibility_start is not None
+            else later_start
+        )
+        later_vis_end = (
+            float(later_line.visibility_end)
+            if later_line.visibility_end is not None
+            else (later_end if later_end is not None else later_start + 1.0)
+        )
+        overlap = min(vis_end, later_vis_end) - max(vis_start, later_vis_start)
+        if overlap < 0.6:
+            continue
+
+        prev_end: Optional[float] = None
+        for k in range(i - 1, -1, -1):
+            pe = _line_end(line_order[k])
+            if pe is not None:
+                prev_end = float(pe)
+                break
+        start = vis_start + 0.05
+        if prev_end is not None:
+            start = max(start, prev_end + 0.15)
+        if start >= later_start - 0.4:
+            continue
+
+        ref_dur = (
+            later_end - later_start
+            if (later_end is not None and later_end > later_start)
+            else max(0.8, 0.22 * len(ln.words))
+        )
+        dur = min(max(ref_dur, 0.7), 2.0)
+        end = start + dur
+
+        next_start: Optional[float] = None
+        for k in range(i + 1, n):
+            ns = _line_start(line_order[k])
+            if ns is not None:
+                next_start = float(ns)
+                break
+        if next_start is not None:
+            end = min(end, next_start - 0.15)
+        if end <= start + 0.55:
+            end = min(later_start - 0.15, start + 0.85)
+        if end <= start + 0.45:
+            continue
+
+        _assign_line_level_word_timings(ln, start, end, 0.4)
+
+
+def _compress_overlong_sparse_line_timings(  # noqa: C901
+    g_jobs: List[Tuple[TargetLine, float, float]],
+) -> None:
+    """Compress lines with sparse, overlong word timings inside shared-visibility blocks."""
+    line_order = [ln for ln, _, _ in g_jobs]
+    n = len(line_order)
+    if n < 2:
+        return
+
+    for i, ln in enumerate(line_order):
+        if not ln.word_starts:
+            continue
+        known = [float(s) for s in ln.word_starts if s is not None]
+        if len(known) < 2:
+            continue
+        start = known[0]
+        span = known[-1] - start
+        max_reasonable = max(2.6, 0.6 * float(max(len(ln.words), 1)))
+        if span <= max_reasonable:
+            continue
+
+        if ln.visibility_start is None or ln.visibility_end is None:
+            continue
+        vis_start = float(ln.visibility_start)
+        vis_end = float(ln.visibility_end)
+        has_overlap_neighbor = False
+        for j in range(max(0, i - 2), min(n, i + 3)):
+            if j == i:
+                continue
+            other = line_order[j]
+            if other.visibility_start is None or other.visibility_end is None:
+                continue
+            ov = min(vis_end, float(other.visibility_end)) - max(
+                vis_start, float(other.visibility_start)
+            )
+            if ov >= 0.8:
+                has_overlap_neighbor = True
+                break
+        if not has_overlap_neighbor:
+            continue
+
+        target_dur = min(max(1.0, 0.32 * float(max(len(ln.words), 1)) + 0.8), 2.8)
+        end = start + target_dur
+        end = min(end, vis_end + 0.4)
+
+        next_start: Optional[float] = None
+        for j in range(i + 1, n):
+            ns = _line_start(line_order[j])
+            if ns is not None:
+                next_start = float(ns)
+                break
+        if next_start is not None:
+            end = min(end, next_start - 0.15)
+        if end <= start + 0.55:
+            continue
+
+        _assign_line_level_word_timings(ln, start, end, 0.38)
 
 
 def _retime_large_gaps_with_early_visibility(  # noqa: C901

@@ -19,10 +19,12 @@ from ..models import TargetLine
 from ...exceptions import VisualRefinementError
 from .refinement_postpasses import (
     _clamp_line_ends_to_visibility_windows,
+    _compress_overlong_sparse_line_timings,
     _pull_dense_short_runs_toward_previous_anchor,
     _pull_lines_earlier_after_visibility_transitions,
     _rebalance_early_lead_shared_visibility_runs,
     _rebalance_two_followups_after_short_lead,
+    _promote_unresolved_first_repeated_lines,
     _retime_compressed_shared_visibility_blocks,
     _retime_dense_runs_after_overlong_lead,
     _retime_followups_in_short_lead_shared_visibility_runs,
@@ -728,9 +730,24 @@ def _refine_line_with_frames(
     # For line-level karaoke (all words change together), word-level transitions may
     # be absent. Fall back to line transition + weighted in-line distribution.
     if not any(s is not None for s in new_starts):
-        line_s, line_e, line_conf = _detect_line_highlight_with_confidence(
-            ln, line_frames, c_bg_line
+        min_start = (
+            float(ln.visibility_start) if ln.visibility_start is not None else None
         )
+        line_s, line_e, line_conf = _detect_line_highlight_with_confidence(
+            ln,
+            line_frames,
+            c_bg_line,
+            min_start_time=min_start,
+            require_full_cycle=True,
+        )
+        if line_s is None and line_e is None:
+            line_s, line_e, line_conf = _detect_line_highlight_with_confidence(
+                ln,
+                line_frames,
+                c_bg_line,
+                min_start_time=min_start,
+                require_full_cycle=False,
+            )
         _assign_line_level_word_timings(ln, line_s, line_e, line_conf)
         return
 
@@ -1192,6 +1209,7 @@ def _compute_line_min_start_time(
     ln: TargetLine,
     *,
     last_assigned_start: Optional[float],
+    last_assigned_visibility_end: Optional[float],
 ) -> Optional[float]:
     min_start: Optional[float] = None
     if ln.visibility_start is not None:
@@ -1205,7 +1223,17 @@ def _compute_line_min_start_time(
                 min_start -= 1.0
         min_start = max(0.0, min_start)
 
-    if last_assigned_start is not None:
+    enforce_global_gate = True
+    if (
+        ln.visibility_start is not None
+        and last_assigned_visibility_end is not None
+        and float(ln.visibility_start) < (float(last_assigned_visibility_end) - 0.2)
+    ):
+        # Overlapping visibility windows are common in karaoke blocks; allow
+        # starts to overlap instead of forcing strict global sequencing.
+        enforce_global_gate = False
+
+    if last_assigned_start is not None and enforce_global_gate:
         gate = float(last_assigned_start + 0.05)
         min_start = gate if min_start is None else max(min_start, gate)
     return min_start
@@ -1250,10 +1278,34 @@ def refine_word_timings_at_high_fps(
                 continue
             _refine_line_with_frames(ln, line_frames)
 
+        _apply_persistent_block_highlight_order(g_jobs, group_frames, group_times)
+        _assign_surrogate_timings_for_unresolved_overlap_blocks(
+            g_jobs,
+            group_frames=group_frames,
+            group_times=group_times,
+        )
+        _retime_late_first_lines_in_shared_visibility_blocks(g_jobs)
+        _retime_compressed_shared_visibility_blocks(g_jobs)
+        _promote_unresolved_first_repeated_lines(g_jobs)
+        _compress_overlong_sparse_line_timings(g_jobs)
+
+    _retime_large_gaps_with_early_visibility(jobs)
+    _retime_followups_in_short_lead_shared_visibility_runs(jobs)
+    _rebalance_two_followups_after_short_lead(jobs)
+    _rebalance_early_lead_shared_visibility_runs(jobs)
+    _shrink_overlong_leads_in_dense_shared_visibility_runs(jobs)
+    _retime_dense_runs_after_overlong_lead(jobs)
+    _pull_dense_short_runs_toward_previous_anchor(jobs)
+    _retime_repeated_blocks_with_long_tail_gap(jobs)
+    _pull_late_first_lines_in_alternating_repeated_blocks(jobs)
+    _clamp_line_ends_to_visibility_windows(jobs)
+    _pull_lines_earlier_after_visibility_transitions(jobs)
+    _retime_short_interstitial_lines_between_anchors(jobs)
+    _rebalance_middle_lines_in_four_line_shared_visibility_runs(jobs)
     cap.release()
 
 
-def refine_line_timings_at_low_fps(
+def refine_line_timings_at_low_fps(  # noqa: C901
     video_path: Path,
     target_lines: List[TargetLine],
     roi_rect: tuple[int, int, int, int],
@@ -1279,6 +1331,7 @@ def refine_line_timings_at_low_fps(
     )
     groups = _merge_line_refinement_jobs(jobs, max_group_duration_sec=90.0)
     last_assigned_start: Optional[float] = None
+    last_assigned_visibility_end: Optional[float] = None
 
     for g_start, g_end, g_jobs in groups:
         group_frames = _read_window_frames_sampled(
@@ -1304,6 +1357,7 @@ def refine_line_timings_at_low_fps(
             line_min_start = _compute_line_min_start_time(
                 ln,
                 last_assigned_start=last_assigned_start,
+                last_assigned_visibility_end=last_assigned_visibility_end,
             )
             c_bg_line = np.mean(
                 [
@@ -1320,7 +1374,17 @@ def refine_line_timings_at_low_fps(
                 require_full_cycle=True,
             )
             if line_s is None and line_e is None:
-                continue
+                # Some repeated/persistent lines never show a full consume phase
+                # inside the sampled window. Fall back to onset-only detection.
+                line_s, line_e, line_conf = _detect_line_highlight_with_confidence(
+                    ln,
+                    line_frames,
+                    c_bg_line,
+                    min_start_time=line_min_start,
+                    require_full_cycle=False,
+                )
+                if line_s is None and line_e is None:
+                    continue
             line_s, line_e, line_conf = (
                 _maybe_adjust_detected_line_start_with_visibility_hint(
                     ln,
@@ -1334,8 +1398,12 @@ def refine_line_timings_at_low_fps(
             _assign_line_level_word_timings(ln, line_s, line_e, line_conf)
             if ln.word_starts and ln.word_starts[0] is not None:
                 last_assigned_start = float(ln.word_starts[0])
+                if ln.visibility_end is not None:
+                    last_assigned_visibility_end = float(ln.visibility_end)
             elif line_s is not None:
                 last_assigned_start = float(line_s)
+                if ln.visibility_end is not None:
+                    last_assigned_visibility_end = float(ln.visibility_end)
 
         _apply_persistent_block_highlight_order(g_jobs, group_frames, group_times)
         _assign_surrogate_timings_for_unresolved_overlap_blocks(
@@ -1345,6 +1413,8 @@ def refine_line_timings_at_low_fps(
         )
         _retime_late_first_lines_in_shared_visibility_blocks(g_jobs)
         _retime_compressed_shared_visibility_blocks(g_jobs)
+        _promote_unresolved_first_repeated_lines(g_jobs)
+        _compress_overlong_sparse_line_timings(g_jobs)
         for ln, _, _ in g_jobs:
             if ln.word_starts and ln.word_starts[0] is not None:
                 if last_assigned_start is None:
@@ -1353,6 +1423,14 @@ def refine_line_timings_at_low_fps(
                     last_assigned_start = max(
                         last_assigned_start, float(ln.word_starts[0])
                     )
+                if ln.visibility_end is not None:
+                    vis_end = float(ln.visibility_end)
+                    if last_assigned_visibility_end is None:
+                        last_assigned_visibility_end = vis_end
+                    else:
+                        last_assigned_visibility_end = max(
+                            last_assigned_visibility_end, vis_end
+                        )
 
     _retime_large_gaps_with_early_visibility(jobs)
     _retime_followups_in_short_lead_shared_visibility_runs(jobs)

@@ -117,3 +117,9 @@ Last updated: 2026-02-18
   - Raised `LINE_LEVEL_REFINE_SKIP_THRESHOLD` from `0.05` to `0.5` to avoid routing mixed-but-not-stable videos into fragile native-FPS refinement.
   - Regression check on `Billie Eilish - bad guy` (`GsFlbMS7UIc`) confirmed restored parity with v104 after gate hardening:
     - `mean_abs=0.543s`, `p95=1.35s`, `max=1.70s` (same as v104 under global-offset comparison).
+- [x] Unified high-FPS and low-FPS shared-visibility timing postpasses to reduce repeated-block drift when multiple lyric lines overlap on screen.
+- [x] Added sparse overlong-line compression for shared-visibility runs, preventing single-line long-tail spreads that delayed subsequent line starts.
+- [x] Validation snapshot (`Ed Sheeran - Shape of You`, `o71_MatpYV0`, refreshed cache):
+  - Recovered missing line in `3:36–3:43` window: `"I'm in love with your body"` now starts at `219.75s`.
+  - Companion line `"Come on be my baby..."` now starts at `221.60s`.
+  - Block emits all four concurrent lines in order rather than dropping/deferring the bottom lines.
