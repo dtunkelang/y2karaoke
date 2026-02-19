@@ -280,6 +280,14 @@ Status: Completed
   - First chorus repeated block now emits `I'm the bad guy / Duh / I'm the bad guy / Duh`.
   - Distorted OCR fragment is removed from final extracted lines.
 
+### Milestone 41: Refrain Token Normalization for `come one` OCR Drift
+Status: Completed
+- [x] Added conservative context-aware OCR token normalization for `come one` -> `come on` in chant/refrain contexts (`come one be my baby ...`, `... be my baby come one`).
+- [x] Added regression coverage in `tests/unit/core_shared/test_text_utils.py`.
+- [x] Validation snapshot:
+  - `Shape of You` (`o71_MatpYV0`) problematic block now emits `Come on be my baby come on` for both repeated lines.
+  - `Bad guy` first-chorus repetition improvements from Milestone 40 remain intact.
+
 ## Notes
 - Keep changes in significant, validated commits.
 - Prefer deterministic ranking and quality decisions for reproducibility.

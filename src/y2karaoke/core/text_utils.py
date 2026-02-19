@@ -474,6 +474,20 @@ def normalize_ocr_tokens(tokens: List[str]) -> List[str]:
             i += 1
             continue
 
+        # Frequent OCR confusion in refrain phrase
+        # "... come on be my baby come on ...".
+        if low == "one" and prev_low == "come":
+            trailing_baby_phrase = (
+                not next_low
+                and len(out) >= 4
+                and out[-1].lower() == "come"
+                and [w.lower() for w in out[-4:-1]] == ["be", "my", "baby"]
+            )
+            if next_low in {"be", "my", "baby"} or trailing_baby_phrase:
+                out.append("on")
+                i += 1
+                continue
+
         replacement = _contextual_ocr_token_replacement(low, prev_low, next_low)
         if replacement is not None:
             out.append(replacement)

@@ -222,6 +222,16 @@ class TestNormalizeOcrTokens:
         ]
         assert normalize_ocr_tokens(["come", "ony", "now"]) == ["come", "on", "now"]
         assert normalize_ocr_tokens(["come", "om", "baby"]) == ["come", "on", "baby"]
+        assert normalize_ocr_tokens(["come", "one", "be", "my", "baby"]) == [
+            "come",
+            "on",
+            "be",
+            "my",
+            "baby",
+        ]
+        assert normalize_ocr_tokens(
+            ["come", "on", "be", "my", "baby", "come", "one"]
+        ) == ["come", "on", "be", "my", "baby", "come", "on"]
 
     def test_repairs_short_token_confusions_in_context(self):
         assert normalize_ocr_tokens(["girl", "you", "know", "l", "want"]) == [
