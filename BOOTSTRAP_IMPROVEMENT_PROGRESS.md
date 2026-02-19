@@ -241,6 +241,16 @@ Status: Completed
   - Logs now show `Using cached video...` and `Using cached audio...` for `o71_MatpYV0`.
   - Eliminates repeated media downloads in iterative OCR/refinement tuning loops.
 
+### Milestone 37: Repeated-Lane Refrain Expansion
+Status: Completed
+- [x] Add overlap-aware repeated-line expansion in visual reconstruction for long, same-text dual-lane windows interleaved with short refrain cycles.
+- [x] Preserve synthesized repeated entries through duplicate-reentry suppression using explicit synthetic markers.
+- [x] Add regression coverage for overlapped same-text repetition expansion behavior.
+- [x] Validate Shape-of-You refrain block (`1:20-1:35`) now emits repeated body lines:
+  - `83.55` `"I'm in love with your body"`
+  - `89.35` `"I'm in love with your body"`
+  - `93.60` `"I'm in love with your body"`
+
 ## Notes
 - Keep changes in significant, validated commits.
 - Prefer deterministic ranking and quality decisions for reproducibility.
