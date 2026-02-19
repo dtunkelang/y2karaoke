@@ -50,6 +50,7 @@ This document outlines the critical areas of the `y2karaoke` codebase and the im
 *   **In progress:** Moved static-overlay suppression logic out of `visual/reconstruction.py` into `visual/reconstruction_overlay.py` to isolate OCR-noise filtering from line sequencing logic.
 *   **In progress:** Moved shared-visibility gap/followup retiming heuristics into `visual/refinement_shared_visibility_postpasses.py` with compatibility wrappers in `visual/refinement_postpasses.py`.
 *   **In progress:** Moved transition/interstitial retiming heuristics into `visual/refinement_transition_postpasses.py` with compatibility wrappers in `visual/refinement_postpasses.py`.
+*   **In progress:** Started Whisper post-processing decomposition by moving interjection-line retiming into `components/whisper/whisper_mapping_post_interjections.py` with compatibility wrapper in `whisper_mapping_post.py`.
 
 **Action Plan:**
 *   **Consolidate:** Keep singer-color policy in a dedicated module and avoid duplicating it in frame drawing code.
