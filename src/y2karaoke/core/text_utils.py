@@ -491,7 +491,7 @@ def normalize_ocr_tokens(tokens: List[str]) -> List[str]:
 
         # Frequent OCR confusion in refrain phrase
         # "... come on be my baby come on ...".
-        if low == "one" and prev_low == "come":
+        if low in {"one", "an"} and prev_low == "come":
             trailing_baby_phrase = (
                 not next_low
                 and len(out) >= 4

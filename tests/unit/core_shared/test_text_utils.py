@@ -229,6 +229,13 @@ class TestNormalizeOcrTokens:
             "my",
             "baby",
         ]
+        assert normalize_ocr_tokens(["come", "an", "be", "my", "baby"]) == [
+            "come",
+            "on",
+            "be",
+            "my",
+            "baby",
+        ]
         assert normalize_ocr_tokens(
             ["come", "on", "be", "my", "baby", "come", "one"]
         ) == ["come", "on", "be", "my", "baby", "come", "on"]

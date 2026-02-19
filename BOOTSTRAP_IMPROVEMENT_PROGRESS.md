@@ -341,6 +341,15 @@ Status: Completed
   - Evaluator metrics improved from `precision=0.9110, recall=0.8565, f1=0.8829` to `precision=0.9119, recall=0.8670, f1=0.8889`.
   - `Bad Guy` (`GsFlbMS7UIc`) remained stable on evaluator metrics (`precision=0.8176, recall=0.9528`).
 
+### Milestone 48: Refrain `come an` Normalization
+Status: Completed
+- [x] Extended refrain-context OCR normalization in `normalize_ocr_tokens` to repair `come an` -> `come on` (same guarded context as `come one`).
+- [x] Added regression coverage in `tests/unit/core_shared/test_text_utils.py`.
+- [x] Validation snapshot:
+  - `Shape of You` (`o71_MatpYV0`) evaluator improved further:
+    - `precision=0.9135`, `recall=0.8685`, `f1=0.8904` (from `0.9119/0.8670/0.8889`).
+  - `Bad Guy` (`GsFlbMS7UIc`) remained stable (`precision=0.8176`, `recall=0.9528`, `f1=0.8800`).
+
 ## Notes
 - Keep changes in significant, validated commits.
 - Prefer deterministic ranking and quality decisions for reproducibility.
