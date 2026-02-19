@@ -372,6 +372,9 @@ def normalize_ocr_tokens(tokens: List[str]) -> List[str]:
     i = 0
     while i < len(compact):
         tok = compact[i]
+        low = tok.lower()
+        prev_low = out[-1].lower() if out else ""
+        next_low = compact[i + 1].lower() if i + 1 < len(compact) else ""
 
         if out and tok in {"'ll", "'re", "'ve", "'m", "'d", "'s", "'t"}:
             out[-1] = out[-1] + tok
@@ -391,6 +394,49 @@ def normalize_ocr_tokens(tokens: List[str]) -> List[str]:
 
         if tok == "'" and out and any(ch.isalpha() for ch in out[-1]):
             out[-1] = out[-1] + "'"
+            i += 1
+            continue
+
+        # Common OCR split for "you" at line starts: "' ou come ..."
+        if tok == "'" and i + 1 < len(compact) and compact[i + 1].lower() == "ou":
+            out.append("you")
+            i += 2
+            continue
+
+        # Context-aware repair for frequent "you" misread.
+        if low == "ou" and (
+            not out
+            or prev_low in {"and", "but", "so", "then", "if", "when", "cause"}
+            or next_low
+            in {
+                "come",
+                "know",
+                "want",
+                "need",
+                "got",
+                "are",
+                "were",
+                "can",
+                "could",
+                "would",
+                "should",
+                "say",
+                "said",
+                "make",
+                "made",
+                "do",
+                "did",
+                "dont",
+                "don't",
+            }
+        ):
+            out.append("you")
+            i += 1
+            continue
+
+        # Frequent OCR confusion in phrase "... start up".
+        if low == "tup" and prev_low == "start":
+            out.append("up")
             i += 1
             continue
 

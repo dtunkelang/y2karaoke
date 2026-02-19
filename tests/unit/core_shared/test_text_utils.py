@@ -186,3 +186,22 @@ class TestNormalizeOcrTokens:
             "now",
             "red",
         ]
+
+    def test_repairs_you_start_artifacts(self):
+        assert normalize_ocr_tokens(["'", "ou", "come", "over"]) == [
+            "you",
+            "come",
+            "over",
+        ]
+        assert normalize_ocr_tokens(["ou", "know", "I", "want"]) == [
+            "you",
+            "know",
+            "I",
+            "want",
+        ]
+        assert normalize_ocr_tokens(["start", "tup", "a", "conversation"]) == [
+            "start",
+            "up",
+            "a",
+            "conversation",
+        ]
