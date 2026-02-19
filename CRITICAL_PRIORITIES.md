@@ -58,6 +58,7 @@ This document outlines the critical areas of the `y2karaoke` codebase and the im
 *   **In progress:** Continued Whisper integration decomposition by moving baseline-alignment/rollback helpers into `components/whisper/whisper_integration_baseline.py` with compatibility wrappers in `whisper_integration_pipeline.py`.
 *   **In progress:** Continued Whisper integration decomposition by moving low-quality-segment and finalization orchestration into `components/whisper/whisper_integration_finalize.py` with compatibility wrappers in `whisper_integration_pipeline.py`.
 *   **In progress:** Continued Whisper repetition-postprocessing decomposition by moving short-question minimum-duration enforcement into `components/whisper/whisper_mapping_post_question_duration.py` with compatibility wrapper in `whisper_mapping_post_repetition.py`.
+*   **In progress:** Continued Whisper alignment decomposition by moving short-line silence/onset refinement helpers into `components/whisper/whisper_alignment_short_lines.py` with compatibility wrappers in `whisper_alignment_refinement.py`.
 
 **Action Plan:**
 *   **Consolidate:** Keep singer-color policy in a dedicated module and avoid duplicating it in frame drawing code.
@@ -74,4 +75,4 @@ This document outlines the critical areas of the `y2karaoke` codebase and the im
 ---
 
 **Next Immediate Step:**
-Continue render technical-debt cleanup by splitting remaining orchestration in `frame_renderer.py` into a focused coordinator model.
+Continue Whisper alignment decomposition by extracting the next cohesive helper cluster from `whisper_alignment_refinement.py` into focused modules with compatibility wrappers.
