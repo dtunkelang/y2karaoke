@@ -238,6 +238,54 @@ def test_reconstruct_merges_overlapping_same_lane_same_text_epochs() -> None:
     assert texts.count("My bloody nose") == 1
 
 
+def test_reconstruct_extrapolates_mirrored_lane_repeated_cycles() -> None:
+    raw_frames = []
+    t = 100.0
+    while t <= 117.0:
+        words = [
+            {"text": "I'm", "x": 20, "y": 160, "w": 30, "h": 18},
+            {"text": "in", "x": 54, "y": 160, "w": 14, "h": 18},
+            {"text": "love", "x": 72, "y": 160, "w": 34, "h": 18},
+            {"text": "with", "x": 110, "y": 160, "w": 30, "h": 18},
+            {"text": "your", "x": 144, "y": 160, "w": 30, "h": 18},
+            {"text": "body", "x": 178, "y": 160, "w": 34, "h": 18},
+            {"text": "Come", "x": 20, "y": 230, "w": 42, "h": 18},
+            {"text": "on", "x": 66, "y": 230, "w": 20, "h": 18},
+            {"text": "be", "x": 90, "y": 230, "w": 20, "h": 18},
+            {"text": "my", "x": 114, "y": 230, "w": 24, "h": 18},
+            {"text": "baby", "x": 142, "y": 230, "w": 36, "h": 18},
+            {"text": "come", "x": 182, "y": 230, "w": 42, "h": 18},
+            {"text": "on", "x": 228, "y": 230, "w": 20, "h": 18},
+        ]
+        if t >= 107.0:
+            words.extend(
+                [
+                    {"text": "I'm", "x": 20, "y": 20, "w": 30, "h": 18},
+                    {"text": "in", "x": 54, "y": 20, "w": 14, "h": 18},
+                    {"text": "love", "x": 72, "y": 20, "w": 34, "h": 18},
+                    {"text": "with", "x": 110, "y": 20, "w": 30, "h": 18},
+                    {"text": "your", "x": 144, "y": 20, "w": 30, "h": 18},
+                    {"text": "body", "x": 178, "y": 20, "w": 34, "h": 18},
+                    {"text": "Come", "x": 20, "y": 90, "w": 42, "h": 18},
+                    {"text": "on", "x": 66, "y": 90, "w": 20, "h": 18},
+                    {"text": "be", "x": 90, "y": 90, "w": 20, "h": 18},
+                    {"text": "my", "x": 114, "y": 90, "w": 24, "h": 18},
+                    {"text": "baby", "x": 142, "y": 90, "w": 36, "h": 18},
+                    {"text": "come", "x": 182, "y": 90, "w": 42, "h": 18},
+                    {"text": "on", "x": 228, "y": 90, "w": 20, "h": 18},
+                ]
+            )
+        raw_frames.append({"time": t, "words": words})
+        t += 1.0
+
+    raw_frames.append({"time": 119.0, "words": []})
+    lines = reconstruct_lyrics_from_visuals(raw_frames, 1.0)
+    body_lines = [ln for ln in lines if ln.text == "I'm in love with your body"]
+    come_lines = [ln for ln in lines if ln.text == "Come on be my baby come on"]
+    assert len(body_lines) >= 3
+    assert len(come_lines) >= 3
+
+
 def test_reconstruct_lyrics_suppresses_ultrashort_same_lane_repeat_ghost():
     raw_frames = [
         {

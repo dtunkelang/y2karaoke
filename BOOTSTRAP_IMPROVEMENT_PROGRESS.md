@@ -330,6 +330,17 @@ Status: Completed
 - [x] Added regression coverage in `tests/unit/core_shared/test_text_utils.py` (`Oh 1 oh` -> `Oh I oh`).
 - [x] Validation check on `Shape of You` confirms removal of `oh 1 oh`-style token artifact from largest-diff diagnostics without regressions to overall extraction metrics.
 
+### Milestone 47: Mirrored-Lane Cycle Extrapolation (Outro Recovery)
+Status: Completed
+- [x] Added conservative mirrored-lane cycle extrapolation in `src/y2karaoke/core/visual/reconstruction.py` to infer one additional repeated cycle when long same-text duplicate lanes overlap with stable phase gap.
+- [x] Added regression coverage in `tests/unit/visual/test_reconstruction.py` for mirrored-lane repeated-cycle recovery behavior.
+- [x] Validation snapshot:
+  - `Shape of You` (`o71_MatpYV0`) now recovers an additional repeated outro pair around `231-234s`:
+    - `231.35` `I'm in love with your body`
+    - `233.55` `Come on be my baby come on`
+  - Evaluator metrics improved from `precision=0.9110, recall=0.8565, f1=0.8829` to `precision=0.9119, recall=0.8670, f1=0.8889`.
+  - `Bad Guy` (`GsFlbMS7UIc`) remained stable on evaluator metrics (`precision=0.8176, recall=0.9528`).
+
 ## Notes
 - Keep changes in significant, validated commits.
 - Prefer deterministic ranking and quality decisions for reproducibility.
