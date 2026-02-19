@@ -24,9 +24,15 @@ jobs:
       - name: Install system dependencies
         run: |
           # Some runner images include stale Microsoft apt sources that can 403.
-          sudo rm -f /etc/apt/sources.list.d/azure-cli.list
-          sudo rm -f /etc/apt/sources.list.d/microsoft-prod.list
-          sudo find /etc/apt/sources.list.d -maxdepth 1 -type f -name '*microsoft*' -delete || true
+          sudo rm -f /etc/apt/sources.list.d/azure-cli.list /etc/apt/sources.list.d/azure-cli.sources
+          sudo rm -f /etc/apt/sources.list.d/microsoft-prod.list /etc/apt/sources.list.d/microsoft-prod.sources
+          for f in /etc/apt/sources.list /etc/apt/sources.list.d/*.list /etc/apt/sources.list.d/*.sources; do
+            [ -f "$f" ] || continue
+            if grep -qi "packages.microsoft.com" "$f"; then
+              echo "Removing stale Microsoft apt source: $f"
+              sudo rm -f "$f"
+            fi
+          done
           sudo apt-get update
           sudo apt-get install -y ffmpeg
 
@@ -86,9 +92,15 @@ jobs:
       - name: Install system dependencies
         run: |
           # Some runner images include stale Microsoft apt sources that can 403.
-          sudo rm -f /etc/apt/sources.list.d/azure-cli.list
-          sudo rm -f /etc/apt/sources.list.d/microsoft-prod.list
-          sudo find /etc/apt/sources.list.d -maxdepth 1 -type f -name '*microsoft*' -delete || true
+          sudo rm -f /etc/apt/sources.list.d/azure-cli.list /etc/apt/sources.list.d/azure-cli.sources
+          sudo rm -f /etc/apt/sources.list.d/microsoft-prod.list /etc/apt/sources.list.d/microsoft-prod.sources
+          for f in /etc/apt/sources.list /etc/apt/sources.list.d/*.list /etc/apt/sources.list.d/*.sources; do
+            [ -f "$f" ] || continue
+            if grep -qi "packages.microsoft.com" "$f"; then
+              echo "Removing stale Microsoft apt source: $f"
+              sudo rm -f "$f"
+            fi
+          done
           sudo apt-get update
           sudo apt-get install -y ffmpeg
 
