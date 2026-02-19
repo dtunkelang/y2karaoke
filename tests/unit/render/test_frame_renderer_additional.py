@@ -102,7 +102,7 @@ def test_draw_line_text_uses_singer_color(monkeypatch):
     word_widths = [10, 5, 20]
 
     monkeypatch.setattr(
-        "y2karaoke.core.components.render.frame_renderer.get_singer_colors",
+        "y2karaoke.core.components.render.render_text.get_singer_colors",
         lambda *_: ((1, 2, 3), (4, 5, 6)),
     )
 
