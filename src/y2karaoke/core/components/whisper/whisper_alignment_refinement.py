@@ -18,6 +18,7 @@ from .whisper_alignment_base import (
     _line_duration,
     _shift_line,
 )
+from . import whisper_alignment_activity as _alignment_activity_helpers
 from . import whisper_alignment_short_lines as _short_line_helpers
 from .whisper_alignment_segments import _find_best_whisper_segment
 
@@ -634,116 +635,21 @@ def _fill_vocal_activity_gaps(
     chunk_duration: float = 0.5,
     segments: Optional[List[TranscriptionSegment]] = None,
 ) -> Tuple[List[TranscriptionWord], Optional[List[TranscriptionSegment]]]:
-    """Inject pseudo-words and segments where vocal activity is high but transcription missing."""
-    if not whisper_words:
-        return whisper_words, segments
-
-    filled_words = list(whisper_words)
-    filled_words.sort(key=lambda w: w.start)
-
-    filled_segments = list(segments) if segments is not None else None
-    if filled_segments:
-        filled_segments.sort(key=lambda s: s.start)
-
-    new_words = []
-    new_segments = []
-
-    def add_vocal_block(start, end):
-        curr = start
-        seg_words = []
-        while curr + chunk_duration <= end:
-            w = TranscriptionWord(
-                start=curr,
-                end=curr + chunk_duration,
-                text="[VOCAL]",
-                probability=0.0,
-            )
-            new_words.append(w)
-            seg_words.append(w)
-            curr += chunk_duration
-
-        if seg_words and filled_segments is not None:
-            new_segments.append(
-                TranscriptionSegment(
-                    start=seg_words[0].start,
-                    end=seg_words[-1].end,
-                    text="[VOCAL]",
-                    words=seg_words,
-                )
-            )
-
-    # 1. Check gap before first word
-    vocal_start = audio_features.vocal_start
-    if filled_words[0].start - vocal_start >= min_gap:
-        activity = _check_vocal_activity_in_range(
-            vocal_start, filled_words[0].start, audio_features
-        )
-        if activity > threshold:
-            add_vocal_block(vocal_start, filled_words[0].start)
-
-    # 2. Check gaps between words
-    for i in range(len(filled_words) - 1):
-        gap_start = filled_words[i].end
-        gap_end = filled_words[i + 1].start
-
-        if gap_end - gap_start >= min_gap:
-            activity = _check_vocal_activity_in_range(
-                gap_start, gap_end, audio_features
-            )
-            if activity > threshold:
-                add_vocal_block(gap_start, gap_end)
-
-    # 3. Check gap after last word
-    vocal_end = audio_features.vocal_end
-    if vocal_end - filled_words[-1].end >= min_gap:
-        activity = _check_vocal_activity_in_range(
-            filled_words[-1].end, vocal_end, audio_features
-        )
-        if activity > threshold:
-            add_vocal_block(filled_words[-1].end, vocal_end)
-
-    if new_words:
-        logger.info(f"Vocal gap filler: injected {len(new_words)} [VOCAL] pseudo-words")
-        filled_words.extend(new_words)
-        filled_words.sort(key=lambda w: w.start)
-
-        if filled_segments is not None and new_segments:
-            filled_segments.extend(new_segments)
-            filled_segments.sort(key=lambda s: s.start)
-
-    return filled_words, filled_segments
+    return _alignment_activity_helpers._fill_vocal_activity_gaps(
+        whisper_words,
+        audio_features,
+        check_vocal_activity_in_range_fn=_check_vocal_activity_in_range,
+        threshold=threshold,
+        min_gap=min_gap,
+        chunk_duration=chunk_duration,
+        segments=segments,
+    )
 
 
 def _drop_duplicate_lines_by_timing(
     lines: List[Line],
     max_gap: float = 0.2,
 ) -> Tuple[List[Line], int]:
-    """Drop adjacent duplicate lines that overlap or are nearly contiguous."""
-    if not lines:
-        return lines, 0
-
-    deduped: List[Line] = []
-    dropped = 0
-
-    for line in lines:
-        if not deduped:
-            deduped.append(line)
-            continue
-
-        prev = deduped[-1]
-        if not prev.words or not line.words:
-            deduped.append(line)
-            continue
-
-        if prev.text.strip() != line.text.strip():
-            deduped.append(line)
-            continue
-
-        gap = line.start_time - prev.end_time
-        if gap <= max_gap:
-            dropped += 1
-            continue
-
-        deduped.append(line)
-
-    return deduped, dropped
+    return _alignment_activity_helpers._drop_duplicate_lines_by_timing(
+        lines, max_gap=max_gap
+    )
