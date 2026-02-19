@@ -7,6 +7,10 @@ from typing import List, Optional, Tuple, cast
 import numpy as np
 
 from ..models import TargetLine
+from .refinement_repetition_postpasses import (
+    _pull_late_first_lines_in_alternating_repeated_blocks as _pull_late_first_lines_in_alternating_repeated_blocks_impl,
+    _retime_repeated_blocks_with_long_tail_gap as _retime_repeated_blocks_with_long_tail_gap_impl,
+)
 
 
 def _canonical_line_text(ln: TargetLine) -> str:
@@ -1224,115 +1228,22 @@ def _pull_dense_short_runs_toward_previous_anchor(
 def _retime_repeated_blocks_with_long_tail_gap(
     g_jobs: List[Tuple[TargetLine, float, float]],
 ) -> None:
-    """Delay repeated-line sub-blocks when a long tail gap indicates late highlights.
-
-    This targets karaoke layouts where repeated short lines stay visible for a long time
-    and only highlight near the end of the shared on-screen window.
-    """
-    line_order = [ln for ln, _, _ in g_jobs]
-    for i in range(len(line_order) - 3):
-        a = line_order[i]
-        b = line_order[i + 1]
-        c = line_order[i + 2]
-        d = line_order[i + 3]
-        a_s, a_e = _line_start(a), _line_end(a)
-        b_s, b_e = _line_start(b), _line_end(b)
-        c_s, c_e = _line_start(c), _line_end(c)
-        d_s, d_e = _line_start(d), _line_end(d)
-        if None in (a_s, a_e, b_s, b_e, c_s, c_e, d_s, d_e):
-            continue
-
-        a_sf = float(cast(float, a_s))
-        a_ef = float(cast(float, a_e))
-        b_sf = float(cast(float, b_s))
-        b_ef = float(cast(float, b_e))
-        c_sf = float(cast(float, c_s))
-        c_ef = float(cast(float, c_e))
-        d_sf = float(cast(float, d_s))
-
-        texts = [_canonical_line_text(x) for x in [a, b, c, d]]
-        if texts[0] != texts[1]:
-            continue
-        if len(set(t for t in texts if t)) >= 4:
-            continue
-        # First three are compressed early, then a large gap before last line.
-        if not ((b_sf - a_sf) <= 3.0 and (c_sf - b_sf) <= 1.5):
-            continue
-        tail_gap = d_sf - c_ef
-        if tail_gap < 6.0:
-            continue
-
-        dur_a = max(0.8, a_ef - a_sf)
-        dur_b = max(0.7, b_ef - b_sf)
-        dur_c = max(0.7, c_ef - c_sf)
-        a_target = a_sf
-        if i > 0:
-            prev = line_order[i - 1]
-            p_e = _line_end(prev)
-            if p_e is not None and (a_sf - float(p_e)) < 1.2:
-                # In long-tail repeated blocks, avoid starting the first repeated
-                # line immediately after the previous line; highlights often begin later.
-                a_target = max(a_target, float(p_e) + 2.5)
-        a_target_end = a_target + dur_a
-        b_target = max(a_target_end + 1.0, d_sf - 4.0)
-        c_target = max(b_target + 1.5, d_sf - 2.0)
-        b_target = max(b_target, a_target + 0.8)
-        c_target = min(c_target, d_sf - 0.4)
-        b_target = min(b_target, c_target - 0.8)
-        if a_target <= a_sf + 0.3 and b_target <= b_sf + 0.4 and c_target <= c_sf + 0.4:
-            continue
-
-        _assign_line_level_word_timings(a, a_target, a_target + dur_a, 0.42)
-        _assign_line_level_word_timings(b, b_target, b_target + dur_b, 0.42)
-        _assign_line_level_word_timings(c, c_target, c_target + dur_c, 0.42)
+    _retime_repeated_blocks_with_long_tail_gap_impl(
+        g_jobs,
+        line_start_fn=_line_start,
+        line_end_fn=_line_end,
+        canonical_line_text_fn=_canonical_line_text,
+        assign_line_level_word_timings_fn=_assign_line_level_word_timings,
+    )
 
 
 def _pull_late_first_lines_in_alternating_repeated_blocks(
     g_jobs: List[Tuple[TargetLine, float, float]],
 ) -> None:
-    """Correct late first onsets in A/B/A/B repeated blocks with shared visibility."""
-    line_order = [ln for ln, _, _ in g_jobs]
-    for i in range(len(line_order) - 3):
-        a = line_order[i]
-        b = line_order[i + 1]
-        c = line_order[i + 2]
-        d = line_order[i + 3]
-        a_s, a_e = _line_start(a), _line_end(a)
-        b_s, b_e = _line_start(b), _line_end(b)
-        c_s, c_e = _line_start(c), _line_end(c)
-        d_s, d_e = _line_start(d), _line_end(d)
-        if None in (a_s, a_e, b_s, b_e, c_s, c_e, d_s, d_e):
-            continue
-        if a.visibility_start is None or a.visibility_end is None:
-            continue
-
-        a_sf = float(cast(float, a_s))
-        a_ef = float(cast(float, a_e))
-        b_sf = float(cast(float, b_s))
-        b_ef = float(cast(float, b_e))
-        c_sf = float(cast(float, c_s))
-        vis_start = float(a.visibility_start)
-        vis_end = float(a.visibility_end)
-        if (vis_end - vis_start) < 10.0:
-            continue
-
-        ta = _canonical_line_text(a)
-        tb = _canonical_line_text(b)
-        tc = _canonical_line_text(c)
-        td = _canonical_line_text(d)
-        if not ta or not tb or ta != tc or tb != td or ta == tb:
-            continue
-
-        # Only correct when first repeated line is clearly delayed from visibility.
-        if (a_sf - vis_start) < 1.2:
-            continue
-        # Distinguish from tightly chained repetition; here second A appears much later.
-        if (c_sf - b_ef) < 4.0:
-            continue
-
-        a_dur = max(0.8, a_ef - a_sf)
-        target_a = max(vis_start + 0.05, a_sf - 1.8)
-        target_a = min(target_a, b_sf - a_dur - 0.1)
-        if target_a >= a_sf - 0.25:
-            continue
-        _assign_line_level_word_timings(a, target_a, target_a + a_dur, 0.42)
+    _pull_late_first_lines_in_alternating_repeated_blocks_impl(
+        g_jobs,
+        line_start_fn=_line_start,
+        line_end_fn=_line_end,
+        canonical_line_text_fn=_canonical_line_text,
+        assign_line_level_word_timings_fn=_assign_line_level_word_timings,
+    )
