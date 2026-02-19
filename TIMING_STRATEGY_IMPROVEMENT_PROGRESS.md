@@ -29,7 +29,7 @@ Last updated: 2026-02-18
 - [x] Add line-level visual fallback when word-level highlight transitions are absent.
 
 ### P2 - Architecture and Maintainability
-- [ ] Continue splitting high-complexity Whisper orchestration hotspots.
+- [x] Continue splitting high-complexity Whisper orchestration hotspots.
 - [ ] Tighten module boundaries and contracts for easier regression isolation.
 
 ### P2 - Documentation Sync
@@ -128,3 +128,7 @@ Last updated: 2026-02-18
 - [x] Validation snapshot (`Ed Sheeran - Shape of You`, refrain window around `1:18–1:31`):
   - Normalized refrain output now recovers canonical alternation in previously noisy lane (`Oh I oh I oh I oh I` instead of duplicated-adjacent drift forms).
   - Refrain sequencing around overlapping repeats remains intact (no regression on repeated-line preservation checks).
+- [x] Refactored Whisper orchestration hotspot in `src/y2karaoke/core/components/whisper/whisper_integration_pipeline.py`:
+  - extracted low-quality segment postpass chain into `_apply_low_quality_segment_postpasses`,
+  - extracted normalization/dedupe/final-guard chain into `_finalize_whisper_line_set`,
+  - preserved existing behavior while reducing top-level orchestration branching and improving separation of concerns.

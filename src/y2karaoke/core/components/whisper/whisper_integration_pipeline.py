@@ -719,75 +719,171 @@ def correct_timing_with_whisper_impl(  # noqa: C901
             )
 
     if quality < 0.4 or force_dtw:
-        aligned_lines, merged_first = merge_first_two_lines_if_segment_matches_fn(
-            aligned_lines, transcription, epitran_lang
+        aligned_lines, alignments = _apply_low_quality_segment_postpasses(
+            aligned_lines=aligned_lines,
+            alignments=alignments,
+            transcription=transcription,
+            epitran_lang=epitran_lang,
+            merge_first_two_lines_if_segment_matches_fn=merge_first_two_lines_if_segment_matches_fn,
+            retime_adjacent_lines_to_whisper_window_fn=retime_adjacent_lines_to_whisper_window_fn,
+            retime_adjacent_lines_to_segment_window_fn=retime_adjacent_lines_to_segment_window_fn,
+            pull_next_line_into_segment_window_fn=pull_next_line_into_segment_window_fn,
+            pull_lines_near_segment_end_fn=pull_lines_near_segment_end_fn,
+            pull_next_line_into_same_segment_fn=pull_next_line_into_same_segment_fn,
+            merge_lines_to_whisper_segments_fn=merge_lines_to_whisper_segments_fn,
+            tighten_lines_to_whisper_segments_fn=tighten_lines_to_whisper_segments_fn,
+            pull_lines_to_best_segments_fn=pull_lines_to_best_segments_fn,
         )
-        if merged_first:
-            alignments.append("Merged first two lines via Whisper segment")
-        aligned_lines, pair_retimed = retime_adjacent_lines_to_whisper_window_fn(
-            aligned_lines, transcription, epitran_lang
-        )
-        if pair_retimed:
-            alignments.append(
-                f"Retimed {pair_retimed} adjacent line pair(s) to Whisper window"
-            )
-        aligned_lines, pair_windowed = retime_adjacent_lines_to_segment_window_fn(
-            aligned_lines, transcription, epitran_lang
-        )
-        if pair_windowed:
-            alignments.append(
-                f"Retimed {pair_windowed} adjacent line pair(s) to Whisper segment window"
-            )
-        aligned_lines, pulled_next = pull_next_line_into_segment_window_fn(
-            aligned_lines, transcription, epitran_lang
-        )
-        if pulled_next:
-            alignments.append(
-                f"Pulled {pulled_next} line(s) into adjacent segment window"
-            )
-        aligned_lines, pulled_near_end = pull_lines_near_segment_end_fn(
-            aligned_lines, transcription, epitran_lang
-        )
-        if pulled_near_end:
-            alignments.append(f"Pulled {pulled_near_end} line(s) near segment ends")
-        aligned_lines, pulled_same = pull_next_line_into_same_segment_fn(
-            aligned_lines, transcription
-        )
-        if pulled_same:
-            alignments.append(f"Pulled {pulled_same} line(s) into same segment")
-        aligned_lines, pair_retimed_after = retime_adjacent_lines_to_whisper_window_fn(
-            aligned_lines,
-            transcription,
-            epitran_lang,
-            max_window_duration=4.5,
-            max_start_offset=1.0,
-        )
-        if pair_retimed_after:
-            alignments.append(
-                f"Retimed {pair_retimed_after} adjacent line pair(s) after pulls"
-            )
-        aligned_lines, merged = merge_lines_to_whisper_segments_fn(
-            aligned_lines, transcription, epitran_lang
-        )
-        if merged:
-            alignments.append(f"Merged {merged} line pair(s) via Whisper segments")
-        aligned_lines, tightened = tighten_lines_to_whisper_segments_fn(
-            aligned_lines, transcription, epitran_lang
-        )
-        if tightened:
-            alignments.append(f"Tightened {tightened} line(s) to Whisper segments")
-        aligned_lines, pulled = pull_lines_to_best_segments_fn(
-            aligned_lines, transcription, epitran_lang
-        )
-        if pulled:
-            alignments.append(f"Pulled {pulled} line(s) to Whisper segments")
 
+    aligned_lines, alignments = _finalize_whisper_line_set(
+        source_lines=lines,
+        aligned_lines=aligned_lines,
+        alignments=alignments,
+        transcription=transcription,
+        epitran_lang=epitran_lang,
+        force_dtw=force_dtw,
+        audio_features=audio_features,
+        fix_ordering_violations_fn=fix_ordering_violations_fn,
+        normalize_line_word_timings_fn=normalize_line_word_timings_fn,
+        enforce_monotonic_line_starts_fn=enforce_monotonic_line_starts_fn,
+        enforce_non_overlapping_lines_fn=enforce_non_overlapping_lines_fn,
+        pull_lines_near_segment_end_fn=pull_lines_near_segment_end_fn,
+        merge_short_following_line_into_segment_fn=merge_short_following_line_into_segment_fn,
+        clamp_repeated_line_duration_fn=clamp_repeated_line_duration_fn,
+        drop_duplicate_lines_fn=drop_duplicate_lines_fn,
+        drop_duplicate_lines_by_timing_fn=drop_duplicate_lines_by_timing_fn,
+        pull_lines_forward_for_continuous_vocals_fn=pull_lines_forward_for_continuous_vocals_fn,
+    )
+
+    # Policy constraint: keep line starts anchored to LRC timings.
+    aligned_lines = _constrain_line_starts_to_baseline(aligned_lines, baseline_lines)
+
+    rollback, short_before, short_after = _should_rollback_short_line_degradation(
+        baseline_lines, aligned_lines
+    )
+    if rollback:
+        logger.warning(
+            "Rolling back Whisper corrections: implausibly short multi-word lines worsened (%d -> %d)",
+            short_before,
+            short_after,
+        )
+        alignments.append(
+            "Rolled back Whisper timing due to short-line compression artifacts"
+        )
+        aligned_lines = baseline_lines
+
+    if alignments:
+        logger.info(f"Whisper hybrid alignment: {len(alignments)} lines corrected")
+
+    return aligned_lines, alignments, metrics
+
+
+def _apply_low_quality_segment_postpasses(
+    *,
+    aligned_lines: List[models.Line],
+    alignments: List[str],
+    transcription: List[timing_models.TranscriptionSegment],
+    epitran_lang: str,
+    merge_first_two_lines_if_segment_matches_fn: Callable[..., Any],
+    retime_adjacent_lines_to_whisper_window_fn: Callable[..., Any],
+    retime_adjacent_lines_to_segment_window_fn: Callable[..., Any],
+    pull_next_line_into_segment_window_fn: Callable[..., Any],
+    pull_lines_near_segment_end_fn: Callable[..., Any],
+    pull_next_line_into_same_segment_fn: Callable[..., Any],
+    merge_lines_to_whisper_segments_fn: Callable[..., Any],
+    tighten_lines_to_whisper_segments_fn: Callable[..., Any],
+    pull_lines_to_best_segments_fn: Callable[..., Any],
+) -> Tuple[List[models.Line], List[str]]:
+    aligned_lines, merged_first = merge_first_two_lines_if_segment_matches_fn(
+        aligned_lines, transcription, epitran_lang
+    )
+    if merged_first:
+        alignments.append("Merged first two lines via Whisper segment")
+    aligned_lines, pair_retimed = retime_adjacent_lines_to_whisper_window_fn(
+        aligned_lines, transcription, epitran_lang
+    )
+    if pair_retimed:
+        alignments.append(
+            f"Retimed {pair_retimed} adjacent line pair(s) to Whisper window"
+        )
+    aligned_lines, pair_windowed = retime_adjacent_lines_to_segment_window_fn(
+        aligned_lines, transcription, epitran_lang
+    )
+    if pair_windowed:
+        alignments.append(
+            f"Retimed {pair_windowed} adjacent line pair(s) to Whisper segment window"
+        )
+    aligned_lines, pulled_next = pull_next_line_into_segment_window_fn(
+        aligned_lines, transcription, epitran_lang
+    )
+    if pulled_next:
+        alignments.append(f"Pulled {pulled_next} line(s) into adjacent segment window")
+    aligned_lines, pulled_near_end = pull_lines_near_segment_end_fn(
+        aligned_lines, transcription, epitran_lang
+    )
+    if pulled_near_end:
+        alignments.append(f"Pulled {pulled_near_end} line(s) near segment ends")
+    aligned_lines, pulled_same = pull_next_line_into_same_segment_fn(
+        aligned_lines, transcription
+    )
+    if pulled_same:
+        alignments.append(f"Pulled {pulled_same} line(s) into same segment")
+    aligned_lines, pair_retimed_after = retime_adjacent_lines_to_whisper_window_fn(
+        aligned_lines,
+        transcription,
+        epitran_lang,
+        max_window_duration=4.5,
+        max_start_offset=1.0,
+    )
+    if pair_retimed_after:
+        alignments.append(
+            f"Retimed {pair_retimed_after} adjacent line pair(s) after pulls"
+        )
+    aligned_lines, merged = merge_lines_to_whisper_segments_fn(
+        aligned_lines, transcription, epitran_lang
+    )
+    if merged:
+        alignments.append(f"Merged {merged} line pair(s) via Whisper segments")
+    aligned_lines, tightened = tighten_lines_to_whisper_segments_fn(
+        aligned_lines, transcription, epitran_lang
+    )
+    if tightened:
+        alignments.append(f"Tightened {tightened} line(s) to Whisper segments")
+    aligned_lines, pulled = pull_lines_to_best_segments_fn(
+        aligned_lines, transcription, epitran_lang
+    )
+    if pulled:
+        alignments.append(f"Pulled {pulled} line(s) to Whisper segments")
+    return aligned_lines, alignments
+
+
+def _finalize_whisper_line_set(
+    *,
+    source_lines: List[models.Line],
+    aligned_lines: List[models.Line],
+    alignments: List[str],
+    transcription: List[timing_models.TranscriptionSegment],
+    epitran_lang: str,
+    force_dtw: bool,
+    audio_features: Optional[timing_models.AudioFeatures],
+    fix_ordering_violations_fn: Callable[..., Any],
+    normalize_line_word_timings_fn: Callable[..., Any],
+    enforce_monotonic_line_starts_fn: Callable[..., Any],
+    enforce_non_overlapping_lines_fn: Callable[..., Any],
+    pull_lines_near_segment_end_fn: Callable[..., Any],
+    merge_short_following_line_into_segment_fn: Callable[..., Any],
+    clamp_repeated_line_duration_fn: Callable[..., Any],
+    drop_duplicate_lines_fn: Callable[..., Any],
+    drop_duplicate_lines_by_timing_fn: Callable[..., Any],
+    pull_lines_forward_for_continuous_vocals_fn: Callable[..., Any],
+) -> Tuple[List[models.Line], List[str]]:
     aligned_lines, alignments = fix_ordering_violations_fn(
-        lines, aligned_lines, alignments
+        source_lines, aligned_lines, alignments
     )
     aligned_lines = normalize_line_word_timings_fn(aligned_lines)
     aligned_lines = enforce_monotonic_line_starts_fn(aligned_lines)
     aligned_lines = enforce_non_overlapping_lines_fn(aligned_lines)
+
     if force_dtw:
         aligned_lines, pulled_near_end = pull_lines_near_segment_end_fn(
             aligned_lines, transcription, epitran_lang
@@ -833,25 +929,4 @@ def correct_timing_with_whisper_impl(  # noqa: C901
 
     aligned_lines = enforce_monotonic_line_starts_fn(aligned_lines)
     aligned_lines = enforce_non_overlapping_lines_fn(aligned_lines)
-
-    # Policy constraint: keep line starts anchored to LRC timings.
-    aligned_lines = _constrain_line_starts_to_baseline(aligned_lines, baseline_lines)
-
-    rollback, short_before, short_after = _should_rollback_short_line_degradation(
-        baseline_lines, aligned_lines
-    )
-    if rollback:
-        logger.warning(
-            "Rolling back Whisper corrections: implausibly short multi-word lines worsened (%d -> %d)",
-            short_before,
-            short_after,
-        )
-        alignments.append(
-            "Rolled back Whisper timing due to short-line compression artifacts"
-        )
-        aligned_lines = baseline_lines
-
-    if alignments:
-        logger.info(f"Whisper hybrid alignment: {len(alignments)} lines corrected")
-
-    return aligned_lines, alignments, metrics
+    return aligned_lines, alignments
