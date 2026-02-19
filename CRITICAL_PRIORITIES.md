@@ -60,6 +60,7 @@ This document outlines the critical areas of the `y2karaoke` codebase and the im
 *   **In progress:** Continued Whisper repetition-postprocessing decomposition by moving short-question minimum-duration enforcement into `components/whisper/whisper_mapping_post_question_duration.py` with compatibility wrapper in `whisper_mapping_post_repetition.py`.
 *   **In progress:** Continued Whisper alignment decomposition by moving short-line silence/onset refinement helpers into `components/whisper/whisper_alignment_short_lines.py` with compatibility wrappers in `whisper_alignment_refinement.py`.
 *   **In progress:** Continued Whisper alignment decomposition by moving vocal-activity gap-fill and timing dedupe helpers into `components/whisper/whisper_alignment_activity.py` with compatibility wrappers in `whisper_alignment_refinement.py`.
+*   **In progress:** Continued Whisper repetition-postprocessing decomposition by moving trailing-line extension logic into `components/whisper/whisper_mapping_post_tail_extension.py` with compatibility wrapper in `whisper_mapping_post_repetition.py`.
 
 **Action Plan:**
 *   **Consolidate:** Keep singer-color policy in a dedicated module and avoid duplicating it in frame drawing code.
