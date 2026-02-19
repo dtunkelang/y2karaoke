@@ -220,6 +220,17 @@ Status: Completed
 - [x] Add dedicated reconstruction regression tests in `tests/unit/visual/test_reconstruction_refrain_noise.py`
 - [x] Re-validate Shape of You extraction quality after refrain continuity cleanup
 
+### Milestone 35: Geometry-First Confusable Token Segmentation
+Status: Completed
+- [x] Add visual-gap token segmentation module (`core.visual.word_segmentation`) and integrate it into reconstruction.
+- [x] Tighten gap merge thresholds so confusable chant tokens (`I`/`oh`) are split conservatively and avoid over-fusion.
+- [x] Expand reconstruction regression coverage for spacing-driven confusable splits and same-lane continuation reentries.
+- [x] Add chant-run normalization in `normalize_ocr_line` for fused confusable tokens in postprocessed output.
+- [x] Validate Shape of You bootstrap output quality (cached OCR, Vision OCR, `visual_fps=3.0`):
+  - Baseline (`/tmp/shape_spacing_general.gold.json`): `lines=142`, `ocr_words=624`, `matched=555`, `precision=0.8894`, `recall=0.8009`.
+  - Updated (`/tmp/shape_spacing_general_v2.gold.json`): `lines=139`, `ocr_words=609`, `matched=551`, `precision=0.9048`, `recall=0.7951`.
+  - Net: precision improved, recall slightly lower; overall sequence quality remains favorable with reduced duplicate/reentry noise.
+
 ## Notes
 - Keep changes in significant, validated commits.
 - Prefer deterministic ranking and quality decisions for reproducibility.

@@ -6,6 +6,7 @@ from y2karaoke.core.text_utils import (
     clean_title_for_search,
     strip_leading_artist_from_line,
     filter_singer_only_lines,
+    normalize_ocr_line,
     normalize_ocr_tokens,
 )
 
@@ -245,3 +246,15 @@ class TestNormalizeOcrTokens:
             "oh",
             "I",
         ]
+
+
+class TestNormalizeOcrLine:
+    def test_splits_confusable_chant_runs(self):
+        assert normalize_ocr_line("Oh Ioh loh l") == "Oh I oh I oh I"
+        assert normalize_ocr_line("oh lohlohlohl") in {
+            "oh I oh I oh I",
+            "oh I oh I oh I oh I",
+        }
+
+    def test_leaves_non_chant_tokens_unchanged(self):
+        assert normalize_ocr_line("with your body") == "with your body"

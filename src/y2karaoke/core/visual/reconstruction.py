@@ -9,6 +9,7 @@ from ..text_utils import (
     normalize_text_basic,
     text_similarity,
 )
+from .word_segmentation import segment_line_tokens_by_visual_gaps
 
 _OVERLAY_BIN_PX = 24.0
 _OVERLAY_MAX_JITTER_PX = 20.0
@@ -273,40 +274,57 @@ def _merge_short_same_lane_reentries(
             prev_idx = idx
             break
 
-        if prev_idx is not None and len(tokens) <= 2:
+        if prev_idx is not None:
             prev = out[prev_idx]
             prev_tokens = [t for t in prev.get("words", []) if str(t).strip()]
-            if len(prev_tokens) <= 2:
-                gap = float(ent["first"]) - float(prev["last"])
-                if 0.0 <= gap <= 4.0:
-                    mids = out[prev_idx + 1 :]
-                    has_lane_conflict = any(
-                        _is_same_lane(mid, ent)
-                        and text_similarity(mid["text"], ent["text"]) < 0.9
-                        for mid in mids
-                    )
-                    prev_duration = float(prev["last"]) - float(prev["first"])
-                    cross_lane_same_text = any(
-                        not _is_same_lane(mid, ent)
-                        and text_similarity(mid["text"], ent["text"]) >= 0.9
-                        for mid in mids
-                    )
-                    allow_merge = prev_duration >= 1.0 or cross_lane_same_text
-                    continuation_split = gap <= 1.5
-                    if continuation_split and not has_lane_conflict:
-                        prev["last"] = max(float(prev["last"]), float(ent["last"]))
-                        if len(ent.get("w_rois", [])) > len(
-                            prev.get("w_rois", [])
-                        ) and ent.get("w_rois"):
-                            prev["w_rois"] = ent["w_rois"]
-                        continue
-                    if duration <= 1.6 and allow_merge and not has_lane_conflict:
-                        prev["last"] = max(float(prev["last"]), float(ent["last"]))
-                        if len(ent.get("w_rois", [])) > len(
-                            prev.get("w_rois", [])
-                        ) and ent.get("w_rois"):
-                            prev["w_rois"] = ent["w_rois"]
-                        continue
+            gap = float(ent["first"]) - float(prev["last"])
+            if 0.0 <= gap <= 4.0:
+                mids = out[prev_idx + 1 :]
+                has_lane_conflict = any(
+                    _is_same_lane(mid, ent)
+                    and text_similarity(mid["text"], ent["text"]) < 0.9
+                    for mid in mids
+                )
+                prev_duration = float(prev["last"]) - float(prev["first"])
+                cross_lane_same_text = any(
+                    not _is_same_lane(mid, ent)
+                    and text_similarity(mid["text"], ent["text"]) >= 0.9
+                    for mid in mids
+                )
+                allow_merge = prev_duration >= 1.0 or cross_lane_same_text
+                continuation_split = gap <= 1.5
+                is_short_refrain = _is_short_refrain_entry(
+                    prev
+                ) or _is_short_refrain_entry(ent)
+                # OCR can briefly drop same-lane lines, then re-emit them as a new
+                # entry. Stitch these continuation fragments for any line length.
+                if (
+                    continuation_split
+                    and not has_lane_conflict
+                    and not is_short_refrain
+                ):
+                    prev["last"] = max(float(prev["last"]), float(ent["last"]))
+                    if len(ent.get("w_rois", [])) > len(
+                        prev.get("w_rois", [])
+                    ) and ent.get("w_rois"):
+                        prev["w_rois"] = ent["w_rois"]
+                    continue
+
+                # For very short fragments, keep additional merge path but restrict
+                # to short token runs to avoid collapsing real repeated long lines.
+                if (
+                    duration <= 1.6
+                    and allow_merge
+                    and not has_lane_conflict
+                    and len(tokens) <= 2
+                    and len(prev_tokens) <= 2
+                ):
+                    prev["last"] = max(float(prev["last"]), float(ent["last"]))
+                    if len(ent.get("w_rois", [])) > len(
+                        prev.get("w_rois", [])
+                    ) and ent.get("w_rois"):
+                        prev["w_rois"] = ent["w_rois"]
+                    continue
 
         out.append(ent)
 
@@ -602,7 +620,8 @@ def reconstruct_lyrics_from_visuals(  # noqa: C901
 
             for ln_w in lines_in_frame:
                 ln_w.sort(key=lambda w: w["x"])
-                line_tokens = normalize_ocr_tokens([str(w["text"]) for w in ln_w])
+                line_tokens = segment_line_tokens_by_visual_gaps(ln_w)
+                line_tokens = normalize_ocr_tokens(line_tokens)
                 if not line_tokens:
                     continue
                 txt = normalize_ocr_line(" ".join(line_tokens))

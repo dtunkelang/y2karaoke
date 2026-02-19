@@ -241,9 +241,43 @@ def normalize_ocr_line(text: str) -> str:
         if tok in confusable_i:
             if any(c.isalpha() for c in prev_tok) or any(c.isalpha() for c in next_tok):
                 tok = "I"
+        if tok.lower() == "l" and prev_tok.lower() in {"oh", "i", "loh", "ioh"}:
+            tok = "I"
+        chant_split = _split_confusable_chant_token(tok)
+        if chant_split:
+            out.extend(chant_split)
+            continue
         out.append(tok)
     repaired = _repair_fused_ocr_words(" ".join(out))
     return spell_correct(repaired)
+
+
+def _split_confusable_chant_token(token: str) -> List[str] | None:
+    compact = "".join(ch for ch in token.lower() if ch.isalnum())
+    if len(compact) < 3 or len(compact) > 16:
+        return None
+    if any(ch not in {"o", "h", "i", "l", "1"} for ch in compact):
+        return None
+    if "oh" not in compact:
+        return None
+
+    out: List[str] = []
+    i = 0
+    while i < len(compact):
+        if compact.startswith("oh", i):
+            out.append("oh")
+            i += 2
+            continue
+        if compact[i] in {"i", "l", "1"}:
+            out.append("I")
+            i += 1
+            continue
+        return None
+
+    # Split only when we recovered at least one "I" and one "oh" atom.
+    if len(out) < 2 or "I" not in out or "oh" not in out:
+        return None
+    return out
 
 
 _FUSED_SPLIT_ANCHORS = {
@@ -463,9 +497,15 @@ def _contextual_ocr_token_replacement(
     if low in {"ony", "om"} and prev_low == "come":
         return "on"
 
-    if low in {"l", "loh", "loll", "lohlohlohl", "lohlohl"} and prev_low == "oh":
+    if (
+        low in {"l", "loh", "loll", "lohl", "lohlohlohl", "lohlohl"}
+        and prev_low == "oh"
+    ):
         return "I"
-    if low in {"loh", "loll", "lohlohlohl", "lohlohl"} and prev_low == "i":
+    if (
+        low in {"loh", "loll", "lohl", "lohlohlohl", "lohlohl", "ohl"}
+        and prev_low == "i"
+    ):
         return "oh"
     if low == "l" and prev_low in {"i", "im", "i'm"}:
         return "oh"
