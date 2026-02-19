@@ -184,7 +184,7 @@ def test_collect_raw_frames_uses_grab_retrieve_sampling(monkeypatch) -> None:
             return [
                 {
                     "rec_texts": ["hello"],
-                    "rec_boxes": [[[0, 0], [1, 0], [1, 1], [0, 1]]],
+                    "rec_boxes": [[[2, 4], [14, 4], [14, 12], [2, 12]]],
                 }
             ]
 
@@ -218,7 +218,8 @@ def test_collect_raw_frames_uses_grab_retrieve_sampling(monkeypatch) -> None:
 
         def retrieve(self):
             self.retrieve_calls += 1
-            frame = _MODULE.np.zeros((4, 4, 3), dtype=_MODULE.np.uint8)
+            frame = _MODULE.np.zeros((20, 20, 3), dtype=_MODULE.np.uint8)
+            frame[4:12, 2:14] = 255
             return True, frame
 
         def release(self):
@@ -239,7 +240,7 @@ def test_collect_raw_frames_uses_grab_retrieve_sampling(monkeypatch) -> None:
         start=0.0,
         end=0.95,
         fps=2.0,
-        roi_rect=(0, 0, 4, 4),
+        roi_rect=(0, 0, 20, 20),
     )
 
     cap = captured["cap"]

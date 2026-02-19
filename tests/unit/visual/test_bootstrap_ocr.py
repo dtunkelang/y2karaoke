@@ -312,3 +312,63 @@ def test_build_line_boxes_refines_to_text_mask_center():
     assert lb["y"] + lb["h"] >= 50
     center_y = lb["y"] + lb["h"] / 2.0
     assert 40.0 <= center_y <= 48.0
+
+
+@pytest.mark.skipif(_MODULE.cv2 is None or _MODULE.np is None, reason="opencv required")
+def test_append_predicted_words_rejects_blank_frame_hallucinations():
+    np = _MODULE.np
+    raw = []
+    roi = np.zeros((120, 320, 3), dtype=np.uint8)
+    pred = [
+        {
+            "rec_texts": ["116", "010", "10lai"],
+            "rec_boxes": [
+                {"word": [[50, 40], [95, 40], [95, 58], [50, 58]]},
+                {"word": [[100, 40], [135, 40], [135, 58], [100, 58]]},
+                {"word": [[140, 40], [200, 40], [200, 58], [140, 58]]},
+            ],
+            "rec_scores": [0.9, 0.8, 0.75],
+        }
+    ]
+
+    _MODULE._append_predicted_words(
+        raw,
+        pred,
+        [206.08],
+        roi_frames=[roi],
+        roi_shapes=[roi.shape[:2]],
+    )
+
+    assert raw == []
+
+
+@pytest.mark.skipif(_MODULE.cv2 is None or _MODULE.np is None, reason="opencv required")
+def test_append_predicted_words_keeps_boxes_with_visible_text_ink():
+    np = _MODULE.np
+    cv2 = _MODULE.cv2
+    raw = []
+    roi = np.zeros((120, 320, 3), dtype=np.uint8)
+    # White glyph-like band in OCR box region.
+    cv2.rectangle(roi, (60, 44), (190, 56), (255, 255, 255), thickness=-1)
+    pred = [
+        {
+            "rec_texts": ["And", "trust", "me"],
+            "rec_boxes": [
+                {"word": [[60, 40], [92, 40], [92, 60], [60, 60]]},
+                {"word": [[98, 40], [152, 40], [152, 60], [98, 60]]},
+                {"word": [[158, 40], [190, 40], [190, 60], [158, 60]]},
+            ],
+            "rec_scores": [0.96, 0.95, 0.94],
+        }
+    ]
+
+    _MODULE._append_predicted_words(
+        raw,
+        pred,
+        [30.4],
+        roi_frames=[roi],
+        roi_shapes=[roi.shape[:2]],
+    )
+
+    assert len(raw) == 1
+    assert [w["text"] for w in raw[0]["words"]] == ["And", "trust", "me"]

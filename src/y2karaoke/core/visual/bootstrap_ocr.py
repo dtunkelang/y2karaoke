@@ -68,6 +68,9 @@ def _append_predicted_words(
         items = normalize_ocr_items(raw_item)
         rec_texts = items["rec_texts"]
         rec_boxes = items["rec_boxes"]
+        roi_nd = None
+        if roi_frames is not None and idx < len(roi_frames):
+            roi_nd = roi_frames[idx]
         words = []
         for txt, box_data in zip(rec_texts, rec_boxes):
             points = box_data["word"] if isinstance(box_data, dict) else box_data
@@ -81,13 +84,80 @@ def _append_predicted_words(
                     continue
                 if x > int(roi_w * 1.05) or y > int(roi_h * 1.05):
                     continue
+            if roi_nd is not None and not _word_box_has_visible_ink(
+                roi_nd, x=x, y=y, w=bw, h=bh
+            ):
+                continue
             words.append({"text": txt, "x": x, "y": y, "w": bw, "h": bh})
         if words:
-            roi_nd = None
-            if roi_frames is not None and idx < len(roi_frames):
-                roi_nd = roi_frames[idx]
             line_boxes = _build_line_boxes(words, roi_nd=roi_nd)
             raw.append({"time": t_val, "words": words, "line_boxes": line_boxes})
+
+
+def _word_box_has_visible_ink(
+    roi_nd: Any,
+    *,
+    x: int,
+    y: int,
+    w: int,
+    h: int,
+) -> bool:
+    """Reject OCR boxes that have almost no visible text signal in the frame."""
+    if np is None or cv2 is None:
+        return True
+    if roi_nd is None:
+        return True
+    if getattr(roi_nd, "ndim", 0) not in {2, 3}:
+        return True
+
+    rh, rw = int(roi_nd.shape[0]), int(roi_nd.shape[1])
+    x0 = max(0, int(x))
+    y0 = max(0, int(y))
+    x1 = min(rw, int(x + max(1, w)))
+    y1 = min(rh, int(y + max(1, h)))
+    if x1 <= x0 or y1 <= y0:
+        return False
+
+    crop = roi_nd[y0:y1, x0:x1]
+    if crop.size == 0:
+        return False
+    if getattr(crop, "ndim", 0) == 3:
+        try:
+            gray = cv2.cvtColor(crop, cv2.COLOR_BGR2GRAY)
+        except Exception:
+            return True
+    else:
+        gray = crop
+
+    _, otsu = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+    fixed = (gray >= 38).astype(np.uint8) * 255
+    mask = np.where((otsu > 0) | (fixed > 0), 1, 0).astype(np.uint8)
+    mask = cv2.morphologyEx(
+        mask, cv2.MORPH_OPEN, np.ones((2, 2), dtype=np.uint8)
+    ).astype(np.uint8)
+    if int(mask.sum()) <= 0:
+        return False
+
+    area = max(1, int(mask.shape[0] * mask.shape[1]))
+    ink_ratio = float(mask.sum()) / float(area)
+    min_ratio = 0.008 if area < 700 else 0.012
+    if ink_ratio < min_ratio:
+        return False
+
+    row_max = int(mask.sum(axis=1).max()) if mask.shape[0] else 0
+    row_gate = max(2, int(round(mask.shape[1] * 0.06)))
+    if row_max < row_gate:
+        return False
+
+    num_labels, _labels, stats, _cent = cv2.connectedComponentsWithStats(
+        mask, connectivity=8
+    )
+    if num_labels <= 1:
+        return False
+    largest = int(max(stats[1:, cv2.CC_STAT_AREA])) if num_labels > 1 else 0
+    if largest < max(6, int(round(area * 0.015))):
+        return False
+    return True
 
 
 def _refine_line_box_with_text_mask(
