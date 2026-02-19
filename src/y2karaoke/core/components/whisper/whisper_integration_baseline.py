@@ -1,0 +1,119 @@
+"""Baseline/rollback helpers for Whisper integration."""
+
+from __future__ import annotations
+
+from typing import List, Tuple
+
+from ... import models
+
+
+def _clone_lines_for_fallback(lines: List[models.Line]) -> List[models.Line]:
+    """Deep-copy lines so rollback logic can safely restore original timing."""
+    return [
+        models.Line(
+            words=[
+                models.Word(
+                    text=w.text,
+                    start_time=w.start_time,
+                    end_time=w.end_time,
+                    singer=w.singer,
+                )
+                for w in line.words
+            ],
+            singer=line.singer,
+        )
+        for line in lines
+    ]
+
+
+def _implausibly_short_multiword_count(lines: List[models.Line]) -> int:
+    """Count suspiciously compressed multi-word lines."""
+    count = 0
+    for line in lines:
+        word_count = len(line.words)
+        if word_count < 3:
+            continue
+        duration = line.end_time - line.start_time
+        if duration <= 0:
+            count += 1
+            continue
+        if duration < 0.5 and (duration / max(word_count, 1)) < 0.14:
+            count += 1
+    return count
+
+
+def _should_rollback_short_line_degradation(
+    original_lines: List[models.Line],
+    aligned_lines: List[models.Line],
+) -> Tuple[bool, int, int]:
+    """Detect when Whisper introduces widespread short-line compression artifacts."""
+    before = _implausibly_short_multiword_count(original_lines)
+    after = _implausibly_short_multiword_count(aligned_lines)
+    added = after - before
+    min_added = max(3, int(0.06 * max(len(aligned_lines), 1)))
+    should_rollback = added >= min_added and after >= max(4, before * 2)
+    return should_rollback, before, after
+
+
+def _constrain_line_starts_to_baseline(
+    mapped_lines: List[models.Line],
+    baseline_lines: List[models.Line],
+    *,
+    min_gap: float = 0.01,
+) -> List[models.Line]:
+    """Force mapped line starts to baseline (LRC) starts while preserving within-line shape."""
+    constrained: List[models.Line] = []
+    for idx, line in enumerate(mapped_lines):
+        if idx >= len(baseline_lines) or not line.words:
+            constrained.append(line)
+            continue
+
+        baseline = baseline_lines[idx]
+        if not baseline.words:
+            constrained.append(line)
+            continue
+
+        target_start = baseline.start_time
+        shift = target_start - line.start_time
+        shifted_words = [
+            models.Word(
+                text=w.text,
+                start_time=w.start_time + shift,
+                end_time=w.end_time + shift,
+                singer=w.singer,
+            )
+            for w in line.words
+        ]
+        shifted_line = models.Line(words=shifted_words, singer=line.singer)
+
+        next_baseline_start = None
+        for nxt in baseline_lines[idx + 1 :]:
+            if nxt.words:
+                next_baseline_start = nxt.start_time
+                break
+
+        if next_baseline_start is not None and shifted_line.end_time > (
+            next_baseline_start - min_gap
+        ):
+            available = max(0.1, (next_baseline_start - min_gap) - target_start)
+            current = max(0.1, shifted_line.end_time - target_start)
+            scale = min(1.0, available / current)
+            compressed_words = []
+            for w in shifted_line.words:
+                ws = target_start + (w.start_time - target_start) * scale
+                we = target_start + (w.end_time - target_start) * scale
+                if we < ws:
+                    we = ws
+                compressed_words.append(
+                    models.Word(
+                        text=w.text,
+                        start_time=ws,
+                        end_time=we,
+                        singer=w.singer,
+                    )
+                )
+            shifted_line = models.Line(words=compressed_words, singer=line.singer)
+
+        constrained.append(shifted_line)
+
+    return constrained
