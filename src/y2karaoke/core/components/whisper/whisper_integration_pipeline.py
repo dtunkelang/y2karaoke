@@ -9,6 +9,10 @@ from ..alignment import timing_models
 from .whisper_integration_filters import (
     _filter_low_confidence_whisper_words as _filter_low_confidence_whisper_words_impl,
 )
+from .whisper_integration_stages import (
+    _enforce_mapped_line_stage_invariants as _enforce_mapped_line_stage_invariants_impl,
+    _run_mapped_line_postpasses as _run_mapped_line_postpasses_impl,
+)
 
 _MIN_SEGMENT_OVERLAP_COVERAGE = 0.45
 
@@ -147,13 +151,12 @@ def _enforce_mapped_line_stage_invariants(
     enforce_monotonic_line_starts_whisper_fn: Callable[..., Any],
     resolve_line_overlaps_fn: Callable[..., Any],
 ) -> List[models.Line]:
-    """Settle monotonic/overlap constraints across dense mapped lyric sections."""
-    out = lines_in
-    # Run twice to settle chained neighbor constraints in repeated sections.
-    for _ in range(2):
-        out = enforce_monotonic_line_starts_whisper_fn(out, all_words)
-        out = resolve_line_overlaps_fn(out)
-    return out
+    return _enforce_mapped_line_stage_invariants_impl(
+        lines_in,
+        all_words,
+        enforce_monotonic_line_starts_whisper_fn=enforce_monotonic_line_starts_whisper_fn,
+        resolve_line_overlaps_fn=resolve_line_overlaps_fn,
+    )
 
 
 def _run_mapped_line_postpasses(
@@ -177,131 +180,26 @@ def _run_mapped_line_postpasses(
     enforce_monotonic_line_starts_whisper_fn: Callable[..., Any],
     resolve_line_overlaps_fn: Callable[..., Any],
 ) -> Tuple[List[models.Line], List[str]]:
-    mapped_lines = interpolate_unmatched_lines_fn(mapped_lines, mapped_lines_set)
-    mapped_lines = _enforce_mapped_line_stage_invariants(
-        mapped_lines,
-        all_words,
+    return _run_mapped_line_postpasses_impl(
+        mapped_lines=mapped_lines,
+        mapped_lines_set=mapped_lines_set,
+        all_words=all_words,
+        transcription=transcription,
+        audio_features=audio_features,
+        vocals_path=vocals_path,
+        epitran_lang=epitran_lang,
+        corrections=corrections,
+        interpolate_unmatched_lines_fn=interpolate_unmatched_lines_fn,
+        refine_unmatched_lines_with_onsets_fn=refine_unmatched_lines_with_onsets_fn,
+        shift_repeated_lines_to_next_whisper_fn=shift_repeated_lines_to_next_whisper_fn,
+        extend_line_to_trailing_whisper_matches_fn=extend_line_to_trailing_whisper_matches_fn,
+        pull_late_lines_to_matching_segments_fn=pull_late_lines_to_matching_segments_fn,
+        retime_short_interjection_lines_fn=retime_short_interjection_lines_fn,
+        snap_first_word_to_whisper_onset_fn=snap_first_word_to_whisper_onset_fn,
+        pull_lines_forward_for_continuous_vocals_fn=pull_lines_forward_for_continuous_vocals_fn,
         enforce_monotonic_line_starts_whisper_fn=enforce_monotonic_line_starts_whisper_fn,
         resolve_line_overlaps_fn=resolve_line_overlaps_fn,
     )
-
-    mapped_lines = refine_unmatched_lines_with_onsets_fn(
-        mapped_lines,
-        mapped_lines_set,
-        vocals_path,
-    )
-    mapped_lines = _enforce_mapped_line_stage_invariants(
-        mapped_lines,
-        all_words,
-        enforce_monotonic_line_starts_whisper_fn=enforce_monotonic_line_starts_whisper_fn,
-        resolve_line_overlaps_fn=resolve_line_overlaps_fn,
-    )
-
-    mapped_lines = shift_repeated_lines_to_next_whisper_fn(mapped_lines, all_words)
-    mapped_lines = _enforce_mapped_line_stage_invariants(
-        mapped_lines,
-        all_words,
-        enforce_monotonic_line_starts_whisper_fn=enforce_monotonic_line_starts_whisper_fn,
-        resolve_line_overlaps_fn=resolve_line_overlaps_fn,
-    )
-    mapped_lines = extend_line_to_trailing_whisper_matches_fn(
-        mapped_lines,
-        all_words,
-    )
-    mapped_lines = _enforce_mapped_line_stage_invariants(
-        mapped_lines,
-        all_words,
-        enforce_monotonic_line_starts_whisper_fn=enforce_monotonic_line_starts_whisper_fn,
-        resolve_line_overlaps_fn=resolve_line_overlaps_fn,
-    )
-    mapped_lines = pull_late_lines_to_matching_segments_fn(
-        mapped_lines,
-        transcription,
-        epitran_lang,
-    )
-    mapped_lines = _enforce_mapped_line_stage_invariants(
-        mapped_lines,
-        all_words,
-        enforce_monotonic_line_starts_whisper_fn=enforce_monotonic_line_starts_whisper_fn,
-        resolve_line_overlaps_fn=resolve_line_overlaps_fn,
-    )
-    mapped_lines = retime_short_interjection_lines_fn(
-        mapped_lines,
-        transcription,
-    )
-    mapped_lines = _enforce_mapped_line_stage_invariants(
-        mapped_lines,
-        all_words,
-        enforce_monotonic_line_starts_whisper_fn=enforce_monotonic_line_starts_whisper_fn,
-        resolve_line_overlaps_fn=resolve_line_overlaps_fn,
-    )
-    mapped_lines = snap_first_word_to_whisper_onset_fn(
-        mapped_lines,
-        all_words,
-    )
-    mapped_lines = _enforce_mapped_line_stage_invariants(
-        mapped_lines,
-        all_words,
-        enforce_monotonic_line_starts_whisper_fn=enforce_monotonic_line_starts_whisper_fn,
-        resolve_line_overlaps_fn=resolve_line_overlaps_fn,
-    )
-    if audio_features is not None:
-        mapped_lines, continuous_fixes = pull_lines_forward_for_continuous_vocals_fn(
-            mapped_lines,
-            audio_features,
-        )
-        if continuous_fixes:
-            corrections.append(
-                f"Pulled {continuous_fixes} line(s) forward for continuous vocals"
-            )
-    mapped_lines = _enforce_mapped_line_stage_invariants(
-        mapped_lines,
-        all_words,
-        enforce_monotonic_line_starts_whisper_fn=enforce_monotonic_line_starts_whisper_fn,
-        resolve_line_overlaps_fn=resolve_line_overlaps_fn,
-    )
-    mapped_lines = pull_late_lines_to_matching_segments_fn(
-        mapped_lines,
-        transcription,
-        epitran_lang,
-    )
-    mapped_lines = _enforce_mapped_line_stage_invariants(
-        mapped_lines,
-        all_words,
-        enforce_monotonic_line_starts_whisper_fn=enforce_monotonic_line_starts_whisper_fn,
-        resolve_line_overlaps_fn=resolve_line_overlaps_fn,
-    )
-    try:
-        mapped_lines = snap_first_word_to_whisper_onset_fn(
-            mapped_lines,
-            all_words,
-            max_shift=2.5,
-        )
-    except TypeError:
-        mapped_lines = snap_first_word_to_whisper_onset_fn(mapped_lines, all_words)
-    mapped_lines = _enforce_mapped_line_stage_invariants(
-        mapped_lines,
-        all_words,
-        enforce_monotonic_line_starts_whisper_fn=enforce_monotonic_line_starts_whisper_fn,
-        resolve_line_overlaps_fn=resolve_line_overlaps_fn,
-    )
-    if audio_features is not None:
-        mapped_lines, late_audio_fixes = pull_lines_forward_for_continuous_vocals_fn(
-            mapped_lines,
-            audio_features,
-        )
-        if late_audio_fixes:
-            corrections.append(
-                f"Applied {late_audio_fixes} late audio onset/silence adjustment(s)"
-            )
-        mapped_lines = _enforce_mapped_line_stage_invariants(
-            mapped_lines,
-            all_words,
-            enforce_monotonic_line_starts_whisper_fn=enforce_monotonic_line_starts_whisper_fn,
-            resolve_line_overlaps_fn=resolve_line_overlaps_fn,
-        )
-
-    return mapped_lines, corrections
 
 
 def transcribe_vocals_impl(
