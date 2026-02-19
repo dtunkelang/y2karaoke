@@ -20,6 +20,7 @@ from ...exceptions import VisualRefinementError
 from .refinement_postpasses import (
     _clamp_line_ends_to_visibility_windows,
     _compress_overlong_sparse_line_timings,
+    _compute_line_min_start_time,
     _pull_dense_short_runs_toward_previous_anchor,
     _pull_lines_earlier_after_visibility_transitions,
     _rebalance_early_lead_shared_visibility_runs,
@@ -1191,54 +1192,6 @@ def _assign_surrogate_timings_for_unresolved_overlap_blocks(
         )
 
 
-def _line_start(ln: TargetLine) -> Optional[float]:
-    if ln.word_starts and ln.word_starts[0] is not None:
-        return float(ln.word_starts[0])
-    return None
-
-
-def _line_end(ln: TargetLine) -> Optional[float]:
-    if ln.word_ends and ln.word_ends[-1] is not None:
-        return float(ln.word_ends[-1])
-    if ln.end is not None:
-        return float(ln.end)
-    return None
-
-
-def _compute_line_min_start_time(
-    ln: TargetLine,
-    *,
-    last_assigned_start: Optional[float],
-    last_assigned_visibility_end: Optional[float],
-) -> Optional[float]:
-    min_start: Optional[float] = None
-    if ln.visibility_start is not None:
-        min_start = float(ln.visibility_start)
-        if ln.visibility_end is not None:
-            vis_span = max(0.0, float(ln.visibility_end) - float(ln.visibility_start))
-            # OCR visibility can lag true on-screen appearance; allow bounded lookback.
-            if vis_span >= 8.0:
-                min_start -= 2.0
-            elif vis_span >= 5.0:
-                min_start -= 1.0
-        min_start = max(0.0, min_start)
-
-    enforce_global_gate = True
-    if (
-        ln.visibility_start is not None
-        and last_assigned_visibility_end is not None
-        and float(ln.visibility_start) < (float(last_assigned_visibility_end) - 0.2)
-    ):
-        # Overlapping visibility windows are common in karaoke blocks; allow
-        # starts to overlap instead of forcing strict global sequencing.
-        enforce_global_gate = False
-
-    if last_assigned_start is not None and enforce_global_gate:
-        gate = float(last_assigned_start + 0.05)
-        min_start = gate if min_start is None else max(min_start, gate)
-    return min_start
-
-
 def refine_word_timings_at_high_fps(
     video_path: Path,
     target_lines: List[TargetLine],
@@ -1374,7 +1327,6 @@ def refine_line_timings_at_low_fps(  # noqa: C901
                 require_full_cycle=True,
             )
             if line_s is None and line_e is None:
-                # Some repeated/persistent lines never show a full consume phase
                 # inside the sampled window. Fall back to onset-only detection.
                 line_s, line_e, line_conf = _detect_line_highlight_with_confidence(
                     ln,
