@@ -509,6 +509,12 @@ _INTRO_META_KEYWORDS = {
     "official",
     "records",
     "universal",
+    "kobalt",
+    "publishing",
+    "ltd",
+    "mca",
+    "oconnell",
+    "connell",
     "lyrics",
     "instrumental",
 }

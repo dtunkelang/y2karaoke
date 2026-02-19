@@ -586,10 +586,10 @@ def _estimate_lyrics_start_time(raw_frames: list[dict[str, Any]]) -> float | Non
         hits.append(float(fr.get("time", 0.0)))
     if len(hits) < 3:
         return None
-    start = min(hits)
-    if start < 8.0 or start > 45.0:
+    plausible = [t for t in hits if 8.0 <= t <= 45.0]
+    if len(plausible) < 3:
         return None
-    return start
+    return min(plausible)
 
 
 def _suppress_intro_title_words(

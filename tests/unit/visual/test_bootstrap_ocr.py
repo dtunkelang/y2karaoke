@@ -341,6 +341,83 @@ def test_collect_raw_frames_cached_applies_intro_filters_on_cache_load(tmp_path)
     assert "You" in second_half and "come" in second_half
 
 
+def test_collect_raw_frames_cached_ignores_dense_pre8s_intro_when_finding_lyrics_start(
+    tmp_path,
+):
+    video_path = tmp_path / "v.mp4"
+    video_path.write_bytes(b"v")
+    cache_dir = tmp_path / "cache"
+
+    def fake_collect(video_path, start, end, fps, roi_rect):
+        frames = []
+        # Early dense credit card (should not be treated as lyric start).
+        for i in range(12):
+            t = 4.0 + i * 0.25
+            frames.append(
+                {
+                    "time": t,
+                    "words": [
+                        {"text": "Karaoke", "x": 160, "y": 185, "w": 120, "h": 22},
+                        {"text": "Version", "x": 285, "y": 185, "w": 90, "h": 22},
+                        {"text": "O", "x": 190, "y": 215, "w": 14, "h": 18},
+                        {"text": "Connell", "x": 210, "y": 215, "w": 78, "h": 18},
+                        {"text": "Universal", "x": 165, "y": 245, "w": 90, "h": 18},
+                        {"text": "Music", "x": 262, "y": 245, "w": 56, "h": 18},
+                        {"text": "Ltd", "x": 326, "y": 245, "w": 30, "h": 18},
+                        {"text": "Kobalt", "x": 365, "y": 245, "w": 62, "h": 18},
+                        {"text": "Publishing", "x": 430, "y": 245, "w": 95, "h": 18},
+                    ],
+                }
+            )
+        # Real lyric phase.
+        for i in range(48):
+            t = 16.0 + i * 0.25
+            frames.append(
+                {
+                    "time": t,
+                    "words": [
+                        {"text": "White", "x": 90, "y": 20, "w": 42, "h": 18},
+                        {"text": "shirt", "x": 136, "y": 20, "w": 44, "h": 18},
+                        {"text": "now", "x": 184, "y": 20, "w": 32, "h": 18},
+                        {"text": "red", "x": 220, "y": 20, "w": 28, "h": 18},
+                        {"text": "My", "x": 96, "y": 90, "w": 26, "h": 18},
+                        {"text": "bloody", "x": 126, "y": 90, "w": 58, "h": 18},
+                        {"text": "nose", "x": 188, "y": 90, "w": 42, "h": 18},
+                        {"text": "Sleepin", "x": 98, "y": 160, "w": 64, "h": 18},
+                        {"text": "on", "x": 166, "y": 160, "w": 22, "h": 18},
+                        {"text": "your", "x": 192, "y": 160, "w": 36, "h": 18},
+                        {"text": "tippy", "x": 96, "y": 230, "w": 46, "h": 18},
+                        {"text": "toes", "x": 146, "y": 230, "w": 40, "h": 18},
+                    ],
+                }
+            )
+        return frames
+
+    out = _MODULE.collect_raw_frames_cached(
+        video_path=video_path,
+        duration=30.0,
+        fps=2.0,
+        roi_rect=(0, 0, 560, 332),
+        cache_dir=cache_dir,
+        cache_version="v1",
+        collect_fn=fake_collect,
+    )
+    early_texts = [
+        w["text"]
+        for f in out
+        if float(f.get("time", 0.0)) < 15.75
+        for w in f.get("words", [])
+    ]
+    later_texts = [
+        w["text"]
+        for f in out
+        if float(f.get("time", 0.0)) >= 16.0
+        for w in f.get("words", [])
+    ]
+    assert not early_texts
+    assert "White" in later_texts and "bloody" in later_texts
+
+
 def test_suppress_transient_digit_heavy_frames_clears_single_glitch_frame():
     frames = [
         {

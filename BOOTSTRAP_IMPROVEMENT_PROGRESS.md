@@ -297,6 +297,14 @@ Status: Completed
   - cache-key invalidation on OCR fingerprint changes,
   - intro/title suppression behavior when reading pre-existing cache files.
 
+### Milestone 43: Intro/Credit Suppression Robustness
+Status: Completed
+- [x] Fixed lyric-start estimation in OCR intro suppression to ignore dense non-lyric cards before `8s` and anchor from plausible lyric-start frames (`8s-45s`), avoiding fail-open behavior on early credit cards.
+- [x] Expanded reconstruction intro-metadata lexical filters to cover common legal-credit tokens (`connell`, `kobalt`, `publishing`, `ltd`, `mca`) that can persist into lyric windows.
+- [x] Added regression coverage for:
+  - dense pre-`8s` credit cards that should not set lyric-start anchors (`tests/unit/visual/test_bootstrap_ocr.py`),
+  - early legal credit-line suppression while preserving real lyric lines (`tests/unit/visual/test_reconstruction.py`).
+
 ## Notes
 - Keep changes in significant, validated commits.
 - Prefer deterministic ranking and quality decisions for reproducibility.
