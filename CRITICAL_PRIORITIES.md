@@ -38,6 +38,7 @@ This document outlines the critical areas of the `y2karaoke` codebase and the im
 *   **In progress:** Timing/visibility logic extracted from `frame_renderer.py` into `render/lyric_timeline.py` to separate timeline decisions from pixel drawing.
 *   **In progress:** Removed unused parameter from `lyrics_renderer.get_singer_colors` and updated callsites/tests.
 *   **In progress:** Further split `frame_renderer.py` by extracting active-line resolution, per-line highlight-width computation, and visible-line rendering pass into focused helpers.
+*   **In progress:** Extracted frame mode/state computation (`outro` / `splash` / `progress` / `lyrics`) from `render_frame` to reduce orchestration complexity.
 
 **Action Plan:**
 *   **Consolidate:** Keep singer-color policy in a dedicated module and avoid duplicating it in frame drawing code.

@@ -342,6 +342,44 @@ def _draw_visible_lines(
         )
 
 
+def _compute_frame_display_state(
+    lines: list[Line],
+    *,
+    current_time: float,
+    title: Optional[str],
+    artist: Optional[str],
+    audio_duration: Optional[float],
+) -> tuple[str, float, int, float]:
+    """Compute render mode and timeline state for a frame.
+
+    Returns:
+        (mode, progress, current_line_idx, activation_time)
+        mode is one of: "outro", "splash", "progress", "lyrics".
+    """
+    show_splash = bool(current_time < SPLASH_DURATION and title and artist)
+    show_progress_bar, progress = _check_intro_progress(lines, current_time)
+
+    activation_time = current_time + LYRICS_ACTIVATION_LEAD
+    current_line_idx = _resolve_current_line_idx(lines, activation_time)
+
+    outro_start = lines[-1].end_time + OUTRO_DELAY if lines else OUTRO_DELAY
+    if audio_duration:
+        outro_start = max(outro_start, audio_duration - OUTRO_DELAY)
+    if lines and current_time >= outro_start:
+        return "outro", progress, current_line_idx, activation_time
+
+    if not show_progress_bar:
+        show_progress_bar, progress = _check_mid_song_progress(
+            lines, current_line_idx, current_time
+        )
+
+    if show_splash:
+        return "splash", progress, current_line_idx, activation_time
+    if show_progress_bar:
+        return "progress", progress, current_line_idx, activation_time
+    return "lyrics", progress, current_line_idx, activation_time
+
+
 def render_frame(  # noqa: C901
     lines: list[Line],
     current_time: float,
@@ -361,29 +399,21 @@ def render_frame(  # noqa: C901
     img = Image.fromarray(background.copy())
     draw = ImageDraw.Draw(img)
 
-    show_splash = current_time < SPLASH_DURATION and title and artist
-    show_progress_bar, progress = _check_intro_progress(lines, current_time)
+    mode, progress, current_line_idx, activation_time = _compute_frame_display_state(
+        lines,
+        current_time=current_time,
+        title=title,
+        artist=artist,
+        audio_duration=audio_duration,
+    )
 
-    activation_time = current_time + LYRICS_ACTIVATION_LEAD
-    current_line_idx = _resolve_current_line_idx(lines, activation_time)
-
-    outro_start = lines[-1].end_time + OUTRO_DELAY if lines else OUTRO_DELAY
-    if audio_duration:
-        outro_start = max(outro_start, audio_duration - OUTRO_DELAY)
-    if lines and current_time >= outro_start:
+    if mode == "outro":
         draw_logo_screen(draw, font, video_width, video_height)
         return np.array(img)
-
-    if not show_progress_bar:
-        show_progress_bar, progress = _check_mid_song_progress(
-            lines, current_line_idx, current_time
-        )
-
-    if show_splash and title and artist:
+    if mode == "splash" and title and artist:
         draw_splash_screen(draw, title, artist, video_width, video_height)
         return np.array(img)
-
-    if show_progress_bar:
+    if mode == "progress":
         draw_progress_bar(draw, progress, video_width, video_height)
         return np.array(img)
 
