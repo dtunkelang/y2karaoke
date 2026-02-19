@@ -1,5 +1,6 @@
 """Frame rendering for karaoke videos."""
 
+from dataclasses import dataclass
 from typing import Optional, Dict, Tuple, List
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
@@ -27,6 +28,16 @@ from .lyric_timeline import (
     carryover_handoff_delay as _carryover_handoff_delay,
 )
 from ...models import Line
+
+
+@dataclass(frozen=True)
+class RenderPlan:
+    """Per-frame render plan derived from timeline and mode decisions."""
+
+    mode: str
+    progress: float
+    current_line_idx: int
+    activation_time: float
 
 
 def _draw_cue_indicator(
@@ -349,13 +360,8 @@ def _compute_frame_display_state(
     title: Optional[str],
     artist: Optional[str],
     audio_duration: Optional[float],
-) -> tuple[str, float, int, float]:
-    """Compute render mode and timeline state for a frame.
-
-    Returns:
-        (mode, progress, current_line_idx, activation_time)
-        mode is one of: "outro", "splash", "progress", "lyrics".
-    """
+) -> RenderPlan:
+    """Compute render mode and timeline state for a frame."""
     show_splash = bool(current_time < SPLASH_DURATION and title and artist)
     show_progress_bar, progress = _check_intro_progress(lines, current_time)
 
@@ -366,7 +372,7 @@ def _compute_frame_display_state(
     if audio_duration:
         outro_start = max(outro_start, audio_duration - OUTRO_DELAY)
     if lines and current_time >= outro_start:
-        return "outro", progress, current_line_idx, activation_time
+        return RenderPlan("outro", progress, current_line_idx, activation_time)
 
     if not show_progress_bar:
         show_progress_bar, progress = _check_mid_song_progress(
@@ -374,10 +380,10 @@ def _compute_frame_display_state(
         )
 
     if show_splash:
-        return "splash", progress, current_line_idx, activation_time
+        return RenderPlan("splash", progress, current_line_idx, activation_time)
     if show_progress_bar:
-        return "progress", progress, current_line_idx, activation_time
-    return "lyrics", progress, current_line_idx, activation_time
+        return RenderPlan("progress", progress, current_line_idx, activation_time)
+    return RenderPlan("lyrics", progress, current_line_idx, activation_time)
 
 
 def render_frame(  # noqa: C901
@@ -399,7 +405,7 @@ def render_frame(  # noqa: C901
     img = Image.fromarray(background.copy())
     draw = ImageDraw.Draw(img)
 
-    mode, progress, current_line_idx, activation_time = _compute_frame_display_state(
+    plan = _compute_frame_display_state(
         lines,
         current_time=current_time,
         title=title,
@@ -407,18 +413,18 @@ def render_frame(  # noqa: C901
         audio_duration=audio_duration,
     )
 
-    if mode == "outro":
+    if plan.mode == "outro":
         draw_logo_screen(draw, font, video_width, video_height)
         return np.array(img)
-    if mode == "splash" and title and artist:
+    if plan.mode == "splash" and title and artist:
         draw_splash_screen(draw, title, artist, video_width, video_height)
         return np.array(img)
-    if mode == "progress":
-        draw_progress_bar(draw, progress, video_width, video_height)
+    if plan.mode == "progress":
+        draw_progress_bar(draw, plan.progress, video_width, video_height)
         return np.array(img)
 
     lines_to_show, display_start_idx = _get_lines_to_display(
-        lines, current_line_idx, current_time, activation_time
+        lines, plan.current_line_idx, current_time, plan.activation_time
     )
     total_height = len(lines_to_show) * LINE_SPACING
     start_y = (video_height - total_height) // 2
