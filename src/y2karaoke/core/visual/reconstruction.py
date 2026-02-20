@@ -33,6 +33,12 @@ from .reconstruction_context_transitions import (
 from .reconstruction_overlap_repetitions import (
     expand_overlapped_same_text_repetitions as _expand_overlapped_same_text_repetitions_impl,
 )
+from .reconstruction_refrain import (
+    collapse_short_refrain_noise as _collapse_short_refrain_noise_impl,
+)
+from .reconstruction_refrain import (
+    is_short_refrain_entry as _is_short_refrain_entry_impl,
+)
 from .reconstruction_overlay import _filter_static_overlay_words
 from .word_segmentation import segment_line_tokens_by_visual_gaps
 
@@ -322,64 +328,18 @@ def _merge_overlapping_same_lane_duplicates(
     return out
 
 
-_SHORT_REFRAIN_TOKENS = {
-    "oh",
-    "ooh",
-    "woah",
-    "i",
-    "im",
-    "i'm",
-    "yeah",
-    "uh",
-}
-
-
 def _is_short_refrain_entry(entry: dict[str, Any]) -> bool:
-    words = [
-        normalize_text_basic(str(w)) for w in entry.get("words", []) if str(w).strip()
-    ]
-    words = [w for w in words if w]
-    if len(words) < 3 or len(words) > 10:
-        return False
-    refrain_count = sum(1 for w in words if w in _SHORT_REFRAIN_TOKENS)
-    return refrain_count / float(len(words)) >= 0.75
+    return _is_short_refrain_entry_impl(entry)
 
 
 def _collapse_short_refrain_noise(
     entries: list[dict[str, Any]],
 ) -> list[dict[str, Any]]:
-    """Collapse overlapping same-lane short refrain OCR variants."""
-    if len(entries) < 2:
-        return entries
-
-    out: list[dict[str, Any]] = []
-    for ent in entries:
-        if not _is_short_refrain_entry(ent):
-            out.append(ent)
-            continue
-
-        merged = False
-        for prev in reversed(out[-10:]):
-            if not _is_short_refrain_entry(prev):
-                continue
-            if not _is_same_lane(prev, ent):
-                continue
-            start_gap = abs(
-                float(ent.get("first", 0.0)) - float(prev.get("first", 0.0))
-            )
-            end_gap = float(ent.get("first", 0.0)) - float(prev.get("last", 0.0))
-            sim = text_similarity(str(prev.get("text", "")), str(ent.get("text", "")))
-            if start_gap <= 2.2 and end_gap <= 1.8 and sim >= 0.45:
-                prev["last"] = max(
-                    float(prev.get("last", 0.0)), float(ent.get("last", 0.0))
-                )
-                if len(ent.get("w_rois", [])) > len(prev.get("w_rois", [])):
-                    prev["w_rois"] = ent.get("w_rois", [])
-                merged = True
-                break
-        if not merged:
-            out.append(ent)
-    return out
+    return _collapse_short_refrain_noise_impl(
+        entries,
+        is_short_refrain_entry=_is_short_refrain_entry,
+        is_same_lane=_is_same_lane,
+    )
 
 
 def _is_intro_artifact(entry: dict[str, Any]) -> bool:
