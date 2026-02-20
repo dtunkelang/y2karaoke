@@ -91,20 +91,24 @@ This document outlines the critical areas of the `y2karaoke` codebase and the im
 *   **In progress:** Continued visual refinement decomposition by moving per-line frame refinement orchestration into `visual/refinement_line_refine.py` with compatibility wrapper in `visual/refinement.py`.
 *   **In progress:** Continued visual reconstruction decomposition by moving top-level OCR-to-line reconstruction orchestration into `visual/reconstruction_pipeline.py` with compatibility wrapper in `visual/reconstruction.py`.
 *   **In progress:** Continued visual refinement decomposition by moving high-FPS orchestration loop into `visual/refinement_high_fps_pipeline.py` with compatibility wrapper in `visual/refinement.py`.
+*   **In progress:** Continued visual refinement decomposition by moving dense shared-visibility run retiming heuristics into `visual/refinement_dense_run_postpasses.py` with compatibility wrappers in `visual/refinement_postpasses.py`.
+*   **In progress:** Continued visual reconstruction decomposition by moving persistent-line frame accumulation logic into `visual/reconstruction_frame_accumulation.py` with compatibility wrapper in `visual/reconstruction_pipeline.py`.
+*   **In progress:** Continued visual reconstruction decomposition by moving persistent-line deduplication logic into `visual/reconstruction_deduplication.py` with compatibility wrapper in `visual/reconstruction_pipeline.py`.
+*   **In progress:** Continued visual reconstruction decomposition by moving persistent-line to target-line conversion logic into `visual/reconstruction_target_conversion.py` with compatibility wrapper in `visual/reconstruction_pipeline.py`.
 
 **Action Plan:**
 *   **Consolidate:** Keep singer-color policy in a dedicated module and avoid duplicating it in frame drawing code.
 *   **Decouple:** Continue extracting render-time orchestration hotspots into focused helpers.
 
-## 4. Visual Refinement Stability (Completed)
-**Status (2026-02-17):**
+## 4. Visual Refinement Stability
+**Status (2026-02-19):**
 *   **Complete:** Refactoring and test coverage improvements done. Logic extracted to `src/y2karaoke/core/visual/`.
 
-## 5. Benchmark Execution & Validation (Completed)
-**Status (2026-02-17):**
-*   **Complete:** Full suite run passed. "Anti-Hero" and "Bohemian Rhapsody" fixes verified.
+## 5. Benchmark Execution & Validation
+**Status (2026-02-19):**
+*   **In Progress:** Full suite validation running (`validation_run_u`) to verify refactoring stability.
 
 ---
 
 **Next Immediate Step:**
-Continue visual reconstruction decomposition by extracting the next cohesive helper cluster from `visual/reconstruction.py` into focused modules with compatibility wrappers.
+Consolidate singer-color policy logic into a dedicated module to remove duplication from `frame_renderer.py` and `lyrics_renderer.py`.

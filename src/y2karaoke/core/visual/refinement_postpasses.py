@@ -2,9 +2,7 @@ from __future__ import annotations
 
 import math
 import re
-from typing import List, Optional, Tuple, cast
-
-import numpy as np
+from typing import List, Optional, Tuple
 
 from ..models import TargetLine
 from .refinement_dense_run_postpasses import (

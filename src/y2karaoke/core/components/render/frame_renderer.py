@@ -22,7 +22,7 @@ from .line_pass import (
     draw_visible_lines as _draw_visible_lines_impl,
 )
 from .progress import draw_progress_bar
-from .lyrics_renderer import get_singer_colors as _get_singer_colors
+from .singer_style import get_singer_colors as _get_singer_colors
 from .layout import get_or_build_line_layout as _get_or_build_line_layout_impl
 from .lyric_timeline import (
     check_intro_progress as _check_intro_progress_impl,

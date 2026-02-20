@@ -3,7 +3,7 @@
 from PIL import ImageDraw, ImageFont
 
 from ....config import Colors, FIRST_WORD_HIGHLIGHT_DELAY
-from .lyrics_renderer import get_singer_colors
+from .singer_style import get_singer_colors
 from ...models import Line
 
 
