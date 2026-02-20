@@ -3,48 +3,26 @@ import types
 import y2karaoke.core.components.render.progress as progress
 
 
-def test_render_progress_bar_prints_every_5_percent(capsys):
-    bar = progress.RenderProgressBar(total_frames=20)
-    bar(lambda t: None, 0)
+def test_console_progress_bar_prints_updates(capsys):
+    bar = progress.ConsoleProgressBar(total=100)
+
+    # 1%
+    bar.update()
     captured = capsys.readouterr().out
-    assert "5%" in captured
+    assert captured == ""  # 2% threshold
+
+    # 2%
+    bar.update()
+    captured = capsys.readouterr().out
+    assert "2%" in captured
     assert "Rendering:" in captured
 
-    bar(lambda t: None, 0)
-    captured = capsys.readouterr().out
-    assert "10%" in captured
 
-
-def test_render_progress_bar_skips_non_5_percent(capsys):
-    bar = progress.RenderProgressBar(total_frames=30)
-    bar(lambda t: None, 0)
-    captured = capsys.readouterr().out
-    assert captured == ""
-
-
-def test_progress_logger_handles_zero_total_frames(capsys):
-    logger = progress.ProgressLogger(total_duration=0, fps=24)
-    logger.bars_callback(bar=None, attr="index", value=10, old_value=None)
+def test_console_progress_bar_handles_zero_total(capsys):
+    bar = progress.ConsoleProgressBar(total=0)
+    bar.update()
     captured = capsys.readouterr().out
     assert "0%" in captured
-
-
-def test_progress_logger_updates_when_percent_changes(capsys):
-    logger = progress.ProgressLogger(total_duration=1, fps=10)
-    logger.bars_callback(bar=None, attr="index", value=1, old_value=None)
-    captured = capsys.readouterr().out
-    assert "10%" in captured
-
-    logger.bars_callback(bar=None, attr="index", value=1, old_value=None)
-    captured = capsys.readouterr().out
-    assert captured == ""
-
-
-def test_progress_logger_ignores_non_index_attr(capsys):
-    logger = progress.ProgressLogger(total_duration=1, fps=10)
-    logger.bars_callback(bar=None, attr="foo", value=1, old_value=None)
-    captured = capsys.readouterr().out
-    assert captured == ""
 
 
 def test_draw_progress_bar_draws_background_and_fill():

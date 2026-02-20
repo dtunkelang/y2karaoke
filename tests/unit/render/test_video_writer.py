@@ -134,11 +134,17 @@ class TestRenderKaraokeVideo:
         mock_video_clip.assert_called_once()
 
     @patch("builtins.print")
+    @patch("y2karaoke.core.components.render.video_writer.ConsoleProgressBar")
     @patch("y2karaoke.core.components.render.video_writer.FrameGenerator")
     @patch("y2karaoke.core.components.render.video_writer.AudioFileClip")
     @patch("y2karaoke.core.components.render.video_writer.VideoClip")
     def test_make_frame_progress_and_background(
-        self, mock_video_clip, mock_audio_clip, mock_frame_generator, mock_print
+        self,
+        mock_video_clip,
+        mock_audio_clip,
+        mock_frame_generator,
+        mock_progress_bar,
+        mock_print,
     ):
         """Covers make_frame progress output and background selection."""
         mock_audio = Mock()
@@ -161,6 +167,9 @@ class TestRenderKaraokeVideo:
         mock_generator_instance.generate_frame.return_value = "frame"
         mock_frame_generator.return_value = mock_generator_instance
 
+        mock_pb_instance = Mock()
+        mock_progress_bar.return_value = mock_pb_instance
+
         lines = [Line(words=[Word(text="test", start_time=0.0, end_time=1.0)])]
 
         segment = Mock()
@@ -179,11 +188,12 @@ class TestRenderKaraokeVideo:
         # We need to verify that FrameGenerator was initialized correctly
         # and that generate_frame was called via the closure
         mock_frame_generator.assert_called_once()
+        mock_progress_bar.assert_called_once()
 
         frame = captured["make_frame"](0.5)
         assert frame == "frame"
         mock_generator_instance.generate_frame.assert_called_with(0.5)
-        assert mock_print.called
+        mock_pb_instance.update.assert_called_once()
 
 
 class TestGetBackgroundAtTime:

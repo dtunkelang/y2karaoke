@@ -3,49 +3,27 @@
 from ....config import VIDEO_WIDTH, VIDEO_HEIGHT
 
 
-class RenderProgressBar:
-    """Custom progress bar for video rendering."""
+class ConsoleProgressBar:
+    """Console progress bar for long-running operations."""
 
-    def __init__(self, total_frames: int):
-        self.total_frames = total_frames
-        self.current_frame = 0
+    def __init__(self, total: int, prefix: str = "Rendering"):
+        self.total = total
+        self.current = 0
         self.last_percent = -1
+        self.prefix = prefix
 
-    def __call__(self, gf, t):
-        """Called by MoviePy for each frame."""
-        self.current_frame += 1
-        percent = int(100 * self.current_frame / self.total_frames)
-        if percent != self.last_percent and percent % 5 == 0:
+    def update(self) -> None:
+        """Increment progress and print bar if percentage changed significantly."""
+        self.current += 1
+        percent = int(100 * self.current / self.total) if self.total > 0 else 0
+
+        # Update every 2% to reduce I/O churn
+        if percent != self.last_percent and percent % 2 == 0:
             bar_len = 30
             filled = int(bar_len * percent / 100)
             bar = "█" * filled + "░" * (bar_len - filled)
-            print(f"\r  Rendering: [{bar}] {percent}%", end="", flush=True)
+            print(f"\r  {self.prefix}: [{bar}] {percent}%", end="", flush=True)
             self.last_percent = percent
-
-
-class ProgressLogger:
-    """Custom logger for MoviePy that shows a progress bar."""
-
-    def __init__(self, total_duration: float, fps: int):
-        self.total_frames = int(total_duration * fps)
-        self.last_percent = -1
-
-    def bars_callback(self, bar, attr, value, old_value=None):
-        """Callback for progress bars."""
-        if attr == "index":
-            percent = (
-                int(100 * value / self.total_frames) if self.total_frames > 0 else 0
-            )
-            if percent != self.last_percent:
-                bar_len = 30
-                filled = int(bar_len * percent / 100)
-                bar_str = "█" * filled + "░" * (bar_len - filled)
-                print(f"\r  Rendering: [{bar_str}] {percent}%", end="", flush=True)
-                self.last_percent = percent
-
-    def callback(self, **kw):
-        """General callback."""
-        pass
 
 
 def draw_progress_bar(

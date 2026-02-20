@@ -9,6 +9,7 @@ from ....utils.logging import get_logger
 from ....utils.fonts import get_font
 from ....utils.validation import validate_line_order
 from .frame_generation import FrameGenerator
+from .progress import ConsoleProgressBar
 from ...models import Line, SongMetadata
 from .backgrounds_static import create_gradient_background
 
@@ -61,8 +62,7 @@ def render_karaoke_video(
     is_duet = song_metadata.is_duet if song_metadata else False
 
     total_frames = int(duration * video_fps)
-    frame_count = [0]
-    last_percent = [-1]
+    progress_bar = ConsoleProgressBar(total_frames) if show_progress else None
 
     generator = FrameGenerator(
         lines=lines,
@@ -79,17 +79,8 @@ def render_karaoke_video(
     )
 
     def make_frame(t):
-        if show_progress:
-            frame_count[0] += 1
-            percent = (
-                int(100 * frame_count[0] / total_frames) if total_frames > 0 else 0
-            )
-            if percent != last_percent[0] and percent % 2 == 0:
-                bar_len = 30
-                filled = int(bar_len * percent / 100)
-                bar = "█" * filled + "░" * (bar_len - filled)
-                print(f"\r  Rendering: [{bar}] {percent}%", end="", flush=True)
-                last_percent[0] = percent
+        if progress_bar:
+            progress_bar.update()
 
         return generator.generate_frame(t)
 
