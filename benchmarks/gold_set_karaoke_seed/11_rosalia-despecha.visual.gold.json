@@ -1,2908 +1,7404 @@
 {
-  "schema_version": "1.0",
+  "schema_version": "1.2",
   "title": "DESPECHA",
   "artist": "ROSALIA",
-  "audio_path": "",
-  "source_timing_path": "/Users/dtunkelang/y2karaoke/benchmarks/gold_set/11_rosalia-despecha.gold.json",
+  "candidate_url": "https://www.youtube.com/watch?v=cb44Xd_LxGc",
+  "visual_suitability": {
+    "word_level_score": 0.9682539682539683,
+    "avg_ocr_confidence": 0.9352669996158279,
+    "has_word_level_highlighting": true,
+    "detectability_score": 0.9546868997310796,
+    "sampled_frames": 167,
+    "duration_sec": 171.46666666666667,
+    "fps": 1.0
+  },
+  "audio_path": "/Users/dtunkelang/y2karaoke/.cache/karaoke_bootstrap/rosalia/despecha/video/Rosal\u00eda - Despecha - Karaoke Instrumental_video.extracted.wav",
   "lines": [
     {
       "line_index": 1,
-      "text": "Yeah-yeah",
-      "start": 1.9,
-      "end": 3.6,
+      "text": "Para evitar problemas legales",
+      "start": 12.25,
+      "end": 12.8,
+      "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
-          "text": "Yeah-yeah",
-          "start": 1.9,
-          "end": 3.6
+          "text": "Para",
+          "start": 12.25,
+          "end": 12.35,
+          "confidence": 1.0
+        },
+        {
+          "word_index": 2,
+          "text": "evitar",
+          "start": 12.4,
+          "end": 12.5,
+          "confidence": 1.0
+        },
+        {
+          "word_index": 3,
+          "text": "problemas",
+          "start": 12.55,
+          "end": 12.65,
+          "confidence": 1.0
+        },
+        {
+          "word_index": 4,
+          "text": "legales",
+          "start": 12.7,
+          "end": 12.8,
+          "confidence": 1.0
         }
-      ]
+      ],
+      "y": 134,
+      "word_rois": [
+        [
+          150,
+          134,
+          54,
+          24
+        ],
+        [
+          207,
+          134,
+          72,
+          24
+        ],
+        [
+          282,
+          134,
+          123,
+          24
+        ],
+        [
+          408,
+          134,
+          86,
+          24
+        ]
+      ],
+      "char_rois": []
     },
     {
       "line_index": 2,
-      "text": "Yeah-yeah",
-      "start": 3.9,
-      "end": 4.3,
+      "text": "en Streaming o plataformas tales como",
+      "start": 13.5,
+      "end": 14.35,
+      "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
-          "text": "Yeah-yeah",
-          "start": 3.9,
-          "end": 4.3
+          "text": "en",
+          "start": 13.5,
+          "end": 13.6,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 2,
+          "text": "Streaming",
+          "start": 13.65,
+          "end": 13.75,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 3,
+          "text": "o",
+          "start": 13.8,
+          "end": 13.9,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 4,
+          "text": "plataformas",
+          "start": 13.95,
+          "end": 14.05,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 5,
+          "text": "tales",
+          "start": 14.1,
+          "end": 14.2,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 6,
+          "text": "como",
+          "start": 14.25,
+          "end": 14.35,
+          "confidence": 0.252
         }
-      ]
+      ],
+      "y": 188,
+      "word_rois": [
+        [
+          92,
+          188,
+          30,
+          24
+        ],
+        [
+          125,
+          188,
+          123,
+          24
+        ],
+        [
+          251,
+          188,
+          15,
+          24
+        ],
+        [
+          269,
+          188,
+          144,
+          24
+        ],
+        [
+          416,
+          188,
+          63,
+          24
+        ],
+        [
+          482,
+          188,
+          69,
+          24
+        ]
+      ],
+      "char_rois": []
     },
     {
       "line_index": 3,
-      "text": "Mmm",
-      "start": 6.0,
-      "end": 6.5,
+      "text": "Spotify AppleMusic Amuse Distrokids Etc",
+      "start": 18.25,
+      "end": 18.95,
+      "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
-          "text": "Mmm",
-          "start": 6.0,
-          "end": 6.5
-        }
-      ]
-    },
-    {
-      "line_index": 4,
-      "text": "Baby, no me llame'",
-      "start": 8.2,
-      "end": 10.0,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "Baby,",
-          "start": 8.2,
-          "end": 8.8
+          "text": "Spotify",
+          "start": 18.25,
+          "end": 18.35,
+          "confidence": 0.252
         },
         {
           "word_index": 2,
-          "text": "no",
-          "start": 8.8,
-          "end": 9.1
-        },
-        {
-          "word_index": 3,
-          "text": "me",
-          "start": 9.1,
-          "end": 9.5
-        },
-        {
-          "word_index": 4,
-          "text": "llame'",
-          "start": 9.5,
-          "end": 10.0
-        }
-      ]
-    },
-    {
-      "line_index": 5,
-      "text": "Que yo estoy ocupá' olvidando tus male'",
-      "start": 10.6,
-      "end": 14.5,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "Que",
-          "start": 10.6,
-          "end": 11.0
-        },
-        {
-          "word_index": 2,
-          "text": "yo",
-          "start": 11.0,
-          "end": 11.3
-        },
-        {
-          "word_index": 3,
-          "text": "estoy",
-          "start": 11.3,
-          "end": 11.9
-        },
-        {
-          "word_index": 4,
-          "text": "ocupá'",
-          "start": 11.9,
-          "end": 12.6
-        },
-        {
-          "word_index": 5,
-          "text": "olvidando",
-          "start": 12.6,
-          "end": 13.6
-        },
-        {
-          "word_index": 6,
-          "text": "tus",
-          "start": 13.6,
-          "end": 14.0
-        },
-        {
-          "word_index": 7,
-          "text": "male'",
-          "start": 14.0,
-          "end": 14.5
-        }
-      ]
-    },
-    {
-      "line_index": 6,
-      "text": "Ya decidí que esta noche se sale",
-      "start": 14.5,
-      "end": 16.9,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "Ya",
-          "start": 14.5,
-          "end": 14.8
-        },
-        {
-          "word_index": 2,
-          "text": "decidí",
-          "start": 14.8,
-          "end": 15.2
-        },
-        {
-          "word_index": 3,
-          "text": "que",
-          "start": 15.2,
-          "end": 15.6
-        },
-        {
-          "word_index": 4,
-          "text": "esta",
-          "start": 15.6,
-          "end": 15.9
-        },
-        {
-          "word_index": 5,
-          "text": "noche",
-          "start": 15.9,
-          "end": 16.4
-        },
-        {
-          "word_index": 6,
-          "text": "se",
-          "start": 16.4,
-          "end": 16.6
-        },
-        {
-          "word_index": 7,
-          "text": "sale",
-          "start": 16.6,
-          "end": 16.9
-        }
-      ]
-    },
-    {
-      "line_index": 7,
-      "text": "Con toda' mis motomami', con toda' mis gyale'",
-      "start": 18.1,
-      "end": 20.2,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "Con",
-          "start": 18.1,
-          "end": 18.4
-        },
-        {
-          "word_index": 2,
-          "text": "toda'",
+          "text": "AppleMusic",
           "start": 18.4,
-          "end": 18.6
+          "end": 18.5,
+          "confidence": 0.252
         },
         {
           "word_index": 3,
-          "text": "mis",
-          "start": 18.6,
-          "end": 18.9
+          "text": "Amuse",
+          "start": 18.55,
+          "end": 18.65,
+          "confidence": 0.252
         },
         {
           "word_index": 4,
-          "text": "motomami',",
-          "start": 18.9,
-          "end": 19.3
+          "text": "Distrokids",
+          "start": 18.7,
+          "end": 18.8,
+          "confidence": 0.252
         },
         {
           "word_index": 5,
-          "text": "con",
-          "start": 19.3,
-          "end": 19.6
-        },
-        {
-          "word_index": 6,
-          "text": "toda'",
-          "start": 19.6,
-          "end": 19.8
-        },
-        {
-          "word_index": 7,
-          "text": "mis",
-          "start": 19.8,
-          "end": 20.0
-        },
-        {
-          "word_index": 8,
-          "text": "gyale'",
-          "start": 20.0,
-          "end": 20.2
+          "text": "Etc",
+          "start": 18.85,
+          "end": 18.95,
+          "confidence": 0.252
         }
-      ]
-    },
-    {
-      "line_index": 8,
-      "text": "Y ando despechá', oah, alocá'",
-      "start": 21.7,
-      "end": 23.2,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "Y",
-          "start": 21.7,
-          "end": 21.9
-        },
-        {
-          "word_index": 2,
-          "text": "ando",
-          "start": 21.9,
-          "end": 22.2
-        },
-        {
-          "word_index": 3,
-          "text": "despechá',",
-          "start": 22.2,
-          "end": 22.6
-        },
-        {
-          "word_index": 4,
-          "text": "oah,",
-          "start": 22.6,
-          "end": 22.9
-        },
-        {
-          "word_index": 5,
-          "text": "alocá'",
-          "start": 22.9,
-          "end": 23.2
-        }
-      ]
-    },
-    {
-      "line_index": 9,
-      "text": "Bajé con un flow nuevo de caja, baby, hackeá'",
-      "start": 25.3,
-      "end": 28.8,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "Bajé",
-          "start": 25.3,
-          "end": 25.7
-        },
-        {
-          "word_index": 2,
-          "text": "con",
-          "start": 25.7,
-          "end": 26.0
-        },
-        {
-          "word_index": 3,
-          "text": "un",
-          "start": 26.0,
-          "end": 26.3
-        },
-        {
-          "word_index": 4,
-          "text": "flow",
-          "start": 26.3,
-          "end": 26.6
-        },
-        {
-          "word_index": 5,
-          "text": "nuevo",
-          "start": 26.6,
-          "end": 27.1
-        },
-        {
-          "word_index": 6,
-          "text": "de",
-          "start": 27.1,
-          "end": 27.3
-        },
-        {
-          "word_index": 7,
-          "text": "caja,",
-          "start": 27.3,
-          "end": 27.8
-        },
-        {
-          "word_index": 8,
-          "text": "baby,",
-          "start": 27.8,
-          "end": 28.2
-        },
-        {
-          "word_index": 9,
-          "text": "hackeá'",
-          "start": 28.3,
-          "end": 28.8
-        }
-      ]
-    },
-    {
-      "line_index": 10,
-      "text": "Lo muevo de la'o a la'o y a otro la'o",
-      "start": 28.9,
-      "end": 30.6,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "Lo",
-          "start": 28.9,
-          "end": 29.3
-        },
-        {
-          "word_index": 2,
-          "text": "muevo",
-          "start": 29.3,
-          "end": 29.6
-        },
-        {
-          "word_index": 3,
-          "text": "de",
-          "start": 29.6,
-          "end": 29.8
-        },
-        {
-          "word_index": 4,
-          "text": "la'o",
-          "start": 29.8,
-          "end": 29.9
-        },
-        {
-          "word_index": 5,
-          "text": "a",
-          "start": 29.9,
-          "end": 30.0
-        },
-        {
-          "word_index": 6,
-          "text": "la'o",
-          "start": 30.0,
-          "end": 30.0
-        },
-        {
-          "word_index": 7,
-          "text": "y",
-          "start": 30.0,
-          "end": 30.0
-        },
-        {
-          "word_index": 8,
-          "text": "a",
-          "start": 30.0,
-          "end": 30.1
-        },
-        {
-          "word_index": 9,
-          "text": "otro",
-          "start": 30.1,
-          "end": 30.2
-        },
-        {
-          "word_index": 10,
-          "text": "la'o",
-          "start": 30.2,
-          "end": 30.6
-        }
-      ]
-    },
-    {
-      "line_index": 11,
-      "text": "Hoy salgo con mi baby de la disco coroná'",
-      "start": 32.8,
-      "end": 35.0,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "Hoy",
-          "start": 32.8,
-          "end": 33.1
-        },
-        {
-          "word_index": 2,
-          "text": "salgo",
-          "start": 33.1,
-          "end": 33.4
-        },
-        {
-          "word_index": 3,
-          "text": "con",
-          "start": 33.4,
-          "end": 33.6
-        },
-        {
-          "word_index": 4,
-          "text": "mi",
-          "start": 33.6,
-          "end": 33.8
-        },
-        {
-          "word_index": 5,
-          "text": "baby",
-          "start": 33.8,
-          "end": 34.1
-        },
-        {
-          "word_index": 6,
-          "text": "de",
-          "start": 34.1,
-          "end": 34.2
-        },
-        {
-          "word_index": 7,
-          "text": "la",
-          "start": 34.2,
-          "end": 34.4
-        },
-        {
-          "word_index": 8,
-          "text": "disco",
-          "start": 34.4,
-          "end": 34.7
-        },
-        {
-          "word_index": 9,
-          "text": "coroná'",
-          "start": 34.7,
-          "end": 35.0
-        }
-      ]
-    },
-    {
-      "line_index": 12,
-      "text": "Y ando despechá', oah, alocá'",
-      "start": 36.2,
-      "end": 39.2,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "Y",
-          "start": 36.2,
-          "end": 36.4
-        },
-        {
-          "word_index": 2,
-          "text": "ando",
-          "start": 36.4,
-          "end": 36.9
-        },
-        {
-          "word_index": 3,
-          "text": "despechá',",
-          "start": 36.9,
-          "end": 38.1
-        },
-        {
-          "word_index": 4,
-          "text": "oah,",
-          "start": 38.1,
-          "end": 38.6
-        },
-        {
-          "word_index": 5,
-          "text": "alocá'",
-          "start": 38.7,
-          "end": 39.2
-        }
-      ]
-    },
-    {
-      "line_index": 13,
-      "text": "Que Dios me libre de volver a tu la'o",
-      "start": 40.1,
-      "end": 43.5,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "Que",
-          "start": 40.1,
-          "end": 40.5
-        },
-        {
-          "word_index": 2,
-          "text": "Dios",
-          "start": 40.5,
-          "end": 40.9
-        },
-        {
-          "word_index": 3,
-          "text": "me",
-          "start": 40.9,
-          "end": 41.2
-        },
-        {
-          "word_index": 4,
-          "text": "libre",
-          "start": 41.2,
-          "end": 41.7
-        },
-        {
-          "word_index": 5,
-          "text": "de",
-          "start": 41.8,
-          "end": 42.0
-        },
-        {
-          "word_index": 6,
-          "text": "volver",
-          "start": 42.0,
-          "end": 42.7
-        },
-        {
-          "word_index": 7,
-          "text": "a",
-          "start": 42.7,
-          "end": 42.9
-        },
-        {
-          "word_index": 8,
-          "text": "tu",
-          "start": 42.9,
-          "end": 43.1
-        },
-        {
-          "word_index": 9,
-          "text": "la'o",
-          "start": 43.1,
-          "end": 43.5
-        }
-      ]
-    },
-    {
-      "line_index": 14,
-      "text": "Lo muevo de la'o a la'o y a otro la'o",
-      "start": 43.8,
-      "end": 47.3,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "Lo",
-          "start": 43.8,
-          "end": 44.1
-        },
-        {
-          "word_index": 2,
-          "text": "muevo",
-          "start": 44.1,
-          "end": 44.6
-        },
-        {
-          "word_index": 3,
-          "text": "de",
-          "start": 44.7,
-          "end": 44.9
-        },
-        {
-          "word_index": 4,
-          "text": "la'o",
-          "start": 44.9,
-          "end": 45.4
-        },
-        {
-          "word_index": 5,
-          "text": "a",
-          "start": 45.4,
-          "end": 45.6
-        },
-        {
-          "word_index": 6,
-          "text": "la'o",
-          "start": 45.6,
-          "end": 46.1
-        },
-        {
-          "word_index": 7,
-          "text": "y",
-          "start": 46.1,
-          "end": 46.3
-        },
-        {
-          "word_index": 8,
-          "text": "a",
-          "start": 46.3,
-          "end": 46.5
-        },
-        {
-          "word_index": 9,
-          "text": "otro",
-          "start": 46.5,
-          "end": 46.9
-        },
-        {
-          "word_index": 10,
-          "text": "la'o",
-          "start": 46.9,
-          "end": 47.3
-        }
-      ]
-    },
-    {
-      "line_index": 15,
-      "text": "Hoy salgo con mi baby de la disco coroná', coroná', yeah",
-      "start": 47.7,
-      "end": 52.6,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "Hoy",
-          "start": 47.7,
-          "end": 48.0
-        },
-        {
-          "word_index": 2,
-          "text": "salgo",
-          "start": 48.0,
-          "end": 48.6
-        },
-        {
-          "word_index": 3,
-          "text": "con",
-          "start": 48.6,
-          "end": 48.9
-        },
-        {
-          "word_index": 4,
-          "text": "mi",
-          "start": 48.9,
-          "end": 49.2
-        },
-        {
-          "word_index": 5,
-          "text": "baby",
-          "start": 49.2,
-          "end": 49.6
-        },
-        {
-          "word_index": 6,
-          "text": "de",
-          "start": 49.6,
-          "end": 49.9
-        },
-        {
-          "word_index": 7,
-          "text": "la",
-          "start": 49.9,
-          "end": 50.1
-        },
-        {
-          "word_index": 8,
-          "text": "disco",
-          "start": 50.2,
-          "end": 50.7
-        },
-        {
-          "word_index": 9,
-          "text": "coroná',",
-          "start": 50.7,
-          "end": 51.4
-        },
-        {
-          "word_index": 10,
-          "text": "coroná',",
-          "start": 51.5,
-          "end": 52.2
-        },
-        {
-          "word_index": 11,
-          "text": "yeah",
-          "start": 52.2,
-          "end": 52.6
-        }
-      ]
-    },
-    {
-      "line_index": 16,
-      "text": "Voy con la falda (ah), aro' y cadena' (eh)",
-      "start": 52.6,
-      "end": 54.3,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "Voy",
-          "start": 52.6,
-          "end": 52.9
-        },
-        {
-          "word_index": 2,
-          "text": "con",
-          "start": 52.9,
-          "end": 53.1
-        },
-        {
-          "word_index": 3,
-          "text": "la",
-          "start": 53.1,
-          "end": 53.2
-        },
-        {
-          "word_index": 4,
-          "text": "falda",
-          "start": 53.2,
-          "end": 53.4
-        },
-        {
-          "word_index": 5,
-          "text": "(ah),",
-          "start": 53.4,
-          "end": 53.5
-        },
-        {
-          "word_index": 6,
-          "text": "aro'",
-          "start": 53.5,
-          "end": 53.8
-        },
-        {
-          "word_index": 7,
-          "text": "y",
-          "start": 53.8,
-          "end": 53.9
-        },
-        {
-          "word_index": 8,
-          "text": "cadena'",
-          "start": 53.9,
-          "end": 54.2
-        },
-        {
-          "word_index": 9,
-          "text": "(eh)",
-          "start": 54.2,
-          "end": 54.3
-        }
-      ]
-    },
-    {
-      "line_index": 17,
-      "text": "Piña colada (sí), no tengo pena (no)",
-      "start": 54.3,
-      "end": 56.1,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "Piña",
-          "start": 54.3,
-          "end": 54.6
-        },
-        {
-          "word_index": 2,
-          "text": "colada",
-          "start": 54.6,
-          "end": 55.0
-        },
-        {
-          "word_index": 3,
-          "text": "(sí),",
-          "start": 55.0,
-          "end": 55.2
-        },
-        {
-          "word_index": 4,
-          "text": "no",
-          "start": 55.2,
-          "end": 55.5
-        },
-        {
-          "word_index": 5,
-          "text": "tengo",
-          "start": 55.5,
-          "end": 55.7
-        },
-        {
-          "word_index": 6,
-          "text": "pena",
-          "start": 55.7,
-          "end": 56.0
-        },
-        {
-          "word_index": 7,
-          "text": "(no)",
-          "start": 56.0,
-          "end": 56.1
-        }
-      ]
-    },
-    {
-      "line_index": 18,
-      "text": "'Toy con la Fefa (wuh), ella es la jefa (sí)",
-      "start": 56.2,
-      "end": 58.0,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "'Toy",
-          "start": 56.2,
-          "end": 56.5
-        },
-        {
-          "word_index": 2,
-          "text": "con",
-          "start": 56.5,
-          "end": 56.7
-        },
-        {
-          "word_index": 3,
-          "text": "la",
-          "start": 56.7,
-          "end": 56.8
-        },
-        {
-          "word_index": 4,
-          "text": "Fefa",
-          "start": 56.8,
-          "end": 57.0
-        },
-        {
-          "word_index": 5,
-          "text": "(wuh),",
-          "start": 57.0,
-          "end": 57.2
-        },
-        {
-          "word_index": 6,
-          "text": "ella",
-          "start": 57.2,
-          "end": 57.5
-        },
-        {
-          "word_index": 7,
-          "text": "es",
-          "start": 57.5,
-          "end": 57.6
-        },
-        {
-          "word_index": 8,
-          "text": "la",
-          "start": 57.6,
-          "end": 57.8
-        },
-        {
-          "word_index": 9,
-          "text": "jefa",
-          "start": 57.8,
-          "end": 58.0
-        },
-        {
-          "word_index": 10,
-          "text": "(sí)",
-          "start": 58.0,
-          "end": 58.0
-        }
-      ]
-    },
-    {
-      "line_index": 19,
-      "text": "Ella lo baila (yeh), ella me enseña (yeh)",
-      "start": 58.1,
-      "end": 59.8,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "Ella",
-          "start": 58.1,
-          "end": 58.5
-        },
-        {
-          "word_index": 2,
-          "text": "lo",
-          "start": 58.5,
-          "end": 58.6
-        },
-        {
-          "word_index": 3,
-          "text": "baila",
-          "start": 58.6,
-          "end": 58.8
-        },
-        {
-          "word_index": 4,
-          "text": "(yeh),",
-          "start": 58.8,
-          "end": 59.0
-        },
-        {
-          "word_index": 5,
-          "text": "ella",
-          "start": 59.0,
-          "end": 59.3
-        },
-        {
-          "word_index": 6,
-          "text": "me",
-          "start": 59.3,
-          "end": 59.4
-        },
-        {
-          "word_index": 7,
-          "text": "enseña",
-          "start": 59.4,
-          "end": 59.7
-        },
-        {
-          "word_index": 8,
-          "text": "(yeh)",
-          "start": 59.7,
-          "end": 59.8
-        }
-      ]
-    },
-    {
-      "line_index": 20,
-      "text": "Hoy no trabaja (uh) esta morena (no)",
-      "start": 59.8,
-      "end": 61.5,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "Hoy",
-          "start": 59.8,
-          "end": 60.1
-        },
-        {
-          "word_index": 2,
-          "text": "no",
-          "start": 60.1,
-          "end": 60.2
-        },
-        {
-          "word_index": 3,
-          "text": "trabaja",
-          "start": 60.2,
-          "end": 60.6
-        },
-        {
-          "word_index": 4,
-          "text": "(uh)",
-          "start": 60.6,
-          "end": 60.8
-        },
-        {
-          "word_index": 5,
-          "text": "esta",
-          "start": 60.8,
-          "end": 61.1
-        },
-        {
-          "word_index": 6,
-          "text": "morena",
-          "start": 61.1,
-          "end": 61.4
-        },
-        {
-          "word_index": 7,
-          "text": "(no)",
-          "start": 61.4,
-          "end": 61.5
-        }
-      ]
-    },
-    {
-      "line_index": 21,
-      "text": "Fuck la fama (eh), fuck la faena (ja)",
-      "start": 61.8,
-      "end": 63.7,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "Fuck",
-          "start": 61.8,
-          "end": 62.2
-        },
-        {
-          "word_index": 2,
-          "text": "la",
-          "start": 62.2,
-          "end": 62.3
-        },
-        {
-          "word_index": 3,
-          "text": "fama",
-          "start": 62.3,
-          "end": 62.6
-        },
-        {
-          "word_index": 4,
-          "text": "(eh),",
-          "start": 62.6,
-          "end": 62.8
-        },
-        {
-          "word_index": 5,
-          "text": "fuck",
-          "start": 62.8,
-          "end": 63.1
-        },
-        {
-          "word_index": 6,
-          "text": "la",
-          "start": 63.1,
-          "end": 63.3
-        },
-        {
-          "word_index": 7,
-          "text": "faena",
-          "start": 63.3,
-          "end": 63.6
-        },
-        {
-          "word_index": 8,
-          "text": "(ja)",
-          "start": 63.6,
-          "end": 63.7
-        }
-      ]
-    },
-    {
-      "line_index": 22,
-      "text": "La noche es larga (eh), la noche está buena (eh)",
-      "start": 63.8,
-      "end": 65.6,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "La",
-          "start": 63.8,
-          "end": 64.1
-        },
-        {
-          "word_index": 2,
-          "text": "noche",
-          "start": 64.1,
-          "end": 64.3
-        },
-        {
-          "word_index": 3,
-          "text": "es",
-          "start": 64.3,
-          "end": 64.4
-        },
-        {
-          "word_index": 4,
-          "text": "larga",
-          "start": 64.4,
-          "end": 64.6
-        },
-        {
-          "word_index": 5,
-          "text": "(eh),",
-          "start": 64.6,
-          "end": 64.7
-        },
-        {
-          "word_index": 6,
-          "text": "la",
-          "start": 64.7,
-          "end": 65.0
-        },
-        {
-          "word_index": 7,
-          "text": "noche",
-          "start": 65.0,
-          "end": 65.2
-        },
-        {
-          "word_index": 8,
-          "text": "está",
-          "start": 65.2,
-          "end": 65.3
-        },
-        {
-          "word_index": 9,
-          "text": "buena",
-          "start": 65.3,
-          "end": 65.5
-        },
-        {
-          "word_index": 10,
-          "text": "(eh)",
-          "start": 65.5,
-          "end": 65.6
-        }
-      ]
-    },
-    {
-      "line_index": 23,
-      "text": "Un mambo violento y fin del problema",
-      "start": 65.6,
-      "end": 66.9,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "Un",
-          "start": 65.6,
-          "end": 65.9
-        },
-        {
-          "word_index": 2,
-          "text": "mambo",
-          "start": 65.9,
-          "end": 66.1
-        },
-        {
-          "word_index": 3,
-          "text": "violento",
-          "start": 66.1,
-          "end": 66.5
-        },
-        {
-          "word_index": 4,
-          "text": "y",
-          "start": 66.5,
-          "end": 66.5
-        },
-        {
-          "word_index": 5,
-          "text": "fin",
-          "start": 66.5,
-          "end": 66.6
-        },
-        {
-          "word_index": 6,
-          "text": "del",
-          "start": 66.6,
-          "end": 66.8
-        },
-        {
-          "word_index": 7,
-          "text": "problema",
-          "start": 66.8,
-          "end": 66.9
-        }
-      ]
-    },
-    {
-      "line_index": 24,
-      "text": "Mira qué fácil te lo v'y a decir",
-      "start": 67.0,
-      "end": 68.6,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "Mira",
-          "start": 67.0,
-          "end": 67.4
-        },
-        {
-          "word_index": 2,
-          "text": "qué",
-          "start": 67.4,
-          "end": 67.5
-        },
-        {
-          "word_index": 3,
-          "text": "fácil",
-          "start": 67.5,
-          "end": 67.8
-        },
-        {
-          "word_index": 4,
-          "text": "te",
-          "start": 67.8,
-          "end": 68.0
-        },
-        {
-          "word_index": 5,
-          "text": "lo",
-          "start": 68.0,
-          "end": 68.2
-        },
-        {
-          "word_index": 6,
-          "text": "v'y",
-          "start": 68.2,
-          "end": 68.3
-        },
-        {
-          "word_index": 7,
-          "text": "a",
-          "start": 68.3,
-          "end": 68.5
-        },
-        {
-          "word_index": 8,
-          "text": "decir",
-          "start": 68.5,
-          "end": 68.6
-        }
-      ]
-    },
-    {
-      "line_index": 25,
-      "text": "A, B, C, one, two, three",
-      "start": 68.6,
-      "end": 68.8,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "A,",
-          "start": 68.6,
-          "end": 68.6
-        },
-        {
-          "word_index": 2,
-          "text": "B,",
-          "start": 68.6,
-          "end": 68.6
-        },
-        {
-          "word_index": 3,
-          "text": "C,",
-          "start": 68.6,
-          "end": 68.6
-        },
-        {
-          "word_index": 4,
-          "text": "one,",
-          "start": 68.6,
-          "end": 68.7
-        },
-        {
-          "word_index": 5,
-          "text": "two,",
-          "start": 68.7,
-          "end": 68.8
-        },
-        {
-          "word_index": 6,
-          "text": "three",
-          "start": 68.8,
-          "end": 68.8
-        }
-      ]
-    },
-    {
-      "line_index": 26,
-      "text": "Mira qué fácil te lo v'y a decir",
-      "start": 70.3,
-      "end": 71.8,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "Mira",
-          "start": 70.3,
-          "end": 70.7
-        },
-        {
-          "word_index": 2,
-          "text": "qué",
-          "start": 70.7,
-          "end": 70.8
-        },
-        {
-          "word_index": 3,
-          "text": "fácil",
-          "start": 70.8,
-          "end": 71.1
-        },
-        {
-          "word_index": 4,
-          "text": "te",
-          "start": 71.1,
-          "end": 71.3
-        },
-        {
-          "word_index": 5,
-          "text": "lo",
-          "start": 71.3,
-          "end": 71.4
-        },
-        {
-          "word_index": 6,
-          "text": "v'y",
-          "start": 71.4,
-          "end": 71.5
-        },
-        {
-          "word_index": 7,
-          "text": "a",
-          "start": 71.5,
-          "end": 71.7
-        },
-        {
-          "word_index": 8,
-          "text": "decir",
-          "start": 71.7,
-          "end": 71.8
-        }
-      ]
-    },
-    {
-      "line_index": 27,
-      "text": "Que esta motomami ya no está pa' ti",
-      "start": 72.3,
-      "end": 73.9,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "Que",
-          "start": 72.3,
-          "end": 72.6
-        },
-        {
-          "word_index": 2,
-          "text": "esta",
-          "start": 72.6,
-          "end": 72.8
-        },
-        {
-          "word_index": 3,
-          "text": "motomami",
-          "start": 72.8,
-          "end": 73.3
-        },
-        {
-          "word_index": 4,
-          "text": "ya",
-          "start": 73.3,
-          "end": 73.4
-        },
-        {
-          "word_index": 5,
-          "text": "no",
-          "start": 73.4,
-          "end": 73.5
-        },
-        {
-          "word_index": 6,
-          "text": "está",
-          "start": 73.5,
-          "end": 73.7
-        },
-        {
-          "word_index": 7,
-          "text": "pa'",
-          "start": 73.7,
-          "end": 73.8
-        },
-        {
-          "word_index": 8,
-          "text": "ti",
-          "start": 73.8,
-          "end": 73.9
-        }
-      ]
-    },
-    {
-      "line_index": 28,
-      "text": "Mira qué fácil te lo v'y a decir",
-      "start": 74.0,
-      "end": 75.9,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "Mira",
-          "start": 74.0,
-          "end": 74.4
-        },
-        {
-          "word_index": 2,
-          "text": "qué",
-          "start": 74.4,
-          "end": 74.6
-        },
-        {
-          "word_index": 3,
-          "text": "fácil",
-          "start": 74.6,
-          "end": 74.9
-        },
-        {
-          "word_index": 4,
-          "text": "te",
-          "start": 74.9,
-          "end": 75.1
-        },
-        {
-          "word_index": 5,
-          "text": "lo",
-          "start": 75.1,
-          "end": 75.3
-        },
-        {
-          "word_index": 6,
-          "text": "v'y",
-          "start": 75.3,
-          "end": 75.5
-        },
-        {
-          "word_index": 7,
-          "text": "a",
-          "start": 75.5,
-          "end": 75.7
-        },
-        {
-          "word_index": 8,
-          "text": "decir",
-          "start": 75.7,
-          "end": 75.9
-        }
-      ]
-    },
-    {
-      "line_index": 29,
-      "text": "A, B, C, one, two, three",
-      "start": 76.0,
-      "end": 77.6,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "A,",
-          "start": 76.0,
-          "end": 76.2
-        },
-        {
-          "word_index": 2,
-          "text": "B,",
-          "start": 76.2,
-          "end": 76.4
-        },
-        {
-          "word_index": 3,
-          "text": "C,",
-          "start": 76.4,
-          "end": 76.6
-        },
-        {
-          "word_index": 4,
-          "text": "one,",
-          "start": 76.6,
-          "end": 76.9
-        },
-        {
-          "word_index": 5,
-          "text": "two,",
-          "start": 76.9,
-          "end": 77.3
-        },
-        {
-          "word_index": 6,
-          "text": "three",
-          "start": 77.3,
-          "end": 77.6
-        }
-      ]
-    },
-    {
-      "line_index": 30,
-      "text": "Mira qué fácil te lo v'y a decir",
-      "start": 77.7,
-      "end": 78.1,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "Mira",
-          "start": 77.7,
-          "end": 77.8
-        },
-        {
-          "word_index": 2,
-          "text": "qué",
-          "start": 77.8,
-          "end": 77.8
-        },
-        {
-          "word_index": 3,
-          "text": "fácil",
-          "start": 77.8,
-          "end": 77.8
-        },
-        {
-          "word_index": 4,
-          "text": "te",
-          "start": 77.8,
-          "end": 77.9
-        },
-        {
-          "word_index": 5,
-          "text": "lo",
-          "start": 77.9,
-          "end": 78.0
-        },
-        {
-          "word_index": 6,
-          "text": "v'y",
-          "start": 78.0,
-          "end": 78.0
-        },
-        {
-          "word_index": 7,
-          "text": "a",
-          "start": 78.0,
-          "end": 78.0
-        },
-        {
-          "word_index": 8,
-          "text": "decir",
-          "start": 78.0,
-          "end": 78.1
-        }
-      ]
-    },
-    {
-      "line_index": 31,
-      "text": "Que esta motomami ya -",
-      "start": 79.5,
-      "end": 80.7,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "Que",
-          "start": 79.5,
-          "end": 79.8
-        },
-        {
-          "word_index": 2,
-          "text": "esta",
-          "start": 79.8,
-          "end": 80.1
-        },
-        {
-          "word_index": 3,
-          "text": "motomami",
-          "start": 80.1,
-          "end": 80.5
-        },
-        {
-          "word_index": 4,
-          "text": "ya",
-          "start": 80.5,
-          "end": 80.6
-        },
-        {
-          "word_index": 5,
-          "text": "-",
-          "start": 80.6,
-          "end": 80.7
-        }
-      ]
-    },
-    {
-      "line_index": 32,
-      "text": "Y ando despechá', oah, alocá'",
-      "start": 80.7,
-      "end": 82.5,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "Y",
-          "start": 80.7,
-          "end": 80.9
-        },
-        {
-          "word_index": 2,
-          "text": "ando",
-          "start": 80.9,
-          "end": 81.2
-        },
-        {
-          "word_index": 3,
-          "text": "despechá',",
-          "start": 81.2,
-          "end": 81.8
-        },
-        {
-          "word_index": 4,
-          "text": "oah,",
-          "start": 81.8,
-          "end": 82.1
-        },
-        {
-          "word_index": 5,
-          "text": "alocá'",
-          "start": 82.1,
-          "end": 82.5
-        }
-      ]
-    },
-    {
-      "line_index": 33,
-      "text": "Bajé con un flow nuevo de caja, baby, hackeá'",
-      "start": 84.2,
-      "end": 87.5,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "Bajé",
-          "start": 84.2,
-          "end": 84.6
-        },
-        {
-          "word_index": 2,
-          "text": "con",
-          "start": 84.6,
-          "end": 84.9
-        },
-        {
-          "word_index": 3,
-          "text": "un",
-          "start": 84.9,
-          "end": 85.1
-        },
-        {
-          "word_index": 4,
-          "text": "flow",
-          "start": 85.1,
-          "end": 85.4
-        },
-        {
-          "word_index": 5,
-          "text": "nuevo",
-          "start": 85.4,
-          "end": 85.9
-        },
-        {
-          "word_index": 6,
-          "text": "de",
-          "start": 85.9,
-          "end": 86.1
-        },
-        {
-          "word_index": 7,
-          "text": "caja,",
-          "start": 86.1,
-          "end": 86.5
-        },
-        {
-          "word_index": 8,
-          "text": "baby,",
-          "start": 86.5,
-          "end": 87.0
-        },
-        {
-          "word_index": 9,
-          "text": "hackeá'",
-          "start": 87.0,
-          "end": 87.5
-        }
-      ]
-    },
-    {
-      "line_index": 34,
-      "text": "Lo muevo de la'o a la'o y a otro la'o",
-      "start": 87.9,
-      "end": 90.1,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "Lo",
-          "start": 87.9,
-          "end": 88.2
-        },
-        {
-          "word_index": 2,
-          "text": "muevo",
-          "start": 88.2,
-          "end": 88.5
-        },
-        {
-          "word_index": 3,
-          "text": "de",
-          "start": 88.5,
-          "end": 88.7
-        },
-        {
-          "word_index": 4,
-          "text": "la'o",
-          "start": 88.7,
-          "end": 88.9
-        },
-        {
-          "word_index": 5,
-          "text": "a",
-          "start": 88.9,
-          "end": 89.1
-        },
-        {
-          "word_index": 6,
-          "text": "la'o",
-          "start": 89.1,
-          "end": 89.3
-        },
-        {
-          "word_index": 7,
-          "text": "y",
-          "start": 89.3,
-          "end": 89.5
-        },
-        {
-          "word_index": 8,
-          "text": "a",
-          "start": 89.5,
-          "end": 89.7
-        },
-        {
-          "word_index": 9,
-          "text": "otro",
-          "start": 89.7,
-          "end": 89.9
-        },
-        {
-          "word_index": 10,
-          "text": "la'o",
-          "start": 89.9,
-          "end": 90.1
-        }
-      ]
-    },
-    {
-      "line_index": 35,
-      "text": "Hoy salgo con mi baby de la disco coroná'",
-      "start": 91.8,
-      "end": 94.0,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "Hoy",
-          "start": 91.8,
-          "end": 92.1
-        },
-        {
-          "word_index": 2,
-          "text": "salgo",
-          "start": 92.1,
-          "end": 92.4
-        },
-        {
-          "word_index": 3,
-          "text": "con",
-          "start": 92.4,
-          "end": 92.6
-        },
-        {
-          "word_index": 4,
-          "text": "mi",
-          "start": 92.6,
-          "end": 92.8
-        },
-        {
-          "word_index": 5,
-          "text": "baby",
-          "start": 92.8,
-          "end": 93.1
-        },
-        {
-          "word_index": 6,
-          "text": "de",
-          "start": 93.1,
-          "end": 93.2
-        },
-        {
-          "word_index": 7,
-          "text": "la",
-          "start": 93.2,
-          "end": 93.4
-        },
-        {
-          "word_index": 8,
-          "text": "disco",
-          "start": 93.4,
-          "end": 93.7
-        },
-        {
-          "word_index": 9,
-          "text": "coroná'",
-          "start": 93.7,
-          "end": 94.0
-        }
-      ]
-    },
-    {
-      "line_index": 36,
-      "text": "Y ando despechá', oah, alocá'",
-      "start": 95.5,
-      "end": 98.8,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "Y",
-          "start": 95.5,
-          "end": 95.7
-        },
-        {
-          "word_index": 2,
-          "text": "ando",
-          "start": 95.7,
-          "end": 96.3
-        },
-        {
-          "word_index": 3,
-          "text": "despechá',",
-          "start": 96.3,
-          "end": 97.7
-        },
-        {
-          "word_index": 4,
-          "text": "oah,",
-          "start": 97.7,
-          "end": 98.3
-        },
-        {
-          "word_index": 5,
-          "text": "alocá'",
-          "start": 98.3,
-          "end": 98.8
-        }
-      ]
-    },
-    {
-      "line_index": 37,
-      "text": "Que Dios me libre de volver a tu la'o",
-      "start": 99.0,
-      "end": 101.0,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "Que",
-          "start": 99.0,
-          "end": 99.3
-        },
-        {
-          "word_index": 2,
-          "text": "Dios",
-          "start": 99.3,
-          "end": 99.6
-        },
-        {
-          "word_index": 3,
-          "text": "me",
-          "start": 99.6,
-          "end": 99.7
-        },
-        {
-          "word_index": 4,
-          "text": "libre",
-          "start": 99.7,
-          "end": 100.0
-        },
-        {
-          "word_index": 5,
-          "text": "de",
-          "start": 100.0,
-          "end": 100.2
-        },
-        {
-          "word_index": 6,
-          "text": "volver",
-          "start": 100.2,
-          "end": 100.6
-        },
-        {
-          "word_index": 7,
-          "text": "a",
-          "start": 100.6,
-          "end": 100.7
-        },
-        {
-          "word_index": 8,
-          "text": "tu",
-          "start": 100.7,
-          "end": 100.9
-        },
-        {
-          "word_index": 9,
-          "text": "la'o",
-          "start": 100.9,
-          "end": 101.0
-        }
-      ]
-    },
-    {
-      "line_index": 38,
-      "text": "Lo muevo de la'o a la'o y a otro la'o",
-      "start": 103.1,
-      "end": 105.7,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "Lo",
-          "start": 103.1,
-          "end": 103.4
-        },
-        {
-          "word_index": 2,
-          "text": "muevo",
-          "start": 103.4,
-          "end": 103.7
-        },
-        {
-          "word_index": 3,
-          "text": "de",
-          "start": 103.7,
-          "end": 104.0
-        },
-        {
-          "word_index": 4,
-          "text": "la'o",
-          "start": 104.0,
-          "end": 104.3
-        },
-        {
-          "word_index": 5,
-          "text": "a",
-          "start": 104.3,
-          "end": 104.5
-        },
-        {
-          "word_index": 6,
-          "text": "la'o",
-          "start": 104.5,
-          "end": 104.8
-        },
-        {
-          "word_index": 7,
-          "text": "y",
-          "start": 104.8,
-          "end": 105.0
-        },
-        {
-          "word_index": 8,
-          "text": "a",
-          "start": 105.0,
-          "end": 105.1
-        },
-        {
-          "word_index": 9,
-          "text": "otro",
-          "start": 105.1,
-          "end": 105.4
-        },
-        {
-          "word_index": 10,
-          "text": "la'o",
-          "start": 105.4,
-          "end": 105.7
-        }
-      ]
-    },
-    {
-      "line_index": 39,
-      "text": "Hoy salgo con mi baby de la disco coroná', coroná', yeah",
-      "start": 106.7,
-      "end": 108.4,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "Hoy",
-          "start": 106.7,
-          "end": 107.0
-        },
-        {
-          "word_index": 2,
-          "text": "salgo",
-          "start": 107.0,
-          "end": 107.2
-        },
-        {
-          "word_index": 3,
-          "text": "con",
-          "start": 107.2,
-          "end": 107.3
-        },
-        {
-          "word_index": 4,
-          "text": "mi",
-          "start": 107.3,
-          "end": 107.4
-        },
-        {
-          "word_index": 5,
-          "text": "baby",
-          "start": 107.4,
-          "end": 107.6
-        },
-        {
-          "word_index": 6,
-          "text": "de",
-          "start": 107.6,
-          "end": 107.6
-        },
-        {
-          "word_index": 7,
-          "text": "la",
-          "start": 107.6,
-          "end": 107.7
-        },
-        {
-          "word_index": 8,
-          "text": "disco",
-          "start": 107.7,
-          "end": 107.9
-        },
-        {
-          "word_index": 9,
-          "text": "coroná',",
-          "start": 107.9,
-          "end": 108.1
-        },
-        {
-          "word_index": 10,
-          "text": "coroná',",
-          "start": 108.1,
-          "end": 108.4
-        },
-        {
-          "word_index": 11,
-          "text": "yeah",
-          "start": 108.4,
-          "end": 108.4
-        }
-      ]
-    },
-    {
-      "line_index": 40,
-      "text": "Mmm, voy a 180 porque soy una racineta, ¿qué, qué?",
-      "start": 111.6,
-      "end": 112.9,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "Mmm,",
-          "start": 111.6,
-          "end": 111.9
-        },
-        {
-          "word_index": 2,
-          "text": "voy",
-          "start": 111.9,
-          "end": 112.0
-        },
-        {
-          "word_index": 3,
-          "text": "a",
-          "start": 112.0,
-          "end": 112.1
-        },
-        {
-          "word_index": 4,
-          "text": "180",
-          "start": 112.1,
-          "end": 112.2
-        },
-        {
-          "word_index": 5,
-          "text": "porque",
-          "start": 112.2,
-          "end": 112.4
-        },
-        {
-          "word_index": 6,
-          "text": "soy",
-          "start": 112.4,
-          "end": 112.5
-        },
-        {
-          "word_index": 7,
-          "text": "una",
-          "start": 112.5,
-          "end": 112.6
-        },
-        {
-          "word_index": 8,
-          "text": "racineta,",
-          "start": 112.6,
-          "end": 112.8
-        },
-        {
-          "word_index": 9,
-          "text": "¿qué,",
-          "start": 112.8,
-          "end": 112.8
-        },
-        {
-          "word_index": 10,
-          "text": "qué?",
-          "start": 112.8,
-          "end": 112.9
-        }
-      ]
-    },
-    {
-      "line_index": 41,
-      "text": "Te distrae' y yo te adelanto por la derecha, uh",
-      "start": 115.4,
-      "end": 116.9,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "Te",
-          "start": 115.4,
-          "end": 115.7
-        },
-        {
-          "word_index": 2,
-          "text": "distrae'",
-          "start": 115.7,
-          "end": 116.0
-        },
-        {
-          "word_index": 3,
-          "text": "y",
-          "start": 116.0,
-          "end": 116.0
-        },
-        {
-          "word_index": 4,
-          "text": "yo",
-          "start": 116.0,
-          "end": 116.1
-        },
-        {
-          "word_index": 5,
-          "text": "te",
-          "start": 116.1,
-          "end": 116.2
-        },
-        {
-          "word_index": 6,
-          "text": "adelanto",
-          "start": 116.2,
-          "end": 116.6
-        },
-        {
-          "word_index": 7,
-          "text": "por",
-          "start": 116.6,
-          "end": 116.6
-        },
-        {
-          "word_index": 8,
-          "text": "la",
-          "start": 116.6,
-          "end": 116.7
-        },
-        {
-          "word_index": 9,
-          "text": "derecha,",
-          "start": 116.7,
-          "end": 116.8
-        },
-        {
-          "word_index": 10,
-          "text": "uh",
-          "start": 116.8,
-          "end": 116.9
-        }
-      ]
-    },
-    {
-      "line_index": 42,
-      "text": "Voy a 180 porque soy una racineta, ey, ey",
-      "start": 119.2,
-      "end": 121.4,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "Voy",
-          "start": 119.2,
-          "end": 119.5
-        },
-        {
-          "word_index": 2,
-          "text": "a",
-          "start": 119.5,
-          "end": 119.6
-        },
-        {
-          "word_index": 3,
-          "text": "180",
-          "start": 119.6,
-          "end": 119.8
-        },
-        {
-          "word_index": 4,
-          "text": "porque",
-          "start": 119.8,
-          "end": 120.2
-        },
-        {
-          "word_index": 5,
-          "text": "soy",
-          "start": 120.2,
-          "end": 120.4
-        },
-        {
-          "word_index": 6,
-          "text": "una",
-          "start": 120.4,
-          "end": 120.6
-        },
-        {
-          "word_index": 7,
-          "text": "racineta,",
-          "start": 120.6,
-          "end": 121.1
-        },
-        {
-          "word_index": 8,
-          "text": "ey,",
-          "start": 121.1,
-          "end": 121.3
-        },
-        {
-          "word_index": 9,
-          "text": "ey",
-          "start": 121.3,
-          "end": 121.4
-        }
-      ]
-    },
-    {
-      "line_index": 43,
-      "text": "Te distrae' y yo te adelanto por la derecha, mmm, mmm, mmm",
-      "start": 122.8,
-      "end": 123.4,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "Te",
-          "start": 122.8,
-          "end": 122.8
-        },
-        {
-          "word_index": 2,
-          "text": "distrae'",
-          "start": 122.8,
-          "end": 122.9
-        },
-        {
-          "word_index": 3,
-          "text": "y",
-          "start": 122.9,
-          "end": 123.0
-        },
-        {
-          "word_index": 4,
-          "text": "yo",
-          "start": 123.0,
-          "end": 123.0
-        },
-        {
-          "word_index": 5,
-          "text": "te",
-          "start": 123.0,
-          "end": 123.0
-        },
-        {
-          "word_index": 6,
-          "text": "adelanto",
-          "start": 123.0,
-          "end": 123.1
-        },
-        {
-          "word_index": 7,
-          "text": "por",
-          "start": 123.1,
-          "end": 123.2
-        },
-        {
-          "word_index": 8,
-          "text": "la",
-          "start": 123.2,
-          "end": 123.2
-        },
-        {
-          "word_index": 9,
-          "text": "derecha,",
-          "start": 123.2,
-          "end": 123.2
-        },
-        {
-          "word_index": 10,
-          "text": "mmm,",
-          "start": 123.2,
-          "end": 123.3
-        },
-        {
-          "word_index": 11,
-          "text": "mmm,",
-          "start": 123.3,
-          "end": 123.4
-        },
-        {
-          "word_index": 12,
-          "text": "mmm",
-          "start": 123.4,
-          "end": 123.4
-        }
-      ]
-    },
-    {
-      "line_index": 44,
-      "text": "Yeah-yeah-yeah-yeah-yeah-yeah",
-      "start": 126.6,
-      "end": 126.8,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "Yeah-yeah-yeah-yeah-yeah-yeah",
-          "start": 126.6,
-          "end": 126.8
-        }
-      ]
-    },
-    {
-      "line_index": 45,
-      "text": "Ey",
-      "start": 128.6,
-      "end": 129.2,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "Ey",
-          "start": 128.6,
-          "end": 129.2
-        }
-      ]
-    },
-    {
-      "line_index": 46,
-      "text": "Yeah-yeah-yeah-yeah",
-      "start": 130.0,
-      "end": 130.1,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "Yeah-yeah-yeah-yeah",
-          "start": 130.0,
-          "end": 130.1
-        }
-      ]
-    },
-    {
-      "line_index": 47,
-      "text": "Chris Jedi",
-      "start": 132.2,
-      "end": 132.4,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "Chris",
-          "start": 132.2,
-          "end": 132.3
-        },
-        {
-          "word_index": 2,
-          "text": "Jedi",
-          "start": 132.3,
-          "end": 132.4
-        }
-      ]
-    },
-    {
-      "line_index": 48,
-      "text": "Gaby, Gaby, Gaby",
-      "start": 133.9,
-      "end": 134.7,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "Gaby,",
-          "start": 133.9,
-          "end": 134.3
-        },
-        {
-          "word_index": 2,
-          "text": "Gaby,",
-          "start": 134.3,
-          "end": 134.6
-        },
-        {
-          "word_index": 3,
-          "text": "Gaby",
-          "start": 134.6,
-          "end": 134.7
-        }
-      ]
-    },
-    {
-      "line_index": 49,
-      "text": "De Barcelona pa' Santo Domingo",
-      "start": 135.7,
-      "end": 138.3,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "De",
-          "start": 135.7,
-          "end": 136.0
-        },
-        {
-          "word_index": 2,
-          "text": "Barcelona",
-          "start": 136.0,
-          "end": 136.8
-        },
-        {
-          "word_index": 3,
-          "text": "pa'",
-          "start": 136.8,
-          "end": 137.2
-        },
-        {
-          "word_index": 4,
-          "text": "Santo",
-          "start": 137.2,
-          "end": 137.7
-        },
-        {
-          "word_index": 5,
-          "text": "Domingo",
-          "start": 137.7,
-          "end": 138.3
-        }
-      ]
-    },
-    {
-      "line_index": 50,
-      "text": "La ROSALÍA, mmm, jaja, je",
-      "start": 139.3,
-      "end": 140.9,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "La",
-          "start": 139.3,
-          "end": 139.6
-        },
-        {
-          "word_index": 2,
-          "text": "ROSALÍA,",
-          "start": 139.6,
-          "end": 140.1
-        },
-        {
-          "word_index": 3,
-          "text": "mmm,",
-          "start": 140.1,
-          "end": 140.4
-        },
-        {
-          "word_index": 4,
-          "text": "jaja,",
-          "start": 140.4,
-          "end": 140.8
-        },
-        {
-          "word_index": 5,
-          "text": "je",
-          "start": 140.8,
-          "end": 140.9
-        }
-      ]
-    },
-    {
-      "line_index": 51,
-      "text": "Jeje",
-      "start": 142.4,
-      "end": 142.5,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "Jeje",
-          "start": 142.4,
-          "end": 142.5
-        }
-      ]
-    },
-    {
-      "line_index": 52,
-      "text": "Ey",
-      "start": 144.3,
-      "end": 144.7,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "Ey",
-          "start": 144.3,
-          "end": 144.7
-        }
-      ]
-    },
-    {
-      "line_index": 53,
-      "text": "Uh, uh, uh, uh",
-      "start": 146.2,
-      "end": 147.3,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "Uh,",
-          "start": 146.2,
-          "end": 146.5
-        },
-        {
-          "word_index": 2,
-          "text": "uh,",
-          "start": 146.5,
-          "end": 146.8
-        },
-        {
-          "word_index": 3,
-          "text": "uh,",
-          "start": 146.8,
-          "end": 147.1
-        },
-        {
-          "word_index": 4,
-          "text": "uh",
-          "start": 147.1,
-          "end": 147.3
-        }
-      ]
-    },
-    {
-      "line_index": 54,
-      "text": "Omega",
-      "start": 150.0,
-      "end": 150.1,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "Omega",
-          "start": 150.0,
-          "end": 150.1
-        }
-      ]
-    },
-    {
-      "line_index": 55,
-      "text": "Ey, ey, ey",
-      "start": 151.2,
-      "end": 152.2,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "Ey,",
-          "start": 151.2,
-          "end": 151.6
-        },
-        {
-          "word_index": 2,
-          "text": "ey,",
-          "start": 151.6,
-          "end": 152.0
-        },
-        {
-          "word_index": 3,
-          "text": "ey",
-          "start": 152.0,
-          "end": 152.2
-        }
-      ]
-    },
-    {
-      "line_index": 56,
-      "text": "Uh, uh, uh, uh",
-      "start": 153.8,
-      "end": 155.1,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "Uh,",
-          "start": 153.8,
-          "end": 154.2
-        },
-        {
-          "word_index": 2,
-          "text": "uh,",
-          "start": 154.2,
-          "end": 154.5
-        },
-        {
-          "word_index": 3,
-          "text": "uh,",
-          "start": 154.5,
-          "end": 154.9
-        },
-        {
-          "word_index": 4,
-          "text": "uh",
-          "start": 154.9,
-          "end": 155.1
-        }
-      ]
-    }
-  ],
-  "karaoke_source_url": "https://www.youtube.com/watch?v=wvPZm3sCQh8",
-  "karaoke_video_path": ".cache/karaoke_bootstrap/rosalia-despecha/wvPZm3sCQh8/wvPZm3sCQh8.mp4",
-  "karaoke_line_windows": [
-    {
-      "line_index": 1,
-      "video_start": 17.0,
-      "video_end": 18.252
-    },
-    {
-      "line_index": 2,
-      "video_start": 18.252,
-      "video_end": 18.502
-    },
-    {
-      "line_index": 3,
-      "video_start": 19.566,
-      "video_end": 19.879
+      ],
+      "y": 216,
+      "word_rois": [
+        [
+          72,
+          216,
+          92,
+          24
+        ],
+        [
+          168,
+          216,
+          141,
+          24
+        ],
+        [
+          312,
+          216,
+          87,
+          24
+        ],
+        [
+          402,
+          216,
+          126,
+          24
+        ],
+        [
+          531,
+          216,
+          39,
+          24
+        ]
+      ],
+      "char_rois": []
     },
     {
       "line_index": 4,
-      "video_start": 20.943,
-      "video_end": 22.132
+      "text": "OLVIDANDO TUS MALE'",
+      "start": 21.25,
+      "end": 25.0,
+      "confidence": 0.252,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "OLVIDANDO",
+          "start": 21.25,
+          "end": 22.05,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 2,
+          "text": "TUS",
+          "start": 23.1,
+          "end": 23.9,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 3,
+          "text": "MALE'",
+          "start": 24.2,
+          "end": 25.0,
+          "confidence": 0.252
+        }
+      ],
+      "y": 217,
+      "word_rois": [
+        [
+          10,
+          217,
+          330,
+          55
+        ],
+        [
+          347,
+          217,
+          108,
+          55
+        ],
+        [
+          462,
+          217,
+          170,
+          55
+        ]
+      ],
+      "char_rois": []
     },
     {
       "line_index": 5,
-      "video_start": 22.445,
-      "video_end": 24.886
+      "text": "YA",
+      "start": 25.35,
+      "end": 26.15,
+      "confidence": 0.5,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "YA",
+          "start": 25.35,
+          "end": 26.15,
+          "confidence": 0.5
+        }
+      ],
+      "y": 68,
+      "word_rois": [
+        [
+          202,
+          68,
+          68,
+          49
+        ]
+      ],
+      "char_rois": []
     },
     {
       "line_index": 6,
-      "video_start": 24.886,
-      "video_end": 26.388
+      "text": "QUE SE",
+      "start": 26.15,
+      "end": 26.4,
+      "confidence": 0.494,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "QUE",
+          "start": 26.15,
+          "end": 26.25,
+          "confidence": 0.25
+        },
+        {
+          "word_index": 2,
+          "text": "SE",
+          "start": 26.3,
+          "end": 26.4,
+          "confidence": 0.738
+        }
+      ],
+      "y": 130,
+      "word_rois": [
+        [
+          26,
+          130,
+          89,
+          72
+        ],
+        [
+          431,
+          130,
+          54,
+          72
+        ]
+      ],
+      "char_rois": []
     },
     {
       "line_index": 7,
-      "video_start": 27.139,
-      "video_end": 28.453
+      "text": "CON TODA MIS YALES",
+      "start": 32.8,
+      "end": 33.35,
+      "confidence": 0.402,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "CON",
+          "start": 32.8,
+          "end": 32.9,
+          "confidence": 0.561
+        },
+        {
+          "word_index": 2,
+          "text": "TODA",
+          "start": 32.95,
+          "end": 33.05,
+          "confidence": 0.25
+        },
+        {
+          "word_index": 3,
+          "text": "MIS",
+          "start": 33.1,
+          "end": 33.2,
+          "confidence": 0.545
+        },
+        {
+          "word_index": 4,
+          "text": "YALES",
+          "start": 33.25,
+          "end": 33.35,
+          "confidence": 0.25
+        }
+      ],
+      "y": 244,
+      "word_rois": [
+        [
+          72,
+          244,
+          104,
+          42
+        ],
+        [
+          182,
+          244,
+          136,
+          42
+        ],
+        [
+          324,
+          244,
+          89,
+          42
+        ],
+        [
+          418,
+          244,
+          152,
+          42
+        ]
+      ],
+      "char_rois": []
     },
     {
       "line_index": 8,
-      "video_start": 29.392,
-      "video_end": 30.331
+      "text": "CON TOA MIS MOTOMAMI",
+      "start": 33.35,
+      "end": 33.9,
+      "confidence": 0.3,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "CON",
+          "start": 33.35,
+          "end": 33.45,
+          "confidence": 0.3
+        },
+        {
+          "word_index": 2,
+          "text": "TOA",
+          "start": 33.5,
+          "end": 33.6,
+          "confidence": 0.3
+        },
+        {
+          "word_index": 3,
+          "text": "MIS",
+          "start": 33.65,
+          "end": 33.75,
+          "confidence": 0.3
+        },
+        {
+          "word_index": 4,
+          "text": "MOTOMAMI",
+          "start": 33.8,
+          "end": 33.9,
+          "confidence": 0.3
+        }
+      ],
+      "y": 175,
+      "word_rois": [
+        [
+          9,
+          175,
+          109,
+          55
+        ],
+        [
+          124,
+          175,
+          108,
+          55
+        ],
+        [
+          239,
+          176,
+          88,
+          55
+        ],
+        [
+          333,
+          177,
+          303,
+          57
+        ]
+      ],
+      "char_rois": []
     },
     {
       "line_index": 9,
-      "video_start": 31.645,
-      "video_end": 33.835
+      "text": "YA DECID",
+      "start": 33.9,
+      "end": 34.15,
+      "confidence": 0.27,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "YA",
+          "start": 33.9,
+          "end": 34.0,
+          "confidence": 0.27
+        },
+        {
+          "word_index": 2,
+          "text": "DECID",
+          "start": 34.05,
+          "end": 34.15,
+          "confidence": 0.27
+        }
+      ],
+      "y": 67,
+      "word_rois": [
+        [
+          201,
+          68,
+          69,
+          50
+        ],
+        [
+          276,
+          67,
+          164,
+          51
+        ]
+      ],
+      "char_rois": []
     },
     {
       "line_index": 10,
-      "video_start": 33.898,
-      "video_end": 35.275
+      "text": "QUE ESTA NOCHE SE SALE",
+      "start": 34.15,
+      "end": 34.85,
+      "confidence": 0.55,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "QUE",
+          "start": 34.15,
+          "end": 34.25,
+          "confidence": 0.25
+        },
+        {
+          "word_index": 2,
+          "text": "ESTA",
+          "start": 34.3,
+          "end": 34.4,
+          "confidence": 1.0
+        },
+        {
+          "word_index": 3,
+          "text": "NOCHE",
+          "start": 34.45,
+          "end": 34.55,
+          "confidence": 0.25
+        },
+        {
+          "word_index": 4,
+          "text": "SE",
+          "start": 34.6,
+          "end": 34.7,
+          "confidence": 0.25
+        },
+        {
+          "word_index": 5,
+          "text": "SALE",
+          "start": 34.75,
+          "end": 34.85,
+          "confidence": 1.0
+        }
+      ],
+      "y": 130,
+      "word_rois": [
+        [
+          26,
+          130,
+          102,
+          48
+        ],
+        [
+          134,
+          130,
+          114,
+          48
+        ],
+        [
+          254,
+          130,
+          174,
+          48
+        ],
+        [
+          434,
+          130,
+          54,
+          48
+        ],
+        [
+          494,
+          130,
+          119,
+          48
+        ]
+      ],
+      "char_rois": []
     },
     {
       "line_index": 11,
-      "video_start": 36.339,
-      "video_end": 37.716
+      "text": "CON TOA MIS MOTOMAMI",
+      "start": 34.85,
+      "end": 35.4,
+      "confidence": 0.664,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "CON",
+          "start": 34.85,
+          "end": 34.95,
+          "confidence": 0.87
+        },
+        {
+          "word_index": 2,
+          "text": "TOA",
+          "start": 35.0,
+          "end": 35.1,
+          "confidence": 0.87
+        },
+        {
+          "word_index": 3,
+          "text": "MIS",
+          "start": 35.15,
+          "end": 35.25,
+          "confidence": 0.25
+        },
+        {
+          "word_index": 4,
+          "text": "MOTOMAMI",
+          "start": 35.3,
+          "end": 35.4,
+          "confidence": 0.668
+        }
+      ],
+      "y": 174,
+      "word_rois": [
+        [
+          11,
+          172,
+          106,
+          58
+        ],
+        [
+          123,
+          174,
+          113,
+          57
+        ],
+        [
+          242,
+          175,
+          92,
+          57
+        ],
+        [
+          340,
+          176,
+          296,
+          60
+        ]
+      ],
+      "char_rois": []
     },
     {
       "line_index": 12,
-      "video_start": 38.467,
-      "video_end": 40.407
+      "text": "Y ANDO DESPECH",
+      "start": 35.4,
+      "end": 35.8,
+      "confidence": 0.5,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Y",
+          "start": 35.4,
+          "end": 35.5,
+          "confidence": 0.5
+        },
+        {
+          "word_index": 2,
+          "text": "ANDO",
+          "start": 35.55,
+          "end": 35.65,
+          "confidence": 0.5
+        },
+        {
+          "word_index": 3,
+          "text": "DESPECH",
+          "start": 35.7,
+          "end": 35.8,
+          "confidence": 0.5
+        }
+      ],
+      "y": 71,
+      "word_rois": [
+        [
+          104,
+          71,
+          31,
+          51
+        ],
+        [
+          141,
+          71,
+          138,
+          51
+        ],
+        [
+          285,
+          71,
+          253,
+          51
+        ]
+      ],
+      "char_rois": []
     },
     {
       "line_index": 13,
-      "video_start": 40.907,
-      "video_end": 43.035
+      "text": "OAH A LOCA",
+      "start": 35.8,
+      "end": 36.75,
+      "confidence": 0.75,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "OAH",
+          "start": 35.8,
+          "end": 35.9,
+          "confidence": 0.25
+        },
+        {
+          "word_index": 2,
+          "text": "A",
+          "start": 35.95,
+          "end": 36.1,
+          "confidence": 1.0
+        },
+        {
+          "word_index": 3,
+          "text": "LOCA",
+          "start": 36.1,
+          "end": 36.75,
+          "confidence": 1.0
+        }
+      ],
+      "y": 128,
+      "word_rois": [
+        [
+          153,
+          128,
+          131,
+          56
+        ],
+        [
+          291,
+          129,
+          195,
+          56
+        ]
+      ],
+      "char_rois": []
     },
     {
       "line_index": 14,
-      "video_start": 43.223,
-      "video_end": 45.414
+      "text": "BAJ CON UN FLOW NUEVO",
+      "start": 36.75,
+      "end": 38.15,
+      "confidence": 0.609,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "BAJ",
+          "start": 36.75,
+          "end": 36.85,
+          "confidence": 0.25
+        },
+        {
+          "word_index": 2,
+          "text": "CON",
+          "start": 36.9,
+          "end": 37.7,
+          "confidence": 1.0
+        },
+        {
+          "word_index": 3,
+          "text": "UN",
+          "start": 37.75,
+          "end": 37.85,
+          "confidence": 0.25
+        },
+        {
+          "word_index": 4,
+          "text": "FLOW",
+          "start": 37.9,
+          "end": 38.0,
+          "confidence": 0.544
+        },
+        {
+          "word_index": 5,
+          "text": "NUEVO",
+          "start": 38.05,
+          "end": 38.15,
+          "confidence": 1.0
+        }
+      ],
+      "y": 180,
+      "word_rois": [
+        [
+          20,
+          180,
+          113,
+          48
+        ],
+        [
+          140,
+          180,
+          102,
+          48
+        ],
+        [
+          248,
+          180,
+          66,
+          48
+        ],
+        [
+          320,
+          180,
+          132,
+          48
+        ],
+        [
+          458,
+          180,
+          162,
+          48
+        ]
+      ],
+      "char_rois": []
     },
     {
       "line_index": 15,
-      "video_start": 45.664,
-      "video_end": 48.731
+      "text": "QUE",
+      "start": 38.15,
+      "end": 38.25,
+      "confidence": 0.5,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "QUE",
+          "start": 38.15,
+          "end": 38.25,
+          "confidence": 0.5
+        }
+      ],
+      "y": 240,
+      "word_rois": [
+        [
+          9,
+          240,
+          98,
+          46
+        ]
+      ],
+      "char_rois": []
     },
     {
       "line_index": 16,
-      "video_start": 48.731,
-      "video_end": 49.794
+      "text": "QUE DEJA AL BABY HACKE",
+      "start": 38.25,
+      "end": 38.95,
+      "confidence": 0.228,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "QUE",
+          "start": 38.25,
+          "end": 38.35,
+          "confidence": 0.228
+        },
+        {
+          "word_index": 2,
+          "text": "DEJA",
+          "start": 38.4,
+          "end": 38.5,
+          "confidence": 0.228
+        },
+        {
+          "word_index": 3,
+          "text": "AL",
+          "start": 38.55,
+          "end": 38.65,
+          "confidence": 0.228
+        },
+        {
+          "word_index": 4,
+          "text": "BABY",
+          "start": 38.7,
+          "end": 38.8,
+          "confidence": 0.228
+        },
+        {
+          "word_index": 5,
+          "text": "HACKE",
+          "start": 38.85,
+          "end": 38.95,
+          "confidence": 0.228
+        }
+      ],
+      "y": 235,
+      "word_rois": [
+        [
+          11,
+          238,
+          91,
+          50
+        ],
+        [
+          107,
+          237,
+          121,
+          49
+        ],
+        [
+          233,
+          236,
+          61,
+          49
+        ],
+        [
+          299,
+          234,
+          121,
+          50
+        ],
+        [
+          425,
+          231,
+          209,
+          51
+        ]
+      ],
+      "char_rois": []
     },
     {
       "line_index": 17,
-      "video_start": 49.794,
-      "video_end": 50.921
+      "text": "ESPECH",
+      "start": 39.35,
+      "end": 39.65,
+      "confidence": 0.5,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "ESPECH",
+          "start": 39.35,
+          "end": 39.65,
+          "confidence": 0.5
+        }
+      ],
+      "y": 71,
+      "word_rois": [
+        [
+          319,
+          71,
+          219,
+          49
+        ]
+      ],
+      "char_rois": []
     },
     {
       "line_index": 18,
-      "video_start": 50.984,
-      "video_end": 52.11
+      "text": "AL BABY HACKE",
+      "start": 39.65,
+      "end": 40.05,
+      "confidence": 0.347,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "AL",
+          "start": 39.65,
+          "end": 39.75,
+          "confidence": 0.25
+        },
+        {
+          "word_index": 2,
+          "text": "BABY",
+          "start": 39.8,
+          "end": 39.9,
+          "confidence": 0.542
+        },
+        {
+          "word_index": 3,
+          "text": "HACKE",
+          "start": 39.95,
+          "end": 40.05,
+          "confidence": 0.25
+        }
+      ],
+      "y": 232,
+      "word_rois": [
+        [
+          236,
+          232,
+          62,
+          50
+        ],
+        [
+          304,
+          232,
+          119,
+          50
+        ],
+        [
+          429,
+          232,
+          204,
+          50
+        ]
+      ],
+      "char_rois": []
     },
     {
       "line_index": 19,
-      "video_start": 52.173,
-      "video_end": 53.237
+      "text": "LO MUEVO DE LA'O A LA'O",
+      "start": 40.05,
+      "end": 41.45,
+      "confidence": 0.252,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "LO",
+          "start": 40.05,
+          "end": 40.25,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 2,
+          "text": "MUEVO",
+          "start": 40.3,
+          "end": 40.5,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 3,
+          "text": "DE",
+          "start": 40.55,
+          "end": 40.75,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 4,
+          "text": "LA'O",
+          "start": 40.8,
+          "end": 41.0,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 5,
+          "text": "A",
+          "start": 41.05,
+          "end": 41.2,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 6,
+          "text": "LA'O",
+          "start": 41.25,
+          "end": 41.45,
+          "confidence": 0.252
+        }
+      ],
+      "y": 66,
+      "word_rois": [
+        [
+          8,
+          66,
+          64,
+          51
+        ],
+        [
+          79,
+          66,
+          182,
+          51
+        ],
+        [
+          267,
+          66,
+          65,
+          51
+        ],
+        [
+          339,
+          66,
+          117,
+          51
+        ],
+        [
+          462,
+          66,
+          39,
+          51
+        ],
+        [
+          508,
+          66,
+          119,
+          51
+        ]
+      ],
+      "char_rois": []
     },
     {
       "line_index": 20,
-      "video_start": 53.237,
-      "video_end": 54.301
+      "text": "Y A OTRO LA'O",
+      "start": 41.45,
+      "end": 42.0,
+      "confidence": 0.5,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Y",
+          "start": 41.45,
+          "end": 41.55,
+          "confidence": 0.5
+        },
+        {
+          "word_index": 2,
+          "text": "A",
+          "start": 41.6,
+          "end": 41.7,
+          "confidence": 0.5
+        },
+        {
+          "word_index": 3,
+          "text": "OTRO",
+          "start": 41.75,
+          "end": 41.85,
+          "confidence": 0.5
+        },
+        {
+          "word_index": 4,
+          "text": "LA'O",
+          "start": 41.9,
+          "end": 42.0,
+          "confidence": 0.5
+        }
+      ],
+      "y": 128,
+      "word_rois": [
+        [
+          140,
+          128,
+          40,
+          46
+        ],
+        [
+          186,
+          128,
+          40,
+          46
+        ],
+        [
+          232,
+          128,
+          138,
+          46
+        ],
+        [
+          375,
+          128,
+          120,
+          46
+        ]
+      ],
+      "char_rois": []
     },
     {
       "line_index": 21,
-      "video_start": 54.488,
-      "video_end": 55.677
+      "text": "HOY SALGO CON MI BABY",
+      "start": 42.0,
+      "end": 42.7,
+      "confidence": 0.252,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "HOY",
+          "start": 42.0,
+          "end": 42.1,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 2,
+          "text": "SALGO",
+          "start": 42.15,
+          "end": 42.25,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 3,
+          "text": "CON",
+          "start": 42.3,
+          "end": 42.4,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 4,
+          "text": "MI",
+          "start": 42.45,
+          "end": 42.55,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 5,
+          "text": "BABY",
+          "start": 42.6,
+          "end": 42.7,
+          "confidence": 0.252
+        }
+      ],
+      "y": 186,
+      "word_rois": [
+        [
+          20,
+          186,
+          104,
+          44
+        ],
+        [
+          130,
+          186,
+          170,
+          44
+        ],
+        [
+          306,
+          186,
+          110,
+          44
+        ],
+        [
+          421,
+          186,
+          66,
+          44
+        ],
+        [
+          493,
+          186,
+          129,
+          44
+        ]
+      ],
+      "char_rois": []
     },
     {
       "line_index": 22,
-      "video_start": 55.74,
-      "video_end": 56.867
+      "text": "DE LA",
+      "start": 42.7,
+      "end": 42.95,
+      "confidence": 0.56,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "DE",
+          "start": 42.7,
+          "end": 42.8,
+          "confidence": 0.25
+        },
+        {
+          "word_index": 2,
+          "text": "LA",
+          "start": 42.85,
+          "end": 42.95,
+          "confidence": 0.87
+        }
+      ],
+      "y": 244,
+      "word_rois": [
+        [
+          56,
+          244,
+          66,
+          44
+        ],
+        [
+          127,
+          244,
+          67,
+          44
+        ]
+      ],
+      "char_rois": []
     },
     {
       "line_index": 23,
-      "video_start": 56.867,
-      "video_end": 57.68
+      "text": "DE LA DISCO CORON",
+      "start": 45.25,
+      "end": 45.95,
+      "confidence": 0.252,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "DE",
+          "start": 45.25,
+          "end": 45.35,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 2,
+          "text": "LA",
+          "start": 45.4,
+          "end": 45.5,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 3,
+          "text": "DISCO",
+          "start": 45.55,
+          "end": 45.65,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 4,
+          "text": "CORON",
+          "start": 45.7,
+          "end": 45.8,
+          "confidence": 0.252
+        }
+      ],
+      "y": 236,
+      "word_rois": [
+        [
+          56,
+          236,
+          58,
+          52
+        ],
+        [
+          120,
+          236,
+          65,
+          52
+        ],
+        [
+          192,
+          236,
+          156,
+          52
+        ],
+        [
+          354,
+          236,
+          235,
+          52
+        ]
+      ],
+      "char_rois": []
     },
     {
       "line_index": 24,
-      "video_start": 57.743,
-      "video_end": 58.744
+      "text": "Y A OTRO LA'O",
+      "start": 46.85,
+      "end": 47.45,
+      "confidence": 0.5,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Y",
+          "start": 46.85,
+          "end": 47.0,
+          "confidence": 0.5
+        },
+        {
+          "word_index": 2,
+          "text": "A",
+          "start": 47.05,
+          "end": 47.15,
+          "confidence": 0.5
+        },
+        {
+          "word_index": 3,
+          "text": "OTRO",
+          "start": 47.2,
+          "end": 47.3,
+          "confidence": 0.5
+        },
+        {
+          "word_index": 4,
+          "text": "LA'O",
+          "start": 47.35,
+          "end": 47.45,
+          "confidence": 0.5
+        }
+      ],
+      "y": 128,
+      "word_rois": [
+        [
+          142,
+          128,
+          34,
+          46
+        ],
+        [
+          182,
+          128,
+          46,
+          46
+        ],
+        [
+          234,
+          128,
+          138,
+          46
+        ],
+        [
+          377,
+          128,
+          119,
+          46
+        ]
+      ],
+      "char_rois": []
     },
     {
       "line_index": 25,
-      "video_start": 58.744,
-      "video_end": 58.869
+      "text": "CON MI BABY",
+      "start": 47.45,
+      "end": 47.85,
+      "confidence": 0.5,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "CON",
+          "start": 47.45,
+          "end": 47.55,
+          "confidence": 0.5
+        },
+        {
+          "word_index": 2,
+          "text": "MI",
+          "start": 47.6,
+          "end": 47.7,
+          "confidence": 0.5
+        },
+        {
+          "word_index": 3,
+          "text": "BABY",
+          "start": 47.75,
+          "end": 47.85,
+          "confidence": 0.5
+        }
+      ],
+      "y": 186,
+      "word_rois": [
+        [
+          308,
+          186,
+          110,
+          44
+        ],
+        [
+          423,
+          186,
+          61,
+          44
+        ],
+        [
+          489,
+          186,
+          133,
+          44
+        ]
+      ],
+      "char_rois": []
     },
     {
       "line_index": 26,
-      "video_start": 59.808,
-      "video_end": 60.747
+      "text": "Y ANDO DESPECH",
+      "start": 49.6,
+      "end": 54.4,
+      "confidence": 0.75,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Y",
+          "start": 49.6,
+          "end": 49.7,
+          "confidence": 0.25
+        },
+        {
+          "word_index": 2,
+          "text": "ANDO",
+          "start": 54.15,
+          "end": 54.25,
+          "confidence": 1.0
+        },
+        {
+          "word_index": 3,
+          "text": "DESPECH",
+          "start": 54.3,
+          "end": 54.4,
+          "confidence": 1.0
+        }
+      ],
+      "y": 42,
+      "word_rois": [
+        [
+          42,
+          42,
+          38,
+          62
+        ],
+        [
+          88,
+          42,
+          178,
+          62
+        ],
+        [
+          274,
+          42,
+          325,
+          62
+        ]
+      ],
+      "char_rois": []
     },
     {
       "line_index": 27,
-      "video_start": 61.06,
-      "video_end": 62.061
+      "text": "OAH A LOCA",
+      "start": 54.4,
+      "end": 54.65,
+      "confidence": 1.0,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "OAH",
+          "start": 54.4,
+          "end": 54.5,
+          "confidence": 1.0
+        },
+        {
+          "word_index": 2,
+          "text": "A",
+          "start": 54.55,
+          "end": 54.55,
+          "confidence": 1.0
+        },
+        {
+          "word_index": 3,
+          "text": "LOCA",
+          "start": 54.55,
+          "end": 54.65,
+          "confidence": 1.0
+        }
+      ],
+      "y": 112,
+      "word_rois": [
+        [
+          125,
+          111,
+          154,
+          75
+        ],
+        [
+          287,
+          113,
+          232,
+          76
+        ]
+      ],
+      "char_rois": []
     },
     {
       "line_index": 28,
-      "video_start": 62.124,
-      "video_end": 63.313
+      "text": "QUE DIOS ME LIBRE",
+      "start": 54.65,
+      "end": 55.2,
+      "confidence": 0.522,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "QUE",
+          "start": 54.65,
+          "end": 54.75,
+          "confidence": 0.25
+        },
+        {
+          "word_index": 2,
+          "text": "DIOS",
+          "start": 54.8,
+          "end": 54.9,
+          "confidence": 0.25
+        },
+        {
+          "word_index": 3,
+          "text": "ME",
+          "start": 54.95,
+          "end": 55.05,
+          "confidence": 0.589
+        },
+        {
+          "word_index": 4,
+          "text": "LIBRE",
+          "start": 55.1,
+          "end": 55.2,
+          "confidence": 1.0
+        }
+      ],
+      "y": 190,
+      "word_rois": [
+        [
+          50,
+          190,
+          123,
+          58
+        ],
+        [
+          180,
+          190,
+          145,
+          58
+        ],
+        [
+          332,
+          190,
+          87,
+          58
+        ],
+        [
+          426,
+          190,
+          163,
+          58
+        ]
+      ],
+      "char_rois": []
     },
     {
       "line_index": 29,
-      "video_start": 63.375,
-      "video_end": 64.377
+      "text": "DE VOLVER A TU LA'O",
+      "start": 55.2,
+      "end": 55.9,
+      "confidence": 0.252,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "DE",
+          "start": 55.2,
+          "end": 55.3,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 2,
+          "text": "VOLVER",
+          "start": 55.35,
+          "end": 55.45,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 3,
+          "text": "A",
+          "start": 55.5,
+          "end": 55.6,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 4,
+          "text": "TU",
+          "start": 55.65,
+          "end": 55.75,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 5,
+          "text": "LA'O",
+          "start": 55.8,
+          "end": 55.9,
+          "confidence": 0.252
+        }
+      ],
+      "y": 250,
+      "word_rois": [
+        [
+          12,
+          250,
+          77,
+          62
+        ],
+        [
+          97,
+          250,
+          240,
+          62
+        ],
+        [
+          345,
+          250,
+          46,
+          62
+        ],
+        [
+          399,
+          250,
+          78,
+          62
+        ],
+        [
+          484,
+          250,
+          141,
+          62
+        ]
+      ],
+      "char_rois": []
     },
     {
       "line_index": 30,
-      "video_start": 64.439,
-      "video_end": 64.69
+      "text": "A LOCA",
+      "start": 56.7,
+      "end": 56.8,
+      "confidence": 0.5,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "A",
+          "start": 56.7,
+          "end": 56.7,
+          "confidence": 0.5
+        },
+        {
+          "word_index": 2,
+          "text": "LOCA",
+          "start": 56.7,
+          "end": 56.8,
+          "confidence": 0.5
+        }
+      ],
+      "y": 114,
+      "word_rois": [
+        [
+          242,
+          114,
+          280,
+          69
+        ]
+      ],
+      "char_rois": []
     },
     {
       "line_index": 31,
-      "video_start": 65.566,
-      "video_end": 66.317
+      "text": "LO MUEVO DE LA'O A LA'O",
+      "start": 61.6,
+      "end": 62.5,
+      "confidence": 0.252,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "LO",
+          "start": 61.6,
+          "end": 61.7,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 2,
+          "text": "MUEVO",
+          "start": 61.75,
+          "end": 61.85,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 3,
+          "text": "DE",
+          "start": 61.9,
+          "end": 62.05,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 4,
+          "text": "LA'O",
+          "start": 62.1,
+          "end": 62.2,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 5,
+          "text": "A",
+          "start": 62.25,
+          "end": 62.35,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 6,
+          "text": "LA'O",
+          "start": 62.4,
+          "end": 62.5,
+          "confidence": 0.252
+        }
+      ],
+      "y": 37,
+      "word_rois": [
+        [
+          10,
+          37,
+          68,
+          51
+        ],
+        [
+          85,
+          37,
+          175,
+          51
+        ],
+        [
+          266,
+          37,
+          69,
+          51
+        ],
+        [
+          341,
+          37,
+          119,
+          51
+        ],
+        [
+          466,
+          37,
+          37,
+          51
+        ],
+        [
+          509,
+          37,
+          118,
+          51
+        ]
+      ],
+      "char_rois": []
     },
     {
       "line_index": 32,
-      "video_start": 66.317,
-      "video_end": 67.443
+      "text": "Y A OTRO LAO",
+      "start": 63.45,
+      "end": 64.15,
+      "confidence": 0.252,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Y",
+          "start": 63.45,
+          "end": 63.55,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 2,
+          "text": "A",
+          "start": 63.6,
+          "end": 63.75,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 3,
+          "text": "OTRO",
+          "start": 63.8,
+          "end": 63.95,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 4,
+          "text": "LAO",
+          "start": 64.0,
+          "end": 64.15,
+          "confidence": 0.252
+        }
+      ],
+      "y": 97,
+      "word_rois": [
+        [
+          140,
+          97,
+          36,
+          49
+        ],
+        [
+          182,
+          97,
+          42,
+          49
+        ],
+        [
+          230,
+          97,
+          138,
+          49
+        ],
+        [
+          373,
+          97,
+          122,
+          49
+        ]
+      ],
+      "char_rois": []
     },
     {
       "line_index": 33,
-      "video_start": 68.507,
-      "video_end": 70.573
+      "text": "HOY SALGO CON MI BABY",
+      "start": 64.15,
+      "end": 64.85,
+      "confidence": 0.252,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "HOY",
+          "start": 64.15,
+          "end": 64.25,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 2,
+          "text": "SALGO",
+          "start": 64.3,
+          "end": 64.4,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 3,
+          "text": "CON",
+          "start": 64.45,
+          "end": 64.55,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 4,
+          "text": "MI",
+          "start": 64.6,
+          "end": 64.7,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 5,
+          "text": "BABY",
+          "start": 64.75,
+          "end": 64.85,
+          "confidence": 0.252
+        }
+      ],
+      "y": 158,
+      "word_rois": [
+        [
+          20,
+          158,
+          104,
+          44
+        ],
+        [
+          130,
+          158,
+          170,
+          44
+        ],
+        [
+          306,
+          158,
+          110,
+          44
+        ],
+        [
+          421,
+          158,
+          66,
+          44
+        ],
+        [
+          493,
+          158,
+          126,
+          44
+        ]
+      ],
+      "char_rois": []
     },
     {
       "line_index": 34,
-      "video_start": 70.823,
-      "video_end": 72.2
+      "text": "DE LA DISCO CORON",
+      "start": 64.85,
+      "end": 65.4,
+      "confidence": 0.252,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "DE",
+          "start": 64.85,
+          "end": 64.95,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 2,
+          "text": "LA",
+          "start": 65.0,
+          "end": 65.1,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 3,
+          "text": "DISCO",
+          "start": 65.15,
+          "end": 65.25,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 4,
+          "text": "CORON",
+          "start": 65.3,
+          "end": 65.4,
+          "confidence": 0.252
+        }
+      ],
+      "y": 207,
+      "word_rois": [
+        [
+          56,
+          207,
+          62,
+          51
+        ],
+        [
+          124,
+          207,
+          63,
+          51
+        ],
+        [
+          193,
+          207,
+          150,
+          51
+        ],
+        [
+          349,
+          207,
+          241,
+          51
+        ]
+      ],
+      "char_rois": []
     },
     {
       "line_index": 35,
-      "video_start": 73.264,
-      "video_end": 74.641
+      "text": "CORON Y",
+      "start": 65.4,
+      "end": 65.65,
+      "confidence": 0.87,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "CORON",
+          "start": 65.4,
+          "end": 65.5,
+          "confidence": 0.87
+        },
+        {
+          "word_index": 2,
+          "text": "Y",
+          "start": 65.55,
+          "end": 65.65,
+          "confidence": 0.87
+        }
+      ],
+      "y": 263,
+      "word_rois": [
+        [
+          129,
+          263,
+          233,
+          65
+        ],
+        [
+          369,
+          263,
+          45,
+          64
+        ]
+      ],
+      "char_rois": []
     },
     {
       "line_index": 36,
-      "video_start": 75.579,
-      "video_end": 77.77
+      "text": "CORON YEAH",
+      "start": 65.65,
+      "end": 65.9,
+      "confidence": 0.468,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "CORON",
+          "start": 65.65,
+          "end": 65.75,
+          "confidence": 0.25
+        },
+        {
+          "word_index": 2,
+          "text": "YEAH",
+          "start": 65.8,
+          "end": 65.9,
+          "confidence": 0.685
+        }
+      ],
+      "y": 264,
+      "word_rois": [
+        [
+          130,
+          264,
+          240,
+          64
+        ],
+        [
+          377,
+          264,
+          130,
+          64
+        ]
+      ],
+      "char_rois": []
     },
     {
       "line_index": 37,
-      "video_start": 77.77,
-      "video_end": 79.022
+      "text": "VOY CON LA",
+      "start": 65.9,
+      "end": 66.3,
+      "confidence": 0.5,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "VOY",
+          "start": 65.9,
+          "end": 66.0,
+          "confidence": 0.5
+        },
+        {
+          "word_index": 2,
+          "text": "CON",
+          "start": 66.05,
+          "end": 66.15,
+          "confidence": 0.5
+        },
+        {
+          "word_index": 3,
+          "text": "LA",
+          "start": 66.2,
+          "end": 66.3,
+          "confidence": 0.5
+        }
+      ],
+      "y": 13,
+      "word_rois": [
+        [
+          10,
+          13,
+          110,
+          44
+        ],
+        [
+          125,
+          13,
+          116,
+          44
+        ],
+        [
+          246,
+          13,
+          67,
+          44
+        ]
+      ],
+      "char_rois": []
     },
     {
       "line_index": 38,
-      "video_start": 80.336,
-      "video_end": 81.963
+      "text": "VOY CON LA FALDA ARO",
+      "start": 66.3,
+      "end": 67.0,
+      "confidence": 0.252,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "VOY",
+          "start": 66.3,
+          "end": 66.4,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 2,
+          "text": "CON",
+          "start": 66.45,
+          "end": 66.55,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 3,
+          "text": "LA",
+          "start": 66.6,
+          "end": 66.7,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 4,
+          "text": "FALDA",
+          "start": 66.75,
+          "end": 66.85,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 5,
+          "text": "ARO",
+          "start": 66.9,
+          "end": 67.0,
+          "confidence": 0.252
+        }
+      ],
+      "y": 9,
+      "word_rois": [
+        [
+          9,
+          12,
+          105,
+          66
+        ],
+        [
+          121,
+          11,
+          113,
+          65
+        ],
+        [
+          241,
+          10,
+          65,
+          64
+        ],
+        [
+          313,
+          7,
+          177,
+          67
+        ],
+        [
+          497,
+          5,
+          139,
+          66
+        ]
+      ],
+      "char_rois": []
     },
     {
       "line_index": 39,
-      "video_start": 82.589,
-      "video_end": 83.653
+      "text": "Y CADENA' EH",
+      "start": 67.0,
+      "end": 69.05,
+      "confidence": 0.5,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Y",
+          "start": 67.0,
+          "end": 67.1,
+          "confidence": 0.25
+        },
+        {
+          "word_index": 2,
+          "text": "CADENA'",
+          "start": 68.55,
+          "end": 68.65,
+          "confidence": 1.0
+        },
+        {
+          "word_index": 3,
+          "text": "EH",
+          "start": 68.95,
+          "end": 69.05,
+          "confidence": 0.25
+        }
+      ],
+      "y": 68,
+      "word_rois": [
+        [
+          136,
+          68,
+          36,
+          47
+        ],
+        [
+          178,
+          68,
+          216,
+          47
+        ],
+        [
+          399,
+          68,
+          102,
+          47
+        ]
+      ],
+      "char_rois": []
     },
     {
       "line_index": 40,
-      "video_start": 85.656,
-      "video_end": 86.469
+      "text": "PIA COLADA S",
+      "start": 69.05,
+      "end": 69.45,
+      "confidence": 0.252,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "PIA",
+          "start": 69.05,
+          "end": 69.15,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 2,
+          "text": "COLADA",
+          "start": 69.2,
+          "end": 69.3,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 3,
+          "text": "S",
+          "start": 69.35,
+          "end": 69.45,
+          "confidence": 0.252
+        }
+      ],
+      "y": 122,
+      "word_rois": [
+        [
+          110,
+          122,
+          116,
+          52
+        ],
+        [
+          233,
+          122,
+          208,
+          52
+        ],
+        [
+          447,
+          122,
+          84,
+          52
+        ]
+      ],
+      "char_rois": []
     },
     {
       "line_index": 41,
-      "video_start": 88.034,
-      "video_end": 88.973
+      "text": "NO TENGO PENA AH NO",
+      "start": 69.45,
+      "end": 70.15,
+      "confidence": 0.252,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "NO",
+          "start": 69.45,
+          "end": 69.55,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 2,
+          "text": "TENGO",
+          "start": 69.6,
+          "end": 69.7,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 3,
+          "text": "PENA",
+          "start": 69.75,
+          "end": 69.85,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 4,
+          "text": "AH",
+          "start": 69.9,
+          "end": 70.0,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 5,
+          "text": "NO",
+          "start": 70.05,
+          "end": 70.15,
+          "confidence": 0.252
+        }
+      ],
+      "y": 188,
+      "word_rois": [
+        [
+          16,
+          188,
+          76,
+          56
+        ],
+        [
+          99,
+          188,
+          168,
+          56
+        ],
+        [
+          274,
+          188,
+          126,
+          56
+        ],
+        [
+          407,
+          188,
+          112,
+          56
+        ],
+        [
+          526,
+          188,
+          102,
+          56
+        ]
+      ],
+      "char_rois": []
     },
     {
       "line_index": 42,
-      "video_start": 90.412,
-      "video_end": 91.789
+      "text": "ESTOY CON LA FEFA",
+      "start": 70.15,
+      "end": 70.7,
+      "confidence": 0.252,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "ESTOY",
+          "start": 70.15,
+          "end": 70.25,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 2,
+          "text": "CON",
+          "start": 70.3,
+          "end": 70.4,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 3,
+          "text": "LA",
+          "start": 70.45,
+          "end": 70.55,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 4,
+          "text": "FEFA",
+          "start": 70.6,
+          "end": 70.7,
+          "confidence": 0.252
+        }
+      ],
+      "y": 246,
+      "word_rois": [
+        [
+          84,
+          246,
+          154,
+          44
+        ],
+        [
+          243,
+          246,
+          110,
+          44
+        ],
+        [
+          359,
+          246,
+          66,
+          44
+        ],
+        [
+          430,
+          246,
+          125,
+          44
+        ]
+      ],
+      "char_rois": []
     },
     {
       "line_index": 43,
-      "video_start": 92.79,
-      "video_end": 93.041
+      "text": "ELLA ES LA JEFA S",
+      "start": 70.7,
+      "end": 71.4,
+      "confidence": 0.252,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "ELLA",
+          "start": 70.7,
+          "end": 70.8,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 2,
+          "text": "ES",
+          "start": 70.85,
+          "end": 70.95,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 3,
+          "text": "LA",
+          "start": 71.0,
+          "end": 71.1,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 4,
+          "text": "JEFA",
+          "start": 71.15,
+          "end": 71.25,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 5,
+          "text": "S",
+          "start": 71.3,
+          "end": 71.4,
+          "confidence": 0.252
+        }
+      ],
+      "y": 298,
+      "word_rois": [
+        [
+          86,
+          298,
+          112,
+          50
+        ],
+        [
+          204,
+          298,
+          63,
+          50
+        ],
+        [
+          273,
+          298,
+          69,
+          50
+        ],
+        [
+          348,
+          298,
+          119,
+          50
+        ],
+        [
+          473,
+          298,
+          82,
+          50
+        ]
+      ],
+      "char_rois": []
     },
     {
       "line_index": 44,
-      "video_start": 95.043,
-      "video_end": 95.168
+      "text": "A S",
+      "start": 71.4,
+      "end": 71.65,
+      "confidence": 0.625,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "A",
+          "start": 71.4,
+          "end": 71.5,
+          "confidence": 1.0
+        },
+        {
+          "word_index": 2,
+          "text": "S",
+          "start": 71.55,
+          "end": 71.65,
+          "confidence": 0.25
+        }
+      ],
+      "y": 122,
+      "word_rois": [
+        [
+          402,
+          122,
+          38,
+          52
+        ],
+        [
+          447,
+          122,
+          84,
+          52
+        ]
+      ],
+      "char_rois": []
     },
     {
       "line_index": 45,
-      "video_start": 96.295,
-      "video_end": 96.671
+      "text": "ELLA LO BAILA EH",
+      "start": 71.65,
+      "end": 72.2,
+      "confidence": 0.252,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "ELLA",
+          "start": 71.65,
+          "end": 71.75,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 2,
+          "text": "LO",
+          "start": 71.8,
+          "end": 71.9,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 3,
+          "text": "BAILA",
+          "start": 71.95,
+          "end": 72.05,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 4,
+          "text": "EH",
+          "start": 72.1,
+          "end": 72.2,
+          "confidence": 0.252
+        }
+      ],
+      "y": 22,
+      "word_rois": [
+        [
+          62,
+          22,
+          129,
+          51
+        ],
+        [
+          198,
+          22,
+          84,
+          51
+        ],
+        [
+          289,
+          22,
+          169,
+          51
+        ],
+        [
+          464,
+          22,
+          115,
+          51
+        ]
+      ],
+      "char_rois": []
     },
     {
       "line_index": 46,
-      "video_start": 97.171,
-      "video_end": 97.271
+      "text": "ELLA ME ENSEA EH",
+      "start": 72.2,
+      "end": 72.75,
+      "confidence": 0.252,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "ELLA",
+          "start": 72.2,
+          "end": 72.3,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 2,
+          "text": "ME",
+          "start": 72.35,
+          "end": 72.45,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 3,
+          "text": "ENSEA",
+          "start": 72.5,
+          "end": 72.6,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 4,
+          "text": "EH",
+          "start": 72.65,
+          "end": 72.75,
+          "confidence": 0.252
+        }
+      ],
+      "y": 81,
+      "word_rois": [
+        [
+          32,
+          81,
+          137,
+          58
+        ],
+        [
+          177,
+          81,
+          79,
+          58
+        ],
+        [
+          264,
+          81,
+          217,
+          58
+        ],
+        [
+          488,
+          81,
+          120,
+          58
+        ]
+      ],
+      "char_rois": []
     },
     {
       "line_index": 47,
-      "video_start": 98.548,
-      "video_end": 98.673
+      "text": "HOY NO TRABAJO UH",
+      "start": 72.75,
+      "end": 73.3,
+      "confidence": 0.252,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "HOY",
+          "start": 72.75,
+          "end": 72.85,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 2,
+          "text": "NO",
+          "start": 72.9,
+          "end": 73.0,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 3,
+          "text": "TRABAJO",
+          "start": 73.05,
+          "end": 73.15,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 4,
+          "text": "UH",
+          "start": 73.2,
+          "end": 73.3,
+          "confidence": 0.252
+        }
+      ],
+      "y": 156,
+      "word_rois": [
+        [
+          10,
+          156,
+          124,
+          50
+        ],
+        [
+          141,
+          156,
+          87,
+          50
+        ],
+        [
+          235,
+          156,
+          268,
+          50
+        ],
+        [
+          510,
+          156,
+          122,
+          50
+        ]
+      ],
+      "char_rois": []
     },
     {
       "line_index": 48,
-      "video_start": 99.612,
-      "video_end": 100.113
+      "text": "ESTOY MORENA",
+      "start": 73.3,
+      "end": 73.55,
+      "confidence": 0.252,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "ESTOY",
+          "start": 73.3,
+          "end": 73.4,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 2,
+          "text": "MORENA",
+          "start": 73.45,
+          "end": 73.55,
+          "confidence": 0.252
+        }
+      ],
+      "y": 222,
+      "word_rois": [
+        [
+          102,
+          222,
+          175,
+          50
+        ],
+        [
+          283,
+          222,
+          251,
+          50
+        ]
+      ],
+      "char_rois": []
     },
     {
       "line_index": 49,
-      "video_start": 100.739,
-      "video_end": 102.366
+      "text": "FCK LA FAMA EH",
+      "start": 73.55,
+      "end": 74.1,
+      "confidence": 0.252,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "FCK",
+          "start": 73.55,
+          "end": 73.65,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 2,
+          "text": "LA",
+          "start": 73.7,
+          "end": 73.8,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 3,
+          "text": "FAMA",
+          "start": 73.85,
+          "end": 73.95,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 4,
+          "text": "EH",
+          "start": 74.0,
+          "end": 74.1,
+          "confidence": 0.252
+        }
+      ],
+      "y": 280,
+      "word_rois": [
+        [
+          65,
+          280,
+          128,
+          60
+        ],
+        [
+          200,
+          280,
+          75,
+          60
+        ],
+        [
+          283,
+          280,
+          165,
+          60
+        ],
+        [
+          455,
+          280,
+          118,
+          60
+        ]
+      ],
+      "char_rois": []
     },
     {
       "line_index": 50,
-      "video_start": 102.992,
-      "video_end": 103.993
+      "text": "UH",
+      "start": 74.1,
+      "end": 74.2,
+      "confidence": 0.835,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "UH",
+          "start": 74.1,
+          "end": 74.2,
+          "confidence": 0.835
+        }
+      ],
+      "y": 155,
+      "word_rois": [
+        [
+          530,
+          155,
+          104,
+          48
+        ]
+      ],
+      "char_rois": []
     },
     {
       "line_index": 51,
-      "video_start": 104.932,
-      "video_end": 105.032
+      "text": "FCK LA FAENA JAJA",
+      "start": 74.2,
+      "end": 74.75,
+      "confidence": 0.252,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "FCK",
+          "start": 74.2,
+          "end": 74.3,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 2,
+          "text": "LA",
+          "start": 74.35,
+          "end": 74.45,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 3,
+          "text": "FAENA",
+          "start": 74.5,
+          "end": 74.6,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 4,
+          "text": "JAJA",
+          "start": 74.65,
+          "end": 74.75,
+          "confidence": 0.252
+        }
+      ],
+      "y": 42,
+      "word_rois": [
+        [
+          68,
+          42,
+          106,
+          50
+        ],
+        [
+          180,
+          42,
+          63,
+          50
+        ],
+        [
+          249,
+          42,
+          156,
+          50
+        ],
+        [
+          411,
+          42,
+          160,
+          50
+        ]
+      ],
+      "char_rois": []
     },
     {
       "line_index": 52,
-      "video_start": 106.121,
-      "video_end": 106.371
+      "text": "LA NOCHE ES LARGA EH",
+      "start": 74.75,
+      "end": 75.45,
+      "confidence": 0.252,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "LA",
+          "start": 74.75,
+          "end": 74.85,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 2,
+          "text": "NOCHE",
+          "start": 74.9,
+          "end": 75.0,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 3,
+          "text": "ES",
+          "start": 75.05,
+          "end": 75.15,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 4,
+          "text": "LARGA",
+          "start": 75.2,
+          "end": 75.3,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 5,
+          "text": "EH",
+          "start": 75.35,
+          "end": 75.45,
+          "confidence": 0.252
+        }
+      ],
+      "y": 103,
+      "word_rois": [
+        [
+          36,
+          103,
+          63,
+          43
+        ],
+        [
+          104,
+          103,
+          168,
+          43
+        ],
+        [
+          277,
+          103,
+          58,
+          43
+        ],
+        [
+          340,
+          103,
+          163,
+          43
+        ],
+        [
+          508,
+          103,
+          98,
+          43
+        ]
+      ],
+      "char_rois": []
     },
     {
       "line_index": 53,
-      "video_start": 107.31,
-      "video_end": 107.998
+      "text": "LA NOCHE EST BUENA EH",
+      "start": 75.45,
+      "end": 76.15,
+      "confidence": 0.252,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "LA",
+          "start": 75.45,
+          "end": 75.55,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 2,
+          "text": "NOCHE",
+          "start": 75.6,
+          "end": 75.7,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 3,
+          "text": "EST",
+          "start": 75.75,
+          "end": 75.85,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 4,
+          "text": "BUENA",
+          "start": 75.9,
+          "end": 76.0,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 5,
+          "text": "EH",
+          "start": 76.05,
+          "end": 76.15,
+          "confidence": 0.252
+        }
+      ],
+      "y": 152,
+      "word_rois": [
+        [
+          10,
+          152,
+          62,
+          50
+        ],
+        [
+          78,
+          152,
+          163,
+          50
+        ],
+        [
+          247,
+          152,
+          119,
+          50
+        ],
+        [
+          372,
+          152,
+          156,
+          50
+        ],
+        [
+          534,
+          152,
+          97,
+          50
+        ]
+      ],
+      "char_rois": []
     },
     {
       "line_index": 54,
-      "video_start": 109.688,
-      "video_end": 109.788
+      "text": "UN MAMBO VIOLENTO",
+      "start": 76.4,
+      "end": 77.1,
+      "confidence": 0.252,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "UN",
+          "start": 76.4,
+          "end": 76.5,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 2,
+          "text": "MAMBO",
+          "start": 76.55,
+          "end": 76.65,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 3,
+          "text": "VIOLENTO",
+          "start": 76.7,
+          "end": 76.8,
+          "confidence": 0.252
+        }
+      ],
+      "y": 214,
+      "word_rois": [
+        [
+          70,
+          214,
+          65,
+          44
+        ],
+        [
+          141,
+          214,
+          187,
+          44
+        ],
+        [
+          333,
+          214,
+          236,
+          44
+        ]
+      ],
+      "char_rois": []
     },
     {
       "line_index": 55,
-      "video_start": 110.439,
-      "video_end": 111.065
+      "text": "Y FIN DEL PROBLEMA",
+      "start": 78.15,
+      "end": 81.1,
+      "confidence": 0.805,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Y",
+          "start": 78.15,
+          "end": 78.25,
+          "confidence": 0.25
+        },
+        {
+          "word_index": 2,
+          "text": "FIN",
+          "start": 79.75,
+          "end": 79.85,
+          "confidence": 0.988
+        },
+        {
+          "word_index": 3,
+          "text": "DEL",
+          "start": 80.85,
+          "end": 80.95,
+          "confidence": 0.983
+        },
+        {
+          "word_index": 4,
+          "text": "PROBLEMA",
+          "start": 81.0,
+          "end": 81.1,
+          "confidence": 1.0
+        }
+      ],
+      "y": 270,
+      "word_rois": [
+        [
+          84,
+          270,
+          31,
+          42
+        ],
+        [
+          120,
+          270,
+          79,
+          42
+        ],
+        [
+          204,
+          270,
+          90,
+          42
+        ],
+        [
+          299,
+          270,
+          255,
+          42
+        ]
+      ],
+      "char_rois": []
     },
     {
       "line_index": 56,
-      "video_start": 112.066,
-      "video_end": 112.88
+      "text": "MIRA QU FCIL",
+      "start": 79.75,
+      "end": 80.45,
+      "confidence": 0.252,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "MIRA",
+          "start": 79.75,
+          "end": 79.85,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 2,
+          "text": "QU",
+          "start": 79.9,
+          "end": 80.0,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 3,
+          "text": "FCIL",
+          "start": 80.05,
+          "end": 80.15,
+          "confidence": 0.252
+        }
+      ],
+      "y": 12,
+      "word_rois": [
+        [
+          130,
+          17,
+          119,
+          60
+        ],
+        [
+          254,
+          13,
+          105,
+          59
+        ],
+        [
+          364,
+          7,
+          149,
+          61
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 57,
+      "text": "TE LO VOY A DECIR",
+      "start": 81.7,
+      "end": 85.25,
+      "confidence": 0.55,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "TE",
+          "start": 81.7,
+          "end": 81.8,
+          "confidence": 0.25
+        },
+        {
+          "word_index": 2,
+          "text": "LO",
+          "start": 84.7,
+          "end": 84.8,
+          "confidence": 1.0
+        },
+        {
+          "word_index": 3,
+          "text": "VOY",
+          "start": 84.85,
+          "end": 84.95,
+          "confidence": 0.25
+        },
+        {
+          "word_index": 4,
+          "text": "A",
+          "start": 85.0,
+          "end": 85.1,
+          "confidence": 0.25
+        },
+        {
+          "word_index": 5,
+          "text": "DECIR",
+          "start": 85.15,
+          "end": 85.25,
+          "confidence": 1.0
+        }
+      ],
+      "y": 78,
+      "word_rois": [
+        [
+          94,
+          78,
+          60,
+          44
+        ],
+        [
+          160,
+          78,
+          71,
+          44
+        ],
+        [
+          237,
+          78,
+          110,
+          44
+        ],
+        [
+          352,
+          78,
+          39,
+          44
+        ],
+        [
+          396,
+          78,
+          147,
+          44
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 58,
+      "text": "A B C ONE",
+      "start": 83.45,
+      "end": 84.0,
+      "confidence": 0.252,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "A",
+          "start": 83.45,
+          "end": 83.55,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 2,
+          "text": "B",
+          "start": 83.6,
+          "end": 83.7,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 3,
+          "text": "C",
+          "start": 83.75,
+          "end": 83.85,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 4,
+          "text": "ONE",
+          "start": 83.9,
+          "end": 84.0,
+          "confidence": 0.252
+        }
+      ],
+      "y": 133,
+      "word_rois": [
+        [
+          177,
+          132,
+          52,
+          59
+        ],
+        [
+          235,
+          133,
+          52,
+          58
+        ],
+        [
+          293,
+          133,
+          59,
+          59
+        ],
+        [
+          358,
+          134,
+          104,
+          59
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 59,
+      "text": "TWO THREE",
+      "start": 84.0,
+      "end": 84.25,
+      "confidence": 0.252,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "TWO",
+          "start": 84.0,
+          "end": 84.1,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 2,
+          "text": "THREE",
+          "start": 84.15,
+          "end": 84.25,
+          "confidence": 0.252
+        }
+      ],
+      "y": 192,
+      "word_rois": [
+        [
+          176,
+          192,
+          123,
+          58
+        ],
+        [
+          306,
+          192,
+          155,
+          58
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 60,
+      "text": "MIRA QU FCIL",
+      "start": 84.25,
+      "end": 84.65,
+      "confidence": 0.252,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "MIRA",
+          "start": 84.25,
+          "end": 84.35,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 2,
+          "text": "QU",
+          "start": 84.4,
+          "end": 84.5,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 3,
+          "text": "FCIL",
+          "start": 84.55,
+          "end": 84.65,
+          "confidence": 0.252
+        }
+      ],
+      "y": 240,
+      "word_rois": [
+        [
+          131,
+          240,
+          119,
+          56
+        ],
+        [
+          257,
+          240,
+          105,
+          56
+        ],
+        [
+          369,
+          240,
+          142,
+          56
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 61,
+      "text": "TE LO VOY A DECIR",
+      "start": 84.65,
+      "end": 85.4,
+      "confidence": 0.524,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "TE",
+          "start": 84.65,
+          "end": 84.75,
+          "confidence": 0.25
+        },
+        {
+          "word_index": 2,
+          "text": "LO",
+          "start": 84.8,
+          "end": 84.9,
+          "confidence": 0.25
+        },
+        {
+          "word_index": 3,
+          "text": "VOY",
+          "start": 84.95,
+          "end": 85.05,
+          "confidence": 0.25
+        },
+        {
+          "word_index": 4,
+          "text": "A",
+          "start": 85.1,
+          "end": 85.2,
+          "confidence": 1.0
+        },
+        {
+          "word_index": 5,
+          "text": "DECIR",
+          "start": 85.3,
+          "end": 85.4,
+          "confidence": 0.87
+        }
+      ],
+      "y": 306,
+      "word_rois": [
+        [
+          96,
+          306,
+          55,
+          44
+        ],
+        [
+          156,
+          306,
+          72,
+          44
+        ],
+        [
+          233,
+          306,
+          116,
+          44
+        ],
+        [
+          354,
+          306,
+          38,
+          44
+        ],
+        [
+          398,
+          306,
+          143,
+          44
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 62,
+      "text": "QUE ESTA MOTOMAMI",
+      "start": 85.4,
+      "end": 85.8,
+      "confidence": 0.252,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "QUE",
+          "start": 85.4,
+          "end": 85.5,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 2,
+          "text": "ESTA",
+          "start": 85.55,
+          "end": 85.65,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 3,
+          "text": "MOTOMAMI",
+          "start": 85.7,
+          "end": 85.8,
+          "confidence": 0.252
+        }
+      ],
+      "y": 119,
+      "word_rois": [
+        [
+          10,
+          119,
+          123,
+          59
+        ],
+        [
+          140,
+          119,
+          138,
+          59
+        ],
+        [
+          285,
+          119,
+          347,
+          59
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 63,
+      "text": "YA",
+      "start": 85.8,
+      "end": 85.9,
+      "confidence": 0.252,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "YA",
+          "start": 85.8,
+          "end": 85.9,
+          "confidence": 0.252
+        }
+      ],
+      "y": 189,
+      "word_rois": [
+        [
+          62,
+          189,
+          88,
+          50
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 64,
+      "text": "CIL",
+      "start": 85.9,
+      "end": 86.0,
+      "confidence": 0.252,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "CIL",
+          "start": 85.9,
+          "end": 86.0,
+          "confidence": 0.252
+        }
+      ],
+      "y": 239,
+      "word_rois": [
+        [
+          395,
+          239,
+          116,
+          52
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 65,
+      "text": "YA NO EST PA'TI",
+      "start": 86.0,
+      "end": 86.55,
+      "confidence": 0.252,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "YA",
+          "start": 86.0,
+          "end": 86.1,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 2,
+          "text": "NO",
+          "start": 86.15,
+          "end": 86.25,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 3,
+          "text": "EST",
+          "start": 86.3,
+          "end": 86.4,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 4,
+          "text": "PA'TI",
+          "start": 86.45,
+          "end": 86.55,
+          "confidence": 0.252
+        }
+      ],
+      "y": 180,
+      "word_rois": [
+        [
+          62,
+          180,
+          85,
+          62
+        ],
+        [
+          155,
+          180,
+          93,
+          62
+        ],
+        [
+          255,
+          180,
+          148,
+          62
+        ],
+        [
+          410,
+          180,
+          161,
+          62
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 66,
+      "text": "MIRA QU FCIL",
+      "start": 86.55,
+      "end": 86.95,
+      "confidence": 0.252,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "MIRA",
+          "start": 86.55,
+          "end": 86.65,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 2,
+          "text": "QU",
+          "start": 86.7,
+          "end": 86.8,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 3,
+          "text": "FCIL",
+          "start": 86.85,
+          "end": 86.95,
+          "confidence": 0.252
+        }
+      ],
+      "y": 16,
+      "word_rois": [
+        [
+          135,
+          19,
+          120,
+          57
+        ],
+        [
+          260,
+          17,
+          101,
+          55
+        ],
+        [
+          366,
+          13,
+          142,
+          57
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 67,
+      "text": "TE LO VOY A DECIR",
+      "start": 86.95,
+      "end": 87.65,
+      "confidence": 0.252,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "TE",
+          "start": 86.95,
+          "end": 87.05,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 2,
+          "text": "LO",
+          "start": 87.1,
+          "end": 87.2,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 3,
+          "text": "VOY",
+          "start": 87.25,
+          "end": 87.35,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 4,
+          "text": "A",
+          "start": 87.4,
+          "end": 87.5,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 5,
+          "text": "DECIR",
+          "start": 87.55,
+          "end": 87.65,
+          "confidence": 0.252
+        }
+      ],
+      "y": 80,
+      "word_rois": [
+        [
+          100,
+          80,
+          54,
+          44
+        ],
+        [
+          160,
+          80,
+          72,
+          44
+        ],
+        [
+          237,
+          80,
+          110,
+          44
+        ],
+        [
+          353,
+          80,
+          38,
+          44
+        ],
+        [
+          397,
+          80,
+          141,
+          44
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 68,
+      "text": "A B C ONE TWO THREE",
+      "start": 87.65,
+      "end": 88.5,
+      "confidence": 0.252,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "A",
+          "start": 87.65,
+          "end": 87.75,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 2,
+          "text": "B",
+          "start": 87.8,
+          "end": 87.9,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 3,
+          "text": "C",
+          "start": 87.95,
+          "end": 88.05,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 4,
+          "text": "ONE",
+          "start": 88.1,
+          "end": 88.2,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 5,
+          "text": "TWO",
+          "start": 88.25,
+          "end": 88.35,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 6,
+          "text": "THREE",
+          "start": 88.4,
+          "end": 88.5,
+          "confidence": 0.252
+        }
+      ],
+      "y": 136,
+      "word_rois": [
+        [
+          32,
+          136,
+          50,
+          58
+        ],
+        [
+          90,
+          136,
+          50,
+          58
+        ],
+        [
+          148,
+          136,
+          50,
+          58
+        ],
+        [
+          206,
+          136,
+          116,
+          58
+        ],
+        [
+          329,
+          136,
+          123,
+          58
+        ],
+        [
+          459,
+          136,
+          148,
+          58
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 69,
+      "text": "MIRA QU FCIL",
+      "start": 88.75,
+      "end": 89.45,
+      "confidence": 0.252,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "MIRA",
+          "start": 88.75,
+          "end": 88.85,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 2,
+          "text": "QU",
+          "start": 88.9,
+          "end": 89.0,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 3,
+          "text": "FCIL",
+          "start": 89.05,
+          "end": 89.15,
+          "confidence": 0.252
+        }
+      ],
+      "y": 184,
+      "word_rois": [
+        [
+          136,
+          184,
+          118,
+          56
+        ],
+        [
+          261,
+          184,
+          98,
+          56
+        ],
+        [
+          366,
+          184,
+          141,
+          56
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 70,
+      "text": "TE LO VOY A DECIR",
+      "start": 89.95,
+      "end": 92.15,
+      "confidence": 0.252,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "TE",
+          "start": 89.95,
+          "end": 90.2,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 2,
+          "text": "LO",
+          "start": 90.25,
+          "end": 90.65,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 3,
+          "text": "VOY",
+          "start": 90.7,
+          "end": 91.15,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 4,
+          "text": "A",
+          "start": 91.2,
+          "end": 91.55,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 5,
+          "text": "DECIR",
+          "start": 91.6,
+          "end": 92.15,
+          "confidence": 0.252
+        }
+      ],
+      "y": 248,
+      "word_rois": [
+        [
+          100,
+          248,
+          57,
+          42
+        ],
+        [
+          163,
+          248,
+          68,
+          42
+        ],
+        [
+          236,
+          248,
+          110,
+          42
+        ],
+        [
+          352,
+          248,
+          36,
+          42
+        ],
+        [
+          394,
+          248,
+          144,
+          42
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 71,
+      "text": "QUE ESTA MOTOMAMI",
+      "start": 91.45,
+      "end": 92.15,
+      "confidence": 0.356,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "QUE",
+          "start": 91.45,
+          "end": 91.55,
+          "confidence": 0.25
+        },
+        {
+          "word_index": 2,
+          "text": "ESTA",
+          "start": 91.6,
+          "end": 91.7,
+          "confidence": 0.569
+        },
+        {
+          "word_index": 3,
+          "text": "MOTOMAMI",
+          "start": 91.85,
+          "end": 91.95,
+          "confidence": 0.25
+        }
+      ],
+      "y": 300,
+      "word_rois": [
+        [
+          67,
+          299,
+          94,
+          51
+        ],
+        [
+          167,
+          300,
+          119,
+          51
+        ],
+        [
+          292,
+          301,
+          282,
+          53
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 72,
+      "text": "A DECIR",
+      "start": 94.9,
+      "end": 95.6,
+      "confidence": 0.935,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "A",
+          "start": 94.9,
+          "end": 95.0,
+          "confidence": 1.0
+        },
+        {
+          "word_index": 2,
+          "text": "DECIR",
+          "start": 95.05,
+          "end": 95.15,
+          "confidence": 0.87
+        }
+      ],
+      "y": 79,
+      "word_rois": [
+        [
+          351,
+          80,
+          39,
+          44
+        ],
+        [
+          395,
+          79,
+          143,
+          45
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 73,
+      "text": "OAH A LOCA",
+      "start": 97.4,
+      "end": 98.1,
+      "confidence": 0.27,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "OAH",
+          "start": 97.4,
+          "end": 97.7,
+          "confidence": 0.27
+        },
+        {
+          "word_index": 2,
+          "text": "A",
+          "start": 97.75,
+          "end": 97.8,
+          "confidence": 0.27
+        },
+        {
+          "word_index": 3,
+          "text": "LOCA",
+          "start": 97.8,
+          "end": 98.1,
+          "confidence": 0.27
+        }
+      ],
+      "y": 129,
+      "word_rois": [
+        [
+          153,
+          129,
+          131,
+          55
+        ],
+        [
+          291,
+          129,
+          195,
+          56
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 74,
+      "text": "BAJ CON UN FLOW NUEVO",
+      "start": 98.1,
+      "end": 98.95,
+      "confidence": 0.632,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "BAJ",
+          "start": 98.1,
+          "end": 98.35,
+          "confidence": 1.0
+        },
+        {
+          "word_index": 2,
+          "text": "CON",
+          "start": 98.4,
+          "end": 98.5,
+          "confidence": 1.0
+        },
+        {
+          "word_index": 3,
+          "text": "UN",
+          "start": 98.55,
+          "end": 98.65,
+          "confidence": 0.25
+        },
+        {
+          "word_index": 4,
+          "text": "FLOW",
+          "start": 98.7,
+          "end": 98.8,
+          "confidence": 0.66
+        },
+        {
+          "word_index": 5,
+          "text": "NUEVO",
+          "start": 98.85,
+          "end": 98.95,
+          "confidence": 0.25
+        }
+      ],
+      "y": 180,
+      "word_rois": [
+        [
+          20,
+          180,
+          114,
+          48
+        ],
+        [
+          140,
+          180,
+          102,
+          48
+        ],
+        [
+          248,
+          180,
+          66,
+          48
+        ],
+        [
+          320,
+          180,
+          132,
+          48
+        ],
+        [
+          457,
+          180,
+          162,
+          48
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 75,
+      "text": "QUE DEJA AL BABY HACKE",
+      "start": 98.95,
+      "end": 99.65,
+      "confidence": 0.755,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "QUE",
+          "start": 98.95,
+          "end": 99.05,
+          "confidence": 1.0
+        },
+        {
+          "word_index": 2,
+          "text": "DEJA",
+          "start": 99.1,
+          "end": 99.2,
+          "confidence": 0.87
+        },
+        {
+          "word_index": 3,
+          "text": "AL",
+          "start": 99.25,
+          "end": 99.35,
+          "confidence": 0.961
+        },
+        {
+          "word_index": 4,
+          "text": "BABY",
+          "start": 99.4,
+          "end": 99.5,
+          "confidence": 0.693
+        },
+        {
+          "word_index": 5,
+          "text": "HACKE",
+          "start": 99.55,
+          "end": 99.65,
+          "confidence": 0.25
+        }
+      ],
+      "y": 235,
+      "word_rois": [
+        [
+          11,
+          238,
+          91,
+          50
+        ],
+        [
+          107,
+          237,
+          121,
+          49
+        ],
+        [
+          233,
+          236,
+          61,
+          49
+        ],
+        [
+          299,
+          234,
+          121,
+          50
+        ],
+        [
+          425,
+          231,
+          209,
+          51
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 76,
+      "text": "Y AN Y ANDO DESPECH'",
+      "start": 99.65,
+      "end": 100.35,
+      "confidence": 0.5,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Y",
+          "start": 99.65,
+          "end": 99.75,
+          "confidence": 0.5
+        },
+        {
+          "word_index": 2,
+          "text": "AN",
+          "start": 99.8,
+          "end": 99.9,
+          "confidence": 0.5
+        },
+        {
+          "word_index": 3,
+          "text": "Y",
+          "start": 99.95,
+          "end": 100.05,
+          "confidence": 0.5
+        },
+        {
+          "word_index": 4,
+          "text": "ANDO",
+          "start": 100.1,
+          "end": 100.2,
+          "confidence": 0.5
+        },
+        {
+          "word_index": 5,
+          "text": "DESPECH'",
+          "start": 100.25,
+          "end": 100.35,
+          "confidence": 0.5
+        }
+      ],
+      "y": 76,
+      "word_rois": [
+        [
+          39,
+          79,
+          29,
+          58
+        ],
+        [
+          75,
+          78,
+          86,
+          58
+        ],
+        [
+          167,
+          77,
+          30,
+          58
+        ],
+        [
+          203,
+          75,
+          143,
+          59
+        ],
+        [
+          352,
+          71,
+          250,
+          62
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 77,
+      "text": "C",
+      "start": 100.35,
+      "end": 100.45,
+      "confidence": 0.5,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "C",
+          "start": 100.35,
+          "end": 100.45,
+          "confidence": 0.5
+        }
+      ],
+      "y": 125,
+      "word_rois": [
+        [
+          388,
+          125,
+          88,
+          48
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 78,
+      "text": "LO MUEVO DE LA'O A LA'O",
+      "start": 100.85,
+      "end": 101.8,
+      "confidence": 0.27,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "LO",
+          "start": 100.85,
+          "end": 101.0,
+          "confidence": 0.27
+        },
+        {
+          "word_index": 2,
+          "text": "MUEVO",
+          "start": 101.05,
+          "end": 101.15,
+          "confidence": 0.27
+        },
+        {
+          "word_index": 3,
+          "text": "DE",
+          "start": 101.2,
+          "end": 101.3,
+          "confidence": 0.27
+        },
+        {
+          "word_index": 4,
+          "text": "LA'O",
+          "start": 101.35,
+          "end": 101.45,
+          "confidence": 0.27
+        },
+        {
+          "word_index": 5,
+          "text": "A",
+          "start": 101.5,
+          "end": 101.65,
+          "confidence": 0.27
+        },
+        {
+          "word_index": 6,
+          "text": "LA'O",
+          "start": 101.7,
+          "end": 101.8,
+          "confidence": 0.27
+        }
+      ],
+      "y": 66,
+      "word_rois": [
+        [
+          8,
+          66,
+          64,
+          51
+        ],
+        [
+          79,
+          66,
+          182,
+          51
+        ],
+        [
+          267,
+          66,
+          65,
+          51
+        ],
+        [
+          339,
+          66,
+          117,
+          51
+        ],
+        [
+          462,
+          66,
+          39,
+          51
+        ],
+        [
+          508,
+          66,
+          120,
+          51
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 79,
+      "text": "Y A OTRO",
+      "start": 101.8,
+      "end": 102.2,
+      "confidence": 0.5,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Y",
+          "start": 101.8,
+          "end": 101.9,
+          "confidence": 0.5
+        },
+        {
+          "word_index": 2,
+          "text": "A",
+          "start": 101.95,
+          "end": 102.05,
+          "confidence": 0.5
+        },
+        {
+          "word_index": 3,
+          "text": "OTRO",
+          "start": 102.1,
+          "end": 102.2,
+          "confidence": 0.5
+        }
+      ],
+      "y": 129,
+      "word_rois": [
+        [
+          139,
+          129,
+          39,
+          44
+        ],
+        [
+          183,
+          129,
+          45,
+          44
+        ],
+        [
+          233,
+          129,
+          139,
+          45
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 80,
+      "text": "Y A OTRO LA'O",
+      "start": 102.6,
+      "end": 103.3,
+      "confidence": 0.5,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Y",
+          "start": 102.6,
+          "end": 102.7,
+          "confidence": 0.5
+        },
+        {
+          "word_index": 2,
+          "text": "A",
+          "start": 102.75,
+          "end": 102.85,
+          "confidence": 0.5
+        },
+        {
+          "word_index": 3,
+          "text": "OTRO",
+          "start": 102.9,
+          "end": 103.0,
+          "confidence": 0.5
+        },
+        {
+          "word_index": 4,
+          "text": "LA'O",
+          "start": 103.05,
+          "end": 103.15,
+          "confidence": 0.5
+        }
+      ],
+      "y": 128,
+      "word_rois": [
+        [
+          140,
+          128,
+          40,
+          46
+        ],
+        [
+          186,
+          128,
+          40,
+          46
+        ],
+        [
+          232,
+          128,
+          138,
+          46
+        ],
+        [
+          375,
+          128,
+          120,
+          46
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 81,
+      "text": "HOY SALGO CON MI BABY",
+      "start": 104.75,
+      "end": 108.25,
+      "confidence": 0.4,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "HOY",
+          "start": 104.75,
+          "end": 104.85,
+          "confidence": 0.25
+        },
+        {
+          "word_index": 2,
+          "text": "SALGO",
+          "start": 104.9,
+          "end": 105.0,
+          "confidence": 0.25
+        },
+        {
+          "word_index": 3,
+          "text": "CON",
+          "start": 105.05,
+          "end": 105.15,
+          "confidence": 0.25
+        },
+        {
+          "word_index": 4,
+          "text": "MI",
+          "start": 105.2,
+          "end": 106.0,
+          "confidence": 1.0
+        },
+        {
+          "word_index": 5,
+          "text": "BABY",
+          "start": 108.15,
+          "end": 108.25,
+          "confidence": 0.25
+        }
+      ],
+      "y": 186,
+      "word_rois": [
+        [
+          20,
+          186,
+          104,
+          44
+        ],
+        [
+          130,
+          186,
+          170,
+          44
+        ],
+        [
+          306,
+          186,
+          110,
+          44
+        ],
+        [
+          421,
+          186,
+          66,
+          44
+        ],
+        [
+          493,
+          186,
+          126,
+          44
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 82,
+      "text": "DE LA DISCO CORON",
+      "start": 106.25,
+      "end": 106.8,
+      "confidence": 0.625,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "DE",
+          "start": 106.25,
+          "end": 106.35,
+          "confidence": 0.25
+        },
+        {
+          "word_index": 2,
+          "text": "LA",
+          "start": 106.4,
+          "end": 106.5,
+          "confidence": 1.0
+        },
+        {
+          "word_index": 3,
+          "text": "DISCO",
+          "start": 106.55,
+          "end": 106.65,
+          "confidence": 0.25
+        },
+        {
+          "word_index": 4,
+          "text": "CORON",
+          "start": 106.7,
+          "end": 106.8,
+          "confidence": 1.0
+        }
+      ],
+      "y": 236,
+      "word_rois": [
+        [
+          56,
+          236,
+          58,
+          52
+        ],
+        [
+          120,
+          236,
+          65,
+          52
+        ],
+        [
+          192,
+          236,
+          156,
+          52
+        ],
+        [
+          354,
+          236,
+          235,
+          52
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 83,
+      "text": "Y ANDO DESPECH",
+      "start": 106.8,
+      "end": 107.45,
+      "confidence": 0.252,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Y",
+          "start": 106.8,
+          "end": 106.9,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 2,
+          "text": "ANDO",
+          "start": 106.95,
+          "end": 107.05,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 3,
+          "text": "DESPECH",
+          "start": 107.1,
+          "end": 107.45,
+          "confidence": 0.252
+        }
+      ],
+      "y": 40,
+      "word_rois": [
+        [
+          42,
+          40,
+          38,
+          62
+        ],
+        [
+          88,
+          40,
+          178,
+          62
+        ],
+        [
+          274,
+          40,
+          327,
+          62
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 84,
+      "text": "OAH A LOCA",
+      "start": 107.45,
+      "end": 108.4,
+      "confidence": 0.252,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "OAH",
+          "start": 107.45,
+          "end": 107.55,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 2,
+          "text": "A",
+          "start": 107.6,
+          "end": 107.75,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 3,
+          "text": "LOCA",
+          "start": 107.75,
+          "end": 108.4,
+          "confidence": 0.252
+        }
+      ],
+      "y": 112,
+      "word_rois": [
+        [
+          125,
+          112,
+          149,
+          76
+        ],
+        [
+          282,
+          113,
+          239,
+          77
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 85,
+      "text": "QUE DIOS ME L",
+      "start": 108.8,
+      "end": 109.5,
+      "confidence": 0.5,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "QUE",
+          "start": 108.8,
+          "end": 108.9,
+          "confidence": 0.5
+        },
+        {
+          "word_index": 2,
+          "text": "DIOS",
+          "start": 108.95,
+          "end": 109.05,
+          "confidence": 0.5
+        },
+        {
+          "word_index": 3,
+          "text": "ME",
+          "start": 109.1,
+          "end": 109.2,
+          "confidence": 0.5
+        },
+        {
+          "word_index": 4,
+          "text": "L",
+          "start": 109.25,
+          "end": 109.35,
+          "confidence": 0.5
+        }
+      ],
+      "y": 190,
+      "word_rois": [
+        [
+          50,
+          190,
+          123,
+          58
+        ],
+        [
+          180,
+          190,
+          145,
+          58
+        ],
+        [
+          332,
+          190,
+          87,
+          58
+        ],
+        [
+          427,
+          190,
+          42,
+          58
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 86,
+      "text": "QUE DIOS ME LIBRE",
+      "start": 112.05,
+      "end": 117.45,
+      "confidence": 0.385,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "QUE",
+          "start": 112.05,
+          "end": 112.15,
+          "confidence": 0.25
+        },
+        {
+          "word_index": 2,
+          "text": "DIOS",
+          "start": 116.3,
+          "end": 116.75,
+          "confidence": 0.788
+        },
+        {
+          "word_index": 3,
+          "text": "ME",
+          "start": 117.05,
+          "end": 117.15,
+          "confidence": 0.25
+        },
+        {
+          "word_index": 4,
+          "text": "LIBRE",
+          "start": 117.35,
+          "end": 117.45,
+          "confidence": 0.25
+        }
+      ],
+      "y": 190,
+      "word_rois": [
+        [
+          50,
+          190,
+          123,
+          58
+        ],
+        [
+          180,
+          190,
+          145,
+          58
+        ],
+        [
+          332,
+          190,
+          87,
+          58
+        ],
+        [
+          426,
+          190,
+          163,
+          58
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 87,
+      "text": "DE VOLVER A TU LA'O",
+      "start": 114.35,
+      "end": 115.05,
+      "confidence": 0.252,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "DE",
+          "start": 114.35,
+          "end": 114.45,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 2,
+          "text": "VOLVER",
+          "start": 114.5,
+          "end": 114.6,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 3,
+          "text": "A",
+          "start": 114.65,
+          "end": 114.75,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 4,
+          "text": "TU",
+          "start": 114.8,
+          "end": 114.9,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 5,
+          "text": "LA'O",
+          "start": 114.95,
+          "end": 115.05,
+          "confidence": 0.252
+        }
+      ],
+      "y": 250,
+      "word_rois": [
+        [
+          12,
+          250,
+          77,
+          62
+        ],
+        [
+          97,
+          250,
+          240,
+          62
+        ],
+        [
+          345,
+          250,
+          46,
+          62
+        ],
+        [
+          399,
+          250,
+          78,
+          62
+        ],
+        [
+          484,
+          250,
+          141,
+          62
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 88,
+      "text": "DESPECH",
+      "start": 115.85,
+      "end": 115.95,
+      "confidence": 0.87,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "DESPECH",
+          "start": 115.85,
+          "end": 115.95,
+          "confidence": 0.87
+        }
+      ],
+      "y": 41,
+      "word_rois": [
+        [
+          219,
+          41,
+          47,
+          62
+        ],
+        [
+          274,
+          41,
+          326,
+          63
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 89,
+      "text": "LO MUEVO DE LA'O A LA'O",
+      "start": 120.2,
+      "end": 121.1,
+      "confidence": 0.27,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "LO",
+          "start": 120.2,
+          "end": 120.3,
+          "confidence": 0.27
+        },
+        {
+          "word_index": 2,
+          "text": "MUEVO",
+          "start": 120.35,
+          "end": 120.5,
+          "confidence": 0.27
+        },
+        {
+          "word_index": 3,
+          "text": "DE",
+          "start": 120.55,
+          "end": 120.65,
+          "confidence": 0.27
+        },
+        {
+          "word_index": 4,
+          "text": "LA'O",
+          "start": 120.7,
+          "end": 120.8,
+          "confidence": 0.27
+        },
+        {
+          "word_index": 5,
+          "text": "A",
+          "start": 120.85,
+          "end": 120.95,
+          "confidence": 0.27
+        },
+        {
+          "word_index": 6,
+          "text": "LA'O",
+          "start": 121.0,
+          "end": 121.1,
+          "confidence": 0.27
+        }
+      ],
+      "y": 37,
+      "word_rois": [
+        [
+          10,
+          37,
+          68,
+          51
+        ],
+        [
+          85,
+          37,
+          175,
+          51
+        ],
+        [
+          266,
+          37,
+          69,
+          51
+        ],
+        [
+          341,
+          37,
+          119,
+          51
+        ],
+        [
+          466,
+          37,
+          37,
+          51
+        ],
+        [
+          509,
+          37,
+          118,
+          51
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 90,
+      "text": "Y A OTRO LAO",
+      "start": 121.1,
+      "end": 121.9,
+      "confidence": 0.625,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Y",
+          "start": 121.1,
+          "end": 121.2,
+          "confidence": 0.25
+        },
+        {
+          "word_index": 2,
+          "text": "A",
+          "start": 121.25,
+          "end": 121.35,
+          "confidence": 0.25
+        },
+        {
+          "word_index": 3,
+          "text": "OTRO",
+          "start": 121.4,
+          "end": 121.75,
+          "confidence": 1.0
+        },
+        {
+          "word_index": 4,
+          "text": "LAO",
+          "start": 121.8,
+          "end": 121.9,
+          "confidence": 1.0
+        }
+      ],
+      "y": 97,
+      "word_rois": [
+        [
+          140,
+          97,
+          37,
+          51
+        ],
+        [
+          183,
+          97,
+          44,
+          51
+        ],
+        [
+          233,
+          97,
+          138,
+          51
+        ],
+        [
+          377,
+          97,
+          118,
+          51
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 91,
+      "text": "HOY SALGO CON MI BA",
+      "start": 121.9,
+      "end": 122.6,
+      "confidence": 0.5,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "HOY",
+          "start": 121.9,
+          "end": 122.0,
+          "confidence": 0.5
+        },
+        {
+          "word_index": 2,
+          "text": "SALGO",
+          "start": 122.05,
+          "end": 122.15,
+          "confidence": 0.5
+        },
+        {
+          "word_index": 3,
+          "text": "CON",
+          "start": 122.2,
+          "end": 122.3,
+          "confidence": 0.5
+        },
+        {
+          "word_index": 4,
+          "text": "MI",
+          "start": 122.35,
+          "end": 122.45,
+          "confidence": 0.5
+        },
+        {
+          "word_index": 5,
+          "text": "BA",
+          "start": 122.5,
+          "end": 122.6,
+          "confidence": 0.5
+        }
+      ],
+      "y": 158,
+      "word_rois": [
+        [
+          20,
+          158,
+          104,
+          44
+        ],
+        [
+          130,
+          158,
+          170,
+          44
+        ],
+        [
+          306,
+          158,
+          110,
+          44
+        ],
+        [
+          421,
+          158,
+          66,
+          44
+        ],
+        [
+          493,
+          158,
+          68,
+          44
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 92,
+      "text": "DE LA DISCO CORON",
+      "start": 122.6,
+      "end": 123.15,
+      "confidence": 0.5,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "DE",
+          "start": 122.6,
+          "end": 122.7,
+          "confidence": 0.5
+        },
+        {
+          "word_index": 2,
+          "text": "LA",
+          "start": 122.75,
+          "end": 122.85,
+          "confidence": 0.5
+        },
+        {
+          "word_index": 3,
+          "text": "DISCO",
+          "start": 122.9,
+          "end": 123.0,
+          "confidence": 0.5
+        },
+        {
+          "word_index": 4,
+          "text": "CORON",
+          "start": 123.05,
+          "end": 123.15,
+          "confidence": 0.5
+        }
+      ],
+      "y": 207,
+      "word_rois": [
+        [
+          56,
+          207,
+          62,
+          51
+        ],
+        [
+          124,
+          207,
+          63,
+          51
+        ],
+        [
+          193,
+          207,
+          150,
+          51
+        ],
+        [
+          349,
+          207,
+          241,
+          51
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 93,
+      "text": "CORON YEAH",
+      "start": 123.15,
+      "end": 123.4,
+      "confidence": 0.228,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "CORON",
+          "start": 123.15,
+          "end": 123.25,
+          "confidence": 0.228
+        },
+        {
+          "word_index": 2,
+          "text": "YEAH",
+          "start": 123.3,
+          "end": 123.4,
+          "confidence": 0.228
+        }
+      ],
+      "y": 266,
+      "word_rois": [
+        [
+          130,
+          266,
+          240,
+          64
+        ],
+        [
+          378,
+          266,
+          130,
+          64
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 94,
+      "text": "MMM VOY A I",
+      "start": 123.4,
+      "end": 123.95,
+      "confidence": 0.438,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "MMM",
+          "start": 123.4,
+          "end": 123.5,
+          "confidence": 0.25
+        },
+        {
+          "word_index": 2,
+          "text": "VOY",
+          "start": 123.55,
+          "end": 123.65,
+          "confidence": 0.25
+        },
+        {
+          "word_index": 3,
+          "text": "A",
+          "start": 123.7,
+          "end": 123.8,
+          "confidence": 1.0
+        },
+        {
+          "word_index": 4,
+          "text": "I",
+          "start": 123.85,
+          "end": 123.95,
+          "confidence": 0.25
+        }
+      ],
+      "y": 61,
+      "word_rois": [
+        [
+          57,
+          60,
+          124,
+          53
+        ],
+        [
+          187,
+          61,
+          92,
+          53
+        ],
+        [
+          285,
+          62,
+          33,
+          52
+        ],
+        [
+          324,
+          62,
+          28,
+          53
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 95,
+      "text": "A",
+      "start": 123.95,
+      "end": 124.05,
+      "confidence": 1.0,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "A",
+          "start": 123.95,
+          "end": 124.05,
+          "confidence": 1.0
+        }
+      ],
+      "y": 216,
+      "word_rois": [
+        [
+          536,
+          216,
+          29,
+          35
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 96,
+      "text": "MMM VOY A 180 PORQUE",
+      "start": 124.6,
+      "end": 125.3,
+      "confidence": 0.252,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "MMM",
+          "start": 124.6,
+          "end": 124.7,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 2,
+          "text": "VOY",
+          "start": 124.75,
+          "end": 124.85,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 3,
+          "text": "A",
+          "start": 124.9,
+          "end": 125.0,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 4,
+          "text": "180",
+          "start": 125.05,
+          "end": 125.15,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 5,
+          "text": "PORQUE",
+          "start": 125.2,
+          "end": 125.3,
+          "confidence": 0.252
+        }
+      ],
+      "y": 61,
+      "word_rois": [
+        [
+          56,
+          61,
+          121,
+          54
+        ],
+        [
+          184,
+          61,
+          94,
+          54
+        ],
+        [
+          285,
+          61,
+          27,
+          54
+        ],
+        [
+          319,
+          61,
+          81,
+          54
+        ],
+        [
+          406,
+          61,
+          175,
+          54
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 97,
+      "text": "SOY UNA RACINETA",
+      "start": 127.9,
+      "end": 133.05,
+      "confidence": 0.457,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "SOY",
+          "start": 127.9,
+          "end": 128.0,
+          "confidence": 0.25
+        },
+        {
+          "word_index": 2,
+          "text": "UNA",
+          "start": 128.05,
+          "end": 128.15,
+          "confidence": 0.25
+        },
+        {
+          "word_index": 3,
+          "text": "RACINETA",
+          "start": 132.95,
+          "end": 133.05,
+          "confidence": 0.87
+        }
+      ],
+      "y": 112,
+      "word_rois": [
+        [
+          118,
+          112,
+          85,
+          38
+        ],
+        [
+          208,
+          112,
+          95,
+          38
+        ],
+        [
+          308,
+          112,
+          210,
+          38
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 98,
+      "text": "QU QU",
+      "start": 129.9,
+      "end": 130.15,
+      "confidence": 0.252,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "QU",
+          "start": 129.9,
+          "end": 130.0,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 2,
+          "text": "QU",
+          "start": 130.05,
+          "end": 130.15,
+          "confidence": 0.252
+        }
+      ],
+      "y": 153,
+      "word_rois": [
+        [
+          195,
+          153,
+          124,
+          59
+        ],
+        [
+          326,
+          154,
+          114,
+          58
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 99,
+      "text": "TE DISTRAE' Y YA TE ADELANTE",
+      "start": 130.15,
+      "end": 131.0,
+      "confidence": 0.458,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "TE",
+          "start": 130.15,
+          "end": 130.25,
+          "confidence": 0.25
+        },
+        {
+          "word_index": 2,
+          "text": "DISTRAE'",
+          "start": 130.3,
+          "end": 130.4,
+          "confidence": 0.87
+        },
+        {
+          "word_index": 3,
+          "text": "Y",
+          "start": 130.45,
+          "end": 130.55,
+          "confidence": 0.25
+        },
+        {
+          "word_index": 4,
+          "text": "YA",
+          "start": 130.6,
+          "end": 130.7,
+          "confidence": 0.25
+        },
+        {
+          "word_index": 5,
+          "text": "TE",
+          "start": 130.75,
+          "end": 130.85,
+          "confidence": 0.877
+        },
+        {
+          "word_index": 6,
+          "text": "ADELANTE",
+          "start": 130.9,
+          "end": 131.0,
+          "confidence": 0.25
+        }
+      ],
+      "y": 206,
+      "word_rois": [
+        [
+          8,
+          206,
+          49,
+          44
+        ],
+        [
+          63,
+          206,
+          187,
+          44
+        ],
+        [
+          255,
+          206,
+          28,
+          44
+        ],
+        [
+          288,
+          206,
+          61,
+          44
+        ],
+        [
+          354,
+          206,
+          55,
+          44
+        ],
+        [
+          414,
+          206,
+          213,
+          44
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 100,
+      "text": "POR LA DERECHA UH",
+      "start": 131.0,
+      "end": 131.55,
+      "confidence": 0.252,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "POR",
+          "start": 131.0,
+          "end": 131.1,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 2,
+          "text": "LA",
+          "start": 131.15,
+          "end": 131.25,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 3,
+          "text": "DERECHA",
+          "start": 131.3,
+          "end": 131.4,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 4,
+          "text": "UH",
+          "start": 131.45,
+          "end": 131.55,
+          "confidence": 0.252
+        }
+      ],
+      "y": 262,
+      "word_rois": [
+        [
+          110,
+          262,
+          89,
+          36
+        ],
+        [
+          204,
+          262,
+          54,
+          36
+        ],
+        [
+          263,
+          262,
+          198,
+          36
+        ],
+        [
+          465,
+          262,
+          63,
+          36
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 101,
+      "text": "Y YA TE ADELANT",
+      "start": 131.55,
+      "end": 132.1,
+      "confidence": 0.589,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Y",
+          "start": 131.55,
+          "end": 131.65,
+          "confidence": 0.25
+        },
+        {
+          "word_index": 2,
+          "text": "YA",
+          "start": 131.7,
+          "end": 131.8,
+          "confidence": 0.855
+        },
+        {
+          "word_index": 3,
+          "text": "TE",
+          "start": 131.85,
+          "end": 131.95,
+          "confidence": 0.25
+        },
+        {
+          "word_index": 4,
+          "text": "ADELANT",
+          "start": 132.0,
+          "end": 132.1,
+          "confidence": 1.0
+        }
+      ],
+      "y": 206,
+      "word_rois": [
+        [
+          252,
+          206,
+          33,
+          44
+        ],
+        [
+          290,
+          206,
+          61,
+          44
+        ],
+        [
+          356,
+          206,
+          55,
+          44
+        ],
+        [
+          416,
+          206,
+          211,
+          44
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 102,
+      "text": "VOY A 180 PORQUE",
+      "start": 132.1,
+      "end": 132.65,
+      "confidence": 0.252,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "VOY",
+          "start": 132.1,
+          "end": 132.2,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 2,
+          "text": "A",
+          "start": 132.25,
+          "end": 132.35,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 3,
+          "text": "180",
+          "start": 132.4,
+          "end": 132.5,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 4,
+          "text": "PORQUE",
+          "start": 132.55,
+          "end": 132.65,
+          "confidence": 0.252
+        }
+      ],
+      "y": 62,
+      "word_rois": [
+        [
+          122,
+          62,
+          94,
+          42
+        ],
+        [
+          221,
+          62,
+          32,
+          42
+        ],
+        [
+          258,
+          62,
+          79,
+          42
+        ],
+        [
+          342,
+          62,
+          173,
+          42
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 103,
+      "text": "SOY UNA RACINETA EY EY",
+      "start": 132.65,
+      "end": 133.35,
+      "confidence": 0.252,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "SOY",
+          "start": 132.65,
+          "end": 132.75,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 2,
+          "text": "UNA",
+          "start": 132.8,
+          "end": 132.9,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 3,
+          "text": "RACINETA",
+          "start": 132.95,
+          "end": 133.05,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 4,
+          "text": "EY",
+          "start": 133.1,
+          "end": 133.2,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 5,
+          "text": "EY",
+          "start": 133.25,
+          "end": 133.35,
+          "confidence": 0.252
+        }
+      ],
+      "y": 112,
+      "word_rois": [
+        [
+          52,
+          112,
+          84,
+          51
+        ],
+        [
+          142,
+          112,
+          91,
+          51
+        ],
+        [
+          240,
+          112,
+          208,
+          51
+        ],
+        [
+          454,
+          112,
+          65,
+          51
+        ],
+        [
+          526,
+          112,
+          59,
+          51
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 104,
+      "text": "TE DIS",
+      "start": 133.35,
+      "end": 133.6,
+      "confidence": 0.5,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "TE",
+          "start": 133.35,
+          "end": 133.45,
+          "confidence": 0.5
+        },
+        {
+          "word_index": 2,
+          "text": "DIS",
+          "start": 133.5,
+          "end": 133.6,
+          "confidence": 0.5
+        }
+      ],
+      "y": 163,
+      "word_rois": [
+        [
+          8,
+          163,
+          54,
+          37
+        ],
+        [
+          66,
+          163,
+          70,
+          37
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 105,
+      "text": "TE DISTRAE' Y YA TE ADELANTE",
+      "start": 133.6,
+      "end": 135.15,
+      "confidence": 0.375,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "TE",
+          "start": 133.6,
+          "end": 133.7,
+          "confidence": 0.25
+        },
+        {
+          "word_index": 2,
+          "text": "DISTRAE'",
+          "start": 133.75,
+          "end": 133.85,
+          "confidence": 0.25
+        },
+        {
+          "word_index": 3,
+          "text": "Y",
+          "start": 133.9,
+          "end": 134.0,
+          "confidence": 0.25
+        },
+        {
+          "word_index": 4,
+          "text": "YA",
+          "start": 134.05,
+          "end": 134.15,
+          "confidence": 0.25
+        },
+        {
+          "word_index": 5,
+          "text": "TE",
+          "start": 134.2,
+          "end": 134.3,
+          "confidence": 0.25
+        },
+        {
+          "word_index": 6,
+          "text": "ADELANTE",
+          "start": 134.35,
+          "end": 135.15,
+          "confidence": 1.0
+        }
+      ],
+      "y": 156,
+      "word_rois": [
+        [
+          8,
+          156,
+          49,
+          44
+        ],
+        [
+          63,
+          156,
+          187,
+          44
+        ],
+        [
+          255,
+          156,
+          28,
+          44
+        ],
+        [
+          288,
+          156,
+          61,
+          44
+        ],
+        [
+          354,
+          156,
+          55,
+          44
+        ],
+        [
+          414,
+          156,
+          213,
+          44
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 106,
+      "text": "POR LA DERECHA",
+      "start": 135.15,
+      "end": 135.55,
+      "confidence": 0.252,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "POR",
+          "start": 135.15,
+          "end": 135.25,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 2,
+          "text": "LA",
+          "start": 135.3,
+          "end": 135.4,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 3,
+          "text": "DERECHA",
+          "start": 135.45,
+          "end": 135.55,
+          "confidence": 0.252
+        }
+      ],
+      "y": 212,
+      "word_rois": [
+        [
+          144,
+          212,
+          90,
+          38
+        ],
+        [
+          239,
+          212,
+          57,
+          38
+        ],
+        [
+          300,
+          212,
+          194,
+          38
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 107,
+      "text": "MMM MMM MMM",
+      "start": 135.55,
+      "end": 139.45,
+      "confidence": 0.489,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "MMM",
+          "start": 135.55,
+          "end": 135.65,
+          "confidence": 0.25
+        },
+        {
+          "word_index": 2,
+          "text": "MMM",
+          "start": 137.8,
+          "end": 137.9,
+          "confidence": 0.613
+        },
+        {
+          "word_index": 3,
+          "text": "MMM",
+          "start": 139.35,
+          "end": 139.45,
+          "confidence": 0.604
+        }
+      ],
+      "y": 260,
+      "word_rois": [
+        [
+          136,
+          260,
+          116,
+          52
+        ],
+        [
+          259,
+          260,
+          123,
+          52
+        ],
+        [
+          389,
+          260,
+          112,
+          52
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 108,
+      "text": "YEAHYEAHYEAH",
+      "start": 139.45,
+      "end": 140.25,
+      "confidence": 0.252,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "YEAHYEAHYEAH",
+          "start": 139.45,
+          "end": 140.25,
+          "confidence": 0.252
+        }
+      ],
+      "y": 29,
+      "word_rois": [
+        [
+          90,
+          29,
+          458,
+          48
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 109,
+      "text": "YEAHYEAHYEAH",
+      "start": 140.25,
+      "end": 140.35,
+      "confidence": 0.5,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "YEAHYEAHYEAH",
+          "start": 140.25,
+          "end": 140.35,
+          "confidence": 0.5
+        }
+      ],
+      "y": 93,
+      "word_rois": [
+        [
+          88,
+          93,
+          460,
+          48
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 110,
+      "text": "EY",
+      "start": 140.35,
+      "end": 140.45,
+      "confidence": 0.5,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "EY",
+          "start": 140.35,
+          "end": 140.45,
+          "confidence": 0.5
+        }
+      ],
+      "y": 158,
+      "word_rois": [
+        [
+          288,
+          158,
+          66,
+          46
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 111,
+      "text": "YEAHYEAHRYEAHAYEAH",
+      "start": 140.45,
+      "end": 140.55,
+      "confidence": 0.5,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "YEAHYEAHRYEAHAYEAH",
+          "start": 140.45,
+          "end": 140.55,
+          "confidence": 0.5
+        }
+      ],
+      "y": 211,
+      "word_rois": [
+        [
+          8,
+          211,
+          620,
+          56
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 112,
+      "text": "MICHRIS MEDI IMMM",
+      "start": 140.8,
+      "end": 141.5,
+      "confidence": 0.377,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "MICHRIS",
+          "start": 140.8,
+          "end": 140.9,
+          "confidence": 0.631
+        },
+        {
+          "word_index": 2,
+          "text": "MEDI",
+          "start": 140.95,
+          "end": 141.05,
+          "confidence": 0.25
+        },
+        {
+          "word_index": 3,
+          "text": "IMMM",
+          "start": 141.1,
+          "end": 141.2,
+          "confidence": 0.25
+        }
+      ],
+      "y": 260,
+      "word_rois": [
+        [
+          135,
+          259,
+          193,
+          71
+        ],
+        [
+          337,
+          260,
+          131,
+          70
+        ],
+        [
+          375,
+          261,
+          122,
+          36
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 113,
+      "text": "CHRIS JEDI",
+      "start": 144.1,
+      "end": 147.9,
+      "confidence": 0.489,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "CHRIS",
+          "start": 144.1,
+          "end": 144.2,
+          "confidence": 0.25
+        },
+        {
+          "word_index": 2,
+          "text": "JEDI",
+          "start": 147.5,
+          "end": 147.9,
+          "confidence": 0.728
+        }
+      ],
+      "y": 283,
+      "word_rois": [
+        [
+          179,
+          283,
+          156,
+          47
+        ],
+        [
+          340,
+          284,
+          122,
+          46
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 114,
+      "text": "GABY GABY GABY",
+      "start": 145.9,
+      "end": 150.1,
+      "confidence": 0.628,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "GABY",
+          "start": 145.9,
+          "end": 146.0,
+          "confidence": 0.25
+        },
+        {
+          "word_index": 2,
+          "text": "GABY",
+          "start": 148.45,
+          "end": 149.25,
+          "confidence": 1.0
+        },
+        {
+          "word_index": 3,
+          "text": "GABY",
+          "start": 149.3,
+          "end": 150.1,
+          "confidence": 0.633
+        }
+      ],
+      "y": 13,
+      "word_rois": [
+        [
+          40,
+          13,
+          180,
+          73
+        ],
+        [
+          229,
+          13,
+          189,
+          73
+        ],
+        [
+          426,
+          13,
+          173,
+          73
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 115,
+      "text": "DE BARCELONA",
+      "start": 150.1,
+      "end": 152.85,
+      "confidence": 0.625,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "DE",
+          "start": 150.1,
+          "end": 150.9,
+          "confidence": 1.0
+        },
+        {
+          "word_index": 2,
+          "text": "BARCELONA",
+          "start": 152.75,
+          "end": 152.85,
+          "confidence": 0.25
+        }
+      ],
+      "y": 84,
+      "word_rois": [
+        [
+          96,
+          84,
+          77,
+          52
+        ],
+        [
+          180,
+          84,
+          359,
+          52
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 116,
+      "text": "P",
+      "start": 152.85,
+      "end": 152.95,
+      "confidence": 0.5,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "P",
+          "start": 152.85,
+          "end": 152.95,
+          "confidence": 0.5
+        }
+      ],
+      "y": 156,
+      "word_rois": [
+        [
+          12,
+          156,
+          37,
+          46
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 117,
+      "text": "YEAH",
+      "start": 152.95,
+      "end": 153.05,
+      "confidence": 1.0,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "YEAH",
+          "start": 152.95,
+          "end": 153.05,
+          "confidence": 1.0
+        }
+      ],
+      "y": 219,
+      "word_rois": [
+        [
+          483,
+          219,
+          145,
+          47
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 118,
+      "text": "PA' SANTO DOMINGO",
+      "start": 153.05,
+      "end": 153.45,
+      "confidence": 0.75,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "PA'",
+          "start": 153.05,
+          "end": 153.15,
+          "confidence": 0.25
+        },
+        {
+          "word_index": 2,
+          "text": "SANTO",
+          "start": 153.2,
+          "end": 153.3,
+          "confidence": 1.0
+        },
+        {
+          "word_index": 3,
+          "text": "DOMINGO",
+          "start": 153.35,
+          "end": 153.45,
+          "confidence": 1.0
+        }
+      ],
+      "y": 146,
+      "word_rois": [
+        [
+          10,
+          146,
+          93,
+          61
+        ],
+        [
+          110,
+          146,
+          210,
+          61
+        ],
+        [
+          327,
+          146,
+          298,
+          61
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 119,
+      "text": "LA ROSALA",
+      "start": 153.45,
+      "end": 153.7,
+      "confidence": 0.5,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "LA",
+          "start": 153.45,
+          "end": 153.55,
+          "confidence": 0.5
+        },
+        {
+          "word_index": 2,
+          "text": "ROSALA",
+          "start": 153.6,
+          "end": 153.7,
+          "confidence": 0.5
+        }
+      ],
+      "y": 216,
+      "word_rois": [
+        [
+          143,
+          216,
+          76,
+          60
+        ],
+        [
+          226,
+          217,
+          266,
+          62
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 120,
+      "text": "MMM JAJA JE",
+      "start": 153.7,
+      "end": 154.1,
+      "confidence": 1.0,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "MMM",
+          "start": 153.7,
+          "end": 153.8,
+          "confidence": 1.0
+        },
+        {
+          "word_index": 2,
+          "text": "JAJA",
+          "start": 153.85,
+          "end": 153.95,
+          "confidence": 1.0
+        },
+        {
+          "word_index": 3,
+          "text": "JE",
+          "start": 154.0,
+          "end": 154.1,
+          "confidence": 1.0
+        }
+      ],
+      "y": 295,
+      "word_rois": [
+        [
+          101,
+          296,
+          171,
+          63
+        ],
+        [
+          280,
+          295,
+          178,
+          63
+        ],
+        [
+          466,
+          294,
+          72,
+          63
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 121,
+      "text": "GABY GABY",
+      "start": 154.1,
+      "end": 154.35,
+      "confidence": 0.935,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "GABY",
+          "start": 154.1,
+          "end": 154.2,
+          "confidence": 0.87
+        },
+        {
+          "word_index": 2,
+          "text": "GABY",
+          "start": 154.25,
+          "end": 154.35,
+          "confidence": 1.0
+        }
+      ],
+      "y": 13,
+      "word_rois": [
+        [
+          236,
+          13,
+          183,
+          71
+        ],
+        [
+          428,
+          13,
+          172,
+          71
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 122,
+      "text": "JEJE",
+      "start": 154.35,
+      "end": 154.45,
+      "confidence": 0.45,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "JEJE",
+          "start": 154.35,
+          "end": 154.45,
+          "confidence": 0.45
+        }
+      ],
+      "y": 8,
+      "word_rois": [
+        [
+          261,
+          8,
+          115,
+          47
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 123,
+      "text": "EY",
+      "start": 154.45,
+      "end": 154.55,
+      "confidence": 0.45,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "EY",
+          "start": 154.45,
+          "end": 154.55,
+          "confidence": 0.45
+        }
+      ],
+      "y": 67,
+      "word_rois": [
+        [
+          288,
+          67,
+          64,
+          44
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 124,
+      "text": "UH UH",
+      "start": 154.55,
+      "end": 154.8,
+      "confidence": 0.3,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "UH",
+          "start": 154.55,
+          "end": 154.65,
+          "confidence": 0.3
+        },
+        {
+          "word_index": 2,
+          "text": "UH",
+          "start": 154.7,
+          "end": 154.8,
+          "confidence": 0.3
+        }
+      ],
+      "y": 127,
+      "word_rois": [
+        [
+          137,
+          128,
+          88,
+          58
+        ],
+        [
+          231,
+          127,
+          97,
+          59
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 125,
+      "text": "UH UH UH UH",
+      "start": 154.8,
+      "end": 155.35,
+      "confidence": 0.5,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "UH",
+          "start": 154.8,
+          "end": 154.9,
+          "confidence": 0.5
+        },
+        {
+          "word_index": 2,
+          "text": "UH",
+          "start": 154.95,
+          "end": 155.05,
+          "confidence": 0.5
+        },
+        {
+          "word_index": 3,
+          "text": "UH",
+          "start": 155.1,
+          "end": 155.2,
+          "confidence": 0.5
+        },
+        {
+          "word_index": 4,
+          "text": "UH",
+          "start": 155.25,
+          "end": 155.35,
+          "confidence": 0.5
+        }
+      ],
+      "y": 128,
+      "word_rois": [
+        [
+          140,
+          128,
+          82,
+          60
+        ],
+        [
+          229,
+          128,
+          90,
+          60
+        ],
+        [
+          327,
+          128,
+          90,
+          60
+        ],
+        [
+          424,
+          128,
+          75,
+          60
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 126,
+      "text": "OMEGA",
+      "start": 155.35,
+      "end": 155.45,
+      "confidence": 0.21,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "OMEGA",
+          "start": 155.35,
+          "end": 155.45,
+          "confidence": 0.21
+        }
+      ],
+      "y": 187,
+      "word_rois": [
+        [
+          224,
+          187,
+          192,
+          44
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 127,
+      "text": "EY EY EY",
+      "start": 155.45,
+      "end": 155.85,
+      "confidence": 0.45,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "EY",
+          "start": 155.45,
+          "end": 155.55,
+          "confidence": 0.45
+        },
+        {
+          "word_index": 2,
+          "text": "EY",
+          "start": 155.6,
+          "end": 155.7,
+          "confidence": 0.45
+        },
+        {
+          "word_index": 3,
+          "text": "EY",
+          "start": 155.75,
+          "end": 155.85,
+          "confidence": 0.45
+        }
+      ],
+      "y": 245,
+      "word_rois": [
+        [
+          199,
+          246,
+          78,
+          62
+        ],
+        [
+          285,
+          245,
+          77,
+          63
+        ],
+        [
+          370,
+          245,
+          68,
+          62
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 128,
+      "text": "UH UH",
+      "start": 155.85,
+      "end": 156.1,
+      "confidence": 0.935,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "UH",
+          "start": 155.85,
+          "end": 155.95,
+          "confidence": 0.87
+        },
+        {
+          "word_index": 2,
+          "text": "UH",
+          "start": 156.0,
+          "end": 156.1,
+          "confidence": 1.0
+        }
+      ],
+      "y": 305,
+      "word_rois": [
+        [
+          137,
+          306,
+          85,
+          52
+        ],
+        [
+          228,
+          305,
+          102,
+          53
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 129,
+      "text": "UH UH UH UH",
+      "start": 163.2,
+      "end": 163.9,
+      "confidence": 0.21,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "UH",
+          "start": 163.2,
+          "end": 163.3,
+          "confidence": 0.21
+        },
+        {
+          "word_index": 2,
+          "text": "UH",
+          "start": 163.35,
+          "end": 163.45,
+          "confidence": 0.21
+        },
+        {
+          "word_index": 3,
+          "text": "UH",
+          "start": 163.5,
+          "end": 163.6,
+          "confidence": 0.21
+        },
+        {
+          "word_index": 4,
+          "text": "UH",
+          "start": 163.65,
+          "end": 163.75,
+          "confidence": 0.21
+        }
+      ],
+      "y": 304,
+      "word_rois": [
+        [
+          140,
+          304,
+          87,
+          54
+        ],
+        [
+          234,
+          304,
+          88,
+          54
+        ],
+        [
+          329,
+          304,
+          87,
+          54
+        ],
+        [
+          423,
+          304,
+          76,
+          54
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 130,
+      "text": "UH UH",
+      "start": 167.05,
+      "end": 167.35,
+      "confidence": 0.5,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "UH",
+          "start": 167.05,
+          "end": 167.15,
+          "confidence": 0.5
+        },
+        {
+          "word_index": 2,
+          "text": "UH",
+          "start": 167.2,
+          "end": 167.35,
+          "confidence": 0.5
+        }
+      ],
+      "y": 128,
+      "word_rois": [
+        [
+          332,
+          128,
+          87,
+          58
+        ],
+        [
+          426,
+          128,
+          74,
+          58
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 131,
+      "text": "Y EY",
+      "start": 170.05,
+      "end": 170.3,
+      "confidence": 1.0,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Y",
+          "start": 170.05,
+          "end": 170.15,
+          "confidence": 1.0
+        },
+        {
+          "word_index": 2,
+          "text": "EY",
+          "start": 170.2,
+          "end": 170.3,
+          "confidence": 1.0
+        }
+      ],
+      "y": 245,
+      "word_rois": [
+        [
+          313,
+          245,
+          48,
+          54
+        ],
+        [
+          367,
+          245,
+          71,
+          55
+        ]
+      ],
+      "char_rois": []
     }
-  ],
-  "karaoke_timing_method": "visual_highlight_progress"
+  ]
 }

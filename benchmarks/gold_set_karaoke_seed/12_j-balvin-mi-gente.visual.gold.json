@@ -1,2456 +1,4048 @@
 {
-  "schema_version": "1.0",
+  "schema_version": "1.2",
   "title": "Mi Gente",
   "artist": "J Balvin",
-  "audio_path": "",
-  "source_timing_path": "/Users/dtunkelang/y2karaoke/benchmarks/gold_set/12_j-balvin-mi-gente.gold.json",
+  "candidate_url": "https://www.youtube.com/watch?v=m08bnH5G8p8",
+  "visual_suitability": {
+    "word_level_score": 0.989247311827957,
+    "avg_ocr_confidence": 0.8891345546430828,
+    "has_word_level_highlighting": true,
+    "detectability_score": 0.9223941882501578,
+    "sampled_frames": 192,
+    "duration_sec": 206.04,
+    "fps": 1.0
+  },
+  "audio_path": "/Users/dtunkelang/y2karaoke/.cache/karaoke_bootstrap/j-balvin/mi-gente/video/J Balvin, Willy William - Mi Gente (Karaoke Version)_video.extracted.wav",
   "lines": [
     {
       "line_index": 1,
-      "text": "¡Wuh!",
-      "start": 8.0,
-      "end": 8.4,
+      "text": "J Balvin Willy William",
+      "start": 8.5,
+      "end": 9.9,
+      "confidence": 0.625,
       "words": [
         {
           "word_index": 1,
-          "text": "¡Wuh!",
-          "start": 8.0,
-          "end": 8.4
+          "text": "J",
+          "start": 8.5,
+          "end": 8.6,
+          "confidence": 0.25
+        },
+        {
+          "word_index": 2,
+          "text": "Balvin",
+          "start": 9.5,
+          "end": 9.6,
+          "confidence": 1.0
+        },
+        {
+          "word_index": 3,
+          "text": "Willy",
+          "start": 9.65,
+          "end": 9.75,
+          "confidence": 0.25
+        },
+        {
+          "word_index": 4,
+          "text": "William",
+          "start": 9.8,
+          "end": 9.9,
+          "confidence": 1.0
         }
-      ]
+      ],
+      "y": 135,
+      "word_rois": [
+        [
+          91,
+          135,
+          36,
+          36
+        ],
+        [
+          132,
+          135,
+          90,
+          36
+        ],
+        [
+          226,
+          135,
+          67,
+          36
+        ],
+        [
+          298,
+          135,
+          117,
+          36
+        ]
+      ],
+      "char_rois": []
     },
     {
       "line_index": 2,
-      "text": "Si el ritmo te lleva a mover la cabeza",
-      "start": 9.9,
-      "end": 12.05,
+      "text": "Si el ritmo te lleva",
+      "start": 15.1,
+      "end": 16.1,
+      "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
           "text": "Si",
-          "start": 9.9,
-          "end": 10.1
+          "start": 15.1,
+          "end": 15.25,
+          "confidence": 0.5
         },
         {
           "word_index": 2,
           "text": "el",
-          "start": 10.1,
-          "end": 10.3
+          "start": 15.3,
+          "end": 15.45,
+          "confidence": 0.5
         },
         {
           "word_index": 3,
           "text": "ritmo",
-          "start": 10.3,
-          "end": 10.55
+          "start": 15.5,
+          "end": 15.65,
+          "confidence": 0.5
         },
         {
           "word_index": 4,
           "text": "te",
-          "start": 10.55,
-          "end": 10.75
+          "start": 15.7,
+          "end": 15.85,
+          "confidence": 0.5
         },
         {
           "word_index": 5,
           "text": "lleva",
-          "start": 10.75,
-          "end": 11.0
-        },
-        {
-          "word_index": 6,
-          "text": "a",
-          "start": 11.0,
-          "end": 11.2
-        },
-        {
-          "word_index": 7,
-          "text": "mover",
-          "start": 11.2,
-          "end": 11.45
-        },
-        {
-          "word_index": 8,
-          "text": "la",
-          "start": 11.45,
-          "end": 11.75
-        },
-        {
-          "word_index": 9,
-          "text": "cabeza",
-          "start": 11.75,
-          "end": 12.05
+          "start": 15.9,
+          "end": 16.1,
+          "confidence": 0.5
         }
-      ]
+      ],
+      "y": 21,
+      "word_rois": [
+        [
+          109,
+          21,
+          32,
+          28
+        ],
+        [
+          144,
+          21,
+          32,
+          28
+        ],
+        [
+          179,
+          21,
+          84,
+          28
+        ],
+        [
+          267,
+          21,
+          34,
+          28
+        ],
+        [
+          305,
+          21,
+          74,
+          28
+        ]
+      ],
+      "char_rois": []
     },
     {
       "line_index": 3,
-      "text": "Ya empezamo' como es",
-      "start": 12.1,
-      "end": 14.2,
+      "text": "a mover la cabeza",
+      "start": 16.1,
+      "end": 19.85,
+      "confidence": 0.252,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "a",
+          "start": 16.1,
+          "end": 16.75,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 2,
+          "text": "mover",
+          "start": 16.8,
+          "end": 17.6,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 3,
+          "text": "la",
+          "start": 18.15,
+          "end": 18.95,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 4,
+          "text": "cabeza",
+          "start": 19.05,
+          "end": 19.85,
+          "confidence": 0.252
+        }
+      ],
+      "y": 89,
+      "word_rois": [
+        [
+          109,
+          89,
+          23,
+          30
+        ],
+        [
+          136,
+          89,
+          97,
+          30
+        ],
+        [
+          237,
+          89,
+          30,
+          30
+        ],
+        [
+          270,
+          89,
+          109,
+          30
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 4,
+      "text": "Ya empezamos com es",
+      "start": 20.7,
+      "end": 23.5,
+      "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "Ya",
-          "start": 12.1,
-          "end": 12.55
+          "start": 20.7,
+          "end": 21.25,
+          "confidence": 0.252
         },
         {
           "word_index": 2,
-          "text": "empezamo'",
-          "start": 12.55,
-          "end": 13.05
+          "text": "empezamos",
+          "start": 21.3,
+          "end": 22.1,
+          "confidence": 0.252
         },
         {
           "word_index": 3,
-          "text": "como",
-          "start": 13.05,
-          "end": 13.6
+          "text": "cmo",
+          "start": 22.3,
+          "end": 22.9,
+          "confidence": 0.252
         },
         {
           "word_index": 4,
           "text": "es",
-          "start": 13.6,
-          "end": 14.2
+          "start": 22.95,
+          "end": 23.5,
+          "confidence": 0.252
         }
-      ]
+      ],
+      "y": 157,
+      "word_rois": [
+        [
+          65,
+          160,
+          38,
+          35
+        ],
+        [
+          106,
+          157,
+          186,
+          36
+        ],
+        [
+          296,
+          156,
+          87,
+          34
+        ],
+        [
+          386,
+          155,
+          37,
+          34
+        ]
+      ],
+      "char_rois": []
     },
     {
-      "line_index": 4,
-      "text": "Mi música no discrimina a nadie",
-      "start": 14.3,
-      "end": 16.25,
+      "line_index": 5,
+      "text": "Mi mica no discrimina",
+      "start": 23.7,
+      "end": 24.7,
+      "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "Mi",
-          "start": 14.3,
-          "end": 14.6
+          "start": 23.7,
+          "end": 23.85,
+          "confidence": 0.252
         },
         {
           "word_index": 2,
-          "text": "música",
-          "start": 14.6,
-          "end": 14.9
+          "text": "msica",
+          "start": 23.9,
+          "end": 24.15,
+          "confidence": 0.252
         },
         {
           "word_index": 3,
           "text": "no",
-          "start": 14.9,
-          "end": 15.2
+          "start": 24.2,
+          "end": 24.35,
+          "confidence": 0.252
         },
         {
           "word_index": 4,
           "text": "discrimina",
-          "start": 15.2,
-          "end": 15.5
-        },
-        {
-          "word_index": 5,
-          "text": "a",
-          "start": 15.5,
-          "end": 15.85
-        },
-        {
-          "word_index": 6,
-          "text": "nadie",
-          "start": 15.85,
-          "end": 16.25
+          "start": 24.4,
+          "end": 24.7,
+          "confidence": 0.252
         }
-      ]
-    },
-    {
-      "line_index": 5,
-      "text": "Así que vamo' a romper",
-      "start": 16.3,
-      "end": 17.95,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "Así",
-          "start": 16.3,
-          "end": 16.6
-        },
-        {
-          "word_index": 2,
-          "text": "que",
-          "start": 16.6,
-          "end": 16.9
-        },
-        {
-          "word_index": 3,
-          "text": "vamo'",
-          "start": 16.9,
-          "end": 17.2
-        },
-        {
-          "word_index": 4,
-          "text": "a",
-          "start": 17.2,
-          "end": 17.55
-        },
-        {
-          "word_index": 5,
-          "text": "romper",
-          "start": 17.55,
-          "end": 17.95
-        }
-      ]
+      ],
+      "y": 21,
+      "word_rois": [
+        [
+          67,
+          21,
+          39,
+          28
+        ],
+        [
+          109,
+          21,
+          109,
+          28
+        ],
+        [
+          221,
+          21,
+          42,
+          28
+        ],
+        [
+          267,
+          21,
+          160,
+          28
+        ]
+      ],
+      "char_rois": []
     },
     {
       "line_index": 6,
-      "text": "Toda mi gente se mueve (rra)",
-      "start": 17.95,
-      "end": 18.25,
+      "text": "a nadie as que",
+      "start": 24.7,
+      "end": 25.7,
+      "confidence": 0.252,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "a",
+          "start": 24.7,
+          "end": 24.85,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 2,
+          "text": "nadie",
+          "start": 24.9,
+          "end": 25.15,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 3,
+          "text": "as",
+          "start": 25.2,
+          "end": 25.4,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 4,
+          "text": "que",
+          "start": 25.45,
+          "end": 25.7,
+          "confidence": 0.252
+        }
+      ],
+      "y": 85,
+      "word_rois": [
+        [
+          133,
+          84,
+          18,
+          36
+        ],
+        [
+          155,
+          85,
+          88,
+          36
+        ],
+        [
+          246,
+          86,
+          49,
+          36
+        ],
+        [
+          299,
+          87,
+          60,
+          36
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 7,
+      "text": "vamos a romper",
+      "start": 25.7,
+      "end": 27.05,
+      "confidence": 0.252,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "vamos",
+          "start": 25.7,
+          "end": 25.8,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 2,
+          "text": "a",
+          "start": 25.85,
+          "end": 26.2,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 3,
+          "text": "romper",
+          "start": 26.25,
+          "end": 27.05,
+          "confidence": 0.252
+        }
+      ],
+      "y": 163,
+      "word_rois": [
+        [
+          123,
+          163,
+          98,
+          30
+        ],
+        [
+          224,
+          163,
+          23,
+          30
+        ],
+        [
+          251,
+          163,
+          116,
+          30
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 8,
+      "text": "Toda mi gente se mueve",
+      "start": 27.5,
+      "end": 29.55,
+      "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "Toda",
-          "start": 17.95,
-          "end": 18.0
+          "start": 27.5,
+          "end": 27.9,
+          "confidence": 0.252
         },
         {
           "word_index": 2,
           "text": "mi",
-          "start": 18.0,
-          "end": 18.05
+          "start": 27.95,
+          "end": 28.25,
+          "confidence": 0.252
         },
         {
           "word_index": 3,
           "text": "gente",
-          "start": 18.05,
-          "end": 18.1
+          "start": 28.3,
+          "end": 28.75,
+          "confidence": 0.252
         },
         {
           "word_index": 4,
           "text": "se",
-          "start": 18.1,
-          "end": 18.15
+          "start": 28.8,
+          "end": 29.1,
+          "confidence": 0.252
         },
         {
           "word_index": 5,
           "text": "mueve",
-          "start": 18.15,
-          "end": 18.2
-        },
-        {
-          "word_index": 6,
-          "text": "(rra)",
-          "start": 18.2,
-          "end": 18.25
+          "start": 29.15,
+          "end": 29.55,
+          "confidence": 0.252
         }
-      ]
+      ],
+      "y": 231,
+      "word_rois": [
+        [
+          63,
+          231,
+          77,
+          34
+        ],
+        [
+          144,
+          231,
+          42,
+          34
+        ],
+        [
+          191,
+          231,
+          89,
+          34
+        ],
+        [
+          284,
+          231,
+          38,
+          34
+        ],
+        [
+          326,
+          231,
+          101,
+          34
+        ]
+      ],
+      "char_rois": []
     },
     {
-      "line_index": 7,
-      "text": "Mira el ritmo cómo los tiene",
-      "start": 20.2,
-      "end": 22.3,
+      "line_index": 9,
+      "text": "Mira el ritmo com los tiene",
+      "start": 29.75,
+      "end": 30.95,
+      "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "Mira",
-          "start": 20.2,
-          "end": 20.5
+          "start": 29.75,
+          "end": 29.95,
+          "confidence": 0.252
         },
         {
           "word_index": 2,
           "text": "el",
-          "start": 20.5,
-          "end": 20.85
+          "start": 30.0,
+          "end": 30.1,
+          "confidence": 0.252
         },
         {
           "word_index": 3,
           "text": "ritmo",
-          "start": 20.85,
-          "end": 21.15
+          "start": 30.15,
+          "end": 30.35,
+          "confidence": 0.252
         },
         {
           "word_index": 4,
-          "text": "cómo",
-          "start": 21.15,
-          "end": 21.5
+          "text": "cmo",
+          "start": 30.4,
+          "end": 30.55,
+          "confidence": 0.252
         },
         {
           "word_index": 5,
           "text": "los",
-          "start": 21.5,
-          "end": 21.9
+          "start": 30.6,
+          "end": 30.75,
+          "confidence": 0.252
         },
         {
           "word_index": 6,
           "text": "tiene",
-          "start": 21.9,
-          "end": 22.3
+          "start": 30.8,
+          "end": 30.95,
+          "confidence": 0.252
         }
-      ]
+      ],
+      "y": 19,
+      "word_rois": [
+        [
+          39,
+          19,
+          68,
+          30
+        ],
+        [
+          111,
+          19,
+          29,
+          30
+        ],
+        [
+          144,
+          19,
+          86,
+          30
+        ],
+        [
+          234,
+          19,
+          82,
+          30
+        ],
+        [
+          320,
+          19,
+          49,
+          30
+        ],
+        [
+          373,
+          19,
+          80,
+          30
+        ]
+      ],
+      "char_rois": []
     },
     {
-      "line_index": 8,
-      "text": "Hago música que entretiene",
-      "start": 22.4,
-      "end": 24.3,
+      "line_index": 10,
+      "text": "Hago mica que entretiene",
+      "start": 31.3,
+      "end": 32.0,
+      "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "Hago",
-          "start": 22.4,
-          "end": 22.8
+          "start": 31.3,
+          "end": 31.4,
+          "confidence": 0.252
         },
         {
           "word_index": 2,
-          "text": "música",
-          "start": 22.8,
-          "end": 23.25
+          "text": "msica",
+          "start": 31.45,
+          "end": 31.55,
+          "confidence": 0.252
         },
         {
           "word_index": 3,
           "text": "que",
-          "start": 23.25,
-          "end": 23.75
+          "start": 31.6,
+          "end": 31.7,
+          "confidence": 0.252
         },
         {
           "word_index": 4,
           "text": "entretiene",
-          "start": 23.75,
-          "end": 24.3
+          "start": 31.75,
+          "end": 31.85,
+          "confidence": 0.252
         }
-      ]
+      ],
+      "y": 89,
+      "word_rois": [
+        [
+          39,
+          89,
+          77,
+          34
+        ],
+        [
+          120,
+          89,
+          110,
+          34
+        ],
+        [
+          235,
+          89,
+          59,
+          34
+        ],
+        [
+          298,
+          89,
+          155,
+          34
+        ]
+      ],
+      "char_rois": []
     },
     {
-      "line_index": 9,
-      "text": "El mundo nos quiere, nos quiere, me quiere a mí",
-      "start": 24.8,
-      "end": 27.0,
+      "line_index": 11,
+      "text": "El mundo nos quiere nos quiere",
+      "start": 32.85,
+      "end": 35.5,
+      "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "El",
-          "start": 24.8,
-          "end": 25.0
+          "start": 32.85,
+          "end": 32.95,
+          "confidence": 0.252
         },
         {
           "word_index": 2,
           "text": "mundo",
-          "start": 25.0,
-          "end": 25.2
+          "start": 33.0,
+          "end": 33.1,
+          "confidence": 0.252
         },
         {
           "word_index": 3,
           "text": "nos",
-          "start": 25.2,
-          "end": 25.4
+          "start": 33.15,
+          "end": 33.25,
+          "confidence": 0.252
         },
         {
           "word_index": 4,
-          "text": "quiere,",
-          "start": 25.4,
-          "end": 25.6
+          "text": "quiere",
+          "start": 33.3,
+          "end": 34.0,
+          "confidence": 0.252
         },
         {
           "word_index": 5,
           "text": "nos",
-          "start": 25.6,
-          "end": 25.8
+          "start": 34.05,
+          "end": 34.65,
+          "confidence": 0.252
         },
         {
           "word_index": 6,
-          "text": "quiere,",
-          "start": 25.8,
-          "end": 26.05
-        },
-        {
-          "word_index": 7,
-          "text": "me",
-          "start": 26.05,
-          "end": 26.25
-        },
-        {
-          "word_index": 8,
           "text": "quiere",
-          "start": 26.25,
-          "end": 26.5
-        },
-        {
-          "word_index": 9,
-          "text": "a",
-          "start": 26.5,
-          "end": 26.55
-        },
-        {
-          "word_index": 10,
-          "text": "mí",
-          "start": 26.55,
-          "end": 27.0
+          "start": 34.7,
+          "end": 35.5,
+          "confidence": 0.252
         }
-      ]
+      ],
+      "y": 161,
+      "word_rois": [
+        [
+          7,
+          161,
+          27,
+          36
+        ],
+        [
+          39,
+          161,
+          108,
+          36
+        ],
+        [
+          151,
+          161,
+          59,
+          36
+        ],
+        [
+          214,
+          161,
+          108,
+          36
+        ],
+        [
+          326,
+          161,
+          59,
+          36
+        ],
+        [
+          389,
+          161,
+          100,
+          36
+        ]
+      ],
+      "char_rois": []
     },
     {
-      "line_index": 10,
-      "text": "Toda mi gente se mueve (rra)",
-      "start": 27.4,
-      "end": 29.3,
+      "line_index": 12,
+      "text": "Y me quiere a m",
+      "start": 34.4,
+      "end": 36.9,
+      "confidence": 0.252,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Y",
+          "start": 34.4,
+          "end": 34.75,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 2,
+          "text": "me",
+          "start": 34.8,
+          "end": 35.3,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 3,
+          "text": "quiere",
+          "start": 35.35,
+          "end": 36.05,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 4,
+          "text": "a",
+          "start": 36.1,
+          "end": 36.5,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 5,
+          "text": "m",
+          "start": 36.55,
+          "end": 36.9,
+          "confidence": 0.252
+        }
+      ],
+      "y": 229,
+      "word_rois": [
+        [
+          117,
+          229,
+          22,
+          34
+        ],
+        [
+          143,
+          229,
+          51,
+          34
+        ],
+        [
+          198,
+          229,
+          97,
+          34
+        ],
+        [
+          300,
+          229,
+          25,
+          34
+        ],
+        [
+          329,
+          229,
+          44,
+          34
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 13,
+      "text": "Toda mi gente se mueve",
+      "start": 37.15,
+      "end": 38.15,
+      "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
           "text": "Toda",
-          "start": 27.4,
-          "end": 27.65
+          "start": 37.15,
+          "end": 37.35,
+          "confidence": 0.5
         },
         {
           "word_index": 2,
           "text": "mi",
-          "start": 28.85,
-          "end": 29.0
+          "start": 37.4,
+          "end": 37.55,
+          "confidence": 0.5
         },
         {
           "word_index": 3,
           "text": "gente",
-          "start": 29.0,
-          "end": 29.05
+          "start": 37.6,
+          "end": 37.75,
+          "confidence": 0.5
         },
         {
           "word_index": 4,
           "text": "se",
-          "start": 29.05,
-          "end": 29.1
+          "start": 37.8,
+          "end": 37.95,
+          "confidence": 0.5
         },
         {
           "word_index": 5,
           "text": "mueve",
-          "start": 29.1,
-          "end": 29.2
-        },
-        {
-          "word_index": 6,
-          "text": "(rra)",
-          "start": 29.2,
-          "end": 29.3
+          "start": 38.0,
+          "end": 38.15,
+          "confidence": 0.5
         }
-      ]
+      ],
+      "y": 21,
+      "word_rois": [
+        [
+          63,
+          19,
+          78,
+          33
+        ],
+        [
+          144,
+          21,
+          43,
+          31
+        ],
+        [
+          191,
+          21,
+          89,
+          33
+        ],
+        [
+          283,
+          23,
+          40,
+          32
+        ],
+        [
+          326,
+          24,
+          101,
+          33
+        ]
+      ],
+      "char_rois": []
     },
     {
-      "line_index": 11,
-      "text": "Mira el ritmo cómo los tiene",
-      "start": 29.3,
-      "end": 31.35,
+      "line_index": 14,
+      "text": "Mira el ritmo com los tiene",
+      "start": 38.15,
+      "end": 41.0,
+      "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "Mira",
-          "start": 29.3,
-          "end": 29.6
+          "start": 38.15,
+          "end": 38.6,
+          "confidence": 0.252
         },
         {
           "word_index": 2,
           "text": "el",
-          "start": 29.6,
-          "end": 29.9
+          "start": 38.65,
+          "end": 39.0,
+          "confidence": 0.252
         },
         {
           "word_index": 3,
           "text": "ritmo",
-          "start": 29.9,
-          "end": 30.2
+          "start": 39.05,
+          "end": 39.55,
+          "confidence": 0.252
         },
         {
           "word_index": 4,
-          "text": "cómo",
-          "start": 30.2,
-          "end": 30.55
+          "text": "cmo",
+          "start": 39.6,
+          "end": 40.0,
+          "confidence": 0.252
         },
         {
           "word_index": 5,
           "text": "los",
-          "start": 30.55,
-          "end": 30.9
+          "start": 40.05,
+          "end": 40.45,
+          "confidence": 0.252
         },
         {
           "word_index": 6,
           "text": "tiene",
-          "start": 30.9,
-          "end": 31.35
+          "start": 40.5,
+          "end": 41.0,
+          "confidence": 0.252
         }
-      ]
+      ],
+      "y": 89,
+      "word_rois": [
+        [
+          39,
+          89,
+          68,
+          32
+        ],
+        [
+          111,
+          89,
+          28,
+          32
+        ],
+        [
+          143,
+          89,
+          84,
+          32
+        ],
+        [
+          231,
+          89,
+          84,
+          32
+        ],
+        [
+          319,
+          89,
+          48,
+          32
+        ],
+        [
+          371,
+          89,
+          82,
+          32
+        ]
+      ],
+      "char_rois": []
     },
     {
-      "line_index": 12,
-      "text": "Hago música que entretiene",
-      "start": 31.6,
-      "end": 33.25,
+      "line_index": 15,
+      "text": "Hago mica que entretiene",
+      "start": 41.2,
+      "end": 42.9,
+      "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "Hago",
-          "start": 31.6,
-          "end": 32.05
+          "start": 41.2,
+          "end": 41.55,
+          "confidence": 0.252
         },
         {
           "word_index": 2,
-          "text": "música",
-          "start": 32.05,
-          "end": 32.5
+          "text": "msica",
+          "start": 41.6,
+          "end": 42.0,
+          "confidence": 0.252
         },
         {
           "word_index": 3,
           "text": "que",
-          "start": 32.5,
-          "end": 32.55
+          "start": 42.05,
+          "end": 42.35,
+          "confidence": 0.252
         },
         {
           "word_index": 4,
           "text": "entretiene",
-          "start": 32.55,
-          "end": 33.25
+          "start": 42.4,
+          "end": 42.9,
+          "confidence": 0.252
         }
-      ]
+      ],
+      "y": 159,
+      "word_rois": [
+        [
+          39,
+          159,
+          77,
+          36
+        ],
+        [
+          120,
+          159,
+          113,
+          36
+        ],
+        [
+          237,
+          159,
+          58,
+          36
+        ],
+        [
+          300,
+          159,
+          155,
+          36
+        ]
+      ],
+      "char_rois": []
     },
     {
-      "line_index": 13,
-      "text": "Mi música los tiene fuerte bailando y se baila así (let's go)",
-      "start": 33.8,
-      "end": 38.6,
+      "line_index": 16,
+      "text": "Mi mica los tiene",
+      "start": 43.1,
+      "end": 43.7,
+      "confidence": 0.45,
       "words": [
         {
           "word_index": 1,
           "text": "Mi",
-          "start": 33.8,
-          "end": 34.15
+          "start": 43.1,
+          "end": 43.2,
+          "confidence": 0.45
         },
         {
           "word_index": 2,
-          "text": "música",
-          "start": 38.05,
-          "end": 38.1
+          "text": "msica",
+          "start": 43.25,
+          "end": 43.35,
+          "confidence": 0.45
         },
         {
           "word_index": 3,
           "text": "los",
-          "start": 38.1,
-          "end": 38.15
+          "start": 43.4,
+          "end": 43.5,
+          "confidence": 0.45
         },
         {
           "word_index": 4,
           "text": "tiene",
-          "start": 38.15,
-          "end": 38.2
-        },
-        {
-          "word_index": 5,
-          "text": "fuerte",
-          "start": 38.2,
-          "end": 38.25
-        },
-        {
-          "word_index": 6,
-          "text": "bailando",
-          "start": 38.25,
-          "end": 38.3
-        },
-        {
-          "word_index": 7,
-          "text": "y",
-          "start": 38.3,
-          "end": 38.35
-        },
-        {
-          "word_index": 8,
-          "text": "se",
-          "start": 38.35,
-          "end": 38.4
-        },
-        {
-          "word_index": 9,
-          "text": "baila",
-          "start": 38.4,
-          "end": 38.45
-        },
-        {
-          "word_index": 10,
-          "text": "así",
-          "start": 38.45,
-          "end": 38.5
-        },
-        {
-          "word_index": 11,
-          "text": "(let's",
-          "start": 38.5,
-          "end": 38.55
-        },
-        {
-          "word_index": 12,
-          "text": "go)",
-          "start": 38.55,
-          "end": 38.6
+          "start": 43.55,
+          "end": 43.7,
+          "confidence": 0.45
         }
-      ]
+      ],
+      "y": 21,
+      "word_rois": [
+        [
+          95,
+          21,
+          46,
+          28
+        ],
+        [
+          144,
+          21,
+          112,
+          28
+        ],
+        [
+          260,
+          21,
+          48,
+          28
+        ],
+        [
+          312,
+          21,
+          79,
+          28
+        ]
+      ],
+      "char_rois": []
     },
     {
-      "line_index": 14,
-      "text": "Estamo' rompiendo la discoteca",
-      "start": 55.0,
-      "end": 56.9,
+      "line_index": 17,
+      "text": "fuerte bailando",
+      "start": 44.3,
+      "end": 49.75,
+      "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
-          "text": "Estamo'",
-          "start": 55.0,
-          "end": 55.4
+          "text": "fuerte",
+          "start": 44.3,
+          "end": 45.1,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 2,
+          "text": "bailando",
+          "start": 48.95,
+          "end": 49.75,
+          "confidence": 0.252
+        }
+      ],
+      "y": 89,
+      "word_rois": [
+        [
+          131,
+          89,
+          92,
+          32
+        ],
+        [
+          227,
+          89,
+          132,
+          32
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 18,
+      "text": "Y se baila as",
+      "start": 54.5,
+      "end": 61.45,
+      "confidence": 0.252,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Y",
+          "start": 54.5,
+          "end": 55.3,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 2,
+          "text": "se",
+          "start": 55.9,
+          "end": 56.7,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 3,
+          "text": "baila",
+          "start": 57.75,
+          "end": 58.55,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 4,
+          "text": "as",
+          "start": 60.65,
+          "end": 61.45,
+          "confidence": 0.252
+        }
+      ],
+      "y": 159,
+      "word_rois": [
+        [
+          147,
+          159,
+          20,
+          32
+        ],
+        [
+          171,
+          159,
+          40,
+          32
+        ],
+        [
+          215,
+          159,
+          76,
+          32
+        ],
+        [
+          295,
+          159,
+          48,
+          32
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 19,
+      "text": "Tamo' rompiendo la discoteca",
+      "start": 62.7,
+      "end": 63.7,
+      "confidence": 0.5,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Tamo'",
+          "start": 62.7,
+          "end": 62.9,
+          "confidence": 0.5
         },
         {
           "word_index": 2,
           "text": "rompiendo",
-          "start": 55.4,
-          "end": 55.85
+          "start": 62.95,
+          "end": 63.2,
+          "confidence": 0.5
         },
         {
           "word_index": 3,
           "text": "la",
-          "start": 55.85,
-          "end": 56.35
+          "start": 63.25,
+          "end": 63.45,
+          "confidence": 0.5
         },
         {
           "word_index": 4,
           "text": "discoteca",
-          "start": 56.35,
-          "end": 56.9
+          "start": 63.5,
+          "end": 63.7,
+          "confidence": 0.5
         }
-      ]
+      ],
+      "y": 17,
+      "word_rois": [
+        [
+          25,
+          13,
+          91,
+          38
+        ],
+        [
+          119,
+          16,
+          167,
+          40
+        ],
+        [
+          290,
+          20,
+          32,
+          36
+        ],
+        [
+          326,
+          21,
+          145,
+          39
+        ]
+      ],
+      "char_rois": []
     },
     {
-      "line_index": 15,
-      "text": "La fiesta no para, apenas comienza",
-      "start": 57.3,
-      "end": 59.6,
+      "line_index": 20,
+      "text": "La fiesta no para",
+      "start": 63.7,
+      "end": 67.1,
+      "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "La",
-          "start": 57.3,
-          "end": 57.65
+          "start": 63.7,
+          "end": 64.4,
+          "confidence": 0.252
         },
         {
           "word_index": 2,
           "text": "fiesta",
-          "start": 57.65,
-          "end": 58.0
+          "start": 64.45,
+          "end": 65.25,
+          "confidence": 0.252
         },
         {
           "word_index": 3,
           "text": "no",
-          "start": 58.0,
-          "end": 58.35
-        },
-        {
-          "word_index": 4,
-          "text": "para,",
-          "start": 58.35,
-          "end": 58.75
-        },
-        {
-          "word_index": 5,
-          "text": "apenas",
-          "start": 58.75,
-          "end": 59.15
-        },
-        {
-          "word_index": 6,
-          "text": "comienza",
-          "start": 59.15,
-          "end": 59.6
-        }
-      ]
-    },
-    {
-      "line_index": 16,
-      "text": "(¡Eh!) C'est comme ci (¡eh!), c'est comme ça",
-      "start": 59.7,
-      "end": 62.05,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "(¡Eh!)",
-          "start": 59.7,
-          "end": 59.95
-        },
-        {
-          "word_index": 2,
-          "text": "C'est",
-          "start": 59.95,
-          "end": 60.2
-        },
-        {
-          "word_index": 3,
-          "text": "comme",
-          "start": 60.2,
-          "end": 60.5
-        },
-        {
-          "word_index": 4,
-          "text": "ci",
-          "start": 60.5,
-          "end": 60.75
-        },
-        {
-          "word_index": 5,
-          "text": "(¡eh!),",
-          "start": 60.75,
-          "end": 61.05
-        },
-        {
-          "word_index": 6,
-          "text": "c'est",
-          "start": 61.05,
-          "end": 61.35
-        },
-        {
-          "word_index": 7,
-          "text": "comme",
-          "start": 61.35,
-          "end": 61.65
-        },
-        {
-          "word_index": 8,
-          "text": "ça",
-          "start": 61.65,
-          "end": 62.05
-        }
-      ]
-    },
-    {
-      "line_index": 17,
-      "text": "(¡Eh!) Ma chérie, la-la-la-la-la",
-      "start": 62.1,
-      "end": 62.75,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "(¡Eh!)",
-          "start": 62.1,
-          "end": 62.25
-        },
-        {
-          "word_index": 2,
-          "text": "Ma",
-          "start": 62.25,
-          "end": 62.4
-        },
-        {
-          "word_index": 3,
-          "text": "chérie,",
-          "start": 62.4,
-          "end": 62.55
-        },
-        {
-          "word_index": 4,
-          "text": "la-la-la-la-la",
-          "start": 62.55,
-          "end": 62.75
-        }
-      ]
-    },
-    {
-      "line_index": 18,
-      "text": "(Eh) Francia (eh), Colombia (eh)",
-      "start": 64.6,
-      "end": 65.95,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "(Eh)",
-          "start": 64.6,
-          "end": 64.85
-        },
-        {
-          "word_index": 2,
-          "text": "Francia",
-          "start": 64.85,
-          "end": 65.1
-        },
-        {
-          "word_index": 3,
-          "text": "(eh),",
-          "start": 65.1,
-          "end": 65.35
-        },
-        {
-          "word_index": 4,
-          "text": "Colombia",
-          "start": 65.35,
-          "end": 65.6
-        },
-        {
-          "word_index": 5,
-          "text": "(eh)",
           "start": 65.6,
-          "end": 65.95
-        }
-      ]
-    },
-    {
-      "line_index": 19,
-      "text": "Me gusta (¡freeze!)",
-      "start": 66.5,
-      "end": 68.55,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "Me",
-          "start": 66.5,
-          "end": 67.15
-        },
-        {
-          "word_index": 2,
-          "text": "gusta",
-          "start": 67.15,
-          "end": 67.85
-        },
-        {
-          "word_index": 3,
-          "text": "(¡freeze!)",
-          "start": 67.85,
-          "end": 68.55
-        }
-      ]
-    },
-    {
-      "line_index": 20,
-      "text": "(Eh) J Balvin (eh), Willy William (eh)",
-      "start": 68.8,
-      "end": 69.5,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "(Eh)",
-          "start": 68.8,
-          "end": 68.9
-        },
-        {
-          "word_index": 2,
-          "text": "J",
-          "start": 68.9,
-          "end": 68.95
-        },
-        {
-          "word_index": 3,
-          "text": "Balvin",
-          "start": 68.95,
-          "end": 69.05
+          "end": 66.25,
+          "confidence": 0.252
         },
         {
           "word_index": 4,
-          "text": "(eh),",
-          "start": 69.05,
-          "end": 69.15
-        },
-        {
-          "word_index": 5,
-          "text": "Willy",
-          "start": 69.15,
-          "end": 69.25
-        },
-        {
-          "word_index": 6,
-          "text": "William",
-          "start": 69.25,
-          "end": 69.35
-        },
-        {
-          "word_index": 7,
-          "text": "(eh)",
-          "start": 69.35,
-          "end": 69.5
+          "text": "para",
+          "start": 66.3,
+          "end": 67.1,
+          "confidence": 0.252
         }
-      ]
+      ],
+      "y": 90,
+      "word_rois": [
+        [
+          117,
+          88,
+          35,
+          32
+        ],
+        [
+          155,
+          89,
+          90,
+          33
+        ],
+        [
+          248,
+          91,
+          44,
+          32
+        ],
+        [
+          295,
+          92,
+          83,
+          34
+        ]
+      ],
+      "char_rois": []
     },
     {
       "line_index": 21,
-      "text": "Me gusta (¡freeze!)",
-      "start": 71.4,
-      "end": 72.55,
+      "text": "apenas comienza",
+      "start": 67.45,
+      "end": 69.1,
+      "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
-          "text": "Me",
-          "start": 71.4,
-          "end": 71.75
+          "text": "apenas",
+          "start": 67.45,
+          "end": 68.25,
+          "confidence": 0.252
         },
         {
           "word_index": 2,
-          "text": "gusta",
-          "start": 71.75,
-          "end": 72.1
-        },
-        {
-          "word_index": 3,
-          "text": "(¡freeze!)",
-          "start": 72.1,
-          "end": 72.55
+          "text": "comienza",
+          "start": 68.3,
+          "end": 69.1,
+          "confidence": 0.252
         }
-      ]
+      ],
+      "y": 160,
+      "word_rois": [
+        [
+          115,
+          163,
+          109,
+          36
+        ],
+        [
+          226,
+          158,
+          147,
+          37
+        ]
+      ],
+      "char_rois": []
     },
     {
       "line_index": 22,
-      "text": "Los DJs no mienten, les gusta mi gente",
-      "start": 73.3,
-      "end": 75.45,
+      "text": "C'est comme i",
+      "start": 69.45,
+      "end": 70.45,
+      "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
-          "text": "Los",
-          "start": 73.3,
-          "end": 73.55
+          "text": "C'est",
+          "start": 69.45,
+          "end": 69.75,
+          "confidence": 0.5
         },
         {
           "word_index": 2,
-          "text": "DJs",
-          "start": 73.55,
-          "end": 73.75
+          "text": "comme",
+          "start": 69.8,
+          "end": 70.15,
+          "confidence": 0.5
         },
         {
           "word_index": 3,
-          "text": "no",
-          "start": 73.75,
-          "end": 74.0
-        },
-        {
-          "word_index": 4,
-          "text": "mienten,",
-          "start": 74.0,
-          "end": 74.25
-        },
-        {
-          "word_index": 5,
-          "text": "les",
-          "start": 74.25,
-          "end": 74.55
-        },
-        {
-          "word_index": 6,
-          "text": "gusta",
-          "start": 74.55,
-          "end": 74.8
-        },
-        {
-          "word_index": 7,
-          "text": "mi",
-          "start": 74.8,
-          "end": 75.1
-        },
-        {
-          "word_index": 8,
-          "text": "gente",
-          "start": 75.1,
-          "end": 75.45
+          "text": "i",
+          "start": 70.2,
+          "end": 70.45,
+          "confidence": 0.5
         }
-      ]
+      ],
+      "y": 19,
+      "word_rois": [
+        [
+          129,
+          19,
+          72,
+          36
+        ],
+        [
+          206,
+          19,
+          112,
+          36
+        ],
+        [
+          322,
+          19,
+          43,
+          36
+        ]
+      ],
+      "char_rois": []
     },
     {
       "line_index": 23,
-      "text": "Y eso se fue mundial (¡freeze!)",
-      "start": 75.6,
-      "end": 77.7,
+      "text": "C'est comme a",
+      "start": 70.45,
+      "end": 70.85,
+      "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
-          "text": "Y",
-          "start": 75.6,
-          "end": 75.9
+          "text": "C'est",
+          "start": 70.45,
+          "end": 70.55,
+          "confidence": 0.5
         },
         {
           "word_index": 2,
-          "text": "eso",
-          "start": 75.9,
-          "end": 76.25
+          "text": "comme",
+          "start": 70.6,
+          "end": 70.7,
+          "confidence": 0.5
         },
         {
           "word_index": 3,
-          "text": "se",
-          "start": 76.25,
-          "end": 76.55
-        },
-        {
-          "word_index": 4,
-          "text": "fue",
-          "start": 76.55,
-          "end": 76.9
-        },
-        {
-          "word_index": 5,
-          "text": "mundial",
-          "start": 76.9,
-          "end": 77.3
-        },
-        {
-          "word_index": 6,
-          "text": "(¡freeze!)",
-          "start": 77.3,
-          "end": 77.7
+          "text": "a",
+          "start": 70.75,
+          "end": 70.85,
+          "confidence": 0.5
         }
-      ]
+      ],
+      "y": 91,
+      "word_rois": [
+        [
+          131,
+          91,
+          71,
+          30
+        ],
+        [
+          206,
+          91,
+          116,
+          30
+        ],
+        [
+          326,
+          91,
+          37,
+          30
+        ]
+      ],
+      "char_rois": []
     },
     {
       "line_index": 24,
-      "text": "No le bajamos, mas nunca paramos",
-      "start": 77.9,
-      "end": 80.15,
+      "text": "Ma cherie la la la la la",
+      "start": 72.15,
+      "end": 74.1,
+      "confidence": 0.357,
       "words": [
         {
           "word_index": 1,
-          "text": "No",
-          "start": 77.9,
-          "end": 79.1
+          "text": "Ma",
+          "start": 72.15,
+          "end": 72.25,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
-          "text": "le",
-          "start": 79.1,
-          "end": 79.3
+          "text": "cherie",
+          "start": 72.5,
+          "end": 72.6,
+          "confidence": 0.25
         },
         {
           "word_index": 3,
-          "text": "bajamos,",
-          "start": 79.3,
-          "end": 79.45
-        },
-        {
-          "word_index": 4,
-          "text": "mas",
-          "start": 79.45,
-          "end": 79.7
-        },
-        {
-          "word_index": 5,
-          "text": "nunca",
-          "start": 79.7,
-          "end": 79.9
-        },
-        {
-          "word_index": 6,
-          "text": "paramos",
-          "start": 79.9,
-          "end": 80.15
-        }
-      ]
-    },
-    {
-      "line_index": 25,
-      "text": "Es otro palo y, ¡blam!",
-      "start": 80.3,
-      "end": 81.45,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "Es",
-          "start": 80.3,
-          "end": 80.5
-        },
-        {
-          "word_index": 2,
-          "text": "otro",
-          "start": 80.5,
-          "end": 80.7
-        },
-        {
-          "word_index": 3,
-          "text": "palo",
-          "start": 80.7,
-          "end": 80.95
-        },
-        {
-          "word_index": 4,
-          "text": "y,",
-          "start": 80.95,
-          "end": 81.2
-        },
-        {
-          "word_index": 5,
-          "text": "¡blam!",
-          "start": 81.2,
-          "end": 81.45
-        }
-      ]
-    },
-    {
-      "line_index": 26,
-      "text": "¿Y dónde está mi gente?",
-      "start": 81.6,
-      "end": 82.55,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "¿Y",
-          "start": 81.6,
-          "end": 81.75
-        },
-        {
-          "word_index": 2,
-          "text": "dónde",
-          "start": 81.75,
-          "end": 81.95
-        },
-        {
-          "word_index": 3,
-          "text": "está",
-          "start": 81.95,
-          "end": 82.0
-        },
-        {
-          "word_index": 4,
-          "text": "mi",
-          "start": 82.0,
-          "end": 82.25
-        },
-        {
-          "word_index": 5,
-          "text": "gente?",
-          "start": 82.25,
-          "end": 82.55
-        }
-      ]
-    },
-    {
-      "line_index": 27,
-      "text": "Mais fais bouger la tête",
-      "start": 83.8,
-      "end": 86.0,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "Mais",
-          "start": 83.8,
-          "end": 84.2
-        },
-        {
-          "word_index": 2,
-          "text": "fais",
-          "start": 84.2,
-          "end": 84.6
-        },
-        {
-          "word_index": 3,
-          "text": "bouger",
-          "start": 84.6,
-          "end": 85.0
+          "text": "la",
+          "start": 72.8,
+          "end": 72.9,
+          "confidence": 0.25
         },
         {
           "word_index": 4,
           "text": "la",
-          "start": 85.0,
-          "end": 85.5
+          "start": 73.1,
+          "end": 73.2,
+          "confidence": 0.25
         },
         {
           "word_index": 5,
-          "text": "tête",
-          "start": 85.5,
-          "end": 86.0
+          "text": "la",
+          "start": 73.4,
+          "end": 73.5,
+          "confidence": 0.25
+        },
+        {
+          "word_index": 6,
+          "text": "la",
+          "start": 73.7,
+          "end": 73.8,
+          "confidence": 0.25
+        },
+        {
+          "word_index": 7,
+          "text": "la",
+          "start": 74.0,
+          "end": 74.1,
+          "confidence": 0.25
         }
-      ]
+      ],
+      "y": 163,
+      "word_rois": [
+        [
+          81,
+          163,
+          48,
+          32
+        ],
+        [
+          133,
+          163,
+          100,
+          32
+        ],
+        [
+          237,
+          163,
+          32,
+          32
+        ],
+        [
+          273,
+          163,
+          32,
+          32
+        ],
+        [
+          309,
+          163,
+          32,
+          32
+        ],
+        [
+          345,
+          163,
+          32,
+          32
+        ],
+        [
+          381,
+          163,
+          30,
+          32
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 25,
+      "text": "Francia",
+      "start": 74.3,
+      "end": 75.1,
+      "confidence": 0.5,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Francia",
+          "start": 74.3,
+          "end": 75.1,
+          "confidence": 0.5
+        }
+      ],
+      "y": 21,
+      "word_rois": [
+        [
+          185,
+          21,
+          120,
+          35
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 26,
+      "text": "Colombia",
+      "start": 75.1,
+      "end": 75.3,
+      "confidence": 0.5,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Colombia",
+          "start": 75.1,
+          "end": 75.3,
+          "confidence": 0.5
+        }
+      ],
+      "y": 89,
+      "word_rois": [
+        [
+          173,
+          89,
+          142,
+          31
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 27,
+      "text": "Me gusta",
+      "start": 81.3,
+      "end": 81.75,
+      "confidence": 0.625,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Me",
+          "start": 81.3,
+          "end": 81.4,
+          "confidence": 1.0
+        },
+        {
+          "word_index": 2,
+          "text": "gusta",
+          "start": 81.65,
+          "end": 81.75,
+          "confidence": 0.25
+        }
+      ],
+      "y": 160,
+      "word_rois": [
+        [
+          177,
+          160,
+          47,
+          35
+        ],
+        [
+          228,
+          161,
+          85,
+          35
+        ]
+      ],
+      "char_rois": []
     },
     {
       "line_index": 28,
-      "text": "¿Y dónde está mi gente?",
-      "start": 86.1,
-      "end": 88.2,
+      "text": "Freeze",
+      "start": 81.75,
+      "end": 82.55,
+      "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
-          "text": "¿Y",
-          "start": 86.1,
-          "end": 86.45
-        },
-        {
-          "word_index": 2,
-          "text": "dónde",
-          "start": 86.45,
-          "end": 86.85
-        },
-        {
-          "word_index": 3,
-          "text": "está",
-          "start": 86.85,
-          "end": 87.25
-        },
-        {
-          "word_index": 4,
-          "text": "mi",
-          "start": 87.25,
-          "end": 87.7
-        },
-        {
-          "word_index": 5,
-          "text": "gente?",
-          "start": 87.7,
-          "end": 88.2
+          "text": "Freeze",
+          "start": 81.75,
+          "end": 82.55,
+          "confidence": 0.5
         }
-      ]
+      ],
+      "y": 228,
+      "word_rois": [
+        [
+          189,
+          228,
+          112,
+          35
+        ]
+      ],
+      "char_rois": []
     },
     {
       "line_index": 29,
-      "text": "Say yeah, yeah, yeah",
-      "start": 88.3,
-      "end": 89.45,
+      "text": "Willy William",
+      "start": 82.55,
+      "end": 82.8,
+      "confidence": 0.625,
       "words": [
         {
           "word_index": 1,
-          "text": "Say",
-          "start": 88.3,
-          "end": 88.55
+          "text": "Willy",
+          "start": 82.55,
+          "end": 82.65,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
-          "text": "yeah,",
-          "start": 88.55,
-          "end": 88.8
-        },
-        {
-          "word_index": 3,
-          "text": "yeah,",
-          "start": 88.8,
-          "end": 89.1
-        },
-        {
-          "word_index": 4,
-          "text": "yeah",
-          "start": 89.1,
-          "end": 89.45
+          "text": "William",
+          "start": 82.7,
+          "end": 82.8,
+          "confidence": 0.25
         }
-      ]
+      ],
+      "y": 90,
+      "word_rois": [
+        [
+          147,
+          90,
+          72,
+          37
+        ],
+        [
+          223,
+          91,
+          114,
+          37
+        ]
+      ],
+      "char_rois": []
     },
     {
       "line_index": 30,
-      "text": "¡Un, dos, tres, leggo! (Ay, di que sí)",
-      "start": 89.5,
-      "end": 93.9,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "¡Un,",
-          "start": 89.5,
-          "end": 90.0
-        },
-        {
-          "word_index": 2,
-          "text": "dos,",
-          "start": 90.0,
-          "end": 90.45
-        },
-        {
-          "word_index": 3,
-          "text": "tres,",
-          "start": 90.45,
-          "end": 90.95
-        },
-        {
-          "word_index": 4,
-          "text": "leggo!",
-          "start": 90.95,
-          "end": 91.5
-        },
-        {
-          "word_index": 5,
-          "text": "(Ay,",
-          "start": 91.5,
-          "end": 92.0
-        },
-        {
-          "word_index": 6,
-          "text": "di",
-          "start": 92.0,
-          "end": 92.6
-        },
-        {
-          "word_index": 7,
-          "text": "que",
-          "start": 92.6,
-          "end": 93.2
-        },
-        {
-          "word_index": 8,
-          "text": "sí)",
-          "start": 93.2,
-          "end": 93.9
-        }
-      ]
-    },
-    {
-      "line_index": 31,
-      "text": "¡Rra!",
-      "start": 107.3,
-      "end": 107.7,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "¡Rra!",
-          "start": 107.3,
-          "end": 107.7
-        }
-      ]
-    },
-    {
-      "line_index": 32,
-      "text": "Esquina a esquina, de ahí no' vamo'",
-      "start": 110.3,
-      "end": 112.35,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "Esquina",
-          "start": 110.3,
-          "end": 110.55
-        },
-        {
-          "word_index": 2,
-          "text": "a",
-          "start": 110.55,
-          "end": 110.8
-        },
-        {
-          "word_index": 3,
-          "text": "esquina,",
-          "start": 110.8,
-          "end": 111.1
-        },
-        {
-          "word_index": 4,
-          "text": "de",
-          "start": 111.1,
-          "end": 111.35
-        },
-        {
-          "word_index": 5,
-          "text": "ahí",
-          "start": 111.35,
-          "end": 111.65
-        },
-        {
-          "word_index": 6,
-          "text": "no'",
-          "start": 111.65,
-          "end": 111.95
-        },
-        {
-          "word_index": 7,
-          "text": "vamo'",
-          "start": 111.95,
-          "end": 112.35
-        }
-      ]
-    },
-    {
-      "line_index": 33,
-      "text": "El mundo es grande, pero lo tengo en mi' manos",
-      "start": 112.4,
-      "end": 114.7,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "El",
-          "start": 112.4,
-          "end": 112.6
-        },
-        {
-          "word_index": 2,
-          "text": "mundo",
-          "start": 112.6,
-          "end": 112.8
-        },
-        {
-          "word_index": 3,
-          "text": "es",
-          "start": 112.8,
-          "end": 113.0
-        },
-        {
-          "word_index": 4,
-          "text": "grande,",
-          "start": 113.0,
-          "end": 113.25
-        },
-        {
-          "word_index": 5,
-          "text": "pero",
-          "start": 113.25,
-          "end": 113.45
-        },
-        {
-          "word_index": 6,
-          "text": "lo",
-          "start": 113.45,
-          "end": 113.7
-        },
-        {
-          "word_index": 7,
-          "text": "tengo",
-          "start": 113.7,
-          "end": 113.9
-        },
-        {
-          "word_index": 8,
-          "text": "en",
-          "start": 113.9,
-          "end": 114.15
-        },
-        {
-          "word_index": 9,
-          "text": "mi'",
-          "start": 114.15,
-          "end": 114.2
-        },
-        {
-          "word_index": 10,
-          "text": "manos",
-          "start": 114.2,
-          "end": 114.7
-        }
-      ]
-    },
-    {
-      "line_index": 34,
-      "text": "Estoy muy duro, sí, okay, ahí vamos",
-      "start": 114.7,
-      "end": 115.05,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "Estoy",
-          "start": 114.7,
-          "end": 114.75
-        },
-        {
-          "word_index": 2,
-          "text": "muy",
-          "start": 114.75,
-          "end": 114.8
-        },
-        {
-          "word_index": 3,
-          "text": "duro,",
-          "start": 114.8,
-          "end": 114.85
-        },
-        {
-          "word_index": 4,
-          "text": "sí,",
-          "start": 114.85,
-          "end": 114.9
-        },
-        {
-          "word_index": 5,
-          "text": "okay,",
-          "start": 114.9,
-          "end": 114.95
-        },
-        {
-          "word_index": 6,
-          "text": "ahí",
-          "start": 114.95,
-          "end": 115.0
-        },
-        {
-          "word_index": 7,
-          "text": "vamos",
-          "start": 115.0,
-          "end": 115.05
-        }
-      ]
-    },
-    {
-      "line_index": 35,
-      "text": "Y con el tiempo nos seguimos elevando (y yeah)",
-      "start": 117.0,
-      "end": 118.55,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "Y",
-          "start": 117.0,
-          "end": 117.15
-        },
-        {
-          "word_index": 2,
-          "text": "con",
-          "start": 117.15,
-          "end": 117.3
-        },
-        {
-          "word_index": 3,
-          "text": "el",
-          "start": 117.3,
-          "end": 117.45
-        },
-        {
-          "word_index": 4,
-          "text": "tiempo",
-          "start": 117.45,
-          "end": 117.6
-        },
-        {
-          "word_index": 5,
-          "text": "nos",
-          "start": 117.6,
-          "end": 117.8
-        },
-        {
-          "word_index": 6,
-          "text": "seguimos",
-          "start": 117.8,
-          "end": 117.95
-        },
-        {
-          "word_index": 7,
-          "text": "elevando",
-          "start": 117.95,
-          "end": 118.15
-        },
-        {
-          "word_index": 8,
-          "text": "(y",
-          "start": 118.15,
-          "end": 118.35
-        },
-        {
-          "word_index": 9,
-          "text": "yeah)",
-          "start": 118.35,
-          "end": 118.55
-        }
-      ]
-    },
-    {
-      "line_index": 36,
-      "text": "Que seguimos rompiendo aquí (y yeah)",
-      "start": 119.5,
-      "end": 121.45,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "Que",
-          "start": 119.5,
-          "end": 119.8
-        },
-        {
-          "word_index": 2,
-          "text": "seguimos",
-          "start": 119.8,
-          "end": 120.1
-        },
-        {
-          "word_index": 3,
-          "text": "rompiendo",
-          "start": 120.1,
-          "end": 120.4
-        },
-        {
-          "word_index": 4,
-          "text": "aquí",
-          "start": 120.4,
-          "end": 120.7
-        },
-        {
-          "word_index": 5,
-          "text": "(y",
-          "start": 120.7,
-          "end": 121.05
-        },
-        {
-          "word_index": 6,
-          "text": "yeah)",
-          "start": 121.05,
-          "end": 121.45
-        }
-      ]
-    },
-    {
-      "line_index": 37,
-      "text": "Esta fiesta no tiene fin (y yeah)",
-      "start": 121.8,
-      "end": 124.15,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "Esta",
-          "start": 121.8,
-          "end": 122.1
-        },
-        {
-          "word_index": 2,
-          "text": "fiesta",
-          "start": 122.1,
-          "end": 122.4
-        },
-        {
-          "word_index": 3,
-          "text": "no",
-          "start": 122.4,
-          "end": 122.7
-        },
-        {
-          "word_index": 4,
-          "text": "tiene",
-          "start": 122.7,
-          "end": 123.0
-        },
-        {
-          "word_index": 5,
-          "text": "fin",
-          "start": 123.0,
-          "end": 123.35
-        },
-        {
-          "word_index": 6,
-          "text": "(y",
-          "start": 123.35,
-          "end": 123.7
-        },
-        {
-          "word_index": 7,
-          "text": "yeah)",
-          "start": 123.7,
-          "end": 124.15
-        }
-      ]
-    },
-    {
-      "line_index": 38,
-      "text": "Botellas para arriba, sí",
-      "start": 124.2,
-      "end": 125.7,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "Botellas",
-          "start": 124.2,
-          "end": 124.55
-        },
-        {
-          "word_index": 2,
-          "text": "para",
-          "start": 124.55,
-          "end": 124.9
-        },
-        {
-          "word_index": 3,
-          "text": "arriba,",
-          "start": 124.9,
-          "end": 125.3
-        },
-        {
-          "word_index": 4,
-          "text": "sí",
-          "start": 125.3,
-          "end": 125.7
-        }
-      ]
-    },
-    {
-      "line_index": 39,
-      "text": "Los tengo bailando, rompiendo y yo sigo aquí (y yeah)",
-      "start": 125.8,
-      "end": 128.85,
+      "text": "Los DJ's no mienten",
+      "start": 82.9,
+      "end": 83.9,
+      "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
           "text": "Los",
-          "start": 125.8,
-          "end": 126.05
+          "start": 82.9,
+          "end": 83.15,
+          "confidence": 0.5
         },
         {
           "word_index": 2,
-          "text": "tengo",
-          "start": 126.05,
-          "end": 126.35
+          "text": "DJ's",
+          "start": 83.2,
+          "end": 83.4,
+          "confidence": 0.5
         },
         {
           "word_index": 3,
-          "text": "bailando,",
-          "start": 126.35,
-          "end": 126.6
+          "text": "no",
+          "start": 83.45,
+          "end": 83.6,
+          "confidence": 0.5
         },
         {
           "word_index": 4,
-          "text": "rompiendo",
-          "start": 126.6,
-          "end": 126.9
+          "text": "mienten",
+          "start": 83.65,
+          "end": 83.9,
+          "confidence": 0.5
+        }
+      ],
+      "y": 17,
+      "word_rois": [
+        [
+          91,
+          15,
+          56,
+          35
+        ],
+        [
+          150,
+          16,
+          60,
+          36
+        ],
+        [
+          214,
+          19,
+          43,
+          35
+        ],
+        [
+          260,
+          20,
+          140,
+          38
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 31,
+      "text": "le gusta a mi gente",
+      "start": 84.4,
+      "end": 85.1,
+      "confidence": 0.5,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "le",
+          "start": 84.4,
+          "end": 84.5,
+          "confidence": 0.5
+        },
+        {
+          "word_index": 2,
+          "text": "gusta",
+          "start": 84.55,
+          "end": 84.65,
+          "confidence": 0.5
+        },
+        {
+          "word_index": 3,
+          "text": "a",
+          "start": 84.7,
+          "end": 84.8,
+          "confidence": 0.5
+        },
+        {
+          "word_index": 4,
+          "text": "mi",
+          "start": 84.85,
+          "end": 84.95,
+          "confidence": 0.5
         },
         {
           "word_index": 5,
-          "text": "y",
-          "start": 126.9,
-          "end": 127.15
-        },
-        {
-          "word_index": 6,
-          "text": "yo",
-          "start": 127.15,
-          "end": 127.45
-        },
-        {
-          "word_index": 7,
-          "text": "sigo",
-          "start": 127.45,
-          "end": 127.75
-        },
-        {
-          "word_index": 8,
-          "text": "aquí",
-          "start": 127.75,
-          "end": 128.1
-        },
-        {
-          "word_index": 9,
-          "text": "(y",
-          "start": 128.1,
-          "end": 128.45
-        },
-        {
-          "word_index": 10,
-          "text": "yeah)",
-          "start": 128.45,
-          "end": 128.85
+          "text": "gente",
+          "start": 85.0,
+          "end": 85.1,
+          "confidence": 0.5
         }
-      ]
+      ],
+      "y": 89,
+      "word_rois": [
+        [
+          91,
+          89,
+          36,
+          36
+        ],
+        [
+          132,
+          89,
+          90,
+          36
+        ],
+        [
+          226,
+          89,
+          23,
+          36
+        ],
+        [
+          253,
+          89,
+          40,
+          36
+        ],
+        [
+          298,
+          89,
+          89,
+          36
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 32,
+      "text": "Y eso se fue mundial",
+      "start": 85.85,
+      "end": 86.55,
+      "confidence": 0.228,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Y",
+          "start": 85.85,
+          "end": 85.95,
+          "confidence": 0.228
+        },
+        {
+          "word_index": 2,
+          "text": "eso",
+          "start": 86.0,
+          "end": 86.1,
+          "confidence": 0.228
+        },
+        {
+          "word_index": 3,
+          "text": "se",
+          "start": 86.15,
+          "end": 86.25,
+          "confidence": 0.228
+        },
+        {
+          "word_index": 4,
+          "text": "fue",
+          "start": 86.3,
+          "end": 86.4,
+          "confidence": 0.228
+        },
+        {
+          "word_index": 5,
+          "text": "mundial",
+          "start": 86.45,
+          "end": 86.55,
+          "confidence": 0.228
+        }
+      ],
+      "y": 161,
+      "word_rois": [
+        [
+          91,
+          161,
+          21,
+          28
+        ],
+        [
+          116,
+          161,
+          59,
+          28
+        ],
+        [
+          179,
+          161,
+          35,
+          28
+        ],
+        [
+          217,
+          161,
+          56,
+          28
+        ],
+        [
+          277,
+          161,
+          122,
+          28
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 33,
+      "text": "No le bajamos",
+      "start": 87.35,
+      "end": 88.35,
+      "confidence": 0.5,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "No",
+          "start": 87.35,
+          "end": 87.6,
+          "confidence": 0.5
+        },
+        {
+          "word_index": 2,
+          "text": "le",
+          "start": 87.65,
+          "end": 87.95,
+          "confidence": 0.5
+        },
+        {
+          "word_index": 3,
+          "text": "bajamos",
+          "start": 88.0,
+          "end": 88.35,
+          "confidence": 0.5
+        }
+      ],
+      "y": 18,
+      "word_rois": [
+        [
+          135,
+          17,
+          42,
+          34
+        ],
+        [
+          180,
+          18,
+          34,
+          34
+        ],
+        [
+          217,
+          19,
+          143,
+          37
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 34,
+      "text": "ms nunca paramos",
+      "start": 88.35,
+      "end": 88.75,
+      "confidence": 0.5,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "ms",
+          "start": 88.35,
+          "end": 88.45,
+          "confidence": 0.5
+        },
+        {
+          "word_index": 2,
+          "text": "nunca",
+          "start": 88.5,
+          "end": 88.6,
+          "confidence": 0.5
+        },
+        {
+          "word_index": 3,
+          "text": "paramos",
+          "start": 88.65,
+          "end": 88.75,
+          "confidence": 0.5
+        }
+      ],
+      "y": 90,
+      "word_rois": [
+        [
+          91,
+          88,
+          68,
+          33
+        ],
+        [
+          162,
+          90,
+          94,
+          32
+        ],
+        [
+          259,
+          92,
+          134,
+          34
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 35,
+      "text": "Es otro palo y Blam",
+      "start": 88.75,
+      "end": 89.45,
+      "confidence": 0.5,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Es",
+          "start": 88.75,
+          "end": 88.85,
+          "confidence": 0.5
+        },
+        {
+          "word_index": 2,
+          "text": "otro",
+          "start": 88.9,
+          "end": 89.0,
+          "confidence": 0.5
+        },
+        {
+          "word_index": 3,
+          "text": "palo",
+          "start": 89.05,
+          "end": 89.15,
+          "confidence": 0.5
+        },
+        {
+          "word_index": 4,
+          "text": "y",
+          "start": 89.2,
+          "end": 89.3,
+          "confidence": 0.5
+        },
+        {
+          "word_index": 5,
+          "text": "Blam",
+          "start": 89.35,
+          "end": 89.45,
+          "confidence": 0.5
+        }
+      ],
+      "y": 161,
+      "word_rois": [
+        [
+          91,
+          161,
+          36,
+          36
+        ],
+        [
+          132,
+          161,
+          67,
+          36
+        ],
+        [
+          204,
+          161,
+          67,
+          36
+        ],
+        [
+          276,
+          161,
+          22,
+          36
+        ],
+        [
+          302,
+          161,
+          97,
+          36
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 36,
+      "text": "Y dnde est mi gente",
+      "start": 90.15,
+      "end": 90.95,
+      "confidence": 0.5,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Y",
+          "start": 90.15,
+          "end": 90.25,
+          "confidence": 0.5
+        },
+        {
+          "word_index": 2,
+          "text": "dnde",
+          "start": 90.3,
+          "end": 90.4,
+          "confidence": 0.5
+        },
+        {
+          "word_index": 3,
+          "text": "est",
+          "start": 90.45,
+          "end": 90.55,
+          "confidence": 0.5
+        },
+        {
+          "word_index": 4,
+          "text": "mi",
+          "start": 90.6,
+          "end": 90.7,
+          "confidence": 0.5
+        },
+        {
+          "word_index": 5,
+          "text": "gente",
+          "start": 90.75,
+          "end": 90.95,
+          "confidence": 0.5
+        }
+      ],
+      "y": 229,
+      "word_rois": [
+        [
+          63,
+          229,
+          36,
+          36
+        ],
+        [
+          104,
+          229,
+          99,
+          36
+        ],
+        [
+          207,
+          229,
+          68,
+          36
+        ],
+        [
+          279,
+          229,
+          40,
+          36
+        ],
+        [
+          324,
+          229,
+          101,
+          36
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 37,
+      "text": "ms nunca paramos",
+      "start": 91.6,
+      "end": 94.1,
+      "confidence": 0.5,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "ms",
+          "start": 91.6,
+          "end": 92.25,
+          "confidence": 0.5
+        },
+        {
+          "word_index": 2,
+          "text": "nunca",
+          "start": 92.3,
+          "end": 93.1,
+          "confidence": 0.5
+        },
+        {
+          "word_index": 3,
+          "text": "paramos",
+          "start": 93.3,
+          "end": 94.1,
+          "confidence": 0.5
+        }
+      ],
+      "y": 90,
+      "word_rois": [
+        [
+          91,
+          88,
+          68,
+          34
+        ],
+        [
+          163,
+          90,
+          96,
+          34
+        ],
+        [
+          262,
+          92,
+          131,
+          36
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 38,
+      "text": "Mais fais bouger la tte",
+      "start": 93.0,
+      "end": 93.75,
+      "confidence": 0.252,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Mais",
+          "start": 93.0,
+          "end": 93.1,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 2,
+          "text": "fais",
+          "start": 93.15,
+          "end": 93.3,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 3,
+          "text": "bouger",
+          "start": 93.35,
+          "end": 93.45,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 4,
+          "text": "la",
+          "start": 93.5,
+          "end": 93.6,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 5,
+          "text": "tte",
+          "start": 93.65,
+          "end": 93.75,
+          "confidence": 0.252
+        }
+      ],
+      "y": 19,
+      "word_rois": [
+        [
+          75,
+          19,
+          68,
+          34
+        ],
+        [
+          147,
+          19,
+          56,
+          34
+        ],
+        [
+          207,
+          19,
+          110,
+          34
+        ],
+        [
+          321,
+          19,
+          30,
+          34
+        ],
+        [
+          355,
+          19,
+          64,
+          34
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 39,
+      "text": "Y dnde est mi gente",
+      "start": 94.8,
+      "end": 95.55,
+      "confidence": 0.252,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Y",
+          "start": 94.8,
+          "end": 94.9,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 2,
+          "text": "dnde",
+          "start": 94.95,
+          "end": 95.1,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 3,
+          "text": "est",
+          "start": 95.15,
+          "end": 95.25,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 4,
+          "text": "mi",
+          "start": 95.3,
+          "end": 95.4,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 5,
+          "text": "gente",
+          "start": 95.45,
+          "end": 95.55,
+          "confidence": 0.252
+        }
+      ],
+      "y": 89,
+      "word_rois": [
+        [
+          65,
+          89,
+          36,
+          36
+        ],
+        [
+          106,
+          89,
+          94,
+          36
+        ],
+        [
+          205,
+          89,
+          67,
+          36
+        ],
+        [
+          277,
+          89,
+          40,
+          36
+        ],
+        [
+          321,
+          89,
+          104,
+          36
+        ]
+      ],
+      "char_rois": []
     },
     {
       "line_index": 40,
-      "text": "Que seguimos rompiendo aquí (y yeah)",
-      "start": 128.9,
-      "end": 130.85,
+      "text": "Say yeah yeah yeah",
+      "start": 103.75,
+      "end": 114.85,
+      "confidence": 0.252,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Say",
+          "start": 103.75,
+          "end": 104.55,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 2,
+          "text": "yeah",
+          "start": 106.5,
+          "end": 107.3,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 3,
+          "text": "yeah",
+          "start": 110.25,
+          "end": 111.05,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 4,
+          "text": "yeah",
+          "start": 114.05,
+          "end": 114.85,
+          "confidence": 0.252
+        }
+      ],
+      "y": 161,
+      "word_rois": [
+        [
+          91,
+          161,
+          50,
+          36
+        ],
+        [
+          145,
+          161,
+          86,
+          36
+        ],
+        [
+          235,
+          161,
+          81,
+          36
+        ],
+        [
+          320,
+          161,
+          75,
+          36
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 41,
+      "text": "Ay di que s",
+      "start": 109.15,
+      "end": 116.85,
+      "confidence": 0.252,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Ay",
+          "start": 109.15,
+          "end": 109.95,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 2,
+          "text": "di",
+          "start": 111.3,
+          "end": 112.1,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 3,
+          "text": "que",
+          "start": 113.45,
+          "end": 114.25,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 4,
+          "text": "s",
+          "start": 116.05,
+          "end": 116.85,
+          "confidence": 0.252
+        }
+      ],
+      "y": 230,
+      "word_rois": [
+        [
+          157,
+          230,
+          39,
+          34
+        ],
+        [
+          200,
+          230,
+          34,
+          35
+        ],
+        [
+          238,
+          231,
+          64,
+          34
+        ],
+        [
+          306,
+          231,
+          31,
+          34
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 42,
+      "text": "Esquina a esquina",
+      "start": 117.75,
+      "end": 118.75,
+      "confidence": 0.252,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Esquina",
+          "start": 117.75,
+          "end": 118.1,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 2,
+          "text": "a",
+          "start": 118.15,
+          "end": 118.35,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 3,
+          "text": "esquina",
+          "start": 118.4,
+          "end": 118.75,
+          "confidence": 0.252
+        }
+      ],
+      "y": 21,
+      "word_rois": [
+        [
+          109,
+          21,
+          120,
+          32
+        ],
+        [
+          233,
+          21,
+          20,
+          32
+        ],
+        [
+          257,
+          21,
+          122,
+          32
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 43,
+      "text": "de ah no' vamo'",
+      "start": 119.15,
+      "end": 120.15,
+      "confidence": 0.252,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "de",
+          "start": 119.15,
+          "end": 119.35,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 2,
+          "text": "ah",
+          "start": 119.4,
+          "end": 119.6,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 3,
+          "text": "no'",
+          "start": 119.65,
+          "end": 119.85,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 4,
+          "text": "vamo'",
+          "start": 119.9,
+          "end": 120.15,
+          "confidence": 0.252
+        }
+      ],
+      "y": 85,
+      "word_rois": [
+        [
+          123,
+          85,
+          41,
+          36
+        ],
+        [
+          168,
+          85,
+          50,
+          36
+        ],
+        [
+          222,
+          85,
+          50,
+          36
+        ],
+        [
+          276,
+          85,
+          97,
+          36
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 44,
+      "text": "El mundo es grande",
+      "start": 120.6,
+      "end": 122.55,
+      "confidence": 0.252,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "El",
+          "start": 120.6,
+          "end": 120.7,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 2,
+          "text": "mundo",
+          "start": 120.75,
+          "end": 121.05,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 3,
+          "text": "es",
+          "start": 121.1,
+          "end": 121.7,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 4,
+          "text": "grande",
+          "start": 121.75,
+          "end": 122.55,
+          "confidence": 0.252
+        }
+      ],
+      "y": 161,
+      "word_rois": [
+        [
+          91,
+          161,
+          36,
+          32
+        ],
+        [
+          131,
+          161,
+          108,
+          32
+        ],
+        [
+          243,
+          161,
+          40,
+          32
+        ],
+        [
+          287,
+          161,
+          106,
+          32
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 45,
+      "text": "pero lo tengo en mi' manos",
+      "start": 122.0,
+      "end": 124.3,
+      "confidence": 0.252,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "pero",
+          "start": 122.0,
+          "end": 122.35,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 2,
+          "text": "lo",
+          "start": 122.4,
+          "end": 122.7,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 3,
+          "text": "tengo",
+          "start": 122.75,
+          "end": 123.15,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 4,
+          "text": "en",
+          "start": 123.2,
+          "end": 123.5,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 5,
+          "text": "mi'",
+          "start": 123.55,
+          "end": 123.85,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 6,
+          "text": "manos",
+          "start": 123.9,
+          "end": 124.3,
+          "confidence": 0.252
+        }
+      ],
+      "y": 228,
+      "word_rois": [
+        [
+          43,
+          231,
+          68,
+          35
+        ],
+        [
+          115,
+          230,
+          30,
+          35
+        ],
+        [
+          149,
+          228,
+          94,
+          36
+        ],
+        [
+          247,
+          228,
+          38,
+          34
+        ],
+        [
+          289,
+          227,
+          52,
+          34
+        ],
+        [
+          344,
+          225,
+          103,
+          35
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 46,
+      "text": "Estoy muy duro s",
+      "start": 124.5,
+      "end": 125.5,
+      "confidence": 0.252,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Estoy",
+          "start": 124.5,
+          "end": 124.75,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 2,
+          "text": "muy",
+          "start": 124.8,
+          "end": 125.0,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 3,
+          "text": "duro",
+          "start": 125.05,
+          "end": 125.25,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 4,
+          "text": "s",
+          "start": 125.3,
+          "end": 125.5,
+          "confidence": 0.252
+        }
+      ],
+      "y": 19,
+      "word_rois": [
+        [
+          109,
+          19,
+          76,
+          38
+        ],
+        [
+          190,
+          19,
+          71,
+          38
+        ],
+        [
+          266,
+          19,
+          80,
+          38
+        ],
+        [
+          351,
+          19,
+          34,
+          38
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 47,
+      "text": "okay ah vamos",
+      "start": 125.5,
+      "end": 125.9,
+      "confidence": 0.252,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "okay",
+          "start": 125.5,
+          "end": 125.6,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 2,
+          "text": "ah",
+          "start": 125.65,
+          "end": 125.75,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 3,
+          "text": "vamos",
+          "start": 125.8,
+          "end": 125.9,
+          "confidence": 0.252
+        }
+      ],
+      "y": 89,
+      "word_rois": [
+        [
+          125,
+          89,
+          81,
+          36
+        ],
+        [
+          211,
+          89,
+          49,
+          36
+        ],
+        [
+          265,
+          89,
+          102,
+          36
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 48,
+      "text": "Y con el tiempo nos",
+      "start": 125.9,
+      "end": 127.15,
+      "confidence": 0.252,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Y",
+          "start": 125.9,
+          "end": 126.0,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 2,
+          "text": "con",
+          "start": 126.05,
+          "end": 126.15,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 3,
+          "text": "el",
+          "start": 126.2,
+          "end": 126.3,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 4,
+          "text": "tiempo",
+          "start": 126.35,
+          "end": 126.6,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 5,
+          "text": "nos",
+          "start": 126.65,
+          "end": 127.15,
+          "confidence": 0.252
+        }
+      ],
+      "y": 159,
+      "word_rois": [
+        [
+          91,
+          158,
+          28,
+          31
+        ],
+        [
+          122,
+          158,
+          62,
+          33
+        ],
+        [
+          188,
+          160,
+          27,
+          31
+        ],
+        [
+          218,
+          160,
+          113,
+          34
+        ],
+        [
+          334,
+          163,
+          57,
+          32
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 49,
+      "text": "seguimos elevando",
+      "start": 127.35,
+      "end": 128.75,
+      "confidence": 0.252,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "seguimos",
+          "start": 127.35,
+          "end": 128.05,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 2,
+          "text": "elevando",
+          "start": 128.1,
+          "end": 128.75,
+          "confidence": 0.252
+        }
+      ],
+      "y": 231,
+      "word_rois": [
+        [
+          103,
+          231,
+          144,
+          32
+        ],
+        [
+          251,
+          231,
+          136,
+          32
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 50,
+      "text": "Que seguimos rompiendo au",
+      "start": 128.95,
+      "end": 131.1,
+      "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
           "text": "Que",
-          "start": 128.9,
-          "end": 129.2
+          "start": 128.95,
+          "end": 129.35,
+          "confidence": 0.5
         },
         {
           "word_index": 2,
           "text": "seguimos",
-          "start": 129.2,
-          "end": 129.5
+          "start": 129.4,
+          "end": 130.0,
+          "confidence": 0.5
         },
         {
           "word_index": 3,
           "text": "rompiendo",
-          "start": 129.5,
-          "end": 129.8
+          "start": 130.05,
+          "end": 130.65,
+          "confidence": 0.5
         },
         {
           "word_index": 4,
-          "text": "aquí",
-          "start": 129.8,
-          "end": 130.1
-        },
-        {
-          "word_index": 5,
-          "text": "(y",
-          "start": 130.1,
-          "end": 130.45
-        },
-        {
-          "word_index": 6,
-          "text": "yeah)",
-          "start": 130.45,
-          "end": 130.85
+          "text": "aqu",
+          "start": 130.7,
+          "end": 131.1,
+          "confidence": 0.5
         }
-      ]
+      ],
+      "y": 19,
+      "word_rois": [
+        [
+          19,
+          19,
+          60,
+          34
+        ],
+        [
+          83,
+          19,
+          144,
+          34
+        ],
+        [
+          232,
+          19,
+          165,
+          34
+        ],
+        [
+          401,
+          19,
+          82,
+          34
+        ]
+      ],
+      "char_rois": []
     },
     {
-      "line_index": 41,
-      "text": "Esta fiesta no tiene fin (y yeah)",
+      "line_index": 51,
+      "text": "Esta fiesta no tiene fin",
       "start": 131.1,
-      "end": 133.25,
+      "end": 131.8,
+      "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
           "text": "Esta",
           "start": 131.1,
-          "end": 131.35
+          "end": 131.2,
+          "confidence": 0.5
         },
         {
           "word_index": 2,
           "text": "fiesta",
-          "start": 131.35,
-          "end": 131.65
+          "start": 131.25,
+          "end": 131.35,
+          "confidence": 0.5
         },
         {
           "word_index": 3,
           "text": "no",
-          "start": 131.65,
-          "end": 131.9
+          "start": 131.4,
+          "end": 131.5,
+          "confidence": 0.5
         },
         {
           "word_index": 4,
           "text": "tiene",
-          "start": 131.9,
-          "end": 132.2
+          "start": 131.55,
+          "end": 131.65,
+          "confidence": 0.5
         },
         {
           "word_index": 5,
           "text": "fin",
-          "start": 132.2,
-          "end": 132.5
-        },
-        {
-          "word_index": 6,
-          "text": "(y",
-          "start": 132.5,
-          "end": 132.85
-        },
-        {
-          "word_index": 7,
-          "text": "yeah)",
-          "start": 132.85,
-          "end": 133.25
+          "start": 131.7,
+          "end": 131.8,
+          "confidence": 0.5
         }
-      ]
+      ],
+      "y": 89,
+      "word_rois": [
+        [
+          81,
+          89,
+          60,
+          32
+        ],
+        [
+          145,
+          89,
+          88,
+          32
+        ],
+        [
+          237,
+          89,
+          44,
+          32
+        ],
+        [
+          285,
+          89,
+          76,
+          32
+        ],
+        [
+          365,
+          89,
+          44,
+          32
+        ]
+      ],
+      "char_rois": []
     },
     {
-      "line_index": 42,
-      "text": "Botellas para arriba, sí",
-      "start": 133.3,
-      "end": 134.9,
+      "line_index": 52,
+      "text": "Botellas para arriba s",
+      "start": 131.8,
+      "end": 132.35,
+      "confidence": 0.228,
       "words": [
         {
           "word_index": 1,
           "text": "Botellas",
-          "start": 133.3,
-          "end": 133.65
+          "start": 131.8,
+          "end": 131.9,
+          "confidence": 0.228
         },
         {
           "word_index": 2,
           "text": "para",
-          "start": 133.65,
-          "end": 134.05
+          "start": 131.95,
+          "end": 132.05,
+          "confidence": 0.228
         },
         {
           "word_index": 3,
-          "text": "arriba,",
-          "start": 134.05,
-          "end": 134.45
+          "text": "arriba",
+          "start": 132.1,
+          "end": 132.2,
+          "confidence": 0.228
         },
         {
           "word_index": 4,
-          "text": "sí",
-          "start": 134.45,
-          "end": 134.9
+          "text": "s",
+          "start": 132.25,
+          "end": 132.35,
+          "confidence": 0.228
         }
-      ]
+      ],
+      "y": 159,
+      "word_rois": [
+        [
+          81,
+          159,
+          114,
+          38
+        ],
+        [
+          200,
+          159,
+          71,
+          38
+        ],
+        [
+          276,
+          159,
+          99,
+          38
+        ],
+        [
+          380,
+          159,
+          35,
+          38
+        ]
+      ],
+      "char_rois": []
     },
     {
-      "line_index": 43,
-      "text": "Los tengo bailando, rompiendo",
-      "start": 135.0,
-      "end": 136.5,
+      "line_index": 53,
+      "text": "Los tengo bailando",
+      "start": 135.35,
+      "end": 136.35,
+      "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "Los",
-          "start": 135.0,
-          "end": 135.35
+          "start": 135.35,
+          "end": 135.6,
+          "confidence": 0.252
         },
         {
           "word_index": 2,
           "text": "tengo",
-          "start": 135.35,
-          "end": 135.7
+          "start": 135.65,
+          "end": 135.95,
+          "confidence": 0.252
         },
         {
           "word_index": 3,
-          "text": "bailando,",
-          "start": 135.7,
-          "end": 136.1
-        },
-        {
-          "word_index": 4,
-          "text": "rompiendo",
-          "start": 136.1,
-          "end": 136.5
+          "text": "bailando",
+          "start": 136.0,
+          "end": 136.35,
+          "confidence": 0.252
         }
-      ]
+      ],
+      "y": 21,
+      "word_rois": [
+        [
+          91,
+          21,
+          57,
+          38
+        ],
+        [
+          153,
+          21,
+          90,
+          38
+        ],
+        [
+          248,
+          21,
+          145,
+          38
+        ]
+      ],
+      "char_rois": []
     },
     {
-      "line_index": 44,
-      "text": "¿Y dónde está mi gente?",
-      "start": 136.6,
-      "end": 138.5,
+      "line_index": 54,
+      "text": "rompiendo y yo sigo au",
+      "start": 136.9,
+      "end": 137.9,
+      "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
-          "text": "¿Y",
-          "start": 136.6,
-          "end": 136.95
+          "text": "rompiendo",
+          "start": 136.9,
+          "end": 137.1,
+          "confidence": 0.252
         },
         {
           "word_index": 2,
-          "text": "dónde",
-          "start": 136.95,
-          "end": 137.3
+          "text": "y",
+          "start": 137.15,
+          "end": 137.3,
+          "confidence": 0.252
         },
         {
           "word_index": 3,
-          "text": "está",
-          "start": 137.3,
-          "end": 137.65
+          "text": "yo",
+          "start": 137.35,
+          "end": 137.5,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 4,
+          "text": "sigo",
+          "start": 137.55,
+          "end": 137.7,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 5,
+          "text": "aqu",
+          "start": 137.75,
+          "end": 137.9,
+          "confidence": 0.252
+        }
+      ],
+      "y": 89,
+      "word_rois": [
+        [
+          59,
+          89,
+          162,
+          36
+        ],
+        [
+          226,
+          89,
+          18,
+          36
+        ],
+        [
+          248,
+          89,
+          40,
+          36
+        ],
+        [
+          293,
+          89,
+          67,
+          36
+        ],
+        [
+          365,
+          89,
+          74,
+          36
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 55,
+      "text": "Que seguimos rompiendo au",
+      "start": 138.5,
+      "end": 141.0,
+      "confidence": 0.252,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Que",
+          "start": 138.5,
+          "end": 138.6,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 2,
+          "text": "seguimos",
+          "start": 138.65,
+          "end": 139.2,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 3,
+          "text": "rompiendo",
+          "start": 139.25,
+          "end": 140.05,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 4,
+          "text": "aqu",
+          "start": 140.35,
+          "end": 141.0,
+          "confidence": 0.252
+        }
+      ],
+      "y": 159,
+      "word_rois": [
+        [
+          19,
+          159,
+          57,
+          38
+        ],
+        [
+          81,
+          159,
+          147,
+          38
+        ],
+        [
+          233,
+          159,
+          166,
+          38
+        ],
+        [
+          404,
+          159,
+          73,
+          38
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 56,
+      "text": "Esta fiesta no tiene fin",
+      "start": 140.05,
+      "end": 142.5,
+      "confidence": 0.252,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Esta",
+          "start": 140.05,
+          "end": 140.55,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 2,
+          "text": "fiesta",
+          "start": 140.6,
+          "end": 141.1,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 3,
+          "text": "no",
+          "start": 141.15,
+          "end": 141.5,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 4,
+          "text": "tiene",
+          "start": 141.55,
+          "end": 142.05,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 5,
+          "text": "fin",
+          "start": 142.1,
+          "end": 142.5,
+          "confidence": 0.252
+        }
+      ],
+      "y": 231,
+      "word_rois": [
+        [
+          83,
+          231,
+          60,
+          34
+        ],
+        [
+          147,
+          231,
+          85,
+          34
+        ],
+        [
+          236,
+          231,
+          43,
+          34
+        ],
+        [
+          283,
+          231,
+          76,
+          34
+        ],
+        [
+          363,
+          231,
+          46,
+          34
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 57,
+      "text": "Botellas para arriba s",
+      "start": 142.7,
+      "end": 143.7,
+      "confidence": 0.5,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Botellas",
+          "start": 142.7,
+          "end": 143.0,
+          "confidence": 0.5
+        },
+        {
+          "word_index": 2,
+          "text": "para",
+          "start": 143.05,
+          "end": 143.25,
+          "confidence": 0.5
+        },
+        {
+          "word_index": 3,
+          "text": "arriba",
+          "start": 143.3,
+          "end": 143.5,
+          "confidence": 0.5
+        },
+        {
+          "word_index": 4,
+          "text": "s",
+          "start": 143.55,
+          "end": 143.7,
+          "confidence": 0.5
+        }
+      ],
+      "y": 21,
+      "word_rois": [
+        [
+          81,
+          21,
+          115,
+          34
+        ],
+        [
+          200,
+          21,
+          72,
+          34
+        ],
+        [
+          277,
+          21,
+          97,
+          34
+        ],
+        [
+          378,
+          21,
+          35,
+          34
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 58,
+      "text": "Y dnde est mi gente",
+      "start": 143.7,
+      "end": 147.3,
+      "confidence": 0.252,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Y",
+          "start": 143.7,
+          "end": 144.2,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 2,
+          "text": "dnde",
+          "start": 144.25,
+          "end": 145.05,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 3,
+          "text": "est",
+          "start": 145.1,
+          "end": 145.8,
+          "confidence": 0.252
         },
         {
           "word_index": 4,
           "text": "mi",
-          "start": 137.65,
-          "end": 138.05
+          "start": 145.85,
+          "end": 146.45,
+          "confidence": 0.252
         },
         {
           "word_index": 5,
-          "text": "gente?",
-          "start": 138.05,
-          "end": 138.5
+          "text": "gente",
+          "start": 146.5,
+          "end": 147.3,
+          "confidence": 0.252
         }
-      ]
+      ],
+      "y": 89,
+      "word_rois": [
+        [
+          65,
+          89,
+          32,
+          36
+        ],
+        [
+          101,
+          89,
+          99,
+          36
+        ],
+        [
+          205,
+          89,
+          67,
+          36
+        ],
+        [
+          277,
+          89,
+          40,
+          36
+        ],
+        [
+          321,
+          89,
+          104,
+          36
+        ]
+      ],
+      "char_rois": []
     },
     {
-      "line_index": 45,
-      "text": "Mais fais bouger la tête",
-      "start": 138.7,
-      "end": 140.8,
+      "line_index": 59,
+      "text": "Mais fais bouger la tte",
+      "start": 147.55,
+      "end": 149.9,
+      "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "Mais",
-          "start": 138.7,
-          "end": 139.05
+          "start": 147.55,
+          "end": 148.0,
+          "confidence": 0.252
         },
         {
           "word_index": 2,
           "text": "fais",
-          "start": 139.05,
-          "end": 139.45
+          "start": 148.05,
+          "end": 148.5,
+          "confidence": 0.252
         },
         {
           "word_index": 3,
           "text": "bouger",
-          "start": 139.45,
-          "end": 139.85
+          "start": 148.55,
+          "end": 149.05,
+          "confidence": 0.252
         },
         {
           "word_index": 4,
           "text": "la",
-          "start": 139.85,
-          "end": 140.3
+          "start": 149.1,
+          "end": 149.45,
+          "confidence": 0.252
         },
         {
           "word_index": 5,
-          "text": "tête",
-          "start": 140.3,
-          "end": 140.8
+          "text": "tte",
+          "start": 149.5,
+          "end": 149.9,
+          "confidence": 0.252
         }
-      ]
+      ],
+      "y": 159,
+      "word_rois": [
+        [
+          73,
+          159,
+          68,
+          36
+        ],
+        [
+          145,
+          159,
+          59,
+          36
+        ],
+        [
+          208,
+          159,
+          108,
+          36
+        ],
+        [
+          320,
+          159,
+          32,
+          36
+        ],
+        [
+          356,
+          159,
+          63,
+          36
+        ]
+      ],
+      "char_rois": []
     },
     {
-      "line_index": 46,
-      "text": "¿Y dónde está mi gente?",
-      "start": 140.9,
-      "end": 142.8,
+      "line_index": 60,
+      "text": "Y dnde est mi gente",
+      "start": 150.1,
+      "end": 151.1,
+      "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
-          "text": "¿Y",
-          "start": 140.9,
-          "end": 141.25
+          "text": "Y",
+          "start": 150.1,
+          "end": 150.25,
+          "confidence": 0.5
         },
         {
           "word_index": 2,
-          "text": "dónde",
-          "start": 141.25,
-          "end": 141.6
+          "text": "dnde",
+          "start": 150.3,
+          "end": 150.45,
+          "confidence": 0.5
         },
         {
           "word_index": 3,
-          "text": "está",
-          "start": 141.6,
-          "end": 141.95
+          "text": "est",
+          "start": 150.5,
+          "end": 150.65,
+          "confidence": 0.5
         },
         {
           "word_index": 4,
           "text": "mi",
-          "start": 141.95,
-          "end": 142.35
+          "start": 150.7,
+          "end": 150.85,
+          "confidence": 0.5
         },
         {
           "word_index": 5,
-          "text": "gente?",
-          "start": 142.35,
-          "end": 142.8
+          "text": "gente",
+          "start": 150.9,
+          "end": 151.1,
+          "confidence": 0.5
         }
-      ]
+      ],
+      "y": 19,
+      "word_rois": [
+        [
+          65,
+          19,
+          34,
+          34
+        ],
+        [
+          104,
+          19,
+          97,
+          34
+        ],
+        [
+          205,
+          19,
+          68,
+          34
+        ],
+        [
+          278,
+          19,
+          42,
+          34
+        ],
+        [
+          324,
+          19,
+          103,
+          34
+        ]
+      ],
+      "char_rois": []
     },
     {
-      "line_index": 47,
-      "text": "Say yeah, yeah, yeah",
-      "start": 143.1,
-      "end": 144.05,
+      "line_index": 61,
+      "text": "Ay di que s",
+      "start": 151.1,
+      "end": 152.15,
+      "confidence": 0.228,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Ay",
+          "start": 151.1,
+          "end": 151.2,
+          "confidence": 0.228
+        },
+        {
+          "word_index": 2,
+          "text": "di",
+          "start": 151.25,
+          "end": 151.35,
+          "confidence": 0.228
+        },
+        {
+          "word_index": 3,
+          "text": "que",
+          "start": 151.4,
+          "end": 151.75,
+          "confidence": 0.228
+        },
+        {
+          "word_index": 4,
+          "text": "s",
+          "start": 151.8,
+          "end": 152.15,
+          "confidence": 0.228
+        }
+      ],
+      "y": 160,
+      "word_rois": [
+        [
+          157,
+          160,
+          39,
+          34
+        ],
+        [
+          200,
+          161,
+          34,
+          34
+        ],
+        [
+          238,
+          161,
+          64,
+          34
+        ],
+        [
+          306,
+          161,
+          33,
+          35
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 62,
+      "text": "Say yeah yeah yeah",
+      "start": 153.2,
+      "end": 155.6,
+      "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
           "text": "Say",
-          "start": 143.1,
-          "end": 143.3
+          "start": 153.2,
+          "end": 153.7,
+          "confidence": 0.5
         },
         {
           "word_index": 2,
-          "text": "yeah,",
-          "start": 143.3,
-          "end": 143.55
+          "text": "yeah",
+          "start": 153.75,
+          "end": 154.35,
+          "confidence": 0.5
         },
         {
           "word_index": 3,
-          "text": "yeah,",
-          "start": 143.55,
-          "end": 143.8
+          "text": "yeah",
+          "start": 154.4,
+          "end": 154.95,
+          "confidence": 0.5
         },
         {
           "word_index": 4,
           "text": "yeah",
-          "start": 143.8,
-          "end": 144.05
+          "start": 155.0,
+          "end": 155.6,
+          "confidence": 0.5
         }
-      ]
-    },
-    {
-      "line_index": 48,
-      "text": "¡Un, dos, tres, leggo! (Ay, di que sí)",
-      "start": 144.5,
-      "end": 148.4,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "¡Un,",
-          "start": 144.5,
-          "end": 144.9
-        },
-        {
-          "word_index": 2,
-          "text": "dos,",
-          "start": 144.9,
-          "end": 145.35
-        },
-        {
-          "word_index": 3,
-          "text": "tres,",
-          "start": 145.35,
-          "end": 145.8
-        },
-        {
-          "word_index": 4,
-          "text": "leggo!",
-          "start": 145.8,
-          "end": 146.25
-        },
-        {
-          "word_index": 5,
-          "text": "(Ay,",
-          "start": 146.25,
-          "end": 146.75
-        },
-        {
-          "word_index": 6,
-          "text": "di",
-          "start": 146.75,
-          "end": 147.25
-        },
-        {
-          "word_index": 7,
-          "text": "que",
-          "start": 147.25,
-          "end": 147.75
-        },
-        {
-          "word_index": 8,
-          "text": "sí)",
-          "start": 147.75,
-          "end": 148.4
-        }
-      ]
-    },
-    {
-      "line_index": 49,
-      "text": "Worldwide, Willy William",
-      "start": 160.5,
-      "end": 161.9,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "Worldwide,",
-          "start": 160.5,
-          "end": 160.9
-        },
-        {
-          "word_index": 2,
-          "text": "Willy",
-          "start": 160.9,
-          "end": 161.4
-        },
-        {
-          "word_index": 3,
-          "text": "William",
-          "start": 161.4,
-          "end": 161.9
-        }
-      ]
-    },
-    {
-      "line_index": 50,
-      "text": "J Balvin, man",
-      "start": 162.7,
-      "end": 164.1,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "J",
-          "start": 162.7,
-          "end": 163.1
-        },
-        {
-          "word_index": 2,
-          "text": "Balvin,",
-          "start": 163.1,
-          "end": 163.6
-        },
-        {
-          "word_index": 3,
-          "text": "man",
-          "start": 163.6,
-          "end": 164.1
-        }
-      ]
-    },
-    {
-      "line_index": 51,
-      "text": "Ajá",
-      "start": 164.6,
-      "end": 165.0,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "Ajá",
-          "start": 164.6,
-          "end": 165.0
-        }
-      ]
-    },
-    {
-      "line_index": 52,
-      "text": "Ajá",
-      "start": 166.8,
-      "end": 168.15,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "Ajá",
-          "start": 166.8,
-          "end": 168.15
-        }
-      ]
-    },
-    {
-      "line_index": 53,
-      "text": "Ajá",
-      "start": 169.0,
-      "end": 169.5,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "Ajá",
-          "start": 169.0,
-          "end": 169.5
-        }
-      ]
-    },
-    {
-      "line_index": 54,
-      "text": "Ajá",
-      "start": 171.4,
-      "end": 171.8,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "Ajá",
-          "start": 171.4,
-          "end": 171.8
-        }
-      ]
+      ],
+      "y": 91,
+      "word_rois": [
+        [
+          91,
+          91,
+          54,
+          36
+        ],
+        [
+          150,
+          91,
+          81,
+          36
+        ],
+        [
+          235,
+          91,
+          81,
+          36
+        ],
+        [
+          320,
+          91,
+          75,
+          36
+        ]
+      ],
+      "char_rois": []
     }
-  ],
-  "karaoke_source_url": "https://www.youtube.com/watch?v=m08bnH5G8p8",
-  "karaoke_video_path": ".cache/karaoke_bootstrap/j-balvin-mi-gente/m08bnH5G8p8/m08bnH5G8p8.mp4",
-  "karaoke_line_windows": [
-    {
-      "line_index": 1,
-      "video_start": 6.12,
-      "video_end": 6.554
-    },
-    {
-      "line_index": 2,
-      "video_start": 7.768,
-      "video_end": 9.675
-    },
-    {
-      "line_index": 3,
-      "video_start": 9.675,
-      "video_end": 11.583
-    },
-    {
-      "line_index": 4,
-      "video_start": 11.583,
-      "video_end": 13.317
-    },
-    {
-      "line_index": 5,
-      "video_start": 13.317,
-      "video_end": 14.791
-    },
-    {
-      "line_index": 6,
-      "video_start": 14.791,
-      "video_end": 14.965
-    },
-    {
-      "line_index": 7,
-      "video_start": 16.699,
-      "video_end": 18.606
-    },
-    {
-      "line_index": 8,
-      "video_start": 18.606,
-      "video_end": 20.341
-    },
-    {
-      "line_index": 9,
-      "video_start": 20.688,
-      "video_end": 22.682
-    },
-    {
-      "line_index": 10,
-      "video_start": 22.942,
-      "video_end": 24.59
-    },
-    {
-      "line_index": 11,
-      "video_start": 24.59,
-      "video_end": 26.41
-    },
-    {
-      "line_index": 12,
-      "video_start": 26.584,
-      "video_end": 28.405
-    },
-    {
-      "line_index": 13,
-      "video_start": 28.492,
-      "video_end": 32.654
-    },
-    {
-      "line_index": 14,
-      "video_start": 46.874,
-      "video_end": 48.609
-    },
-    {
-      "line_index": 15,
-      "video_start": 48.869,
-      "video_end": 50.95
-    },
-    {
-      "line_index": 16,
-      "video_start": 50.95,
-      "video_end": 53.031
-    },
-    {
-      "line_index": 17,
-      "video_start": 53.031,
-      "video_end": 53.638
-    },
-    {
-      "line_index": 18,
-      "video_start": 55.199,
-      "video_end": 56.413
-    },
-    {
-      "line_index": 19,
-      "video_start": 56.846,
-      "video_end": 58.841
-    },
-    {
-      "line_index": 20,
-      "video_start": 58.841,
-      "video_end": 59.448
-    },
-    {
-      "line_index": 21,
-      "video_start": 61.095,
-      "video_end": 62.136
-    },
-    {
-      "line_index": 22,
-      "video_start": 62.743,
-      "video_end": 64.65
-    },
-    {
-      "line_index": 23,
-      "video_start": 64.737,
-      "video_end": 66.645
-    },
-    {
-      "line_index": 24,
-      "video_start": 66.731,
-      "video_end": 68.726
-    },
-    {
-      "line_index": 25,
-      "video_start": 68.812,
-      "video_end": 69.853
-    },
-    {
-      "line_index": 26,
-      "video_start": 69.94,
-      "video_end": 70.807
-    },
-    {
-      "line_index": 27,
-      "video_start": 71.847,
-      "video_end": 73.842
-    },
-    {
-      "line_index": 28,
-      "video_start": 73.842,
-      "video_end": 75.749
-    },
-    {
-      "line_index": 29,
-      "video_start": 75.749,
-      "video_end": 76.79
-    },
-    {
-      "line_index": 30,
-      "video_start": 76.79,
-      "video_end": 80.692
-    },
-    {
-      "line_index": 31,
-      "video_start": 92.224,
-      "video_end": 92.658
-    },
-    {
-      "line_index": 32,
-      "video_start": 94.826,
-      "video_end": 96.647
-    },
-    {
-      "line_index": 33,
-      "video_start": 96.647,
-      "video_end": 98.728
-    },
-    {
-      "line_index": 34,
-      "video_start": 98.728,
-      "video_end": 98.901
-    },
-    {
-      "line_index": 35,
-      "video_start": 100.635,
-      "video_end": 102.023
-    },
-    {
-      "line_index": 36,
-      "video_start": 102.803,
-      "video_end": 104.537
-    },
-    {
-      "line_index": 37,
-      "video_start": 104.798,
-      "video_end": 106.879
-    },
-    {
-      "line_index": 38,
-      "video_start": 106.879,
-      "video_end": 108.266
-    },
-    {
-      "line_index": 39,
-      "video_start": 108.266,
-      "video_end": 110.954
-    },
-    {
-      "line_index": 40,
-      "video_start": 110.954,
-      "video_end": 112.688
-    },
-    {
-      "line_index": 41,
-      "video_start": 112.862,
-      "video_end": 114.769
-    },
-    {
-      "line_index": 42,
-      "video_start": 114.769,
-      "video_end": 116.243
-    },
-    {
-      "line_index": 43,
-      "video_start": 116.243,
-      "video_end": 117.631
-    },
-    {
-      "line_index": 44,
-      "video_start": 117.631,
-      "video_end": 119.365
-    },
-    {
-      "line_index": 45,
-      "video_start": 119.452,
-      "video_end": 121.359
-    },
-    {
-      "line_index": 46,
-      "video_start": 121.359,
-      "video_end": 123.094
-    },
-    {
-      "line_index": 47,
-      "video_start": 123.267,
-      "video_end": 124.134
-    },
-    {
-      "line_index": 48,
-      "video_start": 124.481,
-      "video_end": 127.95
-    },
-    {
-      "line_index": 49,
-      "video_start": 138.355,
-      "video_end": 139.656
-    },
-    {
-      "line_index": 50,
-      "video_start": 140.263,
-      "video_end": 141.563
-    },
-    {
-      "line_index": 51,
-      "video_start": 141.91,
-      "video_end": 142.344
-    },
-    {
-      "line_index": 52,
-      "video_start": 143.818,
-      "video_end": 145.205
-    },
-    {
-      "line_index": 53,
-      "video_start": 145.725,
-      "video_end": 146.246
-    },
-    {
-      "line_index": 54,
-      "video_start": 147.806,
-      "video_end": 148.24
-    }
-  ],
-  "karaoke_timing_method": "visual_highlight_progress"
+  ]
 }
