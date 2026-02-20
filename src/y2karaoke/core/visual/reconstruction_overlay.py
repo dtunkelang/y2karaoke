@@ -29,8 +29,7 @@ def _filter_static_overlay_words(
     y_max = max(all_y)
     if (y_max - y_min) < 60.0:
         return raw_frames
-    y_top_cut = y_min + 0.35 * (y_max - y_min)
-    y_bottom_cut = y_min + 0.82 * (y_max - y_min)
+
     all_x = [
         float(w.get("x", 0.0))
         for fr in raw_frames
@@ -38,8 +37,11 @@ def _filter_static_overlay_words(
         if isinstance(w, dict)
     ]
     x_max = max(all_x) if all_x else 0.0
+    y_bottom_cut = y_min + 0.82 * (y_max - y_min)
 
-    static_keys = _identify_static_overlay_keys(stats, total_frames, y_top_cut)
+    static_keys = _identify_static_overlay_keys(
+        stats, total_frames, y_min=y_min, y_max=y_max
+    )
     overlay_roots = _infer_overlay_roots(
         root_frame_counts,
         early_root_frame_counts,
@@ -158,8 +160,13 @@ def _overlay_token_root(token: str) -> str | None:
 def _identify_static_overlay_keys(
     stats: dict[tuple[str, int, int], dict[str, float]],
     total_frames: int,
-    y_top_cut: float,
+    *,
+    y_min: float,
+    y_max: float,
 ) -> set[tuple[str, int, int]]:
+    y_top_zone = y_min + 0.15 * (y_max - y_min)
+    y_bottom_zone = y_min + 0.85 * (y_max - y_min)
+
     static_keys: set[tuple[str, int, int]] = set()
     for key, rec in stats.items():
         n = max(rec["count"], 1.0)
@@ -171,16 +178,11 @@ def _identify_static_overlay_keys(
         std_x = var_x**0.5
         std_y = var_y**0.5
 
-        # More aggressive for stable corner/edge overlays
-        is_stable = std_x <= 12.0 and std_y <= 12.0
-        min_freq = 0.25 if is_stable else 0.45
+        is_stable = std_x <= 8.0 and std_y <= 8.0
+        # Only consider extreme top/bottom zones to avoid lyric collisions
+        is_in_overlay_zone = mean_y <= y_top_zone or mean_y >= y_bottom_zone
 
-        if (
-            freq >= min_freq
-            and std_x <= _OVERLAY_MAX_JITTER_PX
-            and std_y <= _OVERLAY_MAX_JITTER_PX
-            and mean_y <= y_top_cut
-        ):
+        if freq >= 0.7 and is_stable and is_in_overlay_zone:
             static_keys.add(key)
     return static_keys
 
@@ -199,6 +201,6 @@ def _infer_overlay_roots(
         total_cov = count / float(total_frames)
         early_cov = early_root_frame_counts.get(root, 0) / float(max(1, total_frames))
         variants = root_variant_counts.get(root, 0)
-        if total_cov >= 0.2 and early_cov >= 0.12 and variants >= 3:
+        if total_cov >= 0.25 and early_cov >= 0.15 and variants >= 3:
             out.add(root)
     return out

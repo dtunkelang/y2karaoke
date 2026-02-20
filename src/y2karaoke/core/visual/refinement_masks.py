@@ -18,6 +18,8 @@ def word_fill_mask(roi_bgr: np.ndarray, c_bg: np.ndarray) -> np.ndarray:
     """Create a mask for text pixels (foreground)."""
     if cv2 is None or np is None:
         raise ImportError("OpenCV and Numpy required.")
+    if roi_bgr.size == 0:
+        return np.zeros((0, 0), dtype=np.uint8)
 
     dist_bg = np.linalg.norm(roi_bgr - c_bg, axis=2)
     mask = (dist_bg > 35).astype(np.uint8) * 255
@@ -30,6 +32,8 @@ def line_fill_mask(roi_bgr: np.ndarray, c_bg: np.ndarray) -> np.ndarray:
     """Line-level text mask with lower contrast threshold for unselected text."""
     if cv2 is None or np is None:
         raise ImportError("OpenCV and Numpy required.")
+    if roi_bgr.size == 0:
+        return np.zeros((0, 0), dtype=np.uint8)
 
     dist_bg = np.linalg.norm(roi_bgr - c_bg, axis=2)
     mask = (dist_bg > 15).astype(np.uint8) * 255

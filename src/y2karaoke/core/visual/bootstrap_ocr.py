@@ -134,7 +134,7 @@ def _word_box_has_visible_ink(
         gray = crop
 
     _, otsu = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
-    fixed = (gray >= 38).astype(np.uint8) * 255
+    fixed = (gray >= 30).astype(np.uint8) * 255
     mask = np.where((otsu > 0) | (fixed > 0), 1, 0).astype(np.uint8)
     mask = cv2.morphologyEx(
         mask, cv2.MORPH_OPEN, np.ones((2, 2), dtype=np.uint8)
@@ -144,12 +144,13 @@ def _word_box_has_visible_ink(
 
     area = max(1, int(mask.shape[0] * mask.shape[1]))
     ink_ratio = float(mask.sum()) / float(area)
-    min_ratio = 0.008 if area < 700 else 0.012
+    # Extremely lenient thresholds
+    min_ratio = 0.002
     if ink_ratio < min_ratio:
         return False
 
     row_max = int(mask.sum(axis=1).max()) if mask.shape[0] else 0
-    row_gate = max(2, int(round(mask.shape[1] * 0.06)))
+    row_gate = max(1, int(round(mask.shape[1] * 0.02)))
     if row_max < row_gate:
         return False
 
@@ -159,7 +160,7 @@ def _word_box_has_visible_ink(
     if num_labels <= 1:
         return False
     largest = int(max(stats[1:, cv2.CC_STAT_AREA])) if num_labels > 1 else 0
-    if largest < max(6, int(round(area * 0.015))):
+    if largest < max(3, int(round(area * 0.005))):
         return False
     return True
 
@@ -547,11 +548,12 @@ def _suppress_early_banner_words(
             y = float(w.get("y", 0.0))
             ww = float(w.get("w", 0.0))
             hh = float(w.get("h", 0.0))
+            # Only hit REALLY large banner-like text (title/credits)
             is_early_banner_word = (
                 bool(compact)
                 and y <= roi_height * 0.45
-                and hh >= roi_height * 0.12
-                and ww >= roi_width * 0.16
+                and hh >= roi_height * 0.20
+                and ww >= roi_width * 0.25
             )
             if is_early_banner_word:
                 continue
@@ -579,9 +581,9 @@ def _estimate_lyrics_start_time(raw_frames: list[dict[str, Any]]) -> float | Non
     hits: list[float] = []
     for fr in raw_frames:
         words = [w for w in fr.get("words", []) if isinstance(w, dict)]
-        if len(words) < 8:
+        if len(words) < 5:
             continue
-        if _count_dense_line_groups(words) < 3:
+        if _count_dense_line_groups(words) < 2:
             continue
         hits.append(float(fr.get("time", 0.0)))
     if len(hits) < 3:
@@ -605,7 +607,7 @@ def _suppress_intro_title_words(
     for fr in raw_frames:
         t = float(fr.get("time", 0.0))
         if t < cutoff:
-            out.append({**fr, "words": []})
+            out.append({**fr, "words": [], "line_boxes": []})
         else:
             out.append(fr)
     return out
@@ -664,7 +666,7 @@ def _suppress_transient_digit_heavy_frames(
         if overlap > 0.2:
             continue
 
-        out[i] = {**fr, "words": []}
+        out[i] = {**fr, "words": [], "line_boxes": []}
     return out
 
 
