@@ -72,6 +72,7 @@ This document outlines the critical areas of the `y2karaoke` codebase and the im
 *   **In progress:** Continued Whisper post-processing decomposition by moving first-word onset snap logic into `components/whisper/whisper_mapping_post_onset.py` with compatibility wrapper in `whisper_mapping_post.py`.
 *   **In progress:** Continued Whisper mapping decomposition by moving mapped-line assembly logic into `components/whisper/whisper_mapping_pipeline_assembly.py` with compatibility wrapper in `whisper_mapping_pipeline.py`.
 *   **In progress:** Continued Whisper mapping decomposition by moving top-level line orchestration into `components/whisper/whisper_mapping_pipeline_orchestration.py` with compatibility wrapper in `whisper_mapping_pipeline.py`.
+*   **In progress:** Continued visual reconstruction decomposition by moving mirrored-lane cycle extrapolation helpers into `visual/reconstruction_mirrored_cycles.py` with compatibility wrappers in `visual/reconstruction.py`.
 
 **Action Plan:**
 *   **Consolidate:** Keep singer-color policy in a dedicated module and avoid duplicating it in frame drawing code.
@@ -88,4 +89,4 @@ This document outlines the critical areas of the `y2karaoke` codebase and the im
 ---
 
 **Next Immediate Step:**
-Continue Whisper alignment decomposition by extracting the next cohesive helper cluster from `whisper_alignment_refinement.py` into focused modules with compatibility wrappers.
+Continue visual reconstruction decomposition by extracting the next cohesive helper cluster from `visual/reconstruction.py` into focused modules with compatibility wrappers.
