@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Callable
+from typing import Any, Callable, Optional
 
 from ..models import TargetLine
 from .reconstruction_frame_accumulation import accumulate_persistent_lines_from_frames
@@ -23,7 +23,9 @@ def reconstruct_lyrics_from_visuals(  # noqa: C901
     split_persistent_line_epochs_from_context_transitions: EntriesPass,
     suppress_short_duplicate_reentries: EntriesPass,
     collapse_short_refrain_noise: EntriesPass,
-    filter_intro_non_lyrics: Callable[[list[dict[str, Any]], Optional[str]], list[dict[str, Any]]],
+    filter_intro_non_lyrics: Callable[
+        [list[dict[str, Any]], Optional[str]], list[dict[str, Any]]
+    ],
     suppress_bottom_fragment_families: EntriesPass,
     snap_fn: SnapFn,
     artist: Optional[str] = None,

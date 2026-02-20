@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Optional
 
-from ..text_utils import normalize_text_basic
+from ..text_utils import LYRIC_FUNCTION_WORDS, normalize_text_basic
 
 _INTRO_META_KEYWORDS = {
     "karaoke",
@@ -34,32 +34,6 @@ _INTRO_META_KEYWORDS = {
     "distributed",
     "copyright",
     "reserved",
-}
-
-_LYRIC_FUNCTION_WORDS = {
-    "a",
-    "an",
-    "and",
-    "are",
-    "dont",
-    "for",
-    "i",
-    "im",
-    "in",
-    "is",
-    "it",
-    "me",
-    "my",
-    "of",
-    "oh",
-    "on",
-    "so",
-    "the",
-    "to",
-    "we",
-    "yeah",
-    "you",
-    "your",
 }
 
 
@@ -113,7 +87,7 @@ def is_intro_artifact(entry: dict[str, Any], artist: Optional[str] = None) -> bo
     )
     if all_title_case and first_t < 15.0:
         words_l = [w.lower() for w in compact_words]
-        if all(w not in _LYRIC_FUNCTION_WORDS for w in words_l):
+        if all(w not in LYRIC_FUNCTION_WORDS for w in words_l):
             return True
 
     if len(words) <= 2 and duration < 1.1 and "'" not in text and "-" not in text:

@@ -156,6 +156,54 @@ STOP_WORDS = {
 }
 
 
+LYRIC_FUNCTION_WORDS = {
+    "a",
+    "an",
+    "and",
+    "are",
+    "as",
+    "at",
+    "be",
+    "but",
+    "by",
+    "can",
+    "do",
+    "dont",
+    "for",
+    "from",
+    "have",
+    "he",
+    "her",
+    "his",
+    "i",
+    "if",
+    "im",
+    "in",
+    "is",
+    "it",
+    "me",
+    "my",
+    "no",
+    "not",
+    "of",
+    "oh",
+    "on",
+    "or",
+    "she",
+    "so",
+    "the",
+    "they",
+    "this",
+    "to",
+    "was",
+    "we",
+    "with",
+    "yeah",
+    "you",
+    "your",
+}
+
+
 def normalize_text_basic(text: str) -> str:
     """Basic normalization: lowercase, strip non-alphanumeric (except quotes/spaces)."""
     if not text:

@@ -6,7 +6,6 @@ from pathlib import Path
 from typing import Any, Callable, Optional
 from urllib.parse import parse_qs, urlparse
 
-
 _PREFERRED_BRANDS = {
     "sing king",
     "karafun",

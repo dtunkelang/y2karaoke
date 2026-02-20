@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Optional
 
 from ..models import TargetLine
 from .reconstruction_mirrored_cycles import (

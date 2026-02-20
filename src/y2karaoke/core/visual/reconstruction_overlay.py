@@ -168,10 +168,17 @@ def _identify_static_overlay_keys(
         mean_y = rec["sum_y"] / n
         var_x = max(rec["sum_x2"] / n - mean_x * mean_x, 0.0)
         var_y = max(rec["sum_y2"] / n - mean_y * mean_y, 0.0)
+        std_x = var_x**0.5
+        std_y = var_y**0.5
+
+        # More aggressive for stable corner/edge overlays
+        is_stable = std_x <= 12.0 and std_y <= 12.0
+        min_freq = 0.25 if is_stable else 0.45
+
         if (
-            freq >= 0.45
-            and (var_x**0.5) <= _OVERLAY_MAX_JITTER_PX
-            and (var_y**0.5) <= _OVERLAY_MAX_JITTER_PX
+            freq >= min_freq
+            and std_x <= _OVERLAY_MAX_JITTER_PX
+            and std_y <= _OVERLAY_MAX_JITTER_PX
             and mean_y <= y_top_cut
         ):
             static_keys.add(key)
