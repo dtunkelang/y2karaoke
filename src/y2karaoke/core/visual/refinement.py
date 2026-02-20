@@ -96,33 +96,26 @@ from .refinement_jobs import (
 from .refinement_line_assignment import (
     assign_line_level_word_timings as _assign_line_level_word_timings_impl,
 )
+from .refinement_masks import (
+    collect_line_color_values as _collect_line_color_values_impl,
+)
+from .refinement_masks import (
+    line_fill_mask as _line_fill_mask_impl,
+)
+from .refinement_masks import (
+    word_fill_mask as _word_fill_mask_impl,
+)
 
 logger = logging.getLogger(__name__)
 _MAX_MERGED_WINDOW_SEC = 20.0
 
 
 def _word_fill_mask(roi_bgr: np.ndarray, c_bg: np.ndarray) -> np.ndarray:
-    """Create a mask for text pixels (foreground)."""
-    if cv2 is None or np is None:
-        raise ImportError("OpenCV and Numpy required.")
-
-    dist_bg = np.linalg.norm(roi_bgr - c_bg, axis=2)
-    mask = (dist_bg > 35).astype(np.uint8) * 255
-    mask = cv2.medianBlur(mask, 3)
-    mask = cv2.erode(mask, np.ones((3, 3), np.uint8), iterations=2)
-    return mask
+    return _word_fill_mask_impl(roi_bgr, c_bg)
 
 
 def _line_fill_mask(roi_bgr: np.ndarray, c_bg: np.ndarray) -> np.ndarray:
-    """Line-level text mask with lower contrast threshold for unselected text."""
-    if cv2 is None or np is None:
-        raise ImportError("OpenCV and Numpy required.")
-
-    dist_bg = np.linalg.norm(roi_bgr - c_bg, axis=2)
-    mask = (dist_bg > 15).astype(np.uint8) * 255
-    mask = cv2.medianBlur(mask, 3)
-    mask = cv2.erode(mask, np.ones((3, 3), np.uint8), iterations=2)
-    return mask
+    return _line_fill_mask_impl(roi_bgr, c_bg)
 
 
 def _detect_highlight_times(
@@ -239,50 +232,12 @@ def _collect_line_color_values(
     line_frames: List[Tuple[float, np.ndarray, np.ndarray]],
     c_bg_line: np.ndarray,
 ) -> List[Dict[str, Any]]:
-    if cv2 is None or np is None:
-        raise ImportError("OpenCV and Numpy required.")
-    if not ln.word_rois:
-        return []
-
-    x1 = min(wx for wx, _, _, _ in ln.word_rois)
-    y1 = min(wy for _, wy, _, _ in ln.word_rois)
-    x2 = max(wx + ww for wx, _, ww, _ in ln.word_rois)
-    y2 = max(wy + wh for _, wy, _, wh in ln.word_rois)
-
-    vals: List[Dict[str, Any]] = []
-    for t, roi_bgr, roi_lab in line_frames:
-        x_lo = max(0, x1)
-        y_lo = max(0, y1)
-        x_hi = min(roi_bgr.shape[1], x2)
-        y_hi = min(roi_bgr.shape[0], y2)
-        if x_hi <= x_lo or y_hi <= y_lo:
-            continue
-        line_roi_bgr = roi_bgr[y_lo:y_hi, x_lo:x_hi]
-        line_mask = _line_fill_mask(line_roi_bgr, c_bg_line)
-        mask_count = int(np.sum(line_mask > 0))
-        if mask_count <= 30:
-            # Keep visibility tracking alive with a relaxed foreground estimate.
-            dist_bg = np.linalg.norm(line_roi_bgr - c_bg_line, axis=2)
-            relaxed_mask = (dist_bg > 8).astype(np.uint8) * 255
-            relaxed_count = int(np.sum(relaxed_mask > 0))
-            if relaxed_count > 20:
-                line_mask = relaxed_mask
-                mask_count = relaxed_count
-            else:
-                line_mask = np.ones(line_roi_bgr.shape[:2], dtype=np.uint8) * 255
-                mask_count = int(np.sum(line_mask > 0))
-        line_roi_lab = roi_lab[y_lo:y_hi, x_lo:x_hi]
-        vals.append(
-            {
-                "t": t,
-                "mask": line_mask,
-                "lab": line_roi_lab,
-                "avg": line_roi_lab[line_mask.astype(bool)].mean(axis=0),
-                "coverage": float(mask_count)
-                / float(max(1, line_mask.shape[0] * line_mask.shape[1])),
-            }
-        )
-    return vals
+    return _collect_line_color_values_impl(
+        ln,
+        line_frames,
+        c_bg_line,
+        line_fill_mask_fn=_line_fill_mask,
+    )
 
 
 def _estimate_onset_from_visibility_progress(
