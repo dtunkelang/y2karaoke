@@ -168,12 +168,16 @@ def infer_lyric_colors(
             np.array([0, 0, 0]),
         )
 
-    centers = cluster_colors(pixel_samples, k=2)
-    # Sort by brightness (mean channel value). Usually unselected is brighter (white).
+    centers = cluster_colors(pixel_samples, k=3)
+    # Sort by brightness (mean channel value).
+    # Typical Karafun: [Brightest (White), Mid (Dimmed/Blue), Darkest (Blue/Background)]
+    # Typical SingKing: [Brightest (White), Darker (Selected), ...]
     centers.sort(key=lambda c: np.mean(c), reverse=True)
 
-    # Heuristic: First is unselected (Bright), Second is selected (Dark/Color)
-    # Note: This heuristic might fail for "Dark Mode" karaoke.
+    # Heuristic:
+    # centers[0] is likely the 'Unselected' (brightest white).
+    # centers[1] is likely the 'Selected' or 'Dimmed' state.
+    # If we have k=3, we can be more robust.
     return centers[0], centers[1], np.array([0, 0, 0])
 
 

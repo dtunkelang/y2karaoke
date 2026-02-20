@@ -95,44 +95,83 @@
     },
     {
       "line_index": 2,
-      "text": "Dreaming about the things that",
+      "text": "losing sleep",
       "start": 11.3,
-      "end": 12.0,
+      "end": 11.55,
+      "confidence": 0.835,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "losing",
+          "start": 11.3,
+          "end": 11.4,
+          "confidence": 0.835
+        },
+        {
+          "word_index": 2,
+          "text": "sleep",
+          "start": 11.45,
+          "end": 11.55,
+          "confidence": 0.835
+        }
+      ],
+      "y": 89,
+      "word_rois": [
+        [
+          173,
+          89,
+          95,
+          36
+        ],
+        [
+          272,
+          89,
+          82,
+          37
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 3,
+      "text": "Dreaming about the things that",
+      "start": 12.1,
+      "end": 12.8,
       "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
           "text": "Dreaming",
-          "start": 11.3,
-          "end": 11.4,
+          "start": 12.1,
+          "end": 12.2,
           "confidence": 0.5
         },
         {
           "word_index": 2,
           "text": "about",
-          "start": 11.45,
-          "end": 11.55,
+          "start": 12.25,
+          "end": 12.35,
           "confidence": 0.5
         },
         {
           "word_index": 3,
           "text": "the",
-          "start": 11.6,
-          "end": 11.7,
+          "start": 12.4,
+          "end": 12.5,
           "confidence": 0.5
         },
         {
           "word_index": 4,
           "text": "things",
-          "start": 11.75,
-          "end": 11.85,
+          "start": 12.55,
+          "end": 12.65,
           "confidence": 0.5
         },
         {
           "word_index": 5,
           "text": "that",
-          "start": 11.9,
-          "end": 12.0,
+          "start": 12.7,
+          "end": 12.8,
           "confidence": 0.5
         }
       ],
@@ -172,31 +211,31 @@
       "char_rois": []
     },
     {
-      "line_index": 3,
+      "line_index": 4,
       "text": "we could be",
-      "start": 12.65,
-      "end": 13.35,
+      "start": 14.05,
+      "end": 14.75,
       "confidence": 0.228,
       "words": [
         {
           "word_index": 1,
           "text": "we",
-          "start": 12.65,
-          "end": 12.75,
+          "start": 14.05,
+          "end": 14.15,
           "confidence": 0.228
         },
         {
           "word_index": 2,
           "text": "could",
-          "start": 12.8,
-          "end": 12.9,
+          "start": 14.2,
+          "end": 14.3,
           "confidence": 0.228
         },
         {
           "word_index": 3,
           "text": "be",
-          "start": 12.95,
-          "end": 13.05,
+          "start": 14.35,
+          "end": 14.45,
           "confidence": 0.228
         }
       ],
@@ -219,45 +258,6 @@
           231,
           44,
           30
-        ]
-      ],
-      "char_rois": []
-    },
-    {
-      "line_index": 4,
-      "text": "losing sleep",
-      "start": 14.05,
-      "end": 14.75,
-      "confidence": 0.5,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "losing",
-          "start": 14.05,
-          "end": 14.3,
-          "confidence": 0.5
-        },
-        {
-          "word_index": 2,
-          "text": "sleep",
-          "start": 14.35,
-          "end": 14.55,
-          "confidence": 0.5
-        }
-      ],
-      "y": 91,
-      "word_rois": [
-        [
-          173,
-          91,
-          94,
-          34
-        ],
-        [
-          271,
-          91,
-          83,
-          34
         ]
       ],
       "char_rois": []
@@ -1318,51 +1318,51 @@
     {
       "line_index": 20,
       "text": "Old but I'm not that old",
-      "start": 59.9,
-      "end": 62.05,
-      "confidence": 0.5,
+      "start": 59.85,
+      "end": 61.9,
+      "confidence": 0.228,
       "words": [
         {
           "word_index": 1,
           "text": "Old",
-          "start": 59.9,
-          "end": 60.0,
-          "confidence": 0.5
+          "start": 59.85,
+          "end": 59.95,
+          "confidence": 0.228
         },
         {
           "word_index": 2,
           "text": "but",
-          "start": 60.05,
-          "end": 60.15,
-          "confidence": 0.5
+          "start": 60.0,
+          "end": 60.1,
+          "confidence": 0.228
         },
         {
           "word_index": 3,
           "text": "I'm",
-          "start": 60.2,
-          "end": 60.55,
-          "confidence": 0.5
+          "start": 60.15,
+          "end": 60.45,
+          "confidence": 0.228
         },
         {
           "word_index": 4,
           "text": "not",
-          "start": 60.6,
-          "end": 61.05,
-          "confidence": 0.5
+          "start": 60.5,
+          "end": 60.95,
+          "confidence": 0.228
         },
         {
           "word_index": 5,
           "text": "that",
-          "start": 61.1,
-          "end": 61.55,
-          "confidence": 0.5
+          "start": 61.0,
+          "end": 61.45,
+          "confidence": 0.228
         },
         {
           "word_index": 6,
           "text": "old",
-          "start": 61.6,
-          "end": 62.05,
-          "confidence": 0.5
+          "start": 61.5,
+          "end": 61.9,
+          "confidence": 0.228
         }
       ],
       "y": 89,
@@ -1408,142 +1408,51 @@
     },
     {
       "line_index": 21,
-      "text": "Old but I'm not that old",
-      "start": 62.1,
-      "end": 63.3,
-      "confidence": 0.5,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "Old",
-          "start": 62.1,
-          "end": 62.25,
-          "confidence": 0.5
-        },
-        {
-          "word_index": 2,
-          "text": "but",
-          "start": 62.3,
-          "end": 62.45,
-          "confidence": 0.5
-        },
-        {
-          "word_index": 3,
-          "text": "I'm",
-          "start": 62.5,
-          "end": 62.65,
-          "confidence": 0.5
-        },
-        {
-          "word_index": 4,
-          "text": "not",
-          "start": 62.7,
-          "end": 62.85,
-          "confidence": 0.5
-        },
-        {
-          "word_index": 5,
-          "text": "that",
-          "start": 62.9,
-          "end": 63.05,
-          "confidence": 0.5
-        },
-        {
-          "word_index": 6,
-          "text": "old",
-          "start": 63.1,
-          "end": 63.3,
-          "confidence": 0.5
-        }
-      ],
-      "y": 89,
-      "word_rois": [
-        [
-          88,
-          89,
-          61,
-          38
-        ],
-        [
-          154,
-          89,
-          52,
-          38
-        ],
-        [
-          211,
-          89,
-          48,
-          38
-        ],
-        [
-          263,
-          89,
-          53,
-          38
-        ],
-        [
-          320,
-          89,
-          67,
-          38
-        ],
-        [
-          391,
-          89,
-          50,
-          38
-        ]
-      ],
-      "char_rois": []
-    },
-    {
-      "line_index": 22,
       "text": "I'm just doing what we're told",
-      "start": 63.3,
-      "end": 64.15,
+      "start": 62.0,
+      "end": 62.9,
       "confidence": 0.45,
       "words": [
         {
           "word_index": 1,
           "text": "I'm",
-          "start": 63.3,
-          "end": 63.4,
+          "start": 62.0,
+          "end": 62.1,
           "confidence": 0.45
         },
         {
           "word_index": 2,
           "text": "just",
-          "start": 63.45,
-          "end": 63.55,
+          "start": 62.15,
+          "end": 62.3,
           "confidence": 0.45
         },
         {
           "word_index": 3,
           "text": "doing",
-          "start": 63.6,
-          "end": 63.7,
+          "start": 62.35,
+          "end": 62.45,
           "confidence": 0.45
         },
         {
           "word_index": 4,
           "text": "what",
-          "start": 63.75,
-          "end": 63.85,
+          "start": 62.5,
+          "end": 62.6,
           "confidence": 0.45
         },
         {
           "word_index": 5,
           "text": "we're",
-          "start": 63.9,
-          "end": 64.0,
+          "start": 62.65,
+          "end": 62.75,
           "confidence": 0.45
         },
         {
           "word_index": 6,
           "text": "told",
-          "start": 64.05,
-          "end": 64.15,
+          "start": 62.8,
+          "end": 62.9,
           "confidence": 0.45
         }
       ],
@@ -1589,45 +1498,45 @@
       "char_rois": []
     },
     {
-      "line_index": 23,
+      "line_index": 22,
       "text": "I feel something so right",
-      "start": 64.15,
-      "end": 64.85,
+      "start": 62.9,
+      "end": 63.6,
       "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
           "text": "I",
-          "start": 64.15,
-          "end": 64.25,
+          "start": 62.9,
+          "end": 63.0,
           "confidence": 0.5
         },
         {
           "word_index": 2,
           "text": "feel",
-          "start": 64.3,
-          "end": 64.4,
+          "start": 63.05,
+          "end": 63.15,
           "confidence": 0.5
         },
         {
           "word_index": 3,
           "text": "something",
-          "start": 64.45,
-          "end": 64.55,
+          "start": 63.2,
+          "end": 63.3,
           "confidence": 0.5
         },
         {
           "word_index": 4,
           "text": "so",
-          "start": 64.6,
-          "end": 64.7,
+          "start": 63.35,
+          "end": 63.45,
           "confidence": 0.5
         },
         {
           "word_index": 5,
           "text": "right",
-          "start": 64.75,
-          "end": 64.85,
+          "start": 63.5,
+          "end": 63.6,
           "confidence": 0.5
         }
       ],
@@ -1667,38 +1576,38 @@
       "char_rois": []
     },
     {
-      "line_index": 24,
+      "line_index": 23,
       "text": "Doing the wrong thing",
-      "start": 64.85,
-      "end": 65.4,
+      "start": 64.0,
+      "end": 64.7,
       "confidence": 0.45,
       "words": [
         {
           "word_index": 1,
           "text": "Doing",
-          "start": 64.85,
-          "end": 64.95,
+          "start": 64.0,
+          "end": 64.1,
           "confidence": 0.45
         },
         {
           "word_index": 2,
           "text": "the",
-          "start": 65.0,
-          "end": 65.1,
+          "start": 64.15,
+          "end": 64.25,
           "confidence": 0.45
         },
         {
           "word_index": 3,
           "text": "wrong",
-          "start": 65.15,
-          "end": 65.25,
+          "start": 64.3,
+          "end": 64.4,
           "confidence": 0.45
         },
         {
           "word_index": 4,
           "text": "thing",
-          "start": 65.3,
-          "end": 65.4,
+          "start": 64.45,
+          "end": 64.55,
           "confidence": 0.45
         }
       ],
@@ -1732,45 +1641,45 @@
       "char_rois": []
     },
     {
-      "line_index": 25,
+      "line_index": 24,
       "text": "I feel something so wrong",
-      "start": 66.25,
-      "end": 66.95,
+      "start": 65.25,
+      "end": 65.95,
       "confidence": 0.45,
       "words": [
         {
           "word_index": 1,
           "text": "I",
-          "start": 66.25,
-          "end": 66.35,
+          "start": 65.25,
+          "end": 65.35,
           "confidence": 0.45
         },
         {
           "word_index": 2,
           "text": "feel",
-          "start": 66.4,
-          "end": 66.5,
+          "start": 65.4,
+          "end": 65.5,
           "confidence": 0.45
         },
         {
           "word_index": 3,
           "text": "something",
-          "start": 66.55,
-          "end": 66.65,
+          "start": 65.55,
+          "end": 65.65,
           "confidence": 0.45
         },
         {
           "word_index": 4,
           "text": "so",
-          "start": 66.7,
-          "end": 66.8,
+          "start": 65.7,
+          "end": 65.8,
           "confidence": 0.45
         },
         {
           "word_index": 5,
           "text": "wrong",
-          "start": 66.85,
-          "end": 66.95,
+          "start": 65.85,
+          "end": 65.95,
           "confidence": 0.45
         }
       ],
@@ -1810,45 +1719,45 @@
       "char_rois": []
     },
     {
-      "line_index": 26,
+      "line_index": 25,
       "text": "I feel something so right",
-      "start": 72.6,
-      "end": 75.0,
+      "start": 66.4,
+      "end": 68.8,
       "confidence": 0.228,
       "words": [
         {
           "word_index": 1,
           "text": "I",
-          "start": 72.6,
-          "end": 72.9,
+          "start": 66.4,
+          "end": 66.7,
           "confidence": 0.228
         },
         {
           "word_index": 2,
           "text": "feel",
-          "start": 72.95,
-          "end": 73.4,
+          "start": 66.75,
+          "end": 67.2,
           "confidence": 0.228
         },
         {
           "word_index": 3,
           "text": "something",
-          "start": 73.45,
-          "end": 74.05,
+          "start": 67.25,
+          "end": 67.85,
           "confidence": 0.228
         },
         {
           "word_index": 4,
           "text": "so",
-          "start": 74.1,
-          "end": 74.45,
+          "start": 67.9,
+          "end": 68.25,
           "confidence": 0.228
         },
         {
           "word_index": 5,
           "text": "right",
-          "start": 74.5,
-          "end": 75.0,
+          "start": 68.3,
+          "end": 68.8,
           "confidence": 0.228
         }
       ],
@@ -1888,7 +1797,7 @@
       "char_rois": []
     },
     {
-      "line_index": 27,
+      "line_index": 26,
       "text": "Doing the right thing",
       "start": 76.5,
       "end": 77.5,
@@ -1953,7 +1862,7 @@
       "char_rois": []
     },
     {
-      "line_index": 28,
+      "line_index": 27,
       "text": "I could lie could lie could lie",
       "start": 77.5,
       "end": 78.9,
@@ -2057,7 +1966,7 @@
       "char_rois": []
     },
     {
-      "line_index": 29,
+      "line_index": 28,
       "text": "Everything that kills me makes",
       "start": 78.9,
       "end": 79.6,
@@ -2135,7 +2044,7 @@
       "char_rois": []
     },
     {
-      "line_index": 30,
+      "line_index": 29,
       "text": "me feel alive",
       "start": 79.6,
       "end": 80.0,
@@ -2187,46 +2096,46 @@
       "char_rois": []
     },
     {
-      "line_index": 31,
+      "line_index": 30,
       "text": "Lately I've been l've been",
-      "start": 87.7,
-      "end": 88.7,
-      "confidence": 0.5,
+      "start": 89.4,
+      "end": 90.45,
+      "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "Lately",
-          "start": 87.7,
-          "end": 87.85,
-          "confidence": 0.5
+          "start": 89.4,
+          "end": 89.6,
+          "confidence": 0.252
         },
         {
           "word_index": 2,
           "text": "I've",
-          "start": 87.9,
-          "end": 88.05,
-          "confidence": 0.5
+          "start": 89.65,
+          "end": 89.8,
+          "confidence": 0.252
         },
         {
           "word_index": 3,
           "text": "been",
-          "start": 88.1,
-          "end": 88.25,
-          "confidence": 0.5
+          "start": 89.85,
+          "end": 90.05,
+          "confidence": 0.252
         },
         {
           "word_index": 4,
           "text": "l've",
-          "start": 88.3,
-          "end": 88.45,
-          "confidence": 0.5
+          "start": 90.1,
+          "end": 90.25,
+          "confidence": 0.252
         },
         {
           "word_index": 5,
           "text": "been",
-          "start": 88.5,
-          "end": 88.7,
-          "confidence": 0.5
+          "start": 90.3,
+          "end": 90.45,
+          "confidence": 0.252
         }
       ],
       "y": 19,
@@ -2265,25 +2174,25 @@
       "char_rois": []
     },
     {
-      "line_index": 32,
+      "line_index": 31,
       "text": "losing sleep",
-      "start": 88.7,
-      "end": 88.95,
-      "confidence": 0.5,
+      "start": 90.45,
+      "end": 91.75,
+      "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "losing",
-          "start": 88.7,
-          "end": 88.8,
-          "confidence": 0.5
+          "start": 90.45,
+          "end": 91.1,
+          "confidence": 0.252
         },
         {
           "word_index": 2,
           "text": "sleep",
-          "start": 88.85,
-          "end": 88.95,
-          "confidence": 0.5
+          "start": 91.15,
+          "end": 91.75,
+          "confidence": 0.252
         }
       ],
       "y": 89,
@@ -2304,46 +2213,46 @@
       "char_rois": []
     },
     {
-      "line_index": 33,
+      "line_index": 32,
       "text": "Dreaming about the things that",
-      "start": 91.85,
-      "end": 92.55,
-      "confidence": 0.5,
+      "start": 92.0,
+      "end": 92.7,
+      "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "Dreaming",
-          "start": 91.85,
-          "end": 91.95,
-          "confidence": 0.5
+          "start": 92.0,
+          "end": 92.1,
+          "confidence": 0.252
         },
         {
           "word_index": 2,
           "text": "about",
-          "start": 92.0,
-          "end": 92.1,
-          "confidence": 0.5
+          "start": 92.15,
+          "end": 92.25,
+          "confidence": 0.252
         },
         {
           "word_index": 3,
           "text": "the",
-          "start": 92.15,
-          "end": 92.25,
-          "confidence": 0.5
+          "start": 92.3,
+          "end": 92.4,
+          "confidence": 0.252
         },
         {
           "word_index": 4,
           "text": "things",
-          "start": 92.3,
-          "end": 92.4,
-          "confidence": 0.5
+          "start": 92.45,
+          "end": 92.55,
+          "confidence": 0.252
         },
         {
           "word_index": 5,
           "text": "that",
-          "start": 92.45,
-          "end": 92.55,
-          "confidence": 0.5
+          "start": 92.6,
+          "end": 92.7,
+          "confidence": 0.252
         }
       ],
       "y": 157,
@@ -2382,31 +2291,31 @@
       "char_rois": []
     },
     {
-      "line_index": 34,
+      "line_index": 33,
       "text": "we could be",
-      "start": 93.9,
-      "end": 94.8,
+      "start": 93.5,
+      "end": 94.2,
       "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "we",
-          "start": 93.9,
-          "end": 94.15,
+          "start": 93.5,
+          "end": 93.6,
           "confidence": 0.252
         },
         {
           "word_index": 2,
           "text": "could",
-          "start": 94.2,
-          "end": 94.5,
+          "start": 93.65,
+          "end": 93.75,
           "confidence": 0.252
         },
         {
           "word_index": 3,
           "text": "be",
-          "start": 94.55,
-          "end": 94.8,
+          "start": 93.8,
+          "end": 93.9,
           "confidence": 0.252
         }
       ],
@@ -2434,63 +2343,115 @@
       "char_rois": []
     },
     {
-      "line_index": 35,
-      "text": "losing sleep",
-      "start": 94.8,
-      "end": 95.05,
-      "confidence": 0.228,
+      "line_index": 34,
+      "text": "But baby I've been I've been",
+      "start": 95.05,
+      "end": 96.25,
+      "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
-          "text": "losing",
-          "start": 94.8,
-          "end": 94.9,
-          "confidence": 0.228
+          "text": "But",
+          "start": 95.05,
+          "end": 95.2,
+          "confidence": 0.5
         },
         {
           "word_index": 2,
-          "text": "sleep",
-          "start": 94.95,
-          "end": 95.05,
-          "confidence": 0.228
+          "text": "baby",
+          "start": 95.25,
+          "end": 95.4,
+          "confidence": 0.5
+        },
+        {
+          "word_index": 3,
+          "text": "I've",
+          "start": 95.45,
+          "end": 95.6,
+          "confidence": 0.5
+        },
+        {
+          "word_index": 4,
+          "text": "been",
+          "start": 95.65,
+          "end": 95.85,
+          "confidence": 0.5
+        },
+        {
+          "word_index": 5,
+          "text": "I've",
+          "start": 95.9,
+          "end": 96.05,
+          "confidence": 0.5
+        },
+        {
+          "word_index": 6,
+          "text": "been",
+          "start": 96.1,
+          "end": 96.25,
+          "confidence": 0.5
         }
       ],
-      "y": 89,
+      "y": 19,
       "word_rois": [
         [
-          171,
-          89,
-          95,
-          37
+          58,
+          19,
+          52,
+          38
         ],
         [
-          270,
-          89,
-          84,
-          36
+          115,
+          19,
+          71,
+          38
+        ],
+        [
+          190,
+          19,
+          53,
+          38
+        ],
+        [
+          248,
+          19,
+          85,
+          38
+        ],
+        [
+          338,
+          19,
+          52,
+          38
+        ],
+        [
+          395,
+          19,
+          88,
+          38
         ]
       ],
       "char_rois": []
     },
     {
-      "line_index": 36,
+      "line_index": 35,
       "text": "praying hard",
-      "start": 95.9,
-      "end": 96.9,
+      "start": 96.25,
+      "end": 96.5,
       "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
           "text": "praying",
-          "start": 95.9,
-          "end": 96.4,
+          "start": 96.25,
+          "end": 96.35,
           "confidence": 0.5
         },
         {
           "word_index": 2,
           "text": "hard",
-          "start": 96.45,
-          "end": 96.9,
+          "start": 96.4,
+          "end": 96.5,
           "confidence": 0.5
         }
       ],
@@ -2512,46 +2473,46 @@
       "char_rois": []
     },
     {
-      "line_index": 37,
+      "line_index": 36,
       "text": "Said no more counting dollars",
-      "start": 98.6,
-      "end": 103.05,
-      "confidence": 0.5,
+      "start": 98.5,
+      "end": 102.05,
+      "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "Said",
-          "start": 98.6,
-          "end": 98.7,
-          "confidence": 0.5
+          "start": 98.5,
+          "end": 98.8,
+          "confidence": 0.252
         },
         {
           "word_index": 2,
           "text": "no",
-          "start": 98.75,
-          "end": 99.55,
-          "confidence": 0.5
+          "start": 98.85,
+          "end": 99.4,
+          "confidence": 0.252
         },
         {
           "word_index": 3,
           "text": "more",
-          "start": 99.6,
-          "end": 100.4,
-          "confidence": 0.5
+          "start": 99.45,
+          "end": 100.2,
+          "confidence": 0.252
         },
         {
           "word_index": 4,
           "text": "counting",
-          "start": 100.7,
-          "end": 101.5,
-          "confidence": 0.5
+          "start": 100.25,
+          "end": 101.05,
+          "confidence": 0.252
         },
         {
           "word_index": 5,
           "text": "dollars",
-          "start": 102.25,
-          "end": 103.05,
-          "confidence": 0.5
+          "start": 101.25,
+          "end": 102.05,
+          "confidence": 0.252
         }
       ],
       "y": 159,
@@ -2590,39 +2551,39 @@
       "char_rois": []
     },
     {
-      "line_index": 38,
+      "line_index": 37,
       "text": "We'll be counting stars",
-      "start": 100.5,
-      "end": 101.05,
-      "confidence": 0.5,
+      "start": 100.25,
+      "end": 101.15,
+      "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "We'll",
-          "start": 100.5,
-          "end": 100.6,
-          "confidence": 0.5
+          "start": 100.25,
+          "end": 100.45,
+          "confidence": 0.252
         },
         {
           "word_index": 2,
           "text": "be",
-          "start": 100.65,
-          "end": 100.75,
-          "confidence": 0.5
+          "start": 100.5,
+          "end": 100.65,
+          "confidence": 0.252
         },
         {
           "word_index": 3,
           "text": "counting",
-          "start": 100.8,
+          "start": 100.7,
           "end": 100.9,
-          "confidence": 0.5
+          "confidence": 0.252
         },
         {
           "word_index": 4,
           "text": "stars",
           "start": 100.95,
-          "end": 101.05,
-          "confidence": 0.5
+          "end": 101.15,
+          "confidence": 0.252
         }
       ],
       "y": 229,
@@ -2655,137 +2616,124 @@
       "char_rois": []
     },
     {
-      "line_index": 39,
-      "text": "But baby I've been l've been",
-      "start": 101.05,
-      "end": 101.9,
-      "confidence": 0.5,
+      "line_index": 38,
+      "text": "Lately I've peen l've been",
+      "start": 103.25,
+      "end": 104.25,
+      "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
-          "text": "But",
-          "start": 101.05,
-          "end": 101.15,
-          "confidence": 0.5
+          "text": "Lately",
+          "start": 103.25,
+          "end": 103.4,
+          "confidence": 0.252
         },
         {
           "word_index": 2,
-          "text": "baby",
-          "start": 101.2,
-          "end": 101.3,
-          "confidence": 0.5
+          "text": "I've",
+          "start": 103.45,
+          "end": 103.6,
+          "confidence": 0.252
         },
         {
           "word_index": 3,
-          "text": "I've",
-          "start": 101.35,
-          "end": 101.45,
-          "confidence": 0.5
+          "text": "peen",
+          "start": 103.65,
+          "end": 103.85,
+          "confidence": 0.252
         },
         {
           "word_index": 4,
-          "text": "been",
-          "start": 101.5,
-          "end": 101.6,
-          "confidence": 0.5
+          "text": "l've",
+          "start": 103.9,
+          "end": 104.05,
+          "confidence": 0.252
         },
         {
           "word_index": 5,
-          "text": "l've",
-          "start": 101.65,
-          "end": 101.75,
-          "confidence": 0.5
-        },
-        {
-          "word_index": 6,
           "text": "been",
-          "start": 101.8,
-          "end": 101.9,
-          "confidence": 0.5
+          "start": 104.1,
+          "end": 104.25,
+          "confidence": 0.252
         }
       ],
       "y": 21,
       "word_rois": [
         [
-          58,
+          78,
           21,
-          49,
-          36
+          84,
+          40
         ],
         [
-          112,
+          168,
           21,
-          76,
-          36
+          55,
+          40
         ],
         [
-          193,
+          228,
           21,
-          54,
-          36
+          85,
+          40
         ],
         [
-          251,
+          318,
+          21,
+          50,
+          40
+        ],
+        [
+          372,
           21,
           81,
-          36
-        ],
-        [
-          337,
-          21,
-          53,
-          36
-        ],
-        [
-          395,
-          21,
-          88,
-          36
+          40
         ]
       ],
       "char_rois": []
     },
     {
-      "line_index": 40,
+      "line_index": 39,
       "text": "Dreaming about the things that",
-      "start": 103.05,
-      "end": 104.05,
-      "confidence": 0.5,
+      "start": 104.25,
+      "end": 104.95,
+      "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "Dreaming",
-          "start": 103.05,
-          "end": 103.2,
-          "confidence": 0.5
+          "start": 104.25,
+          "end": 104.35,
+          "confidence": 0.252
         },
         {
           "word_index": 2,
           "text": "about",
-          "start": 103.25,
-          "end": 103.45,
-          "confidence": 0.5
+          "start": 104.4,
+          "end": 104.5,
+          "confidence": 0.252
         },
         {
           "word_index": 3,
           "text": "the",
-          "start": 103.5,
-          "end": 103.65,
-          "confidence": 0.5
+          "start": 104.55,
+          "end": 104.65,
+          "confidence": 0.252
         },
         {
           "word_index": 4,
           "text": "things",
-          "start": 103.7,
-          "end": 103.85,
-          "confidence": 0.5
+          "start": 104.7,
+          "end": 104.8,
+          "confidence": 0.252
         },
         {
           "word_index": 5,
           "text": "that",
-          "start": 103.9,
-          "end": 104.05,
-          "confidence": 0.5
+          "start": 104.85,
+          "end": 104.95,
+          "confidence": 0.252
         }
       ],
       "y": 161,
@@ -2824,32 +2772,32 @@
       "char_rois": []
     },
     {
-      "line_index": 41,
+      "line_index": 40,
       "text": "we could be",
-      "start": 104.05,
-      "end": 104.8,
-      "confidence": 0.228,
+      "start": 105.5,
+      "end": 106.2,
+      "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "we",
-          "start": 104.05,
-          "end": 104.15,
-          "confidence": 0.228
+          "start": 105.5,
+          "end": 105.6,
+          "confidence": 0.252
         },
         {
           "word_index": 2,
           "text": "could",
-          "start": 104.2,
-          "end": 104.3,
-          "confidence": 0.228
+          "start": 105.65,
+          "end": 105.75,
+          "confidence": 0.252
         },
         {
           "word_index": 3,
           "text": "be",
-          "start": 104.35,
-          "end": 104.8,
-          "confidence": 0.228
+          "start": 105.8,
+          "end": 105.9,
+          "confidence": 0.252
         }
       ],
       "y": 228,
@@ -2876,102 +2824,24 @@
       "char_rois": []
     },
     {
-      "line_index": 42,
-      "text": "Lately I've been I've been",
-      "start": 105.3,
-      "end": 106.1,
-      "confidence": 0.5,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "Lately",
-          "start": 105.3,
-          "end": 105.45,
-          "confidence": 0.5
-        },
-        {
-          "word_index": 2,
-          "text": "I've",
-          "start": 105.5,
-          "end": 105.6,
-          "confidence": 0.5
-        },
-        {
-          "word_index": 3,
-          "text": "been",
-          "start": 105.65,
-          "end": 105.75,
-          "confidence": 0.5
-        },
-        {
-          "word_index": 4,
-          "text": "I've",
-          "start": 105.8,
-          "end": 105.9,
-          "confidence": 0.5
-        },
-        {
-          "word_index": 5,
-          "text": "been",
-          "start": 105.95,
-          "end": 106.1,
-          "confidence": 0.5
-        }
-      ],
-      "y": 19,
-      "word_rois": [
-        [
-          78,
-          19,
-          85,
-          38
-        ],
-        [
-          168,
-          19,
-          52,
-          38
-        ],
-        [
-          225,
-          19,
-          85,
-          38
-        ],
-        [
-          315,
-          19,
-          57,
-          38
-        ],
-        [
-          377,
-          19,
-          76,
-          38
-        ]
-      ],
-      "char_rois": []
-    },
-    {
-      "line_index": 43,
+      "line_index": 41,
       "text": "losing sleep",
-      "start": 106.9,
-      "end": 107.9,
+      "start": 108.55,
+      "end": 110.0,
       "confidence": 0.228,
       "words": [
         {
           "word_index": 1,
           "text": "losing",
-          "start": 106.9,
-          "end": 107.15,
+          "start": 108.55,
+          "end": 109.25,
           "confidence": 0.228
         },
         {
           "word_index": 2,
           "text": "sleep",
-          "start": 107.2,
-          "end": 107.9,
+          "start": 109.3,
+          "end": 110.0,
           "confidence": 0.228
         }
       ],
@@ -2993,25 +2863,116 @@
       "char_rois": []
     },
     {
-      "line_index": 44,
-      "text": "praying hard",
+      "line_index": 42,
+      "text": "But baby I've been l've been",
       "start": 110.7,
-      "end": 111.7,
-      "confidence": 0.5,
+      "end": 111.9,
+      "confidence": 0.252,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "But",
+          "start": 110.7,
+          "end": 110.9,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 2,
+          "text": "baby",
+          "start": 110.95,
+          "end": 111.1,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 3,
+          "text": "I've",
+          "start": 111.15,
+          "end": 111.3,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 4,
+          "text": "been",
+          "start": 111.35,
+          "end": 111.5,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 5,
+          "text": "l've",
+          "start": 111.55,
+          "end": 111.7,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 6,
+          "text": "been",
+          "start": 111.75,
+          "end": 111.9,
+          "confidence": 0.252
+        }
+      ],
+      "y": 19,
+      "word_rois": [
+        [
+          58,
+          19,
+          47,
+          38
+        ],
+        [
+          110,
+          19,
+          76,
+          38
+        ],
+        [
+          190,
+          19,
+          53,
+          38
+        ],
+        [
+          248,
+          19,
+          85,
+          38
+        ],
+        [
+          338,
+          19,
+          52,
+          38
+        ],
+        [
+          395,
+          19,
+          83,
+          38
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 43,
+      "text": "praying hard",
+      "start": 111.9,
+      "end": 112.15,
+      "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "praying",
-          "start": 110.7,
-          "end": 111.25,
-          "confidence": 0.5
+          "start": 111.9,
+          "end": 112.0,
+          "confidence": 0.252
         },
         {
           "word_index": 2,
           "text": "hard",
-          "start": 111.3,
-          "end": 111.7,
-          "confidence": 0.5
+          "start": 112.05,
+          "end": 112.15,
+          "confidence": 0.252
         }
       ],
       "y": 91,
@@ -3032,45 +2993,45 @@
       "char_rois": []
     },
     {
-      "line_index": 45,
+      "line_index": 44,
       "text": "Said no more counting dollars",
-      "start": 111.7,
-      "end": 118.1,
+      "start": 116.15,
+      "end": 121.6,
       "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "Said",
-          "start": 111.7,
-          "end": 112.5,
+          "start": 116.15,
+          "end": 116.25,
           "confidence": 0.252
         },
         {
           "word_index": 2,
           "text": "no",
-          "start": 113.1,
-          "end": 113.9,
+          "start": 116.3,
+          "end": 117.1,
           "confidence": 0.252
         },
         {
           "word_index": 3,
           "text": "more",
-          "start": 114.1,
-          "end": 114.9,
+          "start": 117.3,
+          "end": 118.1,
           "confidence": 0.252
         },
         {
           "word_index": 4,
           "text": "counting",
-          "start": 115.45,
-          "end": 116.25,
+          "start": 118.75,
+          "end": 119.55,
           "confidence": 0.252
         },
         {
           "word_index": 5,
           "text": "dollars",
-          "start": 117.3,
-          "end": 118.1,
+          "start": 120.8,
+          "end": 121.6,
           "confidence": 0.252
         }
       ],
@@ -3110,52 +3071,52 @@
       "char_rois": []
     },
     {
-      "line_index": 46,
+      "line_index": 45,
       "text": "We'll be we'll be counting stars",
-      "start": 119.25,
-      "end": 123.9,
+      "start": 118.85,
+      "end": 123.85,
       "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "We'll",
-          "start": 119.25,
-          "end": 120.0,
+          "start": 118.85,
+          "end": 119.65,
           "confidence": 0.252
         },
         {
           "word_index": 2,
           "text": "be",
-          "start": 120.05,
-          "end": 120.6,
+          "start": 119.7,
+          "end": 120.35,
           "confidence": 0.252
         },
         {
           "word_index": 3,
           "text": "we'll",
-          "start": 120.65,
-          "end": 121.4,
+          "start": 120.4,
+          "end": 121.2,
           "confidence": 0.252
         },
         {
           "word_index": 4,
           "text": "be",
-          "start": 121.45,
-          "end": 122.0,
+          "start": 121.25,
+          "end": 121.85,
           "confidence": 0.252
         },
         {
           "word_index": 5,
           "text": "counting",
-          "start": 122.05,
-          "end": 122.85,
+          "start": 121.9,
+          "end": 122.7,
           "confidence": 0.252
         },
         {
           "word_index": 6,
           "text": "stars",
-          "start": 123.1,
-          "end": 123.9,
+          "start": 123.05,
+          "end": 123.85,
           "confidence": 0.252
         }
       ],
@@ -3201,7 +3162,7 @@
       "char_rois": []
     },
     {
-      "line_index": 47,
+      "line_index": 46,
       "text": "I feel the love and I feel it burn",
       "start": 124.15,
       "end": 125.95,
@@ -3331,7 +3292,7 @@
       "char_rois": []
     },
     {
-      "line_index": 48,
+      "line_index": 47,
       "text": "Down this river every turn",
       "start": 125.95,
       "end": 126.65,
@@ -3409,7 +3370,7 @@
       "char_rois": []
     },
     {
-      "line_index": 49,
+      "line_index": 48,
       "text": "Hope is a fourletter word",
       "start": 126.65,
       "end": 129.85,
@@ -3487,7 +3448,7 @@
       "char_rois": []
     },
     {
-      "line_index": 50,
+      "line_index": 49,
       "text": "Make that money watch it burn",
       "start": 130.35,
       "end": 131.45,
@@ -3578,7 +3539,7 @@
       "char_rois": []
     },
     {
-      "line_index": 51,
+      "line_index": 50,
       "text": "Old but I'm not that old",
       "start": 134.9,
       "end": 136.1,
@@ -3669,7 +3630,7 @@
       "char_rois": []
     },
     {
-      "line_index": 52,
+      "line_index": 51,
       "text": "Young but I'm not that bold",
       "start": 136.1,
       "end": 136.95,
@@ -3760,7 +3721,7 @@
       "char_rois": []
     },
     {
-      "line_index": 53,
+      "line_index": 52,
       "text": "I don't think the world is sold",
       "start": 137.8,
       "end": 138.8,
@@ -3864,7 +3825,7 @@
       "char_rois": []
     },
     {
-      "line_index": 54,
+      "line_index": 53,
       "text": "I'm just doing what we're told",
       "start": 140.5,
       "end": 141.35,
@@ -3955,7 +3916,7 @@
       "char_rois": []
     },
     {
-      "line_index": 55,
+      "line_index": 54,
       "text": "I feel something so wrong",
       "start": 142.7,
       "end": 143.7,
@@ -4033,39 +3994,39 @@
       "char_rois": []
     },
     {
-      "line_index": 56,
+      "line_index": 55,
       "text": "Doing the right thing",
-      "start": 144.1,
-      "end": 144.8,
-      "confidence": 0.5,
+      "start": 143.7,
+      "end": 148.75,
+      "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "Doing",
-          "start": 144.1,
-          "end": 144.2,
-          "confidence": 0.5
+          "start": 143.7,
+          "end": 144.5,
+          "confidence": 0.252
         },
         {
           "word_index": 2,
           "text": "the",
-          "start": 144.25,
-          "end": 144.35,
-          "confidence": 0.5
+          "start": 145.25,
+          "end": 146.05,
+          "confidence": 0.252
         },
         {
           "word_index": 3,
           "text": "right",
-          "start": 144.4,
-          "end": 144.5,
-          "confidence": 0.5
+          "start": 146.45,
+          "end": 147.25,
+          "confidence": 0.252
         },
         {
           "word_index": 4,
           "text": "thing",
-          "start": 144.55,
-          "end": 144.65,
-          "confidence": 0.5
+          "start": 147.95,
+          "end": 148.75,
+          "confidence": 0.252
         }
       ],
       "y": 89,
@@ -4098,60 +4059,60 @@
       "char_rois": []
     },
     {
-      "line_index": 57,
+      "line_index": 56,
       "text": "I could lie could lie could lie",
-      "start": 150.4,
-      "end": 151.65,
-      "confidence": 0.228,
+      "start": 149.65,
+      "end": 154.05,
+      "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "I",
-          "start": 150.4,
-          "end": 150.5,
-          "confidence": 0.228
+          "start": 149.65,
+          "end": 150.0,
+          "confidence": 0.252
         },
         {
           "word_index": 2,
           "text": "could",
-          "start": 150.55,
-          "end": 150.65,
-          "confidence": 0.228
+          "start": 150.05,
+          "end": 150.75,
+          "confidence": 0.252
         },
         {
           "word_index": 3,
           "text": "lie",
-          "start": 150.7,
-          "end": 150.8,
-          "confidence": 0.228
+          "start": 150.8,
+          "end": 151.35,
+          "confidence": 0.252
         },
         {
           "word_index": 4,
           "text": "could",
-          "start": 150.85,
-          "end": 150.95,
-          "confidence": 0.228
+          "start": 151.4,
+          "end": 152.1,
+          "confidence": 0.252
         },
         {
           "word_index": 5,
           "text": "lie",
-          "start": 151.0,
-          "end": 151.1,
-          "confidence": 0.228
+          "start": 152.15,
+          "end": 152.7,
+          "confidence": 0.252
         },
         {
           "word_index": 6,
           "text": "could",
-          "start": 151.15,
-          "end": 151.3,
-          "confidence": 0.228
+          "start": 152.75,
+          "end": 153.45,
+          "confidence": 0.252
         },
         {
           "word_index": 7,
           "text": "lie",
-          "start": 151.35,
-          "end": 151.65,
-          "confidence": 0.228
+          "start": 153.5,
+          "end": 154.05,
+          "confidence": 0.252
         }
       ],
       "y": 161,
@@ -4202,7 +4163,7 @@
       "char_rois": []
     },
     {
-      "line_index": 58,
+      "line_index": 57,
       "text": "Everything that",
       "start": 154.25,
       "end": 155.25,
@@ -4241,7 +4202,7 @@
       "char_rois": []
     },
     {
-      "line_index": 59,
+      "line_index": 58,
       "text": "downs me",
       "start": 155.25,
       "end": 156.7,
@@ -4280,7 +4241,7 @@
       "char_rois": []
     },
     {
-      "line_index": 60,
+      "line_index": 59,
       "text": "makes me wanna fly",
       "start": 156.9,
       "end": 158.25,
@@ -4345,7 +4306,7 @@
       "char_rois": []
     },
     {
-      "line_index": 61,
+      "line_index": 60,
       "text": "Lately I've been l've been",
       "start": 158.45,
       "end": 159.45,
@@ -4423,7 +4384,7 @@
       "char_rois": []
     },
     {
-      "line_index": 62,
+      "line_index": 61,
       "text": "losing sleep",
       "start": 160.15,
       "end": 161.15,
@@ -4462,7 +4423,7 @@
       "char_rois": []
     },
     {
-      "line_index": 63,
+      "line_index": 62,
       "text": "Dreaming about the things that",
       "start": 161.85,
       "end": 164.75,
@@ -4540,7 +4501,7 @@
       "char_rois": []
     },
     {
-      "line_index": 64,
+      "line_index": 63,
       "text": "we could be",
       "start": 163.55,
       "end": 165.55,
@@ -4592,115 +4553,24 @@
       "char_rois": []
     },
     {
-      "line_index": 65,
-      "text": "But baby I've been I've been",
-      "start": 165.8,
-      "end": 167.0,
-      "confidence": 0.5,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "But",
-          "start": 165.8,
-          "end": 165.95,
-          "confidence": 0.5
-        },
-        {
-          "word_index": 2,
-          "text": "baby",
-          "start": 166.0,
-          "end": 166.15,
-          "confidence": 0.5
-        },
-        {
-          "word_index": 3,
-          "text": "I've",
-          "start": 166.2,
-          "end": 166.4,
-          "confidence": 0.5
-        },
-        {
-          "word_index": 4,
-          "text": "been",
-          "start": 166.45,
-          "end": 166.6,
-          "confidence": 0.5
-        },
-        {
-          "word_index": 5,
-          "text": "I've",
-          "start": 166.65,
-          "end": 166.8,
-          "confidence": 0.5
-        },
-        {
-          "word_index": 6,
-          "text": "been",
-          "start": 166.85,
-          "end": 167.0,
-          "confidence": 0.5
-        }
-      ],
-      "y": 19,
-      "word_rois": [
-        [
-          58,
-          19,
-          47,
-          38
-        ],
-        [
-          110,
-          19,
-          76,
-          38
-        ],
-        [
-          190,
-          19,
-          53,
-          38
-        ],
-        [
-          248,
-          19,
-          85,
-          38
-        ],
-        [
-          338,
-          19,
-          57,
-          38
-        ],
-        [
-          400,
-          19,
-          75,
-          38
-        ]
-      ],
-      "char_rois": []
-    },
-    {
-      "line_index": 66,
+      "line_index": 64,
       "text": "praying hard",
-      "start": 167.0,
-      "end": 167.25,
+      "start": 165.8,
+      "end": 166.8,
       "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
           "text": "praying",
-          "start": 167.0,
-          "end": 167.1,
+          "start": 165.8,
+          "end": 166.35,
           "confidence": 0.5
         },
         {
           "word_index": 2,
           "text": "hard",
-          "start": 167.15,
-          "end": 167.25,
+          "start": 166.4,
+          "end": 166.8,
           "confidence": 0.5
         }
       ],
@@ -4722,45 +4592,45 @@
       "char_rois": []
     },
     {
-      "line_index": 67,
+      "line_index": 65,
       "text": "Said no more counting dollars",
-      "start": 167.25,
-      "end": 167.95,
+      "start": 166.8,
+      "end": 167.5,
       "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
           "text": "Said",
-          "start": 167.25,
-          "end": 167.35,
+          "start": 166.8,
+          "end": 166.9,
           "confidence": 0.5
         },
         {
           "word_index": 2,
           "text": "no",
-          "start": 167.4,
-          "end": 167.5,
+          "start": 166.95,
+          "end": 167.05,
           "confidence": 0.5
         },
         {
           "word_index": 3,
           "text": "more",
-          "start": 167.55,
-          "end": 167.65,
+          "start": 167.1,
+          "end": 167.2,
           "confidence": 0.5
         },
         {
           "word_index": 4,
           "text": "counting",
-          "start": 167.7,
-          "end": 167.8,
+          "start": 167.25,
+          "end": 167.35,
           "confidence": 0.5
         },
         {
           "word_index": 5,
           "text": "dollars",
-          "start": 167.85,
-          "end": 167.95,
+          "start": 167.4,
+          "end": 167.5,
           "confidence": 0.5
         }
       ],
@@ -4800,39 +4670,39 @@
       "char_rois": []
     },
     {
-      "line_index": 68,
+      "line_index": 66,
       "text": "We'll be counting stars",
-      "start": 168.8,
-      "end": 169.5,
-      "confidence": 0.228,
+      "start": 167.5,
+      "end": 168.05,
+      "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
           "text": "We'll",
-          "start": 168.8,
-          "end": 168.9,
-          "confidence": 0.228
+          "start": 167.5,
+          "end": 167.6,
+          "confidence": 0.5
         },
         {
           "word_index": 2,
           "text": "be",
-          "start": 168.95,
-          "end": 169.05,
-          "confidence": 0.228
+          "start": 167.65,
+          "end": 167.75,
+          "confidence": 0.5
         },
         {
           "word_index": 3,
           "text": "counting",
-          "start": 169.1,
-          "end": 169.2,
-          "confidence": 0.228
+          "start": 167.8,
+          "end": 167.9,
+          "confidence": 0.5
         },
         {
           "word_index": 4,
           "text": "stars",
-          "start": 169.25,
-          "end": 169.35,
-          "confidence": 0.228
+          "start": 167.95,
+          "end": 168.05,
+          "confidence": 0.5
         }
       ],
       "y": 228,
@@ -4865,24 +4735,115 @@
       "char_rois": []
     },
     {
-      "line_index": 69,
+      "line_index": 67,
+      "text": "But baby I've been l've been",
+      "start": 168.8,
+      "end": 169.7,
+      "confidence": 0.5,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "But",
+          "start": 168.8,
+          "end": 168.9,
+          "confidence": 0.5
+        },
+        {
+          "word_index": 2,
+          "text": "baby",
+          "start": 168.95,
+          "end": 169.05,
+          "confidence": 0.5
+        },
+        {
+          "word_index": 3,
+          "text": "I've",
+          "start": 169.1,
+          "end": 169.2,
+          "confidence": 0.5
+        },
+        {
+          "word_index": 4,
+          "text": "been",
+          "start": 169.25,
+          "end": 169.35,
+          "confidence": 0.5
+        },
+        {
+          "word_index": 5,
+          "text": "l've",
+          "start": 169.4,
+          "end": 169.5,
+          "confidence": 0.5
+        },
+        {
+          "word_index": 6,
+          "text": "been",
+          "start": 169.55,
+          "end": 169.7,
+          "confidence": 0.5
+        }
+      ],
+      "y": 21,
+      "word_rois": [
+        [
+          58,
+          21,
+          50,
+          34
+        ],
+        [
+          113,
+          21,
+          72,
+          34
+        ],
+        [
+          189,
+          21,
+          56,
+          34
+        ],
+        [
+          249,
+          21,
+          85,
+          34
+        ],
+        [
+          338,
+          21,
+          55,
+          34
+        ],
+        [
+          397,
+          21,
+          86,
+          34
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 68,
       "text": "praying hard",
-      "start": 171.8,
-      "end": 173.25,
+      "start": 171.9,
+      "end": 173.35,
       "confidence": 0.228,
       "words": [
         {
           "word_index": 1,
           "text": "praying",
-          "start": 171.8,
-          "end": 172.6,
+          "start": 171.9,
+          "end": 172.7,
           "confidence": 0.228
         },
         {
           "word_index": 2,
           "text": "hard",
-          "start": 172.65,
-          "end": 173.25,
+          "start": 172.75,
+          "end": 173.35,
           "confidence": 0.228
         }
       ],
@@ -4904,25 +4865,103 @@
       "char_rois": []
     },
     {
-      "line_index": 70,
-      "text": "losing sleep",
+      "line_index": 69,
+      "text": "Lately I've been l've been",
       "start": 174.1,
       "end": 175.1,
-      "confidence": 0.5,
+      "confidence": 0.252,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Lately",
+          "start": 174.1,
+          "end": 174.25,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 2,
+          "text": "I've",
+          "start": 174.3,
+          "end": 174.45,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 3,
+          "text": "been",
+          "start": 174.5,
+          "end": 174.65,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 4,
+          "text": "l've",
+          "start": 174.7,
+          "end": 174.85,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 5,
+          "text": "been",
+          "start": 174.9,
+          "end": 175.1,
+          "confidence": 0.252
+        }
+      ],
+      "y": 19,
+      "word_rois": [
+        [
+          78,
+          19,
+          85,
+          38
+        ],
+        [
+          168,
+          19,
+          52,
+          38
+        ],
+        [
+          225,
+          19,
+          85,
+          38
+        ],
+        [
+          315,
+          19,
+          57,
+          38
+        ],
+        [
+          377,
+          19,
+          76,
+          38
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 70,
+      "text": "losing sleep",
+      "start": 175.1,
+      "end": 175.35,
+      "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "losing",
-          "start": 174.1,
-          "end": 174.6,
-          "confidence": 0.5
+          "start": 175.1,
+          "end": 175.2,
+          "confidence": 0.252
         },
         {
           "word_index": 2,
           "text": "sleep",
-          "start": 174.65,
-          "end": 175.1,
-          "confidence": 0.5
+          "start": 175.25,
+          "end": 175.35,
+          "confidence": 0.252
         }
       ],
       "y": 89,
@@ -4945,43 +4984,43 @@
     {
       "line_index": 71,
       "text": "Dreaming about the things that",
-      "start": 175.1,
-      "end": 178.65,
+      "start": 177.25,
+      "end": 180.55,
       "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "Dreaming",
-          "start": 175.1,
-          "end": 175.2,
+          "start": 177.25,
+          "end": 177.35,
           "confidence": 0.252
         },
         {
           "word_index": 2,
           "text": "about",
-          "start": 175.25,
-          "end": 176.05,
+          "start": 177.4,
+          "end": 178.0,
           "confidence": 0.252
         },
         {
           "word_index": 3,
           "text": "the",
-          "start": 176.1,
-          "end": 176.85,
+          "start": 178.05,
+          "end": 178.75,
           "confidence": 0.252
         },
         {
           "word_index": 4,
           "text": "things",
-          "start": 176.9,
-          "end": 177.7,
+          "start": 178.8,
+          "end": 179.6,
           "confidence": 0.252
         },
         {
           "word_index": 5,
           "text": "that",
-          "start": 177.85,
-          "end": 178.65,
+          "start": 179.75,
+          "end": 180.55,
           "confidence": 0.252
         }
       ],
@@ -5906,16 +5945,94 @@
     },
     {
       "line_index": 86,
-      "text": "losing sleep",
+      "text": "Lately l've been l've been",
       "start": 216.3,
+      "end": 217.3,
+      "confidence": 0.5,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Lately",
+          "start": 216.3,
+          "end": 216.5,
+          "confidence": 0.5
+        },
+        {
+          "word_index": 2,
+          "text": "l've",
+          "start": 216.55,
+          "end": 216.7,
+          "confidence": 0.5
+        },
+        {
+          "word_index": 3,
+          "text": "been",
+          "start": 216.75,
+          "end": 216.9,
+          "confidence": 0.5
+        },
+        {
+          "word_index": 4,
+          "text": "l've",
+          "start": 216.95,
+          "end": 217.1,
+          "confidence": 0.5
+        },
+        {
+          "word_index": 5,
+          "text": "been",
+          "start": 217.15,
+          "end": 217.3,
+          "confidence": 0.5
+        }
+      ],
+      "y": 21,
+      "word_rois": [
+        [
+          78,
+          21,
+          85,
+          36
+        ],
+        [
+          168,
+          21,
+          54,
+          36
+        ],
+        [
+          226,
+          21,
+          86,
+          36
+        ],
+        [
+          316,
+          21,
+          54,
+          36
+        ],
+        [
+          374,
+          21,
+          79,
+          36
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 87,
+      "text": "losing sleep",
+      "start": 217.3,
       "end": 218.55,
       "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
           "text": "losing",
-          "start": 216.3,
-          "end": 217.1,
+          "start": 217.3,
+          "end": 217.7,
           "confidence": 0.5
         },
         {
@@ -5944,45 +6061,45 @@
       "char_rois": []
     },
     {
-      "line_index": 87,
+      "line_index": 88,
       "text": "Dreaming about the things that",
-      "start": 218.55,
-      "end": 219.25,
+      "start": 219.1,
+      "end": 219.8,
       "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
           "text": "Dreaming",
-          "start": 218.55,
-          "end": 218.65,
+          "start": 219.1,
+          "end": 219.2,
           "confidence": 0.5
         },
         {
           "word_index": 2,
           "text": "about",
-          "start": 218.7,
-          "end": 218.8,
+          "start": 219.25,
+          "end": 219.35,
           "confidence": 0.5
         },
         {
           "word_index": 3,
           "text": "the",
-          "start": 218.85,
-          "end": 218.95,
+          "start": 219.4,
+          "end": 219.5,
           "confidence": 0.5
         },
         {
           "word_index": 4,
           "text": "things",
-          "start": 219.0,
-          "end": 219.1,
+          "start": 219.55,
+          "end": 219.65,
           "confidence": 0.5
         },
         {
           "word_index": 5,
           "text": "that",
-          "start": 219.15,
-          "end": 219.25,
+          "start": 219.7,
+          "end": 219.8,
           "confidence": 0.5
         }
       ],
@@ -6022,32 +6139,32 @@
       "char_rois": []
     },
     {
-      "line_index": 88,
+      "line_index": 89,
       "text": "we could be",
-      "start": 219.5,
-      "end": 220.2,
-      "confidence": 0.5,
+      "start": 221.55,
+      "end": 222.25,
+      "confidence": 0.228,
       "words": [
         {
           "word_index": 1,
           "text": "we",
-          "start": 219.5,
-          "end": 219.6,
-          "confidence": 0.5
+          "start": 221.55,
+          "end": 221.65,
+          "confidence": 0.228
         },
         {
           "word_index": 2,
           "text": "could",
-          "start": 219.65,
-          "end": 219.75,
-          "confidence": 0.5
+          "start": 221.7,
+          "end": 221.8,
+          "confidence": 0.228
         },
         {
           "word_index": 3,
           "text": "be",
-          "start": 219.8,
-          "end": 219.9,
-          "confidence": 0.5
+          "start": 221.85,
+          "end": 221.95,
+          "confidence": 0.228
         }
       ],
       "y": 231,
@@ -6069,84 +6186,6 @@
           231,
           41,
           30
-        ]
-      ],
-      "char_rois": []
-    },
-    {
-      "line_index": 89,
-      "text": "Lately I've been l've been",
-      "start": 222.0,
-      "end": 222.7,
-      "confidence": 0.5,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "Lately",
-          "start": 222.0,
-          "end": 222.1,
-          "confidence": 0.5
-        },
-        {
-          "word_index": 2,
-          "text": "I've",
-          "start": 222.15,
-          "end": 222.25,
-          "confidence": 0.5
-        },
-        {
-          "word_index": 3,
-          "text": "been",
-          "start": 222.3,
-          "end": 222.4,
-          "confidence": 0.5
-        },
-        {
-          "word_index": 4,
-          "text": "l've",
-          "start": 222.45,
-          "end": 222.55,
-          "confidence": 0.5
-        },
-        {
-          "word_index": 5,
-          "text": "been",
-          "start": 222.6,
-          "end": 222.7,
-          "confidence": 0.5
-        }
-      ],
-      "y": 19,
-      "word_rois": [
-        [
-          78,
-          19,
-          85,
-          38
-        ],
-        [
-          168,
-          19,
-          52,
-          38
-        ],
-        [
-          225,
-          19,
-          85,
-          38
-        ],
-        [
-          315,
-          19,
-          57,
-          38
-        ],
-        [
-          377,
-          19,
-          76,
-          38
         ]
       ],
       "char_rois": []
@@ -6231,23 +6270,114 @@
     },
     {
       "line_index": 91,
-      "text": "praying hard",
+      "text": "But baby I've been I've been",
       "start": 224.5,
-      "end": 225.0,
+      "end": 225.35,
       "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
-          "text": "praying",
+          "text": "But",
           "start": 224.5,
           "end": 224.6,
           "confidence": 0.5
         },
         {
           "word_index": 2,
-          "text": "hard",
+          "text": "baby",
           "start": 224.65,
-          "end": 225.0,
+          "end": 224.75,
+          "confidence": 0.5
+        },
+        {
+          "word_index": 3,
+          "text": "I've",
+          "start": 224.8,
+          "end": 224.9,
+          "confidence": 0.5
+        },
+        {
+          "word_index": 4,
+          "text": "been",
+          "start": 224.95,
+          "end": 225.05,
+          "confidence": 0.5
+        },
+        {
+          "word_index": 5,
+          "text": "I've",
+          "start": 225.1,
+          "end": 225.2,
+          "confidence": 0.5
+        },
+        {
+          "word_index": 6,
+          "text": "been",
+          "start": 225.25,
+          "end": 225.35,
+          "confidence": 0.5
+        }
+      ],
+      "y": 19,
+      "word_rois": [
+        [
+          58,
+          19,
+          49,
+          36
+        ],
+        [
+          112,
+          19,
+          72,
+          36
+        ],
+        [
+          188,
+          19,
+          59,
+          36
+        ],
+        [
+          251,
+          19,
+          81,
+          36
+        ],
+        [
+          337,
+          19,
+          53,
+          36
+        ],
+        [
+          395,
+          19,
+          83,
+          36
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 92,
+      "text": "praying hard",
+      "start": 225.35,
+      "end": 225.6,
+      "confidence": 0.5,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "praying",
+          "start": 225.35,
+          "end": 225.45,
+          "confidence": 0.5
+        },
+        {
+          "word_index": 2,
+          "text": "hard",
+          "start": 225.5,
+          "end": 225.6,
           "confidence": 0.5
         }
       ],
@@ -6269,45 +6399,45 @@
       "char_rois": []
     },
     {
-      "line_index": 92,
+      "line_index": 93,
       "text": "Said no more counting dollars",
-      "start": 225.0,
-      "end": 225.7,
+      "start": 227.75,
+      "end": 231.15,
       "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "Said",
-          "start": 225.0,
-          "end": 225.1,
+          "start": 227.75,
+          "end": 227.9,
           "confidence": 0.252
         },
         {
           "word_index": 2,
           "text": "no",
-          "start": 225.15,
-          "end": 225.25,
+          "start": 227.95,
+          "end": 228.5,
           "confidence": 0.252
         },
         {
           "word_index": 3,
           "text": "more",
-          "start": 225.3,
-          "end": 225.4,
+          "start": 228.55,
+          "end": 229.3,
           "confidence": 0.252
         },
         {
           "word_index": 4,
           "text": "counting",
-          "start": 225.45,
-          "end": 225.55,
+          "start": 229.35,
+          "end": 230.15,
           "confidence": 0.252
         },
         {
           "word_index": 5,
           "text": "dollars",
-          "start": 225.6,
-          "end": 225.7,
+          "start": 230.35,
+          "end": 231.15,
           "confidence": 0.252
         }
       ],
@@ -6347,38 +6477,38 @@
       "char_rois": []
     },
     {
-      "line_index": 93,
+      "line_index": 94,
       "text": "We'll be counting stars",
-      "start": 226.1,
-      "end": 226.8,
+      "start": 229.35,
+      "end": 231.8,
       "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "We'll",
-          "start": 226.1,
-          "end": 226.2,
+          "start": 229.35,
+          "end": 229.9,
           "confidence": 0.252
         },
         {
           "word_index": 2,
           "text": "be",
-          "start": 226.25,
-          "end": 226.35,
+          "start": 229.95,
+          "end": 230.4,
           "confidence": 0.252
         },
         {
           "word_index": 3,
           "text": "counting",
-          "start": 226.4,
-          "end": 226.5,
+          "start": 230.45,
+          "end": 231.15,
           "confidence": 0.252
         },
         {
           "word_index": 4,
           "text": "stars",
-          "start": 226.55,
-          "end": 226.65,
+          "start": 231.2,
+          "end": 231.8,
           "confidence": 0.252
         }
       ],
@@ -6412,116 +6542,103 @@
       "char_rois": []
     },
     {
-      "line_index": 94,
-      "text": "But baby I've been I've been",
-      "start": 229.65,
-      "end": 232.35,
-      "confidence": 0.228,
+      "line_index": 95,
+      "text": "Lately I've been l've been",
+      "start": 232.0,
+      "end": 233.0,
+      "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
-          "text": "But",
-          "start": 229.65,
-          "end": 230.05,
-          "confidence": 0.228
+          "text": "Lately",
+          "start": 232.0,
+          "end": 232.2,
+          "confidence": 0.252
         },
         {
           "word_index": 2,
-          "text": "baby",
-          "start": 230.1,
-          "end": 230.5,
-          "confidence": 0.228
+          "text": "I've",
+          "start": 232.25,
+          "end": 232.4,
+          "confidence": 0.252
         },
         {
           "word_index": 3,
-          "text": "I've",
-          "start": 230.55,
-          "end": 230.95,
-          "confidence": 0.228
+          "text": "been",
+          "start": 232.45,
+          "end": 232.6,
+          "confidence": 0.252
         },
         {
           "word_index": 4,
-          "text": "been",
-          "start": 231.0,
-          "end": 231.45,
-          "confidence": 0.228
+          "text": "l've",
+          "start": 232.65,
+          "end": 232.8,
+          "confidence": 0.252
         },
         {
           "word_index": 5,
-          "text": "I've",
-          "start": 231.5,
-          "end": 231.9,
-          "confidence": 0.228
-        },
-        {
-          "word_index": 6,
           "text": "been",
-          "start": 231.95,
-          "end": 232.35,
-          "confidence": 0.228
+          "start": 232.85,
+          "end": 233.0,
+          "confidence": 0.252
         }
       ],
       "y": 19,
       "word_rois": [
         [
-          58,
-          19,
-          47,
-          38
-        ],
-        [
-          110,
-          19,
-          76,
-          38
-        ],
-        [
-          190,
-          19,
-          53,
-          38
-        ],
-        [
-          248,
+          78,
           19,
           85,
           38
         ],
         [
-          338,
+          168,
           19,
-          52,
+          57,
           38
         ],
         [
-          395,
+          230,
           19,
-          88,
+          80,
+          38
+        ],
+        [
+          315,
+          19,
+          57,
+          38
+        ],
+        [
+          377,
+          19,
+          76,
           38
         ]
       ],
       "char_rois": []
     },
     {
-      "line_index": 95,
+      "line_index": 96,
       "text": "losing sleep",
-      "start": 232.0,
-      "end": 233.0,
-      "confidence": 0.5,
+      "start": 233.8,
+      "end": 234.8,
+      "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "losing",
-          "start": 232.0,
-          "end": 232.5,
-          "confidence": 0.5
+          "start": 233.8,
+          "end": 234.3,
+          "confidence": 0.252
         },
         {
           "word_index": 2,
           "text": "sleep",
-          "start": 232.55,
-          "end": 233.0,
-          "confidence": 0.5
+          "start": 234.35,
+          "end": 234.8,
+          "confidence": 0.252
         }
       ],
       "y": 88,
@@ -6542,45 +6659,45 @@
       "char_rois": []
     },
     {
-      "line_index": 96,
+      "line_index": 97,
       "text": "Dreaming about the things that",
-      "start": 233.0,
-      "end": 234.9,
+      "start": 235.55,
+      "end": 238.7,
       "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "Dreaming",
-          "start": 233.0,
-          "end": 233.4,
+          "start": 235.55,
+          "end": 235.65,
           "confidence": 0.252
         },
         {
           "word_index": 2,
           "text": "about",
-          "start": 233.45,
-          "end": 233.8,
+          "start": 235.7,
+          "end": 236.35,
           "confidence": 0.252
         },
         {
           "word_index": 3,
           "text": "the",
-          "start": 233.85,
-          "end": 234.15,
+          "start": 236.4,
+          "end": 237.05,
           "confidence": 0.252
         },
         {
           "word_index": 4,
           "text": "things",
-          "start": 234.2,
-          "end": 234.55,
+          "start": 237.1,
+          "end": 237.9,
           "confidence": 0.252
         },
         {
           "word_index": 5,
           "text": "that",
-          "start": 234.6,
-          "end": 234.9,
+          "start": 237.95,
+          "end": 238.7,
           "confidence": 0.252
         }
       ],
@@ -6620,31 +6737,31 @@
       "char_rois": []
     },
     {
-      "line_index": 97,
+      "line_index": 98,
       "text": "we could be",
-      "start": 235.1,
-      "end": 236.3,
+      "start": 237.35,
+      "end": 239.45,
       "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "we",
-          "start": 235.1,
-          "end": 235.45,
+          "start": 237.35,
+          "end": 237.95,
           "confidence": 0.252
         },
         {
           "word_index": 2,
           "text": "could",
-          "start": 235.5,
-          "end": 235.95,
+          "start": 238.0,
+          "end": 238.8,
           "confidence": 0.252
         },
         {
           "word_index": 3,
           "text": "be",
-          "start": 236.0,
-          "end": 236.3,
+          "start": 238.85,
+          "end": 239.45,
           "confidence": 0.252
         }
       ],
@@ -6672,103 +6789,116 @@
       "char_rois": []
     },
     {
-      "line_index": 98,
-      "text": "Lately l've been l've been",
-      "start": 236.5,
-      "end": 238.9,
-      "confidence": 0.228,
+      "line_index": 99,
+      "text": "But baby I've been l've been",
+      "start": 239.7,
+      "end": 240.9,
+      "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
-          "text": "Lately",
-          "start": 236.5,
-          "end": 237.05,
-          "confidence": 0.228
+          "text": "But",
+          "start": 239.7,
+          "end": 239.9,
+          "confidence": 0.252
         },
         {
           "word_index": 2,
-          "text": "l've",
-          "start": 237.1,
-          "end": 237.5,
-          "confidence": 0.228
+          "text": "baby",
+          "start": 239.95,
+          "end": 240.1,
+          "confidence": 0.252
         },
         {
           "word_index": 3,
-          "text": "been",
-          "start": 237.55,
-          "end": 238.0,
-          "confidence": 0.228
+          "text": "I've",
+          "start": 240.15,
+          "end": 240.3,
+          "confidence": 0.252
         },
         {
           "word_index": 4,
-          "text": "l've",
-          "start": 238.05,
-          "end": 238.45,
-          "confidence": 0.228
+          "text": "been",
+          "start": 240.35,
+          "end": 240.5,
+          "confidence": 0.252
         },
         {
           "word_index": 5,
+          "text": "l've",
+          "start": 240.55,
+          "end": 240.7,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 6,
           "text": "been",
-          "start": 238.5,
-          "end": 238.9,
-          "confidence": 0.228
+          "start": 240.75,
+          "end": 240.9,
+          "confidence": 0.252
         }
       ],
-      "y": 21,
+      "y": 19,
       "word_rois": [
         [
-          78,
-          21,
+          58,
+          19,
+          52,
+          38
+        ],
+        [
+          115,
+          19,
+          71,
+          38
+        ],
+        [
+          190,
+          19,
+          53,
+          38
+        ],
+        [
+          248,
+          19,
           85,
-          36
+          38
         ],
         [
-          168,
-          21,
-          54,
-          36
+          338,
+          19,
+          57,
+          38
         ],
         [
-          226,
-          21,
-          86,
-          36
-        ],
-        [
-          316,
-          21,
-          54,
-          36
-        ],
-        [
-          374,
-          21,
-          79,
-          36
+          400,
+          19,
+          83,
+          38
         ]
       ],
       "char_rois": []
     },
     {
-      "line_index": 99,
+      "line_index": 100,
       "text": "praying hard",
-      "start": 239.7,
-      "end": 240.7,
-      "confidence": 0.5,
+      "start": 240.9,
+      "end": 241.15,
+      "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "praying",
-          "start": 239.7,
-          "end": 240.25,
-          "confidence": 0.5
+          "start": 240.9,
+          "end": 241.0,
+          "confidence": 0.252
         },
         {
           "word_index": 2,
           "text": "hard",
-          "start": 240.3,
-          "end": 240.7,
-          "confidence": 0.5
+          "start": 241.05,
+          "end": 241.15,
+          "confidence": 0.252
         }
       ],
       "y": 88,
@@ -6789,45 +6919,45 @@
       "char_rois": []
     },
     {
-      "line_index": 100,
+      "line_index": 101,
       "text": "Said no more counting dollars",
-      "start": 240.7,
-      "end": 246.95,
+      "start": 249.95,
+      "end": 255.5,
       "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "Said",
-          "start": 240.7,
-          "end": 241.5,
+          "start": 249.95,
+          "end": 250.05,
           "confidence": 0.252
         },
         {
           "word_index": 2,
           "text": "no",
-          "start": 242.05,
-          "end": 242.85,
+          "start": 250.1,
+          "end": 250.9,
           "confidence": 0.252
         },
         {
           "word_index": 3,
           "text": "more",
-          "start": 243.0,
-          "end": 243.8,
+          "start": 251.15,
+          "end": 251.95,
           "confidence": 0.252
         },
         {
           "word_index": 4,
           "text": "counting",
-          "start": 244.35,
-          "end": 245.15,
+          "start": 252.65,
+          "end": 253.45,
           "confidence": 0.252
         },
         {
           "word_index": 5,
           "text": "dollars",
-          "start": 246.15,
-          "end": 246.95,
+          "start": 254.7,
+          "end": 255.5,
           "confidence": 0.252
         }
       ],
@@ -6867,52 +6997,52 @@
       "char_rois": []
     },
     {
-      "line_index": 101,
+      "line_index": 102,
       "text": "We'll be we'll be counting stars",
-      "start": 255.5,
-      "end": 256.4,
+      "start": 255.1,
+      "end": 256.05,
       "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "We'll",
-          "start": 255.5,
-          "end": 255.6,
+          "start": 255.1,
+          "end": 255.25,
           "confidence": 0.252
         },
         {
           "word_index": 2,
           "text": "be",
-          "start": 255.65,
-          "end": 255.8,
+          "start": 255.3,
+          "end": 255.4,
           "confidence": 0.252
         },
         {
           "word_index": 3,
           "text": "we'll",
-          "start": 255.85,
-          "end": 255.95,
+          "start": 255.45,
+          "end": 255.55,
           "confidence": 0.252
         },
         {
           "word_index": 4,
           "text": "be",
-          "start": 256.0,
-          "end": 256.1,
+          "start": 255.6,
+          "end": 255.7,
           "confidence": 0.252
         },
         {
           "word_index": 5,
           "text": "counting",
-          "start": 256.15,
-          "end": 256.25,
+          "start": 255.75,
+          "end": 255.9,
           "confidence": 0.252
         },
         {
           "word_index": 6,
           "text": "stars",
-          "start": 256.3,
-          "end": 256.4,
+          "start": 255.95,
+          "end": 256.05,
           "confidence": 0.252
         }
       ],
@@ -6958,32 +7088,32 @@
       "char_rois": []
     },
     {
-      "line_index": 102,
+      "line_index": 103,
       "text": "Take that money",
       "start": 264.85,
       "end": 265.3,
-      "confidence": 0.252,
+      "confidence": 0.45,
       "words": [
         {
           "word_index": 1,
           "text": "Take",
           "start": 264.85,
           "end": 264.95,
-          "confidence": 0.252
+          "confidence": 0.45
         },
         {
           "word_index": 2,
           "text": "that",
           "start": 265.0,
           "end": 265.1,
-          "confidence": 0.252
+          "confidence": 0.45
         },
         {
           "word_index": 3,
           "text": "money",
           "start": 265.15,
           "end": 265.3,
-          "confidence": 0.252
+          "confidence": 0.45
         }
       ],
       "y": 21,
@@ -7010,32 +7140,32 @@
       "char_rois": []
     },
     {
-      "line_index": 103,
+      "line_index": 104,
       "text": "Watch it burn",
       "start": 265.3,
       "end": 265.7,
-      "confidence": 0.252,
+      "confidence": 0.45,
       "words": [
         {
           "word_index": 1,
           "text": "Watch",
           "start": 265.3,
           "end": 265.4,
-          "confidence": 0.252
+          "confidence": 0.45
         },
         {
           "word_index": 2,
           "text": "it",
           "start": 265.45,
           "end": 265.55,
-          "confidence": 0.252
+          "confidence": 0.45
         },
         {
           "word_index": 3,
           "text": "burn",
           "start": 265.6,
           "end": 265.7,
-          "confidence": 0.252
+          "confidence": 0.45
         }
       ],
       "y": 89,
@@ -7062,7 +7192,7 @@
       "char_rois": []
     },
     {
-      "line_index": 104,
+      "line_index": 105,
       "text": "Sink in the river",
       "start": 265.7,
       "end": 266.25,
@@ -7127,39 +7257,39 @@
       "char_rois": []
     },
     {
-      "line_index": 105,
+      "line_index": 106,
       "text": "The lessons I learned",
-      "start": 266.65,
-      "end": 267.35,
-      "confidence": 0.252,
+      "start": 266.25,
+      "end": 266.8,
+      "confidence": 0.228,
       "words": [
         {
           "word_index": 1,
           "text": "The",
-          "start": 266.65,
-          "end": 266.75,
-          "confidence": 0.252
+          "start": 266.25,
+          "end": 266.35,
+          "confidence": 0.228
         },
         {
           "word_index": 2,
           "text": "lessons",
-          "start": 266.8,
-          "end": 266.9,
-          "confidence": 0.252
+          "start": 266.4,
+          "end": 266.5,
+          "confidence": 0.228
         },
         {
           "word_index": 3,
           "text": "I",
-          "start": 266.95,
-          "end": 267.05,
-          "confidence": 0.252
+          "start": 266.55,
+          "end": 266.65,
+          "confidence": 0.228
         },
         {
           "word_index": 4,
           "text": "learned",
-          "start": 267.1,
-          "end": 267.2,
-          "confidence": 0.252
+          "start": 266.7,
+          "end": 266.8,
+          "confidence": 0.228
         }
       ],
       "y": 231,
@@ -7192,32 +7322,32 @@
       "char_rois": []
     },
     {
-      "line_index": 106,
+      "line_index": 107,
       "text": "You CLICK TO",
-      "start": 267.95,
-      "end": 270.2,
-      "confidence": 0.347,
+      "start": 266.8,
+      "end": 267.3,
+      "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
           "text": "You",
-          "start": 267.95,
-          "end": 268.05,
-          "confidence": 0.25
+          "start": 266.8,
+          "end": 266.9,
+          "confidence": 0.5
         },
         {
           "word_index": 2,
           "text": "CLICK",
-          "start": 269.8,
-          "end": 269.9,
-          "confidence": 0.541
+          "start": 266.95,
+          "end": 267.05,
+          "confidence": 0.5
         },
         {
           "word_index": 3,
           "text": "TO",
-          "start": 270.1,
-          "end": 270.2,
-          "confidence": 0.25
+          "start": 267.1,
+          "end": 267.3,
+          "confidence": 0.5
         }
       ],
       "y": 5,
@@ -7244,25 +7374,25 @@
       "char_rois": []
     },
     {
-      "line_index": 107,
+      "line_index": 108,
       "text": "Tube SUBSCRIBER",
-      "start": 269.05,
-      "end": 269.3,
-      "confidence": 0.252,
+      "start": 267.3,
+      "end": 267.55,
+      "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
           "text": "Tube",
-          "start": 269.05,
-          "end": 269.15,
-          "confidence": 0.252
+          "start": 267.3,
+          "end": 267.4,
+          "confidence": 0.5
         },
         {
           "word_index": 2,
           "text": "SUBSCRIBER",
-          "start": 269.2,
-          "end": 269.3,
-          "confidence": 0.252
+          "start": 267.45,
+          "end": 267.55,
+          "confidence": 0.5
         }
       ],
       "y": 32,
@@ -7283,17 +7413,17 @@
       "char_rois": []
     },
     {
-      "line_index": 108,
+      "line_index": 109,
       "text": "KARAOKE",
-      "start": 269.3,
-      "end": 269.4,
+      "start": 267.55,
+      "end": 267.65,
       "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "KARAOKE",
-          "start": 269.3,
-          "end": 269.4,
+          "start": 267.55,
+          "end": 267.65,
           "confidence": 0.252
         }
       ],
@@ -7309,25 +7439,25 @@
       "char_rois": []
     },
     {
-      "line_index": 109,
+      "line_index": 110,
       "text": "Sing KING",
-      "start": 269.4,
-      "end": 269.65,
-      "confidence": 0.252,
+      "start": 268.6,
+      "end": 268.9,
+      "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "Sing",
-          "start": 269.4,
-          "end": 269.5,
-          "confidence": 0.252
+          "start": 268.6,
+          "end": 268.7,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "KING",
-          "start": 269.55,
-          "end": 269.65,
-          "confidence": 0.252
+          "start": 268.75,
+          "end": 268.9,
+          "confidence": 1.0
         }
       ],
       "y": 184,
@@ -7348,37 +7478,37 @@
       "char_rois": []
     },
     {
-      "line_index": 110,
+      "line_index": 111,
       "text": "f LIKE US ON FOLLOW US",
-      "start": 269.65,
+      "start": 269.45,
       "end": 270.65,
       "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
           "text": "f",
-          "start": 269.65,
-          "end": 269.75,
+          "start": 269.45,
+          "end": 269.6,
           "confidence": 0.5
         },
         {
           "word_index": 2,
           "text": "LIKE",
-          "start": 269.8,
-          "end": 269.9,
+          "start": 269.65,
+          "end": 269.8,
           "confidence": 0.5
         },
         {
           "word_index": 3,
           "text": "US",
-          "start": 269.95,
-          "end": 270.05,
+          "start": 269.85,
+          "end": 270.0,
           "confidence": 0.5
         },
         {
           "word_index": 4,
           "text": "ON",
-          "start": 270.1,
+          "start": 270.05,
           "end": 270.2,
           "confidence": 0.5
         },
@@ -7439,7 +7569,7 @@
       "char_rois": []
     },
     {
-      "line_index": 111,
+      "line_index": 112,
       "text": "FACEBOOK ON TWITTER",
       "start": 270.65,
       "end": 271.2,

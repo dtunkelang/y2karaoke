@@ -1421,29 +1421,29 @@
     {
       "line_index": 22,
       "text": "C'est comme a",
-      "start": 70.45,
-      "end": 70.85,
+      "start": 70.7,
+      "end": 71.4,
       "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
           "text": "C'est",
-          "start": 70.45,
-          "end": 70.55,
+          "start": 70.7,
+          "end": 70.8,
           "confidence": 0.5
         },
         {
           "word_index": 2,
           "text": "comme",
-          "start": 70.6,
-          "end": 70.7,
+          "start": 70.85,
+          "end": 70.95,
           "confidence": 0.5
         },
         {
           "word_index": 3,
           "text": "a",
-          "start": 70.75,
-          "end": 70.85,
+          "start": 71.0,
+          "end": 71.1,
           "confidence": 0.5
         }
       ],
@@ -1473,58 +1473,58 @@
     {
       "line_index": 23,
       "text": "Ma cherie la la la la la",
-      "start": 72.15,
-      "end": 74.1,
-      "confidence": 0.357,
+      "start": 72.7,
+      "end": 73.7,
+      "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
           "text": "Ma",
-          "start": 72.15,
-          "end": 72.25,
-          "confidence": 1.0
+          "start": 72.7,
+          "end": 72.8,
+          "confidence": 0.5
         },
         {
           "word_index": 2,
           "text": "cherie",
-          "start": 72.5,
-          "end": 72.6,
-          "confidence": 0.25
+          "start": 72.85,
+          "end": 72.95,
+          "confidence": 0.5
         },
         {
           "word_index": 3,
           "text": "la",
-          "start": 72.8,
-          "end": 72.9,
-          "confidence": 0.25
+          "start": 73.0,
+          "end": 73.1,
+          "confidence": 0.5
         },
         {
           "word_index": 4,
           "text": "la",
-          "start": 73.1,
-          "end": 73.2,
-          "confidence": 0.25
+          "start": 73.15,
+          "end": 73.25,
+          "confidence": 0.5
         },
         {
           "word_index": 5,
           "text": "la",
-          "start": 73.4,
-          "end": 73.5,
-          "confidence": 0.25
+          "start": 73.3,
+          "end": 73.4,
+          "confidence": 0.5
         },
         {
           "word_index": 6,
           "text": "la",
-          "start": 73.7,
-          "end": 73.8,
-          "confidence": 0.25
+          "start": 73.45,
+          "end": 73.55,
+          "confidence": 0.5
         },
         {
           "word_index": 7,
           "text": "la",
-          "start": 74.0,
-          "end": 74.1,
-          "confidence": 0.25
+          "start": 73.6,
+          "end": 73.7,
+          "confidence": 0.5
         }
       ],
       "y": 163,
@@ -1668,15 +1668,15 @@
     {
       "line_index": 27,
       "text": "Freeze",
-      "start": 81.75,
-      "end": 82.55,
+      "start": 82.4,
+      "end": 83.2,
       "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
           "text": "Freeze",
-          "start": 81.75,
-          "end": 82.55,
+          "start": 82.4,
+          "end": 83.2,
           "confidence": 0.5
         }
       ],
@@ -1694,22 +1694,22 @@
     {
       "line_index": 28,
       "text": "Willy William",
-      "start": 82.55,
-      "end": 82.8,
+      "start": 83.5,
+      "end": 84.2,
       "confidence": 0.625,
       "words": [
         {
           "word_index": 1,
           "text": "Willy",
-          "start": 82.55,
-          "end": 82.65,
+          "start": 83.5,
+          "end": 83.6,
           "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "William",
-          "start": 82.7,
-          "end": 82.8,
+          "start": 83.65,
+          "end": 83.75,
           "confidence": 0.25
         }
       ],
@@ -1733,37 +1733,37 @@
     {
       "line_index": 29,
       "text": "Los DJ's no mienten",
-      "start": 82.9,
-      "end": 83.9,
-      "confidence": 0.5,
+      "start": 84.6,
+      "end": 85.3,
+      "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "Los",
-          "start": 82.9,
-          "end": 83.15,
-          "confidence": 0.5
+          "start": 84.6,
+          "end": 84.75,
+          "confidence": 0.252
         },
         {
           "word_index": 2,
           "text": "DJ's",
-          "start": 83.2,
-          "end": 83.4,
-          "confidence": 0.5
+          "start": 84.8,
+          "end": 84.95,
+          "confidence": 0.252
         },
         {
           "word_index": 3,
           "text": "no",
-          "start": 83.45,
-          "end": 83.6,
-          "confidence": 0.5
+          "start": 85.0,
+          "end": 85.1,
+          "confidence": 0.252
         },
         {
           "word_index": 4,
           "text": "mienten",
-          "start": 83.65,
-          "end": 83.9,
-          "confidence": 0.5
+          "start": 85.15,
+          "end": 85.3,
+          "confidence": 0.252
         }
       ],
       "y": 17,
@@ -1797,116 +1797,38 @@
     },
     {
       "line_index": 30,
-      "text": "le gusta a mi gente",
-      "start": 84.4,
-      "end": 85.1,
-      "confidence": 0.5,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "le",
-          "start": 84.4,
-          "end": 84.5,
-          "confidence": 0.5
-        },
-        {
-          "word_index": 2,
-          "text": "gusta",
-          "start": 84.55,
-          "end": 84.65,
-          "confidence": 0.5
-        },
-        {
-          "word_index": 3,
-          "text": "a",
-          "start": 84.7,
-          "end": 84.8,
-          "confidence": 0.5
-        },
-        {
-          "word_index": 4,
-          "text": "mi",
-          "start": 84.85,
-          "end": 84.95,
-          "confidence": 0.5
-        },
-        {
-          "word_index": 5,
-          "text": "gente",
-          "start": 85.0,
-          "end": 85.1,
-          "confidence": 0.5
-        }
-      ],
-      "y": 89,
-      "word_rois": [
-        [
-          91,
-          89,
-          36,
-          36
-        ],
-        [
-          132,
-          89,
-          90,
-          36
-        ],
-        [
-          226,
-          89,
-          23,
-          36
-        ],
-        [
-          253,
-          89,
-          40,
-          36
-        ],
-        [
-          298,
-          89,
-          89,
-          36
-        ]
-      ],
-      "char_rois": []
-    },
-    {
-      "line_index": 31,
       "text": "eso se fue mundial",
-      "start": 86.0,
-      "end": 86.55,
-      "confidence": 0.228,
+      "start": 85.45,
+      "end": 86.0,
+      "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "eso",
-          "start": 86.0,
-          "end": 86.1,
-          "confidence": 0.228
+          "start": 85.45,
+          "end": 85.55,
+          "confidence": 0.252
         },
         {
           "word_index": 2,
           "text": "se",
-          "start": 86.15,
-          "end": 86.25,
-          "confidence": 0.228
+          "start": 85.6,
+          "end": 85.7,
+          "confidence": 0.252
         },
         {
           "word_index": 3,
           "text": "fue",
-          "start": 86.3,
-          "end": 86.4,
-          "confidence": 0.228
+          "start": 85.75,
+          "end": 85.85,
+          "confidence": 0.252
         },
         {
           "word_index": 4,
           "text": "mundial",
-          "start": 86.45,
-          "end": 86.55,
-          "confidence": 0.228
+          "start": 85.9,
+          "end": 86.0,
+          "confidence": 0.252
         }
       ],
       "y": 161,
@@ -1945,32 +1867,110 @@
       "char_rois": []
     },
     {
+      "line_index": 31,
+      "text": "le gusta a mi gente",
+      "start": 86.0,
+      "end": 86.7,
+      "confidence": 0.252,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "le",
+          "start": 86.0,
+          "end": 86.1,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 2,
+          "text": "gusta",
+          "start": 86.15,
+          "end": 86.25,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 3,
+          "text": "a",
+          "start": 86.3,
+          "end": 86.4,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 4,
+          "text": "mi",
+          "start": 86.45,
+          "end": 86.55,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 5,
+          "text": "gente",
+          "start": 86.6,
+          "end": 86.7,
+          "confidence": 0.252
+        }
+      ],
+      "y": 89,
+      "word_rois": [
+        [
+          91,
+          89,
+          41,
+          36
+        ],
+        [
+          136,
+          89,
+          86,
+          36
+        ],
+        [
+          226,
+          89,
+          23,
+          36
+        ],
+        [
+          253,
+          89,
+          40,
+          36
+        ],
+        [
+          298,
+          89,
+          89,
+          36
+        ]
+      ],
+      "char_rois": []
+    },
+    {
       "line_index": 32,
       "text": "No le bajamos",
       "start": 87.35,
       "end": 88.35,
-      "confidence": 0.5,
+      "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "No",
           "start": 87.35,
           "end": 87.6,
-          "confidence": 0.5
+          "confidence": 0.252
         },
         {
           "word_index": 2,
           "text": "le",
           "start": 87.65,
           "end": 87.95,
-          "confidence": 0.5
+          "confidence": 0.252
         },
         {
           "word_index": 3,
           "text": "bajamos",
           "start": 88.0,
           "end": 88.35,
-          "confidence": 0.5
+          "confidence": 0.252
         }
       ],
       "y": 18,
@@ -2000,29 +2000,29 @@
       "line_index": 33,
       "text": "ms nunca paramos",
       "start": 88.35,
-      "end": 88.75,
-      "confidence": 0.5,
+      "end": 89.35,
+      "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "ms",
           "start": 88.35,
-          "end": 88.45,
-          "confidence": 0.5
+          "end": 88.6,
+          "confidence": 0.252
         },
         {
           "word_index": 2,
           "text": "nunca",
-          "start": 88.5,
-          "end": 88.6,
-          "confidence": 0.5
+          "start": 88.65,
+          "end": 88.95,
+          "confidence": 0.252
         },
         {
           "word_index": 3,
           "text": "paramos",
-          "start": 88.65,
-          "end": 88.75,
-          "confidence": 0.5
+          "start": 89.0,
+          "end": 89.35,
+          "confidence": 0.252
         }
       ],
       "y": 90,
@@ -2051,44 +2051,44 @@
     {
       "line_index": 34,
       "text": "Es otro palo y Blam",
-      "start": 88.75,
-      "end": 89.45,
-      "confidence": 0.5,
+      "start": 89.35,
+      "end": 90.9,
+      "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "Es",
-          "start": 88.75,
-          "end": 88.85,
-          "confidence": 0.5
+          "start": 89.35,
+          "end": 89.45,
+          "confidence": 0.252
         },
         {
           "word_index": 2,
           "text": "otro",
-          "start": 88.9,
-          "end": 89.0,
-          "confidence": 0.5
+          "start": 89.5,
+          "end": 89.6,
+          "confidence": 0.252
         },
         {
           "word_index": 3,
           "text": "palo",
-          "start": 89.05,
-          "end": 89.15,
-          "confidence": 0.5
+          "start": 89.65,
+          "end": 89.95,
+          "confidence": 0.252
         },
         {
           "word_index": 4,
           "text": "y",
-          "start": 89.2,
-          "end": 89.3,
-          "confidence": 0.5
+          "start": 90.0,
+          "end": 90.3,
+          "confidence": 0.252
         },
         {
           "word_index": 5,
           "text": "Blam",
-          "start": 89.35,
-          "end": 89.45,
-          "confidence": 0.5
+          "start": 90.35,
+          "end": 90.9,
+          "confidence": 0.252
         }
       ],
       "y": 161,
@@ -2129,37 +2129,37 @@
     {
       "line_index": 35,
       "text": "dnde est mi gente",
-      "start": 90.3,
-      "end": 90.95,
-      "confidence": 0.5,
+      "start": 91.35,
+      "end": 92.8,
+      "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "dnde",
-          "start": 90.3,
-          "end": 90.4,
-          "confidence": 0.5
+          "start": 91.35,
+          "end": 91.7,
+          "confidence": 0.252
         },
         {
           "word_index": 2,
           "text": "est",
-          "start": 90.45,
-          "end": 90.55,
-          "confidence": 0.5
+          "start": 91.75,
+          "end": 92.05,
+          "confidence": 0.252
         },
         {
           "word_index": 3,
           "text": "mi",
-          "start": 90.6,
-          "end": 90.7,
-          "confidence": 0.5
+          "start": 92.1,
+          "end": 92.4,
+          "confidence": 0.252
         },
         {
           "word_index": 4,
           "text": "gente",
-          "start": 90.75,
-          "end": 90.95,
-          "confidence": 0.5
+          "start": 92.45,
+          "end": 92.8,
+          "confidence": 0.252
         }
       ],
       "y": 229,
@@ -2199,58 +2199,6 @@
     },
     {
       "line_index": 36,
-      "text": "ms nunca paramos",
-      "start": 91.6,
-      "end": 94.1,
-      "confidence": 0.5,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "ms",
-          "start": 91.6,
-          "end": 92.25,
-          "confidence": 0.5
-        },
-        {
-          "word_index": 2,
-          "text": "nunca",
-          "start": 92.3,
-          "end": 93.1,
-          "confidence": 0.5
-        },
-        {
-          "word_index": 3,
-          "text": "paramos",
-          "start": 93.3,
-          "end": 94.1,
-          "confidence": 0.5
-        }
-      ],
-      "y": 90,
-      "word_rois": [
-        [
-          91,
-          88,
-          68,
-          34
-        ],
-        [
-          163,
-          90,
-          96,
-          34
-        ],
-        [
-          262,
-          92,
-          131,
-          36
-        ]
-      ],
-      "char_rois": []
-    },
-    {
-      "line_index": 37,
       "text": "Mais fais bouger la tte",
       "start": 93.0,
       "end": 93.75,
@@ -2328,7 +2276,7 @@
       "char_rois": []
     },
     {
-      "line_index": 38,
+      "line_index": 37,
       "text": "dnde est mi gente",
       "start": 94.95,
       "end": 95.55,
@@ -2399,7 +2347,7 @@
       "char_rois": []
     },
     {
-      "line_index": 39,
+      "line_index": 38,
       "text": "Say yeah yeah yeah",
       "start": 103.75,
       "end": 114.85,
@@ -2464,7 +2412,7 @@
       "char_rois": []
     },
     {
-      "line_index": 40,
+      "line_index": 39,
       "text": "Ay di que s",
       "start": 109.15,
       "end": 116.85,
@@ -2529,7 +2477,7 @@
       "char_rois": []
     },
     {
-      "line_index": 41,
+      "line_index": 40,
       "text": "Esquina a esquina",
       "start": 117.75,
       "end": 118.75,
@@ -2581,7 +2529,7 @@
       "char_rois": []
     },
     {
-      "line_index": 42,
+      "line_index": 41,
       "text": "de ah no' vamo'",
       "start": 119.15,
       "end": 120.15,
@@ -2646,7 +2594,7 @@
       "char_rois": []
     },
     {
-      "line_index": 43,
+      "line_index": 42,
       "text": "El mundo es grande",
       "start": 120.6,
       "end": 122.55,
@@ -2711,7 +2659,7 @@
       "char_rois": []
     },
     {
-      "line_index": 44,
+      "line_index": 43,
       "text": "pero lo tengo en mi' manos",
       "start": 122.0,
       "end": 124.3,
@@ -2802,7 +2750,7 @@
       "char_rois": []
     },
     {
-      "line_index": 45,
+      "line_index": 44,
       "text": "Estoy muy duro s",
       "start": 124.5,
       "end": 125.5,
@@ -2867,7 +2815,7 @@
       "char_rois": []
     },
     {
-      "line_index": 46,
+      "line_index": 45,
       "text": "okay ah vamos",
       "start": 125.5,
       "end": 125.9,
@@ -2919,7 +2867,7 @@
       "char_rois": []
     },
     {
-      "line_index": 47,
+      "line_index": 46,
       "text": "con el tiempo nos",
       "start": 126.05,
       "end": 127.15,
@@ -2990,7 +2938,7 @@
       "char_rois": []
     },
     {
-      "line_index": 48,
+      "line_index": 47,
       "text": "seguimos elevando",
       "start": 127.35,
       "end": 128.75,
@@ -3029,7 +2977,7 @@
       "char_rois": []
     },
     {
-      "line_index": 49,
+      "line_index": 48,
       "text": "Que seguimos rompiendo au",
       "start": 128.95,
       "end": 131.1,
@@ -3094,7 +3042,7 @@
       "char_rois": []
     },
     {
-      "line_index": 50,
+      "line_index": 49,
       "text": "Esta fiesta no tiene fin",
       "start": 131.1,
       "end": 131.8,
@@ -3172,7 +3120,7 @@
       "char_rois": []
     },
     {
-      "line_index": 51,
+      "line_index": 50,
       "text": "Botellas para arriba s",
       "start": 131.8,
       "end": 132.35,
@@ -3237,7 +3185,7 @@
       "char_rois": []
     },
     {
-      "line_index": 52,
+      "line_index": 51,
       "text": "Los tengo bailando",
       "start": 135.35,
       "end": 136.35,
@@ -3289,7 +3237,7 @@
       "char_rois": []
     },
     {
-      "line_index": 53,
+      "line_index": 52,
       "text": "rompiendo y yo sigo au",
       "start": 136.9,
       "end": 137.9,
@@ -3367,7 +3315,7 @@
       "char_rois": []
     },
     {
-      "line_index": 54,
+      "line_index": 53,
       "text": "Que seguimos rompiendo au",
       "start": 138.5,
       "end": 141.0,
@@ -3432,7 +3380,7 @@
       "char_rois": []
     },
     {
-      "line_index": 55,
+      "line_index": 54,
       "text": "Esta fiesta no tiene fin",
       "start": 140.05,
       "end": 142.5,
@@ -3510,7 +3458,7 @@
       "char_rois": []
     },
     {
-      "line_index": 56,
+      "line_index": 55,
       "text": "Botellas para arriba s",
       "start": 142.7,
       "end": 143.7,
@@ -3575,7 +3523,7 @@
       "char_rois": []
     },
     {
-      "line_index": 57,
+      "line_index": 56,
       "text": "dnde est mi gente",
       "start": 144.25,
       "end": 147.3,
@@ -3646,7 +3594,7 @@
       "char_rois": []
     },
     {
-      "line_index": 58,
+      "line_index": 57,
       "text": "Mais fais bouger la tte",
       "start": 147.55,
       "end": 149.9,
@@ -3724,7 +3672,7 @@
       "char_rois": []
     },
     {
-      "line_index": 59,
+      "line_index": 58,
       "text": "dnde est mi gente",
       "start": 150.3,
       "end": 151.1,
@@ -3795,7 +3743,7 @@
       "char_rois": []
     },
     {
-      "line_index": 60,
+      "line_index": 59,
       "text": "Ay di que s",
       "start": 151.1,
       "end": 152.15,
@@ -3860,66 +3808,66 @@
       "char_rois": []
     },
     {
-      "line_index": 61,
+      "line_index": 60,
       "text": "Say yeah yeah yeah",
-      "start": 153.2,
-      "end": 155.6,
-      "confidence": 0.5,
+      "start": 153.95,
+      "end": 156.05,
+      "confidence": 0.228,
       "words": [
         {
           "word_index": 1,
           "text": "Say",
-          "start": 153.2,
-          "end": 153.7,
-          "confidence": 0.5
+          "start": 153.95,
+          "end": 154.4,
+          "confidence": 0.228
         },
         {
           "word_index": 2,
           "text": "yeah",
-          "start": 153.75,
-          "end": 154.35,
-          "confidence": 0.5
+          "start": 154.45,
+          "end": 154.95,
+          "confidence": 0.228
         },
         {
           "word_index": 3,
           "text": "yeah",
-          "start": 154.4,
-          "end": 154.95,
-          "confidence": 0.5
+          "start": 155.0,
+          "end": 155.5,
+          "confidence": 0.228
         },
         {
           "word_index": 4,
           "text": "yeah",
-          "start": 155.0,
-          "end": 155.6,
-          "confidence": 0.5
+          "start": 155.55,
+          "end": 156.05,
+          "confidence": 0.228
         }
       ],
-      "y": 91,
+      "y": 89,
       "word_rois": [
         [
           91,
-          91,
-          54,
-          36
+          89,
+          52,
+          38
         ],
         [
-          150,
-          91,
+          148,
+          89,
           81,
-          36
+          38
         ],
         [
-          235,
-          91,
-          81,
-          36
+          234,
+          89,
+          80,
+          38
         ],
         [
-          320,
-          91,
-          75,
-          36
+          319,
+          89,
+          76,
+          38
         ]
       ],
       "char_rois": []

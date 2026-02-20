@@ -56,15 +56,18 @@ def detect_highlight_with_confidence(
     end_stable = min(len(dists_in), idx_peak + 5)
     stable_range = dists_in[start_stable:end_stable]
 
-    noise_floor = 1.0
+    # Very conservative noise floor for Karafun-style fades
     if stable_range:
-        noise_floor = float(np.mean(stable_range) + 2 * np.std(stable_range))
+        noise_floor = float(np.mean(stable_range) + 3 * np.std(stable_range))
+    else:
+        noise_floor = 2.5
 
     s, e = None, None
     for j in range(idx_peak, len(times)):
+        # Require a sustained gradient rise to distinguish from slow fade-in
         if s is None and dists_in[j] > noise_floor:
-            if j + 3 < len(times) and all(
-                dists_in[j + k] > dists_in[j + k - 1] for k in range(1, 4)
+            if j + 4 < len(times) and all(
+                dists_in[j + k] > dists_in[j + k - 1] for k in range(1, 5)
             ):
                 s = times[j]
 

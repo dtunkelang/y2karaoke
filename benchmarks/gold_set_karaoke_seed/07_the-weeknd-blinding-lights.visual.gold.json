@@ -17,45 +17,84 @@
   "lines": [
     {
       "line_index": 1,
+      "text": "Sing KING",
+      "start": 9.7,
+      "end": 204.65,
+      "confidence": 0.625,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Sing",
+          "start": 9.7,
+          "end": 9.8,
+          "confidence": 0.25
+        },
+        {
+          "word_index": 2,
+          "text": "KING",
+          "start": 204.35,
+          "end": 204.65,
+          "confidence": 1.0
+        }
+      ],
+      "y": 279,
+      "word_rois": [
+        [
+          13,
+          279,
+          28,
+          18
+        ],
+        [
+          43,
+          279,
+          41,
+          19
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 2,
       "text": "Yeah I've been tryna call",
-      "start": 15.4,
-      "end": 16.4,
-      "confidence": 0.5,
+      "start": 204.65,
+      "end": 205.35,
+      "confidence": 0.45,
       "words": [
         {
           "word_index": 1,
           "text": "Yeah",
-          "start": 15.4,
-          "end": 15.55,
-          "confidence": 0.5
+          "start": 204.65,
+          "end": 204.75,
+          "confidence": 0.45
         },
         {
           "word_index": 2,
           "text": "I've",
-          "start": 15.6,
-          "end": 15.75,
-          "confidence": 0.5
+          "start": 204.8,
+          "end": 204.9,
+          "confidence": 0.45
         },
         {
           "word_index": 3,
           "text": "been",
-          "start": 15.8,
-          "end": 15.95,
-          "confidence": 0.5
+          "start": 204.95,
+          "end": 205.05,
+          "confidence": 0.45
         },
         {
           "word_index": 4,
           "text": "tryna",
-          "start": 16.0,
-          "end": 16.15,
-          "confidence": 0.5
+          "start": 205.1,
+          "end": 205.2,
+          "confidence": 0.45
         },
         {
           "word_index": 5,
           "text": "call",
-          "start": 16.2,
-          "end": 16.4,
-          "confidence": 0.5
+          "start": 205.25,
+          "end": 205.35,
+          "confidence": 0.45
         }
       ],
       "y": 22,
@@ -94,66 +133,66 @@
       "char_rois": []
     },
     {
-      "line_index": 2,
+      "line_index": 3,
       "text": "I've been on my own for long enough",
-      "start": 16.4,
-      "end": 17.55,
+      "start": 205.35,
+      "end": 206.5,
       "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
           "text": "I've",
-          "start": 16.4,
-          "end": 16.5,
+          "start": 205.35,
+          "end": 205.45,
           "confidence": 0.5
         },
         {
           "word_index": 2,
           "text": "been",
-          "start": 16.55,
-          "end": 16.65,
+          "start": 205.5,
+          "end": 205.6,
           "confidence": 0.5
         },
         {
           "word_index": 3,
           "text": "on",
-          "start": 16.7,
-          "end": 16.8,
+          "start": 205.65,
+          "end": 205.75,
           "confidence": 0.5
         },
         {
           "word_index": 4,
           "text": "my",
-          "start": 16.85,
-          "end": 16.95,
+          "start": 205.8,
+          "end": 205.9,
           "confidence": 0.5
         },
         {
           "word_index": 5,
           "text": "own",
-          "start": 17.0,
-          "end": 17.1,
+          "start": 205.95,
+          "end": 206.05,
           "confidence": 0.5
         },
         {
           "word_index": 6,
           "text": "for",
-          "start": 17.15,
-          "end": 17.25,
+          "start": 206.1,
+          "end": 206.2,
           "confidence": 0.5
         },
         {
           "word_index": 7,
           "text": "long",
-          "start": 17.3,
-          "end": 17.4,
+          "start": 206.25,
+          "end": 206.35,
           "confidence": 0.5
         },
         {
           "word_index": 8,
           "text": "enough",
-          "start": 17.45,
-          "end": 17.55,
+          "start": 206.4,
+          "end": 206.5,
           "confidence": 0.5
         }
       ],
@@ -211,46 +250,46 @@
       "char_rois": []
     },
     {
-      "line_index": 3,
+      "line_index": 4,
       "text": "Maybe you can show me",
-      "start": 42.8,
-      "end": 44.2,
-      "confidence": 0.4,
+      "start": 206.5,
+      "end": 207.2,
+      "confidence": 0.45,
       "words": [
         {
           "word_index": 1,
           "text": "Maybe",
-          "start": 42.8,
-          "end": 42.9,
-          "confidence": 1.0
+          "start": 206.5,
+          "end": 206.6,
+          "confidence": 0.45
         },
         {
           "word_index": 2,
           "text": "you",
-          "start": 43.2,
-          "end": 43.3,
-          "confidence": 0.25
+          "start": 206.65,
+          "end": 206.75,
+          "confidence": 0.45
         },
         {
           "word_index": 3,
           "text": "can",
-          "start": 43.5,
-          "end": 43.6,
-          "confidence": 0.25
+          "start": 206.8,
+          "end": 206.9,
+          "confidence": 0.45
         },
         {
           "word_index": 4,
           "text": "show",
-          "start": 43.8,
-          "end": 43.9,
-          "confidence": 0.25
+          "start": 206.95,
+          "end": 207.05,
+          "confidence": 0.45
         },
         {
           "word_index": 5,
           "text": "me",
-          "start": 44.1,
-          "end": 44.2,
-          "confidence": 0.25
+          "start": 207.1,
+          "end": 207.2,
+          "confidence": 0.45
         }
       ],
       "y": 161,
@@ -289,39 +328,39 @@
       "char_rois": []
     },
     {
-      "line_index": 4,
+      "line_index": 5,
       "text": "how to love maybe",
-      "start": 44.2,
-      "end": 44.75,
-      "confidence": 0.228,
+      "start": 207.2,
+      "end": 207.75,
+      "confidence": 0.45,
       "words": [
         {
           "word_index": 1,
           "text": "how",
-          "start": 44.2,
-          "end": 44.3,
-          "confidence": 0.228
+          "start": 207.2,
+          "end": 207.3,
+          "confidence": 0.45
         },
         {
           "word_index": 2,
           "text": "to",
-          "start": 44.35,
-          "end": 44.45,
-          "confidence": 0.228
+          "start": 207.35,
+          "end": 207.45,
+          "confidence": 0.45
         },
         {
           "word_index": 3,
           "text": "love",
-          "start": 44.5,
-          "end": 44.6,
-          "confidence": 0.228
+          "start": 207.5,
+          "end": 207.6,
+          "confidence": 0.45
         },
         {
           "word_index": 4,
           "text": "maybe",
-          "start": 44.65,
-          "end": 44.75,
-          "confidence": 0.228
+          "start": 207.65,
+          "end": 207.75,
+          "confidence": 0.45
         }
       ],
       "y": 232,
@@ -354,66 +393,66 @@
       "char_rois": []
     },
     {
-      "line_index": 5,
+      "line_index": 6,
       "text": "I've been on my own for long enough",
-      "start": 44.75,
-      "end": 45.9,
+      "start": 207.75,
+      "end": 208.9,
       "confidence": 0.228,
       "words": [
         {
           "word_index": 1,
           "text": "I've",
-          "start": 44.75,
-          "end": 44.85,
+          "start": 207.75,
+          "end": 207.85,
           "confidence": 0.228
         },
         {
           "word_index": 2,
           "text": "been",
-          "start": 44.9,
-          "end": 45.0,
+          "start": 207.9,
+          "end": 208.0,
           "confidence": 0.228
         },
         {
           "word_index": 3,
           "text": "on",
-          "start": 45.05,
-          "end": 45.15,
+          "start": 208.05,
+          "end": 208.15,
           "confidence": 0.228
         },
         {
           "word_index": 4,
           "text": "my",
-          "start": 45.2,
-          "end": 45.3,
+          "start": 208.2,
+          "end": 208.3,
           "confidence": 0.228
         },
         {
           "word_index": 5,
           "text": "own",
-          "start": 45.35,
-          "end": 45.45,
+          "start": 208.35,
+          "end": 208.45,
           "confidence": 0.228
         },
         {
           "word_index": 6,
           "text": "for",
-          "start": 45.5,
-          "end": 45.6,
+          "start": 208.5,
+          "end": 208.6,
           "confidence": 0.228
         },
         {
           "word_index": 7,
           "text": "long",
-          "start": 45.65,
-          "end": 45.75,
+          "start": 208.65,
+          "end": 208.75,
           "confidence": 0.228
         },
         {
           "word_index": 8,
           "text": "enougl",
-          "start": 45.8,
-          "end": 45.9,
+          "start": 208.8,
+          "end": 208.9,
           "confidence": 0.228
         }
       ],
@@ -471,31 +510,31 @@
       "char_rois": []
     },
     {
-      "line_index": 6,
+      "line_index": 7,
       "text": "going through withdrawals",
-      "start": 47.55,
-      "end": 49.65,
+      "start": 209.05,
+      "end": 209.45,
       "confidence": 0.438,
       "words": [
         {
           "word_index": 1,
           "text": "going",
-          "start": 47.55,
-          "end": 47.65,
+          "start": 209.05,
+          "end": 209.15,
           "confidence": 0.25
         },
         {
           "word_index": 2,
           "text": "through",
-          "start": 47.7,
-          "end": 47.8,
+          "start": 209.2,
+          "end": 209.3,
           "confidence": 0.25
         },
         {
           "word_index": 3,
           "text": "withdrawals",
-          "start": 49.55,
-          "end": 49.65,
+          "start": 209.35,
+          "end": 209.45,
           "confidence": 1.0
         }
       ],
@@ -529,66 +568,66 @@
       "char_rois": []
     },
     {
-      "line_index": 7,
+      "line_index": 8,
       "text": "You don't even have to do too much",
-      "start": 49.65,
-      "end": 50.8,
+      "start": 209.45,
+      "end": 210.6,
       "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
           "text": "You",
-          "start": 49.65,
-          "end": 49.75,
+          "start": 209.45,
+          "end": 209.55,
           "confidence": 0.5
         },
         {
           "word_index": 2,
           "text": "don't",
-          "start": 49.8,
-          "end": 49.9,
+          "start": 209.6,
+          "end": 209.7,
           "confidence": 0.5
         },
         {
           "word_index": 3,
           "text": "even",
-          "start": 49.95,
-          "end": 50.05,
+          "start": 209.75,
+          "end": 209.85,
           "confidence": 0.5
         },
         {
           "word_index": 4,
           "text": "have",
-          "start": 50.1,
-          "end": 50.2,
+          "start": 209.9,
+          "end": 210.0,
           "confidence": 0.5
         },
         {
           "word_index": 5,
           "text": "to",
-          "start": 50.25,
-          "end": 50.35,
+          "start": 210.05,
+          "end": 210.15,
           "confidence": 0.5
         },
         {
           "word_index": 6,
           "text": "do",
-          "start": 50.4,
-          "end": 50.5,
+          "start": 210.2,
+          "end": 210.3,
           "confidence": 0.5
         },
         {
           "word_index": 7,
           "text": "too",
-          "start": 50.55,
-          "end": 50.65,
+          "start": 210.35,
+          "end": 210.45,
           "confidence": 0.5
         },
         {
           "word_index": 8,
           "text": "much",
-          "start": 50.7,
-          "end": 50.8,
+          "start": 210.5,
+          "end": 210.6,
           "confidence": 0.5
         }
       ],
@@ -646,45 +685,45 @@
       "char_rois": []
     },
     {
-      "line_index": 8,
+      "line_index": 9,
       "text": "You can turn me on",
-      "start": 50.8,
-      "end": 57.15,
+      "start": 210.6,
+      "end": 211.3,
       "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
           "text": "You",
-          "start": 50.8,
-          "end": 50.9,
+          "start": 210.6,
+          "end": 210.7,
           "confidence": 0.5
         },
         {
           "word_index": 2,
           "text": "can",
-          "start": 50.95,
-          "end": 51.75,
+          "start": 210.75,
+          "end": 210.85,
           "confidence": 0.5
         },
         {
           "word_index": 3,
           "text": "turn",
-          "start": 51.9,
-          "end": 52.7,
+          "start": 210.9,
+          "end": 211.0,
           "confidence": 0.5
         },
         {
           "word_index": 4,
           "text": "me",
-          "start": 54.5,
-          "end": 55.3,
+          "start": 211.05,
+          "end": 211.15,
           "confidence": 0.5
         },
         {
           "word_index": 5,
           "text": "on",
-          "start": 56.35,
-          "end": 57.15,
+          "start": 211.2,
+          "end": 211.3,
           "confidence": 0.5
         }
       ],
@@ -724,45 +763,45 @@
       "char_rois": []
     },
     {
-      "line_index": 9,
+      "line_index": 10,
       "text": "with just a touch baby",
-      "start": 57.15,
-      "end": 57.85,
+      "start": 211.3,
+      "end": 212.0,
       "confidence": 0.228,
       "words": [
         {
           "word_index": 1,
           "text": "with",
-          "start": 57.15,
-          "end": 57.25,
+          "start": 211.3,
+          "end": 211.4,
           "confidence": 0.228
         },
         {
           "word_index": 2,
           "text": "just",
-          "start": 57.3,
-          "end": 57.4,
+          "start": 211.45,
+          "end": 211.55,
           "confidence": 0.228
         },
         {
           "word_index": 3,
           "text": "a",
-          "start": 57.45,
-          "end": 57.55,
+          "start": 211.6,
+          "end": 211.7,
           "confidence": 0.228
         },
         {
           "word_index": 4,
           "text": "touch",
-          "start": 57.6,
-          "end": 57.7,
+          "start": 211.75,
+          "end": 211.85,
           "confidence": 0.228
         },
         {
           "word_index": 5,
           "text": "baby",
-          "start": 57.75,
-          "end": 57.85,
+          "start": 211.9,
+          "end": 212.0,
           "confidence": 0.228
         }
       ],
@@ -802,38 +841,38 @@
       "char_rois": []
     },
     {
-      "line_index": 10,
+      "line_index": 11,
       "text": "I look around and",
-      "start": 59.1,
-      "end": 60.1,
+      "start": 212.0,
+      "end": 212.55,
       "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
           "text": "I",
-          "start": 59.1,
-          "end": 59.25,
+          "start": 212.0,
+          "end": 212.1,
           "confidence": 0.5
         },
         {
           "word_index": 2,
           "text": "look",
-          "start": 59.3,
-          "end": 59.55,
+          "start": 212.15,
+          "end": 212.25,
           "confidence": 0.5
         },
         {
           "word_index": 3,
           "text": "around",
-          "start": 59.6,
-          "end": 59.85,
+          "start": 212.3,
+          "end": 212.4,
           "confidence": 0.5
         },
         {
           "word_index": 4,
           "text": "and",
-          "start": 59.9,
-          "end": 60.1,
+          "start": 212.45,
+          "end": 212.55,
           "confidence": 0.5
         }
       ],
@@ -867,45 +906,45 @@
       "char_rois": []
     },
     {
-      "line_index": 11,
+      "line_index": 12,
       "text": "Sin City's cold and empty",
-      "start": 60.65,
-      "end": 61.35,
+      "start": 212.55,
+      "end": 213.25,
       "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
           "text": "Sin",
-          "start": 60.65,
-          "end": 60.75,
+          "start": 212.55,
+          "end": 212.65,
           "confidence": 0.5
         },
         {
           "word_index": 2,
           "text": "City's",
-          "start": 60.8,
-          "end": 60.9,
+          "start": 212.7,
+          "end": 212.8,
           "confidence": 0.5
         },
         {
           "word_index": 3,
           "text": "cold",
-          "start": 60.95,
-          "end": 61.05,
+          "start": 212.85,
+          "end": 212.95,
           "confidence": 0.5
         },
         {
           "word_index": 4,
           "text": "and",
-          "start": 61.1,
-          "end": 61.2,
+          "start": 213.0,
+          "end": 213.1,
           "confidence": 0.5
         },
         {
           "word_index": 5,
           "text": "empty",
-          "start": 61.25,
-          "end": 61.35,
+          "start": 213.15,
+          "end": 213.25,
           "confidence": 0.5
         }
       ],
@@ -945,52 +984,52 @@
       "char_rois": []
     },
     {
-      "line_index": 12,
+      "line_index": 13,
       "text": "No one's around to judge me",
-      "start": 62.2,
-      "end": 63.2,
+      "start": 213.25,
+      "end": 214.1,
       "confidence": 0.228,
       "words": [
         {
           "word_index": 1,
           "text": "No",
-          "start": 62.2,
-          "end": 62.3,
+          "start": 213.25,
+          "end": 213.35,
           "confidence": 0.228
         },
         {
           "word_index": 2,
           "text": "one's",
-          "start": 62.35,
-          "end": 62.45,
+          "start": 213.4,
+          "end": 213.5,
           "confidence": 0.228
         },
         {
           "word_index": 3,
           "text": "around",
-          "start": 62.5,
-          "end": 62.6,
+          "start": 213.55,
+          "end": 213.65,
           "confidence": 0.228
         },
         {
           "word_index": 4,
           "text": "to",
-          "start": 62.65,
-          "end": 62.75,
+          "start": 213.7,
+          "end": 213.8,
           "confidence": 0.228
         },
         {
           "word_index": 5,
           "text": "judge",
-          "start": 62.8,
-          "end": 62.9,
+          "start": 213.85,
+          "end": 213.95,
           "confidence": 0.228
         },
         {
           "word_index": 6,
           "text": "me",
-          "start": 62.95,
-          "end": 63.2,
+          "start": 214.0,
+          "end": 214.1,
           "confidence": 0.228
         }
       ],
@@ -1036,38 +1075,38 @@
       "char_rois": []
     },
     {
-      "line_index": 13,
+      "line_index": 14,
       "text": "I can't see clearly",
-      "start": 63.75,
-      "end": 64.75,
+      "start": 214.1,
+      "end": 214.65,
       "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
           "text": "I",
-          "start": 63.75,
-          "end": 63.9,
+          "start": 214.1,
+          "end": 214.2,
           "confidence": 0.5
         },
         {
           "word_index": 2,
           "text": "can't",
-          "start": 63.95,
-          "end": 64.15,
+          "start": 214.25,
+          "end": 214.35,
           "confidence": 0.5
         },
         {
           "word_index": 3,
           "text": "see",
-          "start": 64.2,
-          "end": 64.45,
+          "start": 214.4,
+          "end": 214.5,
           "confidence": 0.5
         },
         {
           "word_index": 4,
           "text": "clearly",
-          "start": 64.5,
-          "end": 64.75,
+          "start": 214.55,
+          "end": 214.65,
           "confidence": 0.5
         }
       ],
@@ -1101,31 +1140,31 @@
       "char_rois": []
     },
     {
-      "line_index": 14,
+      "line_index": 15,
       "text": "when you're Goshen",
-      "start": 64.75,
-      "end": 65.5,
+      "start": 214.65,
+      "end": 215.05,
       "confidence": 0.228,
       "words": [
         {
           "word_index": 1,
           "text": "when",
-          "start": 64.75,
-          "end": 64.85,
+          "start": 214.65,
+          "end": 214.75,
           "confidence": 0.228
         },
         {
           "word_index": 2,
           "text": "you're",
-          "start": 64.9,
-          "end": 65.0,
+          "start": 214.8,
+          "end": 214.9,
           "confidence": 0.228
         },
         {
           "word_index": 3,
           "text": "goohone",
-          "start": 65.05,
-          "end": 65.5,
+          "start": 214.95,
+          "end": 215.05,
           "confidence": 0.228
         }
       ],
@@ -1153,31 +1192,31 @@
       "char_rois": []
     },
     {
-      "line_index": 15,
+      "line_index": 16,
       "text": "I said ooh",
-      "start": 66.75,
-      "end": 67.75,
+      "start": 215.05,
+      "end": 215.45,
       "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
           "text": "I",
-          "start": 66.75,
-          "end": 67.0,
+          "start": 215.05,
+          "end": 215.15,
           "confidence": 0.5
         },
         {
           "word_index": 2,
           "text": "said",
-          "start": 67.05,
-          "end": 67.4,
+          "start": 215.2,
+          "end": 215.3,
           "confidence": 0.5
         },
         {
           "word_index": 3,
           "text": "ooh",
-          "start": 67.45,
-          "end": 67.75,
+          "start": 215.35,
+          "end": 215.45,
           "confidence": 0.5
         }
       ],
@@ -1205,38 +1244,38 @@
       "char_rois": []
     },
     {
-      "line_index": 16,
+      "line_index": 17,
       "text": "blinded by the lights",
-      "start": 67.9,
-      "end": 69.15,
+      "start": 215.6,
+      "end": 216.15,
       "confidence": 0.228,
       "words": [
         {
           "word_index": 1,
           "text": "blinded",
-          "start": 67.9,
-          "end": 68.0,
+          "start": 215.6,
+          "end": 215.7,
           "confidence": 0.228
         },
         {
           "word_index": 2,
           "text": "by",
-          "start": 68.05,
-          "end": 68.15,
+          "start": 215.75,
+          "end": 215.85,
           "confidence": 0.228
         },
         {
           "word_index": 3,
           "text": "the",
-          "start": 68.2,
-          "end": 68.6,
+          "start": 215.9,
+          "end": 216.0,
           "confidence": 0.228
         },
         {
           "word_index": 4,
           "text": "lights",
-          "start": 68.65,
-          "end": 69.15,
+          "start": 216.05,
+          "end": 216.15,
           "confidence": 0.228
         }
       ],
@@ -1276,38 +1315,38 @@
       "char_rois": []
     },
     {
-      "line_index": 17,
+      "line_index": 18,
       "text": "No I can't sleep",
-      "start": 71.75,
-      "end": 72.75,
+      "start": 216.15,
+      "end": 216.7,
       "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
           "text": "No",
-          "start": 71.75,
-          "end": 71.95,
+          "start": 216.15,
+          "end": 216.25,
           "confidence": 0.5
         },
         {
           "word_index": 2,
           "text": "I",
-          "start": 72.0,
-          "end": 72.15,
+          "start": 216.3,
+          "end": 216.4,
           "confidence": 0.5
         },
         {
           "word_index": 3,
           "text": "can't",
-          "start": 72.2,
-          "end": 72.45,
+          "start": 216.45,
+          "end": 216.55,
           "confidence": 0.5
         },
         {
           "word_index": 4,
           "text": "sleep",
-          "start": 72.5,
-          "end": 72.75,
+          "start": 216.6,
+          "end": 216.7,
           "confidence": 0.5
         }
       ],
@@ -1341,45 +1380,45 @@
       "char_rois": []
     },
     {
-      "line_index": 18,
+      "line_index": 19,
       "text": "until I feel your touch",
-      "start": 72.75,
-      "end": 74.15,
+      "start": 216.7,
+      "end": 217.4,
       "confidence": 0.228,
       "words": [
         {
           "word_index": 1,
           "text": "until",
-          "start": 72.75,
-          "end": 72.85,
+          "start": 216.7,
+          "end": 216.8,
           "confidence": 0.228
         },
         {
           "word_index": 2,
           "text": "I",
-          "start": 72.9,
-          "end": 73.0,
+          "start": 216.85,
+          "end": 216.95,
           "confidence": 0.228
         },
         {
           "word_index": 3,
           "text": "feel",
-          "start": 73.05,
-          "end": 73.15,
+          "start": 217.0,
+          "end": 217.1,
           "confidence": 0.228
         },
         {
           "word_index": 4,
           "text": "your",
-          "start": 73.2,
-          "end": 73.6,
+          "start": 217.15,
+          "end": 217.25,
           "confidence": 0.228
         },
         {
           "word_index": 5,
           "text": "touch",
-          "start": 73.65,
-          "end": 74.15,
+          "start": 217.3,
+          "end": 217.4,
           "confidence": 0.228
         }
       ],
@@ -1419,38 +1458,38 @@
       "char_rois": []
     },
     {
-      "line_index": 19,
+      "line_index": 20,
       "text": "drowning in the night",
-      "start": 77.5,
-      "end": 79.5,
+      "start": 217.55,
+      "end": 218.1,
       "confidence": 0.228,
       "words": [
         {
           "word_index": 1,
           "text": "drowning",
-          "start": 77.5,
-          "end": 78.1,
+          "start": 217.55,
+          "end": 217.65,
           "confidence": 0.228
         },
         {
           "word_index": 2,
           "text": "in",
-          "start": 78.15,
-          "end": 78.5,
+          "start": 217.7,
+          "end": 217.8,
           "confidence": 0.228
         },
         {
           "word_index": 3,
           "text": "the",
-          "start": 78.55,
-          "end": 78.95,
+          "start": 217.85,
+          "end": 217.95,
           "confidence": 0.228
         },
         {
           "word_index": 4,
           "text": "night",
-          "start": 79.0,
-          "end": 79.5,
+          "start": 218.0,
+          "end": 218.1,
           "confidence": 0.228
         }
       ],
@@ -1490,45 +1529,45 @@
       "char_rois": []
     },
     {
-      "line_index": 20,
+      "line_index": 21,
       "text": "Oh when I'm like this",
-      "start": 82.1,
-      "end": 83.1,
+      "start": 218.1,
+      "end": 218.8,
       "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
           "text": "Oh",
-          "start": 82.1,
-          "end": 82.25,
+          "start": 218.1,
+          "end": 218.2,
           "confidence": 0.5
         },
         {
           "word_index": 2,
           "text": "when",
-          "start": 82.3,
-          "end": 82.45,
+          "start": 218.25,
+          "end": 218.35,
           "confidence": 0.5
         },
         {
           "word_index": 3,
           "text": "I'm",
-          "start": 82.5,
-          "end": 82.65,
+          "start": 218.4,
+          "end": 218.5,
           "confidence": 0.5
         },
         {
           "word_index": 4,
           "text": "like",
-          "start": 82.7,
-          "end": 82.85,
+          "start": 218.55,
+          "end": 218.65,
           "confidence": 0.5
         },
         {
           "word_index": 5,
           "text": "this",
-          "start": 82.9,
-          "end": 83.1,
+          "start": 218.7,
+          "end": 218.8,
           "confidence": 0.5
         }
       ],
@@ -1568,45 +1607,45 @@
       "char_rois": []
     },
     {
-      "line_index": 21,
+      "line_index": 22,
       "text": "You're the one I trust",
-      "start": 83.1,
-      "end": 84.5,
+      "start": 218.8,
+      "end": 219.5,
       "confidence": 0.228,
       "words": [
         {
           "word_index": 1,
           "text": "You're",
-          "start": 83.1,
-          "end": 83.2,
+          "start": 218.8,
+          "end": 218.9,
           "confidence": 0.228
         },
         {
           "word_index": 2,
           "text": "the",
-          "start": 83.25,
-          "end": 83.35,
+          "start": 218.95,
+          "end": 219.05,
           "confidence": 0.228
         },
         {
           "word_index": 3,
           "text": "one",
-          "start": 83.4,
-          "end": 83.55,
+          "start": 219.1,
+          "end": 219.2,
           "confidence": 0.228
         },
         {
           "word_index": 4,
           "text": "I",
-          "start": 83.6,
-          "end": 83.9,
+          "start": 219.25,
+          "end": 219.35,
           "confidence": 0.228
         },
         {
           "word_index": 5,
           "text": "trust",
-          "start": 83.95,
-          "end": 84.5,
+          "start": 219.4,
+          "end": 219.5,
           "confidence": 0.228
         }
       ],
@@ -1646,31 +1685,31 @@
       "char_rois": []
     },
     {
-      "line_index": 22,
+      "line_index": 23,
       "text": "Hey hey hey",
-      "start": 88.1,
-      "end": 89.9,
+      "start": 219.5,
+      "end": 219.9,
       "confidence": 0.228,
       "words": [
         {
           "word_index": 1,
           "text": "Hey",
-          "start": 88.1,
-          "end": 88.7,
+          "start": 219.5,
+          "end": 219.6,
           "confidence": 0.228
         },
         {
           "word_index": 2,
           "text": "hey",
-          "start": 88.75,
-          "end": 89.3,
+          "start": 219.65,
+          "end": 219.75,
           "confidence": 0.228
         },
         {
           "word_index": 3,
           "text": "hey",
-          "start": 89.35,
-          "end": 89.9,
+          "start": 219.8,
+          "end": 219.9,
           "confidence": 0.228
         }
       ],
@@ -1698,38 +1737,38 @@
       "char_rois": []
     },
     {
-      "line_index": 23,
+      "line_index": 24,
       "text": "running out of time",
-      "start": 94.9,
-      "end": 95.45,
+      "start": 220.05,
+      "end": 220.6,
       "confidence": 0.496,
       "words": [
         {
           "word_index": 1,
           "text": "running",
-          "start": 94.9,
-          "end": 95.0,
+          "start": 220.05,
+          "end": 220.15,
           "confidence": 0.865
         },
         {
           "word_index": 2,
           "text": "out",
-          "start": 95.05,
-          "end": 95.15,
+          "start": 220.2,
+          "end": 220.3,
           "confidence": 0.25
         },
         {
           "word_index": 3,
           "text": "of",
-          "start": 95.2,
-          "end": 95.3,
+          "start": 220.35,
+          "end": 220.45,
           "confidence": 0.865
         },
         {
           "word_index": 4,
           "text": "time",
-          "start": 95.35,
-          "end": 95.45,
+          "start": 220.5,
+          "end": 220.6,
           "confidence": 0.25
         }
       ],
@@ -1769,52 +1808,52 @@
       "char_rois": []
     },
     {
-      "line_index": 24,
+      "line_index": 25,
       "text": "'Cause I can see the sun",
-      "start": 95.45,
-      "end": 96.3,
+      "start": 220.6,
+      "end": 221.45,
       "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
           "text": "'Cause",
-          "start": 95.45,
-          "end": 95.55,
+          "start": 220.6,
+          "end": 220.7,
           "confidence": 0.5
         },
         {
           "word_index": 2,
           "text": "I",
-          "start": 95.6,
-          "end": 95.7,
+          "start": 220.75,
+          "end": 220.85,
           "confidence": 0.5
         },
         {
           "word_index": 3,
           "text": "can",
-          "start": 95.75,
-          "end": 95.85,
+          "start": 220.9,
+          "end": 221.0,
           "confidence": 0.5
         },
         {
           "word_index": 4,
           "text": "see",
-          "start": 95.9,
-          "end": 96.0,
+          "start": 221.05,
+          "end": 221.15,
           "confidence": 0.5
         },
         {
           "word_index": 5,
           "text": "the",
-          "start": 96.05,
-          "end": 96.15,
+          "start": 221.2,
+          "end": 221.3,
           "confidence": 0.5
         },
         {
           "word_index": 6,
           "text": "sun",
-          "start": 96.2,
-          "end": 96.3,
+          "start": 221.35,
+          "end": 221.45,
           "confidence": 0.5
         }
       ],
@@ -1860,73 +1899,73 @@
       "char_rois": []
     },
     {
-      "line_index": 25,
+      "line_index": 26,
       "text": "light up the sky so I hit the road",
-      "start": 96.3,
-      "end": 97.6,
+      "start": 221.45,
+      "end": 222.75,
       "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
           "text": "light",
-          "start": 96.3,
-          "end": 96.4,
+          "start": 221.45,
+          "end": 221.55,
           "confidence": 0.5
         },
         {
           "word_index": 2,
           "text": "up",
-          "start": 96.45,
-          "end": 96.55,
+          "start": 221.6,
+          "end": 221.7,
           "confidence": 0.5
         },
         {
           "word_index": 3,
           "text": "the",
-          "start": 96.6,
-          "end": 96.7,
+          "start": 221.75,
+          "end": 221.85,
           "confidence": 0.5
         },
         {
           "word_index": 4,
           "text": "sky",
-          "start": 96.75,
-          "end": 96.85,
+          "start": 221.9,
+          "end": 222.0,
           "confidence": 0.5
         },
         {
           "word_index": 5,
           "text": "so",
-          "start": 96.9,
-          "end": 97.0,
+          "start": 222.05,
+          "end": 222.15,
           "confidence": 0.5
         },
         {
           "word_index": 6,
           "text": "I",
-          "start": 97.05,
-          "end": 97.15,
+          "start": 222.2,
+          "end": 222.3,
           "confidence": 0.5
         },
         {
           "word_index": 7,
           "text": "hit",
-          "start": 97.2,
-          "end": 97.3,
+          "start": 222.35,
+          "end": 222.45,
           "confidence": 0.5
         },
         {
           "word_index": 8,
           "text": "the",
-          "start": 97.35,
-          "end": 97.45,
+          "start": 222.5,
+          "end": 222.6,
           "confidence": 0.5
         },
         {
           "word_index": 9,
           "text": "road",
-          "start": 97.5,
-          "end": 97.6,
+          "start": 222.65,
+          "end": 222.75,
           "confidence": 0.5
         }
       ],
@@ -1990,38 +2029,38 @@
       "char_rois": []
     },
     {
-      "line_index": 26,
+      "line_index": 27,
       "text": "in overdrive baby oh",
-      "start": 97.6,
-      "end": 98.15,
+      "start": 222.75,
+      "end": 223.3,
       "confidence": 0.228,
       "words": [
         {
           "word_index": 1,
           "text": "in",
-          "start": 97.6,
-          "end": 97.7,
+          "start": 222.75,
+          "end": 222.85,
           "confidence": 0.228
         },
         {
           "word_index": 2,
           "text": "overdrive",
-          "start": 97.75,
-          "end": 97.85,
+          "start": 222.9,
+          "end": 223.0,
           "confidence": 0.228
         },
         {
           "word_index": 3,
           "text": "baby",
-          "start": 97.9,
-          "end": 98.0,
+          "start": 223.05,
+          "end": 223.15,
           "confidence": 0.228
         },
         {
           "word_index": 4,
           "text": "oh",
-          "start": 98.05,
-          "end": 98.15,
+          "start": 223.2,
+          "end": 223.3,
           "confidence": 0.228
         }
       ],
@@ -2055,45 +2094,45 @@
       "char_rois": []
     },
     {
-      "line_index": 27,
+      "line_index": 28,
       "text": "The city's cold and empty",
-      "start": 109.1,
-      "end": 110.1,
+      "start": 223.3,
+      "end": 224.0,
       "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
           "text": "The",
-          "start": 109.1,
-          "end": 109.25,
+          "start": 223.3,
+          "end": 223.4,
           "confidence": 0.5
         },
         {
           "word_index": 2,
           "text": "city's",
-          "start": 109.3,
-          "end": 109.5,
+          "start": 223.45,
+          "end": 223.55,
           "confidence": 0.5
         },
         {
           "word_index": 3,
           "text": "cold",
-          "start": 109.55,
-          "end": 109.7,
+          "start": 223.6,
+          "end": 223.7,
           "confidence": 0.5
         },
         {
           "word_index": 4,
           "text": "and",
-          "start": 109.75,
-          "end": 109.9,
+          "start": 223.75,
+          "end": 223.85,
           "confidence": 0.5
         },
         {
           "word_index": 5,
           "text": "empty",
-          "start": 109.95,
-          "end": 110.1,
+          "start": 223.9,
+          "end": 224.0,
           "confidence": 0.5
         }
       ],
@@ -2133,52 +2172,52 @@
       "char_rois": []
     },
     {
-      "line_index": 28,
+      "line_index": 29,
       "text": "No one's around to judge me",
-      "start": 110.1,
-      "end": 111.85,
+      "start": 224.0,
+      "end": 224.85,
       "confidence": 0.228,
       "words": [
         {
           "word_index": 1,
           "text": "No",
-          "start": 110.1,
-          "end": 110.2,
+          "start": 224.0,
+          "end": 224.1,
           "confidence": 0.228
         },
         {
           "word_index": 2,
           "text": "one's",
-          "start": 110.25,
-          "end": 110.35,
+          "start": 224.15,
+          "end": 224.25,
           "confidence": 0.228
         },
         {
           "word_index": 3,
           "text": "around",
-          "start": 110.4,
-          "end": 110.5,
+          "start": 224.3,
+          "end": 224.4,
           "confidence": 0.228
         },
         {
           "word_index": 4,
           "text": "to",
-          "start": 110.55,
-          "end": 110.9,
+          "start": 224.45,
+          "end": 224.55,
           "confidence": 0.228
         },
         {
           "word_index": 5,
           "text": "judge",
-          "start": 110.95,
-          "end": 111.45,
+          "start": 224.6,
+          "end": 224.7,
           "confidence": 0.228
         },
         {
           "word_index": 6,
           "text": "me",
-          "start": 111.5,
-          "end": 111.85,
+          "start": 224.75,
+          "end": 224.85,
           "confidence": 0.228
         }
       ],
@@ -2224,138 +2263,73 @@
       "char_rois": []
     },
     {
-      "line_index": 29,
-      "text": "in overdrive baby oh",
-      "start": 112.15,
-      "end": 115.3,
-      "confidence": 0.5,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "in",
-          "start": 112.15,
-          "end": 112.75,
-          "confidence": 0.5
-        },
-        {
-          "word_index": 2,
-          "text": "overdrive",
-          "start": 112.8,
-          "end": 113.6,
-          "confidence": 0.5
-        },
-        {
-          "word_index": 3,
-          "text": "baby",
-          "start": 113.9,
-          "end": 114.7,
-          "confidence": 0.5
-        },
-        {
-          "word_index": 4,
-          "text": "oh",
-          "start": 114.75,
-          "end": 115.3,
-          "confidence": 0.5
-        }
-      ],
-      "y": 230,
-      "word_rois": [
-        [
-          162,
-          230,
-          31,
-          36
-        ],
-        [
-          198,
-          230,
-          144,
-          36
-        ],
-        [
-          346,
-          230,
-          81,
-          36
-        ],
-        [
-          432,
-          230,
-          52,
-          36
-        ]
-      ],
-      "char_rois": []
-    },
-    {
       "line_index": 30,
       "text": "light up the sky so l hit the road",
-      "start": 116.8,
-      "end": 118.2,
+      "start": 224.85,
+      "end": 226.15,
       "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
           "text": "light",
-          "start": 116.8,
-          "end": 116.9,
+          "start": 224.85,
+          "end": 224.95,
           "confidence": 0.5
         },
         {
           "word_index": 2,
           "text": "up",
-          "start": 116.95,
-          "end": 117.05,
+          "start": 225.0,
+          "end": 225.1,
           "confidence": 0.5
         },
         {
           "word_index": 3,
           "text": "the",
-          "start": 117.1,
-          "end": 117.2,
+          "start": 225.15,
+          "end": 225.25,
           "confidence": 0.5
         },
         {
           "word_index": 4,
           "text": "sky",
-          "start": 117.25,
-          "end": 117.4,
+          "start": 225.3,
+          "end": 225.4,
           "confidence": 0.5
         },
         {
           "word_index": 5,
           "text": "so",
-          "start": 117.45,
-          "end": 117.55,
+          "start": 225.45,
+          "end": 225.55,
           "confidence": 0.5
         },
         {
           "word_index": 6,
           "text": "l",
-          "start": 117.6,
-          "end": 117.7,
+          "start": 225.6,
+          "end": 225.7,
           "confidence": 0.5
         },
         {
           "word_index": 7,
           "text": "hit",
-          "start": 117.75,
-          "end": 117.85,
+          "start": 225.75,
+          "end": 225.85,
           "confidence": 0.5
         },
         {
           "word_index": 8,
           "text": "the",
-          "start": 117.9,
-          "end": 118.0,
+          "start": 225.9,
+          "end": 226.0,
           "confidence": 0.5
         },
         {
           "word_index": 9,
           "text": "road",
-          "start": 118.05,
-          "end": 118.2,
+          "start": 226.05,
+          "end": 226.15,
           "confidence": 0.5
         }
       ],
@@ -2420,76 +2394,37 @@
     },
     {
       "line_index": 31,
-      "text": "in overdrive",
-      "start": 118.2,
-      "end": 118.45,
-      "confidence": 0.5,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "in",
-          "start": 118.2,
-          "end": 118.3,
-          "confidence": 0.5
-        },
-        {
-          "word_index": 2,
-          "text": "overdrive",
-          "start": 118.35,
-          "end": 118.45,
-          "confidence": 0.5
-        }
-      ],
-      "y": 234,
-      "word_rois": [
-        [
-          164,
-          234,
-          32,
-          32
-        ],
-        [
-          200,
-          234,
-          144,
-          32
-        ]
-      ],
-      "char_rois": []
-    },
-    {
-      "line_index": 32,
       "text": "I can't see clearly",
-      "start": 118.85,
-      "end": 119.55,
+      "start": 226.15,
+      "end": 226.7,
       "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
           "text": "I",
-          "start": 118.85,
-          "end": 118.95,
+          "start": 226.15,
+          "end": 226.25,
           "confidence": 0.5
         },
         {
           "word_index": 2,
           "text": "can't",
-          "start": 119.0,
-          "end": 119.1,
+          "start": 226.3,
+          "end": 226.4,
           "confidence": 0.5
         },
         {
           "word_index": 3,
           "text": "see",
-          "start": 119.15,
-          "end": 119.25,
+          "start": 226.45,
+          "end": 226.55,
           "confidence": 0.5
         },
         {
           "word_index": 4,
           "text": "clearly",
-          "start": 119.3,
-          "end": 119.4,
+          "start": 226.6,
+          "end": 226.7,
           "confidence": 0.5
         }
       ],
@@ -2523,31 +2458,31 @@
       "char_rois": []
     },
     {
-      "line_index": 33,
+      "line_index": 32,
       "text": "when you're Goshen",
-      "start": 121.25,
-      "end": 121.95,
+      "start": 226.7,
+      "end": 227.1,
       "confidence": 0.228,
       "words": [
         {
           "word_index": 1,
           "text": "when",
-          "start": 121.25,
-          "end": 121.35,
+          "start": 226.7,
+          "end": 226.8,
           "confidence": 0.228
         },
         {
           "word_index": 2,
           "text": "you're",
-          "start": 121.4,
-          "end": 121.5,
+          "start": 226.85,
+          "end": 226.95,
           "confidence": 0.228
         },
         {
           "word_index": 3,
           "text": "goohone",
-          "start": 121.55,
-          "end": 121.65,
+          "start": 227.0,
+          "end": 227.1,
           "confidence": 0.228
         }
       ],
@@ -2575,31 +2510,31 @@
       "char_rois": []
     },
     {
-      "line_index": 34,
+      "line_index": 33,
       "text": "I said ooh",
-      "start": 122.8,
-      "end": 128.2,
+      "start": 227.1,
+      "end": 227.5,
       "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
           "text": "I",
-          "start": 122.8,
-          "end": 123.6,
+          "start": 227.1,
+          "end": 227.2,
           "confidence": 0.5
         },
         {
           "word_index": 2,
           "text": "said",
-          "start": 124.4,
-          "end": 125.2,
+          "start": 227.25,
+          "end": 227.35,
           "confidence": 0.5
         },
         {
           "word_index": 3,
           "text": "ooh",
-          "start": 127.4,
-          "end": 128.2,
+          "start": 227.4,
+          "end": 227.5,
           "confidence": 0.5
         }
       ],
@@ -2627,38 +2562,38 @@
       "char_rois": []
     },
     {
-      "line_index": 35,
+      "line_index": 34,
       "text": "blinded by the lights",
-      "start": 128.35,
-      "end": 128.9,
+      "start": 227.65,
+      "end": 228.2,
       "confidence": 0.228,
       "words": [
         {
           "word_index": 1,
           "text": "blinded",
-          "start": 128.35,
-          "end": 128.45,
+          "start": 227.65,
+          "end": 227.75,
           "confidence": 0.228
         },
         {
           "word_index": 2,
           "text": "by",
-          "start": 128.5,
-          "end": 128.6,
+          "start": 227.8,
+          "end": 227.9,
           "confidence": 0.228
         },
         {
           "word_index": 3,
           "text": "the",
-          "start": 128.65,
-          "end": 128.75,
+          "start": 227.95,
+          "end": 228.05,
           "confidence": 0.228
         },
         {
           "word_index": 4,
           "text": "lights",
-          "start": 128.8,
-          "end": 128.9,
+          "start": 228.1,
+          "end": 228.2,
           "confidence": 0.228
         }
       ],
@@ -2698,38 +2633,38 @@
       "char_rois": []
     },
     {
-      "line_index": 36,
+      "line_index": 35,
       "text": "No I can't sleep",
-      "start": 129.3,
-      "end": 130.0,
+      "start": 228.2,
+      "end": 228.75,
       "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
           "text": "No",
-          "start": 129.3,
-          "end": 129.4,
+          "start": 228.2,
+          "end": 228.3,
           "confidence": 0.5
         },
         {
           "word_index": 2,
           "text": "I",
-          "start": 129.45,
-          "end": 129.55,
+          "start": 228.35,
+          "end": 228.45,
           "confidence": 0.5
         },
         {
           "word_index": 3,
           "text": "can't",
-          "start": 129.6,
-          "end": 129.7,
+          "start": 228.5,
+          "end": 228.6,
           "confidence": 0.5
         },
         {
           "word_index": 4,
           "text": "sleep",
-          "start": 129.75,
-          "end": 129.85,
+          "start": 228.65,
+          "end": 228.75,
           "confidence": 0.5
         }
       ],
@@ -2763,45 +2698,45 @@
       "char_rois": []
     },
     {
-      "line_index": 37,
+      "line_index": 36,
       "text": "until I feel your touch",
-      "start": 131.5,
-      "end": 132.25,
+      "start": 228.75,
+      "end": 229.45,
       "confidence": 0.228,
       "words": [
         {
           "word_index": 1,
           "text": "until",
-          "start": 131.5,
-          "end": 131.6,
+          "start": 228.75,
+          "end": 228.85,
           "confidence": 0.228
         },
         {
           "word_index": 2,
           "text": "I",
-          "start": 131.65,
-          "end": 131.75,
+          "start": 228.9,
+          "end": 229.0,
           "confidence": 0.228
         },
         {
           "word_index": 3,
           "text": "feel",
-          "start": 131.8,
-          "end": 131.9,
+          "start": 229.05,
+          "end": 229.15,
           "confidence": 0.228
         },
         {
           "word_index": 4,
           "text": "your",
-          "start": 131.95,
-          "end": 132.05,
+          "start": 229.2,
+          "end": 229.3,
           "confidence": 0.228
         },
         {
           "word_index": 5,
           "text": "touch",
-          "start": 132.1,
-          "end": 132.25,
+          "start": 229.35,
+          "end": 229.45,
           "confidence": 0.228
         }
       ],
@@ -2841,38 +2776,38 @@
       "char_rois": []
     },
     {
-      "line_index": 38,
+      "line_index": 37,
       "text": "drowning in the night",
-      "start": 133.6,
-      "end": 135.55,
+      "start": 229.6,
+      "end": 230.15,
       "confidence": 0.228,
       "words": [
         {
           "word_index": 1,
           "text": "drowning",
-          "start": 133.6,
-          "end": 134.15,
+          "start": 229.6,
+          "end": 229.7,
           "confidence": 0.228
         },
         {
           "word_index": 2,
           "text": "in",
-          "start": 134.2,
-          "end": 134.55,
+          "start": 229.75,
+          "end": 229.85,
           "confidence": 0.228
         },
         {
           "word_index": 3,
           "text": "the",
-          "start": 134.6,
-          "end": 135.05,
+          "start": 229.9,
+          "end": 230.0,
           "confidence": 0.228
         },
         {
           "word_index": 4,
           "text": "night",
-          "start": 135.1,
-          "end": 135.55,
+          "start": 230.05,
+          "end": 230.15,
           "confidence": 0.228
         }
       ],
@@ -2912,45 +2847,45 @@
       "char_rois": []
     },
     {
-      "line_index": 39,
+      "line_index": 38,
       "text": "Oh when I'm like this",
-      "start": 137.8,
-      "end": 138.8,
+      "start": 230.15,
+      "end": 230.85,
       "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
           "text": "Oh",
-          "start": 137.8,
-          "end": 137.95,
+          "start": 230.15,
+          "end": 230.25,
           "confidence": 0.5
         },
         {
           "word_index": 2,
           "text": "when",
-          "start": 138.0,
-          "end": 138.2,
+          "start": 230.3,
+          "end": 230.4,
           "confidence": 0.5
         },
         {
           "word_index": 3,
           "text": "I'm",
-          "start": 138.25,
-          "end": 138.4,
+          "start": 230.45,
+          "end": 230.55,
           "confidence": 0.5
         },
         {
           "word_index": 4,
           "text": "like",
-          "start": 138.45,
-          "end": 138.6,
+          "start": 230.6,
+          "end": 230.7,
           "confidence": 0.5
         },
         {
           "word_index": 5,
           "text": "this",
-          "start": 138.65,
-          "end": 138.8,
+          "start": 230.75,
+          "end": 230.85,
           "confidence": 0.5
         }
       ],
@@ -2990,46 +2925,46 @@
       "char_rois": []
     },
     {
-      "line_index": 40,
+      "line_index": 39,
       "text": "You're the one I trust",
-      "start": 138.8,
-      "end": 148.8,
-      "confidence": 0.4,
+      "start": 230.85,
+      "end": 231.55,
+      "confidence": 0.228,
       "words": [
         {
           "word_index": 1,
           "text": "You're",
-          "start": 138.8,
-          "end": 138.9,
-          "confidence": 0.25
+          "start": 230.85,
+          "end": 230.95,
+          "confidence": 0.228
         },
         {
           "word_index": 2,
           "text": "the",
-          "start": 138.95,
-          "end": 139.05,
-          "confidence": 0.25
+          "start": 231.0,
+          "end": 231.1,
+          "confidence": 0.228
         },
         {
           "word_index": 3,
           "text": "one",
-          "start": 139.1,
-          "end": 139.2,
-          "confidence": 0.25
+          "start": 231.15,
+          "end": 231.25,
+          "confidence": 0.228
         },
         {
           "word_index": 4,
           "text": "I",
-          "start": 148.4,
-          "end": 148.5,
-          "confidence": 1.0
+          "start": 231.3,
+          "end": 231.4,
+          "confidence": 0.228
         },
         {
           "word_index": 5,
           "text": "trust",
-          "start": 148.7,
-          "end": 148.8,
-          "confidence": 0.25
+          "start": 231.45,
+          "end": 231.55,
+          "confidence": 0.228
         }
       ],
       "y": 232,
@@ -3068,31 +3003,31 @@
       "char_rois": []
     },
     {
-      "line_index": 41,
+      "line_index": 40,
       "text": "just calling back",
-      "start": 148.95,
-      "end": 149.35,
+      "start": 231.7,
+      "end": 232.1,
       "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
           "text": "just",
-          "start": 148.95,
-          "end": 149.05,
+          "start": 231.7,
+          "end": 231.8,
           "confidence": 0.5
         },
         {
           "word_index": 2,
           "text": "calling",
-          "start": 149.1,
-          "end": 149.2,
+          "start": 231.85,
+          "end": 231.95,
           "confidence": 0.5
         },
         {
           "word_index": 3,
           "text": "back",
-          "start": 149.25,
-          "end": 149.35,
+          "start": 232.0,
+          "end": 232.1,
           "confidence": 0.5
         }
       ],
@@ -3126,39 +3061,39 @@
       "char_rois": []
     },
     {
-      "line_index": 42,
+      "line_index": 41,
       "text": "to let you know",
-      "start": 149.35,
-      "end": 149.9,
-      "confidence": 0.3,
+      "start": 232.1,
+      "end": 232.65,
+      "confidence": 0.406,
       "words": [
         {
           "word_index": 1,
           "text": "to",
-          "start": 149.35,
-          "end": 149.45,
-          "confidence": 0.3
+          "start": 232.1,
+          "end": 232.2,
+          "confidence": 0.25
         },
         {
           "word_index": 2,
           "text": "let",
-          "start": 149.5,
-          "end": 149.6,
-          "confidence": 0.3
+          "start": 232.25,
+          "end": 232.35,
+          "confidence": 0.25
         },
         {
           "word_index": 3,
           "text": "you",
-          "start": 149.65,
-          "end": 149.75,
-          "confidence": 0.3
+          "start": 232.4,
+          "end": 232.5,
+          "confidence": 0.25
         },
         {
           "word_index": 4,
           "text": "know",
-          "start": 149.8,
-          "end": 149.9,
-          "confidence": 0.3
+          "start": 232.55,
+          "end": 232.65,
+          "confidence": 0.873
         }
       ],
       "y": 92,
@@ -3191,31 +3126,31 @@
       "char_rois": []
     },
     {
-      "line_index": 43,
+      "line_index": 42,
       "text": "just calling back",
-      "start": 150.05,
-      "end": 150.6,
+      "start": 232.8,
+      "end": 233.2,
       "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
           "text": "just",
-          "start": 150.05,
-          "end": 150.15,
+          "start": 232.8,
+          "end": 232.9,
           "confidence": 0.5
         },
         {
           "word_index": 2,
           "text": "calling",
-          "start": 150.2,
-          "end": 150.3,
+          "start": 232.95,
+          "end": 233.05,
           "confidence": 0.5
         },
         {
           "word_index": 3,
           "text": "back",
-          "start": 150.35,
-          "end": 150.6,
+          "start": 233.1,
+          "end": 233.2,
           "confidence": 0.5
         }
       ],
@@ -3249,118 +3184,66 @@
       "char_rois": []
     },
     {
-      "line_index": 44,
-      "text": "You're the trust",
-      "start": 150.6,
-      "end": 151.0,
-      "confidence": 0.5,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "You're",
-          "start": 150.6,
-          "end": 150.7,
-          "confidence": 0.5
-        },
-        {
-          "word_index": 2,
-          "text": "the",
-          "start": 150.75,
-          "end": 150.85,
-          "confidence": 0.5
-        },
-        {
-          "word_index": 3,
-          "text": "trust",
-          "start": 150.9,
-          "end": 151.0,
-          "confidence": 0.5
-        }
-      ],
-      "y": 234,
-      "word_rois": [
-        [
-          168,
-          234,
-          89,
-          30
-        ],
-        [
-          261,
-          234,
-          53,
-          30
-        ],
-        [
-          396,
-          234,
-          78,
-          30
-        ]
-      ],
-      "char_rois": []
-    },
-    {
-      "line_index": 45,
+      "line_index": 43,
       "text": "I could never say it on the phone",
-      "start": 151.0,
-      "end": 152.15,
+      "start": 233.2,
+      "end": 234.35,
       "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
           "text": "I",
-          "start": 151.0,
-          "end": 151.1,
+          "start": 233.2,
+          "end": 233.3,
           "confidence": 0.5
         },
         {
           "word_index": 2,
           "text": "could",
-          "start": 151.15,
-          "end": 151.25,
+          "start": 233.35,
+          "end": 233.45,
           "confidence": 0.5
         },
         {
           "word_index": 3,
           "text": "never",
-          "start": 151.3,
-          "end": 151.4,
+          "start": 233.5,
+          "end": 233.6,
           "confidence": 0.5
         },
         {
           "word_index": 4,
           "text": "say",
-          "start": 151.45,
-          "end": 151.55,
+          "start": 233.65,
+          "end": 233.75,
           "confidence": 0.5
         },
         {
           "word_index": 5,
           "text": "it",
-          "start": 151.6,
-          "end": 151.7,
+          "start": 233.8,
+          "end": 233.9,
           "confidence": 0.5
         },
         {
           "word_index": 6,
           "text": "on",
-          "start": 151.75,
-          "end": 151.85,
+          "start": 233.95,
+          "end": 234.05,
           "confidence": 0.5
         },
         {
           "word_index": 7,
           "text": "the",
-          "start": 151.9,
-          "end": 152.0,
+          "start": 234.1,
+          "end": 234.2,
           "confidence": 0.5
         },
         {
           "word_index": 8,
           "text": "phone",
-          "start": 152.05,
-          "end": 152.15,
+          "start": 234.25,
+          "end": 234.35,
           "confidence": 0.5
         }
       ],
@@ -3418,59 +3301,59 @@
       "char_rois": []
     },
     {
-      "line_index": 46,
+      "line_index": 44,
       "text": "Will never let you go this time",
-      "start": 152.15,
-      "end": 153.15,
+      "start": 234.35,
+      "end": 235.35,
       "confidence": 0.228,
       "words": [
         {
           "word_index": 1,
           "text": "Will",
-          "start": 152.15,
-          "end": 152.25,
+          "start": 234.35,
+          "end": 234.45,
           "confidence": 0.228
         },
         {
           "word_index": 2,
           "text": "never",
-          "start": 152.3,
-          "end": 152.4,
+          "start": 234.5,
+          "end": 234.6,
           "confidence": 0.228
         },
         {
           "word_index": 3,
           "text": "let",
-          "start": 152.45,
-          "end": 152.55,
+          "start": 234.65,
+          "end": 234.75,
           "confidence": 0.228
         },
         {
           "word_index": 4,
           "text": "you",
-          "start": 152.6,
-          "end": 152.7,
+          "start": 234.8,
+          "end": 234.9,
           "confidence": 0.228
         },
         {
           "word_index": 5,
           "text": "go",
-          "start": 152.75,
-          "end": 152.85,
+          "start": 234.95,
+          "end": 235.05,
           "confidence": 0.228
         },
         {
           "word_index": 6,
           "text": "this",
-          "start": 152.9,
-          "end": 153.0,
+          "start": 235.1,
+          "end": 235.2,
           "confidence": 0.228
         },
         {
           "word_index": 7,
           "text": "time",
-          "start": 153.05,
-          "end": 153.15,
+          "start": 235.25,
+          "end": 235.35,
           "confidence": 0.228
         }
       ],
@@ -3522,31 +3405,31 @@
       "char_rois": []
     },
     {
-      "line_index": 47,
+      "line_index": 45,
       "text": "I said ooh",
-      "start": 153.65,
-      "end": 154.35,
+      "start": 235.35,
+      "end": 235.75,
       "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
           "text": "I",
-          "start": 153.65,
-          "end": 153.75,
+          "start": 235.35,
+          "end": 235.45,
           "confidence": 0.5
         },
         {
           "word_index": 2,
           "text": "said",
-          "start": 153.8,
-          "end": 153.95,
+          "start": 235.5,
+          "end": 235.6,
           "confidence": 0.5
         },
         {
           "word_index": 3,
           "text": "ooh",
-          "start": 154.0,
-          "end": 154.3,
+          "start": 235.65,
+          "end": 235.75,
           "confidence": 0.5
         }
       ],
@@ -3574,38 +3457,38 @@
       "char_rois": []
     },
     {
-      "line_index": 48,
+      "line_index": 46,
       "text": "blinded by the lights",
-      "start": 158.35,
-      "end": 159.6,
+      "start": 235.9,
+      "end": 236.45,
       "confidence": 0.228,
       "words": [
         {
           "word_index": 1,
           "text": "blinded",
-          "start": 158.35,
-          "end": 158.45,
+          "start": 235.9,
+          "end": 236.0,
           "confidence": 0.228
         },
         {
           "word_index": 2,
           "text": "by",
-          "start": 158.5,
-          "end": 158.6,
+          "start": 236.05,
+          "end": 236.15,
           "confidence": 0.228
         },
         {
           "word_index": 3,
           "text": "the",
-          "start": 158.65,
-          "end": 159.05,
+          "start": 236.2,
+          "end": 236.3,
           "confidence": 0.228
         },
         {
           "word_index": 4,
           "text": "lights",
-          "start": 159.1,
-          "end": 159.6,
+          "start": 236.35,
+          "end": 236.45,
           "confidence": 0.228
         }
       ],
@@ -3645,38 +3528,38 @@
       "char_rois": []
     },
     {
-      "line_index": 49,
+      "line_index": 47,
       "text": "No I can't sleep",
-      "start": 161.2,
-      "end": 167.75,
+      "start": 236.45,
+      "end": 237.0,
       "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
           "text": "No",
-          "start": 161.2,
-          "end": 162.0,
+          "start": 236.45,
+          "end": 236.55,
           "confidence": 0.5
         },
         {
           "word_index": 2,
           "text": "I",
-          "start": 163.05,
-          "end": 163.85,
+          "start": 236.6,
+          "end": 236.7,
           "confidence": 0.5
         },
         {
           "word_index": 3,
           "text": "can't",
-          "start": 164.4,
-          "end": 165.2,
+          "start": 236.75,
+          "end": 236.85,
           "confidence": 0.5
         },
         {
           "word_index": 4,
           "text": "sleep",
-          "start": 166.95,
-          "end": 167.75,
+          "start": 236.9,
+          "end": 237.0,
           "confidence": 0.5
         }
       ],
@@ -3710,45 +3593,45 @@
       "char_rois": []
     },
     {
-      "line_index": 50,
+      "line_index": 48,
       "text": "until I feel your touch",
-      "start": 167.75,
-      "end": 168.45,
+      "start": 237.0,
+      "end": 237.7,
       "confidence": 0.228,
       "words": [
         {
           "word_index": 1,
           "text": "until",
-          "start": 167.75,
-          "end": 167.85,
+          "start": 237.0,
+          "end": 237.1,
           "confidence": 0.228
         },
         {
           "word_index": 2,
           "text": "I",
-          "start": 167.9,
-          "end": 168.0,
+          "start": 237.15,
+          "end": 237.25,
           "confidence": 0.228
         },
         {
           "word_index": 3,
           "text": "feel",
-          "start": 168.05,
-          "end": 168.15,
+          "start": 237.3,
+          "end": 237.4,
           "confidence": 0.228
         },
         {
           "word_index": 4,
           "text": "your",
-          "start": 168.2,
-          "end": 168.3,
+          "start": 237.45,
+          "end": 237.55,
           "confidence": 0.228
         },
         {
           "word_index": 5,
           "text": "touch",
-          "start": 168.35,
-          "end": 168.45,
+          "start": 237.6,
+          "end": 237.7,
           "confidence": 0.228
         }
       ],
@@ -3788,31 +3671,31 @@
       "char_rois": []
     },
     {
-      "line_index": 51,
+      "line_index": 49,
       "text": "Hey hey hey",
-      "start": 168.45,
-      "end": 168.95,
+      "start": 237.7,
+      "end": 238.1,
       "confidence": 0.228,
       "words": [
         {
           "word_index": 1,
           "text": "Hey",
-          "start": 168.45,
-          "end": 168.55,
+          "start": 237.7,
+          "end": 237.8,
           "confidence": 0.228
         },
         {
           "word_index": 2,
           "text": "hey",
-          "start": 168.6,
-          "end": 168.7,
+          "start": 237.85,
+          "end": 237.95,
           "confidence": 0.228
         },
         {
           "word_index": 3,
           "text": "hey",
-          "start": 168.75,
-          "end": 168.95,
+          "start": 238.0,
+          "end": 238.1,
           "confidence": 0.228
         }
       ],
@@ -3840,31 +3723,31 @@
       "char_rois": []
     },
     {
-      "line_index": 52,
+      "line_index": 50,
       "text": "Hey hey hey",
-      "start": 171.85,
-      "end": 173.65,
+      "start": 238.1,
+      "end": 238.5,
       "confidence": 0.228,
       "words": [
         {
           "word_index": 1,
           "text": "Hey",
-          "start": 171.85,
-          "end": 172.45,
+          "start": 238.1,
+          "end": 238.2,
           "confidence": 0.228
         },
         {
           "word_index": 2,
           "text": "hey",
-          "start": 172.5,
-          "end": 173.05,
+          "start": 238.25,
+          "end": 238.35,
           "confidence": 0.228
         },
         {
           "word_index": 3,
           "text": "hey",
-          "start": 173.1,
-          "end": 173.65,
+          "start": 238.4,
+          "end": 238.5,
           "confidence": 0.228
         }
       ],
@@ -3892,31 +3775,31 @@
       "char_rois": []
     },
     {
-      "line_index": 53,
+      "line_index": 51,
       "text": "Hey hey hey",
-      "start": 180.45,
-      "end": 181.45,
+      "start": 238.5,
+      "end": 238.9,
       "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
           "text": "Hey",
-          "start": 180.45,
-          "end": 180.75,
+          "start": 238.5,
+          "end": 238.6,
           "confidence": 0.5
         },
         {
           "word_index": 2,
           "text": "hey",
-          "start": 180.8,
-          "end": 181.1,
+          "start": 238.65,
+          "end": 238.75,
           "confidence": 0.5
         },
         {
           "word_index": 3,
           "text": "hey",
-          "start": 181.15,
-          "end": 181.45,
+          "start": 238.8,
+          "end": 238.9,
           "confidence": 0.5
         }
       ],
@@ -3944,31 +3827,31 @@
       "char_rois": []
     },
     {
-      "line_index": 54,
+      "line_index": 52,
       "text": "I said ooh",
-      "start": 185.1,
-      "end": 185.5,
+      "start": 238.9,
+      "end": 239.3,
       "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "I",
-          "start": 185.1,
-          "end": 185.2,
+          "start": 238.9,
+          "end": 239.0,
           "confidence": 0.252
         },
         {
           "word_index": 2,
           "text": "said",
-          "start": 185.25,
-          "end": 185.35,
+          "start": 239.05,
+          "end": 239.15,
           "confidence": 0.252
         },
         {
           "word_index": 3,
           "text": "ooh",
-          "start": 185.4,
-          "end": 185.5,
+          "start": 239.2,
+          "end": 239.3,
           "confidence": 0.252
         }
       ],
@@ -3996,38 +3879,38 @@
       "char_rois": []
     },
     {
-      "line_index": 55,
+      "line_index": 53,
       "text": "blinded by the lights",
-      "start": 187.05,
-      "end": 187.65,
+      "start": 239.45,
+      "end": 240.0,
       "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "blinded",
-          "start": 187.05,
-          "end": 187.15,
+          "start": 239.45,
+          "end": 239.55,
           "confidence": 0.252
         },
         {
           "word_index": 2,
           "text": "by",
-          "start": 187.2,
-          "end": 187.3,
+          "start": 239.6,
+          "end": 239.7,
           "confidence": 0.252
         },
         {
           "word_index": 3,
           "text": "the",
-          "start": 187.35,
-          "end": 187.5,
+          "start": 239.75,
+          "end": 239.85,
           "confidence": 0.252
         },
         {
           "word_index": 4,
           "text": "lights",
-          "start": 187.55,
-          "end": 187.65,
+          "start": 239.9,
+          "end": 240.0,
           "confidence": 0.252
         }
       ],
@@ -4067,38 +3950,38 @@
       "char_rois": []
     },
     {
-      "line_index": 56,
+      "line_index": 54,
       "text": "No I can't sleep",
-      "start": 193.85,
-      "end": 201.85,
+      "start": 240.0,
+      "end": 240.55,
       "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "No",
-          "start": 193.85,
-          "end": 194.65,
+          "start": 240.0,
+          "end": 240.1,
           "confidence": 0.252
         },
         {
           "word_index": 2,
           "text": "I",
-          "start": 195.75,
-          "end": 196.55,
+          "start": 240.15,
+          "end": 240.25,
           "confidence": 0.252
         },
         {
           "word_index": 3,
           "text": "can't",
-          "start": 197.6,
-          "end": 198.4,
+          "start": 240.3,
+          "end": 240.4,
           "confidence": 0.252
         },
         {
           "word_index": 4,
           "text": "sleep",
-          "start": 201.05,
-          "end": 201.85,
+          "start": 240.45,
+          "end": 240.55,
           "confidence": 0.252
         }
       ],
@@ -4132,45 +4015,45 @@
       "char_rois": []
     },
     {
-      "line_index": 57,
+      "line_index": 55,
       "text": "until I feel your touch",
-      "start": 198.25,
-      "end": 204.25,
+      "start": 240.55,
+      "end": 241.25,
       "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "until",
-          "start": 198.25,
-          "end": 199.05,
+          "start": 240.55,
+          "end": 240.65,
           "confidence": 0.252
         },
         {
           "word_index": 2,
           "text": "I",
-          "start": 199.8,
-          "end": 200.55,
+          "start": 240.7,
+          "end": 240.8,
           "confidence": 0.252
         },
         {
           "word_index": 3,
           "text": "feel",
-          "start": 200.6,
-          "end": 201.4,
+          "start": 240.85,
+          "end": 240.95,
           "confidence": 0.252
         },
         {
           "word_index": 4,
           "text": "your",
-          "start": 202.0,
-          "end": 202.8,
+          "start": 241.0,
+          "end": 241.1,
           "confidence": 0.252
         },
         {
           "word_index": 5,
           "text": "touch",
-          "start": 203.45,
-          "end": 204.25,
+          "start": 241.15,
+          "end": 241.25,
           "confidence": 0.252
         }
       ],

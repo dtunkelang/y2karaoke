@@ -62,7 +62,12 @@ def build_refined_lines_output(
 
         w_out: list[dict[str, Any]] = []
         n_words = len(ln.words)
-        l_start = max(ln.start, prev_line_end)
+        # Use visibility_start as the absolute floor if available, otherwise fallback to sequential logic
+        l_start = (
+            float(ln.visibility_start)
+            if ln.visibility_start is not None
+            else max(ln.start, prev_line_end)
+        )
 
         if not ln.word_starts or all(s is None for s in ln.word_starts):
             line_duration = max((ln.end or (l_start + 1.0)) - l_start, 1.0)

@@ -19,11 +19,11 @@ def deduplicate_persistent_lines(
         is_dup = False
         for u in unique:
             if text_similarity(ent["text"], u["text"]) > 0.9:
-                if abs(ent["y"] - u["y"]) < 20 and abs(ent["first"] - u["first"]) < 2.0:
+                if abs(ent["y"] - u["y"]) < 20 and abs(ent["first"] - u["first"]) < 0.5:
                     is_dup = True
                     break
         if not is_dup:
             unique.append(ent)
 
-    unique.sort(key=lambda x: (round(float(x["first"]) / 2.0) * 2.0, x["y"]))
+    unique.sort(key=lambda x: (x["first"], x["y"]))
     return unique
