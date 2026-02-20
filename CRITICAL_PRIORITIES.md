@@ -77,6 +77,7 @@ This document outlines the critical areas of the `y2karaoke` codebase and the im
 *   **In progress:** Continued visual refinement decomposition by moving frame-window capture/sampling/slicing helpers into `visual/refinement_frame_windows.py` with compatibility wrappers in `visual/refinement.py`.
 *   **In progress:** Continued visual refinement decomposition by moving persistent-overlap block selection/clustering/onset assignment helpers into `visual/refinement_persistent_blocks.py` with compatibility wrappers in `visual/refinement.py`.
 *   **In progress:** Continued visual refinement decomposition by moving unresolved-overlap onset-hint helpers into `visual/refinement_overlap_hints.py` with compatibility wrappers in `visual/refinement.py`.
+*   **In progress:** Continued visual refinement decomposition by moving highlight detection algorithms into `visual/refinement_detection.py` with compatibility wrappers in `visual/refinement.py`.
 
 **Action Plan:**
 *   **Consolidate:** Keep singer-color policy in a dedicated module and avoid duplicating it in frame drawing code.
