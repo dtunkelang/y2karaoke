@@ -64,6 +64,7 @@ This document outlines the critical areas of the `y2karaoke` codebase and the im
 *   **In progress:** Hardened GitHub Actions apt bootstrap in `.github/workflows/test.yml` to remove any stale `packages.microsoft.com` source entries before `apt-get update` (fixes intermittent Ubuntu Noble 403 failures).
 *   **In progress:** Continued Whisper mapping decomposition by moving line-context and drift-clamp helpers into `components/whisper/whisper_mapping_pipeline_line_context.py` with compatibility wrappers in `whisper_mapping_pipeline.py`.
 *   **In progress:** Continued Whisper integration decomposition by moving transcription/cache orchestration into `components/whisper/whisper_integration_transcribe.py` with compatibility wrapper in `whisper_integration_pipeline.py`.
+*   **In progress:** Continued Whisper post-processing decomposition by moving repeated-line shift + monotonic-start helpers into `components/whisper/whisper_mapping_post_repeat_shift.py` with compatibility wrappers in `whisper_mapping_post.py`.
 
 **Action Plan:**
 *   **Consolidate:** Keep singer-color policy in a dedicated module and avoid duplicating it in frame drawing code.
