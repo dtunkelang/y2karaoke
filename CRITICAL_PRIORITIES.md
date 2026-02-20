@@ -79,6 +79,7 @@ This document outlines the critical areas of the `y2karaoke` codebase and the im
 *   **In progress:** Continued visual refinement decomposition by moving unresolved-overlap onset-hint helpers into `visual/refinement_overlap_hints.py` with compatibility wrappers in `visual/refinement.py`.
 *   **In progress:** Continued visual refinement decomposition by moving highlight detection algorithms into `visual/refinement_detection.py` with compatibility wrappers in `visual/refinement.py`.
 *   **In progress:** Continued visual reconstruction decomposition by moving context-transition epoch inference into `visual/reconstruction_context_transitions.py` with compatibility wrapper in `visual/reconstruction.py`.
+*   **In progress:** Continued visual reconstruction decomposition by moving overlapped same-text repetition expansion into `visual/reconstruction_overlap_repetitions.py` with compatibility wrapper in `visual/reconstruction.py`.
 
 **Action Plan:**
 *   **Consolidate:** Keep singer-color policy in a dedicated module and avoid duplicating it in frame drawing code.
