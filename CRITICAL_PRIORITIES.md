@@ -86,6 +86,7 @@ This document outlines the critical areas of the `y2karaoke` codebase and the im
 *   **In progress:** Continued visual reconstruction decomposition by moving lane-proximity and overlapping-lane merge helpers into `visual/reconstruction_lane_merge.py` with compatibility wrappers in `visual/reconstruction.py`.
 *   **In progress:** Continued visual reconstruction decomposition by moving short-duplicate suppression and same-lane reentry merge helpers into `visual/reconstruction_reentry.py` with compatibility wrappers in `visual/reconstruction.py`.
 *   **In progress:** Continued visual refinement decomposition by moving foreground mask and line color-value collection helpers into `visual/refinement_masks.py` with compatibility wrappers in `visual/refinement.py`.
+*   **In progress:** Continued visual refinement decomposition by moving visibility-window onset estimators into `visual/refinement_onset_estimation.py` with compatibility wrappers in `visual/refinement.py`.
 
 **Action Plan:**
 *   **Consolidate:** Keep singer-color policy in a dedicated module and avoid duplicating it in frame drawing code.
