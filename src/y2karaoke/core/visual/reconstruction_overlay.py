@@ -164,8 +164,8 @@ def _identify_static_overlay_keys(
     y_min: float,
     y_max: float,
 ) -> set[tuple[str, int, int]]:
+    # Only filter the very top zone where title cards/watermarks live.
     y_top_zone = y_min + 0.15 * (y_max - y_min)
-    y_bottom_zone = y_min + 0.85 * (y_max - y_min)
 
     static_keys: set[tuple[str, int, int]] = set()
     for key, rec in stats.items():
@@ -179,10 +179,8 @@ def _identify_static_overlay_keys(
         std_y = var_y**0.5
 
         is_stable = std_x <= 8.0 and std_y <= 8.0
-        # Only consider extreme top/bottom zones to avoid lyric collisions
-        is_in_overlay_zone = mean_y <= y_top_zone or mean_y >= y_bottom_zone
 
-        if freq >= 0.7 and is_stable and is_in_overlay_zone:
+        if freq >= 0.7 and is_stable and mean_y <= y_top_zone:
             static_keys.add(key)
     return static_keys
 
