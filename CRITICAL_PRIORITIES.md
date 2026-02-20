@@ -67,6 +67,7 @@ This document outlines the critical areas of the `y2karaoke` codebase and the im
 *   **In progress:** Continued Whisper post-processing decomposition by moving repeated-line shift + monotonic-start helpers into `components/whisper/whisper_mapping_post_repeat_shift.py` with compatibility wrappers in `whisper_mapping_post.py`.
 *   **In progress:** Continued Whisper integration decomposition by moving DTW LRC-to-Whisper alignment orchestration into `components/whisper/whisper_integration_align.py` with compatibility wrapper in `whisper_integration_pipeline.py`.
 *   **In progress:** Continued Whisper mapping decomposition by moving assigned-word and gap-fill matching passes into `components/whisper/whisper_mapping_pipeline_matching.py` with compatibility wrappers in `whisper_mapping_pipeline.py`.
+*   **In progress:** Continued Whisper mapping decomposition by moving candidate scoring/ordering/registration into `components/whisper/whisper_mapping_pipeline_candidates.py` with compatibility wrappers in `whisper_mapping_pipeline.py`.
 
 **Action Plan:**
 *   **Consolidate:** Keep singer-color policy in a dedicated module and avoid duplicating it in frame drawing code.
