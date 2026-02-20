@@ -74,6 +74,7 @@ This document outlines the critical areas of the `y2karaoke` codebase and the im
 *   **In progress:** Continued Whisper mapping decomposition by moving top-level line orchestration into `components/whisper/whisper_mapping_pipeline_orchestration.py` with compatibility wrapper in `whisper_mapping_pipeline.py`.
 *   **In progress:** Continued visual reconstruction decomposition by moving mirrored-lane cycle extrapolation helpers into `visual/reconstruction_mirrored_cycles.py` with compatibility wrappers in `visual/reconstruction.py`.
 *   **In progress:** Continued visual reconstruction decomposition by moving intro-credits and bottom-fragment suppression helpers into `visual/reconstruction_intro_filters.py` with compatibility wrappers in `visual/reconstruction.py`.
+*   **In progress:** Continued visual refinement decomposition by moving frame-window capture/sampling/slicing helpers into `visual/refinement_frame_windows.py` with compatibility wrappers in `visual/refinement.py`.
 
 **Action Plan:**
 *   **Consolidate:** Keep singer-color policy in a dedicated module and avoid duplicating it in frame drawing code.
