@@ -1759,27 +1759,20 @@
     },
     {
       "line_index": 36,
-      "text": "Don't believe me",
-      "start": 71.35,
+      "text": "believe me",
+      "start": 72.2,
       "end": 72.45,
       "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
-          "text": "Don't",
-          "start": 71.35,
-          "end": 72.15,
-          "confidence": 1.0
-        },
-        {
-          "word_index": 2,
           "text": "believe",
           "start": 72.2,
           "end": 72.3,
           "confidence": 1.0
         },
         {
-          "word_index": 3,
+          "word_index": 2,
           "text": "me",
           "start": 72.35,
           "end": 72.45,
@@ -1876,34 +1869,27 @@
     },
     {
       "line_index": 38,
-      "text": "Doh doh doh doh",
-      "start": 74.65,
+      "text": "doh doh doh",
+      "start": 75.1,
       "end": 75.8,
       "confidence": 0.438,
       "words": [
         {
           "word_index": 1,
-          "text": "Doh",
-          "start": 74.65,
-          "end": 74.8,
-          "confidence": 1.0
-        },
-        {
-          "word_index": 2,
           "text": "doh",
           "start": 75.1,
           "end": 75.2,
           "confidence": 0.25
         },
         {
-          "word_index": 3,
+          "word_index": 2,
           "text": "doh",
           "start": 75.4,
           "end": 75.5,
           "confidence": 0.25
         },
         {
-          "word_index": 4,
+          "word_index": 3,
           "text": "doh",
           "start": 75.7,
           "end": 75.8,
@@ -1941,27 +1927,20 @@
     },
     {
       "line_index": 39,
-      "text": "doh doh doh",
-      "start": 76.3,
+      "text": "doh doh",
+      "start": 76.5,
       "end": 77.15,
       "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "doh",
-          "start": 76.3,
-          "end": 76.4,
-          "confidence": 1.0
-        },
-        {
-          "word_index": 2,
-          "text": "doh",
           "start": 76.5,
           "end": 76.75,
           "confidence": 1.0
         },
         {
-          "word_index": 3,
+          "word_index": 2,
           "text": "doh",
           "start": 77.0,
           "end": 77.15,
@@ -2019,41 +1998,34 @@
     },
     {
       "line_index": 41,
-      "text": "Don't believe me just watch",
-      "start": 79.65,
+      "text": "believe me just watc",
+      "start": 80.5,
       "end": 82.05,
       "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
-          "text": "Don't",
-          "start": 79.65,
-          "end": 80.45,
-          "confidence": 1.0
-        },
-        {
-          "word_index": 2,
           "text": "believe",
           "start": 80.5,
           "end": 81.3,
           "confidence": 1.0
         },
         {
-          "word_index": 3,
+          "word_index": 2,
           "text": "me",
           "start": 81.35,
           "end": 81.75,
           "confidence": 1.0
         },
         {
-          "word_index": 4,
+          "word_index": 3,
           "text": "just",
           "start": 81.8,
           "end": 81.9,
           "confidence": 1.0
         },
         {
-          "word_index": 5,
+          "word_index": 4,
           "text": "watc",
           "start": 81.95,
           "end": 82.05,
@@ -2097,34 +2069,27 @@
     },
     {
       "line_index": 42,
-      "text": "Doh doh doh doh",
-      "start": 82.05,
+      "text": "doh doh doh",
+      "start": 82.2,
       "end": 82.9,
       "confidence": 0.438,
       "words": [
         {
           "word_index": 1,
-          "text": "Doh",
-          "start": 82.05,
-          "end": 82.15,
-          "confidence": 1.0
-        },
-        {
-          "word_index": 2,
           "text": "doh",
           "start": 82.2,
           "end": 82.3,
           "confidence": 0.25
         },
         {
-          "word_index": 3,
+          "word_index": 2,
           "text": "doh",
           "start": 82.5,
           "end": 82.6,
           "confidence": 0.25
         },
         {
-          "word_index": 4,
+          "word_index": 3,
           "text": "doh",
           "start": 82.8,
           "end": 82.9,
@@ -2162,27 +2127,20 @@
     },
     {
       "line_index": 43,
-      "text": "doh doh doh",
-      "start": 84.6,
+      "text": "doh doh",
+      "start": 84.9,
       "end": 85.5,
       "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "doh",
-          "start": 84.6,
-          "end": 84.7,
-          "confidence": 1.0
-        },
-        {
-          "word_index": 2,
-          "text": "doh",
           "start": 84.9,
           "end": 85.1,
           "confidence": 1.0
         },
         {
-          "word_index": 3,
+          "word_index": 2,
           "text": "doh",
           "start": 85.3,
           "end": 85.5,
@@ -2240,41 +2198,34 @@
     },
     {
       "line_index": 45,
-      "text": "Don't believe me just watch",
-      "start": 88.0,
+      "text": "believe me just watc",
+      "start": 88.85,
       "end": 90.4,
       "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
-          "text": "Don't",
-          "start": 88.0,
-          "end": 88.8,
-          "confidence": 1.0
-        },
-        {
-          "word_index": 2,
           "text": "believe",
           "start": 88.85,
           "end": 89.65,
           "confidence": 1.0
         },
         {
-          "word_index": 3,
+          "word_index": 2,
           "text": "me",
           "start": 89.7,
           "end": 90.1,
           "confidence": 1.0
         },
         {
-          "word_index": 4,
+          "word_index": 3,
           "text": "just",
           "start": 90.15,
           "end": 90.25,
           "confidence": 1.0
         },
         {
-          "word_index": 5,
+          "word_index": 4,
           "text": "watc",
           "start": 90.3,
           "end": 90.4,
@@ -2318,20 +2269,13 @@
     },
     {
       "line_index": 46,
-      "text": "Don't believe",
-      "start": 91.2,
+      "text": "believe",
+      "start": 91.35,
       "end": 91.45,
       "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
-          "text": "Don't",
-          "start": 91.2,
-          "end": 91.3,
-          "confidence": 1.0
-        },
-        {
-          "word_index": 2,
           "text": "believe",
           "start": 91.35,
           "end": 91.45,
@@ -2357,41 +2301,34 @@
     },
     {
       "line_index": 47,
-      "text": "Don't believe me just watch",
-      "start": 91.95,
+      "text": "believe me just watc",
+      "start": 92.5,
       "end": 93.55,
       "confidence": 0.7,
       "words": [
         {
           "word_index": 1,
-          "text": "Don't",
-          "start": 91.95,
-          "end": 92.05,
-          "confidence": 0.25
-        },
-        {
-          "word_index": 2,
           "text": "believe",
           "start": 92.5,
           "end": 92.65,
           "confidence": 1.0
         },
         {
-          "word_index": 3,
+          "word_index": 2,
           "text": "me",
           "start": 92.85,
           "end": 92.95,
           "confidence": 0.25
         },
         {
-          "word_index": 4,
+          "word_index": 3,
           "text": "just",
           "start": 93.0,
           "end": 93.15,
           "confidence": 1.0
         },
         {
-          "word_index": 5,
+          "word_index": 4,
           "text": "watc",
           "start": 93.25,
           "end": 93.55,
@@ -2435,20 +2372,13 @@
     },
     {
       "line_index": 48,
-      "text": "Don't believe",
-      "start": 94.3,
+      "text": "believe",
+      "start": 95.15,
       "end": 95.95,
       "confidence": 0.585,
       "words": [
         {
           "word_index": 1,
-          "text": "Don't",
-          "start": 94.3,
-          "end": 95.1,
-          "confidence": 0.592
-        },
-        {
-          "word_index": 2,
           "text": "believe",
           "start": 95.15,
           "end": 95.95,
@@ -4411,27 +4341,20 @@
     },
     {
       "line_index": 84,
-      "text": "Don't believe me",
-      "start": 147.7,
+      "text": "believe me",
+      "start": 147.85,
       "end": 148.1,
       "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
-          "text": "Don't",
-          "start": 147.7,
-          "end": 147.8,
-          "confidence": 1.0
-        },
-        {
-          "word_index": 2,
           "text": "believe",
           "start": 147.85,
           "end": 147.95,
           "confidence": 1.0
         },
         {
-          "word_index": 3,
+          "word_index": 2,
           "text": "me",
           "start": 148.0,
           "end": 148.1,
@@ -4502,34 +4425,27 @@
     },
     {
       "line_index": 86,
-      "text": "Doh doh doh doh",
-      "start": 151.55,
+      "text": "doh doh doh",
+      "start": 153.35,
       "end": 156.4,
       "confidence": 0.812,
       "words": [
         {
           "word_index": 1,
-          "text": "Doh",
-          "start": 151.55,
-          "end": 152.35,
-          "confidence": 1.0
-        },
-        {
-          "word_index": 2,
           "text": "doh",
           "start": 153.35,
           "end": 154.15,
           "confidence": 1.0
         },
         {
-          "word_index": 3,
+          "word_index": 2,
           "text": "doh",
           "start": 155.45,
           "end": 155.55,
           "confidence": 0.25
         },
         {
-          "word_index": 4,
+          "word_index": 3,
           "text": "doh",
           "start": 155.6,
           "end": 156.4,
@@ -4567,41 +4483,34 @@
     },
     {
       "line_index": 87,
-      "text": "doh doh doh doh Ah",
-      "start": 153.45,
+      "text": "doh doh doh Ah",
+      "start": 153.95,
       "end": 154.5,
       "confidence": 0.676,
       "words": [
         {
           "word_index": 1,
           "text": "doh",
-          "start": 153.45,
-          "end": 153.9,
-          "confidence": 1.0
-        },
-        {
-          "word_index": 2,
-          "text": "doh",
           "start": 153.95,
           "end": 154.05,
           "confidence": 1.0
         },
         {
-          "word_index": 3,
+          "word_index": 2,
           "text": "doh",
           "start": 154.1,
           "end": 154.2,
           "confidence": 0.551
         },
         {
-          "word_index": 4,
+          "word_index": 3,
           "text": "doh",
           "start": 154.25,
           "end": 154.35,
           "confidence": 0.25
         },
         {
-          "word_index": 5,
+          "word_index": 4,
           "text": "Ah",
           "start": 154.4,
           "end": 154.5,
@@ -4645,27 +4554,20 @@
     },
     {
       "line_index": 88,
-      "text": "Don't believe watch",
-      "start": 155.05,
+      "text": "believe watcl",
+      "start": 155.5,
       "end": 155.9,
       "confidence": 0.472,
       "words": [
         {
           "word_index": 1,
-          "text": "Don't",
-          "start": 155.05,
-          "end": 155.2,
-          "confidence": 0.915
-        },
-        {
-          "word_index": 2,
           "text": "believe",
           "start": 155.5,
           "end": 155.6,
           "confidence": 0.25
         },
         {
-          "word_index": 3,
+          "word_index": 2,
           "text": "watcl",
           "start": 155.8,
           "end": 155.9,
@@ -4697,20 +4599,13 @@
     },
     {
       "line_index": 89,
-      "text": "Don't believe",
-      "start": 156.7,
+      "text": "believe",
+      "start": 157.55,
       "end": 157.65,
       "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
-          "text": "Don't",
-          "start": 156.7,
-          "end": 157.5,
-          "confidence": 1.0
-        },
-        {
-          "word_index": 2,
           "text": "believe",
           "start": 157.55,
           "end": 157.65,
@@ -4736,34 +4631,27 @@
     },
     {
       "line_index": 90,
-      "text": "Doh doh doh doh",
-      "start": 158.3,
+      "text": "doh doh doh",
+      "start": 160.5,
       "end": 160.9,
       "confidence": 0.781,
       "words": [
         {
           "word_index": 1,
-          "text": "Doh",
-          "start": 158.3,
-          "end": 158.4,
-          "confidence": 0.25
-        },
-        {
-          "word_index": 2,
           "text": "doh",
           "start": 160.5,
           "end": 160.6,
           "confidence": 0.876
         },
         {
-          "word_index": 3,
+          "word_index": 2,
           "text": "doh",
           "start": 160.65,
           "end": 160.75,
           "confidence": 1.0
         },
         {
-          "word_index": 4,
+          "word_index": 3,
           "text": "doh",
           "start": 160.8,
           "end": 160.9,
@@ -4801,41 +4689,34 @@
     },
     {
       "line_index": 91,
-      "text": "doh doh doh doh Ah",
-      "start": 160.9,
+      "text": "doh doh doh Ah",
+      "start": 161.05,
       "end": 163.0,
       "confidence": 0.579,
       "words": [
         {
           "word_index": 1,
           "text": "doh",
-          "start": 160.9,
-          "end": 161.0,
-          "confidence": 0.25
-        },
-        {
-          "word_index": 2,
-          "text": "doh",
           "start": 161.05,
           "end": 161.85,
           "confidence": 0.714
         },
         {
-          "word_index": 3,
+          "word_index": 2,
           "text": "doh",
           "start": 161.9,
           "end": 162.0,
           "confidence": 0.57
         },
         {
-          "word_index": 4,
+          "word_index": 3,
           "text": "doh",
           "start": 162.05,
           "end": 162.15,
           "confidence": 0.583
         },
         {
-          "word_index": 5,
+          "word_index": 4,
           "text": "Ah",
           "start": 162.2,
           "end": 163.0,
@@ -4905,20 +4786,13 @@
     },
     {
       "line_index": 93,
-      "text": "Don't believe",
-      "start": 163.5,
+      "text": "believe",
+      "start": 164.35,
       "end": 164.45,
       "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
-          "text": "Don't",
-          "start": 163.5,
-          "end": 164.3,
-          "confidence": 1.0
-        },
-        {
-          "word_index": 2,
           "text": "believe",
           "start": 164.35,
           "end": 164.45,
@@ -4944,41 +4818,34 @@
     },
     {
       "line_index": 94,
-      "text": "Don't believe me just watch",
-      "start": 165.25,
+      "text": "believe me just watc",
+      "start": 166.1,
       "end": 170.5,
       "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
-          "text": "Don't",
-          "start": 165.25,
-          "end": 166.05,
-          "confidence": 1.0
-        },
-        {
-          "word_index": 2,
           "text": "believe",
           "start": 166.1,
           "end": 166.2,
           "confidence": 1.0
         },
         {
-          "word_index": 3,
+          "word_index": 2,
           "text": "me",
           "start": 166.25,
           "end": 166.35,
           "confidence": 1.0
         },
         {
-          "word_index": 4,
+          "word_index": 3,
           "text": "just",
           "start": 170.2,
           "end": 170.35,
           "confidence": 1.0
         },
         {
-          "word_index": 5,
+          "word_index": 4,
           "text": "watc",
           "start": 170.4,
           "end": 170.5,
@@ -5022,20 +4889,13 @@
     },
     {
       "line_index": 95,
-      "text": "Don't believe",
-      "start": 170.5,
+      "text": "believe",
+      "start": 170.65,
       "end": 170.75,
       "confidence": 0.228,
       "words": [
         {
           "word_index": 1,
-          "text": "Don't",
-          "start": 170.5,
-          "end": 170.6,
-          "confidence": 0.228
-        },
-        {
-          "word_index": 2,
           "text": "believe",
           "start": 170.65,
           "end": 170.75,
@@ -5100,27 +4960,20 @@
     },
     {
       "line_index": 97,
-      "text": "Doh doh doh",
-      "start": 173.65,
+      "text": "doh doh",
+      "start": 175.4,
       "end": 175.9,
       "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
-          "text": "Doh",
-          "start": 173.65,
-          "end": 173.75,
-          "confidence": 1.0
-        },
-        {
-          "word_index": 2,
           "text": "doh",
           "start": 175.4,
           "end": 175.55,
           "confidence": 1.0
         },
         {
-          "word_index": 3,
+          "word_index": 2,
           "text": "doh",
           "start": 175.7,
           "end": 175.9,
@@ -5152,34 +5005,27 @@
     },
     {
       "line_index": 98,
-      "text": "doh doh doh doh",
-      "start": 176.2,
+      "text": "doh doh doh",
+      "start": 176.5,
       "end": 177.3,
       "confidence": 0.797,
       "words": [
         {
           "word_index": 1,
           "text": "doh",
-          "start": 176.2,
-          "end": 176.3,
-          "confidence": 1.0
-        },
-        {
-          "word_index": 2,
-          "text": "doh",
           "start": 176.5,
           "end": 176.6,
           "confidence": 1.0
         },
         {
-          "word_index": 3,
+          "word_index": 2,
           "text": "doh",
           "start": 176.7,
           "end": 176.85,
           "confidence": 0.622
         },
         {
-          "word_index": 4,
+          "word_index": 3,
           "text": "doh",
           "start": 177.2,
           "end": 177.3,
@@ -5360,34 +5206,27 @@
     },
     {
       "line_index": 102,
-      "text": "Uptown Funk you up",
-      "start": 181.2,
+      "text": "Funk you up",
+      "start": 181.55,
       "end": 182.35,
       "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
-          "text": "Uptown",
-          "start": 181.2,
-          "end": 181.5,
-          "confidence": 0.252
-        },
-        {
-          "word_index": 2,
           "text": "Funk",
           "start": 181.55,
           "end": 181.8,
           "confidence": 0.252
         },
         {
-          "word_index": 3,
+          "word_index": 2,
           "text": "you",
           "start": 181.85,
           "end": 182.1,
           "confidence": 0.252
         },
         {
-          "word_index": 4,
+          "word_index": 3,
           "text": "up",
           "start": 182.15,
           "end": 182.35,
@@ -5425,34 +5264,27 @@
     },
     {
       "line_index": 103,
-      "text": "Uptown Funk you up",
-      "start": 186.1,
+      "text": "Funk you up",
+      "start": 187.1,
       "end": 189.6,
       "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
-          "text": "Uptown",
-          "start": 186.1,
-          "end": 186.9,
-          "confidence": 1.0
-        },
-        {
-          "word_index": 2,
           "text": "Funk",
           "start": 187.1,
           "end": 187.9,
           "confidence": 1.0
         },
         {
-          "word_index": 3,
+          "word_index": 2,
           "text": "you",
           "start": 187.95,
           "end": 188.75,
           "confidence": 1.0
         },
         {
-          "word_index": 4,
+          "word_index": 3,
           "text": "up",
           "start": 188.8,
           "end": 189.6,
@@ -5490,34 +5322,27 @@
     },
     {
       "line_index": 104,
-      "text": "Uptown Funk you up",
-      "start": 189.6,
+      "text": "Funk you up",
+      "start": 189.95,
       "end": 190.35,
       "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
-          "text": "Uptown",
-          "start": 189.6,
-          "end": 189.9,
-          "confidence": 1.0
-        },
-        {
-          "word_index": 2,
           "text": "Funk",
           "start": 189.95,
           "end": 190.05,
           "confidence": 1.0
         },
         {
-          "word_index": 3,
+          "word_index": 2,
           "text": "you",
           "start": 190.1,
           "end": 190.2,
           "confidence": 1.0
         },
         {
-          "word_index": 4,
+          "word_index": 3,
           "text": "up",
           "start": 190.25,
           "end": 190.35,
@@ -5672,34 +5497,27 @@
     },
     {
       "line_index": 107,
-      "text": "Uptown Funk you up",
-      "start": 196.9,
+      "text": "Funk you up",
+      "start": 197.75,
       "end": 198.9,
       "confidence": 0.625,
       "words": [
         {
           "word_index": 1,
-          "text": "Uptown",
-          "start": 196.9,
-          "end": 197.7,
-          "confidence": 1.0
-        },
-        {
-          "word_index": 2,
           "text": "Funk",
           "start": 197.75,
           "end": 198.2,
           "confidence": 1.0
         },
         {
-          "word_index": 3,
+          "word_index": 2,
           "text": "you",
           "start": 198.5,
           "end": 198.6,
           "confidence": 0.25
         },
         {
-          "word_index": 4,
+          "word_index": 3,
           "text": "up",
           "start": 198.8,
           "end": 198.9,
@@ -5737,34 +5555,27 @@
     },
     {
       "line_index": 108,
-      "text": "Uptown Funk you up",
-      "start": 198.9,
+      "text": "Funk you up",
+      "start": 199.05,
       "end": 199.45,
       "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
-          "text": "Uptown",
-          "start": 198.9,
-          "end": 199.0,
-          "confidence": 0.252
-        },
-        {
-          "word_index": 2,
           "text": "Funk",
           "start": 199.05,
           "end": 199.15,
           "confidence": 0.252
         },
         {
-          "word_index": 3,
+          "word_index": 2,
           "text": "you",
           "start": 199.2,
           "end": 199.3,
           "confidence": 0.252
         },
         {
-          "word_index": 4,
+          "word_index": 3,
           "text": "up",
           "start": 199.35,
           "end": 199.45,
@@ -6088,27 +5899,20 @@
     },
     {
       "line_index": 114,
-      "text": "Don't brag about",
-      "start": 204.65,
+      "text": "brag about",
+      "start": 205.05,
       "end": 205.45,
       "confidence": 0.404,
       "words": [
         {
           "word_index": 1,
-          "text": "Don't",
-          "start": 204.65,
-          "end": 204.75,
-          "confidence": 0.712
-        },
-        {
-          "word_index": 2,
           "text": "brag",
           "start": 205.05,
           "end": 205.15,
           "confidence": 0.25
         },
         {
-          "word_index": 3,
+          "word_index": 2,
           "text": "about",
           "start": 205.35,
           "end": 205.45,
@@ -6465,27 +6269,20 @@
     },
     {
       "line_index": 121,
-      "text": "Don't believe me",
-      "start": 214.15,
+      "text": "believe me",
+      "start": 215.25,
       "end": 217.45,
       "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
-          "text": "Don't",
-          "start": 214.15,
-          "end": 214.95,
-          "confidence": 0.5
-        },
-        {
-          "word_index": 2,
           "text": "believe",
           "start": 215.25,
           "end": 216.05,
           "confidence": 0.5
         },
         {
-          "word_index": 3,
+          "word_index": 2,
           "text": "me",
           "start": 216.65,
           "end": 217.45,
@@ -6582,34 +6379,27 @@
     },
     {
       "line_index": 123,
-      "text": "Doh doh doh doh",
-      "start": 216.4,
+      "text": "doh doh doh",
+      "start": 216.55,
       "end": 216.95,
       "confidence": 0.438,
       "words": [
         {
           "word_index": 1,
-          "text": "Doh",
-          "start": 216.4,
-          "end": 216.5,
-          "confidence": 1.0
-        },
-        {
-          "word_index": 2,
           "text": "doh",
           "start": 216.55,
           "end": 216.65,
           "confidence": 0.25
         },
         {
-          "word_index": 3,
+          "word_index": 2,
           "text": "doh",
           "start": 216.7,
           "end": 216.8,
           "confidence": 0.25
         },
         {
-          "word_index": 4,
+          "word_index": 3,
           "text": "doh",
           "start": 216.85,
           "end": 216.95,
@@ -6647,27 +6437,20 @@
     },
     {
       "line_index": 124,
-      "text": "doh doh doh",
-      "start": 218.2,
+      "text": "doh doh",
+      "start": 218.5,
       "end": 219.1,
       "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "doh",
-          "start": 218.2,
-          "end": 218.35,
-          "confidence": 1.0
-        },
-        {
-          "word_index": 2,
-          "text": "doh",
           "start": 218.5,
           "end": 218.7,
           "confidence": 1.0
         },
         {
-          "word_index": 3,
+          "word_index": 2,
           "text": "doh",
           "start": 218.9,
           "end": 219.1,
@@ -6725,41 +6508,34 @@
     },
     {
       "line_index": 126,
-      "text": "Don't believe me just watch",
-      "start": 221.6,
+      "text": "believe me just watc",
+      "start": 222.45,
       "end": 224.0,
       "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
-          "text": "Don't",
-          "start": 221.6,
-          "end": 222.4,
-          "confidence": 1.0
-        },
-        {
-          "word_index": 2,
           "text": "believe",
           "start": 222.45,
           "end": 223.25,
           "confidence": 1.0
         },
         {
-          "word_index": 3,
+          "word_index": 2,
           "text": "me",
           "start": 223.3,
           "end": 223.7,
           "confidence": 1.0
         },
         {
-          "word_index": 4,
+          "word_index": 3,
           "text": "just",
           "start": 223.75,
           "end": 223.85,
           "confidence": 1.0
         },
         {
-          "word_index": 5,
+          "word_index": 4,
           "text": "watc",
           "start": 223.9,
           "end": 224.0,
@@ -6803,34 +6579,27 @@
     },
     {
       "line_index": 127,
-      "text": "Doh doh doh doh",
-      "start": 224.0,
+      "text": "doh doh doh",
+      "start": 224.15,
       "end": 224.85,
       "confidence": 0.438,
       "words": [
         {
           "word_index": 1,
-          "text": "Doh",
-          "start": 224.0,
-          "end": 224.1,
-          "confidence": 1.0
-        },
-        {
-          "word_index": 2,
           "text": "doh",
           "start": 224.15,
           "end": 224.25,
           "confidence": 0.25
         },
         {
-          "word_index": 3,
+          "word_index": 2,
           "text": "doh",
           "start": 224.45,
           "end": 224.55,
           "confidence": 0.25
         },
         {
-          "word_index": 4,
+          "word_index": 3,
           "text": "doh",
           "start": 224.75,
           "end": 224.85,
@@ -6868,27 +6637,20 @@
     },
     {
       "line_index": 128,
-      "text": "doh doh doh",
-      "start": 226.55,
+      "text": "doh doh",
+      "start": 226.8,
       "end": 227.45,
       "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "doh",
-          "start": 226.55,
-          "end": 226.7,
-          "confidence": 1.0
-        },
-        {
-          "word_index": 2,
-          "text": "doh",
           "start": 226.8,
           "end": 227.05,
           "confidence": 1.0
         },
         {
-          "word_index": 3,
+          "word_index": 2,
           "text": "doh",
           "start": 227.25,
           "end": 227.45,
@@ -6946,34 +6708,27 @@
     },
     {
       "line_index": 130,
-      "text": "Doh doh doh doh",
-      "start": 228.65,
+      "text": "doh doh doh",
+      "start": 228.8,
       "end": 229.35,
       "confidence": 0.438,
       "words": [
         {
           "word_index": 1,
-          "text": "Doh",
-          "start": 228.65,
-          "end": 228.75,
-          "confidence": 0.25
-        },
-        {
-          "word_index": 2,
           "text": "doh",
           "start": 228.8,
           "end": 228.9,
           "confidence": 0.25
         },
         {
-          "word_index": 3,
+          "word_index": 2,
           "text": "doh",
           "start": 228.95,
           "end": 229.05,
           "confidence": 0.25
         },
         {
-          "word_index": 4,
+          "word_index": 3,
           "text": "doh",
           "start": 229.1,
           "end": 229.2,
@@ -7011,41 +6766,34 @@
     },
     {
       "line_index": 131,
-      "text": "Don't believe me just watch",
-      "start": 230.5,
+      "text": "believe me just watc",
+      "start": 230.9,
       "end": 232.5,
       "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
-          "text": "Don't",
-          "start": 230.5,
-          "end": 230.85,
-          "confidence": 0.252
-        },
-        {
-          "word_index": 2,
           "text": "believe",
           "start": 230.9,
           "end": 231.35,
           "confidence": 0.252
         },
         {
-          "word_index": 3,
+          "word_index": 2,
           "text": "me",
           "start": 231.4,
           "end": 231.65,
           "confidence": 0.252
         },
         {
-          "word_index": 4,
+          "word_index": 3,
           "text": "just",
           "start": 231.7,
           "end": 232.1,
           "confidence": 0.252
         },
         {
-          "word_index": 5,
+          "word_index": 4,
           "text": "watc",
           "start": 232.15,
           "end": 232.5,
@@ -7089,20 +6837,13 @@
     },
     {
       "line_index": 132,
-      "text": "Don't believe",
-      "start": 232.05,
+      "text": "believe",
+      "start": 232.25,
       "end": 232.35,
       "confidence": 0.722,
       "words": [
         {
           "word_index": 1,
-          "text": "Don't",
-          "start": 232.05,
-          "end": 232.15,
-          "confidence": 0.804
-        },
-        {
-          "word_index": 2,
           "text": "believe",
           "start": 232.25,
           "end": 232.35,
@@ -7193,34 +6934,27 @@
     },
     {
       "line_index": 134,
-      "text": "Uptown Funk you up",
-      "start": 240.4,
+      "text": "Funk you up",
+      "start": 241.45,
       "end": 242.1,
       "confidence": 0.991,
       "words": [
         {
           "word_index": 1,
-          "text": "Uptown",
-          "start": 240.4,
-          "end": 240.95,
-          "confidence": 1.0
-        },
-        {
-          "word_index": 2,
           "text": "Funk",
           "start": 241.45,
           "end": 241.55,
           "confidence": 1.0
         },
         {
-          "word_index": 3,
+          "word_index": 2,
           "text": "you",
           "start": 241.65,
           "end": 241.75,
           "confidence": 1.0
         },
         {
-          "word_index": 4,
+          "word_index": 3,
           "text": "up",
           "start": 242.0,
           "end": 242.1,
@@ -7258,34 +6992,27 @@
     },
     {
       "line_index": 135,
-      "text": "Uptown Funk you up",
-      "start": 244.6,
+      "text": "Funk you up",
+      "start": 245.6,
       "end": 248.1,
       "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
-          "text": "Uptown",
-          "start": 244.6,
-          "end": 245.4,
-          "confidence": 1.0
-        },
-        {
-          "word_index": 2,
           "text": "Funk",
           "start": 245.6,
           "end": 246.4,
           "confidence": 1.0
         },
         {
-          "word_index": 3,
+          "word_index": 2,
           "text": "you",
           "start": 246.45,
           "end": 247.25,
           "confidence": 1.0
         },
         {
-          "word_index": 4,
+          "word_index": 3,
           "text": "up",
           "start": 247.3,
           "end": 248.1,
@@ -7323,34 +7050,27 @@
     },
     {
       "line_index": 136,
-      "text": "Uptown Funk you up",
-      "start": 248.1,
+      "text": "Funk you up",
+      "start": 248.4,
       "end": 248.8,
       "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
-          "text": "Uptown",
-          "start": 248.1,
-          "end": 248.35,
-          "confidence": 1.0
-        },
-        {
-          "word_index": 2,
           "text": "Funk",
           "start": 248.4,
           "end": 248.5,
           "confidence": 1.0
         },
         {
-          "word_index": 3,
+          "word_index": 2,
           "text": "you",
           "start": 248.55,
           "end": 248.65,
           "confidence": 1.0
         },
         {
-          "word_index": 4,
+          "word_index": 3,
           "text": "up",
           "start": 248.7,
           "end": 248.8,
@@ -7388,34 +7108,27 @@
     },
     {
       "line_index": 137,
-      "text": "Uptown Funk you up",
-      "start": 248.8,
+      "text": "Funk you up",
+      "start": 249.75,
       "end": 250.35,
       "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
-          "text": "Uptown",
-          "start": 248.8,
-          "end": 249.6,
-          "confidence": 1.0
-        },
-        {
-          "word_index": 2,
           "text": "Funk",
           "start": 249.75,
           "end": 249.9,
           "confidence": 1.0
         },
         {
-          "word_index": 3,
+          "word_index": 2,
           "text": "you",
           "start": 250.05,
           "end": 250.15,
           "confidence": 1.0
         },
         {
-          "word_index": 4,
+          "word_index": 3,
           "text": "up",
           "start": 250.2,
           "end": 250.35,
@@ -7453,34 +7166,27 @@
     },
     {
       "line_index": 138,
-      "text": "Uptown Funk you up",
-      "start": 253.4,
+      "text": "Funk you up",
+      "start": 254.25,
       "end": 256.7,
       "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
-          "text": "Uptown",
-          "start": 253.4,
-          "end": 254.2,
-          "confidence": 1.0
-        },
-        {
-          "word_index": 2,
           "text": "Funk",
           "start": 254.25,
           "end": 255.05,
           "confidence": 1.0
         },
         {
-          "word_index": 3,
+          "word_index": 2,
           "text": "you",
           "start": 255.1,
           "end": 255.9,
           "confidence": 1.0
         },
         {
-          "word_index": 4,
+          "word_index": 3,
           "text": "up",
           "start": 255.95,
           "end": 256.7,
@@ -7518,34 +7224,27 @@
     },
     {
       "line_index": 139,
-      "text": "Uptown Funk you up",
-      "start": 256.7,
+      "text": "Funk you up",
+      "start": 256.85,
       "end": 257.25,
       "confidence": 0.812,
       "words": [
         {
           "word_index": 1,
-          "text": "Uptown",
-          "start": 256.7,
-          "end": 256.8,
-          "confidence": 0.25
-        },
-        {
-          "word_index": 2,
           "text": "Funk",
           "start": 256.85,
           "end": 256.95,
           "confidence": 1.0
         },
         {
-          "word_index": 3,
+          "word_index": 2,
           "text": "you",
           "start": 257.0,
           "end": 257.1,
           "confidence": 1.0
         },
         {
-          "word_index": 4,
+          "word_index": 3,
           "text": "up",
           "start": 257.15,
           "end": 257.25,
@@ -7583,34 +7282,27 @@
     },
     {
       "line_index": 140,
-      "text": "Uptown Funk you up",
-      "start": 257.25,
+      "text": "Funk you up",
+      "start": 259.6,
       "end": 260.0,
       "confidence": 0.807,
       "words": [
         {
           "word_index": 1,
-          "text": "Uptown",
-          "start": 257.25,
-          "end": 258.05,
-          "confidence": 1.0
-        },
-        {
-          "word_index": 2,
           "text": "Funk",
           "start": 259.6,
           "end": 259.7,
           "confidence": 0.25
         },
         {
-          "word_index": 3,
+          "word_index": 2,
           "text": "you",
           "start": 259.75,
           "end": 259.85,
           "confidence": 1.0
         },
         {
-          "word_index": 4,
+          "word_index": 3,
           "text": "up",
           "start": 259.9,
           "end": 260.0,
@@ -7648,34 +7340,27 @@
     },
     {
       "line_index": 141,
-      "text": "Uptown Funk you up",
-      "start": 261.3,
+      "text": "Funk you up",
+      "start": 262.2,
       "end": 264.9,
       "confidence": 0.812,
       "words": [
         {
           "word_index": 1,
-          "text": "Uptown",
-          "start": 261.3,
-          "end": 262.1,
-          "confidence": 1.0
-        },
-        {
-          "word_index": 2,
           "text": "Funk",
           "start": 262.2,
           "end": 263.0,
           "confidence": 1.0
         },
         {
-          "word_index": 3,
+          "word_index": 2,
           "text": "you",
           "start": 263.95,
           "end": 264.05,
           "confidence": 0.25
         },
         {
-          "word_index": 4,
+          "word_index": 3,
           "text": "up",
           "start": 264.1,
           "end": 264.9,
@@ -7713,34 +7398,27 @@
     },
     {
       "line_index": 142,
-      "text": "Uptown Funk you up",
-      "start": 264.9,
+      "text": "Funk you up",
+      "start": 265.1,
       "end": 265.5,
       "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
-          "text": "Uptown",
-          "start": 264.9,
-          "end": 265.05,
-          "confidence": 1.0
-        },
-        {
-          "word_index": 2,
           "text": "Funk",
           "start": 265.1,
           "end": 265.2,
           "confidence": 1.0
         },
         {
-          "word_index": 3,
+          "word_index": 2,
           "text": "you",
           "start": 265.25,
           "end": 265.35,
           "confidence": 1.0
         },
         {
-          "word_index": 4,
+          "word_index": 3,
           "text": "up",
           "start": 265.4,
           "end": 265.5,
@@ -7778,34 +7456,27 @@
     },
     {
       "line_index": 143,
-      "text": "Uptown Funk you up",
-      "start": 265.5,
+      "text": "Funk you up",
+      "start": 266.55,
       "end": 267.1,
       "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
-          "text": "Uptown",
-          "start": 265.5,
-          "end": 266.3,
-          "confidence": 1.0
-        },
-        {
-          "word_index": 2,
           "text": "Funk",
           "start": 266.55,
           "end": 266.65,
           "confidence": 1.0
         },
         {
-          "word_index": 3,
+          "word_index": 2,
           "text": "you",
           "start": 266.7,
           "end": 266.85,
           "confidence": 1.0
         },
         {
-          "word_index": 4,
+          "word_index": 3,
           "text": "up",
           "start": 266.9,
           "end": 267.1,
@@ -7843,34 +7514,27 @@
     },
     {
       "line_index": 144,
-      "text": "Uptown Funk you up",
-      "start": 269.6,
+      "text": "Funk you up",
+      "start": 270.65,
       "end": 272.45,
       "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
-          "text": "Uptown",
-          "start": 269.6,
-          "end": 270.4,
-          "confidence": 1.0
-        },
-        {
-          "word_index": 2,
           "text": "Funk",
           "start": 270.65,
           "end": 271.45,
           "confidence": 1.0
         },
         {
-          "word_index": 3,
+          "word_index": 2,
           "text": "you",
           "start": 271.5,
           "end": 272.3,
           "confidence": 1.0
         },
         {
-          "word_index": 4,
+          "word_index": 3,
           "text": "up",
           "start": 272.35,
           "end": 272.45,

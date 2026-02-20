@@ -5,7 +5,11 @@ from __future__ import annotations
 from typing import Any, List, Optional
 
 from ..models import TargetLine
-from ..text_utils import normalize_ocr_line, normalize_text_basic
+from ..text_utils import (
+    LYRIC_FUNCTION_WORDS,
+    normalize_ocr_line,
+    normalize_text_basic,
+)
 from .reconstruction import snap
 
 
@@ -171,7 +175,95 @@ def build_refined_lines_output(
         line_dict["line_index"] = i + 1
     _retime_short_interstitial_output_lines(lines_out)
     _rebalance_compressed_middle_four_line_sequences(lines_out)
+    _filter_singer_label_prefixes(lines_out, artist=artist)
+    _normalize_output_casing(lines_out)
     return lines_out
+
+
+def _normalize_output_casing(lines_out: list[dict[str, Any]]) -> None:
+    """If the output is almost entirely ALL CAPS, convert to Title Case for readability."""
+    if not lines_out:
+        return
+    total_chars = 0
+    upper_chars = 0
+    for ln in lines_out:
+        txt = ln.get("text", "")
+        alpha = [ch for ch in txt if ch.isalpha()]
+        total_chars += len(alpha)
+        upper_chars += sum(1 for ch in alpha if ch.isupper())
+
+    if total_chars > 100 and upper_chars > 0.9 * total_chars:
+        import string
+
+        for ln in lines_out:
+            for w in ln.get("words", []):
+                w["text"] = string.capwords(w["text"].lower())
+            ln["text"] = " ".join(w["text"] for w in ln.get("words", []))
+
+
+def _filter_singer_label_prefixes(
+    lines_out: list[dict[str, Any]], artist: Optional[str]
+) -> None:
+    """Remove words that appear as prefixes with high frequency or match artist name."""
+    if not lines_out:
+        return
+
+    banned_prefixes = _identify_banned_prefixes(lines_out, artist)
+    if not banned_prefixes:
+        return
+
+    for ln in lines_out:
+        _remove_prefix_from_line(ln, banned_prefixes)
+
+    # Remove now-empty lines
+    lines_out[:] = [ln for ln in lines_out if ln.get("words")]
+    for i, ln in enumerate(lines_out):
+        ln["line_index"] = i + 1
+
+
+def _identify_banned_prefixes(
+    lines_out: list[dict[str, Any]], artist: Optional[str]
+) -> set[str]:
+    counts: dict[str, int] = {}
+    for ln in lines_out:
+        words = ln.get("words", [])
+        if words:
+            prefix = normalize_text_basic(words[0]["text"])
+            if prefix:
+                counts[prefix] = counts.get(prefix, 0) + 1
+
+    artist_norm = normalize_text_basic(artist or "").split()
+    banned_prefixes: set[str] = set()
+    total = len(lines_out)
+
+    for prefix, count in counts.items():
+        if prefix in LYRIC_FUNCTION_WORDS:
+            continue
+        # If it appears in > 10% of lines as a prefix and is not a function word
+        if count > 0.1 * total and count >= 3:
+            banned_prefixes.add(prefix)
+        # Or if it matches a part of the artist name
+        elif artist_norm and prefix in artist_norm:
+            banned_prefixes.add(prefix)
+    return banned_prefixes
+
+
+def _remove_prefix_from_line(line: dict[str, Any], banned_prefixes: set[str]) -> None:
+    words = line.get("words", [])
+    if not words:
+        return
+    prefix = normalize_text_basic(words[0]["text"])
+    if prefix in banned_prefixes:
+        words.pop(0)
+        if not words:
+            line["words"] = []
+            line["text"] = ""
+            return
+        line["words"] = words
+        line["text"] = " ".join(w["text"] for w in words)
+        line["start"] = words[0]["start"]
+        for i, w in enumerate(words):
+            w["word_index"] = i + 1
 
 
 def _retime_short_interstitial_output_lines(lines_out: list[dict[str, Any]]) -> None:

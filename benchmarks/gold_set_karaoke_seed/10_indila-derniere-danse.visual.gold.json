@@ -128,22 +128,22 @@
     {
       "line_index": 3,
       "text": "tu commences",
-      "start": 23.0,
-      "end": 24.6,
+      "start": 25.05,
+      "end": 26.65,
       "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "tu",
-          "start": 23.0,
-          "end": 23.8,
+          "start": 25.05,
+          "end": 25.85,
           "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "rcommences",
-          "start": 23.85,
-          "end": 24.6,
+          "start": 25.9,
+          "end": 26.65,
           "confidence": 1.0
         }
       ],
@@ -167,15 +167,15 @@
     {
       "line_index": 4,
       "text": "tu",
-      "start": 24.6,
-      "end": 24.7,
+      "start": 26.8,
+      "end": 26.9,
       "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
           "text": "tu",
-          "start": 24.6,
-          "end": 24.7,
+          "start": 26.8,
+          "end": 26.9,
           "confidence": 0.5
         }
       ],
@@ -192,23 +192,42 @@
     },
     {
       "line_index": 5,
-      "text": "Je qu'un",
-      "start": 24.7,
-      "end": 24.95,
+      "text": "Xarajun",
+      "start": 26.9,
+      "end": 27.0,
+      "confidence": 1.0,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Xarajun",
+          "start": 26.9,
+          "end": 27.0,
+          "confidence": 1.0
+        }
+      ],
+      "y": 237,
+      "word_rois": [
+        [
+          385,
+          237,
+          86,
+          39
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 6,
+      "text": "qu'un",
+      "start": 27.15,
+      "end": 27.25,
       "confidence": 0.625,
       "words": [
         {
           "word_index": 1,
-          "text": "Je",
-          "start": 24.7,
-          "end": 24.8,
-          "confidence": 0.25
-        },
-        {
-          "word_index": 2,
           "text": "qu'un",
-          "start": 24.85,
-          "end": 24.95,
+          "start": 27.15,
+          "end": 27.25,
           "confidence": 1.0
         }
       ],
@@ -230,24 +249,24 @@
       "char_rois": []
     },
     {
-      "line_index": 6,
+      "line_index": 7,
       "text": "tre sans",
-      "start": 24.95,
-      "end": 25.2,
+      "start": 27.25,
+      "end": 27.5,
       "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
           "text": "tre",
-          "start": 24.95,
-          "end": 25.05,
+          "start": 27.25,
+          "end": 27.35,
           "confidence": 0.5
         },
         {
           "word_index": 2,
           "text": "sans",
-          "start": 25.1,
-          "end": 25.2,
+          "start": 27.4,
+          "end": 27.5,
           "confidence": 0.5
         }
       ],
@@ -269,57 +288,31 @@
       "char_rois": []
     },
     {
-      "line_index": 7,
-      "text": "Je",
-      "start": 25.2,
-      "end": 25.3,
-      "confidence": 1.0,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "Je",
-          "start": 25.2,
-          "end": 25.3,
-          "confidence": 1.0
-        }
-      ],
-      "y": 17,
-      "word_rois": [
-        [
-          164,
-          17,
-          31,
-          36
-        ]
-      ],
-      "char_rois": []
-    },
-    {
       "line_index": 8,
       "text": "tre sans importance",
-      "start": 25.3,
-      "end": 25.7,
+      "start": 27.6,
+      "end": 28.0,
       "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "tre",
-          "start": 25.3,
-          "end": 25.4,
+          "start": 27.6,
+          "end": 27.7,
           "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "sans",
-          "start": 25.45,
-          "end": 25.55,
+          "start": 27.75,
+          "end": 27.85,
           "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "importance",
-          "start": 25.6,
-          "end": 25.7,
+          "start": 27.9,
+          "end": 28.0,
           "confidence": 1.0
         }
       ],
@@ -349,22 +342,22 @@
     {
       "line_index": 9,
       "text": "Se qu'un",
-      "start": 26.25,
-      "end": 26.5,
+      "start": 28.0,
+      "end": 28.25,
       "confidence": 0.555,
       "words": [
         {
           "word_index": 1,
           "text": "Se",
-          "start": 26.25,
-          "end": 26.35,
+          "start": 28.0,
+          "end": 28.1,
           "confidence": 0.25
         },
         {
           "word_index": 2,
           "text": "qu'un",
-          "start": 26.4,
-          "end": 26.5,
+          "start": 28.15,
+          "end": 28.25,
           "confidence": 0.86
         }
       ],
@@ -388,16 +381,16 @@
     {
       "line_index": 10,
       "text": "de",
-      "start": 26.9,
-      "end": 27.7,
-      "confidence": 0.5,
+      "start": 28.25,
+      "end": 28.35,
+      "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "de",
-          "start": 26.9,
-          "end": 27.7,
-          "confidence": 0.5
+          "start": 28.25,
+          "end": 28.35,
+          "confidence": 0.252
         }
       ],
       "y": 18,
@@ -414,50 +407,50 @@
     {
       "line_index": 11,
       "text": "Sans lui je su is un peu paro",
-      "start": 27.75,
+      "start": 28.35,
       "end": 29.6,
       "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "Sans",
-          "start": 27.75,
-          "end": 27.85,
+          "start": 28.35,
+          "end": 28.45,
           "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "lui",
-          "start": 27.9,
-          "end": 28.0,
+          "start": 28.5,
+          "end": 28.6,
           "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "je",
-          "start": 28.05,
-          "end": 28.3,
+          "start": 28.65,
+          "end": 28.75,
           "confidence": 1.0
         },
         {
           "word_index": 4,
           "text": "su",
-          "start": 28.35,
-          "end": 28.4,
+          "start": 28.8,
+          "end": 28.85,
           "confidence": 1.0
         },
         {
           "word_index": 5,
           "text": "is",
-          "start": 28.4,
-          "end": 28.45,
+          "start": 28.85,
+          "end": 28.9,
           "confidence": 1.0
         },
         {
           "word_index": 6,
           "text": "un",
-          "start": 28.5,
-          "end": 28.6,
+          "start": 28.95,
+          "end": 29.05,
           "confidence": 1.0
         },
         {
@@ -524,45 +517,38 @@
     },
     {
       "line_index": 12,
-      "text": "je dumbbell seule dans l'mort",
-      "start": 29.6,
+      "text": "dambule seule dans l'mtro",
+      "start": 29.75,
       "end": 30.3,
-      "confidence": 0.674,
+      "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
-          "text": "je",
-          "start": 29.6,
-          "end": 29.7,
-          "confidence": 0.616
-        },
-        {
-          "word_index": 2,
           "text": "dambule",
           "start": 29.75,
           "end": 29.85,
-          "confidence": 0.572
+          "confidence": 0.252
         },
         {
-          "word_index": 3,
+          "word_index": 2,
           "text": "seule",
           "start": 29.9,
           "end": 30.0,
-          "confidence": 0.96
+          "confidence": 0.252
         },
         {
-          "word_index": 4,
+          "word_index": 3,
           "text": "dans",
           "start": 30.05,
           "end": 30.15,
-          "confidence": 0.971
+          "confidence": 0.252
         },
         {
-          "word_index": 5,
+          "word_index": 4,
           "text": "l'mtro",
           "start": 30.2,
           "end": 30.3,
-          "confidence": 0.25
+          "confidence": 0.252
         }
       ],
       "y": 158,
@@ -602,41 +588,34 @@
     },
     {
       "line_index": 13,
-      "text": "je dumbbell seule dans metro",
-      "start": 30.3,
+      "text": "dambule seule dans mtro",
+      "start": 30.85,
       "end": 31.9,
       "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
-          "text": "je",
-          "start": 30.3,
-          "end": 30.8,
-          "confidence": 1.0
-        },
-        {
-          "word_index": 2,
           "text": "dambule",
           "start": 30.85,
           "end": 30.95,
           "confidence": 1.0
         },
         {
-          "word_index": 3,
+          "word_index": 2,
           "text": "seule",
           "start": 31.0,
           "end": 31.35,
           "confidence": 1.0
         },
         {
-          "word_index": 4,
+          "word_index": 3,
           "text": "dans",
           "start": 31.45,
           "end": 31.75,
           "confidence": 1.0
         },
         {
-          "word_index": 5,
+          "word_index": 4,
           "text": "mtro",
           "start": 31.8,
           "end": 31.9,
@@ -719,31 +698,24 @@
     },
     {
       "line_index": 15,
-      "text": "Je n'suis qu'un",
-      "start": 32.85,
-      "end": 33.55,
-      "confidence": 1.0,
+      "text": "n'suis qu'un",
+      "start": 32.3,
+      "end": 32.55,
+      "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
-          "text": "Je",
-          "start": 32.85,
-          "end": 32.95,
-          "confidence": 1.0
+          "text": "n'suis",
+          "start": 32.3,
+          "end": 32.4,
+          "confidence": 0.252
         },
         {
           "word_index": 2,
-          "text": "n'suis",
-          "start": 33.0,
-          "end": 33.1,
-          "confidence": 1.0
-        },
-        {
-          "word_index": 3,
           "text": "qu'un",
-          "start": 33.15,
-          "end": 33.25,
-          "confidence": 1.0
+          "start": 32.45,
+          "end": 32.55,
+          "confidence": 0.252
         }
       ],
       "y": 19,
@@ -772,29 +744,29 @@
     {
       "line_index": 16,
       "text": "Une derringer danse",
-      "start": 34.7,
-      "end": 36.5,
+      "start": 34.8,
+      "end": 36.6,
       "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "Une",
-          "start": 34.7,
-          "end": 34.8,
+          "start": 34.8,
+          "end": 34.9,
           "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "dernire",
-          "start": 34.85,
-          "end": 35.65,
+          "start": 34.95,
+          "end": 35.75,
           "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "danse",
-          "start": 35.7,
-          "end": 36.5,
+          "start": 35.8,
+          "end": 36.6,
           "confidence": 1.0
         }
       ],
@@ -875,41 +847,34 @@
     },
     {
       "line_index": 18,
-      "text": "Je deambule seule dans l'mort",
-      "start": 38.5,
+      "text": "deambule seule dans l'mtro",
+      "start": 38.65,
       "end": 39.2,
-      "confidence": 0.399,
+      "confidence": 0.349,
       "words": [
         {
           "word_index": 1,
-          "text": "Je",
-          "start": 38.5,
-          "end": 38.6,
-          "confidence": 0.25
-        },
-        {
-          "word_index": 2,
           "text": "deambule",
           "start": 38.65,
           "end": 38.75,
           "confidence": 0.25
         },
         {
-          "word_index": 3,
+          "word_index": 2,
           "text": "seule",
           "start": 38.8,
           "end": 38.9,
-          "confidence": 0.584
+          "confidence": 0.746
         },
         {
-          "word_index": 4,
+          "word_index": 3,
           "text": "dans",
           "start": 38.95,
           "end": 39.05,
-          "confidence": 0.663
+          "confidence": 0.25
         },
         {
-          "word_index": 5,
+          "word_index": 4,
           "text": "l'mtro",
           "start": 39.1,
           "end": 39.2,
@@ -953,23 +918,49 @@
     },
     {
       "line_index": 19,
+      "text": "Xarajun",
+      "start": 39.3,
+      "end": 39.4,
+      "confidence": 1.0,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Xarajun",
+          "start": 39.3,
+          "end": 39.4,
+          "confidence": 1.0
+        }
+      ],
+      "y": 239,
+      "word_rois": [
+        [
+          387,
+          239,
+          80,
+          32
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 20,
       "text": "peine immense",
-      "start": 39.2,
-      "end": 39.45,
+      "start": 39.4,
+      "end": 39.65,
       "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "peine",
-          "start": 39.2,
-          "end": 39.3,
+          "start": 39.4,
+          "end": 39.5,
           "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "immense",
-          "start": 39.35,
-          "end": 39.45,
+          "start": 39.55,
+          "end": 39.65,
           "confidence": 1.0
         }
       ],
@@ -991,28 +982,21 @@
       "char_rois": []
     },
     {
-      "line_index": 20,
-      "text": "Je veux m'enfuir",
-      "start": 39.9,
+      "line_index": 21,
+      "text": "veux m'enfuir",
+      "start": 40.5,
       "end": 41.3,
       "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
-          "text": "Je",
-          "start": 39.9,
-          "end": 40.0,
-          "confidence": 1.0
-        },
-        {
-          "word_index": 2,
           "text": "veux",
           "start": 40.5,
           "end": 40.7,
           "confidence": 1.0
         },
         {
-          "word_index": 3,
+          "word_index": 2,
           "text": "m'enfuir",
           "start": 40.9,
           "end": 41.3,
@@ -1043,11 +1027,11 @@
       "char_rois": []
     },
     {
-      "line_index": 21,
+      "line_index": 22,
       "text": "que tout r'commence",
       "start": 41.85,
-      "end": 42.55,
-      "confidence": 0.858,
+      "end": 42.25,
+      "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
@@ -1061,14 +1045,14 @@
           "text": "tout",
           "start": 42.0,
           "end": 42.1,
-          "confidence": 0.823
+          "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "r'commence",
           "start": 42.15,
-          "end": 42.55,
-          "confidence": 0.752
+          "end": 42.25,
+          "confidence": 1.0
         }
       ],
       "y": 67,
@@ -1095,38 +1079,64 @@
       "char_rois": []
     },
     {
-      "line_index": 22,
+      "line_index": 23,
+      "text": "Xarajun",
+      "start": 43.3,
+      "end": 43.4,
+      "confidence": 1.0,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Xarajun",
+          "start": 43.3,
+          "end": 43.4,
+          "confidence": 1.0
+        }
+      ],
+      "y": 239,
+      "word_rois": [
+        [
+          388,
+          239,
+          80,
+          34
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 24,
       "text": "oh ma douce souffrance",
-      "start": 43.2,
-      "end": 44.85,
+      "start": 43.5,
+      "end": 45.15,
       "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "oh",
-          "start": 43.2,
-          "end": 43.5,
+          "start": 43.5,
+          "end": 43.8,
           "confidence": 0.252
         },
         {
           "word_index": 2,
           "text": "ma",
-          "start": 43.55,
-          "end": 43.85,
+          "start": 43.85,
+          "end": 44.15,
           "confidence": 0.252
         },
         {
           "word_index": 3,
           "text": "douce",
-          "start": 43.9,
-          "end": 44.3,
+          "start": 44.2,
+          "end": 44.6,
           "confidence": 0.252
         },
         {
           "word_index": 4,
           "text": "souffrance",
-          "start": 44.35,
-          "end": 44.85,
+          "start": 44.65,
+          "end": 45.15,
           "confidence": 0.252
         }
       ],
@@ -1160,18 +1170,44 @@
       "char_rois": []
     },
     {
-      "line_index": 23,
+      "line_index": 25,
+      "text": "Xarajun",
+      "start": 45.95,
+      "end": 46.05,
+      "confidence": 1.0,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Xarajun",
+          "start": 45.95,
+          "end": 46.05,
+          "confidence": 1.0
+        }
+      ],
+      "y": 239,
+      "word_rois": [
+        [
+          387,
+          239,
+          80,
+          32
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 26,
       "text": "que tom mince",
       "start": 47.95,
       "end": 48.35,
-      "confidence": 0.88,
+      "confidence": 0.92,
       "words": [
         {
           "word_index": 1,
           "text": "que",
           "start": 47.95,
           "end": 48.05,
-          "confidence": 0.909
+          "confidence": 0.936
         },
         {
           "word_index": 2,
@@ -1185,7 +1221,7 @@
           "text": "mmence",
           "start": 48.25,
           "end": 48.35,
-          "confidence": 0.73
+          "confidence": 0.824
         }
       ],
       "y": 65,
@@ -1212,39 +1248,32 @@
       "char_rois": []
     },
     {
-      "line_index": 24,
-      "text": "Je remue le ciel",
-      "start": 49.5,
-      "end": 56.55,
-      "confidence": 0.625,
+      "line_index": 27,
+      "text": "remue le ciel",
+      "start": 49.2,
+      "end": 49.7,
+      "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
-          "text": "Je",
-          "start": 49.5,
-          "end": 50.3,
-          "confidence": 1.0
+          "text": "remue",
+          "start": 49.2,
+          "end": 49.35,
+          "confidence": 0.252
         },
         {
           "word_index": 2,
-          "text": "remue",
-          "start": 50.55,
-          "end": 51.35,
-          "confidence": 1.0
+          "text": "le",
+          "start": 49.4,
+          "end": 49.55,
+          "confidence": 0.252
         },
         {
           "word_index": 3,
-          "text": "le",
-          "start": 56.15,
-          "end": 56.25,
-          "confidence": 0.25
-        },
-        {
-          "word_index": 4,
           "text": "ciel",
-          "start": 56.45,
-          "end": 56.55,
-          "confidence": 0.25
+          "start": 49.6,
+          "end": 49.7,
+          "confidence": 0.252
         }
       ],
       "y": 21,
@@ -1277,45 +1306,45 @@
       "char_rois": []
     },
     {
-      "line_index": 25,
+      "line_index": 28,
       "text": "le jour la nu it",
-      "start": 56.55,
-      "end": 57.1,
+      "start": 49.7,
+      "end": 50.25,
       "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "le",
-          "start": 56.55,
-          "end": 56.65,
+          "start": 49.7,
+          "end": 49.8,
           "confidence": 0.252
         },
         {
           "word_index": 2,
           "text": "jour",
-          "start": 56.7,
-          "end": 56.8,
+          "start": 49.85,
+          "end": 49.95,
           "confidence": 0.252
         },
         {
           "word_index": 3,
           "text": "la",
-          "start": 56.85,
-          "end": 56.95,
+          "start": 50.0,
+          "end": 50.1,
           "confidence": 0.252
         },
         {
           "word_index": 4,
           "text": "nu",
-          "start": 57.0,
-          "end": 57.05,
+          "start": 50.15,
+          "end": 50.2,
           "confidence": 0.252
         },
         {
           "word_index": 5,
           "text": "it",
-          "start": 57.05,
-          "end": 57.1,
+          "start": 50.2,
+          "end": 50.25,
           "confidence": 0.252
         }
       ],
@@ -1349,38 +1378,64 @@
       "char_rois": []
     },
     {
-      "line_index": 26,
+      "line_index": 29,
+      "text": "Xarajun",
+      "start": 51.05,
+      "end": 51.15,
+      "confidence": 0.252,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Xarajun",
+          "start": 51.05,
+          "end": 51.15,
+          "confidence": 0.252
+        }
+      ],
+      "y": 237,
+      "word_rois": [
+        [
+          386,
+          237,
+          83,
+          39
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 30,
       "text": "oh ma douce SOUTIENSE",
-      "start": 57.1,
-      "end": 57.65,
+      "start": 52.45,
+      "end": 53.15,
       "confidence": 0.563,
       "words": [
         {
           "word_index": 1,
           "text": "oh",
-          "start": 57.1,
-          "end": 57.2,
+          "start": 52.45,
+          "end": 52.55,
           "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "ma",
-          "start": 57.25,
-          "end": 57.35,
+          "start": 52.6,
+          "end": 52.7,
           "confidence": 0.753
         },
         {
           "word_index": 3,
           "text": "douce",
-          "start": 57.4,
-          "end": 57.5,
+          "start": 52.75,
+          "end": 52.85,
           "confidence": 0.25
         },
         {
           "word_index": 4,
           "text": "SOUTIENSE",
-          "start": 57.55,
-          "end": 57.65,
+          "start": 53.05,
+          "end": 53.15,
           "confidence": 0.25
         }
       ],
@@ -1414,24 +1469,24 @@
       "char_rois": []
     },
     {
-      "line_index": 27,
+      "line_index": 31,
       "text": "danse avec",
-      "start": 57.65,
-      "end": 57.9,
+      "start": 53.8,
+      "end": 54.8,
       "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
           "text": "danse",
-          "start": 57.65,
-          "end": 57.75,
+          "start": 53.8,
+          "end": 54.3,
           "confidence": 0.5
         },
         {
           "word_index": 2,
           "text": "avec",
-          "start": 57.8,
-          "end": 57.9,
+          "start": 54.35,
+          "end": 54.8,
           "confidence": 0.5
         }
       ],
@@ -1453,39 +1508,39 @@
       "char_rois": []
     },
     {
-      "line_index": 28,
+      "line_index": 32,
       "text": "le vent la pluie",
-      "start": 57.9,
-      "end": 58.45,
-      "confidence": 1.0,
+      "start": 55.2,
+      "end": 56.25,
+      "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "le",
-          "start": 57.9,
-          "end": 58.0,
-          "confidence": 1.0
+          "start": 55.2,
+          "end": 55.4,
+          "confidence": 0.252
         },
         {
           "word_index": 2,
           "text": "vent",
-          "start": 58.05,
-          "end": 58.15,
-          "confidence": 1.0
+          "start": 55.45,
+          "end": 55.7,
+          "confidence": 0.252
         },
         {
           "word_index": 3,
           "text": "la",
-          "start": 58.2,
-          "end": 58.3,
-          "confidence": 1.0
+          "start": 55.75,
+          "end": 55.95,
+          "confidence": 0.252
         },
         {
           "word_index": 4,
           "text": "pluie",
-          "start": 58.35,
-          "end": 58.45,
-          "confidence": 1.0
+          "start": 56.0,
+          "end": 56.25,
+          "confidence": 0.252
         }
       ],
       "y": 163,
@@ -1518,31 +1573,24 @@
       "char_rois": []
     },
     {
-      "line_index": 29,
-      "text": "Je danse avec",
-      "start": 58.45,
-      "end": 59.55,
+      "line_index": 33,
+      "text": "danse avec",
+      "start": 57.1,
+      "end": 58.5,
       "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
-          "text": "Je",
-          "start": 58.45,
-          "end": 58.55,
+          "text": "danse",
+          "start": 57.1,
+          "end": 57.8,
           "confidence": 0.252
         },
         {
           "word_index": 2,
-          "text": "danse",
-          "start": 58.6,
-          "end": 58.7,
-          "confidence": 0.252
-        },
-        {
-          "word_index": 3,
           "text": "avec",
-          "start": 58.75,
-          "end": 59.55,
+          "start": 57.85,
+          "end": 58.5,
           "confidence": 0.252
         }
       ],
@@ -1570,38 +1618,38 @@
       "char_rois": []
     },
     {
-      "line_index": 30,
+      "line_index": 34,
       "text": "le vent la plume",
-      "start": 59.55,
-      "end": 60.3,
+      "start": 58.8,
+      "end": 60.05,
       "confidence": 0.625,
       "words": [
         {
           "word_index": 1,
           "text": "le",
-          "start": 59.55,
-          "end": 59.65,
+          "start": 58.8,
+          "end": 58.9,
           "confidence": 0.25
         },
         {
           "word_index": 2,
           "text": "vent",
-          "start": 59.7,
-          "end": 60.0,
+          "start": 58.95,
+          "end": 59.75,
           "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "la",
-          "start": 60.05,
-          "end": 60.15,
+          "start": 59.8,
+          "end": 59.9,
           "confidence": 1.0
         },
         {
           "word_index": 4,
           "text": "plufe",
-          "start": 60.2,
-          "end": 60.3,
+          "start": 59.95,
+          "end": 60.05,
           "confidence": 0.25
         }
       ],
@@ -1635,17 +1683,17 @@
       "char_rois": []
     },
     {
-      "line_index": 31,
+      "line_index": 35,
       "text": "Yarajun",
-      "start": 60.3,
-      "end": 60.4,
+      "start": 60.05,
+      "end": 60.15,
       "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "Yarajun",
-          "start": 60.3,
-          "end": 60.4,
+          "start": 60.05,
+          "end": 60.15,
           "confidence": 1.0
         }
       ],
@@ -1661,38 +1709,38 @@
       "char_rois": []
     },
     {
-      "line_index": 32,
+      "line_index": 36,
       "text": "un brin de miel",
-      "start": 60.4,
-      "end": 60.95,
+      "start": 60.15,
+      "end": 60.7,
       "confidence": 0.925,
       "words": [
         {
           "word_index": 1,
           "text": "un",
-          "start": 60.4,
-          "end": 60.5,
+          "start": 60.15,
+          "end": 60.25,
           "confidence": 0.748
         },
         {
           "word_index": 2,
           "text": "brin",
-          "start": 60.55,
-          "end": 60.65,
+          "start": 60.3,
+          "end": 60.4,
           "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "de",
-          "start": 60.7,
-          "end": 60.8,
+          "start": 60.45,
+          "end": 60.55,
           "confidence": 1.0
         },
         {
           "word_index": 4,
           "text": "miel",
-          "start": 60.85,
-          "end": 60.95,
+          "start": 60.6,
+          "end": 60.7,
           "confidence": 0.954
         }
       ],
@@ -1726,31 +1774,31 @@
       "char_rois": []
     },
     {
-      "line_index": 33,
+      "line_index": 37,
       "text": "Un peu amour",
-      "start": 61.25,
-      "end": 61.95,
+      "start": 60.7,
+      "end": 61.1,
       "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "Un",
-          "start": 61.25,
-          "end": 61.35,
+          "start": 60.7,
+          "end": 60.8,
           "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "peu",
-          "start": 61.4,
-          "end": 61.5,
+          "start": 60.85,
+          "end": 60.95,
           "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "damour",
-          "start": 61.55,
-          "end": 61.65,
+          "start": 61.0,
+          "end": 61.1,
           "confidence": 1.0
         }
       ],
@@ -1778,52 +1826,78 @@
       "char_rois": []
     },
     {
-      "line_index": 34,
+      "line_index": 38,
+      "text": "Xarajun",
+      "start": 61.1,
+      "end": 61.2,
+      "confidence": 0.5,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Xarajun",
+          "start": 61.1,
+          "end": 61.2,
+          "confidence": 0.5
+        }
+      ],
+      "y": 239,
+      "word_rois": [
+        [
+          389,
+          239,
+          78,
+          32
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 39,
       "text": "Et je danse danse danse danse",
-      "start": 65.9,
-      "end": 73.15,
+      "start": 66.0,
+      "end": 73.25,
       "confidence": 0.875,
       "words": [
         {
           "word_index": 1,
           "text": "Et",
-          "start": 65.9,
-          "end": 66.0,
+          "start": 66.0,
+          "end": 66.1,
           "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "je",
-          "start": 66.05,
-          "end": 66.6,
+          "start": 66.15,
+          "end": 66.7,
           "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "danse",
-          "start": 66.65,
-          "end": 67.45,
+          "start": 66.75,
+          "end": 67.55,
           "confidence": 1.0
         },
         {
           "word_index": 4,
           "text": "danse",
-          "start": 67.5,
-          "end": 68.2,
+          "start": 67.6,
+          "end": 68.3,
           "confidence": 1.0
         },
         {
           "word_index": 5,
           "text": "danse",
-          "start": 68.25,
-          "end": 69.05,
+          "start": 68.35,
+          "end": 69.15,
           "confidence": 1.0
         },
         {
           "word_index": 6,
           "text": "danse",
-          "start": 73.05,
-          "end": 73.15,
+          "start": 73.15,
+          "end": 73.25,
           "confidence": 0.25
         }
       ],
@@ -1869,7 +1943,7 @@
       "char_rois": []
     },
     {
-      "line_index": 35,
+      "line_index": 40,
       "text": "danse danse danse",
       "start": 68.65,
       "end": 69.05,
@@ -1921,11 +1995,11 @@
       "char_rois": []
     },
     {
-      "line_index": 36,
+      "line_index": 41,
       "text": "Un peu amour",
       "start": 69.05,
       "end": 69.45,
-      "confidence": 0.37,
+      "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
@@ -1939,7 +2013,7 @@
           "text": "peu",
           "start": 69.2,
           "end": 69.3,
-          "confidence": 0.61
+          "confidence": 1.0
         },
         {
           "word_index": 3,
@@ -1973,17 +2047,56 @@
       "char_rois": []
     },
     {
-      "line_index": 37,
-      "text": "Karajan",
+      "line_index": 42,
+      "text": "Kara un",
       "start": 69.45,
-      "end": 69.55,
+      "end": 69.7,
+      "confidence": 0.252,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Kara",
+          "start": 69.45,
+          "end": 69.55,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 2,
+          "text": "un",
+          "start": 69.6,
+          "end": 69.7,
+          "confidence": 0.252
+        }
+      ],
+      "y": 247,
+      "word_rois": [
+        [
+          406,
+          247,
+          32,
+          22
+        ],
+        [
+          441,
+          247,
+          24,
+          22
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 43,
+      "text": "Karajan",
+      "start": 69.8,
+      "end": 69.9,
       "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "Karajun",
-          "start": 69.45,
-          "end": 69.55,
+          "start": 69.8,
+          "end": 69.9,
           "confidence": 0.252
         }
       ],
@@ -1999,39 +2112,39 @@
       "char_rois": []
     },
     {
-      "line_index": 38,
+      "line_index": 44,
       "text": "Et dans I BFUIE",
-      "start": 69.55,
-      "end": 70.1,
-      "confidence": 0.252,
+      "start": 69.9,
+      "end": 70.45,
+      "confidence": 0.424,
       "words": [
         {
           "word_index": 1,
           "text": "Et",
-          "start": 69.55,
-          "end": 69.65,
-          "confidence": 0.252
+          "start": 69.9,
+          "end": 70.0,
+          "confidence": 0.947
         },
         {
           "word_index": 2,
           "text": "dans",
-          "start": 69.7,
-          "end": 69.8,
-          "confidence": 0.252
+          "start": 70.05,
+          "end": 70.15,
+          "confidence": 0.25
         },
         {
           "word_index": 3,
           "text": "I",
-          "start": 69.85,
-          "end": 69.95,
-          "confidence": 0.252
+          "start": 70.2,
+          "end": 70.3,
+          "confidence": 0.25
         },
         {
           "word_index": 4,
           "text": "BFUIE",
-          "start": 70.0,
-          "end": 70.1,
-          "confidence": 0.252
+          "start": 70.35,
+          "end": 70.45,
+          "confidence": 0.25
         }
       ],
       "y": 22,
@@ -2064,46 +2177,46 @@
       "char_rois": []
     },
     {
-      "line_index": 39,
+      "line_index": 45,
       "text": "e cours et j'ai peur",
-      "start": 70.1,
-      "end": 70.8,
-      "confidence": 0.252,
+      "start": 70.45,
+      "end": 71.15,
+      "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
           "text": "e",
-          "start": 70.1,
-          "end": 70.2,
-          "confidence": 0.252
+          "start": 70.45,
+          "end": 70.55,
+          "confidence": 0.5
         },
         {
           "word_index": 2,
           "text": "cours",
-          "start": 70.25,
-          "end": 70.35,
-          "confidence": 0.252
+          "start": 70.6,
+          "end": 70.7,
+          "confidence": 0.5
         },
         {
           "word_index": 3,
           "text": "et",
-          "start": 70.4,
-          "end": 70.5,
-          "confidence": 0.252
+          "start": 70.75,
+          "end": 70.85,
+          "confidence": 0.5
         },
         {
           "word_index": 4,
           "text": "j'ai",
-          "start": 70.55,
-          "end": 70.65,
-          "confidence": 0.252
+          "start": 70.9,
+          "end": 71.0,
+          "confidence": 0.5
         },
         {
           "word_index": 5,
           "text": "peur",
-          "start": 70.7,
-          "end": 70.8,
-          "confidence": 0.252
+          "start": 71.05,
+          "end": 71.15,
+          "confidence": 0.5
         }
       ],
       "y": 67,
@@ -2142,129 +2255,38 @@
       "char_rois": []
     },
     {
-      "line_index": 40,
-      "text": "Et je danse danse danse danse",
-      "start": 70.8,
-      "end": 71.65,
-      "confidence": 0.375,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "Et",
-          "start": 70.8,
-          "end": 70.9,
-          "confidence": 0.25
-        },
-        {
-          "word_index": 2,
-          "text": "je",
-          "start": 70.95,
-          "end": 71.05,
-          "confidence": 0.25
-        },
-        {
-          "word_index": 3,
-          "text": "danse",
-          "start": 71.1,
-          "end": 71.2,
-          "confidence": 0.25
-        },
-        {
-          "word_index": 4,
-          "text": "danse",
-          "start": 71.25,
-          "end": 71.35,
-          "confidence": 1.0
-        },
-        {
-          "word_index": 5,
-          "text": "danse",
-          "start": 71.4,
-          "end": 71.5,
-          "confidence": 0.25
-        },
-        {
-          "word_index": 6,
-          "text": "danse",
-          "start": 71.55,
-          "end": 71.65,
-          "confidence": 0.25
-        }
-      ],
-      "y": 113,
-      "word_rois": [
-        [
-          58,
-          113,
-          29,
-          30
-        ],
-        [
-          91,
-          113,
-          34,
-          30
-        ],
-        [
-          129,
-          113,
-          86,
-          30
-        ],
-        [
-          219,
-          113,
-          86,
-          30
-        ],
-        [
-          309,
-          113,
-          86,
-          30
-        ],
-        [
-          399,
-          113,
-          86,
-          30
-        ]
-      ],
-      "char_rois": []
-    },
-    {
-      "line_index": 41,
+      "line_index": 46,
       "text": "Et dans le bruit",
-      "start": 71.65,
-      "end": 72.2,
+      "start": 71.15,
+      "end": 71.7,
       "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "Et",
-          "start": 71.65,
-          "end": 71.75,
+          "start": 71.15,
+          "end": 71.25,
           "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "dans",
-          "start": 71.8,
-          "end": 71.9,
+          "start": 71.3,
+          "end": 71.4,
           "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "le",
-          "start": 71.95,
-          "end": 72.05,
+          "start": 71.45,
+          "end": 71.55,
           "confidence": 1.0
         },
         {
           "word_index": 4,
           "text": "bruit",
-          "start": 72.1,
-          "end": 72.2,
+          "start": 71.6,
+          "end": 71.7,
           "confidence": 1.0
         }
       ],
@@ -2298,79 +2320,124 @@
       "char_rois": []
     },
     {
-      "line_index": 42,
-      "text": "larajun",
-      "start": 72.2,
-      "end": 72.3,
-      "confidence": 0.252,
+      "line_index": 47,
+      "text": "tara un",
+      "start": 71.7,
+      "end": 71.95,
+      "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
-          "text": "larajun",
-          "start": 72.2,
-          "end": 72.3,
-          "confidence": 0.252
+          "text": "tara",
+          "start": 71.7,
+          "end": 71.8,
+          "confidence": 0.5
+        },
+        {
+          "word_index": 2,
+          "text": "un",
+          "start": 71.85,
+          "end": 71.95,
+          "confidence": 0.5
         }
       ],
-      "y": 247,
+      "y": 249,
       "word_rois": [
         [
           408,
-          247,
-          58,
-          22
+          249,
+          32,
+          20
+        ],
+        [
+          443,
+          249,
+          22,
+          20
         ]
       ],
       "char_rois": []
     },
     {
-      "line_index": 43,
-      "text": "jer lasso danse danse d une",
-      "start": 72.3,
-      "end": 73.15,
+      "line_index": 48,
+      "text": "un",
+      "start": 71.95,
+      "end": 72.05,
       "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
-          "text": "jer",
-          "start": 72.3,
-          "end": 72.4,
+          "text": "un",
+          "start": 71.95,
+          "end": 72.05,
           "confidence": 0.252
+        }
+      ],
+      "y": 249,
+      "word_rois": [
+        [
+          414,
+          249,
+          24,
+          18
+        ],
+        [
+          441,
+          249,
+          25,
+          18
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 49,
+      "text": "jer lasso danse danse d une",
+      "start": 72.05,
+      "end": 72.9,
+      "confidence": 0.733,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "jer",
+          "start": 72.05,
+          "end": 72.15,
+          "confidence": 0.25
         },
         {
           "word_index": 2,
           "text": "lanso",
-          "start": 72.45,
-          "end": 72.55,
-          "confidence": 0.252
+          "start": 72.2,
+          "end": 72.3,
+          "confidence": 0.25
         },
         {
           "word_index": 3,
           "text": "danse",
-          "start": 72.6,
-          "end": 72.7,
-          "confidence": 0.252
+          "start": 72.35,
+          "end": 72.45,
+          "confidence": 0.899
         },
         {
           "word_index": 4,
           "text": "danse",
-          "start": 72.75,
-          "end": 72.85,
-          "confidence": 0.252
+          "start": 72.5,
+          "end": 72.6,
+          "confidence": 1.0
         },
         {
           "word_index": 5,
           "text": "d",
-          "start": 72.9,
-          "end": 73.0,
-          "confidence": 0.252
+          "start": 72.65,
+          "end": 72.75,
+          "confidence": 1.0
         },
         {
           "word_index": 6,
           "text": "une",
-          "start": 73.05,
-          "end": 73.15,
-          "confidence": 0.252
+          "start": 72.8,
+          "end": 72.9,
+          "confidence": 1.0
         }
       ],
       "y": 111,
@@ -2415,45 +2482,194 @@
       "char_rois": []
     },
     {
-      "line_index": 44,
-      "text": "je cours et fai peur",
+      "line_index": 50,
+      "text": "O un",
+      "start": 72.9,
+      "end": 73.15,
+      "confidence": 0.848,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "O",
+          "start": 72.9,
+          "end": 73.0,
+          "confidence": 0.87
+        },
+        {
+          "word_index": 2,
+          "text": "un",
+          "start": 73.05,
+          "end": 73.15,
+          "confidence": 0.826
+        }
+      ],
+      "y": 249,
+      "word_rois": [
+        [
+          424,
+          249,
+          15,
+          18
+        ],
+        [
+          441,
+          249,
+          24,
+          18
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 51,
+      "text": "ura un",
       "start": 73.15,
-      "end": 73.85,
+      "end": 73.4,
+      "confidence": 0.837,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "ura",
+          "start": 73.15,
+          "end": 73.25,
+          "confidence": 0.699
+        },
+        {
+          "word_index": 2,
+          "text": "un",
+          "start": 73.3,
+          "end": 73.4,
+          "confidence": 0.974
+        }
+      ],
+      "y": 249,
+      "word_rois": [
+        [
+          416,
+          249,
+          22,
+          20
+        ],
+        [
+          441,
+          249,
+          24,
+          20
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 52,
+      "text": "d EN",
+      "start": 73.4,
+      "end": 73.65,
+      "confidence": 0.422,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "d",
+          "start": 73.4,
+          "end": 73.5,
+          "confidence": 0.25
+        },
+        {
+          "word_index": 2,
+          "text": "EN",
+          "start": 73.55,
+          "end": 73.65,
+          "confidence": 0.594
+        }
+      ],
+      "y": 251,
+      "word_rois": [
+        [
+          430,
+          251,
+          10,
+          12
+        ],
+        [
+          441,
+          251,
+          22,
+          12
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 53,
+      "text": "ara un",
+      "start": 73.65,
+      "end": 73.9,
+      "confidence": 0.836,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "ara",
+          "start": 73.65,
+          "end": 73.75,
+          "confidence": 0.672
+        },
+        {
+          "word_index": 2,
+          "text": "un",
+          "start": 73.8,
+          "end": 73.9,
+          "confidence": 1.0
+        }
+      ],
+      "y": 249,
+      "word_rois": [
+        [
+          410,
+          249,
+          30,
+          16
+        ],
+        [
+          442,
+          249,
+          24,
+          16
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 54,
+      "text": "cours et fai peur",
+      "start": 74.05,
+      "end": 74.6,
       "confidence": 0.795,
       "words": [
         {
           "word_index": 1,
-          "text": "je",
-          "start": 73.15,
-          "end": 73.25,
-          "confidence": 1.0
-        },
-        {
-          "word_index": 2,
           "text": "cours",
-          "start": 73.3,
-          "end": 73.4,
+          "start": 74.05,
+          "end": 74.15,
           "confidence": 0.25
         },
         {
-          "word_index": 3,
+          "word_index": 2,
           "text": "et",
-          "start": 73.45,
-          "end": 73.55,
+          "start": 74.2,
+          "end": 74.3,
           "confidence": 0.723
         },
         {
-          "word_index": 4,
+          "word_index": 3,
           "text": "fai",
-          "start": 73.6,
-          "end": 73.7,
+          "start": 74.35,
+          "end": 74.45,
           "confidence": 1.0
         },
         {
-          "word_index": 5,
+          "word_index": 4,
           "text": "peur",
-          "start": 73.75,
-          "end": 73.85,
+          "start": 74.5,
+          "end": 74.6,
           "confidence": 1.0
         }
       ],
@@ -2493,31 +2709,31 @@
       "char_rois": []
     },
     {
-      "line_index": 45,
+      "line_index": 55,
       "text": "vient la douleur",
-      "start": 73.85,
-      "end": 74.25,
+      "start": 74.6,
+      "end": 75.0,
       "confidence": 0.956,
       "words": [
         {
           "word_index": 1,
           "text": "vient",
-          "start": 73.85,
-          "end": 73.95,
+          "start": 74.6,
+          "end": 74.7,
           "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "la",
-          "start": 74.0,
-          "end": 74.1,
+          "start": 74.75,
+          "end": 74.85,
           "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "douleur",
-          "start": 74.15,
-          "end": 74.25,
+          "start": 74.9,
+          "end": 75.0,
           "confidence": 0.869
         }
       ],
@@ -2545,38 +2761,103 @@
       "char_rois": []
     },
     {
-      "line_index": 46,
+      "line_index": 56,
+      "text": "Estate mon tour 8",
+      "start": 75.0,
+      "end": 75.55,
+      "confidence": 1.0,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Estce",
+          "start": 75.0,
+          "end": 75.1,
+          "confidence": 1.0
+        },
+        {
+          "word_index": 2,
+          "text": "mon",
+          "start": 75.15,
+          "end": 75.25,
+          "confidence": 1.0
+        },
+        {
+          "word_index": 3,
+          "text": "tour",
+          "start": 75.3,
+          "end": 75.4,
+          "confidence": 1.0
+        },
+        {
+          "word_index": 4,
+          "text": "8",
+          "start": 75.45,
+          "end": 75.55,
+          "confidence": 1.0
+        }
+      ],
+      "y": 105,
+      "word_rois": [
+        [
+          143,
+          105,
+          93,
+          46
+        ],
+        [
+          241,
+          105,
+          64,
+          46
+        ],
+        [
+          310,
+          105,
+          58,
+          46
+        ],
+        [
+          373,
+          105,
+          27,
+          46
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 57,
       "text": "Est ce mon tour",
-      "start": 74.25,
-      "end": 74.8,
+      "start": 75.55,
+      "end": 76.1,
       "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "Est",
-          "start": 74.25,
-          "end": 74.35,
+          "start": 75.55,
+          "end": 75.65,
           "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "ce",
-          "start": 74.4,
-          "end": 74.5,
+          "start": 75.7,
+          "end": 75.8,
           "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "mon",
-          "start": 74.55,
-          "end": 74.65,
+          "start": 75.85,
+          "end": 75.95,
           "confidence": 1.0
         },
         {
           "word_index": 4,
           "text": "tour",
-          "start": 74.7,
-          "end": 74.8,
+          "start": 76.0,
+          "end": 76.1,
           "confidence": 1.0
         }
       ],
@@ -2616,17 +2897,17 @@
       "char_rois": []
     },
     {
-      "line_index": 47,
+      "line_index": 58,
       "text": "Arjun",
-      "start": 74.8,
-      "end": 74.9,
+      "start": 76.1,
+      "end": 76.2,
       "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "arajun",
-          "start": 74.8,
-          "end": 74.9,
+          "start": 76.1,
+          "end": 76.2,
           "confidence": 0.252
         }
       ],
@@ -2642,17 +2923,17 @@
       "char_rois": []
     },
     {
-      "line_index": 48,
+      "line_index": 59,
       "text": "Paraffin",
-      "start": 74.9,
-      "end": 75.0,
+      "start": 76.2,
+      "end": 76.3,
       "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "Yarafun",
-          "start": 74.9,
-          "end": 75.0,
+          "start": 76.2,
+          "end": 76.3,
           "confidence": 0.252
         }
       ],
@@ -2668,31 +2949,31 @@
       "char_rois": []
     },
     {
-      "line_index": 49,
+      "line_index": 60,
       "text": "Dans tout Pa",
-      "start": 75.45,
-      "end": 76.15,
+      "start": 76.3,
+      "end": 76.7,
       "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
           "text": "Dans",
-          "start": 75.45,
-          "end": 75.55,
+          "start": 76.3,
+          "end": 76.4,
           "confidence": 0.5
         },
         {
           "word_index": 2,
           "text": "tout",
-          "start": 75.6,
-          "end": 75.75,
+          "start": 76.45,
+          "end": 76.55,
           "confidence": 0.5
         },
         {
           "word_index": 3,
           "text": "Pa",
-          "start": 75.8,
-          "end": 76.05,
+          "start": 76.6,
+          "end": 76.7,
           "confidence": 0.5
         }
       ],
@@ -2720,25 +3001,25 @@
       "char_rois": []
     },
     {
-      "line_index": 50,
+      "line_index": 61,
       "text": "Te m'abandonne",
-      "start": 78.4,
-      "end": 79.1,
-      "confidence": 0.5,
+      "start": 76.7,
+      "end": 77.65,
+      "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "Te",
-          "start": 78.4,
-          "end": 78.5,
-          "confidence": 0.5
+          "start": 76.7,
+          "end": 76.8,
+          "confidence": 0.252
         },
         {
           "word_index": 2,
           "text": "m'abandonne",
-          "start": 78.55,
-          "end": 78.65,
-          "confidence": 0.5
+          "start": 76.85,
+          "end": 77.65,
+          "confidence": 0.252
         }
       ],
       "y": 67,
@@ -2759,7 +3040,33 @@
       "char_rois": []
     },
     {
-      "line_index": 51,
+      "line_index": 62,
+      "text": "Xarajun",
+      "start": 78.5,
+      "end": 79.3,
+      "confidence": 0.252,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Xarajun",
+          "start": 78.5,
+          "end": 79.3,
+          "confidence": 0.252
+        }
+      ],
+      "y": 241,
+      "word_rois": [
+        [
+          391,
+          241,
+          78,
+          33
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 63,
       "text": "Dans tout Paris",
       "start": 80.15,
       "end": 80.55,
@@ -2811,7 +3118,7 @@
       "char_rois": []
     },
     {
-      "line_index": 52,
+      "line_index": 64,
       "text": "Estate mon tour 8",
       "start": 80.55,
       "end": 81.1,
@@ -2876,7 +3183,7 @@
       "char_rois": []
     },
     {
-      "line_index": 53,
+      "line_index": 65,
       "text": "Karajan",
       "start": 81.1,
       "end": 81.2,
@@ -2902,18 +3209,18 @@
       "char_rois": []
     },
     {
-      "line_index": 54,
+      "line_index": 66,
       "text": "larajun",
       "start": 81.2,
       "end": 81.3,
-      "confidence": 0.252,
+      "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
           "text": "larajun",
           "start": 81.2,
           "end": 81.3,
-          "confidence": 0.252
+          "confidence": 0.5
         }
       ],
       "y": 246,
@@ -2928,18 +3235,18 @@
       "char_rois": []
     },
     {
-      "line_index": 55,
+      "line_index": 67,
       "text": "Harajun",
       "start": 81.3,
       "end": 81.4,
-      "confidence": 0.252,
+      "confidence": 0.707,
       "words": [
         {
           "word_index": 1,
           "text": "Harajun",
           "start": 81.3,
           "end": 81.4,
-          "confidence": 0.252
+          "confidence": 0.707
         }
       ],
       "y": 247,
@@ -2954,38 +3261,70 @@
       "char_rois": []
     },
     {
-      "line_index": 56,
-      "text": "je m'envole vole vol",
+      "line_index": 68,
+      "text": "ara un",
       "start": 81.4,
-      "end": 81.95,
+      "end": 81.65,
+      "confidence": 0.97,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "ara",
+          "start": 81.4,
+          "end": 81.5,
+          "confidence": 0.941
+        },
+        {
+          "word_index": 2,
+          "text": "un",
+          "start": 81.55,
+          "end": 81.65,
+          "confidence": 1.0
+        }
+      ],
+      "y": 249,
+      "word_rois": [
+        [
+          410,
+          249,
+          30,
+          20
+        ],
+        [
+          442,
+          249,
+          23,
+          20
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 69,
+      "text": "m'envole vole vol",
+      "start": 81.8,
+      "end": 82.2,
       "confidence": 0.625,
       "words": [
         {
           "word_index": 1,
-          "text": "je",
-          "start": 81.4,
-          "end": 81.5,
+          "text": "m'envole",
+          "start": 81.8,
+          "end": 81.9,
           "confidence": 0.25
         },
         {
           "word_index": 2,
-          "text": "m'envole",
-          "start": 81.55,
-          "end": 81.65,
-          "confidence": 0.25
-        },
-        {
-          "word_index": 3,
           "text": "vole",
-          "start": 81.7,
-          "end": 81.8,
+          "start": 81.95,
+          "end": 82.05,
           "confidence": 1.0
         },
         {
-          "word_index": 4,
+          "word_index": 3,
           "text": "vol",
-          "start": 81.85,
-          "end": 81.95,
+          "start": 82.1,
+          "end": 82.2,
           "confidence": 1.0
         }
       ],
@@ -3019,38 +3358,38 @@
       "char_rois": []
     },
     {
-      "line_index": 57,
+      "line_index": 70,
       "text": "vole Tole vole wol",
-      "start": 81.95,
-      "end": 82.5,
+      "start": 82.2,
+      "end": 82.75,
       "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "vole",
-          "start": 81.95,
-          "end": 82.05,
+          "start": 82.2,
+          "end": 82.3,
           "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "Tole",
-          "start": 82.1,
-          "end": 82.2,
+          "start": 82.35,
+          "end": 82.45,
           "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "vole",
-          "start": 82.25,
-          "end": 82.35,
+          "start": 82.5,
+          "end": 82.6,
           "confidence": 1.0
         },
         {
           "word_index": 4,
           "text": "wol",
-          "start": 82.4,
-          "end": 82.5,
+          "start": 82.65,
+          "end": 82.75,
           "confidence": 1.0
         }
       ],
@@ -3084,38 +3423,38 @@
       "char_rois": []
     },
     {
-      "line_index": 58,
+      "line_index": 71,
       "text": "vole vole vole vole",
-      "start": 82.5,
-      "end": 83.05,
+      "start": 82.75,
+      "end": 83.3,
       "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "vole",
-          "start": 82.5,
-          "end": 82.6,
+          "start": 82.75,
+          "end": 82.85,
           "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "vole",
-          "start": 82.65,
-          "end": 82.75,
+          "start": 82.9,
+          "end": 83.0,
           "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "vole",
-          "start": 82.8,
-          "end": 82.9,
+          "start": 83.05,
+          "end": 83.15,
           "confidence": 1.0
         },
         {
           "word_index": 4,
           "text": "vole",
-          "start": 82.95,
-          "end": 83.05,
+          "start": 83.2,
+          "end": 83.3,
           "confidence": 1.0
         }
       ],
@@ -3149,25 +3488,96 @@
       "char_rois": []
     },
     {
-      "line_index": 59,
+      "line_index": 72,
+      "text": "un",
+      "start": 83.3,
+      "end": 83.4,
+      "confidence": 0.853,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "un",
+          "start": 83.3,
+          "end": 83.4,
+          "confidence": 0.853
+        }
+      ],
+      "y": 249,
+      "word_rois": [
+        [
+          412,
+          249,
+          27,
+          20
+        ],
+        [
+          442,
+          249,
+          23,
+          20
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 73,
+      "text": "fara un",
+      "start": 83.4,
+      "end": 83.65,
+      "confidence": 0.252,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "fara",
+          "start": 83.4,
+          "end": 83.5,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 2,
+          "text": "un",
+          "start": 83.55,
+          "end": 83.65,
+          "confidence": 0.252
+        }
+      ],
+      "y": 247,
+      "word_rois": [
+        [
+          410,
+          247,
+          30,
+          22
+        ],
+        [
+          442,
+          247,
+          23,
+          22
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 74,
       "text": "te m'abanderne",
-      "start": 83.05,
-      "end": 83.3,
-      "confidence": 1.0,
+      "start": 83.65,
+      "end": 83.9,
+      "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "te",
-          "start": 83.05,
-          "end": 83.15,
-          "confidence": 1.0
+          "start": 83.65,
+          "end": 83.75,
+          "confidence": 0.252
         },
         {
           "word_index": 2,
           "text": "m'abanderne",
-          "start": 83.2,
-          "end": 83.3,
-          "confidence": 1.0
+          "start": 83.8,
+          "end": 83.9,
+          "confidence": 0.252
         }
       ],
       "y": 65,
@@ -3188,18 +3598,44 @@
       "char_rois": []
     },
     {
-      "line_index": 60,
+      "line_index": 75,
+      "text": "Xarajun",
+      "start": 83.9,
+      "end": 84.0,
+      "confidence": 0.252,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Xarajun",
+          "start": 83.9,
+          "end": 84.0,
+          "confidence": 0.252
+        }
+      ],
+      "y": 245,
+      "word_rois": [
+        [
+          393,
+          245,
+          74,
+          26
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 76,
       "text": "farajun",
-      "start": 83.3,
-      "end": 83.4,
-      "confidence": 0.763,
+      "start": 84.0,
+      "end": 84.1,
+      "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "farajun",
-          "start": 83.3,
-          "end": 83.4,
-          "confidence": 0.763
+          "start": 84.0,
+          "end": 84.1,
+          "confidence": 0.252
         }
       ],
       "y": 245,
@@ -3214,18 +3650,18 @@
       "char_rois": []
     },
     {
-      "line_index": 61,
+      "line_index": 77,
       "text": "Harajun",
-      "start": 83.4,
-      "end": 83.5,
-      "confidence": 0.813,
+      "start": 84.1,
+      "end": 84.2,
+      "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "Harajun",
-          "start": 83.4,
-          "end": 83.5,
-          "confidence": 0.813
+          "start": 84.1,
+          "end": 84.2,
+          "confidence": 0.252
         }
       ],
       "y": 247,
@@ -3240,18 +3676,57 @@
       "char_rois": []
     },
     {
-      "line_index": 62,
+      "line_index": 78,
+      "text": "ra un",
+      "start": 84.2,
+      "end": 84.45,
+      "confidence": 0.252,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "ra",
+          "start": 84.2,
+          "end": 84.3,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 2,
+          "text": "un",
+          "start": 84.35,
+          "end": 84.45,
+          "confidence": 0.252
+        }
+      ],
+      "y": 249,
+      "word_rois": [
+        [
+          420,
+          249,
+          20,
+          16
+        ],
+        [
+          442,
+          249,
+          24,
+          16
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 79,
       "text": "Karajan",
-      "start": 83.5,
-      "end": 83.6,
-      "confidence": 1.0,
+      "start": 84.45,
+      "end": 84.55,
+      "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "Karajun",
-          "start": 83.5,
-          "end": 83.6,
-          "confidence": 1.0
+          "start": 84.45,
+          "end": 84.55,
+          "confidence": 0.252
         }
       ],
       "y": 247,
@@ -3266,25 +3741,64 @@
       "char_rois": []
     },
     {
-      "line_index": 63,
+      "line_index": 80,
+      "text": "fara un",
+      "start": 84.55,
+      "end": 84.8,
+      "confidence": 0.252,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "fara",
+          "start": 84.55,
+          "end": 84.65,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 2,
+          "text": "un",
+          "start": 84.7,
+          "end": 84.8,
+          "confidence": 0.252
+        }
+      ],
+      "y": 247,
+      "word_rois": [
+        [
+          408,
+          247,
+          30,
+          22
+        ],
+        [
+          441,
+          247,
+          24,
+          22
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 81,
       "text": "Que d'esperant",
-      "start": 83.6,
-      "end": 83.85,
-      "confidence": 0.85,
+      "start": 84.8,
+      "end": 85.05,
+      "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "Que",
-          "start": 83.6,
-          "end": 83.7,
-          "confidence": 1.0
+          "start": 84.8,
+          "end": 84.9,
+          "confidence": 0.252
         },
         {
           "word_index": 2,
           "text": "d'esperant",
-          "start": 83.75,
-          "end": 83.85,
-          "confidence": 0.7
+          "start": 84.95,
+          "end": 85.05,
+          "confidence": 0.252
         }
       ],
       "y": 69,
@@ -3305,24 +3819,24 @@
       "char_rois": []
     },
     {
-      "line_index": 64,
+      "line_index": 82,
       "text": "Que d'esprance",
-      "start": 83.85,
-      "end": 84.8,
+      "start": 85.05,
+      "end": 86.0,
       "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "Que",
-          "start": 83.85,
-          "end": 83.95,
+          "start": 85.05,
+          "end": 85.15,
           "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "d'esprance",
-          "start": 84.0,
-          "end": 84.8,
+          "start": 85.2,
+          "end": 86.0,
           "confidence": 1.0
         }
       ],
@@ -3344,18 +3858,18 @@
       "char_rois": []
     },
     {
-      "line_index": 65,
+      "line_index": 83,
       "text": "Yarajun",
-      "start": 84.8,
-      "end": 84.9,
-      "confidence": 0.949,
+      "start": 86.0,
+      "end": 86.1,
+      "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "Yarajun",
-          "start": 84.8,
-          "end": 84.9,
-          "confidence": 0.949
+          "start": 86.0,
+          "end": 86.1,
+          "confidence": 1.0
         }
       ],
       "y": 245,
@@ -3370,53 +3884,118 @@
       "char_rois": []
     },
     {
-      "line_index": 66,
-      "text": "sur ce chemin en ton absence",
+      "line_index": 84,
+      "text": "vole vole vole vale",
       "start": 86.2,
-      "end": 88.0,
-      "confidence": 1.0,
+      "end": 86.75,
+      "confidence": 0.625,
       "words": [
         {
           "word_index": 1,
-          "text": "sur",
+          "text": "vole",
           "start": 86.2,
-          "end": 86.6,
+          "end": 86.3,
           "confidence": 1.0
         },
         {
           "word_index": 2,
-          "text": "ce",
+          "text": "vole",
+          "start": 86.35,
+          "end": 86.45,
+          "confidence": 0.25
+        },
+        {
+          "word_index": 3,
+          "text": "vole",
+          "start": 86.5,
+          "end": 86.6,
+          "confidence": 0.25
+        },
+        {
+          "word_index": 4,
+          "text": "vale",
           "start": 86.65,
           "end": 86.75,
           "confidence": 1.0
+        }
+      ],
+      "y": 161,
+      "word_rois": [
+        [
+          142,
+          161,
+          59,
+          30
+        ],
+        [
+          205,
+          161,
+          60,
+          30
+        ],
+        [
+          269,
+          161,
+          64,
+          30
+        ],
+        [
+          336,
+          161,
+          61,
+          30
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 85,
+      "text": "sur ce chemin en ton absence",
+      "start": 86.75,
+      "end": 87.6,
+      "confidence": 0.252,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "sur",
+          "start": 86.75,
+          "end": 86.85,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 2,
+          "text": "ce",
+          "start": 86.9,
+          "end": 87.0,
+          "confidence": 0.252
         },
         {
           "word_index": 3,
           "text": "chemin",
-          "start": 86.8,
-          "end": 87.35,
-          "confidence": 1.0
+          "start": 87.05,
+          "end": 87.15,
+          "confidence": 0.252
         },
         {
           "word_index": 4,
           "text": "en",
-          "start": 87.45,
-          "end": 87.6,
-          "confidence": 1.0
+          "start": 87.2,
+          "end": 87.3,
+          "confidence": 0.252
         },
         {
           "word_index": 5,
           "text": "ton",
-          "start": 87.75,
-          "end": 87.85,
-          "confidence": 1.0
+          "start": 87.35,
+          "end": 87.45,
+          "confidence": 0.252
         },
         {
           "word_index": 6,
           "text": "absence",
-          "start": 87.9,
-          "end": 88.0,
-          "confidence": 1.0
+          "start": 87.5,
+          "end": 87.6,
+          "confidence": 0.252
         }
       ],
       "y": 113,
@@ -3461,33 +4040,33 @@
       "char_rois": []
     },
     {
-      "line_index": 67,
-      "text": "Paraffin",
-      "start": 88.8,
-      "end": 88.9,
-      "confidence": 1.0,
+      "line_index": 86,
+      "text": "Xarajun",
+      "start": 88.3,
+      "end": 88.4,
+      "confidence": 0.728,
       "words": [
         {
           "word_index": 1,
-          "text": "Yarafun",
-          "start": 88.8,
-          "end": 88.9,
-          "confidence": 1.0
+          "text": "Xarajun",
+          "start": 88.3,
+          "end": 88.4,
+          "confidence": 0.728
         }
       ],
-      "y": 239,
+      "y": 240,
       "word_rois": [
         [
-          390,
-          239,
-          80,
-          34
+          389,
+          240,
+          79,
+          31
         ]
       ],
       "char_rois": []
     },
     {
-      "line_index": 68,
+      "line_index": 87,
       "text": "vie",
       "start": 89.3,
       "end": 89.6,
@@ -3513,7 +4092,7 @@
       "char_rois": []
     },
     {
-      "line_index": 69,
+      "line_index": 88,
       "text": "J'ai beau trimer sans toi ma vie",
       "start": 90.3,
       "end": 92.15,
@@ -3617,46 +4196,46 @@
       "char_rois": []
     },
     {
-      "line_index": 70,
+      "line_index": 89,
       "text": "n'est qu'un dc or qui",
       "start": 92.15,
-      "end": 97.15,
-      "confidence": 1.0,
+      "end": 92.7,
+      "confidence": 0.228,
       "words": [
         {
           "word_index": 1,
           "text": "n'est",
           "start": 92.15,
-          "end": 92.9,
-          "confidence": 1.0
+          "end": 92.25,
+          "confidence": 0.228
         },
         {
           "word_index": 2,
           "text": "qu'un",
-          "start": 96.75,
-          "end": 96.85,
-          "confidence": 1.0
+          "start": 92.3,
+          "end": 92.4,
+          "confidence": 0.228
         },
         {
           "word_index": 3,
           "text": "dc",
-          "start": 96.9,
-          "end": 96.95,
-          "confidence": 1.0
+          "start": 92.45,
+          "end": 92.5,
+          "confidence": 0.228
         },
         {
           "word_index": 4,
           "text": "or",
-          "start": 96.95,
-          "end": 97.0,
-          "confidence": 1.0
+          "start": 92.5,
+          "end": 92.55,
+          "confidence": 0.228
         },
         {
           "word_index": 5,
           "text": "qui",
-          "start": 97.05,
-          "end": 97.15,
-          "confidence": 1.0
+          "start": 92.6,
+          "end": 92.7,
+          "confidence": 0.228
         }
       ],
       "y": 65,
@@ -3689,69 +4268,17 @@
       "char_rois": []
     },
     {
-      "line_index": 71,
-      "text": "larajun",
-      "start": 97.15,
-      "end": 97.25,
-      "confidence": 1.0,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "larajun",
-          "start": 97.15,
-          "end": 97.25,
-          "confidence": 1.0
-        }
-      ],
-      "y": 245,
-      "word_rois": [
-        [
-          407,
-          245,
-          60,
-          26
-        ]
-      ],
-      "char_rois": []
-    },
-    {
-      "line_index": 72,
-      "text": "Paraffin",
-      "start": 97.25,
-      "end": 97.35,
-      "confidence": 1.0,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "Yarafun",
-          "start": 97.25,
-          "end": 97.35,
-          "confidence": 1.0
-        }
-      ],
-      "y": 243,
-      "word_rois": [
-        [
-          391,
-          243,
-          76,
-          28
-        ]
-      ],
-      "char_rois": []
-    },
-    {
-      "line_index": 73,
+      "line_index": 90,
       "text": "Xorafun",
-      "start": 97.35,
-      "end": 97.45,
+      "start": 94.25,
+      "end": 94.35,
       "confidence": 0.61,
       "words": [
         {
           "word_index": 1,
           "text": "Xorafun",
-          "start": 97.35,
-          "end": 97.45,
+          "start": 94.25,
+          "end": 94.35,
           "confidence": 0.61
         }
       ],
@@ -3767,45 +4294,45 @@
       "char_rois": []
     },
     {
-      "line_index": 74,
+      "line_index": 91,
       "text": "n'est qu'un dc or qui",
-      "start": 97.45,
-      "end": 98.0,
+      "start": 94.35,
+      "end": 94.9,
       "confidence": 0.965,
       "words": [
         {
           "word_index": 1,
           "text": "n'est",
-          "start": 97.45,
-          "end": 97.55,
+          "start": 94.35,
+          "end": 94.45,
           "confidence": 0.827
         },
         {
           "word_index": 2,
           "text": "qu'un",
-          "start": 97.6,
-          "end": 97.7,
+          "start": 94.5,
+          "end": 94.6,
           "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "dc",
-          "start": 97.75,
-          "end": 97.8,
+          "start": 94.65,
+          "end": 94.7,
           "confidence": 1.0
         },
         {
           "word_index": 4,
           "text": "or",
-          "start": 97.8,
-          "end": 97.85,
+          "start": 94.7,
+          "end": 94.75,
           "confidence": 1.0
         },
         {
           "word_index": 5,
           "text": "qui",
-          "start": 97.9,
-          "end": 98.0,
+          "start": 94.8,
+          "end": 94.9,
           "confidence": 1.0
         }
       ],
@@ -3839,38 +4366,38 @@
       "char_rois": []
     },
     {
-      "line_index": 75,
+      "line_index": 92,
       "text": "brille vide de sens",
-      "start": 98.0,
-      "end": 98.55,
+      "start": 95.1,
+      "end": 97.1,
       "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "brille",
-          "start": 98.0,
-          "end": 98.1,
+          "start": 95.1,
+          "end": 95.7,
           "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "vide",
-          "start": 98.15,
-          "end": 98.25,
+          "start": 95.85,
+          "end": 96.15,
           "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "de",
-          "start": 98.3,
-          "end": 98.4,
+          "start": 96.5,
+          "end": 96.8,
           "confidence": 1.0
         },
         {
           "word_index": 4,
           "text": "sens",
-          "start": 98.45,
-          "end": 98.55,
+          "start": 96.85,
+          "end": 97.1,
           "confidence": 1.0
         }
       ],
@@ -3904,17 +4431,17 @@
       "char_rois": []
     },
     {
-      "line_index": 76,
+      "line_index": 93,
       "text": "Xorafun",
-      "start": 98.55,
-      "end": 98.65,
+      "start": 97.1,
+      "end": 97.2,
       "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "Xorafun",
-          "start": 98.55,
-          "end": 98.65,
+          "start": 97.1,
+          "end": 97.2,
           "confidence": 1.0
         }
       ],
@@ -3930,59 +4457,59 @@
       "char_rois": []
     },
     {
-      "line_index": 77,
+      "line_index": 94,
       "text": "Jal a auster dane loi ma vie",
-      "start": 98.65,
-      "end": 101.1,
-      "confidence": 0.357,
+      "start": 97.2,
+      "end": 98.2,
+      "confidence": 0.571,
       "words": [
         {
           "word_index": 1,
           "text": "Jal",
-          "start": 98.65,
-          "end": 98.75,
+          "start": 97.2,
+          "end": 97.3,
           "confidence": 0.25
         },
         {
           "word_index": 2,
           "text": "a",
-          "start": 98.8,
-          "end": 98.9,
+          "start": 97.35,
+          "end": 97.45,
           "confidence": 0.25
         },
         {
           "word_index": 3,
           "text": "auster",
-          "start": 98.95,
-          "end": 99.05,
+          "start": 97.5,
+          "end": 97.6,
           "confidence": 0.25
         },
         {
           "word_index": 4,
           "text": "dane",
-          "start": 100.05,
-          "end": 100.15,
+          "start": 97.65,
+          "end": 97.75,
           "confidence": 1.0
         },
         {
           "word_index": 5,
           "text": "loi",
-          "start": 100.4,
-          "end": 100.5,
-          "confidence": 0.25
+          "start": 97.8,
+          "end": 97.9,
+          "confidence": 1.0
         },
         {
           "word_index": 6,
           "text": "ma",
-          "start": 100.7,
-          "end": 100.8,
-          "confidence": 0.25
+          "start": 97.95,
+          "end": 98.05,
+          "confidence": 1.0
         },
         {
           "word_index": 7,
           "text": "vie",
-          "start": 101.0,
-          "end": 101.1,
+          "start": 98.1,
+          "end": 98.2,
           "confidence": 0.25
         }
       ],
@@ -4034,38 +4561,57 @@
       "char_rois": []
     },
     {
-      "line_index": 78,
-      "text": "Je remue le ciel",
-      "start": 101.1,
-      "end": 106.65,
+      "line_index": 95,
+      "text": "Xarajun",
+      "start": 100.15,
+      "end": 100.85,
       "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
-          "text": "Je",
-          "start": 101.1,
-          "end": 101.2,
+          "text": "Xarajun",
+          "start": 100.15,
+          "end": 100.25,
+          "confidence": 1.0
+        }
+      ],
+      "y": 239,
+      "word_rois": [
+        [
+          387,
+          239,
+          80,
+          34
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 96,
+      "text": "remue le ciel",
+      "start": 104.25,
+      "end": 110.45,
+      "confidence": 1.0,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "remue",
+          "start": 104.25,
+          "end": 105.05,
           "confidence": 1.0
         },
         {
           "word_index": 2,
-          "text": "remue",
-          "start": 101.25,
-          "end": 101.35,
+          "text": "le",
+          "start": 110.2,
+          "end": 110.3,
           "confidence": 1.0
         },
         {
           "word_index": 3,
-          "text": "le",
-          "start": 106.4,
-          "end": 106.5,
-          "confidence": 1.0
-        },
-        {
-          "word_index": 4,
           "text": "ciel",
-          "start": 106.55,
-          "end": 106.65,
+          "start": 110.35,
+          "end": 110.45,
           "confidence": 1.0
         }
       ],
@@ -4099,7 +4645,7 @@
       "char_rois": []
     },
     {
-      "line_index": 79,
+      "line_index": 97,
       "text": "le jour la nu it",
       "start": 106.65,
       "end": 107.2,
@@ -4171,31 +4717,154 @@
       "char_rois": []
     },
     {
-      "line_index": 80,
-      "text": "Je danse avec",
-      "start": 107.2,
-      "end": 107.6,
+      "line_index": 98,
+      "text": "remue le ciel",
+      "start": 107.35,
+      "end": 107.75,
+      "confidence": 0.5,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "remue",
+          "start": 107.35,
+          "end": 107.45,
+          "confidence": 0.5
+        },
+        {
+          "word_index": 2,
+          "text": "le",
+          "start": 107.5,
+          "end": 107.6,
+          "confidence": 0.5
+        },
+        {
+          "word_index": 3,
+          "text": "ciel",
+          "start": 107.65,
+          "end": 107.75,
+          "confidence": 0.5
+        }
+      ],
+      "y": 19,
+      "word_rois": [
+        [
+          158,
+          19,
+          33,
+          30
+        ],
+        [
+          195,
+          19,
+          90,
+          30
+        ],
+        [
+          289,
+          19,
+          33,
+          30
+        ],
+        [
+          326,
+          19,
+          55,
+          30
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 99,
+      "text": "le jour la nu it",
+      "start": 107.75,
+      "end": 108.3,
+      "confidence": 0.5,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "le",
+          "start": 107.75,
+          "end": 107.85,
+          "confidence": 0.5
+        },
+        {
+          "word_index": 2,
+          "text": "jour",
+          "start": 107.9,
+          "end": 108.0,
+          "confidence": 0.5
+        },
+        {
+          "word_index": 3,
+          "text": "la",
+          "start": 108.05,
+          "end": 108.15,
+          "confidence": 0.5
+        },
+        {
+          "word_index": 4,
+          "text": "nu",
+          "start": 108.2,
+          "end": 108.25,
+          "confidence": 0.5
+        },
+        {
+          "word_index": 5,
+          "text": "it",
+          "start": 108.25,
+          "end": 108.3,
+          "confidence": 0.5
+        }
+      ],
+      "y": 67,
+      "word_rois": [
+        [
+          172,
+          67,
+          29,
+          30
+        ],
+        [
+          205,
+          67,
+          60,
+          30
+        ],
+        [
+          269,
+          67,
+          30,
+          30
+        ],
+        [
+          303,
+          67,
+          62,
+          30
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 100,
+      "text": "danse avec",
+      "start": 108.45,
+      "end": 108.7,
       "confidence": 0.935,
       "words": [
         {
           "word_index": 1,
-          "text": "Je",
-          "start": 107.2,
-          "end": 107.3,
-          "confidence": 0.815
-        },
-        {
-          "word_index": 2,
           "text": "danse",
-          "start": 107.35,
-          "end": 107.45,
+          "start": 108.45,
+          "end": 108.55,
           "confidence": 1.0
         },
         {
-          "word_index": 3,
+          "word_index": 2,
           "text": "avec",
-          "start": 107.5,
-          "end": 107.6,
+          "start": 108.6,
+          "end": 108.7,
           "confidence": 0.989
         }
       ],
@@ -4223,39 +4892,39 @@
       "char_rois": []
     },
     {
-      "line_index": 81,
+      "line_index": 101,
       "text": "le vent la pluie",
-      "start": 108.0,
-      "end": 108.7,
-      "confidence": 0.228,
+      "start": 108.7,
+      "end": 109.25,
+      "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "le",
-          "start": 108.0,
-          "end": 108.1,
-          "confidence": 0.228
+          "start": 108.7,
+          "end": 108.8,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "vent",
-          "start": 108.15,
-          "end": 108.25,
-          "confidence": 0.228
+          "start": 108.85,
+          "end": 108.95,
+          "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "la",
-          "start": 108.3,
-          "end": 108.4,
-          "confidence": 0.228
+          "start": 109.0,
+          "end": 109.1,
+          "confidence": 1.0
         },
         {
           "word_index": 4,
           "text": "pluie",
-          "start": 108.45,
-          "end": 108.55,
-          "confidence": 0.228
+          "start": 109.15,
+          "end": 109.25,
+          "confidence": 1.0
         }
       ],
       "y": 161,
@@ -4288,32 +4957,32 @@
       "char_rois": []
     },
     {
-      "line_index": 82,
+      "line_index": 102,
       "text": "Un peu d'amour",
-      "start": 109.7,
-      "end": 110.7,
-      "confidence": 0.5,
+      "start": 109.35,
+      "end": 109.75,
+      "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "Un",
-          "start": 109.7,
-          "end": 109.95,
-          "confidence": 0.5
+          "start": 109.35,
+          "end": 109.45,
+          "confidence": 0.252
         },
         {
           "word_index": 2,
           "text": "peu",
-          "start": 110.0,
-          "end": 110.3,
-          "confidence": 0.5
+          "start": 109.5,
+          "end": 109.6,
+          "confidence": 0.252
         },
         {
           "word_index": 3,
           "text": "d'amour",
-          "start": 110.35,
-          "end": 110.7,
-          "confidence": 0.5
+          "start": 109.65,
+          "end": 109.75,
+          "confidence": 0.252
         }
       ],
       "y": 19,
@@ -4340,7 +5009,7 @@
       "char_rois": []
     },
     {
-      "line_index": 83,
+      "line_index": 103,
       "text": "un brin de miel",
       "start": 110.95,
       "end": 114.2,
@@ -4405,18 +5074,18 @@
       "char_rois": []
     },
     {
-      "line_index": 84,
+      "line_index": 104,
       "text": "larajun",
       "start": 114.2,
       "end": 114.3,
-      "confidence": 0.624,
+      "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
           "text": "larajun",
           "start": 114.2,
           "end": 114.3,
-          "confidence": 0.624
+          "confidence": 0.5
         }
       ],
       "y": 247,
@@ -4431,32 +5100,32 @@
       "char_rois": []
     },
     {
-      "line_index": 85,
+      "line_index": 105,
       "text": "Un peu amour",
-      "start": 114.3,
-      "end": 114.7,
-      "confidence": 0.5,
+      "start": 114.4,
+      "end": 114.8,
+      "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "Un",
-          "start": 114.3,
-          "end": 114.4,
-          "confidence": 0.5
+          "start": 114.4,
+          "end": 114.5,
+          "confidence": 0.252
         },
         {
           "word_index": 2,
           "text": "peu",
-          "start": 114.45,
-          "end": 114.55,
-          "confidence": 0.5
+          "start": 114.55,
+          "end": 114.65,
+          "confidence": 0.252
         },
         {
           "word_index": 3,
           "text": "damour",
-          "start": 114.6,
-          "end": 114.7,
-          "confidence": 0.5
+          "start": 114.7,
+          "end": 114.8,
+          "confidence": 0.252
         }
       ],
       "y": 17,
@@ -4483,53 +5152,53 @@
       "char_rois": []
     },
     {
-      "line_index": 86,
+      "line_index": 106,
       "text": "Et je danse danse danse danse",
-      "start": 114.7,
-      "end": 115.55,
-      "confidence": 0.24,
+      "start": 116.4,
+      "end": 119.65,
+      "confidence": 0.875,
       "words": [
         {
           "word_index": 1,
           "text": "Et",
-          "start": 114.7,
-          "end": 114.8,
-          "confidence": 0.24
+          "start": 116.4,
+          "end": 116.5,
+          "confidence": 0.25
         },
         {
           "word_index": 2,
           "text": "je",
-          "start": 114.85,
-          "end": 114.95,
-          "confidence": 0.24
+          "start": 118.95,
+          "end": 119.05,
+          "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "danse",
-          "start": 115.0,
-          "end": 115.1,
-          "confidence": 0.24
+          "start": 119.1,
+          "end": 119.2,
+          "confidence": 1.0
         },
         {
           "word_index": 4,
           "text": "danse",
-          "start": 115.15,
-          "end": 115.25,
-          "confidence": 0.24
+          "start": 119.25,
+          "end": 119.35,
+          "confidence": 1.0
         },
         {
           "word_index": 5,
           "text": "danse",
-          "start": 115.3,
-          "end": 115.4,
-          "confidence": 0.24
+          "start": 119.4,
+          "end": 119.5,
+          "confidence": 1.0
         },
         {
           "word_index": 6,
           "text": "danse",
-          "start": 115.45,
-          "end": 115.55,
-          "confidence": 0.24
+          "start": 119.55,
+          "end": 119.65,
+          "confidence": 1.0
         }
       ],
       "y": 113,
@@ -4574,31 +5243,31 @@
       "char_rois": []
     },
     {
-      "line_index": 87,
+      "line_index": 107,
       "text": "danse danse danse",
-      "start": 115.55,
-      "end": 116.5,
+      "start": 119.65,
+      "end": 120.05,
       "confidence": 0.936,
       "words": [
         {
           "word_index": 1,
           "text": "danse",
-          "start": 115.55,
-          "end": 115.65,
+          "start": 119.65,
+          "end": 119.75,
           "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "danse",
-          "start": 115.7,
-          "end": 115.8,
+          "start": 119.8,
+          "end": 119.9,
           "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "danse",
-          "start": 115.85,
-          "end": 116.5,
+          "start": 119.95,
+          "end": 120.05,
           "confidence": 0.809
         }
       ],
@@ -4626,18 +5295,18 @@
       "char_rois": []
     },
     {
-      "line_index": 88,
+      "line_index": 108,
       "text": "Karajan",
-      "start": 116.5,
-      "end": 116.6,
-      "confidence": 0.796,
+      "start": 120.05,
+      "end": 120.15,
+      "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "Karajan",
-          "start": 116.5,
-          "end": 116.6,
-          "confidence": 0.796
+          "start": 120.05,
+          "end": 120.15,
+          "confidence": 0.252
         }
       ],
       "y": 245,
@@ -4652,18 +5321,89 @@
       "char_rois": []
     },
     {
-      "line_index": 89,
+      "line_index": 109,
+      "text": "lara un",
+      "start": 120.15,
+      "end": 120.4,
+      "confidence": 0.571,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "lara",
+          "start": 120.15,
+          "end": 120.25,
+          "confidence": 0.25
+        },
+        {
+          "word_index": 2,
+          "text": "un",
+          "start": 120.3,
+          "end": 120.4,
+          "confidence": 0.891
+        }
+      ],
+      "y": 249,
+      "word_rois": [
+        [
+          410,
+          249,
+          29,
+          20
+        ],
+        [
+          442,
+          249,
+          24,
+          20
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 110,
+      "text": "un",
+      "start": 120.4,
+      "end": 120.5,
+      "confidence": 0.252,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "un",
+          "start": 120.4,
+          "end": 120.5,
+          "confidence": 0.252
+        }
+      ],
+      "y": 249,
+      "word_rois": [
+        [
+          412,
+          249,
+          27,
+          20
+        ],
+        [
+          442,
+          249,
+          24,
+          20
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 111,
       "text": "farajun",
-      "start": 116.6,
-      "end": 116.7,
-      "confidence": 0.694,
+      "start": 120.5,
+      "end": 120.6,
+      "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "farajun",
-          "start": 116.6,
-          "end": 116.7,
-          "confidence": 0.694
+          "start": 120.5,
+          "end": 120.6,
+          "confidence": 0.252
         }
       ],
       "y": 245,
@@ -4678,18 +5418,18 @@
       "char_rois": []
     },
     {
-      "line_index": 90,
+      "line_index": 112,
       "text": "Karajan",
-      "start": 116.7,
-      "end": 116.8,
-      "confidence": 0.761,
+      "start": 120.6,
+      "end": 120.7,
+      "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
           "text": "Karajun",
-          "start": 116.7,
-          "end": 116.8,
-          "confidence": 0.761
+          "start": 120.6,
+          "end": 120.7,
+          "confidence": 0.5
         }
       ],
       "y": 247,
@@ -4704,108 +5444,56 @@
       "char_rois": []
     },
     {
-      "line_index": 91,
-      "text": "Et je danse danse danse danse",
-      "start": 116.8,
-      "end": 117.65,
-      "confidence": 0.872,
+      "line_index": 113,
+      "text": "ara tan",
+      "start": 120.7,
+      "end": 120.95,
+      "confidence": 0.879,
       "words": [
         {
           "word_index": 1,
-          "text": "Et",
-          "start": 116.8,
-          "end": 116.9,
-          "confidence": 0.647
+          "text": "ara",
+          "start": 120.7,
+          "end": 120.8,
+          "confidence": 0.951
         },
         {
           "word_index": 2,
-          "text": "je",
-          "start": 116.95,
-          "end": 117.05,
-          "confidence": 0.873
-        },
-        {
-          "word_index": 3,
-          "text": "danse",
-          "start": 117.1,
-          "end": 117.2,
-          "confidence": 0.81
-        },
-        {
-          "word_index": 4,
-          "text": "danse",
-          "start": 117.25,
-          "end": 117.35,
-          "confidence": 0.901
-        },
-        {
-          "word_index": 5,
-          "text": "danse",
-          "start": 117.4,
-          "end": 117.5,
-          "confidence": 1.0
-        },
-        {
-          "word_index": 6,
-          "text": "danse",
-          "start": 117.55,
-          "end": 117.65,
-          "confidence": 1.0
+          "text": "tan",
+          "start": 120.85,
+          "end": 120.95,
+          "confidence": 0.806
         }
       ],
-      "y": 113,
+      "y": 249,
       "word_rois": [
         [
-          58,
-          113,
-          32,
-          32
+          410,
+          249,
+          30,
+          22
         ],
         [
-          94,
-          113,
-          28,
-          32
-        ],
-        [
-          126,
-          113,
-          88,
-          32
-        ],
-        [
-          218,
-          113,
-          84,
-          32
-        ],
-        [
-          306,
-          113,
-          88,
-          32
-        ],
-        [
-          398,
-          113,
-          85,
-          32
+          442,
+          249,
+          21,
+          22
         ]
       ],
       "char_rois": []
     },
     {
-      "line_index": 92,
+      "line_index": 114,
       "text": "Harajun",
-      "start": 117.65,
-      "end": 117.75,
+      "start": 120.95,
+      "end": 121.05,
       "confidence": 0.775,
       "words": [
         {
           "word_index": 1,
           "text": "Harajun",
-          "start": 117.65,
-          "end": 117.75,
+          "start": 120.95,
+          "end": 121.05,
           "confidence": 0.775
         }
       ],
@@ -4821,17 +5509,17 @@
       "char_rois": []
     },
     {
-      "line_index": 93,
+      "line_index": 115,
       "text": "Arjun",
-      "start": 117.75,
-      "end": 117.85,
+      "start": 121.05,
+      "end": 121.15,
       "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
           "text": "arajun",
-          "start": 117.75,
-          "end": 117.85,
+          "start": 121.05,
+          "end": 121.15,
           "confidence": 0.5
         }
       ],
@@ -4847,38 +5535,38 @@
       "char_rois": []
     },
     {
-      "line_index": 94,
+      "line_index": 116,
       "text": "Et dans le bruit",
-      "start": 117.85,
-      "end": 118.6,
+      "start": 121.15,
+      "end": 121.7,
       "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "Et",
-          "start": 117.85,
-          "end": 117.95,
+          "start": 121.15,
+          "end": 121.25,
           "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "dans",
-          "start": 118.0,
-          "end": 118.1,
+          "start": 121.3,
+          "end": 121.4,
           "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "le",
-          "start": 118.15,
-          "end": 118.25,
+          "start": 121.45,
+          "end": 121.55,
           "confidence": 1.0
         },
         {
           "word_index": 4,
           "text": "bruit",
-          "start": 118.3,
-          "end": 118.6,
+          "start": 121.6,
+          "end": 121.7,
           "confidence": 1.0
         }
       ],
@@ -4912,46 +5600,39 @@
       "char_rois": []
     },
     {
-      "line_index": 95,
-      "text": "je cours et j'ai peur",
-      "start": 119.15,
-      "end": 120.1,
-      "confidence": 0.871,
+      "line_index": 117,
+      "text": "cours et j'ai peur",
+      "start": 121.85,
+      "end": 122.4,
+      "confidence": 0.958,
       "words": [
         {
           "word_index": 1,
-          "text": "je",
-          "start": 119.15,
-          "end": 119.4,
+          "text": "cours",
+          "start": 121.85,
+          "end": 121.95,
           "confidence": 1.0
         },
         {
           "word_index": 2,
-          "text": "cours",
-          "start": 119.45,
-          "end": 119.65,
+          "text": "et",
+          "start": 122.0,
+          "end": 122.1,
           "confidence": 1.0
         },
         {
           "word_index": 3,
-          "text": "et",
-          "start": 119.7,
-          "end": 119.8,
-          "confidence": 0.849
+          "text": "j'ai",
+          "start": 122.15,
+          "end": 122.25,
+          "confidence": 1.0
         },
         {
           "word_index": 4,
-          "text": "j'ai",
-          "start": 119.85,
-          "end": 119.95,
-          "confidence": 0.727
-        },
-        {
-          "word_index": 5,
           "text": "peur",
-          "start": 120.0,
-          "end": 120.1,
-          "confidence": 0.779
+          "start": 122.3,
+          "end": 122.4,
+          "confidence": 0.79
         }
       ],
       "y": 67,
@@ -4990,46 +5671,110 @@
       "char_rois": []
     },
     {
-      "line_index": 96,
-      "text": "je cours et fai peur",
-      "start": 120.5,
-      "end": 121.8,
-      "confidence": 0.998,
+      "line_index": 118,
+      "text": "a un",
+      "start": 122.4,
+      "end": 122.65,
+      "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
-          "text": "je",
-          "start": 120.5,
-          "end": 120.6,
-          "confidence": 1.0
+          "text": "a",
+          "start": 122.4,
+          "end": 122.5,
+          "confidence": 0.252
         },
         {
           "word_index": 2,
+          "text": "un",
+          "start": 122.55,
+          "end": 122.65,
+          "confidence": 0.252
+        }
+      ],
+      "y": 249,
+      "word_rois": [
+        [
+          426,
+          249,
+          14,
+          16
+        ],
+        [
+          441,
+          249,
+          24,
+          16
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 119,
+      "text": "un",
+      "start": 122.65,
+      "end": 122.75,
+      "confidence": 0.252,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "un",
+          "start": 122.65,
+          "end": 122.75,
+          "confidence": 0.252
+        }
+      ],
+      "y": 249,
+      "word_rois": [
+        [
+          414,
+          249,
+          24,
+          18
+        ],
+        [
+          441,
+          249,
+          24,
+          18
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 120,
+      "text": "cours et fai peur",
+      "start": 122.9,
+      "end": 123.45,
+      "confidence": 0.252,
+      "words": [
+        {
+          "word_index": 1,
           "text": "cours",
-          "start": 120.65,
-          "end": 120.75,
-          "confidence": 1.0
+          "start": 122.9,
+          "end": 123.0,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 2,
+          "text": "et",
+          "start": 123.05,
+          "end": 123.15,
+          "confidence": 0.252
         },
         {
           "word_index": 3,
-          "text": "et",
-          "start": 120.8,
-          "end": 120.9,
-          "confidence": 0.992
+          "text": "fai",
+          "start": 123.2,
+          "end": 123.3,
+          "confidence": 0.252
         },
         {
           "word_index": 4,
-          "text": "fai",
-          "start": 120.95,
-          "end": 121.05,
-          "confidence": 1.0
-        },
-        {
-          "word_index": 5,
           "text": "peur",
-          "start": 121.1,
-          "end": 121.8,
-          "confidence": 1.0
+          "start": 123.35,
+          "end": 123.45,
+          "confidence": 0.252
         }
       ],
       "y": 63,
@@ -5068,17 +5813,17 @@
       "char_rois": []
     },
     {
-      "line_index": 97,
+      "line_index": 121,
       "text": "Saran",
-      "start": 121.8,
-      "end": 121.95,
+      "start": 125.8,
+      "end": 126.5,
       "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "Sarajun",
-          "start": 121.8,
-          "end": 121.95,
+          "start": 125.8,
+          "end": 125.9,
           "confidence": 1.0
         }
       ],
@@ -5094,7 +5839,7 @@
       "char_rois": []
     },
     {
-      "line_index": 98,
+      "line_index": 122,
       "text": "vient la douleur",
       "start": 127.3,
       "end": 127.7,
@@ -5146,7 +5891,7 @@
       "char_rois": []
     },
     {
-      "line_index": 99,
+      "line_index": 123,
       "text": "Karajan",
       "start": 127.7,
       "end": 127.8,
@@ -5172,7 +5917,7 @@
       "char_rois": []
     },
     {
-      "line_index": 100,
+      "line_index": 124,
       "text": "Estate mon tour 8",
       "start": 127.8,
       "end": 128.35,
@@ -5237,17 +5982,56 @@
       "char_rois": []
     },
     {
-      "line_index": 101,
-      "text": "larajun",
+      "line_index": 125,
+      "text": "fara un",
       "start": 128.35,
-      "end": 128.45,
+      "end": 128.6,
+      "confidence": 0.252,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "fara",
+          "start": 128.35,
+          "end": 128.45,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 2,
+          "text": "un",
+          "start": 128.5,
+          "end": 128.6,
+          "confidence": 0.252
+        }
+      ],
+      "y": 249,
+      "word_rois": [
+        [
+          408,
+          249,
+          31,
+          18
+        ],
+        [
+          441,
+          249,
+          24,
+          18
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 126,
+      "text": "larajun",
+      "start": 128.6,
+      "end": 128.7,
       "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "larajun",
-          "start": 128.35,
-          "end": 128.45,
+          "start": 128.6,
+          "end": 128.7,
           "confidence": 0.252
         }
       ],
@@ -5263,38 +6047,38 @@
       "char_rois": []
     },
     {
-      "line_index": 102,
+      "line_index": 127,
       "text": "Est ce mon tour",
-      "start": 128.45,
-      "end": 129.0,
+      "start": 128.7,
+      "end": 129.25,
       "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "Est",
-          "start": 128.45,
-          "end": 128.55,
+          "start": 128.7,
+          "end": 128.8,
           "confidence": 0.252
         },
         {
           "word_index": 2,
           "text": "ce",
-          "start": 128.6,
-          "end": 128.7,
+          "start": 128.85,
+          "end": 128.95,
           "confidence": 0.252
         },
         {
           "word_index": 3,
           "text": "mon",
-          "start": 128.75,
-          "end": 128.85,
+          "start": 129.0,
+          "end": 129.1,
           "confidence": 0.252
         },
         {
           "word_index": 4,
           "text": "tour",
-          "start": 128.9,
-          "end": 129.0,
+          "start": 129.15,
+          "end": 129.25,
           "confidence": 0.252
         }
       ],
@@ -5328,32 +6112,84 @@
       "char_rois": []
     },
     {
-      "line_index": 103,
+      "line_index": 128,
+      "text": "Endans le bruit",
+      "start": 129.25,
+      "end": 129.65,
+      "confidence": 0.5,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Endans",
+          "start": 129.25,
+          "end": 129.35,
+          "confidence": 0.5
+        },
+        {
+          "word_index": 2,
+          "text": "le",
+          "start": 129.4,
+          "end": 129.5,
+          "confidence": 0.5
+        },
+        {
+          "word_index": 3,
+          "text": "bruit",
+          "start": 129.55,
+          "end": 129.65,
+          "confidence": 0.5
+        }
+      ],
+      "y": 19,
+      "word_rois": [
+        [
+          162,
+          19,
+          104,
+          30
+        ],
+        [
+          270,
+          19,
+          34,
+          30
+        ],
+        [
+          308,
+          19,
+          71,
+          30
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 129,
       "text": "Dans tout Paris",
-      "start": 129.0,
-      "end": 129.4,
-      "confidence": 0.252,
+      "start": 129.75,
+      "end": 130.15,
+      "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "Dans",
-          "start": 129.0,
-          "end": 129.1,
-          "confidence": 0.252
+          "start": 129.75,
+          "end": 129.85,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "tout",
-          "start": 129.15,
-          "end": 129.25,
-          "confidence": 0.252
+          "start": 129.9,
+          "end": 130.0,
+          "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "Paris",
-          "start": 129.3,
-          "end": 129.4,
-          "confidence": 0.252
+          "start": 130.05,
+          "end": 130.15,
+          "confidence": 1.0
         }
       ],
       "y": 19,
@@ -5380,24 +6216,17 @@
       "char_rois": []
     },
     {
-      "line_index": 104,
-      "text": "je m'abandonne",
-      "start": 129.4,
-      "end": 129.65,
+      "line_index": 130,
+      "text": "m'abandonne",
+      "start": 130.3,
+      "end": 130.4,
       "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
-          "text": "je",
-          "start": 129.4,
-          "end": 129.5,
-          "confidence": 0.252
-        },
-        {
-          "word_index": 2,
           "text": "m'abandonne",
-          "start": 129.55,
-          "end": 129.65,
+          "start": 130.3,
+          "end": 130.4,
           "confidence": 0.252
         }
       ],
@@ -5419,17 +6248,17 @@
       "char_rois": []
     },
     {
-      "line_index": 105,
+      "line_index": 131,
       "text": "farajun",
-      "start": 129.65,
-      "end": 129.75,
+      "start": 130.4,
+      "end": 130.5,
       "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
           "text": "farajun",
-          "start": 129.65,
-          "end": 129.75,
+          "start": 130.4,
+          "end": 130.5,
           "confidence": 0.5
         }
       ],
@@ -5445,45 +6274,45 @@
       "char_rois": []
     },
     {
-      "line_index": 106,
+      "line_index": 132,
       "text": "Est ce mon tour 8",
-      "start": 129.75,
-      "end": 130.45,
+      "start": 130.5,
+      "end": 131.2,
       "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
           "text": "Est",
-          "start": 129.75,
-          "end": 129.85,
+          "start": 130.5,
+          "end": 130.6,
           "confidence": 0.5
         },
         {
           "word_index": 2,
           "text": "ce",
-          "start": 129.9,
-          "end": 130.0,
+          "start": 130.65,
+          "end": 130.75,
           "confidence": 0.5
         },
         {
           "word_index": 3,
           "text": "mon",
-          "start": 130.05,
-          "end": 130.15,
+          "start": 130.8,
+          "end": 130.9,
           "confidence": 0.5
         },
         {
           "word_index": 4,
           "text": "tour",
-          "start": 130.2,
-          "end": 130.3,
+          "start": 130.95,
+          "end": 131.05,
           "confidence": 0.5
         },
         {
           "word_index": 5,
           "text": "8",
-          "start": 130.35,
-          "end": 130.45,
+          "start": 131.1,
+          "end": 131.2,
           "confidence": 0.5
         }
       ],
@@ -5523,18 +6352,57 @@
       "char_rois": []
     },
     {
-      "line_index": 107,
+      "line_index": 133,
+      "text": "ara un",
+      "start": 131.2,
+      "end": 131.45,
+      "confidence": 0.252,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "ara",
+          "start": 131.2,
+          "end": 131.3,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 2,
+          "text": "un",
+          "start": 131.35,
+          "end": 131.45,
+          "confidence": 0.252
+        }
+      ],
+      "y": 249,
+      "word_rois": [
+        [
+          410,
+          249,
+          30,
+          20
+        ],
+        [
+          442,
+          249,
+          23,
+          20
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 134,
       "text": "saran",
-      "start": 130.45,
-      "end": 130.55,
-      "confidence": 0.737,
+      "start": 131.45,
+      "end": 131.55,
+      "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "sarajun",
-          "start": 130.45,
-          "end": 130.55,
-          "confidence": 0.737
+          "start": 131.45,
+          "end": 131.55,
+          "confidence": 0.252
         }
       ],
       "y": 247,
@@ -5549,17 +6417,17 @@
       "char_rois": []
     },
     {
-      "line_index": 108,
+      "line_index": 135,
       "text": "tou",
-      "start": 130.55,
-      "end": 130.65,
+      "start": 131.55,
+      "end": 131.65,
       "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "tou",
-          "start": 130.55,
-          "end": 130.65,
+          "start": 131.55,
+          "end": 131.65,
           "confidence": 0.252
         }
       ],
@@ -5587,24 +6455,24 @@
       "char_rois": []
     },
     {
-      "line_index": 109,
+      "line_index": 136,
       "text": "ma douer",
-      "start": 130.65,
-      "end": 130.9,
+      "start": 131.65,
+      "end": 131.9,
       "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "ma",
-          "start": 130.65,
-          "end": 130.75,
+          "start": 131.65,
+          "end": 131.75,
           "confidence": 0.252
         },
         {
           "word_index": 2,
           "text": "douer",
-          "start": 130.8,
-          "end": 130.9,
+          "start": 131.8,
+          "end": 131.9,
           "confidence": 0.252
         }
       ],
@@ -5626,45 +6494,45 @@
       "char_rois": []
     },
     {
-      "line_index": 110,
+      "line_index": 137,
       "text": "Et je m'envole vole vole",
-      "start": 130.9,
-      "end": 131.6,
+      "start": 131.9,
+      "end": 132.6,
       "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "Et",
-          "start": 130.9,
-          "end": 131.0,
+          "start": 131.9,
+          "end": 132.0,
           "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "je",
-          "start": 131.05,
-          "end": 131.15,
+          "start": 132.05,
+          "end": 132.15,
           "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "m'envole",
-          "start": 131.2,
-          "end": 131.3,
+          "start": 132.2,
+          "end": 132.3,
           "confidence": 1.0
         },
         {
           "word_index": 4,
           "text": "vole",
-          "start": 131.35,
-          "end": 131.45,
+          "start": 132.35,
+          "end": 132.45,
           "confidence": 1.0
         },
         {
           "word_index": 5,
           "text": "vole",
-          "start": 131.5,
-          "end": 131.6,
+          "start": 132.5,
+          "end": 132.6,
           "confidence": 1.0
         }
       ],
@@ -5704,37 +6572,37 @@
       "char_rois": []
     },
     {
-      "line_index": 111,
+      "line_index": 138,
       "text": "vole vole vole vole",
-      "start": 131.6,
+      "start": 132.6,
       "end": 133.4,
       "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "vole",
-          "start": 131.6,
-          "end": 131.7,
+          "start": 132.6,
+          "end": 132.7,
           "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "vole",
-          "start": 131.75,
-          "end": 132.2,
+          "start": 132.75,
+          "end": 132.85,
           "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "vole",
-          "start": 132.25,
-          "end": 132.55,
+          "start": 132.9,
+          "end": 133.0,
           "confidence": 1.0
         },
         {
           "word_index": 4,
           "text": "vole",
-          "start": 132.6,
+          "start": 133.05,
           "end": 133.4,
           "confidence": 1.0
         }
@@ -5769,7 +6637,7 @@
       "char_rois": []
     },
     {
-      "line_index": 112,
+      "line_index": 139,
       "text": "farajun",
       "start": 133.4,
       "end": 133.5,
@@ -5795,72 +6663,46 @@
       "char_rois": []
     },
     {
-      "line_index": 113,
-      "text": "fearful",
-      "start": 133.5,
-      "end": 133.6,
-      "confidence": 1.0,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "farafun",
-          "start": 133.5,
-          "end": 133.6,
-          "confidence": 1.0
-        }
-      ],
-      "y": 245,
-      "word_rois": [
-        [
-          407,
-          245,
-          60,
-          24
-        ]
-      ],
-      "char_rois": []
-    },
-    {
-      "line_index": 114,
+      "line_index": 140,
       "text": "Et je m'envole vole vole",
-      "start": 133.6,
-      "end": 135.75,
-      "confidence": 0.4,
+      "start": 133.5,
+      "end": 134.2,
+      "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "Et",
-          "start": 133.6,
-          "end": 133.7,
-          "confidence": 0.25
+          "start": 133.5,
+          "end": 133.6,
+          "confidence": 0.252
         },
         {
           "word_index": 2,
           "text": "je",
-          "start": 133.75,
-          "end": 133.85,
-          "confidence": 0.25
+          "start": 133.65,
+          "end": 133.75,
+          "confidence": 0.252
         },
         {
           "word_index": 3,
           "text": "m'envole",
-          "start": 133.9,
-          "end": 134.0,
-          "confidence": 0.25
+          "start": 133.8,
+          "end": 133.9,
+          "confidence": 0.252
         },
         {
           "word_index": 4,
           "text": "vole",
-          "start": 134.05,
-          "end": 134.85,
-          "confidence": 1.0
+          "start": 133.95,
+          "end": 134.05,
+          "confidence": 0.252
         },
         {
           "word_index": 5,
           "text": "vole",
-          "start": 135.65,
-          "end": 135.75,
-          "confidence": 0.25
+          "start": 134.1,
+          "end": 134.2,
+          "confidence": 0.252
         }
       ],
       "y": 115,
@@ -5899,39 +6741,39 @@
       "char_rois": []
     },
     {
-      "line_index": 115,
+      "line_index": 141,
       "text": "vole vole vole vole",
-      "start": 135.75,
-      "end": 136.3,
-      "confidence": 0.625,
+      "start": 134.2,
+      "end": 134.75,
+      "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "vole",
-          "start": 135.75,
-          "end": 135.85,
-          "confidence": 0.25
+          "start": 134.2,
+          "end": 134.3,
+          "confidence": 0.252
         },
         {
           "word_index": 2,
           "text": "vole",
-          "start": 135.9,
-          "end": 136.0,
-          "confidence": 0.25
+          "start": 134.35,
+          "end": 134.45,
+          "confidence": 0.252
         },
         {
           "word_index": 3,
           "text": "vole",
-          "start": 136.05,
-          "end": 136.15,
-          "confidence": 1.0
+          "start": 134.5,
+          "end": 134.6,
+          "confidence": 0.252
         },
         {
           "word_index": 4,
           "text": "vole",
-          "start": 136.2,
-          "end": 136.3,
-          "confidence": 1.0
+          "start": 134.65,
+          "end": 134.75,
+          "confidence": 0.252
         }
       ],
       "y": 161,
@@ -5964,17 +6806,43 @@
       "char_rois": []
     },
     {
-      "line_index": 116,
+      "line_index": 142,
+      "text": "fearful",
+      "start": 134.75,
+      "end": 134.85,
+      "confidence": 0.252,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "farafun",
+          "start": 134.75,
+          "end": 134.85,
+          "confidence": 0.252
+        }
+      ],
+      "y": 245,
+      "word_rois": [
+        [
+          407,
+          245,
+          60,
+          24
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 143,
       "text": "Xorafun",
-      "start": 137.1,
-      "end": 137.2,
+      "start": 136.0,
+      "end": 136.1,
       "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "Xorafun",
-          "start": 137.1,
-          "end": 137.2,
+          "start": 136.0,
+          "end": 136.1,
           "confidence": 1.0
         }
       ],
@@ -5990,7 +6858,7 @@
       "char_rois": []
     },
     {
-      "line_index": 117,
+      "line_index": 144,
       "text": "Xarefun",
       "start": 142.1,
       "end": 142.45,
@@ -6016,43 +6884,69 @@
       "char_rois": []
     },
     {
-      "line_index": 118,
-      "text": "Paraffin",
-      "start": 144.6,
-      "end": 144.7,
+      "line_index": 145,
+      "text": "Xarajun",
+      "start": 142.45,
+      "end": 142.55,
       "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
-          "text": "Yarafun",
-          "start": 144.6,
-          "end": 144.7,
+          "text": "Xarajun",
+          "start": 142.45,
+          "end": 142.55,
           "confidence": 1.0
         }
       ],
-      "y": 240,
+      "y": 241,
       "word_rois": [
         [
           385,
-          240,
+          241,
           83,
-          34
+          33
         ]
       ],
       "char_rois": []
     },
     {
-      "line_index": 119,
+      "line_index": 146,
+      "text": "Xarajun",
+      "start": 147.05,
+      "end": 147.15,
+      "confidence": 1.0,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Xarajun",
+          "start": 147.05,
+          "end": 147.15,
+          "confidence": 1.0
+        }
+      ],
+      "y": 241,
+      "word_rois": [
+        [
+          385,
+          241,
+          83,
+          33
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 147,
       "text": "2",
-      "start": 147.7,
-      "end": 148.3,
+      "start": 148.55,
+      "end": 149.25,
       "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "2",
-          "start": 147.7,
-          "end": 148.3,
+          "start": 148.55,
+          "end": 149.15,
           "confidence": 1.0
         }
       ],
@@ -6068,38 +6962,38 @@
       "char_rois": []
     },
     {
-      "line_index": 120,
+      "line_index": 148,
       "text": "Dans cette douce souffrance",
-      "start": 148.7,
-      "end": 152.55,
+      "start": 150.7,
+      "end": 154.55,
       "confidence": 0.812,
       "words": [
         {
           "word_index": 1,
           "text": "Dans",
-          "start": 148.7,
-          "end": 149.3,
+          "start": 150.7,
+          "end": 151.3,
           "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "cette",
-          "start": 149.35,
-          "end": 150.15,
+          "start": 151.35,
+          "end": 152.15,
           "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "douce",
-          "start": 152.3,
-          "end": 152.4,
+          "start": 154.3,
+          "end": 154.4,
           "confidence": 0.25
         },
         {
           "word_index": 4,
           "text": "souffrance",
-          "start": 152.45,
-          "end": 152.55,
+          "start": 154.45,
+          "end": 154.55,
           "confidence": 1.0
         }
       ],
@@ -6133,31 +7027,31 @@
       "char_rois": []
     },
     {
-      "line_index": 121,
+      "line_index": 149,
       "text": "dont j'ai pay",
       "start": 152.55,
-      "end": 154.35,
+      "end": 157.45,
       "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "dont",
           "start": 152.55,
-          "end": 153.35,
+          "end": 152.65,
           "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "j'ai",
-          "start": 153.4,
-          "end": 154.2,
+          "start": 157.2,
+          "end": 157.3,
           "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "pay",
-          "start": 154.25,
-          "end": 154.35,
+          "start": 157.35,
+          "end": 157.45,
           "confidence": 1.0
         }
       ],
@@ -6185,58 +7079,32 @@
       "char_rois": []
     },
     {
-      "line_index": 122,
-      "text": "Paraffin",
-      "start": 154.35,
-      "end": 154.45,
-      "confidence": 1.0,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "Yarafun",
-          "start": 154.35,
-          "end": 154.45,
-          "confidence": 1.0
-        }
-      ],
-      "y": 239,
-      "word_rois": [
-        [
-          385,
-          239,
-          82,
-          34
-        ]
-      ],
-      "char_rois": []
-    },
-    {
-      "line_index": 123,
+      "line_index": 150,
       "text": "toutes les offenses",
-      "start": 154.45,
-      "end": 154.85,
-      "confidence": 0.392,
+      "start": 157.45,
+      "end": 157.85,
+      "confidence": 0.75,
       "words": [
         {
           "word_index": 1,
           "text": "toutes",
-          "start": 154.45,
-          "end": 154.55,
+          "start": 157.45,
+          "end": 157.55,
           "confidence": 0.25
         },
         {
           "word_index": 2,
           "text": "les",
-          "start": 154.6,
-          "end": 154.7,
-          "confidence": 0.25
+          "start": 157.6,
+          "end": 157.7,
+          "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "oftenses",
-          "start": 154.75,
-          "end": 154.85,
-          "confidence": 0.675
+          "start": 157.75,
+          "end": 157.85,
+          "confidence": 1.0
         }
       ],
       "y": 117,
@@ -6263,32 +7131,32 @@
       "char_rois": []
     },
     {
-      "line_index": 124,
+      "line_index": 151,
       "text": "Ecoute comme mon",
-      "start": 156.1,
-      "end": 157.85,
-      "confidence": 0.228,
+      "start": 157.95,
+      "end": 158.35,
+      "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "Ecoute",
-          "start": 156.1,
-          "end": 156.7,
-          "confidence": 0.228
+          "start": 157.95,
+          "end": 158.05,
+          "confidence": 0.252
         },
         {
           "word_index": 2,
           "text": "comme",
-          "start": 156.75,
-          "end": 157.3,
-          "confidence": 0.228
+          "start": 158.1,
+          "end": 158.2,
+          "confidence": 0.252
         },
         {
           "word_index": 3,
           "text": "mon",
-          "start": 157.35,
-          "end": 157.85,
-          "confidence": 0.228
+          "start": 158.25,
+          "end": 158.35,
+          "confidence": 0.252
         }
       ],
       "y": 19,
@@ -6315,32 +7183,32 @@
       "char_rois": []
     },
     {
-      "line_index": 125,
+      "line_index": 152,
       "text": "cur est immense",
-      "start": 163.5,
-      "end": 163.9,
-      "confidence": 1.0,
+      "start": 158.35,
+      "end": 158.75,
+      "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "cur",
-          "start": 163.5,
-          "end": 163.6,
-          "confidence": 1.0
+          "start": 158.35,
+          "end": 158.45,
+          "confidence": 0.252
         },
         {
           "word_index": 2,
           "text": "est",
-          "start": 163.65,
-          "end": 163.75,
-          "confidence": 1.0
+          "start": 158.5,
+          "end": 158.6,
+          "confidence": 0.252
         },
         {
           "word_index": 3,
           "text": "immense",
-          "start": 163.8,
-          "end": 163.9,
-          "confidence": 1.0
+          "start": 158.65,
+          "end": 158.75,
+          "confidence": 0.252
         }
       ],
       "y": 67,
@@ -6367,183 +7235,78 @@
       "char_rois": []
     },
     {
-      "line_index": 126,
-      "text": "je su is une enfant du monde",
-      "start": 163.9,
-      "end": 165.45,
+      "line_index": 153,
+      "text": "Xarajun",
+      "start": 160.05,
+      "end": 160.7,
       "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
-          "text": "je",
-          "start": 163.9,
-          "end": 164.0,
+          "text": "Xarajun",
+          "start": 160.05,
+          "end": 160.7,
           "confidence": 1.0
-        },
-        {
-          "word_index": 2,
-          "text": "su",
-          "start": 164.05,
-          "end": 164.1,
-          "confidence": 1.0
-        },
-        {
-          "word_index": 3,
-          "text": "is",
-          "start": 164.1,
-          "end": 164.15,
-          "confidence": 1.0
-        },
-        {
-          "word_index": 4,
-          "text": "une",
-          "start": 164.2,
-          "end": 164.3,
-          "confidence": 1.0
-        },
-        {
-          "word_index": 5,
-          "text": "enfant",
-          "start": 164.35,
-          "end": 164.45,
-          "confidence": 1.0
-        },
-        {
-          "word_index": 6,
-          "text": "du",
-          "start": 164.5,
-          "end": 164.6,
-          "confidence": 1.0
-        },
-        {
-          "word_index": 7,
-          "text": "monde",
-          "start": 164.65,
-          "end": 165.45,
-          "confidence": 1.0
-        }
-      ],
-      "y": 113,
-      "word_rois": [
-        [
-          65,
-          115,
-          34,
-          30
-        ],
-        [
-          103,
-          114,
-          60,
-          31
-        ],
-        [
-          167,
-          114,
-          56,
-          30
-        ],
-        [
-          227,
-          113,
-          94,
-          30
-        ],
-        [
-          324,
-          112,
-          42,
-          30
-        ],
-        [
-          369,
-          111,
-          101,
-          31
-        ]
-      ],
-      "char_rois": []
-    },
-    {
-      "line_index": 127,
-      "text": "Paraffin",
-      "start": 165.45,
-      "end": 165.55,
-      "confidence": 0.5,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "Yarafun",
-          "start": 165.45,
-          "end": 165.55,
-          "confidence": 0.5
         }
       ],
       "y": 239,
       "word_rois": [
         [
-          390,
+          387,
           239,
-          78,
-          34
+          80,
+          32
         ]
       ],
       "char_rois": []
     },
     {
-      "line_index": 128,
-      "text": "je su is une enfant du monde",
-      "start": 165.55,
-      "end": 166.4,
-      "confidence": 0.766,
+      "line_index": 154,
+      "text": "su is une enfant du monde",
+      "start": 161.45,
+      "end": 164.2,
+      "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
-          "text": "je",
-          "start": 165.55,
-          "end": 165.65,
-          "confidence": 0.25
+          "text": "su",
+          "start": 161.45,
+          "end": 161.5,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
-          "text": "su",
-          "start": 165.7,
-          "end": 165.75,
-          "confidence": 0.642
+          "text": "is",
+          "start": 161.5,
+          "end": 161.55,
+          "confidence": 1.0
         },
         {
           "word_index": 3,
-          "text": "is",
-          "start": 165.75,
-          "end": 165.8,
-          "confidence": 0.642
+          "text": "une",
+          "start": 161.6,
+          "end": 161.9,
+          "confidence": 1.0
         },
         {
           "word_index": 4,
-          "text": "une",
-          "start": 165.85,
-          "end": 165.95,
-          "confidence": 0.973
+          "text": "enfant",
+          "start": 162.1,
+          "end": 162.5,
+          "confidence": 1.0
         },
         {
           "word_index": 5,
-          "text": "enfant",
-          "start": 166.0,
-          "end": 166.1,
-          "confidence": 0.915
+          "text": "du",
+          "start": 162.55,
+          "end": 163.35,
+          "confidence": 1.0
         },
         {
           "word_index": 6,
-          "text": "du",
-          "start": 166.15,
-          "end": 166.25,
-          "confidence": 0.941
-        },
-        {
-          "word_index": 7,
           "text": "monde",
-          "start": 166.3,
-          "end": 166.4,
+          "start": 163.4,
+          "end": 164.2,
           "confidence": 1.0
         }
       ],
@@ -6589,18 +7352,18 @@
       "char_rois": []
     },
     {
-      "line_index": 129,
+      "line_index": 155,
       "text": "Yarajun",
-      "start": 166.4,
-      "end": 166.5,
-      "confidence": 0.5,
+      "start": 166.95,
+      "end": 167.1,
+      "confidence": 0.819,
       "words": [
         {
           "word_index": 1,
           "text": "Yarajun",
-          "start": 166.4,
-          "end": 166.5,
-          "confidence": 0.5
+          "start": 166.95,
+          "end": 167.1,
+          "confidence": 0.819
         }
       ],
       "y": 242,
@@ -6615,61 +7378,28 @@
       "char_rois": []
     },
     {
-      "line_index": 130,
-      "text": "Paraffin",
-      "start": 166.5,
-      "end": 166.6,
-      "confidence": 0.5,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "Marafun",
-          "start": 166.5,
-          "end": 166.6,
-          "confidence": 0.5
-        }
-      ],
-      "y": 242,
-      "word_rois": [
-        [
-          388,
-          242,
-          80,
-          31
-        ]
-      ],
-      "char_rois": []
-    },
-    {
-      "line_index": 131,
-      "text": "Je remue le ciel",
-      "start": 166.6,
+      "line_index": 156,
+      "text": "remue le ciel",
+      "start": 167.8,
       "end": 168.9,
       "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
-          "text": "Je",
-          "start": 166.6,
-          "end": 167.05,
-          "confidence": 1.0
-        },
-        {
-          "word_index": 2,
           "text": "remue",
           "start": 167.8,
           "end": 168.6,
           "confidence": 1.0
         },
         {
-          "word_index": 3,
+          "word_index": 2,
           "text": "le",
           "start": 168.65,
           "end": 168.75,
           "confidence": 1.0
         },
         {
-          "word_index": 4,
+          "word_index": 3,
           "text": "ciel",
           "start": 168.8,
           "end": 168.9,
@@ -6706,7 +7436,7 @@
       "char_rois": []
     },
     {
-      "line_index": 132,
+      "line_index": 157,
       "text": "le jour la nu it",
       "start": 168.9,
       "end": 172.2,
@@ -6778,31 +7508,115 @@
       "char_rois": []
     },
     {
-      "line_index": 133,
-      "text": "Je danse avec",
-      "start": 172.2,
-      "end": 172.6,
-      "confidence": 0.75,
+      "line_index": 158,
+      "text": "su is une enfant du monde",
+      "start": 172.35,
+      "end": 173.05,
+      "confidence": 0.293,
       "words": [
         {
           "word_index": 1,
-          "text": "Je",
-          "start": 172.2,
-          "end": 172.3,
+          "text": "su",
+          "start": 172.35,
+          "end": 172.4,
           "confidence": 0.25
         },
         {
           "word_index": 2,
-          "text": "danse",
-          "start": 172.35,
+          "text": "is",
+          "start": 172.4,
           "end": 172.45,
-          "confidence": 1.0
+          "confidence": 0.25
         },
         {
           "word_index": 3,
-          "text": "avec",
+          "text": "une",
           "start": 172.5,
           "end": 172.6,
+          "confidence": 0.25
+        },
+        {
+          "word_index": 4,
+          "text": "enfant",
+          "start": 172.65,
+          "end": 172.75,
+          "confidence": 0.25
+        },
+        {
+          "word_index": 5,
+          "text": "du",
+          "start": 172.8,
+          "end": 172.9,
+          "confidence": 0.25
+        },
+        {
+          "word_index": 6,
+          "text": "monde",
+          "start": 172.95,
+          "end": 173.05,
+          "confidence": 0.25
+        }
+      ],
+      "y": 113,
+      "word_rois": [
+        [
+          65,
+          115,
+          34,
+          30
+        ],
+        [
+          103,
+          114,
+          60,
+          31
+        ],
+        [
+          167,
+          114,
+          56,
+          30
+        ],
+        [
+          227,
+          113,
+          94,
+          30
+        ],
+        [
+          324,
+          112,
+          42,
+          30
+        ],
+        [
+          369,
+          111,
+          101,
+          31
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 159,
+      "text": "danse avec",
+      "start": 174.2,
+      "end": 174.45,
+      "confidence": 0.75,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "danse",
+          "start": 174.2,
+          "end": 174.3,
+          "confidence": 1.0
+        },
+        {
+          "word_index": 2,
+          "text": "avec",
+          "start": 174.35,
+          "end": 174.45,
           "confidence": 1.0
         }
       ],
@@ -6830,39 +7644,39 @@
       "char_rois": []
     },
     {
-      "line_index": 134,
+      "line_index": 160,
       "text": "le vent la pluie",
-      "start": 172.9,
-      "end": 175.3,
-      "confidence": 0.829,
+      "start": 174.45,
+      "end": 175.0,
+      "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "le",
-          "start": 172.9,
-          "end": 173.7,
+          "start": 174.45,
+          "end": 174.55,
           "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "vent",
-          "start": 173.75,
-          "end": 173.85,
-          "confidence": 0.764
+          "start": 174.6,
+          "end": 174.7,
+          "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "la",
-          "start": 173.9,
-          "end": 174.45,
-          "confidence": 0.788
+          "start": 174.75,
+          "end": 174.85,
+          "confidence": 1.0
         },
         {
           "word_index": 4,
           "text": "pluie",
-          "start": 174.5,
-          "end": 175.3,
-          "confidence": 0.765
+          "start": 174.9,
+          "end": 175.0,
+          "confidence": 1.0
         }
       ],
       "y": 162,
@@ -6895,7 +7709,33 @@
       "char_rois": []
     },
     {
-      "line_index": 135,
+      "line_index": 161,
+      "text": "Xarajun",
+      "start": 175.5,
+      "end": 175.6,
+      "confidence": 1.0,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Xarajun",
+          "start": 175.5,
+          "end": 175.6,
+          "confidence": 1.0
+        }
+      ],
+      "y": 237,
+      "word_rois": [
+        [
+          386,
+          237,
+          84,
+          39
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 162,
       "text": "Un peu d'amour",
       "start": 175.9,
       "end": 177.1,
@@ -6947,38 +7787,38 @@
       "char_rois": []
     },
     {
-      "line_index": 136,
+      "line_index": 163,
       "text": "n brin de miel'",
       "start": 177.1,
-      "end": 178.5,
-      "confidence": 1.0,
+      "end": 177.65,
+      "confidence": 0.803,
       "words": [
         {
           "word_index": 1,
           "text": "n",
           "start": 177.1,
-          "end": 177.3,
+          "end": 177.2,
           "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "brin",
-          "start": 177.35,
-          "end": 177.75,
-          "confidence": 1.0
+          "start": 177.25,
+          "end": 177.35,
+          "confidence": 0.25
         },
         {
           "word_index": 3,
           "text": "de",
-          "start": 177.8,
-          "end": 178.35,
-          "confidence": 1.0
+          "start": 177.4,
+          "end": 177.5,
+          "confidence": 0.962
         },
         {
           "word_index": 4,
           "text": "miel'",
-          "start": 178.4,
-          "end": 178.5,
+          "start": 177.55,
+          "end": 177.65,
           "confidence": 1.0
         }
       ],
@@ -7012,17 +7852,43 @@
       "char_rois": []
     },
     {
-      "line_index": 137,
-      "text": "Karajan",
+      "line_index": 164,
+      "text": "Xarajun",
       "start": 178.5,
       "end": 178.6,
+      "confidence": 1.0,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Xarajun",
+          "start": 178.5,
+          "end": 178.6,
+          "confidence": 1.0
+        }
+      ],
+      "y": 240,
+      "word_rois": [
+        [
+          389,
+          240,
+          79,
+          31
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 165,
+      "text": "Karajan",
+      "start": 178.6,
+      "end": 178.7,
       "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
           "text": "Karajun",
-          "start": 178.5,
-          "end": 178.6,
+          "start": 178.6,
+          "end": 178.7,
           "confidence": 0.5
         }
       ],
@@ -7038,24 +7904,24 @@
       "char_rois": []
     },
     {
-      "line_index": 138,
+      "line_index": 166,
       "text": "Et je danse danse danse danse",
-      "start": 178.6,
+      "start": 178.7,
       "end": 181.3,
       "confidence": 0.75,
       "words": [
         {
           "word_index": 1,
           "text": "Et",
-          "start": 178.6,
-          "end": 178.7,
+          "start": 178.7,
+          "end": 178.8,
           "confidence": 0.25
         },
         {
           "word_index": 2,
           "text": "je",
-          "start": 178.75,
-          "end": 178.85,
+          "start": 178.85,
+          "end": 178.95,
           "confidence": 0.25
         },
         {
@@ -7129,7 +7995,7 @@
       "char_rois": []
     },
     {
-      "line_index": 139,
+      "line_index": 167,
       "text": "danse danse danse",
       "start": 181.3,
       "end": 182.85,
@@ -7181,43 +8047,17 @@
       "char_rois": []
     },
     {
-      "line_index": 140,
-      "text": "Yarajun",
+      "line_index": 168,
+      "text": "Arjun",
       "start": 182.85,
       "end": 182.95,
-      "confidence": 1.0,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "Yarajun",
-          "start": 182.85,
-          "end": 182.95,
-          "confidence": 1.0
-        }
-      ],
-      "y": 243,
-      "word_rois": [
-        [
-          391,
-          243,
-          76,
-          28
-        ]
-      ],
-      "char_rois": []
-    },
-    {
-      "line_index": 141,
-      "text": "Arjun",
-      "start": 182.95,
-      "end": 183.05,
       "confidence": 0.713,
       "words": [
         {
           "word_index": 1,
           "text": "arajun",
-          "start": 182.95,
-          "end": 183.05,
+          "start": 182.85,
+          "end": 182.95,
           "confidence": 0.713
         }
       ],
@@ -7233,7 +8073,7 @@
       "char_rois": []
     },
     {
-      "line_index": 142,
+      "line_index": 169,
       "text": "Et je danse danse danse danse",
       "start": 183.05,
       "end": 185.55,
@@ -7324,7 +8164,7 @@
       "char_rois": []
     },
     {
-      "line_index": 143,
+      "line_index": 170,
       "text": "Karajan",
       "start": 185.55,
       "end": 185.65,
@@ -7350,7 +8190,7 @@
       "char_rois": []
     },
     {
-      "line_index": 144,
+      "line_index": 171,
       "text": "Et dans le bruit",
       "start": 185.65,
       "end": 186.2,
@@ -7415,42 +8255,35 @@
       "char_rois": []
     },
     {
-      "line_index": 145,
-      "text": "je cours et j'ai peur",
-      "start": 186.2,
+      "line_index": 172,
+      "text": "cours et j'ai peur",
+      "start": 186.35,
       "end": 186.9,
       "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
-          "text": "je",
-          "start": 186.2,
-          "end": 186.3,
-          "confidence": 1.0
-        },
-        {
-          "word_index": 2,
           "text": "cours",
           "start": 186.35,
           "end": 186.45,
           "confidence": 1.0
         },
         {
-          "word_index": 3,
+          "word_index": 2,
           "text": "et",
           "start": 186.5,
           "end": 186.6,
           "confidence": 1.0
         },
         {
-          "word_index": 4,
+          "word_index": 3,
           "text": "j'ai",
           "start": 186.65,
           "end": 186.75,
           "confidence": 1.0
         },
         {
-          "word_index": 5,
+          "word_index": 4,
           "text": "peur",
           "start": 186.8,
           "end": 186.9,
@@ -7493,38 +8326,187 @@
       "char_rois": []
     },
     {
-      "line_index": 146,
-      "text": "Et dans le brought",
+      "line_index": 173,
+      "text": "ra an",
       "start": 186.9,
-      "end": 187.45,
+      "end": 187.15,
+      "confidence": 0.486,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "ra",
+          "start": 186.9,
+          "end": 187.0,
+          "confidence": 0.722
+        },
+        {
+          "word_index": 2,
+          "text": "an",
+          "start": 187.05,
+          "end": 187.15,
+          "confidence": 0.25
+        }
+      ],
+      "y": 249,
+      "word_rois": [
+        [
+          418,
+          249,
+          20,
+          20
+        ],
+        [
+          440,
+          249,
+          23,
+          20
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 174,
+      "text": "un",
+      "start": 187.15,
+      "end": 187.25,
+      "confidence": 0.691,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "un",
+          "start": 187.15,
+          "end": 187.25,
+          "confidence": 0.691
+        }
+      ],
+      "y": 249,
+      "word_rois": [
+        [
+          418,
+          249,
+          20,
+          18
+        ],
+        [
+          440,
+          249,
+          25,
+          18
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 175,
+      "text": "a un",
+      "start": 187.25,
+      "end": 187.5,
+      "confidence": 0.5,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "a",
+          "start": 187.25,
+          "end": 187.35,
+          "confidence": 0.5
+        },
+        {
+          "word_index": 2,
+          "text": "un",
+          "start": 187.4,
+          "end": 187.5,
+          "confidence": 0.5
+        }
+      ],
+      "y": 249,
+      "word_rois": [
+        [
+          428,
+          249,
+          12,
+          16
+        ],
+        [
+          441,
+          249,
+          22,
+          16
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 176,
+      "text": "ara un",
+      "start": 187.5,
+      "end": 187.75,
+      "confidence": 0.252,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "ara",
+          "start": 187.5,
+          "end": 187.6,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 2,
+          "text": "un",
+          "start": 187.65,
+          "end": 187.75,
+          "confidence": 0.252
+        }
+      ],
+      "y": 249,
+      "word_rois": [
+        [
+          408,
+          249,
+          30,
+          22
+        ],
+        [
+          440,
+          249,
+          25,
+          22
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 177,
+      "text": "Et dans le brought",
+      "start": 187.75,
+      "end": 188.3,
       "confidence": 0.812,
       "words": [
         {
           "word_index": 1,
           "text": "Et",
-          "start": 186.9,
-          "end": 187.0,
+          "start": 187.75,
+          "end": 187.85,
           "confidence": 0.25
         },
         {
           "word_index": 2,
           "text": "dans",
-          "start": 187.05,
-          "end": 187.15,
+          "start": 187.9,
+          "end": 188.0,
           "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "le",
-          "start": 187.2,
-          "end": 187.3,
+          "start": 188.05,
+          "end": 188.15,
           "confidence": 1.0
         },
         {
           "word_index": 4,
           "text": "bruft",
-          "start": 187.35,
-          "end": 187.45,
+          "start": 188.2,
+          "end": 188.3,
           "confidence": 1.0
         }
       ],
@@ -7558,96 +8540,96 @@
       "char_rois": []
     },
     {
-      "line_index": 147,
-      "text": "Et dans le bruit",
-      "start": 187.45,
-      "end": 188.0,
-      "confidence": 0.252,
+      "line_index": 178,
+      "text": "Marg cin",
+      "start": 188.3,
+      "end": 188.55,
+      "confidence": 0.833,
       "words": [
         {
           "word_index": 1,
-          "text": "Et",
-          "start": 187.45,
-          "end": 187.55,
-          "confidence": 0.252
+          "text": "Marg",
+          "start": 188.3,
+          "end": 188.4,
+          "confidence": 0.771
         },
         {
           "word_index": 2,
-          "text": "dans",
-          "start": 187.6,
-          "end": 187.7,
-          "confidence": 0.252
-        },
-        {
-          "word_index": 3,
-          "text": "le",
-          "start": 187.75,
-          "end": 187.85,
-          "confidence": 0.252
-        },
-        {
-          "word_index": 4,
-          "text": "bruit",
-          "start": 187.9,
-          "end": 188.0,
-          "confidence": 0.252
+          "text": "cin",
+          "start": 188.45,
+          "end": 188.55,
+          "confidence": 0.894
         }
       ],
-      "y": 19,
+      "y": 248,
       "word_rois": [
         [
-          162,
-          19,
-          33,
-          30
+          395,
+          248,
+          43,
+          21
         ],
         [
-          199,
-          19,
-          71,
-          30
-        ],
-        [
-          274,
-          19,
-          30,
-          30
-        ],
-        [
-          308,
-          19,
-          71,
-          30
+          440,
+          249,
+          24,
+          20
         ]
       ],
       "char_rois": []
     },
     {
-      "line_index": 148,
+      "line_index": 179,
+      "text": "Xarajun",
+      "start": 188.55,
+      "end": 188.65,
+      "confidence": 0.772,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Xarajun",
+          "start": 188.55,
+          "end": 188.65,
+          "confidence": 0.772
+        }
+      ],
+      "y": 245,
+      "word_rois": [
+        [
+          393,
+          245,
+          74,
+          26
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 180,
       "text": "vient la douleur",
-      "start": 188.0,
-      "end": 188.8,
+      "start": 188.65,
+      "end": 189.05,
       "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
           "text": "vient",
-          "start": 188.0,
-          "end": 188.1,
+          "start": 188.65,
+          "end": 188.75,
           "confidence": 0.25
         },
         {
           "word_index": 2,
           "text": "la",
-          "start": 188.15,
-          "end": 188.4,
+          "start": 188.8,
+          "end": 188.9,
           "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "douleur",
-          "start": 188.7,
-          "end": 188.8,
+          "start": 188.95,
+          "end": 189.05,
           "confidence": 0.25
         }
       ],
@@ -7675,39 +8657,39 @@
       "char_rois": []
     },
     {
-      "line_index": 149,
+      "line_index": 181,
       "text": "Est ce mon tour",
-      "start": 188.8,
-      "end": 189.35,
-      "confidence": 0.252,
+      "start": 189.05,
+      "end": 189.6,
+      "confidence": 0.55,
       "words": [
         {
           "word_index": 1,
           "text": "Est",
-          "start": 188.8,
-          "end": 188.9,
-          "confidence": 0.252
+          "start": 189.05,
+          "end": 189.15,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "ce",
-          "start": 188.95,
-          "end": 189.05,
-          "confidence": 0.252
+          "start": 189.2,
+          "end": 189.3,
+          "confidence": 0.25
         },
         {
           "word_index": 3,
           "text": "mon",
-          "start": 189.1,
-          "end": 189.2,
-          "confidence": 0.252
+          "start": 189.35,
+          "end": 189.45,
+          "confidence": 0.25
         },
         {
           "word_index": 4,
           "text": "tour",
-          "start": 189.25,
-          "end": 189.35,
-          "confidence": 0.252
+          "start": 189.5,
+          "end": 189.6,
+          "confidence": 0.7
         }
       ],
       "y": 107,
@@ -7746,18 +8728,18 @@
       "char_rois": []
     },
     {
-      "line_index": 150,
+      "line_index": 182,
       "text": "larajun",
-      "start": 189.35,
-      "end": 189.45,
-      "confidence": 0.252,
+      "start": 189.6,
+      "end": 189.7,
+      "confidence": 0.806,
       "words": [
         {
           "word_index": 1,
           "text": "larajun",
-          "start": 189.35,
-          "end": 189.45,
-          "confidence": 0.252
+          "start": 189.6,
+          "end": 189.7,
+          "confidence": 0.806
         }
       ],
       "y": 247,
@@ -7772,39 +8754,39 @@
       "char_rois": []
     },
     {
-      "line_index": 151,
+      "line_index": 183,
       "text": "Estate mon tour 8",
-      "start": 189.45,
-      "end": 190.0,
-      "confidence": 0.252,
+      "start": 189.7,
+      "end": 190.25,
+      "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "Estce",
-          "start": 189.45,
-          "end": 189.55,
-          "confidence": 0.252
+          "start": 189.7,
+          "end": 189.8,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "mon",
-          "start": 189.6,
-          "end": 189.7,
-          "confidence": 0.252
+          "start": 189.85,
+          "end": 189.95,
+          "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "tour",
-          "start": 189.75,
-          "end": 189.85,
-          "confidence": 0.252
+          "start": 190.0,
+          "end": 190.1,
+          "confidence": 1.0
         },
         {
           "word_index": 4,
           "text": "8",
-          "start": 189.9,
-          "end": 190.0,
-          "confidence": 0.252
+          "start": 190.15,
+          "end": 190.25,
+          "confidence": 1.0
         }
       ],
       "y": 107,
@@ -7837,18 +8819,18 @@
       "char_rois": []
     },
     {
-      "line_index": 152,
+      "line_index": 184,
       "text": "Karajan",
-      "start": 190.8,
-      "end": 190.9,
-      "confidence": 0.252,
+      "start": 190.25,
+      "end": 190.35,
+      "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
           "text": "Karajun",
-          "start": 190.8,
-          "end": 190.9,
-          "confidence": 0.252
+          "start": 190.25,
+          "end": 190.35,
+          "confidence": 0.5
         }
       ],
       "y": 245,
@@ -7863,7 +8845,59 @@
       "char_rois": []
     },
     {
-      "line_index": 153,
+      "line_index": 185,
+      "text": "Arjun",
+      "start": 190.35,
+      "end": 190.45,
+      "confidence": 1.0,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "arajun",
+          "start": 190.35,
+          "end": 190.45,
+          "confidence": 1.0
+        }
+      ],
+      "y": 247,
+      "word_rois": [
+        [
+          410,
+          247,
+          56,
+          22
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 186,
+      "text": "Xarajun",
+      "start": 190.45,
+      "end": 190.55,
+      "confidence": 0.678,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Xarajun",
+          "start": 190.45,
+          "end": 190.55,
+          "confidence": 0.678
+        }
+      ],
+      "y": 243,
+      "word_rois": [
+        [
+          393,
+          243,
+          74,
+          28
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 187,
       "text": "Dans tout Paris",
       "start": 191.75,
       "end": 193.35,
@@ -7915,21 +8949,14 @@
       "char_rois": []
     },
     {
-      "line_index": 154,
-      "text": "je m'abandonne",
-      "start": 193.35,
+      "line_index": 188,
+      "text": "m'abandonne",
+      "start": 193.5,
       "end": 193.6,
       "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
-          "text": "je",
-          "start": 193.35,
-          "end": 193.45,
-          "confidence": 1.0
-        },
-        {
-          "word_index": 2,
           "text": "m'abandonne",
           "start": 193.5,
           "end": 193.6,
@@ -7954,83 +8981,148 @@
       "char_rois": []
     },
     {
-      "line_index": 155,
-      "text": "Xarajun",
+      "line_index": 189,
+      "text": "lara un",
       "start": 193.6,
-      "end": 193.7,
-      "confidence": 0.5,
+      "end": 193.85,
+      "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
-          "text": "Xarajun",
+          "text": "lara",
           "start": 193.6,
           "end": 193.7,
-          "confidence": 0.5
+          "confidence": 0.252
+        },
+        {
+          "word_index": 2,
+          "text": "un",
+          "start": 193.75,
+          "end": 193.85,
+          "confidence": 0.252
         }
       ],
-      "y": 245,
+      "y": 246,
       "word_rois": [
         [
-          404,
-          245,
-          64,
-          26
+          407,
+          246,
+          33,
+          21
+        ],
+        [
+          442,
+          247,
+          24,
+          20
         ]
       ],
       "char_rois": []
     },
     {
-      "line_index": 156,
-      "text": "farajun",
-      "start": 195.3,
-      "end": 195.4,
-      "confidence": 0.693,
+      "line_index": 190,
+      "text": "kara un",
+      "start": 193.85,
+      "end": 194.1,
+      "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
-          "text": "farajun",
-          "start": 195.3,
-          "end": 195.4,
-          "confidence": 0.693
+          "text": "kara",
+          "start": 193.85,
+          "end": 193.95,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 2,
+          "text": "un",
+          "start": 194.0,
+          "end": 194.1,
+          "confidence": 0.252
         }
       ],
       "y": 247,
       "word_rois": [
         [
-          408,
+          406,
           247,
-          58,
-          22
+          33,
+          24
+        ],
+        [
+          441,
+          247,
+          24,
+          24
         ]
       ],
       "char_rois": []
     },
     {
-      "line_index": 157,
+      "line_index": 191,
+      "text": "fara un",
+      "start": 194.1,
+      "end": 194.75,
+      "confidence": 0.477,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "fara",
+          "start": 194.1,
+          "end": 194.2,
+          "confidence": 0.25
+        },
+        {
+          "word_index": 2,
+          "text": "un",
+          "start": 194.65,
+          "end": 194.75,
+          "confidence": 0.704
+        }
+      ],
+      "y": 249,
+      "word_rois": [
+        [
+          408,
+          249,
+          30,
+          20
+        ],
+        [
+          440,
+          249,
+          25,
+          20
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 192,
       "text": "envoie vote Vol",
-      "start": 195.4,
-      "end": 195.8,
+      "start": 194.85,
+      "end": 195.7,
       "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
           "text": "envoie",
-          "start": 195.4,
-          "end": 195.5,
+          "start": 194.85,
+          "end": 195.05,
           "confidence": 0.5
         },
         {
           "word_index": 2,
           "text": "vote",
-          "start": 195.55,
-          "end": 195.65,
+          "start": 195.1,
+          "end": 195.4,
           "confidence": 0.5
         },
         {
           "word_index": 3,
           "text": "Vol",
-          "start": 195.7,
-          "end": 195.8,
+          "start": 195.45,
+          "end": 195.7,
           "confidence": 0.5
         }
       ],
@@ -8058,17 +9150,17 @@
       "char_rois": []
     },
     {
-      "line_index": 158,
+      "line_index": 193,
       "text": "Vora",
-      "start": 195.8,
-      "end": 195.9,
+      "start": 195.7,
+      "end": 195.8,
       "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "Vora",
-          "start": 195.8,
-          "end": 195.9,
+          "start": 195.7,
+          "end": 195.8,
           "confidence": 1.0
         }
       ],
@@ -8084,44 +9176,44 @@
       "char_rois": []
     },
     {
-      "line_index": 159,
+      "line_index": 194,
       "text": "Et je m'envole vole vole",
-      "start": 195.9,
+      "start": 195.8,
       "end": 197.9,
       "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "Et",
-          "start": 195.9,
-          "end": 196.0,
+          "start": 195.8,
+          "end": 195.9,
           "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "je",
-          "start": 196.05,
-          "end": 196.15,
+          "start": 195.95,
+          "end": 196.05,
           "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "m'envole",
-          "start": 196.2,
-          "end": 196.3,
+          "start": 196.1,
+          "end": 196.2,
           "confidence": 1.0
         },
         {
           "word_index": 4,
           "text": "vole",
-          "start": 196.35,
-          "end": 197.15,
+          "start": 196.25,
+          "end": 197.05,
           "confidence": 1.0
         },
         {
           "word_index": 5,
           "text": "vole",
-          "start": 197.2,
+          "start": 197.1,
           "end": 197.9,
           "confidence": 1.0
         }
@@ -8162,7 +9254,7 @@
       "char_rois": []
     },
     {
-      "line_index": 160,
+      "line_index": 195,
       "text": "vole vole vole vole",
       "start": 197.9,
       "end": 198.45,
@@ -8227,7 +9319,7 @@
       "char_rois": []
     },
     {
-      "line_index": 161,
+      "line_index": 196,
       "text": "farajun",
       "start": 198.95,
       "end": 199.05,
@@ -8253,7 +9345,46 @@
       "char_rois": []
     },
     {
-      "line_index": 162,
+      "line_index": 197,
+      "text": "sara un",
+      "start": 201.1,
+      "end": 201.8,
+      "confidence": 1.0,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "sara",
+          "start": 201.1,
+          "end": 201.2,
+          "confidence": 1.0
+        },
+        {
+          "word_index": 2,
+          "text": "un",
+          "start": 201.25,
+          "end": 201.35,
+          "confidence": 1.0
+        }
+      ],
+      "y": 249,
+      "word_rois": [
+        [
+          406,
+          249,
+          32,
+          20
+        ],
+        [
+          441,
+          249,
+          24,
+          20
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 198,
       "text": "wwwkarafuncom",
       "start": 208.15,
       "end": 208.95,
@@ -8279,18 +9410,18 @@
       "char_rois": []
     },
     {
-      "line_index": 163,
-      "text": "Paraffin",
+      "line_index": 199,
+      "text": "Xerafun",
       "start": 208.95,
       "end": 209.05,
-      "confidence": 0.93,
+      "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
-          "text": "Yarafun",
+          "text": "Xerafun",
           "start": 208.95,
           "end": 209.05,
-          "confidence": 0.93
+          "confidence": 1.0
         }
       ],
       "y": 239,
@@ -8305,15 +9436,15 @@
       "char_rois": []
     },
     {
-      "line_index": 164,
-      "text": "Xerafun",
+      "line_index": 200,
+      "text": "Xorafun",
       "start": 209.05,
       "end": 209.15,
       "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
-          "text": "Xerafun",
+          "text": "Xorafun",
           "start": 209.05,
           "end": 209.15,
           "confidence": 1.0
@@ -8324,32 +9455,6 @@
         [
           390,
           239,
-          78,
-          34
-        ]
-      ],
-      "char_rois": []
-    },
-    {
-      "line_index": 165,
-      "text": "Xorafun",
-      "start": 209.15,
-      "end": 209.25,
-      "confidence": 1.0,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "Xorafun",
-          "start": 209.15,
-          "end": 209.25,
-          "confidence": 1.0
-        }
-      ],
-      "y": 239,
-      "word_rois": [
-        [
-          390,
-          239,
           80,
           34
         ]
@@ -8357,17 +9462,17 @@
       "char_rois": []
     },
     {
-      "line_index": 166,
+      "line_index": 201,
       "text": "Xerafun",
-      "start": 209.25,
-      "end": 209.35,
+      "start": 211.75,
+      "end": 212.45,
       "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "Xerafun",
-          "start": 209.25,
-          "end": 209.35,
+          "start": 211.75,
+          "end": 211.85,
           "confidence": 1.0
         }
       ],
@@ -8383,33 +9488,7 @@
       "char_rois": []
     },
     {
-      "line_index": 167,
-      "text": "Paraffin",
-      "start": 211.8,
-      "end": 212.5,
-      "confidence": 1.0,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "Yarafun",
-          "start": 211.8,
-          "end": 211.9,
-          "confidence": 1.0
-        }
-      ],
-      "y": 239,
-      "word_rois": [
-        [
-          390,
-          239,
-          80,
-          34
-        ]
-      ],
-      "char_rois": []
-    },
-    {
-      "line_index": 168,
+      "line_index": 202,
       "text": "Karajan",
       "start": 213.15,
       "end": 213.3,
@@ -8435,7 +9514,7 @@
       "char_rois": []
     },
     {
-      "line_index": 169,
+      "line_index": 203,
       "text": "XarJun",
       "start": 213.3,
       "end": 213.4,
@@ -8461,33 +9540,7 @@
       "char_rois": []
     },
     {
-      "line_index": 170,
-      "text": "Paraffin",
-      "start": 213.4,
-      "end": 213.5,
-      "confidence": 1.0,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "Xarafun",
-          "start": 213.4,
-          "end": 213.5,
-          "confidence": 1.0
-        }
-      ],
-      "y": 39,
-      "word_rois": [
-        [
-          108,
-          39,
-          314,
-          132
-        ]
-      ],
-      "char_rois": []
-    },
-    {
-      "line_index": 171,
+      "line_index": 204,
       "text": "wwwkarafuncom",
       "start": 214.1,
       "end": 214.9,

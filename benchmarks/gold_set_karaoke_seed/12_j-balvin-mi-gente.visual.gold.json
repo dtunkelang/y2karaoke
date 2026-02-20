@@ -732,41 +732,34 @@
     },
     {
       "line_index": 11,
-      "text": "Y me quiere a m",
-      "start": 34.4,
+      "text": "me quiere a m",
+      "start": 34.8,
       "end": 36.9,
       "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
-          "text": "Y",
-          "start": 34.4,
-          "end": 34.75,
-          "confidence": 0.252
-        },
-        {
-          "word_index": 2,
           "text": "me",
           "start": 34.8,
           "end": 35.3,
           "confidence": 0.252
         },
         {
-          "word_index": 3,
+          "word_index": 2,
           "text": "quiere",
           "start": 35.35,
           "end": 36.05,
           "confidence": 0.252
         },
         {
-          "word_index": 4,
+          "word_index": 3,
           "text": "a",
           "start": 36.1,
           "end": 36.5,
           "confidence": 0.252
         },
         {
-          "word_index": 5,
+          "word_index": 4,
           "text": "m",
           "start": 36.55,
           "end": 36.9,
@@ -1148,34 +1141,27 @@
     },
     {
       "line_index": 17,
-      "text": "Y se baila as",
-      "start": 54.5,
+      "text": "se baila as",
+      "start": 55.9,
       "end": 61.45,
       "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
-          "text": "Y",
-          "start": 54.5,
-          "end": 55.3,
-          "confidence": 0.252
-        },
-        {
-          "word_index": 2,
           "text": "se",
           "start": 55.9,
           "end": 56.7,
           "confidence": 0.252
         },
         {
-          "word_index": 3,
+          "word_index": 2,
           "text": "baila",
           "start": 57.75,
           "end": 58.55,
           "confidence": 0.252
         },
         {
-          "word_index": 4,
+          "word_index": 3,
           "text": "as",
           "start": 60.65,
           "end": 61.45,
@@ -1889,41 +1875,34 @@
     },
     {
       "line_index": 31,
-      "text": "Y eso se fue mundial",
-      "start": 85.85,
+      "text": "eso se fue mundial",
+      "start": 86.0,
       "end": 86.55,
       "confidence": 0.228,
       "words": [
         {
           "word_index": 1,
-          "text": "Y",
-          "start": 85.85,
-          "end": 85.95,
-          "confidence": 0.228
-        },
-        {
-          "word_index": 2,
           "text": "eso",
           "start": 86.0,
           "end": 86.1,
           "confidence": 0.228
         },
         {
-          "word_index": 3,
+          "word_index": 2,
           "text": "se",
           "start": 86.15,
           "end": 86.25,
           "confidence": 0.228
         },
         {
-          "word_index": 4,
+          "word_index": 3,
           "text": "fue",
           "start": 86.3,
           "end": 86.4,
           "confidence": 0.228
         },
         {
-          "word_index": 5,
+          "word_index": 4,
           "text": "mundial",
           "start": 86.45,
           "end": 86.55,
@@ -2149,41 +2128,34 @@
     },
     {
       "line_index": 35,
-      "text": "Y dnde est mi gente",
-      "start": 90.15,
+      "text": "dnde est mi gente",
+      "start": 90.3,
       "end": 90.95,
       "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
-          "text": "Y",
-          "start": 90.15,
-          "end": 90.25,
-          "confidence": 0.5
-        },
-        {
-          "word_index": 2,
           "text": "dnde",
           "start": 90.3,
           "end": 90.4,
           "confidence": 0.5
         },
         {
-          "word_index": 3,
+          "word_index": 2,
           "text": "est",
           "start": 90.45,
           "end": 90.55,
           "confidence": 0.5
         },
         {
-          "word_index": 4,
+          "word_index": 3,
           "text": "mi",
           "start": 90.6,
           "end": 90.7,
           "confidence": 0.5
         },
         {
-          "word_index": 5,
+          "word_index": 4,
           "text": "gente",
           "start": 90.75,
           "end": 90.95,
@@ -2357,41 +2329,34 @@
     },
     {
       "line_index": 38,
-      "text": "Y dnde est mi gente",
-      "start": 94.8,
+      "text": "dnde est mi gente",
+      "start": 94.95,
       "end": 95.55,
       "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
-          "text": "Y",
-          "start": 94.8,
-          "end": 94.9,
-          "confidence": 0.252
-        },
-        {
-          "word_index": 2,
           "text": "dnde",
           "start": 94.95,
           "end": 95.1,
           "confidence": 0.252
         },
         {
-          "word_index": 3,
+          "word_index": 2,
           "text": "est",
           "start": 95.15,
           "end": 95.25,
           "confidence": 0.252
         },
         {
-          "word_index": 4,
+          "word_index": 3,
           "text": "mi",
           "start": 95.3,
           "end": 95.4,
           "confidence": 0.252
         },
         {
-          "word_index": 5,
+          "word_index": 4,
           "text": "gente",
           "start": 95.45,
           "end": 95.55,
@@ -2955,41 +2920,34 @@
     },
     {
       "line_index": 47,
-      "text": "Y con el tiempo nos",
-      "start": 125.9,
+      "text": "con el tiempo nos",
+      "start": 126.05,
       "end": 127.15,
       "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
-          "text": "Y",
-          "start": 125.9,
-          "end": 126.0,
-          "confidence": 0.252
-        },
-        {
-          "word_index": 2,
           "text": "con",
           "start": 126.05,
           "end": 126.15,
           "confidence": 0.252
         },
         {
-          "word_index": 3,
+          "word_index": 2,
           "text": "el",
           "start": 126.2,
           "end": 126.3,
           "confidence": 0.252
         },
         {
-          "word_index": 4,
+          "word_index": 3,
           "text": "tiempo",
           "start": 126.35,
           "end": 126.6,
           "confidence": 0.252
         },
         {
-          "word_index": 5,
+          "word_index": 4,
           "text": "nos",
           "start": 126.65,
           "end": 127.15,
@@ -3618,41 +3576,34 @@
     },
     {
       "line_index": 57,
-      "text": "Y dnde est mi gente",
-      "start": 143.7,
+      "text": "dnde est mi gente",
+      "start": 144.25,
       "end": 147.3,
       "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
-          "text": "Y",
-          "start": 143.7,
-          "end": 144.2,
-          "confidence": 0.252
-        },
-        {
-          "word_index": 2,
           "text": "dnde",
           "start": 144.25,
           "end": 145.05,
           "confidence": 0.252
         },
         {
-          "word_index": 3,
+          "word_index": 2,
           "text": "est",
           "start": 145.1,
           "end": 145.8,
           "confidence": 0.252
         },
         {
-          "word_index": 4,
+          "word_index": 3,
           "text": "mi",
           "start": 145.85,
           "end": 146.45,
           "confidence": 0.252
         },
         {
-          "word_index": 5,
+          "word_index": 4,
           "text": "gente",
           "start": 146.5,
           "end": 147.3,
@@ -3774,41 +3725,34 @@
     },
     {
       "line_index": 59,
-      "text": "Y dnde est mi gente",
-      "start": 150.1,
+      "text": "dnde est mi gente",
+      "start": 150.3,
       "end": 151.1,
       "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
-          "text": "Y",
-          "start": 150.1,
-          "end": 150.25,
-          "confidence": 0.5
-        },
-        {
-          "word_index": 2,
           "text": "dnde",
           "start": 150.3,
           "end": 150.45,
           "confidence": 0.5
         },
         {
-          "word_index": 3,
+          "word_index": 2,
           "text": "est",
           "start": 150.5,
           "end": 150.65,
           "confidence": 0.5
         },
         {
-          "word_index": 4,
+          "word_index": 3,
           "text": "mi",
           "start": 150.7,
           "end": 150.85,
           "confidence": 0.5
         },
         {
-          "word_index": 5,
+          "word_index": 4,
           "text": "gente",
           "start": 150.9,
           "end": 151.1,
