@@ -3,7 +3,6 @@
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
 from ... import models
-from ... import phonetic_utils
 from ..alignment import timing_models
 from .whisper_integration_baseline import (
     _clone_lines_for_fallback as _clone_lines_for_fallback_impl,
@@ -24,6 +23,9 @@ from .whisper_integration_stages import (
 )
 from .whisper_integration_align import (
     align_lrc_text_to_whisper_timings_impl as _align_lrc_text_to_whisper_timings_impl,
+)
+from .whisper_integration_correct import (
+    correct_timing_with_whisper_impl as _correct_timing_with_whisper_impl,
 )
 from .whisper_integration_transcribe import (
     transcribe_vocals_impl as _transcribe_vocals_impl,
@@ -295,169 +297,53 @@ def correct_timing_with_whisper_impl(  # noqa: C901
     pull_lines_forward_for_continuous_vocals_fn: Callable[..., Any],
     logger,
 ) -> Tuple[List[models.Line], List[str], Dict[str, float]]:
-    """Correct lyric timing by combining quality gates and Whisper alignments."""
-    baseline_lines = _clone_lines_for_fallback(lines)
-    transcription, all_words, detected_lang, _model = transcribe_vocals_fn(
-        vocals_path, language, model_size, aggressive, temperature
-    )
-    if not audio_features:
-        audio_features = extract_audio_features_fn(vocals_path)
-
-    line_texts = [line.text for line in lines if line.text.strip()]
-    transcription, all_words, trimmed_end = trim_whisper_transcription_by_lyrics_fn(
-        transcription, all_words, line_texts
-    )
-    if trimmed_end:
-        logger.info(
-            "Truncated Whisper transcript to %.2f s (last matching lyric).", trimmed_end
-        )
-
-    if not transcription:
-        logger.warning("No transcription available, skipping Whisper alignment")
-        return lines, [], {}
-
-    if audio_features:
-        all_words, filled_segments = fill_vocal_activity_gaps_fn(
-            all_words,
-            audio_features,
-            lenient_vocal_activity_threshold,
-            segments=transcription,
-        )
-        if filled_segments is not None:
-            transcription = filled_segments
-
-    epitran_lang = phonetic_utils._whisper_lang_to_epitran(detected_lang)
-    logger.debug(
-        f"Using epitran language: {epitran_lang} (from Whisper: {detected_lang})"
-    )
-
-    logger.debug(f"Pre-computing IPA for {len(all_words)} Whisper words...")
-    for w in all_words:
-        phonetic_utils._get_ipa(w.text, epitran_lang)
-
-    quality, assessments = assess_lrc_quality_fn(
-        lines, all_words, epitran_lang, tolerance=1.5
-    )
-    logger.info(f"LRC timing quality: {quality:.0%} of lines within 1.5s of Whisper")
-    _ = assessments
-
-    metrics: Dict[str, float] = {}
-    if not force_dtw and quality >= 0.7:
-        logger.info("LRC timing is good, using targeted corrections only")
-        aligned_lines, alignments = align_hybrid_lrc_whisper_fn(
-            lines,
-            transcription,
-            all_words,
-            language=epitran_lang,
-            trust_threshold=trust_lrc_threshold,
-            correct_threshold=correct_lrc_threshold,
-        )
-    elif not force_dtw and quality >= 0.4:
-        logger.info("LRC timing is mixed, using hybrid Whisper alignment")
-        aligned_lines, alignments = align_hybrid_lrc_whisper_fn(
-            lines,
-            transcription,
-            all_words,
-            language=epitran_lang,
-            trust_threshold=trust_lrc_threshold,
-            correct_threshold=correct_lrc_threshold,
-        )
-    else:
-        logger.info("LRC timing is poor, using DTW global alignment")
-        aligned_lines, alignments, metrics, lrc_words, alignments_map = (
-            align_dtw_whisper_with_data_fn(
-                lines,
-                all_words,
-                language=epitran_lang,
-                silence_regions=(
-                    audio_features.silence_regions if audio_features else None
-                ),
-                audio_features=audio_features,
-                lenient_vocal_activity_threshold=lenient_vocal_activity_threshold,
-                lenient_activity_bonus=lenient_activity_bonus,
-                low_word_confidence_threshold=low_word_confidence_threshold,
-            )
-        )
-        metrics["dtw_used"] = 1.0
-
-        matched_ratio = metrics.get("matched_ratio", 0.0)
-        avg_similarity = metrics.get("avg_similarity", 0.0)
-        line_coverage = metrics.get("line_coverage", 0.0)
-        confidence_ok = (
-            matched_ratio >= 0.6 and avg_similarity >= 0.5 and line_coverage >= 0.6
-        )
-
-        if confidence_ok and lrc_words and alignments_map:
-            dtw_lines, dtw_fixes = retime_lines_from_dtw_alignments_fn(
-                lines, lrc_words, alignments_map
-            )
-            aligned_lines = dtw_lines
-            alignments.extend(dtw_fixes)
-            metrics["dtw_confidence_passed"] = 1.0
-        else:
-            metrics["dtw_confidence_passed"] = 0.0
-            alignments.append(
-                "DTW confidence gating failed; keeping conservative word shifts"
-            )
-
-    if quality < 0.4 or force_dtw:
-        aligned_lines, alignments = _apply_low_quality_segment_postpasses(
-            aligned_lines=aligned_lines,
-            alignments=alignments,
-            transcription=transcription,
-            epitran_lang=epitran_lang,
-            merge_first_two_lines_if_segment_matches_fn=merge_first_two_lines_if_segment_matches_fn,
-            retime_adjacent_lines_to_whisper_window_fn=retime_adjacent_lines_to_whisper_window_fn,
-            retime_adjacent_lines_to_segment_window_fn=retime_adjacent_lines_to_segment_window_fn,
-            pull_next_line_into_segment_window_fn=pull_next_line_into_segment_window_fn,
-            pull_lines_near_segment_end_fn=pull_lines_near_segment_end_fn,
-            pull_next_line_into_same_segment_fn=pull_next_line_into_same_segment_fn,
-            merge_lines_to_whisper_segments_fn=merge_lines_to_whisper_segments_fn,
-            tighten_lines_to_whisper_segments_fn=tighten_lines_to_whisper_segments_fn,
-            pull_lines_to_best_segments_fn=pull_lines_to_best_segments_fn,
-        )
-
-    aligned_lines, alignments = _finalize_whisper_line_set(
-        source_lines=lines,
-        aligned_lines=aligned_lines,
-        alignments=alignments,
-        transcription=transcription,
-        epitran_lang=epitran_lang,
-        force_dtw=force_dtw,
-        audio_features=audio_features,
+    return _correct_timing_with_whisper_impl(
+        lines,
+        vocals_path,
+        language,
+        model_size,
+        aggressive,
+        temperature,
+        trust_lrc_threshold,
+        correct_lrc_threshold,
+        force_dtw,
+        audio_features,
+        lenient_vocal_activity_threshold,
+        lenient_activity_bonus,
+        low_word_confidence_threshold,
+        transcribe_vocals_fn=transcribe_vocals_fn,
+        extract_audio_features_fn=extract_audio_features_fn,
+        trim_whisper_transcription_by_lyrics_fn=trim_whisper_transcription_by_lyrics_fn,
+        fill_vocal_activity_gaps_fn=fill_vocal_activity_gaps_fn,
+        assess_lrc_quality_fn=assess_lrc_quality_fn,
+        align_hybrid_lrc_whisper_fn=align_hybrid_lrc_whisper_fn,
+        align_dtw_whisper_with_data_fn=align_dtw_whisper_with_data_fn,
+        retime_lines_from_dtw_alignments_fn=retime_lines_from_dtw_alignments_fn,
+        apply_low_quality_segment_postpasses_fn=_apply_low_quality_segment_postpasses,
+        finalize_whisper_line_set_fn=_finalize_whisper_line_set,
+        constrain_line_starts_to_baseline_fn=_constrain_line_starts_to_baseline,
+        should_rollback_short_line_degradation_fn=_should_rollback_short_line_degradation,
+        clone_lines_for_fallback_fn=_clone_lines_for_fallback,
+        logger=logger,
+        merge_first_two_lines_if_segment_matches_fn=merge_first_two_lines_if_segment_matches_fn,
+        retime_adjacent_lines_to_whisper_window_fn=retime_adjacent_lines_to_whisper_window_fn,
+        retime_adjacent_lines_to_segment_window_fn=retime_adjacent_lines_to_segment_window_fn,
+        pull_next_line_into_segment_window_fn=pull_next_line_into_segment_window_fn,
+        pull_lines_near_segment_end_fn=pull_lines_near_segment_end_fn,
+        pull_next_line_into_same_segment_fn=pull_next_line_into_same_segment_fn,
+        merge_lines_to_whisper_segments_fn=merge_lines_to_whisper_segments_fn,
+        tighten_lines_to_whisper_segments_fn=tighten_lines_to_whisper_segments_fn,
+        pull_lines_to_best_segments_fn=pull_lines_to_best_segments_fn,
         fix_ordering_violations_fn=fix_ordering_violations_fn,
         normalize_line_word_timings_fn=normalize_line_word_timings_fn,
         enforce_monotonic_line_starts_fn=enforce_monotonic_line_starts_fn,
         enforce_non_overlapping_lines_fn=enforce_non_overlapping_lines_fn,
-        pull_lines_near_segment_end_fn=pull_lines_near_segment_end_fn,
         merge_short_following_line_into_segment_fn=merge_short_following_line_into_segment_fn,
         clamp_repeated_line_duration_fn=clamp_repeated_line_duration_fn,
         drop_duplicate_lines_fn=drop_duplicate_lines_fn,
         drop_duplicate_lines_by_timing_fn=drop_duplicate_lines_by_timing_fn,
         pull_lines_forward_for_continuous_vocals_fn=pull_lines_forward_for_continuous_vocals_fn,
     )
-
-    # Policy constraint: keep line starts anchored to LRC timings.
-    aligned_lines = _constrain_line_starts_to_baseline(aligned_lines, baseline_lines)
-
-    rollback, short_before, short_after = _should_rollback_short_line_degradation(
-        baseline_lines, aligned_lines
-    )
-    if rollback:
-        logger.warning(
-            "Rolling back Whisper corrections: implausibly short multi-word lines worsened (%d -> %d)",
-            short_before,
-            short_after,
-        )
-        alignments.append(
-            "Rolled back Whisper timing due to short-line compression artifacts"
-        )
-        aligned_lines = baseline_lines
-
-    if alignments:
-        logger.info(f"Whisper hybrid alignment: {len(alignments)} lines corrected")
-
-    return aligned_lines, alignments, metrics
 
 
 def _apply_low_quality_segment_postpasses(
