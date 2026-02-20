@@ -30,6 +30,12 @@ from .reconstruction_intro_filters import (
 from .reconstruction_context_transitions import (
     split_persistent_line_epochs_from_context_transitions as _split_persistent_line_epochs_from_context_transitions_impl,
 )
+from .reconstruction_lane_merge import (
+    is_same_lane as _is_same_lane_impl,
+)
+from .reconstruction_lane_merge import (
+    merge_overlapping_same_lane_duplicates as _merge_overlapping_same_lane_duplicates_impl,
+)
 from .reconstruction_overlap_repetitions import (
     expand_overlapped_same_text_repetitions as _expand_overlapped_same_text_repetitions_impl,
 )
@@ -281,51 +287,17 @@ def _merge_short_same_lane_reentries(
 
 
 def _is_same_lane(a: dict[str, Any], b: dict[str, Any]) -> bool:
-    return abs(float(a.get("y", 0.0)) - float(b.get("y", 0.0))) <= _LANE_PROXIMITY_PX
+    return _is_same_lane_impl(a, b, lane_proximity_px=_LANE_PROXIMITY_PX)
 
 
 def _merge_overlapping_same_lane_duplicates(
     entries: list[dict[str, Any]],
 ) -> list[dict[str, Any]]:
-    """Merge overlapping same-text epochs caused by lane-bin jitter."""
-    if len(entries) < 2:
-        return entries
-
-    out: list[dict[str, Any]] = []
-    for ent in entries:
-        if not out or _is_short_refrain_entry(ent):
-            out.append(ent)
-            continue
-
-        merged = False
-        for prev in reversed(out[-10:]):
-            if _is_short_refrain_entry(prev):
-                continue
-            if not _is_same_lane(prev, ent):
-                continue
-            if (
-                text_similarity(str(prev.get("text", "")), str(ent.get("text", "")))
-                < 0.95
-            ):
-                continue
-            prev_first = float(prev.get("first", 0.0))
-            prev_last = float(prev.get("last", 0.0))
-            cur_first = float(ent.get("first", 0.0))
-            cur_last = float(ent.get("last", 0.0))
-            overlap = min(prev_last, cur_last) - max(prev_first, cur_first)
-            if overlap < 0.35:
-                continue
-
-            prev["first"] = min(prev_first, cur_first)
-            prev["last"] = max(prev_last, cur_last)
-            if len(ent.get("w_rois", [])) > len(prev.get("w_rois", [])):
-                prev["w_rois"] = ent.get("w_rois", [])
-            merged = True
-            break
-
-        if not merged:
-            out.append(ent)
-    return out
+    return _merge_overlapping_same_lane_duplicates_impl(
+        entries,
+        is_short_refrain_entry=_is_short_refrain_entry,
+        is_same_lane=_is_same_lane,
+    )
 
 
 def _is_short_refrain_entry(entry: dict[str, Any]) -> bool:
