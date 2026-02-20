@@ -7,6 +7,7 @@ from ... import models, phonetic_utils
 from ..alignment import timing_models
 from . import whisper_utils
 from .whisper_dtw import _LineMappingContext
+from . import whisper_mapping_pipeline_assembly as _assembly_helpers
 from . import whisper_mapping_pipeline_candidates as _candidate_helpers
 from . import whisper_mapping_pipeline_line_context as _line_context_helpers
 from . import whisper_mapping_pipeline_matching as _matching_helpers
@@ -257,65 +258,23 @@ def _assemble_mapped_line(
     line_last_idx_ref: List[Optional[int]],
     next_original_start: Optional[float],
 ) -> "models.Line":
-    """Build a mapped models.Line from match intervals and update tracking state."""
-    from ...models import Line as LineModel
-
-    mapped_words: List[models.Word] = []
-    for word_idx, word in enumerate(line.words):
-        interval = line_match_intervals.get(word_idx)
-        if interval:
-            start, end = interval
-        else:
-            start, end = word.start_time, word.end_time
-        mapped_words.append(
-            models.Word(
-                text=word.text,
-                start_time=start,
-                end_time=end,
-                singer=word.singer,
-            )
-        )
-
-    mapped_line = LineModel(words=mapped_words, singer=line.singer)
-    if line_matches:
-        actual_start = min(iv[0] for _, iv in line_matches)
-        actual_end = max(iv[1] for _, iv in line_matches)
-        actual_start, actual_end = _clamp_match_window_to_anchor(
-            actual_start,
-            actual_end,
-            line_anchor_time,
-        )
-    else:
-        original_duration = _fallback_unmatched_line_duration(line)
-        actual_start = line_anchor_time
-        actual_end = actual_start + original_duration
-    target_duration = max(actual_end - actual_start, 0.0)
-    mapped_line = whisper_utils._redistribute_word_timings_to_line(
-        mapped_line,
+    return _assembly_helpers._assemble_mapped_line(
+        ctx,
+        line_idx,
+        line,
         line_matches,
-        target_duration=target_duration,
-        min_word_duration=0.05,
-        line_start=actual_start,
+        line_match_intervals,
+        line_anchor_time,
+        line_segment,
+        line_last_idx_ref,
+        next_original_start,
+        clamp_match_window_to_anchor_fn=_clamp_match_window_to_anchor,
+        fallback_unmatched_line_duration_fn=_fallback_unmatched_line_duration,
+        redistribute_word_timings_to_line_fn=whisper_utils._redistribute_word_timings_to_line,
+        clamp_line_shift_vs_original_fn=_clamp_line_shift_vs_original,
+        clamp_line_duration_vs_original_fn=_clamp_line_duration_vs_original,
+        logger=logger,
     )
-    mapped_line = _clamp_line_shift_vs_original(mapped_line, line)
-    mapped_line = _clamp_line_duration_vs_original(
-        mapped_line, line, next_original_start
-    )
-    logger.debug(
-        "Mapped line %d start=%.2f end=%.2f matches=%d",
-        line_idx + 1,
-        mapped_line.start_time,
-        mapped_line.end_time,
-        len(line_matches),
-    )
-    if mapped_line.words:
-        ctx.last_line_start = mapped_line.start_time
-        ctx.prev_line_end = mapped_line.end_time
-    if line_segment is not None:
-        ctx.used_segments.add(line_segment)
-    if line_last_idx_ref[0] is not None:
-        ctx.next_word_idx_start = line_last_idx_ref[0] + 1
-    return mapped_line
 
 
 def _map_lrc_words_to_whisper(
