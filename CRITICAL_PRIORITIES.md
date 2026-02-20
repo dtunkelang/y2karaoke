@@ -95,10 +95,12 @@ This document outlines the critical areas of the `y2karaoke` codebase and the im
 *   **In progress:** Continued visual reconstruction decomposition by moving persistent-line frame accumulation logic into `visual/reconstruction_frame_accumulation.py` with compatibility wrapper in `visual/reconstruction_pipeline.py`.
 *   **In progress:** Continued visual reconstruction decomposition by moving persistent-line deduplication logic into `visual/reconstruction_deduplication.py` with compatibility wrapper in `visual/reconstruction_pipeline.py`.
 *   **In progress:** Continued visual reconstruction decomposition by moving persistent-line to target-line conversion logic into `visual/reconstruction_target_conversion.py` with compatibility wrapper in `visual/reconstruction_pipeline.py`.
+*   **In progress:** Consolidated singer-color policy into `render/singer_style.py` and updated `frame_renderer.py` and `lyrics_renderer.py`.
+*   **In progress:** Extracted frame generation logic from `video_writer.py` into `render/frame_generation.py` to decouple MoviePy integration from rendering state management.
 
 **Action Plan:**
-*   **Consolidate:** Keep singer-color policy in a dedicated module and avoid duplicating it in frame drawing code.
-*   **Decouple:** Continue extracting render-time orchestration hotspots into focused helpers.
+*   **Monitor:** Check generation speed on longer songs.
+*   **Audit:** Use this tool to fix gold files for songs with systematic offsets.
 
 ## 4. Visual Refinement Stability
 **Status (2026-02-19):**
@@ -111,4 +113,4 @@ This document outlines the critical areas of the `y2karaoke` codebase and the im
 ---
 
 **Next Immediate Step:**
-Consolidate singer-color policy logic into a dedicated module to remove duplication from `frame_renderer.py` and `lyrics_renderer.py`.
+Commit the recent rendering decomposition changes and then wait for the benchmark validation to complete.

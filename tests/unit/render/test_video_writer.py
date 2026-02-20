@@ -134,11 +134,11 @@ class TestRenderKaraokeVideo:
         mock_video_clip.assert_called_once()
 
     @patch("builtins.print")
-    @patch("y2karaoke.core.components.render.video_writer.render_frame")
+    @patch("y2karaoke.core.components.render.video_writer.FrameGenerator")
     @patch("y2karaoke.core.components.render.video_writer.AudioFileClip")
     @patch("y2karaoke.core.components.render.video_writer.VideoClip")
     def test_make_frame_progress_and_background(
-        self, mock_video_clip, mock_audio_clip, mock_render_frame, mock_print
+        self, mock_video_clip, mock_audio_clip, mock_frame_generator, mock_print
     ):
         """Covers make_frame progress output and background selection."""
         mock_audio = Mock()
@@ -156,7 +156,10 @@ class TestRenderKaraokeVideo:
             return mock_video
 
         mock_video_clip.side_effect = fake_video_clip
-        mock_render_frame.return_value = "frame"
+        
+        mock_generator_instance = Mock()
+        mock_generator_instance.generate_frame.return_value = "frame"
+        mock_frame_generator.return_value = mock_generator_instance
 
         lines = [Line(words=[Word(text="test", start_time=0.0, end_time=1.0)])]
 
@@ -173,9 +176,13 @@ class TestRenderKaraokeVideo:
             show_progress=True,
         )
 
+        # We need to verify that FrameGenerator was initialized correctly
+        # and that generate_frame was called via the closure
+        mock_frame_generator.assert_called_once()
+        
         frame = captured["make_frame"](0.5)
         assert frame == "frame"
-        assert mock_render_frame.call_args[0][3] == "bg"
+        mock_generator_instance.generate_frame.assert_called_with(0.5)
         assert mock_print.called
 
 
@@ -268,15 +275,15 @@ class TestVideoWriterIntegration:
         assert render_karaoke_video is not None
         assert get_background_at_time is not None
 
-    @patch("y2karaoke.core.components.render.video_writer.render_frame")
-    def test_render_frame_integration(self, mock_render_frame):
-        """Test that video writer integrates with frame renderer."""
-        mock_render_frame.return_value = Mock()
+    @patch("y2karaoke.core.components.render.video_writer.FrameGenerator")
+    def test_frame_generator_integration(self, mock_frame_generator):
+        """Test that video writer integrates with frame generator."""
+        mock_frame_generator.return_value = Mock()
 
-        # This tests that render_frame is available for import
-        from y2karaoke.core.components.render.video_writer import render_frame
+        # This tests that FrameGenerator is available for import
+        from y2karaoke.core.components.render.video_writer import FrameGenerator
 
-        assert render_frame is not None
+        assert FrameGenerator is not None
 
     @patch("y2karaoke.core.components.render.video_writer.create_gradient_background")
     def test_background_integration(self, mock_create_gradient):

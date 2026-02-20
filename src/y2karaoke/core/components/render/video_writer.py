@@ -8,7 +8,7 @@ from ....config import VIDEO_WIDTH, VIDEO_HEIGHT, FPS, FONT_SIZE
 from ....utils.logging import get_logger
 from ....utils.fonts import get_font
 from ....utils.validation import validate_line_order
-from .frame_renderer import render_frame
+from .frame_generation import FrameGenerator
 from ...models import Line, SongMetadata
 from .backgrounds_static import create_gradient_background
 
@@ -63,17 +63,22 @@ def render_karaoke_video(
     total_frames = int(duration * video_fps)
     frame_count = [0]
     last_percent = [-1]
-    layout_cache: Dict[int, Tuple[List[str], List[float], float]] = {}
+
+    generator = FrameGenerator(
+        lines=lines,
+        timing_offset=timing_offset,
+        video_width=video_width,
+        video_height=video_height,
+        font=font,
+        static_background=static_background,
+        background_segments=background_segments,
+        audio_duration=audio_duration,
+        title=title,
+        artist=artist,
+        is_duet=is_duet,
+    )
 
     def make_frame(t):
-        adjusted_time = t - timing_offset
-
-        if background_segments:
-            bg = get_background_at_time(background_segments, t)
-            background = bg if bg is not None else static_background
-        else:
-            background = static_background
-
         if show_progress:
             frame_count[0] += 1
             percent = (
@@ -86,19 +91,7 @@ def render_karaoke_video(
                 print(f"\r  Rendering: [{bar}] {percent}%", end="", flush=True)
                 last_percent[0] = percent
 
-        return render_frame(
-            lines,
-            adjusted_time,
-            font,
-            background,
-            title,
-            artist,
-            is_duet,
-            video_width,
-            video_height,
-            audio_duration,
-            layout_cache=layout_cache,
-        )
+        return generator.generate_frame(t)
 
     logger.info(
         f"Creating video ({duration:.1f}s at {video_fps}fps, {total_frames} frames)..."
