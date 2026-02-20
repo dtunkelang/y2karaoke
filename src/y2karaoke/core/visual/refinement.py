@@ -114,6 +114,9 @@ from .refinement_onset_estimation import (
 from .refinement_line_highlight import (
     detect_line_highlight_with_confidence as _detect_line_highlight_with_confidence_impl,
 )
+from .refinement_line_refine import (
+    refine_line_with_frames as _refine_line_with_frames_impl,
+)
 
 logger = logging.getLogger(__name__)
 _MAX_MERGED_WINDOW_SEC = 20.0
@@ -317,70 +320,34 @@ def _collect_persistent_block_onset_candidates(
     )
 
 
+def _detect_line_highlight_for_refine_line(
+    ln: TargetLine,
+    frames: List[Tuple[float, np.ndarray, np.ndarray]],
+    c_bg_line: np.ndarray,
+    min_start: Optional[float],
+    require_cycle: bool,
+) -> Tuple[Optional[float], Optional[float], float]:
+    return _detect_line_highlight_with_confidence(
+        ln,
+        frames,
+        c_bg_line,
+        min_start_time=min_start,
+        require_full_cycle=require_cycle,
+    )
+
+
 def _refine_line_with_frames(
     ln: TargetLine,
     line_frames: List[Tuple[float, np.ndarray, np.ndarray]],
 ) -> None:
-    # Estimate background color from first few frames (assumed unlit)
-    c_bg_line = np.mean([np.mean(f[1], axis=(0, 1)) for f in line_frames[:10]], axis=0)
-
-    new_starts: List[Optional[float]] = []
-    new_ends: List[Optional[float]] = []
-    new_confidences: List[Optional[float]] = []
-
-    # We know word_rois is not None from job construction
-    assert ln.word_rois is not None
-
-    for wi in range(len(ln.words)):
-        wx, wy, ww, wh = ln.word_rois[wi]
-        word_vals = []
-        for t, roi, roi_lab in line_frames:
-            if wy + wh <= roi.shape[0] and wx + ww <= roi.shape[1]:
-                word_roi = roi[wy : wy + wh, wx : wx + ww]
-                mask = _word_fill_mask(word_roi, c_bg_line)
-                if np.sum(mask > 0) > 30:  # Glyph is present
-                    lab = roi_lab[wy : wy + wh, wx : wx + ww]
-                    word_vals.append(
-                        {
-                            "t": t,
-                            "mask": mask,
-                            "lab": lab,
-                            "avg": lab[mask.astype(bool)].mean(axis=0),
-                        }
-                    )
-
-        s, e, conf = _detect_highlight_with_confidence(word_vals)
-        new_starts.append(s)
-        new_ends.append(e)
-        new_confidences.append(conf)
-
-    # For line-level karaoke (all words change together), word-level transitions may
-    # be absent. Fall back to line transition + weighted in-line distribution.
-    if not any(s is not None for s in new_starts):
-        min_start = (
-            float(ln.visibility_start) if ln.visibility_start is not None else None
-        )
-        line_s, line_e, line_conf = _detect_line_highlight_with_confidence(
-            ln,
-            line_frames,
-            c_bg_line,
-            min_start_time=min_start,
-            require_full_cycle=True,
-        )
-        if line_s is None and line_e is None:
-            line_s, line_e, line_conf = _detect_line_highlight_with_confidence(
-                ln,
-                line_frames,
-                c_bg_line,
-                min_start_time=min_start,
-                require_full_cycle=False,
-            )
-        _assign_line_level_word_timings(ln, line_s, line_e, line_conf)
-        return
-
-    ln.word_starts = new_starts
-    ln.word_ends = new_ends
-    ln.word_confidences = new_confidences
+    _refine_line_with_frames_impl(
+        ln,
+        line_frames,
+        word_fill_mask=_word_fill_mask,
+        detect_highlight_with_confidence=_detect_highlight_with_confidence,
+        detect_line_highlight_with_confidence=_detect_line_highlight_for_refine_line,
+        assign_line_level_word_timings=_assign_line_level_word_timings,
+    )
 
 
 def _detect_line_highlight_with_confidence(
