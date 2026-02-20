@@ -64,6 +64,18 @@ from .refinement_persistent_blocks import (
 from .refinement_persistent_blocks import (
     select_persistent_overlap_lines as _select_persistent_overlap_lines_impl,
 )
+from .refinement_overlap_hints import (
+    collect_unresolved_line_onset_hints as _collect_unresolved_line_onset_hints_impl,
+)
+from .refinement_overlap_hints import (
+    estimate_line_onset_hint_in_visibility_window as _estimate_line_onset_hint_in_visibility_window_impl,
+)
+from .refinement_overlap_hints import (
+    line_has_assigned_word_timing as _line_has_assigned_word_timing_impl,
+)
+from .refinement_overlap_hints import (
+    maybe_adjust_detected_line_start_with_visibility_hint as _maybe_adjust_detected_line_start_with_visibility_hint_impl,
+)
 
 logger = logging.getLogger(__name__)
 _MAX_MERGED_WINDOW_SEC = 20.0
@@ -784,7 +796,23 @@ def _assign_line_level_word_timings(
 
 
 def _line_has_assigned_word_timing(ln: TargetLine) -> bool:
-    return bool(ln.word_starts and any(s is not None for s in ln.word_starts))
+    return _line_has_assigned_word_timing_impl(ln)
+
+
+def _detect_line_highlight_for_overlap_hint(
+    ln: TargetLine,
+    line_frames: List[Tuple[float, np.ndarray, np.ndarray]],
+    c_bg_line: np.ndarray,
+    min_start: float,
+    require_cycle: bool,
+) -> Tuple[Optional[float], Optional[float], float]:
+    return _detect_line_highlight_with_confidence(
+        ln,
+        line_frames,
+        c_bg_line,
+        min_start_time=min_start,
+        require_full_cycle=require_cycle,
+    )
 
 
 def _assign_surrogate_cluster_timings(
@@ -808,42 +836,20 @@ def _collect_unresolved_line_onset_hints(
     group_frames: List[Tuple[float, np.ndarray, np.ndarray]],
     group_times: List[float],
 ) -> Dict[int, float]:
-    hints: Dict[int, float] = {}
-    for ln in cluster:
-        if ln.visibility_start is None or ln.visibility_end is None:
-            continue
-        v_start = max(0.0, float(ln.visibility_start) - 0.5)
-        v_end = float(ln.visibility_end) + 0.5
-        line_frames = _slice_frames_for_window(
-            group_frames,
-            group_times,
-            v_start=v_start,
-            v_end=v_end,
-        )
-        if len(line_frames) < 8:
-            continue
-        c_bg_line = np.mean(
-            [
-                np.mean(f[1], axis=(0, 1))
-                for f in line_frames[: min(10, len(line_frames))]
-            ],
-            axis=0,
-        )
-        s, _e, conf = _detect_line_highlight_with_confidence(
-            ln,
-            line_frames,
-            c_bg_line,
-            min_start_time=float(ln.visibility_start),
-            require_full_cycle=False,
-        )
-        if s is not None and conf >= 0.45:
-            hints[id(ln)] = float(s)
-            continue
-        vals = _collect_line_color_values(ln, line_frames, c_bg_line)
-        onset, onset_conf = _estimate_onset_from_visibility_progress(vals)
-        if onset is not None and onset_conf >= 0.45:
-            hints[id(ln)] = float(onset)
-    return hints
+    return _collect_unresolved_line_onset_hints_impl(
+        cluster,
+        group_frames,
+        group_times,
+        slice_frames_for_window=lambda frames, times, start, end: _slice_frames_for_window(
+            frames,
+            times,
+            v_start=start,
+            v_end=end,
+        ),
+        detect_line_highlight_with_confidence=_detect_line_highlight_for_overlap_hint,
+        collect_line_color_values=_collect_line_color_values,
+        estimate_onset_from_visibility_progress=_estimate_onset_from_visibility_progress,
+    )
 
 
 def _estimate_line_onset_hint_in_visibility_window(
@@ -851,36 +857,20 @@ def _estimate_line_onset_hint_in_visibility_window(
     group_frames: List[Tuple[float, np.ndarray, np.ndarray]],
     group_times: List[float],
 ) -> Optional[float]:
-    if ln.visibility_start is None or ln.visibility_end is None:
-        return None
-    v_start = max(0.0, float(ln.visibility_start) - 0.5)
-    v_end = float(ln.visibility_end) + 0.5
-    line_frames = _slice_frames_for_window(
+    return _estimate_line_onset_hint_in_visibility_window_impl(
+        ln,
         group_frames,
         group_times,
-        v_start=v_start,
-        v_end=v_end,
+        slice_frames_for_window=lambda frames, times, start, end: _slice_frames_for_window(
+            frames,
+            times,
+            v_start=start,
+            v_end=end,
+        ),
+        detect_line_highlight_with_confidence=_detect_line_highlight_for_overlap_hint,
+        collect_line_color_values=_collect_line_color_values,
+        estimate_onset_from_visibility_progress=_estimate_onset_from_visibility_progress,
     )
-    if len(line_frames) < 8:
-        return None
-    c_bg_line = np.mean(
-        [np.mean(f[1], axis=(0, 1)) for f in line_frames[: min(10, len(line_frames))]],
-        axis=0,
-    )
-    s, _e, conf = _detect_line_highlight_with_confidence(
-        ln,
-        line_frames,
-        c_bg_line,
-        min_start_time=float(ln.visibility_start),
-        require_full_cycle=False,
-    )
-    if s is not None and conf >= 0.45:
-        return float(s)
-    vals = _collect_line_color_values(ln, line_frames, c_bg_line)
-    onset, onset_conf = _estimate_onset_from_visibility_progress(vals)
-    if onset is not None and onset_conf >= 0.45:
-        return float(onset)
-    return None
 
 
 def _maybe_adjust_detected_line_start_with_visibility_hint(
@@ -892,24 +882,19 @@ def _maybe_adjust_detected_line_start_with_visibility_hint(
     group_frames: List[Tuple[float, np.ndarray, np.ndarray]],
     group_times: List[float],
 ) -> Tuple[Optional[float], Optional[float], float]:
-    if (
-        detected_start is None
-        or ln.visibility_start is None
-        or ln.visibility_end is None
-        or (float(ln.visibility_end) - float(ln.visibility_start)) < 8.0
-    ):
-        return detected_start, detected_end, detected_confidence
-
-    hint = _estimate_line_onset_hint_in_visibility_window(ln, group_frames, group_times)
-    if hint is None or hint < detected_start + 2.5:
-        return detected_start, detected_end, detected_confidence
-
-    adjusted_start = hint
-    adjusted_end = detected_end
-    if adjusted_end is not None and adjusted_end < adjusted_start + 0.2:
-        adjusted_end = None
-    adjusted_conf = max(detected_confidence, 0.45)
-    return adjusted_start, adjusted_end, adjusted_conf
+    return _maybe_adjust_detected_line_start_with_visibility_hint_impl(
+        ln,
+        detected_start=detected_start,
+        detected_end=detected_end,
+        detected_confidence=detected_confidence,
+        group_frames=group_frames,
+        group_times=group_times,
+        estimate_line_onset_hint_in_visibility_window=lambda ln, frames, times: _estimate_line_onset_hint_in_visibility_window(
+            ln,
+            frames,
+            times,
+        ),
+    )
 
 
 def _assign_surrogate_timings_for_unresolved_overlap_blocks(
