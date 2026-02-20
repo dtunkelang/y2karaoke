@@ -23,6 +23,9 @@ from .whisper_integration_stages import (
     _enforce_mapped_line_stage_invariants as _enforce_mapped_line_stage_invariants_impl,
     _run_mapped_line_postpasses as _run_mapped_line_postpasses_impl,
 )
+from .whisper_integration_transcribe import (
+    transcribe_vocals_impl as _transcribe_vocals_impl,
+)
 
 _MIN_SEGMENT_OVERLAP_COVERAGE = 0.45
 
@@ -145,93 +148,19 @@ def transcribe_vocals_impl(
     str,
     str,
 ]:
-    """Transcribe vocals with disk cache and return timing models."""
-    cache_path = get_whisper_cache_path_fn(
-        vocals_path, model_size, language, aggressive, temperature
+    return _transcribe_vocals_impl(
+        vocals_path,
+        language,
+        model_size,
+        aggressive,
+        temperature,
+        get_whisper_cache_path_fn=get_whisper_cache_path_fn,
+        find_best_cached_whisper_model_fn=find_best_cached_whisper_model_fn,
+        load_whisper_cache_fn=load_whisper_cache_fn,
+        save_whisper_cache_fn=save_whisper_cache_fn,
+        load_whisper_model_class_fn=load_whisper_model_class_fn,
+        logger=logger,
     )
-    cached_model = model_size
-    if cache_path:
-        best_cached = find_best_cached_whisper_model_fn(
-            vocals_path, language, aggressive, model_size, temperature
-        )
-        if best_cached:
-            cache_path, cached_model = best_cached
-        cached = load_whisper_cache_fn(cache_path)
-        if cached:
-            segments, all_words, detected_lang = cached
-            return segments, all_words, detected_lang, cached_model
-
-    try:
-        whisper_model_class = load_whisper_model_class_fn()
-    except ImportError:
-        logger.warning("faster-whisper not installed, cannot transcribe")
-        return [], [], "", model_size
-
-    try:
-        logger.info(f"Loading Whisper model ({model_size})...")
-        model = whisper_model_class(model_size, device="cpu", compute_type="int8")
-
-        logger.info(f"Transcribing vocals{f' in {language}' if language else ''}...")
-        transcribe_kwargs: Dict[str, object] = {
-            "language": language,
-            "word_timestamps": True,
-            "vad_filter": True,
-            "temperature": temperature,
-        }
-        if aggressive:
-            transcribe_kwargs.update(
-                {
-                    "vad_filter": False,
-                    "no_speech_threshold": 1.0,
-                    "log_prob_threshold": -2.0,
-                }
-            )
-        segments, info = model.transcribe(vocals_path, **transcribe_kwargs)
-
-        result = []
-        all_words = []
-        for seg in segments:
-            seg_words = []
-            if seg.words:
-                for w in seg.words:
-                    tw = timing_models.TranscriptionWord(
-                        start=w.start,
-                        end=w.end,
-                        text=w.word.strip(),
-                        probability=w.probability,
-                    )
-                    seg_words.append(tw)
-                    all_words.append(tw)
-            result.append(
-                timing_models.TranscriptionSegment(
-                    start=seg.start,
-                    end=seg.end,
-                    text=seg.text.strip(),
-                    words=seg_words,
-                )
-            )
-
-        detected_lang = info.language
-        logger.info(
-            f"Transcribed {len(result)} segments, {len(all_words)} words (language: {detected_lang})"
-        )
-
-        if cache_path:
-            save_whisper_cache_fn(
-                cache_path,
-                result,
-                all_words,
-                detected_lang,
-                model_size,
-                aggressive,
-                temperature,
-            )
-
-        return result, all_words, detected_lang, model_size
-
-    except Exception as e:
-        logger.error(f"Transcription failed: {e}")
-        return [], [], "", model_size
 
 
 def align_lrc_text_to_whisper_timings_impl(  # noqa: C901
