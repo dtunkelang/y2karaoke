@@ -1,6 +1,7 @@
 """Background processing for dynamic video backgrounds."""
 
 from contextlib import contextmanager
+from pathlib import Path
 import subprocess
 import sys
 from dataclasses import dataclass
@@ -151,52 +152,11 @@ class BackgroundProcessor:
         """Detect scene changes using subprocess."""
 
         try:
-            # Simple scene detection code - video_path passed safely via sys.argv
-            code = """
-import sys
-import cv2
-import numpy as np
-
-def detect_scenes(video_path, threshold=30.0):
-    cap = cv2.VideoCapture(video_path)
-    if not cap.isOpened():
-        return []
-
-    fps = cap.get(cv2.CAP_PROP_FPS)
-    frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-
-    scenes = [0.0]  # Always include start
-    prev_frame = None
-
-    # Sample every 30 frames for speed
-    for i in range(0, frame_count, 30):
-        cap.set(cv2.CAP_PROP_POS_FRAMES, i)
-        ret, frame = cap.read()
-
-        if not ret:
-            break
-
-        if prev_frame is not None:
-            # Calculate frame difference
-            diff = cv2.absdiff(frame, prev_frame)
-            mean_diff = np.mean(diff)
-
-            if mean_diff > threshold:
-                timestamp = i / fps
-                scenes.append(timestamp)
-
-        prev_frame = frame
-
-    cap.release()
-    return scenes
-
-if len(sys.argv) > 1:
-    scenes = detect_scenes(sys.argv[1])
-    logger.debug(",".join(map(str, scenes)))
-"""
-
+            script_path = (
+                Path(__file__).parents[3] / "utils" / "scene_detector_script.py"
+            )
             result = subprocess.run(
-                [sys.executable, "-c", code, video_path],
+                [sys.executable, str(script_path), video_path],
                 capture_output=True,
                 text=True,
                 timeout=30,
