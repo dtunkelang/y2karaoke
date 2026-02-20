@@ -90,6 +90,7 @@ This document outlines the critical areas of the `y2karaoke` codebase and the im
 *   **In progress:** Continued visual refinement decomposition by moving line-level highlight-cycle/onset combination into `visual/refinement_line_highlight.py` with compatibility wrapper in `visual/refinement.py`.
 *   **In progress:** Continued visual refinement decomposition by moving per-line frame refinement orchestration into `visual/refinement_line_refine.py` with compatibility wrapper in `visual/refinement.py`.
 *   **In progress:** Continued visual reconstruction decomposition by moving top-level OCR-to-line reconstruction orchestration into `visual/reconstruction_pipeline.py` with compatibility wrapper in `visual/reconstruction.py`.
+*   **In progress:** Continued visual refinement decomposition by moving high-FPS orchestration loop into `visual/refinement_high_fps_pipeline.py` with compatibility wrapper in `visual/refinement.py`.
 
 **Action Plan:**
 *   **Consolidate:** Keep singer-color policy in a dedicated module and avoid duplicating it in frame drawing code.

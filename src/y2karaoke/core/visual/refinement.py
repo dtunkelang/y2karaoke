@@ -117,6 +117,9 @@ from .refinement_line_highlight import (
 from .refinement_line_refine import (
     refine_line_with_frames as _refine_line_with_frames_impl,
 )
+from .refinement_high_fps_pipeline import (
+    run_high_fps_refinement_pipeline as _run_high_fps_refinement_pipeline_impl,
+)
 
 logger = logging.getLogger(__name__)
 _MAX_MERGED_WINDOW_SEC = 20.0
@@ -532,55 +535,35 @@ def refine_word_timings_at_high_fps(
         raise VisualRefinementError(f"Could not open video: {video_path}")
 
     logger.info("Refining timings with Departure-Onset detection...")
-    jobs = _build_line_refinement_jobs(target_lines)
-    groups = _merge_line_refinement_jobs(jobs, max_group_duration_sec=90.0)
-
-    for g_start, g_end, g_jobs in groups:
-        group_frames = _read_window_frames(
-            cap,
-            v_start=g_start,
-            v_end=g_end,
-            roi_rect=roi_rect,
-        )
-        if not group_frames:
-            continue
-        group_times = [frame[0] for frame in group_frames]
-
-        for ln, v_start, v_end in g_jobs:
-            line_frames = _slice_frames_for_window(
-                group_frames,
-                group_times,
-                v_start=v_start,
-                v_end=v_end,
-            )
-            if len(line_frames) < 20:
-                continue
-            _refine_line_with_frames(ln, line_frames)
-
-        _apply_persistent_block_highlight_order(g_jobs, group_frames, group_times)
-        _assign_surrogate_timings_for_unresolved_overlap_blocks(
-            g_jobs,
-            group_frames=group_frames,
-            group_times=group_times,
-        )
-        _retime_late_first_lines_in_shared_visibility_blocks(g_jobs)
-        _retime_compressed_shared_visibility_blocks(g_jobs)
-        _promote_unresolved_first_repeated_lines(g_jobs)
-        _compress_overlong_sparse_line_timings(g_jobs)
-
-    _retime_large_gaps_with_early_visibility(jobs)
-    _retime_followups_in_short_lead_shared_visibility_runs(jobs)
-    _rebalance_two_followups_after_short_lead(jobs)
-    _rebalance_early_lead_shared_visibility_runs(jobs)
-    _shrink_overlong_leads_in_dense_shared_visibility_runs(jobs)
-    _retime_dense_runs_after_overlong_lead(jobs)
-    _pull_dense_short_runs_toward_previous_anchor(jobs)
-    _retime_repeated_blocks_with_long_tail_gap(jobs)
-    _pull_late_first_lines_in_alternating_repeated_blocks(jobs)
-    _clamp_line_ends_to_visibility_windows(jobs)
-    _pull_lines_earlier_after_visibility_transitions(jobs)
-    _retime_short_interstitial_lines_between_anchors(jobs)
-    _rebalance_middle_lines_in_four_line_shared_visibility_runs(jobs)
+    _run_high_fps_refinement_pipeline_impl(
+        cap=cap,
+        target_lines=target_lines,
+        roi_rect=roi_rect,
+        build_line_refinement_jobs=_build_line_refinement_jobs,
+        merge_line_refinement_jobs=_merge_line_refinement_jobs,
+        read_window_frames=_read_window_frames,
+        slice_frames_for_window=_slice_frames_for_window,
+        refine_line_with_frames=_refine_line_with_frames,
+        apply_persistent_block_highlight_order=_apply_persistent_block_highlight_order,
+        assign_surrogate_timings_for_unresolved_overlap_blocks=_assign_surrogate_timings_for_unresolved_overlap_blocks,
+        retime_late_first_lines_in_shared_visibility_blocks=_retime_late_first_lines_in_shared_visibility_blocks,
+        retime_compressed_shared_visibility_blocks=_retime_compressed_shared_visibility_blocks,
+        promote_unresolved_first_repeated_lines=_promote_unresolved_first_repeated_lines,
+        compress_overlong_sparse_line_timings=_compress_overlong_sparse_line_timings,
+        retime_large_gaps_with_early_visibility=_retime_large_gaps_with_early_visibility,
+        retime_followups_in_short_lead_shared_visibility_runs=_retime_followups_in_short_lead_shared_visibility_runs,
+        rebalance_two_followups_after_short_lead=_rebalance_two_followups_after_short_lead,
+        rebalance_early_lead_shared_visibility_runs=_rebalance_early_lead_shared_visibility_runs,
+        shrink_overlong_leads_in_dense_shared_visibility_runs=_shrink_overlong_leads_in_dense_shared_visibility_runs,
+        retime_dense_runs_after_overlong_lead=_retime_dense_runs_after_overlong_lead,
+        pull_dense_short_runs_toward_previous_anchor=_pull_dense_short_runs_toward_previous_anchor,
+        retime_repeated_blocks_with_long_tail_gap=_retime_repeated_blocks_with_long_tail_gap,
+        pull_late_first_lines_in_alternating_repeated_blocks=_pull_late_first_lines_in_alternating_repeated_blocks,
+        clamp_line_ends_to_visibility_windows=_clamp_line_ends_to_visibility_windows,
+        pull_lines_earlier_after_visibility_transitions=_pull_lines_earlier_after_visibility_transitions,
+        retime_short_interstitial_lines_between_anchors=_retime_short_interstitial_lines_between_anchors,
+        rebalance_middle_lines_in_four_line_shared_visibility_runs=_rebalance_middle_lines_in_four_line_shared_visibility_runs,
+    )
     cap.release()
 
 
