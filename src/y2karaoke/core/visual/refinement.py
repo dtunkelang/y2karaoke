@@ -88,6 +88,12 @@ from .refinement_detection import (
 from .refinement_detection import (
     detect_sustained_onset as _detect_sustained_onset_impl,
 )
+from .refinement_jobs import (
+    build_line_refinement_jobs as _build_line_refinement_jobs_impl,
+)
+from .refinement_jobs import (
+    merge_line_refinement_jobs as _merge_line_refinement_jobs_impl,
+)
 
 logger = logging.getLogger(__name__)
 _MAX_MERGED_WINDOW_SEC = 20.0
@@ -138,23 +144,11 @@ def _build_line_refinement_jobs(
     lead_in_sec: float = 1.0,
     tail_sec: float = 1.0,
 ) -> List[Tuple[TargetLine, float, float]]:
-    jobs: List[Tuple[TargetLine, float, float]] = []
-    lead = max(0.0, float(lead_in_sec))
-    tail = max(0.0, float(tail_sec))
-    for ln in target_lines:
-        if not ln.word_rois:
-            continue
-        line_start = ln.start
-        line_end = ln.end if ln.end is not None else ln.start + 5.0
-        # Ensure refinement window is never shorter than observed visibility span.
-        if ln.visibility_start is not None:
-            line_start = min(line_start, float(ln.visibility_start))
-        if ln.visibility_end is not None:
-            line_end = max(line_end, float(ln.visibility_end))
-        v_start, v_end = max(0.0, line_start - lead), line_end + tail
-        jobs.append((ln, v_start, v_end))
-    jobs.sort(key=lambda item: item[1])
-    return jobs
+    return _build_line_refinement_jobs_impl(
+        target_lines,
+        lead_in_sec=lead_in_sec,
+        tail_sec=tail_sec,
+    )
 
 
 def _detect_sustained_onset(
@@ -185,22 +179,10 @@ def _merge_line_refinement_jobs(
     *,
     max_group_duration_sec: float = _MAX_MERGED_WINDOW_SEC,
 ) -> List[Tuple[float, float, List[Tuple[TargetLine, float, float]]]]:
-    groups: List[Tuple[float, float, List[Tuple[TargetLine, float, float]]]] = []
-    for ln, v_start, v_end in jobs:
-        if not groups:
-            groups.append((v_start, v_end, [(ln, v_start, v_end)]))
-            continue
-
-        g_start, g_end, g_jobs = groups[-1]
-        merged_end = max(g_end, v_end)
-        merged_duration = merged_end - g_start
-        if v_start <= g_end and merged_duration <= max_group_duration_sec:
-            g_jobs.append((ln, v_start, v_end))
-            groups[-1] = (g_start, merged_end, g_jobs)
-            continue
-
-        groups.append((v_start, v_end, [(ln, v_start, v_end)]))
-    return groups
+    return _merge_line_refinement_jobs_impl(
+        jobs,
+        max_group_duration_sec=max_group_duration_sec,
+    )
 
 
 def _read_window_frames(
