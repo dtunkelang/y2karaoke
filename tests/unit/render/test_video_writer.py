@@ -156,7 +156,7 @@ class TestRenderKaraokeVideo:
             return mock_video
 
         mock_video_clip.side_effect = fake_video_clip
-        
+
         mock_generator_instance = Mock()
         mock_generator_instance.generate_frame.return_value = "frame"
         mock_frame_generator.return_value = mock_generator_instance
@@ -179,7 +179,7 @@ class TestRenderKaraokeVideo:
         # We need to verify that FrameGenerator was initialized correctly
         # and that generate_frame was called via the closure
         mock_frame_generator.assert_called_once()
-        
+
         frame = captured["make_frame"](0.5)
         assert frame == "frame"
         mock_generator_instance.generate_frame.assert_called_with(0.5)

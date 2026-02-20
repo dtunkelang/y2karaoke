@@ -1,7 +1,7 @@
 """High-level karaoke video writing using MoviePy."""
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Optional, List, Dict, Tuple
+from typing import TYPE_CHECKING, Optional, List
 from moviepy import AudioFileClip, VideoClip
 
 from ....config import VIDEO_WIDTH, VIDEO_HEIGHT, FPS, FONT_SIZE
