@@ -7,6 +7,7 @@
     "word_level_score": 0.989247311827957,
     "avg_ocr_confidence": 0.8891345546430828,
     "has_word_level_highlighting": true,
+    "is_all_caps": false,
     "detectability_score": 0.9223941882501578,
     "sampled_frames": 192,
     "duration_sec": 206.04,
@@ -16,71 +17,6 @@
   "lines": [
     {
       "line_index": 1,
-      "text": "J Balvin Willy William",
-      "start": 8.5,
-      "end": 9.9,
-      "confidence": 0.625,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "J",
-          "start": 8.5,
-          "end": 8.6,
-          "confidence": 0.25
-        },
-        {
-          "word_index": 2,
-          "text": "Balvin",
-          "start": 9.5,
-          "end": 9.6,
-          "confidence": 1.0
-        },
-        {
-          "word_index": 3,
-          "text": "Willy",
-          "start": 9.65,
-          "end": 9.75,
-          "confidence": 0.25
-        },
-        {
-          "word_index": 4,
-          "text": "William",
-          "start": 9.8,
-          "end": 9.9,
-          "confidence": 1.0
-        }
-      ],
-      "y": 135,
-      "word_rois": [
-        [
-          91,
-          135,
-          36,
-          36
-        ],
-        [
-          132,
-          135,
-          90,
-          36
-        ],
-        [
-          226,
-          135,
-          67,
-          36
-        ],
-        [
-          298,
-          135,
-          117,
-          36
-        ]
-      ],
-      "char_rois": []
-    },
-    {
-      "line_index": 2,
       "text": "Si el ritmo te lleva",
       "start": 15.1,
       "end": 16.1,
@@ -158,7 +94,7 @@
       "char_rois": []
     },
     {
-      "line_index": 3,
+      "line_index": 2,
       "text": "a mover la cabeza",
       "start": 16.1,
       "end": 19.85,
@@ -223,7 +159,7 @@
       "char_rois": []
     },
     {
-      "line_index": 4,
+      "line_index": 3,
       "text": "Ya empezamos com es",
       "start": 20.7,
       "end": 23.5,
@@ -288,7 +224,7 @@
       "char_rois": []
     },
     {
-      "line_index": 5,
+      "line_index": 4,
       "text": "Mi mica no discrimina",
       "start": 23.7,
       "end": 24.7,
@@ -353,7 +289,7 @@
       "char_rois": []
     },
     {
-      "line_index": 6,
+      "line_index": 5,
       "text": "a nadie as que",
       "start": 24.7,
       "end": 25.7,
@@ -418,7 +354,7 @@
       "char_rois": []
     },
     {
-      "line_index": 7,
+      "line_index": 6,
       "text": "vamos a romper",
       "start": 25.7,
       "end": 27.05,
@@ -470,7 +406,7 @@
       "char_rois": []
     },
     {
-      "line_index": 8,
+      "line_index": 7,
       "text": "Toda mi gente se mueve",
       "start": 27.5,
       "end": 29.55,
@@ -548,7 +484,7 @@
       "char_rois": []
     },
     {
-      "line_index": 9,
+      "line_index": 8,
       "text": "Mira el ritmo com los tiene",
       "start": 29.75,
       "end": 30.95,
@@ -639,7 +575,7 @@
       "char_rois": []
     },
     {
-      "line_index": 10,
+      "line_index": 9,
       "text": "Hago mica que entretiene",
       "start": 31.3,
       "end": 32.0,
@@ -704,7 +640,7 @@
       "char_rois": []
     },
     {
-      "line_index": 11,
+      "line_index": 10,
       "text": "El mundo nos quiere nos quiere",
       "start": 32.85,
       "end": 35.5,
@@ -795,7 +731,7 @@
       "char_rois": []
     },
     {
-      "line_index": 12,
+      "line_index": 11,
       "text": "Y me quiere a m",
       "start": 34.4,
       "end": 36.9,
@@ -873,7 +809,7 @@
       "char_rois": []
     },
     {
-      "line_index": 13,
+      "line_index": 12,
       "text": "Toda mi gente se mueve",
       "start": 37.15,
       "end": 38.15,
@@ -951,7 +887,7 @@
       "char_rois": []
     },
     {
-      "line_index": 14,
+      "line_index": 13,
       "text": "Mira el ritmo com los tiene",
       "start": 38.15,
       "end": 41.0,
@@ -1042,7 +978,7 @@
       "char_rois": []
     },
     {
-      "line_index": 15,
+      "line_index": 14,
       "text": "Hago mica que entretiene",
       "start": 41.2,
       "end": 42.9,
@@ -1107,7 +1043,7 @@
       "char_rois": []
     },
     {
-      "line_index": 16,
+      "line_index": 15,
       "text": "Mi mica los tiene",
       "start": 43.1,
       "end": 43.7,
@@ -1172,7 +1108,7 @@
       "char_rois": []
     },
     {
-      "line_index": 17,
+      "line_index": 16,
       "text": "fuerte bailando",
       "start": 44.3,
       "end": 49.75,
@@ -1211,7 +1147,7 @@
       "char_rois": []
     },
     {
-      "line_index": 18,
+      "line_index": 17,
       "text": "Y se baila as",
       "start": 54.5,
       "end": 61.45,
@@ -1276,7 +1212,7 @@
       "char_rois": []
     },
     {
-      "line_index": 19,
+      "line_index": 18,
       "text": "Tamo' rompiendo la discoteca",
       "start": 62.7,
       "end": 63.7,
@@ -1341,7 +1277,7 @@
       "char_rois": []
     },
     {
-      "line_index": 20,
+      "line_index": 19,
       "text": "La fiesta no para",
       "start": 63.7,
       "end": 67.1,
@@ -1406,7 +1342,7 @@
       "char_rois": []
     },
     {
-      "line_index": 21,
+      "line_index": 20,
       "text": "apenas comienza",
       "start": 67.45,
       "end": 69.1,
@@ -1445,7 +1381,7 @@
       "char_rois": []
     },
     {
-      "line_index": 22,
+      "line_index": 21,
       "text": "C'est comme i",
       "start": 69.45,
       "end": 70.45,
@@ -1497,7 +1433,7 @@
       "char_rois": []
     },
     {
-      "line_index": 23,
+      "line_index": 22,
       "text": "C'est comme a",
       "start": 70.45,
       "end": 70.85,
@@ -1549,7 +1485,7 @@
       "char_rois": []
     },
     {
-      "line_index": 24,
+      "line_index": 23,
       "text": "Ma cherie la la la la la",
       "start": 72.15,
       "end": 74.1,
@@ -1653,7 +1589,7 @@
       "char_rois": []
     },
     {
-      "line_index": 25,
+      "line_index": 24,
       "text": "Francia",
       "start": 74.3,
       "end": 75.1,
@@ -1679,7 +1615,7 @@
       "char_rois": []
     },
     {
-      "line_index": 26,
+      "line_index": 25,
       "text": "Colombia",
       "start": 75.1,
       "end": 75.3,
@@ -1705,7 +1641,7 @@
       "char_rois": []
     },
     {
-      "line_index": 27,
+      "line_index": 26,
       "text": "Me gusta",
       "start": 81.3,
       "end": 81.75,
@@ -1744,7 +1680,7 @@
       "char_rois": []
     },
     {
-      "line_index": 28,
+      "line_index": 27,
       "text": "Freeze",
       "start": 81.75,
       "end": 82.55,
@@ -1770,7 +1706,7 @@
       "char_rois": []
     },
     {
-      "line_index": 29,
+      "line_index": 28,
       "text": "Willy William",
       "start": 82.55,
       "end": 82.8,
@@ -1809,7 +1745,7 @@
       "char_rois": []
     },
     {
-      "line_index": 30,
+      "line_index": 29,
       "text": "Los DJ's no mienten",
       "start": 82.9,
       "end": 83.9,
@@ -1874,7 +1810,7 @@
       "char_rois": []
     },
     {
-      "line_index": 31,
+      "line_index": 30,
       "text": "le gusta a mi gente",
       "start": 84.4,
       "end": 85.1,
@@ -1952,7 +1888,7 @@
       "char_rois": []
     },
     {
-      "line_index": 32,
+      "line_index": 31,
       "text": "Y eso se fue mundial",
       "start": 85.85,
       "end": 86.55,
@@ -2030,7 +1966,7 @@
       "char_rois": []
     },
     {
-      "line_index": 33,
+      "line_index": 32,
       "text": "No le bajamos",
       "start": 87.35,
       "end": 88.35,
@@ -2082,7 +2018,7 @@
       "char_rois": []
     },
     {
-      "line_index": 34,
+      "line_index": 33,
       "text": "ms nunca paramos",
       "start": 88.35,
       "end": 88.75,
@@ -2134,7 +2070,7 @@
       "char_rois": []
     },
     {
-      "line_index": 35,
+      "line_index": 34,
       "text": "Es otro palo y Blam",
       "start": 88.75,
       "end": 89.45,
@@ -2212,7 +2148,7 @@
       "char_rois": []
     },
     {
-      "line_index": 36,
+      "line_index": 35,
       "text": "Y dnde est mi gente",
       "start": 90.15,
       "end": 90.95,
@@ -2290,7 +2226,7 @@
       "char_rois": []
     },
     {
-      "line_index": 37,
+      "line_index": 36,
       "text": "ms nunca paramos",
       "start": 91.6,
       "end": 94.1,
@@ -2342,7 +2278,7 @@
       "char_rois": []
     },
     {
-      "line_index": 38,
+      "line_index": 37,
       "text": "Mais fais bouger la tte",
       "start": 93.0,
       "end": 93.75,
@@ -2420,7 +2356,7 @@
       "char_rois": []
     },
     {
-      "line_index": 39,
+      "line_index": 38,
       "text": "Y dnde est mi gente",
       "start": 94.8,
       "end": 95.55,
@@ -2498,7 +2434,7 @@
       "char_rois": []
     },
     {
-      "line_index": 40,
+      "line_index": 39,
       "text": "Say yeah yeah yeah",
       "start": 103.75,
       "end": 114.85,
@@ -2563,7 +2499,7 @@
       "char_rois": []
     },
     {
-      "line_index": 41,
+      "line_index": 40,
       "text": "Ay di que s",
       "start": 109.15,
       "end": 116.85,
@@ -2628,7 +2564,7 @@
       "char_rois": []
     },
     {
-      "line_index": 42,
+      "line_index": 41,
       "text": "Esquina a esquina",
       "start": 117.75,
       "end": 118.75,
@@ -2680,7 +2616,7 @@
       "char_rois": []
     },
     {
-      "line_index": 43,
+      "line_index": 42,
       "text": "de ah no' vamo'",
       "start": 119.15,
       "end": 120.15,
@@ -2745,7 +2681,7 @@
       "char_rois": []
     },
     {
-      "line_index": 44,
+      "line_index": 43,
       "text": "El mundo es grande",
       "start": 120.6,
       "end": 122.55,
@@ -2810,7 +2746,7 @@
       "char_rois": []
     },
     {
-      "line_index": 45,
+      "line_index": 44,
       "text": "pero lo tengo en mi' manos",
       "start": 122.0,
       "end": 124.3,
@@ -2901,7 +2837,7 @@
       "char_rois": []
     },
     {
-      "line_index": 46,
+      "line_index": 45,
       "text": "Estoy muy duro s",
       "start": 124.5,
       "end": 125.5,
@@ -2966,7 +2902,7 @@
       "char_rois": []
     },
     {
-      "line_index": 47,
+      "line_index": 46,
       "text": "okay ah vamos",
       "start": 125.5,
       "end": 125.9,
@@ -3018,7 +2954,7 @@
       "char_rois": []
     },
     {
-      "line_index": 48,
+      "line_index": 47,
       "text": "Y con el tiempo nos",
       "start": 125.9,
       "end": 127.15,
@@ -3096,7 +3032,7 @@
       "char_rois": []
     },
     {
-      "line_index": 49,
+      "line_index": 48,
       "text": "seguimos elevando",
       "start": 127.35,
       "end": 128.75,
@@ -3135,7 +3071,7 @@
       "char_rois": []
     },
     {
-      "line_index": 50,
+      "line_index": 49,
       "text": "Que seguimos rompiendo au",
       "start": 128.95,
       "end": 131.1,
@@ -3200,7 +3136,7 @@
       "char_rois": []
     },
     {
-      "line_index": 51,
+      "line_index": 50,
       "text": "Esta fiesta no tiene fin",
       "start": 131.1,
       "end": 131.8,
@@ -3278,7 +3214,7 @@
       "char_rois": []
     },
     {
-      "line_index": 52,
+      "line_index": 51,
       "text": "Botellas para arriba s",
       "start": 131.8,
       "end": 132.35,
@@ -3343,7 +3279,7 @@
       "char_rois": []
     },
     {
-      "line_index": 53,
+      "line_index": 52,
       "text": "Los tengo bailando",
       "start": 135.35,
       "end": 136.35,
@@ -3395,7 +3331,7 @@
       "char_rois": []
     },
     {
-      "line_index": 54,
+      "line_index": 53,
       "text": "rompiendo y yo sigo au",
       "start": 136.9,
       "end": 137.9,
@@ -3473,7 +3409,7 @@
       "char_rois": []
     },
     {
-      "line_index": 55,
+      "line_index": 54,
       "text": "Que seguimos rompiendo au",
       "start": 138.5,
       "end": 141.0,
@@ -3538,7 +3474,7 @@
       "char_rois": []
     },
     {
-      "line_index": 56,
+      "line_index": 55,
       "text": "Esta fiesta no tiene fin",
       "start": 140.05,
       "end": 142.5,
@@ -3616,7 +3552,7 @@
       "char_rois": []
     },
     {
-      "line_index": 57,
+      "line_index": 56,
       "text": "Botellas para arriba s",
       "start": 142.7,
       "end": 143.7,
@@ -3681,7 +3617,7 @@
       "char_rois": []
     },
     {
-      "line_index": 58,
+      "line_index": 57,
       "text": "Y dnde est mi gente",
       "start": 143.7,
       "end": 147.3,
@@ -3759,7 +3695,7 @@
       "char_rois": []
     },
     {
-      "line_index": 59,
+      "line_index": 58,
       "text": "Mais fais bouger la tte",
       "start": 147.55,
       "end": 149.9,
@@ -3837,7 +3773,7 @@
       "char_rois": []
     },
     {
-      "line_index": 60,
+      "line_index": 59,
       "text": "Y dnde est mi gente",
       "start": 150.1,
       "end": 151.1,
@@ -3915,7 +3851,7 @@
       "char_rois": []
     },
     {
-      "line_index": 61,
+      "line_index": 60,
       "text": "Ay di que s",
       "start": 151.1,
       "end": 152.15,
@@ -3980,7 +3916,7 @@
       "char_rois": []
     },
     {
-      "line_index": 62,
+      "line_index": 61,
       "text": "Say yeah yeah yeah",
       "start": 153.2,
       "end": 155.6,

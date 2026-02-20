@@ -122,6 +122,8 @@ def calculate_visual_suitability(raw_frames: list[dict[str, Any]]) -> dict[str, 
     total_active_frames = 0
     total_ocr_confidence = 0.0
     total_words_with_confidence = 0
+    total_upper = 0
+    total_lower = 0
 
     for frame in raw_frames:
         words = frame.get("words", [])
@@ -138,6 +140,10 @@ def calculate_visual_suitability(raw_frames: list[dict[str, Any]]) -> dict[str, 
             if "confidence" in w:
                 total_ocr_confidence += w["confidence"]
                 total_words_with_confidence += 1
+
+            text = w.get("text", "")
+            total_upper += sum(1 for ch in text if ch.isupper())
+            total_lower += sum(1 for ch in text if ch.islower())
 
         has_any_highlight = False
         has_word_level_mix = False
@@ -168,10 +174,15 @@ def calculate_visual_suitability(raw_frames: list[dict[str, Any]]) -> dict[str, 
         else 0.0
     )
 
+    is_all_caps = (total_upper + total_lower) >= 50 and total_lower < 0.1 * (
+        total_upper + total_lower
+    )
+
     return {
         "word_level_score": float(word_level_score),
         "avg_ocr_confidence": float(avg_confidence),
         "has_word_level_highlighting": word_level_score > 0.15,
+        "is_all_caps": bool(is_all_caps),
         "detectability_score": float(
             avg_confidence * 0.7 + min(word_level_score * 2.0, 1.0) * 0.3
         ),

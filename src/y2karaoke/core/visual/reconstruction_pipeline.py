@@ -23,9 +23,10 @@ def reconstruct_lyrics_from_visuals(  # noqa: C901
     split_persistent_line_epochs_from_context_transitions: EntriesPass,
     suppress_short_duplicate_reentries: EntriesPass,
     collapse_short_refrain_noise: EntriesPass,
-    filter_intro_non_lyrics: EntriesPass,
+    filter_intro_non_lyrics: Callable[[list[dict[str, Any]], Optional[str]], list[dict[str, Any]]],
     suppress_bottom_fragment_families: EntriesPass,
     snap_fn: SnapFn,
+    artist: Optional[str] = None,
 ) -> list[TargetLine]:
     committed = accumulate_persistent_lines_from_frames(
         raw_frames, filter_static_overlay_words=filter_static_overlay_words
@@ -40,7 +41,7 @@ def reconstruct_lyrics_from_visuals(  # noqa: C901
     unique = split_persistent_line_epochs_from_context_transitions(unique)
     unique = suppress_short_duplicate_reentries(unique)
     unique = collapse_short_refrain_noise(unique)
-    unique = filter_intro_non_lyrics(unique)
+    unique = filter_intro_non_lyrics(unique, artist)
     unique = suppress_bottom_fragment_families(unique)
 
     return convert_persistent_lines_to_target_lines(unique, snap_fn=snap_fn)

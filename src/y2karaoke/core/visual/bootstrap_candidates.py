@@ -7,6 +7,16 @@ from typing import Any, Callable, Optional
 from urllib.parse import parse_qs, urlparse
 
 
+_PREFERRED_BRANDS = {
+    "sing king",
+    "karafun",
+    "the karaoke channel",
+    "stingray karaoke",
+    "cc karaoke",
+    "mega karaoke",
+}
+
+
 def _metadata_prefilter_score(candidate: dict[str, Any]) -> float:
     """Cheap metadata score used to limit expensive video downloads."""
     title = str(candidate.get("title") or "").lower()
@@ -23,6 +33,11 @@ def _metadata_prefilter_score(candidate: dict[str, Any]) -> float:
         score -= 0.8
     if "topic" in uploader:
         score -= 0.3
+
+    # Brand preference boost
+    if any(brand in uploader for brand in _PREFERRED_BRANDS):
+        score += 5.0
+
     if duration is not None:
         if 60 <= duration <= 900:
             score += 0.5
@@ -147,9 +162,20 @@ def rank_candidates_by_suitability(
             if log_warning_fn:
                 log_warning_fn(f"Skipping candidate {url}: {exc}")
 
+    def _final_score(c: dict[str, Any]) -> float:
+        base = float(c["score"])
+        # Penalize all-caps
+        if c["metrics"].get("is_all_caps"):
+            base -= 0.05
+        # Reward preferred brands
+        uploader = str(c.get("uploader") or "").lower()
+        if any(brand in uploader for brand in _PREFERRED_BRANDS):
+            base += 0.1
+        return base
+
     ranked.sort(
         key=lambda c: (
-            c["score"],
+            _final_score(c),
             c["metrics"].get("word_level_score", 0.0),
             c["metrics"].get("avg_ocr_confidence", 0.0),
         ),

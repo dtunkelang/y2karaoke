@@ -109,8 +109,10 @@ def _is_intro_artifact(entry: dict[str, Any]) -> bool:
     return _is_intro_artifact_impl(entry)
 
 
-def _filter_intro_non_lyrics(entries: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    return _filter_intro_non_lyrics_impl(entries)
+def _filter_intro_non_lyrics(
+    entries: list[dict[str, Any]], artist: Optional[str] = None
+) -> list[dict[str, Any]]:
+    return _filter_intro_non_lyrics_impl(entries, artist)
 
 
 def _suppress_bottom_fragment_families(
@@ -170,7 +172,7 @@ def _split_persistent_line_epochs_from_context_transitions(  # noqa: C901
 
 
 def reconstruct_lyrics_from_visuals(  # noqa: C901
-    raw_frames: list[dict[str, Any]], visual_fps: float
+    raw_frames: list[dict[str, Any]], visual_fps: float, artist: Optional[str] = None
 ) -> list[TargetLine]:
     _ = visual_fps
     return _reconstruct_lyrics_from_visuals_impl(
@@ -186,4 +188,5 @@ def reconstruct_lyrics_from_visuals(  # noqa: C901
         filter_intro_non_lyrics=_filter_intro_non_lyrics,
         suppress_bottom_fragment_families=_suppress_bottom_fragment_families,
         snap_fn=snap,
+        artist=artist,
     )

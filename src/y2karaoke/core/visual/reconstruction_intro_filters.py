@@ -7,6 +7,13 @@ from ..text_utils import normalize_text_basic
 _INTRO_META_KEYWORDS = {
     "karaoke",
     "singking",
+    "karafun",
+    "stingray",
+    "megakaraoke",
+    "cckaraoke",
+    "zoomkaraoke",
+    "sunfly",
+    "songjam",
     "version",
     "official",
     "records",
@@ -19,6 +26,14 @@ _INTRO_META_KEYWORDS = {
     "connell",
     "lyrics",
     "instrumental",
+    "produced",
+    "producer",
+    "writer",
+    "composed",
+    "arranged",
+    "distributed",
+    "copyright",
+    "reserved",
 }
 
 _LYRIC_FUNCTION_WORDS = {
@@ -48,7 +63,7 @@ _LYRIC_FUNCTION_WORDS = {
 }
 
 
-def is_intro_artifact(entry: dict[str, Any]) -> bool:
+def is_intro_artifact(entry: dict[str, Any], artist: Optional[str] = None) -> bool:
     text = str(entry.get("text", ""))
     words = [w for w in entry.get("words", []) if str(w).strip()]
     duration = float(entry.get("last", 0.0)) - float(entry.get("first", 0.0))
@@ -62,6 +77,12 @@ def is_intro_artifact(entry: dict[str, Any]) -> bool:
     text_l = cleaned.lower()
     if any(k in text_l for k in _INTRO_META_KEYWORDS):
         return True
+
+    # Filter out artist name if it appears as a short line early on
+    if artist:
+        artist_l = normalize_text_basic(artist).lower()
+        if text_l == artist_l or (len(compact_words) <= 2 and text_l in artist_l):
+            return True
 
     upper_chars = sum(1 for ch in text if ch.isalpha() and ch.isupper())
     alpha_chars = sum(1 for ch in text if ch.isalpha())
@@ -88,9 +109,9 @@ def is_intro_artifact(entry: dict[str, Any]) -> bool:
             for token in text.split()
             if any(ch.isalpha() for ch in token)
         )
-        and len(compact_words) <= 3
+        and len(compact_words) <= 6
     )
-    if all_title_case and first_t < 12.0:
+    if all_title_case and first_t < 15.0:
         words_l = [w.lower() for w in compact_words]
         if all(w not in _LYRIC_FUNCTION_WORDS for w in words_l):
             return True
@@ -101,7 +122,9 @@ def is_intro_artifact(entry: dict[str, Any]) -> bool:
     return False
 
 
-def filter_intro_non_lyrics(entries: list[dict[str, Any]]) -> list[dict[str, Any]]:
+def filter_intro_non_lyrics(
+    entries: list[dict[str, Any]], artist: Optional[str] = None
+) -> list[dict[str, Any]]:
     if len(entries) < 2:
         return entries
 
@@ -110,7 +133,7 @@ def filter_intro_non_lyrics(entries: list[dict[str, Any]]) -> list[dict[str, Any
     for idx, ent in enumerate(entries):
         words = [w for w in ent.get("words", []) if str(w).strip()]
         duration = float(ent.get("last", 0.0)) - float(ent.get("first", 0.0))
-        if len(words) >= 3 and duration >= 0.8 and not is_intro_artifact(ent):
+        if len(words) >= 3 and duration >= 0.8 and not is_intro_artifact(ent, artist):
             candidates.append(idx)
 
     if candidates:

@@ -7,6 +7,7 @@
     "word_level_score": 0.6752767527675276,
     "avg_ocr_confidence": 1.0,
     "has_word_level_highlighting": true,
+    "is_all_caps": false,
     "detectability_score": 1.0,
     "sampled_frames": 276,
     "duration_sec": 275.84223333333335,

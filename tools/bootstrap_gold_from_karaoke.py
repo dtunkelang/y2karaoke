@@ -337,7 +337,9 @@ def _bootstrap_refined_lines(
         song_dir / "cache",
         cache_version=args.raw_ocr_cache_version,
     )
-    t_lines = reconstruct_lyrics_from_visuals(raw_frames, args.visual_fps)
+    t_lines = reconstruct_lyrics_from_visuals(
+        raw_frames, args.visual_fps, artist=args.artist
+    )
     logger.info(f"Reconstructed {len(t_lines)} initial lines.")
 
     word_level_score = 0.0
