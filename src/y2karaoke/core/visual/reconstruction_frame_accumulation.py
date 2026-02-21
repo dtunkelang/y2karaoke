@@ -154,6 +154,10 @@ def accumulate_persistent_lines_from_frames(  # noqa: C901
                 if idx in matched_track_indices:
                     continue
 
+                # Don't match if the track has been gone for too long
+                if curr_time - track.last_seen > 1.0:
+                    continue
+
                 # Spatial check (Y)
                 dy = abs(track.current_y - entry["y"])
                 if dy > 25:  # Lane proximity

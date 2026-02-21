@@ -76,7 +76,7 @@ def test_collect_raw_frames_with_confidence_uses_sampled_retrieve(monkeypatch) -
     monkeypatch.setattr(_MODULE, "get_ocr_engine", lambda: FakeOCR())
     monkeypatch.setattr(_MODULE.cv2, "VideoCapture", make_cap)
     monkeypatch.setattr(
-        _MODULE, "classify_word_state", lambda *a, **k: ("selected", 0.8)
+        _MODULE, "classify_word_state", lambda *a, **k: ("selected", 0.8, 0.0)
     )
 
     raw = _MODULE.collect_raw_frames_with_confidence(

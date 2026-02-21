@@ -34,21 +34,33 @@ def deduplicate_persistent_lines(
 
             # 2. Ghost busting: lines separated by a gap (e.g. flickering static footer)
             # Require STRICT similarity to avoid merging different lines that share a lane.
-            elif gap_t < 20.0:
+            # Reduced gap threshold from 20.0 to 5.0 to avoid merging legitimate repetitions.
+            elif gap_t < 5.0:
                 if sim > 0.85 and dist_y < 30:
                     is_dup = True
 
             if is_dup:
-                # Keep the 'better' version
+                ent_dur = ent["last"] - ent["first"]
+                u_dur = u["last"] - u["first"]
                 ent_alpha = sum(1 for c in ent["text"] if c.isalpha())
                 u_alpha = sum(1 for c in u["text"] if c.isalpha())
                 ent_word_count = len(ent["words"])
                 u_word_count = len(u["words"])
 
-                # Prefer more words (fewer OCR fusions), or more letters
-                if ent_word_count > u_word_count or (
-                    ent_word_count == u_word_count and ent_alpha > u_alpha
-                ):
+                # If one is significantly more stable (longer duration), prefer its text
+                prefer_ent = False
+                if ent_dur > u_dur + 1.0:
+                    prefer_ent = True
+                elif u_dur > ent_dur + 1.0:
+                    prefer_ent = False
+                else:
+                    # Prefer more words (fewer OCR fusions), or more letters
+                    if ent_word_count > u_word_count or (
+                        ent_word_count == u_word_count and ent_alpha > u_alpha
+                    ):
+                        prefer_ent = True
+
+                if prefer_ent:
                     u["text"] = ent["text"]
                     u["words"] = ent["words"]
                     u["w_rois"] = ent["w_rois"]
