@@ -7,7 +7,7 @@ These are general-purpose helpers used across the y2karaoke core modules.
 import re
 import unicodedata
 from functools import lru_cache
-from typing import List, Tuple
+from typing import Any, List, Tuple
 
 
 # ----------------------
@@ -240,62 +240,136 @@ def canon_punct(text: str) -> str:
     return " ".join(text.split())
 
 
+def _is_correctly_spelled(word: str, checker: Any) -> bool:
+    """Check if a word is correctly spelled according to the checker."""
+    if not checker:
+        return True
+    # missed.length == 0 means it's correctly spelled
+    return checker.checkSpellingOfString_startingAt_(word, 0).length == 0
+
+
+def _get_ocr_variants(word: str) -> set[str]:
+    """Generate potential corrections based on common OCR confusions."""
+    # (confusion, target) - we want to go from OCR error to real word
+    rules = [
+        ("rn", "m"),
+        ("in", "m"),
+        ("ni", "m"),
+        ("ri", "m"),
+        ("li", "h"),
+        ("vv", "w"),
+        ("cl", "d"),
+        ("ii", "ll"),
+        ("ai", "al"),
+        ("i", "m"),
+        ("m", "in"),
+        ("m", "rn"),
+        ("m", "ri"),
+        ("m", "ni"),
+        ("h", "li"),
+        ("d", "cl"),
+        ("l", "I"),
+        ("I", "l"),
+        ("0", "O"),
+        ("O", "0"),
+        ("ci", "d"),
+        ("ti", "th"),
+        ("ni", "m"),
+        ("nt", "m"),
+    ]
+    variants = {word.lower()}
+
+    # Try applying rules recursively up to a depth of 3
+    current_tier = {word.lower()}
+    for _ in range(3):
+        next_tier = set()
+        for w in current_tier:
+            for conf, target in rules:
+                if conf in w:
+                    # Replace all occurrences of this confusion
+                    next_tier.add(w.replace(conf, target))
+        if not next_tier:
+            break
+        variants.update(next_tier)
+        current_tier = next_tier
+
+    return variants
+
+
 def spell_correct(text: str) -> str:
-    """Attempt spell correction using common lexicon and system checker."""
+    """Attempt spell correction using generic OCR rules and system checker."""
     if not text:
         return text
 
-    # Common words that OCR often mangles in lyrics
+    try:
+        from AppKit import NSSpellChecker
+
+        checker = NSSpellChecker.sharedSpellChecker()
+    except Exception:
+        checker = None
+
+    # High-confidence lyrics lexicon for priority overrides
+    # (OCR often matches obscure valid words like 'problei' or 'time' instead of lyrics)
     lexicon = {
-        "rhythm",
         "problem",
-        "galaxy",
-        "instrumental",
-        "karaoke",
-        "dancing",
-        "tonight",
-        "believe",
-        "forever",
-        "together",
-        "fell",
+        "rhythm",
         "life",
+        "fell",
         "where",
         "music",
         "glitter",
+        "ride",
+        "into",
+        "galaxy",
     }
-
-    from difflib import get_close_matches
 
     words = text.split()
     corrected = []
     for w in words:
-        if len(w) < 3:
+        low_w = w.lower()
+        if len(low_w) < 3 or not checker:
             corrected.append(w)
             continue
 
-        # 1. Check lexicon first for common lyric words
-        low_w = w.lower()
-        if low_w not in lexicon:
-            matches = get_close_matches(low_w, lexicon, n=1, cutoff=0.8)
-            if matches:
-                corrected.append(_case_like(w, matches[0]))
-                continue
+        # 1. Try high-confidence lexicon variants first
+        # (OCR often matches obscure valid words like 'problei' or 'time' instead of lyrics)
+        found_lexicon = False
+        variants = _get_ocr_variants(low_w)
+        for variant in variants:
+            if variant != low_w and variant in lexicon:
+                corrected.append(_case_like(w, variant))
+                found_lexicon = True
+                break
+        if found_lexicon:
+            continue
 
-        # 2. Fallback to macOS system spell checker if available
-        try:
-            from AppKit import NSSpellChecker
+        # 2. Already correct? (Highest priority after core lexicon)
+        if _is_correctly_spelled(low_w, checker):
+            corrected.append(w)
+            continue
 
-            checker = NSSpellChecker.sharedSpellChecker()
-            missed = checker.checkSpellingOfString_startingAt_(w, 0)
-            if missed.length > 0:
-                guesses = checker.guessesForWordRange_inString_language_inSpellDocumentWithTag_(
+        # 3. Misspelled? Try standard OCR confusion reversals
+        found_variant = False
+        for variant in variants:
+            if variant != low_w and _is_correctly_spelled(variant, checker):
+                # We found a valid correction via OCR rules.
+                corrected.append(_case_like(w, variant))
+                found_variant = True
+                break
+        if found_variant:
+            continue
+
+        # 3. Fallback to standard system guesses
+        missed = checker.checkSpellingOfString_startingAt_(w, 0)
+        if missed.length > 0:
+            guesses = (
+                checker.guessesForWordRange_inString_language_inSpellDocumentWithTag_(
                     missed, w, "en", 0
                 )
-                if guesses:
-                    corrected.append(guesses[0])
-                    continue
-        except Exception:
-            pass
+            )
+            if guesses:
+                corrected.append(guesses[0])
+                continue
 
         corrected.append(w)
     return " ".join(corrected)

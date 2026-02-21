@@ -58,6 +58,8 @@ def deduplicate_persistent_lines(
         if not is_dup:
             unique.append(ent)
 
-    # Primary sort by time (bucketed to 0.5s), secondary by Y (Top-to-Bottom)
-    unique.sort(key=lambda x: (round(float(x["first"]) * 2.0) / 2.0, x["y"]))
+    # Primary sort by time (bucketed to 0.2s), secondary by Y (Top-to-Bottom)
+    # The 0.2s bucket ensures lines that appear 'together' are ordered Top-then-Bottom
+    # while keeping temporally distinct lines in their detected order.
+    unique.sort(key=lambda x: (round(float(x["first"]) * 5.0) / 5.0, x["y"]))
     return unique
