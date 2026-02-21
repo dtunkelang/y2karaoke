@@ -11,6 +11,7 @@ from ..text_utils import (
     normalize_text_basic,
 )
 from .reconstruction import snap
+from .reconstruction_intro_filters import filter_intro_non_lyrics
 
 
 def _clamp_confidence(value: Optional[float], default: float = 0.0) -> float:
@@ -181,6 +182,7 @@ def build_refined_lines_output(
     _retime_short_interstitial_output_lines(lines_out)
     _rebalance_compressed_middle_four_line_sequences(lines_out)
     _filter_singer_label_prefixes(lines_out, artist=artist)
+    lines_out = filter_intro_non_lyrics(lines_out, artist=artist)
     _normalize_output_casing(lines_out)
     return lines_out
 

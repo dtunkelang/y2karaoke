@@ -244,8 +244,24 @@ def spell_correct(text: str) -> str:
     """Attempt spell correction using macOS spell checker if available."""
     if not text:
         return text
+
+    # Common words that OCR often mangles in lyrics
+    lexicon = {
+        "rhythm",
+        "problem",
+        "galaxy",
+        "instrumental",
+        "karaoke",
+        "dancing",
+        "tonight",
+        "believe",
+        "forever",
+        "together",
+    }
+
     try:
         from AppKit import NSSpellChecker
+        from difflib import get_close_matches
 
         checker = NSSpellChecker.sharedSpellChecker()
         words = text.split()
@@ -254,6 +270,15 @@ def spell_correct(text: str) -> str:
             if len(w) < 3:
                 corrected.append(w)
                 continue
+
+            # 1. Check lexicon first for common lyric words
+            if w.lower() not in lexicon:
+                matches = get_close_matches(w.lower(), lexicon, n=1, cutoff=0.85)
+                if matches:
+                    corrected.append(_case_like(w, matches[0]))
+                    continue
+
+            # 2. Fallback to macOS system spell checker
             missed = checker.checkSpellingOfString_startingAt_(w, 0)
             if missed.length > 0:
                 guesses = checker.guessesForWordRange_inString_language_inSpellDocumentWithTag_(
@@ -275,7 +300,6 @@ def normalize_ocr_line(text: str) -> str:
         return text
     if text.lower().startswith("have "):
         text = "I " + text
-    text = text.replace("problei", "problem")
     toks = text.split()
     out: List[str] = []
     contractions = {"'ll", "'re", "'ve", "'m", "'d"}
