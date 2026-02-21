@@ -18,12 +18,46 @@ def deduplicate_persistent_lines(
     for ent in committed_lines:
         is_dup = False
         for u in unique:
-            if text_similarity(ent["text"], u["text"]) > 0.9:
-                if abs(ent["y"] - u["y"]) < 20 and abs(ent["first"] - u["first"]) < 0.5:
+            sim = text_similarity(ent["text"], u["text"])
+            dist_y = abs(ent["y"] - u["y"])
+            dist_t = abs(ent["first"] - u["first"])
+
+            # If close in time, check spatial proximity and similarity
+            if dist_t < 1.5:
+                # 1. Mangled OCR fragment vs stable line: allow vertical jitter (40px)
+                #    if they are clearly intended to be the same (sim 0.4 - 0.9)
+                if 0.4 <= sim <= 0.9 and dist_y < 40:
                     is_dup = True
+                # 2. Near identical text (sim > 0.9): require tight proximity (20px)
+                #    to keep distinct lanes separate (e.g. repeated 'Duh').
+                elif sim > 0.9 and dist_y < 20:
+                    is_dup = True
+                # 3. Distinct noise: require tight proximity (20px)
+                elif sim > 0.3 and dist_y < 20:
+                    is_dup = True
+
+                if is_dup:
+                    # Keep the 'better' version
+                    ent_alpha = sum(1 for c in ent["text"] if c.isalpha())
+                    u_alpha = sum(1 for c in u["text"] if c.isalpha())
+                    ent_word_count = len(ent["words"])
+                    u_word_count = len(u["words"])
+
+                    # Prefer more words (fewer OCR fusions), or more letters
+                    if ent_word_count > u_word_count or (
+                        ent_word_count == u_word_count and ent_alpha > u_alpha
+                    ):
+                        u["text"] = ent["text"]
+                        u["words"] = ent["words"]
+                        u["w_rois"] = ent["w_rois"]
+
+                    u["first"] = min(u["first"], ent["first"])
+                    u["last"] = max(u["last"], ent["last"])
                     break
+
         if not is_dup:
             unique.append(ent)
 
-    unique.sort(key=lambda x: (x["first"], x["y"]))
+    # Primary sort by time (bucketed to 0.5s), secondary by Y (Top-to-Bottom)
+    unique.sort(key=lambda x: (round(float(x["first"]) * 2.0) / 2.0, x["y"]))
     return unique

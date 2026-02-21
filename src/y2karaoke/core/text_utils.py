@@ -241,7 +241,7 @@ def canon_punct(text: str) -> str:
 
 
 def spell_correct(text: str) -> str:
-    """Attempt spell correction using macOS spell checker if available."""
+    """Attempt spell correction using common lexicon and system checker."""
     if not text:
         return text
 
@@ -257,28 +257,35 @@ def spell_correct(text: str) -> str:
         "believe",
         "forever",
         "together",
+        "fell",
+        "life",
+        "where",
+        "music",
+        "glitter",
     }
 
-    try:
-        from AppKit import NSSpellChecker
-        from difflib import get_close_matches
+    from difflib import get_close_matches
 
-        checker = NSSpellChecker.sharedSpellChecker()
-        words = text.split()
-        corrected = []
-        for w in words:
-            if len(w) < 3:
-                corrected.append(w)
+    words = text.split()
+    corrected = []
+    for w in words:
+        if len(w) < 3:
+            corrected.append(w)
+            continue
+
+        # 1. Check lexicon first for common lyric words
+        low_w = w.lower()
+        if low_w not in lexicon:
+            matches = get_close_matches(low_w, lexicon, n=1, cutoff=0.8)
+            if matches:
+                corrected.append(_case_like(w, matches[0]))
                 continue
 
-            # 1. Check lexicon first for common lyric words
-            if w.lower() not in lexicon:
-                matches = get_close_matches(w.lower(), lexicon, n=1, cutoff=0.85)
-                if matches:
-                    corrected.append(_case_like(w, matches[0]))
-                    continue
+        # 2. Fallback to macOS system spell checker if available
+        try:
+            from AppKit import NSSpellChecker
 
-            # 2. Fallback to macOS system spell checker
+            checker = NSSpellChecker.sharedSpellChecker()
             missed = checker.checkSpellingOfString_startingAt_(w, 0)
             if missed.length > 0:
                 guesses = checker.guessesForWordRange_inString_language_inSpellDocumentWithTag_(
@@ -287,10 +294,11 @@ def spell_correct(text: str) -> str:
                 if guesses:
                     corrected.append(guesses[0])
                     continue
-            corrected.append(w)
-        return " ".join(corrected)
-    except Exception:
-        return text
+        except Exception:
+            pass
+
+        corrected.append(w)
+    return " ".join(corrected)
 
 
 def normalize_ocr_line(text: str) -> str:

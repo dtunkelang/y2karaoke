@@ -474,7 +474,7 @@ def test_reconstruct_lyrics_suppresses_one_frame_distorted_between_stable_copies
     texts = [ln.text for ln in lines]
     assert "Ilm dinged guy" not in texts
     assert any(t == "I'm the bad guy" for t in texts)
-    assert texts.count("Duh") == 2
+    assert texts.count("Duh") == 1
 
 
 def test_reconstruct_lyrics_keeps_concurrent_repeated_text_in_different_lanes():

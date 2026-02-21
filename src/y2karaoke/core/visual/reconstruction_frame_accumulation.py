@@ -38,7 +38,7 @@ def accumulate_persistent_lines_from_frames(
 
             curr = [words[0]]
             for i in range(1, len(words)):
-                if words[i]["y"] - curr[-1]["y"] < 20:
+                if words[i]["y"] - curr[-1]["y"] < 30:
                     curr.append(words[i])
                 else:
                     lines_in_frame.append(curr)
@@ -56,7 +56,7 @@ def accumulate_persistent_lines_from_frames(
                     continue
 
                 y_pos = int(sum(w["y"] for w in ln_w) / len(ln_w))
-                lane = y_pos // 30
+                lane = y_pos // 20
                 norm = f"y{lane}_{normalize_text_basic(txt)}"
 
                 if norm in on_screen and (

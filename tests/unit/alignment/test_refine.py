@@ -301,6 +301,7 @@ class TestRefineLineTiming:
 
 
 class TestRefineWordTiming:
+    @pytest.mark.filterwarnings("ignore:PySoundFile failed")
     def test_returns_original_on_nonexistent_file(self):
         """Test that refine_word_timing returns original lines when file doesn't exist."""
         words = [Word(text="hello", start_time=0.0, end_time=0.5)]
@@ -313,6 +314,7 @@ class TestRefineWordTiming:
         assert result[0].words[0].text == "hello"
         assert result[0].words[0].start_time == 0.0
 
+    @pytest.mark.filterwarnings("ignore:PySoundFile failed")
     def test_handles_empty_lines_list(self):
         """Test handling of empty lines list."""
         # With empty lines, it should return empty even if it tries to load audio
