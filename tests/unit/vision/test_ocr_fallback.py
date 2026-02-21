@@ -4,7 +4,6 @@ import sys
 
 from y2karaoke.vision.ocr import (
     get_ocr_engine,
-    _OCR_ENGINE,
     OCRError,
     normalize_ocr_items,
 )

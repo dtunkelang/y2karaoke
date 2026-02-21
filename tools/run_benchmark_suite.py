@@ -229,7 +229,9 @@ def _gold_path_for_song(
     return None
 
 
-def _default_gold_path_for_song(index: int, song: BenchmarkSong, gold_root: Path) -> Path:
+def _default_gold_path_for_song(
+    index: int, song: BenchmarkSong, gold_root: Path
+) -> Path:
     return gold_root / f"{index:02d}_{song.slug}.gold.json"
 
 
@@ -2258,7 +2260,9 @@ def main() -> int:  # noqa: C901
                         rebased_path = _rebaseline_song_from_report(
                             index=index,
                             song=song,
-                            report_path=Path(str(prior.get("report_path", report_path))),
+                            report_path=Path(
+                                str(prior.get("report_path", report_path))
+                            ),
                             gold_root=gold_root,
                         )
                         prior["gold_rebaselined"] = rebased_path is not None

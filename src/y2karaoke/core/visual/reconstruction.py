@@ -174,9 +174,9 @@ def _split_persistent_line_epochs_from_context_transitions(  # noqa: C901
 def reconstruct_lyrics_from_visuals(  # noqa: C901
     raw_frames: list[dict[str, Any]], visual_fps: float, artist: Optional[str] = None
 ) -> list[TargetLine]:
-    _ = visual_fps
     return _reconstruct_lyrics_from_visuals_impl(
         raw_frames,
+        visual_fps,
         filter_static_overlay_words=_filter_static_overlay_words,
         merge_overlapping_same_lane_duplicates=_merge_overlapping_same_lane_duplicates,
         merge_short_same_lane_reentries=_merge_short_same_lane_reentries,

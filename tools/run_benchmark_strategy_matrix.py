@@ -181,11 +181,14 @@ def _recommendations(rows: list[dict[str, Any]]) -> dict[str, Any]:
     quality_runtime_candidates = [
         r
         for r in rows
-        if isinstance(r.get("agreement_start_p95_abs_sec_line_weighted_mean"), (int, float))
+        if isinstance(
+            r.get("agreement_start_p95_abs_sec_line_weighted_mean"), (int, float)
+        )
         and isinstance(r.get("sum_song_elapsed_sec"), (int, float))
     ]
     quality_runtime_best: dict[str, Any] | None = None
     if quality_runtime_candidates:
+
         def _composite(row: dict[str, Any]) -> float:
             p95 = float(row["agreement_start_p95_abs_sec_line_weighted_mean"])
             elapsed = float(row["sum_song_elapsed_sec"])

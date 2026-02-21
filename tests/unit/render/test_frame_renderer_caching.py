@@ -1,4 +1,3 @@
-import pytest
 from unittest.mock import MagicMock, patch
 import numpy as np
 from PIL import ImageFont

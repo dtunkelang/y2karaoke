@@ -39,7 +39,7 @@ def convert_persistent_lines_to_target_lines(
                 word_ends=None,
                 word_rois=ent["w_rois"],
                 char_rois=None,
-                visibility_start=float(ent["first"]),
+                visibility_start=float(ent.get("first_visible", ent["first"])),
                 visibility_end=float(ent["last"]),
             )
         )

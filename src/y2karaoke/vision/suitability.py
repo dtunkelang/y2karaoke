@@ -90,7 +90,7 @@ def collect_raw_frames_with_confidence(
                 x, y = int(min(np_box[:, 0])), int(min(np_box[:, 1]))
                 bw, bh = int(max(np_box[:, 0]) - x), int(max(np_box[:, 1]) - y)
                 word_roi = roi[y : y + bh, x : x + bw]
-                state, ratio = classify_word_state(word_roi, c_un, c_sel)
+                state, ratio, _ = classify_word_state(word_roi, c_un, c_sel)
                 if state != "unknown":
                     words.append(
                         {

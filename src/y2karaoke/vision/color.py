@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
-from typing import Tuple, List
+from typing import Tuple, List, Any, cast
 
 try:
     import cv2
@@ -91,6 +91,7 @@ def infer_lyric_colors(
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     """
     Sample text colors from the video to find Unselected and Selected prototypes.
+    Uses cluster support to identify stable colors vs transient fade-ins.
 
     Returns:
         Tuple of (c_unselected, c_selected, c_background_dummy)
@@ -118,11 +119,8 @@ def infer_lyric_colors(
     for t in np.arange(start_t, end_t, step_t):
         cap.set(cv2.CAP_PROP_POS_MSEC, t * 1000.0)
         ok, frame = cap.read()
-        if not ok:
+        if not ok or frame is None:
             break
-
-        if frame is None:
-            continue
 
         # Extract ROI
         if ry + rh > frame.shape[0] or rx + rw > frame.shape[1]:
@@ -135,24 +133,15 @@ def infer_lyric_colors(
             rec_boxes = items["rec_boxes"]
 
             for box_data in rec_boxes:
-                # box_data might be a dict with 'word' key (VisionOCR) or just points
-                if isinstance(box_data, dict):
-                    points = box_data["word"]
-                else:
-                    points = box_data
-
+                points = box_data["word"] if isinstance(box_data, dict) else box_data
                 nb = np.array(points).reshape(-1, 2)
                 x, y = int(min(nb[:, 0])), int(min(nb[:, 1]))
                 bw, bh = int(max(nb[:, 0]) - x), int(max(nb[:, 1]) - y)
 
-                # Skip tiny noise
                 if bw > 4 and bh > 4:
-                    # Clip to ROI
-                    y = max(0, y)
-                    x = max(0, x)
+                    y, x = max(0, y), max(0, x)
                     bh = min(bh, roi.shape[0] - y)
                     bw = min(bw, roi.shape[1] - x)
-
                     word_roi = roi[y : y + bh, x : x + bw]
                     sampled = _sample_text_pixels(word_roi)
                     if sampled.size:
@@ -168,49 +157,75 @@ def infer_lyric_colors(
             np.array([0, 0, 0]),
         )
 
-    centers = cluster_colors(pixel_samples, k=3)
-    # Sort by brightness (mean channel value).
-    # Typical Karafun: [Brightest (White), Mid (Dimmed/Blue), Darkest (Blue/Background)]
-    # Typical SingKing: [Brightest (White), Darker (Selected), ...]
-    centers.sort(key=lambda c: np.mean(c), reverse=True)
+    # 1. Cluster into k=3 candidates
+    data = np.stack(pixel_samples).astype(np.float32)
+    criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 10, 1.0)
+    flags = cv2.KMEANS_RANDOM_CENTERS
+    _, labels, centers = cv2.kmeans(data, 3, cast(Any, None), criteria, 10, flags)
 
-    # Heuristic:
-    # centers[0] is likely the 'Unselected' (brightest white).
-    # centers[1] is likely the 'Selected' or 'Dimmed' state.
-    # If we have k=3, we can be more robust.
-    return centers[0], centers[1], np.array([0, 0, 0])
+    # 2. Count support for each cluster
+    counts = np.bincount(labels.flatten())
+    cluster_info = []
+    for i, center in enumerate(centers):
+        cluster_info.append(
+            {"center": center, "count": counts[i], "brightness": np.mean(center)}
+        )
+
+    # 3. Exclude the darkest cluster (likely background noise/edges)
+    cluster_info.sort(key=lambda x: x["brightness"])
+    foreground_clusters = cluster_info[1:]  # Keep two brightest
+
+    # 4. Of the remaining, sort by support (count) to identify 'stable' states
+    # Actually, we want both persistent states. Usually they are the top 2 brightest anyway.
+    # We'll assign c_unselected as the brighter of the two foregrounds,
+    # and c_selected as the other.
+    foreground_clusters.sort(key=lambda x: x["brightness"], reverse=True)
+    c_un = foreground_clusters[0]["center"]
+    c_sel = (
+        foreground_clusters[1]["center"]
+        if len(foreground_clusters) > 1
+        else foreground_clusters[0]["center"] * 0.7
+    )
+
+    logger.info(
+        f"Inferred stable colors: Unselected={c_un.astype(int)}, Selected={c_sel.astype(int)}"
+    )
+    return c_un, c_sel, cluster_info[0]["center"]
 
 
 def classify_word_state(
     word_roi: np.ndarray, c_un: np.ndarray, c_sel: np.ndarray
-) -> Tuple[str, float]:
+) -> Tuple[str, float, float]:
     """
-    Determine if a word is 'unselected', 'selected', or 'mixed'.
+    Determine word state and return metrics for stability analysis.
 
     Returns:
-        (state_str, ratio_of_selected_pixels)
+        (state_str, ratio_of_selected_pixels, distance_to_unselected)
     """
     if cv2 is None or np is None:
         raise ImportError("OpenCV and Numpy required.")
 
     if word_roi.size == 0:
-        return "unknown", 0.0
+        return "unknown", 0.0, 1000.0
 
     mask = _foreground_mask(word_roi)
     pixels = word_roi[mask].astype(np.float32)
     if pixels.size == 0:
         pixels = word_roi.reshape(-1, 3).astype(np.float32)
 
-    # Simple Euclidean distance in BGR space
+    # Calculate distances to prototypes
     dist_un = np.linalg.norm(pixels - c_un, axis=1)
     dist_sel = np.linalg.norm(pixels - c_sel, axis=1)
 
-    # Pixel is 'selected' if it's closer to the selected prototype
+    avg_dist_un = float(np.mean(dist_un))
     is_sel = dist_sel < dist_un
-    ratio = np.mean(is_sel)
+    ratio = float(np.mean(is_sel))
 
     if ratio > 0.8:
-        return "selected", float(ratio)
-    if ratio > 0.2:
-        return "mixed", float(ratio)
-    return "unselected", float(ratio)
+        state = "selected"
+    elif ratio > 0.2:
+        state = "mixed"
+    else:
+        state = "unselected"
+
+    return state, ratio, avg_dist_un

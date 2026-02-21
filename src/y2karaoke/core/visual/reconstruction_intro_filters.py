@@ -8,6 +8,7 @@ _INTRO_META_KEYWORDS = {
     "karaoke",
     "singking",
     "karafun",
+    "karajan",
     "stingray",
     "megakaraoke",
     "cckaraoke",

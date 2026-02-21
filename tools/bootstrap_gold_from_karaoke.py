@@ -67,7 +67,7 @@ except ImportError:
     sys.exit(1)
 
 logger = get_logger(__name__)
-RAW_OCR_CACHE_VERSION = "3"
+RAW_OCR_CACHE_VERSION = "4"
 # Native-FPS word refinement is only reliable when mixed-state evidence is strong.
 # Lower thresholds can route line-level videos into an expensive but lower-quality path.
 LINE_LEVEL_REFINE_SKIP_THRESHOLD = 0.5
@@ -245,7 +245,7 @@ def _parse_args() -> argparse.Namespace:
     p.add_argument("--work-dir", type=Path, default=Path(".cache/karaoke_bootstrap"))
     p.add_argument("--report-json", type=Path, default=None)
     p.add_argument("--candidate-url")
-    p.add_argument("--visual-fps", type=float, default=3.0)
+    p.add_argument("--visual-fps", type=float, default=10.0)
     p.add_argument("--max-candidates", type=int, default=5)
     p.add_argument("--show-candidates", action="store_true")
     p.add_argument("--suitability-fps", type=float, default=1.0)

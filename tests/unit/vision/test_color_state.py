@@ -9,7 +9,7 @@ def test_classify_word_state_ignores_dark_background() -> None:
 
     c_un = np.array([250, 250, 250], dtype=np.float32)
     c_sel = np.array([190, 80, 200], dtype=np.float32)
-    state, ratio = classify_word_state(roi, c_un, c_sel)
+    state, ratio, _ = classify_word_state(roi, c_un, c_sel)
 
     assert state == "unselected"
     assert ratio < 0.2
@@ -22,7 +22,7 @@ def test_classify_word_state_detects_mixed_foreground() -> None:
 
     c_un = np.array([250, 250, 250], dtype=np.float32)
     c_sel = np.array([190, 80, 200], dtype=np.float32)
-    state, ratio = classify_word_state(roi, c_un, c_sel)
+    state, ratio, _ = classify_word_state(roi, c_un, c_sel)
 
     assert state == "mixed"
     assert 0.2 < ratio < 0.8

@@ -148,10 +148,12 @@ class VisionOCR:
         rec_scores = []
 
         for result in results:
-            candidates = result.topCandidates_(1)
+            # Request up to 5 candidates to resolve visual ambiguities
+            candidates = result.topCandidates_(5)
             if not candidates:
                 continue
-            top_candidate = candidates[0]
+
+            top_candidate = self._select_best_ocr_candidate(candidates)
             full_text = top_candidate.string()
             words = full_text.split()
             current_pos = 0
@@ -163,51 +165,17 @@ class VisionOCR:
                 current_pos = word_start_idx + len(word_text)
 
                 try:
-                    range_obj = (word_start_idx, len(word_text))
-                    box_result_tuple = top_candidate.boundingBoxForRange_error_(
-                        range_obj, None
+                    word_data = self._parse_vision_word_data(
+                        top_candidate, word_text, word_start_idx, w, h
                     )
-                    if not box_result_tuple or not box_result_tuple[0]:
-                        continue
-
-                    # Attempt to get first char box for finer granularity if needed
-                    # (Currently unused but kept for parity with original logic)
-                    first_char_range = (word_start_idx, 1)
-                    char_box_result = top_candidate.boundingBoxForRange_error_(
-                        first_char_range, None
-                    )
-                    char_box = None
-                    if char_box_result and char_box_result[0]:
-                        cobs = char_box_result[0]
-                        cbbox = cobs.boundingBox()
-                        char_box = [
-                            cbbox.origin.x * w,
-                            (1.0 - cbbox.origin.y - cbbox.size.height) * h,
-                            cbbox.size.width * w,
-                            cbbox.size.height * h,
-                        ]
-
-                    bbox = box_result_tuple[0].boundingBox()
-                    # Convert normalized coords (bottom-left origin) to pixel coords (top-left origin)
-                    px_x = bbox.origin.x * w
-                    px_y = (1.0 - bbox.origin.y - bbox.size.height) * h
-                    px_w = bbox.size.width * w
-                    px_h = bbox.size.height * h
-
-                    # PaddleOCR format: [[x1, y1], [x2, y1], [x2, y2], [x1, y2]]
-                    box = [
-                        [px_x, px_y],
-                        [px_x + px_w, px_y],
-                        [px_x + px_w, px_y + px_h],
-                        [px_x, px_y + px_h],
-                    ]
-
-                    rec_texts.append(word_text)
-                    rec_boxes.append({"word": box, "first_char": char_box})
-                    rec_scores.append(top_candidate.confidence())
-
+                    if word_data:
+                        rec_texts.append(word_text)
+                        rec_boxes.append(
+                            {"word": word_data["box"], "first_char": word_data["char"]}
+                        )
+                        rec_scores.append(top_candidate.confidence())
                 except Exception as e:
-                    logger.debug(f"Error parsing bbox for '{word_text}': {e}")
+                    logger.debug(f"Error parsing word '{word_text}': {e}")
                     continue
 
         if not rec_texts:
@@ -217,6 +185,79 @@ class VisionOCR:
         return [
             {"rec_texts": rec_texts, "rec_boxes": rec_boxes, "rec_scores": rec_scores}
         ]
+
+    def _select_best_ocr_candidate(self, candidates: List[Any]) -> Any:
+        """Heuristic: prefer candidates that resolve common visual confusions."""
+        chosen = candidates[0]
+        top_conf = candidates[0].confidence()
+        confusions = [
+            ("rn", "m"),
+            ("in", "m"),
+            ("ni", "m"),
+            ("ri", "m"),
+            ("li", "h"),
+            ("vv", "w"),
+            ("cl", "d"),
+        ]
+
+        for i in range(1, len(candidates)):
+            cand = candidates[i]
+            # Only consider if confidence is very close (within 10%)
+            if cand.confidence() < top_conf * 0.9:
+                break
+
+            cand_str = cand.string().lower()
+            top_str = chosen.string().lower()
+
+            changed = False
+            for confusion, target in confusions:
+                if confusion in top_str and target in cand_str:
+                    # Candidate resolved a common confusion
+                    chosen = cand
+                    changed = True
+                    break
+            if changed:
+                break
+        return chosen
+
+    def _parse_vision_word_data(
+        self, candidate: Any, text: str, start_idx: int, w: int, h: int
+    ) -> Dict[str, Any] | None:
+        """Extract bounding box and character data for a specific word range."""
+        range_obj = (start_idx, len(text))
+        box_result_tuple = candidate.boundingBoxForRange_error_(range_obj, None)
+        if not box_result_tuple or not box_result_tuple[0]:
+            return None
+
+        bbox = box_result_tuple[0].boundingBox()
+        # Convert normalized coords (bottom-left origin) to pixel coords (top-left origin)
+        px_x = bbox.origin.x * w
+        px_y = (1.0 - bbox.origin.y - bbox.size.height) * h
+        px_w = bbox.size.width * w
+        px_h = bbox.size.height * h
+
+        # PaddleOCR format: [[x1, y1], [x2, y1], [x2, y2], [x1, y2]]
+        box = [
+            [px_x, px_y],
+            [px_x + px_w, px_y],
+            [px_x + px_w, px_y + px_h],
+            [px_x, px_y + px_h],
+        ]
+
+        # First character box for alignment precision
+        char_box = None
+        char_box_res = candidate.boundingBoxForRange_error_((start_idx, 1), None)
+        if char_box_res and char_box_res[0]:
+            cobs = char_box_res[0]
+            cbbox = cobs.boundingBox()
+            char_box = [
+                cbbox.origin.x * w,
+                (1.0 - cbbox.origin.y - cbbox.size.height) * h,
+                cbbox.size.width * w,
+                cbbox.size.height * h,
+            ]
+
+        return {"box": box, "char": char_box}
 
 
 def get_ocr_engine() -> Any:
@@ -276,5 +317,5 @@ def get_ocr_engine() -> Any:
 def get_ocr_cache_fingerprint() -> str:
     """Return a stable cache fingerprint for the preferred OCR backend."""
     if platform.system() == "Darwin" and platform.machine() == "arm64":
-        return "vision_macos_arm64"
+        return "vision_macos_arm64_v2"
     return "paddleocr"

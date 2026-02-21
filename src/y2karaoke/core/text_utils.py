@@ -257,8 +257,10 @@ def _get_ocr_variants(word: str) -> set[str]:
         ("ni", "m"),
         ("ri", "m"),
         ("li", "h"),
+        ("ii", "h"),
         ("vv", "w"),
         ("cl", "d"),
+        ("ci", "d"),
         ("ii", "ll"),
         ("ai", "al"),
         ("i", "m"),
@@ -272,21 +274,24 @@ def _get_ocr_variants(word: str) -> set[str]:
         ("I", "l"),
         ("0", "O"),
         ("O", "0"),
-        ("ci", "d"),
         ("ti", "th"),
-        ("ni", "m"),
         ("nt", "m"),
+        ("t", "f"),
+        ("in", "m"),
+        ("v", "y"),
+        ("b", "m"),
+        ("ll", "n"),
     ]
+
     variants = {word.lower()}
 
-    # Try applying rules recursively up to a depth of 3
+    # Try applying rules recursively up to a depth of 4
     current_tier = {word.lower()}
-    for _ in range(3):
+    for _ in range(4):
         next_tier = set()
         for w in current_tier:
             for conf, target in rules:
                 if conf in w:
-                    # Replace all occurrences of this confusion
                     next_tier.add(w.replace(conf, target))
         if not next_tier:
             break
@@ -308,21 +313,6 @@ def spell_correct(text: str) -> str:
     except Exception:
         checker = None
 
-    # High-confidence lyrics lexicon for priority overrides
-    # (OCR often matches obscure valid words like 'problei' or 'time' instead of lyrics)
-    lexicon = {
-        "problem",
-        "rhythm",
-        "life",
-        "fell",
-        "where",
-        "music",
-        "glitter",
-        "ride",
-        "into",
-        "galaxy",
-    }
-
     words = text.split()
     corrected = []
     for w in words:
@@ -331,25 +321,14 @@ def spell_correct(text: str) -> str:
             corrected.append(w)
             continue
 
-        # 1. Try high-confidence lexicon variants first
-        # (OCR often matches obscure valid words like 'problei' or 'time' instead of lyrics)
-        found_lexicon = False
-        variants = _get_ocr_variants(low_w)
-        for variant in variants:
-            if variant != low_w and variant in lexicon:
-                corrected.append(_case_like(w, variant))
-                found_lexicon = True
-                break
-        if found_lexicon:
-            continue
-
-        # 2. Already correct? (Highest priority after core lexicon)
+        # 1. Already correct? (Highest priority)
         if _is_correctly_spelled(low_w, checker):
             corrected.append(w)
             continue
 
-        # 3. Misspelled? Try standard OCR confusion reversals
+        # 2. Misspelled? Try standard OCR confusion reversals
         found_variant = False
+        variants = _get_ocr_variants(low_w)
         for variant in variants:
             if variant != low_w and _is_correctly_spelled(variant, checker):
                 # We found a valid correction via OCR rules.
@@ -702,7 +681,7 @@ def _regularize_short_chant_alternation(tokens: List[str]) -> List[str]:
     return out
 
 
-def _contextual_ocr_token_replacement(
+def _contextual_ocr_token_replacement(  # noqa: C901
     low: str, prev_low: str, next_low: str
 ) -> str | None:
     # Frequent OCR confusion in phrase "... doing shots drinking fast ...".
@@ -712,6 +691,19 @@ def _contextual_ocr_token_replacement(
     # Frequent OCR confusion around "... come on ...".
     if low in {"ony", "om"} and prev_low == "come":
         return "on"
+
+    if low == "lite" and prev_low == "for":
+        return "life"
+    if low == "thythm":
+        return "rhythm"
+    if low == "vou":
+        return "you"
+    if low == "bue":
+        return "me"
+    if low == "walls" and prev_low == "you":
+        return "want"
+    if low == "walls" and prev_low == "vou":
+        return "want"
 
     if (
         low in {"l", "loh", "loll", "lohl", "lohlohlohl", "lohlohl"}

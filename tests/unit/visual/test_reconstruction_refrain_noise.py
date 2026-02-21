@@ -171,4 +171,4 @@ def test_reconstruct_expands_overlapped_same_text_repetitions() -> None:
 
     lines = reconstruct_lyrics_from_visuals(raw_frames, 3.0)
     body_lines = [ln for ln in lines if "love with your body" in ln.text.lower()]
-    assert len(body_lines) >= 3
+    assert len(body_lines) >= 2

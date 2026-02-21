@@ -1,5 +1,3 @@
-from pathlib import Path
-
 from y2karaoke.core.visual.bootstrap_candidates import (
     _metadata_prefilter_score,
     rank_candidates_by_suitability,

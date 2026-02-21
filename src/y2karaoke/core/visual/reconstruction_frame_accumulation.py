@@ -2,90 +2,312 @@
 
 from __future__ import annotations
 
+import logging
+import collections
 from typing import Any, Callable, Dict, List
 
 from ..text_utils import (
     normalize_ocr_line,
     normalize_ocr_tokens,
-    normalize_text_basic,
+    text_similarity,
 )
 from .word_segmentation import segment_line_tokens_by_visual_gaps
 
+logger = logging.getLogger(__name__)
 FrameFilter = Callable[[List[Dict[str, Any]]], List[Dict[str, Any]]]
 
 
-def accumulate_persistent_lines_from_frames(
+class TrackedLine:
+    def __init__(self, entry: Dict[str, Any], entry_key: str):
+        self.id = entry_key
+        self.lane = entry["lane"]
+        self.y_history = [entry["y"]]
+        self.text_counts = collections.Counter({entry["text"]: 1})
+        self.entries = [entry]
+        self.first_seen = entry["first"]
+        self.last_seen = entry["last"]
+
+        # Visibility tracking
+        self.visible_yet = entry.get("visible_yet", False)
+        self.vis_count = entry.get("vis_count", 0)
+        self.first_visible = entry.get("first_visible", 999999.0)
+
+    def update(self, entry: Dict[str, Any], curr_time: float, is_visible: bool):
+        self.entries.append(entry)
+        self.last_seen = curr_time
+        self.y_history.append(entry["y"])
+        self.text_counts[entry["text"]] += 1
+
+        # Update visibility
+        if is_visible:
+            self.vis_count += 1
+        else:
+            self.vis_count = 0
+
+        if not self.visible_yet and self.vis_count >= 3:
+            # Backtrack start time slightly to capture the fade-in
+            # Using a simplified heuristic (2 frames back)
+            # entry["first"] is curr_time.
+            self.first_visible = max(self.first_seen, curr_time - 0.2)
+            self.visible_yet = True
+
+    @property
+    def current_y(self) -> int:
+        # Simple moving average or just last
+        if not self.y_history:
+            return 0
+        return int(sum(self.y_history[-5:]) / len(self.y_history[-5:]))
+
+    @property
+    def best_text(self) -> str:
+        # Return text that balances frequency and length to capture full lines
+        if not self.text_counts:
+            return ""
+
+        # Filter out rare noise (e.g. 1-off OCR glitches) unless track is very short
+        # require at least 15% of frames
+        min_count = max(1, int(len(self.entries) * 0.15))
+        candidates = [t for t, c in self.text_counts.items() if c >= min_count]
+
+        if not candidates:
+            # Fallback to most frequent if nothing meets threshold
+            return self.text_counts.most_common(1)[0][0]
+
+        # Pick longest text among candidates
+        return max(candidates, key=len)
+
+    def to_dict(self) -> Dict[str, Any]:
+        # Construct the final entry dictionary
+        best_txt = self.best_text
+
+        # Find the entry that matches best_txt to get 'words' and 'w_rois'
+        # Prefer the longest/most complete one if multiple match
+        candidates = [e for e in self.entries if e["text"] == best_txt]
+        if not candidates:
+            # Fallback to last entry if best text not found (shouldn't happen)
+            candidates = [self.entries[-1]]
+
+        # Pick the candidate with most words
+        best_entry = max(candidates, key=lambda e: len(e["words"]))
+
+        return {
+            "text": best_txt,
+            "words": best_entry["words"],
+            "first": self.first_seen,
+            "first_visible": (
+                self.first_visible if self.visible_yet else self.first_seen
+            ),  # Fallback
+            "last": self.last_seen,
+            "y": self.current_y,
+            "lane": self.lane,
+            "visible_yet": self.visible_yet,
+            "vis_count": self.vis_count,
+            "w_rois": best_entry["w_rois"],
+        }
+
+
+def accumulate_persistent_lines_from_frames(  # noqa: C901
     raw_frames: List[Dict[str, Any]],
     *,
     filter_static_overlay_words: FrameFilter,
+    visual_fps: float = 3.0,
 ) -> List[Dict[str, Any]]:
     """
     Groups OCR words into lines per frame and tracks them over time to form persistent line objects.
     """
     raw_frames = filter_static_overlay_words(raw_frames)
-    on_screen: Dict[str, Dict[str, Any]] = {}
+    visibility_thresholds = _calculate_visibility_threshold(raw_frames)
+
+    active_tracks: List[TrackedLine] = []
     committed: List[Dict[str, Any]] = []
-    prev_time = None
+
+    # Unique ID counter
+    _track_id_counter = 0
 
     for frame in raw_frames:
         curr_time = frame["time"]
         words = frame.get("words", [])
-        current_norms = {}
 
+        current_frame_lines = []
         if words:
-            words.sort(key=lambda w: w["y"])
-            lines_in_frame = []
-
-            curr = [words[0]]
-            for i in range(1, len(words)):
-                if words[i]["y"] - curr[-1]["y"] < 30:
-                    curr.append(words[i])
-                else:
-                    lines_in_frame.append(curr)
-                    curr = [words[i]]
-            lines_in_frame.append(curr)
-
+            lines_in_frame = _group_words_into_lines(words)
             for ln_w in lines_in_frame:
-                ln_w.sort(key=lambda w: w["x"])
-                line_tokens = segment_line_tokens_by_visual_gaps(ln_w)
-                line_tokens = normalize_ocr_tokens(line_tokens)
-                if not line_tokens:
-                    continue
-                txt = normalize_ocr_line(" ".join(line_tokens))
-                if not txt:
+                res = _process_line_in_frame(
+                    ln_w,
+                    curr_time,
+                    visibility_thresholds,
+                )
+                if res:
+                    current_frame_lines.append(res)
+
+        # Match current frame lines to active tracks
+        matched_track_indices = set()
+
+        for frame_line_data in current_frame_lines:
+            entry, is_visible = frame_line_data
+
+            # Find best match in active_tracks
+            best_match_idx = -1
+            best_match_score = 0.0
+
+            for idx, track in enumerate(active_tracks):
+                if idx in matched_track_indices:
                     continue
 
-                y_pos = int(sum(w["y"] for w in ln_w) / len(ln_w))
-                lane = y_pos // 20
-                norm = f"y{lane}_{normalize_text_basic(txt)}"
+                # Spatial check (Y)
+                dy = abs(track.current_y - entry["y"])
+                if dy > 25:  # Lane proximity
+                    continue
 
-                if norm in on_screen and (
-                    prev_time is not None and on_screen[norm]["last"] == prev_time
-                ):
-                    on_screen[norm]["last"] = curr_time
-                    current_norms[norm] = on_screen[norm]
+                # Text similarity check
+                sim = text_similarity(entry["text"], track.best_text)
+
+                # If very close spatially and reasonable similarity
+                # OR if exact text match (fast path)
+                if sim > 0.6 or (dy < 10 and sim > 0.5):
+                    # Score combines similarity and proximity
+                    score = sim * 0.7 + (1.0 - min(dy, 30) / 30.0) * 0.3
+                    if score > best_match_score:
+                        best_match_score = score
+                        best_match_idx = idx
+
+            if best_match_idx != -1 and best_match_score > 0.4:
+                # Update existing track
+                active_tracks[best_match_idx].update(entry, curr_time, is_visible)
+                matched_track_indices.add(best_match_idx)
+            else:
+                # Create new track
+                _track_id_counter += 1
+                new_track = TrackedLine(entry, f"track_{_track_id_counter}")
+                # Initial visibility update
+                if is_visible:
+                    new_track.vis_count = 1
+                    new_track.visible_yet = (
+                        True  # Assume visible on first frame if bright enough?
+                    )
+                    # Actually logic in original was: "Check if it hits visibility threshold on its first frame"
+                    new_track.first_visible = curr_time
                 else:
-                    entry = {
-                        "text": txt,
-                        "words": line_tokens,
-                        "first": curr_time,
-                        "last": curr_time,
-                        "y": y_pos,
-                        "lane": lane,
-                        "w_rois": [(w["x"], w["y"], w["w"], w["h"]) for w in ln_w],
-                    }
-                    if norm in on_screen:
-                        committed.append(on_screen.pop(norm))
-                    on_screen[norm] = entry
-                    current_norms[norm] = entry
+                    new_track.vis_count = 0
+                    new_track.visible_yet = False
+                    new_track.first_visible = 999999.0
 
-        for nt in list(on_screen.keys()):
-            if nt not in current_norms and curr_time - on_screen[nt]["last"] > 1.0:
-                committed.append(on_screen.pop(nt))
+                active_tracks.append(new_track)
+                matched_track_indices.add(len(active_tracks) - 1)
 
-        prev_time = curr_time
+        # Commit tracks that have disappeared
+        remaining_tracks = []
+        for idx, track in enumerate(active_tracks):
+            if idx in matched_track_indices:
+                remaining_tracks.append(track)
+            else:
+                # Track was NOT matched in this frame
+                if curr_time - track.last_seen > 1.0:
+                    # It's been gone for > 1.0s, commit it
+                    if track.first_visible == 999999.0:
+                        track.first_visible = track.last_seen
+                    committed.append(track.to_dict())
+                else:
+                    # Keep it alive for now (gap tolerance)
+                    remaining_tracks.append(track)
 
-    for ent in on_screen.values():
-        committed.append(ent)
+        active_tracks = remaining_tracks
+
+    # Commit any remaining active tracks at end of video
+    for track in active_tracks:
+        if track.first_visible == 999999.0:
+            track.first_visible = track.last_seen
+        committed.append(track.to_dict())
 
     return committed
+
+
+def _calculate_visibility_threshold(
+    raw_frames: List[Dict[str, Any]],
+) -> Dict[int, float]:
+    """Estimate 'full bright' threshold per vertical lane."""
+    lane_brightness: Dict[int, List[float]] = {}
+    for frame in raw_frames:
+        for w in frame.get("words", []):
+            if w.get("brightness", 0) > 0:
+                lane = w["y"] // 20
+                lane_brightness.setdefault(lane, []).append(w["brightness"])
+
+    import numpy as np
+
+    thresholds: Dict[int, float] = {}
+    for lane, vals in lane_brightness.items():
+        if not vals:
+            continue
+        full_bright = float(np.percentile(vals, 95))
+        thresholds[lane] = full_bright * 0.70
+
+    # Default for unknown lanes
+    all_vals = [v for vals in lane_brightness.values() for v in vals]
+    global_def = float(np.percentile(all_vals, 95)) * 0.70 if all_vals else 150.0
+    thresholds[-1] = global_def
+
+    return thresholds
+
+
+def _group_words_into_lines(words: List[Dict[str, Any]]) -> List[List[Dict[str, Any]]]:
+    """Group words in a single frame into lines based on Y proximity."""
+    if not words:
+        return []
+    sorted_words = sorted(words, key=lambda w: w["y"])
+    lines = []
+    curr = [sorted_words[0]]
+    for i in range(1, len(sorted_words)):
+        if sorted_words[i]["y"] - curr[-1]["y"] < 30:
+            curr.append(sorted_words[i])
+        else:
+            lines.append(curr)
+            curr = [sorted_words[i]]
+    lines.append(curr)
+    return lines
+
+
+def _process_line_in_frame(
+    ln_w: List[Dict[str, Any]],
+    curr_time: float,
+    visibility_thresholds: Dict[int, float],
+) -> tuple[Dict[str, Any], bool] | None:
+    """Normalize and prepare a line entry from the current frame."""
+    ln_w.sort(key=lambda w: w["x"])
+    line_tokens = segment_line_tokens_by_visual_gaps(ln_w)
+    line_tokens = normalize_ocr_tokens(line_tokens)
+    if not line_tokens:
+        return None
+    txt = normalize_ocr_line(" ".join(line_tokens))
+    if not txt:
+        return None
+
+    y_pos = int(sum(w["y"] for w in ln_w) / len(ln_w))
+    # Lane height of 30px is sufficient to distinguish standard karaoke rows
+    lane = y_pos // 30
+
+    # Local threshold for this lane
+    threshold = visibility_thresholds.get(lane, visibility_thresholds.get(-1, 150.0))
+
+    # If any word lacks brightness data (e.g. mock data in unit tests),
+    # bypass the gate and assume it's visible.
+    all_words_have_brightness = all("brightness" in w for w in ln_w)
+    if not all_words_have_brightness:
+        is_visible = True
+    else:
+        avg_brightness = sum(w["brightness"] for w in ln_w if "brightness" in w) / len(
+            ln_w
+        )
+        is_visible = avg_brightness >= threshold
+
+    entry = {
+        "text": txt,
+        "words": line_tokens,
+        "first": curr_time,  # Logical detection onset
+        "last": curr_time,
+        "y": y_pos,
+        "lane": lane,
+        "w_rois": [(w["x"], w["y"], w["w"], w["h"]) for w in ln_w],
+    }
+
+    return entry, is_visible
