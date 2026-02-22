@@ -175,17 +175,42 @@ def infer_lyric_colors(
     cluster_info.sort(key=lambda x: x["brightness"])
     foreground_clusters = cluster_info[1:]  # Keep two brightest
 
-    # 4. Of the remaining, sort by support (count) to identify 'stable' states
-    # Actually, we want both persistent states. Usually they are the top 2 brightest anyway.
-    # We'll assign c_unselected as the brighter of the two foregrounds,
-    # and c_selected as the other.
-    foreground_clusters.sort(key=lambda x: x["brightness"], reverse=True)
-    c_un = foreground_clusters[0]["center"]
-    c_sel = (
-        foreground_clusters[1]["center"]
-        if len(foreground_clusters) > 1
-        else foreground_clusters[0]["center"] * 0.7
-    )
+    # 4. Identify Selected vs Unselected
+    # Heuristic:
+    # - If Saturation difference is high, Colored one is Selected (active).
+    # - Else (both grey or both colored), Brighter one is Selected (active).
+    
+    candidates = [c["center"] for c in foreground_clusters]
+    if len(candidates) < 2:
+        # Fallback: assume brighter is Unselected (standard white-to-blue)
+        # But if we only have one, we make a dummy dark selected.
+        c_un = candidates[0]
+        c_sel = c_un * 0.6
+    else:
+        # Convert BGR to HSV for robust S/V comparison
+        # centers are float32, need uint8 for cvtColor
+        src = np.array([[c for c in candidates]], dtype=np.uint8)
+        hsv = cv2.cvtColor(src, cv2.COLOR_BGR2HSV)[0]
+        
+        # hsv[i] = [H, S, V]
+        s0, v0 = float(hsv[0][1]), float(hsv[0][2])
+        s1, v1 = float(hsv[1][1]), float(hsv[1][2])
+        
+        diff_s = abs(s0 - s1)
+        
+        # If saturation differs significantly (> 15% of 255), prefer high saturation as Selected.
+        if diff_s > 40:
+            if s0 > s1:
+                c_sel, c_un = candidates[0], candidates[1]
+            else:
+                c_sel, c_un = candidates[1], candidates[0]
+        else:
+            # Otherwise, prefer higher brightness as Selected (e.g. dim -> bright).
+            # Note: OpenCV V channel is brightness.
+            if v0 > v1:
+                c_sel, c_un = candidates[0], candidates[1]
+            else:
+                c_sel, c_un = candidates[1], candidates[0]
 
     logger.info(
         f"Inferred stable colors: Unselected={c_un.astype(int)}, Selected={c_sel.astype(int)}"
