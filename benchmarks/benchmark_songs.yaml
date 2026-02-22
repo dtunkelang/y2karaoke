@@ -7,11 +7,12 @@ default_lrc_duration_tolerance_sec: 20
 songs:
   - artist: "Queen"
     title: "Bohemian Rhapsody"
-    youtube_id: "fJ9rUzIMcZQ"
-    youtube_url: "https://www.youtube.com/watch?v=fJ9rUzIMcZQ"
+    youtube_id: "9Lxm0iSnKNc"
+    youtube_url: "https://www.youtube.com/watch?v=9Lxm0iSnKNc"
     preferred_lyrics_provider: "lyriq"
     fallback_lyrics_provider: "syncedlyrics"
     lrc_duration_tolerance_sec: 12
+    notes: "Updated to Sing King karaoke version for visual bootstrapping compatibility."
 
   - artist: "Billie Eilish"
     title: "bad guy"
@@ -33,80 +34,90 @@ songs:
 
   - artist: "Dua Lipa"
     title: "Levitating"
-    youtube_id: "TUVcZfQe-Kw"
-    youtube_url: "https://www.youtube.com/watch?v=TUVcZfQe-Kw"
+    youtube_id: "j6ktiPUmgmQ"
+    youtube_url: "https://www.youtube.com/watch?v=j6ktiPUmgmQ"
     preferred_lyrics_provider: "lyriq"
     fallback_lyrics_provider: "syncedlyrics"
     lrc_duration_tolerance_sec: 30
+    notes: "Updated to karaoke version for visual bootstrapping."
 
   - artist: "Bruno Mars"
     title: "Uptown Funk"
-    youtube_id: "OPf0YbXqDm0"
-    youtube_url: "https://www.youtube.com/watch?v=OPf0YbXqDm0"
+    youtube_id: "u-TsARZWbRk"
+    youtube_url: "https://www.youtube.com/watch?v=u-TsARZWbRk"
     preferred_lyrics_provider: "lyriq"
     fallback_lyrics_provider: "syncedlyrics"
     lrc_duration_tolerance_sec: 20
+    notes: "Updated to karaoke version for visual bootstrapping."
 
   - artist: "OneRepublic"
     title: "Counting Stars"
-    youtube_id: "hT_nvWreIhg"
-    youtube_url: "https://www.youtube.com/watch?v=hT_nvWreIhg"
+    youtube_id: "WQIFlS0Bqok"
+    youtube_url: "https://www.youtube.com/watch?v=WQIFlS0Bqok"
     preferred_lyrics_provider: "lyriq"
     fallback_lyrics_provider: "syncedlyrics"
     lrc_duration_tolerance_sec: 35
+    notes: "Updated to karaoke version for visual bootstrapping."
 
   - artist: "The Weeknd"
     title: "Blinding Lights"
-    youtube_id: "fHI8X4OXluQ"
-    youtube_url: "https://www.youtube.com/watch?v=fHI8X4OXluQ"
+    youtube_id: "LEdBLhABQRs"
+    youtube_url: "https://www.youtube.com/watch?v=LEdBLhABQRs"
     preferred_lyrics_provider: "lyriq"
     fallback_lyrics_provider: "syncedlyrics"
     lrc_duration_tolerance_sec: 10
+    notes: "Updated to karaoke version for visual bootstrapping."
 
   - artist: "Imagine Dragons"
     title: "Believer"
-    youtube_id: "7wtfhZwyrcc"
-    youtube_url: "https://www.youtube.com/watch?v=7wtfhZwyrcc"
+    youtube_id: "CWK4s9N6YQ8"
+    youtube_url: "https://www.youtube.com/watch?v=CWK4s9N6YQ8"
     preferred_lyrics_provider: "syncedlyrics"
     fallback_lyrics_provider: "lyriq"
     lrc_duration_tolerance_sec: 20
+    notes: "Updated to karaoke version for visual bootstrapping."
 
   - artist: "Stromae"
     title: "Papaoutai"
-    youtube_id: "oiKj0Z_Xnjc"
-    youtube_url: "https://www.youtube.com/watch?v=oiKj0Z_Xnjc"
+    youtube_id: "dnOFwPjwNiI"
+    youtube_url: "https://www.youtube.com/watch?v=dnOFwPjwNiI"
     preferred_lyrics_provider: "lyriq"
     fallback_lyrics_provider: "syncedlyrics"
     lrc_duration_tolerance_sec: 25
+    notes: "Updated to karaoke version for visual bootstrapping."
 
   - artist: "Indila"
     title: "Derniere danse"
-    youtube_id: "K5KAc5CoCuk"
-    youtube_url: "https://www.youtube.com/watch?v=K5KAc5CoCuk"
+    youtube_id: "g83DvrPBFP8"
+    youtube_url: "https://www.youtube.com/watch?v=g83DvrPBFP8"
     preferred_lyrics_provider: "lyriq"
     fallback_lyrics_provider: "syncedlyrics"
     lrc_duration_tolerance_sec: 22
+    notes: "Updated to karaoke version for visual bootstrapping."
 
   - artist: "ROSALIA"
     title: "DESPECHA"
-    youtube_id: "5g2hT4GmAGU"
-    youtube_url: "https://www.youtube.com/watch?v=5g2hT4GmAGU"
+    youtube_id: "0UG_AnCRgmk"
+    youtube_url: "https://www.youtube.com/watch?v=0UG_AnCRgmk"
     preferred_lyrics_provider: "lyriq"
     fallback_lyrics_provider: "syncedlyrics"
     lrc_duration_tolerance_sec: 10
+    notes: "Updated to karaoke version for visual bootstrapping."
 
   - artist: "J Balvin"
     title: "Mi Gente"
-    youtube_id: "wnJ6LuUFpMo"
-    youtube_url: "https://www.youtube.com/watch?v=wnJ6LuUFpMo"
+    youtube_id: "m08bnH5G8p8"
+    youtube_url: "https://www.youtube.com/watch?v=m08bnH5G8p8"
     preferred_lyrics_provider: "lyriq"
     fallback_lyrics_provider: "syncedlyrics"
     lrc_duration_tolerance_sec: 18
+    notes: "Updated to karaoke version for visual bootstrapping."
 
   - artist: "Taylor Swift"
     title: "Anti-Hero"
-    youtube_id: "b1kbLwvqugk"
-    youtube_url: "https://www.youtube.com/watch?v=b1kbLwvqugk"
+    youtube_id: "TdPPo-hs5kA"
+    youtube_url: "https://www.youtube.com/watch?v=TdPPo-hs5kA"
     preferred_lyrics_provider: "lyriq"
     fallback_lyrics_provider: "syncedlyrics"
     lrc_duration_tolerance_sec: 15
+    notes: "Updated to karaoke version for visual bootstrapping."

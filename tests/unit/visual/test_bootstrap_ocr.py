@@ -462,6 +462,42 @@ def test_suppress_transient_digit_heavy_frames_clears_single_glitch_frame():
     assert out[1]["words"] == []
 
 
+def test_fill_transient_ocr_gaps_injects_missing_word():
+    frames = [
+        {
+            "time": 205.76,
+            "words": [
+                {"text": "Hello", "x": 100, "y": 100, "w": 50, "h": 20},
+                {"text": "World", "x": 160, "y": 100, "w": 50, "h": 20},
+            ],
+        },
+        {
+            "time": 206.08,
+            # "World" is missing in this frame
+            "words": [
+                {"text": "Hello", "x": 100, "y": 100, "w": 50, "h": 20},
+            ],
+        },
+        {
+            "time": 206.40,
+            "words": [
+                {"text": "Hello", "x": 100, "y": 100, "w": 50, "h": 20},
+                {"text": "World", "x": 160, "y": 100, "w": 50, "h": 20},
+            ],
+        },
+    ]
+    out = _MODULE._fill_transient_ocr_gaps(frames)
+    
+    # Check middle frame
+    middle_words = sorted(out[1]["words"], key=lambda w: w["x"])
+    assert len(middle_words) == 2
+    assert middle_words[0]["text"] == "Hello"
+    assert middle_words[1]["text"] == "World"
+    # Interpolated pos (same as prev/next in this simple case)
+    assert middle_words[1]["x"] == 160
+    assert middle_words[1]["y"] == 100
+
+
 def test_build_line_boxes_groups_words_by_row():
     words = [
         {"text": "You", "x": 20, "y": 40, "w": 30, "h": 12},

@@ -683,6 +683,115 @@ def _suppress_transient_digit_heavy_frames(
     return out
 
 
+def _fill_transient_ocr_gaps(
+    raw_frames: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    """Fill single-frame gaps where a word is seen in prev/next frames but missing in current."""
+    if len(raw_frames) < 3:
+        return raw_frames
+
+    out = [dict(fr) for fr in raw_frames]
+
+    # Helper to find match
+    def _find_match(
+        target_w: dict[str, Any], candidates: list[Any]
+    ) -> dict[str, Any] | None:
+        tx = float(target_w.get("x", 0))
+        ty = float(target_w.get("y", 0))
+        ttext = str(target_w.get("text", ""))
+
+        for cw in candidates:
+            if not isinstance(cw, dict):
+                continue
+            cx = float(cw.get("x", 0))
+            cy = float(cw.get("y", 0))
+            ctext = str(cw.get("text", ""))
+
+            # Spatial proximity (20px x 10px tolerance)
+            if abs(cx - tx) > 20 or abs(cy - ty) > 10:
+                continue
+
+            if ttext == ctext:
+                return cw
+        return None
+
+    for i in range(1, len(raw_frames) - 1):
+        prev_f = raw_frames[i - 1]
+        next_f = raw_frames[i + 1]
+
+        # Use the mutable output frame for current
+        curr_f = out[i]
+
+        t_prev = float(prev_f.get("time", 0.0))
+        t_curr = float(curr_f.get("time", 0.0))
+        t_next = float(next_f.get("time", 0.0))
+
+        if (t_curr - t_prev) > 0.6 or (t_next - t_curr) > 0.6:
+            continue
+
+        prev_words = prev_f.get("words", [])
+        next_words = next_f.get("words", [])
+        curr_words = curr_f.get("words", [])
+
+        if (
+            not isinstance(prev_words, list)
+            or not isinstance(next_words, list)
+            or not isinstance(curr_words, list)
+        ):
+            continue
+
+        injected_words = []
+        for pw in prev_words:
+            if not isinstance(pw, dict):
+                continue
+
+            nw = _find_match(pw, next_words)
+            if not nw:
+                continue
+
+            cw = _find_match(pw, curr_words)
+            if cw:
+                continue
+
+            # Interpolate
+            px, py = float(pw.get("x", 0)), float(pw.get("y", 0))
+            nx, ny = float(nw.get("x", 0)), float(nw.get("y", 0))
+            pw_w, pw_h = float(pw.get("w", 0)), float(pw.get("h", 0))
+            nw_w, nw_h = float(nw.get("w", 0)), float(nw.get("h", 0))
+
+            ix = int((px + nx) * 0.5)
+            iy = int((py + ny) * 0.5)
+            iw = int((pw_w + nw_w) * 0.5)
+            ih = int((pw_h + nw_h) * 0.5)
+
+            pb = float(pw.get("brightness", 0))
+            nb = float(nw.get("brightness", 0))
+            pd = float(pw.get("density", 0))
+            nd = float(nw.get("density", 0))
+
+            new_word = {
+                "text": nw.get("text"),
+                "x": ix,
+                "y": iy,
+                "w": iw,
+                "h": ih,
+                "brightness": (pb + nb) * 0.5,
+                "density": (pd + nd) * 0.5,
+            }
+            injected_words.append(new_word)
+
+        if injected_words:
+            # Combine and rebuild lines
+            combined = list(curr_words) + injected_words
+            out[i] = {
+                **curr_f,
+                "words": combined,
+                "line_boxes": _build_line_boxes(combined, roi_nd=None),
+            }
+
+    return out
+
+
 def _apply_post_ocr_filters(
     raw_frames: list[dict[str, Any]],
     *,
@@ -696,7 +805,8 @@ def _apply_post_ocr_filters(
         filtered, roi_width=roi_width, roi_height=roi_height
     )
     filtered = _suppress_intro_title_words(filtered)
-    return _suppress_transient_digit_heavy_frames(filtered)
+    filtered = _suppress_transient_digit_heavy_frames(filtered)
+    return _fill_transient_ocr_gaps(filtered)
 
 
 def collect_raw_frames(
