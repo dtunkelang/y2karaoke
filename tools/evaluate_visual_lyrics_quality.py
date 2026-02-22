@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# flake8: noqa: E402
 """Evaluate visual-bootstrapped lyrics token quality against LRC text."""
 
 from __future__ import annotations
@@ -16,7 +17,9 @@ if str(SRC_DIR) not in sys.path:
     sys.path.insert(0, str(SRC_DIR))
 
 from y2karaoke.core.components.lyrics.lrc import parse_lrc_with_timing  # noqa: E402
-from y2karaoke.core.components.lyrics.sync import fetch_lyrics_multi_source  # noqa: E402
+from y2karaoke.core.components.lyrics.sync import (
+    fetch_lyrics_multi_source,
+)  # noqa: E402
 from y2karaoke.core.text_utils import normalize_text_basic  # noqa: E402
 
 

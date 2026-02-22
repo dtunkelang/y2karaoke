@@ -1,0 +1,425 @@
+[1/13] Queen - Bohemian Rhapsody
+    >>> phase_start whisper at 30.0s
+    ... running 30.0s (timeout 1800s) stage: [whisper] cpu=261.0%
+    ... running 60.0s (timeout 1800s) stage: [whisper] cpu=288.8%
+    ... running 90.1s (timeout 1800s) stage: [whisper] cpu=287.8%
+    ... running 120.1s (timeout 1800s) stage: [whisper] cpu=247.6%
+    ... running 150.1s (timeout 1800s) stage: [whisper] cpu=244.8%
+    ... running 180.2s (timeout 1800s) stage: [whisper] cpu=236.4%
+    ... running 210.2s (timeout 1800s) stage: [whisper] cpu=236.6%
+    ... running 240.2s (timeout 1800s) stage: [whisper] cpu=288.6%
+    ... running 270.3s (timeout 1800s) stage: [whisper] cpu=257.3%
+    ... running 300.3s (timeout 1800s) stage: [whisper] cpu=241.3%
+    ... running 330.3s (timeout 1800s) stage: [whisper] cpu=296.7%
+    ... running 360.3s (timeout 1800s) stage: [whisper] cpu=242.8%
+    ... running 390.4s (timeout 1800s) stage: [whisper] cpu=231.5%
+    ... running 420.4s (timeout 1800s) stage: [whisper] cpu=255.9%
+    ... running 450.4s (timeout 1800s) stage: [whisper] cpu=296.1%
+    ... running 480.5s (timeout 1800s) stage: [whisper] cpu=280.1%
+    ... running 510.5s (timeout 1800s) stage: [whisper] cpu=295.6%
+    ... running 540.5s (timeout 1800s) stage: [whisper] cpu=258.4%
+    ... running 570.6s (timeout 1800s) stage: [whisper] cpu=265.5%
+    ... running 600.6s (timeout 1800s) stage: [whisper] cpu=269.8%
+    ... running 630.6s (timeout 1800s) stage: [whisper] cpu=265.9%
+    ... running 660.7s (timeout 1800s) stage: [whisper] cpu=239.1%
+    ... running 690.7s (timeout 1800s) stage: [whisper] cpu=266.4%
+    ... running 720.7s (timeout 1800s) stage: [whisper] cpu=255.8%
+    ... running 750.8s (timeout 1800s) stage: [whisper_alignment] INFO:y2karaoke.core.components.whisper.whisper_integration:Transcribing vocals... (cpu=388.8%)
+    ... running 780.8s (timeout 1800s) stage: [whisper_alignment] INFO:y2karaoke.core.components.whisper.whisper_integration:Transcribing vocals... (cpu=398.9%)
+    ... running 810.8s (timeout 1800s) stage: [whisper_alignment] INFO:y2karaoke.core.components.whisper.whisper_integration:Transcribing vocals... (cpu=457.6%)
+    >>> phase_start alignment at 840.9s
+    ... running 840.9s (timeout 1800s) stage: [whisper_alignment] INFO:y2karaoke.core.components.whisper.whisper_alignment_activity:Vocal gap filler: injected 457 [VOCAL] pseudo-words (cpu=3.0%)
+    ... running 870.9s (timeout 1800s) stage: [whisper_alignment] INFO:y2karaoke.core.components.whisper.whisper_alignment_activity:Vocal gap filler: injected 457 [VOCAL] pseudo-words (cpu=3.3%)
+    >>> phase_summary alignment=43.9s, whisper=810.9s
+    >>> cache_decisions audio=hit (logged cached audio), separation=miss (generated stems), whisper=miss (generated whisper output), alignment=computed (timing report written)
+  -> ok (884.76s)
+[2/13] Billie Eilish - bad guy
+    >>> phase_start whisper at 30.0s
+    ... running 30.0s (timeout 1800s) stage: [whisper] cpu=231.2%
+    ... running 60.0s (timeout 1800s) stage: [whisper] cpu=233.1%
+    ... running 90.1s (timeout 1800s) stage: [whisper] cpu=289.2%
+    ... running 120.1s (timeout 1800s) stage: [whisper] cpu=221.1%
+    ... running 150.1s (timeout 1800s) stage: [whisper] cpu=270.8%
+    ... running 180.2s (timeout 1800s) stage: [whisper] cpu=240.5%
+    ... running 210.2s (timeout 1800s) stage: [whisper] cpu=244.8%
+    ... running 240.2s (timeout 1800s) stage: [whisper] cpu=253.1%
+    ... running 270.3s (timeout 1800s) stage: [whisper] cpu=291.4%
+    ... running 300.3s (timeout 1800s) stage: [whisper] cpu=217.5%
+    ... running 330.3s (timeout 1800s) stage: [whisper] cpu=246.9%
+    ... running 360.4s (timeout 1800s) stage: [whisper] cpu=252.6%
+    ... running 390.4s (timeout 1800s) stage: [whisper] cpu=246.8%
+    >>> phase_start alignment at 420.4s
+    ... running 420.4s (timeout 1800s) stage: [whisper_alignment] INFO:y2karaoke.core.components.whisper.whisper_integration:Loading Whisper model (large)... (cpu=51.2%)
+    >>> phase_start whisper at 450.5s
+    ... running 450.5s (timeout 1800s) stage: [whisper_alignment] INFO:y2karaoke.core.components.whisper.whisper_integration:Transcribing vocals... (cpu=456.8%)
+    ... running 480.5s (timeout 1800s) stage: [whisper_alignment] INFO:y2karaoke.core.components.whisper.whisper_integration:Transcribing vocals... (cpu=387.4%)
+    >>> phase_start alignment at 510.6s
+    ... running 510.6s (timeout 1800s) stage: [whisper_alignment] INFO:y2karaoke.core.components.whisper.whisper_alignment_activity:Vocal gap filler: injected 102 [VOCAL] pseudo-words (cpu=8.6%)
+    ... running 540.6s (timeout 1800s) stage: [whisper_alignment] INFO:y2karaoke.core.components.whisper.whisper_alignment_activity:Vocal gap filler: injected 102 [VOCAL] pseudo-words (cpu=8.6%)
+    >>> phase_summary alignment=72.8s, whisper=450.5s
+    >>> cache_decisions audio=miss (downloaded), separation=miss (generated stems), whisper=miss (generated whisper output), alignment=computed (timing report written)
+  -> ok (553.26s)
+[3/13] Ed Sheeran - Shape of You
+    >>> phase_start whisper at 30.0s
+    ... running 30.0s (timeout 1800s) stage: [whisper] cpu=270.7%
+    ... running 60.0s (timeout 1800s) stage: [whisper] cpu=280.8%
+    ... running 90.1s (timeout 1800s) stage: [whisper] cpu=249.5%
+    ... running 120.1s (timeout 1800s) stage: [whisper] cpu=256.3%
+    ... running 150.1s (timeout 1800s) stage: [whisper] cpu=218.1%
+    ... running 180.2s (timeout 1800s) stage: [whisper] cpu=259.8%
+    ... running 210.2s (timeout 1800s) stage: [whisper] cpu=264.3%
+    ... running 240.2s (timeout 1800s) stage: [whisper] cpu=246.7%
+    ... running 270.3s (timeout 1800s) stage: [whisper] cpu=289.3%
+    ... running 300.3s (timeout 1800s) stage: [whisper] cpu=235.7%
+    ... running 330.3s (timeout 1800s) stage: [whisper] cpu=284.6%
+    ... running 360.4s (timeout 1800s) stage: [whisper] cpu=260.3%
+    ... running 390.4s (timeout 1800s) stage: [whisper] cpu=290.6%
+    ... running 420.5s (timeout 1800s) stage: [whisper] cpu=237.2%
+    ... running 450.5s (timeout 1800s) stage: [whisper] cpu=279.8%
+    ... running 480.5s (timeout 1800s) stage: [whisper] cpu=293.9%
+    >>> phase_start alignment at 510.6s
+    ... running 510.6s (timeout 1800s) stage: [whisper_alignment] INFO:y2karaoke.core.components.whisper.whisper_integration:Loading Whisper model (large)... (cpu=37.0%)
+    >>> phase_start whisper at 540.6s
+    ... running 540.6s (timeout 1800s) stage: [whisper_alignment] INFO:y2karaoke.core.components.whisper.whisper_integration:Transcribing vocals... (cpu=386.6%)
+    ... running 570.6s (timeout 1800s) stage: [whisper_alignment] INFO:y2karaoke.core.components.whisper.whisper_integration:Transcribing vocals... (cpu=472.3%)
+    ... running 600.7s (timeout 1800s) stage: [whisper_alignment] INFO:y2karaoke.core.components.whisper.whisper_integration:Transcribing vocals... (cpu=479.8%)
+    ... running 630.7s (timeout 1800s) stage: [whisper_alignment] INFO:y2karaoke.core.components.whisper.whisper_integration:Transcribing vocals... (cpu=470.9%)
+    ... running 660.8s (timeout 1800s) stage: [whisper_alignment] INFO:y2karaoke.core.components.whisper.whisper_integration:Transcribing vocals... (cpu=393.5%)
+    ... running 690.8s (timeout 1800s) stage: [whisper_alignment] INFO:y2karaoke.core.components.whisper.whisper_integration:Transcribing vocals... (cpu=404.4%)
+    ... running 720.9s (timeout 1800s) stage: [whisper_alignment] INFO:y2karaoke.core.components.whisper.whisper_integration:Transcribing vocals... (cpu=458.4%)
+    >>> phase_start alignment at 750.9s
+    ... running 750.9s (timeout 1800s) stage: [whisper_alignment] INFO:y2karaoke.core.components.whisper.whisper_alignment_activity:Vocal gap filler: injected 27 [VOCAL] pseudo-words (cpu=7.2%)
+    ... running 781.0s (timeout 1800s) stage: [whisper_alignment] INFO:y2karaoke.core.components.whisper.whisper_alignment_activity:Vocal gap filler: injected 27 [VOCAL] pseudo-words (cpu=9.3%)
+    >>> phase_summary alignment=80.2s, whisper=690.9s
+    >>> cache_decisions audio=miss (downloaded), separation=miss (generated stems), whisper=miss (generated whisper output), alignment=computed (timing report written)
+  -> ok (801.15s)
+[4/13] Dua Lipa - Levitating
+    >>> phase_start whisper at 30.0s
+    ... running 30.0s (timeout 1800s) stage: [whisper] cpu=271.3%
+    ... running 60.0s (timeout 1800s) stage: [whisper] cpu=237.3%
+    ... running 90.1s (timeout 1800s) stage: [whisper] cpu=276.5%
+    ... running 120.1s (timeout 1800s) stage: [whisper] cpu=251.1%
+    ... running 150.1s (timeout 1800s) stage: [whisper] cpu=286.5%
+    ... running 180.2s (timeout 1800s) stage: [whisper] cpu=281.8%
+    ... running 210.2s (timeout 1800s) stage: [whisper] cpu=278.0%
+    ... running 240.2s (timeout 1800s) stage: [whisper] cpu=240.8%
+    ... running 270.3s (timeout 1800s) stage: [whisper] cpu=239.7%
+    ... running 300.3s (timeout 1800s) stage: [whisper] cpu=286.5%
+    ... running 330.3s (timeout 1800s) stage: [whisper] cpu=248.9%
+    ... running 360.4s (timeout 1800s) stage: [whisper] cpu=290.0%
+    ... running 390.4s (timeout 1800s) stage: [whisper] cpu=298.2%
+    ... running 420.4s (timeout 1800s) stage: [whisper] cpu=256.5%
+    ... running 450.5s (timeout 1800s) stage: [whisper] cpu=244.9%
+    ... running 480.5s (timeout 1800s) stage: [whisper] cpu=217.2%
+    ... running 510.5s (timeout 1800s) stage: [whisper] cpu=246.4%
+    ... running 540.6s (timeout 1800s) stage: [whisper_alignment] INFO:y2karaoke.core.components.whisper.whisper_integration:Transcribing vocals... (cpu=452.9%)
+    ... running 570.6s (timeout 1800s) stage: [whisper_alignment] INFO:y2karaoke.core.components.whisper.whisper_integration:Transcribing vocals... (cpu=454.4%)
+    ... running 600.7s (timeout 1800s) stage: [whisper_alignment] INFO:y2karaoke.core.components.whisper.whisper_integration:Transcribing vocals... (cpu=483.8%)
+    ... running 630.7s (timeout 1800s) stage: [whisper_alignment] INFO:y2karaoke.core.components.whisper.whisper_integration:Transcribing vocals... (cpu=480.0%)
+    ... running 660.7s (timeout 1800s) stage: [whisper_alignment] INFO:y2karaoke.core.components.whisper.whisper_integration:Transcribing vocals... (cpu=471.5%)
+    ... running 690.8s (timeout 1800s) stage: [whisper_alignment] INFO:y2karaoke.core.components.whisper.whisper_integration:Transcribing vocals... (cpu=466.1%)
+    ... running 720.8s (timeout 1800s) stage: [whisper_alignment] INFO:y2karaoke.core.components.whisper.whisper_integration:Transcribing vocals... (cpu=475.0%)
+    >>> phase_start alignment at 750.9s
+    ... running 750.9s (timeout 1800s) stage: [whisper_alignment] INFO:y2karaoke.core.components.whisper.whisper_alignment_activity:Vocal gap filler: injected 51 [VOCAL] pseudo-words (cpu=6.4%)
+    ... running 780.9s (timeout 1800s) stage: [whisper_alignment] INFO:y2karaoke.core.components.whisper.whisper_alignment_activity:Vocal gap filler: injected 51 [VOCAL] pseudo-words (cpu=10.5%)
+    ... running 811.0s (timeout 1800s) stage: [whisper_alignment] INFO:y2karaoke.core.components.whisper.whisper_alignment_activity:Vocal gap filler: injected 51 [VOCAL] pseudo-words (cpu=2.8%)
+    >>> phase_summary alignment=65.9s, whisper=720.9s
+    >>> cache_decisions audio=miss (downloaded), separation=miss (generated stems), whisper=miss (generated whisper output), alignment=computed (timing report written)
+  -> ok (816.84s)
+[5/13] Bruno Mars - Uptown Funk
+    >>> phase_start whisper at 30.0s
+    ... running 30.0s (timeout 1800s) stage: [whisper] cpu=235.9%
+    ... running 60.0s (timeout 1800s) stage: [whisper] cpu=295.0%
+    ... running 90.1s (timeout 1800s) stage: [whisper] cpu=242.3%
+    ... running 120.1s (timeout 1800s) stage: [whisper] cpu=231.6%
+    ... running 150.1s (timeout 1800s) stage: [whisper] cpu=265.5%
+    ... running 180.2s (timeout 1800s) stage: [whisper] cpu=237.8%
+    ... running 210.2s (timeout 1800s) stage: [whisper] cpu=252.7%
+    ... running 240.2s (timeout 1800s) stage: [whisper] cpu=235.6%
+    ... running 270.3s (timeout 1800s) stage: [whisper] cpu=236.7%
+    ... running 300.3s (timeout 1800s) stage: [whisper] cpu=234.6%
+    ... running 330.3s (timeout 1800s) stage: [whisper] cpu=286.1%
+    ... running 360.4s (timeout 1800s) stage: [whisper] cpu=267.9%
+    ... running 390.4s (timeout 1800s) stage: [whisper] cpu=257.1%
+    ... running 420.5s (timeout 1800s) stage: [whisper] cpu=249.2%
+    ... running 450.5s (timeout 1800s) stage: [whisper] cpu=262.3%
+    ... running 480.5s (timeout 1800s) stage: [whisper] cpu=292.2%
+    ... running 510.6s (timeout 1800s) stage: [whisper] cpu=283.5%
+    ... running 540.6s (timeout 1800s) stage: [whisper] cpu=256.1%
+    ... running 570.6s (timeout 1800s) stage: [whisper] cpu=285.5%
+    ... running 600.7s (timeout 1800s) stage: [whisper] cpu=293.8%
+    ... running 630.7s (timeout 1800s) stage: INFO:y2karaoke.core.components.lyrics.sync:Found LRC with matching duration: 269s (target: 270s) (cpu=0.0%)
+    ... running 660.8s (timeout 1800s) stage: [whisper_alignment] INFO:y2karaoke.core.components.whisper.whisper_integration:Transcribing vocals... (cpu=454.9%)
+    ... running 690.8s (timeout 1800s) stage: [whisper_alignment] INFO:y2karaoke.core.components.whisper.whisper_integration:Transcribing vocals... (cpu=450.6%)
+    ... running 720.8s (timeout 1800s) stage: [whisper_alignment] INFO:y2karaoke.core.components.whisper.whisper_integration:Transcribing vocals... (cpu=449.4%)
+    ... running 750.9s (timeout 1800s) stage: [whisper_alignment] INFO:y2karaoke.core.components.whisper.whisper_integration:Transcribing vocals... (cpu=457.2%)
+    >>> phase_start alignment at 780.9s
+    ... running 780.9s (timeout 1800s) stage: [whisper_alignment] INFO:y2karaoke.core.components.whisper.whisper_alignment_activity:Vocal gap filler: injected 246 [VOCAL] pseudo-words (cpu=3.8%)
+    ... running 811.0s (timeout 1800s) stage: [whisper_alignment] INFO:y2karaoke.core.components.whisper.whisper_alignment_activity:Vocal gap filler: injected 246 [VOCAL] pseudo-words (cpu=3.6%)
+    >>> phase_summary alignment=58.8s, whisper=750.9s
+    >>> cache_decisions audio=miss (downloaded), separation=miss (generated stems), whisper=miss (generated whisper output), alignment=computed (timing report written)
+  -> ok (839.71s)
+[6/13] OneRepublic - Counting Stars
+    >>> phase_start whisper at 30.0s
+    ... running 30.0s (timeout 1800s) stage: [whisper] cpu=292.1%
+    ... running 60.0s (timeout 1800s) stage: [whisper] cpu=246.6%
+    ... running 90.1s (timeout 1800s) stage: [whisper] cpu=267.9%
+    ... running 120.1s (timeout 1800s) stage: [whisper] cpu=244.2%
+    ... running 150.1s (timeout 1800s) stage: [whisper] cpu=272.8%
+    ... running 180.2s (timeout 1800s) stage: [whisper] cpu=265.0%
+    ... running 210.2s (timeout 1800s) stage: [whisper] cpu=244.4%
+    ... running 240.2s (timeout 1800s) stage: [whisper] cpu=262.0%
+    ... running 270.3s (timeout 1800s) stage: [whisper] cpu=237.1%
+    ... running 300.3s (timeout 1800s) stage: [whisper] cpu=294.2%
+    ... running 330.4s (timeout 1800s) stage: [whisper] cpu=262.7%
+    ... running 360.4s (timeout 1800s) stage: [whisper] cpu=244.3%
+    ... running 390.4s (timeout 1800s) stage: [whisper] cpu=272.5%
+    ... running 420.5s (timeout 1800s) stage: [whisper] cpu=240.5%
+    ... running 450.5s (timeout 1800s) stage: [whisper] cpu=279.1%
+    ... running 480.5s (timeout 1800s) stage: [whisper] cpu=271.4%
+    ... running 510.6s (timeout 1800s) stage: [whisper] cpu=283.6%
+    ... running 540.6s (timeout 1800s) stage: [whisper] cpu=219.5%
+    ... running 570.7s (timeout 1800s) stage: [whisper] cpu=260.6%
+    ... running 600.7s (timeout 1800s) stage: [whisper] cpu=256.8%
+    ... running 630.7s (timeout 1800s) stage: [whisper_alignment] INFO:y2karaoke.core.components.whisper.whisper_integration:Transcribing vocals... (cpu=386.5%)
+    ... running 660.8s (timeout 1800s) stage: [whisper_alignment] INFO:y2karaoke.core.components.whisper.whisper_integration:Transcribing vocals... (cpu=396.2%)
+    ... running 690.8s (timeout 1800s) stage: [whisper_alignment] INFO:y2karaoke.core.components.whisper.whisper_integration:Transcribing vocals... (cpu=481.5%)
+    ... running 720.9s (timeout 1800s) stage: [whisper_alignment] INFO:y2karaoke.core.components.whisper.whisper_integration:Transcribing vocals... (cpu=401.2%)
+    ... running 750.9s (timeout 1800s) stage: [whisper_alignment] INFO:y2karaoke.core.components.whisper.whisper_integration:Transcribing vocals... (cpu=455.4%)
+    ... running 780.9s (timeout 1800s) stage: [whisper_alignment] INFO:y2karaoke.core.components.whisper.whisper_integration:Transcribing vocals... (cpu=384.9%)
+    ... running 811.0s (timeout 1800s) stage: [whisper_alignment] INFO:y2karaoke.core.components.whisper.whisper_integration:Transcribing vocals... (cpu=396.6%)
+    ... running 841.0s (timeout 1800s) stage: [whisper_alignment] INFO:y2karaoke.core.components.whisper.whisper_integration:Transcribing vocals... (cpu=472.6%)
+    >>> phase_start alignment at 871.1s
+    ... running 871.1s (timeout 1800s) stage: [whisper_alignment] INFO:y2karaoke.core.components.whisper.whisper_alignment_activity:Vocal gap filler: injected 86 [VOCAL] pseudo-words (cpu=4.5%)
+    >>> phase_summary alignment=28.6s, whisper=841.1s
+    >>> cache_decisions audio=miss (downloaded), separation=miss (generated stems), whisper=miss (generated whisper output), alignment=computed (timing report written)
+  -> ok (899.7s)
+[7/13] The Weeknd - Blinding Lights
+    >>> phase_start whisper at 30.0s
+    ... running 30.0s (timeout 1800s) stage: [whisper] cpu=255.6%
+    ... running 60.0s (timeout 1800s) stage: [whisper] cpu=274.0%
+    ... running 90.1s (timeout 1800s) stage: [whisper] cpu=258.6%
+    ... running 120.1s (timeout 1800s) stage: [whisper] cpu=287.0%
+    ... running 150.1s (timeout 1800s) stage: [whisper] cpu=266.6%
+    ... running 180.2s (timeout 1800s) stage: [whisper] cpu=270.5%
+    ... running 210.2s (timeout 1800s) stage: [whisper] cpu=259.3%
+    ... running 240.3s (timeout 1800s) stage: [whisper] cpu=243.7%
+    ... running 270.3s (timeout 1800s) stage: [whisper] cpu=236.9%
+    ... running 300.3s (timeout 1800s) stage: [whisper] cpu=241.5%
+    ... running 330.4s (timeout 1800s) stage: [whisper] cpu=273.4%
+    ... running 360.4s (timeout 1800s) stage: [whisper] cpu=242.4%
+    ... running 390.4s (timeout 1800s) stage: [whisper] cpu=227.3%
+    ... running 420.5s (timeout 1800s) stage: [whisper] cpu=267.0%
+    ... running 450.5s (timeout 1800s) stage: [whisper] cpu=257.9%
+    >>> phase_start alignment at 480.5s
+    ... running 480.5s (timeout 1800s) stage: [whisper_alignment] WARNING:y2karaoke.core.components.lyrics.lyrics_whisper:Large timing delta (+14.56s) exceeds auto-offset clamp (5.0s) - not auto-applying. (cpu=73.5%)
+    >>> phase_start whisper at 510.6s
+    ... running 510.6s (timeout 1800s) stage: [whisper_alignment] INFO:y2karaoke.core.components.whisper.whisper_integration:Transcribing vocals... (cpu=391.2%)
+    ... running 540.6s (timeout 1800s) stage: [whisper_alignment] INFO:y2karaoke.core.components.whisper.whisper_integration:Transcribing vocals... (cpu=480.7%)
+    ... running 570.7s (timeout 1800s) stage: [whisper_alignment] INFO:y2karaoke.core.components.whisper.whisper_integration:Transcribing vocals... (cpu=458.2%)
+    >>> phase_start alignment at 600.7s
+    ... running 600.7s (timeout 1800s) stage: [whisper_alignment] INFO:y2karaoke.core.components.whisper.whisper_alignment_activity:Vocal gap filler: injected 178 [VOCAL] pseudo-words (cpu=6.3%)
+    ... running 630.8s (timeout 1800s) stage: [whisper_alignment] INFO:y2karaoke.core.components.whisper.whisper_alignment_activity:Vocal gap filler: injected 178 [VOCAL] pseudo-words (cpu=6.6%)
+    >>> phase_summary alignment=67.6s, whisper=540.6s
+    >>> cache_decisions audio=miss (downloaded), separation=miss (generated stems), whisper=miss (generated whisper output), alignment=computed (timing report written)
+  -> ok (638.22s)
+[8/13] Imagine Dragons - Believer
+    >>> phase_start whisper at 30.0s
+    ... running 30.0s (timeout 1800s) stage: [whisper] cpu=229.5%
+    ... running 60.0s (timeout 1800s) stage: [whisper] cpu=234.2%
+    ... running 90.1s (timeout 1800s) stage: [whisper] cpu=254.4%
+    ... running 120.1s (timeout 1800s) stage: [whisper] cpu=219.0%
+    ... running 150.1s (timeout 1800s) stage: [whisper] cpu=284.9%
+    ... running 180.2s (timeout 1800s) stage: [whisper] cpu=221.4%
+    ... running 210.2s (timeout 1800s) stage: [whisper] cpu=270.0%
+    ... running 240.3s (timeout 1800s) stage: [whisper] cpu=286.4%
+    ... running 270.3s (timeout 1800s) stage: [whisper] cpu=210.7%
+    ... running 300.3s (timeout 1800s) stage: [whisper] cpu=247.7%
+    ... running 330.4s (timeout 1800s) stage: [whisper] cpu=229.4%
+    ... running 360.4s (timeout 1800s) stage: [whisper] cpu=224.4%
+    ... running 390.4s (timeout 1800s) stage: [whisper] cpu=227.4%
+    ... running 420.5s (timeout 1800s) stage: [whisper] cpu=196.7%
+    ... running 450.5s (timeout 1800s) stage: [whisper] cpu=277.1%
+    ... running 480.5s (timeout 1800s) stage: [whisper] cpu=263.9%
+    ... running 510.6s (timeout 1800s) stage: [whisper] cpu=246.7%
+    ... running 540.6s (timeout 1800s) stage: WARNING:y2karaoke.core.components.lyrics.sync:Using LRC despite duration mismatch. LRC timing may be off. (cpu=0.0%)
+    ... running 570.7s (timeout 1800s) stage: [whisper_alignment] INFO:y2karaoke.core.components.whisper.whisper_integration:Transcribing vocals... (cpu=397.4%)
+    ... running 600.7s (timeout 1800s) stage: [whisper_alignment] INFO:y2karaoke.core.components.whisper.whisper_integration:Transcribing vocals... (cpu=383.9%)
+    ... running 630.8s (timeout 1800s) stage: [whisper_alignment] INFO:y2karaoke.core.components.whisper.whisper_integration:Transcribing vocals... (cpu=403.3%)
+    ... running 660.8s (timeout 1800s) stage: [whisper_alignment] INFO:y2karaoke.core.components.whisper.whisper_integration:Transcribing vocals... (cpu=468.9%)
+    ... running 690.9s (timeout 1800s) stage: [whisper_alignment] INFO:y2karaoke.core.components.whisper.whisper_integration:Transcribing vocals... (cpu=384.5%)
+    ... running 720.9s (timeout 1800s) stage: [whisper_alignment] INFO:y2karaoke.core.components.whisper.whisper_integration:Transcribing vocals... (cpu=386.9%)
+    ... running 751.0s (timeout 1800s) stage: [whisper_alignment] INFO:y2karaoke.core.components.whisper.whisper_integration:Transcribing vocals... (cpu=380.8%)
+    >>> phase_start alignment at 781.0s
+    ... running 781.0s (timeout 1800s) stage: [whisper_alignment] INFO:y2karaoke.core.components.whisper.whisper_alignment_activity:Vocal gap filler: injected 125 [VOCAL] pseudo-words (cpu=7.8%)
+    >>> phase_summary alignment=23.1s, whisper=751.0s
+    >>> cache_decisions audio=miss (downloaded), separation=miss (generated stems), whisper=miss (generated whisper output), alignment=computed (timing report written)
+  -> ok (804.08s)
+[9/13] Stromae - Papaoutai
+    >>> phase_start whisper at 30.0s
+    ... running 30.0s (timeout 1800s) stage: [whisper] cpu=276.9%
+    ... running 60.0s (timeout 1800s) stage: [whisper] cpu=244.1%
+    ... running 90.1s (timeout 1800s) stage: [whisper] cpu=281.9%
+    ... running 120.1s (timeout 1800s) stage: [whisper] cpu=297.8%
+    ... running 150.1s (timeout 1800s) stage: [whisper] cpu=256.1%
+    ... running 180.2s (timeout 1800s) stage: [whisper] cpu=254.3%
+    ... running 210.2s (timeout 1800s) stage: [whisper] cpu=238.7%
+    ... running 240.3s (timeout 1800s) stage: [whisper] cpu=247.4%
+    ... running 270.3s (timeout 1800s) stage: [whisper] cpu=297.5%
+    ... running 300.3s (timeout 1800s) stage: [whisper] cpu=295.5%
+    ... running 330.4s (timeout 1800s) stage: [whisper] cpu=294.8%
+    ... running 360.4s (timeout 1800s) stage: [whisper] cpu=244.0%
+    ... running 390.4s (timeout 1800s) stage: [whisper] cpu=237.2%
+    ... running 420.5s (timeout 1800s) stage: [whisper] cpu=299.7%
+    ... running 450.5s (timeout 1800s) stage: [whisper] cpu=252.7%
+    ... running 480.5s (timeout 1800s) stage: [whisper] cpu=287.3%
+    ... running 510.6s (timeout 1800s) stage: [whisper] cpu=264.7%
+    ... running 540.6s (timeout 1800s) stage: [whisper] cpu=294.4%
+    ... running 570.7s (timeout 1800s) stage: [whisper_alignment] INFO:y2karaoke.core.components.whisper.whisper_integration:Transcribing vocals... (cpu=393.1%)
+    ... running 600.7s (timeout 1800s) stage: [whisper_alignment] INFO:y2karaoke.core.components.whisper.whisper_integration:Transcribing vocals... (cpu=391.6%)
+    ... running 630.7s (timeout 1800s) stage: [whisper_alignment] INFO:y2karaoke.core.components.whisper.whisper_integration:Transcribing vocals... (cpu=404.3%)
+    ... running 660.8s (timeout 1800s) stage: [whisper_alignment] INFO:y2karaoke.core.components.whisper.whisper_integration:Transcribing vocals... (cpu=452.9%)
+    ... running 690.8s (timeout 1800s) stage: [whisper_alignment] INFO:y2karaoke.core.components.whisper.whisper_integration:Transcribing vocals... (cpu=452.9%)
+    ... running 720.9s (timeout 1800s) stage: [whisper_alignment] INFO:y2karaoke.core.components.whisper.whisper_integration:Transcribing vocals... (cpu=409.2%)
+    ... running 750.9s (timeout 1800s) stage: [whisper_alignment] INFO:y2karaoke.core.components.whisper.whisper_integration:Transcribing vocals... (cpu=453.6%)
+    ... running 781.0s (timeout 1800s) stage: [whisper_alignment] INFO:y2karaoke.core.components.whisper.whisper_integration:Transcribing vocals... (cpu=481.2%)
+    ... running 811.0s (timeout 1800s) stage: [whisper_alignment] INFO:y2karaoke.core.components.whisper.whisper_integration:Transcribing vocals... (cpu=461.2%)
+    >>> phase_summary whisper=799.6s
+    >>> cache_decisions audio=miss (downloaded), separation=miss (generated stems), whisper=miss (generated whisper output), alignment=computed (timing report written)
+  -> ok (829.57s)
+[10/13] Indila - Derniere danse
+    >>> phase_start whisper at 30.0s
+    ... running 30.0s (timeout 1800s) stage: [whisper] cpu=293.1%
+    ... running 60.0s (timeout 1800s) stage: [whisper] cpu=254.9%
+    ... running 90.1s (timeout 1800s) stage: [whisper] cpu=238.6%
+    ... running 120.1s (timeout 1800s) stage: [whisper] cpu=281.4%
+    ... running 150.1s (timeout 1800s) stage: [whisper] cpu=232.1%
+    ... running 180.2s (timeout 1800s) stage: [whisper] cpu=211.9%
+    ... running 210.2s (timeout 1800s) stage: [whisper] cpu=254.2%
+    ... running 240.3s (timeout 1800s) stage: [whisper] cpu=246.2%
+    ... running 270.3s (timeout 1800s) stage: [whisper] cpu=297.1%
+    ... running 300.3s (timeout 1800s) stage: [whisper] cpu=245.7%
+    ... running 330.4s (timeout 1800s) stage: [whisper] cpu=269.7%
+    ... running 360.4s (timeout 1800s) stage: [whisper] cpu=221.7%
+    ... running 390.4s (timeout 1800s) stage: [whisper] cpu=294.4%
+    ... running 420.5s (timeout 1800s) stage: [whisper] cpu=245.5%
+    ... running 450.5s (timeout 1800s) stage: [whisper] cpu=282.7%
+    ... running 480.6s (timeout 1800s) stage: [whisper] cpu=261.3%
+    ... running 510.6s (timeout 1800s) stage: [whisper] cpu=294.2%
+    ... running 540.6s (timeout 1800s) stage: [whisper_alignment] INFO:y2karaoke.core.components.whisper.whisper_integration:Transcribing vocals... (cpu=388.1%)
+    ... running 570.7s (timeout 1800s) stage: [whisper_alignment] INFO:y2karaoke.core.components.whisper.whisper_integration:Transcribing vocals... (cpu=474.8%)
+    >>> phase_summary whisper=560.8s
+    >>> cache_decisions audio=miss (downloaded), separation=miss (generated stems), whisper=miss (generated whisper output), alignment=computed (timing report written)
+  -> ok (590.78s)
+[11/13] ROSALIA - DESPECHA
+    >>> phase_start whisper at 30.0s
+    ... running 30.0s (timeout 1800s) stage: [whisper] cpu=219.6%
+    ... running 60.0s (timeout 1800s) stage: [whisper] cpu=292.2%
+    ... running 90.1s (timeout 1800s) stage: [whisper] cpu=256.2%
+    ... running 120.1s (timeout 1800s) stage: [whisper] cpu=267.6%
+    ... running 150.2s (timeout 1800s) stage: [whisper] cpu=238.4%
+    ... running 180.2s (timeout 1800s) stage: [whisper] cpu=287.0%
+    ... running 210.2s (timeout 1800s) stage: [whisper] cpu=282.0%
+    ... running 240.3s (timeout 1800s) stage: [whisper] cpu=230.5%
+    ... running 270.3s (timeout 1800s) stage: [whisper] cpu=293.9%
+    ... running 300.3s (timeout 1800s) stage: [whisper] cpu=249.5%
+    ... running 330.4s (timeout 1800s) stage: [whisper] cpu=230.5%
+    ... running 360.4s (timeout 1800s) stage: [whisper] cpu=283.2%
+    ... running 390.5s (timeout 1800s) stage: [whisper] cpu=244.9%
+    ... running 420.5s (timeout 1800s) stage: INFO:y2karaoke.core.components.lyrics.sync:Found LRC with matching duration: 159s (target: 159s) (cpu=0.6%)
+    ... running 450.6s (timeout 1800s) stage: [whisper_alignment] INFO:y2karaoke.core.components.whisper.whisper_integration:Transcribing vocals... (cpu=459.3%)
+    ... running 480.6s (timeout 1800s) stage: [whisper_alignment] INFO:y2karaoke.core.components.whisper.whisper_integration:Transcribing vocals... (cpu=460.3%)
+    ... running 510.7s (timeout 1800s) stage: [whisper_alignment] INFO:y2karaoke.core.components.whisper.whisper_integration:Transcribing vocals... (cpu=402.3%)
+    ... running 540.8s (timeout 1800s) stage: [whisper_alignment] INFO:y2karaoke.core.components.whisper.whisper_integration:Transcribing vocals... (cpu=394.6%)
+    ... running 570.8s (timeout 1800s) stage: [whisper_alignment] INFO:y2karaoke.core.components.whisper.whisper_integration:Transcribing vocals... (cpu=463.4%)
+    ... running 600.9s (timeout 1800s) stage: [whisper_alignment] INFO:y2karaoke.core.components.whisper.whisper_integration:Transcribing vocals... (cpu=489.1%)
+    ... running 630.9s (timeout 1800s) stage: [whisper_alignment] INFO:y2karaoke.core.components.whisper.whisper_integration:Transcribing vocals... (cpu=378.2%)
+    >>> phase_summary whisper=604.8s
+    >>> cache_decisions audio=miss (downloaded), separation=miss (generated stems), whisper=miss (generated whisper output), alignment=computed (timing report written)
+  -> ok (634.83s)
+[12/13] J Balvin - Mi Gente
+    >>> phase_start whisper at 30.0s
+    ... running 30.0s (timeout 1800s) stage: [whisper] cpu=300.4%
+    ... running 60.0s (timeout 1800s) stage: [whisper] cpu=247.8%
+    ... running 90.1s (timeout 1800s) stage: [whisper] cpu=252.3%
+    ... running 120.1s (timeout 1800s) stage: [whisper] cpu=243.4%
+    ... running 150.2s (timeout 1800s) stage: [whisper] cpu=239.9%
+    ... running 180.2s (timeout 1800s) stage: [whisper] cpu=296.3%
+    ... running 210.2s (timeout 1800s) stage: [whisper] cpu=212.1%
+    ... running 240.3s (timeout 1800s) stage: [whisper] cpu=297.7%
+    ... running 270.3s (timeout 1800s) stage: [whisper] cpu=296.6%
+    ... running 300.3s (timeout 1800s) stage: [whisper] cpu=223.6%
+    ... running 330.4s (timeout 1800s) stage: [whisper] cpu=273.9%
+    ... running 360.4s (timeout 1800s) stage: [whisper] cpu=245.2%
+    ... running 390.5s (timeout 1800s) stage: [whisper] cpu=286.3%
+    ... running 420.5s (timeout 1800s) stage: [whisper] cpu=276.3%
+    ... running 450.5s (timeout 1800s) stage: [whisper] cpu=272.4%
+    ... running 480.6s (timeout 1800s) stage: [whisper_alignment] INFO:y2karaoke.core.components.whisper.whisper_integration:Transcribing vocals... (cpu=396.6%)
+    ... running 510.6s (timeout 1800s) stage: [whisper_alignment] INFO:y2karaoke.core.components.whisper.whisper_integration:Transcribing vocals... (cpu=384.9%)
+    ... running 540.7s (timeout 1800s) stage: [whisper_alignment] INFO:y2karaoke.core.components.whisper.whisper_integration:Transcribing vocals... (cpu=407.5%)
+    ... running 570.7s (timeout 1800s) stage: [whisper_alignment] INFO:y2karaoke.core.components.whisper.whisper_integration:Transcribing vocals... (cpu=381.5%)
+    >>> phase_summary whisper=552.6s
+    >>> cache_decisions audio=miss (downloaded), separation=miss (generated stems), whisper=miss (generated whisper output), alignment=computed (timing report written)
+  -> ok (582.59s)
+[13/13] Taylor Swift - Anti-Hero
+    >>> phase_start whisper at 30.0s
+    ... running 30.0s (timeout 1800s) stage: [whisper] cpu=259.3%
+    ... running 60.0s (timeout 1800s) stage: [whisper] cpu=224.7%
+    ... running 90.1s (timeout 1800s) stage: [whisper] cpu=277.9%
+    ... running 120.1s (timeout 1800s) stage: [whisper] cpu=231.4%
+    ... running 150.2s (timeout 1800s) stage: [whisper] cpu=273.1%
+    ... running 180.2s (timeout 1800s) stage: [whisper] cpu=253.2%
+    ... running 210.2s (timeout 1800s) stage: [whisper] cpu=252.5%
+    ... running 240.3s (timeout 1800s) stage: [whisper] cpu=219.0%
+    ... running 270.3s (timeout 1800s) stage: [whisper] cpu=296.6%
+    ... running 300.3s (timeout 1800s) stage: [whisper] cpu=230.6%
+    ... running 330.4s (timeout 1800s) stage: [whisper] cpu=268.0%
+    ... running 360.4s (timeout 1800s) stage: [whisper] cpu=296.6%
+    ... running 390.5s (timeout 1800s) stage: [whisper] cpu=256.7%
+    ... running 420.5s (timeout 1800s) stage: [whisper] cpu=231.5%
+    ... running 450.5s (timeout 1800s) stage: [whisper] cpu=240.8%
+    ... running 480.6s (timeout 1800s) stage: [whisper] cpu=260.7%
+    ... running 510.6s (timeout 1800s) stage: [whisper] cpu=232.3%
+    ... running 540.6s (timeout 1800s) stage: [whisper] cpu=282.9%
+    ... running 570.7s (timeout 1800s) stage: [whisper] cpu=283.3%
+    ... running 600.7s (timeout 1800s) stage: [whisper] cpu=255.3%
+    ... running 630.8s (timeout 1800s) stage: [whisper] cpu=248.3%
+    ... running 660.8s (timeout 1800s) stage: [whisper] cpu=296.4%
+    ... running 690.9s (timeout 1800s) stage: [whisper] cpu=234.8%
+    ... running 720.9s (timeout 1800s) stage: [whisper] cpu=273.5%
+    ... running 751.0s (timeout 1800s) stage: [whisper] cpu=260.2%
+    >>> phase_start alignment at 781.0s
+    ... running 781.0s (timeout 1800s) stage: [whisper_alignment] INFO:y2karaoke.core.components.whisper.whisper_integration:Loading Whisper model (large)... (cpu=57.0%)
+    >>> phase_start whisper at 811.1s
+    ... running 811.1s (timeout 1800s) stage: [whisper_alignment] INFO:y2karaoke.core.components.whisper.whisper_integration:Transcribing vocals... (cpu=389.5%)
+    ... running 841.1s (timeout 1800s) stage: [whisper_alignment] INFO:y2karaoke.core.components.whisper.whisper_integration:Transcribing vocals... (cpu=306.1%)
+    ... running 871.2s (timeout 1800s) stage: [whisper_alignment] INFO:y2karaoke.core.components.whisper.whisper_integration:Transcribing vocals... (cpu=447.3%)
+    ... running 901.2s (timeout 1800s) stage: [whisper_alignment] INFO:y2karaoke.core.components.whisper.whisper_integration:Transcribing vocals... (cpu=388.7%)
+    ... running 931.3s (timeout 1800s) stage: [whisper_alignment] INFO:y2karaoke.core.components.whisper.whisper_integration:Transcribing vocals... (cpu=360.9%)
+    ... running 961.3s (timeout 1800s) stage: [whisper_alignment] INFO:y2karaoke.core.components.whisper.whisper_integration:Transcribing vocals... (cpu=383.9%)
+    ... running 991.4s (timeout 1800s) stage: [whisper_alignment] INFO:y2karaoke.core.components.whisper.whisper_integration:Transcribing vocals... (cpu=401.8%)
+    ... running 1021.4s (timeout 1800s) stage: [whisper_alignment] INFO:y2karaoke.core.components.whisper.whisper_integration:Transcribing vocals... (cpu=435.9%)
+    ... running 1051.5s (timeout 1800s) stage: [whisper_alignment] INFO:y2karaoke.core.components.whisper.whisper_integration:Transcribing vocals... (cpu=490.2%)
+    ... running 1081.6s (timeout 1800s) stage: [whisper_alignment] INFO:y2karaoke.core.components.whisper.whisper_integration:Transcribing vocals... (cpu=446.2%)
+    ... running 1111.6s (timeout 1800s) stage: [whisper_alignment] INFO:y2karaoke.core.components.whisper.whisper_integration:Transcribing vocals... (cpu=400.3%)
+    ... running 1141.7s (timeout 1800s) stage: [whisper_alignment] INFO:y2karaoke.core.components.whisper.whisper_integration:Transcribing vocals... (cpu=398.6%)
+    >>> phase_start alignment at 1171.7s
+    ... running 1171.7s (timeout 1800s) stage: [whisper_alignment] INFO:y2karaoke.core.components.whisper.whisper_alignment_activity:Vocal gap filler: injected 72 [VOCAL] pseudo-words (cpu=9.7%)
+    ... running 1201.8s (timeout 1800s) stage: [whisper_alignment] INFO:y2karaoke.core.components.whisper.whisper_alignment_activity:Vocal gap filler: injected 72 [VOCAL] pseudo-words (cpu=10.1%)
+    >>> phase_summary alignment=78.3s, whisper=1111.6s
+    >>> cache_decisions audio=miss (downloaded), separation=miss (generated stems), whisper=miss (generated whisper output), alignment=computed (timing report written)
+  -> ok (1219.87s)
+benchmark_suite: WARN
+- run_dir: /Users/dtunkelang/y2karaoke/benchmarks/results/validation_run_u
+- json: /Users/dtunkelang/y2karaoke/benchmarks/results/validation_run_u/benchmark_report.json
+- markdown: /Users/dtunkelang/y2karaoke/benchmarks/results/validation_run_u/benchmark_report.md
+- success: 13/13 (100.0%)
+- mean metrics: gold_start_abs_mean_weighted=2.060s, gold_start_p95_mean=4.855s, gold_end_abs_mean=2.495s, gold_cov=0.984, dtw_line=0.829, dtw_line_weighted=0.799, dtw_word=0.693, phonetic=0.508, low_conf_ratio=0.048, agreement_cov=0.215, agreement_text_sim=0.798, agreement_start_abs_mean=2.587s, agreement_start_p95=3.248s, agreement_bad_ratio=0.040, agreement_severe_ratio=0.013
+- gold coverage: songs=1.000, words=4962/5041
+- dtw coverage: songs=1.000, lines=1.000
+- elapsed: suite_wall=10098.15s, sum_song=10095.36s, overhead=2.79s
+- separation cache: cached_ratio=0.000, miss_count=13
+- warnings:
+  - LRC-Whisper agreement coverage is low: 0.233 < 0.400 (not enough lexically comparable lines)
+  - Line-start agreement p95 is high on comparable lines: 3.248s > 0.800s
+  - Gold-set avg abs word-start delta is high: 2.060s > 0.350s

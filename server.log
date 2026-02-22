@@ -1,0 +1,70 @@
+Serving editor at http://127.0.0.1:8765
+127.0.0.1 - - [21/Feb/2026 11:57:53] "GET /?timing=/Users/dtunkelang/y2karaoke/debug_levitating_dedup_final.json&audio=/Users/dtunkelang HTTP/1.1" 200 -
+127.0.0.1 - - [21/Feb/2026 11:57:53] "GET /app.js HTTP/1.1" 304 -
+127.0.0.1 - - [21/Feb/2026 11:57:53] "GET /styles.css HTTP/1.1" 304 -
+127.0.0.1 - - [21/Feb/2026 11:57:53] "POST /api/load HTTP/1.1" 200 -
+127.0.0.1 - - [21/Feb/2026 11:57:53] "GET /api/audio?path=%2FUsers%2Fdtunkelang HTTP/1.1" 206 -
+----------------------------------------
+Exception occurred during processing of request from ('127.0.0.1', 64676)
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/socketserver.py", line 692, in process_request_thread
+    self.finish_request(request, client_address)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/socketserver.py", line 362, in finish_request
+    self.RequestHandlerClass(request, client_address, self)
+  File "/Users/dtunkelang/y2karaoke/tools/gold_timing_editor.py", line 74, in __init__
+    super().__init__(*args, directory=str(EDITOR_DIR), **kwargs)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/http/server.py", line 672, in __init__
+    super().__init__(*args, **kwargs)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/socketserver.py", line 761, in __init__
+    self.handle()
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/http/server.py", line 436, in handle
+    self.handle_one_request()
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/http/server.py", line 424, in handle_one_request
+    method()
+  File "/Users/dtunkelang/y2karaoke/tools/gold_timing_editor.py", line 148, in do_GET
+    self._serve_absolute_audio(real_path)
+  File "/Users/dtunkelang/y2karaoke/tools/gold_timing_editor.py", line 122, in _serve_absolute_audio
+    with path.open("rb") as f:
+         ^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/pathlib.py", line 1013, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+IsADirectoryError: [Errno 21] Is a directory: '/Users/dtunkelang'
+----------------------------------------
+127.0.0.1 - - [21/Feb/2026 11:57:53] code 404, message File not found
+127.0.0.1 - - [21/Feb/2026 11:57:53] "GET /favicon.ico HTTP/1.1" 404 -
+127.0.0.1 - - [21/Feb/2026 11:58:43] "POST /api/load HTTP/1.1" 200 -
+127.0.0.1 - - [21/Feb/2026 11:58:43] "GET /api/audio?path=%2FUsers%2Fdtunkelang HTTP/1.1" 206 -
+----------------------------------------
+Exception occurred during processing of request from ('127.0.0.1', 64686)
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/socketserver.py", line 692, in process_request_thread
+    self.finish_request(request, client_address)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/socketserver.py", line 362, in finish_request
+    self.RequestHandlerClass(request, client_address, self)
+  File "/Users/dtunkelang/y2karaoke/tools/gold_timing_editor.py", line 74, in __init__
+    super().__init__(*args, directory=str(EDITOR_DIR), **kwargs)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/http/server.py", line 672, in __init__
+    super().__init__(*args, **kwargs)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/socketserver.py", line 761, in __init__
+    self.handle()
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/http/server.py", line 436, in handle
+    self.handle_one_request()
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/http/server.py", line 424, in handle_one_request
+    method()
+  File "/Users/dtunkelang/y2karaoke/tools/gold_timing_editor.py", line 148, in do_GET
+    self._serve_absolute_audio(real_path)
+  File "/Users/dtunkelang/y2karaoke/tools/gold_timing_editor.py", line 122, in _serve_absolute_audio
+    with path.open("rb") as f:
+         ^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/pathlib.py", line 1013, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+IsADirectoryError: [Errno 21] Is a directory: '/Users/dtunkelang'
+----------------------------------------
+127.0.0.1 - - [21/Feb/2026 11:59:04] "GET /?timing=/Users/dtunkelang/y2karaoke/debug_levitating_dedup_final.json&audio=/Users/dtunkelang/y2karaoke/clean.wav HTTP/1.1" 200 -
+127.0.0.1 - - [21/Feb/2026 11:59:04] "POST /api/load HTTP/1.1" 200 -
+127.0.0.1 - - [21/Feb/2026 11:59:04] "GET /api/audio?path=%2FUsers%2Fdtunkelang%2Fy2karaoke%2Fclean.wav HTTP/1.1" 206 -
+127.0.0.1 - - [21/Feb/2026 11:59:06] code 404, message File not found
+127.0.0.1 - - [21/Feb/2026 11:59:06] "GET /favicon.ico HTTP/1.1" 404 -
+127.0.0.1 - - [21/Feb/2026 11:59:06] "GET /api/audio?path=%2FUsers%2Fdtunkelang%2Fy2karaoke%2Fclean.wav HTTP/1.1" 206 -

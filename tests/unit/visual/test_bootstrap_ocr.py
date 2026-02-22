@@ -1,4 +1,5 @@
 import json
+from typing import Any
 
 from y2karaoke.core.visual import bootstrap_ocr as _MODULE
 import pytest
@@ -487,7 +488,7 @@ def test_fill_transient_ocr_gaps_injects_missing_word():
         },
     ]
     out = _MODULE._fill_transient_ocr_gaps(frames)
-    
+
     # Check middle frame
     middle_words = sorted(out[1]["words"], key=lambda w: w["x"])
     assert len(middle_words) == 2
@@ -556,7 +557,7 @@ def test_build_line_boxes_refines_to_text_mask_center():
 @pytest.mark.skipif(_MODULE.cv2 is None or _MODULE.np is None, reason="opencv required")
 def test_append_predicted_words_rejects_blank_frame_hallucinations():
     np = _MODULE.np
-    raw = []
+    raw: list[dict[str, Any]] = []
     roi = np.zeros((120, 320, 3), dtype=np.uint8)
     pred = [
         {
@@ -575,7 +576,7 @@ def test_append_predicted_words_rejects_blank_frame_hallucinations():
         pred,
         [206.08],
         roi_frames=[roi],
-        roi_shapes=[roi.shape[:2]],
+        roi_shapes=[roi.shape[:2]],  # type: ignore
     )
 
     assert raw == []
@@ -585,7 +586,7 @@ def test_append_predicted_words_rejects_blank_frame_hallucinations():
 def test_append_predicted_words_keeps_boxes_with_visible_text_ink():
     np = _MODULE.np
     cv2 = _MODULE.cv2
-    raw = []
+    raw: list[dict[str, Any]] = []
     roi = np.zeros((120, 320, 3), dtype=np.uint8)
     # White glyph-like band in OCR box region.
     cv2.rectangle(roi, (60, 44), (190, 56), (255, 255, 255), thickness=-1)
@@ -606,7 +607,7 @@ def test_append_predicted_words_keeps_boxes_with_visible_text_ink():
         pred,
         [30.4],
         roi_frames=[roi],
-        roi_shapes=[roi.shape[:2]],
+        roi_shapes=[roi.shape[:2]],  # type: ignore
     )
 
     assert len(raw) == 1

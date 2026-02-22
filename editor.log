@@ -1,0 +1,80 @@
+Serving editor at http://127.0.0.1:8766
+Traceback (most recent call last):
+  File "/Users/dtunkelang/y2karaoke/tools/gold_timing_editor.py", line 195, in <module>
+    main()
+  File "/Users/dtunkelang/y2karaoke/tools/gold_timing_editor.py", line 191, in main
+    ThreadingHTTPServer((args.host, args.port), Handler).serve_forever()
+    ^^127.0.0.1 - - [20/Feb/2026 11:14:47] "GET /?timing=/Users/dtunkelang/y2karaoke/benchmarks/gold_set_karaoke_seed/04_dua-lipa-levitating.visual.gold.json HTTP/1.1" 200 -
+127.0.0.1 - - [20/Feb/2026 11:14:47] "POST /api/load HTTP/1.1" 200 -
+127.0.0.1 - - [20/Feb/2026 11:15:11] "POST /api/save HTTP/1.1" 200 -
+127.0.0.1 - - [20/Feb/2026 11:15:56] "GET /?timing=%2FUsers%2Fdtunkelang%2Fy2karaoke%2Fbenchmarks%2Fgold_set_karaoke_seed%2F04_dua-lipa-levitating.visual.gold.json&audio=%2FUsers%2Fdtunkelang%2Fy2karaoke%2F.cache%2Fkaraoke_bootstrap%2Fdua-lipa%2Flevitating%2Fvideo%2FDua+Lipa+-+Levitating+%28Official+Karaoke+Instrumental%29+%EF%BD%9C+SongJam_video.extracted.wav HTTP/1.1" 200 -
+127.0.0.1 - - [20/Feb/2026 11:15:56] "POST /api/load HTTP/1.1" 200 -
+127.0.0.1 - - [20/Feb/2026 11:15:56] "GET /api/audio?path=%2FUsers%2Fdtunkelang%2Fy2karaoke%2F.cache%2Fkaraoke_bootstrap%2Fdua-lipa%2Flevitating%2Fvideo%2FDua%20Lipa%20-%20Levitating%20(Official%20Karaoke%20Instrumental)%20%EF%BD%9C%20SongJam_video.extracted.wav HTTP/1.1" 206 -
+127.0.0.1 - - [20/Feb/2026 11:16:03] code 404, message File not found
+127.0.0.1 - - [20/Feb/2026 11:16:03] "GET /favicon.ico HTTP/1.1" 404 -
+127.0.0.1 - - [20/Feb/2026 11:16:03] "GET /api/audio?path=%2FUsers%2Fdtunkelang%2Fy2karaoke%2F.cache%2Fkaraoke_bootstrap%2Fdua-lipa%2Flevitating%2Fvideo%2FDua%20Lipa%20-%20Levitating%20(Official%20Karaoke%20Instrumental)%20%EF%BD%9C%20SongJam_video.extracted.wav HTTP/1.1" 206 -
+127.0.0.1 - - [20/Feb/2026 11:18:16] "GET /api/audio?path=%2FUsers%2Fdtunkelang%2Fy2karaoke%2F.cache%2Fkaraoke_bootstrap%2Fdua-lipa%2Flevitating%2Fvideo%2FDua%20Lipa%20-%20Levitating%20(Official%20Karaoke%20Instrumental)%20%EF%BD%9C%20SongJam_video.extracted.wav HTTP/1.1" 206 -
+127.0.0.1 - - [20/Feb/2026 11:18:23] "GET /api/audio?path=%2FUsers%2Fdtunkelang%2Fy2karaoke%2F.cache%2Fkaraoke_bootstrap%2Fdua-lipa%2Flevitating%2Fvideo%2FDua%20Lipa%20-%20Levitating%20(Official%20Karaoke%20Instrumental)%20%EF%BD%9C%20SongJam_video.extracted.wav HTTP/1.1" 206 -
+127.0.0.1 - - [20/Feb/2026 11:18:24] "GET /api/audio?path=%2FUsers%2Fdtunkelang%2Fy2karaoke%2F.cache%2Fkaraoke_bootstrap%2Fdua-lipa%2Flevitating%2Fvideo%2FDua%20Lipa%20-%20Levitating%20(Official%20Karaoke%20Instrumental)%20%EF%BD%9C%20SongJam_video.extracted.wav HTTP/1.1" 206 -
+127.0.0.1 - - [20/Feb/2026 11:18:24] "GET /api/audio?path=%2FUsers%2Fdtunkelang%2Fy2karaoke%2F.cache%2Fkaraoke_bootstrap%2Fdua-lipa%2Flevitating%2Fvideo%2FDua%20Lipa%20-%20Levitating%20(Official%20Karaoke%20Instrumental)%20%EF%BD%9C%20SongJam_video.extracted.wav HTTP/1.1" 206 -
+127.0.0.1 - - [20/Feb/2026 11:18:26] "GET /api/audio?path=%2FUsers%2Fdtunkelang%2Fy2karaoke%2F.cache%2Fkaraoke_bootstrap%2Fdua-lipa%2Flevitating%2Fvideo%2FDua%20Lipa%20-%20Levitating%20(Official%20Karaoke%20Instrumental)%20%EF%BD%9C%20SongJam_video.extracted.wav HTTP/1.1" 206 -
+127.0.0.1 - - [20/Feb/2026 11:18:27] "GET /api/audio?path=%2FUsers%2Fdtunkelang%2Fy2karaoke%2F.cache%2Fkaraoke_bootstrap%2Fdua-lipa%2Flevitating%2Fvideo%2FDua%20Lipa%20-%20Levitating%20(Official%20Karaoke%20Instrumental)%20%EF%BD%9C%20SongJam_video.extracted.wav HTTP/1.1" 206 -
+127.0.0.1 - - [20/Feb/2026 11:18:37] "GET /api/audio?path=%2FUsers%2Fdtunkelang%2Fy2karaoke%2F.cache%2Fkaraoke_bootstrap%2Fdua-lipa%2Flevitating%2Fvideo%2FDua%20Lipa%20-%20Levitating%20(Official%20Karaoke%20Instrumental)%20%EF%BD%9C%20SongJam_video.extracted.wav HTTP/1.1" 206 -
+127.0.0.1 - - [20/Feb/2026 13:06:06] "GET /?timing=%2FUsers%2Fdtunkelang%2Fy2karaoke%2Fbenchmarks%2Fgold_set_karaoke_seed%2F04_dua-lipa-levitating.visual.gold.json&audio=%2FUsers%2Fdtunkelang%2Fy2karaoke%2F.cache%2Fkaraoke_bootstrap%2Fdua-lipa%2Flevitating%2Fvideo%2FLevitating+-+Dua+Lipa+%EF%BD%9C+Karaoke+Version+%EF%BD%9C+KaraFun_video.extracted.wav HTTP/1.1" 200 -
+127.0.0.1 - - [20/Feb/2026 13:06:06] "POST /api/load HTTP/1.1" 200 -
+127.0.0.1 - - [20/Feb/2026 13:06:06] "GET /api/audio?path=%2FUsers%2Fdtunkelang%2Fy2karaoke%2F.cache%2Fkaraoke_bootstrap%2Fdua-lipa%2Flevitating%2Fvideo%2FLevitating%20-%20Dua%20Lipa%20%EF%BD%9C%20Karaoke%20Version%20%EF%BD%9C%20KaraFun_video.extracted.wav HTTP/1.1" 206 -
+127.0.0.1 - - [20/Feb/2026 13:06:13] code 404, message File not found
+127.0.0.1 - - [20/Feb/2026 13:06:13] "GET /favicon.ico HTTP/1.1" 404 -
+127.0.0.1 - - [20/Feb/2026 13:06:13] "GET /api/audio?path=%2FUsers%2Fdtunkelang%2Fy2karaoke%2F.cache%2Fkaraoke_bootstrap%2Fdua-lipa%2Flevitating%2Fvideo%2FLevitating%20-%20Dua%20Lipa%20%EF%BD%9C%20Karaoke%20Version%20%EF%BD%9C%20KaraFun_video.extracted.wav HTTP/1.1" 206 -
+127.0.0.1 - - [20/Feb/2026 13:07:54] "GET /api/audio?path=%2FUsers%2Fdtunkelang%2Fy2karaoke%2F.cache%2Fkaraoke_bootstrap%2Fdua-lipa%2Flevitating%2Fvideo%2FLevitating%20-%20Dua%20Lipa%20%EF%BD%9C%20Karaoke%20Version%20%EF%BD%9C%20KaraFun_video.extracted.wav HTTP/1.1" 206 -
+127.0.0.1 - - [20/Feb/2026 13:07:55] "GET /api/audio?path=%2FUsers%2Fdtunkelang%2Fy2karaoke%2F.cache%2Fkaraoke_bootstrap%2Fdua-lipa%2Flevitating%2Fvideo%2FLevitating%20-%20Dua%20Lipa%20%EF%BD%9C%20Karaoke%20Version%20%EF%BD%9C%20KaraFun_video.extracted.wav HTTP/1.1" 206 -
+127.0.0.1 - - [20/Feb/2026 13:07:55] "GET /api/audio?path=%2FUsers%2Fdtunkelang%2Fy2karaoke%2F.cache%2Fkaraoke_bootstrap%2Fdua-lipa%2Flevitating%2Fvideo%2FLevitating%20-%20Dua%20Lipa%20%EF%BD%9C%20Karaoke%20Version%20%EF%BD%9C%20KaraFun_video.extracted.wav HTTP/1.1" 206 -
+127.0.0.1 - - [20/Feb/2026 13:07:57] "GET /api/audio?path=%2FUsers%2Fdtunkelang%2Fy2karaoke%2F.cache%2Fkaraoke_bootstrap%2Fdua-lipa%2Flevitating%2Fvideo%2FLevitating%20-%20Dua%20Lipa%20%EF%BD%9C%20Karaoke%20Version%20%EF%BD%9C%20KaraFun_video.extracted.wav HTTP/1.1" 206 -
+127.0.0.1 - - [20/Feb/2026 13:07:57] "GET /api/audio?path=%2FUsers%2Fdtunkelang%2Fy2karaoke%2F.cache%2Fkaraoke_bootstrap%2Fdua-lipa%2Flevitating%2Fvideo%2FLevitating%20-%20Dua%20Lipa%20%EF%BD%9C%20Karaoke%20Version%20%EF%BD%9C%20KaraFun_video.extracted.wav HTTP/1.1" 206 -
+127.0.0.1 - - [20/Feb/2026 14:57:50] "POST /api/load HTTP/1.1" 200 -
+127.0.0.1 - - [20/Feb/2026 14:57:50] "GET /api/audio?path=%2FUsers%2Fdtunkelang%2Fy2karaoke%2F.cache%2Fkaraoke_bootstrap%2Fdua-lipa%2Flevitating%2Fvideo%2FLevitating%20-%20Dua%20Lipa%20%EF%BD%9C%20Karaoke%20Version%20%EF%BD%9C%20KaraFun_video.extracted.wav HTTP/1.1" 206 -
+127.0.0.1 - - [20/Feb/2026 14:58:01] code 404, message File not found
+127.0.0.1 - - [20/Feb/2026 14:58:01] "GET /favicon.ico HTTP/1.1" 404 -
+127.0.0.1 - - [20/Feb/2026 14:58:01] "GET /api/audio?path=%2FUsers%2Fdtunkelang%2Fy2karaoke%2F.cache%2Fkaraoke_bootstrap%2Fdua-lipa%2Flevitating%2Fvideo%2FLevitating%20-%20Dua%20Lipa%20%EF%BD%9C%20Karaoke%20Version%20%EF%BD%9C%20KaraFun_video.extracted.wav HTTP/1.1" 206 -
+127.0.0.1 - - [20/Feb/2026 15:14:04] "POST /api/load HTTP/1.1" 200 -
+127.0.0.1 - - [20/Feb/2026 15:14:04] code 404, message File not found
+127.0.0.1 - - [20/Feb/2026 15:14:04] "GET /favicon.ico HTTP/1.1" 404 -
+127.0.0.1 - - [20/Feb/2026 15:20:28] "GET /api/audio?path=%2FUsers%2Fdtunkelang%2Fy2karaoke%2F.cache%2Fkaraoke_bootstrap%2Fdua-lipa%2Flevitating%2Fvideo%2FLevitating%20-%20Dua%20Lipa%20%EF%BD%9C%20Karaoke%20Version%20%EF%BD%9C%20KaraFun_video.extracted.wav HTTP/1.1" 206 -
+127.0.0.1 - - [20/Feb/2026 15:48:09] "POST /api/load HTTP/1.1" 200 -
+127.0.0.1 - - [20/Feb/2026 15:48:09] "GET /api/audio?path=%2FUsers%2Fdtunkelang%2Fy2karaoke%2F.cache%2Fkaraoke_bootstrap%2Fdua-lipa%2Flevitating%2Fvideo%2FLevitating%20-%20Dua%20Lipa%20%EF%BD%9C%20Karaoke%20Version%20%EF%BD%9C%20KaraFun_video.extracted.wav HTTP/1.1" 206 -
+127.0.0.1 - - [20/Feb/2026 15:48:13] code 404, message File not found
+127.0.0.1 - - [20/Feb/2026 15:48:13] "GET /favicon.ico HTTP/1.1" 404 -
+127.0.0.1 - - [20/Feb/2026 15:48:13] "GET /api/audio?path=%2FUsers%2Fdtunkelang%2Fy2karaoke%2F.cache%2Fkaraoke_bootstrap%2Fdua-lipa%2Flevitating%2Fvideo%2FLevitating%20-%20Dua%20Lipa%20%EF%BD%9C%20Karaoke%20Version%20%EF%BD%9C%20KaraFun_video.extracted.wav HTTP/1.1" 206 -
+127.0.0.1 - - [20/Feb/2026 15:51:55] "GET /api/audio?path=%2FUsers%2Fdtunkelang%2Fy2karaoke%2F.cache%2Fkaraoke_bootstrap%2Fdua-lipa%2Flevitating%2Fvideo%2FLevitating%20-%20Dua%20Lipa%20%EF%BD%9C%20Karaoke%20Version%20%EF%BD%9C%20KaraFun_video.extracted.wav HTTP/1.1" 206 -
+127.0.0.1 - - [20/Feb/2026 15:51:55] "GET /api/audio?path=%2FUsers%2Fdtunkelang%2Fy2karaoke%2F.cache%2Fkaraoke_bootstrap%2Fdua-lipa%2Flevitating%2Fvideo%2FLevitating%20-%20Dua%20Lipa%20%EF%BD%9C%20Karaoke%20Version%20%EF%BD%9C%20KaraFun_video.extracted.wav HTTP/1.1" 206 -
+127.0.0.1 - - [20/Feb/2026 16:24:27] "POST /api/load HTTP/1.1" 200 -
+127.0.0.1 - - [20/Feb/2026 16:24:27] "GET /api/audio?path=%2FUsers%2Fdtunkelang%2Fy2karaoke%2F.cache%2Fkaraoke_bootstrap%2Fdua-lipa%2Flevitating%2Fvideo%2FLevitating%20-%20Dua%20Lipa%20%EF%BD%9C%20Karaoke%20Version%20%EF%BD%9C%20KaraFun_video.extracted.wav HTTP/1.1" 206 -
+127.0.0.1 - - [20/Feb/2026 16:24:28] code 404, message File not found
+127.0.0.1 - - [20/Feb/2026 16:24:28] "GET /favicon.ico HTTP/1.1" 404 -
+127.0.0.1 - - [20/Feb/2026 16:24:28] "GET /api/audio?path=%2FUsers%2Fdtunkelang%2Fy2karaoke%2F.cache%2Fkaraoke_bootstrap%2Fdua-lipa%2Flevitating%2Fvideo%2FLevitating%20-%20Dua%20Lipa%20%EF%BD%9C%20Karaoke%20Version%20%EF%BD%9C%20KaraFun_video.extracted.wav HTTP/1.1" 206 -
+127.0.0.1 - - [20/Feb/2026 16:28:58] "GET /api/audio?path=%2FUsers%2Fdtunkelang%2Fy2karaoke%2F.cache%2Fkaraoke_bootstrap%2Fdua-lipa%2Flevitating%2Fvideo%2FLevitating%20-%20Dua%20Lipa%20%EF%BD%9C%20Karaoke%20Version%20%EF%BD%9C%20KaraFun_video.extracted.wav HTTP/1.1" 206 -
+127.0.0.1 - - [20/Feb/2026 16:29:10] "GET /api/audio?path=%2FUsers%2Fdtunkelang%2Fy2karaoke%2F.cache%2Fkaraoke_bootstrap%2Fdua-lipa%2Flevitating%2Fvideo%2FLevitating%20-%20Dua%20Lipa%20%EF%BD%9C%20Karaoke%20Version%20%EF%BD%9C%20KaraFun_video.extracted.wav HTTP/1.1" 206 -
+127.0.0.1 - - [20/Feb/2026 16:29:13] "GET /api/audio?path=%2FUsers%2Fdtunkelang%2Fy2karaoke%2F.cache%2Fkaraoke_bootstrap%2Fdua-lipa%2Flevitating%2Fvideo%2FLevitating%20-%20Dua%20Lipa%20%EF%BD%9C%20Karaoke%20Version%20%EF%BD%9C%20KaraFun_video.extracted.wav HTTP/1.1" 206 -
+127.0.0.1 - - [20/Feb/2026 16:29:35] "GET /api/audio?path=%2FUsers%2Fdtunkelang%2Fy2karaoke%2F.cache%2Fkaraoke_bootstrap%2Fdua-lipa%2Flevitating%2Fvideo%2FLevitating%20-%20Dua%20Lipa%20%EF%BD%9C%20Karaoke%20Version%20%EF%BD%9C%20KaraFun_video.extracted.wav HTTP/1.1" 206 -
+127.0.0.1 - - [20/Feb/2026 16:29:42] "GET /api/audio?path=%2FUsers%2Fdtunkelang%2Fy2karaoke%2F.cache%2Fkaraoke_bootstrap%2Fdua-lipa%2Flevitating%2Fvideo%2FLevitating%20-%20Dua%20Lipa%20%EF%BD%9C%20Karaoke%20Version%20%EF%BD%9C%20KaraFun_video.extracted.wav HTTP/1.1" 206 -
+127.0.0.1 - - [20/Feb/2026 17:25:13] "GET /app.js HTTP/1.1" 304 -
+127.0.0.1 - - [20/Feb/2026 17:25:13] "POST /api/load HTTP/1.1" 200 -
+127.0.0.1 - - [20/Feb/2026 17:25:13] "GET /api/audio?path=%2FUsers%2Fdtunkelang%2Fy2karaoke%2F.cache%2Fkaraoke_bootstrap%2Fdua-lipa%2Flevitating%2Fvideo%2FLevitating%20-%20Dua%20Lipa%20%EF%BD%9C%20Karaoke%20Version%20%EF%BD%9C%20KaraFun_video.extracted.wav HTTP/1.1" 206 -
+127.0.0.1 - - [20/Feb/2026 17:25:16] code 404, message File not found
+127.0.0.1 - - [20/Feb/2026 17:25:16] "GET /favicon.ico HTTP/1.1" 404 -
+127.0.0.1 - - [20/Feb/2026 17:25:16] "GET /api/audio?path=%2FUsers%2Fdtunkelang%2Fy2karaoke%2F.cache%2Fkaraoke_bootstrap%2Fdua-lipa%2Flevitating%2Fvideo%2FLevitating%20-%20Dua%20Lipa%20%EF%BD%9C%20Karaoke%20Version%20%EF%BD%9C%20KaraFun_video.extracted.wav HTTP/1.1" 206 -
+127.0.0.1 - - [20/Feb/2026 18:03:43] "POST /api/load HTTP/1.1" 200 -
+127.0.0.1 - - [20/Feb/2026 18:03:43] "GET /api/audio?path=%2FUsers%2Fdtunkelang%2Fy2karaoke%2F.cache%2Fkaraoke_bootstrap%2Fdua-lipa%2Flevitating%2Fvideo%2FLevitating%20-%20Dua%20Lipa%20%EF%BD%9C%20Karaoke%20Version%20%EF%BD%9C%20KaraFun_video.extracted.wav HTTP/1.1" 206 -
+127.0.0.1 - - [20/Feb/2026 18:03:53] code 404, message File not found
+127.0.0.1 - - [20/Feb/2026 18:03:53] "GET /favicon.ico HTTP/1.1" 404 -
+127.0.0.1 - - [20/Feb/2026 18:03:53] "GET /api/audio?path=%2FUsers%2Fdtunkelang%2Fy2karaoke%2F.cache%2Fkaraoke_bootstrap%2Fdua-lipa%2Flevitating%2Fvideo%2FLevitating%20-%20Dua%20Lipa%20%EF%BD%9C%20Karaoke%20Version%20%EF%BD%9C%20KaraFun_video.extracted.wav HTTP/1.1" 206 -
+127.0.0.1 - - [20/Feb/2026 18:38:05] "POST /api/load HTTP/1.1" 200 -
+127.0.0.1 - - [20/Feb/2026 18:38:05] "GET /api/audio?path=%2FUsers%2Fdtunkelang%2Fy2karaoke%2F.cache%2Fkaraoke_bootstrap%2Fdua-lipa%2Flevitating%2Fvideo%2FLevitating%20-%20Dua%20Lipa%20%EF%BD%9C%20Karaoke%20Version%20%EF%BD%9C%20KaraFun_video.extracted.wav HTTP/1.1" 206 -
+127.0.0.1 - - [20/Feb/2026 18:38:09] code 404, message File not found
+127.0.0.1 - - [20/Feb/2026 18:38:09] "GET /favicon.ico HTTP/1.1" 404 -
+127.0.0.1 - - [20/Feb/2026 18:38:09] "GET /api/audio?path=%2FUsers%2Fdtunkelang%2Fy2karaoke%2F.cache%2Fkaraoke_bootstrap%2Fdua-lipa%2Flevitating%2Fvideo%2FLevitating%20-%20Dua%20Lipa%20%EF%BD%9C%20Karaoke%20Version%20%EF%BD%9C%20KaraFun_video.extracted.wav HTTP/1.1" 206 -
+127.0.0.1 - - [20/Feb/2026 18:45:02] "POST /api/load HTTP/1.1" 200 -
+127.0.0.1 - - [20/Feb/2026 18:45:02] "GET /api/audio?path=%2FUsers%2Fdtunkelang%2Fy2karaoke%2F.cache%2Fkaraoke_bootstrap%2Fdua-lipa%2Flevitating%2Fvideo%2FLevitating%20-%20Dua%20Lipa%20%EF%BD%9C%20Karaoke%20Version%20%EF%BD%9C%20KaraFun_video.extracted.wav HTTP/1.1" 206 -
+127.0.0.1 - - [20/Feb/2026 18:45:53] code 404, message File not found
+127.0.0.1 - - [20/Feb/2026 18:45:53] "GET /favicon.ico HTTP/1.1" 404 -
+127.0.0.1 - - [20/Feb/2026 18:45:53] "GET /api/audio?path=%2FUsers%2Fdtunkelang%2Fy2karaoke%2F.cache%2Fkaraoke_bootstrap%2Fdua-lipa%2Flevitating%2Fvideo%2FLevitating%20-%20Dua%20Lipa%20%EF%BD%9C%20Karaoke%20Version%20%EF%BD%9C%20KaraFun_video.extracted.wav HTTP/1.1" 206 -

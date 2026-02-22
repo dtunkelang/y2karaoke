@@ -730,87 +730,87 @@ def _aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:  # noqa: C901
         "agreement_bad_ratio_total": round(agreement_bad_ratio, 4),
         "agreement_severe_ratio_total": round(agreement_severe_ratio, 4),
         "dtw_line_coverage_mean": (
-            round(metric_mean("dtw_line_coverage"), 4)
+            round(float(metric_mean("dtw_line_coverage") or 0.0), 4)
             if metric_mean("dtw_line_coverage") is not None
             else None
         ),
         "dtw_word_coverage_mean": (
-            round(metric_mean("dtw_word_coverage"), 4)
+            round(float(metric_mean("dtw_word_coverage") or 0.0), 4)
             if metric_mean("dtw_word_coverage") is not None
             else None
         ),
         "dtw_phonetic_similarity_coverage_mean": (
-            round(metric_mean("dtw_phonetic_similarity_coverage"), 4)
+            round(float(metric_mean("dtw_phonetic_similarity_coverage") or 0.0), 4)
             if metric_mean("dtw_phonetic_similarity_coverage") is not None
             else None
         ),
         "dtw_line_coverage_line_weighted_mean": (
-            round(weighted_metric_mean("dtw_line_coverage"), 4)
+            round(float(weighted_metric_mean("dtw_line_coverage") or 0.0), 4)
             if weighted_metric_mean("dtw_line_coverage") is not None
             else None
         ),
         "dtw_word_coverage_line_weighted_mean": (
-            round(weighted_metric_mean("dtw_word_coverage"), 4)
+            round(float(weighted_metric_mean("dtw_word_coverage") or 0.0), 4)
             if weighted_metric_mean("dtw_word_coverage") is not None
             else None
         ),
         "dtw_phonetic_similarity_coverage_line_weighted_mean": (
-            round(weighted_metric_mean("dtw_phonetic_similarity_coverage"), 4)
+            round(float(weighted_metric_mean("dtw_phonetic_similarity_coverage") or 0.0), 4)
             if weighted_metric_mean("dtw_phonetic_similarity_coverage") is not None
             else None
         ),
         "agreement_coverage_ratio_mean": (
-            round(metric_mean("agreement_coverage_ratio"), 4)
+            round(float(metric_mean("agreement_coverage_ratio") or 0.0), 4)
             if metric_mean("agreement_coverage_ratio") is not None
             else None
         ),
         "agreement_text_similarity_mean": (
-            round(metric_mean("agreement_text_similarity_mean"), 4)
+            round(float(metric_mean("agreement_text_similarity_mean") or 0.0), 4)
             if metric_mean("agreement_text_similarity_mean") is not None
             else None
         ),
         "agreement_start_mean_abs_sec_mean": (
-            round(metric_mean("agreement_start_mean_abs_sec"), 4)
+            round(float(metric_mean("agreement_start_mean_abs_sec") or 0.0), 4)
             if metric_mean("agreement_start_mean_abs_sec") is not None
             else None
         ),
         "agreement_start_max_abs_sec_mean": (
-            round(metric_mean("agreement_start_max_abs_sec"), 4)
+            round(float(metric_mean("agreement_start_max_abs_sec") or 0.0), 4)
             if metric_mean("agreement_start_max_abs_sec") is not None
             else None
         ),
         "agreement_start_p95_abs_sec_mean": (
-            round(metric_mean("agreement_start_p95_abs_sec"), 4)
+            round(float(metric_mean("agreement_start_p95_abs_sec") or 0.0), 4)
             if metric_mean("agreement_start_p95_abs_sec") is not None
             else None
         ),
         "agreement_bad_ratio_mean": (
-            round(metric_mean("agreement_bad_ratio"), 4)
+            round(float(metric_mean("agreement_bad_ratio") or 0.0), 4)
             if metric_mean("agreement_bad_ratio") is not None
             else None
         ),
         "agreement_severe_ratio_mean": (
-            round(metric_mean("agreement_severe_ratio"), 4)
+            round(float(metric_mean("agreement_severe_ratio") or 0.0), 4)
             if metric_mean("agreement_severe_ratio") is not None
             else None
         ),
         "whisper_anchor_start_mean_abs_sec_mean": (
-            round(metric_mean("whisper_anchor_start_mean_abs_sec"), 4)
+            round(float(metric_mean("whisper_anchor_start_mean_abs_sec") or 0.0), 4)
             if metric_mean("whisper_anchor_start_mean_abs_sec") is not None
             else None
         ),
         "whisper_anchor_start_p95_abs_sec_mean": (
-            round(metric_mean("whisper_anchor_start_p95_abs_sec"), 4)
+            round(float(metric_mean("whisper_anchor_start_p95_abs_sec") or 0.0), 4)
             if metric_mean("whisper_anchor_start_p95_abs_sec") is not None
             else None
         ),
         "whisper_anchor_bad_ratio_mean": (
-            round(metric_mean("whisper_anchor_bad_ratio"), 4)
+            round(float(metric_mean("whisper_anchor_bad_ratio") or 0.0), 4)
             if metric_mean("whisper_anchor_bad_ratio") is not None
             else None
         ),
         "whisper_anchor_severe_ratio_mean": (
-            round(metric_mean("whisper_anchor_severe_ratio"), 4)
+            round(float(metric_mean("whisper_anchor_severe_ratio") or 0.0), 4)
             if metric_mean("whisper_anchor_severe_ratio") is not None
             else None
         ),
@@ -830,16 +830,16 @@ def _aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:  # noqa: C901
         "gold_comparable_word_count_total": gold_comparable_word_count_total,
         "gold_word_coverage_ratio_total": round(gold_word_coverage_ratio_total, 4),
         "avg_abs_word_start_delta_sec_mean": (
-            round(metric_mean("avg_abs_word_start_delta_sec"), 4)
+            round(float(metric_mean("avg_abs_word_start_delta_sec") or 0.0), 4)
             if metric_mean("avg_abs_word_start_delta_sec") is not None
             else None
         ),
         "avg_abs_word_start_delta_sec_word_weighted_mean": (
             round(
-                weighted_metric_mean(
+                float(weighted_metric_mean(
                     "avg_abs_word_start_delta_sec",
                     weight_key="gold_comparable_word_count",
-                ),
+                ) or 0.0),
                 4,
             )
             if weighted_metric_mean(
@@ -850,17 +850,17 @@ def _aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:  # noqa: C901
             else None
         ),
         "gold_start_p95_abs_sec_mean": (
-            round(metric_mean("gold_start_p95_abs_sec"), 4)
+            round(float(metric_mean("gold_start_p95_abs_sec") or 0.0), 4)
             if metric_mean("gold_start_p95_abs_sec") is not None
             else None
         ),
         "gold_end_mean_abs_sec_mean": (
-            round(metric_mean("gold_end_mean_abs_sec"), 4)
+            round(float(metric_mean("gold_end_mean_abs_sec") or 0.0), 4)
             if metric_mean("gold_end_mean_abs_sec") is not None
             else None
         ),
         "gold_end_p95_abs_sec_mean": (
-            round(metric_mean("gold_end_p95_abs_sec"), 4)
+            round(float(metric_mean("gold_end_p95_abs_sec") or 0.0), 4)
             if metric_mean("gold_end_p95_abs_sec") is not None
             else None
         ),
