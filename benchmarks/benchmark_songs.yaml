@@ -112,12 +112,3 @@ songs:
     fallback_lyrics_provider: "syncedlyrics"
     lrc_duration_tolerance_sec: 18
     notes: "Updated to karaoke version for visual bootstrapping."
-
-  - artist: "Taylor Swift"
-    title: "Anti-Hero"
-    youtube_id: "TdPPo-hs5kA"
-    youtube_url: "https://www.youtube.com/watch?v=TdPPo-hs5kA"
-    preferred_lyrics_provider: "lyriq"
-    fallback_lyrics_provider: "syncedlyrics"
-    lrc_duration_tolerance_sec: 15
-    notes: "Updated to karaoke version for visual bootstrapping."
