@@ -86,6 +86,37 @@ def cluster_colors(pixel_samples: List[np.ndarray], k: int = 2) -> List[np.ndarr
     return [c for c in centers]
 
 
+def _identify_color_states(
+    candidates: List[np.ndarray],
+) -> Tuple[np.ndarray, np.ndarray]:
+    """Determine which candidate is Unselected vs Selected using S/V heuristic."""
+    if len(candidates) < 2:
+        c_un = candidates[0]
+        return c_un, c_un * 0.6
+
+    # Convert BGR to HSV for robust S/V comparison
+    src = np.array([[c for c in candidates]], dtype=np.uint8)
+    hsv = cv2.cvtColor(src, cv2.COLOR_BGR2HSV)[0]
+
+    # hsv[i] = [H, S, V]
+    s0, v0 = float(hsv[0][1]), float(hsv[0][2])
+    s1, v1 = float(hsv[1][1]), float(hsv[1][2])
+
+    diff_s = abs(s0 - s1)
+
+    # If saturation differs significantly (> 15% of 255), prefer high saturation as Selected.
+    if diff_s > 40:
+        if s0 > s1:
+            return candidates[1], candidates[0]  # un, sel
+        else:
+            return candidates[0], candidates[1]
+
+    # Otherwise, prefer higher brightness as Selected (e.g. dim -> bright).
+    if v0 > v1:
+        return candidates[1], candidates[0]
+    return candidates[0], candidates[1]
+
+
 def infer_lyric_colors(
     video_path: Path, roi_rect: Tuple[int, int, int, int]
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
@@ -171,51 +202,18 @@ def infer_lyric_colors(
             {"center": center, "count": counts[i], "brightness": np.mean(center)}
         )
 
-    # 3. Exclude the darkest cluster (likely background noise/edges)
-    cluster_info.sort(key=lambda x: x["brightness"])
-    foreground_clusters = cluster_info[1:]  # Keep two brightest
+        # 3. Exclude the darkest cluster (likely background noise/edges)
+        cluster_info.sort(key=lambda x: x["brightness"])
+        foreground_clusters = cluster_info[1:]  # Keep two brightest
 
-    # 4. Identify Selected vs Unselected
-    # Heuristic:
-    # - If Saturation difference is high, Colored one is Selected (active).
-    # - Else (both grey or both colored), Brighter one is Selected (active).
-    
-    candidates = [c["center"] for c in foreground_clusters]
-    if len(candidates) < 2:
-        # Fallback: assume brighter is Unselected (standard white-to-blue)
-        # But if we only have one, we make a dummy dark selected.
-        c_un = candidates[0]
-        c_sel = c_un * 0.6
-    else:
-        # Convert BGR to HSV for robust S/V comparison
-        # centers are float32, need uint8 for cvtColor
-        src = np.array([[c for c in candidates]], dtype=np.uint8)
-        hsv = cv2.cvtColor(src, cv2.COLOR_BGR2HSV)[0]
-        
-        # hsv[i] = [H, S, V]
-        s0, v0 = float(hsv[0][1]), float(hsv[0][2])
-        s1, v1 = float(hsv[1][1]), float(hsv[1][2])
-        
-        diff_s = abs(s0 - s1)
-        
-        # If saturation differs significantly (> 15% of 255), prefer high saturation as Selected.
-        if diff_s > 40:
-            if s0 > s1:
-                c_sel, c_un = candidates[0], candidates[1]
-            else:
-                c_sel, c_un = candidates[1], candidates[0]
-        else:
-            # Otherwise, prefer higher brightness as Selected (e.g. dim -> bright).
-            # Note: OpenCV V channel is brightness.
-            if v0 > v1:
-                c_sel, c_un = candidates[0], candidates[1]
-            else:
-                c_sel, c_un = candidates[1], candidates[0]
+        # 4. Identify Selected vs Unselected
+        candidates = [c["center"] for c in foreground_clusters]
+        c_un, c_sel = _identify_color_states(candidates)
 
-    logger.info(
-        f"Inferred stable colors: Unselected={c_un.astype(int)}, Selected={c_sel.astype(int)}"
-    )
-    return c_un, c_sel, cluster_info[0]["center"]
+        logger.info(
+            f"Inferred stable colors: Unselected={c_un.astype(int)}, Selected={c_sel.astype(int)}"
+        )
+        return c_un, c_sel, cluster_info[0]["center"]
 
 
 def classify_word_state(

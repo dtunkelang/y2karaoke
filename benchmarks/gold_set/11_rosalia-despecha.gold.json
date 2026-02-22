@@ -381,7 +381,7 @@
     },
     {
       "line_index": 8,
-      "text": "con toa' mis motomann",
+      "text": "con toa' mis motomarin",
       "start": 21.3,
       "end": 22.3,
       "confidence": 0.5,
@@ -511,17 +511,17 @@
     },
     {
       "line_index": 10,
-      "text": "asnianii",
+      "text": "asmanii",
       "start": 22.85,
-      "end": 23.05,
-      "confidence": 0.319,
+      "end": 22.95,
+      "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "asmami",
           "start": 22.85,
-          "end": 23.05,
-          "confidence": 0.319
+          "end": 22.95,
+          "confidence": 0.252
         }
       ],
       "y": 122,
@@ -537,17 +537,69 @@
     },
     {
       "line_index": 11,
+      "text": "yo o dai",
+      "start": 23.2,
+      "end": 23.9,
+      "confidence": 0.252,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "yo",
+          "start": 23.2,
+          "end": 23.3,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 2,
+          "text": "o",
+          "start": 23.35,
+          "end": 23.45,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 3,
+          "text": "cial",
+          "start": 23.5,
+          "end": 23.6,
+          "confidence": 0.252
+        }
+      ],
+      "y": 21,
+      "word_rois": [
+        [
+          204,
+          21,
+          37,
+          31
+        ],
+        [
+          245,
+          21,
+          26,
+          31
+        ],
+        [
+          275,
+          21,
+          60,
+          31
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 12,
       "text": "PUE",
-      "start": 25.55,
-      "end": 26.35,
-      "confidence": 0.313,
+      "start": 25.75,
+      "end": 26.45,
+      "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "PUE",
-          "start": 25.55,
-          "end": 26.35,
-          "confidence": 0.313
+          "start": 25.75,
+          "end": 25.85,
+          "confidence": 0.252
         }
       ],
       "y": 75,
@@ -562,7 +614,7 @@
       "char_rois": []
     },
     {
-      "line_index": 12,
+      "line_index": 13,
       "text": "Y ando despecha woah",
       "start": 27.2,
       "end": 28.2,
@@ -627,7 +679,7 @@
       "char_rois": []
     },
     {
-      "line_index": 13,
+      "line_index": 14,
       "text": "a loca",
       "start": 28.2,
       "end": 29.0,
@@ -660,7 +712,7 @@
       "char_rois": []
     },
     {
-      "line_index": 14,
+      "line_index": 15,
       "text": "aiod",
       "start": 24.55,
       "end": 26.55,
@@ -686,7 +738,7 @@
       "char_rois": []
     },
     {
-      "line_index": 15,
+      "line_index": 16,
       "text": "Baj con un flow nuevo e caja",
       "start": 27.5,
       "end": 30.4,
@@ -790,7 +842,7 @@
       "char_rois": []
     },
     {
-      "line_index": 16,
+      "line_index": 17,
       "text": "baby hackea",
       "start": 30.4,
       "end": 31.35,
@@ -829,7 +881,7 @@
       "char_rois": []
     },
     {
-      "line_index": 17,
+      "line_index": 18,
       "text": "Lo muevo de lao a lao",
       "start": 31.9,
       "end": 32.8,
@@ -920,7 +972,7 @@
       "char_rois": []
     },
     {
-      "line_index": 18,
+      "line_index": 19,
       "text": "y a otro lao",
       "start": 33.4,
       "end": 34.6,
@@ -985,7 +1037,7 @@
       "char_rois": []
     },
     {
-      "line_index": 19,
+      "line_index": 20,
       "text": "Hoy salgo con mi baby",
       "start": 34.9,
       "end": 35.75,
@@ -1063,7 +1115,7 @@
       "char_rois": []
     },
     {
-      "line_index": 20,
+      "line_index": 21,
       "text": "de la disco corona",
       "start": 35.75,
       "end": 36.3,
@@ -1128,7 +1180,7 @@
       "char_rois": []
     },
     {
-      "line_index": 21,
+      "line_index": 22,
       "text": "ya 0i30",
       "start": 37.75,
       "end": 38.75,
@@ -1167,7 +1219,7 @@
       "char_rois": []
     },
     {
-      "line_index": 22,
+      "line_index": 23,
       "text": "a mica de Drierian",
       "start": 38.75,
       "end": 39.15,
@@ -1226,7 +1278,7 @@
       "char_rois": []
     },
     {
-      "line_index": 23,
+      "line_index": 24,
       "text": "Gina de boa lan",
       "start": 39.55,
       "end": 40.25,
@@ -1291,7 +1343,7 @@
       "char_rois": []
     },
     {
-      "line_index": 24,
+      "line_index": 25,
       "text": "Y ando despecha woah",
       "start": 42.15,
       "end": 42.85,
@@ -1356,7 +1408,7 @@
       "char_rois": []
     },
     {
-      "line_index": 25,
+      "line_index": 26,
       "text": "alocaTM",
       "start": 43.85,
       "end": 44.65,
@@ -1382,7 +1434,7 @@
       "char_rois": []
     },
     {
-      "line_index": 26,
+      "line_index": 27,
       "text": "aloca' alocaTM",
       "start": 44.65,
       "end": 44.9,
@@ -1421,7 +1473,7 @@
       "char_rois": []
     },
     {
-      "line_index": 27,
+      "line_index": 28,
       "text": "Bel Dias errant",
       "start": 44.9,
       "end": 45.3,
@@ -1473,7 +1525,7 @@
       "char_rois": []
     },
     {
-      "line_index": 28,
+      "line_index": 29,
       "text": "Que Dios me libre de volver",
       "start": 45.3,
       "end": 46.15,
@@ -1564,7 +1616,7 @@
       "char_rois": []
     },
     {
-      "line_index": 29,
+      "line_index": 30,
       "text": "a tu lafo lao",
       "start": 46.15,
       "end": 46.7,
@@ -1629,7 +1681,7 @@
       "char_rois": []
     },
     {
-      "line_index": 30,
+      "line_index": 31,
       "text": "Keratin",
       "start": 45.05,
       "end": 46.8,
@@ -1655,7 +1707,7 @@
       "char_rois": []
     },
     {
-      "line_index": 31,
+      "line_index": 32,
       "text": "Lo muevo de lao a lalo",
       "start": 46.8,
       "end": 47.65,
@@ -1746,7 +1798,7 @@
       "char_rois": []
     },
     {
-      "line_index": 32,
+      "line_index": 33,
       "text": "y a otro la'o",
       "start": 47.65,
       "end": 48.2,
@@ -1811,7 +1863,7 @@
       "char_rois": []
     },
     {
-      "line_index": 33,
+      "line_index": 34,
       "text": "CIe DIO ma Thia co vah p",
       "start": 48.8,
       "end": 50.2,
@@ -1915,7 +1967,7 @@
       "char_rois": []
     },
     {
-      "line_index": 34,
+      "line_index": 35,
       "text": "OL IO e Mimra do valo",
       "start": 50.2,
       "end": 51.05,
@@ -2006,7 +2058,7 @@
       "char_rois": []
     },
     {
-      "line_index": 35,
+      "line_index": 36,
       "text": "Lo muevo de lao a lalo",
       "start": 51.05,
       "end": 51.9,
@@ -2097,7 +2149,7 @@
       "char_rois": []
     },
     {
-      "line_index": 36,
+      "line_index": 37,
       "text": "y a otro la'o",
       "start": 52.7,
       "end": 53.4,
@@ -2162,7 +2214,7 @@
       "char_rois": []
     },
     {
-      "line_index": 37,
+      "line_index": 38,
       "text": "Hoy salgo con mi baby",
       "start": 54.35,
       "end": 55.35,
@@ -2240,7 +2292,7 @@
       "char_rois": []
     },
     {
-      "line_index": 38,
+      "line_index": 39,
       "text": "de la disco corona corona yeah",
       "start": 56.0,
       "end": 57.2,
@@ -2331,7 +2383,7 @@
       "char_rois": []
     },
     {
-      "line_index": 39,
+      "line_index": 40,
       "text": "Karen",
       "start": 57.2,
       "end": 57.3,
@@ -2357,7 +2409,7 @@
       "char_rois": []
     },
     {
-      "line_index": 40,
+      "line_index": 41,
       "text": "Voy con la falda",
       "start": 57.3,
       "end": 57.85,
@@ -2422,7 +2474,7 @@
       "char_rois": []
     },
     {
-      "line_index": 41,
+      "line_index": 42,
       "text": "Aro' y cadena",
       "start": 57.85,
       "end": 58.25,
@@ -2474,7 +2526,7 @@
       "char_rois": []
     },
     {
-      "line_index": 42,
+      "line_index": 43,
       "text": "mi 357",
       "start": 58.25,
       "end": 58.5,
@@ -2513,7 +2565,7 @@
       "char_rois": []
     },
     {
-      "line_index": 43,
+      "line_index": 44,
       "text": "Pia colada",
       "start": 58.5,
       "end": 58.75,
@@ -2552,7 +2604,7 @@
       "char_rois": []
     },
     {
-      "line_index": 44,
+      "line_index": 45,
       "text": "No tengo pena",
       "start": 58.75,
       "end": 59.15,
@@ -2604,7 +2656,7 @@
       "char_rois": []
     },
     {
-      "line_index": 45,
+      "line_index": 46,
       "text": "Ella es la jefa",
       "start": 59.15,
       "end": 59.7,
@@ -2669,7 +2721,7 @@
       "char_rois": []
     },
     {
-      "line_index": 46,
+      "line_index": 47,
       "text": "Voy con la falda",
       "start": 59.85,
       "end": 60.6,
@@ -2734,7 +2786,7 @@
       "char_rois": []
     },
     {
-      "line_index": 47,
+      "line_index": 48,
       "text": "Ella lo baila",
       "start": 60.6,
       "end": 61.0,
@@ -2786,7 +2838,7 @@
       "char_rois": []
     },
     {
-      "line_index": 48,
+      "line_index": 49,
       "text": "Ella me ensefia",
       "start": 61.0,
       "end": 61.4,
@@ -2838,7 +2890,7 @@
       "char_rois": []
     },
     {
-      "line_index": 49,
+      "line_index": 50,
       "text": "Hoy no trabaja",
       "start": 61.65,
       "end": 62.35,
@@ -2890,7 +2942,7 @@
       "char_rois": []
     },
     {
-      "line_index": 50,
+      "line_index": 51,
       "text": "Esta morena",
       "start": 63.65,
       "end": 64.35,
@@ -2929,7 +2981,7 @@
       "char_rois": []
     },
     {
-      "line_index": 51,
+      "line_index": 52,
       "text": "Fuck la fama",
       "start": 64.95,
       "end": 65.95,
@@ -2981,7 +3033,7 @@
       "char_rois": []
     },
     {
-      "line_index": 52,
+      "line_index": 53,
       "text": "Fuck la faena",
       "start": 65.95,
       "end": 67.05,
@@ -3033,7 +3085,7 @@
       "char_rois": []
     },
     {
-      "line_index": 53,
+      "line_index": 54,
       "text": "La noche es larga",
       "start": 67.05,
       "end": 67.7,
@@ -3098,7 +3150,7 @@
       "char_rois": []
     },
     {
-      "line_index": 54,
+      "line_index": 55,
       "text": "La noche est buena",
       "start": 68.95,
       "end": 69.95,
@@ -3163,7 +3215,7 @@
       "char_rois": []
     },
     {
-      "line_index": 55,
+      "line_index": 56,
       "text": "ma",
       "start": 68.3,
       "end": 69.3,
@@ -3189,76 +3241,24 @@
       "char_rois": []
     },
     {
-      "line_index": 56,
-      "text": "y in Iiiina",
-      "start": 69.3,
-      "end": 69.7,
-      "confidence": 0.386,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "y",
-          "start": 69.3,
-          "end": 69.4,
-          "confidence": 0.386
-        },
-        {
-          "word_index": 2,
-          "text": "in",
-          "start": 69.45,
-          "end": 69.55,
-          "confidence": 0.386
-        },
-        {
-          "word_index": 3,
-          "text": "Hima",
-          "start": 69.6,
-          "end": 69.7,
-          "confidence": 0.386
-        }
-      ],
-      "y": 167,
-      "word_rois": [
-        [
-          140,
-          166,
-          19,
-          26
-        ],
-        [
-          162,
-          166,
-          51,
-          26
-        ],
-        [
-          336,
-          169,
-          56,
-          18
-        ]
-      ],
-      "char_rois": []
-    },
-    {
       "line_index": 57,
       "text": "Mambo violento",
-      "start": 69.75,
-      "end": 70.75,
+      "start": 69.3,
+      "end": 69.8,
       "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
           "text": "Mambo",
-          "start": 69.75,
-          "end": 70.2,
+          "start": 69.3,
+          "end": 69.4,
           "confidence": 0.5
         },
         {
           "word_index": 2,
           "text": "violento",
-          "start": 70.25,
-          "end": 70.75,
+          "start": 69.45,
+          "end": 69.8,
           "confidence": 0.5
         }
       ],
@@ -3282,36 +3282,36 @@
     {
       "line_index": 58,
       "text": "y fin del problema",
-      "start": 71.15,
-      "end": 71.85,
+      "start": 69.8,
+      "end": 70.35,
       "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
           "text": "y",
-          "start": 71.15,
-          "end": 71.25,
+          "start": 69.8,
+          "end": 69.9,
           "confidence": 0.5
         },
         {
           "word_index": 2,
           "text": "fin",
-          "start": 71.3,
-          "end": 71.4,
+          "start": 69.95,
+          "end": 70.05,
           "confidence": 0.5
         },
         {
           "word_index": 3,
           "text": "del",
-          "start": 71.45,
-          "end": 71.55,
+          "start": 70.1,
+          "end": 70.2,
           "confidence": 0.5
         },
         {
           "word_index": 4,
           "text": "problema",
-          "start": 71.6,
-          "end": 71.7,
+          "start": 70.25,
+          "end": 70.35,
           "confidence": 0.5
         }
       ],
@@ -3347,64 +3347,64 @@
     {
       "line_index": 59,
       "text": "Mira qu fdi te lo voy a decir",
-      "start": 72.5,
-      "end": 74.1,
+      "start": 71.5,
+      "end": 73.1,
       "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
           "text": "Mira",
-          "start": 72.5,
-          "end": 72.7,
+          "start": 71.5,
+          "end": 71.7,
           "confidence": 0.5
         },
         {
           "word_index": 2,
           "text": "qu",
-          "start": 72.75,
-          "end": 72.9,
+          "start": 71.75,
+          "end": 71.9,
           "confidence": 0.5
         },
         {
           "word_index": 3,
           "text": "fcil",
-          "start": 72.95,
-          "end": 73.1,
+          "start": 71.95,
+          "end": 72.1,
           "confidence": 0.5
         },
         {
           "word_index": 4,
           "text": "te",
-          "start": 73.15,
-          "end": 73.3,
+          "start": 72.15,
+          "end": 72.3,
           "confidence": 0.5
         },
         {
           "word_index": 5,
           "text": "lo",
-          "start": 73.35,
-          "end": 73.5,
+          "start": 72.35,
+          "end": 72.5,
           "confidence": 0.5
         },
         {
           "word_index": 6,
           "text": "voy",
-          "start": 73.55,
-          "end": 73.7,
+          "start": 72.55,
+          "end": 72.7,
           "confidence": 0.5
         },
         {
           "word_index": 7,
           "text": "a",
-          "start": 73.75,
-          "end": 73.9,
+          "start": 72.75,
+          "end": 72.9,
           "confidence": 0.5
         },
         {
           "word_index": 8,
           "text": "decir",
-          "start": 73.95,
-          "end": 74.1,
+          "start": 72.95,
+          "end": 73.1,
           "confidence": 0.5
         }
       ],
@@ -3658,7 +3658,7 @@
     },
     {
       "line_index": 63,
-      "text": "Que esta motomann",
+      "text": "Que esta motomarin",
       "start": 76.85,
       "end": 77.25,
       "confidence": 0.5,
@@ -3944,7 +3944,7 @@
     },
     {
       "line_index": 67,
-      "text": "Que esta motomann",
+      "text": "Que esta motomarin",
       "start": 82.9,
       "end": 84.15,
       "confidence": 0.5,
@@ -5550,7 +5550,7 @@
     },
     {
       "line_index": 92,
-      "text": "lano enni",
+      "text": "lano ennin",
       "start": 122.1,
       "end": 122.35,
       "confidence": 0.5,
@@ -5966,7 +5966,7 @@
     },
     {
       "line_index": 99,
-      "text": "Mmh rllii mmh",
+      "text": "Mmh riili mmh",
       "start": 129.9,
       "end": 130.9,
       "confidence": 0.5,
@@ -6135,7 +6135,7 @@
     },
     {
       "line_index": 102,
-      "text": "Rmii Rllii rmii rllii rllii",
+      "text": "Mnim Riili mnim riili riili",
       "start": 132.0,
       "end": 132.7,
       "confidence": 0.289,
@@ -6213,7 +6213,7 @@
     },
     {
       "line_index": 103,
-      "text": "Rmii minh muh",
+      "text": "Mnim minh muh",
       "start": 132.7,
       "end": 133.1,
       "confidence": 0.5,
@@ -6240,7 +6240,7 @@
           "confidence": 0.5
         }
       ],
-      "y": 116,
+      "y": 115,
       "word_rois": [
         [
           154,
@@ -6330,7 +6330,7 @@
     },
     {
       "line_index": 105,
-      "text": "Ciiris Jedi",
+      "text": "Diris Jedi",
       "start": 136.6,
       "end": 139.45,
       "confidence": 0.252,
