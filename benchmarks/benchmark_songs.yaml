@@ -59,6 +59,15 @@ songs:
     lrc_duration_tolerance_sec: 35
     notes: "Updated to karaoke version for visual bootstrapping."
 
+  - artist: "Coldplay"
+    title: "Viva La Vida"
+    youtube_id: "VQxLvR_P75o"
+    youtube_url: "https://www.youtube.com/watch?v=VQxLvR_P75o"
+    preferred_lyrics_provider: "lyriq"
+    fallback_lyrics_provider: "syncedlyrics"
+    lrc_duration_tolerance_sec: 20
+    notes: "Updated to karaoke version for visual bootstrapping."
+
   - artist: "The Weeknd"
     title: "Blinding Lights"
     youtube_id: "LEdBLhABQRs"
