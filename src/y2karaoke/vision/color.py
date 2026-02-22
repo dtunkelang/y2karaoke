@@ -202,18 +202,18 @@ def infer_lyric_colors(
             {"center": center, "count": counts[i], "brightness": np.mean(center)}
         )
 
-        # 3. Exclude the darkest cluster (likely background noise/edges)
-        cluster_info.sort(key=lambda x: x["brightness"])
-        foreground_clusters = cluster_info[1:]  # Keep two brightest
+    # 3. Exclude the darkest cluster (likely background noise/edges)
+    cluster_info.sort(key=lambda x: x["brightness"])
+    foreground_clusters = cluster_info[1:]  # Keep two brightest
 
-        # 4. Identify Selected vs Unselected
-        candidates = [c["center"] for c in foreground_clusters]
-        c_un, c_sel = _identify_color_states(candidates)
+    # 4. Identify Selected vs Unselected
+    candidates = [c["center"] for c in foreground_clusters]
+    c_un, c_sel = _identify_color_states(candidates)
 
-        logger.info(
-            f"Inferred stable colors: Unselected={c_un.astype(int)}, Selected={c_sel.astype(int)}"
-        )
-        return c_un, c_sel, cluster_info[0]["center"]
+    logger.info(
+        f"Inferred stable colors: Unselected={c_un.astype(int)}, Selected={c_sel.astype(int)}"
+    )
+    return c_un, c_sel, cluster_info[0]["center"]
 
 
 def classify_word_state(
