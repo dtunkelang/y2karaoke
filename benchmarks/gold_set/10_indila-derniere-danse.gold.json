@@ -1470,29 +1470,29 @@
     {
       "line_index": 20,
       "text": "Dans tout Paris",
-      "start": 79.85,
-      "end": 80.55,
+      "start": 79.5,
+      "end": 79.9,
       "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
           "text": "Dans",
-          "start": 79.85,
-          "end": 79.95,
+          "start": 79.5,
+          "end": 79.6,
           "confidence": 0.5
         },
         {
           "word_index": 2,
           "text": "tout",
-          "start": 80.0,
-          "end": 80.1,
+          "start": 79.65,
+          "end": 79.75,
           "confidence": 0.5
         },
         {
           "word_index": 3,
           "text": "Paris",
-          "start": 80.15,
-          "end": 80.25,
+          "start": 79.8,
+          "end": 79.9,
           "confidence": 0.5
         }
       ],
@@ -1522,15 +1522,15 @@
     {
       "line_index": 21,
       "text": "m'abandonne",
-      "start": 82.1,
-      "end": 82.9,
+      "start": 80.45,
+      "end": 81.25,
       "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
           "text": "m'abandonne",
-          "start": 82.1,
-          "end": 82.9,
+          "start": 80.45,
+          "end": 81.25,
           "confidence": 0.5
         }
       ],
@@ -1806,7 +1806,7 @@
     },
     {
       "line_index": 26,
-      "text": "J'ai beau trimer sans toi ninavine n'est",
+      "text": "J'ai beau trimer sans toi ma vie n'est",
       "start": 92.45,
       "end": 94.25,
       "confidence": 0.5,
@@ -1815,46 +1815,53 @@
           "word_index": 1,
           "text": "J'ai",
           "start": 92.45,
-          "end": 92.65,
+          "end": 92.6,
           "confidence": 0.5
         },
         {
           "word_index": 2,
           "text": "beau",
-          "start": 92.7,
-          "end": 92.9,
+          "start": 92.65,
+          "end": 92.85,
           "confidence": 0.5
         },
         {
           "word_index": 3,
           "text": "trimer",
-          "start": 92.95,
-          "end": 93.2,
+          "start": 92.9,
+          "end": 93.1,
           "confidence": 0.5
         },
         {
           "word_index": 4,
           "text": "sans",
-          "start": 93.25,
-          "end": 93.45,
+          "start": 93.15,
+          "end": 93.35,
           "confidence": 0.5
         },
         {
           "word_index": 5,
           "text": "toi",
-          "start": 93.5,
-          "end": 93.7,
+          "start": 93.4,
+          "end": 93.6,
           "confidence": 0.5
         },
         {
           "word_index": 6,
-          "text": "mavie",
-          "start": 93.75,
-          "end": 94.0,
+          "text": "ma",
+          "start": 93.65,
+          "end": 93.8,
           "confidence": 0.5
         },
         {
           "word_index": 7,
+          "text": "vie",
+          "start": 93.85,
+          "end": 94.0,
+          "confidence": 0.5
+        },
+        {
+          "word_index": 8,
           "text": "n'est",
           "start": 94.05,
           "end": 94.25,
@@ -1866,13 +1873,13 @@
         [
           32,
           140,
-          41,
+          45,
           28
         ],
         [
-          77,
+          80,
           140,
-          70,
+          67,
           28
         ],
         [
@@ -1896,13 +1903,19 @@
         [
           357,
           140,
-          91,
+          45,
+          28
+        ],
+        [
+          406,
+          140,
+          42,
           28
         ],
         [
           451,
           140,
-          66,
+          67,
           28
         ]
       ],
@@ -2826,29 +2839,29 @@
     {
       "line_index": 38,
       "text": "Dans tout Paris",
-      "start": 130.15,
-      "end": 130.55,
+      "start": 130.05,
+      "end": 130.45,
       "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
           "text": "Dans",
-          "start": 130.15,
-          "end": 130.25,
+          "start": 130.05,
+          "end": 130.15,
           "confidence": 0.5
         },
         {
           "word_index": 2,
           "text": "tout",
-          "start": 130.3,
-          "end": 130.4,
+          "start": 130.2,
+          "end": 130.3,
           "confidence": 0.5
         },
         {
           "word_index": 3,
           "text": "Paris",
-          "start": 130.45,
-          "end": 130.55,
+          "start": 130.35,
+          "end": 130.45,
           "confidence": 0.5
         }
       ],
@@ -2878,15 +2891,15 @@
     {
       "line_index": 39,
       "text": "m'abandonne",
-      "start": 130.7,
-      "end": 130.8,
+      "start": 130.6,
+      "end": 130.7,
       "confidence": 0.228,
       "words": [
         {
           "word_index": 1,
           "text": "m'abandonne",
-          "start": 130.7,
-          "end": 130.8,
+          "start": 130.6,
+          "end": 130.7,
           "confidence": 0.228
         }
       ],
@@ -3643,9 +3656,9 @@
     },
     {
       "line_index": 49,
-      "text": "Un peu d'amour un brin de miel",
+      "text": "Un peu d'amour un brin cieniiei",
       "start": 179.55,
-      "end": 180.75,
+      "end": 180.55,
       "confidence": 0.5,
       "words": [
         {
@@ -3673,28 +3686,21 @@
           "word_index": 4,
           "text": "un",
           "start": 180.0,
-          "end": 180.15,
+          "end": 180.1,
           "confidence": 0.5
         },
         {
           "word_index": 5,
           "text": "brin",
-          "start": 180.2,
+          "start": 180.15,
           "end": 180.35,
           "confidence": 0.5
         },
         {
           "word_index": 6,
-          "text": "de",
+          "text": "demiel",
           "start": 180.4,
           "end": 180.55,
-          "confidence": 0.5
-        },
-        {
-          "word_index": 7,
-          "text": "miel",
-          "start": 180.6,
-          "end": 180.75,
           "confidence": 0.5
         }
       ],
@@ -3702,45 +3708,39 @@
       "word_rois": [
         [
           60,
-          20,
+          17,
           41,
-          27
+          30
         ],
         [
-          105,
-          20,
-          56,
-          27
+          104,
+          17,
+          57,
+          30
         ],
         [
           164,
-          20,
-          112,
-          27
+          17,
+          117,
+          30
         ],
         [
-          280,
-          20,
-          38,
-          27
+          284,
+          17,
+          34,
+          30
         ],
         [
           322,
-          20,
+          17,
           56,
-          27
+          30
         ],
         [
-          381,
-          20,
-          39,
-          27
-        ],
-        [
-          423,
-          20,
-          64,
-          27
+          382,
+          17,
+          106,
+          30
         ]
       ],
       "char_rois": []

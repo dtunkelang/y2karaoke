@@ -1093,14 +1093,14 @@
       "text": "AND NOW IM SINGING LIKE",
       "start": 31.2,
       "end": 31.9,
-      "confidence": 0.687,
+      "confidence": 0.69,
       "words": [
         {
           "word_index": 1,
           "text": "AND",
           "start": 31.2,
           "end": 31.3,
-          "confidence": 0.927
+          "confidence": 0.941
         },
         {
           "word_index": 2,
@@ -1675,7 +1675,7 @@
     },
     {
       "line_index": 27,
-      "text": "DON'T MMCIME",
+      "text": "DON'T RIINCIRIE",
       "start": 38.95,
       "end": 39.2,
       "confidence": 0.252,
@@ -2749,16 +2749,16 @@
     {
       "line_index": 45,
       "text": "Cours",
-      "start": 64.25,
-      "end": 64.35,
-      "confidence": 0.3,
+      "start": 63.45,
+      "end": 63.55,
+      "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "Cours",
-          "start": 64.25,
-          "end": 64.35,
-          "confidence": 0.3
+          "start": 63.45,
+          "end": 63.55,
+          "confidence": 0.252
         }
       ],
       "y": 247,
@@ -2775,44 +2775,44 @@
     {
       "line_index": 46,
       "text": "AND NOW MY BED SHEETS",
-      "start": 64.8,
-      "end": 65.5,
-      "confidence": 0.542,
+      "start": 63.55,
+      "end": 64.3,
+      "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "AND",
-          "start": 64.8,
-          "end": 64.9,
-          "confidence": 0.601
+          "start": 63.55,
+          "end": 63.65,
+          "confidence": 0.252
         },
         {
           "word_index": 2,
           "text": "NOW",
-          "start": 64.95,
-          "end": 65.05,
-          "confidence": 0.25
+          "start": 63.7,
+          "end": 63.8,
+          "confidence": 0.252
         },
         {
           "word_index": 3,
           "text": "MY",
-          "start": 65.1,
-          "end": 65.2,
-          "confidence": 0.652
+          "start": 63.85,
+          "end": 63.95,
+          "confidence": 0.252
         },
         {
           "word_index": 4,
           "text": "BED",
-          "start": 65.25,
-          "end": 65.35,
-          "confidence": 0.655
+          "start": 64.0,
+          "end": 64.1,
+          "confidence": 0.252
         },
         {
           "word_index": 5,
           "text": "SHEETS",
-          "start": 65.4,
-          "end": 65.5,
-          "confidence": 0.554
+          "start": 64.15,
+          "end": 64.3,
+          "confidence": 0.252
         }
       ],
       "y": 57,
@@ -2853,30 +2853,30 @@
     {
       "line_index": 47,
       "text": "SMELL LIKE YOU",
-      "start": 65.5,
-      "end": 65.9,
-      "confidence": 0.537,
+      "start": 64.3,
+      "end": 64.8,
+      "confidence": 0.539,
       "words": [
         {
           "word_index": 1,
           "text": "SMELL",
-          "start": 65.5,
-          "end": 65.6,
+          "start": 64.3,
+          "end": 64.4,
           "confidence": 0.25
         },
         {
           "word_index": 2,
           "text": "LIKE",
-          "start": 65.65,
-          "end": 65.75,
+          "start": 64.45,
+          "end": 64.55,
           "confidence": 0.762
         },
         {
           "word_index": 3,
           "text": "YOU",
-          "start": 65.8,
-          "end": 65.9,
-          "confidence": 0.6
+          "start": 64.7,
+          "end": 64.8,
+          "confidence": 0.604
         }
       ],
       "y": 109,
@@ -2904,70 +2904,31 @@
     },
     {
       "line_index": 48,
-      "text": "Mous co",
-      "start": 65.9,
-      "end": 66.15,
-      "confidence": 0.336,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "Mous",
-          "start": 65.9,
-          "end": 66.0,
-          "confidence": 0.336
-        },
-        {
-          "word_index": 2,
-          "text": "co",
-          "start": 66.05,
-          "end": 66.15,
-          "confidence": 0.336
-        }
-      ],
-      "y": 246,
-      "word_rois": [
-        [
-          592,
-          249,
-          44,
-          20
-        ],
-        [
-          597,
-          237,
-          22,
-          14
-        ]
-      ],
-      "char_rois": []
-    },
-    {
-      "line_index": 49,
       "text": "EVERY DAY DISCOVERING",
-      "start": 66.95,
-      "end": 67.65,
-      "confidence": 0.27,
+      "start": 64.8,
+      "end": 65.2,
+      "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "EVERY",
-          "start": 66.95,
-          "end": 67.15,
-          "confidence": 0.27
+          "start": 64.8,
+          "end": 64.9,
+          "confidence": 0.252
         },
         {
           "word_index": 2,
           "text": "DAY",
-          "start": 67.2,
-          "end": 67.35,
-          "confidence": 0.27
+          "start": 64.95,
+          "end": 65.05,
+          "confidence": 0.252
         },
         {
           "word_index": 3,
           "text": "DISCOVERING",
-          "start": 67.4,
-          "end": 67.65,
-          "confidence": 0.27
+          "start": 65.1,
+          "end": 65.2,
+          "confidence": 0.252
         }
       ],
       "y": 55,
@@ -2994,32 +2955,32 @@
       "char_rois": []
     },
     {
-      "line_index": 50,
+      "line_index": 49,
       "text": "SOMETHING BAND NEW",
-      "start": 67.75,
-      "end": 68.15,
-      "confidence": 0.929,
+      "start": 65.2,
+      "end": 65.6,
+      "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "SOMETHING",
-          "start": 67.75,
-          "end": 67.85,
-          "confidence": 1.0
+          "start": 65.2,
+          "end": 65.3,
+          "confidence": 0.252
         },
         {
           "word_index": 2,
           "text": "BAND",
-          "start": 67.9,
-          "end": 68.0,
-          "confidence": 0.786
+          "start": 65.35,
+          "end": 65.45,
+          "confidence": 0.252
         },
         {
           "word_index": 3,
           "text": "NEW",
-          "start": 68.05,
-          "end": 68.15,
-          "confidence": 1.0
+          "start": 65.5,
+          "end": 65.6,
+          "confidence": 0.252
         }
       ],
       "y": 107,
@@ -3046,18 +3007,18 @@
       "char_rois": []
     },
     {
-      "line_index": 51,
+      "line_index": 50,
       "text": "Nomad",
-      "start": 68.15,
-      "end": 68.25,
-      "confidence": 0.3,
+      "start": 65.6,
+      "end": 65.7,
+      "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "Nowad",
-          "start": 68.15,
-          "end": 68.25,
-          "confidence": 0.3
+          "start": 65.6,
+          "end": 65.7,
+          "confidence": 0.252
         }
       ],
       "y": 249,
@@ -3072,18 +3033,18 @@
       "char_rois": []
     },
     {
-      "line_index": 52,
+      "line_index": 51,
       "text": "co",
-      "start": 68.25,
-      "end": 68.35,
-      "confidence": 0.607,
+      "start": 65.7,
+      "end": 65.8,
+      "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "co",
-          "start": 68.25,
-          "end": 68.35,
-          "confidence": 0.607
+          "start": 65.7,
+          "end": 65.8,
+          "confidence": 0.252
         }
       ],
       "y": 237,
@@ -3098,25 +3059,25 @@
       "char_rois": []
     },
     {
-      "line_index": 53,
+      "line_index": 52,
       "text": "mO g3",
-      "start": 68.35,
-      "end": 68.6,
-      "confidence": 0.5,
+      "start": 65.8,
+      "end": 66.05,
+      "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "mO",
-          "start": 68.35,
-          "end": 68.45,
-          "confidence": 0.5
+          "start": 65.8,
+          "end": 65.9,
+          "confidence": 0.252
         },
         {
           "word_index": 2,
           "text": "g3",
-          "start": 68.5,
-          "end": 68.6,
-          "confidence": 0.5
+          "start": 65.95,
+          "end": 66.05,
+          "confidence": 0.252
         }
       ],
       "y": 242,
@@ -3137,32 +3098,32 @@
       "char_rois": []
     },
     {
-      "line_index": 54,
+      "line_index": 53,
       "text": "10 on al",
-      "start": 72.1,
-      "end": 72.8,
-      "confidence": 0.3,
+      "start": 71.25,
+      "end": 71.95,
+      "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "10",
-          "start": 72.1,
-          "end": 72.2,
-          "confidence": 0.3
+          "start": 71.25,
+          "end": 71.35,
+          "confidence": 0.252
         },
         {
           "word_index": 2,
           "text": "on",
-          "start": 72.25,
-          "end": 72.3,
-          "confidence": 0.3
+          "start": 71.4,
+          "end": 71.45,
+          "confidence": 0.252
         },
         {
           "word_index": 3,
           "text": "al",
-          "start": 72.3,
-          "end": 72.35,
-          "confidence": 0.3
+          "start": 71.45,
+          "end": 71.5,
+          "confidence": 0.252
         }
       ],
       "y": 249,
@@ -3183,7 +3144,7 @@
       "char_rois": []
     },
     {
-      "line_index": 55,
+      "line_index": 54,
       "text": "U'M IN LOVE WITH YOUR BODY",
       "start": 74.0,
       "end": 85.2,
@@ -3274,7 +3235,7 @@
       "char_rois": []
     },
     {
-      "line_index": 56,
+      "line_index": 55,
       "text": "lawd",
       "start": 86.0,
       "end": 86.1,
@@ -3300,7 +3261,7 @@
       "char_rois": []
     },
     {
-      "line_index": 57,
+      "line_index": 56,
       "text": "EVERY DAY DISCOVERING",
       "start": 87.6,
       "end": 88.0,
@@ -3352,7 +3313,7 @@
       "char_rois": []
     },
     {
-      "line_index": 58,
+      "line_index": 57,
       "text": "SOMETHING BAND NEW",
       "start": 88.0,
       "end": 88.4,
@@ -3404,7 +3365,7 @@
       "char_rois": []
     },
     {
-      "line_index": 59,
+      "line_index": 58,
       "text": "IM IN LOVE WITH",
       "start": 89.45,
       "end": 90.0,
@@ -3469,7 +3430,7 @@
       "char_rois": []
     },
     {
-      "line_index": 60,
+      "line_index": 59,
       "text": "THE SHAPE OF YOU",
       "start": 90.0,
       "end": 90.55,
@@ -3534,7 +3495,7 @@
       "char_rois": []
     },
     {
-      "line_index": 61,
+      "line_index": 60,
       "text": "Louis",
       "start": 90.55,
       "end": 90.65,
@@ -3560,7 +3521,7 @@
       "char_rois": []
     },
     {
-      "line_index": 62,
+      "line_index": 61,
       "text": "ONE WEEK IN WE LET",
       "start": 90.85,
       "end": 92.0,
@@ -3638,7 +3599,7 @@
       "char_rois": []
     },
     {
-      "line_index": 63,
+      "line_index": 62,
       "text": "THE STORY BEGIN",
       "start": 92.0,
       "end": 92.4,
@@ -3690,7 +3651,7 @@
       "char_rois": []
     },
     {
-      "line_index": 64,
+      "line_index": 63,
       "text": "WE'RE GOING OUT",
       "start": 92.65,
       "end": 93.35,
@@ -3742,7 +3703,7 @@
       "char_rois": []
     },
     {
-      "line_index": 65,
+      "line_index": 64,
       "text": "ON OUR FIRST DATE",
       "start": 94.8,
       "end": 97.45,
@@ -3807,7 +3768,7 @@
       "char_rois": []
     },
     {
-      "line_index": 66,
+      "line_index": 65,
       "text": "Haus",
       "start": 96.2,
       "end": 97.0,
@@ -3833,7 +3794,7 @@
       "char_rois": []
     },
     {
-      "line_index": 67,
+      "line_index": 66,
       "text": "YOU AND ME ARE THRIFTY",
       "start": 97.15,
       "end": 97.85,
@@ -3911,7 +3872,7 @@
       "char_rois": []
     },
     {
-      "line_index": 68,
+      "line_index": 67,
       "text": "SO GO ALL YOU CAN EAT",
       "start": 97.85,
       "end": 98.7,
@@ -4002,7 +3963,7 @@
       "char_rois": []
     },
     {
-      "line_index": 69,
+      "line_index": 68,
       "text": "FILL UP YOUR BAG",
       "start": 98.7,
       "end": 99.35,
@@ -4067,7 +4028,7 @@
       "char_rois": []
     },
     {
-      "line_index": 70,
+      "line_index": 69,
       "text": "AND I FILL UP A PLATE",
       "start": 99.35,
       "end": 100.2,
@@ -4158,7 +4119,7 @@
       "char_rois": []
     },
     {
-      "line_index": 71,
+      "line_index": 70,
       "text": "WE TALK FOR",
       "start": 100.3,
       "end": 100.7,
@@ -4210,7 +4171,7 @@
       "char_rois": []
     },
     {
-      "line_index": 72,
+      "line_index": 71,
       "text": "SWEET AND THE SOUR",
       "start": 100.7,
       "end": 101.25,
@@ -4275,7 +4236,7 @@
       "char_rois": []
     },
     {
-      "line_index": 73,
+      "line_index": 72,
       "text": "ABOUT THE",
       "start": 102.05,
       "end": 102.3,
@@ -4314,7 +4275,7 @@
       "char_rois": []
     },
     {
-      "line_index": 74,
+      "line_index": 73,
       "text": "AND HOW YOUR",
       "start": 102.65,
       "end": 104.35,
@@ -4366,7 +4327,7 @@
       "char_rois": []
     },
     {
-      "line_index": 75,
+      "line_index": 74,
       "text": "FAMILYIS DOING OKAY",
       "start": 104.35,
       "end": 104.75,
@@ -4418,7 +4379,7 @@
       "char_rois": []
     },
     {
-      "line_index": 76,
+      "line_index": 75,
       "text": "LEAVE AND GET IN A TAXI",
       "start": 105.6,
       "end": 107.4,
@@ -4509,7 +4470,7 @@
       "char_rois": []
     },
     {
-      "line_index": 77,
+      "line_index": 76,
       "text": "THEN KISS IN THE BACKSEAT",
       "start": 107.4,
       "end": 108.1,
@@ -4587,8 +4548,8 @@
       "char_rois": []
     },
     {
-      "line_index": 78,
-      "text": "TELL THE DRIVER NINAKEFHE",
+      "line_index": 77,
+      "text": "TELL THE DRIVER MAKETIME",
       "start": 108.1,
       "end": 108.65,
       "confidence": 0.715,
@@ -4652,7 +4613,7 @@
       "char_rois": []
     },
     {
-      "line_index": 79,
+      "line_index": 78,
       "text": "RADIO PLAY",
       "start": 108.65,
       "end": 108.9,
@@ -4697,7 +4658,7 @@
       "char_rois": []
     },
     {
-      "line_index": 80,
+      "line_index": 79,
       "text": "Hous",
       "start": 108.9,
       "end": 109.0,
@@ -4723,7 +4684,7 @@
       "char_rois": []
     },
     {
-      "line_index": 81,
+      "line_index": 80,
       "text": "ANDI'M AND IM SINGING LIKE",
       "start": 109.55,
       "end": 110.25,
@@ -4801,7 +4762,7 @@
       "char_rois": []
     },
     {
-      "line_index": 82,
+      "line_index": 81,
       "text": "GIRL YOU KNOW",
       "start": 110.25,
       "end": 111.05,
@@ -4853,7 +4814,7 @@
       "char_rois": []
     },
     {
-      "line_index": 83,
+      "line_index": 82,
       "text": "I WANT YOUR LOVE",
       "start": 111.05,
       "end": 112.55,
@@ -4918,7 +4879,7 @@
       "char_rois": []
     },
     {
-      "line_index": 84,
+      "line_index": 83,
       "text": "Nomad",
       "start": 112.55,
       "end": 112.65,
@@ -4944,18 +4905,18 @@
       "char_rois": []
     },
     {
-      "line_index": 85,
+      "line_index": 84,
       "text": "Jamal",
       "start": 112.65,
       "end": 112.75,
-      "confidence": 0.252,
+      "confidence": 0.3,
       "words": [
         {
           "word_index": 1,
           "text": "Jamal",
           "start": 112.65,
           "end": 112.75,
-          "confidence": 0.252
+          "confidence": 0.3
         }
       ],
       "y": 249,
@@ -4970,17 +4931,17 @@
       "char_rois": []
     },
     {
-      "line_index": 86,
+      "line_index": 85,
       "text": "Clowns",
       "start": 112.75,
-      "end": 112.85,
+      "end": 113.55,
       "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "Clowns",
           "start": 112.75,
-          "end": 112.85,
+          "end": 113.55,
           "confidence": 0.252
         }
       ],
@@ -4996,24 +4957,24 @@
       "char_rois": []
     },
     {
-      "line_index": 87,
+      "line_index": 86,
       "text": "10 owal",
-      "start": 112.85,
-      "end": 113.8,
+      "start": 113.95,
+      "end": 115.45,
       "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "10",
-          "start": 112.85,
-          "end": 112.95,
+          "start": 113.95,
+          "end": 114.6,
           "confidence": 0.252
         },
         {
           "word_index": 2,
           "text": "owal",
-          "start": 113.0,
-          "end": 113.8,
+          "start": 114.65,
+          "end": 115.45,
           "confidence": 0.252
         }
       ],
@@ -5035,33 +4996,7 @@
       "char_rois": []
     },
     {
-      "line_index": 88,
-      "text": "Uauis",
-      "start": 114.3,
-      "end": 115.1,
-      "confidence": 0.252,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "Uauls",
-          "start": 114.3,
-          "end": 115.1,
-          "confidence": 0.252
-        }
-      ],
-      "y": 245,
-      "word_rois": [
-        [
-          587,
-          245,
-          51,
-          30
-        ]
-      ],
-      "char_rois": []
-    },
-    {
-      "line_index": 89,
+      "line_index": 87,
       "text": "YOUR LOVE WAS HANDMADE",
       "start": 115.7,
       "end": 116.25,
@@ -5126,7 +5061,7 @@
       "char_rois": []
     },
     {
-      "line_index": 90,
+      "line_index": 88,
       "text": "FOR SOMEBODY LIKE ME",
       "start": 116.25,
       "end": 116.8,
@@ -5191,7 +5126,7 @@
       "char_rois": []
     },
     {
-      "line_index": 91,
+      "line_index": 89,
       "text": "News",
       "start": 116.8,
       "end": 116.9,
@@ -5217,7 +5152,7 @@
       "char_rois": []
     },
     {
-      "line_index": 92,
+      "line_index": 90,
       "text": "COME ON NOW",
       "start": 116.9,
       "end": 117.3,
@@ -5269,7 +5204,7 @@
       "char_rois": []
     },
     {
-      "line_index": 93,
+      "line_index": 91,
       "text": "FOLLOW MY LEAD",
       "start": 117.3,
       "end": 117.7,
@@ -5321,7 +5256,7 @@
       "char_rois": []
     },
     {
-      "line_index": 94,
+      "line_index": 92,
       "text": "Vous",
       "start": 117.7,
       "end": 117.8,
@@ -5347,7 +5282,7 @@
       "char_rois": []
     },
     {
-      "line_index": 95,
+      "line_index": 93,
       "text": "I MAY BE CRAZY",
       "start": 119.1,
       "end": 119.65,
@@ -5412,8 +5347,8 @@
       "char_rois": []
     },
     {
-      "line_index": 96,
-      "text": "DON'T MMCIME",
+      "line_index": 94,
+      "text": "DON'T RIINCIRIE",
       "start": 120.45,
       "end": 120.7,
       "confidence": 0.418,
@@ -5451,7 +5386,7 @@
       "char_rois": []
     },
     {
-      "line_index": 97,
+      "line_index": 95,
       "text": "SAY BOY",
       "start": 121.9,
       "end": 122.3,
@@ -5490,7 +5425,7 @@
       "char_rois": []
     },
     {
-      "line_index": 98,
+      "line_index": 96,
       "text": "LET'S NOT TALK TOO MUCH",
       "start": 122.3,
       "end": 123.0,
@@ -5568,7 +5503,7 @@
       "char_rois": []
     },
     {
-      "line_index": 99,
+      "line_index": 97,
       "text": "GRAB ON MY WAIST AND",
       "start": 124.95,
       "end": 125.65,
@@ -5646,7 +5581,7 @@
       "char_rois": []
     },
     {
-      "line_index": 100,
+      "line_index": 98,
       "text": "PUT THAT BODY ON ME",
       "start": 125.65,
       "end": 126.35,
@@ -5724,7 +5659,7 @@
       "char_rois": []
     },
     {
-      "line_index": 101,
+      "line_index": 99,
       "text": "COME COME ON NOW",
       "start": 129.25,
       "end": 129.9,
@@ -5789,7 +5724,7 @@
       "char_rois": []
     },
     {
-      "line_index": 102,
+      "line_index": 100,
       "text": "FOLLOW MY LEAD",
       "start": 129.9,
       "end": 130.3,
@@ -5841,7 +5776,7 @@
       "char_rois": []
     },
     {
-      "line_index": 103,
+      "line_index": 101,
       "text": "IM IN LOVE WITH",
       "start": 131.3,
       "end": 132.3,
@@ -5906,7 +5841,7 @@
       "char_rois": []
     },
     {
-      "line_index": 104,
+      "line_index": 102,
       "text": "THE SHAPE OF YOU",
       "start": 132.8,
       "end": 134.5,
@@ -5971,7 +5906,7 @@
       "char_rois": []
     },
     {
-      "line_index": 105,
+      "line_index": 103,
       "text": "WE PUSH AND PULL",
       "start": 134.25,
       "end": 135.65,
@@ -6036,7 +5971,7 @@
       "char_rois": []
     },
     {
-      "line_index": 106,
+      "line_index": 104,
       "text": "LIKE A MAGNET DO",
       "start": 135.65,
       "end": 136.2,
@@ -6101,7 +6036,7 @@
       "char_rois": []
     },
     {
-      "line_index": 107,
+      "line_index": 105,
       "text": "Nomad",
       "start": 136.2,
       "end": 136.3,
@@ -6127,7 +6062,7 @@
       "char_rois": []
     },
     {
-      "line_index": 108,
+      "line_index": 106,
       "text": "10 oul",
       "start": 136.3,
       "end": 136.55,
@@ -6166,7 +6101,7 @@
       "char_rois": []
     },
     {
-      "line_index": 109,
+      "line_index": 107,
       "text": "ALTHOUGH MY HEART",
       "start": 137.5,
       "end": 138.6,
@@ -6218,7 +6153,7 @@
       "char_rois": []
     },
     {
-      "line_index": 110,
+      "line_index": 108,
       "text": "IS FALLING TOO",
       "start": 138.85,
       "end": 139.55,
@@ -6270,7 +6205,7 @@
       "char_rois": []
     },
     {
-      "line_index": 111,
+      "line_index": 109,
       "text": "U'M IN LOVE WITH YOUR BODY",
       "start": 140.15,
       "end": 141.0,
@@ -6361,7 +6296,7 @@
       "char_rois": []
     },
     {
-      "line_index": 112,
+      "line_index": 110,
       "text": "AND LAST NIGHT YOU",
       "start": 141.7,
       "end": 142.4,
@@ -6426,7 +6361,7 @@
       "char_rois": []
     },
     {
-      "line_index": 113,
+      "line_index": 111,
       "text": "WERE IN MY ROOM",
       "start": 143.65,
       "end": 144.65,
@@ -6485,7 +6420,7 @@
       "char_rois": []
     },
     {
-      "line_index": 114,
+      "line_index": 112,
       "text": "Louis",
       "start": 144.65,
       "end": 144.75,
@@ -6511,7 +6446,7 @@
       "char_rois": []
     },
     {
-      "line_index": 115,
+      "line_index": 113,
       "text": "AND NOW MY BED SHEETS",
       "start": 144.9,
       "end": 145.6,
@@ -6589,7 +6524,7 @@
       "char_rois": []
     },
     {
-      "line_index": 116,
+      "line_index": 114,
       "text": "SMELL LIKE YOU",
       "start": 145.6,
       "end": 146.0,
@@ -6641,7 +6576,7 @@
       "char_rois": []
     },
     {
-      "line_index": 117,
+      "line_index": 115,
       "text": "EVERY DAY DISCOVERING",
       "start": 147.75,
       "end": 148.15,
@@ -6693,7 +6628,7 @@
       "char_rois": []
     },
     {
-      "line_index": 118,
+      "line_index": 116,
       "text": "SOMETHING BAND NEW",
       "start": 148.15,
       "end": 148.55,
@@ -6745,7 +6680,7 @@
       "char_rois": []
     },
     {
-      "line_index": 119,
+      "line_index": 117,
       "text": "Clowns",
       "start": 148.55,
       "end": 148.65,
@@ -6771,7 +6706,7 @@
       "char_rois": []
     },
     {
-      "line_index": 120,
+      "line_index": 118,
       "text": "ce'",
       "start": 159.3,
       "end": 160.0,
@@ -6797,7 +6732,7 @@
       "char_rois": []
     },
     {
-      "line_index": 121,
+      "line_index": 119,
       "text": "U'M IN LOVE WITH YOUR BODY",
       "start": 164.85,
       "end": 165.7,
@@ -6888,7 +6823,7 @@
       "char_rois": []
     },
     {
-      "line_index": 122,
+      "line_index": 120,
       "text": "ech",
       "start": 165.7,
       "end": 165.8,
@@ -6914,7 +6849,7 @@
       "char_rois": []
     },
     {
-      "line_index": 123,
+      "line_index": 121,
       "text": "gmail",
       "start": 165.8,
       "end": 165.9,
@@ -6940,7 +6875,7 @@
       "char_rois": []
     },
     {
-      "line_index": 124,
+      "line_index": 122,
       "text": "EVERY DAY DISCOVERING",
       "start": 167.65,
       "end": 168.05,
@@ -6992,7 +6927,7 @@
       "char_rois": []
     },
     {
-      "line_index": 125,
+      "line_index": 123,
       "text": "SOMETHING BAND NEW",
       "start": 168.05,
       "end": 168.45,
@@ -7044,7 +6979,7 @@
       "char_rois": []
     },
     {
-      "line_index": 126,
+      "line_index": 124,
       "text": "Nomad",
       "start": 168.45,
       "end": 168.55,
@@ -7070,7 +7005,7 @@
       "char_rois": []
     },
     {
-      "line_index": 127,
+      "line_index": 125,
       "text": "IM UM IN LOVE WITH",
       "start": 170.05,
       "end": 170.75,
@@ -7148,7 +7083,7 @@
       "char_rois": []
     },
     {
-      "line_index": 128,
+      "line_index": 126,
       "text": "THE SHAPE OF YOU",
       "start": 177.6,
       "end": 178.3,
@@ -7213,7 +7148,7 @@
       "char_rois": []
     },
     {
-      "line_index": 129,
+      "line_index": 127,
       "text": "COME ON",
       "start": 182.2,
       "end": 182.45,
@@ -7252,7 +7187,7 @@
       "char_rois": []
     },
     {
-      "line_index": 130,
+      "line_index": 128,
       "text": "BE MY BABY COME ON",
       "start": 182.45,
       "end": 189.9,
@@ -7330,7 +7265,7 @@
       "char_rois": []
     },
     {
-      "line_index": 131,
+      "line_index": 129,
       "text": "Could",
       "start": 189.9,
       "end": 190.0,
@@ -7356,97 +7291,45 @@
       "char_rois": []
     },
     {
-      "line_index": 132,
-      "text": "Nomad",
-      "start": 190.0,
-      "end": 190.1,
-      "confidence": 0.252,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "Nowad",
-          "start": 190.0,
-          "end": 190.1,
-          "confidence": 0.252
-        }
-      ],
-      "y": 249,
-      "word_rois": [
-        [
-          592,
-          249,
-          44,
-          22
-        ]
-      ],
-      "char_rois": []
-    },
-    {
-      "line_index": 133,
-      "text": "Haus",
-      "start": 190.1,
-      "end": 190.2,
-      "confidence": 0.252,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "Haus",
-          "start": 190.1,
-          "end": 190.2,
-          "confidence": 0.252
-        }
-      ],
-      "y": 247,
-      "word_rois": [
-        [
-          589,
-          247,
-          47,
-          27
-        ]
-      ],
-      "char_rois": []
-    },
-    {
-      "line_index": 134,
+      "line_index": 130,
       "text": "BE MY BABY COME ON",
-      "start": 190.2,
-      "end": 190.9,
+      "start": 190.0,
+      "end": 190.7,
       "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
           "text": "BE",
-          "start": 190.2,
-          "end": 190.3,
+          "start": 190.0,
+          "end": 190.1,
           "confidence": 0.5
         },
         {
           "word_index": 2,
           "text": "MY",
-          "start": 190.35,
-          "end": 190.45,
+          "start": 190.15,
+          "end": 190.25,
           "confidence": 0.5
         },
         {
           "word_index": 3,
           "text": "BABY",
-          "start": 190.5,
-          "end": 190.6,
+          "start": 190.3,
+          "end": 190.4,
           "confidence": 0.5
         },
         {
           "word_index": 4,
           "text": "COME",
-          "start": 190.65,
-          "end": 190.75,
+          "start": 190.45,
+          "end": 190.55,
           "confidence": 0.5
         },
         {
           "word_index": 5,
           "text": "ON",
-          "start": 190.8,
-          "end": 190.9,
+          "start": 190.6,
+          "end": 190.7,
           "confidence": 0.5
         }
       ],
@@ -7486,17 +7369,17 @@
       "char_rois": []
     },
     {
-      "line_index": 135,
+      "line_index": 131,
       "text": "Ech",
-      "start": 190.9,
-      "end": 191.0,
+      "start": 190.7,
+      "end": 190.8,
       "confidence": 0.617,
       "words": [
         {
           "word_index": 1,
           "text": "Ech",
-          "start": 190.9,
-          "end": 191.0,
+          "start": 190.7,
+          "end": 190.8,
           "confidence": 0.617
         }
       ],
@@ -7512,17 +7395,17 @@
       "char_rois": []
     },
     {
-      "line_index": 136,
+      "line_index": 132,
       "text": "Monas",
-      "start": 191.0,
-      "end": 191.1,
+      "start": 190.8,
+      "end": 190.9,
       "confidence": 0.554,
       "words": [
         {
           "word_index": 1,
           "text": "Monas",
-          "start": 191.0,
-          "end": 191.1,
+          "start": 190.8,
+          "end": 190.9,
           "confidence": 0.554
         }
       ],
@@ -7538,7 +7421,7 @@
       "char_rois": []
     },
     {
-      "line_index": 137,
+      "line_index": 133,
       "text": "IM IN LOVE WITH",
       "start": 191.65,
       "end": 192.35,
@@ -7568,8 +7451,8 @@
         {
           "word_index": 4,
           "text": "WITH",
-          "start": 192.1,
-          "end": 192.2,
+          "start": 192.15,
+          "end": 192.25,
           "confidence": 0.609
         }
       ],
@@ -7603,38 +7486,38 @@
       "char_rois": []
     },
     {
-      "line_index": 138,
+      "line_index": 134,
       "text": "THE SHAPE OF YOU",
-      "start": 193.95,
-      "end": 195.6,
+      "start": 193.9,
+      "end": 195.55,
       "confidence": 0.572,
       "words": [
         {
           "word_index": 1,
           "text": "THE",
-          "start": 193.95,
-          "end": 194.05,
+          "start": 193.9,
+          "end": 194.0,
           "confidence": 0.25
         },
         {
           "word_index": 2,
           "text": "SHAPE",
-          "start": 195.2,
-          "end": 195.3,
+          "start": 195.15,
+          "end": 195.25,
           "confidence": 0.681
         },
         {
           "word_index": 3,
           "text": "OF",
-          "start": 195.35,
-          "end": 195.45,
+          "start": 195.3,
+          "end": 195.4,
           "confidence": 0.718
         },
         {
           "word_index": 4,
           "text": "YOU",
-          "start": 195.5,
-          "end": 195.6,
+          "start": 195.45,
+          "end": 195.55,
           "confidence": 0.638
         }
       ],
@@ -7668,7 +7551,7 @@
       "char_rois": []
     },
     {
-      "line_index": 139,
+      "line_index": 135,
       "text": "WE PUSH AND PULL",
       "start": 195.45,
       "end": 196.2,
@@ -7733,7 +7616,7 @@
       "char_rois": []
     },
     {
-      "line_index": 140,
+      "line_index": 136,
       "text": "LIKE A MAGNET DO",
       "start": 196.2,
       "end": 196.75,
@@ -7798,7 +7681,7 @@
       "char_rois": []
     },
     {
-      "line_index": 141,
+      "line_index": 137,
       "text": "Clowns",
       "start": 197.55,
       "end": 197.65,
@@ -7824,7 +7707,7 @@
       "char_rois": []
     },
     {
-      "line_index": 142,
+      "line_index": 138,
       "text": "ALTHOUGH MY HEART",
       "start": 197.9,
       "end": 198.3,
@@ -7876,18 +7759,18 @@
       "char_rois": []
     },
     {
-      "line_index": 143,
+      "line_index": 139,
       "text": "IS FALLING TOO",
       "start": 198.3,
       "end": 198.7,
-      "confidence": 0.953,
+      "confidence": 0.954,
       "words": [
         {
           "word_index": 1,
           "text": "IS",
           "start": 198.3,
           "end": 198.4,
-          "confidence": 0.938
+          "confidence": 0.939
         },
         {
           "word_index": 2,
@@ -7901,7 +7784,7 @@
           "text": "TOO",
           "start": 198.6,
           "end": 198.7,
-          "confidence": 0.922
+          "confidence": 0.924
         }
       ],
       "y": 109,
@@ -7928,7 +7811,7 @@
       "char_rois": []
     },
     {
-      "line_index": 144,
+      "line_index": 140,
       "text": "10mal",
       "start": 198.7,
       "end": 198.8,
@@ -7954,7 +7837,7 @@
       "char_rois": []
     },
     {
-      "line_index": 145,
+      "line_index": 141,
       "text": "U'M IN LOVE WITH YOUR BODY",
       "start": 200.35,
       "end": 201.25,
@@ -8045,7 +7928,7 @@
       "char_rois": []
     },
     {
-      "line_index": 146,
+      "line_index": 142,
       "text": "AND LAST NIGHT YOU",
       "start": 201.6,
       "end": 203.15,
@@ -8110,7 +7993,7 @@
       "char_rois": []
     },
     {
-      "line_index": 147,
+      "line_index": 143,
       "text": "WERE IN IN MY MY ROOM ROOM",
       "start": 203.15,
       "end": 204.0,
@@ -8202,7 +8085,7 @@
       "char_rois": []
     },
     {
-      "line_index": 148,
+      "line_index": 144,
       "text": "AND NOW MY BED SHEETS",
       "start": 204.3,
       "end": 205.6,
@@ -8280,7 +8163,7 @@
       "char_rois": []
     },
     {
-      "line_index": 149,
+      "line_index": 145,
       "text": "SMELL LIKE YOU",
       "start": 205.6,
       "end": 206.0,
@@ -8332,7 +8215,7 @@
       "char_rois": []
     },
     {
-      "line_index": 150,
+      "line_index": 146,
       "text": "ious",
       "start": 206.0,
       "end": 206.1,
@@ -8358,7 +8241,7 @@
       "char_rois": []
     },
     {
-      "line_index": 151,
+      "line_index": 147,
       "text": "EVERY DAY DISCOVERING",
       "start": 206.1,
       "end": 208.2,
@@ -8410,7 +8293,7 @@
       "char_rois": []
     },
     {
-      "line_index": 152,
+      "line_index": 148,
       "text": "SOMETHING BAND NEW",
       "start": 208.2,
       "end": 208.6,
@@ -8462,7 +8345,7 @@
       "char_rois": []
     },
     {
-      "line_index": 153,
+      "line_index": 149,
       "text": "UM IN LOVE WITH YOUR BODY",
       "start": 209.7,
       "end": 210.55,
@@ -8553,7 +8436,7 @@
       "char_rois": []
     },
     {
-      "line_index": 154,
+      "line_index": 150,
       "text": "COME ON BE MY",
       "start": 222.3,
       "end": 222.85,
@@ -8618,7 +8501,7 @@
       "char_rois": []
     },
     {
-      "line_index": 155,
+      "line_index": 151,
       "text": "BABY COME ON",
       "start": 222.85,
       "end": 223.25,
@@ -8670,7 +8553,7 @@
       "char_rois": []
     },
     {
-      "line_index": 156,
+      "line_index": 152,
       "text": "Nomad",
       "start": 223.25,
       "end": 223.35,
@@ -8696,7 +8579,7 @@
       "char_rois": []
     },
     {
-      "line_index": 157,
+      "line_index": 153,
       "text": "10mal",
       "start": 225.05,
       "end": 225.75,
@@ -8722,7 +8605,7 @@
       "char_rois": []
     },
     {
-      "line_index": 158,
+      "line_index": 154,
       "text": "70k",
       "start": 226.15,
       "end": 226.45,
@@ -8748,7 +8631,7 @@
       "char_rois": []
     },
     {
-      "line_index": 159,
+      "line_index": 155,
       "text": "Subscribe Subscribe",
       "start": 226.55,
       "end": 226.85,
@@ -8793,7 +8676,7 @@
       "char_rois": []
     },
     {
-      "line_index": 160,
+      "line_index": 156,
       "text": "70l01",
       "start": 226.85,
       "end": 226.95,
@@ -8819,7 +8702,7 @@
       "char_rois": []
     },
     {
-      "line_index": 161,
+      "line_index": 157,
       "text": "7dow",
       "start": 226.95,
       "end": 227.25,
@@ -8845,7 +8728,7 @@
       "char_rois": []
     },
     {
-      "line_index": 162,
+      "line_index": 158,
       "text": "7 hour",
       "start": 227.25,
       "end": 227.5,
@@ -8884,7 +8767,7 @@
       "char_rois": []
     },
     {
-      "line_index": 163,
+      "line_index": 159,
       "text": "Talaud",
       "start": 228.35,
       "end": 229.15,
@@ -8910,7 +8793,7 @@
       "char_rois": []
     },
     {
-      "line_index": 164,
+      "line_index": 160,
       "text": "Sumsprime",
       "start": 229.15,
       "end": 229.25,
@@ -8942,7 +8825,7 @@
       "char_rois": []
     },
     {
-      "line_index": 165,
+      "line_index": 161,
       "text": "Halides",
       "start": 229.25,
       "end": 229.65,
@@ -8968,7 +8851,7 @@
       "char_rois": []
     },
     {
-      "line_index": 166,
+      "line_index": 162,
       "text": "7cloyfiny",
       "start": 229.65,
       "end": 229.75,
@@ -8994,7 +8877,7 @@
       "char_rois": []
     },
     {
-      "line_index": 167,
+      "line_index": 163,
       "text": "Maincis",
       "start": 229.95,
       "end": 230.75,
@@ -9020,7 +8903,7 @@
       "char_rois": []
     },
     {
-      "line_index": 168,
+      "line_index": 164,
       "text": "clouds",
       "start": 231.05,
       "end": 231.15,
@@ -9046,7 +8929,7 @@
       "char_rois": []
     },
     {
-      "line_index": 169,
+      "line_index": 165,
       "text": "Collas",
       "start": 231.15,
       "end": 231.25,
@@ -9072,7 +8955,7 @@
       "char_rois": []
     },
     {
-      "line_index": 170,
+      "line_index": 166,
       "text": "Taimet",
       "start": 231.25,
       "end": 231.35,
