@@ -157,8 +157,8 @@ def calculate_visual_suitability(raw_frames: list[dict[str, Any]]) -> dict[str, 
 
             if has_sel:
                 has_any_highlight = True
-            
-            # Word-level evidence: 
+
+            # Word-level evidence:
             # 1. A mix of selected and unselected words on the same line
             # 2. OR any word in a partially-highlighted 'mixed' state
             if (has_sel and has_unsel) or has_mixed_word:
