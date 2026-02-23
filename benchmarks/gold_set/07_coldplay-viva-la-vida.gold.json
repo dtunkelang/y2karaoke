@@ -4,7 +4,7 @@
   "artist": "Coldplay",
   "candidate_url": "https://www.youtube.com/watch?v=VQxLvR_P75o",
   "visual_suitability": {
-    "word_level_score": 0.6296296296296297,
+    "word_level_score": 1.0,
     "avg_ocr_confidence": 0.9787018255578094,
     "has_word_level_highlighting": true,
     "is_all_caps": false,

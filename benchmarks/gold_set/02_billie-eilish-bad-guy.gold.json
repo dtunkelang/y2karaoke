@@ -4,7 +4,7 @@
   "artist": "Billie Eilish",
   "candidate_url": "https://www.youtube.com/watch?v=ayxYgDgBD3g",
   "visual_suitability": {
-    "word_level_score": 0.7456140350877193,
+    "word_level_score": 0.8421052631578947,
     "avg_ocr_confidence": 0.9583789704271632,
     "has_word_level_highlighting": true,
     "is_all_caps": false,
@@ -1298,16 +1298,42 @@
     },
     {
       "line_index": 16,
+      "text": "Duh",
+      "start": 60.9,
+      "end": 61.0,
+      "confidence": 0.5,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Duh",
+          "start": 60.9,
+          "end": 61.0,
+          "confidence": 0.5
+        }
+      ],
+      "y": 93,
+      "word_rois": [
+        [
+          259,
+          93,
+          62,
+          18
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 17,
       "text": "Duhi",
-      "start": 61.7,
-      "end": 62.5,
+      "start": 61.0,
+      "end": 61.8,
       "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
           "text": "Duhi",
-          "start": 61.7,
-          "end": 62.5,
+          "start": 61.0,
+          "end": 61.8,
           "confidence": 0.5
         }
       ],
@@ -1323,7 +1349,7 @@
       "char_rois": []
     },
     {
-      "line_index": 17,
+      "line_index": 18,
       "text": "Im The Bad Guy",
       "start": 66.85,
       "end": 70.25,
@@ -1388,7 +1414,7 @@
       "char_rois": []
     },
     {
-      "line_index": 18,
+      "line_index": 19,
       "text": "Like It When You Take Control",
       "start": 74.35,
       "end": 79.45,
@@ -1485,7 +1511,7 @@
       "char_rois": []
     },
     {
-      "line_index": 19,
+      "line_index": 20,
       "text": "Even If You Know That You Don't",
       "start": 79.45,
       "end": 82.6,
@@ -1589,7 +1615,7 @@
       "char_rois": []
     },
     {
-      "line_index": 20,
+      "line_index": 21,
       "text": "Own Me I'll Let You Play The Role",
       "start": 84.5,
       "end": 87.25,
@@ -1706,7 +1732,7 @@
       "char_rois": []
     },
     {
-      "line_index": 21,
+      "line_index": 22,
       "text": "Ll Be Your Animal",
       "start": 87.25,
       "end": 89.4,
@@ -1771,7 +1797,7 @@
       "char_rois": []
     },
     {
-      "line_index": 22,
+      "line_index": 23,
       "text": "My Mommy Likes With Me To Singalong",
       "start": 92.85,
       "end": 93.9,
@@ -1875,7 +1901,7 @@
       "char_rois": []
     },
     {
-      "line_index": 23,
+      "line_index": 24,
       "text": "But She Won't Sing This Song",
       "start": 95.65,
       "end": 97.35,
@@ -1966,7 +1992,7 @@
       "char_rois": []
     },
     {
-      "line_index": 24,
+      "line_index": 25,
       "text": "Shell Pity The Men I Know",
       "start": 98.95,
       "end": 103.95,
@@ -2057,7 +2083,7 @@
       "char_rois": []
     },
     {
-      "line_index": 25,
+      "line_index": 26,
       "text": "Like I Really Rough Guy",
       "start": 103.95,
       "end": 105.25,
@@ -2135,7 +2161,7 @@
       "char_rois": []
     },
     {
-      "line_index": 26,
+      "line_index": 27,
       "text": "Just Can't Get Enough Guy",
       "start": 105.5,
       "end": 107.1,
@@ -2213,7 +2239,7 @@
       "char_rois": []
     },
     {
-      "line_index": 27,
+      "line_index": 28,
       "text": "Chest Always So Puffed Guy",
       "start": 108.9,
       "end": 110.45,
@@ -2291,7 +2317,7 @@
       "char_rois": []
     },
     {
-      "line_index": 28,
+      "line_index": 29,
       "text": "Im That Bad Type",
       "start": 110.45,
       "end": 111.0,
@@ -2356,7 +2382,7 @@
       "char_rois": []
     },
     {
-      "line_index": 29,
+      "line_index": 30,
       "text": "Make Your Girlfriend Mad Type",
       "start": 119.15,
       "end": 120.45,
@@ -2434,7 +2460,7 @@
       "char_rois": []
     },
     {
-      "line_index": 30,
+      "line_index": 31,
       "text": "Im The Bad Guy",
       "start": 120.45,
       "end": 121.0,
@@ -2499,7 +2525,7 @@
       "char_rois": []
     },
     {
-      "line_index": 31,
+      "line_index": 32,
       "text": "Duh",
       "start": 121.8,
       "end": 122.6,
@@ -2525,7 +2551,7 @@
       "char_rois": []
     },
     {
-      "line_index": 32,
+      "line_index": 33,
       "text": "Im The Bad Guy",
       "start": 127.25,
       "end": 130.6,
@@ -2590,17 +2616,43 @@
       "char_rois": []
     },
     {
-      "line_index": 33,
-      "text": "Duhi",
+      "line_index": 34,
+      "text": "Duh",
       "start": 134.45,
       "end": 135.25,
       "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
-          "text": "Duhi",
+          "text": "Duh",
           "start": 134.45,
           "end": 135.25,
+          "confidence": 0.5
+        }
+      ],
+      "y": 93,
+      "word_rois": [
+        [
+          259,
+          93,
+          62,
+          18
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 35,
+      "text": "Duhi",
+      "start": 135.65,
+      "end": 136.45,
+      "confidence": 0.5,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Duhi",
+          "start": 135.65,
+          "end": 136.45,
           "confidence": 0.5
         }
       ],
@@ -2616,7 +2668,7 @@
       "char_rois": []
     },
     {
-      "line_index": 34,
+      "line_index": 36,
       "text": "Im Only Good At Bein' Bad Bad",
       "start": 140.45,
       "end": 148.3,
@@ -2720,7 +2772,7 @@
       "char_rois": []
     },
     {
-      "line_index": 35,
+      "line_index": 37,
       "text": "J Like When You Get Mad",
       "start": 159.2,
       "end": 161.6,
@@ -2817,7 +2869,7 @@
       "char_rois": []
     },
     {
-      "line_index": 36,
+      "line_index": 38,
       "text": "I Guess That Im You're Pretty Alone Glad",
       "start": 163.25,
       "end": 168.95,
@@ -2934,7 +2986,7 @@
       "char_rois": []
     },
     {
-      "line_index": 37,
+      "line_index": 39,
       "text": "You Said She's Scared Of Me",
       "start": 168.95,
       "end": 169.8,
@@ -3025,7 +3077,7 @@
       "char_rois": []
     },
     {
-      "line_index": 38,
+      "line_index": 40,
       "text": "I Mean I Don't See What She Sees",
       "start": 169.8,
       "end": 173.3,
@@ -3142,7 +3194,7 @@
       "char_rois": []
     },
     {
-      "line_index": 39,
+      "line_index": 41,
       "text": "I'm But Wearing Maybe Your It's 'cause Cologne",
       "start": 173.3,
       "end": 176.85,
@@ -3259,7 +3311,7 @@
       "char_rois": []
     },
     {
-      "line_index": 40,
+      "line_index": 42,
       "text": "Im A Bad Guy",
       "start": 177.4,
       "end": 179.7,
@@ -3324,7 +3376,7 @@
       "char_rois": []
     },
     {
-      "line_index": 41,
+      "line_index": 43,
       "text": "Bad Guy Bad Guy",
       "start": 190.45,
       "end": 191.55,
@@ -3389,7 +3441,7 @@
       "char_rois": []
     },
     {
-      "line_index": 42,
+      "line_index": 44,
       "text": "Im A Bad",
       "start": 191.55,
       "end": 191.95,
@@ -3441,7 +3493,7 @@
       "char_rois": []
     },
     {
-      "line_index": 43,
+      "line_index": 45,
       "text": "Colalboy",
       "start": 191.95,
       "end": 192.05,

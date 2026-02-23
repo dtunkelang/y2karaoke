@@ -132,7 +132,8 @@ def calculate_visual_suitability(raw_frames: list[dict[str, Any]]) -> dict[str, 
 
         lines: Dict[int, List[dict[str, Any]]] = {}
         for w in words:
-            y_bin = w["y"] // 20
+            # Increase bin size to 40px to be more robust to vertical splitting/jitter
+            y_bin = w["y"] // 40
             if y_bin not in lines:
                 lines[y_bin] = []
             lines[y_bin].append(w)
@@ -152,10 +153,15 @@ def calculate_visual_suitability(raw_frames: list[dict[str, Any]]) -> dict[str, 
             states = [w["color"] for w in line_words]
             has_sel = any(s in ("selected", "mixed") for s in states)
             has_unsel = any(s == "unselected" for s in states)
+            has_mixed_word = any(s == "mixed" for s in states)
 
             if has_sel:
                 has_any_highlight = True
-            if has_sel and has_unsel:
+            
+            # Word-level evidence: 
+            # 1. A mix of selected and unselected words on the same line
+            # 2. OR any word in a partially-highlighted 'mixed' state
+            if (has_sel and has_unsel) or has_mixed_word:
                 has_word_level_mix = True
 
         if has_any_highlight:

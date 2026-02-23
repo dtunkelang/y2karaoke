@@ -4,11 +4,11 @@
   "artist": "Stromae",
   "candidate_url": "https://www.youtube.com/watch?v=dnOFwPjwNiI",
   "visual_suitability": {
-    "word_level_score": 0.4752475247524752,
+    "word_level_score": 0.9356435643564357,
     "avg_ocr_confidence": 0.690835753480401,
     "has_word_level_highlighting": true,
     "is_all_caps": false,
-    "detectability_score": 0.7687335422877658,
+    "detectability_score": 0.7835850274362807,
     "sampled_frames": 220,
     "duration_sec": 240.2,
     "fps": 1.0
@@ -18,37 +18,37 @@
     {
       "line_index": 1,
       "text": "Ditesmoi d'o il vient",
-      "start": 13.1,
-      "end": 14.1,
-      "confidence": 0.5,
+      "start": 15.6,
+      "end": 19.55,
+      "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "Ditesmoi",
-          "start": 13.1,
-          "end": 13.4,
-          "confidence": 0.5
+          "start": 15.6,
+          "end": 16.4,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "d'o",
-          "start": 13.45,
-          "end": 13.6,
-          "confidence": 0.5
+          "start": 17.1,
+          "end": 17.9,
+          "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "il",
-          "start": 13.65,
-          "end": 13.85,
-          "confidence": 0.5
+          "start": 17.95,
+          "end": 18.75,
+          "confidence": 1.0
         },
         {
           "word_index": 4,
           "text": "vient",
-          "start": 13.9,
-          "end": 14.1,
-          "confidence": 0.5
+          "start": 18.8,
+          "end": 19.55,
+          "confidence": 1.0
         }
       ],
       "y": 22,
@@ -83,44 +83,44 @@
     {
       "line_index": 2,
       "text": "Enfin je o je vais",
-      "start": 14.1,
-      "end": 15.5,
-      "confidence": 0.228,
+      "start": 19.55,
+      "end": 20.25,
+      "confidence": 0.994,
       "words": [
         {
           "word_index": 1,
           "text": "Enfin",
-          "start": 14.1,
-          "end": 14.2,
-          "confidence": 0.228
+          "start": 19.55,
+          "end": 19.65,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "je",
-          "start": 14.25,
-          "end": 14.35,
-          "confidence": 0.228
+          "start": 19.7,
+          "end": 19.8,
+          "confidence": 0.971
         },
         {
           "word_index": 3,
           "text": "o",
-          "start": 14.4,
-          "end": 14.5,
-          "confidence": 0.228
+          "start": 19.85,
+          "end": 19.95,
+          "confidence": 1.0
         },
         {
           "word_index": 4,
           "text": "je",
-          "start": 14.55,
-          "end": 14.95,
-          "confidence": 0.228
+          "start": 20.0,
+          "end": 20.1,
+          "confidence": 1.0
         },
         {
           "word_index": 5,
           "text": "vais",
-          "start": 15.0,
-          "end": 15.5,
-          "confidence": 0.228
+          "start": 20.15,
+          "end": 20.25,
+          "confidence": 1.0
         }
       ],
       "y": 69,
@@ -161,23 +161,23 @@
     {
       "line_index": 3,
       "text": "dit que",
-      "start": 17.75,
-      "end": 18.75,
-      "confidence": 0.5,
+      "start": 20.25,
+      "end": 22.25,
+      "confidence": 0.625,
       "words": [
         {
           "word_index": 1,
           "text": "dit",
-          "start": 17.75,
-          "end": 18.25,
-          "confidence": 0.5
+          "start": 20.25,
+          "end": 20.35,
+          "confidence": 0.25
         },
         {
           "word_index": 2,
           "text": "que",
-          "start": 18.3,
-          "end": 18.75,
-          "confidence": 0.5
+          "start": 22.15,
+          "end": 22.25,
+          "confidence": 1.0
         }
       ],
       "y": 114,
@@ -200,30 +200,30 @@
     {
       "line_index": 4,
       "text": "lorsqu'on cherche bien",
-      "start": 18.75,
-      "end": 19.9,
-      "confidence": 0.5,
+      "start": 22.25,
+      "end": 22.65,
+      "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "lorsqu'on",
-          "start": 18.75,
-          "end": 18.85,
-          "confidence": 0.5
+          "start": 22.25,
+          "end": 22.35,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "cherche",
-          "start": 18.9,
-          "end": 19.3,
-          "confidence": 0.5
+          "start": 22.4,
+          "end": 22.5,
+          "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "bien",
-          "start": 19.35,
-          "end": 19.9,
-          "confidence": 0.5
+          "start": 22.55,
+          "end": 22.65,
+          "confidence": 1.0
         }
       ],
       "y": 162,
@@ -252,30 +252,30 @@
     {
       "line_index": 5,
       "text": "On finit toujours",
-      "start": 19.95,
-      "end": 20.7,
-      "confidence": 0.252,
+      "start": 22.65,
+      "end": 23.05,
+      "confidence": 0.75,
       "words": [
         {
           "word_index": 1,
           "text": "On",
-          "start": 19.95,
-          "end": 20.15,
-          "confidence": 0.252
+          "start": 22.65,
+          "end": 22.75,
+          "confidence": 0.25
         },
         {
           "word_index": 2,
           "text": "finit",
-          "start": 20.2,
-          "end": 20.4,
-          "confidence": 0.252
+          "start": 22.8,
+          "end": 22.9,
+          "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "toujours",
-          "start": 20.45,
-          "end": 20.7,
-          "confidence": 0.252
+          "start": 22.95,
+          "end": 23.05,
+          "confidence": 1.0
         }
       ],
       "y": 68,
@@ -304,23 +304,23 @@
     {
       "line_index": 6,
       "text": "par trouver",
-      "start": 20.7,
-      "end": 20.95,
-      "confidence": 0.252,
+      "start": 23.05,
+      "end": 23.6,
+      "confidence": 0.625,
       "words": [
         {
           "word_index": 1,
           "text": "par",
-          "start": 20.7,
-          "end": 20.8,
-          "confidence": 0.252
+          "start": 23.05,
+          "end": 23.15,
+          "confidence": 0.25
         },
         {
           "word_index": 2,
           "text": "trouver",
-          "start": 20.85,
-          "end": 20.95,
-          "confidence": 0.252
+          "start": 23.2,
+          "end": 23.6,
+          "confidence": 1.0
         }
       ],
       "y": 117,
@@ -343,37 +343,37 @@
     {
       "line_index": 7,
       "text": "Elle dit qu'il n'est",
-      "start": 20.95,
-      "end": 21.5,
-      "confidence": 0.252,
+      "start": 23.6,
+      "end": 24.85,
+      "confidence": 0.544,
       "words": [
         {
           "word_index": 1,
           "text": "Elle",
-          "start": 20.95,
-          "end": 21.05,
-          "confidence": 0.252
+          "start": 23.6,
+          "end": 23.7,
+          "confidence": 0.25
         },
         {
           "word_index": 2,
           "text": "dit",
-          "start": 21.1,
-          "end": 21.2,
-          "confidence": 0.252
+          "start": 23.75,
+          "end": 24.55,
+          "confidence": 0.819
         },
         {
           "word_index": 3,
           "text": "qu'il",
-          "start": 21.25,
-          "end": 21.35,
-          "confidence": 0.252
+          "start": 24.6,
+          "end": 24.7,
+          "confidence": 0.25
         },
         {
           "word_index": 4,
           "text": "n'est",
-          "start": 21.4,
-          "end": 21.5,
-          "confidence": 0.252
+          "start": 24.75,
+          "end": 24.85,
+          "confidence": 0.857
         }
       ],
       "y": 22,
@@ -408,23 +408,23 @@
     {
       "line_index": 8,
       "text": "trs loin",
-      "start": 22.3,
-      "end": 22.55,
-      "confidence": 0.252,
+      "start": 25.75,
+      "end": 26.0,
+      "confidence": 0.683,
       "words": [
         {
           "word_index": 1,
           "text": "trs",
-          "start": 22.3,
-          "end": 22.4,
-          "confidence": 0.252
+          "start": 25.75,
+          "end": 25.85,
+          "confidence": 0.674
         },
         {
           "word_index": 2,
           "text": "loin",
-          "start": 22.45,
-          "end": 22.55,
-          "confidence": 0.252
+          "start": 25.9,
+          "end": 26.0,
+          "confidence": 0.693
         }
       ],
       "y": 67,
@@ -447,44 +447,44 @@
     {
       "line_index": 9,
       "text": "qu'il part trs souvent travailler",
-      "start": 24.15,
-      "end": 26.15,
-      "confidence": 0.5,
+      "start": 26.0,
+      "end": 28.45,
+      "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "qu'il",
-          "start": 24.15,
-          "end": 24.5,
-          "confidence": 0.5
+          "start": 26.0,
+          "end": 26.8,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "part",
-          "start": 24.55,
-          "end": 24.85,
-          "confidence": 0.5
+          "start": 26.85,
+          "end": 27.65,
+          "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "trs",
-          "start": 24.9,
-          "end": 25.2,
-          "confidence": 0.5
+          "start": 27.7,
+          "end": 28.15,
+          "confidence": 1.0
         },
         {
           "word_index": 4,
           "text": "souvent",
-          "start": 25.25,
-          "end": 25.65,
-          "confidence": 0.5
+          "start": 28.2,
+          "end": 28.3,
+          "confidence": 1.0
         },
         {
           "word_index": 5,
           "text": "travailler",
-          "start": 25.7,
-          "end": 26.15,
-          "confidence": 0.5
+          "start": 28.35,
+          "end": 28.45,
+          "confidence": 1.0
         }
       ],
       "y": 116,
@@ -525,44 +525,44 @@
     {
       "line_index": 10,
       "text": "Maman dit travailler c'est bien",
-      "start": 26.2,
-      "end": 26.95,
-      "confidence": 0.252,
+      "start": 28.45,
+      "end": 30.85,
+      "confidence": 0.677,
       "words": [
         {
           "word_index": 1,
           "text": "Maman",
-          "start": 26.2,
-          "end": 26.3,
-          "confidence": 0.252
+          "start": 28.45,
+          "end": 29.25,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "dit",
-          "start": 26.35,
-          "end": 26.5,
-          "confidence": 0.252
+          "start": 30.05,
+          "end": 30.15,
+          "confidence": 0.25
         },
         {
           "word_index": 3,
           "text": "travailler",
-          "start": 26.55,
-          "end": 26.65,
-          "confidence": 0.252
+          "start": 30.2,
+          "end": 30.3,
+          "confidence": 0.25
         },
         {
           "word_index": 4,
           "text": "c'est",
-          "start": 26.7,
-          "end": 26.8,
-          "confidence": 0.252
+          "start": 30.35,
+          "end": 30.7,
+          "confidence": 0.885
         },
         {
           "word_index": 5,
           "text": "bien",
-          "start": 26.85,
-          "end": 26.95,
-          "confidence": 0.252
+          "start": 30.75,
+          "end": 30.85,
+          "confidence": 1.0
         }
       ],
       "y": 21,
@@ -603,16 +603,16 @@
     {
       "line_index": 11,
       "text": "bien",
-      "start": 27.2,
-      "end": 27.95,
-      "confidence": 0.252,
+      "start": 30.85,
+      "end": 30.95,
+      "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "bien",
-          "start": 27.2,
-          "end": 27.95,
-          "confidence": 0.252
+          "start": 30.85,
+          "end": 30.95,
+          "confidence": 1.0
         }
       ],
       "y": 68,
@@ -629,30 +629,30 @@
     {
       "line_index": 12,
       "text": "bien mieux quitter",
-      "start": 27.95,
-      "end": 28.35,
-      "confidence": 0.252,
+      "start": 30.95,
+      "end": 31.35,
+      "confidence": 0.687,
       "words": [
         {
           "word_index": 1,
           "text": "bien",
-          "start": 27.95,
-          "end": 28.05,
-          "confidence": 0.252
+          "start": 30.95,
+          "end": 31.05,
+          "confidence": 0.25
         },
         {
           "word_index": 2,
           "text": "mieux",
-          "start": 28.1,
-          "end": 28.2,
-          "confidence": 0.252
+          "start": 31.1,
+          "end": 31.2,
+          "confidence": 0.812
         },
         {
           "word_index": 3,
           "text": "qu'tre",
-          "start": 28.25,
-          "end": 28.35,
-          "confidence": 0.252
+          "start": 31.25,
+          "end": 31.35,
+          "confidence": 1.0
         }
       ],
       "y": 70,
@@ -681,23 +681,23 @@
     {
       "line_index": 13,
       "text": "mal accompagn",
-      "start": 28.95,
-      "end": 29.95,
-      "confidence": 0.5,
+      "start": 31.35,
+      "end": 33.0,
+      "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "mal",
-          "start": 28.95,
-          "end": 29.35,
-          "confidence": 0.5
+          "start": 31.35,
+          "end": 32.15,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "accompagn",
-          "start": 29.4,
-          "end": 29.95,
-          "confidence": 0.5
+          "start": 32.2,
+          "end": 33.0,
+          "confidence": 1.0
         }
       ],
       "y": 117,
@@ -720,23 +720,23 @@
     {
       "line_index": 14,
       "text": "Pas vrai",
-      "start": 30.75,
-      "end": 31.7,
-      "confidence": 0.5,
+      "start": 33.0,
+      "end": 33.45,
+      "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "Pas",
-          "start": 30.75,
-          "end": 30.85,
-          "confidence": 0.5
+          "start": 33.0,
+          "end": 33.3,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "vrai",
-          "start": 30.9,
-          "end": 31.7,
-          "confidence": 0.5
+          "start": 33.35,
+          "end": 33.45,
+          "confidence": 1.0
         }
       ],
       "y": 160,
@@ -765,30 +765,30 @@
     {
       "line_index": 15,
       "text": "est ton papa",
-      "start": 32.85,
-      "end": 33.4,
-      "confidence": 0.5,
+      "start": 34.3,
+      "end": 36.3,
+      "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "est",
-          "start": 32.85,
-          "end": 32.95,
-          "confidence": 0.5
+          "start": 34.3,
+          "end": 35.1,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "ton",
-          "start": 33.0,
-          "end": 33.1,
-          "confidence": 0.5
+          "start": 35.15,
+          "end": 35.95,
+          "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "papa",
-          "start": 33.15,
-          "end": 33.25,
-          "confidence": 0.5
+          "start": 36.0,
+          "end": 36.3,
+          "confidence": 1.0
         }
       ],
       "y": 22,
@@ -829,44 +829,44 @@
     {
       "line_index": 16,
       "text": "Dismay o est ton papa",
-      "start": 34.55,
-      "end": 38.5,
-      "confidence": 0.5,
+      "start": 36.3,
+      "end": 38.4,
+      "confidence": 0.659,
       "words": [
         {
           "word_index": 1,
           "text": "Dismoi",
-          "start": 34.55,
-          "end": 35.35,
-          "confidence": 0.5
+          "start": 36.3,
+          "end": 36.4,
+          "confidence": 0.25
         },
         {
           "word_index": 2,
           "text": "o",
-          "start": 35.6,
-          "end": 36.1,
-          "confidence": 0.5
+          "start": 36.45,
+          "end": 37.25,
+          "confidence": 0.654
         },
         {
           "word_index": 3,
           "text": "est",
-          "start": 36.15,
-          "end": 36.9,
-          "confidence": 0.5
+          "start": 37.3,
+          "end": 37.4,
+          "confidence": 0.803
         },
         {
           "word_index": 4,
           "text": "ton",
-          "start": 36.95,
-          "end": 37.65,
-          "confidence": 0.5
+          "start": 37.45,
+          "end": 38.25,
+          "confidence": 0.59
         },
         {
           "word_index": 5,
           "text": "papa",
-          "start": 37.7,
-          "end": 38.5,
-          "confidence": 0.5
+          "start": 38.3,
+          "end": 38.4,
+          "confidence": 1.0
         }
       ],
       "y": 67,
@@ -913,44 +913,44 @@
     {
       "line_index": 17,
       "text": "Sans mme devoir lui parler",
-      "start": 38.5,
-      "end": 39.2,
-      "confidence": 0.5,
+      "start": 38.4,
+      "end": 40.9,
+      "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "Sans",
-          "start": 38.5,
-          "end": 38.6,
-          "confidence": 0.5
+          "start": 38.4,
+          "end": 39.2,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "mme",
-          "start": 38.65,
-          "end": 38.75,
-          "confidence": 0.5
+          "start": 39.25,
+          "end": 40.05,
+          "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "devoir",
-          "start": 38.8,
-          "end": 38.9,
-          "confidence": 0.5
+          "start": 40.1,
+          "end": 40.6,
+          "confidence": 1.0
         },
         {
           "word_index": 4,
           "text": "lui",
-          "start": 38.95,
-          "end": 39.05,
-          "confidence": 0.5
+          "start": 40.65,
+          "end": 40.75,
+          "confidence": 1.0
         },
         {
           "word_index": 5,
           "text": "parler",
-          "start": 39.1,
-          "end": 39.2,
-          "confidence": 0.5
+          "start": 40.8,
+          "end": 40.9,
+          "confidence": 1.0
         }
       ],
       "y": 116,
@@ -991,65 +991,65 @@
     {
       "line_index": 18,
       "text": "il sa it ce qui ne va pas",
-      "start": 39.2,
-      "end": 40.2,
-      "confidence": 0.228,
+      "start": 41.55,
+      "end": 42.55,
+      "confidence": 0.899,
       "words": [
         {
           "word_index": 1,
           "text": "il",
-          "start": 39.2,
-          "end": 39.3,
-          "confidence": 0.228
+          "start": 41.55,
+          "end": 41.65,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "sa",
-          "start": 39.35,
-          "end": 39.4,
-          "confidence": 0.228
+          "start": 41.7,
+          "end": 41.75,
+          "confidence": 0.907
         },
         {
           "word_index": 3,
           "text": "it",
-          "start": 39.4,
-          "end": 39.45,
-          "confidence": 0.228
+          "start": 41.75,
+          "end": 41.8,
+          "confidence": 0.907
         },
         {
           "word_index": 4,
           "text": "ce",
-          "start": 39.5,
-          "end": 39.6,
-          "confidence": 0.228
+          "start": 41.85,
+          "end": 41.95,
+          "confidence": 0.731
         },
         {
           "word_index": 5,
           "text": "qui",
-          "start": 39.65,
-          "end": 39.75,
-          "confidence": 0.228
+          "start": 42.0,
+          "end": 42.1,
+          "confidence": 0.651
         },
         {
           "word_index": 6,
           "text": "ne",
-          "start": 39.8,
-          "end": 39.9,
-          "confidence": 0.228
+          "start": 42.15,
+          "end": 42.25,
+          "confidence": 1.0
         },
         {
           "word_index": 7,
           "text": "va",
-          "start": 39.95,
-          "end": 40.05,
-          "confidence": 0.228
+          "start": 42.3,
+          "end": 42.4,
+          "confidence": 1.0
         },
         {
           "word_index": 8,
           "text": "pas",
-          "start": 40.1,
-          "end": 40.2,
-          "confidence": 0.228
+          "start": 42.45,
+          "end": 42.55,
+          "confidence": 1.0
         }
       ],
       "y": 163,
@@ -1102,30 +1102,30 @@
     {
       "line_index": 19,
       "text": "Un sacr papa",
-      "start": 40.45,
-      "end": 41.15,
-      "confidence": 0.5,
+      "start": 42.55,
+      "end": 44.5,
+      "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "Un",
-          "start": 40.45,
-          "end": 40.55,
-          "confidence": 0.5
+          "start": 42.55,
+          "end": 43.35,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "sacr",
-          "start": 40.6,
-          "end": 40.7,
-          "confidence": 0.5
+          "start": 43.4,
+          "end": 44.2,
+          "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "papa",
-          "start": 40.75,
-          "end": 40.85,
-          "confidence": 0.5
+          "start": 44.25,
+          "end": 44.5,
+          "confidence": 1.0
         }
       ],
       "y": 21,
@@ -1154,37 +1154,37 @@
     {
       "line_index": 20,
       "text": "Dismay o estu cach",
-      "start": 43.15,
-      "end": 46.3,
-      "confidence": 0.252,
+      "start": 44.5,
+      "end": 45.05,
+      "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "Dismoi",
-          "start": 43.15,
-          "end": 43.25,
-          "confidence": 0.252
+          "start": 44.5,
+          "end": 44.6,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "o",
-          "start": 43.3,
-          "end": 43.7,
-          "confidence": 0.252
+          "start": 44.65,
+          "end": 44.75,
+          "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "estu",
-          "start": 43.75,
-          "end": 44.55,
-          "confidence": 0.252
+          "start": 44.8,
+          "end": 44.9,
+          "confidence": 1.0
         },
         {
           "word_index": 4,
           "text": "cach",
-          "start": 45.5,
-          "end": 46.3,
-          "confidence": 0.252
+          "start": 44.95,
+          "end": 45.05,
+          "confidence": 1.0
         }
       ],
       "y": 62,
@@ -1225,51 +1225,51 @@
     {
       "line_index": 21,
       "text": "a do it faire au moins",
-      "start": 45.1,
-      "end": 47.05,
-      "confidence": 0.342,
+      "start": 45.05,
+      "end": 46.95,
+      "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "a",
-          "start": 45.1,
-          "end": 45.35,
-          "confidence": 0.342
+          "start": 45.05,
+          "end": 45.15,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "do",
-          "start": 45.4,
-          "end": 45.6,
-          "confidence": 0.342
+          "start": 45.2,
+          "end": 45.25,
+          "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "it",
-          "start": 45.6,
-          "end": 45.8,
-          "confidence": 0.342
+          "start": 45.25,
+          "end": 45.3,
+          "confidence": 1.0
         },
         {
           "word_index": 4,
           "text": "faire",
-          "start": 45.85,
-          "end": 46.25,
-          "confidence": 0.342
+          "start": 45.35,
+          "end": 45.45,
+          "confidence": 1.0
         },
         {
           "word_index": 5,
           "text": "au",
-          "start": 46.3,
-          "end": 46.6,
-          "confidence": 0.342
+          "start": 45.5,
+          "end": 46.3,
+          "confidence": 1.0
         },
         {
           "word_index": 6,
           "text": "moins",
-          "start": 46.65,
-          "end": 47.05,
-          "confidence": 0.342
+          "start": 46.35,
+          "end": 46.95,
+          "confidence": 1.0
         }
       ],
       "y": 113,
@@ -1310,37 +1310,37 @@
     {
       "line_index": 22,
       "text": "mille fois que j'ai",
-      "start": 47.05,
-      "end": 47.6,
-      "confidence": 0.5,
+      "start": 46.95,
+      "end": 47.5,
+      "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "mille",
-          "start": 47.05,
-          "end": 47.15,
-          "confidence": 0.5
+          "start": 46.95,
+          "end": 47.05,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "fois",
-          "start": 47.2,
-          "end": 47.3,
-          "confidence": 0.5
+          "start": 47.1,
+          "end": 47.2,
+          "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "que",
-          "start": 47.35,
-          "end": 47.45,
-          "confidence": 0.5
+          "start": 47.25,
+          "end": 47.35,
+          "confidence": 1.0
         },
         {
           "word_index": 4,
           "text": "j'ai",
-          "start": 47.5,
-          "end": 47.6,
-          "confidence": 0.5
+          "start": 47.4,
+          "end": 47.5,
+          "confidence": 1.0
         }
       ],
       "y": 163,
@@ -1375,30 +1375,30 @@
     {
       "line_index": 23,
       "text": "Comet mes doigts",
-      "start": 47.6,
-      "end": 48.0,
-      "confidence": 0.5,
+      "start": 47.5,
+      "end": 48.1,
+      "confidence": 0.733,
       "words": [
         {
           "word_index": 1,
           "text": "Compt",
-          "start": 47.6,
-          "end": 47.7,
-          "confidence": 0.5
+          "start": 47.5,
+          "end": 47.6,
+          "confidence": 0.95
         },
         {
           "word_index": 2,
           "text": "mes",
-          "start": 47.75,
-          "end": 47.85,
-          "confidence": 0.5
+          "start": 47.65,
+          "end": 47.75,
+          "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "doigts",
-          "start": 47.9,
-          "end": 48.0,
-          "confidence": 0.5
+          "start": 48.0,
+          "end": 48.1,
+          "confidence": 0.25
         }
       ],
       "y": 67,
@@ -1427,16 +1427,16 @@
     {
       "line_index": 24,
       "text": "h",
-      "start": 48.5,
-      "end": 49.2,
-      "confidence": 0.5,
+      "start": 49.55,
+      "end": 49.7,
+      "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "h",
-          "start": 48.5,
-          "end": 48.8,
-          "confidence": 0.5
+          "start": 49.55,
+          "end": 49.7,
+          "confidence": 1.0
         }
       ],
       "y": 115,
@@ -1453,37 +1453,37 @@
     {
       "line_index": 25,
       "text": "t'es papa o t'es",
-      "start": 52.0,
-      "end": 52.8,
-      "confidence": 0.5,
+      "start": 59.35,
+      "end": 59.9,
+      "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "t'es",
-          "start": 52.0,
-          "end": 52.15,
-          "confidence": 0.5
+          "start": 59.35,
+          "end": 59.45,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "papa",
-          "start": 52.2,
-          "end": 52.4,
-          "confidence": 0.5
+          "start": 59.5,
+          "end": 59.6,
+          "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "o",
-          "start": 52.45,
-          "end": 52.55,
-          "confidence": 0.5
+          "start": 59.65,
+          "end": 59.75,
+          "confidence": 1.0
         },
         {
           "word_index": 4,
           "text": "t'es",
-          "start": 52.6,
-          "end": 52.8,
-          "confidence": 0.5
+          "start": 59.8,
+          "end": 59.9,
+          "confidence": 1.0
         }
       ],
       "y": 20,
@@ -1530,37 +1530,37 @@
     {
       "line_index": 26,
       "text": "t'es papa o t'es",
-      "start": 55.1,
-      "end": 61.2,
-      "confidence": 0.252,
+      "start": 60.75,
+      "end": 61.3,
+      "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "t'es",
-          "start": 55.1,
-          "end": 55.9,
-          "confidence": 0.252
+          "start": 60.75,
+          "end": 60.85,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "papa",
-          "start": 57.0,
-          "end": 57.8,
-          "confidence": 0.252
+          "start": 60.9,
+          "end": 61.0,
+          "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "o",
-          "start": 59.2,
-          "end": 60.0,
-          "confidence": 0.252
+          "start": 61.05,
+          "end": 61.15,
+          "confidence": 1.0
         },
         {
           "word_index": 4,
           "text": "t'es",
-          "start": 60.4,
-          "end": 61.2,
-          "confidence": 0.252
+          "start": 61.2,
+          "end": 61.3,
+          "confidence": 1.0
         }
       ],
       "y": 66,
@@ -1607,37 +1607,37 @@
     {
       "line_index": 27,
       "text": "t'es papa o t'es",
-      "start": 61.35,
-      "end": 61.9,
-      "confidence": 0.2,
+      "start": 62.15,
+      "end": 63.4,
+      "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "t'es",
-          "start": 61.35,
-          "end": 61.45,
-          "confidence": 0.2
+          "start": 62.15,
+          "end": 62.95,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "papa",
-          "start": 61.5,
-          "end": 61.6,
-          "confidence": 0.2
+          "start": 63.0,
+          "end": 63.1,
+          "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "o",
-          "start": 61.65,
-          "end": 61.75,
-          "confidence": 0.2
+          "start": 63.15,
+          "end": 63.25,
+          "confidence": 1.0
         },
         {
           "word_index": 4,
           "text": "t'es",
-          "start": 61.8,
-          "end": 61.9,
-          "confidence": 0.2
+          "start": 63.3,
+          "end": 63.4,
+          "confidence": 1.0
         }
       ],
       "y": 114,
@@ -1684,58 +1684,58 @@
     {
       "line_index": 28,
       "text": "tes o tes o papa o t'es",
-      "start": 62.05,
-      "end": 63.05,
-      "confidence": 0.228,
+      "start": 64.25,
+      "end": 66.65,
+      "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "tes",
-          "start": 62.05,
-          "end": 62.15,
-          "confidence": 0.228
+          "start": 64.25,
+          "end": 65.05,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "o",
-          "start": 62.2,
-          "end": 62.3,
-          "confidence": 0.228
+          "start": 65.1,
+          "end": 65.9,
+          "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "tes",
-          "start": 62.35,
-          "end": 62.45,
-          "confidence": 0.228
+          "start": 65.95,
+          "end": 66.05,
+          "confidence": 1.0
         },
         {
           "word_index": 4,
           "text": "o",
-          "start": 62.5,
-          "end": 62.6,
-          "confidence": 0.228
+          "start": 66.1,
+          "end": 66.2,
+          "confidence": 1.0
         },
         {
           "word_index": 5,
           "text": "papa",
-          "start": 62.65,
-          "end": 62.75,
-          "confidence": 0.228
+          "start": 66.25,
+          "end": 66.35,
+          "confidence": 1.0
         },
         {
           "word_index": 6,
           "text": "o",
-          "start": 62.8,
-          "end": 62.9,
-          "confidence": 0.228
+          "start": 66.4,
+          "end": 66.5,
+          "confidence": 1.0
         },
         {
           "word_index": 7,
           "text": "t'es",
-          "start": 62.95,
-          "end": 63.05,
-          "confidence": 0.228
+          "start": 66.55,
+          "end": 66.65,
+          "confidence": 1.0
         }
       ],
       "y": 162,
@@ -1800,37 +1800,37 @@
     {
       "line_index": 29,
       "text": "t'es papa o t'es",
-      "start": 63.2,
-      "end": 63.75,
-      "confidence": 0.5,
+      "start": 66.8,
+      "end": 67.35,
+      "confidence": 0.55,
       "words": [
         {
           "word_index": 1,
           "text": "t'es",
-          "start": 63.2,
-          "end": 63.3,
-          "confidence": 0.5
+          "start": 66.8,
+          "end": 66.9,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "papa",
-          "start": 63.35,
-          "end": 63.45,
-          "confidence": 0.5
+          "start": 66.95,
+          "end": 67.05,
+          "confidence": 0.25
         },
         {
           "word_index": 3,
           "text": "o",
-          "start": 63.5,
-          "end": 63.6,
-          "confidence": 0.5
+          "start": 67.1,
+          "end": 67.2,
+          "confidence": 1.0
         },
         {
           "word_index": 4,
           "text": "t'es",
-          "start": 63.65,
-          "end": 63.75,
-          "confidence": 0.5
+          "start": 67.25,
+          "end": 67.35,
+          "confidence": 0.25
         }
       ],
       "y": 66,
@@ -1877,37 +1877,37 @@
     {
       "line_index": 30,
       "text": "t'es papa o t'es",
-      "start": 63.9,
-      "end": 64.45,
-      "confidence": 0.313,
+      "start": 67.5,
+      "end": 68.05,
+      "confidence": 0.85,
       "words": [
         {
           "word_index": 1,
           "text": "t'es",
-          "start": 63.9,
-          "end": 64.0,
-          "confidence": 0.313
+          "start": 67.5,
+          "end": 67.6,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "papa",
-          "start": 64.05,
-          "end": 64.15,
-          "confidence": 0.313
+          "start": 67.65,
+          "end": 67.75,
+          "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "o",
-          "start": 64.2,
-          "end": 64.3,
-          "confidence": 0.313
+          "start": 67.8,
+          "end": 67.9,
+          "confidence": 1.0
         },
         {
           "word_index": 4,
           "text": "t'es",
-          "start": 64.35,
-          "end": 64.45,
-          "confidence": 0.313
+          "start": 67.95,
+          "end": 68.05,
+          "confidence": 1.0
         }
       ],
       "y": 20,
@@ -1954,37 +1954,37 @@
     {
       "line_index": 31,
       "text": "t'es papa o t'es",
-      "start": 64.6,
-      "end": 65.15,
-      "confidence": 0.252,
+      "start": 68.75,
+      "end": 69.3,
+      "confidence": 0.332,
       "words": [
         {
           "word_index": 1,
           "text": "t'es",
-          "start": 64.6,
-          "end": 64.7,
-          "confidence": 0.252
+          "start": 68.75,
+          "end": 68.85,
+          "confidence": 0.659
         },
         {
           "word_index": 2,
           "text": "papa",
-          "start": 64.75,
-          "end": 64.85,
-          "confidence": 0.252
+          "start": 68.9,
+          "end": 69.0,
+          "confidence": 0.25
         },
         {
           "word_index": 3,
           "text": "o",
-          "start": 64.9,
-          "end": 65.0,
-          "confidence": 0.252
+          "start": 69.05,
+          "end": 69.15,
+          "confidence": 0.25
         },
         {
           "word_index": 4,
           "text": "t'es",
-          "start": 65.05,
-          "end": 65.15,
-          "confidence": 0.252
+          "start": 69.2,
+          "end": 69.3,
+          "confidence": 0.25
         }
       ],
       "y": 114,
@@ -2031,58 +2031,58 @@
     {
       "line_index": 32,
       "text": "tes o tes o papa o t'es",
-      "start": 65.3,
-      "end": 66.3,
-      "confidence": 0.252,
+      "start": 74.65,
+      "end": 75.65,
+      "confidence": 0.625,
       "words": [
         {
           "word_index": 1,
           "text": "tes",
-          "start": 65.3,
-          "end": 65.4,
-          "confidence": 0.252
+          "start": 74.65,
+          "end": 74.75,
+          "confidence": 0.25
         },
         {
           "word_index": 2,
           "text": "o",
-          "start": 65.45,
-          "end": 65.55,
-          "confidence": 0.252
+          "start": 74.8,
+          "end": 74.9,
+          "confidence": 0.25
         },
         {
           "word_index": 3,
           "text": "tes",
-          "start": 65.6,
-          "end": 65.7,
-          "confidence": 0.252
+          "start": 74.95,
+          "end": 75.05,
+          "confidence": 1.0
         },
         {
           "word_index": 4,
           "text": "o",
-          "start": 65.75,
-          "end": 65.85,
-          "confidence": 0.252
+          "start": 75.1,
+          "end": 75.2,
+          "confidence": 1.0
         },
         {
           "word_index": 5,
           "text": "papa",
-          "start": 65.9,
-          "end": 66.0,
-          "confidence": 0.252
+          "start": 75.25,
+          "end": 75.35,
+          "confidence": 1.0
         },
         {
           "word_index": 6,
           "text": "o",
-          "start": 66.05,
-          "end": 66.15,
-          "confidence": 0.252
+          "start": 75.4,
+          "end": 75.5,
+          "confidence": 0.25
         },
         {
           "word_index": 7,
           "text": "t'es",
-          "start": 66.2,
-          "end": 66.3,
-          "confidence": 0.252
+          "start": 75.55,
+          "end": 75.65,
+          "confidence": 0.25
         }
       ],
       "y": 162,
@@ -2147,16 +2147,16 @@
     {
       "line_index": 33,
       "text": "t'es",
-      "start": 66.45,
-      "end": 66.55,
-      "confidence": 0.252,
+      "start": 78.2,
+      "end": 78.3,
+      "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "t'es",
-          "start": 66.45,
-          "end": 66.55,
-          "confidence": 0.252
+          "start": 78.2,
+          "end": 78.3,
+          "confidence": 1.0
         }
       ],
       "y": 20,
@@ -2185,16 +2185,16 @@
     {
       "line_index": 34,
       "text": "t'es",
-      "start": 67.0,
-      "end": 67.55,
-      "confidence": 0.5,
+      "start": 78.45,
+      "end": 78.55,
+      "confidence": 0.27,
       "words": [
         {
           "word_index": 1,
           "text": "t'es",
-          "start": 67.0,
-          "end": 67.55,
-          "confidence": 0.5
+          "start": 78.45,
+          "end": 78.55,
+          "confidence": 0.27
         }
       ],
       "y": 67,
@@ -2223,23 +2223,23 @@
     {
       "line_index": 35,
       "text": "you tes",
-      "start": 68.0,
-      "end": 69.0,
-      "confidence": 0.5,
+      "start": 78.55,
+      "end": 78.8,
+      "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "you",
-          "start": 68.0,
-          "end": 68.5,
-          "confidence": 0.5
+          "start": 78.55,
+          "end": 78.65,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "tes",
-          "start": 68.55,
-          "end": 69.0,
-          "confidence": 0.5
+          "start": 78.7,
+          "end": 78.8,
+          "confidence": 1.0
         }
       ],
       "y": 115,
@@ -2268,16 +2268,16 @@
     {
       "line_index": 36,
       "text": "t'es",
-      "start": 69.25,
-      "end": 69.8,
-      "confidence": 0.5,
+      "start": 78.95,
+      "end": 79.05,
+      "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "t'es",
-          "start": 69.25,
-          "end": 69.8,
-          "confidence": 0.5
+          "start": 78.95,
+          "end": 79.05,
+          "confidence": 1.0
         }
       ],
       "y": 161,
@@ -2306,37 +2306,37 @@
     {
       "line_index": 37,
       "text": "t'es papa o t'es",
-      "start": 69.95,
-      "end": 70.5,
-      "confidence": 0.5,
+      "start": 79.2,
+      "end": 79.75,
+      "confidence": 0.4,
       "words": [
         {
           "word_index": 1,
           "text": "t'es",
-          "start": 69.95,
-          "end": 70.05,
-          "confidence": 0.5
+          "start": 79.2,
+          "end": 79.3,
+          "confidence": 0.25
         },
         {
           "word_index": 2,
           "text": "papa",
-          "start": 70.1,
-          "end": 70.2,
-          "confidence": 0.5
+          "start": 79.35,
+          "end": 79.45,
+          "confidence": 0.25
         },
         {
           "word_index": 3,
           "text": "o",
-          "start": 70.25,
-          "end": 70.35,
-          "confidence": 0.5
+          "start": 79.5,
+          "end": 79.6,
+          "confidence": 0.25
         },
         {
           "word_index": 4,
           "text": "t'es",
-          "start": 70.4,
-          "end": 70.5,
-          "confidence": 0.5
+          "start": 79.65,
+          "end": 79.75,
+          "confidence": 0.25
         }
       ],
       "y": 114,
@@ -2383,58 +2383,58 @@
     {
       "line_index": 38,
       "text": "tes o tes o papa o t'es",
-      "start": 70.65,
-      "end": 71.65,
-      "confidence": 0.5,
+      "start": 79.9,
+      "end": 80.9,
+      "confidence": 0.566,
       "words": [
         {
           "word_index": 1,
           "text": "tes",
-          "start": 70.65,
-          "end": 70.75,
-          "confidence": 0.5
+          "start": 79.9,
+          "end": 80.0,
+          "confidence": 0.25
         },
         {
           "word_index": 2,
           "text": "o",
-          "start": 70.8,
-          "end": 70.9,
-          "confidence": 0.5
+          "start": 80.05,
+          "end": 80.15,
+          "confidence": 0.675
         },
         {
           "word_index": 3,
           "text": "tes",
-          "start": 70.95,
-          "end": 71.05,
-          "confidence": 0.5
+          "start": 80.2,
+          "end": 80.3,
+          "confidence": 0.25
         },
         {
           "word_index": 4,
           "text": "o",
-          "start": 71.1,
-          "end": 71.2,
-          "confidence": 0.5
+          "start": 80.35,
+          "end": 80.45,
+          "confidence": 0.25
         },
         {
           "word_index": 5,
           "text": "papa",
-          "start": 71.25,
-          "end": 71.35,
-          "confidence": 0.5
+          "start": 80.5,
+          "end": 80.6,
+          "confidence": 0.853
         },
         {
           "word_index": 6,
           "text": "o",
-          "start": 71.4,
-          "end": 71.5,
-          "confidence": 0.5
+          "start": 80.65,
+          "end": 80.75,
+          "confidence": 1.0
         },
         {
           "word_index": 7,
           "text": "t'es",
-          "start": 71.55,
-          "end": 71.65,
-          "confidence": 0.5
+          "start": 80.8,
+          "end": 80.9,
+          "confidence": 1.0
         }
       ],
       "y": 162,
@@ -2499,30 +2499,30 @@
     {
       "line_index": 39,
       "text": "Du Vas y",
-      "start": 71.65,
-      "end": 72.05,
-      "confidence": 0.5,
+      "start": 80.9,
+      "end": 81.3,
+      "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "Du",
-          "start": 71.65,
-          "end": 71.75,
-          "confidence": 0.5
+          "start": 80.9,
+          "end": 81.0,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "Vas",
-          "start": 71.8,
-          "end": 71.9,
-          "confidence": 0.5
+          "start": 81.05,
+          "end": 81.15,
+          "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "y",
-          "start": 71.95,
-          "end": 72.05,
-          "confidence": 0.5
+          "start": 81.2,
+          "end": 81.3,
+          "confidence": 1.0
         }
       ],
       "y": 163,
@@ -2551,16 +2551,16 @@
     {
       "line_index": 40,
       "text": "Buter",
-      "start": 72.8,
-      "end": 73.6,
-      "confidence": 0.5,
+      "start": 81.3,
+      "end": 81.4,
+      "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "Buter",
-          "start": 72.8,
-          "end": 73.6,
-          "confidence": 0.5
+          "start": 81.3,
+          "end": 81.4,
+          "confidence": 1.0
         }
       ],
       "y": 69,
@@ -2583,23 +2583,23 @@
     {
       "line_index": 41,
       "text": "Di des",
-      "start": 74.4,
-      "end": 76.1,
-      "confidence": 0.5,
+      "start": 81.4,
+      "end": 81.65,
+      "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "Di",
-          "start": 74.4,
-          "end": 75.2,
-          "confidence": 0.5
+          "start": 81.4,
+          "end": 81.5,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "des",
-          "start": 75.3,
-          "end": 76.1,
-          "confidence": 0.5
+          "start": 81.55,
+          "end": 81.65,
+          "confidence": 1.0
         }
       ],
       "y": 115,
@@ -2628,37 +2628,37 @@
     {
       "line_index": 42,
       "text": "Q tes fes 8",
-      "start": 76.5,
-      "end": 78.55,
-      "confidence": 0.5,
+      "start": 81.65,
+      "end": 82.2,
+      "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "Q",
-          "start": 76.5,
-          "end": 76.85,
-          "confidence": 0.5
+          "start": 81.65,
+          "end": 81.75,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "tes",
-          "start": 76.9,
-          "end": 77.5,
-          "confidence": 0.5
+          "start": 81.8,
+          "end": 81.9,
+          "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "fes",
-          "start": 77.55,
-          "end": 78.1,
-          "confidence": 0.5
+          "start": 81.95,
+          "end": 82.05,
+          "confidence": 1.0
         },
         {
           "word_index": 4,
           "text": "8",
-          "start": 78.15,
-          "end": 78.55,
-          "confidence": 0.5
+          "start": 82.1,
+          "end": 82.2,
+          "confidence": 1.0
         }
       ],
       "y": 21,
@@ -2693,23 +2693,23 @@
     {
       "line_index": 43,
       "text": "D l'as",
-      "start": 78.7,
-      "end": 80.3,
-      "confidence": 0.5,
+      "start": 82.2,
+      "end": 82.45,
+      "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "D",
-          "start": 78.7,
-          "end": 79.45,
-          "confidence": 0.5
+          "start": 82.2,
+          "end": 82.3,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "l'as",
-          "start": 79.5,
-          "end": 80.3,
-          "confidence": 0.5
+          "start": 82.35,
+          "end": 82.45,
+          "confidence": 1.0
         }
       ],
       "y": 163,
@@ -2738,22 +2738,22 @@
     {
       "line_index": 44,
       "text": "Quoi 8",
-      "start": 80.75,
-      "end": 81.6,
+      "start": 82.45,
+      "end": 82.7,
       "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "Quoi",
-          "start": 80.75,
-          "end": 81.25,
+          "start": 82.45,
+          "end": 82.55,
           "confidence": 0.252
         },
         {
           "word_index": 2,
           "text": "8",
-          "start": 81.3,
-          "end": 81.6,
+          "start": 82.6,
+          "end": 82.7,
           "confidence": 0.252
         }
       ],
@@ -2777,44 +2777,44 @@
     {
       "line_index": 45,
       "text": "Qu'on y croie ou pas",
-      "start": 81.6,
-      "end": 82.4,
-      "confidence": 0.5,
+      "start": 82.7,
+      "end": 83.4,
+      "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "Qu'on",
-          "start": 81.6,
-          "end": 81.7,
-          "confidence": 0.5
+          "start": 82.7,
+          "end": 82.8,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "y",
-          "start": 81.75,
-          "end": 81.85,
-          "confidence": 0.5
+          "start": 82.85,
+          "end": 82.95,
+          "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "croie",
-          "start": 81.9,
-          "end": 82.0,
-          "confidence": 0.5
+          "start": 83.0,
+          "end": 83.1,
+          "confidence": 1.0
         },
         {
           "word_index": 4,
           "text": "ou",
-          "start": 82.05,
-          "end": 82.15,
-          "confidence": 0.5
+          "start": 83.15,
+          "end": 83.25,
+          "confidence": 1.0
         },
         {
           "word_index": 5,
           "text": "pas",
-          "start": 82.2,
-          "end": 82.4,
-          "confidence": 0.5
+          "start": 83.3,
+          "end": 83.4,
+          "confidence": 1.0
         }
       ],
       "y": 68,
@@ -2855,36 +2855,36 @@
     {
       "line_index": 46,
       "text": "y'aura bien un jour",
-      "start": 82.4,
-      "end": 82.95,
+      "start": 83.4,
+      "end": 83.95,
       "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "y'aura",
-          "start": 82.4,
-          "end": 82.5,
+          "start": 83.4,
+          "end": 83.5,
           "confidence": 0.252
         },
         {
           "word_index": 2,
           "text": "bien",
-          "start": 82.55,
-          "end": 82.65,
+          "start": 83.55,
+          "end": 83.65,
           "confidence": 0.252
         },
         {
           "word_index": 3,
           "text": "un",
-          "start": 82.7,
-          "end": 82.8,
+          "start": 83.7,
+          "end": 83.8,
           "confidence": 0.252
         },
         {
           "word_index": 4,
           "text": "jour",
-          "start": 82.85,
-          "end": 82.95,
+          "start": 83.85,
+          "end": 83.95,
           "confidence": 0.252
         }
       ],
@@ -2920,36 +2920,36 @@
     {
       "line_index": 47,
       "text": "on y croira plus",
-      "start": 83.65,
-      "end": 84.2,
+      "start": 84.1,
+      "end": 84.65,
       "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "on",
-          "start": 83.65,
-          "end": 83.75,
+          "start": 84.1,
+          "end": 84.2,
           "confidence": 0.252
         },
         {
           "word_index": 2,
           "text": "y",
-          "start": 83.8,
-          "end": 83.9,
+          "start": 84.25,
+          "end": 84.35,
           "confidence": 0.252
         },
         {
           "word_index": 3,
           "text": "croira",
-          "start": 83.95,
-          "end": 84.05,
+          "start": 84.4,
+          "end": 84.5,
           "confidence": 0.252
         },
         {
           "word_index": 4,
           "text": "plus",
-          "start": 84.1,
-          "end": 84.2,
+          "start": 84.55,
+          "end": 84.65,
           "confidence": 0.252
         }
       ],
@@ -2991,36 +2991,36 @@
     {
       "line_index": 48,
       "text": "Un jour ou l'autre",
-      "start": 85.05,
-      "end": 85.75,
+      "start": 84.65,
+      "end": 85.2,
       "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "Un",
-          "start": 85.05,
-          "end": 85.15,
+          "start": 84.65,
+          "end": 84.75,
           "confidence": 0.252
         },
         {
           "word_index": 2,
           "text": "jour",
-          "start": 85.2,
-          "end": 85.3,
+          "start": 84.8,
+          "end": 84.9,
           "confidence": 0.252
         },
         {
           "word_index": 3,
           "text": "ou",
-          "start": 85.35,
-          "end": 85.45,
+          "start": 84.95,
+          "end": 85.05,
           "confidence": 0.252
         },
         {
           "word_index": 4,
           "text": "l'autre",
-          "start": 85.5,
-          "end": 85.6,
+          "start": 85.1,
+          "end": 85.2,
           "confidence": 0.252
         }
       ],
@@ -3056,44 +3056,44 @@
     {
       "line_index": 49,
       "text": "Qu'on y croie ou pas",
-      "start": 86.4,
-      "end": 87.4,
-      "confidence": 0.5,
+      "start": 86.15,
+      "end": 88.65,
+      "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "Qu'on",
-          "start": 86.4,
-          "end": 86.6,
-          "confidence": 0.5
+          "start": 86.15,
+          "end": 86.95,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "y",
-          "start": 86.65,
-          "end": 86.75,
-          "confidence": 0.5
+          "start": 88.1,
+          "end": 88.2,
+          "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "croie",
-          "start": 86.8,
-          "end": 87.0,
-          "confidence": 0.5
+          "start": 88.25,
+          "end": 88.35,
+          "confidence": 1.0
         },
         {
           "word_index": 4,
           "text": "ou",
-          "start": 87.05,
-          "end": 87.2,
-          "confidence": 0.5
+          "start": 88.4,
+          "end": 88.5,
+          "confidence": 1.0
         },
         {
           "word_index": 5,
           "text": "pas",
-          "start": 87.25,
-          "end": 87.4,
-          "confidence": 0.5
+          "start": 88.55,
+          "end": 88.65,
+          "confidence": 1.0
         }
       ],
       "y": 68,
@@ -3134,37 +3134,37 @@
     {
       "line_index": 50,
       "text": "Et d'un jour l'autre",
-      "start": 87.4,
-      "end": 87.95,
-      "confidence": 0.5,
+      "start": 88.65,
+      "end": 90.8,
+      "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "Et",
-          "start": 87.4,
-          "end": 87.5,
-          "confidence": 0.5
+          "start": 88.65,
+          "end": 89.0,
+          "confidence": 0.252
         },
         {
           "word_index": 2,
           "text": "d'un",
-          "start": 87.55,
-          "end": 87.65,
-          "confidence": 0.5
+          "start": 89.05,
+          "end": 89.55,
+          "confidence": 0.252
         },
         {
           "word_index": 3,
           "text": "jour",
-          "start": 87.7,
-          "end": 87.8,
-          "confidence": 0.5
+          "start": 89.6,
+          "end": 90.1,
+          "confidence": 0.252
         },
         {
           "word_index": 4,
           "text": "l'autre",
-          "start": 87.85,
-          "end": 87.95,
-          "confidence": 0.5
+          "start": 90.15,
+          "end": 90.8,
+          "confidence": 0.252
         }
       ],
       "y": 116,
@@ -3205,30 +3205,30 @@
     {
       "line_index": 51,
       "text": "on aura disparu",
-      "start": 88.4,
-      "end": 89.1,
-      "confidence": 0.5,
+      "start": 90.8,
+      "end": 91.2,
+      "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "on",
-          "start": 88.4,
-          "end": 88.5,
-          "confidence": 0.5
+          "start": 90.8,
+          "end": 90.9,
+          "confidence": 0.252
         },
         {
           "word_index": 2,
           "text": "aura",
-          "start": 88.55,
-          "end": 88.65,
-          "confidence": 0.5
+          "start": 90.95,
+          "end": 91.05,
+          "confidence": 0.252
         },
         {
           "word_index": 3,
           "text": "disparu",
-          "start": 88.7,
-          "end": 89.0,
-          "confidence": 0.5
+          "start": 91.1,
+          "end": 91.2,
+          "confidence": 0.252
         }
       ],
       "y": 163,
@@ -3257,23 +3257,23 @@
     {
       "line_index": 52,
       "text": "Seronsnous detestable",
-      "start": 90.35,
-      "end": 91.05,
-      "confidence": 0.5,
+      "start": 91.2,
+      "end": 91.45,
+      "confidence": 0.97,
       "words": [
         {
           "word_index": 1,
           "text": "Seronsnous",
-          "start": 90.35,
-          "end": 90.45,
-          "confidence": 0.5
+          "start": 91.2,
+          "end": 91.3,
+          "confidence": 0.939
         },
         {
           "word_index": 2,
           "text": "dtestables",
-          "start": 90.5,
-          "end": 90.6,
-          "confidence": 0.5
+          "start": 91.35,
+          "end": 91.45,
+          "confidence": 1.0
         }
       ],
       "y": 21,
@@ -3302,23 +3302,23 @@
     {
       "line_index": 53,
       "text": "Seronsnous admirables",
-      "start": 91.85,
-      "end": 94.9,
-      "confidence": 0.5,
+      "start": 91.9,
+      "end": 92.85,
+      "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "Seronsnous",
-          "start": 91.85,
-          "end": 92.65,
-          "confidence": 0.5
+          "start": 91.9,
+          "end": 92.7,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "admirables",
-          "start": 94.1,
-          "end": 94.9,
-          "confidence": 0.5
+          "start": 92.75,
+          "end": 92.85,
+          "confidence": 1.0
         }
       ],
       "y": 68,
@@ -3346,45 +3346,45 @@
     },
     {
       "line_index": 54,
-      "text": "Des genitors ou des gries",
-      "start": 94.9,
-      "end": 95.6,
-      "confidence": 0.5,
+      "text": "Des genitors ou des gnines",
+      "start": 93.55,
+      "end": 96.45,
+      "confidence": 0.97,
       "words": [
         {
           "word_index": 1,
           "text": "Des",
-          "start": 94.9,
-          "end": 95.0,
-          "confidence": 0.5
+          "start": 93.55,
+          "end": 94.35,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "gniteurs",
-          "start": 95.05,
-          "end": 95.15,
-          "confidence": 0.5
+          "start": 94.4,
+          "end": 95.2,
+          "confidence": 0.848
         },
         {
           "word_index": 3,
           "text": "ou",
-          "start": 95.2,
-          "end": 95.3,
-          "confidence": 0.5
+          "start": 95.25,
+          "end": 95.35,
+          "confidence": 1.0
         },
         {
           "word_index": 4,
           "text": "des",
-          "start": 95.35,
-          "end": 95.45,
-          "confidence": 0.5
+          "start": 95.4,
+          "end": 96.2,
+          "confidence": 1.0
         },
         {
           "word_index": 5,
           "text": "gnies",
-          "start": 95.5,
-          "end": 95.6,
-          "confidence": 0.5
+          "start": 96.25,
+          "end": 96.45,
+          "confidence": 1.0
         }
       ],
       "y": 115,
@@ -3425,37 +3425,37 @@
     {
       "line_index": 55,
       "text": "Diriesnous qui donne naissance",
-      "start": 95.6,
-      "end": 96.15,
-      "confidence": 0.5,
+      "start": 96.45,
+      "end": 97.0,
+      "confidence": 0.438,
       "words": [
         {
           "word_index": 1,
           "text": "Ditesnous",
-          "start": 95.6,
-          "end": 95.7,
-          "confidence": 0.5
+          "start": 96.45,
+          "end": 96.55,
+          "confidence": 0.25
         },
         {
           "word_index": 2,
           "text": "qui",
-          "start": 95.75,
-          "end": 95.85,
-          "confidence": 0.5
+          "start": 96.6,
+          "end": 96.7,
+          "confidence": 0.25
         },
         {
           "word_index": 3,
           "text": "donne",
-          "start": 95.9,
-          "end": 96.0,
-          "confidence": 0.5
+          "start": 96.75,
+          "end": 96.85,
+          "confidence": 0.25
         },
         {
           "word_index": 4,
           "text": "naissance",
-          "start": 96.05,
-          "end": 96.15,
-          "confidence": 0.5
+          "start": 96.9,
+          "end": 97.0,
+          "confidence": 1.0
         }
       ],
       "y": 22,
@@ -3490,22 +3490,22 @@
     {
       "line_index": 56,
       "text": "aux irresponsables",
-      "start": 96.95,
-      "end": 97.7,
+      "start": 97.0,
+      "end": 97.25,
       "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
           "text": "aux",
-          "start": 96.95,
-          "end": 97.05,
+          "start": 97.0,
+          "end": 97.1,
           "confidence": 0.5
         },
         {
           "word_index": 2,
           "text": "irresponsables",
-          "start": 97.1,
-          "end": 97.7,
+          "start": 97.15,
+          "end": 97.25,
           "confidence": 0.5
         }
       ],
@@ -3529,22 +3529,22 @@
     {
       "line_index": 57,
       "text": "Hein 8",
-      "start": 99.05,
-      "end": 100.05,
+      "start": 97.25,
+      "end": 97.95,
       "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
           "text": "Hein",
-          "start": 99.05,
-          "end": 99.65,
+          "start": 97.25,
+          "end": 97.55,
           "confidence": 0.5
         },
         {
           "word_index": 2,
           "text": "8",
-          "start": 99.7,
-          "end": 100.05,
+          "start": 97.6,
+          "end": 97.95,
           "confidence": 0.5
         }
       ],
@@ -3568,29 +3568,29 @@
     {
       "line_index": 58,
       "text": "Diriesnous qui tient",
-      "start": 100.05,
-      "end": 100.45,
+      "start": 97.95,
+      "end": 98.95,
       "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
           "text": "Ditesnous",
-          "start": 100.05,
-          "end": 100.15,
+          "start": 97.95,
+          "end": 98.05,
           "confidence": 0.5
         },
         {
           "word_index": 2,
           "text": "qui",
-          "start": 100.2,
-          "end": 100.3,
+          "start": 98.1,
+          "end": 98.3,
           "confidence": 0.5
         },
         {
           "word_index": 3,
           "text": "tient",
-          "start": 100.35,
-          "end": 100.45,
+          "start": 98.35,
+          "end": 98.95,
           "confidence": 0.5
         }
       ],
@@ -3620,51 +3620,51 @@
     {
       "line_index": 59,
       "text": "Tout le monde sa it comment",
-      "start": 100.45,
-      "end": 101.15,
-      "confidence": 0.5,
+      "start": 100.15,
+      "end": 102.45,
+      "confidence": 0.978,
       "words": [
         {
           "word_index": 1,
           "text": "Tout",
-          "start": 100.45,
-          "end": 100.55,
-          "confidence": 0.5
+          "start": 100.15,
+          "end": 100.95,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "le",
-          "start": 100.6,
-          "end": 100.7,
-          "confidence": 0.5
+          "start": 101.2,
+          "end": 101.3,
+          "confidence": 0.865
         },
         {
           "word_index": 3,
           "text": "monde",
-          "start": 100.75,
-          "end": 100.85,
-          "confidence": 0.5
+          "start": 101.35,
+          "end": 101.45,
+          "confidence": 1.0
         },
         {
           "word_index": 4,
           "text": "sa",
-          "start": 100.9,
-          "end": 100.95,
-          "confidence": 0.5
+          "start": 101.5,
+          "end": 101.55,
+          "confidence": 1.0
         },
         {
           "word_index": 5,
           "text": "it",
-          "start": 100.95,
-          "end": 101.0,
-          "confidence": 0.5
+          "start": 101.55,
+          "end": 101.6,
+          "confidence": 1.0
         },
         {
           "word_index": 6,
           "text": "comment",
-          "start": 101.05,
-          "end": 101.15,
-          "confidence": 0.5
+          "start": 101.65,
+          "end": 102.45,
+          "confidence": 1.0
         }
       ],
       "y": 22,
@@ -3705,37 +3705,37 @@
     {
       "line_index": 60,
       "text": "on fait des bbs",
-      "start": 101.15,
-      "end": 102.1,
-      "confidence": 0.5,
+      "start": 102.45,
+      "end": 103.0,
+      "confidence": 0.73,
       "words": [
         {
           "word_index": 1,
           "text": "on",
-          "start": 101.15,
-          "end": 101.3,
-          "confidence": 0.5
+          "start": 102.45,
+          "end": 102.55,
+          "confidence": 0.788
         },
         {
           "word_index": 2,
           "text": "fait",
-          "start": 101.35,
-          "end": 101.6,
-          "confidence": 0.5
+          "start": 102.6,
+          "end": 102.7,
+          "confidence": 0.25
         },
         {
           "word_index": 3,
           "text": "des",
-          "start": 101.65,
-          "end": 101.85,
-          "confidence": 0.5
+          "start": 102.75,
+          "end": 102.85,
+          "confidence": 0.882
         },
         {
           "word_index": 4,
           "text": "bbs",
-          "start": 101.9,
-          "end": 102.1,
-          "confidence": 0.5
+          "start": 102.9,
+          "end": 103.0,
+          "confidence": 1.0
         }
       ],
       "y": 68,
@@ -3770,44 +3770,44 @@
     {
       "line_index": 61,
       "text": "Mais personne sa it comment",
-      "start": 102.1,
-      "end": 102.65,
-      "confidence": 0.5,
+      "start": 103.0,
+      "end": 104.25,
+      "confidence": 0.672,
       "words": [
         {
           "word_index": 1,
           "text": "Mais",
-          "start": 102.1,
-          "end": 102.2,
-          "confidence": 0.5
+          "start": 103.0,
+          "end": 103.8,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "personne",
-          "start": 102.25,
-          "end": 102.35,
-          "confidence": 0.5
+          "start": 103.85,
+          "end": 103.95,
+          "confidence": 0.858
         },
         {
           "word_index": 3,
           "text": "sa",
-          "start": 102.4,
-          "end": 102.45,
-          "confidence": 0.5
+          "start": 104.0,
+          "end": 104.05,
+          "confidence": 0.25
         },
         {
           "word_index": 4,
           "text": "it",
-          "start": 102.45,
-          "end": 102.5,
-          "confidence": 0.5
+          "start": 104.05,
+          "end": 104.1,
+          "confidence": 0.25
         },
         {
           "word_index": 5,
           "text": "comment",
-          "start": 102.55,
-          "end": 102.65,
-          "confidence": 0.5
+          "start": 104.15,
+          "end": 104.25,
+          "confidence": 1.0
         }
       ],
       "y": 116,
@@ -3842,37 +3842,37 @@
     {
       "line_index": 62,
       "text": "on fait des papas",
-      "start": 102.65,
-      "end": 103.2,
-      "confidence": 0.5,
+      "start": 104.25,
+      "end": 105.0,
+      "confidence": 0.74,
       "words": [
         {
           "word_index": 1,
           "text": "on",
-          "start": 102.65,
-          "end": 102.75,
-          "confidence": 0.5
+          "start": 104.25,
+          "end": 104.35,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "fait",
-          "start": 102.8,
-          "end": 102.9,
-          "confidence": 0.5
+          "start": 104.4,
+          "end": 104.5,
+          "confidence": 0.25
         },
         {
           "word_index": 3,
           "text": "des",
-          "start": 102.95,
-          "end": 103.05,
-          "confidence": 0.5
+          "start": 104.55,
+          "end": 104.85,
+          "confidence": 1.0
         },
         {
           "word_index": 4,
           "text": "papas",
-          "start": 103.1,
-          "end": 103.2,
-          "confidence": 0.5
+          "start": 104.9,
+          "end": 105.0,
+          "confidence": 0.711
         }
       ],
       "y": 164,
@@ -3907,36 +3907,36 @@
     {
       "line_index": 63,
       "text": "Monsieur je sais tout",
-      "start": 103.2,
-      "end": 104.05,
+      "start": 105.0,
+      "end": 105.55,
       "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
           "text": "Monsieur",
-          "start": 103.2,
-          "end": 103.3,
+          "start": 105.0,
+          "end": 105.1,
           "confidence": 0.5
         },
         {
           "word_index": 2,
           "text": "je",
-          "start": 103.35,
-          "end": 103.55,
+          "start": 105.15,
+          "end": 105.25,
           "confidence": 0.5
         },
         {
           "word_index": 3,
           "text": "sais",
-          "start": 103.6,
-          "end": 103.8,
+          "start": 105.3,
+          "end": 105.4,
           "confidence": 0.5
         },
         {
           "word_index": 4,
           "text": "tout",
-          "start": 103.85,
-          "end": 104.05,
+          "start": 105.45,
+          "end": 105.55,
           "confidence": 0.5
         }
       ],
@@ -3972,51 +3972,51 @@
     {
       "line_index": 64,
       "text": "en aurait hr it c'est a",
-      "start": 104.05,
-      "end": 105.3,
-      "confidence": 0.5,
+      "start": 106.95,
+      "end": 107.65,
+      "confidence": 0.876,
       "words": [
         {
           "word_index": 1,
           "text": "en",
-          "start": 104.05,
-          "end": 104.15,
-          "confidence": 0.5
+          "start": 106.95,
+          "end": 107.05,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "aurait",
-          "start": 104.2,
-          "end": 104.3,
-          "confidence": 0.5
+          "start": 107.1,
+          "end": 107.2,
+          "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "hr",
-          "start": 104.35,
-          "end": 104.4,
-          "confidence": 0.5
+          "start": 107.25,
+          "end": 107.3,
+          "confidence": 0.628
         },
         {
           "word_index": 4,
           "text": "it",
-          "start": 104.4,
-          "end": 104.45,
-          "confidence": 0.5
+          "start": 107.3,
+          "end": 107.35,
+          "confidence": 0.628
         },
         {
           "word_index": 5,
           "text": "c'est",
-          "start": 104.5,
-          "end": 104.95,
-          "confidence": 0.5
+          "start": 107.4,
+          "end": 107.5,
+          "confidence": 1.0
         },
         {
           "word_index": 6,
           "text": "a",
-          "start": 105.0,
-          "end": 105.3,
-          "confidence": 0.5
+          "start": 107.55,
+          "end": 107.65,
+          "confidence": 1.0
         }
       ],
       "y": 68,
@@ -4057,37 +4057,37 @@
     {
       "line_index": 65,
       "text": "Il faut le sucer",
-      "start": 105.45,
-      "end": 106.45,
-      "confidence": 0.5,
+      "start": 107.65,
+      "end": 108.2,
+      "confidence": 0.967,
       "words": [
         {
           "word_index": 1,
           "text": "Il",
-          "start": 105.45,
-          "end": 105.65,
-          "confidence": 0.5
+          "start": 107.65,
+          "end": 107.75,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "faut",
-          "start": 105.7,
-          "end": 105.9,
-          "confidence": 0.5
+          "start": 107.8,
+          "end": 107.9,
+          "confidence": 0.994
         },
         {
           "word_index": 3,
           "text": "le",
-          "start": 105.95,
-          "end": 106.15,
-          "confidence": 0.5
+          "start": 107.95,
+          "end": 108.05,
+          "confidence": 1.0
         },
         {
           "word_index": 4,
           "text": "sucer",
-          "start": 106.2,
-          "end": 106.45,
-          "confidence": 0.5
+          "start": 108.1,
+          "end": 108.2,
+          "confidence": 0.873
         }
       ],
       "y": 116,
@@ -4122,37 +4122,37 @@
     {
       "line_index": 66,
       "text": "son pouce ou quoi",
-      "start": 106.45,
-      "end": 107.35,
-      "confidence": 0.5,
+      "start": 108.2,
+      "end": 109.45,
+      "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "son",
-          "start": 106.45,
-          "end": 106.55,
-          "confidence": 0.5
+          "start": 108.2,
+          "end": 108.3,
+          "confidence": 0.252
         },
         {
           "word_index": 2,
           "text": "pouce",
-          "start": 106.6,
-          "end": 106.7,
-          "confidence": 0.5
+          "start": 108.35,
+          "end": 108.45,
+          "confidence": 0.252
         },
         {
           "word_index": 3,
           "text": "ou",
-          "start": 106.75,
-          "end": 106.85,
-          "confidence": 0.5
+          "start": 108.5,
+          "end": 108.8,
+          "confidence": 0.252
         },
         {
           "word_index": 4,
           "text": "quoi",
-          "start": 106.9,
-          "end": 107.35,
-          "confidence": 0.5
+          "start": 108.85,
+          "end": 109.45,
+          "confidence": 0.252
         }
       ],
       "y": 165,
@@ -4187,37 +4187,37 @@
     {
       "line_index": 67,
       "text": "Diriesnous o c'est cach",
-      "start": 107.95,
-      "end": 108.95,
-      "confidence": 0.5,
+      "start": 109.45,
+      "end": 111.45,
+      "confidence": 0.812,
       "words": [
         {
           "word_index": 1,
           "text": "Ditesnous",
-          "start": 107.95,
-          "end": 108.25,
-          "confidence": 0.5
+          "start": 109.45,
+          "end": 110.25,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "o",
-          "start": 108.3,
-          "end": 108.45,
-          "confidence": 0.5
+          "start": 110.3,
+          "end": 111.1,
+          "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "c'est",
-          "start": 108.5,
-          "end": 108.7,
-          "confidence": 0.5
+          "start": 111.15,
+          "end": 111.25,
+          "confidence": 0.25
         },
         {
           "word_index": 4,
           "text": "cach",
-          "start": 108.75,
-          "end": 108.95,
-          "confidence": 0.5
+          "start": 111.3,
+          "end": 111.45,
+          "confidence": 1.0
         }
       ],
       "y": 22,
@@ -4252,29 +4252,29 @@
     {
       "line_index": 68,
       "text": "a do it",
-      "start": 109.4,
-      "end": 110.35,
+      "start": 111.45,
+      "end": 111.7,
       "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
           "text": "a",
-          "start": 109.4,
-          "end": 109.5,
+          "start": 111.45,
+          "end": 111.55,
           "confidence": 0.5
         },
         {
           "word_index": 2,
           "text": "do",
-          "start": 109.55,
-          "end": 109.95,
+          "start": 111.6,
+          "end": 111.65,
           "confidence": 0.5
         },
         {
           "word_index": 3,
           "text": "it",
-          "start": 109.95,
-          "end": 110.35,
+          "start": 111.65,
+          "end": 111.7,
           "confidence": 0.5
         }
       ],
@@ -4298,44 +4298,44 @@
     {
       "line_index": 69,
       "text": "faire au moins mille fos",
-      "start": 110.9,
-      "end": 113.1,
-      "confidence": 0.395,
+      "start": 111.7,
+      "end": 113.5,
+      "confidence": 0.849,
       "words": [
         {
           "word_index": 1,
           "text": "faire",
-          "start": 110.9,
-          "end": 111.35,
-          "confidence": 0.395
+          "start": 111.7,
+          "end": 111.8,
+          "confidence": 0.25
         },
         {
           "word_index": 2,
           "text": "au",
-          "start": 111.4,
-          "end": 111.7,
-          "confidence": 0.395
+          "start": 111.85,
+          "end": 112.65,
+          "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "moins",
-          "start": 111.75,
-          "end": 112.2,
-          "confidence": 0.395
+          "start": 113.1,
+          "end": 113.2,
+          "confidence": 0.993
         },
         {
           "word_index": 4,
           "text": "mille",
-          "start": 112.25,
-          "end": 112.7,
-          "confidence": 0.395
+          "start": 113.25,
+          "end": 113.35,
+          "confidence": 1.0
         },
         {
           "word_index": 5,
           "text": "fos",
-          "start": 112.75,
-          "end": 113.1,
-          "confidence": 0.395
+          "start": 113.4,
+          "end": 113.5,
+          "confidence": 1.0
         }
       ],
       "y": 115,
@@ -4376,23 +4376,23 @@
     {
       "line_index": 70,
       "text": "qu'on a",
-      "start": 109.8,
-      "end": 111.75,
-      "confidence": 0.0,
+      "start": 113.5,
+      "end": 113.75,
+      "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "qu'on",
-          "start": 109.8,
-          "end": 110.8,
-          "confidence": 0.0
+          "start": 113.5,
+          "end": 113.6,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "a",
-          "start": 110.8,
-          "end": 111.75,
-          "confidence": 0.0
+          "start": 113.65,
+          "end": 113.75,
+          "confidence": 1.0
         }
       ],
       "y": 163,
@@ -4415,30 +4415,30 @@
     {
       "line_index": 71,
       "text": "Bought nos doigts",
-      "start": 111.8,
-      "end": 112.85,
-      "confidence": 0.252,
+      "start": 113.75,
+      "end": 114.15,
+      "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
           "text": "Bouft",
-          "start": 111.8,
-          "end": 112.15,
-          "confidence": 0.252
+          "start": 113.75,
+          "end": 113.85,
+          "confidence": 0.25
         },
         {
           "word_index": 2,
           "text": "nos",
-          "start": 112.2,
-          "end": 112.45,
-          "confidence": 0.252
+          "start": 113.9,
+          "end": 114.0,
+          "confidence": 0.25
         },
         {
           "word_index": 3,
           "text": "doigts",
-          "start": 112.5,
-          "end": 112.85,
-          "confidence": 0.252
+          "start": 114.05,
+          "end": 114.15,
+          "confidence": 1.0
         }
       ],
       "y": 68,
@@ -4467,16 +4467,16 @@
     {
       "line_index": 72,
       "text": "h",
-      "start": 112.85,
-      "end": 113.05,
-      "confidence": 0.252,
+      "start": 115.1,
+      "end": 115.85,
+      "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "h",
-          "start": 112.85,
-          "end": 113.05,
-          "confidence": 0.252
+          "start": 115.1,
+          "end": 115.85,
+          "confidence": 1.0
         }
       ],
       "y": 117,
@@ -4493,23 +4493,23 @@
     {
       "line_index": 73,
       "text": "h h",
-      "start": 114.7,
-      "end": 115.4,
-      "confidence": 0.252,
+      "start": 116.75,
+      "end": 117.45,
+      "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "h",
-          "start": 114.7,
-          "end": 114.8,
-          "confidence": 0.252
+          "start": 116.75,
+          "end": 116.85,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "h",
-          "start": 114.85,
-          "end": 114.95,
-          "confidence": 0.252
+          "start": 116.9,
+          "end": 117.0,
+          "confidence": 1.0
         }
       ],
       "y": 117,
@@ -4532,37 +4532,37 @@
     {
       "line_index": 74,
       "text": "t'es papa o t'es",
-      "start": 116.35,
-      "end": 117.15,
-      "confidence": 0.5,
+      "start": 122.35,
+      "end": 124.35,
+      "confidence": 0.228,
       "words": [
         {
           "word_index": 1,
           "text": "t'es",
-          "start": 116.35,
-          "end": 116.55,
-          "confidence": 0.5
+          "start": 122.35,
+          "end": 122.85,
+          "confidence": 0.228
         },
         {
           "word_index": 2,
           "text": "papa",
-          "start": 116.6,
-          "end": 116.75,
-          "confidence": 0.5
+          "start": 122.9,
+          "end": 123.45,
+          "confidence": 0.228
         },
         {
           "word_index": 3,
           "text": "o",
-          "start": 116.8,
-          "end": 116.95,
-          "confidence": 0.5
+          "start": 123.5,
+          "end": 123.85,
+          "confidence": 0.228
         },
         {
           "word_index": 4,
           "text": "t'es",
-          "start": 117.0,
-          "end": 117.15,
-          "confidence": 0.5
+          "start": 123.9,
+          "end": 124.35,
+          "confidence": 0.228
         }
       ],
       "y": 19,
@@ -4609,37 +4609,37 @@
     {
       "line_index": 75,
       "text": "t'es papa o t'es",
-      "start": 121.45,
-      "end": 127.45,
-      "confidence": 0.252,
+      "start": 126.25,
+      "end": 129.25,
+      "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "t'es",
-          "start": 121.45,
-          "end": 122.25,
-          "confidence": 0.252
+          "start": 126.25,
+          "end": 126.35,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "papa",
-          "start": 123.35,
-          "end": 124.15,
-          "confidence": 0.252
+          "start": 126.4,
+          "end": 126.5,
+          "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "o",
-          "start": 125.5,
-          "end": 126.3,
-          "confidence": 0.252
+          "start": 129.0,
+          "end": 129.1,
+          "confidence": 1.0
         },
         {
           "word_index": 4,
           "text": "t'es",
-          "start": 126.65,
-          "end": 127.45,
-          "confidence": 0.252
+          "start": 129.15,
+          "end": 129.25,
+          "confidence": 1.0
         }
       ],
       "y": 68,
@@ -4686,37 +4686,37 @@
     {
       "line_index": 76,
       "text": "tes papa o t'es",
-      "start": 127.6,
-      "end": 128.15,
-      "confidence": 0.5,
+      "start": 129.4,
+      "end": 129.95,
+      "confidence": 0.228,
       "words": [
         {
           "word_index": 1,
           "text": "tes",
-          "start": 127.6,
-          "end": 127.7,
-          "confidence": 0.5
+          "start": 129.4,
+          "end": 129.5,
+          "confidence": 0.228
         },
         {
           "word_index": 2,
           "text": "papa",
-          "start": 127.75,
-          "end": 127.85,
-          "confidence": 0.5
+          "start": 129.55,
+          "end": 129.65,
+          "confidence": 0.228
         },
         {
           "word_index": 3,
           "text": "o",
-          "start": 127.9,
-          "end": 128.0,
-          "confidence": 0.5
+          "start": 129.7,
+          "end": 129.8,
+          "confidence": 0.228
         },
         {
           "word_index": 4,
           "text": "t'es",
-          "start": 128.05,
-          "end": 128.15,
-          "confidence": 0.5
+          "start": 129.85,
+          "end": 129.95,
+          "confidence": 0.228
         }
       ],
       "y": 114,
@@ -4763,58 +4763,58 @@
     {
       "line_index": 77,
       "text": "tes o tes o papa o t'es",
-      "start": 128.3,
-      "end": 129.3,
-      "confidence": 0.228,
+      "start": 130.8,
+      "end": 132.5,
+      "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "tes",
-          "start": 128.3,
-          "end": 128.4,
-          "confidence": 0.228
+          "start": 130.8,
+          "end": 130.9,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "o",
-          "start": 128.45,
-          "end": 128.55,
-          "confidence": 0.228
+          "start": 130.95,
+          "end": 131.75,
+          "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "tes",
-          "start": 128.6,
-          "end": 128.7,
-          "confidence": 0.228
+          "start": 131.8,
+          "end": 131.9,
+          "confidence": 1.0
         },
         {
           "word_index": 4,
           "text": "o",
-          "start": 128.75,
-          "end": 128.85,
-          "confidence": 0.228
+          "start": 131.95,
+          "end": 132.05,
+          "confidence": 1.0
         },
         {
           "word_index": 5,
           "text": "papa",
-          "start": 128.9,
-          "end": 129.0,
-          "confidence": 0.228
+          "start": 132.1,
+          "end": 132.2,
+          "confidence": 1.0
         },
         {
           "word_index": 6,
           "text": "o",
-          "start": 129.05,
-          "end": 129.15,
-          "confidence": 0.228
+          "start": 132.25,
+          "end": 132.35,
+          "confidence": 1.0
         },
         {
           "word_index": 7,
           "text": "t'es",
-          "start": 129.2,
-          "end": 129.3,
-          "confidence": 0.228
+          "start": 132.4,
+          "end": 132.5,
+          "confidence": 1.0
         }
       ],
       "y": 162,
@@ -4879,16 +4879,16 @@
     {
       "line_index": 78,
       "text": "t'es",
-      "start": 131.15,
-      "end": 131.7,
-      "confidence": 0.5,
+      "start": 133.45,
+      "end": 134.25,
+      "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "t'es",
-          "start": 131.15,
-          "end": 131.7,
-          "confidence": 0.5
+          "start": 133.45,
+          "end": 134.25,
+          "confidence": 1.0
         }
       ],
       "y": 19,
@@ -4917,16 +4917,16 @@
     {
       "line_index": 79,
       "text": "t'es",
-      "start": 131.85,
-      "end": 132.65,
-      "confidence": 0.5,
+      "start": 141.1,
+      "end": 141.2,
+      "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "t'es",
-          "start": 131.85,
-          "end": 132.65,
-          "confidence": 0.5
+          "start": 141.1,
+          "end": 141.2,
+          "confidence": 1.0
         }
       ],
       "y": 66,
@@ -4955,23 +4955,23 @@
     {
       "line_index": 80,
       "text": "you tes",
-      "start": 147.85,
-      "end": 148.85,
-      "confidence": 0.5,
+      "start": 141.2,
+      "end": 141.45,
+      "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "you",
-          "start": 147.85,
-          "end": 148.3,
-          "confidence": 0.5
+          "start": 141.2,
+          "end": 141.3,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "tes",
-          "start": 148.35,
-          "end": 148.85,
-          "confidence": 0.5
+          "start": 141.35,
+          "end": 141.45,
+          "confidence": 1.0
         }
       ],
       "y": 114,
@@ -5000,16 +5000,16 @@
     {
       "line_index": 81,
       "text": "t'es",
-      "start": 149.0,
-      "end": 149.1,
-      "confidence": 0.228,
+      "start": 141.6,
+      "end": 141.7,
+      "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "t'es",
-          "start": 149.0,
-          "end": 149.1,
-          "confidence": 0.228
+          "start": 141.6,
+          "end": 141.7,
+          "confidence": 1.0
         }
       ],
       "y": 162,
@@ -5038,37 +5038,37 @@
     {
       "line_index": 82,
       "text": "tes papa o t'es",
-      "start": 149.25,
-      "end": 149.8,
-      "confidence": 0.5,
+      "start": 141.85,
+      "end": 142.4,
+      "confidence": 0.698,
       "words": [
         {
           "word_index": 1,
           "text": "tes",
-          "start": 149.25,
-          "end": 149.35,
-          "confidence": 0.5
+          "start": 141.85,
+          "end": 141.95,
+          "confidence": 0.99
         },
         {
           "word_index": 2,
           "text": "papa",
-          "start": 149.4,
-          "end": 149.5,
-          "confidence": 0.5
+          "start": 142.0,
+          "end": 142.1,
+          "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "o",
-          "start": 149.55,
-          "end": 149.65,
-          "confidence": 0.5
+          "start": 142.15,
+          "end": 142.25,
+          "confidence": 1.0
         },
         {
           "word_index": 4,
           "text": "t'es",
-          "start": 149.7,
-          "end": 149.8,
-          "confidence": 0.5
+          "start": 142.3,
+          "end": 142.4,
+          "confidence": 0.25
         }
       ],
       "y": 114,
@@ -5115,30 +5115,30 @@
     {
       "line_index": 83,
       "text": "00 Rs 8",
-      "start": 149.8,
-      "end": 150.2,
-      "confidence": 0.5,
+      "start": 142.4,
+      "end": 142.8,
+      "confidence": 0.75,
       "words": [
         {
           "word_index": 1,
           "text": "00",
-          "start": 149.8,
-          "end": 149.9,
-          "confidence": 0.5
+          "start": 142.4,
+          "end": 142.5,
+          "confidence": 0.25
         },
         {
           "word_index": 2,
           "text": "Rs",
-          "start": 149.95,
-          "end": 150.05,
-          "confidence": 0.5
+          "start": 142.55,
+          "end": 142.65,
+          "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "8",
-          "start": 150.1,
-          "end": 150.2,
-          "confidence": 0.5
+          "start": 142.7,
+          "end": 142.8,
+          "confidence": 1.0
         }
       ],
       "y": 21,
@@ -5167,23 +5167,23 @@
     {
       "line_index": 84,
       "text": "ON T01",
-      "start": 150.2,
-      "end": 150.45,
-      "confidence": 0.5,
+      "start": 142.8,
+      "end": 143.05,
+      "confidence": 0.625,
       "words": [
         {
           "word_index": 1,
           "text": "ON",
-          "start": 150.2,
-          "end": 150.3,
-          "confidence": 0.5
+          "start": 142.8,
+          "end": 142.9,
+          "confidence": 0.25
         },
         {
           "word_index": 2,
           "text": "T01",
-          "start": 150.35,
-          "end": 150.45,
-          "confidence": 0.5
+          "start": 142.95,
+          "end": 143.05,
+          "confidence": 1.0
         }
       ],
       "y": 22,
@@ -5206,16 +5206,16 @@
     {
       "line_index": 85,
       "text": "you",
-      "start": 150.45,
-      "end": 150.55,
-      "confidence": 0.5,
+      "start": 143.05,
+      "end": 143.15,
+      "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "you",
-          "start": 150.45,
-          "end": 150.55,
-          "confidence": 0.5
+          "start": 143.05,
+          "end": 143.15,
+          "confidence": 1.0
         }
       ],
       "y": 25,
@@ -5232,23 +5232,23 @@
     {
       "line_index": 86,
       "text": "Q0 Ces",
-      "start": 150.55,
-      "end": 150.8,
-      "confidence": 0.258,
+      "start": 143.15,
+      "end": 143.4,
+      "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
           "text": "Q0",
-          "start": 150.55,
-          "end": 150.65,
-          "confidence": 0.258
+          "start": 143.15,
+          "end": 143.25,
+          "confidence": 0.5
         },
         {
           "word_index": 2,
           "text": "Ces",
-          "start": 150.7,
-          "end": 150.8,
-          "confidence": 0.258
+          "start": 143.3,
+          "end": 143.4,
+          "confidence": 0.5
         }
       ],
       "y": 161,
@@ -5277,16 +5277,16 @@
     {
       "line_index": 87,
       "text": "UU",
-      "start": 150.8,
-      "end": 150.9,
-      "confidence": 0.5,
+      "start": 143.4,
+      "end": 143.5,
+      "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "UU",
-          "start": 150.8,
-          "end": 150.9,
-          "confidence": 0.5
+          "start": 143.4,
+          "end": 143.5,
+          "confidence": 1.0
         }
       ],
       "y": 123,
@@ -5303,30 +5303,30 @@
     {
       "line_index": 88,
       "text": "Du Les y",
-      "start": 150.9,
-      "end": 151.3,
-      "confidence": 0.5,
+      "start": 146.3,
+      "end": 147.0,
+      "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "Du",
-          "start": 150.9,
-          "end": 151.0,
-          "confidence": 0.5
+          "start": 146.3,
+          "end": 146.4,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "Les",
-          "start": 151.05,
-          "end": 151.15,
-          "confidence": 0.5
+          "start": 146.45,
+          "end": 146.55,
+          "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "y",
-          "start": 151.2,
-          "end": 151.3,
-          "confidence": 0.5
+          "start": 146.6,
+          "end": 146.7,
+          "confidence": 1.0
         }
       ],
       "y": 123,
@@ -5355,30 +5355,30 @@
     {
       "line_index": 89,
       "text": "est ton papa",
-      "start": 151.45,
-      "end": 151.85,
-      "confidence": 0.5,
+      "start": 148.6,
+      "end": 151.1,
+      "confidence": 0.812,
       "words": [
         {
           "word_index": 1,
           "text": "est",
-          "start": 151.45,
-          "end": 151.55,
-          "confidence": 0.5
+          "start": 148.6,
+          "end": 149.4,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "ton",
-          "start": 151.6,
-          "end": 151.7,
-          "confidence": 0.5
+          "start": 149.45,
+          "end": 150.25,
+          "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "papa",
-          "start": 151.75,
-          "end": 151.85,
-          "confidence": 0.5
+          "start": 150.3,
+          "end": 151.1,
+          "confidence": 1.0
         }
       ],
       "y": 21,
@@ -5419,44 +5419,44 @@
     {
       "line_index": 90,
       "text": "Dismay o est ton papa",
-      "start": 151.85,
-      "end": 152.55,
-      "confidence": 0.228,
+      "start": 151.1,
+      "end": 153.25,
+      "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "Dismoi",
-          "start": 151.85,
-          "end": 151.95,
-          "confidence": 0.228
+          "start": 151.1,
+          "end": 151.2,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "o",
-          "start": 152.0,
-          "end": 152.1,
-          "confidence": 0.228
+          "start": 152.7,
+          "end": 152.8,
+          "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "est",
-          "start": 152.15,
-          "end": 152.25,
-          "confidence": 0.228
+          "start": 152.85,
+          "end": 152.95,
+          "confidence": 1.0
         },
         {
           "word_index": 4,
           "text": "ton",
-          "start": 152.3,
-          "end": 152.4,
-          "confidence": 0.228
+          "start": 153.0,
+          "end": 153.1,
+          "confidence": 1.0
         },
         {
           "word_index": 5,
           "text": "papa",
-          "start": 152.45,
-          "end": 152.55,
-          "confidence": 0.228
+          "start": 153.15,
+          "end": 153.25,
+          "confidence": 1.0
         }
       ],
       "y": 68,
@@ -5503,44 +5503,44 @@
     {
       "line_index": 91,
       "text": "Sans mme devoir lui parler",
-      "start": 152.55,
-      "end": 153.25,
-      "confidence": 0.5,
+      "start": 153.25,
+      "end": 156.75,
+      "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "Sans",
-          "start": 152.55,
-          "end": 152.65,
-          "confidence": 0.5
+          "start": 153.25,
+          "end": 154.05,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "mme",
-          "start": 152.7,
-          "end": 152.8,
-          "confidence": 0.5
+          "start": 154.1,
+          "end": 154.9,
+          "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "devoir",
-          "start": 152.85,
-          "end": 152.95,
-          "confidence": 0.5
+          "start": 154.95,
+          "end": 155.75,
+          "confidence": 1.0
         },
         {
           "word_index": 4,
           "text": "lui",
-          "start": 153.0,
-          "end": 153.1,
-          "confidence": 0.5
+          "start": 155.8,
+          "end": 156.6,
+          "confidence": 1.0
         },
         {
           "word_index": 5,
           "text": "parler",
-          "start": 153.15,
-          "end": 153.25,
-          "confidence": 0.5
+          "start": 156.65,
+          "end": 156.75,
+          "confidence": 1.0
         }
       ],
       "y": 116,
@@ -5581,65 +5581,65 @@
     {
       "line_index": 92,
       "text": "il sa it ce qui ne va pas",
-      "start": 153.25,
-      "end": 154.25,
-      "confidence": 0.228,
+      "start": 156.75,
+      "end": 160.05,
+      "confidence": 0.906,
       "words": [
         {
           "word_index": 1,
           "text": "il",
-          "start": 153.25,
-          "end": 153.35,
-          "confidence": 0.228
+          "start": 156.75,
+          "end": 156.85,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "sa",
-          "start": 153.4,
-          "end": 153.45,
-          "confidence": 0.228
+          "start": 156.9,
+          "end": 156.95,
+          "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "it",
-          "start": 153.45,
-          "end": 153.5,
-          "confidence": 0.228
+          "start": 156.95,
+          "end": 157.0,
+          "confidence": 1.0
         },
         {
           "word_index": 4,
           "text": "ce",
-          "start": 153.55,
-          "end": 153.65,
-          "confidence": 0.228
+          "start": 157.05,
+          "end": 157.15,
+          "confidence": 0.25
         },
         {
           "word_index": 5,
           "text": "qui",
-          "start": 153.7,
-          "end": 153.8,
-          "confidence": 0.228
+          "start": 157.2,
+          "end": 157.3,
+          "confidence": 1.0
         },
         {
           "word_index": 6,
           "text": "ne",
-          "start": 153.85,
-          "end": 153.95,
-          "confidence": 0.228
+          "start": 159.65,
+          "end": 159.75,
+          "confidence": 1.0
         },
         {
           "word_index": 7,
           "text": "va",
-          "start": 154.0,
-          "end": 154.1,
-          "confidence": 0.228
+          "start": 159.8,
+          "end": 159.9,
+          "confidence": 1.0
         },
         {
           "word_index": 8,
           "text": "pas",
-          "start": 154.15,
-          "end": 154.25,
-          "confidence": 0.228
+          "start": 159.95,
+          "end": 160.05,
+          "confidence": 1.0
         }
       ],
       "y": 162,
@@ -5692,30 +5692,30 @@
     {
       "line_index": 93,
       "text": "Ah sacr papa",
-      "start": 154.9,
-      "end": 155.7,
-      "confidence": 0.5,
+      "start": 160.05,
+      "end": 160.5,
+      "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "Ah",
-          "start": 154.9,
-          "end": 155.0,
-          "confidence": 0.5
+          "start": 160.05,
+          "end": 160.2,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "sacr",
-          "start": 155.05,
-          "end": 155.35,
-          "confidence": 0.5
+          "start": 160.25,
+          "end": 160.35,
+          "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "papa",
-          "start": 155.4,
-          "end": 155.7,
-          "confidence": 0.5
+          "start": 160.4,
+          "end": 160.5,
+          "confidence": 1.0
         }
       ],
       "y": 21,
@@ -5744,37 +5744,37 @@
     {
       "line_index": 94,
       "text": "Dismay o estu cach",
-      "start": 156.8,
-      "end": 158.05,
-      "confidence": 0.228,
+      "start": 160.5,
+      "end": 163.25,
+      "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "Dismoi",
-          "start": 156.8,
-          "end": 156.9,
-          "confidence": 0.228
+          "start": 160.5,
+          "end": 160.6,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "o",
-          "start": 156.95,
-          "end": 157.05,
-          "confidence": 0.228
+          "start": 162.8,
+          "end": 162.9,
+          "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "estu",
-          "start": 157.1,
-          "end": 157.5,
-          "confidence": 0.228
+          "start": 163.0,
+          "end": 163.1,
+          "confidence": 1.0
         },
         {
           "word_index": 4,
           "text": "cach",
-          "start": 157.55,
-          "end": 158.05,
-          "confidence": 0.228
+          "start": 163.15,
+          "end": 163.25,
+          "confidence": 1.0
         }
       ],
       "y": 67,
@@ -5815,51 +5815,51 @@
     {
       "line_index": 95,
       "text": "a do it fate au moins",
-      "start": 158.55,
-      "end": 159.55,
-      "confidence": 0.5,
+      "start": 163.25,
+      "end": 163.95,
+      "confidence": 0.875,
       "words": [
         {
           "word_index": 1,
           "text": "a",
-          "start": 158.55,
-          "end": 158.7,
-          "confidence": 0.5
+          "start": 163.25,
+          "end": 163.35,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "do",
-          "start": 158.75,
-          "end": 158.8,
-          "confidence": 0.5
+          "start": 163.4,
+          "end": 163.45,
+          "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "it",
-          "start": 158.8,
-          "end": 158.9,
-          "confidence": 0.5
+          "start": 163.45,
+          "end": 163.5,
+          "confidence": 1.0
         },
         {
           "word_index": 4,
           "text": "fatre",
-          "start": 158.95,
-          "end": 159.15,
-          "confidence": 0.5
+          "start": 163.55,
+          "end": 163.65,
+          "confidence": 0.25
         },
         {
           "word_index": 5,
           "text": "au",
-          "start": 159.2,
-          "end": 159.35,
-          "confidence": 0.5
+          "start": 163.7,
+          "end": 163.8,
+          "confidence": 1.0
         },
         {
           "word_index": 6,
           "text": "moins",
-          "start": 159.4,
-          "end": 159.55,
-          "confidence": 0.5
+          "start": 163.85,
+          "end": 163.95,
+          "confidence": 1.0
         }
       ],
       "y": 116,
@@ -5900,37 +5900,37 @@
     {
       "line_index": 96,
       "text": "mille fois que fai",
-      "start": 159.55,
-      "end": 161.1,
-      "confidence": 0.5,
+      "start": 163.95,
+      "end": 164.5,
+      "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "mille",
-          "start": 159.55,
-          "end": 159.65,
-          "confidence": 0.5
+          "start": 163.95,
+          "end": 164.05,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "fois",
-          "start": 159.7,
-          "end": 160.0,
-          "confidence": 0.5
+          "start": 164.1,
+          "end": 164.2,
+          "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "que",
-          "start": 160.05,
-          "end": 160.55,
-          "confidence": 0.5
+          "start": 164.25,
+          "end": 164.35,
+          "confidence": 1.0
         },
         {
           "word_index": 4,
           "text": "fai",
-          "start": 160.6,
-          "end": 161.1,
-          "confidence": 0.5
+          "start": 164.4,
+          "end": 164.5,
+          "confidence": 1.0
         }
       ],
       "y": 162,
@@ -5965,30 +5965,30 @@
     {
       "line_index": 97,
       "text": "Comet mes doigts",
-      "start": 161.3,
-      "end": 162.95,
-      "confidence": 0.5,
+      "start": 164.75,
+      "end": 165.45,
+      "confidence": 0.632,
       "words": [
         {
           "word_index": 1,
           "text": "Compt",
-          "start": 161.3,
-          "end": 161.85,
-          "confidence": 0.5
+          "start": 164.75,
+          "end": 164.85,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "mes",
-          "start": 161.9,
-          "end": 162.3,
-          "confidence": 0.5
+          "start": 164.9,
+          "end": 165.0,
+          "confidence": 0.647
         },
         {
           "word_index": 3,
           "text": "doigts",
-          "start": 162.35,
-          "end": 162.95,
-          "confidence": 0.5
+          "start": 165.05,
+          "end": 165.15,
+          "confidence": 0.25
         }
       ],
       "y": 68,
@@ -6017,16 +6017,16 @@
     {
       "line_index": 98,
       "text": "h",
-      "start": 163.05,
-      "end": 163.85,
-      "confidence": 0.5,
+      "start": 166.1,
+      "end": 166.8,
+      "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "h",
-          "start": 163.05,
-          "end": 163.85,
-          "confidence": 0.5
+          "start": 166.1,
+          "end": 166.7,
+          "confidence": 1.0
         }
       ],
       "y": 115,
@@ -6043,30 +6043,30 @@
     {
       "line_index": 99,
       "text": "est ton papa",
-      "start": 164.0,
-      "end": 164.4,
-      "confidence": 0.5,
+      "start": 168.6,
+      "end": 169.85,
+      "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "est",
-          "start": 164.0,
-          "end": 164.1,
-          "confidence": 0.5
+          "start": 168.6,
+          "end": 169.4,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "ton",
-          "start": 164.15,
-          "end": 164.25,
-          "confidence": 0.5
+          "start": 169.45,
+          "end": 169.7,
+          "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "papa",
-          "start": 164.3,
-          "end": 164.4,
-          "confidence": 0.5
+          "start": 169.75,
+          "end": 169.85,
+          "confidence": 1.0
         }
       ],
       "y": 22,
@@ -6107,44 +6107,44 @@
     {
       "line_index": 100,
       "text": "Dismay o est ton papa",
-      "start": 165.45,
-      "end": 166.2,
-      "confidence": 0.228,
+      "start": 169.25,
+      "end": 169.95,
+      "confidence": 0.844,
       "words": [
         {
           "word_index": 1,
           "text": "Dismoi",
-          "start": 165.45,
-          "end": 165.55,
-          "confidence": 0.228
+          "start": 169.25,
+          "end": 169.35,
+          "confidence": 0.25
         },
         {
           "word_index": 2,
           "text": "o",
-          "start": 165.6,
-          "end": 165.7,
-          "confidence": 0.228
+          "start": 169.4,
+          "end": 169.5,
+          "confidence": 0.97
         },
         {
           "word_index": 3,
           "text": "est",
-          "start": 165.75,
-          "end": 165.9,
-          "confidence": 0.228
+          "start": 169.55,
+          "end": 169.65,
+          "confidence": 1.0
         },
         {
           "word_index": 4,
           "text": "ton",
-          "start": 165.95,
-          "end": 166.05,
-          "confidence": 0.228
+          "start": 169.7,
+          "end": 169.8,
+          "confidence": 1.0
         },
         {
           "word_index": 5,
           "text": "papa",
-          "start": 166.1,
-          "end": 166.2,
-          "confidence": 0.228
+          "start": 169.85,
+          "end": 169.95,
+          "confidence": 1.0
         }
       ],
       "y": 68,
@@ -6191,44 +6191,44 @@
     {
       "line_index": 101,
       "text": "Sans mme devoir lui parler",
-      "start": 167.05,
-      "end": 168.0,
-      "confidence": 0.5,
+      "start": 169.95,
+      "end": 172.75,
+      "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "Sans",
-          "start": 167.05,
-          "end": 167.2,
-          "confidence": 0.5
+          "start": 169.95,
+          "end": 170.75,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "mme",
-          "start": 167.25,
-          "end": 167.4,
-          "confidence": 0.5
+          "start": 170.8,
+          "end": 170.9,
+          "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "devoir",
-          "start": 167.45,
-          "end": 167.6,
-          "confidence": 0.5
+          "start": 170.95,
+          "end": 171.05,
+          "confidence": 1.0
         },
         {
           "word_index": 4,
           "text": "lui",
-          "start": 167.65,
-          "end": 167.8,
-          "confidence": 0.5
+          "start": 172.5,
+          "end": 172.6,
+          "confidence": 1.0
         },
         {
           "word_index": 5,
           "text": "parler",
-          "start": 167.85,
-          "end": 168.0,
-          "confidence": 0.5
+          "start": 172.65,
+          "end": 172.75,
+          "confidence": 1.0
         }
       ],
       "y": 115,
@@ -6269,65 +6269,65 @@
     {
       "line_index": 102,
       "text": "il sa it ce qui ne va pas",
-      "start": 168.95,
-      "end": 170.8,
-      "confidence": 0.228,
+      "start": 172.75,
+      "end": 174.15,
+      "confidence": 0.576,
       "words": [
         {
           "word_index": 1,
           "text": "il",
-          "start": 168.95,
-          "end": 169.05,
-          "confidence": 0.228
+          "start": 172.75,
+          "end": 173.25,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "sa",
-          "start": 169.1,
-          "end": 169.15,
-          "confidence": 0.228
+          "start": 173.3,
+          "end": 173.35,
+          "confidence": 0.25
         },
         {
           "word_index": 3,
           "text": "it",
-          "start": 169.15,
-          "end": 169.2,
-          "confidence": 0.228
+          "start": 173.35,
+          "end": 173.4,
+          "confidence": 0.25
         },
         {
           "word_index": 4,
           "text": "ce",
-          "start": 169.25,
-          "end": 169.35,
-          "confidence": 0.228
+          "start": 173.45,
+          "end": 173.55,
+          "confidence": 0.25
         },
         {
           "word_index": 5,
           "text": "qui",
-          "start": 169.4,
-          "end": 169.6,
-          "confidence": 0.228
+          "start": 173.6,
+          "end": 173.7,
+          "confidence": 0.25
         },
         {
           "word_index": 6,
           "text": "ne",
-          "start": 169.65,
-          "end": 170.0,
-          "confidence": 0.228
+          "start": 173.75,
+          "end": 173.85,
+          "confidence": 0.607
         },
         {
           "word_index": 7,
           "text": "va",
-          "start": 170.05,
-          "end": 170.35,
-          "confidence": 0.228
+          "start": 173.9,
+          "end": 174.0,
+          "confidence": 1.0
         },
         {
           "word_index": 8,
           "text": "pas",
-          "start": 170.4,
-          "end": 170.8,
-          "confidence": 0.228
+          "start": 174.05,
+          "end": 174.15,
+          "confidence": 1.0
         }
       ],
       "y": 162,
@@ -6380,30 +6380,30 @@
     {
       "line_index": 103,
       "text": "Ah sacr papa",
-      "start": 170.7,
-      "end": 171.5,
-      "confidence": 0.5,
+      "start": 174.15,
+      "end": 176.65,
+      "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "Ah",
-          "start": 170.7,
-          "end": 170.95,
-          "confidence": 0.5
+          "start": 174.15,
+          "end": 174.95,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "sacr",
-          "start": 171.0,
-          "end": 171.2,
-          "confidence": 0.5
+          "start": 175.0,
+          "end": 175.8,
+          "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "papa",
-          "start": 171.25,
-          "end": 171.5,
-          "confidence": 0.5
+          "start": 175.85,
+          "end": 176.65,
+          "confidence": 1.0
         }
       ],
       "y": 21,
@@ -6432,37 +6432,37 @@
     {
       "line_index": 104,
       "text": "Dismay o estu cach",
-      "start": 171.5,
-      "end": 172.8,
-      "confidence": 0.228,
+      "start": 176.65,
+      "end": 177.2,
+      "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "Dismoi",
-          "start": 171.5,
-          "end": 171.6,
-          "confidence": 0.228
+          "start": 176.65,
+          "end": 176.75,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "o",
-          "start": 171.65,
-          "end": 171.75,
-          "confidence": 0.228
+          "start": 176.8,
+          "end": 176.9,
+          "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "estu",
-          "start": 171.8,
-          "end": 172.25,
-          "confidence": 0.228
+          "start": 176.95,
+          "end": 177.05,
+          "confidence": 1.0
         },
         {
           "word_index": 4,
           "text": "cach",
-          "start": 172.3,
-          "end": 172.8,
-          "confidence": 0.228
+          "start": 177.1,
+          "end": 177.2,
+          "confidence": 1.0
         }
       ],
       "y": 66,
@@ -6503,44 +6503,44 @@
     {
       "line_index": 105,
       "text": "a do it Faeroe moins",
-      "start": 175.05,
-      "end": 176.05,
-      "confidence": 0.5,
+      "start": 177.2,
+      "end": 180.45,
+      "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "a",
-          "start": 175.05,
-          "end": 175.2,
-          "confidence": 0.5
+          "start": 177.2,
+          "end": 178.0,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "do",
-          "start": 175.25,
-          "end": 175.35,
-          "confidence": 0.5
+          "start": 178.05,
+          "end": 178.45,
+          "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "it",
-          "start": 175.35,
-          "end": 175.45,
-          "confidence": 0.5
+          "start": 178.45,
+          "end": 178.85,
+          "confidence": 1.0
         },
         {
           "word_index": 4,
           "text": "faireau",
-          "start": 175.5,
-          "end": 175.75,
-          "confidence": 0.5
+          "start": 180.2,
+          "end": 180.3,
+          "confidence": 1.0
         },
         {
           "word_index": 5,
           "text": "moins",
-          "start": 175.8,
-          "end": 176.05,
-          "confidence": 0.5
+          "start": 180.35,
+          "end": 180.45,
+          "confidence": 1.0
         }
       ],
       "y": 113,
@@ -6575,37 +6575,37 @@
     {
       "line_index": 106,
       "text": "mille fois que j'ai",
-      "start": 176.05,
-      "end": 177.1,
-      "confidence": 0.228,
+      "start": 180.45,
+      "end": 181.0,
+      "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "mille",
-          "start": 176.05,
-          "end": 176.15,
-          "confidence": 0.228
+          "start": 180.45,
+          "end": 180.55,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "fois",
-          "start": 176.2,
-          "end": 176.3,
-          "confidence": 0.228
+          "start": 180.6,
+          "end": 180.7,
+          "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "que",
-          "start": 176.35,
-          "end": 176.65,
-          "confidence": 0.228
+          "start": 180.75,
+          "end": 180.85,
+          "confidence": 1.0
         },
         {
           "word_index": 4,
           "text": "j'ai",
-          "start": 176.7,
-          "end": 177.1,
-          "confidence": 0.228
+          "start": 180.9,
+          "end": 181.0,
+          "confidence": 1.0
         }
       ],
       "y": 162,
@@ -6640,30 +6640,30 @@
     {
       "line_index": 107,
       "text": "Comet mes doigts",
-      "start": 177.75,
-      "end": 179.6,
-      "confidence": 0.5,
+      "start": 181.25,
+      "end": 181.95,
+      "confidence": 0.613,
       "words": [
         {
           "word_index": 1,
           "text": "Compt",
-          "start": 177.75,
-          "end": 178.35,
-          "confidence": 0.5
+          "start": 181.25,
+          "end": 181.35,
+          "confidence": 0.83
         },
         {
           "word_index": 2,
           "text": "mes",
-          "start": 178.4,
-          "end": 178.9,
-          "confidence": 0.5
+          "start": 181.4,
+          "end": 181.5,
+          "confidence": 0.25
         },
         {
           "word_index": 3,
           "text": "doigts",
-          "start": 178.95,
-          "end": 179.6,
-          "confidence": 0.5
+          "start": 181.55,
+          "end": 181.65,
+          "confidence": 0.759
         }
       ],
       "y": 68,
@@ -6692,16 +6692,16 @@
     {
       "line_index": 108,
       "text": "h",
-      "start": 179.7,
-      "end": 180.5,
-      "confidence": 0.5,
+      "start": 186.55,
+      "end": 187.25,
+      "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "h",
-          "start": 179.7,
-          "end": 180.5,
-          "confidence": 0.5
+          "start": 186.55,
+          "end": 187.25,
+          "confidence": 1.0
         }
       ],
       "y": 115,
@@ -6718,37 +6718,37 @@
     {
       "line_index": 109,
       "text": "t'es papa o t'es",
-      "start": 181.95,
-      "end": 182.75,
-      "confidence": 0.5,
+      "start": 190.45,
+      "end": 192.4,
+      "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "t'es",
-          "start": 181.95,
-          "end": 182.15,
-          "confidence": 0.5
+          "start": 190.45,
+          "end": 191.25,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "papa",
-          "start": 182.2,
-          "end": 182.35,
-          "confidence": 0.5
+          "start": 191.3,
+          "end": 192.1,
+          "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "o",
-          "start": 182.4,
-          "end": 182.55,
-          "confidence": 0.5
+          "start": 192.15,
+          "end": 192.25,
+          "confidence": 1.0
         },
         {
           "word_index": 4,
           "text": "t'es",
-          "start": 182.6,
-          "end": 182.75,
-          "confidence": 0.5
+          "start": 192.3,
+          "end": 192.4,
+          "confidence": 1.0
         }
       ],
       "y": 21,
@@ -6795,37 +6795,37 @@
     {
       "line_index": 110,
       "text": "t'es papa o t'es",
-      "start": 187.55,
-      "end": 193.6,
-      "confidence": 0.252,
+      "start": 192.55,
+      "end": 195.45,
+      "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "t'es",
-          "start": 187.55,
-          "end": 188.35,
-          "confidence": 0.252
+          "start": 192.55,
+          "end": 192.65,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "papa",
-          "start": 189.45,
-          "end": 190.25,
-          "confidence": 0.252
+          "start": 192.7,
+          "end": 192.8,
+          "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "o",
-          "start": 191.65,
-          "end": 192.45,
-          "confidence": 0.252
+          "start": 195.15,
+          "end": 195.3,
+          "confidence": 1.0
         },
         {
           "word_index": 4,
           "text": "t'es",
-          "start": 192.8,
-          "end": 193.6,
-          "confidence": 0.252
+          "start": 195.35,
+          "end": 195.45,
+          "confidence": 1.0
         }
       ],
       "y": 66,
@@ -6872,44 +6872,44 @@
     {
       "line_index": 111,
       "text": "you tes papa o t'es",
-      "start": 193.6,
-      "end": 194.3,
-      "confidence": 0.234,
+      "start": 195.45,
+      "end": 196.85,
+      "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "you",
-          "start": 193.6,
-          "end": 193.7,
-          "confidence": 0.234
+          "start": 195.45,
+          "end": 196.25,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "tes",
-          "start": 193.75,
-          "end": 193.85,
-          "confidence": 0.234
+          "start": 196.3,
+          "end": 196.4,
+          "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "papa",
-          "start": 193.9,
-          "end": 194.0,
-          "confidence": 0.234
+          "start": 196.45,
+          "end": 196.55,
+          "confidence": 1.0
         },
         {
           "word_index": 4,
           "text": "o",
-          "start": 194.05,
-          "end": 194.15,
-          "confidence": 0.234
+          "start": 196.6,
+          "end": 196.7,
+          "confidence": 1.0
         },
         {
           "word_index": 5,
           "text": "t'es",
-          "start": 194.2,
-          "end": 194.3,
-          "confidence": 0.234
+          "start": 196.75,
+          "end": 196.85,
+          "confidence": 1.0
         }
       ],
       "y": 114,
@@ -6956,58 +6956,58 @@
     {
       "line_index": 112,
       "text": "tes o tes o papa o tes",
-      "start": 194.45,
-      "end": 195.45,
-      "confidence": 0.228,
+      "start": 197.7,
+      "end": 198.7,
+      "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "tes",
-          "start": 194.45,
-          "end": 194.55,
-          "confidence": 0.228
+          "start": 197.7,
+          "end": 197.8,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "o",
-          "start": 194.6,
-          "end": 194.7,
-          "confidence": 0.228
+          "start": 197.85,
+          "end": 197.95,
+          "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "tes",
-          "start": 194.75,
-          "end": 194.85,
-          "confidence": 0.228
+          "start": 198.0,
+          "end": 198.1,
+          "confidence": 1.0
         },
         {
           "word_index": 4,
           "text": "o",
-          "start": 194.9,
-          "end": 195.0,
-          "confidence": 0.228
+          "start": 198.15,
+          "end": 198.25,
+          "confidence": 1.0
         },
         {
           "word_index": 5,
           "text": "papa",
-          "start": 195.05,
-          "end": 195.15,
-          "confidence": 0.228
+          "start": 198.3,
+          "end": 198.4,
+          "confidence": 1.0
         },
         {
           "word_index": 6,
           "text": "o",
-          "start": 195.2,
-          "end": 195.3,
-          "confidence": 0.228
+          "start": 198.45,
+          "end": 198.55,
+          "confidence": 1.0
         },
         {
           "word_index": 7,
           "text": "tes",
-          "start": 195.35,
-          "end": 195.45,
-          "confidence": 0.228
+          "start": 198.6,
+          "end": 198.7,
+          "confidence": 1.0
         }
       ],
       "y": 162,
@@ -7072,22 +7072,22 @@
     {
       "line_index": 113,
       "text": "you tes",
-      "start": 195.45,
-      "end": 195.7,
+      "start": 198.7,
+      "end": 198.95,
       "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
           "text": "you",
-          "start": 195.45,
-          "end": 195.55,
+          "start": 198.7,
+          "end": 198.8,
           "confidence": 0.5
         },
         {
           "word_index": 2,
           "text": "tes",
-          "start": 195.6,
-          "end": 195.7,
+          "start": 198.85,
+          "end": 198.95,
           "confidence": 0.5
         }
       ],
@@ -7117,37 +7117,37 @@
     {
       "line_index": 114,
       "text": "t'es papa o t'es",
-      "start": 195.85,
-      "end": 196.4,
-      "confidence": 0.5,
+      "start": 199.1,
+      "end": 199.65,
+      "confidence": 0.228,
       "words": [
         {
           "word_index": 1,
           "text": "t'es",
-          "start": 195.85,
-          "end": 195.95,
-          "confidence": 0.5
+          "start": 199.1,
+          "end": 199.2,
+          "confidence": 0.228
         },
         {
           "word_index": 2,
           "text": "papa",
-          "start": 196.0,
-          "end": 196.1,
-          "confidence": 0.5
+          "start": 199.25,
+          "end": 199.35,
+          "confidence": 0.228
         },
         {
           "word_index": 3,
           "text": "o",
-          "start": 196.15,
-          "end": 196.25,
-          "confidence": 0.5
+          "start": 199.4,
+          "end": 199.5,
+          "confidence": 0.228
         },
         {
           "word_index": 4,
           "text": "t'es",
-          "start": 196.3,
-          "end": 196.4,
-          "confidence": 0.5
+          "start": 199.55,
+          "end": 199.65,
+          "confidence": 0.228
         }
       ],
       "y": 66,
@@ -7194,16 +7194,16 @@
     {
       "line_index": 115,
       "text": "t'es",
-      "start": 197.4,
-      "end": 197.95,
-      "confidence": 0.5,
+      "start": 204.75,
+      "end": 204.85,
+      "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "t'es",
-          "start": 197.4,
-          "end": 197.95,
-          "confidence": 0.5
+          "start": 204.75,
+          "end": 204.85,
+          "confidence": 1.0
         }
       ],
       "y": 20,
@@ -7232,16 +7232,16 @@
     {
       "line_index": 116,
       "text": "t'es",
-      "start": 203.8,
-      "end": 204.35,
-      "confidence": 0.5,
+      "start": 205.0,
+      "end": 205.1,
+      "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "t'es",
-          "start": 203.8,
-          "end": 204.35,
-          "confidence": 0.5
+          "start": 205.0,
+          "end": 205.1,
+          "confidence": 1.0
         }
       ],
       "y": 66,
@@ -7270,23 +7270,23 @@
     {
       "line_index": 117,
       "text": "you tes",
-      "start": 204.35,
-      "end": 204.6,
-      "confidence": 0.5,
+      "start": 208.1,
+      "end": 208.55,
+      "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "you",
-          "start": 204.35,
-          "end": 204.45,
-          "confidence": 0.5
+          "start": 208.1,
+          "end": 208.35,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "tes",
-          "start": 204.5,
-          "end": 204.6,
-          "confidence": 0.5
+          "start": 208.4,
+          "end": 208.55,
+          "confidence": 1.0
         }
       ],
       "y": 114,
@@ -7315,16 +7315,16 @@
     {
       "line_index": 118,
       "text": "t'es",
-      "start": 204.75,
-      "end": 204.85,
-      "confidence": 0.5,
+      "start": 209.35,
+      "end": 209.65,
+      "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "t'es",
-          "start": 204.75,
-          "end": 204.85,
-          "confidence": 0.5
+          "start": 209.35,
+          "end": 209.65,
+          "confidence": 1.0
         }
       ],
       "y": 161,
@@ -7353,44 +7353,44 @@
     {
       "line_index": 119,
       "text": "you tes papa o t'es",
-      "start": 204.85,
-      "end": 205.55,
-      "confidence": 0.5,
+      "start": 209.65,
+      "end": 210.35,
+      "confidence": 0.55,
       "words": [
         {
           "word_index": 1,
           "text": "you",
-          "start": 204.85,
-          "end": 204.95,
-          "confidence": 0.5
+          "start": 209.65,
+          "end": 209.75,
+          "confidence": 0.25
         },
         {
           "word_index": 2,
           "text": "tes",
-          "start": 205.0,
-          "end": 205.1,
-          "confidence": 0.5
+          "start": 209.8,
+          "end": 209.9,
+          "confidence": 0.25
         },
         {
           "word_index": 3,
           "text": "papa",
-          "start": 205.15,
-          "end": 205.25,
-          "confidence": 0.5
+          "start": 209.95,
+          "end": 210.05,
+          "confidence": 0.25
         },
         {
           "word_index": 4,
           "text": "o",
-          "start": 205.3,
-          "end": 205.4,
-          "confidence": 0.5
+          "start": 210.1,
+          "end": 210.2,
+          "confidence": 1.0
         },
         {
           "word_index": 5,
           "text": "t'es",
-          "start": 205.45,
-          "end": 205.55,
-          "confidence": 0.5
+          "start": 210.25,
+          "end": 210.35,
+          "confidence": 1.0
         }
       ],
       "y": 114,
@@ -7437,58 +7437,58 @@
     {
       "line_index": 120,
       "text": "tes o tes o papa o tes",
-      "start": 205.7,
-      "end": 206.7,
-      "confidence": 0.5,
+      "start": 210.5,
+      "end": 211.5,
+      "confidence": 0.692,
       "words": [
         {
           "word_index": 1,
           "text": "tes",
-          "start": 205.7,
-          "end": 205.8,
-          "confidence": 0.5
+          "start": 210.5,
+          "end": 210.6,
+          "confidence": 0.782
         },
         {
           "word_index": 2,
           "text": "o",
-          "start": 205.85,
-          "end": 205.95,
-          "confidence": 0.5
+          "start": 210.65,
+          "end": 210.75,
+          "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "tes",
-          "start": 206.0,
-          "end": 206.1,
-          "confidence": 0.5
+          "start": 210.8,
+          "end": 210.9,
+          "confidence": 0.25
         },
         {
           "word_index": 4,
           "text": "o",
-          "start": 206.15,
-          "end": 206.25,
-          "confidence": 0.5
+          "start": 210.95,
+          "end": 211.05,
+          "confidence": 0.25
         },
         {
           "word_index": 5,
           "text": "papa",
-          "start": 206.3,
-          "end": 206.4,
-          "confidence": 0.5
+          "start": 211.1,
+          "end": 211.2,
+          "confidence": 1.0
         },
         {
           "word_index": 6,
           "text": "o",
-          "start": 206.45,
-          "end": 206.55,
-          "confidence": 0.5
+          "start": 211.25,
+          "end": 211.35,
+          "confidence": 1.0
         },
         {
           "word_index": 7,
           "text": "tes",
-          "start": 206.6,
-          "end": 206.7,
-          "confidence": 0.5
+          "start": 211.4,
+          "end": 211.5,
+          "confidence": 1.0
         }
       ],
       "y": 162,
@@ -7553,16 +7553,16 @@
     {
       "line_index": 121,
       "text": "ULTE",
-      "start": 207.35,
-      "end": 208.15,
-      "confidence": 0.5,
+      "start": 212.3,
+      "end": 212.4,
+      "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "ULTE",
-          "start": 207.35,
-          "end": 208.15,
-          "confidence": 0.5
+          "start": 212.3,
+          "end": 212.4,
+          "confidence": 1.0
         }
       ],
       "y": 125,
@@ -7579,15 +7579,15 @@
     {
       "line_index": 122,
       "text": "K2",
-      "start": 236.0,
-      "end": 236.8,
+      "start": 235.95,
+      "end": 236.75,
       "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
           "text": "K2",
-          "start": 236.0,
-          "end": 236.8,
+          "start": 235.95,
+          "end": 236.75,
           "confidence": 0.5
         }
       ],

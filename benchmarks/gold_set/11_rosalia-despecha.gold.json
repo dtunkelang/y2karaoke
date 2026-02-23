@@ -4,11 +4,11 @@
   "artist": "ROSALIA",
   "candidate_url": "https://www.youtube.com/watch?v=0UG_AnCRgmk",
   "visual_suitability": {
-    "word_level_score": 0.29559748427672955,
+    "word_level_score": 0.8867924528301887,
     "avg_ocr_confidence": 0.8600415154077503,
     "has_word_level_highlighting": true,
     "is_all_caps": false,
-    "detectability_score": 0.7793875513514629,
+    "detectability_score": 0.9020290607854251,
     "sampled_frames": 160,
     "duration_sec": 162.16,
     "fps": 1.0
@@ -18,23 +18,23 @@
     {
       "line_index": 1,
       "text": "Yeah yeah",
-      "start": 10.55,
-      "end": 11.55,
-      "confidence": 0.36,
+      "start": 10.25,
+      "end": 11.25,
+      "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
           "text": "Yeah",
-          "start": 10.55,
-          "end": 11.05,
-          "confidence": 0.36
+          "start": 10.25,
+          "end": 10.7,
+          "confidence": 0.5
         },
         {
           "word_index": 2,
           "text": "yeah",
-          "start": 11.1,
-          "end": 11.55,
-          "confidence": 0.36
+          "start": 10.75,
+          "end": 11.25,
+          "confidence": 0.5
         }
       ],
       "y": 18,
@@ -57,23 +57,23 @@
     {
       "line_index": 2,
       "text": "Yeah yeah",
-      "start": 11.55,
-      "end": 12.4,
-      "confidence": 0.303,
+      "start": 11.85,
+      "end": 12.1,
+      "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "Yeah",
-          "start": 11.55,
-          "end": 11.65,
-          "confidence": 0.303
+          "start": 11.85,
+          "end": 11.95,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "yeah",
-          "start": 11.7,
-          "end": 12.4,
-          "confidence": 0.303
+          "start": 12.0,
+          "end": 12.1,
+          "confidence": 1.0
         }
       ],
       "y": 64,
@@ -96,30 +96,30 @@
     {
       "line_index": 3,
       "text": "No me llame",
-      "start": 12.4,
-      "end": 13.35,
-      "confidence": 0.5,
+      "start": 13.35,
+      "end": 15.35,
+      "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "No",
-          "start": 12.4,
-          "end": 12.5,
-          "confidence": 0.5
+          "start": 13.35,
+          "end": 13.9,
+          "confidence": 0.252
         },
         {
           "word_index": 2,
           "text": "me",
-          "start": 12.55,
-          "end": 12.65,
-          "confidence": 0.5
+          "start": 13.95,
+          "end": 14.5,
+          "confidence": 0.252
         },
         {
           "word_index": 3,
           "text": "llame",
-          "start": 12.7,
-          "end": 13.35,
-          "confidence": 0.5
+          "start": 14.55,
+          "end": 15.35,
+          "confidence": 0.252
         }
       ],
       "y": 65,
@@ -148,37 +148,37 @@
     {
       "line_index": 4,
       "text": "Que yo estoy ocupa",
-      "start": 13.75,
-      "end": 14.45,
-      "confidence": 0.5,
+      "start": 15.35,
+      "end": 15.9,
+      "confidence": 0.598,
       "words": [
         {
           "word_index": 1,
           "text": "Que",
-          "start": 13.75,
-          "end": 13.85,
-          "confidence": 0.5
+          "start": 15.35,
+          "end": 15.45,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "yo",
-          "start": 13.9,
-          "end": 14.0,
-          "confidence": 0.5
+          "start": 15.5,
+          "end": 15.6,
+          "confidence": 0.891
         },
         {
           "word_index": 3,
           "text": "estoy",
-          "start": 14.05,
-          "end": 14.15,
-          "confidence": 0.5
+          "start": 15.65,
+          "end": 15.75,
+          "confidence": 0.25
         },
         {
           "word_index": 4,
           "text": "ocupa",
-          "start": 14.2,
-          "end": 14.3,
-          "confidence": 0.5
+          "start": 15.8,
+          "end": 15.9,
+          "confidence": 0.25
         }
       ],
       "y": 113,
@@ -213,30 +213,30 @@
     {
       "line_index": 5,
       "text": "olvidando tus male",
-      "start": 15.25,
-      "end": 15.95,
-      "confidence": 0.228,
+      "start": 21.3,
+      "end": 22.0,
+      "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "olvidando",
-          "start": 15.25,
-          "end": 15.35,
-          "confidence": 0.228
+          "start": 21.3,
+          "end": 21.55,
+          "confidence": 0.252
         },
         {
           "word_index": 2,
           "text": "tus",
-          "start": 15.4,
-          "end": 15.5,
-          "confidence": 0.228
+          "start": 21.6,
+          "end": 21.8,
+          "confidence": 0.252
         },
         {
           "word_index": 3,
           "text": "male",
-          "start": 15.55,
-          "end": 15.65,
-          "confidence": 0.228
+          "start": 21.85,
+          "end": 22.0,
+          "confidence": 0.252
         }
       ],
       "y": 159,
@@ -265,22 +265,22 @@
     {
       "line_index": 6,
       "text": "Ya decidi",
-      "start": 16.9,
-      "end": 17.75,
+      "start": 22.0,
+      "end": 22.25,
       "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
           "text": "Ya",
-          "start": 16.9,
-          "end": 17.2,
+          "start": 22.0,
+          "end": 22.1,
           "confidence": 0.5
         },
         {
           "word_index": 2,
           "text": "decidi",
-          "start": 17.25,
-          "end": 17.75,
+          "start": 22.15,
+          "end": 22.25,
           "confidence": 0.5
         }
       ],
@@ -304,43 +304,43 @@
     {
       "line_index": 7,
       "text": "que esta noche se sale",
-      "start": 18.5,
-      "end": 20.05,
+      "start": 22.8,
+      "end": 23.5,
       "confidence": 0.228,
       "words": [
         {
           "word_index": 1,
           "text": "que",
-          "start": 18.5,
-          "end": 18.6,
+          "start": 22.8,
+          "end": 22.9,
           "confidence": 0.228
         },
         {
           "word_index": 2,
           "text": "esta",
-          "start": 18.65,
-          "end": 18.75,
+          "start": 22.95,
+          "end": 23.05,
           "confidence": 0.228
         },
         {
           "word_index": 3,
           "text": "noche",
-          "start": 18.8,
-          "end": 19.1,
+          "start": 23.1,
+          "end": 23.2,
           "confidence": 0.228
         },
         {
           "word_index": 4,
           "text": "se",
-          "start": 19.15,
-          "end": 19.55,
+          "start": 23.25,
+          "end": 23.35,
           "confidence": 0.228
         },
         {
           "word_index": 5,
           "text": "sale",
-          "start": 19.6,
-          "end": 20.05,
+          "start": 23.4,
+          "end": 23.5,
           "confidence": 0.228
         }
       ],
@@ -381,38 +381,38 @@
     },
     {
       "line_index": 8,
-      "text": "con toa' mis motomann",
-      "start": 20.15,
-      "end": 20.95,
-      "confidence": 0.5,
+      "text": "con toa' mis motomarin",
+      "start": 26.25,
+      "end": 26.95,
+      "confidence": 0.228,
       "words": [
         {
           "word_index": 1,
           "text": "con",
-          "start": 20.15,
-          "end": 20.3,
-          "confidence": 0.5
+          "start": 26.25,
+          "end": 26.35,
+          "confidence": 0.228
         },
         {
           "word_index": 2,
           "text": "toa'",
-          "start": 20.35,
-          "end": 20.5,
-          "confidence": 0.5
+          "start": 26.4,
+          "end": 26.5,
+          "confidence": 0.228
         },
         {
           "word_index": 3,
           "text": "mis",
-          "start": 20.55,
-          "end": 20.7,
-          "confidence": 0.5
+          "start": 26.55,
+          "end": 26.65,
+          "confidence": 0.228
         },
         {
           "word_index": 4,
           "text": "motomami",
-          "start": 20.75,
-          "end": 20.95,
-          "confidence": 0.5
+          "start": 26.7,
+          "end": 26.8,
+          "confidence": 0.228
         }
       ],
       "y": 112,
@@ -447,37 +447,37 @@
     {
       "line_index": 9,
       "text": "con toda' mis yale",
-      "start": 27.05,
-      "end": 27.75,
-      "confidence": 0.252,
+      "start": 28.4,
+      "end": 28.95,
+      "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "con",
-          "start": 27.05,
-          "end": 27.2,
-          "confidence": 0.252
+          "start": 28.4,
+          "end": 28.5,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "toda'",
-          "start": 27.25,
-          "end": 27.35,
-          "confidence": 0.252
+          "start": 28.55,
+          "end": 28.65,
+          "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "mis",
-          "start": 27.4,
-          "end": 27.55,
-          "confidence": 0.252
+          "start": 28.7,
+          "end": 28.8,
+          "confidence": 1.0
         },
         {
           "word_index": 4,
           "text": "yale",
-          "start": 27.6,
-          "end": 27.75,
-          "confidence": 0.252
+          "start": 28.85,
+          "end": 28.95,
+          "confidence": 1.0
         }
       ],
       "y": 158,
@@ -512,37 +512,37 @@
     {
       "line_index": 10,
       "text": "Y ando despecha woah",
-      "start": 27.75,
-      "end": 28.3,
-      "confidence": 0.5,
+      "start": 28.95,
+      "end": 29.5,
+      "confidence": 0.313,
       "words": [
         {
           "word_index": 1,
           "text": "Y",
-          "start": 27.75,
-          "end": 27.85,
-          "confidence": 0.5
+          "start": 28.95,
+          "end": 29.05,
+          "confidence": 0.313
         },
         {
           "word_index": 2,
           "text": "ando",
-          "start": 27.9,
-          "end": 28.0,
-          "confidence": 0.5
+          "start": 29.1,
+          "end": 29.2,
+          "confidence": 0.313
         },
         {
           "word_index": 3,
           "text": "despecha",
-          "start": 28.05,
-          "end": 28.15,
-          "confidence": 0.5
+          "start": 29.25,
+          "end": 29.35,
+          "confidence": 0.313
         },
         {
           "word_index": 4,
           "text": "woah",
-          "start": 28.2,
-          "end": 28.3,
-          "confidence": 0.5
+          "start": 29.4,
+          "end": 29.5,
+          "confidence": 0.313
         }
       ],
       "y": 19,
@@ -577,23 +577,23 @@
     {
       "line_index": 11,
       "text": "a loca",
-      "start": 28.3,
-      "end": 28.4,
-      "confidence": 0.36,
+      "start": 29.5,
+      "end": 29.6,
+      "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "a",
-          "start": 28.3,
-          "end": 28.3,
-          "confidence": 0.36
+          "start": 29.5,
+          "end": 29.5,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "loca",
-          "start": 28.3,
-          "end": 28.4,
-          "confidence": 0.36
+          "start": 29.5,
+          "end": 29.6,
+          "confidence": 1.0
         }
       ],
       "y": 66,
@@ -610,58 +610,58 @@
     {
       "line_index": 12,
       "text": "Baj con un flow nuevo e caja",
-      "start": 28.4,
-      "end": 30.4,
-      "confidence": 0.5,
+      "start": 33.6,
+      "end": 34.6,
+      "confidence": 0.893,
       "words": [
         {
           "word_index": 1,
           "text": "Baj",
-          "start": 28.4,
-          "end": 28.5,
-          "confidence": 0.5
+          "start": 33.6,
+          "end": 33.7,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "con",
-          "start": 28.55,
-          "end": 28.65,
-          "confidence": 0.5
+          "start": 33.75,
+          "end": 33.85,
+          "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "un",
-          "start": 28.7,
-          "end": 28.8,
-          "confidence": 0.5
+          "start": 33.9,
+          "end": 34.0,
+          "confidence": 1.0
         },
         {
           "word_index": 4,
           "text": "flow",
-          "start": 28.85,
-          "end": 29.15,
-          "confidence": 0.5
+          "start": 34.05,
+          "end": 34.15,
+          "confidence": 0.25
         },
         {
           "word_index": 5,
           "text": "nuevo",
-          "start": 29.2,
-          "end": 29.65,
-          "confidence": 0.5
+          "start": 34.2,
+          "end": 34.3,
+          "confidence": 1.0
         },
         {
           "word_index": 6,
           "text": "e",
-          "start": 29.7,
-          "end": 29.95,
-          "confidence": 0.5
+          "start": 34.35,
+          "end": 34.45,
+          "confidence": 1.0
         },
         {
           "word_index": 7,
           "text": "caja",
-          "start": 30.0,
-          "end": 30.4,
-          "confidence": 0.5
+          "start": 34.5,
+          "end": 34.6,
+          "confidence": 1.0
         }
       ],
       "y": 109,
@@ -714,23 +714,23 @@
     {
       "line_index": 13,
       "text": "baby hackea",
-      "start": 30.4,
-      "end": 31.35,
-      "confidence": 0.5,
+      "start": 35.95,
+      "end": 36.2,
+      "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "baby",
-          "start": 30.4,
-          "end": 30.5,
-          "confidence": 0.5
+          "start": 35.95,
+          "end": 36.05,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "hackea",
-          "start": 30.55,
-          "end": 31.35,
-          "confidence": 0.5
+          "start": 36.1,
+          "end": 36.2,
+          "confidence": 1.0
         }
       ],
       "y": 159,
@@ -753,51 +753,51 @@
     {
       "line_index": 14,
       "text": "Lo muevo de lao a lao",
-      "start": 31.9,
-      "end": 32.75,
-      "confidence": 0.5,
+      "start": 36.2,
+      "end": 37.05,
+      "confidence": 0.875,
       "words": [
         {
           "word_index": 1,
           "text": "Lo",
-          "start": 31.9,
-          "end": 32.0,
-          "confidence": 0.5
+          "start": 36.2,
+          "end": 36.3,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "muevo",
-          "start": 32.05,
-          "end": 32.15,
-          "confidence": 0.5
+          "start": 36.35,
+          "end": 36.45,
+          "confidence": 0.25
         },
         {
           "word_index": 3,
           "text": "de",
-          "start": 32.2,
-          "end": 32.3,
-          "confidence": 0.5
+          "start": 36.5,
+          "end": 36.6,
+          "confidence": 1.0
         },
         {
           "word_index": 4,
           "text": "lao",
-          "start": 32.35,
-          "end": 32.45,
-          "confidence": 0.5
+          "start": 36.65,
+          "end": 36.75,
+          "confidence": 1.0
         },
         {
           "word_index": 5,
           "text": "a",
-          "start": 32.5,
-          "end": 32.6,
-          "confidence": 0.5
+          "start": 36.8,
+          "end": 36.9,
+          "confidence": 1.0
         },
         {
           "word_index": 6,
           "text": "lao",
-          "start": 32.65,
-          "end": 32.75,
-          "confidence": 0.5
+          "start": 36.95,
+          "end": 37.05,
+          "confidence": 1.0
         }
       ],
       "y": 18,
@@ -844,37 +844,37 @@
     {
       "line_index": 15,
       "text": "y a otro lao",
-      "start": 33.4,
-      "end": 34.65,
-      "confidence": 0.228,
+      "start": 39.0,
+      "end": 40.2,
+      "confidence": 0.948,
       "words": [
         {
           "word_index": 1,
           "text": "y",
-          "start": 33.4,
-          "end": 33.5,
-          "confidence": 0.228
+          "start": 39.0,
+          "end": 39.1,
+          "confidence": 0.805
         },
         {
           "word_index": 2,
           "text": "a",
-          "start": 33.55,
-          "end": 33.65,
-          "confidence": 0.228
+          "start": 39.8,
+          "end": 39.9,
+          "confidence": 0.985
         },
         {
           "word_index": 3,
           "text": "otro",
-          "start": 33.7,
-          "end": 34.05,
-          "confidence": 0.228
+          "start": 39.95,
+          "end": 40.05,
+          "confidence": 1.0
         },
         {
           "word_index": 4,
           "text": "lao",
-          "start": 34.1,
-          "end": 34.65,
-          "confidence": 0.228
+          "start": 40.1,
+          "end": 40.2,
+          "confidence": 1.0
         }
       ],
       "y": 66,
@@ -909,44 +909,44 @@
     {
       "line_index": 16,
       "text": "Hoy salgo con mi baby",
-      "start": 34.9,
-      "end": 35.75,
-      "confidence": 0.431,
+      "start": 40.2,
+      "end": 40.9,
+      "confidence": 0.7,
       "words": [
         {
           "word_index": 1,
           "text": "Hoy",
-          "start": 34.9,
-          "end": 35.0,
-          "confidence": 0.431
+          "start": 40.2,
+          "end": 40.3,
+          "confidence": 0.25
         },
         {
           "word_index": 2,
           "text": "salgo",
-          "start": 35.05,
-          "end": 35.2,
-          "confidence": 0.431
+          "start": 40.35,
+          "end": 40.45,
+          "confidence": 0.25
         },
         {
           "word_index": 3,
           "text": "con",
-          "start": 35.25,
-          "end": 35.4,
-          "confidence": 0.431
+          "start": 40.5,
+          "end": 40.6,
+          "confidence": 1.0
         },
         {
           "word_index": 4,
           "text": "mi",
-          "start": 35.45,
-          "end": 35.55,
-          "confidence": 0.431
+          "start": 40.65,
+          "end": 40.75,
+          "confidence": 1.0
         },
         {
           "word_index": 5,
           "text": "baby",
-          "start": 35.6,
-          "end": 35.75,
-          "confidence": 0.431
+          "start": 40.8,
+          "end": 40.9,
+          "confidence": 1.0
         }
       ],
       "y": 113,
@@ -987,37 +987,37 @@
     {
       "line_index": 17,
       "text": "de la disco corona",
-      "start": 35.75,
-      "end": 36.3,
-      "confidence": 0.308,
+      "start": 42.3,
+      "end": 43.6,
+      "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "de",
-          "start": 35.75,
-          "end": 35.85,
-          "confidence": 0.308
+          "start": 42.3,
+          "end": 42.4,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "la",
-          "start": 35.9,
-          "end": 36.0,
-          "confidence": 0.308
+          "start": 42.45,
+          "end": 42.55,
+          "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "disco",
-          "start": 36.05,
-          "end": 36.15,
-          "confidence": 0.308
+          "start": 43.3,
+          "end": 43.45,
+          "confidence": 1.0
         },
         {
           "word_index": 4,
           "text": "corona",
-          "start": 36.2,
-          "end": 36.3,
-          "confidence": 0.308
+          "start": 43.5,
+          "end": 43.6,
+          "confidence": 1.0
         }
       ],
       "y": 160,
@@ -1052,37 +1052,37 @@
     {
       "line_index": 18,
       "text": "Y ando despecha woah",
-      "start": 38.25,
-      "end": 39.2,
-      "confidence": 0.5,
+      "start": 43.6,
+      "end": 44.85,
+      "confidence": 0.812,
       "words": [
         {
           "word_index": 1,
           "text": "Y",
-          "start": 38.25,
-          "end": 38.4,
-          "confidence": 0.5
+          "start": 43.6,
+          "end": 43.7,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "ando",
-          "start": 38.45,
-          "end": 38.65,
-          "confidence": 0.5
+          "start": 43.75,
+          "end": 43.85,
+          "confidence": 0.25
         },
         {
           "word_index": 3,
           "text": "despecha",
-          "start": 38.7,
-          "end": 38.95,
-          "confidence": 0.5
+          "start": 43.9,
+          "end": 44.0,
+          "confidence": 1.0
         },
         {
           "word_index": 4,
           "text": "woah",
-          "start": 39.0,
-          "end": 39.2,
-          "confidence": 0.5
+          "start": 44.05,
+          "end": 44.85,
+          "confidence": 1.0
         }
       ],
       "y": 19,
@@ -1117,16 +1117,16 @@
     {
       "line_index": 19,
       "text": "alocaTM",
-      "start": 43.85,
-      "end": 44.65,
-      "confidence": 0.5,
+      "start": 44.85,
+      "end": 44.95,
+      "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "alocaTM",
-          "start": 43.85,
-          "end": 44.65,
-          "confidence": 0.5
+          "start": 44.85,
+          "end": 44.95,
+          "confidence": 1.0
         }
       ],
       "y": 66,
@@ -1143,51 +1143,51 @@
     {
       "line_index": 20,
       "text": "Que Dios me libre de volver",
-      "start": 44.65,
-      "end": 45.5,
-      "confidence": 0.5,
+      "start": 44.95,
+      "end": 45.8,
+      "confidence": 0.625,
       "words": [
         {
           "word_index": 1,
           "text": "Que",
-          "start": 44.65,
-          "end": 44.75,
-          "confidence": 0.5
+          "start": 44.95,
+          "end": 45.05,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "Dios",
-          "start": 44.8,
-          "end": 44.9,
-          "confidence": 0.5
+          "start": 45.1,
+          "end": 45.2,
+          "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "me",
-          "start": 44.95,
-          "end": 45.05,
-          "confidence": 0.5
+          "start": 45.25,
+          "end": 45.35,
+          "confidence": 1.0
         },
         {
           "word_index": 4,
           "text": "libre",
-          "start": 45.1,
-          "end": 45.2,
-          "confidence": 0.5
+          "start": 45.4,
+          "end": 45.5,
+          "confidence": 0.25
         },
         {
           "word_index": 5,
           "text": "de",
-          "start": 45.25,
-          "end": 45.35,
-          "confidence": 0.5
+          "start": 45.55,
+          "end": 45.65,
+          "confidence": 0.25
         },
         {
           "word_index": 6,
           "text": "volver",
-          "start": 45.4,
-          "end": 45.5,
-          "confidence": 0.5
+          "start": 45.7,
+          "end": 45.8,
+          "confidence": 0.25
         }
       ],
       "y": 113,
@@ -1234,37 +1234,37 @@
     {
       "line_index": 21,
       "text": "a tu lafo lao",
-      "start": 45.5,
-      "end": 46.05,
-      "confidence": 0.294,
+      "start": 45.8,
+      "end": 46.35,
+      "confidence": 0.228,
       "words": [
         {
           "word_index": 1,
           "text": "a",
-          "start": 45.5,
-          "end": 45.6,
-          "confidence": 0.294
+          "start": 45.8,
+          "end": 45.9,
+          "confidence": 0.228
         },
         {
           "word_index": 2,
           "text": "tu",
-          "start": 45.65,
-          "end": 45.75,
-          "confidence": 0.294
+          "start": 45.95,
+          "end": 46.05,
+          "confidence": 0.228
         },
         {
           "word_index": 3,
           "text": "lafo",
-          "start": 45.8,
-          "end": 45.9,
-          "confidence": 0.294
+          "start": 46.1,
+          "end": 46.2,
+          "confidence": 0.228
         },
         {
           "word_index": 4,
           "text": "lao",
-          "start": 45.95,
-          "end": 46.05,
-          "confidence": 0.294
+          "start": 46.25,
+          "end": 46.35,
+          "confidence": 0.228
         }
       ],
       "y": 159,
@@ -1299,16 +1299,16 @@
     {
       "line_index": 22,
       "text": "Keratin",
-      "start": 45.05,
-      "end": 46.8,
-      "confidence": 0.0,
+      "start": 46.75,
+      "end": 47.45,
+      "confidence": 0.774,
       "words": [
         {
           "word_index": 1,
           "text": "Kerafun",
-          "start": 45.05,
-          "end": 46.8,
-          "confidence": 0.0
+          "start": 46.75,
+          "end": 46.85,
+          "confidence": 0.774
         }
       ],
       "y": 245,
@@ -1325,51 +1325,51 @@
     {
       "line_index": 23,
       "text": "Lo muevo de lao a lalo",
-      "start": 46.8,
-      "end": 47.65,
-      "confidence": 0.334,
+      "start": 50.1,
+      "end": 55.45,
+      "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "Lo",
-          "start": 46.8,
-          "end": 46.9,
-          "confidence": 0.334
+          "start": 50.1,
+          "end": 50.9,
+          "confidence": 0.252
         },
         {
           "word_index": 2,
           "text": "muevo",
-          "start": 46.95,
-          "end": 47.05,
-          "confidence": 0.334
+          "start": 50.95,
+          "end": 51.75,
+          "confidence": 0.252
         },
         {
           "word_index": 3,
           "text": "de",
-          "start": 47.1,
-          "end": 47.2,
-          "confidence": 0.334
+          "start": 52.2,
+          "end": 52.95,
+          "confidence": 0.252
         },
         {
           "word_index": 4,
           "text": "lao",
-          "start": 47.25,
-          "end": 47.35,
-          "confidence": 0.334
+          "start": 53.0,
+          "end": 53.8,
+          "confidence": 0.252
         },
         {
           "word_index": 5,
           "text": "a",
-          "start": 47.4,
-          "end": 47.5,
-          "confidence": 0.334
+          "start": 54.0,
+          "end": 54.6,
+          "confidence": 0.252
         },
         {
           "word_index": 6,
           "text": "lalo",
-          "start": 47.55,
-          "end": 47.65,
-          "confidence": 0.334
+          "start": 54.65,
+          "end": 55.45,
+          "confidence": 0.252
         }
       ],
       "y": 19,
@@ -1416,37 +1416,37 @@
     {
       "line_index": 24,
       "text": "y a otro la'o",
-      "start": 47.65,
-      "end": 48.2,
-      "confidence": 0.228,
+      "start": 52.25,
+      "end": 52.8,
+      "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "y",
-          "start": 47.65,
-          "end": 47.75,
-          "confidence": 0.228
+          "start": 52.25,
+          "end": 52.35,
+          "confidence": 0.252
         },
         {
           "word_index": 2,
           "text": "a",
-          "start": 47.8,
-          "end": 47.9,
-          "confidence": 0.228
+          "start": 52.4,
+          "end": 52.5,
+          "confidence": 0.252
         },
         {
           "word_index": 3,
           "text": "otro",
-          "start": 47.95,
-          "end": 48.05,
-          "confidence": 0.228
+          "start": 52.55,
+          "end": 52.65,
+          "confidence": 0.252
         },
         {
           "word_index": 4,
           "text": "la'o",
-          "start": 48.1,
-          "end": 48.2,
-          "confidence": 0.228
+          "start": 52.7,
+          "end": 52.8,
+          "confidence": 0.252
         }
       ],
       "y": 67,
@@ -1481,44 +1481,44 @@
     {
       "line_index": 25,
       "text": "Hoy salgo con mi baby",
-      "start": 52.95,
-      "end": 53.95,
-      "confidence": 0.36,
+      "start": 52.8,
+      "end": 53.5,
+      "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "Hoy",
-          "start": 52.95,
-          "end": 53.15,
-          "confidence": 0.36
+          "start": 52.8,
+          "end": 52.9,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "salgo",
-          "start": 53.2,
-          "end": 53.35,
-          "confidence": 0.36
+          "start": 52.95,
+          "end": 53.05,
+          "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "con",
-          "start": 53.4,
-          "end": 53.55,
-          "confidence": 0.36
+          "start": 53.1,
+          "end": 53.2,
+          "confidence": 1.0
         },
         {
           "word_index": 4,
           "text": "mi",
-          "start": 53.6,
-          "end": 53.75,
-          "confidence": 0.36
+          "start": 53.25,
+          "end": 53.35,
+          "confidence": 1.0
         },
         {
           "word_index": 5,
           "text": "baby",
-          "start": 53.8,
-          "end": 53.95,
-          "confidence": 0.36
+          "start": 53.4,
+          "end": 53.5,
+          "confidence": 1.0
         }
       ],
       "y": 113,
@@ -1559,51 +1559,51 @@
     {
       "line_index": 26,
       "text": "de la disco corona corona yeah",
-      "start": 56.0,
-      "end": 57.2,
-      "confidence": 0.2,
+      "start": 53.5,
+      "end": 54.35,
+      "confidence": 0.75,
       "words": [
         {
           "word_index": 1,
           "text": "de",
-          "start": 56.0,
-          "end": 56.15,
-          "confidence": 0.2
+          "start": 53.5,
+          "end": 53.6,
+          "confidence": 0.25
         },
         {
           "word_index": 2,
           "text": "la",
-          "start": 56.2,
-          "end": 56.35,
-          "confidence": 0.2
+          "start": 53.65,
+          "end": 53.75,
+          "confidence": 0.25
         },
         {
           "word_index": 3,
           "text": "disco",
-          "start": 56.4,
-          "end": 56.55,
-          "confidence": 0.2
+          "start": 53.8,
+          "end": 53.9,
+          "confidence": 1.0
         },
         {
           "word_index": 4,
           "text": "corona",
-          "start": 56.6,
-          "end": 56.8,
-          "confidence": 0.2
+          "start": 53.95,
+          "end": 54.05,
+          "confidence": 1.0
         },
         {
           "word_index": 5,
           "text": "corona",
-          "start": 56.85,
-          "end": 57.0,
-          "confidence": 0.2
+          "start": 54.1,
+          "end": 54.2,
+          "confidence": 1.0
         },
         {
           "word_index": 6,
           "text": "yeah",
-          "start": 57.05,
-          "end": 57.2,
-          "confidence": 0.2
+          "start": 54.25,
+          "end": 54.35,
+          "confidence": 1.0
         }
       ],
       "y": 159,
@@ -1650,16 +1650,16 @@
     {
       "line_index": 27,
       "text": "Karen",
-      "start": 57.2,
-      "end": 57.3,
-      "confidence": 0.5,
+      "start": 55.15,
+      "end": 55.25,
+      "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "Kerayun",
-          "start": 57.2,
-          "end": 57.3,
-          "confidence": 0.5
+          "start": 55.15,
+          "end": 55.25,
+          "confidence": 1.0
         }
       ],
       "y": 248,
@@ -1676,37 +1676,37 @@
     {
       "line_index": 28,
       "text": "Voy con la falda",
-      "start": 57.3,
-      "end": 57.85,
-      "confidence": 0.5,
+      "start": 59.75,
+      "end": 62.7,
+      "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "Voy",
-          "start": 57.3,
-          "end": 57.4,
-          "confidence": 0.5
+          "start": 59.75,
+          "end": 60.45,
+          "confidence": 0.252
         },
         {
           "word_index": 2,
           "text": "con",
-          "start": 57.45,
-          "end": 57.55,
-          "confidence": 0.5
+          "start": 60.5,
+          "end": 61.2,
+          "confidence": 0.252
         },
         {
           "word_index": 3,
           "text": "la",
-          "start": 57.6,
-          "end": 57.7,
-          "confidence": 0.5
+          "start": 61.25,
+          "end": 61.85,
+          "confidence": 0.252
         },
         {
           "word_index": 4,
           "text": "falda",
-          "start": 57.75,
-          "end": 57.85,
-          "confidence": 0.5
+          "start": 61.9,
+          "end": 62.7,
+          "confidence": 0.252
         }
       ],
       "y": 19,
@@ -1741,30 +1741,30 @@
     {
       "line_index": 29,
       "text": "Aro' y cadena",
-      "start": 57.85,
-      "end": 58.25,
+      "start": 62.7,
+      "end": 63.1,
       "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
           "text": "Aro'",
-          "start": 57.85,
-          "end": 57.95,
-          "confidence": 0.5
+          "start": 62.7,
+          "end": 62.8,
+          "confidence": 0.25
         },
         {
           "word_index": 2,
           "text": "y",
-          "start": 58.0,
-          "end": 58.1,
-          "confidence": 0.5
+          "start": 62.85,
+          "end": 62.95,
+          "confidence": 0.25
         },
         {
           "word_index": 3,
           "text": "cadena",
-          "start": 58.15,
-          "end": 58.25,
-          "confidence": 0.5
+          "start": 63.0,
+          "end": 63.1,
+          "confidence": 1.0
         }
       ],
       "y": 64,
@@ -1793,22 +1793,22 @@
     {
       "line_index": 30,
       "text": "Pia colada",
-      "start": 58.25,
-      "end": 58.5,
+      "start": 63.1,
+      "end": 63.35,
       "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "Pia",
-          "start": 58.25,
-          "end": 58.35,
+          "start": 63.1,
+          "end": 63.2,
           "confidence": 0.252
         },
         {
           "word_index": 2,
           "text": "colada",
-          "start": 58.4,
-          "end": 58.5,
+          "start": 63.25,
+          "end": 63.35,
           "confidence": 0.252
         }
       ],
@@ -1832,29 +1832,29 @@
     {
       "line_index": 31,
       "text": "No tengo pena",
-      "start": 58.5,
-      "end": 59.2,
+      "start": 63.35,
+      "end": 63.75,
       "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "No",
-          "start": 58.5,
-          "end": 58.6,
+          "start": 63.35,
+          "end": 63.45,
           "confidence": 0.252
         },
         {
           "word_index": 2,
           "text": "tengo",
-          "start": 58.65,
-          "end": 58.75,
+          "start": 63.5,
+          "end": 63.6,
           "confidence": 0.252
         },
         {
           "word_index": 3,
           "text": "pena",
-          "start": 58.8,
-          "end": 59.2,
+          "start": 63.65,
+          "end": 63.75,
           "confidence": 0.252
         }
       ],
@@ -1884,36 +1884,36 @@
     {
       "line_index": 32,
       "text": "Ella es la jefa",
-      "start": 59.2,
-      "end": 59.75,
+      "start": 63.75,
+      "end": 64.3,
       "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "Ella",
-          "start": 59.2,
-          "end": 59.3,
+          "start": 63.75,
+          "end": 63.85,
           "confidence": 0.252
         },
         {
           "word_index": 2,
           "text": "es",
-          "start": 59.35,
-          "end": 59.45,
+          "start": 63.9,
+          "end": 64.0,
           "confidence": 0.252
         },
         {
           "word_index": 3,
           "text": "la",
-          "start": 59.5,
-          "end": 59.6,
+          "start": 64.05,
+          "end": 64.15,
           "confidence": 0.252
         },
         {
           "word_index": 4,
           "text": "jefa",
-          "start": 59.65,
-          "end": 59.75,
+          "start": 64.2,
+          "end": 64.3,
           "confidence": 0.252
         }
       ],
@@ -1949,37 +1949,37 @@
     {
       "line_index": 33,
       "text": "Voy con la falda",
-      "start": 59.85,
-      "end": 60.65,
-      "confidence": 0.252,
+      "start": 64.3,
+      "end": 64.85,
+      "confidence": 0.438,
       "words": [
         {
           "word_index": 1,
           "text": "Voy",
-          "start": 59.85,
-          "end": 60.0,
-          "confidence": 0.252
+          "start": 64.3,
+          "end": 64.4,
+          "confidence": 0.25
         },
         {
           "word_index": 2,
           "text": "con",
-          "start": 60.05,
-          "end": 60.2,
-          "confidence": 0.252
+          "start": 64.45,
+          "end": 64.55,
+          "confidence": 0.25
         },
         {
           "word_index": 3,
           "text": "la",
-          "start": 60.25,
-          "end": 60.4,
-          "confidence": 0.252
+          "start": 64.6,
+          "end": 64.7,
+          "confidence": 1.0
         },
         {
           "word_index": 4,
           "text": "falda",
-          "start": 60.45,
-          "end": 60.65,
-          "confidence": 0.252
+          "start": 64.75,
+          "end": 64.85,
+          "confidence": 0.25
         }
       ],
       "y": 19,
@@ -2014,29 +2014,29 @@
     {
       "line_index": 34,
       "text": "Ella lo baila",
-      "start": 60.65,
-      "end": 61.05,
+      "start": 64.85,
+      "end": 65.25,
       "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "Ella",
-          "start": 60.65,
-          "end": 60.75,
+          "start": 64.85,
+          "end": 64.95,
           "confidence": 0.252
         },
         {
           "word_index": 2,
           "text": "lo",
-          "start": 60.8,
-          "end": 60.9,
+          "start": 65.0,
+          "end": 65.1,
           "confidence": 0.252
         },
         {
           "word_index": 3,
           "text": "baila",
-          "start": 60.95,
-          "end": 61.05,
+          "start": 65.15,
+          "end": 65.25,
           "confidence": 0.252
         }
       ],
@@ -2066,29 +2066,29 @@
     {
       "line_index": 35,
       "text": "Ella me ensefia",
-      "start": 61.05,
-      "end": 61.45,
+      "start": 65.25,
+      "end": 65.65,
       "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "Ella",
-          "start": 61.05,
-          "end": 61.15,
+          "start": 65.25,
+          "end": 65.35,
           "confidence": 0.252
         },
         {
           "word_index": 2,
           "text": "me",
-          "start": 61.2,
-          "end": 61.3,
+          "start": 65.4,
+          "end": 65.5,
           "confidence": 0.252
         },
         {
           "word_index": 3,
           "text": "ensefia",
-          "start": 61.35,
-          "end": 61.45,
+          "start": 65.55,
+          "end": 65.65,
           "confidence": 0.252
         }
       ],
@@ -2118,15 +2118,15 @@
     {
       "line_index": 36,
       "text": "Hor",
-      "start": 61.45,
-      "end": 61.55,
+      "start": 65.65,
+      "end": 65.75,
       "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "Hor",
-          "start": 61.45,
-          "end": 61.55,
+          "start": 65.65,
+          "end": 65.75,
           "confidence": 0.252
         }
       ],
@@ -2144,22 +2144,22 @@
     {
       "line_index": 37,
       "text": "Esta morena",
-      "start": 63.65,
-      "end": 64.35,
+      "start": 65.75,
+      "end": 66.0,
       "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "Esta",
-          "start": 63.65,
-          "end": 63.75,
+          "start": 65.75,
+          "end": 65.85,
           "confidence": 0.252
         },
         {
           "word_index": 2,
           "text": "morena",
-          "start": 63.8,
-          "end": 63.9,
+          "start": 65.9,
+          "end": 66.0,
           "confidence": 0.252
         }
       ],
@@ -2183,30 +2183,30 @@
     {
       "line_index": 38,
       "text": "Fuck la fama",
-      "start": 64.95,
-      "end": 65.95,
-      "confidence": 0.5,
+      "start": 66.0,
+      "end": 66.4,
+      "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "Fuck",
-          "start": 64.95,
-          "end": 65.3,
-          "confidence": 0.5
+          "start": 66.0,
+          "end": 66.1,
+          "confidence": 0.252
         },
         {
           "word_index": 2,
           "text": "la",
-          "start": 65.35,
-          "end": 65.6,
-          "confidence": 0.5
+          "start": 66.15,
+          "end": 66.25,
+          "confidence": 0.252
         },
         {
           "word_index": 3,
           "text": "fama",
-          "start": 65.65,
-          "end": 65.95,
-          "confidence": 0.5
+          "start": 66.3,
+          "end": 66.4,
+          "confidence": 0.252
         }
       ],
       "y": 113,
@@ -2235,30 +2235,30 @@
     {
       "line_index": 39,
       "text": "Fuck la faena",
-      "start": 65.95,
-      "end": 67.05,
-      "confidence": 0.5,
+      "start": 66.4,
+      "end": 66.8,
+      "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "Fuck",
-          "start": 65.95,
-          "end": 66.05,
-          "confidence": 0.5
+          "start": 66.4,
+          "end": 66.5,
+          "confidence": 0.252
         },
         {
           "word_index": 2,
           "text": "la",
-          "start": 66.1,
-          "end": 66.3,
-          "confidence": 0.5
+          "start": 66.55,
+          "end": 66.65,
+          "confidence": 0.252
         },
         {
           "word_index": 3,
           "text": "faena",
-          "start": 66.35,
-          "end": 67.05,
-          "confidence": 0.5
+          "start": 66.7,
+          "end": 66.8,
+          "confidence": 0.252
         }
       ],
       "y": 160,
@@ -2287,37 +2287,37 @@
     {
       "line_index": 40,
       "text": "La noche es larga",
-      "start": 67.05,
-      "end": 67.7,
-      "confidence": 0.5,
+      "start": 66.8,
+      "end": 68.25,
+      "confidence": 0.399,
       "words": [
         {
           "word_index": 1,
           "text": "La",
-          "start": 67.05,
-          "end": 67.15,
-          "confidence": 0.5
+          "start": 66.8,
+          "end": 66.9,
+          "confidence": 0.25
         },
         {
           "word_index": 2,
           "text": "noche",
-          "start": 67.2,
-          "end": 67.3,
-          "confidence": 0.5
+          "start": 66.95,
+          "end": 67.05,
+          "confidence": 0.25
         },
         {
           "word_index": 3,
           "text": "es",
-          "start": 67.35,
-          "end": 67.45,
-          "confidence": 0.5
+          "start": 67.1,
+          "end": 67.2,
+          "confidence": 0.25
         },
         {
           "word_index": 4,
           "text": "larga",
-          "start": 67.5,
-          "end": 67.7,
-          "confidence": 0.5
+          "start": 68.1,
+          "end": 68.25,
+          "confidence": 0.847
         }
       ],
       "y": 17,
@@ -2352,37 +2352,37 @@
     {
       "line_index": 41,
       "text": "La noche est buena",
-      "start": 68.95,
-      "end": 69.95,
-      "confidence": 0.5,
+      "start": 68.25,
+      "end": 68.8,
+      "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "La",
-          "start": 68.95,
-          "end": 69.15,
-          "confidence": 0.5
+          "start": 68.25,
+          "end": 68.35,
+          "confidence": 0.252
         },
         {
           "word_index": 2,
           "text": "noche",
-          "start": 69.2,
-          "end": 69.45,
-          "confidence": 0.5
+          "start": 68.4,
+          "end": 68.5,
+          "confidence": 0.252
         },
         {
           "word_index": 3,
           "text": "est",
-          "start": 69.5,
-          "end": 69.7,
-          "confidence": 0.5
+          "start": 68.55,
+          "end": 68.65,
+          "confidence": 0.252
         },
         {
           "word_index": 4,
           "text": "buena",
-          "start": 69.75,
-          "end": 69.95,
-          "confidence": 0.5
+          "start": 68.7,
+          "end": 68.8,
+          "confidence": 0.252
         }
       ],
       "y": 67,
@@ -2417,23 +2417,23 @@
     {
       "line_index": 42,
       "text": "Mambo violento",
-      "start": 69.95,
-      "end": 70.2,
-      "confidence": 0.5,
+      "start": 68.8,
+      "end": 69.05,
+      "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "Mambo",
-          "start": 69.95,
-          "end": 70.05,
-          "confidence": 0.5
+          "start": 68.8,
+          "end": 68.9,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "violento",
-          "start": 70.1,
-          "end": 70.2,
-          "confidence": 0.5
+          "start": 68.95,
+          "end": 69.05,
+          "confidence": 1.0
         }
       ],
       "y": 113,
@@ -2456,37 +2456,37 @@
     {
       "line_index": 43,
       "text": "y fin del problema",
-      "start": 70.2,
-      "end": 70.75,
-      "confidence": 0.5,
+      "start": 69.05,
+      "end": 69.6,
+      "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "y",
-          "start": 70.2,
-          "end": 70.3,
-          "confidence": 0.5
+          "start": 69.05,
+          "end": 69.15,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "fin",
-          "start": 70.35,
-          "end": 70.45,
-          "confidence": 0.5
+          "start": 69.2,
+          "end": 69.3,
+          "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "del",
-          "start": 70.5,
-          "end": 70.6,
-          "confidence": 0.5
+          "start": 69.35,
+          "end": 69.45,
+          "confidence": 1.0
         },
         {
           "word_index": 4,
           "text": "problema",
-          "start": 70.65,
-          "end": 70.75,
-          "confidence": 0.5
+          "start": 69.5,
+          "end": 69.6,
+          "confidence": 1.0
         }
       ],
       "y": 160,
@@ -2521,65 +2521,65 @@
     {
       "line_index": 44,
       "text": "Mira qu fdi te lo voy a decir",
-      "start": 71.5,
-      "end": 73.1,
-      "confidence": 0.5,
+      "start": 70.15,
+      "end": 71.35,
+      "confidence": 0.24,
       "words": [
         {
           "word_index": 1,
           "text": "Mira",
-          "start": 71.5,
-          "end": 71.7,
-          "confidence": 0.5
+          "start": 70.15,
+          "end": 70.25,
+          "confidence": 0.24
         },
         {
           "word_index": 2,
           "text": "qu",
-          "start": 71.75,
-          "end": 71.9,
-          "confidence": 0.5
+          "start": 70.3,
+          "end": 70.4,
+          "confidence": 0.24
         },
         {
           "word_index": 3,
           "text": "fcil",
-          "start": 71.95,
-          "end": 72.1,
-          "confidence": 0.5
+          "start": 70.45,
+          "end": 70.55,
+          "confidence": 0.24
         },
         {
           "word_index": 4,
           "text": "te",
-          "start": 72.15,
-          "end": 72.3,
-          "confidence": 0.5
+          "start": 70.6,
+          "end": 70.75,
+          "confidence": 0.24
         },
         {
           "word_index": 5,
           "text": "lo",
-          "start": 72.35,
-          "end": 72.5,
-          "confidence": 0.5
+          "start": 70.8,
+          "end": 70.9,
+          "confidence": 0.24
         },
         {
           "word_index": 6,
           "text": "voy",
-          "start": 72.55,
-          "end": 72.7,
-          "confidence": 0.5
+          "start": 70.95,
+          "end": 71.05,
+          "confidence": 0.24
         },
         {
           "word_index": 7,
           "text": "a",
-          "start": 72.75,
-          "end": 72.9,
-          "confidence": 0.5
+          "start": 71.1,
+          "end": 71.2,
+          "confidence": 0.24
         },
         {
           "word_index": 8,
           "text": "decir",
-          "start": 72.95,
-          "end": 73.1,
-          "confidence": 0.5
+          "start": 71.25,
+          "end": 71.35,
+          "confidence": 0.24
         }
       ],
       "y": 19,
@@ -2638,15 +2638,15 @@
     {
       "line_index": 45,
       "text": "ABC",
-      "start": 73.9,
-      "end": 74.45,
+      "start": 72.15,
+      "end": 72.95,
       "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
           "text": "ABC",
-          "start": 73.9,
-          "end": 74.45,
+          "start": 72.15,
+          "end": 72.95,
           "confidence": 0.5
         }
       ],
@@ -2664,30 +2664,30 @@
     {
       "line_index": 46,
       "text": "One two three",
-      "start": 74.7,
-      "end": 75.7,
-      "confidence": 0.5,
+      "start": 80.75,
+      "end": 81.25,
+      "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "One",
-          "start": 74.7,
-          "end": 75.0,
-          "confidence": 0.5
+          "start": 80.75,
+          "end": 80.95,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "two",
-          "start": 75.05,
-          "end": 75.35,
-          "confidence": 0.5
+          "start": 81.0,
+          "end": 81.1,
+          "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "three",
-          "start": 75.4,
-          "end": 75.7,
-          "confidence": 0.5
+          "start": 81.15,
+          "end": 81.25,
+          "confidence": 1.0
         }
       ],
       "y": 113,
@@ -2716,65 +2716,65 @@
     {
       "line_index": 47,
       "text": "Mira qu fdi te lo voy a decir",
-      "start": 75.7,
-      "end": 76.85,
-      "confidence": 0.5,
+      "start": 81.25,
+      "end": 82.4,
+      "confidence": 0.906,
       "words": [
         {
           "word_index": 1,
           "text": "Mira",
-          "start": 75.7,
-          "end": 75.8,
-          "confidence": 0.5
+          "start": 81.25,
+          "end": 81.35,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "qu",
-          "start": 75.85,
-          "end": 75.95,
-          "confidence": 0.5
+          "start": 81.4,
+          "end": 81.5,
+          "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "fcil",
-          "start": 76.0,
-          "end": 76.1,
-          "confidence": 0.5
+          "start": 81.55,
+          "end": 81.65,
+          "confidence": 1.0
         },
         {
           "word_index": 4,
           "text": "te",
-          "start": 76.15,
-          "end": 76.25,
-          "confidence": 0.5
+          "start": 81.7,
+          "end": 81.8,
+          "confidence": 0.25
         },
         {
           "word_index": 5,
           "text": "lo",
-          "start": 76.3,
-          "end": 76.4,
-          "confidence": 0.5
+          "start": 81.85,
+          "end": 81.95,
+          "confidence": 1.0
         },
         {
           "word_index": 6,
           "text": "voy",
-          "start": 76.45,
-          "end": 76.55,
-          "confidence": 0.5
+          "start": 82.0,
+          "end": 82.1,
+          "confidence": 1.0
         },
         {
           "word_index": 7,
           "text": "a",
-          "start": 76.6,
-          "end": 76.7,
-          "confidence": 0.5
+          "start": 82.15,
+          "end": 82.25,
+          "confidence": 1.0
         },
         {
           "word_index": 8,
           "text": "decir",
-          "start": 76.75,
-          "end": 76.85,
-          "confidence": 0.5
+          "start": 82.3,
+          "end": 82.4,
+          "confidence": 1.0
         }
       ],
       "y": 19,
@@ -2832,31 +2832,31 @@
     },
     {
       "line_index": 48,
-      "text": "Que esta motomann",
-      "start": 76.85,
-      "end": 77.25,
-      "confidence": 0.5,
+      "text": "Que esta motomarin",
+      "start": 82.4,
+      "end": 82.8,
+      "confidence": 0.75,
       "words": [
         {
           "word_index": 1,
           "text": "Que",
-          "start": 76.85,
-          "end": 76.95,
-          "confidence": 0.5
+          "start": 82.4,
+          "end": 82.5,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "esta",
-          "start": 77.0,
-          "end": 77.1,
-          "confidence": 0.5
+          "start": 82.55,
+          "end": 82.65,
+          "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "motomami",
-          "start": 77.15,
-          "end": 77.25,
-          "confidence": 0.5
+          "start": 82.7,
+          "end": 82.8,
+          "confidence": 0.25
         }
       ],
       "y": 65,
@@ -2885,44 +2885,44 @@
     {
       "line_index": 49,
       "text": "ya no esta pa ti",
-      "start": 78.05,
-      "end": 78.8,
-      "confidence": 0.469,
+      "start": 82.8,
+      "end": 83.5,
+      "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
           "text": "ya",
-          "start": 78.05,
-          "end": 78.15,
-          "confidence": 0.469
+          "start": 82.8,
+          "end": 82.9,
+          "confidence": 0.5
         },
         {
           "word_index": 2,
           "text": "no",
-          "start": 78.2,
-          "end": 78.3,
-          "confidence": 0.469
+          "start": 82.95,
+          "end": 83.05,
+          "confidence": 0.5
         },
         {
           "word_index": 3,
           "text": "esta",
-          "start": 78.35,
-          "end": 78.5,
-          "confidence": 0.469
+          "start": 83.1,
+          "end": 83.2,
+          "confidence": 0.5
         },
         {
           "word_index": 4,
           "text": "pa",
-          "start": 78.55,
-          "end": 78.65,
-          "confidence": 0.469
+          "start": 83.25,
+          "end": 83.35,
+          "confidence": 0.5
         },
         {
           "word_index": 5,
           "text": "ti",
-          "start": 78.7,
-          "end": 78.8,
-          "confidence": 0.469
+          "start": 83.4,
+          "end": 83.5,
+          "confidence": 0.5
         }
       ],
       "y": 113,
@@ -2963,23 +2963,23 @@
     {
       "line_index": 50,
       "text": "Mira que",
-      "start": 79.9,
-      "end": 81.3,
-      "confidence": 0.5,
+      "start": 83.5,
+      "end": 83.75,
+      "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "Mira",
-          "start": 79.9,
-          "end": 80.45,
-          "confidence": 0.5
+          "start": 83.5,
+          "end": 83.6,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "que",
-          "start": 80.5,
-          "end": 81.3,
-          "confidence": 0.5
+          "start": 83.65,
+          "end": 83.75,
+          "confidence": 1.0
         }
       ],
       "y": 22,
@@ -3002,65 +3002,65 @@
     {
       "line_index": 51,
       "text": "Mira qu fdi te lo voy a decir",
-      "start": 81.45,
-      "end": 82.8,
-      "confidence": 0.5,
+      "start": 83.75,
+      "end": 84.9,
+      "confidence": 0.812,
       "words": [
         {
           "word_index": 1,
           "text": "Mira",
-          "start": 81.45,
-          "end": 81.6,
-          "confidence": 0.5
+          "start": 83.75,
+          "end": 83.85,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "qu",
-          "start": 81.65,
-          "end": 81.75,
-          "confidence": 0.5
+          "start": 83.9,
+          "end": 84.0,
+          "confidence": 0.25
         },
         {
           "word_index": 3,
           "text": "fcil",
-          "start": 81.8,
-          "end": 81.95,
-          "confidence": 0.5
+          "start": 84.05,
+          "end": 84.15,
+          "confidence": 0.25
         },
         {
           "word_index": 4,
           "text": "te",
-          "start": 82.0,
-          "end": 82.1,
-          "confidence": 0.5
+          "start": 84.2,
+          "end": 84.3,
+          "confidence": 1.0
         },
         {
           "word_index": 5,
           "text": "lo",
-          "start": 82.15,
-          "end": 82.25,
-          "confidence": 0.5
+          "start": 84.35,
+          "end": 84.45,
+          "confidence": 1.0
         },
         {
           "word_index": 6,
           "text": "voy",
-          "start": 82.3,
-          "end": 82.45,
-          "confidence": 0.5
+          "start": 84.5,
+          "end": 84.6,
+          "confidence": 1.0
         },
         {
           "word_index": 7,
           "text": "a",
-          "start": 82.5,
-          "end": 82.6,
-          "confidence": 0.5
+          "start": 84.65,
+          "end": 84.75,
+          "confidence": 1.0
         },
         {
           "word_index": 8,
           "text": "decir",
-          "start": 82.65,
-          "end": 82.8,
-          "confidence": 0.5
+          "start": 84.8,
+          "end": 84.9,
+          "confidence": 1.0
         }
       ],
       "y": 65,
@@ -3118,31 +3118,31 @@
     },
     {
       "line_index": 52,
-      "text": "Que esta motomann",
-      "start": 82.9,
-      "end": 84.15,
-      "confidence": 0.5,
+      "text": "Que esta motomarin",
+      "start": 85.15,
+      "end": 85.85,
+      "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "Que",
-          "start": 82.9,
-          "end": 83.2,
-          "confidence": 0.5
+          "start": 85.15,
+          "end": 85.25,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "esta",
-          "start": 83.25,
-          "end": 83.65,
-          "confidence": 0.5
+          "start": 85.3,
+          "end": 85.4,
+          "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "motomami",
-          "start": 83.7,
-          "end": 84.15,
-          "confidence": 0.5
+          "start": 85.45,
+          "end": 85.55,
+          "confidence": 1.0
         }
       ],
       "y": 113,
@@ -3171,37 +3171,37 @@
     {
       "line_index": 53,
       "text": "Y ando despecha woah",
-      "start": 84.15,
-      "end": 84.8,
-      "confidence": 0.5,
+      "start": 88.9,
+      "end": 89.6,
+      "confidence": 0.812,
       "words": [
         {
           "word_index": 1,
           "text": "Y",
-          "start": 84.15,
-          "end": 84.25,
-          "confidence": 0.5
+          "start": 88.9,
+          "end": 89.0,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "ando",
-          "start": 84.3,
-          "end": 84.4,
-          "confidence": 0.5
+          "start": 89.05,
+          "end": 89.15,
+          "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "despecha",
-          "start": 84.45,
-          "end": 84.55,
-          "confidence": 0.5
+          "start": 89.2,
+          "end": 89.3,
+          "confidence": 0.25
         },
         {
           "word_index": 4,
           "text": "woah",
-          "start": 84.6,
-          "end": 84.8,
-          "confidence": 0.5
+          "start": 89.35,
+          "end": 89.45,
+          "confidence": 1.0
         }
       ],
       "y": 19,
@@ -3236,16 +3236,16 @@
     {
       "line_index": 54,
       "text": "aloca'",
-      "start": 89.45,
-      "end": 90.15,
-      "confidence": 0.252,
+      "start": 91.45,
+      "end": 91.55,
+      "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "aloca'",
-          "start": 89.45,
-          "end": 90.15,
-          "confidence": 0.252
+          "start": 91.45,
+          "end": 91.55,
+          "confidence": 1.0
         }
       ],
       "y": 67,
@@ -3262,58 +3262,58 @@
     {
       "line_index": 55,
       "text": "Baj con un flow nuevo e caja",
-      "start": 90.15,
-      "end": 91.15,
-      "confidence": 0.5,
+      "start": 91.55,
+      "end": 92.55,
+      "confidence": 0.571,
       "words": [
         {
           "word_index": 1,
           "text": "Baj",
-          "start": 90.15,
-          "end": 90.25,
-          "confidence": 0.5
+          "start": 91.55,
+          "end": 91.65,
+          "confidence": 0.25
         },
         {
           "word_index": 2,
           "text": "con",
-          "start": 90.3,
-          "end": 90.4,
-          "confidence": 0.5
+          "start": 91.7,
+          "end": 91.8,
+          "confidence": 0.25
         },
         {
           "word_index": 3,
           "text": "un",
-          "start": 90.45,
-          "end": 90.55,
-          "confidence": 0.5
+          "start": 91.85,
+          "end": 91.95,
+          "confidence": 1.0
         },
         {
           "word_index": 4,
           "text": "flow",
-          "start": 90.6,
-          "end": 90.7,
-          "confidence": 0.5
+          "start": 92.0,
+          "end": 92.1,
+          "confidence": 1.0
         },
         {
           "word_index": 5,
           "text": "nuevo",
-          "start": 90.75,
-          "end": 90.85,
-          "confidence": 0.5
+          "start": 92.15,
+          "end": 92.25,
+          "confidence": 0.25
         },
         {
           "word_index": 6,
           "text": "e",
-          "start": 90.9,
-          "end": 91.0,
-          "confidence": 0.5
+          "start": 92.3,
+          "end": 92.4,
+          "confidence": 0.25
         },
         {
           "word_index": 7,
           "text": "caja",
-          "start": 91.05,
-          "end": 91.15,
-          "confidence": 0.5
+          "start": 92.45,
+          "end": 92.55,
+          "confidence": 1.0
         }
       ],
       "y": 108,
@@ -3366,23 +3366,23 @@
     {
       "line_index": 56,
       "text": "baby hackea",
-      "start": 91.15,
-      "end": 92.55,
-      "confidence": 0.252,
+      "start": 92.55,
+      "end": 92.8,
+      "confidence": 0.228,
       "words": [
         {
           "word_index": 1,
           "text": "baby",
-          "start": 91.15,
-          "end": 91.7,
-          "confidence": 0.252
+          "start": 92.55,
+          "end": 92.65,
+          "confidence": 0.228
         },
         {
           "word_index": 2,
           "text": "hackea",
-          "start": 91.75,
-          "end": 92.55,
-          "confidence": 0.252
+          "start": 92.7,
+          "end": 92.8,
+          "confidence": 0.228
         }
       ],
       "y": 159,
@@ -3405,51 +3405,51 @@
     {
       "line_index": 57,
       "text": "Lo muevo de lafo a lao",
-      "start": 92.55,
-      "end": 93.4,
+      "start": 93.5,
+      "end": 94.35,
       "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
           "text": "Lo",
-          "start": 92.55,
-          "end": 92.65,
-          "confidence": 0.5
+          "start": 93.5,
+          "end": 93.6,
+          "confidence": 0.25
         },
         {
           "word_index": 2,
           "text": "muevo",
-          "start": 92.7,
-          "end": 92.8,
-          "confidence": 0.5
+          "start": 93.65,
+          "end": 93.75,
+          "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "de",
-          "start": 92.85,
-          "end": 92.95,
-          "confidence": 0.5
+          "start": 93.8,
+          "end": 93.9,
+          "confidence": 1.0
         },
         {
           "word_index": 4,
           "text": "lafo",
-          "start": 93.0,
-          "end": 93.1,
-          "confidence": 0.5
+          "start": 93.95,
+          "end": 94.05,
+          "confidence": 0.25
         },
         {
           "word_index": 5,
           "text": "a",
-          "start": 93.15,
-          "end": 93.25,
-          "confidence": 0.5
+          "start": 94.1,
+          "end": 94.2,
+          "confidence": 0.25
         },
         {
           "word_index": 6,
           "text": "lao",
-          "start": 93.3,
-          "end": 93.4,
-          "confidence": 0.5
+          "start": 94.25,
+          "end": 94.35,
+          "confidence": 0.25
         }
       ],
       "y": 18,
@@ -3496,37 +3496,37 @@
     {
       "line_index": 58,
       "text": "y a otro lao",
-      "start": 93.4,
-      "end": 93.95,
-      "confidence": 0.5,
+      "start": 96.8,
+      "end": 102.1,
+      "confidence": 0.625,
       "words": [
         {
           "word_index": 1,
           "text": "y",
-          "start": 93.4,
-          "end": 93.5,
-          "confidence": 0.5
+          "start": 96.8,
+          "end": 96.9,
+          "confidence": 0.25
         },
         {
           "word_index": 2,
           "text": "a",
-          "start": 93.55,
-          "end": 93.65,
-          "confidence": 0.5
+          "start": 96.95,
+          "end": 97.05,
+          "confidence": 0.25
         },
         {
           "word_index": 3,
           "text": "otro",
-          "start": 93.7,
-          "end": 93.8,
-          "confidence": 0.5
+          "start": 101.85,
+          "end": 101.95,
+          "confidence": 1.0
         },
         {
           "word_index": 4,
           "text": "lao",
-          "start": 93.85,
-          "end": 93.95,
-          "confidence": 0.5
+          "start": 102.0,
+          "end": 102.1,
+          "confidence": 1.0
         }
       ],
       "y": 67,
@@ -3561,51 +3561,51 @@
     {
       "line_index": 59,
       "text": "Hoy salgo con mi baby de",
-      "start": 94.7,
-      "end": 95.6,
-      "confidence": 0.5,
+      "start": 98.95,
+      "end": 99.8,
+      "confidence": 0.875,
       "words": [
         {
           "word_index": 1,
           "text": "Hoy",
-          "start": 94.7,
-          "end": 94.8,
-          "confidence": 0.5
+          "start": 98.95,
+          "end": 99.05,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "salgo",
-          "start": 94.85,
-          "end": 94.95,
-          "confidence": 0.5
+          "start": 99.1,
+          "end": 99.2,
+          "confidence": 0.25
         },
         {
           "word_index": 3,
           "text": "con",
-          "start": 95.0,
-          "end": 95.1,
-          "confidence": 0.5
+          "start": 99.25,
+          "end": 99.35,
+          "confidence": 1.0
         },
         {
           "word_index": 4,
           "text": "mi",
-          "start": 95.15,
-          "end": 95.25,
-          "confidence": 0.5
+          "start": 99.4,
+          "end": 99.5,
+          "confidence": 1.0
         },
         {
           "word_index": 5,
           "text": "baby",
-          "start": 95.3,
-          "end": 95.45,
-          "confidence": 0.5
+          "start": 99.55,
+          "end": 99.65,
+          "confidence": 1.0
         },
         {
           "word_index": 6,
           "text": "de",
-          "start": 95.5,
-          "end": 95.6,
-          "confidence": 0.5
+          "start": 99.7,
+          "end": 99.8,
+          "confidence": 1.0
         }
       ],
       "y": 113,
@@ -3652,30 +3652,30 @@
     {
       "line_index": 60,
       "text": "la disco corona",
-      "start": 96.1,
-      "end": 96.95,
-      "confidence": 0.228,
+      "start": 99.8,
+      "end": 101.45,
+      "confidence": 0.75,
       "words": [
         {
           "word_index": 1,
           "text": "la",
-          "start": 96.1,
-          "end": 96.2,
-          "confidence": 0.228
+          "start": 99.8,
+          "end": 99.9,
+          "confidence": 0.25
         },
         {
           "word_index": 2,
           "text": "disco",
-          "start": 96.25,
-          "end": 96.35,
-          "confidence": 0.228
+          "start": 101.05,
+          "end": 101.3,
+          "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "corona",
-          "start": 96.4,
-          "end": 96.95,
-          "confidence": 0.228
+          "start": 101.35,
+          "end": 101.45,
+          "confidence": 1.0
         }
       ],
       "y": 160,
@@ -3704,37 +3704,37 @@
     {
       "line_index": 61,
       "text": "Y ando despecha woah",
-      "start": 97.45,
-      "end": 98.4,
-      "confidence": 0.5,
+      "start": 101.45,
+      "end": 102.0,
+      "confidence": 0.438,
       "words": [
         {
           "word_index": 1,
           "text": "Y",
-          "start": 97.45,
-          "end": 97.6,
-          "confidence": 0.5
+          "start": 101.45,
+          "end": 101.55,
+          "confidence": 0.25
         },
         {
           "word_index": 2,
           "text": "ando",
-          "start": 97.65,
-          "end": 97.85,
-          "confidence": 0.5
+          "start": 101.6,
+          "end": 101.7,
+          "confidence": 0.25
         },
         {
           "word_index": 3,
           "text": "despecha",
-          "start": 97.9,
-          "end": 98.15,
-          "confidence": 0.5
+          "start": 101.75,
+          "end": 101.85,
+          "confidence": 0.25
         },
         {
           "word_index": 4,
           "text": "woah",
-          "start": 98.2,
-          "end": 98.4,
-          "confidence": 0.5
+          "start": 101.9,
+          "end": 102.0,
+          "confidence": 1.0
         }
       ],
       "y": 19,
@@ -3769,23 +3769,23 @@
     {
       "line_index": 62,
       "text": "a loca",
-      "start": 99.2,
-      "end": 100.0,
-      "confidence": 0.5,
+      "start": 106.1,
+      "end": 106.2,
+      "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "a",
-          "start": 99.2,
-          "end": 99.35,
-          "confidence": 0.5
+          "start": 106.1,
+          "end": 106.1,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "loca",
-          "start": 99.35,
-          "end": 100.0,
-          "confidence": 0.5
+          "start": 106.1,
+          "end": 106.2,
+          "confidence": 1.0
         }
       ],
       "y": 65,
@@ -3802,51 +3802,51 @@
     {
       "line_index": 63,
       "text": "Que Dios me libre de volver",
-      "start": 101.3,
-      "end": 102.2,
+      "start": 106.2,
+      "end": 107.05,
       "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
           "text": "Que",
-          "start": 101.3,
-          "end": 101.4,
-          "confidence": 0.5
+          "start": 106.2,
+          "end": 106.3,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "Dios",
-          "start": 101.45,
-          "end": 101.55,
-          "confidence": 0.5
+          "start": 106.35,
+          "end": 106.45,
+          "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "me",
-          "start": 101.6,
-          "end": 101.7,
-          "confidence": 0.5
+          "start": 106.5,
+          "end": 106.6,
+          "confidence": 0.25
         },
         {
           "word_index": 4,
           "text": "libre",
-          "start": 101.75,
-          "end": 101.9,
-          "confidence": 0.5
+          "start": 106.65,
+          "end": 106.75,
+          "confidence": 0.25
         },
         {
           "word_index": 5,
           "text": "de",
-          "start": 101.95,
-          "end": 102.05,
-          "confidence": 0.5
+          "start": 106.8,
+          "end": 106.9,
+          "confidence": 0.25
         },
         {
           "word_index": 6,
           "text": "volver",
-          "start": 102.1,
-          "end": 102.2,
-          "confidence": 0.5
+          "start": 106.95,
+          "end": 107.05,
+          "confidence": 0.25
         }
       ],
       "y": 113,
@@ -3893,30 +3893,30 @@
     {
       "line_index": 64,
       "text": "a tu lafo",
-      "start": 102.2,
-      "end": 103.05,
-      "confidence": 0.228,
+      "start": 109.8,
+      "end": 110.2,
+      "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "a",
-          "start": 102.2,
-          "end": 102.3,
-          "confidence": 0.228
+          "start": 109.8,
+          "end": 109.9,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "tu",
-          "start": 102.35,
-          "end": 102.45,
-          "confidence": 0.228
+          "start": 109.95,
+          "end": 110.05,
+          "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "lafo",
-          "start": 102.5,
-          "end": 103.05,
-          "confidence": 0.228
+          "start": 110.1,
+          "end": 110.2,
+          "confidence": 1.0
         }
       ],
       "y": 159,
@@ -3945,51 +3945,51 @@
     {
       "line_index": 65,
       "text": "Lo muevo de lao a lao",
-      "start": 104.95,
-      "end": 106.25,
-      "confidence": 0.409,
+      "start": 110.9,
+      "end": 111.75,
+      "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "Lo",
-          "start": 104.95,
-          "end": 105.15,
-          "confidence": 0.409
+          "start": 110.9,
+          "end": 111.0,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "muevo",
-          "start": 105.2,
-          "end": 105.4,
-          "confidence": 0.409
+          "start": 111.05,
+          "end": 111.15,
+          "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "de",
-          "start": 105.45,
-          "end": 105.6,
-          "confidence": 0.409
+          "start": 111.2,
+          "end": 111.3,
+          "confidence": 1.0
         },
         {
           "word_index": 4,
           "text": "lao",
-          "start": 105.65,
-          "end": 105.8,
-          "confidence": 0.409
+          "start": 111.35,
+          "end": 111.45,
+          "confidence": 1.0
         },
         {
           "word_index": 5,
           "text": "a",
-          "start": 105.85,
-          "end": 106.0,
-          "confidence": 0.409
+          "start": 111.5,
+          "end": 111.6,
+          "confidence": 1.0
         },
         {
           "word_index": 6,
           "text": "lao",
-          "start": 106.05,
-          "end": 106.25,
-          "confidence": 0.409
+          "start": 111.65,
+          "end": 111.75,
+          "confidence": 1.0
         }
       ],
       "y": 19,
@@ -4036,37 +4036,37 @@
     {
       "line_index": 66,
       "text": "y a otro la'o",
-      "start": 106.25,
-      "end": 108.45,
-      "confidence": 0.36,
+      "start": 113.0,
+      "end": 116.55,
+      "confidence": 0.812,
       "words": [
         {
           "word_index": 1,
           "text": "y",
-          "start": 106.25,
-          "end": 106.35,
-          "confidence": 0.36
+          "start": 113.0,
+          "end": 113.1,
+          "confidence": 0.25
         },
         {
           "word_index": 2,
           "text": "a",
-          "start": 106.4,
-          "end": 106.5,
-          "confidence": 0.36
+          "start": 115.45,
+          "end": 116.25,
+          "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "otro",
-          "start": 106.55,
-          "end": 107.35,
-          "confidence": 0.36
+          "start": 116.3,
+          "end": 116.4,
+          "confidence": 1.0
         },
         {
           "word_index": 4,
           "text": "la'o",
-          "start": 107.65,
-          "end": 108.45,
-          "confidence": 0.36
+          "start": 116.45,
+          "end": 116.55,
+          "confidence": 1.0
         }
       ],
       "y": 67,
@@ -4101,44 +4101,44 @@
     {
       "line_index": 67,
       "text": "Hoy salgo con mi baby",
-      "start": 108.65,
-      "end": 110.25,
-      "confidence": 0.417,
+      "start": 114.6,
+      "end": 115.3,
+      "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "Hoy",
-          "start": 108.65,
-          "end": 108.9,
-          "confidence": 0.417
+          "start": 114.6,
+          "end": 114.7,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "salgo",
-          "start": 108.95,
-          "end": 109.3,
-          "confidence": 0.417
+          "start": 114.75,
+          "end": 114.85,
+          "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "con",
-          "start": 109.35,
-          "end": 109.6,
-          "confidence": 0.417
+          "start": 114.9,
+          "end": 115.0,
+          "confidence": 1.0
         },
         {
           "word_index": 4,
           "text": "mi",
-          "start": 109.65,
-          "end": 109.9,
-          "confidence": 0.417
+          "start": 115.05,
+          "end": 115.15,
+          "confidence": 1.0
         },
         {
           "word_index": 5,
           "text": "baby",
-          "start": 109.95,
-          "end": 110.25,
-          "confidence": 0.417
+          "start": 115.2,
+          "end": 115.3,
+          "confidence": 1.0
         }
       ],
       "y": 113,
@@ -4179,51 +4179,51 @@
     {
       "line_index": 68,
       "text": "de la disco corona corona yeah",
-      "start": 110.25,
-      "end": 111.5,
-      "confidence": 0.228,
+      "start": 115.3,
+      "end": 116.15,
+      "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "de",
-          "start": 110.25,
-          "end": 110.35,
-          "confidence": 0.228
+          "start": 115.3,
+          "end": 115.4,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "la",
-          "start": 110.4,
-          "end": 110.5,
-          "confidence": 0.228
+          "start": 115.45,
+          "end": 115.55,
+          "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "disco",
-          "start": 110.55,
-          "end": 110.65,
-          "confidence": 0.228
+          "start": 115.6,
+          "end": 115.7,
+          "confidence": 1.0
         },
         {
           "word_index": 4,
           "text": "corona",
-          "start": 110.7,
-          "end": 110.8,
-          "confidence": 0.228
+          "start": 115.75,
+          "end": 115.85,
+          "confidence": 1.0
         },
         {
           "word_index": 5,
           "text": "corona",
-          "start": 110.85,
-          "end": 111.05,
-          "confidence": 0.228
+          "start": 115.9,
+          "end": 116.0,
+          "confidence": 1.0
         },
         {
           "word_index": 6,
           "text": "yeah",
-          "start": 111.1,
-          "end": 111.5,
-          "confidence": 0.228
+          "start": 116.05,
+          "end": 116.15,
+          "confidence": 1.0
         }
       ],
       "y": 159,
@@ -4270,15 +4270,15 @@
     {
       "line_index": 69,
       "text": "Mmh",
-      "start": 114.55,
-      "end": 115.35,
+      "start": 116.15,
+      "end": 116.25,
       "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
           "text": "Mmh",
-          "start": 114.55,
-          "end": 115.35,
+          "start": 116.15,
+          "end": 116.25,
           "confidence": 0.5
         }
       ],
@@ -4296,44 +4296,44 @@
     {
       "line_index": 70,
       "text": "Voy a ciento ochenta porque",
-      "start": 115.35,
-      "end": 116.25,
-      "confidence": 0.5,
+      "start": 117.55,
+      "end": 119.95,
+      "confidence": 0.85,
       "words": [
         {
           "word_index": 1,
           "text": "Voy",
-          "start": 115.35,
-          "end": 115.45,
-          "confidence": 0.5
+          "start": 117.55,
+          "end": 117.65,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "a",
-          "start": 115.5,
-          "end": 115.6,
-          "confidence": 0.5
+          "start": 117.7,
+          "end": 117.8,
+          "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "ciento",
-          "start": 115.65,
-          "end": 115.75,
-          "confidence": 0.5
+          "start": 119.55,
+          "end": 119.65,
+          "confidence": 1.0
         },
         {
           "word_index": 4,
           "text": "ochenta",
-          "start": 115.8,
-          "end": 115.9,
-          "confidence": 0.5
+          "start": 119.7,
+          "end": 119.8,
+          "confidence": 0.25
         },
         {
           "word_index": 5,
           "text": "porque",
-          "start": 115.95,
-          "end": 116.25,
-          "confidence": 0.5
+          "start": 119.85,
+          "end": 119.95,
+          "confidence": 1.0
         }
       ],
       "y": 67,
@@ -4374,30 +4374,30 @@
     {
       "line_index": 71,
       "text": "soy una Racine",
-      "start": 120.3,
-      "end": 121.0,
-      "confidence": 0.252,
+      "start": 118.9,
+      "end": 119.6,
+      "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
           "text": "soy",
-          "start": 120.3,
-          "end": 120.5,
-          "confidence": 0.252
+          "start": 118.9,
+          "end": 119.0,
+          "confidence": 0.5
         },
         {
           "word_index": 2,
           "text": "una",
-          "start": 120.55,
-          "end": 120.75,
-          "confidence": 0.252
+          "start": 119.05,
+          "end": 119.15,
+          "confidence": 0.5
         },
         {
           "word_index": 3,
           "text": "racineta",
-          "start": 120.8,
-          "end": 121.0,
-          "confidence": 0.252
+          "start": 119.2,
+          "end": 119.3,
+          "confidence": 0.5
         }
       ],
       "y": 114,
@@ -4426,23 +4426,23 @@
     {
       "line_index": 72,
       "text": "Qu qu",
-      "start": 121.0,
-      "end": 121.25,
-      "confidence": 0.252,
+      "start": 123.85,
+      "end": 124.55,
+      "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
           "text": "Qu",
-          "start": 121.0,
-          "end": 121.1,
-          "confidence": 0.252
+          "start": 123.85,
+          "end": 123.95,
+          "confidence": 0.5
         },
         {
           "word_index": 2,
           "text": "qu",
-          "start": 121.15,
-          "end": 121.25,
-          "confidence": 0.252
+          "start": 124.0,
+          "end": 124.1,
+          "confidence": 0.5
         }
       ],
       "y": 158,
@@ -4465,51 +4465,51 @@
     {
       "line_index": 73,
       "text": "Te distrae' y yo te adelanto",
-      "start": 121.25,
-      "end": 122.1,
-      "confidence": 0.5,
+      "start": 127.0,
+      "end": 127.85,
+      "confidence": 0.968,
       "words": [
         {
           "word_index": 1,
           "text": "Te",
-          "start": 121.25,
-          "end": 121.35,
-          "confidence": 0.5
+          "start": 127.0,
+          "end": 127.1,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "distrae'",
-          "start": 121.4,
-          "end": 121.5,
-          "confidence": 0.5
+          "start": 127.15,
+          "end": 127.25,
+          "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "y",
-          "start": 121.55,
-          "end": 121.65,
-          "confidence": 0.5
+          "start": 127.3,
+          "end": 127.4,
+          "confidence": 1.0
         },
         {
           "word_index": 4,
           "text": "yo",
-          "start": 121.7,
-          "end": 121.8,
-          "confidence": 0.5
+          "start": 127.45,
+          "end": 127.55,
+          "confidence": 1.0
         },
         {
           "word_index": 5,
           "text": "te",
-          "start": 121.85,
-          "end": 121.95,
-          "confidence": 0.5
+          "start": 127.6,
+          "end": 127.7,
+          "confidence": 1.0
         },
         {
           "word_index": 6,
           "text": "adelanto",
-          "start": 122.0,
-          "end": 122.1,
-          "confidence": 0.5
+          "start": 127.75,
+          "end": 127.85,
+          "confidence": 0.806
         }
       ],
       "y": 18,
@@ -4556,30 +4556,30 @@
     {
       "line_index": 74,
       "text": "por la derecha",
-      "start": 122.1,
-      "end": 122.5,
-      "confidence": 0.5,
+      "start": 127.85,
+      "end": 128.25,
+      "confidence": 0.228,
       "words": [
         {
           "word_index": 1,
           "text": "por",
-          "start": 122.1,
-          "end": 122.2,
-          "confidence": 0.5
+          "start": 127.85,
+          "end": 127.95,
+          "confidence": 0.228
         },
         {
           "word_index": 2,
           "text": "la",
-          "start": 122.25,
-          "end": 122.35,
-          "confidence": 0.5
+          "start": 128.0,
+          "end": 128.1,
+          "confidence": 0.228
         },
         {
           "word_index": 3,
           "text": "derecha",
-          "start": 122.4,
-          "end": 122.5,
-          "confidence": 0.5
+          "start": 128.15,
+          "end": 128.25,
+          "confidence": 0.228
         }
       ],
       "y": 65,
@@ -4608,16 +4608,16 @@
     {
       "line_index": 75,
       "text": "Uh",
-      "start": 122.5,
-      "end": 122.95,
-      "confidence": 0.252,
+      "start": 128.25,
+      "end": 128.35,
+      "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "Uh",
-          "start": 122.5,
-          "end": 122.95,
-          "confidence": 0.252
+          "start": 128.25,
+          "end": 128.35,
+          "confidence": 1.0
         }
       ],
       "y": 113,
@@ -4634,51 +4634,51 @@
     {
       "line_index": 76,
       "text": "Te distrae' y yo te adelanto",
-      "start": 122.95,
-      "end": 123.8,
-      "confidence": 0.252,
+      "start": 128.35,
+      "end": 129.2,
+      "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "Te",
-          "start": 122.95,
-          "end": 123.05,
-          "confidence": 0.252
+          "start": 128.35,
+          "end": 128.45,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "distrae'",
-          "start": 123.1,
-          "end": 123.2,
-          "confidence": 0.252
+          "start": 128.5,
+          "end": 128.6,
+          "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "y",
-          "start": 123.25,
-          "end": 123.35,
-          "confidence": 0.252
+          "start": 128.65,
+          "end": 128.75,
+          "confidence": 1.0
         },
         {
           "word_index": 4,
           "text": "yo",
-          "start": 123.4,
-          "end": 123.5,
-          "confidence": 0.252
+          "start": 128.8,
+          "end": 128.9,
+          "confidence": 1.0
         },
         {
           "word_index": 5,
           "text": "te",
-          "start": 123.55,
-          "end": 123.65,
-          "confidence": 0.252
+          "start": 128.95,
+          "end": 129.05,
+          "confidence": 1.0
         },
         {
           "word_index": 6,
           "text": "adelanto",
-          "start": 123.7,
-          "end": 123.8,
-          "confidence": 0.252
+          "start": 129.1,
+          "end": 129.2,
+          "confidence": 1.0
         }
       ],
       "y": 18,
@@ -4725,44 +4725,44 @@
     {
       "line_index": 77,
       "text": "Voy a ciento ochenta porque",
-      "start": 123.8,
-      "end": 124.5,
-      "confidence": 0.252,
+      "start": 129.2,
+      "end": 129.9,
+      "confidence": 0.4,
       "words": [
         {
           "word_index": 1,
           "text": "Voy",
-          "start": 123.8,
-          "end": 123.9,
-          "confidence": 0.252
+          "start": 129.2,
+          "end": 129.3,
+          "confidence": 0.25
         },
         {
           "word_index": 2,
           "text": "a",
-          "start": 123.95,
-          "end": 124.05,
-          "confidence": 0.252
+          "start": 129.35,
+          "end": 129.45,
+          "confidence": 0.25
         },
         {
           "word_index": 3,
           "text": "ciento",
-          "start": 124.1,
-          "end": 124.2,
-          "confidence": 0.252
+          "start": 129.5,
+          "end": 129.6,
+          "confidence": 0.25
         },
         {
           "word_index": 4,
           "text": "ochenta",
-          "start": 124.25,
-          "end": 124.35,
-          "confidence": 0.252
+          "start": 129.65,
+          "end": 129.75,
+          "confidence": 1.0
         },
         {
           "word_index": 5,
           "text": "porque",
-          "start": 124.4,
-          "end": 124.5,
-          "confidence": 0.252
+          "start": 129.8,
+          "end": 129.9,
+          "confidence": 0.25
         }
       ],
       "y": 19,
@@ -4803,30 +4803,30 @@
     {
       "line_index": 78,
       "text": "soy una Racine",
-      "start": 124.75,
-      "end": 125.45,
-      "confidence": 0.252,
+      "start": 129.9,
+      "end": 130.3,
+      "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "soy",
-          "start": 124.75,
-          "end": 124.85,
-          "confidence": 0.252
+          "start": 129.9,
+          "end": 130.0,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "una",
-          "start": 124.9,
-          "end": 125.0,
-          "confidence": 0.252
+          "start": 130.05,
+          "end": 130.15,
+          "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "racineta",
-          "start": 125.05,
-          "end": 125.15,
-          "confidence": 0.252
+          "start": 130.2,
+          "end": 130.3,
+          "confidence": 1.0
         }
       ],
       "y": 67,
@@ -4855,23 +4855,23 @@
     {
       "line_index": 79,
       "text": "Eye ey",
-      "start": 126.8,
-      "end": 127.5,
-      "confidence": 0.252,
+      "start": 130.3,
+      "end": 130.55,
+      "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "Eyo",
-          "start": 126.8,
-          "end": 126.9,
-          "confidence": 0.252
+          "start": 130.3,
+          "end": 130.4,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "ey",
-          "start": 126.95,
-          "end": 127.05,
-          "confidence": 0.252
+          "start": 130.45,
+          "end": 130.55,
+          "confidence": 1.0
         }
       ],
       "y": 113,
@@ -4894,51 +4894,51 @@
     {
       "line_index": 80,
       "text": "Te distrae' y yo te adelanto",
-      "start": 128.3,
-      "end": 129.5,
-      "confidence": 0.425,
+      "start": 130.55,
+      "end": 131.4,
+      "confidence": 0.426,
       "words": [
         {
           "word_index": 1,
           "text": "Te",
-          "start": 128.3,
-          "end": 128.5,
-          "confidence": 0.425
+          "start": 130.55,
+          "end": 130.65,
+          "confidence": 0.25
         },
         {
           "word_index": 2,
           "text": "distrae'",
-          "start": 128.55,
-          "end": 128.7,
-          "confidence": 0.425
+          "start": 130.7,
+          "end": 130.8,
+          "confidence": 0.25
         },
         {
           "word_index": 3,
           "text": "y",
-          "start": 128.75,
-          "end": 128.9,
-          "confidence": 0.425
+          "start": 130.85,
+          "end": 130.95,
+          "confidence": 0.25
         },
         {
           "word_index": 4,
           "text": "yo",
-          "start": 128.95,
-          "end": 129.1,
-          "confidence": 0.425
+          "start": 131.0,
+          "end": 131.1,
+          "confidence": 0.25
         },
         {
           "word_index": 5,
           "text": "te",
-          "start": 129.15,
-          "end": 129.3,
-          "confidence": 0.425
+          "start": 131.15,
+          "end": 131.25,
+          "confidence": 0.706
         },
         {
           "word_index": 6,
           "text": "adelanto",
-          "start": 129.35,
-          "end": 129.5,
-          "confidence": 0.425
+          "start": 131.3,
+          "end": 131.4,
+          "confidence": 0.848
         }
       ],
       "y": 18,
@@ -4984,31 +4984,31 @@
     },
     {
       "line_index": 81,
-      "text": "Mmh niiii mmh",
-      "start": 129.9,
-      "end": 130.9,
-      "confidence": 0.5,
+      "text": "Mmh rniii mmh",
+      "start": 131.4,
+      "end": 131.8,
+      "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "Mmh",
-          "start": 129.9,
-          "end": 130.25,
-          "confidence": 0.5
+          "start": 131.4,
+          "end": 131.5,
+          "confidence": 0.252
         },
         {
           "word_index": 2,
           "text": "mih",
-          "start": 130.3,
-          "end": 130.55,
-          "confidence": 0.5
+          "start": 131.55,
+          "end": 131.65,
+          "confidence": 0.252
         },
         {
           "word_index": 3,
           "text": "mmh",
-          "start": 130.6,
-          "end": 130.9,
-          "confidence": 0.5
+          "start": 131.7,
+          "end": 131.8,
+          "confidence": 0.252
         }
       ],
       "y": 113,
@@ -5037,51 +5037,51 @@
     {
       "line_index": 82,
       "text": "Yeah yeah yeah yeah yeah yeah",
-      "start": 132.0,
-      "end": 133.2,
-      "confidence": 0.375,
+      "start": 131.8,
+      "end": 132.65,
+      "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "Yeah",
-          "start": 132.0,
-          "end": 132.15,
-          "confidence": 0.375
+          "start": 131.8,
+          "end": 131.9,
+          "confidence": 0.252
         },
         {
           "word_index": 2,
           "text": "yeah",
-          "start": 132.2,
-          "end": 132.35,
-          "confidence": 0.375
+          "start": 131.95,
+          "end": 132.05,
+          "confidence": 0.252
         },
         {
           "word_index": 3,
           "text": "yeah",
-          "start": 132.4,
-          "end": 132.6,
-          "confidence": 0.375
+          "start": 132.1,
+          "end": 132.2,
+          "confidence": 0.252
         },
         {
           "word_index": 4,
           "text": "yeah",
-          "start": 132.65,
-          "end": 132.8,
-          "confidence": 0.375
+          "start": 132.25,
+          "end": 132.35,
+          "confidence": 0.252
         },
         {
           "word_index": 5,
           "text": "yeah",
-          "start": 132.85,
-          "end": 133.0,
-          "confidence": 0.375
+          "start": 132.4,
+          "end": 132.5,
+          "confidence": 0.252
         },
         {
           "word_index": 6,
           "text": "yeah",
-          "start": 133.05,
-          "end": 133.2,
-          "confidence": 0.375
+          "start": 132.55,
+          "end": 132.65,
+          "confidence": 0.252
         }
       ],
       "y": 19,
@@ -5128,15 +5128,15 @@
     {
       "line_index": 83,
       "text": "Ey",
-      "start": 133.2,
-      "end": 134.0,
+      "start": 133.45,
+      "end": 133.55,
       "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "Ey",
-          "start": 133.2,
-          "end": 134.0,
+          "start": 133.45,
+          "end": 133.55,
           "confidence": 0.252
         }
       ],
@@ -5154,37 +5154,37 @@
     {
       "line_index": 84,
       "text": "Yeah yeah yeah yeah",
-      "start": 134.0,
-      "end": 134.55,
-      "confidence": 0.5,
+      "start": 133.8,
+      "end": 139.5,
+      "confidence": 0.754,
       "words": [
         {
           "word_index": 1,
           "text": "Yeah",
-          "start": 134.0,
-          "end": 134.1,
-          "confidence": 0.5
+          "start": 133.8,
+          "end": 134.6,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "yeah",
-          "start": 134.15,
-          "end": 134.25,
-          "confidence": 0.5
+          "start": 139.0,
+          "end": 139.1,
+          "confidence": 0.25
         },
         {
           "word_index": 3,
           "text": "yeah",
-          "start": 134.3,
-          "end": 134.4,
-          "confidence": 0.5
+          "start": 139.25,
+          "end": 139.35,
+          "confidence": 0.835
         },
         {
           "word_index": 4,
           "text": "yeah",
-          "start": 134.45,
-          "end": 134.55,
-          "confidence": 0.5
+          "start": 139.4,
+          "end": 139.5,
+          "confidence": 0.931
         }
       ],
       "y": 113,
@@ -5219,23 +5219,23 @@
     {
       "line_index": 85,
       "text": "Dims Jedi",
-      "start": 135.35,
-      "end": 135.6,
-      "confidence": 0.228,
+      "start": 141.35,
+      "end": 141.6,
+      "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "Chris",
-          "start": 135.35,
-          "end": 135.45,
-          "confidence": 0.228
+          "start": 141.35,
+          "end": 141.45,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "Jedi",
-          "start": 135.5,
-          "end": 135.6,
-          "confidence": 0.228
+          "start": 141.5,
+          "end": 141.6,
+          "confidence": 1.0
         }
       ],
       "y": 159,
@@ -5258,30 +5258,30 @@
     {
       "line_index": 86,
       "text": "Gaby Gaby Gaby",
-      "start": 138.55,
-      "end": 139.55,
-      "confidence": 0.313,
+      "start": 141.6,
+      "end": 142.0,
+      "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "Gaby",
-          "start": 138.55,
-          "end": 138.85,
-          "confidence": 0.313
+          "start": 141.6,
+          "end": 141.7,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "Gaby",
-          "start": 138.9,
-          "end": 139.2,
-          "confidence": 0.313
+          "start": 141.75,
+          "end": 141.85,
+          "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "Gaby",
-          "start": 139.25,
-          "end": 139.55,
-          "confidence": 0.313
+          "start": 141.9,
+          "end": 142.0,
+          "confidence": 1.0
         }
       ],
       "y": 19,
@@ -5310,23 +5310,23 @@
     {
       "line_index": 87,
       "text": "De Barcelona",
-      "start": 139.55,
-      "end": 139.8,
-      "confidence": 0.228,
+      "start": 142.0,
+      "end": 142.25,
+      "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "De",
-          "start": 139.55,
-          "end": 139.65,
-          "confidence": 0.228
+          "start": 142.0,
+          "end": 142.1,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "Barcelona",
-          "start": 139.7,
-          "end": 139.8,
-          "confidence": 0.228
+          "start": 142.15,
+          "end": 142.25,
+          "confidence": 1.0
         }
       ],
       "y": 65,
@@ -5349,30 +5349,30 @@
     {
       "line_index": 88,
       "text": "pa' Santo Domingo",
-      "start": 142.6,
-      "end": 143.3,
-      "confidence": 0.5,
+      "start": 142.25,
+      "end": 142.65,
+      "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "pa'",
-          "start": 142.6,
-          "end": 142.7,
-          "confidence": 0.5
+          "start": 142.25,
+          "end": 142.35,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "Santo",
-          "start": 142.75,
-          "end": 142.85,
-          "confidence": 0.5
+          "start": 142.4,
+          "end": 142.5,
+          "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "Domingo",
-          "start": 142.9,
-          "end": 143.0,
-          "confidence": 0.5
+          "start": 142.55,
+          "end": 142.65,
+          "confidence": 1.0
         }
       ],
       "y": 112,
@@ -5401,58 +5401,58 @@
     {
       "line_index": 89,
       "text": "La Rosalfa mh ha ha ha heh",
-      "start": 144.65,
-      "end": 147.45,
-      "confidence": 0.252,
+      "start": 143.5,
+      "end": 145.2,
+      "confidence": 0.786,
       "words": [
         {
           "word_index": 1,
           "text": "La",
-          "start": 144.65,
-          "end": 144.95,
-          "confidence": 0.252
+          "start": 143.5,
+          "end": 143.6,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "Rosalfa",
-          "start": 145.0,
-          "end": 145.55,
-          "confidence": 0.252
+          "start": 143.65,
+          "end": 143.75,
+          "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "mh",
-          "start": 145.6,
-          "end": 145.9,
-          "confidence": 0.252
+          "start": 143.8,
+          "end": 143.9,
+          "confidence": 0.25
         },
         {
           "word_index": 4,
           "text": "ha",
-          "start": 145.95,
-          "end": 146.3,
-          "confidence": 0.252
+          "start": 143.95,
+          "end": 144.05,
+          "confidence": 0.25
         },
         {
           "word_index": 5,
           "text": "ha",
-          "start": 146.35,
-          "end": 146.65,
-          "confidence": 0.252
+          "start": 144.1,
+          "end": 144.2,
+          "confidence": 1.0
         },
         {
           "word_index": 6,
           "text": "ha",
-          "start": 146.7,
-          "end": 147.05,
-          "confidence": 0.252
+          "start": 144.25,
+          "end": 145.05,
+          "confidence": 1.0
         },
         {
           "word_index": 7,
           "text": "heh",
-          "start": 147.1,
-          "end": 147.45,
-          "confidence": 0.252
+          "start": 145.1,
+          "end": 145.2,
+          "confidence": 1.0
         }
       ],
       "y": 160,
@@ -5505,29 +5505,29 @@
     {
       "line_index": 90,
       "text": "Heh heh heh",
-      "start": 147.45,
-      "end": 149.85,
+      "start": 146.7,
+      "end": 149.75,
       "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "Heh",
-          "start": 147.45,
-          "end": 148.0,
+          "start": 146.7,
+          "end": 147.5,
           "confidence": 0.252
         },
         {
           "word_index": 2,
           "text": "heh",
-          "start": 148.05,
-          "end": 148.85,
+          "start": 147.8,
+          "end": 148.6,
           "confidence": 0.252
         },
         {
           "word_index": 3,
           "text": "heh",
-          "start": 149.05,
-          "end": 149.85,
+          "start": 148.95,
+          "end": 149.75,
           "confidence": 0.252
         }
       ],
@@ -5557,37 +5557,37 @@
     {
       "line_index": 91,
       "text": "Uh uh uh uh",
-      "start": 151.7,
-      "end": 153.75,
-      "confidence": 0.228,
+      "start": 149.9,
+      "end": 158.45,
+      "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "Uh",
-          "start": 151.7,
-          "end": 152.15,
-          "confidence": 0.228
+          "start": 149.9,
+          "end": 150.7,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "uh",
-          "start": 152.2,
-          "end": 152.7,
-          "confidence": 0.228
+          "start": 150.75,
+          "end": 151.5,
+          "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "uh",
-          "start": 152.75,
-          "end": 153.25,
-          "confidence": 0.228
+          "start": 157.5,
+          "end": 158.3,
+          "confidence": 1.0
         },
         {
           "word_index": 4,
           "text": "uh",
-          "start": 153.3,
-          "end": 153.75,
-          "confidence": 0.228
+          "start": 158.35,
+          "end": 158.45,
+          "confidence": 1.0
         }
       ],
       "y": 111,
@@ -5622,16 +5622,16 @@
     {
       "line_index": 92,
       "text": "Omega",
-      "start": 154.7,
-      "end": 155.5,
-      "confidence": 0.274,
+      "start": 158.45,
+      "end": 158.55,
+      "confidence": 0.27,
       "words": [
         {
           "word_index": 1,
           "text": "Omega",
-          "start": 154.7,
-          "end": 155.5,
-          "confidence": 0.274
+          "start": 158.45,
+          "end": 158.55,
+          "confidence": 0.27
         }
       ],
       "y": 21,
@@ -5648,29 +5648,29 @@
     {
       "line_index": 93,
       "text": "Ey ey ey",
-      "start": 155.5,
-      "end": 155.9,
+      "start": 158.55,
+      "end": 158.95,
       "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
           "text": "Ey",
-          "start": 155.5,
-          "end": 155.6,
+          "start": 158.55,
+          "end": 158.65,
           "confidence": 0.5
         },
         {
           "word_index": 2,
           "text": "ey",
-          "start": 155.65,
-          "end": 155.75,
+          "start": 158.7,
+          "end": 158.8,
           "confidence": 0.5
         },
         {
           "word_index": 3,
           "text": "ey",
-          "start": 155.8,
-          "end": 155.9,
+          "start": 158.85,
+          "end": 158.95,
           "confidence": 0.5
         }
       ],
@@ -5700,22 +5700,22 @@
     {
       "line_index": 94,
       "text": "Uhm gath",
-      "start": 155.9,
-      "end": 156.85,
+      "start": 158.95,
+      "end": 159.2,
       "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
           "text": "Uhm",
-          "start": 155.9,
-          "end": 156.0,
+          "start": 158.95,
+          "end": 159.05,
           "confidence": 0.5
         },
         {
           "word_index": 2,
           "text": "gath",
-          "start": 156.05,
-          "end": 156.85,
+          "start": 159.1,
+          "end": 159.2,
           "confidence": 0.5
         }
       ],

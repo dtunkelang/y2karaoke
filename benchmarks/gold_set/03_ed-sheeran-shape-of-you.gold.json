@@ -4,7 +4,7 @@
   "artist": "Ed Sheeran",
   "candidate_url": "https://www.youtube.com/watch?v=liTfD88dbCo",
   "visual_suitability": {
-    "word_level_score": 0.8429752066115702,
+    "word_level_score": 0.9504132231404959,
     "avg_ocr_confidence": 0.8958600600328807,
     "has_word_level_highlighting": true,
     "is_all_caps": true,
@@ -4549,7 +4549,7 @@
     },
     {
       "line_index": 77,
-      "text": "TELL THE DRIVER MAKETIME",
+      "text": "TELL THE DRIVER NINAKEFHE",
       "start": 108.1,
       "end": 108.65,
       "confidence": 0.715,
@@ -8705,14 +8705,14 @@
       "line_index": 157,
       "text": "7dow",
       "start": 226.95,
-      "end": 227.25,
+      "end": 227.05,
       "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "7Clow",
           "start": 226.95,
-          "end": 227.25,
+          "end": 227.05,
           "confidence": 0.252
         }
       ],
@@ -8729,6 +8729,32 @@
     },
     {
       "line_index": 158,
+      "text": "7cloy",
+      "start": 227.05,
+      "end": 227.25,
+      "confidence": 0.252,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "7Clov",
+          "start": 227.05,
+          "end": 227.25,
+          "confidence": 0.252
+        }
+      ],
+      "y": 89,
+      "word_rois": [
+        [
+          57,
+          89,
+          120,
+          78
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 159,
       "text": "7 hour",
       "start": 227.25,
       "end": 227.5,
@@ -8767,7 +8793,7 @@
       "char_rois": []
     },
     {
-      "line_index": 159,
+      "line_index": 160,
       "text": "Talaud",
       "start": 228.35,
       "end": 229.15,
@@ -8793,7 +8819,7 @@
       "char_rois": []
     },
     {
-      "line_index": 160,
+      "line_index": 161,
       "text": "Sumsprime",
       "start": 229.15,
       "end": 229.25,
@@ -8825,7 +8851,7 @@
       "char_rois": []
     },
     {
-      "line_index": 161,
+      "line_index": 162,
       "text": "Halides",
       "start": 229.25,
       "end": 229.65,
@@ -8851,7 +8877,7 @@
       "char_rois": []
     },
     {
-      "line_index": 162,
+      "line_index": 163,
       "text": "7cloyfiny",
       "start": 229.65,
       "end": 229.75,
@@ -8877,21 +8903,21 @@
       "char_rois": []
     },
     {
-      "line_index": 163,
-      "text": "Maincis",
-      "start": 229.95,
-      "end": 230.75,
+      "line_index": 164,
+      "text": "Inaincis",
+      "start": 229.75,
+      "end": 229.85,
       "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "Mainds",
-          "start": 229.95,
-          "end": 230.75,
+          "start": 229.75,
+          "end": 229.85,
           "confidence": 0.252
         }
       ],
-      "y": 78,
+      "y": 77,
       "word_rois": [
         [
           54,
@@ -8903,7 +8929,33 @@
       "char_rois": []
     },
     {
-      "line_index": 164,
+      "line_index": 165,
+      "text": "Minds",
+      "start": 229.95,
+      "end": 230.75,
+      "confidence": 0.252,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Minds",
+          "start": 229.95,
+          "end": 230.75,
+          "confidence": 0.252
+        }
+      ],
+      "y": 79,
+      "word_rois": [
+        [
+          53,
+          79,
+          174,
+          94
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 166,
       "text": "clouds",
       "start": 231.05,
       "end": 231.15,
@@ -8929,7 +8981,7 @@
       "char_rois": []
     },
     {
-      "line_index": 165,
+      "line_index": 167,
       "text": "Collas",
       "start": 231.15,
       "end": 231.25,
@@ -8955,7 +9007,7 @@
       "char_rois": []
     },
     {
-      "line_index": 166,
+      "line_index": 168,
       "text": "Taimet",
       "start": 231.25,
       "end": 231.35,

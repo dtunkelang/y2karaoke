@@ -4,7 +4,7 @@
   "artist": "OneRepublic",
   "candidate_url": "https://www.youtube.com/watch?v=WQIFlS0Bqok",
   "visual_suitability": {
-    "word_level_score": 0.5476190476190477,
+    "word_level_score": 0.9404761904761905,
     "avg_ocr_confidence": 0.9526402640460742,
     "has_word_level_highlighting": true,
     "is_all_caps": false,
@@ -388,16 +388,16 @@
     },
     {
       "line_index": 7,
-      "text": "Said no more counting dollar",
-      "start": 19.95,
-      "end": 21.6,
+      "text": "Said no more contling dollars",
+      "start": 19.9,
+      "end": 21.55,
       "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "Said",
-          "start": 19.95,
-          "end": 20.05,
+          "start": 19.9,
+          "end": 20.0,
           "confidence": 1.0
         },
         {
@@ -416,16 +416,16 @@
         },
         {
           "word_index": 4,
-          "text": "counting",
+          "text": "conting",
           "start": 20.5,
-          "end": 20.75,
+          "end": 20.7,
           "confidence": 1.0
         },
         {
           "word_index": 5,
-          "text": "dollar",
-          "start": 20.8,
-          "end": 21.6,
+          "text": "dollars",
+          "start": 20.75,
+          "end": 21.55,
           "confidence": 1.0
         }
       ],
@@ -433,33 +433,33 @@
       "word_rois": [
         [
           59,
-          115,
-          67,
-          35
+          116,
+          64,
+          34
         ],
         [
-          131,
+          127,
           116,
           38,
           34
         ],
         [
-          173,
+          170,
           116,
-          72,
+          76,
           34
         ],
         [
-          249,
+          250,
           116,
           123,
           34
         ],
         [
-          377,
-          115,
-          97,
-          35
+          378,
+          116,
+          105,
+          34
         ]
       ],
       "char_rois": []
@@ -2203,57 +2203,57 @@
     {
       "line_index": 33,
       "text": "Baby I been I been prayinn' hard",
-      "start": 94.0,
-      "end": 95.0,
+      "start": 94.85,
+      "end": 95.85,
       "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "Baby",
-          "start": 94.0,
-          "end": 94.1,
+          "start": 94.85,
+          "end": 94.95,
           "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "I",
-          "start": 94.15,
-          "end": 94.25,
+          "start": 95.0,
+          "end": 95.1,
           "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "been",
-          "start": 94.3,
-          "end": 94.4,
+          "start": 95.15,
+          "end": 95.25,
           "confidence": 1.0
         },
         {
           "word_index": 4,
           "text": "I",
-          "start": 94.45,
-          "end": 94.55,
+          "start": 95.3,
+          "end": 95.4,
           "confidence": 1.0
         },
         {
           "word_index": 5,
           "text": "been",
-          "start": 94.6,
-          "end": 94.7,
+          "start": 95.45,
+          "end": 95.55,
           "confidence": 1.0
         },
         {
           "word_index": 6,
           "text": "prayin'",
-          "start": 94.75,
-          "end": 94.85,
+          "start": 95.6,
+          "end": 95.7,
           "confidence": 1.0
         },
         {
           "word_index": 7,
           "text": "hard",
-          "start": 94.9,
-          "end": 95.0,
+          "start": 95.75,
+          "end": 95.85,
           "confidence": 1.0
         }
       ],
@@ -2306,78 +2306,78 @@
     },
     {
       "line_index": 34,
-      "text": "said no more counting dollar",
-      "start": 95.7,
-      "end": 98.1,
+      "text": "said no more contling dollars",
+      "start": 98.25,
+      "end": 99.35,
       "confidence": 0.228,
       "words": [
         {
           "word_index": 1,
           "text": "said",
-          "start": 95.7,
-          "end": 96.15,
+          "start": 98.25,
+          "end": 98.35,
           "confidence": 0.228
         },
         {
           "word_index": 2,
           "text": "no",
-          "start": 96.2,
-          "end": 96.5,
+          "start": 98.4,
+          "end": 98.5,
           "confidence": 0.228
         },
         {
           "word_index": 3,
           "text": "more",
-          "start": 96.55,
-          "end": 97.0,
+          "start": 98.55,
+          "end": 98.65,
           "confidence": 0.228
         },
         {
           "word_index": 4,
-          "text": "counting",
-          "start": 97.05,
-          "end": 97.6,
+          "text": "conting",
+          "start": 98.7,
+          "end": 98.8,
           "confidence": 0.228
         },
         {
           "word_index": 5,
-          "text": "dollar",
-          "start": 97.65,
-          "end": 98.1,
+          "text": "dollars",
+          "start": 98.85,
+          "end": 99.35,
           "confidence": 0.228
         }
       ],
       "y": 68,
       "word_rois": [
         [
-          61,
-          69,
-          63,
-          33
-        ],
-        [
-          128,
+          59,
           70,
-          36,
-          32
+          64,
+          34
         ],
         [
-          168,
+          127,
+          70,
+          38,
+          34
+        ],
+        [
+          170,
           70,
           72,
-          32
+          34
         ],
         [
-          244,
+          246,
           70,
-          128,
-          32
+          123,
+          34
         ],
         [
-          376,
-          69,
-          96,
-          33
+          373,
+          70,
+          100,
+          34
         ]
       ],
       "char_rois": []
@@ -2794,10 +2794,10 @@
     },
     {
       "line_index": 41,
-      "text": "said no more counting dollar",
+      "text": "said no more contling dollars",
       "start": 115.4,
       "end": 116.8,
-      "confidence": 1.0,
+      "confidence": 0.85,
       "words": [
         {
           "word_index": 1,
@@ -2822,50 +2822,50 @@
         },
         {
           "word_index": 4,
-          "text": "counting",
+          "text": "conting",
           "start": 116.55,
           "end": 116.65,
           "confidence": 1.0
         },
         {
           "word_index": 5,
-          "text": "dollar",
+          "text": "dollars",
           "start": 116.7,
           "end": 116.8,
-          "confidence": 1.0
+          "confidence": 0.25
         }
       ],
       "y": 68,
       "word_rois": [
         [
-          61,
-          69,
-          59,
-          33
+          57,
+          70,
+          64,
+          34
         ],
         [
-          124,
+          125,
           70,
-          40,
-          32
+          38,
+          34
         ],
         [
           168,
           70,
-          76,
-          32
+          72,
+          34
         ],
         [
-          248,
+          244,
           70,
-          124,
-          32
+          127,
+          34
         ],
         [
           376,
-          69,
-          96,
-          33
+          70,
+          99,
+          34
         ]
       ],
       "char_rois": []
@@ -4491,9 +4491,9 @@
     },
     {
       "line_index": 66,
-      "text": "said no more counting dollar",
+      "text": "said no more contling dollars",
       "start": 165.75,
-      "end": 166.6,
+      "end": 166.55,
       "confidence": 0.228,
       "words": [
         {
@@ -4519,16 +4519,16 @@
         },
         {
           "word_index": 4,
-          "text": "counting",
+          "text": "conting",
           "start": 166.2,
           "end": 166.3,
           "confidence": 0.228
         },
         {
           "word_index": 5,
-          "text": "dollar",
+          "text": "dollars",
           "start": 166.35,
-          "end": 166.6,
+          "end": 166.55,
           "confidence": 0.228
         }
       ],
@@ -4536,33 +4536,33 @@
       "word_rois": [
         [
           59,
-          66,
-          63,
-          30
+          70,
+          64,
+          32
         ],
         [
-          126,
-          67,
-          38,
-          29
+          127,
+          70,
+          36,
+          32
         ],
         [
           167,
-          68,
-          74,
-          29
+          70,
+          76,
+          32
         ],
         [
-          244,
-          69,
-          126,
-          30
+          247,
+          70,
+          124,
+          32
         ],
         [
-          374,
-          71,
-          95,
-          30
+          375,
+          70,
+          98,
+          32
         ]
       ],
       "char_rois": []
@@ -4901,7 +4901,7 @@
     },
     {
       "line_index": 73,
-      "text": "COII",
+      "text": "COHN",
       "start": 180.2,
       "end": 180.3,
       "confidence": 0.373,
@@ -5031,7 +5031,7 @@
     },
     {
       "line_index": 75,
-      "text": "said no more corning dollars",
+      "text": "said no more contling dollars",
       "start": 187.4,
       "end": 188.1,
       "confidence": 1.0,
@@ -6130,9 +6130,9 @@
     },
     {
       "line_index": 93,
-      "text": "Said no more counting dollar",
+      "text": "Said no more contling dollars",
       "start": 226.3,
-      "end": 230.0,
+      "end": 229.95,
       "confidence": 0.7,
       "words": [
         {
@@ -6145,63 +6145,63 @@
         {
           "word_index": 2,
           "text": "no",
-          "start": 229.45,
-          "end": 229.55,
+          "start": 229.4,
+          "end": 229.5,
           "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "more",
-          "start": 229.6,
-          "end": 229.7,
+          "start": 229.55,
+          "end": 229.65,
           "confidence": 1.0
         },
         {
           "word_index": 4,
-          "text": "counting",
-          "start": 229.75,
-          "end": 229.85,
+          "text": "conting",
+          "start": 229.7,
+          "end": 229.8,
           "confidence": 0.25
         },
         {
           "word_index": 5,
-          "text": "dollar",
-          "start": 229.9,
-          "end": 230.0,
+          "text": "dollars",
+          "start": 229.85,
+          "end": 229.95,
           "confidence": 1.0
         }
       ],
       "y": 117,
       "word_rois": [
         [
-          59,
-          117,
-          64,
-          33
+          57,
+          116,
+          68,
+          34
         ],
         [
-          127,
-          117,
-          40,
-          33
+          130,
+          116,
+          38,
+          34
         ],
         [
-          171,
-          117,
-          76,
-          33
+          172,
+          116,
+          72,
+          34
         ],
         [
-          251,
-          117,
-          124,
-          33
+          248,
+          116,
+          128,
+          34
         ],
         [
-          379,
-          117,
-          104,
-          33
+          380,
+          116,
+          103,
+          34
         ]
       ],
       "char_rois": []
@@ -6209,36 +6209,36 @@
     {
       "line_index": 94,
       "text": "we'll be counting stars",
-      "start": 230.0,
-      "end": 230.55,
+      "start": 229.95,
+      "end": 230.5,
       "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "we'll",
-          "start": 230.0,
-          "end": 230.1,
+          "start": 229.95,
+          "end": 230.05,
           "confidence": 0.252
         },
         {
           "word_index": 2,
           "text": "be",
-          "start": 230.15,
-          "end": 230.25,
+          "start": 230.1,
+          "end": 230.2,
           "confidence": 0.252
         },
         {
           "word_index": 3,
           "text": "counting",
-          "start": 230.3,
-          "end": 230.4,
+          "start": 230.25,
+          "end": 230.35,
           "confidence": 0.252
         },
         {
           "word_index": 4,
           "text": "stars",
-          "start": 230.45,
-          "end": 230.55,
+          "start": 230.4,
+          "end": 230.5,
           "confidence": 0.252
         }
       ],
@@ -6274,29 +6274,29 @@
     {
       "line_index": 95,
       "text": "Lately I been",
-      "start": 230.55,
-      "end": 230.95,
+      "start": 230.5,
+      "end": 230.9,
       "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "Lately",
-          "start": 230.55,
-          "end": 230.65,
+          "start": 230.5,
+          "end": 230.6,
           "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "I",
-          "start": 230.7,
-          "end": 230.8,
+          "start": 230.65,
+          "end": 230.75,
           "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "been",
-          "start": 230.85,
-          "end": 230.95,
+          "start": 230.8,
+          "end": 230.9,
           "confidence": 1.0
         }
       ],
@@ -6326,36 +6326,36 @@
     {
       "line_index": 96,
       "text": "I been losing sleep",
-      "start": 231.35,
-      "end": 232.05,
+      "start": 231.3,
+      "end": 232.0,
       "confidence": 0.228,
       "words": [
         {
           "word_index": 1,
           "text": "I",
-          "start": 231.35,
-          "end": 231.45,
+          "start": 231.3,
+          "end": 231.4,
           "confidence": 0.228
         },
         {
           "word_index": 2,
           "text": "been",
-          "start": 231.5,
-          "end": 231.6,
+          "start": 231.45,
+          "end": 231.55,
           "confidence": 0.228
         },
         {
           "word_index": 3,
           "text": "losing",
-          "start": 231.65,
-          "end": 231.75,
+          "start": 231.6,
+          "end": 231.7,
           "confidence": 0.228
         },
         {
           "word_index": 4,
           "text": "sleep",
-          "start": 231.8,
-          "end": 231.9,
+          "start": 231.75,
+          "end": 231.85,
           "confidence": 0.228
         }
       ],
@@ -6392,7 +6392,7 @@
       "line_index": 97,
       "text": "Dreaming about the things",
       "start": 233.9,
-      "end": 238.0,
+      "end": 238.05,
       "confidence": 0.252,
       "words": [
         {
@@ -6405,22 +6405,22 @@
         {
           "word_index": 2,
           "text": "about",
-          "start": 235.55,
-          "end": 236.35,
+          "start": 235.6,
+          "end": 236.4,
           "confidence": 0.252
         },
         {
           "word_index": 3,
           "text": "the",
-          "start": 237.2,
-          "end": 237.45,
+          "start": 237.25,
+          "end": 237.5,
           "confidence": 0.252
         },
         {
           "word_index": 4,
           "text": "things",
-          "start": 237.45,
-          "end": 238.0,
+          "start": 237.5,
+          "end": 238.05,
           "confidence": 0.252
         }
       ],
@@ -6618,7 +6618,7 @@
     },
     {
       "line_index": 100,
-      "text": "said no more corning dollars",
+      "text": "said no more contling dollars",
       "start": 244.3,
       "end": 245.0,
       "confidence": 1.0,
