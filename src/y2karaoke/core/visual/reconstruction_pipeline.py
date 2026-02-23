@@ -8,6 +8,7 @@ from .reconstruction_deduplication import deduplicate_persistent_lines
 from .reconstruction_target_conversion import convert_persistent_lines_to_target_lines
 
 EntriesPass = Callable[[list[dict[str, Any]]], list[dict[str, Any]]]
+EntryPairPredicate = Callable[[dict[str, Any], dict[str, Any]], bool]
 FrameFilter = Callable[[list[dict[str, Any]]], list[dict[str, Any]]]
 SnapFn = Callable[[float], float]
 
@@ -18,6 +19,10 @@ def reconstruct_lyrics_from_visuals(  # noqa: C901
     *,
     filter_static_overlay_words: FrameFilter,
     merge_overlapping_same_lane_duplicates: EntriesPass,
+    merge_dim_fade_in_fragments: Callable[
+        [list[dict[str, Any]], EntryPairPredicate], list[dict[str, Any]]
+    ],
+    is_same_lane: EntryPairPredicate,
     merge_short_same_lane_reentries: EntriesPass,
     expand_overlapped_same_text_repetitions: EntriesPass,
     extrapolate_mirrored_lane_cycles: EntriesPass,
@@ -40,6 +45,8 @@ def reconstruct_lyrics_from_visuals(  # noqa: C901
     unique = deduplicate_persistent_lines(committed)
 
     unique = merge_overlapping_same_lane_duplicates(unique)
+
+    unique = merge_dim_fade_in_fragments(unique, is_same_lane=is_same_lane)
 
     unique = merge_short_same_lane_reentries(unique)
 

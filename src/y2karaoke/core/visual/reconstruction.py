@@ -28,6 +28,9 @@ from .reconstruction_lane_merge import (
     is_same_lane as _is_same_lane_impl,
 )
 from .reconstruction_lane_merge import (
+    merge_dim_fade_in_fragments as _merge_dim_fade_in_fragments_impl,
+)
+from .reconstruction_lane_merge import (
     merge_overlapping_same_lane_duplicates as _merge_overlapping_same_lane_duplicates_impl,
 )
 from .reconstruction_overlap_repetitions import (
@@ -88,6 +91,17 @@ def _merge_overlapping_same_lane_duplicates(
         entries,
         is_short_refrain_entry=_is_short_refrain_entry,
         is_same_lane=_is_same_lane,
+    )
+
+
+def _merge_dim_fade_in_fragments(
+    entries: list[dict[str, Any]],
+    *,
+    is_same_lane: EntryPairPredicate,
+) -> list[dict[str, Any]]:
+    return _merge_dim_fade_in_fragments_impl(
+        entries,
+        is_same_lane=is_same_lane,
     )
 
 
@@ -179,6 +193,8 @@ def reconstruct_lyrics_from_visuals(  # noqa: C901
         visual_fps,
         filter_static_overlay_words=_filter_static_overlay_words,
         merge_overlapping_same_lane_duplicates=_merge_overlapping_same_lane_duplicates,
+        merge_dim_fade_in_fragments=_merge_dim_fade_in_fragments,
+        is_same_lane=_is_same_lane,
         merge_short_same_lane_reentries=_merge_short_same_lane_reentries,
         expand_overlapped_same_text_repetitions=_expand_overlapped_same_text_repetitions,
         extrapolate_mirrored_lane_cycles=_extrapolate_mirrored_lane_cycles,

@@ -22,6 +22,7 @@ class TrackedLine:
         self.id = entry_key
         self.lane = entry["lane"]
         self.y_history = [entry["y"]]
+        self.brightness_history = [entry.get("brightness", 0.0)]
         self.text_counts = collections.Counter({entry["text"]: 1})
         self.entries = [entry]
         self.first_seen = entry["first"]
@@ -36,6 +37,7 @@ class TrackedLine:
         self.entries.append(entry)
         self.last_seen = curr_time
         self.y_history.append(entry["y"])
+        self.brightness_history.append(entry.get("brightness", 0.0))
         self.text_counts[entry["text"]] += 1
 
         # Update visibility
@@ -57,6 +59,12 @@ class TrackedLine:
         if not self.y_history:
             return 0
         return int(sum(self.y_history[-5:]) / len(self.y_history[-5:]))
+
+    @property
+    def avg_brightness(self) -> float:
+        if not self.brightness_history:
+            return 0.0
+        return sum(self.brightness_history) / len(self.brightness_history)
 
     @property
     def best_text(self) -> str:
@@ -103,6 +111,7 @@ class TrackedLine:
             "visible_yet": self.visible_yet,
             "vis_count": self.vis_count,
             "w_rois": best_entry["w_rois"],
+            "avg_brightness": self.avg_brightness,
         }
 
 
@@ -312,6 +321,9 @@ def _process_line_in_frame(
         "y": y_pos,
         "lane": lane,
         "w_rois": [(w["x"], w["y"], w["w"], w["h"]) for w in ln_w],
+        "brightness": (
+            sum(w.get("brightness", 0.0) for w in ln_w) / len(ln_w) if ln_w else 0.0
+        ),
     }
 
     return entry, is_visible
