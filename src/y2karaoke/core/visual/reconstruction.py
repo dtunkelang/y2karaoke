@@ -25,6 +25,7 @@ from .reconstruction_context_transitions import (
     split_persistent_line_epochs_from_context_transitions as _split_persistent_line_epochs_from_context_transitions_impl,
 )
 from .reconstruction_lane_merge import (
+    EntryPairPredicate,
     is_same_lane as _is_same_lane_impl,
 )
 from .reconstruction_lane_merge import (
@@ -96,7 +97,6 @@ def _merge_overlapping_same_lane_duplicates(
 
 def _merge_dim_fade_in_fragments(
     entries: list[dict[str, Any]],
-    *,
     is_same_lane: EntryPairPredicate,
 ) -> list[dict[str, Any]]:
     return _merge_dim_fade_in_fragments_impl(

@@ -46,7 +46,7 @@ def reconstruct_lyrics_from_visuals(  # noqa: C901
 
     unique = merge_overlapping_same_lane_duplicates(unique)
 
-    unique = merge_dim_fade_in_fragments(unique, is_same_lane=is_same_lane)
+    unique = merge_dim_fade_in_fragments(unique, is_same_lane)
 
     unique = merge_short_same_lane_reentries(unique)
 
