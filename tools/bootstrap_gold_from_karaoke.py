@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import subprocess
 import sys
 from time import perf_counter
@@ -281,6 +282,29 @@ def _parse_args() -> argparse.Namespace:
     p.add_argument("--min-detectability", type=float, default=0.45)
     p.add_argument("--min-word-level-score", type=float, default=0.15)
     p.add_argument("--raw-ocr-cache-version", default=RAW_OCR_CACHE_VERSION)
+    p.add_argument(
+        "--visual-spell-correction-mode",
+        choices=["full", "no-guesses", "off", "auto"],
+        default="off",
+        help=(
+            "OCR text cleanup mode during visual reconstruction: "
+            "'full' uses OCR variants + system guesses, "
+            "'no-guesses' disables generic OS spell guesses, "
+            "'off' disables spell correction entirely, "
+            "'auto' applies OCR-only correction to suspicious OCR tokens."
+        ),
+    )
+    p.add_argument(
+        "--visual-refinement-mode",
+        choices=["auto", "high-fps-word", "low-fps-line"],
+        default="auto",
+        help=(
+            "Visual timing refinement mode: "
+            "'auto' picks based on suitability score, "
+            "'high-fps-word' forces word-level refinement, "
+            "'low-fps-line' forces line-level refinement."
+        ),
+    )
     p.add_argument("--allow-low-suitability", action="store_true")
     p.add_argument(
         "--strict-sequential", action="store_true"
@@ -377,9 +401,38 @@ def _bootstrap_refined_lines(
         f"elapsed={ocr_elapsed:.1f}s"
     )
     reconstruct_t0 = perf_counter()
-    t_lines = reconstruct_lyrics_from_visuals(
-        raw_frames, args.visual_fps, artist=args.artist
-    )
+    prev_spell_mode = os.environ.get("Y2K_VISUAL_SPELL_CORRECTION_MODE")
+    prev_disable_spell_correct = os.environ.get("Y2K_VISUAL_DISABLE_SPELL_CORRECT")
+    prev_disable_spell_guesses = os.environ.get("Y2K_VISUAL_DISABLE_SPELL_GUESSES")
+    try:
+        mode = str(getattr(args, "visual_spell_correction_mode", "full"))
+        os.environ["Y2K_VISUAL_SPELL_CORRECTION_MODE"] = mode
+        # Keep legacy toggles in sync for older codepaths/tests.
+        if mode == "off":
+            os.environ["Y2K_VISUAL_DISABLE_SPELL_CORRECT"] = "1"
+            os.environ.pop("Y2K_VISUAL_DISABLE_SPELL_GUESSES", None)
+        elif mode in {"no-guesses", "auto"}:
+            os.environ.pop("Y2K_VISUAL_DISABLE_SPELL_CORRECT", None)
+            os.environ["Y2K_VISUAL_DISABLE_SPELL_GUESSES"] = "1"
+        else:
+            os.environ.pop("Y2K_VISUAL_DISABLE_SPELL_CORRECT", None)
+            os.environ.pop("Y2K_VISUAL_DISABLE_SPELL_GUESSES", None)
+        t_lines = reconstruct_lyrics_from_visuals(
+            raw_frames, args.visual_fps, artist=args.artist
+        )
+    finally:
+        if prev_spell_mode is None:
+            os.environ.pop("Y2K_VISUAL_SPELL_CORRECTION_MODE", None)
+        else:
+            os.environ["Y2K_VISUAL_SPELL_CORRECTION_MODE"] = prev_spell_mode
+        if prev_disable_spell_correct is None:
+            os.environ.pop("Y2K_VISUAL_DISABLE_SPELL_CORRECT", None)
+        else:
+            os.environ["Y2K_VISUAL_DISABLE_SPELL_CORRECT"] = prev_disable_spell_correct
+        if prev_disable_spell_guesses is None:
+            os.environ.pop("Y2K_VISUAL_DISABLE_SPELL_GUESSES", None)
+        else:
+            os.environ["Y2K_VISUAL_DISABLE_SPELL_GUESSES"] = prev_disable_spell_guesses
     reconstruct_elapsed = perf_counter() - reconstruct_t0
     logger.info(
         f"Reconstructed {len(t_lines)} initial lines in {reconstruct_elapsed:.1f}s."
@@ -390,8 +443,20 @@ def _bootstrap_refined_lines(
         word_level_score = float(selected_metrics.get("word_level_score", 0.0))
 
     refine_t0 = perf_counter()
+    requested_refine_mode = str(getattr(args, "visual_refinement_mode", "auto"))
     refine_mode = "high_fps_word"
-    if word_level_score >= LINE_LEVEL_REFINE_SKIP_THRESHOLD:
+    if requested_refine_mode == "high-fps-word":
+        refine_word_timings_at_high_fps(v_path, t_lines, roi)
+    elif requested_refine_mode == "low-fps-line":
+        refine_mode = "low_fps_line"
+        logger.info("Forcing low-FPS line-level timing refinement.")
+        refine_line_timings_at_low_fps(
+            v_path,
+            t_lines,
+            roi,
+            sample_fps=LOW_FPS_LINE_REFINE_FPS,
+        )
+    elif word_level_score >= LINE_LEVEL_REFINE_SKIP_THRESHOLD:
         refine_word_timings_at_high_fps(v_path, t_lines, roi)
     else:
         refine_mode = "low_fps_line"
@@ -424,9 +489,13 @@ def _bootstrap_refined_lines(
         "reconstruction": {
             "initial_line_count": len(t_lines),
             "elapsed_sec": round(reconstruct_elapsed, 3),
+            "spell_correction_mode": str(
+                getattr(args, "visual_spell_correction_mode", "full")
+            ),
         },
         "refinement": {
             "mode": refine_mode,
+            "requested_mode": requested_refine_mode,
             "elapsed_sec": round(refine_elapsed, 3),
             "output_line_count": len(lines_out),
             "word_level_score": round(word_level_score, 4),

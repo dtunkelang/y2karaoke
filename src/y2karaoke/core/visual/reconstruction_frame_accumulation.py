@@ -98,9 +98,18 @@ class TrackedLine:
         if not valid_entries:
             return self.best_text
 
+        valid_entry_texts = [
+            str(e.get("text", ""))
+            for e in self.entries
+            if len(e.get("words", [])) == target_wc
+        ]
+        text_freq = collections.Counter(valid_entry_texts)
+
         final_words = []
+        position_vote_counts: list[collections.Counter[str]] = []
         for i in range(target_wc):
             word_votes = collections.Counter(tokens[i] for tokens in valid_entries)
+            position_vote_counts.append(word_votes)
 
             # Weighted vote
             weighted_votes = {}
@@ -112,8 +121,37 @@ class TrackedLine:
 
             best_word = max(weighted_votes.items(), key=lambda x: x[1])[0]
             final_words.append(best_word)
+        voted_text = " ".join(final_words)
 
-        return " ".join(final_words)
+        # When per-position consensus is weak, per-word voting can synthesize a
+        # never-observed "Frankenstein" line. In that case prefer the strongest
+        # observed candidate with the target word count.
+        if voted_text not in text_freq:
+            n_valid = max(1, len(valid_entries))
+            supports = [
+                position_vote_counts[i].get(final_words[i], 0) / float(n_valid)
+                for i in range(target_wc)
+            ]
+            weak_positions = sum(1 for s in supports if s < 0.5)
+            avg_support = sum(supports) / len(supports) if supports else 1.0
+            if avg_support < 0.72 or weak_positions >= 2:
+                best_tokens = max(
+                    valid_entries,
+                    key=lambda toks: (
+                        # Prefer candidates matching high-support position votes.
+                        sum(
+                            position_vote_counts[i].get(tok, 0)
+                            for i, tok in enumerate(toks)
+                        ),
+                        text_freq.get(" ".join(toks), 0),
+                        # Deterministic tie-breakers
+                        sum(len(tok) for tok in toks),
+                        " ".join(toks),
+                    ),
+                )
+                return " ".join(best_tokens)
+
+        return voted_text
 
     def to_dict(self) -> Dict[str, Any]:
         # Construct the final entry dictionary

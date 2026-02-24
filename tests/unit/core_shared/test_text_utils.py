@@ -1,6 +1,7 @@
 """Tests for text utility functions."""
 
 import pytest  # noqa: F401
+import y2karaoke.core.text_utils as text_utils_mod
 from y2karaoke.core.text_utils import (
     make_slug,
     clean_title_for_search,
@@ -240,6 +241,27 @@ class TestNormalizeOcrTokens:
             ["come", "on", "be", "my", "baby", "come", "one"]
         ) == ["come", "on", "be", "my", "baby", "come", "on"]
 
+    def test_repairs_common_karaoke_ocr_fragments_deterministically(self):
+        assert normalize_ocr_tokens(["Corne", "me"]) == ["come", "me"]
+        assert normalize_ocr_tokens(["come", "cance", "with", "me"]) == [
+            "come",
+            "dance",
+            "with",
+            "me",
+        ]
+        assert normalize_ocr_tokens(["youre", "my", "starlich"]) == [
+            "youre",
+            "my",
+            "starlight",
+        ]
+        assert normalize_ocr_tokens(["with", "metonight"]) == ["with", "tonight"]
+        assert normalize_ocr_tokens(["And", "youtre", "here"]) == [
+            "And",
+            "you're",
+            "here",
+        ]
+        assert normalize_ocr_tokens(["so", "Ctric"]) == ["so", "electric"]
+
     def test_repairs_short_token_confusions_in_context(self):
         assert normalize_ocr_tokens(["girl", "you", "know", "l", "want"]) == [
             "girl",
@@ -277,3 +299,38 @@ class TestNormalizeOcrLine:
 
     def test_leaves_non_chant_tokens_unchanged(self):
         assert normalize_ocr_line("with your body") == "with your body"
+
+
+class TestVisualSpellCorrectionModes:
+    def test_visual_spell_mode_env_precedence(self, monkeypatch):
+        monkeypatch.setenv("Y2K_VISUAL_SPELL_CORRECTION_MODE", "auto")
+        monkeypatch.setenv("Y2K_VISUAL_DISABLE_SPELL_CORRECT", "1")
+        assert text_utils_mod._visual_spell_correction_mode() == "auto"
+
+    def test_spell_correct_passes_mode_to_mode_aware_cache(self, monkeypatch):
+        calls = []
+
+        def fake_cached(text: str, mode: str) -> str:
+            calls.append((text, mode))
+            return f"{mode}:{text}"
+
+        monkeypatch.setattr(text_utils_mod, "_spell_correct_cached", fake_cached)
+        monkeypatch.setenv("Y2K_VISUAL_SPELL_CORRECTION_MODE", "full")
+        assert text_utils_mod.spell_correct("demo") == "full:demo"
+        monkeypatch.setenv("Y2K_VISUAL_SPELL_CORRECTION_MODE", "off")
+        assert text_utils_mod.spell_correct("demo") == "off:demo"
+        assert calls == [("demo", "full"), ("demo", "off")]
+
+    @pytest.mark.parametrize(
+        ("word", "expected"),
+        [
+            ("modern", False),
+            ("love", False),
+            ("rnother", True),
+            ("cI0ud", True),
+            ("cl0ser", True),
+            ("miiine", True),
+        ],
+    )
+    def test_looks_ocr_suspicious_heuristic(self, word, expected):
+        assert text_utils_mod._looks_ocr_suspicious(word) is expected

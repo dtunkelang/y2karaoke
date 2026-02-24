@@ -4,6 +4,7 @@ Text utilities for slug generation, normalization, and karaoke-specific line cle
 These are general-purpose helpers used across the y2karaoke core modules.
 """
 
+import os
 import re
 import unicodedata
 from functools import lru_cache
@@ -248,8 +249,11 @@ def _is_correctly_spelled(word: str, checker: Any) -> bool:
     return checker.checkSpellingOfString_startingAt_(word, 0).length == 0
 
 
-def _get_ocr_variants(word: str) -> set[str]:
-    """Generate potential corrections based on common OCR confusions."""
+def _get_ocr_variants(word: str) -> list[str]:
+    """Generate potential corrections based on common OCR confusions.
+
+    Returns a deterministic BFS-ordered list (closest/simple rewrites first).
+    """
     # (confusion, target) - we want to go from OCR error to real word
     rules = [
         ("rn", "m"),
@@ -283,28 +287,76 @@ def _get_ocr_variants(word: str) -> set[str]:
         ("ll", "n"),
     ]
 
-    variants = {word.lower()}
+    seed = word.lower()
+    seen = {seed}
+    variants = [seed]
 
-    # Try applying rules recursively up to a depth of 4
-    current_tier = {word.lower()}
+    # Try applying rules recursively up to a depth of 4 (breadth-first)
+    current_tier = [seed]
     for _ in range(4):
-        next_tier = set()
+        next_tier: list[str] = []
         for w in current_tier:
             for conf, target in rules:
                 if conf in w:
-                    next_tier.add(w.replace(conf, target))
+                    candidate = w.replace(conf, target)
+                    if candidate in seen:
+                        continue
+                    seen.add(candidate)
+                    next_tier.append(candidate)
         if not next_tier:
             break
-        variants.update(next_tier)
+        variants.extend(next_tier)
         current_tier = next_tier
 
     return variants
 
 
-@lru_cache(maxsize=1024)
 def spell_correct(text: str) -> str:
-    """Attempt spell correction using generic OCR rules and system checker."""
+    """Attempt spell correction using the active visual spell-correction mode."""
+    mode = _visual_spell_correction_mode()
+    return _spell_correct_cached(text, mode)
+
+
+def _visual_spell_correction_mode() -> str:
+    mode = os.environ.get("Y2K_VISUAL_SPELL_CORRECTION_MODE", "").strip().lower()
+    if mode in {"full", "no-guesses", "off", "auto"}:
+        return mode
+    if os.environ.get("Y2K_VISUAL_DISABLE_SPELL_CORRECT", "0") == "1":
+        return "off"
+    if os.environ.get("Y2K_VISUAL_DISABLE_SPELL_GUESSES", "0") == "1":
+        return "no-guesses"
+    return "full"
+
+
+def _looks_ocr_suspicious(word: str) -> bool:
+    low = word.lower()
+    if len(low) < 3:
+        return False
+    if any(ch.isdigit() for ch in low) and any(ch.isalpha() for ch in low):
+        return True
+    if "|" in low:
+        return True
+    # Common OCR confusion clusters. Avoid overly common patterns like "in".
+    if any(cluster in low for cluster in ("vv", "ii")):
+        return True
+    if low.startswith(("rn", "ri", "ni")):
+        return True
+    # Many narrow glyphs often indicate OCR confusion (e.g. lI1 noise).
+    narrow_count = sum(1 for ch in low if ch in {"l", "i", "1"})
+    if len(low) >= 4 and narrow_count >= 3:
+        return True
+    return False
+
+
+@lru_cache(maxsize=4096)
+def _spell_correct_cached(text: str, mode: str) -> str:
+    """Mode-aware cached spell correction.
+
+    The mode is part of the cache key to avoid cross-mode contamination.
+    """
     if not text:
+        return text
+    if mode == "off":
         return text
 
     try:
@@ -327,6 +379,11 @@ def spell_correct(text: str) -> str:
             corrected.append(w)
             continue
 
+        auto_mode = mode == "auto"
+        if auto_mode and not _looks_ocr_suspicious(low_w):
+            corrected.append(w)
+            continue
+
         # 2. Misspelled? Try standard OCR confusion reversals
         found_variant = False
         variants = _get_ocr_variants(low_w)
@@ -340,6 +397,9 @@ def spell_correct(text: str) -> str:
             continue
 
         # 3. Fallback to standard system guesses
+        if mode in {"no-guesses", "auto"}:
+            corrected.append(w)
+            continue
         missed = checker.checkSpellingOfString_startingAt_(w, 0)
         if missed.length > 0:
             guesses = (
@@ -384,6 +444,8 @@ def normalize_ocr_line(text: str) -> str:
         out.append(tok)
     out = _regularize_short_chant_alternation(out)
     repaired = _repair_fused_ocr_words(" ".join(out))
+    if _visual_spell_correction_mode() == "off":
+        return repaired
     return spell_correct(repaired)
 
 
@@ -705,6 +767,25 @@ def _contextual_ocr_token_replacement(  # noqa: C901
         return "want"
     if low == "walls" and prev_low == "vou":
         return "want"
+
+    # Deterministic OCR repairs for common karaoke lyric fragments
+    # (kept token-count preserving; no spellchecker dependency).
+    if low == "corne" and next_low in {"me", "on", "baby", "with"}:
+        return "come"
+    if low == "cance" and (prev_low in {"on", "come"} or next_low in {"with", "me"}):
+        return "dance"
+    if low == "starlich" and prev_low in {"my", "youre", "you're"}:
+        return "starlight"
+    if low == "tonish":
+        return "tonight"
+    if low == "metonight" and prev_low == "with":
+        return "tonight"
+    if low == "youtre":
+        return "you're"
+    if low == "ctric":
+        return "electric"
+    if low == "cuting":
+        return "cutting"
 
     if (
         low in {"l", "loh", "loll", "lohl", "lohlohlohl", "lohlohl"}

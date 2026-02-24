@@ -73,21 +73,77 @@ def _song_slug(artist: str, title: str) -> str:
     return _slugify(f"{artist}-{title}")
 
 
-def _resolve_visual_gold(
-    args: argparse.Namespace, idx: int, artist: str, title: str
+def _parse_gold_filename(path: Path) -> tuple[int | None, str]:
+    m = re.match(r"^(?:(\d+)_)?(.+)\.visual\.gold\.json$", path.name)
+    if not m:
+        return None, path.stem
+    idx_raw = m.group(1)
+    idx = int(idx_raw) if idx_raw is not None else None
+    return idx, m.group(2)
+
+
+def _list_visual_gold_files(gold_dir: Path) -> list[Path]:
+    files = sorted(gold_dir.glob("*.visual.gold.json"))
+
+    def _sort_key(path: Path) -> tuple[int, int, str]:
+        idx, slug = _parse_gold_filename(path)
+        return (0 if idx is not None else 1, idx if idx is not None else 9999, slug)
+
+    return sorted(files, key=_sort_key)
+
+
+def _load_gold_artist_title(gold_file: Path) -> tuple[str | None, str | None]:
+    try:
+        payload = json.loads(gold_file.read_text(encoding="utf-8"))
+    except Exception:
+        return None, None
+    if not isinstance(payload, dict):
+        return None, None
+    artist = payload.get("artist")
+    title = payload.get("title")
+    if isinstance(artist, str) and isinstance(title, str):
+        return artist, title
+    return None, None
+
+
+def _resolve_lrc_reference(
+    lrc_dir: Path,
+    *,
+    seed_idx: int | None,
+    artist: str,
+    title: str,
 ) -> Path | None:
     slug = _song_slug(artist, title)
-    exact = args.gold_dir / f"{idx:02d}_{slug}.visual.gold.json"
-    if exact.exists():
-        return exact
-
-    slug_matches = sorted(args.gold_dir.glob(f"*_{slug}.visual.gold.json"))
-    if len(slug_matches) == 1:
+    if seed_idx is not None:
+        exact = lrc_dir / f"{seed_idx:02d}_{slug}.lrc"
+        if exact.exists():
+            return exact
+        idx_candidates = sorted(lrc_dir.glob(f"{seed_idx:02d}_*.lrc"))
+        for cand in idx_candidates:
+            if cand.stem.endswith(slug):
+                return cand
+    slug_matches = sorted(lrc_dir.glob(f"*_{slug}.lrc"))
+    if slug_matches:
         return slug_matches[0]
-    if len(slug_matches) > 1:
-        return slug_matches[0]
-
     return None
+
+
+def _default_lrc_snapshot_path(
+    lrc_dir: Path,
+    *,
+    seed_idx: int | None,
+    artist: str,
+    title: str,
+) -> Path:
+    slug = _song_slug(artist, title)
+    if seed_idx is not None:
+        indexed = lrc_dir / f"{seed_idx:02d}_{slug}.lrc"
+        if not indexed.exists():
+            # Avoid colliding with an existing different song that already uses this index.
+            same_index = [p for p in lrc_dir.glob(f"{seed_idx:02d}_*.lrc")]
+            if not same_index:
+                return indexed
+    return lrc_dir / f"{slug}.lrc"
 
 
 def _pct(values: list[float], q: float) -> float | None:
@@ -161,7 +217,17 @@ def _load_manifest_songs(path: Path) -> list[dict[str, str]]:
 
 def main() -> int:
     args = _parse_args()
-    songs = _load_manifest_songs(args.manifest)
+    manifest_songs = _load_manifest_songs(args.manifest)
+    manifest_by_slug: dict[str, dict[str, Any]] = {}
+    for idx, song in enumerate(manifest_songs, 1):
+        artist = str(song["artist"])
+        title = str(song["title"])
+        manifest_by_slug[_song_slug(artist, title)] = {
+            "index": idx,
+            "artist": artist,
+            "title": title,
+        }
+    gold_files = _list_visual_gold_files(args.gold_dir)
 
     results_md: list[str] = []
     summary_rows_md: list[str] = []
@@ -172,23 +238,31 @@ def main() -> int:
         args.summary_json.parent.mkdir(parents=True, exist_ok=True)
     args.lrc_dir.mkdir(parents=True, exist_ok=True)
 
-    for idx, song in enumerate(songs, 1):
-        artist = str(song["artist"])
-        title = str(song["title"])
-        song_label = f"{artist} - {title}"
-        gold_file = _resolve_visual_gold(args, idx, artist, title)
-        if gold_file is None:
-            msg = f"No visual gold file found for index {idx:02d}"
-            results_md.append(f"## {song_label}\nERROR: {msg}\n")
-            summary_rows_md.append(
-                f"| {idx:02d} | {song_label} | NOT FOUND | NOT FOUND |"
-            )
-            aggregate_rows.append(
-                {"index": idx, "artist": artist, "title": title, "status": "not_found"}
-            )
-            continue
+    seen_manifest_slugs: set[str] = set()
 
-        report_path = args.reports_dir / f"{idx:02d}.json"
+    for gold_file in gold_files:
+        seed_idx, seed_slug = _parse_gold_filename(gold_file)
+        artist, title = _load_gold_artist_title(gold_file)
+        if not artist or not title:
+            # Best-effort fallback to filename slug if metadata is absent.
+            artist = seed_slug.split("-", 1)[0].replace("-", " ").title()
+            title = (
+                seed_slug.split("-", 1)[1].replace("-", " ").title()
+                if "-" in seed_slug
+                else seed_slug
+            )
+        row_slug = _song_slug(artist, title)
+        manifest_match = manifest_by_slug.get(row_slug)
+        if manifest_match:
+            seen_manifest_slugs.add(row_slug)
+        display_idx = (
+            seed_idx if seed_idx is not None else (manifest_match or {}).get("index")
+        )
+        display_idx = int(display_idx) if isinstance(display_idx, int) else 0
+        song_label = f"{artist} - {title}"
+
+        report_stem = f"{display_idx:02d}" if display_idx else seed_slug
+        report_path = args.reports_dir / f"{report_stem}.json"
         cmd = [
             sys.executable,
             "tools/evaluate_visual_lyrics_quality.py",
@@ -201,18 +275,23 @@ def main() -> int:
             "--output-json",
             str(report_path),
         ]
-        lrc_candidates = sorted(args.lrc_dir.glob(f"{idx:02d}_*.lrc"))
-        if lrc_candidates:
-            cmd.extend(["--lrc-file", str(lrc_candidates[0])])
+        lrc_ref = _resolve_lrc_reference(
+            args.lrc_dir, seed_idx=seed_idx, artist=artist, title=title
+        )
+        if lrc_ref is not None:
+            cmd.extend(["--lrc-file", str(lrc_ref)])
         else:
-            # Snapshot fetched LRC references for reproducible future runs.
-            slug = f"{artist}-{title}".lower()
-            safe = "".join(ch if ch.isalnum() else "-" for ch in slug)
-            safe = "-".join(part for part in safe.split("-") if part)
             cmd.extend(
                 [
                     "--write-lrc-file",
-                    str(args.lrc_dir / f"{idx:02d}_{safe}.lrc"),
+                    str(
+                        _default_lrc_snapshot_path(
+                            args.lrc_dir,
+                            seed_idx=seed_idx,
+                            artist=artist,
+                            title=title,
+                        )
+                    ),
                 ]
             )
 
@@ -220,15 +299,23 @@ def main() -> int:
         if res.returncode != 0:
             err = (res.stderr or res.stdout).strip()
             results_md.append(f"## {song_label}\nERROR: {err}\n")
-            summary_rows_md.append(f"| {idx:02d} | {song_label} | ERROR | ERROR |")
+            summary_rows_md.append(
+                f"| {display_idx:02d} | {song_label} | ERROR | ERROR |"
+            )
             aggregate_rows.append(
                 {
-                    "index": idx,
+                    "index": display_idx,
+                    "seed_index": seed_idx,
+                    "song_key": row_slug,
                     "artist": artist,
                     "title": title,
                     "status": "error",
                     "error": err,
                     "gold_json": str(gold_file),
+                    "manifest_index": (
+                        int(manifest_match["index"]) if manifest_match else None
+                    ),
+                    "manifest_match": bool(manifest_match),
                 }
             )
             continue
@@ -257,11 +344,13 @@ def main() -> int:
         )
         results_md.append(f"## {song_label}\n{strict_line}\n{repeat_line}\n")
         summary_rows_md.append(
-            f"| {idx:02d} | {song_label} | {strict_f1:.4f} | {repeat_f1:.4f} |"
+            f"| {display_idx:02d} | {song_label} | {strict_f1:.4f} | {repeat_f1:.4f} |"
         )
         aggregate_rows.append(
             {
-                "index": idx,
+                "index": display_idx,
+                "seed_index": seed_idx,
+                "song_key": row_slug,
                 "artist": artist,
                 "title": title,
                 "status": "ok",
@@ -270,8 +359,25 @@ def main() -> int:
                 "reference_source": payload.get("reference_source", {}),
                 "strict": strict,
                 "repeat_capped": repeat,
+                "manifest_index": (
+                    int(manifest_match["index"]) if manifest_match else None
+                ),
+                "manifest_match": bool(manifest_match),
             }
         )
+
+    manifest_missing = []
+    for slug, meta in manifest_by_slug.items():
+        if slug not in seen_manifest_slugs:
+            manifest_missing.append(meta)
+            song_label = f"{meta['artist']} - {meta['title']}"
+            results_md.append(
+                f"## {song_label}\nERROR: No visual gold file found for manifest song.\n"
+            )
+            summary_rows_md.append(
+                f"| {int(meta['index']):02d} | {song_label} | NOT FOUND | NOT FOUND |"
+            )
+    gold_only_count = sum(1 for row in aggregate_rows if not row.get("manifest_match"))
 
     strict_values = [
         v
@@ -288,12 +394,14 @@ def main() -> int:
         if v is not None
     ]
     aggregate_summary = {
-        "song_count": len(songs),
+        "song_count": len(gold_files),
+        "gold_file_count": len(gold_files),
+        "manifest_song_count": len(manifest_songs),
         "evaluated_count": sum(1 for r in aggregate_rows if r.get("status") == "ok"),
         "error_count": sum(1 for r in aggregate_rows if r.get("status") == "error"),
-        "missing_count": sum(
-            1 for r in aggregate_rows if r.get("status") == "not_found"
-        ),
+        "missing_count": len(manifest_missing),
+        "manifest_missing_count": len(manifest_missing),
+        "gold_only_count": gold_only_count,
         "strict_f1_min": min(strict_values) if strict_values else None,
         "strict_f1_p10": _pct(strict_values, 0.10),
         "strict_f1_p20": _pct(strict_values, 0.20),
@@ -354,6 +462,7 @@ def main() -> int:
                 "summary": aggregate_summary,
                 "recommendations": recommendations,
                 "songs": aggregate_rows,
+                "manifest_missing": manifest_missing,
             },
             indent=2,
         ),

@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import os
 import logging
+import hashlib
+import json
 from typing import Any, Callable, Optional
 
 from ..models import TargetLine
@@ -47,11 +49,28 @@ def reconstruct_lyrics_from_visuals(  # noqa: C901
         if not trace_enabled:
             return
         token_count = sum(len(e.get("words", [])) for e in entries)
+        trace_hash = hashlib.sha256(
+            json.dumps(
+                [
+                    (
+                        round(float(e.get("first_visible", e.get("first", 0.0))), 3),
+                        round(float(e.get("first", 0.0)), 3),
+                        round(float(e.get("last", 0.0)), 3),
+                        int(e.get("lane", -1) if e.get("lane") is not None else -1),
+                        str(e.get("text", "")),
+                    )
+                    for e in entries
+                ],
+                ensure_ascii=True,
+                separators=(",", ":"),
+            ).encode("utf-8")
+        ).hexdigest()[:12]
         logger.info(
-            "recon_trace stage=%s lines=%d tokens=%d",
+            "recon_trace stage=%s lines=%d tokens=%d hash=%s",
             stage,
             len(entries),
             token_count,
+            trace_hash,
         )
 
     committed = accumulate_persistent_lines_from_frames(
