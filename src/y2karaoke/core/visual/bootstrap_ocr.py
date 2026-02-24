@@ -329,7 +329,9 @@ def _build_line_boxes(
                 med_h = (sorted_h[mid_h - 1] + sorted_h[mid_h]) * 0.5
             else:
                 med_h = float(sorted_h[mid_h])
-            idx80 = min(len(sorted_h) - 1, max(0, int(round((len(sorted_h) - 1) * 0.8))))
+            idx80 = min(
+                len(sorted_h) - 1, max(0, int(round((len(sorted_h) - 1) * 0.8)))
+            )
             p80_h = float(sorted_h[idx80])
             line_h = max(p80_h, med_h)
 

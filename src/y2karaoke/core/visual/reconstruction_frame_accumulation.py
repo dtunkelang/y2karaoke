@@ -184,7 +184,9 @@ def accumulate_persistent_lines_from_frames(  # noqa: C901
         matched_track_indices = set()
         track_y_cache = [track.current_y for track in active_tracks]
         track_text_cache = [track.best_text for track in active_tracks]
-        track_stale_cache = [(curr_time - track.last_seen) > 1.0 for track in active_tracks]
+        track_stale_cache = [
+            (curr_time - track.last_seen) > 1.0 for track in active_tracks
+        ]
         track_buckets: Dict[int, List[int]] = {}
         for idx, y_val in enumerate(track_y_cache):
             bucket = int(y_val) // _TRACK_MATCH_BUCKET_PX

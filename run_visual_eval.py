@@ -7,14 +7,20 @@ import math
 import statistics
 import subprocess
 import sys
+import re
 from pathlib import Path
 from typing import Any
 
-import yaml
+try:
+    import yaml
+except ModuleNotFoundError:  # pragma: no cover - exercised in minimal CI envs
+    yaml = None  # type: ignore[assignment]
 
 
 def _parse_args() -> argparse.Namespace:
-    p = argparse.ArgumentParser(description="Run visual extraction eval across benchmark set")
+    p = argparse.ArgumentParser(
+        description="Run visual extraction eval across benchmark set"
+    )
     p.add_argument(
         "--manifest",
         type=Path,
@@ -59,6 +65,31 @@ def _f1_or_none(song_report: dict[str, Any], key: str) -> float | None:
     return None
 
 
+def _slugify(text: str) -> str:
+    return re.sub(r"[^a-z0-9]+", "-", text.lower()).strip("-")
+
+
+def _song_slug(artist: str, title: str) -> str:
+    return _slugify(f"{artist}-{title}")
+
+
+def _resolve_visual_gold(
+    args: argparse.Namespace, idx: int, artist: str, title: str
+) -> Path | None:
+    slug = _song_slug(artist, title)
+    exact = args.gold_dir / f"{idx:02d}_{slug}.visual.gold.json"
+    if exact.exists():
+        return exact
+
+    slug_matches = sorted(args.gold_dir.glob(f"*_{slug}.visual.gold.json"))
+    if len(slug_matches) == 1:
+        return slug_matches[0]
+    if len(slug_matches) > 1:
+        return slug_matches[0]
+
+    return None
+
+
 def _pct(values: list[float], q: float) -> float | None:
     if not values:
         return None
@@ -74,10 +105,63 @@ def _floor3(value: float) -> float:
     return math.floor(float(value) * 1000.0) / 1000.0
 
 
+def _parse_yaml_scalar(raw: str) -> str:
+    text = raw.strip()
+    if not text:
+        return ""
+    if (text.startswith('"') and text.endswith('"')) or (
+        text.startswith("'") and text.endswith("'")
+    ):
+        return text[1:-1]
+    return text
+
+
+def _load_manifest_songs(path: Path) -> list[dict[str, str]]:
+    if yaml is not None:
+        manifest = yaml.safe_load(path.read_text(encoding="utf-8"))
+        raw_songs = manifest.get("songs", []) if isinstance(manifest, dict) else []
+        return [
+            {"artist": str(song["artist"]), "title": str(song["title"])}
+            for song in raw_songs
+            if isinstance(song, dict) and "artist" in song and "title" in song
+        ]
+
+    # Minimal fallback parser for benchmarks/benchmark_songs.yaml in CI environments
+    # that do not install PyYAML. We only need ordered artist/title pairs.
+    songs: list[dict[str, str]] = []
+    current: dict[str, str] | None = None
+    in_songs = False
+    for line in path.read_text(encoding="utf-8").splitlines():
+        stripped = line.strip()
+        if not stripped or stripped.startswith("#"):
+            continue
+        if stripped == "songs:":
+            in_songs = True
+            continue
+        if not in_songs:
+            continue
+        if stripped.startswith("- "):
+            if current and "artist" in current and "title" in current:
+                songs.append(current)
+            current = {}
+            stripped = stripped[2:].strip()
+            if stripped.startswith("artist:"):
+                current["artist"] = _parse_yaml_scalar(stripped.split(":", 1)[1])
+            continue
+        if current is None or ":" not in stripped:
+            continue
+        key, value = stripped.split(":", 1)
+        key = key.strip()
+        if key in {"artist", "title"}:
+            current[key] = _parse_yaml_scalar(value)
+    if current and "artist" in current and "title" in current:
+        songs.append(current)
+    return songs
+
+
 def main() -> int:
     args = _parse_args()
-    manifest = yaml.safe_load(args.manifest.read_text(encoding="utf-8"))
-    songs = manifest.get("songs", []) if isinstance(manifest, dict) else []
+    songs = _load_manifest_songs(args.manifest)
 
     results_md: list[str] = []
     summary_rows_md: list[str] = []
@@ -92,19 +176,18 @@ def main() -> int:
         artist = str(song["artist"])
         title = str(song["title"])
         song_label = f"{artist} - {title}"
-        pattern = f"{idx:02d}_*.visual.gold.json"
-        candidates = sorted(args.gold_dir.glob(pattern))
-
-        if not candidates:
+        gold_file = _resolve_visual_gold(args, idx, artist, title)
+        if gold_file is None:
             msg = f"No visual gold file found for index {idx:02d}"
             results_md.append(f"## {song_label}\nERROR: {msg}\n")
-            summary_rows_md.append(f"| {idx:02d} | {song_label} | NOT FOUND | NOT FOUND |")
+            summary_rows_md.append(
+                f"| {idx:02d} | {song_label} | NOT FOUND | NOT FOUND |"
+            )
             aggregate_rows.append(
                 {"index": idx, "artist": artist, "title": title, "status": "not_found"}
             )
             continue
 
-        gold_file = candidates[0]
         report_path = args.reports_dir / f"{idx:02d}.json"
         cmd = [
             sys.executable,
@@ -191,7 +274,11 @@ def main() -> int:
         )
 
     strict_values = [
-        v for row in aggregate_rows if row.get("status") == "ok" for v in [_f1_or_none(row, "strict")] if v is not None
+        v
+        for row in aggregate_rows
+        if row.get("status") == "ok"
+        for v in [_f1_or_none(row, "strict")]
+        if v is not None
     ]
     repeat_values = [
         v
@@ -204,7 +291,9 @@ def main() -> int:
         "song_count": len(songs),
         "evaluated_count": sum(1 for r in aggregate_rows if r.get("status") == "ok"),
         "error_count": sum(1 for r in aggregate_rows if r.get("status") == "error"),
-        "missing_count": sum(1 for r in aggregate_rows if r.get("status") == "not_found"),
+        "missing_count": sum(
+            1 for r in aggregate_rows if r.get("status") == "not_found"
+        ),
         "strict_f1_min": min(strict_values) if strict_values else None,
         "strict_f1_p10": _pct(strict_values, 0.10),
         "strict_f1_p20": _pct(strict_values, 0.20),
@@ -213,7 +302,9 @@ def main() -> int:
         "repeat_capped_f1_min": min(repeat_values) if repeat_values else None,
         "repeat_capped_f1_p10": _pct(repeat_values, 0.10),
         "repeat_capped_f1_p20": _pct(repeat_values, 0.20),
-        "repeat_capped_f1_mean": statistics.fmean(repeat_values) if repeat_values else None,
+        "repeat_capped_f1_mean": (
+            statistics.fmean(repeat_values) if repeat_values else None
+        ),
         "repeat_capped_f1_median": (
             statistics.median(repeat_values) if repeat_values else None
         ),

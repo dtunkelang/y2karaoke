@@ -41,7 +41,9 @@ def _load_guardrails(path: Path) -> tuple[Path, dict[str, Any]]:
     doc = json.loads(path.read_text(encoding="utf-8"))
     if not isinstance(doc, dict):
         raise ValueError("Guardrails JSON root must be an object")
-    summary_json = doc.get("summary_json", "benchmarks/results/visual_eval_summary.json")
+    summary_json = doc.get(
+        "summary_json", "benchmarks/results/visual_eval_summary.json"
+    )
     thresholds = doc.get("thresholds", {})
     if not isinstance(summary_json, str):
         raise ValueError("'summary_json' must be a string")

@@ -352,7 +352,9 @@ def _bootstrap_refined_lines(
     song_dir: Path,
     selected_metrics: Optional[dict[str, Any]] = None,
     roi_rect: Optional[tuple[int, int, int, int]] = None,
-) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    *,
+    return_runtime_metrics: bool = False,
+) -> list[dict[str, Any]] | tuple[list[dict[str, Any]], dict[str, Any]]:
     _require_cv2()
     roi = roi_rect if roi_rect is not None else detect_lyric_roi(v_path, sample_fps=1.0)
     cap = cv2.VideoCapture(str(v_path))
@@ -410,8 +412,10 @@ def _bootstrap_refined_lines(
         "Refinement complete: "
         f"mode={refine_mode} elapsed={refine_elapsed:.1f}s lines={len(t_lines)}"
     )
-    lines_out = _build_refined_lines_output(t_lines, artist=args.artist, title=args.title)
-    return lines_out, {
+    lines_out = _build_refined_lines_output(
+        t_lines, artist=args.artist, title=args.title
+    )
+    runtime_metrics = {
         "ocr": {
             "sampled_frames": len(raw_frames),
             "elapsed_sec": round(ocr_elapsed, 3),
@@ -428,6 +432,9 @@ def _bootstrap_refined_lines(
             "word_level_score": round(word_level_score, 4),
         },
     }
+    if return_runtime_metrics:
+        return lines_out, runtime_metrics
+    return lines_out
 
 
 def _write_run_report(
@@ -518,6 +525,7 @@ def main():
         song_dir,
         selected_metrics=selected_metrics,
         roi_rect=roi_rect,
+        return_runtime_metrics=True,
     )
     bootstrap_elapsed = perf_counter() - bootstrap_t0
 
@@ -533,6 +541,7 @@ def main():
 
     args.output.write_text(json.dumps(res, indent=2))
     logger.info(f"Saved refined gold timings to {args.output}")
+    total_elapsed = perf_counter() - total_t0
     _write_run_report(
         args,
         candidate_url=candidate_url,
@@ -549,7 +558,6 @@ def main():
             },
         },
     )
-    total_elapsed = perf_counter() - total_t0
     logger.info(
         "Bootstrap stage timing (s): "
         f"select={select_elapsed:.1f} "

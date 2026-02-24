@@ -15,7 +15,7 @@ __all__ = [
 ]
 
 try:
-    from .components.alignment import timing_evaluator
+    from .components.alignment import timing_evaluator  # noqa: F401
 
     __all__.append("timing_evaluator")
 except ImportError:
@@ -74,7 +74,7 @@ except ImportError:
     pass
 
 try:
-    from .karaoke import KaraokeGenerator
+    from .karaoke import KaraokeGenerator  # noqa: F401
 
     __all__.append("KaraokeGenerator")
 except ImportError:

@@ -7,28 +7,28 @@ __all__ = [
 ]
 
 try:
-    from .implementation import TrackIdentifier
+    from .implementation import TrackIdentifier  # noqa: F401
 
     __all__.append("TrackIdentifier")
 except ImportError:
     pass
 
 try:
-    from .musicbrainz import MusicBrainzClient
+    from .musicbrainz import MusicBrainzClient  # noqa: F401
 
     __all__.append("MusicBrainzClient")
 except ImportError:
     pass
 
 try:
-    from .parser import QueryParser
+    from .parser import QueryParser  # noqa: F401
 
     __all__.append("QueryParser")
 except ImportError:
     pass
 
 try:
-    from .youtube import YouTubeSearcher
+    from .youtube import YouTubeSearcher  # noqa: F401
 
     __all__.append("YouTubeSearcher")
 except ImportError:

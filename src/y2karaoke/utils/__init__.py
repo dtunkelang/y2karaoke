@@ -24,7 +24,7 @@ __all__ = [
 ]
 
 try:
-    from .fonts import get_font
+    from .fonts import get_font  # noqa: F401
 
     __all__.append("get_font")
 except ImportError:
