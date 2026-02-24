@@ -2,12 +2,12 @@
   "schema_version": "1.0",
   "summary_json": "benchmarks/results/visual_eval_summary.json",
   "thresholds": {
-    "min_visual_eval_strict_f1": 0.004,
-    "min_visual_eval_repeat_capped_f1": 0.006,
-    "min_visual_eval_strict_f1_mean": 0.357,
-    "min_visual_eval_repeat_capped_f1_mean": 0.374,
-    "min_visual_eval_strict_f1_median": 0.105,
-    "min_visual_eval_repeat_capped_f1_median": 0.081
+    "min_visual_eval_strict_f1": 0.368,
+    "min_visual_eval_repeat_capped_f1": 0.521,
+    "min_visual_eval_strict_f1_mean": 0.695,
+    "min_visual_eval_repeat_capped_f1_mean": 0.725,
+    "min_visual_eval_strict_f1_median": 0.662,
+    "min_visual_eval_repeat_capped_f1_median": 0.735
   },
-  "notes": "Baseline thresholds derived from run_visual_eval.py aggregate summary; ratchet upward deliberately."
+  "notes": "Ratchet baseline derived from run_visual_eval.py recommendations on the current 13-song manifest-aligned seeded visual gold set (includes Coldplay Viva La Vida; excludes Anti-Hero)."
 }
