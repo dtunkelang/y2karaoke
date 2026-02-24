@@ -91,6 +91,80 @@ def _check_doc(
     return issues
 
 
+def _iter_visual_eval_rows(summary_doc: dict[str, Any]) -> list[dict[str, Any]]:
+    songs = summary_doc.get("songs", [])
+    if not isinstance(songs, list):
+        return []
+    return [row for row in songs if isinstance(row, dict)]
+
+
+def _check_visual_eval_summary(
+    summary_doc: dict[str, Any],
+    *,
+    min_strict_f1: float | None,
+    min_repeat_capped_f1: float | None,
+    min_strict_f1_mean: float | None = None,
+    min_repeat_capped_f1_mean: float | None = None,
+    min_strict_f1_median: float | None = None,
+    min_repeat_capped_f1_median: float | None = None,
+) -> list[str]:
+    issues: list[str] = []
+    if (
+        min_strict_f1 is None
+        and min_repeat_capped_f1 is None
+        and min_strict_f1_mean is None
+        and min_repeat_capped_f1_mean is None
+        and min_strict_f1_median is None
+        and min_repeat_capped_f1_median is None
+    ):
+        return issues
+
+    summary_block = summary_doc.get("summary", {})
+    if not isinstance(summary_block, dict):
+        summary_block = {}
+    summary_pairs = [
+        ("strict_f1_mean", min_strict_f1_mean, "strict_f1_mean"),
+        (
+            "repeat_capped_f1_mean",
+            min_repeat_capped_f1_mean,
+            "repeat_capped_f1_mean",
+        ),
+        ("strict_f1_median", min_strict_f1_median, "strict_f1_median"),
+        (
+            "repeat_capped_f1_median",
+            min_repeat_capped_f1_median,
+            "repeat_capped_f1_median",
+        ),
+    ]
+    for label, threshold, key in summary_pairs:
+        if threshold is None:
+            continue
+        val = summary_block.get(key)
+        if not isinstance(val, (int, float)) or float(val) < threshold:
+            issues.append(f"visual eval {label} too low ({val!r} < {threshold:.3f})")
+
+    for row in _iter_visual_eval_rows(summary_doc):
+        if row.get("status") != "ok":
+            continue
+        label = f"{row.get('index', '?'):02d} {row.get('artist', '?')} - {row.get('title', '?')}"
+        if min_strict_f1 is not None:
+            strict = row.get("strict", {})
+            val = strict.get("f1") if isinstance(strict, dict) else None
+            if not isinstance(val, (int, float)) or float(val) < min_strict_f1:
+                issues.append(
+                    f"visual eval strict f1 too low for {label} ({val!r} < {min_strict_f1:.3f})"
+                )
+        if min_repeat_capped_f1 is not None:
+            rc = row.get("repeat_capped", {})
+            val = rc.get("f1") if isinstance(rc, dict) else None
+            if not isinstance(val, (int, float)) or float(val) < min_repeat_capped_f1:
+                issues.append(
+                    "visual eval repeat_capped f1 too low for "
+                    f"{label} ({val!r} < {min_repeat_capped_f1:.3f})"
+                )
+    return issues
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Bootstrap quality guardrails")
     parser.add_argument(
@@ -109,6 +183,32 @@ def main() -> int:
     parser.add_argument("--min-word-level-score", type=float, default=0.10)
     parser.add_argument("--min-word-confidence-mean", type=float, default=0.25)
     parser.add_argument("--min-line-confidence-mean", type=float, default=0.25)
+    parser.add_argument(
+        "--visual-eval-summary-json",
+        type=Path,
+        default=None,
+        help="Optional aggregate visual eval summary JSON from run_visual_eval.py",
+    )
+    parser.add_argument(
+        "--min-visual-eval-strict-f1",
+        type=float,
+        default=None,
+        help="Optional per-song minimum strict F1 gate using --visual-eval-summary-json",
+    )
+    parser.add_argument(
+        "--min-visual-eval-repeat-capped-f1",
+        type=float,
+        default=None,
+        help="Optional per-song minimum repeat-capped F1 gate using --visual-eval-summary-json",
+    )
+    parser.add_argument("--min-visual-eval-strict-f1-mean", type=float, default=None)
+    parser.add_argument(
+        "--min-visual-eval-repeat-capped-f1-mean", type=float, default=None
+    )
+    parser.add_argument("--min-visual-eval-strict-f1-median", type=float, default=None)
+    parser.add_argument(
+        "--min-visual-eval-repeat-capped-f1-median", type=float, default=None
+    )
     args = parser.parse_args()
 
     root = args.root.resolve()
@@ -144,6 +244,31 @@ def main() -> int:
         for line in failures:
             print(f"- {line}")
         return 1
+
+    if args.visual_eval_summary_json is not None:
+        try:
+            summary_doc = json.loads(
+                args.visual_eval_summary_json.read_text(encoding="utf-8")
+            )
+        except Exception as exc:
+            print("bootstrap_quality_guardrails: FAIL")
+            print(f"- invalid visual eval summary JSON ({exc})")
+            return 1
+
+        eval_issues = _check_visual_eval_summary(
+            summary_doc if isinstance(summary_doc, dict) else {},
+            min_strict_f1=args.min_visual_eval_strict_f1,
+            min_repeat_capped_f1=args.min_visual_eval_repeat_capped_f1,
+            min_strict_f1_mean=args.min_visual_eval_strict_f1_mean,
+            min_repeat_capped_f1_mean=args.min_visual_eval_repeat_capped_f1_mean,
+            min_strict_f1_median=args.min_visual_eval_strict_f1_median,
+            min_repeat_capped_f1_median=args.min_visual_eval_repeat_capped_f1_median,
+        )
+        if eval_issues:
+            print("bootstrap_quality_guardrails: FAIL")
+            for line in eval_issues:
+                print(f"- {line}")
+            return 1
 
     print(
         f"bootstrap_quality_guardrails: OK (analyzed {analyzed} visual bootstrap file(s))"

@@ -139,6 +139,36 @@ def _load_lrc_reference_lines(
     return out
 
 
+def _fetch_synced_lrc_text(*, title: str, artist: str) -> str:
+    lrc_text, _, _ = fetch_lyrics_multi_source(title, artist, synced_only=True)
+    return lrc_text or ""
+
+
+def _load_lrc_reference_lines_from_text(
+    *,
+    lrc_text: str,
+    title: str,
+    artist: str,
+    include_parenthetical: bool,
+) -> list[dict[str, Any]]:
+    timed_lines = parse_lrc_with_timing(lrc_text, title=title, artist=artist)
+    out: list[dict[str, Any]] = []
+    for _, text in timed_lines:
+        token_recs = _split_tokens_with_optional_flags(text)
+        line_tokens: list[str] = []
+        for rec in token_recs:
+            if not include_parenthetical and bool(rec["optional"]):
+                continue
+            line_tokens.append(str(rec["token"]))
+        if not line_tokens:
+            continue
+        key = normalize_text_basic(" ".join(line_tokens)).strip()
+        if not key:
+            continue
+        out.append({"line_key": key, "tokens": line_tokens})
+    return out
+
+
 def _load_lrc_tokens(
     *,
     title: str,
@@ -240,6 +270,18 @@ def _parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--max-diff-blocks", type=int, default=8)
     parser.add_argument("--output-json", type=Path, default=None)
+    parser.add_argument(
+        "--lrc-file",
+        type=Path,
+        default=None,
+        help="Optional local LRC file to avoid network fetches during evaluation.",
+    )
+    parser.add_argument(
+        "--write-lrc-file",
+        type=Path,
+        default=None,
+        help="Optional path to write fetched synced LRC for reproducible future evals.",
+    )
     return parser.parse_args()
 
 
@@ -253,11 +295,43 @@ def main() -> int:
     extracted_tokens = _load_extracted_tokens(args.gold_json)
     extracted_line_keys = _load_extracted_line_keys(args.gold_json)
     extracted_lines = _load_extracted_reference_lines(args.gold_json)
-    reference_lines = _load_lrc_reference_lines(
-        title=args.title,
-        artist=args.artist,
-        include_parenthetical=bool(args.include_parenthetical_lrc),
-    )
+    lrc_text_used: str | None = None
+    if args.lrc_file is not None:
+        if not args.lrc_file.exists():
+            print(f"ERROR: missing LRC file: {args.lrc_file}")
+            return 4
+        lrc_text_used = args.lrc_file.read_text(encoding="utf-8")
+        reference_lines = _load_lrc_reference_lines_from_text(
+            lrc_text=lrc_text_used,
+            title=args.title,
+            artist=args.artist,
+            include_parenthetical=bool(args.include_parenthetical_lrc),
+        )
+        reference_source = {"type": "lrc_file", "path": str(args.lrc_file)}
+    else:
+        if args.write_lrc_file is None:
+            reference_lines = _load_lrc_reference_lines(
+                title=args.title,
+                artist=args.artist,
+                include_parenthetical=bool(args.include_parenthetical_lrc),
+            )
+            reference_source = {"type": "live_fetch"}
+        else:
+            lrc_text_used = _fetch_synced_lrc_text(title=args.title, artist=args.artist)
+            if not lrc_text_used:
+                reference_lines = []
+            else:
+                reference_lines = _load_lrc_reference_lines_from_text(
+                    lrc_text=lrc_text_used,
+                    title=args.title,
+                    artist=args.artist,
+                    include_parenthetical=bool(args.include_parenthetical_lrc),
+                )
+            reference_source = {"type": "live_fetch"}
+            if lrc_text_used:
+                args.write_lrc_file.parent.mkdir(parents=True, exist_ok=True)
+                args.write_lrc_file.write_text(lrc_text_used, encoding="utf-8")
+                reference_source["snapshot_lrc_path"] = str(args.write_lrc_file)
     reference_tokens: list[str] = []
     for line in reference_lines:
         reference_tokens.extend([str(tok) for tok in line.get("tokens", [])])
@@ -291,6 +365,7 @@ def main() -> int:
         "lrc_mode": (
             "include_parenthetical" if args.include_parenthetical_lrc else "optional"
         ),
+        "reference_source": reference_source,
         "strict": strict_summary,
         "repeat_capped": repeat_capped_summary,
     }

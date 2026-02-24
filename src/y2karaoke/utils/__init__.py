@@ -10,7 +10,6 @@ from .validation import (
     sanitize_filename,
 )
 from .cache import CacheManager
-from .fonts import get_font
 
 __all__ = [
     "setup_logging",
@@ -22,5 +21,11 @@ __all__ = [
     "validate_output_path",
     "sanitize_filename",
     "CacheManager",
-    "get_font",
 ]
+
+try:
+    from .fonts import get_font
+
+    __all__.append("get_font")
+except ImportError:
+    pass

@@ -58,6 +58,7 @@ def generate_karaoke(
 
     generator._original_prompt = original_prompt
     total_start = time()
+    stage_started = total_start
 
     video_id = extract_video_id(url)
     logger.info(f"Video ID: {video_id}")
@@ -72,6 +73,8 @@ def generate_karaoke(
         force_reprocess,
         offline,
     )
+    media_elapsed = time() - stage_started
+    stage_started = time()
 
     final_title, final_artist = generator._resolve_final_metadata(
         audio_result, lyrics_title, lyrics_artist
@@ -103,6 +106,8 @@ def generate_karaoke(
         offline=offline,
         filter_promos=filter_promos,
     )
+    lyrics_elapsed = time() - stage_started
+    stage_started = time()
 
     processed_audio, break_edits = generator._process_audio_track(
         debug_audio,
@@ -115,6 +120,8 @@ def generate_karaoke(
         shorten_breaks,
         max_break_duration,
     )
+    audio_process_elapsed = time() - stage_started
+    stage_started = time()
 
     if outro_line:
         generator._append_outro_line(
@@ -143,13 +150,20 @@ def generate_karaoke(
             lyrics_result,
             video_id=video_id,
         )
+    prep_elapsed = time() - stage_started
 
     output_path = output_path or generator._build_output_path(final_title)
-    background_segments = generator._build_background_segments(
-        use_backgrounds, video_path, scaled_lines, processed_audio
-    )
-
+    bg_start = time()
+    background_segments = []
     if not skip_render:
+        background_segments = generator._build_background_segments(
+            use_backgrounds, video_path, scaled_lines, processed_audio
+        )
+    bg_elapsed = time() - bg_start
+
+    render_elapsed = 0.0
+    if not skip_render:
+        render_start = time()
         generator._render_video(
             lines=scaled_lines,
             audio_path=processed_audio,
@@ -161,6 +175,7 @@ def generate_karaoke(
             song_metadata=lyrics_result.get("metadata"),
             video_settings=video_settings,
         )
+        render_elapsed = time() - render_start
     else:
         logger.info("Skipping video rendering (--no-render)")
 
@@ -174,6 +189,15 @@ def generate_karaoke(
     logger.info(
         f"{quality_emoji} Karaoke generation complete: {output_path} ({total_time:.1f}s)"
     )
+    logger.info(
+        "   Stage timing (s): "
+        f"media={media_elapsed:.1f} "
+        f"lyrics={lyrics_elapsed:.1f} "
+        f"audio={audio_process_elapsed:.1f} "
+        f"prep={prep_elapsed:.1f} "
+        f"backgrounds={bg_elapsed:.1f} "
+        f"render={render_elapsed:.1f}"
+    )
     logger.info(f"   Quality: {quality_score:.0f}/100 ({quality_level} confidence)")
     if quality_issues:
         for issue in quality_issues[:3]:
@@ -185,9 +209,19 @@ def generate_karaoke(
         "artist": final_artist,
         "video_id": video_id,
         "rendered": not skip_render,
+        "line_count": len(scaled_lines),
         "quality_score": quality_score,
         "quality_level": quality_level,
         "quality_issues": quality_issues,
         "lyrics_source": lyrics_quality.get("source", ""),
         "alignment_method": lyrics_quality.get("alignment_method", ""),
+        "timings_sec": {
+            "media": round(media_elapsed, 3),
+            "lyrics": round(lyrics_elapsed, 3),
+            "audio": round(audio_process_elapsed, 3),
+            "prep": round(prep_elapsed, 3),
+            "backgrounds": round(bg_elapsed, 3),
+            "render": round(render_elapsed, 3),
+            "total": round(total_time, 3),
+        },
     }

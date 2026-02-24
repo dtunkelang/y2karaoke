@@ -311,9 +311,27 @@ def _build_line_boxes(
 
         # Use robust vertical statistics so boxes stay centered on glyphs even
         # when one token has a noisy OCR box.
-        line_cy = float(np.median(np.array(cy_vals, dtype=np.float32)))
-        line_h = float(np.percentile(np.array(h_vals, dtype=np.float32), 80))
-        line_h = max(line_h, float(np.median(np.array(h_vals, dtype=np.float32))))
+        if np is not None:
+            line_cy = float(np.median(np.array(cy_vals, dtype=np.float32)))
+            line_h = float(np.percentile(np.array(h_vals, dtype=np.float32), 80))
+            line_h = max(line_h, float(np.median(np.array(h_vals, dtype=np.float32))))
+        else:
+            sorted_cy = sorted(cy_vals)
+            mid = len(sorted_cy) // 2
+            if len(sorted_cy) % 2 == 0:
+                line_cy = (sorted_cy[mid - 1] + sorted_cy[mid]) * 0.5
+            else:
+                line_cy = float(sorted_cy[mid])
+
+            sorted_h = sorted(h_vals)
+            mid_h = len(sorted_h) // 2
+            if len(sorted_h) % 2 == 0:
+                med_h = (sorted_h[mid_h - 1] + sorted_h[mid_h]) * 0.5
+            else:
+                med_h = float(sorted_h[mid_h])
+            idx80 = min(len(sorted_h) - 1, max(0, int(round((len(sorted_h) - 1) * 0.8))))
+            p80_h = float(sorted_h[idx80])
+            line_h = max(p80_h, med_h)
 
         x0 = min(xs) - pad_x
         x1 = max(x2s) + pad_x
@@ -818,6 +836,7 @@ def collect_raw_frames(
     *,
     log_fn: Any = None,
     ocr_engine_fn: Any = None,
+    apply_post_filters: bool = True,
 ) -> list[dict[str, Any]]:
     if cv2 is None or np is None:
         raise ImportError("OpenCV and Numpy are required.")
@@ -887,6 +906,8 @@ def collect_raw_frames(
 
     _flush_batch()
     cap.release()
+    if not apply_post_filters:
+        return raw
     return _apply_post_ocr_filters(raw, roi_width=rw, roi_height=rh)
 
 
@@ -935,8 +956,16 @@ def collect_raw_frames_cached(
         )
 
     if collect_fn is None:
-        collect_fn = collect_raw_frames
-    raw = collect_fn(video_path, 0, duration, fps, roi_rect)
+        raw = collect_raw_frames(
+            video_path,
+            0,
+            duration,
+            fps,
+            roi_rect,
+            apply_post_filters=False,
+        )
+    else:
+        raw = collect_fn(video_path, 0, duration, fps, roi_rect)
     raw = _apply_post_ocr_filters(raw, roi_width=roi_rect[2], roi_height=roi_rect[3])
     cache_path.write_text(json.dumps(raw))
     return raw

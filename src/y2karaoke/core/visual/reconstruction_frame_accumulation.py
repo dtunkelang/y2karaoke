@@ -17,6 +17,8 @@ from .word_segmentation import segment_line_tokens_by_visual_gaps
 
 logger = logging.getLogger(__name__)
 FrameFilter = Callable[[List[Dict[str, Any]]], List[Dict[str, Any]]]
+_TRACK_MATCH_BUCKET_PX = 20
+_TRACK_MATCH_NEIGHBOR_BUCKETS = 2
 
 
 class TrackedLine:
@@ -180,6 +182,13 @@ def accumulate_persistent_lines_from_frames(  # noqa: C901
 
         # Match current frame lines to active tracks
         matched_track_indices = set()
+        track_y_cache = [track.current_y for track in active_tracks]
+        track_text_cache = [track.best_text for track in active_tracks]
+        track_stale_cache = [(curr_time - track.last_seen) > 1.0 for track in active_tracks]
+        track_buckets: Dict[int, List[int]] = {}
+        for idx, y_val in enumerate(track_y_cache):
+            bucket = int(y_val) // _TRACK_MATCH_BUCKET_PX
+            track_buckets.setdefault(bucket, []).append(idx)
 
         for frame_line_data in current_frame_lines:
             entry, is_visible = frame_line_data
@@ -187,22 +196,32 @@ def accumulate_persistent_lines_from_frames(  # noqa: C901
             # Find best match in active_tracks
             best_match_idx = -1
             best_match_score = 0.0
+            y_bucket = int(entry["y"]) // _TRACK_MATCH_BUCKET_PX
+            candidate_indices: list[int] = []
+            for delta in range(
+                -_TRACK_MATCH_NEIGHBOR_BUCKETS, _TRACK_MATCH_NEIGHBOR_BUCKETS + 1
+            ):
+                candidate_indices.extend(track_buckets.get(y_bucket + delta, []))
+            if not candidate_indices:
+                candidate_indices = list(range(len(active_tracks)))
 
-            for idx, track in enumerate(active_tracks):
+            # Preserve deterministic iteration order comparable to enumerate(active_tracks)
+            for idx in sorted(set(candidate_indices)):
                 if idx in matched_track_indices:
                     continue
+                track = active_tracks[idx]
 
                 # Don't match if the track has been gone for too long
-                if curr_time - track.last_seen > 1.0:
+                if track_stale_cache[idx]:
                     continue
 
                 # Spatial check (Y)
-                dy = abs(track.current_y - entry["y"])
+                dy = abs(track_y_cache[idx] - entry["y"])
                 if dy > 25:  # Lane proximity
                     continue
 
                 # Text similarity check
-                sim = text_similarity(entry["text"], track.best_text)
+                sim = text_similarity(entry["text"], track_text_cache[idx])
 
                 # If very close spatially and reasonable similarity
                 # OR if exact text match (fast path)
@@ -275,18 +294,33 @@ def _calculate_visibility_threshold(
                 lane = w["y"] // 40
                 lane_brightness.setdefault(lane, []).append(w["brightness"])
 
-    import numpy as np
+    def _p95(values: List[float]) -> float:
+        if not values:
+            return 0.0
+        try:
+            import numpy as np  # type: ignore
+
+            return float(np.percentile(values, 95))
+        except ImportError:
+            ordered = sorted(float(v) for v in values)
+            if len(ordered) == 1:
+                return ordered[0]
+            pos = (len(ordered) - 1) * 0.95
+            lo = int(pos)
+            hi = min(lo + 1, len(ordered) - 1)
+            frac = pos - lo
+            return ordered[lo] * (1.0 - frac) + ordered[hi] * frac
 
     thresholds: Dict[int, float] = {}
     for lane, vals in lane_brightness.items():
         if not vals:
             continue
-        full_bright = float(np.percentile(vals, 95))
+        full_bright = _p95(vals)
         thresholds[lane] = full_bright * 0.70
 
     # Default for unknown lanes
     all_vals = [v for vals in lane_brightness.values() for v in vals]
-    global_def = float(np.percentile(all_vals, 95)) * 0.70 if all_vals else 150.0
+    global_def = _p95(all_vals) * 0.70 if all_vals else 150.0
     thresholds[-1] = global_def
 
     return thresholds

@@ -11,7 +11,9 @@ import argparse
 import json
 import subprocess
 import sys
+from time import perf_counter
 from pathlib import Path
+from types import SimpleNamespace
 from typing import Any, Dict, List, Optional
 
 # Add src to path if running from tools/
@@ -21,10 +23,6 @@ if str(src_path) not in sys.path:
 
 from y2karaoke.utils.logging import setup_logging, get_logger  # noqa: E402
 from y2karaoke.core.components.audio.downloader import YouTubeDownloader  # noqa: E402
-from y2karaoke.core.visual.refinement import (  # noqa: E402
-    refine_line_timings_at_low_fps,
-    refine_word_timings_at_high_fps,
-)
 from y2karaoke.core.visual.reconstruction import (  # noqa: E402
     reconstruct_lyrics_from_visuals,
 )
@@ -47,6 +45,7 @@ from y2karaoke.core.visual.bootstrap_ocr import (  # noqa: E402
     collect_raw_frames_cached as _collect_raw_frames_cached_impl,
     raw_frames_cache_path as _raw_frames_cache_path_impl,
 )
+from y2karaoke.core.visual import bootstrap_ocr as _bootstrap_ocr_module  # noqa: E402
 from y2karaoke.core.visual.bootstrap_media import (  # noqa: E402
     extract_audio_from_video as _extract_audio_from_video_impl,
     resolve_media_paths as _resolve_media_paths_impl,
@@ -63,8 +62,12 @@ try:
     import cv2  # noqa: E402
     import numpy as np  # noqa: E402,F401
 except ImportError:
-    print("Error: OpenCV and Numpy are required. Please install them.")
-    sys.exit(1)
+    cv2 = SimpleNamespace(  # type: ignore[assignment]
+        VideoCapture=None,
+        CAP_PROP_FRAME_COUNT=7,
+        CAP_PROP_FPS=5,
+    )
+    np = None  # type: ignore[assignment]
 
 logger = get_logger(__name__)
 RAW_OCR_CACHE_VERSION = "4"
@@ -72,6 +75,27 @@ RAW_OCR_CACHE_VERSION = "4"
 # Lower thresholds can route line-level videos into an expensive but lower-quality path.
 LINE_LEVEL_REFINE_SKIP_THRESHOLD = 0.5
 LOW_FPS_LINE_REFINE_FPS = 6.0
+
+
+def _require_cv2() -> None:
+    if not hasattr(cv2, "VideoCapture"):
+        raise ImportError("OpenCV is required. Please install OpenCV.")
+
+
+def refine_word_timings_at_high_fps(*args: Any, **kwargs: Any) -> Any:
+    from y2karaoke.core.visual.refinement import (  # noqa: E402
+        refine_word_timings_at_high_fps as _impl,
+    )
+
+    return _impl(*args, **kwargs)
+
+
+def refine_line_timings_at_low_fps(*args: Any, **kwargs: Any) -> Any:
+    from y2karaoke.core.visual.refinement import (  # noqa: E402
+        refine_line_timings_at_low_fps as _impl,
+    )
+
+    return _impl(*args, **kwargs)
 
 
 def _search_karaoke_candidates(
@@ -158,6 +182,11 @@ def _collect_raw_frames(
     roi_rect: tuple[int, int, int, int],
 ) -> list[dict]:
     """Backward-compatible wrapper around shared OCR collection helper."""
+    # Keep delegated module in sync with local monkeypatches used by tests/tools.
+    if hasattr(_bootstrap_ocr_module, "cv2"):
+        _bootstrap_ocr_module.cv2 = cv2
+    if hasattr(_bootstrap_ocr_module, "np"):
+        _bootstrap_ocr_module.np = np
     return _collect_raw_frames_impl(
         video_path,
         start,
@@ -323,12 +352,14 @@ def _bootstrap_refined_lines(
     song_dir: Path,
     selected_metrics: Optional[dict[str, Any]] = None,
     roi_rect: Optional[tuple[int, int, int, int]] = None,
-) -> list[dict[str, Any]]:
+) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    _require_cv2()
     roi = roi_rect if roi_rect is not None else detect_lyric_roi(v_path, sample_fps=1.0)
     cap = cv2.VideoCapture(str(v_path))
     duration = cap.get(cv2.CAP_PROP_FRAME_COUNT) / (cap.get(cv2.CAP_PROP_FPS) or 30.0)
     cap.release()
 
+    ocr_t0 = perf_counter()
     raw_frames = _collect_raw_frames_cached(
         v_path,
         duration,
@@ -337,18 +368,31 @@ def _bootstrap_refined_lines(
         song_dir / "cache",
         cache_version=args.raw_ocr_cache_version,
     )
+    ocr_elapsed = perf_counter() - ocr_t0
+    logger.info(
+        "OCR sampling complete: "
+        f"frames={len(raw_frames)} visual_fps={args.visual_fps:.2f} "
+        f"elapsed={ocr_elapsed:.1f}s"
+    )
+    reconstruct_t0 = perf_counter()
     t_lines = reconstruct_lyrics_from_visuals(
         raw_frames, args.visual_fps, artist=args.artist
     )
-    logger.info(f"Reconstructed {len(t_lines)} initial lines.")
+    reconstruct_elapsed = perf_counter() - reconstruct_t0
+    logger.info(
+        f"Reconstructed {len(t_lines)} initial lines in {reconstruct_elapsed:.1f}s."
+    )
 
     word_level_score = 0.0
     if selected_metrics:
         word_level_score = float(selected_metrics.get("word_level_score", 0.0))
 
+    refine_t0 = perf_counter()
+    refine_mode = "high_fps_word"
     if word_level_score >= LINE_LEVEL_REFINE_SKIP_THRESHOLD:
         refine_word_timings_at_high_fps(v_path, t_lines, roi)
     else:
+        refine_mode = "low_fps_line"
         logger.info(
             "Skipping high-FPS visual refinement due to low word-level suitability "
             f"(word_level_score={word_level_score:.3f} < "
@@ -361,8 +405,29 @@ def _bootstrap_refined_lines(
             roi,
             sample_fps=LOW_FPS_LINE_REFINE_FPS,
         )
-
-    return _build_refined_lines_output(t_lines, artist=args.artist, title=args.title)
+    refine_elapsed = perf_counter() - refine_t0
+    logger.info(
+        "Refinement complete: "
+        f"mode={refine_mode} elapsed={refine_elapsed:.1f}s lines={len(t_lines)}"
+    )
+    lines_out = _build_refined_lines_output(t_lines, artist=args.artist, title=args.title)
+    return lines_out, {
+        "ocr": {
+            "sampled_frames": len(raw_frames),
+            "elapsed_sec": round(ocr_elapsed, 3),
+            "visual_fps": float(args.visual_fps),
+        },
+        "reconstruction": {
+            "initial_line_count": len(t_lines),
+            "elapsed_sec": round(reconstruct_elapsed, 3),
+        },
+        "refinement": {
+            "mode": refine_mode,
+            "elapsed_sec": round(refine_elapsed, 3),
+            "output_line_count": len(lines_out),
+            "word_level_score": round(word_level_score, 4),
+        },
+    }
 
 
 def _write_run_report(
@@ -371,6 +436,7 @@ def _write_run_report(
     candidate_url: str,
     selected_metrics: dict[str, Any],
     ranked_candidates: list[dict[str, Any]],
+    runtime_metrics: Optional[dict[str, Any]] = None,
 ) -> None:
     if not args.report_json:
         return
@@ -388,12 +454,15 @@ def _write_run_report(
         raw_ocr_cache_version=args.raw_ocr_cache_version,
         allow_low_suitability=args.allow_low_suitability,
     )
+    if runtime_metrics:
+        report["runtime_metrics"] = runtime_metrics
     _write_run_report_impl(args.report_json, report)
     logger.info(f"Wrote bootstrap report to {args.report_json}")
 
 
 def main():
     setup_logging(verbose=True)
+    total_t0 = perf_counter()
     args = _parse_args()
 
     slug_artist = make_slug(args.artist or "unk")
@@ -401,6 +470,7 @@ def main():
     song_dir = args.work_dir / slug_artist / slug_title
 
     downloader = YouTubeDownloader(cache_dir=song_dir.parent)
+    select_t0 = perf_counter()
     try:
         (
             candidate_url,
@@ -411,9 +481,11 @@ def main():
     except ValueError as e:
         logger.error(str(e))
         return 1
+    select_elapsed = perf_counter() - select_t0
 
     logger.info(f"Selected candidate URL: {candidate_url}")
 
+    media_t0 = perf_counter()
     try:
         v_path, a_path = _resolve_media_paths(
             downloader, candidate_url, cached_video_path, song_dir
@@ -421,9 +493,11 @@ def main():
     except Exception as e:
         logger.error(f"Download failed: {e}")
         return 1
+    media_elapsed = perf_counter() - media_t0
 
     roi_rect = detect_lyric_roi(v_path, sample_fps=1.0)
 
+    suit_t0 = perf_counter()
     try:
         selected_metrics = _ensure_selected_suitability(
             selected_metrics,
@@ -435,14 +509,17 @@ def main():
     except ValueError as e:
         logger.error(str(e))
         return 1
+    suit_elapsed = perf_counter() - suit_t0
 
-    lines_out = _bootstrap_refined_lines(
+    bootstrap_t0 = perf_counter()
+    lines_out, bootstrap_runtime_metrics = _bootstrap_refined_lines(
         v_path,
         args,
         song_dir,
         selected_metrics=selected_metrics,
         roi_rect=roi_rect,
     )
+    bootstrap_elapsed = perf_counter() - bootstrap_t0
 
     res: Dict[str, Any] = {
         "schema_version": "1.2",
@@ -461,6 +538,25 @@ def main():
         candidate_url=candidate_url,
         selected_metrics=selected_metrics,
         ranked_candidates=ranked_candidates,
+        runtime_metrics={
+            **bootstrap_runtime_metrics,
+            "stages": {
+                "select_sec": round(select_elapsed, 3),
+                "media_sec": round(media_elapsed, 3),
+                "suitability_sec": round(suit_elapsed, 3),
+                "bootstrap_sec": round(bootstrap_elapsed, 3),
+                "total_sec": round(total_elapsed, 3),
+            },
+        },
+    )
+    total_elapsed = perf_counter() - total_t0
+    logger.info(
+        "Bootstrap stage timing (s): "
+        f"select={select_elapsed:.1f} "
+        f"media={media_elapsed:.1f} "
+        f"suitability={suit_elapsed:.1f} "
+        f"bootstrap={bootstrap_elapsed:.1f} "
+        f"total={total_elapsed:.1f}"
     )
 
     return 0

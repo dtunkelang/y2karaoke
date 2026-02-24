@@ -1,0 +1,13 @@
+{
+  "schema_version": "1.0",
+  "summary_json": "benchmarks/results/visual_eval_summary.json",
+  "thresholds": {
+    "min_visual_eval_strict_f1": 0.004,
+    "min_visual_eval_repeat_capped_f1": 0.006,
+    "min_visual_eval_strict_f1_mean": 0.357,
+    "min_visual_eval_repeat_capped_f1_mean": 0.374,
+    "min_visual_eval_strict_f1_median": 0.105,
+    "min_visual_eval_repeat_capped_f1_median": 0.081
+  },
+  "notes": "Baseline thresholds derived from run_visual_eval.py aggregate summary; ratchet upward deliberately."
+}
