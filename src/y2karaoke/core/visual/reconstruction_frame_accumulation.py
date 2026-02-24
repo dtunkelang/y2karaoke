@@ -90,14 +90,16 @@ class TrackedLine:
         target_wc = int(statistics.median(word_counts))
 
         # Only vote among entries that match the target word count
-        valid_entries = [tokens for tokens in all_line_tokens if len(tokens) == target_wc]
+        valid_entries = [
+            tokens for tokens in all_line_tokens if len(tokens) == target_wc
+        ]
         if not valid_entries:
             return self.best_text
 
         final_words = []
         for i in range(target_wc):
             word_votes = collections.Counter(tokens[i] for tokens in valid_entries)
-            
+
             # Weighted vote
             weighted_votes = {}
             for word, count in word_votes.items():
@@ -105,7 +107,7 @@ class TrackedLine:
                 if word.lower() in LYRIC_FUNCTION_WORDS:
                     score += 0.5
                 weighted_votes[word] = score
-            
+
             best_word = max(weighted_votes.items(), key=lambda x: x[1])[0]
             final_words.append(best_word)
 
@@ -298,11 +300,10 @@ def _group_words_into_lines(words: List[Dict[str, Any]]) -> List[List[Dict[str, 
     lines = []
     curr = [sorted_words[0]]
     for i in range(1, len(sorted_words)):
-        if sorted_words[i]["y"] - curr[-1]["y"] < 40:
+        if sorted_words[i]["y"] - curr[-1]["y"] < 30:
             curr.append(sorted_words[i])
         else:
             lines.append(curr)
-            curr = [sorted_words[i]]
             curr = [sorted_words[i]]
     lines.append(curr)
     return lines
