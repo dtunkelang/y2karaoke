@@ -119,31 +119,49 @@ def _sequence_by_visual_neighborhood(
     # 1. Sort by first detection to establish temporal baseline
     lines.sort(key=lambda x: x["first"])
 
-    # 2. Build adjacency list for lines that overlap significantly
-    adj: dict[int, set[int]] = {i: set() for i in range(len(lines))}
-    for i in range(len(lines)):
-        for j in range(i + 1, len(lines)):
-            if _has_significant_overlap(lines[i], lines[j]):
-                adj[i].add(j)
-                adj[j].add(i)
-            # Optimization: stop if j starts long after i ends
-            if lines[j]["first"] > lines[i]["last"] + 1.5:
-                break
+    # 2. Build connected components with a sweep-line + union-find.
+    # This preserves behavior while avoiding large adjacency sets on dense overlap cases.
+    parent = list(range(len(lines)))
+    rank = [0] * len(lines)
 
-    # 3. Find connected components (visual blocks)
-    visited = set()
-    unsorted_blocks = []
-    for i in range(len(lines)):
-        if i not in visited:
-            block_indices = []
-            stack = [i]
-            while stack:
-                node = stack.pop()
-                if node not in visited:
-                    visited.add(node)
-                    block_indices.append(node)
-                    stack.extend(adj[node] - visited)
-            unsorted_blocks.append([lines[idx] for idx in block_indices])
+    def _find(i: int) -> int:
+        while parent[i] != i:
+            parent[i] = parent[parent[i]]
+            i = parent[i]
+        return i
+
+    def _union(a_idx: int, b_idx: int) -> None:
+        ra = _find(a_idx)
+        rb = _find(b_idx)
+        if ra == rb:
+            return
+        if rank[ra] < rank[rb]:
+            parent[ra] = rb
+            return
+        if rank[ra] > rank[rb]:
+            parent[rb] = ra
+            return
+        parent[rb] = ra
+        rank[ra] += 1
+
+    active: list[int] = []
+    for j, line_j in enumerate(lines):
+        start_j = float(line_j["first"])
+        next_active: list[int] = []
+        for i in active:
+            # Same pruning condition as the original nested-loop break.
+            if start_j <= float(lines[i]["last"]) + 1.5:
+                next_active.append(i)
+                if _has_significant_overlap(lines[i], line_j):
+                    _union(i, j)
+        next_active.append(j)
+        active = next_active
+
+    # 3. Collect connected components (visual blocks)
+    blocks_by_root: dict[int, list[dict[str, Any]]] = {}
+    for i, line in enumerate(lines):
+        blocks_by_root.setdefault(_find(i), []).append(line)
+    unsorted_blocks = list(blocks_by_root.values())
 
     # 4. Sort blocks externally by earliest 'first', and internally by Y
     unsorted_blocks.sort(key=lambda b: min(x["first"] for x in b))
