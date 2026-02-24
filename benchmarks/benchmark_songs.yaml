@@ -7,12 +7,12 @@ default_lrc_duration_tolerance_sec: 20
 songs:
   - artist: "Queen"
     title: "Bohemian Rhapsody"
-    youtube_id: "9Lxm0iSnKNc"
-    youtube_url: "https://www.youtube.com/watch?v=9Lxm0iSnKNc"
+    youtube_id: "hY3FuBZM7kk"
+    youtube_url: "https://www.youtube.com/watch?v=hY3FuBZM7kk"
     preferred_lyrics_provider: "lyriq"
     fallback_lyrics_provider: "syncedlyrics"
     lrc_duration_tolerance_sec: 12
-    notes: "Updated to Sing King karaoke version for visual bootstrapping compatibility."
+    notes: "Uses official audio for benchmark alignment; compare against Sing King visual gold."
 
   - artist: "Billie Eilish"
     title: "bad guy"
@@ -34,39 +34,39 @@ songs:
 
   - artist: "Dua Lipa"
     title: "Levitating"
-    youtube_id: "j6ktiPUmgmQ"
-    youtube_url: "https://www.youtube.com/watch?v=j6ktiPUmgmQ"
+    youtube_id: "TUVcZfQe-Kw"
+    youtube_url: "https://www.youtube.com/watch?v=TUVcZfQe-Kw"
     preferred_lyrics_provider: "lyriq"
     fallback_lyrics_provider: "syncedlyrics"
     lrc_duration_tolerance_sec: 30
-    notes: "Updated to karaoke version for visual bootstrapping."
+    notes: "Uses official audio for benchmark alignment."
 
   - artist: "Bruno Mars"
     title: "Uptown Funk"
-    youtube_id: "u-TsARZWbRk"
-    youtube_url: "https://www.youtube.com/watch?v=u-TsARZWbRk"
+    youtube_id: "OPf0YbXqDm0"
+    youtube_url: "https://www.youtube.com/watch?v=OPf0YbXqDm0"
     preferred_lyrics_provider: "lyriq"
     fallback_lyrics_provider: "syncedlyrics"
     lrc_duration_tolerance_sec: 20
-    notes: "Updated to karaoke version for visual bootstrapping."
+    notes: "Uses official audio for benchmark alignment."
 
   - artist: "OneRepublic"
     title: "Counting Stars"
-    youtube_id: "WQIFlS0Bqok"
-    youtube_url: "https://www.youtube.com/watch?v=WQIFlS0Bqok"
+    youtube_id: "hT_nvWreIhg"
+    youtube_url: "https://www.youtube.com/watch?v=hT_nvWreIhg"
     preferred_lyrics_provider: "lyriq"
     fallback_lyrics_provider: "syncedlyrics"
     lrc_duration_tolerance_sec: 35
-    notes: "Updated to karaoke version for visual bootstrapping."
+    notes: "Uses official audio for benchmark alignment."
 
   - artist: "Coldplay"
     title: "Viva La Vida"
-    youtube_id: "VQxLvR_P75o"
-    youtube_url: "https://www.youtube.com/watch?v=VQxLvR_P75o"
+    youtube_id: "dvgZkm1xWPE"
+    youtube_url: "https://www.youtube.com/watch?v=dvgZkm1xWPE"
     preferred_lyrics_provider: "lyriq"
     fallback_lyrics_provider: "syncedlyrics"
     lrc_duration_tolerance_sec: 20
-    notes: "Updated to karaoke version for visual bootstrapping."
+    notes: "Uses official audio for benchmark alignment."
 
   - artist: "The Weeknd"
     title: "Blinding Lights"
@@ -75,49 +75,49 @@ songs:
     preferred_lyrics_provider: "lyriq"
     fallback_lyrics_provider: "syncedlyrics"
     lrc_duration_tolerance_sec: 10
-    notes: "Updated to karaoke version for visual bootstrapping."
+    notes: "Uses KaraFun version (has guide vocals)."
 
   - artist: "Imagine Dragons"
     title: "Believer"
-    youtube_id: "CWK4s9N6YQ8"
-    youtube_url: "https://www.youtube.com/watch?v=CWK4s9N6YQ8"
+    youtube_id: "7wtfhZwyrcc"
+    youtube_url: "https://www.youtube.com/watch?v=7wtfhZwyrcc"
     preferred_lyrics_provider: "syncedlyrics"
     fallback_lyrics_provider: "lyriq"
     lrc_duration_tolerance_sec: 20
-    notes: "Updated to karaoke version for visual bootstrapping."
+    notes: "Uses official audio for benchmark alignment."
 
   - artist: "Stromae"
     title: "Papaoutai"
-    youtube_id: "dnOFwPjwNiI"
-    youtube_url: "https://www.youtube.com/watch?v=dnOFwPjwNiI"
+    youtube_id: "oiKj0Z_Xnjc"
+    youtube_url: "https://www.youtube.com/watch?v=oiKj0Z_Xnjc"
     preferred_lyrics_provider: "lyriq"
     fallback_lyrics_provider: "syncedlyrics"
     lrc_duration_tolerance_sec: 25
-    notes: "Updated to karaoke version for visual bootstrapping."
+    notes: "Uses official audio for benchmark alignment."
 
   - artist: "Indila"
     title: "Derniere danse"
-    youtube_id: "g83DvrPBFP8"
-    youtube_url: "https://www.youtube.com/watch?v=g83DvrPBFP8"
+    youtube_id: "K5KAc5CoCuk"
+    youtube_url: "https://www.youtube.com/watch?v=K5KAc5CoCuk"
     preferred_lyrics_provider: "lyriq"
     fallback_lyrics_provider: "syncedlyrics"
     lrc_duration_tolerance_sec: 22
-    notes: "Updated to karaoke version for visual bootstrapping."
+    notes: "Uses official audio for benchmark alignment."
 
   - artist: "ROSALIA"
     title: "DESPECHA"
-    youtube_id: "0UG_AnCRgmk"
-    youtube_url: "https://www.youtube.com/watch?v=0UG_AnCRgmk"
+    youtube_id: "Y2ESxHKuSOk"
+    youtube_url: "https://www.youtube.com/watch?v=Y2ESxHKuSOk"
     preferred_lyrics_provider: "lyriq"
     fallback_lyrics_provider: "syncedlyrics"
     lrc_duration_tolerance_sec: 10
-    notes: "Updated to karaoke version for visual bootstrapping."
+    notes: "Uses official audio for benchmark alignment."
 
   - artist: "J Balvin"
     title: "Mi Gente"
-    youtube_id: "m08bnH5G8p8"
-    youtube_url: "https://www.youtube.com/watch?v=m08bnH5G8p8"
+    youtube_id: "wnJ6LuUFpMo"
+    youtube_url: "https://www.youtube.com/watch?v=wnJ6LuUFpMo"
     preferred_lyrics_provider: "lyriq"
     fallback_lyrics_provider: "syncedlyrics"
     lrc_duration_tolerance_sec: 18
-    notes: "Updated to karaoke version for visual bootstrapping."
+    notes: "Uses official audio for benchmark alignment."

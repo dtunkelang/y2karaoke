@@ -1,5 +1,6 @@
 # test_genius_output.py
-from y2karaoke.core.genius import fetch_genius_lyrics_with_singers
+import sys
+from y2karaoke.core.components.lyrics.genius import fetch_genius_lyrics_with_singers
 
 
 def print_genius_lyrics(title, artist, max_lines=None):
@@ -30,6 +31,11 @@ def print_genius_lyrics(title, artist, max_lines=None):
         print(f"Is duet: {metadata.is_duet}")
 
 
-# Example usage
 if __name__ == "__main__":
-    print_genius_lyrics("Somewhere I Belong", "Linkin Park")
+    if len(sys.argv) < 3:
+        print("Usage: python3 tools/genius_inspect.py <artist> <title>")
+        sys.exit(1)
+    
+    artist = sys.argv[1]
+    title = sys.argv[2]
+    print_genius_lyrics(title, artist)

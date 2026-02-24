@@ -420,17 +420,17 @@
     },
     {
       "line_index": 8,
-      "text": "hymn' it up in the city",
+      "text": "livin it up in the city",
       "start": 29.15,
       "end": 30.0,
-      "confidence": 0.875,
+      "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
-          "text": "livin'",
+          "text": "n",
           "start": 29.15,
           "end": 29.25,
-          "confidence": 0.25
+          "confidence": 1.0
         },
         {
           "word_index": 2,
@@ -462,7 +462,7 @@
         },
         {
           "word_index": 6,
-          "text": "city",
+          "text": "ciu",
           "start": 29.9,
           "end": 30.0,
           "confidence": 1.0
@@ -471,40 +471,40 @@
       "y": 112,
       "word_rois": [
         [
-          116,
-          108,
-          68,
-          42
+          142,
+          112,
+          42,
+          34
         ],
         [
-          189,
-          108,
-          26,
-          42
+          188,
+          112,
+          30,
+          34
         ],
         [
-          221,
-          108,
-          36,
-          42
+          222,
+          112,
+          39,
+          34
         ],
         [
-          263,
-          108,
-          31,
-          42
+          265,
+          112,
+          30,
+          34
         ],
         [
           299,
-          108,
-          48,
-          42
+          112,
+          51,
+          34
         ],
         [
-          352,
-          108,
-          61,
-          42
+          354,
+          112,
+          53,
+          34
         ]
       ],
       "char_rois": []
@@ -917,7 +917,7 @@
           "confidence": 0.25
         }
       ],
-      "y": 111,
+      "y": 114,
       "word_rois": [
         [
           66,
@@ -1018,14 +1018,14 @@
     },
     {
       "line_index": 16,
-      "text": "I'm too hot say my name",
+      "text": "Im too hot say my name",
       "start": 44.3,
       "end": 46.5,
       "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
-          "text": "I'm",
+          "text": "Im",
           "start": 44.3,
           "end": 44.4,
           "confidence": 0.252
@@ -1069,47 +1069,47 @@
       "y": 18,
       "word_rois": [
         [
-          88,
-          19,
-          46,
-          34
+          86,
+          17,
+          47,
+          39
         ],
         [
-          139,
-          19,
-          51,
-          34
+          138,
+          17,
+          47,
+          39
         ],
         [
-          194,
-          19,
-          55,
-          34
+          190,
+          17,
+          62,
+          39
         ],
         [
-          253,
-          19,
-          51,
-          34
+          257,
+          17,
+          47,
+          39
         ],
         [
           309,
-          19,
-          46,
-          34
+          17,
+          47,
+          39
         ],
         [
-          360,
-          19,
-          81,
-          34
+          361,
+          17,
+          80,
+          39
         ]
       ],
       "char_rois": []
     },
     {
       "line_index": 17,
-      "text": "you know who I am",
+      "text": "you know who l am",
       "start": 46.5,
       "end": 47.2,
       "confidence": 0.228,
@@ -1137,7 +1137,7 @@
         },
         {
           "word_index": 4,
-          "text": "I",
+          "text": "l",
           "start": 46.95,
           "end": 47.05,
           "confidence": 0.228
@@ -1153,34 +1153,34 @@
       "y": 64,
       "word_rois": [
         [
-          132,
-          66,
-          52,
-          27
+          127,
+          68,
+          55,
+          33
         ],
         [
-          187,
+          185,
           66,
-          74,
-          27
+          78,
+          33
         ],
         [
-          264,
-          66,
-          63,
-          27
+          266,
+          65,
+          59,
+          32
         ],
         [
-          331,
-          66,
-          14,
-          27
+          328,
+          64,
+          17,
+          32
         ],
         [
           348,
-          66,
-          49,
-          27
+          63,
+          52,
+          33
         ]
       ],
       "char_rois": []
@@ -1877,70 +1877,70 @@
     {
       "line_index": 28,
       "text": "believe me just watch",
-      "start": 68.45,
-      "end": 69.0,
+      "start": 68.35,
+      "end": 68.9,
       "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "believe",
-          "start": 68.45,
-          "end": 68.55,
+          "start": 68.35,
+          "end": 68.45,
           "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "me",
-          "start": 68.6,
-          "end": 68.7,
+          "start": 68.5,
+          "end": 68.6,
           "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "just",
-          "start": 68.75,
-          "end": 68.85,
+          "start": 68.65,
+          "end": 68.75,
           "confidence": 1.0
         },
         {
           "word_index": 4,
           "text": "watch",
-          "start": 68.9,
-          "end": 69.0,
+          "start": 68.8,
+          "end": 68.9,
           "confidence": 1.0
         }
       ],
       "y": 66,
       "word_rois": [
         [
-          70,
+          68,
           66,
-          71,
-          32
+          76,
+          33
         ],
         [
-          146,
+          148,
           66,
-          104,
-          32
+          102,
+          33
         ],
         [
-          254,
+          255,
           66,
-          56,
-          32
+          55,
+          33
         ],
         [
           314,
           66,
-          56,
-          32
+          55,
+          33
         ],
         [
-          373,
+          374,
           66,
-          88,
-          32
+          87,
+          33
         ]
       ],
       "char_rois": []
@@ -1948,22 +1948,22 @@
     {
       "line_index": 29,
       "text": "Come on",
-      "start": 69.8,
-      "end": 70.05,
+      "start": 69.7,
+      "end": 69.95,
       "confidence": 0.228,
       "words": [
         {
           "word_index": 1,
           "text": "Come",
-          "start": 69.8,
-          "end": 69.9,
+          "start": 69.7,
+          "end": 69.8,
           "confidence": 0.228
         },
         {
           "word_index": 2,
           "text": "on",
-          "start": 69.95,
-          "end": 70.05,
+          "start": 69.85,
+          "end": 69.95,
           "confidence": 0.228
         }
       ],
@@ -2031,20 +2031,27 @@
     },
     {
       "line_index": 31,
-      "text": "watch huh",
-      "start": 72.8,
+      "text": "just watch huh",
+      "start": 72.65,
       "end": 73.05,
       "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
+          "text": "just",
+          "start": 72.65,
+          "end": 72.75,
+          "confidence": 1.0
+        },
+        {
+          "word_index": 2,
           "text": "watch",
           "start": 72.8,
           "end": 72.9,
           "confidence": 1.0
         },
         {
-          "word_index": 2,
+          "word_index": 3,
           "text": "huh",
           "start": 72.95,
           "end": 73.05,
@@ -2121,20 +2128,27 @@
     },
     {
       "line_index": 33,
-      "text": "watch huh",
-      "start": 89.8,
+      "text": "just watch huh",
+      "start": 89.65,
       "end": 90.05,
       "confidence": 0.75,
       "words": [
         {
           "word_index": 1,
+          "text": "just",
+          "start": 89.65,
+          "end": 89.75,
+          "confidence": 1.0
+        },
+        {
+          "word_index": 2,
           "text": "watch",
           "start": 89.8,
           "end": 89.9,
           "confidence": 1.0
         },
         {
-          "word_index": 2,
+          "word_index": 3,
           "text": "huh",
           "start": 89.95,
           "end": 90.05,
@@ -2211,20 +2225,27 @@
     },
     {
       "line_index": 35,
-      "text": "watch huh",
-      "start": 90.6,
+      "text": "just watch huh",
+      "start": 90.45,
       "end": 90.85,
       "confidence": 0.228,
       "words": [
         {
           "word_index": 1,
+          "text": "just",
+          "start": 90.45,
+          "end": 90.55,
+          "confidence": 0.228
+        },
+        {
+          "word_index": 2,
           "text": "watch",
           "start": 90.6,
           "end": 90.7,
           "confidence": 0.228
         },
         {
-          "word_index": 2,
+          "word_index": 3,
           "text": "huh",
           "start": 90.75,
           "end": 90.85,
@@ -2256,7 +2277,7 @@
     },
     {
       "line_index": 36,
-      "text": "Dor Chalet ma",
+      "text": "Dor Kuelate ma",
       "start": 90.85,
       "end": 91.25,
       "confidence": 1.0,
@@ -2308,10 +2329,10 @@
     },
     {
       "line_index": 37,
-      "text": "Hey hey hey oh",
+      "text": "Hey hey hey ch",
       "start": 91.65,
       "end": 92.35,
-      "confidence": 1.0,
+      "confidence": 0.985,
       "words": [
         {
           "word_index": 1,
@@ -2336,37 +2357,37 @@
         },
         {
           "word_index": 4,
-          "text": "oh",
+          "text": "ch",
           "start": 92.1,
           "end": 92.2,
-          "confidence": 1.0
+          "confidence": 0.941
         }
       ],
       "y": 17,
       "word_rois": [
         [
-          146,
-          19,
-          63,
-          37
+          142,
+          17,
+          66,
+          39
         ],
         [
           213,
-          19,
-          63,
-          37
+          17,
+          62,
+          39
         ],
         [
-          281,
-          19,
-          63,
-          37
+          279,
+          17,
+          62,
+          39
         ],
         [
-          348,
-          19,
-          37,
-          37
+          346,
+          17,
+          42,
+          39
         ]
       ],
       "char_rois": []
@@ -2490,43 +2511,36 @@
     },
     {
       "line_index": 40,
-      "text": "put some liquor in it",
+      "text": "put some liquor init",
       "start": 95.55,
       "end": 96.1,
-      "confidence": 0.7,
+      "confidence": 0.812,
       "words": [
         {
           "word_index": 1,
-          "text": "put",
+          "text": "Bestine",
           "start": 95.55,
           "end": 95.65,
           "confidence": 0.25
         },
         {
           "word_index": 2,
-          "text": "some",
+          "text": "liquor",
           "start": 95.7,
           "end": 95.8,
-          "confidence": 0.25
+          "confidence": 1.0
         },
         {
           "word_index": 3,
-          "text": "liquor",
+          "text": "in",
           "start": 95.85,
           "end": 95.95,
           "confidence": 1.0
         },
         {
           "word_index": 4,
-          "text": "in",
+          "text": "lE",
           "start": 96.0,
-          "end": 96.05,
-          "confidence": 1.0
-        },
-        {
-          "word_index": 5,
-          "text": "it",
-          "start": 96.05,
           "end": 96.1,
           "confidence": 1.0
         }
@@ -2536,25 +2550,25 @@
         [
           124,
           160,
-          48,
-          32
-        ],
-        [
-          176,
-          160,
-          76,
+          127,
           32
         ],
         [
           256,
           160,
-          84,
+          88,
           32
         ],
         [
-          344,
+          348,
           160,
-          66,
+          28,
+          32
+        ],
+        [
+          380,
+          160,
+          30,
           32
         ]
       ],
@@ -2653,28 +2667,28 @@
     },
     {
       "line_index": 42,
-      "text": "Julinoget the stretch",
+      "text": "Julioget the stretch",
       "start": 102.55,
       "end": 102.95,
       "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
-          "text": "Julioget",
+          "text": "Julion",
           "start": 102.55,
           "end": 102.65,
           "confidence": 0.252
         },
         {
           "word_index": 2,
-          "text": "the",
+          "text": "gestic",
           "start": 102.7,
           "end": 102.8,
           "confidence": 0.252
         },
         {
           "word_index": 3,
-          "text": "stretch",
+          "text": "stratch",
           "start": 102.85,
           "end": 102.95,
           "confidence": 0.252
@@ -2685,20 +2699,20 @@
         [
           120,
           66,
-          131,
-          33
+          80,
+          32
         ],
         [
-          256,
+          204,
           66,
-          46,
-          33
+          100,
+          32
         ],
         [
-          307,
+          308,
           66,
-          102,
-          33
+          101,
+          32
         ]
       ],
       "char_rois": []
@@ -3212,14 +3226,14 @@
     },
     {
       "line_index": 51,
-      "text": "I'm too hot I make a dragon",
+      "text": "Im too hot I make a dragon",
       "start": 113.35,
       "end": 117.45,
       "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
-          "text": "I'm",
+          "text": "Im",
           "start": 113.35,
           "end": 113.45,
           "confidence": 0.252
@@ -3235,13 +3249,13 @@
           "word_index": 3,
           "text": "hot",
           "start": 113.65,
-          "end": 114.2,
+          "end": 114.25,
           "confidence": 0.252
         },
         {
           "word_index": 4,
           "text": "I",
-          "start": 114.25,
+          "start": 114.3,
           "end": 114.85,
           "confidence": 0.252
         },
@@ -3267,49 +3281,49 @@
           "confidence": 0.252
         }
       ],
-      "y": 111,
+      "y": 116,
       "word_rois": [
         [
-          66,
-          113,
-          46,
-          35
+          68,
+          112,
+          44,
+          36
         ],
         [
-          116,
-          113,
-          52,
-          35
+          117,
+          112,
+          50,
+          36
         ],
         [
-          172,
-          113,
-          55,
-          35
+          171,
+          112,
+          54,
+          36
         ],
         [
-          231,
-          113,
+          230,
+          112,
           17,
-          35
+          36
         ],
         [
-          253,
-          113,
-          80,
-          35
+          252,
+          112,
+          81,
+          36
         ],
         [
           338,
-          113,
-          21,
-          35
+          112,
+          18,
+          36
         ],
         [
-          363,
-          113,
-          98,
-          35
+          360,
+          112,
+          104,
+          36
         ]
       ],
       "char_rois": []
@@ -3343,25 +3357,25 @@
           "confidence": 0.228
         }
       ],
-      "y": 159,
+      "y": 158,
       "word_rois": [
         [
-          141,
-          154,
-          88,
+          138,
+          160,
+          90,
           38
         ],
         [
-          231,
-          159,
-          88,
-          37
+          233,
+          160,
+          90,
+          38
         ],
         [
-          322,
-          163,
-          71,
-          37
+          327,
+          160,
+          64,
+          38
         ]
       ],
       "char_rois": []
@@ -3416,7 +3430,7 @@
           "confidence": 1.0
         }
       ],
-      "y": 18,
+      "y": 17,
       "word_rois": [
         [
           89,
@@ -3459,130 +3473,130 @@
     },
     {
       "line_index": 54,
-      "text": "you know who I am",
+      "text": "you know who l am",
       "start": 119.4,
-      "end": 122.0,
+      "end": 121.95,
       "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "you",
           "start": 119.4,
-          "end": 119.6,
+          "end": 119.55,
           "confidence": 0.252
         },
         {
           "word_index": 2,
           "text": "know",
-          "start": 119.65,
-          "end": 120.35,
+          "start": 119.6,
+          "end": 120.3,
           "confidence": 0.252
         },
         {
           "word_index": 3,
           "text": "who",
-          "start": 120.4,
-          "end": 121.0,
+          "start": 120.35,
+          "end": 120.95,
           "confidence": 0.252
         },
         {
           "word_index": 4,
-          "text": "I",
-          "start": 121.05,
-          "end": 121.45,
+          "text": "l",
+          "start": 121.0,
+          "end": 121.4,
           "confidence": 0.252
         },
         {
           "word_index": 5,
           "text": "am",
-          "start": 121.5,
-          "end": 122.0,
+          "start": 121.45,
+          "end": 121.95,
           "confidence": 0.252
         }
       ],
       "y": 65,
       "word_rois": [
         [
-          132,
+          130,
           66,
           52,
-          29
+          32
         ],
         [
-          188,
+          186,
           66,
-          75,
-          29
+          76,
+          32
         ],
         [
           266,
           66,
           60,
-          29
+          32
         ],
         [
           330,
           66,
           15,
-          29
+          32
         ],
         [
-          349,
+          350,
           66,
-          48,
-          29
+          49,
+          32
         ]
       ],
       "char_rois": []
     },
     {
       "line_index": 55,
-      "text": "I'm too hot",
-      "start": 122.0,
-      "end": 122.4,
-      "confidence": 0.75,
+      "text": "Im too hot",
+      "start": 126.6,
+      "end": 127.0,
+      "confidence": 0.915,
       "words": [
         {
           "word_index": 1,
-          "text": "I'm",
-          "start": 122.0,
-          "end": 122.1,
-          "confidence": 0.25
+          "text": "Im",
+          "start": 126.6,
+          "end": 126.7,
+          "confidence": 0.745
         },
         {
           "word_index": 2,
           "text": "too",
-          "start": 122.15,
-          "end": 122.25,
+          "start": 126.75,
+          "end": 126.85,
           "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "hot",
-          "start": 122.3,
-          "end": 122.4,
+          "start": 126.9,
+          "end": 127.0,
           "confidence": 1.0
         }
       ],
       "y": 111,
       "word_rois": [
         [
-          187,
-          113,
-          50,
-          28
+          185,
+          111,
+          52,
+          34
         ],
         [
-          240,
-          113,
-          46,
-          29
+          241,
+          111,
+          47,
+          35
         ],
         [
-          289,
-          114,
-          55,
-          28
+          292,
+          112,
+          54,
+          34
         ]
       ],
       "char_rois": []
@@ -3590,51 +3604,51 @@
     {
       "line_index": 56,
       "text": "am I bad bout that money",
-      "start": 122.4,
-      "end": 123.25,
-      "confidence": 0.228,
+      "start": 127.0,
+      "end": 127.85,
+      "confidence": 0.858,
       "words": [
         {
           "word_index": 1,
           "text": "am",
-          "start": 122.4,
-          "end": 122.5,
-          "confidence": 0.228
+          "start": 127.0,
+          "end": 127.1,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "I",
-          "start": 122.55,
-          "end": 122.65,
-          "confidence": 0.228
+          "start": 127.15,
+          "end": 127.25,
+          "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "bad",
-          "start": 122.7,
-          "end": 122.8,
-          "confidence": 0.228
+          "start": 127.3,
+          "end": 127.4,
+          "confidence": 0.901
         },
         {
           "word_index": 4,
           "text": "bout",
-          "start": 122.85,
-          "end": 122.95,
-          "confidence": 0.228
+          "start": 127.45,
+          "end": 127.55,
+          "confidence": 1.0
         },
         {
           "word_index": 5,
           "text": "that",
-          "start": 123.0,
-          "end": 123.1,
-          "confidence": 0.228
+          "start": 127.6,
+          "end": 127.7,
+          "confidence": 1.0
         },
         {
           "word_index": 6,
           "text": "money",
-          "start": 123.15,
-          "end": 123.25,
-          "confidence": 0.228
+          "start": 127.75,
+          "end": 127.85,
+          "confidence": 0.25
         }
       ],
       "y": 157,
@@ -3680,37 +3694,128 @@
     },
     {
       "line_index": 57,
+      "text": "Im You too a Lon baT",
+      "start": 127.85,
+      "end": 128.7,
+      "confidence": 0.75,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Im",
+          "start": 127.85,
+          "end": 127.95,
+          "confidence": 1.0
+        },
+        {
+          "word_index": 2,
+          "text": "You",
+          "start": 128.0,
+          "end": 128.1,
+          "confidence": 0.25
+        },
+        {
+          "word_index": 3,
+          "text": "too",
+          "start": 128.15,
+          "end": 128.25,
+          "confidence": 0.25
+        },
+        {
+          "word_index": 4,
+          "text": "a",
+          "start": 128.3,
+          "end": 128.4,
+          "confidence": 1.0
+        },
+        {
+          "word_index": 5,
+          "text": "Lon",
+          "start": 128.45,
+          "end": 128.55,
+          "confidence": 1.0
+        },
+        {
+          "word_index": 6,
+          "text": "baT",
+          "start": 128.6,
+          "end": 128.7,
+          "confidence": 1.0
+        }
+      ],
+      "y": 41,
+      "word_rois": [
+        [
+          85,
+          18,
+          51,
+          30
+        ],
+        [
+          129,
+          66,
+          53,
+          32
+        ],
+        [
+          139,
+          20,
+          48,
+          28
+        ],
+        [
+          185,
+          64,
+          57,
+          32
+        ],
+        [
+          190,
+          21,
+          62,
+          30
+        ],
+        [
+          245,
+          60,
+          105,
+          34
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 58,
       "text": "Girls hit your hallelujah",
-      "start": 124.45,
-      "end": 125.35,
+      "start": 128.7,
+      "end": 129.25,
       "confidence": 0.24,
       "words": [
         {
           "word_index": 1,
           "text": "Girls",
-          "start": 124.45,
-          "end": 124.65,
+          "start": 128.7,
+          "end": 128.8,
           "confidence": 0.24
         },
         {
           "word_index": 2,
           "text": "hit",
-          "start": 124.7,
-          "end": 124.85,
+          "start": 128.85,
+          "end": 128.95,
           "confidence": 0.24
         },
         {
           "word_index": 3,
           "text": "your",
-          "start": 124.9,
-          "end": 125.05,
+          "start": 129.0,
+          "end": 129.1,
           "confidence": 0.24
         },
         {
           "word_index": 4,
           "text": "hallelujah",
-          "start": 125.1,
-          "end": 125.35,
+          "start": 129.15,
+          "end": 129.25,
           "confidence": 0.24
         }
       ],
@@ -3744,39 +3849,39 @@
       "char_rois": []
     },
     {
-      "line_index": 58,
+      "line_index": 59,
       "text": "Girls hit your hallelujah",
-      "start": 132.6,
-      "end": 133.15,
-      "confidence": 1.0,
+      "start": 129.25,
+      "end": 129.8,
+      "confidence": 0.24,
       "words": [
         {
           "word_index": 1,
           "text": "Girls",
-          "start": 132.6,
-          "end": 132.7,
-          "confidence": 1.0
+          "start": 129.25,
+          "end": 129.35,
+          "confidence": 0.24
         },
         {
           "word_index": 2,
           "text": "hit",
-          "start": 132.75,
-          "end": 132.85,
-          "confidence": 1.0
+          "start": 129.4,
+          "end": 129.5,
+          "confidence": 0.24
         },
         {
           "word_index": 3,
           "text": "your",
-          "start": 132.9,
-          "end": 133.0,
-          "confidence": 1.0
+          "start": 129.55,
+          "end": 129.65,
+          "confidence": 0.24
         },
         {
           "word_index": 4,
           "text": "hallelujah",
-          "start": 133.05,
-          "end": 133.15,
-          "confidence": 1.0
+          "start": 129.7,
+          "end": 129.8,
+          "confidence": 0.24
         }
       ],
       "y": 64,
@@ -3809,38 +3914,129 @@
       "char_rois": []
     },
     {
-      "line_index": 59,
+      "line_index": 60,
+      "text": "am I bad bout that money",
+      "start": 130.5,
+      "end": 131.35,
+      "confidence": 0.926,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "am",
+          "start": 130.5,
+          "end": 130.6,
+          "confidence": 0.668
+        },
+        {
+          "word_index": 2,
+          "text": "I",
+          "start": 130.65,
+          "end": 130.75,
+          "confidence": 0.89
+        },
+        {
+          "word_index": 3,
+          "text": "bad",
+          "start": 130.8,
+          "end": 130.9,
+          "confidence": 1.0
+        },
+        {
+          "word_index": 4,
+          "text": "bout",
+          "start": 130.95,
+          "end": 131.05,
+          "confidence": 1.0
+        },
+        {
+          "word_index": 5,
+          "text": "that",
+          "start": 131.1,
+          "end": 131.2,
+          "confidence": 1.0
+        },
+        {
+          "word_index": 6,
+          "text": "money",
+          "start": 131.25,
+          "end": 131.35,
+          "confidence": 1.0
+        }
+      ],
+      "y": 157,
+      "word_rois": [
+        [
+          78,
+          157,
+          49,
+          37
+        ],
+        [
+          132,
+          157,
+          13,
+          37
+        ],
+        [
+          150,
+          157,
+          58,
+          37
+        ],
+        [
+          213,
+          157,
+          72,
+          37
+        ],
+        [
+          289,
+          157,
+          59,
+          37
+        ],
+        [
+          352,
+          157,
+          100,
+          37
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 61,
       "text": "Girls hit your hallelujah",
-      "start": 133.15,
-      "end": 133.7,
+      "start": 133.55,
+      "end": 134.25,
       "confidence": 0.625,
       "words": [
         {
           "word_index": 1,
           "text": "Girls",
-          "start": 133.15,
-          "end": 133.25,
+          "start": 133.55,
+          "end": 133.65,
           "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "hit",
-          "start": 133.3,
-          "end": 133.4,
+          "start": 133.7,
+          "end": 133.8,
           "confidence": 0.25
         },
         {
           "word_index": 3,
           "text": "your",
-          "start": 133.45,
-          "end": 133.55,
+          "start": 133.85,
+          "end": 133.95,
           "confidence": 0.25
         },
         {
           "word_index": 4,
           "text": "hallelujah",
-          "start": 133.6,
-          "end": 133.7,
+          "start": 134.0,
+          "end": 134.1,
           "confidence": 1.0
         }
       ],
@@ -3874,7 +4070,7 @@
       "char_rois": []
     },
     {
-      "line_index": 60,
+      "line_index": 62,
       "text": "gon' give it to you",
       "start": 135.7,
       "end": 137.3,
@@ -3952,7 +4148,7 @@
       "char_rois": []
     },
     {
-      "line_index": 61,
+      "line_index": 63,
       "text": "gon' give it to you",
       "start": 137.3,
       "end": 138.0,
@@ -4030,7 +4226,7 @@
       "char_rois": []
     },
     {
-      "line_index": 62,
+      "line_index": 64,
       "text": "gon' give it to you",
       "start": 138.0,
       "end": 138.7,
@@ -4108,7 +4304,7 @@
       "char_rois": []
     },
     {
-      "line_index": 63,
+      "line_index": 65,
       "text": "Saturday night",
       "start": 138.7,
       "end": 138.95,
@@ -4147,7 +4343,7 @@
       "char_rois": []
     },
     {
-      "line_index": 64,
+      "line_index": 66,
       "text": "and we in the spot",
       "start": 140.35,
       "end": 141.75,
@@ -4225,95 +4421,102 @@
       "char_rois": []
     },
     {
-      "line_index": 65,
-      "text": "believe me just watch",
-      "start": 143.2,
-      "end": 143.75,
+      "line_index": 67,
+      "text": "Dont believe me just watch",
+      "start": 141.5,
+      "end": 143.65,
       "confidence": 0.85,
       "words": [
         {
           "word_index": 1,
-          "text": "believe",
-          "start": 143.2,
-          "end": 143.3,
-          "confidence": 1.0
+          "text": "Dont",
+          "start": 141.5,
+          "end": 141.6,
+          "confidence": 0.25
         },
         {
           "word_index": 2,
-          "text": "me",
-          "start": 143.35,
-          "end": 143.45,
+          "text": "believe",
+          "start": 143.1,
+          "end": 143.2,
           "confidence": 1.0
         },
         {
           "word_index": 3,
-          "text": "just",
-          "start": 143.5,
-          "end": 143.6,
+          "text": "me",
+          "start": 143.25,
+          "end": 143.35,
           "confidence": 1.0
         },
         {
           "word_index": 4,
+          "text": "just",
+          "start": 143.4,
+          "end": 143.5,
+          "confidence": 1.0
+        },
+        {
+          "word_index": 5,
           "text": "watch",
-          "start": 143.65,
-          "end": 143.75,
+          "start": 143.55,
+          "end": 143.65,
           "confidence": 1.0
         }
       ],
-      "y": 65,
+      "y": 68,
       "word_rois": [
         [
-          64,
-          66,
+          62,
+          63,
           80,
-          32
+          41
         ],
         [
-          148,
-          66,
+          147,
+          63,
           100,
-          32
+          41
         ],
         [
           252,
-          66,
-          56,
-          32
+          63,
+          55,
+          41
         ],
         [
           312,
-          66,
+          63,
           60,
-          32
+          41
         ],
         [
-          375,
-          66,
+          377,
+          63,
           86,
-          32
+          41
         ]
       ],
       "char_rois": []
     },
     {
-      "line_index": 66,
+      "line_index": 68,
       "text": "Come on",
-      "start": 144.55,
-      "end": 144.8,
+      "start": 144.45,
+      "end": 144.7,
       "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "Come",
-          "start": 144.55,
-          "end": 144.65,
+          "start": 144.45,
+          "end": 144.55,
           "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "on",
-          "start": 144.7,
-          "end": 144.8,
+          "start": 144.6,
+          "end": 144.7,
           "confidence": 1.0
         }
       ],
@@ -4335,7 +4538,7 @@
       "char_rois": []
     },
     {
-      "line_index": 67,
+      "line_index": 69,
       "text": "believe me",
       "start": 152.5,
       "end": 152.8,
@@ -4380,21 +4583,28 @@
       "char_rois": []
     },
     {
-      "line_index": 68,
-      "text": "watch huh",
-      "start": 152.95,
+      "line_index": 70,
+      "text": "just watch huh",
+      "start": 152.8,
       "end": 153.2,
       "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
+          "text": "just",
+          "start": 152.8,
+          "end": 152.9,
+          "confidence": 1.0
+        },
+        {
+          "word_index": 2,
           "text": "watch",
           "start": 152.95,
           "end": 153.05,
           "confidence": 1.0
         },
         {
-          "word_index": 2,
+          "word_index": 3,
           "text": "huh",
           "start": 153.1,
           "end": 153.2,
@@ -4425,7 +4635,7 @@
       "char_rois": []
     },
     {
-      "line_index": 69,
+      "line_index": 71,
       "text": "believe me",
       "start": 161.1,
       "end": 161.7,
@@ -4470,21 +4680,28 @@
       "char_rois": []
     },
     {
-      "line_index": 70,
-      "text": "watch huh",
-      "start": 162.35,
+      "line_index": 72,
+      "text": "just watch huh",
+      "start": 162.2,
       "end": 162.9,
       "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
+          "text": "just",
+          "start": 162.2,
+          "end": 162.3,
+          "confidence": 1.0
+        },
+        {
+          "word_index": 2,
           "text": "watch",
           "start": 162.35,
           "end": 162.45,
           "confidence": 1.0
         },
         {
-          "word_index": 2,
+          "word_index": 3,
           "text": "huh",
           "start": 162.5,
           "end": 162.6,
@@ -4515,7 +4732,7 @@
       "char_rois": []
     },
     {
-      "line_index": 71,
+      "line_index": 73,
       "text": "believe me",
       "start": 166.1,
       "end": 166.6,
@@ -4560,21 +4777,28 @@
       "char_rois": []
     },
     {
-      "line_index": 72,
-      "text": "watch huh",
-      "start": 168.55,
+      "line_index": 74,
+      "text": "just watch huh",
+      "start": 168.4,
       "end": 168.8,
       "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
+          "text": "just",
+          "start": 168.4,
+          "end": 168.5,
+          "confidence": 1.0
+        },
+        {
+          "word_index": 2,
           "text": "watch",
           "start": 168.55,
           "end": 168.65,
           "confidence": 1.0
         },
         {
-          "word_index": 2,
+          "word_index": 3,
           "text": "huh",
           "start": 168.7,
           "end": 168.8,
@@ -4605,31 +4829,31 @@
       "char_rois": []
     },
     {
-      "line_index": 73,
+      "line_index": 75,
       "text": "Juck antal both",
-      "start": 168.8,
-      "end": 169.2,
+      "start": 169.05,
+      "end": 169.75,
       "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "Juck",
-          "start": 168.8,
-          "end": 168.9,
+          "start": 169.05,
+          "end": 169.15,
           "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "antal",
-          "start": 168.95,
-          "end": 169.05,
+          "start": 169.2,
+          "end": 169.3,
           "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "both",
-          "start": 169.1,
-          "end": 169.2,
+          "start": 169.35,
+          "end": 169.45,
           "confidence": 1.0
         }
       ],
@@ -4657,72 +4881,72 @@
       "char_rois": []
     },
     {
-      "line_index": 74,
-      "text": "Hey hey hey oh",
-      "start": 173.6,
-      "end": 174.6,
-      "confidence": 0.374,
+      "line_index": 76,
+      "text": "Hey hey hey ch",
+      "start": 172.65,
+      "end": 177.5,
+      "confidence": 0.438,
       "words": [
         {
           "word_index": 1,
           "text": "Hey",
-          "start": 173.6,
-          "end": 173.7,
-          "confidence": 0.747
+          "start": 172.65,
+          "end": 173.45,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "hey",
-          "start": 173.9,
-          "end": 174.0,
+          "start": 176.8,
+          "end": 176.9,
           "confidence": 0.25
         },
         {
           "word_index": 3,
           "text": "hey",
-          "start": 174.2,
-          "end": 174.3,
+          "start": 177.1,
+          "end": 177.2,
           "confidence": 0.25
         },
         {
           "word_index": 4,
-          "text": "oh",
-          "start": 174.5,
-          "end": 174.6,
+          "text": "ch",
+          "start": 177.4,
+          "end": 177.5,
           "confidence": 0.25
         }
       ],
       "y": 16,
       "word_rois": [
         [
-          146,
-          19,
-          63,
-          37
+          141,
+          16,
+          66,
+          41
         ],
         [
-          213,
-          19,
-          63,
-          37
+          211,
+          17,
+          66,
+          41
         ],
         [
           281,
-          19,
-          63,
-          37
+          18,
+          61,
+          40
         ],
         [
-          348,
-          19,
-          37,
-          37
+          346,
+          18,
+          42,
+          41
         ]
       ],
       "char_rois": []
     },
     {
-      "line_index": 75,
+      "line_index": 77,
       "text": "Before we leave",
       "start": 174.75,
       "end": 175.15,
@@ -4774,7 +4998,7 @@
       "char_rois": []
     },
     {
-      "line_index": 76,
+      "line_index": 78,
       "text": "Imma tell y'all a lil something",
       "start": 179.05,
       "end": 180.2,
@@ -4865,8 +5089,8 @@
       "char_rois": []
     },
     {
-      "line_index": 77,
-      "text": "UDOAN ONUCI",
+      "line_index": 79,
+      "text": "UDOAN ONUD",
       "start": 180.95,
       "end": 182.25,
       "confidence": 1.0,
@@ -4904,7 +5128,7 @@
       "char_rois": []
     },
     {
-      "line_index": 78,
+      "line_index": 80,
       "text": "Uptown",
       "start": 182.25,
       "end": 182.35,
@@ -4930,7 +5154,7 @@
       "char_rois": []
     },
     {
-      "line_index": 79,
+      "line_index": 81,
       "text": "Come on dance",
       "start": 196.3,
       "end": 197.2,
@@ -4982,7 +5206,7 @@
       "char_rois": []
     },
     {
-      "line_index": 80,
+      "line_index": 82,
       "text": "Jump on it",
       "start": 197.35,
       "end": 197.95,
@@ -5034,7 +5258,7 @@
       "char_rois": []
     },
     {
-      "line_index": 81,
+      "line_index": 83,
       "text": "If you sexy than flaunt it",
       "start": 200.7,
       "end": 201.65,
@@ -5125,7 +5349,7 @@
       "char_rois": []
     },
     {
-      "line_index": 82,
+      "line_index": 84,
       "text": "If you freaky than own it",
       "start": 201.65,
       "end": 202.5,
@@ -5216,7 +5440,7 @@
       "char_rois": []
     },
     {
-      "line_index": 83,
+      "line_index": 85,
       "text": "brag about it",
       "start": 202.65,
       "end": 203.05,
@@ -5274,7 +5498,7 @@
       "char_rois": []
     },
     {
-      "line_index": 84,
+      "line_index": 86,
       "text": "come show me",
       "start": 203.95,
       "end": 204.7,
@@ -5326,7 +5550,7 @@
       "char_rois": []
     },
     {
-      "line_index": 85,
+      "line_index": 87,
       "text": "Well it's Saturday night",
       "start": 207.05,
       "end": 212.3,
@@ -5391,7 +5615,7 @@
       "char_rois": []
     },
     {
-      "line_index": 86,
+      "line_index": 88,
       "text": "and we in the spot",
       "start": 209.35,
       "end": 210.05,
@@ -5469,7 +5693,7 @@
       "char_rois": []
     },
     {
-      "line_index": 87,
+      "line_index": 89,
       "text": "If you sexy than flaunt it",
       "start": 210.05,
       "end": 210.9,
@@ -5560,7 +5784,7 @@
       "char_rois": []
     },
     {
-      "line_index": 88,
+      "line_index": 90,
       "text": "believe me just watch",
       "start": 211.05,
       "end": 211.6,
@@ -5631,7 +5855,7 @@
       "char_rois": []
     },
     {
-      "line_index": 89,
+      "line_index": 91,
       "text": "Come on",
       "start": 212.4,
       "end": 212.65,
@@ -5670,7 +5894,7 @@
       "char_rois": []
     },
     {
-      "line_index": 90,
+      "line_index": 92,
       "text": "believe me",
       "start": 215.1,
       "end": 216.25,
@@ -5715,21 +5939,28 @@
       "char_rois": []
     },
     {
-      "line_index": 91,
-      "text": "watch huh",
-      "start": 219.5,
+      "line_index": 93,
+      "text": "just watch huh",
+      "start": 219.35,
       "end": 219.75,
       "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
+          "text": "just",
+          "start": 219.35,
+          "end": 219.45,
+          "confidence": 1.0
+        },
+        {
+          "word_index": 2,
           "text": "watch",
           "start": 219.5,
           "end": 219.6,
           "confidence": 1.0
         },
         {
-          "word_index": 2,
+          "word_index": 3,
           "text": "huh",
           "start": 219.65,
           "end": 219.75,
@@ -5760,7 +5991,7 @@
       "char_rois": []
     },
     {
-      "line_index": 92,
+      "line_index": 94,
       "text": "believe me",
       "start": 227.3,
       "end": 227.55,
@@ -5805,21 +6036,28 @@
       "char_rois": []
     },
     {
-      "line_index": 93,
-      "text": "watch huh",
-      "start": 227.7,
+      "line_index": 95,
+      "text": "just watch huh",
+      "start": 227.55,
       "end": 227.95,
       "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
+          "text": "just",
+          "start": 227.55,
+          "end": 227.65,
+          "confidence": 1.0
+        },
+        {
+          "word_index": 2,
           "text": "watch",
           "start": 227.7,
           "end": 227.8,
           "confidence": 1.0
         },
         {
-          "word_index": 2,
+          "word_index": 3,
           "text": "huh",
           "start": 227.85,
           "end": 227.95,
@@ -5843,14 +6081,14 @@
         [
           315,
           65,
-          57,
+          59,
           38
         ]
       ],
       "char_rois": []
     },
     {
-      "line_index": 94,
+      "line_index": 96,
       "text": "believe me",
       "start": 233.4,
       "end": 233.65,
@@ -5895,14 +6133,21 @@
       "char_rois": []
     },
     {
-      "line_index": 95,
-      "text": "watch",
-      "start": 233.8,
+      "line_index": 97,
+      "text": "just watch",
+      "start": 233.65,
       "end": 233.9,
       "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
+          "text": "just",
+          "start": 233.65,
+          "end": 233.75,
+          "confidence": 1.0
+        },
+        {
+          "word_index": 2,
           "text": "watch",
           "start": 233.8,
           "end": 233.9,
@@ -5927,7 +6172,33 @@
       "char_rois": []
     },
     {
-      "line_index": 96,
+      "line_index": 98,
+      "text": "JUST",
+      "start": 233.9,
+      "end": 234.0,
+      "confidence": 1.0,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "JUST",
+          "start": 233.9,
+          "end": 234.0,
+          "confidence": 1.0
+        }
+      ],
+      "y": 71,
+      "word_rois": [
+        [
+          154,
+          71,
+          54,
+          22
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 99,
       "text": "Dank balat nua",
       "start": 234.0,
       "end": 234.4,
@@ -5979,7 +6250,7 @@
       "char_rois": []
     },
     {
-      "line_index": 97,
+      "line_index": 100,
       "text": "Hey hey hey oh",
       "start": 234.4,
       "end": 237.0,
@@ -6044,7 +6315,7 @@
       "char_rois": []
     },
     {
-      "line_index": 98,
+      "line_index": 101,
       "text": "DULU",
       "start": 237.0,
       "end": 237.35,

@@ -98,14 +98,14 @@
       "text": "with me I know a galaxy",
       "start": 10.85,
       "end": 11.7,
-      "confidence": 0.982,
+      "confidence": 0.983,
       "words": [
         {
           "word_index": 1,
           "text": "with",
           "start": 10.85,
           "end": 10.95,
-          "confidence": 0.894
+          "confidence": 0.897
         },
         {
           "word_index": 2,
@@ -316,38 +316,38 @@
     },
     {
       "line_index": 5,
-      "text": "I had a premonition",
-      "start": 14.3,
-      "end": 15.3,
-      "confidence": 0.946,
+      "text": "U had a premonition",
+      "start": 14.1,
+      "end": 14.9,
+      "confidence": 0.912,
       "words": [
         {
           "word_index": 1,
-          "text": "I",
-          "start": 14.3,
-          "end": 14.4,
+          "text": "U",
+          "start": 14.1,
+          "end": 14.2,
           "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "had",
-          "start": 14.45,
-          "end": 14.55,
+          "start": 14.25,
+          "end": 14.35,
           "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "a",
-          "start": 15.05,
-          "end": 15.15,
-          "confidence": 0.937
+          "start": 14.65,
+          "end": 14.75,
+          "confidence": 0.766
         },
         {
           "word_index": 4,
           "text": "premonition",
-          "start": 15.2,
-          "end": 15.3,
-          "confidence": 0.847
+          "start": 14.8,
+          "end": 14.9,
+          "confidence": 0.884
         }
       ],
       "y": 20,
@@ -355,77 +355,56 @@
         [
           120,
           19,
-          12,
-          34
+          13,
+          36
         ],
         [
-          137,
+          138,
           19,
-          59,
-          34
+          58,
+          36
         ],
         [
-          200,
+          201,
           19,
-          17,
-          34
+          18,
+          36
         ],
         [
-          221,
+          223,
           19,
           172,
-          34
+          36
         ]
       ],
       "char_rois": []
     },
     {
       "line_index": 6,
-      "text": "that we fell into a rhythm",
-      "start": 15.3,
-      "end": 16.85,
-      "confidence": 0.828,
+      "text": "that we fell into arhythm",
+      "start": 14.9,
+      "end": 16.15,
+      "confidence": 0.746,
       "words": [
         {
           "word_index": 1,
           "text": "that",
-          "start": 15.3,
-          "end": 16.1,
+          "start": 14.9,
+          "end": 15.7,
           "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "we",
-          "start": 16.15,
-          "end": 16.25,
-          "confidence": 1.0
+          "start": 15.75,
+          "end": 15.85,
+          "confidence": 0.989
         },
         {
           "word_index": 3,
-          "text": "fell",
-          "start": 16.3,
-          "end": 16.4,
-          "confidence": 0.731
-        },
-        {
-          "word_index": 4,
-          "text": "into",
-          "start": 16.45,
-          "end": 16.55,
-          "confidence": 0.986
-        },
-        {
-          "word_index": 5,
-          "text": "a",
-          "start": 16.6,
-          "end": 16.7,
-          "confidence": 1.0
-        },
-        {
-          "word_index": 6,
-          "text": "rhythmn",
-          "start": 16.75,
-          "end": 16.85,
+          "text": "tel",
+          "start": 16.05,
+          "end": 16.15,
           "confidence": 0.25
         }
       ],
@@ -433,39 +412,21 @@
       "word_rois": [
         [
           82,
-          67,
-          56,
-          32
+          69,
+          58,
+          26
         ],
         [
-          142,
-          67,
-          44,
-          32
+          143,
+          69,
+          42,
+          26
         ],
         [
-          190,
-          67,
-          52,
-          32
-        ],
-        [
-          246,
-          67,
-          56,
-          32
-        ],
-        [
-          306,
-          67,
-          20,
-          32
-        ],
-        [
-          330,
-          67,
-          106,
-          32
+          189,
+          69,
+          124,
+          26
         ]
       ],
       "char_rois": []
@@ -473,15 +434,15 @@
     {
       "line_index": 7,
       "text": "where the music",
-      "start": 16.85,
+      "start": 16.45,
       "end": 17.25,
-      "confidence": 0.711,
+      "confidence": 0.709,
       "words": [
         {
           "word_index": 1,
           "text": "where",
-          "start": 16.85,
-          "end": 16.95,
+          "start": 16.45,
+          "end": 16.55,
           "confidence": 0.25
         },
         {
@@ -496,7 +457,7 @@
           "text": "music",
           "start": 17.15,
           "end": 17.25,
-          "confidence": 0.882
+          "confidence": 0.876
         }
       ],
       "y": 113,
@@ -525,40 +486,40 @@
     {
       "line_index": 8,
       "text": "don't stop for life",
-      "start": 17.25,
-      "end": 19.5,
+      "start": 17.95,
+      "end": 20.5,
       "confidence": 0.812,
       "words": [
         {
           "word_index": 1,
           "text": "don't",
-          "start": 17.25,
-          "end": 18.05,
+          "start": 17.95,
+          "end": 18.75,
           "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "stop",
-          "start": 18.4,
-          "end": 18.5,
+          "start": 19.4,
+          "end": 19.5,
           "confidence": 0.25
         },
         {
           "word_index": 3,
           "text": "for",
-          "start": 18.55,
-          "end": 19.35,
+          "start": 19.55,
+          "end": 20.35,
           "confidence": 1.0
         },
         {
           "word_index": 4,
           "text": "life",
-          "start": 19.4,
-          "end": 19.5,
+          "start": 20.4,
+          "end": 20.5,
           "confidence": 1.0
         }
       ],
-      "y": 160,
+      "y": 159,
       "word_rois": [
         [
           139,
@@ -797,14 +758,14 @@
     },
     {
       "line_index": 13,
-      "text": "If you're feeling like you",
+      "text": "If youre feeling like you",
       "start": 25.55,
       "end": 27.5,
-      "confidence": 0.86,
+      "confidence": 0.887,
       "words": [
         {
           "word_index": 1,
-          "text": "If",
+          "text": "li",
           "start": 25.55,
           "end": 25.65,
           "confidence": 1.0
@@ -821,14 +782,14 @@
           "text": "feeling",
           "start": 26.4,
           "end": 26.5,
-          "confidence": 0.642
+          "confidence": 0.753
         },
         {
           "word_index": 4,
           "text": "like",
           "start": 26.55,
           "end": 27.35,
-          "confidence": 0.66
+          "confidence": 0.68
         },
         {
           "word_index": 5,
@@ -841,34 +802,34 @@
       "y": 20,
       "word_rois": [
         [
-          90,
-          19,
-          25,
-          34
+          92,
+          23,
+          24,
+          28
         ],
         [
           119,
-          19,
-          85,
-          34
+          23,
+          84,
+          28
         ],
         [
-          209,
-          19,
-          97,
-          34
+          207,
+          23,
+          101,
+          28
         ],
         [
-          311,
-          19,
-          55,
-          34
+          312,
+          23,
+          56,
+          28
         ],
         [
-          370,
-          19,
-          57,
-          34
+          371,
+          23,
+          54,
+          28
         ]
       ],
       "char_rois": []
@@ -878,7 +839,7 @@
       "text": "need a little bit of company",
       "start": 27.5,
       "end": 28.35,
-      "confidence": 0.641,
+      "confidence": 0.64,
       "words": [
         {
           "word_index": 1,
@@ -892,14 +853,14 @@
           "text": "a",
           "start": 27.65,
           "end": 27.75,
-          "confidence": 0.796
+          "confidence": 0.789
         },
         {
           "word_index": 3,
           "text": "little",
           "start": 27.8,
           "end": 27.9,
-          "confidence": 0.837
+          "confidence": 0.84
         },
         {
           "word_index": 4,
@@ -1200,7 +1161,7 @@
     },
     {
       "line_index": 19,
-      "text": "My sugar",
+      "text": "My sugarboo",
       "start": 33.2,
       "end": 33.45,
       "confidence": 1.0,
@@ -1214,7 +1175,7 @@
         },
         {
           "word_index": 2,
-          "text": "sugarboo",
+          "text": "sugetboo",
           "start": 33.35,
           "end": 33.45,
           "confidence": 1.0
@@ -1223,30 +1184,30 @@
       "y": 111,
       "word_rois": [
         [
-          170,
-          115,
-          44,
-          32
+          167,
+          114,
+          46,
+          36
         ],
         [
           217,
-          115,
-          128,
-          32
+          112,
+          133,
+          37
         ]
       ],
       "char_rois": []
     },
     {
       "line_index": 20,
-      "text": "Um levitating",
+      "text": "Am levitating",
       "start": 33.45,
       "end": 33.7,
       "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
-          "text": "Um",
+          "text": "Am",
           "start": 33.45,
           "end": 33.55,
           "confidence": 1.0
@@ -1264,14 +1225,14 @@
         [
           163,
           158,
-          50,
-          36
+          48,
+          38
         ],
         [
-          217,
-          159,
-          135,
-          37
+          215,
+          158,
+          139,
+          40
         ]
       ],
       "char_rois": []
@@ -1350,7 +1311,7 @@
           "confidence": 1.0
         }
       ],
-      "y": 66,
+      "y": 65,
       "word_rois": [
         [
           136,
@@ -1525,59 +1486,52 @@
     },
     {
       "line_index": 26,
-      "text": "you tre my starlight",
+      "text": "youre my starlight",
       "start": 40.9,
       "end": 41.6,
       "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
-          "text": "you",
+          "text": "you're",
           "start": 40.9,
-          "end": 40.95,
-          "confidence": 1.0
-        },
-        {
-          "word_index": 2,
-          "text": "tre",
-          "start": 40.95,
           "end": 41.0,
           "confidence": 1.0
         },
         {
-          "word_index": 3,
+          "word_index": 2,
           "text": "my",
           "start": 41.05,
           "end": 41.15,
           "confidence": 1.0
         },
         {
-          "word_index": 4,
-          "text": "starlight",
+          "word_index": 3,
+          "text": "starlich",
           "start": 41.2,
-          "end": 41.3,
+          "end": 41.45,
           "confidence": 1.0
         }
       ],
       "y": 65,
       "word_rois": [
         [
-          124,
-          65,
-          90,
-          38
+          128,
+          67,
+          88,
+          32
         ],
         [
-          219,
-          65,
-          42,
-          38
+          220,
+          67,
+          43,
+          32
         ],
         [
-          266,
-          65,
-          123,
-          38
+          268,
+          67,
+          111,
+          32
         ]
       ],
       "char_rois": []
@@ -1586,43 +1540,43 @@
       "line_index": 27,
       "text": "I need you all night",
       "start": 42.25,
-      "end": 42.95,
-      "confidence": 0.7,
+      "end": 44.65,
+      "confidence": 0.228,
       "words": [
         {
           "word_index": 1,
           "text": "I",
           "start": 42.25,
-          "end": 42.35,
-          "confidence": 1.0
+          "end": 42.55,
+          "confidence": 0.228
         },
         {
           "word_index": 2,
           "text": "need",
-          "start": 42.4,
-          "end": 42.5,
-          "confidence": 1.0
+          "start": 42.6,
+          "end": 43.1,
+          "confidence": 0.228
         },
         {
           "word_index": 3,
           "text": "you",
-          "start": 42.55,
-          "end": 42.65,
-          "confidence": 0.25
+          "start": 43.15,
+          "end": 43.55,
+          "confidence": 0.228
         },
         {
           "word_index": 4,
           "text": "all",
-          "start": 42.7,
-          "end": 42.8,
-          "confidence": 0.25
+          "start": 43.6,
+          "end": 44.05,
+          "confidence": 0.228
         },
         {
           "word_index": 5,
           "text": "night",
-          "start": 42.85,
-          "end": 42.95,
-          "confidence": 1.0
+          "start": 44.1,
+          "end": 44.65,
+          "confidence": 0.228
         }
       ],
       "y": 111,
@@ -1662,133 +1616,55 @@
     },
     {
       "line_index": 28,
-      "text": "Come on dance with me",
-      "start": 44.35,
-      "end": 46.05,
-      "confidence": 0.85,
+      "text": "Im levitating",
+      "start": 45.45,
+      "end": 46.1,
+      "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
-          "text": "Come",
-          "start": 44.35,
-          "end": 44.45,
-          "confidence": 1.0
+          "text": "Im",
+          "start": 45.45,
+          "end": 45.65,
+          "confidence": 0.252
         },
         {
           "word_index": 2,
-          "text": "on",
-          "start": 44.85,
-          "end": 44.95,
-          "confidence": 1.0
-        },
-        {
-          "word_index": 3,
-          "text": "dance",
-          "start": 45.0,
-          "end": 45.1,
-          "confidence": 1.0
-        },
-        {
-          "word_index": 4,
-          "text": "with",
-          "start": 45.15,
-          "end": 45.25,
-          "confidence": 0.25
-        },
-        {
-          "word_index": 5,
-          "text": "me",
-          "start": 45.3,
-          "end": 46.05,
-          "confidence": 1.0
+          "text": "levitating",
+          "start": 45.7,
+          "end": 46.1,
+          "confidence": 0.252
         }
       ],
-      "y": 65,
+      "y": 112,
       "word_rois": [
         [
-          86,
-          67,
-          80,
-          32
+          163,
+          114,
+          50,
+          37
         ],
         [
-          170,
-          67,
-          48,
-          32
-        ],
-        [
-          222,
-          67,
-          88,
-          32
-        ],
-        [
-          314,
-          67,
-          64,
-          32
-        ],
-        [
-          382,
-          67,
-          47,
-          32
+          217,
+          111,
+          137,
+          39
         ]
       ],
       "char_rois": []
     },
     {
       "line_index": 29,
-      "text": "U'm levitating",
-      "start": 46.05,
-      "end": 47.0,
-      "confidence": 1.0,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "U'm",
-          "start": 46.05,
-          "end": 46.15,
-          "confidence": 1.0
-        },
-        {
-          "word_index": 2,
-          "text": "levitating",
-          "start": 46.2,
-          "end": 47.0,
-          "confidence": 1.0
-        }
-      ],
-      "y": 112,
-      "word_rois": [
-        [
-          164,
-          113,
-          51,
-          34
-        ],
-        [
-          219,
-          113,
-          132,
-          34
-        ]
-      ],
-      "char_rois": []
-    },
-    {
-      "line_index": 30,
       "text": "You moonlight",
-      "start": 47.0,
+      "start": 46.95,
       "end": 48.7,
       "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "You",
-          "start": 47.0,
-          "end": 47.1,
+          "start": 46.95,
+          "end": 47.05,
           "confidence": 1.0
         },
         {
@@ -1817,7 +1693,7 @@
       "char_rois": []
     },
     {
-      "line_index": 31,
+      "line_index": 30,
       "text": "I need you all night",
       "start": 51.7,
       "end": 53.2,
@@ -1895,7 +1771,7 @@
       "char_rois": []
     },
     {
-      "line_index": 32,
+      "line_index": 31,
       "text": "Come on dance with me",
       "start": 53.7,
       "end": 56.1,
@@ -1937,7 +1813,7 @@
           "confidence": 1.0
         }
       ],
-      "y": 66,
+      "y": 68,
       "word_rois": [
         [
           86,
@@ -1973,7 +1849,7 @@
       "char_rois": []
     },
     {
-      "line_index": 33,
+      "line_index": 32,
       "text": "Im levitating",
       "start": 60.15,
       "end": 60.4,
@@ -2012,240 +1888,220 @@
       "char_rois": []
     },
     {
-      "line_index": 34,
-      "text": "I believe that you tre for me",
-      "start": 60.7,
-      "end": 62.8,
-      "confidence": 0.464,
+      "line_index": 33,
+      "text": "I believe that youtre for me",
+      "start": 60.65,
+      "end": 62.9,
+      "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
           "text": "I",
-          "start": 60.7,
-          "end": 60.8,
+          "start": 60.65,
+          "end": 61.35,
           "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "believe",
-          "start": 61.05,
-          "end": 61.15,
+          "start": 61.5,
+          "end": 61.6,
           "confidence": 0.25
         },
         {
           "word_index": 3,
           "text": "that",
-          "start": 61.3,
-          "end": 61.4,
+          "start": 61.65,
+          "end": 61.75,
           "confidence": 0.25
         },
         {
           "word_index": 4,
-          "text": "you",
-          "start": 61.5,
-          "end": 61.55,
+          "text": "you're",
+          "start": 61.8,
+          "end": 61.9,
           "confidence": 0.25
         },
         {
           "word_index": 5,
-          "text": "tre",
-          "start": 61.55,
-          "end": 61.6,
+          "text": "for",
+          "start": 61.95,
+          "end": 62.05,
           "confidence": 0.25
         },
         {
           "word_index": 6,
-          "text": "for",
-          "start": 61.75,
-          "end": 61.85,
-          "confidence": 0.25
-        },
-        {
-          "word_index": 7,
           "text": "me",
-          "start": 62.0,
-          "end": 62.8,
+          "start": 62.1,
+          "end": 62.9,
           "confidence": 1.0
         }
       ],
       "y": 19,
       "word_rois": [
         [
-          62,
-          17,
-          23,
-          38
+          60,
+          21,
+          29,
+          30
         ],
         [
-          90,
-          17,
-          100,
-          38
+          93,
+          21,
+          98,
+          30
         ],
         [
-          195,
-          17,
-          57,
-          38
+          194,
+          21,
+          64,
+          30
+        ],
+        [
+          262,
+          21,
+          82,
+          30
+        ],
+        [
+          348,
+          21,
+          45,
+          30
+        ],
+        [
+          397,
+          21,
+          46,
+          30
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 34,
+      "text": "I feel it in our energy",
+      "start": 62.9,
+      "end": 63.75,
+      "confidence": 0.27,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "I",
+          "start": 62.9,
+          "end": 63.0,
+          "confidence": 0.27
+        },
+        {
+          "word_index": 2,
+          "text": "feel",
+          "start": 63.05,
+          "end": 63.15,
+          "confidence": 0.27
+        },
+        {
+          "word_index": 3,
+          "text": "it",
+          "start": 63.2,
+          "end": 63.3,
+          "confidence": 0.27
+        },
+        {
+          "word_index": 4,
+          "text": "in",
+          "start": 63.35,
+          "end": 63.45,
+          "confidence": 0.27
+        },
+        {
+          "word_index": 5,
+          "text": "our",
+          "start": 63.5,
+          "end": 63.6,
+          "confidence": 0.27
+        },
+        {
+          "word_index": 6,
+          "text": "energy",
+          "start": 63.65,
+          "end": 63.75,
+          "confidence": 0.27
+        }
+      ],
+      "y": 66,
+      "word_rois": [
+        [
+          109,
+          63,
+          16,
+          31
+        ],
+        [
+          128,
+          64,
+          59,
+          32
+        ],
+        [
+          190,
+          66,
+          25,
+          31
+        ],
+        [
+          217,
+          67,
+          36,
+          32
         ],
         [
           256,
-          17,
-          86,
-          38
+          68,
+          51,
+          33
         ],
         [
-          347,
-          17,
-          47,
-          38
-        ],
-        [
-          399,
-          17,
-          46,
-          38
+          310,
+          70,
+          94,
+          34
         ]
       ],
       "char_rois": []
     },
     {
       "line_index": 35,
-      "text": "so let's do it now or never",
-      "start": 62.8,
-      "end": 67.4,
-      "confidence": 1.0,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "so",
-          "start": 62.8,
-          "end": 63.2,
-          "confidence": 1.0
-        },
-        {
-          "word_index": 2,
-          "text": "let's",
-          "start": 63.25,
-          "end": 63.35,
-          "confidence": 1.0
-        },
-        {
-          "word_index": 3,
-          "text": "do",
-          "start": 66.7,
-          "end": 66.8,
-          "confidence": 1.0
-        },
-        {
-          "word_index": 4,
-          "text": "it",
-          "start": 66.85,
-          "end": 66.95,
-          "confidence": 1.0
-        },
-        {
-          "word_index": 5,
-          "text": "now",
-          "start": 67.0,
-          "end": 67.1,
-          "confidence": 1.0
-        },
-        {
-          "word_index": 6,
-          "text": "or",
-          "start": 67.15,
-          "end": 67.25,
-          "confidence": 1.0
-        },
-        {
-          "word_index": 7,
-          "text": "never",
-          "start": 67.3,
-          "end": 67.4,
-          "confidence": 1.0
-        }
-      ],
-      "y": 67,
-      "word_rois": [
-        [
-          80,
-          67,
-          34,
-          28
-        ],
-        [
-          118,
-          67,
-          63,
-          28
-        ],
-        [
-          184,
-          67,
-          39,
-          28
-        ],
-        [
-          226,
-          67,
-          28,
-          28
-        ],
-        [
-          258,
-          67,
-          59,
-          28
-        ],
-        [
-          321,
-          67,
-          31,
-          28
-        ],
-        [
-          356,
-          67,
-          81,
-          28
-        ]
-      ],
-      "char_rois": []
-    },
-    {
-      "line_index": 36,
       "text": "I see us written",
-      "start": 67.4,
-      "end": 67.95,
+      "start": 63.75,
+      "end": 64.3,
       "confidence": 0.577,
       "words": [
         {
           "word_index": 1,
           "text": "I",
-          "start": 67.4,
-          "end": 67.5,
+          "start": 63.75,
+          "end": 63.85,
           "confidence": 0.25
         },
         {
           "word_index": 2,
           "text": "see",
-          "start": 67.55,
-          "end": 67.65,
+          "start": 63.9,
+          "end": 64.0,
           "confidence": 0.809
         },
         {
           "word_index": 3,
           "text": "us",
-          "start": 67.7,
-          "end": 67.8,
+          "start": 64.05,
+          "end": 64.15,
           "confidence": 1.0
         },
         {
           "word_index": 4,
           "text": "written",
-          "start": 67.85,
-          "end": 67.95,
+          "start": 64.2,
+          "end": 64.3,
           "confidence": 0.25
         }
       ],
@@ -2279,31 +2135,31 @@
       "char_rois": []
     },
     {
-      "line_index": 37,
+      "line_index": 36,
       "text": "in the stars",
-      "start": 67.95,
-      "end": 68.35,
+      "start": 64.95,
+      "end": 65.65,
       "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "in",
-          "start": 67.95,
-          "end": 68.05,
+          "start": 64.95,
+          "end": 65.05,
           "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "the",
-          "start": 68.1,
-          "end": 68.2,
+          "start": 65.1,
+          "end": 65.2,
           "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "stars",
-          "start": 68.25,
-          "end": 68.35,
+          "start": 65.25,
+          "end": 65.35,
           "confidence": 1.0
         }
       ],
@@ -2331,38 +2187,38 @@
       "char_rois": []
     },
     {
-      "line_index": 38,
+      "line_index": 37,
       "text": "We can go wherever",
-      "start": 68.35,
-      "end": 68.9,
+      "start": 66.2,
+      "end": 68.25,
       "confidence": 0.974,
       "words": [
         {
           "word_index": 1,
           "text": "We",
-          "start": 68.35,
-          "end": 68.45,
+          "start": 66.2,
+          "end": 66.3,
           "confidence": 0.989
         },
         {
           "word_index": 2,
           "text": "can",
-          "start": 68.5,
-          "end": 68.6,
+          "start": 67.85,
+          "end": 67.95,
           "confidence": 0.907
         },
         {
           "word_index": 3,
           "text": "go",
-          "start": 68.65,
-          "end": 68.75,
+          "start": 68.0,
+          "end": 68.1,
           "confidence": 1.0
         },
         {
           "word_index": 4,
           "text": "wherever",
-          "start": 68.8,
-          "end": 68.9,
+          "start": 68.15,
+          "end": 68.25,
           "confidence": 1.0
         }
       ],
@@ -2396,132 +2252,119 @@
       "char_rois": []
     },
     {
-      "line_index": 39,
-      "text": "so let's do it now or never",
-      "start": 68.9,
-      "end": 69.9,
-      "confidence": 1.0,
+      "line_index": 38,
+      "text": "I feel it in our energy",
+      "start": 67.4,
+      "end": 68.25,
+      "confidence": 0.75,
       "words": [
         {
           "word_index": 1,
-          "text": "so",
-          "start": 68.9,
-          "end": 69.0,
-          "confidence": 1.0
+          "text": "I",
+          "start": 67.4,
+          "end": 67.5,
+          "confidence": 0.25
         },
         {
           "word_index": 2,
-          "text": "let's",
-          "start": 69.05,
-          "end": 69.15,
+          "text": "feel",
+          "start": 67.55,
+          "end": 67.65,
           "confidence": 1.0
         },
         {
           "word_index": 3,
-          "text": "do",
-          "start": 69.2,
-          "end": 69.3,
-          "confidence": 1.0
+          "text": "it",
+          "start": 67.7,
+          "end": 67.8,
+          "confidence": 0.25
         },
         {
           "word_index": 4,
-          "text": "it",
-          "start": 69.35,
-          "end": 69.45,
+          "text": "in",
+          "start": 67.85,
+          "end": 67.95,
           "confidence": 1.0
         },
         {
           "word_index": 5,
-          "text": "now",
-          "start": 69.5,
-          "end": 69.6,
+          "text": "our",
+          "start": 68.0,
+          "end": 68.1,
           "confidence": 1.0
         },
         {
           "word_index": 6,
-          "text": "or",
-          "start": 69.65,
-          "end": 69.75,
-          "confidence": 1.0
-        },
-        {
-          "word_index": 7,
-          "text": "never",
-          "start": 69.8,
-          "end": 69.9,
+          "text": "energy",
+          "start": 68.15,
+          "end": 68.25,
           "confidence": 1.0
         }
       ],
-      "y": 67,
+      "y": 66,
       "word_rois": [
         [
-          80,
-          67,
-          34,
-          28
-        ],
-        [
-          118,
-          67,
+          109,
           63,
-          28
+          16,
+          31
         ],
         [
-          184,
-          67,
-          39,
-          28
-        ],
-        [
-          226,
-          67,
-          28,
-          28
-        ],
-        [
-          258,
-          67,
+          128,
+          64,
           59,
-          28
+          32
         ],
         [
-          321,
-          67,
-          31,
-          28
+          190,
+          66,
+          25,
+          31
         ],
         [
-          356,
+          217,
           67,
-          81,
-          28
+          36,
+          32
+        ],
+        [
+          256,
+          68,
+          51,
+          33
+        ],
+        [
+          310,
+          70,
+          94,
+          34
         ]
       ],
       "char_rois": []
     },
     {
-      "line_index": 40,
+      "line_index": 39,
       "text": "Baby nothing's",
-      "start": 69.9,
-      "end": 70.15,
+      "start": 68.25,
+      "end": 68.5,
       "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "Baby",
-          "start": 69.9,
-          "end": 70.0,
+          "start": 68.25,
+          "end": 68.35,
           "confidence": 0.252
         },
         {
           "word_index": 2,
           "text": "nothing's",
-          "start": 70.05,
-          "end": 70.15,
+          "start": 68.4,
+          "end": 68.5,
           "confidence": 0.252
         }
       ],
-      "y": 112,
+      "y": 85,
       "word_rois": [
         [
           151,
@@ -2539,39 +2382,39 @@
       "char_rois": []
     },
     {
-      "line_index": 41,
+      "line_index": 40,
       "text": "ever ever too far",
-      "start": 70.15,
-      "end": 70.7,
-      "confidence": 1.0,
+      "start": 68.9,
+      "end": 69.6,
+      "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "ever",
-          "start": 70.15,
-          "end": 70.25,
-          "confidence": 1.0
+          "start": 68.9,
+          "end": 69.0,
+          "confidence": 0.252
         },
         {
           "word_index": 2,
           "text": "ever",
-          "start": 70.3,
-          "end": 70.4,
-          "confidence": 1.0
+          "start": 69.05,
+          "end": 69.15,
+          "confidence": 0.252
         },
         {
           "word_index": 3,
           "text": "too",
-          "start": 70.45,
-          "end": 70.55,
-          "confidence": 1.0
+          "start": 69.2,
+          "end": 69.3,
+          "confidence": 0.252
         },
         {
           "word_index": 4,
           "text": "far",
-          "start": 70.6,
-          "end": 70.7,
-          "confidence": 1.0
+          "start": 69.35,
+          "end": 69.45,
+          "confidence": 0.252
         }
       ],
       "y": 160,
@@ -2604,31 +2447,31 @@
       "char_rois": []
     },
     {
-      "line_index": 42,
+      "line_index": 41,
       "text": "Glitterin the sky",
-      "start": 70.7,
-      "end": 71.5,
+      "start": 70.4,
+      "end": 72.85,
       "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
           "text": "Glitterin",
-          "start": 70.7,
-          "end": 70.8,
+          "start": 70.4,
+          "end": 70.5,
           "confidence": 0.25
         },
         {
           "word_index": 2,
           "text": "the",
-          "start": 71.1,
-          "end": 71.2,
+          "start": 72.45,
+          "end": 72.55,
           "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "sky",
-          "start": 71.4,
-          "end": 71.5,
+          "start": 72.75,
+          "end": 72.85,
           "confidence": 0.25
         }
       ],
@@ -2656,90 +2499,116 @@
       "char_rois": []
     },
     {
-      "line_index": 43,
-      "text": "Glitter in our eyes",
+      "line_index": 42,
+      "text": "I feel it in our energy",
       "start": 71.5,
-      "end": 72.05,
-      "confidence": 0.789,
+      "end": 72.35,
+      "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
-          "text": "Glitter",
+          "text": "I",
           "start": 71.5,
           "end": 71.6,
-          "confidence": 0.906
+          "confidence": 0.252
         },
         {
           "word_index": 2,
-          "text": "in",
+          "text": "feel",
           "start": 71.65,
           "end": 71.75,
-          "confidence": 0.25
+          "confidence": 0.252
         },
         {
           "word_index": 3,
-          "text": "our",
+          "text": "it",
           "start": 71.8,
           "end": 71.9,
-          "confidence": 1.0
+          "confidence": 0.252
         },
         {
           "word_index": 4,
-          "text": "eyes",
+          "text": "in",
           "start": 71.95,
           "end": 72.05,
-          "confidence": 1.0
+          "confidence": 0.252
+        },
+        {
+          "word_index": 5,
+          "text": "our",
+          "start": 72.1,
+          "end": 72.2,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 6,
+          "text": "energy",
+          "start": 72.25,
+          "end": 72.35,
+          "confidence": 0.252
         }
       ],
       "y": 66,
       "word_rois": [
         [
-          134,
-          67,
-          90,
-          28
+          109,
+          63,
+          16,
+          31
         ],
         [
-          228,
-          67,
-          31,
-          28
+          128,
+          64,
+          59,
+          32
         ],
         [
-          263,
-          67,
-          49,
-          28
-        ],
-        [
-          315,
-          67,
+          190,
           66,
-          28
+          25,
+          31
+        ],
+        [
+          217,
+          67,
+          36,
+          32
+        ],
+        [
+          256,
+          68,
+          51,
+          33
+        ],
+        [
+          310,
+          70,
+          94,
+          34
         ]
       ],
       "char_rois": []
     },
     {
-      "line_index": 44,
+      "line_index": 43,
       "text": "Shining just",
-      "start": 72.55,
-      "end": 73.25,
-      "confidence": 0.5,
+      "start": 72.35,
+      "end": 72.6,
+      "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "Shining",
-          "start": 72.55,
-          "end": 72.65,
-          "confidence": 0.5
+          "start": 72.35,
+          "end": 72.45,
+          "confidence": 0.252
         },
         {
           "word_index": 2,
           "text": "just",
-          "start": 72.7,
-          "end": 72.8,
-          "confidence": 0.5
+          "start": 72.5,
+          "end": 72.6,
+          "confidence": 0.252
         }
       ],
       "y": 111,
@@ -2760,39 +2629,39 @@
       "char_rois": []
     },
     {
-      "line_index": 45,
+      "line_index": 44,
       "text": "the way we are",
-      "start": 74.45,
-      "end": 76.3,
-      "confidence": 0.553,
+      "start": 72.6,
+      "end": 73.15,
+      "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "the",
-          "start": 74.45,
-          "end": 74.55,
-          "confidence": 1.0
+          "start": 72.6,
+          "end": 72.7,
+          "confidence": 0.252
         },
         {
           "word_index": 2,
           "text": "way",
-          "start": 74.8,
-          "end": 74.9,
-          "confidence": 0.25
+          "start": 72.75,
+          "end": 72.85,
+          "confidence": 0.252
         },
         {
           "word_index": 3,
           "text": "we",
-          "start": 75.05,
-          "end": 75.85,
-          "confidence": 0.714
+          "start": 72.9,
+          "end": 73.0,
+          "confidence": 0.252
         },
         {
           "word_index": 4,
           "text": "are",
-          "start": 76.2,
-          "end": 76.3,
-          "confidence": 0.25
+          "start": 73.05,
+          "end": 73.15,
+          "confidence": 0.252
         }
       ],
       "y": 162,
@@ -2825,46 +2694,46 @@
       "char_rois": []
     },
     {
-      "line_index": 46,
+      "line_index": 45,
       "text": "I feel like we're forever",
-      "start": 75.95,
-      "end": 77.75,
-      "confidence": 1.0,
+      "start": 73.15,
+      "end": 73.85,
+      "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "I",
-          "start": 75.95,
-          "end": 76.05,
-          "confidence": 1.0
+          "start": 73.15,
+          "end": 73.25,
+          "confidence": 0.252
         },
         {
           "word_index": 2,
           "text": "feel",
-          "start": 76.1,
-          "end": 76.2,
-          "confidence": 1.0
+          "start": 73.3,
+          "end": 73.4,
+          "confidence": 0.252
         },
         {
           "word_index": 3,
           "text": "like",
-          "start": 76.65,
-          "end": 76.75,
-          "confidence": 1.0
+          "start": 73.45,
+          "end": 73.55,
+          "confidence": 0.252
         },
         {
           "word_index": 4,
           "text": "we're",
-          "start": 76.8,
-          "end": 77.6,
-          "confidence": 1.0
+          "start": 73.6,
+          "end": 73.7,
+          "confidence": 0.252
         },
         {
           "word_index": 5,
           "text": "forever",
-          "start": 77.65,
-          "end": 77.75,
-          "confidence": 1.0
+          "start": 73.75,
+          "end": 73.85,
+          "confidence": 0.252
         }
       ],
       "y": 19,
@@ -2903,46 +2772,46 @@
       "char_rois": []
     },
     {
-      "line_index": 47,
+      "line_index": 46,
       "text": "every time we get together",
-      "start": 77.75,
-      "end": 78.45,
-      "confidence": 1.0,
+      "start": 73.85,
+      "end": 74.55,
+      "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "every",
-          "start": 77.75,
-          "end": 77.85,
-          "confidence": 1.0
+          "start": 73.85,
+          "end": 73.95,
+          "confidence": 0.252
         },
         {
           "word_index": 2,
           "text": "time",
-          "start": 77.9,
-          "end": 78.0,
-          "confidence": 1.0
+          "start": 74.0,
+          "end": 74.1,
+          "confidence": 0.252
         },
         {
           "word_index": 3,
           "text": "we",
-          "start": 78.05,
-          "end": 78.15,
-          "confidence": 1.0
+          "start": 74.15,
+          "end": 74.25,
+          "confidence": 0.252
         },
         {
           "word_index": 4,
           "text": "get",
-          "start": 78.2,
-          "end": 78.3,
-          "confidence": 1.0
+          "start": 74.3,
+          "end": 74.4,
+          "confidence": 0.252
         },
         {
           "word_index": 5,
           "text": "together",
-          "start": 78.35,
-          "end": 78.45,
-          "confidence": 1.0
+          "start": 74.45,
+          "end": 74.55,
+          "confidence": 0.252
         }
       ],
       "y": 66,
@@ -2981,24 +2850,24 @@
       "char_rois": []
     },
     {
-      "line_index": 48,
+      "line_index": 47,
       "text": "But whatever",
-      "start": 78.45,
-      "end": 78.7,
+      "start": 75.7,
+      "end": 76.7,
       "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
           "text": "But",
-          "start": 78.45,
-          "end": 78.55,
+          "start": 75.7,
+          "end": 76.05,
           "confidence": 0.5
         },
         {
           "word_index": 2,
           "text": "whatever",
-          "start": 78.6,
-          "end": 78.7,
+          "start": 76.1,
+          "end": 76.7,
           "confidence": 0.5
         }
       ],
@@ -3020,45 +2889,45 @@
       "char_rois": []
     },
     {
-      "line_index": 49,
+      "line_index": 48,
       "text": "let's get lost on Mars",
-      "start": 78.7,
-      "end": 79.4,
+      "start": 76.7,
+      "end": 78.65,
       "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
           "text": "let's",
-          "start": 78.7,
-          "end": 78.8,
+          "start": 76.7,
+          "end": 76.8,
           "confidence": 0.5
         },
         {
           "word_index": 2,
           "text": "get",
-          "start": 78.85,
-          "end": 78.95,
+          "start": 76.85,
+          "end": 77.0,
           "confidence": 0.5
         },
         {
           "word_index": 3,
           "text": "lost",
-          "start": 79.0,
-          "end": 79.1,
+          "start": 77.05,
+          "end": 77.6,
           "confidence": 0.5
         },
         {
           "word_index": 4,
           "text": "on",
-          "start": 79.15,
-          "end": 79.25,
+          "start": 77.65,
+          "end": 78.05,
           "confidence": 0.5
         },
         {
           "word_index": 5,
           "text": "Mars",
-          "start": 79.3,
-          "end": 79.4,
+          "start": 78.1,
+          "end": 78.65,
           "confidence": 0.5
         }
       ],
@@ -3098,31 +2967,31 @@
       "char_rois": []
     },
     {
-      "line_index": 50,
+      "line_index": 49,
       "text": "You want me",
-      "start": 79.4,
-      "end": 79.8,
+      "start": 78.7,
+      "end": 79.7,
       "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
           "text": "You",
-          "start": 79.4,
-          "end": 79.5,
+          "start": 78.7,
+          "end": 79.0,
           "confidence": 0.5
         },
         {
           "word_index": 2,
           "text": "want",
-          "start": 79.55,
-          "end": 79.65,
+          "start": 79.05,
+          "end": 79.35,
           "confidence": 0.5
         },
         {
           "word_index": 3,
           "text": "me",
-          "start": 79.7,
-          "end": 79.8,
+          "start": 79.4,
+          "end": 79.7,
           "confidence": 0.5
         }
       ],
@@ -3150,30 +3019,30 @@
       "char_rois": []
     },
     {
-      "line_index": 51,
+      "line_index": 50,
       "text": "I want you baby",
-      "start": 79.8,
+      "start": 79.7,
       "end": 81.05,
       "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
           "text": "I",
-          "start": 79.8,
-          "end": 79.9,
+          "start": 79.7,
+          "end": 79.8,
           "confidence": 0.5
         },
         {
           "word_index": 2,
           "text": "want",
-          "start": 79.95,
-          "end": 80.05,
+          "start": 79.85,
+          "end": 79.95,
           "confidence": 0.5
         },
         {
           "word_index": 3,
           "text": "you",
-          "start": 80.1,
+          "start": 80.0,
           "end": 80.4,
           "confidence": 0.5
         },
@@ -3215,46 +3084,46 @@
       "char_rois": []
     },
     {
-      "line_index": 52,
-      "text": "My sugar",
-      "start": 81.45,
+      "line_index": 51,
+      "text": "My sugarboo",
+      "start": 81.35,
       "end": 82.15,
       "confidence": 0.625,
       "words": [
         {
           "word_index": 1,
           "text": "My",
-          "start": 81.45,
-          "end": 81.55,
+          "start": 81.35,
+          "end": 81.45,
           "confidence": 0.25
         },
         {
           "word_index": 2,
           "text": "sugarboo",
-          "start": 81.7,
-          "end": 81.8,
+          "start": 82.05,
+          "end": 82.15,
           "confidence": 1.0
         }
       ],
       "y": 111,
       "word_rois": [
         [
-          171,
-          114,
-          42,
-          31
+          169,
+          112,
+          43,
+          34
         ],
         [
           216,
-          115,
-          130,
-          31
+          113,
+          134,
+          35
         ]
       ],
       "char_rois": []
     },
     {
-      "line_index": 53,
+      "line_index": 52,
       "text": "Im levitating",
       "start": 83.05,
       "end": 83.75,
@@ -3293,7 +3162,7 @@
       "char_rois": []
     },
     {
-      "line_index": 54,
+      "line_index": 53,
       "text": "The Milky Way",
       "start": 84.7,
       "end": 85.8,
@@ -3345,28 +3214,21 @@
       "char_rois": []
     },
     {
-      "line_index": 55,
-      "text": "We tre renegading",
+      "line_index": 54,
+      "text": "Were renegading",
       "start": 85.8,
       "end": 86.05,
-      "confidence": 0.5,
+      "confidence": 0.625,
       "words": [
         {
           "word_index": 1,
-          "text": "We",
+          "text": "Were",
           "start": 85.8,
-          "end": 85.85,
-          "confidence": 0.25
-        },
-        {
-          "word_index": 2,
-          "text": "tre",
-          "start": 85.85,
           "end": 85.9,
           "confidence": 0.25
         },
         {
-          "word_index": 3,
+          "word_index": 2,
           "text": "renegading",
           "start": 85.95,
           "end": 86.05,
@@ -3376,22 +3238,22 @@
       "y": 65,
       "word_rois": [
         [
-          136,
+          138,
           65,
-          80,
-          38
+          76,
+          36
         ],
         [
-          221,
+          218,
           65,
-          158,
-          38
+          161,
+          36
         ]
       ],
       "char_rois": []
     },
     {
-      "line_index": 56,
+      "line_index": 55,
       "text": "Yeah yeah",
       "start": 89.3,
       "end": 89.55,
@@ -3430,7 +3292,7 @@
       "char_rois": []
     },
     {
-      "line_index": 57,
+      "line_index": 56,
       "text": "Yeah yeah yeah",
       "start": 89.55,
       "end": 89.95,
@@ -3482,7 +3344,7 @@
       "char_rois": []
     },
     {
-      "line_index": 58,
+      "line_index": 57,
       "text": "U got you moonlight",
       "start": 90.75,
       "end": 91.85,
@@ -3547,36 +3409,29 @@
       "char_rois": []
     },
     {
-      "line_index": 59,
-      "text": "you re my starlight",
+      "line_index": 58,
+      "text": "youre my starlight",
       "start": 91.9,
       "end": 92.6,
       "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
-          "text": "you",
+          "text": "you're",
           "start": 91.9,
-          "end": 91.95,
-          "confidence": 1.0
-        },
-        {
-          "word_index": 2,
-          "text": "re",
-          "start": 91.95,
           "end": 92.0,
           "confidence": 1.0
         },
         {
-          "word_index": 3,
-          "text": "my",
+          "word_index": 2,
+          "text": "iny",
           "start": 92.05,
           "end": 92.15,
           "confidence": 1.0
         },
         {
-          "word_index": 4,
-          "text": "starlight",
+          "word_index": 3,
+          "text": "starti",
           "start": 92.2,
           "end": 92.3,
           "confidence": 1.0
@@ -3585,45 +3440,45 @@
       "y": 65,
       "word_rois": [
         [
-          124,
-          65,
-          90,
-          38
+          128,
+          67,
+          82,
+          30
         ],
         [
-          219,
-          65,
-          42,
-          38
+          214,
+          67,
+          48,
+          30
         ],
         [
           266,
-          65,
-          123,
-          38
+          67,
+          75,
+          30
         ]
       ],
       "char_rois": []
     },
     {
-      "line_index": 60,
+      "line_index": 59,
       "text": "I need you all night",
       "start": 93.1,
-      "end": 95.7,
-      "confidence": 0.85,
+      "end": 99.15,
+      "confidence": 0.98,
       "words": [
         {
           "word_index": 1,
           "text": "I",
           "start": 93.1,
-          "end": 93.9,
+          "end": 93.2,
           "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "need",
-          "start": 93.95,
-          "end": 94.05,
+          "start": 93.25,
+          "end": 93.35,
           "confidence": 1.0
         },
         {
@@ -3636,15 +3491,15 @@
         {
           "word_index": 4,
           "text": "all",
-          "start": 95.45,
-          "end": 95.55,
-          "confidence": 0.25
+          "start": 98.9,
+          "end": 99.0,
+          "confidence": 0.9
         },
         {
           "word_index": 5,
           "text": "night",
-          "start": 95.6,
-          "end": 95.7,
+          "start": 99.05,
+          "end": 99.15,
           "confidence": 1.0
         }
       ],
@@ -3684,46 +3539,124 @@
       "char_rois": []
     },
     {
+      "line_index": 60,
+      "text": "you you're re iny garlie",
+      "start": 99.15,
+      "end": 99.85,
+      "confidence": 0.4,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "you",
+          "start": 99.15,
+          "end": 99.25,
+          "confidence": 0.25
+        },
+        {
+          "word_index": 2,
+          "text": "you're",
+          "start": 99.3,
+          "end": 99.4,
+          "confidence": 1.0
+        },
+        {
+          "word_index": 3,
+          "text": "re",
+          "start": 99.45,
+          "end": 99.55,
+          "confidence": 0.25
+        },
+        {
+          "word_index": 4,
+          "text": "iny",
+          "start": 99.6,
+          "end": 99.7,
+          "confidence": 0.25
+        },
+        {
+          "word_index": 5,
+          "text": "garlie",
+          "start": 99.75,
+          "end": 99.85,
+          "confidence": 0.25
+        }
+      ],
+      "y": 63,
+      "word_rois": [
+        [
+          125,
+          62,
+          53,
+          42
+        ],
+        [
+          127,
+          66,
+          83,
+          34
+        ],
+        [
+          183,
+          63,
+          27,
+          42
+        ],
+        [
+          215,
+          63,
+          47,
+          42
+        ],
+        [
+          267,
+          63,
+          111,
+          43
+        ]
+      ],
+      "char_rois": []
+    },
+    {
       "line_index": 61,
       "text": "Come on dance with me",
-      "start": 95.7,
-      "end": 96.8,
-      "confidence": 0.906,
+      "start": 99.85,
+      "end": 100.55,
+      "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "Come",
-          "start": 95.7,
-          "end": 95.8,
-          "confidence": 1.0
+          "start": 99.85,
+          "end": 99.95,
+          "confidence": 0.252
         },
         {
           "word_index": 2,
           "text": "on",
-          "start": 95.85,
-          "end": 95.95,
-          "confidence": 0.87
+          "start": 100.0,
+          "end": 100.1,
+          "confidence": 0.252
         },
         {
           "word_index": 3,
           "text": "dance",
-          "start": 96.1,
-          "end": 96.2,
-          "confidence": 1.0
+          "start": 100.15,
+          "end": 100.25,
+          "confidence": 0.252
         },
         {
           "word_index": 4,
           "text": "with",
-          "start": 96.55,
-          "end": 96.65,
-          "confidence": 0.66
+          "start": 100.3,
+          "end": 100.4,
+          "confidence": 0.252
         },
         {
           "word_index": 5,
           "text": "me",
-          "start": 96.7,
-          "end": 96.8,
-          "confidence": 1.0
+          "start": 100.45,
+          "end": 100.55,
+          "confidence": 0.252
         }
       ],
       "y": 65,
@@ -3764,22 +3697,22 @@
     {
       "line_index": 62,
       "text": "Im levitating",
-      "start": 97.2,
-      "end": 98.15,
+      "start": 100.55,
+      "end": 100.8,
       "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "Im",
-          "start": 97.2,
-          "end": 97.3,
+          "start": 100.55,
+          "end": 100.65,
           "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "levitating",
-          "start": 97.4,
-          "end": 98.15,
+          "start": 100.7,
+          "end": 100.8,
           "confidence": 1.0
         }
       ],
@@ -3803,22 +3736,22 @@
     {
       "line_index": 63,
       "text": "You moonlight",
-      "start": 98.15,
-      "end": 99.8,
+      "start": 101.6,
+      "end": 102.55,
       "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "You",
-          "start": 98.15,
-          "end": 98.25,
+          "start": 101.6,
+          "end": 101.7,
           "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "moonlight",
-          "start": 99.7,
-          "end": 99.8,
+          "start": 101.75,
+          "end": 102.55,
           "confidence": 1.0
         }
       ],
@@ -3841,78 +3774,39 @@
     },
     {
       "line_index": 64,
-      "text": "I need you all night",
-      "start": 105.65,
-      "end": 106.35,
-      "confidence": 0.988,
+      "text": "hale Math",
+      "start": 104.05,
+      "end": 104.75,
+      "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
-          "text": "I",
-          "start": 105.65,
-          "end": 105.75,
-          "confidence": 1.0
+          "text": "hale",
+          "start": 104.05,
+          "end": 104.15,
+          "confidence": 0.5
         },
         {
           "word_index": 2,
-          "text": "need",
-          "start": 105.8,
-          "end": 105.9,
-          "confidence": 1.0
-        },
-        {
-          "word_index": 3,
-          "text": "you",
-          "start": 105.95,
-          "end": 106.05,
-          "confidence": 1.0
-        },
-        {
-          "word_index": 4,
-          "text": "all",
-          "start": 106.1,
-          "end": 106.2,
-          "confidence": 0.941
-        },
-        {
-          "word_index": 5,
-          "text": "night",
-          "start": 106.25,
-          "end": 106.35,
-          "confidence": 1.0
+          "text": "Math",
+          "start": 104.2,
+          "end": 104.3,
+          "confidence": 0.5
         }
       ],
-      "y": 111,
+      "y": 114,
       "word_rois": [
         [
-          122,
-          113,
-          17,
-          34
+          165,
+          114,
+          81,
+          30
         ],
         [
-          143,
-          113,
-          68,
-          34
-        ],
-        [
-          215,
-          113,
-          55,
-          34
-        ],
-        [
-          275,
-          113,
-          38,
-          34
-        ],
-        [
-          317,
-          113,
-          78,
-          34
+          249,
+          114,
+          93,
+          29
         ]
       ],
       "char_rois": []
@@ -3920,43 +3814,43 @@
     {
       "line_index": 65,
       "text": "Come on dance with me",
-      "start": 106.35,
-      "end": 107.05,
+      "start": 105.8,
+      "end": 106.7,
       "confidence": 0.55,
       "words": [
         {
           "word_index": 1,
           "text": "Come",
-          "start": 106.35,
-          "end": 106.45,
+          "start": 105.8,
+          "end": 105.9,
           "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "on",
-          "start": 106.5,
-          "end": 106.6,
+          "start": 105.95,
+          "end": 106.05,
           "confidence": 0.25
         },
         {
           "word_index": 3,
           "text": "dance",
-          "start": 106.65,
-          "end": 106.75,
+          "start": 106.1,
+          "end": 106.2,
           "confidence": 0.25
         },
         {
           "word_index": 4,
           "text": "with",
-          "start": 106.8,
-          "end": 106.9,
+          "start": 106.25,
+          "end": 106.35,
           "confidence": 0.25
         },
         {
           "word_index": 5,
           "text": "me",
-          "start": 106.95,
-          "end": 107.05,
+          "start": 106.4,
+          "end": 106.7,
           "confidence": 1.0
         }
       ],
@@ -3997,38 +3891,38 @@
     },
     {
       "line_index": 66,
-      "text": "'m levitating",
-      "start": 107.6,
-      "end": 108.3,
+      "text": "Im levitating",
+      "start": 106.7,
+      "end": 107.2,
       "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
-          "text": "'m",
-          "start": 107.6,
-          "end": 107.7,
+          "text": "Im",
+          "start": 106.7,
+          "end": 106.8,
           "confidence": 0.5
         },
         {
           "word_index": 2,
           "text": "levitating",
-          "start": 107.75,
-          "end": 107.85,
+          "start": 106.85,
+          "end": 107.2,
           "confidence": 0.5
         }
       ],
       "y": 112,
       "word_rois": [
         [
-          164,
+          166,
           113,
-          51,
+          46,
           34
         ],
         [
-          219,
+          216,
           113,
-          132,
+          135,
           34
         ]
       ],
@@ -4037,37 +3931,37 @@
     {
       "line_index": 67,
       "text": "You can fly away",
-      "start": 109.3,
-      "end": 110.25,
-      "confidence": 0.812,
+      "start": 107.25,
+      "end": 109.1,
+      "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "You",
-          "start": 109.3,
-          "end": 109.4,
-          "confidence": 1.0
+          "start": 107.25,
+          "end": 107.65,
+          "confidence": 0.252
         },
         {
           "word_index": 2,
           "text": "can",
-          "start": 109.8,
-          "end": 109.9,
-          "confidence": 1.0
+          "start": 107.7,
+          "end": 108.15,
+          "confidence": 0.252
         },
         {
           "word_index": 3,
           "text": "fly",
-          "start": 109.95,
-          "end": 110.05,
-          "confidence": 0.25
+          "start": 108.2,
+          "end": 108.6,
+          "confidence": 0.252
         },
         {
           "word_index": 4,
           "text": "away",
-          "start": 110.1,
-          "end": 110.25,
-          "confidence": 1.0
+          "start": 108.65,
+          "end": 109.1,
+          "confidence": 0.252
         }
       ],
       "y": 18,
@@ -4101,45 +3995,38 @@
     },
     {
       "line_index": 68,
-      "text": "with me tonight",
-      "start": 110.75,
-      "end": 111.0,
-      "confidence": 1.0,
+      "text": "with metonight",
+      "start": 109.1,
+      "end": 109.35,
+      "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
-          "text": "with",
-          "start": 110.75,
-          "end": 110.85,
-          "confidence": 1.0
+          "text": "aime",
+          "start": 109.1,
+          "end": 109.2,
+          "confidence": 0.252
         },
         {
           "word_index": 2,
-          "text": "me",
-          "start": 110.9,
-          "end": 110.9,
-          "confidence": 1.0
-        },
-        {
-          "word_index": 3,
           "text": "tonight",
-          "start": 110.9,
-          "end": 111.0,
-          "confidence": 1.0
+          "start": 109.25,
+          "end": 109.35,
+          "confidence": 0.252
         }
       ],
       "y": 66,
       "word_rois": [
         [
-          140,
-          67,
-          68,
+          188,
+          69,
+          76,
           32
         ],
         [
-          211,
-          67,
-          158,
+          267,
+          69,
+          100,
           32
         ]
       ],
@@ -4148,37 +4035,37 @@
     {
       "line_index": 69,
       "text": "You can fly away",
-      "start": 111.0,
-      "end": 111.55,
-      "confidence": 0.5,
+      "start": 109.35,
+      "end": 109.9,
+      "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "You",
-          "start": 111.0,
-          "end": 111.1,
-          "confidence": 0.5
+          "start": 109.35,
+          "end": 109.45,
+          "confidence": 0.252
         },
         {
           "word_index": 2,
           "text": "can",
-          "start": 111.15,
-          "end": 111.25,
-          "confidence": 0.5
+          "start": 109.5,
+          "end": 109.6,
+          "confidence": 0.252
         },
         {
           "word_index": 3,
           "text": "fly",
-          "start": 111.3,
-          "end": 111.4,
-          "confidence": 0.5
+          "start": 109.65,
+          "end": 109.75,
+          "confidence": 0.252
         },
         {
           "word_index": 4,
           "text": "away",
-          "start": 111.45,
-          "end": 111.55,
-          "confidence": 0.5
+          "start": 109.8,
+          "end": 109.9,
+          "confidence": 0.252
         }
       ],
       "y": 111,
@@ -4212,46 +4099,59 @@
     },
     {
       "line_index": 70,
-      "text": "with me tonight",
-      "start": 112.25,
-      "end": 112.95,
-      "confidence": 0.75,
+      "text": "with metonight",
+      "start": 109.9,
+      "end": 111.6,
+      "confidence": 0.812,
       "words": [
         {
           "word_index": 1,
-          "text": "with",
-          "start": 112.25,
-          "end": 112.35,
+          "text": "Bin",
+          "start": 109.9,
+          "end": 110.0,
           "confidence": 0.25
         },
         {
           "word_index": 2,
-          "text": "me",
-          "start": 112.4,
-          "end": 112.4,
+          "text": "no",
+          "start": 111.3,
+          "end": 111.4,
           "confidence": 1.0
         },
         {
           "word_index": 3,
-          "text": "tonight",
-          "start": 112.4,
-          "end": 112.5,
+          "text": "to",
+          "start": 111.5,
+          "end": 111.55,
+          "confidence": 1.0
+        },
+        {
+          "word_index": 4,
+          "text": "nigh",
+          "start": 111.55,
+          "end": 111.6,
           "confidence": 1.0
         }
       ],
       "y": 160,
       "word_rois": [
         [
-          148,
-          161,
-          63,
-          32
+          152,
+          165,
+          59,
+          30
         ],
         [
           215,
-          161,
-          154,
-          32
+          165,
+          45,
+          30
+        ],
+        [
+          264,
+          165,
+          98,
+          30
         ]
       ],
       "char_rois": []
@@ -4259,30 +4159,30 @@
     {
       "line_index": 71,
       "text": "Baby let me",
-      "start": 113.45,
-      "end": 115.65,
-      "confidence": 1.0,
+      "start": 111.6,
+      "end": 112.35,
+      "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "Baby",
-          "start": 113.45,
-          "end": 114.25,
-          "confidence": 1.0
+          "start": 111.6,
+          "end": 111.85,
+          "confidence": 0.252
         },
         {
           "word_index": 2,
           "text": "let",
-          "start": 114.3,
-          "end": 114.4,
-          "confidence": 1.0
+          "start": 111.9,
+          "end": 112.1,
+          "confidence": 0.252
         },
         {
           "word_index": 3,
           "text": "me",
-          "start": 115.45,
-          "end": 115.65,
-          "confidence": 1.0
+          "start": 112.15,
+          "end": 112.35,
+          "confidence": 0.252
         }
       ],
       "y": 19,
@@ -4311,44 +4211,44 @@
     {
       "line_index": 72,
       "text": "take you for a ride",
-      "start": 115.1,
-      "end": 116.05,
-      "confidence": 1.0,
+      "start": 112.35,
+      "end": 113.05,
+      "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "take",
-          "start": 115.1,
-          "end": 115.2,
-          "confidence": 1.0
+          "start": 112.35,
+          "end": 112.45,
+          "confidence": 0.252
         },
         {
           "word_index": 2,
           "text": "you",
-          "start": 115.5,
-          "end": 115.6,
-          "confidence": 1.0
+          "start": 112.5,
+          "end": 112.6,
+          "confidence": 0.252
         },
         {
           "word_index": 3,
           "text": "for",
-          "start": 115.65,
-          "end": 115.75,
-          "confidence": 1.0
+          "start": 112.65,
+          "end": 112.75,
+          "confidence": 0.252
         },
         {
           "word_index": 4,
           "text": "a",
-          "start": 115.8,
-          "end": 115.9,
-          "confidence": 1.0
+          "start": 112.8,
+          "end": 112.9,
+          "confidence": 0.252
         },
         {
           "word_index": 5,
           "text": "ride",
-          "start": 115.95,
-          "end": 116.05,
-          "confidence": 1.0
+          "start": 112.95,
+          "end": 113.05,
+          "confidence": 0.252
         }
       ],
       "y": 65,
@@ -4389,44 +4289,44 @@
     {
       "line_index": 73,
       "text": "Yeah yeah yeah yeah yeah",
-      "start": 116.8,
-      "end": 119.6,
-      "confidence": 0.7,
+      "start": 113.05,
+      "end": 113.75,
+      "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "Yeah",
-          "start": 116.8,
-          "end": 116.9,
-          "confidence": 1.0
+          "start": 113.05,
+          "end": 113.15,
+          "confidence": 0.252
         },
         {
           "word_index": 2,
           "text": "yeah",
-          "start": 119.05,
-          "end": 119.15,
-          "confidence": 1.0
+          "start": 113.2,
+          "end": 113.3,
+          "confidence": 0.252
         },
         {
           "word_index": 3,
           "text": "yeah",
-          "start": 119.2,
-          "end": 119.3,
-          "confidence": 0.25
+          "start": 113.35,
+          "end": 113.45,
+          "confidence": 0.252
         },
         {
           "word_index": 4,
           "text": "yeah",
-          "start": 119.35,
-          "end": 119.45,
-          "confidence": 0.25
+          "start": 113.5,
+          "end": 113.6,
+          "confidence": 0.252
         },
         {
           "word_index": 5,
           "text": "yeah",
-          "start": 119.5,
-          "end": 119.6,
-          "confidence": 1.0
+          "start": 113.65,
+          "end": 113.75,
+          "confidence": 0.252
         }
       ],
       "y": 112,
@@ -4467,23 +4367,23 @@
     {
       "line_index": 74,
       "text": "Im levitating",
-      "start": 118.45,
-      "end": 118.7,
-      "confidence": 1.0,
+      "start": 114.55,
+      "end": 114.8,
+      "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "Im",
-          "start": 118.45,
-          "end": 118.55,
-          "confidence": 1.0
+          "start": 114.55,
+          "end": 114.65,
+          "confidence": 0.252
         },
         {
           "word_index": 2,
           "text": "levitating",
-          "start": 118.6,
-          "end": 118.7,
-          "confidence": 1.0
+          "start": 114.7,
+          "end": 114.8,
+          "confidence": 0.252
         }
       ],
       "y": 158,
@@ -4506,22 +4406,22 @@
     {
       "line_index": 75,
       "text": "you g",
-      "start": 118.7,
-      "end": 118.95,
+      "start": 115.7,
+      "end": 116.6,
       "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "you",
-          "start": 118.7,
-          "end": 118.8,
+          "start": 115.7,
+          "end": 116.2,
           "confidence": 0.252
         },
         {
           "word_index": 2,
           "text": "g",
-          "start": 118.85,
-          "end": 118.95,
+          "start": 116.25,
+          "end": 116.6,
           "confidence": 0.252
         }
       ],
@@ -4545,36 +4445,36 @@
     {
       "line_index": 76,
       "text": "You can fly away",
-      "start": 118.95,
-      "end": 119.5,
+      "start": 116.9,
+      "end": 118.75,
       "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "You",
-          "start": 118.95,
-          "end": 119.05,
+          "start": 116.9,
+          "end": 117.3,
           "confidence": 0.252
         },
         {
           "word_index": 2,
           "text": "can",
-          "start": 119.1,
-          "end": 119.2,
+          "start": 117.35,
+          "end": 117.75,
           "confidence": 0.252
         },
         {
           "word_index": 3,
           "text": "fly",
-          "start": 119.25,
-          "end": 119.35,
+          "start": 117.8,
+          "end": 118.25,
           "confidence": 0.252
         },
         {
           "word_index": 4,
           "text": "away",
-          "start": 119.4,
-          "end": 119.5,
+          "start": 118.3,
+          "end": 118.75,
           "confidence": 0.252
         }
       ],
@@ -4609,52 +4509,59 @@
     },
     {
       "line_index": 77,
-      "text": "with me tonight",
-      "start": 119.5,
-      "end": 119.9,
+      "text": "with metonight",
+      "start": 118.05,
+      "end": 119.3,
       "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
-          "text": "with",
-          "start": 119.5,
-          "end": 119.6,
+          "text": "ngH",
+          "start": 118.05,
+          "end": 118.45,
           "confidence": 0.252
         },
         {
           "word_index": 2,
-          "text": "me",
-          "start": 119.65,
-          "end": 119.75,
+          "text": "R",
+          "start": 118.5,
+          "end": 118.75,
           "confidence": 0.252
         },
         {
           "word_index": 3,
-          "text": "tonight",
-          "start": 119.8,
-          "end": 119.9,
+          "text": "To",
+          "start": 118.8,
+          "end": 118.95,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 4,
+          "text": "nigh",
+          "start": 118.95,
+          "end": 119.3,
           "confidence": 0.252
         }
       ],
       "y": 63,
       "word_rois": [
         [
-          141,
+          171,
           64,
-          67,
-          38
+          46,
+          36
         ],
         [
-          212,
-          65,
-          49,
-          38
+          221,
+          63,
+          41,
+          36
         ],
         [
-          265,
-          65,
-          107,
-          40
+          266,
+          63,
+          96,
+          36
         ]
       ],
       "char_rois": []
@@ -4662,15 +4569,15 @@
     {
       "line_index": 78,
       "text": "You can fly away",
-      "start": 119.9,
+      "start": 119.5,
       "end": 122.1,
       "confidence": 0.883,
       "words": [
         {
           "word_index": 1,
           "text": "You",
-          "start": 119.9,
-          "end": 120.0,
+          "start": 119.5,
+          "end": 119.6,
           "confidence": 1.0
         },
         {
@@ -4726,10 +4633,10 @@
     },
     {
       "line_index": 79,
-      "text": "with me tonight",
+      "text": "with metonight",
       "start": 122.1,
-      "end": 122.35,
-      "confidence": 0.581,
+      "end": 122.5,
+      "confidence": 0.637,
       "words": [
         {
           "word_index": 1,
@@ -4742,29 +4649,35 @@
           "word_index": 2,
           "text": "me",
           "start": 122.25,
-          "end": 122.25,
-          "confidence": 0.747
+          "end": 122.35,
+          "confidence": 0.968
         },
         {
           "word_index": 3,
-          "text": "tonight",
-          "start": 122.25,
-          "end": 122.35,
-          "confidence": 0.747
+          "text": "tonish",
+          "start": 122.4,
+          "end": 122.5,
+          "confidence": 0.694
         }
       ],
       "y": 159,
       "word_rois": [
         [
-          145,
+          146,
           161,
-          64,
+          63,
           30
         ],
         [
           213,
           161,
-          154,
+          49,
+          30
+        ],
+        [
+          265,
+          161,
+          102,
           30
         ]
       ],
@@ -4773,15 +4686,15 @@
     {
       "line_index": 80,
       "text": "Baby let me",
-      "start": 122.35,
+      "start": 122.5,
       "end": 123.8,
       "confidence": 0.75,
       "words": [
         {
           "word_index": 1,
           "text": "Baby",
-          "start": 122.35,
-          "end": 122.45,
+          "start": 122.5,
+          "end": 122.6,
           "confidence": 0.25
         },
         {
@@ -4903,23 +4816,23 @@
     {
       "line_index": 82,
       "text": "Yeah yeah",
-      "start": 124.5,
-      "end": 124.75,
-      "confidence": 0.252,
+      "start": 126.5,
+      "end": 126.85,
+      "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "Yeah",
-          "start": 124.5,
-          "end": 124.6,
-          "confidence": 0.252
+          "start": 126.5,
+          "end": 126.7,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "yeah",
-          "start": 124.65,
-          "end": 124.75,
-          "confidence": 0.252
+          "start": 126.75,
+          "end": 126.85,
+          "confidence": 1.0
         }
       ],
       "y": 116,
@@ -4942,30 +4855,30 @@
     {
       "line_index": 83,
       "text": "Yeah yeah yeah",
-      "start": 124.75,
-      "end": 125.15,
-      "confidence": 0.252,
+      "start": 126.85,
+      "end": 127.25,
+      "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "Yeah",
-          "start": 124.75,
-          "end": 124.85,
-          "confidence": 0.252
+          "start": 126.85,
+          "end": 126.95,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "yeah",
-          "start": 124.9,
-          "end": 125.0,
-          "confidence": 0.252
+          "start": 127.0,
+          "end": 127.1,
+          "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "yeah",
-          "start": 125.05,
-          "end": 125.15,
-          "confidence": 0.252
+          "start": 127.15,
+          "end": 127.25,
+          "confidence": 1.0
         }
       ],
       "y": 160,
@@ -4994,50 +4907,50 @@
     {
       "line_index": 84,
       "text": "My love is like a rocket",
-      "start": 125.9,
-      "end": 128.05,
+      "start": 127.25,
+      "end": 128.45,
       "confidence": 0.875,
       "words": [
         {
           "word_index": 1,
           "text": "My",
-          "start": 125.9,
-          "end": 126.0,
+          "start": 127.25,
+          "end": 127.35,
           "confidence": 0.25
         },
         {
           "word_index": 2,
           "text": "love",
-          "start": 126.45,
-          "end": 127.25,
+          "start": 127.4,
+          "end": 127.85,
           "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "is",
-          "start": 127.5,
-          "end": 127.6,
+          "start": 127.9,
+          "end": 128.0,
           "confidence": 1.0
         },
         {
           "word_index": 4,
           "text": "like",
-          "start": 127.65,
-          "end": 127.75,
+          "start": 128.05,
+          "end": 128.15,
           "confidence": 1.0
         },
         {
           "word_index": 5,
           "text": "a",
-          "start": 127.8,
-          "end": 127.9,
+          "start": 128.2,
+          "end": 128.3,
           "confidence": 1.0
         },
         {
           "word_index": 6,
           "text": "rocket",
-          "start": 127.95,
-          "end": 128.05,
+          "start": 128.35,
+          "end": 128.45,
           "confidence": 1.0
         }
       ],
@@ -5085,37 +4998,37 @@
     {
       "line_index": 85,
       "text": "Watch it blast off",
-      "start": 128.05,
-      "end": 128.6,
-      "confidence": 0.252,
+      "start": 128.45,
+      "end": 129.15,
+      "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "Watch",
-          "start": 128.05,
-          "end": 128.15,
-          "confidence": 0.252
+          "start": 128.45,
+          "end": 128.7,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "it",
-          "start": 128.2,
-          "end": 128.3,
-          "confidence": 0.252
+          "start": 128.75,
+          "end": 128.85,
+          "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "blast",
-          "start": 128.35,
-          "end": 128.45,
-          "confidence": 0.252
+          "start": 128.9,
+          "end": 129.0,
+          "confidence": 1.0
         },
         {
           "word_index": 4,
           "text": "off",
-          "start": 128.5,
-          "end": 128.6,
-          "confidence": 0.252
+          "start": 129.05,
+          "end": 129.15,
+          "confidence": 1.0
         }
       ],
       "y": 65,
@@ -5149,34 +5062,139 @@
     },
     {
       "line_index": 86,
-      "text": "NA LEVITA TANG",
-      "start": 128.6,
-      "end": 129.0,
-      "confidence": 0.75,
+      "text": "I LOVITA",
+      "start": 129.15,
+      "end": 129.4,
+      "confidence": 0.252,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "I",
+          "start": 129.15,
+          "end": 129.25,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 2,
+          "text": "LOVITA",
+          "start": 129.3,
+          "end": 129.4,
+          "confidence": 0.252
+        }
+      ],
+      "y": 203,
+      "word_rois": [
+        [
+          108,
+          201,
+          42,
+          46
+        ],
+        [
+          151,
+          205,
+          191,
+          64
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 87,
+      "text": "TR",
+      "start": 129.4,
+      "end": 129.5,
+      "confidence": 0.252,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "TR",
+          "start": 129.4,
+          "end": 129.5,
+          "confidence": 0.252
+        }
+      ],
+      "y": 206,
+      "word_rois": [
+        [
+          79,
+          200,
+          72,
+          50
+        ],
+        [
+          154,
+          204,
+          181,
+          55
+        ],
+        [
+          338,
+          214,
+          125,
+          53
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 88,
+      "text": "NA Yeah LEVITA yeah yeah TANG Karajun",
+      "start": 129.5,
+      "end": 130.5,
+      "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "NA",
-          "start": 128.6,
-          "end": 128.7,
-          "confidence": 1.0
+          "start": 129.5,
+          "end": 129.6,
+          "confidence": 0.252
         },
         {
           "word_index": 2,
-          "text": "LEVITA",
-          "start": 128.75,
-          "end": 128.85,
-          "confidence": 1.0
+          "text": "Yeah",
+          "start": 129.65,
+          "end": 129.75,
+          "confidence": 0.252
         },
         {
           "word_index": 3,
+          "text": "LEVITA",
+          "start": 129.8,
+          "end": 129.9,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 4,
+          "text": "yeah",
+          "start": 129.95,
+          "end": 130.05,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 5,
+          "text": "yeah",
+          "start": 130.1,
+          "end": 130.2,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 6,
           "text": "TANG",
-          "start": 128.9,
-          "end": 129.0,
-          "confidence": 0.25
+          "start": 130.25,
+          "end": 130.35,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 7,
+          "text": "Karajun",
+          "start": 130.4,
+          "end": 130.5,
+          "confidence": 0.252
         }
       ],
-      "y": 201,
+      "y": 189,
       "word_rois": [
         [
           76,
@@ -5185,40 +5203,64 @@
           55
         ],
         [
+          138,
+          159,
+          81,
+          36
+        ],
+        [
           157,
           198,
           171,
           59
         ],
         [
+          223,
+          159,
+          77,
+          36
+        ],
+        [
+          304,
+          159,
+          71,
+          36
+        ],
+        [
           331,
           208,
           132,
           57
+        ],
+        [
+          376,
+          247,
+          80,
+          22
         ]
       ],
       "char_rois": []
     },
     {
-      "line_index": 87,
+      "line_index": 89,
       "text": "MOL CORNE",
-      "start": 129.0,
-      "end": 129.25,
-      "confidence": 1.0,
+      "start": 130.5,
+      "end": 130.75,
+      "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "MOL",
-          "start": 129.0,
-          "end": 129.1,
-          "confidence": 1.0
+          "start": 130.5,
+          "end": 130.6,
+          "confidence": 0.252
         },
         {
           "word_index": 2,
           "text": "CORNE",
-          "start": 129.15,
-          "end": 129.25,
-          "confidence": 1.0
+          "start": 130.65,
+          "end": 130.75,
+          "confidence": 0.252
         }
       ],
       "y": 203,
@@ -5239,82 +5281,43 @@
       "char_rois": []
     },
     {
-      "line_index": 88,
-      "text": "CUTIMG",
-      "start": 129.25,
-      "end": 129.35,
+      "line_index": 90,
+      "text": "CUTING",
+      "start": 130.75,
+      "end": 130.85,
       "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
-          "text": "CUTING",
-          "start": 129.25,
-          "end": 129.35,
+          "text": "COTING",
+          "start": 130.75,
+          "end": 130.85,
           "confidence": 1.0
         }
       ],
       "y": 204,
       "word_rois": [
         [
-          180,
-          203,
-          256,
-          40
+          277,
+          205,
+          156,
+          36
         ]
       ],
       "char_rois": []
     },
     {
-      "line_index": 89,
-      "text": "BE MENEAFRIG",
-      "start": 129.35,
-      "end": 129.6,
-      "confidence": 1.0,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "BE",
-          "start": 129.35,
-          "end": 129.45,
-          "confidence": 1.0
-        },
-        {
-          "word_index": 2,
-          "text": "BENEATING",
-          "start": 129.5,
-          "end": 129.6,
-          "confidence": 1.0
-        }
-      ],
-      "y": 206,
-      "word_rois": [
-        [
-          43,
-          217,
-          101,
-          49
-        ],
-        [
-          146,
-          195,
-          292,
-          63
-        ]
-      ],
-      "char_rois": []
-    },
-    {
-      "line_index": 90,
-      "text": "Citric",
-      "start": 129.6,
-      "end": 129.7,
+      "line_index": 91,
+      "text": "Ctric",
+      "start": 130.85,
+      "end": 130.95,
       "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "Ctric",
-          "start": 129.6,
-          "end": 129.7,
+          "start": 130.85,
+          "end": 130.95,
           "confidence": 1.0
         }
       ],
@@ -5330,38 +5333,38 @@
       "char_rois": []
     },
     {
-      "line_index": 91,
+      "line_index": 92,
       "text": "dance my ass off",
-      "start": 129.7,
-      "end": 130.25,
+      "start": 130.95,
+      "end": 131.5,
       "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "dance",
-          "start": 129.7,
-          "end": 129.8,
+          "start": 130.95,
+          "end": 131.05,
           "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "my",
-          "start": 129.85,
-          "end": 129.95,
+          "start": 131.1,
+          "end": 131.2,
           "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "ass",
-          "start": 130.0,
-          "end": 130.1,
+          "start": 131.25,
+          "end": 131.35,
           "confidence": 1.0
         },
         {
           "word_index": 4,
           "text": "off",
-          "start": 130.15,
-          "end": 130.25,
+          "start": 131.4,
+          "end": 131.5,
           "confidence": 1.0
         }
       ],
@@ -5395,24 +5398,24 @@
       "char_rois": []
     },
     {
-      "line_index": 92,
+      "line_index": 93,
       "text": "LEVIAT Knu",
-      "start": 130.25,
-      "end": 130.5,
+      "start": 131.5,
+      "end": 131.75,
       "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "LEVIAT",
-          "start": 130.25,
-          "end": 130.35,
+          "start": 131.5,
+          "end": 131.6,
           "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "Knu",
-          "start": 130.4,
-          "end": 130.5,
+          "start": 131.65,
+          "end": 131.75,
           "confidence": 1.0
         }
       ],
@@ -5434,24 +5437,24 @@
       "char_rois": []
     },
     {
-      "line_index": 93,
-      "text": "TA Braun",
-      "start": 130.5,
-      "end": 130.75,
+      "line_index": 94,
+      "text": "TA Kraun",
+      "start": 131.75,
+      "end": 132.0,
       "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "TA",
-          "start": 130.5,
-          "end": 130.6,
+          "start": 131.75,
+          "end": 131.85,
           "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "Kraun",
-          "start": 130.65,
-          "end": 130.75,
+          "start": 131.9,
+          "end": 132.0,
           "confidence": 1.0
         }
       ],
@@ -5473,52 +5476,52 @@
       "char_rois": []
     },
     {
-      "line_index": 94,
+      "line_index": 95,
       "text": "And even if I wanted to",
-      "start": 137.55,
-      "end": 139.9,
+      "start": 137.95,
+      "end": 139.05,
       "confidence": 0.228,
       "words": [
         {
           "word_index": 1,
           "text": "And",
-          "start": 137.55,
-          "end": 137.65,
+          "start": 137.95,
+          "end": 138.05,
           "confidence": 0.228
         },
         {
           "word_index": 2,
           "text": "even",
-          "start": 137.7,
-          "end": 138.15,
+          "start": 138.1,
+          "end": 138.2,
           "confidence": 0.228
         },
         {
           "word_index": 3,
           "text": "if",
-          "start": 138.2,
-          "end": 138.55,
+          "start": 138.25,
+          "end": 138.35,
           "confidence": 0.228
         },
         {
           "word_index": 4,
           "text": "I",
-          "start": 138.6,
-          "end": 138.9,
+          "start": 138.4,
+          "end": 138.5,
           "confidence": 0.228
         },
         {
           "word_index": 5,
           "text": "wanted",
-          "start": 138.95,
-          "end": 139.5,
+          "start": 138.55,
+          "end": 138.65,
           "confidence": 0.228
         },
         {
           "word_index": 6,
           "text": "to",
-          "start": 139.55,
-          "end": 139.9,
+          "start": 138.7,
+          "end": 139.05,
           "confidence": 0.228
         }
       ],
@@ -5564,7 +5567,7 @@
       "char_rois": []
     },
     {
-      "line_index": 95,
+      "line_index": 96,
       "text": "I can't stop",
       "start": 141.2,
       "end": 141.6,
@@ -5616,7 +5619,7 @@
       "char_rois": []
     },
     {
-      "line_index": 96,
+      "line_index": 97,
       "text": "Yeah yeah",
       "start": 141.6,
       "end": 141.85,
@@ -5655,7 +5658,7 @@
       "char_rois": []
     },
     {
-      "line_index": 97,
+      "line_index": 98,
       "text": "Yeah yeah yeah",
       "start": 141.85,
       "end": 142.25,
@@ -5707,7 +5710,7 @@
       "char_rois": []
     },
     {
-      "line_index": 98,
+      "line_index": 99,
       "text": "My love is like a rocket",
       "start": 142.25,
       "end": 143.1,
@@ -5798,7 +5801,7 @@
       "char_rois": []
     },
     {
-      "line_index": 99,
+      "line_index": 100,
       "text": "Watch it blast off",
       "start": 143.1,
       "end": 143.65,
@@ -5869,7 +5872,7 @@
       "char_rois": []
     },
     {
-      "line_index": 100,
+      "line_index": 101,
       "text": "And even if I wanted to",
       "start": 143.65,
       "end": 144.5,
@@ -5960,7 +5963,7 @@
       "char_rois": []
     },
     {
-      "line_index": 101,
+      "line_index": 102,
       "text": "And even if I wanted to",
       "start": 144.5,
       "end": 145.35,
@@ -6051,7 +6054,7 @@
       "char_rois": []
     },
     {
-      "line_index": 102,
+      "line_index": 103,
       "text": "And Im feeling so electric",
       "start": 145.35,
       "end": 146.05,
@@ -6129,7 +6132,7 @@
       "char_rois": []
     },
     {
-      "line_index": 103,
+      "line_index": 104,
       "text": "dance my ass off",
       "start": 146.05,
       "end": 146.6,
@@ -6194,7 +6197,7 @@
       "char_rois": []
     },
     {
-      "line_index": 104,
+      "line_index": 105,
       "text": "Yeah yeah",
       "start": 146.6,
       "end": 146.85,
@@ -6233,7 +6236,7 @@
       "char_rois": []
     },
     {
-      "line_index": 105,
+      "line_index": 106,
       "text": "Yeah yeah yeah",
       "start": 146.85,
       "end": 147.25,
@@ -6261,7 +6264,7 @@
           "confidence": 1.0
         }
       ],
-      "y": 159,
+      "y": 155,
       "word_rois": [
         [
           140,
@@ -6285,7 +6288,7 @@
       "char_rois": []
     },
     {
-      "line_index": 106,
+      "line_index": 107,
       "text": "You want me",
       "start": 147.25,
       "end": 147.65,
@@ -6337,7 +6340,7 @@
       "char_rois": []
     },
     {
-      "line_index": 107,
+      "line_index": 108,
       "text": "I want you baby",
       "start": 147.65,
       "end": 148.2,
@@ -6402,8 +6405,8 @@
       "char_rois": []
     },
     {
-      "line_index": 108,
-      "text": "My sugar",
+      "line_index": 109,
+      "text": "My sugarboo",
       "start": 148.2,
       "end": 148.45,
       "confidence": 1.0,
@@ -6426,30 +6429,30 @@
       "y": 111,
       "word_rois": [
         [
-          171,
-          115,
-          41,
-          32
+          169,
+          113,
+          43,
+          34
         ],
         [
-          215,
-          115,
-          131,
-          32
+          216,
+          113,
+          134,
+          34
         ]
       ],
       "char_rois": []
     },
     {
-      "line_index": 109,
-      "text": "Om levitating",
+      "line_index": 110,
+      "text": "Im levitating",
       "start": 148.45,
       "end": 148.7,
       "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
-          "text": "Om",
+          "text": "Im",
           "start": 148.45,
           "end": 148.55,
           "confidence": 1.0
@@ -6472,15 +6475,15 @@
         ],
         [
           216,
-          158,
-          136,
-          40
+          159,
+          138,
+          39
         ]
       ],
       "char_rois": []
     },
     {
-      "line_index": 110,
+      "line_index": 111,
       "text": "The Milky Way",
       "start": 150.75,
       "end": 151.6,
@@ -6532,29 +6535,22 @@
       "char_rois": []
     },
     {
-      "line_index": 111,
-      "text": "We tre renegading",
+      "line_index": 112,
+      "text": "Wetre renegading",
       "start": 151.6,
       "end": 151.85,
       "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
-          "text": "We",
+          "text": "we're",
           "start": 151.6,
-          "end": 151.65,
-          "confidence": 1.0
-        },
-        {
-          "word_index": 2,
-          "text": "tre",
-          "start": 151.65,
           "end": 151.7,
           "confidence": 1.0
         },
         {
-          "word_index": 3,
-          "text": "renegading",
+          "word_index": 2,
+          "text": "renegacine",
           "start": 151.75,
           "end": 151.85,
           "confidence": 1.0
@@ -6563,53 +6559,53 @@
       "y": 114,
       "word_rois": [
         [
-          133,
-          110,
-          81,
-          41
+          142,
+          117,
+          73,
+          28
         ],
         [
           218,
-          111,
-          162,
-          41
+          117,
+          159,
+          28
         ]
       ],
       "char_rois": []
     },
     {
-      "line_index": 112,
-      "text": "I got you moonlight",
-      "start": 153.4,
-      "end": 155.9,
+      "line_index": 113,
+      "text": "U got you moonlight",
+      "start": 153.45,
+      "end": 155.7,
       "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
-          "text": "I",
-          "start": 153.4,
-          "end": 153.5,
+          "text": "U",
+          "start": 153.45,
+          "end": 153.9,
           "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "got",
-          "start": 153.55,
-          "end": 154.2,
+          "start": 153.95,
+          "end": 154.05,
           "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "you",
-          "start": 154.25,
-          "end": 155.05,
+          "start": 154.1,
+          "end": 154.9,
           "confidence": 1.0
         },
         {
           "word_index": 4,
           "text": "moonlight",
-          "start": 155.1,
-          "end": 155.9,
+          "start": 155.05,
+          "end": 155.7,
           "confidence": 1.0
         }
       ],
@@ -6617,130 +6613,110 @@
       "word_rois": [
         [
           116,
-          21,
-          16,
-          32
+          19,
+          13,
+          36
         ],
         [
-          136,
-          21,
-          48,
-          32
+          134,
+          19,
+          49,
+          36
         ],
         [
           188,
-          21,
-          64,
-          32
+          19,
+          63,
+          36
         ],
         [
           255,
-          21,
+          19,
           144,
-          32
-        ]
-      ],
-      "char_rois": []
-    },
-    {
-      "line_index": 113,
-      "text": "you tre my starlight",
-      "start": 160.95,
-      "end": 161.35,
-      "confidence": 1.0,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "you",
-          "start": 160.95,
-          "end": 161.0,
-          "confidence": 1.0
-        },
-        {
-          "word_index": 2,
-          "text": "tre",
-          "start": 161.0,
-          "end": 161.05,
-          "confidence": 1.0
-        },
-        {
-          "word_index": 3,
-          "text": "my",
-          "start": 161.1,
-          "end": 161.2,
-          "confidence": 1.0
-        },
-        {
-          "word_index": 4,
-          "text": "starlight",
-          "start": 161.25,
-          "end": 161.35,
-          "confidence": 1.0
-        }
-      ],
-      "y": 66,
-      "word_rois": [
-        [
-          124,
-          65,
-          90,
-          38
-        ],
-        [
-          219,
-          65,
-          42,
-          38
-        ],
-        [
-          266,
-          65,
-          123,
-          38
+          36
         ]
       ],
       "char_rois": []
     },
     {
       "line_index": 114,
+      "text": "youre my starlight",
+      "start": 156.5,
+      "end": 157.45,
+      "confidence": 1.0,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "vettomy",
+          "start": 156.5,
+          "end": 156.6,
+          "confidence": 1.0
+        },
+        {
+          "word_index": 2,
+          "text": "starlight",
+          "start": 156.65,
+          "end": 157.45,
+          "confidence": 1.0
+        }
+      ],
+      "y": 66,
+      "word_rois": [
+        [
+          130,
+          67,
+          132,
+          32
+        ],
+        [
+          265,
+          67,
+          122,
+          32
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 115,
       "text": "I need you all night",
-      "start": 161.35,
-      "end": 162.05,
+      "start": 158.3,
+      "end": 160.05,
       "confidence": 0.958,
       "words": [
         {
           "word_index": 1,
           "text": "I",
-          "start": 161.35,
-          "end": 161.45,
+          "start": 158.3,
+          "end": 158.45,
           "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "need",
-          "start": 161.5,
-          "end": 161.6,
+          "start": 158.5,
+          "end": 158.6,
           "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "you",
-          "start": 161.65,
-          "end": 161.75,
+          "start": 158.7,
+          "end": 158.8,
           "confidence": 0.788
         },
         {
           "word_index": 4,
           "text": "all",
-          "start": 161.8,
-          "end": 161.9,
+          "start": 159.8,
+          "end": 159.9,
           "confidence": 1.0
         },
         {
           "word_index": 5,
           "text": "night",
-          "start": 161.95,
-          "end": 162.05,
+          "start": 159.95,
+          "end": 160.05,
           "confidence": 1.0
         }
       ],
@@ -6780,45 +6756,45 @@
       "char_rois": []
     },
     {
-      "line_index": 115,
+      "line_index": 116,
       "text": "Come on dance with me",
-      "start": 162.05,
-      "end": 162.75,
+      "start": 160.05,
+      "end": 161.6,
       "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
           "text": "Come",
-          "start": 162.05,
-          "end": 162.15,
+          "start": 160.05,
+          "end": 160.15,
           "confidence": 0.5
         },
         {
           "word_index": 2,
           "text": "on",
-          "start": 162.2,
-          "end": 162.3,
+          "start": 160.2,
+          "end": 160.4,
           "confidence": 0.5
         },
         {
           "word_index": 3,
           "text": "dance",
-          "start": 162.35,
-          "end": 162.45,
+          "start": 160.45,
+          "end": 160.85,
           "confidence": 0.5
         },
         {
           "word_index": 4,
           "text": "with",
-          "start": 162.5,
-          "end": 162.6,
+          "start": 160.9,
+          "end": 161.25,
           "confidence": 0.5
         },
         {
           "word_index": 5,
           "text": "me",
-          "start": 162.65,
-          "end": 162.75,
+          "start": 161.3,
+          "end": 161.6,
           "confidence": 0.5
         }
       ],
@@ -6858,46 +6834,46 @@
       "char_rois": []
     },
     {
-      "line_index": 116,
-      "text": "Im levitating",
-      "start": 163.55,
-      "end": 163.8,
-      "confidence": 0.625,
+      "line_index": 117,
+      "text": "Am levitating",
+      "start": 163.7,
+      "end": 164.65,
+      "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
-          "text": "Im",
-          "start": 163.55,
-          "end": 163.65,
+          "text": "Am",
+          "start": 163.7,
+          "end": 164.5,
           "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "levitating",
-          "start": 163.7,
-          "end": 163.8,
-          "confidence": 0.25
+          "start": 164.55,
+          "end": 164.65,
+          "confidence": 1.0
         }
       ],
       "y": 110,
       "word_rois": [
         [
-          166,
-          115,
-          47,
-          32
+          163,
+          107,
+          46,
+          42
         ],
         [
-          217,
-          115,
-          134,
-          32
+          213,
+          109,
+          141,
+          46
         ]
       ],
       "char_rois": []
     },
     {
-      "line_index": 117,
+      "line_index": 118,
       "text": "You can fly away",
       "start": 165.1,
       "end": 166.55,
@@ -6962,15 +6938,15 @@
       "char_rois": []
     },
     {
-      "line_index": 118,
-      "text": "with me tonight",
+      "line_index": 119,
+      "text": "with metonight",
       "start": 166.55,
-      "end": 166.8,
+      "end": 166.95,
       "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
-          "text": "with",
+          "text": "Mur",
           "start": 166.55,
           "end": 166.65,
           "confidence": 1.0
@@ -6979,67 +6955,73 @@
           "word_index": 2,
           "text": "me",
           "start": 166.7,
-          "end": 166.7,
+          "end": 166.8,
           "confidence": 1.0
         },
         {
           "word_index": 3,
-          "text": "tonight",
-          "start": 166.7,
-          "end": 166.8,
+          "text": "tonlea",
+          "start": 166.85,
+          "end": 166.95,
           "confidence": 1.0
         }
       ],
       "y": 66,
       "word_rois": [
         [
-          148,
-          67,
+          150,
+          69,
           63,
-          32
+          30
         ],
         [
-          216,
-          67,
-          154,
-          32
+          217,
+          69,
+          45,
+          30
+        ],
+        [
+          266,
+          69,
+          96,
+          30
         ]
       ],
       "char_rois": []
     },
     {
-      "line_index": 119,
+      "line_index": 120,
       "text": "You can fly away",
-      "start": 166.8,
-      "end": 167.35,
+      "start": 166.95,
+      "end": 167.5,
       "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "You",
-          "start": 166.8,
-          "end": 166.9,
-          "confidence": 1.0
-        },
-        {
-          "word_index": 2,
-          "text": "can",
           "start": 166.95,
           "end": 167.05,
           "confidence": 1.0
         },
         {
-          "word_index": 3,
-          "text": "fly",
+          "word_index": 2,
+          "text": "can",
           "start": 167.1,
           "end": 167.2,
           "confidence": 1.0
         },
         {
-          "word_index": 4,
-          "text": "away",
+          "word_index": 3,
+          "text": "fly",
           "start": 167.25,
           "end": 167.35,
+          "confidence": 1.0
+        },
+        {
+          "word_index": 4,
+          "text": "away",
+          "start": 167.4,
+          "end": 167.5,
           "confidence": 1.0
         }
       ],
@@ -7073,63 +7055,69 @@
       "char_rois": []
     },
     {
-      "line_index": 120,
-      "text": "with me tonight",
-      "start": 167.35,
-      "end": 167.6,
+      "line_index": 121,
+      "text": "with metonight",
+      "start": 167.5,
+      "end": 167.9,
       "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
-          "text": "with",
-          "start": 167.35,
-          "end": 167.45,
+          "text": "walta",
+          "start": 167.5,
+          "end": 167.6,
           "confidence": 1.0
         },
         {
           "word_index": 2,
-          "text": "me",
-          "start": 167.5,
-          "end": 167.5,
+          "text": "we",
+          "start": 167.65,
+          "end": 167.75,
           "confidence": 1.0
         },
         {
           "word_index": 3,
-          "text": "tonight",
-          "start": 167.5,
-          "end": 167.6,
+          "text": "forlght",
+          "start": 167.8,
+          "end": 167.9,
           "confidence": 1.0
         }
       ],
       "y": 159,
       "word_rois": [
         [
-          150,
+          148,
           161,
-          59,
+          60,
           32
         ],
         [
-          213,
+          212,
           161,
-          156,
+          48,
+          32
+        ],
+        [
+          263,
+          161,
+          108,
           32
         ]
       ],
       "char_rois": []
     },
     {
-      "line_index": 121,
+      "line_index": 122,
       "text": "Baby let me",
-      "start": 167.7,
+      "start": 167.9,
       "end": 169.0,
       "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "Baby",
-          "start": 167.7,
-          "end": 167.8,
+          "start": 167.9,
+          "end": 168.0,
           "confidence": 1.0
         },
         {
@@ -7171,7 +7159,7 @@
       "char_rois": []
     },
     {
-      "line_index": 122,
+      "line_index": 123,
       "text": "take you for a ride",
       "start": 169.0,
       "end": 170.55,
@@ -7249,7 +7237,7 @@
       "char_rois": []
     },
     {
-      "line_index": 123,
+      "line_index": 124,
       "text": "Yeah yeah yeah yeah yeah",
       "start": 170.55,
       "end": 173.15,
@@ -7327,7 +7315,7 @@
       "char_rois": []
     },
     {
-      "line_index": 124,
+      "line_index": 125,
       "text": "Im levitating",
       "start": 173.95,
       "end": 174.2,
@@ -7366,7 +7354,7 @@
       "char_rois": []
     },
     {
-      "line_index": 125,
+      "line_index": 126,
       "text": "You can fly away",
       "start": 176.15,
       "end": 176.7,
@@ -7431,31 +7419,31 @@
       "char_rois": []
     },
     {
-      "line_index": 126,
-      "text": "with me tonight",
+      "line_index": 127,
+      "text": "with metonight",
       "start": 176.7,
-      "end": 176.95,
+      "end": 177.1,
       "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
-          "text": "with",
+          "text": "With",
           "start": 176.7,
           "end": 176.8,
           "confidence": 0.5
         },
         {
           "word_index": 2,
-          "text": "me",
+          "text": "one",
           "start": 176.85,
-          "end": 176.85,
+          "end": 176.95,
           "confidence": 0.5
         },
         {
           "word_index": 3,
-          "text": "tonight",
-          "start": 176.85,
-          "end": 176.95,
+          "text": "torin",
+          "start": 177.0,
+          "end": 177.1,
           "confidence": 0.5
         }
       ],
@@ -7463,52 +7451,58 @@
       "word_rois": [
         [
           150,
-          67,
-          59,
-          32
+          69,
+          58,
+          26
         ],
         [
-          214,
-          67,
-          156,
-          32
+          211,
+          69,
+          52,
+          26
+        ],
+        [
+          266,
+          69,
+          75,
+          26
         ]
       ],
       "char_rois": []
     },
     {
-      "line_index": 127,
+      "line_index": 128,
       "text": "You can fly away",
-      "start": 176.95,
-      "end": 177.5,
+      "start": 177.1,
+      "end": 177.65,
       "confidence": 0.809,
       "words": [
         {
           "word_index": 1,
           "text": "You",
-          "start": 176.95,
-          "end": 177.05,
+          "start": 177.1,
+          "end": 177.2,
           "confidence": 0.25
         },
         {
           "word_index": 2,
           "text": "can",
-          "start": 177.1,
-          "end": 177.2,
+          "start": 177.25,
+          "end": 177.35,
           "confidence": 0.987
         },
         {
           "word_index": 3,
           "text": "fly",
-          "start": 177.25,
-          "end": 177.35,
+          "start": 177.4,
+          "end": 177.5,
           "confidence": 1.0
         },
         {
           "word_index": 4,
           "text": "away",
-          "start": 177.4,
-          "end": 177.5,
+          "start": 177.55,
+          "end": 177.65,
           "confidence": 1.0
         }
       ],
@@ -7542,31 +7536,31 @@
       "char_rois": []
     },
     {
-      "line_index": 128,
-      "text": "with me tonight",
-      "start": 177.5,
-      "end": 177.75,
+      "line_index": 129,
+      "text": "with metonight",
+      "start": 177.65,
+      "end": 178.05,
       "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "with",
-          "start": 177.5,
-          "end": 177.6,
+          "start": 177.65,
+          "end": 177.75,
           "confidence": 1.0
         },
         {
           "word_index": 2,
-          "text": "me",
-          "start": 177.65,
-          "end": 177.65,
+          "text": "men",
+          "start": 177.8,
+          "end": 177.9,
           "confidence": 1.0
         },
         {
           "word_index": 3,
-          "text": "tonight",
-          "start": 177.65,
-          "end": 177.75,
+          "text": "onight",
+          "start": 177.95,
+          "end": 178.05,
           "confidence": 1.0
         }
       ],
@@ -7575,44 +7569,50 @@
         [
           148,
           161,
-          64,
+          63,
           32
         ],
         [
-          215,
+          216,
           161,
-          152,
+          56,
+          32
+        ],
+        [
+          275,
+          161,
+          94,
           32
         ]
       ],
       "char_rois": []
     },
     {
-      "line_index": 129,
+      "line_index": 130,
       "text": "Baby let me",
       "start": 178.55,
-      "end": 179.5,
+      "end": 179.25,
       "confidence": 0.75,
       "words": [
         {
           "word_index": 1,
           "text": "Baby",
           "start": 178.55,
-          "end": 178.75,
+          "end": 178.65,
           "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "let",
-          "start": 179.1,
-          "end": 179.2,
+          "start": 178.8,
+          "end": 178.9,
           "confidence": 0.25
         },
         {
           "word_index": 3,
           "text": "me",
-          "start": 179.4,
-          "end": 179.5,
+          "start": 179.1,
+          "end": 179.2,
           "confidence": 1.0
         }
       ],
@@ -7640,45 +7640,45 @@
       "char_rois": []
     },
     {
-      "line_index": 130,
+      "line_index": 131,
       "text": "take you for a ride",
-      "start": 180.8,
-      "end": 181.5,
+      "start": 180.85,
+      "end": 181.55,
       "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "take",
-          "start": 180.8,
-          "end": 180.9,
+          "start": 180.85,
+          "end": 180.95,
           "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "you",
-          "start": 180.95,
-          "end": 181.05,
+          "start": 181.0,
+          "end": 181.1,
           "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "for",
-          "start": 181.1,
-          "end": 181.2,
+          "start": 181.15,
+          "end": 181.25,
           "confidence": 1.0
         },
         {
           "word_index": 4,
           "text": "a",
-          "start": 181.25,
-          "end": 181.35,
+          "start": 181.3,
+          "end": 181.4,
           "confidence": 1.0
         },
         {
           "word_index": 5,
           "text": "ride",
-          "start": 181.4,
-          "end": 181.5,
+          "start": 181.45,
+          "end": 181.55,
           "confidence": 1.0
         }
       ],
@@ -7718,7 +7718,7 @@
       "char_rois": []
     },
     {
-      "line_index": 131,
+      "line_index": 132,
       "text": "Yeah yeah",
       "start": 182.45,
       "end": 182.85,
@@ -7757,7 +7757,7 @@
       "char_rois": []
     },
     {
-      "line_index": 132,
+      "line_index": 133,
       "text": "Yeah yeah yeah",
       "start": 182.85,
       "end": 183.25,
@@ -7809,137 +7809,137 @@
       "char_rois": []
     },
     {
-      "line_index": 133,
-      "text": "I got you moonlight",
+      "line_index": 134,
+      "text": "U got you moonlight",
       "start": 183.25,
-      "end": 185.2,
+      "end": 184.85,
       "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
-          "text": "I",
+          "text": "U",
           "start": 183.25,
-          "end": 184.05,
+          "end": 183.7,
           "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "got",
-          "start": 184.1,
-          "end": 184.9,
+          "start": 183.75,
+          "end": 184.55,
           "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "you",
-          "start": 184.95,
-          "end": 185.05,
+          "start": 184.6,
+          "end": 184.7,
           "confidence": 1.0
         },
         {
           "word_index": 4,
           "text": "moonlight",
-          "start": 185.1,
-          "end": 185.2,
+          "start": 184.75,
+          "end": 184.85,
           "confidence": 1.0
         }
       ],
       "y": 19,
       "word_rois": [
         [
-          116,
-          21,
-          16,
-          32
+          114,
+          19,
+          19,
+          38
         ],
         [
-          136,
-          21,
-          48,
-          32
+          137,
+          19,
+          43,
+          38
         ],
         [
-          188,
-          21,
-          64,
-          32
+          185,
+          19,
+          66,
+          38
         ],
         [
-          255,
-          21,
-          144,
-          32
-        ]
-      ],
-      "char_rois": []
-    },
-    {
-      "line_index": 134,
-      "text": "you re my starlight",
-      "start": 185.2,
-      "end": 185.75,
-      "confidence": 1.0,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "you",
-          "start": 185.2,
-          "end": 185.3,
-          "confidence": 1.0
-        },
-        {
-          "word_index": 2,
-          "text": "re",
-          "start": 185.35,
-          "end": 185.45,
-          "confidence": 1.0
-        },
-        {
-          "word_index": 3,
-          "text": "my",
-          "start": 185.5,
-          "end": 185.6,
-          "confidence": 1.0
-        },
-        {
-          "word_index": 4,
-          "text": "starlight",
-          "start": 185.65,
-          "end": 185.75,
-          "confidence": 1.0
-        }
-      ],
-      "y": 66,
-      "word_rois": [
-        [
-          126,
-          67,
-          53,
-          36
-        ],
-        [
-          184,
-          67,
-          27,
-          36
-        ],
-        [
-          216,
-          67,
-          45,
-          36
-        ],
-        [
-          265,
-          67,
-          125,
-          36
+          256,
+          19,
+          145,
+          38
         ]
       ],
       "char_rois": []
     },
     {
       "line_index": 135,
+      "text": "youre my starlight",
+      "start": 184.85,
+      "end": 185.4,
+      "confidence": 1.0,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "as",
+          "start": 184.85,
+          "end": 184.95,
+          "confidence": 1.0
+        },
+        {
+          "word_index": 2,
+          "text": "re",
+          "start": 185.0,
+          "end": 185.1,
+          "confidence": 1.0
+        },
+        {
+          "word_index": 3,
+          "text": "my",
+          "start": 185.15,
+          "end": 185.25,
+          "confidence": 1.0
+        },
+        {
+          "word_index": 4,
+          "text": "starlight",
+          "start": 185.3,
+          "end": 185.4,
+          "confidence": 1.0
+        }
+      ],
+      "y": 66,
+      "word_rois": [
+        [
+          137,
+          61,
+          43,
+          36
+        ],
+        [
+          184,
+          62,
+          30,
+          35
+        ],
+        [
+          218,
+          63,
+          43,
+          35
+        ],
+        [
+          264,
+          64,
+          120,
+          38
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 136,
       "text": "I need you all night",
       "start": 187.05,
       "end": 188.55,
@@ -8017,7 +8017,7 @@
       "char_rois": []
     },
     {
-      "line_index": 136,
+      "line_index": 137,
       "text": "Come on dance with me",
       "start": 188.7,
       "end": 189.9,
@@ -8095,23 +8095,23 @@
       "char_rois": []
     },
     {
-      "line_index": 137,
-      "text": "U'm levitating",
-      "start": 191.5,
+      "line_index": 138,
+      "text": "Im levitating",
+      "start": 191.25,
       "end": 192.0,
       "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
-          "text": "U'm",
-          "start": 191.5,
-          "end": 191.6,
+          "text": "Im",
+          "start": 191.25,
+          "end": 191.35,
           "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "levitating",
-          "start": 191.65,
+          "start": 191.4,
           "end": 192.0,
           "confidence": 1.0
         }
@@ -8119,22 +8119,22 @@
       "y": 112,
       "word_rois": [
         [
-          164,
+          161,
           113,
-          49,
-          36
+          48,
+          38
         ],
         [
-          217,
+          214,
           113,
-          134,
-          36
+          138,
+          38
         ]
       ],
       "char_rois": []
     },
     {
-      "line_index": 138,
+      "line_index": 139,
       "text": "You moonlight",
       "start": 192.0,
       "end": 193.7,
@@ -8173,37 +8173,37 @@
       "char_rois": []
     },
     {
-      "line_index": 139,
+      "line_index": 140,
       "text": "Come on dance with me",
-      "start": 197.05,
+      "start": 196.95,
       "end": 199.2,
       "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "Come",
-          "start": 197.05,
-          "end": 197.45,
+          "start": 196.95,
+          "end": 197.4,
           "confidence": 0.252
         },
         {
           "word_index": 2,
           "text": "on",
-          "start": 197.5,
-          "end": 197.85,
+          "start": 197.45,
+          "end": 197.8,
           "confidence": 0.252
         },
         {
           "word_index": 3,
           "text": "dance",
-          "start": 197.9,
-          "end": 198.35,
+          "start": 197.85,
+          "end": 198.3,
           "confidence": 0.252
         },
         {
           "word_index": 4,
           "text": "with",
-          "start": 198.4,
+          "start": 198.35,
           "end": 198.8,
           "confidence": 0.252
         },
@@ -8251,7 +8251,7 @@
       "char_rois": []
     },
     {
-      "line_index": 140,
+      "line_index": 141,
       "text": "U'm levitating",
       "start": 200.05,
       "end": 201.5,

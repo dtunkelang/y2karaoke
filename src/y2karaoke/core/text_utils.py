@@ -301,6 +301,7 @@ def _get_ocr_variants(word: str) -> set[str]:
     return variants
 
 
+@lru_cache(maxsize=1024)
 def spell_correct(text: str) -> str:
     """Attempt spell correction using generic OCR rules and system checker."""
     if not text:

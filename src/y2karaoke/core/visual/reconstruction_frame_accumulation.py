@@ -4,12 +4,14 @@ from __future__ import annotations
 
 import logging
 import collections
+import statistics
 from typing import Any, Callable, Dict, List
 
 from ..text_utils import (
     normalize_ocr_line,
     normalize_ocr_tokens,
     text_similarity,
+    LYRIC_FUNCTION_WORDS,
 )
 from .word_segmentation import segment_line_tokens_by_visual_gaps
 
@@ -68,25 +70,50 @@ class TrackedLine:
 
     @property
     def best_text(self) -> str:
-        # Return text that balances frequency and length to capture full lines
+        # Fast frequency-based matching for track persistence during accumulation.
         if not self.text_counts:
             return ""
+        return self.text_counts.most_common(1)[0][0]
 
-        # Filter out rare noise (e.g. 1-off OCR glitches) unless track is very short
-        # require at least 15% of frames
-        min_count = max(1, int(len(self.entries) * 0.15))
-        candidates = [t for t, c in self.text_counts.items() if c >= min_count]
+    def get_voted_text(self) -> str:
+        # Perform word-by-word voting across all frames to filter out transient OCR noise.
+        # This is expensive and should only be called once per track on finalization.
+        if not self.entries:
+            return ""
 
-        if not candidates:
-            # Fallback to most frequent if nothing meets threshold
-            return self.text_counts.most_common(1)[0][0]
+        all_line_tokens = [e["words"] for e in self.entries]
+        if not all_line_tokens:
+            return self.best_text
 
-        # Pick longest text among candidates
-        return max(candidates, key=len)
+        # Use the median word count as the target structure
+        word_counts = [len(tokens) for tokens in all_line_tokens]
+        target_wc = int(statistics.median(word_counts))
+
+        # Only vote among entries that match the target word count
+        valid_entries = [tokens for tokens in all_line_tokens if len(tokens) == target_wc]
+        if not valid_entries:
+            return self.best_text
+
+        final_words = []
+        for i in range(target_wc):
+            word_votes = collections.Counter(tokens[i] for tokens in valid_entries)
+            
+            # Weighted vote
+            weighted_votes = {}
+            for word, count in word_votes.items():
+                score = float(count)
+                if word.lower() in LYRIC_FUNCTION_WORDS:
+                    score += 0.5
+                weighted_votes[word] = score
+            
+            best_word = max(weighted_votes.items(), key=lambda x: x[1])[0]
+            final_words.append(best_word)
+
+        return " ".join(final_words)
 
     def to_dict(self) -> Dict[str, Any]:
         # Construct the final entry dictionary
-        best_txt = self.best_text
+        best_txt = self.get_voted_text()
 
         # Find the entry that matches best_txt to get 'words' and 'w_rois'
         # Prefer the longest/most complete one if multiple match
@@ -243,7 +270,7 @@ def _calculate_visibility_threshold(
     for frame in raw_frames:
         for w in frame.get("words", []):
             if w.get("brightness", 0) > 0:
-                lane = w["y"] // 20
+                lane = w["y"] // 40
                 lane_brightness.setdefault(lane, []).append(w["brightness"])
 
     import numpy as np
@@ -271,10 +298,11 @@ def _group_words_into_lines(words: List[Dict[str, Any]]) -> List[List[Dict[str, 
     lines = []
     curr = [sorted_words[0]]
     for i in range(1, len(sorted_words)):
-        if sorted_words[i]["y"] - curr[-1]["y"] < 30:
+        if sorted_words[i]["y"] - curr[-1]["y"] < 40:
             curr.append(sorted_words[i])
         else:
             lines.append(curr)
+            curr = [sorted_words[i]]
             curr = [sorted_words[i]]
     lines.append(curr)
     return lines
@@ -296,8 +324,8 @@ def _process_line_in_frame(
         return None
 
     y_pos = int(sum(w["y"] for w in ln_w) / len(ln_w))
-    # Lane height of 30px is sufficient to distinguish standard karaoke rows
-    lane = y_pos // 30
+    # Lane height of 40px is sufficient to distinguish standard karaoke rows
+    lane = y_pos // 40
 
     # Local threshold for this lane
     threshold = visibility_thresholds.get(lane, visibility_thresholds.get(-1, 150.0))

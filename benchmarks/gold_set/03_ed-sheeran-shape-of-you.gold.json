@@ -17,42 +17,42 @@
   "lines": [
     {
       "line_index": 1,
-      "text": "THE CLUB ISN'T THE BEST",
+      "text": "The Club Isn't The Best",
       "start": 10.75,
       "end": 11.95,
       "confidence": 0.732,
       "words": [
         {
           "word_index": 1,
-          "text": "THE",
+          "text": "The",
           "start": 10.75,
           "end": 10.85,
           "confidence": 0.25
         },
         {
           "word_index": 2,
-          "text": "CLUB",
+          "text": "Club",
           "start": 11.4,
           "end": 11.5,
           "confidence": 0.732
         },
         {
           "word_index": 3,
-          "text": "ISN'T",
+          "text": "Isn't",
           "start": 11.55,
           "end": 11.65,
           "confidence": 0.9
         },
         {
           "word_index": 4,
-          "text": "THE",
+          "text": "The",
           "start": 11.7,
           "end": 11.8,
           "confidence": 0.778
         },
         {
           "word_index": 5,
-          "text": "BEST",
+          "text": "Best",
           "start": 11.85,
           "end": 11.95,
           "confidence": 1.0
@@ -95,28 +95,28 @@
     },
     {
       "line_index": 2,
-      "text": "PLACE TO FIND A LOVER",
+      "text": "Place To Find A Lover",
       "start": 11.95,
       "end": 12.65,
       "confidence": 0.949,
       "words": [
         {
           "word_index": 1,
-          "text": "PLACE",
+          "text": "Place",
           "start": 11.95,
           "end": 12.05,
           "confidence": 0.876
         },
         {
           "word_index": 2,
-          "text": "TO",
+          "text": "To",
           "start": 12.1,
           "end": 12.2,
           "confidence": 0.97
         },
         {
           "word_index": 3,
-          "text": "FIND",
+          "text": "Find",
           "start": 12.25,
           "end": 12.35,
           "confidence": 0.946
@@ -130,7 +130,7 @@
         },
         {
           "word_index": 5,
-          "text": "LOVER",
+          "text": "Lover",
           "start": 12.55,
           "end": 12.65,
           "confidence": 0.953
@@ -173,42 +173,42 @@
     },
     {
       "line_index": 3,
-      "text": "SO THE BAR IS WHERE I GO",
+      "text": "So The Bar Is Where I Go",
       "start": 13.8,
       "end": 14.8,
       "confidence": 0.518,
       "words": [
         {
           "word_index": 1,
-          "text": "SO",
+          "text": "So",
           "start": 13.8,
           "end": 13.9,
           "confidence": 0.651
         },
         {
           "word_index": 2,
-          "text": "THE",
+          "text": "The",
           "start": 13.95,
           "end": 14.05,
           "confidence": 0.25
         },
         {
           "word_index": 3,
-          "text": "BAR",
+          "text": "Bar",
           "start": 14.1,
           "end": 14.2,
           "confidence": 0.666
         },
         {
           "word_index": 4,
-          "text": "IS",
+          "text": "Is",
           "start": 14.25,
           "end": 14.35,
           "confidence": 0.25
         },
         {
           "word_index": 5,
-          "text": "WHERE",
+          "text": "Where",
           "start": 14.4,
           "end": 14.5,
           "confidence": 0.685
@@ -222,7 +222,7 @@
         },
         {
           "word_index": 7,
-          "text": "GO",
+          "text": "Go",
           "start": 14.7,
           "end": 14.8,
           "confidence": 0.872
@@ -277,42 +277,42 @@
     },
     {
       "line_index": 4,
-      "text": "ME AND MY FRIENDS AT",
+      "text": "Me And My Friends At",
       "start": 15.25,
       "end": 16.9,
       "confidence": 0.431,
       "words": [
         {
           "word_index": 1,
-          "text": "ME",
+          "text": "Me",
           "start": 15.25,
           "end": 15.3,
           "confidence": 0.25
         },
         {
           "word_index": 2,
-          "text": "AND",
+          "text": "And",
           "start": 15.3,
           "end": 15.35,
           "confidence": 0.25
         },
         {
           "word_index": 3,
-          "text": "MY",
+          "text": "My",
           "start": 16.5,
           "end": 16.6,
           "confidence": 0.623
         },
         {
           "word_index": 4,
-          "text": "FRIENDS",
+          "text": "Friends",
           "start": 16.65,
           "end": 16.75,
           "confidence": 0.25
         },
         {
           "word_index": 5,
-          "text": "AT",
+          "text": "At",
           "start": 16.8,
           "end": 16.9,
           "confidence": 0.783
@@ -349,64 +349,64 @@
     },
     {
       "line_index": 5,
-      "text": "THE TABLE DOING SHOTS",
+      "text": "Then We Talk Slow",
       "start": 16.9,
-      "end": 19.2,
-      "confidence": 0.591,
+      "end": 19.3,
+      "confidence": 0.558,
       "words": [
         {
           "word_index": 1,
-          "text": "THE",
+          "text": "Then",
           "start": 16.9,
           "end": 17.0,
-          "confidence": 0.86
+          "confidence": 0.867
         },
         {
           "word_index": 2,
-          "text": "TABLE",
-          "start": 17.05,
-          "end": 17.15,
-          "confidence": 0.683
+          "text": "We",
+          "start": 18.9,
+          "end": 19.0,
+          "confidence": 0.568
         },
         {
           "word_index": 3,
-          "text": "DOING",
-          "start": 18.8,
-          "end": 18.9,
-          "confidence": 0.57
+          "text": "Talk",
+          "start": 19.05,
+          "end": 19.15,
+          "confidence": 0.549
         },
         {
           "word_index": 4,
-          "text": "SHOTS",
-          "start": 19.1,
-          "end": 19.2,
+          "text": "Slow",
+          "start": 19.2,
+          "end": 19.3,
           "confidence": 0.25
         }
       ],
       "y": 109,
       "word_rois": [
         [
-          68,
+          114,
           111,
-          80,
+          105,
           40
         ],
         [
-          153,
+          224,
           111,
-          140,
+          65,
           40
         ],
         [
-          298,
+          294,
           111,
-          135,
+          110,
           40
         ],
         [
-          438,
+          408,
           111,
-          127,
+          117,
           40
         ]
       ],
@@ -414,30 +414,30 @@
     },
     {
       "line_index": 6,
-      "text": "DRINKING FAST AND",
-      "start": 19.2,
-      "end": 19.6,
+      "text": "Drinking Fast And",
+      "start": 19.3,
+      "end": 19.7,
       "confidence": 0.484,
       "words": [
         {
           "word_index": 1,
-          "text": "DRINKING",
-          "start": 19.2,
-          "end": 19.3,
+          "text": "Drinking",
+          "start": 19.3,
+          "end": 19.4,
           "confidence": 0.25
         },
         {
           "word_index": 2,
-          "text": "FAST",
-          "start": 19.35,
-          "end": 19.45,
+          "text": "Fast",
+          "start": 19.45,
+          "end": 19.55,
           "confidence": 0.614
         },
         {
           "word_index": 3,
-          "text": "AND",
-          "start": 19.5,
-          "end": 19.6,
+          "text": "And",
+          "start": 19.6,
+          "end": 19.7,
           "confidence": 0.587
         }
       ],
@@ -466,16 +466,16 @@
     },
     {
       "line_index": 7,
-      "text": "Louis",
-      "start": 19.6,
-      "end": 19.7,
+      "text": "Louds",
+      "start": 19.7,
+      "end": 19.8,
       "confidence": 0.3,
       "words": [
         {
           "word_index": 1,
-          "text": "louds",
-          "start": 19.6,
-          "end": 19.7,
+          "text": "Louds",
+          "start": 19.7,
+          "end": 19.8,
           "confidence": 0.3
         }
       ],
@@ -492,37 +492,37 @@
     },
     {
       "line_index": 8,
-      "text": "AND YOU COME OVER",
-      "start": 19.7,
-      "end": 20.25,
+      "text": "And You Come Over",
+      "start": 19.8,
+      "end": 20.35,
       "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
-          "text": "AND",
-          "start": 19.7,
-          "end": 19.8,
+          "text": "And",
+          "start": 19.8,
+          "end": 19.9,
           "confidence": 0.252
         },
         {
           "word_index": 2,
-          "text": "YOU",
-          "start": 19.85,
-          "end": 19.95,
+          "text": "You",
+          "start": 19.95,
+          "end": 20.05,
           "confidence": 0.252
         },
         {
           "word_index": 3,
-          "text": "COME",
-          "start": 20.0,
-          "end": 20.1,
+          "text": "Come",
+          "start": 20.1,
+          "end": 20.2,
           "confidence": 0.252
         },
         {
           "word_index": 4,
-          "text": "OVER",
-          "start": 20.15,
-          "end": 20.25,
+          "text": "Over",
+          "start": 20.25,
+          "end": 20.35,
           "confidence": 0.252
         }
       ],
@@ -557,30 +557,30 @@
     },
     {
       "line_index": 9,
-      "text": "AND START UP",
-      "start": 20.5,
-      "end": 21.2,
+      "text": "And Start Up",
+      "start": 20.6,
+      "end": 21.3,
       "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
-          "text": "AND",
-          "start": 20.5,
-          "end": 20.6,
+          "text": "And",
+          "start": 20.6,
+          "end": 20.7,
           "confidence": 0.252
         },
         {
           "word_index": 2,
-          "text": "START",
-          "start": 20.65,
-          "end": 20.75,
+          "text": "Start",
+          "start": 20.75,
+          "end": 20.85,
           "confidence": 0.252
         },
         {
           "word_index": 3,
-          "text": "UP",
-          "start": 20.8,
-          "end": 20.9,
+          "text": "Up",
+          "start": 20.9,
+          "end": 21.0,
           "confidence": 0.252
         }
       ],
@@ -609,44 +609,44 @@
     },
     {
       "line_index": 10,
-      "text": "A CONVERSATION WITH JUST ME",
-      "start": 22.7,
-      "end": 23.4,
+      "text": "A Conversation With Just Me",
+      "start": 22.75,
+      "end": 23.45,
       "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "A",
-          "start": 22.7,
-          "end": 22.8,
+          "start": 22.75,
+          "end": 22.85,
           "confidence": 0.252
         },
         {
           "word_index": 2,
-          "text": "CONVERSATION",
-          "start": 22.85,
-          "end": 22.95,
+          "text": "Conversation",
+          "start": 22.9,
+          "end": 23.0,
           "confidence": 0.252
         },
         {
           "word_index": 3,
-          "text": "WITH",
-          "start": 23.0,
-          "end": 23.1,
+          "text": "With",
+          "start": 23.05,
+          "end": 23.15,
           "confidence": 0.252
         },
         {
           "word_index": 4,
-          "text": "JUST",
-          "start": 23.15,
-          "end": 23.25,
+          "text": "Just",
+          "start": 23.2,
+          "end": 23.3,
           "confidence": 0.252
         },
         {
           "word_index": 5,
-          "text": "ME",
-          "start": 23.3,
-          "end": 23.4,
+          "text": "Me",
+          "start": 23.35,
+          "end": 23.45,
           "confidence": 0.252
         }
       ],
@@ -687,35 +687,35 @@
     },
     {
       "line_index": 11,
-      "text": "AND TRUST ME I'LL",
+      "text": "And Trust Me I'll",
       "start": 24.2,
       "end": 24.75,
       "confidence": 0.479,
       "words": [
         {
           "word_index": 1,
-          "text": "AND",
+          "text": "And",
           "start": 24.2,
           "end": 24.3,
           "confidence": 0.616
         },
         {
           "word_index": 2,
-          "text": "TRUST",
+          "text": "Trust",
           "start": 24.35,
           "end": 24.45,
           "confidence": 0.25
         },
         {
           "word_index": 3,
-          "text": "ME",
+          "text": "Me",
           "start": 24.5,
           "end": 24.6,
           "confidence": 0.798
         },
         {
           "word_index": 4,
-          "text": "I'LL",
+          "text": "I'll",
           "start": 24.65,
           "end": 24.75,
           "confidence": 0.25
@@ -752,21 +752,21 @@
     },
     {
       "line_index": 12,
-      "text": "GIVE IT A CHANCE NOW",
+      "text": "Give It A Chance Now",
       "start": 25.3,
       "end": 26.0,
       "confidence": 0.499,
       "words": [
         {
           "word_index": 1,
-          "text": "GIVE",
+          "text": "Give",
           "start": 25.3,
           "end": 25.4,
           "confidence": 0.681
         },
         {
           "word_index": 2,
-          "text": "IT",
+          "text": "It",
           "start": 25.45,
           "end": 25.55,
           "confidence": 0.25
@@ -780,14 +780,14 @@
         },
         {
           "word_index": 4,
-          "text": "CHANCE",
+          "text": "Chance",
           "start": 25.75,
           "end": 25.85,
           "confidence": 0.25
         },
         {
           "word_index": 5,
-          "text": "NOW",
+          "text": "Now",
           "start": 25.9,
           "end": 26.0,
           "confidence": 0.619
@@ -830,49 +830,49 @@
     },
     {
       "line_index": 13,
-      "text": "TAKE MY HAND STOP PUT VAN",
+      "text": "Take My Hand Stop Put Van",
       "start": 26.65,
       "end": 29.05,
       "confidence": 0.362,
       "words": [
         {
           "word_index": 1,
-          "text": "TAKE",
+          "text": "Take",
           "start": 26.65,
           "end": 26.75,
           "confidence": 0.25
         },
         {
           "word_index": 2,
-          "text": "MY",
+          "text": "My",
           "start": 26.8,
           "end": 26.9,
           "confidence": 0.592
         },
         {
           "word_index": 3,
-          "text": "HAND",
+          "text": "Hand",
           "start": 28.05,
           "end": 28.15,
           "confidence": 0.583
         },
         {
           "word_index": 4,
-          "text": "STOP",
+          "text": "Stop",
           "start": 28.35,
           "end": 28.45,
           "confidence": 0.25
         },
         {
           "word_index": 5,
-          "text": "PUT",
+          "text": "Put",
           "start": 28.65,
           "end": 28.75,
           "confidence": 0.25
         },
         {
           "word_index": 6,
-          "text": "VAN",
+          "text": "Van",
           "start": 28.95,
           "end": 29.05,
           "confidence": 0.25
@@ -921,42 +921,42 @@
     },
     {
       "line_index": 14,
-      "text": "THE MAN ON THE JUKEBOX",
+      "text": "The Man On The Jukebox",
       "start": 27.85,
       "end": 28.55,
       "confidence": 0.517,
       "words": [
         {
           "word_index": 1,
-          "text": "THE",
+          "text": "The",
           "start": 27.85,
           "end": 27.95,
           "confidence": 0.25
         },
         {
           "word_index": 2,
-          "text": "MAN",
+          "text": "Man",
           "start": 28.0,
           "end": 28.1,
           "confidence": 0.25
         },
         {
           "word_index": 3,
-          "text": "ON",
+          "text": "On",
           "start": 28.15,
           "end": 28.25,
           "confidence": 0.628
         },
         {
           "word_index": 4,
-          "text": "THE",
+          "text": "The",
           "start": 28.3,
           "end": 28.4,
           "confidence": 0.797
         },
         {
           "word_index": 5,
-          "text": "JUKEBOX",
+          "text": "Jukebox",
           "start": 28.45,
           "end": 28.55,
           "confidence": 0.658
@@ -999,49 +999,49 @@
     },
     {
       "line_index": 15,
-      "text": "AND THEN WE START TO DANCE",
+      "text": "And Then We Start To Dance",
       "start": 30.35,
       "end": 31.2,
       "confidence": 0.625,
       "words": [
         {
           "word_index": 1,
-          "text": "AND",
+          "text": "And",
           "start": 30.35,
           "end": 30.45,
           "confidence": 0.676
         },
         {
           "word_index": 2,
-          "text": "THEN",
+          "text": "Then",
           "start": 30.5,
           "end": 30.6,
           "confidence": 0.64
         },
         {
           "word_index": 3,
-          "text": "WE",
+          "text": "We",
           "start": 30.65,
           "end": 30.75,
           "confidence": 0.933
         },
         {
           "word_index": 4,
-          "text": "START",
+          "text": "Start",
           "start": 30.8,
           "end": 30.9,
           "confidence": 0.25
         },
         {
           "word_index": 5,
-          "text": "TO",
+          "text": "To",
           "start": 30.95,
           "end": 31.05,
           "confidence": 0.25
         },
         {
           "word_index": 6,
-          "text": "DANCE",
+          "text": "Dance",
           "start": 31.1,
           "end": 31.2,
           "confidence": 1.0
@@ -1090,42 +1090,42 @@
     },
     {
       "line_index": 16,
-      "text": "AND NOW IM SINGING LIKE",
+      "text": "And Now Im Singing Like",
       "start": 31.2,
       "end": 31.9,
       "confidence": 0.69,
       "words": [
         {
           "word_index": 1,
-          "text": "AND",
+          "text": "And",
           "start": 31.2,
           "end": 31.3,
           "confidence": 0.941
         },
         {
           "word_index": 2,
-          "text": "NOW",
+          "text": "Now",
           "start": 31.35,
           "end": 31.45,
           "confidence": 0.617
         },
         {
           "word_index": 3,
-          "text": "IM",
+          "text": "Im",
           "start": 31.5,
           "end": 31.6,
           "confidence": 0.64
         },
         {
           "word_index": 4,
-          "text": "SINGING",
+          "text": "Singing",
           "start": 31.65,
           "end": 31.75,
           "confidence": 0.25
         },
         {
           "word_index": 5,
-          "text": "LIKE",
+          "text": "Like",
           "start": 31.8,
           "end": 31.9,
           "confidence": 1.0
@@ -1168,28 +1168,28 @@
     },
     {
       "line_index": 17,
-      "text": "GIRL YOU KNOW",
+      "text": "Girl You Know",
       "start": 31.9,
       "end": 32.3,
       "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
-          "text": "GIRL",
+          "text": "Girl",
           "start": 31.9,
           "end": 32.0,
           "confidence": 0.252
         },
         {
           "word_index": 2,
-          "text": "YOU",
+          "text": "You",
           "start": 32.05,
           "end": 32.15,
           "confidence": 0.252
         },
         {
           "word_index": 3,
-          "text": "KNOW",
+          "text": "Know",
           "start": 32.2,
           "end": 32.3,
           "confidence": 0.252
@@ -1220,77 +1220,64 @@
     },
     {
       "line_index": 18,
-      "text": "U I WANT YOUR LOVE",
+      "text": "I Want Your Love",
       "start": 32.3,
-      "end": 33.0,
-      "confidence": 0.499,
+      "end": 32.85,
+      "confidence": 0.553,
       "words": [
         {
           "word_index": 1,
-          "text": "U",
+          "text": "I",
           "start": 32.3,
           "end": 32.4,
           "confidence": 0.25
         },
         {
           "word_index": 2,
-          "text": "I",
+          "text": "Want",
           "start": 32.45,
           "end": 32.55,
-          "confidence": 0.25
+          "confidence": 0.612
         },
         {
           "word_index": 3,
-          "text": "WANT",
+          "text": "Your",
           "start": 32.6,
           "end": 32.7,
-          "confidence": 0.616
+          "confidence": 0.667
         },
         {
           "word_index": 4,
-          "text": "YOUR",
+          "text": "Love",
           "start": 32.75,
           "end": 32.85,
-          "confidence": 0.673
-        },
-        {
-          "word_index": 5,
-          "text": "LOVE",
-          "start": 32.9,
-          "end": 33.0,
-          "confidence": 0.707
+          "confidence": 0.683
         }
       ],
       "y": 109,
       "word_rois": [
         [
-          130,
+          134,
           109,
-          22,
+          16,
           44
         ],
         [
-          132,
-          109,
-          16,
-          45
-        ],
-        [
-          157,
+          156,
           109,
           121,
           44
         ],
         [
-          284,
+          282,
           109,
           110,
           44
         ],
         [
-          399,
+          398,
           109,
-          108,
+          110,
           44
         ]
       ],
@@ -1299,15 +1286,15 @@
     {
       "line_index": 19,
       "text": "Clowns",
-      "start": 33.0,
-      "end": 33.1,
+      "start": 32.85,
+      "end": 32.95,
       "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "Clowns",
-          "start": 33.0,
-          "end": 33.1,
+          "start": 32.85,
+          "end": 32.95,
           "confidence": 0.252
         }
       ],
@@ -1324,37 +1311,37 @@
     },
     {
       "line_index": 20,
-      "text": "YOUR LOVE WAS HANDMADE",
-      "start": 33.1,
-      "end": 33.65,
+      "text": "Your Love Was Handmade",
+      "start": 32.95,
+      "end": 33.5,
       "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
-          "text": "YOUR",
+          "text": "Your",
+          "start": 32.95,
+          "end": 33.05,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 2,
+          "text": "Love",
           "start": 33.1,
           "end": 33.2,
           "confidence": 0.252
         },
         {
-          "word_index": 2,
-          "text": "LOVE",
+          "word_index": 3,
+          "text": "Was",
           "start": 33.25,
           "end": 33.35,
           "confidence": 0.252
         },
         {
-          "word_index": 3,
-          "text": "WAS",
+          "word_index": 4,
+          "text": "Handmade",
           "start": 33.4,
           "end": 33.5,
-          "confidence": 0.252
-        },
-        {
-          "word_index": 4,
-          "text": "HANDMADE",
-          "start": 33.55,
-          "end": 33.65,
           "confidence": 0.252
         }
       ],
@@ -1389,37 +1376,37 @@
     },
     {
       "line_index": 21,
-      "text": "FOR SOMEBODY LIKE ME",
-      "start": 33.65,
-      "end": 34.2,
+      "text": "For Somebody Like Me",
+      "start": 33.5,
+      "end": 34.05,
       "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
-          "text": "FOR",
+          "text": "For",
+          "start": 33.5,
+          "end": 33.6,
+          "confidence": 0.252
+        },
+        {
+          "word_index": 2,
+          "text": "Somebody",
           "start": 33.65,
           "end": 33.75,
           "confidence": 0.252
         },
         {
-          "word_index": 2,
-          "text": "SOMEBODY",
+          "word_index": 3,
+          "text": "Like",
           "start": 33.8,
           "end": 33.9,
           "confidence": 0.252
         },
         {
-          "word_index": 3,
-          "text": "LIKE",
+          "word_index": 4,
+          "text": "Me",
           "start": 33.95,
           "end": 34.05,
-          "confidence": 0.252
-        },
-        {
-          "word_index": 4,
-          "text": "ME",
-          "start": 34.1,
-          "end": 34.2,
           "confidence": 0.252
         }
       ],
@@ -1455,15 +1442,15 @@
     {
       "line_index": 22,
       "text": "Mous",
-      "start": 34.2,
-      "end": 34.3,
+      "start": 34.05,
+      "end": 34.15,
       "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "Mous",
-          "start": 34.2,
-          "end": 34.3,
+          "start": 34.05,
+          "end": 34.15,
           "confidence": 0.252
         }
       ],
@@ -1480,16 +1467,16 @@
     },
     {
       "line_index": 23,
-      "text": "ch",
-      "start": 34.3,
-      "end": 34.4,
+      "text": "Ch",
+      "start": 34.15,
+      "end": 34.25,
       "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
-          "text": "ch",
-          "start": 34.3,
-          "end": 34.4,
+          "text": "Ch",
+          "start": 34.15,
+          "end": 34.25,
           "confidence": 0.252
         }
       ],
@@ -1506,28 +1493,28 @@
     },
     {
       "line_index": 24,
-      "text": "COME ON NOW",
+      "text": "Come On Now",
       "start": 35.8,
       "end": 37.2,
       "confidence": 0.559,
       "words": [
         {
           "word_index": 1,
-          "text": "COME",
+          "text": "Come",
           "start": 35.8,
           "end": 35.9,
           "confidence": 0.25
         },
         {
           "word_index": 2,
-          "text": "ON",
+          "text": "On",
           "start": 36.95,
           "end": 37.05,
           "confidence": 0.719
         },
         {
           "word_index": 3,
-          "text": "NOW",
+          "text": "Now",
           "start": 37.1,
           "end": 37.2,
           "confidence": 0.709
@@ -1558,31 +1545,31 @@
     },
     {
       "line_index": 25,
-      "text": "FOLLOW MY LEAD",
+      "text": "Follow My Lead",
       "start": 37.2,
       "end": 37.6,
-      "confidence": 0.252,
+      "confidence": 0.515,
       "words": [
         {
           "word_index": 1,
-          "text": "FOLLOW",
+          "text": "Follow",
           "start": 37.2,
           "end": 37.3,
-          "confidence": 0.252
+          "confidence": 0.581
         },
         {
           "word_index": 2,
-          "text": "MY",
+          "text": "My",
           "start": 37.35,
           "end": 37.45,
-          "confidence": 0.252
+          "confidence": 0.715
         },
         {
           "word_index": 3,
-          "text": "LEAD",
+          "text": "Lead",
           "start": 37.5,
           "end": 37.6,
-          "confidence": 0.252
+          "confidence": 0.25
         }
       ],
       "y": 107,
@@ -1610,103 +1597,116 @@
     },
     {
       "line_index": 26,
-      "text": "I MAY BE CRAZY",
-      "start": 37.6,
-      "end": 38.15,
-      "confidence": 0.252,
+      "text": "U May Be Crazy",
+      "start": 39.1,
+      "end": 39.65,
+      "confidence": 0.614,
       "words": [
         {
           "word_index": 1,
-          "text": "I",
-          "start": 37.6,
-          "end": 37.7,
-          "confidence": 0.252
+          "text": "U",
+          "start": 39.1,
+          "end": 39.2,
+          "confidence": 0.634
         },
         {
           "word_index": 2,
-          "text": "MAY",
-          "start": 37.75,
-          "end": 37.85,
-          "confidence": 0.252
+          "text": "May",
+          "start": 39.25,
+          "end": 39.35,
+          "confidence": 0.656
         },
         {
           "word_index": 3,
-          "text": "BE",
-          "start": 37.9,
-          "end": 38.0,
-          "confidence": 0.252
+          "text": "Be",
+          "start": 39.4,
+          "end": 39.5,
+          "confidence": 0.25
         },
         {
           "word_index": 4,
-          "text": "CRAZY",
-          "start": 38.05,
-          "end": 38.15,
-          "confidence": 0.252
+          "text": "Crazy",
+          "start": 39.55,
+          "end": 39.65,
+          "confidence": 0.915
         }
       ],
       "y": 55,
       "word_rois": [
         [
+          144,
+          55,
+          19,
+          52
+        ],
+        [
+          169,
+          55,
+          91,
+          52
+        ],
+        [
+          267,
+          55,
+          58,
+          52
+        ],
+        [
+          332,
+          55,
           148,
-          57,
-          18,
-          48
-        ],
-        [
-          172,
-          57,
-          90,
-          48
-        ],
-        [
-          268,
-          57,
-          54,
-          48
-        ],
-        [
-          327,
-          57,
-          156,
-          48
+          52
         ]
       ],
       "char_rois": []
     },
     {
       "line_index": 27,
-      "text": "DON'T RIINCIRIE",
-      "start": 38.95,
-      "end": 39.2,
-      "confidence": 0.252,
+      "text": "Dont Mind Me",
+      "start": 39.65,
+      "end": 40.05,
+      "confidence": 0.644,
       "words": [
         {
           "word_index": 1,
-          "text": "DON'T",
-          "start": 38.95,
-          "end": 39.05,
-          "confidence": 0.252
+          "text": "Dont",
+          "start": 39.65,
+          "end": 39.75,
+          "confidence": 0.582
         },
         {
           "word_index": 2,
-          "text": "MINDME",
-          "start": 39.1,
-          "end": 39.2,
-          "confidence": 0.252
+          "text": "Mind",
+          "start": 39.8,
+          "end": 39.9,
+          "confidence": 0.609
+        },
+        {
+          "word_index": 3,
+          "text": "Me",
+          "start": 39.95,
+          "end": 40.05,
+          "confidence": 0.74
         }
       ],
       "y": 111,
       "word_rois": [
         [
-          160,
+          164,
           111,
           135,
           40
         ],
         [
-          300,
+          304,
           111,
-          172,
+          100,
+          40
+        ],
+        [
+          408,
+          111,
+          61,
           40
         ]
       ],
@@ -1714,21 +1714,21 @@
     },
     {
       "line_index": 28,
-      "text": "SAY BOY",
+      "text": "Say Boy",
       "start": 41.8,
       "end": 42.3,
       "confidence": 0.504,
       "words": [
         {
           "word_index": 1,
-          "text": "SAY",
+          "text": "Say",
           "start": 41.8,
           "end": 41.9,
           "confidence": 0.758
         },
         {
           "word_index": 2,
-          "text": "BOY",
+          "text": "Boy",
           "start": 42.2,
           "end": 42.3,
           "confidence": 0.25
@@ -1753,42 +1753,42 @@
     },
     {
       "line_index": 29,
-      "text": "LET'S NOT TALK TOO MUCH",
+      "text": "Let's Not Talk Too Much",
       "start": 42.3,
       "end": 43.0,
       "confidence": 0.56,
       "words": [
         {
           "word_index": 1,
-          "text": "LET'S",
+          "text": "Let's",
           "start": 42.3,
           "end": 42.4,
           "confidence": 0.617
         },
         {
           "word_index": 2,
-          "text": "NOT",
+          "text": "Not",
           "start": 42.45,
           "end": 42.55,
           "confidence": 0.583
         },
         {
           "word_index": 3,
-          "text": "TALK",
+          "text": "Talk",
           "start": 42.6,
           "end": 42.7,
           "confidence": 0.744
         },
         {
           "word_index": 4,
-          "text": "TOO",
+          "text": "Too",
           "start": 42.75,
           "end": 42.85,
           "confidence": 0.604
         },
         {
           "word_index": 5,
-          "text": "MUCH",
+          "text": "Much",
           "start": 42.9,
           "end": 43.0,
           "confidence": 0.25
@@ -1831,42 +1831,42 @@
     },
     {
       "line_index": 30,
-      "text": "GRAB ON MY WAIST AND",
+      "text": "Grab On My Waist And",
       "start": 44.9,
       "end": 45.6,
       "confidence": 0.637,
       "words": [
         {
           "word_index": 1,
-          "text": "GRAB",
+          "text": "Grab",
           "start": 44.9,
           "end": 45.0,
           "confidence": 0.686
         },
         {
           "word_index": 2,
-          "text": "ON",
+          "text": "On",
           "start": 45.05,
           "end": 45.15,
           "confidence": 0.25
         },
         {
           "word_index": 3,
-          "text": "MY",
+          "text": "My",
           "start": 45.2,
           "end": 45.3,
           "confidence": 1.0
         },
         {
           "word_index": 4,
-          "text": "WAIST",
+          "text": "Waist",
           "start": 45.35,
           "end": 45.45,
           "confidence": 0.25
         },
         {
           "word_index": 5,
-          "text": "AND",
+          "text": "And",
           "start": 45.5,
           "end": 45.6,
           "confidence": 1.0
@@ -1909,42 +1909,42 @@
     },
     {
       "line_index": 31,
-      "text": "PUT THAT BODY ON ME",
+      "text": "Put That Body On Me",
       "start": 45.6,
       "end": 46.3,
       "confidence": 0.613,
       "words": [
         {
           "word_index": 1,
-          "text": "PUT",
+          "text": "Put",
           "start": 45.6,
           "end": 45.7,
           "confidence": 0.905
         },
         {
           "word_index": 2,
-          "text": "THAT",
+          "text": "That",
           "start": 45.75,
           "end": 45.85,
           "confidence": 0.6
         },
         {
           "word_index": 3,
-          "text": "BODY",
+          "text": "Body",
           "start": 45.9,
           "end": 46.0,
           "confidence": 0.25
         },
         {
           "word_index": 4,
-          "text": "ON",
+          "text": "On",
           "start": 46.05,
           "end": 46.15,
           "confidence": 0.574
         },
         {
           "word_index": 5,
-          "text": "ME",
+          "text": "Me",
           "start": 46.2,
           "end": 46.3,
           "confidence": 0.734
@@ -1987,7 +1987,7 @@
     },
     {
       "line_index": 32,
-      "text": "10 ou",
+      "text": "10 Ou",
       "start": 47.1,
       "end": 47.35,
       "confidence": 0.3,
@@ -2001,7 +2001,7 @@
         },
         {
           "word_index": 2,
-          "text": "ou",
+          "text": "Ou",
           "start": 47.25,
           "end": 47.35,
           "confidence": 0.3
@@ -2026,35 +2026,35 @@
     },
     {
       "line_index": 33,
-      "text": "COME COME ON NOW",
+      "text": "Come Come On Now",
       "start": 49.1,
       "end": 49.65,
       "confidence": 0.95,
       "words": [
         {
           "word_index": 1,
-          "text": "COME",
+          "text": "Come",
           "start": 49.1,
           "end": 49.2,
           "confidence": 0.798
         },
         {
           "word_index": 2,
-          "text": "COME",
+          "text": "Come",
           "start": 49.25,
           "end": 49.35,
           "confidence": 1.0
         },
         {
           "word_index": 3,
-          "text": "ON",
+          "text": "On",
           "start": 49.4,
           "end": 49.5,
           "confidence": 1.0
         },
         {
           "word_index": 4,
-          "text": "NOW",
+          "text": "Now",
           "start": 49.55,
           "end": 49.65,
           "confidence": 1.0
@@ -2091,28 +2091,28 @@
     },
     {
       "line_index": 34,
-      "text": "FOLLOW MY LEAD",
+      "text": "Follow My Lead",
       "start": 49.9,
       "end": 50.6,
       "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
-          "text": "FOLLOW",
+          "text": "Follow",
           "start": 49.9,
           "end": 50.0,
           "confidence": 1.0
         },
         {
           "word_index": 2,
-          "text": "MY",
+          "text": "My",
           "start": 50.05,
           "end": 50.15,
           "confidence": 1.0
         },
         {
           "word_index": 3,
-          "text": "LEAD",
+          "text": "Lead",
           "start": 50.2,
           "end": 50.3,
           "confidence": 1.0
@@ -2143,14 +2143,14 @@
     },
     {
       "line_index": 35,
-      "text": "Louis",
+      "text": "Louds",
       "start": 51.45,
       "end": 52.15,
       "confidence": 0.3,
       "words": [
         {
           "word_index": 1,
-          "text": "louds",
+          "text": "Louds",
           "start": 51.45,
           "end": 51.75,
           "confidence": 0.3
@@ -2169,35 +2169,35 @@
     },
     {
       "line_index": 36,
-      "text": "IM IN LOVE WITH",
+      "text": "Im In Love With",
       "start": 52.65,
       "end": 53.2,
       "confidence": 0.435,
       "words": [
         {
           "word_index": 1,
-          "text": "IM",
+          "text": "Im",
           "start": 52.65,
           "end": 52.75,
           "confidence": 0.668
         },
         {
           "word_index": 2,
-          "text": "IN",
+          "text": "In",
           "start": 52.8,
           "end": 52.9,
           "confidence": 0.25
         },
         {
           "word_index": 3,
-          "text": "LOVE",
+          "text": "Love",
           "start": 52.95,
           "end": 53.05,
           "confidence": 0.25
         },
         {
           "word_index": 4,
-          "text": "WITH",
+          "text": "With",
           "start": 53.1,
           "end": 53.2,
           "confidence": 0.571
@@ -2234,35 +2234,35 @@
     },
     {
       "line_index": 37,
-      "text": "THE SHAPE OF YOU",
+      "text": "The Shape Of You",
       "start": 53.2,
       "end": 53.75,
       "confidence": 0.49,
       "words": [
         {
           "word_index": 1,
-          "text": "THE",
+          "text": "The",
           "start": 53.2,
           "end": 53.3,
           "confidence": 0.25
         },
         {
           "word_index": 2,
-          "text": "SHAPE",
+          "text": "Shape",
           "start": 53.35,
           "end": 53.45,
           "confidence": 0.719
         },
         {
           "word_index": 3,
-          "text": "OF",
+          "text": "Of",
           "start": 53.5,
           "end": 53.6,
           "confidence": 0.74
         },
         {
           "word_index": 4,
-          "text": "YOU",
+          "text": "You",
           "start": 53.65,
           "end": 53.75,
           "confidence": 0.25
@@ -2299,35 +2299,35 @@
     },
     {
       "line_index": 38,
-      "text": "WE PUSH AND PULL",
+      "text": "We Push And Pull",
       "start": 55.15,
       "end": 55.7,
       "confidence": 0.539,
       "words": [
         {
           "word_index": 1,
-          "text": "WE",
+          "text": "We",
           "start": 55.15,
           "end": 55.25,
           "confidence": 0.726
         },
         {
           "word_index": 2,
-          "text": "PUSH",
+          "text": "Push",
           "start": 55.3,
           "end": 55.4,
           "confidence": 0.64
         },
         {
           "word_index": 3,
-          "text": "AND",
+          "text": "And",
           "start": 55.45,
           "end": 55.55,
           "confidence": 0.54
         },
         {
           "word_index": 4,
-          "text": "PULL",
+          "text": "Pull",
           "start": 55.6,
           "end": 55.7,
           "confidence": 0.25
@@ -2364,14 +2364,14 @@
     },
     {
       "line_index": 39,
-      "text": "LIKE A MAGNET DO",
+      "text": "Like A Magnet Do",
       "start": 55.7,
       "end": 56.25,
       "confidence": 0.546,
       "words": [
         {
           "word_index": 1,
-          "text": "LIKE",
+          "text": "Like",
           "start": 55.7,
           "end": 55.8,
           "confidence": 0.69
@@ -2385,14 +2385,14 @@
         },
         {
           "word_index": 3,
-          "text": "MAGNET",
+          "text": "Magnet",
           "start": 56.0,
           "end": 56.1,
           "confidence": 0.601
         },
         {
           "word_index": 4,
-          "text": "DO",
+          "text": "Do",
           "start": 56.15,
           "end": 56.25,
           "confidence": 0.25
@@ -2429,28 +2429,28 @@
     },
     {
       "line_index": 40,
-      "text": "ALTHOUGH MY HEART",
+      "text": "Although My Heart",
       "start": 57.55,
       "end": 57.95,
       "confidence": 0.839,
       "words": [
         {
           "word_index": 1,
-          "text": "ALTHOUGH",
+          "text": "Although",
           "start": 57.55,
           "end": 57.65,
           "confidence": 0.841
         },
         {
           "word_index": 2,
-          "text": "MY",
+          "text": "My",
           "start": 57.7,
           "end": 57.8,
           "confidence": 0.675
         },
         {
           "word_index": 3,
-          "text": "HEART",
+          "text": "Heart",
           "start": 57.85,
           "end": 57.95,
           "confidence": 1.0
@@ -2481,28 +2481,28 @@
     },
     {
       "line_index": 41,
-      "text": "IS FALLING TOO",
+      "text": "Is Falling Too",
       "start": 57.95,
       "end": 58.35,
       "confidence": 0.97,
       "words": [
         {
           "word_index": 1,
-          "text": "IS",
+          "text": "Is",
           "start": 57.95,
           "end": 58.05,
           "confidence": 0.928
         },
         {
           "word_index": 2,
-          "text": "FALLING",
+          "text": "Falling",
           "start": 58.1,
           "end": 58.2,
           "confidence": 0.981
         },
         {
           "word_index": 3,
-          "text": "TOO",
+          "text": "Too",
           "start": 58.25,
           "end": 58.35,
           "confidence": 1.0
@@ -2533,49 +2533,49 @@
     },
     {
       "line_index": 42,
-      "text": "IM IN LOVE WITH YOUR BODY",
+      "text": "Im In Love With Your Body",
       "start": 60.15,
       "end": 61.0,
       "confidence": 0.728,
       "words": [
         {
           "word_index": 1,
-          "text": "IM",
+          "text": "Im",
           "start": 60.15,
           "end": 60.25,
           "confidence": 0.776
         },
         {
           "word_index": 2,
-          "text": "IN",
+          "text": "In",
           "start": 60.3,
           "end": 60.4,
           "confidence": 0.782
         },
         {
           "word_index": 3,
-          "text": "LOVE",
+          "text": "Love",
           "start": 60.45,
           "end": 60.55,
           "confidence": 0.742
         },
         {
           "word_index": 4,
-          "text": "WITH",
+          "text": "With",
           "start": 60.6,
           "end": 60.7,
           "confidence": 0.25
         },
         {
           "word_index": 5,
-          "text": "YOUR",
+          "text": "Your",
           "start": 60.75,
           "end": 60.85,
           "confidence": 0.817
         },
         {
           "word_index": 6,
-          "text": "BODY",
+          "text": "Body",
           "start": 60.9,
           "end": 61.0,
           "confidence": 1.0
@@ -2624,35 +2624,35 @@
     },
     {
       "line_index": 43,
-      "text": "AND LAST NIGHT YOU",
+      "text": "And Last Night You",
       "start": 62.5,
       "end": 63.05,
       "confidence": 0.527,
       "words": [
         {
           "word_index": 1,
-          "text": "AND",
+          "text": "And",
           "start": 62.5,
           "end": 62.6,
           "confidence": 0.625
         },
         {
           "word_index": 2,
-          "text": "LAST",
+          "text": "Last",
           "start": 62.65,
           "end": 62.75,
           "confidence": 0.607
         },
         {
           "word_index": 3,
-          "text": "NIGHT",
+          "text": "Night",
           "start": 62.8,
           "end": 62.9,
           "confidence": 0.625
         },
         {
           "word_index": 4,
-          "text": "YOU",
+          "text": "You",
           "start": 62.95,
           "end": 63.05,
           "confidence": 0.25
@@ -2689,58 +2689,58 @@
     },
     {
       "line_index": 44,
-      "text": "WERE IN MY ROOM",
+      "text": "Were In My Room",
       "start": 63.05,
       "end": 63.45,
-      "confidence": 0.549,
+      "confidence": 0.565,
       "words": [
         {
           "word_index": 1,
-          "text": "WERE",
+          "text": "Were",
           "start": 63.05,
           "end": 63.15,
-          "confidence": 0.653
+          "confidence": 0.645
         },
         {
           "word_index": 2,
-          "text": "IN",
+          "text": "In",
           "start": 63.2,
-          "end": 63.3,
-          "confidence": 0.25
+          "end": 63.25,
+          "confidence": 0.682
         },
         {
           "word_index": 3,
-          "text": "MY",
-          "start": 63.35,
-          "end": 63.4,
-          "confidence": 0.647
+          "text": "My",
+          "start": 63.25,
+          "end": 63.3,
+          "confidence": 0.682
         },
         {
           "word_index": 4,
-          "text": "ROOM",
-          "start": 63.4,
+          "text": "Room",
+          "start": 63.35,
           "end": 63.45,
-          "confidence": 0.647
+          "confidence": 0.25
         }
       ],
       "y": 109,
       "word_rois": [
         [
-          146,
+          148,
           111,
-          105,
+          104,
           42
         ],
         [
-          256,
+          258,
           111,
-          52,
+          110,
           42
         ],
         [
-          313,
+          373,
           111,
-          182,
+          123,
           42
         ]
       ],
@@ -2748,14 +2748,14 @@
     },
     {
       "line_index": 45,
-      "text": "Cours",
+      "text": "Vous",
       "start": 63.45,
       "end": 63.55,
       "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
-          "text": "Cours",
+          "text": "Vous",
           "start": 63.45,
           "end": 63.55,
           "confidence": 0.252
@@ -2764,54 +2764,54 @@
       "y": 247,
       "word_rois": [
         [
-          590,
+          589,
           247,
           45,
-          26
+          25
         ]
       ],
       "char_rois": []
     },
     {
       "line_index": 46,
-      "text": "AND NOW MY BED SHEETS",
-      "start": 63.55,
-      "end": 64.3,
+      "text": "And Now My Bed Sheets",
+      "start": 64.25,
+      "end": 65.1,
       "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
-          "text": "AND",
-          "start": 63.55,
-          "end": 63.65,
+          "text": "And",
+          "start": 64.25,
+          "end": 64.35,
           "confidence": 0.252
         },
         {
           "word_index": 2,
-          "text": "NOW",
-          "start": 63.7,
-          "end": 63.8,
+          "text": "Now",
+          "start": 64.4,
+          "end": 64.5,
           "confidence": 0.252
         },
         {
           "word_index": 3,
-          "text": "MY",
-          "start": 63.85,
-          "end": 63.95,
+          "text": "My",
+          "start": 64.55,
+          "end": 64.65,
           "confidence": 0.252
         },
         {
           "word_index": 4,
-          "text": "BED",
-          "start": 64.0,
-          "end": 64.1,
+          "text": "Bed",
+          "start": 64.7,
+          "end": 64.8,
           "confidence": 0.252
         },
         {
           "word_index": 5,
-          "text": "SHEETS",
-          "start": 64.15,
-          "end": 64.3,
+          "text": "Sheets",
+          "start": 64.85,
+          "end": 65.1,
           "confidence": 0.252
         }
       ],
@@ -2852,30 +2852,30 @@
     },
     {
       "line_index": 47,
-      "text": "SMELL LIKE YOU",
-      "start": 64.3,
-      "end": 64.8,
+      "text": "Smell Like You",
+      "start": 65.8,
+      "end": 66.5,
       "confidence": 0.539,
       "words": [
         {
           "word_index": 1,
-          "text": "SMELL",
-          "start": 64.3,
-          "end": 64.4,
+          "text": "Smell",
+          "start": 65.8,
+          "end": 65.9,
           "confidence": 0.25
         },
         {
           "word_index": 2,
-          "text": "LIKE",
-          "start": 64.45,
-          "end": 64.55,
+          "text": "Like",
+          "start": 65.95,
+          "end": 66.05,
           "confidence": 0.762
         },
         {
           "word_index": 3,
-          "text": "YOU",
-          "start": 64.7,
-          "end": 64.8,
+          "text": "You",
+          "start": 66.1,
+          "end": 66.2,
           "confidence": 0.604
         }
       ],
@@ -2904,31 +2904,31 @@
     },
     {
       "line_index": 48,
-      "text": "EVERY DAY DISCOVERING",
-      "start": 64.8,
-      "end": 65.2,
-      "confidence": 0.252,
+      "text": "Every Day Discovering",
+      "start": 66.95,
+      "end": 67.65,
+      "confidence": 0.27,
       "words": [
         {
           "word_index": 1,
-          "text": "EVERY",
-          "start": 64.8,
-          "end": 64.9,
-          "confidence": 0.252
+          "text": "Every",
+          "start": 66.95,
+          "end": 67.15,
+          "confidence": 0.27
         },
         {
           "word_index": 2,
-          "text": "DAY",
-          "start": 64.95,
-          "end": 65.05,
-          "confidence": 0.252
+          "text": "Day",
+          "start": 67.2,
+          "end": 67.35,
+          "confidence": 0.27
         },
         {
           "word_index": 3,
-          "text": "DISCOVERING",
-          "start": 65.1,
-          "end": 65.2,
-          "confidence": 0.252
+          "text": "Discovering",
+          "start": 67.4,
+          "end": 67.65,
+          "confidence": 0.27
         }
       ],
       "y": 55,
@@ -2956,31 +2956,31 @@
     },
     {
       "line_index": 49,
-      "text": "SOMETHING BAND NEW",
-      "start": 65.2,
-      "end": 65.6,
-      "confidence": 0.252,
+      "text": "Something Band New",
+      "start": 67.75,
+      "end": 68.15,
+      "confidence": 0.929,
       "words": [
         {
           "word_index": 1,
-          "text": "SOMETHING",
-          "start": 65.2,
-          "end": 65.3,
-          "confidence": 0.252
+          "text": "Something",
+          "start": 67.75,
+          "end": 67.85,
+          "confidence": 1.0
         },
         {
           "word_index": 2,
-          "text": "BAND",
-          "start": 65.35,
-          "end": 65.45,
-          "confidence": 0.252
+          "text": "Band",
+          "start": 67.9,
+          "end": 68.0,
+          "confidence": 0.786
         },
         {
           "word_index": 3,
-          "text": "NEW",
-          "start": 65.5,
-          "end": 65.6,
-          "confidence": 0.252
+          "text": "New",
+          "start": 68.05,
+          "end": 68.15,
+          "confidence": 1.0
         }
       ],
       "y": 107,
@@ -3008,16 +3008,16 @@
     },
     {
       "line_index": 50,
-      "text": "Nomad",
-      "start": 65.6,
-      "end": 65.7,
+      "text": "Nowad",
+      "start": 68.15,
+      "end": 68.25,
       "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "Nowad",
-          "start": 65.6,
-          "end": 65.7,
+          "start": 68.15,
+          "end": 68.25,
           "confidence": 0.252
         }
       ],
@@ -3025,26 +3025,26 @@
       "word_rois": [
         [
           592,
-          247,
-          44,
-          24
+          249,
+          42,
+          22
         ]
       ],
       "char_rois": []
     },
     {
       "line_index": 51,
-      "text": "co",
-      "start": 65.7,
-      "end": 65.8,
-      "confidence": 0.252,
+      "text": "Co",
+      "start": 68.25,
+      "end": 68.35,
+      "confidence": 0.607,
       "words": [
         {
           "word_index": 1,
-          "text": "co",
-          "start": 65.7,
-          "end": 65.8,
-          "confidence": 0.252
+          "text": "Co",
+          "start": 68.25,
+          "end": 68.35,
+          "confidence": 0.607
         }
       ],
       "y": 237,
@@ -3060,24 +3060,24 @@
     },
     {
       "line_index": 52,
-      "text": "mO g3",
-      "start": 65.8,
-      "end": 66.05,
-      "confidence": 0.252,
+      "text": "Mo G3",
+      "start": 68.35,
+      "end": 68.6,
+      "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
-          "text": "mO",
-          "start": 65.8,
-          "end": 65.9,
-          "confidence": 0.252
+          "text": "Mo",
+          "start": 68.35,
+          "end": 68.45,
+          "confidence": 0.5
         },
         {
           "word_index": 2,
-          "text": "g3",
-          "start": 65.95,
-          "end": 66.05,
-          "confidence": 0.252
+          "text": "G3",
+          "start": 68.5,
+          "end": 68.6,
+          "confidence": 0.5
         }
       ],
       "y": 242,
@@ -3099,31 +3099,31 @@
     },
     {
       "line_index": 53,
-      "text": "10 on al",
-      "start": 71.25,
-      "end": 71.95,
-      "confidence": 0.252,
+      "text": "10 On Al",
+      "start": 72.1,
+      "end": 72.8,
+      "confidence": 0.3,
       "words": [
         {
           "word_index": 1,
           "text": "10",
-          "start": 71.25,
-          "end": 71.35,
-          "confidence": 0.252
+          "start": 72.1,
+          "end": 72.2,
+          "confidence": 0.3
         },
         {
           "word_index": 2,
-          "text": "on",
-          "start": 71.4,
-          "end": 71.45,
-          "confidence": 0.252
+          "text": "On",
+          "start": 72.25,
+          "end": 72.3,
+          "confidence": 0.3
         },
         {
           "word_index": 3,
-          "text": "al",
-          "start": 71.45,
-          "end": 71.5,
-          "confidence": 0.252
+          "text": "Al",
+          "start": 72.3,
+          "end": 72.35,
+          "confidence": 0.3
         }
       ],
       "y": 249,
@@ -3145,107 +3145,107 @@
     },
     {
       "line_index": 54,
-      "text": "U'M IN LOVE WITH YOUR BODY",
-      "start": 74.0,
-      "end": 85.2,
-      "confidence": 0.904,
+      "text": "'m In Love With Your Body",
+      "start": 74.05,
+      "end": 76.8,
+      "confidence": 0.228,
       "words": [
         {
           "word_index": 1,
-          "text": "U'M",
-          "start": 74.0,
-          "end": 74.5,
-          "confidence": 0.822
+          "text": "'m",
+          "start": 74.05,
+          "end": 74.35,
+          "confidence": 0.228
         },
         {
           "word_index": 2,
-          "text": "IN",
-          "start": 74.55,
-          "end": 74.65,
-          "confidence": 0.946
+          "text": "In",
+          "start": 74.4,
+          "end": 74.75,
+          "confidence": 0.228
         },
         {
           "word_index": 3,
-          "text": "LOVE",
-          "start": 79.6,
-          "end": 79.7,
-          "confidence": 0.905
+          "text": "Love",
+          "start": 74.8,
+          "end": 75.3,
+          "confidence": 0.228
         },
         {
           "word_index": 4,
-          "text": "WITH",
-          "start": 84.8,
-          "end": 84.9,
-          "confidence": 0.817
+          "text": "With",
+          "start": 75.35,
+          "end": 75.8,
+          "confidence": 0.228
         },
         {
           "word_index": 5,
-          "text": "YOUR",
-          "start": 84.95,
-          "end": 85.05,
-          "confidence": 0.936
+          "text": "Your",
+          "start": 75.85,
+          "end": 76.3,
+          "confidence": 0.228
         },
         {
           "word_index": 6,
-          "text": "BODY",
-          "start": 85.1,
-          "end": 85.2,
-          "confidence": 1.0
+          "text": "Body",
+          "start": 76.35,
+          "end": 76.8,
+          "confidence": 0.228
         }
       ],
       "y": 82,
       "word_rois": [
         [
-          32,
-          108,
-          60,
-          48
+          36,
+          107,
+          57,
+          46
         ],
         [
-          98,
-          108,
-          48,
-          48
+          99,
+          107,
+          52,
+          46
         ],
         [
-          152,
-          108,
-          108,
-          48
+          156,
+          107,
+          104,
+          46
         ],
         [
           266,
-          108,
-          101,
-          48
+          107,
+          103,
+          46
         ],
         [
-          374,
-          108,
-          108,
-          48
+          375,
+          107,
+          109,
+          46
         ],
         [
-          488,
-          108,
-          117,
-          48
+          490,
+          107,
+          115,
+          46
         ]
       ],
       "char_rois": []
     },
     {
       "line_index": 55,
-      "text": "lawd",
-      "start": 86.0,
-      "end": 86.1,
+      "text": "Lawd",
+      "start": 77.3,
+      "end": 78.1,
       "confidence": 0.3,
       "words": [
         {
           "word_index": 1,
-          "text": "lawd",
-          "start": 86.0,
-          "end": 86.1,
+          "text": "Lawd",
+          "start": 77.3,
+          "end": 78.1,
           "confidence": 0.3
         }
       ],
@@ -3262,28 +3262,119 @@
     },
     {
       "line_index": 56,
-      "text": "EVERY DAY DISCOVERING",
+      "text": "'m In Love With Your Body",
+      "start": 81.0,
+      "end": 82.55,
+      "confidence": 0.542,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "'m",
+          "start": 81.0,
+          "end": 81.1,
+          "confidence": 0.25
+        },
+        {
+          "word_index": 2,
+          "text": "In",
+          "start": 81.8,
+          "end": 81.95,
+          "confidence": 0.579
+        },
+        {
+          "word_index": 3,
+          "text": "Love",
+          "start": 82.0,
+          "end": 82.1,
+          "confidence": 0.557
+        },
+        {
+          "word_index": 4,
+          "text": "With",
+          "start": 82.15,
+          "end": 82.25,
+          "confidence": 0.557
+        },
+        {
+          "word_index": 5,
+          "text": "Your",
+          "start": 82.3,
+          "end": 82.4,
+          "confidence": 0.635
+        },
+        {
+          "word_index": 6,
+          "text": "Body",
+          "start": 82.45,
+          "end": 82.55,
+          "confidence": 0.676
+        }
+      ],
+      "y": 82,
+      "word_rois": [
+        [
+          36,
+          107,
+          57,
+          46
+        ],
+        [
+          99,
+          107,
+          52,
+          46
+        ],
+        [
+          156,
+          107,
+          104,
+          46
+        ],
+        [
+          266,
+          107,
+          103,
+          46
+        ],
+        [
+          375,
+          107,
+          109,
+          46
+        ],
+        [
+          490,
+          107,
+          115,
+          46
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 57,
+      "text": "Every Day Discovering",
       "start": 87.6,
       "end": 88.0,
       "confidence": 0.762,
       "words": [
         {
           "word_index": 1,
-          "text": "EVERY",
+          "text": "Every",
           "start": 87.6,
           "end": 87.7,
           "confidence": 0.666
         },
         {
           "word_index": 2,
-          "text": "DAY",
+          "text": "Day",
           "start": 87.75,
           "end": 87.85,
           "confidence": 0.758
         },
         {
           "word_index": 3,
-          "text": "DISCOVERING",
+          "text": "Discovering",
           "start": 87.9,
           "end": 88.0,
           "confidence": 0.861
@@ -3313,29 +3404,29 @@
       "char_rois": []
     },
     {
-      "line_index": 57,
-      "text": "SOMETHING BAND NEW",
+      "line_index": 58,
+      "text": "Something Band New",
       "start": 88.0,
       "end": 88.4,
       "confidence": 0.76,
       "words": [
         {
           "word_index": 1,
-          "text": "SOMETHING",
+          "text": "Something",
           "start": 88.0,
           "end": 88.1,
           "confidence": 0.716
         },
         {
           "word_index": 2,
-          "text": "BAND",
+          "text": "Band",
           "start": 88.15,
           "end": 88.25,
           "confidence": 0.625
         },
         {
           "word_index": 3,
-          "text": "NEW",
+          "text": "New",
           "start": 88.3,
           "end": 88.4,
           "confidence": 0.94
@@ -3365,36 +3456,36 @@
       "char_rois": []
     },
     {
-      "line_index": 58,
-      "text": "IM IN LOVE WITH",
+      "line_index": 59,
+      "text": "Im In Love With",
       "start": 89.45,
       "end": 90.0,
       "confidence": 0.598,
       "words": [
         {
           "word_index": 1,
-          "text": "IM",
+          "text": "Im",
           "start": 89.45,
           "end": 89.55,
           "confidence": 0.739
         },
         {
           "word_index": 2,
-          "text": "IN",
+          "text": "In",
           "start": 89.6,
           "end": 89.7,
           "confidence": 0.832
         },
         {
           "word_index": 3,
-          "text": "LOVE",
+          "text": "Love",
           "start": 89.75,
           "end": 89.85,
           "confidence": 0.25
         },
         {
           "word_index": 4,
-          "text": "WITH",
+          "text": "With",
           "start": 89.9,
           "end": 90.0,
           "confidence": 0.57
@@ -3430,36 +3521,36 @@
       "char_rois": []
     },
     {
-      "line_index": 59,
-      "text": "THE SHAPE OF YOU",
+      "line_index": 60,
+      "text": "The Shape Of You",
       "start": 90.0,
       "end": 90.55,
       "confidence": 0.524,
       "words": [
         {
           "word_index": 1,
-          "text": "THE",
+          "text": "The",
           "start": 90.0,
           "end": 90.1,
           "confidence": 0.679
         },
         {
           "word_index": 2,
-          "text": "SHAPE",
+          "text": "Shape",
           "start": 90.15,
           "end": 90.25,
           "confidence": 0.577
         },
         {
           "word_index": 3,
-          "text": "OF",
+          "text": "Of",
           "start": 90.3,
           "end": 90.4,
           "confidence": 0.25
         },
         {
           "word_index": 4,
-          "text": "YOU",
+          "text": "You",
           "start": 90.45,
           "end": 90.55,
           "confidence": 0.59
@@ -3495,15 +3586,15 @@
       "char_rois": []
     },
     {
-      "line_index": 60,
-      "text": "Louis",
+      "line_index": 61,
+      "text": "Louds",
       "start": 90.55,
       "end": 90.65,
       "confidence": 0.3,
       "words": [
         {
           "word_index": 1,
-          "text": "louds",
+          "text": "Louds",
           "start": 90.55,
           "end": 90.65,
           "confidence": 0.3
@@ -3514,50 +3605,50 @@
         [
           592,
           249,
-          42,
+          44,
           20
         ]
       ],
       "char_rois": []
     },
     {
-      "line_index": 61,
-      "text": "ONE WEEK IN WE LET",
+      "line_index": 62,
+      "text": "One Week In We Let",
       "start": 90.85,
       "end": 92.0,
       "confidence": 0.555,
       "words": [
         {
           "word_index": 1,
-          "text": "ONE",
+          "text": "One",
           "start": 90.85,
           "end": 90.95,
           "confidence": 0.25
         },
         {
           "word_index": 2,
-          "text": "WEEK",
+          "text": "Week",
           "start": 91.45,
           "end": 91.55,
           "confidence": 0.547
         },
         {
           "word_index": 3,
-          "text": "IN",
+          "text": "In",
           "start": 91.6,
           "end": 91.7,
           "confidence": 0.636
         },
         {
           "word_index": 4,
-          "text": "WE",
+          "text": "We",
           "start": 91.75,
           "end": 91.85,
           "confidence": 0.617
         },
         {
           "word_index": 5,
-          "text": "LET",
+          "text": "Let",
           "start": 91.9,
           "end": 92.0,
           "confidence": 0.724
@@ -3599,29 +3690,29 @@
       "char_rois": []
     },
     {
-      "line_index": 62,
-      "text": "THE STORY BEGIN",
+      "line_index": 63,
+      "text": "The Story Begin",
       "start": 92.0,
       "end": 92.4,
       "confidence": 0.383,
       "words": [
         {
           "word_index": 1,
-          "text": "THE",
+          "text": "The",
           "start": 92.0,
           "end": 92.1,
           "confidence": 0.25
         },
         {
           "word_index": 2,
-          "text": "STORY",
+          "text": "Story",
           "start": 92.15,
           "end": 92.25,
           "confidence": 0.649
         },
         {
           "word_index": 3,
-          "text": "BEGIN",
+          "text": "Begin",
           "start": 92.3,
           "end": 92.4,
           "confidence": 0.25
@@ -3651,29 +3742,29 @@
       "char_rois": []
     },
     {
-      "line_index": 63,
-      "text": "WE'RE GOING OUT",
+      "line_index": 64,
+      "text": "We're Going Out",
       "start": 92.65,
       "end": 93.35,
       "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
-          "text": "WE'RE",
+          "text": "We're",
           "start": 92.65,
           "end": 92.75,
           "confidence": 0.252
         },
         {
           "word_index": 2,
-          "text": "GOING",
+          "text": "Going",
           "start": 92.8,
           "end": 92.9,
           "confidence": 0.252
         },
         {
           "word_index": 3,
-          "text": "OUT",
+          "text": "Out",
           "start": 92.95,
           "end": 93.05,
           "confidence": 0.252
@@ -3703,36 +3794,36 @@
       "char_rois": []
     },
     {
-      "line_index": 64,
-      "text": "ON OUR FIRST DATE",
+      "line_index": 65,
+      "text": "On Our First Date",
       "start": 94.8,
       "end": 97.45,
       "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
-          "text": "ON",
+          "text": "On",
           "start": 94.8,
           "end": 95.3,
           "confidence": 0.252
         },
         {
           "word_index": 2,
-          "text": "OUR",
+          "text": "Our",
           "start": 95.35,
           "end": 95.95,
           "confidence": 0.252
         },
         {
           "word_index": 3,
-          "text": "FIRST",
+          "text": "First",
           "start": 96.0,
           "end": 96.75,
           "confidence": 0.252
         },
         {
           "word_index": 4,
-          "text": "DATE",
+          "text": "Date",
           "start": 96.8,
           "end": 97.45,
           "confidence": 0.252
@@ -3768,7 +3859,7 @@
       "char_rois": []
     },
     {
-      "line_index": 65,
+      "line_index": 66,
       "text": "Haus",
       "start": 96.2,
       "end": 97.0,
@@ -3794,43 +3885,43 @@
       "char_rois": []
     },
     {
-      "line_index": 66,
-      "text": "YOU AND ME ARE THRIFTY",
+      "line_index": 67,
+      "text": "You And Me Are Thrifty",
       "start": 97.15,
       "end": 97.85,
       "confidence": 0.568,
       "words": [
         {
           "word_index": 1,
-          "text": "YOU",
+          "text": "You",
           "start": 97.15,
           "end": 97.25,
           "confidence": 0.589
         },
         {
           "word_index": 2,
-          "text": "AND",
+          "text": "And",
           "start": 97.3,
           "end": 97.4,
           "confidence": 0.659
         },
         {
           "word_index": 3,
-          "text": "ME",
+          "text": "Me",
           "start": 97.45,
           "end": 97.55,
           "confidence": 0.615
         },
         {
           "word_index": 4,
-          "text": "ARE",
+          "text": "Are",
           "start": 97.6,
           "end": 97.7,
           "confidence": 0.25
         },
         {
           "word_index": 5,
-          "text": "THRIFTY",
+          "text": "Thrifty",
           "start": 97.75,
           "end": 97.85,
           "confidence": 0.729
@@ -3872,50 +3963,50 @@
       "char_rois": []
     },
     {
-      "line_index": 67,
-      "text": "SO GO ALL YOU CAN EAT",
+      "line_index": 68,
+      "text": "So Go All You Can Eat",
       "start": 97.85,
       "end": 98.7,
       "confidence": 0.453,
       "words": [
         {
           "word_index": 1,
-          "text": "SO",
+          "text": "So",
           "start": 97.85,
           "end": 97.95,
           "confidence": 0.741
         },
         {
           "word_index": 2,
-          "text": "GO",
+          "text": "Go",
           "start": 98.0,
           "end": 98.1,
           "confidence": 0.551
         },
         {
           "word_index": 3,
-          "text": "ALL",
+          "text": "All",
           "start": 98.15,
           "end": 98.25,
           "confidence": 0.675
         },
         {
           "word_index": 4,
-          "text": "YOU",
+          "text": "You",
           "start": 98.3,
           "end": 98.4,
           "confidence": 0.25
         },
         {
           "word_index": 5,
-          "text": "CAN",
+          "text": "Can",
           "start": 98.45,
           "end": 98.55,
           "confidence": 0.25
         },
         {
           "word_index": 6,
-          "text": "EAT",
+          "text": "Eat",
           "start": 98.6,
           "end": 98.7,
           "confidence": 0.25
@@ -3963,36 +4054,36 @@
       "char_rois": []
     },
     {
-      "line_index": 68,
-      "text": "FILL UP YOUR BAG",
+      "line_index": 69,
+      "text": "Fill Up Your Bag",
       "start": 98.7,
       "end": 99.35,
       "confidence": 0.67,
       "words": [
         {
           "word_index": 1,
-          "text": "FILL",
+          "text": "Fill",
           "start": 98.7,
           "end": 98.8,
           "confidence": 0.697
         },
         {
           "word_index": 2,
-          "text": "UP",
+          "text": "Up",
           "start": 98.95,
           "end": 99.05,
           "confidence": 0.733
         },
         {
           "word_index": 3,
-          "text": "YOUR",
+          "text": "Your",
           "start": 99.1,
           "end": 99.2,
           "confidence": 0.25
         },
         {
           "word_index": 4,
-          "text": "BAG",
+          "text": "Bag",
           "start": 99.25,
           "end": 99.35,
           "confidence": 1.0
@@ -4028,15 +4119,15 @@
       "char_rois": []
     },
     {
-      "line_index": 69,
-      "text": "AND I FILL UP A PLATE",
+      "line_index": 70,
+      "text": "And I Fill Up A Plate",
       "start": 99.35,
       "end": 100.2,
       "confidence": 0.728,
       "words": [
         {
           "word_index": 1,
-          "text": "AND",
+          "text": "And",
           "start": 99.35,
           "end": 99.45,
           "confidence": 0.895
@@ -4050,14 +4141,14 @@
         },
         {
           "word_index": 3,
-          "text": "FILL",
+          "text": "Fill",
           "start": 99.65,
           "end": 99.75,
           "confidence": 0.25
         },
         {
           "word_index": 4,
-          "text": "UP",
+          "text": "Up",
           "start": 99.8,
           "end": 99.9,
           "confidence": 0.973
@@ -4071,7 +4162,7 @@
         },
         {
           "word_index": 6,
-          "text": "PLATE",
+          "text": "Plate",
           "start": 100.1,
           "end": 100.2,
           "confidence": 1.0
@@ -4119,29 +4210,29 @@
       "char_rois": []
     },
     {
-      "line_index": 70,
-      "text": "WE TALK FOR",
+      "line_index": 71,
+      "text": "We Talk For",
       "start": 100.3,
       "end": 100.7,
       "confidence": 0.743,
       "words": [
         {
           "word_index": 1,
-          "text": "WE",
+          "text": "We",
           "start": 100.3,
           "end": 100.4,
           "confidence": 0.604
         },
         {
           "word_index": 2,
-          "text": "TALK",
+          "text": "Talk",
           "start": 100.45,
           "end": 100.55,
           "confidence": 0.712
         },
         {
           "word_index": 3,
-          "text": "FOR",
+          "text": "For",
           "start": 100.6,
           "end": 100.7,
           "confidence": 0.912
@@ -4171,36 +4262,36 @@
       "char_rois": []
     },
     {
-      "line_index": 71,
-      "text": "SWEET AND THE SOUR",
+      "line_index": 72,
+      "text": "Sweet And The Sour",
       "start": 100.7,
       "end": 101.25,
       "confidence": 0.608,
       "words": [
         {
           "word_index": 1,
-          "text": "SWEET",
+          "text": "Sweet",
           "start": 100.7,
           "end": 100.8,
           "confidence": 0.25
         },
         {
           "word_index": 2,
-          "text": "AND",
+          "text": "And",
           "start": 100.85,
           "end": 100.95,
           "confidence": 0.662
         },
         {
           "word_index": 3,
-          "text": "THE",
+          "text": "The",
           "start": 101.0,
           "end": 101.1,
           "confidence": 0.899
         },
         {
           "word_index": 4,
-          "text": "SOUR",
+          "text": "Sour",
           "start": 101.15,
           "end": 101.25,
           "confidence": 0.619
@@ -4236,22 +4327,22 @@
       "char_rois": []
     },
     {
-      "line_index": 72,
-      "text": "ABOUT THE",
+      "line_index": 73,
+      "text": "About The",
       "start": 102.05,
       "end": 102.3,
       "confidence": 0.438,
       "words": [
         {
           "word_index": 1,
-          "text": "ABOUT",
+          "text": "About",
           "start": 102.05,
           "end": 102.15,
           "confidence": 0.625
         },
         {
           "word_index": 2,
-          "text": "THE",
+          "text": "The",
           "start": 102.2,
           "end": 102.3,
           "confidence": 0.25
@@ -4275,29 +4366,29 @@
       "char_rois": []
     },
     {
-      "line_index": 73,
-      "text": "AND HOW YOUR",
+      "line_index": 74,
+      "text": "And How Your",
       "start": 102.65,
       "end": 104.35,
       "confidence": 0.585,
       "words": [
         {
           "word_index": 1,
-          "text": "AND",
+          "text": "And",
           "start": 102.65,
           "end": 102.75,
           "confidence": 0.25
         },
         {
           "word_index": 2,
-          "text": "HOW",
+          "text": "How",
           "start": 104.1,
           "end": 104.2,
           "confidence": 0.892
         },
         {
           "word_index": 3,
-          "text": "YOUR",
+          "text": "Your",
           "start": 104.25,
           "end": 104.35,
           "confidence": 0.614
@@ -4327,29 +4418,29 @@
       "char_rois": []
     },
     {
-      "line_index": 74,
-      "text": "FAMILYIS DOING OKAY",
+      "line_index": 75,
+      "text": "Familyis Doing Okay",
       "start": 104.35,
       "end": 104.75,
       "confidence": 0.35,
       "words": [
         {
           "word_index": 1,
-          "text": "FAMILYIS",
+          "text": "Familyis",
           "start": 104.35,
           "end": 104.45,
           "confidence": 0.25
         },
         {
           "word_index": 2,
-          "text": "DOING",
+          "text": "Doing",
           "start": 104.5,
           "end": 104.6,
           "confidence": 0.55
         },
         {
           "word_index": 3,
-          "text": "OKAY",
+          "text": "Okay",
           "start": 104.65,
           "end": 104.75,
           "confidence": 0.25
@@ -4379,36 +4470,36 @@
       "char_rois": []
     },
     {
-      "line_index": 75,
-      "text": "LEAVE AND GET IN A TAXI",
+      "line_index": 76,
+      "text": "Leave And Get In A Taxi",
       "start": 105.6,
       "end": 107.4,
       "confidence": 0.568,
       "words": [
         {
           "word_index": 1,
-          "text": "LEAVE",
+          "text": "Leave",
           "start": 105.6,
           "end": 105.7,
           "confidence": 0.627
         },
         {
           "word_index": 2,
-          "text": "AND",
+          "text": "And",
           "start": 106.7,
           "end": 106.8,
           "confidence": 0.581
         },
         {
           "word_index": 3,
-          "text": "GET",
+          "text": "Get",
           "start": 106.85,
           "end": 106.95,
           "confidence": 0.781
         },
         {
           "word_index": 4,
-          "text": "IN",
+          "text": "In",
           "start": 107.0,
           "end": 107.1,
           "confidence": 0.546
@@ -4422,7 +4513,7 @@
         },
         {
           "word_index": 6,
-          "text": "TAXI",
+          "text": "Taxi",
           "start": 107.3,
           "end": 107.4,
           "confidence": 0.25
@@ -4470,43 +4561,43 @@
       "char_rois": []
     },
     {
-      "line_index": 76,
-      "text": "THEN KISS IN THE BACKSEAT",
+      "line_index": 77,
+      "text": "Then Kiss In The Backseat",
       "start": 107.4,
       "end": 108.1,
       "confidence": 0.777,
       "words": [
         {
           "word_index": 1,
-          "text": "THEN",
+          "text": "Then",
           "start": 107.4,
           "end": 107.5,
           "confidence": 0.94
         },
         {
           "word_index": 2,
-          "text": "KISS",
+          "text": "Kiss",
           "start": 107.55,
           "end": 107.65,
           "confidence": 0.977
         },
         {
           "word_index": 3,
-          "text": "IN",
+          "text": "In",
           "start": 107.7,
           "end": 107.8,
           "confidence": 0.72
         },
         {
           "word_index": 4,
-          "text": "THE",
+          "text": "The",
           "start": 107.85,
           "end": 107.95,
           "confidence": 0.25
         },
         {
           "word_index": 5,
-          "text": "BACKSEAT",
+          "text": "Backseat",
           "start": 108.0,
           "end": 108.1,
           "confidence": 1.0
@@ -4548,89 +4639,89 @@
       "char_rois": []
     },
     {
-      "line_index": 77,
-      "text": "TELL THE DRIVER NINAKEFHE",
+      "line_index": 78,
+      "text": "Tell The Driver Makethe",
       "start": 108.1,
-      "end": 108.65,
-      "confidence": 0.715,
+      "end": 108.85,
+      "confidence": 0.723,
       "words": [
         {
           "word_index": 1,
-          "text": "TELL",
+          "text": "Tell",
           "start": 108.1,
           "end": 108.2,
           "confidence": 0.25
         },
         {
           "word_index": 2,
-          "text": "THE",
-          "start": 108.25,
-          "end": 108.35,
-          "confidence": 0.78
-        },
-        {
-          "word_index": 3,
-          "text": "DRIVER",
-          "start": 108.4,
-          "end": 108.5,
+          "text": "The",
+          "start": 108.35,
+          "end": 108.55,
           "confidence": 0.83
         },
         {
+          "word_index": 3,
+          "text": "Driver",
+          "start": 108.6,
+          "end": 108.7,
+          "confidence": 0.811
+        },
+        {
           "word_index": 4,
-          "text": "MAKETHE",
-          "start": 108.55,
-          "end": 108.65,
+          "text": "Makethe",
+          "start": 108.75,
+          "end": 108.85,
           "confidence": 1.0
         }
       ],
       "y": 55,
       "word_rois": [
         [
-          40,
-          55,
+          42,
+          57,
           99,
-          44
+          42
         ],
         [
-          144,
-          55,
-          88,
-          44
+          147,
+          57,
+          84,
+          42
         ],
         [
-          238,
-          55,
-          143,
-          44
+          236,
+          57,
+          142,
+          42
         ],
         [
-          386,
-          55,
-          197,
-          44
+          383,
+          57,
+          198,
+          42
         ]
       ],
       "char_rois": []
     },
     {
-      "line_index": 78,
-      "text": "RADIO PLAY",
-      "start": 108.65,
-      "end": 108.9,
+      "line_index": 79,
+      "text": "Radio Play",
+      "start": 108.85,
+      "end": 109.1,
       "confidence": 0.966,
       "words": [
         {
           "word_index": 1,
-          "text": "RADIO",
-          "start": 108.65,
-          "end": 108.75,
+          "text": "Radio",
+          "start": 108.85,
+          "end": 108.95,
           "confidence": 1.0
         },
         {
           "word_index": 2,
-          "text": "PLAY",
-          "start": 108.8,
-          "end": 108.9,
+          "text": "Play",
+          "start": 109.0,
+          "end": 109.1,
           "confidence": 0.932
         }
       ],
@@ -4658,17 +4749,17 @@
       "char_rois": []
     },
     {
-      "line_index": 79,
+      "line_index": 80,
       "text": "Hous",
-      "start": 108.9,
-      "end": 109.0,
+      "start": 109.1,
+      "end": 109.2,
       "confidence": 0.3,
       "words": [
         {
           "word_index": 1,
           "text": "Hous",
-          "start": 108.9,
-          "end": 109.0,
+          "start": 109.1,
+          "end": 109.2,
           "confidence": 0.3
         }
       ],
@@ -4684,107 +4775,94 @@
       "char_rois": []
     },
     {
-      "line_index": 80,
-      "text": "ANDI'M AND IM SINGING LIKE",
-      "start": 109.55,
-      "end": 110.25,
-      "confidence": 0.735,
+      "line_index": 81,
+      "text": "And Im Singing Like",
+      "start": 109.6,
+      "end": 110.15,
+      "confidence": 0.787,
       "words": [
         {
           "word_index": 1,
-          "text": "ANDI'M",
-          "start": 109.55,
-          "end": 109.65,
-          "confidence": 0.712
+          "text": "And",
+          "start": 109.6,
+          "end": 109.7,
+          "confidence": 0.81
         },
         {
           "word_index": 2,
-          "text": "AND",
-          "start": 109.7,
-          "end": 109.8,
-          "confidence": 0.801
+          "text": "Im",
+          "start": 109.75,
+          "end": 109.85,
+          "confidence": 0.705
         },
         {
           "word_index": 3,
-          "text": "IM",
-          "start": 109.85,
-          "end": 109.95,
-          "confidence": 0.63
+          "text": "Singing",
+          "start": 109.9,
+          "end": 110.0,
+          "confidence": 0.666
         },
         {
           "word_index": 4,
-          "text": "SINGING",
-          "start": 110.0,
-          "end": 110.1,
-          "confidence": 0.621
-        },
-        {
-          "word_index": 5,
-          "text": "LIKE",
-          "start": 110.15,
-          "end": 110.25,
-          "confidence": 0.909
+          "text": "Like",
+          "start": 110.05,
+          "end": 110.15,
+          "confidence": 0.969
         }
       ],
       "y": 81,
       "word_rois": [
         [
           104,
-          81,
-          159,
-          44
+          83,
+          89,
+          42
         ],
         [
-          104,
-          81,
-          88,
-          44
+          198,
+          83,
+          63,
+          42
         ],
         [
-          197,
-          81,
-          66,
-          44
+          266,
+          83,
+          174,
+          42
         ],
         [
-          269,
-          81,
-          170,
-          44
-        ],
-        [
-          444,
-          81,
-          91,
-          44
+          445,
+          83,
+          90,
+          42
         ]
       ],
       "char_rois": []
     },
     {
-      "line_index": 81,
-      "text": "GIRL YOU KNOW",
-      "start": 110.25,
+      "line_index": 82,
+      "text": "Girl You Know",
+      "start": 110.15,
       "end": 111.05,
       "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
-          "text": "GIRL",
-          "start": 110.25,
+          "text": "Girl",
+          "start": 110.15,
           "end": 110.35,
           "confidence": 0.5
         },
         {
           "word_index": 2,
-          "text": "YOU",
+          "text": "You",
           "start": 110.4,
           "end": 110.7,
           "confidence": 0.5
         },
         {
           "word_index": 3,
-          "text": "KNOW",
+          "text": "Know",
           "start": 110.75,
           "end": 111.05,
           "confidence": 0.5
@@ -4814,8 +4892,8 @@
       "char_rois": []
     },
     {
-      "line_index": 82,
-      "text": "I WANT YOUR LOVE",
+      "line_index": 83,
+      "text": "I Want Your Love",
       "start": 111.05,
       "end": 112.55,
       "confidence": 0.338,
@@ -4829,21 +4907,21 @@
         },
         {
           "word_index": 2,
-          "text": "WANT",
+          "text": "Want",
           "start": 111.8,
           "end": 111.9,
           "confidence": 0.601
         },
         {
           "word_index": 3,
-          "text": "YOUR",
+          "text": "Your",
           "start": 112.15,
           "end": 112.25,
           "confidence": 0.25
         },
         {
           "word_index": 4,
-          "text": "LOVE",
+          "text": "Love",
           "start": 112.45,
           "end": 112.55,
           "confidence": 0.25
@@ -4879,8 +4957,8 @@
       "char_rois": []
     },
     {
-      "line_index": 83,
-      "text": "Nomad",
+      "line_index": 84,
+      "text": "Nowad",
       "start": 112.55,
       "end": 112.65,
       "confidence": 0.3,
@@ -4905,7 +4983,7 @@
       "char_rois": []
     },
     {
-      "line_index": 84,
+      "line_index": 85,
       "text": "Jamal",
       "start": 112.65,
       "end": 112.75,
@@ -4931,7 +5009,7 @@
       "char_rois": []
     },
     {
-      "line_index": 85,
+      "line_index": 86,
       "text": "Clowns",
       "start": 112.75,
       "end": 113.55,
@@ -4957,8 +5035,8 @@
       "char_rois": []
     },
     {
-      "line_index": 86,
-      "text": "10 owal",
+      "line_index": 87,
+      "text": "10 Owal",
       "start": 113.95,
       "end": 115.45,
       "confidence": 0.252,
@@ -4972,7 +5050,7 @@
         },
         {
           "word_index": 2,
-          "text": "owal",
+          "text": "Owal",
           "start": 114.65,
           "end": 115.45,
           "confidence": 0.252
@@ -4996,36 +5074,36 @@
       "char_rois": []
     },
     {
-      "line_index": 87,
-      "text": "YOUR LOVE WAS HANDMADE",
+      "line_index": 88,
+      "text": "Your Love Was Handmade",
       "start": 115.7,
       "end": 116.25,
       "confidence": 0.62,
       "words": [
         {
           "word_index": 1,
-          "text": "YOUR",
+          "text": "Your",
           "start": 115.7,
           "end": 115.8,
           "confidence": 0.572
         },
         {
           "word_index": 2,
-          "text": "LOVE",
+          "text": "Love",
           "start": 115.85,
           "end": 115.95,
           "confidence": 0.25
         },
         {
           "word_index": 3,
-          "text": "WAS",
+          "text": "Was",
           "start": 116.0,
           "end": 116.1,
           "confidence": 0.658
         },
         {
           "word_index": 4,
-          "text": "HANDMADE",
+          "text": "Handmade",
           "start": 116.15,
           "end": 116.25,
           "confidence": 1.0
@@ -5061,36 +5139,36 @@
       "char_rois": []
     },
     {
-      "line_index": 88,
-      "text": "FOR SOMEBODY LIKE ME",
+      "line_index": 89,
+      "text": "For Somebody Like Me",
       "start": 116.25,
       "end": 116.8,
       "confidence": 0.688,
       "words": [
         {
           "word_index": 1,
-          "text": "FOR",
+          "text": "For",
           "start": 116.25,
           "end": 116.35,
           "confidence": 0.858
         },
         {
           "word_index": 2,
-          "text": "SOMEBODY",
+          "text": "Somebody",
           "start": 116.4,
           "end": 116.5,
           "confidence": 0.25
         },
         {
           "word_index": 3,
-          "text": "LIKE",
+          "text": "Like",
           "start": 116.55,
           "end": 116.65,
           "confidence": 0.642
         },
         {
           "word_index": 4,
-          "text": "ME",
+          "text": "Me",
           "start": 116.7,
           "end": 116.8,
           "confidence": 1.0
@@ -5126,7 +5204,7 @@
       "char_rois": []
     },
     {
-      "line_index": 89,
+      "line_index": 90,
       "text": "News",
       "start": 116.8,
       "end": 116.9,
@@ -5152,29 +5230,29 @@
       "char_rois": []
     },
     {
-      "line_index": 90,
-      "text": "COME ON NOW",
+      "line_index": 91,
+      "text": "Come On Now",
       "start": 116.9,
       "end": 117.3,
       "confidence": 0.536,
       "words": [
         {
           "word_index": 1,
-          "text": "COME",
+          "text": "Come",
           "start": 116.9,
           "end": 117.0,
           "confidence": 0.25
         },
         {
           "word_index": 2,
-          "text": "ON",
+          "text": "On",
           "start": 117.05,
           "end": 117.15,
           "confidence": 0.681
         },
         {
           "word_index": 3,
-          "text": "NOW",
+          "text": "Now",
           "start": 117.2,
           "end": 117.3,
           "confidence": 0.676
@@ -5204,29 +5282,29 @@
       "char_rois": []
     },
     {
-      "line_index": 91,
-      "text": "FOLLOW MY LEAD",
+      "line_index": 92,
+      "text": "Follow My Lead",
       "start": 117.3,
       "end": 117.7,
       "confidence": 0.516,
       "words": [
         {
           "word_index": 1,
-          "text": "FOLLOW",
+          "text": "Follow",
           "start": 117.3,
           "end": 117.4,
           "confidence": 0.579
         },
         {
           "word_index": 2,
-          "text": "MY",
+          "text": "My",
           "start": 117.45,
           "end": 117.55,
           "confidence": 0.718
         },
         {
           "word_index": 3,
-          "text": "LEAD",
+          "text": "Lead",
           "start": 117.6,
           "end": 117.7,
           "confidence": 0.25
@@ -5256,7 +5334,7 @@
       "char_rois": []
     },
     {
-      "line_index": 92,
+      "line_index": 93,
       "text": "Vous",
       "start": 117.7,
       "end": 117.8,
@@ -5282,90 +5360,90 @@
       "char_rois": []
     },
     {
-      "line_index": 93,
-      "text": "I MAY BE CRAZY",
-      "start": 119.1,
-      "end": 119.65,
-      "confidence": 0.623,
+      "line_index": 94,
+      "text": "U May Be Crazy",
+      "start": 119.2,
+      "end": 119.75,
+      "confidence": 0.59,
       "words": [
         {
           "word_index": 1,
-          "text": "I",
-          "start": 119.1,
-          "end": 119.2,
-          "confidence": 0.638
+          "text": "U",
+          "start": 119.2,
+          "end": 119.3,
+          "confidence": 0.578
         },
         {
           "word_index": 2,
-          "text": "MAY",
-          "start": 119.25,
-          "end": 119.35,
-          "confidence": 0.706
+          "text": "May",
+          "start": 119.35,
+          "end": 119.45,
+          "confidence": 0.64
         },
         {
           "word_index": 3,
-          "text": "BE",
-          "start": 119.4,
-          "end": 119.5,
+          "text": "Be",
+          "start": 119.5,
+          "end": 119.6,
           "confidence": 0.25
         },
         {
           "word_index": 4,
-          "text": "CRAZY",
-          "start": 119.55,
-          "end": 119.65,
-          "confidence": 0.898
+          "text": "Crazy",
+          "start": 119.65,
+          "end": 119.75,
+          "confidence": 0.89
         }
       ],
       "y": 55,
       "word_rois": [
         [
-          148,
-          57,
-          17,
-          46
+          144,
+          55,
+          20,
+          54
         ],
         [
           171,
-          57,
-          86,
-          46
+          55,
+          87,
+          54
         ],
         [
-          263,
-          57,
-          63,
-          46
+          265,
+          55,
+          61,
+          54
         ],
         [
-          331,
-          57,
-          152,
-          46
+          332,
+          55,
+          147,
+          54
         ]
       ],
       "char_rois": []
     },
     {
-      "line_index": 94,
-      "text": "DON'T RIINCIRIE",
-      "start": 120.45,
-      "end": 120.7,
-      "confidence": 0.418,
+      "line_index": 95,
+      "text": "Don't Mindme",
+      "start": 120.55,
+      "end": 120.8,
+      "confidence": 0.437,
       "words": [
         {
           "word_index": 1,
-          "text": "DON'T",
-          "start": 120.45,
-          "end": 120.55,
+          "text": "Don't",
+          "start": 120.55,
+          "end": 120.65,
           "confidence": 0.25
         },
         {
           "word_index": 2,
-          "text": "MINDME",
-          "start": 120.6,
-          "end": 120.7,
-          "confidence": 0.587
+          "text": "Mindme",
+          "start": 120.7,
+          "end": 120.8,
+          "confidence": 0.624
         }
       ],
       "y": 111,
@@ -5377,31 +5455,31 @@
           40
         ],
         [
-          298,
+          299,
           111,
-          185,
+          173,
           40
         ]
       ],
       "char_rois": []
     },
     {
-      "line_index": 95,
-      "text": "SAY BOY",
+      "line_index": 96,
+      "text": "Say Boy",
       "start": 121.9,
       "end": 122.3,
       "confidence": 0.484,
       "words": [
         {
           "word_index": 1,
-          "text": "SAY",
+          "text": "Say",
           "start": 121.9,
           "end": 122.0,
           "confidence": 0.718
         },
         {
           "word_index": 2,
-          "text": "BOY",
+          "text": "Boy",
           "start": 122.2,
           "end": 122.3,
           "confidence": 0.25
@@ -5425,45 +5503,45 @@
       "char_rois": []
     },
     {
-      "line_index": 96,
-      "text": "LET'S NOT TALK TOO MUCH",
-      "start": 122.3,
-      "end": 123.0,
+      "line_index": 97,
+      "text": "Let's Not Talk Too Much",
+      "start": 123.5,
+      "end": 124.2,
       "confidence": 0.474,
       "words": [
         {
           "word_index": 1,
-          "text": "LET'S",
-          "start": 122.3,
-          "end": 122.4,
+          "text": "Let's",
+          "start": 123.5,
+          "end": 123.6,
           "confidence": 0.578
         },
         {
           "word_index": 2,
-          "text": "NOT",
-          "start": 122.45,
-          "end": 122.55,
+          "text": "Not",
+          "start": 123.65,
+          "end": 123.75,
           "confidence": 0.577
         },
         {
           "word_index": 3,
-          "text": "TALK",
-          "start": 122.6,
-          "end": 122.7,
+          "text": "Talk",
+          "start": 123.8,
+          "end": 123.9,
           "confidence": 0.714
         },
         {
           "word_index": 4,
-          "text": "TOO",
-          "start": 122.75,
-          "end": 122.85,
+          "text": "Too",
+          "start": 123.95,
+          "end": 124.05,
           "confidence": 0.25
         },
         {
           "word_index": 5,
-          "text": "MUCH",
-          "start": 122.9,
-          "end": 123.0,
+          "text": "Much",
+          "start": 124.1,
+          "end": 124.2,
           "confidence": 0.25
         }
       ],
@@ -5503,43 +5581,43 @@
       "char_rois": []
     },
     {
-      "line_index": 97,
-      "text": "GRAB ON MY WAIST AND",
+      "line_index": 98,
+      "text": "Grab On My Waist And",
       "start": 124.95,
       "end": 125.65,
       "confidence": 0.777,
       "words": [
         {
           "word_index": 1,
-          "text": "GRAB",
+          "text": "Grab",
           "start": 124.95,
           "end": 125.05,
           "confidence": 0.726
         },
         {
           "word_index": 2,
-          "text": "ON",
+          "text": "On",
           "start": 125.1,
           "end": 125.2,
           "confidence": 0.558
         },
         {
           "word_index": 3,
-          "text": "MY",
+          "text": "My",
           "start": 125.25,
           "end": 125.35,
           "confidence": 1.0
         },
         {
           "word_index": 4,
-          "text": "WAIST",
+          "text": "Waist",
           "start": 125.4,
           "end": 125.5,
           "confidence": 0.603
         },
         {
           "word_index": 5,
-          "text": "AND",
+          "text": "And",
           "start": 125.55,
           "end": 125.65,
           "confidence": 1.0
@@ -5581,43 +5659,43 @@
       "char_rois": []
     },
     {
-      "line_index": 98,
-      "text": "PUT THAT BODY ON ME",
+      "line_index": 99,
+      "text": "Put That Body On Me",
       "start": 125.65,
       "end": 126.35,
       "confidence": 0.69,
       "words": [
         {
           "word_index": 1,
-          "text": "PUT",
+          "text": "Put",
           "start": 125.65,
           "end": 125.75,
           "confidence": 0.966
         },
         {
           "word_index": 2,
-          "text": "THAT",
+          "text": "That",
           "start": 125.8,
           "end": 125.9,
           "confidence": 0.664
         },
         {
           "word_index": 3,
-          "text": "BODY",
+          "text": "Body",
           "start": 125.95,
           "end": 126.05,
           "confidence": 0.25
         },
         {
           "word_index": 4,
-          "text": "ON",
+          "text": "On",
           "start": 126.1,
           "end": 126.2,
           "confidence": 0.569
         },
         {
           "word_index": 5,
-          "text": "ME",
+          "text": "Me",
           "start": 126.25,
           "end": 126.35,
           "confidence": 1.0
@@ -5659,36 +5737,36 @@
       "char_rois": []
     },
     {
-      "line_index": 99,
-      "text": "COME COME ON NOW",
+      "line_index": 100,
+      "text": "Come Come On Now",
       "start": 129.25,
       "end": 129.9,
       "confidence": 0.941,
       "words": [
         {
           "word_index": 1,
-          "text": "COME",
+          "text": "Come",
           "start": 129.25,
           "end": 129.45,
           "confidence": 0.764
         },
         {
           "word_index": 2,
-          "text": "COME",
+          "text": "Come",
           "start": 129.5,
           "end": 129.6,
           "confidence": 1.0
         },
         {
           "word_index": 3,
-          "text": "ON",
+          "text": "On",
           "start": 129.65,
           "end": 129.75,
           "confidence": 1.0
         },
         {
           "word_index": 4,
-          "text": "NOW",
+          "text": "Now",
           "start": 129.8,
           "end": 129.9,
           "confidence": 1.0
@@ -5724,29 +5802,29 @@
       "char_rois": []
     },
     {
-      "line_index": 100,
-      "text": "FOLLOW MY LEAD",
+      "line_index": 101,
+      "text": "Follow My Lead",
       "start": 129.9,
       "end": 130.3,
       "confidence": 0.685,
       "words": [
         {
           "word_index": 1,
-          "text": "FOLLOW",
+          "text": "Follow",
           "start": 129.9,
           "end": 130.0,
           "confidence": 0.578
         },
         {
           "word_index": 2,
-          "text": "MY",
+          "text": "My",
           "start": 130.05,
           "end": 130.15,
           "confidence": 0.781
         },
         {
           "word_index": 3,
-          "text": "LEAD",
+          "text": "Lead",
           "start": 130.2,
           "end": 130.3,
           "confidence": 0.696
@@ -5776,36 +5854,36 @@
       "char_rois": []
     },
     {
-      "line_index": 101,
-      "text": "IM IN LOVE WITH",
+      "line_index": 102,
+      "text": "Im In Love With",
       "start": 131.3,
       "end": 132.3,
       "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
-          "text": "IM",
+          "text": "Im",
           "start": 131.3,
           "end": 131.5,
           "confidence": 0.5
         },
         {
           "word_index": 2,
-          "text": "IN",
+          "text": "In",
           "start": 131.55,
           "end": 131.75,
           "confidence": 0.5
         },
         {
           "word_index": 3,
-          "text": "LOVE",
+          "text": "Love",
           "start": 131.8,
           "end": 132.05,
           "confidence": 0.5
         },
         {
           "word_index": 4,
-          "text": "WITH",
+          "text": "With",
           "start": 132.1,
           "end": 132.3,
           "confidence": 0.5
@@ -5841,36 +5919,36 @@
       "char_rois": []
     },
     {
-      "line_index": 102,
-      "text": "THE SHAPE OF YOU",
+      "line_index": 103,
+      "text": "The Shape Of You",
       "start": 132.8,
       "end": 134.5,
       "confidence": 0.465,
       "words": [
         {
           "word_index": 1,
-          "text": "THE",
+          "text": "The",
           "start": 132.8,
           "end": 132.9,
           "confidence": 0.25
         },
         {
           "word_index": 2,
-          "text": "SHAPE",
+          "text": "Shape",
           "start": 134.1,
           "end": 134.2,
           "confidence": 0.718
         },
         {
           "word_index": 3,
-          "text": "OF",
+          "text": "Of",
           "start": 134.25,
           "end": 134.35,
           "confidence": 0.641
         },
         {
           "word_index": 4,
-          "text": "YOU",
+          "text": "You",
           "start": 134.4,
           "end": 134.5,
           "confidence": 0.25
@@ -5906,36 +5984,36 @@
       "char_rois": []
     },
     {
-      "line_index": 103,
-      "text": "WE PUSH AND PULL",
+      "line_index": 104,
+      "text": "We Push And Pull",
       "start": 134.25,
       "end": 135.65,
       "confidence": 0.512,
       "words": [
         {
           "word_index": 1,
-          "text": "WE",
+          "text": "We",
           "start": 134.25,
           "end": 134.35,
           "confidence": 0.677
         },
         {
           "word_index": 2,
-          "text": "PUSH",
+          "text": "Push",
           "start": 135.25,
           "end": 135.35,
           "confidence": 0.569
         },
         {
           "word_index": 3,
-          "text": "AND",
+          "text": "And",
           "start": 135.4,
           "end": 135.5,
           "confidence": 0.551
         },
         {
           "word_index": 4,
-          "text": "PULL",
+          "text": "Pull",
           "start": 135.55,
           "end": 135.65,
           "confidence": 0.25
@@ -5971,15 +6049,15 @@
       "char_rois": []
     },
     {
-      "line_index": 104,
-      "text": "LIKE A MAGNET DO",
+      "line_index": 105,
+      "text": "Like A Magnet Do",
       "start": 135.65,
       "end": 136.2,
       "confidence": 0.675,
       "words": [
         {
           "word_index": 1,
-          "text": "LIKE",
+          "text": "Like",
           "start": 135.65,
           "end": 135.75,
           "confidence": 0.749
@@ -5993,14 +6071,14 @@
         },
         {
           "word_index": 3,
-          "text": "MAGNET",
+          "text": "Magnet",
           "start": 135.95,
           "end": 136.05,
           "confidence": 0.626
         },
         {
           "word_index": 4,
-          "text": "DO",
+          "text": "Do",
           "start": 136.1,
           "end": 136.2,
           "confidence": 0.664
@@ -6036,8 +6114,8 @@
       "char_rois": []
     },
     {
-      "line_index": 105,
-      "text": "Nomad",
+      "line_index": 106,
+      "text": "Nowad",
       "start": 136.2,
       "end": 136.3,
       "confidence": 0.3,
@@ -6062,8 +6140,8 @@
       "char_rois": []
     },
     {
-      "line_index": 106,
-      "text": "10 oul",
+      "line_index": 107,
+      "text": "10 Oul",
       "start": 136.3,
       "end": 136.55,
       "confidence": 0.3,
@@ -6077,7 +6155,7 @@
         },
         {
           "word_index": 2,
-          "text": "oul",
+          "text": "Oul",
           "start": 136.45,
           "end": 136.55,
           "confidence": 0.3
@@ -6101,29 +6179,29 @@
       "char_rois": []
     },
     {
-      "line_index": 107,
-      "text": "ALTHOUGH MY HEART",
+      "line_index": 108,
+      "text": "Although My Heart",
       "start": 137.5,
       "end": 138.6,
       "confidence": 0.707,
       "words": [
         {
           "word_index": 1,
-          "text": "ALTHOUGH",
+          "text": "Although",
           "start": 137.5,
           "end": 137.6,
           "confidence": 0.871
         },
         {
           "word_index": 2,
-          "text": "MY",
+          "text": "My",
           "start": 137.65,
           "end": 137.75,
           "confidence": 0.25
         },
         {
           "word_index": 3,
-          "text": "HEART",
+          "text": "Heart",
           "start": 138.5,
           "end": 138.6,
           "confidence": 1.0
@@ -6153,29 +6231,29 @@
       "char_rois": []
     },
     {
-      "line_index": 108,
-      "text": "IS FALLING TOO",
+      "line_index": 109,
+      "text": "Is Falling Too",
       "start": 138.85,
       "end": 139.55,
       "confidence": 0.963,
       "words": [
         {
           "word_index": 1,
-          "text": "IS",
+          "text": "Is",
           "start": 138.85,
           "end": 138.95,
           "confidence": 0.95
         },
         {
           "word_index": 2,
-          "text": "FALLING",
+          "text": "Falling",
           "start": 139.0,
           "end": 139.1,
           "confidence": 1.0
         },
         {
           "word_index": 3,
-          "text": "TOO",
+          "text": "Too",
           "start": 139.15,
           "end": 139.25,
           "confidence": 0.939
@@ -6205,50 +6283,50 @@
       "char_rois": []
     },
     {
-      "line_index": 109,
-      "text": "U'M IN LOVE WITH YOUR BODY",
+      "line_index": 110,
+      "text": "Im In Love With Your Body",
       "start": 140.15,
       "end": 141.0,
-      "confidence": 0.588,
+      "confidence": 0.622,
       "words": [
         {
           "word_index": 1,
-          "text": "U'M",
+          "text": "Im",
           "start": 140.15,
           "end": 140.25,
-          "confidence": 0.704
+          "confidence": 0.738
         },
         {
           "word_index": 2,
-          "text": "IN",
+          "text": "In",
           "start": 140.3,
           "end": 140.4,
-          "confidence": 0.7
+          "confidence": 0.787
         },
         {
           "word_index": 3,
-          "text": "LOVE",
+          "text": "Love",
           "start": 140.45,
           "end": 140.55,
-          "confidence": 0.623
+          "confidence": 0.708
         },
         {
           "word_index": 4,
-          "text": "WITH",
+          "text": "With",
           "start": 140.6,
           "end": 140.7,
           "confidence": 0.25
         },
         {
           "word_index": 5,
-          "text": "YOUR",
+          "text": "Your",
           "start": 140.75,
           "end": 140.85,
           "confidence": 0.25
         },
         {
           "word_index": 6,
-          "text": "BODY",
+          "text": "Body",
           "start": 140.9,
           "end": 141.0,
           "confidence": 1.0
@@ -6257,75 +6335,75 @@
       "y": 81,
       "word_rois": [
         [
-          34,
-          81,
+          36,
+          83,
           57,
-          46
+          42
         ],
         [
-          97,
-          81,
-          52,
-          46
+          99,
+          83,
+          47,
+          42
         ],
         [
-          154,
-          81,
+          151,
+          83,
           110,
-          46
+          42
         ],
         [
-          269,
-          81,
-          98,
-          46
+          267,
+          83,
+          99,
+          42
         ],
         [
-          373,
-          81,
-          109,
-          46
+          372,
+          83,
+          110,
+          42
         ],
         [
-          488,
-          81,
-          117,
-          46
+          487,
+          83,
+          116,
+          42
         ]
       ],
       "char_rois": []
     },
     {
-      "line_index": 110,
-      "text": "AND LAST NIGHT YOU",
+      "line_index": 111,
+      "text": "And Last Night You",
       "start": 141.7,
       "end": 142.4,
       "confidence": 0.27,
       "words": [
         {
           "word_index": 1,
-          "text": "AND",
+          "text": "And",
           "start": 141.7,
           "end": 141.8,
           "confidence": 0.27
         },
         {
           "word_index": 2,
-          "text": "LAST",
+          "text": "Last",
           "start": 141.85,
           "end": 142.0,
           "confidence": 0.27
         },
         {
           "word_index": 3,
-          "text": "NIGHT",
+          "text": "Night",
           "start": 142.05,
           "end": 142.2,
           "confidence": 0.27
         },
         {
           "word_index": 4,
-          "text": "YOU",
+          "text": "You",
           "start": 142.25,
           "end": 142.4,
           "confidence": 0.27
@@ -6361,37 +6439,37 @@
       "char_rois": []
     },
     {
-      "line_index": 111,
-      "text": "WERE IN MY ROOM",
+      "line_index": 112,
+      "text": "Were In My Roo",
       "start": 143.65,
       "end": 144.65,
       "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
-          "text": "WERE",
+          "text": "Were",
           "start": 143.65,
-          "end": 143.95,
+          "end": 143.9,
           "confidence": 0.252
         },
         {
           "word_index": 2,
-          "text": "IN",
-          "start": 144.0,
-          "end": 144.25,
+          "text": "In",
+          "start": 143.95,
+          "end": 144.15,
           "confidence": 0.252
         },
         {
           "word_index": 3,
-          "text": "MY",
-          "start": 144.3,
+          "text": "My",
+          "start": 144.2,
           "end": 144.4,
           "confidence": 0.252
         },
         {
           "word_index": 4,
-          "text": "ROOM",
-          "start": 144.4,
+          "text": "Roo",
+          "start": 144.45,
           "end": 144.65,
           "confidence": 0.252
         }
@@ -6401,7 +6479,7 @@
         [
           146,
           111,
-          105,
+          104,
           42
         ],
         [
@@ -6411,24 +6489,30 @@
           42
         ],
         [
-          313,
+          314,
           111,
-          182,
+          57,
+          42
+        ],
+        [
+          377,
+          111,
+          119,
           42
         ]
       ],
       "char_rois": []
     },
     {
-      "line_index": 112,
-      "text": "Louis",
+      "line_index": 113,
+      "text": "Ious",
       "start": 144.65,
       "end": 144.75,
       "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
-          "text": "louds",
+          "text": "Ious",
           "start": 144.65,
           "end": 144.75,
           "confidence": 0.252
@@ -6439,50 +6523,50 @@
         [
           592,
           249,
-          40,
+          42,
           20
         ]
       ],
       "char_rois": []
     },
     {
-      "line_index": 113,
-      "text": "AND NOW MY BED SHEETS",
+      "line_index": 114,
+      "text": "And Now My Bed Sheets",
       "start": 144.9,
       "end": 145.6,
       "confidence": 0.561,
       "words": [
         {
           "word_index": 1,
-          "text": "AND",
+          "text": "And",
           "start": 144.9,
           "end": 145.0,
           "confidence": 0.644
         },
         {
           "word_index": 2,
-          "text": "NOW",
+          "text": "Now",
           "start": 145.05,
           "end": 145.15,
           "confidence": 0.59
         },
         {
           "word_index": 3,
-          "text": "MY",
+          "text": "My",
           "start": 145.2,
           "end": 145.3,
           "confidence": 0.714
         },
         {
           "word_index": 4,
-          "text": "BED",
+          "text": "Bed",
           "start": 145.35,
           "end": 145.45,
           "confidence": 0.609
         },
         {
           "word_index": 5,
-          "text": "SHEETS",
+          "text": "Sheets",
           "start": 145.5,
           "end": 145.6,
           "confidence": 0.25
@@ -6524,29 +6608,29 @@
       "char_rois": []
     },
     {
-      "line_index": 114,
-      "text": "SMELL LIKE YOU",
+      "line_index": 115,
+      "text": "Smell Like You",
       "start": 145.6,
       "end": 146.0,
       "confidence": 0.417,
       "words": [
         {
           "word_index": 1,
-          "text": "SMELL",
+          "text": "Smell",
           "start": 145.6,
           "end": 145.7,
           "confidence": 0.25
         },
         {
           "word_index": 2,
-          "text": "LIKE",
+          "text": "Like",
           "start": 145.75,
           "end": 145.85,
           "confidence": 0.752
         },
         {
           "word_index": 3,
-          "text": "YOU",
+          "text": "You",
           "start": 145.9,
           "end": 146.0,
           "confidence": 0.25
@@ -6576,29 +6660,29 @@
       "char_rois": []
     },
     {
-      "line_index": 115,
-      "text": "EVERY DAY DISCOVERING",
+      "line_index": 116,
+      "text": "Every Day Discovering",
       "start": 147.75,
       "end": 148.15,
       "confidence": 0.867,
       "words": [
         {
           "word_index": 1,
-          "text": "EVERY",
+          "text": "Every",
           "start": 147.75,
           "end": 147.85,
           "confidence": 0.601
         },
         {
           "word_index": 2,
-          "text": "DAY",
+          "text": "Day",
           "start": 147.9,
           "end": 148.0,
           "confidence": 1.0
         },
         {
           "word_index": 3,
-          "text": "DISCOVERING",
+          "text": "Discovering",
           "start": 148.05,
           "end": 148.15,
           "confidence": 1.0
@@ -6628,29 +6712,29 @@
       "char_rois": []
     },
     {
-      "line_index": 116,
-      "text": "SOMETHING BAND NEW",
+      "line_index": 117,
+      "text": "Something Band New",
       "start": 148.15,
       "end": 148.55,
       "confidence": 0.912,
       "words": [
         {
           "word_index": 1,
-          "text": "SOMETHING",
+          "text": "Something",
           "start": 148.15,
           "end": 148.25,
           "confidence": 1.0
         },
         {
           "word_index": 2,
-          "text": "BAND",
+          "text": "Band",
           "start": 148.3,
           "end": 148.4,
           "confidence": 0.803
         },
         {
           "word_index": 3,
-          "text": "NEW",
+          "text": "New",
           "start": 148.45,
           "end": 148.55,
           "confidence": 0.934
@@ -6680,7 +6764,7 @@
       "char_rois": []
     },
     {
-      "line_index": 117,
+      "line_index": 118,
       "text": "Clowns",
       "start": 148.55,
       "end": 148.65,
@@ -6706,17 +6790,17 @@
       "char_rois": []
     },
     {
-      "line_index": 118,
-      "text": "ce'",
-      "start": 159.3,
-      "end": 160.0,
+      "line_index": 119,
+      "text": "Ce'",
+      "start": 148.65,
+      "end": 148.75,
       "confidence": 0.745,
       "words": [
         {
           "word_index": 1,
-          "text": "ce'",
-          "start": 159.3,
-          "end": 159.4,
+          "text": "Ce'",
+          "start": 148.65,
+          "end": 148.75,
           "confidence": 0.745
         }
       ],
@@ -6732,108 +6816,108 @@
       "char_rois": []
     },
     {
-      "line_index": 119,
-      "text": "U'M IN LOVE WITH YOUR BODY",
-      "start": 164.85,
-      "end": 165.7,
-      "confidence": 0.615,
+      "line_index": 120,
+      "text": "'m In Love With Your Body",
+      "start": 149.85,
+      "end": 150.75,
+      "confidence": 0.27,
       "words": [
         {
           "word_index": 1,
-          "text": "U'M",
-          "start": 164.85,
-          "end": 164.95,
-          "confidence": 0.858
+          "text": "'m",
+          "start": 149.85,
+          "end": 149.95,
+          "confidence": 0.27
         },
         {
           "word_index": 2,
-          "text": "IN",
-          "start": 165.0,
-          "end": 165.1,
-          "confidence": 0.548
+          "text": "In",
+          "start": 150.0,
+          "end": 150.15,
+          "confidence": 0.27
         },
         {
           "word_index": 3,
-          "text": "LOVE",
-          "start": 165.15,
-          "end": 165.25,
-          "confidence": 0.595
+          "text": "Love",
+          "start": 150.2,
+          "end": 150.3,
+          "confidence": 0.27
         },
         {
           "word_index": 4,
-          "text": "WITH",
-          "start": 165.3,
-          "end": 165.4,
-          "confidence": 0.651
+          "text": "With",
+          "start": 150.35,
+          "end": 150.45,
+          "confidence": 0.27
         },
         {
           "word_index": 5,
-          "text": "YOUR",
-          "start": 165.45,
-          "end": 165.55,
-          "confidence": 0.25
+          "text": "Your",
+          "start": 150.5,
+          "end": 150.6,
+          "confidence": 0.27
         },
         {
           "word_index": 6,
-          "text": "BODY",
-          "start": 165.6,
-          "end": 165.7,
-          "confidence": 0.79
+          "text": "Body",
+          "start": 150.65,
+          "end": 150.75,
+          "confidence": 0.27
         }
       ],
       "y": 82,
       "word_rois": [
         [
           36,
-          109,
-          54,
-          44
+          107,
+          57,
+          46
         ],
         [
-          96,
-          109,
-          50,
-          44
-        ],
-        [
-          151,
-          109,
-          110,
-          44
-        ],
-        [
-          267,
-          109,
           99,
-          44
+          107,
+          52,
+          46
         ],
         [
-          371,
-          109,
-          116,
-          44
+          156,
+          107,
+          104,
+          46
         ],
         [
-          492,
+          266,
+          107,
+          103,
+          46
+        ],
+        [
+          375,
+          107,
           109,
-          111,
-          44
+          46
+        ],
+        [
+          490,
+          107,
+          115,
+          46
         ]
       ],
       "char_rois": []
     },
     {
-      "line_index": 120,
-      "text": "ech",
-      "start": 165.7,
-      "end": 165.8,
+      "line_index": 121,
+      "text": "Ech",
+      "start": 150.75,
+      "end": 150.85,
       "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
-          "text": "ech",
-          "start": 165.7,
-          "end": 165.8,
+          "text": "Ech",
+          "start": 150.75,
+          "end": 150.85,
           "confidence": 0.5
         }
       ],
@@ -6849,17 +6933,17 @@
       "char_rois": []
     },
     {
-      "line_index": 121,
-      "text": "gmail",
-      "start": 165.8,
-      "end": 165.9,
+      "line_index": 122,
+      "text": "Gmail",
+      "start": 155.4,
+      "end": 156.2,
       "confidence": 0.3,
       "words": [
         {
           "word_index": 1,
-          "text": "gmail",
-          "start": 165.8,
-          "end": 165.9,
+          "text": "Gmail",
+          "start": 155.4,
+          "end": 156.2,
           "confidence": 0.3
         }
       ],
@@ -6875,29 +6959,120 @@
       "char_rois": []
     },
     {
-      "line_index": 122,
-      "text": "EVERY DAY DISCOVERING",
+      "line_index": 123,
+      "text": "'m In Love With Your Body",
+      "start": 158.2,
+      "end": 160.35,
+      "confidence": 0.911,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "'m",
+          "start": 158.2,
+          "end": 159.0,
+          "confidence": 0.738
+        },
+        {
+          "word_index": 2,
+          "text": "In",
+          "start": 159.05,
+          "end": 159.75,
+          "confidence": 0.774
+        },
+        {
+          "word_index": 3,
+          "text": "Love",
+          "start": 159.8,
+          "end": 159.9,
+          "confidence": 0.955
+        },
+        {
+          "word_index": 4,
+          "text": "With",
+          "start": 159.95,
+          "end": 160.05,
+          "confidence": 1.0
+        },
+        {
+          "word_index": 5,
+          "text": "Your",
+          "start": 160.1,
+          "end": 160.2,
+          "confidence": 1.0
+        },
+        {
+          "word_index": 6,
+          "text": "Body",
+          "start": 160.25,
+          "end": 160.35,
+          "confidence": 1.0
+        }
+      ],
+      "y": 82,
+      "word_rois": [
+        [
+          36,
+          107,
+          57,
+          46
+        ],
+        [
+          99,
+          107,
+          52,
+          46
+        ],
+        [
+          156,
+          107,
+          104,
+          46
+        ],
+        [
+          266,
+          107,
+          103,
+          46
+        ],
+        [
+          375,
+          107,
+          109,
+          46
+        ],
+        [
+          490,
+          107,
+          115,
+          46
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 124,
+      "text": "Every Day Discovering",
       "start": 167.65,
       "end": 168.05,
       "confidence": 0.743,
       "words": [
         {
           "word_index": 1,
-          "text": "EVERY",
+          "text": "Every",
           "start": 167.65,
           "end": 167.75,
           "confidence": 0.602
         },
         {
           "word_index": 2,
-          "text": "DAY",
+          "text": "Day",
           "start": 167.8,
           "end": 167.9,
           "confidence": 0.724
         },
         {
           "word_index": 3,
-          "text": "DISCOVERING",
+          "text": "Discovering",
           "start": 167.95,
           "end": 168.05,
           "confidence": 0.902
@@ -6927,29 +7102,29 @@
       "char_rois": []
     },
     {
-      "line_index": 123,
-      "text": "SOMETHING BAND NEW",
+      "line_index": 125,
+      "text": "Something Band New",
       "start": 168.05,
       "end": 168.45,
       "confidence": 0.733,
       "words": [
         {
           "word_index": 1,
-          "text": "SOMETHING",
+          "text": "Something",
           "start": 168.05,
           "end": 168.15,
           "confidence": 0.693
         },
         {
           "word_index": 2,
-          "text": "BAND",
+          "text": "Band",
           "start": 168.2,
           "end": 168.3,
           "confidence": 0.667
         },
         {
           "word_index": 3,
-          "text": "NEW",
+          "text": "New",
           "start": 168.35,
           "end": 168.45,
           "confidence": 0.84
@@ -6979,8 +7154,8 @@
       "char_rois": []
     },
     {
-      "line_index": 124,
-      "text": "Nomad",
+      "line_index": 126,
+      "text": "Nowad",
       "start": 168.45,
       "end": 168.55,
       "confidence": 0.3,
@@ -7005,114 +7180,101 @@
       "char_rois": []
     },
     {
-      "line_index": 125,
-      "text": "IM UM IN LOVE WITH",
-      "start": 170.05,
-      "end": 170.75,
-      "confidence": 0.685,
+      "line_index": 127,
+      "text": "Im In Love With",
+      "start": 169.9,
+      "end": 170.6,
+      "confidence": 0.713,
       "words": [
         {
           "word_index": 1,
-          "text": "IM",
-          "start": 170.05,
-          "end": 170.15,
-          "confidence": 0.789
+          "text": "Im",
+          "start": 169.9,
+          "end": 170.0,
+          "confidence": 0.811
         },
         {
           "word_index": 2,
-          "text": "UM",
-          "start": 170.2,
-          "end": 170.3,
-          "confidence": 0.773
+          "text": "In",
+          "start": 170.05,
+          "end": 170.15,
+          "confidence": 0.79
         },
         {
           "word_index": 3,
-          "text": "IN",
-          "start": 170.35,
-          "end": 170.45,
-          "confidence": 0.612
-        },
-        {
-          "word_index": 4,
-          "text": "LOVE",
-          "start": 170.5,
-          "end": 170.6,
+          "text": "Love",
+          "start": 170.2,
+          "end": 170.3,
           "confidence": 0.25
         },
         {
-          "word_index": 5,
-          "text": "WITH",
-          "start": 170.65,
-          "end": 170.75,
+          "word_index": 4,
+          "text": "With",
+          "start": 170.35,
+          "end": 170.45,
           "confidence": 1.0
         }
       ],
       "y": 54,
       "word_rois": [
         [
-          145,
-          55,
+          144,
           57,
-          44
+          57,
+          42
         ],
         [
-          146,
-          55,
-          60,
-          44
+          207,
+          57,
+          52,
+          42
         ],
         [
-          212,
-          55,
-          49,
-          44
+          264,
+          57,
+          111,
+          42
         ],
         [
-          267,
-          55,
-          110,
-          44
-        ],
-        [
-          382,
-          55,
-          101,
-          44
+          380,
+          57,
+          103,
+          42
         ]
       ],
       "char_rois": []
     },
     {
-      "line_index": 126,
-      "text": "THE SHAPE OF YOU",
+      "line_index": 128,
+      "text": "The Shape Of You",
       "start": 177.6,
       "end": 178.3,
       "confidence": 0.46,
       "words": [
         {
           "word_index": 1,
-          "text": "THE",
+          "text": "The",
           "start": 177.6,
           "end": 177.7,
           "confidence": 0.628
         },
         {
           "word_index": 2,
-          "text": "SHAPE",
+          "text": "Shape",
           "start": 177.75,
           "end": 177.85,
           "confidence": 0.25
         },
         {
           "word_index": 3,
-          "text": "OF",
+          "text": "Of",
           "start": 177.9,
           "end": 178.0,
           "confidence": 0.71
         },
         {
           "word_index": 4,
-          "text": "YOU",
+          "text": "You",
           "start": 178.05,
           "end": 178.15,
           "confidence": 0.25
@@ -7148,22 +7310,22 @@
       "char_rois": []
     },
     {
-      "line_index": 127,
-      "text": "COME ON",
+      "line_index": 129,
+      "text": "Come On",
       "start": 182.2,
       "end": 182.45,
       "confidence": 0.574,
       "words": [
         {
           "word_index": 1,
-          "text": "COME",
+          "text": "Come",
           "start": 182.2,
           "end": 182.3,
           "confidence": 0.595
         },
         {
           "word_index": 2,
-          "text": "ON",
+          "text": "On",
           "start": 182.35,
           "end": 182.45,
           "confidence": 0.553
@@ -7187,43 +7349,43 @@
       "char_rois": []
     },
     {
-      "line_index": 128,
-      "text": "BE MY BABY COME ON",
+      "line_index": 130,
+      "text": "Be My Baby Come On",
       "start": 182.45,
       "end": 189.9,
       "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
-          "text": "BE",
+          "text": "Be",
           "start": 182.45,
           "end": 183.25,
           "confidence": 0.252
         },
         {
           "word_index": 2,
-          "text": "MY",
+          "text": "My",
           "start": 183.8,
           "end": 184.6,
           "confidence": 0.252
         },
         {
           "word_index": 3,
-          "text": "BABY",
+          "text": "Baby",
           "start": 185.2,
           "end": 186.0,
           "confidence": 0.252
         },
         {
           "word_index": 4,
-          "text": "COME",
+          "text": "Come",
           "start": 187.15,
           "end": 187.95,
           "confidence": 0.252
         },
         {
           "word_index": 5,
-          "text": "ON",
+          "text": "On",
           "start": 189.1,
           "end": 189.9,
           "confidence": 0.252
@@ -7265,7 +7427,7 @@
       "char_rois": []
     },
     {
-      "line_index": 129,
+      "line_index": 131,
       "text": "Could",
       "start": 189.9,
       "end": 190.0,
@@ -7291,43 +7453,43 @@
       "char_rois": []
     },
     {
-      "line_index": 130,
-      "text": "BE MY BABY COME ON",
+      "line_index": 132,
+      "text": "Be My Baby Come On",
       "start": 190.0,
       "end": 190.7,
       "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
-          "text": "BE",
+          "text": "Be",
           "start": 190.0,
           "end": 190.1,
           "confidence": 0.5
         },
         {
           "word_index": 2,
-          "text": "MY",
+          "text": "My",
           "start": 190.15,
           "end": 190.25,
           "confidence": 0.5
         },
         {
           "word_index": 3,
-          "text": "BABY",
+          "text": "Baby",
           "start": 190.3,
           "end": 190.4,
           "confidence": 0.5
         },
         {
           "word_index": 4,
-          "text": "COME",
+          "text": "Come",
           "start": 190.45,
           "end": 190.55,
           "confidence": 0.5
         },
         {
           "word_index": 5,
-          "text": "ON",
+          "text": "On",
           "start": 190.6,
           "end": 190.7,
           "confidence": 0.5
@@ -7369,7 +7531,7 @@
       "char_rois": []
     },
     {
-      "line_index": 131,
+      "line_index": 133,
       "text": "Ech",
       "start": 190.7,
       "end": 190.8,
@@ -7395,7 +7557,7 @@
       "char_rois": []
     },
     {
-      "line_index": 132,
+      "line_index": 134,
       "text": "Monas",
       "start": 190.8,
       "end": 190.9,
@@ -7421,36 +7583,36 @@
       "char_rois": []
     },
     {
-      "line_index": 133,
-      "text": "IM IN LOVE WITH",
+      "line_index": 135,
+      "text": "Im In Love With",
       "start": 191.65,
       "end": 192.35,
       "confidence": 0.34,
       "words": [
         {
           "word_index": 1,
-          "text": "IM",
+          "text": "Im",
           "start": 191.65,
           "end": 191.75,
           "confidence": 0.25
         },
         {
           "word_index": 2,
-          "text": "IN",
+          "text": "In",
           "start": 191.8,
           "end": 191.9,
           "confidence": 0.25
         },
         {
           "word_index": 3,
-          "text": "LOVE",
+          "text": "Love",
           "start": 191.95,
           "end": 192.05,
           "confidence": 0.25
         },
         {
           "word_index": 4,
-          "text": "WITH",
+          "text": "With",
           "start": 192.15,
           "end": 192.25,
           "confidence": 0.609
@@ -7486,36 +7648,36 @@
       "char_rois": []
     },
     {
-      "line_index": 134,
-      "text": "THE SHAPE OF YOU",
+      "line_index": 136,
+      "text": "The Shape Of You",
       "start": 193.9,
       "end": 195.55,
       "confidence": 0.572,
       "words": [
         {
           "word_index": 1,
-          "text": "THE",
+          "text": "The",
           "start": 193.9,
           "end": 194.0,
           "confidence": 0.25
         },
         {
           "word_index": 2,
-          "text": "SHAPE",
+          "text": "Shape",
           "start": 195.15,
           "end": 195.25,
           "confidence": 0.681
         },
         {
           "word_index": 3,
-          "text": "OF",
+          "text": "Of",
           "start": 195.3,
           "end": 195.4,
           "confidence": 0.718
         },
         {
           "word_index": 4,
-          "text": "YOU",
+          "text": "You",
           "start": 195.45,
           "end": 195.55,
           "confidence": 0.638
@@ -7551,36 +7713,36 @@
       "char_rois": []
     },
     {
-      "line_index": 135,
-      "text": "WE PUSH AND PULL",
+      "line_index": 137,
+      "text": "We Push And Pull",
       "start": 195.45,
       "end": 196.2,
       "confidence": 0.429,
       "words": [
         {
           "word_index": 1,
-          "text": "WE",
+          "text": "We",
           "start": 195.45,
           "end": 195.55,
           "confidence": 0.559
         },
         {
           "word_index": 2,
-          "text": "PUSH",
+          "text": "Push",
           "start": 195.6,
           "end": 195.7,
           "confidence": 0.656
         },
         {
           "word_index": 3,
-          "text": "AND",
+          "text": "And",
           "start": 195.8,
           "end": 195.9,
           "confidence": 0.25
         },
         {
           "word_index": 4,
-          "text": "PULL",
+          "text": "Pull",
           "start": 196.1,
           "end": 196.2,
           "confidence": 0.25
@@ -7616,15 +7778,15 @@
       "char_rois": []
     },
     {
-      "line_index": 136,
-      "text": "LIKE A MAGNET DO",
+      "line_index": 138,
+      "text": "Like A Magnet Do",
       "start": 196.2,
       "end": 196.75,
       "confidence": 0.521,
       "words": [
         {
           "word_index": 1,
-          "text": "LIKE",
+          "text": "Like",
           "start": 196.2,
           "end": 196.3,
           "confidence": 0.698
@@ -7638,14 +7800,14 @@
         },
         {
           "word_index": 3,
-          "text": "MAGNET",
+          "text": "Magnet",
           "start": 196.5,
           "end": 196.6,
           "confidence": 0.548
         },
         {
           "word_index": 4,
-          "text": "DO",
+          "text": "Do",
           "start": 196.65,
           "end": 196.75,
           "confidence": 0.25
@@ -7681,7 +7843,7 @@
       "char_rois": []
     },
     {
-      "line_index": 137,
+      "line_index": 139,
       "text": "Clowns",
       "start": 197.55,
       "end": 197.65,
@@ -7707,29 +7869,29 @@
       "char_rois": []
     },
     {
-      "line_index": 138,
-      "text": "ALTHOUGH MY HEART",
+      "line_index": 140,
+      "text": "Although My Heart",
       "start": 197.9,
       "end": 198.3,
       "confidence": 0.701,
       "words": [
         {
           "word_index": 1,
-          "text": "ALTHOUGH",
+          "text": "Although",
           "start": 197.9,
           "end": 198.0,
           "confidence": 0.852
         },
         {
           "word_index": 2,
-          "text": "MY",
+          "text": "My",
           "start": 198.05,
           "end": 198.15,
           "confidence": 0.25
         },
         {
           "word_index": 3,
-          "text": "HEART",
+          "text": "Heart",
           "start": 198.2,
           "end": 198.3,
           "confidence": 1.0
@@ -7759,29 +7921,29 @@
       "char_rois": []
     },
     {
-      "line_index": 139,
-      "text": "IS FALLING TOO",
+      "line_index": 141,
+      "text": "Is Falling Too",
       "start": 198.3,
       "end": 198.7,
       "confidence": 0.954,
       "words": [
         {
           "word_index": 1,
-          "text": "IS",
+          "text": "Is",
           "start": 198.3,
           "end": 198.4,
           "confidence": 0.939
         },
         {
           "word_index": 2,
-          "text": "FALLING",
+          "text": "Falling",
           "start": 198.45,
           "end": 198.55,
           "confidence": 1.0
         },
         {
           "word_index": 3,
-          "text": "TOO",
+          "text": "Too",
           "start": 198.6,
           "end": 198.7,
           "confidence": 0.924
@@ -7811,7 +7973,7 @@
       "char_rois": []
     },
     {
-      "line_index": 140,
+      "line_index": 142,
       "text": "10mal",
       "start": 198.7,
       "end": 198.8,
@@ -7837,50 +7999,50 @@
       "char_rois": []
     },
     {
-      "line_index": 141,
-      "text": "U'M IN LOVE WITH YOUR BODY",
+      "line_index": 143,
+      "text": "Um In Love With Your Body",
       "start": 200.35,
       "end": 201.25,
       "confidence": 0.602,
       "words": [
         {
           "word_index": 1,
-          "text": "U'M",
+          "text": "Um",
           "start": 200.35,
           "end": 200.5,
           "confidence": 0.734
         },
         {
           "word_index": 2,
-          "text": "IN",
+          "text": "In",
           "start": 200.55,
           "end": 200.65,
           "confidence": 0.716
         },
         {
           "word_index": 3,
-          "text": "LOVE",
+          "text": "Love",
           "start": 200.7,
           "end": 200.8,
           "confidence": 0.662
         },
         {
           "word_index": 4,
-          "text": "WITH",
+          "text": "With",
           "start": 200.85,
           "end": 200.95,
           "confidence": 0.25
         },
         {
           "word_index": 5,
-          "text": "YOUR",
+          "text": "Your",
           "start": 201.0,
           "end": 201.1,
           "confidence": 0.25
         },
         {
           "word_index": 6,
-          "text": "BODY",
+          "text": "Body",
           "start": 201.15,
           "end": 201.25,
           "confidence": 1.0
@@ -7928,36 +8090,36 @@
       "char_rois": []
     },
     {
-      "line_index": 142,
-      "text": "AND LAST NIGHT YOU",
+      "line_index": 144,
+      "text": "And Last Night You",
       "start": 201.6,
       "end": 203.15,
       "confidence": 0.548,
       "words": [
         {
           "word_index": 1,
-          "text": "AND",
+          "text": "And",
           "start": 201.6,
           "end": 201.7,
           "confidence": 0.68
         },
         {
           "word_index": 2,
-          "text": "LAST",
+          "text": "Last",
           "start": 202.75,
           "end": 202.85,
           "confidence": 0.646
         },
         {
           "word_index": 3,
-          "text": "NIGHT",
+          "text": "Night",
           "start": 202.9,
           "end": 203.0,
           "confidence": 0.618
         },
         {
           "word_index": 4,
-          "text": "YOU",
+          "text": "You",
           "start": 203.05,
           "end": 203.15,
           "confidence": 0.25
@@ -7993,57 +8155,36 @@
       "char_rois": []
     },
     {
-      "line_index": 143,
-      "text": "WERE IN IN MY MY ROOM ROOM",
+      "line_index": 145,
+      "text": "Were In My Room",
       "start": 203.15,
       "end": 204.0,
-      "confidence": 0.59,
+      "confidence": 0.692,
       "words": [
         {
           "word_index": 1,
-          "text": "WERE",
+          "text": "Were",
           "start": 203.15,
           "end": 203.25,
           "confidence": 0.621
         },
         {
           "word_index": 2,
-          "text": "IN",
+          "text": "In",
           "start": 203.3,
-          "end": 203.4,
-          "confidence": 0.861
+          "end": 203.35,
+          "confidence": 0.732
         },
         {
           "word_index": 3,
-          "text": "IN",
-          "start": 203.45,
-          "end": 203.5,
+          "text": "My",
+          "start": 203.35,
+          "end": 203.4,
           "confidence": 0.732
         },
         {
           "word_index": 4,
-          "text": "MY",
-          "start": 203.5,
-          "end": 203.55,
-          "confidence": 0.732
-        },
-        {
-          "word_index": 5,
-          "text": "MY",
-          "start": 203.6,
-          "end": 203.65,
-          "confidence": 0.25
-        },
-        {
-          "word_index": 6,
-          "text": "ROOM",
-          "start": 203.65,
-          "end": 203.7,
-          "confidence": 0.25
-        },
-        {
-          "word_index": 7,
-          "text": "ROOM",
+          "text": "Room",
           "start": 203.9,
           "end": 204.0,
           "confidence": 0.684
@@ -8058,22 +8199,10 @@
           42
         ],
         [
-          257,
-          110,
-          49,
-          44
-        ],
-        [
           259,
           111,
           110,
           42
-        ],
-        [
-          311,
-          110,
-          184,
-          44
         ],
         [
           374,
@@ -8085,43 +8214,43 @@
       "char_rois": []
     },
     {
-      "line_index": 144,
-      "text": "AND NOW MY BED SHEETS",
+      "line_index": 146,
+      "text": "And Now My Bed Sheets",
       "start": 204.3,
       "end": 205.6,
       "confidence": 0.592,
       "words": [
         {
           "word_index": 1,
-          "text": "AND",
+          "text": "And",
           "start": 204.3,
           "end": 204.4,
           "confidence": 0.25
         },
         {
           "word_index": 2,
-          "text": "NOW",
+          "text": "Now",
           "start": 205.05,
           "end": 205.15,
           "confidence": 0.643
         },
         {
           "word_index": 3,
-          "text": "MY",
+          "text": "My",
           "start": 205.2,
           "end": 205.3,
           "confidence": 0.816
         },
         {
           "word_index": 4,
-          "text": "BED",
+          "text": "Bed",
           "start": 205.35,
           "end": 205.45,
           "confidence": 0.697
         },
         {
           "word_index": 5,
-          "text": "SHEETS",
+          "text": "Sheets",
           "start": 205.5,
           "end": 205.6,
           "confidence": 0.553
@@ -8163,29 +8292,29 @@
       "char_rois": []
     },
     {
-      "line_index": 145,
-      "text": "SMELL LIKE YOU",
+      "line_index": 147,
+      "text": "Smell Like You",
       "start": 205.6,
       "end": 206.0,
       "confidence": 0.53,
       "words": [
         {
           "word_index": 1,
-          "text": "SMELL",
+          "text": "Smell",
           "start": 205.6,
           "end": 205.7,
           "confidence": 0.25
         },
         {
           "word_index": 2,
-          "text": "LIKE",
+          "text": "Like",
           "start": 205.75,
           "end": 205.85,
           "confidence": 0.707
         },
         {
           "word_index": 3,
-          "text": "YOU",
+          "text": "You",
           "start": 205.9,
           "end": 206.0,
           "confidence": 0.634
@@ -8215,15 +8344,15 @@
       "char_rois": []
     },
     {
-      "line_index": 146,
-      "text": "ious",
+      "line_index": 148,
+      "text": "Ious",
       "start": 206.0,
       "end": 206.1,
       "confidence": 0.3,
       "words": [
         {
           "word_index": 1,
-          "text": "ious",
+          "text": "Ious",
           "start": 206.0,
           "end": 206.1,
           "confidence": 0.3
@@ -8241,29 +8370,29 @@
       "char_rois": []
     },
     {
-      "line_index": 147,
-      "text": "EVERY DAY DISCOVERING",
+      "line_index": 149,
+      "text": "Every Day Discovering",
       "start": 206.1,
       "end": 208.2,
       "confidence": 0.904,
       "words": [
         {
           "word_index": 1,
-          "text": "EVERY",
+          "text": "Every",
           "start": 206.1,
           "end": 206.2,
           "confidence": 0.711
         },
         {
           "word_index": 2,
-          "text": "DAY",
+          "text": "Day",
           "start": 207.95,
           "end": 208.05,
           "confidence": 1.0
         },
         {
           "word_index": 3,
-          "text": "DISCOVERING",
+          "text": "Discovering",
           "start": 208.1,
           "end": 208.2,
           "confidence": 1.0
@@ -8293,29 +8422,29 @@
       "char_rois": []
     },
     {
-      "line_index": 148,
-      "text": "SOMETHING BAND NEW",
+      "line_index": 150,
+      "text": "Something Band New",
       "start": 208.2,
       "end": 208.6,
       "confidence": 0.913,
       "words": [
         {
           "word_index": 1,
-          "text": "SOMETHING",
+          "text": "Something",
           "start": 208.2,
           "end": 208.3,
           "confidence": 1.0
         },
         {
           "word_index": 2,
-          "text": "BAND",
+          "text": "Band",
           "start": 208.35,
           "end": 208.45,
           "confidence": 0.756
         },
         {
           "word_index": 3,
-          "text": "NEW",
+          "text": "New",
           "start": 208.5,
           "end": 208.6,
           "confidence": 0.983
@@ -8345,127 +8474,127 @@
       "char_rois": []
     },
     {
-      "line_index": 149,
-      "text": "UM IN LOVE WITH YOUR BODY",
+      "line_index": 151,
+      "text": "Im In Love With Your Body",
       "start": 209.7,
-      "end": 210.55,
-      "confidence": 0.779,
+      "end": 210.6,
+      "confidence": 0.774,
       "words": [
         {
           "word_index": 1,
-          "text": "UM",
+          "text": "Im",
           "start": 209.7,
-          "end": 209.8,
-          "confidence": 0.773
+          "end": 209.85,
+          "confidence": 0.767
         },
         {
           "word_index": 2,
-          "text": "IN",
-          "start": 209.85,
-          "end": 209.95,
-          "confidence": 0.759
+          "text": "In",
+          "start": 209.9,
+          "end": 210.0,
+          "confidence": 0.769
         },
         {
           "word_index": 3,
-          "text": "LOVE",
-          "start": 210.0,
-          "end": 210.1,
-          "confidence": 0.753
+          "text": "Love",
+          "start": 210.05,
+          "end": 210.15,
+          "confidence": 0.699
         },
         {
           "word_index": 4,
-          "text": "WITH",
-          "start": 210.15,
-          "end": 210.25,
-          "confidence": 0.67
+          "text": "With",
+          "start": 210.2,
+          "end": 210.3,
+          "confidence": 0.742
         },
         {
           "word_index": 5,
-          "text": "YOUR",
-          "start": 210.3,
-          "end": 210.4,
-          "confidence": 0.722
+          "text": "Your",
+          "start": 210.35,
+          "end": 210.45,
+          "confidence": 0.668
         },
         {
           "word_index": 6,
-          "text": "BODY",
-          "start": 210.45,
-          "end": 210.55,
+          "text": "Body",
+          "start": 210.5,
+          "end": 210.6,
           "confidence": 1.0
         }
       ],
       "y": 81,
       "word_rois": [
         [
-          34,
+          36,
           83,
-          57,
-          42
+          54,
+          44
         ],
         [
-          97,
+          96,
           83,
-          52,
-          42
+          55,
+          44
         ],
         [
-          154,
+          157,
+          83,
+          104,
+          44
+        ],
+        [
+          267,
+          83,
+          99,
+          44
+        ],
+        [
+          371,
+          83,
+          116,
+          44
+        ],
+        [
+          492,
           83,
           111,
-          42
-        ],
-        [
-          270,
-          83,
-          100,
-          42
-        ],
-        [
-          375,
-          83,
-          110,
-          42
-        ],
-        [
-          490,
-          83,
-          113,
-          42
+          44
         ]
       ],
       "char_rois": []
     },
     {
-      "line_index": 150,
-      "text": "COME ON BE MY",
+      "line_index": 152,
+      "text": "Come On Be My",
       "start": 222.3,
       "end": 222.85,
       "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
-          "text": "COME",
+          "text": "Come",
           "start": 222.3,
           "end": 222.4,
           "confidence": 1.0
         },
         {
           "word_index": 2,
-          "text": "ON",
+          "text": "On",
           "start": 222.45,
           "end": 222.55,
           "confidence": 1.0
         },
         {
           "word_index": 3,
-          "text": "BE",
+          "text": "Be",
           "start": 222.6,
           "end": 222.7,
           "confidence": 1.0
         },
         {
           "word_index": 4,
-          "text": "MY",
+          "text": "My",
           "start": 222.75,
           "end": 222.85,
           "confidence": 1.0
@@ -8501,29 +8630,29 @@
       "char_rois": []
     },
     {
-      "line_index": 151,
-      "text": "BABY COME ON",
+      "line_index": 153,
+      "text": "Baby Come On",
       "start": 222.85,
       "end": 223.25,
       "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
-          "text": "BABY",
+          "text": "Baby",
           "start": 222.85,
           "end": 222.95,
           "confidence": 1.0
         },
         {
           "word_index": 2,
-          "text": "COME",
+          "text": "Come",
           "start": 223.0,
           "end": 223.1,
           "confidence": 1.0
         },
         {
           "word_index": 3,
-          "text": "ON",
+          "text": "On",
           "start": 223.15,
           "end": 223.25,
           "confidence": 1.0
@@ -8553,8 +8682,8 @@
       "char_rois": []
     },
     {
-      "line_index": 152,
-      "text": "Nomad",
+      "line_index": 154,
+      "text": "Nowad",
       "start": 223.25,
       "end": 223.35,
       "confidence": 0.3,
@@ -8572,24 +8701,24 @@
         [
           592,
           249,
-          42,
+          44,
           22
         ]
       ],
       "char_rois": []
     },
     {
-      "line_index": 153,
+      "line_index": 155,
       "text": "10mal",
-      "start": 225.05,
-      "end": 225.75,
+      "start": 225.25,
+      "end": 225.95,
       "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
           "text": "10mal",
-          "start": 225.05,
-          "end": 225.15,
+          "start": 225.25,
+          "end": 225.35,
           "confidence": 0.5
         }
       ],
@@ -8605,49 +8734,16 @@
       "char_rois": []
     },
     {
-      "line_index": 154,
-      "text": "70k",
-      "start": 226.15,
-      "end": 226.45,
-      "confidence": 0.252,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "70k",
-          "start": 226.15,
-          "end": 226.45,
-          "confidence": 0.252
-        }
-      ],
-      "y": 88,
-      "word_rois": [
-        [
-          54,
-          86,
-          104,
-          82
-        ]
-      ],
-      "char_rois": []
-    },
-    {
-      "line_index": 155,
-      "text": "Subscribe Subscribe",
-      "start": 226.55,
+      "line_index": 156,
+      "text": "Subscribe",
+      "start": 226.45,
       "end": 226.85,
       "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "Subscribe",
-          "start": 226.55,
-          "end": 226.7,
-          "confidence": 0.252
-        },
-        {
-          "word_index": 2,
-          "text": "Subscribe",
-          "start": 226.75,
+          "start": 226.45,
           "end": 226.85,
           "confidence": 0.252
         }
@@ -8655,89 +8751,31 @@
       "y": 210,
       "word_rois": [
         [
-          93,
+          94,
           211,
-          73,
-          20
+          16,
+          12
         ],
         [
-          97,
+          112,
           211,
-          14,
-          13
-        ],
-        [
-          113,
-          211,
-          47,
-          13
-        ]
-      ],
-      "char_rois": []
-    },
-    {
-      "line_index": 156,
-      "text": "70l01",
-      "start": 226.85,
-      "end": 226.95,
-      "confidence": 0.252,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "70l01",
-          "start": 226.85,
-          "end": 226.95,
-          "confidence": 0.252
-        }
-      ],
-      "y": 89,
-      "word_rois": [
-        [
-          57,
-          89,
-          106,
-          76
+          50,
+          12
         ]
       ],
       "char_rois": []
     },
     {
       "line_index": 157,
-      "text": "7dow",
-      "start": 226.95,
-      "end": 227.05,
-      "confidence": 0.252,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "7Clow",
-          "start": 226.95,
-          "end": 227.05,
-          "confidence": 0.252
-        }
-      ],
-      "y": 89,
-      "word_rois": [
-        [
-          57,
-          89,
-          114,
-          78
-        ]
-      ],
-      "char_rois": []
-    },
-    {
-      "line_index": 158,
-      "text": "7cloy",
-      "start": 227.05,
+      "text": "7clov",
+      "start": 226.85,
       "end": 227.25,
       "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
-          "text": "7Clov",
-          "start": 227.05,
+          "text": "7clov",
+          "start": 226.85,
           "end": 227.25,
           "confidence": 0.252
         }
@@ -8754,8 +8792,8 @@
       "char_rois": []
     },
     {
-      "line_index": 159,
-      "text": "7 hour",
+      "line_index": 158,
+      "text": "7 Hour",
       "start": 227.25,
       "end": 227.5,
       "confidence": 0.252,
@@ -8769,7 +8807,7 @@
         },
         {
           "word_index": 2,
-          "text": "hour",
+          "text": "Hour",
           "start": 227.4,
           "end": 227.5,
           "confidence": 0.252
@@ -8793,75 +8831,17 @@
       "char_rois": []
     },
     {
-      "line_index": 160,
-      "text": "Talaud",
-      "start": 228.35,
-      "end": 229.15,
-      "confidence": 0.252,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "Talaud",
-          "start": 228.35,
-          "end": 229.15,
-          "confidence": 0.252
-        }
-      ],
-      "y": 75,
-      "word_rois": [
-        [
-          51,
-          75,
-          170,
-          98
-        ]
-      ],
-      "char_rois": []
-    },
-    {
-      "line_index": 161,
-      "text": "Sumsprime",
-      "start": 229.15,
-      "end": 229.25,
-      "confidence": 0.252,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "Subspribe",
-          "start": 229.15,
-          "end": 229.25,
-          "confidence": 0.252
-        }
-      ],
-      "y": 211,
-      "word_rois": [
-        [
-          102,
-          211,
-          10,
-          14
-        ],
-        [
-          114,
-          211,
-          43,
-          14
-        ]
-      ],
-      "char_rois": []
-    },
-    {
-      "line_index": 162,
-      "text": "Halides",
-      "start": 229.25,
-      "end": 229.65,
+      "line_index": 159,
+      "text": "Halauds",
+      "start": 227.5,
+      "end": 227.65,
       "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "Halauds",
-          "start": 229.25,
-          "end": 229.65,
+          "start": 227.5,
+          "end": 227.65,
           "confidence": 0.252
         }
       ],
@@ -8877,17 +8857,17 @@
       "char_rois": []
     },
     {
-      "line_index": 163,
+      "line_index": 160,
       "text": "7cloyfiny",
-      "start": 229.65,
-      "end": 229.75,
+      "start": 227.65,
+      "end": 228.45,
       "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "7cloyfiny",
-          "start": 229.65,
-          "end": 229.75,
+          "start": 227.65,
+          "end": 228.45,
           "confidence": 0.252
         }
       ],
@@ -8903,17 +8883,17 @@
       "char_rois": []
     },
     {
-      "line_index": 164,
-      "text": "Inaincis",
-      "start": 229.75,
-      "end": 229.85,
+      "line_index": 161,
+      "text": "Mainds",
+      "start": 229.55,
+      "end": 230.35,
       "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
           "text": "Mainds",
-          "start": 229.75,
-          "end": 229.85,
+          "start": 229.55,
+          "end": 230.35,
           "confidence": 0.252
         }
       ],
@@ -8929,95 +8909,43 @@
       "char_rois": []
     },
     {
-      "line_index": 165,
-      "text": "Minds",
-      "start": 229.95,
-      "end": 230.75,
-      "confidence": 0.252,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "Minds",
-          "start": 229.95,
-          "end": 230.75,
-          "confidence": 0.252
-        }
-      ],
-      "y": 79,
-      "word_rois": [
-        [
-          53,
-          79,
-          174,
-          94
-        ]
-      ],
-      "char_rois": []
-    },
-    {
-      "line_index": 166,
-      "text": "clouds",
-      "start": 231.05,
-      "end": 231.15,
+      "line_index": 162,
+      "text": "Colds",
+      "start": 231.0,
+      "end": 231.1,
       "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
-          "text": "clouds",
-          "start": 231.05,
-          "end": 231.15,
+          "text": "Colds",
+          "start": 231.0,
+          "end": 231.1,
           "confidence": 1.0
         }
       ],
       "y": 215,
       "word_rois": [
         [
-          110,
+          108,
           215,
-          35,
+          37,
           4
         ]
       ],
       "char_rois": []
     },
     {
-      "line_index": 167,
-      "text": "Collas",
-      "start": 231.15,
-      "end": 231.25,
-      "confidence": 1.0,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "Collas",
-          "start": 231.15,
-          "end": 231.25,
-          "confidence": 1.0
-        }
-      ],
-      "y": 215,
-      "word_rois": [
-        [
-          110,
-          215,
-          35,
-          4
-        ]
-      ],
-      "char_rois": []
-    },
-    {
-      "line_index": 168,
-      "text": "Taimet",
-      "start": 231.25,
-      "end": 231.35,
+      "line_index": 163,
+      "text": "Times",
+      "start": 231.1,
+      "end": 231.2,
       "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
-          "text": "Talmet",
-          "start": 231.25,
-          "end": 231.35,
+          "text": "Times",
+          "start": 231.1,
+          "end": 231.2,
           "confidence": 0.5
         }
       ],

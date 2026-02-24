@@ -304,44 +304,44 @@
     {
       "line_index": 4,
       "text": "Think You Re So Criminal",
-      "start": 28.85,
-      "end": 29.85,
-      "confidence": 0.33,
+      "start": 25.8,
+      "end": 28.1,
+      "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
           "text": "Think",
-          "start": 28.85,
-          "end": 28.95,
-          "confidence": 0.648
+          "start": 25.8,
+          "end": 25.9,
+          "confidence": 0.5
         },
         {
           "word_index": 2,
           "text": "You",
-          "start": 29.15,
-          "end": 29.2,
-          "confidence": 0.25
+          "start": 25.95,
+          "end": 26.3,
+          "confidence": 0.5
         },
         {
           "word_index": 3,
           "text": "Re",
-          "start": 29.2,
-          "end": 29.25,
-          "confidence": 0.25
+          "start": 26.3,
+          "end": 26.55,
+          "confidence": 0.5
         },
         {
           "word_index": 4,
           "text": "So",
-          "start": 29.45,
-          "end": 29.55,
-          "confidence": 0.25
+          "start": 26.6,
+          "end": 27.25,
+          "confidence": 0.5
         },
         {
           "word_index": 5,
           "text": "Criminal",
-          "start": 29.75,
-          "end": 29.85,
-          "confidence": 0.25
+          "start": 27.3,
+          "end": 28.1,
+          "confidence": 0.5
         }
       ],
       "y": 93,
@@ -349,26 +349,26 @@
         [
           99,
           93,
-          93,
-          20
+          92,
+          18
         ],
         [
           194,
           93,
-          100,
-          20
+          101,
+          18
         ],
         [
           297,
           93,
-          44,
-          20
+          45,
+          18
         ],
         [
           344,
           93,
           137,
-          20
+          18
         ]
       ],
       "char_rois": []
@@ -700,7 +700,7 @@
     },
     {
       "line_index": 8,
-      "text": "My Soult So Cynical",
+      "text": "My Soulp So Cynical",
       "start": 41.35,
       "end": 42.35,
       "confidence": 0.438,
@@ -714,7 +714,7 @@
         },
         {
           "word_index": 2,
-          "text": "Soult",
+          "text": "Soulp",
           "start": 41.65,
           "end": 41.75,
           "confidence": 0.25
@@ -737,26 +737,26 @@
       "y": 92,
       "word_rois": [
         [
-          129,
-          93,
-          50,
+          127,
+          91,
+          53,
           20
         ],
         [
           182,
-          93,
-          97,
+          91,
+          98,
           20
         ],
         [
           282,
-          93,
-          44,
+          91,
+          45,
           20
         ],
         [
           329,
-          93,
+          91,
           118,
           20
         ]
@@ -766,43 +766,43 @@
     {
       "line_index": 9,
       "text": "So You're A Tough Guy",
-      "start": 43.05,
-      "end": 44.05,
+      "start": 42.35,
+      "end": 43.35,
       "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
           "text": "So",
-          "start": 43.05,
-          "end": 43.15,
+          "start": 42.35,
+          "end": 42.45,
           "confidence": 0.5
         },
         {
           "word_index": 2,
           "text": "You're",
-          "start": 43.2,
-          "end": 43.3,
+          "start": 42.5,
+          "end": 42.6,
           "confidence": 0.5
         },
         {
           "word_index": 3,
           "text": "A",
-          "start": 43.35,
-          "end": 43.45,
+          "start": 42.65,
+          "end": 42.75,
           "confidence": 0.5
         },
         {
           "word_index": 4,
           "text": "Tough",
-          "start": 43.5,
-          "end": 43.75,
+          "start": 42.8,
+          "end": 43.05,
           "confidence": 0.5
         },
         {
           "word_index": 5,
           "text": "Guy",
-          "start": 43.8,
-          "end": 44.05,
+          "start": 43.1,
+          "end": 43.35,
           "confidence": 0.5
         }
       ],
@@ -843,169 +843,156 @@
     },
     {
       "line_index": 10,
-      "text": "Like It Really Rough Guy",
-      "start": 44.8,
-      "end": 46.55,
+      "text": "Like I Really Rough Guy",
+      "start": 43.4,
+      "end": 45.15,
       "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
           "text": "Like",
-          "start": 44.8,
-          "end": 45.1,
+          "start": 43.4,
+          "end": 43.7,
           "confidence": 0.5
         },
         {
           "word_index": 2,
-          "text": "It",
-          "start": 45.15,
-          "end": 45.4,
+          "text": "I",
+          "start": 43.75,
+          "end": 44.0,
           "confidence": 0.5
         },
         {
           "word_index": 3,
           "text": "Really",
-          "start": 45.45,
-          "end": 45.8,
+          "start": 44.05,
+          "end": 44.4,
           "confidence": 0.5
         },
         {
           "word_index": 4,
           "text": "Rough",
-          "start": 45.85,
-          "end": 46.2,
+          "start": 44.45,
+          "end": 44.8,
           "confidence": 0.5
         },
         {
           "word_index": 5,
           "text": "Guy",
-          "start": 46.25,
-          "end": 46.55,
+          "start": 44.85,
+          "end": 45.15,
           "confidence": 0.5
         }
       ],
       "y": 92,
       "word_rois": [
         [
-          99,
+          91,
           93,
-          63,
-          18
+          73,
+          20
         ],
         [
-          164,
+          166,
           93,
-          32,
-          18
+          30,
+          20
         ],
         [
-          198,
+          199,
           93,
-          112,
-          18
+          109,
+          20
         ],
         [
-          313,
+          311,
           93,
-          103,
-          18
+          105,
+          20
         ],
         [
           418,
           93,
           63,
-          18
+          20
         ]
       ],
       "char_rois": []
     },
     {
       "line_index": 11,
-      "text": "Just Can't Cant Get Enough Guy",
-      "start": 46.5,
-      "end": 48.1,
-      "confidence": 0.309,
+      "text": "Just Can't Get Enough Guy",
+      "start": 45.15,
+      "end": 46.0,
+      "confidence": 0.315,
       "words": [
         {
           "word_index": 1,
           "text": "Just",
-          "start": 46.5,
-          "end": 46.6,
-          "confidence": 0.602
+          "start": 45.15,
+          "end": 45.25,
+          "confidence": 0.573
         },
         {
           "word_index": 2,
           "text": "Can't",
-          "start": 46.8,
-          "end": 46.9,
+          "start": 45.3,
+          "end": 45.4,
           "confidence": 0.25
         },
         {
           "word_index": 3,
-          "text": "Cant",
-          "start": 47.1,
-          "end": 47.2,
+          "text": "Get",
+          "start": 45.45,
+          "end": 45.55,
           "confidence": 0.25
         },
         {
           "word_index": 4,
-          "text": "Get",
-          "start": 47.4,
-          "end": 47.5,
+          "text": "Enough",
+          "start": 45.6,
+          "end": 45.7,
           "confidence": 0.25
         },
         {
           "word_index": 5,
-          "text": "Enough",
-          "start": 47.7,
-          "end": 47.8,
-          "confidence": 0.25
-        },
-        {
-          "word_index": 6,
           "text": "Guy",
-          "start": 48.0,
-          "end": 48.1,
+          "start": 45.9,
+          "end": 46.0,
           "confidence": 0.25
         }
       ],
       "y": 90,
       "word_rois": [
         [
-          79,
-          89,
-          81,
-          28
+          78,
+          90,
+          82,
+          21
         ],
         [
           162,
           90,
           84,
-          20
+          21
         ],
         [
-          163,
-          89,
-          84,
-          28
+          249,
+          90,
+          63,
+          21
         ],
         [
-          251,
-          89,
-          59,
-          28
-        ],
-        [
-          313,
-          89,
+          314,
+          90,
           123,
-          28
+          21
         ],
         [
-          439,
-          89,
-          66,
-          28
+          440,
+          90,
+          64,
+          21
         ]
       ],
       "char_rois": []
@@ -1015,14 +1002,14 @@
       "text": "Chest Always So Puffed Guy",
       "start": 48.85,
       "end": 50.15,
-      "confidence": 0.383,
+      "confidence": 0.369,
       "words": [
         {
           "word_index": 1,
           "text": "Chest",
           "start": 48.85,
           "end": 48.95,
-          "confidence": 0.915
+          "confidence": 0.846
         },
         {
           "word_index": 2,
@@ -1090,159 +1077,94 @@
     },
     {
       "line_index": 13,
-      "text": "Unviu Iat Bad Type",
-      "start": 50.15,
-      "end": 50.7,
-      "confidence": 0.368,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "Unviu",
-          "start": 50.15,
-          "end": 50.25,
-          "confidence": 0.721
-        },
-        {
-          "word_index": 2,
-          "text": "Iat",
-          "start": 50.3,
-          "end": 50.4,
-          "confidence": 0.25
-        },
-        {
-          "word_index": 3,
-          "text": "Bad",
-          "start": 50.45,
-          "end": 50.55,
-          "confidence": 0.25
-        },
-        {
-          "word_index": 4,
-          "text": "Type",
-          "start": 50.6,
-          "end": 50.7,
-          "confidence": 0.25
-        }
-      ],
-      "y": 93,
-      "word_rois": [
-        [
-          155,
-          95,
-          66,
-          14
-        ],
-        [
-          233,
-          93,
-          43,
-          18
-        ],
-        [
-          278,
-          93,
-          65,
-          18
-        ],
-        [
-          345,
-          93,
-          76,
-          18
-        ]
-      ],
-      "char_rois": []
-    },
-    {
-      "line_index": 14,
-      "text": "Make Your Girlfriend Md Type",
-      "start": 55.75,
-      "end": 56.5,
+      "text": "Might Seduce Your Dad Type",
+      "start": 51.7,
+      "end": 56.05,
       "confidence": 0.252,
       "words": [
         {
           "word_index": 1,
-          "text": "Make",
-          "start": 55.75,
-          "end": 55.9,
+          "text": "Might",
+          "start": 51.7,
+          "end": 52.5,
           "confidence": 0.252
         },
         {
           "word_index": 2,
-          "text": "Your",
-          "start": 55.95,
-          "end": 56.05,
+          "text": "Seduce",
+          "start": 52.65,
+          "end": 53.45,
           "confidence": 0.252
         },
         {
           "word_index": 3,
-          "text": "Girlfriend",
-          "start": 56.1,
-          "end": 56.2,
+          "text": "Your",
+          "start": 53.65,
+          "end": 54.45,
           "confidence": 0.252
         },
         {
           "word_index": 4,
-          "text": "Md",
-          "start": 56.25,
-          "end": 56.35,
+          "text": "Dad",
+          "start": 54.5,
+          "end": 55.2,
           "confidence": 0.252
         },
         {
           "word_index": 5,
           "text": "Type",
-          "start": 56.4,
-          "end": 56.5,
+          "start": 55.25,
+          "end": 56.05,
           "confidence": 0.252
         }
       ],
       "y": 89,
       "word_rois": [
         [
-          40,
-          90,
-          90,
-          21
+          65,
+          89,
+          96,
+          24
         ],
         [
-          132,
-          90,
+          164,
+          89,
+          120,
+          24
+        ],
+        [
+          287,
+          89,
           81,
-          21
+          24
         ],
         [
-          216,
-          90,
-          170,
-          21
+          371,
+          89,
+          63,
+          24
         ],
         [
-          389,
-          90,
-          71,
-          21
-        ],
-        [
-          462,
-          90,
-          73,
-          21
+          437,
+          89,
+          70,
+          24
         ]
       ],
       "char_rois": []
     },
     {
-      "line_index": 15,
+      "line_index": 14,
       "text": "Im The Bad Guy",
-      "start": 56.5,
+      "start": 56.2,
       "end": 60.9,
       "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
           "text": "Im",
-          "start": 56.5,
-          "end": 57.3,
+          "start": 56.2,
+          "end": 57.0,
           "confidence": 0.5
         },
         {
@@ -1297,17 +1219,17 @@
       "char_rois": []
     },
     {
-      "line_index": 16,
+      "line_index": 15,
       "text": "Duh",
-      "start": 60.9,
-      "end": 61.0,
+      "start": 61.7,
+      "end": 62.5,
       "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
           "text": "Duh",
-          "start": 60.9,
-          "end": 61.0,
+          "start": 61.7,
+          "end": 62.5,
           "confidence": 0.5
         }
       ],
@@ -1323,33 +1245,7 @@
       "char_rois": []
     },
     {
-      "line_index": 17,
-      "text": "Duhi",
-      "start": 61.0,
-      "end": 61.8,
-      "confidence": 0.5,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "Duhi",
-          "start": 61.0,
-          "end": 61.8,
-          "confidence": 0.5
-        }
-      ],
-      "y": 93,
-      "word_rois": [
-        [
-          259,
-          93,
-          66,
-          18
-        ]
-      ],
-      "char_rois": []
-    },
-    {
-      "line_index": 18,
+      "line_index": 16,
       "text": "Im The Bad Guy",
       "start": 66.85,
       "end": 70.25,
@@ -1414,7 +1310,7 @@
       "char_rois": []
     },
     {
-      "line_index": 19,
+      "line_index": 17,
       "text": "Like It When You Take Control",
       "start": 74.35,
       "end": 79.45,
@@ -1511,7 +1407,7 @@
       "char_rois": []
     },
     {
-      "line_index": 20,
+      "line_index": 18,
       "text": "Even If You Know That You Don't",
       "start": 79.45,
       "end": 82.6,
@@ -1615,7 +1511,7 @@
       "char_rois": []
     },
     {
-      "line_index": 21,
+      "line_index": 19,
       "text": "Own Me I'll Let You Play The Role",
       "start": 84.5,
       "end": 87.25,
@@ -1732,7 +1628,7 @@
       "char_rois": []
     },
     {
-      "line_index": 22,
+      "line_index": 20,
       "text": "Ll Be Your Animal",
       "start": 87.25,
       "end": 89.4,
@@ -1797,7 +1693,7 @@
       "char_rois": []
     },
     {
-      "line_index": 23,
+      "line_index": 21,
       "text": "My Mommy Likes With Me To Singalong",
       "start": 92.85,
       "end": 93.9,
@@ -1901,7 +1797,7 @@
       "char_rois": []
     },
     {
-      "line_index": 24,
+      "line_index": 22,
       "text": "But She Won't Sing This Song",
       "start": 95.65,
       "end": 97.35,
@@ -1992,7 +1888,7 @@
       "char_rois": []
     },
     {
-      "line_index": 25,
+      "line_index": 23,
       "text": "Shell Pity The Men I Know",
       "start": 98.95,
       "end": 103.95,
@@ -2083,46 +1979,124 @@
       "char_rois": []
     },
     {
-      "line_index": 26,
-      "text": "Like I Really Rough Guy",
+      "line_index": 24,
+      "text": "So You're A Tough Guy",
       "start": 103.95,
-      "end": 105.25,
-      "confidence": 0.456,
+      "end": 104.65,
+      "confidence": 0.361,
       "words": [
         {
           "word_index": 1,
-          "text": "Like",
+          "text": "So",
           "start": 103.95,
           "end": 104.05,
-          "confidence": 0.25
+          "confidence": 0.805
         },
         {
           "word_index": 2,
-          "text": "I",
+          "text": "You're",
           "start": 104.1,
           "end": 104.2,
           "confidence": 0.25
         },
         {
           "word_index": 3,
-          "text": "Really",
-          "start": 104.85,
-          "end": 104.95,
-          "confidence": 0.788
+          "text": "A",
+          "start": 104.25,
+          "end": 104.35,
+          "confidence": 0.25
         },
         {
           "word_index": 4,
-          "text": "Rough",
-          "start": 105.0,
-          "end": 105.1,
-          "confidence": 0.743
+          "text": "Tough",
+          "start": 104.4,
+          "end": 104.5,
+          "confidence": 0.25
         },
         {
           "word_index": 5,
           "text": "Guy",
-          "start": 105.15,
-          "end": 105.25,
+          "start": 104.55,
+          "end": 104.65,
           "confidence": 0.25
+        }
+      ],
+      "y": 91,
+      "word_rois": [
+        [
+          117,
+          93,
+          45,
+          20
+        ],
+        [
+          165,
+          93,
+          100,
+          20
+        ],
+        [
+          267,
+          93,
+          28,
+          20
+        ],
+        [
+          297,
+          93,
+          102,
+          20
+        ],
+        [
+          402,
+          93,
+          61,
+          20
+        ]
+      ],
+      "char_rois": []
+    },
+    {
+      "line_index": 25,
+      "text": "Like I Really Rough Guy",
+      "start": 105.35,
+      "end": 106.2,
+      "confidence": 0.5,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Like",
+          "start": 105.35,
+          "end": 105.45,
+          "confidence": 0.5
+        },
+        {
+          "word_index": 2,
+          "text": "I",
+          "start": 105.5,
+          "end": 105.6,
+          "confidence": 0.5
+        },
+        {
+          "word_index": 3,
+          "text": "Really",
+          "start": 105.65,
+          "end": 105.75,
+          "confidence": 0.5
+        },
+        {
+          "word_index": 4,
+          "text": "Rough",
+          "start": 105.8,
+          "end": 105.9,
+          "confidence": 0.5
+        },
+        {
+          "word_index": 5,
+          "text": "Guy",
+          "start": 105.95,
+          "end": 106.2,
+          "confidence": 0.5
         }
       ],
       "y": 93,
@@ -2161,45 +2135,45 @@
       "char_rois": []
     },
     {
-      "line_index": 27,
+      "line_index": 26,
       "text": "Just Can't Get Enough Guy",
-      "start": 105.5,
-      "end": 107.1,
+      "start": 107.25,
+      "end": 108.85,
       "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
           "text": "Just",
-          "start": 105.5,
-          "end": 105.8,
+          "start": 107.25,
+          "end": 107.55,
           "confidence": 0.5
         },
         {
           "word_index": 2,
           "text": "Can't",
-          "start": 105.85,
-          "end": 106.1,
+          "start": 107.6,
+          "end": 107.85,
           "confidence": 0.5
         },
         {
           "word_index": 3,
           "text": "Get",
-          "start": 106.15,
-          "end": 106.45,
+          "start": 107.9,
+          "end": 108.2,
           "confidence": 0.5
         },
         {
           "word_index": 4,
           "text": "Enough",
-          "start": 106.5,
-          "end": 106.8,
+          "start": 108.25,
+          "end": 108.55,
           "confidence": 0.5
         },
         {
           "word_index": 5,
           "text": "Guy",
-          "start": 106.85,
-          "end": 107.1,
+          "start": 108.6,
+          "end": 108.85,
           "confidence": 0.5
         }
       ],
@@ -2239,7 +2213,7 @@
       "char_rois": []
     },
     {
-      "line_index": 28,
+      "line_index": 27,
       "text": "Chest Always So Puffed Guy",
       "start": 108.9,
       "end": 110.45,
@@ -2317,7 +2291,7 @@
       "char_rois": []
     },
     {
-      "line_index": 29,
+      "line_index": 28,
       "text": "Im That Bad Type",
       "start": 110.45,
       "end": 111.0,
@@ -2382,116 +2356,116 @@
       "char_rois": []
     },
     {
-      "line_index": 30,
-      "text": "Make Your Girlfriend Mad Type",
-      "start": 119.15,
-      "end": 120.45,
-      "confidence": 0.4,
+      "line_index": 29,
+      "text": "Micht Seduce Your Dad Type",
+      "start": 111.0,
+      "end": 115.0,
+      "confidence": 0.313,
       "words": [
         {
           "word_index": 1,
-          "text": "Make",
-          "start": 119.15,
-          "end": 119.25,
-          "confidence": 1.0
-        },
-        {
-          "word_index": 2,
-          "text": "Your",
-          "start": 119.45,
-          "end": 119.55,
+          "text": "Micht",
+          "start": 111.0,
+          "end": 111.1,
           "confidence": 0.25
         },
         {
+          "word_index": 2,
+          "text": "Seduce",
+          "start": 114.0,
+          "end": 114.1,
+          "confidence": 0.565
+        },
+        {
           "word_index": 3,
-          "text": "Girlfriend",
-          "start": 119.75,
-          "end": 119.85,
+          "text": "Your",
+          "start": 114.3,
+          "end": 114.4,
           "confidence": 0.25
         },
         {
           "word_index": 4,
-          "text": "Mad",
-          "start": 120.05,
-          "end": 120.15,
+          "text": "Dad",
+          "start": 114.6,
+          "end": 114.7,
           "confidence": 0.25
         },
         {
           "word_index": 5,
           "text": "Type",
-          "start": 120.35,
-          "end": 120.45,
+          "start": 114.9,
+          "end": 115.0,
           "confidence": 0.25
         }
       ],
       "y": 90,
       "word_rois": [
         [
-          40,
-          90,
-          90,
-          21
+          65,
+          93,
+          97,
+          18
         ],
         [
-          132,
-          90,
+          164,
+          93,
+          122,
+          18
+        ],
+        [
+          288,
+          93,
           81,
-          21
+          18
         ],
         [
-          216,
-          90,
-          168,
-          21
+          371,
+          93,
+          63,
+          18
         ],
         [
-          386,
-          90,
-          74,
-          21
-        ],
-        [
-          462,
-          90,
+          436,
+          93,
           75,
-          21
+          18
         ]
       ],
       "char_rois": []
     },
     {
-      "line_index": 31,
+      "line_index": 30,
       "text": "Im The Bad Guy",
-      "start": 120.45,
-      "end": 121.0,
+      "start": 116.5,
+      "end": 117.1,
       "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
           "text": "Im",
-          "start": 120.45,
-          "end": 120.55,
+          "start": 116.5,
+          "end": 116.65,
           "confidence": 0.5
         },
         {
           "word_index": 2,
           "text": "The",
-          "start": 120.6,
-          "end": 120.7,
+          "start": 116.7,
+          "end": 116.8,
           "confidence": 0.5
         },
         {
           "word_index": 3,
           "text": "Bad",
-          "start": 120.75,
-          "end": 120.85,
+          "start": 116.85,
+          "end": 116.95,
           "confidence": 0.5
         },
         {
           "word_index": 4,
           "text": "Guy",
-          "start": 120.9,
-          "end": 121.0,
+          "start": 117.0,
+          "end": 117.1,
           "confidence": 0.5
         }
       ],
@@ -2525,17 +2499,17 @@
       "char_rois": []
     },
     {
-      "line_index": 32,
+      "line_index": 31,
       "text": "Duh",
-      "start": 121.8,
-      "end": 122.6,
+      "start": 120.15,
+      "end": 120.95,
       "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
           "text": "Duh",
-          "start": 121.8,
-          "end": 122.6,
+          "start": 120.15,
+          "end": 120.95,
           "confidence": 0.5
         }
       ],
@@ -2551,7 +2525,7 @@
       "char_rois": []
     },
     {
-      "line_index": 33,
+      "line_index": 32,
       "text": "Im The Bad Guy",
       "start": 127.25,
       "end": 130.6,
@@ -2616,7 +2590,7 @@
       "char_rois": []
     },
     {
-      "line_index": 34,
+      "line_index": 33,
       "text": "Duh",
       "start": 134.45,
       "end": 135.25,
@@ -2642,33 +2616,7 @@
       "char_rois": []
     },
     {
-      "line_index": 35,
-      "text": "Duhi",
-      "start": 135.65,
-      "end": 136.45,
-      "confidence": 0.5,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "Duhi",
-          "start": 135.65,
-          "end": 136.45,
-          "confidence": 0.5
-        }
-      ],
-      "y": 93,
-      "word_rois": [
-        [
-          259,
-          93,
-          64,
-          18
-        ]
-      ],
-      "char_rois": []
-    },
-    {
-      "line_index": 36,
+      "line_index": 34,
       "text": "Im Only Good At Bein' Bad Bad",
       "start": 140.45,
       "end": 148.3,
@@ -2772,63 +2720,50 @@
       "char_rois": []
     },
     {
-      "line_index": 37,
-      "text": "J Like When You Get Mad",
-      "start": 159.2,
+      "line_index": 35,
+      "text": "Like When You Get Mad",
+      "start": 159.15,
       "end": 161.6,
       "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
-          "text": "J",
-          "start": 159.2,
-          "end": 159.45,
+          "text": "Like",
+          "start": 159.15,
+          "end": 159.65,
           "confidence": 0.5
         },
         {
           "word_index": 2,
-          "text": "Like",
-          "start": 159.5,
-          "end": 159.9,
+          "text": "When",
+          "start": 159.7,
+          "end": 160.15,
           "confidence": 0.5
         },
         {
           "word_index": 3,
-          "text": "When",
-          "start": 159.95,
-          "end": 160.35,
+          "text": "You",
+          "start": 160.2,
+          "end": 160.65,
           "confidence": 0.5
         },
         {
           "word_index": 4,
-          "text": "You",
-          "start": 160.4,
-          "end": 160.75,
+          "text": "Get",
+          "start": 160.7,
+          "end": 161.1,
           "confidence": 0.5
         },
         {
           "word_index": 5,
-          "text": "Get",
-          "start": 160.8,
-          "end": 161.2,
-          "confidence": 0.5
-        },
-        {
-          "word_index": 6,
           "text": "Mad",
-          "start": 161.25,
+          "start": 161.15,
           "end": 161.6,
           "confidence": 0.5
         }
       ],
       "y": 90,
       "word_rois": [
-        [
-          96,
-          90,
-          16,
-          21
-        ],
         [
           97,
           93,
@@ -2844,13 +2779,13 @@
         [
           185,
           93,
-          95,
+          97,
           20
         ],
         [
-          282,
+          285,
           93,
-          60,
+          57,
           20
         ],
         [
@@ -2869,7 +2804,7 @@
       "char_rois": []
     },
     {
-      "line_index": 38,
+      "line_index": 36,
       "text": "I Guess That Im You're Pretty Alone Glad",
       "start": 163.25,
       "end": 168.95,
@@ -2986,7 +2921,7 @@
       "char_rois": []
     },
     {
-      "line_index": 39,
+      "line_index": 37,
       "text": "You Said She's Scared Of Me",
       "start": 168.95,
       "end": 169.8,
@@ -3077,7 +3012,7 @@
       "char_rois": []
     },
     {
-      "line_index": 40,
+      "line_index": 38,
       "text": "I Mean I Don't See What She Sees",
       "start": 169.8,
       "end": 173.3,
@@ -3194,15 +3129,15 @@
       "char_rois": []
     },
     {
-      "line_index": 41,
-      "text": "I'm But Wearing Maybe Your It's 'cause Cologne",
+      "line_index": 39,
+      "text": "Im But Wearing Maybe Your It's 'cause Cologne",
       "start": 173.3,
       "end": 176.85,
       "confidence": 0.5,
       "words": [
         {
           "word_index": 1,
-          "text": "I'm",
+          "text": "Im",
           "start": 173.3,
           "end": 173.4,
           "confidence": 0.5
@@ -3260,10 +3195,10 @@
       "y": 92,
       "word_rois": [
         [
-          86,
-          103,
+          87,
+          99,
           42,
-          23
+          24
         ],
         [
           127,
@@ -3272,10 +3207,10 @@
           18
         ],
         [
-          131,
-          103,
-          138,
-          23
+          132,
+          99,
+          135,
+          24
         ],
         [
           192,
@@ -3284,10 +3219,10 @@
           18
         ],
         [
-          272,
-          103,
-          80,
-          23
+          270,
+          99,
+          81,
+          24
         ],
         [
           296,
@@ -3302,16 +3237,16 @@
           18
         ],
         [
-          355,
-          103,
+          354,
+          99,
           137,
-          23
+          24
         ]
       ],
       "char_rois": []
     },
     {
-      "line_index": 42,
+      "line_index": 40,
       "text": "Im A Bad Guy",
       "start": 177.4,
       "end": 179.7,
@@ -3376,134 +3311,82 @@
       "char_rois": []
     },
     {
-      "line_index": 43,
-      "text": "Bad Guy Bad Guy",
-      "start": 190.45,
-      "end": 191.55,
-      "confidence": 1.0,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "Bad",
-          "start": 190.45,
-          "end": 191.1,
-          "confidence": 1.0
-        },
-        {
-          "word_index": 2,
-          "text": "Guy",
-          "start": 191.15,
-          "end": 191.25,
-          "confidence": 1.0
-        },
-        {
-          "word_index": 3,
-          "text": "Bad",
-          "start": 191.3,
-          "end": 191.4,
-          "confidence": 1.0
-        },
-        {
-          "word_index": 4,
-          "text": "Guy",
-          "start": 191.45,
-          "end": 191.55,
-          "confidence": 1.0
-        }
-      ],
-      "y": 93,
-      "word_rois": [
-        [
-          155,
-          93,
-          65,
-          18
-        ],
-        [
-          223,
-          93,
-          67,
-          18
-        ],
-        [
-          292,
-          93,
-          68,
-          18
-        ],
-        [
-          362,
-          93,
-          59,
-          18
-        ]
-      ],
-      "char_rois": []
-    },
-    {
-      "line_index": 44,
-      "text": "Im A Bad",
-      "start": 191.55,
-      "end": 191.95,
+      "line_index": 41,
+      "text": "Im A Bad Guy",
+      "start": 190.55,
+      "end": 191.65,
       "confidence": 1.0,
       "words": [
         {
           "word_index": 1,
           "text": "Im",
-          "start": 191.55,
-          "end": 191.65,
+          "start": 190.55,
+          "end": 191.2,
           "confidence": 1.0
         },
         {
           "word_index": 2,
           "text": "A",
-          "start": 191.7,
-          "end": 191.8,
+          "start": 191.25,
+          "end": 191.35,
           "confidence": 1.0
         },
         {
           "word_index": 3,
           "text": "Bad",
-          "start": 191.85,
-          "end": 191.95,
+          "start": 191.4,
+          "end": 191.5,
+          "confidence": 1.0
+        },
+        {
+          "word_index": 4,
+          "text": "Guy",
+          "start": 191.55,
+          "end": 191.65,
           "confidence": 1.0
         }
       ],
       "y": 93,
       "word_rois": [
         [
-          221,
-          93,
-          43,
-          18
+          189,
+          89,
+          41,
+          22
         ],
         [
-          266,
-          93,
-          27,
-          18
+          233,
+          89,
+          25,
+          22
         ],
         [
-          295,
-          93,
-          58,
-          18
+          261,
+          89,
+          65,
+          22
+        ],
+        [
+          329,
+          89,
+          60,
+          22
         ]
       ],
       "char_rois": []
     },
     {
-      "line_index": 45,
+      "line_index": 42,
       "text": "Colalboy",
-      "start": 191.95,
-      "end": 192.05,
+      "start": 191.65,
+      "end": 191.75,
       "confidence": 0.978,
       "words": [
         {
           "word_index": 1,
           "text": "Colalboy",
-          "start": 191.95,
-          "end": 192.05,
+          "start": 191.65,
+          "end": 191.75,
           "confidence": 0.978
         }
       ],

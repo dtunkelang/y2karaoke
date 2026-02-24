@@ -8,7 +8,7 @@ from difflib import SequenceMatcher
 # Set up path to use y2karaoke.core.text_utils
 REPO_ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(REPO_ROOT / "src"))
-from y2karaoke.core.text_utils import normalize_text_basic  # noqa: E402
+from y2karaoke.core.text_utils import normalize_text_basic, make_slug  # noqa: E402
 
 
 def load_words(path):
@@ -74,30 +74,36 @@ print(
 )
 print("|---|---|---|---|---|---|")
 
+import argparse
+parser = argparse.ArgumentParser()
+parser.add_argument("--results-dir", type=str, help="Path to a benchmark results directory")
+args = parser.parse_args()
+
 gold_set_dir = Path("benchmarks/gold_set/")
-visual_gold_dir = Path("benchmarks/gold_set_karaoke_seed/")
+visual_gold_dir = Path(args.results_dir) if args.results_dir else Path("benchmarks/gold_set_karaoke_seed/")
 
 for idx, song in enumerate(config["songs"], 1):
     artist = song["artist"]
     title = song["title"]
+    song_slug = f"{make_slug(artist)}-{make_slug(title)}"
 
     ref_path = None
     ext_path = None
 
-    if "Viva la Vida" in title:
-        ref_path = gold_set_dir / "07_coldplay-viva-la-vida.gold.json"
-        ext_path = visual_gold_dir / "07_coldplay-viva-la-vida.visual.gold.json"
-    elif "Blinding Lights" in title:
-        ref_path = gold_set_dir / "07_the-weeknd-blinding-lights.gold.json"
-        ext_path = visual_gold_dir / "07_the-weeknd-blinding-lights.visual.gold.json"
+    # Find the current gold file
+    ref_matches = list(gold_set_dir.glob(f"{idx:02d}_*.gold.json"))
+    if ref_matches:
+        ref_path = ref_matches[0]
+
+    # Find the generated timing report in the results dir or seed dir
+    if args.results_dir:
+        # Match by slug in results dir since numbering might differ
+        ext_matches = list(visual_gold_dir.glob(f"*_{song_slug}_timing_report.json"))
     else:
-        # Standard index match
-        rp = list(gold_set_dir.glob(f"{idx:02d}_*.gold.json"))
-        ep = list(visual_gold_dir.glob(f"{idx:02d}_*.visual.gold.json"))
-        if rp:
-            ref_path = rp[0]
-        if ep:
-            ext_path = ep[0]
+        ext_matches = list(visual_gold_dir.glob(f"*_{song_slug}.visual.gold.json"))
+    
+    if ext_matches:
+        ext_path = ext_matches[0]
 
     if ref_path and ext_path and ref_path.exists() and ext_path.exists():
         ref_words = load_words(ref_path)
