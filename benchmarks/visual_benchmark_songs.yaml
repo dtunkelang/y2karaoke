@@ -1,0 +1,30 @@
+version: 1
+name: visual_seed_v1
+description: >
+  Visual benchmark songs intentionally included in the seeded karaoke visual gold set.
+  This list excludes songs dropped from visual guardrails due to benchmark/reference mismatch.
+songs:
+  - artist: "Queen"
+    title: "Bohemian Rhapsody"
+  - artist: "Billie Eilish"
+    title: "bad guy"
+  - artist: "Ed Sheeran"
+    title: "Shape of You"
+  - artist: "Dua Lipa"
+    title: "Levitating"
+  - artist: "OneRepublic"
+    title: "Counting Stars"
+  - artist: "Coldplay"
+    title: "Viva La Vida"
+  - artist: "The Weeknd"
+    title: "Blinding Lights"
+  - artist: "Imagine Dragons"
+    title: "Believer"
+  - artist: "Stromae"
+    title: "Papaoutai"
+  - artist: "Indila"
+    title: "Derniere danse"
+  - artist: "ROSALIA"
+    title: "DESPECHA"
+  - artist: "J Balvin"
+    title: "Mi Gente"

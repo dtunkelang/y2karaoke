@@ -18,13 +18,16 @@ except ModuleNotFoundError:  # pragma: no cover - exercised in minimal CI envs
 
 
 def _parse_args() -> argparse.Namespace:
+    default_manifest = Path("benchmarks/visual_benchmark_songs.yaml")
+    if not default_manifest.exists():
+        default_manifest = Path("benchmarks/benchmark_songs.yaml")
     p = argparse.ArgumentParser(
         description="Run visual extraction eval across benchmark set"
     )
     p.add_argument(
         "--manifest",
         type=Path,
-        default=Path("benchmarks/benchmark_songs.yaml"),
+        default=default_manifest,
     )
     p.add_argument(
         "--gold-dir",
@@ -234,6 +237,8 @@ def main() -> int:
     aggregate_rows: list[dict[str, Any]] = []
 
     args.reports_dir.mkdir(parents=True, exist_ok=True)
+    for stale in args.reports_dir.glob("*.json"):
+        stale.unlink(missing_ok=True)
     if args.summary_json.parent:
         args.summary_json.parent.mkdir(parents=True, exist_ok=True)
     args.lrc_dir.mkdir(parents=True, exist_ok=True)
@@ -255,9 +260,9 @@ def main() -> int:
         manifest_match = manifest_by_slug.get(row_slug)
         if manifest_match:
             seen_manifest_slugs.add(row_slug)
-        display_idx = (
-            seed_idx if seed_idx is not None else (manifest_match or {}).get("index")
-        )
+        display_idx = (manifest_match or {}).get("index")
+        if display_idx is None:
+            display_idx = seed_idx
         display_idx = int(display_idx) if isinstance(display_idx, int) else 0
         song_label = f"{artist} - {title}"
 
