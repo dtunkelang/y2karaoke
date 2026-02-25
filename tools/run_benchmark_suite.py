@@ -562,6 +562,142 @@ def _extract_alignment_diagnostics(report: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def _lexical_tokens_basic(text: str) -> list[str]:
+    tokens: list[str] = []
+    for raw in text.split():
+        tok = "".join(ch for ch in raw.lower() if ch.isalpha() or ch == "'")
+        if tok:
+            tokens.append(tok)
+    return tokens
+
+
+def _lexical_tokens_compact(text: str) -> list[str]:
+    tokens: list[str] = []
+    for raw in text.split():
+        tok = "".join(ch for ch in raw.lower() if ch.isalpha())
+        if tok:
+            tokens.append(tok)
+    return tokens
+
+
+def _best_lexical_match_index(
+    token: str, pool: list[str], used: list[bool], min_ratio: float = 0.86
+) -> int | None:
+    best_idx: int | None = None
+    best_score = 0.0
+    for idx, cand in enumerate(pool):
+        if used[idx]:
+            continue
+        if token == cand:
+            return idx
+        score = SequenceMatcher(None, token, cand).ratio()
+        if score > best_score:
+            best_score = score
+            best_idx = idx
+    if best_idx is None or best_score < min_ratio:
+        return None
+    return best_idx
+
+
+def _extract_lexical_mismatch_diagnostics(
+    report: dict[str, Any],
+    metrics: dict[str, Any],
+    alignment_policy_hint: dict[str, Any] | None = None,
+) -> dict[str, Any] | None:
+    hint = ""
+    if isinstance(alignment_policy_hint, dict):
+        hint = str(alignment_policy_hint.get("hint") or "")
+    if hint != "review_dtw_lexical_matching":
+        return None
+
+    lines = report.get("lines")
+    if not isinstance(lines, list) or not lines:
+        return None
+
+    line_count_analyzed = 0
+    total_line_tokens = 0
+    compact_rescue = 0
+    apostrophe_rescue = 0
+    samples: list[dict[str, Any]] = []
+
+    for line in lines:
+        if not isinstance(line, dict):
+            continue
+        line_text = str(line.get("text") or "")
+        win_words = line.get("whisper_window_words")
+        if not line_text or not isinstance(win_words, list):
+            continue
+        whisper_text = " ".join(
+            str(w.get("text") or "")
+            for w in win_words
+            if isinstance(w, dict) and str(w.get("text") or "").strip()
+        )
+        if not whisper_text:
+            continue
+        line_count_analyzed += 1
+
+        line_basic = _lexical_tokens_basic(line_text)
+        line_compact = _lexical_tokens_compact(line_text)
+        wh_basic = _lexical_tokens_basic(whisper_text)
+        wh_compact = _lexical_tokens_compact(whisper_text)
+        if not line_basic or not wh_basic:
+            continue
+
+        total_line_tokens += len(line_basic)
+        used_basic = [False] * len(wh_basic)
+        used_compact = [False] * len(wh_compact)
+        rescued_tokens: list[str] = []
+        apostrophe_tokens: list[str] = []
+        unmatched_tokens: list[str] = []
+
+        for i, tok_basic in enumerate(line_basic):
+            tok_compact = (
+                line_compact[i] if i < len(line_compact) else tok_basic.replace("'", "")
+            )
+            idx_basic = _best_lexical_match_index(tok_basic, wh_basic, used_basic)
+            if idx_basic is not None:
+                used_basic[idx_basic] = True
+                continue
+            unmatched_tokens.append(tok_basic)
+            idx_compact = _best_lexical_match_index(
+                tok_compact, wh_compact, used_compact
+            )
+            if idx_compact is not None:
+                used_compact[idx_compact] = True
+                rescued_tokens.append(tok_basic)
+                compact_rescue += 1
+                if "'" in tok_basic:
+                    apostrophe_tokens.append(tok_basic)
+                    apostrophe_rescue += 1
+
+        if rescued_tokens and len(samples) < 8:
+            samples.append(
+                {
+                    "line_index": int(line.get("index") or 0),
+                    "line_text": line_text,
+                    "whisper_window_excerpt": whisper_text[:180],
+                    "rescued_tokens": rescued_tokens[:8],
+                    "apostrophe_rescued_tokens": apostrophe_tokens[:8],
+                    "unmatched_tokens": unmatched_tokens[:8],
+                }
+            )
+
+    if total_line_tokens <= 0:
+        return None
+
+    return {
+        "active": True,
+        "line_count_analyzed": line_count_analyzed,
+        "dtw_line_coverage": float(metrics.get("dtw_line_coverage") or 0.0),
+        "dtw_word_coverage": float(metrics.get("dtw_word_coverage") or 0.0),
+        "compact_rescue_token_count": int(compact_rescue),
+        "apostrophe_rescue_token_count": int(apostrophe_rescue),
+        "compact_rescue_ratio": round(compact_rescue / total_line_tokens, 4),
+        "apostrophe_rescue_ratio": round(apostrophe_rescue / total_line_tokens, 4),
+        "samples": samples,
+    }
+
+
 def _infer_reference_divergence_suspicion(metrics: dict[str, Any]) -> dict[str, Any]:
     if not isinstance(metrics, dict):
         return {"suspected": False, "score": 0.0, "confidence": "low", "evidence": []}
@@ -1787,6 +1923,11 @@ def _refresh_cached_metrics(
         alignment_diagnostics=record.get("alignment_diagnostics"),
         reference_divergence=record.get("reference_divergence"),
     )
+    record["lexical_mismatch_diagnostics"] = _extract_lexical_mismatch_diagnostics(
+        report,
+        record["metrics"],
+        alignment_policy_hint=record.get("alignment_policy_hint"),
+    )
     return record
 
 
@@ -2597,6 +2738,13 @@ def _run_song_command(
                 record["metrics"],
                 alignment_diagnostics=record.get("alignment_diagnostics"),
                 reference_divergence=record.get("reference_divergence"),
+            )
+            record["lexical_mismatch_diagnostics"] = (
+                _extract_lexical_mismatch_diagnostics(
+                    report,
+                    record["metrics"],
+                    alignment_policy_hint=record.get("alignment_policy_hint"),
+                )
             )
             record["status"] = "ok"
     except subprocess.TimeoutExpired as exc:
