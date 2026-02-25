@@ -16,6 +16,7 @@ from time import perf_counter
 from pathlib import Path
 from types import SimpleNamespace
 from typing import Any, Dict, List, Optional
+from difflib import SequenceMatcher
 
 # Add src to path if running from tools/
 src_path = Path(__file__).resolve().parents[1] / "src"
@@ -54,7 +55,7 @@ from y2karaoke.core.visual.bootstrap_media import (  # noqa: E402
 from y2karaoke.core.visual.bootstrap_selection import (  # noqa: E402
     select_candidate_with_rankings as _select_candidate_with_rankings_impl,
 )
-from y2karaoke.core.text_utils import make_slug  # noqa: E402
+from y2karaoke.core.text_utils import make_slug, normalize_text_basic as normalize_text  # noqa: E402
 from y2karaoke.vision.ocr import get_ocr_engine  # noqa: E402,F401
 from y2karaoke.vision.roi import detect_lyric_roi  # noqa: E402
 from y2karaoke.vision.suitability import analyze_visual_suitability  # noqa: E402
@@ -267,6 +268,156 @@ def _build_refined_lines_output(
     return _build_refined_lines_output_impl(t_lines, artist=artist, title=title)
 
 
+def _summarize_reconstruction_uncertainty(t_lines: list[Any]) -> dict[str, Any]:
+    scores: list[float] = []
+    weak_count = 0
+    fallback_count = 0
+    low_support_count = 0
+    examples: list[dict[str, Any]] = []
+    for ln in t_lines:
+        meta = getattr(ln, "reconstruction_meta", None)
+        if not isinstance(meta, dict):
+            continue
+        score = meta.get("uncertainty_score")
+        if isinstance(score, (int, float)):
+            score_f = float(score)
+            scores.append(score_f)
+            if score_f >= 0.55:
+                weak_count += 1
+        if bool(meta.get("used_observed_fallback")):
+            fallback_count += 1
+        support = meta.get("selected_text_support_ratio")
+        if isinstance(support, (int, float)) and float(support) < 0.5:
+            low_support_count += 1
+
+        if isinstance(score, (int, float)):
+            examples.append(
+                {
+                    "text": str(getattr(ln, "text", ""))[:120],
+                    "uncertainty_score": round(float(score), 3),
+                    "selected_text_support_ratio": meta.get(
+                        "selected_text_support_ratio"
+                    ),
+                    "position_support_min": meta.get("position_support_min"),
+                    "position_support_mean": meta.get("position_support_mean"),
+                    "observations": meta.get("observations"),
+                    "text_variant_count": meta.get("text_variant_count"),
+                }
+            )
+
+    if not scores:
+        return {"available": False}
+    scores_sorted = sorted(scores)
+    p95_idx = int(round((len(scores_sorted) - 1) * 0.95))
+    return {
+        "available": True,
+        "line_count_with_meta": len(scores),
+        "uncertainty_score_mean": round(sum(scores) / len(scores), 3),
+        "uncertainty_score_p95": round(scores_sorted[p95_idx], 3),
+        "high_uncertainty_line_count": weak_count,
+        "fallback_selected_count": fallback_count,
+        "low_text_support_line_count": low_support_count,
+        "top_uncertain_examples": sorted(
+            examples, key=lambda r: float(r.get("uncertainty_score", 0.0)), reverse=True
+        )[:3],
+    }
+
+
+def _summarize_repeat_clusters(lines_out: list[dict[str, Any]]) -> dict[str, Any]:
+    if not lines_out:
+        return {"available": False}
+
+    texts = [str(ln.get("text", "") or "") for ln in lines_out]
+    norms = [normalize_text(text) for text in texts]
+    token_lists = [[t for t in n.split() if t] for n in norms]
+    n = len(lines_out)
+    parents = list(range(n))
+
+    def find(x: int) -> int:
+        while parents[x] != x:
+            parents[x] = parents[parents[x]]
+            x = parents[x]
+        return x
+
+    def union(a: int, b: int) -> None:
+        ra = find(a)
+        rb = find(b)
+        if ra != rb:
+            parents[rb] = ra
+
+    for i in range(n):
+        if len(token_lists[i]) < 2:
+            continue
+        for j in range(i + 1, n):
+            if len(token_lists[j]) < 2:
+                continue
+            if abs(len(token_lists[i]) - len(token_lists[j])) > 2:
+                continue
+            ratio = SequenceMatcher(None, norms[i], norms[j]).ratio()
+            if ratio < 0.84:
+                continue
+            shared = len(set(token_lists[i]) & set(token_lists[j]))
+            if shared < 2:
+                continue
+            union(i, j)
+
+    groups: dict[int, list[int]] = {}
+    for i in range(n):
+        groups.setdefault(find(i), []).append(i)
+    repeat_groups = [sorted(g) for g in groups.values() if len(g) >= 2]
+    if not repeat_groups:
+        return {"available": True, "cluster_count": 0}
+
+    cluster_summaries: list[dict[str, Any]] = []
+    chronology_conflicts = 0
+    variant_heavy = 0
+
+    for group in repeat_groups:
+        starts = [float(lines_out[i].get("start", 0.0) or 0.0) for i in group]
+        group_norms = [norms[i] for i in group]
+        unique_norms = sorted({g for g in group_norms if g})
+        variant_count = len(unique_norms)
+        if variant_count >= 3:
+            variant_heavy += 1
+        inversions = 0
+        for a in range(len(group) - 1):
+            for b in range(a + 1, len(group)):
+                if starts[a] > starts[b]:
+                    inversions += 1
+        if inversions > 0:
+            chronology_conflicts += 1
+        span = max(starts) - min(starts) if starts else 0.0
+        cluster_summaries.append(
+            {
+                "size": len(group),
+                "variant_count": variant_count,
+                "span_sec": round(span, 2),
+                "chronology_inversions": inversions,
+                "example_text": texts[group[0]][:120],
+                "variant_examples": unique_norms[:3],
+            }
+        )
+
+    cluster_summaries.sort(
+        key=lambda c: (
+            int(c.get("chronology_inversions", 0)),
+            int(c.get("variant_count", 0)),
+            int(c.get("size", 0)),
+            float(c.get("span_sec", 0.0)),
+        ),
+        reverse=True,
+    )
+
+    return {
+        "available": True,
+        "cluster_count": len(repeat_groups),
+        "clusters_size_ge_3": sum(1 for g in repeat_groups if len(g) >= 3),
+        "variant_heavy_cluster_count": variant_heavy,
+        "chronology_conflict_cluster_count": chronology_conflicts,
+        "top_problem_clusters": cluster_summaries[:5],
+    }
+
+
 def _parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser()
     p.add_argument("--artist")
@@ -437,6 +588,20 @@ def _bootstrap_refined_lines(
     logger.info(
         f"Reconstructed {len(t_lines)} initial lines in {reconstruct_elapsed:.1f}s."
     )
+    reconstruction_uncertainty = _summarize_reconstruction_uncertainty(t_lines)
+    if reconstruction_uncertainty.get("available"):
+        logger.info(
+            "Reconstruction uncertainty: "
+            "mean=%s p95=%s high=%s/%s fallback=%s low_support=%s"
+            % (
+                reconstruction_uncertainty.get("uncertainty_score_mean"),
+                reconstruction_uncertainty.get("uncertainty_score_p95"),
+                reconstruction_uncertainty.get("high_uncertainty_line_count"),
+                reconstruction_uncertainty.get("line_count_with_meta"),
+                reconstruction_uncertainty.get("fallback_selected_count"),
+                reconstruction_uncertainty.get("low_text_support_line_count"),
+            )
+        )
 
     word_level_score = 0.0
     if selected_metrics:
@@ -492,6 +657,7 @@ def _bootstrap_refined_lines(
             "spell_correction_mode": str(
                 getattr(args, "visual_spell_correction_mode", "full")
             ),
+            "uncertainty": reconstruction_uncertainty,
         },
         "refinement": {
             "mode": refine_mode,
@@ -499,6 +665,7 @@ def _bootstrap_refined_lines(
             "elapsed_sec": round(refine_elapsed, 3),
             "output_line_count": len(lines_out),
             "word_level_score": round(word_level_score, 4),
+            "repeat_structure": _summarize_repeat_clusters(lines_out),
         },
     }
     if return_runtime_metrics:

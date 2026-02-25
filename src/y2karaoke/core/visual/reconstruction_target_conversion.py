@@ -41,6 +41,11 @@ def convert_persistent_lines_to_target_lines(
                 char_rois=None,
                 visibility_start=float(ent.get("first_visible", ent["first"])),
                 visibility_end=float(ent["last"]),
+                reconstruction_meta=(
+                    ent["reconstruction_meta"]
+                    if isinstance(ent.get("reconstruction_meta"), dict)
+                    else None
+                ),
             )
         )
     return out

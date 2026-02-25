@@ -45,3 +45,23 @@ def test_tracked_line_keeps_stable_majority_vote_when_consensus_is_strong() -> N
     voted = track.get_voted_text()
 
     assert voted == "i'm levitating you moonlight"
+
+
+def test_tracked_line_to_dict_includes_reconstruction_meta() -> None:
+    entries = [
+        _entry("and i feel my rhythm", t=0.0),
+        _entry("and we dance your rhythm", t=0.1),
+        _entry("and you dance their rhythm", t=0.2),
+        _entry("and they dance our rhythm", t=0.3),
+    ]
+    track = TrackedLine(entries[0], "track_1")
+    track.entries = entries
+
+    out = track.to_dict()
+    meta = out.get("reconstruction_meta")
+
+    assert isinstance(meta, dict)
+    assert "uncertainty_score" in meta
+    assert "selected_text_support_ratio" in meta
+    assert "position_support_mean" in meta
+    assert "used_observed_fallback" in meta

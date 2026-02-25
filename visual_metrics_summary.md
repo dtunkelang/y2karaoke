@@ -5,15 +5,15 @@
 | 01 | Queen - Bohemian Rhapsody | 0.8986 | 0.9070 |
 | 02 | Billie Eilish - bad guy | 1.0000 | 1.0000 |
 | 03 | Ed Sheeran - Shape of You | 0.9745 | 0.9693 |
-| 04 | Dua Lipa - Levitating | 0.4824 | 0.5427 |
+| 04 | Dua Lipa - Levitating | 0.8420 | 0.7765 |
 | 05 | Bruno Mars - Uptown Funk | 0.6756 | 0.7328 |
 | 06 | OneRepublic - Counting Stars | 0.6091 | 0.7013 |
-| 07 | Coldplay - Viva La Vida | 0.6971 | 0.7796 |
+| 07 | Coldplay - Viva La Vida | 0.9877 | 0.9694 |
 | 08 | The Weeknd - Blinding Lights | 0.8793 | 0.8855 |
 | 09 | Imagine Dragons - Believer | 0.8335 | 0.7742 |
-| 10 | Stromae - Papaoutai | 0.6969 | 0.7036 |
-| 11 | Indila - Derniere danse | 0.3682 | 0.5665 |
-| 12 | ROSALIA - DESPECHA | 0.5483 | 0.5215 |
+| 10 | Stromae - Papaoutai | 0.6528 | 0.7883 |
+| 11 | Indila - Derniere danse | 0.7550 | 0.7019 |
+| 12 | ROSALIA - DESPECHA | 0.7041 | 0.6936 |
 | 13 | J Balvin - Mi Gente | 0.8595 | 0.8467 |
 
 ## Queen - Bohemian Rhapsody
@@ -29,8 +29,8 @@ strict: precision=0.9503 recall=1.0000 f1=0.9745 matched=669/669 ext=704
 repeat_capped: precision=0.9405 recall=1.0000 f1=0.9693 matched=648/648 ext=689
 
 ## Dua Lipa - Levitating
-strict: precision=0.4372 recall=0.5382 f1=0.4824 matched=268/498 ext=613
-repeat_capped: precision=0.4332 recall=0.7265 f1=0.5427 matched=162/223 ext=374
+strict: precision=0.8551 recall=0.8293 f1=0.8420 matched=413/498 ext=483
+repeat_capped: precision=0.7444 recall=0.8115 f1=0.7765 matched=198/244 ext=266
 
 ## Bruno Mars - Uptown Funk
 strict: precision=0.7681 recall=0.6029 f1=0.6756 matched=328/544 ext=427
@@ -41,8 +41,8 @@ strict: precision=0.6342 recall=0.5859 f1=0.6091 matched=300/512 ext=473
 repeat_capped: precision=0.6454 recall=0.7678 f1=0.7013 matched=162/211 ext=251
 
 ## Coldplay - Viva La Vida
-strict: precision=0.6710 recall=0.7254 f1=0.6971 matched=206/284 ext=307
-repeat_capped: precision=0.7520 recall=0.8093 f1=0.7796 matched=191/236 ext=254
+strict: precision=0.9860 recall=0.9894 f1=0.9877 matched=281/284 ext=285
+repeat_capped: precision=0.9642 recall=0.9746 f1=0.9694 matched=269/276 ext=279
 
 ## The Weeknd - Blinding Lights
 strict: precision=0.8465 recall=0.9149 f1=0.8793 matched=215/235 ext=254
@@ -53,16 +53,16 @@ strict: precision=0.7723 recall=0.9053 f1=0.8335 matched=373/412 ext=483
 repeat_capped: precision=0.7374 recall=0.8148 f1=0.7742 matched=264/324 ext=358
 
 ## Stromae - Papaoutai
-strict: precision=0.6135 recall=0.8065 f1=0.6969 matched=300/372 ext=489
-repeat_capped: precision=0.6006 recall=0.8491 f1=0.7036 matched=197/232 ext=328
+strict: precision=0.6753 recall=0.6317 f1=0.6528 matched=235/372 ext=348
+repeat_capped: precision=0.7673 recall=0.8103 f1=0.7883 matched=188/232 ext=245
 
 ## Indila - Derniere danse
-strict: precision=0.2729 recall=0.5657 f1=0.3682 matched=155/274 ext=568
-repeat_capped: precision=0.4204 recall=0.8684 f1=0.5665 matched=132/152 ext=314
+strict: precision=0.7509 recall=0.7591 f1=0.7550 matched=208/274 ext=277
+repeat_capped: precision=0.6647 recall=0.7434 f1=0.7019 matched=113/152 ext=170
 
 ## ROSALIA - DESPECHA
-strict: precision=0.4225 recall=0.7809 f1=0.5483 matched=278/356 ext=658
-repeat_capped: precision=0.3974 recall=0.7583 f1=0.5215 matched=182/240 ext=458
+strict: precision=0.7031 recall=0.7051 f1=0.7041 matched=251/356 ext=357
+repeat_capped: precision=0.7026 recall=0.6849 f1=0.6936 matched=163/238 ext=232
 
 ## J Balvin - Mi Gente
 strict: precision=0.9056 recall=0.8178 f1=0.8595 matched=211/258 ext=233

@@ -154,6 +154,72 @@ def test_clamp_confidence() -> None:
     assert _MODULE._clamp_confidence(-0.5) == 0.0
 
 
+def test_summarize_reconstruction_uncertainty_aggregates_meta() -> None:
+    lines = [
+        TargetLine(
+            line_index=1,
+            start=1.0,
+            end=2.0,
+            text="A",
+            words=["A"],
+            y=100.0,
+            reconstruction_meta={
+                "uncertainty_score": 0.2,
+                "selected_text_support_ratio": 0.9,
+                "used_observed_fallback": False,
+                "position_support_min": 0.8,
+                "position_support_mean": 0.9,
+                "observations": 4,
+                "text_variant_count": 1,
+            },
+        ),
+        TargetLine(
+            line_index=2,
+            start=2.0,
+            end=3.0,
+            text="B",
+            words=["B"],
+            y=120.0,
+            reconstruction_meta={
+                "uncertainty_score": 0.7,
+                "selected_text_support_ratio": 0.4,
+                "used_observed_fallback": True,
+                "position_support_min": 0.3,
+                "position_support_mean": 0.45,
+                "observations": 3,
+                "text_variant_count": 3,
+            },
+        ),
+    ]
+
+    summary = _MODULE._summarize_reconstruction_uncertainty(lines)
+
+    assert summary["available"] is True
+    assert summary["line_count_with_meta"] == 2
+    assert summary["high_uncertainty_line_count"] == 1
+    assert summary["fallback_selected_count"] == 1
+    assert summary["low_text_support_line_count"] == 1
+    assert len(summary["top_uncertain_examples"]) == 2
+
+
+def test_summarize_repeat_clusters_flags_variant_heavy_groups() -> None:
+    lines_out = [
+        {"text": "don't believe me just watch", "start": 10.0, "confidence": 0.8},
+        {"text": "don't believe me just watch", "start": 40.0, "confidence": 0.8},
+        {"text": "believe me just watch", "start": 41.0, "confidence": 0.2},
+        {"text": "don't believe me just watc", "start": 70.0, "confidence": 0.2},
+        {"text": "another line entirely", "start": 12.0, "confidence": 0.8},
+    ]
+
+    summary = _MODULE._summarize_repeat_clusters(lines_out)
+
+    assert summary["available"] is True
+    assert summary["cluster_count"] >= 1
+    assert summary["clusters_size_ge_3"] >= 1
+    assert summary["variant_heavy_cluster_count"] >= 1
+    assert len(summary["top_problem_clusters"]) >= 1
+
+
 def test_select_candidate_with_rankings_explicit_url(tmp_path) -> None:
     class Args:
         candidate_url = "https://youtube.com/watch?v=abc123def45"

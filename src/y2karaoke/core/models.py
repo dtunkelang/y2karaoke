@@ -329,3 +329,4 @@ class TargetLine:
     char_rois: Optional[List[Optional[tuple[int, int, int, int]]]] = None
     visibility_start: Optional[float] = None
     visibility_end: Optional[float] = None
+    reconstruction_meta: Optional[Dict[str, Any]] = None

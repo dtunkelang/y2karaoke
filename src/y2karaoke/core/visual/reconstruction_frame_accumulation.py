@@ -5,7 +5,7 @@ from __future__ import annotations
 import logging
 import collections
 import statistics
-from typing import Any, Callable, Dict, List
+from typing import Any, Callable, Dict, List, Tuple
 
 from ..text_utils import (
     normalize_ocr_line,
@@ -77,15 +77,28 @@ class TrackedLine:
             return ""
         return self.text_counts.most_common(1)[0][0]
 
-    def get_voted_text(self) -> str:
+    def _compute_voted_text_and_evidence(self) -> Tuple[str, Dict[str, Any]]:
         # Perform word-by-word voting across all frames to filter out transient OCR noise.
         # This is expensive and should only be called once per track on finalization.
         if not self.entries:
-            return ""
+            return "", {}
 
         all_line_tokens = [e["words"] for e in self.entries]
         if not all_line_tokens:
-            return self.best_text
+            best = self.best_text
+            return best, {
+                "observations": 0,
+                "target_word_count": 0,
+                "token_count_variants": 0,
+                "valid_entry_fraction": 0.0,
+                "text_variant_count": 0,
+                "selected_text_support_ratio": 0.0,
+                "position_support_mean": 0.0,
+                "position_support_min": 0.0,
+                "weak_vote_positions": 0,
+                "used_observed_fallback": False,
+                "uncertainty_score": 1.0,
+            }
 
         # Use the median word count as the target structure
         word_counts = [len(tokens) for tokens in all_line_tokens]
@@ -96,7 +109,24 @@ class TrackedLine:
             tokens for tokens in all_line_tokens if len(tokens) == target_wc
         ]
         if not valid_entries:
-            return self.best_text
+            best = self.best_text
+            total_entries = len(self.entries)
+            support = self.text_counts.get(best, 0)
+            return best, {
+                "observations": total_entries,
+                "target_word_count": target_wc,
+                "token_count_variants": len(set(word_counts)),
+                "valid_entry_fraction": 0.0,
+                "text_variant_count": len(self.text_counts),
+                "selected_text_support_ratio": round(
+                    support / float(max(total_entries, 1)), 3
+                ),
+                "position_support_mean": 0.0,
+                "position_support_min": 0.0,
+                "weak_vote_positions": target_wc,
+                "used_observed_fallback": True,
+                "uncertainty_score": 1.0,
+            }
 
         valid_entry_texts = [
             str(e.get("text", ""))
@@ -122,18 +152,23 @@ class TrackedLine:
             best_word = max(weighted_votes.items(), key=lambda x: x[1])[0]
             final_words.append(best_word)
         voted_text = " ".join(final_words)
+        total_entries = len(self.entries)
+        valid_fraction = len(valid_entries) / float(max(total_entries, 1))
+        supports = []
+        for i in range(target_wc):
+            supports.append(
+                position_vote_counts[i].get(final_words[i], 0)
+                / float(max(1, len(valid_entries)))
+            )
+        avg_support = sum(supports) / len(supports) if supports else 1.0
+        min_support = min(supports) if supports else 1.0
+        weak_positions = sum(1 for s in supports if s < 0.5)
+        used_observed_fallback = False
 
         # When per-position consensus is weak, per-word voting can synthesize a
         # never-observed "Frankenstein" line. In that case prefer the strongest
         # observed candidate with the target word count.
         if voted_text not in text_freq:
-            n_valid = max(1, len(valid_entries))
-            supports = [
-                position_vote_counts[i].get(final_words[i], 0) / float(n_valid)
-                for i in range(target_wc)
-            ]
-            weak_positions = sum(1 for s in supports if s < 0.5)
-            avg_support = sum(supports) / len(supports) if supports else 1.0
             if avg_support < 0.72 or weak_positions >= 2:
                 best_tokens = max(
                     valid_entries,
@@ -149,13 +184,41 @@ class TrackedLine:
                         " ".join(toks),
                     ),
                 )
-                return " ".join(best_tokens)
+                voted_text = " ".join(best_tokens)
+                used_observed_fallback = True
 
+        selected_support_ratio = text_freq.get(voted_text, 0) / float(
+            max(total_entries, 1)
+        )
+        # Higher score => more uncertainty (0..1)
+        uncertainty_score = (
+            (1.0 - min(max(valid_fraction, 0.0), 1.0)) * 0.35
+            + (1.0 - min(max(avg_support, 0.0), 1.0)) * 0.35
+            + (1.0 - min(max(selected_support_ratio, 0.0), 1.0)) * 0.2
+            + (min(weak_positions, max(target_wc, 1)) / float(max(target_wc, 1))) * 0.1
+        )
+        evidence = {
+            "observations": total_entries,
+            "target_word_count": target_wc,
+            "token_count_variants": len(set(word_counts)),
+            "valid_entry_fraction": round(valid_fraction, 3),
+            "text_variant_count": len(self.text_counts),
+            "selected_text_support_ratio": round(selected_support_ratio, 3),
+            "position_support_mean": round(avg_support, 3),
+            "position_support_min": round(min_support, 3),
+            "weak_vote_positions": weak_positions,
+            "used_observed_fallback": used_observed_fallback,
+            "uncertainty_score": round(max(0.0, min(1.0, uncertainty_score)), 3),
+        }
+        return voted_text, evidence
+
+    def get_voted_text(self) -> str:
+        voted_text, _ = self._compute_voted_text_and_evidence()
         return voted_text
 
     def to_dict(self) -> Dict[str, Any]:
         # Construct the final entry dictionary
-        best_txt = self.get_voted_text()
+        best_txt, evidence = self._compute_voted_text_and_evidence()
 
         # Find the entry that matches best_txt to get 'words' and 'w_rois'
         # Prefer the longest/most complete one if multiple match
@@ -181,6 +244,7 @@ class TrackedLine:
             "vis_count": self.vis_count,
             "w_rois": best_entry["w_rois"],
             "avg_brightness": self.avg_brightness,
+            "reconstruction_meta": evidence,
         }
 
 
