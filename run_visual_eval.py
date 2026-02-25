@@ -56,6 +56,11 @@ def _parse_args() -> argparse.Namespace:
         type=Path,
         default=Path("benchmarks/results/visual_eval_summary.json"),
     )
+    p.add_argument(
+        "--manifest-only",
+        action="store_true",
+        help="Evaluate only seed files that match the manifest (skip gold-only extras).",
+    )
     return p.parse_args()
 
 
@@ -260,6 +265,8 @@ def main() -> int:
         manifest_match = manifest_by_slug.get(row_slug)
         if manifest_match:
             seen_manifest_slugs.add(row_slug)
+        if args.manifest_only and not manifest_match:
+            continue
         display_idx = (manifest_match or {}).get("index")
         if display_idx is None:
             display_idx = seed_idx
@@ -399,6 +406,7 @@ def main() -> int:
         if v is not None
     ]
     aggregate_summary = {
+        "manifest_only": bool(args.manifest_only),
         "song_count": len(gold_files),
         "gold_file_count": len(gold_files),
         "manifest_song_count": len(manifest_songs),

@@ -1,8 +1,8 @@
 version: 1
-name: visual_guardrail_v1
+name: visual_seed_v1
 description: >
-  Visual guardrail songs included in aggregate visual-eval thresholds.
-  This list excludes known source/reference mismatch cases (kept in visual_dev_songs.yaml for development).
+  Visual benchmark songs intentionally included in the seeded karaoke visual gold set.
+  This list excludes songs dropped from visual guardrails due to benchmark/reference mismatch.
 songs:
   - artist: "Queen"
     title: "Bohemian Rhapsody"
@@ -12,6 +12,8 @@ songs:
     title: "Shape of You"
   - artist: "Dua Lipa"
     title: "Levitating"
+  - artist: "OneRepublic"
+    title: "Counting Stars"
   - artist: "Coldplay"
     title: "Viva La Vida"
   - artist: "The Weeknd"

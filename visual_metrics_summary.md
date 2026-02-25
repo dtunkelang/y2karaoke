@@ -6,14 +6,13 @@
 | 02 | Billie Eilish - bad guy | 1.0000 | 1.0000 |
 | 03 | Ed Sheeran - Shape of You | 0.9745 | 0.9693 |
 | 04 | Dua Lipa - Levitating | 0.8420 | 0.7765 |
-| 05 | OneRepublic - Counting Stars | 0.6091 | 0.7013 |
-| 06 | Coldplay - Viva La Vida | 0.9877 | 0.9694 |
-| 07 | The Weeknd - Blinding Lights | 0.8793 | 0.8855 |
-| 08 | Imagine Dragons - Believer | 0.8335 | 0.7742 |
-| 09 | Stromae - Papaoutai | 0.6528 | 0.7883 |
-| 10 | Indila - Derniere danse | 0.7550 | 0.7019 |
-| 11 | ROSALIA - DESPECHA | 0.7041 | 0.6936 |
-| 12 | J Balvin - Mi Gente | 0.8595 | 0.8467 |
+| 05 | Coldplay - Viva La Vida | 0.9877 | 0.9694 |
+| 06 | The Weeknd - Blinding Lights | 0.8793 | 0.8855 |
+| 07 | Imagine Dragons - Believer | 0.8335 | 0.7742 |
+| 08 | Stromae - Papaoutai | 0.6528 | 0.7883 |
+| 09 | Indila - Derniere danse | 0.7550 | 0.7019 |
+| 10 | ROSALIA - DESPECHA | 0.7041 | 0.6936 |
+| 11 | J Balvin - Mi Gente | 0.8595 | 0.8467 |
 
 ## Queen - Bohemian Rhapsody
 strict: precision=0.8454 recall=0.9591 f1=0.8986 matched=328/342 ext=388
@@ -30,10 +29,6 @@ repeat_capped: precision=0.9405 recall=1.0000 f1=0.9693 matched=648/648 ext=689
 ## Dua Lipa - Levitating
 strict: precision=0.8551 recall=0.8293 f1=0.8420 matched=413/498 ext=483
 repeat_capped: precision=0.7444 recall=0.8115 f1=0.7765 matched=198/244 ext=266
-
-## OneRepublic - Counting Stars
-strict: precision=0.6342 recall=0.5859 f1=0.6091 matched=300/512 ext=473
-repeat_capped: precision=0.6454 recall=0.7678 f1=0.7013 matched=162/211 ext=251
 
 ## Coldplay - Viva La Vida
 strict: precision=0.9860 recall=0.9894 f1=0.9877 matched=281/284 ext=285

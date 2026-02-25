@@ -1,13 +1,15 @@
 {
   "schema_version": "1.0",
+  "manifest": "benchmarks/visual_benchmark_songs.yaml",
+  "manifest_only": true,
   "summary_json": "benchmarks/results/visual_eval_summary.json",
   "thresholds": {
-    "min_visual_eval_strict_f1": 0.609,
+    "min_visual_eval_strict_f1": 0.652,
     "min_visual_eval_repeat_capped_f1": 0.693,
-    "min_visual_eval_strict_f1_mean": 0.791,
-    "min_visual_eval_repeat_capped_f1_mean": 0.792,
-    "min_visual_eval_strict_f1_median": 0.808,
-    "min_visual_eval_repeat_capped_f1_median": 0.776
+    "min_visual_eval_strict_f1_mean": 0.81,
+    "min_visual_eval_repeat_capped_f1_mean": 0.804,
+    "min_visual_eval_strict_f1_median": 0.816,
+    "min_visual_eval_repeat_capped_f1_median": 0.804
   },
-  "notes": "Ratchet baseline derived from run_visual_eval.py recommendations on the current 12-song visual benchmark manifest (Uptown Funk intentionally removed from the visual seeded set; includes Coldplay Viva La Vida)."
+  "notes": "Ratchet baseline derived from run_visual_eval.py on the visual guardrail manifest (manifest-only mode). Counting Stars is kept in visual_dev_songs.yaml for block-structure development but excluded from guardrail aggregates due to source/LRC mismatch."
 }

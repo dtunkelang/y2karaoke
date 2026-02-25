@@ -44,20 +44,39 @@ def _load_guardrails(path: Path) -> tuple[Path, dict[str, Any]]:
     summary_json = doc.get(
         "summary_json", "benchmarks/results/visual_eval_summary.json"
     )
+    manifest = doc.get("manifest")
+    manifest_only = bool(doc.get("manifest_only", False))
     thresholds = doc.get("thresholds", {})
     if not isinstance(summary_json, str):
         raise ValueError("'summary_json' must be a string")
+    if manifest is not None and not isinstance(manifest, str):
+        raise ValueError("'manifest' must be a string when provided")
     if not isinstance(thresholds, dict):
         raise ValueError("'thresholds' must be an object")
-    return Path(summary_json), thresholds
+    opts: dict[str, Any] = {
+        "summary_json": Path(summary_json),
+        "thresholds": thresholds,
+        "manifest": Path(manifest) if isinstance(manifest, str) else None,
+        "manifest_only": manifest_only,
+    }
+    return Path(summary_json), opts
 
 
 def main() -> int:
     args = _parse_args()
-    summary_json, thresholds = _load_guardrails(args.guardrails_json)
+    _summary_json_path, config = _load_guardrails(args.guardrails_json)
+    summary_json = config["summary_json"]
+    thresholds = config["thresholds"]
+    manifest = config.get("manifest")
+    manifest_only = bool(config.get("manifest_only", False))
 
     if not args.skip_eval:
-        rc = _run([args.python, "run_visual_eval.py"])
+        eval_cmd = [args.python, "run_visual_eval.py"]
+        if manifest is not None:
+            eval_cmd.extend(["--manifest", str(manifest)])
+        if manifest_only:
+            eval_cmd.append("--manifest-only")
+        rc = _run(eval_cmd)
         if rc != 0:
             return rc
 

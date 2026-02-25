@@ -294,6 +294,10 @@ and enforces committed F1 thresholds from `benchmarks/visual_eval_guardrails.jso
 make visual-eval-guardrails
 ```
 
+`Counting Stars` is intentionally kept in `benchmarks/visual_dev_songs.yaml` for
+block-first extractor development, but excluded from the guardrail manifest because
+this karaoke source's late-section lyric sequence does not match the LRC reference.
+
 To refresh only the metrics summary (without enforcing guardrails):
 
 ```bash
