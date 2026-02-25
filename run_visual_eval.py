@@ -8,6 +8,7 @@ import statistics
 import subprocess
 import sys
 import re
+from difflib import SequenceMatcher
 from pathlib import Path
 from typing import Any
 
@@ -169,6 +170,185 @@ def _floor3(value: float) -> float:
     return math.floor(float(value) * 1000.0) / 1000.0
 
 
+def _preview_norm(text: str) -> str:
+    return re.sub(r"[^a-z0-9 ]+", " ", text.lower()).strip()
+
+
+def _preview_similarity(a: str, b: str) -> float:
+    a_norm = re.sub(r"\s+", " ", _preview_norm(a))
+    b_norm = re.sub(r"\s+", " ", _preview_norm(b))
+    if not a_norm or not b_norm:
+        return 0.0
+    if a_norm == b_norm:
+        return 1.0
+    return float(SequenceMatcher(a=a_norm, b=b_norm, autojunk=False).ratio())
+
+
+def _analyze_reference_divergence(payload: dict[str, Any]) -> dict[str, Any]:
+    strict = payload.get("strict") if isinstance(payload.get("strict"), dict) else {}
+    repeat = (
+        payload.get("repeat_capped")
+        if isinstance(payload.get("repeat_capped"), dict)
+        else {}
+    )
+    strict_f1 = float(strict.get("f1", 0.0) or 0.0)
+    repeat_f1 = float(repeat.get("f1", 0.0) or 0.0)
+    diff_gap = repeat_f1 - strict_f1
+    repeat_structure_gap = strict_f1 - repeat_f1
+    strict_diffs = strict.get("largest_diffs", [])
+    repeat_diffs = repeat.get("largest_diffs", [])
+    if not isinstance(strict_diffs, list):
+        strict_diffs = []
+    if not isinstance(repeat_diffs, list):
+        repeat_diffs = []
+
+    score = 0.0
+    evidence: list[str] = []
+
+    if diff_gap >= 0.08:
+        score += 1.5
+        evidence.append("repeat_strict_gap")
+    elif diff_gap >= 0.05:
+        score += 0.75
+        evidence.append("repeat_strict_gap_small")
+    if repeat_structure_gap >= 0.08:
+        score += 1.5
+        evidence.append("repeat_structure_gap")
+    elif repeat_structure_gap >= 0.05:
+        score += 0.75
+        evidence.append("repeat_structure_gap_small")
+
+    strict_id = 0
+    strict_rep = 0
+    catastrophic = 0
+    large_insert_delete = 0
+    lyricish_preview = 0
+    repeat_large_diffs = 0
+    repeat_lyricish_preview = 0
+
+    for d in strict_diffs:
+        if not isinstance(d, dict):
+            continue
+        op = str(d.get("op", ""))
+        ref_count = int(d.get("ref_count", 0) or 0)
+        ext_count = int(d.get("ext_count", 0) or 0)
+        ref_preview = str(d.get("ref_preview", "") or "")
+        ext_preview = str(d.get("ext_preview", "") or "")
+        if op in {"insert", "delete"} and max(ref_count, ext_count) >= 6:
+            large_insert_delete += 1
+        if op in {"insert", "delete"}:
+            strict_id += 1
+        if op == "replace":
+            strict_rep += 1
+            if (ref_count >= 20 and ext_count <= 2) or (
+                ext_count >= 20 and ref_count <= 2
+            ):
+                catastrophic += 1
+        preview_combo = f"{ref_preview} {ext_preview}".lower()
+        if any(
+            tok in preview_combo
+            for tok in (
+                "counting",
+                "stars",
+                "baby",
+                "lately",
+                "chorus",
+                "revolutionaries",
+                "wait",
+            )
+        ):
+            lyricish_preview += 1
+    for d in repeat_diffs:
+        if not isinstance(d, dict):
+            continue
+        op = str(d.get("op", ""))
+        ref_count = int(d.get("ref_count", 0) or 0)
+        ext_count = int(d.get("ext_count", 0) or 0)
+        if op in {"insert", "delete", "replace"} and max(ref_count, ext_count) >= 8:
+            repeat_large_diffs += 1
+        preview_combo = (
+            f"{str(d.get('ref_preview', '') or '')} "
+            f"{str(d.get('ext_preview', '') or '')}"
+        ).lower()
+        if any(
+            tok in preview_combo
+            for tok in (
+                "counting",
+                "stars",
+                "baby",
+                "lately",
+                "revolutionaries",
+                "wait",
+                "take that money",
+                "watch it burn",
+            )
+        ):
+            repeat_lyricish_preview += 1
+
+    if large_insert_delete >= 2 and strict_id >= strict_rep:
+        score += 1.0
+        evidence.append("large_insert_delete_diffs")
+
+    if catastrophic:
+        score -= 1.5
+        evidence.append("catastrophic_alignment_collapse")
+
+    if lyricish_preview >= 2:
+        score += 0.75
+        evidence.append("lyric_phrase_conflicts")
+    if (
+        repeat_structure_gap >= 0.05
+        and repeat_large_diffs >= 2
+        and repeat_lyricish_preview >= 2
+    ):
+        score += 1.0
+        evidence.append("repeat_section_sequence_conflicts")
+
+    # Detect likely relocation/order mismatches: same phrase appears as insert+delete or strict/repeat diff pair.
+    relocation_pairs = 0
+    previews_by_op: dict[str, list[tuple[str, int]]] = {"insert": [], "delete": []}
+    for d in strict_diffs + repeat_diffs:
+        if not isinstance(d, dict):
+            continue
+        op = str(d.get("op", ""))
+        if op not in previews_by_op:
+            continue
+        preview = str(d.get("ref_preview") or d.get("ext_preview") or "")
+        mag = int(d.get("magnitude", 0) or 0)
+        if mag <= 0 or not preview.strip():
+            continue
+        previews_by_op[op].append((preview, mag))
+    for del_prev, del_mag in previews_by_op["delete"]:
+        for ins_prev, ins_mag in previews_by_op["insert"]:
+            if min(del_mag, ins_mag) < 2:
+                continue
+            if _preview_similarity(del_prev, ins_prev) >= 0.85:
+                relocation_pairs += 1
+                break
+    if relocation_pairs:
+        score += min(2.0, 0.9 * relocation_pairs)
+        evidence.append("relocation_like_diff_pairs")
+
+    suspected = bool(score >= 2.25 and strict_f1 <= 0.9)
+    confidence = "high" if score >= 3.5 else "medium" if score >= 2.25 else "low"
+    return {
+        "suspected": suspected,
+        "score": round(score, 3),
+        "confidence": confidence,
+        "strict_minus_repeat_gap": round(diff_gap, 4),
+        "repeat_structure_gap": round(repeat_structure_gap, 4),
+        "evidence": sorted(set(evidence)),
+        "signals": {
+            "strict_f1": round(strict_f1, 4),
+            "repeat_capped_f1": round(repeat_f1, 4),
+            "large_insert_delete_diffs": large_insert_delete,
+            "repeat_large_diffs": repeat_large_diffs,
+            "catastrophic_alignment_collapses": catastrophic,
+            "relocation_like_diff_pairs": relocation_pairs,
+        },
+    }
+
+
 def _parse_yaml_scalar(raw: str) -> str:
     text = raw.strip()
     if not text:
@@ -312,7 +492,7 @@ def main() -> int:
             err = (res.stderr or res.stdout).strip()
             results_md.append(f"## {song_label}\nERROR: {err}\n")
             summary_rows_md.append(
-                f"| {display_idx:02d} | {song_label} | ERROR | ERROR |"
+                f"| {display_idx:02d} | {song_label} | ERROR | ERROR | |"
             )
             aggregate_rows.append(
                 {
@@ -337,6 +517,7 @@ def main() -> int:
         repeat = payload["repeat_capped"]
         strict_f1 = float(strict["f1"])
         repeat_f1 = float(repeat["f1"])
+        reference_divergence = _analyze_reference_divergence(payload)
 
         strict_line = (
             f"strict: precision={strict['precision']:.4f} "
@@ -354,9 +535,20 @@ def main() -> int:
             f"{repeat['reference_token_count']} "
             f"ext={repeat['extracted_token_count']}"
         )
-        results_md.append(f"## {song_label}\n{strict_line}\n{repeat_line}\n")
+        suspect_note = ""
+        if reference_divergence.get("suspected"):
+            suspect_note = (
+                "\nreference_divergence_suspected: "
+                f"{reference_divergence.get('confidence')} "
+                f"(score={reference_divergence.get('score')}, "
+                f"evidence={', '.join(reference_divergence.get('evidence', []))})"
+            )
+        results_md.append(
+            f"## {song_label}\n{strict_line}\n{repeat_line}{suspect_note}\n"
+        )
         summary_rows_md.append(
-            f"| {display_idx:02d} | {song_label} | {strict_f1:.4f} | {repeat_f1:.4f} |"
+            f"| {display_idx:02d} | {song_label} | {strict_f1:.4f} | {repeat_f1:.4f} | "
+            f"{'SUSPECT' if reference_divergence.get('suspected') else ''} |"
         )
         aggregate_rows.append(
             {
@@ -371,6 +563,7 @@ def main() -> int:
                 "reference_source": payload.get("reference_source", {}),
                 "strict": strict,
                 "repeat_capped": repeat,
+                "reference_divergence": reference_divergence,
                 "manifest_index": (
                     int(manifest_match["index"]) if manifest_match else None
                 ),
@@ -387,7 +580,7 @@ def main() -> int:
                 f"## {song_label}\nERROR: No visual gold file found for manifest song.\n"
             )
             summary_rows_md.append(
-                f"| {int(meta['index']):02d} | {song_label} | NOT FOUND | NOT FOUND |"
+                f"| {int(meta['index']):02d} | {song_label} | NOT FOUND | NOT FOUND | |"
             )
     gold_only_count = sum(1 for row in aggregate_rows if not row.get("manifest_match"))
 
@@ -415,6 +608,13 @@ def main() -> int:
         "missing_count": len(manifest_missing),
         "manifest_missing_count": len(manifest_missing),
         "gold_only_count": gold_only_count,
+        "reference_divergence_suspected_count": sum(
+            1
+            for row in aggregate_rows
+            if row.get("status") == "ok"
+            and isinstance(row.get("reference_divergence"), dict)
+            and bool(row["reference_divergence"].get("suspected"))
+        ),
         "strict_f1_min": min(strict_values) if strict_values else None,
         "strict_f1_p10": _pct(strict_values, 0.10),
         "strict_f1_p20": _pct(strict_values, 0.20),
@@ -458,8 +658,8 @@ def main() -> int:
 
     args.summary_md.write_text(
         "# Visual Extraction Quality Summary\n\n"
-        "| Index | Song | Strict F1 | Repeat-Capped F1 |\n"
-        "|---|---|---|---|\n"
+        "| Index | Song | Strict F1 | Repeat-Capped F1 | Ref Mismatch Suspect |\n"
+        "|---|---|---|---|---|\n"
         + "\n".join(summary_rows_md)
         + "\n\n"
         + "\n".join(results_md),

@@ -1,18 +1,18 @@
 # Visual Extraction Quality Summary
 
-| Index | Song | Strict F1 | Repeat-Capped F1 |
-|---|---|---|---|
-| 01 | Queen - Bohemian Rhapsody | 0.8986 | 0.9070 |
-| 02 | Billie Eilish - bad guy | 1.0000 | 1.0000 |
-| 03 | Ed Sheeran - Shape of You | 0.9745 | 0.9693 |
-| 04 | Dua Lipa - Levitating | 0.8420 | 0.7765 |
-| 05 | Coldplay - Viva La Vida | 0.9877 | 0.9694 |
-| 06 | The Weeknd - Blinding Lights | 0.8793 | 0.8855 |
-| 07 | Imagine Dragons - Believer | 0.8335 | 0.7742 |
-| 08 | Stromae - Papaoutai | 0.6528 | 0.7883 |
-| 09 | Indila - Derniere danse | 0.7550 | 0.7019 |
-| 10 | ROSALIA - DESPECHA | 0.7041 | 0.6936 |
-| 11 | J Balvin - Mi Gente | 0.8595 | 0.8467 |
+| Index | Song | Strict F1 | Repeat-Capped F1 | Ref Mismatch Suspect |
+|---|---|---|---|---|
+| 01 | Queen - Bohemian Rhapsody | 0.8986 | 0.9070 |  |
+| 02 | Billie Eilish - bad guy | 1.0000 | 1.0000 |  |
+| 03 | Ed Sheeran - Shape of You | 0.9745 | 0.9693 |  |
+| 04 | Dua Lipa - Levitating | 0.8420 | 0.7765 |  |
+| 05 | Coldplay - Viva La Vida | 0.9877 | 0.9694 |  |
+| 06 | The Weeknd - Blinding Lights | 0.8793 | 0.8855 |  |
+| 07 | Imagine Dragons - Believer | 0.8335 | 0.7742 |  |
+| 08 | Stromae - Papaoutai | 0.6528 | 0.7883 |  |
+| 09 | Indila - Derniere danse | 0.7550 | 0.7019 |  |
+| 10 | ROSALIA - DESPECHA | 0.7041 | 0.6936 |  |
+| 11 | J Balvin - Mi Gente | 0.8595 | 0.8467 |  |
 
 ## Queen - Bohemian Rhapsody
 strict: precision=0.8454 recall=0.9591 f1=0.8986 matched=328/342 ext=388
