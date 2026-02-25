@@ -693,25 +693,63 @@ def _infer_alignment_policy_hint(
     dtw_word = _f("dtw_word_coverage")
     agree_cov = _f("agreement_coverage_ratio")
     agree_p95 = _f("agreement_start_p95_abs_sec")
+    agree_bad = _f("agreement_bad_ratio")
     low_conf = _f("low_confidence_ratio")
     gold_cov = _f("gold_word_coverage_ratio")
+    gold_start_mean = _f("gold_start_mean_abs_sec")
 
     reasons: list[str] = []
     hint = "none"
     confidence = "low"
 
-    # Candidate for ignoring provider LRC line timings and deriving timing from audio+lyrics.
-    # Signal: strong text comparability but poor agreement start alignment, with decent DTW support.
-    if agree_cov >= 0.35 and agree_p95 >= 1.0 and dtw_line >= 0.65 and low_conf <= 0.15:
-        hint = "consider_lyrics_no_timing"
-        confidence = "medium" if agree_p95 < 2.5 else "high"
-        reasons.extend(
-            [
-                "agreement_start_p95_high",
-                "agreement_coverage_present",
-                "dtw_line_coverage_present",
-            ]
+    issue_tags: set[str] = set()
+    if isinstance(alignment_diagnostics, dict):
+        issue_tags = set(
+            str(v)
+            for v in (alignment_diagnostics.get("issue_tags") or [])
+            if isinstance(v, str)
         )
+
+    # Candidate for ignoring provider LRC line timings and deriving timing from audio+lyrics.
+    # Keep this conservative: it should only trigger when we have stronger evidence that
+    # timing disagreement is real (not just sparse/noisy agreement matches).
+    gold_timing_mismatch_evidence = (
+        gold_cov >= 0.6
+        and gold_start_mean >= 1.0
+        and agree_cov >= 0.3
+        and agree_p95 >= 1.0
+        and (agree_bad >= 0.1 or "timing_delta_clamped" in issue_tags)
+        and dtw_line >= 0.65
+        and low_conf <= 0.15
+    )
+    internal_timing_mismatch_evidence = (
+        "timing_delta_clamped" in issue_tags
+        and agree_cov >= 0.45
+        and agree_p95 >= 2.0
+        and agree_bad >= 0.2
+        and dtw_line >= 0.75
+        and dtw_word >= 0.6
+        and low_conf <= 0.15
+    )
+    if gold_timing_mismatch_evidence or internal_timing_mismatch_evidence:
+        hint = "consider_lyrics_no_timing"
+        confidence = "high" if gold_timing_mismatch_evidence else "medium"
+        if gold_timing_mismatch_evidence:
+            reasons.extend(
+                [
+                    "gold_timing_mismatch_with_good_coverage",
+                    "dtw_line_coverage_present",
+                ]
+            )
+        if internal_timing_mismatch_evidence:
+            reasons.extend(
+                [
+                    "agreement_start_p95_high",
+                    "agreement_bad_ratio_high",
+                    "agreement_coverage_present",
+                    "dtw_line_coverage_present",
+                ]
+            )
 
     # Candidate for Whisper-heavy / audio-first review: weak DTW lexical coverage but low internal uncertainty.
     if (
@@ -731,11 +769,6 @@ def _infer_alignment_policy_hint(
         )
 
     if isinstance(alignment_diagnostics, dict):
-        issue_tags = set(
-            str(v)
-            for v in (alignment_diagnostics.get("issue_tags") or [])
-            if isinstance(v, str)
-        )
         if "timing_delta_clamped" in issue_tags and hint == "none":
             hint = "timing_delta_clamped_review"
             confidence = "medium"
