@@ -97,10 +97,17 @@ def is_intro_artifact(
 
 
 def _is_metadata_keyword_line(text_l: str) -> bool:
-    if any(k in text_l for k in _INTRO_META_KEYWORDS):
-        return True
-    if any(k in text_l.replace(" ", "") for k in _INTRO_META_KEYWORDS):
-        return True
+    tokens = [t for t in text_l.split() if t]
+    compact = text_l.replace(" ", "")
+    for k in _INTRO_META_KEYWORDS:
+        # Short keywords (e.g. "fun", "ltd", "mca") are too collision-prone for
+        # substring matching ("fun" matches "funk"). Require exact token match.
+        if len(k) <= 3:
+            if k in tokens:
+                return True
+            continue
+        if k in text_l or k in compact:
+            return True
     return False
 
 

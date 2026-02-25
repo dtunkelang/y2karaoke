@@ -24,6 +24,15 @@ _VOCALIZATION_NOISE_TOKENS = {
     "hmm",
 }
 _HUM_NOISE_TOKENS = {"mm", "mmm", "hmm"}
+_ADLIB_TAIL_TOKENS = {
+    "uh",
+    "ah",
+    "aww",
+    "oh",
+    "hey",
+    "come",
+    "on",
+}
 _OVERLAY_PLATFORM_TOKENS = {
     "youtube",
     "youtu",
@@ -702,9 +711,10 @@ def _remove_repeated_fragment_noise_lines(  # noqa: C901
         min_count = 3
         if count >= 2 and len(key) <= 2 and avg_conf <= 0.25:
             min_count = 2
+        allow_high_conf_refrain_frag = count >= 5 and len(key) <= 3 and avg_conf <= 0.9
         if count < min_count:
             continue
-        if avg_conf > 0.4:
+        if avg_conf > 0.4 and not allow_high_conf_refrain_frag:
             continue
 
         for idx in frag_indices[key]:
@@ -739,6 +749,137 @@ def _remove_repeated_fragment_noise_lines(  # noqa: C901
     lines_out[:] = [ln for idx, ln in enumerate(lines_out) if idx not in drops]
     for i, ln in enumerate(lines_out):
         ln["line_index"] = i + 1
+
+
+def _case_like_token(source: str, replacement: str) -> str:
+    if source.isupper():
+        return replacement.upper()
+    if source[:1].isupper() and source[1:].islower():
+        return replacement.capitalize()
+    if source.islower():
+        return replacement.lower()
+    return replacement
+
+
+def _canonicalize_local_chant_token_variants(lines_out: list[dict[str, Any]]) -> None:
+    """Normalize OCR variants inside chant-like repeated-token lines (e.g. dohi -> doh)."""
+    if not lines_out:
+        return
+    protected_vocab = _VOCALIZATION_NOISE_TOKENS | {"hey", "yeah", "yea", "yo", "no"}
+    for ln in lines_out:
+        words = ln.get("words", [])
+        if len(words) < 2 or len(words) > 8:
+            continue
+        norm_tokens = [normalize_text_basic(str(w.get("text", ""))) for w in words]
+        norm_tokens = [t for t in norm_tokens if t]
+        if len(norm_tokens) != len(words):
+            continue
+        if len(set(norm_tokens)) < 2:
+            continue
+        if any(len(t) < 2 or len(t) > 5 or not t.isalpha() for t in norm_tokens):
+            continue
+        if set(norm_tokens).issubset(protected_vocab):
+            continue
+
+        shortest = min(norm_tokens, key=len)
+        if len(shortest) < 3:
+            continue
+        if not all(
+            SequenceMatcher(None, shortest, t).ratio() >= 0.72 for t in norm_tokens
+        ):
+            continue
+
+        canon = min(
+            set(norm_tokens),
+            key=lambda t: (
+                -norm_tokens.count(t),
+                len(t),
+                t,
+            ),
+        )
+        changed = False
+        for w, norm in zip(words, norm_tokens):
+            if norm == canon:
+                continue
+            if SequenceMatcher(None, canon, norm).ratio() < 0.72:
+                continue
+            w["text"] = _case_like_token(str(w.get("text", "")), canon)
+            changed = True
+        if changed:
+            ln["text"] = " ".join(
+                str(w.get("text", "")) for w in words if w.get("text")
+            )
+
+
+def _trim_short_adlib_tails(lines_out: list[dict[str, Any]]) -> None:
+    """Trim short ad-lib tails on fragment lines when a stronger neighbor already covers the lyric."""
+    if len(lines_out) < 3:
+        return
+
+    norm_lines = [normalize_text_basic(str(ln.get("text", ""))) for ln in lines_out]
+    token_lines = [[t for t in n.split() if t] for n in norm_lines]
+
+    for i, ln in enumerate(lines_out):
+        words = ln.get("words", [])
+        toks = token_lines[i]
+        if len(words) != len(toks) or len(toks) < 3 or len(toks) > 5:
+            continue
+        start = float(ln.get("start", 0.0) or 0.0)
+        end = float(ln.get("end", start) or start)
+        dur = max(0.0, end - start)
+        if dur > 1.8:
+            continue
+
+        split_idx = None
+        for j in range(1, len(toks)):
+            tail = toks[j:]
+            if not tail or len(tail) > 2:
+                continue
+            if not set(tail).issubset(_ADLIB_TAIL_TOKENS):
+                continue
+            if len(toks[:j]) < 2:
+                continue
+            split_idx = j
+            break
+        if split_idx is None:
+            continue
+
+        prefix = toks[:split_idx]
+        if set(prefix).issubset(_ADLIB_TAIL_TOKENS | _VOCALIZATION_NOISE_TOKENS):
+            continue
+        prefix_supported = False
+        base_quality = _line_duplicate_quality_score(ln)
+        for k in range(max(0, i - 2), min(len(lines_out), i + 3)):
+            if k == i:
+                continue
+            other = lines_out[k]
+            other_toks = token_lines[k]
+            if len(other_toks) <= len(prefix):
+                continue
+            other_start = float(other.get("start", 0.0) or 0.0)
+            other_end = float(other.get("end", other_start) or other_start)
+            if other_end < start - 1.0 or other_start > end + 1.0:
+                continue
+            if not _tokens_contiguous_subphrase(prefix, other_toks):
+                continue
+            if _line_duplicate_quality_score(other) + 0.05 < base_quality:
+                continue
+            prefix_supported = True
+            break
+        if not prefix_supported:
+            continue
+
+        kept_words = words[:split_idx]
+        if len(kept_words) < 2:
+            continue
+        ln["words"] = kept_words
+        ln["text"] = " ".join(
+            str(w.get("text", "")) for w in kept_words if w.get("text")
+        )
+        if kept_words:
+            ln["end"] = float(kept_words[-1].get("end", end) or end)
+            for wi, w in enumerate(kept_words):
+                w["word_index"] = wi + 1
 
 
 def _repair_strong_local_chronology_inversions(lines_out: list[dict[str, Any]]) -> None:
@@ -925,7 +1066,10 @@ def _identify_banned_prefixes(
     total = len(lines_out)
 
     for prefix, count in counts.items():
-        if prefix in LYRIC_FUNCTION_WORDS:
+        if (
+            prefix in LYRIC_FUNCTION_WORDS
+            or prefix.replace("'", "") in LYRIC_FUNCTION_WORDS
+        ):
             continue
         # If it appears in > 10% of lines as a prefix and is not a function word
         if count > 0.1 * total and count >= 3:
