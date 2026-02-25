@@ -731,25 +731,42 @@ def _infer_alignment_policy_hint(
         and dtw_word >= 0.6
         and low_conf <= 0.15
     )
+    already_strong_hybrid_alignment = (
+        dtw_line >= 0.95
+        and dtw_word >= 0.9
+        and agree_cov >= 0.5
+        and agree_p95 <= 2.0
+        and low_conf <= 0.05
+    )
     if gold_timing_mismatch_evidence or internal_timing_mismatch_evidence:
-        hint = "consider_lyrics_no_timing"
-        confidence = "high" if gold_timing_mismatch_evidence else "medium"
-        if gold_timing_mismatch_evidence:
+        if already_strong_hybrid_alignment:
+            hint = "timing_delta_clamped_review"
+            confidence = "medium"
             reasons.extend(
                 [
-                    "gold_timing_mismatch_with_good_coverage",
-                    "dtw_line_coverage_present",
+                    "timing_delta_clamped",
+                    "hybrid_alignment_already_strong",
                 ]
             )
-        if internal_timing_mismatch_evidence:
-            reasons.extend(
-                [
-                    "agreement_start_p95_high",
-                    "agreement_bad_ratio_high",
-                    "agreement_coverage_present",
-                    "dtw_line_coverage_present",
-                ]
-            )
+        else:
+            hint = "consider_lyrics_no_timing"
+            confidence = "high" if gold_timing_mismatch_evidence else "medium"
+            if gold_timing_mismatch_evidence:
+                reasons.extend(
+                    [
+                        "gold_timing_mismatch_with_good_coverage",
+                        "dtw_line_coverage_present",
+                    ]
+                )
+            if internal_timing_mismatch_evidence:
+                reasons.extend(
+                    [
+                        "agreement_start_p95_high",
+                        "agreement_bad_ratio_high",
+                        "agreement_coverage_present",
+                        "dtw_line_coverage_present",
+                    ]
+                )
 
     # Candidate for Whisper-heavy / audio-first review: weak DTW lexical coverage but low internal uncertainty.
     if (
