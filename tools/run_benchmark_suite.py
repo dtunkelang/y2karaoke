@@ -517,6 +517,51 @@ def _extract_song_metrics(
     return metrics
 
 
+def _issue_tag(message: str) -> str:
+    msg = message.lower()
+    if "low whisper confidence" in msg:
+        return "low_whisper_confidence"
+    if "timing delta" in msg and "clamp" in msg:
+        return "timing_delta_clamped"
+    if "duration mismatch" in msg:
+        return "duration_mismatch"
+    if "no lyrics" in msg:
+        return "missing_lyrics"
+    return "other"
+
+
+def _extract_alignment_diagnostics(report: dict[str, Any]) -> dict[str, Any]:
+    alignment_method = str(report.get("alignment_method") or "")
+    lyrics_source = str(report.get("lyrics_source") or "")
+    lyrics_source_provider = (
+        lyrics_source.split("(", 1)[0].strip() if lyrics_source else ""
+    )
+    issues = report.get("issues", [])
+    issue_tags: list[str] = []
+    if isinstance(issues, list):
+        for item in issues:
+            if isinstance(item, str) and item.strip():
+                issue_tags.append(_issue_tag(item))
+    issue_tag_counts: dict[str, int] = {}
+    for tag in issue_tags:
+        issue_tag_counts[tag] = issue_tag_counts.get(tag, 0) + 1
+    dtw_metrics = report.get("dtw_metrics", {})
+    dtw_enabled = isinstance(dtw_metrics, dict) and bool(dtw_metrics)
+    return {
+        "alignment_method": alignment_method,
+        "lyrics_source": lyrics_source,
+        "lyrics_source_provider": lyrics_source_provider,
+        "whisper_requested": bool(report.get("whisper_requested", False)),
+        "whisper_used": bool(report.get("whisper_used", False)),
+        "whisper_force_dtw": bool(report.get("whisper_force_dtw", False)),
+        "whisper_corrections": int(report.get("whisper_corrections", 0) or 0),
+        "dtw_metrics_present": bool(dtw_enabled),
+        "issue_count": len(issue_tags),
+        "issue_tags": sorted(set(issue_tags)),
+        "issue_tag_counts": issue_tag_counts,
+    }
+
+
 def _infer_reference_divergence_suspicion(metrics: dict[str, Any]) -> dict[str, Any]:
     if not isinstance(metrics, dict):
         return {"suspected": False, "score": 0.0, "confidence": "low", "evidence": []}
@@ -816,6 +861,26 @@ def _aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:  # noqa: C901
             "miss_ratio": round((counts["miss"] / total) if total else 0.0, 4),
         }
 
+    alignment_method_counts: dict[str, int] = {}
+    lyrics_source_provider_counts: dict[str, int] = {}
+    issue_tag_totals: dict[str, int] = {}
+    for r in succeeded:
+        diag = r.get("alignment_diagnostics", {})
+        if not isinstance(diag, dict):
+            continue
+        method = str(diag.get("alignment_method", "") or "unknown")
+        alignment_method_counts[method] = alignment_method_counts.get(method, 0) + 1
+        provider = str(diag.get("lyrics_source_provider", "") or "unknown")
+        lyrics_source_provider_counts[provider] = (
+            lyrics_source_provider_counts.get(provider, 0) + 1
+        )
+        tag_counts = diag.get("issue_tag_counts", {})
+        if isinstance(tag_counts, dict):
+            for tag, raw_count in tag_counts.items():
+                if not isinstance(tag, str) or not isinstance(raw_count, (int, float)):
+                    continue
+                issue_tag_totals[tag] = issue_tag_totals.get(tag, 0) + int(raw_count)
+
     reference_divergence_suspects = [
         {
             "song": f"{r['artist']} - {r['title']}",
@@ -1048,6 +1113,15 @@ def _aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:  # noqa: C901
             "reference_divergence_suspects": reference_divergence_suspects[:5],
         },
         "cache_summary": cache_summary,
+        "alignment_diagnostics_summary": {
+            "alignment_method_counts": dict(sorted(alignment_method_counts.items())),
+            "lyrics_source_provider_counts": dict(
+                sorted(lyrics_source_provider_counts.items())
+            ),
+            "issue_tag_totals": dict(
+                sorted(issue_tag_totals.items(), key=lambda kv: (-kv[1], kv[0]))
+            ),
+        },
         "failed_songs": [f"{r['artist']} - {r['title']}" for r in failed],
     }
 
@@ -1328,6 +1402,29 @@ def _write_markdown_summary(  # noqa: C901
             "- Slowest phase by summed song time: "
             f"`{top_phase}` (`{float(phase_totals[top_phase]):.2f}s`)"
         )
+    diag_summary = aggregate.get("alignment_diagnostics_summary", {})
+    if isinstance(diag_summary, dict):
+        method_counts = diag_summary.get("alignment_method_counts", {})
+        provider_counts = diag_summary.get("lyrics_source_provider_counts", {})
+        issue_totals = diag_summary.get("issue_tag_totals", {})
+        if isinstance(method_counts, dict) and method_counts:
+            lines.append(
+                "- Alignment methods used: "
+                + ", ".join(f"`{k}` x{v}" for k, v in sorted(method_counts.items()))
+            )
+        if isinstance(provider_counts, dict) and provider_counts:
+            lines.append(
+                "- Lyrics providers seen: "
+                + ", ".join(f"`{k}` x{v}" for k, v in sorted(provider_counts.items()))
+            )
+        if isinstance(issue_totals, dict) and issue_totals:
+            top_issue_tags = sorted(
+                issue_totals.items(), key=lambda kv: (-int(kv[1]), str(kv[0]))
+            )[:5]
+            lines.append(
+                "- Common timing report issue tags: "
+                + ", ".join(f"`{k}` x{v}" for k, v in top_issue_tags)
+            )
     lines.append("")
     lines.append("## Per-song")
     lines.append("")
@@ -1525,6 +1622,7 @@ def _refresh_cached_metrics(
     if index is not None and song is not None:
         gold_doc = _load_gold_doc(index=index, song=song, gold_root=gold_root)
     record["metrics"] = _extract_song_metrics(report, gold_doc=gold_doc)
+    record["alignment_diagnostics"] = _extract_alignment_diagnostics(report)
     record["reference_divergence"] = _infer_reference_divergence_suspicion(
         record["metrics"]
     )
@@ -2330,6 +2428,7 @@ def _run_song_command(
         else:
             report = json.loads(report_path.read_text(encoding="utf-8"))
             record["metrics"] = _extract_song_metrics(report, gold_doc=gold_doc)
+            record["alignment_diagnostics"] = _extract_alignment_diagnostics(report)
             record["reference_divergence"] = _infer_reference_divergence_suspicion(
                 record["metrics"]
             )
