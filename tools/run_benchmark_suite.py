@@ -669,6 +669,87 @@ def _infer_reference_divergence_suspicion(metrics: dict[str, Any]) -> dict[str, 
     }
 
 
+def _infer_alignment_policy_hint(
+    metrics: dict[str, Any],
+    alignment_diagnostics: dict[str, Any] | None = None,
+    reference_divergence: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    if not isinstance(metrics, dict):
+        return {"hint": "none", "confidence": "low", "reasons": []}
+    if isinstance(reference_divergence, dict) and bool(
+        reference_divergence.get("suspected")
+    ):
+        return {
+            "hint": "reference_mismatch_review",
+            "confidence": str(reference_divergence.get("confidence", "medium")),
+            "reasons": ["reference_divergence_suspected"],
+        }
+
+    def _f(key: str) -> float:
+        v = metrics.get(key)
+        return float(v) if isinstance(v, (int, float)) else 0.0
+
+    dtw_line = _f("dtw_line_coverage")
+    dtw_word = _f("dtw_word_coverage")
+    agree_cov = _f("agreement_coverage_ratio")
+    agree_p95 = _f("agreement_start_p95_abs_sec")
+    low_conf = _f("low_confidence_ratio")
+    gold_cov = _f("gold_word_coverage_ratio")
+
+    reasons: list[str] = []
+    hint = "none"
+    confidence = "low"
+
+    # Candidate for ignoring provider LRC line timings and deriving timing from audio+lyrics.
+    # Signal: strong text comparability but poor agreement start alignment, with decent DTW support.
+    if agree_cov >= 0.35 and agree_p95 >= 1.0 and dtw_line >= 0.65 and low_conf <= 0.15:
+        hint = "consider_lyrics_no_timing"
+        confidence = "medium" if agree_p95 < 2.5 else "high"
+        reasons.extend(
+            [
+                "agreement_start_p95_high",
+                "agreement_coverage_present",
+                "dtw_line_coverage_present",
+            ]
+        )
+
+    # Candidate for Whisper-heavy / audio-first review: weak DTW lexical coverage but low internal uncertainty.
+    if (
+        hint == "none"
+        and dtw_line >= 0.75
+        and dtw_word < 0.5
+        and low_conf <= 0.1
+        and gold_cov >= 0.75
+    ):
+        hint = "review_dtw_lexical_matching"
+        confidence = "medium"
+        reasons.extend(
+            [
+                "dtw_line_good_but_word_low",
+                "low_internal_uncertainty",
+            ]
+        )
+
+    if isinstance(alignment_diagnostics, dict):
+        issue_tags = set(
+            str(v)
+            for v in (alignment_diagnostics.get("issue_tags") or [])
+            if isinstance(v, str)
+        )
+        if "timing_delta_clamped" in issue_tags and hint == "none":
+            hint = "timing_delta_clamped_review"
+            confidence = "medium"
+            reasons.append("timing_delta_clamped")
+        elif "timing_delta_clamped" in issue_tags and hint != "none":
+            reasons.append("timing_delta_clamped")
+
+    return {
+        "hint": hint,
+        "confidence": confidence,
+        "reasons": sorted(set(reasons)),
+    }
+
+
 def _aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:  # noqa: C901
     succeeded = [r for r in results if r["status"] == "ok"]
     failed = [r for r in results if r["status"] != "ok"]
@@ -864,6 +945,7 @@ def _aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:  # noqa: C901
     alignment_method_counts: dict[str, int] = {}
     lyrics_source_provider_counts: dict[str, int] = {}
     issue_tag_totals: dict[str, int] = {}
+    policy_hint_counts: dict[str, int] = {}
     for r in succeeded:
         diag = r.get("alignment_diagnostics", {})
         if not isinstance(diag, dict):
@@ -880,6 +962,10 @@ def _aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:  # noqa: C901
                 if not isinstance(tag, str) or not isinstance(raw_count, (int, float)):
                     continue
                 issue_tag_totals[tag] = issue_tag_totals.get(tag, 0) + int(raw_count)
+        policy_hint = r.get("alignment_policy_hint", {})
+        if isinstance(policy_hint, dict):
+            hint = str(policy_hint.get("hint", "") or "none")
+            policy_hint_counts[hint] = policy_hint_counts.get(hint, 0) + 1
 
     reference_divergence_suspects = [
         {
@@ -1118,6 +1204,7 @@ def _aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:  # noqa: C901
             "lyrics_source_provider_counts": dict(
                 sorted(lyrics_source_provider_counts.items())
             ),
+            "alignment_policy_hint_counts": dict(sorted(policy_hint_counts.items())),
             "issue_tag_totals": dict(
                 sorted(issue_tag_totals.items(), key=lambda kv: (-kv[1], kv[0]))
             ),
@@ -1406,6 +1493,7 @@ def _write_markdown_summary(  # noqa: C901
     if isinstance(diag_summary, dict):
         method_counts = diag_summary.get("alignment_method_counts", {})
         provider_counts = diag_summary.get("lyrics_source_provider_counts", {})
+        policy_hint_counts = diag_summary.get("alignment_policy_hint_counts", {})
         issue_totals = diag_summary.get("issue_tag_totals", {})
         if isinstance(method_counts, dict) and method_counts:
             lines.append(
@@ -1416,6 +1504,13 @@ def _write_markdown_summary(  # noqa: C901
             lines.append(
                 "- Lyrics providers seen: "
                 + ", ".join(f"`{k}` x{v}" for k, v in sorted(provider_counts.items()))
+            )
+        if isinstance(policy_hint_counts, dict) and policy_hint_counts:
+            lines.append(
+                "- Alignment policy hints: "
+                + ", ".join(
+                    f"`{k}` x{v}" for k, v in sorted(policy_hint_counts.items())
+                )
             )
         if isinstance(issue_totals, dict) and issue_totals:
             top_issue_tags = sorted(
@@ -1429,11 +1524,20 @@ def _write_markdown_summary(  # noqa: C901
     lines.append("## Per-song")
     lines.append("")
     lines.append(
-        "| Song | Status | Gold words | Gold cov | Word start abs mean | Word start p95 | Word end abs mean | Alignment | DTW line | DTW word | Ref mismatch suspect | Elapsed |"  # noqa: E501
+        "| Song | Status | Gold words | Gold cov | Word start abs mean | Word start p95 | Word end abs mean | Alignment | DTW line | DTW word | Policy hint | Ref mismatch suspect | Elapsed |"  # noqa: E501
     )
-    lines.append("|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|")
+    lines.append("|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|")
     for song in songs:
         metrics = song.get("metrics", {})
+        policy_hint = song.get("alignment_policy_hint", {})
+        policy_hint_cell = "-"
+        if isinstance(policy_hint, dict) and policy_hint:
+            hint = str(policy_hint.get("hint", "none") or "none")
+            conf = str(policy_hint.get("confidence", "low") or "low")
+            if hint != "none":
+                policy_hint_cell = f"{hint} ({conf})"
+            else:
+                policy_hint_cell = "none"
         ref_div = song.get("reference_divergence", {})
         ref_div_cell = "-"
         if isinstance(ref_div, dict) and ref_div:
@@ -1463,6 +1567,8 @@ def _write_markdown_summary(  # noqa: C901
             + f"{metrics.get('dtw_line_coverage', '-')}"
             + " | "
             + f"{metrics.get('dtw_word_coverage', '-')}"
+            + " | "
+            + policy_hint_cell
             + " | "
             + ref_div_cell
             + " | "
@@ -1625,6 +1731,11 @@ def _refresh_cached_metrics(
     record["alignment_diagnostics"] = _extract_alignment_diagnostics(report)
     record["reference_divergence"] = _infer_reference_divergence_suspicion(
         record["metrics"]
+    )
+    record["alignment_policy_hint"] = _infer_alignment_policy_hint(
+        record["metrics"],
+        alignment_diagnostics=record.get("alignment_diagnostics"),
+        reference_divergence=record.get("reference_divergence"),
     )
     return record
 
@@ -2431,6 +2542,11 @@ def _run_song_command(
             record["alignment_diagnostics"] = _extract_alignment_diagnostics(report)
             record["reference_divergence"] = _infer_reference_divergence_suspicion(
                 record["metrics"]
+            )
+            record["alignment_policy_hint"] = _infer_alignment_policy_hint(
+                record["metrics"],
+                alignment_diagnostics=record.get("alignment_diagnostics"),
+                reference_divergence=record.get("reference_divergence"),
             )
             record["status"] = "ok"
     except subprocess.TimeoutExpired as exc:
