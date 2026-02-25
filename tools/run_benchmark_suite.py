@@ -517,6 +517,113 @@ def _extract_song_metrics(
     return metrics
 
 
+def _infer_reference_divergence_suspicion(metrics: dict[str, Any]) -> dict[str, Any]:
+    if not isinstance(metrics, dict):
+        return {"suspected": False, "score": 0.0, "confidence": "low", "evidence": []}
+    if not bool(metrics.get("gold_available")):
+        return {
+            "suspected": False,
+            "score": 0.0,
+            "confidence": "low",
+            "evidence": ["no_gold_reference"],
+        }
+
+    def _f(key: str) -> float:
+        v = metrics.get(key)
+        return float(v) if isinstance(v, (int, float)) else 0.0
+
+    line_count = int(metrics.get("line_count", 0) or 0)
+    score = 0.0
+    evidence: list[str] = []
+
+    gold_cov = _f("gold_word_coverage_ratio")
+    gold_start_mean = _f("gold_start_mean_abs_sec")
+    gold_start_p95 = _f("gold_start_p95_abs_sec")
+    dtw_line_cov = _f("dtw_line_coverage")
+    dtw_word_cov = _f("dtw_word_coverage")
+    agree_cov = _f("agreement_coverage_ratio")
+    agree_sim = _f("agreement_text_similarity_mean")
+    agree_bad = _f("agreement_bad_ratio")
+    low_conf = _f("low_confidence_ratio")
+    comparable_words = int(metrics.get("gold_comparable_word_count", 0) or 0)
+
+    if comparable_words < 20 or line_count < 10:
+        return {
+            "suspected": False,
+            "score": 0.0,
+            "confidence": "low",
+            "evidence": ["insufficient_comparable_coverage"],
+            "signals": {
+                "gold_word_coverage_ratio": round(gold_cov, 4),
+                "gold_start_mean_abs_sec": round(gold_start_mean, 4),
+                "gold_start_p95_abs_sec": round(gold_start_p95, 4),
+                "dtw_line_coverage": round(dtw_line_cov, 4),
+                "agreement_coverage_ratio": round(agree_cov, 4),
+                "agreement_text_similarity_mean": round(agree_sim, 4),
+                "low_confidence_ratio": round(low_conf, 4),
+                "gold_comparable_word_count": comparable_words,
+            },
+        }
+
+    strong_dtw_internal = (
+        dtw_line_cov >= 0.9 and dtw_word_cov >= 0.4 and low_conf <= 0.1
+    )
+    strong_agreement_subset = agree_cov >= 0.5 and agree_sim >= 0.9 and low_conf <= 0.08
+    if strong_dtw_internal:
+        score += 1.0
+        evidence.append("strong_dtw_internal_consistency")
+    if strong_agreement_subset:
+        score += 1.0
+        evidence.append("strong_lrc_whisper_agreement_subset")
+    if low_conf <= 0.1:
+        score += 0.25
+        evidence.append("low_internal_uncertainty")
+
+    severe_gold_timing_mismatch = gold_start_mean >= 20.0 or gold_start_p95 >= 35.0
+    gold_coverage_timing_combo = gold_cov <= 0.68 and gold_start_mean >= 10.0
+    if severe_gold_timing_mismatch:
+        score += 1.5
+        evidence.append("severe_gold_timing_mismatch")
+    elif gold_start_mean >= 10.0 and gold_start_p95 >= 20.0:
+        score += 0.5
+        evidence.append("elevated_gold_timing_mismatch")
+    if gold_coverage_timing_combo:
+        score += 1.0
+        evidence.append("gold_coverage_timing_combo_mismatch")
+
+    # If internal signals are weak, treat this as likely pipeline quality rather than reference mismatch.
+    if not (strong_dtw_internal or strong_agreement_subset):
+        score -= 1.5
+        evidence.append("insufficient_internal_consistency")
+    if dtw_line_cov < 0.75 or low_conf > 0.2:
+        score -= 0.5
+        evidence.append("weak_internal_alignment_signals")
+    if agree_cov > 0 and agree_bad > 0.2:
+        score -= 0.5
+        evidence.append("high_agreement_bad_ratio")
+
+    suspected = bool(score >= 2.5)
+    confidence = "high" if score >= 4.0 else "medium" if score >= 2.5 else "low"
+    return {
+        "suspected": suspected,
+        "score": round(score, 3),
+        "confidence": confidence,
+        "evidence": sorted(set(evidence)),
+        "signals": {
+            "gold_word_coverage_ratio": round(gold_cov, 4),
+            "gold_start_mean_abs_sec": round(gold_start_mean, 4),
+            "gold_start_p95_abs_sec": round(gold_start_p95, 4),
+            "dtw_line_coverage": round(dtw_line_cov, 4),
+            "dtw_word_coverage": round(dtw_word_cov, 4),
+            "agreement_coverage_ratio": round(agree_cov, 4),
+            "agreement_text_similarity_mean": round(agree_sim, 4),
+            "agreement_bad_ratio": round(agree_bad, 4),
+            "low_confidence_ratio": round(low_conf, 4),
+            "gold_comparable_word_count": comparable_words,
+        },
+    }
+
+
 def _aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:  # noqa: C901
     succeeded = [r for r in results if r["status"] == "ok"]
     failed = [r for r in results if r["status"] != "ok"]
@@ -709,6 +816,23 @@ def _aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:  # noqa: C901
             "miss_ratio": round((counts["miss"] / total) if total else 0.0, 4),
         }
 
+    reference_divergence_suspects = [
+        {
+            "song": f"{r['artist']} - {r['title']}",
+            "score": float(r.get("reference_divergence", {}).get("score", 0.0) or 0.0),
+            "confidence": str(
+                r.get("reference_divergence", {}).get("confidence", "low") or "low"
+            ),
+            "evidence": list(
+                r.get("reference_divergence", {}).get("evidence", []) or []
+            ),
+        }
+        for r in succeeded
+        if isinstance(r.get("reference_divergence"), dict)
+        and bool(r["reference_divergence"].get("suspected"))
+    ]
+    reference_divergence_suspects.sort(key=lambda row: row["score"], reverse=True)
+
     return {
         "songs_total": len(results),
         "songs_succeeded": len(succeeded),
@@ -755,7 +879,10 @@ def _aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:  # noqa: C901
             else None
         ),
         "dtw_phonetic_similarity_coverage_line_weighted_mean": (
-            round(float(weighted_metric_mean("dtw_phonetic_similarity_coverage") or 0.0), 4)
+            round(
+                float(weighted_metric_mean("dtw_phonetic_similarity_coverage") or 0.0),
+                4,
+            )
             if weighted_metric_mean("dtw_phonetic_similarity_coverage") is not None
             else None
         ),
@@ -826,6 +953,11 @@ def _aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:  # noqa: C901
         "gold_metric_song_coverage_ratio": round(
             (gold_metric_song_count / len(succeeded)) if succeeded else 0.0, 4
         ),
+        "reference_divergence_suspected_count": len(reference_divergence_suspects),
+        "reference_divergence_suspected_ratio": round(
+            (len(reference_divergence_suspects) / len(succeeded)) if succeeded else 0.0,
+            4,
+        ),
         "gold_word_count_total": gold_word_count_total,
         "gold_comparable_word_count_total": gold_comparable_word_count_total,
         "gold_word_coverage_ratio_total": round(gold_word_coverage_ratio_total, 4),
@@ -836,10 +968,13 @@ def _aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:  # noqa: C901
         ),
         "avg_abs_word_start_delta_sec_word_weighted_mean": (
             round(
-                float(weighted_metric_mean(
-                    "avg_abs_word_start_delta_sec",
-                    weight_key="gold_comparable_word_count",
-                ) or 0.0),
+                float(
+                    weighted_metric_mean(
+                        "avg_abs_word_start_delta_sec",
+                        weight_key="gold_comparable_word_count",
+                    )
+                    or 0.0
+                ),
                 4,
             )
             if weighted_metric_mean(
@@ -910,6 +1045,7 @@ def _aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:  # noqa: C901
             "lowest_gold_word_coverage_ratio": _hotspot_records(
                 key="gold_word_coverage_ratio", top_n=3, reverse=False
             ),
+            "reference_divergence_suspects": reference_divergence_suspects[:5],
         },
         "cache_summary": cache_summary,
         "failed_songs": [f"{r['artist']} - {r['title']}" for r in failed],
@@ -1117,6 +1253,11 @@ def _write_markdown_summary(  # noqa: C901
         f"`{aggregate.get('gold_word_coverage_ratio_total', 0.0):.3f}`"
     )
     lines.append(
+        "- Reference divergence suspects (first-pass heuristic): "
+        f"`{aggregate.get('reference_divergence_suspected_count', 0)}` "
+        f"({aggregate.get('reference_divergence_suspected_ratio', 0.0):.3f})"
+    )
+    lines.append(
         "- Primary metric (avg abs word-start delta): "
         f"`{_fmt_num(aggregate.get('avg_abs_word_start_delta_sec_word_weighted_mean'), unit='s')}` (word-weighted)"
     )
@@ -1191,11 +1332,21 @@ def _write_markdown_summary(  # noqa: C901
     lines.append("## Per-song")
     lines.append("")
     lines.append(
-        "| Song | Status | Gold words | Gold cov | Word start abs mean | Word start p95 | Word end abs mean | Alignment | DTW line | DTW word | Elapsed |"  # noqa: E501
+        "| Song | Status | Gold words | Gold cov | Word start abs mean | Word start p95 | Word end abs mean | Alignment | DTW line | DTW word | Ref mismatch suspect | Elapsed |"  # noqa: E501
     )
-    lines.append("|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|")
+    lines.append("|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|")
     for song in songs:
         metrics = song.get("metrics", {})
+        ref_div = song.get("reference_divergence", {})
+        ref_div_cell = "-"
+        if isinstance(ref_div, dict) and ref_div:
+            if bool(ref_div.get("suspected")):
+                ref_div_cell = (
+                    f"yes ({ref_div.get('confidence', 'low')}, "
+                    f"{float(ref_div.get('score', 0.0) or 0.0):.2f})"
+                )
+            else:
+                ref_div_cell = f"no ({float(ref_div.get('score', 0.0) or 0.0):.2f})"
         lines.append(
             "| "
             + f"{song['artist']} - {song['title']} | "
@@ -1216,6 +1367,8 @@ def _write_markdown_summary(  # noqa: C901
             + " | "
             + f"{metrics.get('dtw_word_coverage', '-')}"
             + " | "
+            + ref_div_cell
+            + " | "
             + f"{song.get('elapsed_sec', '-')}"
             + "s |"
         )
@@ -1230,6 +1383,7 @@ def _write_markdown_summary(  # noqa: C901
         high_agree_severe = hotspots.get("highest_agreement_severe_ratio", [])
         high_gold_start = hotspots.get("highest_avg_abs_word_start_delta_sec", [])
         low_gold_cov = hotspots.get("lowest_gold_word_coverage_ratio", [])
+        ref_div_suspects = hotspots.get("reference_divergence_suspects", [])
         if (
             low_dtw
             or high_low_conf
@@ -1239,6 +1393,7 @@ def _write_markdown_summary(  # noqa: C901
             or high_agree_severe
             or high_gold_start
             or low_gold_cov
+            or ref_div_suspects
         ):
             lines.append("## Hotspots")
             lines.append("")
@@ -1282,6 +1437,20 @@ def _write_markdown_summary(  # noqa: C901
                 for item in low_gold_cov:
                     if isinstance(item, dict):
                         lines.append(f"  - {item.get('song')}: {item.get('value')}")
+            if ref_div_suspects:
+                lines.append("- Reference divergence suspects (heuristic):")
+                for item in ref_div_suspects:
+                    if isinstance(item, dict):
+                        evidence = item.get("evidence") or []
+                        if isinstance(evidence, list):
+                            evidence_text = ", ".join(str(v) for v in evidence[:3])
+                        else:
+                            evidence_text = str(evidence)
+                        lines.append(
+                            "  - "
+                            f"{item.get('song')}: score={item.get('score')} "
+                            f"({item.get('confidence')}); {evidence_text}"
+                        )
             lines.append("")
     if aggregate["failed_songs"]:
         lines.append("## Failures")
@@ -1356,6 +1525,9 @@ def _refresh_cached_metrics(
     if index is not None and song is not None:
         gold_doc = _load_gold_doc(index=index, song=song, gold_root=gold_root)
     record["metrics"] = _extract_song_metrics(report, gold_doc=gold_doc)
+    record["reference_divergence"] = _infer_reference_divergence_suspicion(
+        record["metrics"]
+    )
     return record
 
 
@@ -2158,6 +2330,9 @@ def _run_song_command(
         else:
             report = json.loads(report_path.read_text(encoding="utf-8"))
             record["metrics"] = _extract_song_metrics(report, gold_doc=gold_doc)
+            record["reference_divergence"] = _infer_reference_divergence_suspicion(
+                record["metrics"]
+            )
             record["status"] = "ok"
     except subprocess.TimeoutExpired as exc:
         elapsed = round(time.monotonic() - start, 2)

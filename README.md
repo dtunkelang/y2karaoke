@@ -180,6 +180,8 @@ pytest tests -v
 
 Benchmark seed set for timing quality work:
 - `benchmarks/benchmark_songs.yaml` contains a curated core list (IDs, provider preference, tolerance hints).
+- `benchmarks/main_benchmark_songs.yaml` is the current **guardrail** subset for CI/main-metric enforcement (high-trust enough references).
+- `benchmarks/main_dev_songs.yaml` is the broader **development** set for alignment experiments and reference-mismatch investigation.
 - Validate it with: `make benchmark-validate`
 - Run the benchmark suite and aggregate report:
   - `make benchmark-run`
@@ -218,6 +220,11 @@ Benchmark seed set for timing quality work:
   - Run strategy matrix and emit combined report: `make benchmark-matrix`
   - Matrix JSON now includes `recommendations` (best strategy by p95/mean start error, low-confidence ratio, DTW coverage, runtime, and quality/runtime balance)
   - Recommend default strategy/thresholds from prior reports: `make benchmark-recommend`
+  - Enforce committed main benchmark guardrails: `./venv/bin/python tools/main_benchmark_guardrails.py`
+
+Main benchmark reference trust policy (first pass):
+- Some songs are intentionally excluded from `benchmarks/main_benchmark_songs.yaml` when the benchmark report flags likely `reference_divergence` (strong internal alignment signals but severe gold-reference mismatch).
+- Those songs remain in `benchmarks/main_dev_songs.yaml` so they continue informing architecture work without distorting CI guardrails.
 
 Benchmark metric interpretation:
 - `dtw_line_coverage`: fraction of lyric lines with usable DTW anchor/match. Lower values often mean noisy or duration-mismatched LRC.

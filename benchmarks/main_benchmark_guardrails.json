@@ -1,0 +1,18 @@
+{
+  "manifest": "benchmarks/main_benchmark_songs.yaml",
+  "latest_pointer": "benchmarks/results/latest.json",
+  "benchmark_args": [
+    "--offline",
+    "--strategy",
+    "hybrid_dtw"
+  ],
+  "thresholds": {
+    "min_success_rate": 0.85,
+    "min_dtw_metric_song_coverage_ratio": 0.9,
+    "min_dtw_metric_line_coverage_ratio": 0.9,
+    "min_dtw_line_coverage_mean": 0.78,
+    "max_agreement_start_p95_abs_sec_mean": 3.0,
+    "max_agreement_bad_ratio_total": 0.06,
+    "max_reference_divergence_suspected_ratio": 0.1
+  }
+}

@@ -1,0 +1,89 @@
+version: 1
+name: timing_guardrail_v1
+description: 'Curated high-trust songs for main timing/alignment guardrails. This
+  set favors clean audio sources and broad musical/language coverage.
+
+  '
+default_lrc_duration_tolerance_sec: 20
+songs:
+- artist: Queen
+  title: Bohemian Rhapsody
+  youtube_id: hY3FuBZM7kk
+  youtube_url: https://www.youtube.com/watch?v=hY3FuBZM7kk
+  preferred_lyrics_provider: lyriq
+  fallback_lyrics_provider: syncedlyrics
+  lrc_duration_tolerance_sec: 12
+  notes: Uses official audio for benchmark alignment; compare against Sing King visual
+    gold.
+- artist: Billie Eilish
+  title: bad guy
+  youtube_id: ayxYgDgBD3g
+  youtube_url: https://www.youtube.com/watch?v=ayxYgDgBD3g
+  preferred_lyrics_provider: lyriq
+  fallback_lyrics_provider: syncedlyrics
+  lrc_duration_tolerance_sec: 8
+  notes: Uses lyric video source to avoid official-video intro material.
+- artist: Ed Sheeran
+  title: Shape of You
+  youtube_id: liTfD88dbCo
+  youtube_url: https://www.youtube.com/watch?v=liTfD88dbCo
+  preferred_lyrics_provider: lyriq
+  fallback_lyrics_provider: syncedlyrics
+  lrc_duration_tolerance_sec: 8
+  notes: Uses lyric video source for cleaner alignment target.
+- artist: Dua Lipa
+  title: Levitating
+  youtube_id: TUVcZfQe-Kw
+  youtube_url: https://www.youtube.com/watch?v=TUVcZfQe-Kw
+  preferred_lyrics_provider: lyriq
+  fallback_lyrics_provider: syncedlyrics
+  lrc_duration_tolerance_sec: 30
+  notes: Uses official audio for benchmark alignment.
+- artist: Bruno Mars
+  title: Uptown Funk
+  youtube_id: OPf0YbXqDm0
+  youtube_url: https://www.youtube.com/watch?v=OPf0YbXqDm0
+  preferred_lyrics_provider: lyriq
+  fallback_lyrics_provider: syncedlyrics
+  lrc_duration_tolerance_sec: 20
+  notes: Uses official audio for benchmark alignment.
+- artist: The Weeknd
+  title: Blinding Lights
+  youtube_id: LEdBLhABQRs
+  youtube_url: https://www.youtube.com/watch?v=LEdBLhABQRs
+  preferred_lyrics_provider: lyriq
+  fallback_lyrics_provider: syncedlyrics
+  lrc_duration_tolerance_sec: 10
+  notes: Uses KaraFun version (has guide vocals).
+- artist: Imagine Dragons
+  title: Believer
+  youtube_id: 7wtfhZwyrcc
+  youtube_url: https://www.youtube.com/watch?v=7wtfhZwyrcc
+  preferred_lyrics_provider: syncedlyrics
+  fallback_lyrics_provider: lyriq
+  lrc_duration_tolerance_sec: 20
+  notes: Uses official audio for benchmark alignment.
+- artist: Indila
+  title: Derniere danse
+  youtube_id: K5KAc5CoCuk
+  youtube_url: https://www.youtube.com/watch?v=K5KAc5CoCuk
+  preferred_lyrics_provider: lyriq
+  fallback_lyrics_provider: syncedlyrics
+  lrc_duration_tolerance_sec: 22
+  notes: Uses official audio for benchmark alignment.
+- artist: ROSALIA
+  title: DESPECHA
+  youtube_id: Y2ESxHKuSOk
+  youtube_url: https://www.youtube.com/watch?v=Y2ESxHKuSOk
+  preferred_lyrics_provider: lyriq
+  fallback_lyrics_provider: syncedlyrics
+  lrc_duration_tolerance_sec: 10
+  notes: Uses official audio for benchmark alignment.
+- artist: J Balvin
+  title: Mi Gente
+  youtube_id: wnJ6LuUFpMo
+  youtube_url: https://www.youtube.com/watch?v=wnJ6LuUFpMo
+  preferred_lyrics_provider: lyriq
+  fallback_lyrics_provider: syncedlyrics
+  lrc_duration_tolerance_sec: 18
+  notes: Uses official audio for benchmark alignment.
