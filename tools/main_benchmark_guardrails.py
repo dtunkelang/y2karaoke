@@ -87,6 +87,13 @@ def _metric_value(report: dict[str, Any], key: str) -> float | None:
     value = aggregate.get(key)
     if isinstance(value, (int, float)):
         return float(value)
+    if key in {
+        "reference_divergence_suspected_ratio",
+        "reference_divergence_suspected_count",
+    }:
+        # Backward compatibility for benchmark reports generated before the
+        # reference-divergence signal was added.
+        return 0.0
     return None
 
 
