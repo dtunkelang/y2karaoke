@@ -58,6 +58,7 @@ _OVERLAY_BRAND_TOKENS = {
     "collection",
 }
 
+
 def _normalize_output_casing(lines_out: list[dict[str, Any]]) -> None:
     """If the output is almost entirely ALL CAPS, convert to Title Case for readability."""
     if not lines_out:
@@ -430,7 +431,6 @@ def _remove_repeated_singleton_noise_lines(  # noqa: C901
     lines_out[:] = [ln for idx, ln in enumerate(lines_out) if idx not in drops]
     for i, ln in enumerate(lines_out):
         ln["line_index"] = i + 1
-
 
 
 def _tokens_contiguous_subphrase(needle: list[str], haystack: list[str]) -> bool:
@@ -817,5 +817,3 @@ def _rebalance_compressed_middle_four_line_sequences(
             for w in words:
                 w["start"] = snap(float(w["start"]) + shift)
                 w["end"] = snap(float(w["end"]) + shift)
-
-
