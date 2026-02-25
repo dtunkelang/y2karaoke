@@ -599,6 +599,22 @@ def _best_lexical_match_index(
     return best_idx
 
 
+def _max_contiguous_exact_run(left: list[str], right: list[str]) -> int:
+    if not left or not right:
+        return 0
+    best = 0
+    for i in range(len(left)):
+        for j in range(len(right)):
+            run = 0
+            while i + run < len(left) and j + run < len(right):
+                if left[i + run] != right[j + run]:
+                    break
+                run += 1
+            if run > best:
+                best = run
+    return best
+
+
 def _extract_lexical_mismatch_diagnostics(
     report: dict[str, Any],
     metrics: dict[str, Any],
@@ -618,6 +634,8 @@ def _extract_lexical_mismatch_diagnostics(
     total_line_tokens = 0
     compact_rescue = 0
     apostrophe_rescue = 0
+    truncation_pattern_count = 0
+    repetitive_phrase_line_count = 0
     samples: list[dict[str, Any]] = []
 
     for line in lines:
@@ -644,6 +662,23 @@ def _extract_lexical_mismatch_diagnostics(
             continue
 
         total_line_tokens += len(line_basic)
+        if len(line_basic) >= 4 and len(set(line_compact)) <= max(
+            2, len(line_compact) // 2
+        ):
+            repetitive_phrase_line_count += 1
+
+        compact_line_set = set(line_compact)
+        compact_wh_set = set(wh_compact)
+        max_run = _max_contiguous_exact_run(line_compact, wh_compact)
+        if (
+            max_run >= 3
+            and compact_line_set
+            and len(compact_line_set & compact_wh_set) < len(compact_line_set)
+        ):
+            # Strong contiguous overlap but missing line tokens suggests the window
+            # latched onto a repeated/truncated phrase rather than the full line.
+            truncation_pattern_count += 1
+
         used_basic = [False] * len(wh_basic)
         used_compact = [False] * len(wh_compact)
         rescued_tokens: list[str] = []
@@ -694,6 +729,18 @@ def _extract_lexical_mismatch_diagnostics(
         "apostrophe_rescue_token_count": int(apostrophe_rescue),
         "compact_rescue_ratio": round(compact_rescue / total_line_tokens, 4),
         "apostrophe_rescue_ratio": round(apostrophe_rescue / total_line_tokens, 4),
+        "truncation_pattern_count": int(truncation_pattern_count),
+        "truncation_pattern_ratio": (
+            round(truncation_pattern_count / line_count_analyzed, 4)
+            if line_count_analyzed
+            else 0.0
+        ),
+        "repetitive_phrase_line_count": int(repetitive_phrase_line_count),
+        "repetitive_phrase_line_ratio": (
+            round(repetitive_phrase_line_count / line_count_analyzed, 4)
+            if line_count_analyzed
+            else 0.0
+        ),
         "samples": samples,
     }
 
