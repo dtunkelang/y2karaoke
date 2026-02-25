@@ -4,6 +4,7 @@ import os
 import logging
 import hashlib
 import json
+from difflib import SequenceMatcher
 from typing import Any, Callable, Optional
 
 from ..models import TargetLine
@@ -107,7 +108,8 @@ def reconstruct_lyrics_from_visuals(  # noqa: C901
 
     unique = collapse_short_refrain_noise(unique)
     _trace("collapse_short_refrain_noise", unique)
-    unique = filter_intro_non_lyrics(unique, artist)
+    if os.environ.get("Y2K_VISUAL_DISABLE_RECON_INTRO_FILTER", "0") != "1":
+        unique = filter_intro_non_lyrics(unique, artist)
     _trace("filter_intro_non_lyrics", unique)
     if os.environ.get("Y2K_VISUAL_SUPPRESS_GLOBAL_METADATA", "1") != "0":
         unique = _suppress_global_metadata_noise(unique)
@@ -119,6 +121,8 @@ def reconstruct_lyrics_from_visuals(  # noqa: C901
     # Suppress short-lived, low-word-count fragments that are overshadowed by stable lines
     unique = _suppress_short_lane_fragments(unique)
     _trace("suppress_short_lane_fragments", unique)
+    unique = _suppress_repeated_short_fragment_clusters(unique)
+    _trace("suppress_repeated_short_fragments", unique)
 
     # Final logic-based sequencing: Group lines by temporal overlap and sort by Y.
     if os.environ.get("Y2K_VISUAL_DISABLE_SEQUENCING", "0") != "1":
@@ -169,6 +173,67 @@ def _suppress_short_lane_fragments(lines: list[dict[str, Any]]) -> list[dict[str
                     break
 
     return [l for idx, l in enumerate(lines) if idx not in suppressed_indices]
+
+
+def _suppress_repeated_short_fragment_clusters(  # noqa: C901
+    lines: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    """Remove repeated short fragment shards backed by nearby fuller lyric lines."""
+    if len(lines) < 4:
+        return lines
+
+    token_lists = [
+        [t for t in normalize_text_basic(str(line.get("text", ""))).split() if t]
+        for line in lines
+    ]
+    groups: dict[tuple[str, ...], list[int]] = {}
+    for idx, (line, toks) in enumerate(zip(lines, token_lists)):
+        if not (1 <= len(toks) <= 3):
+            continue
+        dur = float(line["last"]) - float(line["first"])
+        if dur > 1.6:
+            continue
+        groups.setdefault(tuple(toks), []).append(idx)
+
+    suppressed: set[int] = set()
+    for key, idxs in groups.items():
+        if len(idxs) < 2:
+            continue
+        avg_dur = sum(
+            max(0.0, float(lines[i]["last"]) - float(lines[i]["first"])) for i in idxs
+        ) / max(len(idxs), 1)
+        min_count = 3
+        if len(key) <= 2 and avg_dur <= 1.0:
+            min_count = 2
+        if len(idxs) < min_count:
+            continue
+
+        supported: list[int] = []
+        for idx in idxs:
+            line = lines[idx]
+            start = float(line["first"])
+            end = float(line["last"])
+            for j, other in enumerate(lines):
+                if j == idx:
+                    continue
+                other_toks = token_lists[j]
+                if len(other_toks) <= len(key):
+                    continue
+                other_start = float(other["first"])
+                other_end = float(other["last"])
+                if other_end < start - 3.0 or other_start > end + 3.0:
+                    continue
+                if _is_band_fragment_subphrase(list(key), other_toks):
+                    supported.append(idx)
+                    break
+
+        if len(supported) < min_count:
+            continue
+        suppressed.update(supported)
+
+    if not suppressed:
+        return lines
+    return [line for idx, line in enumerate(lines) if idx not in suppressed]
 
 
 _GLOBAL_META_KEYWORDS = {
@@ -425,9 +490,14 @@ def _order_visual_block_locally(
         nonlocal band
         if not band:
             return
+        fragment_indices = _band_fragment_indices(band)
         # Stable sort keeps same-lane lines in chronological order.
         band.sort(
-            key=lambda x: (x.get("lane", 0), float(x.get("first_visible", x["first"])))
+            key=lambda x: (
+                1 if id(x) in fragment_indices else 0,
+                x.get("lane", 0),
+                float(x.get("first_visible", x["first"])),
+            )
         )
         ordered.extend(band)
         band = []
@@ -459,6 +529,78 @@ def _order_visual_block_locally(
 
     _flush()
     return ordered
+
+
+def _band_fragment_indices(band: list[dict[str, Any]]) -> set[int]:
+    if len(band) < 2:
+        return set()
+
+    def _tokens(line: dict[str, Any]) -> list[str]:
+        return [t for t in normalize_text_basic(str(line.get("text", ""))).split() if t]
+
+    token_lists = [_tokens(line) for line in band]
+    out: set[int] = set()
+    for i, toks_i in enumerate(token_lists):
+        if len(toks_i) < 1 or len(toks_i) > 4:
+            continue
+        if all(t in {"oh", "ooh", "ah", "la", "na", "mm", "mmm"} for t in toks_i):
+            continue
+        dur_i = max(
+            0.1,
+            float(band[i]["last"])
+            - float(band[i].get("first_visible", band[i]["first"])),
+        )
+        for j, toks_j in enumerate(token_lists):
+            if i == j or len(toks_j) <= len(toks_i):
+                continue
+            if not _is_band_fragment_subphrase(toks_i, toks_j):
+                continue
+            dur_j = max(
+                0.1,
+                float(band[j]["last"])
+                - float(band[j].get("first_visible", band[j]["first"])),
+            )
+            if dur_j < dur_i:
+                continue
+            out.add(id(band[i]))
+            break
+    return out
+
+
+def _is_band_fragment_subphrase(fragment: list[str], full: list[str]) -> bool:
+    if _tokens_contiguous_subphrase(fragment, full):
+        return True
+    if len(fragment) == 1:
+        tok = fragment[0]
+        if len(tok) >= 4:
+            singular = tok[:-1] if tok.endswith("s") else tok
+            plural = tok if tok.endswith("s") else f"{tok}s"
+            for full_tok in full:
+                if full_tok == singular or full_tok == plural:
+                    return True
+    # OCR often splits a single word into short pieces ("con ting"), producing
+    # local simultaneous fragment lines that should trail the fuller line.
+    if 2 <= len(fragment) <= 3 and all(1 <= len(t) <= 4 for t in fragment):
+        merged = "".join(fragment)
+        if len(merged) >= 5:
+            for tok in full:
+                if len(tok) < len(merged):
+                    continue
+                if tok == merged:
+                    return True
+                if SequenceMatcher(None, merged, tok).ratio() >= 0.84:
+                    return True
+    return False
+
+
+def _tokens_contiguous_subphrase(needle: list[str], haystack: list[str]) -> bool:
+    if not needle or len(needle) > len(haystack):
+        return False
+    n = len(needle)
+    for idx in range(0, len(haystack) - n + 1):
+        if haystack[idx : idx + n] == needle:
+            return True
+    return False
 
 
 def _has_significant_overlap(a: dict[str, Any], b: dict[str, Any]) -> bool:

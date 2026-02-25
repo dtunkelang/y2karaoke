@@ -308,6 +308,10 @@ def _canonicalize_repeated_line_text_variants(  # noqa: C901
     for group in groups.values():
         if len(group) < 2:
             continue
+        _repair_repeat_cluster_tokenization_variants(lines_out, group)
+        for idx in group:
+            norms[idx] = normalize_text_basic(str(lines_out[idx].get("text", "")))
+            token_lists[idx] = [t for t in norms[idx].split() if t]
         # Pick canonical line by best combined quality.
         group_sorted = sorted(
             group,
@@ -355,6 +359,189 @@ def _canonicalize_repeated_line_text_variants(  # noqa: C901
             for w, replacement in zip(words, canon_tokens):
                 w["text"] = replacement
             line["text"] = " ".join(str(w.get("text", "")) for w in words)
+
+
+def _merge_adjacent_words(
+    words: list[dict[str, Any]], idx: int, merged_text: str
+) -> None:
+    a = words[idx]
+    b = words[idx + 1]
+    a_conf = float(a.get("confidence", 0.0) or 0.0)
+    b_conf = float(b.get("confidence", 0.0) or 0.0)
+    merged = {
+        **a,
+        "text": merged_text,
+        "start": a.get("start"),
+        "end": b.get("end", a.get("end")),
+        "confidence": round((a_conf + b_conf) / 2.0, 3),
+    }
+    words[idx : idx + 2] = [merged]
+    for j, w in enumerate(words, start=1):
+        w["word_index"] = j
+
+
+def _plural_family_key(tok: str) -> str:
+    if tok.endswith("s") and len(tok) >= 4:
+        return tok[:-1]
+    return tok
+
+
+def _ocr_confusion_family_key(tok: str) -> str:
+    chars = []
+    for ch in tok:
+        if ch in {"l", "1", "|"}:
+            chars.append("i")
+        else:
+            chars.append(ch)
+    return "".join(chars)
+
+
+def _line_tokens_from_output(line: dict[str, Any]) -> list[str]:
+    return [t for t in normalize_text_basic(str(line.get("text", ""))).split() if t]
+
+
+def _best_cluster_token_match_for_merge(
+    merged_norm: str, cluster_tokens: list[str]
+) -> str | None:
+    best_token = None
+    best_score = 0.0
+    for tok in cluster_tokens:
+        if len(tok) < len(merged_norm):
+            continue
+        if tok == merged_norm:
+            return tok
+        score = SequenceMatcher(None, merged_norm, tok).ratio()
+        if score >= 0.84 and score > best_score:
+            best_token = tok
+            best_score = score
+    return best_token
+
+
+def _merge_repeat_cluster_split_fragments(
+    lines_out: list[dict[str, Any]], group: list[int], cluster_tokens: list[str]
+) -> None:
+    for idx in group:
+        line = lines_out[idx]
+        words = line.get("words", [])
+        if len(words) < 2:
+            continue
+        j = 0
+        changed = False
+        while j < len(words) - 1:
+            a = str(words[j].get("text", ""))
+            b = str(words[j + 1].get("text", ""))
+            a_n = normalize_text_basic(a)
+            b_n = normalize_text_basic(b)
+            merged_n = a_n + b_n
+            if not (1 <= len(a_n) <= 4 and 1 <= len(b_n) <= 4 and len(merged_n) >= 5):
+                j += 1
+                continue
+            merged_text = _best_cluster_token_match_for_merge(merged_n, cluster_tokens)
+            if not merged_text:
+                j += 1
+                continue
+            _merge_adjacent_words(words, j, merged_text)
+            changed = True
+            continue
+        if changed:
+            line["text"] = " ".join(str(w.get("text", "")) for w in words)
+
+
+def _harmonize_repeat_cluster_plural_variants(
+    lines_out: list[dict[str, Any]], group: list[int]
+) -> None:
+    token_lists = [_line_tokens_from_output(lines_out[idx]) for idx in group]
+    if not token_lists:
+        return
+
+    lengths = [len(toks) for toks in token_lists]
+    target_len = max(set(lengths), key=lambda n: (sum(1 for x in lengths if x == n), n))
+    aligned = [pos for pos, toks in enumerate(token_lists) if len(toks) == target_len]
+    if len(aligned) < 2:
+        return
+
+    consensus_by_pos: dict[int, str] = {}
+    for pos in range(target_len):
+        chosen = _repeat_cluster_consensus_token_at_pos(token_lists, aligned, pos)
+        if chosen is not None:
+            consensus_by_pos[pos] = chosen
+
+    if not consensus_by_pos:
+        return
+    for rel_idx in aligned:
+        line = lines_out[group[rel_idx]]
+        words = line.get("words", [])
+        if len(words) != target_len:
+            continue
+        changed = False
+        for pos, chosen_norm in consensus_by_pos.items():
+            cur = str(words[pos].get("text", ""))
+            cur_norm = normalize_text_basic(cur).replace(" ", "")
+            same_plural_family = _plural_family_key(cur_norm) == _plural_family_key(
+                chosen_norm
+            )
+            same_ocr_family = _ocr_confusion_family_key(
+                cur_norm
+            ) == _ocr_confusion_family_key(chosen_norm)
+            if not (same_plural_family or same_ocr_family):
+                continue
+            if cur_norm == chosen_norm:
+                continue
+            words[pos]["text"] = chosen_norm
+            changed = True
+        if changed:
+            line["text"] = " ".join(str(w.get("text", "")) for w in words)
+
+
+def _repeat_cluster_consensus_token_at_pos(
+    token_lists: list[list[str]], aligned: list[int], pos: int
+) -> str | None:
+    families: dict[str, dict[str, int]] = {}
+    ocr_families: dict[str, dict[str, int]] = {}
+    for rel_idx in aligned:
+        tok = token_lists[rel_idx][pos]
+        fam = _plural_family_key(tok)
+        families.setdefault(fam, {})
+        families[fam][tok] = families[fam].get(tok, 0) + 1
+        ocr_fam = _ocr_confusion_family_key(tok)
+        ocr_families.setdefault(ocr_fam, {})
+        ocr_families[ocr_fam][tok] = ocr_families[ocr_fam].get(tok, 0) + 1
+
+    if len(families) == 1:
+        variants = next(iter(families.values()))
+        if len(variants) < 2:
+            return None
+        return sorted(
+            variants.items(), key=lambda item: (item[1], len(item[0])), reverse=True
+        )[0][0]
+
+    # Allow OCR-confusable token families (e.g. "i've" vs "l've") but avoid semantic alternations.
+    if len(ocr_families) != 1:
+        return None
+    variants = next(iter(ocr_families.values()))
+    if len(variants) < 2:
+        return None
+    return sorted(
+        variants.items(),
+        key=lambda item: (
+            item[1],
+            item[0].count("i") - item[0].count("l"),
+            len(item[0]),
+        ),
+        reverse=True,
+    )[0][0]
+
+
+def _repair_repeat_cluster_tokenization_variants(
+    lines_out: list[dict[str, Any]], group: list[int]
+) -> None:
+    if len(group) < 2:
+        return
+    cluster_tokens: list[str] = []
+    for idx in group:
+        cluster_tokens.extend(_line_tokens_from_output(lines_out[idx]))
+    _merge_repeat_cluster_split_fragments(lines_out, group, cluster_tokens)
+    _harmonize_repeat_cluster_plural_variants(lines_out, group)
 
 
 def _remove_repeated_singleton_noise_lines(  # noqa: C901
@@ -443,6 +630,40 @@ def _tokens_contiguous_subphrase(needle: list[str], haystack: list[str]) -> bool
     return False
 
 
+def _neighbor_supports_fragment_tokens(
+    fragment_tokens: list[str], neighbor_tokens: list[str]
+) -> bool:
+    if _tokens_contiguous_subphrase(fragment_tokens, neighbor_tokens):
+        return True
+
+    # OCR often splits a single word across 2-3 tiny tokens ("con ting").
+    if 2 <= len(fragment_tokens) <= 3 and all(
+        1 <= len(t) <= 4 for t in fragment_tokens
+    ):
+        merged = "".join(fragment_tokens)
+        if len(merged) >= 5:
+            for tok in neighbor_tokens:
+                if tok == merged:
+                    return True
+                if (
+                    len(tok) >= len(merged)
+                    and SequenceMatcher(None, merged, tok).ratio() >= 0.84
+                ):
+                    return True
+
+    # Singular/plural near-fragments are common in noisy repeated lines ("dollar" vs "dollars").
+    if len(fragment_tokens) == 1:
+        tok = fragment_tokens[0]
+        if len(tok) >= 4:
+            singular = tok[:-1] if tok.endswith("s") else tok
+            plural = tok if tok.endswith("s") else f"{tok}s"
+            for n_tok in neighbor_tokens:
+                if n_tok == singular or n_tok == plural:
+                    return True
+
+    return False
+
+
 def _remove_repeated_fragment_noise_lines(  # noqa: C901
     lines_out: list[dict[str, Any]], artist: Optional[str], title: Optional[str]
 ) -> None:
@@ -477,9 +698,12 @@ def _remove_repeated_fragment_noise_lines(  # noqa: C901
 
     drops: set[int] = set()
     for key, count in frag_counts.items():
-        if count < 3:
-            continue
         avg_conf = frag_conf_sums[key] / max(count, 1)
+        min_count = 3
+        if count >= 2 and len(key) <= 2 and avg_conf <= 0.25:
+            min_count = 2
+        if count < min_count:
+            continue
         if avg_conf > 0.4:
             continue
 
@@ -502,7 +726,7 @@ def _remove_repeated_fragment_noise_lines(  # noqa: C901
                 n_conf = float(lines_out[j].get("confidence", 0.0) or 0.0)
                 if n_conf + 0.1 < float(ln.get("confidence", 0.0) or 0.0):
                     continue
-                if _tokens_contiguous_subphrase(list(key), neigh_toks):
+                if _neighbor_supports_fragment_tokens(list(key), neigh_toks):
                     supported_by_neighbor = True
                     break
             if not supported_by_neighbor:

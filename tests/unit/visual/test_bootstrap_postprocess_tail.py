@@ -5,6 +5,7 @@ from y2karaoke.core.visual.bootstrap_postprocess import (
     nearest_known_word_indices,
 )
 
+
 def test_build_refined_lines_output_does_not_canonicalize_nearby_sequence_lines():
     lines = [
         TargetLine(

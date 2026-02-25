@@ -1,11 +1,9 @@
 from y2karaoke.core.models import TargetLine
 from y2karaoke.core.visual import bootstrap_postprocess
-from y2karaoke.core.visual.bootstrap_postprocess import build_refined_lines_output, nearest_known_word_indices
-
-def test_nearest_known_word_indices_mapping():
-    prev_known, next_known = nearest_known_word_indices([1, 4], 6)
-    assert prev_known == [-1, 1, 1, 1, 4, 4]
-    assert next_known == [1, 1, 4, 4, 4, -1]
+from y2karaoke.core.visual.bootstrap_postprocess import (
+    build_refined_lines_output,
+    nearest_known_word_indices,
+)
 
 
 def test_build_refined_lines_output_filters_title_artist():
@@ -896,4 +894,3 @@ def test_build_refined_lines_output_canonicalizes_weaker_distant_repeat_variant(
         "we'll be counting stars",
         "we'll be counting stars",
     ]
-
