@@ -28,6 +28,9 @@ from y2karaoke.core.components.audio.downloader import YouTubeDownloader  # noqa
 from y2karaoke.core.visual.reconstruction import (  # noqa: E402
     reconstruct_lyrics_from_visuals,
 )
+from y2karaoke.core.visual.extractor_mode import (  # noqa: E402
+    resolve_visual_extractor_mode,
+)
 from y2karaoke.core.visual.bootstrap_postprocess import (  # noqa: E402
     build_refined_lines_output as _build_refined_lines_output_impl,
     nearest_known_word_indices as _nearest_known_word_indices_impl,
@@ -55,7 +58,10 @@ from y2karaoke.core.visual.bootstrap_media import (  # noqa: E402
 from y2karaoke.core.visual.bootstrap_selection import (  # noqa: E402
     select_candidate_with_rankings as _select_candidate_with_rankings_impl,
 )
-from y2karaoke.core.text_utils import make_slug, normalize_text_basic as normalize_text  # noqa: E402
+from y2karaoke.core.text_utils import (
+    make_slug,
+    normalize_text_basic as normalize_text,
+)  # noqa: E402
 from y2karaoke.vision.ocr import get_ocr_engine  # noqa: E402,F401
 from y2karaoke.vision.roi import detect_lyric_roi  # noqa: E402
 from y2karaoke.vision.suitability import analyze_visual_suitability  # noqa: E402
@@ -82,6 +88,38 @@ LOW_FPS_LINE_REFINE_FPS = 6.0
 def _require_cv2() -> None:
     if not hasattr(cv2, "VideoCapture"):
         raise ImportError("OpenCV is required. Please install OpenCV.")
+
+
+def _should_use_fade_fragment_text_guard(extractor_selection: Any) -> bool:
+    """Keep stricter fade-fragment merging only for stable block-like layouts.
+
+    This guard was introduced to prevent wrong same-lane merges on clean block
+    videos (e.g. Counting Stars), but it regresses some noisier/non-stable
+    line-first videos. We gate it using the same raw-frame layout diagnostics
+    used by extractor auto-selection.
+    """
+    diag = getattr(extractor_selection, "diagnostics", None) or {}
+    if not isinstance(diag, dict):
+        return True
+    modal_row_count = int(diag.get("modal_row_count", 0) or 0)
+    modal_ratio = float(diag.get("modal_row_ratio", 0.0) or 0.0)
+    eligible_ratio = float(diag.get("eligible_ratio", 0.0) or 0.0)
+    long_run_ratio = float(diag.get("long_stable_run_ratio", 0.0) or 0.0)
+    mean_row_y_std = diag.get("mean_row_y_std")
+    if mean_row_y_std is None:
+        return True
+    y_std = float(mean_row_y_std)
+    return (
+        2 <= modal_row_count <= 5
+        and modal_ratio >= 0.70
+        and eligible_ratio >= 0.75
+        and long_run_ratio >= 0.80
+        and y_std <= 5.0
+    )
+
+
+def _looks_like_stable_block_layout(extractor_selection: Any) -> bool:
+    return _should_use_fade_fragment_text_guard(extractor_selection)
 
 
 def refine_word_timings_at_high_fps(*args: Any, **kwargs: Any) -> Any:
@@ -265,6 +303,57 @@ def _build_refined_lines_output(
     t_lines: list[Any], artist: Optional[str], title: Optional[str]
 ) -> list[dict[str, Any]]:
     """Backward-compatible wrapper around shared post-processing helper."""
+    if os.environ.get("Y2K_VISUAL_BOOTSTRAP_TARGET_TRACE", "0") == "1":
+        preview: list[dict[str, Any]] = []
+        for ln in t_lines[:15]:
+            word_starts = getattr(ln, "word_starts", None) or []
+            word_ends = getattr(ln, "word_ends", None) or []
+            s = (
+                float(word_starts[0])
+                if word_starts and word_starts[0] is not None
+                else float(getattr(ln, "start", 0.0))
+            )
+            e = (
+                float(word_ends[-1])
+                if word_ends and word_ends[-1] is not None
+                else float(getattr(ln, "end", s) or s)
+            )
+            preview.append(
+                {
+                    "i": int(getattr(ln, "line_index", 0)),
+                    "s": round(s, 2),
+                    "e": round(e, 2),
+                    "y": round(float(getattr(ln, "y", 0.0)), 1),
+                    "vs": (
+                        round(float(getattr(ln, "visibility_start")), 2)
+                        if getattr(ln, "visibility_start", None) is not None
+                        else None
+                    ),
+                    "ve": (
+                        round(float(getattr(ln, "visibility_end")), 2)
+                        if getattr(ln, "visibility_end", None) is not None
+                        else None
+                    ),
+                    "hint": getattr(ln, "block_order_hint", None),
+                    "variants": (
+                        (
+                            (getattr(ln, "reconstruction_meta", {}) or {}).get(
+                                "top_text_variants"
+                            )
+                        )[:3]
+                        if isinstance(getattr(ln, "reconstruction_meta", None), dict)
+                        and isinstance(
+                            (getattr(ln, "reconstruction_meta", {}) or {}).get(
+                                "top_text_variants"
+                            ),
+                            list,
+                        )
+                        else None
+                    ),
+                    "t": " ".join(list(getattr(ln, "words", []))[:6]),
+                }
+            )
+        logger.info("BOOTSTRAP_TARGET_TRACE pre_build first15=%s", preview)
     return _build_refined_lines_output_impl(t_lines, artist=artist, title=title)
 
 
@@ -456,6 +545,17 @@ def _parse_args() -> argparse.Namespace:
             "'low-fps-line' forces line-level refinement."
         ),
     )
+    p.add_argument(
+        "--visual-extractor-mode",
+        choices=["auto", "line-first", "block-first"],
+        default="auto",
+        help=(
+            "Visual lyrics extraction backend: "
+            "'line-first' (current default pipeline), "
+            "'block-first' (new screen/block-oriented prototype), "
+            "'auto' (currently resolves to line-first; future selector hook)."
+        ),
+    )
     p.add_argument("--allow-low-suitability", action="store_true")
     p.add_argument(
         "--strict-sequential", action="store_true"
@@ -552,9 +652,32 @@ def _bootstrap_refined_lines(
         f"elapsed={ocr_elapsed:.1f}s"
     )
     reconstruct_t0 = perf_counter()
+    extractor_selection = resolve_visual_extractor_mode(
+        str(getattr(args, "visual_extractor_mode", "auto")),
+        raw_frames=raw_frames,
+    )
+    logger.info(
+        "Visual extractor mode: requested=%s resolved=%s (%s)",
+        extractor_selection.requested_mode,
+        extractor_selection.resolved_mode,
+        extractor_selection.reason,
+    )
+    if extractor_selection.diagnostics:
+        logger.info(
+            "Visual extractor auto diagnostics: %s", extractor_selection.diagnostics
+        )
     prev_spell_mode = os.environ.get("Y2K_VISUAL_SPELL_CORRECTION_MODE")
     prev_disable_spell_correct = os.environ.get("Y2K_VISUAL_DISABLE_SPELL_CORRECT")
     prev_disable_spell_guesses = os.environ.get("Y2K_VISUAL_DISABLE_SPELL_GUESSES")
+    prev_disable_fade_guard = os.environ.get(
+        "Y2K_VISUAL_DISABLE_FADE_FRAGMENT_TEXT_GUARD"
+    )
+    prev_disable_ghost_guards = os.environ.get(
+        "Y2K_VISUAL_DISABLE_GHOST_REENTRY_GUARDS"
+    )
+    prev_disable_visible_end_guard = os.environ.get(
+        "Y2K_VISUAL_DISABLE_VISIBLE_END_GHOST_GUARD"
+    )
     try:
         mode = str(getattr(args, "visual_spell_correction_mode", "full"))
         os.environ["Y2K_VISUAL_SPELL_CORRECTION_MODE"] = mode
@@ -568,8 +691,30 @@ def _bootstrap_refined_lines(
         else:
             os.environ.pop("Y2K_VISUAL_DISABLE_SPELL_CORRECT", None)
             os.environ.pop("Y2K_VISUAL_DISABLE_SPELL_GUESSES", None)
+        use_fade_guard = _should_use_fade_fragment_text_guard(extractor_selection)
+        is_line_first = extractor_selection.resolved_mode == "line-first"
+        stable_block_layout = _looks_like_stable_block_layout(extractor_selection)
+        if is_line_first and not use_fade_guard:
+            os.environ["Y2K_VISUAL_DISABLE_FADE_FRAGMENT_TEXT_GUARD"] = "1"
+            logger.info(
+                "Disabling fade-fragment text guard for non-stable line-first layout"
+            )
+        else:
+            os.environ.pop("Y2K_VISUAL_DISABLE_FADE_FRAGMENT_TEXT_GUARD", None)
+        if is_line_first and not stable_block_layout:
+            os.environ["Y2K_VISUAL_DISABLE_GHOST_REENTRY_GUARDS"] = "1"
+            os.environ["Y2K_VISUAL_DISABLE_VISIBLE_END_GHOST_GUARD"] = "1"
+            logger.info(
+                "Using legacy ghost-tail handling for non-stable line-first layout"
+            )
+        else:
+            os.environ.pop("Y2K_VISUAL_DISABLE_GHOST_REENTRY_GUARDS", None)
+            os.environ.pop("Y2K_VISUAL_DISABLE_VISIBLE_END_GHOST_GUARD", None)
         t_lines = reconstruct_lyrics_from_visuals(
-            raw_frames, args.visual_fps, artist=args.artist
+            raw_frames,
+            args.visual_fps,
+            artist=args.artist,
+            extractor_mode=extractor_selection.resolved_mode,
         )
     finally:
         if prev_spell_mode is None:
@@ -584,6 +729,24 @@ def _bootstrap_refined_lines(
             os.environ.pop("Y2K_VISUAL_DISABLE_SPELL_GUESSES", None)
         else:
             os.environ["Y2K_VISUAL_DISABLE_SPELL_GUESSES"] = prev_disable_spell_guesses
+        if prev_disable_fade_guard is None:
+            os.environ.pop("Y2K_VISUAL_DISABLE_FADE_FRAGMENT_TEXT_GUARD", None)
+        else:
+            os.environ["Y2K_VISUAL_DISABLE_FADE_FRAGMENT_TEXT_GUARD"] = (
+                prev_disable_fade_guard
+            )
+        if prev_disable_ghost_guards is None:
+            os.environ.pop("Y2K_VISUAL_DISABLE_GHOST_REENTRY_GUARDS", None)
+        else:
+            os.environ["Y2K_VISUAL_DISABLE_GHOST_REENTRY_GUARDS"] = (
+                prev_disable_ghost_guards
+            )
+        if prev_disable_visible_end_guard is None:
+            os.environ.pop("Y2K_VISUAL_DISABLE_VISIBLE_END_GHOST_GUARD", None)
+        else:
+            os.environ["Y2K_VISUAL_DISABLE_VISIBLE_END_GHOST_GUARD"] = (
+                prev_disable_visible_end_guard
+            )
     reconstruct_elapsed = perf_counter() - reconstruct_t0
     logger.info(
         f"Reconstructed {len(t_lines)} initial lines in {reconstruct_elapsed:.1f}s."
@@ -620,6 +783,7 @@ def _bootstrap_refined_lines(
             t_lines,
             roi,
             sample_fps=LOW_FPS_LINE_REFINE_FPS,
+            extractor_mode=extractor_selection.resolved_mode,
         )
     elif word_level_score >= LINE_LEVEL_REFINE_SKIP_THRESHOLD:
         refine_word_timings_at_high_fps(v_path, t_lines, roi)
@@ -636,6 +800,7 @@ def _bootstrap_refined_lines(
             t_lines,
             roi,
             sample_fps=LOW_FPS_LINE_REFINE_FPS,
+            extractor_mode=extractor_selection.resolved_mode,
         )
     refine_elapsed = perf_counter() - refine_t0
     logger.info(
@@ -657,6 +822,12 @@ def _bootstrap_refined_lines(
             "spell_correction_mode": str(
                 getattr(args, "visual_spell_correction_mode", "full")
             ),
+            "extractor_mode": {
+                "requested": extractor_selection.requested_mode,
+                "resolved": extractor_selection.resolved_mode,
+                "reason": extractor_selection.reason,
+                "diagnostics": extractor_selection.diagnostics,
+            },
             "uncertainty": reconstruction_uncertainty,
         },
         "refinement": {

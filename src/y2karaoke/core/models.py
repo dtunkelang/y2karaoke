@@ -330,3 +330,4 @@ class TargetLine:
     visibility_start: Optional[float] = None
     visibility_end: Optional[float] = None
     reconstruction_meta: Optional[Dict[str, Any]] = None
+    block_order_hint: Optional[int] = None

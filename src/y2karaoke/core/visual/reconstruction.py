@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Any, Optional
 
 from ..models import TargetLine
+from .extractor_mode import ResolvedVisualExtractorMode
 from .reconstruction_mirrored_cycles import (
     extrapolate_mirrored_lane_cycles as _extrapolate_mirrored_lane_cycles_impl,
 )
@@ -186,7 +187,10 @@ def _split_persistent_line_epochs_from_context_transitions(  # noqa: C901
 
 
 def reconstruct_lyrics_from_visuals(  # noqa: C901
-    raw_frames: list[dict[str, Any]], visual_fps: float, artist: Optional[str] = None
+    raw_frames: list[dict[str, Any]],
+    visual_fps: float,
+    artist: Optional[str] = None,
+    extractor_mode: ResolvedVisualExtractorMode = "line-first",
 ) -> list[TargetLine]:
     return _reconstruct_lyrics_from_visuals_impl(
         raw_frames,
@@ -205,4 +209,5 @@ def reconstruct_lyrics_from_visuals(  # noqa: C901
         suppress_bottom_fragment_families=_suppress_bottom_fragment_families,
         snap_fn=snap,
         artist=artist,
+        extractor_mode=extractor_mode,
     )

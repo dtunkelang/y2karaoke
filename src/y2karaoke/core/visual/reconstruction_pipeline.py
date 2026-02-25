@@ -8,9 +8,16 @@ from difflib import SequenceMatcher
 from typing import Any, Callable, Optional
 
 from ..models import TargetLine
-from ..text_utils import normalize_text_basic
+from ..text_utils import normalize_text_basic, text_similarity
+from .extractor_mode import ResolvedVisualExtractorMode
 from .reconstruction_frame_accumulation import accumulate_persistent_lines_from_frames
 from .reconstruction_deduplication import deduplicate_persistent_lines
+from .reconstruction_block_first import (
+    apply_block_first_ordering_to_persistent_entries,
+)
+from .reconstruction_block_first_frames import (
+    reconstruct_lyrics_from_visuals_block_first_frames,
+)
 from .reconstruction_target_conversion import convert_persistent_lines_to_target_lines
 
 logger = logging.getLogger(__name__)
@@ -43,8 +50,26 @@ def reconstruct_lyrics_from_visuals(  # noqa: C901
     suppress_bottom_fragment_families: EntriesPass,
     snap_fn: SnapFn,
     artist: Optional[str] = None,
+    extractor_mode: ResolvedVisualExtractorMode = "line-first",
 ) -> list[TargetLine]:
     trace_enabled = os.environ.get("Y2K_VISUAL_RECON_TRACE", "0") == "1"
+    use_block_first_proto = extractor_mode == "block-first" or (
+        os.environ.get("Y2K_VISUAL_BLOCK_FIRST_PROTOTYPE", "0") == "1"
+    )
+
+    if use_block_first_proto:
+        block_first_lines = reconstruct_lyrics_from_visuals_block_first_frames(
+            raw_frames,
+            filter_static_overlay_words=filter_static_overlay_words,
+            snap_fn=snap_fn,
+        )
+        if block_first_lines:
+            if trace_enabled:
+                logger.info(
+                    "recon_trace stage=block_first_frame_extractor lines=%d",
+                    len(block_first_lines),
+                )
+            return block_first_lines
 
     def _trace(stage: str, entries: list[dict[str, Any]]) -> None:
         if not trace_enabled:
@@ -86,6 +111,11 @@ def reconstruct_lyrics_from_visuals(  # noqa: C901
     else:
         unique = deduplicate_persistent_lines(committed)
     _trace("dedup", unique)
+    if os.environ.get("Y2K_VISUAL_DISABLE_GHOST_REENTRY_GUARDS", "0") != "1":
+        unique = _suppress_never_visible_ghost_reentries(
+            unique, is_same_lane=is_same_lane
+        )
+    _trace("suppress_never_visible_ghost_reentries", unique)
 
     unique = merge_overlapping_same_lane_duplicates(unique)
     _trace("merge_overlap_same_lane", unique)
@@ -124,8 +154,11 @@ def reconstruct_lyrics_from_visuals(  # noqa: C901
     unique = _suppress_repeated_short_fragment_clusters(unique)
     _trace("suppress_repeated_short_fragments", unique)
 
+    if use_block_first_proto:
+        unique = apply_block_first_ordering_to_persistent_entries(unique)
+        _trace("block_first_persistent_order", unique)
     # Final logic-based sequencing: Group lines by temporal overlap and sort by Y.
-    if os.environ.get("Y2K_VISUAL_DISABLE_SEQUENCING", "0") != "1":
+    elif os.environ.get("Y2K_VISUAL_DISABLE_SEQUENCING", "0") != "1":
         if os.environ.get("Y2K_VISUAL_SEQUENCE_SWEEP", "1") == "0":
             unique = _sequence_by_visual_neighborhood_legacy(unique)
         else:
@@ -133,6 +166,51 @@ def reconstruct_lyrics_from_visuals(  # noqa: C901
     _trace("sequence_visual_neighborhood", unique)
 
     return convert_persistent_lines_to_target_lines(unique, snap_fn=snap_fn)
+
+
+def _suppress_never_visible_ghost_reentries(
+    lines: list[dict[str, Any]],
+    *,
+    is_same_lane: EntryPairPredicate,
+) -> list[dict[str, Any]]:
+    """Drop later never-visible reentries that mirror an earlier visible line.
+
+    These are typically dim OCR ghost trails that persist after a lyric line fades out
+    and can incorrectly bridge instrumental gaps.
+    """
+    if len(lines) < 2:
+        return lines
+
+    kept: list[dict[str, Any]] = []
+    for ent in lines:
+        if bool(ent.get("visible_yet", False)):
+            kept.append(ent)
+            continue
+
+        suppress = False
+        ent_first = float(ent.get("first", 0.0))
+        ent_last = float(ent.get("last", ent_first))
+        ent_dur = max(0.0, ent_last - ent_first)
+        if ent_dur >= 1.0:
+            for prev in reversed(kept[-16:]):
+                if not bool(prev.get("visible_yet", False)):
+                    continue
+                if not is_same_lane(prev, ent):
+                    continue
+                if (
+                    text_similarity(str(prev.get("text", "")), str(ent.get("text", "")))
+                    < 0.9
+                ):
+                    continue
+                prev_last = float(prev.get("last", prev.get("first", 0.0)))
+                if ent_first >= prev_last + 0.8:
+                    suppress = True
+                    break
+
+        if not suppress:
+            kept.append(ent)
+
+    return kept
 
 
 def _suppress_short_lane_fragments(lines: list[dict[str, Any]]) -> list[dict[str, Any]]:

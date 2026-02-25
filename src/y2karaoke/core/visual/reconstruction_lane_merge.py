@@ -1,8 +1,9 @@
 from __future__ import annotations
 
+import os
 from typing import Any, Callable
 
-from ..text_utils import text_similarity
+from ..text_utils import normalize_text_basic, text_similarity
 
 EntryPredicate = Callable[[dict[str, Any]], bool]
 EntryPairPredicate = Callable[[dict[str, Any], dict[str, Any]], bool]
@@ -82,6 +83,11 @@ def merge_dim_fade_in_fragments(
             if not is_same_lane(a, b):
                 continue
 
+            if os.environ.get(
+                "Y2K_VISUAL_DISABLE_FADE_FRAGMENT_TEXT_GUARD", "0"
+            ) != "1" and not _looks_like_same_line_fade_fragment(a, b):
+                continue
+
             start_a = a["first"]
             end_a = a["last"]
             start_b = b["first"]
@@ -125,3 +131,29 @@ def merge_dim_fade_in_fragments(
                     b["last"] = max(b["last"], a["last"])
 
     return [e for idx, e in enumerate(entries) if keep[idx]]
+
+
+def _looks_like_same_line_fade_fragment(a: dict[str, Any], b: dict[str, Any]) -> bool:
+    ta = str(a.get("text", ""))
+    tb = str(b.get("text", ""))
+    sim = text_similarity(ta, tb)
+    if sim >= 0.72:
+        return True
+
+    toks_a = [t for t in normalize_text_basic(ta).split() if t]
+    toks_b = [t for t in normalize_text_basic(tb).split() if t]
+    if not toks_a or not toks_b:
+        return False
+    set_a = set(toks_a)
+    set_b = set(toks_b)
+    overlap = len(set_a & set_b) / float(max(1, min(len(set_a), len(set_b))))
+    if overlap < 0.75:
+        return False
+
+    # Require a strong containment-like relationship for low string-similarity merges.
+    shorter, longer = (
+        (toks_a, toks_b) if len(toks_a) <= len(toks_b) else (toks_b, toks_a)
+    )
+    shorter_join = " ".join(shorter)
+    longer_join = " ".join(longer)
+    return shorter_join in longer_join

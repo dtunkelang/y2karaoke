@@ -2,9 +2,25 @@
 
 from __future__ import annotations
 
+import os
 from typing import Any, Dict, List
 
 from ..text_utils import text_similarity
+
+
+def _is_likely_nonvisible_ghost_tail(
+    ent: Dict[str, Any], u: Dict[str, Any], sim: float, dist_y: float
+) -> bool:
+    """Avoid merging later ghost-only continuations into earlier visible lines."""
+    ent_visible = bool(ent.get("visible_yet", False))
+    u_visible = bool(u.get("visible_yet", False))
+    if ent_visible or not u_visible:
+        return False
+    if sim <= 0.8 or dist_y >= 30:
+        return False
+    # Later non-visible continuations often come from dim OCR persistence through
+    # instrumental sections and should not extend the earlier visible line.
+    return float(ent["first"]) >= float(u["last"]) + 0.8
 
 
 def deduplicate_persistent_lines(
@@ -22,6 +38,11 @@ def deduplicate_persistent_lines(
             dist_y = abs(ent["y"] - u["y"])
             dist_t = abs(ent["first"] - u["first"])
             gap_t = max(0.0, ent["first"] - u["last"])
+
+            if os.environ.get(
+                "Y2K_VISUAL_DISABLE_GHOST_REENTRY_GUARDS", "0"
+            ) != "1" and _is_likely_nonvisible_ghost_tail(ent, u, sim, dist_y):
+                continue
 
             # 1. Standard deduplication: overlapping or very close in time (< 5.0s start-diff)
             if dist_t < 5.0:

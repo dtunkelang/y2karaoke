@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import os
 from pathlib import Path
 from typing import List, Optional, Any, Dict, Tuple
 
@@ -15,6 +16,7 @@ except ImportError:
 
 from ..models import TargetLine
 from ...exceptions import VisualRefinementError
+from .extractor_mode import ResolvedVisualExtractorMode
 from .surrogate_timing import (
     _assign_surrogate_cluster_timings as _assign_surrogate_cluster_timings_impl,
     _assign_surrogate_timings_for_unresolved_overlap_blocks as _assign_surrogate_timings_for_unresolved_overlap_blocks_impl,
@@ -36,6 +38,12 @@ from .refinement_postpasses import (
     _rebalance_middle_lines_in_four_line_shared_visibility_runs,
     _pull_late_first_lines_in_alternating_repeated_blocks,
     _retime_repeated_blocks_with_long_tail_gap,
+    _trace_clean_blocks,
+    _demote_fragment_lines_within_clean_blocks,
+    _merge_prefix_fragment_rows_in_clean_blocks,
+    _assign_block_sequence_hints_from_visibility,
+    _retime_clean_screen_blocks_by_vertical_order,
+    _reorder_clean_screen_blocks_target_lines,
     _retime_short_interstitial_lines_between_anchors,
     _shrink_overlong_leads_in_dense_shared_visibility_runs,
 )
@@ -120,8 +128,53 @@ from .refinement_line_refine import (
 from .refinement_high_fps_pipeline import (
     run_high_fps_refinement_pipeline as _run_high_fps_refinement_pipeline_impl,
 )
+from .refinement_block_first import (
+    apply_block_first_prototype_ordering as _apply_block_first_prototype_ordering,
+)
 
 logger = logging.getLogger(__name__)
+
+
+def _trace_refinement_snapshot(
+    label: str, jobs: List[Tuple[TargetLine, float, float]]
+) -> None:
+    if os.environ.get("Y2K_VISUAL_REFINE_TRACE", "0") != "1":
+        return
+    lines = [ln for ln, _, _ in jobs]
+    preview = []
+    for ln in lines[:12]:
+        if ln.word_starts and ln.word_starts[0] is not None:
+            s = float(ln.word_starts[0])
+        else:
+            s = float(ln.start or 0.0)
+        if ln.word_ends and ln.word_ends[-1] is not None:
+            e = float(ln.word_ends[-1])
+        elif ln.end is not None:
+            e = float(ln.end)
+        else:
+            e = s
+        preview.append(
+            {
+                "i": ln.line_index,
+                "s": round(s, 2),
+                "e": round(e, 2),
+                "y": round(float(ln.y), 1),
+                "vs": (
+                    round(float(ln.visibility_start), 2)
+                    if ln.visibility_start is not None
+                    else None
+                ),
+                "ve": (
+                    round(float(ln.visibility_end), 2)
+                    if ln.visibility_end is not None
+                    else None
+                ),
+                "t": " ".join(ln.words[:6]),
+            }
+        )
+    logger.info("REFINE_TRACE %s first12=%s", label, preview)
+
+
 _MAX_MERGED_WINDOW_SEC = 20.0
 
 
@@ -400,6 +453,19 @@ def _line_has_assigned_word_timing(ln: TargetLine) -> bool:
     return _line_has_assigned_word_timing_impl(ln)
 
 
+def _is_block_first_multi_cycle_line(ln: TargetLine) -> bool:
+    meta = ln.reconstruction_meta or {}
+    if not isinstance(meta, dict):
+        return False
+    bf = meta.get("block_first")
+    if not isinstance(bf, dict):
+        return False
+    try:
+        return int(bf.get("cycle_count", 1) or 1) > 1
+    except Exception:
+        return False
+
+
 def _detect_line_highlight_for_overlap_hint(
     ln: TargetLine,
     line_frames: List[Tuple[float, np.ndarray, np.ndarray]],
@@ -573,6 +639,7 @@ def refine_line_timings_at_low_fps(  # noqa: C901
     roi_rect: tuple[int, int, int, int],
     *,
     sample_fps: float = 6.0,
+    extractor_mode: ResolvedVisualExtractorMode = "line-first",
 ) -> None:
     """Refine line-level highlight timing cheaply when word-level cues are weak."""
     if cv2 is None or np is None:
@@ -594,6 +661,9 @@ def refine_line_timings_at_low_fps(  # noqa: C901
     groups = _merge_line_refinement_jobs(jobs, max_group_duration_sec=90.0)
     last_assigned_start: Optional[float] = None
     last_assigned_visibility_end: Optional[float] = None
+    has_multi_cycle_block_first = any(
+        _is_block_first_multi_cycle_line(ln) for ln in target_lines
+    )
 
     for g_start, g_end, g_jobs in groups:
         group_frames = _read_window_frames_sampled(
@@ -608,6 +678,20 @@ def refine_line_timings_at_low_fps(  # noqa: C901
         group_times = [frame[0] for frame in group_frames]
 
         for ln, v_start, v_end in g_jobs:
+            if _is_block_first_multi_cycle_line(ln):
+                # Preserve extractor timing for explicit cycle rows; line-first low-FPS
+                # refinement and downstream heuristics tend to collapse repeated cycles.
+                _assign_line_level_word_timings(
+                    ln,
+                    float(ln.start),
+                    float(ln.end) if ln.end is not None else float(ln.start) + 0.3,
+                    0.35,
+                )
+                if ln.word_starts and ln.word_starts[0] is not None:
+                    last_assigned_start = float(ln.word_starts[0])
+                    if ln.visibility_end is not None:
+                        last_assigned_visibility_end = float(ln.visibility_end)
+                continue
             line_frames = _slice_frames_for_window(
                 group_frames,
                 group_times,
@@ -666,16 +750,32 @@ def refine_line_timings_at_low_fps(  # noqa: C901
                 if ln.visibility_end is not None:
                     last_assigned_visibility_end = float(ln.visibility_end)
 
-        _apply_persistent_block_highlight_order(g_jobs, group_frames, group_times)
-        _assign_surrogate_timings_for_unresolved_overlap_blocks(
-            g_jobs,
-            group_frames=group_frames,
-            group_times=group_times,
-        )
-        _retime_late_first_lines_in_shared_visibility_blocks(g_jobs)
-        _retime_compressed_shared_visibility_blocks(g_jobs)
-        _promote_unresolved_first_repeated_lines(g_jobs)
-        _compress_overlong_sparse_line_timings(g_jobs)
+        mutable_g_jobs = [
+            job for job in g_jobs if not _is_block_first_multi_cycle_line(job[0])
+        ]
+        if mutable_g_jobs:
+            _apply_persistent_block_highlight_order(
+                mutable_g_jobs, group_frames, group_times
+            )
+            _assign_surrogate_timings_for_unresolved_overlap_blocks(
+                mutable_g_jobs,
+                group_frames=group_frames,
+                group_times=group_times,
+            )
+        _trace_refinement_snapshot("group_after_overlap", g_jobs)
+        if (
+            os.environ.get("Y2K_VISUAL_DISABLE_REFINE_SHARED_VIS_HEURISTICS", "0")
+            != "1"
+        ):
+            if mutable_g_jobs:
+                _retime_late_first_lines_in_shared_visibility_blocks(mutable_g_jobs)
+                _retime_compressed_shared_visibility_blocks(mutable_g_jobs)
+        if os.environ.get("Y2K_VISUAL_DISABLE_REFINE_REPEAT_PROMOTION", "0") != "1":
+            if mutable_g_jobs:
+                _promote_unresolved_first_repeated_lines(mutable_g_jobs)
+        if mutable_g_jobs:
+            _compress_overlong_sparse_line_timings(mutable_g_jobs)
+        _trace_refinement_snapshot("group_after_legacy_passes", g_jobs)
         for ln, _, _ in g_jobs:
             if ln.word_starts and ln.word_starts[0] is not None:
                 if last_assigned_start is None:
@@ -693,17 +793,43 @@ def refine_line_timings_at_low_fps(  # noqa: C901
                             last_assigned_visibility_end, vis_end
                         )
 
-    _retime_large_gaps_with_early_visibility(jobs)
-    _retime_followups_in_short_lead_shared_visibility_runs(jobs)
-    _rebalance_two_followups_after_short_lead(jobs)
-    _rebalance_early_lead_shared_visibility_runs(jobs)
-    _shrink_overlong_leads_in_dense_shared_visibility_runs(jobs)
-    _retime_dense_runs_after_overlong_lead(jobs)
-    _pull_dense_short_runs_toward_previous_anchor(jobs)
-    _retime_repeated_blocks_with_long_tail_gap(jobs)
-    _pull_late_first_lines_in_alternating_repeated_blocks(jobs)
-    _clamp_line_ends_to_visibility_windows(jobs)
-    _pull_lines_earlier_after_visibility_transitions(jobs)
-    _retime_short_interstitial_lines_between_anchors(jobs)
-    _rebalance_middle_lines_in_four_line_shared_visibility_runs(jobs)
+    _trace_refinement_snapshot("pre_global_postpasses", jobs)
+    mutable_jobs = [job for job in jobs if not _is_block_first_multi_cycle_line(job[0])]
+    if mutable_jobs:
+        _retime_large_gaps_with_early_visibility(mutable_jobs)
+    if os.environ.get("Y2K_VISUAL_DISABLE_REFINE_SHARED_VIS_HEURISTICS", "0") != "1":
+        if mutable_jobs:
+            _retime_followups_in_short_lead_shared_visibility_runs(mutable_jobs)
+            _rebalance_two_followups_after_short_lead(mutable_jobs)
+            _rebalance_early_lead_shared_visibility_runs(mutable_jobs)
+            _shrink_overlong_leads_in_dense_shared_visibility_runs(mutable_jobs)
+            _retime_dense_runs_after_overlong_lead(mutable_jobs)
+            _pull_dense_short_runs_toward_previous_anchor(mutable_jobs)
+    if os.environ.get("Y2K_VISUAL_DISABLE_REFINE_REPEAT_HEURISTICS", "0") != "1":
+        if mutable_jobs:
+            _retime_repeated_blocks_with_long_tail_gap(mutable_jobs)
+            _pull_late_first_lines_in_alternating_repeated_blocks(mutable_jobs)
+    _trace_refinement_snapshot("post_global_legacy", jobs)
+    if mutable_jobs:
+        _clamp_line_ends_to_visibility_windows(mutable_jobs)
+        _pull_lines_earlier_after_visibility_transitions(mutable_jobs)
+        _retime_short_interstitial_lines_between_anchors(mutable_jobs)
+    if os.environ.get("Y2K_VISUAL_DISABLE_REFINE_SHARED_VIS_HEURISTICS", "0") != "1":
+        if mutable_jobs:
+            _rebalance_middle_lines_in_four_line_shared_visibility_runs(mutable_jobs)
+    _trace_clean_blocks("pre_clean_block", target_lines)
+    use_block_first_proto = extractor_mode == "block-first" or (
+        os.environ.get("Y2K_VISUAL_BLOCK_FIRST_PROTOTYPE", "0") == "1"
+    )
+    if use_block_first_proto:
+        if not has_multi_cycle_block_first:
+            _apply_block_first_prototype_ordering(target_lines)
+    else:
+        _merge_prefix_fragment_rows_in_clean_blocks(target_lines)
+        _demote_fragment_lines_within_clean_blocks(target_lines)
+        _retime_clean_screen_blocks_by_vertical_order(jobs)
+        _reorder_clean_screen_blocks_target_lines(target_lines)
+        _assign_block_sequence_hints_from_visibility(target_lines)
+    _trace_clean_blocks("post_clean_block", target_lines)
+    _trace_refinement_snapshot("post_clean_block", jobs)
     cap.release()

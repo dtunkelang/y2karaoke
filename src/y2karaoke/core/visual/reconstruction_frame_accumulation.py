@@ -5,7 +5,8 @@ from __future__ import annotations
 import logging
 import collections
 import statistics
-from typing import Any, Callable, Dict, List, Tuple
+import os
+from typing import Any, Callable, Dict, List, Optional, Tuple
 
 from ..text_utils import (
     normalize_ocr_line,
@@ -21,6 +22,10 @@ _TRACK_MATCH_BUCKET_PX = 20
 _TRACK_MATCH_NEIGHBOR_BUCKETS = 2
 
 
+def _legacy_visible_end_tracking_enabled() -> bool:
+    return os.environ.get("Y2K_VISUAL_DISABLE_VISIBLE_END_GHOST_GUARD", "0") == "1"
+
+
 class TrackedLine:
     def __init__(self, entry: Dict[str, Any], entry_key: str):
         self.id = entry_key
@@ -31,23 +36,34 @@ class TrackedLine:
         self.entries = [entry]
         self.first_seen = entry["first"]
         self.last_seen = entry["last"]
+        self.last_visible_seen: Optional[float] = None
 
         # Visibility tracking
         self.visible_yet = entry.get("visible_yet", False)
         self.vis_count = entry.get("vis_count", 0)
         self.first_visible = entry.get("first_visible", 999999.0)
+        if self.visible_yet:
+            self.last_visible_seen = entry["last"]
 
     def update(self, entry: Dict[str, Any], curr_time: float, is_visible: bool):
         self.entries.append(entry)
-        self.last_seen = curr_time
+        if _legacy_visible_end_tracking_enabled():
+            self.last_seen = curr_time
         self.y_history.append(entry["y"])
         self.brightness_history.append(entry.get("brightness", 0.0))
         self.text_counts[entry["text"]] += 1
 
         # Update visibility
         if is_visible:
+            self.last_seen = curr_time
+            self.last_visible_seen = curr_time
             self.vis_count += 1
         else:
+            # Before a line becomes visibly active, allow dim frames to extend the
+            # candidate so we can detect fade-ins. After that, do not extend end
+            # time on dim/ghost OCR frames or they can bridge instrumental gaps.
+            if not self.visible_yet:
+                self.last_seen = curr_time
             self.vis_count = 0
 
         if not self.visible_yet and self.vis_count >= 3:
@@ -190,6 +206,29 @@ class TrackedLine:
         selected_support_ratio = text_freq.get(voted_text, 0) / float(
             max(total_entries, 1)
         )
+        top_text_variants: list[dict[str, object]] = []
+        if self.text_counts:
+            ranked_variants = sorted(
+                self.text_counts.items(),
+                key=lambda kv: (
+                    -int(kv[1]),
+                    -len(kv[0].split()),
+                    -len(kv[0]),
+                    kv[0],
+                ),
+            )
+            for txt, count in ranked_variants[:6]:
+                top_text_variants.append(
+                    {
+                        "text": txt,
+                        "count": int(count),
+                        "support_ratio": round(
+                            int(count) / float(max(total_entries, 1)),
+                            3,
+                        ),
+                        "word_count": len(txt.split()),
+                    }
+                )
         # Higher score => more uncertainty (0..1)
         uncertainty_score = (
             (1.0 - min(max(valid_fraction, 0.0), 1.0)) * 0.35
@@ -208,6 +247,7 @@ class TrackedLine:
             "position_support_min": round(min_support, 3),
             "weak_vote_positions": weak_positions,
             "used_observed_fallback": used_observed_fallback,
+            "top_text_variants": top_text_variants,
             "uncertainty_score": round(max(0.0, min(1.0, uncertainty_score)), 3),
         }
         return voted_text, evidence
@@ -237,7 +277,15 @@ class TrackedLine:
             "first_visible": (
                 self.first_visible if self.visible_yet else self.first_seen
             ),  # Fallback
-            "last": self.last_seen,
+            "last": (
+                self.last_seen
+                if _legacy_visible_end_tracking_enabled()
+                else (
+                    self.last_visible_seen
+                    if self.visible_yet and self.last_visible_seen is not None
+                    else self.last_seen
+                )
+            ),
             "y": self.current_y,
             "lane": self.lane,
             "visible_yet": self.visible_yet,
@@ -287,7 +335,20 @@ def accumulate_persistent_lines_from_frames(  # noqa: C901
         track_y_cache = [track.current_y for track in active_tracks]
         track_text_cache = [track.best_text for track in active_tracks]
         track_stale_cache = [
-            (curr_time - track.last_seen) > 1.0 for track in active_tracks
+            (
+                curr_time
+                - (
+                    track.last_seen
+                    if _legacy_visible_end_tracking_enabled()
+                    else (
+                        track.last_visible_seen
+                        if track.visible_yet and track.last_visible_seen is not None
+                        else track.last_seen
+                    )
+                )
+            )
+            > 1.0
+            for track in active_tracks
         ]
         track_buckets: Dict[int, List[int]] = {}
         for idx, y_val in enumerate(track_y_cache):
@@ -352,10 +413,12 @@ def accumulate_persistent_lines_from_frames(  # noqa: C901
                     )
                     # Actually logic in original was: "Check if it hits visibility threshold on its first frame"
                     new_track.first_visible = curr_time
+                    new_track.last_visible_seen = curr_time
                 else:
                     new_track.vis_count = 0
                     new_track.visible_yet = False
                     new_track.first_visible = 999999.0
+                    new_track.last_visible_seen = None
 
                 active_tracks.append(new_track)
                 matched_track_indices.add(len(active_tracks) - 1)

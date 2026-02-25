@@ -1,11 +1,20 @@
 from __future__ import annotations
 
+import os
 from typing import Any, Callable
 
 from ..text_utils import text_similarity
 
 EntryPredicate = Callable[[dict[str, Any]], bool]
 EntryPairPredicate = Callable[[dict[str, Any], dict[str, Any]], bool]
+
+
+def _is_likely_nonvisible_tail_reentry(
+    prev: dict[str, Any], ent: dict[str, Any], gap: float
+) -> bool:
+    prev_visible = bool(prev.get("visible_yet", False))
+    ent_visible = bool(ent.get("visible_yet", False))
+    return prev_visible and not ent_visible and gap >= 0.8
 
 
 def suppress_short_duplicate_reentries(  # noqa: C901
@@ -204,6 +213,11 @@ def merge_short_same_lane_reentries(
                     continuation_split
                     and not has_lane_conflict
                     and not is_short_refrain
+                    and (
+                        os.environ.get("Y2K_VISUAL_DISABLE_GHOST_REENTRY_GUARDS", "0")
+                        == "1"
+                        or not _is_likely_nonvisible_tail_reentry(prev, ent, gap)
+                    )
                 ):
                     prev["last"] = max(float(prev["last"]), float(ent["last"]))
                     if len(ent.get("w_rois", [])) > len(
@@ -218,6 +232,11 @@ def merge_short_same_lane_reentries(
                     and not has_lane_conflict
                     and len(tokens) <= 2
                     and len(prev_tokens) <= 2
+                    and (
+                        os.environ.get("Y2K_VISUAL_DISABLE_GHOST_REENTRY_GUARDS", "0")
+                        == "1"
+                        or not _is_likely_nonvisible_tail_reentry(prev, ent, gap)
+                    )
                 ):
                     prev["last"] = max(float(prev["last"]), float(ent["last"]))
                     if len(ent.get("w_rois", [])) > len(
