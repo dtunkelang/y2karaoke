@@ -1,5 +1,7 @@
 """Post-processing helpers for Whisper mapping output."""
 
+import os
+
 from typing import Dict, List, Set, Tuple
 
 from ... import models
@@ -51,6 +53,8 @@ def _shift_repeated_lines_to_next_whisper(
     mapped_lines: List[models.Line],
     all_words: List[timing_models.TranscriptionWord],
 ) -> List[models.Line]:
+    if os.getenv("Y2K_WHISPER_DISABLE_REPEAT_SHIFT") == "1":
+        return mapped_lines
     return _repeat_shift_helpers._shift_repeated_lines_to_next_whisper(
         mapped_lines,
         all_words,
@@ -62,6 +66,8 @@ def _enforce_monotonic_line_starts_whisper(
     mapped_lines: List[models.Line],
     all_words: List[timing_models.TranscriptionWord],
 ) -> List[models.Line]:
+    if os.getenv("Y2K_WHISPER_DISABLE_MONOTONIC_START_ENFORCE") == "1":
+        return mapped_lines
     return _repeat_shift_helpers._enforce_monotonic_line_starts_whisper(
         mapped_lines, all_words
     )

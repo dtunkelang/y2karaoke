@@ -1,5 +1,7 @@
 """Block and segment assignment logic for Whisper integration."""
 
+import os
+
 from typing import List, Tuple, Dict, Set
 from ....utils.logging import get_logger
 from ..alignment import timing_models
@@ -73,13 +75,15 @@ def _text_overlap_score(
 def _build_segment_word_info(
     all_words: List[timing_models.TranscriptionWord],
     segments: List[timing_models.TranscriptionSegment],
-) -> Tuple[List[Tuple[int, int]], List[List[str]]]:
-    """Return (word-index ranges, word-bags) for each Whisper segment."""
+) -> Tuple[List[Tuple[int, int]], List[List[str]], List[float]]:
+    """Return (word-index ranges, word-bags, durations) for each Whisper segment."""
     seg_word_ranges: List[Tuple[int, int]] = []
     seg_word_bags: List[List[str]] = []
+    seg_durations: List[float] = []
     for seg in segments:
         seg_start = whisper_utils._segment_start(seg)
         seg_end = whisper_utils._segment_end(seg)
+        seg_durations.append(max(0.0, seg_end - seg_start))
         first_idx = -1
         last_idx = -1
         for wi, w in enumerate(all_words):
@@ -97,12 +101,13 @@ def _build_segment_word_info(
             )
         else:
             seg_word_bags.append([])
-    return seg_word_ranges, seg_word_bags
+    return seg_word_ranges, seg_word_bags, seg_durations
 
 
 def _assign_lrc_lines_to_segments(
     lrc_lines_words: List[List[Tuple[int, str]]],
     seg_word_bags: List[List[str]],
+    seg_durations: List[float],
 ) -> List[int]:
     """Assign each LRC line to a Whisper segment using text overlap."""
     lrc_line_count = len(lrc_lines_words)
@@ -128,10 +133,47 @@ def _assign_lrc_lines_to_segments(
                 if mscore > best_score:
                     best_score = mscore
                     s1 = _text_overlap_score(words, seg_word_bags[si])
+                    s2 = _text_overlap_score(words, seg_word_bags[si + 1])
                     # Prefer the earlier segment - karaoke lines should
                     # appear when the first word is sung.  Only use the
                     # later segment if the earlier has zero overlap.
                     best_seg = si if s1 > 0 else si + 1
+                    if (
+                        os.getenv(
+                            "Y2K_WHISPER_SEGMENT_ASSIGN_PREFER_LATER_ON_STRONG_MERGE"
+                        )
+                        == "1"
+                        and len(words) >= 3
+                        and s1 > 0
+                        and s2 > 0
+                        and mscore >= 0.6
+                        and s2 >= max(0.35, s1 * 0.8)
+                        and (mscore - s1) >= 0.2
+                        and len(seg_word_bags[si + 1]) >= max(4, int(len(words) * 0.7))
+                        and seg_durations[si + 1] >= max(0.9, 0.18 * len(words))
+                        and len(seg_word_bags[si])
+                        <= max(3, int(len(seg_word_bags[si + 1]) * 0.6))
+                        and seg_durations[si] <= max(2.2, seg_durations[si + 1] * 0.7)
+                    ):
+                        if os.getenv("Y2K_WHISPER_SEGMENT_ASSIGN_LATER_TRACE") == "1":
+                            logger.info(
+                                (
+                                    "later-merge-tiebreak line=%d words=%s si=%d "
+                                    "s1=%.3f s2=%.3f merged=%.3f seg1_wc=%d "
+                                    "seg2_wc=%d seg1_dur=%.2f seg2_dur=%.2f"
+                                ),
+                                li,
+                                " ".join(words),
+                                si,
+                                s1,
+                                s2,
+                                mscore,
+                                len(seg_word_bags[si]),
+                                len(seg_word_bags[si + 1]),
+                                seg_durations[si],
+                                seg_durations[si + 1],
+                            )
+                        best_seg = si + 1
         # Zero-score lines (e.g. "Oooh") have no text match; advance
         # past the cursor so subsequent lines don't cascade early.
         if best_score <= 0 and best_seg <= seg_cursor:
@@ -202,7 +244,7 @@ def _build_segment_text_overlap_assignments(
     if not segments or not lrc_words:
         return {}
 
-    seg_word_ranges, seg_word_bags = _build_segment_word_info(
+    seg_word_ranges, seg_word_bags, seg_durations = _build_segment_word_info(
         all_words,
         segments,
     )
@@ -217,6 +259,7 @@ def _build_segment_text_overlap_assignments(
     line_to_seg = _assign_lrc_lines_to_segments(
         lrc_lines_words,
         seg_word_bags,
+        seg_durations,
     )
     assignments = _distribute_words_within_segments(
         line_to_seg,
