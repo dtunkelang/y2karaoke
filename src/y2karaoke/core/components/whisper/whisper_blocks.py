@@ -1,6 +1,7 @@
 """Block and segment assignment logic for Whisper integration."""
 
 import os
+from collections import Counter
 
 from typing import List, Tuple, Dict, Set
 from ....utils.logging import get_logger
@@ -116,6 +117,10 @@ def _assign_lrc_lines_to_segments(
     seg_cursor = 0
     for li in range(lrc_line_count):
         words = [w for _, w in lrc_lines_words[li]]
+        content_words = [w for w in words if len(w) > 2]
+        repeated_phrase_like = any(
+            count >= 2 for _, count in Counter(content_words).items()
+        )
         if not words:
             line_to_seg[li] = line_to_seg[li - 1] if li > 0 else 0
             continue
@@ -175,6 +180,17 @@ def _assign_lrc_lines_to_segments(
                                 seg_durations[si + 1],
                             )
                         best_seg = si + 1
+        # Zero-score repeated lines can get cursor-locked in long refrain sections.
+        # Allow a limited lookback rescue without moving the global cursor backward.
+        best_seg, best_score = _rescue_zero_score_repeated_line_assignment(
+            words=words,
+            repeated_phrase_like=repeated_phrase_like,
+            best_seg=best_seg,
+            best_score=best_score,
+            seg_cursor=seg_cursor,
+            seg_word_bags=seg_word_bags,
+            n_segs=n_segs,
+        )
         # Zero-score lines (e.g. "Oooh") have no text match; advance
         # past the cursor so subsequent lines don't cascade early.
         if best_score <= 0 and best_seg <= seg_cursor:
@@ -198,6 +214,44 @@ def _assign_lrc_lines_to_segments(
         line_to_seg[li] = best_seg
         seg_cursor = max(seg_cursor, best_seg)
     return line_to_seg
+
+
+def _rescue_zero_score_repeated_line_assignment(
+    *,
+    words: List[str],
+    repeated_phrase_like: bool,
+    best_seg: int,
+    best_score: float,
+    seg_cursor: int,
+    seg_word_bags: List[List[str]],
+    n_segs: int,
+) -> Tuple[int, float]:
+    if (
+        os.getenv("Y2K_WHISPER_SEGMENT_ASSIGN_ZERO_SCORE_LOOKBACK", "1") == "0"
+        or not repeated_phrase_like
+        or len(words) < 4
+        or best_score > 0
+        or seg_cursor <= 0
+    ):
+        return best_seg, best_score
+
+    lookback = int(os.getenv("Y2K_WHISPER_SEGMENT_ASSIGN_ZERO_SCORE_LOOKBACK_SEGS", "24"))
+    lb_start = max(0, seg_cursor - lookback)
+    lb_best_seg = best_seg
+    lb_best_score = best_score
+    for si in range(lb_start, seg_cursor + 1):
+        s = _text_overlap_score(words, seg_word_bags[si])
+        if s > lb_best_score:
+            lb_best_score = s
+            lb_best_seg = si
+        if si + 1 < n_segs:
+            ms = _text_overlap_score(words, seg_word_bags[si] + seg_word_bags[si + 1])
+            if ms > lb_best_score:
+                lb_best_score = ms
+                lb_best_seg = si + 1
+    if lb_best_score > 0:
+        return lb_best_seg, lb_best_score
+    return best_seg, best_score
 
 
 def _distribute_words_within_segments(
