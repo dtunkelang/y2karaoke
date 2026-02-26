@@ -140,9 +140,10 @@ def _assign_lrc_lines_to_segments(
                     best_seg = si if s1 > 0 else si + 1
                     if (
                         os.getenv(
-                            "Y2K_WHISPER_SEGMENT_ASSIGN_PREFER_LATER_ON_STRONG_MERGE"
+                            "Y2K_WHISPER_SEGMENT_ASSIGN_PREFER_LATER_ON_STRONG_MERGE",
+                            "1",
                         )
-                        == "1"
+                        != "0"
                         and len(words) >= 3
                         and s1 > 0
                         and s2 > 0
