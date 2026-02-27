@@ -235,7 +235,9 @@ def _rescue_zero_score_repeated_line_assignment(
     ):
         return best_seg, best_score
 
-    lookback = int(os.getenv("Y2K_WHISPER_SEGMENT_ASSIGN_ZERO_SCORE_LOOKBACK_SEGS", "24"))
+    lookback = int(
+        os.getenv("Y2K_WHISPER_SEGMENT_ASSIGN_ZERO_SCORE_LOOKBACK_SEGS", "32")
+    )
     lb_start = max(0, seg_cursor - lookback)
     lb_best_seg = best_seg
     lb_best_score = best_score
