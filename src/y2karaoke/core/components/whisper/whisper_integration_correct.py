@@ -6,6 +6,15 @@ from typing import Any, Callable, Dict, List, Optional, Tuple
 
 from ... import models, phonetic_utils
 from ..alignment import timing_models
+from .whisper_forced_alignment import align_lines_with_whisperx
+
+
+def _line_set_end(lines: List[models.Line]) -> float:
+    end_time = 0.0
+    for line in lines:
+        if line.words:
+            end_time = max(end_time, line.end_time)
+    return end_time
 
 
 def correct_timing_with_whisper_impl(  # noqa: C901
@@ -72,6 +81,42 @@ def correct_timing_with_whisper_impl(  # noqa: C901
         logger.info(
             "Truncated Whisper transcript to %.2f s (last matching lyric).", trimmed_end
         )
+
+    sparse_whisper_output = len(all_words) < 80 or len(transcription) <= 4
+    if sparse_whisper_output:
+        forced = align_lines_with_whisperx(lines, vocals_path, language, logger)
+        if forced is not None:
+            aligned_lines, forced_metrics = forced
+            aligned_lines = constrain_line_starts_to_baseline_fn(
+                aligned_lines, baseline_lines
+            )
+            rollback, short_before, short_after = (
+                should_rollback_short_line_degradation_fn(baseline_lines, aligned_lines)
+            )
+            if not rollback:
+                return (
+                    aligned_lines,
+                    [
+                        "Applied WhisperX transcript-constrained forced alignment due to sparse Whisper transcript"
+                    ],
+                    {
+                        "matched_ratio": float(
+                            forced_metrics.get("forced_word_coverage", 0.0)
+                        ),
+                        "avg_similarity": 1.0,
+                        "line_coverage": float(
+                            forced_metrics.get("forced_line_coverage", 0.0)
+                        ),
+                        "unmatched_ratio": 1.0
+                        - float(forced_metrics.get("forced_word_coverage", 0.0)),
+                        "whisperx_forced": 1.0,
+                    },
+                )
+            logger.warning(
+                "Discarded WhisperX forced alignment due to short-line degradation (%d -> %d)",
+                short_before,
+                short_after,
+            )
 
     if not transcription:
         logger.warning("No transcription available, skipping Whisper alignment")
@@ -200,7 +245,16 @@ def correct_timing_with_whisper_impl(  # noqa: C901
         pull_lines_forward_for_continuous_vocals_fn=pull_lines_forward_for_continuous_vocals_fn,
     )
 
+    whisper_end = max((w.end for w in all_words), default=0.0)
+    baseline_end = _line_set_end(baseline_lines)
+    baseline_timeline_ratio = baseline_end / whisper_end if whisper_end > 0.0 else 1.0
+    matched_ratio = float(metrics.get("matched_ratio", 0.0) or 0.0)
+    line_coverage = float(metrics.get("line_coverage", 0.0) or 0.0)
+    aligned_end = _line_set_end(aligned_lines)
+    aligned_timeline_ratio = aligned_end / whisper_end if whisper_end > 0.0 else 1.0
     aligned_lines = constrain_line_starts_to_baseline_fn(aligned_lines, baseline_lines)
+    metrics["baseline_timeline_ratio"] = baseline_timeline_ratio
+    metrics["aligned_timeline_ratio"] = aligned_timeline_ratio
 
     rollback, short_before, short_after = should_rollback_short_line_degradation_fn(
         baseline_lines, aligned_lines

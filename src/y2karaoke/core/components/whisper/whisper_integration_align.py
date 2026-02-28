@@ -7,6 +7,15 @@ from typing import Any, Callable, Dict, List, Optional, Tuple
 from ....utils.lex_lookup_installer import ensure_local_lex_lookup
 from ... import models, phonetic_utils
 from ..alignment import timing_models
+from .whisper_forced_alignment import align_lines_with_whisperx
+
+
+def _line_set_end(lines: List[models.Line]) -> float:
+    end_time = 0.0
+    for line in lines:
+        if line.words:
+            end_time = max(end_time, line.end_time)
+    return end_time
 
 
 def align_lrc_text_to_whisper_timings_impl(  # noqa: C901
@@ -77,6 +86,51 @@ def align_lrc_text_to_whisper_timings_impl(  # noqa: C901
         logger.info(
             "Truncated Whisper transcript to %.2f s (last matching lyric).", trimmed_end
         )
+
+    sparse_whisper_output = len(all_words) < 80 or len(transcription) <= 4
+    if sparse_whisper_output:
+        forced = align_lines_with_whisperx(lines, vocals_path, language, logger)
+        if forced is not None:
+            forced_lines, forced_metrics = forced
+            rollback, short_before, short_after = (
+                should_rollback_short_line_degradation_fn(baseline_lines, forced_lines)
+            )
+            if not rollback:
+                metrics: Dict[str, Any] = {
+                    "matched_ratio": float(
+                        forced_metrics.get("forced_word_coverage", 0.0)
+                    ),
+                    "word_coverage": float(
+                        forced_metrics.get("forced_word_coverage", 0.0)
+                    ),
+                    "avg_similarity": 1.0,
+                    "line_coverage": float(
+                        forced_metrics.get("forced_line_coverage", 0.0)
+                    ),
+                    "phonetic_similarity_coverage": float(
+                        forced_metrics.get("forced_word_coverage", 0.0)
+                    ),
+                    "high_similarity_ratio": 1.0,
+                    "exact_match_ratio": 0.0,
+                    "unmatched_ratio": 1.0
+                    - float(forced_metrics.get("forced_word_coverage", 0.0)),
+                    "dtw_used": 0.0,
+                    "dtw_mode": 0.0,
+                    "whisperx_forced": 1.0,
+                    "whisper_model": used_model,
+                }
+                return (
+                    forced_lines,
+                    [
+                        "Applied WhisperX transcript-constrained forced alignment due to sparse Whisper transcript"
+                    ],
+                    metrics,
+                )
+            logger.warning(
+                "Discarded WhisperX forced alignment due to short-line degradation (%d -> %d)",
+                short_before,
+                short_after,
+            )
 
     if not transcription or not all_words:
         logger.warning("No transcription available, skipping Whisper timing map")
@@ -202,7 +256,19 @@ def align_lrc_text_to_whisper_timings_impl(  # noqa: C901
         resolve_line_overlaps_fn=resolve_line_overlaps_fn,
     )
 
+    matched_ratio = mapped_count / len(lrc_words) if lrc_words else 0.0
+    avg_similarity = total_similarity / mapped_count if mapped_count else 0.0
+    line_coverage = (
+        len(mapped_lines_set) / sum(1 for line in lines if line.words) if lines else 0.0
+    )
+
+    whisper_end = max((w.end for w in all_words), default=0.0)
+    baseline_end = _line_set_end(baseline_lines)
+    mapped_end = _line_set_end(mapped_lines)
+    baseline_timeline_ratio = baseline_end / whisper_end if whisper_end > 0.0 else 1.0
+    mapped_timeline_ratio = mapped_end / whisper_end if whisper_end > 0.0 else 1.0
     mapped_lines = constrain_line_starts_to_baseline_fn(mapped_lines, baseline_lines)
+
     try:
         mapped_lines = snap_first_word_to_whisper_onset_fn(
             mapped_lines,
@@ -213,17 +279,13 @@ def align_lrc_text_to_whisper_timings_impl(  # noqa: C901
         mapped_lines = snap_first_word_to_whisper_onset_fn(mapped_lines, all_words)
     mapped_lines = constrain_line_starts_to_baseline_fn(mapped_lines, baseline_lines)
 
-    matched_ratio = mapped_count / len(lrc_words) if lrc_words else 0.0
-    avg_similarity = total_similarity / mapped_count if mapped_count else 0.0
-    line_coverage = (
-        len(mapped_lines_set) / sum(1 for line in lines if line.words) if lines else 0.0
-    )
-
     metrics: Dict[str, Any] = {
         "matched_ratio": matched_ratio,
         "word_coverage": matched_ratio,
         "avg_similarity": avg_similarity,
         "line_coverage": line_coverage,
+        "baseline_timeline_ratio": baseline_timeline_ratio,
+        "mapped_timeline_ratio": mapped_timeline_ratio,
         "phonetic_similarity_coverage": matched_ratio * avg_similarity,
         "high_similarity_ratio": avg_similarity,
         "exact_match_ratio": 0.0,

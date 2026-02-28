@@ -194,6 +194,21 @@ def test_find_best_cached_prefers_aggressive_when_requested(tmp_path):
     assert "_aggr" in found_path
 
 
+def test_find_best_cached_aggressive_requires_aggressive_cache(tmp_path):
+    audio = tmp_path / "vocals.wav"
+    audio.write_bytes(b"fake")
+
+    word = te.TranscriptionWord(start=0.1, end=0.2, text="hello")
+    segments = [te.TranscriptionSegment(start=0.0, end=1.0, text="hello", words=[word])]
+
+    non_aggr = wc._get_whisper_cache_path(str(audio), "large", "en", aggressive=False)
+    assert non_aggr is not None
+    wc._save_whisper_cache(non_aggr, segments, [word], "en", "large", False)
+
+    result = wc._find_best_cached_whisper_model(str(audio), "en", True, "large")
+    assert result is None
+
+
 def test_find_best_cached_prefers_higher_model_over_mode_match(tmp_path):
     audio = tmp_path / "vocals.wav"
     audio.write_bytes(b"fake")

@@ -2,6 +2,7 @@ import pytest
 
 import y2karaoke.core.components.alignment.timing_evaluator as te
 import y2karaoke.core.components.whisper.whisper_integration as wi
+import y2karaoke.core.components.whisper.whisper_integration_transcribe as wit
 import y2karaoke.core.components.whisper.whisper_dtw as w_dtw
 import y2karaoke.core.components.whisper.whisper_alignment as wa
 from y2karaoke.core.models import Line, Word
@@ -617,3 +618,52 @@ def test_transcribe_vocals_handles_transcribe_error(monkeypatch):
     assert words == []
     assert language == ""
     assert model == "base"
+
+
+def test_transcribe_vocals_cached_sparse_upgrade_persists_cache(monkeypatch):
+    sparse_segments = [te.TranscriptionSegment(start=0.0, end=1.0, text="a", words=[])]
+    sparse_words = [te.TranscriptionWord(start=0.1, end=0.2, text="a", probability=0.9)]
+    upgraded_segments = [
+        te.TranscriptionSegment(
+            start=0.0,
+            end=2.0,
+            text="upgraded",
+            words=[
+                te.TranscriptionWord(start=0.0, end=0.5, text="up", probability=0.9)
+            ],
+        )
+    ]
+    upgraded_words = [
+        te.TranscriptionWord(start=0.0, end=0.5, text="up", probability=0.9)
+    ]
+    saved = {"count": 0, "words": 0}
+
+    monkeypatch.setattr(
+        wit,
+        "_maybe_upgrade_sparse_transcription_with_whisperx",
+        lambda **_k: (upgraded_segments, upgraded_words, "en", True),
+    )
+    monkeypatch.setattr(
+        wi,
+        "_find_best_cached_whisper_model",
+        lambda *_: ("fake_cache.json", "base"),
+    )
+
+    with wi.use_whisper_integration_hooks(
+        get_whisper_cache_path_fn=lambda *_: "fake_cache.json",
+        load_whisper_cache_fn=lambda *_: (sparse_segments, sparse_words, "en"),
+        save_whisper_cache_fn=lambda _path, _segs, words, *_: saved.update(
+            {"count": saved["count"] + 1, "words": len(words)}
+        ),
+        load_whisper_model_class_fn=lambda: None,
+    ):
+        segments, words, language, model = te.transcribe_vocals(
+            "vocals.wav", language="en"
+        )
+
+    assert len(segments) == len(upgraded_segments)
+    assert len(words) == len(upgraded_words)
+    assert language == "en"
+    assert model == "base"
+    assert saved["count"] == 1
+    assert saved["words"] == len(upgraded_words)

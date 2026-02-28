@@ -1,5 +1,7 @@
 import numpy as np
+import pytest
 from typing import Any, cast
+import y2karaoke.core.components.alignment.timing_evaluator as te
 from y2karaoke.core.models import Line, Word
 import y2karaoke.core.components.whisper.whisper_integration as wi
 import y2karaoke.core.components.whisper.whisper_integration_pipeline as wip
@@ -213,6 +215,106 @@ def test_align_lrc_text_pipeline_pulls_forward_for_continuous_vocals():
 
     assert mapped[1].start_time == 120.0
     assert any("continuous vocals" in msg for msg in corrections)
+
+
+def test_align_lrc_text_pipeline_uses_whisperx_for_sparse_transcript(monkeypatch):
+    lines = [
+        Line(words=[Word(text="a", start_time=1.0, end_time=1.2)]),
+        Line(words=[Word(text="b", start_time=2.0, end_time=2.2)]),
+    ]
+    forced_lines = [
+        Line(words=[Word(text="a", start_time=1.5, end_time=1.8)]),
+        Line(words=[Word(text="b", start_time=2.5, end_time=2.8)]),
+    ]
+    whisper_words = [TranscriptionWord(text="a", start=1.4, end=1.8, probability=0.9)]
+    segments = [
+        TranscriptionSegment(start=1.4, end=1.8, text="a", words=[whisper_words[0]])
+    ]
+
+    monkeypatch.setattr(
+        "y2karaoke.core.components.whisper.whisper_integration_align.align_lines_with_whisperx",
+        lambda *_args, **_kwargs: (
+            forced_lines,
+            {"forced_line_coverage": 1.0, "forced_word_coverage": 1.0},
+        ),
+    )
+
+    mapped, corrections, metrics = align_lrc_text_to_whisper_timings_impl(
+        lines,
+        vocals_path="vocals.wav",
+        language="en",
+        model_size="base",
+        aggressive=False,
+        temperature=0.0,
+        min_similarity=0.15,
+        audio_features=None,
+        lenient_vocal_activity_threshold=0.3,
+        lenient_activity_bonus=0.4,
+        low_word_confidence_threshold=0.5,
+        transcribe_vocals_fn=lambda *_a, **_k: (segments, whisper_words, "en", "base"),
+        extract_audio_features_fn=lambda *_a, **_k: None,
+        dedupe_whisper_segments_fn=lambda s: s,
+        trim_whisper_transcription_by_lyrics_fn=lambda s, w, _t: (s, w, None),
+        fill_vocal_activity_gaps_fn=lambda w, _a, _t, segments=None: (w, segments),
+        dedupe_whisper_words_fn=lambda w: w,
+        extract_lrc_words_all_fn=lambda _in_lines: [],
+        build_phoneme_tokens_from_lrc_words_fn=lambda *_a, **_k: [],
+        build_phoneme_tokens_from_whisper_words_fn=lambda *_a, **_k: [],
+        build_syllable_tokens_from_phonemes_fn=lambda *_a, **_k: [],
+        build_segment_text_overlap_assignments_fn=lambda *_a, **_k: {},
+        build_phoneme_dtw_path_fn=lambda *_a, **_k: [],
+        build_word_assignments_from_phoneme_path_fn=lambda *_a, **_k: {},
+        build_block_segmented_syllable_assignments_fn=lambda *_a, **_k: {},
+        map_lrc_words_to_whisper_fn=lambda *_a, **_k: (lines, 0, 0.0, set()),
+        shift_repeated_lines_to_next_whisper_fn=lambda ml, _aw: ml,
+        enforce_monotonic_line_starts_whisper_fn=lambda ml, _aw: ml,
+        resolve_line_overlaps_fn=lambda ml: ml,
+        extend_line_to_trailing_whisper_matches_fn=lambda ml, _aw: ml,
+        pull_late_lines_to_matching_segments_fn=lambda ml, _s, _lang: ml,
+        retime_short_interjection_lines_fn=lambda ml, _s: ml,
+        snap_first_word_to_whisper_onset_fn=lambda ml, _aw: ml,
+        interpolate_unmatched_lines_fn=lambda ml, _set: ml,
+        refine_unmatched_lines_with_onsets_fn=lambda ml, _set, _vp: ml,
+        pull_lines_forward_for_continuous_vocals_fn=lambda ml, _af: (ml, 0),
+        logger=wi.logger,
+    )
+
+    assert mapped == forced_lines
+    assert metrics["whisperx_forced"] == 1.0
+    assert any(
+        "WhisperX transcript-constrained forced alignment" in msg for msg in corrections
+    )
+
+
+def test_correct_timing_with_whisper_uses_whisperx_when_sparse(monkeypatch):
+    lines = [Line(words=[Word(text="hello", start_time=10.0, end_time=11.0)])]
+    forced = [Line(words=[Word(text="hello", start_time=10.3, end_time=11.2)])]
+    words = [te.TranscriptionWord(start=10.1, end=10.6, text="hello", probability=0.9)]
+    segments = [
+        te.TranscriptionSegment(start=10.1, end=10.6, text="hello", words=words)
+    ]
+
+    monkeypatch.setattr(
+        "y2karaoke.core.components.whisper.whisper_integration_correct.align_lines_with_whisperx",
+        lambda *_args, **_kwargs: (
+            forced,
+            {"forced_line_coverage": 1.0, "forced_word_coverage": 1.0},
+        ),
+    )
+
+    with wi.use_whisper_integration_hooks(
+        transcribe_vocals_fn=lambda *_: (segments, words, "en", "base"),
+        extract_audio_features_fn=lambda *_: None,
+    ):
+        aligned, corrections, metrics = te.correct_timing_with_whisper(
+            lines, "vocals.wav"
+        )
+
+    assert aligned[0].start_time == pytest.approx(lines[0].start_time, abs=0.05)
+    assert metrics["whisperx_forced"] == 1.0
+    assert any(
+        "WhisperX transcript-constrained forced alignment" in c for c in corrections
+    )
 
 
 def test_align_lrc_text_pipeline_enforces_monotonic_non_overlapping_invariants():

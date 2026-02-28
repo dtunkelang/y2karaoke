@@ -67,6 +67,9 @@ def _find_best_cached_whisper_model(  # noqa: C901
         if file_aggressive:
             tail = tail[: -len("_aggr")]
         mode_exact = file_aggressive == aggressive
+        if aggressive and not file_aggressive:
+            # Never satisfy an aggressive request with a non-aggressive transcript.
+            continue
 
         # Parse temperature from filename if present
         file_temp = 0.0
