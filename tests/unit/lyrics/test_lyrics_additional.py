@@ -4,6 +4,7 @@ from y2karaoke.core.components.lyrics import api as lyrics
 from y2karaoke.core import lyrics_whisper as lw
 from y2karaoke.core.components.lyrics import helpers as lh
 from y2karaoke.core.components.lyrics import api as lyrics_api
+from y2karaoke.core.components.lyrics import lyrics_whisper_pipeline as lwp
 from y2karaoke.core.components.lyrics import lyrics_whisper_quality as lwq
 from y2karaoke.core.models import Line, SongMetadata, Word
 
@@ -326,6 +327,64 @@ def test_get_lyrics_with_quality_marks_moderate_lrc_mismatch_as_degraded(monkeyp
     assert lines
     assert report["lrc_timing_trust"] == "degraded_duration_mismatch"
     assert any("LRC duration mismatch" in issue for issue in report["issues"])
+
+
+def test_get_lyrics_with_quality_keeps_lrc_timestamps_for_likely_outro_padding(
+    monkeypatch,
+):
+    lrc_text = "[00:12.00]First\n[03:33.00]Last"
+    line_timings = [(12.0, "First"), (213.0, "Last")]
+
+    monkeypatch.setattr(
+        "y2karaoke.core.components.lyrics.sync.get_lrc_duration", lambda *_: 214
+    )
+    monkeypatch.setattr(
+        lh, "create_lines_from_lrc", lambda *a, **k: [_line("First"), _line("Last")]
+    )
+    monkeypatch.setattr(
+        lw,
+        "_refine_timing_with_quality",
+        lambda *a, **k: ([_line("First"), _line("Last")], "onset_refined"),
+    )
+
+    with lw.use_lyrics_whisper_hooks(
+        fetch_lrc_text_and_timings_fn=lambda *a, **k: (lrc_text, line_timings, "src"),
+    ):
+        lines, _meta, report = lw.get_lyrics_with_quality(
+            "Title",
+            "Artist",
+            vocals_path="vocals.wav",
+            use_whisper=True,
+            target_duration=228,
+            romanize=False,
+        )
+
+    assert lines
+    assert report["lrc_timing_trust"] == "degraded_outro_padding"
+    assert not any(
+        "Ignoring provider LRC timestamps due to severe duration mismatch" in issue
+        for issue in report["issues"]
+    )
+    assert any("outro padding" in issue for issue in report["issues"])
+
+
+def test_should_keep_lrc_timings_for_trailing_outro_padding():
+    assert (
+        lwp.should_keep_lrc_timings_for_trailing_outro_padding(
+            line_timings=[(12.0, "a"), (213.0, "b")],
+            lrc_duration=214,
+            target_duration=228,
+        )
+        is True
+    )
+    assert (
+        lwp.should_keep_lrc_timings_for_trailing_outro_padding(
+            line_timings=[(1.0, "a"), (3.0, "b")],
+            lrc_duration=100,
+            target_duration=130,
+        )
+        is False
+    )
 
 
 def test_get_lyrics_with_quality_auto_enables_whisper_without_line_timings(

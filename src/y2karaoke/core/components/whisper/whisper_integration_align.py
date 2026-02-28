@@ -203,6 +203,15 @@ def align_lrc_text_to_whisper_timings_impl(  # noqa: C901
     )
 
     mapped_lines = constrain_line_starts_to_baseline_fn(mapped_lines, baseline_lines)
+    try:
+        mapped_lines = snap_first_word_to_whisper_onset_fn(
+            mapped_lines,
+            all_words,
+            max_shift=2.5,
+        )
+    except TypeError:
+        mapped_lines = snap_first_word_to_whisper_onset_fn(mapped_lines, all_words)
+    mapped_lines = constrain_line_starts_to_baseline_fn(mapped_lines, baseline_lines)
 
     matched_ratio = mapped_count / len(lrc_words) if lrc_words else 0.0
     avg_similarity = total_similarity / mapped_count if mapped_count else 0.0

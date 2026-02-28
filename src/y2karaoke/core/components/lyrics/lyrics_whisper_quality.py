@@ -13,7 +13,10 @@ from .helpers import (
     _romanize_lines,
 )
 from .lyrics_whisper_map import _map_lrc_lines_to_whisper_segments
-from .lyrics_whisper_pipeline import should_auto_enable_whisper
+from .lyrics_whisper_pipeline import (
+    should_auto_enable_whisper,
+    should_keep_lrc_timings_for_trailing_outro_padding,
+)
 from ...models import Line, SongMetadata
 
 logger = logging.getLogger(__name__)
@@ -108,7 +111,19 @@ def _apply_lrc_timing_trust_policy(
             can_recover_with_audio_alignment = bool(vocals_path) and bool(
                 use_whisper or whisper_map_lrc
             )
+            likely_outro_padding = should_keep_lrc_timings_for_trailing_outro_padding(
+                line_timings=line_timings,
+                lrc_duration=lrc_duration,
+                target_duration=target_duration,
+            )
             if can_recover_with_audio_alignment and lrc_duration_mismatch_sec >= 12.0:
+                if likely_outro_padding:
+                    issues_list.append(
+                        "Detected likely trailing instrumental outro padding; "
+                        "keeping provider LRC timestamps"
+                    )
+                    quality_report["lrc_timing_trust"] = "degraded_outro_padding"
+                    return line_timings
                 issues_list.append(
                     "Ignoring provider LRC timestamps due to severe duration mismatch; "
                     "using audio/Whisper timing alignment instead"

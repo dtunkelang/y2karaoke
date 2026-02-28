@@ -121,3 +121,66 @@ songs:
     fallback_lyrics_provider: "syncedlyrics"
     lrc_duration_tolerance_sec: 18
     notes: "Uses official audio for benchmark alignment."
+
+  - artist: "Johnny Cash"
+    title: "Hurt"
+    youtube_id: "8AHCfZTRGiI"
+    youtube_url: "https://www.youtube.com/watch?v=8AHCfZTRGiI"
+    preferred_lyrics_provider: "lyriq"
+    fallback_lyrics_provider: "syncedlyrics"
+    lrc_duration_tolerance_sec: 20
+    notes: "Official audio source for main timing/alignment evaluation."
+
+  - artist: "Neil Diamond"
+    title: "Sweet Caroline"
+    youtube_id: "4F_RCWVoL4s"
+    youtube_url: "https://www.youtube.com/watch?v=4F_RCWVoL4s"
+    preferred_lyrics_provider: "lyriq"
+    fallback_lyrics_provider: "syncedlyrics"
+    lrc_duration_tolerance_sec: 20
+    notes: "Official audio source for main timing/alignment evaluation."
+
+  - artist: "Daddy Yankee & Snow"
+    title: "Con Calma"
+    youtube_id: "r_wb7GAiCg4"
+    youtube_url: "https://www.youtube.com/watch?v=r_wb7GAiCg4"
+    preferred_lyrics_provider: "lyriq"
+    fallback_lyrics_provider: "syncedlyrics"
+    lrc_duration_tolerance_sec: 20
+    notes: "Official audio source for main timing/alignment evaluation; adds Spanish/English mixed-lyrics coverage."
+
+  - artist: "Eminem"
+    title: "Houdini"
+    youtube_id: "soNLLPokjC4"
+    youtube_url: "https://www.youtube.com/watch?v=soNLLPokjC4"
+    preferred_lyrics_provider: "lyriq"
+    fallback_lyrics_provider: "syncedlyrics"
+    lrc_duration_tolerance_sec: 20
+    notes: "Official audio source; rapid-lyrics stress candidate for timing/alignment."
+
+  - artist: "Sabrina Carpenter"
+    title: "Taste"
+    youtube_id: "-5GI38vWew8"
+    youtube_url: "https://www.youtube.com/watch?v=-5GI38vWew8"
+    preferred_lyrics_provider: "lyriq"
+    fallback_lyrics_provider: "syncedlyrics"
+    lrc_duration_tolerance_sec: 20
+    notes: "Official audio source for main timing/alignment evaluation; candidate for guardrail promotion."
+
+  - artist: "a-ha"
+    title: "Take On Me"
+    youtube_id: "NaQ083rNUwc"
+    youtube_url: "https://www.youtube.com/watch?v=NaQ083rNUwc"
+    preferred_lyrics_provider: "lyriq"
+    fallback_lyrics_provider: "syncedlyrics"
+    lrc_duration_tolerance_sec: 20
+    notes: "Official audio source for main timing/alignment evaluation; candidate for guardrail promotion."
+
+  - artist: "Olivia Rodrigo"
+    title: "good 4 u"
+    youtube_id: "aeDdS9aIpck"
+    youtube_url: "https://www.youtube.com/watch?v=aeDdS9aIpck"
+    preferred_lyrics_provider: "lyriq"
+    fallback_lyrics_provider: "syncedlyrics"
+    lrc_duration_tolerance_sec: 20
+    notes: "Official audio source for main timing/alignment evaluation; upbeat candidate for guardrail promotion."

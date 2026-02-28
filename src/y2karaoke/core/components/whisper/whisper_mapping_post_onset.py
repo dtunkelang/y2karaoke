@@ -2,10 +2,162 @@
 
 from __future__ import annotations
 
+from collections import Counter
 from typing import Callable, List
 
 from ... import models
 from ..alignment import timing_models
+
+
+def _is_uniform_word_timing(line: models.Line) -> bool:
+    if not line.words or len(line.words) < 3:
+        return False
+    durations = [max(0.0, w.end_time - w.start_time) for w in line.words]
+    mean_duration = sum(durations) / len(durations)
+    if mean_duration <= 0.0:
+        return False
+    variance = sum((d - mean_duration) ** 2 for d in durations) / len(durations)
+    coeff_var = (variance**0.5) / mean_duration
+    unique_rounded = len(set(round(d, 3) for d in durations))
+    return coeff_var < 0.12 or unique_rounded <= 2
+
+
+def _retime_uniform_words_to_whisper_anchors(  # noqa: C901
+    mapped_lines: List[models.Line],
+    all_words: List[timing_models.TranscriptionWord],
+    *,
+    normalize_interjection_token_fn: Callable[[str], str],
+    normalize_match_token_fn: Callable[[str], str],
+) -> List[models.Line]:
+    if not mapped_lines or not all_words:
+        return mapped_lines
+    adjusted = list(mapped_lines)
+    for idx, line in enumerate(adjusted):
+        has_front_delay = (
+            len(line.words) >= 3 and (line.words[1].start_time - line.start_time) > 0.8
+        )
+        if not _is_uniform_word_timing(line) and not has_front_delay:
+            continue
+        n_words = len(line.words)
+        if n_words < 3:
+            continue
+        line_start = line.start_time
+        line_end = line.end_time
+        next_start = (
+            adjusted[idx + 1].start_time
+            if idx + 1 < len(adjusted) and adjusted[idx + 1].words
+            else line_end + 2.0
+        )
+
+        window_words = [
+            w for w in all_words if (line_start - 0.6) <= w.start <= (next_start + 0.3)
+        ]
+        if not window_words:
+            continue
+
+        matches: dict[int, float] = {}
+        match_ends: dict[int, float] = {}
+        cursor = 0
+
+        def _strict_token_match(a: str, b: str) -> bool:
+            if not a or not b:
+                return False
+            if a == b:
+                return True
+            return a.startswith(b) or b.startswith(a)
+
+        for word_idx, word in enumerate(line.words):
+            if word_idx == 0:
+                continue
+            token = normalize_interjection_token_fn(
+                word.text
+            ) or normalize_match_token_fn(word.text)
+            if not token:
+                continue
+            found_idx = None
+            for j in range(cursor, len(window_words)):
+                wt = normalize_interjection_token_fn(
+                    window_words[j].text
+                ) or normalize_match_token_fn(window_words[j].text)
+                if not wt:
+                    continue
+                if _strict_token_match(token, wt):
+                    # Allow aggressive pulls earlier, but resist pushing words much later.
+                    if window_words[j].start > (word.start_time + 0.6):
+                        continue
+                    found_idx = j
+                    break
+            if found_idx is None:
+                continue
+            matches[word_idx] = float(window_words[found_idx].start)
+            match_ends[word_idx] = float(window_words[found_idx].end)
+            cursor = found_idx + 1
+
+        min_matches = max(2, int(0.5 * n_words))
+        if len(matches) < min_matches:
+            continue
+
+        starts = [w.start_time for w in line.words]
+        original_starts = list(starts)
+        starts[0] = line_start
+        for word_idx, anchor in matches.items():
+            if word_idx == 0:
+                continue
+            starts[word_idx] = anchor
+
+        min_word_duration = 0.08
+        min_inter_word_gap = 0.02
+        for i in range(1, n_words):
+            min_start = starts[i - 1] + min_word_duration + min_inter_word_gap
+            tail_reserved = (n_words - i - 1) * (min_word_duration + min_inter_word_gap)
+            max_start = line_end - min_word_duration - tail_reserved
+            starts[i] = max(min_start, min(starts[i], max_start))
+        changed = sum(abs(starts[i] - original_starts[i]) for i in range(1, n_words))
+        if changed < 0.08:
+            continue
+        if starts[-1] >= line_end - min_word_duration:
+            continue
+
+        target_line_end = line_end
+        last_idx = n_words - 1
+        if last_idx in match_ends:
+            # Whisper can provide strong evidence that the displayed lyric phrase
+            # ends well before the line boundary inherited from baseline timing.
+            candidate_end = match_ends[last_idx] + 0.25
+            next_line_start = (
+                adjusted[idx + 1].start_time
+                if idx + 1 < len(adjusted) and adjusted[idx + 1].words
+                else line_end + 3.0
+            )
+            candidate_end = min(candidate_end, next_line_start - 0.05, line_end)
+            if candidate_end <= line_end - 0.5:
+                target_line_end = max(
+                    starts[last_idx] + min_word_duration, candidate_end
+                )
+
+        retimed_words: List[models.Word] = []
+        for i, word in enumerate(line.words):
+            start = starts[i]
+            if i + 1 < n_words:
+                end = min(target_line_end, starts[i + 1] - min_inter_word_gap)
+            else:
+                end = target_line_end
+            if end - start < min_word_duration:
+                end = min(target_line_end, start + min_word_duration)
+            if end <= start:
+                retimed_words = []
+                break
+            retimed_words.append(
+                models.Word(
+                    text=word.text,
+                    start_time=start,
+                    end_time=end,
+                    singer=word.singer,
+                )
+            )
+        if retimed_words and len(retimed_words) == n_words:
+            adjusted[idx] = models.Line(words=retimed_words, singer=line.singer)
+    return adjusted
 
 
 def _snap_first_word_to_whisper_onset(  # noqa: C901
@@ -25,9 +177,36 @@ def _snap_first_word_to_whisper_onset(  # noqa: C901
         return mapped_lines
 
     adjusted = list(mapped_lines)
+    line_text_keys: Counter[str] = Counter()
+    for src_line in mapped_lines:
+        tokens = [
+            normalize_match_token_fn(w.text)
+            for w in src_line.words
+            if normalize_match_token_fn(w.text)
+        ]
+        if tokens:
+            line_text_keys[" ".join(tokens)] += 1
     for idx, line in enumerate(adjusted):
         if not line.words:
             continue
+        line_tokens = [
+            normalize_match_token_fn(w.text)
+            for w in line.words
+            if normalize_match_token_fn(w.text)
+        ]
+        line_key = " ".join(line_tokens)
+        repeated_phrase_count = line_text_keys.get(line_key, 0) if line_key else 0
+        repetition_guard = False
+        if line_tokens:
+            token_counts = Counter(line_tokens)
+            max_token_share = max(token_counts.values()) / len(line_tokens)
+            repetition_guard = (
+                len(line_tokens) >= 5
+                and max_token_share >= 0.33
+                and len(token_counts) <= max(3, int(len(line_tokens) * 0.6))
+            )
+            if repeated_phrase_count >= 3 and len(line_tokens) >= 4:
+                repetition_guard = True
         if line.text.strip().endswith("?"):
             cur_tokens = [
                 normalize_match_token_fn(w.text)
@@ -104,6 +283,7 @@ def _snap_first_word_to_whisper_onset(  # noqa: C901
                 repetitive_following
                 and match_score >= 2
                 and word.start >= fw.start_time + 0.8
+                and (not repetition_guard or word.start <= fw.start_time + 1.2)
             ):
                 later_match_starts.append(word.start)
             score = (match_score, -abs(word.start - fw.start_time))
@@ -119,7 +299,8 @@ def _snap_first_word_to_whisper_onset(  # noqa: C901
         if delta >= -early_threshold:
             continue
 
-        desired_shift = min(-delta, max_shift)
+        max_shift_effective = min(max_shift, 1.0) if repetition_guard else max_shift
+        desired_shift = min(-delta, max_shift_effective)
         max_allowed = desired_shift
         if prev_end is not None:
             max_allowed = min(
@@ -151,7 +332,11 @@ def _snap_first_word_to_whisper_onset(  # noqa: C901
                 break
             run_end += 1
 
-        should_shift_run = run_end > idx + 1 and desired_shift - max_allowed >= 0.1
+        should_shift_run = (
+            (not repetition_guard)
+            and run_end > idx + 1
+            and desired_shift - max_allowed >= 0.1
+        )
         if should_shift_run:
             desired_run_shift = min(-delta, 2.5)
             run_lines = adjusted[idx:run_end]
@@ -242,6 +427,42 @@ def _snap_first_word_to_whisper_onset(  # noqa: C901
                     continue
 
         if max_allowed <= 0:
+            best_match_strength = best[0][0] if best is not None else 0
+            # In tightly packed regions, whole-line shifting may be blocked by neighbor
+            # constraints. If Whisper provides strong onset evidence, retime the first
+            # word only so line-start can still move later without cascading overlaps.
+            if (
+                desired_shift >= 0.25
+                and best_match_strength >= 2
+                and len(line.words) >= 3
+                and not line.text.strip().endswith("?")
+                and not repetition_guard
+            ):
+                first = line.words[0]
+                second = line.words[1]
+                target_first_start = min(target_start, second.start_time - 0.1)
+                if target_first_start - first.start_time >= 0.12:
+                    target_first_end = min(second.start_time - 0.02, first.end_time)
+                    if target_first_end - target_first_start < 0.06:
+                        target_first_end = min(
+                            second.start_time - 0.02, target_first_start + 0.06
+                        )
+                    if target_first_end - target_first_start >= 0.05:
+                        shifted_words = [
+                            models.Word(
+                                text=first.text,
+                                start_time=target_first_start,
+                                end_time=target_first_end,
+                                singer=first.singer,
+                            ),
+                            *line.words[1:],
+                        ]
+                        adjusted[idx] = models.Line(
+                            words=shifted_words,
+                            singer=line.singer,
+                        )
+                        continue
+
             tightly_packed = False
             if next_start is not None and (next_start - line.end_time) <= 0.12:
                 packed_count = 0
@@ -256,13 +477,13 @@ def _snap_first_word_to_whisper_onset(  # noqa: C901
                     packed_count += 1
                     probe += 1
                 tightly_packed = packed_count >= 2
-            best_match_strength = best[0][0] if best is not None else 0
             if (
                 desired_shift >= 0.8
                 and tightly_packed
                 and best_match_strength >= 2
                 and idx >= len(adjusted) // 2
                 and not line.text.strip().endswith("?")
+                and not repetition_guard
             ):
                 suffix_shift = min(desired_shift, max_shift)
                 local_end = idx + 1
@@ -305,5 +526,12 @@ def _snap_first_word_to_whisper_onset(  # noqa: C901
             for w in line.words
         ]
         adjusted[idx] = models.Line(words=shifted_words, singer=line.singer)
+
+    adjusted = _retime_uniform_words_to_whisper_anchors(
+        adjusted,
+        all_words,
+        normalize_interjection_token_fn=normalize_interjection_token_fn,
+        normalize_match_token_fn=normalize_match_token_fn,
+    )
 
     return adjusted

@@ -355,6 +355,61 @@ def test_snap_first_word_suffix_shift_does_not_trigger_for_question_line() -> No
     assert adjusted[5].start_time == lines[5].start_time
 
 
+def test_snap_first_word_to_whisper_onset_retimes_first_word_when_shift_blocked() -> (
+    None
+):
+    lines = [
+        Line(words=[Word(text="prev", start_time=10.0, end_time=11.9)]),
+        Line(
+            words=[
+                Word(text="Los", start_time=12.0, end_time=12.3),
+                Word(text="DJs", start_time=12.35, end_time=12.7),
+                Word(text="no", start_time=12.72, end_time=13.0),
+            ]
+        ),
+        Line(words=[Word(text="next", start_time=13.02, end_time=13.6)]),
+    ]
+    whisper_words = [
+        TranscriptionWord(start=12.82, end=13.1, text="Los", probability=0.95),
+    ]
+
+    adjusted = wm._snap_first_word_to_whisper_onset(lines, whisper_words)
+
+    assert adjusted[1].words[0].start_time > lines[1].words[0].start_time
+    assert adjusted[1].words[1].start_time == lines[1].words[1].start_time
+    assert adjusted[2].start_time == lines[2].start_time
+
+
+def test_snap_first_word_to_whisper_onset_retimes_uniform_line_words_from_whisper() -> (
+    None
+):
+    lines = [
+        Line(
+            words=[
+                Word(text="But", start_time=49.60, end_time=50.98),
+                Word(text="I", start_time=51.13, end_time=52.50),
+                Word(text="remember", start_time=52.66, end_time=54.03),
+                Word(text="everything", start_time=54.18, end_time=55.71),
+            ]
+        ),
+        Line(words=[Word(text="What", start_time=55.72, end_time=57.32)]),
+    ]
+    whisper_words = [
+        TranscriptionWord(start=49.70, end=50.00, text="I", probability=0.99),
+        TranscriptionWord(start=50.00, end=50.62, text="remember", probability=0.99),
+        TranscriptionWord(start=50.62, end=52.68, text="everything.", probability=0.99),
+        TranscriptionWord(start=53.08, end=54.30, text="What", probability=0.99),
+    ]
+
+    adjusted = wm._snap_first_word_to_whisper_onset(lines, whisper_words)
+
+    assert adjusted[0].words[0].start_time == 49.60
+    assert adjusted[0].words[1].start_time == pytest.approx(49.70, abs=1e-3)
+    assert adjusted[0].words[2].start_time == pytest.approx(50.00, abs=1e-3)
+    assert adjusted[0].words[3].start_time == pytest.approx(50.62, abs=1e-3)
+    assert adjusted[0].end_time == pytest.approx(52.93, abs=1e-2)
+
+
 def test_pull_late_lines_handles_code_switch_with_accented_spanish() -> None:
     lines = [
         Line(words=[Word(text="prev", start_time=46.0, end_time=46.4)]),

@@ -167,5 +167,19 @@ def _run_mapped_line_postpasses(
             enforce_monotonic_line_starts_whisper_fn=enforce_monotonic_line_starts_whisper_fn,
             resolve_line_overlaps_fn=resolve_line_overlaps_fn,
         )
+        try:
+            mapped_lines = snap_first_word_to_whisper_onset_fn(
+                mapped_lines,
+                all_words,
+                max_shift=2.5,
+            )
+        except TypeError:
+            mapped_lines = snap_first_word_to_whisper_onset_fn(mapped_lines, all_words)
+        mapped_lines = _enforce_mapped_line_stage_invariants(
+            mapped_lines,
+            all_words,
+            enforce_monotonic_line_starts_whisper_fn=enforce_monotonic_line_starts_whisper_fn,
+            resolve_line_overlaps_fn=resolve_line_overlaps_fn,
+        )
 
     return mapped_lines, corrections

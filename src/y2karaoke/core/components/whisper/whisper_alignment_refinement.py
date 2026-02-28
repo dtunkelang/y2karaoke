@@ -4,6 +4,7 @@ import os
 import logging
 from contextlib import contextmanager
 from typing import List, Optional, Tuple, Set
+import numpy as np
 
 from ...models import Line, Word
 from ..alignment.timing_models import (
@@ -454,6 +455,171 @@ def _shift_lines_across_long_activity_gaps(
     return fixes
 
 
+def _extend_line_ends_across_active_gaps(
+    lines: List[Line],
+    audio_features: AudioFeatures,
+    *,
+    min_gap: float = 1.25,
+    min_extension: float = 0.25,
+    max_extension: float = 2.5,
+    activity_threshold: float = 0.65,
+    silence_min_duration: float = 0.35,
+) -> int:
+    """Extend prior line ends when a gap has sustained vocal activity and no silence."""
+    fixes = 0
+    for idx in range(1, len(lines)):
+        prev_line = lines[idx - 1]
+        next_line = lines[idx]
+        if not prev_line.words or not next_line.words:
+            continue
+        gap = next_line.start_time - prev_line.end_time
+        if gap < min_gap:
+            continue
+        activity = _check_vocal_activity_in_range(
+            prev_line.end_time, next_line.start_time, audio_features
+        )
+        if activity < activity_threshold:
+            continue
+        has_silence = _check_for_silence_in_range(
+            prev_line.end_time,
+            next_line.start_time,
+            audio_features,
+            min_silence_duration=silence_min_duration,
+        )
+        if has_silence:
+            continue
+
+        extension = min(gap - 0.05, max_extension)
+        if extension < min_extension:
+            continue
+        target_end = prev_line.end_time + extension
+        target_end = min(target_end, next_line.start_time - 0.05)
+        stretched = _rebuild_line_with_target_end(prev_line, target_end)
+        if stretched is None:
+            continue
+        if stretched.end_time <= prev_line.end_time + min_extension:
+            continue
+        lines[idx - 1] = stretched
+        fixes += 1
+    return fixes
+
+
+def _is_uniform_word_timing(line: Line) -> bool:
+    if not line.words or len(line.words) < 3:
+        return False
+    durations = np.array(
+        [max(0.0, word.end_time - word.start_time) for word in line.words], dtype=float
+    )
+    mean_duration = float(np.mean(durations)) if len(durations) else 0.0
+    if mean_duration <= 0.0:
+        return False
+    coeff_var = float(np.std(durations) / mean_duration)
+    unique_rounded = len(set(round(float(d), 3) for d in durations))
+    return coeff_var < 0.08 or unique_rounded <= 2
+
+
+def _retime_line_words_to_onsets(
+    line: Line,
+    onset_times,
+    *,
+    min_word_duration: float = 0.08,
+) -> Optional[Line]:
+    if not line.words or len(line.words) < 3:
+        return None
+    line_start = line.start_time
+    line_end = line.end_time
+    if line_end <= line_start + min_word_duration * len(line.words):
+        return None
+
+    n_words = len(line.words)
+    if n_words < 2:
+        return None
+
+    candidate_onsets = np.sort(
+        onset_times[
+            (onset_times >= line_start + 0.04) & (onset_times <= line_end - 0.01)
+        ]
+    )
+    # Keep first word start anchored to the line start to avoid line-level shifts.
+    target_word_count = n_words - 1
+    if len(candidate_onsets) < target_word_count:
+        return None
+
+    original_duration = max(line_end - line_start, 1e-3)
+    expected_starts = [
+        line_start
+        + max(0.0, min(1.0, (word.start_time - line_start) / original_duration))
+        * original_duration
+        for word in line.words[1:]
+    ]
+
+    chosen_indices = []
+    prev_idx = -1
+    for i in range(target_word_count):
+        min_idx = prev_idx + 1
+        max_idx = len(candidate_onsets) - (target_word_count - i)
+        if max_idx < min_idx:
+            return None
+        target = expected_starts[i]
+        best_idx = min(
+            range(min_idx, max_idx + 1),
+            key=lambda idx: abs(float(candidate_onsets[idx]) - target),
+        )
+        chosen_indices.append(best_idx)
+        prev_idx = best_idx
+
+    starts = [line_start] + [float(candidate_onsets[idx]) for idx in chosen_indices]
+    adjusted_starts = [line_start]
+    for start in starts[1:]:
+        adjusted_starts.append(max(start, adjusted_starts[-1] + 0.02))
+
+    if adjusted_starts[-1] >= line_end - 0.01:
+        return None
+
+    new_words: List[Word] = []
+    for i, word in enumerate(line.words):
+        start = adjusted_starts[i]
+        if i + 1 < len(adjusted_starts):
+            end = min(line_end, adjusted_starts[i + 1] - 0.02)
+        else:
+            end = line_end
+        if end - start < min_word_duration:
+            end = min(line_end, start + min_word_duration)
+        if end <= start:
+            return None
+        new_words.append(
+            Word(
+                text=word.text,
+                start_time=start,
+                end_time=end,
+                singer=word.singer,
+            )
+        )
+    return Line(words=new_words, singer=line.singer)
+
+
+def _retime_uniform_word_lines_with_onsets(
+    lines: List[Line],
+    onset_times,
+) -> int:
+    fixes = 0
+    for idx, line in enumerate(lines):
+        if not _is_uniform_word_timing(line):
+            continue
+        retimed = _retime_line_words_to_onsets(line, onset_times)
+        if retimed is None:
+            continue
+        delta = sum(
+            abs(retimed.words[i].start_time - line.words[i].start_time)
+            for i in range(len(line.words))
+        )
+        if delta < 0.15:
+            continue
+        lines[idx] = retimed
+        fixes += 1
+    return fixes
+
+
 def _short_line_silence_shift_candidate(
     line: Line,
     normalized_silences: List[Tuple[float, float]],
@@ -587,6 +753,7 @@ def _pull_lines_forward_for_continuous_vocals(
     fixes = _shift_lines_across_long_activity_gaps(
         lines, audio_features, max_gap, onset_times
     )
+    fixes += _extend_line_ends_across_active_gaps(lines, audio_features)
 
     env_flag = os.getenv("Y2K_WHISPER_SILENCE_REFINEMENT", "1").strip().lower()
     env_enabled = env_flag not in {"0", "false", "off", "no"}

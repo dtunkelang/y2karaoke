@@ -228,6 +228,60 @@ def test_pull_lines_forward_for_continuous_vocals():
     assert pulled[1].start_time == 12.0
 
 
+def test_pull_lines_forward_for_continuous_vocals_extends_prior_line_end():
+    lines = [
+        Line(words=[Word(text="one", start_time=10.0, end_time=11.0)]),
+        Line(words=[Word(text="two", start_time=13.5, end_time=14.0)]),
+    ]
+
+    class MockAF:
+        def __init__(self):
+            self.onset_times = np.array([10.5, 12.0, 13.0])
+            self.silence_regions = []
+
+    af = MockAF()
+
+    import y2karaoke.core.components.whisper.whisper_alignment_refinement as war
+
+    with war.use_alignment_refinement_hooks(
+        check_vocal_activity_in_range_fn=lambda *args: 0.9,
+        check_for_silence_in_range_fn=lambda *args, **kw: False,
+    ):
+        pulled, count = wa._pull_lines_forward_for_continuous_vocals(
+            lines, af, max_gap=4.0, enable_silence_short_line_refinement=False
+        )
+
+    assert count == 1
+    assert pulled[0].end_time == 13.45
+
+
+def test_pull_lines_forward_for_continuous_vocals_does_not_extend_with_silence():
+    lines = [
+        Line(words=[Word(text="one", start_time=10.0, end_time=11.0)]),
+        Line(words=[Word(text="two", start_time=13.5, end_time=14.0)]),
+    ]
+
+    class MockAF:
+        def __init__(self):
+            self.onset_times = np.array([10.5, 12.0, 13.0])
+            self.silence_regions = []
+
+    af = MockAF()
+
+    import y2karaoke.core.components.whisper.whisper_alignment_refinement as war
+
+    with war.use_alignment_refinement_hooks(
+        check_vocal_activity_in_range_fn=lambda *args: 0.9,
+        check_for_silence_in_range_fn=lambda *args, **kw: True,
+    ):
+        pulled, count = wa._pull_lines_forward_for_continuous_vocals(
+            lines, af, max_gap=4.0, enable_silence_short_line_refinement=False
+        )
+
+    assert count == 0
+    assert pulled[0].end_time == 11.0
+
+
 def test_pull_lines_forward_for_continuous_vocals_pushes_short_line_after_silence():
     lines = [
         Line(words=[Word(text="prev", start_time=124.98, end_time=127.08)]),

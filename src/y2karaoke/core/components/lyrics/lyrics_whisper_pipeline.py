@@ -41,6 +41,33 @@ def should_auto_enable_whisper(
     )
 
 
+def should_keep_lrc_timings_for_trailing_outro_padding(
+    *,
+    line_timings: Optional[List[Tuple[float, str]]],
+    lrc_duration: Optional[int],
+    target_duration: Optional[int],
+    max_outro_padding_sec: float = 20.0,
+    max_lrc_tail_gap_sec: float = 8.0,
+) -> bool:
+    """Return True when duration mismatch likely comes from trailing instrumental outro.
+
+    We treat positive duration deltas as likely-outro only when:
+    - audio is longer than LRC,
+    - extra tail is bounded (not an arbitrary long mismatch),
+    - last timed lyric appears near the LRC end.
+    """
+    if not line_timings or not lrc_duration or not target_duration:
+        return False
+
+    duration_delta = float(target_duration) - float(lrc_duration)
+    if duration_delta <= 0 or duration_delta > max_outro_padding_sec:
+        return False
+
+    last_timed_lyric_start = max(t for t, _ in line_timings)
+    lrc_tail_gap = float(lrc_duration) - float(last_timed_lyric_start)
+    return lrc_tail_gap >= 0 and lrc_tail_gap <= max_lrc_tail_gap_sec
+
+
 def get_lyrics_simple_impl(  # noqa: C901
     title: str,
     artist: str,
@@ -188,10 +215,17 @@ def get_lyrics_simple_impl(  # noqa: C901
     if target_duration and lrc_text:
         lrc_duration = get_lrc_duration_fn(lrc_text)
         if lrc_duration and abs(target_duration - lrc_duration) > 8:
-            logger.warning(
-                "LRC duration mismatch: keeping text but ignoring LRC timings"
+            mismatch = abs(target_duration - lrc_duration)
+            likely_outro_padding = should_keep_lrc_timings_for_trailing_outro_padding(
+                line_timings=line_timings,
+                lrc_duration=lrc_duration,
+                target_duration=target_duration,
             )
-            line_timings = None
+            if mismatch >= 12 and not likely_outro_padding:
+                logger.warning(
+                    "LRC duration mismatch: keeping text but ignoring LRC timings"
+                )
+                line_timings = None
 
     genius_lines: Optional[List[Tuple[str, str]]] = None
     metadata: Optional[SongMetadata] = None

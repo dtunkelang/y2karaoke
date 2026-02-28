@@ -99,6 +99,17 @@ def _agreement_text_similarity(left: Any, right: Any) -> float:
     return SequenceMatcher(None, a, b).ratio()
 
 
+def _agreement_token_overlap(left: Any, right: Any) -> float:
+    a = _normalize_agreement_text(left).split()
+    b = _normalize_agreement_text(right).split()
+    if not a or not b:
+        return 0.0
+    a_set = set(a)
+    b_set = set(b)
+    overlap = len(a_set & b_set)
+    return overlap / max(1, min(len(a_set), len(b_set)))
+
+
 def _normalize_word_text(raw: Any) -> str:
     if not isinstance(raw, str):
         return ""
@@ -347,6 +358,7 @@ def _extract_song_metrics(
     has_independent_anchor = isinstance(dtw_line_coverage, (int, float))
 
     agreement_min_text_similarity = 0.7
+    agreement_min_token_overlap = 0.6
     agreement_good_start_sec = 0.35
     agreement_warn_start_sec = 0.8
     whisper_anchor_start_abs_deltas: list[float] = []
@@ -356,12 +368,38 @@ def _extract_song_metrics(
         whisper_anchor_start = line.get("nearest_segment_start")
         line_text = line.get("text")
         whisper_anchor_text = line.get("nearest_segment_start_text")
+        line_words = line.get("words")
+        line_word_count = len(line_words) if isinstance(line_words, list) else 0
+        window_word_count_raw = line.get("whisper_window_word_count")
+        window_word_count = (
+            int(window_word_count_raw)
+            if isinstance(window_word_count_raw, (int, float))
+            else 0
+        )
+        window_avg_prob = line.get("whisper_window_avg_prob")
+        # Require enough local Whisper evidence before scoring line-start agreement.
+        if line_word_count >= 6 and window_word_count < max(
+            2, int(0.35 * line_word_count)
+        ):
+            continue
+        if (
+            line_word_count >= 5
+            and isinstance(window_avg_prob, (int, float))
+            and window_avg_prob < 0.45
+            and window_word_count < max(2, int(0.5 * line_word_count))
+        ):
+            continue
         if not isinstance(line_start, (int, float)):
             continue
         if not isinstance(whisper_anchor_start, (int, float)):
             continue
         sim = _agreement_text_similarity(line_text, whisper_anchor_text)
         if sim < agreement_min_text_similarity:
+            continue
+        if (
+            _agreement_token_overlap(line_text, whisper_anchor_text)
+            < agreement_min_token_overlap
+        ):
             continue
         agreement_text_sims.append(sim)
         whisper_anchor_start_abs_deltas.append(
@@ -412,6 +450,7 @@ def _extract_song_metrics(
             "dtw_phonetic_similarity_coverage"
         ),
         "agreement_min_text_similarity": agreement_min_text_similarity,
+        "agreement_min_token_overlap": agreement_min_token_overlap,
         "agreement_count": len(agreement_start_abs_deltas),
         "agreement_coverage_ratio": round(
             (len(agreement_start_abs_deltas) / line_count) if line_count else 0.0, 4
