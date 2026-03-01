@@ -9,6 +9,7 @@ from y2karaoke.core.components.whisper.whisper_integration_pipeline import (
     align_lrc_text_to_whisper_timings_impl,
 )
 from y2karaoke.core.components.whisper import whisper_mapping as wm
+from y2karaoke.core.components.whisper import whisper_integration_baseline as wib
 from y2karaoke.core.components.whisper import whisper_integration_transcribe as witx
 from y2karaoke.core.components.alignment.timing_models import (
     AudioFeatures,
@@ -214,7 +215,7 @@ def test_align_lrc_text_pipeline_pulls_forward_for_continuous_vocals():
         logger=wi.logger,
     )
 
-    assert mapped[1].start_time == 120.0
+    assert mapped[1].start_time == 98.0
     assert any("continuous vocals" in msg for msg in corrections)
 
 
@@ -785,3 +786,87 @@ def test_normalize_whisperx_segments_enforces_monotonic_words():
     assert all(ends[i] <= starts[i + 1] for i in range(len(starts) - 1))
     assert normalized_segments[0].start == pytest.approx(normalized_words[0].start)
     assert normalized_segments[-1].end == pytest.approx(normalized_words[-1].end)
+
+
+def test_constrain_line_starts_to_baseline_skips_large_shift():
+    mapped = [
+        Line(words=[Word(text="hello", start_time=20.0, end_time=21.5)]),
+    ]
+    baseline = [
+        Line(words=[Word(text="hello", start_time=12.0, end_time=13.5)]),
+    ]
+
+    constrained = wib._constrain_line_starts_to_baseline(
+        mapped, baseline, max_shift_sec=2.5
+    )
+
+    assert constrained[0].start_time == pytest.approx(20.0)
+    assert constrained[0].end_time == pytest.approx(21.5)
+
+
+def test_constrain_line_starts_to_baseline_applies_small_shift():
+    mapped = [
+        Line(words=[Word(text="hello", start_time=10.0, end_time=11.0)]),
+    ]
+    baseline = [
+        Line(words=[Word(text="hello", start_time=11.2, end_time=12.2)]),
+    ]
+
+    constrained = wib._constrain_line_starts_to_baseline(
+        mapped, baseline, max_shift_sec=2.5
+    )
+
+    assert constrained[0].start_time == pytest.approx(11.2)
+
+
+def test_restore_implausibly_short_lines_restores_newly_compressed():
+    baseline = [
+        Line(
+            words=[
+                Word(text="one", start_time=10.0, end_time=10.4),
+                Word(text="two", start_time=10.4, end_time=10.8),
+                Word(text="three", start_time=10.8, end_time=11.2),
+            ]
+        )
+    ]
+    aligned = [
+        Line(
+            words=[
+                Word(text="one", start_time=10.0, end_time=10.05),
+                Word(text="two", start_time=10.05, end_time=10.1),
+                Word(text="three", start_time=10.1, end_time=10.15),
+            ]
+        )
+    ]
+
+    repaired, restored = wib._restore_implausibly_short_lines(baseline, aligned)
+
+    assert restored == 1
+    assert repaired[0].start_time == pytest.approx(baseline[0].start_time)
+    assert repaired[0].end_time == pytest.approx(baseline[0].end_time)
+
+
+def test_restore_implausibly_short_lines_keeps_legitimate_short_baseline():
+    baseline = [
+        Line(
+            words=[
+                Word(text="a", start_time=1.0, end_time=1.03),
+                Word(text="b", start_time=1.03, end_time=1.06),
+                Word(text="c", start_time=1.06, end_time=1.09),
+            ]
+        )
+    ]
+    aligned = [
+        Line(
+            words=[
+                Word(text="a", start_time=2.0, end_time=2.03),
+                Word(text="b", start_time=2.03, end_time=2.06),
+                Word(text="c", start_time=2.06, end_time=2.09),
+            ]
+        )
+    ]
+
+    repaired, restored = wib._restore_implausibly_short_lines(baseline, aligned)
+
+    assert restored == 0
+    assert repaired[0].start_time == pytest.approx(aligned[0].start_time)

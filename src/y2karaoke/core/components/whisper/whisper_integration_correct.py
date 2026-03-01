@@ -44,6 +44,7 @@ def correct_timing_with_whisper_impl(  # noqa: C901
     finalize_whisper_line_set_fn: Callable[..., Any],
     constrain_line_starts_to_baseline_fn: Callable[..., Any],
     should_rollback_short_line_degradation_fn: Callable[..., Any],
+    restore_implausibly_short_lines_fn: Callable[..., Any],
     clone_lines_for_fallback_fn: Callable[..., Any],
     logger,
     merge_first_two_lines_if_segment_matches_fn: Callable[..., Any],
@@ -93,6 +94,24 @@ def correct_timing_with_whisper_impl(  # noqa: C901
             rollback, short_before, short_after = (
                 should_rollback_short_line_degradation_fn(baseline_lines, aligned_lines)
             )
+            if rollback:
+                repaired_lines, restored_count = restore_implausibly_short_lines_fn(
+                    baseline_lines, aligned_lines
+                )
+                repaired_rollback, _, repaired_after = (
+                    should_rollback_short_line_degradation_fn(
+                        baseline_lines, repaired_lines
+                    )
+                )
+                if restored_count > 0 and not repaired_rollback:
+                    logger.info(
+                        "Kept WhisperX forced alignment after restoring %d short baseline line(s) (%d -> %d)",
+                        restored_count,
+                        short_after,
+                        repaired_after,
+                    )
+                    aligned_lines = repaired_lines
+                    rollback = False
             if not rollback:
                 return (
                     aligned_lines,
@@ -260,15 +279,33 @@ def correct_timing_with_whisper_impl(  # noqa: C901
         baseline_lines, aligned_lines
     )
     if rollback:
-        logger.warning(
-            "Rolling back Whisper corrections: implausibly short multi-word lines worsened (%d -> %d)",
-            short_before,
-            short_after,
+        repaired_lines, restored_count = restore_implausibly_short_lines_fn(
+            baseline_lines, aligned_lines
         )
-        alignments.append(
-            "Rolled back Whisper timing due to short-line compression artifacts"
+        repaired_rollback, _, repaired_after = (
+            should_rollback_short_line_degradation_fn(baseline_lines, repaired_lines)
         )
-        aligned_lines = baseline_lines
+        if restored_count > 0 and not repaired_rollback:
+            logger.info(
+                "Recovered Whisper corrections by restoring %d short baseline line(s) (%d -> %d)",
+                restored_count,
+                short_after,
+                repaired_after,
+            )
+            alignments.append(
+                f"Restored {restored_count} short compressed lines from baseline timing"
+            )
+            aligned_lines = repaired_lines
+        else:
+            logger.warning(
+                "Rolling back Whisper corrections: implausibly short multi-word lines worsened (%d -> %d)",
+                short_before,
+                short_after,
+            )
+            alignments.append(
+                "Rolled back Whisper timing due to short-line compression artifacts"
+            )
+            aligned_lines = baseline_lines
 
     if alignments:
         logger.info("Whisper hybrid alignment: %d lines corrected", len(alignments))

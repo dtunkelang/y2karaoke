@@ -59,6 +59,7 @@ def align_lrc_text_to_whisper_timings_impl(  # noqa: C901
     run_mapped_line_postpasses_fn: Callable[..., Any],
     constrain_line_starts_to_baseline_fn: Callable[..., Any],
     should_rollback_short_line_degradation_fn: Callable[..., Any],
+    restore_implausibly_short_lines_fn: Callable[..., Any],
     clone_lines_for_fallback_fn: Callable[..., Any],
     filter_low_confidence_whisper_words_fn: Callable[..., Any],
     min_segment_overlap_coverage: float,
@@ -95,6 +96,24 @@ def align_lrc_text_to_whisper_timings_impl(  # noqa: C901
             rollback, short_before, short_after = (
                 should_rollback_short_line_degradation_fn(baseline_lines, forced_lines)
             )
+            if rollback:
+                repaired_lines, restored_count = restore_implausibly_short_lines_fn(
+                    baseline_lines, forced_lines
+                )
+                repaired_rollback, _, repaired_after = (
+                    should_rollback_short_line_degradation_fn(
+                        baseline_lines, repaired_lines
+                    )
+                )
+                if restored_count > 0 and not repaired_rollback:
+                    logger.info(
+                        "Kept WhisperX forced alignment after restoring %d short baseline line(s) (%d -> %d)",
+                        restored_count,
+                        short_after,
+                        repaired_after,
+                    )
+                    forced_lines = repaired_lines
+                    rollback = False
             if not rollback:
                 forced_payload: Dict[str, Any] = {
                     "matched_ratio": float(
@@ -301,6 +320,23 @@ def align_lrc_text_to_whisper_timings_impl(  # noqa: C901
         baseline_lines, mapped_lines
     )
     if rollback:
+        repaired_lines, restored_count = restore_implausibly_short_lines_fn(
+            baseline_lines, mapped_lines
+        )
+        repaired_rollback, _, repaired_after = (
+            should_rollback_short_line_degradation_fn(baseline_lines, repaired_lines)
+        )
+        if restored_count > 0 and not repaired_rollback:
+            logger.info(
+                "Recovered Whisper map by restoring %d short baseline line(s) (%d -> %d)",
+                restored_count,
+                short_after,
+                repaired_after,
+            )
+            corrections.append(
+                f"Restored {restored_count} short compressed lines from baseline timing"
+            )
+            return repaired_lines, corrections, metrics
         logger.warning(
             "Rolling back Whisper map: implausibly short multi-word lines worsened (%d -> %d)",
             short_before,

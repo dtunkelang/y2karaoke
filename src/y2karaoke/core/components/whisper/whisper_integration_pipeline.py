@@ -8,6 +8,7 @@ from .whisper_integration_baseline import (
     _clone_lines_for_fallback as _clone_lines_for_fallback_impl,
     _constrain_line_starts_to_baseline as _constrain_line_starts_to_baseline_impl,
     _implausibly_short_multiword_count as _implausibly_short_multiword_count_impl,
+    _restore_implausibly_short_lines as _restore_implausibly_short_lines_impl,
     _should_rollback_short_line_degradation as _should_rollback_short_line_degradation_impl,
 )
 from .whisper_integration_filters import (
@@ -47,6 +48,13 @@ def _should_rollback_short_line_degradation(
     aligned_lines: List[models.Line],
 ) -> Tuple[bool, int, int]:
     return _should_rollback_short_line_degradation_impl(original_lines, aligned_lines)
+
+
+def _restore_implausibly_short_lines(
+    original_lines: List[models.Line],
+    aligned_lines: List[models.Line],
+) -> Tuple[List[models.Line], int]:
+    return _restore_implausibly_short_lines_impl(original_lines, aligned_lines)
 
 
 def _constrain_line_starts_to_baseline(
@@ -247,6 +255,7 @@ def align_lrc_text_to_whisper_timings_impl(  # noqa: C901
         run_mapped_line_postpasses_fn=_run_mapped_line_postpasses,
         constrain_line_starts_to_baseline_fn=_constrain_line_starts_to_baseline,
         should_rollback_short_line_degradation_fn=_should_rollback_short_line_degradation,
+        restore_implausibly_short_lines_fn=_restore_implausibly_short_lines,
         clone_lines_for_fallback_fn=_clone_lines_for_fallback,
         filter_low_confidence_whisper_words_fn=_filter_low_confidence_whisper_words,
         min_segment_overlap_coverage=_MIN_SEGMENT_OVERLAP_COVERAGE,
@@ -323,6 +332,7 @@ def correct_timing_with_whisper_impl(  # noqa: C901
         finalize_whisper_line_set_fn=_finalize_whisper_line_set,
         constrain_line_starts_to_baseline_fn=_constrain_line_starts_to_baseline,
         should_rollback_short_line_degradation_fn=_should_rollback_short_line_degradation,
+        restore_implausibly_short_lines_fn=_restore_implausibly_short_lines,
         clone_lines_for_fallback_fn=_clone_lines_for_fallback,
         logger=logger,
         merge_first_two_lines_if_segment_matches_fn=merge_first_two_lines_if_segment_matches_fn,
