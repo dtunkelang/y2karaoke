@@ -87,6 +87,53 @@ def _should_rollback_short_line_degradation(
     return should_rollback, before, after
 
 
+def _has_start_inversion(lines: List[models.Line], tolerance: float = 0.01) -> bool:
+    prev_start: float | None = None
+    for line in lines:
+        if not line.words:
+            continue
+        if prev_start is not None and line.start_time < prev_start - tolerance:
+            return True
+        prev_start = line.start_time
+    return False
+
+
+def _copy_line(line: models.Line) -> models.Line:
+    return _clone_lines_for_fallback([line])[0]
+
+
+def _find_next_baseline_start(
+    baseline_lines: List[models.Line], start_idx: int
+) -> float | None:
+    for nxt in baseline_lines[start_idx:]:
+        if nxt.words:
+            return nxt.start_time
+    return None
+
+
+def _compress_line_to_fit(
+    line: models.Line, target_start: float, next_start: float, min_gap: float
+) -> models.Line:
+    available = max(0.1, (next_start - min_gap) - target_start)
+    current = max(0.1, line.end_time - target_start)
+    scale = min(1.0, available / current)
+    compressed_words = []
+    for word in line.words:
+        ws = target_start + (word.start_time - target_start) * scale
+        we = target_start + (word.end_time - target_start) * scale
+        if we < ws:
+            we = ws
+        compressed_words.append(
+            models.Word(
+                text=word.text,
+                start_time=ws,
+                end_time=we,
+                singer=word.singer,
+            )
+        )
+    return models.Line(words=compressed_words, singer=line.singer)
+
+
 def _constrain_line_starts_to_baseline(
     mapped_lines: List[models.Line],
     baseline_lines: List[models.Line],
@@ -97,6 +144,7 @@ def _constrain_line_starts_to_baseline(
     """Force mapped line starts to baseline (LRC) starts while preserving within-line shape."""
     constrained: List[models.Line] = []
     prev_output_start: float | None = None
+    unstable_sequence = _has_start_inversion(mapped_lines)
     for idx, line in enumerate(mapped_lines):
         if idx >= len(baseline_lines) or not line.words:
             constrained.append(line)
@@ -114,6 +162,13 @@ def _constrain_line_starts_to_baseline(
         target_start = baseline.start_time
         shift = target_start - line.start_time
         if abs(shift) > max_shift_sec:
+            if unstable_sequence and (
+                prev_output_start is None
+                or target_start >= (prev_output_start + min_gap)
+            ):
+                constrained.append(_copy_line(baseline))
+                prev_output_start = target_start
+                continue
             constrained.append(line)
             prev_output_start = line.start_time
             continue
@@ -134,33 +189,14 @@ def _constrain_line_starts_to_baseline(
         ]
         shifted_line = models.Line(words=shifted_words, singer=line.singer)
 
-        next_baseline_start = None
-        for nxt in baseline_lines[idx + 1 :]:
-            if nxt.words:
-                next_baseline_start = nxt.start_time
-                break
+        next_baseline_start = _find_next_baseline_start(baseline_lines, idx + 1)
 
         if next_baseline_start is not None and shifted_line.end_time > (
             next_baseline_start - min_gap
         ):
-            available = max(0.1, (next_baseline_start - min_gap) - target_start)
-            current = max(0.1, shifted_line.end_time - target_start)
-            scale = min(1.0, available / current)
-            compressed_words = []
-            for w in shifted_line.words:
-                ws = target_start + (w.start_time - target_start) * scale
-                we = target_start + (w.end_time - target_start) * scale
-                if we < ws:
-                    we = ws
-                compressed_words.append(
-                    models.Word(
-                        text=w.text,
-                        start_time=ws,
-                        end_time=we,
-                        singer=w.singer,
-                    )
-                )
-            shifted_line = models.Line(words=compressed_words, singer=line.singer)
+            shifted_line = _compress_line_to_fit(
+                shifted_line, target_start, next_baseline_start, min_gap
+            )
 
         constrained.append(shifted_line)
         prev_output_start = shifted_line.start_time

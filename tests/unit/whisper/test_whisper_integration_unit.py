@@ -805,6 +805,24 @@ def test_constrain_line_starts_to_baseline_skips_large_shift():
     assert constrained[0].end_time == pytest.approx(21.5)
 
 
+def test_constrain_line_starts_to_baseline_reverts_large_shift_when_unstable():
+    mapped = [
+        Line(words=[Word(text="a", start_time=166.78, end_time=167.5)]),
+        Line(words=[Word(text="b", start_time=151.42, end_time=152.2)]),
+    ]
+    baseline = [
+        Line(words=[Word(text="a", start_time=149.10, end_time=149.8)]),
+        Line(words=[Word(text="b", start_time=151.04, end_time=151.8)]),
+    ]
+
+    constrained = wib._constrain_line_starts_to_baseline(
+        mapped, baseline, max_shift_sec=2.5
+    )
+
+    assert constrained[0].start_time == pytest.approx(149.10)
+    assert constrained[1].start_time == pytest.approx(151.04)
+
+
 def test_constrain_line_starts_to_baseline_applies_small_shift():
     mapped = [
         Line(words=[Word(text="hello", start_time=10.0, end_time=11.0)]),
