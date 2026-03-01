@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
+from ....utils.lex_lookup_installer import ensure_local_lex_lookup
 from ... import models, phonetic_utils
 from ..alignment import timing_models
 from .whisper_forced_alignment import align_lines_with_whisperx
@@ -71,6 +72,7 @@ def correct_timing_with_whisper_impl(  # noqa: C901
 ) -> Tuple[List[models.Line], List[str], Dict[str, float]]:
     """Correct lyric timing by combining quality gates and Whisper alignments."""
     baseline_lines = clone_lines_for_fallback_fn(lines)
+    ensure_local_lex_lookup()
     transcription, all_words, detected_lang, _model = transcribe_vocals_fn(
         vocals_path, language, model_size, aggressive, temperature
     )
