@@ -179,6 +179,33 @@ def test_apply_whisper_with_quality_handles_error(monkeypatch):
     assert any("Whisper alignment failed" in issue for issue in report["issues"])
 
 
+def test_apply_whisper_with_quality_marks_no_evidence_fallback_as_lrc_only():
+    lines = [_make_line("hello", 0.0, 0.5)]
+    report = {"alignment_method": "onset_refined", "issues": []}
+
+    with lw.use_lyrics_whisper_hooks(
+        apply_whisper_alignment_fn=lambda *args, **kwargs: (
+            lines,
+            ["rolled back"],
+            {"no_evidence_fallback": 1.0},
+        )
+    ):
+        updated, report = lw._apply_whisper_with_quality(
+            lines,
+            vocals_path="vocals.wav",
+            whisper_language="en",
+            whisper_model="base",
+            whisper_force_dtw=False,
+            quality_report=report,
+        )
+
+    assert updated is lines
+    assert report["alignment_method"] == "lrc_only"
+    assert report["whisper_used"] is False
+    assert report["whisper_corrections"] == 0
+    assert report["dtw_metrics"]["no_evidence_fallback"] == 1.0
+
+
 def test_fetch_genius_with_quality_tracking_no_lrc(monkeypatch):
     monkeypatch.setattr(
         "y2karaoke.core.components.lyrics.genius.fetch_genius_lyrics_with_singers",

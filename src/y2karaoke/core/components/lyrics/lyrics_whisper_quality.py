@@ -524,11 +524,20 @@ def _apply_whisper_with_quality(
             lenient_activity_bonus=lenient_activity_bonus,
             low_word_confidence_threshold=low_word_confidence_threshold,
         )
-        quality_report["whisper_used"] = True
-        quality_report["whisper_corrections"] = len(whisper_fixes)
+        no_evidence_fallback = bool(
+            float(whisper_metrics.get("no_evidence_fallback", 0.0))
+            if whisper_metrics
+            else 0.0
+        )
+        quality_report["whisper_used"] = not no_evidence_fallback
+        quality_report["whisper_corrections"] = (
+            0 if no_evidence_fallback else len(whisper_fixes)
+        )
         if whisper_metrics:
             quality_report["dtw_metrics"] = whisper_metrics
-        if whisper_fixes:
+        if no_evidence_fallback:
+            quality_report["alignment_method"] = "lrc_only"
+        elif whisper_fixes:
             quality_report["alignment_method"] = "whisper_hybrid"
     except Exception as e:
         logger.warning(f"Whisper alignment failed: {e}")
