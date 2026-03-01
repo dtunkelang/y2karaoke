@@ -21,6 +21,55 @@ def _line_set_end(lines: List[models.Line]) -> float:
     return end_time
 
 
+def _count_non_vocal_words_near_time(
+    words: List[timing_models.TranscriptionWord],
+    center_time: float,
+    *,
+    window_sec: float = 1.0,
+) -> int:
+    lo = center_time - window_sec
+    hi = center_time + window_sec
+    count = 0
+    for word in words:
+        if word.text == "[VOCAL]":
+            continue
+        if lo <= word.start <= hi:
+            count += 1
+    return count
+
+
+def _restore_weak_evidence_large_start_shifts(
+    mapped_lines: List[models.Line],
+    baseline_lines: List[models.Line],
+    whisper_words: List[timing_models.TranscriptionWord],
+    *,
+    min_shift_sec: float = 1.1,
+    min_support_words: int = 3,
+    support_window_sec: float = 1.0,
+) -> Tuple[List[models.Line], int]:
+    repaired = list(mapped_lines)
+    restored = 0
+    limit = min(len(mapped_lines), len(baseline_lines))
+    for idx in range(limit):
+        mapped = repaired[idx]
+        base = baseline_lines[idx]
+        if not mapped.words or not base.words:
+            continue
+        shift = mapped.start_time - base.start_time
+        if shift < min_shift_sec:
+            continue
+        support = _count_non_vocal_words_near_time(
+            whisper_words,
+            mapped.start_time,
+            window_sec=support_window_sec,
+        )
+        if support >= min_support_words:
+            continue
+        repaired[idx] = base
+        restored += 1
+    return repaired, restored
+
+
 def align_lrc_text_to_whisper_timings_impl(  # noqa: C901
     lines: List[models.Line],
     vocals_path: str,
@@ -314,6 +363,15 @@ def align_lrc_text_to_whisper_timings_impl(  # noqa: C901
     except TypeError:
         mapped_lines = snap_first_word_to_whisper_onset_fn(mapped_lines, all_words)
     mapped_lines = constrain_line_starts_to_baseline_fn(mapped_lines, baseline_lines)
+    mapped_lines, restored_weak = _restore_weak_evidence_large_start_shifts(
+        mapped_lines,
+        baseline_lines,
+        all_words,
+    )
+    if restored_weak:
+        corrections.append(
+            f"Restored {restored_weak} weak-evidence large start shift line(s) to baseline"
+        )
 
     metrics: Dict[str, Any] = {
         "matched_ratio": matched_ratio,
