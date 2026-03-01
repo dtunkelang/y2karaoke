@@ -281,12 +281,37 @@ def correct_timing_with_whisper_impl(  # noqa: C901
     baseline_end = _line_set_end(baseline_lines)
     baseline_timeline_ratio = baseline_end / whisper_end if whisper_end > 0.0 else 1.0
     matched_ratio = float(metrics.get("matched_ratio", 0.0) or 0.0)
+    avg_similarity = float(metrics.get("avg_similarity", 0.0) or 0.0)
     line_coverage = float(metrics.get("line_coverage", 0.0) or 0.0)
     aligned_end = _line_set_end(aligned_lines)
     aligned_timeline_ratio = aligned_end / whisper_end if whisper_end > 0.0 else 1.0
     aligned_lines = constrain_line_starts_to_baseline_fn(aligned_lines, baseline_lines)
     metrics["baseline_timeline_ratio"] = baseline_timeline_ratio
     metrics["aligned_timeline_ratio"] = aligned_timeline_ratio
+
+    no_whisper_evidence = (
+        quality < 0.4
+        and not force_dtw
+        and float(metrics.get("whisperx_forced", 0.0) or 0.0) < 0.5
+        and matched_ratio < 0.05
+        and line_coverage < 0.05
+        and avg_similarity < 0.1
+    )
+    if no_whisper_evidence:
+        logger.warning(
+            (
+                "Rolling back Whisper corrections: insufficient DTW evidence "
+                "(matched=%.2f line_coverage=%.2f avg_similarity=%.2f)"
+            ),
+            matched_ratio,
+            line_coverage,
+            avg_similarity,
+        )
+        alignments.append(
+            "Rolled back Whisper timing due to insufficient DTW alignment evidence"
+        )
+        aligned_lines = baseline_lines
+        metrics["no_evidence_fallback"] = 1.0
 
     rollback, short_before, short_after = should_rollback_short_line_degradation_fn(
         baseline_lines, aligned_lines

@@ -318,6 +318,46 @@ def test_correct_timing_with_whisper_uses_whisperx_when_sparse(monkeypatch):
     )
 
 
+def test_correct_timing_with_whisper_rolls_back_when_dtw_has_no_evidence():
+    lines = [Line(words=[Word(text="hello", start_time=10.0, end_time=11.0)])]
+    words = [
+        te.TranscriptionWord(
+            start=10.0 + 0.1 * i, end=10.05 + 0.1 * i, text=f"w{i}", probability=0.9
+        )
+        for i in range(81)
+    ]
+    segments = [
+        te.TranscriptionSegment(
+            start=10.0 + 2.0 * i,
+            end=12.0 + 2.0 * i,
+            text=f"s{i}",
+            words=words[i * 16 : (i + 1) * 16],
+        )
+        for i in range(5)
+    ]
+    misaligned = [Line(words=[Word(text="hello", start_time=35.0, end_time=36.0)])]
+
+    with wi.use_whisper_integration_hooks(
+        transcribe_vocals_fn=lambda *_: (segments, words, "en", "base"),
+        extract_audio_features_fn=lambda *_: None,
+        assess_lrc_quality_fn=lambda *_a, **_k: (0.2, []),
+        align_dtw_whisper_with_data_fn=lambda *_a, **_k: (
+            misaligned,
+            ["dtw-shifted"],
+            {"matched_ratio": 0.0, "avg_similarity": 0.0, "line_coverage": 0.0},
+            [],
+            {},
+        ),
+    ):
+        aligned, corrections, metrics = te.correct_timing_with_whisper(
+            lines, "vocals.wav"
+        )
+
+    assert aligned[0].start_time == pytest.approx(lines[0].start_time)
+    assert metrics["no_evidence_fallback"] == 1.0
+    assert any("insufficient DTW alignment evidence" in c for c in corrections)
+
+
 def test_align_lrc_text_pipeline_enforces_monotonic_non_overlapping_invariants():
     lines = [
         Line(words=[Word(text="a", start_time=10.0, end_time=11.0)]),
