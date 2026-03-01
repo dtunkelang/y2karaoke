@@ -820,3 +820,40 @@ def test_infer_cache_decisions_uses_logged_cache_hits():
     assert decisions["audio"].startswith("hit")
     assert decisions["separation"].startswith("hit")
     assert decisions["whisper"].startswith("hit")
+
+
+def test_infer_reference_divergence_without_gold_uses_anchor_vs_dtw_signal():
+    module = _load_module()
+    result = module._infer_reference_divergence_suspicion(
+        {
+            "gold_available": False,
+            "line_count": 76,
+            "dtw_line_coverage": 0.447,
+            "dtw_word_coverage": 0.353,
+            "agreement_coverage_ratio": 0.0789,
+            "agreement_text_similarity_mean": 0.9414,
+            "agreement_start_p95_abs_sec": 0.9675,
+            "low_confidence_ratio": 0.0132,
+        }
+    )
+    assert result["suspected"] is True
+    assert result["confidence"] == "medium"
+    assert "low_dtw_with_strong_anchor_agreement" in result["evidence"]
+
+
+def test_infer_reference_divergence_without_gold_stays_false_when_signals_weak():
+    module = _load_module()
+    result = module._infer_reference_divergence_suspicion(
+        {
+            "gold_available": False,
+            "line_count": 76,
+            "dtw_line_coverage": 0.447,
+            "dtw_word_coverage": 0.353,
+            "agreement_coverage_ratio": 0.02,
+            "agreement_text_similarity_mean": 0.7,
+            "agreement_start_p95_abs_sec": 3.2,
+            "low_confidence_ratio": 0.22,
+        }
+    )
+    assert result["suspected"] is False
+    assert result["evidence"] == ["no_gold_reference"]

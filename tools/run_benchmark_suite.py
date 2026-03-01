@@ -807,31 +807,64 @@ def _extract_lexical_mismatch_diagnostics(
 def _infer_reference_divergence_suspicion(metrics: dict[str, Any]) -> dict[str, Any]:
     if not isinstance(metrics, dict):
         return {"suspected": False, "score": 0.0, "confidence": "low", "evidence": []}
-    if not bool(metrics.get("gold_available")):
-        return {
-            "suspected": False,
-            "score": 0.0,
-            "confidence": "low",
-            "evidence": ["no_gold_reference"],
-        }
 
     def _f(key: str) -> float:
         v = metrics.get(key)
         return float(v) if isinstance(v, (int, float)) else 0.0
 
     line_count = int(metrics.get("line_count", 0) or 0)
+    dtw_line_cov = _f("dtw_line_coverage")
+    dtw_word_cov = _f("dtw_word_coverage")
+    agree_cov = _f("agreement_coverage_ratio")
+    agree_sim = _f("agreement_text_similarity_mean")
+    agree_p95 = _f("agreement_start_p95_abs_sec")
+    low_conf = _f("low_confidence_ratio")
+
+    if not bool(metrics.get("gold_available")):
+        # No-gold fallback: if line-level agreement anchors are strong while
+        # word-level DTW coverage is persistently weak, likely reference/lyrics
+        # lexical divergence rather than pure timing failure.
+        no_gold_suspected = (
+            line_count >= 40
+            and dtw_line_cov <= 0.6
+            and dtw_word_cov <= 0.45
+            and agree_cov >= 0.07
+            and agree_sim >= 0.9
+            and agree_p95 <= 1.2
+            and low_conf <= 0.08
+        )
+        if no_gold_suspected:
+            return {
+                "suspected": True,
+                "score": 1.75,
+                "confidence": "medium",
+                "evidence": [
+                    "no_gold_reference",
+                    "low_dtw_with_strong_anchor_agreement",
+                ],
+                "signals": {
+                    "dtw_line_coverage": round(dtw_line_cov, 4),
+                    "dtw_word_coverage": round(dtw_word_cov, 4),
+                    "agreement_coverage_ratio": round(agree_cov, 4),
+                    "agreement_text_similarity_mean": round(agree_sim, 4),
+                    "agreement_start_p95_abs_sec": round(agree_p95, 4),
+                    "low_confidence_ratio": round(low_conf, 4),
+                    "line_count": line_count,
+                },
+            }
+        return {
+            "suspected": False,
+            "score": 0.0,
+            "confidence": "low",
+            "evidence": ["no_gold_reference"],
+        }
     score = 0.0
     evidence: list[str] = []
 
     gold_cov = _f("gold_word_coverage_ratio")
     gold_start_mean = _f("gold_start_mean_abs_sec")
     gold_start_p95 = _f("gold_start_p95_abs_sec")
-    dtw_line_cov = _f("dtw_line_coverage")
-    dtw_word_cov = _f("dtw_word_coverage")
-    agree_cov = _f("agreement_coverage_ratio")
-    agree_sim = _f("agreement_text_similarity_mean")
     agree_bad = _f("agreement_bad_ratio")
-    low_conf = _f("low_confidence_ratio")
     comparable_words = int(metrics.get("gold_comparable_word_count", 0) or 0)
 
     if comparable_words < 20 or line_count < 10:
