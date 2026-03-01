@@ -80,7 +80,6 @@ def align_lrc_text_to_whisper_timings_impl(  # noqa: C901
     if not audio_features:
         audio_features = extract_audio_features_fn(vocals_path)
     transcription = dedupe_whisper_segments_fn(transcription)
-    transcription = dedupe_whisper_segments_fn(transcription)
 
     line_texts = [line.text for line in lines if line.text.strip()]
     transcription, all_words, trimmed_end = trim_whisper_transcription_by_lyrics_fn(
