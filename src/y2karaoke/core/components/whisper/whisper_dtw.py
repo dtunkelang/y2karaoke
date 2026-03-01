@@ -73,7 +73,11 @@ def _load_fastdtw():
 
 
 def _dtw_fallback_path(
-    lrc_seq: np.ndarray, whisper_seq: np.ndarray, dist: Callable[..., float]
+    lrc_seq: np.ndarray,
+    whisper_seq: np.ndarray,
+    dist: Callable[..., float],
+    *,
+    window: Optional[int] = None,
 ) -> Tuple[float, List[Tuple[int, int]]]:
     """Compute an exact DTW path when fastdtw is unavailable."""
     m = int(lrc_seq.shape[0])
@@ -87,7 +91,13 @@ def _dtw_fallback_path(
 
     for i in range(1, m + 1):
         a = lrc_seq[i - 1]
-        for j in range(1, n + 1):
+        j_lo = 1
+        j_hi = n
+        if window is not None:
+            center = int(round((i - 1) * (n / max(m, 1)))) + 1
+            j_lo = max(1, center - window)
+            j_hi = min(n, center + window)
+        for j in range(j_lo, j_hi + 1):
             b = whisper_seq[j - 1]
             step_cost = float(dist(a, b))
             diag = costs[i - 1, j - 1]
@@ -121,6 +131,28 @@ def _dtw_fallback_path(
 
     path.reverse()
     return float(costs[m, n]), path
+
+
+def _dtw_fallback_with_runtime_guard(
+    lrc_seq: np.ndarray, whisper_seq: np.ndarray, dist: Callable[..., float]
+) -> Tuple[float, List[Tuple[int, int]]]:
+    m = int(lrc_seq.shape[0])
+    n = int(whisper_seq.shape[0])
+    cell_budget = m * n
+    if cell_budget <= 250_000:
+        return _dtw_fallback_path(lrc_seq, whisper_seq, dist)
+
+    window = max(96, abs(n - m) + 96)
+    logger.info("Using banded exact DTW fallback (m=%d, n=%d, window=%d)", m, n, window)
+    distance, path = _dtw_fallback_path(lrc_seq, whisper_seq, dist, window=window)
+    if np.isfinite(distance):
+        return distance, path
+
+    logger.warning(
+        "Banded exact DTW fallback found no path (window=%d); retrying full exact DTW",
+        window,
+    )
+    return _dtw_fallback_path(lrc_seq, whisper_seq, dist)
 
 
 def _empty_dtw_metrics() -> Dict[str, float]:
@@ -293,31 +325,31 @@ def align_dtw_whisper_base(
     phonetic_costs = _compute_phonetic_costs_base(
         lrc_words, whisper_words, language, min_similarity
     )
+    lrc_times = np.array([lw["start"] for lw in lrc_words])
+    whisper_times = np.array([ww.start for ww in whisper_words])
+    lrc_seq = np.column_stack([np.arange(len(lrc_words)), lrc_times])
+    whisper_seq = np.column_stack([np.arange(len(whisper_words)), whisper_times])
+
+    def dtw_dist(a, b):
+        i, lrc_t = int(a[0]), a[1]
+        j, whisper_t = int(b[0]), b[1]
+        phon_cost = phonetic_costs[(i, j)]
+        time_diff = abs(whisper_t - lrc_t)
+        time_penalty = min(time_diff / 20.0, 1.0)
+        return 0.7 * phon_cost + 0.3 * time_penalty
 
     # Run DTW
     logger.debug("DTW: Running alignment...")
     try:
         fastdtw = _load_fastdtw_for_state()
 
-        lrc_times = np.array([lw["start"] for lw in lrc_words])
-        whisper_times = np.array([ww.start for ww in whisper_words])
-
-        lrc_seq = np.column_stack([np.arange(len(lrc_words)), lrc_times])
-        whisper_seq = np.column_stack([np.arange(len(whisper_words)), whisper_times])
-
-        def dtw_dist(a, b):
-            i, lrc_t = int(a[0]), a[1]
-            j, whisper_t = int(b[0]), b[1]
-            phon_cost = phonetic_costs[(i, j)]
-            time_diff = abs(whisper_t - lrc_t)
-            time_penalty = min(time_diff / 20.0, 1.0)
-            return 0.7 * phon_cost + 0.3 * time_penalty
-
         _distance, path = fastdtw(lrc_seq, whisper_seq, dist=dtw_dist)
 
     except ImportError:
         logger.warning("fastdtw not available, falling back to exact DTW")
-        _distance, path = _dtw_fallback_path(lrc_seq, whisper_seq, dtw_dist)
+        _distance, path = _dtw_fallback_with_runtime_guard(
+            lrc_seq, whisper_seq, dtw_dist
+        )
 
     alignments_map = _extract_alignments_from_path_base(
         path, lrc_words, whisper_words, language, min_similarity
@@ -488,67 +520,67 @@ def _align_dtw_whisper_with_data(
     phonetic_costs = whisper_phonetic_dtw._compute_phonetic_costs(
         lrc_words, whisper_words, language, min_similarity
     )
+    lrc_times = np.array([lw["start"] for lw in lrc_words])
+    whisper_times = np.array([ww.start for ww in whisper_words])
+    lrc_seq = np.column_stack([np.arange(len(lrc_words)), lrc_times])
+    whisper_seq = np.column_stack([np.arange(len(whisper_words)), whisper_times])
+    use_silence = silence_regions or []
+
+    def dtw_dist(a, b):
+        i, lrc_t = int(a[0]), a[1]
+        j, whisper_t = int(b[0]), b[1]
+        phon_cost = phonetic_costs[(i, j)]
+
+        # Leniency mechanism: if Whisper word has low confidence but there is vocal activity,
+        # be more lenient about phonetic mismatch.
+        if (
+            audio_features
+            and whisper_words[j].probability < low_word_confidence_threshold
+        ):
+            # Check activity around the whisper word
+            w_start = whisper_words[j].start
+            w_end = whisper_words[j].end
+            vocal_activity = _check_vocal_activity_in_range(
+                w_start, w_end, audio_features
+            )
+            if vocal_activity > lenient_vocal_activity_threshold:
+                phon_cost = max(0.0, phon_cost - lenient_activity_bonus)
+
+        time_diff = abs(whisper_t - lrc_t)
+        time_penalty = min(time_diff / 20.0, 1.0)
+        gap_start = min(lrc_t, whisper_t)
+        gap_end = max(lrc_t, whisper_t)
+        silence_overlap = _compute_silence_overlap(gap_start, gap_end, use_silence)
+        silence_penalty = min(silence_overlap / 2.0, 1.0)
+        if _is_time_in_silence(whisper_t, use_silence):
+            silence_penalty = max(silence_penalty, 0.8)
+        activity_penalty = 0.0
+        if audio_features and gap_end - gap_start > 0.5:
+            activity = _check_vocal_activity_in_range(
+                gap_start, gap_end, audio_features
+            )
+            non_silent = max(gap_end - gap_start - silence_overlap, 0.0)
+            if activity > 0.5 and non_silent > 0.5:
+                activity_penalty = min(activity, 1.0)
+        return (
+            0.5 * phon_cost
+            + 0.2 * time_penalty
+            + 0.2 * silence_penalty
+            + 0.1 * activity_penalty
+        )
 
     # Run DTW
     logger.debug("DTW: Running alignment...")
-    use_silence = silence_regions or []
     try:
         fastdtw = _load_fastdtw_for_state()
-
-        lrc_times = np.array([lw["start"] for lw in lrc_words])
-        whisper_times = np.array([ww.start for ww in whisper_words])
-
-        lrc_seq = np.column_stack([np.arange(len(lrc_words)), lrc_times])
-        whisper_seq = np.column_stack([np.arange(len(whisper_words)), whisper_times])
-
-        def dtw_dist(a, b):
-            i, lrc_t = int(a[0]), a[1]
-            j, whisper_t = int(b[0]), b[1]
-            phon_cost = phonetic_costs[(i, j)]
-
-            # Leniency mechanism: if Whisper word has low confidence but there is vocal activity,
-            # be more lenient about phonetic mismatch.
-            if (
-                audio_features
-                and whisper_words[j].probability < low_word_confidence_threshold
-            ):
-                # Check activity around the whisper word
-                w_start = whisper_words[j].start
-                w_end = whisper_words[j].end
-                vocal_activity = _check_vocal_activity_in_range(
-                    w_start, w_end, audio_features
-                )
-                if vocal_activity > lenient_vocal_activity_threshold:
-                    phon_cost = max(0.0, phon_cost - lenient_activity_bonus)
-
-            time_diff = abs(whisper_t - lrc_t)
-            time_penalty = min(time_diff / 20.0, 1.0)
-            gap_start = min(lrc_t, whisper_t)
-            gap_end = max(lrc_t, whisper_t)
-            silence_overlap = _compute_silence_overlap(gap_start, gap_end, use_silence)
-            silence_penalty = min(silence_overlap / 2.0, 1.0)
-            if _is_time_in_silence(whisper_t, use_silence):
-                silence_penalty = max(silence_penalty, 0.8)
-            activity_penalty = 0.0
-            if audio_features and gap_end - gap_start > 0.5:
-                activity = _check_vocal_activity_in_range(
-                    gap_start, gap_end, audio_features
-                )
-                non_silent = max(gap_end - gap_start - silence_overlap, 0.0)
-                if activity > 0.5 and non_silent > 0.5:
-                    activity_penalty = min(activity, 1.0)
-            return (
-                0.5 * phon_cost
-                + 0.2 * time_penalty
-                + 0.2 * silence_penalty
-                + 0.1 * activity_penalty
-            )
 
         _distance, path = fastdtw(lrc_seq, whisper_seq, dist=dtw_dist)
 
     except ImportError:
         logger.warning("fastdtw not available, falling back to exact DTW")
-        _distance, path = _dtw_fallback_path(lrc_seq, whisper_seq, dtw_dist)
+        _distance, path = _dtw_fallback_with_runtime_guard(
+            lrc_seq, whisper_seq, dtw_dist
+        )
 
     alignments_map = _extract_alignments_from_path_base(
         path, lrc_words, whisper_words, language, min_similarity
