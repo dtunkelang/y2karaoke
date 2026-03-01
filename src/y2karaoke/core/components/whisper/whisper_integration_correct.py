@@ -298,6 +298,7 @@ def correct_timing_with_whisper_impl(  # noqa: C901
         and avg_similarity < 0.1
     )
     if no_whisper_evidence:
+        discarded = len(alignments)
         logger.warning(
             (
                 "Rolling back Whisper corrections: insufficient DTW evidence "
@@ -307,9 +308,15 @@ def correct_timing_with_whisper_impl(  # noqa: C901
             line_coverage,
             avg_similarity,
         )
-        alignments.append(
-            "Rolled back Whisper timing due to insufficient DTW alignment evidence"
-        )
+        if discarded > 0:
+            alignments = [
+                "Rolled back Whisper timing due to insufficient DTW alignment evidence "
+                f"(discarded {discarded} tentative correction(s))"
+            ]
+        else:
+            alignments = [
+                "Rolled back Whisper timing due to insufficient DTW alignment evidence"
+            ]
         aligned_lines = baseline_lines
         metrics["no_evidence_fallback"] = 1.0
 

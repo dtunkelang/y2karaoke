@@ -355,6 +355,7 @@ def test_correct_timing_with_whisper_rolls_back_when_dtw_has_no_evidence():
 
     assert aligned[0].start_time == pytest.approx(lines[0].start_time)
     assert metrics["no_evidence_fallback"] == 1.0
+    assert len(corrections) == 1
     assert any("insufficient DTW alignment evidence" in c for c in corrections)
 
 
