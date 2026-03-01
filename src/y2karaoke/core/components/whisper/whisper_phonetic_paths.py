@@ -22,6 +22,16 @@ def _compute_phonetic_costs(
 ) -> Dict[Tuple[int, int], float]:
     """Compute sparse phonetic cost matrix for DTW."""
     phonetic_costs = defaultdict(lambda: 1.0)
+    similarity_cache: Dict[Tuple[str, str], float] = {}
+
+    def cached_similarity(left: str, right: str) -> float:
+        key = (left, right)
+        if key in similarity_cache:
+            return similarity_cache[key]
+        sim = phonetic_utils._phonetic_similarity(left, right, language)
+        similarity_cache[key] = sim
+        return sim
+
     for i, lw in enumerate(lrc_words):
         lrc_time = lw["start"]
         for j, ww in enumerate(whisper_words):
@@ -31,7 +41,7 @@ def _compute_phonetic_costs(
             time_diff = abs(ww.start - lrc_time)
             if time_diff > 20:
                 continue
-            sim = phonetic_utils._phonetic_similarity(lw["text"], ww.text, language)
+            sim = cached_similarity(lw["text"], ww.text)
             if sim >= min_similarity:
                 phonetic_costs[(i, j)] = 1.0 - sim
     return phonetic_costs
@@ -45,12 +55,22 @@ def _compute_phonetic_costs_unbounded(
 ) -> Dict[Tuple[int, int], float]:
     """Compute phonetic costs without time-window constraints."""
     phonetic_costs = defaultdict(lambda: 1.0)
+    similarity_cache: Dict[Tuple[str, str], float] = {}
+
+    def cached_similarity(left: str, right: str) -> float:
+        key = (left, right)
+        if key in similarity_cache:
+            return similarity_cache[key]
+        sim = phonetic_utils._phonetic_similarity(left, right, language)
+        similarity_cache[key] = sim
+        return sim
+
     for i, lw in enumerate(lrc_words):
         for j, ww in enumerate(whisper_words):
             if ww.text == "[VOCAL]":
                 phonetic_costs[(i, j)] = 0.5
                 continue
-            sim = phonetic_utils._phonetic_similarity(lw["text"], ww.text, language)
+            sim = cached_similarity(lw["text"], ww.text)
             if sim >= min_similarity:
                 phonetic_costs[(i, j)] = 1.0 - sim
     return phonetic_costs

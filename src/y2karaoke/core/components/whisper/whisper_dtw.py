@@ -195,6 +195,15 @@ def _compute_phonetic_costs_base(
 ) -> Dict[Tuple[int, int], float]:
     """Compute sparse phonetic cost matrix for DTW (base version)."""
     phonetic_costs = defaultdict(lambda: 1.0)  # Default high cost
+    similarity_cache: Dict[Tuple[str, str], float] = {}
+
+    def cached_similarity(left: str, right: str) -> float:
+        key = (left, right)
+        if key in similarity_cache:
+            return similarity_cache[key]
+        sim = _phonetic_similarity_for_state(left, right, language)
+        similarity_cache[key] = sim
+        return sim
 
     for i, lw in enumerate(lrc_words):
         lrc_time = lw["start"]
@@ -204,7 +213,7 @@ def _compute_phonetic_costs_base(
             if time_diff > 20:
                 continue
 
-            sim = _phonetic_similarity_for_state(lw["text"], ww.text, language)
+            sim = cached_similarity(lw["text"], ww.text)
             if sim >= min_similarity:
                 phonetic_costs[(i, j)] = 1.0 - sim
 
