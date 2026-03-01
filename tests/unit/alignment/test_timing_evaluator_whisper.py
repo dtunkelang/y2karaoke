@@ -65,7 +65,7 @@ def test_extract_alignments_from_path_filters_by_similarity(monkeypatch):
     path = [(0, 0)]
     lrc_words = [{"text": "hello", "start": 1.0}]
     whisper_words = [
-        te.TranscriptionWord(start=1.1, end=1.6, text="hello", probability=0.9)
+        te.TranscriptionWord(start=1.1, end=1.6, text="hullo", probability=0.9)
     ]
 
     with w_dtw.use_whisper_dtw_hooks(
@@ -93,21 +93,19 @@ def test_apply_dtw_alignments_shifts_large_offsets():
 
 
 def test_align_dtw_whisper_falls_back_without_fastdtw(monkeypatch):
-    monkeypatch.setattr(
-        w_dtw,
-        "_load_fastdtw",
-        lambda: (_ for _ in ()).throw(ImportError("missing fastdtw")),
-    )
-
     lines = [Line(words=[Word(text="hello", start_time=1.0, end_time=1.5)])]
     words = [te.TranscriptionWord(start=1.1, end=1.6, text="hello", probability=0.9)]
 
-    aligned, corrections, metrics = te.align_dtw_whisper(
-        lines, words, min_similarity=0.1
-    )
+    with w_dtw.use_whisper_dtw_hooks(
+        phonetic_similarity_fn=lambda *_a, **_k: 1.0,
+        load_fastdtw_fn=lambda: (_ for _ in ()).throw(ImportError("missing fastdtw")),
+    ):
+        aligned, corrections, metrics = te.align_dtw_whisper(
+            lines, words, min_similarity=0.1
+        )
     assert len(aligned) == 1
-    # Simple fallback doesn't necessarily shift if fastdtw missing, but should return lines
-    assert metrics["matched_ratio"] >= 0
+    assert metrics["matched_ratio"] > 0.0
+    assert metrics["line_coverage"] > 0.0
 
 
 def test_correct_timing_with_whisper_no_transcription(monkeypatch):

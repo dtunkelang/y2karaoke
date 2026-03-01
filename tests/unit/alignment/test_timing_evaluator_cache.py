@@ -262,9 +262,10 @@ def test_align_dtw_whisper_falls_back_without_fastdtw():
 
     with wi.use_whisper_integration_hooks(get_ipa_fn=lambda *a, **k: None):
         with wdtw.use_whisper_dtw_hooks(
-            load_fastdtw_fn=lambda: (_ for _ in ()).throw(ImportError("no fastdtw"))
+            phonetic_similarity_fn=lambda *_a, **_k: 1.0,
+            load_fastdtw_fn=lambda: (_ for _ in ()).throw(ImportError("no fastdtw")),
         ):
             aligned, corrections, metrics = te.align_dtw_whisper(lines, whisper_words)
-    assert aligned == lines
-    assert corrections == []
-    assert metrics["matched_ratio"] == 0.0
+    assert len(aligned) == 1
+    assert metrics["matched_ratio"] > 0.0
+    assert metrics["line_coverage"] > 0.0

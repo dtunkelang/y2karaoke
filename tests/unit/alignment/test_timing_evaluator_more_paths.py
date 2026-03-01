@@ -34,6 +34,30 @@ def test_align_dtw_whisper_uses_fastdtw():
     assert "exact_match_ratio" in metrics
 
 
+def test_align_dtw_whisper_accepts_exact_text_match_when_phonetics_fail():
+    line = Line(words=[Word(text="hello", start_time=0.0, end_time=0.5)])
+    whisper_words = [
+        te.TranscriptionWord(start=2.0, end=2.5, text="hello", probability=0.9)
+    ]
+
+    def fake_fastdtw(lrc_seq, whisper_seq, dist):
+        _ = dist(lrc_seq[0], whisper_seq[0])
+        return 0.0, [(0, 0)]
+
+    with wi.use_whisper_integration_hooks(get_ipa_fn=lambda *_args, **_kwargs: None):
+        with w_dtw.use_whisper_dtw_hooks(
+            phonetic_similarity_fn=lambda *_a, **_k: 0.0,
+            load_fastdtw_fn=lambda: fake_fastdtw,
+        ):
+            aligned, corrections, metrics = te.align_dtw_whisper(
+                [line], whisper_words, language="eng-Latn", min_similarity=0.4
+            )
+
+    assert aligned[0].words[0].start_time == 2.0
+    assert corrections
+    assert metrics["matched_ratio"] > 0.0
+
+
 def test_print_comparison_report_formats_output(monkeypatch, capsys):
     report_a = te.TimingReport(
         source_name="source-a",

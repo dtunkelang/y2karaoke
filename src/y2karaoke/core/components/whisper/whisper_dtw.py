@@ -72,6 +72,57 @@ def _load_fastdtw():
     return fastdtw
 
 
+def _dtw_fallback_path(
+    lrc_seq: np.ndarray, whisper_seq: np.ndarray, dist: Callable[..., float]
+) -> Tuple[float, List[Tuple[int, int]]]:
+    """Compute an exact DTW path when fastdtw is unavailable."""
+    m = int(lrc_seq.shape[0])
+    n = int(whisper_seq.shape[0])
+    if m == 0 or n == 0:
+        return float("inf"), []
+
+    costs = np.full((m + 1, n + 1), np.inf, dtype=np.float64)
+    prev = np.zeros((m + 1, n + 1), dtype=np.uint8)
+    costs[0, 0] = 0.0
+
+    for i in range(1, m + 1):
+        a = lrc_seq[i - 1]
+        for j in range(1, n + 1):
+            b = whisper_seq[j - 1]
+            step_cost = float(dist(a, b))
+            diag = costs[i - 1, j - 1]
+            up = costs[i - 1, j]
+            left = costs[i, j - 1]
+            best = diag
+            direction = 1  # diagonal
+            if up < best:
+                best = up
+                direction = 2  # up
+            if left < best:
+                best = left
+                direction = 3  # left
+            costs[i, j] = step_cost + best
+            prev[i, j] = direction
+
+    i, j = m, n
+    path: List[Tuple[int, int]] = []
+    while i > 0 and j > 0:
+        path.append((i - 1, j - 1))
+        direction = int(prev[i, j])
+        if direction == 1:
+            i -= 1
+            j -= 1
+        elif direction == 2:
+            i -= 1
+        elif direction == 3:
+            j -= 1
+        else:
+            break
+
+    path.reverse()
+    return float(costs[m, n]), path
+
+
 def _empty_dtw_metrics() -> Dict[str, float]:
     return {
         "matched_ratio": 0.0,
@@ -138,6 +189,9 @@ def _extract_alignments_from_path_base(
     """Extract validated alignments from DTW path (base version)."""
     alignments_map = {}  # lrc_word_idx -> whisper_word
 
+    def _norm_token(text: str) -> str:
+        return "".join(ch for ch in text.lower() if ch.isalnum())
+
     for lrc_idx, whisper_idx in path:
         if lrc_idx not in alignments_map:
             # Only take first match for each LRC word
@@ -145,7 +199,16 @@ def _extract_alignments_from_path_base(
             lw = lrc_words[lrc_idx]
             # Verify it's a reasonable match
             sim = _phonetic_similarity_for_state(lw["text"], ww.text, language)
-            if sim >= min_similarity:
+            lrc_norm = _norm_token(lw["text"])
+            whisper_norm = _norm_token(ww.text)
+            exact_text_match = (
+                bool(lrc_norm)
+                and bool(whisper_norm)
+                and len(lrc_norm) >= 2
+                and len(whisper_norm) >= 2
+                and lrc_norm == whisper_norm
+            )
+            if sim >= min_similarity or exact_text_match:
                 alignments_map[lrc_idx] = (ww, sim)
 
     return alignments_map
@@ -250,11 +313,11 @@ def align_dtw_whisper_base(
             time_penalty = min(time_diff / 20.0, 1.0)
             return 0.7 * phon_cost + 0.3 * time_penalty
 
-        distance, path = fastdtw(lrc_seq, whisper_seq, dist=dtw_dist)
+        _distance, path = fastdtw(lrc_seq, whisper_seq, dist=dtw_dist)
 
     except ImportError:
-        logger.warning("fastdtw not available, falling back to greedy alignment")
-        return lines, []
+        logger.warning("fastdtw not available, falling back to exact DTW")
+        _distance, path = _dtw_fallback_path(lrc_seq, whisper_seq, dtw_dist)
 
     alignments_map = _extract_alignments_from_path_base(
         path, lrc_words, whisper_words, language, min_similarity
@@ -484,14 +547,8 @@ def _align_dtw_whisper_with_data(
         _distance, path = fastdtw(lrc_seq, whisper_seq, dist=dtw_dist)
 
     except ImportError:
-        logger.warning("fastdtw not available, falling back to greedy alignment")
-        return (
-            lines,
-            [],
-            _empty_dtw_metrics(),
-            lrc_words,
-            {},
-        )
+        logger.warning("fastdtw not available, falling back to exact DTW")
+        _distance, path = _dtw_fallback_path(lrc_seq, whisper_seq, dtw_dist)
 
     alignments_map = _extract_alignments_from_path_base(
         path, lrc_words, whisper_words, language, min_similarity
@@ -531,31 +588,25 @@ def align_dtw_whisper(
         lrc_words, whisper_words, language, min_similarity
     )
 
-    # Simple greedy alignment if fastdtw missing
+    lrc_times = np.array([lw["start"] for lw in lrc_words])
+    whisper_times = np.array([ww.start for ww in whisper_words])
+    lrc_seq = np.column_stack([np.arange(len(lrc_words)), lrc_times])
+    whisper_seq = np.column_stack([np.arange(len(whisper_words)), whisper_times])
+
+    def dtw_dist(a, b):
+        i, lrc_t = int(a[0]), a[1]
+        j, whisper_t = int(b[0]), b[1]
+        phon_cost = phonetic_costs[(i, j)]
+        time_diff = abs(whisper_t - lrc_t)
+        time_penalty = min(time_diff / 20.0, 1.0)
+        return 0.7 * phon_cost + 0.3 * time_penalty
+
     try:
         fastdtw = _load_fastdtw_for_state()
-
-        lrc_times = np.array([lw["start"] for lw in lrc_words])
-        whisper_times = np.array([ww.start for ww in whisper_words])
-        lrc_seq = np.column_stack([np.arange(len(lrc_words)), lrc_times])
-        whisper_seq = np.column_stack([np.arange(len(whisper_words)), whisper_times])
-
-        def dtw_dist(a, b):
-            i, lrc_t = int(a[0]), a[1]
-            j, whisper_t = int(b[0]), b[1]
-            phon_cost = phonetic_costs[(i, j)]
-            time_diff = abs(whisper_t - lrc_t)
-            time_penalty = min(time_diff / 20.0, 1.0)
-            return 0.7 * phon_cost + 0.3 * time_penalty
-
         _distance, path = fastdtw(lrc_seq, whisper_seq, dist=dtw_dist)
     except ImportError:
-        logger.warning("fastdtw not available, falling back to greedy alignment")
-        return (
-            lines,
-            [],
-            _empty_dtw_metrics(),
-        )
+        logger.warning("fastdtw not available, falling back to exact DTW")
+        _distance, path = _dtw_fallback_path(lrc_seq, whisper_seq, dtw_dist)
 
     alignments_map = _extract_alignments_from_path_base(
         path, lrc_words, whisper_words, language, min_similarity
