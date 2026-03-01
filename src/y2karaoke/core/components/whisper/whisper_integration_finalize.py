@@ -8,6 +8,54 @@ from ... import models
 from ..alignment import timing_models
 
 
+def _clone_line(line: models.Line) -> models.Line:
+    return models.Line(
+        words=[
+            models.Word(
+                text=w.text,
+                start_time=w.start_time,
+                end_time=w.end_time,
+                singer=w.singer,
+            )
+            for w in line.words
+        ],
+        singer=line.singer,
+    )
+
+
+def _restore_pairwise_inversions_from_source(
+    source_lines: List[models.Line],
+    aligned_lines: List[models.Line],
+    *,
+    min_inversion_gap: float = 1.0,
+    min_ahead_shift: float = 8.0,
+    source_order_tolerance: float = 0.1,
+) -> Tuple[List[models.Line], int]:
+    """Repair local pairwise inversions by restoring obviously over-shifted lines."""
+    if len(aligned_lines) < 2 or len(source_lines) < 2:
+        return aligned_lines, 0
+
+    repaired = list(aligned_lines)
+    restored = 0
+    limit = min(len(source_lines), len(aligned_lines)) - 1
+    for idx in range(limit):
+        curr = repaired[idx]
+        nxt = repaired[idx + 1]
+        src_curr = source_lines[idx]
+        src_next = source_lines[idx + 1]
+        if not curr.words or not nxt.words or not src_curr.words or not src_next.words:
+            continue
+        inversion = curr.start_time > nxt.start_time + min_inversion_gap
+        source_ordered = (
+            src_curr.start_time <= src_next.start_time + source_order_tolerance
+        )
+        shifted_far_ahead = (curr.start_time - src_curr.start_time) >= min_ahead_shift
+        if inversion and source_ordered and shifted_far_ahead:
+            repaired[idx] = _clone_line(src_curr)
+            restored += 1
+    return repaired, restored
+
+
 def _apply_low_quality_segment_postpasses(
     *,
     aligned_lines: List[models.Line],
@@ -107,6 +155,14 @@ def _finalize_whisper_line_set(
     drop_duplicate_lines_by_timing_fn: Callable[..., Any],
     pull_lines_forward_for_continuous_vocals_fn: Callable[..., Any],
 ) -> Tuple[List[models.Line], List[str]]:
+    aligned_lines, restored_inversions = _restore_pairwise_inversions_from_source(
+        source_lines,
+        aligned_lines,
+    )
+    if restored_inversions:
+        alignments.append(
+            f"Restored {restored_inversions} inversion outlier line(s) from source timing"
+        )
     aligned_lines, alignments = fix_ordering_violations_fn(
         source_lines, aligned_lines, alignments
     )

@@ -96,20 +96,32 @@ def _constrain_line_starts_to_baseline(
 ) -> List[models.Line]:
     """Force mapped line starts to baseline (LRC) starts while preserving within-line shape."""
     constrained: List[models.Line] = []
+    prev_output_start: float | None = None
     for idx, line in enumerate(mapped_lines):
         if idx >= len(baseline_lines) or not line.words:
             constrained.append(line)
+            if line.words:
+                prev_output_start = line.start_time
             continue
 
         baseline = baseline_lines[idx]
         if not baseline.words:
             constrained.append(line)
+            if line.words:
+                prev_output_start = line.start_time
             continue
 
         target_start = baseline.start_time
         shift = target_start - line.start_time
         if abs(shift) > max_shift_sec:
             constrained.append(line)
+            prev_output_start = line.start_time
+            continue
+        if prev_output_start is not None and target_start < (
+            prev_output_start + min_gap
+        ):
+            constrained.append(line)
+            prev_output_start = line.start_time
             continue
         shifted_words = [
             models.Word(
@@ -151,5 +163,6 @@ def _constrain_line_starts_to_baseline(
             shifted_line = models.Line(words=compressed_words, singer=line.singer)
 
         constrained.append(shifted_line)
+        prev_output_start = shifted_line.start_time
 
     return constrained

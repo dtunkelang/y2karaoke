@@ -9,9 +9,9 @@ logger = logging.getLogger(__name__)
 
 
 def _enforce_monotonic_line_starts(
-    lines: List[Line], min_gap: float = 0.01
+    lines: List[Line], min_gap: float = 0.01, max_forward_shift: float = 3.0
 ) -> List[Line]:
-    """Shift lines forward so start times are non-decreasing."""
+    """Make line starts non-decreasing, preferring backward pull on large inversions."""
     adjusted: List[Line] = []
     prev_start = None
     for line in lines:
@@ -21,17 +21,33 @@ def _enforce_monotonic_line_starts(
 
         start = line.start_time
         if prev_start is not None and start < prev_start:
-            shift = (prev_start - start) + min_gap
-            new_words = [
-                Word(
-                    text=w.text,
-                    start_time=w.start_time + shift,
-                    end_time=w.end_time + shift,
-                    singer=w.singer,
-                )
-                for w in line.words
-            ]
-            line = Line(words=new_words, singer=line.singer)
+            needed = (prev_start - start) + min_gap
+            # Large single inversions are often caused by one outlier line pulled too late.
+            # Pull the previous line back first to avoid cascading forward shifts.
+            if needed > max_forward_shift and adjusted:
+                prev_line = adjusted[-1]
+                if prev_line.words:
+                    prior_start: Optional[float] = None
+                    for j in range(len(adjusted) - 2, -1, -1):
+                        if adjusted[j].words:
+                            prior_start = adjusted[j].start_time
+                            break
+                    target_prev_start = start - min_gap
+                    if prior_start is not None:
+                        target_prev_start = max(
+                            target_prev_start, prior_start + min_gap
+                        )
+                    backward = prev_line.start_time - target_prev_start
+                    if backward > 0.0:
+                        adjusted[-1] = _shift_line(prev_line, -backward)
+                        prev_start = adjusted[-1].start_time
+                        needed = (
+                            (prev_start - start) + min_gap
+                            if start < prev_start
+                            else 0.0
+                        )
+            if needed > 0.0:
+                line = _shift_line(line, needed)
 
         adjusted.append(line)
         prev_start = line.start_time

@@ -10,6 +10,7 @@ from y2karaoke.core.components.whisper.whisper_integration_pipeline import (
 )
 from y2karaoke.core.components.whisper import whisper_mapping as wm
 from y2karaoke.core.components.whisper import whisper_integration_baseline as wib
+from y2karaoke.core.components.whisper import whisper_integration_finalize as wifin
 from y2karaoke.core.components.whisper import whisper_integration_transcribe as witx
 from y2karaoke.core.components.alignment.timing_models import (
     AudioFeatures,
@@ -819,6 +820,26 @@ def test_constrain_line_starts_to_baseline_applies_small_shift():
     assert constrained[0].start_time == pytest.approx(11.2)
 
 
+def test_constrain_line_starts_to_baseline_skips_inverting_snap():
+    mapped = [
+        Line(words=[Word(text="a", start_time=166.78, end_time=167.78)]),
+        Line(words=[Word(text="b", start_time=166.79, end_time=167.40)]),
+    ]
+    baseline = [
+        Line(words=[Word(text="a", start_time=149.10, end_time=150.10)]),
+        Line(words=[Word(text="b", start_time=151.04, end_time=151.80)]),
+    ]
+
+    constrained = wib._constrain_line_starts_to_baseline(
+        mapped, baseline, max_shift_sec=2.5
+    )
+
+    # First line is too far from baseline and remains aligned.
+    assert constrained[0].start_time == pytest.approx(166.78)
+    # Second line would invert ordering if snapped to baseline, so keep aligned.
+    assert constrained[1].start_time == pytest.approx(166.79)
+
+
 def test_restore_implausibly_short_lines_restores_newly_compressed():
     baseline = [
         Line(
@@ -870,3 +891,39 @@ def test_restore_implausibly_short_lines_keeps_legitimate_short_baseline():
 
     assert restored == 0
     assert repaired[0].start_time == pytest.approx(aligned[0].start_time)
+
+
+def test_restore_pairwise_inversions_from_source_restores_outlier():
+    source = [
+        Line(words=[Word(text="a", start_time=100.0, end_time=101.0)]),
+        Line(words=[Word(text="b", start_time=102.0, end_time=103.0)]),
+        Line(words=[Word(text="c", start_time=104.0, end_time=105.0)]),
+    ]
+    aligned = [
+        Line(words=[Word(text="a", start_time=130.0, end_time=131.0)]),
+        Line(words=[Word(text="b", start_time=102.5, end_time=103.5)]),
+        Line(words=[Word(text="c", start_time=104.5, end_time=105.5)]),
+    ]
+
+    repaired, restored = wifin._restore_pairwise_inversions_from_source(source, aligned)
+
+    assert restored == 1
+    assert repaired[0].start_time == pytest.approx(100.0)
+    assert repaired[1].start_time == pytest.approx(102.5)
+
+
+def test_restore_pairwise_inversions_from_source_keeps_ordered_lines():
+    source = [
+        Line(words=[Word(text="a", start_time=10.0, end_time=11.0)]),
+        Line(words=[Word(text="b", start_time=12.0, end_time=13.0)]),
+    ]
+    aligned = [
+        Line(words=[Word(text="a", start_time=25.0, end_time=26.0)]),
+        Line(words=[Word(text="b", start_time=27.0, end_time=28.0)]),
+    ]
+
+    repaired, restored = wifin._restore_pairwise_inversions_from_source(source, aligned)
+
+    assert restored == 0
+    assert repaired[0].start_time == pytest.approx(25.0)
+    assert repaired[1].start_time == pytest.approx(27.0)

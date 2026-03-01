@@ -8,6 +8,7 @@ from y2karaoke.utils.validation import (
     validate_offset,
     sanitize_filename,
     validate_line_order,
+    fix_line_order,
 )
 from y2karaoke.exceptions import ValidationError
 from y2karaoke.core.models import Line, Word
@@ -121,3 +122,25 @@ class TestValidation:
             words=[Word(text="hello", start_time=3.0, end_time=4.0, singer="")]
         )
         validate_line_order([line1, line2])
+
+    def test_fix_line_order_prefers_backward_pull_for_large_inversion(self):
+        lines = [
+            Line(words=[Word(text="a", start_time=166.78, end_time=167.78, singer="")]),
+            Line(words=[Word(text="b", start_time=151.42, end_time=152.12, singer="")]),
+        ]
+
+        fixed = fix_line_order(lines, max_forward_shift=3.0)
+
+        assert fixed[0].start_time == pytest.approx(151.41)
+        assert fixed[1].start_time == pytest.approx(151.42)
+
+    def test_fix_line_order_keeps_forward_shift_for_small_inversion(self):
+        lines = [
+            Line(words=[Word(text="a", start_time=10.0, end_time=11.0, singer="")]),
+            Line(words=[Word(text="b", start_time=9.8, end_time=10.2, singer="")]),
+        ]
+
+        fixed = fix_line_order(lines, max_forward_shift=3.0)
+
+        assert fixed[0].start_time == pytest.approx(10.0)
+        assert fixed[1].start_time > fixed[0].start_time

@@ -733,6 +733,23 @@ def _long_gap_stats(lines: List[Line], threshold: float = 20.0) -> Tuple[int, fl
     return long_count, max_gap
 
 
+def _ordering_inversion_stats(
+    lines: List[Line], tolerance: float = 0.01
+) -> Tuple[int, float]:
+    prev_start: Optional[float] = None
+    inversions = 0
+    max_drop = 0.0
+    for line in lines:
+        if not line.words:
+            continue
+        start = line.start_time
+        if prev_start is not None and start < (prev_start - tolerance):
+            inversions += 1
+            max_drop = max(max_drop, prev_start - start)
+        prev_start = start
+    return inversions, max_drop
+
+
 def _pull_lines_forward_for_continuous_vocals(
     lines: List[Line],
     audio_features: Optional[AudioFeatures],
@@ -749,6 +766,7 @@ def _pull_lines_forward_for_continuous_vocals(
 
     original_lines = _clone_lines(lines)
     before_long_count, before_max_gap = _long_gap_stats(lines)
+    before_inv_count, before_inv_drop = _ordering_inversion_stats(lines)
 
     fixes = _shift_lines_across_long_activity_gaps(
         lines, audio_features, max_gap, onset_times
@@ -766,20 +784,19 @@ def _pull_lines_forward_for_continuous_vocals(
         for start, end in silence_regions
         if float(end) - float(start) >= 0.8
     ]
-    if not normalized_silences:
-        return lines, fixes
-
-    fixes += _shift_short_line_runs_after_silence(
-        lines, normalized_silences, onset_times
-    )
-    fixes += _shift_single_short_lines_after_silence(
-        lines, normalized_silences, onset_times
-    )
-    fixes += _compact_short_lines_near_silence(lines, normalized_silences)
-    fixes += _stretch_similar_adjacent_short_lines(lines, normalized_silences)
-    fixes += _cap_isolated_short_lines(lines)
+    if normalized_silences:
+        fixes += _shift_short_line_runs_after_silence(
+            lines, normalized_silences, onset_times
+        )
+        fixes += _shift_single_short_lines_after_silence(
+            lines, normalized_silences, onset_times
+        )
+        fixes += _compact_short_lines_near_silence(lines, normalized_silences)
+        fixes += _stretch_similar_adjacent_short_lines(lines, normalized_silences)
+        fixes += _cap_isolated_short_lines(lines)
 
     after_long_count, after_max_gap = _long_gap_stats(lines)
+    after_inv_count, after_inv_drop = _ordering_inversion_stats(lines)
     if after_long_count > before_long_count or after_max_gap > max(
         before_max_gap + 8.0, 20.0
     ):
@@ -789,6 +806,17 @@ def _pull_lines_forward_for_continuous_vocals(
             after_long_count,
             before_max_gap,
             after_max_gap,
+        )
+        return original_lines, 0
+    if after_inv_count > before_inv_count and after_inv_drop > max(
+        before_inv_drop + 0.75, 1.5
+    ):
+        logger.debug(
+            "Reverting continuous-vocals refinement: ordering inversions worsened (%d→%d, %.2fs→%.2fs)",
+            before_inv_count,
+            after_inv_count,
+            before_inv_drop,
+            after_inv_drop,
         )
         return original_lines, 0
     return lines, fixes

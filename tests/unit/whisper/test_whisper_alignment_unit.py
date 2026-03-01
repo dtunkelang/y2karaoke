@@ -1,8 +1,11 @@
 from y2karaoke.core.models import Line, Word
 import y2karaoke.core.components.whisper.whisper_alignment as wa
+import y2karaoke.core.components.whisper.whisper_alignment_refinement as war
+import pytest
 from y2karaoke.core.components.alignment.timing_models import (
     TranscriptionWord,
     TranscriptionSegment,
+    AudioFeatures,
 )
 import numpy as np
 
@@ -27,6 +30,19 @@ def test_enforce_monotonic_line_starts_fixes_order():
     assert adjusted[0].start_time == 10.0
     assert adjusted[1].start_time == 10.1
     assert adjusted[1].words[0].text == "second"
+
+
+def test_enforce_monotonic_line_starts_pulls_previous_on_large_inversion():
+    lines = [
+        Line(words=[Word(text="first", start_time=20.0, end_time=21.0)]),
+        Line(words=[Word(text="second", start_time=9.0, end_time=10.0)]),
+    ]
+    adjusted = wa._enforce_monotonic_line_starts(
+        lines, min_gap=0.1, max_forward_shift=3.0
+    )
+    # Prefer pulling the previous outlier backward over pushing the second line +11s.
+    assert adjusted[0].start_time == 8.9
+    assert adjusted[1].start_time == 9.0
 
 
 def test_scale_line_to_duration_simple():
@@ -144,6 +160,50 @@ def test_interpolate_unmatched_lines_preserves_trailing_tail_timing():
 
     assert interpolated[2].start_time == 20.0
     assert interpolated[3].start_time == 22.0
+
+
+def test_pull_lines_forward_for_continuous_vocals_reverts_on_inversion_regression(
+    monkeypatch,
+):
+    lines = [
+        Line(words=[Word(text="a", start_time=10.0, end_time=11.0)]),
+        Line(words=[Word(text="b", start_time=12.0, end_time=13.0)]),
+    ]
+    audio_features = AudioFeatures(
+        onset_times=np.array([10.1], dtype=float),
+        silence_regions=[],
+        vocal_start=0.0,
+        vocal_end=20.0,
+        duration=20.0,
+        energy_envelope=np.array([], dtype=float),
+        energy_times=np.array([], dtype=float),
+    )
+
+    def inject_inversion(lines_in, _audio_features, _max_gap, _onsets):
+        lines_in[0] = wa._shift_line(lines_in[0], 5.0)
+        return 1
+
+    monkeypatch.setattr(war, "_shift_lines_across_long_activity_gaps", inject_inversion)
+    monkeypatch.setattr(
+        war, "_extend_line_ends_across_active_gaps", lambda *_a, **_k: 0
+    )
+    monkeypatch.setattr(
+        war, "_shift_short_line_runs_after_silence", lambda *_a, **_k: 0
+    )
+    monkeypatch.setattr(
+        war, "_shift_single_short_lines_after_silence", lambda *_a, **_k: 0
+    )
+    monkeypatch.setattr(war, "_compact_short_lines_near_silence", lambda *_a, **_k: 0)
+    monkeypatch.setattr(
+        war, "_stretch_similar_adjacent_short_lines", lambda *_a, **_k: 0
+    )
+    monkeypatch.setattr(war, "_cap_isolated_short_lines", lambda *_a, **_k: 0)
+
+    refined, fixes = wa._pull_lines_forward_for_continuous_vocals(lines, audio_features)
+
+    assert fixes >= 0
+    assert refined[0].start_time == pytest.approx(10.0)
+    assert refined[1].start_time == pytest.approx(12.0)
 
 
 def test_merge_first_two_lines_if_segment_matches(monkeypatch):

@@ -67,7 +67,7 @@ def validate_output_path(path: str) -> Path:
     return output_path
 
 
-def fix_line_order(lines):
+def fix_line_order(lines, max_forward_shift: float = 3.0):
     """Fix non-monotonic line ordering by shifting lines forward.
 
     Returns the (possibly modified) list of lines.
@@ -76,12 +76,63 @@ def fix_line_order(lines):
 
     prev_start = None
     fixed = list(lines)
+
+    def _previous_word_line_index(start_idx: int):
+        for pos in range(start_idx, -1, -1):
+            if getattr(fixed[pos], "words", None):
+                return pos
+        return None
+
+    def _shift_line_backward_at(index: int, delta: float):
+        from ..core.models import Line, Word
+
+        if delta <= 0:
+            return
+        line = fixed[index]
+        if not getattr(line, "words", None):
+            return
+        fixed[index] = Line(
+            words=[
+                Word(
+                    text=w.text,
+                    start_time=w.start_time - delta,
+                    end_time=w.end_time - delta,
+                    singer=w.singer,
+                )
+                for w in line.words
+            ],
+            singer=line.singer,
+        )
+
     for idx, line in enumerate(fixed):
         if not getattr(line, "words", None):
             continue
         start = line.start_time
         if prev_start is not None and start < prev_start:
             shift = (prev_start - start) + 0.01
+            if shift > max_forward_shift and idx > 0:
+                target_start = start - 0.01
+                j = _previous_word_line_index(idx - 1)
+                while j is not None:
+                    prior_idx = _previous_word_line_index(j - 1)
+                    lower_bound = (
+                        fixed[prior_idx].start_time + 0.01
+                        if prior_idx is not None
+                        else float("-inf")
+                    )
+                    desired = max(target_start, lower_bound)
+                    backward = fixed[j].start_time - desired
+                    if backward > 0:
+                        _shift_line_backward_at(j, backward)
+                    target_start = desired - 0.01
+                    if prior_idx is None:
+                        break
+                    j = prior_idx
+                prev_start = fixed[idx - 1].start_time
+                shift = (prev_start - start) + 0.01 if start < prev_start else 0.0
+            if shift <= 0:
+                prev_start = start
+                continue
             logger.warning(
                 "Line %d starts before previous line (%.2fs < %.2fs), shifting +%.2fs",
                 idx + 1,
