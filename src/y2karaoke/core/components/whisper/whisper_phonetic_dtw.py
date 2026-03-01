@@ -186,10 +186,18 @@ def align_words_to_whisper(
     if not lines or not whisper_words:
         return lines, []
 
-    # Pre-compute IPA for all Whisper words
+    # Pre-compute IPA for all candidate lexical words.
     logger.debug(f"Pre-computing IPA for {len(whisper_words)} Whisper words...")
-    for ww in whisper_words:
-        phonetic_utils._get_ipa(ww.text, language)
+    lrc_texts = [
+        word.text.strip()
+        for line in lines
+        for word in line.words
+        if len(word.text.strip()) >= 2
+    ]
+    phonetic_utils._prewarm_ipa_cache(
+        [ww.text for ww in whisper_words] + lrc_texts,
+        language,
+    )
 
     sorted_whisper = sorted(whisper_words, key=lambda w: w.start)
     total_whisper = len(sorted_whisper)

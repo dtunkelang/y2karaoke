@@ -57,6 +57,31 @@ def test_get_ipa_english_token_cache_reuses_vocabulary():
     assert calls["count"] == 7
 
 
+def test_prewarm_ipa_cache_deduplicates_repeated_texts():
+    calls = {"count": 0}
+
+    class FakeEpi:
+        def transliterate(self, text):
+            calls["count"] += 1
+            return text.upper()
+
+    pu._ipa_cache.clear()
+    with pu.use_phonetic_utils_hooks(get_epitran_fn=lambda *_: FakeEpi()):
+        warmed = pu._prewarm_ipa_cache(
+            ["you are here", "you are there", "you are here"],
+            "eng-Latn",
+        )
+        assert warmed == 2
+        assert calls["count"] == 4
+
+        warmed_again = pu._prewarm_ipa_cache(
+            ["you are here", "you are there"],
+            "eng-Latn",
+        )
+        assert warmed_again == 0
+        assert calls["count"] == 4
+
+
 def test_phonetic_similarity_falls_back():
     with pu.use_phonetic_utils_hooks(
         get_panphon_distance_fn=lambda: None,

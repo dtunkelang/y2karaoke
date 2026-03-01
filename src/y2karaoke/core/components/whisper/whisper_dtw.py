@@ -524,10 +524,10 @@ def _align_dtw_whisper_with_data(
 
     # Pre-compute IPA
     logger.debug(f"DTW: Pre-computing IPA for {len(whisper_words)} Whisper words...")
-    for ww in whisper_words:
-        phonetic_utils._get_ipa(ww.text, language)
-    for lw in lrc_words:
-        phonetic_utils._get_ipa(lw["text"], language)
+    phonetic_utils._prewarm_ipa_cache(
+        [ww.text for ww in whisper_words] + [lw["text"] for lw in lrc_words],
+        language,
+    )
 
     logger.debug(
         f"DTW: Building cost matrix ({len(lrc_words)} x {len(whisper_words)})..."
@@ -634,10 +634,10 @@ def align_dtw_whisper(
         )
 
     # Pre-compute IPA
-    for ww in whisper_words:
-        phonetic_utils._get_ipa(ww.text, language)
-    for lw in lrc_words:
-        phonetic_utils._get_ipa(lw["text"], language)
+    phonetic_utils._prewarm_ipa_cache(
+        [ww.text for ww in whisper_words] + [lw["text"] for lw in lrc_words],
+        language,
+    )
 
     phonetic_costs = _compute_phonetic_costs_base(
         lrc_words, whisper_words, language, min_similarity

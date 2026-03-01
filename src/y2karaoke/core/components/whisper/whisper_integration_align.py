@@ -260,10 +260,10 @@ def align_lrc_text_to_whisper_timings_impl(  # noqa: C901
     logger.debug(
         "DTW-phonetic: Pre-computing IPA for %d Whisper words...", len(all_words)
     )
-    for ww in all_words:
-        phonetic_utils._get_ipa(ww.text, epitran_lang)
-    for lw in lrc_words:
-        phonetic_utils._get_ipa(lw["text"], epitran_lang)
+    phonetic_utils._prewarm_ipa_cache(
+        [ww.text for ww in all_words] + [lw["text"] for lw in lrc_words],
+        epitran_lang,
+    )
 
     logger.debug(
         "DTW-phonetic: Preparing phoneme sequences for %d lyrics words and %d Whisper words...",

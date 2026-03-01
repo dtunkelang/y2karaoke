@@ -368,6 +368,24 @@ def _get_ipa(text: str, language: str = "fra-Latn") -> Optional[str]:
     return _set_cache_value(cache_key, ipa)
 
 
+def _prewarm_ipa_cache(texts: List[str], language: str = "fra-Latn") -> int:
+    """Pre-warm IPA cache for unique normalized texts and return new lookups attempted."""
+    _load_ipa_cache_from_disk()
+    warmed = 0
+    seen_keys = set()
+    for text in texts:
+        norm = _normalize_text_for_phonetic(text, language)
+        if not norm:
+            continue
+        cache_key = f"{language}:{norm}"
+        if cache_key in seen_keys or cache_key in _ipa_cache:
+            continue
+        seen_keys.add(cache_key)
+        warmed += 1
+        _get_ipa(norm, language)
+    return warmed
+
+
 def _get_ipa_segs(ipa: str) -> List[str]:
     """Segment IPA string into phonetic segments with caching."""
     if ipa in _ipa_segs_cache:
