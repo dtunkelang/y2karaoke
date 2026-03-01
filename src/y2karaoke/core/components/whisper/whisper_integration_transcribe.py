@@ -26,6 +26,46 @@ class _WhisperxSegment:
     words: List[_WhisperxWord]
 
 
+def _normalize_whisperx_segments(
+    segments: List[_WhisperxSegment],
+) -> Tuple[List[_WhisperxSegment], List[_WhisperxWord]]:
+    """Enforce monotonic non-overlapping WhisperX word timings."""
+    normalized_segments: List[_WhisperxSegment] = []
+    normalized_words: List[_WhisperxWord] = []
+    prev_end: Optional[float] = None
+
+    for seg in segments:
+        seg_words: List[_WhisperxWord] = []
+        for word in sorted(seg.words, key=lambda w: (float(w.start), float(w.end))):
+            start = max(0.0, float(word.start))
+            end = max(start + 0.01, float(word.end))
+            if prev_end is not None and start < prev_end:
+                shift = prev_end - start
+                start += shift
+                end += shift
+            adjusted = _WhisperxWord(
+                start=start,
+                end=end,
+                text=word.text,
+                probability=word.probability,
+            )
+            seg_words.append(adjusted)
+            normalized_words.append(adjusted)
+            prev_end = adjusted.end
+        if not seg_words:
+            continue
+        normalized_segments.append(
+            _WhisperxSegment(
+                start=seg_words[0].start,
+                end=seg_words[-1].end,
+                text=seg.text,
+                words=seg_words,
+            )
+        )
+
+    return normalized_segments, normalized_words
+
+
 def _transcribe_with_whisperx(
     *,
     vocals_path: str,
@@ -146,6 +186,7 @@ def _maybe_upgrade_sparse_transcription_with_whisperx(
         return result, all_words, detected_lang, False
 
     wx_segments, wx_words, wx_lang = wx
+    wx_segments, wx_words = _normalize_whisperx_segments(wx_segments)
     if len(wx_words) < max(120, len(all_words) * 2):
         return result, all_words, detected_lang, False
     if not _should_accept_whisperx_upgrade(
