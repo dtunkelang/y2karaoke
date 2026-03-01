@@ -227,7 +227,20 @@ def correct_timing_with_whisper_impl(  # noqa: C901
                 "DTW confidence gating failed; keeping conservative word shifts"
             )
 
-    if quality < 0.4 or force_dtw:
+    low_confidence_alignment = False
+    if quality < 0.4 and not force_dtw:
+        matched_ratio = float(metrics.get("matched_ratio", 0.0) or 0.0)
+        line_coverage = float(metrics.get("line_coverage", 0.0) or 0.0)
+        avg_similarity = float(metrics.get("avg_similarity", 0.0) or 0.0)
+        low_confidence_alignment = (
+            matched_ratio < 0.25 and line_coverage < 0.25 and avg_similarity < 0.4
+        )
+        if low_confidence_alignment:
+            alignments.append(
+                "Skipped aggressive low-quality segment postpasses due to very low DTW confidence"
+            )
+
+    if (quality < 0.4 or force_dtw) and not low_confidence_alignment:
         aligned_lines, alignments = apply_low_quality_segment_postpasses_fn(
             aligned_lines=aligned_lines,
             alignments=alignments,

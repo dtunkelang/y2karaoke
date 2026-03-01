@@ -23,6 +23,42 @@ def _clone_line(line: models.Line) -> models.Line:
     )
 
 
+def _line_text_token_overlap(a: str, b: str) -> float:
+    def _tokens(text: str) -> set[str]:
+        out = set()
+        for raw in text.lower().split():
+            token = "".join(ch for ch in raw if ch.isalpha())
+            if token:
+                out.add(token)
+        return out
+
+    ta = _tokens(a)
+    tb = _tokens(b)
+    if not ta or not tb:
+        return 0.0
+    return len(ta & tb) / max(len(ta), len(tb))
+
+
+def _text_divergence_stats(
+    source_lines: List[models.Line],
+    aligned_lines: List[models.Line],
+    *,
+    min_overlap: float = 0.45,
+) -> Tuple[int, int]:
+    compared = 0
+    diverged = 0
+    limit = min(len(source_lines), len(aligned_lines))
+    for idx in range(limit):
+        src = source_lines[idx]
+        dst = aligned_lines[idx]
+        if not src.words or not dst.words:
+            continue
+        compared += 1
+        if _line_text_token_overlap(src.text, dst.text) < min_overlap:
+            diverged += 1
+    return diverged, compared
+
+
 def _restore_pairwise_inversions_from_source(
     source_lines: List[models.Line],
     aligned_lines: List[models.Line],
@@ -215,4 +251,11 @@ def _finalize_whisper_line_set(
 
     aligned_lines = enforce_monotonic_line_starts_fn(aligned_lines)
     aligned_lines = enforce_non_overlapping_lines_fn(aligned_lines)
+
+    diverged_count, compared_count = _text_divergence_stats(source_lines, aligned_lines)
+    if compared_count >= 8 and diverged_count >= max(3, int(compared_count * 0.25)):
+        alignments.append(
+            "Rolled back Whisper timing due to high per-line text divergence from source lyrics"
+        )
+        return [_clone_line(line) for line in source_lines], alignments
     return aligned_lines, alignments
