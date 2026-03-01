@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import statistics
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
 from ..alignment import timing_models
@@ -147,6 +148,14 @@ def _maybe_upgrade_sparse_transcription_with_whisperx(
     wx_segments, wx_words, wx_lang = wx
     if len(wx_words) < max(120, len(all_words) * 2):
         return result, all_words, detected_lang, False
+    if not _should_accept_whisperx_upgrade(
+        base_segments=result,
+        base_words=all_words,
+        upgraded_segments=wx_segments,
+        upgraded_words=wx_words,
+        logger=logger,
+    ):
+        return result, all_words, detected_lang, False
 
     upgraded_segments = [
         timing_models.TranscriptionSegment(
@@ -178,6 +187,72 @@ def _maybe_upgrade_sparse_transcription_with_whisperx(
         "Using whisperx fallback transcript due to sparse faster-whisper output"
     )
     return upgraded_segments, upgraded_words, wx_lang, True
+
+
+def _should_accept_whisperx_upgrade(
+    *,
+    base_segments: List[timing_models.TranscriptionSegment],
+    base_words: List[timing_models.TranscriptionWord],
+    upgraded_segments: List[_WhisperxSegment],
+    upgraded_words: List[_WhisperxWord],
+    logger,
+) -> bool:
+    """Guard WhisperX upgrades with basic timing-shape sanity checks."""
+    if not upgraded_words:
+        return False
+
+    durations = [max(0.0, float(w.end) - float(w.start)) for w in upgraded_words]
+    if not durations:
+        return False
+    overlaps = 0
+    prev_end = None
+    for w in upgraded_words:
+        if prev_end is not None and float(w.start) < prev_end - 0.02:
+            overlaps += 1
+        prev_end = float(w.end)
+    p95 = (
+        statistics.quantiles(durations, n=20)[18]
+        if len(durations) >= 20
+        else max(durations)
+    )
+    median = statistics.median(durations)
+    too_short = sum(1 for d in durations if d < 0.03)
+    short_ratio = too_short / len(durations)
+
+    if overlaps > max(3, int(len(upgraded_words) * 0.03)):
+        logger.debug(
+            "Rejected whisperx fallback: excessive overlaps (%d/%d)",
+            overlaps,
+            len(upgraded_words),
+        )
+        return False
+    if p95 > 4.5 or median < 0.03 or short_ratio > 0.2:
+        logger.debug(
+            "Rejected whisperx fallback: bad duration shape (median=%.3f, p95=%.3f, short_ratio=%.2f)",
+            median,
+            p95,
+            short_ratio,
+        )
+        return False
+
+    base_end = max((float(w.end) for w in base_words), default=0.0)
+    upgraded_end = max((float(w.end) for w in upgraded_words), default=0.0)
+    if base_end > 0.0 and upgraded_end < base_end * 0.9:
+        logger.debug(
+            "Rejected whisperx fallback: shorter transcript span (base=%.2f, upgraded=%.2f)",
+            base_end,
+            upgraded_end,
+        )
+        return False
+
+    if len(upgraded_segments) < max(6, len(base_segments)):
+        logger.debug(
+            "Rejected whisperx fallback: insufficient segment coverage (%d < %d)",
+            len(upgraded_segments),
+            max(6, len(base_segments)),
+        )
+        return False
+    return True
 
 
 def transcribe_vocals_impl(

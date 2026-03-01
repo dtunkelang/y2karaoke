@@ -96,7 +96,7 @@ def align_lrc_text_to_whisper_timings_impl(  # noqa: C901
                 should_rollback_short_line_degradation_fn(baseline_lines, forced_lines)
             )
             if not rollback:
-                metrics: Dict[str, Any] = {
+                forced_payload: Dict[str, Any] = {
                     "matched_ratio": float(
                         forced_metrics.get("forced_word_coverage", 0.0)
                     ),
@@ -124,7 +124,7 @@ def align_lrc_text_to_whisper_timings_impl(  # noqa: C901
                     [
                         "Applied WhisperX transcript-constrained forced alignment due to sparse Whisper transcript"
                     ],
-                    metrics,
+                    forced_payload,
                 )
             logger.warning(
                 "Discarded WhisperX forced alignment due to short-line degradation (%d -> %d)",
