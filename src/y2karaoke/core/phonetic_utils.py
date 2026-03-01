@@ -1,11 +1,16 @@
 """Phonetic and text similarity utilities for lyrics alignment."""
 
+import atexit
 from contextlib import contextmanager
+import json
+import os
+from pathlib import Path
 import re
 import unicodedata
 from typing import Callable, Dict, Iterator, List, Optional, Any
 from difflib import SequenceMatcher
 
+from ..config import get_cache_dir
 from ..utils.logging import get_logger
 
 logger = get_logger(__name__)
@@ -18,6 +23,68 @@ _panphon_distance = None
 _panphon_ft = None
 _ipa_cache: Dict[str, Optional[str]] = {}  # Cache for IPA transliterations
 _ipa_segs_cache: Dict[str, List[str]] = {}  # Cache for IPA segments
+_ipa_disk_cache_loaded = False
+_ipa_disk_cache_dirty = 0
+_IPA_DISK_FLUSH_THRESHOLD = 64
+_IPA_DISK_CACHE_MAX_ENTRIES = 25000
+
+
+def _ipa_disk_cache_enabled() -> bool:
+    if os.getenv("PYTEST_CURRENT_TEST"):
+        return False
+    setting = os.getenv("Y2KARAOKE_PHONETIC_DISK_CACHE", "1").strip().lower()
+    return setting not in {"0", "false", "no", "off"}
+
+
+def _ipa_disk_cache_path() -> Path:
+    return get_cache_dir() / "phonetic_ipa_cache.json"
+
+
+def _load_ipa_cache_from_disk() -> None:
+    global _ipa_disk_cache_loaded
+    if _ipa_disk_cache_loaded or not _ipa_disk_cache_enabled():
+        return
+    _ipa_disk_cache_loaded = True
+    path = _ipa_disk_cache_path()
+    try:
+        if not path.exists():
+            return
+        raw = json.loads(path.read_text(encoding="utf-8"))
+    except Exception as exc:
+        logger.debug(f"Failed to load phonetic IPA disk cache: {exc}")
+        return
+    if not isinstance(raw, dict):
+        return
+    for key, value in raw.items():
+        if isinstance(key, str) and (isinstance(value, str) or value is None):
+            _ipa_cache[key] = value
+
+
+def _flush_ipa_cache_to_disk(*, force: bool = False) -> None:
+    global _ipa_disk_cache_dirty
+    if not _ipa_disk_cache_enabled():
+        return
+    if not force and _ipa_disk_cache_dirty < _IPA_DISK_FLUSH_THRESHOLD:
+        return
+    try:
+        path = _ipa_disk_cache_path()
+        path.parent.mkdir(parents=True, exist_ok=True)
+        serializable = {
+            key: value for key, value in _ipa_cache.items() if isinstance(value, str)
+        }
+        if len(serializable) > _IPA_DISK_CACHE_MAX_ENTRIES:
+            keep = len(serializable) - _IPA_DISK_CACHE_MAX_ENTRIES
+            for key in list(serializable.keys())[:keep]:
+                del serializable[key]
+        tmp_path = path.with_suffix(".tmp")
+        tmp_path.write_text(json.dumps(serializable), encoding="utf-8")
+        tmp_path.replace(path)
+        _ipa_disk_cache_dirty = 0
+    except Exception as exc:
+        logger.debug(f"Failed to persist phonetic IPA disk cache: {exc}")
+
+
+atexit.register(lambda: _flush_ipa_cache_to_disk(force=True))
 
 
 @contextmanager
@@ -248,13 +315,24 @@ def _is_vowel(ipa: str) -> bool:
 
 def _get_ipa(text: str, language: str = "fra-Latn") -> Optional[str]:
     """Get IPA transliteration with caching."""
+    _load_ipa_cache_from_disk()
     norm = _normalize_text_for_phonetic(text, language)
     cache_key = f"{language}:{norm}"
+    if cache_key in _ipa_cache:
+        return _ipa_cache[cache_key]
     epi = _get_epitran(language)
     if epi is None:
         return None
-    if cache_key in _ipa_cache:
-        return _ipa_cache[cache_key]
+
+    def _set_cache_value(key: str, value: Optional[str]) -> Optional[str]:
+        global _ipa_disk_cache_dirty
+        if _ipa_cache.get(key) != value:
+            _ipa_cache[key] = value
+            _ipa_disk_cache_dirty += 1
+            _flush_ipa_cache_to_disk()
+        else:
+            _ipa_cache[key] = value
+        return value
 
     def _transliterate_cached(piece: str) -> Optional[str]:
         piece_key = f"{language}:{piece}"
@@ -264,10 +342,8 @@ def _get_ipa(text: str, language: str = "fra-Latn") -> Optional[str]:
             piece_ipa = epi.transliterate(piece)
         except Exception as exc:
             logger.debug(f"IPA transliteration failed for '{piece}': {exc}")
-            _ipa_cache[piece_key] = None
-            return None
-        _ipa_cache[piece_key] = piece_ipa
-        return piece_ipa
+            return _set_cache_value(piece_key, None)
+        return _set_cache_value(piece_key, piece_ipa)
 
     try:
         ipa: Optional[str]
@@ -279,21 +355,17 @@ def _get_ipa(text: str, language: str = "fra-Latn") -> Optional[str]:
             for token in norm.split():
                 token_ipa = _transliterate_cached(token)
                 if token_ipa is None:
-                    _ipa_cache[cache_key] = None
-                    return None
+                    return _set_cache_value(cache_key, None)
                 token_ipas.append(token_ipa)
             ipa = " ".join(token_ipas)
         else:
             ipa = _transliterate_cached(norm)
             if ipa is None:
-                _ipa_cache[cache_key] = None
-                return None
+                return _set_cache_value(cache_key, None)
     except Exception as exc:
         logger.debug(f"IPA transliteration failed for '{text}': {exc}")
-        _ipa_cache[cache_key] = None
-        return None
-    _ipa_cache[cache_key] = ipa
-    return ipa
+        return _set_cache_value(cache_key, None)
+    return _set_cache_value(cache_key, ipa)
 
 
 def _get_ipa_segs(ipa: str) -> List[str]:
@@ -332,10 +404,30 @@ def _text_similarity_basic(
 
 def _phonetic_similarity(text1: str, text2: str, language: str = "fra-Latn") -> float:
     """Calculate phonetic similarity using epitran and panphon."""
+    norm1 = _normalize_text_for_phonetic(text1, language)
+    norm2 = _normalize_text_for_phonetic(text2, language)
+
+    if not norm1 or not norm2:
+        return 0.0
+
+    if norm1 == norm2:
+        return 1.0
+
+    basic_sim = _text_similarity_basic(text1, text2, language)
+    if basic_sim <= 0.12:
+        return basic_sim
+
+    is_english = language.startswith("eng") or language.startswith("en")
+    if is_english and " " not in norm1 and " " not in norm2:
+        if basic_sim >= 0.93:
+            return max(basic_sim, 0.95)
+        if basic_sim <= 0.30 and norm1[0] != norm2[0]:
+            return basic_sim
+
     dst = _get_panphon_distance()
 
     if dst is None:
-        return _text_similarity_basic(text1, text2, language)
+        return basic_sim
 
     try:
         # Get cached IPA transliterations
@@ -343,14 +435,14 @@ def _phonetic_similarity(text1: str, text2: str, language: str = "fra-Latn") -> 
         ipa2 = _get_ipa(text2, language)
 
         if not ipa1 or not ipa2:
-            return _text_similarity_basic(text1, text2, language)
+            return basic_sim
 
         # Get cached IPA segments
         segs1 = _get_ipa_segs(ipa1)
         segs2 = _get_ipa_segs(ipa2)
 
         if not segs1 or not segs2:
-            return _text_similarity_basic(text1, text2, language)
+            return basic_sim
 
         # Calculate feature edit distance (weighted Levenshtein)
         fed = dst.feature_edit_distance(ipa1, ipa2)
@@ -362,19 +454,9 @@ def _phonetic_similarity(text1: str, text2: str, language: str = "fra-Latn") -> 
         normalized_distance = fed / max_segs
         similarity = max(0.0, 1.0 - normalized_distance)
 
-        norm1 = _normalize_text_for_phonetic(text1, language)
-        norm2 = _normalize_text_for_phonetic(text2, language)
-        if norm1 and norm2 and norm1 == norm2:
-            return max(similarity, 0.98)
-
-        basic_sim = _text_similarity_basic(text1, text2, language)
         blended = max(similarity, basic_sim * 0.9)
 
-        if (
-            (language.startswith("eng") or language.startswith("en"))
-            and " " not in norm1
-            and " " not in norm2
-        ):
+        if is_english and " " not in norm1 and " " not in norm2:
             sk1 = _consonant_skeleton(norm1)
             sk2 = _consonant_skeleton(norm2)
             if sk1 and sk2:

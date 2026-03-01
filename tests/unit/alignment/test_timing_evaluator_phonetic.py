@@ -82,6 +82,28 @@ def test_phonetic_similarity_with_panphon():
         assert pu._phonetic_similarity("bonjour", "bonjour") == 1.0
 
 
+def test_phonetic_similarity_short_circuits_identical_normalized_text():
+    def fail_get_ipa(*_args, **_kwargs):
+        raise AssertionError("unexpected IPA lookup")
+
+    with pu.use_phonetic_utils_hooks(
+        get_panphon_distance_fn=lambda: object(),
+        get_ipa_fn=fail_get_ipa,
+    ):
+        assert pu._phonetic_similarity("You're", "you are", "eng-Latn") == 1.0
+
+
+def test_phonetic_similarity_short_circuits_low_overlap_without_ipa():
+    def fail_get_ipa(*_args, **_kwargs):
+        raise AssertionError("unexpected IPA lookup")
+
+    with pu.use_phonetic_utils_hooks(
+        get_panphon_distance_fn=lambda: object(),
+        get_ipa_fn=fail_get_ipa,
+    ):
+        assert pu._phonetic_similarity("cat", "zzzzzz", "eng-Latn") <= 0.12
+
+
 def test_text_similarity_basic_path():
     assert pu._text_similarity("hello", "hello", use_phonetic=False) == 1.0
 
