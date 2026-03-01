@@ -162,9 +162,9 @@ def _build_phoneme_dtw_path(
                 if cost < best_cost:
                     best_cost = cost
                     best_idx = j
-        path.append((lrc_idx, best_idx))
-        whisper_idx = best_idx
-    return path
+            path.append((lrc_idx, best_idx))
+            whisper_idx = best_idx
+        return path
 
 
 def _build_syllable_dtw_path(
