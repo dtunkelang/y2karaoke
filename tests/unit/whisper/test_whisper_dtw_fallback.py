@@ -77,3 +77,27 @@ def test_dtw_fallback_runtime_guard_uses_banded_window(monkeypatch):
 
     assert calls
     assert calls[0] is not None
+
+
+def test_extract_alignments_uses_precomputed_similarity_without_recompute():
+    lrc_words = [{"text": "hello", "line_idx": 0, "word_idx": 0, "start": 0.0}]
+    whisper_words = [
+        TranscriptionWord(text="hullo", start=1.0, end=1.2, probability=0.9)
+    ]
+
+    with whisper_dtw.use_whisper_dtw_hooks(
+        phonetic_similarity_fn=lambda *_a, **_k: (_ for _ in ()).throw(
+            AssertionError("unexpected phonetic similarity call")
+        )
+    ):
+        alignments = whisper_dtw._extract_alignments_from_path_base(
+            path=[(0, 0)],
+            lrc_words=lrc_words,
+            whisper_words=whisper_words,
+            language="eng-Latn",
+            min_similarity=0.4,
+            precomputed_similarity={(0, 0): 0.8},
+        )
+
+    assert 0 in alignments
+    assert alignments[0][1] == 0.8

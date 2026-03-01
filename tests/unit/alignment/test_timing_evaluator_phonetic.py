@@ -30,6 +30,33 @@ def test_get_ipa_returns_none_without_epitran():
         assert pu._get_ipa("Hello", "eng-Latn") is None
 
 
+def test_get_ipa_english_token_cache_reuses_vocabulary():
+    calls = {"count": 0}
+
+    class FakeEpi:
+        def transliterate(self, text):
+            calls["count"] += 1
+            return text.upper()
+
+    pu._ipa_cache.clear()
+    phrases = [
+        "you are here",
+        "you are there",
+        "you are home",
+        "we are here",
+        "we are there",
+        "we are home",
+        "they are here",
+        "they are there",
+        "they are home",
+    ]
+    with pu.use_phonetic_utils_hooks(get_epitran_fn=lambda *_: FakeEpi()):
+        for phrase in phrases:
+            assert pu._get_ipa(phrase, "eng-Latn") is not None
+
+    assert calls["count"] == 7
+
+
 def test_phonetic_similarity_falls_back():
     with pu.use_phonetic_utils_hooks(
         get_panphon_distance_fn=lambda: None,

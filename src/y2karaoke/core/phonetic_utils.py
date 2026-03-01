@@ -256,8 +256,38 @@ def _get_ipa(text: str, language: str = "fra-Latn") -> Optional[str]:
     if cache_key in _ipa_cache:
         return _ipa_cache[cache_key]
 
+    def _transliterate_cached(piece: str) -> Optional[str]:
+        piece_key = f"{language}:{piece}"
+        if piece_key in _ipa_cache:
+            return _ipa_cache[piece_key]
+        try:
+            piece_ipa = epi.transliterate(piece)
+        except Exception as exc:
+            logger.debug(f"IPA transliteration failed for '{piece}': {exc}")
+            _ipa_cache[piece_key] = None
+            return None
+        _ipa_cache[piece_key] = piece_ipa
+        return piece_ipa
+
     try:
-        ipa = epi.transliterate(norm)
+        ipa: Optional[str]
+        # English transliteration often receives many repeated token combinations
+        # across line/segment comparisons; token-level caching keeps subprocess
+        # calls bounded by vocabulary size instead of phrase permutations.
+        if (language.startswith("eng") or language.startswith("en")) and " " in norm:
+            token_ipas: List[str] = []
+            for token in norm.split():
+                token_ipa = _transliterate_cached(token)
+                if token_ipa is None:
+                    _ipa_cache[cache_key] = None
+                    return None
+                token_ipas.append(token_ipa)
+            ipa = " ".join(token_ipas)
+        else:
+            ipa = _transliterate_cached(norm)
+            if ipa is None:
+                _ipa_cache[cache_key] = None
+                return None
     except Exception as exc:
         logger.debug(f"IPA transliteration failed for '{text}': {exc}")
         _ipa_cache[cache_key] = None

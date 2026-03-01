@@ -217,6 +217,7 @@ def _extract_alignments_from_path_base(
     whisper_words: List[TranscriptionWord],
     language: str,
     min_similarity: float,
+    precomputed_similarity: Optional[Dict[Tuple[int, int], float]] = None,
 ) -> Dict[int, Tuple[TranscriptionWord, float]]:
     """Extract validated alignments from DTW path (base version)."""
     alignments_map = {}  # lrc_word_idx -> whisper_word
@@ -229,8 +230,6 @@ def _extract_alignments_from_path_base(
             # Only take first match for each LRC word
             ww = whisper_words[whisper_idx]
             lw = lrc_words[lrc_idx]
-            # Verify it's a reasonable match
-            sim = _phonetic_similarity_for_state(lw["text"], ww.text, language)
             lrc_norm = _norm_token(lw["text"])
             whisper_norm = _norm_token(ww.text)
             exact_text_match = (
@@ -240,6 +239,14 @@ def _extract_alignments_from_path_base(
                 and len(whisper_norm) >= 2
                 and lrc_norm == whisper_norm
             )
+            sim = None
+            if precomputed_similarity is not None:
+                sim = precomputed_similarity.get((lrc_idx, whisper_idx))
+            if sim is None:
+                if exact_text_match:
+                    sim = 1.0
+                else:
+                    sim = _phonetic_similarity_for_state(lw["text"], ww.text, language)
             if sim >= min_similarity or exact_text_match:
                 alignments_map[lrc_idx] = (ww, sim)
 
@@ -351,8 +358,16 @@ def align_dtw_whisper_base(
             lrc_seq, whisper_seq, dtw_dist
         )
 
+    precomputed_similarity = {
+        key: max(0.0, 1.0 - float(cost)) for key, cost in phonetic_costs.items()
+    }
     alignments_map = _extract_alignments_from_path_base(
-        path, lrc_words, whisper_words, language, min_similarity
+        path,
+        lrc_words,
+        whisper_words,
+        language,
+        min_similarity,
+        precomputed_similarity=precomputed_similarity,
     )
 
     aligned_lines, corrections = _apply_dtw_alignments_base(
@@ -582,8 +597,16 @@ def _align_dtw_whisper_with_data(
             lrc_seq, whisper_seq, dtw_dist
         )
 
+    precomputed_similarity = {
+        key: max(0.0, 1.0 - float(cost)) for key, cost in phonetic_costs.items()
+    }
     alignments_map = _extract_alignments_from_path_base(
-        path, lrc_words, whisper_words, language, min_similarity
+        path,
+        lrc_words,
+        whisper_words,
+        language,
+        min_similarity,
+        precomputed_similarity=precomputed_similarity,
     )
 
     aligned_lines, corrections = _apply_dtw_alignments_base(
