@@ -318,6 +318,37 @@ def test_correct_timing_with_whisper_uses_whisperx_when_sparse(monkeypatch):
     )
 
 
+def test_correct_timing_with_whisper_rejects_low_coverage_whisperx(monkeypatch):
+    lines = [Line(words=[Word(text="hello", start_time=10.0, end_time=11.0)])]
+    forced = [Line(words=[Word(text="hello", start_time=15.0, end_time=16.0)])]
+    words = [te.TranscriptionWord(start=10.1, end=10.6, text="hello", probability=0.9)]
+    segments = [
+        te.TranscriptionSegment(start=10.1, end=10.6, text="hello", words=words)
+    ]
+
+    monkeypatch.setattr(
+        "y2karaoke.core.components.whisper.whisper_integration_correct.align_lines_with_whisperx",
+        lambda *_args, **_kwargs: (
+            forced,
+            {"forced_line_coverage": 0.1, "forced_word_coverage": 0.1},
+        ),
+    )
+
+    with wi.use_whisper_integration_hooks(
+        transcribe_vocals_fn=lambda *_: (segments, words, "en", "base"),
+        extract_audio_features_fn=lambda *_: None,
+    ):
+        aligned, corrections, metrics = te.correct_timing_with_whisper(
+            lines, "vocals.wav"
+        )
+
+    assert aligned[0].start_time == pytest.approx(lines[0].start_time)
+    assert not any(
+        "WhisperX transcript-constrained forced alignment" in c for c in corrections
+    )
+    assert metrics.get("whisperx_forced", 0.0) == 0.0
+
+
 def test_correct_timing_with_whisper_rolls_back_when_dtw_has_no_evidence():
     lines = [Line(words=[Word(text="hello", start_time=10.0, end_time=11.0)])]
     words = [

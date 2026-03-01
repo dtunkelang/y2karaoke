@@ -8,6 +8,9 @@ from ... import models, phonetic_utils
 from ..alignment import timing_models
 from .whisper_forced_alignment import align_lines_with_whisperx
 
+_MIN_FORCED_WORD_COVERAGE = 0.2
+_MIN_FORCED_LINE_COVERAGE = 0.2
+
 
 def _line_set_end(lines: List[models.Line]) -> float:
     end_time = 0.0
@@ -88,54 +91,73 @@ def correct_timing_with_whisper_impl(  # noqa: C901
         forced = align_lines_with_whisperx(lines, vocals_path, language, logger)
         if forced is not None:
             aligned_lines, forced_metrics = forced
-            aligned_lines = constrain_line_starts_to_baseline_fn(
-                aligned_lines, baseline_lines
+            forced_word_coverage = float(
+                forced_metrics.get("forced_word_coverage", 0.0)
             )
-            rollback, short_before, short_after = (
-                should_rollback_short_line_degradation_fn(baseline_lines, aligned_lines)
+            forced_line_coverage = float(
+                forced_metrics.get("forced_line_coverage", 0.0)
             )
-            if rollback:
-                repaired_lines, restored_count = restore_implausibly_short_lines_fn(
-                    baseline_lines, aligned_lines
+            if (
+                forced_word_coverage < _MIN_FORCED_WORD_COVERAGE
+                or forced_line_coverage < _MIN_FORCED_LINE_COVERAGE
+            ):
+                logger.warning(
+                    (
+                        "Discarded WhisperX forced alignment due to low forced coverage "
+                        "(word=%.2f line=%.2f)"
+                    ),
+                    forced_word_coverage,
+                    forced_line_coverage,
                 )
-                repaired_rollback, _, repaired_after = (
+                forced = None
+            if forced is None:
+                pass
+            else:
+                aligned_lines = constrain_line_starts_to_baseline_fn(
+                    aligned_lines, baseline_lines
+                )
+                rollback, short_before, short_after = (
                     should_rollback_short_line_degradation_fn(
-                        baseline_lines, repaired_lines
+                        baseline_lines, aligned_lines
                     )
                 )
-                if restored_count > 0 and not repaired_rollback:
-                    logger.info(
-                        "Kept WhisperX forced alignment after restoring %d short baseline line(s) (%d -> %d)",
-                        restored_count,
-                        short_after,
-                        repaired_after,
+                if rollback:
+                    repaired_lines, restored_count = restore_implausibly_short_lines_fn(
+                        baseline_lines, aligned_lines
                     )
-                    aligned_lines = repaired_lines
-                    rollback = False
-            if not rollback:
-                return (
-                    aligned_lines,
-                    [
-                        "Applied WhisperX transcript-constrained forced alignment due to sparse Whisper transcript"
-                    ],
-                    {
-                        "matched_ratio": float(
-                            forced_metrics.get("forced_word_coverage", 0.0)
-                        ),
-                        "avg_similarity": 1.0,
-                        "line_coverage": float(
-                            forced_metrics.get("forced_line_coverage", 0.0)
-                        ),
-                        "unmatched_ratio": 1.0
-                        - float(forced_metrics.get("forced_word_coverage", 0.0)),
-                        "whisperx_forced": 1.0,
-                    },
+                    repaired_rollback, _, repaired_after = (
+                        should_rollback_short_line_degradation_fn(
+                            baseline_lines, repaired_lines
+                        )
+                    )
+                    if restored_count > 0 and not repaired_rollback:
+                        logger.info(
+                            "Kept WhisperX forced alignment after restoring %d short baseline line(s) (%d -> %d)",
+                            restored_count,
+                            short_after,
+                            repaired_after,
+                        )
+                        aligned_lines = repaired_lines
+                        rollback = False
+                if not rollback:
+                    return (
+                        aligned_lines,
+                        [
+                            "Applied WhisperX transcript-constrained forced alignment due to sparse Whisper transcript"
+                        ],
+                        {
+                            "matched_ratio": forced_word_coverage,
+                            "avg_similarity": 1.0,
+                            "line_coverage": forced_line_coverage,
+                            "unmatched_ratio": 1.0 - forced_word_coverage,
+                            "whisperx_forced": 1.0,
+                        },
+                    )
+                logger.warning(
+                    "Discarded WhisperX forced alignment due to short-line degradation (%d -> %d)",
+                    short_before,
+                    short_after,
                 )
-            logger.warning(
-                "Discarded WhisperX forced alignment due to short-line degradation (%d -> %d)",
-                short_before,
-                short_after,
-            )
 
     if not transcription:
         logger.warning("No transcription available, skipping Whisper alignment")
