@@ -170,6 +170,62 @@ def test_extract_song_metrics_separates_independent_and_anchor_agreement():
     assert metrics["whisper_anchor_start_mean_abs_sec"] == 0.3
 
 
+def test_extract_song_metrics_skips_anchor_outside_window():
+    module = _load_module()
+    report = {
+        "dtw_line_coverage": 1.0,
+        "lines": [
+            {
+                "start": 174.53,
+                "nearest_segment_start": 141.72,
+                "text": "Well good for you I guess you moved on really easily",
+                "nearest_segment_start_text": "I guess you moved on really easily",
+                "whisper_window_start": 173.53,
+                "whisper_window_end": 177.0,
+                "whisper_window_word_count": 6,
+                "words": [{"text": "Well"}, {"text": "good"}, {"text": "for"}],
+            }
+        ],
+        "low_confidence_lines": [],
+    }
+
+    metrics = module._extract_song_metrics(report)
+
+    assert metrics["agreement_count"] == 0
+    assert metrics["agreement_start_p95_abs_sec"] == 0.0
+
+
+def test_extract_song_metrics_skips_low_window_evidence_for_longer_line():
+    module = _load_module()
+    report = {
+        "dtw_line_coverage": 1.0,
+        "lines": [
+            {
+                "start": 100.0,
+                "nearest_segment_start": 100.4,
+                "text": "maybe i am too emotional",
+                "nearest_segment_start_text": "maybe i am too emotional",
+                "whisper_window_start": 99.0,
+                "whisper_window_end": 101.0,
+                "whisper_window_word_count": 1,
+                "words": [
+                    {"text": "maybe"},
+                    {"text": "i"},
+                    {"text": "am"},
+                    {"text": "too"},
+                    {"text": "emotional"},
+                ],
+            }
+        ],
+        "low_confidence_lines": [],
+    }
+
+    metrics = module._extract_song_metrics(report)
+
+    assert metrics["agreement_count"] == 0
+    assert metrics["agreement_start_mean_abs_sec"] == 0.0
+
+
 def test_extract_song_metrics_gold_matching_handles_insertions():
     module = _load_module()
     report = {

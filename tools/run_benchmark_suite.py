@@ -389,10 +389,30 @@ def _extract_song_metrics(
             and window_word_count < max(2, int(0.5 * line_word_count))
         ):
             continue
+        if (
+            "whisper_window_word_count" in line
+            and line_word_count >= 4
+            and window_word_count < 2
+        ):
+            continue
         if not isinstance(line_start, (int, float)):
             continue
         if not isinstance(whisper_anchor_start, (int, float)):
             continue
+        window_start_raw = line.get("whisper_window_start")
+        window_end_raw = line.get("whisper_window_end")
+        if isinstance(window_start_raw, (int, float)) and isinstance(
+            window_end_raw, (int, float)
+        ):
+            window_start = float(window_start_raw) - 1.0
+            window_end = float(window_end_raw) + 1.0
+            # If the anchor falls outside the local evidence window, treat it as
+            # stale/repeated-phrase mismatch and skip agreement scoring.
+            if (
+                float(whisper_anchor_start) < window_start
+                or float(whisper_anchor_start) > window_end
+            ):
+                continue
         sim = _agreement_text_similarity(line_text, whisper_anchor_text)
         if sim < agreement_min_text_similarity:
             continue
