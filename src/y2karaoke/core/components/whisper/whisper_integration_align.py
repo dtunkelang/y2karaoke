@@ -8,6 +8,9 @@ from ....utils.lex_lookup_installer import ensure_local_lex_lookup
 from ... import models, phonetic_utils
 from ..alignment import timing_models
 from .whisper_forced_alignment import align_lines_with_whisperx
+from .whisper_integration_shift_guard import (
+    should_apply_baseline_constraint as _should_apply_baseline_constraint,
+)
 
 _MIN_FORCED_WORD_COVERAGE = 0.2
 _MIN_FORCED_LINE_COVERAGE = 0.2
@@ -19,46 +22,6 @@ def _line_set_end(lines: List[models.Line]) -> float:
         if line.words:
             end_time = max(end_time, line.end_time)
     return end_time
-
-
-def _median(values: List[float]) -> float:
-    if not values:
-        return 0.0
-    ordered = sorted(values)
-    mid = len(ordered) // 2
-    if len(ordered) % 2:
-        return ordered[mid]
-    return (ordered[mid - 1] + ordered[mid]) / 2.0
-
-
-def _should_apply_baseline_constraint(
-    mapped_lines: List[models.Line],
-    baseline_lines: List[models.Line],
-    *,
-    matched_ratio: float,
-    line_coverage: float,
-    min_global_shift_sec: float = 2.5,
-    max_global_shift_sec: float = 12.0,
-) -> tuple[bool, float]:
-    """Return (apply_constraint, median_global_shift_sec)."""
-    shifts: List[float] = []
-    limit = min(len(mapped_lines), len(baseline_lines))
-    for idx in range(limit):
-        mapped = mapped_lines[idx]
-        baseline = baseline_lines[idx]
-        if not mapped.words or not baseline.words:
-            continue
-        shifts.append(mapped.start_time - baseline.start_time)
-
-    median_shift = _median(shifts)
-    if (
-        matched_ratio >= 0.55
-        and line_coverage >= 0.8
-        and abs(median_shift) >= min_global_shift_sec
-        and abs(median_shift) <= max_global_shift_sec
-    ):
-        return False, median_shift
-    return True, median_shift
 
 
 def _count_non_vocal_words_near_time(
