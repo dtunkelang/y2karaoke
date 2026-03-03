@@ -1124,7 +1124,11 @@ def _maybe_contextual_inflection_token(
             return _case_like(token, low + "g")
 
     # Directional/action context often loses a trailing "w" in OCR ("Ble down" -> "Blew down").
-    if next_norm in {"down", "up", "away"} and _is_spelled_word(low + "w"):
+    if (
+        next_norm in {"down", "up", "away"}
+        and not _is_spelled_word(low)
+        and _is_spelled_word(low + "w")
+    ):
         return _case_like(token, low + "w")
 
     # Line-start interjection confusion ("Aw who" -> "Oh who").

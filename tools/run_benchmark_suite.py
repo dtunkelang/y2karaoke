@@ -1075,6 +1075,96 @@ def _infer_alignment_policy_hint(
     }
 
 
+def _build_triage_rankings(
+    succeeded: list[dict[str, Any]], *, top_n: int = 5
+) -> dict[str, list[dict[str, Any]]]:
+    """Rank songs by likely reference divergence vs likely pipeline failure."""
+
+    def _f(metrics: dict[str, Any], key: str) -> float:
+        value = metrics.get(key)
+        return float(value) if isinstance(value, (int, float)) else 0.0
+
+    reference_rows: list[dict[str, Any]] = []
+    pipeline_rows: list[dict[str, Any]] = []
+
+    for record in succeeded:
+        metrics = record.get("metrics", {})
+        if not isinstance(metrics, dict):
+            continue
+        song_name = f"{record['artist']} - {record['title']}"
+        dtw_line = _f(metrics, "dtw_line_coverage")
+        dtw_word = _f(metrics, "dtw_word_coverage")
+        low_conf = _f(metrics, "low_confidence_ratio")
+        agree_cov = _f(metrics, "agreement_coverage_ratio")
+        agree_sim = _f(metrics, "agreement_text_similarity_mean")
+        agree_p95 = _f(metrics, "agreement_start_p95_abs_sec")
+        agree_bad = _f(metrics, "agreement_bad_ratio")
+
+        reference_score = 0.0
+        reference_reasons: list[str] = []
+        ref_div = record.get("reference_divergence", {})
+        if isinstance(ref_div, dict) and bool(ref_div.get("suspected")):
+            reference_score += (
+                2.0 + min(float(ref_div.get("score", 0.0) or 0.0), 4.0) / 2
+            )
+            reference_reasons.append("reference_divergence_suspected")
+        if (
+            not bool(metrics.get("gold_available"))
+            and dtw_line <= 0.6
+            and dtw_word <= 0.45
+            and agree_cov >= 0.07
+            and agree_sim >= 0.9
+            and agree_p95 <= 1.2
+            and low_conf <= 0.08
+        ):
+            reference_score += 1.0
+            reference_reasons.append("low_dtw_with_strong_anchor_agreement")
+        if reference_score > 0:
+            reference_rows.append(
+                {
+                    "song": song_name,
+                    "score": round(reference_score, 3),
+                    "reasons": sorted(set(reference_reasons)),
+                }
+            )
+
+        pipeline_score = 0.0
+        pipeline_reasons: list[str] = []
+        if dtw_line < 0.75:
+            pipeline_score += (0.75 - dtw_line) * 2.0
+            pipeline_reasons.append("low_dtw_line_coverage")
+        if dtw_word < 0.6:
+            pipeline_score += (0.6 - dtw_word) * 1.5
+            pipeline_reasons.append("low_dtw_word_coverage")
+        if low_conf > 0.1:
+            pipeline_score += min(low_conf, 0.5)
+            pipeline_reasons.append("high_low_confidence_ratio")
+        if agree_p95 > 1.0:
+            pipeline_score += min((agree_p95 - 1.0) / 2.0, 1.5)
+            pipeline_reasons.append("high_agreement_p95")
+        if agree_bad > 0.1:
+            pipeline_score += (agree_bad - 0.1) * 2.0
+            pipeline_reasons.append("high_agreement_bad_ratio")
+        if isinstance(ref_div, dict) and bool(ref_div.get("suspected")):
+            pipeline_score = max(0.0, pipeline_score - 1.0)
+            pipeline_reasons.append("downgraded_due_to_reference_divergence")
+        if pipeline_score > 0.25:
+            pipeline_rows.append(
+                {
+                    "song": song_name,
+                    "score": round(pipeline_score, 3),
+                    "reasons": sorted(set(pipeline_reasons)),
+                }
+            )
+
+    reference_rows.sort(key=lambda row: float(row["score"]), reverse=True)
+    pipeline_rows.sort(key=lambda row: float(row["score"]), reverse=True)
+    return {
+        "likely_reference_divergence": reference_rows[:top_n],
+        "likely_pipeline_failure": pipeline_rows[:top_n],
+    }
+
+
 def _aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:  # noqa: C901
     succeeded = [r for r in results if r["status"] == "ok"]
     failed = [r for r in results if r["status"] != "ok"]
@@ -1308,6 +1398,7 @@ def _aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:  # noqa: C901
         and bool(r["reference_divergence"].get("suspected"))
     ]
     reference_divergence_suspects.sort(key=lambda row: row["score"], reverse=True)
+    triage_rankings = _build_triage_rankings(succeeded, top_n=5)
 
     return {
         "songs_total": len(results),
@@ -1434,6 +1525,12 @@ def _aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:  # noqa: C901
             (len(reference_divergence_suspects) / len(succeeded)) if succeeded else 0.0,
             4,
         ),
+        "likely_reference_divergence_count": len(
+            triage_rankings.get("likely_reference_divergence", [])
+        ),
+        "likely_pipeline_failure_count": len(
+            triage_rankings.get("likely_pipeline_failure", [])
+        ),
         "gold_word_count_total": gold_word_count_total,
         "gold_comparable_word_count_total": gold_comparable_word_count_total,
         "gold_word_coverage_ratio_total": round(gold_word_coverage_ratio_total, 4),
@@ -1522,6 +1619,12 @@ def _aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:  # noqa: C901
                 key="gold_word_coverage_ratio", top_n=3, reverse=False
             ),
             "reference_divergence_suspects": reference_divergence_suspects[:5],
+            "likely_reference_divergence": triage_rankings.get(
+                "likely_reference_divergence", []
+            ),
+            "likely_pipeline_failure": triage_rankings.get(
+                "likely_pipeline_failure", []
+            ),
         },
         "cache_summary": cache_summary,
         "alignment_diagnostics_summary": {
@@ -1912,6 +2015,8 @@ def _write_markdown_summary(  # noqa: C901
         high_gold_start = hotspots.get("highest_avg_abs_word_start_delta_sec", [])
         low_gold_cov = hotspots.get("lowest_gold_word_coverage_ratio", [])
         ref_div_suspects = hotspots.get("reference_divergence_suspects", [])
+        likely_ref_div = hotspots.get("likely_reference_divergence", [])
+        likely_pipeline = hotspots.get("likely_pipeline_failure", [])
         if (
             low_dtw
             or high_low_conf
@@ -1922,6 +2027,8 @@ def _write_markdown_summary(  # noqa: C901
             or high_gold_start
             or low_gold_cov
             or ref_div_suspects
+            or likely_ref_div
+            or likely_pipeline
         ):
             lines.append("## Hotspots")
             lines.append("")
@@ -1978,6 +2085,32 @@ def _write_markdown_summary(  # noqa: C901
                             "  - "
                             f"{item.get('song')}: score={item.get('score')} "
                             f"({item.get('confidence')}); {evidence_text}"
+                        )
+            if likely_ref_div:
+                lines.append("- Triage ranking: likely reference divergence:")
+                for item in likely_ref_div:
+                    if isinstance(item, dict):
+                        reasons = item.get("reasons") or []
+                        reason_text = (
+                            ", ".join(str(v) for v in reasons[:3])
+                            if isinstance(reasons, list)
+                            else str(reasons)
+                        )
+                        lines.append(
+                            f"  - {item.get('song')}: score={item.get('score')} ({reason_text})"
+                        )
+            if likely_pipeline:
+                lines.append("- Triage ranking: likely pipeline failure:")
+                for item in likely_pipeline:
+                    if isinstance(item, dict):
+                        reasons = item.get("reasons") or []
+                        reason_text = (
+                            ", ".join(str(v) for v in reasons[:3])
+                            if isinstance(reasons, list)
+                            else str(reasons)
+                        )
+                        lines.append(
+                            f"  - {item.get('song')}: score={item.get('score')} ({reason_text})"
                         )
             lines.append("")
     if aggregate["failed_songs"]:
