@@ -1131,6 +1131,7 @@ def _build_triage_rankings(
         agree_sim = _f(metrics, "agreement_text_similarity_mean")
         agree_p95 = _f(metrics, "agreement_start_p95_abs_sec")
         agree_bad = _f(metrics, "agreement_bad_ratio")
+        agreement_reliability = max(0.3, min(1.0, agree_cov / 0.5))
 
         reference_score = 0.0
         reference_reasons: list[str] = []
@@ -1172,10 +1173,10 @@ def _build_triage_rankings(
             pipeline_score += min(low_conf, 0.5)
             pipeline_reasons.append("high_low_confidence_ratio")
         if agree_p95 > 1.0:
-            pipeline_score += min((agree_p95 - 1.0) / 2.0, 1.5)
+            pipeline_score += min((agree_p95 - 1.0) / 2.0, 1.5) * agreement_reliability
             pipeline_reasons.append("high_agreement_p95")
         if agree_bad > 0.1:
-            pipeline_score += (agree_bad - 0.1) * 2.0
+            pipeline_score += (agree_bad - 0.1) * 2.0 * agreement_reliability
             pipeline_reasons.append("high_agreement_bad_ratio")
         if isinstance(ref_div, dict) and bool(ref_div.get("suspected")):
             pipeline_score = max(0.0, pipeline_score - 1.0)

@@ -58,6 +58,28 @@ def test_build_triage_rankings_classifies_reference_and_pipeline():
     assert triage["likely_pipeline_failure"][0]["song"] == "B - Pipey"
 
 
+def test_build_triage_rankings_downweights_sparse_agreement_penalties():
+    module = _load_module()
+    succeeded = [
+        {
+            "artist": "A",
+            "title": "SparseAnchors",
+            "metrics": {
+                "gold_available": False,
+                "dtw_line_coverage": 0.98,
+                "dtw_word_coverage": 0.84,
+                "low_confidence_ratio": 0.06,
+                "agreement_coverage_ratio": 0.2,
+                "agreement_text_similarity_mean": 0.9,
+                "agreement_start_p95_abs_sec": 1.9,
+                "agreement_bad_ratio": 0.08,
+            },
+        },
+    ]
+    triage = module._build_triage_rankings(succeeded, top_n=5)
+    assert triage["likely_pipeline_failure"] == []
+
+
 def test_aggregate_includes_triage_ranking_fields():
     module = _load_module()
     results = [
