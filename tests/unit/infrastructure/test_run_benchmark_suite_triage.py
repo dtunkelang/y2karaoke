@@ -88,6 +88,49 @@ def test_aggregate_includes_triage_ranking_fields():
     assert "likely_pipeline_failure" in hotspots
 
 
+def test_infer_reference_divergence_with_gold_strong_dtw_high_mismatch():
+    module = _load_module()
+    result = module._infer_reference_divergence_suspicion(
+        {
+            "gold_available": True,
+            "line_count": 50,
+            "gold_comparable_word_count": 300,
+            "gold_word_coverage_ratio": 0.86,
+            "gold_start_mean_abs_sec": 14.6,
+            "gold_start_p95_abs_sec": 21.2,
+            "dtw_line_coverage": 0.9,
+            "dtw_word_coverage": 0.62,
+            "agreement_coverage_ratio": 0.02,
+            "agreement_text_similarity_mean": 0.84,
+            "agreement_bad_ratio": 0.03,
+            "low_confidence_ratio": 0.04,
+        }
+    )
+    assert result["suspected"] is True
+    assert "high_gold_mismatch_with_strong_dtw" in result["evidence"]
+
+
+def test_infer_reference_divergence_with_gold_weak_dtw_stays_false():
+    module = _load_module()
+    result = module._infer_reference_divergence_suspicion(
+        {
+            "gold_available": True,
+            "line_count": 60,
+            "gold_comparable_word_count": 220,
+            "gold_word_coverage_ratio": 0.8,
+            "gold_start_mean_abs_sec": 14.0,
+            "gold_start_p95_abs_sec": 22.0,
+            "dtw_line_coverage": 0.62,
+            "dtw_word_coverage": 0.4,
+            "agreement_coverage_ratio": 0.03,
+            "agreement_text_similarity_mean": 0.7,
+            "agreement_bad_ratio": 0.2,
+            "low_confidence_ratio": 0.18,
+        }
+    )
+    assert result["suspected"] is False
+
+
 def test_markdown_summary_includes_triage_rankings(tmp_path):
     module = _load_module()
     out_path = tmp_path / "summary.md"

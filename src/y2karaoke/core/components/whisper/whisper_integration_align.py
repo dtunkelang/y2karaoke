@@ -21,6 +21,44 @@ def _line_set_end(lines: List[models.Line]) -> float:
     return end_time
 
 
+def _median(values: List[float]) -> float:
+    if not values:
+        return 0.0
+    ordered = sorted(values)
+    mid = len(ordered) // 2
+    if len(ordered) % 2:
+        return ordered[mid]
+    return (ordered[mid - 1] + ordered[mid]) / 2.0
+
+
+def _should_apply_baseline_constraint(
+    mapped_lines: List[models.Line],
+    baseline_lines: List[models.Line],
+    *,
+    matched_ratio: float,
+    line_coverage: float,
+    min_global_shift_sec: float = 2.5,
+) -> tuple[bool, float]:
+    """Return (apply_constraint, median_global_shift_sec)."""
+    shifts: List[float] = []
+    limit = min(len(mapped_lines), len(baseline_lines))
+    for idx in range(limit):
+        mapped = mapped_lines[idx]
+        baseline = baseline_lines[idx]
+        if not mapped.words or not baseline.words:
+            continue
+        shifts.append(mapped.start_time - baseline.start_time)
+
+    median_shift = _median(shifts)
+    if (
+        matched_ratio >= 0.55
+        and line_coverage >= 0.55
+        and abs(median_shift) >= min_global_shift_sec
+    ):
+        return False, median_shift
+    return True, median_shift
+
+
 def _count_non_vocal_words_near_time(
     words: List[timing_models.TranscriptionWord],
     center_time: float,
@@ -358,7 +396,20 @@ def align_lrc_text_to_whisper_timings_impl(  # noqa: C901
     mapped_end = _line_set_end(mapped_lines)
     baseline_timeline_ratio = baseline_end / whisper_end if whisper_end > 0.0 else 1.0
     mapped_timeline_ratio = mapped_end / whisper_end if whisper_end > 0.0 else 1.0
-    mapped_lines = constrain_line_starts_to_baseline_fn(mapped_lines, baseline_lines)
+    apply_baseline_constraint, median_global_shift = _should_apply_baseline_constraint(
+        mapped_lines,
+        baseline_lines,
+        matched_ratio=matched_ratio,
+        line_coverage=line_coverage,
+    )
+    if apply_baseline_constraint:
+        mapped_lines = constrain_line_starts_to_baseline_fn(
+            mapped_lines, baseline_lines
+        )
+    else:
+        corrections.append(
+            "Skipped baseline start constraint due to strong global Whisper shift evidence"
+        )
 
     try:
         mapped_lines = snap_first_word_to_whisper_onset_fn(
@@ -368,7 +419,10 @@ def align_lrc_text_to_whisper_timings_impl(  # noqa: C901
         )
     except TypeError:
         mapped_lines = snap_first_word_to_whisper_onset_fn(mapped_lines, all_words)
-    mapped_lines = constrain_line_starts_to_baseline_fn(mapped_lines, baseline_lines)
+    if apply_baseline_constraint:
+        mapped_lines = constrain_line_starts_to_baseline_fn(
+            mapped_lines, baseline_lines
+        )
     mapped_lines, restored_weak = _restore_weak_evidence_large_start_shifts(
         mapped_lines,
         baseline_lines,
@@ -386,6 +440,8 @@ def align_lrc_text_to_whisper_timings_impl(  # noqa: C901
         "line_coverage": line_coverage,
         "baseline_timeline_ratio": baseline_timeline_ratio,
         "mapped_timeline_ratio": mapped_timeline_ratio,
+        "median_global_start_shift_sec": median_global_shift,
+        "baseline_constraint_applied": 1.0 if apply_baseline_constraint else 0.0,
         "phonetic_similarity_coverage": matched_ratio * avg_similarity,
         "high_similarity_ratio": avg_similarity,
         "exact_match_ratio": 0.0,

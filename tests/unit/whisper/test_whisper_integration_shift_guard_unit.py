@@ -154,3 +154,41 @@ def test_align_pipeline_uses_whisperx_on_low_dtw_coverage(monkeypatch):
     assert mapped == forced_lines
     assert metrics.get("whisperx_forced", 0.0) == pytest.approx(1.0)
     assert any("low DTW mapping coverage" in msg for msg in corrections)
+
+
+def test_should_apply_baseline_constraint_skips_for_strong_global_shift():
+    mapped = [
+        Line(words=[Word(text="a", start_time=20.0, end_time=21.0)]),
+        Line(words=[Word(text="b", start_time=30.0, end_time=31.0)]),
+    ]
+    baseline = [
+        Line(words=[Word(text="a", start_time=10.0, end_time=11.0)]),
+        Line(words=[Word(text="b", start_time=20.0, end_time=21.0)]),
+    ]
+    apply, median_shift = wialign._should_apply_baseline_constraint(
+        mapped,
+        baseline,
+        matched_ratio=0.8,
+        line_coverage=0.8,
+        min_global_shift_sec=2.5,
+    )
+    assert apply is False
+    assert median_shift == pytest.approx(10.0)
+
+
+def test_should_apply_baseline_constraint_keeps_for_weak_coverage():
+    mapped = [
+        Line(words=[Word(text="a", start_time=20.0, end_time=21.0)]),
+    ]
+    baseline = [
+        Line(words=[Word(text="a", start_time=10.0, end_time=11.0)]),
+    ]
+    apply, median_shift = wialign._should_apply_baseline_constraint(
+        mapped,
+        baseline,
+        matched_ratio=0.3,
+        line_coverage=0.4,
+        min_global_shift_sec=2.5,
+    )
+    assert apply is True
+    assert median_shift == pytest.approx(10.0)

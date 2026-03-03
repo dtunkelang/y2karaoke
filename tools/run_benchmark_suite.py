@@ -901,12 +901,23 @@ def _infer_reference_divergence_suspicion(metrics: dict[str, Any]) -> dict[str, 
 
     severe_gold_timing_mismatch = gold_start_mean >= 20.0 or gold_start_p95 >= 35.0
     gold_coverage_timing_combo = gold_cov <= 0.68 and gold_start_mean >= 10.0
+    high_gold_mismatch_with_strong_dtw = (
+        dtw_line_cov >= 0.88
+        and dtw_word_cov >= 0.55
+        and low_conf <= 0.1
+        and agree_cov <= 0.12
+        and gold_start_mean >= 10.0
+        and gold_start_p95 >= 18.0
+    )
     if severe_gold_timing_mismatch:
         score += 1.5
         evidence.append("severe_gold_timing_mismatch")
     elif gold_start_mean >= 10.0 and gold_start_p95 >= 20.0:
         score += 0.5
         evidence.append("elevated_gold_timing_mismatch")
+    if high_gold_mismatch_with_strong_dtw:
+        score += 1.25
+        evidence.append("high_gold_mismatch_with_strong_dtw")
     if gold_coverage_timing_combo:
         score += 1.0
         evidence.append("gold_coverage_timing_combo_mismatch")
