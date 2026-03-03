@@ -86,3 +86,57 @@ def test_aggregate_includes_triage_ranking_fields():
     hotspots = agg["quality_hotspots"]
     assert "likely_reference_divergence" in hotspots
     assert "likely_pipeline_failure" in hotspots
+
+
+def test_markdown_summary_includes_triage_rankings(tmp_path):
+    module = _load_module()
+    out_path = tmp_path / "summary.md"
+    aggregate = module._aggregate(
+        [
+            {
+                "artist": "A",
+                "title": "Refy",
+                "status": "ok",
+                "metrics": {
+                    "line_count": 10,
+                    "low_confidence_lines": 0,
+                    "low_confidence_ratio": 0.0,
+                    "dtw_line_coverage": 0.45,
+                    "dtw_word_coverage": 0.35,
+                    "agreement_count": 2,
+                    "agreement_coverage_ratio": 0.1,
+                    "agreement_text_similarity_mean": 0.95,
+                    "agreement_start_p95_abs_sec": 0.9,
+                    "agreement_bad_ratio": 0.02,
+                },
+                "reference_divergence": {"suspected": True, "score": 2.0},
+            },
+            {
+                "artist": "B",
+                "title": "Pipey",
+                "status": "ok",
+                "metrics": {
+                    "line_count": 12,
+                    "low_confidence_lines": 4,
+                    "low_confidence_ratio": 0.33,
+                    "dtw_line_coverage": 0.2,
+                    "dtw_word_coverage": 0.1,
+                    "agreement_count": 3,
+                    "agreement_coverage_ratio": 0.2,
+                    "agreement_text_similarity_mean": 0.6,
+                    "agreement_start_p95_abs_sec": 2.2,
+                    "agreement_bad_ratio": 0.3,
+                },
+            },
+        ]
+    )
+    module._write_markdown_summary(
+        out_path,
+        run_id="run1",
+        manifest=Path("manifest.yaml"),
+        aggregate=aggregate,
+        songs=[],
+    )
+    content = out_path.read_text(encoding="utf-8")
+    assert "Triage ranking: likely reference divergence" in content
+    assert "Triage ranking: likely pipeline failure" in content
