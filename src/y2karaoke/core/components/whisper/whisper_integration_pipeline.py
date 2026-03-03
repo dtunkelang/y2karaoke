@@ -141,6 +141,48 @@ def _run_mapped_line_postpasses(
     )
 
 
+def _should_retry_with_aggressive_whisper(
+    lines: List[models.Line],
+    *,
+    aggressive: bool,
+    metrics: Dict[str, float],
+) -> bool:
+    if aggressive or len(lines) < 25:
+        return False
+    matched_ratio = float(metrics.get("matched_ratio", 0.0) or 0.0)
+    line_coverage = float(metrics.get("line_coverage", 0.0) or 0.0)
+    phonetic_coverage = float(metrics.get("phonetic_similarity_coverage", 0.0) or 0.0)
+    # Retry only for borderline mappings where VAD aggressiveness often helps.
+    if matched_ratio < 0.78 or matched_ratio > 0.88:
+        return False
+    if line_coverage < 0.80 or line_coverage > 0.92:
+        return False
+    if phonetic_coverage < 0.35:
+        return False
+    return True
+
+
+def _retry_improves_alignment(
+    baseline_metrics: Dict[str, float],
+    retry_metrics: Dict[str, float],
+) -> bool:
+    base_matched = float(baseline_metrics.get("matched_ratio", 0.0) or 0.0)
+    base_line = float(baseline_metrics.get("line_coverage", 0.0) or 0.0)
+    base_phonetic = float(
+        baseline_metrics.get("phonetic_similarity_coverage", 0.0) or 0.0
+    )
+    retry_matched = float(retry_metrics.get("matched_ratio", 0.0) or 0.0)
+    retry_line = float(retry_metrics.get("line_coverage", 0.0) or 0.0)
+    retry_phonetic = float(
+        retry_metrics.get("phonetic_similarity_coverage", 0.0) or 0.0
+    )
+    return (
+        (retry_matched >= base_matched + 0.03 and retry_line >= base_line - 0.02)
+        or (retry_line >= base_line + 0.05 and retry_matched >= base_matched - 0.01)
+        or (retry_phonetic >= base_phonetic + 0.05 and retry_matched >= base_matched)
+    )
+
+
 def transcribe_vocals_impl(
     vocals_path: str,
     language: Optional[str],
@@ -215,7 +257,7 @@ def align_lrc_text_to_whisper_timings_impl(  # noqa: C901
     pull_lines_forward_for_continuous_vocals_fn: Callable[..., Any],
     logger,
 ) -> Tuple[List[models.Line], List[str], Dict[str, float]]:
-    return _align_lrc_text_to_whisper_timings_impl(
+    mapped_lines, corrections, metrics = _align_lrc_text_to_whisper_timings_impl(
         lines,
         vocals_path,
         language,
@@ -261,6 +303,69 @@ def align_lrc_text_to_whisper_timings_impl(  # noqa: C901
         min_segment_overlap_coverage=_MIN_SEGMENT_OVERLAP_COVERAGE,
         logger=logger,
     )
+    if _should_retry_with_aggressive_whisper(
+        lines, aggressive=aggressive, metrics=metrics
+    ):
+        retry_lines, retry_corrections, retry_metrics = (
+            _align_lrc_text_to_whisper_timings_impl(
+                lines,
+                vocals_path,
+                language,
+                model_size,
+                True,
+                temperature,
+                min_similarity,
+                audio_features,
+                lenient_vocal_activity_threshold,
+                lenient_activity_bonus,
+                low_word_confidence_threshold,
+                transcribe_vocals_fn=transcribe_vocals_fn,
+                extract_audio_features_fn=extract_audio_features_fn,
+                dedupe_whisper_segments_fn=dedupe_whisper_segments_fn,
+                trim_whisper_transcription_by_lyrics_fn=trim_whisper_transcription_by_lyrics_fn,
+                fill_vocal_activity_gaps_fn=fill_vocal_activity_gaps_fn,
+                extract_lrc_words_all_fn=extract_lrc_words_all_fn,
+                build_phoneme_tokens_from_lrc_words_fn=build_phoneme_tokens_from_lrc_words_fn,
+                build_phoneme_tokens_from_whisper_words_fn=build_phoneme_tokens_from_whisper_words_fn,
+                build_syllable_tokens_from_phonemes_fn=build_syllable_tokens_from_phonemes_fn,
+                build_segment_text_overlap_assignments_fn=build_segment_text_overlap_assignments_fn,
+                build_phoneme_dtw_path_fn=build_phoneme_dtw_path_fn,
+                build_word_assignments_from_phoneme_path_fn=build_word_assignments_from_phoneme_path_fn,
+                build_block_segmented_syllable_assignments_fn=build_block_segmented_syllable_assignments_fn,
+                map_lrc_words_to_whisper_fn=map_lrc_words_to_whisper_fn,
+                dedupe_whisper_words_fn=dedupe_whisper_words_fn,
+                interpolate_unmatched_lines_fn=interpolate_unmatched_lines_fn,
+                refine_unmatched_lines_with_onsets_fn=refine_unmatched_lines_with_onsets_fn,
+                shift_repeated_lines_to_next_whisper_fn=shift_repeated_lines_to_next_whisper_fn,
+                extend_line_to_trailing_whisper_matches_fn=extend_line_to_trailing_whisper_matches_fn,
+                pull_late_lines_to_matching_segments_fn=pull_late_lines_to_matching_segments_fn,
+                retime_short_interjection_lines_fn=retime_short_interjection_lines_fn,
+                snap_first_word_to_whisper_onset_fn=snap_first_word_to_whisper_onset_fn,
+                pull_lines_forward_for_continuous_vocals_fn=pull_lines_forward_for_continuous_vocals_fn,
+                enforce_monotonic_line_starts_whisper_fn=enforce_monotonic_line_starts_whisper_fn,
+                resolve_line_overlaps_fn=resolve_line_overlaps_fn,
+                run_mapped_line_postpasses_fn=_run_mapped_line_postpasses,
+                constrain_line_starts_to_baseline_fn=_constrain_line_starts_to_baseline,
+                should_rollback_short_line_degradation_fn=_should_rollback_short_line_degradation,
+                restore_implausibly_short_lines_fn=_restore_implausibly_short_lines,
+                clone_lines_for_fallback_fn=_clone_lines_for_fallback,
+                filter_low_confidence_whisper_words_fn=_filter_low_confidence_whisper_words,
+                min_segment_overlap_coverage=_MIN_SEGMENT_OVERLAP_COVERAGE,
+                logger=logger,
+            )
+        )
+        if _retry_improves_alignment(metrics, retry_metrics):
+            merged_metrics = dict(retry_metrics)
+            merged_metrics["aggressive_retry_applied"] = 1.0
+            retry_corrections = list(retry_corrections)
+            retry_corrections.append(
+                "Accepted aggressive Whisper retry after weak initial alignment coverage"
+            )
+            return retry_lines, retry_corrections, merged_metrics
+        metrics = dict(metrics)
+        metrics["aggressive_retry_attempted"] = 1.0
+        metrics["aggressive_retry_applied"] = 0.0
+    return mapped_lines, corrections, metrics
 
 
 def correct_timing_with_whisper_impl(  # noqa: C901
