@@ -3,7 +3,6 @@
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
 from ... import models
-from ..alignment.alignment_policy import should_retry_aggressive_whisper_dtw_map
 from ..alignment import timing_models
 from .whisper_integration_baseline import (
     _clone_lines_for_fallback as _clone_lines_for_fallback_impl,
@@ -31,6 +30,10 @@ from .whisper_integration_correct import (
 )
 from .whisper_integration_transcribe import (
     transcribe_vocals_impl as _transcribe_vocals_impl,
+)
+from .whisper_integration_retry import (
+    retry_improves_alignment as _retry_improves_alignment,
+    should_retry_with_aggressive_whisper as _should_retry_with_aggressive_whisper,
 )
 
 _MIN_SEGMENT_OVERLAP_COVERAGE = 0.45
@@ -139,40 +142,6 @@ def _run_mapped_line_postpasses(
         pull_lines_forward_for_continuous_vocals_fn=pull_lines_forward_for_continuous_vocals_fn,
         enforce_monotonic_line_starts_whisper_fn=enforce_monotonic_line_starts_whisper_fn,
         resolve_line_overlaps_fn=resolve_line_overlaps_fn,
-    )
-
-
-def _should_retry_with_aggressive_whisper(
-    lines: List[models.Line],
-    *,
-    aggressive: bool,
-    metrics: Dict[str, float],
-) -> bool:
-    return should_retry_aggressive_whisper_dtw_map(
-        line_count=len(lines),
-        aggressive_already_enabled=aggressive,
-        metrics=metrics,
-    )
-
-
-def _retry_improves_alignment(
-    baseline_metrics: Dict[str, float],
-    retry_metrics: Dict[str, float],
-) -> bool:
-    base_matched = float(baseline_metrics.get("matched_ratio", 0.0) or 0.0)
-    base_line = float(baseline_metrics.get("line_coverage", 0.0) or 0.0)
-    base_phonetic = float(
-        baseline_metrics.get("phonetic_similarity_coverage", 0.0) or 0.0
-    )
-    retry_matched = float(retry_metrics.get("matched_ratio", 0.0) or 0.0)
-    retry_line = float(retry_metrics.get("line_coverage", 0.0) or 0.0)
-    retry_phonetic = float(
-        retry_metrics.get("phonetic_similarity_coverage", 0.0) or 0.0
-    )
-    return (
-        (retry_matched >= base_matched + 0.03 and retry_line >= base_line - 0.02)
-        or (retry_line >= base_line + 0.05 and retry_matched >= base_matched - 0.01)
-        or (retry_phonetic >= base_phonetic + 0.05 and retry_matched >= base_matched)
     )
 
 
@@ -297,7 +266,7 @@ def align_lrc_text_to_whisper_timings_impl(  # noqa: C901
         logger=logger,
     )
     if _should_retry_with_aggressive_whisper(
-        lines, aggressive=aggressive, metrics=metrics
+        line_count=len(lines), aggressive=aggressive, metrics=metrics
     ):
         retry_lines, retry_corrections, retry_metrics = (
             _align_lrc_text_to_whisper_timings_impl(
