@@ -8,7 +8,9 @@ from __future__ import annotations
 import logging
 import os
 import shutil
+import subprocess
 import sys
+import tempfile
 from pathlib import Path
 from typing import Optional
 
@@ -26,20 +28,48 @@ def _build_script_content(python_executable: str) -> str:
     )
 
 
+def _is_usable_lex_lookup(path: Path) -> bool:
+    try:
+        completed = subprocess.run(
+            [str(path), "lexlookupprobe"],
+            capture_output=True,
+            text=True,
+            timeout=2,
+            check=False,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return False
+    return completed.returncode == 0
+
+
+def _resolve_shim_dir() -> Path:
+    primary = Path(tempfile.gettempdir()) / "y2karaoke" / "lex_lookup"
+    try:
+        primary.mkdir(parents=True, exist_ok=True)
+        return primary
+    except OSError:
+        pass
+    cache_dir = get_cache_dir()
+    fallback = cache_dir / "lex_lookup"
+    fallback.mkdir(parents=True, exist_ok=True)
+    return fallback
+
+
 def ensure_local_lex_lookup() -> Optional[Path]:
     """Ensure a lex_lookup shim exists on PATH for this environment."""
     global _lex_lookup_added
     found = shutil.which(_LEX_LOOKUP_BIN_NAME)
-    if _lex_lookup_added and found:
-        return Path(found)
-
     if found:
-        _lex_lookup_added = True
-        return Path(found)
+        found_path = Path(found)
+        if _is_usable_lex_lookup(found_path):
+            _lex_lookup_added = True
+            return found_path
+        logger.warning(
+            "Ignoring unusable lex_lookup binary at %s; installing local shim.",
+            found_path,
+        )
 
-    cache_dir = get_cache_dir()
-    shim_dir = cache_dir / "lex_lookup"
-    shim_dir.mkdir(parents=True, exist_ok=True)
+    shim_dir = _resolve_shim_dir()
     stub_path = shim_dir / _LEX_LOOKUP_BIN_NAME
     content = _build_script_content(sys.executable)
     if not stub_path.exists() or stub_path.read_text(encoding="utf-8") != content:

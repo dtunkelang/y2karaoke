@@ -395,6 +395,7 @@ def test_build_generate_command_includes_expected_flags(tmp_path):
     assert cmd[:4] == ["python", "-m", "y2karaoke.cli", "generate"]
     assert "--offline" in cmd
     assert "--force" in cmd
+    assert "--whisper" not in cmd
     assert "--whisper-map-lrc-dtw" in cmd
     assert "--work-dir" in cmd
     assert str(cache_dir) in cmd
