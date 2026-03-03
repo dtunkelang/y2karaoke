@@ -83,9 +83,51 @@ def test_aggregate_includes_triage_ranking_fields():
     agg = module._aggregate(results)
     assert agg["likely_reference_divergence_count"] >= 1
     assert agg["likely_pipeline_failure_count"] >= 0
+    assert (
+        "avg_abs_word_start_delta_sec_word_weighted_mean_excluding_reference_divergence"
+        in agg
+    )
     hotspots = agg["quality_hotspots"]
     assert "likely_reference_divergence" in hotspots
     assert "likely_pipeline_failure" in hotspots
+
+
+def test_aggregate_reports_reference_excluded_primary_metric():
+    module = _load_module()
+    results = [
+        {
+            "artist": "A",
+            "title": "Refy",
+            "status": "ok",
+            "metrics": {
+                "line_count": 10,
+                "avg_abs_word_start_delta_sec": 12.0,
+                "gold_comparable_word_count": 100,
+                "gold_word_count": 100,
+            },
+            "reference_divergence": {"suspected": True, "score": 3.0},
+        },
+        {
+            "artist": "B",
+            "title": "Clean",
+            "status": "ok",
+            "metrics": {
+                "line_count": 10,
+                "avg_abs_word_start_delta_sec": 2.0,
+                "gold_comparable_word_count": 100,
+                "gold_word_count": 100,
+            },
+            "reference_divergence": {"suspected": False, "score": 0.0},
+        },
+    ]
+    agg = module._aggregate(results)
+    assert agg["avg_abs_word_start_delta_sec_word_weighted_mean"] == 7.0
+    assert (
+        agg[
+            "avg_abs_word_start_delta_sec_word_weighted_mean_excluding_reference_divergence"
+        ]
+        == 2.0
+    )
 
 
 def test_infer_reference_divergence_with_gold_strong_dtw_high_mismatch():

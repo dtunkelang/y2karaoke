@@ -1228,6 +1228,27 @@ def _aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:  # noqa: C901
             return None
         return weighted_sum / total_weight
 
+    def weighted_metric_mean_for_rows(
+        rows: list[dict[str, Any]], key: str, *, weight_key: str = "line_count"
+    ) -> float | None:
+        weighted_sum = 0.0
+        total_weight = 0.0
+        for row in rows:
+            metrics_obj = row.get("metrics", {})
+            if not isinstance(metrics_obj, dict):
+                continue
+            value = metrics_obj.get(key)
+            weight = metrics_obj.get(weight_key)
+            if not isinstance(value, (int, float)):
+                continue
+            if not isinstance(weight, (int, float)) or float(weight) <= 0:
+                continue
+            weighted_sum += float(value) * float(weight)
+            total_weight += float(weight)
+        if total_weight <= 0:
+            return None
+        return weighted_sum / total_weight
+
     def metric_mean(key: str) -> float | None:
         result = _mean(metric_values(key))
         return float(result) if result is not None else None
@@ -1430,6 +1451,22 @@ def _aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:  # noqa: C901
         and bool(r["reference_divergence"].get("suspected"))
     ]
     reference_divergence_suspects.sort(key=lambda row: row["score"], reverse=True)
+    reference_divergence_song_keys = {
+        row["song"] for row in reference_divergence_suspects if isinstance(row, dict)
+    }
+    gold_measured_non_reference_songs = [
+        row
+        for row in gold_measured_songs
+        if f"{row['artist']} - {row['title']}" not in reference_divergence_song_keys
+    ]
+    gold_metric_song_count_excluding_reference = len(gold_measured_non_reference_songs)
+    avg_abs_word_start_delta_word_weighted_mean_excluding_reference = (
+        weighted_metric_mean_for_rows(
+            gold_measured_non_reference_songs,
+            "avg_abs_word_start_delta_sec",
+            weight_key="gold_comparable_word_count",
+        )
+    )
     triage_rankings = _build_triage_rankings(succeeded, top_n=5)
 
     return {
@@ -1552,6 +1589,17 @@ def _aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:  # noqa: C901
         "gold_metric_song_coverage_ratio": round(
             (gold_metric_song_count / len(succeeded)) if succeeded else 0.0, 4
         ),
+        "gold_metric_song_count_excluding_reference_divergence": (
+            gold_metric_song_count_excluding_reference
+        ),
+        "gold_metric_song_coverage_ratio_excluding_reference_divergence": round(
+            (
+                (gold_metric_song_count_excluding_reference / len(succeeded))
+                if succeeded
+                else 0.0
+            ),
+            4,
+        ),
         "reference_divergence_suspected_count": len(reference_divergence_suspects),
         "reference_divergence_suspected_ratio": round(
             (len(reference_divergence_suspects) / len(succeeded)) if succeeded else 0.0,
@@ -1586,6 +1634,18 @@ def _aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:  # noqa: C901
                 "avg_abs_word_start_delta_sec",
                 weight_key="gold_comparable_word_count",
             )
+            is not None
+            else None
+        ),
+        "avg_abs_word_start_delta_sec_word_weighted_mean_excluding_reference_divergence": (
+            round(
+                float(
+                    avg_abs_word_start_delta_word_weighted_mean_excluding_reference
+                    or 0.0
+                ),
+                4,
+            )
+            if avg_abs_word_start_delta_word_weighted_mean_excluding_reference
             is not None
             else None
         ),
@@ -1881,6 +1941,11 @@ def _write_markdown_summary(  # noqa: C901
     lines.append(
         "- Primary metric (avg abs word-start delta): "
         f"`{_fmt_num(aggregate.get('avg_abs_word_start_delta_sec_word_weighted_mean'), unit='s')}` (word-weighted)"
+    )
+    lines.append(
+        "- Primary metric excluding reference-divergence suspects: "
+        f"`{_fmt_num(aggregate.get('avg_abs_word_start_delta_sec_word_weighted_mean_excluding_reference_divergence'), unit='s')}` "
+        "(word-weighted)"
     )
     lines.append(
         "- Secondary metric (avg abs word-end delta): "
@@ -3330,6 +3395,8 @@ def main() -> int:  # noqa: C901
     print(
         "- mean metrics: "
         f"gold_start_abs_mean_weighted={(aggregate.get('avg_abs_word_start_delta_sec_word_weighted_mean') or 0.0):.3f}s, "
+        "gold_start_abs_mean_weighted_ex_ref_div="
+        f"{(aggregate.get('avg_abs_word_start_delta_sec_word_weighted_mean_excluding_reference_divergence') or 0.0):.3f}s, "
         f"gold_start_p95_mean={(aggregate.get('gold_start_p95_abs_sec_mean') or 0.0):.3f}s, "
         f"gold_end_abs_mean={(aggregate.get('gold_end_mean_abs_sec_mean') or 0.0):.3f}s, "
         f"gold_cov={(aggregate.get('gold_word_coverage_ratio_total') or 0.0):.3f}, "
