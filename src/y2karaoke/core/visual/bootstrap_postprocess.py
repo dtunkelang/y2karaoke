@@ -41,6 +41,15 @@ from .bootstrap_postprocess_block_cycle_passes import (
     _retime_short_interstitial_output_lines,
     _trim_leading_vocalization_prefixes,
 )
+from .bootstrap_postprocess_token_ocr import (
+    OCR_SUB_CHAR_MAP as _OCR_SUB_CHAR_MAP,
+    best_ocr_substitution as _best_ocr_substitution_impl,
+    fallback_spell_checker as _fallback_spell_checker_impl,
+    fallback_spell_guess as _fallback_spell_guess_impl,
+    is_safe_spell_guess_correction as _is_safe_spell_guess_correction_impl,
+    ocr_insertion_candidates as _ocr_insertion_candidates_impl,
+    ocr_substitution_candidates as _ocr_substitution_candidates_impl,
+)
 
 _FUSED_FALLBACK_PREFIX_ANCHORS = (
     "i",
@@ -100,16 +109,6 @@ _CONTRACTION_RESTORES = {
     "im": "I'm",
     "ive": "I've",
     "ill": "I'll",
-}
-_OCR_SUB_CHAR_MAP = {
-    "i": ("l",),
-    "l": ("i",),
-    "1": ("l", "i"),
-    "|": ("l", "i"),
-    "y": ("w",),
-    "w": ("y",),
-    "0": ("o",),
-    "o": ("0",),
 }
 _OVERLAY_PLATFORM_TOKENS = {
     "youtube",
@@ -766,14 +765,8 @@ def _case_like(source: str, token: str) -> str:
     return token
 
 
-@lru_cache(maxsize=1)
 def _fallback_spell_checker() -> Any:
-    try:
-        from AppKit import NSSpellChecker
-
-        return NSSpellChecker.sharedSpellChecker()
-    except Exception:
-        return None
+    return _fallback_spell_checker_impl()
 
 
 @lru_cache(maxsize=4096)
@@ -872,121 +865,33 @@ def _contextual_compound_split(
 
 
 def _fallback_spell_guess(token: str) -> str | None:
-    checker = _fallback_spell_checker()
-    if checker is None:
-        return None
-    try:
-        missed = checker.checkSpellingOfString_startingAt_(token, 0)
-        if missed.length <= 0:
-            return None
-        guesses = checker.guessesForWordRange_inString_language_inSpellDocumentWithTag_(
-            missed, token, "en", 0
-        )
-        if not guesses:
-            return None
-        return str(guesses[0])
-    except Exception:
-        return None
+    return _fallback_spell_guess_impl(
+        token, fallback_spell_checker_fn=_fallback_spell_checker
+    )
 
 
 def _is_safe_spell_guess_correction(source: str, guess: str) -> bool:
-    s = source.lower()
-    g = guess.lower()
-    if not s.isalpha() or not g.isalpha():
-        return False
-    if s == g:
-        return False
-    if len(s) < 4 or len(g) < 4:
-        return False
-    if abs(len(s) - len(g)) > 1:
-        return False
-    if SequenceMatcher(None, s, g).ratio() < 0.75:
-        return False
-    # Require shared suffix or prefix to avoid wild substitutions.
-    if not (s[:2] == g[:2] or s[-3:] == g[-3:] or s[1:] == g[1:]):
-        return False
-    return True
+    return _is_safe_spell_guess_correction_impl(source, guess)
 
 
 def _ocr_substitution_candidates(token: str) -> list[str]:
-    low = token.lower()
-    if not low.isalpha() or len(low) < 3 or len(low) > 8:
-        return []
-
-    candidates: set[str] = set()
-    chars = list(low)
-    # 1-edit substitutions
-    for i, ch in enumerate(chars):
-        for repl in _OCR_SUB_CHAR_MAP.get(ch, ()):
-            if repl == ch:
-                continue
-            cand_chars = chars.copy()
-            cand_chars[i] = repl
-            candidates.add("".join(cand_chars))
-    # 2-edit substitutions (bounded to short invalid tokens)
-    if len(low) <= 6 and not _is_spelled_word(low):
-        one_edit = list(candidates)
-        for base in one_edit:
-            bchars = list(base)
-            for i, ch in enumerate(bchars):
-                for repl in _OCR_SUB_CHAR_MAP.get(ch, ()):
-                    if repl == ch:
-                        continue
-                    cand_chars = bchars.copy()
-                    cand_chars[i] = repl
-                    candidates.add("".join(cand_chars))
-
-    out = []
-    for cand in sorted(candidates):
-        if cand == low:
-            continue
-        if _is_spelled_word(cand):
-            out.append(cand)
-    return out
+    return _ocr_substitution_candidates_impl(
+        token, is_spelled_word_fn=_is_spelled_word, sub_char_map=_OCR_SUB_CHAR_MAP
+    )
 
 
 def _ocr_insertion_candidates(token: str) -> list[str]:
-    low = token.lower()
-    if not low.isalpha() or len(low) < 2 or len(low) > 5:
-        return []
-    if _is_spelled_word(low):
-        return []
-    alphabet = ("w", "l", "i", "e", "o", "a", "u", "r", "n")
-    out = []
-    seen: set[str] = set()
-    for i in range(len(low) + 1):
-        for ch in alphabet:
-            cand = low[:i] + ch + low[i:]
-            if cand in seen:
-                continue
-            seen.add(cand)
-            if _is_spelled_word(cand):
-                out.append(cand)
-    return out
+    return _ocr_insertion_candidates_impl(token, is_spelled_word_fn=_is_spelled_word)
 
 
 def _best_ocr_substitution(token: str) -> str | None:
-    low = token.lower()
-    if _is_spelled_word(low):
-        return None
-    best: tuple[float, str] | None = None
-    for cand in _ocr_substitution_candidates(low):
-        score = SequenceMatcher(None, low, cand).ratio()
-        # Lower threshold than spell-guess path because OCR confusions can require 2 edits.
-        if score < 0.58:
-            continue
-        if best is None or score > best[0]:
-            best = (score, cand)
-    if best is None:
-        for cand in _ocr_insertion_candidates(low):
-            score = SequenceMatcher(None, low, cand).ratio()
-            if score < 0.72:
-                continue
-            if best is None or score > best[0]:
-                best = (score, cand)
-    if best is None:
-        return None
-    return _case_like(token, best[1])
+    return _best_ocr_substitution_impl(
+        token,
+        is_spelled_word_fn=_is_spelled_word,
+        case_like_fn=_case_like,
+        ocr_substitution_candidates_fn=_ocr_substitution_candidates,
+        ocr_insertion_candidates_fn=_ocr_insertion_candidates,
+    )
 
 
 def _maybe_repair_output_token(text: str, confidence: float) -> str:
