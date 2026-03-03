@@ -15,6 +15,11 @@ from .reconstruction_block_first_segmentation import (
     split_block_on_row_cycle_resets as _split_block_on_row_cycle_resets_impl,
     split_block_on_row_text_phase_changes as _split_block_on_row_text_phase_changes_impl,
 )
+from .reconstruction_block_first_windows import (
+    estimate_cycle_row_windows_from_block as _estimate_cycle_row_windows_from_block_impl,
+    estimate_row_windows_from_block as _estimate_row_windows_from_block_impl,
+    estimate_row_windows_from_seq as _estimate_row_windows_from_seq_impl,
+)
 from .reconstruction_frame_accumulation import (
     _calculate_visibility_threshold,
     _group_words_into_lines,
@@ -185,270 +190,20 @@ def _estimate_row_windows_from_block(  # noqa: C901
     block_frames: list[_FrameState],
     row_clusters: list[_BlockRow],
 ) -> Optional[list[tuple[float, float]]]:
-    """Estimate row onset/offsets from selected-row progression inside a block.
-
-    Uses per-row normalized brightness so baseline row brightness does not dominate.
-    Returns windows in row-cluster order when a stable sequence is detected.
-    """
-    row_count = len(row_clusters)
-    if row_count < 3 or row_count > 5:
-        return None
-
-    # Map frame rows to cluster rows by y proximity.
-    frame_rows: list[tuple[float, list[_FrameRow | None]]] = []
-    row_brightness: list[list[float]] = [[] for _ in range(row_count)]
-    for fr in block_frames:
-        mapped: list[Optional[_FrameRow]] = [None] * row_count
-        for r in fr.rows:
-            best_idx: Optional[int] = None
-            best_dist = 1e9
-            for idx, c in enumerate(row_clusters):
-                d = abs(float(c.y) - float(r.y))
-                if d <= 28.0 and d < best_dist:
-                    best_idx = idx
-                    best_dist = d
-            if best_idx is None:
-                continue
-            prev = mapped[best_idx]
-            # Prefer visible or brighter observation when multiple rows collide.
-            if (
-                prev is None
-                or (r.is_visible and not prev.is_visible)
-                or (r.is_visible == prev.is_visible and r.brightness > prev.brightness)
-            ):
-                mapped[best_idx] = r
-        if sum(1 for m in mapped if m is not None) < row_count - 1:
-            continue
-        resolved: list[_FrameRow] = []
-        for idx in range(row_count):
-            mapped_row = mapped[idx]
-            if mapped_row is None:
-                # If exactly one row missing, use a placeholder-like baseline row.
-                # This frame will contribute weakly and may still be useful for timing.
-                continue
-            resolved.append(mapped_row)
-            row_brightness[idx].append(float(mapped_row.brightness))
-        if len(resolved) >= row_count - 1:
-            frame_rows.append((float(fr.time), mapped))  # type: ignore[arg-type]
-
-    if len(frame_rows) < 10:
-        return None
-
-    row_minmax: list[tuple[float, float]] = []
-    for vals in row_brightness:
-        if not vals:
-            return None
-        mn = min(vals)
-        mx = max(vals)
-        row_minmax.append((mn, mx if mx > mn else mn + 1.0))
-
-    # For each frame, pick the most likely selected row by normalized brightness.
-    seq: list[tuple[float, int, list[float]]] = []
-    for t, mapped in frame_rows:
-        norm_vals: list[float] = []
-        for idx in range(row_count):
-            row = mapped[idx]
-            if row is None:
-                norm_vals.append(0.0)
-                continue
-            mn, mx = row_minmax[idx]
-            norm_vals.append((float(row.brightness) - mn) / max(1.0, mx - mn))
-        if max(norm_vals) < 0.28:
-            continue
-        selected_idx = max(range(row_count), key=lambda idx: (norm_vals[idx], -idx))
-        seq.append((t, selected_idx, norm_vals))
-
-    if len(seq) < 8:
-        return None
-
-    # Row window onset: first time a row becomes dominant after previous row.
-    onsets: list[Optional[float]] = [None] * row_count
-    offsets: list[Optional[float]] = [None] * row_count
-    prev_idx = seq[0][1]
-    onsets[prev_idx] = seq[0][0]
-    for t, idx, _vals in seq[1:]:
-        if idx != prev_idx:
-            if offsets[prev_idx] is None:
-                offsets[prev_idx] = t
-            if onsets[idx] is None:
-                onsets[idx] = t
-            prev_idx = idx
-    if offsets[prev_idx] is None:
-        offsets[prev_idx] = seq[-1][0] + 0.2
-
-    # Fill missing rows conservatively from observation windows.
-    for idx, cluster in enumerate(row_clusters):
-        if onsets[idx] is None:
-            obs_times = sorted(r.time for r in cluster.observations if r.is_visible)
-            if obs_times:
-                onsets[idx] = float(obs_times[0])
-        if offsets[idx] is None:
-            obs_times = sorted(r.time for r in cluster.observations if r.is_visible)
-            if obs_times:
-                offsets[idx] = float(obs_times[-1]) + 0.2
-
-    if any(v is None for v in onsets) or any(v is None for v in offsets):
-        return None
-
-    windows: list[tuple[float, float]] = []
-    prev_t = float(block_frames[0].time) - 0.05
-    for idx in range(row_count):
-        on = onsets[idx]
-        off = offsets[idx]
-        if on is None or off is None:
-            return None
-        s = max(float(on), prev_t + 0.05)
-        e = max(s + 0.2, float(off))
-        windows.append((s, e))
-        prev_t = s
-    return windows
+    return _estimate_row_windows_from_block_impl(block_frames, row_clusters)
 
 
 def _estimate_cycle_row_windows_from_block(  # noqa: C901
     block_frames: list[_FrameState],
     row_clusters: list[_BlockRow],
 ) -> Optional[list[tuple[float, float, list[tuple[float, float]]]]]:
-    """Estimate repeated cycles inside a stable block.
-
-    Returns cycle segments as (cycle_start, cycle_end, row_windows) when the block
-    appears to contain repeated highlight sweeps over the same rows.
-    """
-    row_count = len(row_clusters)
-    if row_count < 2 or row_count > 5:
-        return None
-    if len(block_frames) < 20:
-        return None
-    duration = float(block_frames[-1].time) - float(block_frames[0].time)
-    if duration < 6.5 or duration > 12.0:
-        return None
-    if not _has_strong_top_row_phase_change(block_frames):
-        return None
-
-    # Build normalized selected-row sequence (same approach as row-window estimation).
-    frame_rows: list[tuple[float, list[Optional[_FrameRow]]]] = []
-    row_brightness: list[list[float]] = [[] for _ in range(row_count)]
-    for fr in block_frames:
-        mapped: list[Optional[_FrameRow]] = [None] * row_count
-        for r in fr.rows:
-            best_idx: Optional[int] = None
-            best_dist = 1e9
-            for idx, c in enumerate(row_clusters):
-                d = abs(float(c.y) - float(r.y))
-                if d <= 28.0 and d < best_dist:
-                    best_idx = idx
-                    best_dist = d
-            if best_idx is None:
-                continue
-            prev = mapped[best_idx]
-            if (
-                prev is None
-                or (r.is_visible and not prev.is_visible)
-                or (r.is_visible == prev.is_visible and r.brightness > prev.brightness)
-            ):
-                mapped[best_idx] = r
-        if sum(1 for m in mapped if m is not None) < row_count - 1:
-            continue
-        frame_rows.append((float(fr.time), mapped))
-        for idx, row in enumerate(mapped):
-            if row is not None:
-                row_brightness[idx].append(float(row.brightness))
-
-    if len(frame_rows) < 12:
-        return None
-    row_minmax: list[tuple[float, float]] = []
-    for vals in row_brightness:
-        if not vals:
-            return None
-        mn = min(vals)
-        mx = max(vals)
-        row_minmax.append((mn, mx if mx > mn else mn + 1.0))
-
-    seq: list[tuple[float, int, float, float]] = []
-    # (time, selected_idx, max_norm, sum_norm)
-    for t, mapped in frame_rows:
-        norm_vals: list[float] = []
-        for idx in range(row_count):
-            row = mapped[idx]
-            if row is None:
-                norm_vals.append(0.0)
-                continue
-            mn, mx = row_minmax[idx]
-            norm_vals.append((float(row.brightness) - mn) / max(1.0, mx - mn))
-        max_norm = max(norm_vals)
-        if max_norm < 0.28:
-            continue
-        selected_idx = max(range(row_count), key=lambda idx: (norm_vals[idx], -idx))
-        seq.append((t, selected_idx, max_norm, sum(norm_vals)))
-    if len(seq) < 10:
-        return None
-
-    def _restart_after(pos: int) -> bool:
-        limit = min(len(seq), pos + 22)
-        for k in range(pos + 1, limit):
-            _t, idx_k, max_norm_k, _sum_k = seq[k]
-            if max_norm_k < 0.55:
-                continue
-            if idx_k <= 1 or max_norm_k >= 0.8:
-                return True
-        return False
-
-    split_times: list[float] = []
-    seg_start_seq = 0
-    seen_max_idx = seq[0][1]
-    prev_idx = seq[0][1]
-    last_split_time = seq[0][0]
-    for j in range(1, len(seq)):
-        t, idx, max_norm, _sum_norm = seq[j]
-        seen_max_idx = max(seen_max_idx, idx)
-        is_reset = (
-            prev_idx >= (row_count - 2)
-            and idx <= 1
-            and seen_max_idx >= (row_count - 1)
-            and (t - last_split_time) >= 1.8
-            and (j - seg_start_seq) >= 5
-            and max_norm >= 0.6
-            and _restart_after(j)
-        )
-        if is_reset:
-            split_times.append(t)
-            seg_start_seq = j
-            seen_max_idx = idx
-            last_split_time = t
-        prev_idx = idx
-
-    if not split_times:
-        return None
-
-    # Convert split times to cycle frame segments and estimate row windows per cycle.
-    cycles: list[tuple[float, float, list[tuple[float, float]]]] = []
-    start_idx = 0
-    cut_times = split_times + [float(block_frames[-1].time) + 1e-6]
-    for cut_t in cut_times:
-        seg_frames: list[_FrameState] = []
-        while start_idx < len(block_frames):
-            fr_t = float(block_frames[start_idx].time)
-            if seg_frames and fr_t >= cut_t:
-                break
-            seg_frames.append(block_frames[start_idx])
-            start_idx += 1
-        if len(seg_frames) < 6:
-            continue
-        seg_start = float(seg_frames[0].time)
-        seg_end = float(seg_frames[-1].time)
-        if (seg_end - seg_start) < 1.0:
-            continue
-        seg_windows = _estimate_row_windows_from_seq(
-            seg_start, seg_end, seq, row_clusters, row_count
-        )
-        if not seg_windows:
-            seg_windows = _estimate_row_windows_from_block(seg_frames, row_clusters)
-        if not seg_windows:
-            continue
-        cycles.append((seg_start, seg_end, seg_windows))
-
-    if len(cycles) < 2:
-        return None
-    return cycles
+    return _estimate_cycle_row_windows_from_block_impl(
+        block_frames,
+        row_clusters,
+        has_strong_top_row_phase_change_fn=_has_strong_top_row_phase_change,
+        estimate_row_windows_from_seq_fn=_estimate_row_windows_from_seq,
+        estimate_row_windows_from_block_fn=_estimate_row_windows_from_block,
+    )
 
 
 def _estimate_row_windows_from_seq(
@@ -458,65 +213,9 @@ def _estimate_row_windows_from_seq(
     row_clusters: list[_BlockRow],
     row_count: int,
 ) -> Optional[list[tuple[float, float]]]:
-    seg_seq = [
-        (t, idx)
-        for (t, idx, _max_norm, _sum_norm) in seq
-        if (cycle_start - 0.05) <= t <= (cycle_end + 0.05)
-    ]
-    if len(seg_seq) < 4:
-        return None
-
-    onsets: list[Optional[float]] = [None] * row_count
-    offsets: list[Optional[float]] = [None] * row_count
-    prev_idx = seg_seq[0][1]
-    onsets[prev_idx] = max(cycle_start, seg_seq[0][0])
-    for t, idx in seg_seq[1:]:
-        if idx == prev_idx:
-            continue
-        if offsets[prev_idx] is None:
-            offsets[prev_idx] = min(cycle_end, t)
-        if onsets[idx] is None:
-            onsets[idx] = max(cycle_start, t)
-        prev_idx = idx
-    if offsets[prev_idx] is None:
-        offsets[prev_idx] = min(cycle_end + 0.2, seg_seq[-1][0] + 0.2)
-
-    for idx, cluster in enumerate(row_clusters):
-        if onsets[idx] is None:
-            obs_times = sorted(
-                float(r.time)
-                for r in cluster.observations
-                if r.is_visible
-                and (cycle_start - 0.15) <= float(r.time) <= (cycle_end + 0.15)
-            )
-            if obs_times:
-                onsets[idx] = max(cycle_start, obs_times[0])
-        if offsets[idx] is None:
-            obs_times = sorted(
-                float(r.time)
-                for r in cluster.observations
-                if r.is_visible
-                and (cycle_start - 0.15) <= float(r.time) <= (cycle_end + 0.15)
-            )
-            if obs_times:
-                offsets[idx] = min(cycle_end + 0.2, obs_times[-1] + 0.2)
-
-    if any(v is None for v in onsets) or any(v is None for v in offsets):
-        return None
-
-    windows: list[tuple[float, float]] = []
-    prev_s = cycle_start - 0.05
-    for idx in range(row_count):
-        on = onsets[idx]
-        off = offsets[idx]
-        if on is None or off is None:
-            return None
-        s = max(float(on), prev_s + 0.05)
-        e = max(s + 0.2, float(off))
-        e = min(cycle_end + 0.4, e)
-        windows.append((s, e))
-        prev_s = s
-    return windows
+    return _estimate_row_windows_from_seq_impl(
+        cycle_start, cycle_end, seq, row_clusters, row_count
+    )
 
 
 def _slice_cluster_observations_for_cycle(
