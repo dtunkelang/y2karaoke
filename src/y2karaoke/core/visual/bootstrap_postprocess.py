@@ -5,7 +5,6 @@ from __future__ import annotations
 from functools import lru_cache
 from difflib import SequenceMatcher
 import os
-import re
 from typing import Any, List, Optional
 
 from ..models import TargetLine
@@ -49,6 +48,18 @@ from .bootstrap_postprocess_token_ocr import (
     is_safe_spell_guess_correction as _is_safe_spell_guess_correction_impl,
     ocr_insertion_candidates as _ocr_insertion_candidates_impl,
     ocr_substitution_candidates as _ocr_substitution_candidates_impl,
+)
+from .bootstrap_postprocess_token_rules import (
+    contextual_compound_split as _contextual_compound_split_impl,
+    fallback_spell_validated_split as _fallback_spell_validated_split_impl,
+    fallback_split_fused_token as _fallback_split_fused_token_impl,
+    looks_fused_prefix_candidate as _looks_fused_prefix_candidate_impl,
+    maybe_contextual_inflection_token as _maybe_contextual_inflection_token_impl,
+    maybe_expand_colloquial_token as _maybe_expand_colloquial_token_impl,
+    maybe_restore_contraction_token as _maybe_restore_contraction_token_impl,
+    maybe_restore_contextual_contraction_token as _maybe_restore_contextual_contraction_token_impl,
+    maybe_split_fused_contraction_token as _maybe_split_fused_contraction_token_impl,
+    repair_fallback_token as _repair_fallback_token_impl,
 )
 
 _FUSED_FALLBACK_PREFIX_ANCHORS = (
@@ -657,100 +668,24 @@ def _allow_token_level_ocr_fallback(token: str) -> bool:
 
 
 def _looks_fused_prefix_candidate(token: str) -> bool:
-    low = token.strip().lower()
-    if not low.isalpha() or len(low) < 5:
-        return False
-    for anchor in _FUSED_FALLBACK_PREFIX_ANCHORS:
-        if low.startswith(anchor) and len(low) > len(anchor) + 2:
-            return True
-    return False
+    return _looks_fused_prefix_candidate_impl(
+        token, fused_fallback_prefix_anchors=_FUSED_FALLBACK_PREFIX_ANCHORS
+    )
 
 
 def _fallback_split_fused_token(token: str) -> list[str] | None:  # noqa: C901
-    if not token or " " in token:
-        return None
-    if not token.isalpha():
-        return None
-    lower = token.lower()
-    if len(lower) < 5:
-        for i in range(1, len(lower)):
-            left = lower[:i]
-            right = lower[i:]
-            if left in _FUSED_FALLBACK_SHORT_FUNCTIONS and right in (
-                _FUSED_FALLBACK_SHORT_FUNCTIONS
-            ):
-                return ["I" if left == "i" else left, "I" if right == "i" else right]
-        return None
-
-    for anchor in _FUSED_FALLBACK_PREFIX_ANCHORS:
-        if not lower.startswith(anchor):
-            continue
-        if len(lower) <= len(anchor):
-            continue
-        right = lower[len(anchor) :]
-        min_right_len = 4 if len(anchor) == 1 else 3
-        if len(right) < min_right_len:
-            continue
-        if sum(ch in "aeiouy" for ch in right) < 1:
-            continue
-        left_out = "I" if anchor == "i" else anchor
-        return [left_out, right]
-
-    # Split internal single-letter function-word anchors when both sides look lexical.
-    if len(lower) >= 8:
-        for anchor in ("a",):
-            for idx in range(2, len(lower) - 2):
-                if lower[idx] != anchor:
-                    continue
-                left = lower[:idx]
-                right = lower[idx + 1 :]
-                if len(left) < 4 or len(right) < 4:
-                    continue
-                if not right.endswith("in"):
-                    continue
-                if sum(ch in "aeiouy" for ch in left) < 1:
-                    continue
-                if sum(ch in "aeiouy" for ch in right) < 1:
-                    continue
-                right_parts = _fallback_split_fused_token(right)
-                if right_parts:
-                    return [left, anchor, *right_parts]
-                return [left, anchor, _repair_fallback_token(right)]
-
-    for anchor in _FUSED_FALLBACK_SUFFIX_ANCHORS:
-        if not lower.endswith(anchor):
-            continue
-        left = lower[: -len(anchor)]
-        if len(left) < 4:
-            continue
-        if sum(ch in "aeiouy" for ch in left) < 1:
-            continue
-        if anchor == "in" and not left[-1].isalpha():
-            continue
-        if anchor == "in" and left.endswith("ng"):
-            return [_repair_fallback_token(lower)]
-        if anchor == "in" and not left.endswith("r"):
-            continue
-        return [left, anchor]
-
-    # Common OCR fusion pattern where a trailing pronoun "I" gets attached.
-    if lower.endswith("i") and len(lower) >= 6:
-        left = lower[:-1]
-        if sum(ch in "aeiouy" for ch in left) >= 1 and left.isalpha():
-            return [left, "I"]
-
-    spell_split = _fallback_spell_validated_split(lower)
-    if spell_split:
-        return spell_split
-    return None
+    return _fallback_split_fused_token_impl(
+        token,
+        fused_fallback_short_functions=_FUSED_FALLBACK_SHORT_FUNCTIONS,
+        fused_fallback_prefix_anchors=_FUSED_FALLBACK_PREFIX_ANCHORS,
+        fused_fallback_suffix_anchors=_FUSED_FALLBACK_SUFFIX_ANCHORS,
+        fallback_spell_validated_split_fn=_fallback_spell_validated_split,
+        repair_fallback_token_fn=_repair_fallback_token,
+    )
 
 
 def _repair_fallback_token(token: str) -> str:
-    lower = token.lower()
-    # Common lyric OCR artifact: dropped terminal "g" in gerunds (singin -> singing).
-    if len(lower) >= 6 and lower.endswith("in") and lower[:-2].endswith("ng"):
-        return lower[:-2] + "ing"
-    return token
+    return _repair_fallback_token_impl(token)
 
 
 def _case_like(source: str, token: str) -> str:
@@ -786,82 +721,25 @@ def _is_spelled_word(token: str) -> bool:
 
 
 def _fallback_spell_validated_split(token: str) -> list[str] | None:
-    if not token.isalpha() or len(token) < 7:
-        return None
-    if _is_spelled_word(token):
-        return None
-
-    best: tuple[int, tuple[str, str]] | None = None
-    for i in range(2, len(token) - 1):
-        left = token[:i]
-        right = token[i:]
-        if len(left) < 2 or len(right) < 2:
-            continue
-        if not (_is_spelled_word(left) and _is_spelled_word(right)):
-            continue
-        # Require a strong signal to avoid over-splitting uncertain-but-valid words.
-        score = 0
-        if left in _FUSED_FALLBACK_SHORT_FUNCTIONS:
-            score += 6
-        if right in _FUSED_FALLBACK_SHORT_FUNCTIONS:
-            score += 6
-        if len(left) <= 4:
-            score += 2
-        if len(right) <= 4:
-            score += 2
-        if abs(len(left) - len(right)) <= 2:
-            score += 1
-        if score < 4:
-            continue
-        if best is None or score > best[0]:
-            best = (score, (left, right))
-
-    if best is None:
-        return None
-    left, right = best[1]
-    return ["I" if left == "i" else left, "I" if right == "i" else right]
+    return _fallback_spell_validated_split_impl(
+        token,
+        is_spelled_word_fn=_is_spelled_word,
+        fused_fallback_short_functions=_FUSED_FALLBACK_SHORT_FUNCTIONS,
+    )
 
 
 def _contextual_compound_split(
     token: str, next_token: str, confidence: float
 ) -> list[str] | None:
-    low = token.lower()
-    next_norm = normalize_text_basic(next_token or "")
-    if confidence > 0.55:
-        return None
-    if not low.isalpha() or not (8 <= len(low) <= 12):
-        return None
-    if not next_norm or next_norm not in LYRIC_FUNCTION_WORDS:
-        return None
-    if not _is_spelled_word(low):
-        return None
-
-    best: tuple[int, tuple[str, str]] | None = None
-    for i in range(4, len(low) - 3):
-        left = low[:i]
-        right = low[i:]
-        if len(left) < 4 or len(right) < 4:
-            continue
-        if abs(len(left) - len(right)) > 1:
-            continue
-        if not (_is_spelled_word(left) and _is_spelled_word(right)):
-            continue
-        score = 0
-        if len(left) == len(right):
-            score += 3
-        if right.endswith(("ing", "ed", "s")):
-            score -= 3
-        if right.endswith(("ive", "all", "ight", "ove")):
-            score += 1
-        if score < 2:
-            continue
-        if best is None or score > best[0]:
-            best = (score, (left, right))
-
-    if best is None:
-        return None
-    left, right = best[1]
-    return [_case_like(token, left), right]
+    return _contextual_compound_split_impl(
+        token,
+        next_token,
+        confidence,
+        normalize_text_basic_fn=normalize_text_basic,
+        lyric_function_words=LYRIC_FUNCTION_WORDS,
+        is_spelled_word_fn=_is_spelled_word,
+        case_like_fn=_case_like,
+    )
 
 
 def _fallback_spell_guess(token: str) -> str | None:
@@ -921,136 +799,52 @@ def _maybe_repair_output_token(text: str, confidence: float) -> str:
 
 
 def _maybe_expand_colloquial_token(text: str, confidence: float) -> list[str] | None:
-    token = text.strip()
-    if not token:
-        return None
-    if confidence > 0.55:
-        return None
-
-    low = token.lower()
-    exp = _COLLOQUIAL_EXPANSIONS.get(low)
-    if exp:
-        first, second = exp
-        return [_case_like(token, first), second]
-
-    # Normalize dropped-g gerunds (singin' -> singing) conservatively.
-    compact = low.replace("’", "'")
-    if re.fullmatch(r"[a-z]{3,}in'", compact):
-        return [_case_like(token, compact[:-1] + "g")]
-    return None
+    return _maybe_expand_colloquial_token_impl(
+        text,
+        confidence,
+        colloquial_expansions=_COLLOQUIAL_EXPANSIONS,
+        case_like_fn=_case_like,
+    )
 
 
 def _maybe_restore_contraction_token(text: str, confidence: float) -> str | None:
-    token = text.strip()
-    if confidence > 0.55:
-        return None
-    restored = _CONTRACTION_RESTORES.get(token.lower())
-    if not restored:
-        return None
-    return _case_like(token, restored)
+    return _maybe_restore_contraction_token_impl(
+        text,
+        confidence,
+        contraction_restores=_CONTRACTION_RESTORES,
+        case_like_fn=_case_like,
+    )
 
 
 def _maybe_restore_contextual_contraction_token(
     text: str, confidence: float, prev_token: str, next_token: str
 ) -> str | None:
-    token = text.strip()
-    if not token or confidence > 0.4:
-        return None
-    low = token.lower()
-    if low != "i":
-        return None
-
-    prev_norm = normalize_text_basic(prev_token or "")
-    next_norm = normalize_text_basic(next_token or "")
-    if not next_norm:
-        return None
-
-    participle_like = (
-        next_norm in {"been", "seen", "done", "gone", "known", "grown", "shown"}
-        or next_norm.endswith("ed")
-        or next_norm.endswith("en")
+    return _maybe_restore_contextual_contraction_token_impl(
+        text,
+        confidence,
+        prev_token,
+        next_token,
+        normalize_text_basic_fn=normalize_text_basic,
+        case_like_fn=_case_like,
     )
-    if not participle_like:
-        return None
-    if next_norm in {"feel", "know", "want", "need", "think", "am", "was"}:
-        return None
-
-    prev_support = bool(prev_norm) and prev_norm not in {
-        "and",
-        "but",
-        "or",
-        "if",
-        "that",
-        "because",
-        "when",
-        "while",
-    }
-    if not prev_support and next_norm not in {"been", "seen", "done", "gone"}:
-        return None
-
-    return _case_like(token, "i've")
 
 
 def _maybe_split_fused_contraction_token(token: str) -> list[str] | None:
-    t = token.strip()
-    if not t:
-        return None
-    low = t.lower().replace("’", "'")
-    if low in {"i'min", "imin"}:
-        return ["i'm", "in"]
-    if low in {"andi'm", "andim"}:
-        return ["and", "i'm"]
-    return None
+    return _maybe_split_fused_contraction_token_impl(token)
 
 
 def _maybe_contextual_inflection_token(
     text: str, confidence: float, prev_token: str, next_token: str
 ) -> str | None:
-    token = text.strip()
-    low = token.lower()
-    if confidence > 0.55 or not low.isalpha() or len(low) < 2:
-        return None
-    prev_norm = normalize_text_basic(prev_token or "")
-    next_norm = normalize_text_basic(next_token or "")
-
-    # Singular/plural agreement hints around be-verbs.
-    if next_norm in {"are", "were"} and _is_spelled_word(low + "s"):
-        return _case_like(token, low + "s")
-    if next_norm in {"is", "was"} and low.endswith("s") and _is_spelled_word(low[:-1]):
-        return _case_like(token, low[:-1])
-
-    # Optional past-tense normalization in a narrow, common pattern ("___ as").
-    if next_norm == "as" and _is_spelled_word(low + "ed"):
-        return _case_like(token, low + "ed")
-
-    # Be-verb + dropped-g gerund ("are singin" -> "are singing").
-    if prev_norm in {"am", "is", "are", "was", "were", "be", "been"}:
-        if low.endswith("in") and _is_spelled_word(low + "g"):
-            return _case_like(token, low + "g")
-
-    # Directional/action context often loses a trailing "w" in OCR ("Ble down" -> "Blew down").
-    if (
-        next_norm in {"down", "up", "away"}
-        and not _is_spelled_word(low)
-        and _is_spelled_word(low + "w")
-    ):
-        return _case_like(token, low + "w")
-
-    # Line-start interjection confusion ("Aw who" -> "Oh who").
-    if prev_norm == "" and low == "aw" and next_norm in {"who", "what", "why", "yeah"}:
-        return _case_like(token, "oh")
-
-    # Title/name OCR prefix drop ("Saint eter" -> "Saint Peter").
-    if prev_norm in {"saint", "st"} and len(low) >= 3 and not _is_spelled_word(low):
-        candidates: list[str] = []
-        for ch in "abcdefghijklmnopqrstuvwxyz":
-            cand = ch + low
-            if _is_spelled_word(cand):
-                candidates.append(cand)
-        if len(candidates) == 1:
-            return _case_like(token, candidates[0])
-
-    return None
+    return _maybe_contextual_inflection_token_impl(
+        text,
+        confidence,
+        prev_token,
+        next_token,
+        normalize_text_basic_fn=normalize_text_basic,
+        is_spelled_word_fn=_is_spelled_word,
+        case_like_fn=_case_like,
+    )
 
 
 def _split_fused_output_words(  # noqa: C901
