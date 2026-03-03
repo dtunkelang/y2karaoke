@@ -18,6 +18,7 @@ from .lyrics_whisper_pipeline import (
     should_keep_lrc_timings_for_trailing_outro_padding,
 )
 from ...models import Line, SongMetadata
+from ..alignment.alignment_policy import decide_lrc_timing_trust
 
 logger = logging.getLogger(__name__)
 
@@ -117,18 +118,23 @@ def _apply_lrc_timing_trust_policy(
                 target_duration=target_duration,
             )
             if can_recover_with_audio_alignment and lrc_duration_mismatch_sec >= 12.0:
-                if likely_outro_padding:
-                    issues_list.append(
-                        "Detected likely trailing instrumental outro padding; "
-                        "keeping provider LRC timestamps"
-                    )
-                    quality_report["lrc_timing_trust"] = "degraded_outro_padding"
+                decision = decide_lrc_timing_trust(
+                    lrc_duration_mismatch_sec=lrc_duration_mismatch_sec,
+                    can_recover_with_audio_alignment=can_recover_with_audio_alignment,
+                    likely_outro_padding=likely_outro_padding,
+                )
+                quality_report["lrc_timing_trust"] = decision.mode
+                if decision.keep_lrc_timings:
+                    if decision.mode == "degraded_outro_padding":
+                        issues_list.append(
+                            "Detected likely trailing instrumental outro padding; "
+                            "keeping provider LRC timestamps"
+                        )
                     return line_timings
                 issues_list.append(
                     "Ignoring provider LRC timestamps due to severe duration mismatch; "
                     "using audio/Whisper timing alignment instead"
                 )
-                quality_report["lrc_timing_trust"] = "dropped_duration_mismatch"
                 return None
     return line_timings
 

@@ -3,6 +3,7 @@
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
 from ... import models
+from ..alignment.alignment_policy import should_retry_aggressive_whisper_dtw_map
 from ..alignment import timing_models
 from .whisper_integration_baseline import (
     _clone_lines_for_fallback as _clone_lines_for_fallback_impl,
@@ -147,19 +148,11 @@ def _should_retry_with_aggressive_whisper(
     aggressive: bool,
     metrics: Dict[str, float],
 ) -> bool:
-    if aggressive or len(lines) < 25:
-        return False
-    matched_ratio = float(metrics.get("matched_ratio", 0.0) or 0.0)
-    line_coverage = float(metrics.get("line_coverage", 0.0) or 0.0)
-    phonetic_coverage = float(metrics.get("phonetic_similarity_coverage", 0.0) or 0.0)
-    # Retry only for borderline mappings where VAD aggressiveness often helps.
-    if matched_ratio < 0.78 or matched_ratio > 0.88:
-        return False
-    if line_coverage < 0.80 or line_coverage > 0.92:
-        return False
-    if phonetic_coverage < 0.35:
-        return False
-    return True
+    return should_retry_aggressive_whisper_dtw_map(
+        line_count=len(lines),
+        aggressive_already_enabled=aggressive,
+        metrics=metrics,
+    )
 
 
 def _retry_improves_alignment(
