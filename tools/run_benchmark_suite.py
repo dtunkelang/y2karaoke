@@ -15,6 +15,7 @@ import statistics
 import subprocess
 import sys
 import time
+import unicodedata
 from urllib.parse import parse_qs, urlparse
 from typing import Any, Iterable
 
@@ -88,7 +89,12 @@ def _mean(values: Iterable[float]) -> float | None:
 def _normalize_agreement_text(text: Any) -> str:
     if not isinstance(text, str):
         return ""
-    return re.sub(r"[^a-z0-9\s]", "", text.lower()).strip()
+    folded = "".join(
+        ch
+        for ch in unicodedata.normalize("NFKD", text.lower())
+        if unicodedata.category(ch) != "Mn"
+    )
+    return re.sub(r"[^a-z0-9\s]", "", folded).strip()
 
 
 def _agreement_text_similarity(left: Any, right: Any) -> float:
@@ -113,7 +119,12 @@ def _agreement_token_overlap(left: Any, right: Any) -> float:
 def _normalize_word_text(raw: Any) -> str:
     if not isinstance(raw, str):
         return ""
-    cleaned = re.sub(r"[^a-z0-9'\s]", " ", raw.strip().lower())
+    folded = "".join(
+        ch
+        for ch in unicodedata.normalize("NFKD", raw.strip().lower())
+        if unicodedata.category(ch) != "Mn"
+    )
+    cleaned = re.sub(r"[^a-z0-9'\s]", " ", folded)
     return re.sub(r"\s+", " ", cleaned).strip()
 
 
@@ -623,7 +634,12 @@ def _extract_alignment_diagnostics(report: dict[str, Any]) -> dict[str, Any]:
 
 def _lexical_tokens_basic(text: str) -> list[str]:
     tokens: list[str] = []
-    for raw in text.split():
+    folded = "".join(
+        ch
+        for ch in unicodedata.normalize("NFKD", text)
+        if unicodedata.category(ch) != "Mn"
+    )
+    for raw in folded.split():
         tok = "".join(ch for ch in raw.lower() if ch.isalpha() or ch == "'")
         if tok:
             tokens.append(tok)
@@ -632,7 +648,12 @@ def _lexical_tokens_basic(text: str) -> list[str]:
 
 def _lexical_tokens_compact(text: str) -> list[str]:
     tokens: list[str] = []
-    for raw in text.split():
+    folded = "".join(
+        ch
+        for ch in unicodedata.normalize("NFKD", text)
+        if unicodedata.category(ch) != "Mn"
+    )
+    for raw in folded.split():
         tok = "".join(ch for ch in raw.lower() if ch.isalpha())
         if tok:
             tokens.append(tok)

@@ -183,3 +183,15 @@ def test_markdown_summary_includes_triage_rankings(tmp_path):
     content = out_path.read_text(encoding="utf-8")
     assert "Triage ranking: likely reference divergence" in content
     assert "Triage ranking: likely pipeline failure" in content
+
+
+def test_agreement_text_normalization_folds_diacritics():
+    module = _load_module()
+    assert module._normalize_agreement_text("DÉSPÉCHA!") == "despecha"
+    assert module._agreement_text_similarity("Déspecha", "Despecha") == 1.0
+
+
+def test_lexical_token_helpers_fold_diacritics():
+    module = _load_module()
+    assert module._lexical_tokens_basic("Bésame más") == ["besame", "mas"]
+    assert module._lexical_tokens_compact("Bésame más") == ["besame", "mas"]
