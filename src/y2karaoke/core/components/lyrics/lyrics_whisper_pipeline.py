@@ -47,7 +47,10 @@ def should_keep_lrc_timings_for_trailing_outro_padding(
     lrc_duration: Optional[int],
     target_duration: Optional[int],
     max_outro_padding_sec: float = 20.0,
+    max_outro_padding_ratio: float = 0.13,
+    max_outro_padding_cap_sec: float = 32.0,
     max_lrc_tail_gap_sec: float = 8.0,
+    min_lyric_span_ratio: float = 0.75,
 ) -> bool:
     """Return True when duration mismatch likely comes from trailing instrumental outro.
 
@@ -60,12 +63,27 @@ def should_keep_lrc_timings_for_trailing_outro_padding(
         return False
 
     duration_delta = float(target_duration) - float(lrc_duration)
-    if duration_delta <= 0 or duration_delta > max_outro_padding_sec:
+    allowed_padding = max(
+        float(max_outro_padding_sec),
+        float(target_duration) * float(max_outro_padding_ratio),
+    )
+    allowed_padding = min(allowed_padding, float(max_outro_padding_cap_sec))
+    if duration_delta <= 0 or duration_delta > allowed_padding:
         return False
 
-    last_timed_lyric_start = max(t for t, _ in line_timings)
+    lyric_starts = [float(t) for t, _ in line_timings]
+    first_timed_lyric_start = min(lyric_starts)
+    last_timed_lyric_start = max(lyric_starts)
     lrc_tail_gap = float(lrc_duration) - float(last_timed_lyric_start)
-    return lrc_tail_gap >= 0 and lrc_tail_gap <= max_lrc_tail_gap_sec
+    if not (lrc_tail_gap >= 0 and lrc_tail_gap <= max_lrc_tail_gap_sec):
+        return False
+
+    lyric_span_ratio = 0.0
+    if lrc_duration > 0:
+        lyric_span_ratio = max(
+            0.0, last_timed_lyric_start - first_timed_lyric_start
+        ) / float(lrc_duration)
+    return lyric_span_ratio >= float(min_lyric_span_ratio)
 
 
 def get_lyrics_simple_impl(  # noqa: C901

@@ -385,6 +385,22 @@ def test_should_keep_lrc_timings_for_trailing_outro_padding():
         )
         is False
     )
+    assert (
+        lwp.should_keep_lrc_timings_for_trailing_outro_padding(
+            line_timings=[(24.0, "a"), (205.0, "b")],
+            lrc_duration=205,
+            target_duration=230,
+        )
+        is True
+    )
+    assert (
+        lwp.should_keep_lrc_timings_for_trailing_outro_padding(
+            line_timings=[(170.0, "a"), (205.0, "b")],
+            lrc_duration=205,
+            target_duration=230,
+        )
+        is False
+    )
 
 
 def test_get_lyrics_with_quality_auto_enables_whisper_without_line_timings(
