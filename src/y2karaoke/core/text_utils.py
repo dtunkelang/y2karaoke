@@ -6,10 +6,14 @@ These are general-purpose helpers used across the y2karaoke core modules.
 
 import os
 import re
-import unicodedata
 from functools import lru_cache
 from typing import Any, List, Tuple
 
+from .text_normalization_utils import (
+    canon_punct as _canon_punct_impl,
+    normalize_text_basic as _normalize_text_basic_impl,
+    text_similarity as _text_similarity_impl,
+)
 from .text_ocr_context import (
     contextual_ocr_token_replacement as _contextual_ocr_token_replacement_impl,
     regularize_short_chant_alternation as _regularize_short_chant_alternation_impl,
@@ -105,39 +109,15 @@ LYRIC_FUNCTION_WORDS = {
 
 
 def normalize_text_basic(text: str) -> str:
-    """Basic normalization: lowercase, strip non-alphanumeric (except quotes/spaces)."""
-    if not text:
-        return ""
-    # Replace hyphens with spaces before regex to ensure 'anti-hero' -> 'anti hero'
-    t = text.lower().replace("-", " ")
-    return re.sub(r"[^a-z0-9' ]+", "", t).strip()
+    return _normalize_text_basic_impl(text)
 
 
 def text_similarity(a: str, b: str) -> float:
-    """Calculate similarity ratio between two strings."""
-    from difflib import SequenceMatcher
-
-    na, nb = normalize_text_basic(a), normalize_text_basic(b)
-    if not na or not nb:
-        return 0.0
-    return SequenceMatcher(None, na, nb).ratio()
+    return _text_similarity_impl(a, b)
 
 
 def canon_punct(text: str) -> str:
-    """Canonicalize punctuation characters."""
-    text = unicodedata.normalize("NFKC", text)
-    trans = {
-        "’": "'",
-        "‘": "'",
-        "´": "'",
-        "`": "'",
-        "“": '"',
-        "”": '"',
-        "–": "-",
-        "—": "-",
-    }
-    text = "".join(trans.get(ch, ch) for ch in text)
-    return " ".join(text.split())
+    return _canon_punct_impl(text)
 
 
 def _is_correctly_spelled(word: str, checker: Any) -> bool:
