@@ -6,6 +6,79 @@ from ...models import Line, Word
 from .timing_models import AudioFeatures
 
 
+def _shift_line_by_offset(line: Line, offset: float) -> Line:
+    new_words = [
+        Word(
+            text=word.text,
+            start_time=word.start_time + offset,
+            end_time=word.end_time + offset,
+            singer=word.singer,
+        )
+        for word in line.words
+    ]
+    return Line(words=new_words, singer=line.singer)
+
+
+def _maybe_apply_global_vocal_start_shift(
+    lines: List[Line], audio_features: AudioFeatures, corrections: List[str]
+) -> List[Line]:
+    first_line = next((line for line in lines if line.words), None)
+    if first_line is None:
+        return lines
+    first_start = first_line.start_time
+    vocal_start = audio_features.vocal_start
+    if vocal_start <= 0 or first_start >= vocal_start - 0.5:
+        return lines
+    global_offset = vocal_start - first_start
+    shifted_lines = [
+        _shift_line_by_offset(line, global_offset) if line.words else line
+        for line in lines
+    ]
+    corrections.append(f"Global shift {global_offset:+.1f}s to align with vocal start")
+    return shifted_lines
+
+
+def _select_best_onset_for_line(
+    *,
+    line_start: float,
+    onset_times,
+    max_correction: float,
+    prev_line_audio_end: float,
+    audio_features: AudioFeatures,
+    check_vocal_activity_fn: Callable[[float, float, AudioFeatures], float],
+    find_best_onset_for_phrase_end_fn: Callable[..., Optional[float]],
+    find_best_onset_proximity_fn: Callable[..., Optional[float]],
+    find_best_onset_during_silence_fn: Callable[..., Optional[float]],
+) -> Optional[float]:
+    if len(onset_times) == 0:
+        return None
+    singing_at_lrc_time = (
+        check_vocal_activity_fn(line_start - 0.5, line_start + 0.5, audio_features)
+        > 0.3
+    )
+    if not singing_at_lrc_time:
+        return find_best_onset_during_silence_fn(
+            onset_times, line_start, prev_line_audio_end, max_correction, audio_features
+        )
+    silence_after = (
+        check_vocal_activity_fn(line_start + 0.1, line_start + 0.6, audio_features)
+        < 0.3
+    )
+    silence_before = (
+        check_vocal_activity_fn(
+            max(0, line_start - 0.6), line_start - 0.1, audio_features
+        )
+        < 0.3
+    )
+    if silence_after and not silence_before:
+        return find_best_onset_for_phrase_end_fn(
+            onset_times, line_start, prev_line_audio_end, audio_features
+        )
+    return find_best_onset_proximity_fn(
+        onset_times, line_start, max_correction, audio_features
+    )
+
+
 def correct_line_timestamps_impl(
     lines: List[Line],
     audio_features: Optional[AudioFeatures],
@@ -28,31 +101,7 @@ def correct_line_timestamps_impl(
     onset_times = audio_features.onset_times
     prev_line_audio_end = 0.0
 
-    first_line = next((line for line in lines if line.words), None)
-    if first_line is not None:
-        first_start = first_line.start_time
-        vocal_start = audio_features.vocal_start
-        if vocal_start > 0 and first_start < vocal_start - 0.5:
-            global_offset = vocal_start - first_start
-            shifted_lines: List[Line] = []
-            for line in lines:
-                if not line.words:
-                    shifted_lines.append(line)
-                    continue
-                new_words = [
-                    Word(
-                        text=word.text,
-                        start_time=word.start_time + global_offset,
-                        end_time=word.end_time + global_offset,
-                        singer=word.singer,
-                    )
-                    for word in line.words
-                ]
-                shifted_lines.append(Line(words=new_words, singer=line.singer))
-            lines = shifted_lines
-            corrections.append(
-                f"Global shift {global_offset:+.1f}s to align with vocal start"
-            )
+    lines = _maybe_apply_global_vocal_start_shift(lines, audio_features, corrections)
 
     for i, line in enumerate(lines):
         if not line.words:
@@ -60,70 +109,32 @@ def correct_line_timestamps_impl(
             continue
 
         line_start = line.start_time
-        singing_at_lrc_time = (
-            check_vocal_activity_fn(line_start - 0.5, line_start + 0.5, audio_features)
-            > 0.3
+        best_onset = _select_best_onset_for_line(
+            line_start=line_start,
+            onset_times=onset_times,
+            max_correction=max_correction,
+            prev_line_audio_end=prev_line_audio_end,
+            audio_features=audio_features,
+            check_vocal_activity_fn=check_vocal_activity_fn,
+            find_best_onset_for_phrase_end_fn=find_best_onset_for_phrase_end_fn,
+            find_best_onset_proximity_fn=find_best_onset_proximity_fn,
+            find_best_onset_during_silence_fn=find_best_onset_during_silence_fn,
         )
-
-        best_onset = None
-        if len(onset_times) > 0:
-            if singing_at_lrc_time:
-                silence_after = (
-                    check_vocal_activity_fn(
-                        line_start + 0.1, line_start + 0.6, audio_features
-                    )
-                    < 0.3
-                )
-                silence_before = (
-                    check_vocal_activity_fn(
-                        max(0, line_start - 0.6), line_start - 0.1, audio_features
-                    )
-                    < 0.3
-                )
-
-                if silence_after and not silence_before:
-                    best_onset = find_best_onset_for_phrase_end_fn(
-                        onset_times, line_start, prev_line_audio_end, audio_features
-                    )
-                else:
-                    best_onset = find_best_onset_proximity_fn(
-                        onset_times, line_start, max_correction, audio_features
-                    )
-            else:
-                best_onset = find_best_onset_during_silence_fn(
-                    onset_times,
-                    line_start,
-                    prev_line_audio_end,
-                    max_correction,
+        if best_onset is not None:
+            offset = best_onset - line_start
+            if abs(offset) > 0.3:
+                corrected_lines.append(_shift_line_by_offset(line, offset))
+                prev_line_audio_end = find_phrase_end_fn(
+                    best_onset,
+                    best_onset + 30.0,
                     audio_features,
+                    min_silence_duration=0.3,
                 )
-
-            if best_onset is not None:
-                offset = best_onset - line_start
-                if abs(offset) > 0.3:
-                    new_words = [
-                        Word(
-                            text=word.text,
-                            start_time=word.start_time + offset,
-                            end_time=word.end_time + offset,
-                            singer=word.singer,
-                        )
-                        for word in line.words
-                    ]
-
-                    corrected_lines.append(Line(words=new_words, singer=line.singer))
-                    prev_line_audio_end = find_phrase_end_fn(
-                        best_onset,
-                        best_onset + 30.0,
-                        audio_features,
-                        min_silence_duration=0.3,
-                    )
-
-                    line_text = " ".join(w.text for w in line.words)[:30]
-                    corrections.append(
-                        f'Line {i+1} shifted {offset:+.1f}s: "{line_text}..."'
-                    )
-                    continue
+                line_text = " ".join(w.text for w in line.words)[:30]
+                corrections.append(
+                    f'Line {i+1} shifted {offset:+.1f}s: "{line_text}..."'
+                )
+                continue
 
         corrected_lines.append(line)
         prev_line_audio_end = find_phrase_end_fn(
