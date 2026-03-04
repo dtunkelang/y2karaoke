@@ -245,24 +245,14 @@ def rebalance_short_question_pairs(
     for idx in range(len(adjusted) - 1):
         prev = adjusted[idx]
         cur = adjusted[idx + 1]
-        if not prev.words or not cur.words:
+        if not _is_rebalance_candidate(
+            prev=prev,
+            cur=cur,
+            normalize_match_token_fn=normalize_match_token_fn,
+            soft_token_match_fn=soft_token_match_fn,
+        ):
             continue
-        if len(prev.words) > 4 or len(cur.words) > 4:
-            continue
-        prev_text = prev.text.strip()
-        cur_text = cur.text.strip()
-        if not prev_text.endswith("?") or not cur_text.endswith("?"):
-            continue
-        prev_first = normalize_match_token_fn(prev.words[0].text)
-        cur_first = normalize_match_token_fn(cur.words[0].text)
-        if not soft_token_match_fn(prev_first, cur_first):
-            continue
-
         prev_dur = prev.end_time - prev.start_time
-        cur_dur = cur.end_time - cur.start_time
-        if prev_dur >= 0.9 or cur_dur <= 2.4:
-            continue
-
         target_cur_duration = 2.0 if len(cur.words) <= 2 else 2.2
         new_cur_start = max(prev.start_time + 0.8, cur.end_time - target_cur_duration)
         if new_cur_start <= cur.start_time + 0.2:
@@ -279,22 +269,11 @@ def rebalance_short_question_pairs(
                 target_cur_duration, next_start - min_gap - new_cur_start
             )
         target_cur_duration = max(0.8, target_cur_duration)
-        spacing = target_cur_duration / len(cur.words)
-        rebuilt_cur_words: List[models.Word] = []
-        for w_idx, w in enumerate(cur.words):
-            ws = new_cur_start + w_idx * spacing
-            we = ws + spacing * 0.9
-            if w_idx == len(cur.words) - 1:
-                we = new_cur_start + target_cur_duration
-            rebuilt_cur_words.append(
-                models.Word(
-                    text=w.text,
-                    start_time=ws,
-                    end_time=we,
-                    singer=w.singer,
-                )
-            )
-        adjusted[idx + 1] = models.Line(words=rebuilt_cur_words, singer=cur.singer)
+        adjusted[idx + 1] = _rebuild_line_uniformly(
+            line=cur,
+            start=new_cur_start,
+            duration=target_cur_duration,
+        )
 
         target_prev_end = min(
             adjusted[idx + 1].start_time - min_gap,
@@ -302,21 +281,58 @@ def rebalance_short_question_pairs(
         )
         if target_prev_end > prev.end_time + 0.2:
             duration = max(target_prev_end - prev.start_time, 0.3)
-            spacing = duration / len(prev.words)
-            stretched_prev_words: List[models.Word] = []
-            for w_idx, w in enumerate(prev.words):
-                ws = prev.start_time + w_idx * spacing
-                we = ws + spacing * 0.9
-                if w_idx == len(prev.words) - 1:
-                    we = target_prev_end
-                stretched_prev_words.append(
-                    models.Word(
-                        text=w.text,
-                        start_time=ws,
-                        end_time=we,
-                        singer=w.singer,
-                    )
-                )
-            adjusted[idx] = models.Line(words=stretched_prev_words, singer=prev.singer)
+            adjusted[idx] = _rebuild_line_uniformly(
+                line=prev,
+                start=prev.start_time,
+                duration=duration,
+            )
 
     return adjusted
+
+
+def _is_rebalance_candidate(
+    *,
+    prev: models.Line,
+    cur: models.Line,
+    normalize_match_token_fn: Callable[[str], str],
+    soft_token_match_fn: Callable[[str, str], bool],
+) -> bool:
+    if not prev.words or not cur.words:
+        return False
+    if len(prev.words) > 4 or len(cur.words) > 4:
+        return False
+    prev_text = prev.text.strip()
+    cur_text = cur.text.strip()
+    if not prev_text.endswith("?") or not cur_text.endswith("?"):
+        return False
+    prev_first = normalize_match_token_fn(prev.words[0].text)
+    cur_first = normalize_match_token_fn(cur.words[0].text)
+    if not soft_token_match_fn(prev_first, cur_first):
+        return False
+    prev_dur = prev.end_time - prev.start_time
+    cur_dur = cur.end_time - cur.start_time
+    return prev_dur < 0.9 and cur_dur > 2.4
+
+
+def _rebuild_line_uniformly(
+    *,
+    line: models.Line,
+    start: float,
+    duration: float,
+) -> models.Line:
+    spacing = duration / len(line.words)
+    rebuilt_words: List[models.Word] = []
+    for w_idx, w in enumerate(line.words):
+        ws = start + w_idx * spacing
+        we = ws + spacing * 0.9
+        if w_idx == len(line.words) - 1:
+            we = start + duration
+        rebuilt_words.append(
+            models.Word(
+                text=w.text,
+                start_time=ws,
+                end_time=we,
+                singer=w.singer,
+            )
+        )
+    return models.Line(words=rebuilt_words, singer=line.singer)
