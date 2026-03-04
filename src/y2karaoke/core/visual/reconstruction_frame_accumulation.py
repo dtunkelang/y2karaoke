@@ -331,72 +331,21 @@ def accumulate_persistent_lines_from_frames(  # noqa: C901
                     current_frame_lines.append(res)
 
         # Match current frame lines to active tracks
-        matched_track_indices = set()
-        track_y_cache = [track.current_y for track in active_tracks]
-        track_text_cache = [track.best_text for track in active_tracks]
-        track_stale_cache = [
-            (
-                curr_time
-                - (
-                    track.last_seen
-                    if _legacy_visible_end_tracking_enabled()
-                    else (
-                        track.last_visible_seen
-                        if track.visible_yet and track.last_visible_seen is not None
-                        else track.last_seen
-                    )
-                )
-            )
-            > 1.0
-            for track in active_tracks
-        ]
-        track_buckets: Dict[int, List[int]] = {}
-        for idx, y_val in enumerate(track_y_cache):
-            bucket = int(y_val) // _TRACK_MATCH_BUCKET_PX
-            track_buckets.setdefault(bucket, []).append(idx)
-
+        matched_track_indices: set[int] = set()
+        track_y_cache, track_text_cache, track_stale_cache, track_buckets = (
+            _build_track_matching_state(active_tracks, curr_time)
+        )
         for frame_line_data in current_frame_lines:
             entry, is_visible = frame_line_data
-
-            # Find best match in active_tracks
-            best_match_idx = -1
-            best_match_score = 0.0
-            y_bucket = int(entry["y"]) // _TRACK_MATCH_BUCKET_PX
-            candidate_indices: list[int] = []
-            for delta in range(
-                -_TRACK_MATCH_NEIGHBOR_BUCKETS, _TRACK_MATCH_NEIGHBOR_BUCKETS + 1
-            ):
-                candidate_indices.extend(track_buckets.get(y_bucket + delta, []))
-            if not candidate_indices:
-                candidate_indices = list(range(len(active_tracks)))
-
-            # Preserve deterministic iteration order comparable to enumerate(active_tracks)
-            for idx in sorted(set(candidate_indices)):
-                if idx in matched_track_indices:
-                    continue
-                track = active_tracks[idx]
-
-                # Don't match if the track has been gone for too long
-                if track_stale_cache[idx]:
-                    continue
-
-                # Spatial check (Y)
-                dy = abs(track_y_cache[idx] - entry["y"])
-                if dy > 25:  # Lane proximity
-                    continue
-
-                # Text similarity check
-                sim = text_similarity(entry["text"], track_text_cache[idx])
-
-                # If very close spatially and reasonable similarity
-                # OR if exact text match (fast path)
-                if sim > 0.6 or (dy < 10 and sim > 0.5):
-                    # Score combines similarity and proximity
-                    score = sim * 0.7 + (1.0 - min(dy, 30) / 30.0) * 0.3
-                    if score > best_match_score:
-                        best_match_score = score
-                        best_match_idx = idx
-
+            best_match_idx, best_match_score = _find_best_track_match(
+                entry=entry,
+                active_tracks=active_tracks,
+                matched_track_indices=matched_track_indices,
+                track_y_cache=track_y_cache,
+                track_text_cache=track_text_cache,
+                track_stale_cache=track_stale_cache,
+                track_buckets=track_buckets,
+            )
             if best_match_idx != -1 and best_match_score > 0.4:
                 # Update existing track
                 active_tracks[best_match_idx].update(entry, curr_time, is_visible)
@@ -405,41 +354,19 @@ def accumulate_persistent_lines_from_frames(  # noqa: C901
                 # Create new track
                 _track_id_counter += 1
                 new_track = TrackedLine(entry, f"track_{_track_id_counter}")
-                # Initial visibility update
-                if is_visible:
-                    new_track.vis_count = 1
-                    new_track.visible_yet = (
-                        True  # Assume visible on first frame if bright enough?
-                    )
-                    # Actually logic in original was: "Check if it hits visibility threshold on its first frame"
-                    new_track.first_visible = curr_time
-                    new_track.last_visible_seen = curr_time
-                else:
-                    new_track.vis_count = 0
-                    new_track.visible_yet = False
-                    new_track.first_visible = 999999.0
-                    new_track.last_visible_seen = None
-
+                _initialize_new_track_visibility(
+                    track=new_track, curr_time=curr_time, is_visible=is_visible
+                )
                 active_tracks.append(new_track)
                 matched_track_indices.add(len(active_tracks) - 1)
 
         # Commit tracks that have disappeared
-        remaining_tracks = []
-        for idx, track in enumerate(active_tracks):
-            if idx in matched_track_indices:
-                remaining_tracks.append(track)
-            else:
-                # Track was NOT matched in this frame
-                if curr_time - track.last_seen > 1.0:
-                    # It's been gone for > 1.0s, commit it
-                    if track.first_visible == 999999.0:
-                        track.first_visible = track.last_seen
-                    committed.append(track.to_dict())
-                else:
-                    # Keep it alive for now (gap tolerance)
-                    remaining_tracks.append(track)
-
-        active_tracks = remaining_tracks
+        active_tracks = _commit_or_keep_unmatched_tracks(
+            active_tracks=active_tracks,
+            curr_time=curr_time,
+            matched_track_indices=matched_track_indices,
+            committed=committed,
+        )
 
     # Commit any remaining active tracks at end of video
     for track in active_tracks:
@@ -448,6 +375,131 @@ def accumulate_persistent_lines_from_frames(  # noqa: C901
         committed.append(track.to_dict())
 
     return committed
+
+
+def _build_track_matching_state(
+    active_tracks: List[TrackedLine],
+    curr_time: float,
+) -> tuple[
+    List[int],
+    List[str],
+    List[bool],
+    Dict[int, List[int]],
+]:
+    track_y_cache = [track.current_y for track in active_tracks]
+    track_text_cache = [track.best_text for track in active_tracks]
+    track_stale_cache = [
+        (
+            curr_time
+            - (
+                track.last_seen
+                if _legacy_visible_end_tracking_enabled()
+                else (
+                    track.last_visible_seen
+                    if track.visible_yet and track.last_visible_seen is not None
+                    else track.last_seen
+                )
+            )
+        )
+        > 1.0
+        for track in active_tracks
+    ]
+    track_buckets: Dict[int, List[int]] = {}
+    for idx, y_val in enumerate(track_y_cache):
+        bucket = int(y_val) // _TRACK_MATCH_BUCKET_PX
+        track_buckets.setdefault(bucket, []).append(idx)
+    return track_y_cache, track_text_cache, track_stale_cache, track_buckets
+
+
+def _candidate_track_indices_for_entry(
+    entry: Dict[str, Any],
+    *,
+    active_track_count: int,
+    track_buckets: Dict[int, List[int]],
+) -> List[int]:
+    y_bucket = int(entry["y"]) // _TRACK_MATCH_BUCKET_PX
+    candidate_indices: List[int] = []
+    for delta in range(
+        -_TRACK_MATCH_NEIGHBOR_BUCKETS, _TRACK_MATCH_NEIGHBOR_BUCKETS + 1
+    ):
+        candidate_indices.extend(track_buckets.get(y_bucket + delta, []))
+    if not candidate_indices:
+        candidate_indices = list(range(active_track_count))
+    # Preserve deterministic iteration order comparable to enumerate(active_tracks)
+    return sorted(set(candidate_indices))
+
+
+def _find_best_track_match(
+    *,
+    entry: Dict[str, Any],
+    active_tracks: List[TrackedLine],
+    matched_track_indices: set[int],
+    track_y_cache: List[int],
+    track_text_cache: List[str],
+    track_stale_cache: List[bool],
+    track_buckets: Dict[int, List[int]],
+) -> tuple[int, float]:
+    best_match_idx = -1
+    best_match_score = 0.0
+    candidate_indices = _candidate_track_indices_for_entry(
+        entry,
+        active_track_count=len(active_tracks),
+        track_buckets=track_buckets,
+    )
+    for idx in candidate_indices:
+        if idx in matched_track_indices:
+            continue
+        if track_stale_cache[idx]:
+            continue
+        dy = abs(track_y_cache[idx] - entry["y"])
+        if dy > 25:
+            continue
+        sim = text_similarity(entry["text"], track_text_cache[idx])
+        if sim > 0.6 or (dy < 10 and sim > 0.5):
+            score = sim * 0.7 + (1.0 - min(dy, 30) / 30.0) * 0.3
+            if score > best_match_score:
+                best_match_score = score
+                best_match_idx = idx
+    return best_match_idx, best_match_score
+
+
+def _initialize_new_track_visibility(
+    *,
+    track: TrackedLine,
+    curr_time: float,
+    is_visible: bool,
+) -> None:
+    if is_visible:
+        track.vis_count = 1
+        track.visible_yet = True
+        track.first_visible = curr_time
+        track.last_visible_seen = curr_time
+        return
+    track.vis_count = 0
+    track.visible_yet = False
+    track.first_visible = 999999.0
+    track.last_visible_seen = None
+
+
+def _commit_or_keep_unmatched_tracks(
+    *,
+    active_tracks: List[TrackedLine],
+    curr_time: float,
+    matched_track_indices: set[int],
+    committed: List[Dict[str, Any]],
+) -> List[TrackedLine]:
+    remaining_tracks: List[TrackedLine] = []
+    for idx, track in enumerate(active_tracks):
+        if idx in matched_track_indices:
+            remaining_tracks.append(track)
+            continue
+        if curr_time - track.last_seen > 1.0:
+            if track.first_visible == 999999.0:
+                track.first_visible = track.last_seen
+            committed.append(track.to_dict())
+            continue
+        remaining_tracks.append(track)
+    return remaining_tracks
 
 
 def _calculate_visibility_threshold(
