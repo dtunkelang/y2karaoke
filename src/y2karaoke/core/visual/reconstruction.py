@@ -63,7 +63,7 @@ def snap(value: float) -> float:
     return round(round(float(value) / 0.05) * 0.05, 3)
 
 
-def _suppress_short_duplicate_reentries(  # noqa: C901
+def _suppress_short_duplicate_reentries(
     entries: list[dict[str, Any]],
 ) -> list[dict[str, Any]]:
     return _suppress_short_duplicate_reentries_impl(
@@ -136,7 +136,7 @@ def _suppress_bottom_fragment_families(
     return _suppress_bottom_fragment_families_impl(entries)
 
 
-def _expand_overlapped_same_text_repetitions(  # noqa: C901
+def _expand_overlapped_same_text_repetitions(
     entries: list[dict[str, Any]],
 ) -> list[dict[str, Any]]:
     return _expand_overlapped_same_text_repetitions_impl(
@@ -176,7 +176,7 @@ def _mirrored_cycle_candidate(
     )
 
 
-def _split_persistent_line_epochs_from_context_transitions(  # noqa: C901
+def _split_persistent_line_epochs_from_context_transitions(
     entries: list[dict[str, Any]],
 ) -> list[dict[str, Any]]:
     return _split_persistent_line_epochs_from_context_transitions_impl(
@@ -186,7 +186,7 @@ def _split_persistent_line_epochs_from_context_transitions(  # noqa: C901
     )
 
 
-def reconstruct_lyrics_from_visuals(  # noqa: C901
+def reconstruct_lyrics_from_visuals(
     raw_frames: list[dict[str, Any]],
     visual_fps: float,
     artist: Optional[str] = None,

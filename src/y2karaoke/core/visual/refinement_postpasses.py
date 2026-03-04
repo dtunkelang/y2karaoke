@@ -167,7 +167,7 @@ def _retime_late_first_lines_in_shared_visibility_blocks(
     )
 
 
-def _retime_compressed_shared_visibility_blocks(  # noqa: C901
+def _retime_compressed_shared_visibility_blocks(
     g_jobs: List[Tuple[TargetLine, float, float]],
 ) -> None:
     _retime_compressed_shared_visibility_blocks_impl(
@@ -178,7 +178,7 @@ def _retime_compressed_shared_visibility_blocks(  # noqa: C901
     )
 
 
-def _promote_unresolved_first_repeated_lines(  # noqa: C901
+def _promote_unresolved_first_repeated_lines(
     g_jobs: List[Tuple[TargetLine, float, float]],
 ) -> None:
     """Backfill early repeated-line starts when only later repeats were resolved."""
@@ -191,7 +191,7 @@ def _promote_unresolved_first_repeated_lines(  # noqa: C901
     )
 
 
-def _compress_overlong_sparse_line_timings(  # noqa: C901
+def _compress_overlong_sparse_line_timings(
     g_jobs: List[Tuple[TargetLine, float, float]],
 ) -> None:
     """Compress lines with sparse, overlong word timings inside shared-visibility blocks."""
@@ -202,7 +202,7 @@ def _compress_overlong_sparse_line_timings(  # noqa: C901
     )
 
 
-def _retime_large_gaps_with_early_visibility(  # noqa: C901
+def _retime_large_gaps_with_early_visibility(
     g_jobs: List[Tuple[TargetLine, float, float]],
 ) -> None:
     _retime_large_gaps_with_early_visibility_impl(
@@ -213,7 +213,7 @@ def _retime_large_gaps_with_early_visibility(  # noqa: C901
     )
 
 
-def _retime_followups_in_short_lead_shared_visibility_runs(  # noqa: C901
+def _retime_followups_in_short_lead_shared_visibility_runs(
     g_jobs: List[Tuple[TargetLine, float, float]],
 ) -> None:
     _retime_followups_in_short_lead_shared_visibility_runs_impl(
@@ -279,7 +279,7 @@ def _rebalance_middle_lines_in_four_line_shared_visibility_runs(
     )
 
 
-def _rebalance_early_lead_shared_visibility_runs(  # noqa: C901
+def _rebalance_early_lead_shared_visibility_runs(
     g_jobs: List[Tuple[TargetLine, float, float]],
 ) -> None:
     _rebalance_early_lead_shared_visibility_runs_impl(
@@ -290,7 +290,7 @@ def _rebalance_early_lead_shared_visibility_runs(  # noqa: C901
     )
 
 
-def _shrink_overlong_leads_in_dense_shared_visibility_runs(  # noqa: C901
+def _shrink_overlong_leads_in_dense_shared_visibility_runs(
     g_jobs: List[Tuple[TargetLine, float, float]],
 ) -> None:
     _shrink_overlong_leads_in_dense_shared_visibility_runs_impl(
@@ -362,7 +362,7 @@ def _trace_clean_blocks(label: str, target_lines: List[TargetLine]) -> None:
     _trace_clean_blocks_impl(label, target_lines)
 
 
-def _retime_clean_screen_blocks_by_vertical_order(  # noqa: C901
+def _retime_clean_screen_blocks_by_vertical_order(
     g_jobs: List[Tuple[TargetLine, float, float]],
 ) -> None:
     _retime_clean_screen_blocks_by_vertical_order_impl(
@@ -373,7 +373,7 @@ def _retime_clean_screen_blocks_by_vertical_order(  # noqa: C901
     )
 
 
-def _reorder_clean_screen_blocks_target_lines(  # noqa: C901
+def _reorder_clean_screen_blocks_target_lines(
     target_lines: List[TargetLine],
 ) -> None:
     _reorder_clean_screen_blocks_target_lines_impl(
@@ -382,7 +382,7 @@ def _reorder_clean_screen_blocks_target_lines(  # noqa: C901
     )
 
 
-def _assign_block_sequence_hints_from_visibility(  # noqa: C901
+def _assign_block_sequence_hints_from_visibility(
     target_lines: List[TargetLine],
 ) -> None:
     _assign_block_sequence_hints_from_visibility_impl(
@@ -395,7 +395,7 @@ def _demote_fragment_lines_within_clean_blocks(target_lines: List[TargetLine]) -
     _demote_fragment_lines_within_clean_blocks_impl(target_lines)
 
 
-def _merge_prefix_fragment_rows_in_clean_blocks(  # noqa: C901
+def _merge_prefix_fragment_rows_in_clean_blocks(
     target_lines: List[TargetLine],
 ) -> None:
     _merge_prefix_fragment_rows_in_clean_blocks_impl(target_lines)

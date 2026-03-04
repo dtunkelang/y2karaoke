@@ -246,7 +246,7 @@ def _suppress_short_lane_fragments(lines: list[dict[str, Any]]) -> list[dict[str
     return _suppress_short_lane_fragments_impl(lines)
 
 
-def _suppress_repeated_short_fragment_clusters(  # noqa: C901
+def _suppress_repeated_short_fragment_clusters(
     lines: list[dict[str, Any]],
 ) -> list[dict[str, Any]]:
     return _suppress_repeated_short_fragment_clusters_impl(

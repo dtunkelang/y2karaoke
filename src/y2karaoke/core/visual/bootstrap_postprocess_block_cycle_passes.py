@@ -101,7 +101,7 @@ def _retime_short_interstitial_output_lines(lines_out: list[dict[str, Any]]) -> 
     _retime_short_interstitial_output_lines_impl(lines_out, snap_fn=snap)
 
 
-def _consolidate_block_first_fragment_rows(  # noqa: C901
+def _consolidate_block_first_fragment_rows(
     lines_out: list[dict[str, Any]],
 ) -> None:
     _consolidate_block_first_fragment_rows_impl(
@@ -110,13 +110,13 @@ def _consolidate_block_first_fragment_rows(  # noqa: C901
     )
 
 
-def _normalize_block_first_row_timings(  # noqa: C901
+def _normalize_block_first_row_timings(
     lines_out: list[dict[str, Any]],
 ) -> None:
     _normalize_block_first_row_timings_impl(lines_out, snap_fn=snap)
 
 
-def _normalize_block_first_repeated_cycles(  # noqa: C901
+def _normalize_block_first_repeated_cycles(
     lines_out: list[dict[str, Any]],
 ) -> None:
     _normalize_block_first_repeated_cycles_impl(
@@ -124,7 +124,7 @@ def _normalize_block_first_repeated_cycles(  # noqa: C901
     )
 
 
-def _rebalance_compressed_middle_four_line_sequences(  # noqa: C901
+def _rebalance_compressed_middle_four_line_sequences(
     lines_out: list[dict[str, Any]],
 ) -> None:
     _rebalance_compressed_middle_four_line_sequences_impl(

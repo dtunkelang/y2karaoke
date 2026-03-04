@@ -533,7 +533,7 @@ def refine_word_timings_at_high_fps(
     cap.release()
 
 
-def refine_line_timings_at_low_fps(  # noqa: C901
+def refine_line_timings_at_low_fps(
     video_path: Path,
     target_lines: List[TargetLine],
     roi_rect: tuple[int, int, int, int],

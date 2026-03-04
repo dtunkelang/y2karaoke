@@ -77,13 +77,13 @@ def _strip_internal_line_metadata(lines_out: list[dict[str, Any]]) -> None:
         ln.pop("_orig_order", None)
 
 
-def _reorder_clean_visibility_blocks(  # noqa: C901
+def _reorder_clean_visibility_blocks(
     lines_out: list[dict[str, Any]],
 ) -> None:
     _reorder_clean_visibility_blocks_impl(lines_out)
 
 
-def _overlay_line_signal_score(line: dict[str, Any]) -> int:  # noqa: C901
+def _overlay_line_signal_score(line: dict[str, Any]) -> int:
     return _overlay_line_signal_score_impl(
         line,
         normalize_text_basic_fn=normalize_text_basic,
@@ -109,13 +109,13 @@ def _line_uncertainty(line: dict[str, Any]) -> float:
     return _line_uncertainty_impl(line)
 
 
-def _remove_weaker_near_duplicate_lines(  # noqa: C901
+def _remove_weaker_near_duplicate_lines(
     lines_out: list[dict[str, Any]],
 ) -> None:
     _remove_weaker_near_duplicate_lines_impl(lines_out)
 
 
-def _canonicalize_repeated_line_text_variants(  # noqa: C901
+def _canonicalize_repeated_line_text_variants(
     lines_out: list[dict[str, Any]],
 ) -> None:
     _canonicalize_repeated_line_text_variants_impl(lines_out)
@@ -211,7 +211,7 @@ def _neighbor_supports_fragment_tokens(
     )
 
 
-def _remove_repeated_fragment_noise_lines(  # noqa: C901
+def _remove_repeated_fragment_noise_lines(
     lines_out: list[dict[str, Any]], artist: Optional[str], title: Optional[str]
 ) -> None:
     _remove_repeated_fragment_noise_lines_impl(

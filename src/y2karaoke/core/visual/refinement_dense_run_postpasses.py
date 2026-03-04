@@ -53,7 +53,7 @@ def _retime_late_first_lines_in_shared_visibility_blocks(
     )
 
 
-def _retime_compressed_shared_visibility_blocks(  # noqa: C901
+def _retime_compressed_shared_visibility_blocks(
     g_jobs: List[Tuple[TargetLine, float, float]],
     *,
     line_start_fn: Callable[[TargetLine], Optional[float]],
@@ -70,7 +70,7 @@ def _retime_compressed_shared_visibility_blocks(  # noqa: C901
     )
 
 
-def _promote_unresolved_first_repeated_lines(  # noqa: C901
+def _promote_unresolved_first_repeated_lines(
     g_jobs: List[Tuple[TargetLine, float, float]],
     *,
     line_start_fn: Callable[[TargetLine], Optional[float]],
@@ -89,7 +89,7 @@ def _promote_unresolved_first_repeated_lines(  # noqa: C901
     )
 
 
-def _compress_overlong_sparse_line_timings(  # noqa: C901
+def _compress_overlong_sparse_line_timings(
     g_jobs: List[Tuple[TargetLine, float, float]],
     *,
     line_start_fn: Callable[[TargetLine], Optional[float]],
@@ -104,7 +104,7 @@ def _compress_overlong_sparse_line_timings(  # noqa: C901
     )
 
 
-def _rebalance_early_lead_shared_visibility_runs(  # noqa: C901
+def _rebalance_early_lead_shared_visibility_runs(
     g_jobs: List[Tuple[TargetLine, float, float]],
     *,
     line_start_fn: Callable[[TargetLine], Optional[float]],
@@ -121,7 +121,7 @@ def _rebalance_early_lead_shared_visibility_runs(  # noqa: C901
     )
 
 
-def _shrink_overlong_leads_in_dense_shared_visibility_runs(  # noqa: C901
+def _shrink_overlong_leads_in_dense_shared_visibility_runs(
     g_jobs: List[Tuple[TargetLine, float, float]],
     *,
     line_start_fn: Callable[[TargetLine], Optional[float]],
