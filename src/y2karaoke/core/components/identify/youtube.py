@@ -223,37 +223,53 @@ class YouTubeSearcher(_Base):
         Returns:
             Dict with 'url' and 'duration' keys, or None if not found
         """
-        search_query = query.replace(" ", "+")
-        search_url = f"https://www.youtube.com/results?search_query={search_query}"
-
-        headers = {
-            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36"
-        }
-
         try:
-            candidates = self._fetch_youtube_candidates(
-                search_url=search_url, headers=headers
-            )
+            candidates = self._fetch_candidates_for_query(query)
             if not candidates:
                 return None
 
-            query_wants_non_studio = self._query_wants_non_studio(query)
-            with_duration = [c for c in candidates if c["duration"] is not None]
-
-            if not with_duration:
-                return self._pick_first_candidate(candidates, query_wants_non_studio)
-
-            if not query_wants_non_studio:
-                with_duration = self._filter_studio_candidates(with_duration)
-
-            tolerance = self._youtube_duration_tolerance(target_duration)
-            return self._pick_best_duration_candidate(
-                with_duration, target_duration, tolerance
+            return self._select_youtube_single_candidate(
+                candidates=candidates,
+                query=query,
+                target_duration=target_duration,
             )
 
         except Exception as e:
             logger.warning(f"YouTube search failed: {e}")
             return None
+
+    def _youtube_search_url(self, query: str) -> str:
+        search_query = query.replace(" ", "+")
+        return f"https://www.youtube.com/results?search_query={search_query}"
+
+    def _youtube_request_headers(self) -> Dict[str, str]:
+        return {
+            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36"
+        }
+
+    def _fetch_candidates_for_query(self, query: str) -> List[Dict[str, Any]]:
+        return self._fetch_youtube_candidates(
+            search_url=self._youtube_search_url(query),
+            headers=self._youtube_request_headers(),
+        )
+
+    def _select_youtube_single_candidate(
+        self,
+        *,
+        candidates: List[Dict[str, Any]],
+        query: str,
+        target_duration: int,
+    ) -> Optional[Dict[str, Any]]:
+        query_wants_non_studio = self._query_wants_non_studio(query)
+        with_duration = [c for c in candidates if c["duration"] is not None]
+        if not with_duration:
+            return self._pick_first_candidate(candidates, query_wants_non_studio)
+        if not query_wants_non_studio:
+            with_duration = self._filter_studio_candidates(with_duration)
+        tolerance = self._youtube_duration_tolerance(target_duration)
+        return self._pick_best_duration_candidate(
+            with_duration, target_duration, tolerance
+        )
 
     def _fetch_youtube_candidates(
         self, search_url: str, headers: Dict[str, str]
