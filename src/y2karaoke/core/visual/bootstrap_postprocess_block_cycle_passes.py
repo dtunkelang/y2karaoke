@@ -97,8 +97,7 @@ def _repair_strong_local_chronology_inversions(lines_out: list[dict[str, Any]]) 
     )
 
 
-def _repair_large_adjacent_time_inversions(lines_out: list[dict[str, Any]]) -> None:
-    _repair_large_adjacent_time_inversions_impl(lines_out)
+_repair_large_adjacent_time_inversions = _repair_large_adjacent_time_inversions_impl
 
 
 def _dedupe_block_first_cycle_rows(lines_out: list[dict[str, Any]]) -> None:
@@ -242,20 +241,13 @@ def _remove_vocalization_noise_runs(lines_out: list[dict[str, Any]]) -> None:
     )
 
 
-def _filter_singer_label_prefixes(
-    lines_out: list[dict[str, Any]], artist: Optional[str]
-) -> None:
-    _filter_singer_label_prefixes_impl(lines_out, artist)
+_filter_singer_label_prefixes = _filter_singer_label_prefixes_impl
 
 
-def _identify_banned_prefixes(
-    lines_out: list[dict[str, Any]], artist: Optional[str]
-) -> set[str]:
-    return _identify_banned_prefixes_impl(lines_out, artist)
+_identify_banned_prefixes = _identify_banned_prefixes_impl
 
 
-def _remove_prefix_from_line(line: dict[str, Any], banned_prefixes: set[str]) -> None:
-    _remove_prefix_from_line_impl(line, banned_prefixes)
+_remove_prefix_from_line = _remove_prefix_from_line_impl
 
 
 def _retime_short_interstitial_output_lines(lines_out: list[dict[str, Any]]) -> None:
