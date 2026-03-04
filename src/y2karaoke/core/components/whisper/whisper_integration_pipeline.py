@@ -307,12 +307,11 @@ def align_lrc_text_to_whisper_timings_impl(  # noqa: C901
     pull_lines_forward_for_continuous_vocals_fn: Callable[..., Any],
     logger,
 ) -> Tuple[List[models.Line], List[str], Dict[str, float]]:
-    mapped_lines, corrections, metrics = _run_alignment_pass(
+    pass_kwargs: Dict[str, Any] = dict(
         lines=lines,
         vocals_path=vocals_path,
         language=language,
         model_size=model_size,
-        aggressive=aggressive,
         temperature=temperature,
         min_similarity=min_similarity,
         audio_features=audio_features,
@@ -346,47 +345,16 @@ def align_lrc_text_to_whisper_timings_impl(  # noqa: C901
         resolve_line_overlaps_fn=resolve_line_overlaps_fn,
         logger=logger,
     )
+    mapped_lines, corrections, metrics = _run_alignment_pass(
+        aggressive=aggressive,
+        **pass_kwargs,
+    )
     if _should_retry_with_aggressive_whisper(
         line_count=len(lines), aggressive=aggressive, metrics=metrics
     ):
         retry_lines, retry_corrections, retry_metrics = _run_alignment_pass(
-            lines=lines,
-            vocals_path=vocals_path,
-            language=language,
-            model_size=model_size,
             aggressive=True,
-            temperature=temperature,
-            min_similarity=min_similarity,
-            audio_features=audio_features,
-            lenient_vocal_activity_threshold=lenient_vocal_activity_threshold,
-            lenient_activity_bonus=lenient_activity_bonus,
-            low_word_confidence_threshold=low_word_confidence_threshold,
-            transcribe_vocals_fn=transcribe_vocals_fn,
-            extract_audio_features_fn=extract_audio_features_fn,
-            dedupe_whisper_segments_fn=dedupe_whisper_segments_fn,
-            trim_whisper_transcription_by_lyrics_fn=trim_whisper_transcription_by_lyrics_fn,
-            fill_vocal_activity_gaps_fn=fill_vocal_activity_gaps_fn,
-            dedupe_whisper_words_fn=dedupe_whisper_words_fn,
-            extract_lrc_words_all_fn=extract_lrc_words_all_fn,
-            build_phoneme_tokens_from_lrc_words_fn=build_phoneme_tokens_from_lrc_words_fn,
-            build_phoneme_tokens_from_whisper_words_fn=build_phoneme_tokens_from_whisper_words_fn,
-            build_syllable_tokens_from_phonemes_fn=build_syllable_tokens_from_phonemes_fn,
-            build_segment_text_overlap_assignments_fn=build_segment_text_overlap_assignments_fn,
-            build_phoneme_dtw_path_fn=build_phoneme_dtw_path_fn,
-            build_word_assignments_from_phoneme_path_fn=build_word_assignments_from_phoneme_path_fn,
-            build_block_segmented_syllable_assignments_fn=build_block_segmented_syllable_assignments_fn,
-            map_lrc_words_to_whisper_fn=map_lrc_words_to_whisper_fn,
-            shift_repeated_lines_to_next_whisper_fn=shift_repeated_lines_to_next_whisper_fn,
-            enforce_monotonic_line_starts_whisper_fn=enforce_monotonic_line_starts_whisper_fn,
-            resolve_line_overlaps_fn=resolve_line_overlaps_fn,
-            extend_line_to_trailing_whisper_matches_fn=extend_line_to_trailing_whisper_matches_fn,
-            pull_late_lines_to_matching_segments_fn=pull_late_lines_to_matching_segments_fn,
-            retime_short_interjection_lines_fn=retime_short_interjection_lines_fn,
-            snap_first_word_to_whisper_onset_fn=snap_first_word_to_whisper_onset_fn,
-            interpolate_unmatched_lines_fn=interpolate_unmatched_lines_fn,
-            refine_unmatched_lines_with_onsets_fn=refine_unmatched_lines_with_onsets_fn,
-            pull_lines_forward_for_continuous_vocals_fn=pull_lines_forward_for_continuous_vocals_fn,
-            logger=logger,
+            **pass_kwargs,
         )
         if _retry_improves_alignment(metrics, retry_metrics):
             merged_metrics = dict(retry_metrics)
