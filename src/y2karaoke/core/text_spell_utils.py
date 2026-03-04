@@ -108,6 +108,40 @@ def looks_ocr_suspicious(word: str) -> bool:
     return False
 
 
+def _get_spell_checker() -> Any:
+    try:
+        from AppKit import NSSpellChecker
+
+        return NSSpellChecker.sharedSpellChecker()
+    except Exception:
+        return None
+
+
+def _match_case_like(source: str, corrected: str) -> str:
+    if source.isupper():
+        return corrected.upper()
+    if source and source[0].isupper():
+        return corrected.capitalize()
+    return corrected
+
+
+def _correct_word_or_keep(word: str, *, checker: Any, mode: str) -> str:
+    low_w = word.lower()
+    if len(low_w) < 3 or not checker:
+        return word
+    if is_correctly_spelled(low_w, checker):
+        return word
+
+    auto_mode = mode == "auto"
+    if auto_mode and not looks_ocr_suspicious(low_w):
+        return word
+
+    for variant in get_ocr_variants(low_w):
+        if variant != low_w and is_correctly_spelled(variant, checker):
+            return _match_case_like(word, variant)
+    return word
+
+
 @lru_cache(maxsize=4096)
 def spell_correct_cached(text: str, mode: str) -> str:
     """Mode-aware cached spell correction.
@@ -119,48 +153,9 @@ def spell_correct_cached(text: str, mode: str) -> str:
     if mode == "off":
         return text
 
-    try:
-        from AppKit import NSSpellChecker
-
-        checker = NSSpellChecker.sharedSpellChecker()
-    except Exception:
-        checker = None
-
-    words = text.split()
-    corrected = []
-    for w in words:
-        low_w = w.lower()
-        if len(low_w) < 3 or not checker:
-            corrected.append(w)
-            continue
-
-        # 1. Already correct? (Highest priority)
-        if is_correctly_spelled(low_w, checker):
-            corrected.append(w)
-            continue
-
-        auto_mode = mode == "auto"
-        if auto_mode and not looks_ocr_suspicious(low_w):
-            corrected.append(w)
-            continue
-
-        # 2. Try OCR variant generation
-        correction = None
-        variants = get_ocr_variants(low_w)
-        for variant in variants:
-            if variant != low_w and is_correctly_spelled(variant, checker):
-                correction = variant
-                break
-
-        # 3. Use correction or keep original
-        if correction:
-            if w.isupper():
-                corrected.append(correction.upper())
-            elif w[0].isupper():
-                corrected.append(correction.capitalize())
-            else:
-                corrected.append(correction)
-        else:
-            corrected.append(w)
+    checker = _get_spell_checker()
+    corrected = [
+        _correct_word_or_keep(w, checker=checker, mode=mode) for w in text.split()
+    ]
 
     return " ".join(corrected)
