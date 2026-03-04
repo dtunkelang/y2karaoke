@@ -486,43 +486,157 @@ def _append_cycle_target_lines(
     for row_order, ((cluster, cand, _onset), s) in enumerate(
         zip(row_specs, adjusted_starts)
     ):
-        next_start = (
-            adjusted_starts[row_order + 1]
-            if row_order + 1 < len(adjusted_starts)
-            else (cycle_end + 0.8)
+        e = _compute_row_line_end(
+            cluster=cluster,
+            row_windows=row_windows,
+            row_order=row_order,
+            adjusted_starts=adjusted_starts,
+            cycle_end=cycle_end,
+            start=s,
+            cycle_idx=cycle_idx,
+            cycle_specs_count=cycle_specs_count,
+            next_block_start=next_block_start,
         )
-        observed_end = _row_offset_time(cluster, cycle_end, s)
-        if row_windows and row_order < len(row_windows):
-            observed_end = row_windows[row_order][1]
-        e_cap = cycle_end + 0.8
-        if cycle_idx == cycle_specs_count - 1 and next_block_start is not None:
-            e_cap = min(e_cap, next_block_start - 0.02)
-        e = max(s + 0.2, min(e_cap, min(observed_end, next_start)))
-        meta = {
-            "block_first": {
-                "block_id": block_id,
-                "row_order": row_order,
-                "row_y": round(float(cluster.y), 1),
-                "frame_block_size": len(bframes),
-                "cycle_index": cycle_idx,
-                "cycle_count": cycle_specs_count,
-            }
-        }
+        meta = _build_block_first_reconstruction_meta(
+            block_id=block_id,
+            row_order=row_order,
+            row_y=cluster.y,
+            frame_block_size=len(bframes),
+            cycle_idx=cycle_idx,
+            cycle_specs_count=cycle_specs_count,
+        )
         out.append(
-            TargetLine(
+            _build_target_line_for_cycle_row(
                 line_index=line_index,
-                start=snap_fn(s),
-                end=snap_fn(e),
-                text=cand.text,
-                words=list(cand.words),
-                y=float(cluster.y),
-                word_rois=list(cand.w_rois),
-                visibility_start=float(bframes[0].time),
-                visibility_end=float(bframes[-1].time),
+                start=s,
+                end=e,
+                candidate=cand,
+                row_y=cluster.y,
+                bframes=bframes,
                 reconstruction_meta=meta,
+                snap_fn=snap_fn,
             )
         )
         line_index += 1
+    return line_index
+
+
+def _compute_row_line_end(
+    *,
+    cluster: _BlockRow,
+    row_windows: list[tuple[float, float]],
+    row_order: int,
+    adjusted_starts: list[float],
+    cycle_end: float,
+    start: float,
+    cycle_idx: int,
+    cycle_specs_count: int,
+    next_block_start: Optional[float],
+) -> float:
+    next_start = (
+        adjusted_starts[row_order + 1]
+        if row_order + 1 < len(adjusted_starts)
+        else (cycle_end + 0.8)
+    )
+    observed_end = _row_offset_time(cluster, cycle_end, start)
+    if row_windows and row_order < len(row_windows):
+        observed_end = row_windows[row_order][1]
+    e_cap = cycle_end + 0.8
+    if cycle_idx == cycle_specs_count - 1 and next_block_start is not None:
+        e_cap = min(e_cap, next_block_start - 0.02)
+    return max(start + 0.2, min(e_cap, min(observed_end, next_start)))
+
+
+def _build_block_first_reconstruction_meta(
+    *,
+    block_id: int,
+    row_order: int,
+    row_y: float,
+    frame_block_size: int,
+    cycle_idx: int,
+    cycle_specs_count: int,
+) -> dict[str, dict[str, float | int]]:
+    return {
+        "block_first": {
+            "block_id": block_id,
+            "row_order": row_order,
+            "row_y": round(float(row_y), 1),
+            "frame_block_size": frame_block_size,
+            "cycle_index": cycle_idx,
+            "cycle_count": cycle_specs_count,
+        }
+    }
+
+
+def _build_target_line_for_cycle_row(
+    *,
+    line_index: int,
+    start: float,
+    end: float,
+    candidate: _FrameRow,
+    row_y: float,
+    bframes: list[_FrameState],
+    reconstruction_meta: dict[str, dict[str, float | int]],
+    snap_fn: SnapFn,
+) -> TargetLine:
+    return TargetLine(
+        line_index=line_index,
+        start=snap_fn(start),
+        end=snap_fn(end),
+        text=candidate.text,
+        words=list(candidate.words),
+        y=float(row_y),
+        word_rois=list(candidate.w_rois),
+        visibility_start=float(bframes[0].time),
+        visibility_end=float(bframes[-1].time),
+        reconstruction_meta=reconstruction_meta,
+    )
+
+
+def _append_block_cycles_to_output(
+    out: list[TargetLine],
+    *,
+    block_id: int,
+    bframes: list[_FrameState],
+    rows: list[_BlockRow],
+    block_start: float,
+    block_end: float,
+    next_block_start: Optional[float],
+    line_index_start: int,
+    snap_fn: SnapFn,
+) -> int:
+    cycle_specs = _build_cycle_specs(
+        bframes,
+        rows,
+        block_start=block_start,
+        block_end=block_end,
+    )
+
+    line_index = line_index_start
+    for cycle_idx, (cycle_start, cycle_end, row_windows) in enumerate(cycle_specs):
+        row_specs = _build_row_specs_for_cycle(
+            rows,
+            cycle_start=cycle_start,
+            cycle_end=cycle_end,
+            row_windows=row_windows,
+        )
+        adjusted_starts = _compute_adjusted_row_starts(
+            row_specs, cycle_start=cycle_start
+        )
+        line_index = _append_cycle_target_lines(
+            out,
+            row_specs=row_specs,
+            adjusted_starts=adjusted_starts,
+            row_windows=row_windows,
+            line_index_start=line_index,
+            block_id=block_id,
+            cycle_idx=cycle_idx,
+            cycle_specs_count=len(cycle_specs),
+            bframes=bframes,
+            cycle_end=cycle_end,
+            next_block_start=next_block_start,
+            snap_fn=snap_fn,
+        )
     return line_index
 
 
@@ -553,36 +667,16 @@ def reconstruct_lyrics_from_visuals_block_first_frames(
         rows = _merge_suffix_fragment_rows(rows)
         if not rows:
             continue
-        cycle_specs = _build_cycle_specs(
-            bframes,
-            rows,
+        line_index = _append_block_cycles_to_output(
+            out,
+            block_id=block_id,
+            bframes=bframes,
+            rows=rows,
             block_start=block_start,
             block_end=block_end,
+            next_block_start=next_block_start,
+            line_index_start=line_index,
+            snap_fn=snap_fn,
         )
-
-        for cycle_idx, (cycle_start, cycle_end, row_windows) in enumerate(cycle_specs):
-            row_specs = _build_row_specs_for_cycle(
-                rows,
-                cycle_start=cycle_start,
-                cycle_end=cycle_end,
-                row_windows=row_windows,
-            )
-            adjusted_starts = _compute_adjusted_row_starts(
-                row_specs, cycle_start=cycle_start
-            )
-            line_index = _append_cycle_target_lines(
-                out,
-                row_specs=row_specs,
-                adjusted_starts=adjusted_starts,
-                row_windows=row_windows,
-                line_index_start=line_index,
-                block_id=block_id,
-                cycle_idx=cycle_idx,
-                cycle_specs_count=len(cycle_specs),
-                bframes=bframes,
-                cycle_end=cycle_end,
-                next_block_start=next_block_start,
-                snap_fn=snap_fn,
-            )
 
     return out
