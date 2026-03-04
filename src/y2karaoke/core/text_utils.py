@@ -14,152 +14,46 @@ from .text_ocr_context import (
     contextual_ocr_token_replacement as _contextual_ocr_token_replacement_impl,
     regularize_short_chant_alternation as _regularize_short_chant_alternation_impl,
 )
+from .text_title_utils import (
+    STOP_WORDS as _STOP_WORDS,
+    clean_title_for_search as _clean_title_for_search_impl,
+    filter_singer_only_lines as _filter_singer_only_lines_impl,
+    make_slug as _make_slug_impl,
+    normalize_title as _normalize_title_impl,
+    strip_leading_artist_from_line as _strip_leading_artist_from_line_impl,
+)
+
+STOP_WORDS = _STOP_WORDS
 
 
 # ----------------------
 # Slug and title utilities
 # ----------------------
 def make_slug(text: str) -> str:
-    text = unicodedata.normalize("NFKD", text)
-    text = text.lower()
-    text = re.sub(r"[^\w\s-]", "", text)
-    text = re.sub(r"\s+", "-", text)
-    return text.strip("-")
+    return _make_slug_impl(text)
 
 
 def clean_title_for_search(
     title: str, title_cleanup_patterns: List[str], youtube_suffixes: List[str]
 ) -> str:
-    cleaned = title
-    for pattern in title_cleanup_patterns:
-        cleaned = re.sub(pattern, "", cleaned, flags=re.IGNORECASE)
-    for suffix in youtube_suffixes:
-        if cleaned.endswith(suffix):
-            cleaned = cleaned[: -len(suffix)].strip()
-    return cleaned.strip()
+    return _clean_title_for_search_impl(title, title_cleanup_patterns, youtube_suffixes)
 
 
 # ----------------------
 # Genius-specific line helpers
 # ----------------------
 def strip_leading_artist_from_line(text: str, artist: str) -> str:
-    if not artist:
-        return text
-    pattern = re.compile(
-        rf"^(?:\[{re.escape(artist)}\]\s*|{re.escape(artist)}\s*[-–]\s*)", re.IGNORECASE
-    )
-    return pattern.sub("", text).strip()
+    return _strip_leading_artist_from_line_impl(text, artist)
 
 
 def filter_singer_only_lines(
     lines: List[Tuple[str, str]], known_singers: List[str]
 ) -> List[Tuple[str, str]]:
-    known_set = {s.lower() for s in known_singers}
-    filtered = []
-    for text, singer in lines:
-        text_clean = strip_leading_artist_from_line(text, artist="")
-        parts = re.split(r"[\/,]", text_clean.lower())
-        if any(p.strip() not in known_set for p in parts):
-            filtered.append((text_clean, singer))
-    return filtered
+    return _filter_singer_only_lines_impl(lines, known_singers)
 
 
 def normalize_title(title: str, remove_stopwords: bool = False) -> str:
-    """Normalize title for comparison.
-
-    Args:
-        title: Title string to normalize
-        remove_stopwords: If True, remove common stopwords (the, el, los, etc.)
-    """
-    normalized = re.sub(r"[,.\-:;\'\"!?()]", " ", title.lower())
-    normalized = re.sub(r"\s+", " ", normalized).strip()
-
-    if remove_stopwords:
-        words = [w for w in normalized.split() if w not in STOP_WORDS]
-        normalized = " ".join(words)
-
-    return normalized
-
-
-STOP_WORDS = {
-    # English
-    "the",
-    "a",
-    "an",
-    "and",
-    "or",
-    "of",
-    "with",
-    "in",
-    "to",
-    "for",
-    "by",
-    "&",
-    "+",
-    # Spanish
-    "el",
-    "la",
-    "los",
-    "las",
-    "un",
-    "una",
-    "unos",
-    "unas",
-    "y",
-    "de",
-    "del",
-    "con",
-    # French
-    "le",
-    "la",
-    "les",
-    "un",
-    "une",
-    "des",
-    "et",
-    "de",
-    "du",
-    "au",
-    "aux",
-    # German
-    "der",
-    "die",
-    "das",
-    "ein",
-    "eine",
-    "und",
-    "von",
-    "mit",
-    # Italian
-    "il",
-    "lo",
-    "la",
-    "i",
-    "gli",
-    "le",
-    "un",
-    "uno",
-    "una",
-    "e",
-    "di",
-    "del",
-    "della",
-    # Portuguese
-    "o",
-    "a",
-    "os",
-    "as",
-    "um",
-    "uma",
-    "uns",
-    "umas",
-    "e",
-    "de",
-    "do",
-    "da",
-    "dos",
-    "das",
-}
+    return _normalize_title_impl(title, remove_stopwords=remove_stopwords)
 
 
 LYRIC_FUNCTION_WORDS = {
