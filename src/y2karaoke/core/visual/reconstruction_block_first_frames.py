@@ -129,7 +129,7 @@ def _segment_blocks(frames: list[_FrameState]) -> list[list[_FrameState]]:
     return split_blocks
 
 
-def _split_block_on_row_cycle_resets(  # noqa: C901
+def _split_block_on_row_cycle_resets(
     block_frames: list[_FrameState],
 ) -> list[list[_FrameState]]:
     return _split_block_on_row_cycle_resets_impl(
@@ -186,14 +186,14 @@ def _cluster_rows_within_block(block_frames: list[_FrameState]) -> list[_BlockRo
     return row_clusters
 
 
-def _estimate_row_windows_from_block(  # noqa: C901
+def _estimate_row_windows_from_block(
     block_frames: list[_FrameState],
     row_clusters: list[_BlockRow],
 ) -> Optional[list[tuple[float, float]]]:
     return _estimate_row_windows_from_block_impl(block_frames, row_clusters)
 
 
-def _estimate_cycle_row_windows_from_block(  # noqa: C901
+def _estimate_cycle_row_windows_from_block(
     block_frames: list[_FrameState],
     row_clusters: list[_BlockRow],
 ) -> Optional[list[tuple[float, float, list[tuple[float, float]]]]]:

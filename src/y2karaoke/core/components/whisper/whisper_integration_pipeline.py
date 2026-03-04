@@ -465,7 +465,7 @@ def align_lrc_text_to_whisper_timings_impl(
     )
 
 
-def correct_timing_with_whisper_impl(  # noqa: C901
+def correct_timing_with_whisper_impl(
     lines: List[models.Line],
     vocals_path: str,
     language: Optional[str],
