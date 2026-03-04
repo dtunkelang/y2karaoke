@@ -10,6 +10,11 @@ import unicodedata
 from functools import lru_cache
 from typing import Any, List, Tuple
 
+from .text_ocr_context import (
+    contextual_ocr_token_replacement as _contextual_ocr_token_replacement_impl,
+    regularize_short_chant_alternation as _regularize_short_chant_alternation_impl,
+)
+
 
 # ----------------------
 # Slug and title utilities
@@ -712,119 +717,10 @@ def normalize_ocr_tokens(tokens: List[str]) -> List[str]:
 
 
 def _regularize_short_chant_alternation(tokens: List[str]) -> List[str]:
-    """Stabilize short chant runs made only of 'oh'/'I' atoms.
-
-    OCR can inject adjacent duplicate atoms (e.g., "oh oh") in refrain lines.
-    For short chant-only lines, regularize to an alternating pattern while
-    preserving token count.
-    """
-    if len(tokens) < 4 or len(tokens) > 10:
-        return tokens
-
-    lowered = [t.lower() for t in tokens]
-    allowed = {"oh", "i"}
-    if any(tok not in allowed for tok in lowered):
-        return tokens
-    if len(set(lowered)) < 2:
-        return tokens
-
-    has_adjacent_dup = any(lowered[i] == lowered[i - 1] for i in range(1, len(lowered)))
-    if not has_adjacent_dup:
-        return tokens
-
-    start = lowered[0]
-    other = "i" if start == "oh" else "oh"
-    out: List[str] = []
-    for i, _ in enumerate(tokens):
-        atom = start if i % 2 == 0 else other
-        if atom == "oh":
-            out.append("Oh" if i == 0 else "oh")
-        else:
-            out.append("I")
-    return out
+    return _regularize_short_chant_alternation_impl(tokens)
 
 
 def _contextual_ocr_token_replacement(  # noqa: C901
     low: str, prev_low: str, next_low: str
 ) -> str | None:
-    # Frequent OCR confusion in phrase "... doing shots drinking fast ...".
-    if low != "drinking" and re.fullmatch(r"d[a-z]{0,4}(?:inking|nking)", low):
-        return "drinking"
-
-    # Frequent OCR confusion around "... come on ...".
-    if low in {"ony", "om"} and prev_low == "come":
-        return "on"
-
-    if low == "lite" and prev_low == "for":
-        return "life"
-    if low == "thythm":
-        return "rhythm"
-    if low == "vou":
-        return "you"
-    if low == "bue":
-        return "me"
-    if low == "walls" and prev_low == "you":
-        return "want"
-    if low == "walls" and prev_low == "vou":
-        return "want"
-
-    # Deterministic OCR repairs for common karaoke lyric fragments
-    # (kept token-count preserving; no spellchecker dependency).
-    if low == "corne" and next_low in {"me", "on", "baby", "with"}:
-        return "come"
-    if low == "cance" and (prev_low in {"on", "come"} or next_low in {"with", "me"}):
-        return "dance"
-    if low == "starlich" and prev_low in {"my", "youre", "you're"}:
-        return "starlight"
-    if low == "tonish":
-        return "tonight"
-    if low == "metonight" and prev_low == "with":
-        return "tonight"
-    if low == "youtre":
-        return "you're"
-    if low == "ctric":
-        return "electric"
-    if low == "cuting":
-        return "cutting"
-
-    if (
-        low in {"l", "loh", "loll", "lohl", "lohlohlohl", "lohlohl"}
-        and prev_low == "oh"
-    ):
-        return "I"
-    if (
-        low in {"loh", "loll", "lohl", "lohlohlohl", "lohlohl", "ohl"}
-        and prev_low == "i"
-    ):
-        return "oh"
-    if low == "l" and prev_low in {"i", "im", "i'm"}:
-        return "oh"
-
-    # Short-token confusions in fast sections.
-    if low == "l" and next_low in {
-        "may",
-        "want",
-        "know",
-        "be",
-        "love",
-        "got",
-        "dont",
-        "don't",
-        "could",
-        "would",
-        "do",
-    }:
-        return "I"
-
-    if low == "loh":
-        # "in loh with your body" -> "in love with your body"
-        if prev_low == "in" and next_low == "with":
-            return "love"
-        # "with loh body" -> "with your body"
-        if prev_low == "with" and next_low == "body":
-            return "your"
-        # "your loh" often means "body" in this repeated phrase.
-        if prev_low == "your":
-            return "body"
-
-    return None
+    return _contextual_ocr_token_replacement_impl(low, prev_low, next_low)
