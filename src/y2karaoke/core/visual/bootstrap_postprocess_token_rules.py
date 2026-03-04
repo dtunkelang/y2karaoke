@@ -128,29 +128,11 @@ def fallback_spell_validated_split(
     if is_spelled_word_fn(token):
         return None
 
-    best: tuple[int, tuple[str, str]] | None = None
-    for i in range(2, len(token) - 1):
-        left = token[:i]
-        right = token[i:]
-        if len(left) < 2 or len(right) < 2:
-            continue
-        if not (is_spelled_word_fn(left) and is_spelled_word_fn(right)):
-            continue
-        score = 0
-        if left in fused_fallback_short_functions:
-            score += 6
-        if right in fused_fallback_short_functions:
-            score += 6
-        if len(left) <= 4:
-            score += 2
-        if len(right) <= 4:
-            score += 2
-        if abs(len(left) - len(right)) <= 2:
-            score += 1
-        if score < 4:
-            continue
-        if best is None or score > best[0]:
-            best = (score, (left, right))
+    best = _best_spell_validated_split(
+        token,
+        is_spelled_word_fn=is_spelled_word_fn,
+        fused_fallback_short_functions=fused_fallback_short_functions,
+    )
 
     if best is None:
         return None
@@ -179,27 +161,7 @@ def contextual_compound_split(
     if not is_spelled_word_fn(low):
         return None
 
-    best: tuple[int, tuple[str, str]] | None = None
-    for i in range(4, len(low) - 3):
-        left = low[:i]
-        right = low[i:]
-        if len(left) < 4 or len(right) < 4:
-            continue
-        if abs(len(left) - len(right)) > 1:
-            continue
-        if not (is_spelled_word_fn(left) and is_spelled_word_fn(right)):
-            continue
-        score = 0
-        if len(left) == len(right):
-            score += 3
-        if right.endswith(("ing", "ed", "s")):
-            score -= 3
-        if right.endswith(("ive", "all", "ight", "ove")):
-            score += 1
-        if score < 2:
-            continue
-        if best is None or score > best[0]:
-            best = (score, (left, right))
+    best = _best_contextual_compound_split(low, is_spelled_word_fn=is_spelled_word_fn)
 
     if best is None:
         return None
@@ -351,12 +313,103 @@ def maybe_contextual_inflection_token(
         return case_like_fn(token, "oh")
 
     if prev_norm in {"saint", "st"} and len(low) >= 3 and not is_spelled_word_fn(low):
-        candidates: list[str] = []
-        for ch in "abcdefghijklmnopqrstuvwxyz":
-            cand = ch + low
-            if is_spelled_word_fn(cand):
-                candidates.append(cand)
-        if len(candidates) == 1:
-            return case_like_fn(token, candidates[0])
+        unique_prefix = _single_prefixed_candidate(
+            low, is_spelled_word_fn=is_spelled_word_fn
+        )
+        if unique_prefix is not None:
+            return case_like_fn(token, unique_prefix)
 
+    return None
+
+
+def _spell_split_score(
+    left: str,
+    right: str,
+    *,
+    fused_fallback_short_functions: tuple[str, ...],
+) -> int:
+    score = 0
+    if left in fused_fallback_short_functions:
+        score += 6
+    if right in fused_fallback_short_functions:
+        score += 6
+    if len(left) <= 4:
+        score += 2
+    if len(right) <= 4:
+        score += 2
+    if abs(len(left) - len(right)) <= 2:
+        score += 1
+    return score
+
+
+def _best_spell_validated_split(
+    token: str,
+    *,
+    is_spelled_word_fn: Callable[[str], bool],
+    fused_fallback_short_functions: tuple[str, ...],
+) -> tuple[int, tuple[str, str]] | None:
+    best: tuple[int, tuple[str, str]] | None = None
+    for i in range(2, len(token) - 1):
+        left = token[:i]
+        right = token[i:]
+        if len(left) < 2 or len(right) < 2:
+            continue
+        if not (is_spelled_word_fn(left) and is_spelled_word_fn(right)):
+            continue
+        score = _spell_split_score(
+            left, right, fused_fallback_short_functions=fused_fallback_short_functions
+        )
+        if score < 4:
+            continue
+        if best is None or score > best[0]:
+            best = (score, (left, right))
+    return best
+
+
+def _compound_split_score(left: str, right: str) -> int:
+    score = 0
+    if len(left) == len(right):
+        score += 3
+    if right.endswith(("ing", "ed", "s")):
+        score -= 3
+    if right.endswith(("ive", "all", "ight", "ove")):
+        score += 1
+    return score
+
+
+def _best_contextual_compound_split(
+    token: str,
+    *,
+    is_spelled_word_fn: Callable[[str], bool],
+) -> tuple[int, tuple[str, str]] | None:
+    best: tuple[int, tuple[str, str]] | None = None
+    for i in range(4, len(token) - 3):
+        left = token[:i]
+        right = token[i:]
+        if len(left) < 4 or len(right) < 4:
+            continue
+        if abs(len(left) - len(right)) > 1:
+            continue
+        if not (is_spelled_word_fn(left) and is_spelled_word_fn(right)):
+            continue
+        score = _compound_split_score(left, right)
+        if score < 2:
+            continue
+        if best is None or score > best[0]:
+            best = (score, (left, right))
+    return best
+
+
+def _single_prefixed_candidate(
+    token: str,
+    *,
+    is_spelled_word_fn: Callable[[str], bool],
+) -> str | None:
+    candidates = [
+        ch + token
+        for ch in "abcdefghijklmnopqrstuvwxyz"
+        if is_spelled_word_fn(ch + token)
+    ]
+    if len(candidates) == 1:
+        return candidates[0]
     return None
