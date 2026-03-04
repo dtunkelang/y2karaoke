@@ -224,41 +224,59 @@ def split_block_on_row_text_phase_changes(  # noqa: C901
     *,
     cluster_rows_within_block_fn: Callable[[list[Any]], list[Any]],
 ) -> list[list[Any]]:
-    if len(block_frames) < 16:
+    split_time = _phase_change_split_time(
+        block_frames, cluster_rows_within_block_fn=cluster_rows_within_block_fn
+    )
+    if split_time is None:
         return [block_frames]
+
+    cut_idx = _find_split_cut_index(block_frames, split_time)
+    if cut_idx is None or cut_idx < 2 or cut_idx > len(block_frames) - 2:
+        return [block_frames]
+    return [block_frames[:cut_idx], block_frames[cut_idx:]]
+
+
+def _phase_change_split_time(
+    block_frames: list[Any],
+    *,
+    cluster_rows_within_block_fn: Callable[[list[Any]], list[Any]],
+) -> Optional[float]:
+    if len(block_frames) < 16:
+        return None
     duration = float(block_frames[-1].time) - float(block_frames[0].time)
     if duration < 6.0:
-        return [block_frames]
+        return None
 
     rows = cluster_rows_within_block_fn(block_frames)
     if not (2 <= len(rows) <= 5):
-        return [block_frames]
+        return None
 
     phase = _top_row_phase_summary(block_frames, rows=rows, min_count_ratio=0.18)
     if phase is None:
-        return [block_frames]
+        return None
 
     if not (
         _is_suffix_variant_tokens(phase["tokens_a"], phase["tokens_b"])
         or phase["similarity"] >= 0.8
     ):
-        return [block_frames]
+        return None
 
     if (phase["late_start"] - phase["early_end"]) < -0.1:
-        return [block_frames]
+        return None
     split_time = phase["late_start"] - 0.02
     if not _has_selection_reset_near_time(block_frames, len(rows), split_time):
-        return [block_frames]
+        return None
 
+    return split_time
+
+
+def _find_split_cut_index(block_frames: list[Any], split_time: float) -> Optional[int]:
     cut_idx: Optional[int] = None
     for i, fr in enumerate(block_frames):
         if float(fr.time) >= split_time:
             cut_idx = i
             break
-    if cut_idx is None or cut_idx < 2 or cut_idx > len(block_frames) - 2:
-        return [block_frames]
-
-    return [block_frames[:cut_idx], block_frames[cut_idx:]]
+    return cut_idx
 
 
 def prune_tiny_identical_blocks(
