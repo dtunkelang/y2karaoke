@@ -35,6 +35,69 @@ musicbrainzngs.set_useragent(
 class MusicBrainzClient(_Base):
     """Handles querying MusicBrainz and scoring track matches."""
 
+    def _search_musicbrainz_recordings(
+        self,
+        *,
+        search_recordings,
+        query: str,
+        artist_hint: Optional[str],
+        title_hint: str,
+    ) -> List[Dict]:
+        if artist_hint:
+            results = search_recordings(
+                recording=title_hint, artist=artist_hint, limit=25
+            )
+        else:
+            results = search_recordings(recording=query, limit=25)
+        return results.get("recording-list", [])
+
+    def _title_match_bonus(self, *, title_hint: str, recording_title: str) -> int:
+        if not title_hint:
+            return 0
+        title_hint_norm = normalize_title(title_hint, remove_stopwords=False)
+        rec_title_norm = normalize_title(recording_title, remove_stopwords=False)
+        if rec_title_norm == title_hint_norm:
+            return 100
+        title_hint_no_stop = normalize_title(title_hint, remove_stopwords=True)
+        rec_title_no_stop = normalize_title(recording_title, remove_stopwords=True)
+        if rec_title_no_stop == title_hint_no_stop:
+            return 30
+        if (
+            title_hint_no_stop in rec_title_no_stop
+            or rec_title_no_stop in title_hint_no_stop
+        ):
+            return 15
+        return 0
+
+    def _score_and_rank_recordings(
+        self, recordings: List[Dict], title_hint: str
+    ) -> List[Dict]:
+        score_recording = getattr(self, "_score_recording_studio_likelihood_fn", None)
+        if not callable(score_recording):
+            score_recording = self._score_recording_studio_likelihood
+        scored = []
+        for rec in recordings:
+            score = score_recording(rec)
+            score += self._title_match_bonus(
+                title_hint=title_hint, recording_title=rec.get("title", "")
+            )
+            scored.append((score, rec))
+        scored.sort(key=lambda x: x[0], reverse=True)
+        return [rec for _, rec in scored[:15]]
+
+    def _is_transient_musicbrainz_error(self, error: Exception) -> bool:
+        error_msg = str(error).lower()
+        return any(
+            marker in error_msg
+            for marker in [
+                "connection",
+                "timeout",
+                "reset",
+                "temporarily",
+                "urlopen error",
+            ]
+        )
+
     def _query_musicbrainz(
         self,
         query: str,
@@ -62,77 +125,16 @@ class MusicBrainzClient(_Base):
 
         for attempt in range(max_retries + 1):
             try:
-                # Include release info to check release type
-                if artist_hint:
-                    results = search_recordings(
-                        recording=title_hint, artist=artist_hint, limit=25
-                    )
-                else:
-                    results = search_recordings(recording=query, limit=25)
-
-                recordings = results.get("recording-list", [])
-
-                # Score and sort recordings to prioritize studio versions and title matches
-                scored = []
-                score_recording = getattr(
-                    self, "_score_recording_studio_likelihood_fn", None
+                recordings = self._search_musicbrainz_recordings(
+                    search_recordings=search_recordings,
+                    query=query,
+                    artist_hint=artist_hint,
+                    title_hint=title_hint,
                 )
-                if not callable(score_recording):
-                    score_recording = self._score_recording_studio_likelihood
-                for rec in recordings:
-                    score = score_recording(rec)
-
-                    # Bonus for title match (when user explicitly provides title)
-                    if title_hint:
-                        rec_title = rec.get("title", "")
-
-                        # First check exact match (with stopwords retained)
-                        title_hint_norm = normalize_title(
-                            title_hint, remove_stopwords=False
-                        )
-                        rec_title_norm = normalize_title(
-                            rec_title, remove_stopwords=False
-                        )
-
-                        if rec_title_norm == title_hint_norm:
-                            score += 100  # Strong bonus for exact match - should outweigh album release bonus
-                        else:
-                            # Check match with stopwords removed (looser matching)
-                            title_hint_no_stop = normalize_title(
-                                title_hint, remove_stopwords=True
-                            )
-                            rec_title_no_stop = normalize_title(
-                                rec_title, remove_stopwords=True
-                            )
-
-                            if rec_title_no_stop == title_hint_no_stop:
-                                score += (
-                                    30  # Moderate bonus for stopword-invariant match
-                                )
-                            elif (
-                                title_hint_no_stop in rec_title_no_stop
-                                or rec_title_no_stop in title_hint_no_stop
-                            ):
-                                score += 15  # Small bonus for partial match
-
-                    scored.append((score, rec))
-
-                # Sort by score (highest first) and take top 15
-                scored.sort(key=lambda x: x[0], reverse=True)
-                return [rec for _, rec in scored[:15]]
+                return self._score_and_rank_recordings(recordings, title_hint)
 
             except Exception as e:
-                error_msg = str(e).lower()
-                is_transient = any(
-                    x in error_msg
-                    for x in [
-                        "connection",
-                        "timeout",
-                        "reset",
-                        "temporarily",
-                        "urlopen error",
-                    ]
-                )
+                is_transient = self._is_transient_musicbrainz_error(e)
 
                 if is_transient and attempt < max_retries:
                     delay = 1.0 * (2**attempt)
