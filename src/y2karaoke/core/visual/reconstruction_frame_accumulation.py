@@ -11,15 +11,18 @@ from typing import Any, Callable, Dict, List, Optional, Tuple
 from ..text_utils import (
     normalize_ocr_line,
     normalize_ocr_tokens,
-    text_similarity,
     LYRIC_FUNCTION_WORDS,
+)
+from .reconstruction_tracking import (
+    commit_or_keep_unmatched_tracks as _commit_or_keep_unmatched_tracks_impl,
+    find_best_track_match as _find_best_track_match_impl,
+    initialize_new_track_visibility as _initialize_new_track_visibility_impl,
 )
 from .word_segmentation import segment_line_tokens_by_visual_gaps
 
 logger = logging.getLogger(__name__)
 FrameFilter = Callable[[List[Dict[str, Any]]], List[Dict[str, Any]]]
 _TRACK_MATCH_BUCKET_PX = 20
-_TRACK_MATCH_NEIGHBOR_BUCKETS = 2
 
 
 def _legacy_visible_end_tracking_enabled() -> bool:
@@ -337,9 +340,9 @@ def accumulate_persistent_lines_from_frames(  # noqa: C901
         )
         for frame_line_data in current_frame_lines:
             entry, is_visible = frame_line_data
-            best_match_idx, best_match_score = _find_best_track_match(
+            best_match_idx, best_match_score = _find_best_track_match_impl(
                 entry=entry,
-                active_tracks=active_tracks,
+                active_track_count=len(active_tracks),
                 matched_track_indices=matched_track_indices,
                 track_y_cache=track_y_cache,
                 track_text_cache=track_text_cache,
@@ -354,14 +357,14 @@ def accumulate_persistent_lines_from_frames(  # noqa: C901
                 # Create new track
                 _track_id_counter += 1
                 new_track = TrackedLine(entry, f"track_{_track_id_counter}")
-                _initialize_new_track_visibility(
+                _initialize_new_track_visibility_impl(
                     track=new_track, curr_time=curr_time, is_visible=is_visible
                 )
                 active_tracks.append(new_track)
                 matched_track_indices.add(len(active_tracks) - 1)
 
         # Commit tracks that have disappeared
-        active_tracks = _commit_or_keep_unmatched_tracks(
+        active_tracks = _commit_or_keep_unmatched_tracks_impl(
             active_tracks=active_tracks,
             curr_time=curr_time,
             matched_track_indices=matched_track_indices,
@@ -409,97 +412,6 @@ def _build_track_matching_state(
         bucket = int(y_val) // _TRACK_MATCH_BUCKET_PX
         track_buckets.setdefault(bucket, []).append(idx)
     return track_y_cache, track_text_cache, track_stale_cache, track_buckets
-
-
-def _candidate_track_indices_for_entry(
-    entry: Dict[str, Any],
-    *,
-    active_track_count: int,
-    track_buckets: Dict[int, List[int]],
-) -> List[int]:
-    y_bucket = int(entry["y"]) // _TRACK_MATCH_BUCKET_PX
-    candidate_indices: List[int] = []
-    for delta in range(
-        -_TRACK_MATCH_NEIGHBOR_BUCKETS, _TRACK_MATCH_NEIGHBOR_BUCKETS + 1
-    ):
-        candidate_indices.extend(track_buckets.get(y_bucket + delta, []))
-    if not candidate_indices:
-        candidate_indices = list(range(active_track_count))
-    # Preserve deterministic iteration order comparable to enumerate(active_tracks)
-    return sorted(set(candidate_indices))
-
-
-def _find_best_track_match(
-    *,
-    entry: Dict[str, Any],
-    active_tracks: List[TrackedLine],
-    matched_track_indices: set[int],
-    track_y_cache: List[int],
-    track_text_cache: List[str],
-    track_stale_cache: List[bool],
-    track_buckets: Dict[int, List[int]],
-) -> tuple[int, float]:
-    best_match_idx = -1
-    best_match_score = 0.0
-    candidate_indices = _candidate_track_indices_for_entry(
-        entry,
-        active_track_count=len(active_tracks),
-        track_buckets=track_buckets,
-    )
-    for idx in candidate_indices:
-        if idx in matched_track_indices:
-            continue
-        if track_stale_cache[idx]:
-            continue
-        dy = abs(track_y_cache[idx] - entry["y"])
-        if dy > 25:
-            continue
-        sim = text_similarity(entry["text"], track_text_cache[idx])
-        if sim > 0.6 or (dy < 10 and sim > 0.5):
-            score = sim * 0.7 + (1.0 - min(dy, 30) / 30.0) * 0.3
-            if score > best_match_score:
-                best_match_score = score
-                best_match_idx = idx
-    return best_match_idx, best_match_score
-
-
-def _initialize_new_track_visibility(
-    *,
-    track: TrackedLine,
-    curr_time: float,
-    is_visible: bool,
-) -> None:
-    if is_visible:
-        track.vis_count = 1
-        track.visible_yet = True
-        track.first_visible = curr_time
-        track.last_visible_seen = curr_time
-        return
-    track.vis_count = 0
-    track.visible_yet = False
-    track.first_visible = 999999.0
-    track.last_visible_seen = None
-
-
-def _commit_or_keep_unmatched_tracks(
-    *,
-    active_tracks: List[TrackedLine],
-    curr_time: float,
-    matched_track_indices: set[int],
-    committed: List[Dict[str, Any]],
-) -> List[TrackedLine]:
-    remaining_tracks: List[TrackedLine] = []
-    for idx, track in enumerate(active_tracks):
-        if idx in matched_track_indices:
-            remaining_tracks.append(track)
-            continue
-        if curr_time - track.last_seen > 1.0:
-            if track.first_visible == 999999.0:
-                track.first_visible = track.last_seen
-            committed.append(track.to_dict())
-            continue
-        remaining_tracks.append(track)
-    return remaining_tracks
 
 
 def _calculate_visibility_threshold(
