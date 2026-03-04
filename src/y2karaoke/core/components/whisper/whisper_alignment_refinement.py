@@ -5,7 +5,7 @@ import logging
 from contextlib import contextmanager
 from typing import List, Optional, Tuple, Set
 
-from ...models import Line, Word
+from ...models import Line
 from ..alignment.timing_models import (
     TranscriptionSegment,
     TranscriptionWord,
@@ -19,6 +19,7 @@ from .whisper_alignment_base import (
     _shift_line,
 )
 from . import whisper_alignment_activity as _alignment_activity_helpers
+from . import whisper_alignment_guard_stats as _guard_stats_helpers
 from . import whisper_alignment_hybrid as _hybrid_helpers
 from . import whisper_alignment_line_helpers as _line_helpers
 from . import whisper_alignment_short_lines as _short_line_helpers
@@ -391,55 +392,17 @@ def _cap_isolated_short_lines(lines: List[Line]) -> int:
 
 
 def _clone_lines(lines: List[Line]) -> List[Line]:
-    return [
-        Line(
-            words=[
-                Word(
-                    text=w.text,
-                    start_time=w.start_time,
-                    end_time=w.end_time,
-                    singer=w.singer,
-                )
-                for w in line.words
-            ],
-            singer=line.singer,
-        )
-        for line in lines
-    ]
+    return _guard_stats_helpers.clone_lines(lines)
 
 
 def _long_gap_stats(lines: List[Line], threshold: float = 20.0) -> Tuple[int, float]:
-    prev_end: Optional[float] = None
-    long_count = 0
-    max_gap = 0.0
-    for line in lines:
-        if not line.words:
-            continue
-        if prev_end is not None:
-            gap = line.start_time - prev_end
-            if gap > threshold:
-                long_count += 1
-            if gap > max_gap:
-                max_gap = gap
-        prev_end = line.end_time
-    return long_count, max_gap
+    return _guard_stats_helpers.long_gap_stats(lines, threshold=threshold)
 
 
 def _ordering_inversion_stats(
     lines: List[Line], tolerance: float = 0.01
 ) -> Tuple[int, float]:
-    prev_start: Optional[float] = None
-    inversions = 0
-    max_drop = 0.0
-    for line in lines:
-        if not line.words:
-            continue
-        start = line.start_time
-        if prev_start is not None and start < (prev_start - tolerance):
-            inversions += 1
-            max_drop = max(max_drop, prev_start - start)
-        prev_start = start
-    return inversions, max_drop
+    return _guard_stats_helpers.ordering_inversion_stats(lines, tolerance=tolerance)
 
 
 def _pull_lines_forward_for_continuous_vocals(
