@@ -75,6 +75,57 @@ def get_word_ink_metrics(
     }
 
 
+def _group_words_by_row(words: list[dict[str, Any]]) -> list[list[dict[str, Any]]]:
+    ordered = sorted(words, key=lambda w: (int(w.get("y", 0)), int(w.get("x", 0))))
+    groups: list[list[dict[str, Any]]] = []
+    for word in ordered:
+        if not groups:
+            groups.append([word])
+            continue
+        prev = groups[-1][-1]
+        if int(word.get("y", 0)) - int(prev.get("y", 0)) < 22:
+            groups[-1].append(word)
+            continue
+        groups.append([word])
+    return groups
+
+
+def _roi_gray(roi_nd: Any | None) -> Any | None:
+    if roi_nd is None or cv2 is None or np is None:
+        return None
+    try:
+        return cv2.cvtColor(roi_nd, cv2.COLOR_BGR2GRAY)
+    except Exception:
+        return None
+
+
+def _line_center_height(h_vals: list[int], cy_vals: list[float]) -> tuple[float, float]:
+    # Use robust vertical statistics so boxes stay centered on glyphs even
+    # when one token has a noisy OCR box.
+    if np is not None:
+        line_cy = float(np.median(np.array(cy_vals, dtype=np.float32)))
+        line_h = float(np.percentile(np.array(h_vals, dtype=np.float32), 80))
+        line_h = max(line_h, float(np.median(np.array(h_vals, dtype=np.float32))))
+        return line_cy, line_h
+
+    sorted_cy = sorted(cy_vals)
+    mid = len(sorted_cy) // 2
+    if len(sorted_cy) % 2 == 0:
+        line_cy = (sorted_cy[mid - 1] + sorted_cy[mid]) * 0.5
+    else:
+        line_cy = float(sorted_cy[mid])
+
+    sorted_h = sorted(h_vals)
+    mid_h = len(sorted_h) // 2
+    if len(sorted_h) % 2 == 0:
+        med_h = (sorted_h[mid_h - 1] + sorted_h[mid_h]) * 0.5
+    else:
+        med_h = float(sorted_h[mid_h])
+    idx80 = min(len(sorted_h) - 1, max(0, int(round((len(sorted_h) - 1) * 0.8))))
+    p80_h = float(sorted_h[idx80])
+    return line_cy, max(p80_h, med_h)
+
+
 def refine_line_box_with_text_mask(
     line_box: dict[str, Any],
     *,
@@ -176,24 +227,8 @@ def build_line_boxes(
 ) -> list[dict[str, Any]]:
     if not words:
         return []
-    ordered = sorted(words, key=lambda w: (int(w.get("y", 0)), int(w.get("x", 0))))
-    groups: list[list[dict[str, Any]]] = []
-    for w in ordered:
-        if not groups:
-            groups.append([w])
-            continue
-        prev = groups[-1][-1]
-        if int(w.get("y", 0)) - int(prev.get("y", 0)) < 22:
-            groups[-1].append(w)
-        else:
-            groups.append([w])
-
-    roi_gray = None
-    if roi_nd is not None and cv2 is not None and np is not None:
-        try:
-            roi_gray = cv2.cvtColor(roi_nd, cv2.COLOR_BGR2GRAY)
-        except Exception:
-            roi_gray = None
+    groups = _group_words_by_row(words)
+    roi_gray = _roi_gray(roi_nd)
 
     out: list[dict[str, Any]] = []
     pad_x = 8
@@ -205,32 +240,7 @@ def build_line_boxes(
         y2s = [int(w.get("y", 0)) + int(w.get("h", 0)) for w in g]
         h_vals = [max(1, int(w.get("h", 1))) for w in g]
         cy_vals = [int(w.get("y", 0)) + int(w.get("h", 0)) * 0.5 for w in g]
-
-        # Use robust vertical statistics so boxes stay centered on glyphs even
-        # when one token has a noisy OCR box.
-        if np is not None:
-            line_cy = float(np.median(np.array(cy_vals, dtype=np.float32)))
-            line_h = float(np.percentile(np.array(h_vals, dtype=np.float32), 80))
-            line_h = max(line_h, float(np.median(np.array(h_vals, dtype=np.float32))))
-        else:
-            sorted_cy = sorted(cy_vals)
-            mid = len(sorted_cy) // 2
-            if len(sorted_cy) % 2 == 0:
-                line_cy = (sorted_cy[mid - 1] + sorted_cy[mid]) * 0.5
-            else:
-                line_cy = float(sorted_cy[mid])
-
-            sorted_h = sorted(h_vals)
-            mid_h = len(sorted_h) // 2
-            if len(sorted_h) % 2 == 0:
-                med_h = (sorted_h[mid_h - 1] + sorted_h[mid_h]) * 0.5
-            else:
-                med_h = float(sorted_h[mid_h])
-            idx80 = min(
-                len(sorted_h) - 1, max(0, int(round((len(sorted_h) - 1) * 0.8)))
-            )
-            p80_h = float(sorted_h[idx80])
-            line_h = max(p80_h, med_h)
+        line_cy, line_h = _line_center_height(h_vals, cy_vals)
 
         x0 = min(xs) - pad_x
         x1 = max(x2s) + pad_x

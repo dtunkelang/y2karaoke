@@ -66,6 +66,49 @@ def is_safe_spell_guess_correction(source: str, guess: str) -> bool:
     return True
 
 
+def _expand_sub_candidates_once(
+    token: str, *, sub_char_map: dict[str, tuple[str, ...]]
+) -> set[str]:
+    candidates: set[str] = set()
+    chars = list(token)
+    for i, ch in enumerate(chars):
+        for repl in sub_char_map.get(ch, ()):
+            if repl == ch:
+                continue
+            cand_chars = chars.copy()
+            cand_chars[i] = repl
+            candidates.add("".join(cand_chars))
+    return candidates
+
+
+def _expand_sub_candidates_twice(
+    candidates: set[str], *, sub_char_map: dict[str, tuple[str, ...]]
+) -> set[str]:
+    expanded = set(candidates)
+    for base in list(candidates):
+        bchars = list(base)
+        for i, ch in enumerate(bchars):
+            for repl in sub_char_map.get(ch, ()):
+                if repl == ch:
+                    continue
+                cand_chars = bchars.copy()
+                cand_chars[i] = repl
+                expanded.add("".join(cand_chars))
+    return expanded
+
+
+def _spelled_candidate_list(
+    candidates: set[str], *, original: str, is_spelled_word_fn: Callable[[str], bool]
+) -> list[str]:
+    out: list[str] = []
+    for cand in sorted(candidates):
+        if cand == original:
+            continue
+        if is_spelled_word_fn(cand):
+            out.append(cand)
+    return out
+
+
 def ocr_substitution_candidates(
     token: str,
     *,
@@ -76,34 +119,12 @@ def ocr_substitution_candidates(
     if not low.isalpha() or len(low) < 3 or len(low) > 8:
         return []
 
-    candidates: set[str] = set()
-    chars = list(low)
-    for i, ch in enumerate(chars):
-        for repl in sub_char_map.get(ch, ()):
-            if repl == ch:
-                continue
-            cand_chars = chars.copy()
-            cand_chars[i] = repl
-            candidates.add("".join(cand_chars))
+    candidates = _expand_sub_candidates_once(low, sub_char_map=sub_char_map)
     if len(low) <= 6 and not is_spelled_word_fn(low):
-        one_edit = list(candidates)
-        for base in one_edit:
-            bchars = list(base)
-            for i, ch in enumerate(bchars):
-                for repl in sub_char_map.get(ch, ()):
-                    if repl == ch:
-                        continue
-                    cand_chars = bchars.copy()
-                    cand_chars[i] = repl
-                    candidates.add("".join(cand_chars))
-
-    out: list[str] = []
-    for cand in sorted(candidates):
-        if cand == low:
-            continue
-        if is_spelled_word_fn(cand):
-            out.append(cand)
-    return out
+        candidates = _expand_sub_candidates_twice(candidates, sub_char_map=sub_char_map)
+    return _spelled_candidate_list(
+        candidates, original=low, is_spelled_word_fn=is_spelled_word_fn
+    )
 
 
 def ocr_insertion_candidates(
