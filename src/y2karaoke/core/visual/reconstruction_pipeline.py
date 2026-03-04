@@ -4,7 +4,6 @@ import os
 import logging
 import hashlib
 import json
-from difflib import SequenceMatcher
 from typing import Any, Callable, Optional
 
 from ..models import TargetLine
@@ -19,6 +18,17 @@ from .reconstruction_block_first_frames import (
     reconstruct_lyrics_from_visuals_block_first_frames,
 )
 from .reconstruction_target_conversion import convert_persistent_lines_to_target_lines
+from .reconstruction_sequencing import (
+    band_fragment_indices as _band_fragment_indices_impl,
+    has_significant_overlap as _has_significant_overlap_impl,
+    is_band_fragment_subphrase as _is_band_fragment_subphrase_impl,
+    log_sequence_blocks as _log_sequence_blocks_impl,
+    order_visual_block_locally as _order_visual_block_locally_impl,
+    sequence_by_visual_neighborhood as _sequence_by_visual_neighborhood_impl,
+    sequence_by_visual_neighborhood_legacy as _sequence_by_visual_neighborhood_legacy_impl,
+    should_disable_sequencing_for_blocks as _should_disable_sequencing_for_blocks_impl,
+    tokens_contiguous_subphrase as _tokens_contiguous_subphrase_impl,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -381,323 +391,64 @@ def _suppress_global_metadata_noise(
 def _sequence_by_visual_neighborhood(
     lines: list[dict[str, Any]],
 ) -> list[dict[str, Any]]:
-    """Group truly simultaneous lines and sort Top-to-Bottom."""
-    if not lines:
-        return []
-    input_order = list(lines)
-
-    # 1. Sort by first detection to establish temporal baseline
-    lines.sort(key=lambda x: x["first"])
-
-    # 2. Build connected components with a sweep-line + union-find.
-    # This preserves behavior while avoiding large adjacency sets on dense overlap cases.
-    parent = list(range(len(lines)))
-    rank = [0] * len(lines)
-
-    def _find(i: int) -> int:
-        while parent[i] != i:
-            parent[i] = parent[parent[i]]
-            i = parent[i]
-        return i
-
-    def _union(a_idx: int, b_idx: int) -> None:
-        ra = _find(a_idx)
-        rb = _find(b_idx)
-        if ra == rb:
-            return
-        if rank[ra] < rank[rb]:
-            parent[ra] = rb
-            return
-        if rank[ra] > rank[rb]:
-            parent[rb] = ra
-            return
-        parent[rb] = ra
-        rank[ra] += 1
-
-    active: list[int] = []
-    for j, line_j in enumerate(lines):
-        start_j = float(line_j["first"])
-        next_active: list[int] = []
-        for i in active:
-            # Same pruning condition as the original nested-loop break.
-            if start_j <= float(lines[i]["last"]) + 1.5:
-                next_active.append(i)
-                if _has_significant_overlap(lines[i], line_j):
-                    _union(i, j)
-        next_active.append(j)
-        active = next_active
-
-    # 3. Collect connected components (visual blocks)
-    blocks_by_root: dict[int, list[dict[str, Any]]] = {}
-    for i, line in enumerate(lines):
-        blocks_by_root.setdefault(_find(i), []).append(line)
-    unsorted_blocks = list(blocks_by_root.values())
-    _log_sequence_blocks("sweep", unsorted_blocks)
-    if _should_disable_sequencing_for_blocks(unsorted_blocks):
-        return input_order
-
-    # 4. Sort blocks externally by earliest 'first', and internally by Y
-    unsorted_blocks.sort(key=lambda b: min(x["first"] for x in b))
-
-    ordered = []
-    for block in unsorted_blocks:
-        ordered.extend(_order_visual_block_locally(block))
-
-    return ordered
+    return _sequence_by_visual_neighborhood_impl(
+        lines,
+        has_significant_overlap_fn=_has_significant_overlap,
+        log_sequence_blocks_fn=_log_sequence_blocks,
+        should_disable_sequencing_for_blocks_fn=_should_disable_sequencing_for_blocks,
+        order_visual_block_locally_fn=_order_visual_block_locally,
+    )
 
 
 def _sequence_by_visual_neighborhood_legacy(
     lines: list[dict[str, Any]],
 ) -> list[dict[str, Any]]:
-    """Previous adjacency-list implementation kept for regression A/B toggles."""
-    if not lines:
-        return []
-    input_order = list(lines)
-
-    lines.sort(key=lambda x: x["first"])
-    adj: dict[int, set[int]] = {i: set() for i in range(len(lines))}
-    for i in range(len(lines)):
-        for j in range(i + 1, len(lines)):
-            if _has_significant_overlap(lines[i], lines[j]):
-                adj[i].add(j)
-                adj[j].add(i)
-            if lines[j]["first"] > lines[i]["last"] + 1.5:
-                break
-
-    visited = set()
-    unsorted_blocks = []
-    for i in range(len(lines)):
-        if i not in visited:
-            block_indices = []
-            stack = [i]
-            while stack:
-                node = stack.pop()
-                if node not in visited:
-                    visited.add(node)
-                    block_indices.append(node)
-                    stack.extend(adj[node] - visited)
-            unsorted_blocks.append([lines[idx] for idx in block_indices])
-    _log_sequence_blocks("legacy", unsorted_blocks)
-    if _should_disable_sequencing_for_blocks(unsorted_blocks):
-        return input_order
-
-    unsorted_blocks.sort(key=lambda b: min(x["first"] for x in b))
-    ordered = []
-    for block in unsorted_blocks:
-        ordered.extend(_order_visual_block_locally(block))
-    return ordered
+    return _sequence_by_visual_neighborhood_legacy_impl(
+        lines,
+        has_significant_overlap_fn=_has_significant_overlap,
+        log_sequence_blocks_fn=_log_sequence_blocks,
+        should_disable_sequencing_for_blocks_fn=_should_disable_sequencing_for_blocks,
+        order_visual_block_locally_fn=_order_visual_block_locally,
+    )
 
 
 def _log_sequence_blocks(mode: str, blocks: list[list[dict[str, Any]]]) -> None:
-    if not _SEQUENCE_TRACE_ENABLED or not blocks:
-        return
-    stats = []
-    for block in blocks:
-        starts = [float(x.get("first_visible", x["first"])) for x in block]
-        ends = [float(x["last"]) for x in block]
-        stats.append(
-            (
-                len(block),
-                max(ends) - min(starts),
-                min(starts),
-                max(ends),
-            )
-        )
-    stats.sort(key=lambda x: (x[0], x[1]), reverse=True)
-    top = ", ".join(
-        f"size={size} span={span:.1f}s [{start:.1f},{end:.1f}]"
-        for size, span, start, end in stats[:5]
-    )
-    logger.info(
-        "sequence_blocks mode=%s count=%d top=%s",
-        mode,
-        len(blocks),
-        top,
-    )
+    _log_sequence_blocks_impl(mode, blocks)
 
 
 def _should_disable_sequencing_for_blocks(blocks: list[list[dict[str, Any]]]) -> bool:
-    """Disable global sequencing when overlap components indicate pathological chains."""
-    for block in blocks:
-        if len(block) < 4:
-            continue
-        starts = [float(x.get("first_visible", x["first"])) for x in block]
-        ends = [float(x["last"]) for x in block]
-        span = max(ends) - min(starts)
-        # Large components spanning long intervals are strongly associated with
-        # chronology-scrambling on repeated/refrain-heavy karaoke videos.
-        if span >= 20.0:
-            if _SEQUENCE_TRACE_ENABLED:
-                logger.info(
-                    "sequence_blocks global_fallback size=%d span=%.1fs",
-                    len(block),
-                    span,
-                )
-            return True
-    return False
+    return _should_disable_sequencing_for_blocks_impl(blocks)
 
 
 def _order_visual_block_locally(
     block: list[dict[str, Any]],
 ) -> list[dict[str, Any]]:
-    """Preserve chronology across long overlap chains; lane-sort only local simultaneous bands."""
-    if len(block) <= 1:
-        return list(block)
-
-    chrono = sorted(
+    return _order_visual_block_locally_impl(
         block,
-        key=lambda x: (
-            float(x.get("first_visible", x["first"])),
-            float(x["first"]),
-            float(x["last"]),
-        ),
+        has_significant_overlap_fn=_has_significant_overlap,
+        band_fragment_indices_fn=_band_fragment_indices,
     )
-    block_starts = [float(x.get("first_visible", x["first"])) for x in chrono]
-    block_ends = [float(x["last"]) for x in chrono]
-    block_span = max(block_ends) - min(block_starts)
-    # Long transitive overlap chains can scramble refinement-sensitive chronology (e.g. repeated choruses).
-    if len(chrono) >= 3 and block_span >= 6.0:
-        return chrono
-
-    ordered: list[dict[str, Any]] = []
-    band: list[dict[str, Any]] = []
-    band_anchor = 0.0
-    band_last = 0.0
-
-    def _flush() -> None:
-        nonlocal band
-        if not band:
-            return
-        fragment_indices = _band_fragment_indices(band)
-        # Stable sort keeps same-lane lines in chronological order.
-        band.sort(
-            key=lambda x: (
-                1 if id(x) in fragment_indices else 0,
-                x.get("lane", 0),
-                float(x.get("first_visible", x["first"])),
-            )
-        )
-        ordered.extend(band)
-        band = []
-
-    for line in chrono:
-        start = float(line.get("first_visible", line["first"]))
-        end = float(line["last"])
-        if not band:
-            band = [line]
-            band_anchor = start
-            band_last = end
-            continue
-
-        local_simultaneous = (
-            start <= band_last + 0.20
-            and start <= band_anchor + 0.90
-            and any(_has_significant_overlap(existing, line) for existing in band)
-        )
-        if not local_simultaneous:
-            _flush()
-            band = [line]
-            band_anchor = start
-            band_last = end
-            continue
-
-        band.append(line)
-        if end > band_last:
-            band_last = end
-
-    _flush()
-    return ordered
 
 
 def _band_fragment_indices(band: list[dict[str, Any]]) -> set[int]:
-    if len(band) < 2:
-        return set()
-
-    def _tokens(line: dict[str, Any]) -> list[str]:
-        return [t for t in normalize_text_basic(str(line.get("text", ""))).split() if t]
-
-    token_lists = [_tokens(line) for line in band]
-    out: set[int] = set()
-    for i, toks_i in enumerate(token_lists):
-        if len(toks_i) < 1 or len(toks_i) > 4:
-            continue
-        if all(t in {"oh", "ooh", "ah", "la", "na", "mm", "mmm"} for t in toks_i):
-            continue
-        dur_i = max(
-            0.1,
-            float(band[i]["last"])
-            - float(band[i].get("first_visible", band[i]["first"])),
-        )
-        for j, toks_j in enumerate(token_lists):
-            if i == j or len(toks_j) <= len(toks_i):
-                continue
-            if not _is_band_fragment_subphrase(toks_i, toks_j):
-                continue
-            dur_j = max(
-                0.1,
-                float(band[j]["last"])
-                - float(band[j].get("first_visible", band[j]["first"])),
-            )
-            if dur_j < dur_i:
-                continue
-            out.add(id(band[i]))
-            break
-    return out
+    return _band_fragment_indices_impl(
+        band,
+        normalize_text_basic_fn=normalize_text_basic,
+        is_band_fragment_subphrase_fn=_is_band_fragment_subphrase,
+    )
 
 
 def _is_band_fragment_subphrase(fragment: list[str], full: list[str]) -> bool:
-    if _tokens_contiguous_subphrase(fragment, full):
-        return True
-    if len(fragment) == 1:
-        tok = fragment[0]
-        if len(tok) >= 4:
-            singular = tok[:-1] if tok.endswith("s") else tok
-            plural = tok if tok.endswith("s") else f"{tok}s"
-            for full_tok in full:
-                if full_tok == singular or full_tok == plural:
-                    return True
-    # OCR often splits a single word into short pieces ("con ting"), producing
-    # local simultaneous fragment lines that should trail the fuller line.
-    if 2 <= len(fragment) <= 3 and all(1 <= len(t) <= 4 for t in fragment):
-        merged = "".join(fragment)
-        if len(merged) >= 5:
-            for tok in full:
-                if len(tok) < len(merged):
-                    continue
-                if tok == merged:
-                    return True
-                if SequenceMatcher(None, merged, tok).ratio() >= 0.84:
-                    return True
-    return False
+    return _is_band_fragment_subphrase_impl(
+        fragment,
+        full,
+        tokens_contiguous_subphrase_fn=_tokens_contiguous_subphrase,
+    )
 
 
 def _tokens_contiguous_subphrase(needle: list[str], haystack: list[str]) -> bool:
-    if not needle or len(needle) > len(haystack):
-        return False
-    n = len(needle)
-    for idx in range(0, len(haystack) - n + 1):
-        if haystack[idx : idx + n] == needle:
-            return True
-    return False
+    return _tokens_contiguous_subphrase_impl(needle, haystack)
 
 
 def _has_significant_overlap(a: dict[str, Any], b: dict[str, Any]) -> bool:
-    """Identify if two lines share enough temporal overlap to be part of the same visual block."""
-    # Use first_visible for more stable overlap calculation if available
-    start_a = a.get("first_visible", a["first"])
-    start_b = b.get("first_visible", b["first"])
-
-    overlap_start = max(start_a, start_b)
-    overlap_end = min(a["last"], b["last"])
-    overlap_duration = overlap_end - overlap_start
-    if overlap_duration <= 0:
-        return False
-
-    # Requirement: overlap at least 70% of the duration of BOTH lines
-    dur_a = max(0.1, a["last"] - start_a)
-    dur_b = max(0.1, b["last"] - start_b)
-
-    return (overlap_duration / dur_a) >= 0.7 and (overlap_duration / dur_b) >= 0.7
-
-
-_SEQUENCE_TRACE_ENABLED = os.environ.get("Y2K_VISUAL_SEQUENCE_TRACE", "0") == "1"
+    return _has_significant_overlap_impl(a, b)
