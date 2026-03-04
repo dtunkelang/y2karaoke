@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from functools import lru_cache
-from difflib import SequenceMatcher
 import os
 from typing import Any, List, Optional
 
@@ -60,6 +59,14 @@ from .bootstrap_postprocess_token_rules import (
     maybe_restore_contextual_contraction_token as _maybe_restore_contextual_contraction_token_impl,
     maybe_split_fused_contraction_token as _maybe_split_fused_contraction_token_impl,
     repair_fallback_token as _repair_fallback_token_impl,
+)
+from .bootstrap_postprocess_chant_noise import (
+    collect_chant_signature_stats as _collect_chant_signature_stats_impl,
+    is_chant_noise_signature as _is_chant_noise_signature_impl,
+    line_has_neighbor_chant_token_support as _line_has_neighbor_chant_token_support_impl,
+    remove_high_repeat_nonlexical_chant_noise_lines as _remove_high_repeat_nonlexical_chant_noise_lines_impl,
+    remove_repeated_chant_noise_lines as _remove_repeated_chant_noise_lines_impl,
+    should_drop_high_repeat_chant_signature as _should_drop_high_repeat_chant_signature_impl,
 )
 
 _FUSED_FALLBACK_PREFIX_ANCHORS = (
@@ -457,88 +464,19 @@ def build_refined_lines_output(  # noqa: C901
 
 
 def _is_chant_noise_signature(tokens: list[str]) -> bool:
-    if len(tokens) < 2:
-        return False
-    if len(tokens) > 8:
-        return False
-    if any(len(t) < 2 for t in tokens):
-        return False
-    # Avoid suppressing normal repeated lyric phrases ("no no no", "yeah yeah yeah")
-    if any(t in _VOCALIZATION_NOISE_TOKENS for t in tokens):
-        return False
-    base = tokens[0]
-    if base in _COMMON_LYRIC_CHANT_TOKENS:
-        return False
-    if len(base) > 5:
-        return False
-    for tok in tokens[1:]:
-        if SequenceMatcher(None, base, tok).ratio() < 0.75:
-            return False
-        if tok in _COMMON_LYRIC_CHANT_TOKENS:
-            return False
-    return True
+    return _is_chant_noise_signature_impl(
+        tokens,
+        vocalization_noise_tokens=_VOCALIZATION_NOISE_TOKENS,
+        common_lyric_chant_tokens=_COMMON_LYRIC_CHANT_TOKENS,
+    )
 
 
 def _remove_repeated_chant_noise_lines(  # noqa: C901
     lines_out: list[dict[str, Any]],
 ) -> None:
-    if len(lines_out) < 4:
-        return
-
-    norms = [normalize_text_basic(str(ln.get("text", ""))) for ln in lines_out]
-    token_lists = [[t for t in n.split() if t] for n in norms]
-    sig_counts: dict[tuple[str, ...], int] = {}
-    sig_indices: dict[tuple[str, ...], list[int]] = {}
-    sig_conf_sums: dict[tuple[str, ...], float] = {}
-
-    for idx, (ln, toks) in enumerate(zip(lines_out, token_lists)):
-        if not _is_chant_noise_signature(toks):
-            continue
-        # Normalize chant token variants to a common signature key.
-        base = min(toks, key=len)
-        sig: tuple[str, ...] = (base[:4],)
-        sig_counts[sig] = sig_counts.get(sig, 0) + 1
-        sig_indices.setdefault(sig, []).append(idx)
-        sig_conf_sums[sig] = sig_conf_sums.get(sig, 0.0) + float(
-            ln.get("confidence", 0.0) or 0.0
-        )
-
-    drops: set[int] = set()
-    for sig, count in sig_counts.items():
-        if count < 3:
-            continue
-        avg_conf = sig_conf_sums[sig] / max(count, 1)
-        if avg_conf > 0.4 and not (count >= 6 and avg_conf <= 0.55):
-            continue
-        for idx in sig_indices[sig]:
-            ln = lines_out[idx]
-            start = float(ln.get("start", 0.0) or 0.0)
-            end = float(ln.get("end", start) or start)
-            if end - start > 2.4:
-                continue
-            # Keep if a nearby longer line explicitly contains the chant token.
-            chant_token = sig[0]
-            neighbor_mentions = False
-            for j in range(max(0, idx - 2), min(len(lines_out), idx + 3)):
-                if j == idx:
-                    continue
-                n_words = token_lists[j]
-                if len(n_words) <= len(token_lists[idx]):
-                    continue
-                if _is_chant_noise_signature(n_words):
-                    continue
-                if chant_token in n_words:
-                    neighbor_mentions = True
-                    break
-            if neighbor_mentions:
-                continue
-            drops.add(idx)
-
-    if not drops:
-        return
-    lines_out[:] = [ln for idx, ln in enumerate(lines_out) if idx not in drops]
-    for i, ln in enumerate(lines_out):
-        ln["line_index"] = i + 1
+    _remove_repeated_chant_noise_lines_impl(
+        lines_out, is_chant_noise_signature_fn=_is_chant_noise_signature
+    )
 
 
 def _collect_chant_signature_stats(
@@ -548,22 +486,9 @@ def _collect_chant_signature_stats(
     dict[tuple[str, ...], float],
     dict[tuple[str, ...], float],
 ]:
-    sig_indices: dict[tuple[str, ...], list[int]] = {}
-    sig_conf_sums: dict[tuple[str, ...], float] = {}
-    sig_dur_sums: dict[tuple[str, ...], float] = {}
-    for idx, (ln, toks) in enumerate(zip(lines_out, token_lists)):
-        if not _is_chant_noise_signature(toks):
-            continue
-        base = min(toks, key=len)
-        sig = (base[:4],)
-        sig_indices.setdefault(sig, []).append(idx)
-        sig_conf_sums[sig] = sig_conf_sums.get(sig, 0.0) + float(
-            ln.get("confidence", 0.0) or 0.0
-        )
-        start = float(ln.get("start", 0.0) or 0.0)
-        end = float(ln.get("end", start) or start)
-        sig_dur_sums[sig] = sig_dur_sums.get(sig, 0.0) + max(0.0, end - start)
-    return sig_indices, sig_conf_sums, sig_dur_sums
+    return _collect_chant_signature_stats_impl(
+        lines_out, token_lists, is_chant_noise_signature_fn=_is_chant_noise_signature
+    )
 
 
 def _line_has_neighbor_chant_token_support(
@@ -572,17 +497,13 @@ def _line_has_neighbor_chant_token_support(
     lines_out: list[dict[str, Any]],
     token_lists: list[list[str]],
 ) -> bool:
-    for j in range(max(0, idx - 2), min(len(lines_out), idx + 3)):
-        if j == idx:
-            continue
-        n_words = token_lists[j]
-        if len(n_words) <= len(token_lists[idx]):
-            continue
-        if _is_chant_noise_signature(n_words):
-            continue
-        if root in n_words:
-            return True
-    return False
+    return _line_has_neighbor_chant_token_support_impl(
+        idx,
+        root,
+        lines_out,
+        token_lists,
+        is_chant_noise_signature_fn=_is_chant_noise_signature,
+    )
 
 
 def _should_drop_high_repeat_chant_signature(
@@ -591,55 +512,24 @@ def _should_drop_high_repeat_chant_signature(
     sig_conf_sums: dict[tuple[str, ...], float],
     sig_dur_sums: dict[tuple[str, ...], float],
 ) -> bool:
-    count = len(idxs)
-    if count < 5:
-        return False
-    root = sig[0]
-    if _is_spelled_word(root) and count < 8:
-        return False
-    avg_conf = sig_conf_sums[sig] / max(count, 1)
-    avg_dur = sig_dur_sums[sig] / max(count, 1)
-    return avg_conf <= 0.95 and avg_dur <= 1.6
+    return _should_drop_high_repeat_chant_signature_impl(
+        sig,
+        idxs,
+        sig_conf_sums,
+        sig_dur_sums,
+        is_spelled_word_fn=_is_spelled_word,
+    )
 
 
 def _remove_high_repeat_nonlexical_chant_noise_lines(
     lines_out: list[dict[str, Any]],
 ) -> None:
-    """Always-on narrow chant cleanup for repeated non-lexical syllable junk (e.g. doh/dohi)."""
-    if len(lines_out) < 5:
-        return
-
-    norms = [normalize_text_basic(str(ln.get("text", ""))) for ln in lines_out]
-    token_lists = [[t for t in n.split() if t] for n in norms]
-    sig_indices, sig_conf_sums, sig_dur_sums = _collect_chant_signature_stats(
-        lines_out, token_lists
+    _remove_high_repeat_nonlexical_chant_noise_lines_impl(
+        lines_out,
+        collect_chant_signature_stats_fn=_collect_chant_signature_stats,
+        should_drop_high_repeat_chant_signature_fn=_should_drop_high_repeat_chant_signature,
+        line_has_neighbor_chant_token_support_fn=_line_has_neighbor_chant_token_support,
     )
-
-    drops: set[int] = set()
-    for sig, idxs in sig_indices.items():
-        if not _should_drop_high_repeat_chant_signature(
-            sig, idxs, sig_conf_sums, sig_dur_sums
-        ):
-            continue
-        root = sig[0]
-
-        for idx in idxs:
-            ln = lines_out[idx]
-            start = float(ln.get("start", 0.0) or 0.0)
-            end = float(ln.get("end", start) or start)
-            if end - start > 2.4:
-                continue
-            if _line_has_neighbor_chant_token_support(
-                idx, root, lines_out, token_lists
-            ):
-                continue
-            drops.add(idx)
-
-    if not drops:
-        return
-    lines_out[:] = [ln for idx, ln in enumerate(lines_out) if idx not in drops]
-    for i, ln in enumerate(lines_out):
-        ln["line_index"] = i + 1
 
 
 def _is_high_uncertainty_reconstruction(meta: Optional[dict[str, Any]]) -> bool:
