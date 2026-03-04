@@ -14,6 +14,7 @@ from .reconstruction_metadata_filters import (
     suppress_global_metadata_noise as _suppress_global_metadata_noise_impl,
 )
 from .reconstruction_fragment_filters import (
+    suppress_repeated_short_fragment_clusters as _suppress_repeated_short_fragment_clusters_impl,
     suppress_short_lane_fragments as _suppress_short_lane_fragments_impl,
 )
 from .reconstruction_frame_accumulation import accumulate_persistent_lines_from_frames
@@ -280,62 +281,10 @@ def _suppress_short_lane_fragments(lines: list[dict[str, Any]]) -> list[dict[str
 def _suppress_repeated_short_fragment_clusters(  # noqa: C901
     lines: list[dict[str, Any]],
 ) -> list[dict[str, Any]]:
-    """Remove repeated short fragment shards backed by nearby fuller lyric lines."""
-    if len(lines) < 4:
-        return lines
-
-    token_lists = [
-        [t for t in normalize_text_basic(str(line.get("text", ""))).split() if t]
-        for line in lines
-    ]
-    groups: dict[tuple[str, ...], list[int]] = {}
-    for idx, (line, toks) in enumerate(zip(lines, token_lists)):
-        if not (1 <= len(toks) <= 3):
-            continue
-        dur = float(line["last"]) - float(line["first"])
-        if dur > 1.6:
-            continue
-        groups.setdefault(tuple(toks), []).append(idx)
-
-    suppressed: set[int] = set()
-    for key, idxs in groups.items():
-        if len(idxs) < 2:
-            continue
-        avg_dur = sum(
-            max(0.0, float(lines[i]["last"]) - float(lines[i]["first"])) for i in idxs
-        ) / max(len(idxs), 1)
-        min_count = 3
-        if len(key) <= 2 and avg_dur <= 1.0:
-            min_count = 2
-        if len(idxs) < min_count:
-            continue
-
-        supported: list[int] = []
-        for idx in idxs:
-            line = lines[idx]
-            start = float(line["first"])
-            end = float(line["last"])
-            for j, other in enumerate(lines):
-                if j == idx:
-                    continue
-                other_toks = token_lists[j]
-                if len(other_toks) <= len(key):
-                    continue
-                other_start = float(other["first"])
-                other_end = float(other["last"])
-                if other_end < start - 3.0 or other_start > end + 3.0:
-                    continue
-                if _is_band_fragment_subphrase(list(key), other_toks):
-                    supported.append(idx)
-                    break
-
-        if len(supported) < min_count:
-            continue
-        suppressed.update(supported)
-
-    if not suppressed:
-        return lines
-    return [line for idx, line in enumerate(lines) if idx not in suppressed]
+    return _suppress_repeated_short_fragment_clusters_impl(
+        lines,
+        is_band_fragment_subphrase_fn=_is_band_fragment_subphrase,
+    )
 
 
 _looks_global_metadata_noise = _looks_global_metadata_noise_impl
