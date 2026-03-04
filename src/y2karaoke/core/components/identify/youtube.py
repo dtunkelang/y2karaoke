@@ -31,6 +31,60 @@ class YouTubeSearcher(_Base):
     def _is_preferred_audio_title(self, title: str) -> bool:
         return yt_rules.is_preferred_audio_title(title)
 
+    def _build_youtube_result(self, candidate: Dict[str, Any]) -> Dict[str, Any]:
+        return {
+            "url": f"https://www.youtube.com/watch?v={candidate['video_id']}",
+            "duration": candidate["duration"],
+            "title": candidate["title"],
+        }
+
+    def _prepare_expected_word_sets(
+        self, expected_artist: Optional[str], expected_title: Optional[str]
+    ) -> tuple[set[str], set[str]]:
+        artist_words = set(self._normalize_title(expected_artist or "").split())
+        title_words = set(self._normalize_title(expected_title or "").split())
+        return artist_words, title_words
+
+    def _score_verified_candidate(
+        self,
+        candidate: Dict[str, Any],
+        *,
+        target_duration: int,
+        tolerance: int,
+        artist_words: set[str],
+        title_words: set[str],
+    ) -> Optional[float]:
+        duration = candidate.get("duration")
+        if duration is None:
+            return None
+        duration_diff = abs(duration - target_duration)
+        if duration_diff > tolerance:
+            return None
+        if self._is_likely_non_studio(candidate["title"]):
+            logger.debug(f"Skipping non-studio: {candidate['title']}")
+            return None
+
+        video_title_normalized = self._normalize_title(candidate["title"])
+        video_words = set(video_title_normalized.split())
+        artist_match = len(artist_words & video_words) if artist_words else 0
+        title_match = len(title_words & video_words) if title_words else 0
+        total_match = artist_match + title_match
+        if total_match == 0:
+            logger.debug(f"Skipping no-match: {candidate['title']}")
+            return None
+
+        score = float((total_match * 10) - duration_diff)
+        if self._is_preferred_audio_title(candidate["title"]):
+            score += 5.0
+        logger.debug(
+            "YouTube candidate: %s (match=%s, diff=%ss, score=%s)",
+            candidate["title"],
+            total_match,
+            duration_diff,
+            score,
+        )
+        return score
+
     def _search_youtube_verified(
         self,
         query: str,
@@ -67,9 +121,9 @@ class YouTubeSearcher(_Base):
             if not candidates:
                 return None
 
-            # Prepare matching criteria
-            artist_words = set(self._normalize_title(expected_artist or "").split())
-            title_words = set(self._normalize_title(expected_title or "").split())
+            artist_words, title_words = self._prepare_expected_word_sets(
+                expected_artist, expected_title
+            )
 
             # Filter and score candidates
             scored = []
@@ -78,39 +132,16 @@ class YouTubeSearcher(_Base):
             )
 
             for c in candidates:
-                if c["duration"] is None:
-                    continue
-
-                duration_diff = abs(c["duration"] - target_duration)
-                if duration_diff > tolerance:
-                    continue
-
-                # Skip non-studio versions
-                if self._is_likely_non_studio(c["title"]):
-                    logger.debug(f"Skipping non-studio: {c['title']}")
-                    continue
-
-                # Score by how well the title matches expected artist/title
-                video_title_normalized = self._normalize_title(c["title"])
-                video_words = set(video_title_normalized.split())
-
-                artist_match = len(artist_words & video_words) if artist_words else 0
-                title_match = len(title_words & video_words) if title_words else 0
-                total_match = artist_match + title_match
-
-                # Require at least some match
-                if total_match == 0:
-                    logger.debug(f"Skipping no-match: {c['title']}")
-                    continue
-
-                # Score: higher match is better, lower duration diff is better
-                score = (total_match * 10) - duration_diff
-                if self._is_preferred_audio_title(c["title"]):
-                    score += 5
-                scored.append((score, c))
-                logger.debug(
-                    f"YouTube candidate: {c['title']} (match={total_match}, diff={duration_diff}s, score={score})"
+                score = self._score_verified_candidate(
+                    c,
+                    target_duration=target_duration,
+                    tolerance=tolerance,
+                    artist_words=artist_words,
+                    title_words=title_words,
                 )
+                if score is None:
+                    continue
+                scored.append((score, c))
 
             if scored:
                 scored.sort(key=lambda x: x[0], reverse=True)
@@ -118,11 +149,7 @@ class YouTubeSearcher(_Base):
                 logger.info(
                     f"Found: https://www.youtube.com/watch?v={best['video_id']}"
                 )
-                return {
-                    "url": f"https://www.youtube.com/watch?v={best['video_id']}",
-                    "duration": best["duration"],
-                    "title": best["title"],
-                }
+                return self._build_youtube_result(best)
 
         except Y2KaraokeError:
             return self._search_youtube_by_duration(query, target_duration)
