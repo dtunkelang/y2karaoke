@@ -213,39 +213,93 @@ def fetch_from_all_sources(
     """Fetch lyrics from all available sources for comparison."""
     results: Dict[str, Tuple[Optional[str], Optional[int]]] = {}
 
-    if is_lyriq_available_fn(state):
-        try:
-            with suppress_stderr():
-                lyrics_obj = (
-                    lyriq_get_lyrics(title, artist) if lyriq_get_lyrics else None
-                )
-            if lyrics_obj:
-                synced = getattr(lyrics_obj, "synced_lyrics", None)
-                if synced and has_timestamps_fn(synced, state):
-                    duration = get_lrc_duration_fn(synced, state)
-                    results["lyriq (LRCLib)"] = (synced, duration)
-        except Exception as e:
-            logger.debug(f"lyriq fetch failed for comparison: {e}")
+    _add_lyriq_comparison_result(
+        title=title,
+        artist=artist,
+        state=state,
+        is_lyriq_available_fn=is_lyriq_available_fn,
+        lyriq_get_lyrics=lyriq_get_lyrics,
+        has_timestamps_fn=has_timestamps_fn,
+        get_lrc_duration_fn=get_lrc_duration_fn,
+        suppress_stderr=suppress_stderr,
+        logger=logger,
+        results=results,
+    )
 
     if is_syncedlyrics_available_fn(state):
         syncedlyrics_mod = get_syncedlyrics_module_fn(state)
         if syncedlyrics_mod is None:
             return results
-        search_term = f"{artist} {title}"
-        for provider in provider_order:
-            if provider == "Genius":
-                continue
-            try:
-                with suppress_stderr():
-                    lrc = syncedlyrics_mod.search(
-                        search_term,
-                        providers=[provider],
-                        synced_only=True,
-                    )
-                if lrc and has_timestamps_fn(lrc, state):
-                    duration = get_lrc_duration_fn(lrc, state)
-                    results[provider] = (lrc, duration)
-            except Exception as e:
-                logger.debug(f"{provider} fetch failed for comparison: {e}")
+        _add_syncedlyrics_comparison_results(
+            title=title,
+            artist=artist,
+            state=state,
+            syncedlyrics_mod=syncedlyrics_mod,
+            provider_order=provider_order,
+            has_timestamps_fn=has_timestamps_fn,
+            get_lrc_duration_fn=get_lrc_duration_fn,
+            suppress_stderr=suppress_stderr,
+            logger=logger,
+            results=results,
+        )
 
     return results
+
+
+def _add_lyriq_comparison_result(
+    *,
+    title: str,
+    artist: str,
+    state: Any,
+    is_lyriq_available_fn: Callable[[Any], bool],
+    lyriq_get_lyrics: Optional[Callable[..., Any]],
+    has_timestamps_fn: Callable[[str, Any], bool],
+    get_lrc_duration_fn: Callable[[str, Any], Optional[int]],
+    suppress_stderr: Callable[[], Any],
+    logger: Any,
+    results: Dict[str, Tuple[Optional[str], Optional[int]]],
+) -> None:
+    if not is_lyriq_available_fn(state):
+        return
+    try:
+        with suppress_stderr():
+            lyrics_obj = lyriq_get_lyrics(title, artist) if lyriq_get_lyrics else None
+        if not lyrics_obj:
+            return
+        synced = getattr(lyrics_obj, "synced_lyrics", None)
+        if synced and has_timestamps_fn(synced, state):
+            duration = get_lrc_duration_fn(synced, state)
+            results["lyriq (LRCLib)"] = (synced, duration)
+    except Exception as e:
+        logger.debug(f"lyriq fetch failed for comparison: {e}")
+
+
+def _add_syncedlyrics_comparison_results(
+    *,
+    title: str,
+    artist: str,
+    state: Any,
+    syncedlyrics_mod: Any,
+    provider_order: list[str],
+    has_timestamps_fn: Callable[[str, Any], bool],
+    get_lrc_duration_fn: Callable[[str, Any], Optional[int]],
+    suppress_stderr: Callable[[], Any],
+    logger: Any,
+    results: Dict[str, Tuple[Optional[str], Optional[int]]],
+) -> None:
+    search_term = f"{artist} {title}"
+    for provider in provider_order:
+        if provider == "Genius":
+            continue
+        try:
+            with suppress_stderr():
+                lrc = syncedlyrics_mod.search(
+                    search_term,
+                    providers=[provider],
+                    synced_only=True,
+                )
+            if lrc and has_timestamps_fn(lrc, state):
+                duration = get_lrc_duration_fn(lrc, state)
+                results[provider] = (lrc, duration)
+        except Exception as e:
+            logger.debug(f"{provider} fetch failed for comparison: {e}")
