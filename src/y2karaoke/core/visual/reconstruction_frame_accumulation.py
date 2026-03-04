@@ -4,15 +4,14 @@ from __future__ import annotations
 
 import logging
 import collections
-import statistics
 import os
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
 from ..text_utils import (
     normalize_ocr_line,
     normalize_ocr_tokens,
-    LYRIC_FUNCTION_WORDS,
 )
+from .reconstruction_text_voting import compute_voted_text_and_evidence
 from .reconstruction_tracking import (
     commit_or_keep_unmatched_tracks as _commit_or_keep_unmatched_tracks_impl,
     find_best_track_match as _find_best_track_match_impl,
@@ -97,163 +96,11 @@ class TrackedLine:
         return self.text_counts.most_common(1)[0][0]
 
     def _compute_voted_text_and_evidence(self) -> Tuple[str, Dict[str, Any]]:
-        # Perform word-by-word voting across all frames to filter out transient OCR noise.
-        # This is expensive and should only be called once per track on finalization.
-        if not self.entries:
-            return "", {}
-
-        all_line_tokens = [e["words"] for e in self.entries]
-        if not all_line_tokens:
-            best = self.best_text
-            return best, {
-                "observations": 0,
-                "target_word_count": 0,
-                "token_count_variants": 0,
-                "valid_entry_fraction": 0.0,
-                "text_variant_count": 0,
-                "selected_text_support_ratio": 0.0,
-                "position_support_mean": 0.0,
-                "position_support_min": 0.0,
-                "weak_vote_positions": 0,
-                "used_observed_fallback": False,
-                "uncertainty_score": 1.0,
-            }
-
-        # Use the median word count as the target structure
-        word_counts = [len(tokens) for tokens in all_line_tokens]
-        target_wc = int(statistics.median(word_counts))
-
-        # Only vote among entries that match the target word count
-        valid_entries = [
-            tokens for tokens in all_line_tokens if len(tokens) == target_wc
-        ]
-        if not valid_entries:
-            best = self.best_text
-            total_entries = len(self.entries)
-            support = self.text_counts.get(best, 0)
-            return best, {
-                "observations": total_entries,
-                "target_word_count": target_wc,
-                "token_count_variants": len(set(word_counts)),
-                "valid_entry_fraction": 0.0,
-                "text_variant_count": len(self.text_counts),
-                "selected_text_support_ratio": round(
-                    support / float(max(total_entries, 1)), 3
-                ),
-                "position_support_mean": 0.0,
-                "position_support_min": 0.0,
-                "weak_vote_positions": target_wc,
-                "used_observed_fallback": True,
-                "uncertainty_score": 1.0,
-            }
-
-        valid_entry_texts = [
-            str(e.get("text", ""))
-            for e in self.entries
-            if len(e.get("words", [])) == target_wc
-        ]
-        text_freq = collections.Counter(valid_entry_texts)
-
-        final_words = []
-        position_vote_counts: list[collections.Counter[str]] = []
-        for i in range(target_wc):
-            word_votes = collections.Counter(tokens[i] for tokens in valid_entries)
-            position_vote_counts.append(word_votes)
-
-            # Weighted vote
-            weighted_votes = {}
-            for word, count in word_votes.items():
-                score = float(count)
-                if word.lower() in LYRIC_FUNCTION_WORDS:
-                    score += 0.5
-                weighted_votes[word] = score
-
-            best_word = max(weighted_votes.items(), key=lambda x: x[1])[0]
-            final_words.append(best_word)
-        voted_text = " ".join(final_words)
-        total_entries = len(self.entries)
-        valid_fraction = len(valid_entries) / float(max(total_entries, 1))
-        supports = []
-        for i in range(target_wc):
-            supports.append(
-                position_vote_counts[i].get(final_words[i], 0)
-                / float(max(1, len(valid_entries)))
-            )
-        avg_support = sum(supports) / len(supports) if supports else 1.0
-        min_support = min(supports) if supports else 1.0
-        weak_positions = sum(1 for s in supports if s < 0.5)
-        used_observed_fallback = False
-
-        # When per-position consensus is weak, per-word voting can synthesize a
-        # never-observed "Frankenstein" line. In that case prefer the strongest
-        # observed candidate with the target word count.
-        if voted_text not in text_freq:
-            if avg_support < 0.72 or weak_positions >= 2:
-                best_tokens = max(
-                    valid_entries,
-                    key=lambda toks: (
-                        # Prefer candidates matching high-support position votes.
-                        sum(
-                            position_vote_counts[i].get(tok, 0)
-                            for i, tok in enumerate(toks)
-                        ),
-                        text_freq.get(" ".join(toks), 0),
-                        # Deterministic tie-breakers
-                        sum(len(tok) for tok in toks),
-                        " ".join(toks),
-                    ),
-                )
-                voted_text = " ".join(best_tokens)
-                used_observed_fallback = True
-
-        selected_support_ratio = text_freq.get(voted_text, 0) / float(
-            max(total_entries, 1)
+        return compute_voted_text_and_evidence(
+            entries=self.entries,
+            text_counts=self.text_counts,
+            best_text=self.best_text,
         )
-        top_text_variants: list[dict[str, object]] = []
-        if self.text_counts:
-            ranked_variants = sorted(
-                self.text_counts.items(),
-                key=lambda kv: (
-                    -int(kv[1]),
-                    -len(kv[0].split()),
-                    -len(kv[0]),
-                    kv[0],
-                ),
-            )
-            for txt, count in ranked_variants[:6]:
-                top_text_variants.append(
-                    {
-                        "text": txt,
-                        "count": int(count),
-                        "support_ratio": round(
-                            int(count) / float(max(total_entries, 1)),
-                            3,
-                        ),
-                        "word_count": len(txt.split()),
-                    }
-                )
-        # Higher score => more uncertainty (0..1)
-        uncertainty_score = (
-            (1.0 - min(max(valid_fraction, 0.0), 1.0)) * 0.35
-            + (1.0 - min(max(avg_support, 0.0), 1.0)) * 0.35
-            + (1.0 - min(max(selected_support_ratio, 0.0), 1.0)) * 0.2
-            + (min(weak_positions, max(target_wc, 1)) / float(max(target_wc, 1))) * 0.1
-        )
-        evidence = {
-            "observations": total_entries,
-            "target_word_count": target_wc,
-            "token_count_variants": len(set(word_counts)),
-            "valid_entry_fraction": round(valid_fraction, 3),
-            "text_variant_count": len(self.text_counts),
-            "selected_text_support_ratio": round(selected_support_ratio, 3),
-            "position_support_mean": round(avg_support, 3),
-            "position_support_min": round(min_support, 3),
-            "weak_vote_positions": weak_positions,
-            "used_observed_fallback": used_observed_fallback,
-            "top_text_variants": top_text_variants,
-            "uncertainty_score": round(max(0.0, min(1.0, uncertainty_score)), 3),
-        }
-        return voted_text, evidence
 
     def get_voted_text(self) -> str:
         voted_text, _ = self._compute_voted_text_and_evidence()
