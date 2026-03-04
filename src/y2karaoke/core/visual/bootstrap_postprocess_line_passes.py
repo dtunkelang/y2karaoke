@@ -275,6 +275,53 @@ def _case_like_token(source: str, replacement: str) -> str:
     return replacement
 
 
+def _chant_line_norm_tokens(words: list[dict[str, Any]]) -> list[str] | None:
+    norm_tokens = [normalize_text_basic(str(w.get("text", ""))) for w in words]
+    norm_tokens = [t for t in norm_tokens if t]
+    if len(norm_tokens) != len(words):
+        return None
+    return norm_tokens
+
+
+def _is_chant_variant_candidate(
+    norm_tokens: list[str], *, protected_vocab: set[str]
+) -> bool:
+    if len(set(norm_tokens)) < 2:
+        return False
+    if any(len(t) < 2 or len(t) > 5 or not t.isalpha() for t in norm_tokens):
+        return False
+    if set(norm_tokens).issubset(protected_vocab):
+        return False
+    shortest = min(norm_tokens, key=len)
+    if len(shortest) < 3:
+        return False
+    return all(SequenceMatcher(None, shortest, t).ratio() >= 0.72 for t in norm_tokens)
+
+
+def _canonical_token(norm_tokens: list[str]) -> str:
+    return min(
+        set(norm_tokens),
+        key=lambda t: (-norm_tokens.count(t), len(t), t),
+    )
+
+
+def _apply_canonical_chant_token(
+    words: list[dict[str, Any]],
+    norm_tokens: list[str],
+    *,
+    canon: str,
+) -> bool:
+    changed = False
+    for w, norm in zip(words, norm_tokens):
+        if norm == canon:
+            continue
+        if SequenceMatcher(None, canon, norm).ratio() < 0.72:
+            continue
+        w["text"] = _case_like_token(str(w.get("text", "")), canon)
+        changed = True
+    return changed
+
+
 def _canonicalize_local_chant_token_variants(lines_out: list[dict[str, Any]]) -> None:
     """Normalize OCR variants inside chant-like repeated-token lines (e.g. dohi -> doh)."""
     if not lines_out:
@@ -284,41 +331,16 @@ def _canonicalize_local_chant_token_variants(lines_out: list[dict[str, Any]]) ->
         words = ln.get("words", [])
         if len(words) < 2 or len(words) > 8:
             continue
-        norm_tokens = [normalize_text_basic(str(w.get("text", ""))) for w in words]
-        norm_tokens = [t for t in norm_tokens if t]
-        if len(norm_tokens) != len(words):
+        norm_tokens = _chant_line_norm_tokens(words)
+        if norm_tokens is None:
             continue
-        if len(set(norm_tokens)) < 2:
-            continue
-        if any(len(t) < 2 or len(t) > 5 or not t.isalpha() for t in norm_tokens):
-            continue
-        if set(norm_tokens).issubset(protected_vocab):
-            continue
-
-        shortest = min(norm_tokens, key=len)
-        if len(shortest) < 3:
-            continue
-        if not all(
-            SequenceMatcher(None, shortest, t).ratio() >= 0.72 for t in norm_tokens
+        if not _is_chant_variant_candidate(
+            norm_tokens, protected_vocab=protected_vocab
         ):
             continue
 
-        canon = min(
-            set(norm_tokens),
-            key=lambda t: (
-                -norm_tokens.count(t),
-                len(t),
-                t,
-            ),
-        )
-        changed = False
-        for w, norm in zip(words, norm_tokens):
-            if norm == canon:
-                continue
-            if SequenceMatcher(None, canon, norm).ratio() < 0.72:
-                continue
-            w["text"] = _case_like_token(str(w.get("text", "")), canon)
-            changed = True
+        canon = _canonical_token(norm_tokens)
+        changed = _apply_canonical_chant_token(words, norm_tokens, canon=canon)
         if changed:
             ln["text"] = " ".join(
                 str(w.get("text", "")) for w in words if w.get("text")
