@@ -131,6 +131,72 @@ def detect_sustained_onset(
     return float(times[start_idx]), confidence
 
 
+def _cycle_thresholds(
+    activities: np.ndarray, present_idx: np.ndarray
+) -> tuple[float, float]:
+    base_count = max(3, min(8, len(present_idx) // 3))
+    baseline_vals = activities[present_idx[:base_count]]
+    stable_med = float(np.median(baseline_vals))
+    stable_mad = float(np.median(np.abs(baseline_vals - stable_med)))
+    start_threshold = max(1.8, stable_med + max(1.0, 3.5 * stable_mad))
+    end_threshold = max(stable_med + 0.5, start_threshold * 0.55)
+    return start_threshold, end_threshold
+
+
+def _cycle_start_index(
+    times: np.ndarray,
+    activities: np.ndarray,
+    present: np.ndarray,
+    *,
+    hold_active: int,
+    start_threshold: float,
+    min_start_time: Optional[float],
+) -> int | None:
+    for i in range(0, len(times) - hold_active + 1):
+        if min_start_time is not None and float(times[i]) < min_start_time:
+            continue
+        if not np.all(present[i : i + hold_active]):
+            continue
+        if np.all(activities[i : i + hold_active] > start_threshold):
+            return i
+    return None
+
+
+def _cycle_end_index(
+    times: np.ndarray,
+    activities: np.ndarray,
+    present: np.ndarray,
+    *,
+    start_idx: int,
+    hold_active: int,
+    hold_inactive: int,
+    end_threshold: float,
+) -> int | None:
+    for j in range(start_idx + hold_active, len(times) - hold_inactive + 1):
+        if np.all(~present[j : j + hold_inactive]):
+            return j
+        if np.all(present[j : j + hold_inactive]) and np.all(
+            activities[j : j + hold_inactive] < end_threshold
+        ):
+            return j
+    if np.sum(present[start_idx:]) <= hold_active + 1:
+        return len(times) - 1
+    return None
+
+
+def _cycle_confidence(
+    activities: np.ndarray,
+    *,
+    start_idx: int,
+    start_threshold: float,
+    end_idx: int | None,
+) -> float:
+    peak = float(np.max(activities[start_idx:]))
+    rise_strength = max(0.0, (peak - start_threshold) / max(start_threshold, 1.0))
+    cycle_quality = 1.0 if end_idx is not None else 0.3
+    return max(0.0, min(1.0, 0.65 * rise_strength + 0.35 * cycle_quality))
+
+
 def detect_line_highlight_cycle(
     times: np.ndarray,
     activities: np.ndarray,
@@ -146,47 +212,35 @@ def detect_line_highlight_cycle(
     if len(present_idx) < 6:
         return None, None, 0.0
 
-    base_count = max(3, min(8, len(present_idx) // 3))
-    baseline_vals = activities[present_idx[:base_count]]
-    stable_med = float(np.median(baseline_vals))
-    stable_mad = float(np.median(np.abs(baseline_vals - stable_med)))
-    start_threshold = max(1.8, stable_med + max(1.0, 3.5 * stable_mad))
-    end_threshold = max(stable_med + 0.5, start_threshold * 0.55)
-
+    start_threshold, end_threshold = _cycle_thresholds(activities, present_idx)
     hold_active = max(2, min(4, len(times) // 12))
     hold_inactive = max(2, min(5, len(times) // 10))
-
-    start_idx = None
-    for i in range(0, len(times) - hold_active + 1):
-        if min_start_time is not None and float(times[i]) < min_start_time:
-            continue
-        if not np.all(present[i : i + hold_active]):
-            continue
-        if np.all(activities[i : i + hold_active] > start_threshold):
-            start_idx = i
-            break
-
+    start_idx = _cycle_start_index(
+        times,
+        activities,
+        present,
+        hold_active=hold_active,
+        start_threshold=start_threshold,
+        min_start_time=min_start_time,
+    )
     if start_idx is None:
         return None, None, 0.0
 
-    end_idx = None
-    for j in range(start_idx + hold_active, len(times) - hold_inactive + 1):
-        if np.all(~present[j : j + hold_inactive]):
-            end_idx = j
-            break
-        if np.all(present[j : j + hold_inactive]) and np.all(
-            activities[j : j + hold_inactive] < end_threshold
-        ):
-            end_idx = j
-            break
-
-    if end_idx is None and np.sum(present[start_idx:]) <= hold_active + 1:
-        end_idx = len(times) - 1
-
-    peak = float(np.max(activities[start_idx:]))
-    rise_strength = max(0.0, (peak - start_threshold) / max(start_threshold, 1.0))
-    cycle_quality = 1.0 if end_idx is not None else 0.3
-    confidence = max(0.0, min(1.0, 0.65 * rise_strength + 0.35 * cycle_quality))
+    end_idx = _cycle_end_index(
+        times,
+        activities,
+        present,
+        start_idx=start_idx,
+        hold_active=hold_active,
+        hold_inactive=hold_inactive,
+        end_threshold=end_threshold,
+    )
+    confidence = _cycle_confidence(
+        activities,
+        start_idx=start_idx,
+        start_threshold=start_threshold,
+        end_idx=end_idx,
+    )
 
     start_t = float(times[start_idx])
     end_t = float(times[end_idx]) if end_idx is not None else None
