@@ -184,7 +184,7 @@ class YouTubeSearcher(_Base):
         logger.debug("Initial search found no results, trying 'audio' search")
         return search_single(f"{query} audio", target_duration)
 
-    def _search_youtube_single(  # noqa: C901
+    def _search_youtube_single(
         self, query: str, target_duration: int
     ) -> Optional[Dict[str, Any]]:
         """Execute a single YouTube search and return the best match.
