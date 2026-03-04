@@ -105,3 +105,47 @@ def suppress_repeated_short_fragment_clusters(  # noqa: C901
     if not suppressed:
         return lines
     return [line for idx, line in enumerate(lines) if idx not in suppressed]
+
+
+def suppress_never_visible_ghost_reentries(
+    lines: list[dict[str, Any]],
+    *,
+    is_same_lane_fn: Callable[[dict[str, Any], dict[str, Any]], bool],
+    text_similarity_fn: Callable[[str, str], float],
+) -> list[dict[str, Any]]:
+    """Drop later never-visible reentries that mirror an earlier visible line."""
+    if len(lines) < 2:
+        return lines
+
+    kept: list[dict[str, Any]] = []
+    for ent in lines:
+        if bool(ent.get("visible_yet", False)):
+            kept.append(ent)
+            continue
+
+        suppress = False
+        ent_first = float(ent.get("first", 0.0))
+        ent_last = float(ent.get("last", ent_first))
+        ent_dur = max(0.0, ent_last - ent_first)
+        if ent_dur >= 1.0:
+            for prev in reversed(kept[-16:]):
+                if not bool(prev.get("visible_yet", False)):
+                    continue
+                if not is_same_lane_fn(prev, ent):
+                    continue
+                if (
+                    text_similarity_fn(
+                        str(prev.get("text", "")), str(ent.get("text", ""))
+                    )
+                    < 0.9
+                ):
+                    continue
+                prev_last = float(prev.get("last", prev.get("first", 0.0)))
+                if ent_first >= prev_last + 0.8:
+                    suppress = True
+                    break
+
+        if not suppress:
+            kept.append(ent)
+
+    return kept

@@ -14,6 +14,7 @@ from .reconstruction_metadata_filters import (
     suppress_global_metadata_noise as _suppress_global_metadata_noise_impl,
 )
 from .reconstruction_fragment_filters import (
+    suppress_never_visible_ghost_reentries as _suppress_never_visible_ghost_reentries_impl,
     suppress_repeated_short_fragment_clusters as _suppress_repeated_short_fragment_clusters_impl,
     suppress_short_lane_fragments as _suppress_short_lane_fragments_impl,
 )
@@ -234,44 +235,11 @@ def _suppress_never_visible_ghost_reentries(
     *,
     is_same_lane: EntryPairPredicate,
 ) -> list[dict[str, Any]]:
-    """Drop later never-visible reentries that mirror an earlier visible line.
-
-    These are typically dim OCR ghost trails that persist after a lyric line fades out
-    and can incorrectly bridge instrumental gaps.
-    """
-    if len(lines) < 2:
-        return lines
-
-    kept: list[dict[str, Any]] = []
-    for ent in lines:
-        if bool(ent.get("visible_yet", False)):
-            kept.append(ent)
-            continue
-
-        suppress = False
-        ent_first = float(ent.get("first", 0.0))
-        ent_last = float(ent.get("last", ent_first))
-        ent_dur = max(0.0, ent_last - ent_first)
-        if ent_dur >= 1.0:
-            for prev in reversed(kept[-16:]):
-                if not bool(prev.get("visible_yet", False)):
-                    continue
-                if not is_same_lane(prev, ent):
-                    continue
-                if (
-                    text_similarity(str(prev.get("text", "")), str(ent.get("text", "")))
-                    < 0.9
-                ):
-                    continue
-                prev_last = float(prev.get("last", prev.get("first", 0.0)))
-                if ent_first >= prev_last + 0.8:
-                    suppress = True
-                    break
-
-        if not suppress:
-            kept.append(ent)
-
-    return kept
+    return _suppress_never_visible_ghost_reentries_impl(
+        lines,
+        is_same_lane_fn=is_same_lane,
+        text_similarity_fn=text_similarity,
+    )
 
 
 def _suppress_short_lane_fragments(lines: list[dict[str, Any]]) -> list[dict[str, Any]]:
