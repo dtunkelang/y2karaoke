@@ -133,51 +133,21 @@ def retime_dense_runs_after_overlong_lead(
         d = line_order[i + 3]
         prev = line_order[i - 1]
 
-        a_s = line_start_fn(a)
-        a_e = line_end_fn(a)
-        b_s = line_start_fn(b)
-        b_e = line_end_fn(b)
-        c_s = line_start_fn(c)
-        c_e = line_end_fn(c)
-        d_s = line_start_fn(d)
-        d_e = line_end_fn(d)
-        p_e = line_end_fn(prev)
-        if None in (a_s, a_e, b_s, b_e, c_s, c_e, d_s, d_e, p_e):
+        times = _dense_quad_times(
+            a, b, c, d, prev, line_start_fn=line_start_fn, line_end_fn=line_end_fn
+        )
+        if times is None:
+            continue
+        a_sf, a_ef, b_sf, b_ef, c_sf, c_ef, d_sf, d_ef, p_ef = times
+        if not _is_dense_quad_timing_eligible(times):
             continue
 
-        a_sf = float(cast(float, a_s))
-        a_ef = float(cast(float, a_e))
-        b_sf = float(cast(float, b_s))
-        b_ef = float(cast(float, b_e))
-        c_sf = float(cast(float, c_s))
-        c_ef = float(cast(float, c_e))
-        d_sf = float(cast(float, d_s))
-        d_ef = float(cast(float, d_e))
-        p_ef = float(cast(float, p_e))
-
-        lead_dur = a_ef - a_sf
-        if lead_dur < 2.0:
+        word_counts = [max(len(x.words), 1) for x in (a, b, c, d)]
+        if not _word_counts_balanced(word_counts):
             continue
-        if abs(b_sf - a_ef) > 0.35:
-            continue
-        if (c_sf - b_sf) > 2.0 or (d_sf - c_sf) > 2.0:
-            continue
-        if (b_ef - b_sf) > 2.2 or (c_ef - c_sf) > 2.2 or (d_ef - d_sf) > 2.2:
-            continue
-        if (a_sf - p_ef) > 2.0:
-            continue
-
-        word_counts = [
-            max(len(a.words), 1),
-            max(len(b.words), 1),
-            max(len(c.words), 1),
-            max(len(d.words), 1),
-        ]
-        if max(word_counts) > 1.8 * min(word_counts):
-            continue
-        texts = [canonical_line_text_fn(x) for x in [a, b, c, d]]
-        nonempty = [t for t in texts if t]
-        if len(set(nonempty)) < len(nonempty):
+        if not _quad_texts_distinct(
+            [a, b, c, d], canonical_line_text_fn=canonical_line_text_fn
+        ):
             continue
 
         target_start = max(p_ef + 0.05, a_sf - 1.2)
@@ -211,6 +181,72 @@ def retime_dense_runs_after_overlong_lead(
             assign_line_level_word_timings_fn(
                 ln, proposed_start, proposed_start + dur, 0.42
             )
+
+
+def _dense_quad_times(
+    a: TargetLine,
+    b: TargetLine,
+    c: TargetLine,
+    d: TargetLine,
+    prev: TargetLine,
+    *,
+    line_start_fn: Callable[[TargetLine], Optional[float]],
+    line_end_fn: Callable[[TargetLine], Optional[float]],
+) -> tuple[float, float, float, float, float, float, float, float, float] | None:
+    a_s = line_start_fn(a)
+    a_e = line_end_fn(a)
+    b_s = line_start_fn(b)
+    b_e = line_end_fn(b)
+    c_s = line_start_fn(c)
+    c_e = line_end_fn(c)
+    d_s = line_start_fn(d)
+    d_e = line_end_fn(d)
+    p_e = line_end_fn(prev)
+    if None in (a_s, a_e, b_s, b_e, c_s, c_e, d_s, d_e, p_e):
+        return None
+    return (
+        float(cast(float, a_s)),
+        float(cast(float, a_e)),
+        float(cast(float, b_s)),
+        float(cast(float, b_e)),
+        float(cast(float, c_s)),
+        float(cast(float, c_e)),
+        float(cast(float, d_s)),
+        float(cast(float, d_e)),
+        float(cast(float, p_e)),
+    )
+
+
+def _is_dense_quad_timing_eligible(
+    times: tuple[float, float, float, float, float, float, float, float, float],
+) -> bool:
+    a_sf, a_ef, b_sf, b_ef, c_sf, c_ef, d_sf, d_ef, p_ef = times
+    lead_dur = a_ef - a_sf
+    if lead_dur < 2.0:
+        return False
+    if abs(b_sf - a_ef) > 0.35:
+        return False
+    if (c_sf - b_sf) > 2.0 or (d_sf - c_sf) > 2.0:
+        return False
+    if (b_ef - b_sf) > 2.2 or (c_ef - c_sf) > 2.2 or (d_ef - d_sf) > 2.2:
+        return False
+    if (a_sf - p_ef) > 2.0:
+        return False
+    return True
+
+
+def _word_counts_balanced(word_counts: list[int]) -> bool:
+    return max(word_counts) <= 1.8 * min(word_counts)
+
+
+def _quad_texts_distinct(
+    lines: list[TargetLine],
+    *,
+    canonical_line_text_fn: Callable[[TargetLine], str],
+) -> bool:
+    texts = [canonical_line_text_fn(x) for x in lines]
+    nonempty = [t for t in texts if t]
+    return len(set(nonempty)) == len(nonempty)
 
 
 def pull_dense_short_runs_toward_previous_anchor(
