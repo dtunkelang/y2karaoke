@@ -180,58 +180,14 @@ class _LineMapper:
         best_sim: float,
         gap_required: float,
     ) -> None:
-        new_words: List[Word] = []
-        window_fallback = False
-
-        if desired_start is not None and next_lrc_start is not None and self.all_words:
-            window_words = _select_window_words_for_line(
-                self.all_words,
-                line,
-                desired_start,
-                next_lrc_start,
-                self.language,
-                _phonetic_similarity,
-            )
-            if window_words:
-                whisper_duration = None
-                if (
-                    window_words[-1].end is not None
-                    and window_words[0].start is not None
-                ):
-                    whisper_duration = max(
-                        window_words[-1].end - window_words[0].start, 0.5
-                    )
-                elif (
-                    window_words[-1].start is not None
-                    and window_words[0].start is not None
-                ):
-                    whisper_duration = max(
-                        window_words[-1].start - window_words[0].start, 0.5
-                    )
-                window_text = " ".join(w.text for w in window_words)
-                window_sim = _phonetic_similarity(line.text, window_text, self.language)
-                if window_sim >= self.min_similarity_fallback:
-                    new_words, desired_start = _apply_lrc_weighted_timing(
-                        line,
-                        desired_start,
-                        next_lrc_start,
-                        self.lrc_line_starts,
-                        line_idx,
-                        self.all_words,
-                        None,
-                        self.language,
-                        _phonetic_similarity,
-                        line_duration_override=whisper_duration,
-                    )
-                    window_fallback = True
-                    offset_msg = (
-                        f"(segment offset {self.sorted_segments[best_idx].start - desired_start:+.2f}s)"
-                        if best_idx is not None and desired_start is not None
-                        else ""
-                    )
-                    self.issues.append(
-                        f"Used window-only mapping for line '{line.text[:30]}...' {offset_msg}".strip()
-                    )
+        new_words: List[Word]
+        new_words, desired_start, window_fallback = self._window_fallback_words(
+            line=line,
+            line_idx=line_idx,
+            desired_start=desired_start,
+            next_lrc_start=next_lrc_start,
+            best_idx=best_idx,
+        )
 
         if not window_fallback:
             new_words = list(line.words)
@@ -244,10 +200,7 @@ class _LineMapper:
             line, new_words, self.lrc_line_starts, line_idx
         )
 
-        if self.last_end is not None and new_words:
-            if new_words[0].start_time < self.last_end + gap_required:
-                shift = (self.last_end + gap_required) - new_words[0].start_time
-                new_words = _shift_words(new_words, shift)
+        new_words = self._apply_min_gap_if_needed(new_words, gap_required)
 
         if new_words:
             self.adjusted.append(Line(words=new_words, singer=line.singer))
@@ -259,20 +212,12 @@ class _LineMapper:
             self.last_end = line.end_time
 
         if not window_fallback:
-            if best_sim < self.min_similarity_fallback and best_idx is not None:
-                self.issues.append(
-                    f"Skipped Whisper mapping for line '{line.text[:30]}...' (sim={best_sim:.2f})"
-                )
-            if (
-                desired_start is not None
-                and best_idx is not None
-                and abs(self.sorted_segments[best_idx].start - desired_start)
-                > self.max_time_offset
-            ):
-                self.issues.append(
-                    f"Skipped Whisper mapping for line '{line.text[:30]}...' "
-                    f"(segment offset {self.sorted_segments[best_idx].start - desired_start:+.2f}s)"
-                )
+            self._record_fallback_skip_issues(
+                line=line,
+                best_idx=best_idx,
+                best_sim=best_sim,
+                desired_start=desired_start,
+            )
 
     def _handle_match(
         self,
@@ -285,35 +230,17 @@ class _LineMapper:
         window_end: int,
         gap_required: float,
     ) -> None:
-        seg = self.sorted_segments[best_idx]
-        forced_fallback = False
-
-        if self.last_end is not None and seg.start < self.last_end + gap_required:
-            next_idx: Optional[int] = None
-            best_future_idx: Optional[int] = None
-            best_future_sim: Optional[float] = None
-            for idx in range(best_idx, window_end):
-                seg_candidate = self.sorted_segments[idx]
-                if seg_candidate.start < self.last_end + gap_required:
-                    continue
-                next_idx = idx
-                sim_candidate = _phonetic_similarity(
-                    line.text, seg_candidate.text, self.language
-                )
-                if best_future_sim is None or sim_candidate > best_future_sim:
-                    best_future_sim = sim_candidate
-                    best_future_idx = idx
-            if best_future_idx is not None and best_future_sim is not None:
-                if best_future_sim >= self.min_similarity_fallback:
-                    best_idx = best_future_idx
-                    seg = self.sorted_segments[best_idx]
-                else:
-                    if next_idx is None:
-                        self.adjusted.append(line)
-                        return
-                    best_idx = next_idx
-                    seg = self.sorted_segments[best_idx]
-                    forced_fallback = True
+        seg: Optional[TranscriptionSegment] = self.sorted_segments[best_idx]
+        best_idx, seg, forced_fallback = self._resolve_overlapping_segment_choice(
+            line=line,
+            best_idx=best_idx,
+            window_end=window_end,
+            gap_required=gap_required,
+            current_seg=seg,
+        )
+        if seg is None:
+            self.adjusted.append(line)
+            return
 
         new_words = _map_line_words_to_segment(line, seg)
 
@@ -338,13 +265,7 @@ class _LineMapper:
             line, new_words, self.lrc_line_starts, line_idx
         )
 
-        if (
-            self.last_end is not None
-            and new_words
-            and new_words[0].start_time < self.last_end + gap_required
-        ):
-            shift = (self.last_end + gap_required) - new_words[0].start_time
-            new_words = _shift_words(new_words, shift)
+        new_words = self._apply_min_gap_if_needed(new_words, gap_required)
 
         self.adjusted.append(Line(words=new_words, singer=line.singer))
         self.fixes += 1
@@ -358,6 +279,130 @@ class _LineMapper:
             )
         self.last_end = new_words[-1].end_time if new_words else self.last_end
         self.seg_idx = best_idx + 1
+
+    def _window_fallback_words(
+        self,
+        *,
+        line: Line,
+        line_idx: int,
+        desired_start: Optional[float],
+        next_lrc_start: Optional[float],
+        best_idx: Optional[int],
+    ) -> tuple[List[Word], Optional[float], bool]:
+        if desired_start is None or next_lrc_start is None or not self.all_words:
+            return [], desired_start, False
+        window_words = _select_window_words_for_line(
+            self.all_words,
+            line,
+            desired_start,
+            next_lrc_start,
+            self.language,
+            _phonetic_similarity,
+        )
+        if not window_words:
+            return [], desired_start, False
+        whisper_duration = self._window_duration_override(window_words)
+        window_text = " ".join(w.text for w in window_words)
+        window_sim = _phonetic_similarity(line.text, window_text, self.language)
+        if window_sim < self.min_similarity_fallback:
+            return [], desired_start, False
+        new_words, desired_start = _apply_lrc_weighted_timing(
+            line,
+            desired_start,
+            next_lrc_start,
+            self.lrc_line_starts,
+            line_idx,
+            self.all_words,
+            None,
+            self.language,
+            _phonetic_similarity,
+            line_duration_override=whisper_duration,
+        )
+        offset_msg = (
+            f"(segment offset {self.sorted_segments[best_idx].start - desired_start:+.2f}s)"
+            if best_idx is not None and desired_start is not None
+            else ""
+        )
+        self.issues.append(
+            f"Used window-only mapping for line '{line.text[:30]}...' {offset_msg}".strip()
+        )
+        return new_words, desired_start, True
+
+    def _window_duration_override(self, window_words) -> Optional[float]:
+        if window_words[-1].end is not None and window_words[0].start is not None:
+            return max(window_words[-1].end - window_words[0].start, 0.5)
+        if window_words[-1].start is not None and window_words[0].start is not None:
+            return max(window_words[-1].start - window_words[0].start, 0.5)
+        return None
+
+    def _apply_min_gap_if_needed(
+        self, new_words: List[Word], gap_required: float
+    ) -> List[Word]:
+        if (
+            self.last_end is None
+            or not new_words
+            or new_words[0].start_time >= self.last_end + gap_required
+        ):
+            return new_words
+        shift = (self.last_end + gap_required) - new_words[0].start_time
+        return _shift_words(new_words, shift)
+
+    def _record_fallback_skip_issues(
+        self,
+        *,
+        line: Line,
+        best_idx: Optional[int],
+        best_sim: float,
+        desired_start: Optional[float],
+    ) -> None:
+        if best_sim < self.min_similarity_fallback and best_idx is not None:
+            self.issues.append(
+                f"Skipped Whisper mapping for line '{line.text[:30]}...' (sim={best_sim:.2f})"
+            )
+        if (
+            desired_start is not None
+            and best_idx is not None
+            and abs(self.sorted_segments[best_idx].start - desired_start)
+            > self.max_time_offset
+        ):
+            self.issues.append(
+                f"Skipped Whisper mapping for line '{line.text[:30]}...' "
+                f"(segment offset {self.sorted_segments[best_idx].start - desired_start:+.2f}s)"
+            )
+
+    def _resolve_overlapping_segment_choice(
+        self,
+        *,
+        line: Line,
+        best_idx: int,
+        window_end: int,
+        gap_required: float,
+        current_seg: Optional[TranscriptionSegment],
+    ) -> tuple[int, Optional[TranscriptionSegment], bool]:
+        if current_seg is None:
+            return best_idx, None, False
+        if self.last_end is None or current_seg.start >= self.last_end + gap_required:
+            return best_idx, current_seg, False
+        next_idx: Optional[int] = None
+        best_future_idx: Optional[int] = None
+        best_future_sim: Optional[float] = None
+        for idx in range(best_idx, window_end):
+            seg_candidate = self.sorted_segments[idx]
+            if seg_candidate.start < self.last_end + gap_required:
+                continue
+            next_idx = idx
+            sim_candidate = _phonetic_similarity(
+                line.text, seg_candidate.text, self.language
+            )
+            if best_future_sim is None or sim_candidate > best_future_sim:
+                best_future_sim = sim_candidate
+                best_future_idx = idx
+        if best_future_idx is not None and best_future_sim is not None:
+            if best_future_sim >= self.min_similarity_fallback:
+                return best_future_idx, self.sorted_segments[best_future_idx], False
+            if next_idx is not None:
+                return next_idx, self.sorted_segments[next_idx], True
+        return best_idx, None, False
 
 
 def _map_lrc_lines_to_whisper_segments(
