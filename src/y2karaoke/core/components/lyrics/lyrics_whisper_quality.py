@@ -139,6 +139,104 @@ def _apply_lrc_timing_trust_policy(
     return line_timings
 
 
+def _resolve_lrc_inputs(
+    *,
+    title: str,
+    artist: str,
+    lyrics_file: Optional[Path],
+    filter_promos: bool,
+    target_duration: Optional[int],
+    vocals_path: Optional[str],
+    evaluate_sources: bool,
+    offline: bool,
+    quality_report: dict,
+    issues_list: List[str],
+    drop_lrc_line_timings: bool,
+    use_whisper: bool,
+    whisper_map_lrc: bool,
+) -> tuple[
+    Optional[str],
+    Optional[List[Tuple[float, str]]],
+    str,
+    List[str],
+]:
+    file_lines: List[str] = []
+    file_lrc_text: Optional[str] = None
+    file_line_timings: Optional[List[Tuple[float, str]]] = None
+    if lyrics_file:
+        file_lrc_text, file_line_timings, file_lines = _load_lyrics_file(
+            lyrics_file, filter_promos
+        )
+        if file_lrc_text or file_lines:
+            quality_report["source"] = f"lyrics_file:{lyrics_file}"
+
+    from .lyrics_whisper import _fetch_lrc_text_and_timings_for_state
+
+    lrc_text, line_timings, source = _fetch_lrc_text_and_timings_for_state(
+        title=title,
+        artist=artist,
+        target_duration=target_duration,
+        vocals_path=vocals_path,
+        evaluate_sources=evaluate_sources,
+        filter_promos=filter_promos,
+        offline=offline,
+    )
+    if file_lrc_text and file_line_timings:
+        lrc_text = file_lrc_text
+        line_timings = file_line_timings
+        source = "lyrics_file_lrc"
+    if not quality_report["source"]:
+        quality_report["source"] = source
+
+    line_timings = _apply_lrc_timing_trust_policy(
+        line_timings=line_timings,
+        lrc_text=lrc_text,
+        target_duration=target_duration,
+        drop_lrc_line_timings=drop_lrc_line_timings,
+        vocals_path=vocals_path,
+        use_whisper=use_whisper,
+        whisper_map_lrc=whisper_map_lrc,
+        issues_list=issues_list,
+        quality_report=quality_report,
+    )
+    return lrc_text, line_timings, source, file_lines
+
+
+def _resolve_genius_lines_and_metadata(
+    *,
+    lrc_text: Optional[str],
+    file_lines: List[str],
+    line_timings: Optional[List[Tuple[float, str]]],
+    offline: bool,
+    title: str,
+    artist: str,
+    quality_report: dict,
+) -> tuple[
+    Optional[List[Tuple[str, str]]],
+    Optional[SongMetadata],
+    Optional[Tuple[List[Line], Optional[SongMetadata]]],
+]:
+    from .lyrics_whisper import _fetch_genius_with_quality_tracking
+
+    if (lrc_text or file_lines) and not line_timings:
+        if offline:
+            return None, None, None
+        from .genius import fetch_genius_lyrics_with_singers
+
+        genius_lines, metadata = fetch_genius_lyrics_with_singers(title, artist)
+        return genius_lines, metadata, None
+
+    if offline:
+        return None, None, None
+    genius_lines, metadata = _fetch_genius_with_quality_tracking(
+        line_timings, title, artist, quality_report
+    )
+    if genius_lines is None and not line_timings:
+        lines, meta = _create_no_lyrics_placeholder(title, artist)
+        return genius_lines, metadata, (lines, meta)
+    return genius_lines, metadata, None
+
+
 def get_lyrics_with_quality(  # noqa: C901
     title: str,
     artist: str,
@@ -169,8 +267,6 @@ def get_lyrics_with_quality(  # noqa: C901
         _apply_singer_info,
         _calculate_quality_score,
         _detect_offset_with_issues,
-        _fetch_genius_with_quality_tracking,
-        _fetch_lrc_text_and_timings_for_state,
         _refine_timing_with_quality,
         create_lines_from_lrc,
         create_lines_from_lrc_timings,
@@ -233,60 +329,34 @@ def get_lyrics_with_quality(  # noqa: C901
             "whisper_map_lrc_dtw" if whisper_map_lrc_dtw else "whisper_map_lrc"
         )
 
-    file_lines: List[str] = []
-    file_lrc_text: Optional[str] = None
-    file_line_timings: Optional[List[Tuple[float, str]]] = None
-    if lyrics_file:
-        file_lrc_text, file_line_timings, file_lines = _load_lyrics_file(
-            lyrics_file, filter_promos
-        )
-        if file_lrc_text or file_lines:
-            quality_report["source"] = f"lyrics_file:{lyrics_file}"
-
-    lrc_text, line_timings, source = _fetch_lrc_text_and_timings_for_state(
+    lrc_text, line_timings, source, file_lines = _resolve_lrc_inputs(
         title=title,
         artist=artist,
+        lyrics_file=lyrics_file,
+        filter_promos=filter_promos,
         target_duration=target_duration,
         vocals_path=vocals_path,
         evaluate_sources=evaluate_sources,
-        filter_promos=filter_promos,
         offline=offline,
-    )
-    if file_lrc_text and file_line_timings:
-        lrc_text = file_lrc_text
-        line_timings = file_line_timings
-        source = "lyrics_file_lrc"
-    if not quality_report["source"]:
-        quality_report["source"] = source
-    line_timings = _apply_lrc_timing_trust_policy(
-        line_timings=line_timings,
-        lrc_text=lrc_text,
-        target_duration=target_duration,
+        quality_report=quality_report,
+        issues_list=issues_list,
         drop_lrc_line_timings=drop_lrc_line_timings,
-        vocals_path=vocals_path,
         use_whisper=use_whisper,
         whisper_map_lrc=whisper_map_lrc,
-        issues_list=issues_list,
-        quality_report=quality_report,
     )
 
-    if (lrc_text or file_lines) and not line_timings:
-        if offline:
-            genius_lines, metadata = None, None
-        else:
-            from .genius import fetch_genius_lyrics_with_singers
-
-            genius_lines, metadata = fetch_genius_lyrics_with_singers(title, artist)
-    else:
-        if offline:
-            genius_lines, metadata = None, None
-        else:
-            genius_lines, metadata = _fetch_genius_with_quality_tracking(
-                line_timings, title, artist, quality_report
-            )
-            if genius_lines is None and not line_timings:
-                lines, meta = _create_no_lyrics_placeholder(title, artist)
-                return lines, meta, quality_report
+    genius_lines, metadata, early_placeholder = _resolve_genius_lines_and_metadata(
+        lrc_text=lrc_text,
+        file_lines=file_lines,
+        line_timings=line_timings,
+        offline=offline,
+        title=title,
+        artist=artist,
+        quality_report=quality_report,
+    )
+    if early_placeholder is not None:
+        lines, meta = early_placeholder
+        return lines, meta, quality_report
 
     if line_timings and lrc_text:
         quality_report["lyrics_quality"] = get_lyrics_quality_report(
