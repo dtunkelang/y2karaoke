@@ -73,11 +73,11 @@ def _enforce_monotonic_line_starts_whisper(
     )
 
 
-def _resolve_line_overlaps(lines: List[models.Line]) -> List[models.Line]:  # noqa: C901
+def _resolve_line_overlaps(lines: List[models.Line]) -> List[models.Line]:
     return _resolve_line_overlaps_impl(lines)
 
 
-def _pull_late_lines_to_matching_segments(  # noqa: C901
+def _pull_late_lines_to_matching_segments(
     mapped_lines: List[models.Line],
     segments: List[timing_models.TranscriptionSegment],
     language: str,  # retained for call compatibility
@@ -131,7 +131,7 @@ def _retime_short_interjection_lines(
     )
 
 
-def _snap_first_word_to_whisper_onset(  # noqa: C901
+def _snap_first_word_to_whisper_onset(
     mapped_lines: List[models.Line],
     all_words: List[timing_models.TranscriptionWord],
     *,

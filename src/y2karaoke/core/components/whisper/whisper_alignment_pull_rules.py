@@ -338,7 +338,7 @@ def _merge_short_following_line_into_segment(
     return adjusted, fixes
 
 
-def _pull_lines_near_segment_end(  # noqa: C901
+def _pull_lines_near_segment_end(
     lines: List[Line],
     segments: List[TranscriptionSegment],
     language: str,
@@ -360,7 +360,7 @@ def _pull_lines_near_segment_end(  # noqa: C901
     )
 
 
-def _pull_lines_to_best_segments(  # noqa: C901
+def _pull_lines_to_best_segments(
     lines: List[Line],
     segments: List[TranscriptionSegment],
     language: str,
