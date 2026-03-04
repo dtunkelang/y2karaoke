@@ -520,7 +520,7 @@ def _regularize_short_chant_alternation(tokens: List[str]) -> List[str]:
     return _regularize_short_chant_alternation_impl(tokens)
 
 
-def _contextual_ocr_token_replacement(  # noqa: C901
+def _contextual_ocr_token_replacement(
     low: str, prev_low: str, next_low: str
 ) -> str | None:
     return _contextual_ocr_token_replacement_impl(low, prev_low, next_low)

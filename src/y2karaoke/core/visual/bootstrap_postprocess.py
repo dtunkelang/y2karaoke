@@ -142,7 +142,7 @@ def nearest_known_word_indices(
     return _nearest_known_word_indices_impl(known_indices, n_words)
 
 
-def build_refined_lines_output(  # noqa: C901
+def build_refined_lines_output(
     t_lines: list[TargetLine], artist: Optional[str], title: Optional[str]
 ) -> list[dict[str, Any]]:
     lines_out = _build_initial_lines_output_impl(
@@ -192,7 +192,7 @@ def _is_chant_noise_signature(tokens: list[str]) -> bool:
     )
 
 
-def _remove_repeated_chant_noise_lines(  # noqa: C901
+def _remove_repeated_chant_noise_lines(
     lines_out: list[dict[str, Any]],
 ) -> None:
     _remove_repeated_chant_noise_lines_impl(
@@ -284,7 +284,7 @@ def _looks_fused_prefix_candidate(token: str) -> bool:
     )
 
 
-def _fallback_split_fused_token(token: str) -> list[str] | None:  # noqa: C901
+def _fallback_split_fused_token(token: str) -> list[str] | None:
     return _fallback_split_fused_token_impl(
         token,
         fused_fallback_short_functions=_FUSED_FALLBACK_SHORT_FUNCTIONS,
@@ -458,7 +458,7 @@ def _maybe_contextual_inflection_token(
     )
 
 
-def _split_fused_output_words(  # noqa: C901
+def _split_fused_output_words(
     words: list[dict[str, Any]],
     *,
     reconstruction_meta: Optional[dict[str, Any]] = None,
