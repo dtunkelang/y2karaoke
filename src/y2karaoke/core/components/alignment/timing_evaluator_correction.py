@@ -361,7 +361,7 @@ def _find_phrase_end(
     return max_end_time
 
 
-def fix_spurious_gaps(  # noqa: C901
+def fix_spurious_gaps(
     lines: List[Line],
     audio_features: AudioFeatures,
     activity_threshold: float = 0.5,

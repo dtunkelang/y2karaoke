@@ -224,7 +224,7 @@ def _append_unexpected_pause_issues(
     _append_unexpected_pause_issues_impl(lines, audio_features, issues)
 
 
-def _check_pause_alignment(  # noqa: C901
+def _check_pause_alignment(
     lines: List[Line],
     audio_features: AudioFeatures,
 ) -> List[TimingIssue]:

@@ -219,7 +219,7 @@ def _split_frames_at_indices(
     return out or [block_frames]
 
 
-def split_block_on_row_text_phase_changes(  # noqa: C901
+def split_block_on_row_text_phase_changes(
     block_frames: list[Any],
     *,
     cluster_rows_within_block_fn: Callable[[list[Any]], list[Any]],

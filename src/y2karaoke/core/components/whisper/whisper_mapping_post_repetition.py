@@ -323,7 +323,7 @@ def _retime_repetitive_question_runs_to_segment_windows(  # noqa: C901
     return adjusted
 
 
-def _enforce_min_duration_for_short_question_lines(  # noqa: C901
+def _enforce_min_duration_for_short_question_lines(
     lines: List[models.Line],
     *,
     min_duration: float = 1.0,
@@ -353,7 +353,7 @@ def _pull_adjacent_similar_lines_across_long_gaps(
     )
 
 
-def _smooth_adjacent_duplicate_line_cadence(  # noqa: C901
+def _smooth_adjacent_duplicate_line_cadence(
     lines: List[models.Line],
     *,
     min_gap: float = 0.05,
@@ -387,7 +387,7 @@ def _rebalance_short_question_pairs(
     )
 
 
-def _extend_line_to_trailing_whisper_matches(  # noqa: C901
+def _extend_line_to_trailing_whisper_matches(
     mapped_lines: List[models.Line],
     all_words: List[timing_models.TranscriptionWord],
     *,
