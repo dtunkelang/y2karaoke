@@ -417,8 +417,21 @@ def _looks_like_cycle_reset_boundary(
 def _block_normalized_brightness_seq(
     block_frames: list[Any], row_count: int
 ) -> list[tuple[float, float, float]]:
+    return _normalized_brightness_sequence(
+        block_frames,
+        row_count=row_count,
+        min_stable_frames=4,
+    )
+
+
+def _normalized_brightness_sequence(
+    block_frames: list[Any],
+    *,
+    row_count: int,
+    min_stable_frames: int,
+) -> list[tuple[float, float, float]]:
     stable = [fr for fr in block_frames if len(fr.rows) == row_count]
-    if len(stable) < 4:
+    if len(stable) < min_stable_frames:
         return []
 
     row_vals: list[list[float]] = [[] for _ in range(row_count)]
@@ -448,32 +461,11 @@ def _has_selection_reset_near_time(
 ) -> bool:
     if not (2 <= row_count <= 5):
         return False
-
-    stable_frames = [fr for fr in block_frames if len(fr.rows) == row_count]
-    if len(stable_frames) < 10:
-        return False
-
-    row_brightness: list[list[float]] = [[] for _ in range(row_count)]
-    for fr in stable_frames:
-        for ridx, row in enumerate(fr.rows):
-            row_brightness[ridx].append(float(row.brightness))
-
-    row_minmax: list[tuple[float, float]] = []
-    for vals in row_brightness:
-        if not vals:
-            return False
-        mn = min(vals)
-        mx = max(vals)
-        row_minmax.append((mn, mx if mx > mn else mn + 1.0))
-
-    seq: list[tuple[float, float, float]] = []
-    for fr in stable_frames:
-        norm_vals: list[float] = []
-        for ridx, row in enumerate(fr.rows):
-            mn, mx = row_minmax[ridx]
-            norm_vals.append((float(row.brightness) - mn) / max(1.0, mx - mn))
-        seq.append((float(fr.time), max(norm_vals), sum(norm_vals)))
-
+    seq = _normalized_brightness_sequence(
+        block_frames,
+        row_count=row_count,
+        min_stable_frames=10,
+    )
     if len(seq) < 10:
         return False
 
