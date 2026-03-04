@@ -75,6 +75,9 @@ from .bootstrap_postprocess_pipeline import (
     build_initial_lines_output as _build_initial_lines_output_impl,
     nearest_known_word_indices as _nearest_known_word_indices_impl,
 )
+from .bootstrap_postprocess_sequence import (
+    run_postprocess_sequence as _run_postprocess_sequence_impl,
+)
 
 _FUSED_FALLBACK_PREFIX_ANCHORS = (
     "i",
@@ -224,64 +227,35 @@ def build_refined_lines_output(  # noqa: C901
         clamp_confidence_fn=_clamp_confidence,
         nearest_known_word_indices_fn=nearest_known_word_indices,
     )
-    _trace_postprocess_snapshot("initial", lines_out)
-    _retime_short_interstitial_output_lines(lines_out)
-    _trace_postprocess_snapshot("after_short_interstitial", lines_out)
-    if os.environ.get("Y2K_VISUAL_DISABLE_POST_REBALANCE_FOUR", "0") != "1":
-        _rebalance_compressed_middle_four_line_sequences(lines_out)
-    _trace_postprocess_snapshot("after_rebalance_four", lines_out)
-    _filter_singer_label_prefixes(lines_out, artist=artist)
-    _trace_postprocess_snapshot("after_singer_prefix", lines_out)
-    lines_out = filter_intro_non_lyrics(lines_out, artist=artist)
-    _trace_postprocess_snapshot("after_intro_filter", lines_out)
-    _remove_overlay_credit_lines(lines_out)
-    _trace_postprocess_snapshot("after_overlay", lines_out)
-    _remove_weaker_near_duplicate_lines(lines_out)
-    _trace_postprocess_snapshot("after_near_dupe", lines_out)
-    _canonicalize_repeated_line_text_variants(lines_out)
-    _canonicalize_local_chant_token_variants(lines_out)
-    if os.environ.get("Y2K_VISUAL_ENABLE_LEADING_VOCAL_PREFIX_TRIM", "0") == "1":
-        _trim_leading_vocalization_prefixes(lines_out)
-    _trim_short_adlib_tails(lines_out)
-    _remove_repeated_singleton_noise_lines(lines_out, artist=artist, title=title)
-    _remove_high_repeat_nonlexical_chant_noise_lines(lines_out)
-    if os.environ.get("Y2K_VISUAL_ENABLE_CHANT_NOISE_FILTER", "0") == "1":
-        _remove_repeated_chant_noise_lines(lines_out)
-    _remove_repeated_fragment_noise_lines(lines_out, artist=artist, title=title)
-    _trace_postprocess_snapshot("after_fragment_noise", lines_out)
-    has_multi_cycle_block_first = any(
-        isinstance((ln.get("_reconstruction_meta") or {}).get("block_first"), dict)
-        and int(
-            ((ln.get("_reconstruction_meta") or {}).get("block_first") or {}).get(
-                "cycle_count", 1
-            )
-            or 1
-        )
-        > 1
-        for ln in lines_out
+    return _run_postprocess_sequence_impl(
+        lines_out,
+        artist=artist,
+        title=title,
+        trace_postprocess_snapshot_fn=_trace_postprocess_snapshot,
+        retime_short_interstitial_output_lines_fn=_retime_short_interstitial_output_lines,
+        rebalance_compressed_middle_four_line_sequences_fn=_rebalance_compressed_middle_four_line_sequences,
+        filter_singer_label_prefixes_fn=_filter_singer_label_prefixes,
+        filter_intro_non_lyrics_fn=filter_intro_non_lyrics,
+        remove_overlay_credit_lines_fn=_remove_overlay_credit_lines,
+        remove_weaker_near_duplicate_lines_fn=_remove_weaker_near_duplicate_lines,
+        canonicalize_repeated_line_text_variants_fn=_canonicalize_repeated_line_text_variants,
+        canonicalize_local_chant_token_variants_fn=_canonicalize_local_chant_token_variants,
+        trim_leading_vocalization_prefixes_fn=_trim_leading_vocalization_prefixes,
+        trim_short_adlib_tails_fn=_trim_short_adlib_tails,
+        remove_repeated_singleton_noise_lines_fn=_remove_repeated_singleton_noise_lines,
+        remove_high_repeat_nonlexical_chant_noise_lines_fn=_remove_high_repeat_nonlexical_chant_noise_lines,
+        remove_repeated_chant_noise_lines_fn=_remove_repeated_chant_noise_lines,
+        remove_repeated_fragment_noise_lines_fn=_remove_repeated_fragment_noise_lines,
+        consolidate_block_first_fragment_rows_fn=_consolidate_block_first_fragment_rows,
+        normalize_block_first_row_timings_fn=_normalize_block_first_row_timings,
+        normalize_block_first_repeated_cycles_fn=_normalize_block_first_repeated_cycles,
+        dedupe_block_first_cycle_rows_fn=_dedupe_block_first_cycle_rows,
+        repair_strong_local_chronology_inversions_fn=_repair_strong_local_chronology_inversions,
+        repair_large_adjacent_time_inversions_fn=_repair_large_adjacent_time_inversions,
+        remove_vocalization_noise_runs_fn=_remove_vocalization_noise_runs,
+        normalize_output_casing_fn=_normalize_output_casing,
+        strip_internal_line_metadata_fn=_strip_internal_line_metadata,
     )
-    _consolidate_block_first_fragment_rows(lines_out)
-    _trace_postprocess_snapshot("after_block_first_consolidation", lines_out)
-    _normalize_block_first_row_timings(lines_out)
-    _trace_postprocess_snapshot("after_block_first_timing", lines_out)
-    _normalize_block_first_repeated_cycles(lines_out)
-    _trace_postprocess_snapshot("after_block_first_repeat_cycles", lines_out)
-    if has_multi_cycle_block_first:
-        _dedupe_block_first_cycle_rows(lines_out)
-        _trace_postprocess_snapshot("after_block_first_cycle_dedupe", lines_out)
-    _repair_strong_local_chronology_inversions(lines_out)
-    _repair_large_adjacent_time_inversions(lines_out)
-    _trace_postprocess_snapshot("after_chronology_repairs", lines_out)
-    _remove_vocalization_noise_runs(lines_out)
-    _trace_postprocess_snapshot("after_vocal_noise", lines_out)
-    _normalize_output_casing(lines_out)
-    # Block-aware ordering/timing belongs in refinement, where TargetLine visibility and
-    # selection timing can still be adjusted safely. A postprocess-only reorder here can
-    # improve local order while harming global token sequence alignment.
-    # Keep this disabled by default until a refinement-stage block model replaces it.
-    # _reorder_clean_visibility_blocks(lines_out)
-    _strip_internal_line_metadata(lines_out)
-    return lines_out
 
 
 def _is_chant_noise_signature(tokens: list[str]) -> bool:
