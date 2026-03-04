@@ -74,30 +74,21 @@ def _fill_vocal_activity_gaps(
                 )
             )
 
-    vocal_start = audio_features.vocal_start
-    if filled_words[0].start - vocal_start >= min_gap:
-        activity = check_vocal_activity_in_range_fn(
-            vocal_start, filled_words[0].start, audio_features
-        )
-        if activity > threshold:
-            add_vocal_block(vocal_start, filled_words[0].start)
-
-    for idx in range(len(filled_words) - 1):
-        gap_start = filled_words[idx].end
-        gap_end = filled_words[idx + 1].start
-        if gap_end - gap_start < min_gap:
-            continue
-        activity = check_vocal_activity_in_range_fn(gap_start, gap_end, audio_features)
-        if activity > threshold:
+    gap_ranges = _candidate_vocal_gap_ranges(
+        filled_words=filled_words,
+        vocal_start=audio_features.vocal_start,
+        vocal_end=audio_features.vocal_end,
+        min_gap=min_gap,
+    )
+    for gap_start, gap_end in gap_ranges:
+        if _has_sufficient_vocal_activity(
+            gap_start=gap_start,
+            gap_end=gap_end,
+            audio_features=audio_features,
+            threshold=threshold,
+            check_vocal_activity_in_range_fn=check_vocal_activity_in_range_fn,
+        ):
             add_vocal_block(gap_start, gap_end)
-
-    vocal_end = audio_features.vocal_end
-    if vocal_end - filled_words[-1].end >= min_gap:
-        activity = check_vocal_activity_in_range_fn(
-            filled_words[-1].end, vocal_end, audio_features
-        )
-        if activity > threshold:
-            add_vocal_block(filled_words[-1].end, vocal_end)
 
     if new_words:
         logger.info(
@@ -110,6 +101,38 @@ def _fill_vocal_activity_gaps(
             filled_segments.sort(key=lambda s: s.start)
 
     return filled_words, filled_segments
+
+
+def _candidate_vocal_gap_ranges(
+    *,
+    filled_words: List[TranscriptionWord],
+    vocal_start: float,
+    vocal_end: float,
+    min_gap: float,
+) -> List[Tuple[float, float]]:
+    ranges: List[Tuple[float, float]] = []
+    if filled_words[0].start - vocal_start >= min_gap:
+        ranges.append((vocal_start, filled_words[0].start))
+    for idx in range(len(filled_words) - 1):
+        gap_start = filled_words[idx].end
+        gap_end = filled_words[idx + 1].start
+        if gap_end - gap_start >= min_gap:
+            ranges.append((gap_start, gap_end))
+    if vocal_end - filled_words[-1].end >= min_gap:
+        ranges.append((filled_words[-1].end, vocal_end))
+    return ranges
+
+
+def _has_sufficient_vocal_activity(
+    *,
+    gap_start: float,
+    gap_end: float,
+    audio_features: AudioFeatures,
+    threshold: float,
+    check_vocal_activity_in_range_fn: Callable[[float, float, AudioFeatures], float],
+) -> bool:
+    activity = check_vocal_activity_in_range_fn(gap_start, gap_end, audio_features)
+    return activity > threshold
 
 
 def _drop_duplicate_lines_by_timing(
