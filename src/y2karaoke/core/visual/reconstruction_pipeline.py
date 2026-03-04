@@ -455,12 +455,10 @@ def _sequence_by_visual_neighborhood_legacy(
     )
 
 
-def _log_sequence_blocks(mode: str, blocks: list[list[dict[str, Any]]]) -> None:
-    _log_sequence_blocks_impl(mode, blocks)
+_log_sequence_blocks = _log_sequence_blocks_impl
 
 
-def _should_disable_sequencing_for_blocks(blocks: list[list[dict[str, Any]]]) -> bool:
-    return _should_disable_sequencing_for_blocks_impl(blocks)
+_should_disable_sequencing_for_blocks = _should_disable_sequencing_for_blocks_impl
 
 
 def _order_visual_block_locally(
@@ -489,9 +487,7 @@ def _is_band_fragment_subphrase(fragment: list[str], full: list[str]) -> bool:
     )
 
 
-def _tokens_contiguous_subphrase(needle: list[str], haystack: list[str]) -> bool:
-    return _tokens_contiguous_subphrase_impl(needle, haystack)
+_tokens_contiguous_subphrase = _tokens_contiguous_subphrase_impl
 
 
-def _has_significant_overlap(a: dict[str, Any], b: dict[str, Any]) -> bool:
-    return _has_significant_overlap_impl(a, b)
+_has_significant_overlap = _has_significant_overlap_impl
