@@ -6,7 +6,12 @@ import re
 from typing import List, Optional, Tuple
 
 from ..models import TargetLine
-from ..text_utils import normalize_text_basic
+from .refinement_fragment_passes import (
+    demote_fragment_lines_within_clean_blocks as _demote_fragment_lines_within_clean_blocks_impl,
+    is_fragment_of_line as _is_fragment_of_line_impl,
+    merge_prefix_fragment_rows_in_clean_blocks as _merge_prefix_fragment_rows_in_clean_blocks_impl,
+    token_list as _token_list_impl,
+)
 from .refinement_dense_run_postpasses import (
     _compress_overlong_sparse_line_timings as _compress_overlong_sparse_line_timings_impl,
     _promote_unresolved_first_repeated_lines as _promote_unresolved_first_repeated_lines_impl,
@@ -341,26 +346,11 @@ def _pull_late_first_lines_in_alternating_repeated_blocks(
 
 
 def _token_list(ln: TargetLine) -> list[str]:
-    return [t for t in _canonical_line_text(ln).split() if t]
+    return _token_list_impl(ln)
 
 
 def _is_fragment_of_line(a: TargetLine, b: TargetLine) -> bool:
-    ta = _token_list(a)
-    tb = _token_list(b)
-    if len(ta) < 1 or len(tb) < 2:
-        return False
-    if len(ta) >= len(tb):
-        return False
-    # contiguous token subphrase match
-    for i in range(0, len(tb) - len(ta) + 1):
-        if tb[i : i + len(ta)] == ta:
-            return True
-    # split-word OCR fragments like "con ting" vs "counting"
-    if len(ta) == 2 and len(tb) >= 1:
-        glued = "".join(ta)
-        if any(glued == tok for tok in tb):
-            return True
-    return False
+    return _is_fragment_of_line_impl(a, b)
 
 
 def _trace_clean_blocks(label: str, target_lines: List[TargetLine]) -> None:
@@ -696,175 +686,10 @@ def _assign_block_sequence_hints_from_visibility(  # noqa: C901
 
 
 def _demote_fragment_lines_within_clean_blocks(target_lines: List[TargetLine]) -> None:
-    """Move short fragment rows after fuller rows within simple screen blocks.
-
-    This preserves lines but improves block-local ordering before output assembly.
-    """
-    if len(target_lines) < 2:
-        return
-
-    i = 0
-    while i < len(target_lines):
-        ln0 = target_lines[i]
-        if ln0.visibility_start is None or ln0.visibility_end is None:
-            i += 1
-            continue
-        vs0 = float(ln0.visibility_start)
-        ve0 = float(ln0.visibility_end)
-        block = [target_lines[i]]
-        j = i + 1
-        while j < len(target_lines):
-            ln = target_lines[j]
-            if ln.visibility_start is None or ln.visibility_end is None:
-                break
-            vs = float(ln.visibility_start)
-            ve = float(ln.visibility_end)
-            overlap = min(ve0, ve) - max(vs0, vs)
-            if abs(vs - vs0) > 0.45 or abs(ve - ve0) > 3.0 or overlap < 0.75:
-                break
-            block.append(ln)
-            j += 1
-
-        if 2 <= len(block) <= 5:
-            by_y = sorted(block, key=lambda ln: float(ln.y))
-            fragment_flags: dict[int, bool] = {}
-            for ln in by_y:
-                fragment_flags[id(ln)] = any(
-                    other is not ln and _is_fragment_of_line(ln, other)
-                    for other in by_y
-                )
-            if any(fragment_flags.values()):
-                reordered = sorted(
-                    block,
-                    key=lambda ln: (
-                        1 if fragment_flags.get(id(ln), False) else 0,
-                        float(ln.y),
-                        _line_start(ln) or float(ln.start),
-                    ),
-                )
-                if reordered != block:
-                    target_lines[i:j] = reordered
-                    for k, ln in enumerate(target_lines):
-                        ln.line_index = k + 1
-                        ln.block_order_hint = k
-        i = max(i + 1, j)
+    _demote_fragment_lines_within_clean_blocks_impl(target_lines)
 
 
 def _merge_prefix_fragment_rows_in_clean_blocks(  # noqa: C901
     target_lines: List[TargetLine],
 ) -> None:
-    """Conservatively merge split lyric rows like 'But baby I've been' + 'I've been'.
-
-    This targets basic karaoke blocks where OCR split one logical row into a prefix row
-    and a repeated fragment row on an adjacent row.
-    """
-    if len(target_lines) < 2:
-        return
-
-    def _top_variant_text(ln: TargetLine) -> Optional[str]:
-        meta = (
-            ln.reconstruction_meta if isinstance(ln.reconstruction_meta, dict) else None
-        )
-        if not meta:
-            return None
-        variants = meta.get("top_text_variants")
-        if not isinstance(variants, list) or not variants:
-            return None
-        first = variants[0]
-        if isinstance(first, dict):
-            txt = first.get("text")
-            if isinstance(txt, str) and txt.strip():
-                return txt.strip()
-        return None
-
-    i = 0
-    while i < len(target_lines):
-        ln0 = target_lines[i]
-        if ln0.visibility_start is None or ln0.visibility_end is None:
-            i += 1
-            continue
-        vs0 = float(ln0.visibility_start)
-        ve0 = float(ln0.visibility_end)
-        block = [target_lines[i]]
-        j = i + 1
-        while j < len(target_lines):
-            ln = target_lines[j]
-            if ln.visibility_start is None or ln.visibility_end is None:
-                break
-            vs = float(ln.visibility_start)
-            ve = float(ln.visibility_end)
-            overlap = min(ve0, ve) - max(vs0, vs)
-            if abs(vs - vs0) > 0.45 or abs(ve - ve0) > 3.0 or overlap < 0.75:
-                break
-            block.append(ln)
-            j += 1
-
-        if 2 <= len(block) <= 5:
-            by_y = sorted(block, key=lambda ln: float(ln.y))
-            for upper, lower in zip(by_y, by_y[1:]):
-                upper_tokens = _token_list(upper)
-                lower_tokens = _token_list(lower)
-                if len(lower_tokens) != 2:
-                    continue
-                if len(upper_tokens) < 3 or len(upper_tokens) > 6:
-                    continue
-                # Typical pattern: upper ends with the repeated fragment ("i've been"),
-                # lower is exactly that fragment; merge into upper and drop lower.
-                if upper_tokens[-2:] != lower_tokens:
-                    continue
-                if (
-                    upper.visibility_end is not None
-                    and upper.visibility_start is not None
-                ):
-                    if (
-                        float(upper.visibility_end) - float(upper.visibility_start)
-                    ) > 1.0:
-                        # Only merge very short lead rows (likely split row), not stable rows.
-                        continue
-                merged_text = " ".join(upper.words + lower.words)
-                # Require evidence that the merged text (or close variant) exists elsewhere in the song.
-                found_support = False
-                merged_norm = normalize_text_basic(merged_text)
-                for other in target_lines:
-                    if other is upper or other is lower:
-                        continue
-                    other_norm = normalize_text_basic(" ".join(other.words))
-                    if not other_norm:
-                        continue
-                    if (
-                        merged_norm == other_norm
-                        or merged_norm in other_norm
-                        or other_norm in merged_norm
-                    ):
-                        if len(other_norm.split()) >= len(merged_norm.split()):
-                            found_support = True
-                            break
-                if not found_support:
-                    continue
-
-                # Apply merge: append lower words/timings to upper, then clear lower so output drops it.
-                upper.words = upper.words + lower.words
-                if upper.word_rois and lower.word_rois:
-                    upper.word_rois = list(upper.word_rois) + list(lower.word_rois)
-                if upper.word_starts and lower.word_starts:
-                    upper.word_starts = list(upper.word_starts) + list(
-                        lower.word_starts
-                    )
-                if upper.word_ends and lower.word_ends:
-                    upper.word_ends = list(upper.word_ends) + list(lower.word_ends)
-                if upper.word_confidences and lower.word_confidences:
-                    upper.word_confidences = list(upper.word_confidences) + list(
-                        lower.word_confidences
-                    )
-                upper.text = " ".join(upper.words)
-
-                lower.words = []
-                lower.text = ""
-                lower.word_starts = []
-                lower.word_ends = []
-                lower.word_confidences = []
-                lower.word_rois = []
-                lower.end = lower.start
-                break
-
-        i = max(i + 1, j)
+    _merge_prefix_fragment_rows_in_clean_blocks_impl(target_lines)
