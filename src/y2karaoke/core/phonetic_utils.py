@@ -313,6 +313,57 @@ def _is_vowel(ipa: str) -> bool:
     return bool(_VOWEL_REGEX.search(ipa))
 
 
+def _set_ipa_cache_value(key: str, value: Optional[str]) -> Optional[str]:
+    global _ipa_disk_cache_dirty
+    if _ipa_cache.get(key) != value:
+        _ipa_cache[key] = value
+        _ipa_disk_cache_dirty += 1
+        _flush_ipa_cache_to_disk()
+    else:
+        _ipa_cache[key] = value
+    return value
+
+
+def _transliterate_cached_piece(
+    epi: Any, *, language: str, piece: str
+) -> Optional[str]:
+    piece_key = f"{language}:{piece}"
+    if piece_key in _ipa_cache:
+        return _ipa_cache[piece_key]
+    try:
+        piece_ipa = epi.transliterate(piece)
+    except Exception as exc:
+        logger.debug(f"IPA transliteration failed for '{piece}': {exc}")
+        return _set_ipa_cache_value(piece_key, None)
+    return _set_ipa_cache_value(piece_key, piece_ipa)
+
+
+def _english_token_ipas(
+    epi: Any, *, language: str, normalized_text: str
+) -> Optional[list[str]]:
+    token_ipas: List[str] = []
+    for token in normalized_text.split():
+        token_ipa = _transliterate_cached_piece(epi, language=language, piece=token)
+        if token_ipa is None:
+            return None
+        token_ipas.append(token_ipa)
+    return token_ipas
+
+
+def _transliterate_text_to_ipa(
+    epi: Any, *, language: str, normalized_text: str
+) -> Optional[str]:
+    is_english = language.startswith("eng") or language.startswith("en")
+    if is_english and " " in normalized_text:
+        token_ipas = _english_token_ipas(
+            epi, language=language, normalized_text=normalized_text
+        )
+        if token_ipas is None:
+            return None
+        return " ".join(token_ipas)
+    return _transliterate_cached_piece(epi, language=language, piece=normalized_text)
+
+
 def _get_ipa(text: str, language: str = "fra-Latn") -> Optional[str]:
     """Get IPA transliteration with caching."""
     _load_ipa_cache_from_disk()
@@ -324,48 +375,14 @@ def _get_ipa(text: str, language: str = "fra-Latn") -> Optional[str]:
     if epi is None:
         return None
 
-    def _set_cache_value(key: str, value: Optional[str]) -> Optional[str]:
-        global _ipa_disk_cache_dirty
-        if _ipa_cache.get(key) != value:
-            _ipa_cache[key] = value
-            _ipa_disk_cache_dirty += 1
-            _flush_ipa_cache_to_disk()
-        else:
-            _ipa_cache[key] = value
-        return value
-
-    def _transliterate_cached(piece: str) -> Optional[str]:
-        piece_key = f"{language}:{piece}"
-        if piece_key in _ipa_cache:
-            return _ipa_cache[piece_key]
-        try:
-            piece_ipa = epi.transliterate(piece)
-        except Exception as exc:
-            logger.debug(f"IPA transliteration failed for '{piece}': {exc}")
-            return _set_cache_value(piece_key, None)
-        return _set_cache_value(piece_key, piece_ipa)
-
     try:
-        ipa: Optional[str]
-        # English transliteration often receives many repeated token combinations
-        # across line/segment comparisons; token-level caching keeps subprocess
-        # calls bounded by vocabulary size instead of phrase permutations.
-        if (language.startswith("eng") or language.startswith("en")) and " " in norm:
-            token_ipas: List[str] = []
-            for token in norm.split():
-                token_ipa = _transliterate_cached(token)
-                if token_ipa is None:
-                    return _set_cache_value(cache_key, None)
-                token_ipas.append(token_ipa)
-            ipa = " ".join(token_ipas)
-        else:
-            ipa = _transliterate_cached(norm)
-            if ipa is None:
-                return _set_cache_value(cache_key, None)
+        ipa = _transliterate_text_to_ipa(epi, language=language, normalized_text=norm)
+        if ipa is None:
+            return _set_ipa_cache_value(cache_key, None)
     except Exception as exc:
         logger.debug(f"IPA transliteration failed for '{text}': {exc}")
-        return _set_cache_value(cache_key, None)
-    return _set_cache_value(cache_key, ipa)
+        return _set_ipa_cache_value(cache_key, None)
+    return _set_ipa_cache_value(cache_key, ipa)
 
 
 def _prewarm_ipa_cache(texts: List[str], language: str = "fra-Latn") -> int:
@@ -420,6 +437,45 @@ def _text_similarity_basic(
     return SequenceMatcher(None, norm1, norm2).ratio()
 
 
+def _single_token_english_fast_return(
+    norm1: str, norm2: str, basic_sim: float, *, is_english: bool
+) -> Optional[float]:
+    if not is_english or " " in norm1 or " " in norm2:
+        return None
+    if basic_sim >= 0.93:
+        return max(basic_sim, 0.95)
+    if basic_sim <= 0.30 and norm1[0] != norm2[0]:
+        return basic_sim
+    return None
+
+
+def _blended_similarity_from_ipa(
+    dst: Any, *, ipa1: str, ipa2: str, basic_sim: float
+) -> Optional[float]:
+    segs1 = _get_ipa_segs(ipa1)
+    segs2 = _get_ipa_segs(ipa2)
+    if not segs1 or not segs2:
+        return None
+    fed = dst.feature_edit_distance(ipa1, ipa2)
+    max_segs = max(len(segs1), len(segs2))
+    normalized_distance = fed / max_segs
+    similarity = max(0.0, 1.0 - normalized_distance)
+    return max(similarity, basic_sim * 0.9)
+
+
+def _apply_english_consonant_bonus(
+    blended: float, *, norm1: str, norm2: str, is_english: bool
+) -> float:
+    if not is_english or " " in norm1 or " " in norm2:
+        return blended
+    sk1 = _consonant_skeleton(norm1)
+    sk2 = _consonant_skeleton(norm2)
+    if not sk1 or not sk2:
+        return blended
+    sk_sim = SequenceMatcher(None, sk1, sk2).ratio()
+    return max(blended, sk_sim * 0.95)
+
+
 def _phonetic_similarity(text1: str, text2: str, language: str = "fra-Latn") -> float:
     """Calculate phonetic similarity using epitran and panphon."""
     norm1 = _normalize_text_for_phonetic(text1, language)
@@ -436,11 +492,11 @@ def _phonetic_similarity(text1: str, text2: str, language: str = "fra-Latn") -> 
         return basic_sim
 
     is_english = language.startswith("eng") or language.startswith("en")
-    if is_english and " " not in norm1 and " " not in norm2:
-        if basic_sim >= 0.93:
-            return max(basic_sim, 0.95)
-        if basic_sim <= 0.30 and norm1[0] != norm2[0]:
-            return basic_sim
+    english_fast_return = _single_token_english_fast_return(
+        norm1, norm2, basic_sim, is_english=is_english
+    )
+    if english_fast_return is not None:
+        return english_fast_return
 
     dst = _get_panphon_distance()
 
@@ -448,40 +504,20 @@ def _phonetic_similarity(text1: str, text2: str, language: str = "fra-Latn") -> 
         return basic_sim
 
     try:
-        # Get cached IPA transliterations
         ipa1 = _get_ipa(text1, language)
         ipa2 = _get_ipa(text2, language)
-
         if not ipa1 or not ipa2:
             return basic_sim
 
-        # Get cached IPA segments
-        segs1 = _get_ipa_segs(ipa1)
-        segs2 = _get_ipa_segs(ipa2)
-
-        if not segs1 or not segs2:
+        blended = _blended_similarity_from_ipa(
+            dst, ipa1=ipa1, ipa2=ipa2, basic_sim=basic_sim
+        )
+        if blended is None:
             return basic_sim
 
-        # Calculate feature edit distance (weighted Levenshtein)
-        fed = dst.feature_edit_distance(ipa1, ipa2)
-
-        # Normalize by max segment count
-        max_segs = max(len(segs1), len(segs2))
-
-        # Convert normalized distance to similarity
-        normalized_distance = fed / max_segs
-        similarity = max(0.0, 1.0 - normalized_distance)
-
-        blended = max(similarity, basic_sim * 0.9)
-
-        if is_english and " " not in norm1 and " " not in norm2:
-            sk1 = _consonant_skeleton(norm1)
-            sk2 = _consonant_skeleton(norm2)
-            if sk1 and sk2:
-                sk_sim = SequenceMatcher(None, sk1, sk2).ratio()
-                blended = max(blended, sk_sim * 0.95)
-
-        return blended
+        return _apply_english_consonant_bonus(
+            blended, norm1=norm1, norm2=norm2, is_english=is_english
+        )
 
     except Exception as e:
         logger.debug(f"Phonetic similarity failed: {e}")
