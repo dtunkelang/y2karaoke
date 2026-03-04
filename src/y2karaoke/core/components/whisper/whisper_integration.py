@@ -113,6 +113,21 @@ __all__ = [
 ] + ALIAS_EXPORTS
 
 
+def _set_global_overrides(overrides: dict[str, object]) -> dict[str, object]:
+    previous: dict[str, object] = {}
+    module_globals = globals()
+    for name, new_value in overrides.items():
+        previous[name] = module_globals[name]
+        module_globals[name] = new_value
+    return previous
+
+
+def _restore_global_overrides(previous: dict[str, object]) -> None:
+    module_globals = globals()
+    for name, value in previous.items():
+        module_globals[name] = value
+
+
 @contextmanager
 def use_whisper_integration_hooks(
     *,
@@ -129,63 +144,28 @@ def use_whisper_integration_hooks(
     get_ipa_fn=None,
 ):
     """Temporarily override integration collaborators for tests."""
-    global transcribe_vocals, extract_audio_features
-    global _assess_lrc_quality, align_hybrid_lrc_whisper
-    global _align_dtw_whisper_with_data
-    global _load_whisper_model_class
-    global _get_whisper_cache_path, _load_whisper_cache, _save_whisper_cache
-    global _retime_lines_from_dtw_alignments
-    global _get_ipa
-
-    prev_transcribe_vocals = transcribe_vocals
-    prev_extract_audio_features = extract_audio_features
-    prev_assess_lrc_quality = _assess_lrc_quality
-    prev_align_hybrid = align_hybrid_lrc_whisper
-    prev_align_dtw_data = _align_dtw_whisper_with_data
-    prev_load_model = _load_whisper_model_class
-    prev_get_cache_path = _get_whisper_cache_path
-    prev_load_cache = _load_whisper_cache
-    prev_save_cache = _save_whisper_cache
-    prev_retime_from_dtw = _retime_lines_from_dtw_alignments
-    prev_get_ipa = _get_ipa
-
-    if transcribe_vocals_fn is not None:
-        transcribe_vocals = transcribe_vocals_fn
-    if extract_audio_features_fn is not None:
-        extract_audio_features = extract_audio_features_fn
-    if assess_lrc_quality_fn is not None:
-        _assess_lrc_quality = assess_lrc_quality_fn
-    if align_hybrid_lrc_whisper_fn is not None:
-        align_hybrid_lrc_whisper = align_hybrid_lrc_whisper_fn
-    if align_dtw_whisper_with_data_fn is not None:
-        _align_dtw_whisper_with_data = align_dtw_whisper_with_data_fn
-    if load_whisper_model_class_fn is not None:
-        _load_whisper_model_class = load_whisper_model_class_fn
-    if get_whisper_cache_path_fn is not None:
-        _get_whisper_cache_path = get_whisper_cache_path_fn
-    if load_whisper_cache_fn is not None:
-        _load_whisper_cache = load_whisper_cache_fn
-    if save_whisper_cache_fn is not None:
-        _save_whisper_cache = save_whisper_cache_fn
-    if retime_lines_from_dtw_alignments_fn is not None:
-        _retime_lines_from_dtw_alignments = retime_lines_from_dtw_alignments_fn
-    if get_ipa_fn is not None:
-        _get_ipa = get_ipa_fn
+    requested_overrides = {
+        "transcribe_vocals": transcribe_vocals_fn,
+        "extract_audio_features": extract_audio_features_fn,
+        "_assess_lrc_quality": assess_lrc_quality_fn,
+        "align_hybrid_lrc_whisper": align_hybrid_lrc_whisper_fn,
+        "_align_dtw_whisper_with_data": align_dtw_whisper_with_data_fn,
+        "_load_whisper_model_class": load_whisper_model_class_fn,
+        "_get_whisper_cache_path": get_whisper_cache_path_fn,
+        "_load_whisper_cache": load_whisper_cache_fn,
+        "_save_whisper_cache": save_whisper_cache_fn,
+        "_retime_lines_from_dtw_alignments": retime_lines_from_dtw_alignments_fn,
+        "_get_ipa": get_ipa_fn,
+    }
+    active_overrides = {
+        name: value for name, value in requested_overrides.items() if value is not None
+    }
+    previous = _set_global_overrides(active_overrides)
 
     try:
         yield
     finally:
-        transcribe_vocals = prev_transcribe_vocals
-        extract_audio_features = prev_extract_audio_features
-        _assess_lrc_quality = prev_assess_lrc_quality
-        align_hybrid_lrc_whisper = prev_align_hybrid
-        _align_dtw_whisper_with_data = prev_align_dtw_data
-        _load_whisper_model_class = prev_load_model
-        _get_whisper_cache_path = prev_get_cache_path
-        _load_whisper_cache = prev_load_cache
-        _save_whisper_cache = prev_save_cache
-        _retime_lines_from_dtw_alignments = prev_retime_from_dtw
-        _get_ipa = prev_get_ipa
+        _restore_global_overrides(previous)
 
 
 def _load_whisper_model_class():
