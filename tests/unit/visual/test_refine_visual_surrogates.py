@@ -1,10 +1,6 @@
 from y2karaoke.core.models import TargetLine
 from y2karaoke.core.visual.refinement import (
     _retime_compressed_shared_visibility_blocks,
-    _retime_large_gaps_with_early_visibility,
-    _retime_followups_in_short_lead_shared_visibility_runs,
-    _rebalance_two_followups_after_short_lead,
-    _assign_surrogate_cluster_timings,
     _assign_surrogate_timings_for_unresolved_overlap_blocks,
     _retime_late_first_lines_in_shared_visibility_blocks,
 )

@@ -4,12 +4,10 @@ from typing import Any, cast
 import y2karaoke.core.components.alignment.timing_evaluator as te
 from y2karaoke.core.models import Line, Word
 import y2karaoke.core.components.whisper.whisper_integration as wi
-import y2karaoke.core.components.whisper.whisper_integration_pipeline as wip
 from y2karaoke.core.components.whisper.whisper_integration_pipeline import (
     align_lrc_text_to_whisper_timings_impl,
 )
 from y2karaoke.core.components.whisper import whisper_mapping as wm
-from y2karaoke.core.components.whisper import whisper_integration_transcribe as witx
 from y2karaoke.core.components.alignment.timing_models import (
     AudioFeatures,
     TranscriptionWord,

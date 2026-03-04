@@ -17,7 +17,6 @@ from y2karaoke.core.visual.refinement import (
     _merge_line_refinement_jobs,
     _refine_line_with_frames,
     _slice_frames_for_window,
-    refine_line_timings_at_low_fps,
 )
 from y2karaoke.core.models import TargetLine
 

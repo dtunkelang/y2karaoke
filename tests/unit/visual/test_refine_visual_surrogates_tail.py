@@ -3,7 +3,6 @@ from y2karaoke.core.visual.refinement import (
     _rebalance_early_lead_shared_visibility_runs,
     _shrink_overlong_leads_in_dense_shared_visibility_runs,
     _retime_dense_runs_after_overlong_lead,
-    _retime_repeated_blocks_with_long_tail_gap,
     _pull_dense_short_runs_toward_previous_anchor,
     _clamp_line_ends_to_visibility_windows,
     _pull_lines_earlier_after_visibility_transitions,

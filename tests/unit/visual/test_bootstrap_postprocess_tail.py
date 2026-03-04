@@ -1,9 +1,6 @@
 from y2karaoke.core.models import TargetLine
 from y2karaoke.core.visual import bootstrap_postprocess
-from y2karaoke.core.visual.bootstrap_postprocess import (
-    build_refined_lines_output,
-    nearest_known_word_indices,
-)
+from y2karaoke.core.visual.bootstrap_postprocess import build_refined_lines_output
 
 
 def test_build_refined_lines_output_does_not_canonicalize_nearby_sequence_lines():
