@@ -121,16 +121,9 @@ def _canonicalize_repeated_line_text_variants(
     _canonicalize_repeated_line_text_variants_impl(lines_out)
 
 
-def _remove_repeated_singleton_noise_lines(  # noqa: C901
-    lines_out: list[dict[str, Any]], artist: Optional[str], title: Optional[str]
-) -> None:
-    if len(lines_out) < 3:
-        return
-
-    artist_parts = set(normalize_text_basic(artist or "").split())
-    title_parts = set(normalize_text_basic(title or "").split())
-    protected = {t for t in (artist_parts | title_parts) if t}
-
+def _collect_singleton_token_stats(
+    lines_out: list[dict[str, Any]],
+) -> tuple[dict[str, int], dict[str, list[int]], dict[str, float]]:
     singleton_counts: dict[str, int] = {}
     singleton_indices: dict[str, list[int]] = {}
     singleton_conf_sums: dict[str, float] = {}
@@ -146,48 +139,95 @@ def _remove_repeated_singleton_noise_lines(  # noqa: C901
         singleton_conf_sums[token] = singleton_conf_sums.get(token, 0.0) + float(
             ln.get("confidence", 0.0) or 0.0
         )
+    return singleton_counts, singleton_indices, singleton_conf_sums
+
+
+def _should_consider_singleton_token_for_drop(
+    token: str,
+    count: int,
+    *,
+    protected_tokens: set[str],
+    avg_confidence: float,
+) -> bool:
+    if count < 4:
+        return False
+    if (
+        token in protected_tokens
+        or token in LYRIC_FUNCTION_WORDS
+        or token in _VOCALIZATION_NOISE_TOKENS
+    ):
+        return False
+    if len(token) < 3:
+        return False
+    if avg_confidence > 0.35:
+        return False
+    return True
+
+
+def _has_neighbor_token_mention(
+    lines_out: list[dict[str, Any]],
+    *,
+    index: int,
+    token: str,
+) -> bool:
+    for j in range(max(0, index - 2), min(len(lines_out), index + 3)):
+        if j == index:
+            continue
+        n_words = lines_out[j].get("words", [])
+        if len(n_words) <= 1:
+            continue
+        n_text = normalize_text_basic(str(lines_out[j].get("text", "")))
+        n_toks = [t for t in n_text.split() if t]
+        if token in n_toks:
+            return True
+    return False
+
+
+def _should_drop_singleton_line_instance(
+    lines_out: list[dict[str, Any]],
+    *,
+    index: int,
+    token: str,
+) -> bool:
+    line = lines_out[index]
+    words = line.get("words", [])
+    if len(words) != 1:
+        return False
+    start = float(line.get("start", 0.0) or 0.0)
+    end = float(line.get("end", start) or start)
+    if end - start > 1.4:
+        return False
+    if _has_neighbor_token_mention(lines_out, index=index, token=token):
+        return False
+    return True
+
+
+def _remove_repeated_singleton_noise_lines(
+    lines_out: list[dict[str, Any]], artist: Optional[str], title: Optional[str]
+) -> None:
+    if len(lines_out) < 3:
+        return
+
+    artist_parts = set(normalize_text_basic(artist or "").split())
+    title_parts = set(normalize_text_basic(title or "").split())
+    protected = {t for t in (artist_parts | title_parts) if t}
+    singleton_counts, singleton_indices, singleton_conf_sums = (
+        _collect_singleton_token_stats(lines_out)
+    )
 
     drops: set[int] = set()
     for token, count in singleton_counts.items():
-        if count < 4:
-            continue
-        if (
-            token in protected
-            or token in LYRIC_FUNCTION_WORDS
-            or token in _VOCALIZATION_NOISE_TOKENS
+        avg_conf = singleton_conf_sums[token] / max(count, 1)
+        if not _should_consider_singleton_token_for_drop(
+            token,
+            count,
+            protected_tokens=protected,
+            avg_confidence=avg_conf,
         ):
             continue
-        if len(token) < 3:
-            continue
-        avg_conf = singleton_conf_sums[token] / max(count, 1)
-        if avg_conf > 0.35:
-            continue
-
         for idx in singleton_indices[token]:
-            ln = lines_out[idx]
-            words = ln.get("words", [])
-            if len(words) != 1:
-                continue
-            start = float(ln.get("start", 0.0) or 0.0)
-            end = float(ln.get("end", start) or start)
-            if end - start > 1.4:
-                continue
-
-            neighbor_mentions = False
-            for j in range(max(0, idx - 2), min(len(lines_out), idx + 3)):
-                if j == idx:
-                    continue
-                n_words = lines_out[j].get("words", [])
-                if len(n_words) <= 1:
-                    continue
-                n_text = normalize_text_basic(str(lines_out[j].get("text", "")))
-                n_toks = [t for t in n_text.split() if t]
-                if token in n_toks:
-                    neighbor_mentions = True
-                    break
-            if neighbor_mentions:
-                continue
-            drops.add(idx)
+            if _should_drop_singleton_line_instance(lines_out, index=idx, token=token):
+                drops.add(idx)
 
     if not drops:
         return
