@@ -394,10 +394,9 @@ class TrackIdentifierHelpers:
         """Find candidate whose LRC duration and title best match."""
         scored_matches = []
         fallback_match = None
-        title_hint_words = set(
-            normalize_title(title_hint, remove_stopwords=True).split()
-        )
+        title_hint_words = self._title_hint_words(title_hint)
         artist_hint_norm = normalize_title(artist_hint or "", remove_stopwords=True)
+        title_hint_norm = normalize_title(title_hint, remove_stopwords=False)
         for candidate in candidates:
             artist = candidate["artist"]
             title = candidate["title"]
@@ -413,49 +412,24 @@ class TrackIdentifierHelpers:
 
             duration_diff = abs(lrc_duration - target_duration)
             candidate_title_normalized = normalize_title(title, remove_stopwords=True)
-            candidate_title_words = set(candidate_title_normalized.split())
-            if title_hint_words:
-                word_overlap = len(title_hint_words & candidate_title_words) / len(
-                    title_hint_words
-                )
-            else:
-                word_overlap = 0
-            title_hint_norm = normalize_title(title_hint, remove_stopwords=False)
-            seq_similarity = SequenceMatcher(
-                None, title_hint_norm, candidate_title_normalized
-            ).ratio()
-            title_score = (word_overlap * 0.6) + (seq_similarity * 0.4)
+            title_score = self._title_match_score(
+                title_hint_words=title_hint_words,
+                title_hint_norm=title_hint_norm,
+                candidate_title_normalized=candidate_title_normalized,
+            )
 
             candidate_artist_norm = normalize_title(artist, remove_stopwords=True)
-            artist_score = 0.0
-            if artist_hint_norm:
-                if candidate_artist_norm == artist_hint_norm:
-                    artist_score = 1.0
-                elif (
-                    artist_hint_norm in candidate_artist_norm
-                    or candidate_artist_norm in artist_hint_norm
-                ):
-                    artist_score = 0.9
-                else:
-                    hint_words = set(artist_hint_norm.split())
-                    cand_words = set(candidate_artist_norm.split())
-                    word_overlap = 0.0
-                    if hint_words:
-                        word_overlap = len(hint_words & cand_words) / len(hint_words)
-                    seq_overlap = SequenceMatcher(
-                        None, artist_hint_norm, candidate_artist_norm
-                    ).ratio()
-                    artist_score = (word_overlap * 0.7) + (seq_overlap * 0.3)
-
+            artist_score = self._artist_match_score(
+                artist_hint_norm=artist_hint_norm,
+                candidate_artist_norm=candidate_artist_norm,
+            )
             duration_score = max(0, 1 - (duration_diff / 60))
-            if artist_hint_norm:
-                combined_score = (
-                    (title_score * 0.55)
-                    + (artist_score * 0.25)
-                    + (duration_score * 0.2)
-                )
-            else:
-                combined_score = (title_score * 0.7) + (duration_score * 0.3)
+            combined_score = self._combined_lrc_score(
+                title_score=title_score,
+                artist_score=artist_score,
+                duration_score=duration_score,
+                has_artist_hint=bool(artist_hint_norm),
+            )
             logger.debug(
                 f"LRC candidate: {artist} - {title}, "
                 f"duration={lrc_duration}s (diff={duration_diff}s), "
@@ -482,3 +456,60 @@ class TrackIdentifierHelpers:
                 f"Best LRC match has {duration_diff}s duration difference (tolerance: {tolerance}s)"
             )
         return (artist, title, lrc_duration)
+
+    def _title_hint_words(self, title_hint: str) -> set[str]:
+        return set(normalize_title(title_hint, remove_stopwords=True).split())
+
+    def _title_match_score(
+        self,
+        *,
+        title_hint_words: set[str],
+        title_hint_norm: str,
+        candidate_title_normalized: str,
+    ) -> float:
+        candidate_title_words = set(candidate_title_normalized.split())
+        if title_hint_words:
+            word_overlap = len(title_hint_words & candidate_title_words) / len(
+                title_hint_words
+            )
+        else:
+            word_overlap = 0.0
+        seq_similarity = SequenceMatcher(
+            None, title_hint_norm, candidate_title_normalized
+        ).ratio()
+        return (word_overlap * 0.6) + (seq_similarity * 0.4)
+
+    def _artist_match_score(
+        self, *, artist_hint_norm: str, candidate_artist_norm: str
+    ) -> float:
+        if not artist_hint_norm:
+            return 0.0
+        if candidate_artist_norm == artist_hint_norm:
+            return 1.0
+        if (
+            artist_hint_norm in candidate_artist_norm
+            or candidate_artist_norm in artist_hint_norm
+        ):
+            return 0.9
+        hint_words = set(artist_hint_norm.split())
+        cand_words = set(candidate_artist_norm.split())
+        if hint_words:
+            word_overlap = len(hint_words & cand_words) / len(hint_words)
+        else:
+            word_overlap = 0.0
+        seq_overlap = SequenceMatcher(
+            None, artist_hint_norm, candidate_artist_norm
+        ).ratio()
+        return (word_overlap * 0.7) + (seq_overlap * 0.3)
+
+    def _combined_lrc_score(
+        self,
+        *,
+        title_score: float,
+        artist_score: float,
+        duration_score: float,
+        has_artist_hint: bool,
+    ) -> float:
+        if has_artist_hint:
+            return (title_score * 0.55) + (artist_score * 0.25) + (duration_score * 0.2)
+        return (title_score * 0.7) + (duration_score * 0.3)
