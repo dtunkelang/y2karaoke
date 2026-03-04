@@ -12,6 +12,10 @@ from .bootstrap_postprocess_dedup_passes import (
     line_uncertainty as _line_uncertainty_impl,
     remove_weaker_near_duplicate_lines as _remove_weaker_near_duplicate_lines_impl,
 )
+from .bootstrap_postprocess_overlay import (
+    overlay_line_signal_score as _overlay_line_signal_score_impl,
+    remove_overlay_credit_lines as _remove_overlay_credit_lines_impl,
+)
 from .reconstruction import snap
 
 _VOCALIZATION_NOISE_TOKENS = {
@@ -259,92 +263,21 @@ def _reorder_clean_visibility_blocks(  # noqa: C901
 
 
 def _overlay_line_signal_score(line: dict[str, Any]) -> int:  # noqa: C901
-    text = str(line.get("text", "") or "")
-    if not text:
-        return 0
-    words = line.get("words", [])
-    n_words = len(words)
-    norm = normalize_text_basic(text)
-    toks = [t for t in norm.split() if t]
-    if not toks:
-        return 0
-
-    text_lower = text.lower()
-    token_set = set(toks)
-    score = 0
-
-    if n_words >= 6:
-        score += 1
-    if n_words >= 10:
-        score += 1
-
-    platform_hits = len(token_set & _OVERLAY_PLATFORM_TOKENS)
-    cta_hits = len(token_set & _OVERLAY_CTA_TOKENS)
-    legal_hits = len(token_set & _OVERLAY_LEGAL_TOKENS)
-    brand_hits = len(token_set & _OVERLAY_BRAND_TOKENS)
-
-    if platform_hits:
-        score += 3
-    if platform_hits >= 2:
-        score += 1
-    if cta_hits and platform_hits:
-        score += 3
-    elif cta_hits >= 2 and n_words >= 8:
-        score += 2
-    if legal_hits >= 2:
-        score += 3
-    elif legal_hits and ("reserved" in token_set or "copyright" in token_set):
-        score += 2
-    if brand_hits and (platform_hits or cta_hits or legal_hits):
-        score += 2
-
-    urlish = (
-        "www" in text_lower
-        or ".com" in text_lower
-        or ".co.uk" in text_lower
-        or ".co" in text_lower
+    return _overlay_line_signal_score_impl(
+        line,
+        normalize_text_basic_fn=normalize_text_basic,
+        overlay_platform_tokens=_OVERLAY_PLATFORM_TOKENS,
+        overlay_cta_tokens=_OVERLAY_CTA_TOKENS,
+        overlay_legal_tokens=_OVERLAY_LEGAL_TOKENS,
+        overlay_brand_tokens=_OVERLAY_BRAND_TOKENS,
     )
-    if urlish:
-        score += 4
-
-    if "all rights reserved" in text_lower:
-        score += 4
-    if "follow us" in text_lower or "like us" in text_lower:
-        score += 3
-    if "produced by" in text_lower:
-        score += 2
-    if "in association with" in text_lower:
-        score += 3
-
-    alnum_long_tokens = 0
-    for raw in [str(w.get("text", "")) for w in words]:
-        raw_low = raw.lower()
-        if len(raw_low) >= 10 and any(ch.isdigit() for ch in raw_low):
-            alnum_long_tokens += 1
-        if any(ch in "./" for ch in raw_low) and len(raw_low) >= 6:
-            alnum_long_tokens += 1
-    if alnum_long_tokens:
-        score += 2
-
-    return score
 
 
 def _remove_overlay_credit_lines(lines_out: list[dict[str, Any]]) -> None:
-    if not lines_out:
-        return
-
-    kept: list[dict[str, Any]] = []
-    for ln in lines_out:
-        score = _overlay_line_signal_score(ln)
-        if score >= 6:
-            continue
-        kept.append(ln)
-
-    if len(kept) == len(lines_out):
-        return
-    lines_out[:] = kept
-    for i, ln in enumerate(lines_out):
-        ln["line_index"] = i + 1
+    _remove_overlay_credit_lines_impl(
+        lines_out,
+        overlay_line_signal_score_fn=_overlay_line_signal_score,
+    )
 
 
 def _line_duplicate_quality_score(line: dict[str, Any]) -> float:
