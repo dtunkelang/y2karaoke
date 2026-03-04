@@ -145,60 +145,52 @@ class QueryParser:
         if len(words) < 3:
             return None
 
-        # Try different splits - common patterns are 2-4 word artist names
-        # Start from 2 words to avoid matching single words like "The" to "The Beatles"
-        for split_point in range(2, min(5, len(words))):
-            potential_artist = " ".join(words[:split_point])
-            potential_title = " ".join(words[split_point:])
-
-            # Skip if potential title is too short
-            if len(potential_title.split()) < 2:
-                continue
-
-            # Skip very short potential artists (avoid "The" matching "The Beatles")
-            if len(potential_artist) < 5:
-                continue
-
-            # Quick check: query MusicBrainz for this artist
+        for potential_artist, potential_title in self._candidate_artist_title_splits(
+            words
+        ):
             try:
                 results = musicbrainzngs.search_artists(
                     artist=potential_artist, limit=3
                 )
                 artists = results.get("artist-list", [])
-
-                for artist in artists:
-                    artist_name = artist.get("name", "")
-                    # Check for exact match (case-insensitive)
-                    if artist_name.lower() == potential_artist.lower():
-                        logger.debug(
-                            f"Detected artist '{artist_name}' from title: '{title}'"
-                        )
-                        return artist_name, potential_title
-
-                    # Accept if potential_artist contains most of artist_name
-                    # (e.g., "White Stripes" matches "The White Stripes")
-                    # But NOT if potential_artist is just a small part of artist_name
-                    artist_name_lower = artist_name.lower()
-                    potential_lower = potential_artist.lower()
-
-                    # Check if one contains the other with significant overlap
-                    if potential_lower in artist_name_lower:
-                        # potential is substring of artist - check it's significant
-                        if len(potential_lower) >= len(artist_name_lower) * 0.6:
-                            logger.debug(
-                                f"Detected artist '{artist_name}' from title: '{title}'"
-                            )
-                            return artist_name, potential_title
-                    elif artist_name_lower in potential_lower:
-                        # artist is substring of potential - check it's significant
-                        if len(artist_name_lower) >= len(potential_lower) * 0.6:
-                            logger.debug(
-                                f"Detected artist '{artist_name}' from title: '{title}'"
-                            )
-                            return artist_name, potential_title
-
+                matched_artist = self._match_artist_name(artists, potential_artist)
+                if matched_artist:
+                    logger.debug(
+                        f"Detected artist '{matched_artist}' from title: '{title}'"
+                    )
+                    return matched_artist, potential_title
             except Exception as e:
                 logger.debug(f"Artist detection query failed: {e}")
                 continue
 
+        return None
+
+    def _candidate_artist_title_splits(self, words: list[str]) -> list[tuple[str, str]]:
+        candidates: list[tuple[str, str]] = []
+        for split_point in range(2, min(5, len(words))):
+            potential_artist = " ".join(words[:split_point])
+            potential_title = " ".join(words[split_point:])
+            if len(potential_title.split()) < 2:
+                continue
+            if len(potential_artist) < 5:
+                continue
+            candidates.append((potential_artist, potential_title))
+        return candidates
+
+    def _match_artist_name(
+        self, artists: list[dict], potential_artist: str
+    ) -> Optional[str]:
+        potential_lower = potential_artist.lower()
+        for artist in artists:
+            artist_name = artist.get("name", "")
+            artist_name_lower = artist_name.lower()
+            if artist_name_lower == potential_lower:
+                return artist_name
+            if potential_lower in artist_name_lower:
+                if len(potential_lower) >= len(artist_name_lower) * 0.6:
+                    return artist_name
+                continue
+            if artist_name_lower in potential_lower:
+                if len(artist_name_lower) >= len(potential_lower) * 0.6:
+                    return artist_name
         return None
