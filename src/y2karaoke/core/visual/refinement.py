@@ -140,21 +140,16 @@ from .refinement_trace import (
 logger = logging.getLogger(__name__)
 
 
-def _trace_refinement_snapshot(
-    label: str, jobs: List[Tuple[TargetLine, float, float]]
-) -> None:
-    _trace_refinement_snapshot_impl(label, jobs)
+_trace_refinement_snapshot = _trace_refinement_snapshot_impl
 
 
 _MAX_MERGED_WINDOW_SEC = 20.0
 
 
-def _word_fill_mask(roi_bgr: np.ndarray, c_bg: np.ndarray) -> np.ndarray:
-    return _word_fill_mask_impl(roi_bgr, c_bg)
+_word_fill_mask = _word_fill_mask_impl
 
 
-def _line_fill_mask(roi_bgr: np.ndarray, c_bg: np.ndarray) -> np.ndarray:
-    return _line_fill_mask_impl(roi_bgr, c_bg)
+_line_fill_mask = _line_fill_mask_impl
 
 
 def _detect_highlight_times(
@@ -166,10 +161,7 @@ def _detect_highlight_times(
     )
 
 
-def _detect_highlight_with_confidence(
-    word_vals: List[Dict[str, Any]],
-) -> Tuple[Optional[float], Optional[float], float]:
-    return _detect_highlight_with_confidence_impl(word_vals)
+_detect_highlight_with_confidence = _detect_highlight_with_confidence_impl
 
 
 def _build_line_refinement_jobs(
@@ -185,12 +177,7 @@ def _build_line_refinement_jobs(
     )
 
 
-def _detect_sustained_onset(
-    vals: List[Dict[str, Any]],
-    *,
-    min_start_time: Optional[float] = None,
-) -> Tuple[Optional[float], float]:
-    return _detect_sustained_onset_impl(vals, min_start_time=min_start_time)
+_detect_sustained_onset = _detect_sustained_onset_impl
 
 
 def _detect_line_highlight_cycle(
@@ -219,51 +206,13 @@ def _merge_line_refinement_jobs(
     )
 
 
-def _read_window_frames(
-    cap: Any,
-    *,
-    v_start: float,
-    v_end: float,
-    roi_rect: tuple[int, int, int, int],
-) -> List[Tuple[float, np.ndarray, np.ndarray]]:
-    return _read_window_frames_impl(
-        cap,
-        v_start=v_start,
-        v_end=v_end,
-        roi_rect=roi_rect,
-    )
+_read_window_frames = _read_window_frames_impl
 
 
-def _read_window_frames_sampled(
-    cap: Any,
-    *,
-    v_start: float,
-    v_end: float,
-    roi_rect: tuple[int, int, int, int],
-    sample_fps: float,
-) -> List[Tuple[float, np.ndarray, np.ndarray]]:
-    return _read_window_frames_sampled_impl(
-        cap,
-        v_start=v_start,
-        v_end=v_end,
-        roi_rect=roi_rect,
-        sample_fps=sample_fps,
-    )
+_read_window_frames_sampled = _read_window_frames_sampled_impl
 
 
-def _slice_frames_for_window(
-    group_frames: List[Tuple[float, np.ndarray, np.ndarray]],
-    group_times: List[float],
-    *,
-    v_start: float,
-    v_end: float,
-) -> List[Tuple[float, np.ndarray, np.ndarray]]:
-    return _slice_frames_for_window_impl(
-        group_frames,
-        group_times,
-        v_start=v_start,
-        v_end=v_end,
-    )
+_slice_frames_for_window = _slice_frames_for_window_impl
 
 
 def _collect_line_color_values(
@@ -279,16 +228,12 @@ def _collect_line_color_values(
     )
 
 
-def _estimate_onset_from_visibility_progress(
-    vals: List[Dict[str, Any]],
-) -> Tuple[Optional[float], float]:
-    return _estimate_onset_from_visibility_progress_impl(vals)
+_estimate_onset_from_visibility_progress = _estimate_onset_from_visibility_progress_impl
 
 
-def _estimate_onset_from_visibility_derivative(
-    vals: List[Dict[str, Any]],
-) -> Tuple[Optional[float], float]:
-    return _estimate_onset_from_visibility_derivative_impl(vals)
+_estimate_onset_from_visibility_derivative = (
+    _estimate_onset_from_visibility_derivative_impl
+)
 
 
 def _apply_persistent_block_highlight_order(
@@ -320,14 +265,10 @@ def _assign_cluster_persistent_onsets(
     )
 
 
-def _select_persistent_overlap_lines(candidates: List[TargetLine]) -> List[TargetLine]:
-    return _select_persistent_overlap_lines_impl(candidates)
+_select_persistent_overlap_lines = _select_persistent_overlap_lines_impl
 
 
-def _cluster_persistent_lines_by_visibility(
-    lines: List[TargetLine],
-) -> List[List[TargetLine]]:
-    return _cluster_persistent_lines_by_visibility_impl(lines)
+_cluster_persistent_lines_by_visibility = _cluster_persistent_lines_by_visibility_impl
 
 
 def _collect_persistent_block_onset_candidates(
@@ -406,22 +347,10 @@ def _detect_line_highlight_with_confidence(
     )
 
 
-def _assign_line_level_word_timings(
-    ln: TargetLine,
-    line_start: Optional[float],
-    line_end: Optional[float],
-    line_confidence: float,
-) -> None:
-    _assign_line_level_word_timings_impl(
-        ln,
-        line_start,
-        line_end,
-        line_confidence,
-    )
+_assign_line_level_word_timings = _assign_line_level_word_timings_impl
 
 
-def _line_has_assigned_word_timing(ln: TargetLine) -> bool:
-    return _line_has_assigned_word_timing_impl(ln)
+_line_has_assigned_word_timing = _line_has_assigned_word_timing_impl
 
 
 def _is_block_first_multi_cycle_line(ln: TargetLine) -> bool:
