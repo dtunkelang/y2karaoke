@@ -190,48 +190,19 @@ def split_block_on_row_text_phase_changes(  # noqa: C901
     if not (2 <= len(rows) <= 5):
         return [block_frames]
 
-    top = rows[0]
-    by_variant: dict[str, list[float]] = collections.defaultdict(list)
-    for obs in top.observations:
-        norm = normalize_text_basic(str(obs.text))
-        if norm:
-            by_variant[norm].append(float(obs.time))
-    if len(by_variant) < 2:
+    phase = _top_row_phase_summary(block_frames, rows=rows, min_count_ratio=0.18)
+    if phase is None:
         return [block_frames]
 
-    variants = sorted(by_variant.items(), key=lambda kv: len(kv[1]), reverse=True)
-    (v1, ts1), (v2, ts2) = variants[:2]
-    min_count = max(10, int(0.18 * len(block_frames)))
-    if len(ts1) < min_count or len(ts2) < min_count:
+    if not (
+        _is_suffix_variant_tokens(phase["tokens_a"], phase["tokens_b"])
+        or phase["similarity"] >= 0.8
+    ):
         return [block_frames]
 
-    t1_min, t1_max = min(ts1), max(ts1)
-    t2_min, t2_max = min(ts2), max(ts2)
-    if not (t1_max <= (t2_min + 0.2) or t2_max <= (t1_min + 0.2)):
+    if (phase["late_start"] - phase["early_end"]) < -0.1:
         return [block_frames]
-
-    toks1 = [t for t in v1.split() if t]
-    toks2 = [t for t in v2.split() if t]
-    if not toks1 or not toks2:
-        return [block_frames]
-
-    def _is_suffix_variant(a: list[str], b: list[str]) -> bool:
-        if len(a) == len(b):
-            return False
-        longer, shorter = (a, b) if len(a) > len(b) else (b, a)
-        if len(longer) - len(shorter) > 2:
-            return False
-        return longer[-len(shorter) :] == shorter
-
-    sim = SequenceMatcher(None, v1, v2).ratio()
-    if not (_is_suffix_variant(toks1, toks2) or sim >= 0.8):
-        return [block_frames]
-
-    early_end = t1_max if t1_max <= t2_min else t2_max
-    late_start = t2_min if t1_max <= t2_min else t1_min
-    if (late_start - early_end) < -0.1:
-        return [block_frames]
-    split_time = late_start - 0.02
+    split_time = phase["late_start"] - 0.02
     if not _has_selection_reset_near_time(block_frames, len(rows), split_time):
         return [block_frames]
 
@@ -307,6 +278,30 @@ def has_strong_top_row_phase_change(
     rows = cluster_rows_within_block_fn(block_frames)
     if not (2 <= len(rows) <= 5):
         return False
+    phase = _top_row_phase_summary(block_frames, rows=rows, min_count_ratio=0.15)
+    if phase is None:
+        return False
+    return (
+        _is_suffix_variant_tokens(phase["tokens_a"], phase["tokens_b"])
+        or phase["similarity"] >= 0.8
+    )
+
+
+def _is_suffix_variant_tokens(a: list[str], b: list[str]) -> bool:
+    if len(a) == len(b):
+        return False
+    longer, shorter = (a, b) if len(a) > len(b) else (b, a)
+    if len(longer) - len(shorter) > 2:
+        return False
+    return longer[-len(shorter) :] == shorter
+
+
+def _top_row_phase_summary(
+    block_frames: list[Any],
+    *,
+    rows: list[Any],
+    min_count_ratio: float,
+) -> Optional[dict[str, Any]]:
     top = rows[0]
     by_variant: dict[str, list[float]] = collections.defaultdict(list)
     for obs in top.observations:
@@ -314,35 +309,34 @@ def has_strong_top_row_phase_change(
         if norm:
             by_variant[norm].append(float(obs.time))
     if len(by_variant) < 2:
-        return False
+        return None
 
     variants = sorted(by_variant.items(), key=lambda kv: len(kv[1]), reverse=True)
     (v1, ts1), (v2, ts2) = variants[:2]
-    min_count = max(8, int(0.15 * len(block_frames)))
+    min_count = max(8, int(min_count_ratio * len(block_frames)))
     if len(ts1) < min_count or len(ts2) < min_count:
-        return False
+        return None
 
     t1_min, t1_max = min(ts1), max(ts1)
     t2_min, t2_max = min(ts2), max(ts2)
     disjoint_phases = t1_max <= (t2_min + 0.2) or t2_max <= (t1_min + 0.2)
     if not disjoint_phases:
-        return False
+        return None
 
     toks1 = [t for t in v1.split() if t]
     toks2 = [t for t in v2.split() if t]
     if not toks1 or not toks2:
-        return False
+        return None
 
-    def _is_suffix_variant(a: list[str], b: list[str]) -> bool:
-        if len(a) == len(b):
-            return False
-        longer, shorter = (a, b) if len(a) > len(b) else (b, a)
-        if len(longer) - len(shorter) > 2:
-            return False
-        return longer[-len(shorter) :] == shorter
-
-    sim = SequenceMatcher(None, v1, v2).ratio()
-    return _is_suffix_variant(toks1, toks2) or sim >= 0.8
+    early_end = t1_max if t1_max <= t2_min else t2_max
+    late_start = t2_min if t1_max <= t2_min else t1_min
+    return {
+        "tokens_a": toks1,
+        "tokens_b": toks2,
+        "similarity": SequenceMatcher(None, v1, v2).ratio(),
+        "early_end": early_end,
+        "late_start": late_start,
+    }
 
 
 def _merge_adjacent_identical_row_blocks(
