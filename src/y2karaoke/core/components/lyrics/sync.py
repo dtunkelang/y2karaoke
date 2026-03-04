@@ -442,7 +442,7 @@ def _fetch_from_lyriq(
         )
 
 
-def fetch_lyrics_multi_source(  # noqa: C901
+def fetch_lyrics_multi_source(
     title: str,
     artist: str,
     synced_only: bool = True,
