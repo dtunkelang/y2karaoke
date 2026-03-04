@@ -4,7 +4,6 @@ Text utilities for slug generation, normalization, and karaoke-specific line cle
 These are general-purpose helpers used across the y2karaoke core modules.
 """
 
-import os
 import re
 from functools import lru_cache
 from typing import Any, List, Tuple
@@ -17,6 +16,18 @@ from .text_normalization_utils import (
 from .text_ocr_context import (
     contextual_ocr_token_replacement as _contextual_ocr_token_replacement_impl,
     regularize_short_chant_alternation as _regularize_short_chant_alternation_impl,
+)
+from .text_spell_utils import (
+    get_ocr_variants as _get_ocr_variants_impl,
+)
+from .text_spell_utils import (
+    is_correctly_spelled as _is_correctly_spelled_impl,
+)
+from .text_spell_utils import (
+    looks_ocr_suspicious as _looks_ocr_suspicious_impl,
+)
+from .text_spell_utils import (
+    visual_spell_correction_mode as _visual_spell_correction_mode_impl,
 )
 from .text_title_utils import (
     STOP_WORDS as _STOP_WORDS,
@@ -121,73 +132,11 @@ def canon_punct(text: str) -> str:
 
 
 def _is_correctly_spelled(word: str, checker: Any) -> bool:
-    """Check if a word is correctly spelled according to the checker."""
-    if not checker:
-        return True
-    # missed.length == 0 means it's correctly spelled
-    return checker.checkSpellingOfString_startingAt_(word, 0).length == 0
+    return _is_correctly_spelled_impl(word, checker)
 
 
 def _get_ocr_variants(word: str) -> list[str]:
-    """Generate potential corrections based on common OCR confusions.
-
-    Returns a deterministic BFS-ordered list (closest/simple rewrites first).
-    """
-    # (confusion, target) - we want to go from OCR error to real word
-    rules = [
-        ("rn", "m"),
-        ("in", "m"),
-        ("ni", "m"),
-        ("ri", "m"),
-        ("li", "h"),
-        ("ii", "h"),
-        ("vv", "w"),
-        ("cl", "d"),
-        ("ci", "d"),
-        ("ii", "ll"),
-        ("ai", "al"),
-        ("i", "m"),
-        ("m", "in"),
-        ("m", "rn"),
-        ("m", "ri"),
-        ("m", "ni"),
-        ("h", "li"),
-        ("d", "cl"),
-        ("l", "I"),
-        ("I", "l"),
-        ("0", "O"),
-        ("O", "0"),
-        ("ti", "th"),
-        ("nt", "m"),
-        ("t", "f"),
-        ("in", "m"),
-        ("v", "y"),
-        ("b", "m"),
-        ("ll", "n"),
-    ]
-
-    seed = word.lower()
-    seen = {seed}
-    variants = [seed]
-
-    # Try applying rules recursively up to a depth of 4 (breadth-first)
-    current_tier = [seed]
-    for _ in range(4):
-        next_tier: list[str] = []
-        for w in current_tier:
-            for conf, target in rules:
-                if conf in w:
-                    candidate = w.replace(conf, target)
-                    if candidate in seen:
-                        continue
-                    seen.add(candidate)
-                    next_tier.append(candidate)
-        if not next_tier:
-            break
-        variants.extend(next_tier)
-        current_tier = next_tier
-
-    return variants
+    return _get_ocr_variants_impl(word)
 
 
 def spell_correct(text: str) -> str:
@@ -197,34 +146,11 @@ def spell_correct(text: str) -> str:
 
 
 def _visual_spell_correction_mode() -> str:
-    mode = os.environ.get("Y2K_VISUAL_SPELL_CORRECTION_MODE", "").strip().lower()
-    if mode in {"full", "no-guesses", "off", "auto"}:
-        return mode
-    if os.environ.get("Y2K_VISUAL_DISABLE_SPELL_CORRECT", "0") == "1":
-        return "off"
-    if os.environ.get("Y2K_VISUAL_DISABLE_SPELL_GUESSES", "0") == "1":
-        return "no-guesses"
-    return "full"
+    return _visual_spell_correction_mode_impl()
 
 
 def _looks_ocr_suspicious(word: str) -> bool:
-    low = word.lower()
-    if len(low) < 3:
-        return False
-    if any(ch.isdigit() for ch in low) and any(ch.isalpha() for ch in low):
-        return True
-    if "|" in low:
-        return True
-    # Common OCR confusion clusters. Avoid overly common patterns like "in".
-    if any(cluster in low for cluster in ("vv", "ii")):
-        return True
-    if low.startswith(("rn", "ri", "ni")):
-        return True
-    # Many narrow glyphs often indicate OCR confusion (e.g. lI1 noise).
-    narrow_count = sum(1 for ch in low if ch in {"l", "i", "1"})
-    if len(low) >= 4 and narrow_count >= 3:
-        return True
-    return False
+    return _looks_ocr_suspicious_impl(word)
 
 
 @lru_cache(maxsize=4096)
