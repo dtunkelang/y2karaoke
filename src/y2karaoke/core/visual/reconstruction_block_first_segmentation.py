@@ -40,7 +40,7 @@ def frame_state_same_block(a: Any, b: Any) -> bool:
     return matches >= max(1, min_rows - 1) and (strong >= 1 or min_rows <= 2)
 
 
-def split_block_on_row_cycle_resets(  # noqa: C901
+def split_block_on_row_cycle_resets(
     block_frames: list[Any],
     *,
     cluster_rows_within_block_fn: Callable[[list[Any]], list[Any]],
