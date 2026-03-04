@@ -13,6 +13,52 @@ evaluate_timing = timing_evaluator_core.evaluate_timing
 logger = get_logger(__name__)
 
 
+def _score_with_duration_bonus(
+    *,
+    source_name: str,
+    report: TimingReport,
+    target_duration: Optional[int],
+    sources: Dict[str, Tuple[Optional[str], Optional[int]]],
+) -> tuple[float, Optional[float]]:
+    score = report.overall_score
+    duration_diff: Optional[float] = None
+    if not target_duration:
+        return score, duration_diff
+    _lrc_text, lrc_duration = sources.get(source_name, (None, None))
+    if not lrc_duration:
+        return score, duration_diff
+    duration_diff = abs(lrc_duration - target_duration)
+    if duration_diff <= 10:
+        score += 10
+    elif duration_diff <= 20:
+        score += 5
+    return score, duration_diff
+
+
+def _prefer_current_report_on_tie(
+    *,
+    current_report: TimingReport,
+    current_duration_diff: Optional[float],
+    best_report: Optional[TimingReport],
+    best_duration_diff: Optional[float],
+) -> bool:
+    if current_duration_diff is not None and best_duration_diff is not None:
+        return current_duration_diff < best_duration_diff
+    if current_duration_diff is not None and best_duration_diff is None:
+        return True
+    if current_duration_diff is None and best_duration_diff is not None:
+        return False
+    if current_duration_diff is None and best_duration_diff is None and best_report:
+        best_alignment = (
+            best_report.line_alignment_score + best_report.pause_alignment_score
+        )
+        current_alignment = (
+            current_report.line_alignment_score + current_report.pause_alignment_score
+        )
+        return current_alignment > best_alignment
+    return False
+
+
 def compare_sources(
     title: str,
     artist: str,
@@ -119,45 +165,30 @@ def select_best_source(
     sources = fetch_from_all_sources(title, artist)
 
     for source_name, report in reports.items():
-        score = report.overall_score
-        duration_diff = None
-
-        # Bonus for matching target duration
-        if target_duration:
-            lrc_text, lrc_duration = sources.get(source_name, (None, None))
-            if lrc_duration:
-                duration_diff = abs(lrc_duration - target_duration)
-                if duration_diff <= 10:
-                    score += 10
-                elif duration_diff <= 20:
-                    score += 5
+        score, duration_diff = _score_with_duration_bonus(
+            source_name=source_name,
+            report=report,
+            target_duration=target_duration,
+            sources=sources,
+        )
 
         if score > best_score:
             best_score = score
             best_source = source_name
             best_report = report
             best_duration_diff = duration_diff
-        elif score == best_score:
-            if duration_diff is not None and best_duration_diff is not None:
-                if duration_diff < best_duration_diff:
-                    best_source = source_name
-                    best_report = report
-                    best_duration_diff = duration_diff
-            elif duration_diff is not None and best_duration_diff is None:
-                best_source = source_name
-                best_report = report
-                best_duration_diff = duration_diff
-            elif duration_diff is None and best_duration_diff is None and best_report:
-                best_alignment = (
-                    best_report.line_alignment_score + best_report.pause_alignment_score
-                )
-                current_alignment = (
-                    report.line_alignment_score + report.pause_alignment_score
-                )
-                if current_alignment > best_alignment:
-                    best_source = source_name
-                    best_report = report
-                    best_duration_diff = duration_diff
+            continue
+        if score != best_score:
+            continue
+        if _prefer_current_report_on_tie(
+            current_report=report,
+            current_duration_diff=duration_diff,
+            best_report=best_report,
+            best_duration_diff=best_duration_diff,
+        ):
+            best_source = source_name
+            best_report = report
+            best_duration_diff = duration_diff
 
     if best_source and best_source in sources:
         lrc_text, _ = sources[best_source]
