@@ -166,6 +166,53 @@ def parse_genius_html(
 # ----------------------
 # Main lyrics fetching
 # ----------------------
+def _candidate_genius_urls(*, artist_slug: str, title_slug: str) -> List[str]:
+    return [
+        f"https://genius.com/{artist_slug}-{title_slug}-lyrics",
+        f"https://genius.com/{title_slug}-lyrics",
+        f"https://genius.com/Genius-romanizations-{artist_slug}-{title_slug}-romanized-lyrics",
+    ]
+
+
+def _is_valid_genius_song_url(url: Optional[str]) -> bool:
+    return bool(
+        url
+        and url.endswith("-lyrics")
+        and "/artists/" not in url
+        and "translation" not in url.lower()
+    )
+
+
+def _resolve_genius_url_from_candidates(
+    candidate_urls: List[str], headers: dict
+) -> Optional[str]:
+    for url in candidate_urls:
+        html = fetch_html(url, headers=headers, timeout=5)
+        if html and "translation" not in url.lower():
+            return url
+    return None
+
+
+def _resolve_genius_url_from_search(
+    *, artist: str, cleaned_title: str, headers: dict
+) -> Optional[str]:
+    search_queries = [f"{artist} {cleaned_title}", f"{cleaned_title} {artist}"]
+    for query in search_queries:
+        api_url = f"https://genius.com/api/search/song?per_page=2&q={query.replace(' ', '%20')}"
+        data = fetch_json(api_url, headers=headers, timeout=5)
+        if not data:
+            continue
+        sections = data.get("response", {}).get("sections", [])
+        for section in sections:
+            if section.get("type") != "song":
+                continue
+            for hit in section.get("hits", []):
+                result = hit.get("result", {})
+                if _is_valid_genius_song_url(result.get("url")):
+                    return result.get("url")
+    return None
+
+
 def fetch_genius_lyrics_with_singers(
     title: str, artist: str
 ) -> Tuple[Optional[List[Tuple[str, str]]], Optional[SongMetadata]]:
@@ -188,48 +235,18 @@ def fetch_genius_lyrics_with_singers(
     artist_slug = make_slug(artist)
     title_slug = make_slug(cleaned_title)
 
-    candidate_urls = [
-        f"https://genius.com/{artist_slug}-{title_slug}-lyrics",
-        f"https://genius.com/{title_slug}-lyrics",
-        f"https://genius.com/Genius-romanizations-{artist_slug}-{title_slug}-romanized-lyrics",
-    ]
+    candidate_urls = _candidate_genius_urls(
+        artist_slug=artist_slug, title_slug=title_slug
+    )
 
     # Try candidate URLs first (short timeout, skip translations)
-    song_url = None
-    for url in candidate_urls:
-        html = fetch_html(url, headers=headers, timeout=5)  # 5s per request
-        if html and "translation" not in url.lower():
-            song_url = url
-            break
+    song_url = _resolve_genius_url_from_candidates(candidate_urls, headers)
 
     # Fallback: search API
     if not song_url:
-        search_queries = [f"{artist} {cleaned_title}", f"{cleaned_title} {artist}"]
-        for query in search_queries:
-            api_url = f"https://genius.com/api/search/song?per_page=2&q={query.replace(' ', '%20')}"
-            data = fetch_json(api_url, headers=headers, timeout=5)
-            if not data:
-                continue
-
-            sections = data.get("response", {}).get("sections", [])
-            for section in sections:
-                if section.get("type") != "song":
-                    continue
-                for hit in section.get("hits", []):
-                    result = hit.get("result", {})
-                    url = result.get("url")
-                    if (
-                        url
-                        and url.endswith("-lyrics")
-                        and "/artists/" not in url
-                        and "translation" not in url.lower()
-                    ):
-                        song_url = url
-                        break
-                if song_url:
-                    break
-            if song_url:
-                break
+        song_url = _resolve_genius_url_from_search(
+            artist=artist, cleaned_title=cleaned_title, headers=headers
+        )
 
     if not song_url:
         logger.warning(f"Failed to resolve Genius URL for {title} {artist}")
