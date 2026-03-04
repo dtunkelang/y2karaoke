@@ -46,20 +46,53 @@ def split_block_on_row_cycle_resets(  # noqa: C901
     cluster_rows_within_block_fn: Callable[[list[Any]], list[Any]],
     choose_canonical_observation_fn: Callable[[Any], Any],
 ) -> list[list[Any]]:
+    split_inputs = _prepare_cycle_reset_split_inputs(block_frames)
+    if split_inputs is None:
+        return [block_frames]
+
+    duration, stable_count, stable_frames_with_rows, row_minmax = split_inputs
+    seq = _build_normalized_row_brightness_sequence(
+        stable_frames_with_rows=stable_frames_with_rows,
+        row_minmax=row_minmax,
+    )
+    if len(seq) < 12:
+        return [block_frames]
+
+    split_frame_idxs = _detect_cycle_reset_split_indices(
+        block_frames=block_frames,
+        seq=seq,
+        stable_count=stable_count,
+        duration=duration,
+        cluster_rows_within_block_fn=cluster_rows_within_block_fn,
+    )
+    if not split_frame_idxs:
+        return [block_frames]
+
+    out = _split_frames_at_indices(block_frames, split_frame_idxs)
+    return _merge_adjacent_identical_row_blocks(
+        out,
+        cluster_rows_within_block_fn=cluster_rows_within_block_fn,
+        choose_canonical_observation_fn=choose_canonical_observation_fn,
+    )
+
+
+def _prepare_cycle_reset_split_inputs(
+    block_frames: list[Any],
+) -> Optional[tuple[float, int, list[tuple[int, Any]], list[tuple[float, float]]]]:
     duration = float(block_frames[-1].time) - float(block_frames[0].time)
     if len(block_frames) < 20 or duration < 6.5:
-        return [block_frames]
+        return None
 
     row_counts = [len(fr.rows) for fr in block_frames if fr.rows]
     if not row_counts:
-        return [block_frames]
+        return None
     stable_count, stable_frames = collections.Counter(row_counts).most_common(1)[0]
     if (
         stable_count < 3
         or stable_count > 5
         or stable_frames < int(0.7 * len(row_counts))
     ):
-        return [block_frames]
+        return None
 
     stable_row_brightness: list[list[float]] = [[] for _ in range(stable_count)]
     stable_frames_with_rows: list[tuple[int, Any]] = []
@@ -78,7 +111,14 @@ def split_block_on_row_cycle_resets(  # noqa: C901
         mn = min(vals)
         mx = max(vals)
         row_minmax.append((mn, mx if mx > mn else mn + 1.0))
+    return duration, stable_count, stable_frames_with_rows, row_minmax
 
+
+def _build_normalized_row_brightness_sequence(
+    *,
+    stable_frames_with_rows: list[tuple[int, Any]],
+    row_minmax: list[tuple[float, float]],
+) -> list[tuple[int, float, int, float, float]]:
     seq: list[tuple[int, float, int, float, float]] = []
     for i, fr in stable_frames_with_rows:
         b_vals = [float(r.brightness) for r in fr.rows]
@@ -94,10 +134,17 @@ def split_block_on_row_cycle_resets(  # noqa: C901
             continue
         best_idx = max(range(len(fr.rows)), key=lambda idx: (norm_vals[idx], -idx))
         seq.append((i, float(fr.time), best_idx, max_norm, sum(norm_vals)))
+    return seq
 
-    if len(seq) < 12:
-        return [block_frames]
 
+def _detect_cycle_reset_split_indices(
+    *,
+    block_frames: list[Any],
+    seq: list[tuple[int, float, int, float, float]],
+    stable_count: int,
+    duration: float,
+    cluster_rows_within_block_fn: Callable[[list[Any]], list[Any]],
+) -> list[int]:
     split_frame_idxs: list[int] = []
     seg_start_seq = 0
     seen_max_idx = -1
@@ -120,7 +167,7 @@ def split_block_on_row_cycle_resets(  # noqa: C901
         block_frames,
         cluster_rows_within_block_fn=cluster_rows_within_block_fn,
     ):
-        return [block_frames]
+        return []
     min_events_before_split = 5 if duration < 8.5 else 8
     min_peak_for_reset = max(0.8, 0.25 * stable_count) if short_block_mode else 0.0
 
@@ -153,10 +200,12 @@ def split_block_on_row_cycle_resets(  # noqa: C901
             last_split_time = t
             seg_peak_sum = float(sum_norm)
         prev_idx = idx
+    return split_frame_idxs
 
-    if not split_frame_idxs:
-        return [block_frames]
 
+def _split_frames_at_indices(
+    block_frames: list[Any], split_frame_idxs: list[int]
+) -> list[list[Any]]:
     out: list[list[Any]] = []
     start = 0
     for cut in split_frame_idxs:
@@ -167,12 +216,7 @@ def split_block_on_row_cycle_resets(  # noqa: C901
     tail = block_frames[start:]
     if len(tail) >= 2:
         out.append(tail)
-    out = out or [block_frames]
-    return _merge_adjacent_identical_row_blocks(
-        out,
-        cluster_rows_within_block_fn=cluster_rows_within_block_fn,
-        choose_canonical_observation_fn=choose_canonical_observation_fn,
-    )
+    return out or [block_frames]
 
 
 def split_block_on_row_text_phase_changes(  # noqa: C901
