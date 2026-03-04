@@ -49,6 +49,67 @@ def cluster_unresolved_visibility_lines(
     return clusters
 
 
+def _cluster_visibility_span(cluster: List[TargetLine]) -> tuple[float, float, float]:
+    block_start = min(
+        float(ln.visibility_start) for ln in cluster if ln.visibility_start is not None
+    )
+    block_end = max(
+        float(ln.visibility_end) for ln in cluster if ln.visibility_end is not None
+    )
+    return block_start, block_end, block_end - block_start
+
+
+def _find_previous_end_floor(
+    line_order: List[TargetLine],
+    *,
+    first_pos: int,
+    line_end_fn: Callable[[TargetLine], Optional[float]],
+) -> Optional[float]:
+    for i in range(first_pos - 1, -1, -1):
+        prev_e = line_end_fn(line_order[i])
+        if prev_e is not None:
+            return prev_e
+    return None
+
+
+def _first_non_null_start(
+    cluster: List[TargetLine],
+    *,
+    line_start_fn: Callable[[TargetLine], Optional[float]],
+    skip_first: bool = True,
+) -> Optional[float]:
+    seq = cluster[1:] if skip_first else cluster
+    for ln in seq:
+        start = line_start_fn(ln)
+        if start is not None:
+            return start
+    return None
+
+
+def _retime_first_cluster_line(
+    first: TargetLine,
+    *,
+    anchor: float,
+    first_start: float,
+    next_start: Optional[float],
+    line_end_fn: Callable[[TargetLine], Optional[float]],
+    assign_line_level_word_timings_fn: Callable[
+        [TargetLine, Optional[float], Optional[float], float], None
+    ],
+) -> None:
+    old_end = line_end_fn(first)
+    old_dur = (
+        (old_end - first_start)
+        if (old_end is not None)
+        else max(0.8, 0.25 * len(first.words))
+    )
+    new_end = anchor + old_dur
+    if next_start is not None:
+        new_end = min(new_end, next_start - 0.15)
+    new_end = max(new_end, anchor + 0.7)
+    assign_line_level_word_timings_fn(first, anchor, new_end, 0.45)
+
+
 def retime_late_first_lines_in_shared_visibility_blocks(
     g_jobs: List[Tuple[TargetLine, float, float]],
     *,
@@ -77,27 +138,16 @@ def retime_late_first_lines_in_shared_visibility_blocks(
         first_start = line_start_fn(first)
         if first_start is None:
             continue
-        block_start = min(
-            float(ln.visibility_start)
-            for ln in cluster
-            if ln.visibility_start is not None
-        )
-        block_end = max(
-            float(ln.visibility_end) for ln in cluster if ln.visibility_end is not None
-        )
-        span = block_end - block_start
+        block_start, _block_end, span = _cluster_visibility_span(cluster)
         if span > 16.0:
             continue
         if first_start <= block_start + 1.5:
             continue
 
         first_pos = pos.get(id(first), 10**9)
-        prev_floor: Optional[float] = None
-        for i in range(first_pos - 1, -1, -1):
-            prev_e = line_end_fn(line_order[i])
-            if prev_e is not None:
-                prev_floor = prev_e
-                break
+        prev_floor = _find_previous_end_floor(
+            line_order, first_pos=first_pos, line_end_fn=line_end_fn
+        )
         if prev_floor is None:
             continue
         if prev_floor < block_start - 4.0:
@@ -111,24 +161,15 @@ def retime_late_first_lines_in_shared_visibility_blocks(
         if anchor >= first_start - 0.2:
             continue
 
-        next_start: Optional[float] = None
-        for ln in cluster[1:]:
-            ns = line_start_fn(ln)
-            if ns is not None:
-                next_start = ns
-                break
-
-        old_end = line_end_fn(first)
-        old_dur = (
-            (old_end - first_start)
-            if (old_end is not None)
-            else max(0.8, 0.25 * len(first.words))
+        next_start = _first_non_null_start(cluster, line_start_fn=line_start_fn)
+        _retime_first_cluster_line(
+            first,
+            anchor=anchor,
+            first_start=first_start,
+            next_start=next_start,
+            line_end_fn=line_end_fn,
+            assign_line_level_word_timings_fn=assign_line_level_word_timings_fn,
         )
-        new_end = anchor + old_dur
-        if next_start is not None:
-            new_end = min(new_end, next_start - 0.15)
-        new_end = max(new_end, anchor + 0.7)
-        assign_line_level_word_timings_fn(first, anchor, new_end, 0.45)
 
 
 def retime_compressed_shared_visibility_blocks(  # noqa: C901
