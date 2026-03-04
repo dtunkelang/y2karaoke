@@ -126,6 +126,94 @@ def _line_center_height(h_vals: list[int], cy_vals: list[float]) -> tuple[float,
     return line_cy, max(p80_h, med_h)
 
 
+def _expanded_line_box_bounds(
+    line_box: dict[str, Any], *, roi_w: int, roi_h: int
+) -> tuple[int, int, int, int, int, int] | None:
+    x0 = int(line_box.get("x", 0))
+    y0 = int(line_box.get("y", 0))
+    w = int(line_box.get("w", 1))
+    h = int(line_box.get("h", 1))
+    x1 = x0 + max(1, w)
+    y1 = y0 + max(1, h)
+    sx0 = max(0, x0 - 10)
+    sy0 = max(0, y0 - 8)
+    sx1 = min(roi_w, x1 + 10)
+    sy1 = min(roi_h, y1 + 8)
+    if sx1 <= sx0 or sy1 <= sy0:
+        return None
+    return sx0, sy0, sx1, sy1, w, h
+
+
+def _ink_mask(sub: Any) -> Any | None:
+    _, otsu = cv2.threshold(sub, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+    fixed = (sub >= 45).astype(np.uint8) * 255
+    mask = np.where((otsu > 0) | (fixed > 0), 1, 0).astype(np.uint8)
+    mask = cv2.morphologyEx(
+        mask, cv2.MORPH_OPEN, np.ones((2, 2), dtype=np.uint8)
+    ).astype(np.uint8)
+    if int(mask.sum()) <= 0:
+        return None
+    return mask
+
+
+def _active_rows(mask: Any, *, width: int) -> Any | None:
+    row_counts = mask.sum(axis=1)
+    row_gate = max(2, int(round(width * 0.012)))
+    active = np.where(row_counts >= row_gate)[0]
+    if active.size == 0:
+        active = np.where(row_counts > 0)[0]
+    if active.size == 0:
+        return None
+    return active
+
+
+def _best_row_run(active_rows: Any, *, center_row: int) -> tuple[int, int]:
+    splits = np.where(np.diff(active_rows) > 1)[0] + 1
+    runs = np.split(active_rows, splits)
+    best = runs[0]
+    best_dist = float("inf")
+    for run in runs:
+        lo, hi = int(run[0]), int(run[-1])
+        if lo <= center_row <= hi:
+            return lo, hi + 1
+        mid = (lo + hi) * 0.5
+        dist = abs(mid - center_row)
+        if dist < best_dist:
+            best_dist = dist
+            best = run
+    return int(best[0]), int(best[-1]) + 1
+
+
+def _refined_box_from_band(
+    *,
+    band: Any,
+    sx0: int,
+    sy0: int,
+    ry0: int,
+    ry1: int,
+    roi_w: int,
+    roi_h: int,
+    base_w: int,
+    base_h: int,
+) -> tuple[int, int, int, int] | None:
+    if band.size == 0 or int(band.sum()) <= 0:
+        return None
+    _, xs = np.where(band > 0)
+    if xs.size == 0:
+        return None
+    tx0 = max(0, sx0 + int(xs.min()) - 2)
+    tx1 = min(roi_w, sx0 + int(xs.max()) + 3)
+    ty0 = max(0, sy0 + ry0 - 2)
+    ty1 = min(roi_h, sy0 + ry1 + 4)
+    tw = max(1, tx1 - tx0)
+    th = max(1, ty1 - ty0)
+    if tw < int(0.35 * base_w) or tw > int(2.4 * base_w):
+        return None
+    if th < int(0.5 * base_h) or th > int(2.0 * base_h):
+        return None
+    return tx0, ty0, tw, th
+
+
 def refine_line_box_with_text_mask(
     line_box: dict[str, Any],
     *,
@@ -138,78 +226,39 @@ def refine_line_box_with_text_mask(
         return line_box
 
     rh, rw = int(roi_gray.shape[0]), int(roi_gray.shape[1])
-    x0 = int(line_box.get("x", 0))
-    y0 = int(line_box.get("y", 0))
-    w = int(line_box.get("w", 1))
-    h = int(line_box.get("h", 1))
-    x1 = x0 + max(1, w)
-    y1 = y0 + max(1, h)
-
-    sx0 = max(0, x0 - 10)
-    sy0 = max(0, y0 - 8)
-    sx1 = min(rw, x1 + 10)
-    sy1 = min(rh, y1 + 8)
-    if sx1 <= sx0 or sy1 <= sy0:
+    expanded = _expanded_line_box_bounds(line_box, roi_w=rw, roi_h=rh)
+    if expanded is None:
         return line_box
+    sx0, sy0, sx1, sy1, base_w, base_h = expanded
 
     sub = roi_gray[sy0:sy1, sx0:sx1]
     if sub.size == 0:
         return line_box
 
-    _, otsu = cv2.threshold(sub, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
-    fixed = (sub >= 45).astype(np.uint8) * 255
-    mask = np.where((otsu > 0) | (fixed > 0), 1, 0).astype(np.uint8)
-    mask = cv2.morphologyEx(
-        mask, cv2.MORPH_OPEN, np.ones((2, 2), dtype=np.uint8)
-    ).astype(np.uint8)
-    if int(mask.sum()) <= 0:
+    mask = _ink_mask(sub)
+    if mask is None:
         return line_box
 
-    row_counts = mask.sum(axis=1)
-    row_gate = max(2, int(round((sx1 - sx0) * 0.012)))
-    active_rows = np.where(row_counts >= row_gate)[0]
-    if active_rows.size == 0:
-        active_rows = np.where(row_counts > 0)[0]
-        if active_rows.size == 0:
-            return line_box
-
-    splits = np.where(np.diff(active_rows) > 1)[0] + 1
-    runs = np.split(active_rows, splits)
+    active_rows = _active_rows(mask, width=(sx1 - sx0))
+    if active_rows is None:
+        return line_box
     center_row = int(round(line_cy)) - sy0
-    best = runs[0]
-    best_dist = float("inf")
-    for run in runs:
-        lo, hi = int(run[0]), int(run[-1])
-        if lo <= center_row <= hi:
-            best = run
-            break
-        mid = (lo + hi) * 0.5
-        dist = abs(mid - center_row)
-        if dist < best_dist:
-            best_dist = dist
-            best = run
-
-    ry0 = int(best[0])
-    ry1 = int(best[-1]) + 1
+    ry0, ry1 = _best_row_run(active_rows, center_row=center_row)
     band = mask[ry0:ry1, :]
-    if band.size == 0 or int(band.sum()) <= 0:
+    refined = _refined_box_from_band(
+        band=band,
+        sx0=sx0,
+        sy0=sy0,
+        ry0=ry0,
+        ry1=ry1,
+        roi_w=rw,
+        roi_h=rh,
+        base_w=base_w,
+        base_h=base_h,
+    )
+    if refined is None:
         return line_box
-    ys, xs = np.where(band > 0)
-    if xs.size == 0:
-        return line_box
-
-    tx0 = max(0, sx0 + int(xs.min()) - 2)
-    tx1 = min(rw, sx0 + int(xs.max()) + 3)
-    ty0 = max(0, sy0 + ry0 - 2)
-    # Keep a slightly larger lower margin for descenders (g/j/p/q/y).
-    ty1 = min(rh, sy0 + ry1 + 4)
-    tw = max(1, tx1 - tx0)
-    th = max(1, ty1 - ty0)
-
-    if tw < int(0.35 * w) or tw > int(2.4 * w):
-        return line_box
-    if th < int(0.5 * h) or th > int(2.0 * h):
-        return line_box
+    tx0, ty0, tw, th = refined
 
     return {
         "x": tx0,
