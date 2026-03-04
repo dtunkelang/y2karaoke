@@ -409,6 +409,123 @@ def _stagger_equal_onsets(
     return adjusted
 
 
+def _build_cycle_specs(
+    bframes: list[_FrameState],
+    rows: list[_BlockRow],
+    *,
+    block_start: float,
+    block_end: float,
+) -> list[tuple[float, float, list[tuple[float, float]]]]:
+    cycle_windows = _estimate_cycle_row_windows_from_block(bframes, rows)
+    if cycle_windows:
+        return cycle_windows
+    return [
+        (
+            block_start,
+            block_end,
+            _estimate_row_windows_from_block(bframes, rows) or [],
+        )
+    ]
+
+
+def _build_row_specs_for_cycle(
+    rows: list[_BlockRow],
+    *,
+    cycle_start: float,
+    cycle_end: float,
+    row_windows: list[tuple[float, float]],
+) -> list[tuple[_BlockRow, _FrameRow, float]]:
+    row_specs: list[tuple[_BlockRow, _FrameRow, float]] = []
+    for row_order, cluster in enumerate(rows):
+        cycle_cluster = _slice_cluster_observations_for_cycle(
+            cluster, cycle_start, cycle_end
+        )
+        cand = _choose_canonical_observation(cycle_cluster)
+        onset = (
+            row_windows[row_order][0]
+            if row_windows and row_order < len(row_windows)
+            else _row_onset_time(cycle_cluster, cycle_start)
+        )
+        row_specs.append((cycle_cluster, cand, onset))
+    row_specs.sort(key=lambda item: item[0].y)
+    return row_specs
+
+
+def _compute_adjusted_row_starts(
+    row_specs: list[tuple[_BlockRow, _FrameRow, float]],
+    *,
+    cycle_start: float,
+) -> list[float]:
+    staged_onsets = _stagger_equal_onsets(row_specs)
+    adjusted_starts: list[float] = []
+    prev = cycle_start - 0.05
+    for idx, (_cluster, _cand, onset) in enumerate(row_specs):
+        onset = staged_onsets[idx] if idx < len(staged_onsets) else onset
+        s = max(onset, prev + 0.05)
+        adjusted_starts.append(s)
+        prev = s
+    return adjusted_starts
+
+
+def _append_cycle_target_lines(
+    out: list[TargetLine],
+    *,
+    row_specs: list[tuple[_BlockRow, _FrameRow, float]],
+    adjusted_starts: list[float],
+    row_windows: list[tuple[float, float]],
+    line_index_start: int,
+    block_id: int,
+    cycle_idx: int,
+    cycle_specs_count: int,
+    bframes: list[_FrameState],
+    cycle_end: float,
+    next_block_start: Optional[float],
+    snap_fn: SnapFn,
+) -> int:
+    line_index = line_index_start
+    for row_order, ((cluster, cand, _onset), s) in enumerate(
+        zip(row_specs, adjusted_starts)
+    ):
+        next_start = (
+            adjusted_starts[row_order + 1]
+            if row_order + 1 < len(adjusted_starts)
+            else (cycle_end + 0.8)
+        )
+        observed_end = _row_offset_time(cluster, cycle_end, s)
+        if row_windows and row_order < len(row_windows):
+            observed_end = row_windows[row_order][1]
+        e_cap = cycle_end + 0.8
+        if cycle_idx == cycle_specs_count - 1 and next_block_start is not None:
+            e_cap = min(e_cap, next_block_start - 0.02)
+        e = max(s + 0.2, min(e_cap, min(observed_end, next_start)))
+        meta = {
+            "block_first": {
+                "block_id": block_id,
+                "row_order": row_order,
+                "row_y": round(float(cluster.y), 1),
+                "frame_block_size": len(bframes),
+                "cycle_index": cycle_idx,
+                "cycle_count": cycle_specs_count,
+            }
+        }
+        out.append(
+            TargetLine(
+                line_index=line_index,
+                start=snap_fn(s),
+                end=snap_fn(e),
+                text=cand.text,
+                words=list(cand.words),
+                y=float(cluster.y),
+                word_rois=list(cand.w_rois),
+                visibility_start=float(bframes[0].time),
+                visibility_end=float(bframes[-1].time),
+                reconstruction_meta=meta,
+            )
+        )
+        line_index += 1
+    return line_index
+
+
 def reconstruct_lyrics_from_visuals_block_first_frames(
     raw_frames: list[dict[str, Any]],
     *,
@@ -436,83 +553,36 @@ def reconstruct_lyrics_from_visuals_block_first_frames(
         rows = _merge_suffix_fragment_rows(rows)
         if not rows:
             continue
-        cycle_windows = _estimate_cycle_row_windows_from_block(bframes, rows)
-        cycle_specs = (
-            cycle_windows
-            if cycle_windows
-            else [
-                (
-                    block_start,
-                    block_end,
-                    _estimate_row_windows_from_block(bframes, rows) or [],
-                )
-            ]
+        cycle_specs = _build_cycle_specs(
+            bframes,
+            rows,
+            block_start=block_start,
+            block_end=block_end,
         )
 
         for cycle_idx, (cycle_start, cycle_end, row_windows) in enumerate(cycle_specs):
-            row_specs: list[tuple[_BlockRow, _FrameRow, float]] = []
-            for row_order, cluster in enumerate(rows):
-                cycle_cluster = _slice_cluster_observations_for_cycle(
-                    cluster, cycle_start, cycle_end
-                )
-                cand = _choose_canonical_observation(cycle_cluster)
-                onset = (
-                    row_windows[row_order][0]
-                    if row_windows and row_order < len(row_windows)
-                    else _row_onset_time(cycle_cluster, cycle_start)
-                )
-                row_specs.append((cycle_cluster, cand, onset))
-
-            # Enforce monotonic row starts in top-to-bottom order.
-            row_specs.sort(key=lambda item: item[0].y)
-            staged_onsets = _stagger_equal_onsets(row_specs)
-            adjusted_starts: list[float] = []
-            prev = cycle_start - 0.05
-            for idx2, (_cluster, _cand, onset) in enumerate(row_specs):
-                onset = staged_onsets[idx2] if idx2 < len(staged_onsets) else onset
-                s = max(onset, prev + 0.05)
-                adjusted_starts.append(s)
-                prev = s
-
-            for row_order, ((cluster, cand, _onset), s) in enumerate(
-                zip(row_specs, adjusted_starts)
-            ):
-                next_start = (
-                    adjusted_starts[row_order + 1]
-                    if row_order + 1 < len(adjusted_starts)
-                    else (cycle_end + 0.8)
-                )
-                observed_end = _row_offset_time(cluster, cycle_end, s)
-                if row_windows and row_order < len(row_windows):
-                    observed_end = row_windows[row_order][1]
-                e_cap = cycle_end + 0.8
-                if cycle_idx == len(cycle_specs) - 1 and next_block_start is not None:
-                    e_cap = min(e_cap, next_block_start - 0.02)
-                e = max(s + 0.2, min(e_cap, min(observed_end, next_start)))
-                meta = {
-                    "block_first": {
-                        "block_id": block_id,
-                        "row_order": row_order,
-                        "row_y": round(float(cluster.y), 1),
-                        "frame_block_size": len(bframes),
-                        "cycle_index": cycle_idx,
-                        "cycle_count": len(cycle_specs),
-                    }
-                }
-                out.append(
-                    TargetLine(
-                        line_index=line_index,
-                        start=snap_fn(s),
-                        end=snap_fn(e),
-                        text=cand.text,
-                        words=list(cand.words),
-                        y=float(cluster.y),
-                        word_rois=list(cand.w_rois),
-                        visibility_start=float(block_start),
-                        visibility_end=float(block_end),
-                        reconstruction_meta=meta,
-                    )
-                )
-                line_index += 1
+            row_specs = _build_row_specs_for_cycle(
+                rows,
+                cycle_start=cycle_start,
+                cycle_end=cycle_end,
+                row_windows=row_windows,
+            )
+            adjusted_starts = _compute_adjusted_row_starts(
+                row_specs, cycle_start=cycle_start
+            )
+            line_index = _append_cycle_target_lines(
+                out,
+                row_specs=row_specs,
+                adjusted_starts=adjusted_starts,
+                row_windows=row_windows,
+                line_index_start=line_index,
+                block_id=block_id,
+                cycle_idx=cycle_idx,
+                cycle_specs_count=len(cycle_specs),
+                bframes=bframes,
+                cycle_end=cycle_end,
+                next_block_start=next_block_start,
+                snap_fn=snap_fn,
+            )
 
     return out
