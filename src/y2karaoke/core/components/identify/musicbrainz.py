@@ -342,64 +342,82 @@ class MusicBrainzClient(_Base):
         title_normalized = normalize_title(title_hint)
         title_normalized_no_stop = normalize_title(title_hint, remove_stopwords=True)
         query_words = set(title_hint.lower().split())
-        candidates = []
-
-        for rec in recordings:
-            title = rec.get("title", "")
-            length = rec.get("length")
-            if not length:
-                continue
-
-            duration_sec = int(length) // 1000
-            if duration_sec > 720:
-                continue
-
-            rec_title_normalized = normalize_title(title)
-            rec_title_no_stop = normalize_title(title, remove_stopwords=True)
-
-            if (
-                rec_title_normalized != title_normalized
-                and rec_title_no_stop != title_normalized_no_stop
-            ):
-                continue
-
-            artist_credits = rec.get("artist-credit", [])
-            artists = [a["artist"]["name"] for a in artist_credits if "artist" in a]
-            artist_name = " & ".join(artists) if artists else None
-
-            if not artist_name:
-                continue
-
-            if self._is_likely_cover_recording(title, artist_name, query_words):
-                continue
-
-            candidates.append(
-                {
-                    "duration": duration_sec,
-                    "artist": artist_name,
-                    "title": title,
-                }
-            )
+        candidates = self._build_title_only_candidates(
+            recordings=recordings,
+            title_normalized=title_normalized,
+            title_normalized_no_stop=title_normalized_no_stop,
+            query_words=query_words,
+        )
 
         if not candidates:
             return None
 
         artist_counts = Counter(c["artist"] for c in candidates)
         all_artists = artist_counts.most_common()
+        mb_consensus_duration = self._consensus_duration_bucket(candidates)
 
+        best_with_lrc = self._select_title_only_from_lrc_artist(
+            candidates=candidates,
+            all_artists=all_artists,
+            mb_consensus_duration=mb_consensus_duration,
+        )
+        if best_with_lrc is not None:
+            return best_with_lrc
+        return self._select_title_only_consensus_fallback(candidates, all_artists)
+
+    def _build_title_only_candidates(
+        self,
+        *,
+        recordings: List[Dict],
+        title_normalized: str,
+        title_normalized_no_stop: str,
+        query_words: set,
+    ) -> List[Dict]:
+        candidates = []
+        for rec in recordings:
+            title = rec.get("title", "")
+            length = rec.get("length")
+            if not length:
+                continue
+            duration_sec = int(length) // 1000
+            if duration_sec > 720:
+                continue
+            rec_title_normalized = normalize_title(title)
+            rec_title_no_stop = normalize_title(title, remove_stopwords=True)
+            if (
+                rec_title_normalized != title_normalized
+                and rec_title_no_stop != title_normalized_no_stop
+            ):
+                continue
+            artist_credits = rec.get("artist-credit", [])
+            artists = [a["artist"]["name"] for a in artist_credits if "artist" in a]
+            artist_name = " & ".join(artists) if artists else None
+            if not artist_name:
+                continue
+            if self._is_likely_cover_recording(title, artist_name, query_words):
+                continue
+            candidates.append(
+                {"duration": duration_sec, "artist": artist_name, "title": title}
+            )
+        return candidates
+
+    def _consensus_duration_bucket(self, candidates: List[Dict]) -> Optional[int]:
         all_durations = [c["duration"] for c in candidates]
         rounded_durations = [d // 5 * 5 for d in all_durations]
-        mb_consensus_duration = (
-            Counter(rounded_durations).most_common(1)[0][0]
-            if rounded_durations
-            else None
-        )
+        if not rounded_durations:
+            return None
+        return Counter(rounded_durations).most_common(1)[0][0]
 
-        # First pass: find artist with LRC available
-        for artist_name, count in all_artists:
+    def _select_title_only_from_lrc_artist(
+        self,
+        *,
+        candidates: List[Dict],
+        all_artists: List[tuple[str, int]],
+        mb_consensus_duration: Optional[int],
+    ) -> Optional[tuple]:
+        for artist_name, _count in all_artists:
             artist_matches = [c for c in candidates if c["artist"] == artist_name]
             sample_title = artist_matches[0]["title"]
-
             lrc_available, lrc_duration = self._check_lrc_and_duration(
                 sample_title, artist_name
             )
@@ -407,22 +425,24 @@ class MusicBrainzClient(_Base):
                 return self._select_best_from_artist_matches(
                     artist_matches, lrc_duration, mb_consensus_duration
                 )
-
-        # Fallback: use most common artist with duration consensus
-        if len(candidates) >= 2:
-            most_common_artist, artist_count = all_artists[0]
-            if artist_count >= 2 and artist_count / len(candidates) >= 0.4:
-                artist_matches = [
-                    c for c in candidates if c["artist"] == most_common_artist
-                ]
-                durations = [c["duration"] for c in artist_matches]
-                rounded = [d // 5 * 5 for d in durations]
-                duration_counts = Counter(rounded)
-                if duration_counts.most_common(1)[0][1] >= 2:
-                    best = artist_matches[0]
-                    return (best["duration"], best["artist"], best["title"])
-
         return None
+
+    def _select_title_only_consensus_fallback(
+        self, candidates: List[Dict], all_artists: List[tuple[str, int]]
+    ) -> Optional[tuple]:
+        if len(candidates) < 2:
+            return None
+        most_common_artist, artist_count = all_artists[0]
+        if artist_count < 2 or artist_count / len(candidates) < 0.4:
+            return None
+        artist_matches = [c for c in candidates if c["artist"] == most_common_artist]
+        durations = [c["duration"] for c in artist_matches]
+        rounded = [d // 5 * 5 for d in durations]
+        duration_counts = Counter(rounded)
+        if duration_counts.most_common(1)[0][1] < 2:
+            return None
+        best = artist_matches[0]
+        return (best["duration"], best["artist"], best["title"])
 
     def _normalize_title(self, title: str, remove_stopwords: bool = False) -> str:
         """Delegate to text_utils.normalize_title."""
