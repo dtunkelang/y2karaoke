@@ -394,6 +394,90 @@ def _normalize_confusable_i_token(tok: str, prev_tok: str, next_tok: str) -> str
     return tok
 
 
+_CONTRACTION_SUFFIXES = {"re", "ve", "ll", "m", "d", "s", "t"}
+_CONTRACTION_TOKENS = {"'ll", "'re", "'ve", "'m", "'d", "'s", "'t"}
+_YOU_CONTEXT_PREV = {"and", "but", "so", "then", "if", "when", "cause"}
+_YOU_CONTEXT_NEXT = {
+    "come",
+    "know",
+    "want",
+    "need",
+    "got",
+    "are",
+    "were",
+    "can",
+    "could",
+    "would",
+    "should",
+    "say",
+    "said",
+    "make",
+    "made",
+    "do",
+    "did",
+    "dont",
+    "don't",
+}
+
+
+def _compact_ocr_tokens(tokens: List[str]) -> List[str]:
+    compact: List[str] = []
+    for raw in tokens:
+        tok = canon_punct(str(raw))
+        tok = re.sub(r"[^A-Za-z0-9']+", "", tok)
+        if tok:
+            compact.append(tok)
+    return compact
+
+
+def _consume_contraction_merge(out: List[str], compact: List[str], i: int) -> int:
+    tok = compact[i]
+    if out and tok in _CONTRACTION_TOKENS:
+        out[-1] = out[-1] + tok
+        return i + 1
+
+    if (
+        tok == "'"
+        and out
+        and i + 1 < len(compact)
+        and compact[i + 1].lower() in _CONTRACTION_SUFFIXES
+        and any(ch.isalpha() for ch in out[-1])
+    ):
+        out[-1] = out[-1] + "'" + compact[i + 1]
+        return i + 2
+
+    if tok == "'" and out and any(ch.isalpha() for ch in out[-1]):
+        out[-1] = out[-1] + "'"
+        return i + 1
+    return i
+
+
+def _should_fix_ou(*, low: str, prev_low: str, next_low: str, out: List[str]) -> bool:
+    if low != "ou":
+        return False
+    return (
+        (not out) or (prev_low in _YOU_CONTEXT_PREV) or (next_low in _YOU_CONTEXT_NEXT)
+    )
+
+
+def _should_fix_come_one_an(
+    *,
+    low: str,
+    prev_low: str,
+    next_low: str,
+    out: List[str],
+) -> bool:
+    if low not in {"one", "an"} or prev_low != "come":
+        return False
+    trailing_baby_phrase = (
+        not next_low
+        and len(out) >= 4
+        and out[-1].lower() == "come"
+        and [w.lower() for w in out[-4:-1]] == ["be", "my", "baby"]
+    )
+    return next_low in {"be", "my", "baby"} or trailing_baby_phrase
+
+
 def normalize_ocr_tokens(tokens: List[str]) -> List[str]:
     """Normalize OCR token list and merge common contraction fragments.
 
@@ -403,14 +487,7 @@ def normalize_ocr_tokens(tokens: List[str]) -> List[str]:
     if not tokens:
         return []
 
-    suffixes = {"re", "ve", "ll", "m", "d", "s", "t"}
-    compact: List[str] = []
-    for raw in tokens:
-        tok = canon_punct(str(raw))
-        tok = re.sub(r"[^A-Za-z0-9']+", "", tok)
-        if not tok:
-            continue
-        compact.append(tok)
+    compact = _compact_ocr_tokens(tokens)
 
     out: List[str] = []
     i = 0
@@ -420,25 +497,9 @@ def normalize_ocr_tokens(tokens: List[str]) -> List[str]:
         prev_low = out[-1].lower() if out else ""
         next_low = compact[i + 1].lower() if i + 1 < len(compact) else ""
 
-        if out and tok in {"'ll", "'re", "'ve", "'m", "'d", "'s", "'t"}:
-            out[-1] = out[-1] + tok
-            i += 1
-            continue
-
-        if (
-            tok == "'"
-            and out
-            and i + 1 < len(compact)
-            and compact[i + 1].lower() in suffixes
-            and any(ch.isalpha() for ch in out[-1])
-        ):
-            out[-1] = out[-1] + "'" + compact[i + 1]
-            i += 2
-            continue
-
-        if tok == "'" and out and any(ch.isalpha() for ch in out[-1]):
-            out[-1] = out[-1] + "'"
-            i += 1
+        next_i = _consume_contraction_merge(out, compact, i)
+        if next_i != i:
+            i = next_i
             continue
 
         tok = _normalize_confusable_i_token(
@@ -452,56 +513,22 @@ def normalize_ocr_tokens(tokens: List[str]) -> List[str]:
             i += 2
             continue
 
-        # Context-aware repair for frequent "you" misread.
-        if low == "ou" and (
-            not out
-            or prev_low in {"and", "but", "so", "then", "if", "when", "cause"}
-            or next_low
-            in {
-                "come",
-                "know",
-                "want",
-                "need",
-                "got",
-                "are",
-                "were",
-                "can",
-                "could",
-                "would",
-                "should",
-                "say",
-                "said",
-                "make",
-                "made",
-                "do",
-                "did",
-                "dont",
-                "don't",
-            }
-        ):
+        if _should_fix_ou(low=low, prev_low=prev_low, next_low=next_low, out=out):
             out.append("you")
             i += 1
             continue
 
-        # Frequent OCR confusion in phrase "... start up".
         if low == "tup" and prev_low == "start":
             out.append("up")
             i += 1
             continue
 
-        # Frequent OCR confusion in refrain phrase
-        # "... come on be my baby come on ...".
-        if low in {"one", "an"} and prev_low == "come":
-            trailing_baby_phrase = (
-                not next_low
-                and len(out) >= 4
-                and out[-1].lower() == "come"
-                and [w.lower() for w in out[-4:-1]] == ["be", "my", "baby"]
-            )
-            if next_low in {"be", "my", "baby"} or trailing_baby_phrase:
-                out.append("on")
-                i += 1
-                continue
+        if _should_fix_come_one_an(
+            low=low, prev_low=prev_low, next_low=next_low, out=out
+        ):
+            out.append("on")
+            i += 1
+            continue
 
         replacement = _contextual_ocr_token_replacement(low, prev_low, next_low)
         if replacement is not None:
