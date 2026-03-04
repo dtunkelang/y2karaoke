@@ -347,6 +347,53 @@ def suppress_transient_digit_heavy_frames(
     return out
 
 
+def _find_word_match(
+    target_w: dict[str, Any], candidates: list[Any]
+) -> dict[str, Any] | None:
+    tx = float(target_w.get("x", 0))
+    ty = float(target_w.get("y", 0))
+    ttext = str(target_w.get("text", ""))
+    for cand in candidates:
+        if not isinstance(cand, dict):
+            continue
+        cx = float(cand.get("x", 0))
+        cy = float(cand.get("y", 0))
+        if abs(cx - tx) > 20 or abs(cy - ty) > 10:
+            continue
+        if str(cand.get("text", "")) == ttext:
+            return cand
+    return None
+
+
+def _is_dense_triplet(t_prev: float, t_curr: float, t_next: float) -> bool:
+    return (t_curr - t_prev) <= 0.6 and (t_next - t_curr) <= 0.6
+
+
+def _frame_word_list(frame: dict[str, Any]) -> list[Any] | None:
+    words = frame.get("words", [])
+    return words if isinstance(words, list) else None
+
+
+def _interpolate_missing_word(pw: dict[str, Any], nw: dict[str, Any]) -> dict[str, Any]:
+    px, py = float(pw.get("x", 0)), float(pw.get("y", 0))
+    nx, ny = float(nw.get("x", 0)), float(nw.get("y", 0))
+    pw_w, pw_h = float(pw.get("w", 0)), float(pw.get("h", 0))
+    nw_w, nw_h = float(nw.get("w", 0)), float(nw.get("h", 0))
+    pb = float(pw.get("brightness", 0))
+    nb = float(nw.get("brightness", 0))
+    pd = float(pw.get("density", 0))
+    nd = float(nw.get("density", 0))
+    return {
+        "text": nw.get("text"),
+        "x": int((px + nx) * 0.5),
+        "y": int((py + ny) * 0.5),
+        "w": int((pw_w + nw_w) * 0.5),
+        "h": int((pw_h + nw_h) * 0.5),
+        "brightness": (pb + nb) * 0.5,
+        "density": (pd + nd) * 0.5,
+    }
+
+
 def fill_transient_ocr_gaps(
     raw_frames: list[dict[str, Any]],
     *,
@@ -357,25 +404,6 @@ def fill_transient_ocr_gaps(
 
     out = [dict(fr) for fr in raw_frames]
 
-    def _find_match(
-        target_w: dict[str, Any], candidates: list[Any]
-    ) -> dict[str, Any] | None:
-        tx = float(target_w.get("x", 0))
-        ty = float(target_w.get("y", 0))
-        ttext = str(target_w.get("text", ""))
-
-        for cw in candidates:
-            if not isinstance(cw, dict):
-                continue
-            cx = float(cw.get("x", 0))
-            cy = float(cw.get("y", 0))
-            ctext = str(cw.get("text", ""))
-            if abs(cx - tx) > 20 or abs(cy - ty) > 10:
-                continue
-            if ttext == ctext:
-                return cw
-        return None
-
     for i in range(1, len(raw_frames) - 1):
         prev_f = raw_frames[i - 1]
         next_f = raw_frames[i + 1]
@@ -385,18 +413,13 @@ def fill_transient_ocr_gaps(
         t_curr = float(curr_f.get("time", 0.0))
         t_next = float(next_f.get("time", 0.0))
 
-        if (t_curr - t_prev) > 0.6 or (t_next - t_curr) > 0.6:
+        if not _is_dense_triplet(t_prev, t_curr, t_next):
             continue
 
-        prev_words = prev_f.get("words", [])
-        next_words = next_f.get("words", [])
-        curr_words = curr_f.get("words", [])
-
-        if (
-            not isinstance(prev_words, list)
-            or not isinstance(next_words, list)
-            or not isinstance(curr_words, list)
-        ):
+        prev_words = _frame_word_list(prev_f)
+        next_words = _frame_word_list(next_f)
+        curr_words = _frame_word_list(curr_f)
+        if prev_words is None or next_words is None or curr_words is None:
             continue
 
         injected_words = []
@@ -404,39 +427,14 @@ def fill_transient_ocr_gaps(
             if not isinstance(pw, dict):
                 continue
 
-            nw = _find_match(pw, next_words)
+            nw = _find_word_match(pw, next_words)
             if not nw:
                 continue
 
-            cw = _find_match(pw, curr_words)
+            cw = _find_word_match(pw, curr_words)
             if cw:
                 continue
-
-            px, py = float(pw.get("x", 0)), float(pw.get("y", 0))
-            nx, ny = float(nw.get("x", 0)), float(nw.get("y", 0))
-            pw_w, pw_h = float(pw.get("w", 0)), float(pw.get("h", 0))
-            nw_w, nw_h = float(nw.get("w", 0)), float(nw.get("h", 0))
-
-            ix = int((px + nx) * 0.5)
-            iy = int((py + ny) * 0.5)
-            iw = int((pw_w + nw_w) * 0.5)
-            ih = int((pw_h + nw_h) * 0.5)
-
-            pb = float(pw.get("brightness", 0))
-            nb = float(nw.get("brightness", 0))
-            pd = float(pw.get("density", 0))
-            nd = float(nw.get("density", 0))
-
-            new_word = {
-                "text": nw.get("text"),
-                "x": ix,
-                "y": iy,
-                "w": iw,
-                "h": ih,
-                "brightness": (pb + nb) * 0.5,
-                "density": (pd + nd) * 0.5,
-            }
-            injected_words.append(new_word)
+            injected_words.append(_interpolate_missing_word(pw, nw))
 
         if injected_words:
             combined = list(curr_words) + injected_words
