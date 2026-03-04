@@ -19,6 +19,7 @@ from .whisper_alignment_base import (
     _shift_line,
 )
 from . import whisper_alignment_activity as _alignment_activity_helpers
+from . import whisper_alignment_hybrid as _hybrid_helpers
 from . import whisper_alignment_line_helpers as _line_helpers
 from . import whisper_alignment_short_lines as _short_line_helpers
 from .whisper_alignment_segments import _find_best_whisper_segment
@@ -67,80 +68,18 @@ def use_alignment_refinement_hooks(
 def _calculate_drift_correction(
     recent_offsets: List[float], trust_threshold: float
 ) -> Optional[float]:
-    """Calculate drift correction from recent offsets if consistent drift exists."""
-    if len(recent_offsets) < 2:
-        return None
-
-    # Check recent lines for consistent drift
-    recent_nonzero = [o for o in recent_offsets[-5:] if abs(o) > 0.5]
-    if len(recent_nonzero) >= 2:
-        avg_drift = sum(recent_nonzero) / len(recent_nonzero)
-        if abs(avg_drift) > trust_threshold:
-            return avg_drift
-    return None
+    return _hybrid_helpers.calculate_drift_correction(recent_offsets, trust_threshold)
 
 
 def _interpolate_unmatched_lines(
     mapped_lines: List[Line], matched_lines: Set[int]
 ) -> List[Line]:
-    """Spread lines without matches between their nearest matched neighbors."""
-    total = len(mapped_lines)
-    prev_end = None
-    idx = 0
-    while idx < total:
-        if idx in matched_lines:
-            prev_end = mapped_lines[idx].end_time
-            idx += 1
-            continue
-        run_start = idx
-        while idx < total and idx not in matched_lines:
-            idx += 1
-        run_end = idx
-        run_indices = list(range(run_start, run_end))
-        if not run_indices:
-            continue
-        if run_end == total:
-            # Trailing unmatched tail: preserve existing timing if already
-            # monotonic, rather than stretching to synthetic anchors.
-            tail_start = mapped_lines[run_start].start_time
-            if prev_end is not None and tail_start < prev_end + 0.01:
-                shift = (prev_end + 0.01) - tail_start
-                for line_idx in run_indices:
-                    line = mapped_lines[line_idx]
-                    mapped_lines[line_idx] = _shift_line(line, shift)
-                prev_end = mapped_lines[run_indices[-1]].end_time
-            elif mapped_lines[run_indices[-1]].words:
-                prev_end = mapped_lines[run_indices[-1]].end_time
-            continue
-        start_anchor = (
-            prev_end if prev_end is not None else mapped_lines[run_start].start_time
-        )
-        next_anchor = (
-            mapped_lines[run_end].start_time
-            if run_end < total
-            else start_anchor
-            + sum(_line_duration(mapped_lines[i]) for i in run_indices)
-            + 0.5
-        )
-        total_duration = sum(_line_duration(mapped_lines[i]) for i in run_indices)
-        total_duration = max(total_duration, 0.5 * len(run_indices))
-        available_gap = max(next_anchor - start_anchor, total_duration)
-        duration_scale = available_gap / total_duration if total_duration > 0 else 1.0
-        # Don't spread unmatched runs too aggressively; this can explode
-        # timings in repeated/refrain-heavy songs when one late anchor is wrong.
-        if len(run_indices) >= 3 and duration_scale > 1.2:
-            duration_scale = 1.2
-        elif duration_scale > 2.0:
-            duration_scale = 2.0
-        current = start_anchor
-        for line_idx in run_indices:
-            line = mapped_lines[line_idx]
-            duration = _line_duration(line) * duration_scale
-            line_shift = current - line.start_time
-            mapped_lines[line_idx] = _shift_line(line, line_shift)
-            current += duration + 0.01
-        prev_end = current
-    return mapped_lines
+    return _hybrid_helpers.interpolate_unmatched_lines(
+        mapped_lines,
+        matched_lines,
+        line_duration_fn=_line_duration,
+        shift_line_fn=_shift_line,
+    )
 
 
 def _refine_unmatched_lines_with_onsets(
@@ -148,31 +87,15 @@ def _refine_unmatched_lines_with_onsets(
     matched_lines: Set[int],
     vocals_path: str,
 ) -> List[Line]:
-    """Re-apply onset refinement to lines without Whisper word matches."""
-    unmatched = [
-        i
-        for i in range(len(mapped_lines))
-        if i not in matched_lines and mapped_lines[i].words
-    ]
-    if not unmatched:
-        return mapped_lines
-
     from ...refine import refine_word_timing
 
-    # Build a list of just the unmatched lines and refine them.
-    subset = [mapped_lines[i] for i in unmatched]
-    try:
-        refined = refine_word_timing(subset, vocals_path)
-    except Exception:
-        return mapped_lines
-
-    for idx, line_idx in enumerate(unmatched):
-        mapped_lines[line_idx] = refined[idx]
-    logger.debug(
-        "Onset-refined %d unmatched line(s)",
-        len(unmatched),
+    return _hybrid_helpers.refine_unmatched_lines_with_onsets(
+        mapped_lines,
+        matched_lines,
+        vocals_path,
+        refine_word_timing_fn=refine_word_timing,
+        logger=logger,
     )
-    return mapped_lines
 
 
 def align_hybrid_lrc_whisper(
@@ -184,83 +107,20 @@ def align_hybrid_lrc_whisper(
     correct_threshold: float = 1.5,
     min_similarity: float = 0.4,
 ) -> Tuple[List[Line], List[str]]:
-    """Hybrid alignment: preserve good LRC timing, use Whisper for broken sections."""
-    if not lines or not segments:
-        return lines, []
-
     logger.debug(f"Pre-computing IPA for {len(words)} Whisper words...")
-    for w in words:
-        _get_ipa(w.text, language)
-
-    aligned_lines: List[Line] = []
-    corrections: List[str] = []
-    recent_offsets: List[float] = []
-    sorted_segments = sorted(segments, key=lambda s: s.start)
-
-    for line_idx, line in enumerate(lines):
-        if not line.words:
-            aligned_lines.append(line)
-            continue
-
-        line_text = " ".join(w.text for w in line.words)
-        line_start = line.start_time
-
-        best_segment, best_similarity, best_offset = _find_best_whisper_segment(
-            line_text, line_start, sorted_segments, language, min_similarity
-        )
-
-        timing_error = abs(best_offset) if best_segment else float("inf")
-
-        # Case 1: LRC timing is good - keep it
-        if best_segment and timing_error < trust_threshold:
-            aligned_lines.append(line)
-            recent_offsets.append(0.0)
-            continue
-
-        # Case 2: LRC timing is significantly off - use Whisper
-        if (
-            best_segment
-            and timing_error >= correct_threshold
-            and best_similarity >= 0.5
-        ):
-            aligned_lines.append(_apply_offset_to_line(line, best_offset))
-            corrections.append(
-                f'Line {line_idx} shifted {best_offset:+.1f}s (similarity: {best_similarity:.0%}): "{line_text[:35]}..."'
-            )
-            recent_offsets.append(best_offset)
-            continue
-
-        # Case 3: Intermediate timing error - check for consistent drift
-        if timing_error >= trust_threshold and timing_error < correct_threshold:
-            if len(recent_offsets) >= 2 and all(
-                abs(o) > 0.5 for o in recent_offsets[-2:]
-            ):
-                avg_drift = sum(recent_offsets[-3:]) / len(recent_offsets[-3:])
-                if abs(avg_drift) > trust_threshold:
-                    aligned_lines.append(_apply_offset_to_line(line, avg_drift))
-                    corrections.append(
-                        f'Line {line_idx} drift-corrected {avg_drift:+.1f}s: "{line_text[:35]}..."'
-                    )
-                    recent_offsets.append(avg_drift)
-                    continue
-
-            aligned_lines.append(line)
-            recent_offsets.append(0.0)
-            continue
-
-        # Case 4: No good match - apply drift correction if available
-        drift = _calculate_drift_correction(recent_offsets, trust_threshold)
-        if drift is not None:
-            aligned_lines.append(_apply_offset_to_line(line, drift))
-            corrections.append(
-                f'Line {line_idx} drift-corrected {drift:+.1f}s (no match): "{line_text[:35]}..."'
-            )
-            recent_offsets.append(drift)
-        else:
-            aligned_lines.append(line)
-            recent_offsets.append(0.0)
-
-    return aligned_lines, corrections
+    return _hybrid_helpers.align_hybrid_lrc_whisper(
+        lines,
+        segments,
+        words,
+        language=language,
+        trust_threshold=trust_threshold,
+        correct_threshold=correct_threshold,
+        min_similarity=min_similarity,
+        get_ipa_fn=_get_ipa,
+        find_best_whisper_segment_fn=_find_best_whisper_segment,
+        apply_offset_to_line_fn=_apply_offset_to_line,
+        calculate_drift_correction_fn=_calculate_drift_correction,
+    )
 
 
 def _fix_ordering_violations(
@@ -268,51 +128,12 @@ def _fix_ordering_violations(
     aligned_lines: List[Line],
     alignments: List[str],
 ) -> Tuple[List[Line], List[str]]:
-    """Fix lines that were moved out of order by Whisper alignment."""
-    if not aligned_lines:
-        return aligned_lines, alignments
-
-    fixed_lines: List[Line] = []
-    prev_end_time = 0.0
-    prev_start_time = 0.0
-    reverted_count = 0
-
-    for i, (orig, aligned) in enumerate(zip(original_lines, aligned_lines)):
-        if not aligned.words:
-            fixed_lines.append(aligned)
-            continue
-
-        aligned_start = aligned.start_time
-
-        # Check if this line would start before previous line (or end) with tolerance
-        if (
-            aligned_start < prev_start_time - 0.01
-            or aligned_start < prev_end_time - 0.1
-        ):
-            # Revert to original timing
-            fixed_lines.append(orig)
-            if orig.words:
-                prev_end_time = orig.end_time
-                prev_start_time = orig.start_time
-            reverted_count += 1
-        else:
-            # Keep the aligned timing
-            fixed_lines.append(aligned)
-            prev_end_time = aligned.end_time
-            prev_start_time = aligned.start_time
-
-    # Update alignments list (remove reverted ones)
-    if reverted_count > 0:
-        logger.debug(
-            f"Reverted {reverted_count} Whisper alignments due to ordering violations"
-        )
-        actual_corrections = len(alignments) - reverted_count
-        fixed_alignments = (
-            alignments[:actual_corrections] if actual_corrections > 0 else []
-        )
-        return fixed_lines, fixed_alignments
-
-    return fixed_lines, alignments
+    return _hybrid_helpers.fix_ordering_violations(
+        original_lines,
+        aligned_lines,
+        alignments,
+        logger=logger,
+    )
 
 
 def _line_tokens(text: str) -> List[str]:
