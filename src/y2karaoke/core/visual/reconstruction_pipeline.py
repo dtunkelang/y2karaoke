@@ -9,6 +9,10 @@ from typing import Any, Callable, Optional
 from ..models import TargetLine
 from ..text_utils import normalize_text_basic, text_similarity
 from .extractor_mode import ResolvedVisualExtractorMode
+from .reconstruction_metadata_filters import (
+    looks_global_metadata_noise as _looks_global_metadata_noise_impl,
+    suppress_global_metadata_noise as _suppress_global_metadata_noise_impl,
+)
 from .reconstruction_frame_accumulation import accumulate_persistent_lines_from_frames
 from .reconstruction_deduplication import deduplicate_persistent_lines
 from .reconstruction_block_first import (
@@ -367,68 +371,8 @@ def _suppress_repeated_short_fragment_clusters(  # noqa: C901
     return [line for idx, line in enumerate(lines) if idx not in suppressed]
 
 
-_GLOBAL_META_KEYWORDS = {
-    "karaoke",
-    "karafun",
-    "entertainer",
-    "digitop",
-    "rights",
-    "reserved",
-    "copyright",
-    "produced",
-    "association",
-    "global",
-    "ltd",
-    "www",
-    "http",
-}
-
-
-def _looks_global_metadata_noise(line: dict[str, Any]) -> bool:
-    text = normalize_text_basic(str(line.get("text", ""))).strip().lower()
-    if not text:
-        return False
-    tokens = [tok for tok in text.split() if tok]
-    if not tokens:
-        return False
-
-    compact_tokens = ["".join(ch for ch in tok if ch.isalnum()) for tok in tokens]
-    compact_tokens = [tok for tok in compact_tokens if tok]
-    if not compact_tokens:
-        return False
-
-    metadata_hits = 0
-    providerish = 0
-    urlish = 0
-    for tok in compact_tokens:
-        if any(key in tok for key in _GLOBAL_META_KEYWORDS):
-            metadata_hits += 1
-        if tok.startswith(("kara", "xara", "xora")) and len(tok) >= 5:
-            providerish += 1
-        if "www" in tok or tok.endswith(("com", "couk", "net")):
-            urlish += 1
-
-    # Strong indicators: URLs/legal/provider spam.
-    if urlish >= 1 and (metadata_hits >= 1 or providerish >= 1):
-        return True
-    if metadata_hits >= 3:
-        return True
-    if providerish >= 2 and len(compact_tokens) >= 2:
-        return True
-
-    # Long legal/credit lines are almost never lyrics in this pipeline context.
-    if len(compact_tokens) >= 10 and (metadata_hits >= 2 or providerish >= 2):
-        return True
-
-    return False
-
-
-def _suppress_global_metadata_noise(
-    lines: list[dict[str, Any]],
-) -> list[dict[str, Any]]:
-    if not lines:
-        return []
-    return [line for line in lines if not _looks_global_metadata_noise(line)]
+_looks_global_metadata_noise = _looks_global_metadata_noise_impl
+_suppress_global_metadata_noise = _suppress_global_metadata_noise_impl
 
 
 def _sequence_by_visual_neighborhood(
