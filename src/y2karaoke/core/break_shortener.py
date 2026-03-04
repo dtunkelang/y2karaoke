@@ -392,19 +392,12 @@ def adjust_lyrics_timing(
     if not edits:
         return lines
 
-    # Sort edits by original_start to ensure chronological order
     sorted_edits = sorted(edits, key=lambda e: e.original_start)
-
-    # Log the edits for debugging
-    logger.debug(f"Adjusting lyrics for {len(sorted_edits)} break edits:")
-    for i, edit in enumerate(sorted_edits):
-        # Use actual beat-aligned cut_start if available, otherwise calculate
-        cut_start = (
-            edit.cut_start if edit.cut_start > 0 else edit.original_start + keep_start
-        )
-        logger.debug(
-            f"  Edit {i}: cut_start={cut_start:.1f}s, time_removed={edit.time_removed:.1f}s"
-        )
+    _log_adjustment_edits(
+        logger=logger,
+        sorted_edits=sorted_edits,
+        keep_start=keep_start,
+    )
 
     adjusted_lines = []
 
@@ -415,18 +408,9 @@ def adjust_lyrics_timing(
 
         new_words = []
         for word in line.words:
-            # Calculate cumulative time adjustment
-            # For each edit, if word starts after the cut_start, shift by time_removed
-            time_adjustment = 0.0
-            for edit in sorted_edits:
-                # Use actual beat-aligned cut_start if available, otherwise calculate
-                cut_start = (
-                    edit.cut_start
-                    if edit.cut_start > 0
-                    else edit.original_start + keep_start
-                )
-                if word.start_time >= cut_start:
-                    time_adjustment += edit.time_removed
+            time_adjustment = _cumulative_adjustment_for_time(
+                word.start_time, sorted_edits, keep_start
+            )
 
             new_word = Word(
                 text=word.text,
@@ -438,23 +422,57 @@ def adjust_lyrics_timing(
 
         adjusted_lines.append(Line(words=new_words, singer=line.singer))
 
-    # Log sample adjustments
-    if adjusted_lines and adjusted_lines[0].words:
-        first_word = lines[0].words[0] if lines[0].words else None
-        new_first = adjusted_lines[0].words[0]
-        if first_word:
-            logger.debug(
-                f"First word '{first_word.text}': {first_word.start_time:.1f}s → {new_first.start_time:.1f}s"
-            )
-    if len(adjusted_lines) > 1:
-        # Find first line after the first break
-        for i, line in enumerate(lines):
-            if line.words and line.words[0].start_time > sorted_edits[0].original_start:
-                orig = line.words[0]
-                adj = adjusted_lines[i].words[0]
-                logger.debug(
-                    f"First word after break 1 '{orig.text}': {orig.start_time:.1f}s → {adj.start_time:.1f}s"
-                )
-                break
+    _log_sample_adjustments(
+        logger=logger,
+        lines=lines,
+        adjusted_lines=adjusted_lines,
+        sorted_edits=sorted_edits,
+    )
 
     return adjusted_lines
+
+
+def _effective_cut_start(edit: BreakEdit, keep_start: float) -> float:
+    return edit.cut_start if edit.cut_start > 0 else edit.original_start + keep_start
+
+
+def _cumulative_adjustment_for_time(
+    word_start: float, sorted_edits: List[BreakEdit], keep_start: float
+) -> float:
+    adjustment = 0.0
+    for edit in sorted_edits:
+        if word_start >= _effective_cut_start(edit, keep_start):
+            adjustment += edit.time_removed
+    return adjustment
+
+
+def _log_adjustment_edits(
+    *, logger, sorted_edits: List[BreakEdit], keep_start: float
+) -> None:
+    logger.debug(f"Adjusting lyrics for {len(sorted_edits)} break edits:")
+    for i, edit in enumerate(sorted_edits):
+        cut_start = _effective_cut_start(edit, keep_start)
+        logger.debug(
+            f"  Edit {i}: cut_start={cut_start:.1f}s, time_removed={edit.time_removed:.1f}s"
+        )
+
+
+def _log_sample_adjustments(
+    *, logger, lines: list, adjusted_lines: list, sorted_edits: List[BreakEdit]
+) -> None:
+    if adjusted_lines and adjusted_lines[0].words and lines and lines[0].words:
+        first_word = lines[0].words[0]
+        new_first = adjusted_lines[0].words[0]
+        logger.debug(
+            f"First word '{first_word.text}': {first_word.start_time:.1f}s → {new_first.start_time:.1f}s"
+        )
+    if len(adjusted_lines) <= 1:
+        return
+    for i, line in enumerate(lines):
+        if line.words and line.words[0].start_time > sorted_edits[0].original_start:
+            orig = line.words[0]
+            adj = adjusted_lines[i].words[0]
+            logger.debug(
+                f"First word after break 1 '{orig.text}': {orig.start_time:.1f}s → {adj.start_time:.1f}s"
+            )
+            return

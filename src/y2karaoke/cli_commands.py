@@ -19,6 +19,123 @@ from .utils.validation import (
 )
 
 
+def _resolve_input_query(
+    *,
+    logger,
+    url_or_query,
+    artist,
+    title,
+    resolve_url_or_query_fn,
+):
+    if not url_or_query:
+        resolved = resolve_url_or_query_fn(url_or_query, artist, title)
+        logger.info(f"No url_or_query provided; using title for search: {resolved}")
+        return resolved
+    return resolve_url_or_query_fn(url_or_query, artist, title)
+
+
+def _identify_track_info(
+    *,
+    logger,
+    identifier,
+    url_or_query,
+    artist,
+    title,
+    offline,
+    identify_track_fn,
+    identify_track_offline_fn,
+):
+    if not offline:
+        return identify_track_fn(logger, identifier, url_or_query, artist, title)
+    if not url_or_query.startswith("http"):
+        raise click.BadParameter(
+            "Offline mode requires a YouTube URL (search is not available)."
+        )
+    return identify_track_offline_fn(logger, identifier, url_or_query, artist, title)
+
+
+def _build_generate_kwargs(
+    *,
+    url,
+    output_path,
+    offset,
+    key,
+    tempo,
+    audio_start,
+    title,
+    artist,
+    track_info,
+    lyrics_offset,
+    backgrounds,
+    force,
+    video_settings,
+    url_or_query,
+    target_duration,
+    evaluate_lyrics,
+    whisper,
+    whisper_only,
+    whisper_map_lrc,
+    whisper_map_lrc_dtw,
+    lyrics_file,
+    drop_lrc_line_timings,
+    whisper_language,
+    whisper_model,
+    whisper_force_dtw,
+    whisper_aggressive,
+    whisper_temperature,
+    lenient_vocal_activity_threshold,
+    lenient_activity_bonus,
+    low_word_confidence_threshold,
+    outro_line,
+    offline,
+    filter_promos,
+    effective_shorten_breaks,
+    max_break,
+    debug_audio,
+    no_render,
+    timing_report,
+):
+    return {
+        "url": url,
+        "output_path": output_path,
+        "offset": offset,
+        "key_shift": key,
+        "tempo_multiplier": tempo,
+        "audio_start": audio_start,
+        "lyrics_title": title or track_info.title,
+        "lyrics_artist": artist or track_info.artist,
+        "lyrics_offset": lyrics_offset,
+        "use_backgrounds": backgrounds,
+        "force_reprocess": force,
+        "video_settings": video_settings,
+        "original_prompt": url_or_query,
+        "target_duration": target_duration,
+        "evaluate_lyrics_sources": evaluate_lyrics,
+        "use_whisper": whisper,
+        "whisper_only": whisper_only,
+        "whisper_map_lrc": whisper_map_lrc,
+        "whisper_map_lrc_dtw": whisper_map_lrc_dtw,
+        "lyrics_file": lyrics_file,
+        "drop_lrc_line_timings": drop_lrc_line_timings,
+        "whisper_language": whisper_language,
+        "whisper_model": whisper_model,
+        "whisper_force_dtw": whisper_force_dtw,
+        "whisper_aggressive": whisper_aggressive,
+        "whisper_temperature": whisper_temperature,
+        "lenient_vocal_activity_threshold": lenient_vocal_activity_threshold,
+        "lenient_activity_bonus": lenient_activity_bonus,
+        "low_word_confidence_threshold": low_word_confidence_threshold,
+        "outro_line": outro_line,
+        "offline": offline,
+        "filter_promos": filter_promos,
+        "shorten_breaks": effective_shorten_breaks,
+        "max_break_duration": max_break,
+        "debug_audio": debug_audio,
+        "skip_render": no_render,
+        "timing_report_path": timing_report,
+    }
+
+
 def run_generate_command(
     *,
     ctx,
@@ -75,26 +192,25 @@ def run_generate_command(
     try:
         if whisper_map_lrc_dtw:
             whisper_map_lrc = True
-        if not url_or_query:
-            resolved = resolve_url_or_query_fn(url_or_query, artist, title)
-            logger.info(f"No url_or_query provided; using title for search: {resolved}")
-            url_or_query = resolved
-        else:
-            url_or_query = resolve_url_or_query_fn(url_or_query, artist, title)
+        url_or_query = _resolve_input_query(
+            logger=logger,
+            url_or_query=url_or_query,
+            artist=artist,
+            title=title,
+            resolve_url_or_query_fn=resolve_url_or_query_fn,
+        )
 
         identifier = TrackIdentifier()
-        if offline:
-            if not url_or_query.startswith("http"):
-                raise click.BadParameter(
-                    "Offline mode requires a YouTube URL (search is not available)."
-                )
-            track_info = identify_track_offline_fn(
-                logger, identifier, url_or_query, artist, title
-            )
-        else:
-            track_info = identify_track_fn(
-                logger, identifier, url_or_query, artist, title
-            )
+        track_info = _identify_track_info(
+            logger=logger,
+            identifier=identifier,
+            url_or_query=url_or_query,
+            artist=artist,
+            title=title,
+            offline=offline,
+            identify_track_fn=identify_track_fn,
+            identify_track_offline_fn=identify_track_offline_fn,
+        )
 
         if title or artist:
             track_info = replace(
@@ -126,43 +242,46 @@ def run_generate_command(
         target_duration = track_info.duration if track_info.duration > 0 else None
 
         result = generator.generate(
-            url=url,
-            output_path=output_path,
-            offset=offset,
-            key_shift=key,
-            tempo_multiplier=tempo,
-            audio_start=audio_start,
-            lyrics_title=title or track_info.title,
-            lyrics_artist=artist or track_info.artist,
-            lyrics_offset=lyrics_offset,
-            use_backgrounds=backgrounds,
-            force_reprocess=force,
-            video_settings=video_settings,
-            original_prompt=url_or_query,
-            target_duration=target_duration,
-            evaluate_lyrics_sources=evaluate_lyrics,
-            use_whisper=whisper,
-            whisper_only=whisper_only,
-            whisper_map_lrc=whisper_map_lrc,
-            whisper_map_lrc_dtw=whisper_map_lrc_dtw,
-            lyrics_file=lyrics_file,
-            drop_lrc_line_timings=drop_lrc_line_timings,
-            whisper_language=whisper_language,
-            whisper_model=whisper_model,
-            whisper_force_dtw=whisper_force_dtw,
-            whisper_aggressive=whisper_aggressive,
-            whisper_temperature=whisper_temperature,
-            lenient_vocal_activity_threshold=lenient_vocal_activity_threshold,
-            lenient_activity_bonus=lenient_activity_bonus,
-            low_word_confidence_threshold=low_word_confidence_threshold,
-            outro_line=outro_line,
-            offline=offline,
-            filter_promos=filter_promos,
-            shorten_breaks=effective_shorten_breaks,
-            max_break_duration=max_break,
-            debug_audio=debug_audio,
-            skip_render=no_render,
-            timing_report_path=timing_report,
+            **_build_generate_kwargs(
+                url=url,
+                output_path=output_path,
+                offset=offset,
+                key=key,
+                tempo=tempo,
+                audio_start=audio_start,
+                title=title,
+                artist=artist,
+                track_info=track_info,
+                lyrics_offset=lyrics_offset,
+                backgrounds=backgrounds,
+                force=force,
+                video_settings=video_settings,
+                url_or_query=url_or_query,
+                target_duration=target_duration,
+                evaluate_lyrics=evaluate_lyrics,
+                whisper=whisper,
+                whisper_only=whisper_only,
+                whisper_map_lrc=whisper_map_lrc,
+                whisper_map_lrc_dtw=whisper_map_lrc_dtw,
+                lyrics_file=lyrics_file,
+                drop_lrc_line_timings=drop_lrc_line_timings,
+                whisper_language=whisper_language,
+                whisper_model=whisper_model,
+                whisper_force_dtw=whisper_force_dtw,
+                whisper_aggressive=whisper_aggressive,
+                whisper_temperature=whisper_temperature,
+                lenient_vocal_activity_threshold=lenient_vocal_activity_threshold,
+                lenient_activity_bonus=lenient_activity_bonus,
+                low_word_confidence_threshold=low_word_confidence_threshold,
+                outro_line=outro_line,
+                offline=offline,
+                filter_promos=filter_promos,
+                effective_shorten_breaks=effective_shorten_breaks,
+                max_break=max_break,
+                debug_audio=debug_audio,
+                no_render=no_render,
+                timing_report=timing_report,
+            )
         )
 
         if result.get("rendered", True):
