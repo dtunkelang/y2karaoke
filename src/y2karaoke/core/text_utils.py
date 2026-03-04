@@ -153,6 +153,54 @@ def _looks_ocr_suspicious(word: str) -> bool:
     return _looks_ocr_suspicious_impl(word)
 
 
+def _get_spell_checker() -> Any:
+    try:
+        from AppKit import NSSpellChecker
+
+        return NSSpellChecker.sharedSpellChecker()
+    except Exception:
+        return None
+
+
+def _variant_spelling_correction(word: str, checker: Any) -> str | None:
+    low_w = word.lower()
+    for variant in _get_ocr_variants(low_w):
+        if variant != low_w and _is_correctly_spelled(variant, checker):
+            return _case_like(word, variant)
+    return None
+
+
+def _fallback_spell_guess(word: str, checker: Any) -> str | None:
+    missed = checker.checkSpellingOfString_startingAt_(word, 0)
+    if missed.length <= 0:
+        return None
+    guesses = checker.guessesForWordRange_inString_language_inSpellDocumentWithTag_(
+        missed, word, "en", 0
+    )
+    if guesses:
+        return str(guesses[0])
+    return None
+
+
+def _correct_word_with_mode(word: str, *, checker: Any, mode: str) -> str:
+    low_w = word.lower()
+    if len(low_w) < 3 or not checker:
+        return word
+    if _is_correctly_spelled(low_w, checker):
+        return word
+    if mode == "auto" and not _looks_ocr_suspicious(low_w):
+        return word
+
+    variant_correction = _variant_spelling_correction(word, checker)
+    if variant_correction is not None:
+        return variant_correction
+
+    if mode in {"no-guesses", "auto"}:
+        return word
+    guess = _fallback_spell_guess(word, checker)
+    return guess if guess else word
+
+
 @lru_cache(maxsize=4096)
 def _spell_correct_cached(text: str, mode: str) -> str:
     """Mode-aware cached spell correction.
@@ -164,59 +212,10 @@ def _spell_correct_cached(text: str, mode: str) -> str:
     if mode == "off":
         return text
 
-    try:
-        from AppKit import NSSpellChecker
-
-        checker = NSSpellChecker.sharedSpellChecker()
-    except Exception:
-        checker = None
-
-    words = text.split()
-    corrected = []
-    for w in words:
-        low_w = w.lower()
-        if len(low_w) < 3 or not checker:
-            corrected.append(w)
-            continue
-
-        # 1. Already correct? (Highest priority)
-        if _is_correctly_spelled(low_w, checker):
-            corrected.append(w)
-            continue
-
-        auto_mode = mode == "auto"
-        if auto_mode and not _looks_ocr_suspicious(low_w):
-            corrected.append(w)
-            continue
-
-        # 2. Misspelled? Try standard OCR confusion reversals
-        found_variant = False
-        variants = _get_ocr_variants(low_w)
-        for variant in variants:
-            if variant != low_w and _is_correctly_spelled(variant, checker):
-                # We found a valid correction via OCR rules.
-                corrected.append(_case_like(w, variant))
-                found_variant = True
-                break
-        if found_variant:
-            continue
-
-        # 3. Fallback to standard system guesses
-        if mode in {"no-guesses", "auto"}:
-            corrected.append(w)
-            continue
-        missed = checker.checkSpellingOfString_startingAt_(w, 0)
-        if missed.length > 0:
-            guesses = (
-                checker.guessesForWordRange_inString_language_inSpellDocumentWithTag_(
-                    missed, w, "en", 0
-                )
-            )
-            if guesses:
-                corrected.append(guesses[0])
-                continue
-
-        corrected.append(w)
+    checker = _get_spell_checker()
+    corrected = [
+        _correct_word_with_mode(w, checker=checker, mode=mode) for w in text.split()
+    ]
     return " ".join(corrected)
 
 
