@@ -143,24 +143,68 @@ def retime_line_words_to_onsets(
     if n_words < 2:
         return None
 
-    candidate_onsets = np.sort(
-        onset_times[
-            (onset_times >= line_start + 0.04) & (onset_times <= line_end - 0.01)
-        ]
+    candidate_onsets = _candidate_onsets_for_line(
+        onset_times, line_start=line_start, line_end=line_end
     )
     target_word_count = n_words - 1
     if len(candidate_onsets) < target_word_count:
         return None
 
-    original_duration = max(line_end - line_start, 1e-3)
-    expected_starts = [
-        line_start
-        + max(0.0, min(1.0, (word.start_time - line_start) / original_duration))
-        * original_duration
-        for word in line.words[1:]
-    ]
+    expected_starts = _expected_word_starts(line.words, line_start, line_end)
+    chosen_indices = _choose_onset_indices(
+        candidate_onsets=candidate_onsets,
+        expected_starts=expected_starts,
+        target_word_count=target_word_count,
+    )
+    if chosen_indices is None:
+        return None
 
-    chosen_indices = []
+    starts = [line_start] + [float(candidate_onsets[idx]) for idx in chosen_indices]
+    adjusted_starts = _adjust_monotonic_starts(starts, min_step=0.02)
+
+    if adjusted_starts[-1] >= line_end - 0.01:
+        return None
+
+    new_words = _build_words_from_starts(
+        line.words,
+        adjusted_starts,
+        line_end=line_end,
+        min_word_duration=min_word_duration,
+        boundary_gap=0.02,
+    )
+    if new_words is None:
+        return None
+    return Line(words=new_words, singer=line.singer)
+
+
+def _candidate_onsets_for_line(onset_times, *, line_start: float, line_end: float):
+    return np.sort(
+        onset_times[
+            (onset_times >= line_start + 0.04) & (onset_times <= line_end - 0.01)
+        ]
+    )
+
+
+def _expected_word_starts(
+    words: List[Word], line_start: float, line_end: float
+) -> List[float]:
+    original_duration = max(line_end - line_start, 1e-3)
+    expected_starts: List[float] = []
+    for word in words[1:]:
+        normalized = max(
+            0.0, min(1.0, (word.start_time - line_start) / original_duration)
+        )
+        expected_starts.append(line_start + normalized * original_duration)
+    return expected_starts
+
+
+def _choose_onset_indices(
+    *,
+    candidate_onsets,
+    expected_starts: List[float],
+    target_word_count: int,
+) -> Optional[List[int]]:
+    chosen_indices: List[int] = []
     prev_idx = -1
     for i in range(target_word_count):
         min_idx = prev_idx + 1
@@ -174,20 +218,29 @@ def retime_line_words_to_onsets(
         )
         chosen_indices.append(best_idx)
         prev_idx = best_idx
+    return chosen_indices
 
-    starts = [line_start] + [float(candidate_onsets[idx]) for idx in chosen_indices]
-    adjusted_starts = [line_start]
+
+def _adjust_monotonic_starts(starts: List[float], *, min_step: float) -> List[float]:
+    adjusted_starts = [starts[0]]
     for start in starts[1:]:
-        adjusted_starts.append(max(start, adjusted_starts[-1] + 0.02))
+        adjusted_starts.append(max(start, adjusted_starts[-1] + min_step))
+    return adjusted_starts
 
-    if adjusted_starts[-1] >= line_end - 0.01:
-        return None
 
+def _build_words_from_starts(
+    words: List[Word],
+    adjusted_starts: List[float],
+    *,
+    line_end: float,
+    min_word_duration: float,
+    boundary_gap: float,
+) -> Optional[List[Word]]:
     new_words: List[Word] = []
-    for i, word in enumerate(line.words):
+    for i, word in enumerate(words):
         start = adjusted_starts[i]
         if i + 1 < len(adjusted_starts):
-            end = min(line_end, adjusted_starts[i + 1] - 0.02)
+            end = min(line_end, adjusted_starts[i + 1] - boundary_gap)
         else:
             end = line_end
         if end - start < min_word_duration:
@@ -202,4 +255,4 @@ def retime_line_words_to_onsets(
                 singer=word.singer,
             )
         )
-    return Line(words=new_words, singer=line.singer)
+    return new_words
