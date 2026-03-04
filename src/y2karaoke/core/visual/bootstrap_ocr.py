@@ -93,53 +93,131 @@ def _append_predicted_words(
     for idx, (t_val, raw_item) in enumerate(zip(times, pred_items)):
         if not raw_item:
             continue
-        roi_h = roi_w = None
-        if roi_shapes is not None and idx < len(roi_shapes):
-            roi_h, roi_w = roi_shapes[idx]
         items = normalize_ocr_items(raw_item)
-        rec_texts = items["rec_texts"]
-        rec_boxes = items["rec_boxes"]
-        roi_nd = None
-        if roi_frames is not None and idx < len(roi_frames):
-            roi_nd = roi_frames[idx]
-        words = []
-        for txt, box_data in zip(rec_texts, rec_boxes):
-            points = box_data["word"] if isinstance(box_data, dict) else box_data
-            nb = np.array(points).reshape(-1, 2)
-            x, y = int(min(nb[:, 0])), int(min(nb[:, 1]))
-            bw, bh = int(max(nb[:, 0]) - x), int(max(nb[:, 1]) - y)
-            if bw <= 0 or bh <= 0:
-                continue
-            if roi_h is not None and roi_w is not None:
-                if x < -2 or y < -2:
-                    continue
-                if x > int(roi_w * 1.05) or y > int(roi_h * 1.05):
-                    continue
-
-            # Calculate visibility metrics (brightness and ink density)
-            # Default to high visibility if no ROI frame is available (e.g. in unit tests)
-            if roi_nd is not None:
-                vis = _get_word_ink_metrics(roi_nd, x=x, y=y, w=bw, h=bh)
-            else:
-                vis = {"brightness": 255.0, "density": 1.0}
-
-            if vis["density"] < 0.002:  # Extremely faint
-                continue
-
-            words.append(
-                {
-                    "text": txt,
-                    "x": x,
-                    "y": y,
-                    "w": bw,
-                    "h": bh,
-                    "brightness": vis["brightness"],
-                    "density": vis["density"],
-                }
-            )
+        roi_nd = (
+            roi_frames[idx]
+            if roi_frames is not None and idx < len(roi_frames)
+            else None
+        )
+        roi_shape = (
+            roi_shapes[idx]
+            if roi_shapes is not None and idx < len(roi_shapes)
+            else None
+        )
+        words = _prediction_words(items=items, roi_nd=roi_nd, roi_shape=roi_shape)
         if words:
             line_boxes = _build_line_boxes(words, roi_nd=roi_nd)
             raw.append({"time": t_val, "words": words, "line_boxes": line_boxes})
+
+
+def _prediction_words(
+    *,
+    items: dict[str, Any],
+    roi_nd: Any | None,
+    roi_shape: tuple[int, int] | None,
+) -> list[dict[str, Any]]:
+    if np is None:
+        return []
+    rec_texts = items["rec_texts"]
+    rec_boxes = items["rec_boxes"]
+    out: list[dict[str, Any]] = []
+    for txt, box_data in zip(rec_texts, rec_boxes):
+        bounds = _word_bounds(box_data)
+        if bounds is None:
+            continue
+        x, y, bw, bh = bounds
+        if roi_shape is not None and not _in_roi_bounds(x=x, y=y, roi_shape=roi_shape):
+            continue
+        vis = (
+            _get_word_ink_metrics(roi_nd, x=x, y=y, w=bw, h=bh)
+            if roi_nd is not None
+            else {"brightness": 255.0, "density": 1.0}
+        )
+        if vis["density"] < 0.002:
+            continue
+        out.append(
+            {
+                "text": txt,
+                "x": x,
+                "y": y,
+                "w": bw,
+                "h": bh,
+                "brightness": vis["brightness"],
+                "density": vis["density"],
+            }
+        )
+    return out
+
+
+def _word_bounds(box_data: Any) -> tuple[int, int, int, int] | None:
+    if np is None:
+        return None
+    points = box_data["word"] if isinstance(box_data, dict) else box_data
+    nb = np.array(points).reshape(-1, 2)
+    x, y = int(min(nb[:, 0])), int(min(nb[:, 1]))
+    bw, bh = int(max(nb[:, 0]) - x), int(max(nb[:, 1]) - y)
+    if bw <= 0 or bh <= 0:
+        return None
+    return x, y, bw, bh
+
+
+def _in_roi_bounds(*, x: int, y: int, roi_shape: tuple[int, int]) -> bool:
+    roi_h, roi_w = roi_shape
+    if x < -2 or y < -2:
+        return False
+    if x > int(roi_w * 1.05) or y > int(roi_h * 1.05):
+        return False
+    return True
+
+
+def _sample_frame_rois(
+    cap: Any,
+    *,
+    src_fps: float,
+    step: int,
+    end: float,
+    frame_idx_start: int,
+    roi_rect: tuple[int, int, int, int],
+    batch_size: int,
+    flush_batch_fn: Any,
+) -> None:
+    rx, ry, rw, rh = roi_rect
+    frame_idx = frame_idx_start
+    buffered_rois: list[Any] = []
+    buffered_shapes: list[tuple[int, int]] = []
+    buffered_times: list[float] = []
+
+    def _flush_local() -> None:
+        if not buffered_rois:
+            return
+        flush_batch_fn(buffered_rois, buffered_shapes, buffered_times)
+        buffered_rois.clear()
+        buffered_shapes.clear()
+        buffered_times.clear()
+
+    while True:
+        ok = cap.grab()
+        if not ok:
+            break
+        t = frame_idx / src_fps
+        if t > end + 0.2:
+            break
+        if frame_idx % step != 0:
+            frame_idx += 1
+            continue
+
+        ok, frame = cap.retrieve()
+        if not ok:
+            frame_idx += 1
+            continue
+        roi = frame[ry : ry + rh, rx : rx + rw]
+        buffered_rois.append(roi)
+        buffered_shapes.append((roi.shape[0], roi.shape[1]))
+        buffered_times.append(t)
+        if len(buffered_rois) >= batch_size:
+            _flush_local()
+        frame_idx += 1
+    _flush_local()
 
 
 def _get_word_ink_metrics(
@@ -321,21 +399,20 @@ def collect_raw_frames(
     raw: list[dict[str, Any]] = []
     if start > 0:
         cap.set(cv2.CAP_PROP_POS_MSEC, start * 1000.0)
-    frame_idx = max(int(round(start * src_fps)), 0)
+    frame_idx_start = max(int(round(start * src_fps)), 0)
 
     if log_fn:
         log_fn(f"Sampling frames at {fps} FPS...")
 
     batch_size = 8
     supports_batch: bool | None = None
-    buffered_rois: list[Any] = []
-    buffered_shapes: list[tuple[int, int]] = []
-    buffered_times: list[float] = []
 
-    def _flush_batch() -> None:
+    def _flush_batch(
+        buffered_rois: list[Any],
+        buffered_shapes: list[tuple[int, int]],
+        buffered_times: list[float],
+    ) -> None:
         nonlocal supports_batch
-        if not buffered_rois:
-            return
         pred_items, supports_batch = _predict_rois_with_fallback(
             ocr, buffered_rois, supports_batch
         )
@@ -346,35 +423,17 @@ def collect_raw_frames(
             roi_frames=buffered_rois,
             roi_shapes=buffered_shapes,
         )
-        buffered_rois.clear()
-        buffered_shapes.clear()
-        buffered_times.clear()
 
-    while True:
-        ok = cap.grab()
-        if not ok:
-            break
-        t = frame_idx / src_fps
-        if t > end + 0.2:
-            break
-        if frame_idx % step != 0:
-            frame_idx += 1
-            continue
-
-        ok, frame = cap.retrieve()
-        if not ok:
-            frame_idx += 1
-            continue
-
-        roi = frame[ry : ry + rh, rx : rx + rw]
-        buffered_rois.append(roi)
-        buffered_shapes.append((roi.shape[0], roi.shape[1]))
-        buffered_times.append(t)
-        if len(buffered_rois) >= batch_size:
-            _flush_batch()
-        frame_idx += 1
-
-    _flush_batch()
+    _sample_frame_rois(
+        cap,
+        src_fps=src_fps,
+        step=step,
+        end=end,
+        frame_idx_start=frame_idx_start,
+        roi_rect=roi_rect,
+        batch_size=batch_size,
+        flush_batch_fn=_flush_batch,
+    )
     cap.release()
     if not apply_post_filters:
         return raw
