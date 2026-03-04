@@ -75,88 +75,30 @@ from .bootstrap_postprocess_pipeline import (
     build_initial_lines_output as _build_initial_lines_output_impl,
     nearest_known_word_indices as _nearest_known_word_indices_impl,
 )
+from .bootstrap_postprocess_constants import (
+    COLLOQUIAL_EXPANSIONS as _COLLOQUIAL_EXPANSIONS,
+)
+from .bootstrap_postprocess_constants import (
+    COMMON_LYRIC_CHANT_TOKENS as _COMMON_LYRIC_CHANT_TOKENS,
+)
+from .bootstrap_postprocess_constants import (
+    CONTRACTION_RESTORES as _CONTRACTION_RESTORES,
+)
+from .bootstrap_postprocess_constants import (
+    FUSED_FALLBACK_PREFIX_ANCHORS as _FUSED_FALLBACK_PREFIX_ANCHORS,
+)
+from .bootstrap_postprocess_constants import (
+    FUSED_FALLBACK_SHORT_FUNCTIONS as _FUSED_FALLBACK_SHORT_FUNCTIONS,
+)
+from .bootstrap_postprocess_constants import (
+    FUSED_FALLBACK_SUFFIX_ANCHORS as _FUSED_FALLBACK_SUFFIX_ANCHORS,
+)
+from .bootstrap_postprocess_constants import (
+    VOCALIZATION_NOISE_TOKENS as _VOCALIZATION_NOISE_TOKENS,
+)
 from .bootstrap_postprocess_sequence import (
     run_postprocess_sequence as _run_postprocess_sequence_impl,
 )
-
-_FUSED_FALLBACK_PREFIX_ANCHORS = (
-    "i",
-    "my",
-)
-_FUSED_FALLBACK_SHORT_FUNCTIONS = ("i", "a", "in", "on", "to", "of", "my")
-_FUSED_FALLBACK_SUFFIX_ANCHORS = ("in",)
-_VOCALIZATION_NOISE_TOKENS = {
-    "oh",
-    "ooh",
-    "oooh",
-    "woah",
-    "whoa",
-    "woo",
-    "ah",
-    "aah",
-    "la",
-    "na",
-    "mm",
-    "mmm",
-    "hmm",
-}
-_HUM_NOISE_TOKENS = {"mm", "mmm", "hmm"}
-_COMMON_LYRIC_CHANT_TOKENS = {
-    "hey",
-    "yeah",
-    "yea",
-    "yo",
-    "no",
-    "na",
-    "la",
-    "oh",
-    "ah",
-    "woo",
-    "ooh",
-}
-_COLLOQUIAL_EXPANSIONS = {
-    "wanna": ("want", "to"),
-    "gonna": ("going", "to"),
-    "gotta": ("got", "to"),
-    "lemme": ("let", "me"),
-    "gimme": ("give", "me"),
-}
-_CONTRACTION_RESTORES = {
-    "wont": "won't",
-    "cant": "can't",
-    "dont": "don't",
-    "didnt": "didn't",
-    "doesnt": "doesn't",
-    "isnt": "isn't",
-    "arent": "aren't",
-    "wasnt": "wasn't",
-    "werent": "weren't",
-    "couldnt": "couldn't",
-    "wouldnt": "wouldn't",
-    "shouldnt": "shouldn't",
-    "im": "I'm",
-    "ive": "I've",
-    "ill": "I'll",
-}
-_OVERLAY_PLATFORM_TOKENS = {
-    "youtube",
-    "youtu",
-    "tube",
-    "facebook",
-    "twitter",
-    "instagram",
-    "tiktok",
-}
-_OVERLAY_CTA_TOKENS = {
-    "subscribe",
-    "subscribers",
-    "subscriber",
-    "follow",
-    "like",
-    "click",
-    "watch",
-    "channel",
-}
 
 
 def _trace_postprocess_snapshot(label: str, lines_out: list[dict[str, Any]]) -> None:
@@ -186,22 +128,6 @@ def _trace_postprocess_snapshot(label: str, lines_out: list[dict[str, Any]]) -> 
     import logging
 
     logging.getLogger(__name__).info("POST_TRACE %s first15=%s", label, preview)
-
-
-_OVERLAY_LEGAL_TOKENS = {
-    "rights",
-    "reserved",
-    "association",
-    "ltd",
-    "limited",
-    "copyright",
-    "produced",
-}
-_OVERLAY_BRAND_TOKENS = {
-    "karaoke",
-    "instrumental",
-    "collection",
-}
 
 
 def _clamp_confidence(value: Optional[float], default: float = 0.0) -> float:

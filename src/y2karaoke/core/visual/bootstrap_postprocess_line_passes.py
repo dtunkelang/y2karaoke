@@ -24,65 +24,28 @@ from .bootstrap_postprocess_fragment_noise import (
 from .bootstrap_postprocess_block_order import (
     reorder_clean_visibility_blocks as _reorder_clean_visibility_blocks_impl,
 )
+from .bootstrap_postprocess_constants import ADLIB_TAIL_TOKENS as _ADLIB_TAIL_TOKENS
+from .bootstrap_postprocess_constants import (
+    HUM_NOISE_TOKENS as _HUM_NOISE_TOKENS_SHARED,
+)
+from .bootstrap_postprocess_constants import (
+    OVERLAY_BRAND_TOKENS as _OVERLAY_BRAND_TOKENS,
+)
+from .bootstrap_postprocess_constants import (
+    OVERLAY_CTA_TOKENS as _OVERLAY_CTA_TOKENS,
+)
+from .bootstrap_postprocess_constants import (
+    OVERLAY_LEGAL_TOKENS as _OVERLAY_LEGAL_TOKENS,
+)
+from .bootstrap_postprocess_constants import (
+    OVERLAY_PLATFORM_TOKENS as _OVERLAY_PLATFORM_TOKENS,
+)
+from .bootstrap_postprocess_constants import (
+    VOCALIZATION_NOISE_TOKENS as _VOCALIZATION_NOISE_TOKENS,
+)
 
-_VOCALIZATION_NOISE_TOKENS = {
-    "oh",
-    "ooh",
-    "oooh",
-    "woah",
-    "whoa",
-    "woo",
-    "ah",
-    "aah",
-    "la",
-    "na",
-    "mm",
-    "mmm",
-    "hmm",
-}
-_HUM_NOISE_TOKENS = {"mm", "mmm", "hmm"}
-_ADLIB_TAIL_TOKENS = {
-    "uh",
-    "ah",
-    "aww",
-    "oh",
-    "hey",
-    "come",
-    "on",
-}
-_OVERLAY_PLATFORM_TOKENS = {
-    "youtube",
-    "youtu",
-    "tube",
-    "facebook",
-    "twitter",
-    "instagram",
-    "tiktok",
-}
-_OVERLAY_CTA_TOKENS = {
-    "subscribe",
-    "subscribers",
-    "subscriber",
-    "follow",
-    "like",
-    "click",
-    "watch",
-    "channel",
-}
-_OVERLAY_LEGAL_TOKENS = {
-    "rights",
-    "reserved",
-    "association",
-    "ltd",
-    "limited",
-    "copyright",
-    "produced",
-}
-_OVERLAY_BRAND_TOKENS = {
-    "karaoke",
-    "instrumental",
-    "collection",
-}
+# Backward-compatible symbol for existing imports in neighboring modules.
+_HUM_NOISE_TOKENS = _HUM_NOISE_TOKENS_SHARED
 
 
 def _normalize_output_casing(lines_out: list[dict[str, Any]]) -> None:
