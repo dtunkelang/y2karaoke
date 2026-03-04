@@ -20,6 +20,10 @@ from .bootstrap_postprocess_chronology import (
     repair_large_adjacent_time_inversions as _repair_large_adjacent_time_inversions_impl,
     repair_strong_local_chronology_inversions as _repair_strong_local_chronology_inversions_impl,
 )
+from .bootstrap_postprocess_vocalization_trimming import (
+    trim_leading_vocalization_in_block_first_cycle_rows as _trim_leading_vocalization_in_block_first_cycle_rows_impl,
+    trim_leading_vocalization_prefixes as _trim_leading_vocalization_prefixes_impl,
+)
 from .reconstruction import snap
 from .bootstrap_postprocess_line_passes import (
     _HUM_NOISE_TOKENS,
@@ -29,65 +33,10 @@ from .bootstrap_postprocess_line_passes import (
 
 
 def _trim_leading_vocalization_prefixes(lines_out: list[dict[str, Any]]) -> None:
-    """Drop a leading vocalization token when the same phrase appears nearby without it.
-
-    This targets rows like "Ooh take that money" where the ad-lib is fused onto a
-    lyric row in one repetition but the same row appears without the prefix in nearby
-    repeated cycles. Keep it conservative: low confidence only and requires local
-    support for the suffix phrase.
-    """
-    if len(lines_out) < 2:
-        return
-
-    norm_lines = [normalize_text_basic(str(ln.get("text", ""))) for ln in lines_out]
-    token_lines = [[t for t in n.split() if t] for n in norm_lines]
-
-    for i, ln in enumerate(lines_out):
-        words = ln.get("words", [])
-        toks = token_lines[i]
-        if len(words) != len(toks) or len(toks) < 3:
-            continue
-        lead = toks[0]
-        if lead not in _VOCALIZATION_NOISE_TOKENS:
-            continue
-        suffix = toks[1:]
-        if len(suffix) < 2:
-            continue
-        conf = float(ln.get("confidence", 0.0) or 0.0)
-        if conf > 0.4:
-            continue
-        start = float(ln.get("start", 0.0) or 0.0)
-        end = float(ln.get("end", start) or start)
-
-        supported = False
-        for j in range(max(0, i - 10), min(len(lines_out), i + 11)):
-            if j == i:
-                continue
-            other = lines_out[j]
-            other_toks = token_lines[j]
-            if other_toks != suffix:
-                continue
-            other_start = float(other.get("start", 0.0) or 0.0)
-            other_end = float(other.get("end", other_start) or other_start)
-            # Nearby in time or part of the same repeated cluster region.
-            if max(0.0, min(end, other_end) - max(start, other_start)) > 0.0 or (
-                abs(other_start - start) <= 20.0
-            ):
-                supported = True
-                break
-        if not supported:
-            continue
-
-        kept_words = words[1:]
-        if len(kept_words) < 2:
-            continue
-        ln["words"] = kept_words
-        ln["text"] = " ".join(
-            str(w.get("text", "")) for w in kept_words if w.get("text")
-        )
-        ln["start"] = float(kept_words[0].get("start", start) or start)
-        for wi, w in enumerate(kept_words):
-            w["word_index"] = wi + 1
+    _trim_leading_vocalization_prefixes_impl(
+        lines_out,
+        vocalization_noise_tokens_set=_VOCALIZATION_NOISE_TOKENS,
+    )
 
 
 def _repair_strong_local_chronology_inversions(lines_out: list[dict[str, Any]]) -> None:
@@ -158,73 +107,10 @@ def _dedupe_block_first_cycle_rows(lines_out: list[dict[str, Any]]) -> None:
 def _trim_leading_vocalization_in_block_first_cycle_rows(  # noqa: C901
     lines_out: list[dict[str, Any]],
 ) -> None:
-    """Trim leading vocalization tokens on cycle rows when a sibling cycle has the suffix."""
-    if len(lines_out) < 2:
-        return
-
-    def _bf(line: dict[str, Any]) -> dict[str, Any] | None:
-        meta = line.get("_reconstruction_meta", {})
-        if not isinstance(meta, dict):
-            return None
-        bf = meta.get("block_first")
-        return bf if isinstance(bf, dict) else None
-
-    entries: list[tuple[int, dict[str, Any], tuple[str, ...]]] = []
-    by_block: dict[object, list[int]] = {}
-    for idx, ln in enumerate(lines_out):
-        bf = _bf(ln)
-        if not bf:
-            continue
-        try:
-            if int(bf.get("cycle_count", 1) or 1) <= 1:
-                continue
-        except Exception:
-            continue
-        toks = tuple(
-            t for t in normalize_text_basic(str(ln.get("text", ""))).split() if t
-        )
-        entries.append((idx, bf, toks))
-        by_block.setdefault(bf.get("block_id"), []).append(idx)
-
-    if not by_block:
-        return
-
-    token_map = {
-        idx: tuple(
-            t
-            for t in normalize_text_basic(str(lines_out[idx].get("text", ""))).split()
-            if t
-        )
-        for idxs in by_block.values()
-        for idx in idxs
-    }
-
-    for idxs in by_block.values():
-        tok_set = {token_map[i] for i in idxs if token_map.get(i)}
-        for idx in idxs:
-            toks_list = list(token_map.get(idx, ()))
-            if len(toks_list) < 3:
-                continue
-            if toks_list[0] not in _VOCALIZATION_NOISE_TOKENS:
-                continue
-            suffix = tuple(toks_list[1:])
-            if suffix not in tok_set:
-                continue
-            ln = lines_out[idx]
-            conf = float(ln.get("confidence", 0.0) or 0.0)
-            if conf > 0.45:
-                continue
-            words = list(ln.get("words", []) or [])
-            if len(words) != len(toks_list) or len(words) < 3:
-                continue
-            kept = words[1:]
-            ln["words"] = kept
-            ln["text"] = " ".join(str(w.get("text", "")) for w in kept if w.get("text"))
-            ln["start"] = float(
-                kept[0].get("start", ln.get("start", 0.0)) or ln.get("start", 0.0)
-            )
-            for wi, w in enumerate(kept):
-                w["word_index"] = wi + 1
+    _trim_leading_vocalization_in_block_first_cycle_rows_impl(
+        lines_out,
+        vocalization_noise_tokens_set=_VOCALIZATION_NOISE_TOKENS,
+    )
 
 
 def _vocalization_noise_tokens(line: dict[str, Any]) -> list[str] | None:
