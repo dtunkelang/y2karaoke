@@ -12,6 +12,72 @@ logger = logging.getLogger(__name__)
 _SEQUENCE_TRACE_ENABLED = os.environ.get("Y2K_VISUAL_SEQUENCE_TRACE", "0") == "1"
 
 
+def _dsu_find(parent: list[int], idx: int) -> int:
+    while parent[idx] != idx:
+        parent[idx] = parent[parent[idx]]
+        idx = parent[idx]
+    return idx
+
+
+def _dsu_union(parent: list[int], rank: list[int], a_idx: int, b_idx: int) -> None:
+    ra = _dsu_find(parent, a_idx)
+    rb = _dsu_find(parent, b_idx)
+    if ra == rb:
+        return
+    if rank[ra] < rank[rb]:
+        parent[ra] = rb
+        return
+    if rank[ra] > rank[rb]:
+        parent[rb] = ra
+        return
+    parent[rb] = ra
+    rank[ra] += 1
+
+
+def _connect_overlapping_active_lines(
+    lines: list[dict[str, Any]],
+    *,
+    has_significant_overlap_fn: Callable[[dict[str, Any], dict[str, Any]], bool],
+) -> tuple[list[int], list[int]]:
+    parent = list(range(len(lines)))
+    rank = [0] * len(lines)
+    active: list[int] = []
+    for j, line_j in enumerate(lines):
+        start_j = float(line_j["first"])
+        next_active: list[int] = []
+        for i in active:
+            if start_j <= float(lines[i]["last"]) + 1.5:
+                next_active.append(i)
+                if has_significant_overlap_fn(lines[i], line_j):
+                    _dsu_union(parent, rank, i, j)
+        next_active.append(j)
+        active = next_active
+    return parent, rank
+
+
+def _blocks_from_dsu(
+    lines: list[dict[str, Any]], parent: list[int]
+) -> list[list[dict[str, Any]]]:
+    blocks_by_root: dict[int, list[dict[str, Any]]] = {}
+    for i, line in enumerate(lines):
+        blocks_by_root.setdefault(_dsu_find(parent, i), []).append(line)
+    return list(blocks_by_root.values())
+
+
+def _order_blocks_locally(
+    blocks: list[list[dict[str, Any]]],
+    *,
+    order_visual_block_locally_fn: Callable[
+        [list[dict[str, Any]]], list[dict[str, Any]]
+    ],
+) -> list[dict[str, Any]]:
+    blocks.sort(key=lambda b: min(x["first"] for x in b))
+    ordered: list[dict[str, Any]] = []
+    for block in blocks:
+        ordered.extend(order_visual_block_locally_fn(block))
+    return ordered
+
+
 def sequence_by_visual_neighborhood(
     lines: list[dict[str, Any]],
     *,
@@ -28,57 +94,16 @@ def sequence_by_visual_neighborhood(
         return []
     input_order = list(lines)
     lines.sort(key=lambda x: x["first"])
-
-    parent = list(range(len(lines)))
-    rank = [0] * len(lines)
-
-    def _find(i: int) -> int:
-        while parent[i] != i:
-            parent[i] = parent[parent[i]]
-            i = parent[i]
-        return i
-
-    def _union(a_idx: int, b_idx: int) -> None:
-        ra = _find(a_idx)
-        rb = _find(b_idx)
-        if ra == rb:
-            return
-        if rank[ra] < rank[rb]:
-            parent[ra] = rb
-            return
-        if rank[ra] > rank[rb]:
-            parent[rb] = ra
-            return
-        parent[rb] = ra
-        rank[ra] += 1
-
-    active: list[int] = []
-    for j, line_j in enumerate(lines):
-        start_j = float(line_j["first"])
-        next_active: list[int] = []
-        for i in active:
-            if start_j <= float(lines[i]["last"]) + 1.5:
-                next_active.append(i)
-                if has_significant_overlap_fn(lines[i], line_j):
-                    _union(i, j)
-        next_active.append(j)
-        active = next_active
-
-    blocks_by_root: dict[int, list[dict[str, Any]]] = {}
-    for i, line in enumerate(lines):
-        blocks_by_root.setdefault(_find(i), []).append(line)
-    unsorted_blocks = list(blocks_by_root.values())
+    parent, _rank = _connect_overlapping_active_lines(
+        lines, has_significant_overlap_fn=has_significant_overlap_fn
+    )
+    unsorted_blocks = _blocks_from_dsu(lines, parent)
     log_sequence_blocks_fn("sweep", unsorted_blocks)
     if should_disable_sequencing_for_blocks_fn(unsorted_blocks):
         return input_order
-
-    unsorted_blocks.sort(key=lambda b: min(x["first"] for x in b))
-
-    ordered = []
-    for block in unsorted_blocks:
-        ordered.extend(order_visual_block_locally_fn(block))
-
-    return ordered
+    return _order_blocks_locally(
+        unsorted_blocks, order_visual_block_locally_fn=order_visual_block_locally_fn
+    )
 
 
 def sequence_by_visual_neighborhood_legacy(
