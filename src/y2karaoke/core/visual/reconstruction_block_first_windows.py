@@ -3,6 +3,102 @@ from __future__ import annotations
 from typing import Any, Optional
 
 
+def _segment_sequence(
+    seq: list[tuple[float, int, float, float]],
+    cycle_start: float,
+    cycle_end: float,
+) -> list[tuple[float, int]]:
+    return [
+        (t, idx)
+        for (t, idx, _max_norm, _sum_norm) in seq
+        if (cycle_start - 0.05) <= t <= (cycle_end + 0.05)
+    ]
+
+
+def _assign_transition_windows(
+    seg_seq: list[tuple[float, int]],
+    row_count: int,
+    *,
+    cycle_start: float,
+    cycle_end: float,
+) -> tuple[list[Optional[float]], list[Optional[float]]]:
+    onsets: list[Optional[float]] = [None] * row_count
+    offsets: list[Optional[float]] = [None] * row_count
+    prev_idx = seg_seq[0][1]
+    onsets[prev_idx] = max(cycle_start, seg_seq[0][0])
+    for t, idx in seg_seq[1:]:
+        if idx == prev_idx:
+            continue
+        if offsets[prev_idx] is None:
+            offsets[prev_idx] = min(cycle_end, t)
+        if onsets[idx] is None:
+            onsets[idx] = max(cycle_start, t)
+        prev_idx = idx
+    if offsets[prev_idx] is None:
+        offsets[prev_idx] = min(cycle_end + 0.2, seg_seq[-1][0] + 0.2)
+    return onsets, offsets
+
+
+def _visible_obs_times(
+    cluster: Any,
+    *,
+    cycle_start: float,
+    cycle_end: float,
+) -> list[float]:
+    return sorted(
+        float(r.time)
+        for r in cluster.observations
+        if r.is_visible and (cycle_start - 0.15) <= float(r.time) <= (cycle_end + 0.15)
+    )
+
+
+def _fill_missing_from_observations(
+    onsets: list[Optional[float]],
+    offsets: list[Optional[float]],
+    row_clusters: list[Any],
+    *,
+    cycle_start: float,
+    cycle_end: float,
+) -> None:
+    for idx, cluster in enumerate(row_clusters):
+        if onsets[idx] is None or offsets[idx] is None:
+            obs_times = _visible_obs_times(
+                cluster, cycle_start=cycle_start, cycle_end=cycle_end
+            )
+            if not obs_times:
+                continue
+            if onsets[idx] is None:
+                onsets[idx] = max(cycle_start, obs_times[0])
+            if offsets[idx] is None:
+                offsets[idx] = min(cycle_end + 0.2, obs_times[-1] + 0.2)
+
+
+def _assemble_windows(
+    onsets: list[Optional[float]],
+    offsets: list[Optional[float]],
+    *,
+    row_count: int,
+    cycle_start: float,
+    cycle_end: float,
+) -> Optional[list[tuple[float, float]]]:
+    if any(v is None for v in onsets) or any(v is None for v in offsets):
+        return None
+
+    windows: list[tuple[float, float]] = []
+    prev_s = cycle_start - 0.05
+    for idx in range(row_count):
+        on = onsets[idx]
+        off = offsets[idx]
+        if on is None or off is None:
+            return None
+        s = max(float(on), prev_s + 0.05)
+        e = max(s + 0.2, float(off))
+        e = min(cycle_end + 0.4, e)
+        windows.append((s, e))
+        prev_s = s
+    return windows
+
+
 def estimate_row_windows_from_block(  # noqa: C901
     block_frames: list[Any],
     row_clusters: list[Any],
@@ -264,62 +360,20 @@ def estimate_row_windows_from_seq(
     row_clusters: list[Any],
     row_count: int,
 ) -> Optional[list[tuple[float, float]]]:
-    seg_seq = [
-        (t, idx)
-        for (t, idx, _max_norm, _sum_norm) in seq
-        if (cycle_start - 0.05) <= t <= (cycle_end + 0.05)
-    ]
+    seg_seq = _segment_sequence(seq, cycle_start, cycle_end)
     if len(seg_seq) < 4:
         return None
 
-    onsets: list[Optional[float]] = [None] * row_count
-    offsets: list[Optional[float]] = [None] * row_count
-    prev_idx = seg_seq[0][1]
-    onsets[prev_idx] = max(cycle_start, seg_seq[0][0])
-    for t, idx in seg_seq[1:]:
-        if idx == prev_idx:
-            continue
-        if offsets[prev_idx] is None:
-            offsets[prev_idx] = min(cycle_end, t)
-        if onsets[idx] is None:
-            onsets[idx] = max(cycle_start, t)
-        prev_idx = idx
-    if offsets[prev_idx] is None:
-        offsets[prev_idx] = min(cycle_end + 0.2, seg_seq[-1][0] + 0.2)
-
-    for idx, cluster in enumerate(row_clusters):
-        if onsets[idx] is None:
-            obs_times = sorted(
-                float(r.time)
-                for r in cluster.observations
-                if r.is_visible
-                and (cycle_start - 0.15) <= float(r.time) <= (cycle_end + 0.15)
-            )
-            if obs_times:
-                onsets[idx] = max(cycle_start, obs_times[0])
-        if offsets[idx] is None:
-            obs_times = sorted(
-                float(r.time)
-                for r in cluster.observations
-                if r.is_visible
-                and (cycle_start - 0.15) <= float(r.time) <= (cycle_end + 0.15)
-            )
-            if obs_times:
-                offsets[idx] = min(cycle_end + 0.2, obs_times[-1] + 0.2)
-
-    if any(v is None for v in onsets) or any(v is None for v in offsets):
-        return None
-
-    windows: list[tuple[float, float]] = []
-    prev_s = cycle_start - 0.05
-    for idx in range(row_count):
-        on = onsets[idx]
-        off = offsets[idx]
-        if on is None or off is None:
-            return None
-        s = max(float(on), prev_s + 0.05)
-        e = max(s + 0.2, float(off))
-        e = min(cycle_end + 0.4, e)
-        windows.append((s, e))
-        prev_s = s
-    return windows
+    onsets, offsets = _assign_transition_windows(
+        seg_seq, row_count, cycle_start=cycle_start, cycle_end=cycle_end
+    )
+    _fill_missing_from_observations(
+        onsets, offsets, row_clusters, cycle_start=cycle_start, cycle_end=cycle_end
+    )
+    return _assemble_windows(
+        onsets,
+        offsets,
+        row_count=row_count,
+        cycle_start=cycle_start,
+        cycle_end=cycle_end,
+    )

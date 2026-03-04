@@ -63,6 +63,61 @@ def _pair_merge_threshold(
     return pair_threshold
 
 
+def _append_if_valid_token(out: list[str], text: str) -> None:
+    if _compact(text) or text == "'":
+        out.append(text)
+
+
+def _confusable_run(
+    words: list[dict[str, Any]], start: int
+) -> tuple[int, list[dict[str, Any]]]:
+    j = start + 1
+    while j < len(words):
+        nxt_text = str(words[j].get("text", "")).strip()
+        if not _is_confusable_short_token(nxt_text):
+            break
+        j += 1
+    return j, words[start:j]
+
+
+def _normalized_gaps(run: list[dict[str, Any]]) -> list[float]:
+    scale = _robust_scale(run)
+    gaps: list[float] = []
+    for k in range(len(run) - 1):
+        right = float(run[k].get("x", 0.0)) + float(run[k].get("w", 0.0))
+        nxt = float(run[k + 1].get("x", 0.0))
+        gaps.append(max(0.0, nxt - right))
+    return [g / scale for g in gaps]
+
+
+def _group_confusable_run(run: list[dict[str, Any]]) -> list[list[dict[str, Any]]]:
+    norm_gaps = _normalized_gaps(run)
+    merge_threshold = _estimate_tiny_merge_threshold(norm_gaps)
+    groups: list[list[dict[str, Any]]] = [[run[0]]]
+    for k, w in enumerate(run[1:], start=1):
+        prev = run[k - 1]
+        pair_threshold = _pair_merge_threshold(
+            merge_threshold,
+            prev_text=str(prev.get("text", "")).strip(),
+            cur_text=str(w.get("text", "")).strip(),
+        )
+        if norm_gaps[k - 1] > pair_threshold:
+            groups.append([w])
+        else:
+            groups[-1].append(w)
+    return groups
+
+
+def _append_confusable_run_tokens(out: list[str], run: list[dict[str, Any]]) -> None:
+    if len(run) == 1:
+        _append_if_valid_token(out, str(run[0].get("text", "")).strip())
+        return
+    for grp in _group_confusable_run(run):
+        tok = _as_token(grp)
+        if _compact(tok):
+            out.append(tok)
+
+
 def segment_line_tokens_by_visual_gaps(ln_w: list[dict[str, Any]]) -> list[str]:
     if not ln_w:
         return []
@@ -76,52 +131,12 @@ def segment_line_tokens_by_visual_gaps(ln_w: list[dict[str, Any]]) -> list[str]:
     while i < len(words):
         text = str(words[i].get("text", "")).strip()
         if not _is_confusable_short_token(text):
-            if _compact(text) or text == "'":
-                out.append(text)
+            _append_if_valid_token(out, text)
             i += 1
             continue
 
-        j = i + 1
-        while j < len(words):
-            nxt_text = str(words[j].get("text", "")).strip()
-            if not _is_confusable_short_token(nxt_text):
-                break
-            j += 1
-
-        run = words[i:j]
-        if len(run) == 1:
-            if _compact(text) or text == "'":
-                out.append(text)
-            i = j
-            continue
-
-        scale = _robust_scale(run)
-        gaps = []
-        for k in range(len(run) - 1):
-            right = float(run[k].get("x", 0.0)) + float(run[k].get("w", 0.0))
-            nxt = float(run[k + 1].get("x", 0.0))
-            gaps.append(max(0.0, nxt - right))
-        norm_gaps = [g / scale for g in gaps]
-        merge_threshold = _estimate_tiny_merge_threshold(norm_gaps)
-
-        groups: list[list[dict[str, Any]]] = [[run[0]]]
-        for k, w in enumerate(run[1:], start=1):
-            prev = run[k - 1]
-            pair_threshold = _pair_merge_threshold(
-                merge_threshold,
-                prev_text=str(prev.get("text", "")).strip(),
-                cur_text=str(w.get("text", "")).strip(),
-            )
-
-            if norm_gaps[k - 1] > pair_threshold:
-                groups.append([w])
-            else:
-                groups[-1].append(w)
-
-        for grp in groups:
-            tok = _as_token(grp)
-            if _compact(tok):
-                out.append(tok)
+        j, run = _confusable_run(words, i)
+        _append_confusable_run_tokens(out, run)
         i = j
 
     return out
