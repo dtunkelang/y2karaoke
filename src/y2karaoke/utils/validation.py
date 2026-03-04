@@ -67,72 +67,88 @@ def validate_output_path(path: str) -> Path:
     return output_path
 
 
+def _has_words(line) -> bool:
+    return bool(getattr(line, "words", None))
+
+
+def _previous_word_line_index(fixed, start_idx: int):
+    for pos in range(start_idx, -1, -1):
+        if _has_words(fixed[pos]):
+            return pos
+    return None
+
+
+def _shift_line_by_delta(fixed, index: int, delta: float) -> None:
+    from ..core.models import Line, Word
+
+    if delta == 0:
+        return
+    line = fixed[index]
+    if not _has_words(line):
+        return
+    fixed[index] = Line(
+        words=[
+            Word(
+                text=w.text,
+                start_time=w.start_time + delta,
+                end_time=w.end_time + delta,
+                singer=w.singer,
+            )
+            for w in line.words
+        ],
+        singer=line.singer,
+    )
+
+
+def _shift_line_backward_at(fixed, index: int, delta: float) -> None:
+    if delta <= 0:
+        return
+    _shift_line_by_delta(fixed, index, -delta)
+
+
+def _rebalance_previous_lines(fixed, idx: int, target_start: float) -> None:
+    j = _previous_word_line_index(fixed, idx - 1)
+    while j is not None:
+        prior_idx = _previous_word_line_index(fixed, j - 1)
+        lower_bound = (
+            fixed[prior_idx].start_time + 0.01
+            if prior_idx is not None
+            else float("-inf")
+        )
+        desired = max(target_start, lower_bound)
+        backward = fixed[j].start_time - desired
+        if backward > 0:
+            _shift_line_backward_at(fixed, j, backward)
+        target_start = desired - 0.01
+        if prior_idx is None:
+            break
+        j = prior_idx
+
+
+def _compute_shift(start: float, prev_start: float | None) -> float:
+    if prev_start is None or start >= prev_start:
+        return 0.0
+    return (prev_start - start) + 0.01
+
+
 def fix_line_order(lines, max_forward_shift: float = 3.0):
     """Fix non-monotonic line ordering by shifting lines forward.
 
     Returns the (possibly modified) list of lines.
     """
-    from ..core.models import Line, Word
-
     prev_start = None
     fixed = list(lines)
 
-    def _previous_word_line_index(start_idx: int):
-        for pos in range(start_idx, -1, -1):
-            if getattr(fixed[pos], "words", None):
-                return pos
-        return None
-
-    def _shift_line_backward_at(index: int, delta: float):
-        from ..core.models import Line, Word
-
-        if delta <= 0:
-            return
-        line = fixed[index]
-        if not getattr(line, "words", None):
-            return
-        fixed[index] = Line(
-            words=[
-                Word(
-                    text=w.text,
-                    start_time=w.start_time - delta,
-                    end_time=w.end_time - delta,
-                    singer=w.singer,
-                )
-                for w in line.words
-            ],
-            singer=line.singer,
-        )
-
     for idx, line in enumerate(fixed):
-        if not getattr(line, "words", None):
+        if not _has_words(line):
             continue
         start = line.start_time
-        if prev_start is not None and start < prev_start:
-            shift = (prev_start - start) + 0.01
-            if shift > max_forward_shift and idx > 0:
-                target_start = start - 0.01
-                j = _previous_word_line_index(idx - 1)
-                while j is not None:
-                    prior_idx = _previous_word_line_index(j - 1)
-                    lower_bound = (
-                        fixed[prior_idx].start_time + 0.01
-                        if prior_idx is not None
-                        else float("-inf")
-                    )
-                    desired = max(target_start, lower_bound)
-                    backward = fixed[j].start_time - desired
-                    if backward > 0:
-                        _shift_line_backward_at(j, backward)
-                    target_start = desired - 0.01
-                    if prior_idx is None:
-                        break
-                    j = prior_idx
-                prev_start = fixed[idx - 1].start_time
-                shift = (prev_start - start) + 0.01 if start < prev_start else 0.0
-            if shift <= 0:
-                prev_start = start
-                continue
+        shift = _compute_shift(start, prev_start)
+        if shift > 0 and shift > max_forward_shift and idx > 0:
+            _rebalance_previous_lines(fixed, idx, start - 0.01)
+            prev_start = fixed[idx - 1].start_time
+            shift = _compute_shift(start, prev_start)
+        if shift > 0:
             logger.warning(
                 "Line %d starts before previous line (%.2fs < %.2fs), shifting +%.2fs",
                 idx + 1,
@@ -140,17 +156,11 @@ def fix_line_order(lines, max_forward_shift: float = 3.0):
                 prev_start,
                 shift,
             )
-            new_words = [
-                Word(
-                    text=w.text,
-                    start_time=w.start_time + shift,
-                    end_time=w.end_time + shift,
-                    singer=w.singer,
-                )
-                for w in line.words
-            ]
-            fixed[idx] = Line(words=new_words, singer=line.singer)
+            _shift_line_by_delta(fixed, idx, shift)
             start = fixed[idx].start_time
+        else:
+            prev_start = start
+            continue
         prev_start = start
     return fixed
 
