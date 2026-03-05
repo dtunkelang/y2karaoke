@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import os
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
 from ....utils.lex_lookup_installer import ensure_local_lex_lookup
@@ -31,6 +32,37 @@ class _WhisperCorrectionDecisionConfig:
 
 
 def _default_correction_config() -> _WhisperCorrectionDecisionConfig:
+    profile = os.getenv("Y2K_WHISPER_PROFILE", "default").strip().lower()
+    if profile == "safe":
+        return _WhisperCorrectionDecisionConfig(
+            quality_good_threshold=0.75,
+            quality_mixed_threshold=0.45,
+            dtw_confidence_matched_ratio_min=0.65,
+            dtw_confidence_avg_similarity_min=0.55,
+            dtw_confidence_line_coverage_min=0.65,
+            low_confidence_matched_ratio_max=0.2,
+            low_confidence_line_coverage_max=0.2,
+            low_confidence_avg_similarity_max=0.35,
+            no_evidence_matched_ratio_max=0.04,
+            no_evidence_line_coverage_max=0.04,
+            no_evidence_avg_similarity_max=0.08,
+            no_evidence_quality_max=0.45,
+        )
+    if profile == "aggressive":
+        return _WhisperCorrectionDecisionConfig(
+            quality_good_threshold=0.65,
+            quality_mixed_threshold=0.35,
+            dtw_confidence_matched_ratio_min=0.55,
+            dtw_confidence_avg_similarity_min=0.45,
+            dtw_confidence_line_coverage_min=0.55,
+            low_confidence_matched_ratio_max=0.3,
+            low_confidence_line_coverage_max=0.3,
+            low_confidence_avg_similarity_max=0.45,
+            no_evidence_matched_ratio_max=0.06,
+            no_evidence_line_coverage_max=0.06,
+            no_evidence_avg_similarity_max=0.12,
+            no_evidence_quality_max=0.35,
+        )
     return _WhisperCorrectionDecisionConfig()
 
 

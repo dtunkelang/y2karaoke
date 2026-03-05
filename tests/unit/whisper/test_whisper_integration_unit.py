@@ -1,6 +1,8 @@
 from typing import Any, cast
 from y2karaoke.core.models import Line, Word
 import y2karaoke.core.components.whisper.whisper_integration as wi
+from y2karaoke.core.components.whisper import whisper_integration_align as wialign
+from y2karaoke.core.components.whisper import whisper_integration_correct as wicorrect
 from y2karaoke.core.components.alignment.timing_models import (
     TranscriptionWord,
     TranscriptionSegment,
@@ -118,3 +120,22 @@ def test_find_segment_for_time():
     # wi._find_segment_for_time(time, segments)
     assert wi_any._find_segment_for_time(5.0, segments) == 0
     assert wi_any._find_segment_for_time(20.0, segments) == 1
+
+
+def test_whisper_profile_configs(monkeypatch):
+    monkeypatch.delenv("Y2K_WHISPER_PROFILE", raising=False)
+    default_map = wialign._default_mapping_decision_config()
+    default_correct = wicorrect._default_correction_config()
+
+    monkeypatch.setenv("Y2K_WHISPER_PROFILE", "safe")
+    safe_map = wialign._default_mapping_decision_config()
+    safe_correct = wicorrect._default_correction_config()
+
+    monkeypatch.setenv("Y2K_WHISPER_PROFILE", "aggressive")
+    aggr_map = wialign._default_mapping_decision_config()
+    aggr_correct = wicorrect._default_correction_config()
+
+    assert safe_map.sparse_word_threshold > default_map.sparse_word_threshold
+    assert aggr_map.sparse_word_threshold < default_map.sparse_word_threshold
+    assert safe_correct.quality_good_threshold > default_correct.quality_good_threshold
+    assert aggr_correct.quality_good_threshold < default_correct.quality_good_threshold

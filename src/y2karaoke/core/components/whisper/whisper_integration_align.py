@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import os
 import time
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
@@ -35,6 +36,25 @@ class _WhisperMappingDecisionConfig:
 
 
 def _default_mapping_decision_config() -> _WhisperMappingDecisionConfig:
+    profile = os.getenv("Y2K_WHISPER_PROFILE", "default").strip().lower()
+    if profile == "safe":
+        return _WhisperMappingDecisionConfig(
+            sparse_word_threshold=100,
+            sparse_segment_threshold=5,
+            low_coverage_lrc_word_min=24,
+            low_coverage_matched_ratio_max=0.3,
+            low_coverage_line_coverage_max=0.3,
+            snap_first_word_max_shift=2.0,
+        )
+    if profile == "aggressive":
+        return _WhisperMappingDecisionConfig(
+            sparse_word_threshold=64,
+            sparse_segment_threshold=3,
+            low_coverage_lrc_word_min=16,
+            low_coverage_matched_ratio_max=0.4,
+            low_coverage_line_coverage_max=0.4,
+            snap_first_word_max_shift=3.0,
+        )
     return _WhisperMappingDecisionConfig()
 
 
