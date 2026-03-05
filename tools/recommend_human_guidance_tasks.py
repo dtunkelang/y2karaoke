@@ -267,6 +267,57 @@ def _recommend(doc: dict[str, Any], top: int, min_priority: float) -> dict[str, 
     }
 
 
+def _validate_payload_schema(payload: dict[str, Any]) -> None:
+    if not isinstance(payload, dict):
+        raise ValueError("payload must be an object")
+    for key in ("song_count_considered", "top"):
+        if not isinstance(payload.get(key), int):
+            raise ValueError(f"payload.{key} must be an integer")
+    if not isinstance(payload.get("min_priority"), (int, float)):
+        raise ValueError("payload.min_priority must be numeric")
+    rows = payload.get("rows")
+    if not isinstance(rows, list):
+        raise ValueError("payload.rows must be an array")
+    for idx, row in enumerate(rows):
+        if not isinstance(row, dict):
+            raise ValueError(f"payload.rows[{idx}] must be an object")
+        for key in (
+            "song",
+            "status",
+            "priority_score",
+            "agreement_coverage_ratio",
+            "agreement_start_p95_abs_sec",
+            "low_confidence_ratio",
+            "dtw_line_coverage",
+            "actions",
+            "mismatch_examples",
+            "suggested_targets",
+        ):
+            if key not in row:
+                raise ValueError(f"payload.rows[{idx}].{key} is required")
+        if not isinstance(row.get("song"), str):
+            raise ValueError(f"payload.rows[{idx}].song must be a string")
+        if not isinstance(row.get("status"), str):
+            raise ValueError(f"payload.rows[{idx}].status must be a string")
+        for num_key in (
+            "priority_score",
+            "agreement_coverage_ratio",
+            "agreement_start_p95_abs_sec",
+            "low_confidence_ratio",
+            "dtw_line_coverage",
+        ):
+            if not isinstance(row.get(num_key), (int, float)):
+                raise ValueError(f"payload.rows[{idx}].{num_key} must be numeric")
+        for list_key in ("actions", "mismatch_examples", "suggested_targets"):
+            val = row.get(list_key)
+            if not isinstance(val, list) or not all(
+                isinstance(item, str) for item in val
+            ):
+                raise ValueError(
+                    f"payload.rows[{idx}].{list_key} must be an array of strings"
+                )
+
+
 def _write_markdown(path: Path, payload: dict[str, Any]) -> None:
     lines = ["# Human Guidance Task Recommendations", ""]
     lines.append(f"- Songs considered: `{payload.get('song_count_considered', 0)}`")
@@ -299,6 +350,19 @@ def _write_markdown(path: Path, payload: dict[str, Any]) -> None:
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
+def _write_ready_to_edit(path: Path, payload: dict[str, Any]) -> None:
+    lines = ["# song\tpriority\ttarget"]
+    for row in payload.get("rows", []) or []:
+        song = str(row.get("song") or "")
+        priority = float(row.get("priority_score", 0.0) or 0.0)
+        targets = row.get("suggested_targets", []) or []
+        if not targets:
+            continue
+        for target in targets:
+            lines.append(f"{song}\t{priority:.3f}\t{target}")
+    path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
@@ -322,6 +386,17 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--output-md", type=Path, default=None, help="Output markdown path"
     )
+    parser.add_argument(
+        "--output-ready-edit",
+        type=Path,
+        default=None,
+        help="Optional compact TSV-like export for manual editing handoff",
+    )
+    parser.add_argument(
+        "--validate-schema",
+        action="store_true",
+        help="Validate output JSON payload shape before writing artifacts",
+    )
     return parser.parse_args()
 
 
@@ -332,16 +407,23 @@ def main() -> int:
     payload = _recommend(
         report, top=int(args.top), min_priority=float(args.min_priority)
     )
+    if bool(args.validate_schema):
+        _validate_payload_schema(payload)
 
     out_root = report_path if report_path.is_dir() else report_path.parent
     out_json = args.output_json or (out_root / "human_guidance_tasks.json")
     out_md = args.output_md or (out_root / "human_guidance_tasks.md")
+    out_ready = args.output_ready_edit
     out_json.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
     _write_markdown(out_md, payload)
+    if out_ready is not None:
+        _write_ready_to_edit(out_ready, payload)
     print("human_guidance_tasks: OK")
     print(f"  rows={len(payload.get('rows', []))}")
     print(f"  output_json={out_json}")
     print(f"  output_md={out_md}")
+    if out_ready is not None:
+        print(f"  output_ready_edit={out_ready}")
     return 0
 
 

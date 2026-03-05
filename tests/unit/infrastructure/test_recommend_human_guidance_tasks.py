@@ -171,6 +171,8 @@ def test_recommend_human_guidance_tasks_includes_mismatch_examples(
             str(run_dir),
             "--top",
             "10",
+            "--output-ready-edit",
+            str(run_dir / "ready.tsv"),
         ],
     )
     rc = _MODULE.main()
@@ -186,3 +188,57 @@ def test_recommend_human_guidance_tasks_includes_mismatch_examples(
     md = (run_dir / "human_guidance_tasks.md").read_text("utf-8")
     assert "example mismatch" in md
     assert "suggested target" in md
+    ready = (run_dir / "ready.tsv").read_text("utf-8")
+    assert "line_index=0" in ready
+    assert "C - Mismatch" in ready
+
+
+def test_validate_payload_schema_accepts_expected_shape() -> None:
+    _MODULE._validate_payload_schema(
+        {
+            "song_count_considered": 1,
+            "top": 5,
+            "min_priority": 0.0,
+            "rows": [
+                {
+                    "song": "A - B",
+                    "status": "ok",
+                    "priority_score": 1.2,
+                    "agreement_coverage_ratio": 0.2,
+                    "agreement_start_p95_abs_sec": 1.0,
+                    "low_confidence_ratio": 0.1,
+                    "dtw_line_coverage": 0.9,
+                    "actions": ["x"],
+                    "mismatch_examples": ["y"],
+                    "suggested_targets": ["z"],
+                }
+            ],
+        }
+    )
+
+
+def test_validate_payload_schema_rejects_missing_required_key() -> None:
+    bad_payload = {
+        "song_count_considered": 1,
+        "top": 5,
+        "min_priority": 0.0,
+        "rows": [
+            {
+                "song": "A - B",
+                "status": "ok",
+                "priority_score": 1.2,
+                "agreement_coverage_ratio": 0.2,
+                "agreement_start_p95_abs_sec": 1.0,
+                "low_confidence_ratio": 0.1,
+                "dtw_line_coverage": 0.9,
+                "actions": ["x"],
+                "mismatch_examples": ["y"],
+            }
+        ],
+    }
+    try:
+        _MODULE._validate_payload_schema(bad_payload)
+    except ValueError as exc:
+        assert "suggested_targets" in str(exc)
+    else:
+        raise AssertionError("expected ValueError")

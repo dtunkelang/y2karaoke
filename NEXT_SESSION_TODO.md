@@ -21,6 +21,9 @@
 - [ ] Raise `agreement_coverage_ratio_mean` from current ~`0.329` toward >=`0.350`.
 
 ## 2. Human-Guided Correction Execution
+- [x] Generate current correction handoff artifacts:
+  - `benchmarks/results/human_guidance_tasks_20260305T231015Z.md`
+  - `benchmarks/results/human_guidance_ready_20260305T231015Z.tsv`
 - [ ] Run a focused manual-correction pass for current top priority songs:
   - `J Balvin - Mi Gente`
   - `Indila - Derniere danse`
@@ -51,8 +54,8 @@
 
 ## 6. Tooling and UX Improvements
 - [x] Extend human-guidance report with direct “first 2 suggested correction targets” per song (line index + reason).
-- [ ] Add optional JSON schema validation for `human_guidance_tasks.json` artifacts.
-- [ ] Add a compact “ready-to-edit” export list for editor workflow handoff.
+- [x] Add optional JSON schema validation for `human_guidance_tasks.json` artifacts.
+- [x] Add a compact “ready-to-edit” export list for editor workflow handoff.
 
 ## 7. CI/CD Checklist (reset for next push cycle)
 - [ ] `black --check src tests`

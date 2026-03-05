@@ -262,6 +262,8 @@ Benchmark seed set for timing quality work:
     - `./venv/bin/python tools/recommend_human_guidance_tasks.py --report benchmarks/results/<run_id> --top 5`
     - or `make benchmark-recommend-human-guidance REPORT=benchmarks/results/<run_id> [TOP=5] [MIN_PRIORITY=1.5]`
     - Writes `human_guidance_tasks.{json,md}` in the run directory
+    - Optional payload shape validation: add `--validate-schema`
+    - Optional compact handoff export: add `--output-ready-edit <path>`
   - Analyze agreement tradeoffs across baseline/candidate report sets:
     - `./venv/bin/python tools/analyze_agreement_tradeoffs.py --baseline base=benchmarks/results/<baseline_run_id> --candidate relax=benchmarks/results/<candidate_run_id>`
     - or `make benchmark-analyze-agreement BASELINE_LABEL=base BASELINE=benchmarks/results/<baseline_run_id> CANDIDATE_A_LABEL=relax CANDIDATE_A=benchmarks/results/<candidate_run_id>`
