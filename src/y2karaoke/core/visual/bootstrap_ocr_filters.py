@@ -299,52 +299,80 @@ def suppress_transient_digit_heavy_frames(
 
     out = [dict(fr) for fr in raw_frames]
     for i, fr in enumerate(raw_frames):
-        words = [w for w in fr.get("words", []) if isinstance(w, dict)]
-        if len(words) < 3:
-            continue
-        toks = [str(w.get("text", "")).strip() for w in words]
-        toks = [t for t in toks if t]
-        if len(toks) < 3:
-            continue
-
-        digit_heavy = sum(1 for t in toks if any(ch.isdigit() for ch in t))
-        if (digit_heavy / float(len(toks))) < 0.4:
-            continue
-
-        if i <= 0 or i >= (len(raw_frames) - 1):
-            continue
-        prev = raw_frames[i - 1]
-        nxt = raw_frames[i + 1]
-        prev_words = [w for w in prev.get("words", []) if isinstance(w, dict)]
-        next_words = [w for w in nxt.get("words", []) if isinstance(w, dict)]
-        if len(prev_words) < 6 or len(next_words) < 6:
-            continue
-
-        t_cur = float(fr.get("time", 0.0))
-        t_prev = float(prev.get("time", t_cur))
-        t_next = float(nxt.get("time", t_cur))
-        if (t_cur - t_prev) > 0.6 or (t_next - t_cur) > 0.6:
-            continue
-
-        prev_norm = {
-            re.sub(r"[^a-z0-9]+", "", str(w.get("text", "")).lower())
-            for w in prev_words
-        }
-        next_norm = {
-            re.sub(r"[^a-z0-9]+", "", str(w.get("text", "")).lower())
-            for w in next_words
-        }
-        neigh = {t for t in (prev_norm | next_norm) if t}
-        cur_norm = {re.sub(r"[^a-z0-9]+", "", t.lower()) for t in toks}
-        cur_norm = {t for t in cur_norm if t}
-        if not cur_norm:
-            continue
-        overlap = len(cur_norm & neigh) / float(len(cur_norm))
-        if overlap > 0.2:
-            continue
-
-        out[i] = {**fr, "words": [], "line_boxes": []}
+        if _is_transient_digit_heavy_frame(raw_frames, i):
+            out[i] = {**fr, "words": [], "line_boxes": []}
     return out
+
+
+def _frame_words(frame: dict[str, Any]) -> list[dict[str, Any]]:
+    return [w for w in frame.get("words", []) if isinstance(w, dict)]
+
+
+def _token_texts(words: list[dict[str, Any]]) -> list[str]:
+    return [text for text in (str(w.get("text", "")).strip() for w in words) if text]
+
+
+def _digit_heavy_ratio(tokens: list[str]) -> float:
+    if not tokens:
+        return 0.0
+    digit_heavy = sum(1 for token in tokens if any(ch.isdigit() for ch in token))
+    return digit_heavy / float(len(tokens))
+
+
+def _normalized_token_set_from_texts(tokens: list[str]) -> set[str]:
+    return {
+        tok for tok in (re.sub(r"[^a-z0-9]+", "", t.lower()) for t in tokens) if tok
+    }
+
+
+def _normalized_token_set_from_words(words: list[dict[str, Any]]) -> set[str]:
+    return {
+        tok
+        for tok in (
+            re.sub(r"[^a-z0-9]+", "", str(word.get("text", "")).lower())
+            for word in words
+        )
+        if tok
+    }
+
+
+def _is_dense_neighbor_triplet(
+    prev: dict[str, Any], current: dict[str, Any], nxt: dict[str, Any]
+) -> bool:
+    t_cur = float(current.get("time", 0.0))
+    t_prev = float(prev.get("time", t_cur))
+    t_next = float(nxt.get("time", t_cur))
+    return (t_cur - t_prev) <= 0.6 and (t_next - t_cur) <= 0.6
+
+
+def _is_transient_digit_heavy_frame(raw_frames: list[dict[str, Any]], idx: int) -> bool:
+    if idx <= 0 or idx >= (len(raw_frames) - 1):
+        return False
+    current = raw_frames[idx]
+    current_words = _frame_words(current)
+    if len(current_words) < 3:
+        return False
+    current_tokens = _token_texts(current_words)
+    if len(current_tokens) < 3 or _digit_heavy_ratio(current_tokens) < 0.4:
+        return False
+
+    prev = raw_frames[idx - 1]
+    nxt = raw_frames[idx + 1]
+    prev_words = _frame_words(prev)
+    next_words = _frame_words(nxt)
+    if len(prev_words) < 6 or len(next_words) < 6:
+        return False
+    if not _is_dense_neighbor_triplet(prev, current, nxt):
+        return False
+
+    current_norm = _normalized_token_set_from_texts(current_tokens)
+    if not current_norm:
+        return False
+    neighbor_norm = _normalized_token_set_from_words(
+        prev_words
+    ) | _normalized_token_set_from_words(next_words)
+    overlap = len(current_norm & neighbor_norm) / float(len(current_norm))
+    return overlap <= 0.2
 
 
 def _find_word_match(

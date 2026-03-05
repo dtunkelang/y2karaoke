@@ -175,76 +175,109 @@ def merge_short_same_lane_reentries(
     out: list[dict[str, Any]] = []
 
     for ent in entries:
-        tokens = [t for t in ent.get("words", []) if str(t).strip()]
-        duration = float(ent["last"]) - float(ent["first"])
-        prev_idx: int | None = None
-        for idx in range(len(out) - 1, max(-1, len(out) - 13), -1):
-            prev = out[idx]
-            if text_similarity(prev["text"], ent["text"]) < 0.9:
-                continue
-            if not is_same_lane(prev, ent):
-                continue
-            prev_idx = idx
-            break
+        prev_idx = _find_recent_same_lane_duplicate_index(out, ent, is_same_lane)
+        if prev_idx is None:
+            out.append(ent)
+            continue
+        prev = out[prev_idx]
+        gap = float(ent["first"]) - float(prev["last"])
+        if gap < 0.0 or gap > 4.0:
+            out.append(ent)
+            continue
 
-        if prev_idx is not None:
-            prev = out[prev_idx]
-            prev_tokens = [t for t in prev.get("words", []) if str(t).strip()]
-            gap = float(ent["first"]) - float(prev["last"])
-            if 0.0 <= gap <= 4.0:
-                mids = out[prev_idx + 1 :]
-                has_lane_conflict = any(
-                    is_same_lane(mid, ent)
-                    and text_similarity(mid["text"], ent["text"]) < 0.9
-                    for mid in mids
-                )
-                prev_duration = float(prev["last"]) - float(prev["first"])
-                cross_lane_same_text = any(
-                    not is_same_lane(mid, ent)
-                    and text_similarity(mid["text"], ent["text"]) >= 0.9
-                    for mid in mids
-                )
-                allow_merge = prev_duration >= 1.0 or cross_lane_same_text
-                continuation_split = gap <= 1.5
-                is_short_refrain = is_short_refrain_entry(
-                    prev
-                ) or is_short_refrain_entry(ent)
-                if (
-                    continuation_split
-                    and not has_lane_conflict
-                    and not is_short_refrain
-                    and (
-                        os.environ.get("Y2K_VISUAL_DISABLE_GHOST_REENTRY_GUARDS", "0")
-                        == "1"
-                        or not _is_likely_nonvisible_tail_reentry(prev, ent, gap)
-                    )
-                ):
-                    prev["last"] = max(float(prev["last"]), float(ent["last"]))
-                    if len(ent.get("w_rois", [])) > len(
-                        prev.get("w_rois", [])
-                    ) and ent.get("w_rois"):
-                        prev["w_rois"] = ent["w_rois"]
-                    continue
-
-                if (
-                    duration <= 1.6
-                    and allow_merge
-                    and not has_lane_conflict
-                    and len(tokens) <= 2
-                    and len(prev_tokens) <= 2
-                    and (
-                        os.environ.get("Y2K_VISUAL_DISABLE_GHOST_REENTRY_GUARDS", "0")
-                        == "1"
-                        or not _is_likely_nonvisible_tail_reentry(prev, ent, gap)
-                    )
-                ):
-                    prev["last"] = max(float(prev["last"]), float(ent["last"]))
-                    if len(ent.get("w_rois", [])) > len(
-                        prev.get("w_rois", [])
-                    ) and ent.get("w_rois"):
-                        prev["w_rois"] = ent["w_rois"]
-                    continue
+        mids = out[prev_idx + 1 :]
+        if _should_merge_reentry(
+            prev, ent, mids, gap, is_same_lane, is_short_refrain_entry
+        ):
+            _merge_entry_window(prev, ent)
+            continue
+        if _should_merge_short_token_reentry(prev, ent, mids, gap, is_same_lane):
+            _merge_entry_window(prev, ent)
+            continue
 
         out.append(ent)
 
     return out
+
+
+def _find_recent_same_lane_duplicate_index(
+    out: list[dict[str, Any]], ent: dict[str, Any], is_same_lane: EntryPairPredicate
+) -> int | None:
+    for idx in range(len(out) - 1, max(-1, len(out) - 13), -1):
+        prev = out[idx]
+        if text_similarity(prev["text"], ent["text"]) < 0.9:
+            continue
+        if not is_same_lane(prev, ent):
+            continue
+        return idx
+    return None
+
+
+def _has_lane_conflict(
+    mids: list[dict[str, Any]], ent: dict[str, Any], is_same_lane: EntryPairPredicate
+) -> bool:
+    return any(
+        is_same_lane(mid, ent) and text_similarity(mid["text"], ent["text"]) < 0.9
+        for mid in mids
+    )
+
+
+def _cross_lane_same_text_exists(
+    mids: list[dict[str, Any]], ent: dict[str, Any], is_same_lane: EntryPairPredicate
+) -> bool:
+    return any(
+        not is_same_lane(mid, ent) and text_similarity(mid["text"], ent["text"]) >= 0.9
+        for mid in mids
+    )
+
+
+def _ghost_guard_allows(prev: dict[str, Any], ent: dict[str, Any], gap: float) -> bool:
+    if os.environ.get("Y2K_VISUAL_DISABLE_GHOST_REENTRY_GUARDS", "0") == "1":
+        return True
+    return not _is_likely_nonvisible_tail_reentry(prev, ent, gap)
+
+
+def _should_merge_reentry(
+    prev: dict[str, Any],
+    ent: dict[str, Any],
+    mids: list[dict[str, Any]],
+    gap: float,
+    is_same_lane: EntryPairPredicate,
+    is_short_refrain_entry: EntryPredicate,
+) -> bool:
+    return (
+        gap <= 1.5
+        and not _has_lane_conflict(mids, ent, is_same_lane)
+        and not (is_short_refrain_entry(prev) or is_short_refrain_entry(ent))
+        and _ghost_guard_allows(prev, ent, gap)
+    )
+
+
+def _should_merge_short_token_reentry(
+    prev: dict[str, Any],
+    ent: dict[str, Any],
+    mids: list[dict[str, Any]],
+    gap: float,
+    is_same_lane: EntryPairPredicate,
+) -> bool:
+    prev_duration = float(prev["last"]) - float(prev["first"])
+    duration = float(ent["last"]) - float(ent["first"])
+    allow_merge = prev_duration >= 1.0 or _cross_lane_same_text_exists(
+        mids, ent, is_same_lane
+    )
+    ent_tokens = [t for t in ent.get("words", []) if str(t).strip()]
+    prev_tokens = [t for t in prev.get("words", []) if str(t).strip()]
+    return (
+        duration <= 1.6
+        and allow_merge
+        and not _has_lane_conflict(mids, ent, is_same_lane)
+        and len(ent_tokens) <= 2
+        and len(prev_tokens) <= 2
+        and _ghost_guard_allows(prev, ent, gap)
+    )
+
+
+def _merge_entry_window(prev: dict[str, Any], ent: dict[str, Any]) -> None:
+    prev["last"] = max(float(prev["last"]), float(ent["last"]))
+    if len(ent.get("w_rois", [])) > len(prev.get("w_rois", [])) and ent.get("w_rois"):
+        prev["w_rois"] = ent["w_rois"]

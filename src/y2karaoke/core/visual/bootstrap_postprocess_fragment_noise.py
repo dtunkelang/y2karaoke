@@ -25,30 +25,44 @@ def neighbor_supports_fragment_tokens(
     if tokens_contiguous_subphrase_fn(fragment_tokens, neighbor_tokens):
         return True
 
-    if 2 <= len(fragment_tokens) <= 3 and all(
-        1 <= len(t) <= 4 for t in fragment_tokens
-    ):
-        merged = "".join(fragment_tokens)
-        if len(merged) >= 5:
-            for tok in neighbor_tokens:
-                if tok == merged:
-                    return True
-                if (
-                    len(tok) >= len(merged)
-                    and SequenceMatcher(None, merged, tok).ratio() >= 0.84
-                ):
-                    return True
+    return _supports_merged_fragment_token(
+        fragment_tokens, neighbor_tokens
+    ) or _supports_singular_plural_variant(fragment_tokens, neighbor_tokens)
 
-    if len(fragment_tokens) == 1:
-        tok = fragment_tokens[0]
-        if len(tok) >= 4:
-            singular = tok[:-1] if tok.endswith("s") else tok
-            plural = tok if tok.endswith("s") else f"{tok}s"
-            for n_tok in neighbor_tokens:
-                if n_tok == singular or n_tok == plural:
-                    return True
 
-    return False
+def _supports_merged_fragment_token(
+    fragment_tokens: list[str], neighbor_tokens: list[str]
+) -> bool:
+    if not (2 <= len(fragment_tokens) <= 3):
+        return False
+    if not all(1 <= len(token) <= 4 for token in fragment_tokens):
+        return False
+    merged = "".join(fragment_tokens)
+    if len(merged) < 5:
+        return False
+    return any(
+        token == merged
+        or (
+            len(token) >= len(merged)
+            and SequenceMatcher(None, merged, token).ratio() >= 0.84
+        )
+        for token in neighbor_tokens
+    )
+
+
+def _supports_singular_plural_variant(
+    fragment_tokens: list[str], neighbor_tokens: list[str]
+) -> bool:
+    if len(fragment_tokens) != 1:
+        return False
+    token = fragment_tokens[0]
+    if len(token) < 4:
+        return False
+    singular = token[:-1] if token.endswith("s") else token
+    plural = token if token.endswith("s") else f"{token}s"
+    return any(
+        neighbor == singular or neighbor == plural for neighbor in neighbor_tokens
+    )
 
 
 def remove_repeated_fragment_noise_lines(  # noqa: C901
