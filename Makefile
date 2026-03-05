@@ -4,7 +4,7 @@ PYTEST := PYTHONPATH=src $(PYTHON) -m pytest
 MIN_COVERAGE_GAIN ?= 0.005
 MAX_BAD_RATIO_INCREASE ?= 0.002
 
-.PHONY: bootstrap dep-check fmt fmt-check lint type test-fast test-full perf-smoke quality-guardrails bootstrap-quality-guardrails visual-eval visual-eval-guardrails bootstrap-calibrate benchmark-validate benchmark-run benchmark-aggregate-only benchmark-matrix benchmark-recommend benchmark-compare-correction benchmark-classify-failures benchmark-profile-runtime benchmark-compare-runtime benchmark-recommend-human-guidance benchmark-run-bg benchmark-status benchmark-kill check ci-fast ci-full
+.PHONY: bootstrap dep-check fmt fmt-check lint type test-fast test-full perf-smoke quality-guardrails bootstrap-quality-guardrails visual-eval visual-eval-guardrails bootstrap-calibrate benchmark-validate benchmark-run benchmark-aggregate-only benchmark-matrix benchmark-recommend benchmark-compare-correction benchmark-classify-failures benchmark-profile-runtime benchmark-compare-runtime benchmark-recommend-human-guidance benchmark-analyze-agreement benchmark-run-bg benchmark-status benchmark-kill check ci-fast ci-full
 
 bootstrap:
 	./tools/bootstrap_dev.sh
@@ -91,6 +91,17 @@ benchmark-recommend-human-guidance:
 	@test -n "$(REPORT)" || (echo "REPORT is required (run dir or benchmark_report.json path)"; exit 2)
 	$(PYTHON) tools/recommend_human_guidance_tasks.py --report "$(REPORT)" $(if $(TOP),--top "$(TOP)",) \
 		$(if $(MIN_PRIORITY),--min-priority "$(MIN_PRIORITY)",)
+
+benchmark-analyze-agreement:
+	@test -n "$(BASELINE_LABEL)" || (echo "BASELINE_LABEL is required (e.g. base)"; exit 2)
+	@test -n "$(BASELINE)" || (echo "BASELINE is required (run dir or benchmark_report.json path)"; exit 2)
+	@test -n "$(CANDIDATE_A_LABEL)" || (echo "CANDIDATE_A_LABEL is required (e.g. relax)"; exit 2)
+	@test -n "$(CANDIDATE_A)" || (echo "CANDIDATE_A is required (run dir or benchmark_report.json path)"; exit 2)
+	$(PYTHON) tools/analyze_agreement_tradeoffs.py --baseline "$(BASELINE_LABEL)=$(BASELINE)" \
+		--candidate "$(CANDIDATE_A_LABEL)=$(CANDIDATE_A)" \
+		$(if $(CANDIDATE_B_LABEL),--candidate "$(CANDIDATE_B_LABEL)=$(CANDIDATE_B)",) \
+		$(if $(MIN_COVERAGE_GAIN),--min-coverage-gain "$(MIN_COVERAGE_GAIN)",) \
+		$(if $(MAX_BAD_RATIO_INCREASE),--max-bad-ratio-increase "$(MAX_BAD_RATIO_INCREASE)",)
 
 benchmark-run-bg:
 	./tools/run_benchmark_suite_bg.sh

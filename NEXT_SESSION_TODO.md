@@ -30,6 +30,7 @@
 - [x] Expand text normalization for agreement matching (contractions/apostrophes/repeated fillers) with tests.
 - [x] Add a benchmark assertion that agreement-coverage gains do not materially raise agreement-bad ratio.
 - [x] Add per-song agreement comparability report (matched/eligible lines + skip reasons).
+- [x] Add cross-run agreement tradeoff analysis tool for baseline/candidate report ranking and guard checks.
 
 ## 4. Benchmark/guardrail hardening
 - [x] Re-run full strategy matrix after pipeline updates and compare against:
