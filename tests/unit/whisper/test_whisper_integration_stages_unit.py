@@ -101,3 +101,50 @@ def test_run_mapped_line_postpasses_handles_snap_fallback_and_audio_corrections(
     assert any(
         "Applied 2 late audio onset/silence adjustment(s)" in c for c in corrections
     )
+
+
+def test_run_mapped_line_postpasses_no_audio_calls_snap_with_max_shift():
+    lines = [Line(words=[Word(text="one", start_time=10.0, end_time=10.5)])]
+    whisper_words = [
+        TranscriptionWord(text="one", start=10.0, end=10.5, probability=0.9)
+    ]
+    snap_kwargs: list[dict[str, float]] = []
+    call_log: list[str] = []
+
+    def _mark(tag):
+        def _fn(*args, **kwargs):
+            call_log.append(tag)
+            return args[0]
+
+        return _fn
+
+    def _snap(lines_in, all_words_in, **kwargs):
+        assert all_words_in == whisper_words
+        snap_kwargs.append(dict(kwargs))
+        return lines_in
+
+    out, corrections = stages._run_mapped_line_postpasses(
+        mapped_lines=lines,
+        mapped_lines_set={0},
+        all_words=whisper_words,
+        transcription=[],
+        audio_features=None,
+        vocals_path="vocals.wav",
+        epitran_lang="eng-Latn",
+        corrections=[],
+        interpolate_unmatched_lines_fn=_mark("interpolate"),
+        refine_unmatched_lines_with_onsets_fn=_mark("refine"),
+        shift_repeated_lines_to_next_whisper_fn=_mark("shift_repeat"),
+        extend_line_to_trailing_whisper_matches_fn=_mark("extend"),
+        pull_late_lines_to_matching_segments_fn=_mark("pull_late"),
+        retime_short_interjection_lines_fn=_mark("retime_interjection"),
+        snap_first_word_to_whisper_onset_fn=_snap,
+        pull_lines_forward_for_continuous_vocals_fn=lambda ml, _af: (ml, 0),
+        enforce_monotonic_line_starts_whisper_fn=_mark("monotonic"),
+        resolve_line_overlaps_fn=_mark("resolve"),
+    )
+
+    assert out == lines
+    assert corrections == []
+    assert call_log.count("pull_late") == 2
+    assert snap_kwargs == [{}, {"max_shift": 2.5}]
