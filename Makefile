@@ -89,7 +89,8 @@ benchmark-compare-runtime:
 
 benchmark-recommend-human-guidance:
 	@test -n "$(REPORT)" || (echo "REPORT is required (run dir or benchmark_report.json path)"; exit 2)
-	$(PYTHON) tools/recommend_human_guidance_tasks.py --report "$(REPORT)" $(if $(TOP),--top "$(TOP)",)
+	$(PYTHON) tools/recommend_human_guidance_tasks.py --report "$(REPORT)" $(if $(TOP),--top "$(TOP)",) \
+		$(if $(MIN_PRIORITY),--min-priority "$(MIN_PRIORITY)",)
 
 benchmark-run-bg:
 	./tools/run_benchmark_suite_bg.sh

@@ -64,7 +64,60 @@ def test_recommend_human_guidance_tasks_prioritizes_problem_song(
     assert rc == 0
     payload = json.loads((run_dir / "human_guidance_tasks.json").read_text("utf-8"))
     assert payload["song_count_considered"] == 1
+    assert payload["min_priority"] == 0.0
     assert payload["rows"][0]["song"] == "B - Bad"
     assert payload["rows"][0]["priority_score"] > 0.0
     md = (run_dir / "human_guidance_tasks.md").read_text("utf-8")
     assert "Human Guidance Task Recommendations" in md
+
+
+def test_recommend_human_guidance_tasks_filters_by_min_priority(
+    tmp_path, monkeypatch
+) -> None:
+    run_dir = tmp_path / "run"
+    run_dir.mkdir()
+    report = {
+        "songs": [
+            {
+                "artist": "A",
+                "title": "Low",
+                "status": "ok",
+                "metrics": {
+                    "agreement_coverage_ratio": 0.9,
+                    "agreement_start_p95_abs_sec": 0.1,
+                    "low_confidence_ratio": 0.0,
+                    "dtw_line_coverage": 1.0,
+                },
+            },
+            {
+                "artist": "B",
+                "title": "High",
+                "status": "ok",
+                "metrics": {
+                    "agreement_coverage_ratio": 0.1,
+                    "agreement_start_p95_abs_sec": 1.4,
+                    "low_confidence_ratio": 0.2,
+                    "dtw_line_coverage": 0.6,
+                },
+            },
+        ]
+    }
+    (run_dir / "benchmark_report.json").write_text(json.dumps(report), encoding="utf-8")
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "recommend_human_guidance_tasks.py",
+            "--report",
+            str(run_dir),
+            "--min-priority",
+            "2.0",
+            "--top",
+            "10",
+        ],
+    )
+    rc = _MODULE.main()
+    assert rc == 0
+    payload = json.loads((run_dir / "human_guidance_tasks.json").read_text("utf-8"))
+    assert payload["song_count_considered"] == 1
+    assert payload["rows"][0]["song"] == "B - High"

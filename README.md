@@ -260,7 +260,7 @@ Benchmark seed set for timing quality work:
     - Report includes both `sum_song_elapsed_total_delta_sec` (aggregate-only-safe) and `sum_song_elapsed_executed_delta_sec`.
   - Recommend prioritized human-guided correction tasks from benchmark output:
     - `./venv/bin/python tools/recommend_human_guidance_tasks.py --report benchmarks/results/<run_id> --top 5`
-    - or `make benchmark-recommend-human-guidance REPORT=benchmarks/results/<run_id> [TOP=5]`
+    - or `make benchmark-recommend-human-guidance REPORT=benchmarks/results/<run_id> [TOP=5] [MIN_PRIORITY=1.5]`
     - Writes `human_guidance_tasks.{json,md}` in the run directory
   - Enforce committed main benchmark guardrails: `./venv/bin/python tools/main_benchmark_guardrails.py`
 

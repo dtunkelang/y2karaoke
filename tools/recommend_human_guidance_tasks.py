@@ -75,7 +75,7 @@ def _score_song(metrics: dict[str, Any]) -> float:
     )
 
 
-def _recommend(doc: dict[str, Any], top: int) -> dict[str, Any]:
+def _recommend(doc: dict[str, Any], top: int, min_priority: float) -> dict[str, Any]:
     songs = doc.get("songs", []) or []
     rows: list[dict[str, Any]] = []
     for song in songs:
@@ -105,12 +105,18 @@ def _recommend(doc: dict[str, Any], top: int) -> dict[str, Any]:
             }
         )
     rows = [row for row in rows if row.get("status") == "ok"]
+    rows = [
+        row
+        for row in rows
+        if float(row.get("priority_score", 0.0) or 0.0) >= min_priority
+    ]
     rows.sort(key=lambda row: float(row.get("priority_score", 0.0)), reverse=True)
     if top > 0:
         rows = rows[:top]
     return {
         "song_count_considered": len(rows),
         "top": top,
+        "min_priority": min_priority,
         "rows": rows,
     }
 
@@ -119,6 +125,9 @@ def _write_markdown(path: Path, payload: dict[str, Any]) -> None:
     lines = ["# Human Guidance Task Recommendations", ""]
     lines.append(f"- Songs considered: `{payload.get('song_count_considered', 0)}`")
     lines.append(f"- Top limit: `{payload.get('top', 0)}`")
+    lines.append(
+        f"- Min priority: `{float(payload.get('min_priority', 0.0) or 0.0):.3f}`"
+    )
     lines.append("")
     lines.append(
         "| Song | Priority | Agreement Cov | Agreement P95 (s) | Low Conf | DTW Line Cov |"
@@ -150,6 +159,12 @@ def parse_args() -> argparse.Namespace:
         help="How many songs to include (0 means all)",
     )
     parser.add_argument(
+        "--min-priority",
+        type=float,
+        default=0.0,
+        help="Only include songs with priority score >= this value",
+    )
+    parser.add_argument(
         "--output-json", type=Path, default=None, help="Output JSON path"
     )
     parser.add_argument(
@@ -162,7 +177,9 @@ def main() -> int:
     args = parse_args()
     report_path = args.report.expanduser().resolve()
     report = _load_report(report_path)
-    payload = _recommend(report, top=int(args.top))
+    payload = _recommend(
+        report, top=int(args.top), min_priority=float(args.min_priority)
+    )
 
     out_root = report_path if report_path.is_dir() else report_path.parent
     out_json = args.output_json or (out_root / "human_guidance_tasks.json")
