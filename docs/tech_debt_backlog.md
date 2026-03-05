@@ -44,6 +44,10 @@ Last updated: 2026-03-04
       `whisper_integration_pipeline.py`.
     - Correct-timing dependency plumbing bundled via `_CorrectTimingHooks` in
       `whisper_integration_pipeline.py`.
+    - Hook dataclasses and hook-kwargs expansion extracted into dedicated
+      `whisper_integration_hooks.py` module.
+    - Removed redundant pass-through wrappers from
+      `whisper_integration_pipeline.py`; the pipeline now wires directly to stage/baseline/finalize helper implementations.
     - Segment assignment env heuristics centralized in `whisper_blocks.py`.
     - Correction decision thresholds centralized in `whisper_integration_correct.py`.
     - Mapping decision thresholds centralized in `whisper_integration_align.py`.
