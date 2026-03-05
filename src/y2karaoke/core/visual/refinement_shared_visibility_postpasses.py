@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import math
-from typing import Callable, List, Optional, Tuple
+from typing import Callable, List, Optional, Tuple, cast
 
 from ..models import TargetLine
 
@@ -178,22 +178,10 @@ def _rebalance_two_followups_after_short_lead(
         a = line_order[i]
         b = line_order[i + 1]
         c = line_order[i + 2]
-        if (
-            a.visibility_start is None
-            or a.visibility_end is None
-            or b.visibility_start is None
-            or b.visibility_end is None
-            or c.visibility_start is None
-            or c.visibility_end is None
-        ):
+        if not _has_visibility_windows(a, b, c):
             i += 1
             continue
-        if not (
-            abs(float(b.visibility_start) - float(a.visibility_start)) <= 1.0
-            and abs(float(c.visibility_start) - float(a.visibility_start)) <= 1.0
-            and abs(float(b.visibility_end) - float(a.visibility_end)) <= 2.0
-            and abs(float(c.visibility_end) - float(a.visibility_end)) <= 2.0
-        ):
+        if not _is_shared_visibility_triplet(a, b, c):
             i += 1
             continue
 
@@ -211,35 +199,78 @@ def _rebalance_two_followups_after_short_lead(
             i += 1
             continue
 
-        next_start: Optional[float] = None
-        for k in range(i + 3, n):
-            ns = line_start_fn(line_order[k])
-            if ns is not None:
-                next_start = ns
-                break
+        next_start = _next_assigned_start(
+            line_order, i + 3, line_start_fn=line_start_fn
+        )
         cap = (
             (next_start - 0.2)
             if next_start is not None
-            else (float(a.visibility_end) + 0.8)
+            else (float(cast(float, a.visibility_end)) + 0.8)
         )
         if cap <= b_start + 2.0:
             i += 1
             continue
 
-        gap = 0.2
-        avail = (cap - b_start) - gap
-        if avail <= 1.4:
+        durations = _compute_followup_durations(b, c, b_start=b_start, cap=cap)
+        if durations is None:
             i += 1
             continue
-        min_line = 0.7
-        extra = max(0.0, avail - 2.0 * min_line)
-        w_b = max(1.0, math.sqrt(float(max(len(b.words), 1)))) * 1.8
-        w_c = max(1.0, math.sqrt(float(max(len(c.words), 1))))
-        w_sum = w_b + w_c
-        dur_b = min_line + extra * (w_b / w_sum)
-        dur_c = min_line + extra * (w_c / w_sum)
+        dur_b, dur_c = durations
+        gap = 0.2
         s_b = b_start
         s_c = s_b + dur_b + gap
         assign_line_level_word_timings_fn(b, s_b, s_b + dur_b, 0.42)
         assign_line_level_word_timings_fn(c, s_c, s_c + dur_c, 0.42)
         i += 3
+
+
+def _has_visibility_windows(*lines: TargetLine) -> bool:
+    return all(
+        line.visibility_start is not None and line.visibility_end is not None
+        for line in lines
+    )
+
+
+def _is_shared_visibility_triplet(a: TargetLine, b: TargetLine, c: TargetLine) -> bool:
+    a_vs = float(cast(float, a.visibility_start))
+    a_ve = float(cast(float, a.visibility_end))
+    b_vs = float(cast(float, b.visibility_start))
+    b_ve = float(cast(float, b.visibility_end))
+    c_vs = float(cast(float, c.visibility_start))
+    c_ve = float(cast(float, c.visibility_end))
+    return (
+        abs(b_vs - a_vs) <= 1.0
+        and abs(c_vs - a_vs) <= 1.0
+        and abs(b_ve - a_ve) <= 2.0
+        and abs(c_ve - a_ve) <= 2.0
+    )
+
+
+def _next_assigned_start(
+    lines: List[TargetLine],
+    start_idx: int,
+    *,
+    line_start_fn: Callable[[TargetLine], Optional[float]],
+) -> float | None:
+    for k in range(start_idx, len(lines)):
+        next_start = line_start_fn(lines[k])
+        if next_start is not None:
+            return next_start
+    return None
+
+
+def _compute_followup_durations(
+    b: TargetLine, c: TargetLine, *, b_start: float, cap: float
+) -> tuple[float, float] | None:
+    gap = 0.2
+    avail = (cap - b_start) - gap
+    if avail <= 1.4:
+        return None
+    min_line = 0.7
+    extra = max(0.0, avail - 2.0 * min_line)
+    w_b = max(1.0, math.sqrt(float(max(len(b.words), 1)))) * 1.8
+    w_c = max(1.0, math.sqrt(float(max(len(c.words), 1))))
+    w_sum = w_b + w_c
+    dur_b = min_line + extra * (w_b / w_sum)
+    dur_c = min_line + extra * (w_c / w_sum)
+    return dur_b, dur_c

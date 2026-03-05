@@ -96,24 +96,11 @@ def _assign_surrogate_cluster_timings(
         [TargetLine, Optional[float], Optional[float], float], None
     ],
 ) -> None:
-    block_start = max(
-        min(float(ln.start) for ln in cluster),
-        min(
-            float(ln.visibility_start)
-            for ln in cluster
-            if ln.visibility_start is not None
-        ),
+    block_start, block_end = _surrogate_block_window(
+        cluster,
+        prev_end_floor=prev_end_floor,
+        next_start_cap=next_start_cap,
     )
-    if prev_end_floor is not None:
-        block_start = max(block_start, prev_end_floor)
-
-    block_end = (
-        max(float(ln.visibility_end) for ln in cluster if ln.visibility_end is not None)
-        + 1.0
-    )
-    if next_start_cap is not None:
-        block_end = min(block_end, next_start_cap)
-
     n = len(cluster)
     min_line = 0.7
     line_gap = 0.2
@@ -146,26 +133,73 @@ def _assign_surrogate_cluster_timings(
         cursor += dur + line_gap
 
     if onset_hints:
-        adjusted: List[float] = []
-        prev_end = block_start - line_gap
-        for i, (ln, dur) in enumerate(zip(cluster, durations)):
-            s = starts[i]
-            hint = onset_hints.get(id(ln))
-            if hint is not None:
-                s = max(s, float(hint))
-            s = max(s, prev_end + line_gap)
-
-            remaining = len(cluster) - i - 1
-            min_tail = remaining * min_line + max(0, remaining) * line_gap
-            max_s = block_end - min_tail - dur
-            s = min(s, max_s)
-            adjusted.append(s)
-            prev_end = s + dur
-        starts = adjusted
+        starts = _apply_onset_hints_to_surrogate_starts(
+            cluster=cluster,
+            starts=starts,
+            durations=durations,
+            block_start=block_start,
+            block_end=block_end,
+            onset_hints=onset_hints,
+            min_line=min_line,
+            line_gap=line_gap,
+        )
 
     for ln, line_start, dur in zip(cluster, starts, durations):
         line_end = line_start + dur
         assign_line_level_word_timings_fn(ln, line_start, line_end, 0.4)
+
+
+def _surrogate_block_window(
+    cluster: List[TargetLine],
+    *,
+    prev_end_floor: float | None,
+    next_start_cap: float | None,
+) -> tuple[float, float]:
+    block_start = max(
+        min(float(ln.start) for ln in cluster),
+        min(
+            float(ln.visibility_start)
+            for ln in cluster
+            if ln.visibility_start is not None
+        ),
+    )
+    if prev_end_floor is not None:
+        block_start = max(block_start, prev_end_floor)
+    block_end = (
+        max(float(ln.visibility_end) for ln in cluster if ln.visibility_end is not None)
+        + 1.0
+    )
+    if next_start_cap is not None:
+        block_end = min(block_end, next_start_cap)
+    return block_start, block_end
+
+
+def _apply_onset_hints_to_surrogate_starts(
+    *,
+    cluster: List[TargetLine],
+    starts: List[float],
+    durations: List[float],
+    block_start: float,
+    block_end: float,
+    onset_hints: Dict[int, float],
+    min_line: float,
+    line_gap: float,
+) -> List[float]:
+    adjusted: List[float] = []
+    prev_end = block_start - line_gap
+    for i, (line, dur) in enumerate(zip(cluster, durations)):
+        start = starts[i]
+        hint = onset_hints.get(id(line))
+        if hint is not None:
+            start = max(start, float(hint))
+        start = max(start, prev_end + line_gap)
+        remaining = len(cluster) - i - 1
+        min_tail = remaining * min_line + max(0, remaining) * line_gap
+        max_start = block_end - min_tail - dur
+        start = min(start, max_start)
+        adjusted.append(start)
+        prev_end = start + dur
+    return adjusted
 
 
 def _assign_surrogate_timings_for_unresolved_overlap_blocks(
