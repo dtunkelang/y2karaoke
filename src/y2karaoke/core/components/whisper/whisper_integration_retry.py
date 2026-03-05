@@ -1,10 +1,10 @@
 """Retry arbitration helpers for Whisper/LRC DTW alignment."""
 
-import os
 from dataclasses import dataclass
 from typing import Dict
 
 from ..alignment.alignment_policy import should_retry_aggressive_whisper_dtw_map
+from .whisper_profile import get_whisper_profile
 
 
 @dataclass(frozen=True)
@@ -17,7 +17,7 @@ class _RetryImproveDecisionConfig:
 
 
 def _default_retry_improve_config() -> _RetryImproveDecisionConfig:
-    profile = os.getenv("Y2K_WHISPER_PROFILE", "default").strip().lower()
+    profile = get_whisper_profile()
     if profile == "safe":
         return _RetryImproveDecisionConfig(
             min_matched_gain_with_line_tolerance=0.04,

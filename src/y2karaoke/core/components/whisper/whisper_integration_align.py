@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-import os
 import time
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
@@ -20,6 +19,7 @@ from .whisper_integration_shift_guard import (
 from .whisper_integration_weak_evidence import (
     restore_weak_evidence_large_start_shifts as _restore_weak_evidence_large_start_shifts,
 )
+from .whisper_profile import get_whisper_profile
 
 _MIN_FORCED_WORD_COVERAGE = 0.2
 _MIN_FORCED_LINE_COVERAGE = 0.2
@@ -36,7 +36,7 @@ class _WhisperMappingDecisionConfig:
 
 
 def _default_mapping_decision_config() -> _WhisperMappingDecisionConfig:
-    profile = os.getenv("Y2K_WHISPER_PROFILE", "default").strip().lower()
+    profile = get_whisper_profile()
     if profile == "safe":
         return _WhisperMappingDecisionConfig(
             sparse_word_threshold=100,

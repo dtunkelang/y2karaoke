@@ -3,13 +3,13 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-import os
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
 from ....utils.lex_lookup_installer import ensure_local_lex_lookup
 from ... import models, phonetic_utils
 from ..alignment import timing_models
 from .whisper_forced_alignment import align_lines_with_whisperx
+from .whisper_profile import get_whisper_profile
 
 _MIN_FORCED_WORD_COVERAGE = 0.2
 _MIN_FORCED_LINE_COVERAGE = 0.2
@@ -32,7 +32,7 @@ class _WhisperCorrectionDecisionConfig:
 
 
 def _default_correction_config() -> _WhisperCorrectionDecisionConfig:
-    profile = os.getenv("Y2K_WHISPER_PROFILE", "default").strip().lower()
+    profile = get_whisper_profile()
     if profile == "safe":
         return _WhisperCorrectionDecisionConfig(
             quality_good_threshold=0.75,
