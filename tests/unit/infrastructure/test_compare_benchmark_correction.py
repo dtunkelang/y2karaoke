@@ -86,7 +86,9 @@ def test_build_comparison_reports_net_improvement() -> None:
     assert report["summary"]["songs_compared"] == 1
     assert report["summary"]["songs_net_improved"] == 1
     assert (
-        report["aggregate_deltas"]["timing_quality_score_line_weighted_mean"]["improved"]
+        report["aggregate_deltas"]["timing_quality_score_line_weighted_mean"][
+            "improved"
+        ]
         is True
     )
     song_row = report["song_deltas"][0]
@@ -136,7 +138,9 @@ def test_main_writes_json_and_markdown(tmp_path, monkeypatch) -> None:
     assert (corrected_dir / "human_correction_delta.md").exists()
 
 
-def test_main_assert_tradeoff_fails_on_bad_ratio_regression(tmp_path, monkeypatch) -> None:
+def test_main_assert_tradeoff_fails_on_bad_ratio_regression(
+    tmp_path, monkeypatch
+) -> None:
     baseline_dir = tmp_path / "baseline"
     corrected_dir = tmp_path / "corrected"
     baseline_dir.mkdir()
