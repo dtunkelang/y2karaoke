@@ -610,7 +610,7 @@ def _evaluate_agreement_line(
         and float(window_avg_prob) >= 0.55
     )
     timing_rescue = (
-        line_word_count >= 6
+        line_word_count >= 5
         and anchor_start_delta <= 0.22
         and overlap >= max(0.82, min_token_overlap + 0.25)
         and has_strong_window_evidence

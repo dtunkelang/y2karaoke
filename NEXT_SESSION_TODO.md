@@ -33,9 +33,10 @@
     - `text_sim=0.62` -> agreement_cov `0.317`, p95 `1.125`, bad_ratio `0.047` (guard pass)
     - `text_sim=0.61` -> agreement_cov `0.320`, p95 `1.122`, bad_ratio `0.047` (guard pass, best score in sweep)
   - Recalibration decision: set default `Y2KARAOKE_BENCH_AGREEMENT_MIN_TEXT_SIM` to `0.61` (`token_overlap` remains `0.55`) based on full 10-song guard-pass sweep.
-  - adaptive-rescue refinement (`line_word_count` gate `8 -> 6`) run `20260305T220446Z`:
-    - agreement_cov `0.322`, p95 `1.122`, bad_ratio `0.047`
-    - modest +0.002 absolute coverage lift vs prior `0.61/0.55` calibration run, no bad-ratio regression.
+  - adaptive-rescue refinements:
+    - `line_word_count` gate `8 -> 6` run `20260305T220446Z` -> agreement_cov `0.322`, p95 `1.122`, bad_ratio `0.047`
+    - `line_word_count` gate `6 -> 5` run `20260305T220734Z` -> agreement_cov `0.324`, p95 `1.122`, bad_ratio `0.047`
+    - net +0.004 absolute coverage lift vs initial `0.61/0.55` calibration run, with no bad-ratio regression.
   - Under current guard (`min_coverage_gain=0.005`, `max_bad_ratio_increase=0.002`), mild relaxations (`text_sim=0.61-0.63`, overlap `0.55`) pass; aggressive relaxations do not.
 
 ## 2. Alignment pipeline improvements
