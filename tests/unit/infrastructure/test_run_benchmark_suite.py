@@ -304,6 +304,32 @@ def test_quality_coverage_warnings_independent_unavailable():
     )
 
 
+def test_quality_coverage_warnings_skip_dtw_disabled_alert_when_coverage_is_full():
+    module = _load_module()
+    aggregate = {
+        "dtw_metric_song_coverage_ratio": 1.0,
+        "dtw_metric_line_coverage_ratio": 1.0,
+        "agreement_count_total": 1,
+        "agreement_coverage_ratio_mean": 1.0,
+        "agreement_start_p95_abs_sec_mean": 0.2,
+        "agreement_bad_ratio_total": 0.0,
+        "agreement_severe_ratio_total": 0.0,
+        "sum_song_elapsed_sec": 5.0,
+    }
+    warnings = module._quality_coverage_warnings(
+        aggregate=aggregate,
+        dtw_enabled=False,
+        min_song_coverage_ratio=0.8,
+        min_line_coverage_ratio=0.9,
+        min_timing_quality_score_line_weighted=0.58,
+        suite_wall_elapsed_sec=6.0,
+    )
+    assert not any(
+        "DTW mapping is disabled (--no-whisper-map-lrc-dtw)" in item
+        for item in warnings
+    )
+
+
 def test_quality_coverage_warnings_include_diagnosis_ratio_alerts():
     module = _load_module()
     aggregate = {

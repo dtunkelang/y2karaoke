@@ -2080,9 +2080,12 @@ def _quality_coverage_warnings(
     warnings: list[str] = []
     song_cov = float(aggregate.get("dtw_metric_song_coverage_ratio", 0.0) or 0.0)
     line_cov = float(aggregate.get("dtw_metric_line_coverage_ratio", 0.0) or 0.0)
-    if not dtw_enabled:
+    if not dtw_enabled and (
+        song_cov < min_song_coverage_ratio or line_cov < min_line_coverage_ratio
+    ):
         warnings.append(
-            "DTW mapping is disabled (--no-whisper-map-lrc-dtw); quality metrics may be partially unmeasured."
+            "DTW mapping is disabled (--no-whisper-map-lrc-dtw) and DTW coverage is low; "
+            "quality metrics may be partially unmeasured."
         )
     if song_cov < min_song_coverage_ratio:
         warnings.append(
