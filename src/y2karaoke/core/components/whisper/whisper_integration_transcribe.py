@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import statistics
-from typing import Any, Callable, Dict, List, Optional, Tuple
+from typing import Any, Callable, Dict, List, Optional, Tuple, cast
 
 from ..alignment import timing_models
 from .whisperx_compat import patch_torchaudio_for_whisperx
@@ -82,66 +82,17 @@ def _transcribe_with_whisperx(
 
     model_name = model_size if model_size != "large" else "large-v2"
     try:
-        audio = whisperx.load_audio(vocals_path)
-        model = whisperx.load_model(
-            model_name,
-            device="cpu",
-            compute_type="int8",
+        aligned, detected_lang = _run_whisperx_alignment(
+            whisperx=whisperx,
+            vocals_path=vocals_path,
             language=language,
-        )
-        transcribed = model.transcribe(audio, batch_size=4)
-        detected_lang = transcribed.get("language") or (language or "en")
-        align_model, metadata = whisperx.load_align_model(
-            language_code=detected_lang,
-            device="cpu",
-        )
-        aligned = whisperx.align(
-            transcribed["segments"],
-            align_model,
-            metadata,
-            audio,
-            device="cpu",
-            return_char_alignments=False,
+            model_name=model_name,
         )
     except Exception as exc:
         logger.debug("whisperx fallback transcription failed: %s", exc)
         return None
 
-    raw_segments = aligned.get("segments", [])
-    segments: List[_WhisperxSegment] = []
-    words: List[_WhisperxWord] = []
-    for seg in raw_segments:
-        seg_words: List[_WhisperxWord] = []
-        for w in seg.get("words", []):
-            ws = w.get("start")
-            we = w.get("end")
-            if not isinstance(ws, (int, float)) or not isinstance(we, (int, float)):
-                continue
-            token = str(w.get("word") or w.get("text") or "").strip()
-            if not token:
-                continue
-            prob = float(w.get("score", 1.0) or 1.0)
-            tw = _WhisperxWord(
-                start=float(ws),
-                end=float(we),
-                text=token,
-                probability=prob,
-            )
-            seg_words.append(tw)
-            words.append(tw)
-        if not seg_words:
-            continue
-        seg_start = float(seg_words[0].start)
-        seg_end = float(seg_words[-1].end)
-        seg_text = str(seg.get("text") or " ".join(w.text for w in seg_words)).strip()
-        segments.append(
-            _WhisperxSegment(
-                start=seg_start,
-                end=seg_end,
-                text=seg_text,
-                words=seg_words,
-            )
-        )
+    segments, words = _extract_whisperx_segments_and_words(aligned.get("segments", []))
 
     if not words:
         return None
@@ -153,6 +104,83 @@ def _transcribe_with_whisperx(
         detected_lang,
     )
     return segments, words, str(detected_lang)
+
+
+def _run_whisperx_alignment(
+    *,
+    whisperx: Any,
+    vocals_path: str,
+    language: Optional[str],
+    model_name: str,
+) -> tuple[Dict[str, Any], str]:
+    audio = whisperx.load_audio(vocals_path)
+    model = whisperx.load_model(
+        model_name,
+        device="cpu",
+        compute_type="int8",
+        language=language,
+    )
+    transcribed = model.transcribe(audio, batch_size=4)
+    detected_lang = transcribed.get("language") or (language or "en")
+    align_model, metadata = whisperx.load_align_model(
+        language_code=detected_lang,
+        device="cpu",
+    )
+    aligned = whisperx.align(
+        transcribed["segments"],
+        align_model,
+        metadata,
+        audio,
+        device="cpu",
+        return_char_alignments=False,
+    )
+    return aligned, str(detected_lang)
+
+
+def _extract_whisperx_word(raw_word: Dict[str, Any]) -> _WhisperxWord | None:
+    ws = raw_word.get("start")
+    we = raw_word.get("end")
+    if not isinstance(ws, (int, float)) or not isinstance(we, (int, float)):
+        return None
+    token = str(raw_word.get("word") or raw_word.get("text") or "").strip()
+    if not token:
+        return None
+    prob = float(raw_word.get("score", 1.0) or 1.0)
+    return _WhisperxWord(
+        start=float(ws),
+        end=float(we),
+        text=token,
+        probability=prob,
+    )
+
+
+def _extract_whisperx_segments_and_words(
+    raw_segments: List[Dict[str, Any]],
+) -> tuple[List[_WhisperxSegment], List[_WhisperxWord]]:
+    segments: List[_WhisperxSegment] = []
+    words: List[_WhisperxWord] = []
+    for seg in raw_segments:
+        seg_words = [
+            tw
+            for tw in (
+                _extract_whisperx_word(cast(Dict[str, Any], w))
+                for w in seg.get("words", [])
+            )
+            if tw is not None
+        ]
+        if not seg_words:
+            continue
+        words.extend(seg_words)
+        seg_text = str(seg.get("text") or " ".join(w.text for w in seg_words)).strip()
+        segments.append(
+            _WhisperxSegment(
+                start=float(seg_words[0].start),
+                end=float(seg_words[-1].end),
+                text=seg_text,
+                words=seg_words,
+            )
+        )
+    return segments, words
 
 
 def _maybe_upgrade_sparse_transcription_with_whisperx(
