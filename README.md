@@ -194,7 +194,7 @@ Benchmark seed set for timing quality work:
   - `make benchmark-run`
   - Outputs are written to `benchmarks/results/<timestamp>/benchmark_report.{json,md}`
   - `benchmarks/results/latest.json` points to the latest JSON report path.
-- Resume support (interruption-friendly):
+  - Resume support (interruption-friendly):
   - The runner writes per-song checkpoints (`*_result.json`) and `benchmark_progress.json` after each song.
   - The runner writes per-song command logs (`*_generate.log`) in the run directory.
   - Resume the most recent run: `./venv/bin/python tools/run_benchmark_suite.py --resume-latest`
@@ -202,6 +202,10 @@ Benchmark seed set for timing quality work:
   - Safety: cached per-song results are reused only when core run options match (`offline/force/DTW mode/cache-dir/manifest`).
   - Override only if intentional: `--reuse-mismatched-results`
   - By default, resumed runs skip already-completed songs; use `--rerun-failed` or `--rerun-completed` to override.
+  - Recompute aggregate/markdown only (no song execution): `./venv/bin/python tools/run_benchmark_suite.py --resume-run-dir benchmarks/results/<run_id> --aggregate-only`
+  - Makefile shortcut: `make benchmark-aggregate-only RUN_DIR=benchmarks/results/<run_id>`
+  - Aggregate-only auto-scopes to cached result songs when `--match/--max-songs` are not provided.
+  - In aggregate-only mode, songs without cached `*_result.json` are skipped and listed in report warnings.
 - Background helper script (recommended for long runs):
   - `make benchmark-run-bg` (or `tools/run_benchmark_suite_bg.sh`)
   - This starts a nohup run with `--resume-latest` and prints a log file path to follow.
@@ -222,11 +226,38 @@ Benchmark seed set for timing quality work:
   - Offline cached-only run: `./venv/bin/python tools/run_benchmark_suite.py --offline`
   - Run one song for debugging: `./venv/bin/python tools/run_benchmark_suite.py --match "Papaoutai" --max-songs 1`
   - Disable DTW mapping for A/B checks: `./venv/bin/python tools/run_benchmark_suite.py --no-whisper-map-lrc-dtw`
+  - Enforce agreement tradeoff guard against a baseline run:
+    - `./venv/bin/python tools/run_benchmark_suite.py --agreement-baseline-report benchmarks/results/<baseline_run_id> --min-agreement-coverage-gain-for-bad-ratio-warning 0.005 --max-agreement-bad-ratio-increase-on-coverage-gain 0.002 --strict-agreement-tradeoff`
+  - Tune agreement comparability thresholds for A/B experiments (env overrides):
+    - `Y2KARAOKE_BENCH_AGREEMENT_MIN_TEXT_SIM` (default `0.64`)
+    - `Y2KARAOKE_BENCH_AGREEMENT_MIN_TOKEN_OVERLAP` (default `0.55`)
+    - example: `Y2KARAOKE_BENCH_AGREEMENT_MIN_TEXT_SIM=0.64 ./venv/bin/python tools/run_benchmark_suite.py --offline --strategy hybrid_whisper`
+  - Optionalize fallback-map coverage-promotion heuristic (for A/B):
+    - default enabled: `Y2KARAOKE_ENABLE_FALLBACK_MAP_COVERAGE_PROMOTION=1`
+    - disable for comparison: `Y2KARAOKE_ENABLE_FALLBACK_MAP_COVERAGE_PROMOTION=0`
   - Rebaseline gold from successful reports (all selected songs): `./venv/bin/python tools/run_benchmark_suite.py --rebaseline`
   - Rebaseline one song safely: `./venv/bin/python tools/run_benchmark_suite.py --match "bad guy" --max-songs 1 --rebaseline`
   - Run strategy matrix and emit combined report: `make benchmark-matrix`
   - Matrix JSON now includes `recommendations` (best strategy by p95/mean start error, low-confidence ratio, DTW coverage, runtime, and quality/runtime balance)
   - Recommend default strategy/thresholds from prior reports: `make benchmark-recommend`
+  - Compare baseline vs human-corrected benchmark runs:
+    - `./venv/bin/python tools/compare_benchmark_correction.py --baseline benchmarks/results/<auto_run_id> --corrected benchmarks/results/<corrected_run_id>`
+    - or `make benchmark-compare-correction BASELINE=benchmarks/results/<auto_run_id> CORRECTED=benchmarks/results/<corrected_run_id>`
+    - Optional assertion gate: add `ASSERT_TRADEOFF=1` (override tolerance via `MIN_COVERAGE_GAIN` / `MAX_BAD_RATIO_INCREASE`)
+    - Writes `human_correction_delta.{json,md}` to the corrected run directory
+  - Classify per-song dominant failure mode from benchmark output:
+    - `./venv/bin/python tools/classify_alignment_failures.py --report benchmarks/results/<run_id>`
+    - or `make benchmark-classify-failures REPORT=benchmarks/results/<run_id> [MATCH="levitating"]`
+    - Writes `failure_mode_report.{json,md}` in the run directory
+  - Profile slowest songs from benchmark runtime:
+    - `./venv/bin/python tools/profile_benchmark_runtime.py --report benchmarks/results/<run_id> --top 5`
+    - or `make benchmark-profile-runtime REPORT=benchmarks/results/<run_id> [TOP=5]`
+    - Writes `runtime_profile.{json,md}` in the run directory
+  - Compare runtime deltas between two benchmark runs:
+    - `./venv/bin/python tools/compare_benchmark_runtime.py --baseline benchmarks/results/<baseline_run_id> --candidate benchmarks/results/<candidate_run_id>`
+    - or `make benchmark-compare-runtime BASELINE=benchmarks/results/<baseline_run_id> CANDIDATE=benchmarks/results/<candidate_run_id> [TOP=5] [ONLY_POSITIVE=1]`
+    - Writes `runtime_delta.{json,md}` in the candidate run directory
+    - Report includes both `sum_song_elapsed_total_delta_sec` (aggregate-only-safe) and `sum_song_elapsed_executed_delta_sec`.
   - Enforce committed main benchmark guardrails: `./venv/bin/python tools/main_benchmark_guardrails.py`
 
 Main benchmark reference trust policy (first pass):
@@ -238,6 +269,11 @@ Benchmark metric interpretation:
 - `dtw_word_coverage`: fraction of words matched through DTW/Whisper alignment. This is typically lower than line coverage.
 - `dtw_phonetic_similarity_coverage`: matched words with sufficiently strong phonetic similarity; useful for cross-language or misspelling-heavy cases.
 - `agreement_start_mean_abs_sec` and `agreement_start_p95_abs_sec`: independent line-start agreement metrics (when DTW anchors are available); p95 is the better regression guard.
+- `agreement_comparability_report` / `agreement_skip_reason_totals` (aggregate report JSON): per-song eligible vs matched agreement lines plus skip reasons (text mismatch, sparse window evidence, anchor outside window, etc.).
+- `agreement_adaptive_rescue_count` (per-song metric): count of high-overlap lines admitted by strict timing-gated rescue (used to expand comparability without broadly lowering text thresholds).
+- `alignment_diagnostics_summary.fallback_map_*` (aggregate report JSON): deterministic fallback-map telemetry (attempted/selected/rejected counts, reason counts, and per-song decisions).
+- `local_transcribe_cache_hits` / `local_transcribe_cache_misses` (per-song metric): in-process memoization counters showing transcription reuse across hybrid/fallback passes during one song run.
+- `local_transcribe_cache_*_total` + `local_transcribe_cache_hit_ratio` (aggregate report JSON): suite-level summary of those per-song memoization counters.
 - `whisper_anchor_start_mean_abs_sec` / `whisper_anchor_start_p95_abs_sec`: diagnostic-only line-start deltas against nearest Whisper segments (use for debugging, not strategy ranking).
 - `low_confidence_lines`: lines where Whisper confidence is weak; inspect these first during debugging.
 - `null` metrics: expected when a song path used onset/LRC timing without DTW-based reference comparisons.
@@ -254,8 +290,8 @@ Then open `http://127.0.0.1:8765`.
 
 - Canonical format: `*.gold.json` (human-readable JSON with word-level `start`/`end` timings).
 - Input: existing timing report JSON or existing `*.gold.json`.
-- Editing: drag intervals/handles plus keyboard nudging at 0.1s increments.
-- Validation: forbids word overlaps and allows gaps.
+- Editing: drag intervals/handles, fine/coarse nudges (`0.05s` / `0.2s`), and audio-anchor snap/jump shortcuts.
+- Validation: editing is permissive while adjusting; the save path normalizes/snap-rounds timings.
 
 See `docs/gold_timing_editor.md` for schema and workflow details.
 

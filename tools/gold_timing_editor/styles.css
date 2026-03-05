@@ -70,7 +70,7 @@ h1 {
 }
 
 .controls.compact {
-  grid-template-columns: auto auto auto auto 1fr;
+  grid-template-columns: auto auto auto auto 1fr 1fr;
   align-items: center;
   margin-bottom: 0.5rem;
 }
@@ -181,6 +181,11 @@ button:hover {
 
 .tick.major { height: 15px; }
 .tick.minor { height: 8px; opacity: 0.7; }
+.tick.audio-anchor {
+  height: 100%;
+  width: 1px;
+  background: rgba(18, 107, 67, 0.3);
+}
 
 .tick-label {
   position: absolute;
@@ -245,6 +250,13 @@ button:hover {
 audio {
   display: block;
   height: 32px;
+}
+
+#telemetryInfo {
+  color: var(--ink-soft);
+  font-size: 0.85rem;
+  justify-self: end;
+  text-align: right;
 }
 
 footer {

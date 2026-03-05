@@ -137,6 +137,15 @@ def test_load_song_result(tmp_path):
     assert loaded["status"] == "ok"
 
 
+def test_discover_cached_result_slugs(tmp_path):
+    module = _load_module()
+    (tmp_path / "01_bad-guy_result.json").write_text("{}", encoding="utf-8")
+    (tmp_path / "02_shape-of-you_result.json").write_text("{}", encoding="utf-8")
+    (tmp_path / "notes.txt").write_text("x", encoding="utf-8")
+    slugs = module._discover_cached_result_slugs(tmp_path)
+    assert slugs == {"bad-guy", "shape-of-you"}
+
+
 def test_refresh_cached_metrics(tmp_path):
     module = _load_module()
     report_path = tmp_path / "timing_report.json"
@@ -178,6 +187,178 @@ def test_build_run_signature(tmp_path):
     assert sig["min_timing_quality_score_line_weighted"] == 0.58
 
 
+def test_validate_cli_args_rejects_invalid_thresholds():
+    module = _load_module()
+    invalid_cases = [
+        ("min_dtw_song_coverage_ratio", 1.1),
+        ("min_dtw_line_coverage_ratio", -0.1),
+        ("min_timing_quality_score_line_weighted", 2.0),
+        ("min_agreement_coverage_gain_for_bad_ratio_warning", -0.01),
+        ("max_agreement_bad_ratio_increase_on_coverage_gain", -0.01),
+        ("max_whisper_phase_share", 1.1),
+        ("max_alignment_phase_share", -0.1),
+        ("max_scheduler_overhead_sec", -1.0),
+    ]
+    for field, value in invalid_cases:
+        args = module.argparse.Namespace(
+            min_dtw_song_coverage_ratio=0.5,
+            min_dtw_line_coverage_ratio=0.5,
+            min_timing_quality_score_line_weighted=0.7,
+            min_agreement_coverage_gain_for_bad_ratio_warning=0.0,
+            max_agreement_bad_ratio_increase_on_coverage_gain=0.01,
+            max_whisper_phase_share=0.95,
+            max_alignment_phase_share=0.95,
+            max_scheduler_overhead_sec=120.0,
+        )
+        setattr(args, field, value)
+        try:
+            module._validate_cli_args(args)
+        except ValueError:
+            continue
+        raise AssertionError(f"expected ValueError for {field}={value}")
+
+
+def test_filter_manifest_songs_match_and_limit():
+    module = _load_module()
+    songs = [
+        module.BenchmarkSong(
+            artist="Artist A",
+            title="Alpha",
+            youtube_id="aaaaaaaaaaa",
+            youtube_url="https://www.youtube.com/watch?v=aaaaaaaaaaa",
+        ),
+        module.BenchmarkSong(
+            artist="Artist B",
+            title="Beta",
+            youtube_id="bbbbbbbbbbb",
+            youtube_url="https://www.youtube.com/watch?v=bbbbbbbbbbb",
+        ),
+    ]
+    selected = module._filter_manifest_songs(songs, match="artist", max_songs=1)
+    assert len(selected) == 1
+    assert selected[0].title == "Alpha"
+
+
+def test_apply_aggregate_only_cached_scope(tmp_path):
+    module = _load_module()
+    song_a = module.BenchmarkSong(
+        artist="Artist A",
+        title="Alpha",
+        youtube_id="aaaaaaaaaaa",
+        youtube_url="https://www.youtube.com/watch?v=aaaaaaaaaaa",
+    )
+    song_b = module.BenchmarkSong(
+        artist="Artist B",
+        title="Beta",
+        youtube_id="bbbbbbbbbbb",
+        youtube_url="https://www.youtube.com/watch?v=bbbbbbbbbbb",
+    )
+    (tmp_path / f"01_{song_b.slug}_result.json").write_text("{}", encoding="utf-8")
+    selected = module._apply_aggregate_only_cached_scope(
+        [song_a, song_b],
+        aggregate_only=True,
+        match=None,
+        max_songs=0,
+        run_dir=tmp_path,
+    )
+    assert selected == [song_b]
+
+    not_scoped = module._apply_aggregate_only_cached_scope(
+        [song_a, song_b],
+        aggregate_only=True,
+        match="Artist",
+        max_songs=0,
+        run_dir=tmp_path,
+    )
+    assert not_scoped == [song_a, song_b]
+
+
+def test_load_aggregate_only_results_refreshes_cached_and_marks_missing(tmp_path):
+    module = _load_module()
+    song_a = module.BenchmarkSong(
+        artist="A",
+        title="Song A",
+        youtube_id="aaaaaaaaaaa",
+        youtube_url="https://www.youtube.com/watch?v=aaaaaaaaaaa",
+    )
+    song_b = module.BenchmarkSong(
+        artist="B",
+        title="Song B",
+        youtube_id="bbbbbbbbbbb",
+        youtube_url="https://www.youtube.com/watch?v=bbbbbbbbbbb",
+    )
+    report_path = tmp_path / f"01_{song_a.slug}_timing_report.json"
+    report_path.write_text(
+        (
+            '{"alignment_method":"whisper_hybrid","dtw_line_coverage":0.9,'
+            '"dtw_word_coverage":0.8,"dtw_phonetic_similarity_coverage":0.7,'
+            '"low_confidence_lines":[],"lines":[{"start":1.0,'
+            '"nearest_segment_start":1.1,"text":"hello world",'
+            '"nearest_segment_start_text":"hello world"}]}'
+        ),
+        encoding="utf-8",
+    )
+    result_path = tmp_path / f"01_{song_a.slug}_result.json"
+    result_path.write_text(
+        (
+            '{"artist":"A","title":"Song A","youtube_id":"aaaaaaaaaaa",'
+            f'"report_path":"{report_path}","status":"ok"}}'
+        ).replace("}}", "}"),
+        encoding="utf-8",
+    )
+    rows, skipped = module._load_aggregate_only_results(
+        songs=[song_a, song_b],
+        run_dir=tmp_path,
+        gold_root=tmp_path,
+        rebaseline=False,
+    )
+    assert len(rows) == 1
+    assert skipped == ["B - Song B"]
+    assert rows[0]["status"] == "ok"
+    assert rows[0]["result_reused"] is True
+    assert rows[0]["aggregate_only_recomputed"] is True
+    assert rows[0]["metrics"]["dtw_line_coverage"] == 0.9
+
+
+def test_load_aggregate_only_results_falls_back_to_slug_match(tmp_path):
+    module = _load_module()
+    song = module.BenchmarkSong(
+        artist="B",
+        title="Song B",
+        youtube_id="bbbbbbbbbbb",
+        youtube_url="https://www.youtube.com/watch?v=bbbbbbbbbbb",
+    )
+    report_path = tmp_path / f"01_{song.slug}_timing_report.json"
+    report_path.write_text(
+        (
+            '{"alignment_method":"whisper_hybrid","dtw_line_coverage":0.8,'
+            '"dtw_word_coverage":0.7,"dtw_phonetic_similarity_coverage":0.6,'
+            '"low_confidence_lines":[],"lines":[{"start":1.0,'
+            '"nearest_segment_start":1.1,"text":"hello world",'
+            '"nearest_segment_start_text":"hello world"}]}'
+        ),
+        encoding="utf-8",
+    )
+    (tmp_path / f"01_{song.slug}_result.json").write_text(
+        (
+            '{"artist":"B","title":"Song B","youtube_id":"bbbbbbbbbbb",'
+            f'"report_path":"{report_path}","status":"ok"}}'
+        ).replace("}}", "}"),
+        encoding="utf-8",
+    )
+
+    rows, skipped = module._load_aggregate_only_results(
+        songs=[song],
+        run_dir=tmp_path,
+        gold_root=tmp_path,
+        rebaseline=False,
+    )
+    assert skipped == []
+    assert len(rows) == 1
+    assert rows[0]["status"] == "ok"
+    assert rows[0]["metrics"]["dtw_line_coverage"] == 0.8
+
+
 def test_aggregate_tracks_missing_dtw_and_weighted_means():
     module = _load_module()
     results = [
@@ -208,6 +389,8 @@ def test_aggregate_tracks_missing_dtw_and_weighted_means():
                 "agreement_severe_ratio": 0.04,
                 "timing_quality_score": 0.62,
                 "timing_quality_band": "fair",
+                "local_transcribe_cache_hits": 2,
+                "local_transcribe_cache_misses": 1,
             },
         },
         {
@@ -234,6 +417,8 @@ def test_aggregate_tracks_missing_dtw_and_weighted_means():
                 "agreement_severe_ratio": 0.0,
                 "timing_quality_score": 0.78,
                 "timing_quality_band": "good",
+                "local_transcribe_cache_hits": 0,
+                "local_transcribe_cache_misses": 1,
             },
         },
     ]
@@ -248,6 +433,10 @@ def test_aggregate_tracks_missing_dtw_and_weighted_means():
     assert agg["agreement_start_max_abs_sec_mean"] == 1.4
     assert agg["timing_quality_score_mean"] == 0.7
     assert agg["timing_quality_score_line_weighted_mean"] == 0.6733
+    assert agg["local_transcribe_cache_hits_total"] == 2
+    assert agg["local_transcribe_cache_misses_total"] == 2
+    assert agg["local_transcribe_cache_events_total"] == 4
+    assert agg["local_transcribe_cache_hit_ratio"] == 0.5
     assert agg["sum_song_elapsed_sec"] == 20.0
     assert agg["phase_totals_sec"]["separation"] == 16.0
     assert agg["cache_summary"]["separation"]["miss_count"] == 0
@@ -256,6 +445,31 @@ def test_aggregate_tracks_missing_dtw_and_weighted_means():
     assert "lowest_timing_quality_score" in agg["quality_hotspots"]
     assert agg["timing_quality_band_counts"] == {"fair": 1, "good": 1}
     assert agg["timing_quality_band_ratios"] == {"fair": 0.5, "good": 0.5}
+
+
+def test_aggregate_elapsed_distinguishes_executed_from_total():
+    module = _load_module()
+    results = [
+        {
+            "artist": "A",
+            "title": "Executed",
+            "status": "ok",
+            "elapsed_sec": 12.0,
+            "result_reused": False,
+            "metrics": {"line_count": 10},
+        },
+        {
+            "artist": "B",
+            "title": "Cached",
+            "status": "ok",
+            "elapsed_sec": 30.0,
+            "result_reused": True,
+            "metrics": {"line_count": 10},
+        },
+    ]
+    agg = module._aggregate(results)
+    assert agg["sum_song_elapsed_sec"] == 12.0
+    assert agg["sum_song_elapsed_total_sec"] == 42.0
 
 
 def test_quality_coverage_warnings():
@@ -405,6 +619,164 @@ def test_quality_coverage_warnings_include_poor_band_alert():
         suite_wall_elapsed_sec=6.0,
     )
     assert any("poor timing-quality band" in item for item in warnings)
+
+
+def test_agreement_tradeoff_warnings_triggered_for_coverage_gain_and_bad_regression():
+    module = _load_module()
+    warnings = module._agreement_tradeoff_warnings(
+        aggregate={
+            "agreement_coverage_ratio_mean": 0.26,
+            "agreement_bad_ratio_mean": 0.05,
+        },
+        baseline_aggregate={
+            "agreement_coverage_ratio_mean": 0.24,
+            "agreement_bad_ratio_mean": 0.045,
+        },
+        min_coverage_gain=0.01,
+        max_bad_ratio_increase=0.003,
+    )
+    assert len(warnings) == 1
+    assert "Agreement tradeoff warning" in warnings[0]
+
+
+def test_agreement_tradeoff_warnings_not_triggered_when_within_tolerance():
+    module = _load_module()
+    warnings = module._agreement_tradeoff_warnings(
+        aggregate={
+            "agreement_coverage_ratio_mean": 0.26,
+            "agreement_bad_ratio_mean": 0.047,
+        },
+        baseline_aggregate={
+            "agreement_coverage_ratio_mean": 0.24,
+            "agreement_bad_ratio_mean": 0.045,
+        },
+        min_coverage_gain=0.01,
+        max_bad_ratio_increase=0.003,
+    )
+    assert warnings == []
+
+
+def test_aggregate_includes_agreement_comparability_report():
+    module = _load_module()
+    results = [
+        {
+            "artist": "A",
+            "title": "Song 1",
+            "status": "ok",
+            "metrics": {
+                "line_count": 10,
+                "agreement_count": 4,
+                "agreement_eligible_lines": 6,
+                "agreement_matched_lines": 5,
+                "agreement_skip_reason_counts": {
+                    "low_text_similarity": 1,
+                    "low_token_overlap": 2,
+                },
+            },
+        },
+        {
+            "artist": "B",
+            "title": "Song 2",
+            "status": "ok",
+            "metrics": {
+                "line_count": 8,
+                "agreement_count": 2,
+                "agreement_eligible_lines": 5,
+                "agreement_matched_lines": 2,
+                "agreement_skip_reason_counts": {
+                    "anchor_outside_window": 3,
+                },
+            },
+        },
+    ]
+    agg = module._aggregate(results)
+    assert agg["agreement_eligible_lines_total"] == 11
+    assert agg["agreement_matched_anchor_lines_total"] == 7
+    assert agg["agreement_skip_reason_totals"]["anchor_outside_window"] == 3
+    assert agg["agreement_skip_reason_totals"]["low_token_overlap"] == 2
+    report = agg["agreement_comparability_report"]
+    assert len(report) == 2
+    assert report[0]["song"] in {"A - Song 1", "B - Song 2"}
+
+
+def test_extract_alignment_diagnostics_includes_fallback_map_fields():
+    module = _load_module()
+    report = {
+        "alignment_method": "whisper_hybrid",
+        "lyrics_source": "lyriq(provider)",
+        "dtw_metrics": {
+            "fallback_map_attempted": 1.0,
+            "fallback_map_selected": 0.0,
+            "fallback_map_rejected": 1.0,
+            "fallback_map_decision_code": 2.0,
+            "fallback_map_score_gain": 0.0123,
+        },
+    }
+    diag = module._extract_alignment_diagnostics(report)
+    assert diag["fallback_map_attempted"] is True
+    assert diag["fallback_map_selected"] is False
+    assert diag["fallback_map_rejected"] is True
+    assert diag["fallback_map_decision_reason"] == "rejected_insufficient_score_gain"
+    assert diag["fallback_map_score_gain"] == 0.0123
+
+
+def test_extract_alignment_diagnostics_maps_coverage_promotion_reason():
+    module = _load_module()
+    report = {
+        "dtw_metrics": {
+            "fallback_map_decision_code": 4.0,
+        },
+    }
+    diag = module._extract_alignment_diagnostics(report)
+    assert diag["fallback_map_decision_reason"] == "selected_coverage_promotion"
+
+
+def test_aggregate_includes_fallback_map_selection_summary():
+    module = _load_module()
+    results = [
+        {
+            "artist": "A",
+            "title": "Song 1",
+            "status": "ok",
+            "metrics": {"line_count": 1},
+            "alignment_diagnostics": {
+                "alignment_method": "whisper_hybrid",
+                "lyrics_source_provider": "lyriq",
+                "issue_tag_counts": {},
+                "fallback_map_attempted": True,
+                "fallback_map_selected": True,
+                "fallback_map_rejected": False,
+                "fallback_map_decision_reason": "selected_score_gain",
+                "fallback_map_score_gain": 0.2,
+            },
+        },
+        {
+            "artist": "B",
+            "title": "Song 2",
+            "status": "ok",
+            "metrics": {"line_count": 1},
+            "alignment_diagnostics": {
+                "alignment_method": "whisper_hybrid",
+                "lyrics_source_provider": "lyriq",
+                "issue_tag_counts": {},
+                "fallback_map_attempted": True,
+                "fallback_map_selected": False,
+                "fallback_map_rejected": True,
+                "fallback_map_decision_reason": "rejected_insufficient_score_gain",
+                "fallback_map_score_gain": 0.01,
+            },
+        },
+    ]
+    agg = module._aggregate(results)
+    summary = agg["alignment_diagnostics_summary"]
+    assert summary["fallback_map_attempted_count"] == 2
+    assert summary["fallback_map_selected_count"] == 1
+    assert summary["fallback_map_rejected_count"] == 1
+    assert summary["fallback_map_decision_counts"]["selected_score_gain"] == 1
+    assert (
+        summary["fallback_map_decision_counts"]["rejected_insufficient_score_gain"] == 1
+    )
+    assert len(summary["fallback_map_song_report"]) == 2
 
 
 def test_cache_expectation_warnings():

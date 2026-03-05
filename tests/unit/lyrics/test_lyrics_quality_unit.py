@@ -108,7 +108,7 @@ def test_apply_whisper_alignment_records_fixes(monkeypatch):
         lambda *args, **kwargs: (
             args[0],
             ["fix1", "fix2"],
-            {},
+            {"matched_ratio": 0.9, "avg_similarity": 0.9, "line_coverage": 0.9},
         ),
     )
     monkeypatch.setattr(
@@ -124,7 +124,10 @@ def test_apply_whisper_alignment_records_fixes(monkeypatch):
     )
     assert aligned is lines
     assert fixes == ["fix1", "fix2"]
-    assert metrics == {}
+    assert metrics["fallback_map_attempted"] == 0.0
+    assert metrics["fallback_map_selected"] == 0.0
+    assert metrics["fallback_map_rejected"] == 0.0
+    assert metrics["fallback_map_decision_code"] == 0.0
 
 
 def test_apply_whisper_alignment_uses_map_fallback_when_hybrid_is_weak(monkeypatch):
@@ -161,7 +164,10 @@ def test_apply_whisper_alignment_uses_map_fallback_when_hybrid_is_weak(monkeypat
 
     assert aligned is not lines
     assert fixes == ["map_fix"]
+    assert metrics["fallback_map_attempted"] == 1.0
     assert metrics["fallback_map_selected"] == 1.0
+    assert metrics["fallback_map_rejected"] == 0.0
+    assert metrics["fallback_map_decision_code"] == 1.0
     assert metrics["fallback_map_score_gain"] > 0.0
 
 
@@ -202,7 +208,210 @@ def test_apply_whisper_alignment_keeps_hybrid_when_quality_is_strong(monkeypatch
     assert aligned is lines
     assert fixes == ["hybrid_fix"]
     assert metrics["matched_ratio"] == pytest.approx(0.9)
+    assert metrics["fallback_map_attempted"] == 0.0
+    assert metrics["fallback_map_selected"] == 0.0
+    assert metrics["fallback_map_rejected"] == 0.0
+    assert metrics["fallback_map_decision_code"] == 0.0
     assert map_called["value"] is False
+
+
+def test_apply_whisper_alignment_rejects_map_fallback_when_gain_is_small(monkeypatch):
+    lines = [_make_line("hello world", 0.0, 1.0)]
+
+    monkeypatch.setattr(
+        "y2karaoke.core.components.whisper.whisper_integration.correct_timing_with_whisper",
+        lambda *args, **kwargs: (
+            args[0],
+            ["hybrid_fix"],
+            {"matched_ratio": 0.3, "avg_similarity": 0.45, "line_coverage": 0.4},
+        ),
+    )
+    monkeypatch.setattr(
+        "y2karaoke.core.components.whisper.whisper_integration.align_lrc_text_to_whisper_timings",
+        lambda *args, **kwargs: (
+            args[0],
+            ["map_fix"],
+            {"matched_ratio": 0.31, "avg_similarity": 0.45, "line_coverage": 0.4},
+        ),
+    )
+    monkeypatch.setattr(
+        "y2karaoke.core.audio_analysis.extract_audio_features",
+        lambda *_: None,
+    )
+
+    aligned, fixes, metrics = lyrics._apply_whisper_alignment(
+        lines,
+        "vocals.wav",
+        whisper_language="en",
+        whisper_model="base",
+        whisper_force_dtw=False,
+    )
+
+    assert aligned is lines
+    assert fixes == ["hybrid_fix"]
+    assert metrics["fallback_map_attempted"] == 1.0
+    assert metrics["fallback_map_selected"] == 0.0
+    assert metrics["fallback_map_rejected"] == 1.0
+    assert metrics["fallback_map_decision_code"] == 2.0
+
+
+def test_apply_whisper_alignment_reuses_transcription_across_fallback_passes(
+    monkeypatch,
+):
+    import y2karaoke.core.components.whisper.whisper_integration as wi
+
+    lines = [_make_line("hello world", 0.0, 1.0)]
+    calls = {"count": 0}
+
+    def _fake_transcribe(vocals_path, language=None, model_size="base", **kwargs):
+        _ = (vocals_path, language, model_size, kwargs)
+        calls["count"] += 1
+        return [], [], (language or "en"), model_size
+
+    def _fake_correct(lines_in, vocals_path, **kwargs):
+        wi.transcribe_vocals(
+            vocals_path,
+            language=kwargs.get("language"),
+            model_size=kwargs.get("model_size", "base"),
+            aggressive=kwargs.get("aggressive", False),
+            temperature=kwargs.get("temperature", 0.0),
+        )
+        return (
+            lines_in,
+            ["hybrid_fix"],
+            {"matched_ratio": 0.3, "avg_similarity": 0.45, "line_coverage": 0.4},
+        )
+
+    def _fake_map(lines_in, vocals_path, **kwargs):
+        wi.transcribe_vocals(
+            vocals_path,
+            language=kwargs.get("language"),
+            model_size=kwargs.get("model_size", "base"),
+            aggressive=kwargs.get("aggressive", False),
+            temperature=kwargs.get("temperature", 0.0),
+        )
+        return (
+            lines_in,
+            ["map_fix"],
+            {"matched_ratio": 0.9, "avg_similarity": 0.9, "line_coverage": 0.9},
+        )
+
+    monkeypatch.setattr(
+        "y2karaoke.core.components.whisper.whisper_integration.transcribe_vocals",
+        _fake_transcribe,
+    )
+    monkeypatch.setattr(
+        "y2karaoke.core.components.whisper.whisper_integration.correct_timing_with_whisper",
+        _fake_correct,
+    )
+    monkeypatch.setattr(
+        "y2karaoke.core.components.whisper.whisper_integration.align_lrc_text_to_whisper_timings",
+        _fake_map,
+    )
+    monkeypatch.setattr(
+        "y2karaoke.core.audio_analysis.extract_audio_features",
+        lambda *_: None,
+    )
+
+    _aligned, _fixes, metrics = lyrics._apply_whisper_alignment(
+        lines,
+        "vocals.wav",
+        whisper_language="en",
+        whisper_model="base",
+        whisper_force_dtw=False,
+    )
+
+    assert calls["count"] == 1
+    assert metrics["local_transcribe_cache_misses"] == 1.0
+    assert metrics["local_transcribe_cache_hits"] >= 1.0
+
+
+def test_apply_whisper_alignment_fallback_uses_pre_correction_line_snapshot(
+    monkeypatch,
+):
+    lines = [_make_line("hello world", 0.0, 1.0)]
+
+    def _mutating_correct(lines_in, *args, **kwargs):
+        lines_in[0].words[0].text = "mutated"
+        return (
+            lines_in,
+            ["hybrid_fix"],
+            {"matched_ratio": 0.3, "avg_similarity": 0.45, "line_coverage": 0.4},
+        )
+
+    def _asserting_map(lines_in, *args, **kwargs):
+        assert lines_in[0].words[0].text == "hello"
+        return (
+            lines_in,
+            ["map_fix"],
+            {"matched_ratio": 0.9, "avg_similarity": 0.9, "line_coverage": 0.9},
+        )
+
+    monkeypatch.setattr(
+        "y2karaoke.core.components.whisper.whisper_integration.correct_timing_with_whisper",
+        _mutating_correct,
+    )
+    monkeypatch.setattr(
+        "y2karaoke.core.components.whisper.whisper_integration.align_lrc_text_to_whisper_timings",
+        _asserting_map,
+    )
+    monkeypatch.setattr(
+        "y2karaoke.core.audio_analysis.extract_audio_features",
+        lambda *_: None,
+    )
+
+    _aligned, _fixes, metrics = lyrics._apply_whisper_alignment(
+        lines,
+        "vocals.wav",
+        whisper_language="en",
+        whisper_model="base",
+        whisper_force_dtw=False,
+    )
+
+    assert metrics["fallback_map_attempted"] == 1.0
+    assert metrics["fallback_map_selected"] == 1.0
+
+
+def test_choose_whisper_map_fallback_selects_on_score_gain():
+    decision = lh._choose_whisper_map_fallback(
+        {"matched_ratio": 0.3, "avg_similarity": 0.4, "line_coverage": 0.4},
+        {"matched_ratio": 0.9, "avg_similarity": 0.9, "line_coverage": 0.9},
+    )
+    assert decision["selected"] == 1.0
+    assert decision["decision_code"] == 1.0
+    assert decision["score_gain"] > 0.05
+
+
+def test_choose_whisper_map_fallback_rejects_when_not_better():
+    decision = lh._choose_whisper_map_fallback(
+        {"matched_ratio": 0.7, "avg_similarity": 0.7, "line_coverage": 0.7},
+        {"matched_ratio": 0.69, "avg_similarity": 0.69, "line_coverage": 0.8},
+    )
+    assert decision["selected"] == 0.0
+    assert decision["decision_code"] == 2.0
+
+
+def test_choose_whisper_map_fallback_coverage_promotion_is_optional():
+    baseline = {"matched_ratio": 0.6, "avg_similarity": 0.6, "line_coverage": 0.4}
+    candidate = {"matched_ratio": 0.62, "avg_similarity": 0.62, "line_coverage": 0.52}
+
+    enabled = lh._choose_whisper_map_fallback(
+        baseline,
+        candidate,
+        min_gain=0.05,
+        allow_coverage_promotion=True,
+    )
+    disabled = lh._choose_whisper_map_fallback(
+        baseline,
+        candidate,
+        min_gain=0.05,
+        allow_coverage_promotion=False,
+    )
+
+    assert enabled["selected"] == 1.0
+    assert enabled["decision_code"] == 4.0
+    assert disabled["selected"] == 0.0
+    assert disabled["decision_code"] == 2.0
 
 
 def test_refine_timing_with_quality_sets_method(monkeypatch):

@@ -1,7 +1,7 @@
 """Helper functions for lyrics processing."""
 
-import copy
 import logging
+import os
 import re
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
@@ -52,6 +52,74 @@ def _should_try_whisper_map_fallback(metrics: Dict[str, float]) -> bool:
     if not metrics:
         return False
     return _whisper_metrics_quality_score(metrics) < 0.72
+
+
+def _choose_whisper_map_fallback(
+    baseline_metrics: Dict[str, float],
+    map_metrics: Dict[str, float],
+    *,
+    min_gain: float = 0.05,
+    allow_coverage_promotion: bool = True,
+) -> Dict[str, float]:
+    """Choose whether to use map fallback based on stable internal quality signals."""
+    baseline_score = _whisper_metrics_quality_score(baseline_metrics)
+    map_score = _whisper_metrics_quality_score(map_metrics)
+    score_gain = map_score - baseline_score
+    baseline_coverage = float(baseline_metrics.get("line_coverage", 0.0))
+    map_coverage = float(map_metrics.get("line_coverage", 0.0))
+
+    selected = 0.0
+    decision_code = 2.0  # rejected_insufficient_score_gain
+
+    if map_score > baseline_score + min_gain:
+        selected = 1.0
+        decision_code = 1.0  # selected_score_gain
+    elif (
+        allow_coverage_promotion
+        and map_score > baseline_score
+        and score_gain > (min_gain * 0.4)
+        and map_coverage > baseline_coverage + 0.08
+    ):
+        # Optional secondary path: allow smaller gains when line coverage
+        # meaningfully improves and map score is still better than baseline.
+        selected = 1.0
+        decision_code = 4.0  # selected_coverage_promotion
+    return {
+        "selected": selected,
+        "decision_code": decision_code,
+        "baseline_score": round(baseline_score, 4),
+        "candidate_score": round(map_score, 4),
+        "score_gain": round(score_gain, 4),
+        "min_gain_required": float(min_gain),
+    }
+
+
+def _coverage_promotion_enabled() -> bool:
+    value = str(
+        os.getenv("Y2KARAOKE_ENABLE_FALLBACK_MAP_COVERAGE_PROMOTION", "1")
+    ).strip()
+    return value not in {"0", "false", "False", "no", "off"}
+
+
+def _clone_lines_for_fallback(lines: List[Line]) -> List[Line]:
+    """Fast explicit clone of line/word timing structures for fallback mapping."""
+    cloned: List[Line] = []
+    for line in lines:
+        cloned.append(
+            Line(
+                words=[
+                    Word(
+                        text=word.text,
+                        start_time=word.start_time,
+                        end_time=word.end_time,
+                        singer=word.singer,
+                    )
+                    for word in line.words
+                ],
+                singer=line.singer,
+            )
+        )
+    return cloned
 
 
 def _estimate_singing_duration(text: str, word_count: int) -> float:
@@ -459,45 +527,54 @@ def _apply_whisper_alignment(
     from ..whisper.whisper_integration import (
         align_lrc_text_to_whisper_timings,
         correct_timing_with_whisper,
+        transcribe_vocals,
+        use_whisper_integration_hooks,
     )
 
     audio_features = extract_audio_features(vocals_path)
+    transcribe_cache: Dict[
+        Tuple[str, Optional[str], str, bool, float],
+        Tuple[object, object, str, str],
+    ] = {}
+    transcribe_cache_hits = 0
+    transcribe_cache_misses = 0
 
     # Quality-first default: use Whisper large for alignment paths and rely on
     # cache reuse to keep iterative benchmark runs practical.
     default_model = "large"
     model_size = whisper_model or default_model
-    if prefer_whisper_timing_map:
-        lines, whisper_fixes, whisper_metrics = align_lrc_text_to_whisper_timings(
-            lines,
-            vocals_path,
-            language=whisper_language,
-            model_size=model_size,
-            aggressive=whisper_aggressive,
-            temperature=whisper_temperature,
-            audio_features=audio_features,
-            lenient_vocal_activity_threshold=lenient_vocal_activity_threshold,
-            lenient_activity_bonus=lenient_activity_bonus,
-            low_word_confidence_threshold=low_word_confidence_threshold,
-        )
-    else:
-        baseline_lines = copy.deepcopy(lines)
-        lines, whisper_fixes, whisper_metrics = correct_timing_with_whisper(
-            lines,
-            vocals_path,
-            language=whisper_language,
-            model_size=model_size,
-            aggressive=whisper_aggressive,
-            temperature=whisper_temperature,
-            force_dtw=whisper_force_dtw,
-            audio_features=audio_features,
-            lenient_vocal_activity_threshold=lenient_vocal_activity_threshold,
-            lenient_activity_bonus=lenient_activity_bonus,
-            low_word_confidence_threshold=low_word_confidence_threshold,
-        )
-        if _should_try_whisper_map_fallback(whisper_metrics):
-            map_lines, map_fixes, map_metrics = align_lrc_text_to_whisper_timings(
-                baseline_lines,
+
+    def _memoized_transcribe_vocals(
+        _vocals_path: str,
+        language: Optional[str] = None,
+        model_size: str = "base",
+        aggressive: bool = False,
+        temperature: float = 0.0,
+    ) -> Tuple[object, object, str, str]:
+        nonlocal transcribe_cache_hits, transcribe_cache_misses
+        key = (_vocals_path, language, model_size, aggressive, float(temperature))
+        cached = transcribe_cache.get(key)
+        if cached is None:
+            transcribe_cache_misses += 1
+            miss_result = transcribe_vocals(
+                _vocals_path,
+                language=language,
+                model_size=model_size,
+                aggressive=aggressive,
+                temperature=temperature,
+            )
+            transcribe_cache[key] = miss_result
+            return miss_result
+        else:
+            transcribe_cache_hits += 1
+        return cached
+
+    with use_whisper_integration_hooks(
+        transcribe_vocals_fn=_memoized_transcribe_vocals
+    ):
+        if prefer_whisper_timing_map:
+            lines, whisper_fixes, whisper_metrics = align_lrc_text_to_whisper_timings(
+                lines,
                 vocals_path,
                 language=whisper_language,
                 model_size=model_size,
@@ -508,16 +585,95 @@ def _apply_whisper_alignment(
                 lenient_activity_bonus=lenient_activity_bonus,
                 low_word_confidence_threshold=low_word_confidence_threshold,
             )
-            baseline_score = _whisper_metrics_quality_score(whisper_metrics)
-            map_score = _whisper_metrics_quality_score(map_metrics)
-            if map_score > baseline_score + 0.05:
-                lines = map_lines
-                whisper_fixes = map_fixes
-                whisper_metrics = dict(map_metrics)
-                whisper_metrics["fallback_map_selected"] = 1.0
-                whisper_metrics["fallback_map_score_gain"] = round(
-                    map_score - baseline_score, 4
+            whisper_metrics = dict(whisper_metrics or {})
+            whisper_metrics["fallback_map_attempted"] = 0.0
+            whisper_metrics["fallback_map_selected"] = 0.0
+            whisper_metrics["fallback_map_rejected"] = 0.0
+            whisper_metrics["fallback_map_decision_code"] = 3.0
+        else:
+            baseline_lines = _clone_lines_for_fallback(lines)
+            lines, whisper_fixes, whisper_metrics = correct_timing_with_whisper(
+                lines,
+                vocals_path,
+                language=whisper_language,
+                model_size=model_size,
+                aggressive=whisper_aggressive,
+                temperature=whisper_temperature,
+                force_dtw=whisper_force_dtw,
+                audio_features=audio_features,
+                lenient_vocal_activity_threshold=lenient_vocal_activity_threshold,
+                lenient_activity_bonus=lenient_activity_bonus,
+                low_word_confidence_threshold=low_word_confidence_threshold,
+            )
+            whisper_metrics = dict(whisper_metrics or {})
+            whisper_metrics["fallback_map_attempted"] = 0.0
+            whisper_metrics["fallback_map_selected"] = 0.0
+            whisper_metrics["fallback_map_rejected"] = 0.0
+            whisper_metrics["fallback_map_decision_code"] = 0.0
+            if _should_try_whisper_map_fallback(whisper_metrics):
+                map_lines, map_fixes, map_metrics = align_lrc_text_to_whisper_timings(
+                    baseline_lines,
+                    vocals_path,
+                    language=whisper_language,
+                    model_size=model_size,
+                    aggressive=whisper_aggressive,
+                    temperature=whisper_temperature,
+                    audio_features=audio_features,
+                    lenient_vocal_activity_threshold=lenient_vocal_activity_threshold,
+                    lenient_activity_bonus=lenient_activity_bonus,
+                    low_word_confidence_threshold=low_word_confidence_threshold,
                 )
+                min_gain = 0.05
+                decision = _choose_whisper_map_fallback(
+                    whisper_metrics,
+                    map_metrics,
+                    min_gain=min_gain,
+                    allow_coverage_promotion=_coverage_promotion_enabled(),
+                )
+                selected = bool(float(decision.get("selected", 0.0) or 0.0))
+                if selected:
+                    lines = map_lines
+                    whisper_fixes = map_fixes
+                    whisper_metrics = dict(map_metrics)
+                    whisper_metrics["fallback_map_attempted"] = 1.0
+                    whisper_metrics["fallback_map_selected"] = 1.0
+                    whisper_metrics["fallback_map_rejected"] = 0.0
+                    whisper_metrics["fallback_map_decision_code"] = float(
+                        decision.get("decision_code", 1.0)
+                    )
+                    whisper_metrics["fallback_map_baseline_score"] = float(
+                        decision.get("baseline_score", 0.0)
+                    )
+                    whisper_metrics["fallback_map_candidate_score"] = float(
+                        decision.get("candidate_score", 0.0)
+                    )
+                    whisper_metrics["fallback_map_min_gain_required"] = float(
+                        decision.get("min_gain_required", min_gain)
+                    )
+                    whisper_metrics["fallback_map_score_gain"] = float(
+                        decision.get("score_gain", 0.0)
+                    )
+                else:
+                    whisper_metrics["fallback_map_attempted"] = 1.0
+                    whisper_metrics["fallback_map_selected"] = 0.0
+                    whisper_metrics["fallback_map_rejected"] = 1.0
+                    whisper_metrics["fallback_map_decision_code"] = float(
+                        decision.get("decision_code", 2.0)
+                    )
+                    whisper_metrics["fallback_map_baseline_score"] = float(
+                        decision.get("baseline_score", 0.0)
+                    )
+                    whisper_metrics["fallback_map_candidate_score"] = float(
+                        decision.get("candidate_score", 0.0)
+                    )
+                    whisper_metrics["fallback_map_min_gain_required"] = float(
+                        decision.get("min_gain_required", min_gain)
+                    )
+                    whisper_metrics["fallback_map_score_gain"] = float(
+                        decision.get("score_gain", 0.0)
+                    )
+    whisper_metrics["local_transcribe_cache_hits"] = float(transcribe_cache_hits)
+    whisper_metrics["local_transcribe_cache_misses"] = float(transcribe_cache_misses)
     if whisper_fixes:
         logger.info(f"Whisper aligned {len(whisper_fixes)} line(s)")
         for fix in whisper_fixes:

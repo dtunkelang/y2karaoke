@@ -1,0 +1,81 @@
+# Next Session TODO (Quality / Metrics / Efficiency)
+
+## 0. Human-guided correction loop (new priority track)
+- [x] Add fast micro-adjustment hotkeys in Gold Timing Editor (fine/coarse nudge).
+- [x] Add optional snap-to-audio-onset anchors in Gold Timing Editor for word/line correction.
+- [x] Add line/word "jump-to-next-anchor" actions to reduce repetitive drag edits.
+- [x] Add correction-session telemetry (edits per minute, undo rate, snap usage) to quantify UX speedups.
+- [x] Add benchmark path that compares raw auto-alignment vs post-human-correction delta on agreement/timing metrics.
+
+## 1. Highest-impact quality work
+- [ ] Improve agreement coverage from ~0.25 toward >=0.35 without degrading start-error metrics.
+- [ ] Investigate low-performing songs under current guardrails strategy (`hybrid_whisper`):
+  - [x] `Dua Lipa - Levitating` (provisional classification: sparse lexical comparability)
+  - [x] `Queen - Bohemian Rhapsody` (provisional classification: sparse lexical comparability)
+  - [x] `Bruno Mars - Uptown Funk` (provisional classification: sparse lexical comparability)
+  - [x] `Imagine Dragons - Believer` (provisional classification: sparse lexical comparability)
+  - [x] `Indila - Derniere danse` (provisional classification: sparse lexical comparability)
+- [x] For each, classify dominant failure mode: sparse lexical comparability vs timing drift vs repetition handling.
+
+## 2. Alignment pipeline improvements
+- [x] Add stronger deterministic path-selection telemetry in lyrics pipeline:
+  - [x] record when fallback mapping was attempted
+  - [x] record why fallback was accepted/rejected
+  - [x] surface per-song selection in benchmark summaries
+- [x] Replace heuristic-only selection with score-based chooser using stable internal metrics.
+- [x] Evaluate if any legacy heuristics should be removed/optionalized when they harm measured quality.
+
+## 3. Agreement diagnostics reliability
+- [x] Expand text normalization for agreement matching (contractions/apostrophes/repeated fillers) with tests.
+- [x] Add a benchmark assertion that agreement-coverage gains do not materially raise agreement-bad ratio.
+- [x] Add per-song agreement comparability report (matched/eligible lines + skip reasons).
+
+## 4. Benchmark/guardrail hardening
+- [x] Re-run full strategy matrix after pipeline updates and compare against:
+  - [x] `20260305Tmatrix_full-*`
+  - [x] `20260305T064432Z`
+  - [x] `20260305T_agreement_tune_hybrid_whisper`
+- [ ] Recalibrate guardrail thresholds only if new quality gains hold for full 10-song set.
+- [x] Ensure `main_benchmark_guardrails.py` output remains warning-clean except known reference-divergence cases.
+
+## 5. Efficiency work
+- [x] Profile slowest songs in `hybrid_whisper` to reduce alignment wall time.
+- [x] Cache/reuse expensive intermediate computations across candidate alignment passes.
+- [x] Reduce duplicated work in benchmark runs when only diagnostics logic changes.
+- [x] Add baseline/candidate runtime-delta comparison tooling with schema-aware phase comparability.
+- [x] Add runtime-delta triage filters (`--top`, `--only-positive-delta`) for quicker regression isolation.
+- [x] Make runtime-delta suite elapsed summary aggregate-only-safe (`total` vs `executed` song elapsed deltas).
+- [x] Add runtime-delta comparability warnings (phase non-comparability + aggregate-only elapsed divergence).
+
+## 6. Code quality / tech debt
+- [ ] Continue reducing complexity hotspots in `tools/run_benchmark_suite.py` (incremental extraction).
+- [x] Extract CLI threshold validation + manifest filtering/aggregate-only scoping into pure helpers with focused tests.
+- [x] Extract suite-elapsed/report assembly helpers from `run_benchmark_suite.main()` with focused helper tests.
+- [x] Extract song execution/resume loop into `_collect_song_results()` and runner env setup into `_build_runner_env()`.
+- [x] Extract final benchmark console summary printing into `_print_run_summary()`.
+- [x] Extract warning/exit-policy orchestration into `_compute_run_warnings()` + `_determine_exit_code()`.
+- [x] Extract final report persistence into `_persist_final_report_outputs()` with focused file-output test.
+- [x] Extract pre-run context setup into `_prepare_run_context()` and route `main()` through it.
+- [x] Extract cached-reuse and single-song execution helpers from `_collect_song_results()`.
+- [x] Extract song-result append/checkpoint path into `_append_result_and_checkpoint()` helper with unit test.
+- [x] Extract per-song collection flow into `_collect_single_song_result()` with fail-fast/control-flow tests.
+- [ ] Keep files under quality-guardrail size limits while refactoring.
+- [ ] Add focused tests for new extraction units rather than broad integration expansions.
+
+## 7. CI/CD checklist before every push
+- [ ] `black --check src tests`
+- [ ] `flake8 src/y2karaoke --count --max-complexity=15 --max-line-length=127 --statistics`
+- [ ] `mypy src`
+- [ ] targeted unit tests for touched modules
+- [ ] `python tools/quality_guardrails.py`
+- [ ] if benchmark logic changed: run `tools/main_benchmark_guardrails.py`
+
+## 8. Current baseline snapshot (for quick context)
+- Guardrail strategy: `hybrid_whisper`
+- Guardrail timing-quality floor: `0.70`
+- Latest strong run: `benchmarks/results/20260305T_agreement_tune_hybrid_whisper`
+  - timing_quality_score_line_weighted_mean: `0.7818`
+  - dtw_line_coverage_line_weighted_mean: `0.9257`
+  - dtw_word_coverage_line_weighted_mean: `0.8511`
+  - agreement_coverage_ratio_mean: `0.2523`
+  - agreement_start_p95_abs_sec_mean: `1.051`

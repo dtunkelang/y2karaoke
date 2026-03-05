@@ -25,6 +25,58 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_MANIFEST = REPO_ROOT / "benchmarks" / "benchmark_songs.yaml"
 DEFAULT_RESULTS_ROOT = REPO_ROOT / "benchmarks" / "results"
 DEFAULT_GOLD_ROOT = REPO_ROOT / "benchmarks" / "gold_set"
+_AGREEMENT_FILLER_TOKENS = {
+    "ah",
+    "aah",
+    "eh",
+    "ha",
+    "hey",
+    "la",
+    "na",
+    "oh",
+    "ooh",
+    "uh",
+    "um",
+    "woo",
+    "woah",
+    "whoa",
+    "ya",
+    "yeah",
+    "yo",
+}
+_AGREEMENT_CONTRACTION_SPECIALS: dict[str, tuple[str, ...]] = {
+    "can't": ("can", "not"),
+    "cannot": ("can", "not"),
+    "won't": ("will", "not"),
+    "shan't": ("shall", "not"),
+    "ain't": ("is", "not"),
+    "i'm": ("i", "am"),
+    "it's": ("it", "is"),
+    "you're": ("you", "are"),
+    "we're": ("we", "are"),
+    "they're": ("they", "are"),
+    "that's": ("that", "is"),
+    "there's": ("there", "is"),
+    "what's": ("what", "is"),
+    "let's": ("let", "us"),
+}
+_AGREEMENT_COLLOQUIAL_SPECIALS: dict[str, tuple[str, ...]] = {
+    "gonna": ("going", "to"),
+    "wanna": ("want", "to"),
+    "gotta": ("got", "to"),
+    "lemme": ("let", "me"),
+    "gimme": ("give", "me"),
+    "kinda": ("kind", "of"),
+    "sorta": ("sort", "of"),
+    "yall": ("you", "all"),
+    "ya'll": ("you", "all"),
+    "imma": ("i", "am", "going", "to"),
+    "cuz": ("because",),
+    "cos": ("because",),
+    "coz": ("because",),
+    "cause": ("because",),
+    "em": ("them",),
+}
 
 
 @dataclass(frozen=True)
@@ -68,6 +120,61 @@ def _parse_manifest(path: Path) -> list[BenchmarkSong]:
     return songs
 
 
+def _validate_cli_args(args: argparse.Namespace) -> None:
+    if not 0.0 <= args.min_dtw_song_coverage_ratio <= 1.0:
+        raise ValueError("--min-dtw-song-coverage-ratio must be between 0 and 1")
+    if not 0.0 <= args.min_dtw_line_coverage_ratio <= 1.0:
+        raise ValueError("--min-dtw-line-coverage-ratio must be between 0 and 1")
+    if not 0.0 <= args.min_timing_quality_score_line_weighted <= 1.0:
+        raise ValueError(
+            "--min-timing-quality-score-line-weighted must be between 0 and 1"
+        )
+    if args.min_agreement_coverage_gain_for_bad_ratio_warning < 0.0:
+        raise ValueError(
+            "--min-agreement-coverage-gain-for-bad-ratio-warning must be >= 0"
+        )
+    if args.max_agreement_bad_ratio_increase_on_coverage_gain < 0.0:
+        raise ValueError(
+            "--max-agreement-bad-ratio-increase-on-coverage-gain must be >= 0"
+        )
+    if not 0.0 <= args.max_whisper_phase_share <= 1.0:
+        raise ValueError("--max-whisper-phase-share must be between 0 and 1")
+    if not 0.0 <= args.max_alignment_phase_share <= 1.0:
+        raise ValueError("--max-alignment-phase-share must be between 0 and 1")
+    if args.max_scheduler_overhead_sec < 0.0:
+        raise ValueError("--max-scheduler-overhead-sec must be >= 0")
+
+
+def _filter_manifest_songs(
+    songs: list[BenchmarkSong], *, match: str | None, max_songs: int
+) -> list[BenchmarkSong]:
+    selected = songs
+    if match:
+        regex = re.compile(match, re.IGNORECASE)
+        selected = [
+            song
+            for song in selected
+            if regex.search(f"{song.artist} {song.title}") is not None
+        ]
+    if max_songs > 0:
+        selected = selected[:max_songs]
+    return selected
+
+
+def _apply_aggregate_only_cached_scope(
+    songs: list[BenchmarkSong],
+    *,
+    aggregate_only: bool,
+    match: str | None,
+    max_songs: int,
+    run_dir: Path,
+) -> list[BenchmarkSong]:
+    if not aggregate_only or match or max_songs > 0:
+        return songs
+    cached_slugs = _discover_cached_result_slugs(run_dir)
+    return [song for song in songs if song.slug in cached_slugs]
+
+
 def _pctile(values: list[float], pct: float) -> float:
     if not values:
         return 0.0
@@ -86,6 +193,19 @@ def _mean(values: Iterable[float]) -> float | None:
     return float(statistics.fmean(data))
 
 
+def _env_float(
+    name: str, default: float, *, min_value: float, max_value: float
+) -> float:
+    raw = os.getenv(name)
+    if raw is None:
+        return default
+    try:
+        parsed = float(raw)
+    except ValueError:
+        return default
+    return max(min_value, min(max_value, parsed))
+
+
 def _normalize_agreement_text(text: Any) -> str:
     if not isinstance(text, str):
         return ""
@@ -94,7 +214,61 @@ def _normalize_agreement_text(text: Any) -> str:
         for ch in unicodedata.normalize("NFKD", text.lower())
         if unicodedata.category(ch) != "Mn"
     )
-    return re.sub(r"[^a-z0-9\s]", "", folded).strip()
+    folded = re.sub(r"[’`´]", "'", folded)
+    folded = re.sub(r"[^a-z0-9'\s]", " ", folded)
+    raw_tokens = [tok for tok in re.sub(r"\s+", " ", folded).strip().split(" ") if tok]
+    expanded: list[str] = []
+    for token in raw_tokens:
+        token_canon = token.lstrip("'")
+        if token_canon in _AGREEMENT_COLLOQUIAL_SPECIALS:
+            expanded.extend(_AGREEMENT_COLLOQUIAL_SPECIALS[token_canon])
+            continue
+        if token_canon in _AGREEMENT_CONTRACTION_SPECIALS:
+            expanded.extend(_AGREEMENT_CONTRACTION_SPECIALS[token_canon])
+            continue
+        if token.endswith("in'") and len(token) > 4:
+            expanded.append(f"{token[:-1]}g")
+            continue
+        if token.endswith("n't") and len(token) > 3:
+            expanded.append(token[:-3])
+            expanded.append("not")
+            continue
+        if token.endswith("'re") and len(token) > 3:
+            expanded.append(token[:-3])
+            expanded.append("are")
+            continue
+        if token.endswith("'ve") and len(token) > 3:
+            expanded.append(token[:-3])
+            expanded.append("have")
+            continue
+        if token.endswith("'ll") and len(token) > 3:
+            expanded.append(token[:-3])
+            expanded.append("will")
+            continue
+        if token.endswith("'m") and len(token) > 2:
+            expanded.append(token[:-2])
+            expanded.append("am")
+            continue
+        if token.endswith("'d") and len(token) > 2:
+            expanded.append(token[:-2])
+            expanded.append("would")
+            continue
+        if token.endswith("'s") and len(token) > 2:
+            expanded.append(token[:-2])
+            continue
+        expanded.append(token.replace("'", ""))
+
+    normalized_tokens: list[str] = []
+    prev = ""
+    for token in expanded:
+        if not token:
+            continue
+        # Repeated ad-lib fillers should not dominate string-level similarity.
+        if token in _AGREEMENT_FILLER_TOKENS and prev == token:
+            continue
+        normalized_tokens.append(token)
+        prev = token
+    return " ".join(normalized_tokens).strip()
 
 
 def _agreement_text_similarity(left: Any, right: Any) -> float:
@@ -455,17 +629,39 @@ def _extract_song_metrics(
     line_count = len(lines)
     low_conf = report.get("low_confidence_lines", [])
     alignment_method = str(report.get("alignment_method") or "")
+    dtw_metrics = report.get("dtw_metrics", {})
+    if not isinstance(dtw_metrics, dict):
+        dtw_metrics = {}
     dtw_line_coverage = report.get("dtw_line_coverage")
     has_independent_anchor = isinstance(dtw_line_coverage, (int, float))
 
     # Keep agreement matching conservative, but allow mild lyric-video wording
     # variance so diagnostics have enough comparable anchor lines.
-    agreement_min_text_similarity = 0.65
-    agreement_min_token_overlap = 0.55
+    agreement_min_text_similarity = _env_float(
+        "Y2KARAOKE_BENCH_AGREEMENT_MIN_TEXT_SIM",
+        0.64,
+        min_value=0.0,
+        max_value=1.0,
+    )
+    agreement_min_token_overlap = _env_float(
+        "Y2KARAOKE_BENCH_AGREEMENT_MIN_TOKEN_OVERLAP",
+        0.55,
+        min_value=0.0,
+        max_value=1.0,
+    )
     agreement_good_start_sec = 0.35
     agreement_warn_start_sec = 0.8
     whisper_anchor_start_abs_deltas: list[float] = []
     agreement_text_sims: list[float] = []
+    agreement_eligible_line_count = 0
+    agreement_adaptive_rescue_count = 0
+    agreement_skip_reason_counts: dict[str, int] = {}
+
+    def _inc_agreement_skip(reason: str) -> None:
+        agreement_skip_reason_counts[reason] = (
+            agreement_skip_reason_counts.get(reason, 0) + 1
+        )
+
     for line in lines:
         line_start = line.get("start")
         whisper_anchor_start = line.get("nearest_segment_start")
@@ -473,6 +669,8 @@ def _extract_song_metrics(
         whisper_anchor_text = line.get("nearest_segment_start_text")
         line_words = line.get("words")
         line_word_count = len(line_words) if isinstance(line_words, list) else 0
+        if line_word_count == 0:
+            line_word_count = len(_normalize_agreement_text(line_text).split())
         window_word_count_raw = line.get("whisper_window_word_count")
         window_word_count = (
             int(window_word_count_raw)
@@ -484,6 +682,7 @@ def _extract_song_metrics(
         if line_word_count >= 6 and window_word_count < max(
             2, int(0.35 * line_word_count)
         ):
+            _inc_agreement_skip("insufficient_window_words_for_long_line")
             continue
         if (
             line_word_count >= 5
@@ -491,16 +690,20 @@ def _extract_song_metrics(
             and window_avg_prob < 0.45
             and window_word_count < max(2, int(0.5 * line_word_count))
         ):
+            _inc_agreement_skip("low_window_confidence_and_sparse_words")
             continue
         if (
             "whisper_window_word_count" in line
             and line_word_count >= 4
             and window_word_count < 2
         ):
+            _inc_agreement_skip("explicit_window_too_sparse")
             continue
         if not isinstance(line_start, (int, float)):
+            _inc_agreement_skip("missing_line_start")
             continue
         if not isinstance(whisper_anchor_start, (int, float)):
+            _inc_agreement_skip("missing_anchor_start")
             continue
         window_start_raw = line.get("whisper_window_start")
         window_end_raw = line.get("whisper_window_end")
@@ -515,19 +718,37 @@ def _extract_song_metrics(
                 float(whisper_anchor_start) < window_start
                 or float(whisper_anchor_start) > window_end
             ):
+                _inc_agreement_skip("anchor_outside_window")
                 continue
+        agreement_eligible_line_count += 1
+        anchor_start_delta = abs(float(line_start) - float(whisper_anchor_start))
         sim = _agreement_text_similarity(line_text, whisper_anchor_text)
-        if sim < agreement_min_text_similarity:
-            continue
-        if (
-            _agreement_token_overlap(line_text, whisper_anchor_text)
-            < agreement_min_token_overlap
-        ):
-            continue
-        agreement_text_sims.append(sim)
-        whisper_anchor_start_abs_deltas.append(
-            abs(float(line_start) - float(whisper_anchor_start))
+        overlap = _agreement_token_overlap(line_text, whisper_anchor_text)
+
+        adaptive_text_similarity_floor = agreement_min_text_similarity
+        adaptive_token_overlap_floor = agreement_min_token_overlap
+        has_strong_window_evidence = (
+            window_word_count >= max(3, int(0.6 * line_word_count))
+            and isinstance(window_avg_prob, (int, float))
+            and float(window_avg_prob) >= 0.55
         )
+        timing_rescue = (
+            line_word_count >= 8
+            and anchor_start_delta <= 0.22
+            and overlap >= max(0.82, agreement_min_token_overlap + 0.25)
+            and has_strong_window_evidence
+        )
+
+        if sim < adaptive_text_similarity_floor and not timing_rescue:
+            _inc_agreement_skip("low_text_similarity")
+            continue
+        if overlap < adaptive_token_overlap_floor and not timing_rescue:
+            _inc_agreement_skip("low_token_overlap")
+            continue
+        if timing_rescue and sim < agreement_min_text_similarity:
+            agreement_adaptive_rescue_count += 1
+        agreement_text_sims.append(sim)
+        whisper_anchor_start_abs_deltas.append(anchor_start_delta)
 
     # Independent agreement metric:
     # only available when we have DTW-based anchors (cross-strategy comparable path).
@@ -572,8 +793,56 @@ def _extract_song_metrics(
         "dtw_phonetic_similarity_coverage": report.get(
             "dtw_phonetic_similarity_coverage"
         ),
+        "fallback_map_attempted": int(
+            float(dtw_metrics.get("fallback_map_attempted", 0.0) or 0.0) > 0.0
+        ),
+        "fallback_map_selected": int(
+            float(dtw_metrics.get("fallback_map_selected", 0.0) or 0.0) > 0.0
+        ),
+        "fallback_map_rejected": int(
+            float(dtw_metrics.get("fallback_map_rejected", 0.0) or 0.0) > 0.0
+        ),
+        "fallback_map_decision_code": (
+            int(float(dtw_metrics.get("fallback_map_decision_code", 0.0) or 0.0))
+            if isinstance(dtw_metrics.get("fallback_map_decision_code"), (int, float))
+            else 0
+        ),
+        "fallback_map_score_gain": (
+            round(float(dtw_metrics.get("fallback_map_score_gain", 0.0) or 0.0), 4)
+            if isinstance(dtw_metrics.get("fallback_map_score_gain"), (int, float))
+            else 0.0
+        ),
+        "local_transcribe_cache_hits": (
+            int(float(dtw_metrics.get("local_transcribe_cache_hits", 0.0) or 0.0))
+            if isinstance(dtw_metrics.get("local_transcribe_cache_hits"), (int, float))
+            else 0
+        ),
+        "local_transcribe_cache_misses": (
+            int(float(dtw_metrics.get("local_transcribe_cache_misses", 0.0) or 0.0))
+            if isinstance(
+                dtw_metrics.get("local_transcribe_cache_misses"), (int, float)
+            )
+            else 0
+        ),
         "agreement_min_text_similarity": agreement_min_text_similarity,
         "agreement_min_token_overlap": agreement_min_token_overlap,
+        "agreement_adaptive_rescue_count": agreement_adaptive_rescue_count,
+        "agreement_eligible_lines": agreement_eligible_line_count,
+        "agreement_matched_lines": len(whisper_anchor_start_abs_deltas),
+        "agreement_eligibility_ratio": round(
+            (agreement_eligible_line_count / line_count) if line_count else 0.0, 4
+        ),
+        "agreement_match_ratio_within_eligible": round(
+            (
+                len(whisper_anchor_start_abs_deltas) / agreement_eligible_line_count
+                if agreement_eligible_line_count
+                else 0.0
+            ),
+            4,
+        ),
+        "agreement_skip_reason_counts": dict(
+            sorted(agreement_skip_reason_counts.items())
+        ),
         "agreement_count": len(agreement_start_abs_deltas),
         "agreement_coverage_ratio": round(
             (len(agreement_start_abs_deltas) / line_count) if line_count else 0.0, 4
@@ -699,6 +968,23 @@ def _issue_tag(message: str) -> str:
     return "other"
 
 
+def _fallback_map_reason_from_code(raw: Any) -> str:
+    if not isinstance(raw, (int, float)):
+        return "unknown"
+    code = int(raw)
+    if code == 0:
+        return "skipped_quality_gate"
+    if code == 1:
+        return "selected_score_gain"
+    if code == 2:
+        return "rejected_insufficient_score_gain"
+    if code == 3:
+        return "forced_map_mode"
+    if code == 4:
+        return "selected_coverage_promotion"
+    return "unknown"
+
+
 def _extract_alignment_diagnostics(report: dict[str, Any]) -> dict[str, Any]:
     alignment_method = str(report.get("alignment_method") or "")
     lyrics_source = str(report.get("lyrics_source") or "")
@@ -716,6 +1002,32 @@ def _extract_alignment_diagnostics(report: dict[str, Any]) -> dict[str, Any]:
         issue_tag_counts[tag] = issue_tag_counts.get(tag, 0) + 1
     dtw_metrics = report.get("dtw_metrics", {})
     dtw_enabled = isinstance(dtw_metrics, dict) and bool(dtw_metrics)
+    fallback_map_attempted = (
+        bool(float(dtw_metrics.get("fallback_map_attempted", 0.0) or 0.0))
+        if isinstance(dtw_metrics, dict)
+        else False
+    )
+    fallback_map_selected = (
+        bool(float(dtw_metrics.get("fallback_map_selected", 0.0) or 0.0))
+        if isinstance(dtw_metrics, dict)
+        else False
+    )
+    fallback_map_rejected = (
+        bool(float(dtw_metrics.get("fallback_map_rejected", 0.0) or 0.0))
+        if isinstance(dtw_metrics, dict)
+        else False
+    )
+    fallback_map_decision_reason = (
+        _fallback_map_reason_from_code(dtw_metrics.get("fallback_map_decision_code"))
+        if isinstance(dtw_metrics, dict)
+        else "unknown"
+    )
+    fallback_map_score_gain = (
+        float(dtw_metrics.get("fallback_map_score_gain", 0.0) or 0.0)
+        if isinstance(dtw_metrics, dict)
+        and isinstance(dtw_metrics.get("fallback_map_score_gain"), (int, float))
+        else 0.0
+    )
     return {
         "alignment_method": alignment_method,
         "lyrics_source": lyrics_source,
@@ -725,6 +1037,11 @@ def _extract_alignment_diagnostics(report: dict[str, Any]) -> dict[str, Any]:
         "whisper_force_dtw": bool(report.get("whisper_force_dtw", False)),
         "whisper_corrections": int(report.get("whisper_corrections", 0) or 0),
         "dtw_metrics_present": bool(dtw_enabled),
+        "fallback_map_attempted": fallback_map_attempted,
+        "fallback_map_selected": fallback_map_selected,
+        "fallback_map_rejected": fallback_map_rejected,
+        "fallback_map_decision_reason": fallback_map_decision_reason,
+        "fallback_map_score_gain": round(fallback_map_score_gain, 4),
         "issue_count": len(issue_tags),
         "issue_tags": sorted(set(issue_tags)),
         "issue_tag_counts": issue_tag_counts,
@@ -1495,11 +1812,24 @@ def _aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:  # noqa: C901
     total_lines = int(sum(metric_values("line_count")))
     low_conf_total = int(sum(metric_values("low_confidence_lines")))
     agreement_count_total = int(sum(metric_values("agreement_count")))
+    agreement_eligible_lines_total = int(sum(metric_values("agreement_eligible_lines")))
+    agreement_matched_anchor_lines_total = int(
+        sum(metric_values("agreement_matched_lines"))
+    )
     whisper_anchor_count_total = int(sum(metric_values("whisper_anchor_count")))
     agreement_good_total = int(sum(metric_values("agreement_good_lines")))
     agreement_warn_total = int(sum(metric_values("agreement_warn_lines")))
     agreement_bad_total = int(sum(metric_values("agreement_bad_lines")))
     agreement_severe_total = int(sum(metric_values("agreement_severe_lines")))
+    local_transcribe_cache_hits_total = int(
+        sum(metric_values("local_transcribe_cache_hits"))
+    )
+    local_transcribe_cache_misses_total = int(
+        sum(metric_values("local_transcribe_cache_misses"))
+    )
+    local_transcribe_cache_events_total = (
+        local_transcribe_cache_hits_total + local_transcribe_cache_misses_total
+    )
     low_conf_ratio = (low_conf_total / total_lines) if total_lines else 0.0
     agreement_coverage_ratio = (
         agreement_count_total / total_lines if total_lines else 0.0
@@ -1544,11 +1874,20 @@ def _aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:  # noqa: C901
         if gold_word_count_total
         else 0.0
     )
-    sum_song_elapsed = round(
+    sum_song_elapsed_total = round(
         sum(
             float(r.get("elapsed_sec", 0.0))
             for r in results
             if isinstance(r.get("elapsed_sec"), (int, float))
+        ),
+        2,
+    )
+    sum_song_elapsed_executed = round(
+        sum(
+            float(r.get("elapsed_sec", 0.0))
+            for r in results
+            if isinstance(r.get("elapsed_sec"), (int, float))
+            and not bool(r.get("result_reused", False))
         ),
         2,
     )
@@ -1565,8 +1904,8 @@ def _aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:  # noqa: C901
             )
     phase_totals = {k: round(v, 2) for k, v in sorted(phase_totals.items())}
     phase_shares = (
-        {k: round(v / sum_song_elapsed, 4) for k, v in phase_totals.items()}
-        if sum_song_elapsed > 0
+        {k: round(v / sum_song_elapsed_executed, 4) for k, v in phase_totals.items()}
+        if sum_song_elapsed_executed > 0
         else {}
     )
 
@@ -1653,6 +1992,11 @@ def _aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:  # noqa: C901
     lyrics_source_provider_counts: dict[str, int] = {}
     issue_tag_totals: dict[str, int] = {}
     policy_hint_counts: dict[str, int] = {}
+    fallback_map_decision_counts: dict[str, int] = {}
+    fallback_map_attempted_count = 0
+    fallback_map_selected_count = 0
+    fallback_map_rejected_count = 0
+    fallback_map_song_report: list[dict[str, Any]] = []
     for r in succeeded:
         diag = r.get("alignment_diagnostics", {})
         if not isinstance(diag, dict):
@@ -1673,6 +2017,29 @@ def _aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:  # noqa: C901
         if isinstance(policy_hint, dict):
             hint = str(policy_hint.get("hint", "") or "none")
             policy_hint_counts[hint] = policy_hint_counts.get(hint, 0) + 1
+        attempted = bool(diag.get("fallback_map_attempted", False))
+        selected = bool(diag.get("fallback_map_selected", False))
+        rejected = bool(diag.get("fallback_map_rejected", False))
+        decision_reason = str(diag.get("fallback_map_decision_reason", "") or "unknown")
+        fallback_map_decision_counts[decision_reason] = (
+            fallback_map_decision_counts.get(decision_reason, 0) + 1
+        )
+        if attempted:
+            fallback_map_attempted_count += 1
+        if selected:
+            fallback_map_selected_count += 1
+        if rejected:
+            fallback_map_rejected_count += 1
+        fallback_map_song_report.append(
+            {
+                "song": f"{r['artist']} - {r['title']}",
+                "attempted": attempted,
+                "selected": selected,
+                "rejected": rejected,
+                "decision_reason": decision_reason,
+                "score_gain": float(diag.get("fallback_map_score_gain", 0.0) or 0.0),
+            }
+        )
 
     reference_divergence_suspects = [
         {
@@ -1733,6 +2100,51 @@ def _aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:  # noqa: C901
         key: round((value / len(succeeded)) if succeeded else 0.0, 4)
         for key, value in timing_quality_band_counts.items()
     }
+    agreement_skip_reason_totals: dict[str, int] = {}
+    agreement_comparability_report: list[dict[str, Any]] = []
+    for row in succeeded:
+        metrics_row = row.get("metrics", {})
+        if not isinstance(metrics_row, dict):
+            continue
+        skip_map = metrics_row.get("agreement_skip_reason_counts", {})
+        if isinstance(skip_map, dict):
+            for reason, raw_count in skip_map.items():
+                if not isinstance(reason, str) or not isinstance(
+                    raw_count, (int, float)
+                ):
+                    continue
+                agreement_skip_reason_totals[reason] = agreement_skip_reason_totals.get(
+                    reason, 0
+                ) + int(raw_count)
+        agreement_comparability_report.append(
+            {
+                "song": f"{row['artist']} - {row['title']}",
+                "line_count": int(metrics_row.get("line_count", 0) or 0),
+                "eligible_lines": int(
+                    metrics_row.get("agreement_eligible_lines", 0) or 0
+                ),
+                "matched_lines_anchor": int(
+                    metrics_row.get("agreement_matched_lines", 0) or 0
+                ),
+                "matched_lines_independent": int(
+                    metrics_row.get("agreement_count", 0) or 0
+                ),
+                "eligibility_ratio": metrics_row.get("agreement_eligibility_ratio"),
+                "match_ratio_within_eligible": metrics_row.get(
+                    "agreement_match_ratio_within_eligible"
+                ),
+                "measurement_mode": metrics_row.get("agreement_measurement_mode"),
+                "skip_reasons": (
+                    dict(sorted(skip_map.items())) if isinstance(skip_map, dict) else {}
+                ),
+            }
+        )
+    agreement_comparability_report.sort(
+        key=lambda row: (
+            float(row.get("match_ratio_within_eligible") or 0.0),
+            float(row.get("eligibility_ratio") or 0.0),
+        )
+    )
 
     return {
         "songs_total": len(results),
@@ -1753,6 +2165,8 @@ def _aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:  # noqa: C901
         ),
         "low_confidence_ratio_total": round(low_conf_ratio, 4),
         "agreement_count_total": agreement_count_total,
+        "agreement_eligible_lines_total": agreement_eligible_lines_total,
+        "agreement_matched_anchor_lines_total": agreement_matched_anchor_lines_total,
         "agreement_coverage_ratio_total": round(agreement_coverage_ratio, 4),
         "whisper_anchor_count_total": whisper_anchor_count_total,
         "whisper_anchor_coverage_ratio_total": round(whisper_anchor_coverage_ratio, 4),
@@ -1764,6 +2178,17 @@ def _aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:  # noqa: C901
         "agreement_warn_ratio_total": round(agreement_warn_ratio, 4),
         "agreement_bad_ratio_total": round(agreement_bad_ratio, 4),
         "agreement_severe_ratio_total": round(agreement_severe_ratio, 4),
+        "local_transcribe_cache_hits_total": local_transcribe_cache_hits_total,
+        "local_transcribe_cache_misses_total": local_transcribe_cache_misses_total,
+        "local_transcribe_cache_events_total": local_transcribe_cache_events_total,
+        "local_transcribe_cache_hit_ratio": round(
+            (
+                local_transcribe_cache_hits_total / local_transcribe_cache_events_total
+                if local_transcribe_cache_events_total
+                else 0.0
+            ),
+            4,
+        ),
         "dtw_line_coverage_mean": (
             round(float(metric_mean("dtw_line_coverage") or 0.0), 4)
             if metric_mean("dtw_line_coverage") is not None
@@ -1924,6 +2349,10 @@ def _aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:  # noqa: C901
         ),
         "quality_diagnosis_counts": diagnosis_counts,
         "quality_diagnosis_ratios": diagnosis_ratios,
+        "agreement_skip_reason_totals": dict(
+            sorted(agreement_skip_reason_totals.items(), key=lambda kv: (-kv[1], kv[0]))
+        ),
+        "agreement_comparability_report": agreement_comparability_report,
         "timing_quality_band_counts": timing_quality_band_counts,
         "timing_quality_band_ratios": timing_quality_band_ratios,
         "gold_word_count_total": gold_word_count_total,
@@ -1994,7 +2423,8 @@ def _aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:  # noqa: C901
             )
             or int(r.get("metrics", {}).get("gold_comparable_word_count", 0) or 0) <= 0
         ],
-        "sum_song_elapsed_sec": sum_song_elapsed,
+        "sum_song_elapsed_sec": sum_song_elapsed_executed,
+        "sum_song_elapsed_total_sec": sum_song_elapsed_total,
         "phase_totals_sec": phase_totals,
         "phase_shares_of_song_elapsed": phase_shares,
         "quality_hotspots": {
@@ -2062,6 +2492,13 @@ def _aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:  # noqa: C901
                 sorted(lyrics_source_provider_counts.items())
             ),
             "alignment_policy_hint_counts": dict(sorted(policy_hint_counts.items())),
+            "fallback_map_attempted_count": fallback_map_attempted_count,
+            "fallback_map_selected_count": fallback_map_selected_count,
+            "fallback_map_rejected_count": fallback_map_rejected_count,
+            "fallback_map_decision_counts": dict(
+                sorted(fallback_map_decision_counts.items())
+            ),
+            "fallback_map_song_report": fallback_map_song_report,
             "issue_tag_totals": dict(
                 sorted(issue_tag_totals.items(), key=lambda kv: (-kv[1], kv[0]))
             ),
@@ -2200,6 +2637,47 @@ def _quality_coverage_warnings(
             "suite_wall_elapsed_sec and sum_song_elapsed_sec explicitly."
         )
     return warnings
+
+
+def _agreement_tradeoff_warnings(
+    *,
+    aggregate: dict[str, Any],
+    baseline_aggregate: dict[str, Any] | None,
+    min_coverage_gain: float,
+    max_bad_ratio_increase: float,
+) -> list[str]:
+    if (
+        baseline_aggregate is None
+        or min_coverage_gain <= 0.0
+        or max_bad_ratio_increase < 0.0
+    ):
+        return []
+
+    current_cov = aggregate.get("agreement_coverage_ratio_mean")
+    baseline_cov = baseline_aggregate.get("agreement_coverage_ratio_mean")
+    current_bad = aggregate.get("agreement_bad_ratio_mean")
+    baseline_bad = baseline_aggregate.get("agreement_bad_ratio_mean")
+    if not isinstance(current_cov, (int, float)) or not isinstance(
+        baseline_cov, (int, float)
+    ):
+        return []
+    if not isinstance(current_bad, (int, float)) or not isinstance(
+        baseline_bad, (int, float)
+    ):
+        return []
+
+    coverage_delta = float(current_cov) - float(baseline_cov)
+    bad_ratio_delta = float(current_bad) - float(baseline_bad)
+    if coverage_delta >= float(min_coverage_gain) and bad_ratio_delta > float(
+        max_bad_ratio_increase
+    ):
+        return [
+            "Agreement tradeoff warning: agreement_coverage_ratio_mean increased "
+            f"by {coverage_delta:+.4f} (>= {float(min_coverage_gain):.4f}) while "
+            "agreement_bad_ratio_mean increased by "
+            f"{bad_ratio_delta:+.4f} (> {float(max_bad_ratio_increase):.4f})"
+        ]
+    return []
 
 
 def _cache_expectation_warnings(
@@ -2406,6 +2884,11 @@ def _write_markdown_summary(  # noqa: C901
         f"`{_fmt_num(aggregate.get('agreement_coverage_ratio_total'))}`"
     )
     lines.append(
+        "- Agreement comparability (eligible/matched anchor lines): "
+        f"`{aggregate.get('agreement_eligible_lines_total', 0)}`/"
+        f"`{aggregate.get('agreement_matched_anchor_lines_total', 0)}`"
+    )
+    lines.append(
         "- Mean agreement text similarity: "
         f"`{_fmt_num(aggregate.get('agreement_text_similarity_mean'))}`"
     )
@@ -2425,6 +2908,13 @@ def _write_markdown_summary(  # noqa: C901
         "- Severe agreement ratio (>1.5s): "
         f"`{aggregate.get('agreement_severe_ratio_total', 0.0):.3f}`"
     )
+    agreement_skip_totals = aggregate.get("agreement_skip_reason_totals", {})
+    if isinstance(agreement_skip_totals, dict) and agreement_skip_totals:
+        top_skip = list(agreement_skip_totals.items())[:5]
+        lines.append(
+            "- Common agreement skip reasons: "
+            + ", ".join(f"`{k}` x{v}" for k, v in top_skip)
+        )
     lines.append(
         "- Whisper-anchor diagnostic p95 abs line-start delta: "
         f"`{_fmt_num(aggregate.get('whisper_anchor_start_p95_abs_sec_mean'), unit='s')}`"
@@ -2451,6 +2941,15 @@ def _write_markdown_summary(  # noqa: C901
                 f"`{float(sep.get('cached_ratio', 0.0)):.3f}` "
                 f"({int(sep.get('cached_count', 0) or 0)}/{int(sep.get('total', 0) or 0)})"
             )
+    local_cache_events = int(
+        aggregate.get("local_transcribe_cache_events_total", 0) or 0
+    )
+    if local_cache_events > 0:
+        lines.append(
+            "- Local transcription cache reuse (within song run): "
+            f"`{float(aggregate.get('local_transcribe_cache_hit_ratio', 0.0) or 0.0):.3f}` "
+            f"({int(aggregate.get('local_transcribe_cache_hits_total', 0) or 0)}/{local_cache_events} hits)"
+        )
     phase_totals = aggregate.get("phase_totals_sec", {})
     if isinstance(phase_totals, dict) and phase_totals:
         top_phase = max(phase_totals, key=lambda key: float(phase_totals.get(key, 0.0)))
@@ -2463,6 +2962,16 @@ def _write_markdown_summary(  # noqa: C901
         method_counts = diag_summary.get("alignment_method_counts", {})
         provider_counts = diag_summary.get("lyrics_source_provider_counts", {})
         policy_hint_counts = diag_summary.get("alignment_policy_hint_counts", {})
+        fallback_decision_counts = diag_summary.get("fallback_map_decision_counts", {})
+        fallback_attempted_count = int(
+            diag_summary.get("fallback_map_attempted_count", 0) or 0
+        )
+        fallback_selected_count = int(
+            diag_summary.get("fallback_map_selected_count", 0) or 0
+        )
+        fallback_rejected_count = int(
+            diag_summary.get("fallback_map_rejected_count", 0) or 0
+        )
         issue_totals = diag_summary.get("issue_tag_totals", {})
         if isinstance(method_counts, dict) and method_counts:
             lines.append(
@@ -2481,6 +2990,19 @@ def _write_markdown_summary(  # noqa: C901
                     f"`{k}` x{v}" for k, v in sorted(policy_hint_counts.items())
                 )
             )
+        lines.append(
+            "- Fallback map decisions: "
+            f"attempted={fallback_attempted_count}, "
+            f"selected={fallback_selected_count}, "
+            f"rejected={fallback_rejected_count}"
+        )
+        if isinstance(fallback_decision_counts, dict) and fallback_decision_counts:
+            lines.append(
+                "- Fallback map reason counts: "
+                + ", ".join(
+                    f"`{k}` x{v}" for k, v in sorted(fallback_decision_counts.items())
+                )
+            )
         if isinstance(issue_totals, dict) and issue_totals:
             top_issue_tags = sorted(
                 issue_totals.items(), key=lambda kv: (-int(kv[1]), str(kv[0]))
@@ -2493,13 +3015,32 @@ def _write_markdown_summary(  # noqa: C901
     lines.append("## Per-song")
     lines.append("")
     lines.append(
-        "| Song | Status | Gold words | Gold cov | Word start abs mean | Word start p95 | Word end abs mean | Alignment | DTW line | DTW word | Policy hint | Ref mismatch suspect | Diagnosis | Elapsed |"  # noqa: E501
+        "| Song | Status | Gold words | Gold cov | Word start abs mean | Word start p95 | Word end abs mean | Alignment | DTW line | DTW word | Fallback map | Policy hint | Ref mismatch suspect | Diagnosis | Elapsed |"  # noqa: E501
     )
     lines.append(
-        "|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|"
+        "|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|"
     )
     for song in songs:
         metrics = song.get("metrics", {})
+        alignment_diag = song.get("alignment_diagnostics", {})
+        fallback_cell = "-"
+        if isinstance(alignment_diag, dict):
+            attempted = bool(alignment_diag.get("fallback_map_attempted", False))
+            selected = bool(alignment_diag.get("fallback_map_selected", False))
+            rejected = bool(alignment_diag.get("fallback_map_rejected", False))
+            reason = str(
+                alignment_diag.get("fallback_map_decision_reason", "") or "unknown"
+            )
+            gain = alignment_diag.get("fallback_map_score_gain")
+            if attempted:
+                if selected:
+                    fallback_cell = f"selected ({reason}, gain={_fmt_num(gain)})"
+                elif rejected:
+                    fallback_cell = f"rejected ({reason}, gain={_fmt_num(gain)})"
+                else:
+                    fallback_cell = f"attempted ({reason})"
+            else:
+                fallback_cell = f"no ({reason})"
         policy_hint = song.get("alignment_policy_hint", {})
         policy_hint_cell = "-"
         if isinstance(policy_hint, dict) and policy_hint:
@@ -2545,6 +3086,8 @@ def _write_markdown_summary(  # noqa: C901
             + " | "
             + f"{metrics.get('dtw_word_coverage', '-')}"
             + " | "
+            + fallback_cell
+            + " | "
             + policy_hint_cell
             + " | "
             + ref_div_cell
@@ -2554,6 +3097,31 @@ def _write_markdown_summary(  # noqa: C901
             + f"{song.get('elapsed_sec', '-')}"
             + "s |"
         )
+    comparability_rows = aggregate.get("agreement_comparability_report", [])
+    if isinstance(comparability_rows, list) and comparability_rows:
+        lines.append("")
+        lines.append("## Agreement Comparability")
+        lines.append("")
+        lines.append(
+            "| Song | Eligible | Matched(anchor) | Matched(independent) | Eligible ratio | Match/Eligible | Top skip reasons |"
+        )
+        lines.append("|---|---:|---:|---:|---:|---:|---|")
+        for row in comparability_rows[:12]:
+            skip_reasons = row.get("skip_reasons", {})
+            skip_text = "-"
+            if isinstance(skip_reasons, dict) and skip_reasons:
+                pairs = list(skip_reasons.items())[:3]
+                skip_text = ", ".join(f"{k}:{v}" for k, v in pairs)
+            lines.append(
+                "| "
+                + f"{row.get('song', '-')} | "
+                + f"{row.get('eligible_lines', 0)} | "
+                + f"{row.get('matched_lines_anchor', 0)} | "
+                + f"{row.get('matched_lines_independent', 0)} | "
+                + f"{_fmt_num(row.get('eligibility_ratio'))} | "
+                + f"{_fmt_num(row.get('match_ratio_within_eligible'))} | "
+                + f"{skip_text} |"
+            )
     lines.append("")
     hotspots = aggregate.get("quality_hotspots", {})
     if isinstance(hotspots, dict):
@@ -2732,6 +3300,21 @@ def _song_result_path(run_dir: Path, index: int, slug: str) -> Path:
     return run_dir / f"{index:02d}_{slug}_result.json"
 
 
+def _discover_cached_result_slugs(run_dir: Path) -> set[str]:
+    slugs: set[str] = set()
+    for path in run_dir.glob("*_result.json"):
+        name = path.name
+        if not name.endswith("_result.json"):
+            continue
+        parts = name.split("_", 1)
+        if len(parts) != 2:
+            continue
+        slug = parts[1][: -len("_result.json")]
+        if slug:
+            slugs.add(slug)
+    return slugs
+
+
 def _load_song_result(path: Path) -> dict[str, Any] | None:
     if not path.exists():
         return None
@@ -2794,6 +3377,51 @@ def _write_json(path: Path, payload: dict[str, Any]) -> None:
     path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
 
 
+def _load_aggregate_only_results(
+    *,
+    songs: list[BenchmarkSong],
+    run_dir: Path,
+    gold_root: Path,
+    rebaseline: bool,
+) -> tuple[list[dict[str, Any]], list[str]]:
+    song_results: list[dict[str, Any]] = []
+    skipped_missing: list[str] = []
+    for index, song in enumerate(songs, start=1):
+        report_path = run_dir / f"{index:02d}_{song.slug}_timing_report.json"
+        result_path = _song_result_path(run_dir, index, song.slug)
+        prior = _load_song_result(result_path)
+        if prior is None:
+            slug_matches = sorted(run_dir.glob(f"*_{song.slug}_result.json"))
+            if len(slug_matches) == 1:
+                result_path = slug_matches[0]
+                prior = _load_song_result(result_path)
+        print(f"[{index}/{len(songs)}] {song.artist} - {song.title}")
+        if prior is None:
+            skipped_missing.append(f"{song.artist} - {song.title}")
+            print("  -> skipped (missing cached result)")
+            continue
+
+        prior = _refresh_cached_metrics(
+            prior, index=index, song=song, gold_root=gold_root
+        )
+        if rebaseline and prior.get("status") == "ok":
+            rebased_path = _rebaseline_song_from_report(
+                index=index,
+                song=song,
+                report_path=Path(str(prior.get("report_path", report_path))),
+                gold_root=gold_root,
+            )
+            prior["gold_rebaselined"] = rebased_path is not None
+            if rebased_path is not None:
+                prior["gold_path"] = str(rebased_path)
+                print(f"  -> gold rebaselined: {rebased_path}")
+        prior["result_reused"] = True
+        prior["aggregate_only_recomputed"] = True
+        song_results.append(prior)
+        print(f"  -> {prior.get('status', 'unknown')} (aggregate-only)")
+    return song_results, skipped_missing
+
+
 def _write_checkpoint(
     *,
     run_id: str,
@@ -2806,6 +3434,10 @@ def _write_checkpoint(
     aggregate = _aggregate(song_results)
     suite_wall_elapsed = round(suite_elapsed, 2)
     sum_song_elapsed = float(aggregate.get("sum_song_elapsed_sec", 0.0) or 0.0)
+    sum_song_elapsed_total = float(
+        aggregate.get("sum_song_elapsed_total_sec", sum_song_elapsed) or 0.0
+    )
+    overhead_base = sum_song_elapsed_total if args.aggregate_only else sum_song_elapsed
     report_json = {
         "run_id": run_id,
         "manifest_path": str(manifest_path),
@@ -2814,34 +3446,326 @@ def _write_checkpoint(
         "elapsed_sec": suite_wall_elapsed,
         "suite_wall_elapsed_sec": suite_wall_elapsed,
         "sum_song_elapsed_sec": round(sum_song_elapsed, 2),
-        "scheduler_overhead_sec": round(suite_wall_elapsed - sum_song_elapsed, 2),
+        "sum_song_elapsed_total_sec": round(sum_song_elapsed_total, 2),
+        "scheduler_overhead_sec": round(suite_wall_elapsed - overhead_base, 2),
         "status": "running",
-        "options": {
-            "offline": args.offline,
-            "force": args.force,
-            "strategy": args.strategy,
-            "scenario": args.scenario,
-            "whisper_map_lrc_dtw": not args.no_whisper_map_lrc_dtw,
-            "timeout_sec": args.timeout_sec,
-            "heartbeat_sec": args.heartbeat_sec,
-            "match": args.match,
-            "max_songs": args.max_songs,
-            "min_dtw_song_coverage_ratio": args.min_dtw_song_coverage_ratio,
-            "min_dtw_line_coverage_ratio": args.min_dtw_line_coverage_ratio,
-            "min_timing_quality_score_line_weighted": (
-                args.min_timing_quality_score_line_weighted
-            ),
-            "strict_quality_coverage": args.strict_quality_coverage,
-            "expect_cached_separation": args.expect_cached_separation,
-            "expect_cached_whisper": args.expect_cached_whisper,
-            "strict_cache_expectations": args.strict_cache_expectations,
-            "rebaseline": args.rebaseline,
-            "gold_root": str(args.gold_root.resolve()),
-        },
+        "options": _build_common_report_options(args),
         "aggregate": aggregate,
         "songs": song_results,
     }
     _write_json(run_dir / "benchmark_progress.json", report_json)
+
+
+def _build_common_report_options(args: argparse.Namespace) -> dict[str, Any]:
+    return {
+        "offline": args.offline,
+        "force": args.force,
+        "strategy": args.strategy,
+        "scenario": args.scenario,
+        "whisper_map_lrc_dtw": not args.no_whisper_map_lrc_dtw,
+        "timeout_sec": args.timeout_sec,
+        "heartbeat_sec": args.heartbeat_sec,
+        "match": args.match,
+        "max_songs": args.max_songs,
+        "min_dtw_song_coverage_ratio": args.min_dtw_song_coverage_ratio,
+        "min_dtw_line_coverage_ratio": args.min_dtw_line_coverage_ratio,
+        "min_timing_quality_score_line_weighted": (
+            args.min_timing_quality_score_line_weighted
+        ),
+        "strict_quality_coverage": args.strict_quality_coverage,
+        "agreement_baseline_report": (
+            str(args.agreement_baseline_report.resolve())
+            if args.agreement_baseline_report
+            else None
+        ),
+        "min_agreement_coverage_gain_for_bad_ratio_warning": (
+            args.min_agreement_coverage_gain_for_bad_ratio_warning
+        ),
+        "max_agreement_bad_ratio_increase_on_coverage_gain": (
+            args.max_agreement_bad_ratio_increase_on_coverage_gain
+        ),
+        "strict_agreement_tradeoff": args.strict_agreement_tradeoff,
+        "expect_cached_separation": args.expect_cached_separation,
+        "expect_cached_whisper": args.expect_cached_whisper,
+        "strict_cache_expectations": args.strict_cache_expectations,
+        "rebaseline": args.rebaseline,
+        "gold_root": str(args.gold_root.resolve()),
+        "aggregate_only": args.aggregate_only,
+    }
+
+
+def _build_final_report_options(
+    args: argparse.Namespace, *, aggregate_only_skipped_missing_count: int
+) -> dict[str, Any]:
+    options = _build_common_report_options(args)
+    options.update(
+        {
+            "max_whisper_phase_share": args.max_whisper_phase_share,
+            "max_alignment_phase_share": args.max_alignment_phase_share,
+            "max_scheduler_overhead_sec": args.max_scheduler_overhead_sec,
+            "strict_runtime_budgets": args.strict_runtime_budgets,
+            "aggregate_only_skipped_missing_count": (
+                aggregate_only_skipped_missing_count
+            ),
+        }
+    )
+    return options
+
+
+def _compute_suite_elapsed_accounting(
+    *,
+    aggregate: dict[str, Any],
+    measured_suite_elapsed: float,
+    aggregate_only: bool,
+) -> tuple[float, float, float, float]:
+    measured_suite_elapsed = round(float(measured_suite_elapsed), 2)
+    sum_song_elapsed = float(aggregate.get("sum_song_elapsed_sec", 0.0) or 0.0)
+    sum_song_elapsed_total = float(
+        aggregate.get("sum_song_elapsed_total_sec", sum_song_elapsed) or 0.0
+    )
+    suite_elapsed = (
+        round(max(measured_suite_elapsed, sum_song_elapsed_total), 2)
+        if aggregate_only
+        else measured_suite_elapsed
+    )
+    overhead_base = sum_song_elapsed_total if aggregate_only else sum_song_elapsed
+    return suite_elapsed, sum_song_elapsed, sum_song_elapsed_total, overhead_base
+
+
+def _build_final_report_json(
+    *,
+    run_id: str,
+    manifest_path: Path,
+    args: argparse.Namespace,
+    aggregate: dict[str, Any],
+    song_results: list[dict[str, Any]],
+    suite_elapsed: float,
+    sum_song_elapsed: float,
+    sum_song_elapsed_total: float,
+    overhead_base: float,
+    quality_warnings: list[str],
+    cache_warnings: list[str],
+    runtime_warnings: list[str],
+    run_warnings: list[str],
+    aggregate_only_skipped_missing: list[str],
+) -> dict[str, Any]:
+    return {
+        "run_id": run_id,
+        "manifest_path": str(manifest_path),
+        "repo_root": str(REPO_ROOT),
+        "started_at_utc": run_id,
+        "elapsed_sec": suite_elapsed,
+        "suite_wall_elapsed_sec": suite_elapsed,
+        "sum_song_elapsed_sec": round(sum_song_elapsed, 2),
+        "sum_song_elapsed_total_sec": round(sum_song_elapsed_total, 2),
+        "scheduler_overhead_sec": round(suite_elapsed - overhead_base, 2),
+        "options": _build_final_report_options(
+            args,
+            aggregate_only_skipped_missing_count=len(aggregate_only_skipped_missing),
+        ),
+        "status": "finished_with_warnings" if run_warnings else "finished",
+        "quality_warnings": quality_warnings,
+        "cache_warnings": cache_warnings,
+        "runtime_warnings": runtime_warnings,
+        "warnings": run_warnings,
+        "aggregate_only_skipped_missing_songs": aggregate_only_skipped_missing,
+        "aggregate": aggregate,
+        "songs": song_results,
+    }
+
+
+def _compute_run_warnings(
+    *,
+    args: argparse.Namespace,
+    aggregate: dict[str, Any],
+    suite_elapsed: float,
+    baseline_aggregate: dict[str, Any] | None,
+    aggregate_only_skipped_missing: list[str],
+) -> tuple[list[str], list[str], list[str], list[str], list[str]]:
+    quality_warnings = _quality_coverage_warnings(
+        aggregate=aggregate,
+        dtw_enabled=(args.strategy == "hybrid_dtw" and not args.no_whisper_map_lrc_dtw),
+        min_song_coverage_ratio=args.min_dtw_song_coverage_ratio,
+        min_line_coverage_ratio=args.min_dtw_line_coverage_ratio,
+        min_timing_quality_score_line_weighted=(
+            args.min_timing_quality_score_line_weighted
+        ),
+        suite_wall_elapsed_sec=suite_elapsed,
+    )
+    agreement_tradeoff_warnings = _agreement_tradeoff_warnings(
+        aggregate=aggregate,
+        baseline_aggregate=baseline_aggregate,
+        min_coverage_gain=args.min_agreement_coverage_gain_for_bad_ratio_warning,
+        max_bad_ratio_increase=(args.max_agreement_bad_ratio_increase_on_coverage_gain),
+    )
+    quality_warnings.extend(agreement_tradeoff_warnings)
+    cache_warnings = _cache_expectation_warnings(
+        aggregate=aggregate,
+        expect_cached_separation=args.expect_cached_separation,
+        expect_cached_whisper=args.expect_cached_whisper,
+    )
+    runtime_warnings = _runtime_budget_warnings(
+        aggregate=aggregate,
+        suite_wall_elapsed_sec=suite_elapsed,
+        max_whisper_phase_share=args.max_whisper_phase_share,
+        max_alignment_phase_share=args.max_alignment_phase_share,
+        max_scheduler_overhead_sec=args.max_scheduler_overhead_sec,
+    )
+    run_warnings = quality_warnings + cache_warnings + runtime_warnings
+    if aggregate_only_skipped_missing:
+        run_warnings.append(
+            "Aggregate-only skipped songs without cached results: "
+            f"{len(aggregate_only_skipped_missing)}"
+        )
+    return (
+        quality_warnings,
+        agreement_tradeoff_warnings,
+        cache_warnings,
+        runtime_warnings,
+        run_warnings,
+    )
+
+
+def _derive_run_status(aggregate: dict[str, Any], run_warnings: list[str]) -> str:
+    status = "OK" if aggregate.get("songs_failed", 0) == 0 else "FAIL"
+    if status == "OK" and run_warnings:
+        return "WARN"
+    return status
+
+
+def _determine_exit_code(
+    *,
+    aggregate: dict[str, Any],
+    args: argparse.Namespace,
+    quality_warnings: list[str],
+    agreement_tradeoff_warnings: list[str],
+    cache_warnings: list[str],
+    runtime_warnings: list[str],
+) -> int:
+    if aggregate.get("songs_failed", 0) > 0:
+        return 2
+    if quality_warnings and args.strict_quality_coverage:
+        return 3
+    if agreement_tradeoff_warnings and args.strict_agreement_tradeoff:
+        return 6
+    if cache_warnings and args.strict_cache_expectations:
+        return 4
+    if runtime_warnings and args.strict_runtime_budgets:
+        return 5
+    return 0
+
+
+def _load_baseline_aggregate(
+    report_arg: Path | None,
+) -> dict[str, Any] | None:
+    if report_arg is None:
+        return None
+    baseline_path = report_arg.expanduser().resolve()
+    if baseline_path.is_dir():
+        baseline_path = baseline_path / "benchmark_report.json"
+    baseline_doc = json.loads(baseline_path.read_text(encoding="utf-8"))
+    baseline_raw = baseline_doc.get("aggregate")
+    return baseline_raw if isinstance(baseline_raw, dict) else None
+
+
+def _print_run_summary(
+    *,
+    status: str,
+    run_dir: Path,
+    json_path: Path,
+    md_path: Path,
+    aggregate: dict[str, Any],
+    suite_elapsed: float,
+    sum_song_elapsed: float,
+    overhead_base: float,
+    run_warnings: list[str],
+) -> None:
+    print(f"benchmark_suite: {status}")
+    print(f"- run_dir: {run_dir}")
+    print(f"- json: {json_path}")
+    print(f"- markdown: {md_path}")
+    print(
+        "- success: "
+        f"{aggregate['songs_succeeded']}/{aggregate['songs_total']} "
+        f"({aggregate['success_rate'] * 100:.1f}%)"
+    )
+    print(
+        "- mean metrics: "
+        f"gold_start_abs_mean_weighted={(aggregate.get('avg_abs_word_start_delta_sec_word_weighted_mean') or 0.0):.3f}s, "
+        "gold_start_abs_mean_weighted_ex_ref_div="
+        f"{(aggregate.get('avg_abs_word_start_delta_sec_word_weighted_mean_excluding_reference_divergence') or 0.0):.3f}s, "
+        f"gold_start_p95_mean={(aggregate.get('gold_start_p95_abs_sec_mean') or 0.0):.3f}s, "
+        f"gold_end_abs_mean={(aggregate.get('gold_end_mean_abs_sec_mean') or 0.0):.3f}s, "
+        f"gold_cov={(aggregate.get('gold_word_coverage_ratio_total') or 0.0):.3f}, "
+        f"dtw_line={(aggregate.get('dtw_line_coverage_mean') or 0.0):.3f}, "
+        f"dtw_line_weighted={(aggregate.get('dtw_line_coverage_line_weighted_mean') or 0.0):.3f}, "
+        f"dtw_word={(aggregate.get('dtw_word_coverage_mean') or 0.0):.3f}, "
+        f"phonetic={(aggregate.get('dtw_phonetic_similarity_coverage_mean') or 0.0):.3f}, "
+        f"low_conf_ratio={(aggregate.get('low_confidence_ratio_total') or 0.0):.3f}, "
+        f"agreement_cov={(aggregate.get('agreement_coverage_ratio_total') or 0.0):.3f}, "
+        f"agreement_text_sim={(aggregate.get('agreement_text_similarity_mean') or 0.0):.3f}, "
+        f"agreement_start_abs_mean={(aggregate.get('agreement_start_mean_abs_sec_mean') or 0.0):.3f}s, "
+        f"agreement_start_p95={(aggregate.get('agreement_start_p95_abs_sec_mean') or 0.0):.3f}s, "
+        f"agreement_bad_ratio={(aggregate.get('agreement_bad_ratio_total') or 0.0):.3f}, "
+        f"agreement_severe_ratio={(aggregate.get('agreement_severe_ratio_total') or 0.0):.3f}"
+    )
+    print(
+        "- gold coverage: "
+        f"songs={aggregate.get('gold_metric_song_coverage_ratio', 0.0):.3f}, "
+        f"words={aggregate.get('gold_comparable_word_count_total', 0)}/{aggregate.get('gold_word_count_total', 0)}"
+    )
+    print(
+        "- dtw coverage: "
+        f"songs={aggregate['dtw_metric_song_coverage_ratio']:.3f}, "
+        f"lines={aggregate['dtw_metric_line_coverage_ratio']:.3f}"
+    )
+    print(
+        "- elapsed: "
+        f"suite_wall={suite_elapsed:.2f}s, "
+        f"sum_song={sum_song_elapsed:.2f}s, "
+        f"overhead={suite_elapsed - overhead_base:.2f}s"
+    )
+    cache_summary = aggregate.get("cache_summary", {})
+    if isinstance(cache_summary, dict):
+        sep = cache_summary.get("separation")
+        if isinstance(sep, dict):
+            print(
+                "- separation cache: "
+                f"cached_ratio={float(sep.get('cached_ratio', 0.0) or 0.0):.3f}, "
+                f"miss_count={int(sep.get('miss_count', 0) or 0)}"
+            )
+    if run_warnings:
+        print("- warnings:")
+        for warning in run_warnings:
+            print(f"  - {warning}")
+
+
+def _persist_final_report_outputs(
+    *,
+    args: argparse.Namespace,
+    run_id: str,
+    run_dir: Path,
+    manifest_path: Path,
+    aggregate: dict[str, Any],
+    song_results: list[dict[str, Any]],
+    report_json: dict[str, Any],
+) -> tuple[Path, Path]:
+    json_path = run_dir / "benchmark_report.json"
+    md_path = run_dir / "benchmark_report.md"
+    json_path.write_text(
+        json.dumps(report_json, ensure_ascii=False, indent=2), encoding="utf-8"
+    )
+    _write_json(run_dir / "benchmark_progress.json", report_json)
+    _write_markdown_summary(
+        md_path,
+        run_id=run_id,
+        manifest=manifest_path,
+        aggregate=aggregate,
+        songs=song_results,
+    )
+    latest = args.output_root.resolve() / "latest.json"
+    latest.write_text(str(json_path) + "\n", encoding="utf-8")
+    return json_path, md_path
 
 
 def _build_run_signature(
@@ -2990,6 +3914,14 @@ def _parse_args() -> argparse.Namespace:
         help="Reuse cached per-song results even when run options differ",
     )
     parser.add_argument(
+        "--aggregate-only",
+        action="store_true",
+        help=(
+            "Do not run generation; recompute aggregate/report from cached "
+            "<index>_*_result.json files in run directory."
+        ),
+    )
+    parser.add_argument(
         "--min-dtw-song-coverage-ratio",
         type=float,
         default=0.9,
@@ -3005,6 +3937,42 @@ def _parse_args() -> argparse.Namespace:
         "--strict-quality-coverage",
         action="store_true",
         help="Return non-zero if quality coverage warnings are present",
+    )
+    parser.add_argument(
+        "--agreement-baseline-report",
+        type=Path,
+        default=None,
+        help=(
+            "Optional baseline benchmark report path (or run dir) used to detect "
+            "agreement-coverage vs agreement-bad-ratio tradeoffs."
+        ),
+    )
+    parser.add_argument(
+        "--min-agreement-coverage-gain-for-bad-ratio-warning",
+        type=float,
+        default=0.0,
+        help=(
+            "When baseline report is provided, warn if agreement coverage gain is "
+            "at least this amount while bad-ratio increase exceeds configured max "
+            "(0 disables, default: 0)."
+        ),
+    )
+    parser.add_argument(
+        "--max-agreement-bad-ratio-increase-on-coverage-gain",
+        type=float,
+        default=0.0,
+        help=(
+            "Maximum allowed agreement_bad_ratio_mean increase under coverage-gain "
+            "warning condition (default: 0.0)."
+        ),
+    )
+    parser.add_argument(
+        "--strict-agreement-tradeoff",
+        action="store_true",
+        help=(
+            "Return non-zero if agreement tradeoff warning is triggered "
+            "(requires --agreement-baseline-report + gain threshold)."
+        ),
     )
     parser.add_argument(
         "--min-timing-quality-score-line-weighted",
@@ -3442,7 +4410,8 @@ def _execute_song_process(
             return
         if current_phase is None:
             current_phase = next_phase
-            phase_started_at[next_phase] = elapsed_running
+            # Attribute pre-heartbeat runtime to the first inferred phase.
+            phase_started_at[next_phase] = 0.0
             print(f"    >>> phase_start {next_phase} at {elapsed_running:.1f}s")
             return
         if next_phase == current_phase:
@@ -3541,6 +4510,13 @@ def _execute_song_process(
         raise
 
     elapsed = round(time.monotonic() - start, 2)
+    if current_phase is None:
+        final_stage_hint = _extract_stage_hint(out_accum, err_accum) or last_stage_hint
+        final_stage_label = _stage_label_from_hint(final_stage_hint)
+        inferred_phase = _phase_from_stage_label(final_stage_label)
+        if inferred_phase is not None:
+            current_phase = inferred_phase
+            phase_started_at[inferred_phase] = 0.0
     if current_phase is not None:
         start_time = phase_started_at.get(current_phase, elapsed)
         phase_durations[current_phase] = phase_durations.get(current_phase, 0.0) + max(
@@ -3694,45 +4670,113 @@ def _run_song_command(
     return record
 
 
-def main() -> int:  # noqa: C901
-    args = _parse_args()
-    if not 0.0 <= args.min_dtw_song_coverage_ratio <= 1.0:
-        raise ValueError("--min-dtw-song-coverage-ratio must be between 0 and 1")
-    if not 0.0 <= args.min_dtw_line_coverage_ratio <= 1.0:
-        raise ValueError("--min-dtw-line-coverage-ratio must be between 0 and 1")
-    if not 0.0 <= args.min_timing_quality_score_line_weighted <= 1.0:
-        raise ValueError(
-            "--min-timing-quality-score-line-weighted must be between 0 and 1"
+def _try_reuse_cached_song_result(
+    *,
+    args: argparse.Namespace,
+    run_signature: dict[str, Any],
+    index: int,
+    total_songs: int,
+    song: BenchmarkSong,
+    result_path: Path,
+    report_path: Path,
+    gold_root: Path,
+) -> dict[str, Any] | None:
+    prior = _load_song_result(result_path)
+    if prior is None:
+        return None
+    prior_signature = prior.get("run_signature")
+    signature_matches = prior_signature == run_signature
+    if not signature_matches and not args.reuse_mismatched_results:
+        print(f"[{index}/{total_songs}] {song.artist} - {song.title}")
+        print("  -> cached result ignored (run options changed)")
+        return None
+
+    prior_status = str(prior.get("status", ""))
+    if prior_status == "ok" and not args.rerun_completed:
+        prior = _refresh_cached_metrics(
+            prior, index=index, song=song, gold_root=gold_root
         )
-    if not 0.0 <= args.max_whisper_phase_share <= 1.0:
-        raise ValueError("--max-whisper-phase-share must be between 0 and 1")
-    if not 0.0 <= args.max_alignment_phase_share <= 1.0:
-        raise ValueError("--max-alignment-phase-share must be between 0 and 1")
-    if args.max_scheduler_overhead_sec < 0.0:
-        raise ValueError("--max-scheduler-overhead-sec must be >= 0")
+        if args.rebaseline:
+            rebased_path = _rebaseline_song_from_report(
+                index=index,
+                song=song,
+                report_path=Path(str(prior.get("report_path", report_path))),
+                gold_root=gold_root,
+            )
+            prior["gold_rebaselined"] = rebased_path is not None
+            if rebased_path is not None:
+                prior["gold_path"] = str(rebased_path)
+                print(f"  -> gold rebaselined: {rebased_path}")
+        prior["result_reused"] = True
+        print(f"[{index}/{total_songs}] {song.artist} - {song.title}")
+        print("  -> ok (cached result)")
+        return prior
+    if prior_status == "failed" and not args.rerun_failed:
+        prior["result_reused"] = True
+        print(f"[{index}/{total_songs}] {song.artist} - {song.title}")
+        print("  -> failed (cached result)")
+        return prior
+    return None
 
-    manifest_path = args.manifest.resolve()
-    songs = _parse_manifest(manifest_path)
 
-    if args.match:
-        regex = re.compile(args.match, re.IGNORECASE)
-        songs = [s for s in songs if regex.search(f"{s.artist} {s.title}") is not None]
-
-    if args.max_songs > 0:
-        songs = songs[: args.max_songs]
-
-    if not songs:
-        print("benchmark_suite: no songs selected")
-        return 1
-
-    run_dir, run_id = _resolve_run_dir(
-        output_root=args.output_root,
-        run_id=args.run_id,
-        resume_run_dir=args.resume_run_dir,
-        resume_latest=args.resume_latest,
+def _run_single_song_generation(
+    *,
+    args: argparse.Namespace,
+    index: int,
+    total_songs: int,
+    song: BenchmarkSong,
+    run_dir: Path,
+    run_signature: dict[str, Any],
+    gold_root: Path,
+    env: dict[str, str],
+) -> tuple[dict[str, Any], Path]:
+    report_path = run_dir / f"{index:02d}_{song.slug}_timing_report.json"
+    cmd = _build_generate_command(
+        python_bin=args.python_bin,
+        song=song,
+        report_path=report_path,
+        cache_dir=args.cache_dir,
+        offline=args.offline,
+        force=args.force,
+        whisper_map_lrc_dtw=not args.no_whisper_map_lrc_dtw,
+        strategy=args.strategy,
+        drop_lrc_line_timings=(args.scenario == "lyrics_no_timing"),
     )
-    run_dir.mkdir(parents=True, exist_ok=True)
+    print(f"[{index}/{total_songs}] {song.artist} - {song.title}")
+    start = time.monotonic()
+    song_log_path = run_dir / f"{index:02d}_{song.slug}_generate.log"
+    gold_doc = _load_gold_doc(index=index, song=song, gold_root=gold_root)
+    record = _run_song_command(
+        cmd=cmd,
+        env=env,
+        start=start,
+        song=song,
+        report_path=report_path,
+        song_log_path=song_log_path,
+        timeout_sec=args.timeout_sec,
+        heartbeat_sec=args.heartbeat_sec,
+        run_signature=run_signature,
+        gold_doc=gold_doc,
+    )
+    if gold_doc is not None:
+        gold_path = _gold_path_for_song(index=index, song=song, gold_root=gold_root)
+        if gold_path is not None:
+            record["gold_path"] = str(gold_path)
+    if args.rebaseline and record.get("status") == "ok":
+        rebased_path = _rebaseline_song_from_report(
+            index=index,
+            song=song,
+            report_path=report_path,
+            gold_root=gold_root,
+        )
+        record["gold_rebaselined"] = rebased_path is not None
+        if rebased_path is not None:
+            record["gold_path"] = str(rebased_path)
+            print(f"  -> gold rebaselined: {rebased_path}")
+    return record, _song_result_path(run_dir, index, song.slug)
 
+
+def _build_runner_env() -> dict[str, str]:
     env = os.environ.copy()
     existing_pythonpath = env.get("PYTHONPATH", "")
     env["PYTHONPATH"] = (
@@ -3740,128 +4784,228 @@ def main() -> int:  # noqa: C901
         if existing_pythonpath
         else str(REPO_ROOT / "src")
     )
-    run_signature = _build_run_signature(args, manifest_path)
-    gold_root = args.gold_root.resolve()
+    return env
 
-    song_results: list[dict[str, Any]] = []
-    suite_start = time.monotonic()
-    for index, song in enumerate(songs, start=1):
-        report_path = run_dir / f"{index:02d}_{song.slug}_timing_report.json"
-        result_path = _song_result_path(run_dir, index, song.slug)
 
-        prior = _load_song_result(result_path)
-        if prior:
-            prior_signature = prior.get("run_signature")
-            signature_matches = prior_signature == run_signature
-            if not signature_matches and not args.reuse_mismatched_results:
-                print(f"[{index}/{len(songs)}] {song.artist} - {song.title}")
-                print("  -> cached result ignored (run options changed)")
-            else:
-                prior_status = str(prior.get("status", ""))
-                if prior_status == "ok" and not args.rerun_completed:
-                    prior = _refresh_cached_metrics(
-                        prior, index=index, song=song, gold_root=gold_root
-                    )
-                    if args.rebaseline:
-                        rebased_path = _rebaseline_song_from_report(
-                            index=index,
-                            song=song,
-                            report_path=Path(
-                                str(prior.get("report_path", report_path))
-                            ),
-                            gold_root=gold_root,
-                        )
-                        prior["gold_rebaselined"] = rebased_path is not None
-                        if rebased_path is not None:
-                            prior["gold_path"] = str(rebased_path)
-                            print(f"  -> gold rebaselined: {rebased_path}")
-                    prior["result_reused"] = True
-                    song_results.append(prior)
-                    print(f"[{index}/{len(songs)}] {song.artist} - {song.title}")
-                    print("  -> ok (cached result)")
-                    _write_checkpoint(
-                        run_id=run_id,
-                        run_dir=run_dir,
-                        manifest_path=manifest_path,
-                        args=args,
-                        song_results=song_results,
-                        suite_elapsed=time.monotonic() - suite_start,
-                    )
-                    continue
-                if prior_status == "failed" and not args.rerun_failed:
-                    prior["result_reused"] = True
-                    song_results.append(prior)
-                    print(f"[{index}/{len(songs)}] {song.artist} - {song.title}")
-                    print("  -> failed (cached result)")
-                    _write_checkpoint(
-                        run_id=run_id,
-                        run_dir=run_dir,
-                        manifest_path=manifest_path,
-                        args=args,
-                        song_results=song_results,
-                        suite_elapsed=time.monotonic() - suite_start,
-                    )
-                    continue
-
-        cmd = _build_generate_command(
-            python_bin=args.python_bin,
-            song=song,
-            report_path=report_path,
-            cache_dir=args.cache_dir,
-            offline=args.offline,
-            force=args.force,
-            whisper_map_lrc_dtw=not args.no_whisper_map_lrc_dtw,
-            strategy=args.strategy,
-            drop_lrc_line_timings=(args.scenario == "lyrics_no_timing"),
-        )
-        print(f"[{index}/{len(songs)}] {song.artist} - {song.title}")
-        start = time.monotonic()
-        song_log_path = run_dir / f"{index:02d}_{song.slug}_generate.log"
-        gold_doc = _load_gold_doc(index=index, song=song, gold_root=gold_root)
-        record = _run_song_command(
-            cmd=cmd,
-            env=env,
-            start=start,
-            song=song,
-            report_path=report_path,
-            song_log_path=song_log_path,
-            timeout_sec=args.timeout_sec,
-            heartbeat_sec=args.heartbeat_sec,
-            run_signature=run_signature,
-            gold_doc=gold_doc,
-        )
-        if gold_doc is not None:
-            gold_path = _gold_path_for_song(index=index, song=song, gold_root=gold_root)
-            if gold_path is not None:
-                record["gold_path"] = str(gold_path)
-        if args.rebaseline and record.get("status") == "ok":
-            rebased_path = _rebaseline_song_from_report(
-                index=index,
-                song=song,
-                report_path=report_path,
-                gold_root=gold_root,
-            )
-            record["gold_rebaselined"] = rebased_path is not None
-            if rebased_path is not None:
-                record["gold_path"] = str(rebased_path)
-                print(f"  -> gold rebaselined: {rebased_path}")
-
-        song_results.append(record)
+def _append_result_and_checkpoint(
+    *,
+    record: dict[str, Any],
+    song_results: list[dict[str, Any]],
+    run_id: str,
+    run_dir: Path,
+    manifest_path: Path,
+    args: argparse.Namespace,
+    suite_start: float,
+    result_path: Path | None = None,
+) -> None:
+    song_results.append(record)
+    if result_path is not None:
         _write_json(result_path, record)
-        _write_checkpoint(
+    _write_checkpoint(
+        run_id=run_id,
+        run_dir=run_dir,
+        manifest_path=manifest_path,
+        args=args,
+        song_results=song_results,
+        suite_elapsed=time.monotonic() - suite_start,
+    )
+
+
+def _collect_single_song_result(
+    *,
+    args: argparse.Namespace,
+    song_results: list[dict[str, Any]],
+    index: int,
+    total_songs: int,
+    song: BenchmarkSong,
+    run_signature: dict[str, Any],
+    run_id: str,
+    run_dir: Path,
+    manifest_path: Path,
+    gold_root: Path,
+    env: dict[str, str],
+    suite_start: float,
+) -> dict[str, Any]:
+    report_path = run_dir / f"{index:02d}_{song.slug}_timing_report.json"
+    result_path = _song_result_path(run_dir, index, song.slug)
+    reused = _try_reuse_cached_song_result(
+        args=args,
+        run_signature=run_signature,
+        index=index,
+        total_songs=total_songs,
+        song=song,
+        result_path=result_path,
+        report_path=report_path,
+        gold_root=gold_root,
+    )
+    if reused is not None:
+        _append_result_and_checkpoint(
+            record=reused,
+            song_results=song_results,
             run_id=run_id,
             run_dir=run_dir,
             manifest_path=manifest_path,
             args=args,
-            song_results=song_results,
-            suite_elapsed=time.monotonic() - suite_start,
+            suite_start=suite_start,
         )
-        print(f"  -> {record['status']} ({record.get('elapsed_sec', 0.0)}s)")
+        return reused
+
+    record, result_path = _run_single_song_generation(
+        args=args,
+        index=index,
+        total_songs=total_songs,
+        song=song,
+        run_dir=run_dir,
+        run_signature=run_signature,
+        gold_root=gold_root,
+        env=env,
+    )
+    _append_result_and_checkpoint(
+        record=record,
+        song_results=song_results,
+        run_id=run_id,
+        run_dir=run_dir,
+        manifest_path=manifest_path,
+        args=args,
+        suite_start=suite_start,
+        result_path=result_path,
+    )
+    return record
+
+
+def _collect_song_results(
+    *,
+    args: argparse.Namespace,
+    songs: list[BenchmarkSong],
+    run_id: str,
+    run_dir: Path,
+    manifest_path: Path,
+    run_signature: dict[str, Any],
+    gold_root: Path,
+    env: dict[str, str],
+    suite_start: float,
+) -> tuple[list[dict[str, Any]], list[str]]:
+    song_results: list[dict[str, Any]] = []
+    aggregate_only_skipped_missing: list[str] = []
+    if args.aggregate_only:
+        return _load_aggregate_only_results(
+            songs=songs,
+            run_dir=run_dir,
+            gold_root=gold_root,
+            rebaseline=args.rebaseline,
+        )
+
+    total_songs = len(songs)
+    for index, song in enumerate(songs, start=1):
+        record = _collect_single_song_result(
+            args=args,
+            song_results=song_results,
+            index=index,
+            total_songs=total_songs,
+            song=song,
+            run_signature=run_signature,
+            run_id=run_id,
+            run_dir=run_dir,
+            manifest_path=manifest_path,
+            gold_root=gold_root,
+            env=env,
+            suite_start=suite_start,
+        )
+        if not record.get("result_reused"):
+            print(f"  -> {record['status']} ({record.get('elapsed_sec', 0.0)}s)")
         if record["status"] != "ok" and args.fail_fast:
             break
 
+    return song_results, aggregate_only_skipped_missing
+
+
+def _prepare_run_context(
+    args: argparse.Namespace,
+) -> tuple[
+    Path,
+    list[BenchmarkSong],
+    Path,
+    str,
+    dict[str, str],
+    dict[str, Any],
+    Path,
+    dict[str, Any] | None,
+]:
+    manifest_path = args.manifest.resolve()
+    songs = _filter_manifest_songs(
+        _parse_manifest(manifest_path), match=args.match, max_songs=args.max_songs
+    )
+    run_dir, run_id = _resolve_run_dir(
+        output_root=args.output_root,
+        run_id=args.run_id,
+        resume_run_dir=args.resume_run_dir,
+        resume_latest=args.resume_latest,
+    )
+    run_dir.mkdir(parents=True, exist_ok=True)
+    songs = _apply_aggregate_only_cached_scope(
+        songs,
+        aggregate_only=args.aggregate_only,
+        match=args.match,
+        max_songs=args.max_songs,
+        run_dir=run_dir,
+    )
+    env = _build_runner_env()
+    run_signature = _build_run_signature(args, manifest_path)
+    gold_root = args.gold_root.resolve()
+    baseline_aggregate = _load_baseline_aggregate(args.agreement_baseline_report)
+    return (
+        manifest_path,
+        songs,
+        run_dir,
+        run_id,
+        env,
+        run_signature,
+        gold_root,
+        baseline_aggregate,
+    )
+
+
+def main() -> int:  # noqa: C901
+    args = _parse_args()
+    _validate_cli_args(args)
+    (
+        manifest_path,
+        songs,
+        run_dir,
+        run_id,
+        env,
+        run_signature,
+        gold_root,
+        baseline_aggregate,
+    ) = _prepare_run_context(args)
+
+    if not songs:
+        print("benchmark_suite: no songs selected")
+        if args.aggregate_only:
+            print("  (aggregate-only mode found no cached result songs)")
+        return 1
+
+    suite_start = time.monotonic()
+    song_results, aggregate_only_skipped_missing = _collect_song_results(
+        args=args,
+        songs=songs,
+        run_id=run_id,
+        run_dir=run_dir,
+        manifest_path=manifest_path,
+        run_signature=run_signature,
+        gold_root=gold_root,
+        env=env,
+        suite_start=suite_start,
+    )
+
     aggregate = _aggregate(song_results)
-    suite_elapsed = round(time.monotonic() - suite_start, 2)
+    suite_elapsed, sum_song_elapsed, sum_song_elapsed_total, overhead_base = (
+        _compute_suite_elapsed_accounting(
+            aggregate=aggregate,
+            measured_suite_elapsed=(time.monotonic() - suite_start),
+            aggregate_only=args.aggregate_only,
+        )
+    )
     quality_warnings = _quality_coverage_warnings(
         aggregate=aggregate,
         dtw_enabled=(args.strategy == "hybrid_dtw" and not args.no_whisper_map_lrc_dtw),
@@ -3872,6 +5016,13 @@ def main() -> int:  # noqa: C901
         ),
         suite_wall_elapsed_sec=suite_elapsed,
     )
+    agreement_tradeoff_warnings = _agreement_tradeoff_warnings(
+        aggregate=aggregate,
+        baseline_aggregate=baseline_aggregate,
+        min_coverage_gain=args.min_agreement_coverage_gain_for_bad_ratio_warning,
+        max_bad_ratio_increase=(args.max_agreement_bad_ratio_increase_on_coverage_gain),
+    )
+    quality_warnings.extend(agreement_tradeoff_warnings)
     cache_warnings = _cache_expectation_warnings(
         aggregate=aggregate,
         expect_cached_separation=args.expect_cached_separation,
@@ -3885,139 +5036,58 @@ def main() -> int:  # noqa: C901
         max_scheduler_overhead_sec=args.max_scheduler_overhead_sec,
     )
     run_warnings = quality_warnings + cache_warnings + runtime_warnings
-    sum_song_elapsed = float(aggregate.get("sum_song_elapsed_sec", 0.0) or 0.0)
-    report_json = {
-        "run_id": run_id,
-        "manifest_path": str(manifest_path),
-        "repo_root": str(REPO_ROOT),
-        "started_at_utc": run_id,
-        "elapsed_sec": suite_elapsed,
-        "suite_wall_elapsed_sec": suite_elapsed,
-        "sum_song_elapsed_sec": round(sum_song_elapsed, 2),
-        "scheduler_overhead_sec": round(suite_elapsed - sum_song_elapsed, 2),
-        "options": {
-            "offline": args.offline,
-            "force": args.force,
-            "strategy": args.strategy,
-            "scenario": args.scenario,
-            "whisper_map_lrc_dtw": not args.no_whisper_map_lrc_dtw,
-            "timeout_sec": args.timeout_sec,
-            "heartbeat_sec": args.heartbeat_sec,
-            "match": args.match,
-            "max_songs": args.max_songs,
-            "min_dtw_song_coverage_ratio": args.min_dtw_song_coverage_ratio,
-            "min_dtw_line_coverage_ratio": args.min_dtw_line_coverage_ratio,
-            "min_timing_quality_score_line_weighted": (
-                args.min_timing_quality_score_line_weighted
-            ),
-            "strict_quality_coverage": args.strict_quality_coverage,
-            "expect_cached_separation": args.expect_cached_separation,
-            "expect_cached_whisper": args.expect_cached_whisper,
-            "strict_cache_expectations": args.strict_cache_expectations,
-            "max_whisper_phase_share": args.max_whisper_phase_share,
-            "max_alignment_phase_share": args.max_alignment_phase_share,
-            "max_scheduler_overhead_sec": args.max_scheduler_overhead_sec,
-            "strict_runtime_budgets": args.strict_runtime_budgets,
-            "rebaseline": args.rebaseline,
-            "gold_root": str(args.gold_root.resolve()),
-        },
-        "status": "finished_with_warnings" if run_warnings else "finished",
-        "quality_warnings": quality_warnings,
-        "cache_warnings": cache_warnings,
-        "runtime_warnings": runtime_warnings,
-        "warnings": run_warnings,
-        "aggregate": aggregate,
-        "songs": song_results,
-    }
-
-    json_path = run_dir / "benchmark_report.json"
-    md_path = run_dir / "benchmark_report.md"
-    json_path.write_text(
-        json.dumps(report_json, ensure_ascii=False, indent=2), encoding="utf-8"
-    )
-    _write_json(run_dir / "benchmark_progress.json", report_json)
-    _write_markdown_summary(
-        md_path,
+    if aggregate_only_skipped_missing:
+        run_warnings.append(
+            "Aggregate-only skipped songs without cached results: "
+            f"{len(aggregate_only_skipped_missing)}"
+        )
+    report_json = _build_final_report_json(
         run_id=run_id,
-        manifest=manifest_path,
+        manifest_path=manifest_path,
+        args=args,
         aggregate=aggregate,
-        songs=song_results,
+        song_results=song_results,
+        suite_elapsed=suite_elapsed,
+        sum_song_elapsed=sum_song_elapsed,
+        sum_song_elapsed_total=sum_song_elapsed_total,
+        overhead_base=overhead_base,
+        quality_warnings=quality_warnings,
+        cache_warnings=cache_warnings,
+        runtime_warnings=runtime_warnings,
+        run_warnings=run_warnings,
+        aggregate_only_skipped_missing=aggregate_only_skipped_missing,
     )
 
-    latest = args.output_root.resolve() / "latest.json"
-    latest.write_text(str(json_path) + "\n", encoding="utf-8")
+    json_path, md_path = _persist_final_report_outputs(
+        args=args,
+        run_id=run_id,
+        run_dir=run_dir,
+        manifest_path=manifest_path,
+        aggregate=aggregate,
+        song_results=song_results,
+        report_json=report_json,
+    )
 
-    status = "OK" if aggregate["songs_failed"] == 0 else "FAIL"
-    if status == "OK" and run_warnings:
-        status = "WARN"
-    print(f"benchmark_suite: {status}")
-    print(f"- run_dir: {run_dir}")
-    print(f"- json: {json_path}")
-    print(f"- markdown: {md_path}")
-    print(
-        "- success: "
-        f"{aggregate['songs_succeeded']}/{aggregate['songs_total']} "
-        f"({aggregate['success_rate'] * 100:.1f}%)"
+    status = _derive_run_status(aggregate, run_warnings)
+    _print_run_summary(
+        status=status,
+        run_dir=run_dir,
+        json_path=json_path,
+        md_path=md_path,
+        aggregate=aggregate,
+        suite_elapsed=suite_elapsed,
+        sum_song_elapsed=sum_song_elapsed,
+        overhead_base=overhead_base,
+        run_warnings=run_warnings,
     )
-    print(
-        "- mean metrics: "
-        f"gold_start_abs_mean_weighted={(aggregate.get('avg_abs_word_start_delta_sec_word_weighted_mean') or 0.0):.3f}s, "
-        "gold_start_abs_mean_weighted_ex_ref_div="
-        f"{(aggregate.get('avg_abs_word_start_delta_sec_word_weighted_mean_excluding_reference_divergence') or 0.0):.3f}s, "
-        f"gold_start_p95_mean={(aggregate.get('gold_start_p95_abs_sec_mean') or 0.0):.3f}s, "
-        f"gold_end_abs_mean={(aggregate.get('gold_end_mean_abs_sec_mean') or 0.0):.3f}s, "
-        f"gold_cov={(aggregate.get('gold_word_coverage_ratio_total') or 0.0):.3f}, "
-        f"dtw_line={(aggregate.get('dtw_line_coverage_mean') or 0.0):.3f}, "
-        f"dtw_line_weighted={(aggregate.get('dtw_line_coverage_line_weighted_mean') or 0.0):.3f}, "
-        f"dtw_word={(aggregate.get('dtw_word_coverage_mean') or 0.0):.3f}, "
-        f"phonetic={(aggregate.get('dtw_phonetic_similarity_coverage_mean') or 0.0):.3f}, "
-        f"low_conf_ratio={(aggregate.get('low_confidence_ratio_total') or 0.0):.3f}, "
-        f"agreement_cov={(aggregate.get('agreement_coverage_ratio_total') or 0.0):.3f}, "
-        f"agreement_text_sim={(aggregate.get('agreement_text_similarity_mean') or 0.0):.3f}, "
-        f"agreement_start_abs_mean={(aggregate.get('agreement_start_mean_abs_sec_mean') or 0.0):.3f}s, "
-        f"agreement_start_p95={(aggregate.get('agreement_start_p95_abs_sec_mean') or 0.0):.3f}s, "
-        f"agreement_bad_ratio={(aggregate.get('agreement_bad_ratio_total') or 0.0):.3f}, "
-        f"agreement_severe_ratio={(aggregate.get('agreement_severe_ratio_total') or 0.0):.3f}"
+    return _determine_exit_code(
+        aggregate=aggregate,
+        args=args,
+        quality_warnings=quality_warnings,
+        agreement_tradeoff_warnings=agreement_tradeoff_warnings,
+        cache_warnings=cache_warnings,
+        runtime_warnings=runtime_warnings,
     )
-    print(
-        "- gold coverage: "
-        f"songs={aggregate.get('gold_metric_song_coverage_ratio', 0.0):.3f}, "
-        f"words={aggregate.get('gold_comparable_word_count_total', 0)}/{aggregate.get('gold_word_count_total', 0)}"
-    )
-    print(
-        "- dtw coverage: "
-        f"songs={aggregate['dtw_metric_song_coverage_ratio']:.3f}, "
-        f"lines={aggregate['dtw_metric_line_coverage_ratio']:.3f}"
-    )
-    print(
-        "- elapsed: "
-        f"suite_wall={suite_elapsed:.2f}s, "
-        f"sum_song={sum_song_elapsed:.2f}s, "
-        f"overhead={suite_elapsed - sum_song_elapsed:.2f}s"
-    )
-    cache_summary = aggregate.get("cache_summary", {})
-    if isinstance(cache_summary, dict):
-        sep = cache_summary.get("separation")
-        if isinstance(sep, dict):
-            print(
-                "- separation cache: "
-                f"cached_ratio={float(sep.get('cached_ratio', 0.0) or 0.0):.3f}, "
-                f"miss_count={int(sep.get('miss_count', 0) or 0)}"
-            )
-    if run_warnings:
-        print("- warnings:")
-        for item in run_warnings:
-            print(f"  - {item}")
-
-    if aggregate["songs_failed"] > 0:
-        return 2
-    if quality_warnings and args.strict_quality_coverage:
-        return 3
-    if cache_warnings and args.strict_cache_expectations:
-        return 4
-    if runtime_warnings and args.strict_runtime_budgets:
-        return 5
-    return 0
 
 
 if __name__ == "__main__":

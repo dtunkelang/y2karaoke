@@ -45,6 +45,7 @@
         </label>
         <div id="playbackInfo">t=0.0s</div>
         <div id="selectionInfo">No word selected</div>
+        <div id="telemetryInfo">session: edits=0 | epm=0.0 | undo=0%</div>
       </section>
 
       <audio id="audio" controls preload="metadata"></audio>
@@ -56,8 +57,10 @@
 
     <footer>
       <div>
-        Keyboard: Left/Right move selected word by 0.1s. Shift+Arrow adjusts end only. Alt+Arrow adjusts start only. Ctrl/Cmd+Z undo.
+        Keyboard: Left/Right move selected word/line by 0.05s. Ctrl/Cmd+Arrow uses 0.2s coarse nudges. Shift+Arrow adjusts end only. Alt+Arrow adjusts start only. Ctrl/Cmd+Z undo.
       </div>
+      <div>Snap to audio anchors: S snap start, E snap end, A snap whole word/line to nearest onset.</div>
+      <div>Anchor jump: ] next anchor, [ previous anchor (whole move). Shift+[ / Shift+] jump end only, Alt+[ / Alt+] jump start only.</div>
       <div>Line mode: drag a line ruler/bar (or use Left/Right) to shift the entire line while preserving word durations and intraline gaps.</div>
       <div>Drag bar to move whole interval. Drag left/right handles to resize.</div>
       <div>Editing is permissive: overlaps are allowed while adjusting and validated only on save.</div>

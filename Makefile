@@ -1,8 +1,10 @@
 PYTHON ?= ./venv/bin/python
 PIP := $(PYTHON) -m pip
 PYTEST := PYTHONPATH=src $(PYTHON) -m pytest
+MIN_COVERAGE_GAIN ?= 0.005
+MAX_BAD_RATIO_INCREASE ?= 0.002
 
-.PHONY: bootstrap dep-check fmt fmt-check lint type test-fast test-full perf-smoke quality-guardrails bootstrap-quality-guardrails visual-eval visual-eval-guardrails bootstrap-calibrate benchmark-validate benchmark-run benchmark-matrix benchmark-recommend benchmark-run-bg benchmark-status benchmark-kill check ci-fast ci-full
+.PHONY: bootstrap dep-check fmt fmt-check lint type test-fast test-full perf-smoke quality-guardrails bootstrap-quality-guardrails visual-eval visual-eval-guardrails bootstrap-calibrate benchmark-validate benchmark-run benchmark-aggregate-only benchmark-matrix benchmark-recommend benchmark-compare-correction benchmark-classify-failures benchmark-profile-runtime benchmark-compare-runtime benchmark-run-bg benchmark-status benchmark-kill check ci-fast ci-full
 
 bootstrap:
 	./tools/bootstrap_dev.sh
@@ -52,11 +54,38 @@ benchmark-validate:
 benchmark-run:
 	$(PYTHON) tools/run_benchmark_suite.py
 
+benchmark-aggregate-only:
+	@test -n "$(RUN_DIR)" || (echo "RUN_DIR is required (existing benchmark run directory)"; exit 2)
+	$(PYTHON) tools/run_benchmark_suite.py --resume-run-dir "$(RUN_DIR)" --aggregate-only
+
 benchmark-matrix:
 	$(PYTHON) tools/run_benchmark_strategy_matrix.py
 
 benchmark-recommend:
 	$(PYTHON) tools/recommend_benchmark_defaults.py
+
+benchmark-compare-correction:
+	@test -n "$(BASELINE)" || (echo "BASELINE is required (run dir or benchmark_report.json path)"; exit 2)
+	@test -n "$(CORRECTED)" || (echo "CORRECTED is required (run dir or benchmark_report.json path)"; exit 2)
+	$(PYTHON) tools/compare_benchmark_correction.py --baseline "$(BASELINE)" --corrected "$(CORRECTED)" \
+		$(if $(ASSERT_TRADEOFF),--assert-agreement-tradeoff --min-coverage-gain "$(MIN_COVERAGE_GAIN)" --max-bad-ratio-increase "$(MAX_BAD_RATIO_INCREASE)",)
+
+benchmark-classify-failures:
+	@test -n "$(REPORT)" || (echo "REPORT is required (run dir or benchmark_report.json path)"; exit 2)
+	$(PYTHON) tools/classify_alignment_failures.py --report "$(REPORT)" $(if $(MATCH),--match "$(MATCH)",)
+
+benchmark-profile-runtime:
+	@test -n "$(REPORT)" || (echo "REPORT is required (run dir or benchmark_report.json path)"; exit 2)
+	$(PYTHON) tools/profile_benchmark_runtime.py --report "$(REPORT)" $(if $(TOP),--top "$(TOP)",)
+
+benchmark-compare-runtime:
+	@test -n "$(BASELINE)" || (echo "BASELINE is required (run dir or benchmark_report.json path)"; exit 2)
+	@test -n "$(CANDIDATE)" || (echo "CANDIDATE is required (run dir or benchmark_report.json path)"; exit 2)
+	$(PYTHON) tools/compare_benchmark_runtime.py --baseline "$(BASELINE)" --candidate "$(CANDIDATE)" \
+		$(if $(TOP),--top "$(TOP)",) \
+		$(if $(ONLY_POSITIVE),--only-positive-delta,) \
+		$(if $(OUT_JSON),--output-json "$(OUT_JSON)",) \
+		$(if $(OUT_MD),--output-md "$(OUT_MD)",)
 
 benchmark-run-bg:
 	./tools/run_benchmark_suite_bg.sh

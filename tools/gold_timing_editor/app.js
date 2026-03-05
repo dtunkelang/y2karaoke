@@ -8,8 +8,16 @@ const state = {
   undoStack: [],
   lastActiveLineIndex: -1,
   pendingSeekScroll: false,
+  audioAnchors: [],
+  audioAnalysisToken: 0,
+  audioAnalysisReady: false,
+  sessionStats: null,
 };
 const MIN_WORD_DURATION = 0.1;
+const SNAP_SECONDS = 0.05;
+const KEYBOARD_FINE_STEP = SNAP_SECONDS;
+const KEYBOARD_COARSE_STEP = 0.2;
+const SNAP_MAX_DISTANCE_SEC = 0.2;
 
 const els = {
   status: document.getElementById("status"),
@@ -25,17 +33,66 @@ const els = {
   zoomRange: document.getElementById("zoomRange"),
   playbackInfo: document.getElementById("playbackInfo"),
   selectionInfo: document.getElementById("selectionInfo"),
+  telemetryInfo: document.getElementById("telemetryInfo"),
   timeline: document.getElementById("timeline"),
   audio: document.getElementById("audio"),
 };
 
 function snap(v) {
-  return Math.round(v * 10) / 10;
+  return Math.round((Math.round(v / SNAP_SECONDS) * SNAP_SECONDS) * 1000) / 1000;
 }
 
 function setStatus(msg, isError = false) {
   els.status.textContent = msg;
   els.status.style.color = isError ? "#a92323" : "#5e6c5f";
+}
+
+function resetSessionStats() {
+  state.sessionStats = {
+    sessionStartMs: Date.now(),
+    editCount: 0,
+    undoCount: 0,
+    snapCount: 0,
+    jumpCount: 0,
+    nudgeFineCount: 0,
+    nudgeCoarseCount: 0,
+    dragCount: 0,
+  };
+}
+
+function stats() {
+  if (!state.sessionStats) {
+    resetSessionStats();
+  }
+  return state.sessionStats;
+}
+
+function recordEdit(kind) {
+  const s = stats();
+  s.editCount += 1;
+  if (kind === "snap") s.snapCount += 1;
+  if (kind === "jump") s.jumpCount += 1;
+  if (kind === "nudge-fine") s.nudgeFineCount += 1;
+  if (kind === "nudge-coarse") s.nudgeCoarseCount += 1;
+  if (kind === "drag") s.dragCount += 1;
+}
+
+function recordUndo() {
+  stats().undoCount += 1;
+}
+
+function updateTelemetryInfo() {
+  if (!els.telemetryInfo) return;
+  const s = stats();
+  const elapsedMin = Math.max((Date.now() - s.sessionStartMs) / 60000, 1 / 60);
+  const epm = s.editCount / elapsedMin;
+  const undoDenom = Math.max(1, s.editCount + s.undoCount);
+  const undoPct = (100 * s.undoCount) / undoDenom;
+  const snapPct = s.editCount ? (100 * s.snapCount) / s.editCount : 0;
+  const jumpPct = s.editCount ? (100 * s.jumpCount) / s.editCount : 0;
+  els.telemetryInfo.textContent =
+    `session: edits=${s.editCount} | epm=${epm.toFixed(1)} | undo=${undoPct.toFixed(0)}%` +
+    ` | snap=${snapPct.toFixed(0)}% | jump=${jumpPct.toFixed(0)}%`;
 }
 
 function resetUndo() {
@@ -53,6 +110,7 @@ function snapshotForUndo() {
 function undo() {
   if (!state.undoStack.length) return;
   state.doc = JSON.parse(state.undoStack.pop());
+  recordUndo();
   updateLineBounds();
   render();
   setStatus("Undo applied.");
@@ -306,6 +364,186 @@ function getLineViewWindow(line) {
   return { start, end, duration: end - start };
 }
 
+function nearestAudioAnchor(timeSec, maxDistanceSec = SNAP_MAX_DISTANCE_SEC) {
+  if (!state.audioAnchors.length) return null;
+  let best = null;
+  let bestDist = Number.POSITIVE_INFINITY;
+  for (const anchor of state.audioAnchors) {
+    const dist = Math.abs(anchor - timeSec);
+    if (dist < bestDist) {
+      bestDist = dist;
+      best = anchor;
+    }
+  }
+  if (best == null || bestDist > maxDistanceSec) return null;
+  return best;
+}
+
+function directionalAudioAnchor(timeSec, direction) {
+  if (!state.audioAnchors.length) return null;
+  const eps = 0.001;
+  if (direction > 0) {
+    for (const anchor of state.audioAnchors) {
+      if (anchor > timeSec + eps) return anchor;
+    }
+    return null;
+  }
+  for (let i = state.audioAnchors.length - 1; i >= 0; i -= 1) {
+    const anchor = state.audioAnchors[i];
+    if (anchor < timeSec - eps) return anchor;
+  }
+  return null;
+}
+
+function snapSelectedToAudioAnchor(mode) {
+  if (!state.doc) return false;
+  if (state.editMode === "line") {
+    if (state.selectedLine == null) return false;
+    const line = state.doc.lines[state.selectedLine];
+    const target = nearestAudioAnchor(line.start);
+    if (target == null) return false;
+    shiftLine(state.selectedLine, target - line.start);
+    enforceNonOverlapCascade(state.selectedLine);
+    return true;
+  }
+
+  if (!state.selected) return false;
+  const { li, wi } = state.selected;
+  const word = state.doc.lines[li].words[wi];
+  if (!word) return false;
+
+  if (mode === "start") {
+    const target = nearestAudioAnchor(word.start);
+    if (target == null) return false;
+    setWordTiming(li, wi, target, word.end);
+    return true;
+  }
+  if (mode === "end") {
+    const target = nearestAudioAnchor(word.end);
+    if (target == null) return false;
+    setWordTiming(li, wi, word.start, target);
+    return true;
+  }
+
+  const target = nearestAudioAnchor(word.start);
+  if (target == null) return false;
+  const duration = Math.max(word.end - word.start, MIN_WORD_DURATION);
+  setWordTiming(li, wi, target, target + duration);
+  return true;
+}
+
+function jumpSelectedToAudioAnchor(direction, mode) {
+  if (!state.doc) return false;
+  if (state.editMode === "line") {
+    if (state.selectedLine == null) return false;
+    const line = state.doc.lines[state.selectedLine];
+    const target = directionalAudioAnchor(line.start, direction);
+    if (target == null) return false;
+    shiftLine(state.selectedLine, target - line.start);
+    enforceNonOverlapCascade(state.selectedLine);
+    return true;
+  }
+
+  if (!state.selected) return false;
+  const { li, wi } = state.selected;
+  const word = state.doc.lines[li].words[wi];
+  if (!word) return false;
+
+  if (mode === "start") {
+    const target = directionalAudioAnchor(word.start, direction);
+    if (target == null) return false;
+    setWordTiming(li, wi, target, word.end);
+    return true;
+  }
+  if (mode === "end") {
+    const target = directionalAudioAnchor(word.end, direction);
+    if (target == null) return false;
+    setWordTiming(li, wi, word.start, target);
+    return true;
+  }
+
+  const target = directionalAudioAnchor(word.start, direction);
+  if (target == null) return false;
+  const duration = Math.max(word.end - word.start, MIN_WORD_DURATION);
+  setWordTiming(li, wi, target, target + duration);
+  return true;
+}
+
+function buildAudioAnchors(buffer) {
+  const channel = buffer.getChannelData(0);
+  if (!channel || !channel.length) return [];
+
+  const sampleRate = buffer.sampleRate;
+  const frame = 1024;
+  const hop = 256;
+  const envelope = [];
+  for (let start = 0; start + frame < channel.length; start += hop) {
+    let energy = 0;
+    for (let i = start; i < start + frame; i += 1) {
+      const s = channel[i];
+      energy += s * s;
+    }
+    envelope.push(Math.sqrt(energy / frame));
+  }
+  if (envelope.length < 3) return [];
+
+  const flux = new Array(envelope.length).fill(0);
+  let fluxSum = 0;
+  for (let i = 1; i < envelope.length; i += 1) {
+    const val = Math.max(0, envelope[i] - envelope[i - 1]);
+    flux[i] = val;
+    fluxSum += val;
+  }
+  const fluxMean = fluxSum / Math.max(1, flux.length - 1);
+  const threshold = Math.max(0.006, fluxMean * 2.25);
+
+  const anchors = [];
+  const minGapFrames = Math.max(1, Math.round(0.05 * sampleRate / hop));
+  let lastFrame = -minGapFrames;
+  for (let i = 1; i < flux.length - 1; i += 1) {
+    if (i - lastFrame < minGapFrames) continue;
+    const cur = flux[i];
+    if (cur < threshold) continue;
+    if (cur >= flux[i - 1] && cur >= flux[i + 1]) {
+      anchors.push(snap((i * hop) / sampleRate));
+      lastFrame = i;
+    }
+  }
+  return anchors;
+}
+
+async function analyzeAudioForAnchors() {
+  if (!els.audio.src) return;
+  const token = state.audioAnalysisToken + 1;
+  state.audioAnalysisToken = token;
+  state.audioAnalysisReady = false;
+  state.audioAnchors = [];
+  setStatus("Analyzing audio onsets for snap anchors...");
+  try {
+    const res = await fetch(els.audio.src);
+    if (!res.ok) throw new Error(`Failed to read audio (${res.status})`);
+    const data = await res.arrayBuffer();
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const buffer = await audioCtx.decodeAudioData(data);
+    const anchors = buildAudioAnchors(buffer);
+    await audioCtx.close();
+    if (token !== state.audioAnalysisToken) return;
+    state.audioAnchors = anchors;
+    state.audioAnalysisReady = true;
+    if (anchors.length) {
+      setStatus(`Audio anchors ready (${anchors.length} candidate onsets).`);
+    } else {
+      setStatus("No strong audio onsets detected; snap-to-audio disabled.");
+    }
+    render();
+  } catch (err) {
+    if (token !== state.audioAnalysisToken) return;
+    state.audioAnchors = [];
+    state.audioAnalysisReady = false;
+    setStatus(`Audio analysis unavailable: ${String(err.message || err)}`, true);
+  }
+}
+
 function buildTrack(line, li, viewWindow, pxPerSec) {
   const track = document.createElement("div");
   track.className = "track";
@@ -442,6 +680,17 @@ function buildLineRuler(line, viewWindow, pxPerSec) {
       minor.className = "tick minor";
       minor.style.left = `${minorPx}px`;
       ruler.appendChild(minor);
+    }
+  }
+
+  if (state.audioAnalysisReady && state.audioAnchors.length) {
+    for (const anchor of state.audioAnchors) {
+      if (anchor < viewWindow.start || anchor > viewWindow.end) continue;
+      const anchorPx = (anchor - viewWindow.start) * pxPerSec;
+      const mark = document.createElement("div");
+      mark.className = "tick audio-anchor";
+      mark.style.left = `${anchorPx}px`;
+      ruler.appendChild(mark);
     }
   }
 
@@ -695,6 +944,7 @@ function render() {
   } else {
     els.selectionInfo.textContent = "No word selected";
   }
+  updateTelemetryInfo();
   
   // Update visuals immediately after full render
   updatePlaybackVisuals();
@@ -717,6 +967,7 @@ async function loadTimingPath(path) {
   const data = await postJson("/api/load", { path });
   state.doc = data.document;
   resetUndo();
+  resetSessionStats();
   updateLineBounds();
   render();
   setStatus(`Loaded ${state.doc.lines.length} lines / ${lineWordCount(state.doc)} words.`);
@@ -736,8 +987,10 @@ function loadAudioPath(path) {
   } else {
     els.audio.src = `/${path}`;
   }
+  state.audioAnalysisReady = false;
+  state.audioAnchors = [];
   if (state.doc) state.doc.audio_path = path;
-  setStatus("Audio loaded.");
+  setStatus("Audio loaded. Waiting for metadata...");
 }
 
 els.loadTimingBtn.addEventListener("click", async () => {
@@ -795,6 +1048,10 @@ els.audio.addEventListener("error", (e) => {
   setStatus(`Audio Error: ${els.audio.error?.message || "Unknown error"}`, true);
 });
 
+els.audio.addEventListener("loadedmetadata", () => {
+  analyzeAudioForAnchors();
+});
+
 els.audio.addEventListener("timeupdate", () => {
   updatePlaybackVisuals();
 });
@@ -849,34 +1106,93 @@ document.addEventListener("mouseup", () => {
       els.playbackInfo.textContent = `t=${els.audio.currentTime.toFixed(1)}s`;
     }
   }
+  if (state.drag?.moved) {
+    recordEdit("drag");
+  }
   state.drag = null;
 });
 
 document.addEventListener("keydown", (ev) => {
   if (!state.doc) return;
-  if (ev.key !== "ArrowLeft" && ev.key !== "ArrowRight") return;
+  const key = ev.key;
 
-  ev.preventDefault();
-  snapshotForUndo();
-  const delta = ev.key === "ArrowRight" ? 0.1 : -0.1;
-
-  if (state.editMode === "line") {
-    if (state.selectedLine == null) return;
-    shiftLine(state.selectedLine, delta);
-    enforceNonOverlapCascade(state.selectedLine);
-  } else {
-    if (!state.selected) return;
-    const { li, wi } = state.selected;
-    if (ev.shiftKey) {
-      adjustEnd(li, wi, delta);
-    } else if (ev.altKey) {
-      adjustStart(li, wi, delta);
+  if (key === " ") {
+    ev.preventDefault();
+    if (els.audio.paused) {
+      els.audio.play();
     } else {
-      moveWord(li, wi, delta);
+      els.audio.pause();
     }
+    return;
   }
 
-  render();
+  if (key === "ArrowLeft" || key === "ArrowRight") {
+    ev.preventDefault();
+    snapshotForUndo();
+    const step = ev.ctrlKey || ev.metaKey ? KEYBOARD_COARSE_STEP : KEYBOARD_FINE_STEP;
+    const delta = key === "ArrowRight" ? step : -step;
+
+    if (state.editMode === "line") {
+      if (state.selectedLine == null) return;
+      shiftLine(state.selectedLine, delta);
+      enforceNonOverlapCascade(state.selectedLine);
+    } else {
+      if (!state.selected) return;
+      const { li, wi } = state.selected;
+      if (ev.shiftKey) {
+        adjustEnd(li, wi, delta);
+      } else if (ev.altKey) {
+        adjustStart(li, wi, delta);
+      } else {
+        moveWord(li, wi, delta);
+      }
+    }
+    recordEdit(step === KEYBOARD_COARSE_STEP ? "nudge-coarse" : "nudge-fine");
+
+    render();
+    return;
+  }
+
+  const lower = key.toLowerCase();
+  if (lower === "a" || lower === "s" || lower === "e") {
+    ev.preventDefault();
+    snapshotForUndo();
+    const mode = lower === "s" ? "start" : lower === "e" ? "end" : "all";
+    const snapped = snapSelectedToAudioAnchor(mode);
+    if (!snapped) {
+      state.undoStack.pop();
+      setStatus(
+        state.audioAnalysisReady
+          ? "No nearby audio anchor found for snap."
+          : "Audio anchors are not ready yet."
+      );
+      return;
+    }
+    recordEdit("snap");
+    setStatus("Snapped to nearest audio anchor.");
+    render();
+    return;
+  }
+
+  if (key === "[" || key === "]") {
+    ev.preventDefault();
+    snapshotForUndo();
+    const direction = key === "]" ? 1 : -1;
+    const mode = ev.shiftKey ? "end" : ev.altKey ? "start" : "all";
+    const jumped = jumpSelectedToAudioAnchor(direction, mode);
+    if (!jumped) {
+      state.undoStack.pop();
+      setStatus(
+        state.audioAnalysisReady
+          ? "No further audio anchor in that direction."
+          : "Audio anchors are not ready yet."
+      );
+      return;
+    }
+    recordEdit("jump");
+    setStatus(`Jumped to ${direction > 0 ? "next" : "previous"} audio anchor.`);
+    render();
+  }
 });
 
 document.addEventListener("keydown", (ev) => {
@@ -922,6 +1238,7 @@ function startAnimationLoop() {
 }
 
 setStatus("Load timing + audio to start.");
+resetSessionStats();
 setEditMode("word");
 applyUrlParams();
 startAnimationLoop();

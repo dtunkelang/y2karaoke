@@ -61,6 +61,11 @@ def test_extract_song_metrics():
     assert metrics["low_confidence_ratio"] == 0.3333
     assert metrics["dtw_line_coverage"] == 0.8
     assert metrics["agreement_count"] == 2
+    assert metrics["agreement_eligible_lines"] == 3
+    assert metrics["agreement_matched_lines"] == 2
+    assert metrics["agreement_eligibility_ratio"] == 1.0
+    assert metrics["agreement_match_ratio_within_eligible"] == 0.6667
+    assert metrics["agreement_skip_reason_counts"]["low_text_similarity"] == 1
     assert metrics["agreement_coverage_ratio"] == 0.6667
     assert metrics["agreement_text_similarity_mean"] == 1.0
     assert metrics["agreement_start_mean_abs_sec"] == 0.45
@@ -195,6 +200,8 @@ def test_extract_song_metrics_skips_anchor_outside_window():
     metrics = module._extract_song_metrics(report)
 
     assert metrics["agreement_count"] == 0
+    assert metrics["agreement_eligible_lines"] == 0
+    assert metrics["agreement_skip_reason_counts"]["anchor_outside_window"] == 1
     assert metrics["agreement_start_p95_abs_sec"] == 0.0
 
 
@@ -226,7 +233,152 @@ def test_extract_song_metrics_skips_low_window_evidence_for_longer_line():
     metrics = module._extract_song_metrics(report)
 
     assert metrics["agreement_count"] == 0
+    assert metrics["agreement_eligible_lines"] == 0
+    assert metrics["agreement_skip_reason_counts"]["explicit_window_too_sparse"] == 1
     assert metrics["agreement_start_mean_abs_sec"] == 0.0
+
+
+def test_agreement_normalization_expands_contractions_for_overlap():
+    module = _load_module()
+    assert module._normalize_agreement_text("don't stop me now") == "do not stop me now"
+    assert (
+        module._agreement_token_overlap("don't stop me now", "do not stop me now")
+        == 1.0
+    )
+
+
+def test_agreement_normalization_collapses_repeated_fillers():
+    module = _load_module()
+    norm = module._normalize_agreement_text("oh oh oh oh baby yeah yeah")
+    assert norm == "oh baby yeah"
+    sim = module._agreement_text_similarity("oh oh oh oh baby", "oh baby")
+    assert sim >= 0.95
+
+
+def test_agreement_normalization_expands_colloquialisms():
+    module = _load_module()
+    assert module._normalize_agreement_text("I'm gonna let 'em know") == (
+        "i am going to let them know"
+    )
+    assert module._agreement_token_overlap("I wanna go", "I want to go") == 1.0
+
+
+def test_agreement_normalization_converts_dropped_g_endings():
+    module = _load_module()
+    assert module._normalize_agreement_text("I'm lovin' it") == "i am loving it"
+    assert (
+        module._agreement_text_similarity("we singin' loud", "we singing loud") > 0.95
+    )
+
+
+def test_extract_song_metrics_supports_env_agreement_threshold_overrides(
+    monkeypatch,
+) -> None:
+    module = _load_module()
+    monkeypatch.setenv("Y2KARAOKE_BENCH_AGREEMENT_MIN_TEXT_SIM", "0.6")
+    monkeypatch.setenv("Y2KARAOKE_BENCH_AGREEMENT_MIN_TOKEN_OVERLAP", "0.5")
+    report = {
+        "dtw_line_coverage": 1.0,
+        "lines": [
+            {
+                "start": 10.0,
+                "nearest_segment_start": 10.1,
+                "text": "hello world",
+                "nearest_segment_start_text": "hello world",
+            }
+        ],
+        "low_confidence_lines": [],
+    }
+    metrics = module._extract_song_metrics(report)
+    assert metrics["agreement_min_text_similarity"] == 0.6
+    assert metrics["agreement_min_token_overlap"] == 0.5
+
+
+def test_extract_song_metrics_contraction_lines_are_comparable():
+    module = _load_module()
+    report = {
+        "dtw_line_coverage": 1.0,
+        "lines": [
+            {
+                "start": 12.0,
+                "nearest_segment_start": 12.2,
+                "text": "don't stop me now",
+                "nearest_segment_start_text": "do not stop me now",
+            }
+        ],
+        "low_confidence_lines": [],
+    }
+    metrics = module._extract_song_metrics(report)
+    assert metrics["agreement_eligible_lines"] == 1
+    assert metrics["agreement_count"] == 1
+    assert metrics["agreement_skip_reason_counts"] == {}
+
+
+def test_extract_song_metrics_surfaces_local_transcribe_cache_counters() -> None:
+    module = _load_module()
+    report = {
+        "dtw_line_coverage": 1.0,
+        "dtw_metrics": {
+            "local_transcribe_cache_hits": 2.0,
+            "local_transcribe_cache_misses": 1.0,
+        },
+        "lines": [],
+        "low_confidence_lines": [],
+    }
+    metrics = module._extract_song_metrics(report)
+    assert metrics["local_transcribe_cache_hits"] == 2
+    assert metrics["local_transcribe_cache_misses"] == 1
+
+
+def test_extract_song_metrics_adaptive_rescue_accepts_good_timing_high_overlap() -> (
+    None
+):
+    module = _load_module()
+    report = {
+        "dtw_line_coverage": 1.0,
+        "lines": [
+            {
+                "start": 10.0,
+                "nearest_segment_start": 10.1,
+                "text": "you know i love it when the music starts",
+                "nearest_segment_start_text": "when the music starts you know i love it",
+                "words": [{"text": token} for token in "a b c d e f g h".split()],
+                "whisper_window_word_count": 5,
+                "whisper_window_avg_prob": 0.8,
+            }
+        ],
+        "low_confidence_lines": [],
+    }
+    metrics = module._extract_song_metrics(report)
+    assert metrics["agreement_eligible_lines"] == 1
+    assert metrics["agreement_count"] == 1
+    assert metrics["agreement_adaptive_rescue_count"] == 1
+
+
+def test_extract_song_metrics_adaptive_rescue_does_not_accept_large_timing_delta() -> (
+    None
+):
+    module = _load_module()
+    report = {
+        "dtw_line_coverage": 1.0,
+        "lines": [
+            {
+                "start": 10.0,
+                "nearest_segment_start": 11.2,
+                "text": "you know i love it when the music starts",
+                "nearest_segment_start_text": "when the music starts you know i love it",
+                "words": [{"text": token} for token in "a b c d e f g h".split()],
+                "whisper_window_word_count": 5,
+                "whisper_window_avg_prob": 0.8,
+            }
+        ],
+        "low_confidence_lines": [],
+    }
+    metrics = module._extract_song_metrics(report)
+    assert metrics["agreement_eligible_lines"] == 1
+    assert metrics["agreement_count"] == 0
+    assert metrics["agreement_skip_reason_counts"]["low_text_similarity"] == 1
+    assert metrics["agreement_adaptive_rescue_count"] == 0
 
 
 def test_extract_song_metrics_gold_matching_handles_insertions():
