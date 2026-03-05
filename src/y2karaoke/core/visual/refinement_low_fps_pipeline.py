@@ -81,11 +81,8 @@ def _process_group_jobs(
 ) -> tuple[Optional[float], Optional[float]]:
     for line, v_start, v_end in g_jobs:
         if is_block_first_multi_cycle_line(line):
-            assign_line_level_word_timings(
-                line,
-                float(line.start),
-                float(line.end) if line.end is not None else float(line.start) + 0.3,
-                0.35,
+            _assign_block_first_multi_cycle_defaults(
+                line, assign_line_level_word_timings=assign_line_level_word_timings
             )
             (
                 last_assigned_start,
@@ -98,54 +95,22 @@ def _process_group_jobs(
             )
             continue
 
-        line_frames = slice_frames_for_window(
-            group_frames,
-            group_times,
+        line_timing = _detect_group_line_timing(
+            line=line,
+            group_frames=group_frames,
+            group_times=group_times,
             v_start=v_start,
             v_end=v_end,
-        )
-        if len(line_frames) < 6:
-            continue
-
-        line_min_start = compute_line_min_start_time(
-            line,
             last_assigned_start=last_assigned_start,
             last_assigned_visibility_end=last_assigned_visibility_end,
+            slice_frames_for_window=slice_frames_for_window,
+            compute_line_min_start_time=compute_line_min_start_time,
+            detect_line_highlight_with_confidence=detect_line_highlight_with_confidence,
+            maybe_adjust_detected_line_start_with_visibility_hint=maybe_adjust_detected_line_start_with_visibility_hint,
         )
-        c_bg_line = np.mean(
-            [
-                np.mean(f[1], axis=(0, 1))
-                for f in line_frames[: min(10, len(line_frames))]
-            ],
-            axis=0,
-        )
-        line_s, line_e, line_conf = detect_line_highlight_with_confidence(
-            line,
-            line_frames,
-            c_bg_line,
-            min_start_time=line_min_start,
-            require_full_cycle=True,
-        )
-        if line_s is None and line_e is None:
-            line_s, line_e, line_conf = detect_line_highlight_with_confidence(
-                line,
-                line_frames,
-                c_bg_line,
-                min_start_time=line_min_start,
-                require_full_cycle=False,
-            )
-            if line_s is None and line_e is None:
-                continue
-        line_s, line_e, line_conf = (
-            maybe_adjust_detected_line_start_with_visibility_hint(
-                line,
-                detected_start=line_s,
-                detected_end=line_e,
-                detected_confidence=line_conf,
-                group_frames=group_frames,
-                group_times=group_times,
-            )
-        )
+        if line_timing is None:
+            continue
+        line_s, line_e, line_conf = line_timing
         assign_line_level_word_timings(line, line_s, line_e, line_conf)
         (
             last_assigned_start,
@@ -193,6 +158,86 @@ def _process_group_jobs(
             last_assigned_visibility_end=last_assigned_visibility_end,
         )
     return last_assigned_start, last_assigned_visibility_end
+
+
+def _assign_block_first_multi_cycle_defaults(
+    line: TargetLine,
+    *,
+    assign_line_level_word_timings: Callable[
+        [TargetLine, Optional[float], Optional[float], float], None
+    ],
+) -> None:
+    assign_line_level_word_timings(
+        line,
+        float(line.start),
+        float(line.end) if line.end is not None else float(line.start) + 0.3,
+        0.35,
+    )
+
+
+def _detect_group_line_timing(
+    *,
+    line: TargetLine,
+    group_frames: List[Tuple[float, np.ndarray, np.ndarray]],
+    group_times: List[float],
+    v_start: float,
+    v_end: float,
+    last_assigned_start: Optional[float],
+    last_assigned_visibility_end: Optional[float],
+    slice_frames_for_window: Callable[..., List[Tuple[float, np.ndarray, np.ndarray]]],
+    compute_line_min_start_time: Callable[..., Optional[float]],
+    detect_line_highlight_with_confidence: Callable[
+        ..., Tuple[Optional[float], Optional[float], float]
+    ],
+    maybe_adjust_detected_line_start_with_visibility_hint: Callable[
+        ..., Tuple[Optional[float], Optional[float], float]
+    ],
+) -> tuple[Optional[float], Optional[float], float] | None:
+    line_frames = slice_frames_for_window(
+        group_frames,
+        group_times,
+        v_start=v_start,
+        v_end=v_end,
+    )
+    if len(line_frames) < 6:
+        return None
+    line_min_start = compute_line_min_start_time(
+        line,
+        last_assigned_start=last_assigned_start,
+        last_assigned_visibility_end=last_assigned_visibility_end,
+    )
+    c_bg_line = np.mean(
+        [
+            np.mean(frame[1], axis=(0, 1))
+            for frame in line_frames[: min(10, len(line_frames))]
+        ],
+        axis=0,
+    )
+    line_s, line_e, line_conf = detect_line_highlight_with_confidence(
+        line,
+        line_frames,
+        c_bg_line,
+        min_start_time=line_min_start,
+        require_full_cycle=True,
+    )
+    if line_s is None and line_e is None:
+        line_s, line_e, line_conf = detect_line_highlight_with_confidence(
+            line,
+            line_frames,
+            c_bg_line,
+            min_start_time=line_min_start,
+            require_full_cycle=False,
+        )
+        if line_s is None and line_e is None:
+            return None
+    return maybe_adjust_detected_line_start_with_visibility_hint(
+        line,
+        detected_start=line_s,
+        detected_end=line_e,
+        detected_confidence=line_conf,
+        group_frames=group_frames,
+        group_times=group_times,
+    )
 
 
 def _run_global_postpasses(
