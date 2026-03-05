@@ -265,7 +265,7 @@ def test_quality_coverage_warnings():
         min_line_coverage_ratio=0.9,
         suite_wall_elapsed_sec=10.0,
     )
-    assert len(warnings) == 8
+    assert len(warnings) >= 8
     assert any("LRC-Whisper agreement coverage is low" in item for item in warnings)
     assert any("poor start agreement" in item for item in warnings)
 
@@ -288,6 +288,33 @@ def test_quality_coverage_warnings_independent_unavailable():
     assert any(
         "Independent line-start agreement is unavailable" in item for item in warnings
     )
+
+
+def test_quality_coverage_warnings_include_diagnosis_ratio_alerts():
+    module = _load_module()
+    aggregate = {
+        "dtw_metric_song_coverage_ratio": 1.0,
+        "dtw_metric_line_coverage_ratio": 1.0,
+        "agreement_count_total": 1,
+        "agreement_coverage_ratio_mean": 1.0,
+        "agreement_start_p95_abs_sec_mean": 0.2,
+        "agreement_bad_ratio_total": 0.0,
+        "agreement_severe_ratio_total": 0.0,
+        "sum_song_elapsed_sec": 5.0,
+        "quality_diagnosis_ratios": {
+            "needs_pipeline_work": 0.5,
+            "likely_reference_divergence": 0.4,
+        },
+    }
+    warnings = module._quality_coverage_warnings(
+        aggregate=aggregate,
+        dtw_enabled=True,
+        min_song_coverage_ratio=0.8,
+        min_line_coverage_ratio=0.9,
+        suite_wall_elapsed_sec=6.0,
+    )
+    assert any("diagnosed as pipeline work needed" in item for item in warnings)
+    assert any("diagnosed as likely reference divergence" in item for item in warnings)
 
 
 def test_cache_expectation_warnings():

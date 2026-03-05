@@ -1958,6 +1958,20 @@ def _quality_coverage_warnings(
                 "Comparable lines with severe agreement error (>1.5s) are high: "
                 f"{agreement_severe_ratio:.3f} > 0.030"
             )
+    diagnosis_ratios = aggregate.get("quality_diagnosis_ratios", {})
+    if isinstance(diagnosis_ratios, dict):
+        pipeline_ratio = diagnosis_ratios.get("needs_pipeline_work")
+        if isinstance(pipeline_ratio, (int, float)) and float(pipeline_ratio) > 0.35:
+            warnings.append(
+                "Many songs are diagnosed as pipeline work needed: "
+                f"{float(pipeline_ratio):.3f} > 0.350"
+            )
+        reference_ratio = diagnosis_ratios.get("likely_reference_divergence")
+        if isinstance(reference_ratio, (int, float)) and float(reference_ratio) > 0.35:
+            warnings.append(
+                "Many songs are diagnosed as likely reference divergence: "
+                f"{float(reference_ratio):.3f} > 0.350"
+            )
     gold_metric_song_count = int(aggregate.get("gold_metric_song_count", 0) or 0)
     if gold_metric_song_count > 0:
         gold_song_cov = float(
