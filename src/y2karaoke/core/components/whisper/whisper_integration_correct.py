@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
 from ....utils.lex_lookup_installer import ensure_local_lex_lookup
@@ -11,6 +12,26 @@ from .whisper_forced_alignment import align_lines_with_whisperx
 
 _MIN_FORCED_WORD_COVERAGE = 0.2
 _MIN_FORCED_LINE_COVERAGE = 0.2
+
+
+@dataclass(frozen=True)
+class _WhisperCorrectionDecisionConfig:
+    quality_good_threshold: float = 0.7
+    quality_mixed_threshold: float = 0.4
+    dtw_confidence_matched_ratio_min: float = 0.6
+    dtw_confidence_avg_similarity_min: float = 0.5
+    dtw_confidence_line_coverage_min: float = 0.6
+    low_confidence_matched_ratio_max: float = 0.25
+    low_confidence_line_coverage_max: float = 0.25
+    low_confidence_avg_similarity_max: float = 0.4
+    no_evidence_matched_ratio_max: float = 0.05
+    no_evidence_line_coverage_max: float = 0.05
+    no_evidence_avg_similarity_max: float = 0.1
+    no_evidence_quality_max: float = 0.4
+
+
+def _default_correction_config() -> _WhisperCorrectionDecisionConfig:
+    return _WhisperCorrectionDecisionConfig()
 
 
 def _line_set_end(lines: List[models.Line]) -> float:
@@ -161,6 +182,7 @@ def correct_timing_with_whisper_impl(  # noqa: C901
     pull_lines_forward_for_continuous_vocals_fn: Callable[..., Any],
 ) -> Tuple[List[models.Line], List[str], Dict[str, float]]:
     """Correct lyric timing by combining quality gates and Whisper alignments."""
+    config = _default_correction_config()
     baseline_lines = clone_lines_for_fallback_fn(lines)
     ensure_local_lex_lookup()
     transcription, all_words, detected_lang, _model = transcribe_vocals_fn(
@@ -283,7 +305,7 @@ def correct_timing_with_whisper_impl(  # noqa: C901
     _ = assessments
 
     metrics: Dict[str, float] = {}
-    if not force_dtw and quality >= 0.7:
+    if not force_dtw and quality >= config.quality_good_threshold:
         logger.info("LRC timing is good, using targeted corrections only")
         aligned_lines, alignments = align_hybrid_lrc_whisper_fn(
             lines,
@@ -293,7 +315,7 @@ def correct_timing_with_whisper_impl(  # noqa: C901
             trust_threshold=trust_lrc_threshold,
             correct_threshold=correct_lrc_threshold,
         )
-    elif not force_dtw and quality >= 0.4:
+    elif not force_dtw and quality >= config.quality_mixed_threshold:
         logger.info("LRC timing is mixed, using hybrid Whisper alignment")
         aligned_lines, alignments = align_hybrid_lrc_whisper_fn(
             lines,
@@ -325,7 +347,9 @@ def correct_timing_with_whisper_impl(  # noqa: C901
         avg_similarity = metrics.get("avg_similarity", 0.0)
         line_coverage = metrics.get("line_coverage", 0.0)
         confidence_ok = (
-            matched_ratio >= 0.6 and avg_similarity >= 0.5 and line_coverage >= 0.6
+            matched_ratio >= config.dtw_confidence_matched_ratio_min
+            and avg_similarity >= config.dtw_confidence_avg_similarity_min
+            and line_coverage >= config.dtw_confidence_line_coverage_min
         )
 
         if confidence_ok and lrc_words and alignments_map:
@@ -342,19 +366,23 @@ def correct_timing_with_whisper_impl(  # noqa: C901
             )
 
     low_confidence_alignment = False
-    if quality < 0.4 and not force_dtw:
+    if quality < config.quality_mixed_threshold and not force_dtw:
         matched_ratio = float(metrics.get("matched_ratio", 0.0) or 0.0)
         line_coverage = float(metrics.get("line_coverage", 0.0) or 0.0)
         avg_similarity = float(metrics.get("avg_similarity", 0.0) or 0.0)
         low_confidence_alignment = (
-            matched_ratio < 0.25 and line_coverage < 0.25 and avg_similarity < 0.4
+            matched_ratio < config.low_confidence_matched_ratio_max
+            and line_coverage < config.low_confidence_line_coverage_max
+            and avg_similarity < config.low_confidence_avg_similarity_max
         )
         if low_confidence_alignment:
             alignments.append(
                 "Skipped aggressive low-quality segment postpasses due to very low DTW confidence"
             )
 
-    if (quality < 0.4 or force_dtw) and not low_confidence_alignment:
+    if (
+        quality < config.quality_mixed_threshold or force_dtw
+    ) and not low_confidence_alignment:
         aligned_lines, alignments = _call_apply_low_quality_postpasses_with_metrics(
             apply_low_quality_segment_postpasses_fn,
             aligned_lines=aligned_lines,
@@ -408,12 +436,12 @@ def correct_timing_with_whisper_impl(  # noqa: C901
     metrics["aligned_timeline_ratio"] = aligned_timeline_ratio
 
     no_whisper_evidence = (
-        quality < 0.4
+        quality < config.no_evidence_quality_max
         and not force_dtw
         and float(metrics.get("whisperx_forced", 0.0) or 0.0) < 0.5
-        and matched_ratio < 0.05
-        and line_coverage < 0.05
-        and avg_similarity < 0.1
+        and matched_ratio < config.no_evidence_matched_ratio_max
+        and line_coverage < config.no_evidence_line_coverage_max
+        and avg_similarity < config.no_evidence_avg_similarity_max
     )
     if no_whisper_evidence:
         discarded = len(alignments)

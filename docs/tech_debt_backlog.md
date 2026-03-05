@@ -38,6 +38,9 @@ Last updated: 2026-03-04
 - Scope:
   - Replace scattered thresholds/env checks with typed config structs.
   - Keep defaults unchanged; enable profile-based tuning (safe/aggressive).
+  - Completed so far:
+    - Segment assignment env heuristics centralized in `whisper_blocks.py`.
+    - Correction decision thresholds centralized in `whisper_integration_correct.py`.
 
 5. **Cross-pass integration tests for alignment edge cases**
 - Impact: high
