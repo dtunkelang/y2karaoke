@@ -520,99 +520,209 @@ def _build_generate_command(
     return cmd
 
 
+def _inc_counter(counts: dict[str, int], key: str) -> None:
+    counts[key] = counts.get(key, 0) + 1
+
+
+def _agreement_line_word_count(line: dict[str, Any]) -> int:
+    line_words = line.get("words")
+    if isinstance(line_words, list) and line_words:
+        return len(line_words)
+    return len(_normalize_agreement_text(line.get("text")).split())
+
+
+def _agreement_window_skip_reason(
+    line: dict[str, Any], line_word_count: int
+) -> str | None:
+    window_word_count_raw = line.get("whisper_window_word_count")
+    window_word_count = (
+        int(window_word_count_raw)
+        if isinstance(window_word_count_raw, (int, float))
+        else 0
+    )
+    window_avg_prob = line.get("whisper_window_avg_prob")
+    if line_word_count >= 6 and window_word_count < max(2, int(0.35 * line_word_count)):
+        return "insufficient_window_words_for_long_line"
+    if (
+        line_word_count >= 5
+        and isinstance(window_avg_prob, (int, float))
+        and window_avg_prob < 0.45
+        and window_word_count < max(2, int(0.5 * line_word_count))
+    ):
+        return "low_window_confidence_and_sparse_words"
+    if (
+        "whisper_window_word_count" in line
+        and line_word_count >= 4
+        and window_word_count < 2
+    ):
+        return "explicit_window_too_sparse"
+    return None
+
+
+def _agreement_anchor_outside_window(
+    line: dict[str, Any], whisper_anchor_start: float
+) -> bool:
+    window_start_raw = line.get("whisper_window_start")
+    window_end_raw = line.get("whisper_window_end")
+    if not isinstance(window_start_raw, (int, float)) or not isinstance(
+        window_end_raw, (int, float)
+    ):
+        return False
+    window_start = float(window_start_raw) - 1.0
+    window_end = float(window_end_raw) + 1.0
+    return whisper_anchor_start < window_start or whisper_anchor_start > window_end
+
+
+def _evaluate_agreement_line(
+    line: dict[str, Any],
+    min_text_similarity: float,
+    min_token_overlap: float,
+) -> dict[str, Any]:
+    line_word_count = _agreement_line_word_count(line)
+    skip_reason = _agreement_window_skip_reason(line, line_word_count)
+    if skip_reason is not None:
+        return {"skip_reason": skip_reason}
+
+    line_start = line.get("start")
+    if not isinstance(line_start, (int, float)):
+        return {"skip_reason": "missing_line_start"}
+    whisper_anchor_start = line.get("nearest_segment_start")
+    if not isinstance(whisper_anchor_start, (int, float)):
+        return {"skip_reason": "missing_anchor_start"}
+    if _agreement_anchor_outside_window(line, float(whisper_anchor_start)):
+        return {"skip_reason": "anchor_outside_window"}
+
+    line_text = line.get("text")
+    whisper_anchor_text = line.get("nearest_segment_start_text")
+    window_word_count_raw = line.get("whisper_window_word_count")
+    window_word_count = (
+        int(window_word_count_raw)
+        if isinstance(window_word_count_raw, (int, float))
+        else 0
+    )
+    window_avg_prob = line.get("whisper_window_avg_prob")
+    anchor_start_delta = abs(float(line_start) - float(whisper_anchor_start))
+    sim = _agreement_text_similarity(line_text, whisper_anchor_text)
+    overlap = _agreement_token_overlap(line_text, whisper_anchor_text)
+    has_strong_window_evidence = (
+        window_word_count >= max(3, int(0.6 * line_word_count))
+        and isinstance(window_avg_prob, (int, float))
+        and float(window_avg_prob) >= 0.55
+    )
+    timing_rescue = (
+        line_word_count >= 8
+        and anchor_start_delta <= 0.22
+        and overlap >= max(0.82, min_token_overlap + 0.25)
+        and has_strong_window_evidence
+    )
+    if sim < min_text_similarity and not timing_rescue:
+        return {"skip_reason": "low_text_similarity", "eligible": True}
+    if overlap < min_token_overlap and not timing_rescue:
+        return {"skip_reason": "low_token_overlap", "eligible": True}
+    return {
+        "eligible": True,
+        "anchor_start_delta": anchor_start_delta,
+        "text_similarity": sim,
+        "adaptive_rescue": bool(timing_rescue and sim < min_text_similarity),
+    }
+
+
+def _bucket_counts(
+    deltas: list[float],
+    agreement_good_start_sec: float,
+    agreement_warn_start_sec: float,
+) -> tuple[int, int, int, int]:
+    good = sum(1 for v in deltas if v <= agreement_good_start_sec)
+    warn = sum(
+        1 for v in deltas if agreement_good_start_sec < v <= agreement_warn_start_sec
+    )
+    bad = sum(1 for v in deltas if v > agreement_warn_start_sec)
+    severe = sum(1 for v in deltas if v > 1.5)
+    return good, warn, bad, severe
+
+
+def _clamp01(value: float) -> float:
+    return max(0.0, min(1.0, value))
+
+
+def _timing_quality_band(score: float) -> str:
+    if score >= 0.8:
+        return "excellent"
+    if score >= 0.65:
+        return "good"
+    if score >= 0.5:
+        return "fair"
+    return "poor"
+
+
+def _compute_timing_quality_score(values: dict[str, Any]) -> tuple[float, str, str]:
+    dtw_line_raw = values.get("dtw_line_coverage")
+    dtw_word_raw = values.get("dtw_word_coverage")
+    low_conf_raw = values.get("low_confidence_ratio")
+    agree_cov_raw = values.get("agreement_coverage_ratio")
+    agree_p95_raw = values.get("agreement_start_p95_abs_sec")
+    agree_bad_raw = values.get("agreement_bad_ratio")
+    anchor_p95_raw = values.get("whisper_anchor_start_p95_abs_sec")
+    gold_cov_raw = values.get("gold_word_coverage_ratio")
+    gold_start_raw = values.get("gold_start_mean_abs_sec")
+    gold_comp_raw = values.get("gold_comparable_word_count")
+
+    dtw_line = float(dtw_line_raw) if isinstance(dtw_line_raw, (int, float)) else 0.0
+    dtw_word = float(dtw_word_raw) if isinstance(dtw_word_raw, (int, float)) else 0.0
+    low_conf = float(low_conf_raw) if isinstance(low_conf_raw, (int, float)) else 0.0
+    agree_cov = float(agree_cov_raw) if isinstance(agree_cov_raw, (int, float)) else 0.0
+    agree_p95 = float(agree_p95_raw) if isinstance(agree_p95_raw, (int, float)) else 0.0
+    agree_bad = float(agree_bad_raw) if isinstance(agree_bad_raw, (int, float)) else 0.0
+    anchor_p95 = (
+        float(anchor_p95_raw) if isinstance(anchor_p95_raw, (int, float)) else 0.0
+    )
+    gold_cov = float(gold_cov_raw) if isinstance(gold_cov_raw, (int, float)) else 0.0
+    gold_start_mean = (
+        float(gold_start_raw) if isinstance(gold_start_raw, (int, float)) else 0.0
+    )
+    gold_comparable_words = (
+        int(gold_comp_raw) if isinstance(gold_comp_raw, (int, float)) else 0
+    )
+
+    agreement_score = (
+        (0.45 * _clamp01(agree_cov / 0.5))
+        + (0.35 * (1.0 - _clamp01(agree_p95 / 1.5)))
+        + (0.2 * (1.0 - _clamp01(agree_bad / 0.25)))
+    )
+    anchor_score = 1.0 - _clamp01(anchor_p95 / 2.0)
+    low_conf_score = 1.0 - _clamp01(low_conf / 0.25)
+
+    if isinstance(dtw_line_raw, (int, float)) and isinstance(
+        dtw_word_raw, (int, float)
+    ):
+        internal_score = (
+            (0.42 * _clamp01(dtw_line))
+            + (0.26 * _clamp01(dtw_word))
+            + (0.22 * low_conf_score)
+            + (0.1 * agreement_score)
+        )
+        score_mode = "dtw_internal"
+    else:
+        internal_score = (0.7 * anchor_score) + (0.3 * low_conf_score)
+        score_mode = "anchor_fallback"
+
+    if gold_comparable_words >= 20:
+        gold_score = (0.55 * _clamp01(gold_cov)) + (
+            0.45 * (1.0 - _clamp01(gold_start_mean / 1.25))
+        )
+        final_score = (0.78 * internal_score) + (0.22 * gold_score)
+        score_mode = f"{score_mode}+gold"
+    else:
+        final_score = internal_score
+
+    clamped = _clamp01(final_score)
+    rounded = round(clamped, 4)
+    return rounded, _timing_quality_band(clamped), score_mode
+
+
 def _extract_song_metrics(
     report: dict[str, Any], gold_doc: dict[str, Any] | None = None
 ) -> dict[str, Any]:
-    def _clamp01(value: float) -> float:
-        return max(0.0, min(1.0, value))
-
-    def _quality_band(score: float) -> str:
-        if score >= 0.8:
-            return "excellent"
-        if score >= 0.65:
-            return "good"
-        if score >= 0.5:
-            return "fair"
-        return "poor"
-
-    def _compute_timing_quality_score(values: dict[str, Any]) -> tuple[float, str, str]:
-        dtw_line_raw = values.get("dtw_line_coverage")
-        dtw_word_raw = values.get("dtw_word_coverage")
-        low_conf_raw = values.get("low_confidence_ratio")
-        agree_cov_raw = values.get("agreement_coverage_ratio")
-        agree_p95_raw = values.get("agreement_start_p95_abs_sec")
-        agree_bad_raw = values.get("agreement_bad_ratio")
-        anchor_p95_raw = values.get("whisper_anchor_start_p95_abs_sec")
-        gold_cov_raw = values.get("gold_word_coverage_ratio")
-        gold_start_raw = values.get("gold_start_mean_abs_sec")
-        gold_comp_raw = values.get("gold_comparable_word_count")
-
-        dtw_line = (
-            float(dtw_line_raw) if isinstance(dtw_line_raw, (int, float)) else 0.0
-        )
-        dtw_word = (
-            float(dtw_word_raw) if isinstance(dtw_word_raw, (int, float)) else 0.0
-        )
-        low_conf = (
-            float(low_conf_raw) if isinstance(low_conf_raw, (int, float)) else 0.0
-        )
-        agree_cov = (
-            float(agree_cov_raw) if isinstance(agree_cov_raw, (int, float)) else 0.0
-        )
-        agree_p95 = (
-            float(agree_p95_raw) if isinstance(agree_p95_raw, (int, float)) else 0.0
-        )
-        agree_bad = (
-            float(agree_bad_raw) if isinstance(agree_bad_raw, (int, float)) else 0.0
-        )
-        anchor_p95 = (
-            float(anchor_p95_raw) if isinstance(anchor_p95_raw, (int, float)) else 0.0
-        )
-        gold_cov = (
-            float(gold_cov_raw) if isinstance(gold_cov_raw, (int, float)) else 0.0
-        )
-        gold_start_mean = (
-            float(gold_start_raw) if isinstance(gold_start_raw, (int, float)) else 0.0
-        )
-        gold_comparable_words = (
-            int(gold_comp_raw) if isinstance(gold_comp_raw, (int, float)) else 0
-        )
-
-        agreement_score = (
-            (0.45 * _clamp01(agree_cov / 0.5))
-            + (0.35 * (1.0 - _clamp01(agree_p95 / 1.5)))
-            + (0.2 * (1.0 - _clamp01(agree_bad / 0.25)))
-        )
-        anchor_score = 1.0 - _clamp01(anchor_p95 / 2.0)
-        low_conf_score = 1.0 - _clamp01(low_conf / 0.25)
-
-        if isinstance(dtw_line_raw, (int, float)) and isinstance(
-            dtw_word_raw, (int, float)
-        ):
-            internal_score = (
-                (0.42 * _clamp01(dtw_line))
-                + (0.26 * _clamp01(dtw_word))
-                + (0.22 * low_conf_score)
-                + (0.1 * agreement_score)
-            )
-            score_mode = "dtw_internal"
-        else:
-            internal_score = (0.7 * anchor_score) + (0.3 * low_conf_score)
-            score_mode = "anchor_fallback"
-
-        if gold_comparable_words >= 20:
-            gold_score = (0.55 * _clamp01(gold_cov)) + (
-                0.45 * (1.0 - _clamp01(gold_start_mean / 1.25))
-            )
-            final_score = (0.78 * internal_score) + (0.22 * gold_score)
-            score_mode = f"{score_mode}+gold"
-        else:
-            final_score = internal_score
-
-        clamped = _clamp01(final_score)
-        rounded = round(clamped, 4)
-        return rounded, _quality_band(clamped), score_mode
-
     lines = report.get("lines", [])
     line_count = len(lines)
     low_conf = report.get("low_confidence_lines", [])
@@ -651,92 +761,25 @@ def _extract_song_metrics(
         )
 
     for line in lines:
-        line_start = line.get("start")
-        whisper_anchor_start = line.get("nearest_segment_start")
-        line_text = line.get("text")
-        whisper_anchor_text = line.get("nearest_segment_start_text")
-        line_words = line.get("words")
-        line_word_count = len(line_words) if isinstance(line_words, list) else 0
-        if line_word_count == 0:
-            line_word_count = len(_normalize_agreement_text(line_text).split())
-        window_word_count_raw = line.get("whisper_window_word_count")
-        window_word_count = (
-            int(window_word_count_raw)
-            if isinstance(window_word_count_raw, (int, float))
-            else 0
+        evaluation = _evaluate_agreement_line(
+            line=line,
+            min_text_similarity=agreement_min_text_similarity,
+            min_token_overlap=agreement_min_token_overlap,
         )
-        window_avg_prob = line.get("whisper_window_avg_prob")
-        # Require enough local Whisper evidence before scoring line-start agreement.
-        if line_word_count >= 6 and window_word_count < max(
-            2, int(0.35 * line_word_count)
-        ):
-            _inc_agreement_skip("insufficient_window_words_for_long_line")
+        if bool(evaluation.get("eligible")):
+            agreement_eligible_line_count += 1
+        skip_reason = evaluation.get("skip_reason")
+        if isinstance(skip_reason, str) and skip_reason:
+            _inc_agreement_skip(skip_reason)
             continue
-        if (
-            line_word_count >= 5
-            and isinstance(window_avg_prob, (int, float))
-            and window_avg_prob < 0.45
-            and window_word_count < max(2, int(0.5 * line_word_count))
-        ):
-            _inc_agreement_skip("low_window_confidence_and_sparse_words")
-            continue
-        if (
-            "whisper_window_word_count" in line
-            and line_word_count >= 4
-            and window_word_count < 2
-        ):
-            _inc_agreement_skip("explicit_window_too_sparse")
-            continue
-        if not isinstance(line_start, (int, float)):
-            _inc_agreement_skip("missing_line_start")
-            continue
-        if not isinstance(whisper_anchor_start, (int, float)):
-            _inc_agreement_skip("missing_anchor_start")
-            continue
-        window_start_raw = line.get("whisper_window_start")
-        window_end_raw = line.get("whisper_window_end")
-        if isinstance(window_start_raw, (int, float)) and isinstance(
-            window_end_raw, (int, float)
-        ):
-            window_start = float(window_start_raw) - 1.0
-            window_end = float(window_end_raw) + 1.0
-            # If the anchor falls outside the local evidence window, treat it as
-            # stale/repeated-phrase mismatch and skip agreement scoring.
-            if (
-                float(whisper_anchor_start) < window_start
-                or float(whisper_anchor_start) > window_end
-            ):
-                _inc_agreement_skip("anchor_outside_window")
-                continue
-        agreement_eligible_line_count += 1
-        anchor_start_delta = abs(float(line_start) - float(whisper_anchor_start))
-        sim = _agreement_text_similarity(line_text, whisper_anchor_text)
-        overlap = _agreement_token_overlap(line_text, whisper_anchor_text)
-
-        adaptive_text_similarity_floor = agreement_min_text_similarity
-        adaptive_token_overlap_floor = agreement_min_token_overlap
-        has_strong_window_evidence = (
-            window_word_count >= max(3, int(0.6 * line_word_count))
-            and isinstance(window_avg_prob, (int, float))
-            and float(window_avg_prob) >= 0.55
-        )
-        timing_rescue = (
-            line_word_count >= 8
-            and anchor_start_delta <= 0.22
-            and overlap >= max(0.82, agreement_min_token_overlap + 0.25)
-            and has_strong_window_evidence
-        )
-
-        if sim < adaptive_text_similarity_floor and not timing_rescue:
-            _inc_agreement_skip("low_text_similarity")
-            continue
-        if overlap < adaptive_token_overlap_floor and not timing_rescue:
-            _inc_agreement_skip("low_token_overlap")
-            continue
-        if timing_rescue and sim < agreement_min_text_similarity:
+        anchor_start_delta = evaluation.get("anchor_start_delta")
+        text_similarity = evaluation.get("text_similarity")
+        if isinstance(anchor_start_delta, (int, float)):
+            whisper_anchor_start_abs_deltas.append(float(anchor_start_delta))
+        if isinstance(text_similarity, (int, float)):
+            agreement_text_sims.append(float(text_similarity))
+        if bool(evaluation.get("adaptive_rescue")):
             agreement_adaptive_rescue_count += 1
-        agreement_text_sims.append(sim)
-        whisper_anchor_start_abs_deltas.append(anchor_start_delta)
 
     # Independent agreement metric:
     # only available when we have DTW-based anchors (cross-strategy comparable path).
@@ -744,25 +787,20 @@ def _extract_song_metrics(
         whisper_anchor_start_abs_deltas if has_independent_anchor else []
     )
 
-    def _bucket_counts(deltas: list[float]) -> tuple[int, int, int, int]:
-        good = sum(1 for v in deltas if v <= agreement_good_start_sec)
-        warn = sum(
-            1
-            for v in deltas
-            if agreement_good_start_sec < v <= agreement_warn_start_sec
-        )
-        bad = sum(1 for v in deltas if v > agreement_warn_start_sec)
-        severe = sum(1 for v in deltas if v > 1.5)
-        return good, warn, bad, severe
-
     (
         agreement_good_count,
         agreement_warn_count,
         agreement_bad_count,
         agreement_severe_count,
-    ) = _bucket_counts(agreement_start_abs_deltas)
+    ) = _bucket_counts(
+        agreement_start_abs_deltas, agreement_good_start_sec, agreement_warn_start_sec
+    )
     anchor_good_count, anchor_warn_count, anchor_bad_count, anchor_severe_count = (
-        _bucket_counts(whisper_anchor_start_abs_deltas)
+        _bucket_counts(
+            whisper_anchor_start_abs_deltas,
+            agreement_good_start_sec,
+            agreement_warn_start_sec,
+        )
     )
 
     low_conf_ratio = (len(low_conf) / line_count) if line_count else 0.0
@@ -4480,6 +4518,72 @@ def _compose_heartbeat_stage_text(
     return None
 
 
+def _collect_heartbeat_state(
+    *,
+    cmd: list[str],
+    proc_pid: int,
+    report_path: Path,
+    out_accum: str,
+    err_accum: str,
+    last_stage_hint: str | None,
+) -> dict[str, Any]:
+    stage_hint = _extract_stage_hint(out_accum, err_accum)
+    updated_last_stage_hint = stage_hint or last_stage_hint
+    cpu_percent = _read_process_cpu_percent(proc_pid)
+    compute_substage = _infer_compute_substage(
+        cmd=cmd,
+        proc_pid=proc_pid,
+        stage_hint=stage_hint,
+        report_path=report_path,
+    )
+    heartbeat_stage_text = _compose_heartbeat_stage_text(
+        stage_hint=stage_hint,
+        last_stage_hint=updated_last_stage_hint,
+        cpu_percent=cpu_percent,
+        compute_substage=compute_substage,
+    )
+    prefer_substage = (
+        compute_substage is not None
+        and cpu_percent is not None
+        and cpu_percent >= 120.0
+    )
+    stage_label = (
+        compute_substage
+        if prefer_substage
+        else (
+            _stage_label_from_hint(stage_hint)
+            or _stage_label_from_hint(updated_last_stage_hint)
+        )
+    )
+    return {
+        "last_stage_hint": updated_last_stage_hint,
+        "stage_label": stage_label,
+        "heartbeat_stage_text": heartbeat_stage_text,
+    }
+
+
+def _close_current_phase(
+    *,
+    current_phase: str | None,
+    phase_started_at: dict[str, float],
+    phase_durations: dict[str, float],
+    elapsed: float,
+) -> None:
+    if current_phase is None:
+        return
+    start_time = phase_started_at.get(current_phase, elapsed)
+    phase_durations[current_phase] = phase_durations.get(current_phase, 0.0) + max(
+        elapsed - start_time, 0.0
+    )
+
+
+def _print_phase_summary(phase_durations: dict[str, float]) -> None:
+    if not phase_durations:
+        return
+    summary = ", ".join(f"{k}={v:.1f}s" for k, v in sorted(phase_durations.items()))
+    print(f"    >>> phase_summary {summary}")
+
+
 def _execute_song_process(
     *,
     cmd: list[str],
@@ -4535,33 +4639,29 @@ def _execute_song_process(
                 out_accum += _coerce_text(exc.stdout)
                 err_accum += _coerce_text(exc.stderr)
                 elapsed_running = round(time.monotonic() - start, 1)
-                stage_hint = _extract_stage_hint(out_accum, err_accum)
-                last_stage_hint = stage_hint or last_stage_hint
-                cpu_percent = _read_process_cpu_percent(proc.pid)
-                compute_substage = _infer_compute_substage(
+                heartbeat_state = _collect_heartbeat_state(
                     cmd=cmd,
                     proc_pid=proc.pid,
-                    stage_hint=stage_hint,
                     report_path=report_path,
-                )
-                heartbeat_stage_text = _compose_heartbeat_stage_text(
-                    stage_hint=stage_hint,
+                    out_accum=out_accum,
+                    err_accum=err_accum,
                     last_stage_hint=last_stage_hint,
-                    cpu_percent=cpu_percent,
-                    compute_substage=compute_substage,
                 )
-                prefer_substage = (
-                    compute_substage is not None
-                    and cpu_percent is not None
-                    and cpu_percent >= 120.0
+                last_stage_hint_raw = heartbeat_state.get("last_stage_hint")
+                last_stage_hint = (
+                    str(last_stage_hint_raw)
+                    if last_stage_hint_raw is not None
+                    else last_stage_hint
                 )
                 stage_label = (
-                    compute_substage
-                    if prefer_substage
-                    else (
-                        _stage_label_from_hint(stage_hint)
-                        or _stage_label_from_hint(last_stage_hint)
-                    )
+                    str(heartbeat_state.get("stage_label"))
+                    if heartbeat_state.get("stage_label") is not None
+                    else None
+                )
+                heartbeat_stage_text = (
+                    str(heartbeat_state.get("heartbeat_stage_text"))
+                    if heartbeat_state.get("heartbeat_stage_text") is not None
+                    else None
                 )
                 _begin_or_advance_phase(
                     _phase_from_stage_label(stage_label), elapsed_running
@@ -4586,16 +4686,13 @@ def _execute_song_process(
                     )
     except subprocess.TimeoutExpired:
         elapsed = round(time.monotonic() - start, 2)
-        if current_phase is not None:
-            start_time = phase_started_at.get(current_phase, elapsed)
-            phase_durations[current_phase] = phase_durations.get(
-                current_phase, 0.0
-            ) + max(elapsed - start_time, 0.0)
-        if phase_durations:
-            summary = ", ".join(
-                f"{k}={v:.1f}s" for k, v in sorted(phase_durations.items())
-            )
-            print(f"    >>> phase_summary {summary}")
+        _close_current_phase(
+            current_phase=current_phase,
+            phase_started_at=phase_started_at,
+            phase_durations=phase_durations,
+            elapsed=elapsed,
+        )
+        _print_phase_summary(phase_durations)
         raise
 
     elapsed = round(time.monotonic() - start, 2)
@@ -4606,14 +4703,13 @@ def _execute_song_process(
         if inferred_phase is not None:
             current_phase = inferred_phase
             phase_started_at[inferred_phase] = 0.0
-    if current_phase is not None:
-        start_time = phase_started_at.get(current_phase, elapsed)
-        phase_durations[current_phase] = phase_durations.get(current_phase, 0.0) + max(
-            elapsed - start_time, 0.0
-        )
-    if phase_durations:
-        summary = ", ".join(f"{k}={v:.1f}s" for k, v in sorted(phase_durations.items()))
-        print(f"    >>> phase_summary {summary}")
+    _close_current_phase(
+        current_phase=current_phase,
+        phase_started_at=phase_started_at,
+        phase_durations=phase_durations,
+        elapsed=elapsed,
+    )
+    _print_phase_summary(phase_durations)
     return {
         "out_accum": out_accum,
         "err_accum": err_accum,

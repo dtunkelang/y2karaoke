@@ -18,9 +18,13 @@
   - [x] `Indila - Derniere danse` (provisional classification: sparse lexical comparability)
 - [x] For each, classify dominant failure mode: sparse lexical comparability vs timing drift vs repetition handling.
 - Latest probe notes (main benchmark set, offline, `hybrid_whisper`):
+  - baseline refresh `20260305T212738Z` (`text_sim=0.64`, `token_overlap=0.55`) -> agreement_cov `0.307`, p95 `1.089`, bad_ratio `0.045`
   - `text_sim=0.60, token_overlap=0.50` -> agreement_cov `0.331`, p95 `1.117`, bad_ratio `0.049`
   - `text_sim=0.58, token_overlap=0.48` -> agreement_cov `0.332`, p95 `1.117`, bad_ratio `0.049`
   - `text_sim=0.55, token_overlap=0.45` -> agreement_cov `0.337`, p95 `1.178`, bad_ratio `0.051`
+  - deeper sweep (`20260305T_sweep_deeper_*`):
+    - `text_sim=0.56` (token overlap `0.50/0.46/0.42`) -> agreement_cov `0.336`, p95 `1.180`, bad_ratio `0.051`
+    - `text_sim=0.52` (token overlap `0.50/0.46/0.42`) -> agreement_cov `0.341`, p95 `1.178`, bad_ratio `0.051`
   - Under current guard (`min_coverage_gain=0.005`, `max_bad_ratio_increase=0.002`), no relaxed candidate passes.
 
 ## 2. Alignment pipeline improvements
@@ -56,7 +60,7 @@
 - [x] Add runtime-delta comparability warnings (phase non-comparability + aggregate-only elapsed divergence).
 
 ## 6. Code quality / tech debt
-- [ ] Continue reducing complexity hotspots in `tools/run_benchmark_suite.py` (incremental extraction).
+- [x] Continue reducing complexity hotspots in `tools/run_benchmark_suite.py` (incremental extraction).
 - [x] Extract CLI threshold validation + manifest filtering/aggregate-only scoping into pure helpers with focused tests.
 - [x] Extract suite-elapsed/report assembly helpers from `run_benchmark_suite.main()` with focused helper tests.
 - [x] Extract song execution/resume loop into `_collect_song_results()` and runner env setup into `_build_runner_env()`.
@@ -69,7 +73,7 @@
 - [x] Extract per-song collection flow into `_collect_single_song_result()` with fail-fast/control-flow tests.
 - [x] Reduce agreement text normalization complexity via `_expand_agreement_token()` extraction.
 - [x] Reduce complexity hotspots count in `run_benchmark_suite.py` from 7 -> 2 via warning/reference-divergence/lexical/triage helper extraction.
-- [ ] Keep files under quality-guardrail size limits while refactoring.
+- [x] Keep files under quality-guardrail size limits while refactoring.
 - [ ] Add focused tests for new extraction units rather than broad integration expansions.
 
 ## 7. CI/CD checklist before every push
