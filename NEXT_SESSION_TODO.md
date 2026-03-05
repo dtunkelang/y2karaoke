@@ -38,9 +38,12 @@
   - edits-per-minute / snap-usage from editor telemetry
 
 ## 3. Pipeline Improvement Goals
-- [ ] Investigate large-anchor-span mismatch behavior (especially songs with long noisy anchor segments).
-- [ ] Add/validate another conservative agreement rescue that improves comparability only under tight timing constraints.
-- [ ] Add a regression test fixture for long noisy `nearest_segment_start_text` anchors (Blinding Lights-like behavior).
+- [x] Investigate large-anchor-span mismatch behavior (especially songs with long noisy anchor segments).
+  - Findings artifact: `benchmarks/results/20260305T231015Z/anchor_span_investigation.md`
+  - Highest-risk cases by long-anchor + low-sim count: `The Weeknd - Blinding Lights`, `Queen - Bohemian Rhapsody`, `Indila - Derniere danse`, `J Balvin - Mi Gente`.
+- [x] Add/validate another conservative agreement rescue that improves comparability only under tight timing constraints.
+  - Implemented weak-lexical tight-timing rescue; validated on `20260305T231015Z` (`agreement_coverage_ratio_total=0.3524`, guard pass).
+- [x] Add a regression test fixture for long noisy `nearest_segment_start_text` anchors (Blinding Lights-like behavior).
 
 ## 4. Gold Set and Benchmark Data Quality
 - [ ] Increase gold comparable-word coverage from ~`0.747` toward >=`0.800`.

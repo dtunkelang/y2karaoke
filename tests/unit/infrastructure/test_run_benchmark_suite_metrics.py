@@ -205,6 +205,43 @@ def test_extract_song_metrics_skips_anchor_outside_window():
     assert metrics["agreement_start_p95_abs_sec"] == 0.0
 
 
+def test_extract_song_metrics_handles_long_noisy_anchor_text_without_matching() -> None:
+    module = _load_module()
+    report = {
+        "dtw_line_coverage": 1.0,
+        "lines": [
+            {
+                "start": 13.42,
+                "nearest_segment_start": 30.64,
+                "text": "I've been on my own for long enough",
+                "nearest_segment_start_text": (
+                    "I've been on my own for long, maybe you shouldn't have, maybe, "
+                    "I know the drugs, you don't even have to do too much, you can tell me "
+                    "I'm just a bitch, baby, maybe, you can tell me I'm wrong, but don't "
+                    "want to bless me, I guess you clearly didn't get it, God"
+                ),
+                "whisper_window_start": 12.42,
+                "whisper_window_end": 27.68,
+                "whisper_window_word_count": 0,
+                "whisper_window_avg_prob": None,
+                "words": [{"text": token} for token in "i have been on my own".split()],
+            }
+        ],
+        "low_confidence_lines": [],
+    }
+
+    metrics = module._extract_song_metrics(report)
+
+    assert metrics["agreement_count"] == 0
+    assert metrics["agreement_eligible_lines"] == 0
+    assert (
+        metrics["agreement_skip_reason_counts"][
+            "insufficient_window_words_for_long_line"
+        ]
+        == 1
+    )
+
+
 def test_extract_song_metrics_skips_low_window_evidence_for_longer_line():
     module = _load_module()
     report = {
