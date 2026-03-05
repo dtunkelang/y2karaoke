@@ -1107,6 +1107,137 @@ def _infer_alignment_policy_hint(
     }
 
 
+def _classify_quality_diagnosis(
+    metrics: dict[str, Any],
+    *,
+    alignment_policy_hint: dict[str, Any] | None = None,
+    reference_divergence: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    if not isinstance(metrics, dict):
+        return {
+            "verdict": "insufficient_evidence",
+            "confidence": "low",
+            "reasons": ["metrics_unavailable"],
+            "signals": {},
+        }
+
+    def _f(key: str) -> float:
+        value = metrics.get(key)
+        return float(value) if isinstance(value, (int, float)) else 0.0
+
+    line_count = int(metrics.get("line_count", 0) or 0)
+    dtw_line = _f("dtw_line_coverage")
+    dtw_word = _f("dtw_word_coverage")
+    low_conf = _f("low_confidence_ratio")
+    agree_cov = _f("agreement_coverage_ratio")
+    agree_p95 = _f("agreement_start_p95_abs_sec")
+    gold_cov = _f("gold_word_coverage_ratio")
+    gold_start_mean = _f("gold_start_mean_abs_sec")
+    gold_comparable_words = int(metrics.get("gold_comparable_word_count", 0) or 0)
+    has_gold = bool(metrics.get("gold_available"))
+    has_dtw = isinstance(metrics.get("dtw_line_coverage"), (int, float))
+    reasons: list[str] = []
+    verdict = "needs_pipeline_work"
+    confidence = "low"
+
+    if isinstance(reference_divergence, dict) and bool(
+        reference_divergence.get("suspected")
+    ):
+        evidence = reference_divergence.get("evidence", [])
+        evidence_reasons = (
+            [str(v) for v in evidence if isinstance(v, str)]
+            if isinstance(evidence, list)
+            else []
+        )
+        reasons.extend(evidence_reasons or ["reference_divergence_suspected"])
+        return {
+            "verdict": "likely_reference_divergence",
+            "confidence": str(reference_divergence.get("confidence", "medium")),
+            "reasons": sorted(set(reasons)),
+            "signals": {
+                "line_count": line_count,
+                "dtw_line_coverage": round(dtw_line, 4),
+                "dtw_word_coverage": round(dtw_word, 4),
+                "gold_word_coverage_ratio": round(gold_cov, 4),
+                "gold_start_mean_abs_sec": round(gold_start_mean, 4),
+                "low_confidence_ratio": round(low_conf, 4),
+            },
+        }
+
+    if line_count < 8 or (not has_dtw and not has_gold):
+        reasons.append("insufficient_coverage")
+        return {
+            "verdict": "insufficient_evidence",
+            "confidence": "low",
+            "reasons": reasons,
+            "signals": {
+                "line_count": line_count,
+                "dtw_available": has_dtw,
+                "gold_available": has_gold,
+            },
+        }
+
+    strong_internal = dtw_line >= 0.85 and dtw_word >= 0.55 and low_conf <= 0.12
+    stable_agreement = agree_cov <= 0.0 or agree_p95 <= 0.9
+    strong_gold = (
+        has_gold
+        and gold_comparable_words >= 40
+        and gold_cov >= 0.8
+        and gold_start_mean <= 0.65
+    )
+
+    if strong_internal and stable_agreement and (not has_gold or strong_gold):
+        verdict = "likely_pipeline_ok"
+        confidence = "high" if strong_gold else "medium"
+        reasons.extend(["strong_internal_alignment"])
+        if has_gold:
+            reasons.append("gold_timing_consistent")
+    else:
+        severe_pipeline_signals = (
+            dtw_line < 0.75
+            or dtw_word < 0.45
+            or low_conf > 0.2
+            or (agree_cov >= 0.35 and agree_p95 > 1.2)
+        )
+        if severe_pipeline_signals:
+            verdict = "needs_pipeline_work"
+            confidence = "high"
+            if dtw_line < 0.75:
+                reasons.append("low_dtw_line_coverage")
+            if dtw_word < 0.45:
+                reasons.append("low_dtw_word_coverage")
+            if low_conf > 0.2:
+                reasons.append("high_low_confidence_ratio")
+            if agree_cov >= 0.35 and agree_p95 > 1.2:
+                reasons.append("high_agreement_p95")
+        else:
+            verdict = "needs_manual_review"
+            confidence = "medium"
+            reasons.append("mixed_signals")
+
+    if isinstance(alignment_policy_hint, dict):
+        hint = str(alignment_policy_hint.get("hint") or "")
+        if hint and hint != "none":
+            reasons.append(f"policy_hint:{hint}")
+
+    return {
+        "verdict": verdict,
+        "confidence": confidence,
+        "reasons": sorted(set(reasons)),
+        "signals": {
+            "line_count": line_count,
+            "dtw_line_coverage": round(dtw_line, 4),
+            "dtw_word_coverage": round(dtw_word, 4),
+            "low_confidence_ratio": round(low_conf, 4),
+            "agreement_coverage_ratio": round(agree_cov, 4),
+            "agreement_start_p95_abs_sec": round(agree_p95, 4),
+            "gold_word_coverage_ratio": round(gold_cov, 4),
+            "gold_start_mean_abs_sec": round(gold_start_mean, 4),
+            "gold_comparable_word_count": gold_comparable_words,
+        },
+    }
+
+
 def _build_triage_rankings(
     succeeded: list[dict[str, Any]], *, top_n: int = 5
 ) -> dict[str, list[dict[str, Any]]]:
@@ -1469,6 +1600,18 @@ def _aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:  # noqa: C901
         )
     )
     triage_rankings = _build_triage_rankings(succeeded, top_n=5)
+    diagnosis_counts: dict[str, int] = {}
+    for row in succeeded:
+        diagnosis = row.get("quality_diagnosis", {})
+        if not isinstance(diagnosis, dict):
+            continue
+        verdict = str(diagnosis.get("verdict", "") or "unknown")
+        diagnosis_counts[verdict] = diagnosis_counts.get(verdict, 0) + 1
+    diagnosis_counts = dict(sorted(diagnosis_counts.items()))
+    diagnosis_ratios = {
+        key: round((value / len(succeeded)) if succeeded else 0.0, 4)
+        for key, value in diagnosis_counts.items()
+    }
 
     return {
         "songs_total": len(results),
@@ -1612,6 +1755,8 @@ def _aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:  # noqa: C901
         "likely_pipeline_failure_count": len(
             triage_rankings.get("likely_pipeline_failure", [])
         ),
+        "quality_diagnosis_counts": diagnosis_counts,
+        "quality_diagnosis_ratios": diagnosis_ratios,
         "gold_word_count_total": gold_word_count_total,
         "gold_comparable_word_count_total": gold_comparable_word_count_total,
         "gold_word_coverage_ratio_total": round(gold_word_coverage_ratio_total, 4),
@@ -1718,6 +1863,22 @@ def _aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:  # noqa: C901
             "likely_pipeline_failure": triage_rankings.get(
                 "likely_pipeline_failure", []
             ),
+            "quality_diagnosis": [
+                {
+                    "song": f"{r['artist']} - {r['title']}",
+                    "verdict": str(
+                        r.get("quality_diagnosis", {}).get("verdict", "unknown")
+                    ),
+                    "confidence": str(
+                        r.get("quality_diagnosis", {}).get("confidence", "low")
+                    ),
+                    "reasons": list(
+                        r.get("quality_diagnosis", {}).get("reasons", []) or []
+                    ),
+                }
+                for r in succeeded
+                if isinstance(r.get("quality_diagnosis"), dict)
+            ][:8],
         },
         "cache_summary": cache_summary,
         "alignment_diagnostics_summary": {
@@ -1939,6 +2100,12 @@ def _write_markdown_summary(  # noqa: C901
         f"`{aggregate.get('reference_divergence_suspected_count', 0)}` "
         f"({aggregate.get('reference_divergence_suspected_ratio', 0.0):.3f})"
     )
+    diagnosis_counts = aggregate.get("quality_diagnosis_counts", {})
+    if isinstance(diagnosis_counts, dict) and diagnosis_counts:
+        diagnosis_summary = ", ".join(
+            f"{k}={v}" for k, v in sorted(diagnosis_counts.items())
+        )
+        lines.append(f"- Per-song quality diagnosis: `{diagnosis_summary}`")
     lines.append(
         "- Primary metric (avg abs word-start delta): "
         f"`{_fmt_num(aggregate.get('avg_abs_word_start_delta_sec_word_weighted_mean'), unit='s')}` (word-weighted)"
@@ -2050,9 +2217,11 @@ def _write_markdown_summary(  # noqa: C901
     lines.append("## Per-song")
     lines.append("")
     lines.append(
-        "| Song | Status | Gold words | Gold cov | Word start abs mean | Word start p95 | Word end abs mean | Alignment | DTW line | DTW word | Policy hint | Ref mismatch suspect | Elapsed |"  # noqa: E501
+        "| Song | Status | Gold words | Gold cov | Word start abs mean | Word start p95 | Word end abs mean | Alignment | DTW line | DTW word | Policy hint | Ref mismatch suspect | Diagnosis | Elapsed |"  # noqa: E501
     )
-    lines.append("|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|")
+    lines.append(
+        "|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|"
+    )
     for song in songs:
         metrics = song.get("metrics", {})
         policy_hint = song.get("alignment_policy_hint", {})
@@ -2074,6 +2243,12 @@ def _write_markdown_summary(  # noqa: C901
                 )
             else:
                 ref_div_cell = f"no ({float(ref_div.get('score', 0.0) or 0.0):.2f})"
+        diagnosis = song.get("quality_diagnosis", {})
+        diagnosis_cell = "-"
+        if isinstance(diagnosis, dict) and diagnosis:
+            verdict = str(diagnosis.get("verdict", "unknown") or "unknown")
+            conf = str(diagnosis.get("confidence", "low") or "low")
+            diagnosis_cell = f"{verdict} ({conf})"
         lines.append(
             "| "
             + f"{song['artist']} - {song['title']} | "
@@ -2098,6 +2273,8 @@ def _write_markdown_summary(  # noqa: C901
             + " | "
             + ref_div_cell
             + " | "
+            + diagnosis_cell
+            + " | "
             + f"{song.get('elapsed_sec', '-')}"
             + "s |"
         )
@@ -2115,6 +2292,7 @@ def _write_markdown_summary(  # noqa: C901
         ref_div_suspects = hotspots.get("reference_divergence_suspects", [])
         likely_ref_div = hotspots.get("likely_reference_divergence", [])
         likely_pipeline = hotspots.get("likely_pipeline_failure", [])
+        diagnosis_rows = hotspots.get("quality_diagnosis", [])
         if (
             low_dtw
             or high_low_conf
@@ -2127,6 +2305,7 @@ def _write_markdown_summary(  # noqa: C901
             or ref_div_suspects
             or likely_ref_div
             or likely_pipeline
+            or diagnosis_rows
         ):
             lines.append("## Hotspots")
             lines.append("")
@@ -2210,6 +2389,21 @@ def _write_markdown_summary(  # noqa: C901
                         lines.append(
                             f"  - {item.get('song')}: score={item.get('score')} ({reason_text})"
                         )
+            if diagnosis_rows:
+                lines.append("- Quality diagnosis snapshot:")
+                for item in diagnosis_rows:
+                    if isinstance(item, dict):
+                        reasons = item.get("reasons") or []
+                        reason_text = (
+                            ", ".join(str(v) for v in reasons[:2])
+                            if isinstance(reasons, list)
+                            else str(reasons)
+                        )
+                        lines.append(
+                            "  - "
+                            + f"{item.get('song')}: {item.get('verdict')} ({item.get('confidence')})"
+                            + (f"; {reason_text}" if reason_text else "")
+                        )
             lines.append("")
     if aggregate["failed_songs"]:
         lines.append("## Failures")
@@ -2291,6 +2485,11 @@ def _refresh_cached_metrics(
     record["alignment_policy_hint"] = _infer_alignment_policy_hint(
         record["metrics"],
         alignment_diagnostics=record.get("alignment_diagnostics"),
+        reference_divergence=record.get("reference_divergence"),
+    )
+    record["quality_diagnosis"] = _classify_quality_diagnosis(
+        record["metrics"],
+        alignment_policy_hint=record.get("alignment_policy_hint"),
         reference_divergence=record.get("reference_divergence"),
     )
     record["lexical_mismatch_diagnostics"] = _extract_lexical_mismatch_diagnostics(
@@ -3107,6 +3306,11 @@ def _run_song_command(
             record["alignment_policy_hint"] = _infer_alignment_policy_hint(
                 record["metrics"],
                 alignment_diagnostics=record.get("alignment_diagnostics"),
+                reference_divergence=record.get("reference_divergence"),
+            )
+            record["quality_diagnosis"] = _classify_quality_diagnosis(
+                record["metrics"],
+                alignment_policy_hint=record.get("alignment_policy_hint"),
                 reference_divergence=record.get("reference_divergence"),
             )
             record["lexical_mismatch_diagnostics"] = (

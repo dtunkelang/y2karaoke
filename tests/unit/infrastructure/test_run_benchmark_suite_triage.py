@@ -249,6 +249,70 @@ def test_markdown_summary_includes_triage_rankings(tmp_path):
     assert "Triage ranking: likely pipeline failure" in content
 
 
+def test_classify_quality_diagnosis_flags_pipeline_ok_for_strong_signals():
+    module = _load_module()
+    diagnosis = module._classify_quality_diagnosis(
+        {
+            "line_count": 80,
+            "dtw_line_coverage": 0.94,
+            "dtw_word_coverage": 0.71,
+            "low_confidence_ratio": 0.04,
+            "agreement_coverage_ratio": 0.5,
+            "agreement_start_p95_abs_sec": 0.62,
+            "gold_available": True,
+            "gold_comparable_word_count": 300,
+            "gold_word_coverage_ratio": 0.9,
+            "gold_start_mean_abs_sec": 0.44,
+        }
+    )
+    assert diagnosis["verdict"] == "likely_pipeline_ok"
+    assert diagnosis["confidence"] == "high"
+
+
+def test_classify_quality_diagnosis_defers_to_reference_divergence():
+    module = _load_module()
+    diagnosis = module._classify_quality_diagnosis(
+        {
+            "line_count": 90,
+            "dtw_line_coverage": 0.91,
+            "dtw_word_coverage": 0.66,
+            "low_confidence_ratio": 0.05,
+        },
+        reference_divergence={
+            "suspected": True,
+            "confidence": "medium",
+            "evidence": ["severe_gold_timing_mismatch"],
+        },
+    )
+    assert diagnosis["verdict"] == "likely_reference_divergence"
+    assert diagnosis["confidence"] == "medium"
+    assert "severe_gold_timing_mismatch" in diagnosis["reasons"]
+
+
+def test_aggregate_includes_quality_diagnosis_counts():
+    module = _load_module()
+    results = [
+        {
+            "artist": "A",
+            "title": "Good",
+            "status": "ok",
+            "metrics": {"line_count": 10, "low_confidence_lines": 0},
+            "quality_diagnosis": {"verdict": "likely_pipeline_ok"},
+        },
+        {
+            "artist": "B",
+            "title": "Needs",
+            "status": "ok",
+            "metrics": {"line_count": 10, "low_confidence_lines": 0},
+            "quality_diagnosis": {"verdict": "needs_pipeline_work"},
+        },
+    ]
+    agg = module._aggregate(results)
+    assert agg["quality_diagnosis_counts"]["likely_pipeline_ok"] == 1
+    assert agg["quality_diagnosis_counts"]["needs_pipeline_work"] == 1
+    assert agg["quality_diagnosis_ratios"]["likely_pipeline_ok"] == 0.5
+
+
 def test_agreement_text_normalization_folds_diacritics():
     module = _load_module()
     assert module._normalize_agreement_text("DÉSPÉCHA!") == "despecha"
