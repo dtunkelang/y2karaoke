@@ -134,6 +134,7 @@ def test_recommend_human_guidance_tasks_includes_mismatch_examples(
             {
                 "lines": [
                     {
+                        "index": 0,
                         "start": 10.0,
                         "nearest_segment_start": 10.1,
                         "text": "si el ritmo te lleva a mover la cabeza",
@@ -178,5 +179,10 @@ def test_recommend_human_guidance_tasks_includes_mismatch_examples(
     examples = payload["rows"][0]["mismatch_examples"]
     assert len(examples) == 1
     assert "delta=0.10s" in examples[0]
+    targets = payload["rows"][0]["suggested_targets"]
+    assert len(targets) == 1
+    assert "line_index=0" in targets[0]
+    assert "likely_lexical_mismatch" in targets[0]
     md = (run_dir / "human_guidance_tasks.md").read_text("utf-8")
     assert "example mismatch" in md
+    assert "suggested target" in md

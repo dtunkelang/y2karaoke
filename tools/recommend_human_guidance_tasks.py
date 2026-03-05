@@ -101,6 +101,70 @@ def _collect_mismatch_examples(song: dict[str, Any], *, limit: int = 2) -> list[
     return examples
 
 
+def _collect_correction_targets(song: dict[str, Any], *, limit: int = 2) -> list[str]:
+    report_path_raw = song.get("report_path")
+    if not isinstance(report_path_raw, str) or not report_path_raw:
+        return []
+    report_path = Path(report_path_raw)
+    if not report_path.exists():
+        return []
+    try:
+        report_doc = json.loads(report_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return []
+    lines = report_doc.get("lines", [])
+    if not isinstance(lines, list):
+        return []
+
+    targets: list[str] = []
+    for line in lines:
+        if not isinstance(line, dict):
+            continue
+        index_raw = line.get("index")
+        line_index = int(index_raw) if isinstance(index_raw, (int, float)) else -1
+        line_text = str(line.get("text") or "")
+        anchor_text = str(line.get("nearest_segment_start_text") or "")
+        line_start = line.get("start")
+        anchor_start = line.get("nearest_segment_start")
+        window_word_count_raw = line.get("whisper_window_word_count")
+        window_word_count = (
+            int(window_word_count_raw)
+            if isinstance(window_word_count_raw, (int, float))
+            else 0
+        )
+        word_slots = line.get("word_slots")
+        line_word_count = (
+            int(word_slots) if isinstance(word_slots, (int, float)) else len(line_text.split())
+        )
+        if line_word_count < 1:
+            line_word_count = 1
+
+        if not isinstance(line_start, (int, float)) or not isinstance(
+            anchor_start, (int, float)
+        ):
+            continue
+        start_delta = abs(float(line_start) - float(anchor_start))
+        sim = _text_similarity(line_text, anchor_text)
+        overlap = _token_overlap(line_text, anchor_text)
+
+        reason = ""
+        if start_delta > 0.8:
+            reason = "high_start_delta"
+        elif sim < 0.58 and overlap >= 0.45 and start_delta <= 0.3:
+            reason = "likely_lexical_mismatch"
+        elif line_word_count >= 6 and window_word_count < max(2, int(0.35 * line_word_count)):
+            reason = "sparse_local_anchor_evidence"
+        if not reason:
+            continue
+        targets.append(
+            f"line_index={line_index} reason={reason} delta={start_delta:.2f}s "
+            f"sim={sim:.2f} overlap={overlap:.2f} text='{line_text[:70]}'"
+        )
+        if len(targets) >= limit:
+            break
+    return targets
+
+
 def _build_actions(song: dict[str, Any], metrics: dict[str, Any]) -> list[str]:
     actions: list[str] = []
     agreement_cov = float(metrics.get("agreement_coverage_ratio", 0.0) or 0.0)
@@ -183,6 +247,7 @@ def _recommend(doc: dict[str, Any], top: int, min_priority: float) -> dict[str, 
                 ),
                 "actions": _build_actions(song, metrics),
                 "mismatch_examples": _collect_mismatch_examples(song),
+                "suggested_targets": _collect_correction_targets(song),
             }
         )
     rows = [row for row in rows if row.get("status") == "ok"]
@@ -228,6 +293,9 @@ def _write_markdown(path: Path, payload: dict[str, Any]) -> None:
         mismatch_examples = row.get("mismatch_examples", []) or []
         for example in mismatch_examples:
             lines.append(f"- {row.get('song', '')}: example mismatch {example}")
+        suggested_targets = row.get("suggested_targets", []) or []
+        for target in suggested_targets:
+            lines.append(f"- {row.get('song', '')}: suggested target {target}")
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
