@@ -51,7 +51,7 @@ def test_align_lrc_text_pipeline_pulls_forward_for_continuous_vocals():
         ]
         return shifted, 1
 
-    mapped, corrections, _metrics = align_lrc_text_to_whisper_timings_impl(
+    mapped, corrections, metrics = align_lrc_text_to_whisper_timings_impl(
         lines,
         vocals_path="vocals.wav",
         language="en",
@@ -100,6 +100,9 @@ def test_align_lrc_text_pipeline_pulls_forward_for_continuous_vocals():
 
     assert mapped[1].start_time == 98.0
     assert any("continuous vocals" in msg for msg in corrections)
+    assert "mapping_stage_sec" in metrics
+    assert "mapped_postpasses_sec" in metrics
+    assert "alignment_total_sec" in metrics
 
 
 def test_align_lrc_text_pipeline_uses_whisperx_for_sparse_transcript(monkeypatch):
