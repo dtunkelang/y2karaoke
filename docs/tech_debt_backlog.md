@@ -25,15 +25,16 @@ Last updated: 2026-03-04
 3. **Whisper pipeline observability: per-pass counters in metrics**
 - Impact: high
 - Effort: medium
-- Status: queued
+- Status: completed (phase 1)
 - Scope:
-  - Emit stable pass-level counters/timings for key postpasses.
-  - Include counters in benchmark artifacts for regression triage.
+  - Emit stable pass-level counters for key finalize/postpass stages.
+  - Include counters in returned Whisper metrics for regression triage.
+  - Remaining follow-up: add optional per-pass timing durations.
 
 4. **Heuristic surface reduction via explicit config objects**
 - Impact: high
 - Effort: medium-high
-- Status: queued
+- Status: in progress
 - Scope:
   - Replace scattered thresholds/env checks with typed config structs.
   - Keep defaults unchanged; enable profile-based tuning (safe/aggressive).

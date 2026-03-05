@@ -2,6 +2,7 @@
 
 import os
 from collections import Counter
+from dataclasses import dataclass
 
 from typing import List, Tuple, Dict, Set
 from ....utils.logging import get_logger
@@ -10,6 +11,30 @@ from . import whisper_utils
 from . import whisper_phonetic_dtw
 
 logger = get_logger(__name__)
+
+
+@dataclass(frozen=True)
+class _SegmentAssignmentConfig:
+    prefer_later_on_strong_merge: bool
+    later_trace: bool
+    zero_score_lookback_enabled: bool
+    zero_score_lookback_segs: int
+
+
+def _segment_assignment_config_from_env() -> _SegmentAssignmentConfig:
+    return _SegmentAssignmentConfig(
+        prefer_later_on_strong_merge=(
+            os.getenv("Y2K_WHISPER_SEGMENT_ASSIGN_PREFER_LATER_ON_STRONG_MERGE", "1")
+            != "0"
+        ),
+        later_trace=(os.getenv("Y2K_WHISPER_SEGMENT_ASSIGN_LATER_TRACE") == "1"),
+        zero_score_lookback_enabled=(
+            os.getenv("Y2K_WHISPER_SEGMENT_ASSIGN_ZERO_SCORE_LOOKBACK", "1") != "0"
+        ),
+        zero_score_lookback_segs=int(
+            os.getenv("Y2K_WHISPER_SEGMENT_ASSIGN_ZERO_SCORE_LOOKBACK_SEGS", "36")
+        ),
+    )
 
 
 def _assign_lrc_lines_to_blocks(
@@ -109,6 +134,7 @@ def _assign_lrc_lines_to_segments(
     lrc_lines_words: List[List[Tuple[int, str]]],
     seg_word_bags: List[List[str]],
     seg_durations: List[float],
+    config: _SegmentAssignmentConfig,
 ) -> List[int]:
     """Assign each LRC line to a Whisper segment using text overlap."""
     lrc_line_count = len(lrc_lines_words)
@@ -140,6 +166,7 @@ def _assign_lrc_lines_to_segments(
                     current_best_score=best_score,
                     seg_word_bags=seg_word_bags,
                     seg_durations=seg_durations,
+                    config=config,
                 )
                 if candidate is not None:
                     best_score, best_seg = candidate
@@ -153,6 +180,7 @@ def _assign_lrc_lines_to_segments(
             seg_cursor=seg_cursor,
             seg_word_bags=seg_word_bags,
             n_segs=n_segs,
+            config=config,
         )
         # Zero-score lines (e.g. "Oooh") have no text match; advance
         # past the cursor so subsequent lines don't cascade early.
@@ -187,6 +215,7 @@ def _merged_segment_candidate(
     current_best_score: float,
     seg_word_bags: List[List[str]],
     seg_durations: List[float],
+    config: _SegmentAssignmentConfig,
 ) -> Tuple[float, int] | None:
     merged = seg_word_bags[segment_index] + seg_word_bags[segment_index + 1]
     mscore = _text_overlap_score(words, merged)
@@ -203,6 +232,7 @@ def _merged_segment_candidate(
         seg_word_bags=seg_word_bags,
         seg_durations=seg_durations,
         segment_index=segment_index,
+        config=config,
     ):
         _trace_later_merge_tiebreak(
             line_index=line_index,
@@ -213,6 +243,7 @@ def _merged_segment_candidate(
             mscore=mscore,
             seg_word_bags=seg_word_bags,
             seg_durations=seg_durations,
+            config=config,
         )
         best_seg = segment_index + 1
     return mscore, best_seg
@@ -227,8 +258,9 @@ def _should_prefer_later_segment(
     seg_word_bags: List[List[str]],
     seg_durations: List[float],
     segment_index: int,
+    config: _SegmentAssignmentConfig,
 ) -> bool:
-    if os.getenv("Y2K_WHISPER_SEGMENT_ASSIGN_PREFER_LATER_ON_STRONG_MERGE", "1") == "0":
+    if not config.prefer_later_on_strong_merge:
         return False
     return (
         len(words) >= 3
@@ -256,8 +288,9 @@ def _trace_later_merge_tiebreak(
     mscore: float,
     seg_word_bags: List[List[str]],
     seg_durations: List[float],
+    config: _SegmentAssignmentConfig,
 ) -> None:
-    if os.getenv("Y2K_WHISPER_SEGMENT_ASSIGN_LATER_TRACE") != "1":
+    if not config.later_trace:
         return
     logger.info(
         (
@@ -287,9 +320,10 @@ def _rescue_zero_score_repeated_line_assignment(
     seg_cursor: int,
     seg_word_bags: List[List[str]],
     n_segs: int,
+    config: _SegmentAssignmentConfig,
 ) -> Tuple[int, float]:
     if (
-        os.getenv("Y2K_WHISPER_SEGMENT_ASSIGN_ZERO_SCORE_LOOKBACK", "1") == "0"
+        not config.zero_score_lookback_enabled
         or not repeated_phrase_like
         or len(words) < 4
         or best_score > 0
@@ -297,9 +331,7 @@ def _rescue_zero_score_repeated_line_assignment(
     ):
         return best_seg, best_score
 
-    lookback = int(
-        os.getenv("Y2K_WHISPER_SEGMENT_ASSIGN_ZERO_SCORE_LOOKBACK_SEGS", "36")
-    )
+    lookback = config.zero_score_lookback_segs
     lb_start = max(0, seg_cursor - lookback)
     lb_best_seg = best_seg
     lb_best_score = best_score
@@ -362,6 +394,7 @@ def _build_segment_text_overlap_assignments(
     """
     if not segments or not lrc_words:
         return {}
+    config = _segment_assignment_config_from_env()
 
     seg_word_ranges, seg_word_bags, seg_durations = _build_segment_word_info(
         all_words,
@@ -379,6 +412,7 @@ def _build_segment_text_overlap_assignments(
         lrc_lines_words,
         seg_word_bags,
         seg_durations,
+        config,
     )
     assignments = _distribute_words_within_segments(
         line_to_seg,
