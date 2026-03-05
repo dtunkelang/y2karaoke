@@ -108,40 +108,48 @@ def _apply_low_quality_segment_postpasses(
     tighten_lines_to_whisper_segments_fn: Callable[..., Any],
     pull_lines_to_best_segments_fn: Callable[..., Any],
 ) -> Tuple[List[models.Line], List[str]]:
-    aligned_lines, merged_first = merge_first_two_lines_if_segment_matches_fn(
-        aligned_lines, transcription, epitran_lang
+    aligned_lines, alignments = _run_counted_postpass(
+        aligned_lines=aligned_lines,
+        alignments=alignments,
+        postpass_fn=merge_first_two_lines_if_segment_matches_fn,
+        postpass_args=(transcription, epitran_lang),
+        message_template="Merged first two lines via Whisper segment",
     )
-    if merged_first:
-        alignments.append("Merged first two lines via Whisper segment")
-    aligned_lines, pair_retimed = retime_adjacent_lines_to_whisper_window_fn(
-        aligned_lines, transcription, epitran_lang
+    aligned_lines, alignments = _run_counted_postpass(
+        aligned_lines=aligned_lines,
+        alignments=alignments,
+        postpass_fn=retime_adjacent_lines_to_whisper_window_fn,
+        postpass_args=(transcription, epitran_lang),
+        message_template="Retimed {count} adjacent line pair(s) to Whisper window",
     )
-    if pair_retimed:
-        alignments.append(
-            f"Retimed {pair_retimed} adjacent line pair(s) to Whisper window"
-        )
-    aligned_lines, pair_windowed = retime_adjacent_lines_to_segment_window_fn(
-        aligned_lines, transcription, epitran_lang
+    aligned_lines, alignments = _run_counted_postpass(
+        aligned_lines=aligned_lines,
+        alignments=alignments,
+        postpass_fn=retime_adjacent_lines_to_segment_window_fn,
+        postpass_args=(transcription, epitran_lang),
+        message_template="Retimed {count} adjacent line pair(s) to Whisper segment window",
     )
-    if pair_windowed:
-        alignments.append(
-            f"Retimed {pair_windowed} adjacent line pair(s) to Whisper segment window"
-        )
-    aligned_lines, pulled_next = pull_next_line_into_segment_window_fn(
-        aligned_lines, transcription, epitran_lang
+    aligned_lines, alignments = _run_counted_postpass(
+        aligned_lines=aligned_lines,
+        alignments=alignments,
+        postpass_fn=pull_next_line_into_segment_window_fn,
+        postpass_args=(transcription, epitran_lang),
+        message_template="Pulled {count} line(s) into adjacent segment window",
     )
-    if pulled_next:
-        alignments.append(f"Pulled {pulled_next} line(s) into adjacent segment window")
-    aligned_lines, pulled_near_end = pull_lines_near_segment_end_fn(
-        aligned_lines, transcription, epitran_lang
+    aligned_lines, alignments = _run_counted_postpass(
+        aligned_lines=aligned_lines,
+        alignments=alignments,
+        postpass_fn=pull_lines_near_segment_end_fn,
+        postpass_args=(transcription, epitran_lang),
+        message_template="Pulled {count} line(s) near segment ends",
     )
-    if pulled_near_end:
-        alignments.append(f"Pulled {pulled_near_end} line(s) near segment ends")
-    aligned_lines, pulled_same = pull_next_line_into_same_segment_fn(
-        aligned_lines, transcription
+    aligned_lines, alignments = _run_counted_postpass(
+        aligned_lines=aligned_lines,
+        alignments=alignments,
+        postpass_fn=pull_next_line_into_same_segment_fn,
+        postpass_args=(transcription,),
+        message_template="Pulled {count} line(s) into same segment",
     )
-    if pulled_same:
-        alignments.append(f"Pulled {pulled_same} line(s) into same segment")
     aligned_lines, pair_retimed_after = retime_adjacent_lines_to_whisper_window_fn(
         aligned_lines,
         transcription,
@@ -149,25 +157,32 @@ def _apply_low_quality_segment_postpasses(
         max_window_duration=4.5,
         max_start_offset=1.0,
     )
-    if pair_retimed_after:
-        alignments.append(
-            f"Retimed {pair_retimed_after} adjacent line pair(s) after pulls"
-        )
-    aligned_lines, merged = merge_lines_to_whisper_segments_fn(
-        aligned_lines, transcription, epitran_lang
+    _append_counted_alignment(
+        alignments,
+        pair_retimed_after,
+        "Retimed {count} adjacent line pair(s) after pulls",
     )
-    if merged:
-        alignments.append(f"Merged {merged} line pair(s) via Whisper segments")
-    aligned_lines, tightened = tighten_lines_to_whisper_segments_fn(
-        aligned_lines, transcription, epitran_lang
+    aligned_lines, alignments = _run_counted_postpass(
+        aligned_lines=aligned_lines,
+        alignments=alignments,
+        postpass_fn=merge_lines_to_whisper_segments_fn,
+        postpass_args=(transcription, epitran_lang),
+        message_template="Merged {count} line pair(s) via Whisper segments",
     )
-    if tightened:
-        alignments.append(f"Tightened {tightened} line(s) to Whisper segments")
-    aligned_lines, pulled = pull_lines_to_best_segments_fn(
-        aligned_lines, transcription, epitran_lang
+    aligned_lines, alignments = _run_counted_postpass(
+        aligned_lines=aligned_lines,
+        alignments=alignments,
+        postpass_fn=tighten_lines_to_whisper_segments_fn,
+        postpass_args=(transcription, epitran_lang),
+        message_template="Tightened {count} line(s) to Whisper segments",
     )
-    if pulled:
-        alignments.append(f"Pulled {pulled} line(s) to Whisper segments")
+    aligned_lines, alignments = _run_counted_postpass(
+        aligned_lines=aligned_lines,
+        alignments=alignments,
+        postpass_fn=pull_lines_to_best_segments_fn,
+        postpass_args=(transcription, epitran_lang),
+        message_template="Pulled {count} line(s) to Whisper segments",
+    )
     return aligned_lines, alignments
 
 
@@ -207,47 +222,32 @@ def _finalize_whisper_line_set(
     aligned_lines = enforce_non_overlapping_lines_fn(aligned_lines)
 
     if force_dtw:
-        aligned_lines, pulled_near_end = pull_lines_near_segment_end_fn(
-            aligned_lines, transcription, epitran_lang
+        aligned_lines, alignments = _apply_force_dtw_finalize_passes(
+            aligned_lines=aligned_lines,
+            alignments=alignments,
+            transcription=transcription,
+            epitran_lang=epitran_lang,
+            pull_lines_near_segment_end_fn=pull_lines_near_segment_end_fn,
+            merge_short_following_line_into_segment_fn=merge_short_following_line_into_segment_fn,
+            clamp_repeated_line_duration_fn=clamp_repeated_line_duration_fn,
         )
-        if pulled_near_end:
-            alignments.append(
-                f"Pulled {pulled_near_end} line(s) near segment ends (post-order)"
-            )
-        aligned_lines, merged_short = merge_short_following_line_into_segment_fn(
-            aligned_lines, transcription
-        )
-        if merged_short:
-            alignments.append(
-                f"Merged {merged_short} short line(s) into prior segments"
-            )
-        aligned_lines, clamped_repeat = clamp_repeated_line_duration_fn(aligned_lines)
-        if clamped_repeat:
-            alignments.append(f"Clamped {clamped_repeat} repeated line(s) duration")
 
-    aligned_lines, deduped = drop_duplicate_lines_fn(
-        aligned_lines, transcription, epitran_lang
+    aligned_lines, alignments = _apply_dedup_finalize_passes(
+        aligned_lines=aligned_lines,
+        alignments=alignments,
+        transcription=transcription,
+        epitran_lang=epitran_lang,
+        drop_duplicate_lines_fn=drop_duplicate_lines_fn,
+        drop_duplicate_lines_by_timing_fn=drop_duplicate_lines_by_timing_fn,
     )
-    if deduped:
-        alignments.append(f"Dropped {deduped} duplicate line(s)")
-    before_drop = len(aligned_lines)
-    aligned_lines = [line for line in aligned_lines if line.words]
-    if len(aligned_lines) != before_drop:
-        alignments.append("Dropped empty lines after Whisper merges")
-    aligned_lines, timing_deduped = drop_duplicate_lines_by_timing_fn(aligned_lines)
-    if timing_deduped:
-        alignments.append(
-            f"Dropped {timing_deduped} duplicate line(s) by timing overlap"
-        )
 
     if audio_features is not None:
-        aligned_lines, continuous_fixes = pull_lines_forward_for_continuous_vocals_fn(
-            aligned_lines, audio_features
+        aligned_lines, alignments = _apply_continuous_vocal_finalize_pass(
+            aligned_lines=aligned_lines,
+            alignments=alignments,
+            audio_features=audio_features,
+            pull_lines_forward_for_continuous_vocals_fn=pull_lines_forward_for_continuous_vocals_fn,
         )
-        if continuous_fixes:
-            alignments.append(
-                f"Pulled {continuous_fixes} line(s) forward for continuous vocals"
-            )
 
     aligned_lines = enforce_monotonic_line_starts_fn(aligned_lines)
     aligned_lines = enforce_non_overlapping_lines_fn(aligned_lines)
@@ -258,4 +258,103 @@ def _finalize_whisper_line_set(
             "Rolled back Whisper timing due to high per-line text divergence from source lyrics"
         )
         return [_clone_line(line) for line in source_lines], alignments
+    return aligned_lines, alignments
+
+
+def _append_counted_alignment(alignments: List[str], count: int, template: str) -> None:
+    if count:
+        alignments.append(template.format(count=count))
+
+
+def _run_counted_postpass(
+    *,
+    aligned_lines: List[models.Line],
+    alignments: List[str],
+    postpass_fn: Callable[..., Any],
+    postpass_args: tuple[Any, ...],
+    message_template: str,
+) -> Tuple[List[models.Line], List[str]]:
+    aligned_lines, count = postpass_fn(aligned_lines, *postpass_args)
+    _append_counted_alignment(alignments, count, message_template)
+    return aligned_lines, alignments
+
+
+def _apply_force_dtw_finalize_passes(
+    *,
+    aligned_lines: List[models.Line],
+    alignments: List[str],
+    transcription: List[timing_models.TranscriptionSegment],
+    epitran_lang: str,
+    pull_lines_near_segment_end_fn: Callable[..., Any],
+    merge_short_following_line_into_segment_fn: Callable[..., Any],
+    clamp_repeated_line_duration_fn: Callable[..., Any],
+) -> Tuple[List[models.Line], List[str]]:
+    aligned_lines, alignments = _run_counted_postpass(
+        aligned_lines=aligned_lines,
+        alignments=alignments,
+        postpass_fn=pull_lines_near_segment_end_fn,
+        postpass_args=(transcription, epitran_lang),
+        message_template="Pulled {count} line(s) near segment ends (post-order)",
+    )
+    aligned_lines, alignments = _run_counted_postpass(
+        aligned_lines=aligned_lines,
+        alignments=alignments,
+        postpass_fn=merge_short_following_line_into_segment_fn,
+        postpass_args=(transcription,),
+        message_template="Merged {count} short line(s) into prior segments",
+    )
+    aligned_lines, alignments = _run_counted_postpass(
+        aligned_lines=aligned_lines,
+        alignments=alignments,
+        postpass_fn=clamp_repeated_line_duration_fn,
+        postpass_args=(),
+        message_template="Clamped {count} repeated line(s) duration",
+    )
+    return aligned_lines, alignments
+
+
+def _apply_dedup_finalize_passes(
+    *,
+    aligned_lines: List[models.Line],
+    alignments: List[str],
+    transcription: List[timing_models.TranscriptionSegment],
+    epitran_lang: str,
+    drop_duplicate_lines_fn: Callable[..., Any],
+    drop_duplicate_lines_by_timing_fn: Callable[..., Any],
+) -> Tuple[List[models.Line], List[str]]:
+    aligned_lines, alignments = _run_counted_postpass(
+        aligned_lines=aligned_lines,
+        alignments=alignments,
+        postpass_fn=drop_duplicate_lines_fn,
+        postpass_args=(transcription, epitran_lang),
+        message_template="Dropped {count} duplicate line(s)",
+    )
+    before_drop = len(aligned_lines)
+    aligned_lines = [line for line in aligned_lines if line.words]
+    if len(aligned_lines) != before_drop:
+        alignments.append("Dropped empty lines after Whisper merges")
+    aligned_lines, alignments = _run_counted_postpass(
+        aligned_lines=aligned_lines,
+        alignments=alignments,
+        postpass_fn=drop_duplicate_lines_by_timing_fn,
+        postpass_args=(),
+        message_template="Dropped {count} duplicate line(s) by timing overlap",
+    )
+    return aligned_lines, alignments
+
+
+def _apply_continuous_vocal_finalize_pass(
+    *,
+    aligned_lines: List[models.Line],
+    alignments: List[str],
+    audio_features: timing_models.AudioFeatures,
+    pull_lines_forward_for_continuous_vocals_fn: Callable[..., Any],
+) -> Tuple[List[models.Line], List[str]]:
+    aligned_lines, alignments = _run_counted_postpass(
+        aligned_lines=aligned_lines,
+        alignments=alignments,
+        postpass_fn=pull_lines_forward_for_continuous_vocals_fn,
+        postpass_args=(audio_features,),
+        message_template="Pulled {count} line(s) forward for continuous vocals",
+    )
     return aligned_lines, alignments

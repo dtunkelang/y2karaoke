@@ -246,22 +246,9 @@ def _stretch_similar_adjacent_short_lines(
     for idx in range(1, len(lines)):
         prev_line = lines[idx - 1]
         line = lines[idx]
-        if not prev_line.words or not line.words:
+        if not _eligible_short_line_pair(prev_line, line, token_overlap_fn):
             continue
-        if len(prev_line.words) > 5 or len(line.words) > 4:
-            continue
-        if token_overlap_fn(prev_line.text, line.text) < 0.25:
-            continue
-        gap = line.start_time - prev_line.end_time
-        if gap <= 1.0:
-            continue
-        target_end = line.start_time - 0.05
-        latest_silence_start = None
-        for start, end in normalized_silences:
-            if start >= prev_line.end_time and end <= line.start_time:
-                latest_silence_start = start
-        if latest_silence_start is not None:
-            target_end = min(target_end, latest_silence_start - 0.05)
+        target_end = _stretch_target_end(prev_line, line, normalized_silences)
         if target_end <= prev_line.end_time + 0.6:
             continue
         stretched = rebuild_line_with_target_end_fn(prev_line, target_end)
@@ -272,6 +259,35 @@ def _stretch_similar_adjacent_short_lines(
         lines[idx - 1] = stretched
         fixes += 1
     return fixes
+
+
+def _eligible_short_line_pair(
+    prev_line: Line,
+    line: Line,
+    token_overlap_fn: Callable[[str, str], float],
+) -> bool:
+    if not prev_line.words or not line.words:
+        return False
+    if len(prev_line.words) > 5 or len(line.words) > 4:
+        return False
+    if token_overlap_fn(prev_line.text, line.text) < 0.25:
+        return False
+    return (line.start_time - prev_line.end_time) > 1.0
+
+
+def _stretch_target_end(
+    prev_line: Line,
+    line: Line,
+    normalized_silences: List[Tuple[float, float]],
+) -> float:
+    target_end = line.start_time - 0.05
+    latest_silence_start = None
+    for start, end in normalized_silences:
+        if start >= prev_line.end_time and end <= line.start_time:
+            latest_silence_start = start
+    if latest_silence_start is not None:
+        target_end = min(target_end, latest_silence_start - 0.05)
+    return target_end
 
 
 def _cap_isolated_short_lines(

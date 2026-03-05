@@ -256,17 +256,18 @@ def _retime_adjacent_lines_to_segment_window(
         combined_text = f"{line.text} {next_line.text}".strip()
 
         for s_idx in range(len(sorted_segments) - 1):
-            seg_a = sorted_segments[s_idx]
-            seg_b = sorted_segments[s_idx + 1]
-            if seg_b.start - seg_a.end > 1.0:
+            candidate = _matching_segment_window(
+                sorted_segments=sorted_segments,
+                segment_index=s_idx,
+                line_start=line.start_time,
+                max_time_window=max_time_window,
+                combined_text=combined_text,
+                language=language,
+                min_similarity=min_similarity,
+            )
+            if candidate is None:
                 continue
-            if abs(seg_a.start - line.start_time) > max_time_window:
-                continue
-
-            window_text = f"{seg_a.text} {seg_b.text}".strip()
-            combined_sim = _phonetic_similarity(combined_text, window_text, language)
-            if combined_sim < min_similarity:
-                continue
+            seg_a, seg_b = candidate
 
             total_words = len(line.words) + len(next_line.words)
             if total_words <= 0:
@@ -313,3 +314,26 @@ def _retime_adjacent_lines_to_segment_window(
             break
 
     return adjusted, fixes
+
+
+def _matching_segment_window(
+    *,
+    sorted_segments: List[TranscriptionSegment],
+    segment_index: int,
+    line_start: float,
+    max_time_window: float,
+    combined_text: str,
+    language: str,
+    min_similarity: float,
+) -> Tuple[TranscriptionSegment, TranscriptionSegment] | None:
+    seg_a = sorted_segments[segment_index]
+    seg_b = sorted_segments[segment_index + 1]
+    if seg_b.start - seg_a.end > 1.0:
+        return None
+    if abs(seg_a.start - line_start) > max_time_window:
+        return None
+    window_text = f"{seg_a.text} {seg_b.text}".strip()
+    combined_sim = _phonetic_similarity(combined_text, window_text, language)
+    if combined_sim < min_similarity:
+        return None
+    return seg_a, seg_b

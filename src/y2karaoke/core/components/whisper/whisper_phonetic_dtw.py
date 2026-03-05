@@ -43,78 +43,109 @@ def align_lyrics_to_transcription(
 
         line_text = " ".join(w.text for w in line.words)
         line_start = line.start_time
-
-        # Find best matching transcription segment within reasonable time range
-        best_match_idx = None
-        best_score = -float("inf")
-        best_segment = None
-        best_similarity = 0.0
-
-        for j, seg in enumerate(transcription):
-            if j in used_segments:
-                continue
-
-            # Only consider segments within max_time_shift of current position
-            time_diff = abs(seg.start - line_start)
-            if time_diff > max_time_shift:
-                continue
-
-            similarity = phonetic_utils._text_similarity(
-                line_text, seg.text, use_phonetic=True, language=language
-            )
-
-            if similarity < min_similarity:
-                continue
-
-            # Score: prioritize similarity, with small time bonus
-            time_bonus = max(0, (max_time_shift - time_diff) / max_time_shift) * 0.1
-            score = similarity + time_bonus
-
-            if score > best_score:
-                best_score = score
-                best_similarity = similarity
-                best_match_idx = j
-                best_segment = seg
-
-        if best_segment is not None and best_similarity >= min_similarity:
+        best = _best_transcription_match_for_line(
+            line_text=line_text,
+            line_start=line_start,
+            transcription=transcription,
+            used_segments=used_segments,
+            min_similarity=min_similarity,
+            max_time_shift=max_time_shift,
+            language=language,
+        )
+        if best is not None:
+            best_match_idx, best_segment, best_similarity = best
             used_segments.add(best_match_idx)
-
-            # Calculate timing adjustment
-            offset = best_segment.start - line_start
-            new_duration = best_segment.end - best_segment.start
-
-            # Only adjust if offset is significant but not too large
-            if 0.3 < abs(offset) <= max_time_shift:
-                # Redistribute words across the new duration
-                word_count = len(line.words)
-                word_spacing = new_duration / word_count if word_count > 0 else 0
-
-                new_words = []
-                for k, word in enumerate(line.words):
-                    new_start = best_segment.start + k * word_spacing
-                    new_end = new_start + (word_spacing * 0.9)
-                    new_words.append(
-                        models.Word(
-                            text=word.text,
-                            start_time=new_start,
-                            end_time=new_end,
-                            singer=word.singer,
-                        )
-                    )
-
-                aligned_line = models.Line(words=new_words, singer=line.singer)
+            aligned_line, note = _retime_line_from_transcription_match(
+                line=line,
+                line_index=i,
+                line_text=line_text,
+                line_start=line_start,
+                best_segment=best_segment,
+                best_similarity=best_similarity,
+                max_time_shift=max_time_shift,
+            )
+            if aligned_line is not None and note is not None:
                 aligned_lines.append(aligned_line)
-
-                alignments.append(
-                    f"Line {i+1} aligned to transcription: {offset:+.1f}s "
-                    f'(similarity: {best_similarity:.0%}) "{line_text[:30]}..."'
-                )
+                alignments.append(note)
                 continue
 
         # No good match found or no adjustment needed
         aligned_lines.append(line)
 
     return aligned_lines, alignments
+
+
+def _best_transcription_match_for_line(
+    *,
+    line_text: str,
+    line_start: float,
+    transcription: List[timing_models.TranscriptionSegment],
+    used_segments: set,
+    min_similarity: float,
+    max_time_shift: float,
+    language: str,
+) -> Tuple[int, timing_models.TranscriptionSegment, float] | None:
+    best_match_idx = -1
+    best_score = -float("inf")
+    best_segment: Optional[timing_models.TranscriptionSegment] = None
+    best_similarity = 0.0
+    for j, seg in enumerate(transcription):
+        if j in used_segments:
+            continue
+        time_diff = abs(seg.start - line_start)
+        if time_diff > max_time_shift:
+            continue
+        similarity = phonetic_utils._text_similarity(
+            line_text, seg.text, use_phonetic=True, language=language
+        )
+        if similarity < min_similarity:
+            continue
+        time_bonus = max(0, (max_time_shift - time_diff) / max_time_shift) * 0.1
+        score = similarity + time_bonus
+        if score > best_score:
+            best_score = score
+            best_similarity = similarity
+            best_match_idx = j
+            best_segment = seg
+    if best_segment is None or best_similarity < min_similarity:
+        return None
+    return best_match_idx, best_segment, best_similarity
+
+
+def _retime_line_from_transcription_match(
+    *,
+    line: models.Line,
+    line_index: int,
+    line_text: str,
+    line_start: float,
+    best_segment: timing_models.TranscriptionSegment,
+    best_similarity: float,
+    max_time_shift: float,
+) -> Tuple[models.Line | None, str | None]:
+    offset = best_segment.start - line_start
+    if not (0.3 < abs(offset) <= max_time_shift):
+        return None, None
+    new_duration = best_segment.end - best_segment.start
+    word_count = len(line.words)
+    word_spacing = new_duration / word_count if word_count > 0 else 0
+    new_words = []
+    for k, word in enumerate(line.words):
+        new_start = best_segment.start + k * word_spacing
+        new_end = new_start + (word_spacing * 0.9)
+        new_words.append(
+            models.Word(
+                text=word.text,
+                start_time=new_start,
+                end_time=new_end,
+                singer=word.singer,
+            )
+        )
+    aligned_line = models.Line(words=new_words, singer=line.singer)
+    note = (
+        f"Line {line_index+1} aligned to transcription: {offset:+.1f}s "
+        f'(similarity: {best_similarity:.0%}) "{line_text[:30]}..."'
+    )
+    return aligned_line, note
 
 
 def _find_best_whisper_match(
@@ -288,43 +319,56 @@ def _assess_lrc_quality(
     good_count = 0
 
     for line_idx, line in enumerate(lines):
-        if not line.words:
-            continue
-
-        # Get first significant word in line
-        first_word = None
-        for w in line.words:
-            if len(w.text.strip()) >= 2:
-                first_word = w
-                break
+        first_word = _first_significant_line_word(line)
         if not first_word:
             continue
-
         lrc_time = first_word.start_time
-        lrc_text = first_word.text
-
-        # Find best matching Whisper word
-        best_whisper_time = None
-        best_similarity = 0.0
-
-        for ww in whisper_words:
-            # Only consider words within 20s
-            if abs(ww.start - lrc_time) > 20:
-                continue
-
-            sim = phonetic_utils._phonetic_similarity(lrc_text, ww.text, language)
-            if sim > best_similarity:
-                best_similarity = sim
-                best_whisper_time = ww.start
-
-        if best_whisper_time is not None and best_similarity >= 0.5:
-            time_diff = abs(best_whisper_time - lrc_time)
-            assessments.append((line_idx, lrc_time, best_whisper_time))
-            if time_diff <= tolerance:
-                good_count += 1
+        best = _best_whisper_time_for_lrc_word(
+            lrc_text=first_word.text,
+            lrc_time=lrc_time,
+            whisper_words=whisper_words,
+            language=language,
+        )
+        if best is None:
+            continue
+        best_whisper_time, best_similarity = best
+        if best_similarity < 0.5:
+            continue
+        time_diff = abs(best_whisper_time - lrc_time)
+        assessments.append((line_idx, lrc_time, best_whisper_time))
+        if time_diff <= tolerance:
+            good_count += 1
 
     quality = good_count / len(assessments) if assessments else 1.0
     return quality, assessments
+
+
+def _first_significant_line_word(line: models.Line) -> Optional[models.Word]:
+    for word in line.words:
+        if len(word.text.strip()) >= 2:
+            return word
+    return None
+
+
+def _best_whisper_time_for_lrc_word(
+    *,
+    lrc_text: str,
+    lrc_time: float,
+    whisper_words: List[timing_models.TranscriptionWord],
+    language: str,
+) -> Tuple[float, float] | None:
+    best_whisper_time = None
+    best_similarity = 0.0
+    for ww in whisper_words:
+        if abs(ww.start - lrc_time) > 20:
+            continue
+        sim = phonetic_utils._phonetic_similarity(lrc_text, ww.text, language)
+        if sim > best_similarity:
+            best_similarity = sim
+            best_whisper_time = ww.start
+    if best_whisper_time is None:
+        return None
+    return best_whisper_time, best_similarity
 
 
 def _extract_lrc_words(lines: List[models.Line]) -> List[Dict]:

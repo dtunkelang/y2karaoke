@@ -257,6 +257,73 @@ def _retime_lines_from_dtw_alignments(
     )
 
 
+def _empty_alignment_payload(
+    lines: List[Line],
+) -> Tuple[
+    List[Line],
+    List[str],
+    Dict[str, float],
+    List[Dict],
+    Dict[int, Tuple[TranscriptionWord, float]],
+]:
+    return lines, [], _empty_dtw_metrics(), [], {}
+
+
+def _build_lenient_dtw_distance(
+    *,
+    phonetic_costs: Dict[Tuple[int, int], float],
+    whisper_words: List[TranscriptionWord],
+    use_silence: List[Tuple[float, float]],
+    audio_features: Optional[timing_models.AudioFeatures],
+    low_word_confidence_threshold: float,
+    lenient_vocal_activity_threshold: float,
+    lenient_activity_bonus: float,
+    check_vocal_activity_in_range_fn: Callable[..., float],
+    compute_silence_overlap_fn: Callable[..., float],
+    is_time_in_silence_fn: Callable[..., bool],
+) -> Callable[[np.ndarray, np.ndarray], float]:
+    def dtw_dist(a, b):
+        i, lrc_t = int(a[0]), a[1]
+        j, whisper_t = int(b[0]), b[1]
+        phon_cost = phonetic_costs[(i, j)]
+        if (
+            audio_features
+            and whisper_words[j].probability < low_word_confidence_threshold
+        ):
+            w_start = whisper_words[j].start
+            w_end = whisper_words[j].end
+            vocal_activity = check_vocal_activity_in_range_fn(
+                w_start, w_end, audio_features
+            )
+            if vocal_activity > lenient_vocal_activity_threshold:
+                phon_cost = max(0.0, phon_cost - lenient_activity_bonus)
+
+        time_diff = abs(whisper_t - lrc_t)
+        time_penalty = min(time_diff / 20.0, 1.0)
+        gap_start = min(lrc_t, whisper_t)
+        gap_end = max(lrc_t, whisper_t)
+        silence_overlap = compute_silence_overlap_fn(gap_start, gap_end, use_silence)
+        silence_penalty = min(silence_overlap / 2.0, 1.0)
+        if is_time_in_silence_fn(whisper_t, use_silence):
+            silence_penalty = max(silence_penalty, 0.8)
+        activity_penalty = 0.0
+        if audio_features and gap_end - gap_start > 0.5:
+            activity = check_vocal_activity_in_range_fn(
+                gap_start, gap_end, audio_features
+            )
+            non_silent = max(gap_end - gap_start - silence_overlap, 0.0)
+            if activity > 0.5 and non_silent > 0.5:
+                activity_penalty = min(activity, 1.0)
+        return (
+            0.5 * phon_cost
+            + 0.2 * time_penalty
+            + 0.2 * silence_penalty
+            + 0.1 * activity_penalty
+        )
+
+    return dtw_dist
+
+
 def _align_dtw_whisper_with_data(
     lines: List[Line],
     whisper_words: List[TranscriptionWord],
@@ -284,13 +351,7 @@ def _align_dtw_whisper_with_data(
     from . import whisper_phonetic_dtw
 
     if not lines or not whisper_words:
-        return (
-            lines,
-            [],
-            _empty_dtw_metrics(),
-            [],
-            {},
-        )
+        return _empty_alignment_payload(lines)
 
     if audio_features:
         whisper_words, _ = _fill_vocal_activity_gaps(
@@ -299,13 +360,7 @@ def _align_dtw_whisper_with_data(
 
     lrc_words = whisper_phonetic_dtw._extract_lrc_words(lines)
     if not lrc_words:
-        return (
-            lines,
-            [],
-            _empty_dtw_metrics(),
-            [],
-            {},
-        )
+        return _empty_alignment_payload(lines)
 
     # Pre-compute IPA
     logger.debug(f"DTW: Pre-computing IPA for {len(whisper_words)} Whisper words...")
@@ -326,48 +381,18 @@ def _align_dtw_whisper_with_data(
     whisper_seq = np.column_stack([np.arange(len(whisper_words)), whisper_times])
     use_silence = silence_regions or []
 
-    def dtw_dist(a, b):
-        i, lrc_t = int(a[0]), a[1]
-        j, whisper_t = int(b[0]), b[1]
-        phon_cost = phonetic_costs[(i, j)]
-
-        # Leniency mechanism: if Whisper word has low confidence but there is vocal activity,
-        # be more lenient about phonetic mismatch.
-        if (
-            audio_features
-            and whisper_words[j].probability < low_word_confidence_threshold
-        ):
-            # Check activity around the whisper word
-            w_start = whisper_words[j].start
-            w_end = whisper_words[j].end
-            vocal_activity = _check_vocal_activity_in_range(
-                w_start, w_end, audio_features
-            )
-            if vocal_activity > lenient_vocal_activity_threshold:
-                phon_cost = max(0.0, phon_cost - lenient_activity_bonus)
-
-        time_diff = abs(whisper_t - lrc_t)
-        time_penalty = min(time_diff / 20.0, 1.0)
-        gap_start = min(lrc_t, whisper_t)
-        gap_end = max(lrc_t, whisper_t)
-        silence_overlap = _compute_silence_overlap(gap_start, gap_end, use_silence)
-        silence_penalty = min(silence_overlap / 2.0, 1.0)
-        if _is_time_in_silence(whisper_t, use_silence):
-            silence_penalty = max(silence_penalty, 0.8)
-        activity_penalty = 0.0
-        if audio_features and gap_end - gap_start > 0.5:
-            activity = _check_vocal_activity_in_range(
-                gap_start, gap_end, audio_features
-            )
-            non_silent = max(gap_end - gap_start - silence_overlap, 0.0)
-            if activity > 0.5 and non_silent > 0.5:
-                activity_penalty = min(activity, 1.0)
-        return (
-            0.5 * phon_cost
-            + 0.2 * time_penalty
-            + 0.2 * silence_penalty
-            + 0.1 * activity_penalty
-        )
+    dtw_dist = _build_lenient_dtw_distance(
+        phonetic_costs=phonetic_costs,
+        whisper_words=whisper_words,
+        use_silence=use_silence,
+        audio_features=audio_features,
+        low_word_confidence_threshold=low_word_confidence_threshold,
+        lenient_vocal_activity_threshold=lenient_vocal_activity_threshold,
+        lenient_activity_bonus=lenient_activity_bonus,
+        check_vocal_activity_in_range_fn=_check_vocal_activity_in_range,
+        compute_silence_overlap_fn=_compute_silence_overlap,
+        is_time_in_silence_fn=_is_time_in_silence,
+    )
 
     # Run DTW
     logger.debug("DTW: Running alignment...")

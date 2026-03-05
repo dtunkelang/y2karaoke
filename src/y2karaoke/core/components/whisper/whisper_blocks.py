@@ -133,53 +133,16 @@ def _assign_lrc_lines_to_segments(
                 best_score = score
                 best_seg = si
             if si + 1 < n_segs:
-                merged = seg_word_bags[si] + seg_word_bags[si + 1]
-                mscore = _text_overlap_score(words, merged)
-                if mscore > best_score:
-                    best_score = mscore
-                    s1 = _text_overlap_score(words, seg_word_bags[si])
-                    s2 = _text_overlap_score(words, seg_word_bags[si + 1])
-                    # Prefer the earlier segment - karaoke lines should
-                    # appear when the first word is sung.  Only use the
-                    # later segment if the earlier has zero overlap.
-                    best_seg = si if s1 > 0 else si + 1
-                    if (
-                        os.getenv(
-                            "Y2K_WHISPER_SEGMENT_ASSIGN_PREFER_LATER_ON_STRONG_MERGE",
-                            "1",
-                        )
-                        != "0"
-                        and len(words) >= 3
-                        and s1 > 0
-                        and s2 > 0
-                        and mscore >= 0.6
-                        and s2 >= max(0.35, s1 * 0.8)
-                        and (mscore - s1) >= 0.2
-                        and len(seg_word_bags[si + 1]) >= max(4, int(len(words) * 0.7))
-                        and seg_durations[si + 1] >= max(0.9, 0.18 * len(words))
-                        and len(seg_word_bags[si])
-                        <= max(3, int(len(seg_word_bags[si + 1]) * 0.6))
-                        and seg_durations[si] <= max(2.2, seg_durations[si + 1] * 0.7)
-                    ):
-                        if os.getenv("Y2K_WHISPER_SEGMENT_ASSIGN_LATER_TRACE") == "1":
-                            logger.info(
-                                (
-                                    "later-merge-tiebreak line=%d words=%s si=%d "
-                                    "s1=%.3f s2=%.3f merged=%.3f seg1_wc=%d "
-                                    "seg2_wc=%d seg1_dur=%.2f seg2_dur=%.2f"
-                                ),
-                                li,
-                                " ".join(words),
-                                si,
-                                s1,
-                                s2,
-                                mscore,
-                                len(seg_word_bags[si]),
-                                len(seg_word_bags[si + 1]),
-                                seg_durations[si],
-                                seg_durations[si + 1],
-                            )
-                        best_seg = si + 1
+                candidate = _merged_segment_candidate(
+                    words=words,
+                    line_index=li,
+                    segment_index=si,
+                    current_best_score=best_score,
+                    seg_word_bags=seg_word_bags,
+                    seg_durations=seg_durations,
+                )
+                if candidate is not None:
+                    best_score, best_seg = candidate
         # Zero-score repeated lines can get cursor-locked in long refrain sections.
         # Allow a limited lookback rescue without moving the global cursor backward.
         best_seg, best_score = _rescue_zero_score_repeated_line_assignment(
@@ -214,6 +177,105 @@ def _assign_lrc_lines_to_segments(
         line_to_seg[li] = best_seg
         seg_cursor = max(seg_cursor, best_seg)
     return line_to_seg
+
+
+def _merged_segment_candidate(
+    *,
+    words: List[str],
+    line_index: int,
+    segment_index: int,
+    current_best_score: float,
+    seg_word_bags: List[List[str]],
+    seg_durations: List[float],
+) -> Tuple[float, int] | None:
+    merged = seg_word_bags[segment_index] + seg_word_bags[segment_index + 1]
+    mscore = _text_overlap_score(words, merged)
+    if mscore <= current_best_score:
+        return None
+    s1 = _text_overlap_score(words, seg_word_bags[segment_index])
+    s2 = _text_overlap_score(words, seg_word_bags[segment_index + 1])
+    best_seg = segment_index if s1 > 0 else segment_index + 1
+    if _should_prefer_later_segment(
+        words=words,
+        s1=s1,
+        s2=s2,
+        mscore=mscore,
+        seg_word_bags=seg_word_bags,
+        seg_durations=seg_durations,
+        segment_index=segment_index,
+    ):
+        _trace_later_merge_tiebreak(
+            line_index=line_index,
+            words=words,
+            segment_index=segment_index,
+            s1=s1,
+            s2=s2,
+            mscore=mscore,
+            seg_word_bags=seg_word_bags,
+            seg_durations=seg_durations,
+        )
+        best_seg = segment_index + 1
+    return mscore, best_seg
+
+
+def _should_prefer_later_segment(
+    *,
+    words: List[str],
+    s1: float,
+    s2: float,
+    mscore: float,
+    seg_word_bags: List[List[str]],
+    seg_durations: List[float],
+    segment_index: int,
+) -> bool:
+    if os.getenv("Y2K_WHISPER_SEGMENT_ASSIGN_PREFER_LATER_ON_STRONG_MERGE", "1") == "0":
+        return False
+    return (
+        len(words) >= 3
+        and s1 > 0
+        and s2 > 0
+        and mscore >= 0.6
+        and s2 >= max(0.35, s1 * 0.8)
+        and (mscore - s1) >= 0.2
+        and len(seg_word_bags[segment_index + 1]) >= max(4, int(len(words) * 0.7))
+        and seg_durations[segment_index + 1] >= max(0.9, 0.18 * len(words))
+        and len(seg_word_bags[segment_index])
+        <= max(3, int(len(seg_word_bags[segment_index + 1]) * 0.6))
+        and seg_durations[segment_index]
+        <= max(2.2, seg_durations[segment_index + 1] * 0.7)
+    )
+
+
+def _trace_later_merge_tiebreak(
+    *,
+    line_index: int,
+    words: List[str],
+    segment_index: int,
+    s1: float,
+    s2: float,
+    mscore: float,
+    seg_word_bags: List[List[str]],
+    seg_durations: List[float],
+) -> None:
+    if os.getenv("Y2K_WHISPER_SEGMENT_ASSIGN_LATER_TRACE") != "1":
+        return
+    logger.info(
+        (
+            "later-merge-tiebreak line=%d words=%s si=%d "
+            "s1=%.3f s2=%.3f merged=%.3f seg1_wc=%d "
+            "seg2_wc=%d seg1_dur=%.2f seg2_dur=%.2f"
+        ),
+        line_index,
+        " ".join(words),
+        segment_index,
+        s1,
+        s2,
+        mscore,
+        len(seg_word_bags[segment_index]),
+        len(seg_word_bags[segment_index + 1]),
+        seg_durations[segment_index],
+        seg_durations[segment_index + 1],
+    )
 
 
 def _rescue_zero_score_repeated_line_assignment(

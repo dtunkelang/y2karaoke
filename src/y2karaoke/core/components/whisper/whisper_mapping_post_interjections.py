@@ -38,17 +38,14 @@ def _retime_short_interjection_lines(
             else None
         )
 
-        best_seg: Optional[timing_models.TranscriptionSegment] = None
-        best_score = 0.0
-        for seg in sorted_segments:
-            if abs(seg.start - line.start_time) > max_shift:
-                continue
-            score = interjection_similarity_fn(line.text, seg.text)
-            if score > best_score:
-                best_score = score
-                best_seg = seg
-
-        if best_seg is None or best_score < min_similarity:
+        best_seg = _best_interjection_segment(
+            line=line,
+            sorted_segments=sorted_segments,
+            interjection_similarity_fn=interjection_similarity_fn,
+            max_shift=max_shift,
+            min_similarity=min_similarity,
+        )
+        if best_seg is None:
             continue
 
         window_start = best_seg.start
@@ -62,20 +59,55 @@ def _retime_short_interjection_lines(
         if window_end - window_start <= 0.05:
             continue
 
-        total_duration = max(window_end - window_start, 0.2)
-        spacing = total_duration / len(line.words)
-        new_words = []
-        for word_idx, w in enumerate(line.words):
-            start = window_start + word_idx * spacing
-            end = start + spacing * 0.9
-            new_words.append(
-                models.Word(
-                    text=w.text,
-                    start_time=start,
-                    end_time=end,
-                    singer=w.singer,
-                )
-            )
-        adjusted[idx] = models.Line(words=new_words, singer=line.singer)
+        adjusted[idx] = _retime_interjection_line_to_window(
+            line=line,
+            window_start=window_start,
+            window_end=window_end,
+        )
 
     return adjusted
+
+
+def _best_interjection_segment(
+    *,
+    line: models.Line,
+    sorted_segments: List[timing_models.TranscriptionSegment],
+    interjection_similarity_fn: Callable[[str, str], float],
+    max_shift: float,
+    min_similarity: float,
+) -> Optional[timing_models.TranscriptionSegment]:
+    best_seg: Optional[timing_models.TranscriptionSegment] = None
+    best_score = 0.0
+    for seg in sorted_segments:
+        if abs(seg.start - line.start_time) > max_shift:
+            continue
+        score = interjection_similarity_fn(line.text, seg.text)
+        if score > best_score:
+            best_score = score
+            best_seg = seg
+    if best_seg is None or best_score < min_similarity:
+        return None
+    return best_seg
+
+
+def _retime_interjection_line_to_window(
+    *,
+    line: models.Line,
+    window_start: float,
+    window_end: float,
+) -> models.Line:
+    total_duration = max(window_end - window_start, 0.2)
+    spacing = total_duration / len(line.words)
+    new_words = []
+    for word_idx, w in enumerate(line.words):
+        start = window_start + word_idx * spacing
+        end = start + spacing * 0.9
+        new_words.append(
+            models.Word(
+                text=w.text,
+                start_time=start,
+                end_time=end,
+                singer=w.singer,
+            )
+        )
+    return models.Line(words=new_words, singer=line.singer)
