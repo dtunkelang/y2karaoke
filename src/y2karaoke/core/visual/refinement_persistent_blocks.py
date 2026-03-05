@@ -58,33 +58,52 @@ def assign_cluster_persistent_onsets(
     if sum(1 for _, s, c in onset_candidates if s is not None and c >= 0.25) < 2:
         return
 
+    assigned = _assigned_persistent_onsets(onset_candidates)
+    if len(assigned) < 2:
+        return
+
+    for idx, (line, onset, conf) in enumerate(assigned):
+        next_onset = _next_or_surrogate_onset(assigned, idx)
+        if next_onset is None:
+            next_onset = _surrogate_end_from_onset(line, onset)
+        assign_line_level_word_timings(
+            line,
+            onset,
+            next_onset,
+            max(0.35, min(0.75, conf)),
+        )
+
+
+def _assigned_persistent_onsets(
+    onset_candidates: List[Tuple[TargetLine, Optional[float], float]],
+) -> List[Tuple[TargetLine, float, float]]:
     prev_onset: Optional[float] = None
     assigned: List[Tuple[TargetLine, float, float]] = []
-    for ln, onset, conf in onset_candidates:
+    for line, onset, conf in onset_candidates:
         if onset is None:
             continue
         if prev_onset is not None:
             onset = max(onset, prev_onset + 0.2)
         prev_onset = onset
-        assigned.append((ln, onset, conf))
-    if len(assigned) < 2:
-        return
+        assigned.append((line, onset, conf))
+    return assigned
 
-    for i, (ln, onset, conf) in enumerate(assigned):
-        next_onset = assigned[i + 1][1] if i + 1 < len(assigned) else None
-        if next_onset is not None and (next_onset - onset) > 6.0:
-            next_onset = None
-        if next_onset is None:
-            surrogate_end = onset + max(2.2, 0.33 * len(ln.words))
-            if ln.visibility_end is not None:
-                surrogate_end = min(surrogate_end, float(ln.visibility_end) + 0.5)
-            next_onset = surrogate_end
-        assign_line_level_word_timings(
-            ln,
-            onset,
-            next_onset,
-            max(0.35, min(0.75, conf)),
-        )
+
+def _next_or_surrogate_onset(
+    assigned: List[Tuple[TargetLine, float, float]], idx: int
+) -> float | None:
+    onset = assigned[idx][1]
+    next_onset = assigned[idx + 1][1] if idx + 1 < len(assigned) else None
+    if next_onset is not None and (next_onset - onset) > 6.0:
+        return None
+    return next_onset
+
+
+def _surrogate_end_from_onset(line: TargetLine, onset: float) -> float:
+    surrogate_end = onset + max(2.2, 0.33 * len(line.words))
+    if line.visibility_end is not None:
+        surrogate_end = min(surrogate_end, float(line.visibility_end) + 0.5)
+    return surrogate_end
 
 
 def select_persistent_overlap_lines(candidates: List[TargetLine]) -> List[TargetLine]:
