@@ -106,30 +106,20 @@ def _retime_short_interstitial_lines_between_anchors(
         curr_start_f = float(cast(float, curr_start))
         curr_end_f = float(cast(float, curr_end))
         next_start_f = float(next_start) if next_start is not None else None
-        if curr_start_f <= prev_end_f + 0.05:
-            continue
-
-        n_words = max(len(curr.words), 0)
         curr_dur = curr_end_f - curr_start_f
-        if n_words > 2 or curr_dur > 1.2 or len(prev.words) < 4:
+        if not _should_retime_short_interstitial(
+            prev, curr, prev_end_f, curr_start_f, curr_dur
+        ):
             continue
 
-        lead_gap = curr_start_f - prev_end_f
-        if lead_gap >= 0.45:
+        target_start = _interstitial_target_start(
+            prev_end_f, curr_start_f, curr_dur, next_start_f
+        )
+        if target_start is None:
             continue
-
-        target_start = curr_start_f + min(0.85, max(0.45, 0.8 - lead_gap))
-        if next_start_f is not None:
-            target_start = min(target_start, next_start_f - curr_dur - 0.15)
-        if (target_start - curr_start_f) < 0.25:
-            continue
-
-        if curr.visibility_start is not None:
-            target_start = max(target_start, float(curr.visibility_start) + 0.1)
-        if curr.visibility_end is not None:
-            target_start = min(
-                target_start, float(curr.visibility_end) - curr_dur - 0.05
-            )
+        target_start = _clamp_interstitial_target_to_visibility(
+            curr, target_start, curr_dur
+        )
         if target_start <= curr_start_f + 0.2:
             continue
 
@@ -139,6 +129,46 @@ def _retime_short_interstitial_lines_between_anchors(
             target_start + curr_dur,
             0.42,
         )
+
+
+def _should_retime_short_interstitial(
+    prev: TargetLine,
+    curr: TargetLine,
+    prev_end: float,
+    curr_start: float,
+    curr_dur: float,
+) -> bool:
+    if curr_start <= prev_end + 0.05:
+        return False
+    if max(len(curr.words), 0) > 2 or curr_dur > 1.2 or len(prev.words) < 4:
+        return False
+    lead_gap = curr_start - prev_end
+    return lead_gap < 0.45
+
+
+def _interstitial_target_start(
+    prev_end: float,
+    curr_start: float,
+    curr_dur: float,
+    next_start: float | None,
+) -> float | None:
+    lead_gap = curr_start - prev_end
+    target_start = curr_start + min(0.85, max(0.45, 0.8 - lead_gap))
+    if next_start is not None:
+        target_start = min(target_start, next_start - curr_dur - 0.15)
+    if (target_start - curr_start) < 0.25:
+        return None
+    return target_start
+
+
+def _clamp_interstitial_target_to_visibility(
+    curr: TargetLine, target_start: float, curr_dur: float
+) -> float:
+    if curr.visibility_start is not None:
+        target_start = max(target_start, float(curr.visibility_start) + 0.1)
+    if curr.visibility_end is not None:
+        target_start = min(target_start, float(curr.visibility_end) - curr_dur - 0.05)
+    return target_start
 
 
 def _rebalance_middle_lines_in_four_line_shared_visibility_runs(
@@ -153,55 +183,57 @@ def _rebalance_middle_lines_in_four_line_shared_visibility_runs(
     """Spread compressed middle lines between stable first/last anchors."""
     line_order = [ln for ln, _, _ in g_jobs]
     for i in range(len(line_order) - 3):
-        a = line_order[i]
-        b = line_order[i + 1]
-        c = line_order[i + 2]
-        d = line_order[i + 3]
-        a_s, a_e = line_start_fn(a), line_end_fn(a)
-        b_s, b_e = line_start_fn(b), line_end_fn(b)
-        c_s, c_e = line_start_fn(c), line_end_fn(c)
-        d_s, d_e = line_start_fn(d), line_end_fn(d)
-        if None in (a_s, a_e, b_s, b_e, c_s, c_e, d_s, d_e):
+        quartet = _compute_four_line_rebalance_state(
+            line_order[i : i + 4], line_start_fn=line_start_fn, line_end_fn=line_end_fn
+        )
+        if quartet is None:
             continue
-        if any(
-            ln.visibility_start is None or ln.visibility_end is None
-            for ln in (a, b, c, d)
-        ):
-            continue
-
-        vis_starts = [float(cast(float, ln.visibility_start)) for ln in (a, b, c, d)]
-        vis_ends = [float(cast(float, ln.visibility_end)) for ln in (a, b, c, d)]
-        if (max(vis_starts) - min(vis_starts)) > 0.8:
-            continue
-        if (max(vis_ends) - min(vis_ends)) > 3.5:
-            continue
-
-        a_sf = float(cast(float, a_s))
-        b_sf = float(cast(float, b_s))
-        c_sf = float(cast(float, c_s))
-        d_sf = float(cast(float, d_s))
-        span = d_sf - a_sf
-        if span < 3.5:
-            continue
-        if (c_sf - b_sf) >= 1.1:
-            continue
-        if (d_sf - c_sf) <= 2.0:
-            continue
-
-        counts = [max(len(x.words), 1) for x in (a, b, c, d)]
-        if max(counts) > 1.8 * min(counts):
-            continue
-
-        dur_b = max(0.7, float(cast(float, b_e)) - b_sf)
-        dur_c = max(0.7, float(cast(float, c_e)) - c_sf)
-        target_b = a_sf + span / 3.0
-        target_c = a_sf + 2.0 * span / 3.0
-        target_b = max(target_b, a_sf + 0.45)
-        target_c = max(target_c, target_b + 0.45)
-        target_c = min(target_c, d_sf - dur_c - 0.1)
-        target_b = min(target_b, target_c - dur_b - 0.1)
+        b, c, b_sf, c_sf, dur_b, dur_c, target_b, target_c = quartet
         if target_b <= b_sf + 0.2 and target_c <= c_sf + 0.2:
             continue
-
         assign_line_level_word_timings_fn(b, target_b, target_b + dur_b, 0.42)
         assign_line_level_word_timings_fn(c, target_c, target_c + dur_c, 0.42)
+
+
+def _compute_four_line_rebalance_state(
+    lines: List[TargetLine],
+    *,
+    line_start_fn: Callable[[TargetLine], Optional[float]],
+    line_end_fn: Callable[[TargetLine], Optional[float]],
+) -> tuple[TargetLine, TargetLine, float, float, float, float, float, float] | None:
+    a, b, c, d = lines
+    a_s, a_e = line_start_fn(a), line_end_fn(a)
+    b_s, b_e = line_start_fn(b), line_end_fn(b)
+    c_s, c_e = line_start_fn(c), line_end_fn(c)
+    d_s, d_e = line_start_fn(d), line_end_fn(d)
+    if None in (a_s, a_e, b_s, b_e, c_s, c_e, d_s, d_e):
+        return None
+    if any(
+        ln.visibility_start is None or ln.visibility_end is None for ln in (a, b, c, d)
+    ):
+        return None
+    vis_starts = [float(cast(float, ln.visibility_start)) for ln in (a, b, c, d)]
+    vis_ends = [float(cast(float, ln.visibility_end)) for ln in (a, b, c, d)]
+    if (max(vis_starts) - min(vis_starts)) > 0.8 or (
+        max(vis_ends) - min(vis_ends)
+    ) > 3.5:
+        return None
+    a_sf = float(cast(float, a_s))
+    b_sf = float(cast(float, b_s))
+    c_sf = float(cast(float, c_s))
+    d_sf = float(cast(float, d_s))
+    span = d_sf - a_sf
+    if span < 3.5 or (c_sf - b_sf) >= 1.1 or (d_sf - c_sf) <= 2.0:
+        return None
+    counts = [max(len(x.words), 1) for x in (a, b, c, d)]
+    if max(counts) > 1.8 * min(counts):
+        return None
+    dur_b = max(0.7, float(cast(float, b_e)) - b_sf)
+    dur_c = max(0.7, float(cast(float, c_e)) - c_sf)
+    target_b = a_sf + span / 3.0
+    target_c = a_sf + 2.0 * span / 3.0
+    target_b = max(target_b, a_sf + 0.45)
+    target_c = max(target_c, target_b + 0.45)
+    target_c = min(target_c, d_sf - dur_c - 0.1)
+    target_b = min(target_b, target_c - dur_b - 0.1)
+    return b, c, b_sf, c_sf, dur_b, dur_c, target_b, target_c
