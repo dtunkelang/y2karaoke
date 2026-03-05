@@ -280,30 +280,54 @@ def _is_metadata_line(
 
     text_lower = text.lower().strip()
 
-    if _has_metadata_prefix(text_lower):
-        return True
-    if _has_metadata_keyword(text):
-        return True
-    if _has_metadata_pattern(text_lower):
-        return True
-    if _is_credit_pattern(text):
+    if _is_structural_metadata_line(text, text_lower):
         return True
 
-    # Only filter title/artist headers if they appear extremely early (<= 1s).
-    # Song titles often appear in real lyrics, so avoid dropping them by default.
+    if _is_early_title_or_artist_header(
+        text_lower=text_lower,
+        title=title,
+        artist=artist,
+        timestamp=timestamp,
+    ):
+        return True
+
+    if _is_early_promo_line(
+        text, title=title, timestamp=timestamp, filter_promos=filter_promos
+    ):
+        return True
+
+    return False
+
+
+def _is_structural_metadata_line(text: str, text_lower: str) -> bool:
+    return (
+        _has_metadata_prefix(text_lower)
+        or _has_metadata_keyword(text)
+        or _has_metadata_pattern(text_lower)
+        or _is_credit_pattern(text)
+    )
+
+
+def _is_early_title_or_artist_header(
+    *, text_lower: str, title: str, artist: str, timestamp: float
+) -> bool:
     is_header_time = timestamp <= 1.0
     if title and is_header_time and _is_title_header(text_lower, title, artist):
         return True
     if artist and is_header_time and _is_artist_header(text_lower, artist):
         return True
+    return False
 
-    # Filter obvious promo/CTA lines only at the very beginning.
-    if filter_promos:
-        if timestamp <= 12.0 and _is_promo_line(text):
-            return True
-        if timestamp <= 15.0 and _is_promo_like_title_line(text, title):
-            return True
 
+def _is_early_promo_line(
+    text: str, *, title: str, timestamp: float, filter_promos: bool
+) -> bool:
+    if not filter_promos:
+        return False
+    if timestamp <= 12.0 and _is_promo_line(text):
+        return True
+    if timestamp <= 15.0 and _is_promo_like_title_line(text, title):
+        return True
     return False
 
 

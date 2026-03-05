@@ -341,6 +341,18 @@ def _best_fused_split(token: str) -> Tuple[str, str] | None:
         return None
 
     best: Tuple[int, Tuple[str, str]] | None = None
+    for left, right in _fused_split_candidates(lower, lex):
+        score = _fused_split_score(left, right)
+        if best is None or score > best[0]:
+            best = (score, (left, right))
+
+    if best is None or best[0] < 5:
+        return None
+    return best[1]
+
+
+def _fused_split_candidates(lower: str, lex: set[str]) -> list[tuple[str, str]]:
+    candidates: list[tuple[str, str]] = []
     for i in range(1, len(lower)):
         left = lower[:i]
         right = lower[i:]
@@ -348,24 +360,21 @@ def _best_fused_split(token: str) -> Tuple[str, str] | None:
             continue
         if left not in lex or right not in lex:
             continue
+        candidates.append((left, right))
+    return candidates
 
-        # Favor splits anchored by common short function words.
-        score = 0
-        if left in _FUSED_SPLIT_ANCHORS:
-            score += 6
-        if right in _FUSED_SPLIT_ANCHORS:
-            score += 4
-        if len(left) <= 2:
-            score += 2
-        if len(right) >= 4:
-            score += 1
 
-        if best is None or score > best[0]:
-            best = (score, (left, right))
-
-    if best is None or best[0] < 5:
-        return None
-    return best[1]
+def _fused_split_score(left: str, right: str) -> int:
+    score = 0
+    if left in _FUSED_SPLIT_ANCHORS:
+        score += 6
+    if right in _FUSED_SPLIT_ANCHORS:
+        score += 4
+    if len(left) <= 2:
+        score += 2
+    if len(right) >= 4:
+        score += 1
+    return score
 
 
 def _repair_fused_ocr_words(text: str) -> str:
