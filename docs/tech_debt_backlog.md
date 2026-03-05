@@ -25,10 +25,10 @@ Last updated: 2026-03-04
 3. **Whisper pipeline observability: per-pass counters in metrics**
 - Impact: high
 - Effort: medium
-- Status: completed (phase 1)
+- Status: completed
 - Scope:
   - Emit stable pass-level counters for key finalize/postpass stages.
-  - Emit per-pass durations (`*_sec`) for the same stages.
+  - Emit per-pass durations (`*_sec`) for finalize stages and alignment-stage durations/counts.
   - Include these metrics in returned Whisper metrics for regression triage.
 
 4. **Heuristic surface reduction via explicit config objects**

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import time
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
 from ....utils.lex_lookup_installer import ensure_local_lex_lookup
@@ -82,6 +83,7 @@ def align_lrc_text_to_whisper_timings_impl(  # noqa: C901
     _ = lenient_activity_bonus  # consumed by downstream scoring in related paths
 
     baseline_lines = clone_lines_for_fallback_fn(lines)
+    overall_start = time.perf_counter()
     ensure_local_lex_lookup()
     transcription, all_words, detected_lang, used_model = transcribe_vocals_fn(
         vocals_path, language, model_size, aggressive, temperature
@@ -146,6 +148,7 @@ def align_lrc_text_to_whisper_timings_impl(  # noqa: C901
         )
 
     all_words = dedupe_whisper_words_fn(all_words)
+    whisper_words_after_filter = len(all_words)
 
     epitran_lang = phonetic_utils._whisper_lang_to_epitran(detected_lang)
     logger.debug(
@@ -211,6 +214,7 @@ def align_lrc_text_to_whisper_timings_impl(  # noqa: C901
             )
 
     corrections: List[str] = []
+    mapping_start = time.perf_counter()
     mapped_lines, mapped_count, total_similarity, mapped_lines_set = (
         map_lrc_words_to_whisper_fn(
             lines,
@@ -221,6 +225,8 @@ def align_lrc_text_to_whisper_timings_impl(  # noqa: C901
             transcription,
         )
     )
+    mapping_elapsed = time.perf_counter() - mapping_start
+    postpass_start = time.perf_counter()
     mapped_lines, corrections = run_mapped_line_postpasses_fn(
         mapped_lines=mapped_lines,
         mapped_lines_set=mapped_lines_set,
@@ -241,6 +247,7 @@ def align_lrc_text_to_whisper_timings_impl(  # noqa: C901
         enforce_monotonic_line_starts_whisper_fn=enforce_monotonic_line_starts_whisper_fn,
         resolve_line_overlaps_fn=resolve_line_overlaps_fn,
     )
+    postpass_elapsed = time.perf_counter() - postpass_start
 
     matched_ratio = mapped_count / len(lrc_words) if lrc_words else 0.0
     avg_similarity = total_similarity / mapped_count if mapped_count else 0.0
@@ -323,6 +330,14 @@ def align_lrc_text_to_whisper_timings_impl(  # noqa: C901
         "dtw_used": 1.0,
         "dtw_mode": 1.0,
         "whisper_model": used_model,
+        "whisper_transcription_segment_count": float(len(transcription)),
+        "whisper_word_count_before_filter": float(before_low_conf_filter),
+        "whisper_word_count_after_filter": float(whisper_words_after_filter),
+        "lrc_word_count": float(len(lrc_words)),
+        "mapped_line_count": float(len(mapped_lines_set)),
+        "mapping_stage_sec": float(mapping_elapsed),
+        "mapped_postpasses_sec": float(postpass_elapsed),
+        "alignment_total_sec": float(time.perf_counter() - overall_start),
     }
 
     if mapped_count:
