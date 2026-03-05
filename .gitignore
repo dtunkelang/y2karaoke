@@ -3,11 +3,13 @@ __pycache__/
 *.py[cod]
 *$py.class
 *.so
+build/
 venv/
 .venv/
 env/
 .env/
 debug
+debug_start/
 
 # IDE
 .idea/

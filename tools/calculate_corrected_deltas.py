@@ -1,12 +1,14 @@
+import argparse
 import json
-import yaml
 from pathlib import Path
 import statistics
 import sys
 from difflib import SequenceMatcher
 
+import yaml
+
 # Set up path to use y2karaoke.core.text_utils
-REPO_ROOT = Path(__file__).resolve().parent
+REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT / "src"))
 from y2karaoke.core.text_utils import normalize_text_basic, make_slug  # noqa: E402
 
@@ -61,7 +63,7 @@ def calculate_offset_corrected_metrics(ref_words, ext_words):
     }
 
 
-with open("benchmarks/benchmark_songs.yaml", "r") as f:
+with open(REPO_ROOT / "benchmarks" / "benchmark_songs.yaml", "r") as f:
     config = yaml.safe_load(f)
 
 # Manually fix config to include both 07 songs if one is missing from YAML but present in files
@@ -74,13 +76,18 @@ print(
 )
 print("|---|---|---|---|---|---|")
 
-import argparse
 parser = argparse.ArgumentParser()
-parser.add_argument("--results-dir", type=str, help="Path to a benchmark results directory")
+parser.add_argument(
+    "--results-dir", type=str, help="Path to a benchmark results directory"
+)
 args = parser.parse_args()
 
-gold_set_dir = Path("benchmarks/gold_set/")
-visual_gold_dir = Path(args.results_dir) if args.results_dir else Path("benchmarks/gold_set_karaoke_seed/")
+gold_set_dir = REPO_ROOT / "benchmarks" / "gold_set"
+visual_gold_dir = (
+    Path(args.results_dir)
+    if args.results_dir
+    else (REPO_ROOT / "benchmarks" / "gold_set_karaoke_seed")
+)
 
 for idx, song in enumerate(config["songs"], 1):
     artist = song["artist"]
@@ -101,7 +108,7 @@ for idx, song in enumerate(config["songs"], 1):
         ext_matches = list(visual_gold_dir.glob(f"*_{song_slug}_timing_report.json"))
     else:
         ext_matches = list(visual_gold_dir.glob(f"*_{song_slug}.visual.gold.json"))
-    
+
     if ext_matches:
         ext_path = ext_matches[0]
 

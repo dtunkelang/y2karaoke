@@ -80,7 +80,7 @@ def create_html(json_path):
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
-        print("Usage: python3 visualize_json.py <json_file>")
+        print("Usage: python3 tools/visualize_json.py <json_file>")
         sys.exit(1)
 
     json_file = sys.argv[1]

@@ -187,7 +187,7 @@ def main() -> int:
         "--visual-eval-summary-json",
         type=Path,
         default=None,
-        help="Optional aggregate visual eval summary JSON from run_visual_eval.py",
+        help="Optional aggregate visual eval summary JSON from tools/run_visual_eval.py",
     )
     parser.add_argument(
         "--min-visual-eval-strict-f1",

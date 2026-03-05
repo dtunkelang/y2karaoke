@@ -38,7 +38,7 @@ bootstrap-quality-guardrails:
 	$(PYTHON) tools/bootstrap_quality_guardrails.py
 
 visual-eval:
-	$(PYTHON) run_visual_eval.py
+	$(PYTHON) tools/run_visual_eval.py
 
 visual-eval-guardrails:
 	$(PYTHON) tools/visual_eval_guardrails.py

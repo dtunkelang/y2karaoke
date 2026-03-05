@@ -22,7 +22,7 @@ def _parse_args() -> argparse.Namespace:
     p.add_argument(
         "--skip-eval",
         action="store_true",
-        help="Skip running run_visual_eval.py and only enforce guardrails",
+        help="Skip running tools/run_visual_eval.py and only enforce guardrails",
     )
     p.add_argument(
         "--python",
@@ -71,7 +71,7 @@ def main() -> int:
     manifest_only = bool(config.get("manifest_only", False))
 
     if not args.skip_eval:
-        eval_cmd = [args.python, "run_visual_eval.py"]
+        eval_cmd = [args.python, "tools/run_visual_eval.py"]
         if manifest is not None:
             eval_cmd.extend(["--manifest", str(manifest)])
         if manifest_only:

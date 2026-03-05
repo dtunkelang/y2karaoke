@@ -299,7 +299,7 @@ Bootstrap quality guardrails for visual-seeded gold files:
 make bootstrap-quality-guardrails
 ```
 
-Deterministic visual-extraction metric guardrails (runs `run_visual_eval.py` against the
+Deterministic visual-extraction metric guardrails (runs `tools/run_visual_eval.py` against the
 visual benchmark manifest (`benchmarks/visual_benchmark_songs.yaml`) and seeded visual gold set,
 snapshots/uses local LRC references in `benchmarks/reference_lrc/`,
 and enforces committed F1 thresholds from `benchmarks/visual_eval_guardrails.json`):
