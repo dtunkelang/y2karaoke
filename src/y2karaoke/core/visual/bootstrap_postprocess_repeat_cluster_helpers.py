@@ -101,17 +101,13 @@ def _harmonize_repeat_cluster_plural_variants(
     if not token_lists:
         return
 
-    lengths = [len(toks) for toks in token_lists]
-    target_len = max(set(lengths), key=lambda n: (sum(1 for x in lengths if x == n), n))
-    aligned = [pos for pos, toks in enumerate(token_lists) if len(toks) == target_len]
+    target_len, aligned = _repeat_cluster_alignment_positions(token_lists)
     if len(aligned) < 2:
         return
 
-    consensus_by_pos: dict[int, str] = {}
-    for pos in range(target_len):
-        chosen = _repeat_cluster_consensus_token_at_pos(token_lists, aligned, pos)
-        if chosen is not None:
-            consensus_by_pos[pos] = chosen
+    consensus_by_pos = _repeat_cluster_consensus_by_position(
+        token_lists, aligned, target_len
+    )
 
     if not consensus_by_pos:
         return
@@ -120,24 +116,55 @@ def _harmonize_repeat_cluster_plural_variants(
         words = line.get("words", [])
         if len(words) != target_len:
             continue
-        changed = False
-        for pos, chosen_norm in consensus_by_pos.items():
-            cur = str(words[pos].get("text", ""))
-            cur_norm = normalize_text_basic(cur).replace(" ", "")
-            same_plural_family = _plural_family_key(cur_norm) == _plural_family_key(
-                chosen_norm
-            )
-            same_ocr_family = _ocr_confusion_family_key(
-                cur_norm
-            ) == _ocr_confusion_family_key(chosen_norm)
-            if not (same_plural_family or same_ocr_family):
-                continue
-            if cur_norm == chosen_norm:
-                continue
-            words[pos]["text"] = chosen_norm
-            changed = True
+        changed = _apply_consensus_to_repeat_cluster_words(words, consensus_by_pos)
         if changed:
             line["text"] = " ".join(str(w.get("text", "")) for w in words)
+
+
+def _repeat_cluster_alignment_positions(
+    token_lists: list[list[str]],
+) -> tuple[int, list[int]]:
+    lengths = [len(tokens) for tokens in token_lists]
+    target_len = max(set(lengths), key=lambda n: (sum(1 for x in lengths if x == n), n))
+    aligned = [
+        idx for idx, tokens in enumerate(token_lists) if len(tokens) == target_len
+    ]
+    return target_len, aligned
+
+
+def _repeat_cluster_consensus_by_position(
+    token_lists: list[list[str]], aligned: list[int], target_len: int
+) -> dict[int, str]:
+    consensus_by_pos: dict[int, str] = {}
+    for pos in range(target_len):
+        chosen = _repeat_cluster_consensus_token_at_pos(token_lists, aligned, pos)
+        if chosen is not None:
+            consensus_by_pos[pos] = chosen
+    return consensus_by_pos
+
+
+def _is_plural_or_ocr_family_match(cur_norm: str, chosen_norm: str) -> bool:
+    same_plural_family = _plural_family_key(cur_norm) == _plural_family_key(chosen_norm)
+    same_ocr_family = _ocr_confusion_family_key(cur_norm) == _ocr_confusion_family_key(
+        chosen_norm
+    )
+    return same_plural_family or same_ocr_family
+
+
+def _apply_consensus_to_repeat_cluster_words(
+    words: list[dict[str, Any]], consensus_by_pos: dict[int, str]
+) -> bool:
+    changed = False
+    for pos, chosen_norm in consensus_by_pos.items():
+        cur = str(words[pos].get("text", ""))
+        cur_norm = normalize_text_basic(cur).replace(" ", "")
+        if not _is_plural_or_ocr_family_match(cur_norm, chosen_norm):
+            continue
+        if cur_norm == chosen_norm:
+            continue
+        words[pos]["text"] = chosen_norm
+        changed = True
+    return changed
 
 
 def _repeat_cluster_consensus_token_at_pos(

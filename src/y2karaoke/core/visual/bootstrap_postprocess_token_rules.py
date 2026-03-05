@@ -286,40 +286,68 @@ def maybe_contextual_inflection_token(
     prev_norm = normalize_text_basic_fn(prev_token or "")
     next_norm = normalize_text_basic_fn(next_token or "")
 
+    transformed = _contextual_inflection_basic_variants(
+        low,
+        prev_norm,
+        next_norm,
+        is_spelled_word_fn=is_spelled_word_fn,
+    )
+    if transformed is not None:
+        return case_like_fn(token, transformed)
+    if prev_norm == "" and low == "aw" and next_norm in {"who", "what", "why", "yeah"}:
+        return case_like_fn(token, "oh")
+    transformed = _contextual_inflection_prefix_variant(
+        low,
+        prev_norm,
+        is_spelled_word_fn=is_spelled_word_fn,
+    )
+    if transformed is not None:
+        return case_like_fn(token, transformed)
+
+    return None
+
+
+def _contextual_inflection_basic_variants(
+    low: str,
+    prev_norm: str,
+    next_norm: str,
+    *,
+    is_spelled_word_fn: Callable[[str], bool],
+) -> str | None:
     if next_norm in {"are", "were"} and is_spelled_word_fn(low + "s"):
-        return case_like_fn(token, low + "s")
+        return low + "s"
     if (
         next_norm in {"is", "was"}
         and low.endswith("s")
         and is_spelled_word_fn(low[:-1])
     ):
-        return case_like_fn(token, low[:-1])
-
+        return low[:-1]
     if next_norm == "as" and is_spelled_word_fn(low + "ed"):
-        return case_like_fn(token, low + "ed")
-
-    if prev_norm in {"am", "is", "are", "was", "were", "be", "been"}:
-        if low.endswith("in") and is_spelled_word_fn(low + "g"):
-            return case_like_fn(token, low + "g")
-
+        return low + "ed"
+    if (
+        prev_norm in {"am", "is", "are", "was", "were", "be", "been"}
+        and low.endswith("in")
+        and is_spelled_word_fn(low + "g")
+    ):
+        return low + "g"
     if (
         next_norm in {"down", "up", "away"}
         and not is_spelled_word_fn(low)
         and is_spelled_word_fn(low + "w")
     ):
-        return case_like_fn(token, low + "w")
-
-    if prev_norm == "" and low == "aw" and next_norm in {"who", "what", "why", "yeah"}:
-        return case_like_fn(token, "oh")
-
-    if prev_norm in {"saint", "st"} and len(low) >= 3 and not is_spelled_word_fn(low):
-        unique_prefix = _single_prefixed_candidate(
-            low, is_spelled_word_fn=is_spelled_word_fn
-        )
-        if unique_prefix is not None:
-            return case_like_fn(token, unique_prefix)
-
+        return low + "w"
     return None
+
+
+def _contextual_inflection_prefix_variant(
+    low: str,
+    prev_norm: str,
+    *,
+    is_spelled_word_fn: Callable[[str], bool],
+) -> str | None:
+    if prev_norm not in {"saint", "st"} or len(low) < 3 or is_spelled_word_fn(low):
+        return None
+    return _single_prefixed_candidate(low, is_spelled_word_fn=is_spelled_word_fn)
 
 
 def _spell_split_score(
