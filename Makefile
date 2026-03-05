@@ -4,7 +4,7 @@ PYTEST := PYTHONPATH=src $(PYTHON) -m pytest
 MIN_COVERAGE_GAIN ?= 0.005
 MAX_BAD_RATIO_INCREASE ?= 0.002
 
-.PHONY: bootstrap dep-check fmt fmt-check lint type test-fast test-full perf-smoke quality-guardrails bootstrap-quality-guardrails visual-eval visual-eval-guardrails bootstrap-calibrate benchmark-validate benchmark-run benchmark-aggregate-only benchmark-matrix benchmark-recommend benchmark-compare-correction benchmark-classify-failures benchmark-profile-runtime benchmark-compare-runtime benchmark-run-bg benchmark-status benchmark-kill check ci-fast ci-full
+.PHONY: bootstrap dep-check fmt fmt-check lint type test-fast test-full perf-smoke quality-guardrails bootstrap-quality-guardrails visual-eval visual-eval-guardrails bootstrap-calibrate benchmark-validate benchmark-run benchmark-aggregate-only benchmark-matrix benchmark-recommend benchmark-compare-correction benchmark-classify-failures benchmark-profile-runtime benchmark-compare-runtime benchmark-recommend-human-guidance benchmark-run-bg benchmark-status benchmark-kill check ci-fast ci-full
 
 bootstrap:
 	./tools/bootstrap_dev.sh
@@ -86,6 +86,10 @@ benchmark-compare-runtime:
 		$(if $(ONLY_POSITIVE),--only-positive-delta,) \
 		$(if $(OUT_JSON),--output-json "$(OUT_JSON)",) \
 		$(if $(OUT_MD),--output-md "$(OUT_MD)",)
+
+benchmark-recommend-human-guidance:
+	@test -n "$(REPORT)" || (echo "REPORT is required (run dir or benchmark_report.json path)"; exit 2)
+	$(PYTHON) tools/recommend_human_guidance_tasks.py --report "$(REPORT)" $(if $(TOP),--top "$(TOP)",)
 
 benchmark-run-bg:
 	./tools/run_benchmark_suite_bg.sh
