@@ -50,6 +50,9 @@ Last updated: 2026-03-04
       `whisper_integration_pipeline.py`; the pipeline now wires directly to stage/baseline/finalize helper implementations.
     - Split alignment orchestration into `whisper_integration_pipeline_align.py`,
       leaving `whisper_integration_pipeline.py` as a thinner facade for align/correct/transcribe entry wiring.
+    - Split correct-timing orchestration into
+      `whisper_integration_pipeline_correct.py`; `whisper_integration_pipeline.py`
+      now serves primarily as a backward-compatible facade/export surface.
     - Segment assignment env heuristics centralized in `whisper_blocks.py`.
     - Correction decision thresholds centralized in `whisper_integration_correct.py`.
     - Mapping decision thresholds centralized in `whisper_integration_align.py`.

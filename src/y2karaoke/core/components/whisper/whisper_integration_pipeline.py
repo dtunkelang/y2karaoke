@@ -1,29 +1,15 @@
-"""Pipeline implementations for Whisper integration entry points."""
+"""Facade exports for Whisper integration pipeline entry points."""
 
-from typing import Any, Callable, Dict, List, Optional, Tuple
+from typing import Any, Callable, List, Optional, Tuple
 
-from ... import models
 from ..alignment import timing_models
-from .whisper_integration_baseline import (
-    _clone_lines_for_fallback as _clone_lines_for_fallback_impl,
-    _constrain_line_starts_to_baseline as _constrain_line_starts_to_baseline_impl,
-    _restore_implausibly_short_lines as _restore_implausibly_short_lines_impl,
-    _should_rollback_short_line_degradation as _should_rollback_short_line_degradation_impl,
-)
-from .whisper_integration_correct import (
-    correct_timing_with_whisper_impl as _correct_timing_with_whisper_impl,
-)
-from .whisper_integration_finalize import (
-    _apply_low_quality_segment_postpasses as _apply_low_quality_segment_postpasses_impl,
-    _finalize_whisper_line_set as _finalize_whisper_line_set_impl,
-)
-from .whisper_integration_hooks import (
-    CorrectTimingHooks as _CorrectTimingHooks,
-    correct_timing_hook_kwargs as _correct_timing_hook_kwargs,
-)
 from .whisper_integration_pipeline_align import (
     _build_alignment_pass_kwargs as _build_alignment_pass_kwargs_impl,
     align_lrc_text_to_whisper_timings_impl as _align_lrc_text_to_whisper_timings_impl,
+)
+from .whisper_integration_pipeline_correct import (
+    _build_correct_timing_kwargs as _build_correct_timing_kwargs_impl,
+    correct_timing_with_whisper_impl as _correct_timing_with_whisper_impl,
 )
 from .whisper_integration_transcribe import (
     transcribe_vocals_impl as _transcribe_vocals_impl,
@@ -31,102 +17,8 @@ from .whisper_integration_transcribe import (
 
 _build_alignment_pass_kwargs = _build_alignment_pass_kwargs_impl
 align_lrc_text_to_whisper_timings_impl = _align_lrc_text_to_whisper_timings_impl
-
-
-def _build_correct_timing_kwargs(
-    *,
-    lines: List[models.Line],
-    vocals_path: str,
-    language: Optional[str],
-    model_size: str,
-    aggressive: bool,
-    temperature: float,
-    trust_lrc_threshold: float,
-    correct_lrc_threshold: float,
-    force_dtw: bool,
-    audio_features: Optional[timing_models.AudioFeatures],
-    lenient_vocal_activity_threshold: float,
-    lenient_activity_bonus: float,
-    low_word_confidence_threshold: float,
-    transcribe_vocals_fn: Callable[..., Tuple[Any, Any, str, str]],
-    extract_audio_features_fn: Callable[..., Optional[timing_models.AudioFeatures]],
-    trim_whisper_transcription_by_lyrics_fn: Callable[..., Any],
-    fill_vocal_activity_gaps_fn: Callable[..., Any],
-    assess_lrc_quality_fn: Callable[..., Any],
-    align_hybrid_lrc_whisper_fn: Callable[..., Any],
-    align_dtw_whisper_with_data_fn: Callable[..., Any],
-    retime_lines_from_dtw_alignments_fn: Callable[..., Any],
-    merge_first_two_lines_if_segment_matches_fn: Callable[..., Any],
-    retime_adjacent_lines_to_whisper_window_fn: Callable[..., Any],
-    retime_adjacent_lines_to_segment_window_fn: Callable[..., Any],
-    pull_next_line_into_segment_window_fn: Callable[..., Any],
-    pull_lines_near_segment_end_fn: Callable[..., Any],
-    pull_next_line_into_same_segment_fn: Callable[..., Any],
-    merge_lines_to_whisper_segments_fn: Callable[..., Any],
-    tighten_lines_to_whisper_segments_fn: Callable[..., Any],
-    pull_lines_to_best_segments_fn: Callable[..., Any],
-    fix_ordering_violations_fn: Callable[..., Any],
-    normalize_line_word_timings_fn: Callable[..., Any],
-    enforce_monotonic_line_starts_fn: Callable[..., Any],
-    enforce_non_overlapping_lines_fn: Callable[..., Any],
-    merge_short_following_line_into_segment_fn: Callable[..., Any],
-    clamp_repeated_line_duration_fn: Callable[..., Any],
-    drop_duplicate_lines_fn: Callable[..., Any],
-    drop_duplicate_lines_by_timing_fn: Callable[..., Any],
-    pull_lines_forward_for_continuous_vocals_fn: Callable[..., Any],
-    logger,
-) -> Dict[str, Any]:
-    hooks = _CorrectTimingHooks(
-        transcribe_vocals_fn=transcribe_vocals_fn,
-        extract_audio_features_fn=extract_audio_features_fn,
-        trim_whisper_transcription_by_lyrics_fn=trim_whisper_transcription_by_lyrics_fn,
-        fill_vocal_activity_gaps_fn=fill_vocal_activity_gaps_fn,
-        assess_lrc_quality_fn=assess_lrc_quality_fn,
-        align_hybrid_lrc_whisper_fn=align_hybrid_lrc_whisper_fn,
-        align_dtw_whisper_with_data_fn=align_dtw_whisper_with_data_fn,
-        retime_lines_from_dtw_alignments_fn=retime_lines_from_dtw_alignments_fn,
-        apply_low_quality_segment_postpasses_fn=_apply_low_quality_segment_postpasses_impl,
-        finalize_whisper_line_set_fn=_finalize_whisper_line_set_impl,
-        constrain_line_starts_to_baseline_fn=_constrain_line_starts_to_baseline_impl,
-        should_rollback_short_line_degradation_fn=_should_rollback_short_line_degradation_impl,
-        restore_implausibly_short_lines_fn=_restore_implausibly_short_lines_impl,
-        clone_lines_for_fallback_fn=_clone_lines_for_fallback_impl,
-        merge_first_two_lines_if_segment_matches_fn=merge_first_two_lines_if_segment_matches_fn,
-        retime_adjacent_lines_to_whisper_window_fn=retime_adjacent_lines_to_whisper_window_fn,
-        retime_adjacent_lines_to_segment_window_fn=retime_adjacent_lines_to_segment_window_fn,
-        pull_next_line_into_segment_window_fn=pull_next_line_into_segment_window_fn,
-        pull_lines_near_segment_end_fn=pull_lines_near_segment_end_fn,
-        pull_next_line_into_same_segment_fn=pull_next_line_into_same_segment_fn,
-        merge_lines_to_whisper_segments_fn=merge_lines_to_whisper_segments_fn,
-        tighten_lines_to_whisper_segments_fn=tighten_lines_to_whisper_segments_fn,
-        pull_lines_to_best_segments_fn=pull_lines_to_best_segments_fn,
-        fix_ordering_violations_fn=fix_ordering_violations_fn,
-        normalize_line_word_timings_fn=normalize_line_word_timings_fn,
-        enforce_monotonic_line_starts_fn=enforce_monotonic_line_starts_fn,
-        enforce_non_overlapping_lines_fn=enforce_non_overlapping_lines_fn,
-        merge_short_following_line_into_segment_fn=merge_short_following_line_into_segment_fn,
-        clamp_repeated_line_duration_fn=clamp_repeated_line_duration_fn,
-        drop_duplicate_lines_fn=drop_duplicate_lines_fn,
-        drop_duplicate_lines_by_timing_fn=drop_duplicate_lines_by_timing_fn,
-        pull_lines_forward_for_continuous_vocals_fn=pull_lines_forward_for_continuous_vocals_fn,
-    )
-    return dict(
-        lines=lines,
-        vocals_path=vocals_path,
-        language=language,
-        model_size=model_size,
-        aggressive=aggressive,
-        temperature=temperature,
-        trust_lrc_threshold=trust_lrc_threshold,
-        correct_lrc_threshold=correct_lrc_threshold,
-        force_dtw=force_dtw,
-        audio_features=audio_features,
-        lenient_vocal_activity_threshold=lenient_vocal_activity_threshold,
-        lenient_activity_bonus=lenient_activity_bonus,
-        low_word_confidence_threshold=low_word_confidence_threshold,
-        **_correct_timing_hook_kwargs(hooks),
-        logger=logger,
-    )
+_build_correct_timing_kwargs = _build_correct_timing_kwargs_impl
+correct_timing_with_whisper_impl = _correct_timing_with_whisper_impl
 
 
 def transcribe_vocals_impl(
@@ -161,91 +53,3 @@ def transcribe_vocals_impl(
         load_whisper_model_class_fn=load_whisper_model_class_fn,
         logger=logger,
     )
-
-
-def correct_timing_with_whisper_impl(
-    lines: List[models.Line],
-    vocals_path: str,
-    language: Optional[str],
-    model_size: str,
-    aggressive: bool,
-    temperature: float,
-    trust_lrc_threshold: float,
-    correct_lrc_threshold: float,
-    force_dtw: bool,
-    audio_features: Optional[timing_models.AudioFeatures],
-    lenient_vocal_activity_threshold: float,
-    lenient_activity_bonus: float,
-    low_word_confidence_threshold: float,
-    *,
-    transcribe_vocals_fn: Callable[..., Tuple[Any, Any, str, str]],
-    extract_audio_features_fn: Callable[..., Optional[timing_models.AudioFeatures]],
-    trim_whisper_transcription_by_lyrics_fn: Callable[..., Any],
-    fill_vocal_activity_gaps_fn: Callable[..., Any],
-    assess_lrc_quality_fn: Callable[..., Any],
-    align_hybrid_lrc_whisper_fn: Callable[..., Any],
-    align_dtw_whisper_with_data_fn: Callable[..., Any],
-    retime_lines_from_dtw_alignments_fn: Callable[..., Any],
-    merge_first_two_lines_if_segment_matches_fn: Callable[..., Any],
-    retime_adjacent_lines_to_whisper_window_fn: Callable[..., Any],
-    retime_adjacent_lines_to_segment_window_fn: Callable[..., Any],
-    pull_next_line_into_segment_window_fn: Callable[..., Any],
-    pull_lines_near_segment_end_fn: Callable[..., Any],
-    pull_next_line_into_same_segment_fn: Callable[..., Any],
-    merge_lines_to_whisper_segments_fn: Callable[..., Any],
-    tighten_lines_to_whisper_segments_fn: Callable[..., Any],
-    pull_lines_to_best_segments_fn: Callable[..., Any],
-    fix_ordering_violations_fn: Callable[..., Any],
-    normalize_line_word_timings_fn: Callable[..., Any],
-    enforce_monotonic_line_starts_fn: Callable[..., Any],
-    enforce_non_overlapping_lines_fn: Callable[..., Any],
-    merge_short_following_line_into_segment_fn: Callable[..., Any],
-    clamp_repeated_line_duration_fn: Callable[..., Any],
-    drop_duplicate_lines_fn: Callable[..., Any],
-    drop_duplicate_lines_by_timing_fn: Callable[..., Any],
-    pull_lines_forward_for_continuous_vocals_fn: Callable[..., Any],
-    logger,
-) -> Tuple[List[models.Line], List[str], Dict[str, float]]:
-    impl_kwargs = _build_correct_timing_kwargs(
-        lines=lines,
-        vocals_path=vocals_path,
-        language=language,
-        model_size=model_size,
-        aggressive=aggressive,
-        temperature=temperature,
-        trust_lrc_threshold=trust_lrc_threshold,
-        correct_lrc_threshold=correct_lrc_threshold,
-        force_dtw=force_dtw,
-        audio_features=audio_features,
-        lenient_vocal_activity_threshold=lenient_vocal_activity_threshold,
-        lenient_activity_bonus=lenient_activity_bonus,
-        low_word_confidence_threshold=low_word_confidence_threshold,
-        transcribe_vocals_fn=transcribe_vocals_fn,
-        extract_audio_features_fn=extract_audio_features_fn,
-        trim_whisper_transcription_by_lyrics_fn=trim_whisper_transcription_by_lyrics_fn,
-        fill_vocal_activity_gaps_fn=fill_vocal_activity_gaps_fn,
-        assess_lrc_quality_fn=assess_lrc_quality_fn,
-        align_hybrid_lrc_whisper_fn=align_hybrid_lrc_whisper_fn,
-        align_dtw_whisper_with_data_fn=align_dtw_whisper_with_data_fn,
-        retime_lines_from_dtw_alignments_fn=retime_lines_from_dtw_alignments_fn,
-        merge_first_two_lines_if_segment_matches_fn=merge_first_two_lines_if_segment_matches_fn,
-        retime_adjacent_lines_to_whisper_window_fn=retime_adjacent_lines_to_whisper_window_fn,
-        retime_adjacent_lines_to_segment_window_fn=retime_adjacent_lines_to_segment_window_fn,
-        pull_next_line_into_segment_window_fn=pull_next_line_into_segment_window_fn,
-        pull_lines_near_segment_end_fn=pull_lines_near_segment_end_fn,
-        pull_next_line_into_same_segment_fn=pull_next_line_into_same_segment_fn,
-        merge_lines_to_whisper_segments_fn=merge_lines_to_whisper_segments_fn,
-        tighten_lines_to_whisper_segments_fn=tighten_lines_to_whisper_segments_fn,
-        pull_lines_to_best_segments_fn=pull_lines_to_best_segments_fn,
-        fix_ordering_violations_fn=fix_ordering_violations_fn,
-        normalize_line_word_timings_fn=normalize_line_word_timings_fn,
-        enforce_monotonic_line_starts_fn=enforce_monotonic_line_starts_fn,
-        enforce_non_overlapping_lines_fn=enforce_non_overlapping_lines_fn,
-        merge_short_following_line_into_segment_fn=merge_short_following_line_into_segment_fn,
-        clamp_repeated_line_duration_fn=clamp_repeated_line_duration_fn,
-        drop_duplicate_lines_fn=drop_duplicate_lines_fn,
-        drop_duplicate_lines_by_timing_fn=drop_duplicate_lines_by_timing_fn,
-        pull_lines_forward_for_continuous_vocals_fn=pull_lines_forward_for_continuous_vocals_fn,
-        logger=logger,
-    )
-    return _correct_timing_with_whisper_impl(**impl_kwargs)
