@@ -18,6 +18,37 @@ def is_same_lane(
     return abs(float(a.get("y", 0.0)) - float(b.get("y", 0.0))) <= lane_proximity_px
 
 
+def _is_merge_candidate(
+    prev: dict[str, Any],
+    ent: dict[str, Any],
+    *,
+    is_short_refrain_entry: EntryPredicate,
+    is_same_lane: EntryPairPredicate,
+) -> bool:
+    if is_short_refrain_entry(prev) or not is_same_lane(prev, ent):
+        return False
+    sim = text_similarity(str(prev.get("text", "")), str(ent.get("text", "")))
+    if sim < 0.95:
+        return False
+    prev_first = float(prev.get("first", 0.0))
+    prev_last = float(prev.get("last", 0.0))
+    cur_first = float(ent.get("first", 0.0))
+    cur_last = float(ent.get("last", 0.0))
+    overlap = min(prev_last, cur_last) - max(prev_first, cur_first)
+    return overlap >= 0.35
+
+
+def _merge_duplicate_entry(prev: dict[str, Any], ent: dict[str, Any]) -> None:
+    prev_first = float(prev.get("first", 0.0))
+    prev_last = float(prev.get("last", 0.0))
+    cur_first = float(ent.get("first", 0.0))
+    cur_last = float(ent.get("last", 0.0))
+    prev["first"] = min(prev_first, cur_first)
+    prev["last"] = max(prev_last, cur_last)
+    if len(ent.get("w_rois", [])) > len(prev.get("w_rois", [])):
+        prev["w_rois"] = ent.get("w_rois", [])
+
+
 def merge_overlapping_same_lane_duplicates(
     entries: list[dict[str, Any]],
     *,
@@ -36,33 +67,76 @@ def merge_overlapping_same_lane_duplicates(
 
         merged = False
         for prev in reversed(out[-10:]):
-            if is_short_refrain_entry(prev):
-                continue
-            if not is_same_lane(prev, ent):
-                continue
-            if (
-                text_similarity(str(prev.get("text", "")), str(ent.get("text", "")))
-                < 0.95
+            if not _is_merge_candidate(
+                prev,
+                ent,
+                is_short_refrain_entry=is_short_refrain_entry,
+                is_same_lane=is_same_lane,
             ):
                 continue
-            prev_first = float(prev.get("first", 0.0))
-            prev_last = float(prev.get("last", 0.0))
-            cur_first = float(ent.get("first", 0.0))
-            cur_last = float(ent.get("last", 0.0))
-            overlap = min(prev_last, cur_last) - max(prev_first, cur_first)
-            if overlap < 0.35:
-                continue
-
-            prev["first"] = min(prev_first, cur_first)
-            prev["last"] = max(prev_last, cur_last)
-            if len(ent.get("w_rois", [])) > len(prev.get("w_rois", [])):
-                prev["w_rois"] = ent.get("w_rois", [])
+            _merge_duplicate_entry(prev, ent)
             merged = True
             break
 
         if not merged:
             out.append(ent)
     return out
+
+
+def _overlap_or_close_proximity(a: dict[str, Any], b: dict[str, Any]) -> float:
+    start_a = float(a["first"])
+    end_a = float(a["last"])
+    start_b = float(b["first"])
+    end_b = float(b["last"])
+    overlap_start = max(start_a, start_b)
+    overlap_end = min(end_a, end_b)
+    overlap_duration = overlap_end - overlap_start
+    if overlap_duration > 0:
+        return overlap_duration
+    if abs(start_b - end_a) < 0.2 or abs(start_a - end_b) < 0.2:
+        return 0.1
+    return 0.0
+
+
+def _should_merge_fade_pair(
+    a: dict[str, Any],
+    b: dict[str, Any],
+    *,
+    overlap_duration: float,
+) -> bool:
+    dur_a = float(a["last"]) - float(a["first"])
+    dur_b = float(b["last"]) - float(b["first"])
+    bright_a = float(a.get("avg_brightness", 255.0))
+    bright_b = float(b.get("avg_brightness", 255.0))
+    long_bright_domination = dur_a > dur_b * 2 and bright_a > bright_b * 1.2
+    fragment_overlap = overlap_duration / max(0.01, min(dur_a, dur_b)) > 0.5 and (
+        (dur_a < 1.5 and dur_b > 3.0)
+        or (dur_b < 1.5 and dur_a > 3.0)
+        or (abs(bright_a - bright_b) > 40)
+    )
+    return long_bright_domination or fragment_overlap
+
+
+def _suppress_inferior_fade_entry(
+    a: dict[str, Any],
+    b: dict[str, Any],
+    keep: list[bool],
+    *,
+    i: int,
+    j: int,
+) -> None:
+    dur_a = float(a["last"]) - float(a["first"])
+    dur_b = float(b["last"]) - float(b["first"])
+    bright_a = float(a.get("avg_brightness", 255.0))
+    bright_b = float(b.get("avg_brightness", 255.0))
+    if bright_a > bright_b + 20 or dur_a > dur_b + 1.0:
+        keep[j] = False
+        a["first"] = min(a["first"], b["first"])
+        a["last"] = max(a["last"], b["last"])
+    else:
+        keep[i] = False
+        b["first"] = min(b["first"], a["first"])
+        b["last"] = max(b["last"], a["last"])
 
 
 def merge_dim_fade_in_fragments(
@@ -88,47 +162,12 @@ def merge_dim_fade_in_fragments(
             ) != "1" and not _looks_like_same_line_fade_fragment(a, b):
                 continue
 
-            start_a = a["first"]
-            end_a = a["last"]
-            start_b = b["first"]
-            end_b = b["last"]
-
-            overlap_start = max(start_a, start_b)
-            overlap_end = min(end_a, end_b)
-            overlap_duration = overlap_end - overlap_start
-
+            overlap_duration = _overlap_or_close_proximity(a, b)
             if overlap_duration <= 0:
-                # Also check for extreme proximity (gap < 0.2s)
-                if abs(start_b - end_a) < 0.2 or abs(start_a - end_b) < 0.2:
-                    overlap_duration = 0.1  # Trigger logic
-                else:
-                    continue
-
-            dur_a = end_a - start_a
-            dur_b = end_b - start_b
-            bright_a = a.get("avg_brightness", 255.0)
-            bright_b = b.get("avg_brightness", 255.0)
-
-            # If one is much longer and brighter than the other
-            # OR if they significantly overlap and one is clearly a fragment
-            if (dur_a > dur_b * 2 and bright_a > bright_b * 1.2) or (
-                overlap_duration / max(0.01, min(dur_a, dur_b)) > 0.5
-                and (
-                    (dur_a < 1.5 and dur_b > 3.0)
-                    or (dur_b < 1.5 and dur_a > 3.0)
-                    or (abs(bright_a - bright_b) > 40)
-                )
-            ):
-                # Suppress the "inferior" one
-                if bright_a > bright_b + 20 or dur_a > dur_b + 1.0:
-                    keep[j] = False
-                    # Extend A to cover B's time
-                    a["first"] = min(a["first"], b["first"])
-                    a["last"] = max(a["last"], b["last"])
-                else:
-                    keep[i] = False
-                    b["first"] = min(b["first"], a["first"])
-                    b["last"] = max(b["last"], a["last"])
+                continue
+            if not _should_merge_fade_pair(a, b, overlap_duration=overlap_duration):
+                continue
+            _suppress_inferior_fade_entry(a, b, keep, i=i, j=j)
 
     return [e for idx, e in enumerate(entries) if keep[idx]]
 
