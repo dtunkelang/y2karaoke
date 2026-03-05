@@ -35,6 +35,89 @@ def _get_cache_key(video_path: Path, prefix: str, **kwargs: Any) -> str:
     return f"{prefix}_{digest}.json"
 
 
+def _extract_words_with_confidence(
+    roi: Any,
+    *,
+    ocr: Any,
+    c_un: Any,
+    c_sel: Any,
+) -> list[dict[str, Any]]:
+    res = ocr.predict(roi)
+    if not (res and res[0]):
+        return []
+
+    items = normalize_ocr_items(res[0])
+    rec_texts = items["rec_texts"]
+    rec_boxes = items["rec_boxes"]
+    rec_scores = items["rec_scores"]
+
+    words: list[dict[str, Any]] = []
+    for txt, box, conf in zip(rec_texts, rec_boxes, rec_scores):
+        points = box["word"] if isinstance(box, dict) else box
+        np_box = np.array(points).reshape(-1, 2)
+        x, y = int(min(np_box[:, 0])), int(min(np_box[:, 1]))
+        bw, bh = int(max(np_box[:, 0]) - x), int(max(np_box[:, 1]) - y)
+        word_roi = roi[y : y + bh, x : x + bw]
+        state, ratio, _ = classify_word_state(word_roi, c_un, c_sel)
+        if state == "unknown":
+            continue
+        words.append(
+            {
+                "text": txt,
+                "color": state,
+                "ratio": ratio,
+                "x": x,
+                "y": y,
+                "confidence": float(conf),
+            }
+        )
+    words.sort(key=lambda w: (w["y"] // 30, w["x"]))
+    return words
+
+
+def _sampled_frame_words(
+    cap: Any,
+    *,
+    start: float,
+    end: float,
+    fps: float,
+    src_fps: float,
+    roi_rect: tuple[int, int, int, int],
+    ocr: Any,
+    c_un: Any,
+    c_sel: Any,
+) -> list[dict[str, Any]]:
+    step = max(int(round(src_fps / max(fps, 0.01))), 1)
+    frame_idx = max(int(round(max(0, start - 0.1) * src_fps)), 0)
+    rx, ry, rw, rh = roi_rect
+    raw: list[dict[str, Any]] = []
+    while True:
+        if not cap.grab():
+            break
+        t = frame_idx / src_fps
+        if t > end + 0.2:
+            break
+        if frame_idx % step != 0:
+            frame_idx += 1
+            continue
+        ok, frame = cap.retrieve()
+        if not ok:
+            frame_idx += 1
+            continue
+        roi = frame[ry : ry + rh, rx : rx + rw]
+        words = _extract_words_with_confidence(roi, ocr=ocr, c_un=c_un, c_sel=c_sel)
+        if words:
+            raw.append(
+                {
+                    "time": t,
+                    "timestamp": f"{int(t // 60):02d}:{t % 60:05.2f}",
+                    "words": words,
+                }
+            )
+        frame_idx += 1
+    return raw
+
+
 def collect_raw_frames_with_confidence(
     video_path: Path,
     start: float,
@@ -55,65 +138,47 @@ def collect_raw_frames_with_confidence(
 
     src_fps = cap.get(cv2.CAP_PROP_FPS) or 30.0
     cap.set(cv2.CAP_PROP_POS_MSEC, max(0, start - 0.1) * 1000.0)
-    step = max(int(round(src_fps / max(fps, 0.01))), 1)
-    frame_idx = max(int(round(max(0, start - 0.1) * src_fps)), 0)
-    rx, ry, rw, rh = roi_rect
-    raw: list[dict[str, Any]] = []
-
-    while True:
-        ok = cap.grab()
-        if not ok:
-            break
-        t = frame_idx / src_fps
-        if t > end + 0.2:
-            break
-        if frame_idx % step != 0:
-            frame_idx += 1
-            continue
-        ok, frame = cap.retrieve()
-        if not ok:
-            frame_idx += 1
-            continue
-
-        roi = frame[ry : ry + rh, rx : rx + rw]
-        res = ocr.predict(roi)
-        if res and res[0]:
-            items = normalize_ocr_items(res[0])
-            rec_texts = items["rec_texts"]
-            rec_boxes = items["rec_boxes"]
-            rec_scores = items["rec_scores"]
-
-            words = []
-            for txt, box, conf in zip(rec_texts, rec_boxes, rec_scores):
-                points = box["word"] if isinstance(box, dict) else box
-                np_box = np.array(points).reshape(-1, 2)
-                x, y = int(min(np_box[:, 0])), int(min(np_box[:, 1]))
-                bw, bh = int(max(np_box[:, 0]) - x), int(max(np_box[:, 1]) - y)
-                word_roi = roi[y : y + bh, x : x + bw]
-                state, ratio, _ = classify_word_state(word_roi, c_un, c_sel)
-                if state != "unknown":
-                    words.append(
-                        {
-                            "text": txt,
-                            "color": state,
-                            "ratio": ratio,
-                            "x": x,
-                            "y": y,
-                            "confidence": float(conf),
-                        }
-                    )
-            if words:
-                words.sort(key=lambda w: (w["y"] // 30, w["x"]))
-                raw.append(
-                    {
-                        "time": t,
-                        "timestamp": f"{int(t // 60):02d}:{t % 60:05.2f}",
-                        "words": words,
-                    }
-                )
-        frame_idx += 1
+    raw = _sampled_frame_words(
+        cap,
+        start=start,
+        end=end,
+        fps=fps,
+        src_fps=src_fps,
+        roi_rect=roi_rect,
+        ocr=ocr,
+        c_un=c_un,
+        c_sel=c_sel,
+    )
     cap.release()
     return raw
+
+
+def _line_state_flags(line_words: list[dict[str, Any]]) -> tuple[bool, bool]:
+    states = [w["color"] for w in line_words]
+    has_sel = any(s in ("selected", "mixed") for s in states)
+    has_unsel = any(s == "unselected" for s in states)
+    has_mixed_word = any(s == "mixed" for s in states)
+    return has_sel, (has_mixed_word or (has_sel and has_unsel))
+
+
+def _accumulate_frame_line_groups(
+    frame_words: list[dict[str, Any]],
+) -> tuple[dict[int, list[dict[str, Any]]], float, int, int, int]:
+    lines: Dict[int, List[dict[str, Any]]] = {}
+    total_conf = 0.0
+    total_with_conf = 0
+    total_upper = 0
+    total_lower = 0
+    for w in frame_words:
+        y_bin = w["y"] // 40
+        lines.setdefault(y_bin, []).append(w)
+        if "confidence" in w:
+            total_conf += w["confidence"]
+            total_with_conf += 1
+        text = w.get("text", "")
+        total_upper += sum(1 for ch in text if ch.isupper())
+        total_lower += sum(1 for ch in text if ch.islower())
+    return lines, total_conf, total_with_conf, total_upper, total_lower
 
 
 def calculate_visual_suitability(raw_frames: list[dict[str, Any]]) -> dict[str, Any]:
@@ -130,39 +195,21 @@ def calculate_visual_suitability(raw_frames: list[dict[str, Any]]) -> dict[str, 
         if not words:
             continue
 
-        lines: Dict[int, List[dict[str, Any]]] = {}
-        for w in words:
-            # Increase bin size to 40px to be more robust to vertical splitting/jitter
-            y_bin = w["y"] // 40
-            if y_bin not in lines:
-                lines[y_bin] = []
-            lines[y_bin].append(w)
-
-            if "confidence" in w:
-                total_ocr_confidence += w["confidence"]
-                total_words_with_confidence += 1
-
-            text = w.get("text", "")
-            total_upper += sum(1 for ch in text if ch.isupper())
-            total_lower += sum(1 for ch in text if ch.islower())
+        lines, conf_sum, conf_count, upper_count, lower_count = (
+            _accumulate_frame_line_groups(words)
+        )
+        total_ocr_confidence += conf_sum
+        total_words_with_confidence += conf_count
+        total_upper += upper_count
+        total_lower += lower_count
 
         has_any_highlight = False
         has_word_level_mix = False
 
         for line_words in lines.values():
-            states = [w["color"] for w in line_words]
-            has_sel = any(s in ("selected", "mixed") for s in states)
-            has_unsel = any(s == "unselected" for s in states)
-            has_mixed_word = any(s == "mixed" for s in states)
-
-            if has_sel:
-                has_any_highlight = True
-
-            # Word-level evidence:
-            # 1. A mix of selected and unselected words on the same line
-            # 2. OR any word in a partially-highlighted 'mixed' state
-            if (has_sel and has_unsel) or has_mixed_word:
-                has_word_level_mix = True
+            has_sel, has_mix = _line_state_flags(line_words)
+            has_any_highlight = has_any_highlight or has_sel
+            has_word_level_mix = has_word_level_mix or has_mix
 
         if has_any_highlight:
             total_active_frames += 1

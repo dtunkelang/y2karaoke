@@ -39,25 +39,44 @@ _INTRO_META_KEYWORDS = {
 }
 
 
-def is_intro_artifact(
-    entry: dict[str, Any], artist: Optional[str] = None, is_pre_anchor: bool = True
-) -> bool:
-    text = str(entry.get("text", ""))
+def _entry_words(entry: dict[str, Any]) -> list[str]:
     raw_words = entry.get("words", [])
-    words = []
+    words: list[str] = []
     for w in raw_words:
         if isinstance(w, dict):
             words.append(str(w.get("text", "")))
         else:
             words.append(str(w))
-    words = [w for w in words if w.strip()]
+    return [w for w in words if w.strip()]
 
-    duration = float(entry.get("last", entry.get("end", 0.0))) - float(
+
+def _entry_duration(entry: dict[str, Any]) -> float:
+    return float(entry.get("last", entry.get("end", 0.0))) - float(
         entry.get("first", entry.get("start", 0.0))
     )
+
+
+def _entry_compact_words(cleaned_text: str) -> list[str]:
+    compact_words = [
+        "".join(ch for ch in w if ch.isalnum()) for w in cleaned_text.split()
+    ]
+    return [w for w in compact_words if w]
+
+
+def _caps_upper_ratio(text: str) -> float:
+    upper_chars = sum(1 for ch in text if ch.isalpha() and ch.isupper())
+    alpha_chars = sum(1 for ch in text if ch.isalpha())
+    return (upper_chars / alpha_chars) if alpha_chars else 0.0
+
+
+def is_intro_artifact(
+    entry: dict[str, Any], artist: Optional[str] = None, is_pre_anchor: bool = True
+) -> bool:
+    text = str(entry.get("text", ""))
+    words = _entry_words(entry)
+    duration = _entry_duration(entry)
     cleaned = normalize_text_basic(text).strip()
-    compact_words = ["".join(ch for ch in w if ch.isalnum()) for w in cleaned.split()]
-    compact_words = [w for w in compact_words if w]
+    compact_words = _entry_compact_words(cleaned)
 
     if not compact_words:
         return True
@@ -76,11 +95,7 @@ def is_intro_artifact(
     if not is_pre_anchor:
         return False
 
-    upper_chars = sum(1 for ch in text if ch.isalpha() and ch.isupper())
-    alpha_chars = sum(1 for ch in text if ch.isalpha())
-    upper_ratio = (upper_chars / alpha_chars) if alpha_chars else 0.0
-
-    if _is_short_caps_artifact(compact_words, upper_ratio):
+    if _is_short_caps_artifact(compact_words, _caps_upper_ratio(text)):
         return True
 
     first_t = float(entry.get("first", entry.get("start", 0.0)))
