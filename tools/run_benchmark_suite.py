@@ -458,8 +458,10 @@ def _extract_song_metrics(
     dtw_line_coverage = report.get("dtw_line_coverage")
     has_independent_anchor = isinstance(dtw_line_coverage, (int, float))
 
-    agreement_min_text_similarity = 0.7
-    agreement_min_token_overlap = 0.6
+    # Keep agreement matching conservative, but allow mild lyric-video wording
+    # variance so diagnostics have enough comparable anchor lines.
+    agreement_min_text_similarity = 0.65
+    agreement_min_token_overlap = 0.55
     agreement_good_start_sec = 0.35
     agreement_warn_start_sec = 0.8
     whisper_anchor_start_abs_deltas: list[float] = []
