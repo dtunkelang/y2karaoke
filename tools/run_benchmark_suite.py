@@ -1739,6 +1739,16 @@ def _aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:  # noqa: C901
         "success_rate": round((len(succeeded) / len(results)) if results else 0.0, 4),
         "line_count_total": total_lines,
         "low_confidence_lines_total": low_conf_total,
+        "low_confidence_ratio_mean": (
+            round(float(metric_mean("low_confidence_ratio") or 0.0), 4)
+            if metric_mean("low_confidence_ratio") is not None
+            else None
+        ),
+        "low_confidence_ratio_line_weighted_mean": (
+            round(float(weighted_metric_mean("low_confidence_ratio") or 0.0), 4)
+            if weighted_metric_mean("low_confidence_ratio") is not None
+            else None
+        ),
         "low_confidence_ratio_total": round(low_conf_ratio, 4),
         "agreement_count_total": agreement_count_total,
         "agreement_coverage_ratio_total": round(agreement_coverage_ratio, 4),
@@ -1800,6 +1810,11 @@ def _aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:  # noqa: C901
             if metric_mean("agreement_start_mean_abs_sec") is not None
             else None
         ),
+        "agreement_start_mean_abs_sec_line_weighted_mean": (
+            round(float(weighted_metric_mean("agreement_start_mean_abs_sec") or 0.0), 4)
+            if weighted_metric_mean("agreement_start_mean_abs_sec") is not None
+            else None
+        ),
         "agreement_start_max_abs_sec_mean": (
             round(float(metric_mean("agreement_start_max_abs_sec") or 0.0), 4)
             if metric_mean("agreement_start_max_abs_sec") is not None
@@ -1808,6 +1823,11 @@ def _aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:  # noqa: C901
         "agreement_start_p95_abs_sec_mean": (
             round(float(metric_mean("agreement_start_p95_abs_sec") or 0.0), 4)
             if metric_mean("agreement_start_p95_abs_sec") is not None
+            else None
+        ),
+        "agreement_start_p95_abs_sec_line_weighted_mean": (
+            round(float(weighted_metric_mean("agreement_start_p95_abs_sec") or 0.0), 4)
+            if weighted_metric_mean("agreement_start_p95_abs_sec") is not None
             else None
         ),
         "agreement_bad_ratio_mean": (
@@ -1835,9 +1855,25 @@ def _aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:  # noqa: C901
             if metric_mean("whisper_anchor_start_mean_abs_sec") is not None
             else None
         ),
+        "whisper_anchor_start_mean_abs_sec_line_weighted_mean": (
+            round(
+                float(weighted_metric_mean("whisper_anchor_start_mean_abs_sec") or 0.0),
+                4,
+            )
+            if weighted_metric_mean("whisper_anchor_start_mean_abs_sec") is not None
+            else None
+        ),
         "whisper_anchor_start_p95_abs_sec_mean": (
             round(float(metric_mean("whisper_anchor_start_p95_abs_sec") or 0.0), 4)
             if metric_mean("whisper_anchor_start_p95_abs_sec") is not None
+            else None
+        ),
+        "whisper_anchor_start_p95_abs_sec_line_weighted_mean": (
+            round(
+                float(weighted_metric_mean("whisper_anchor_start_p95_abs_sec") or 0.0),
+                4,
+            )
+            if weighted_metric_mean("whisper_anchor_start_p95_abs_sec") is not None
             else None
         ),
         "whisper_anchor_bad_ratio_mean": (
