@@ -27,6 +27,7 @@ def _score_row(row: dict[str, Any]) -> float:
     score = 0.0
     p95 = fnum("agreement_start_p95_abs_sec_line_weighted_mean")
     mean = fnum("agreement_start_mean_abs_sec_line_weighted_mean")
+    timing_quality = fnum("timing_quality_score_line_weighted_mean")
     low = fnum("low_confidence_ratio_line_weighted_mean")
     gold = fnum("gold_start_abs_word_weighted_mean")
     dtw = fnum("dtw_line_coverage_line_weighted_mean")
@@ -37,6 +38,8 @@ def _score_row(row: dict[str, Any]) -> float:
         score += 2.0 * (1.0 / (1.0 + max(p95, 0.0)))
     if mean is not None:
         score += 1.5 * (1.0 / (1.0 + max(mean, 0.0)))
+    if timing_quality is not None:
+        score += 2.5 * max(0.0, min(timing_quality, 1.0))
     if p95 is None and mean is None:
         # No independent agreement signal available for this strategy.
         score -= 0.5
@@ -136,6 +139,9 @@ def main() -> int:
             "songs_succeeded": best.get("songs_succeeded"),
             "dtw_line_coverage_line_weighted_mean": best.get(
                 "dtw_line_coverage_line_weighted_mean"
+            ),
+            "timing_quality_score_line_weighted_mean": best.get(
+                "timing_quality_score_line_weighted_mean"
             ),
             "agreement_start_mean_abs_sec_line_weighted_mean": best.get(
                 "agreement_start_mean_abs_sec_line_weighted_mean"

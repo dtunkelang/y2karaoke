@@ -17,6 +17,7 @@ _SPEC.loader.exec_module(_MODULE)
 
 def test_score_row_prefers_lower_error_and_higher_coverage():
     a = {
+        "timing_quality_score_line_weighted_mean": 0.78,
         "agreement_start_p95_abs_sec_line_weighted_mean": 0.4,
         "agreement_start_mean_abs_sec_line_weighted_mean": 0.2,
         "low_confidence_ratio_line_weighted_mean": 0.1,
@@ -26,6 +27,7 @@ def test_score_row_prefers_lower_error_and_higher_coverage():
         "songs_total": 2,
     }
     b = {
+        "timing_quality_score_line_weighted_mean": 0.42,
         "agreement_start_p95_abs_sec_line_weighted_mean": 1.0,
         "agreement_start_mean_abs_sec_line_weighted_mean": 0.7,
         "low_confidence_ratio_line_weighted_mean": 0.4,
@@ -35,6 +37,28 @@ def test_score_row_prefers_lower_error_and_higher_coverage():
         "songs_total": 2,
     }
     assert _MODULE._score_row(a) > _MODULE._score_row(b)
+
+
+def test_score_row_prefers_higher_timing_quality_when_other_signals_close():
+    better = {
+        "timing_quality_score_line_weighted_mean": 0.75,
+        "agreement_start_p95_abs_sec_line_weighted_mean": 0.8,
+        "agreement_start_mean_abs_sec_line_weighted_mean": 0.35,
+        "low_confidence_ratio_line_weighted_mean": 0.15,
+        "dtw_line_coverage_line_weighted_mean": 0.75,
+        "songs_succeeded": 2,
+        "songs_total": 2,
+    }
+    worse = {
+        "timing_quality_score_line_weighted_mean": 0.45,
+        "agreement_start_p95_abs_sec_line_weighted_mean": 0.8,
+        "agreement_start_mean_abs_sec_line_weighted_mean": 0.35,
+        "low_confidence_ratio_line_weighted_mean": 0.15,
+        "dtw_line_coverage_line_weighted_mean": 0.75,
+        "songs_succeeded": 2,
+        "songs_total": 2,
+    }
+    assert _MODULE._score_row(better) > _MODULE._score_row(worse)
 
 
 def test_best_strategy_skips_failed_rows():
@@ -66,6 +90,7 @@ def test_main_json_output(tmp_path, monkeypatch, capsys):
                     {
                         "strategy": "hybrid_dtw",
                         "status": "finished",
+                        "timing_quality_score_line_weighted_mean": 0.71,
                         "agreement_start_p95_abs_sec_line_weighted_mean": 0.4,
                         "agreement_start_mean_abs_sec_line_weighted_mean": 0.2,
                         "low_confidence_ratio_line_weighted_mean": 0.1,
@@ -109,6 +134,9 @@ def test_main_json_output(tmp_path, monkeypatch, capsys):
     out = capsys.readouterr().out
     payload = json.loads(out)
     assert payload["recommended_strategy"] == "hybrid_dtw"
+    assert (
+        payload["strategy_metrics"]["timing_quality_score_line_weighted_mean"] == 0.71
+    )
     assert payload["recommended_bootstrap_thresholds"]["min_detectability"] == 0.45
 
 
