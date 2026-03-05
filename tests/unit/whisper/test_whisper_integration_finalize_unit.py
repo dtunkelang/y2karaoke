@@ -271,3 +271,41 @@ def test_finalize_whisper_line_set_records_roll_back_metric():
     )
 
     assert metrics["finalize_text_divergence_rollback"] == pytest.approx(1.0)
+
+
+def test_finalize_whisper_line_set_records_force_dtw_stage_metrics():
+    source_lines = [
+        Line(words=[Word(text="a", start_time=0.0, end_time=0.5)]),
+        Line(words=[Word(text="b", start_time=1.0, end_time=1.5)]),
+    ]
+    aligned_lines = [
+        Line(words=[Word(text="a", start_time=0.0, end_time=0.5)]),
+        Line(words=[Word(text="b", start_time=1.0, end_time=1.5)]),
+    ]
+    metrics: dict[str, float] = {}
+
+    _finalized, _alignments = wifin._finalize_whisper_line_set(
+        source_lines=source_lines,
+        aligned_lines=aligned_lines,
+        alignments=[],
+        transcription=[],
+        epitran_lang="eng-Latn",
+        force_dtw=True,
+        audio_features=None,
+        fix_ordering_violations_fn=lambda s, a, al: (a, al),
+        normalize_line_word_timings_fn=lambda lines: lines,
+        enforce_monotonic_line_starts_fn=lambda lines: lines,
+        enforce_non_overlapping_lines_fn=lambda lines: lines,
+        pull_lines_near_segment_end_fn=lambda lines, *_a: (lines, 2),
+        merge_short_following_line_into_segment_fn=lambda lines, *_a: (lines, 3),
+        clamp_repeated_line_duration_fn=lambda lines: (lines, 4),
+        drop_duplicate_lines_fn=lambda lines, *_a: (lines, 0),
+        drop_duplicate_lines_by_timing_fn=lambda lines, *_a: (lines, 0),
+        pull_lines_forward_for_continuous_vocals_fn=lambda lines, *_a: (lines, 0),
+        stage_metrics=metrics,
+    )
+
+    assert metrics["finalize_force_dtw_pull_near_end"] == pytest.approx(2.0)
+    assert metrics["finalize_force_dtw_merge_short_following"] == pytest.approx(3.0)
+    assert metrics["finalize_force_dtw_clamp_repeated"] == pytest.approx(4.0)
+    assert metrics["finalize_text_divergence_rollback"] == pytest.approx(0.0)
