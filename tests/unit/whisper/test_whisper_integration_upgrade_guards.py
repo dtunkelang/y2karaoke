@@ -2,8 +2,10 @@ import pytest
 
 from y2karaoke.core.models import Line, Word
 import y2karaoke.core.components.whisper.whisper_integration as wi
-import y2karaoke.core.components.whisper.whisper_integration_pipeline as wip
 from y2karaoke.core.components.whisper import whisper_integration_transcribe as witx
+from y2karaoke.core.components.whisper.whisper_integration_baseline import (
+    _should_rollback_short_line_degradation,
+)
 from y2karaoke.core.components.alignment.timing_models import (
     TranscriptionSegment,
     TranscriptionWord,
@@ -32,7 +34,7 @@ def test_should_rollback_short_line_degradation_triggers():
         for _ in range(12)
     ]
 
-    rollback, before, after = wip._should_rollback_short_line_degradation(
+    rollback, before, after = _should_rollback_short_line_degradation(
         original, degraded
     )
 
@@ -68,7 +70,7 @@ def test_should_rollback_short_line_degradation_ignores_small_change():
         ]
     )
 
-    rollback, before, after = wip._should_rollback_short_line_degradation(
+    rollback, before, after = _should_rollback_short_line_degradation(
         original, slightly_worse
     )
 

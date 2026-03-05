@@ -1,6 +1,7 @@
 from y2karaoke.core.models import Line, Word
 import y2karaoke.core.components.whisper.whisper_integration as wi
 import y2karaoke.core.components.whisper.whisper_integration_pipeline as wip
+import y2karaoke.core.components.whisper.whisper_integration_pipeline_align as wipa
 
 
 def _dummy_align_call(lines):
@@ -76,7 +77,7 @@ def test_align_lrc_text_pipeline_applies_aggressive_retry_when_improved(monkeypa
             },
         )
 
-    monkeypatch.setattr(wip, "_align_lrc_text_to_whisper_timings_impl", fake_align)
+    monkeypatch.setattr(wipa, "_align_lrc_text_to_whisper_timings_impl", fake_align)
     mapped, corrections, metrics = _dummy_align_call(lines)
 
     assert len(mapped) == len(lines)
@@ -115,7 +116,7 @@ def test_align_lrc_text_pipeline_keeps_base_when_aggressive_retry_not_better(
             },
         )
 
-    monkeypatch.setattr(wip, "_align_lrc_text_to_whisper_timings_impl", fake_align)
+    monkeypatch.setattr(wipa, "_align_lrc_text_to_whisper_timings_impl", fake_align)
     _mapped, corrections, metrics = _dummy_align_call(lines)
 
     assert corrections == ["base"]
