@@ -1246,43 +1246,15 @@ def _infer_reference_divergence_suspicion(metrics: dict[str, Any]) -> dict[str, 
     low_conf = _f("low_confidence_ratio")
 
     if not bool(metrics.get("gold_available")):
-        # No-gold fallback: if line-level agreement anchors are strong while
-        # word-level DTW coverage is persistently weak, likely reference/lyrics
-        # lexical divergence rather than pure timing failure.
-        no_gold_suspected = (
-            line_count >= 40
-            and dtw_line_cov <= 0.6
-            and dtw_word_cov <= 0.45
-            and agree_cov >= 0.07
-            and agree_sim >= 0.9
-            and agree_p95 <= 1.2
-            and low_conf <= 0.08
+        return _infer_reference_divergence_no_gold(
+            line_count=line_count,
+            dtw_line_cov=dtw_line_cov,
+            dtw_word_cov=dtw_word_cov,
+            agree_cov=agree_cov,
+            agree_sim=agree_sim,
+            agree_p95=agree_p95,
+            low_conf=low_conf,
         )
-        if no_gold_suspected:
-            return {
-                "suspected": True,
-                "score": 1.75,
-                "confidence": "medium",
-                "evidence": [
-                    "no_gold_reference",
-                    "low_dtw_with_strong_anchor_agreement",
-                ],
-                "signals": {
-                    "dtw_line_coverage": round(dtw_line_cov, 4),
-                    "dtw_word_coverage": round(dtw_word_cov, 4),
-                    "agreement_coverage_ratio": round(agree_cov, 4),
-                    "agreement_text_similarity_mean": round(agree_sim, 4),
-                    "agreement_start_p95_abs_sec": round(agree_p95, 4),
-                    "low_confidence_ratio": round(low_conf, 4),
-                    "line_count": line_count,
-                },
-            }
-        return {
-            "suspected": False,
-            "score": 0.0,
-            "confidence": "low",
-            "evidence": ["no_gold_reference"],
-        }
     score = 0.0
     evidence: list[str] = []
 
@@ -1293,22 +1265,16 @@ def _infer_reference_divergence_suspicion(metrics: dict[str, Any]) -> dict[str, 
     comparable_words = int(metrics.get("gold_comparable_word_count", 0) or 0)
 
     if comparable_words < 20 or line_count < 10:
-        return {
-            "suspected": False,
-            "score": 0.0,
-            "confidence": "low",
-            "evidence": ["insufficient_comparable_coverage"],
-            "signals": {
-                "gold_word_coverage_ratio": round(gold_cov, 4),
-                "gold_start_mean_abs_sec": round(gold_start_mean, 4),
-                "gold_start_p95_abs_sec": round(gold_start_p95, 4),
-                "dtw_line_coverage": round(dtw_line_cov, 4),
-                "agreement_coverage_ratio": round(agree_cov, 4),
-                "agreement_text_similarity_mean": round(agree_sim, 4),
-                "low_confidence_ratio": round(low_conf, 4),
-                "gold_comparable_word_count": comparable_words,
-            },
-        }
+        return _infer_reference_divergence_insufficient(
+            gold_cov=gold_cov,
+            gold_start_mean=gold_start_mean,
+            gold_start_p95=gold_start_p95,
+            dtw_line_cov=dtw_line_cov,
+            agree_cov=agree_cov,
+            agree_sim=agree_sim,
+            low_conf=low_conf,
+            comparable_words=comparable_words,
+        )
 
     strong_dtw_internal = (
         dtw_line_cov >= 0.9 and dtw_word_cov >= 0.4 and low_conf <= 0.1
@@ -1374,6 +1340,81 @@ def _infer_reference_divergence_suspicion(metrics: dict[str, Any]) -> dict[str, 
             "agreement_coverage_ratio": round(agree_cov, 4),
             "agreement_text_similarity_mean": round(agree_sim, 4),
             "agreement_bad_ratio": round(agree_bad, 4),
+            "low_confidence_ratio": round(low_conf, 4),
+            "gold_comparable_word_count": comparable_words,
+        },
+    }
+
+
+def _infer_reference_divergence_no_gold(
+    *,
+    line_count: int,
+    dtw_line_cov: float,
+    dtw_word_cov: float,
+    agree_cov: float,
+    agree_sim: float,
+    agree_p95: float,
+    low_conf: float,
+) -> dict[str, Any]:
+    no_gold_suspected = (
+        line_count >= 40
+        and dtw_line_cov <= 0.6
+        and dtw_word_cov <= 0.45
+        and agree_cov >= 0.07
+        and agree_sim >= 0.9
+        and agree_p95 <= 1.2
+        and low_conf <= 0.08
+    )
+    if not no_gold_suspected:
+        return {
+            "suspected": False,
+            "score": 0.0,
+            "confidence": "low",
+            "evidence": ["no_gold_reference"],
+        }
+    return {
+        "suspected": True,
+        "score": 1.75,
+        "confidence": "medium",
+        "evidence": [
+            "no_gold_reference",
+            "low_dtw_with_strong_anchor_agreement",
+        ],
+        "signals": {
+            "dtw_line_coverage": round(dtw_line_cov, 4),
+            "dtw_word_coverage": round(dtw_word_cov, 4),
+            "agreement_coverage_ratio": round(agree_cov, 4),
+            "agreement_text_similarity_mean": round(agree_sim, 4),
+            "agreement_start_p95_abs_sec": round(agree_p95, 4),
+            "low_confidence_ratio": round(low_conf, 4),
+            "line_count": line_count,
+        },
+    }
+
+
+def _infer_reference_divergence_insufficient(
+    *,
+    gold_cov: float,
+    gold_start_mean: float,
+    gold_start_p95: float,
+    dtw_line_cov: float,
+    agree_cov: float,
+    agree_sim: float,
+    low_conf: float,
+    comparable_words: int,
+) -> dict[str, Any]:
+    return {
+        "suspected": False,
+        "score": 0.0,
+        "confidence": "low",
+        "evidence": ["insufficient_comparable_coverage"],
+        "signals": {
+            "gold_word_coverage_ratio": round(gold_cov, 4),
+            "gold_start_mean_abs_sec": round(gold_start_mean, 4),
+            "gold_start_p95_abs_sec": round(gold_start_p95, 4),
+            "dtw_line_coverage": round(dtw_line_cov, 4),
+            "agreement_coverage_ratio": round(agree_cov, 4),
+            "agreement_text_similarity_mean": round(agree_sim, 4),
             "low_confidence_ratio": round(low_conf, 4),
             "gold_comparable_word_count": comparable_words,
         },

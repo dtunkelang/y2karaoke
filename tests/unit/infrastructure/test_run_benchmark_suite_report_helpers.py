@@ -657,3 +657,41 @@ def test_expand_agreement_token_handles_known_patterns():
     assert module._expand_agreement_token("we're") == ["we", "are"]
     assert module._expand_agreement_token("they've") == ["they", "have"]
     assert module._expand_agreement_token("i'll") == ["i", "will"]
+
+
+def test_infer_reference_divergence_no_gold_branch():
+    module = _load_module()
+    result = module._infer_reference_divergence_suspicion(
+        {
+            "gold_available": False,
+            "line_count": 50,
+            "dtw_line_coverage": 0.55,
+            "dtw_word_coverage": 0.40,
+            "agreement_coverage_ratio": 0.10,
+            "agreement_text_similarity_mean": 0.92,
+            "agreement_start_p95_abs_sec": 1.0,
+            "low_confidence_ratio": 0.05,
+        }
+    )
+    assert result["suspected"] is True
+    assert "no_gold_reference" in result["evidence"]
+
+
+def test_infer_reference_divergence_insufficient_comparable_coverage_branch():
+    module = _load_module()
+    result = module._infer_reference_divergence_suspicion(
+        {
+            "gold_available": True,
+            "line_count": 25,
+            "gold_comparable_word_count": 8,
+            "gold_word_coverage_ratio": 0.7,
+            "gold_start_mean_abs_sec": 1.0,
+            "gold_start_p95_abs_sec": 2.0,
+            "dtw_line_coverage": 0.9,
+            "agreement_coverage_ratio": 0.3,
+            "agreement_text_similarity_mean": 0.9,
+            "low_confidence_ratio": 0.05,
+        }
+    )
+    assert result["suspected"] is False
+    assert result["evidence"] == ["insufficient_comparable_coverage"]
