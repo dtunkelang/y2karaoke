@@ -17,6 +17,11 @@
   - [x] `Imagine Dragons - Believer` (provisional classification: sparse lexical comparability)
   - [x] `Indila - Derniere danse` (provisional classification: sparse lexical comparability)
 - [x] For each, classify dominant failure mode: sparse lexical comparability vs timing drift vs repetition handling.
+- Latest probe notes (main benchmark set, offline, `hybrid_whisper`):
+  - `text_sim=0.60, token_overlap=0.50` -> agreement_cov `0.331`, p95 `1.117`, bad_ratio `0.049`
+  - `text_sim=0.58, token_overlap=0.48` -> agreement_cov `0.332`, p95 `1.117`, bad_ratio `0.049`
+  - `text_sim=0.55, token_overlap=0.45` -> agreement_cov `0.337`, p95 `1.178`, bad_ratio `0.051`
+  - Under current guard (`min_coverage_gain=0.005`, `max_bad_ratio_increase=0.002`), no relaxed candidate passes.
 
 ## 2. Alignment pipeline improvements
 - [x] Add stronger deterministic path-selection telemetry in lyrics pipeline:
