@@ -68,7 +68,7 @@
 - [x] Extract song-result append/checkpoint path into `_append_result_and_checkpoint()` helper with unit test.
 - [x] Extract per-song collection flow into `_collect_single_song_result()` with fail-fast/control-flow tests.
 - [x] Reduce agreement text normalization complexity via `_expand_agreement_token()` extraction.
-- [x] Reduce complexity hotspots count in `run_benchmark_suite.py` from 7 -> 4 via warning/reference-divergence helper extraction.
+- [x] Reduce complexity hotspots count in `run_benchmark_suite.py` from 7 -> 3 via warning/reference-divergence/lexical helper extraction.
 - [ ] Keep files under quality-guardrail size limits while refactoring.
 - [ ] Add focused tests for new extraction units rather than broad integration expansions.
 

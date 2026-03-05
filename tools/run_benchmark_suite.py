@@ -1099,6 +1099,78 @@ def _max_contiguous_exact_run(left: list[str], right: list[str]) -> int:
     return best
 
 
+def _compute_lexical_line_diagnostics(
+    *,
+    line: dict[str, Any],
+    line_text: str,
+    whisper_text: str,
+) -> dict[str, Any] | None:
+    line_basic = _lexical_tokens_basic(line_text)
+    line_compact = _lexical_tokens_compact(line_text)
+    wh_basic = _lexical_tokens_basic(whisper_text)
+    wh_compact = _lexical_tokens_compact(whisper_text)
+    if not line_basic or not wh_basic:
+        return None
+
+    repetitive_phrase = len(line_basic) >= 4 and len(set(line_compact)) <= max(
+        2, len(line_compact) // 2
+    )
+    compact_line_set = set(line_compact)
+    compact_wh_set = set(wh_compact)
+    max_run = _max_contiguous_exact_run(line_compact, wh_compact)
+    truncation_pattern = bool(
+        max_run >= 3
+        and compact_line_set
+        and len(compact_line_set & compact_wh_set) < len(compact_line_set)
+    )
+
+    used_basic = [False] * len(wh_basic)
+    used_compact = [False] * len(wh_compact)
+    rescued_tokens: list[str] = []
+    apostrophe_tokens: list[str] = []
+    unmatched_tokens: list[str] = []
+    compact_rescue = 0
+    apostrophe_rescue = 0
+
+    for i, tok_basic in enumerate(line_basic):
+        tok_compact = (
+            line_compact[i] if i < len(line_compact) else tok_basic.replace("'", "")
+        )
+        idx_basic = _best_lexical_match_index(tok_basic, wh_basic, used_basic)
+        if idx_basic is not None:
+            used_basic[idx_basic] = True
+            continue
+        unmatched_tokens.append(tok_basic)
+        idx_compact = _best_lexical_match_index(tok_compact, wh_compact, used_compact)
+        if idx_compact is None:
+            continue
+        used_compact[idx_compact] = True
+        rescued_tokens.append(tok_basic)
+        compact_rescue += 1
+        if "'" in tok_basic:
+            apostrophe_tokens.append(tok_basic)
+            apostrophe_rescue += 1
+
+    sample = None
+    if rescued_tokens:
+        sample = {
+            "line_index": int(line.get("index") or 0),
+            "line_text": line_text,
+            "whisper_window_excerpt": whisper_text[:180],
+            "rescued_tokens": rescued_tokens[:8],
+            "apostrophe_rescued_tokens": apostrophe_tokens[:8],
+            "unmatched_tokens": unmatched_tokens[:8],
+        }
+    return {
+        "line_token_count": len(line_basic),
+        "compact_rescue": compact_rescue,
+        "apostrophe_rescue": apostrophe_rescue,
+        "repetitive_phrase": repetitive_phrase,
+        "truncation_pattern": truncation_pattern,
+        "sample": sample,
+    }
+
+
 def _extract_lexical_mismatch_diagnostics(
     report: dict[str, Any],
     metrics: dict[str, Any],
@@ -1137,69 +1209,24 @@ def _extract_lexical_mismatch_diagnostics(
         if not whisper_text:
             continue
         line_count_analyzed += 1
-
-        line_basic = _lexical_tokens_basic(line_text)
-        line_compact = _lexical_tokens_compact(line_text)
-        wh_basic = _lexical_tokens_basic(whisper_text)
-        wh_compact = _lexical_tokens_compact(whisper_text)
-        if not line_basic or not wh_basic:
+        line_diag = _compute_lexical_line_diagnostics(
+            line=line,
+            line_text=line_text,
+            whisper_text=whisper_text,
+        )
+        if line_diag is None:
             continue
 
-        total_line_tokens += len(line_basic)
-        if len(line_basic) >= 4 and len(set(line_compact)) <= max(
-            2, len(line_compact) // 2
-        ):
+        total_line_tokens += int(line_diag.get("line_token_count", 0) or 0)
+        compact_rescue += int(line_diag.get("compact_rescue", 0) or 0)
+        apostrophe_rescue += int(line_diag.get("apostrophe_rescue", 0) or 0)
+        if bool(line_diag.get("repetitive_phrase")):
             repetitive_phrase_line_count += 1
-
-        compact_line_set = set(line_compact)
-        compact_wh_set = set(wh_compact)
-        max_run = _max_contiguous_exact_run(line_compact, wh_compact)
-        if (
-            max_run >= 3
-            and compact_line_set
-            and len(compact_line_set & compact_wh_set) < len(compact_line_set)
-        ):
-            # Strong contiguous overlap but missing line tokens suggests the window
-            # latched onto a repeated/truncated phrase rather than the full line.
+        if bool(line_diag.get("truncation_pattern")):
             truncation_pattern_count += 1
-
-        used_basic = [False] * len(wh_basic)
-        used_compact = [False] * len(wh_compact)
-        rescued_tokens: list[str] = []
-        apostrophe_tokens: list[str] = []
-        unmatched_tokens: list[str] = []
-
-        for i, tok_basic in enumerate(line_basic):
-            tok_compact = (
-                line_compact[i] if i < len(line_compact) else tok_basic.replace("'", "")
-            )
-            idx_basic = _best_lexical_match_index(tok_basic, wh_basic, used_basic)
-            if idx_basic is not None:
-                used_basic[idx_basic] = True
-                continue
-            unmatched_tokens.append(tok_basic)
-            idx_compact = _best_lexical_match_index(
-                tok_compact, wh_compact, used_compact
-            )
-            if idx_compact is not None:
-                used_compact[idx_compact] = True
-                rescued_tokens.append(tok_basic)
-                compact_rescue += 1
-                if "'" in tok_basic:
-                    apostrophe_tokens.append(tok_basic)
-                    apostrophe_rescue += 1
-
-        if rescued_tokens and len(samples) < 8:
-            samples.append(
-                {
-                    "line_index": int(line.get("index") or 0),
-                    "line_text": line_text,
-                    "whisper_window_excerpt": whisper_text[:180],
-                    "rescued_tokens": rescued_tokens[:8],
-                    "apostrophe_rescued_tokens": apostrophe_tokens[:8],
-                    "unmatched_tokens": unmatched_tokens[:8],
-                }
-            )
+        sample = line_diag.get("sample")
+        if isinstance(sample, dict) and len(samples) < 8:
+            samples.append(sample)
 
     if total_line_tokens <= 0:
         return None

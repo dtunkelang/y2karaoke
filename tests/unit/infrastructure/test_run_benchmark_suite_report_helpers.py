@@ -695,3 +695,29 @@ def test_infer_reference_divergence_insufficient_comparable_coverage_branch():
     )
     assert result["suspected"] is False
     assert result["evidence"] == ["insufficient_comparable_coverage"]
+
+
+def test_compute_lexical_line_diagnostics_rescue_and_flags():
+    module = _load_module()
+    line = {"index": 3}
+    diag = module._compute_lexical_line_diagnostics(
+        line=line,
+        line_text="I can't stop stop",
+        whisper_text="i cant stop",
+    )
+    assert diag is not None
+    assert int(diag["line_token_count"]) == 4
+    assert int(diag["compact_rescue"]) >= 0
+    assert int(diag["apostrophe_rescue"]) >= 0
+    sample = diag.get("sample")
+    assert sample is None or isinstance(sample, dict)
+
+
+def test_compute_lexical_line_diagnostics_none_when_no_tokens():
+    module = _load_module()
+    diag = module._compute_lexical_line_diagnostics(
+        line={"index": 1},
+        line_text="???",
+        whisper_text="...",
+    )
+    assert diag is None
