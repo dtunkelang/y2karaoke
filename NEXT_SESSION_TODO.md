@@ -30,6 +30,10 @@
     - reaches >=0.35 coverage target but with unacceptable timing/bad-ratio regression under current guard.
   - post-default-tune probe `text_sim=0.56, token_overlap=0.50` (`20260305T_probe_ts56_to50_post_tune`) -> agreement_cov `0.337`, p95 `1.180`, bad_ratio `0.051`
     - vs baseline `20260305T222326Z`: coverage `+0.0034`, bad_ratio `+0.0017`, p95 `+0.0632` (guard fail due insufficient coverage gain and p95 regression).
+  - post-high-overlap-rescue sweep (`20260305T_post_delta_sweep_*`) vs baseline `20260305T224717Z`:
+    - `text_sim=0.57, token_overlap=0.50` -> coverage `+0.0017`, bad_ratio `+0.0017`, p95 `+0.0645` (guard fail)
+    - `text_sim=0.56, token_overlap=0.50` -> coverage `+0.0034`, bad_ratio `+0.0017`, p95 `+0.0632` (guard fail)
+    - current default `0.58/0.50` remains best guard-pass setting after latest pipeline changes.
   - near-baseline sweep (`20260305T_sweep_near_base_*`, token overlap fixed `0.55`):
     - `text_sim=0.63` -> agreement_cov `0.314`, p95 `1.129`, bad_ratio `0.047` (guard pass)
     - `text_sim=0.62` -> agreement_cov `0.317`, p95 `1.125`, bad_ratio `0.047` (guard pass)
