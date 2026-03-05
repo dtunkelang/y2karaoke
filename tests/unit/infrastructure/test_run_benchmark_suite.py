@@ -252,6 +252,7 @@ def test_aggregate_tracks_missing_dtw_and_weighted_means():
     assert agg["phase_totals_sec"]["separation"] == 16.0
     assert agg["cache_summary"]["separation"]["miss_count"] == 0
     assert agg["cache_summary"]["separation"]["total"] == 0
+    assert "highest_timing_quality_score" in agg["quality_hotspots"]
     assert "lowest_timing_quality_score" in agg["quality_hotspots"]
     assert agg["timing_quality_band_counts"] == {"fair": 1, "good": 1}
     assert agg["timing_quality_band_ratios"] == {"fair": 0.5, "good": 0.5}

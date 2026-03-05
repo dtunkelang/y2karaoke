@@ -1960,6 +1960,9 @@ def _aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:  # noqa: C901
         "phase_totals_sec": phase_totals,
         "phase_shares_of_song_elapsed": phase_shares,
         "quality_hotspots": {
+            "highest_timing_quality_score": _hotspot_records(
+                key="timing_quality_score", top_n=3, reverse=True
+            ),
             "lowest_dtw_line_coverage": _hotspot_records(
                 key="dtw_line_coverage", top_n=3, reverse=False
             ),
@@ -2519,6 +2522,7 @@ def _write_markdown_summary(  # noqa: C901
         high_agree_p95 = hotspots.get("highest_agreement_start_p95_abs_sec", [])
         high_agree_bad = hotspots.get("highest_agreement_bad_ratio", [])
         high_agree_severe = hotspots.get("highest_agreement_severe_ratio", [])
+        high_timing_quality = hotspots.get("highest_timing_quality_score", [])
         low_timing_quality = hotspots.get("lowest_timing_quality_score", [])
         high_gold_start = hotspots.get("highest_avg_abs_word_start_delta_sec", [])
         low_gold_cov = hotspots.get("lowest_gold_word_coverage_ratio", [])
@@ -2533,6 +2537,7 @@ def _write_markdown_summary(  # noqa: C901
             or high_agree_p95
             or high_agree_bad
             or high_agree_severe
+            or high_timing_quality
             or low_timing_quality
             or high_gold_start
             or low_gold_cov
@@ -2571,6 +2576,11 @@ def _write_markdown_summary(  # noqa: C901
             if high_agree_severe:
                 lines.append("- Highest severe agreement ratio (>1.5s):")
                 for item in high_agree_severe:
+                    if isinstance(item, dict):
+                        lines.append(f"  - {item.get('song')}: {item.get('value')}")
+            if high_timing_quality:
+                lines.append("- Highest timing quality score:")
+                for item in high_timing_quality:
                     if isinstance(item, dict):
                         lines.append(f"  - {item.get('song')}: {item.get('value')}")
             if low_timing_quality:
