@@ -28,8 +28,8 @@ Last updated: 2026-03-04
 - Status: completed (phase 1)
 - Scope:
   - Emit stable pass-level counters for key finalize/postpass stages.
-  - Include counters in returned Whisper metrics for regression triage.
-  - Remaining follow-up: add optional per-pass timing durations.
+  - Emit per-pass durations (`*_sec`) for the same stages.
+  - Include these metrics in returned Whisper metrics for regression triage.
 
 4. **Heuristic surface reduction via explicit config objects**
 - Impact: high

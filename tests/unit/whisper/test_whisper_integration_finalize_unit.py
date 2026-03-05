@@ -231,6 +231,7 @@ def test_apply_low_quality_segment_postpasses_records_stage_metrics():
     assert metrics["postpass_merge_lines_to_segments"] == pytest.approx(7.0)
     assert metrics["postpass_tighten_lines_to_segments"] == pytest.approx(8.0)
     assert metrics["postpass_pull_lines_to_best_segments"] == pytest.approx(9.0)
+    assert metrics["postpass_merge_first_two_lines_sec"] >= 0.0
 
 
 def test_finalize_whisper_line_set_records_roll_back_metric():

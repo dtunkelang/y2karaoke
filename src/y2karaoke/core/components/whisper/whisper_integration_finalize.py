@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import time
 from typing import Any, Callable, List, Optional, Tuple
 
 from ... import models
@@ -307,20 +308,23 @@ def _run_counted_postpass(
     metric_key: str,
     stage_metrics: Optional[dict[str, float]] = None,
 ) -> Tuple[List[models.Line], List[str]]:
+    start = time.perf_counter()
     aligned_lines, count = postpass_fn(aligned_lines, *postpass_args)
+    elapsed = time.perf_counter() - start
     _append_counted_alignment(alignments, count, message_template)
     _record_stage_metric(stage_metrics, metric_key, count)
+    _record_stage_metric(stage_metrics, f"{metric_key}_sec", elapsed)
     return aligned_lines, alignments
 
 
 def _record_stage_metric(
     stage_metrics: Optional[dict[str, float]],
     metric_key: str,
-    count: int,
+    value: float,
 ) -> None:
     if stage_metrics is None:
         return
-    stage_metrics[metric_key] = float(count)
+    stage_metrics[metric_key] = float(value)
 
 
 def _apply_force_dtw_finalize_passes(
