@@ -58,6 +58,8 @@ Last updated: 2026-03-04
   - Completed so far:
     - Added direct unit coverage for mapped-line postpass orchestration/invariants in
       `tests/unit/whisper/test_whisper_integration_stages_unit.py`.
+    - Added pipeline invariant scenario for repeated-reset-style timing jitter without line loss
+      in `tests/unit/whisper/test_whisper_integration_pipeline_unit.py`.
 
 6. **Benchmark trust instrumentation for reference divergence**
 - Impact: medium-high
