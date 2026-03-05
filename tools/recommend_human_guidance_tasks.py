@@ -4,9 +4,12 @@
 from __future__ import annotations
 
 import argparse
+from difflib import SequenceMatcher
 import json
 from pathlib import Path
+import re
 from typing import Any
+import unicodedata
 
 
 def _resolve_report(path: Path) -> Path:
@@ -19,6 +22,83 @@ def _load_report(path: Path) -> dict[str, Any]:
 
 def _song_name(song: dict[str, Any]) -> str:
     return f"{song.get('artist', '')} - {song.get('title', '')}".strip()
+
+
+def _normalize_text(text: Any) -> str:
+    if not isinstance(text, str):
+        return ""
+    folded = "".join(
+        ch
+        for ch in unicodedata.normalize("NFKD", text.lower())
+        if unicodedata.category(ch) != "Mn"
+    )
+    folded = re.sub(r"[’`´]", "'", folded)
+    folded = re.sub(r"[^a-z0-9'\s]", " ", folded)
+    return re.sub(r"\s+", " ", folded).strip()
+
+
+def _text_similarity(left: Any, right: Any) -> float:
+    a = _normalize_text(left)
+    b = _normalize_text(right)
+    if not a or not b:
+        return 0.0
+    return SequenceMatcher(None, a, b).ratio()
+
+
+def _token_overlap(left: Any, right: Any) -> float:
+    a = set(_normalize_text(left).split())
+    b = set(_normalize_text(right).split())
+    if not a or not b:
+        return 0.0
+    return len(a & b) / max(1, min(len(a), len(b)))
+
+
+def _collect_mismatch_examples(song: dict[str, Any], *, limit: int = 2) -> list[str]:
+    report_path_raw = song.get("report_path")
+    if not isinstance(report_path_raw, str) or not report_path_raw:
+        return []
+    report_path = Path(report_path_raw)
+    if not report_path.exists():
+        return []
+    try:
+        report_doc = json.loads(report_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return []
+    lines = report_doc.get("lines", [])
+    if not isinstance(lines, list):
+        return []
+    examples: list[str] = []
+    for line in lines:
+        if not isinstance(line, dict):
+            continue
+        line_text = line.get("text")
+        anchor_text = line.get("nearest_segment_start_text")
+        line_start = line.get("start")
+        anchor_start = line.get("nearest_segment_start")
+        if not isinstance(line_text, str) or not isinstance(anchor_text, str):
+            continue
+        if not isinstance(line_start, (int, float)) or not isinstance(
+            anchor_start, (int, float)
+        ):
+            continue
+        start_delta = abs(float(line_start) - float(anchor_start))
+        sim = _text_similarity(line_text, anchor_text)
+        overlap = _token_overlap(line_text, anchor_text)
+        # Focus examples on likely lexical mismatches that are still temporally close
+        # enough for fast manual correction (snap + nudge).
+        if start_delta > 0.3:
+            continue
+        if sim >= 0.58:
+            continue
+        if overlap < 0.45:
+            continue
+        examples.append(
+            f"line='{line_text[:80]}' vs anchor='{anchor_text[:80]}' "
+            f"(delta={start_delta:.2f}s, sim={sim:.2f}, overlap={overlap:.2f})"
+        )
+        if len(examples) >= limit:
+            break
+    return examples
 
 
 def _build_actions(song: dict[str, Any], metrics: dict[str, Any]) -> list[str]:
@@ -102,6 +182,7 @@ def _recommend(doc: dict[str, Any], top: int, min_priority: float) -> dict[str, 
                     float(metrics.get("dtw_line_coverage", 0.0) or 0.0), 3
                 ),
                 "actions": _build_actions(song, metrics),
+                "mismatch_examples": _collect_mismatch_examples(song),
             }
         )
     rows = [row for row in rows if row.get("status") == "ok"]
@@ -144,6 +225,9 @@ def _write_markdown(path: Path, payload: dict[str, Any]) -> None:
         actions = row.get("actions", []) or []
         for action in actions:
             lines.append(f"- {row.get('song', '')}: {action}")
+        mismatch_examples = row.get("mismatch_examples", []) or []
+        for example in mismatch_examples:
+            lines.append(f"- {row.get('song', '')}: example mismatch {example}")
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 

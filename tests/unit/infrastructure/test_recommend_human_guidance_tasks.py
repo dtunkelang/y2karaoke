@@ -121,3 +121,62 @@ def test_recommend_human_guidance_tasks_filters_by_min_priority(
     payload = json.loads((run_dir / "human_guidance_tasks.json").read_text("utf-8"))
     assert payload["song_count_considered"] == 1
     assert payload["rows"][0]["song"] == "B - High"
+
+
+def test_recommend_human_guidance_tasks_includes_mismatch_examples(
+    tmp_path, monkeypatch
+) -> None:
+    run_dir = tmp_path / "run"
+    run_dir.mkdir()
+    timing_report = run_dir / "song_timing_report.json"
+    timing_report.write_text(
+        json.dumps(
+            {
+                "lines": [
+                    {
+                        "start": 10.0,
+                        "nearest_segment_start": 10.1,
+                        "text": "si el ritmo te lleva a mover la cabeza",
+                        "nearest_segment_start_text": "cabeza mover lleva ritmo te el si la",
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+    report = {
+        "songs": [
+            {
+                "artist": "C",
+                "title": "Mismatch",
+                "status": "ok",
+                "report_path": str(timing_report),
+                "metrics": {
+                    "agreement_coverage_ratio": 0.2,
+                    "agreement_start_p95_abs_sec": 1.0,
+                    "low_confidence_ratio": 0.02,
+                    "dtw_line_coverage": 1.0,
+                },
+            }
+        ]
+    }
+    (run_dir / "benchmark_report.json").write_text(json.dumps(report), encoding="utf-8")
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "recommend_human_guidance_tasks.py",
+            "--report",
+            str(run_dir),
+            "--top",
+            "10",
+        ],
+    )
+    rc = _MODULE.main()
+    assert rc == 0
+    payload = json.loads((run_dir / "human_guidance_tasks.json").read_text("utf-8"))
+    examples = payload["rows"][0]["mismatch_examples"]
+    assert len(examples) == 1
+    assert "delta=0.10s" in examples[0]
+    md = (run_dir / "human_guidance_tasks.md").read_text("utf-8")
+    assert "example mismatch" in md

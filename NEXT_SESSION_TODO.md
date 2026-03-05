@@ -7,9 +7,11 @@
 - [x] Add correction-session telemetry (edits per minute, undo rate, snap usage) to quantify UX speedups.
 - [x] Add benchmark path that compares raw auto-alignment vs post-human-correction delta on agreement/timing metrics.
 - [x] Add benchmark-driven recommendation tool to prioritize manual correction queue per run.
+- [x] Surface per-song mismatch examples (line vs anchor text + delta/sim/overlap) in human-guidance recommendations.
 - Latest recommendation snapshot (`benchmarks/results/human_guidance_tasks_20260305T225648Z.md`):
   - Top priority songs: `J Balvin - Mi Gente`, `Indila - Derniere danse`, `Bruno Mars - Uptown Funk`, `ROSALIA - DESPECHA`, `The Weeknd - Blinding Lights`.
   - Use editor workflow emphasis: jump-to-anchor + snap-to-onset first, then micro-nudge first-word onsets.
+  - Report now includes concrete mismatch examples to seed correction passes (when available).
 
 ## 1. Highest-impact quality work
 - [ ] Improve agreement coverage from ~0.25 toward >=0.35 without degrading start-error metrics.
