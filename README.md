@@ -17,6 +17,13 @@ Generate karaoke videos from YouTube URLs or song titles with word-by-word highl
 - **Tempo control** (speed up or slow down) with synchronized lyrics
 - Caches intermediate files so expensive steps (separation, transcription) are reused across runs
 
+## Project Docs
+
+- Current project status and artifact policy: `docs/project_status.md`
+- Architecture overview: `ARCHITECTURE.md`
+- Development workflow: `docs/development.md`
+- Pipeline docs: `docs/pipelines/`
+
 ## Installation
 
 ### Prerequisites

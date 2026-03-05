@@ -48,6 +48,16 @@ make quality-guardrails
 - `src/y2karaoke.egg-info/` is generated packaging metadata.
 - Keep it out of version control; it is ignored via `.gitignore`.
 - If you need to refresh metadata locally, reinstall with `pip install -e .`.
+- Benchmark run outputs are generated under `benchmarks/results/` and should remain untracked.
+- Experiment scratch outputs belong in `benchmarks/experiments/` and should remain untracked.
+- Transient logs (`*.log`) are ignored and should not be committed.
+
+Cleanup example:
+
+```bash
+rm -rf benchmarks/experiments
+find . -maxdepth 1 -name "*.log" -delete
+```
 
 ## Perf Smoke Thresholds
 

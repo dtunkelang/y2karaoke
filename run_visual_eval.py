@@ -50,7 +50,7 @@ def _parse_args() -> argparse.Namespace:
     p.add_argument(
         "--summary-md",
         type=Path,
-        default=Path("visual_metrics_summary.md"),
+        default=Path("benchmarks/results/visual_eval/visual_metrics_summary.md"),
     )
     p.add_argument(
         "--summary-json",
@@ -426,6 +426,8 @@ def main() -> int:
         stale.unlink(missing_ok=True)
     if args.summary_json.parent:
         args.summary_json.parent.mkdir(parents=True, exist_ok=True)
+    if args.summary_md.parent:
+        args.summary_md.parent.mkdir(parents=True, exist_ok=True)
     args.lrc_dir.mkdir(parents=True, exist_ok=True)
 
     seen_manifest_slugs: set[str] = set()

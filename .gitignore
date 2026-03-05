@@ -18,6 +18,7 @@ debug
 # OS
 .DS_Store
 Thumbs.db
+*.log
 
 # Project
 output/
@@ -33,6 +34,10 @@ tests/.genius_cache
 
 # Benchmark artifacts (keep manifest/scripts, ignore generated results/logs)
 benchmarks/results/
+benchmarks/experiments/
+debug_verification_results/
+bohemian_verified.json
+visual_metrics_summary.md
 
 # Coverage
 .coverage
