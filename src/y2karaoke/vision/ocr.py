@@ -20,6 +20,53 @@ logger = logging.getLogger(__name__)
 _OCR_ENGINE = None
 
 
+def _is_vision_preferred_platform() -> bool:
+    return platform.system() == "Darwin" and platform.machine() == "arm64"
+
+
+def _init_vision_ocr_if_available() -> Any | None:
+    if not _is_vision_preferred_platform():
+        return None
+    try:
+        logger.info("Initializing Apple Vision OCR...")
+        return VisionOCR()
+    except Exception as e:
+        logger.warning(f"Failed to initialize Apple Vision OCR: {e}. Falling back.")
+        return None
+
+
+def _init_paddle_ocr() -> Any:
+    try:
+        from paddleocr import PaddleOCR
+    except ImportError as e:
+        msg = "PaddleOCR not found. Please install via `pip install paddlepaddle paddleocr`"
+        logger.error(msg)
+        raise OCRError(msg) from e
+
+    logger.info("Initializing PaddleOCR...")
+    try:
+        return PaddleOCR(
+            use_textline_orientation=True,
+            lang="en",
+            return_word_box=True,
+            show_log=False,
+        )
+    except Exception as e:
+        if "show_log" in str(e):
+            logger.warning(
+                "PaddleOCR rejected show_log argument; retrying with compatible kwargs"
+            )
+            return PaddleOCR(
+                use_textline_orientation=True, lang="en", return_word_box=True
+            )
+        if "return_word_box" in str(e):
+            logger.warning(
+                "PaddleOCR rejected return_word_box argument; retrying without it"
+            )
+            return PaddleOCR(use_textline_orientation=True, lang="en", show_log=False)
+        raise
+
+
 def _box_to_quad(box: Any) -> list[list[float]] | None:
     """Normalize OCR box output to a 4-point polygon."""
     if np is None:
@@ -142,41 +189,11 @@ class VisionOCR:
             logger.error(f"Vision OCR request failed: {error}")
             return []
 
-        results = request.results()
-        rec_texts = []
-        rec_boxes = []
-        rec_scores = []
-
-        for result in results:
-            # Request up to 5 candidates to resolve visual ambiguities
-            candidates = result.topCandidates_(5)
-            if not candidates:
-                continue
-
-            top_candidate = self._select_best_ocr_candidate(candidates)
-            full_text = top_candidate.string()
-            words = full_text.split()
-            current_pos = 0
-
-            for word_text in words:
-                word_start_idx = full_text.find(word_text, current_pos)
-                if word_start_idx == -1:
-                    continue
-                current_pos = word_start_idx + len(word_text)
-
-                try:
-                    word_data = self._parse_vision_word_data(
-                        top_candidate, word_text, word_start_idx, w, h
-                    )
-                    if word_data:
-                        rec_texts.append(word_text)
-                        rec_boxes.append(
-                            {"word": word_data["box"], "first_char": word_data["char"]}
-                        )
-                        rec_scores.append(top_candidate.confidence())
-                except Exception as e:
-                    logger.debug(f"Error parsing word '{word_text}': {e}")
-                    continue
+        rec_texts: list[str] = []
+        rec_boxes: list[dict[str, Any]] = []
+        rec_scores: list[float] = []
+        for result in request.results():
+            self._append_result_words(result, w, h, rec_texts, rec_boxes, rec_scores)
 
         if not rec_texts:
             return []
@@ -185,6 +202,48 @@ class VisionOCR:
         return [
             {"rec_texts": rec_texts, "rec_boxes": rec_boxes, "rec_scores": rec_scores}
         ]
+
+    def _append_result_words(
+        self,
+        result: Any,
+        w: int,
+        h: int,
+        rec_texts: list[str],
+        rec_boxes: list[dict[str, Any]],
+        rec_scores: list[float],
+    ) -> None:
+        candidates = result.topCandidates_(5)
+        if not candidates:
+            return
+        top_candidate = self._select_best_ocr_candidate(candidates)
+        for word_text, word_start_idx in self._iter_word_positions(
+            top_candidate.string()
+        ):
+            try:
+                word_data = self._parse_vision_word_data(
+                    top_candidate, word_text, word_start_idx, w, h
+                )
+            except Exception as e:
+                logger.debug(f"Error parsing word '{word_text}': {e}")
+                continue
+            if not word_data:
+                continue
+            rec_texts.append(word_text)
+            rec_boxes.append(
+                {"word": word_data["box"], "first_char": word_data["char"]}
+            )
+            rec_scores.append(top_candidate.confidence())
+
+    def _iter_word_positions(self, full_text: str) -> list[tuple[str, int]]:
+        out: list[tuple[str, int]] = []
+        current_pos = 0
+        for word_text in full_text.split():
+            word_start_idx = full_text.find(word_text, current_pos)
+            if word_start_idx == -1:
+                continue
+            current_pos = word_start_idx + len(word_text)
+            out.append((word_text, word_start_idx))
+        return out
 
     def _select_best_ocr_candidate(self, candidates: List[Any]) -> Any:
         """Heuristic: prefer candidates that resolve common visual confusions."""
@@ -266,50 +325,9 @@ def get_ocr_engine() -> Any:
     if _OCR_ENGINE is not None:
         return _OCR_ENGINE
 
-    # Try Apple Vision on macOS/arm64
-    if platform.system() == "Darwin" and platform.machine() == "arm64":
-        try:
-            logger.info("Initializing Apple Vision OCR...")
-            _OCR_ENGINE = VisionOCR()
-            return _OCR_ENGINE
-        except Exception as e:
-            logger.warning(f"Failed to initialize Apple Vision OCR: {e}. Falling back.")
-
-    # Fallback to PaddleOCR
-    try:
-        from paddleocr import PaddleOCR
-
-        logger.info("Initializing PaddleOCR...")
-        # lang='en' is standard for typical western karaoke; could be configurable.
-        # Newer PaddleOCR releases may reject `show_log`, so retry without it.
-        try:
-            _OCR_ENGINE = PaddleOCR(
-                use_textline_orientation=True,
-                lang="en",
-                return_word_box=True,
-                show_log=False,
-            )
-        except Exception as e:
-            if "show_log" in str(e):
-                logger.warning(
-                    "PaddleOCR rejected show_log argument; retrying with compatible kwargs"
-                )
-                _OCR_ENGINE = PaddleOCR(
-                    use_textline_orientation=True, lang="en", return_word_box=True
-                )
-            elif "return_word_box" in str(e):
-                logger.warning(
-                    "PaddleOCR rejected return_word_box argument; retrying without it"
-                )
-                _OCR_ENGINE = PaddleOCR(
-                    use_textline_orientation=True, lang="en", show_log=False
-                )
-            else:
-                raise
-    except ImportError as e:
-        msg = "PaddleOCR not found. Please install via `pip install paddlepaddle paddleocr`"
-        logger.error(msg)
-        raise OCRError(msg) from e
+    _OCR_ENGINE = _init_vision_ocr_if_available()
+    if _OCR_ENGINE is None:
+        _OCR_ENGINE = _init_paddle_ocr()
 
     return _OCR_ENGINE
 

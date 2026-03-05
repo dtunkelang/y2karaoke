@@ -19,6 +19,68 @@ from ..exceptions import VisualRefinementError
 logger = logging.getLogger(__name__)
 
 
+def _iter_color_sample_times(duration: float, step_t: float) -> np.ndarray:
+    start_t = duration * 0.3
+    end_t = duration * 0.7
+    logger.info(f"Inferring colors from {start_t:.1f}s to {end_t:.1f}s...")
+    return np.arange(start_t, end_t, step_t)
+
+
+def _extract_roi(
+    frame: np.ndarray, roi_rect: Tuple[int, int, int, int]
+) -> np.ndarray | None:
+    rx, ry, rw, rh = roi_rect
+    if ry + rh > frame.shape[0] or rx + rw > frame.shape[1]:
+        return None
+    return frame[ry : ry + rh, rx : rx + rw]
+
+
+def _collect_roi_word_samples(roi: np.ndarray, ocr: Any) -> list[np.ndarray]:
+    out: list[np.ndarray] = []
+    res = ocr.predict(roi)
+    if not (res and res[0]):
+        return out
+    items = normalize_ocr_items(res[0])
+    rec_boxes = items["rec_boxes"]
+    for box_data in rec_boxes:
+        points = box_data["word"] if isinstance(box_data, dict) else box_data
+        nb = np.array(points).reshape(-1, 2)
+        x, y = int(min(nb[:, 0])), int(min(nb[:, 1]))
+        bw, bh = int(max(nb[:, 0]) - x), int(max(nb[:, 1]) - y)
+        if bw <= 4 or bh <= 4:
+            continue
+        y, x = max(0, y), max(0, x)
+        bh = min(bh, roi.shape[0] - y)
+        bw = min(bw, roi.shape[1] - x)
+        word_roi = roi[y : y + bh, x : x + bw]
+        sampled = _sample_text_pixels(word_roi)
+        if sampled.size:
+            out.extend(sampled)
+    return out
+
+
+def _infer_clustered_colors(
+    pixel_samples: list[np.ndarray],
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    data = np.stack(pixel_samples).astype(np.float32)
+    criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 10, 1.0)
+    flags = cv2.KMEANS_RANDOM_CENTERS
+    _, labels, centers = cv2.kmeans(data, 3, cast(Any, None), criteria, 10, flags)
+
+    counts = np.bincount(labels.flatten())
+    cluster_info = []
+    for i, center in enumerate(centers):
+        cluster_info.append(
+            {"center": center, "count": counts[i], "brightness": np.mean(center)}
+        )
+    cluster_info.sort(key=lambda x: x["brightness"])
+    foreground_clusters = cluster_info[1:]
+    candidates = [c["center"] for c in foreground_clusters]
+    c_un, c_sel = _identify_color_states(candidates)
+    c_bg = cast(np.ndarray, cluster_info[0]["center"])
+    return c_un, c_sel, c_bg
+
+
 def _foreground_mask(word_roi: np.ndarray) -> np.ndarray:
     """Estimate foreground text pixels inside a word box.
 
@@ -137,46 +199,18 @@ def infer_lyric_colors(
 
     src_fps = cap.get(cv2.CAP_PROP_FPS) or 30.0
     duration = cap.get(cv2.CAP_PROP_FRAME_COUNT) / src_fps
-    rx, ry, rw, rh = roi_rect
     pixel_samples: list[np.ndarray] = []
-
-    # Sample middle 40% of the song where lyrics are dense
-    start_t = duration * 0.3
-    end_t = duration * 0.7
     step_t = 5.0
-
-    logger.info(f"Inferring colors from {start_t:.1f}s to {end_t:.1f}s...")
-
-    for t in np.arange(start_t, end_t, step_t):
+    for t in _iter_color_sample_times(duration, step_t):
         cap.set(cv2.CAP_PROP_POS_MSEC, t * 1000.0)
         ok, frame = cap.read()
         if not ok or frame is None:
             break
 
-        # Extract ROI
-        if ry + rh > frame.shape[0] or rx + rw > frame.shape[1]:
+        roi = _extract_roi(frame, roi_rect)
+        if roi is None:
             continue
-        roi = frame[ry : ry + rh, rx : rx + rw]
-
-        res = ocr.predict(roi)
-        if res and res[0]:
-            items = normalize_ocr_items(res[0])
-            rec_boxes = items["rec_boxes"]
-
-            for box_data in rec_boxes:
-                points = box_data["word"] if isinstance(box_data, dict) else box_data
-                nb = np.array(points).reshape(-1, 2)
-                x, y = int(min(nb[:, 0])), int(min(nb[:, 1]))
-                bw, bh = int(max(nb[:, 0]) - x), int(max(nb[:, 1]) - y)
-
-                if bw > 4 and bh > 4:
-                    y, x = max(0, y), max(0, x)
-                    bh = min(bh, roi.shape[0] - y)
-                    bw = min(bw, roi.shape[1] - x)
-                    word_roi = roi[y : y + bh, x : x + bw]
-                    sampled = _sample_text_pixels(word_roi)
-                    if sampled.size:
-                        pixel_samples.extend(sampled)
+        pixel_samples.extend(_collect_roi_word_samples(roi, ocr))
 
     cap.release()
 
@@ -188,32 +222,12 @@ def infer_lyric_colors(
             np.array([0, 0, 0]),
         )
 
-    # 1. Cluster into k=3 candidates
-    data = np.stack(pixel_samples).astype(np.float32)
-    criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 10, 1.0)
-    flags = cv2.KMEANS_RANDOM_CENTERS
-    _, labels, centers = cv2.kmeans(data, 3, cast(Any, None), criteria, 10, flags)
-
-    # 2. Count support for each cluster
-    counts = np.bincount(labels.flatten())
-    cluster_info = []
-    for i, center in enumerate(centers):
-        cluster_info.append(
-            {"center": center, "count": counts[i], "brightness": np.mean(center)}
-        )
-
-    # 3. Exclude the darkest cluster (likely background noise/edges)
-    cluster_info.sort(key=lambda x: x["brightness"])
-    foreground_clusters = cluster_info[1:]  # Keep two brightest
-
-    # 4. Identify Selected vs Unselected
-    candidates = [c["center"] for c in foreground_clusters]
-    c_un, c_sel = _identify_color_states(candidates)
+    c_un, c_sel, c_bg = _infer_clustered_colors(pixel_samples)
 
     logger.info(
         f"Inferred stable colors: Unselected={c_un.astype(int)}, Selected={c_sel.astype(int)}"
     )
-    return c_un, c_sel, cluster_info[0]["center"]
+    return c_un, c_sel, c_bg
 
 
 def classify_word_state(
