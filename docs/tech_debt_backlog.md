@@ -42,15 +42,19 @@ Last updated: 2026-03-04
     - Segment assignment env heuristics centralized in `whisper_blocks.py`.
     - Correction decision thresholds centralized in `whisper_integration_correct.py`.
     - Mapping decision thresholds centralized in `whisper_integration_align.py`.
+    - Retry-improvement thresholds centralized in `whisper_integration_retry.py`.
     - Added opt-in profile presets (`safe/default/aggressive`) via `Y2K_WHISPER_PROFILE` for mapping/correction threshold configs.
 
 5. **Cross-pass integration tests for alignment edge cases**
 - Impact: high
 - Effort: medium
-- Status: queued
+- Status: in progress
 - Scope:
   - Add scenario tests for block transitions, repeated chorus resets, interjections, sparse Whisper output.
   - Focus on behavioral invariants (ordering, monotonic starts, no line loss).
+  - Completed so far:
+    - Added direct unit coverage for mapped-line postpass orchestration/invariants in
+      `tests/unit/whisper/test_whisper_integration_stages_unit.py`.
 
 6. **Benchmark trust instrumentation for reference divergence**
 - Impact: medium-high

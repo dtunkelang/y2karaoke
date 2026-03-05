@@ -68,3 +68,22 @@ def test_retry_improves_alignment_false_on_tiny_gain():
         )
         is False
     )
+
+
+def test_retry_improves_alignment_profile_safe_is_stricter(monkeypatch):
+    baseline = {
+        "matched_ratio": 0.8,
+        "line_coverage": 0.84,
+        "phonetic_similarity_coverage": 0.4,
+    }
+    retry = {
+        "matched_ratio": 0.833,
+        "line_coverage": 0.83,
+        "phonetic_similarity_coverage": 0.44,
+    }
+
+    monkeypatch.setenv("Y2K_WHISPER_PROFILE", "default")
+    assert retry_improves_alignment(baseline, retry) is True
+
+    monkeypatch.setenv("Y2K_WHISPER_PROFILE", "safe")
+    assert retry_improves_alignment(baseline, retry) is False
