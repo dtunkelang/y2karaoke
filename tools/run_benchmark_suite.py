@@ -1709,6 +1709,20 @@ def _aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:  # noqa: C901
         key: round((value / len(succeeded)) if succeeded else 0.0, 4)
         for key, value in diagnosis_counts.items()
     }
+    timing_quality_band_counts: dict[str, int] = {}
+    for row in succeeded:
+        metrics_row = row.get("metrics", {})
+        if not isinstance(metrics_row, dict):
+            continue
+        band = str(metrics_row.get("timing_quality_band", "") or "")
+        if not band:
+            continue
+        timing_quality_band_counts[band] = timing_quality_band_counts.get(band, 0) + 1
+    timing_quality_band_counts = dict(sorted(timing_quality_band_counts.items()))
+    timing_quality_band_ratios = {
+        key: round((value / len(succeeded)) if succeeded else 0.0, 4)
+        for key, value in timing_quality_band_counts.items()
+    }
 
     return {
         "songs_total": len(results),
@@ -1864,6 +1878,8 @@ def _aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:  # noqa: C901
         ),
         "quality_diagnosis_counts": diagnosis_counts,
         "quality_diagnosis_ratios": diagnosis_ratios,
+        "timing_quality_band_counts": timing_quality_band_counts,
+        "timing_quality_band_ratios": timing_quality_band_ratios,
         "gold_word_count_total": gold_word_count_total,
         "gold_comparable_word_count_total": gold_comparable_word_count_total,
         "gold_word_coverage_ratio_total": round(gold_word_coverage_ratio_total, 4),
@@ -2088,6 +2104,14 @@ def _quality_coverage_warnings(
             "Line-weighted timing quality score is below target: "
             f"{float(timing_quality):.3f} < 0.580"
         )
+    timing_band_ratios = aggregate.get("timing_quality_band_ratios", {})
+    if isinstance(timing_band_ratios, dict):
+        poor_ratio = timing_band_ratios.get("poor")
+        if isinstance(poor_ratio, (int, float)) and float(poor_ratio) > 0.25:
+            warnings.append(
+                "Too many songs are in poor timing-quality band: "
+                f"{float(poor_ratio):.3f} > 0.250"
+            )
     gold_metric_song_count = int(aggregate.get("gold_metric_song_count", 0) or 0)
     if gold_metric_song_count > 0:
         gold_song_cov = float(
@@ -2287,6 +2311,12 @@ def _write_markdown_summary(  # noqa: C901
             f"{k}={v}" for k, v in sorted(diagnosis_counts.items())
         )
         lines.append(f"- Per-song quality diagnosis: `{diagnosis_summary}`")
+    timing_band_counts = aggregate.get("timing_quality_band_counts", {})
+    if isinstance(timing_band_counts, dict) and timing_band_counts:
+        timing_band_summary = ", ".join(
+            f"{k}={v}" for k, v in sorted(timing_band_counts.items())
+        )
+        lines.append(f"- Timing quality bands: `{timing_band_summary}`")
     lines.append(
         "- Primary metric (avg abs word-start delta): "
         f"`{_fmt_num(aggregate.get('avg_abs_word_start_delta_sec_word_weighted_mean'), unit='s')}` (word-weighted)"

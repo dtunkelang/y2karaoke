@@ -205,6 +205,7 @@ def test_aggregate_tracks_missing_dtw_and_weighted_means():
                 "agreement_bad_ratio": 0.1,
                 "agreement_severe_ratio": 0.04,
                 "timing_quality_score": 0.62,
+                "timing_quality_band": "fair",
             },
         },
         {
@@ -230,6 +231,7 @@ def test_aggregate_tracks_missing_dtw_and_weighted_means():
                 "agreement_bad_ratio": 0.02,
                 "agreement_severe_ratio": 0.0,
                 "timing_quality_score": 0.78,
+                "timing_quality_band": "good",
             },
         },
     ]
@@ -249,6 +251,8 @@ def test_aggregate_tracks_missing_dtw_and_weighted_means():
     assert agg["cache_summary"]["separation"]["miss_count"] == 0
     assert agg["cache_summary"]["separation"]["total"] == 0
     assert "lowest_timing_quality_score" in agg["quality_hotspots"]
+    assert agg["timing_quality_band_counts"] == {"fair": 1, "good": 1}
+    assert agg["timing_quality_band_ratios"] == {"fair": 0.5, "good": 0.5}
 
 
 def test_quality_coverage_warnings():
@@ -343,6 +347,30 @@ def test_quality_coverage_warnings_include_timing_quality_score_alert():
         suite_wall_elapsed_sec=6.0,
     )
     assert any("timing quality score is below target" in item for item in warnings)
+
+
+def test_quality_coverage_warnings_include_poor_band_alert():
+    module = _load_module()
+    aggregate = {
+        "dtw_metric_song_coverage_ratio": 1.0,
+        "dtw_metric_line_coverage_ratio": 1.0,
+        "agreement_count_total": 1,
+        "agreement_coverage_ratio_mean": 1.0,
+        "agreement_start_p95_abs_sec_mean": 0.2,
+        "agreement_bad_ratio_total": 0.0,
+        "agreement_severe_ratio_total": 0.0,
+        "sum_song_elapsed_sec": 5.0,
+        "timing_quality_score_line_weighted_mean": 0.8,
+        "timing_quality_band_ratios": {"poor": 0.4},
+    }
+    warnings = module._quality_coverage_warnings(
+        aggregate=aggregate,
+        dtw_enabled=True,
+        min_song_coverage_ratio=0.8,
+        min_line_coverage_ratio=0.9,
+        suite_wall_elapsed_sec=6.0,
+    )
+    assert any("poor timing-quality band" in item for item in warnings)
 
 
 def test_cache_expectation_warnings():
