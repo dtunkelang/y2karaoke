@@ -532,3 +532,106 @@ def test_align_lrc_text_pipeline_filters_low_confidence_whisper_words():
     )
 
     assert observed["word_count"] == 22
+
+
+def test_align_lrc_text_pipeline_preserves_line_count_under_repeated_reset_like_jitter():
+    lines = [
+        Line(words=[Word(text="Lately", start_time=10.0, end_time=10.8)]),
+        Line(words=[Word(text="Dreaming", start_time=10.9, end_time=11.6)]),
+        Line(words=[Word(text="But", start_time=11.7, end_time=12.2)]),
+        Line(words=[Word(text="Said", start_time=12.3, end_time=12.8)]),
+    ]
+    whisper_words = [
+        TranscriptionWord(text="Lately", start=10.0, end=10.3, probability=0.9),
+        TranscriptionWord(text="Dreaming", start=10.4, end=10.8, probability=0.9),
+        TranscriptionWord(text="But", start=10.9, end=11.2, probability=0.9),
+        TranscriptionWord(text="Said", start=11.3, end=11.6, probability=0.9),
+        # Repeat-cycle reset style sequence
+        TranscriptionWord(text="Lately", start=11.7, end=12.0, probability=0.9),
+        TranscriptionWord(text="Dreaming", start=12.1, end=12.4, probability=0.9),
+        TranscriptionWord(text="But", start=12.5, end=12.7, probability=0.9),
+        TranscriptionWord(text="Said", start=12.8, end=13.0, probability=0.9),
+    ]
+    segments = [
+        TranscriptionSegment(start=10.0, end=13.0, text="verse", words=whisper_words)
+    ]
+    audio_features = AudioFeatures(
+        onset_times=np.array([], dtype=float),
+        silence_regions=[],
+        vocal_start=0.0,
+        vocal_end=20.0,
+        duration=20.0,
+        energy_envelope=np.array([], dtype=float),
+        energy_times=np.array([], dtype=float),
+    )
+
+    jittered = [
+        Line(words=[Word(text="Lately", start_time=10.2, end_time=10.9)]),
+        Line(words=[Word(text="Dreaming", start_time=9.9, end_time=10.5)]),
+        Line(words=[Word(text="But", start_time=10.0, end_time=10.6)]),
+        Line(words=[Word(text="Said", start_time=12.2, end_time=12.9)]),
+    ]
+
+    mapped, _corrections, _metrics = align_lrc_text_to_whisper_timings_impl(
+        lines,
+        vocals_path="vocals.wav",
+        language="en",
+        model_size="base",
+        aggressive=False,
+        temperature=0.0,
+        min_similarity=0.15,
+        audio_features=audio_features,
+        lenient_vocal_activity_threshold=0.3,
+        lenient_activity_bonus=0.4,
+        low_word_confidence_threshold=0.5,
+        transcribe_vocals_fn=lambda *_a, **_k: (segments, whisper_words, "en", "base"),
+        extract_audio_features_fn=lambda *_a, **_k: audio_features,
+        dedupe_whisper_segments_fn=lambda s: s,
+        trim_whisper_transcription_by_lyrics_fn=lambda s, w, _t: (s, w, None),
+        fill_vocal_activity_gaps_fn=lambda w, _a, _t, segments=None: (w, segments),
+        dedupe_whisper_words_fn=lambda w: w,
+        extract_lrc_words_all_fn=lambda in_lines: [
+            {"text": wd.text, "line_idx": li, "word_idx": wi}
+            for li, line in enumerate(in_lines)
+            for wi, wd in enumerate(line.words)
+        ],
+        build_phoneme_tokens_from_lrc_words_fn=lambda _w, _l: [1, 2, 3, 4],
+        build_phoneme_tokens_from_whisper_words_fn=lambda _w, _l: [1, 2, 3, 4],
+        build_syllable_tokens_from_phonemes_fn=lambda _p: [1, 2],
+        build_segment_text_overlap_assignments_fn=lambda _lw, _aw, _s: {
+            0: [0],
+            1: [1],
+            2: [2],
+            3: [3],
+        },
+        build_phoneme_dtw_path_fn=lambda *_a, **_k: [],
+        build_word_assignments_from_phoneme_path_fn=lambda *_a, **_k: {
+            0: [0],
+            1: [1],
+            2: [2],
+            3: [3],
+        },
+        build_block_segmented_syllable_assignments_fn=lambda *_a, **_k: {
+            0: [0],
+            1: [1],
+            2: [2],
+            3: [3],
+        },
+        map_lrc_words_to_whisper_fn=lambda *_a, **_k: (jittered, 4, 4.0, {0, 1, 2, 3}),
+        shift_repeated_lines_to_next_whisper_fn=wm._shift_repeated_lines_to_next_whisper,
+        enforce_monotonic_line_starts_whisper_fn=wm._enforce_monotonic_line_starts_whisper,
+        resolve_line_overlaps_fn=wm._resolve_line_overlaps,
+        extend_line_to_trailing_whisper_matches_fn=lambda ml, _aw: ml,
+        pull_late_lines_to_matching_segments_fn=lambda ml, _s, _lang: ml,
+        retime_short_interjection_lines_fn=lambda ml, _s: ml,
+        snap_first_word_to_whisper_onset_fn=lambda ml, _aw, **_kw: ml,
+        interpolate_unmatched_lines_fn=lambda ml, _set: ml,
+        refine_unmatched_lines_with_onsets_fn=lambda ml, _set, _vp: ml,
+        pull_lines_forward_for_continuous_vocals_fn=lambda ml, _af: (ml, 0),
+        logger=wi.logger,
+    )
+
+    assert len(mapped) == len(lines)
+    assert all(line.words for line in mapped)
+    starts = [line.start_time for line in mapped]
+    assert starts == sorted(starts)
