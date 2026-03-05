@@ -206,6 +206,31 @@ def _env_float(
     return max(min_value, min(max_value, parsed))
 
 
+def _expand_agreement_token(token: str) -> list[str]:
+    token_canon = token.lstrip("'")
+    if token_canon in _AGREEMENT_COLLOQUIAL_SPECIALS:
+        return list(_AGREEMENT_COLLOQUIAL_SPECIALS[token_canon])
+    if token_canon in _AGREEMENT_CONTRACTION_SPECIALS:
+        return list(_AGREEMENT_CONTRACTION_SPECIALS[token_canon])
+    if token.endswith("in'") and len(token) > 4:
+        return [f"{token[:-1]}g"]
+    if token.endswith("n't") and len(token) > 3:
+        return [token[:-3], "not"]
+    if token.endswith("'re") and len(token) > 3:
+        return [token[:-3], "are"]
+    if token.endswith("'ve") and len(token) > 3:
+        return [token[:-3], "have"]
+    if token.endswith("'ll") and len(token) > 3:
+        return [token[:-3], "will"]
+    if token.endswith("'m") and len(token) > 2:
+        return [token[:-2], "am"]
+    if token.endswith("'d") and len(token) > 2:
+        return [token[:-2], "would"]
+    if token.endswith("'s") and len(token) > 2:
+        return [token[:-2]]
+    return [token.replace("'", "")]
+
+
 def _normalize_agreement_text(text: Any) -> str:
     if not isinstance(text, str):
         return ""
@@ -219,44 +244,7 @@ def _normalize_agreement_text(text: Any) -> str:
     raw_tokens = [tok for tok in re.sub(r"\s+", " ", folded).strip().split(" ") if tok]
     expanded: list[str] = []
     for token in raw_tokens:
-        token_canon = token.lstrip("'")
-        if token_canon in _AGREEMENT_COLLOQUIAL_SPECIALS:
-            expanded.extend(_AGREEMENT_COLLOQUIAL_SPECIALS[token_canon])
-            continue
-        if token_canon in _AGREEMENT_CONTRACTION_SPECIALS:
-            expanded.extend(_AGREEMENT_CONTRACTION_SPECIALS[token_canon])
-            continue
-        if token.endswith("in'") and len(token) > 4:
-            expanded.append(f"{token[:-1]}g")
-            continue
-        if token.endswith("n't") and len(token) > 3:
-            expanded.append(token[:-3])
-            expanded.append("not")
-            continue
-        if token.endswith("'re") and len(token) > 3:
-            expanded.append(token[:-3])
-            expanded.append("are")
-            continue
-        if token.endswith("'ve") and len(token) > 3:
-            expanded.append(token[:-3])
-            expanded.append("have")
-            continue
-        if token.endswith("'ll") and len(token) > 3:
-            expanded.append(token[:-3])
-            expanded.append("will")
-            continue
-        if token.endswith("'m") and len(token) > 2:
-            expanded.append(token[:-2])
-            expanded.append("am")
-            continue
-        if token.endswith("'d") and len(token) > 2:
-            expanded.append(token[:-2])
-            expanded.append("would")
-            continue
-        if token.endswith("'s") and len(token) > 2:
-            expanded.append(token[:-2])
-            continue
-        expanded.append(token.replace("'", ""))
+        expanded.extend(_expand_agreement_token(token))
 
     normalized_tokens: list[str] = []
     prev = ""

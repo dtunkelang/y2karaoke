@@ -60,6 +60,7 @@
 - [x] Extract cached-reuse and single-song execution helpers from `_collect_song_results()`.
 - [x] Extract song-result append/checkpoint path into `_append_result_and_checkpoint()` helper with unit test.
 - [x] Extract per-song collection flow into `_collect_single_song_result()` with fail-fast/control-flow tests.
+- [x] Reduce agreement text normalization complexity via `_expand_agreement_token()` extraction.
 - [ ] Keep files under quality-guardrail size limits while refactoring.
 - [ ] Add focused tests for new extraction units rather than broad integration expansions.
 

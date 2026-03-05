@@ -647,3 +647,13 @@ def test_collect_song_results_honors_fail_fast(tmp_path):
     assert calls == [1]
     assert len(rows) == 0  # helper was mocked and didn't append into rows
     assert skipped == []
+
+
+def test_expand_agreement_token_handles_known_patterns():
+    module = _load_module()
+    assert module._expand_agreement_token("gonna") == ["going", "to"]
+    assert module._expand_agreement_token("can't") == ["can", "not"]
+    assert module._expand_agreement_token("walkin'") == ["walking"]
+    assert module._expand_agreement_token("we're") == ["we", "are"]
+    assert module._expand_agreement_token("they've") == ["they", "have"]
+    assert module._expand_agreement_token("i'll") == ["i", "will"]
