@@ -1,9 +1,10 @@
 """Helper functions for lyrics processing."""
 
+import copy
 import logging
 import re
 from pathlib import Path
-from typing import List, Optional, Tuple, Dict
+from typing import Dict, List, Optional, Tuple
 
 from ...models import Word, Line, SongMetadata
 from ...romanization import romanize_line
@@ -19,6 +20,38 @@ __all__ = [
     "create_lines_from_lrc",
     "create_lines_from_lrc_timings",
 ]
+
+
+def _whisper_metrics_quality_score(metrics: Dict[str, float]) -> float:
+    """Compute a bounded quality score from Whisper alignment metrics."""
+    if not metrics:
+        return 0.0
+
+    matched_ratio = float(metrics.get("matched_ratio", 0.0))
+    avg_similarity = float(metrics.get("avg_similarity", 0.0))
+    line_coverage = float(metrics.get("line_coverage", 0.0))
+    phonetic_similarity_coverage = float(
+        metrics.get("phonetic_similarity_coverage", matched_ratio * avg_similarity)
+    )
+    exact_match_ratio = float(metrics.get("exact_match_ratio", 0.0))
+    high_similarity_ratio = float(metrics.get("high_similarity_ratio", avg_similarity))
+
+    score = (
+        matched_ratio * 0.34
+        + avg_similarity * 0.23
+        + line_coverage * 0.23
+        + phonetic_similarity_coverage * 0.12
+        + exact_match_ratio * 0.04
+        + high_similarity_ratio * 0.04
+    )
+    return max(0.0, min(1.0, score))
+
+
+def _should_try_whisper_map_fallback(metrics: Dict[str, float]) -> bool:
+    """Determine whether hybrid alignment quality is low enough to try map fallback."""
+    if not metrics:
+        return False
+    return _whisper_metrics_quality_score(metrics) < 0.72
 
 
 def _estimate_singing_duration(text: str, word_count: int) -> float:
@@ -448,6 +481,7 @@ def _apply_whisper_alignment(
             low_word_confidence_threshold=low_word_confidence_threshold,
         )
     else:
+        baseline_lines = copy.deepcopy(lines)
         lines, whisper_fixes, whisper_metrics = correct_timing_with_whisper(
             lines,
             vocals_path,
@@ -461,6 +495,29 @@ def _apply_whisper_alignment(
             lenient_activity_bonus=lenient_activity_bonus,
             low_word_confidence_threshold=low_word_confidence_threshold,
         )
+        if _should_try_whisper_map_fallback(whisper_metrics):
+            map_lines, map_fixes, map_metrics = align_lrc_text_to_whisper_timings(
+                baseline_lines,
+                vocals_path,
+                language=whisper_language,
+                model_size=model_size,
+                aggressive=whisper_aggressive,
+                temperature=whisper_temperature,
+                audio_features=audio_features,
+                lenient_vocal_activity_threshold=lenient_vocal_activity_threshold,
+                lenient_activity_bonus=lenient_activity_bonus,
+                low_word_confidence_threshold=low_word_confidence_threshold,
+            )
+            baseline_score = _whisper_metrics_quality_score(whisper_metrics)
+            map_score = _whisper_metrics_quality_score(map_metrics)
+            if map_score > baseline_score + 0.05:
+                lines = map_lines
+                whisper_fixes = map_fixes
+                whisper_metrics = dict(map_metrics)
+                whisper_metrics["fallback_map_selected"] = 1.0
+                whisper_metrics["fallback_map_score_gain"] = round(
+                    map_score - baseline_score, 4
+                )
     if whisper_fixes:
         logger.info(f"Whisper aligned {len(whisper_fixes)} line(s)")
         for fix in whisper_fixes:

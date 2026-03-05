@@ -127,6 +127,84 @@ def test_apply_whisper_alignment_records_fixes(monkeypatch):
     assert metrics == {}
 
 
+def test_apply_whisper_alignment_uses_map_fallback_when_hybrid_is_weak(monkeypatch):
+    lines = [_make_line("hello world", 0.0, 1.0)]
+
+    monkeypatch.setattr(
+        "y2karaoke.core.components.whisper.whisper_integration.correct_timing_with_whisper",
+        lambda *args, **kwargs: (
+            args[0],
+            ["hybrid_fix"],
+            {"matched_ratio": 0.3, "avg_similarity": 0.45, "line_coverage": 0.4},
+        ),
+    )
+    monkeypatch.setattr(
+        "y2karaoke.core.components.whisper.whisper_integration.align_lrc_text_to_whisper_timings",
+        lambda *args, **kwargs: (
+            args[0],
+            ["map_fix"],
+            {"matched_ratio": 0.9, "avg_similarity": 0.9, "line_coverage": 0.9},
+        ),
+    )
+    monkeypatch.setattr(
+        "y2karaoke.core.audio_analysis.extract_audio_features",
+        lambda *_: None,
+    )
+
+    aligned, fixes, metrics = lyrics._apply_whisper_alignment(
+        lines,
+        "vocals.wav",
+        whisper_language="en",
+        whisper_model="base",
+        whisper_force_dtw=False,
+    )
+
+    assert aligned is not lines
+    assert fixes == ["map_fix"]
+    assert metrics["fallback_map_selected"] == 1.0
+    assert metrics["fallback_map_score_gain"] > 0.0
+
+
+def test_apply_whisper_alignment_keeps_hybrid_when_quality_is_strong(monkeypatch):
+    lines = [_make_line("hello world", 0.0, 1.0)]
+    map_called = {"value": False}
+
+    monkeypatch.setattr(
+        "y2karaoke.core.components.whisper.whisper_integration.correct_timing_with_whisper",
+        lambda *args, **kwargs: (
+            args[0],
+            ["hybrid_fix"],
+            {"matched_ratio": 0.9, "avg_similarity": 0.9, "line_coverage": 0.9},
+        ),
+    )
+
+    def _unexpected_map(*args, **kwargs):
+        map_called["value"] = True
+        return args[0], ["map_fix"], {"matched_ratio": 0.2}
+
+    monkeypatch.setattr(
+        "y2karaoke.core.components.whisper.whisper_integration.align_lrc_text_to_whisper_timings",
+        _unexpected_map,
+    )
+    monkeypatch.setattr(
+        "y2karaoke.core.audio_analysis.extract_audio_features",
+        lambda *_: None,
+    )
+
+    aligned, fixes, metrics = lyrics._apply_whisper_alignment(
+        lines,
+        "vocals.wav",
+        whisper_language="en",
+        whisper_model="base",
+        whisper_force_dtw=False,
+    )
+
+    assert aligned is lines
+    assert fixes == ["hybrid_fix"]
+    assert metrics["matched_ratio"] == pytest.approx(0.9)
+    assert map_called["value"] is False
+
+
 def test_refine_timing_with_quality_sets_method(monkeypatch):
     lines = [_make_line("hello", 0.0, 0.5)]
     line_timings = [(0.0, "hello"), (2.0, "world")]
