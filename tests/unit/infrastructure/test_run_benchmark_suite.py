@@ -369,3 +369,37 @@ def test_cache_expectation_warnings_unknown_state():
     )
     assert len(warnings) == 2
     assert "cache state was unknown" in warnings[0]
+
+
+def test_runtime_budget_warnings():
+    module = _load_module()
+    aggregate = {
+        "phase_shares_of_song_elapsed": {
+            "whisper": 0.62,
+            "alignment": 0.27,
+        },
+        "sum_song_elapsed_sec": 10.0,
+    }
+    warnings = module._runtime_budget_warnings(
+        aggregate=aggregate,
+        suite_wall_elapsed_sec=14.5,
+        max_whisper_phase_share=0.5,
+        max_alignment_phase_share=0.2,
+        max_scheduler_overhead_sec=3.0,
+    )
+    assert len(warnings) == 3
+    assert any("Whisper phase share exceeds budget" in item for item in warnings)
+    assert any("Alignment phase share exceeds budget" in item for item in warnings)
+    assert any("Scheduler overhead exceeds budget" in item for item in warnings)
+
+
+def test_runtime_budget_warnings_disabled_thresholds():
+    module = _load_module()
+    warnings = module._runtime_budget_warnings(
+        aggregate={"phase_shares_of_song_elapsed": {}, "sum_song_elapsed_sec": 12.0},
+        suite_wall_elapsed_sec=12.2,
+        max_whisper_phase_share=0.0,
+        max_alignment_phase_share=0.0,
+        max_scheduler_overhead_sec=0.0,
+    )
+    assert warnings == []

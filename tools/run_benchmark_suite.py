@@ -2062,6 +2062,57 @@ def _cache_expectation_warnings(
     return warnings
 
 
+def _runtime_budget_warnings(
+    *,
+    aggregate: dict[str, Any],
+    suite_wall_elapsed_sec: float,
+    max_whisper_phase_share: float,
+    max_alignment_phase_share: float,
+    max_scheduler_overhead_sec: float,
+) -> list[str]:
+    warnings: list[str] = []
+    phase_shares = aggregate.get("phase_shares_of_song_elapsed", {})
+    if not isinstance(phase_shares, dict):
+        phase_shares = {}
+
+    if max_whisper_phase_share > 0:
+        whisper_share_raw = phase_shares.get("whisper")
+        whisper_share = (
+            float(whisper_share_raw)
+            if isinstance(whisper_share_raw, (int, float))
+            else 0.0
+        )
+        if whisper_share > max_whisper_phase_share:
+            warnings.append(
+                "Whisper phase share exceeds budget: "
+                f"{whisper_share:.3f} > {max_whisper_phase_share:.3f}"
+            )
+
+    if max_alignment_phase_share > 0:
+        alignment_share_raw = phase_shares.get("alignment")
+        alignment_share = (
+            float(alignment_share_raw)
+            if isinstance(alignment_share_raw, (int, float))
+            else 0.0
+        )
+        if alignment_share > max_alignment_phase_share:
+            warnings.append(
+                "Alignment phase share exceeds budget: "
+                f"{alignment_share:.3f} > {max_alignment_phase_share:.3f}"
+            )
+
+    if max_scheduler_overhead_sec > 0:
+        sum_song_elapsed = float(aggregate.get("sum_song_elapsed_sec", 0.0) or 0.0)
+        scheduler_overhead = max(0.0, suite_wall_elapsed_sec - sum_song_elapsed)
+        if scheduler_overhead > max_scheduler_overhead_sec:
+            warnings.append(
+                "Scheduler overhead exceeds budget: "
+                f"{scheduler_overhead:.2f}s > {max_scheduler_overhead_sec:.2f}s"
+            )
+
+    return warnings
+
+
 def _write_markdown_summary(  # noqa: C901
     path: Path,
     *,
@@ -2726,6 +2777,35 @@ def _parse_args() -> argparse.Namespace:
         help="Return non-zero if cache expectation warnings are present",
     )
     parser.add_argument(
+        "--max-whisper-phase-share",
+        type=float,
+        default=0.0,
+        help=(
+            "Warn if whisper phase share of cumulative song elapsed exceeds this "
+            "ratio (0 disables)."
+        ),
+    )
+    parser.add_argument(
+        "--max-alignment-phase-share",
+        type=float,
+        default=0.0,
+        help=(
+            "Warn if alignment phase share of cumulative song elapsed exceeds this "
+            "ratio (0 disables)."
+        ),
+    )
+    parser.add_argument(
+        "--max-scheduler-overhead-sec",
+        type=float,
+        default=0.0,
+        help="Warn if suite wall time minus summed song time exceeds this budget.",
+    )
+    parser.add_argument(
+        "--strict-runtime-budgets",
+        action="store_true",
+        help="Return non-zero if runtime budget warnings are present",
+    )
+    parser.add_argument(
         "--rebaseline",
         action="store_true",
         help=(
@@ -3366,6 +3446,12 @@ def main() -> int:  # noqa: C901
         raise ValueError("--min-dtw-song-coverage-ratio must be between 0 and 1")
     if not 0.0 <= args.min_dtw_line_coverage_ratio <= 1.0:
         raise ValueError("--min-dtw-line-coverage-ratio must be between 0 and 1")
+    if not 0.0 <= args.max_whisper_phase_share <= 1.0:
+        raise ValueError("--max-whisper-phase-share must be between 0 and 1")
+    if not 0.0 <= args.max_alignment_phase_share <= 1.0:
+        raise ValueError("--max-alignment-phase-share must be between 0 and 1")
+    if args.max_scheduler_overhead_sec < 0.0:
+        raise ValueError("--max-scheduler-overhead-sec must be >= 0")
 
     manifest_path = args.manifest.resolve()
     songs = _parse_manifest(manifest_path)
@@ -3530,7 +3616,14 @@ def main() -> int:  # noqa: C901
         expect_cached_separation=args.expect_cached_separation,
         expect_cached_whisper=args.expect_cached_whisper,
     )
-    run_warnings = quality_warnings + cache_warnings
+    runtime_warnings = _runtime_budget_warnings(
+        aggregate=aggregate,
+        suite_wall_elapsed_sec=suite_elapsed,
+        max_whisper_phase_share=args.max_whisper_phase_share,
+        max_alignment_phase_share=args.max_alignment_phase_share,
+        max_scheduler_overhead_sec=args.max_scheduler_overhead_sec,
+    )
+    run_warnings = quality_warnings + cache_warnings + runtime_warnings
     sum_song_elapsed = float(aggregate.get("sum_song_elapsed_sec", 0.0) or 0.0)
     report_json = {
         "run_id": run_id,
@@ -3557,12 +3650,17 @@ def main() -> int:  # noqa: C901
             "expect_cached_separation": args.expect_cached_separation,
             "expect_cached_whisper": args.expect_cached_whisper,
             "strict_cache_expectations": args.strict_cache_expectations,
+            "max_whisper_phase_share": args.max_whisper_phase_share,
+            "max_alignment_phase_share": args.max_alignment_phase_share,
+            "max_scheduler_overhead_sec": args.max_scheduler_overhead_sec,
+            "strict_runtime_budgets": args.strict_runtime_budgets,
             "rebaseline": args.rebaseline,
             "gold_root": str(args.gold_root.resolve()),
         },
         "status": "finished_with_warnings" if run_warnings else "finished",
         "quality_warnings": quality_warnings,
         "cache_warnings": cache_warnings,
+        "runtime_warnings": runtime_warnings,
         "warnings": run_warnings,
         "aggregate": aggregate,
         "songs": song_results,
@@ -3653,6 +3751,8 @@ def main() -> int:  # noqa: C901
         return 3
     if cache_warnings and args.strict_cache_expectations:
         return 4
+    if runtime_warnings and args.strict_runtime_budgets:
+        return 5
     return 0
 
 

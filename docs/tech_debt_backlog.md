@@ -55,15 +55,21 @@ Last updated: 2026-03-04
 6. **Benchmark trust instrumentation for reference divergence**
 - Impact: medium-high
 - Effort: medium
-- Status: queued
+- Status: in progress
 - Scope:
   - Auto-flag likely LRC/video divergence with confidence tags.
   - Separate “pipeline error likely” vs “reference mismatch likely” in reports.
+  - Completed so far:
+    - Added per-song quality diagnosis classification with confidence/reason codes.
+    - Surfaced diagnosis counts/ratios in aggregate output and markdown summaries.
 
 7. **Performance profiling + budgets on Whisper alignment paths**
 - Impact: medium
 - Effort: medium
-- Status: queued
+- Status: in progress
 - Scope:
   - Add timing telemetry for major stages.
   - Define practical runtime budget checks in benchmark runs.
+  - Completed so far:
+    - Added benchmark runtime budget warnings for whisper/alignment phase-share and scheduler overhead.
+    - Added CLI threshold controls and strict mode exit path for runtime budget enforcement.
