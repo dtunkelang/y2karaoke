@@ -265,43 +265,51 @@ def _calculate_visibility_threshold(
     raw_frames: List[Dict[str, Any]],
 ) -> Dict[int, float]:
     """Estimate 'full bright' threshold per vertical lane."""
-    lane_brightness: Dict[int, List[float]] = {}
-    for frame in raw_frames:
-        for w in frame.get("words", []):
-            if w.get("brightness", 0) > 0:
-                lane = w["y"] // 40
-                lane_brightness.setdefault(lane, []).append(w["brightness"])
-
-    def _p95(values: List[float]) -> float:
-        if not values:
-            return 0.0
-        try:
-            import numpy as np  # type: ignore
-
-            return float(np.percentile(values, 95))
-        except ImportError:
-            ordered = sorted(float(v) for v in values)
-            if len(ordered) == 1:
-                return ordered[0]
-            pos = (len(ordered) - 1) * 0.95
-            lo = int(pos)
-            hi = min(lo + 1, len(ordered) - 1)
-            frac = pos - lo
-            return ordered[lo] * (1.0 - frac) + ordered[hi] * frac
+    lane_brightness = _collect_lane_brightness(raw_frames)
 
     thresholds: Dict[int, float] = {}
     for lane, vals in lane_brightness.items():
-        if not vals:
-            continue
-        full_bright = _p95(vals)
+        full_bright = _percentile95(vals)
         thresholds[lane] = full_bright * 0.70
 
     # Default for unknown lanes
     all_vals = [v for vals in lane_brightness.values() for v in vals]
-    global_def = _p95(all_vals) * 0.70 if all_vals else 150.0
+    global_def = _percentile95(all_vals) * 0.70 if all_vals else 150.0
     thresholds[-1] = global_def
 
     return thresholds
+
+
+def _collect_lane_brightness(
+    raw_frames: List[Dict[str, Any]],
+) -> Dict[int, List[float]]:
+    lane_brightness: Dict[int, List[float]] = {}
+    for frame in raw_frames:
+        for word in frame.get("words", []):
+            brightness = float(word.get("brightness", 0))
+            if brightness <= 0:
+                continue
+            lane = int(word["y"]) // 40
+            lane_brightness.setdefault(lane, []).append(brightness)
+    return lane_brightness
+
+
+def _percentile95(values: List[float]) -> float:
+    if not values:
+        return 0.0
+    try:
+        import numpy as np  # type: ignore
+
+        return float(np.percentile(values, 95))
+    except ImportError:
+        ordered = sorted(float(v) for v in values)
+        if len(ordered) == 1:
+            return ordered[0]
+        pos = (len(ordered) - 1) * 0.95
+        lo = int(pos)
+        hi = min(lo + 1, len(ordered) - 1)
+        frac = pos - lo
+        return ordered[lo] * (1.0 - frac) + ordered[hi] * frac
 
 
 def _group_words_into_lines(words: List[Dict[str, Any]]) -> List[List[Dict[str, Any]]]:

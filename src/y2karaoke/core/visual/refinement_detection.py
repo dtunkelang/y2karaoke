@@ -26,65 +26,97 @@ def detect_highlight_with_confidence(
     if len(word_vals) <= 10:
         return None, None, 0.0
 
-    l_vals = np.array([v["avg"][0] for v in word_vals])
-    kernel_size = min(10, len(l_vals))
-    l_smooth = np.convolve(
-        l_vals,
-        np.ones(kernel_size) / kernel_size,
-        mode="same",
+    idx_peak, c_initial, c_final, transition_norm = _highlight_transition_state(
+        word_vals
     )
-
-    idx_peak = int(np.argmax(l_smooth))
-    c_initial = word_vals[idx_peak]["avg"]
-    if idx_peak >= len(l_smooth) - 1:
+    if idx_peak is None:
         return None, None, 0.0
-
-    idx_valley = idx_peak + int(np.argmin(l_smooth[idx_peak:]))
-    c_final = word_vals[idx_valley]["avg"]
-
     transition_norm = float(np.linalg.norm(c_final - c_initial))
     if transition_norm <= 2.0:
         return None, None, 0.0
 
-    times = []
-    dists_in = []
-    for v in word_vals:
-        times.append(v["t"])
-        dists_in.append(np.linalg.norm(v["avg"] - c_initial))
+    times = [v["t"] for v in word_vals]
+    dists_in = [float(np.linalg.norm(v["avg"] - c_initial)) for v in word_vals]
+    noise_floor = _highlight_noise_floor(dists_in, idx_peak)
+    s, e = _highlight_start_end_times(
+        word_vals,
+        times,
+        dists_in,
+        idx_peak=idx_peak,
+        noise_floor=noise_floor,
+        c_initial=c_initial,
+        c_final=c_final,
+    )
+    confidence = _highlight_confidence(transition_norm, len(word_vals), s, e)
+    return s, e, float(confidence)
 
+
+def _highlight_transition_state(
+    word_vals: List[Dict[str, Any]],
+) -> tuple[int | None, np.ndarray, np.ndarray, float]:
+    l_vals = np.array([v["avg"][0] for v in word_vals])
+    kernel_size = min(10, len(l_vals))
+    l_smooth = np.convolve(l_vals, np.ones(kernel_size) / kernel_size, mode="same")
+    idx_peak = int(np.argmax(l_smooth))
+    if idx_peak >= len(l_smooth) - 1:
+        return None, np.zeros(3), np.zeros(3), 0.0
+    idx_valley = idx_peak + int(np.argmin(l_smooth[idx_peak:]))
+    c_initial = word_vals[idx_peak]["avg"]
+    c_final = word_vals[idx_valley]["avg"]
+    transition_norm = float(np.linalg.norm(c_final - c_initial))
+    return idx_peak, c_initial, c_final, transition_norm
+
+
+def _highlight_noise_floor(dists_in: list[float], idx_peak: int) -> float:
     start_stable = max(0, idx_peak - 5)
     end_stable = min(len(dists_in), idx_peak + 5)
     stable_range = dists_in[start_stable:end_stable]
+    if not stable_range:
+        return 2.5
+    return float(np.mean(stable_range) + 3 * np.std(stable_range))
 
-    # Very conservative noise floor for Karafun-style fades
-    if stable_range:
-        noise_floor = float(np.mean(stable_range) + 3 * np.std(stable_range))
-    else:
-        noise_floor = 2.5
 
+def _highlight_start_end_times(
+    word_vals: List[Dict[str, Any]],
+    times: List[float],
+    dists_in: list[float],
+    *,
+    idx_peak: int,
+    noise_floor: float,
+    c_initial: np.ndarray,
+    c_final: np.ndarray,
+) -> tuple[float | None, float | None]:
     s, e = None, None
     for j in range(idx_peak, len(times)):
-        # Require a sustained gradient rise to distinguish from slow fade-in
-        if s is None and dists_in[j] > noise_floor:
-            if j + 4 < len(times) and all(
-                dists_in[j + k] > dists_in[j + k - 1] for k in range(1, 5)
-            ):
-                s = times[j]
+        if s is None and _is_sustained_gradient_rise(dists_in, j, noise_floor):
+            s = times[j]
+        if s is None or e is not None:
+            continue
+        curr_dist_final = np.linalg.norm(word_vals[j]["avg"] - c_final)
+        curr_dist_initial = np.linalg.norm(word_vals[j]["avg"] - c_initial)
+        if curr_dist_final < curr_dist_initial:
+            e = times[j]
+            break
+    return s, e
 
-        if s is not None and e is None:
-            curr_dist_final = np.linalg.norm(word_vals[j]["avg"] - c_final)
-            curr_dist_initial = np.linalg.norm(word_vals[j]["avg"] - c_initial)
-            if curr_dist_final < curr_dist_initial:
-                e = times[j]
-                break
 
+def _is_sustained_gradient_rise(
+    dists_in: list[float], idx: int, noise_floor: float
+) -> bool:
+    if dists_in[idx] <= noise_floor or idx + 4 >= len(dists_in):
+        return False
+    return all(dists_in[idx + k] > dists_in[idx + k - 1] for k in range(1, 5))
+
+
+def _highlight_confidence(
+    transition_norm: float, sample_count: int, start: float | None, end: float | None
+) -> float:
     strength = min(transition_norm / 25.0, 1.0)
-    coverage = min(len(word_vals) / 40.0, 1.0)
-    trigger_quality = 1.0 if (s is not None and e is not None and e >= s) else 0.35
-    confidence = max(
-        0.0, min(1.0, 0.5 * strength + 0.3 * coverage + 0.2 * trigger_quality)
+    coverage = min(sample_count / 40.0, 1.0)
+    trigger_quality = (
+        1.0 if (start is not None and end is not None and end >= start) else 0.35
     )
-    return s, e, float(confidence)
+    return max(0.0, min(1.0, 0.5 * strength + 0.3 * coverage + 0.2 * trigger_quality))
 
 
 def detect_sustained_onset(
