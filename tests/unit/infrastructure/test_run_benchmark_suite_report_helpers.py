@@ -721,3 +721,42 @@ def test_compute_lexical_line_diagnostics_none_when_no_tokens():
         whisper_text="...",
     )
     assert diag is None
+
+
+def test_build_reference_triage_row_detects_reference_signals():
+    module = _load_module()
+    row = module._build_reference_triage_row(
+        record={"reference_divergence": {"suspected": True, "score": 3.0}},
+        metrics={
+            "gold_available": False,
+            "dtw_line_coverage": 0.5,
+            "dtw_word_coverage": 0.4,
+            "low_confidence_ratio": 0.04,
+            "agreement_coverage_ratio": 0.1,
+            "agreement_text_similarity_mean": 0.92,
+            "agreement_start_p95_abs_sec": 1.0,
+        },
+        song_name="A - Song",
+    )
+    assert row is not None
+    assert row["song"] == "A - Song"
+    assert float(row["score"]) > 0.0
+    assert "reference_divergence_suspected" in row["reasons"]
+
+
+def test_build_pipeline_triage_row_returns_none_for_low_score():
+    module = _load_module()
+    row = module._build_pipeline_triage_row(
+        record={},
+        metrics={
+            "dtw_line_coverage": 0.95,
+            "dtw_word_coverage": 0.92,
+            "low_confidence_ratio": 0.01,
+            "agreement_coverage_ratio": 0.8,
+            "agreement_start_p95_abs_sec": 0.3,
+            "agreement_bad_ratio": 0.01,
+            "timing_quality_score": 0.82,
+        },
+        song_name="A - Song",
+    )
+    assert row is None

@@ -1715,10 +1715,6 @@ def _build_triage_rankings(
 ) -> dict[str, list[dict[str, Any]]]:
     """Rank songs by likely reference divergence vs likely pipeline failure."""
 
-    def _f(metrics: dict[str, Any], key: str) -> float:
-        value = metrics.get(key)
-        return float(value) if isinstance(value, (int, float)) else 0.0
-
     reference_rows: list[dict[str, Any]] = []
     pipeline_rows: list[dict[str, Any]] = []
 
@@ -1727,85 +1723,112 @@ def _build_triage_rankings(
         if not isinstance(metrics, dict):
             continue
         song_name = f"{record['artist']} - {record['title']}"
-        dtw_line = _f(metrics, "dtw_line_coverage")
-        dtw_word = _f(metrics, "dtw_word_coverage")
-        low_conf = _f(metrics, "low_confidence_ratio")
-        agree_cov = _f(metrics, "agreement_coverage_ratio")
-        agree_sim = _f(metrics, "agreement_text_similarity_mean")
-        agree_p95 = _f(metrics, "agreement_start_p95_abs_sec")
-        agree_bad = _f(metrics, "agreement_bad_ratio")
-        timing_quality_score = _f(metrics, "timing_quality_score")
-        agreement_reliability = max(0.3, min(1.0, agree_cov / 0.5))
-
-        reference_score = 0.0
-        reference_reasons: list[str] = []
-        ref_div = record.get("reference_divergence", {})
-        if isinstance(ref_div, dict) and bool(ref_div.get("suspected")):
-            reference_score += (
-                2.0 + min(float(ref_div.get("score", 0.0) or 0.0), 4.0) / 2
-            )
-            reference_reasons.append("reference_divergence_suspected")
-        if (
-            not bool(metrics.get("gold_available"))
-            and dtw_line <= 0.6
-            and dtw_word <= 0.45
-            and agree_cov >= 0.07
-            and agree_sim >= 0.9
-            and agree_p95 <= 1.2
-            and low_conf <= 0.08
-        ):
-            reference_score += 1.0
-            reference_reasons.append("low_dtw_with_strong_anchor_agreement")
-        if reference_score > 0:
-            reference_rows.append(
-                {
-                    "song": song_name,
-                    "score": round(reference_score, 3),
-                    "reasons": sorted(set(reference_reasons)),
-                }
-            )
-
-        pipeline_score = 0.0
-        pipeline_reasons: list[str] = []
-        if dtw_line < 0.75:
-            pipeline_score += (0.75 - dtw_line) * 2.0
-            pipeline_reasons.append("low_dtw_line_coverage")
-        if dtw_word < 0.6:
-            pipeline_score += (0.6 - dtw_word) * 1.5
-            pipeline_reasons.append("low_dtw_word_coverage")
-        if low_conf > 0.1:
-            pipeline_score += min(low_conf, 0.5)
-            pipeline_reasons.append("high_low_confidence_ratio")
-        if agree_p95 > 1.0:
-            pipeline_score += min((agree_p95 - 1.0) / 2.0, 1.5) * agreement_reliability
-            pipeline_reasons.append("high_agreement_p95")
-        if agree_bad > 0.1:
-            pipeline_score += (agree_bad - 0.1) * 2.0 * agreement_reliability
-            pipeline_reasons.append("high_agreement_bad_ratio")
-        if isinstance(metrics.get("timing_quality_score"), (int, float)):
-            if timing_quality_score < 0.55:
-                pipeline_score += min((0.55 - timing_quality_score) * 2.0, 0.8)
-                pipeline_reasons.append("low_timing_quality_score")
-            elif timing_quality_score >= 0.78:
-                pipeline_score = max(0.0, pipeline_score - 0.2)
-                pipeline_reasons.append("timing_quality_score_good")
-        if isinstance(ref_div, dict) and bool(ref_div.get("suspected")):
-            pipeline_score = max(0.0, pipeline_score - 1.0)
-            pipeline_reasons.append("downgraded_due_to_reference_divergence")
-        if pipeline_score > 0.25:
-            pipeline_rows.append(
-                {
-                    "song": song_name,
-                    "score": round(pipeline_score, 3),
-                    "reasons": sorted(set(pipeline_reasons)),
-                }
-            )
+        reference_row = _build_reference_triage_row(
+            record=record, metrics=metrics, song_name=song_name
+        )
+        if reference_row is not None:
+            reference_rows.append(reference_row)
+        pipeline_row = _build_pipeline_triage_row(
+            record=record, metrics=metrics, song_name=song_name
+        )
+        if pipeline_row is not None:
+            pipeline_rows.append(pipeline_row)
 
     reference_rows.sort(key=lambda row: float(row["score"]), reverse=True)
     pipeline_rows.sort(key=lambda row: float(row["score"]), reverse=True)
     return {
         "likely_reference_divergence": reference_rows[:top_n],
         "likely_pipeline_failure": pipeline_rows[:top_n],
+    }
+
+
+def _triage_metric_float(metrics: dict[str, Any], key: str) -> float:
+    value = metrics.get(key)
+    return float(value) if isinstance(value, (int, float)) else 0.0
+
+
+def _build_reference_triage_row(
+    *, record: dict[str, Any], metrics: dict[str, Any], song_name: str
+) -> dict[str, Any] | None:
+    dtw_line = _triage_metric_float(metrics, "dtw_line_coverage")
+    dtw_word = _triage_metric_float(metrics, "dtw_word_coverage")
+    low_conf = _triage_metric_float(metrics, "low_confidence_ratio")
+    agree_cov = _triage_metric_float(metrics, "agreement_coverage_ratio")
+    agree_sim = _triage_metric_float(metrics, "agreement_text_similarity_mean")
+    agree_p95 = _triage_metric_float(metrics, "agreement_start_p95_abs_sec")
+
+    reference_score = 0.0
+    reference_reasons: list[str] = []
+    ref_div = record.get("reference_divergence", {})
+    if isinstance(ref_div, dict) and bool(ref_div.get("suspected")):
+        reference_score += 2.0 + min(float(ref_div.get("score", 0.0) or 0.0), 4.0) / 2
+        reference_reasons.append("reference_divergence_suspected")
+    if (
+        not bool(metrics.get("gold_available"))
+        and dtw_line <= 0.6
+        and dtw_word <= 0.45
+        and agree_cov >= 0.07
+        and agree_sim >= 0.9
+        and agree_p95 <= 1.2
+        and low_conf <= 0.08
+    ):
+        reference_score += 1.0
+        reference_reasons.append("low_dtw_with_strong_anchor_agreement")
+    if reference_score <= 0.0:
+        return None
+    return {
+        "song": song_name,
+        "score": round(reference_score, 3),
+        "reasons": sorted(set(reference_reasons)),
+    }
+
+
+def _build_pipeline_triage_row(
+    *, record: dict[str, Any], metrics: dict[str, Any], song_name: str
+) -> dict[str, Any] | None:
+    dtw_line = _triage_metric_float(metrics, "dtw_line_coverage")
+    dtw_word = _triage_metric_float(metrics, "dtw_word_coverage")
+    low_conf = _triage_metric_float(metrics, "low_confidence_ratio")
+    agree_cov = _triage_metric_float(metrics, "agreement_coverage_ratio")
+    agree_p95 = _triage_metric_float(metrics, "agreement_start_p95_abs_sec")
+    agree_bad = _triage_metric_float(metrics, "agreement_bad_ratio")
+    timing_quality_score = _triage_metric_float(metrics, "timing_quality_score")
+    agreement_reliability = max(0.3, min(1.0, agree_cov / 0.5))
+    ref_div = record.get("reference_divergence", {})
+
+    pipeline_score = 0.0
+    pipeline_reasons: list[str] = []
+    if dtw_line < 0.75:
+        pipeline_score += (0.75 - dtw_line) * 2.0
+        pipeline_reasons.append("low_dtw_line_coverage")
+    if dtw_word < 0.6:
+        pipeline_score += (0.6 - dtw_word) * 1.5
+        pipeline_reasons.append("low_dtw_word_coverage")
+    if low_conf > 0.1:
+        pipeline_score += min(low_conf, 0.5)
+        pipeline_reasons.append("high_low_confidence_ratio")
+    if agree_p95 > 1.0:
+        pipeline_score += min((agree_p95 - 1.0) / 2.0, 1.5) * agreement_reliability
+        pipeline_reasons.append("high_agreement_p95")
+    if agree_bad > 0.1:
+        pipeline_score += (agree_bad - 0.1) * 2.0 * agreement_reliability
+        pipeline_reasons.append("high_agreement_bad_ratio")
+    if isinstance(metrics.get("timing_quality_score"), (int, float)):
+        if timing_quality_score < 0.55:
+            pipeline_score += min((0.55 - timing_quality_score) * 2.0, 0.8)
+            pipeline_reasons.append("low_timing_quality_score")
+        elif timing_quality_score >= 0.78:
+            pipeline_score = max(0.0, pipeline_score - 0.2)
+            pipeline_reasons.append("timing_quality_score_good")
+    if isinstance(ref_div, dict) and bool(ref_div.get("suspected")):
+        pipeline_score = max(0.0, pipeline_score - 1.0)
+        pipeline_reasons.append("downgraded_due_to_reference_divergence")
+    if pipeline_score <= 0.25:
+        return None
+    return {
+        "song": song_name,
+        "score": round(pipeline_score, 3),
+        "reasons": sorted(set(pipeline_reasons)),
     }
 
 
