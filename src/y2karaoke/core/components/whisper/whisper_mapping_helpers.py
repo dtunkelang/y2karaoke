@@ -230,33 +230,60 @@ def _choose_segment_for_line(
     best_score = float("-inf")
     excluded_segments = excluded_segments or set()
     for idx in range(start_idx, len(segments)):
-        if idx in excluded_segments:
-            continue
-        segment = segments[idx]
-        seg_text = whisper_utils._get_segment_text(segment)
-        if not seg_text:
-            continue
-        norm_seg = _normalize_line_text(seg_text)
-        text_score = SequenceMatcher(None, norm_line, norm_seg).ratio()
-        if text_score < _SEGMENT_MIN_TEXT_SCORE:
-            continue
-        seg_start = whisper_utils._segment_start(segment)
-        if seg_start < min_start:
-            continue
+        seg_start = whisper_utils._segment_start(segments[idx])
         if seg_start - line.start_time > _MAX_SEGMENT_LOOKAHEAD:
             break
-        if seg_start < min_start:
+        candidate = _segment_candidate_score(
+            norm_line=norm_line,
+            segments=segments,
+            idx=idx,
+            start_idx=start_idx,
+            line_start=line.start_time,
+            min_start=min_start,
+            excluded_segments=excluded_segments,
+        )
+        if candidate is None:
             continue
-        time_diff = abs(seg_start - line.start_time)
-        time_penalty = min(time_diff, _SEGMENT_MAX_TIME_DIFF) * _SEGMENT_TIME_WEIGHT
-        index_penalty = (idx - start_idx) * _SEGMENT_INDEX_WEIGHT
-        score = text_score - time_penalty - index_penalty
+
+        score, text_score = candidate
         if score > best_score:
             best_score = score
             best_idx = idx
-        if time_diff > _SEGMENT_MAX_TIME_DIFF and text_score < 0.5:
+        if (
+            abs(seg_start - line.start_time) > _SEGMENT_MAX_TIME_DIFF
+            and text_score < 0.5
+        ):
             break
     return best_idx
+
+
+def _segment_candidate_score(
+    *,
+    norm_line: str,
+    segments: Sequence[Any],
+    idx: int,
+    start_idx: int,
+    line_start: float,
+    min_start: float,
+    excluded_segments: Set[int],
+) -> tuple[float, float] | None:
+    if idx in excluded_segments:
+        return None
+    segment = segments[idx]
+    seg_text = whisper_utils._get_segment_text(segment)
+    if not seg_text:
+        return None
+    seg_start = whisper_utils._segment_start(segment)
+    if seg_start < min_start:
+        return None
+    norm_seg = _normalize_line_text(seg_text)
+    text_score = SequenceMatcher(None, norm_line, norm_seg).ratio()
+    if text_score < _SEGMENT_MIN_TEXT_SCORE:
+        return None
+    time_diff = abs(seg_start - line_start)
+    time_penalty = min(time_diff, _SEGMENT_MAX_TIME_DIFF) * _SEGMENT_TIME_WEIGHT
+    index_penalty = (idx - start_idx) * _SEGMENT_INDEX_WEIGHT
+    return text_score - time_penalty - index_penalty, text_score
 
 
 def _segment_word_indices(
