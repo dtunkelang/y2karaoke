@@ -10,6 +10,53 @@ _OVERLAY_BIN_PX = 24.0
 _OVERLAY_MAX_JITTER_PX = 20.0
 
 
+def _word_token_compact(word: dict[str, Any]) -> str:
+    tok = normalize_text_basic(str(word.get("text", ""))).strip()
+    return "".join(ch for ch in tok.lower() if ch.isalnum())
+
+
+def _is_short_bottom_right_overlay(
+    word: dict[str, Any],
+    *,
+    y_bottom_cut: float,
+    x_max: float,
+) -> bool:
+    tok_compact = _word_token_compact(word)
+    y_val = float(word.get("y", 0.0))
+    x_val = float(word.get("x", 0.0))
+    return (
+        len(tok_compact) <= 4
+        and y_val >= y_bottom_cut
+        and x_val >= (0.55 * x_max if x_max > 0 else x_val + 1)
+    )
+
+
+def _overlay_key(word: dict[str, Any], *, root: str) -> tuple[str, int, int]:
+    return (
+        root,
+        int(round(float(word.get("x", 0.0)) / _OVERLAY_BIN_PX)),
+        int(round(float(word.get("y", 0.0)) / _OVERLAY_BIN_PX)),
+    )
+
+
+def _should_keep_word(
+    word: dict[str, Any],
+    *,
+    y_bottom_cut: float,
+    x_max: float,
+    static_keys: set[tuple[str, int, int]],
+    overlay_roots: set[str],
+) -> bool:
+    if _is_short_bottom_right_overlay(word, y_bottom_cut=y_bottom_cut, x_max=x_max):
+        return False
+    tok = normalize_text_basic(str(word.get("text", ""))).strip()
+    root = _overlay_token_root(tok)
+    if root is None:
+        return True
+    key = _overlay_key(word, root=root)
+    return key not in static_keys and root not in overlay_roots
+
+
 def _filter_static_overlay_words(
     raw_frames: list[dict[str, Any]],
 ) -> list[dict[str, Any]]:
@@ -56,30 +103,14 @@ def _filter_static_overlay_words(
     for frame in raw_frames:
         new_words = []
         for w in frame.get("words", []):
-            tok = normalize_text_basic(str(w.get("text", ""))).strip()
-            tok_compact = "".join(ch for ch in tok.lower() if ch.isalnum())
-            y_val = float(w.get("y", 0.0))
-            x_val = float(w.get("x", 0.0))
-            is_short_bottom_right = (
-                len(tok_compact) <= 4
-                and y_val >= y_bottom_cut
-                and x_val >= (0.55 * x_max if x_max > 0 else x_val + 1)
-            )
-            if is_short_bottom_right:
-                continue
-
-            root = _overlay_token_root(tok)
-            if root is None:
+            if _should_keep_word(
+                w,
+                y_bottom_cut=y_bottom_cut,
+                x_max=x_max,
+                static_keys=static_keys,
+                overlay_roots=overlay_roots,
+            ):
                 new_words.append(w)
-                continue
-            key = (
-                root,
-                int(round(float(w.get("x", 0.0)) / _OVERLAY_BIN_PX)),
-                int(round(float(w.get("y", 0.0)) / _OVERLAY_BIN_PX)),
-            )
-            if key in static_keys or root in overlay_roots or is_short_bottom_right:
-                continue
-            new_words.append(w)
         out.append({**frame, "words": new_words})
     return out
 
