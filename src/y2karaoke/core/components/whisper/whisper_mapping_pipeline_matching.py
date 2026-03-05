@@ -138,20 +138,11 @@ def _fill_unmatched_gaps(
             candidate_indices.update(
                 _segment_word_indices(ctx.all_words, ctx.word_segment_idx, line_segment)
             )
-        window_start = max(gap_start - 0.25, 0.0)
-        window_end = gap_end + 0.25
-        if ctx.speech_blocks and ctx.current_block < len(ctx.speech_blocks):
-            blk_start_t, blk_end_t = whisper_utils._block_time_range(
-                ctx.current_block, ctx.speech_blocks, ctx.all_words
-            )
-            window_start = max(window_start, blk_start_t - 0.25)
-            window_end = min(window_end, blk_end_t + 0.25)
-        if ctx.speech_blocks and ctx.current_block < len(ctx.speech_blocks):
-            gap_min_idx = min(
-                ctx.next_word_idx_start, ctx.speech_blocks[ctx.current_block][0]
-            )
-        else:
-            gap_min_idx = ctx.next_word_idx_start
+        window_start, window_end, gap_min_idx = _gap_window_bounds(
+            ctx=ctx,
+            gap_start=gap_start,
+            gap_end=gap_end,
+        )
         window_candidates = _collect_unused_words_in_window(
             ctx.all_words,
             ctx.used_word_indices,
@@ -160,43 +151,19 @@ def _fill_unmatched_gaps(
             window_end,
         )
         candidate_indices.update(window_candidates)
-        sorted_indices = [
-            idx
-            for idx in sorted(
-                candidate_indices, key=lambda idx: ctx.all_words[idx].start
-            )
-            if idx >= gap_min_idx and idx not in ctx.used_word_indices
-        ]
-        filtered_indices = [
-            idx
-            for idx in sorted_indices
-            if ctx.all_words[idx].start >= gap_start
-            and ctx.all_words[idx].start <= window_end
-        ]
-        whisper_candidates = [(ctx.all_words[idx], idx) for idx in filtered_indices]
+        whisper_candidates = _build_gap_candidates(
+            ctx=ctx,
+            candidate_indices=candidate_indices,
+            gap_min_idx=gap_min_idx,
+            gap_start=gap_start,
+            window_end=window_end,
+        )
         ordered = [
             pair for pair in whisper_candidates if pair[0].start >= ctx.last_line_start
         ]
         if ordered:
             whisper_candidates = ordered
-        if ctx.speech_blocks and whisper_candidates:
-            cur_blk = ctx.current_block
-            in_block = [
-                (w, idx)
-                for w, idx in whisper_candidates
-                if whisper_utils._word_idx_to_block(idx, ctx.speech_blocks) == cur_blk
-            ]
-            if in_block:
-                whisper_candidates = in_block
-            else:
-                in_next = [
-                    (w, idx)
-                    for w, idx in whisper_candidates
-                    if whisper_utils._word_idx_to_block(idx, ctx.speech_blocks)
-                    == cur_blk + 1
-                ]
-                if in_next:
-                    whisper_candidates = in_next
+        whisper_candidates = _restrict_gap_candidates_to_blocks(ctx, whisper_candidates)
         if not whisper_candidates:
             continue
         best_word, best_idx = select_best_candidate_fn(
@@ -221,3 +188,69 @@ def _fill_unmatched_gaps(
             word_idx,
             line_last_idx_ref,
         )
+
+
+def _gap_window_bounds(
+    *,
+    ctx: _LineMappingContext,
+    gap_start: float,
+    gap_end: float,
+) -> tuple[float, float, int]:
+    window_start = max(gap_start - 0.25, 0.0)
+    window_end = gap_end + 0.25
+    if ctx.speech_blocks and ctx.current_block < len(ctx.speech_blocks):
+        blk_start_t, blk_end_t = whisper_utils._block_time_range(
+            ctx.current_block, ctx.speech_blocks, ctx.all_words
+        )
+        window_start = max(window_start, blk_start_t - 0.25)
+        window_end = min(window_end, blk_end_t + 0.25)
+        gap_min_idx = min(
+            ctx.next_word_idx_start, ctx.speech_blocks[ctx.current_block][0]
+        )
+        return window_start, window_end, gap_min_idx
+    return window_start, window_end, ctx.next_word_idx_start
+
+
+def _build_gap_candidates(
+    *,
+    ctx: _LineMappingContext,
+    candidate_indices: Set[int],
+    gap_min_idx: int,
+    gap_start: float,
+    window_end: float,
+) -> list[tuple[Any, int]]:
+    sorted_indices = [
+        idx
+        for idx in sorted(candidate_indices, key=lambda idx: ctx.all_words[idx].start)
+        if idx >= gap_min_idx and idx not in ctx.used_word_indices
+    ]
+    filtered_indices = [
+        idx
+        for idx in sorted_indices
+        if gap_start <= ctx.all_words[idx].start <= window_end
+    ]
+    return [(ctx.all_words[idx], idx) for idx in filtered_indices]
+
+
+def _restrict_gap_candidates_to_blocks(
+    ctx: _LineMappingContext,
+    whisper_candidates: list[tuple[Any, int]],
+) -> list[tuple[Any, int]]:
+    if not (ctx.speech_blocks and whisper_candidates):
+        return whisper_candidates
+    cur_blk = ctx.current_block
+    in_block = [
+        (w, idx)
+        for w, idx in whisper_candidates
+        if whisper_utils._word_idx_to_block(idx, ctx.speech_blocks) == cur_blk
+    ]
+    if in_block:
+        return in_block
+    in_next = [
+        (w, idx)
+        for w, idx in whisper_candidates
+        if whisper_utils._word_idx_to_block(idx, ctx.speech_blocks) == cur_blk + 1
+    ]
+    if in_next:
+        return in_next
+    return whisper_candidates
