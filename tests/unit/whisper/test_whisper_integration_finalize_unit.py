@@ -199,3 +199,74 @@ def test_finalize_whisper_line_set_rolls_back_on_text_divergence():
 
     assert finalized[0].text == source_lines[0].text
     assert any("text divergence" in msg for msg in alignments)
+
+
+def test_apply_low_quality_segment_postpasses_records_stage_metrics():
+    lines = [Line(words=[Word(text="a", start_time=0.0, end_time=0.5)])]
+    metrics: dict[str, float] = {}
+
+    _out_lines, _out_alignments = wifin._apply_low_quality_segment_postpasses(
+        aligned_lines=lines,
+        alignments=[],
+        transcription=[],
+        epitran_lang="eng-Latn",
+        merge_first_two_lines_if_segment_matches_fn=lambda ls, *_: (ls, 1),
+        retime_adjacent_lines_to_whisper_window_fn=lambda ls, *_a, **_k: (ls, 2),
+        retime_adjacent_lines_to_segment_window_fn=lambda ls, *_: (ls, 3),
+        pull_next_line_into_segment_window_fn=lambda ls, *_: (ls, 4),
+        pull_lines_near_segment_end_fn=lambda ls, *_: (ls, 5),
+        pull_next_line_into_same_segment_fn=lambda ls, *_: (ls, 6),
+        merge_lines_to_whisper_segments_fn=lambda ls, *_: (ls, 7),
+        tighten_lines_to_whisper_segments_fn=lambda ls, *_: (ls, 8),
+        pull_lines_to_best_segments_fn=lambda ls, *_: (ls, 9),
+        stage_metrics=metrics,
+    )
+
+    assert metrics["postpass_merge_first_two_lines"] == pytest.approx(1.0)
+    assert metrics["postpass_retime_adjacent_whisper_window"] == pytest.approx(2.0)
+    assert metrics["postpass_retime_adjacent_segment_window"] == pytest.approx(3.0)
+    assert metrics["postpass_pull_next_into_segment_window"] == pytest.approx(4.0)
+    assert metrics["postpass_pull_near_segment_end"] == pytest.approx(5.0)
+    assert metrics["postpass_pull_next_into_same_segment"] == pytest.approx(6.0)
+    assert metrics["postpass_merge_lines_to_segments"] == pytest.approx(7.0)
+    assert metrics["postpass_tighten_lines_to_segments"] == pytest.approx(8.0)
+    assert metrics["postpass_pull_lines_to_best_segments"] == pytest.approx(9.0)
+
+
+def test_finalize_whisper_line_set_records_roll_back_metric():
+    source_lines = [
+        Line(words=[Word(text=f"s{i}", start_time=float(i), end_time=float(i) + 0.5)])
+        for i in range(10)
+    ]
+    aligned_lines = [
+        Line(
+            words=[
+                Word(text=f"x{i}", start_time=float(i) + 1.0, end_time=float(i) + 1.5)
+            ]
+        )
+        for i in range(10)
+    ]
+    metrics: dict[str, float] = {}
+
+    _finalized, _alignments = wifin._finalize_whisper_line_set(
+        source_lines=source_lines,
+        aligned_lines=aligned_lines,
+        alignments=[],
+        transcription=[],
+        epitran_lang="eng-Latn",
+        force_dtw=False,
+        audio_features=None,
+        fix_ordering_violations_fn=lambda s, a, al: (a, al),
+        normalize_line_word_timings_fn=lambda lines: lines,
+        enforce_monotonic_line_starts_fn=lambda lines: lines,
+        enforce_non_overlapping_lines_fn=lambda lines: lines,
+        pull_lines_near_segment_end_fn=lambda lines, *_a: (lines, 0),
+        merge_short_following_line_into_segment_fn=lambda lines, *_a: (lines, 0),
+        clamp_repeated_line_duration_fn=lambda lines: (lines, 0),
+        drop_duplicate_lines_fn=lambda lines, *_a: (lines, 0),
+        drop_duplicate_lines_by_timing_fn=lambda lines, *_a: (lines, 0),
+        pull_lines_forward_for_continuous_vocals_fn=lambda lines, *_a: (lines, 0),
+        stage_metrics=metrics,
+    )
+
+    assert metrics["finalize_text_divergence_rollback"] == pytest.approx(1.0)

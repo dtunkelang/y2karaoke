@@ -661,6 +661,7 @@ def _apply_low_quality_segment_postpasses(
     merge_lines_to_whisper_segments_fn: Callable[..., Any],
     tighten_lines_to_whisper_segments_fn: Callable[..., Any],
     pull_lines_to_best_segments_fn: Callable[..., Any],
+    stage_metrics: Optional[Dict[str, float]] = None,
 ) -> Tuple[List[models.Line], List[str]]:
     return _apply_low_quality_segment_postpasses_impl(
         aligned_lines=aligned_lines,
@@ -676,6 +677,7 @@ def _apply_low_quality_segment_postpasses(
         merge_lines_to_whisper_segments_fn=merge_lines_to_whisper_segments_fn,
         tighten_lines_to_whisper_segments_fn=tighten_lines_to_whisper_segments_fn,
         pull_lines_to_best_segments_fn=pull_lines_to_best_segments_fn,
+        stage_metrics=stage_metrics,
     )
 
 
@@ -698,6 +700,7 @@ def _finalize_whisper_line_set(
     drop_duplicate_lines_fn: Callable[..., Any],
     drop_duplicate_lines_by_timing_fn: Callable[..., Any],
     pull_lines_forward_for_continuous_vocals_fn: Callable[..., Any],
+    stage_metrics: Optional[Dict[str, float]] = None,
 ) -> Tuple[List[models.Line], List[str]]:
     return _finalize_whisper_line_set_impl(
         source_lines=source_lines,
@@ -717,4 +720,5 @@ def _finalize_whisper_line_set(
         drop_duplicate_lines_fn=drop_duplicate_lines_fn,
         drop_duplicate_lines_by_timing_fn=drop_duplicate_lines_by_timing_fn,
         pull_lines_forward_for_continuous_vocals_fn=pull_lines_forward_for_continuous_vocals_fn,
+        stage_metrics=stage_metrics,
     )
