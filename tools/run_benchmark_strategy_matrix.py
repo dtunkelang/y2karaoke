@@ -83,6 +83,10 @@ def _extract_summary(report_json: dict[str, Any]) -> dict[str, Any]:
         "songs_total": aggregate.get("songs_total"),
         "songs_succeeded": aggregate.get("songs_succeeded"),
         "songs_failed": aggregate.get("songs_failed"),
+        "timing_quality_score_line_weighted_mean": metric(
+            "timing_quality_score_line_weighted_mean",
+            "timing_quality_score_mean",
+        ),
         "dtw_line_coverage_line_weighted_mean": metric(
             "dtw_line_coverage_line_weighted_mean",
             "dtw_line_coverage_mean",
@@ -125,20 +129,21 @@ def _write_markdown(path: Path, rows: list[dict[str, Any]]) -> None:
         "# Benchmark Strategy Matrix",
         "",
         (
-            "| strategy | status | songs ok/total | dtw line cov | dtw word cov | "
+            "| strategy | status | songs ok/total | timing quality | dtw line cov | dtw word cov | "
             "mean start abs (s) | p95 start abs (s) | low-conf ratio | sum song sec |"
         ),
-        "|---|---|---:|---:|---:|---:|---:|---:|---:|",
+        "|---|---|---:|---:|---:|---:|---:|---:|---:|---:|",
     ]
     for row in rows:
         ok = row.get("songs_succeeded")
         total = row.get("songs_total")
         lines.append(
-            "| {strategy} | {status} | {ok}/{total} | {dl} | {dw} | {mean} | {p95} | {low} | {elapsed} |".format(
+            "| {strategy} | {status} | {ok}/{total} | {tq} | {dl} | {dw} | {mean} | {p95} | {low} | {elapsed} |".format(
                 strategy=row.get("strategy"),
                 status=row.get("status"),
                 ok=ok if ok is not None else "-",
                 total=total if total is not None else "-",
+                tq=row.get("timing_quality_score_line_weighted_mean", "-"),
                 dl=row.get("dtw_line_coverage_line_weighted_mean", "-"),
                 dw=row.get("dtw_word_coverage_line_weighted_mean", "-"),
                 mean=row.get("agreement_start_mean_abs_sec_line_weighted_mean", "-"),
@@ -176,30 +181,34 @@ def _recommendations(rows: list[dict[str, Any]]) -> dict[str, Any]:
     best_dtw = _best_row(
         rows, "dtw_line_coverage_line_weighted_mean", higher_is_better=True
     )
+    best_timing_quality = _best_row(
+        rows, "timing_quality_score_line_weighted_mean", higher_is_better=True
+    )
     fastest = _best_row(rows, "sum_song_elapsed_sec", higher_is_better=False)
 
     quality_runtime_candidates = [
         r
         for r in rows
-        if isinstance(
-            r.get("agreement_start_p95_abs_sec_line_weighted_mean"), (int, float)
-        )
+        if isinstance(r.get("timing_quality_score_line_weighted_mean"), (int, float))
         and isinstance(r.get("sum_song_elapsed_sec"), (int, float))
     ]
     quality_runtime_best: dict[str, Any] | None = None
     if quality_runtime_candidates:
 
         def _composite(row: dict[str, Any]) -> float:
-            p95 = float(row["agreement_start_p95_abs_sec_line_weighted_mean"])
+            quality = float(row["timing_quality_score_line_weighted_mean"])
             elapsed = float(row["sum_song_elapsed_sec"])
-            # Keep quality dominant while still penalizing materially slower runs.
-            return p95 + 0.001 * elapsed
+            # Keep timing-quality dominant while still penalizing materially slower runs.
+            return (1.0 - quality) + 0.001 * elapsed
 
         quality_runtime_best = min(quality_runtime_candidates, key=_composite)
 
     return {
         "best_p95_start_abs_sec": best_p95.get("strategy") if best_p95 else None,
         "best_mean_start_abs_sec": best_mean.get("strategy") if best_mean else None,
+        "best_timing_quality": (
+            best_timing_quality.get("strategy") if best_timing_quality else None
+        ),
         "lowest_low_confidence_ratio": (
             best_low_conf.get("strategy") if best_low_conf else None
         ),

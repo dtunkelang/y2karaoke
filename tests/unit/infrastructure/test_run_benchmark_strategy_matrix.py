@@ -47,6 +47,7 @@ def test_extract_summary_handles_aggregate_fields():
             "songs_total": 3,
             "songs_succeeded": 2,
             "songs_failed": 1,
+            "timing_quality_score_line_weighted_mean": 0.63,
             "dtw_line_coverage_line_weighted_mean": 0.7,
             "dtw_word_coverage_line_weighted_mean": 0.6,
             "agreement_start_mean_abs_sec_mean": 0.42,
@@ -58,6 +59,7 @@ def test_extract_summary_handles_aggregate_fields():
     summary = _MODULE._extract_summary(report)
     assert summary["status"] == "finished"
     assert summary["songs_total"] == 3
+    assert summary["timing_quality_score_line_weighted_mean"] == 0.63
     assert summary["dtw_line_coverage_line_weighted_mean"] == 0.7
     assert summary["agreement_start_mean_abs_sec_line_weighted_mean"] == 0.42
     assert summary["low_confidence_ratio_line_weighted_mean"] == 0.1
@@ -93,6 +95,7 @@ def test_write_markdown(tmp_path):
                 "status": "finished",
                 "songs_succeeded": 1,
                 "songs_total": 2,
+                "timing_quality_score_line_weighted_mean": 0.76,
                 "dtw_line_coverage_line_weighted_mean": 0.8,
                 "dtw_word_coverage_line_weighted_mean": 0.7,
                 "agreement_start_mean_abs_sec_line_weighted_mean": 0.3,
@@ -104,6 +107,7 @@ def test_write_markdown(tmp_path):
     )
     text = out.read_text(encoding="utf-8")
     assert "Benchmark Strategy Matrix" in text
+    assert "timing quality" in text
     assert "hybrid_dtw" in text
 
 
@@ -155,6 +159,7 @@ def test_recommendations_select_expected_strategy():
     rows = [
         {
             "strategy": "hybrid_dtw",
+            "timing_quality_score_line_weighted_mean": 0.72,
             "agreement_start_p95_abs_sec_line_weighted_mean": 0.5,
             "agreement_start_mean_abs_sec_line_weighted_mean": 0.2,
             "low_confidence_ratio_line_weighted_mean": 0.1,
@@ -163,6 +168,7 @@ def test_recommendations_select_expected_strategy():
         },
         {
             "strategy": "whisper_only",
+            "timing_quality_score_line_weighted_mean": 0.61,
             "agreement_start_p95_abs_sec_line_weighted_mean": 0.7,
             "agreement_start_mean_abs_sec_line_weighted_mean": 0.35,
             "low_confidence_ratio_line_weighted_mean": 0.2,
@@ -173,6 +179,7 @@ def test_recommendations_select_expected_strategy():
     rec = _MODULE._recommendations(rows)
     assert rec["best_p95_start_abs_sec"] == "hybrid_dtw"
     assert rec["best_mean_start_abs_sec"] == "hybrid_dtw"
+    assert rec["best_timing_quality"] == "hybrid_dtw"
     assert rec["lowest_low_confidence_ratio"] == "hybrid_dtw"
     assert rec["highest_dtw_line_coverage"] == "hybrid_dtw"
     assert rec["fastest_runtime"] == "whisper_only"
