@@ -40,6 +40,8 @@ Last updated: 2026-03-04
   - Keep defaults unchanged; enable profile-based tuning (safe/aggressive).
   - Completed so far:
     - Shared `Y2K_WHISPER_PROFILE` parsing centralized in `whisper_profile.py`.
+    - Alignment-pass dependency plumbing bundled via `_AlignmentPassHooks` in
+      `whisper_integration_pipeline.py`.
     - Segment assignment env heuristics centralized in `whisper_blocks.py`.
     - Correction decision thresholds centralized in `whisper_integration_correct.py`.
     - Mapping decision thresholds centralized in `whisper_integration_align.py`.

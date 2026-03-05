@@ -3,6 +3,7 @@ import pytest
 import y2karaoke.core.components.alignment.timing_evaluator as te
 from y2karaoke.core.models import Line, Word
 import y2karaoke.core.components.whisper.whisper_integration as wi
+import y2karaoke.core.components.whisper.whisper_integration_pipeline as wip
 from y2karaoke.core.components.whisper.whisper_integration_pipeline import (
     align_lrc_text_to_whisper_timings_impl,
 )
@@ -103,6 +104,52 @@ def test_align_lrc_text_pipeline_pulls_forward_for_continuous_vocals():
     assert "mapping_stage_sec" in metrics
     assert "mapped_postpasses_sec" in metrics
     assert "alignment_total_sec" in metrics
+
+
+def test_build_alignment_pass_kwargs_uses_hook_bundle():
+    lines = [Line(words=[Word(text="a", start_time=1.0, end_time=1.2)])]
+    kwargs = wip._build_alignment_pass_kwargs(
+        lines=lines,
+        vocals_path="vocals.wav",
+        language="en",
+        model_size="base",
+        temperature=0.0,
+        min_similarity=0.15,
+        audio_features=None,
+        lenient_vocal_activity_threshold=0.3,
+        lenient_activity_bonus=0.4,
+        low_word_confidence_threshold=0.5,
+        transcribe_vocals_fn=lambda *_a, **_k: ([], [], "en", "base"),
+        extract_audio_features_fn=lambda *_a, **_k: None,
+        dedupe_whisper_segments_fn=lambda s: s,
+        trim_whisper_transcription_by_lyrics_fn=lambda s, w, _t: (s, w, None),
+        fill_vocal_activity_gaps_fn=lambda w, _a, _t, segments=None: (w, segments),
+        dedupe_whisper_words_fn=lambda w: w,
+        extract_lrc_words_all_fn=lambda _in_lines: [],
+        build_phoneme_tokens_from_lrc_words_fn=lambda *_a, **_k: [],
+        build_phoneme_tokens_from_whisper_words_fn=lambda *_a, **_k: [],
+        build_syllable_tokens_from_phonemes_fn=lambda *_a, **_k: [],
+        build_segment_text_overlap_assignments_fn=lambda *_a, **_k: {},
+        build_phoneme_dtw_path_fn=lambda *_a, **_k: [],
+        build_word_assignments_from_phoneme_path_fn=lambda *_a, **_k: {},
+        build_block_segmented_syllable_assignments_fn=lambda *_a, **_k: {},
+        map_lrc_words_to_whisper_fn=lambda *_a, **_k: (lines, 0, 0.0, set()),
+        shift_repeated_lines_to_next_whisper_fn=lambda ml, _aw: ml,
+        enforce_monotonic_line_starts_whisper_fn=lambda ml, _aw: ml,
+        resolve_line_overlaps_fn=lambda ml: ml,
+        extend_line_to_trailing_whisper_matches_fn=lambda ml, _aw: ml,
+        pull_late_lines_to_matching_segments_fn=lambda ml, _s, _lang: ml,
+        retime_short_interjection_lines_fn=lambda ml, _s: ml,
+        snap_first_word_to_whisper_onset_fn=lambda ml, _aw, **_kw: ml,
+        interpolate_unmatched_lines_fn=lambda ml, _set: ml,
+        refine_unmatched_lines_with_onsets_fn=lambda ml, _set, _vp: ml,
+        pull_lines_forward_for_continuous_vocals_fn=lambda ml, _af: (ml, 0),
+        logger=wi.logger,
+    )
+
+    assert "hooks" in kwargs
+    assert isinstance(kwargs["hooks"], wip._AlignmentPassHooks)
+    assert "transcribe_vocals_fn" not in kwargs
 
 
 def test_align_lrc_text_pipeline_uses_whisperx_for_sparse_transcript(monkeypatch):
