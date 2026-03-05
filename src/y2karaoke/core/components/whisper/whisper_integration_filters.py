@@ -6,6 +6,23 @@ from typing import List
 
 from ..alignment import timing_models
 
+_NOISY_SHORT_TOKENS = {
+    "ah",
+    "eh",
+    "ha",
+    "huh",
+    "la",
+    "mm",
+    "mmm",
+    "na",
+    "oh",
+    "ooh",
+    "uh",
+    "woo",
+    "yeah",
+    "yo",
+}
+
 
 def _filter_low_confidence_whisper_words(
     words: List[timing_models.TranscriptionWord],
@@ -20,37 +37,9 @@ def _filter_low_confidence_whisper_words(
     if threshold <= 0.0:
         return words
 
-    noisy_short_tokens = {
-        "ah",
-        "eh",
-        "ha",
-        "huh",
-        "la",
-        "mm",
-        "mmm",
-        "na",
-        "oh",
-        "ooh",
-        "uh",
-        "woo",
-        "yeah",
-        "yo",
-    }
-
-    def keep_word(word: timing_models.TranscriptionWord) -> bool:
-        if word.text == "[VOCAL]":
-            return True
-        prob = float(getattr(word, "probability", 1.0))
-        if prob >= threshold:
-            return True
-        normalized = "".join(ch for ch in word.text.lower() if ch.isalpha())
-        if not normalized:
-            return False
-        if normalized in noisy_short_tokens:
-            return False
-        return len(normalized) >= 4
-
-    filtered = [w for w in words if keep_word(w)]
+    filtered = [
+        word for word in words if _should_keep_whisper_word(word, threshold=threshold)
+    ]
     if not filtered:
         return words
     if len(filtered) < min_keep_words:
@@ -58,3 +47,19 @@ def _filter_low_confidence_whisper_words(
     if (len(filtered) / len(words)) < min_keep_ratio:
         return words
     return filtered
+
+
+def _should_keep_whisper_word(
+    word: timing_models.TranscriptionWord, *, threshold: float
+) -> bool:
+    if word.text == "[VOCAL]":
+        return True
+    prob = float(getattr(word, "probability", 1.0))
+    if prob >= threshold:
+        return True
+    normalized = "".join(ch for ch in word.text.lower() if ch.isalpha())
+    if not normalized:
+        return False
+    if normalized in _NOISY_SHORT_TOKENS:
+        return False
+    return len(normalized) >= 4

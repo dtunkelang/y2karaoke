@@ -27,29 +27,45 @@ def dtw_fallback_path(
 
     for i in range(1, m + 1):
         a = lrc_seq[i - 1]
-        j_lo = 1
-        j_hi = n
-        if window is not None:
-            center = int(round((i - 1) * (n / max(m, 1)))) + 1
-            j_lo = max(1, center - window)
-            j_hi = min(n, center + window)
+        j_lo, j_hi = _dtw_window_bounds(i, m=m, n=n, window=window)
         for j in range(j_lo, j_hi + 1):
             b = whisper_seq[j - 1]
             step_cost = float(dist(a, b))
-            diag = costs[i - 1, j - 1]
-            up = costs[i - 1, j]
-            left = costs[i, j - 1]
-            best = diag
-            direction = 1  # diagonal
-            if up < best:
-                best = up
-                direction = 2  # up
-            if left < best:
-                best = left
-                direction = 3  # left
+            best, direction = _dtw_best_predecessor(costs, i, j)
             costs[i, j] = step_cost + best
             prev[i, j] = direction
 
+    path = _dtw_backtrack_path(prev, m=m, n=n)
+    return float(costs[m, n]), path
+
+
+def _dtw_window_bounds(
+    i: int, *, m: int, n: int, window: Optional[int]
+) -> tuple[int, int]:
+    if window is None:
+        return 1, n
+    center = int(round((i - 1) * (n / max(m, 1)))) + 1
+    j_lo = max(1, center - window)
+    j_hi = min(n, center + window)
+    return j_lo, j_hi
+
+
+def _dtw_best_predecessor(costs: np.ndarray, i: int, j: int) -> tuple[float, int]:
+    diag = costs[i - 1, j - 1]
+    up = costs[i - 1, j]
+    left = costs[i, j - 1]
+    best = diag
+    direction = 1  # diagonal
+    if up < best:
+        best = up
+        direction = 2  # up
+    if left < best:
+        best = left
+        direction = 3  # left
+    return best, direction
+
+
+def _dtw_backtrack_path(prev: np.ndarray, *, m: int, n: int) -> List[Tuple[int, int]]:
     i, j = m, n
     path: List[Tuple[int, int]] = []
     while i > 0 and j > 0:
@@ -64,9 +80,8 @@ def dtw_fallback_path(
             j -= 1
         else:
             break
-
     path.reverse()
-    return float(costs[m, n]), path
+    return path
 
 
 def dtw_fallback_with_runtime_guard(
