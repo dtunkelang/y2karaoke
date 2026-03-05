@@ -41,22 +41,15 @@ def _select_window_sequence(
     best_seq = window_words
     best_sim = -1.0
     best_score = -1.0
-    lengths = [target_len - 1, target_len, target_len + 1]
-    lengths = [length for length in lengths if length > 0]
+    lengths = _candidate_sequence_lengths(target_len)
     max_start = len(window_words)
-    start_candidates = range(max_start)
-    if first_token:
-        anchor_idx = None
-        anchor_sim = 0.0
-        for idx, w in enumerate(window_words):
-            sim = phonetic_similarity(first_token, w.text, language)
-            if sim > anchor_sim:
-                anchor_sim = sim
-                anchor_idx = idx
-        if anchor_idx is not None and anchor_sim >= 0.6:
-            start_candidates = range(
-                max(anchor_idx - 1, 0), min(anchor_idx + 1, max_start - 1) + 1
-            )
+    start_candidates = _window_start_candidates(
+        window_words,
+        first_token,
+        language=language,
+        max_start=max_start,
+        phonetic_similarity=phonetic_similarity,
+    )
     for start_idx in start_candidates:
         for length in lengths:
             end_idx = start_idx + length
@@ -74,6 +67,51 @@ def _select_window_sequence(
     if best_sim < 0.2:
         return window_words
     return best_seq
+
+
+def _candidate_sequence_lengths(target_len: int) -> list[int]:
+    return [
+        length for length in (target_len - 1, target_len, target_len + 1) if length > 0
+    ]
+
+
+def _window_start_candidates(
+    window_words: List[TranscriptionWord],
+    first_token: Optional[str],
+    *,
+    language: str,
+    max_start: int,
+    phonetic_similarity: Callable[[str, str, str], float],
+) -> range:
+    start_candidates = range(max_start)
+    if not first_token:
+        return start_candidates
+    anchor_idx, anchor_sim = _best_anchor_for_first_token(
+        window_words,
+        first_token,
+        language=language,
+        phonetic_similarity=phonetic_similarity,
+    )
+    if anchor_idx is None or anchor_sim < 0.6:
+        return start_candidates
+    return range(max(anchor_idx - 1, 0), min(anchor_idx + 1, max_start - 1) + 1)
+
+
+def _best_anchor_for_first_token(
+    window_words: List[TranscriptionWord],
+    first_token: str,
+    *,
+    language: str,
+    phonetic_similarity: Callable[[str, str, str], float],
+) -> tuple[int | None, float]:
+    anchor_idx: int | None = None
+    anchor_sim = 0.0
+    for idx, word in enumerate(window_words):
+        sim = phonetic_similarity(first_token, word.text, language)
+        if sim > anchor_sim:
+            anchor_sim = sim
+            anchor_idx = idx
+    return anchor_idx, anchor_sim
 
 
 def _slots_from_sequence(
@@ -217,31 +255,16 @@ def _select_window_words_for_line(
     first_token = line.words[0].text if line.words else None
     min_count = max(3, len(line.words) // 2)
     min_prob = 0.5
-
-    def _pick_sequence(candidates: List[TranscriptionWord]):
-        seq = _select_window_sequence(
-            candidates,
-            line.text,
-            language,
-            len(line.words),
-            first_token,
-            phonetic_similarity,
-        )
-        sim = phonetic_similarity(line.text, " ".join(w.text for w in seq), language)
-        return seq, sim
-
-    def _preferred_sequence(candidates: List[TranscriptionWord]):
-        filtered = [
-            w for w in candidates if w.probability is None or w.probability >= min_prob
-        ]
-        seq_all, sim_all = _pick_sequence(candidates)
-        if len(filtered) >= min_count:
-            seq_f, sim_f = _pick_sequence(filtered)
-            if sim_f >= 0.55 and sim_f >= sim_all - 0.02:
-                return seq_f, sim_f
-        return seq_all, sim_all
-
-    initial_seq, initial_sim = _preferred_sequence(window_words)
+    initial_seq, initial_sim = _preferred_sequence_for_line(
+        window_words,
+        line_text=line.text,
+        language=language,
+        target_len=len(line.words),
+        first_token=first_token,
+        min_count=min_count,
+        min_prob=min_prob,
+        phonetic_similarity=phonetic_similarity,
+    )
     if len(window_words) >= min_count and initial_sim >= 0.55:
         return initial_seq
 
@@ -251,10 +274,79 @@ def _select_window_words_for_line(
             w for w in all_words if expanded_start <= w.start < next_lrc_start
         ]
         if expanded_words:
-            expanded_seq, expanded_sim = _preferred_sequence(expanded_words)
+            expanded_seq, expanded_sim = _preferred_sequence_for_line(
+                expanded_words,
+                line_text=line.text,
+                language=language,
+                target_len=len(line.words),
+                first_token=first_token,
+                min_count=min_count,
+                min_prob=min_prob,
+                phonetic_similarity=phonetic_similarity,
+            )
             if expanded_sim > initial_sim + 0.05 or initial_sim < 0.45:
                 return expanded_seq
     return initial_seq
+
+
+def _pick_window_sequence_for_line(
+    candidates: List[TranscriptionWord],
+    *,
+    line_text: str,
+    language: str,
+    target_len: int,
+    first_token: Optional[str],
+    phonetic_similarity: Callable[[str, str, str], float],
+) -> tuple[List[TranscriptionWord], float]:
+    seq = _select_window_sequence(
+        candidates,
+        line_text,
+        language,
+        target_len,
+        first_token,
+        phonetic_similarity,
+    )
+    sim = phonetic_similarity(line_text, " ".join(w.text for w in seq), language)
+    return seq, sim
+
+
+def _preferred_sequence_for_line(
+    candidates: List[TranscriptionWord],
+    *,
+    line_text: str,
+    language: str,
+    target_len: int,
+    first_token: Optional[str],
+    min_count: int,
+    min_prob: float,
+    phonetic_similarity: Callable[[str, str, str], float],
+) -> tuple[List[TranscriptionWord], float]:
+    filtered = [
+        word
+        for word in candidates
+        if word.probability is None or word.probability >= min_prob
+    ]
+    seq_all, sim_all = _pick_window_sequence_for_line(
+        candidates,
+        line_text=line_text,
+        language=language,
+        target_len=target_len,
+        first_token=first_token,
+        phonetic_similarity=phonetic_similarity,
+    )
+    if len(filtered) < min_count:
+        return seq_all, sim_all
+    seq_filtered, sim_filtered = _pick_window_sequence_for_line(
+        filtered,
+        line_text=line_text,
+        language=language,
+        target_len=target_len,
+        first_token=first_token,
+        phonetic_similarity=phonetic_similarity,
+    )
+    if sim_filtered >= 0.55 and sim_filtered >= sim_all - 0.02:
+        return seq_filtered, sim_filtered
+    return seq_all, sim_all
 
 
 def _line_duration_from_lrc(
