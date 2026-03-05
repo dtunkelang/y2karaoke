@@ -70,6 +70,8 @@ def test_analyze_agreement_tradeoffs_sorts_by_score_and_guard(tmp_path, monkeypa
     out = json.loads((tmp_path / "agreement_tradeoff_analysis.json").read_text("utf-8"))
     assert out["baseline_label"] == "base"
     assert len(out["rows"]) == 2
+    assert out["best_score_candidate"] == "relax"
+    assert out["best_guard_pass_candidate"] == "relax"
     assert out["rows"][0]["label"] == "relax"
     assert out["rows"][0]["passes_tradeoff_guard"] is True
     assert out["rows"][1]["label"] == "too_risky"

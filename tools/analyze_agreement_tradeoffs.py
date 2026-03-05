@@ -96,9 +96,17 @@ def _analyze(
             }
         )
     rows.sort(key=lambda row: float(row.get("tradeoff_score", 0.0)), reverse=True)
+    best_score_candidate = rows[0]["label"] if rows else None
+    best_guard_pass_candidate = None
+    for row in rows:
+        if bool(row.get("passes_tradeoff_guard")):
+            best_guard_pass_candidate = row.get("label")
+            break
     return {
         "baseline_label": baseline_label,
         "baseline_metrics": baseline,
+        "best_score_candidate": best_score_candidate,
+        "best_guard_pass_candidate": best_guard_pass_candidate,
         "rows": rows,
         "guard": {
             "min_coverage_gain": min_coverage_gain,
@@ -115,6 +123,12 @@ def _write_markdown(path: Path, payload: dict[str, Any]) -> None:
         "- Guard: "
         f"`min_coverage_gain={float(guard.get('min_coverage_gain', 0.0) or 0.0):.4f}`, "
         f"`max_bad_ratio_increase={float(guard.get('max_bad_ratio_increase', 0.0) or 0.0):.4f}`"
+    )
+    lines.append(
+        f"- Best score candidate: `{payload.get('best_score_candidate', None)}`"
+    )
+    lines.append(
+        f"- Best guard-pass candidate: `{payload.get('best_guard_pass_candidate', None)}`"
     )
     lines.append("")
     lines.append(
