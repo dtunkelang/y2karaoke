@@ -271,6 +271,65 @@ def test_agreement_normalization_converts_dropped_g_endings():
     )
 
 
+def test_agreement_window_skip_reason_variants() -> None:
+    module = _load_module()
+    line = {
+        "whisper_window_word_count": 1,
+        "whisper_window_avg_prob": 0.3,
+    }
+    assert (
+        module._agreement_window_skip_reason(line, line_word_count=6)
+        == "insufficient_window_words_for_long_line"
+    )
+    assert (
+        module._agreement_window_skip_reason(line, line_word_count=5)
+        == "low_window_confidence_and_sparse_words"
+    )
+    assert (
+        module._agreement_window_skip_reason(line, line_word_count=4)
+        == "explicit_window_too_sparse"
+    )
+
+
+def test_evaluate_agreement_line_low_token_overlap_marks_eligible() -> None:
+    module = _load_module()
+    line = {
+        "start": 10.0,
+        "nearest_segment_start": 10.1,
+        "text": "we can make this right tonight",
+        "nearest_segment_start_text": "radio static nonsense words here",
+        "words": [{"text": token} for token in "a b c d e f".split()],
+        "whisper_window_word_count": 6,
+        "whisper_window_avg_prob": 0.9,
+    }
+    result = module._evaluate_agreement_line(
+        line=line,
+        min_text_similarity=0.0,
+        min_token_overlap=0.55,
+    )
+    assert result["eligible"] is True
+    assert result["skip_reason"] == "low_token_overlap"
+
+
+def test_compute_timing_quality_score_anchor_with_gold_mode() -> None:
+    module = _load_module()
+    score, band, mode = module._compute_timing_quality_score(
+        {
+            "low_confidence_ratio": 0.08,
+            "agreement_coverage_ratio": 0.35,
+            "agreement_start_p95_abs_sec": 0.6,
+            "agreement_bad_ratio": 0.03,
+            "whisper_anchor_start_p95_abs_sec": 0.35,
+            "gold_word_coverage_ratio": 0.92,
+            "gold_start_mean_abs_sec": 0.12,
+            "gold_comparable_word_count": 35,
+        }
+    )
+    assert 0.0 <= score <= 1.0
+    assert band in {"poor", "fair", "good", "excellent"}
+    assert mode == "anchor_fallback+gold"
+
+
 def test_extract_song_metrics_supports_env_agreement_threshold_overrides(
     monkeypatch,
 ) -> None:

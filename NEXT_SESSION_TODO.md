@@ -25,6 +25,9 @@
   - deeper sweep (`20260305T_sweep_deeper_*`):
     - `text_sim=0.56` (token overlap `0.50/0.46/0.42`) -> agreement_cov `0.336`, p95 `1.180`, bad_ratio `0.051`
     - `text_sim=0.52` (token overlap `0.50/0.46/0.42`) -> agreement_cov `0.341`, p95 `1.178`, bad_ratio `0.051`
+  - focused probe `text_sim=0.50, token_overlap=0.40` (`20260305T_probe_ts50_to40`) -> agreement_cov `0.346`, p95 `1.194`, bad_ratio `0.054`
+  - focused probe `text_sim=0.48, token_overlap=0.38` (`20260305T_probe_ts48_to38`) -> agreement_cov `0.352`, p95 `1.268`, bad_ratio `0.057`
+    - reaches >=0.35 coverage target but with unacceptable timing/bad-ratio regression under current guard.
   - Under current guard (`min_coverage_gain=0.005`, `max_bad_ratio_increase=0.002`), no relaxed candidate passes.
 
 ## 2. Alignment pipeline improvements
@@ -74,7 +77,7 @@
 - [x] Reduce agreement text normalization complexity via `_expand_agreement_token()` extraction.
 - [x] Reduce complexity hotspots count in `run_benchmark_suite.py` from 7 -> 2 via warning/reference-divergence/lexical/triage helper extraction.
 - [x] Keep files under quality-guardrail size limits while refactoring.
-- [ ] Add focused tests for new extraction units rather than broad integration expansions.
+- [x] Add focused tests for new extraction units rather than broad integration expansions.
 
 ## 7. CI/CD checklist before every push
 - [ ] `black --check src tests`
