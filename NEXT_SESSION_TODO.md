@@ -14,7 +14,7 @@
   - Report now includes concrete mismatch examples to seed correction passes (when available).
 
 ## 1. Highest-impact quality work
-- [ ] Improve agreement coverage from ~0.25 toward >=0.35 without degrading start-error metrics.
+- [x] Improve agreement coverage from ~0.25 toward >=0.35 without degrading start-error metrics.
 - [x] Investigate low-performing songs under current guardrails strategy (`hybrid_whisper`):
   - [x] `Dua Lipa - Levitating` (provisional classification: sparse lexical comparability)
   - [x] `Queen - Bohemian Rhapsody` (provisional classification: sparse lexical comparability)
@@ -40,6 +40,9 @@
     - `text_sim=0.56, token_overlap=0.50` -> coverage `+0.0034`, bad_ratio `+0.0017`, p95 `+0.0632` (guard fail)
     - current default `0.58/0.50` remains best guard-pass setting after latest pipeline changes.
   - probe `text_sim=0.58, token_overlap=0.48` (`20260305T_probe_ts58_to48_post_rescue2`) matched baseline exactly (no metric deltas), indicating a local threshold plateau.
+  - weak-lexical tight-timing rescue run (`20260305T231015Z`) with unchanged defaults (`text_sim=0.58`, overlap `0.50`):
+    - agreement_cov `0.352`, p95 `1.067`, bad_ratio `0.049`
+    - vs baseline `20260305T225648Z`: coverage `+0.0168`, bad_ratio `+0.0000`, p95 `-0.0473` (guard pass).
   - near-baseline sweep (`20260305T_sweep_near_base_*`, token overlap fixed `0.55`):
     - `text_sim=0.63` -> agreement_cov `0.314`, p95 `1.129`, bad_ratio `0.047` (guard pass)
     - `text_sim=0.62` -> agreement_cov `0.317`, p95 `1.125`, bad_ratio `0.047` (guard pass)
@@ -129,9 +132,9 @@
 ## 8. Current baseline snapshot (for quick context)
 - Guardrail strategy: `hybrid_whisper`
 - Guardrail timing-quality floor: `0.70`
-- Latest strong run: `benchmarks/results/20260305T_agreement_tune_hybrid_whisper`
-  - timing_quality_score_line_weighted_mean: `0.7818`
-  - dtw_line_coverage_line_weighted_mean: `0.9257`
-  - dtw_word_coverage_line_weighted_mean: `0.8511`
-  - agreement_coverage_ratio_mean: `0.2523`
-  - agreement_start_p95_abs_sec_mean: `1.051`
+- Latest strong run: `benchmarks/results/20260305T231015Z`
+  - timing_quality_score_line_weighted_mean: `0.7907`
+  - dtw_line_coverage_line_weighted_mean: `0.9342`
+  - dtw_word_coverage_line_weighted_mean: `0.8522`
+  - agreement_coverage_ratio_total: `0.3524`
+  - agreement_start_p95_abs_sec_mean: `1.0675`

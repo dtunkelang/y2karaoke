@@ -508,6 +508,29 @@ def test_extract_song_metrics_rescues_high_overlap_tight_delta_lines() -> None:
     assert metrics["agreement_adaptive_rescue_count"] == 1
 
 
+def test_extract_song_metrics_rescues_weak_lexical_but_tight_timing_lines() -> None:
+    module = _load_module()
+    report = {
+        "dtw_line_coverage": 1.0,
+        "lines": [
+            {
+                "start": 52.0,
+                "nearest_segment_start": 52.17,
+                "text": "if the rhythm takes you move your head",
+                "nearest_segment_start_text": "move your head we are dancing all night",
+                "words": [{"text": token} for token in "a b c d e f g".split()],
+                "whisper_window_word_count": 4,
+                "whisper_window_avg_prob": 0.7,
+            }
+        ],
+        "low_confidence_lines": [],
+    }
+    metrics = module._extract_song_metrics(report)
+    assert metrics["agreement_eligible_lines"] == 1
+    assert metrics["agreement_count"] == 1
+    assert metrics["agreement_adaptive_rescue_count"] == 1
+
+
 def test_extract_song_metrics_adaptive_rescue_does_not_accept_large_timing_delta() -> (
     None
 ):
