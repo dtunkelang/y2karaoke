@@ -361,6 +361,96 @@ def _build_generate_command(
 def _extract_song_metrics(
     report: dict[str, Any], gold_doc: dict[str, Any] | None = None
 ) -> dict[str, Any]:
+    def _clamp01(value: float) -> float:
+        return max(0.0, min(1.0, value))
+
+    def _quality_band(score: float) -> str:
+        if score >= 0.8:
+            return "excellent"
+        if score >= 0.65:
+            return "good"
+        if score >= 0.5:
+            return "fair"
+        return "poor"
+
+    def _compute_timing_quality_score(values: dict[str, Any]) -> tuple[float, str, str]:
+        dtw_line_raw = values.get("dtw_line_coverage")
+        dtw_word_raw = values.get("dtw_word_coverage")
+        low_conf_raw = values.get("low_confidence_ratio")
+        agree_cov_raw = values.get("agreement_coverage_ratio")
+        agree_p95_raw = values.get("agreement_start_p95_abs_sec")
+        agree_bad_raw = values.get("agreement_bad_ratio")
+        anchor_p95_raw = values.get("whisper_anchor_start_p95_abs_sec")
+        gold_cov_raw = values.get("gold_word_coverage_ratio")
+        gold_start_raw = values.get("gold_start_mean_abs_sec")
+        gold_comp_raw = values.get("gold_comparable_word_count")
+
+        dtw_line = (
+            float(dtw_line_raw) if isinstance(dtw_line_raw, (int, float)) else 0.0
+        )
+        dtw_word = (
+            float(dtw_word_raw) if isinstance(dtw_word_raw, (int, float)) else 0.0
+        )
+        low_conf = (
+            float(low_conf_raw) if isinstance(low_conf_raw, (int, float)) else 0.0
+        )
+        agree_cov = (
+            float(agree_cov_raw) if isinstance(agree_cov_raw, (int, float)) else 0.0
+        )
+        agree_p95 = (
+            float(agree_p95_raw) if isinstance(agree_p95_raw, (int, float)) else 0.0
+        )
+        agree_bad = (
+            float(agree_bad_raw) if isinstance(agree_bad_raw, (int, float)) else 0.0
+        )
+        anchor_p95 = (
+            float(anchor_p95_raw) if isinstance(anchor_p95_raw, (int, float)) else 0.0
+        )
+        gold_cov = (
+            float(gold_cov_raw) if isinstance(gold_cov_raw, (int, float)) else 0.0
+        )
+        gold_start_mean = (
+            float(gold_start_raw) if isinstance(gold_start_raw, (int, float)) else 0.0
+        )
+        gold_comparable_words = (
+            int(gold_comp_raw) if isinstance(gold_comp_raw, (int, float)) else 0
+        )
+
+        agreement_score = (
+            (0.45 * _clamp01(agree_cov / 0.5))
+            + (0.35 * (1.0 - _clamp01(agree_p95 / 1.5)))
+            + (0.2 * (1.0 - _clamp01(agree_bad / 0.25)))
+        )
+        anchor_score = 1.0 - _clamp01(anchor_p95 / 2.0)
+        low_conf_score = 1.0 - _clamp01(low_conf / 0.25)
+
+        if isinstance(dtw_line_raw, (int, float)) and isinstance(
+            dtw_word_raw, (int, float)
+        ):
+            internal_score = (
+                (0.42 * _clamp01(dtw_line))
+                + (0.26 * _clamp01(dtw_word))
+                + (0.22 * low_conf_score)
+                + (0.1 * agreement_score)
+            )
+            score_mode = "dtw_internal"
+        else:
+            internal_score = (0.7 * anchor_score) + (0.3 * low_conf_score)
+            score_mode = "anchor_fallback"
+
+        if gold_comparable_words >= 20:
+            gold_score = (0.55 * _clamp01(gold_cov)) + (
+                0.45 * (1.0 - _clamp01(gold_start_mean / 1.25))
+            )
+            final_score = (0.78 * internal_score) + (0.22 * gold_score)
+            score_mode = f"{score_mode}+gold"
+        else:
+            final_score = internal_score
+
+        clamped = _clamp01(final_score)
+        rounded = round(clamped, 4)
+        return rounded, _quality_band(clamped), score_mode
+
     lines = report.get("lines", [])
     line_count = len(lines)
     low_conf = report.get("low_confidence_lines", [])
@@ -583,6 +673,13 @@ def _extract_song_metrics(
             "gold_end_max_abs_sec": round(max(end_abs_deltas, default=0.0), 4),
         }
     )
+
+    timing_quality_score, timing_quality_band, timing_quality_score_mode = (
+        _compute_timing_quality_score(metrics)
+    )
+    metrics["timing_quality_score"] = timing_quality_score
+    metrics["timing_quality_band"] = timing_quality_band
+    metrics["timing_quality_score_mode"] = timing_quality_score_mode
 
     return metrics
 
@@ -1701,6 +1798,16 @@ def _aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:  # noqa: C901
             if metric_mean("agreement_severe_ratio") is not None
             else None
         ),
+        "timing_quality_score_mean": (
+            round(float(metric_mean("timing_quality_score") or 0.0), 4)
+            if metric_mean("timing_quality_score") is not None
+            else None
+        ),
+        "timing_quality_score_line_weighted_mean": (
+            round(float(weighted_metric_mean("timing_quality_score") or 0.0), 4)
+            if weighted_metric_mean("timing_quality_score") is not None
+            else None
+        ),
         "whisper_anchor_start_mean_abs_sec_mean": (
             round(float(metric_mean("whisper_anchor_start_mean_abs_sec") or 0.0), 4)
             if metric_mean("whisper_anchor_start_mean_abs_sec") is not None
@@ -1847,6 +1954,9 @@ def _aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:  # noqa: C901
             "highest_agreement_severe_ratio": _hotspot_records(
                 key="agreement_severe_ratio", top_n=3, reverse=True
             ),
+            "lowest_timing_quality_score": _hotspot_records(
+                key="timing_quality_score", top_n=3, reverse=False
+            ),
             "highest_whisper_anchor_start_p95_abs_sec": _hotspot_records(
                 key="whisper_anchor_start_p95_abs_sec", top_n=3, reverse=True
             ),
@@ -1972,6 +2082,12 @@ def _quality_coverage_warnings(
                 "Many songs are diagnosed as likely reference divergence: "
                 f"{float(reference_ratio):.3f} > 0.350"
             )
+    timing_quality = aggregate.get("timing_quality_score_line_weighted_mean")
+    if isinstance(timing_quality, (int, float)) and float(timing_quality) < 0.58:
+        warnings.append(
+            "Line-weighted timing quality score is below target: "
+            f"{float(timing_quality):.3f} < 0.580"
+        )
     gold_metric_song_count = int(aggregate.get("gold_metric_song_count", 0) or 0)
     if gold_metric_song_count > 0:
         gold_song_cov = float(
@@ -2231,6 +2347,10 @@ def _write_markdown_summary(  # noqa: C901
         "- Mean DTW line coverage (line-weighted): "
         f"`{_fmt_num(aggregate.get('dtw_line_coverage_line_weighted_mean'))}`"
     )
+    lines.append(
+        "- Timing quality score (line-weighted): "
+        f"`{_fmt_num(aggregate.get('timing_quality_score_line_weighted_mean'))}`"
+    )
     cache_summary = aggregate.get("cache_summary", {})
     if isinstance(cache_summary, dict):
         sep = cache_summary.get("separation")
@@ -2352,6 +2472,7 @@ def _write_markdown_summary(  # noqa: C901
         high_agree_p95 = hotspots.get("highest_agreement_start_p95_abs_sec", [])
         high_agree_bad = hotspots.get("highest_agreement_bad_ratio", [])
         high_agree_severe = hotspots.get("highest_agreement_severe_ratio", [])
+        low_timing_quality = hotspots.get("lowest_timing_quality_score", [])
         high_gold_start = hotspots.get("highest_avg_abs_word_start_delta_sec", [])
         low_gold_cov = hotspots.get("lowest_gold_word_coverage_ratio", [])
         ref_div_suspects = hotspots.get("reference_divergence_suspects", [])
@@ -2365,6 +2486,7 @@ def _write_markdown_summary(  # noqa: C901
             or high_agree_p95
             or high_agree_bad
             or high_agree_severe
+            or low_timing_quality
             or high_gold_start
             or low_gold_cov
             or ref_div_suspects
@@ -2402,6 +2524,11 @@ def _write_markdown_summary(  # noqa: C901
             if high_agree_severe:
                 lines.append("- Highest severe agreement ratio (>1.5s):")
                 for item in high_agree_severe:
+                    if isinstance(item, dict):
+                        lines.append(f"  - {item.get('song')}: {item.get('value')}")
+            if low_timing_quality:
+                lines.append("- Lowest timing quality score:")
+                for item in low_timing_quality:
                     if isinstance(item, dict):
                         lines.append(f"  - {item.get('song')}: {item.get('value')}")
             if high_gold_start:
