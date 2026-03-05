@@ -24,6 +24,9 @@
 - [x] Generate current correction handoff artifacts:
   - `benchmarks/results/human_guidance_tasks_20260305T231015Z.md`
   - `benchmarks/results/human_guidance_ready_20260305T231015Z.tsv`
+- [x] Generate proxy delta report artifact to validate comparison pipeline wiring:
+  - `benchmarks/results/20260305T231015Z/human_correction_delta_proxy.md`
+  - Baseline `20260305T225648Z` vs candidate `20260305T231015Z` (non-human proxy).
 - [ ] Run a focused manual-correction pass for current top priority songs:
   - `J Balvin - Mi Gente`
   - `Indila - Derniere danse`
