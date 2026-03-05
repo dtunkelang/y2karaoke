@@ -32,12 +32,18 @@
     - `text_sim=0.63` -> agreement_cov `0.314`, p95 `1.129`, bad_ratio `0.047` (guard pass)
     - `text_sim=0.62` -> agreement_cov `0.317`, p95 `1.125`, bad_ratio `0.047` (guard pass)
     - `text_sim=0.61` -> agreement_cov `0.320`, p95 `1.122`, bad_ratio `0.047` (guard pass, best score in sweep)
-  - Recalibration decision: set default `Y2KARAOKE_BENCH_AGREEMENT_MIN_TEXT_SIM` to `0.61` (`token_overlap` remains `0.55`) based on full 10-song guard-pass sweep.
+  - Recalibration decisions:
+    - set default `Y2KARAOKE_BENCH_AGREEMENT_MIN_TEXT_SIM` to `0.61` (`token_overlap` remains `0.55`) based on full 10-song guard-pass near-baseline sweep.
+    - post-adaptive-rescue probe `text_sim=0.58, token_overlap=0.48` (`20260305T_probe_post_rescue_ts58_to48`) also guard-passes:
+      - agreement_cov `0.334`, p95 `1.117`, bad_ratio `0.049` vs baseline `20260305T220734Z` delta: coverage `+0.0101`, bad_ratio `+0.0017`, p95 `-0.0048`
+    - promoted default `Y2KARAOKE_BENCH_AGREEMENT_MIN_TEXT_SIM` to `0.58`.
+    - default-threshold validation run `20260305T221248Z` (`text_sim=0.58`, overlap default `0.55`):
+      - agreement_cov `0.327`, p95 `1.119`, bad_ratio `0.047` (guardrails run `OK`).
   - adaptive-rescue refinements:
     - `line_word_count` gate `8 -> 6` run `20260305T220446Z` -> agreement_cov `0.322`, p95 `1.122`, bad_ratio `0.047`
     - `line_word_count` gate `6 -> 5` run `20260305T220734Z` -> agreement_cov `0.324`, p95 `1.122`, bad_ratio `0.047`
     - net +0.004 absolute coverage lift vs initial `0.61/0.55` calibration run, with no bad-ratio regression.
-  - Under current guard (`min_coverage_gain=0.005`, `max_bad_ratio_increase=0.002`), mild relaxations (`text_sim=0.61-0.63`, overlap `0.55`) pass; aggressive relaxations do not.
+  - Under current guard (`min_coverage_gain=0.005`, `max_bad_ratio_increase=0.002`), mild-to-moderate relaxations (`text_sim=0.58-0.63`, overlap `0.48-0.55`) can pass; aggressive relaxations do not.
 
 ## 2. Alignment pipeline improvements
 - [x] Add stronger deterministic path-selection telemetry in lyrics pipeline:

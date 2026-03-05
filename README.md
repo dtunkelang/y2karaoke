@@ -229,9 +229,9 @@ Benchmark seed set for timing quality work:
   - Enforce agreement tradeoff guard against a baseline run:
     - `./venv/bin/python tools/run_benchmark_suite.py --agreement-baseline-report benchmarks/results/<baseline_run_id> --min-agreement-coverage-gain-for-bad-ratio-warning 0.005 --max-agreement-bad-ratio-increase-on-coverage-gain 0.002 --strict-agreement-tradeoff`
   - Tune agreement comparability thresholds for A/B experiments (env overrides):
-    - `Y2KARAOKE_BENCH_AGREEMENT_MIN_TEXT_SIM` (default `0.61`)
+    - `Y2KARAOKE_BENCH_AGREEMENT_MIN_TEXT_SIM` (default `0.58`)
     - `Y2KARAOKE_BENCH_AGREEMENT_MIN_TOKEN_OVERLAP` (default `0.55`)
-    - example: `Y2KARAOKE_BENCH_AGREEMENT_MIN_TEXT_SIM=0.61 ./venv/bin/python tools/run_benchmark_suite.py --offline --strategy hybrid_whisper`
+    - example: `Y2KARAOKE_BENCH_AGREEMENT_MIN_TEXT_SIM=0.58 ./venv/bin/python tools/run_benchmark_suite.py --offline --strategy hybrid_whisper`
   - Optionalize fallback-map coverage-promotion heuristic (for A/B):
     - default enabled: `Y2KARAOKE_ENABLE_FALLBACK_MAP_COVERAGE_PROMOTION=1`
     - disable for comparison: `Y2KARAOKE_ENABLE_FALLBACK_MAP_COVERAGE_PROMOTION=0`
