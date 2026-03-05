@@ -737,7 +737,7 @@ def _extract_song_metrics(
     # variance so diagnostics have enough comparable anchor lines.
     agreement_min_text_similarity = _env_float(
         "Y2KARAOKE_BENCH_AGREEMENT_MIN_TEXT_SIM",
-        0.64,
+        0.61,
         min_value=0.0,
         max_value=1.0,
     )

@@ -28,7 +28,12 @@
   - focused probe `text_sim=0.50, token_overlap=0.40` (`20260305T_probe_ts50_to40`) -> agreement_cov `0.346`, p95 `1.194`, bad_ratio `0.054`
   - focused probe `text_sim=0.48, token_overlap=0.38` (`20260305T_probe_ts48_to38`) -> agreement_cov `0.352`, p95 `1.268`, bad_ratio `0.057`
     - reaches >=0.35 coverage target but with unacceptable timing/bad-ratio regression under current guard.
-  - Under current guard (`min_coverage_gain=0.005`, `max_bad_ratio_increase=0.002`), no relaxed candidate passes.
+  - near-baseline sweep (`20260305T_sweep_near_base_*`, token overlap fixed `0.55`):
+    - `text_sim=0.63` -> agreement_cov `0.314`, p95 `1.129`, bad_ratio `0.047` (guard pass)
+    - `text_sim=0.62` -> agreement_cov `0.317`, p95 `1.125`, bad_ratio `0.047` (guard pass)
+    - `text_sim=0.61` -> agreement_cov `0.320`, p95 `1.122`, bad_ratio `0.047` (guard pass, best score in sweep)
+  - Recalibration decision: set default `Y2KARAOKE_BENCH_AGREEMENT_MIN_TEXT_SIM` to `0.61` (`token_overlap` remains `0.55`) based on full 10-song guard-pass sweep.
+  - Under current guard (`min_coverage_gain=0.005`, `max_bad_ratio_increase=0.002`), mild relaxations (`text_sim=0.61-0.63`, overlap `0.55`) pass; aggressive relaxations do not.
 
 ## 2. Alignment pipeline improvements
 - [x] Add stronger deterministic path-selection telemetry in lyrics pipeline:
@@ -50,7 +55,7 @@
   - [x] `20260305Tmatrix_full-*`
   - [x] `20260305T064432Z`
   - [x] `20260305T_agreement_tune_hybrid_whisper`
-- [ ] Recalibrate guardrail thresholds only if new quality gains hold for full 10-song set.
+- [x] Recalibrate guardrail thresholds only if new quality gains hold for full 10-song set.
 - [x] Ensure `main_benchmark_guardrails.py` output remains warning-clean except known reference-divergence cases.
 
 ## 5. Efficiency work
@@ -80,12 +85,12 @@
 - [x] Add focused tests for new extraction units rather than broad integration expansions.
 
 ## 7. CI/CD checklist before every push
-- [ ] `black --check src tests`
-- [ ] `flake8 src/y2karaoke --count --max-complexity=15 --max-line-length=127 --statistics`
-- [ ] `mypy src`
-- [ ] targeted unit tests for touched modules
-- [ ] `python tools/quality_guardrails.py`
-- [ ] if benchmark logic changed: run `tools/main_benchmark_guardrails.py`
+- [x] `black --check src tests`
+- [x] `flake8 src/y2karaoke --count --max-complexity=15 --max-line-length=127 --statistics`
+- [x] `mypy src`
+- [x] targeted unit tests for touched modules
+- [x] `python tools/quality_guardrails.py`
+- [x] if benchmark logic changed: run `tools/main_benchmark_guardrails.py`
 
 ## 8. Current baseline snapshot (for quick context)
 - Guardrail strategy: `hybrid_whisper`
