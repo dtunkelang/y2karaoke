@@ -33,63 +33,70 @@ class _CollectingLogger(_DummyLogger):
         self.warning_calls.append(message % args if args else message)
 
 
-def test_generate_karaoke_smoke(monkeypatch, tmp_path):
+class _CacheManager:
+    def auto_cleanup(self):
+        return None
+
+
+class _DummyGen:
+    cache_manager = _CacheManager()
+
+    def __init__(self, output_dir):
+        self._original_prompt = None
+        self._output_dir = output_dir
+
+    def _prepare_media(self, *_a, **_k):
+        return (
+            {"title": "Song", "artist": "Artist", "audio_path": "song.wav"},
+            None,
+            {"vocals_path": "vocals.wav", "instrumental_path": "inst.wav"},
+        )
+
+    def _resolve_final_metadata(self, audio_result, lyrics_title, lyrics_artist):
+        return (
+            lyrics_title or audio_result["title"],
+            lyrics_artist or audio_result["artist"],
+        )
+
+    def _get_lyrics(self, *_a, **_k):
+        return {"lines": [], "metadata": None, "quality": {"source": "test"}}
+
+    def _process_audio_track(self, *_a, **_k):
+        return "processed.wav", []
+
+    def _scale_lyrics_timing(self, lines, _tempo):
+        return lines
+
+    def _apply_break_edits(self, lines, _edits):
+        return lines
+
+    def _apply_splash_offset(self, lines, **_kwargs):
+        return lines
+
+    def _build_output_path(self, _title):
+        return self._output_dir / "out.mp4"
+
+    def _build_background_segments(self, *_a, **_k):
+        return None
+
+    def _summarize_quality(self, _lyrics_result):
+        return 80.0, [], "high", "ok"
+
+    def _render_video(self, **_kwargs):
+        return None
+
+
+def _install_extract_video_id_stub(monkeypatch) -> None:
     fake_audio_mod = types.ModuleType("y2karaoke.pipeline.audio")
     fake_audio_mod.extract_video_id = lambda _url: "vid123"
     monkeypatch.setitem(sys.modules, "y2karaoke.pipeline.audio", fake_audio_mod)
 
-    class CacheManager:
-        def auto_cleanup(self):
-            return None
 
-    class DummyGen:
-        cache_manager = CacheManager()
-
-        def __init__(self):
-            self._original_prompt = None
-
-        def _prepare_media(self, *_a, **_k):
-            return (
-                {"title": "Song", "artist": "Artist", "audio_path": "song.wav"},
-                None,
-                {"vocals_path": "vocals.wav", "instrumental_path": "inst.wav"},
-            )
-
-        def _resolve_final_metadata(self, audio_result, lyrics_title, lyrics_artist):
-            return (
-                lyrics_title or audio_result["title"],
-                lyrics_artist or audio_result["artist"],
-            )
-
-        def _get_lyrics(self, *_a, **_k):
-            return {"lines": [], "metadata": None, "quality": {"source": "test"}}
-
-        def _process_audio_track(self, *_a, **_k):
-            return "processed.wav", []
-
-        def _scale_lyrics_timing(self, lines, _tempo):
-            return lines
-
-        def _apply_break_edits(self, lines, _edits):
-            return lines
-
-        def _apply_splash_offset(self, lines, **_kwargs):
-            return lines
-
-        def _build_output_path(self, _title):
-            return tmp_path / "out.mp4"
-
-        def _build_background_segments(self, *_a, **_k):
-            return None
-
-        def _summarize_quality(self, _lyrics_result):
-            return 80.0, [], "high", "ok"
-
-        def _render_video(self, **_kwargs):
-            return None
+def test_generate_karaoke_smoke(monkeypatch, tmp_path):
+    _install_extract_video_id_stub(monkeypatch)
 
     result = generate_karaoke(
-        DummyGen(),
+        _DummyGen(tmp_path),
         url="https://youtube.com/watch?v=vid123",
         skip_render=True,
     )

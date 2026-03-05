@@ -243,62 +243,71 @@ def test_select_candidate_with_rankings_explicit_url(tmp_path) -> None:
     assert ranked == []
 
 
-def test_collect_raw_frames_uses_grab_retrieve_sampling(monkeypatch) -> None:
-    class FakeOCR:
-        def predict(self, roi):
-            return [
-                {
-                    "rec_texts": ["hello"],
-                    "rec_boxes": [[[2, 4], [14, 4], [14, 12], [2, 12]]],
-                }
-            ]
+class _CollectRawFramesFakeOCR:
+    def predict(self, _roi):
+        return [
+            {
+                "rec_texts": ["hello"],
+                "rec_boxes": [[[2, 4], [14, 4], [14, 12], [2, 12]]],
+            }
+        ]
 
-    class FakeCap:
-        def __init__(self, total_frames: int = 10, src_fps: float = 10.0) -> None:
-            self.total_frames = total_frames
-            self.src_fps = src_fps
-            self.pos = 0
-            self.grab_calls = 0
-            self.retrieve_calls = 0
 
-        def get(self, prop):
-            if prop == _MODULE.cv2.CAP_PROP_FPS:
-                return self.src_fps
-            if prop == _MODULE.cv2.CAP_PROP_POS_MSEC:
-                return (self.pos / self.src_fps) * 1000.0
-            return 0.0
+class _CollectRawFramesFakeCap:
+    def __init__(self, total_frames: int = 10, src_fps: float = 10.0) -> None:
+        self.total_frames = total_frames
+        self.src_fps = src_fps
+        self.pos = 0
+        self.grab_calls = 0
+        self.retrieve_calls = 0
 
-        def set(self, prop, value):
-            if prop == _MODULE.cv2.CAP_PROP_POS_MSEC:
-                self.pos = int(round((value / 1000.0) * self.src_fps))
-                return True
-            return False
+    def get(self, prop):
+        if prop == _MODULE.cv2.CAP_PROP_FPS:
+            return self.src_fps
+        if prop == _MODULE.cv2.CAP_PROP_POS_MSEC:
+            return (self.pos / self.src_fps) * 1000.0
+        return 0.0
 
-        def grab(self):
-            if self.pos >= self.total_frames:
-                return False
-            self.pos += 1
-            self.grab_calls += 1
+    def set(self, prop, value):
+        if prop == _MODULE.cv2.CAP_PROP_POS_MSEC:
+            self.pos = int(round((value / 1000.0) * self.src_fps))
             return True
+        return False
 
-        def retrieve(self):
-            self.retrieve_calls += 1
-            frame = _MODULE.np.zeros((20, 20, 3), dtype=_MODULE.np.uint8)
-            frame[4:12, 2:14] = 255
-            return True, frame
+    def grab(self):
+        if self.pos >= self.total_frames:
+            return False
+        self.pos += 1
+        self.grab_calls += 1
+        return True
 
-        def release(self):
-            return None
+    def retrieve(self):
+        self.retrieve_calls += 1
+        frame = _MODULE.np.zeros((20, 20, 3), dtype=_MODULE.np.uint8)
+        frame[4:12, 2:14] = 255
+        return True, frame
 
-    captured = {"cap": None}
+    def release(self):
+        return None
+
+
+def _install_collect_raw_frames_doubles(
+    monkeypatch,
+) -> dict[str, _CollectRawFramesFakeCap | None]:
+    captured: dict[str, _CollectRawFramesFakeCap | None] = {"cap": None}
 
     def make_cap(_path):
-        cap = FakeCap()
+        cap = _CollectRawFramesFakeCap()
         captured["cap"] = cap
         return cap
 
-    monkeypatch.setattr(_MODULE, "get_ocr_engine", lambda: FakeOCR())
+    monkeypatch.setattr(_MODULE, "get_ocr_engine", lambda: _CollectRawFramesFakeOCR())
     monkeypatch.setattr(_MODULE.cv2, "VideoCapture", make_cap)
+    return captured
+
+
+def test_collect_raw_frames_uses_grab_retrieve_sampling(monkeypatch) -> None:
+    captured = _install_collect_raw_frames_doubles(monkeypatch)
 
     raw = _MODULE._collect_raw_frames(
         video_path=Path("/tmp/fake.mp4"),
