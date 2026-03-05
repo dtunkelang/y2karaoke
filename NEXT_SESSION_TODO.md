@@ -31,6 +31,7 @@
 - [x] Add a benchmark assertion that agreement-coverage gains do not materially raise agreement-bad ratio.
 - [x] Add per-song agreement comparability report (matched/eligible lines + skip reasons).
 - [x] Add cross-run agreement tradeoff analysis tool for baseline/candidate report ranking and guard checks.
+- [x] Add agreement-threshold sweep runner that executes candidate benchmark runs and auto-generates tradeoff analysis.
 
 ## 4. Benchmark/guardrail hardening
 - [x] Re-run full strategy matrix after pipeline updates and compare against:

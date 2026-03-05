@@ -266,6 +266,9 @@ Benchmark seed set for timing quality work:
     - `./venv/bin/python tools/analyze_agreement_tradeoffs.py --baseline base=benchmarks/results/<baseline_run_id> --candidate relax=benchmarks/results/<candidate_run_id>`
     - or `make benchmark-analyze-agreement BASELINE_LABEL=base BASELINE=benchmarks/results/<baseline_run_id> CANDIDATE_A_LABEL=relax CANDIDATE_A=benchmarks/results/<candidate_run_id>`
     - Writes `agreement_tradeoff_analysis.{json,md}` next to baseline report, including best score and best guard-pass candidate labels.
+  - Sweep agreement thresholds and auto-analyze candidate tradeoffs:
+    - `make benchmark-sweep-agreement BASELINE=benchmarks/results/<baseline_run_id> TEXT_SIM_VALUES=0.60,0.58 TOKEN_OVERLAP_VALUES=0.50,0.48 RUN_ID_PREFIX=agreement_sweep OFFLINE=1`
+    - Runs benchmark suites for each threshold combo and writes consolidated tradeoff analysis output.
   - Enforce committed main benchmark guardrails: `./venv/bin/python tools/main_benchmark_guardrails.py`
 
 Main benchmark reference trust policy (first pass):

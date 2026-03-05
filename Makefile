@@ -4,7 +4,7 @@ PYTEST := PYTHONPATH=src $(PYTHON) -m pytest
 MIN_COVERAGE_GAIN ?= 0.005
 MAX_BAD_RATIO_INCREASE ?= 0.002
 
-.PHONY: bootstrap dep-check fmt fmt-check lint type test-fast test-full perf-smoke quality-guardrails bootstrap-quality-guardrails visual-eval visual-eval-guardrails bootstrap-calibrate benchmark-validate benchmark-run benchmark-aggregate-only benchmark-matrix benchmark-recommend benchmark-compare-correction benchmark-classify-failures benchmark-profile-runtime benchmark-compare-runtime benchmark-recommend-human-guidance benchmark-analyze-agreement benchmark-run-bg benchmark-status benchmark-kill check ci-fast ci-full
+.PHONY: bootstrap dep-check fmt fmt-check lint type test-fast test-full perf-smoke quality-guardrails bootstrap-quality-guardrails visual-eval visual-eval-guardrails bootstrap-calibrate benchmark-validate benchmark-run benchmark-aggregate-only benchmark-matrix benchmark-recommend benchmark-compare-correction benchmark-classify-failures benchmark-profile-runtime benchmark-compare-runtime benchmark-recommend-human-guidance benchmark-analyze-agreement benchmark-sweep-agreement benchmark-run-bg benchmark-status benchmark-kill check ci-fast ci-full
 
 bootstrap:
 	./tools/bootstrap_dev.sh
@@ -102,6 +102,18 @@ benchmark-analyze-agreement:
 		$(if $(CANDIDATE_B_LABEL),--candidate "$(CANDIDATE_B_LABEL)=$(CANDIDATE_B)",) \
 		$(if $(MIN_COVERAGE_GAIN),--min-coverage-gain "$(MIN_COVERAGE_GAIN)",) \
 		$(if $(MAX_BAD_RATIO_INCREASE),--max-bad-ratio-increase "$(MAX_BAD_RATIO_INCREASE)",)
+
+benchmark-sweep-agreement:
+	@test -n "$(BASELINE)" || (echo "BASELINE is required (run dir or benchmark_report.json path)"; exit 2)
+	@test -n "$(TEXT_SIM_VALUES)" || (echo "TEXT_SIM_VALUES is required (e.g. 0.60,0.58)"; exit 2)
+	@test -n "$(TOKEN_OVERLAP_VALUES)" || (echo "TOKEN_OVERLAP_VALUES is required (e.g. 0.50,0.48)"; exit 2)
+	$(PYTHON) tools/sweep_agreement_thresholds.py --baseline "$(BASELINE)" \
+		--text-sim-values "$(TEXT_SIM_VALUES)" \
+		--token-overlap-values "$(TOKEN_OVERLAP_VALUES)" \
+		$(if $(RUN_ID_PREFIX),--run-id-prefix "$(RUN_ID_PREFIX)",) \
+		$(if $(MIN_COVERAGE_GAIN),--min-coverage-gain "$(MIN_COVERAGE_GAIN)",) \
+		$(if $(MAX_BAD_RATIO_INCREASE),--max-bad-ratio-increase "$(MAX_BAD_RATIO_INCREASE)",) \
+		$(if $(OFFLINE),--offline,)
 
 benchmark-run-bg:
 	./tools/run_benchmark_suite_bg.sh
