@@ -7,6 +7,9 @@ import y2karaoke.core.components.whisper.whisper_integration_pipeline as wip
 from y2karaoke.core.components.whisper.whisper_integration_pipeline import (
     align_lrc_text_to_whisper_timings_impl,
 )
+from y2karaoke.core.components.whisper.whisper_integration_hooks import (
+    AlignmentPassHooks,
+)
 from y2karaoke.core.components.whisper import whisper_mapping as wm
 from y2karaoke.core.components.alignment.timing_models import (
     AudioFeatures,
@@ -148,7 +151,7 @@ def test_build_alignment_pass_kwargs_uses_hook_bundle():
     )
 
     assert "hooks" in kwargs
-    assert isinstance(kwargs["hooks"], wip._AlignmentPassHooks)
+    assert isinstance(kwargs["hooks"], AlignmentPassHooks)
     assert "transcribe_vocals_fn" not in kwargs
 
 

@@ -48,6 +48,8 @@ Last updated: 2026-03-04
       `whisper_integration_hooks.py` module.
     - Removed redundant pass-through wrappers from
       `whisper_integration_pipeline.py`; the pipeline now wires directly to stage/baseline/finalize helper implementations.
+    - Split alignment orchestration into `whisper_integration_pipeline_align.py`,
+      leaving `whisper_integration_pipeline.py` as a thinner facade for align/correct/transcribe entry wiring.
     - Segment assignment env heuristics centralized in `whisper_blocks.py`.
     - Correction decision thresholds centralized in `whisper_integration_correct.py`.
     - Mapping decision thresholds centralized in `whisper_integration_align.py`.
