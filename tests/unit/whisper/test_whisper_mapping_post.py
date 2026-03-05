@@ -1,6 +1,7 @@
 import pytest
 
 from y2karaoke.core.components.whisper import whisper_mapping as wm
+from y2karaoke.core.components.whisper import whisper_mapping_post as wmp
 from y2karaoke.core.models import Line, Word
 from y2karaoke.core.components.alignment.timing_models import (
     TranscriptionSegment,
@@ -435,3 +436,25 @@ def test_pull_late_lines_handles_code_switch_with_accented_spanish() -> None:
     )
 
     assert adjusted[1].start_time == 48.0
+
+
+def test_default_postprocess_toggle_config_reads_env(monkeypatch) -> None:
+    monkeypatch.setenv("Y2K_WHISPER_DISABLE_REPEAT_SHIFT", "1")
+    monkeypatch.setenv("Y2K_WHISPER_DISABLE_MONOTONIC_START_ENFORCE", "1")
+
+    cfg = wmp._default_postprocess_toggle_config()
+
+    assert cfg.disable_repeat_shift is True
+    assert cfg.disable_monotonic_start_enforce is True
+
+
+def test_shift_repeated_lines_toggle_disables_repeat_shift(monkeypatch) -> None:
+    monkeypatch.setenv("Y2K_WHISPER_DISABLE_REPEAT_SHIFT", "1")
+    lines = [Line(words=[Word(text="hello", start_time=1.0, end_time=1.4)])]
+    whisper_words = [
+        TranscriptionWord(start=1.0, end=1.3, text="hello", probability=0.9)
+    ]
+
+    adjusted = wmp._shift_repeated_lines_to_next_whisper(lines, whisper_words)
+
+    assert adjusted == lines

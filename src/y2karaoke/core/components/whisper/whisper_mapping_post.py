@@ -1,6 +1,7 @@
 """Post-processing helpers for Whisper mapping output."""
 
 import os
+from dataclasses import dataclass
 
 from typing import Dict, List, Set, Tuple
 
@@ -31,6 +32,21 @@ from . import whisper_mapping_post_repeat_shift as _repeat_shift_helpers
 from . import whisper_mapping_post_onset as _onset_helpers
 
 
+@dataclass(frozen=True)
+class _WhisperPostprocessToggleConfig:
+    disable_repeat_shift: bool
+    disable_monotonic_start_enforce: bool
+
+
+def _default_postprocess_toggle_config() -> _WhisperPostprocessToggleConfig:
+    return _WhisperPostprocessToggleConfig(
+        disable_repeat_shift=os.getenv("Y2K_WHISPER_DISABLE_REPEAT_SHIFT") == "1",
+        disable_monotonic_start_enforce=(
+            os.getenv("Y2K_WHISPER_DISABLE_MONOTONIC_START_ENFORCE") == "1"
+        ),
+    )
+
+
 def _build_word_assignments_from_phoneme_path(
     path: List[Tuple[int, int]],
     lrc_phonemes: List[Dict],
@@ -53,7 +69,8 @@ def _shift_repeated_lines_to_next_whisper(
     mapped_lines: List[models.Line],
     all_words: List[timing_models.TranscriptionWord],
 ) -> List[models.Line]:
-    if os.getenv("Y2K_WHISPER_DISABLE_REPEAT_SHIFT") == "1":
+    config = _default_postprocess_toggle_config()
+    if config.disable_repeat_shift:
         return mapped_lines
     return _repeat_shift_helpers._shift_repeated_lines_to_next_whisper(
         mapped_lines,
@@ -66,7 +83,8 @@ def _enforce_monotonic_line_starts_whisper(
     mapped_lines: List[models.Line],
     all_words: List[timing_models.TranscriptionWord],
 ) -> List[models.Line]:
-    if os.getenv("Y2K_WHISPER_DISABLE_MONOTONIC_START_ENFORCE") == "1":
+    config = _default_postprocess_toggle_config()
+    if config.disable_monotonic_start_enforce:
         return mapped_lines
     return _repeat_shift_helpers._enforce_monotonic_line_starts_whisper(
         mapped_lines, all_words
