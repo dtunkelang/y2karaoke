@@ -2524,58 +2524,15 @@ def _quality_coverage_warnings(
             "DTW line coverage below threshold: "
             f"{line_cov:.3f} < {min_line_coverage_ratio:.3f}"
         )
-    if int(aggregate.get("agreement_count_total", 0) or 0) == 0:
+    agreement_count = int(aggregate.get("agreement_count_total", 0) or 0)
+    if agreement_count == 0:
         warnings.append(
             "Independent line-start agreement is unavailable for this strategy "
             "(no DTW anchor coverage); use Whisper-anchor diagnostics only for debugging."
         )
     else:
-        agreement_cov = float(
-            aggregate.get("agreement_coverage_ratio_mean", 0.0) or 0.0
-        )
-        if agreement_cov < 0.4:
-            warnings.append(
-                "LRC-Whisper agreement coverage is low: "
-                f"{agreement_cov:.3f} < 0.400 (not enough lexically comparable lines)"
-            )
-        agreement_p95 = float(
-            aggregate.get("agreement_start_p95_abs_sec_mean", 0.0) or 0.0
-        )
-        if agreement_p95 > 0.8:
-            warnings.append(
-                "Line-start agreement p95 is high on comparable lines: "
-                f"{agreement_p95:.3f}s > 0.800s"
-            )
-        agreement_bad_ratio = float(
-            aggregate.get("agreement_bad_ratio_total", 0.0) or 0.0
-        )
-        if agreement_bad_ratio > 0.1:
-            warnings.append(
-                "Too many comparable lines have poor start agreement (>0.8s): "
-                f"{agreement_bad_ratio:.3f} > 0.100"
-            )
-        agreement_severe_ratio = float(
-            aggregate.get("agreement_severe_ratio_total", 0.0) or 0.0
-        )
-        if agreement_severe_ratio > 0.03:
-            warnings.append(
-                "Comparable lines with severe agreement error (>1.5s) are high: "
-                f"{agreement_severe_ratio:.3f} > 0.030"
-            )
-    diagnosis_ratios = aggregate.get("quality_diagnosis_ratios", {})
-    if isinstance(diagnosis_ratios, dict):
-        pipeline_ratio = diagnosis_ratios.get("needs_pipeline_work")
-        if isinstance(pipeline_ratio, (int, float)) and float(pipeline_ratio) > 0.35:
-            warnings.append(
-                "Many songs are diagnosed as pipeline work needed: "
-                f"{float(pipeline_ratio):.3f} > 0.350"
-            )
-        reference_ratio = diagnosis_ratios.get("likely_reference_divergence")
-        if isinstance(reference_ratio, (int, float)) and float(reference_ratio) > 0.35:
-            warnings.append(
-                "Many songs are diagnosed as likely reference divergence: "
-                f"{float(reference_ratio):.3f} > 0.350"
-            )
+        warnings.extend(_agreement_coverage_warnings(aggregate))
+    warnings.extend(_diagnosis_ratio_warnings(aggregate))
     timing_quality = aggregate.get("timing_quality_score_line_weighted_mean")
     if isinstance(timing_quality, (int, float)) and float(timing_quality) < float(
         min_timing_quality_score_line_weighted
@@ -2592,37 +2549,90 @@ def _quality_coverage_warnings(
                 "Too many songs are in poor timing-quality band: "
                 f"{float(poor_ratio):.3f} > 0.250"
             )
-    gold_metric_song_count = int(aggregate.get("gold_metric_song_count", 0) or 0)
-    if gold_metric_song_count > 0:
-        gold_song_cov = float(
-            aggregate.get("gold_metric_song_coverage_ratio", 0.0) or 0.0
-        )
-        if gold_song_cov < 0.5:
-            warnings.append(
-                "Gold-set metric song coverage is low: " f"{gold_song_cov:.3f} < 0.500"
-            )
-        gold_word_cov = float(
-            aggregate.get("gold_word_coverage_ratio_total", 0.0) or 0.0
-        )
-        if gold_word_cov < 0.8:
-            warnings.append(
-                "Gold-set comparable word coverage is low: "
-                f"{gold_word_cov:.3f} < 0.800"
-            )
-        gold_start_mean = float(
-            aggregate.get("avg_abs_word_start_delta_sec_word_weighted_mean", 0.0) or 0.0
-        )
-        if gold_start_mean > 0.35:
-            warnings.append(
-                "Gold-set avg abs word-start delta is high: "
-                f"{gold_start_mean:.3f}s > 0.350s"
-            )
+    warnings.extend(_gold_metric_warnings(aggregate))
 
     sum_song_elapsed = float(aggregate.get("sum_song_elapsed_sec", 0.0) or 0.0)
     if suite_wall_elapsed_sec > 0 and sum_song_elapsed > suite_wall_elapsed_sec:
         warnings.append(
             "Per-song elapsed sum exceeds suite wall elapsed; compare runs using "
             "suite_wall_elapsed_sec and sum_song_elapsed_sec explicitly."
+        )
+    return warnings
+
+
+def _agreement_coverage_warnings(aggregate: dict[str, Any]) -> list[str]:
+    warnings: list[str] = []
+    agreement_cov = float(aggregate.get("agreement_coverage_ratio_mean", 0.0) or 0.0)
+    if agreement_cov < 0.4:
+        warnings.append(
+            "LRC-Whisper agreement coverage is low: "
+            f"{agreement_cov:.3f} < 0.400 (not enough lexically comparable lines)"
+        )
+    agreement_p95 = float(aggregate.get("agreement_start_p95_abs_sec_mean", 0.0) or 0.0)
+    if agreement_p95 > 0.8:
+        warnings.append(
+            "Line-start agreement p95 is high on comparable lines: "
+            f"{agreement_p95:.3f}s > 0.800s"
+        )
+    agreement_bad_ratio = float(aggregate.get("agreement_bad_ratio_total", 0.0) or 0.0)
+    if agreement_bad_ratio > 0.1:
+        warnings.append(
+            "Too many comparable lines have poor start agreement (>0.8s): "
+            f"{agreement_bad_ratio:.3f} > 0.100"
+        )
+    agreement_severe_ratio = float(
+        aggregate.get("agreement_severe_ratio_total", 0.0) or 0.0
+    )
+    if agreement_severe_ratio > 0.03:
+        warnings.append(
+            "Comparable lines with severe agreement error (>1.5s) are high: "
+            f"{agreement_severe_ratio:.3f} > 0.030"
+        )
+    return warnings
+
+
+def _diagnosis_ratio_warnings(aggregate: dict[str, Any]) -> list[str]:
+    warnings: list[str] = []
+    diagnosis_ratios = aggregate.get("quality_diagnosis_ratios", {})
+    if not isinstance(diagnosis_ratios, dict):
+        return warnings
+    pipeline_ratio = diagnosis_ratios.get("needs_pipeline_work")
+    if isinstance(pipeline_ratio, (int, float)) and float(pipeline_ratio) > 0.35:
+        warnings.append(
+            "Many songs are diagnosed as pipeline work needed: "
+            f"{float(pipeline_ratio):.3f} > 0.350"
+        )
+    reference_ratio = diagnosis_ratios.get("likely_reference_divergence")
+    if isinstance(reference_ratio, (int, float)) and float(reference_ratio) > 0.35:
+        warnings.append(
+            "Many songs are diagnosed as likely reference divergence: "
+            f"{float(reference_ratio):.3f} > 0.350"
+        )
+    return warnings
+
+
+def _gold_metric_warnings(aggregate: dict[str, Any]) -> list[str]:
+    warnings: list[str] = []
+    gold_metric_song_count = int(aggregate.get("gold_metric_song_count", 0) or 0)
+    if gold_metric_song_count <= 0:
+        return warnings
+    gold_song_cov = float(aggregate.get("gold_metric_song_coverage_ratio", 0.0) or 0.0)
+    if gold_song_cov < 0.5:
+        warnings.append(
+            "Gold-set metric song coverage is low: " f"{gold_song_cov:.3f} < 0.500"
+        )
+    gold_word_cov = float(aggregate.get("gold_word_coverage_ratio_total", 0.0) or 0.0)
+    if gold_word_cov < 0.8:
+        warnings.append(
+            "Gold-set comparable word coverage is low: " f"{gold_word_cov:.3f} < 0.800"
+        )
+    gold_start_mean = float(
+        aggregate.get("avg_abs_word_start_delta_sec_word_weighted_mean", 0.0) or 0.0
+    )
+    if gold_start_mean > 0.35:
+        warnings.append(
+            "Gold-set avg abs word-start delta is high: "
+            f"{gold_start_mean:.3f}s > 0.350s"
         )
     return warnings
 
