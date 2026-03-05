@@ -36,6 +36,9 @@ make perf-smoke
 make quality-guardrails
 ```
 
+Tests automatically prioritize local `src/` imports via `tests/conftest.py`, so
+you do not need to set `PYTHONPATH=src` for normal local runs.
+
 ## CI Lanes
 
 - Fast lane: formatting/linting/types + fast unit tests + perf smoke.

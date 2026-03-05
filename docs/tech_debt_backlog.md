@@ -43,6 +43,7 @@ Last updated: 2026-03-04
     - Correction decision thresholds centralized in `whisper_integration_correct.py`.
     - Mapping decision thresholds centralized in `whisper_integration_align.py`.
     - Retry-improvement thresholds centralized in `whisper_integration_retry.py`.
+    - Silence-refinement env gating centralized in `whisper_alignment_refinement.py`.
     - Added opt-in profile presets (`safe/default/aggressive`) via `Y2K_WHISPER_PROFILE` for mapping/correction threshold configs.
 
 5. **Cross-pass integration tests for alignment edge cases**

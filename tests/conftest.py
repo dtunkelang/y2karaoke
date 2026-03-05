@@ -13,7 +13,14 @@ import pytest
 import tempfile
 from contextlib import ExitStack
 from pathlib import Path
+import sys
 from unittest.mock import Mock, patch, MagicMock
+
+# Ensure tests always import local sources before any installed package.
+_REPO_ROOT = Path(__file__).resolve().parents[1]
+_SRC_PATH = _REPO_ROOT / "src"
+if str(_SRC_PATH) not in sys.path:
+    sys.path.insert(0, str(_SRC_PATH))
 
 
 def pytest_addoption(parser):

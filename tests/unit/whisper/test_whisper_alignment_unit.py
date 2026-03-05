@@ -403,6 +403,43 @@ def test_pull_lines_forward_for_continuous_vocals_can_disable_silence_refinement
     assert pulled[2].start_time == lines[2].start_time
 
 
+def test_pull_lines_forward_for_continuous_vocals_respects_env_disable(monkeypatch):
+    lines = [
+        Line(words=[Word(text="prev", start_time=124.98, end_time=127.08)]),
+        Line(words=[Word(text="Father", start_time=127.08, end_time=129.13)]),
+        Line(words=[Word(text="Oooh", start_time=131.02, end_time=131.18)]),
+        Line(words=[Word(text="next", start_time=136.40, end_time=138.92)]),
+    ]
+
+    class MockAF:
+        def __init__(self):
+            self.onset_times = np.array([128.27, 128.73, 130.98, 131.49, 132.10])
+            self.silence_regions = [(127.11, 128.24), (129.82, 130.96)]
+
+    af = MockAF()
+    monkeypatch.setenv("Y2K_WHISPER_SILENCE_REFINEMENT", "0")
+
+    with war.use_alignment_refinement_hooks(
+        check_vocal_activity_in_range_fn=lambda *args: 0.0,
+        check_for_silence_in_range_fn=lambda *args, **kw: True,
+    ):
+        pulled, _count = wa._pull_lines_forward_for_continuous_vocals(
+            lines,
+            af,
+            max_gap=4.0,
+            enable_silence_short_line_refinement=True,
+        )
+
+    assert pulled[1].start_time == lines[1].start_time
+    assert pulled[2].start_time == lines[2].start_time
+
+
+def test_default_continuous_vocals_refinement_config_reads_env(monkeypatch):
+    monkeypatch.setenv("Y2K_WHISPER_SILENCE_REFINEMENT", "off")
+    cfg = war._default_continuous_vocals_refinement_config()
+    assert cfg.enable_silence_short_line_refinement is False
+
+
 def test_pull_lines_forward_for_continuous_vocals_reverts_when_long_gaps_worsen(
     monkeypatch,
 ):

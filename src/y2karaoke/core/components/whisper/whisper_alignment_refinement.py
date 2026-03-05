@@ -3,6 +3,7 @@
 import os
 import logging
 from contextlib import contextmanager
+from dataclasses import dataclass
 from typing import List, Optional, Tuple, Set
 
 from ...models import Line
@@ -29,6 +30,19 @@ _check_vocal_activity_in_range = audio_analysis._check_vocal_activity_in_range
 _check_for_silence_in_range = audio_analysis._check_for_silence_in_range
 
 logger = logging.getLogger(__name__)
+
+
+@dataclass(frozen=True)
+class _ContinuousVocalsRefinementConfig:
+    enable_silence_short_line_refinement: bool
+
+
+def _default_continuous_vocals_refinement_config() -> _ContinuousVocalsRefinementConfig:
+    env_flag = os.getenv("Y2K_WHISPER_SILENCE_REFINEMENT", "1").strip().lower()
+    return _ContinuousVocalsRefinementConfig(
+        enable_silence_short_line_refinement=env_flag
+        not in {"0", "false", "off", "no"},
+    )
 
 
 @contextmanager
@@ -428,9 +442,11 @@ def _pull_lines_forward_for_continuous_vocals(
     )
     fixes += _extend_line_ends_across_active_gaps(lines, audio_features)
 
-    env_flag = os.getenv("Y2K_WHISPER_SILENCE_REFINEMENT", "1").strip().lower()
-    env_enabled = env_flag not in {"0", "false", "off", "no"}
-    if not (enable_silence_short_line_refinement and env_enabled):
+    config = _default_continuous_vocals_refinement_config()
+    if not (
+        enable_silence_short_line_refinement
+        and config.enable_silence_short_line_refinement
+    ):
         return lines, fixes
 
     silence_regions = getattr(audio_features, "silence_regions", None) or []
