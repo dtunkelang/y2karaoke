@@ -375,6 +375,27 @@ def _load_cached_or_upgraded_transcription(
     return segments, all_words, detected_lang, cached_model
 
 
+@dataclass(frozen=True)
+class _WhisperTranscriptionConfig:
+    use_vad_filter: bool
+    no_speech_threshold: float | None
+    log_prob_threshold: float | None
+
+
+def _default_transcription_config(*, aggressive: bool) -> _WhisperTranscriptionConfig:
+    if aggressive:
+        return _WhisperTranscriptionConfig(
+            use_vad_filter=False,
+            no_speech_threshold=1.0,
+            log_prob_threshold=-2.0,
+        )
+    return _WhisperTranscriptionConfig(
+        use_vad_filter=True,
+        no_speech_threshold=None,
+        log_prob_threshold=None,
+    )
+
+
 def _run_whisper_transcription(
     *,
     model,
@@ -383,20 +404,17 @@ def _run_whisper_transcription(
     aggressive: bool,
     temperature: float,
 ) -> Tuple[Any, Any]:
+    config = _default_transcription_config(aggressive=aggressive)
     transcribe_kwargs: Dict[str, object] = {
         "language": language,
         "word_timestamps": True,
-        "vad_filter": True,
+        "vad_filter": config.use_vad_filter,
         "temperature": temperature,
     }
-    if aggressive:
-        transcribe_kwargs.update(
-            {
-                "vad_filter": False,
-                "no_speech_threshold": 1.0,
-                "log_prob_threshold": -2.0,
-            }
-        )
+    if config.no_speech_threshold is not None:
+        transcribe_kwargs["no_speech_threshold"] = config.no_speech_threshold
+    if config.log_prob_threshold is not None:
+        transcribe_kwargs["log_prob_threshold"] = config.log_prob_threshold
     return model.transcribe(vocals_path, **transcribe_kwargs)
 
 

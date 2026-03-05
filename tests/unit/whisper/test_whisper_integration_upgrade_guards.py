@@ -220,3 +220,47 @@ def test_normalize_whisperx_segments_enforces_monotonic_words():
     assert all(ends[i] <= starts[i + 1] for i in range(len(starts) - 1))
     assert normalized_segments[0].start == pytest.approx(normalized_words[0].start)
     assert normalized_segments[-1].end == pytest.approx(normalized_words[-1].end)
+
+
+def test_default_transcription_config_variants():
+    base = witx._default_transcription_config(aggressive=False)
+    aggr = witx._default_transcription_config(aggressive=True)
+
+    assert base.use_vad_filter is True
+    assert base.no_speech_threshold is None
+    assert base.log_prob_threshold is None
+    assert aggr.use_vad_filter is False
+    assert aggr.no_speech_threshold == 1.0
+    assert aggr.log_prob_threshold == -2.0
+
+
+def test_run_whisper_transcription_applies_aggressive_kwargs():
+    class DummyModel:
+        def __init__(self):
+            self.calls = []
+
+        def transcribe(self, vocals_path, **kwargs):
+            self.calls.append((vocals_path, kwargs))
+            return "segments", "info"
+
+    model = DummyModel()
+
+    segments, info = witx._run_whisper_transcription(
+        model=model,
+        vocals_path="vocals.wav",
+        language="en",
+        aggressive=True,
+        temperature=0.3,
+    )
+
+    assert segments == "segments"
+    assert info == "info"
+    assert len(model.calls) == 1
+    call_path, call_kwargs = model.calls[0]
+    assert call_path == "vocals.wav"
+    assert call_kwargs["language"] == "en"
+    assert call_kwargs["word_timestamps"] is True
+    assert call_kwargs["vad_filter"] is False
+    assert call_kwargs["temperature"] == 0.3
+    assert call_kwargs["no_speech_threshold"] == 1.0
+    assert call_kwargs["log_prob_threshold"] == -2.0
