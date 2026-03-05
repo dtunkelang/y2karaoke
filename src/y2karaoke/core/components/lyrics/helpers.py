@@ -248,19 +248,15 @@ def _refine_timing_with_audio(
     lines = refine_word_timing(lines, vocals_path)
     logger.debug("Word-level timing refined using vocals")
 
-    lrc_duration = get_lrc_duration(lrc_text)
-    if target_duration and lrc_duration and abs(target_duration - lrc_duration) > 8:
-        logger.info(
-            f"Duration mismatch: LRC={lrc_duration}s, "
-            f"audio={target_duration}s (diff={target_duration - lrc_duration:+}s)"
-        )
-        lines = adjust_timing_for_duration_mismatch(
-            lines,
-            line_timings,
-            vocals_path,
-            lrc_duration=lrc_duration,
-            audio_duration=target_duration,
-        )
+    lines = _apply_duration_mismatch_adjustment(
+        lines,
+        line_timings,
+        vocals_path,
+        lrc_text=lrc_text,
+        target_duration=target_duration,
+        get_lrc_duration=get_lrc_duration,
+        adjust_timing_for_duration_mismatch=adjust_timing_for_duration_mismatch,
+    )
 
     audio_features = extract_audio_features(vocals_path)
     if audio_features is None:
@@ -280,26 +276,12 @@ def _refine_timing_with_audio(
             f"Compressed {spurious_gap_fixes} large LRC gap(s) with vocals present"
         )
 
-    needs_aggressive_correction = False
-    for prev_line, next_line in zip(lines, lines[1:]):
-        if not prev_line.words or not next_line.words:
-            continue
-        gap = next_line.start_time - prev_line.end_time
-        if gap <= 4.0:
-            continue
-        activity = _check_vocal_activity_in_range(
-            prev_line.end_time, next_line.start_time, audio_features
-        )
-        has_silence = _check_for_silence_in_range(
-            prev_line.end_time,
-            next_line.start_time,
-            audio_features,
-            min_silence_duration=0.5,
-        )
-        if activity > 0.6 and not has_silence:
-            needs_aggressive_correction = True
-            break
-
+    needs_aggressive_correction = _has_large_continuous_vocal_gap(
+        lines,
+        audio_features,
+        check_vocal_activity=_check_vocal_activity_in_range,
+        check_for_silence=_check_for_silence_in_range,
+    )
     max_correction = 15.0 if needs_aggressive_correction else 3.0
     lines, corrections = correct_line_timestamps(
         lines, audio_features, max_correction=max_correction
@@ -324,6 +306,61 @@ def _refine_timing_with_audio(
         logger.info(f"Merged {len(gap_fixes)} spurious gap(s) based on vocals")
 
     return lines
+
+
+def _apply_duration_mismatch_adjustment(
+    lines: List[Line],
+    line_timings: List[Tuple[float, str]],
+    vocals_path: str,
+    *,
+    lrc_text: str,
+    target_duration: Optional[int],
+    get_lrc_duration,
+    adjust_timing_for_duration_mismatch,
+) -> List[Line]:
+    lrc_duration = get_lrc_duration(lrc_text)
+    if not target_duration or not lrc_duration:
+        return lines
+    if abs(target_duration - lrc_duration) <= 8:
+        return lines
+    logger.info(
+        f"Duration mismatch: LRC={lrc_duration}s, "
+        f"audio={target_duration}s (diff={target_duration - lrc_duration:+}s)"
+    )
+    return adjust_timing_for_duration_mismatch(
+        lines,
+        line_timings,
+        vocals_path,
+        lrc_duration=lrc_duration,
+        audio_duration=target_duration,
+    )
+
+
+def _has_large_continuous_vocal_gap(
+    lines: List[Line],
+    audio_features,
+    *,
+    check_vocal_activity,
+    check_for_silence,
+) -> bool:
+    for prev_line, next_line in zip(lines, lines[1:]):
+        if not prev_line.words or not next_line.words:
+            continue
+        gap = next_line.start_time - prev_line.end_time
+        if gap <= 4.0:
+            continue
+        activity = check_vocal_activity(
+            prev_line.end_time, next_line.start_time, audio_features
+        )
+        has_silence = check_for_silence(
+            prev_line.end_time,
+            next_line.start_time,
+            audio_features,
+            min_silence_duration=0.5,
+        )
+        if activity > 0.6 and not has_silence:
+            return True
+    return False
 
 
 def _compress_spurious_lrc_gaps(

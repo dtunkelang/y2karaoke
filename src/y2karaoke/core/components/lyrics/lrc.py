@@ -438,58 +438,82 @@ def create_lines_from_lrc_timings(
     as the canonical source for lyrics text.
     """
     lines: List[Line] = []
-    used_genius = set()
+    used_genius: set[int] = set()
 
     for i, (start_time, lrc_text) in enumerate(lrc_timings):
-        if i + 1 < len(lrc_timings):
-            end_time = lrc_timings[i + 1][0]
-            if end_time - start_time > 10.0:
-                end_time = start_time + 5.0
-        else:
-            end_time = start_time + 3.0
+        end_time = _line_end_time_from_lrc(lrc_timings, i, start_time)
+        line_text, matched_idx = _best_genius_line_for_lrc(
+            lrc_text, genius_lines, used_genius
+        )
+        if matched_idx is not None:
+            used_genius.add(matched_idx)
 
-        # Find best matching Genius line
-        best_match = None
-        best_score = 0.0
-        lrc_normalized = lrc_text.lower().strip()
-        for j, genius_text in enumerate(genius_lines):
-            if j in used_genius:
-                continue
-            genius_normalized = genius_text.lower().strip()
-            score = SequenceMatcher(None, lrc_normalized, genius_normalized).ratio()
-            if score > best_score:
-                best_score = score
-                best_match = (j, genius_text)
-
-        line_text = best_match[1] if best_match and best_score > 0.5 else lrc_text
-        if best_match:
-            used_genius.add(best_match[0])
-
-        word_texts = line_text.split()
-        if not word_texts:
+        words = _words_from_line_text(line_text, start_time, end_time)
+        if not words:
             continue
-
-        line_duration = end_time - start_time
-        word_count = len(word_texts)
-        word_duration = (line_duration * 0.95) / word_count
-
-        words = []
-        for j, word_text in enumerate(word_texts):
-            word_start = start_time + j * (line_duration / word_count)
-            word_end = word_start + word_duration
-            words.append(Word(text=word_text, start_time=word_start, end_time=word_end))
 
         # Skip duplicate consecutive lines
         line_text_str = " ".join([w.text for w in words]).strip()
-        if (
-            lines
-            and " ".join([w.text for w in lines[-1].words]).strip() == line_text_str
-        ):
+        if _is_duplicate_consecutive_line(lines, line_text_str):
             continue
 
         lines.append(Line(words=words))
 
     return lines
+
+
+def _line_end_time_from_lrc(
+    lrc_timings: List[Tuple[float, str]], idx: int, start_time: float
+) -> float:
+    if idx + 1 >= len(lrc_timings):
+        return start_time + 3.0
+    end_time = lrc_timings[idx + 1][0]
+    if end_time - start_time > 10.0:
+        return start_time + 5.0
+    return end_time
+
+
+def _best_genius_line_for_lrc(
+    lrc_text: str, genius_lines: List[str], used_genius: set[int]
+) -> tuple[str, int | None]:
+    best_match: tuple[int, str] | None = None
+    best_score = 0.0
+    lrc_normalized = lrc_text.lower().strip()
+    for idx, genius_text in enumerate(genius_lines):
+        if idx in used_genius:
+            continue
+        genius_normalized = genius_text.lower().strip()
+        score = SequenceMatcher(None, lrc_normalized, genius_normalized).ratio()
+        if score <= best_score:
+            continue
+        best_score = score
+        best_match = (idx, genius_text)
+    if best_match is None or best_score <= 0.5:
+        return lrc_text, None
+    return best_match[1], best_match[0]
+
+
+def _words_from_line_text(
+    line_text: str, start_time: float, end_time: float
+) -> List[Word]:
+    word_texts = line_text.split()
+    if not word_texts:
+        return []
+    line_duration = end_time - start_time
+    word_count = len(word_texts)
+    word_duration = (line_duration * 0.95) / word_count
+    words: List[Word] = []
+    for idx, word_text in enumerate(word_texts):
+        word_start = start_time + idx * (line_duration / word_count)
+        word_end = word_start + word_duration
+        words.append(Word(text=word_text, start_time=word_start, end_time=word_end))
+    return words
+
+
+def _is_duplicate_consecutive_line(lines: List[Line], line_text: str) -> bool:
+    return (
+        bool(lines) and " ".join([w.text for w in lines[-1].words]).strip() == line_text
+    )
 
 
 # ----------------------
