@@ -145,6 +145,22 @@ def apply_block_first_prototype_ordering(target_lines: List[TargetLine]) -> bool
     if not blocks:
         return False
 
+    block_members = _build_block_membership_index(blocks)
+
+    if not block_members:
+        return False
+
+    # Assign global hints by chronological merge of block rows and singleton lines.
+    order_records = _build_block_order_records(target_lines, block_members)
+    for hint, ln in enumerate(order_records):
+        ln.block_order_hint = hint
+
+    return True
+
+
+def _build_block_membership_index(
+    blocks: List[VisibilityBlock],
+) -> dict[int, tuple[int, float, int, float]]:
     block_members: dict[int, tuple[int, float, int, float]] = {}
     # original_index -> (block_id, block_start, row_order, row_y)
     for block in blocks:
@@ -155,39 +171,51 @@ def apply_block_first_prototype_ordering(target_lines: List[TargetLine]) -> bool
                 row_order,
                 float(row.y),
             )
+    return block_members
 
-    if not block_members:
-        return False
 
-    # Assign global hints by chronological merge of block rows and singleton lines.
+def _ensure_block_first_meta(
+    line: TargetLine, *, block_id: int, row_y: float, row_order: int
+) -> None:
+    if line.reconstruction_meta is None:
+        line.reconstruction_meta = {}
+    meta = line.reconstruction_meta
+    if not isinstance(meta, dict):
+        return
+    meta.setdefault("block_first", {})
+    block_meta = meta.get("block_first")
+    if not isinstance(block_meta, dict):
+        return
+    block_meta["block_id"] = block_id
+    block_meta["row_y"] = row_y
+    block_meta["row_order"] = row_order
+
+
+def _singleton_sort_key(
+    line: TargetLine, idx: int
+) -> tuple[float, int, int, float, int]:
+    visibility_start = (
+        float(line.visibility_start)
+        if line.visibility_start is not None
+        else _line_start(line)
+    )
+    return (visibility_start, 1, 0, float(line.y), idx)
+
+
+def _build_block_order_records(
+    target_lines: List[TargetLine],
+    block_members: dict[int, tuple[int, float, int, float]],
+) -> list[TargetLine]:
     order_records: list[tuple[tuple[float, int, int, float, int], TargetLine]] = []
-    for idx, ln in enumerate(target_lines):
+    for idx, line in enumerate(target_lines):
         membership = block_members.get(idx)
-        if membership is not None:
-            block_id, block_start, row_order, row_y = membership
-            sort_key = (block_start, 0, block_id, float(row_order), idx)
-            if ln.reconstruction_meta is None:
-                ln.reconstruction_meta = {}
-            meta = ln.reconstruction_meta
-            if isinstance(meta, dict):
-                meta.setdefault("block_first", {})
-                if isinstance(meta["block_first"], dict):
-                    meta["block_first"]["block_id"] = block_id
-                    meta["block_first"]["row_y"] = row_y
-                    meta["block_first"]["row_order"] = row_order
-            order_records.append((sort_key, ln))
+        if membership is None:
+            order_records.append((_singleton_sort_key(line, idx), line))
             continue
-
-        # Singleton/non-block line: keep in chronology, interleaved with blocks.
-        vs = (
-            float(ln.visibility_start)
-            if ln.visibility_start is not None
-            else _line_start(ln)
+        block_id, block_start, row_order, row_y = membership
+        _ensure_block_first_meta(
+            line, block_id=block_id, row_y=row_y, row_order=row_order
         )
-        order_records.append(((vs, 1, 0, float(ln.y), idx), ln))
-
-    order_records.sort(key=lambda rec: rec[0])
-    for hint, (_key, ln) in enumerate(order_records):
-        ln.block_order_hint = hint
-
-    return True
+        order_records.append(((block_start, 0, block_id, float(row_order), idx), line))
+    order_records.sort(key=lambda record: record[0])
+    return [line for _key, line in order_records]

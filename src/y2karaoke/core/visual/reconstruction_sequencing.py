@@ -123,34 +123,65 @@ def sequence_by_visual_neighborhood_legacy(
     input_order = list(lines)
 
     lines.sort(key=lambda x: x["first"])
-    adj: dict[int, set[int]] = {i: set() for i in range(len(lines))}
-    for i in range(len(lines)):
-        for j in range(i + 1, len(lines)):
-            if has_significant_overlap_fn(lines[i], lines[j]):
-                adj[i].add(j)
-                adj[j].add(i)
-            if lines[j]["first"] > lines[i]["last"] + 1.5:
-                break
-
-    visited = set()
-    unsorted_blocks = []
-    for i in range(len(lines)):
-        if i not in visited:
-            block_indices = []
-            stack = [i]
-            while stack:
-                node = stack.pop()
-                if node not in visited:
-                    visited.add(node)
-                    block_indices.append(node)
-                    stack.extend(adj[node] - visited)
-            unsorted_blocks.append([lines[idx] for idx in block_indices])
+    adj = _build_legacy_overlap_adjacency(
+        lines, has_significant_overlap_fn=has_significant_overlap_fn
+    )
+    unsorted_blocks = _legacy_blocks_from_adjacency(lines, adj)
     log_sequence_blocks_fn("legacy", unsorted_blocks)
     if should_disable_sequencing_for_blocks_fn(unsorted_blocks):
         return input_order
 
-    unsorted_blocks.sort(key=lambda b: min(x["first"] for x in b))
-    ordered = []
+    return _order_legacy_blocks(
+        unsorted_blocks, order_visual_block_locally_fn=order_visual_block_locally_fn
+    )
+
+
+def _build_legacy_overlap_adjacency(
+    lines: list[dict[str, Any]],
+    *,
+    has_significant_overlap_fn: Callable[[dict[str, Any], dict[str, Any]], bool],
+) -> dict[int, set[int]]:
+    adjacency: dict[int, set[int]] = {i: set() for i in range(len(lines))}
+    for i in range(len(lines)):
+        for j in range(i + 1, len(lines)):
+            if has_significant_overlap_fn(lines[i], lines[j]):
+                adjacency[i].add(j)
+                adjacency[j].add(i)
+            if lines[j]["first"] > lines[i]["last"] + 1.5:
+                break
+    return adjacency
+
+
+def _legacy_blocks_from_adjacency(
+    lines: list[dict[str, Any]], adjacency: dict[int, set[int]]
+) -> list[list[dict[str, Any]]]:
+    visited: set[int] = set()
+    unsorted_blocks: list[list[dict[str, Any]]] = []
+    for i in range(len(lines)):
+        if i in visited:
+            continue
+        block_indices: list[int] = []
+        stack = [i]
+        while stack:
+            node = stack.pop()
+            if node in visited:
+                continue
+            visited.add(node)
+            block_indices.append(node)
+            stack.extend(adjacency[node] - visited)
+        unsorted_blocks.append([lines[idx] for idx in block_indices])
+    return unsorted_blocks
+
+
+def _order_legacy_blocks(
+    unsorted_blocks: list[list[dict[str, Any]]],
+    *,
+    order_visual_block_locally_fn: Callable[
+        [list[dict[str, Any]]], list[dict[str, Any]]
+    ],
+) -> list[dict[str, Any]]:
+    unsorted_blocks.sort(key=lambda block: min(line["first"] for line in block))
+    ordered: list[dict[str, Any]] = []
     for block in unsorted_blocks:
         ordered.extend(order_visual_block_locally_fn(block))
     return ordered
@@ -325,24 +356,37 @@ def is_band_fragment_subphrase(
 ) -> bool:
     if tokens_contiguous_subphrase_fn(fragment, full):
         return True
-    if len(fragment) == 1:
-        tok = fragment[0]
-        if len(tok) >= 4:
-            singular = tok[:-1] if tok.endswith("s") else tok
-            plural = tok if tok.endswith("s") else f"{tok}s"
-            for full_tok in full:
-                if full_tok == singular or full_tok == plural:
-                    return True
-    if 2 <= len(fragment) <= 3 and all(1 <= len(t) <= 4 for t in fragment):
-        merged = "".join(fragment)
-        if len(merged) >= 5:
-            for tok in full:
-                if len(tok) < len(merged):
-                    continue
-                if tok == merged:
-                    return True
-                if SequenceMatcher(None, merged, tok).ratio() >= 0.84:
-                    return True
+    return _matches_singular_plural_variant(fragment, full) or _matches_merged_fragment(
+        fragment, full
+    )
+
+
+def _matches_singular_plural_variant(fragment: list[str], full: list[str]) -> bool:
+    if len(fragment) != 1:
+        return False
+    token = fragment[0]
+    if len(token) < 4:
+        return False
+    singular = token[:-1] if token.endswith("s") else token
+    plural = token if token.endswith("s") else f"{token}s"
+    return any(full_token == singular or full_token == plural for full_token in full)
+
+
+def _matches_merged_fragment(fragment: list[str], full: list[str]) -> bool:
+    if not (2 <= len(fragment) <= 3):
+        return False
+    if not all(1 <= len(token) <= 4 for token in fragment):
+        return False
+    merged = "".join(fragment)
+    if len(merged) < 5:
+        return False
+    for token in full:
+        if len(token) < len(merged):
+            continue
+        if token == merged:
+            return True
+        if SequenceMatcher(None, merged, token).ratio() >= 0.84:
+            return True
     return False
 
 
