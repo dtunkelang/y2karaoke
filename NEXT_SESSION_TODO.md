@@ -28,6 +28,8 @@
   - focused probe `text_sim=0.50, token_overlap=0.40` (`20260305T_probe_ts50_to40`) -> agreement_cov `0.346`, p95 `1.194`, bad_ratio `0.054`
   - focused probe `text_sim=0.48, token_overlap=0.38` (`20260305T_probe_ts48_to38`) -> agreement_cov `0.352`, p95 `1.268`, bad_ratio `0.057`
     - reaches >=0.35 coverage target but with unacceptable timing/bad-ratio regression under current guard.
+  - post-default-tune probe `text_sim=0.56, token_overlap=0.50` (`20260305T_probe_ts56_to50_post_tune`) -> agreement_cov `0.337`, p95 `1.180`, bad_ratio `0.051`
+    - vs baseline `20260305T222326Z`: coverage `+0.0034`, bad_ratio `+0.0017`, p95 `+0.0632` (guard fail due insufficient coverage gain and p95 regression).
   - near-baseline sweep (`20260305T_sweep_near_base_*`, token overlap fixed `0.55`):
     - `text_sim=0.63` -> agreement_cov `0.314`, p95 `1.129`, bad_ratio `0.047` (guard pass)
     - `text_sim=0.62` -> agreement_cov `0.317`, p95 `1.125`, bad_ratio `0.047` (guard pass)
