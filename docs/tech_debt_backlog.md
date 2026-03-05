@@ -41,6 +41,7 @@ Last updated: 2026-03-04
   - Completed so far:
     - Segment assignment env heuristics centralized in `whisper_blocks.py`.
     - Correction decision thresholds centralized in `whisper_integration_correct.py`.
+    - Mapping decision thresholds centralized in `whisper_integration_align.py`.
 
 5. **Cross-pass integration tests for alignment edge cases**
 - Impact: high

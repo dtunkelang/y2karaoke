@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 import time
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
@@ -21,6 +22,20 @@ from .whisper_integration_weak_evidence import (
 
 _MIN_FORCED_WORD_COVERAGE = 0.2
 _MIN_FORCED_LINE_COVERAGE = 0.2
+
+
+@dataclass(frozen=True)
+class _WhisperMappingDecisionConfig:
+    sparse_word_threshold: int = 80
+    sparse_segment_threshold: int = 4
+    low_coverage_lrc_word_min: int = 20
+    low_coverage_matched_ratio_max: float = 0.35
+    low_coverage_line_coverage_max: float = 0.35
+    snap_first_word_max_shift: float = 2.5
+
+
+def _default_mapping_decision_config() -> _WhisperMappingDecisionConfig:
+    return _WhisperMappingDecisionConfig()
 
 
 def _line_set_end(lines: List[models.Line]) -> float:
@@ -79,6 +94,7 @@ def align_lrc_text_to_whisper_timings_impl(  # noqa: C901
     logger,
 ) -> Tuple[List[models.Line], List[str], Dict[str, float]]:
     """Align LRC text to Whisper timings via DTW-style phonetic assignment."""
+    config = _default_mapping_decision_config()
     _ = min_similarity  # reserved for potential future tuning hooks
     _ = lenient_activity_bonus  # consumed by downstream scoring in related paths
 
@@ -101,7 +117,10 @@ def align_lrc_text_to_whisper_timings_impl(  # noqa: C901
             "Truncated Whisper transcript to %.2f s (last matching lyric).", trimmed_end
         )
 
-    sparse_whisper_output = len(all_words) < 80 or len(transcription) <= 4
+    sparse_whisper_output = (
+        len(all_words) < config.sparse_word_threshold
+        or len(transcription) <= config.sparse_segment_threshold
+    )
     if sparse_whisper_output:
         forced_result = attempt_whisperx_forced_alignment(
             lines=lines,
@@ -254,7 +273,10 @@ def align_lrc_text_to_whisper_timings_impl(  # noqa: C901
     line_coverage = (
         len(mapped_lines_set) / sum(1 for line in lines if line.words) if lines else 0.0
     )
-    if len(lrc_words) >= 20 and (matched_ratio < 0.35 or line_coverage < 0.35):
+    if len(lrc_words) >= config.low_coverage_lrc_word_min and (
+        matched_ratio < config.low_coverage_matched_ratio_max
+        or line_coverage < config.low_coverage_line_coverage_max
+    ):
         forced_result = attempt_whisperx_forced_alignment(
             lines=lines,
             baseline_lines=baseline_lines,
@@ -296,7 +318,7 @@ def align_lrc_text_to_whisper_timings_impl(  # noqa: C901
         mapped_lines = snap_first_word_to_whisper_onset_fn(
             mapped_lines,
             all_words,
-            max_shift=2.5,
+            max_shift=config.snap_first_word_max_shift,
         )
     except TypeError:
         mapped_lines = snap_first_word_to_whisper_onset_fn(mapped_lines, all_words)
