@@ -7,6 +7,7 @@ Last updated: 2026-03-04
 - Product and usage: `README.md`
 - Architecture: `ARCHITECTURE.md`
 - Development workflow and quality gates: `docs/development.md`
+- Tech debt priorities: `docs/tech_debt_backlog.md`
 - Pipeline-specific behavior: `docs/pipelines/`
 - Benchmark manifests and guardrails:
   - `benchmarks/main_benchmark_songs.yaml`
