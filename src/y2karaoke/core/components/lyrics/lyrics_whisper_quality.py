@@ -17,7 +17,7 @@ from .lyrics_whisper_pipeline import (
     should_auto_enable_whisper,
     should_keep_lrc_timings_for_trailing_outro_padding,
 )
-from ...models import Line, SongMetadata
+from ...models import Line, SongMetadata, Word
 from ..alignment.alignment_policy import decide_lrc_timing_trust
 
 logger = logging.getLogger(__name__)
@@ -45,30 +45,53 @@ def _clip_lines_to_target_duration(
             dropped_lines += 1
             continue
 
-        new_words = []
-        for word in line.words:
-            if word.start_time >= max_time:
-                trimmed_words += 1
-                break
-            capped_end = min(word.end_time, max_time)
-            if capped_end < word.start_time:
-                capped_end = word.start_time
-            if capped_end < word.end_time:
-                trimmed_words += 1
-            new_words.append(
-                type(word)(
-                    text=word.text,
-                    start_time=word.start_time,
-                    end_time=capped_end,
-                    singer=word.singer,
-                )
-            )
+        new_words, clipped_word_count = _clip_line_words_to_max_time(line, max_time)
+        trimmed_words += clipped_word_count
 
         if not new_words:
             dropped_lines += 1
             continue
         clipped_lines.append(Line(words=new_words, singer=line.singer))
 
+    _append_clip_duration_issues(
+        issues,
+        target_duration=target_duration,
+        dropped_lines=dropped_lines,
+        trimmed_words=trimmed_words,
+    )
+    return clipped_lines
+
+
+def _clip_line_words_to_max_time(line: Line, max_time: float) -> tuple[List[Word], int]:
+    new_words: List[Word] = []
+    trimmed_words = 0
+    for word in line.words:
+        if word.start_time >= max_time:
+            trimmed_words += 1
+            break
+        capped_end = min(word.end_time, max_time)
+        if capped_end < word.start_time:
+            capped_end = word.start_time
+        if capped_end < word.end_time:
+            trimmed_words += 1
+        new_words.append(
+            type(word)(
+                text=word.text,
+                start_time=word.start_time,
+                end_time=capped_end,
+                singer=word.singer,
+            )
+        )
+    return new_words, trimmed_words
+
+
+def _append_clip_duration_issues(
+    issues: List[str],
+    *,
+    target_duration: Optional[int],
+    dropped_lines: int,
+    trimmed_words: int,
+) -> None:
     if dropped_lines:
         issues.append(
             f"Dropped {dropped_lines} line(s) beyond track duration ({target_duration}s)"
@@ -77,7 +100,6 @@ def _clip_lines_to_target_duration(
         issues.append(
             f"Trimmed {trimmed_words} word timing(s) past track duration ({target_duration}s)"
         )
-    return clipped_lines
 
 
 def _apply_lrc_timing_trust_policy(

@@ -124,12 +124,14 @@ def fetch_lyrics_for_duration(
     logger: Any,
 ) -> Tuple[Optional[str], bool, str, Optional[int]]:
     """Fetch synced lyrics that match a target duration."""
-    if not is_syncedlyrics_available_fn(state) and not is_lyriq_available_fn(state):
-        if not offline:
-            logger.warning("Neither syncedlyrics nor lyriq installed")
-            return None, False, "", None
-        # Offline mode can still return from cache-only lyrics resolution.
-        logger.info("Offline mode: attempting cached lyrics only")
+    if not _providers_available_or_offline(
+        state,
+        offline=offline,
+        is_syncedlyrics_available_fn=is_syncedlyrics_available_fn,
+        is_lyriq_available_fn=is_lyriq_available_fn,
+        logger=logger,
+    ):
+        return None, False, "", None
 
     lrc_text, is_synced, source = fetch_lyrics_multi_source_fn(
         title,
@@ -141,51 +143,34 @@ def fetch_lyrics_for_duration(
         state=state,
     )
 
-    if is_synced and lrc_text:
-        lrc_duration = get_lrc_duration_fn(lrc_text, state)
-        if lrc_duration:
-            diff = abs(lrc_duration - target_duration)
-            if diff <= tolerance:
-                logger.info(
-                    "Found LRC with matching duration: %ss (target: %ss)",
-                    lrc_duration,
-                    target_duration,
-                )
-                return lrc_text, is_synced, source, lrc_duration
-            logger.warning(
-                "LRC duration mismatch: LRC=%ss, target=%ss, diff=%ss",
-                lrc_duration,
-                target_duration,
-                diff,
-            )
+    immediate_match = _return_if_duration_match(
+        lrc_text=lrc_text,
+        is_synced=is_synced,
+        source=source,
+        target_duration=target_duration,
+        tolerance=tolerance,
+        state=state,
+        get_lrc_duration_fn=get_lrc_duration_fn,
+        logger=logger,
+    )
+    if immediate_match is not None:
+        return immediate_match
 
-    if is_syncedlyrics_available_fn(state) and not offline:
-        alternative_searches = [
-            f"{title} {artist}",
-            f"{artist} {title} official",
-            f"{artist} {title} album version",
-        ]
-
-        for search_term in alternative_searches:
-            logger.debug(f"Trying alternative LRC search: {search_term}")
-            lrc, provider = search_with_state_fallback_fn(
-                search_term,
-                synced_only=True,
-                enhanced=False,
-                state=state,
-            )
-            if lrc and has_timestamps_fn(lrc, state):
-                alt_duration = get_lrc_duration_fn(lrc, state)
-                if alt_duration:
-                    diff = abs(alt_duration - target_duration)
-                    if diff <= tolerance:
-                        logger.info(
-                            "Found LRC with alternative search '%s' from %s: %ss",
-                            search_term,
-                            provider,
-                            alt_duration,
-                        )
-                        return lrc, True, f"{provider} ({search_term})", alt_duration
+    fallback_match = _search_alternative_lrc_matches(
+        title=title,
+        artist=artist,
+        target_duration=target_duration,
+        tolerance=tolerance,
+        offline=offline,
+        state=state,
+        is_syncedlyrics_available_fn=is_syncedlyrics_available_fn,
+        search_with_state_fallback_fn=search_with_state_fallback_fn,
+        has_timestamps_fn=has_timestamps_fn,
+        get_lrc_duration_fn=get_lrc_duration_fn,
+        logger=logger,
+    )
+    if fallback_match is not None:
+        return fallback_match
 
     if is_synced and lrc_text:
         lrc_duration = get_lrc_duration_fn(lrc_text, state)
@@ -193,6 +178,106 @@ def fetch_lyrics_for_duration(
         return lrc_text, is_synced, source, lrc_duration
 
     return None, False, "", None
+
+
+def _providers_available_or_offline(
+    state: Any,
+    *,
+    offline: bool,
+    is_syncedlyrics_available_fn: Callable[[Any], bool],
+    is_lyriq_available_fn: Callable[[Any], bool],
+    logger: Any,
+) -> bool:
+    providers_available = is_syncedlyrics_available_fn(state) or is_lyriq_available_fn(
+        state
+    )
+    if providers_available:
+        return True
+    if offline:
+        logger.info("Offline mode: attempting cached lyrics only")
+        return True
+    logger.warning("Neither syncedlyrics nor lyriq installed")
+    return False
+
+
+def _return_if_duration_match(
+    *,
+    lrc_text: Optional[str],
+    is_synced: bool,
+    source: str,
+    target_duration: int,
+    tolerance: int,
+    state: Any,
+    get_lrc_duration_fn: Callable[[str, Any], Optional[int]],
+    logger: Any,
+) -> Tuple[Optional[str], bool, str, Optional[int]] | None:
+    if not is_synced or not lrc_text:
+        return None
+    lrc_duration = get_lrc_duration_fn(lrc_text, state)
+    if not lrc_duration:
+        return None
+    diff = abs(lrc_duration - target_duration)
+    if diff <= tolerance:
+        logger.info(
+            "Found LRC with matching duration: %ss (target: %ss)",
+            lrc_duration,
+            target_duration,
+        )
+        return lrc_text, is_synced, source, lrc_duration
+    logger.warning(
+        "LRC duration mismatch: LRC=%ss, target=%ss, diff=%ss",
+        lrc_duration,
+        target_duration,
+        diff,
+    )
+    return None
+
+
+def _search_alternative_lrc_matches(
+    *,
+    title: str,
+    artist: str,
+    target_duration: int,
+    tolerance: int,
+    offline: bool,
+    state: Any,
+    is_syncedlyrics_available_fn: Callable[[Any], bool],
+    search_with_state_fallback_fn: Callable[..., Tuple[Optional[str], str]],
+    has_timestamps_fn: Callable[[str, Any], bool],
+    get_lrc_duration_fn: Callable[[str, Any], Optional[int]],
+    logger: Any,
+) -> Tuple[Optional[str], bool, str, Optional[int]] | None:
+    if not is_syncedlyrics_available_fn(state) or offline:
+        return None
+    alternative_searches = [
+        f"{title} {artist}",
+        f"{artist} {title} official",
+        f"{artist} {title} album version",
+    ]
+    for search_term in alternative_searches:
+        logger.debug(f"Trying alternative LRC search: {search_term}")
+        lrc, provider = search_with_state_fallback_fn(
+            search_term,
+            synced_only=True,
+            enhanced=False,
+            state=state,
+        )
+        if not lrc or not has_timestamps_fn(lrc, state):
+            continue
+        alt_duration = get_lrc_duration_fn(lrc, state)
+        if not alt_duration:
+            continue
+        diff = abs(alt_duration - target_duration)
+        if diff > tolerance:
+            continue
+        logger.info(
+            "Found LRC with alternative search '%s' from %s: %ss",
+            search_term,
+            provider,
+            alt_duration,
+        )
+        return lrc, True, f"{provider} ({search_term})", alt_duration
+    return None
 
 
 def fetch_from_all_sources(

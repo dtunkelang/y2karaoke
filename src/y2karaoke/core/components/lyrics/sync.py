@@ -281,53 +281,25 @@ def _search_with_fallback(
 ) -> Tuple[Optional[str], str]:
     """Search across providers with fallback."""
     runtime_state = _state_or_default(state)
-    if runtime_state.search_with_fallback_fn is not None:
-        attempts: List[Dict[str, Any]] = [
-            {"synced_only": synced_only, "enhanced": enhanced, "state": runtime_state},
-            {"synced_only": synced_only, "enhanced": enhanced},
-            {"synced_only": synced_only},
-        ]
-        last_error: Optional[Exception] = None
-        for kwargs in attempts:
-            try:
-                return runtime_state.search_with_fallback_fn(search_term, **kwargs)
-            except TypeError as e:
-                if "unexpected keyword argument" not in str(e):
-                    raise
-                last_error = e
-                continue
-        if last_error is not None:
-            raise last_error
-        return None, ""
-
-    def _search_single(
-        search_term_inner: str,
-        provider_inner: str,
-        synced_only: bool = True,
-        enhanced: bool = False,
-    ) -> Optional[str]:
-        try:
-            return _search_single_provider(
-                search_term_inner,
-                provider_inner,
-                synced_only=synced_only,
-                enhanced=enhanced,
-                state=runtime_state,
-            )
-        except TypeError as e:
-            if "unexpected keyword argument 'state'" not in str(e):
-                raise
-            return _search_single_provider(
-                search_term_inner,
-                provider_inner,
-                synced_only=synced_only,
-                enhanced=enhanced,
-            )
+    override_result = _search_with_runtime_override(
+        search_term,
+        runtime_state=runtime_state,
+        synced_only=synced_only,
+        enhanced=enhanced,
+    )
+    if override_result is not None:
+        return override_result
 
     return sync_search.search_with_fallback(
         search_term=search_term,
         provider_order=PROVIDER_ORDER,
-        search_single_provider_fn=_search_single,
+        search_single_provider_fn=lambda term, provider, synced_only=True, enhanced=False: _search_single_with_state_fallback(
+            term,
+            provider,
+            synced_only=synced_only,
+            enhanced=enhanced,
+            runtime_state=runtime_state,
+        ),
         search_cache=runtime_state.search_cache,
         disk_cache=runtime_state.disk_cache,
         disk_cache_enabled=_disk_cache_enabled(runtime_state),
@@ -337,6 +309,60 @@ def _search_with_fallback(
         synced_only=synced_only,
         enhanced=enhanced,
     )
+
+
+def _search_with_runtime_override(
+    search_term: str,
+    *,
+    runtime_state: SyncState,
+    synced_only: bool,
+    enhanced: bool,
+) -> Tuple[Optional[str], str] | None:
+    if runtime_state.search_with_fallback_fn is None:
+        return None
+    attempts: List[Dict[str, Any]] = [
+        {"synced_only": synced_only, "enhanced": enhanced, "state": runtime_state},
+        {"synced_only": synced_only, "enhanced": enhanced},
+        {"synced_only": synced_only},
+    ]
+    last_error: Optional[Exception] = None
+    for kwargs in attempts:
+        try:
+            return runtime_state.search_with_fallback_fn(search_term, **kwargs)
+        except TypeError as error:
+            if "unexpected keyword argument" not in str(error):
+                raise
+            last_error = error
+    if last_error is not None:
+        raise last_error
+    return None
+
+
+def _search_single_with_state_fallback(
+    search_term_inner: str,
+    provider_inner: str,
+    *,
+    synced_only: bool,
+    enhanced: bool,
+    runtime_state: SyncState,
+) -> Optional[str]:
+    try:
+        return _search_single_provider(
+            search_term_inner,
+            provider_inner,
+            synced_only=synced_only,
+            enhanced=enhanced,
+            state=runtime_state,
+        )
+    except TypeError as error:
+        if "unexpected keyword argument 'state'" not in str(error):
+            raise
+        return _search_single_provider(
+            search_term_inner,
+            provider_inner,
+            synced_only=synced_only,
+            enhanced=enhanced,
+        )
 
 
 def _search_with_state_fallback(
