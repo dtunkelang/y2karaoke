@@ -39,6 +39,7 @@
     - `text_sim=0.57, token_overlap=0.50` -> coverage `+0.0017`, bad_ratio `+0.0017`, p95 `+0.0645` (guard fail)
     - `text_sim=0.56, token_overlap=0.50` -> coverage `+0.0034`, bad_ratio `+0.0017`, p95 `+0.0632` (guard fail)
     - current default `0.58/0.50` remains best guard-pass setting after latest pipeline changes.
+  - probe `text_sim=0.58, token_overlap=0.48` (`20260305T_probe_ts58_to48_post_rescue2`) matched baseline exactly (no metric deltas), indicating a local threshold plateau.
   - near-baseline sweep (`20260305T_sweep_near_base_*`, token overlap fixed `0.55`):
     - `text_sim=0.63` -> agreement_cov `0.314`, p95 `1.129`, bad_ratio `0.047` (guard pass)
     - `text_sim=0.62` -> agreement_cov `0.317`, p95 `1.125`, bad_ratio `0.047` (guard pass)
