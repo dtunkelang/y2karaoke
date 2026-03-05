@@ -752,7 +752,7 @@ def _extract_song_metrics(
     )
     agreement_min_token_overlap = _env_float(
         "Y2KARAOKE_BENCH_AGREEMENT_MIN_TOKEN_OVERLAP",
-        0.55,
+        0.50,
         min_value=0.0,
         max_value=1.0,
     )

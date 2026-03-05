@@ -39,6 +39,12 @@
     - promoted default `Y2KARAOKE_BENCH_AGREEMENT_MIN_TEXT_SIM` to `0.58`.
     - default-threshold validation run `20260305T221248Z` (`text_sim=0.58`, overlap default `0.55`):
       - agreement_cov `0.327`, p95 `1.119`, bad_ratio `0.047` (guardrails run `OK`).
+    - token-overlap probe (`text_sim=0.58`) vs baseline `20260305T221623Z`:
+      - overlap `0.52` (`20260305T_probe_ts58_to52`) -> no material change
+      - overlap `0.50` (`20260305T_probe_ts58_to50`) -> guard-pass gain: coverage `+0.0067`, bad_ratio `+0.0017`, p95 `-0.0025`
+    - promoted default `Y2KARAOKE_BENCH_AGREEMENT_MIN_TOKEN_OVERLAP` to `0.50`.
+    - default-threshold validation run `20260305T222326Z` (`text_sim=0.58`, overlap `0.50`):
+      - agreement_cov `0.334`, p95 `1.117`, bad_ratio `0.049` (guardrails run `OK`).
   - adaptive-rescue refinements:
     - `line_word_count` gate `8 -> 6` run `20260305T220446Z` -> agreement_cov `0.322`, p95 `1.122`, bad_ratio `0.047`
     - `line_word_count` gate `6 -> 5` run `20260305T220734Z` -> agreement_cov `0.324`, p95 `1.122`, bad_ratio `0.047`
@@ -46,7 +52,7 @@
       - agreement_cov `0.327`, p95 `1.119`, bad_ratio `0.047`
       - no additional aggregate gain beyond current `0.58` default baseline, but guardrail-safe.
     - net +0.004 absolute coverage lift vs initial `0.61/0.55` calibration run, with no bad-ratio regression.
-  - Under current guard (`min_coverage_gain=0.005`, `max_bad_ratio_increase=0.002`), mild-to-moderate relaxations (`text_sim=0.58-0.63`, overlap `0.48-0.55`) can pass; aggressive relaxations do not.
+  - Under current guard (`min_coverage_gain=0.005`, `max_bad_ratio_increase=0.002`), mild-to-moderate relaxations (`text_sim=0.58-0.63`, overlap `0.50-0.55`) can pass; aggressive relaxations do not.
 
 ## 2. Alignment pipeline improvements
 - [x] Add stronger deterministic path-selection telemetry in lyrics pipeline:
