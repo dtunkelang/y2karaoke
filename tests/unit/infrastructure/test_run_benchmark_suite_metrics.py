@@ -460,6 +460,31 @@ def test_extract_song_metrics_adaptive_rescue_accepts_five_word_lines() -> None:
     assert metrics["agreement_adaptive_rescue_count"] == 1
 
 
+def test_extract_song_metrics_adaptive_rescue_accepts_short_high_confidence_lines() -> (
+    None
+):
+    module = _load_module()
+    report = {
+        "dtw_line_coverage": 1.0,
+        "lines": [
+            {
+                "start": 8.0,
+                "nearest_segment_start": 8.08,
+                "text": "feel the beat now",
+                "nearest_segment_start_text": "beat now feel the",
+                "words": [{"text": token} for token in "a b c d".split()],
+                "whisper_window_word_count": 4,
+                "whisper_window_avg_prob": 0.75,
+            }
+        ],
+        "low_confidence_lines": [],
+    }
+    metrics = module._extract_song_metrics(report)
+    assert metrics["agreement_eligible_lines"] == 1
+    assert metrics["agreement_count"] == 1
+    assert metrics["agreement_adaptive_rescue_count"] == 1
+
+
 def test_extract_song_metrics_adaptive_rescue_does_not_accept_large_timing_delta() -> (
     None
 ):

@@ -42,6 +42,9 @@
   - adaptive-rescue refinements:
     - `line_word_count` gate `8 -> 6` run `20260305T220446Z` -> agreement_cov `0.322`, p95 `1.122`, bad_ratio `0.047`
     - `line_word_count` gate `6 -> 5` run `20260305T220734Z` -> agreement_cov `0.324`, p95 `1.122`, bad_ratio `0.047`
+    - strict short-line rescue (`3-4` words, overlap>=`0.90`, delta<=`0.12s`, high local confidence) run `20260305T221623Z`:
+      - agreement_cov `0.327`, p95 `1.119`, bad_ratio `0.047`
+      - no additional aggregate gain beyond current `0.58` default baseline, but guardrail-safe.
     - net +0.004 absolute coverage lift vs initial `0.61/0.55` calibration run, with no bad-ratio regression.
   - Under current guard (`min_coverage_gain=0.005`, `max_bad_ratio_increase=0.002`), mild-to-moderate relaxations (`text_sim=0.58-0.63`, overlap `0.48-0.55`) can pass; aggressive relaxations do not.
 
