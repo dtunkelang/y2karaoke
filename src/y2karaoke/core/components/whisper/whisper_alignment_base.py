@@ -8,6 +8,42 @@ from ...models import Line, Word
 logger = logging.getLogger(__name__)
 
 
+def _find_prior_start(adjusted: List[Line]) -> Optional[float]:
+    for j in range(len(adjusted) - 2, -1, -1):
+        if adjusted[j].words:
+            return adjusted[j].start_time
+    return None
+
+
+def _repair_large_inversion(
+    adjusted: List[Line],
+    start: float,
+    prev_start: float,
+    min_gap: float,
+    max_forward_shift: float,
+) -> tuple[float, float]:
+    needed = (prev_start - start) + min_gap
+    if needed <= max_forward_shift or not adjusted:
+        return prev_start, needed
+
+    prev_line = adjusted[-1]
+    if not prev_line.words:
+        return prev_start, needed
+
+    prior_start = _find_prior_start(adjusted)
+    target_prev_start = start - min_gap
+    if prior_start is not None:
+        target_prev_start = max(target_prev_start, prior_start + min_gap)
+    backward = prev_line.start_time - target_prev_start
+    if backward <= 0.0:
+        return prev_start, needed
+
+    adjusted[-1] = _shift_line(prev_line, -backward)
+    prev_start = adjusted[-1].start_time
+    needed = (prev_start - start) + min_gap if start < prev_start else 0.0
+    return prev_start, needed
+
+
 def _enforce_monotonic_line_starts(
     lines: List[Line], min_gap: float = 0.01, max_forward_shift: float = 3.0
 ) -> List[Line]:
@@ -21,31 +57,9 @@ def _enforce_monotonic_line_starts(
 
         start = line.start_time
         if prev_start is not None and start < prev_start:
-            needed = (prev_start - start) + min_gap
-            # Large single inversions are often caused by one outlier line pulled too late.
-            # Pull the previous line back first to avoid cascading forward shifts.
-            if needed > max_forward_shift and adjusted:
-                prev_line = adjusted[-1]
-                if prev_line.words:
-                    prior_start: Optional[float] = None
-                    for j in range(len(adjusted) - 2, -1, -1):
-                        if adjusted[j].words:
-                            prior_start = adjusted[j].start_time
-                            break
-                    target_prev_start = start - min_gap
-                    if prior_start is not None:
-                        target_prev_start = max(
-                            target_prev_start, prior_start + min_gap
-                        )
-                    backward = prev_line.start_time - target_prev_start
-                    if backward > 0.0:
-                        adjusted[-1] = _shift_line(prev_line, -backward)
-                        prev_start = adjusted[-1].start_time
-                        needed = (
-                            (prev_start - start) + min_gap
-                            if start < prev_start
-                            else 0.0
-                        )
+            prev_start, needed = _repair_large_inversion(
+                adjusted, start, prev_start, min_gap, max_forward_shift
+            )
             if needed > 0.0:
                 line = _shift_line(line, needed)
 
