@@ -1359,6 +1359,7 @@ def _build_triage_rankings(
         agree_sim = _f(metrics, "agreement_text_similarity_mean")
         agree_p95 = _f(metrics, "agreement_start_p95_abs_sec")
         agree_bad = _f(metrics, "agreement_bad_ratio")
+        timing_quality_score = _f(metrics, "timing_quality_score")
         agreement_reliability = max(0.3, min(1.0, agree_cov / 0.5))
 
         reference_score = 0.0
@@ -1406,6 +1407,13 @@ def _build_triage_rankings(
         if agree_bad > 0.1:
             pipeline_score += (agree_bad - 0.1) * 2.0 * agreement_reliability
             pipeline_reasons.append("high_agreement_bad_ratio")
+        if isinstance(metrics.get("timing_quality_score"), (int, float)):
+            if timing_quality_score < 0.55:
+                pipeline_score += min((0.55 - timing_quality_score) * 2.0, 0.8)
+                pipeline_reasons.append("low_timing_quality_score")
+            elif timing_quality_score >= 0.78:
+                pipeline_score = max(0.0, pipeline_score - 0.2)
+                pipeline_reasons.append("timing_quality_score_good")
         if isinstance(ref_div, dict) and bool(ref_div.get("suspected")):
             pipeline_score = max(0.0, pipeline_score - 1.0)
             pipeline_reasons.append("downgraded_due_to_reference_divergence")
@@ -2027,6 +2035,7 @@ def _quality_coverage_warnings(
     dtw_enabled: bool,
     min_song_coverage_ratio: float,
     min_line_coverage_ratio: float,
+    min_timing_quality_score_line_weighted: float,
     suite_wall_elapsed_sec: float,
 ) -> list[str]:
     warnings: list[str] = []
@@ -2099,10 +2108,12 @@ def _quality_coverage_warnings(
                 f"{float(reference_ratio):.3f} > 0.350"
             )
     timing_quality = aggregate.get("timing_quality_score_line_weighted_mean")
-    if isinstance(timing_quality, (int, float)) and float(timing_quality) < 0.58:
+    if isinstance(timing_quality, (int, float)) and float(timing_quality) < float(
+        min_timing_quality_score_line_weighted
+    ):
         warnings.append(
             "Line-weighted timing quality score is below target: "
-            f"{float(timing_quality):.3f} < 0.580"
+            f"{float(timing_quality):.3f} < {float(min_timing_quality_score_line_weighted):.3f}"
         )
     timing_band_ratios = aggregate.get("timing_quality_band_ratios", {})
     if isinstance(timing_band_ratios, dict):
@@ -2321,9 +2332,15 @@ def _write_markdown_summary(  # noqa: C901
         "- Primary metric (avg abs word-start delta): "
         f"`{_fmt_num(aggregate.get('avg_abs_word_start_delta_sec_word_weighted_mean'), unit='s')}` (word-weighted)"
     )
+    primary_metric_ex_ref = _fmt_num(
+        aggregate.get(
+            "avg_abs_word_start_delta_sec_word_weighted_mean_excluding_reference_divergence"
+        ),
+        unit="s",
+    )
     lines.append(
         "- Primary metric excluding reference-divergence suspects: "
-        f"`{_fmt_num(aggregate.get('avg_abs_word_start_delta_sec_word_weighted_mean_excluding_reference_divergence'), unit='s')}` "
+        f"`{primary_metric_ex_ref}` "
         "(word-weighted)"
     )
     lines.append(
@@ -2760,6 +2777,9 @@ def _write_checkpoint(
             "max_songs": args.max_songs,
             "min_dtw_song_coverage_ratio": args.min_dtw_song_coverage_ratio,
             "min_dtw_line_coverage_ratio": args.min_dtw_line_coverage_ratio,
+            "min_timing_quality_score_line_weighted": (
+                args.min_timing_quality_score_line_weighted
+            ),
             "strict_quality_coverage": args.strict_quality_coverage,
             "expect_cached_separation": args.expect_cached_separation,
             "expect_cached_whisper": args.expect_cached_whisper,
@@ -2786,6 +2806,9 @@ def _build_run_signature(
         "whisper_map_lrc_dtw": not bool(args.no_whisper_map_lrc_dtw),
         "cache_dir": str(args.cache_dir.resolve()) if args.cache_dir else None,
         "gold_root": str(gold_root.resolve()) if gold_root else None,
+        "min_timing_quality_score_line_weighted": float(
+            args.min_timing_quality_score_line_weighted
+        ),
     }
 
 
@@ -2931,6 +2954,15 @@ def _parse_args() -> argparse.Namespace:
         "--strict-quality-coverage",
         action="store_true",
         help="Return non-zero if quality coverage warnings are present",
+    )
+    parser.add_argument(
+        "--min-timing-quality-score-line-weighted",
+        type=float,
+        default=0.58,
+        help=(
+            "Warn if line-weighted timing quality score is below this threshold "
+            "(0 disables)."
+        ),
     )
     parser.add_argument(
         "--expect-cached-separation",
@@ -3617,6 +3649,10 @@ def main() -> int:  # noqa: C901
         raise ValueError("--min-dtw-song-coverage-ratio must be between 0 and 1")
     if not 0.0 <= args.min_dtw_line_coverage_ratio <= 1.0:
         raise ValueError("--min-dtw-line-coverage-ratio must be between 0 and 1")
+    if not 0.0 <= args.min_timing_quality_score_line_weighted <= 1.0:
+        raise ValueError(
+            "--min-timing-quality-score-line-weighted must be between 0 and 1"
+        )
     if not 0.0 <= args.max_whisper_phase_share <= 1.0:
         raise ValueError("--max-whisper-phase-share must be between 0 and 1")
     if not 0.0 <= args.max_alignment_phase_share <= 1.0:
@@ -3780,6 +3816,9 @@ def main() -> int:  # noqa: C901
         dtw_enabled=(args.strategy == "hybrid_dtw" and not args.no_whisper_map_lrc_dtw),
         min_song_coverage_ratio=args.min_dtw_song_coverage_ratio,
         min_line_coverage_ratio=args.min_dtw_line_coverage_ratio,
+        min_timing_quality_score_line_weighted=(
+            args.min_timing_quality_score_line_weighted
+        ),
         suite_wall_elapsed_sec=suite_elapsed,
     )
     cache_warnings = _cache_expectation_warnings(
@@ -3817,6 +3856,9 @@ def main() -> int:  # noqa: C901
             "max_songs": args.max_songs,
             "min_dtw_song_coverage_ratio": args.min_dtw_song_coverage_ratio,
             "min_dtw_line_coverage_ratio": args.min_dtw_line_coverage_ratio,
+            "min_timing_quality_score_line_weighted": (
+                args.min_timing_quality_score_line_weighted
+            ),
             "strict_quality_coverage": args.strict_quality_coverage,
             "expect_cached_separation": args.expect_cached_separation,
             "expect_cached_whisper": args.expect_cached_whisper,

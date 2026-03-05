@@ -80,6 +80,31 @@ def test_build_triage_rankings_downweights_sparse_agreement_penalties():
     assert triage["likely_pipeline_failure"] == []
 
 
+def test_build_triage_rankings_uses_timing_quality_score_signal():
+    module = _load_module()
+    succeeded = [
+        {
+            "artist": "Q",
+            "title": "LowScore",
+            "metrics": {
+                "gold_available": True,
+                "dtw_line_coverage": 0.86,
+                "dtw_word_coverage": 0.62,
+                "low_confidence_ratio": 0.07,
+                "agreement_coverage_ratio": 0.4,
+                "agreement_text_similarity_mean": 0.86,
+                "agreement_start_p95_abs_sec": 0.85,
+                "agreement_bad_ratio": 0.08,
+                "timing_quality_score": 0.3,
+            },
+        }
+    ]
+    triage = module._build_triage_rankings(succeeded, top_n=5)
+    assert len(triage["likely_pipeline_failure"]) == 1
+    reasons = triage["likely_pipeline_failure"][0]["reasons"]
+    assert "low_timing_quality_score" in reasons
+
+
 def test_aggregate_includes_triage_ranking_fields():
     module = _load_module()
     results = [

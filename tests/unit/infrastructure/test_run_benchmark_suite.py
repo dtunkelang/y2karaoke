@@ -166,6 +166,7 @@ def test_build_run_signature(tmp_path):
         scenario="lyrics_no_timing",
         no_whisper_map_lrc_dtw=True,
         cache_dir=tmp_path,
+        min_timing_quality_score_line_weighted=0.58,
     )
     sig = module._build_run_signature(args, tmp_path / "manifest.yaml")
     assert sig["manifest_path"].endswith("manifest.yaml")
@@ -174,6 +175,7 @@ def test_build_run_signature(tmp_path):
     assert sig["scenario"] == "lyrics_no_timing"
     assert sig["whisper_map_lrc_dtw"] is False
     assert sig["cache_dir"] == str(tmp_path.resolve())
+    assert sig["min_timing_quality_score_line_weighted"] == 0.58
 
 
 def test_aggregate_tracks_missing_dtw_and_weighted_means():
@@ -272,6 +274,7 @@ def test_quality_coverage_warnings():
         dtw_enabled=False,
         min_song_coverage_ratio=0.8,
         min_line_coverage_ratio=0.9,
+        min_timing_quality_score_line_weighted=0.58,
         suite_wall_elapsed_sec=10.0,
     )
     assert len(warnings) >= 8
@@ -292,6 +295,7 @@ def test_quality_coverage_warnings_independent_unavailable():
         dtw_enabled=True,
         min_song_coverage_ratio=0.8,
         min_line_coverage_ratio=0.9,
+        min_timing_quality_score_line_weighted=0.58,
         suite_wall_elapsed_sec=10.0,
     )
     assert any(
@@ -320,6 +324,7 @@ def test_quality_coverage_warnings_include_diagnosis_ratio_alerts():
         dtw_enabled=True,
         min_song_coverage_ratio=0.8,
         min_line_coverage_ratio=0.9,
+        min_timing_quality_score_line_weighted=0.58,
         suite_wall_elapsed_sec=6.0,
     )
     assert any("diagnosed as pipeline work needed" in item for item in warnings)
@@ -344,6 +349,7 @@ def test_quality_coverage_warnings_include_timing_quality_score_alert():
         dtw_enabled=True,
         min_song_coverage_ratio=0.8,
         min_line_coverage_ratio=0.9,
+        min_timing_quality_score_line_weighted=0.58,
         suite_wall_elapsed_sec=6.0,
     )
     assert any("timing quality score is below target" in item for item in warnings)
@@ -368,6 +374,7 @@ def test_quality_coverage_warnings_include_poor_band_alert():
         dtw_enabled=True,
         min_song_coverage_ratio=0.8,
         min_line_coverage_ratio=0.9,
+        min_timing_quality_score_line_weighted=0.58,
         suite_wall_elapsed_sec=6.0,
     )
     assert any("poor timing-quality band" in item for item in warnings)
