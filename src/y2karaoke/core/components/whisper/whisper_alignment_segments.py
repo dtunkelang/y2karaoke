@@ -144,20 +144,14 @@ def _tighten_lines_to_whisper_segments(
         if seg is None or prev_seg is None:
             continue
 
-        # If both lines map to the same segment, pull line start to segment end.
-        if seg is prev_seg:
-            shift = seg.end - line.start_time
-        else:
-            # If line maps to next segment but starts far after it, pull to segment start.
-            if line.start_time - seg.start <= 0:
-                continue
-            if seg.start - prev_seg.end > 2.5:
-                continue
-            if sim < min_similarity:
-                continue
-            shift = seg.start - line.start_time
-
-        if shift >= -0.2:
+        shift = _line_pull_shift(
+            line=line,
+            seg=seg,
+            prev_seg=prev_seg,
+            sim=sim,
+            min_similarity=min_similarity,
+        )
+        if shift is None or shift >= -0.2:
             continue
 
         new_words = [
@@ -173,3 +167,22 @@ def _tighten_lines_to_whisper_segments(
         fixes += 1
 
     return adjusted, fixes
+
+
+def _line_pull_shift(
+    *,
+    line: Line,
+    seg: TranscriptionSegment,
+    prev_seg: TranscriptionSegment,
+    sim: float,
+    min_similarity: float,
+) -> float | None:
+    if seg is prev_seg:
+        return seg.end - line.start_time
+    if line.start_time - seg.start <= 0:
+        return None
+    if seg.start - prev_seg.end > 2.5:
+        return None
+    if sim < min_similarity:
+        return None
+    return seg.start - line.start_time
