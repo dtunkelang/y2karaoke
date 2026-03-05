@@ -414,6 +414,29 @@ def test_extract_song_metrics_adaptive_rescue_accepts_good_timing_high_overlap()
     assert metrics["agreement_adaptive_rescue_count"] == 1
 
 
+def test_extract_song_metrics_adaptive_rescue_accepts_medium_length_lines() -> None:
+    module = _load_module()
+    report = {
+        "dtw_line_coverage": 1.0,
+        "lines": [
+            {
+                "start": 15.0,
+                "nearest_segment_start": 15.1,
+                "text": "you know this rhythm feels right",
+                "nearest_segment_start_text": "right right rhythm this you know",
+                "words": [{"text": token} for token in "a b c d e f".split()],
+                "whisper_window_word_count": 4,
+                "whisper_window_avg_prob": 0.8,
+            }
+        ],
+        "low_confidence_lines": [],
+    }
+    metrics = module._extract_song_metrics(report)
+    assert metrics["agreement_eligible_lines"] == 1
+    assert metrics["agreement_count"] == 1
+    assert metrics["agreement_adaptive_rescue_count"] == 1
+
+
 def test_extract_song_metrics_adaptive_rescue_does_not_accept_large_timing_delta() -> (
     None
 ):
