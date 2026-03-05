@@ -53,6 +53,9 @@
     - strict short-line rescue (`3-4` words, overlap>=`0.90`, delta<=`0.12s`, high local confidence) run `20260305T221623Z`:
       - agreement_cov `0.327`, p95 `1.119`, bad_ratio `0.047`
       - no additional aggregate gain beyond current `0.58` default baseline, but guardrail-safe.
+    - high-overlap tight-delta rescue (>=3 words, overlap>=`max(0.72, threshold+0.22)`, delta<=`0.14s`) run `20260305T224717Z`:
+      - agreement_cov `0.336`, p95 `1.115`, bad_ratio `0.049`
+      - +0.002 absolute coverage lift vs current `0.58/0.50` default baseline run, with stable bad-ratio.
     - net +0.004 absolute coverage lift vs initial `0.61/0.55` calibration run, with no bad-ratio regression.
   - Under current guard (`min_coverage_gain=0.005`, `max_bad_ratio_increase=0.002`), mild-to-moderate relaxations (`text_sim=0.58-0.63`, overlap `0.50-0.55`) can pass; aggressive relaxations do not.
 

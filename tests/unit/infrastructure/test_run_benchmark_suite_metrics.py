@@ -485,6 +485,29 @@ def test_extract_song_metrics_adaptive_rescue_accepts_short_high_confidence_line
     assert metrics["agreement_adaptive_rescue_count"] == 1
 
 
+def test_extract_song_metrics_rescues_high_overlap_tight_delta_lines() -> None:
+    module = _load_module()
+    report = {
+        "dtw_line_coverage": 1.0,
+        "lines": [
+            {
+                "start": 30.0,
+                "nearest_segment_start": 30.1,
+                "text": "si el ritmo te lleva a mover la cabeza",
+                "nearest_segment_start_text": "cabeza mover lleva ritmo te el si la",
+                "words": [{"text": token} for token in "a b c d e f g h".split()],
+                "whisper_window_word_count": 5,
+                "whisper_window_avg_prob": 0.72,
+            }
+        ],
+        "low_confidence_lines": [],
+    }
+    metrics = module._extract_song_metrics(report)
+    assert metrics["agreement_eligible_lines"] == 1
+    assert metrics["agreement_count"] == 1
+    assert metrics["agreement_adaptive_rescue_count"] == 1
+
+
 def test_extract_song_metrics_adaptive_rescue_does_not_accept_large_timing_delta() -> (
     None
 ):

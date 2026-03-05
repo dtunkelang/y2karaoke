@@ -623,7 +623,17 @@ def _evaluate_agreement_line(
         and isinstance(window_avg_prob, (int, float))
         and float(window_avg_prob) >= 0.65
     )
-    rescue_applies = timing_rescue or short_line_rescue
+    high_overlap_tight_delta_rescue = (
+        line_word_count >= 3
+        and anchor_start_delta <= 0.14
+        and overlap >= max(0.72, min_token_overlap + 0.22)
+        and window_word_count >= max(2, int(0.5 * line_word_count))
+        and isinstance(window_avg_prob, (int, float))
+        and float(window_avg_prob) >= 0.55
+    )
+    rescue_applies = (
+        timing_rescue or short_line_rescue or high_overlap_tight_delta_rescue
+    )
     if sim < min_text_similarity and not rescue_applies:
         return {"skip_reason": "low_text_similarity", "eligible": True}
     if overlap < min_token_overlap and not rescue_applies:
