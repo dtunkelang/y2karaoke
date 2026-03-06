@@ -35,10 +35,24 @@
 
       <section class="controls compact">
         <button id="playPauseBtn">Play</button>
+        <button id="startTapPassBtn" type="button" title="Start sequential tap pass from song start">
+          Start Tap Pass
+        </button>
+        <button id="tapNextBtn" type="button" title="Set next word start to current playback time (T)">
+          Tap Next (T)
+        </button>
         <div class="mode-toggle" role="group" aria-label="Edit mode">
           <button id="wordModeBtn" class="active" type="button">Word Mode</button>
           <button id="lineModeBtn" type="button">Line Mode</button>
         </div>
+        <label class="toggle-label">
+          <input id="tapModeToggle" type="checkbox" />
+          Tap Pass Mode
+        </label>
+        <label class="toggle-label">
+          <input id="autoscrollToggle" type="checkbox" checked />
+          Autoscroll
+        </label>
         <label>
           Zoom
           <input id="zoomRange" type="range" min="20" max="300" step="10" value="90" />
@@ -59,6 +73,7 @@
       <div>
         Keyboard: Left/Right move selected word/line by 0.05s. Ctrl/Cmd+Arrow uses 0.2s coarse nudges. Shift+Arrow adjusts end only. Alt+Arrow adjusts start only. Ctrl/Cmd+Z undo.
       </div>
+      <div>Tap timing: T always stamps the next tap-cursor word start at current time and advances. Start Tap Pass resets to 0:00 and re-arms from word 1. R restarts the tap pass.</div>
       <div>Snap to audio anchors: S snap start, E snap end, A snap whole word/line to nearest onset.</div>
       <div>Anchor jump: ] next anchor, [ previous anchor (whole move). Shift+[ / Shift+] jump end only, Alt+[ / Alt+] jump start only.</div>
       <div>Line mode: drag a line ruler/bar (or use Left/Right) to shift the entire line while preserving word durations and intraline gaps.</div>

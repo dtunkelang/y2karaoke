@@ -70,7 +70,7 @@ h1 {
 }
 
 .controls.compact {
-  grid-template-columns: auto auto auto auto 1fr 1fr;
+  grid-template-columns: auto auto auto auto auto auto 1fr 1fr;
   align-items: center;
   margin-bottom: 0.5rem;
 }
@@ -80,6 +80,18 @@ label {
   gap: 0.25rem;
   font-size: 0.85rem;
   color: var(--ink-soft);
+}
+
+.toggle-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.9rem;
+  color: var(--ink);
+}
+
+.toggle-label input[type="checkbox"] {
+  margin: 0;
 }
 
 input[type="text"] {

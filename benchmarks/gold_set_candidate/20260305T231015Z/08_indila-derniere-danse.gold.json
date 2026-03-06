@@ -1,0 +1,1962 @@
+{
+  "schema_version": "1.0",
+  "title": "Derniere danse",
+  "artist": "Indila",
+  "audio_path": "",
+  "lines": [
+    {
+      "line_index": 1,
+      "text": "Oh ma douce souffrance",
+      "start": 16.05,
+      "end": 18.7,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Oh",
+          "start": 16.05,
+          "end": 16.75
+        },
+        {
+          "word_index": 2,
+          "text": "ma",
+          "start": 16.75,
+          "end": 17.4
+        },
+        {
+          "word_index": 3,
+          "text": "douce",
+          "start": 17.4,
+          "end": 18.05
+        },
+        {
+          "word_index": 4,
+          "text": "souffrance",
+          "start": 18.05,
+          "end": 18.7
+        }
+      ]
+    },
+    {
+      "line_index": 2,
+      "text": "Pourquoi s'acharner? Tu recommences",
+      "start": 18.95,
+      "end": 21.65,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Pourquoi",
+          "start": 18.95,
+          "end": 19.65
+        },
+        {
+          "word_index": 2,
+          "text": "s'acharner?",
+          "start": 19.65,
+          "end": 20.2
+        },
+        {
+          "word_index": 3,
+          "text": "Tu",
+          "start": 20.25,
+          "end": 21.05
+        },
+        {
+          "word_index": 4,
+          "text": "recommences",
+          "start": 21.05,
+          "end": 21.65
+        }
+      ]
+    },
+    {
+      "line_index": 3,
+      "text": "Je ne suis qu'un \u00eatre sans importance",
+      "start": 22.8,
+      "end": 26.65,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Je",
+          "start": 22.8,
+          "end": 23.3
+        },
+        {
+          "word_index": 2,
+          "text": "ne",
+          "start": 23.3,
+          "end": 23.85
+        },
+        {
+          "word_index": 3,
+          "text": "suis",
+          "start": 23.85,
+          "end": 24.4
+        },
+        {
+          "word_index": 4,
+          "text": "qu'un",
+          "start": 24.4,
+          "end": 24.95
+        },
+        {
+          "word_index": 5,
+          "text": "\u00eatre",
+          "start": 24.95,
+          "end": 25.5
+        },
+        {
+          "word_index": 6,
+          "text": "sans",
+          "start": 25.5,
+          "end": 26.05
+        },
+        {
+          "word_index": 7,
+          "text": "importance",
+          "start": 26.05,
+          "end": 26.65
+        }
+      ]
+    },
+    {
+      "line_index": 4,
+      "text": "Sans lui, je suis un peu paro",
+      "start": 27.0,
+      "end": 29.45,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Sans",
+          "start": 27.0,
+          "end": 27.25
+        },
+        {
+          "word_index": 2,
+          "text": "lui,",
+          "start": 27.25,
+          "end": 27.75
+        },
+        {
+          "word_index": 3,
+          "text": "je",
+          "start": 27.75,
+          "end": 28.2
+        },
+        {
+          "word_index": 4,
+          "text": "suis",
+          "start": 28.2,
+          "end": 28.55
+        },
+        {
+          "word_index": 5,
+          "text": "un",
+          "start": 28.55,
+          "end": 29.1
+        },
+        {
+          "word_index": 6,
+          "text": "peu",
+          "start": 29.1,
+          "end": 29.3
+        },
+        {
+          "word_index": 7,
+          "text": "paro",
+          "start": 29.35,
+          "end": 29.45
+        }
+      ]
+    },
+    {
+      "line_index": 5,
+      "text": "Je d\u00e9ambule seule dans le m\u00e9tro",
+      "start": 29.6,
+      "end": 31.75,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Je",
+          "start": 29.6,
+          "end": 30.05
+        },
+        {
+          "word_index": 2,
+          "text": "d\u00e9ambule",
+          "start": 30.05,
+          "end": 30.4
+        },
+        {
+          "word_index": 3,
+          "text": "seule",
+          "start": 30.4,
+          "end": 30.7
+        },
+        {
+          "word_index": 4,
+          "text": "dans",
+          "start": 30.7,
+          "end": 31.05
+        },
+        {
+          "word_index": 5,
+          "text": "le",
+          "start": 31.05,
+          "end": 31.45
+        },
+        {
+          "word_index": 6,
+          "text": "m\u00e9tro",
+          "start": 31.45,
+          "end": 31.75
+        }
+      ]
+    },
+    {
+      "line_index": 6,
+      "text": "Une derni\u00e8re danse",
+      "start": 32.6,
+      "end": 35.7,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Une",
+          "start": 32.6,
+          "end": 33.6
+        },
+        {
+          "word_index": 2,
+          "text": "derni\u00e8re",
+          "start": 33.6,
+          "end": 34.6
+        },
+        {
+          "word_index": 3,
+          "text": "danse",
+          "start": 34.6,
+          "end": 35.7
+        }
+      ]
+    },
+    {
+      "line_index": 7,
+      "text": "Pour oublier ma peine immense",
+      "start": 35.7,
+      "end": 39.15,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Pour",
+          "start": 35.7,
+          "end": 36.4
+        },
+        {
+          "word_index": 2,
+          "text": "oublier",
+          "start": 36.4,
+          "end": 37.1
+        },
+        {
+          "word_index": 3,
+          "text": "ma",
+          "start": 37.1,
+          "end": 37.75
+        },
+        {
+          "word_index": 4,
+          "text": "peine",
+          "start": 37.75,
+          "end": 38.4
+        },
+        {
+          "word_index": 5,
+          "text": "immense",
+          "start": 38.4,
+          "end": 39.15
+        }
+      ]
+    },
+    {
+      "line_index": 8,
+      "text": "Je veux m'enfuir que tout recommence",
+      "start": 39.2,
+      "end": 43.15,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Je",
+          "start": 39.2,
+          "end": 39.85
+        },
+        {
+          "word_index": 2,
+          "text": "veux",
+          "start": 39.85,
+          "end": 40.5
+        },
+        {
+          "word_index": 3,
+          "text": "m'enfuir",
+          "start": 40.5,
+          "end": 41.15
+        },
+        {
+          "word_index": 4,
+          "text": "que",
+          "start": 41.15,
+          "end": 41.8
+        },
+        {
+          "word_index": 5,
+          "text": "tout",
+          "start": 41.8,
+          "end": 42.45
+        },
+        {
+          "word_index": 6,
+          "text": "recommence",
+          "start": 42.45,
+          "end": 43.15
+        }
+      ]
+    },
+    {
+      "line_index": 9,
+      "text": "Oh ma douce souffrance",
+      "start": 43.6,
+      "end": 47.05,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Oh",
+          "start": 43.6,
+          "end": 44.1
+        },
+        {
+          "word_index": 2,
+          "text": "ma",
+          "start": 44.1,
+          "end": 45.0
+        },
+        {
+          "word_index": 3,
+          "text": "douce",
+          "start": 45.0,
+          "end": 45.4
+        },
+        {
+          "word_index": 4,
+          "text": "souffrance",
+          "start": 45.5,
+          "end": 47.05
+        }
+      ]
+    },
+    {
+      "line_index": 10,
+      "text": "Je remue le ciel, le jour, la nuit",
+      "start": 49.8,
+      "end": 53.8,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Je",
+          "start": 49.8,
+          "end": 50.3
+        },
+        {
+          "word_index": 2,
+          "text": "remue",
+          "start": 50.3,
+          "end": 50.8
+        },
+        {
+          "word_index": 3,
+          "text": "le",
+          "start": 50.8,
+          "end": 51.3
+        },
+        {
+          "word_index": 4,
+          "text": "ciel,",
+          "start": 51.3,
+          "end": 51.8
+        },
+        {
+          "word_index": 5,
+          "text": "le",
+          "start": 51.8,
+          "end": 52.3
+        },
+        {
+          "word_index": 6,
+          "text": "jour,",
+          "start": 52.3,
+          "end": 52.8
+        },
+        {
+          "word_index": 7,
+          "text": "la",
+          "start": 52.8,
+          "end": 53.25
+        },
+        {
+          "word_index": 8,
+          "text": "nuit",
+          "start": 53.25,
+          "end": 53.8
+        }
+      ]
+    },
+    {
+      "line_index": 11,
+      "text": "Je danse avec le vent, la pluie",
+      "start": 54.1,
+      "end": 58.05,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Je",
+          "start": 54.1,
+          "end": 54.65
+        },
+        {
+          "word_index": 2,
+          "text": "danse",
+          "start": 54.65,
+          "end": 55.2
+        },
+        {
+          "word_index": 3,
+          "text": "avec",
+          "start": 55.2,
+          "end": 55.75
+        },
+        {
+          "word_index": 4,
+          "text": "le",
+          "start": 55.8,
+          "end": 56.35
+        },
+        {
+          "word_index": 5,
+          "text": "vent,",
+          "start": 56.35,
+          "end": 56.9
+        },
+        {
+          "word_index": 6,
+          "text": "la",
+          "start": 56.9,
+          "end": 57.45
+        },
+        {
+          "word_index": 7,
+          "text": "pluie",
+          "start": 57.45,
+          "end": 58.05
+        }
+      ]
+    },
+    {
+      "line_index": 12,
+      "text": "Un peu d'amour, un brin de miel",
+      "start": 58.95,
+      "end": 61.8,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Un",
+          "start": 58.95,
+          "end": 59.25
+        },
+        {
+          "word_index": 2,
+          "text": "peu",
+          "start": 59.45,
+          "end": 59.75
+        },
+        {
+          "word_index": 3,
+          "text": "d'amour,",
+          "start": 59.75,
+          "end": 60.05
+        },
+        {
+          "word_index": 4,
+          "text": "un",
+          "start": 60.35,
+          "end": 60.65
+        },
+        {
+          "word_index": 5,
+          "text": "brin",
+          "start": 60.65,
+          "end": 60.95
+        },
+        {
+          "word_index": 6,
+          "text": "de",
+          "start": 61.2,
+          "end": 61.45
+        },
+        {
+          "word_index": 7,
+          "text": "miel",
+          "start": 61.45,
+          "end": 61.8
+        }
+      ]
+    },
+    {
+      "line_index": 13,
+      "text": "Et je danse, danse, danse, danse, danse, danse, danse",
+      "start": 61.8,
+      "end": 66.55,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Et",
+          "start": 61.8,
+          "end": 62.35
+        },
+        {
+          "word_index": 2,
+          "text": "je",
+          "start": 62.35,
+          "end": 62.65
+        },
+        {
+          "word_index": 3,
+          "text": "danse,",
+          "start": 62.65,
+          "end": 63.3
+        },
+        {
+          "word_index": 4,
+          "text": "danse,",
+          "start": 63.3,
+          "end": 63.8
+        },
+        {
+          "word_index": 5,
+          "text": "danse,",
+          "start": 63.8,
+          "end": 64.2
+        },
+        {
+          "word_index": 6,
+          "text": "danse,",
+          "start": 64.2,
+          "end": 64.65
+        },
+        {
+          "word_index": 7,
+          "text": "danse,",
+          "start": 64.65,
+          "end": 65.05
+        },
+        {
+          "word_index": 8,
+          "text": "danse,",
+          "start": 65.05,
+          "end": 65.5
+        },
+        {
+          "word_index": 9,
+          "text": "danse",
+          "start": 65.55,
+          "end": 66.55
+        }
+      ]
+    },
+    {
+      "line_index": 14,
+      "text": "Et dans le bruit, je cours et j'ai peur",
+      "start": 66.6,
+      "end": 70.9,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Et",
+          "start": 66.6,
+          "end": 67.15
+        },
+        {
+          "word_index": 2,
+          "text": "dans",
+          "start": 67.15,
+          "end": 67.5
+        },
+        {
+          "word_index": 3,
+          "text": "le",
+          "start": 67.5,
+          "end": 67.95
+        },
+        {
+          "word_index": 4,
+          "text": "bruit,",
+          "start": 67.95,
+          "end": 68.3
+        },
+        {
+          "word_index": 5,
+          "text": "je",
+          "start": 68.3,
+          "end": 68.65
+        },
+        {
+          "word_index": 6,
+          "text": "cours",
+          "start": 68.65,
+          "end": 69.2
+        },
+        {
+          "word_index": 7,
+          "text": "et",
+          "start": 69.2,
+          "end": 69.35
+        },
+        {
+          "word_index": 8,
+          "text": "j'ai",
+          "start": 69.35,
+          "end": 69.7
+        },
+        {
+          "word_index": 9,
+          "text": "peur",
+          "start": 69.7,
+          "end": 70.9
+        }
+      ]
+    },
+    {
+      "line_index": 15,
+      "text": "Est-ce mon tour? Vient la douleur",
+      "start": 70.9,
+      "end": 74.85,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Est-ce",
+          "start": 70.9,
+          "end": 71.55
+        },
+        {
+          "word_index": 2,
+          "text": "mon",
+          "start": 71.55,
+          "end": 72.2
+        },
+        {
+          "word_index": 3,
+          "text": "tour?",
+          "start": 72.2,
+          "end": 72.85
+        },
+        {
+          "word_index": 4,
+          "text": "Vient",
+          "start": 72.85,
+          "end": 73.5
+        },
+        {
+          "word_index": 5,
+          "text": "la",
+          "start": 73.5,
+          "end": 74.15
+        },
+        {
+          "word_index": 6,
+          "text": "douleur",
+          "start": 74.15,
+          "end": 74.85
+        }
+      ]
+    },
+    {
+      "line_index": 16,
+      "text": "Dans tout Paris, je m'abandonne",
+      "start": 74.85,
+      "end": 78.35,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Dans",
+          "start": 74.85,
+          "end": 75.25
+        },
+        {
+          "word_index": 2,
+          "text": "tout",
+          "start": 75.25,
+          "end": 75.85
+        },
+        {
+          "word_index": 3,
+          "text": "Paris,",
+          "start": 75.85,
+          "end": 76.2
+        },
+        {
+          "word_index": 4,
+          "text": "je",
+          "start": 76.2,
+          "end": 76.9
+        },
+        {
+          "word_index": 5,
+          "text": "m'abandonne",
+          "start": 76.9,
+          "end": 78.35
+        }
+      ]
+    },
+    {
+      "line_index": 17,
+      "text": "Et je m'envole, vole, vole, vole, vole, vole, vole",
+      "start": 78.35,
+      "end": 82.85,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Et",
+          "start": 78.35,
+          "end": 78.65
+        },
+        {
+          "word_index": 2,
+          "text": "je",
+          "start": 78.65,
+          "end": 79.0
+        },
+        {
+          "word_index": 3,
+          "text": "m'envole,",
+          "start": 79.0,
+          "end": 79.65
+        },
+        {
+          "word_index": 4,
+          "text": "vole,",
+          "start": 79.65,
+          "end": 80.15
+        },
+        {
+          "word_index": 5,
+          "text": "vole,",
+          "start": 80.15,
+          "end": 80.7
+        },
+        {
+          "word_index": 6,
+          "text": "vole,",
+          "start": 80.7,
+          "end": 81.0
+        },
+        {
+          "word_index": 7,
+          "text": "vole,",
+          "start": 81.0,
+          "end": 81.5
+        },
+        {
+          "word_index": 8,
+          "text": "vole,",
+          "start": 81.5,
+          "end": 81.9
+        },
+        {
+          "word_index": 9,
+          "text": "vole",
+          "start": 81.9,
+          "end": 82.85
+        }
+      ]
+    },
+    {
+      "line_index": 18,
+      "text": "Que d'esp\u00e9rance",
+      "start": 82.85,
+      "end": 85.75,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Que",
+          "start": 82.85,
+          "end": 84.2
+        },
+        {
+          "word_index": 2,
+          "text": "d'esp\u00e9rance",
+          "start": 84.2,
+          "end": 85.75
+        }
+      ]
+    },
+    {
+      "line_index": 19,
+      "text": "Sur ce chemin en ton absence",
+      "start": 85.75,
+      "end": 89.5,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Sur",
+          "start": 85.75,
+          "end": 86.35
+        },
+        {
+          "word_index": 2,
+          "text": "ce",
+          "start": 86.35,
+          "end": 86.95
+        },
+        {
+          "word_index": 3,
+          "text": "chemin",
+          "start": 86.95,
+          "end": 87.55
+        },
+        {
+          "word_index": 4,
+          "text": "en",
+          "start": 87.55,
+          "end": 88.2
+        },
+        {
+          "word_index": 5,
+          "text": "ton",
+          "start": 88.2,
+          "end": 88.8
+        },
+        {
+          "word_index": 6,
+          "text": "absence",
+          "start": 88.8,
+          "end": 89.5
+        }
+      ]
+    },
+    {
+      "line_index": 20,
+      "text": "J'ai beau trimer",
+      "start": 89.95,
+      "end": 91.15,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "J'ai",
+          "start": 89.95,
+          "end": 90.25
+        },
+        {
+          "word_index": 2,
+          "text": "beau",
+          "start": 90.25,
+          "end": 90.6
+        },
+        {
+          "word_index": 3,
+          "text": "trimer",
+          "start": 90.6,
+          "end": 91.15
+        }
+      ]
+    },
+    {
+      "line_index": 21,
+      "text": "Sans toi ma vie n'est qu'un d\u00e9cor qui brille, vide de sens",
+      "start": 91.15,
+      "end": 96.4,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Sans",
+          "start": 91.15,
+          "end": 91.4
+        },
+        {
+          "word_index": 2,
+          "text": "toi",
+          "start": 91.4,
+          "end": 91.65
+        },
+        {
+          "word_index": 3,
+          "text": "ma",
+          "start": 91.65,
+          "end": 92.2
+        },
+        {
+          "word_index": 4,
+          "text": "vie",
+          "start": 92.2,
+          "end": 92.8
+        },
+        {
+          "word_index": 5,
+          "text": "n'est",
+          "start": 92.8,
+          "end": 93.25
+        },
+        {
+          "word_index": 6,
+          "text": "qu'un",
+          "start": 93.25,
+          "end": 93.8
+        },
+        {
+          "word_index": 7,
+          "text": "d\u00e9cor",
+          "start": 93.8,
+          "end": 94.35
+        },
+        {
+          "word_index": 8,
+          "text": "qui",
+          "start": 94.35,
+          "end": 94.8
+        },
+        {
+          "word_index": 9,
+          "text": "brille,",
+          "start": 94.8,
+          "end": 95.2
+        },
+        {
+          "word_index": 10,
+          "text": "vide",
+          "start": 95.2,
+          "end": 95.5
+        },
+        {
+          "word_index": 11,
+          "text": "de",
+          "start": 95.5,
+          "end": 96.0
+        },
+        {
+          "word_index": 12,
+          "text": "sens",
+          "start": 96.0,
+          "end": 96.4
+        }
+      ]
+    },
+    {
+      "line_index": 22,
+      "text": "Je remue le ciel, le jour, la nuit",
+      "start": 100.05,
+      "end": 104.2,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Je",
+          "start": 100.05,
+          "end": 100.55
+        },
+        {
+          "word_index": 2,
+          "text": "remue",
+          "start": 100.55,
+          "end": 101.05
+        },
+        {
+          "word_index": 3,
+          "text": "le",
+          "start": 101.05,
+          "end": 101.6
+        },
+        {
+          "word_index": 4,
+          "text": "ciel,",
+          "start": 101.6,
+          "end": 102.1
+        },
+        {
+          "word_index": 5,
+          "text": "le",
+          "start": 102.1,
+          "end": 102.6
+        },
+        {
+          "word_index": 6,
+          "text": "jour,",
+          "start": 102.6,
+          "end": 103.15
+        },
+        {
+          "word_index": 7,
+          "text": "la",
+          "start": 103.15,
+          "end": 103.65
+        },
+        {
+          "word_index": 8,
+          "text": "nuit",
+          "start": 103.65,
+          "end": 104.2
+        }
+      ]
+    },
+    {
+      "line_index": 23,
+      "text": "Je danse avec le vent, la pluie",
+      "start": 104.2,
+      "end": 108.1,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Je",
+          "start": 104.2,
+          "end": 104.75
+        },
+        {
+          "word_index": 2,
+          "text": "danse",
+          "start": 104.75,
+          "end": 105.3
+        },
+        {
+          "word_index": 3,
+          "text": "avec",
+          "start": 105.3,
+          "end": 105.85
+        },
+        {
+          "word_index": 4,
+          "text": "le",
+          "start": 105.85,
+          "end": 106.4
+        },
+        {
+          "word_index": 5,
+          "text": "vent,",
+          "start": 106.4,
+          "end": 106.95
+        },
+        {
+          "word_index": 6,
+          "text": "la",
+          "start": 106.95,
+          "end": 107.5
+        },
+        {
+          "word_index": 7,
+          "text": "pluie",
+          "start": 107.5,
+          "end": 108.1
+        }
+      ]
+    },
+    {
+      "line_index": 24,
+      "text": "Un peu d'amour, un brin de miel",
+      "start": 108.1,
+      "end": 111.65,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Un",
+          "start": 108.1,
+          "end": 108.6
+        },
+        {
+          "word_index": 2,
+          "text": "peu",
+          "start": 108.6,
+          "end": 109.1
+        },
+        {
+          "word_index": 3,
+          "text": "d'amour,",
+          "start": 109.1,
+          "end": 109.6
+        },
+        {
+          "word_index": 4,
+          "text": "un",
+          "start": 109.6,
+          "end": 110.1
+        },
+        {
+          "word_index": 5,
+          "text": "brin",
+          "start": 110.1,
+          "end": 110.6
+        },
+        {
+          "word_index": 6,
+          "text": "de",
+          "start": 110.6,
+          "end": 111.1
+        },
+        {
+          "word_index": 7,
+          "text": "miel",
+          "start": 111.1,
+          "end": 111.65
+        }
+      ]
+    },
+    {
+      "line_index": 25,
+      "text": "Et je danse, danse, danse, danse, danse, danse, danse",
+      "start": 111.65,
+      "end": 116.75,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Et",
+          "start": 111.65,
+          "end": 112.0
+        },
+        {
+          "word_index": 2,
+          "text": "je",
+          "start": 112.0,
+          "end": 112.55
+        },
+        {
+          "word_index": 3,
+          "text": "danse,",
+          "start": 112.55,
+          "end": 113.0
+        },
+        {
+          "word_index": 4,
+          "text": "danse,",
+          "start": 113.0,
+          "end": 113.6
+        },
+        {
+          "word_index": 5,
+          "text": "danse,",
+          "start": 113.6,
+          "end": 114.05
+        },
+        {
+          "word_index": 6,
+          "text": "danse,",
+          "start": 114.05,
+          "end": 114.5
+        },
+        {
+          "word_index": 7,
+          "text": "danse,",
+          "start": 114.5,
+          "end": 115.15
+        },
+        {
+          "word_index": 8,
+          "text": "danse,",
+          "start": 115.15,
+          "end": 115.85
+        },
+        {
+          "word_index": 9,
+          "text": "danse",
+          "start": 115.85,
+          "end": 116.75
+        }
+      ]
+    },
+    {
+      "line_index": 26,
+      "text": "Et dans le bruit, je cours et j'ai peur",
+      "start": 116.75,
+      "end": 120.9,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Et",
+          "start": 116.75,
+          "end": 117.05
+        },
+        {
+          "word_index": 2,
+          "text": "dans",
+          "start": 117.05,
+          "end": 117.5
+        },
+        {
+          "word_index": 3,
+          "text": "le",
+          "start": 117.5,
+          "end": 117.9
+        },
+        {
+          "word_index": 4,
+          "text": "bruit,",
+          "start": 117.9,
+          "end": 118.7
+        },
+        {
+          "word_index": 5,
+          "text": "je",
+          "start": 118.7,
+          "end": 119.35
+        },
+        {
+          "word_index": 6,
+          "text": "cours",
+          "start": 119.35,
+          "end": 119.65
+        },
+        {
+          "word_index": 7,
+          "text": "et",
+          "start": 119.65,
+          "end": 119.95
+        },
+        {
+          "word_index": 8,
+          "text": "j'ai",
+          "start": 119.95,
+          "end": 120.2
+        },
+        {
+          "word_index": 9,
+          "text": "peur",
+          "start": 120.2,
+          "end": 120.9
+        }
+      ]
+    },
+    {
+      "line_index": 27,
+      "text": "Est-ce mon tour? Vient la douleur",
+      "start": 120.9,
+      "end": 124.95,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Est-ce",
+          "start": 120.9,
+          "end": 121.55
+        },
+        {
+          "word_index": 2,
+          "text": "mon",
+          "start": 121.55,
+          "end": 122.25
+        },
+        {
+          "word_index": 3,
+          "text": "tour?",
+          "start": 122.25,
+          "end": 122.95
+        },
+        {
+          "word_index": 4,
+          "text": "Vient",
+          "start": 122.95,
+          "end": 123.6
+        },
+        {
+          "word_index": 5,
+          "text": "la",
+          "start": 123.6,
+          "end": 124.25
+        },
+        {
+          "word_index": 6,
+          "text": "douleur",
+          "start": 124.25,
+          "end": 124.95
+        }
+      ]
+    },
+    {
+      "line_index": 28,
+      "text": "Dans tout Paris, je m'abandonne",
+      "start": 124.95,
+      "end": 128.05,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Dans",
+          "start": 124.95,
+          "end": 125.45
+        },
+        {
+          "word_index": 2,
+          "text": "tout",
+          "start": 125.45,
+          "end": 126.0
+        },
+        {
+          "word_index": 3,
+          "text": "Paris,",
+          "start": 126.0,
+          "end": 126.3
+        },
+        {
+          "word_index": 4,
+          "text": "je",
+          "start": 126.3,
+          "end": 126.7
+        },
+        {
+          "word_index": 5,
+          "text": "m'abandonne",
+          "start": 126.7,
+          "end": 128.05
+        }
+      ]
+    },
+    {
+      "line_index": 29,
+      "text": "Et je m'envole, vole, vole, vole, vole, vole vole",
+      "start": 128.05,
+      "end": 133.35,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Et",
+          "start": 128.05,
+          "end": 128.3
+        },
+        {
+          "word_index": 2,
+          "text": "je",
+          "start": 128.3,
+          "end": 128.9
+        },
+        {
+          "word_index": 3,
+          "text": "m'envole,",
+          "start": 128.9,
+          "end": 130.1
+        },
+        {
+          "word_index": 4,
+          "text": "vole,",
+          "start": 130.1,
+          "end": 130.7
+        },
+        {
+          "word_index": 5,
+          "text": "vole,",
+          "start": 130.7,
+          "end": 131.25
+        },
+        {
+          "word_index": 6,
+          "text": "vole,",
+          "start": 131.25,
+          "end": 131.75
+        },
+        {
+          "word_index": 7,
+          "text": "vole,",
+          "start": 131.75,
+          "end": 132.35
+        },
+        {
+          "word_index": 8,
+          "text": "vole",
+          "start": 132.35,
+          "end": 132.8
+        },
+        {
+          "word_index": 9,
+          "text": "vole",
+          "start": 132.8,
+          "end": 133.35
+        }
+      ]
+    },
+    {
+      "line_index": 30,
+      "text": "Dans cette douce souffrance",
+      "start": 148.55,
+      "end": 152.35,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Dans",
+          "start": 148.55,
+          "end": 149.1
+        },
+        {
+          "word_index": 2,
+          "text": "cette",
+          "start": 149.1,
+          "end": 149.8
+        },
+        {
+          "word_index": 3,
+          "text": "douce",
+          "start": 149.8,
+          "end": 150.5
+        },
+        {
+          "word_index": 4,
+          "text": "souffrance",
+          "start": 150.5,
+          "end": 152.35
+        }
+      ]
+    },
+    {
+      "line_index": 31,
+      "text": "Dont j'ai pay\u00e9 toutes les offenses",
+      "start": 152.45,
+      "end": 156.9,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Dont",
+          "start": 152.45,
+          "end": 152.9
+        },
+        {
+          "word_index": 2,
+          "text": "j'ai",
+          "start": 152.9,
+          "end": 153.55
+        },
+        {
+          "word_index": 3,
+          "text": "pay\u00e9",
+          "start": 153.55,
+          "end": 153.95
+        },
+        {
+          "word_index": 4,
+          "text": "toutes",
+          "start": 153.95,
+          "end": 154.4
+        },
+        {
+          "word_index": 5,
+          "text": "les",
+          "start": 154.4,
+          "end": 154.85
+        },
+        {
+          "word_index": 6,
+          "text": "offenses",
+          "start": 154.85,
+          "end": 156.9
+        }
+      ]
+    },
+    {
+      "line_index": 32,
+      "text": "\u00c9coute comme mon c\u0153ur est immense",
+      "start": 156.95,
+      "end": 160.75,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "\u00c9coute",
+          "start": 156.95,
+          "end": 157.35
+        },
+        {
+          "word_index": 2,
+          "text": "comme",
+          "start": 157.35,
+          "end": 157.95
+        },
+        {
+          "word_index": 3,
+          "text": "mon",
+          "start": 157.95,
+          "end": 158.4
+        },
+        {
+          "word_index": 4,
+          "text": "c\u0153ur",
+          "start": 158.4,
+          "end": 158.7
+        },
+        {
+          "word_index": 5,
+          "text": "est",
+          "start": 158.7,
+          "end": 159.05
+        },
+        {
+          "word_index": 6,
+          "text": "immense",
+          "start": 159.05,
+          "end": 160.75
+        }
+      ]
+    },
+    {
+      "line_index": 33,
+      "text": "Je suis une enfant du monde",
+      "start": 160.8,
+      "end": 165.35,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Je",
+          "start": 160.8,
+          "end": 161.35
+        },
+        {
+          "word_index": 2,
+          "text": "suis",
+          "start": 161.35,
+          "end": 161.65
+        },
+        {
+          "word_index": 3,
+          "text": "une",
+          "start": 161.65,
+          "end": 162.05
+        },
+        {
+          "word_index": 4,
+          "text": "enfant",
+          "start": 162.05,
+          "end": 162.6
+        },
+        {
+          "word_index": 5,
+          "text": "du",
+          "start": 162.6,
+          "end": 162.75
+        },
+        {
+          "word_index": 6,
+          "text": "monde",
+          "start": 162.75,
+          "end": 165.35
+        }
+      ]
+    },
+    {
+      "line_index": 34,
+      "text": "Je remue le ciel, le jour, la nuit",
+      "start": 166.65,
+      "end": 170.9,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Je",
+          "start": 166.65,
+          "end": 167.15
+        },
+        {
+          "word_index": 2,
+          "text": "remue",
+          "start": 167.15,
+          "end": 167.5
+        },
+        {
+          "word_index": 3,
+          "text": "le",
+          "start": 167.5,
+          "end": 167.85
+        },
+        {
+          "word_index": 4,
+          "text": "ciel,",
+          "start": 167.85,
+          "end": 168.75
+        },
+        {
+          "word_index": 5,
+          "text": "le",
+          "start": 168.75,
+          "end": 169.0
+        },
+        {
+          "word_index": 6,
+          "text": "jour,",
+          "start": 169.0,
+          "end": 169.8
+        },
+        {
+          "word_index": 7,
+          "text": "la",
+          "start": 169.8,
+          "end": 170.35
+        },
+        {
+          "word_index": 8,
+          "text": "nuit",
+          "start": 170.35,
+          "end": 170.9
+        }
+      ]
+    },
+    {
+      "line_index": 35,
+      "text": "Je danse avec le vent, la pluie",
+      "start": 171.65,
+      "end": 175.25,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Je",
+          "start": 171.65,
+          "end": 172.1
+        },
+        {
+          "word_index": 2,
+          "text": "danse",
+          "start": 172.1,
+          "end": 172.4
+        },
+        {
+          "word_index": 3,
+          "text": "avec",
+          "start": 172.4,
+          "end": 173.35
+        },
+        {
+          "word_index": 4,
+          "text": "le",
+          "start": 173.35,
+          "end": 173.65
+        },
+        {
+          "word_index": 5,
+          "text": "vent,",
+          "start": 173.65,
+          "end": 173.95
+        },
+        {
+          "word_index": 6,
+          "text": "la",
+          "start": 173.95,
+          "end": 174.3
+        },
+        {
+          "word_index": 7,
+          "text": "pluie",
+          "start": 174.3,
+          "end": 175.25
+        }
+      ]
+    },
+    {
+      "line_index": 36,
+      "text": "Un peu d'amour, un brin de miel",
+      "start": 175.75,
+      "end": 178.6,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Un",
+          "start": 175.75,
+          "end": 175.95
+        },
+        {
+          "word_index": 2,
+          "text": "peu",
+          "start": 175.95,
+          "end": 176.1
+        },
+        {
+          "word_index": 3,
+          "text": "d'amour,",
+          "start": 176.1,
+          "end": 177.05
+        },
+        {
+          "word_index": 4,
+          "text": "un",
+          "start": 177.05,
+          "end": 177.25
+        },
+        {
+          "word_index": 5,
+          "text": "brin",
+          "start": 177.25,
+          "end": 177.4
+        },
+        {
+          "word_index": 6,
+          "text": "de",
+          "start": 177.4,
+          "end": 177.6
+        },
+        {
+          "word_index": 7,
+          "text": "miel",
+          "start": 177.6,
+          "end": 178.6
+        }
+      ]
+    },
+    {
+      "line_index": 37,
+      "text": "Et je danse, danse, danse, danse, danse, danse, danse",
+      "start": 178.8,
+      "end": 183.8,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Et",
+          "start": 178.8,
+          "end": 179.0
+        },
+        {
+          "word_index": 2,
+          "text": "je",
+          "start": 179.0,
+          "end": 179.3
+        },
+        {
+          "word_index": 3,
+          "text": "danse,",
+          "start": 179.3,
+          "end": 179.85
+        },
+        {
+          "word_index": 4,
+          "text": "danse,",
+          "start": 179.85,
+          "end": 180.4
+        },
+        {
+          "word_index": 5,
+          "text": "danse,",
+          "start": 180.4,
+          "end": 181.0
+        },
+        {
+          "word_index": 6,
+          "text": "danse,",
+          "start": 181.0,
+          "end": 181.55
+        },
+        {
+          "word_index": 7,
+          "text": "danse,",
+          "start": 181.55,
+          "end": 182.1
+        },
+        {
+          "word_index": 8,
+          "text": "danse,",
+          "start": 182.1,
+          "end": 182.8
+        },
+        {
+          "word_index": 9,
+          "text": "danse",
+          "start": 182.8,
+          "end": 183.8
+        }
+      ]
+    },
+    {
+      "line_index": 38,
+      "text": "Et dans le bruit, je cours et j'ai peur",
+      "start": 183.8,
+      "end": 188.15,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Et",
+          "start": 183.8,
+          "end": 184.0
+        },
+        {
+          "word_index": 2,
+          "text": "dans",
+          "start": 184.0,
+          "end": 184.15
+        },
+        {
+          "word_index": 3,
+          "text": "le",
+          "start": 184.15,
+          "end": 184.4
+        },
+        {
+          "word_index": 4,
+          "text": "bruit,",
+          "start": 184.4,
+          "end": 185.25
+        },
+        {
+          "word_index": 5,
+          "text": "je",
+          "start": 185.25,
+          "end": 185.5
+        },
+        {
+          "word_index": 6,
+          "text": "cours",
+          "start": 185.5,
+          "end": 185.9
+        },
+        {
+          "word_index": 7,
+          "text": "et",
+          "start": 185.9,
+          "end": 186.15
+        },
+        {
+          "word_index": 8,
+          "text": "j'ai",
+          "start": 186.15,
+          "end": 186.45
+        },
+        {
+          "word_index": 9,
+          "text": "peur",
+          "start": 186.45,
+          "end": 188.15
+        }
+      ]
+    },
+    {
+      "line_index": 39,
+      "text": "Est-ce mon tour? Vient la douleur",
+      "start": 188.15,
+      "end": 192.15,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Est-ce",
+          "start": 188.15,
+          "end": 188.55
+        },
+        {
+          "word_index": 2,
+          "text": "mon",
+          "start": 188.55,
+          "end": 188.95
+        },
+        {
+          "word_index": 3,
+          "text": "tour?",
+          "start": 188.95,
+          "end": 189.6
+        },
+        {
+          "word_index": 4,
+          "text": "Vient",
+          "start": 189.6,
+          "end": 189.85
+        },
+        {
+          "word_index": 5,
+          "text": "la",
+          "start": 189.85,
+          "end": 190.4
+        },
+        {
+          "word_index": 6,
+          "text": "douleur",
+          "start": 190.4,
+          "end": 192.15
+        }
+      ]
+    },
+    {
+      "line_index": 40,
+      "text": "Dans tout Paris, je m'abandonne",
+      "start": 192.15,
+      "end": 195.6,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Dans",
+          "start": 192.15,
+          "end": 192.65
+        },
+        {
+          "word_index": 2,
+          "text": "tout",
+          "start": 192.65,
+          "end": 193.1
+        },
+        {
+          "word_index": 3,
+          "text": "Paris,",
+          "start": 193.1,
+          "end": 193.75
+        },
+        {
+          "word_index": 4,
+          "text": "je",
+          "start": 193.75,
+          "end": 194.0
+        },
+        {
+          "word_index": 5,
+          "text": "m'abandonne",
+          "start": 194.0,
+          "end": 195.6
+        }
+      ]
+    },
+    {
+      "line_index": 41,
+      "text": "Et je m'envole, vole, vole, vole, vole, vole vole",
+      "start": 195.6,
+      "end": 200.55,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Et",
+          "start": 195.6,
+          "end": 195.85
+        },
+        {
+          "word_index": 2,
+          "text": "je",
+          "start": 195.85,
+          "end": 196.05
+        },
+        {
+          "word_index": 3,
+          "text": "m'envole,",
+          "start": 196.05,
+          "end": 196.6
+        },
+        {
+          "word_index": 4,
+          "text": "vole,",
+          "start": 196.6,
+          "end": 197.2
+        },
+        {
+          "word_index": 5,
+          "text": "vole,",
+          "start": 197.2,
+          "end": 197.65
+        },
+        {
+          "word_index": 6,
+          "text": "vole,",
+          "start": 197.65,
+          "end": 198.35
+        },
+        {
+          "word_index": 7,
+          "text": "vole,",
+          "start": 198.35,
+          "end": 199.0
+        },
+        {
+          "word_index": 8,
+          "text": "vole",
+          "start": 199.0,
+          "end": 199.85
+        },
+        {
+          "word_index": 9,
+          "text": "vole",
+          "start": 199.85,
+          "end": 200.55
+        }
+      ]
+    }
+  ]
+}

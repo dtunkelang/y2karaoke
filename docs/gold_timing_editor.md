@@ -12,6 +12,8 @@ The Gold Timing Editor is a local web application for manual refinement of word-
 - **High-Performance Playback**: Uses `requestAnimationFrame` for perfectly synchronized visual feedback at 60 FPS.
 - **Sticky Controls**: The play button and edit modes stay pinned to the top of the viewport during scrolling.
 - **Autoscroll**: Playback and seek actions auto-scroll so the current lyric line stays visible near the top of the timeline window.
+- **Autoscroll Toggle**: Disable follow-scroll when you want to listen and edit without viewport movement.
+- **Tap Pass Mode**: Enables strict sequential tapping so each key press stamps the next word from the beginning.
 - **LRC Integration**: Synchronizes with LRC files to provide a robust starting point.
 
 ## Standard Workflow
@@ -33,6 +35,8 @@ The Gold Timing Editor is a local web application for manual refinement of word-
 - **S**: Snap selected word start (or line start in line mode) to nearest audio anchor.
 - **E**: Snap selected word end to nearest audio anchor.
 - **A**: Snap selected word or line as a whole to nearest audio anchor.
+- **T**: Set the tap-cursor word start to the current playback time, then advance to the next word.
+- **R**: Restart tap pass from 0:00 (arms sequential tapping and starts playback).
 - **[ / ]**: Jump selected word/line to previous/next audio anchor.
 - **Shift + [ / ]**: Jump selected word end to previous/next anchor.
 - **Alt + [ / ]**: Jump selected word start to previous/next anchor.
@@ -45,3 +49,5 @@ You can pre-load the editor by passing query parameters:
 - `timing`: Absolute path to the timing JSON.
 - `audio`: Absolute path to the audio file (wav/mp3/m4a).
 - `save`: Absolute path where changes should be saved.
+- `autoscroll`: Optional (`1/0`, `true/false`) initial follow-scroll setting.
+- `tapmode`: Optional (`1/0`, `true/false`) initial tap-pass mode setting.

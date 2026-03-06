@@ -12,6 +12,9 @@ const state = {
   audioAnalysisToken: 0,
   audioAnalysisReady: false,
   sessionStats: null,
+  autoScrollEnabled: true,
+  tapPassMode: false,
+  tapCursor: null,
 };
 const MIN_WORD_DURATION = 0.1;
 const SNAP_SECONDS = 0.05;
@@ -28,8 +31,12 @@ const els = {
   savePath: document.getElementById("savePath"),
   saveBtn: document.getElementById("saveBtn"),
   playPauseBtn: document.getElementById("playPauseBtn"),
+  startTapPassBtn: document.getElementById("startTapPassBtn"),
+  tapNextBtn: document.getElementById("tapNextBtn"),
   wordModeBtn: document.getElementById("wordModeBtn"),
   lineModeBtn: document.getElementById("lineModeBtn"),
+  tapModeToggle: document.getElementById("tapModeToggle"),
+  autoscrollToggle: document.getElementById("autoscrollToggle"),
   zoomRange: document.getElementById("zoomRange"),
   playbackInfo: document.getElementById("playbackInfo"),
   selectionInfo: document.getElementById("selectionInfo"),
@@ -40,6 +47,20 @@ const els = {
 
 function snap(v) {
   return Math.round((Math.round(v / SNAP_SECONDS) * SNAP_SECONDS) * 1000) / 1000;
+}
+
+function isTextEditable(el) {
+  return (
+    el instanceof HTMLElement &&
+    (el.tagName === "INPUT" || el.tagName === "TEXTAREA" || el.isContentEditable)
+  );
+}
+
+function blurEditableFocus() {
+  const active = document.activeElement;
+  if (isTextEditable(active)) {
+    active.blur();
+  }
 }
 
 function setStatus(msg, isError = false) {
@@ -127,11 +148,77 @@ function findPrevWord(li, wi) {
   return prevLine.words[prevLine.words.length - 1];
 }
 
-function findNextWord(li, wi) {
+function findNextWordRef(li, wi) {
+  if (!state.doc?.lines?.length) return null;
   const line = state.doc.lines[li];
-  if (wi + 1 < line.words.length) return line.words[wi + 1];
+  if (!line) return null;
+  if (wi + 1 < line.words.length) return { li, wi: wi + 1 };
   if (li + 1 >= state.doc.lines.length) return null;
-  return state.doc.lines[li + 1].words[0];
+  if (!state.doc.lines[li + 1].words.length) return null;
+  return { li: li + 1, wi: 0 };
+}
+
+function firstWordRef() {
+  if (!state.doc?.lines?.length) return null;
+  for (let li = 0; li < state.doc.lines.length; li += 1) {
+    if (state.doc.lines[li].words.length) return { li, wi: 0 };
+  }
+  return null;
+}
+
+function setTapPassMode(enabled) {
+  state.tapPassMode = Boolean(enabled);
+  if (els.tapModeToggle) {
+    els.tapModeToggle.checked = state.tapPassMode;
+  }
+  if (!state.tapCursor) {
+    state.tapCursor = firstWordRef();
+  }
+}
+
+function stampWordStartToCurrentTime(li, wi) {
+  if (!state.doc || Number.isNaN(els.audio.currentTime)) return false;
+  const word = state.doc.lines?.[li]?.words?.[wi];
+  if (!word) return false;
+  const duration = Math.max(word.end - word.start, MIN_WORD_DURATION);
+  setWordTiming(li, wi, els.audio.currentTime, els.audio.currentTime + duration);
+  return true;
+}
+
+function stampTapCursorWordToCurrentTime() {
+  if (!state.doc) return false;
+  if (!state.tapCursor) {
+    state.tapCursor = firstWordRef();
+  }
+  if (!state.tapCursor) return false;
+
+  const { li, wi } = state.tapCursor;
+  if (!stampWordStartToCurrentTime(li, wi)) return false;
+
+  const nextRef = findNextWordRef(li, wi);
+  state.tapCursor = nextRef;
+  if (nextRef) {
+    selectWord(nextRef.li, nextRef.wi);
+  } else {
+    selectWord(li, wi);
+  }
+  return true;
+}
+
+function startTapPassFromBeginning() {
+  if (!state.doc) return false;
+  const first = firstWordRef();
+  if (!first) return false;
+  setTapPassMode(true);
+  state.tapCursor = first;
+  selectWord(first.li, first.wi);
+  state.pendingSeekScroll = state.autoScrollEnabled;
+  els.audio.currentTime = 0;
+  els.playbackInfo.textContent = `t=${els.audio.currentTime.toFixed(1)}s`;
+  if (els.audio.paused) {
+    els.audio.play();
+  }
+  return true;
 }
 
 function updateLineBounds() {
@@ -243,6 +330,7 @@ function startLineDrag(li, ev, pxPerSec = state.secondsToPx) {
   if (!line || !line.words?.length) return;
   ev.preventDefault();
   ev.stopPropagation();
+  blurEditableFocus();
   snapshotForUndo();
   selectLine(li);
   state.drag = {
@@ -819,7 +907,7 @@ function updatePlaybackVisuals() {
   });
 
   // Follow playback/seek by keeping the active row near the top of the viewport.
-  if (currentActiveLineIndex !== -1) {
+  if (state.autoScrollEnabled && currentActiveLineIndex !== -1) {
     const activeChanged = currentActiveLineIndex !== state.lastActiveLineIndex;
     const shouldFollow = activeChanged || state.pendingSeekScroll;
     state.lastActiveLineIndex = currentActiveLineIndex;
@@ -868,6 +956,7 @@ function pinRowToPlaybackWindowTop(
   row,
   { behavior = "smooth", force = false } = {}
 ) {
+  if (!state.autoScrollEnabled) return;
   const rowRect = row.getBoundingClientRect();
   const viewportTop = playbackViewportTopOffsetPx();
   const delta = rowRect.top - viewportTop;
@@ -966,6 +1055,7 @@ async function postJson(url, payload) {
 async function loadTimingPath(path) {
   const data = await postJson("/api/load", { path });
   state.doc = data.document;
+  state.tapCursor = firstWordRef();
   resetUndo();
   resetSessionStats();
   updateLineBounds();
@@ -1032,6 +1122,31 @@ els.playPauseBtn.addEventListener("click", () => {
   }
 });
 
+els.startTapPassBtn.addEventListener("click", () => {
+  if (!state.doc) return;
+  const started = startTapPassFromBeginning();
+  if (!started) {
+    setStatus("Unable to start tap pass (no words loaded).", true);
+    return;
+  }
+  setStatus("Tap pass started from 0:00. Press T on each word onset.");
+  render();
+});
+
+els.tapNextBtn.addEventListener("click", () => {
+  if (!state.doc) return;
+  snapshotForUndo();
+  const stamped = stampTapCursorWordToCurrentTime();
+  if (!stamped) {
+    state.undoStack.pop();
+    setStatus("Tap pass is complete (no remaining words).");
+    return;
+  }
+  recordEdit("nudge-fine");
+  setStatus("Stamped tap-pass cursor word and advanced.");
+  render();
+});
+
 els.wordModeBtn.addEventListener("click", () => setEditMode("word"));
 els.lineModeBtn.addEventListener("click", () => setEditMode("line"));
 
@@ -1057,11 +1172,30 @@ els.audio.addEventListener("timeupdate", () => {
 });
 
 els.audio.addEventListener("seeking", () => {
-  state.pendingSeekScroll = true;
+  state.pendingSeekScroll = state.autoScrollEnabled;
 });
 
 els.zoomRange.addEventListener("input", () => {
   state.secondsToPx = Number(els.zoomRange.value);
+  render();
+});
+
+els.autoscrollToggle.addEventListener("change", () => {
+  state.autoScrollEnabled = Boolean(els.autoscrollToggle.checked);
+  state.pendingSeekScroll = false;
+  if (state.autoScrollEnabled) {
+    setStatus("Autoscroll enabled.");
+  } else {
+    setStatus("Autoscroll disabled.");
+  }
+});
+
+els.tapModeToggle.addEventListener("change", () => {
+  setTapPassMode(Boolean(els.tapModeToggle.checked));
+  if (state.tapPassMode && !state.tapCursor) {
+    state.tapCursor = firstWordRef();
+  }
+  setStatus(state.tapPassMode ? "Tap pass mode enabled." : "Tap pass mode disabled.");
   render();
 });
 
@@ -1101,7 +1235,7 @@ document.addEventListener("mouseup", () => {
   ) {
     const word = state.doc?.lines?.[state.drag.li]?.words?.[state.drag.wi];
     if (word && typeof word.start === "number") {
-      state.pendingSeekScroll = true;
+      state.pendingSeekScroll = state.autoScrollEnabled;
       els.audio.currentTime = Math.max(0, word.start);
       els.playbackInfo.textContent = `t=${els.audio.currentTime.toFixed(1)}s`;
     }
@@ -1114,6 +1248,10 @@ document.addEventListener("mouseup", () => {
 
 document.addEventListener("keydown", (ev) => {
   if (!state.doc) return;
+  const target = ev.target;
+  if (isTextEditable(target)) {
+    return;
+  }
   const key = ev.key;
 
   if (key === " ") {
@@ -1174,6 +1312,33 @@ document.addEventListener("keydown", (ev) => {
     return;
   }
 
+  if (lower === "t") {
+    ev.preventDefault();
+    snapshotForUndo();
+    const stamped = stampTapCursorWordToCurrentTime();
+    if (!stamped) {
+      state.undoStack.pop();
+      setStatus("Tap pass is complete (no remaining words).");
+      return;
+    }
+    recordEdit("nudge-fine");
+    setStatus("Stamped tap-pass cursor word and advanced.");
+    render();
+    return;
+  }
+
+  if (lower === "r") {
+    ev.preventDefault();
+    const started = startTapPassFromBeginning();
+    if (!started) {
+      setStatus("Unable to start tap pass (no words loaded).", true);
+      return;
+    }
+    setStatus("Tap pass restarted from 0:00. Press T on each word onset.");
+    render();
+    return;
+  }
+
   if (key === "[" || key === "]") {
     ev.preventDefault();
     snapshotForUndo();
@@ -1196,6 +1361,10 @@ document.addEventListener("keydown", (ev) => {
 });
 
 document.addEventListener("keydown", (ev) => {
+  const target = ev.target;
+  if (isTextEditable(target)) {
+    return;
+  }
   if ((ev.metaKey || ev.ctrlKey) && ev.key.toLowerCase() === "z") {
     ev.preventDefault();
     undo();
@@ -1212,10 +1381,21 @@ async function applyUrlParams() {
     params.get("audio") || params.get("audioFile") || params.get("audio_path");
   const save =
     params.get("save") || params.get("gold") || params.get("goldFile");
+  const autoscroll = params.get("autoscroll");
+  const tapMode = params.get("tapmode");
 
   if (timing) els.timingPath.value = timing;
   if (audio) els.audioPath.value = audio;
   if (save) els.savePath.value = save;
+  if (autoscroll != null) {
+    const enabled = !["0", "false", "off"].includes(autoscroll.toLowerCase());
+    state.autoScrollEnabled = enabled;
+    els.autoscrollToggle.checked = enabled;
+  }
+  if (tapMode != null) {
+    const enabled = !["0", "false", "off"].includes(tapMode.toLowerCase());
+    setTapPassMode(enabled);
+  }
 
   if (audio) {
     loadAudioPath(audio);
@@ -1240,5 +1420,7 @@ function startAnimationLoop() {
 setStatus("Load timing + audio to start.");
 resetSessionStats();
 setEditMode("word");
+setTapPassMode(false);
+els.timeline.addEventListener("mousedown", blurEditableFocus);
 applyUrlParams();
 startAnimationLoop();
