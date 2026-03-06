@@ -426,6 +426,28 @@ def test_extract_song_metrics_surfaces_local_transcribe_cache_counters() -> None
     assert metrics["local_transcribe_cache_misses"] == 1
 
 
+def test_extract_song_metrics_surfaces_tail_guardrail_fields() -> None:
+    module = _load_module()
+    report = {
+        "dtw_line_coverage": 1.0,
+        "dtw_metrics": {
+            "tail_guardrail_flagged": 1.0,
+            "tail_guardrail_fallback_attempted": 1.0,
+            "tail_guardrail_fallback_applied": 0.0,
+            "tail_guardrail_target_coverage_ratio": 0.81234,
+            "tail_guardrail_target_shortfall_sec": 28.1234,
+        },
+        "lines": [],
+        "low_confidence_lines": [],
+    }
+    metrics = module._extract_song_metrics(report)
+    assert metrics["tail_guardrail_flagged"] == 1
+    assert metrics["tail_guardrail_fallback_attempted"] == 1
+    assert metrics["tail_guardrail_fallback_applied"] == 0
+    assert metrics["tail_guardrail_target_coverage_ratio"] == 0.8123
+    assert metrics["tail_guardrail_target_shortfall_sec"] == 28.1234
+
+
 def test_extract_song_metrics_adaptive_rescue_accepts_good_timing_high_overlap() -> (
     None
 ):

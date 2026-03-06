@@ -493,6 +493,58 @@ def test_apply_whisper_with_quality_marks_no_evidence_fallback_as_lrc_only():
     assert report["dtw_metrics"]["no_evidence_fallback"] == 1.0
 
 
+def test_apply_whisper_with_quality_tail_guardrail_retries_and_applies():
+    lines = [_make_line("hello", 0.0, 150.0)]
+    retry_lines = [_make_line("hello", 0.0, 206.0)]
+    report = {"alignment_method": "onset_refined", "issues": []}
+    calls = {"count": 0}
+
+    def fake_apply(*args, **kwargs):
+        calls["count"] += 1
+        if kwargs.get("prefer_whisper_timing_map"):
+            return (
+                retry_lines,
+                ["retry fix"],
+                {
+                    "matched_ratio": 0.68,
+                    "line_coverage": 0.68,
+                    "aligned_timeline_ratio": 0.93,
+                    "no_evidence_fallback": 0.0,
+                },
+            )
+        return (
+            lines,
+            ["base fix"],
+            {
+                "matched_ratio": 0.7,
+                "line_coverage": 0.7,
+                "aligned_timeline_ratio": 0.78,
+                "no_evidence_fallback": 0.0,
+            },
+        )
+
+    with lw.use_lyrics_whisper_hooks(apply_whisper_alignment_fn=fake_apply):
+        updated, report = lw._apply_whisper_with_quality(
+            lines,
+            vocals_path="vocals.wav",
+            whisper_language="en",
+            whisper_model="base",
+            whisper_force_dtw=False,
+            quality_report=report,
+            target_duration=220,
+        )
+
+    assert calls["count"] == 2
+    assert updated is retry_lines
+    assert report["whisper_used"] is True
+    assert report["whisper_corrections"] == 1
+    assert report["dtw_metrics"]["tail_guardrail_fallback_attempted"] == 1.0
+    assert report["dtw_metrics"]["tail_guardrail_fallback_applied"] == 1.0
+    assert report["dtw_metrics"][
+        "tail_guardrail_target_coverage_ratio"
+    ] == pytest.approx(206.0 / 220.0)
+
+
 def test_fetch_genius_with_quality_tracking_no_lrc(monkeypatch):
     monkeypatch.setattr(
         "y2karaoke.core.components.lyrics.genius.fetch_genius_lyrics_with_singers",

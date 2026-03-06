@@ -868,6 +868,41 @@ def _extract_song_metrics(
             if isinstance(dtw_metrics.get("fallback_map_score_gain"), (int, float))
             else 0.0
         ),
+        "tail_guardrail_flagged": int(
+            float(dtw_metrics.get("tail_guardrail_flagged", 0.0) or 0.0) > 0.0
+        ),
+        "tail_guardrail_fallback_attempted": int(
+            float(dtw_metrics.get("tail_guardrail_fallback_attempted", 0.0) or 0.0)
+            > 0.0
+        ),
+        "tail_guardrail_fallback_applied": int(
+            float(dtw_metrics.get("tail_guardrail_fallback_applied", 0.0) or 0.0) > 0.0
+        ),
+        "tail_guardrail_target_coverage_ratio": (
+            round(
+                float(
+                    dtw_metrics.get("tail_guardrail_target_coverage_ratio", 0.0) or 0.0
+                ),
+                4,
+            )
+            if isinstance(
+                dtw_metrics.get("tail_guardrail_target_coverage_ratio"),
+                (int, float),
+            )
+            else 0.0
+        ),
+        "tail_guardrail_target_shortfall_sec": (
+            round(
+                float(
+                    dtw_metrics.get("tail_guardrail_target_shortfall_sec", 0.0) or 0.0
+                ),
+                4,
+            )
+            if isinstance(
+                dtw_metrics.get("tail_guardrail_target_shortfall_sec"), (int, float)
+            )
+            else 0.0
+        ),
         "local_transcribe_cache_hits": (
             int(float(dtw_metrics.get("local_transcribe_cache_hits", 0.0) or 0.0))
             if isinstance(dtw_metrics.get("local_transcribe_cache_hits"), (int, float))
@@ -1013,6 +1048,8 @@ def _extract_song_metrics(
 
 def _issue_tag(message: str) -> str:
     msg = message.lower()
+    if "tail completeness guardrail" in msg:
+        return "tail_completeness_guardrail"
     if "low whisper confidence" in msg:
         return "low_whisper_confidence"
     if "timing delta" in msg and "clamp" in msg:
@@ -1098,6 +1135,49 @@ def _extract_alignment_diagnostics(report: dict[str, Any]) -> dict[str, Any]:
         "fallback_map_rejected": fallback_map_rejected,
         "fallback_map_decision_reason": fallback_map_decision_reason,
         "fallback_map_score_gain": round(fallback_map_score_gain, 4),
+        "tail_guardrail_flagged": (
+            bool(float(dtw_metrics.get("tail_guardrail_flagged", 0.0) or 0.0))
+            if isinstance(dtw_metrics, dict)
+            else False
+        ),
+        "tail_guardrail_fallback_attempted": (
+            bool(
+                float(dtw_metrics.get("tail_guardrail_fallback_attempted", 0.0) or 0.0)
+            )
+            if isinstance(dtw_metrics, dict)
+            else False
+        ),
+        "tail_guardrail_fallback_applied": (
+            bool(float(dtw_metrics.get("tail_guardrail_fallback_applied", 0.0) or 0.0))
+            if isinstance(dtw_metrics, dict)
+            else False
+        ),
+        "tail_guardrail_target_coverage_ratio": (
+            round(
+                float(
+                    dtw_metrics.get("tail_guardrail_target_coverage_ratio", 0.0) or 0.0
+                ),
+                4,
+            )
+            if isinstance(dtw_metrics, dict)
+            and isinstance(
+                dtw_metrics.get("tail_guardrail_target_coverage_ratio"), (int, float)
+            )
+            else 0.0
+        ),
+        "tail_guardrail_target_shortfall_sec": (
+            round(
+                float(
+                    dtw_metrics.get("tail_guardrail_target_shortfall_sec", 0.0) or 0.0
+                ),
+                4,
+            )
+            if isinstance(dtw_metrics, dict)
+            and isinstance(
+                dtw_metrics.get("tail_guardrail_target_shortfall_sec"), (int, float)
+            )
+            else 0.0
+        ),
         "issue_count": len(issue_tags),
         "issue_tags": sorted(set(issue_tags)),
         "issue_tag_counts": issue_tag_counts,

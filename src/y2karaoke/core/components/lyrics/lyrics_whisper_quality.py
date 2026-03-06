@@ -23,6 +23,104 @@ from ..alignment.alignment_policy import decide_lrc_timing_trust
 logger = logging.getLogger(__name__)
 
 
+def _line_set_end(lines: List[Line]) -> float:
+    return max(
+        (w.end_time for line in lines for w in line.words),
+        default=0.0,
+    )
+
+
+def _tail_guardrail_snapshot(
+    lines: List[Line],
+    *,
+    target_duration: Optional[int],
+    metrics: Optional[dict],
+) -> dict:
+    line_end = _line_set_end(lines)
+    snapshot = {
+        "line_end_sec": float(line_end),
+        "target_coverage_ratio": None,
+        "target_shortfall_sec": None,
+        "whisper_timeline_ratio": None,
+        "flagged": False,
+    }
+    reasons: List[str] = []
+
+    if isinstance(target_duration, (int, float)) and float(target_duration) > 0.0:
+        duration = float(target_duration)
+        shortfall = max(0.0, duration - line_end)
+        coverage = line_end / duration if duration > 0.0 else 0.0
+        snapshot["target_coverage_ratio"] = coverage
+        snapshot["target_shortfall_sec"] = shortfall
+        # Allow realistic instrumental outros; only flag severe lyric-tail cutoffs.
+        shortfall_threshold = max(14.0, duration * 0.08)
+        if shortfall > shortfall_threshold:
+            reasons.append(
+                f"shortfall {shortfall:.1f}s exceeds tail threshold {shortfall_threshold:.1f}s"
+            )
+
+    if isinstance(metrics, dict):
+        ratio = metrics.get("aligned_timeline_ratio")
+        if isinstance(ratio, (int, float)):
+            snapshot["whisper_timeline_ratio"] = float(ratio)
+            if float(ratio) < 0.88:
+                reasons.append(
+                    f"aligned timeline ratio {float(ratio):.3f} below guardrail 0.880"
+                )
+
+    snapshot["flagged"] = bool(reasons)
+    snapshot["reasons"] = reasons
+    return snapshot
+
+
+def _tail_guardrail_should_accept_retry(
+    *,
+    baseline_guard: dict,
+    retry_guard: dict,
+    baseline_metrics: Optional[dict],
+    retry_metrics: Optional[dict],
+) -> bool:
+    base_cov = (
+        float(baseline_guard["target_coverage_ratio"])
+        if isinstance(baseline_guard.get("target_coverage_ratio"), (int, float))
+        else 0.0
+    )
+    retry_cov = (
+        float(retry_guard["target_coverage_ratio"])
+        if isinstance(retry_guard.get("target_coverage_ratio"), (int, float))
+        else 0.0
+    )
+    if retry_cov < base_cov + 0.04:
+        return False
+
+    base_match = (
+        float((baseline_metrics or {}).get("matched_ratio", 0.0) or 0.0)
+        if isinstance((baseline_metrics or {}).get("matched_ratio"), (int, float))
+        else 0.0
+    )
+    retry_match = (
+        float((retry_metrics or {}).get("matched_ratio", 0.0) or 0.0)
+        if isinstance((retry_metrics or {}).get("matched_ratio"), (int, float))
+        else 0.0
+    )
+    if retry_match < base_match - 0.08:
+        return False
+
+    base_line_cov = (
+        float((baseline_metrics or {}).get("line_coverage", 0.0) or 0.0)
+        if isinstance((baseline_metrics or {}).get("line_coverage"), (int, float))
+        else 0.0
+    )
+    retry_line_cov = (
+        float((retry_metrics or {}).get("line_coverage", 0.0) or 0.0)
+        if isinstance((retry_metrics or {}).get("line_coverage"), (int, float))
+        else 0.0
+    )
+    if retry_line_cov < base_line_cov - 0.08:
+        return False
+    return True
+
+
 def _clip_lines_to_target_duration(
     lines: List[Line],
     target_duration: Optional[int],
@@ -453,6 +551,7 @@ def get_lyrics_with_quality(  # noqa: C901
                 lenient_vocal_activity_threshold=lenient_vocal_activity_threshold,
                 lenient_activity_bonus=lenient_activity_bonus,
                 low_word_confidence_threshold=low_word_confidence_threshold,
+                target_duration=target_duration,
             )
         elif vocals_path and whisper_map_lrc:
             try:
@@ -473,6 +572,99 @@ def get_lyrics_with_quality(  # noqa: C901
                         lenient_activity_bonus=lenient_activity_bonus,
                         low_word_confidence_threshold=low_word_confidence_threshold,
                     )
+                    guard = _tail_guardrail_snapshot(
+                        lines,
+                        target_duration=target_duration,
+                        metrics=metrics,
+                    )
+                    if metrics is None:
+                        metrics = {}
+                    metrics["tail_guardrail_flagged"] = 1.0 if guard["flagged"] else 0.0
+                    metrics["tail_guardrail_fallback_attempted"] = 0.0
+                    metrics["tail_guardrail_fallback_applied"] = 0.0
+                    if isinstance(guard.get("target_coverage_ratio"), (int, float)):
+                        metrics["tail_guardrail_target_coverage_ratio"] = float(
+                            guard["target_coverage_ratio"]
+                        )
+                    if isinstance(guard.get("target_shortfall_sec"), (int, float)):
+                        metrics["tail_guardrail_target_shortfall_sec"] = float(
+                            guard["target_shortfall_sec"]
+                        )
+                    if isinstance(guard.get("whisper_timeline_ratio"), (int, float)):
+                        metrics["tail_guardrail_whisper_timeline_ratio"] = float(
+                            guard["whisper_timeline_ratio"]
+                        )
+                    if guard["flagged"]:
+                        issues_list.append(
+                            "Tail completeness guardrail flagged possible truncated lyric ending"
+                        )
+                    if guard["flagged"] and not whisper_aggressive:
+                        metrics["tail_guardrail_fallback_attempted"] = 1.0
+                        try:
+                            retry_lines, retry_alignments, retry_metrics = (
+                                align_lrc_text_to_whisper_timings(
+                                    lines,
+                                    vocals_path,
+                                    language=whisper_language,
+                                    model_size=model_size,
+                                    aggressive=True,
+                                    temperature=whisper_temperature,
+                                    lenient_vocal_activity_threshold=lenient_vocal_activity_threshold,
+                                    lenient_activity_bonus=lenient_activity_bonus,
+                                    low_word_confidence_threshold=low_word_confidence_threshold,
+                                )
+                            )
+                            retry_guard = _tail_guardrail_snapshot(
+                                retry_lines,
+                                target_duration=target_duration,
+                                metrics=retry_metrics,
+                            )
+                            if _tail_guardrail_should_accept_retry(
+                                baseline_guard=guard,
+                                retry_guard=retry_guard,
+                                baseline_metrics=metrics,
+                                retry_metrics=retry_metrics,
+                            ):
+                                lines = retry_lines
+                                alignments = retry_alignments
+                                metrics = retry_metrics or {}
+                                metrics["tail_guardrail_flagged"] = (
+                                    1.0 if retry_guard["flagged"] else 0.0
+                                )
+                                metrics["tail_guardrail_fallback_attempted"] = 1.0
+                                metrics["tail_guardrail_fallback_applied"] = 1.0
+                                if isinstance(
+                                    retry_guard.get("target_coverage_ratio"),
+                                    (int, float),
+                                ):
+                                    metrics["tail_guardrail_target_coverage_ratio"] = (
+                                        float(retry_guard["target_coverage_ratio"])
+                                    )
+                                if isinstance(
+                                    retry_guard.get("target_shortfall_sec"),
+                                    (int, float),
+                                ):
+                                    metrics["tail_guardrail_target_shortfall_sec"] = (
+                                        float(retry_guard["target_shortfall_sec"])
+                                    )
+                                if isinstance(
+                                    retry_guard.get("whisper_timeline_ratio"),
+                                    (int, float),
+                                ):
+                                    metrics["tail_guardrail_whisper_timeline_ratio"] = (
+                                        float(retry_guard["whisper_timeline_ratio"])
+                                    )
+                                issues_list.append(
+                                    "Tail completeness guardrail applied aggressive DTW retry"
+                                )
+                            else:
+                                issues_list.append(
+                                    "Tail completeness guardrail retry rejected (insufficient gain)"
+                                )
+                        except Exception as retry_err:
+                            issues_list.append(
+                                f"Tail completeness guardrail retry failed: {retry_err}"
+                            )
                     quality_report["alignment_method"] = "whisper_map_lrc_dtw"
                     quality_report["whisper_used"] = True
                     quality_report["whisper_corrections"] = len(alignments)
@@ -523,6 +715,7 @@ def get_lyrics_with_quality(  # noqa: C901
                 lenient_vocal_activity_threshold=lenient_vocal_activity_threshold,
                 lenient_activity_bonus=lenient_activity_bonus,
                 low_word_confidence_threshold=low_word_confidence_threshold,
+                target_duration=target_duration,
             )
     else:
         if genius_lines:
@@ -603,25 +796,118 @@ def _apply_whisper_with_quality(
     lenient_vocal_activity_threshold: float = 0.3,
     lenient_activity_bonus: float = 0.4,
     low_word_confidence_threshold: float = 0.5,
+    target_duration: Optional[int] = None,
 ) -> Tuple[List[Line], dict]:
     from . import lyrics_whisper as lw
 
     if quality_report is None:
         quality_report = {"issues": []}
     try:
-        lines, whisper_fixes, whisper_metrics = lw._apply_whisper_alignment_for_state(
-            lines,
-            vocals_path,
-            whisper_language,
-            whisper_model,
-            whisper_force_dtw,
-            whisper_aggressive,
-            whisper_temperature=whisper_temperature,
-            prefer_whisper_timing_map=prefer_whisper_timing_map,
-            lenient_vocal_activity_threshold=lenient_vocal_activity_threshold,
-            lenient_activity_bonus=lenient_activity_bonus,
-            low_word_confidence_threshold=low_word_confidence_threshold,
+        aligned_lines, whisper_fixes, whisper_metrics = (
+            lw._apply_whisper_alignment_for_state(
+                lines,
+                vocals_path,
+                whisper_language,
+                whisper_model,
+                whisper_force_dtw,
+                whisper_aggressive,
+                whisper_temperature=whisper_temperature,
+                prefer_whisper_timing_map=prefer_whisper_timing_map,
+                lenient_vocal_activity_threshold=lenient_vocal_activity_threshold,
+                lenient_activity_bonus=lenient_activity_bonus,
+                low_word_confidence_threshold=low_word_confidence_threshold,
+            )
         )
+        baseline_guard = _tail_guardrail_snapshot(
+            aligned_lines,
+            target_duration=target_duration,
+            metrics=whisper_metrics,
+        )
+        if whisper_metrics is None:
+            whisper_metrics = {}
+        whisper_metrics["tail_guardrail_flagged"] = (
+            1.0 if baseline_guard["flagged"] else 0.0
+        )
+        whisper_metrics["tail_guardrail_fallback_attempted"] = 0.0
+        whisper_metrics["tail_guardrail_fallback_applied"] = 0.0
+        if isinstance(baseline_guard.get("target_coverage_ratio"), (int, float)):
+            whisper_metrics["tail_guardrail_target_coverage_ratio"] = float(
+                baseline_guard["target_coverage_ratio"]
+            )
+        if isinstance(baseline_guard.get("target_shortfall_sec"), (int, float)):
+            whisper_metrics["tail_guardrail_target_shortfall_sec"] = float(
+                baseline_guard["target_shortfall_sec"]
+            )
+        if isinstance(baseline_guard.get("whisper_timeline_ratio"), (int, float)):
+            whisper_metrics["tail_guardrail_whisper_timeline_ratio"] = float(
+                baseline_guard["whisper_timeline_ratio"]
+            )
+
+        if baseline_guard["flagged"]:
+            quality_report["issues"].append(
+                "Tail completeness guardrail flagged possible truncated lyric ending"
+            )
+        should_retry_tail_guard = (
+            baseline_guard["flagged"]
+            and not prefer_whisper_timing_map
+            and not bool(float(whisper_metrics.get("no_evidence_fallback", 0.0) or 0.0))
+        )
+        if should_retry_tail_guard:
+            whisper_metrics["tail_guardrail_fallback_attempted"] = 1.0
+            retry_lines, retry_fixes, retry_metrics = (
+                lw._apply_whisper_alignment_for_state(
+                    lines,
+                    vocals_path,
+                    whisper_language,
+                    whisper_model,
+                    whisper_force_dtw,
+                    whisper_aggressive,
+                    whisper_temperature=whisper_temperature,
+                    prefer_whisper_timing_map=True,
+                    lenient_vocal_activity_threshold=lenient_vocal_activity_threshold,
+                    lenient_activity_bonus=lenient_activity_bonus,
+                    low_word_confidence_threshold=low_word_confidence_threshold,
+                )
+            )
+            retry_guard = _tail_guardrail_snapshot(
+                retry_lines,
+                target_duration=target_duration,
+                metrics=retry_metrics,
+            )
+            if _tail_guardrail_should_accept_retry(
+                baseline_guard=baseline_guard,
+                retry_guard=retry_guard,
+                baseline_metrics=whisper_metrics,
+                retry_metrics=retry_metrics,
+            ):
+                aligned_lines = retry_lines
+                whisper_fixes = retry_fixes
+                whisper_metrics = retry_metrics or {}
+                whisper_metrics["tail_guardrail_flagged"] = (
+                    1.0 if retry_guard["flagged"] else 0.0
+                )
+                whisper_metrics["tail_guardrail_fallback_attempted"] = 1.0
+                whisper_metrics["tail_guardrail_fallback_applied"] = 1.0
+                if isinstance(retry_guard.get("target_coverage_ratio"), (int, float)):
+                    whisper_metrics["tail_guardrail_target_coverage_ratio"] = float(
+                        retry_guard["target_coverage_ratio"]
+                    )
+                if isinstance(retry_guard.get("target_shortfall_sec"), (int, float)):
+                    whisper_metrics["tail_guardrail_target_shortfall_sec"] = float(
+                        retry_guard["target_shortfall_sec"]
+                    )
+                if isinstance(retry_guard.get("whisper_timeline_ratio"), (int, float)):
+                    whisper_metrics["tail_guardrail_whisper_timeline_ratio"] = float(
+                        retry_guard["whisper_timeline_ratio"]
+                    )
+                quality_report["issues"].append(
+                    "Tail completeness guardrail applied fallback timing-map retry"
+                )
+            else:
+                quality_report["issues"].append(
+                    "Tail completeness guardrail retry rejected (insufficient gain)"
+                )
+
         no_evidence_fallback = bool(
             float(whisper_metrics.get("no_evidence_fallback", 0.0))
             if whisper_metrics
@@ -637,6 +923,7 @@ def _apply_whisper_with_quality(
             quality_report["alignment_method"] = "lrc_only"
         elif whisper_fixes:
             quality_report["alignment_method"] = "whisper_hybrid"
+        lines = aligned_lines
     except Exception as e:
         logger.warning(f"Whisper alignment failed: {e}")
         quality_report["issues"].append(f"Whisper alignment failed: {e}")
