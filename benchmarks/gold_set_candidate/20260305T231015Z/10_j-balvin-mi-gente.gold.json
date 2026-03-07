@@ -6,13 +6,13 @@
   "lines": [
     {
       "line_index": 1,
-      "text": "\u00a1Wuh!",
+      "text": "¡Wuh!",
       "start": 8.0,
       "end": 8.4,
       "words": [
         {
           "word_index": 1,
-          "text": "\u00a1Wuh!",
+          "text": "¡Wuh!",
           "start": 8.0,
           "end": 8.4
         }
@@ -106,7 +106,7 @@
     },
     {
       "line_index": 3,
-      "text": "Mi m\u00fasica no discrimina a nadie As\u00ed que vamo' a romper",
+      "text": "Mi música no discrimina a nadie Así que vamo' a romper",
       "start": 13.65,
       "end": 17.3,
       "words": [
@@ -118,7 +118,7 @@
         },
         {
           "word_index": 2,
-          "text": "m\u00fasica",
+          "text": "música",
           "start": 14.0,
           "end": 14.6
         },
@@ -148,7 +148,7 @@
         },
         {
           "word_index": 7,
-          "text": "As\u00ed",
+          "text": "Así",
           "start": 16.0,
           "end": 16.2
         },
@@ -224,7 +224,7 @@
     },
     {
       "line_index": 5,
-      "text": "Mira el ritmo c\u00f3mo los tiene",
+      "text": "Mira el ritmo cómo los tiene",
       "start": 19.9,
       "end": 21.7,
       "words": [
@@ -248,7 +248,7 @@
         },
         {
           "word_index": 4,
-          "text": "c\u00f3mo",
+          "text": "cómo",
           "start": 20.5,
           "end": 20.8
         },
@@ -268,7 +268,7 @@
     },
     {
       "line_index": 6,
-      "text": "Hago m\u00fasica que entretiene",
+      "text": "Hago música que entretiene",
       "start": 22.15,
       "end": 23.5,
       "words": [
@@ -280,7 +280,7 @@
         },
         {
           "word_index": 2,
-          "text": "m\u00fasica",
+          "text": "música",
           "start": 22.4,
           "end": 22.75
         },
@@ -300,7 +300,7 @@
     },
     {
       "line_index": 7,
-      "text": "El mundo nos quiere, nos quiere, me quiere a m\u00ed",
+      "text": "El mundo nos quiere, nos quiere, me quiere a mí",
       "start": 24.2,
       "end": 26.55,
       "words": [
@@ -360,7 +360,7 @@
         },
         {
           "word_index": 10,
-          "text": "m\u00ed",
+          "text": "mí",
           "start": 26.3,
           "end": 26.55
         }
@@ -412,7 +412,7 @@
     },
     {
       "line_index": 9,
-      "text": "Mira el ritmo c\u00f3mo los tiene",
+      "text": "Mira el ritmo cómo los tiene",
       "start": 28.9,
       "end": 30.65,
       "words": [
@@ -436,7 +436,7 @@
         },
         {
           "word_index": 4,
-          "text": "c\u00f3mo",
+          "text": "cómo",
           "start": 29.85,
           "end": 30.1
         },
@@ -456,7 +456,7 @@
     },
     {
       "line_index": 10,
-      "text": "Hago m\u00fasica que entretiene",
+      "text": "Hago música que entretiene",
       "start": 31.25,
       "end": 33.2,
       "words": [
@@ -468,7 +468,7 @@
         },
         {
           "word_index": 2,
-          "text": "m\u00fasica",
+          "text": "música",
           "start": 31.6,
           "end": 32.2
         },
@@ -488,7 +488,7 @@
     },
     {
       "line_index": 11,
-      "text": "Mi m\u00fasica los tiene fuerte bailando y se baila as\u00ed (let's go)",
+      "text": "Mi música los tiene fuerte bailando y se baila así (let's go)",
       "start": 33.25,
       "end": 36.9,
       "words": [
@@ -500,7 +500,7 @@
         },
         {
           "word_index": 2,
-          "text": "m\u00fasica",
+          "text": "música",
           "start": 33.65,
           "end": 34.0
         },
@@ -548,7 +548,7 @@
         },
         {
           "word_index": 10,
-          "text": "as\u00ed",
+          "text": "así",
           "start": 36.25,
           "end": 36.45
         },
@@ -569,228 +569,228 @@
     {
       "line_index": 12,
       "text": "Estamo' rompiendo la discoteca",
-      "start": 54.5,
-      "end": 56.5,
+      "start": 54.7,
+      "end": 56.7,
       "words": [
         {
           "word_index": 1,
           "text": "Estamo'",
-          "start": 54.5,
-          "end": 54.95
+          "start": 54.7,
+          "end": 55.3
         },
         {
           "word_index": 2,
           "text": "rompiendo",
-          "start": 54.95,
-          "end": 55.5
+          "start": 55.3,
+          "end": 55.6
         },
         {
           "word_index": 3,
           "text": "la",
-          "start": 55.5,
-          "end": 55.8
+          "start": 55.6,
+          "end": 56.45
         },
         {
           "word_index": 4,
           "text": "discoteca",
-          "start": 55.8,
-          "end": 56.5
+          "start": 56.45,
+          "end": 56.7
         }
       ]
     },
     {
       "line_index": 13,
       "text": "La fiesta no para, apenas comienza",
-      "start": 56.65,
-      "end": 58.9,
+      "start": 56.7,
+      "end": 59.95,
       "words": [
         {
           "word_index": 1,
           "text": "La",
-          "start": 56.65,
-          "end": 56.95
+          "start": 56.7,
+          "end": 57.05
         },
         {
           "word_index": 2,
           "text": "fiesta",
-          "start": 56.95,
-          "end": 57.4
+          "start": 57.05,
+          "end": 57.45
         },
         {
           "word_index": 3,
           "text": "no",
-          "start": 57.4,
-          "end": 57.8
+          "start": 57.45,
+          "end": 57.9
         },
         {
           "word_index": 4,
           "text": "para,",
-          "start": 57.8,
-          "end": 58.3
+          "start": 57.9,
+          "end": 58.2
         },
         {
           "word_index": 5,
           "text": "apenas",
-          "start": 58.3,
-          "end": 58.65
+          "start": 58.2,
+          "end": 58.45
         },
         {
           "word_index": 6,
           "text": "comienza",
-          "start": 58.65,
-          "end": 58.9
+          "start": 58.45,
+          "end": 59.95
         }
       ]
     },
     {
       "line_index": 14,
-      "text": "(\u00a1Eh!) C'est comme ci (\u00a1eh!), c'est comme \u00e7a",
-      "start": 59.1,
-      "end": 61.5,
+      "text": "(¡Eh!) C'est comme ci (¡eh!), c'est comme ça",
+      "start": 59.95,
+      "end": 61.65,
       "words": [
         {
           "word_index": 1,
-          "text": "(\u00a1Eh!)",
-          "start": 59.1,
-          "end": 59.5
+          "text": "(¡Eh!)",
+          "start": 59.95,
+          "end": 60.2
         },
         {
           "word_index": 2,
           "text": "C'est",
-          "start": 59.5,
-          "end": 59.9
+          "start": 60.2,
+          "end": 60.35
         },
         {
           "word_index": 3,
           "text": "comme",
-          "start": 59.9,
-          "end": 60.3
+          "start": 60.35,
+          "end": 60.6
         },
         {
           "word_index": 4,
           "text": "ci",
-          "start": 60.3,
-          "end": 60.65
+          "start": 60.6,
+          "end": 60.8
         },
         {
           "word_index": 5,
-          "text": "(\u00a1eh!),",
-          "start": 60.65,
-          "end": 60.75
+          "text": "(¡eh!),",
+          "start": 60.8,
+          "end": 61.05
         },
         {
           "word_index": 6,
           "text": "c'est",
-          "start": 60.75,
-          "end": 61.0
+          "start": 61.05,
+          "end": 61.25
         },
         {
           "word_index": 7,
           "text": "comme",
-          "start": 61.0,
-          "end": 61.25
+          "start": 61.25,
+          "end": 61.45
         },
         {
           "word_index": 8,
-          "text": "\u00e7a",
-          "start": 61.25,
-          "end": 61.5
+          "text": "ça",
+          "start": 61.45,
+          "end": 61.65
         }
       ]
     },
     {
       "line_index": 15,
-      "text": "(\u00a1Eh!) Ma ch\u00e9rie, la-la-la-la-la",
-      "start": 61.5,
-      "end": 63.85,
+      "text": "(¡Eh!) Ma chérie, la-la-la-la-la",
+      "start": 61.9,
+      "end": 63.9,
       "words": [
         {
           "word_index": 1,
-          "text": "(\u00a1Eh!)",
-          "start": 61.5,
-          "end": 62.15
+          "text": "(¡Eh!)",
+          "start": 61.9,
+          "end": 62.0
         },
         {
           "word_index": 2,
           "text": "Ma",
-          "start": 62.15,
-          "end": 62.55
+          "start": 62.0,
+          "end": 62.3
         },
         {
           "word_index": 3,
-          "text": "ch\u00e9rie,",
-          "start": 62.55,
-          "end": 63.0
+          "text": "chérie,",
+          "start": 62.3,
+          "end": 62.55
         },
         {
           "word_index": 4,
           "text": "la-la-la-la-la",
-          "start": 63.0,
-          "end": 63.85
+          "start": 62.55,
+          "end": 63.9
         }
       ]
     },
     {
       "line_index": 16,
       "text": "(Eh) Francia (eh), Colombia (eh)",
-      "start": 63.85,
-      "end": 66.5,
+      "start": 64.0,
+      "end": 66.55,
       "words": [
         {
           "word_index": 1,
           "text": "(Eh)",
-          "start": 63.85,
+          "start": 64.0,
           "end": 64.4
         },
         {
           "word_index": 2,
           "text": "Francia",
           "start": 64.4,
-          "end": 65.5
+          "end": 65.15
         },
         {
           "word_index": 3,
           "text": "(eh),",
-          "start": 65.5,
-          "end": 65.6
+          "start": 65.15,
+          "end": 65.5
         },
         {
           "word_index": 4,
           "text": "Colombia",
-          "start": 65.6,
-          "end": 66.4
+          "start": 65.5,
+          "end": 66.15
         },
         {
           "word_index": 5,
           "text": "(eh)",
-          "start": 66.4,
-          "end": 66.5
+          "start": 66.15,
+          "end": 66.55
         }
       ]
     },
     {
       "line_index": 17,
-      "text": "Me gusta (\u00a1freeze!)",
-      "start": 66.5,
-      "end": 67.8,
+      "text": "Me gusta (¡freeze!)",
+      "start": 66.6,
+      "end": 68.2,
       "words": [
         {
           "word_index": 1,
           "text": "Me",
-          "start": 66.5,
-          "end": 66.95
+          "start": 66.6,
+          "end": 66.75
         },
         {
           "word_index": 2,
           "text": "gusta",
-          "start": 66.95,
-          "end": 67.35
+          "start": 66.75,
+          "end": 67.0
         },
         {
           "word_index": 3,
-          "text": "(\u00a1freeze!)",
-          "start": 67.35,
-          "end": 67.8
+          "text": "(¡freeze!)",
+          "start": 67.0,
+          "end": 68.2
         }
       ]
     },
@@ -798,633 +798,633 @@
       "line_index": 18,
       "text": "(Eh) J Balvin (eh), Willy William (eh)",
       "start": 68.9,
-      "end": 71.1,
+      "end": 71.2,
       "words": [
         {
           "word_index": 1,
           "text": "(Eh)",
           "start": 68.9,
-          "end": 69.1
+          "end": 69.2
         },
         {
           "word_index": 2,
           "text": "J",
-          "start": 69.1,
-          "end": 69.25
+          "start": 69.2,
+          "end": 69.3
         },
         {
           "word_index": 3,
           "text": "Balvin",
-          "start": 69.25,
-          "end": 69.7
+          "start": 69.3,
+          "end": 69.8
         },
         {
           "word_index": 4,
           "text": "(eh),",
-          "start": 69.7,
-          "end": 70.05
+          "start": 69.8,
+          "end": 70.2
         },
         {
           "word_index": 5,
           "text": "Willy",
-          "start": 70.05,
-          "end": 70.4
+          "start": 70.2,
+          "end": 70.45
         },
         {
           "word_index": 6,
           "text": "William",
-          "start": 70.4,
-          "end": 70.75
+          "start": 70.45,
+          "end": 70.85
         },
         {
           "word_index": 7,
           "text": "(eh)",
-          "start": 70.75,
-          "end": 71.1
+          "start": 70.85,
+          "end": 71.2
         }
       ]
     },
     {
       "line_index": 19,
-      "text": "Me gusta (\u00a1freeze!)",
-      "start": 71.25,
-      "end": 72.45,
+      "text": "Me gusta (¡freeze!)",
+      "start": 71.2,
+      "end": 73.05,
       "words": [
         {
           "word_index": 1,
           "text": "Me",
-          "start": 71.25,
-          "end": 71.55
+          "start": 71.2,
+          "end": 71.75
         },
         {
           "word_index": 2,
           "text": "gusta",
-          "start": 71.55,
-          "end": 71.95
+          "start": 71.75,
+          "end": 72.15
         },
         {
           "word_index": 3,
-          "text": "(\u00a1freeze!)",
-          "start": 71.95,
-          "end": 72.45
+          "text": "(¡freeze!)",
+          "start": 72.15,
+          "end": 73.05
         }
       ]
     },
     {
       "line_index": 20,
       "text": "Los DJs no mienten, les gusta mi gente",
-      "start": 72.85,
-      "end": 75.2,
+      "start": 73.05,
+      "end": 75.3,
       "words": [
         {
           "word_index": 1,
           "text": "Los",
-          "start": 72.85,
-          "end": 73.15
+          "start": 73.05,
+          "end": 73.55
         },
         {
           "word_index": 2,
           "text": "DJs",
-          "start": 73.15,
-          "end": 73.4
+          "start": 73.55,
+          "end": 73.65
         },
         {
           "word_index": 3,
           "text": "no",
-          "start": 73.4,
-          "end": 73.7
+          "start": 73.65,
+          "end": 73.9
         },
         {
           "word_index": 4,
           "text": "mienten,",
-          "start": 73.7,
-          "end": 74.15
+          "start": 73.9,
+          "end": 74.2
         },
         {
           "word_index": 5,
           "text": "les",
-          "start": 74.15,
-          "end": 74.35
+          "start": 74.2,
+          "end": 74.5
         },
         {
           "word_index": 6,
           "text": "gusta",
-          "start": 74.35,
-          "end": 74.7
+          "start": 74.5,
+          "end": 74.85
         },
         {
           "word_index": 7,
           "text": "mi",
-          "start": 74.7,
-          "end": 74.9
+          "start": 74.85,
+          "end": 75.1
         },
         {
           "word_index": 8,
           "text": "gente",
-          "start": 74.9,
-          "end": 75.2
+          "start": 75.1,
+          "end": 75.3
         }
       ]
     },
     {
       "line_index": 21,
-      "text": "Y eso se fue mundial (\u00a1freeze!)",
-      "start": 75.2,
-      "end": 76.75,
+      "text": "Y eso se fue mundial (¡freeze!)",
+      "start": 75.3,
+      "end": 77.35,
       "words": [
         {
           "word_index": 1,
           "text": "Y",
-          "start": 75.2,
-          "end": 75.5
+          "start": 75.3,
+          "end": 75.45
         },
         {
           "word_index": 2,
           "text": "eso",
-          "start": 75.5,
+          "start": 75.45,
           "end": 75.75
         },
         {
           "word_index": 3,
           "text": "se",
           "start": 75.75,
-          "end": 76.0
+          "end": 75.9
         },
         {
           "word_index": 4,
           "text": "fue",
-          "start": 76.0,
-          "end": 76.25
+          "start": 75.9,
+          "end": 76.1
         },
         {
           "word_index": 5,
           "text": "mundial",
-          "start": 76.25,
-          "end": 76.5
+          "start": 76.1,
+          "end": 76.55
         },
         {
           "word_index": 6,
-          "text": "(\u00a1freeze!)",
-          "start": 76.5,
-          "end": 76.75
+          "text": "(¡freeze!)",
+          "start": 76.55,
+          "end": 77.35
         }
       ]
     },
     {
       "line_index": 22,
       "text": "No le bajamos, mas nunca paramos",
-      "start": 77.7,
-      "end": 79.5,
+      "start": 77.6,
+      "end": 79.65,
       "words": [
         {
           "word_index": 1,
           "text": "No",
-          "start": 77.7,
-          "end": 77.9
+          "start": 77.6,
+          "end": 77.95
         },
         {
           "word_index": 2,
           "text": "le",
-          "start": 77.9,
+          "start": 77.95,
           "end": 78.1
         },
         {
           "word_index": 3,
           "text": "bajamos,",
           "start": 78.1,
-          "end": 78.5
+          "end": 78.45
         },
         {
           "word_index": 4,
           "text": "mas",
-          "start": 78.5,
-          "end": 78.7
+          "start": 78.45,
+          "end": 78.8
         },
         {
           "word_index": 5,
           "text": "nunca",
-          "start": 78.7,
-          "end": 79.0
+          "start": 78.8,
+          "end": 79.2
         },
         {
           "word_index": 6,
           "text": "paramos",
-          "start": 79.0,
-          "end": 79.5
+          "start": 79.2,
+          "end": 79.65
         }
       ]
     },
     {
       "line_index": 23,
-      "text": "Es otro palo y, \u00a1blam!",
-      "start": 80.05,
-      "end": 81.05,
+      "text": "Es otro palo y, ¡blam!",
+      "start": 79.65,
+      "end": 81.45,
       "words": [
         {
           "word_index": 1,
           "text": "Es",
-          "start": 80.05,
-          "end": 80.25
+          "start": 79.65,
+          "end": 79.9
         },
         {
           "word_index": 2,
           "text": "otro",
-          "start": 80.25,
-          "end": 80.45
+          "start": 79.9,
+          "end": 80.15
         },
         {
           "word_index": 3,
           "text": "palo",
-          "start": 80.45,
-          "end": 80.65
+          "start": 80.15,
+          "end": 80.45
         },
         {
           "word_index": 4,
           "text": "y,",
-          "start": 80.65,
-          "end": 80.85
+          "start": 80.45,
+          "end": 80.65
         },
         {
           "word_index": 5,
-          "text": "\u00a1blam!",
-          "start": 80.85,
-          "end": 81.05
+          "text": "¡blam!",
+          "start": 80.65,
+          "end": 81.45
         }
       ]
     },
     {
       "line_index": 24,
-      "text": "\u00bfY d\u00f3nde est\u00e1 mi gente?",
-      "start": 81.05,
-      "end": 82.6,
+      "text": "¿Y dónde está mi gente?",
+      "start": 81.45,
+      "end": 82.5,
       "words": [
         {
           "word_index": 1,
-          "text": "\u00bfY",
-          "start": 81.05,
-          "end": 81.45
+          "text": "¿Y",
+          "start": 81.45,
+          "end": 81.55
         },
         {
           "word_index": 2,
-          "text": "d\u00f3nde",
-          "start": 81.45,
-          "end": 81.8
+          "text": "dónde",
+          "start": 81.55,
+          "end": 81.75
         },
         {
           "word_index": 3,
-          "text": "est\u00e1",
-          "start": 81.8,
-          "end": 82.1
+          "text": "está",
+          "start": 81.75,
+          "end": 82.05
         },
         {
           "word_index": 4,
           "text": "mi",
-          "start": 82.1,
-          "end": 82.2
+          "start": 82.05,
+          "end": 82.35
         },
         {
           "word_index": 5,
           "text": "gente?",
-          "start": 82.2,
-          "end": 82.6
+          "start": 82.35,
+          "end": 82.5
         }
       ]
     },
     {
       "line_index": 25,
-      "text": "Mais fais bouger la t\u00eate",
-      "start": 83.3,
-      "end": 85.0,
+      "text": "Mais fais bouger la tête",
+      "start": 83.2,
+      "end": 85.55,
       "words": [
         {
           "word_index": 1,
           "text": "Mais",
-          "start": 83.3,
-          "end": 83.75
+          "start": 83.2,
+          "end": 83.45
         },
         {
           "word_index": 2,
           "text": "fais",
-          "start": 83.75,
-          "end": 84.1
+          "start": 83.45,
+          "end": 83.75
         },
         {
           "word_index": 3,
           "text": "bouger",
-          "start": 84.1,
-          "end": 84.55
+          "start": 83.75,
+          "end": 84.3
         },
         {
           "word_index": 4,
           "text": "la",
-          "start": 84.55,
-          "end": 84.7
+          "start": 84.3,
+          "end": 84.6
         },
         {
           "word_index": 5,
-          "text": "t\u00eate",
-          "start": 84.7,
-          "end": 85.0
+          "text": "tête",
+          "start": 84.6,
+          "end": 85.55
         }
       ]
     },
     {
       "line_index": 26,
-      "text": "\u00bfY d\u00f3nde est\u00e1 mi gente?",
-      "start": 85.5,
-      "end": 87.2,
+      "text": "¿Y dónde está mi gente?",
+      "start": 85.6,
+      "end": 87.45,
       "words": [
         {
           "word_index": 1,
-          "text": "\u00bfY",
-          "start": 85.5,
-          "end": 85.9
+          "text": "¿Y",
+          "start": 85.6,
+          "end": 85.95
         },
         {
           "word_index": 2,
-          "text": "d\u00f3nde",
-          "start": 85.9,
-          "end": 86.25
+          "text": "dónde",
+          "start": 85.95,
+          "end": 86.3
         },
         {
           "word_index": 3,
-          "text": "est\u00e1",
-          "start": 86.25,
-          "end": 86.6
+          "text": "está",
+          "start": 86.3,
+          "end": 86.65
         },
         {
           "word_index": 4,
           "text": "mi",
-          "start": 86.6,
-          "end": 86.75
+          "start": 86.65,
+          "end": 86.95
         },
         {
           "word_index": 5,
           "text": "gente?",
-          "start": 86.75,
-          "end": 87.2
+          "start": 86.95,
+          "end": 87.45
         }
       ]
     },
     {
       "line_index": 27,
       "text": "Say yeah, yeah, yeah",
-      "start": 88.05,
-      "end": 89.05,
+      "start": 87.45,
+      "end": 89.35,
       "words": [
         {
           "word_index": 1,
           "text": "Say",
-          "start": 88.05,
-          "end": 88.4
+          "start": 87.45,
+          "end": 87.95
         },
         {
           "word_index": 2,
           "text": "yeah,",
-          "start": 88.4,
-          "end": 88.6
+          "start": 87.95,
+          "end": 88.4
         },
         {
           "word_index": 3,
           "text": "yeah,",
-          "start": 88.6,
-          "end": 88.8
+          "start": 88.4,
+          "end": 88.85
         },
         {
           "word_index": 4,
           "text": "yeah",
-          "start": 88.8,
-          "end": 89.05
+          "start": 88.85,
+          "end": 89.35
         }
       ]
     },
     {
       "line_index": 28,
-      "text": "\u00a1Un, dos, tres, leggo! (Ay, di que s\u00ed)",
-      "start": 89.05,
-      "end": 91.15,
+      "text": "¡Un, dos, tres, leggo! (Ay, di que sí)",
+      "start": 89.35,
+      "end": 94.45,
       "words": [
         {
           "word_index": 1,
-          "text": "\u00a1Un,",
-          "start": 89.05,
-          "end": 89.3
+          "text": "¡Un,",
+          "start": 89.35,
+          "end": 89.7
         },
         {
           "word_index": 2,
           "text": "dos,",
-          "start": 89.3,
-          "end": 89.6
+          "start": 89.7,
+          "end": 90.0
         },
         {
           "word_index": 3,
           "text": "tres,",
-          "start": 89.6,
-          "end": 89.85
+          "start": 90.0,
+          "end": 90.35
         },
         {
           "word_index": 4,
           "text": "leggo!",
-          "start": 89.85,
-          "end": 90.1
+          "start": 90.35,
+          "end": 90.7
         },
         {
           "word_index": 5,
           "text": "(Ay,",
-          "start": 90.1,
-          "end": 90.35
+          "start": 90.7,
+          "end": 91.05
         },
         {
           "word_index": 6,
           "text": "di",
-          "start": 90.35,
-          "end": 90.65
+          "start": 91.05,
+          "end": 91.2
         },
         {
           "word_index": 7,
           "text": "que",
-          "start": 90.65,
-          "end": 90.9
+          "start": 91.2,
+          "end": 91.45
         },
         {
           "word_index": 8,
-          "text": "s\u00ed)",
-          "start": 90.9,
-          "end": 91.15
+          "text": "sí)",
+          "start": 91.45,
+          "end": 94.45
         }
       ]
     },
     {
       "line_index": 29,
-      "text": "\u00a1Rra!",
-      "start": 91.15,
-      "end": 91.25,
+      "text": "¡Rra!",
+      "start": 95.8,
+      "end": 97.75,
       "words": [
         {
           "word_index": 1,
-          "text": "\u00a1Rra!",
-          "start": 91.15,
-          "end": 91.25
+          "text": "¡Rra!",
+          "start": 95.8,
+          "end": 97.75
         }
       ]
     },
     {
       "line_index": 30,
-      "text": "Esquina a esquina, de ah\u00ed no' vamo'",
-      "start": 109.9,
-      "end": 111.75,
+      "text": "Esquina a esquina, de ahí no' vamo'",
+      "start": 109.75,
+      "end": 111.8,
       "words": [
         {
           "word_index": 1,
           "text": "Esquina",
-          "start": 109.9,
-          "end": 110.2
+          "start": 109.75,
+          "end": 110.15
         },
         {
           "word_index": 2,
           "text": "a",
-          "start": 110.2,
-          "end": 110.4
+          "start": 110.15,
+          "end": 110.25
         },
         {
           "word_index": 3,
           "text": "esquina,",
-          "start": 110.4,
-          "end": 110.7
+          "start": 110.25,
+          "end": 110.6
         },
         {
           "word_index": 4,
           "text": "de",
-          "start": 110.7,
-          "end": 110.95
+          "start": 110.6,
+          "end": 110.8
         },
         {
           "word_index": 5,
-          "text": "ah\u00ed",
-          "start": 110.95,
-          "end": 111.2
+          "text": "ahí",
+          "start": 110.8,
+          "end": 111.0
         },
         {
           "word_index": 6,
           "text": "no'",
-          "start": 111.2,
-          "end": 111.45
+          "start": 111.0,
+          "end": 111.4
         },
         {
           "word_index": 7,
           "text": "vamo'",
-          "start": 111.45,
-          "end": 111.75
+          "start": 111.4,
+          "end": 111.8
         }
       ]
     },
     {
       "line_index": 31,
       "text": "El mundo es grande, pero lo tengo en mi' manos",
-      "start": 112.1,
+      "start": 111.8,
       "end": 114.15,
       "words": [
         {
           "word_index": 1,
           "text": "El",
-          "start": 112.1,
-          "end": 112.25
+          "start": 111.8,
+          "end": 112.0
         },
         {
           "word_index": 2,
           "text": "mundo",
-          "start": 112.25,
-          "end": 112.5
+          "start": 112.0,
+          "end": 112.25
         },
         {
           "word_index": 3,
           "text": "es",
-          "start": 112.5,
-          "end": 112.7
+          "start": 112.25,
+          "end": 112.5
         },
         {
           "word_index": 4,
           "text": "grande,",
-          "start": 112.7,
-          "end": 112.95
+          "start": 112.5,
+          "end": 112.75
         },
         {
           "word_index": 5,
           "text": "pero",
-          "start": 112.95,
-          "end": 113.2
+          "start": 112.75,
+          "end": 112.95
         },
         {
           "word_index": 6,
           "text": "lo",
-          "start": 113.2,
-          "end": 113.35
+          "start": 112.95,
+          "end": 113.2
         },
         {
           "word_index": 7,
           "text": "tengo",
-          "start": 113.35,
-          "end": 113.6
+          "start": 113.2,
+          "end": 113.45
         },
         {
           "word_index": 8,
           "text": "en",
-          "start": 113.6,
-          "end": 113.8
+          "start": 113.45,
+          "end": 113.65
         },
         {
           "word_index": 9,
           "text": "mi'",
-          "start": 113.8,
-          "end": 113.95
+          "start": 113.65,
+          "end": 113.9
         },
         {
           "word_index": 10,
           "text": "manos",
-          "start": 113.95,
+          "start": 113.9,
           "end": 114.15
         }
       ]
     },
     {
       "line_index": 32,
-      "text": "Estoy muy duro, s\u00ed, okay, ah\u00ed vamos",
-      "start": 114.45,
-      "end": 116.3,
+      "text": "Estoy muy duro, sí, okay, ahí vamos",
+      "start": 114.15,
+      "end": 116.4,
       "words": [
         {
           "word_index": 1,
           "text": "Estoy",
-          "start": 114.45,
-          "end": 114.75
+          "start": 114.15,
+          "end": 114.6
         },
         {
           "word_index": 2,
           "text": "muy",
-          "start": 114.75,
-          "end": 115.0
+          "start": 114.6,
+          "end": 114.9
         },
         {
           "word_index": 3,
           "text": "duro,",
-          "start": 115.0,
-          "end": 115.2
+          "start": 114.9,
+          "end": 115.3
         },
         {
           "word_index": 4,
-          "text": "s\u00ed,",
-          "start": 115.2,
-          "end": 115.5
+          "text": "sí,",
+          "start": 115.3,
+          "end": 115.55
         },
         {
           "word_index": 5,
           "text": "okay,",
-          "start": 115.6,
+          "start": 115.55,
           "end": 115.9
         },
         {
           "word_index": 6,
-          "text": "ah\u00ed",
+          "text": "ahí",
           "start": 115.9,
           "end": 116.1
         },
@@ -1432,38 +1432,38 @@
           "word_index": 7,
           "text": "vamos",
           "start": 116.1,
-          "end": 116.3
+          "end": 116.4
         }
       ]
     },
     {
       "line_index": 33,
       "text": "Y con el tiempo nos seguimos elevando (y yeah)",
-      "start": 116.55,
-      "end": 118.8,
+      "start": 116.4,
+      "end": 118.9,
       "words": [
         {
           "word_index": 1,
           "text": "Y",
-          "start": 116.55,
-          "end": 116.75
+          "start": 116.4,
+          "end": 116.65
         },
         {
           "word_index": 2,
           "text": "con",
-          "start": 116.75,
-          "end": 117.0
+          "start": 116.65,
+          "end": 116.95
         },
         {
           "word_index": 3,
           "text": "el",
-          "start": 117.0,
-          "end": 117.25
+          "start": 116.95,
+          "end": 117.2
         },
         {
           "word_index": 4,
           "text": "tiempo",
-          "start": 117.25,
+          "start": 117.2,
           "end": 117.5
         },
         {
@@ -1476,69 +1476,69 @@
           "word_index": 6,
           "text": "seguimos",
           "start": 117.75,
-          "end": 118.0
+          "end": 118.05
         },
         {
           "word_index": 7,
           "text": "elevando",
-          "start": 118.0,
-          "end": 118.25
+          "start": 118.05,
+          "end": 118.35
         },
         {
           "word_index": 8,
           "text": "(y",
-          "start": 118.25,
-          "end": 118.5
+          "start": 118.35,
+          "end": 118.6
         },
         {
           "word_index": 9,
           "text": "yeah)",
-          "start": 118.5,
-          "end": 118.8
+          "start": 118.6,
+          "end": 118.9
         }
       ]
     },
     {
       "line_index": 34,
-      "text": "Que seguimos rompiendo aqu\u00ed (y yeah)",
-      "start": 119.25,
-      "end": 121.3,
+      "text": "Que seguimos rompiendo aquí (y yeah)",
+      "start": 118.95,
+      "end": 120.4,
       "words": [
         {
           "word_index": 1,
           "text": "Que",
-          "start": 119.25,
-          "end": 119.45
+          "start": 118.95,
+          "end": 119.1
         },
         {
           "word_index": 2,
           "text": "seguimos",
-          "start": 119.45,
-          "end": 119.85
+          "start": 119.1,
+          "end": 119.65
         },
         {
           "word_index": 3,
           "text": "rompiendo",
-          "start": 119.85,
-          "end": 120.35
+          "start": 119.65,
+          "end": 119.95
         },
         {
           "word_index": 4,
-          "text": "aqu\u00ed",
-          "start": 120.35,
-          "end": 121.05
+          "text": "aquí",
+          "start": 119.95,
+          "end": 120.2
         },
         {
           "word_index": 5,
           "text": "(y",
-          "start": 121.05,
-          "end": 121.2
+          "start": 120.2,
+          "end": 120.3
         },
         {
           "word_index": 6,
           "text": "yeah)",
-          "start": 121.2,
-          "end": 121.3
+          "start": 120.3,
+          "end": 120.4
         }
       ]
     },
@@ -1546,89 +1546,89 @@
       "line_index": 35,
       "text": "Esta fiesta no tiene fin (y yeah)",
       "start": 121.3,
-      "end": 123.25,
+      "end": 123.4,
       "words": [
         {
           "word_index": 1,
           "text": "Esta",
           "start": 121.3,
-          "end": 121.55
+          "end": 121.85
         },
         {
           "word_index": 2,
           "text": "fiesta",
-          "start": 121.55,
-          "end": 121.85
+          "start": 121.85,
+          "end": 122.15
         },
         {
           "word_index": 3,
           "text": "no",
-          "start": 121.85,
-          "end": 122.1
+          "start": 122.15,
+          "end": 122.35
         },
         {
           "word_index": 4,
           "text": "tiene",
-          "start": 122.1,
-          "end": 122.4
+          "start": 122.35,
+          "end": 122.6
         },
         {
           "word_index": 5,
           "text": "fin",
-          "start": 122.4,
-          "end": 122.65
+          "start": 122.6,
+          "end": 123.05
         },
         {
           "word_index": 6,
           "text": "(y",
-          "start": 122.65,
-          "end": 122.95
+          "start": 123.05,
+          "end": 123.3
         },
         {
           "word_index": 7,
           "text": "yeah)",
-          "start": 122.95,
-          "end": 123.25
+          "start": 123.3,
+          "end": 123.4
         }
       ]
     },
     {
       "line_index": 36,
-      "text": "Botellas para arriba, s\u00ed",
-      "start": 123.55,
+      "text": "Botellas para arriba, sí",
+      "start": 123.85,
       "end": 125.0,
       "words": [
         {
           "word_index": 1,
           "text": "Botellas",
-          "start": 123.55,
-          "end": 123.9
+          "start": 123.85,
+          "end": 124.35
         },
         {
           "word_index": 2,
           "text": "para",
-          "start": 123.9,
-          "end": 124.25
+          "start": 124.35,
+          "end": 124.5
         },
         {
           "word_index": 3,
           "text": "arriba,",
-          "start": 124.25,
-          "end": 124.6
+          "start": 124.5,
+          "end": 124.9
         },
         {
           "word_index": 4,
-          "text": "s\u00ed",
-          "start": 124.6,
+          "text": "sí",
+          "start": 124.9,
           "end": 125.0
         }
       ]
     },
     {
       "line_index": 37,
-      "text": "Los tengo bailando, rompiendo y yo sigo aqu\u00ed (y yeah)",
+      "text": "Los tengo bailando, rompiendo y yo sigo aquí (y yeah)",
       "start": 125.0,
-      "end": 127.7,
+      "end": 128.5,
       "words": [
         {
           "word_index": 1,
@@ -1640,509 +1640,523 @@
           "word_index": 2,
           "text": "tengo",
           "start": 125.35,
-          "end": 125.8
+          "end": 125.65
         },
         {
           "word_index": 3,
           "text": "bailando,",
-          "start": 125.8,
-          "end": 126.15
+          "start": 125.65,
+          "end": 126.3
         },
         {
           "word_index": 4,
           "text": "rompiendo",
-          "start": 126.15,
-          "end": 126.55
+          "start": 126.3,
+          "end": 126.95
         },
         {
           "word_index": 5,
           "text": "y",
-          "start": 126.55,
-          "end": 126.75
+          "start": 126.95,
+          "end": 127.3
         },
         {
           "word_index": 6,
           "text": "yo",
-          "start": 126.75,
-          "end": 126.95
+          "start": 127.3,
+          "end": 127.55
         },
         {
           "word_index": 7,
           "text": "sigo",
-          "start": 126.95,
-          "end": 127.25
+          "start": 127.55,
+          "end": 127.85
         },
         {
           "word_index": 8,
-          "text": "aqu\u00ed",
-          "start": 127.25,
-          "end": 127.5
+          "text": "aquí",
+          "start": 127.85,
+          "end": 128.1
         },
         {
           "word_index": 9,
           "text": "(y",
-          "start": 127.5,
-          "end": 127.6
+          "start": 128.1,
+          "end": 128.2
         },
         {
           "word_index": 10,
           "text": "yeah)",
-          "start": 127.6,
-          "end": 127.7
+          "start": 128.2,
+          "end": 128.5
         }
       ]
     },
     {
       "line_index": 38,
-      "text": "Que seguimos rompiendo aqu\u00ed (y yeah)",
-      "start": 127.7,
-      "end": 129.7,
+      "text": "Que seguimos rompiendo aquí (y yeah)",
+      "start": 128.5,
+      "end": 129.9,
       "words": [
         {
           "word_index": 1,
           "text": "Que",
-          "start": 127.7,
-          "end": 128.0
+          "start": 128.5,
+          "end": 128.65
         },
         {
           "word_index": 2,
           "text": "seguimos",
-          "start": 128.0,
-          "end": 128.35
+          "start": 128.65,
+          "end": 129.05
         },
         {
           "word_index": 3,
           "text": "rompiendo",
-          "start": 128.35,
-          "end": 128.7
+          "start": 129.05,
+          "end": 129.5
         },
         {
           "word_index": 4,
-          "text": "aqu\u00ed",
-          "start": 128.7,
-          "end": 129.05
+          "text": "aquí",
+          "start": 129.5,
+          "end": 129.7
         },
         {
           "word_index": 5,
           "text": "(y",
-          "start": 129.05,
-          "end": 129.35
+          "start": 129.7,
+          "end": 129.8
         },
         {
           "word_index": 6,
           "text": "yeah)",
-          "start": 129.35,
-          "end": 129.7
+          "start": 129.8,
+          "end": 129.9
         }
       ]
     },
     {
       "line_index": 39,
-      "text": "Esta fiesta no tiene fin, yeah",
-      "start": 129.7,
-      "end": 131.9,
+      "text": "Esta fiesta no tiene fin (y yeah)",
+      "start": 130.7,
+      "end": 132.9,
       "words": [
         {
           "word_index": 1,
           "text": "Esta",
-          "start": 129.7,
-          "end": 130.05
+          "start": 130.7,
+          "end": 131.0
         },
         {
           "word_index": 2,
           "text": "fiesta",
-          "start": 130.05,
-          "end": 130.45
+          "start": 131.0,
+          "end": 131.3
         },
         {
           "word_index": 3,
           "text": "no",
-          "start": 130.45,
-          "end": 130.8
+          "start": 131.3,
+          "end": 131.65
         },
         {
           "word_index": 4,
           "text": "tiene",
-          "start": 130.8,
-          "end": 131.15
+          "start": 131.65,
+          "end": 131.95
         },
         {
           "word_index": 5,
-          "text": "fin,",
-          "start": 131.15,
-          "end": 131.55
+          "text": "fin",
+          "start": 131.95,
+          "end": 132.3
         },
         {
           "word_index": 6,
-          "text": "yeah",
-          "start": 131.55,
-          "end": 131.9
+          "text": "(y",
+          "start": 132.3,
+          "end": 132.6
+        },
+        {
+          "word_index": 7,
+          "text": "yeah)",
+          "start": 132.6,
+          "end": 132.9
         }
       ]
     },
     {
       "line_index": 40,
-      "text": "Botellas para arriba, s\u00ed",
-      "start": 131.9,
-      "end": 133.6,
+      "text": "Botellas para arriba, sí",
+      "start": 132.9,
+      "end": 134.55,
       "words": [
         {
           "word_index": 1,
           "text": "Botellas",
-          "start": 131.9,
-          "end": 132.35
+          "start": 132.9,
+          "end": 133.5
         },
         {
           "word_index": 2,
           "text": "para",
-          "start": 132.35,
-          "end": 132.75
+          "start": 133.5,
+          "end": 133.9
         },
         {
           "word_index": 3,
           "text": "arriba,",
-          "start": 132.75,
-          "end": 133.2
+          "start": 133.9,
+          "end": 134.35
         },
         {
           "word_index": 4,
-          "text": "s\u00ed",
-          "start": 133.2,
-          "end": 133.6
+          "text": "sí",
+          "start": 134.35,
+          "end": 134.55
         }
       ]
     },
     {
       "line_index": 41,
       "text": "Los tengo bailando, rompiendo",
-      "start": 133.6,
-      "end": 135.2,
+      "start": 134.6,
+      "end": 136.2,
       "words": [
         {
           "word_index": 1,
           "text": "Los",
-          "start": 133.6,
-          "end": 134.0
+          "start": 134.6,
+          "end": 135.1
         },
         {
           "word_index": 2,
           "text": "tengo",
-          "start": 134.0,
-          "end": 134.4
+          "start": 135.1,
+          "end": 135.6
         },
         {
           "word_index": 3,
           "text": "bailando,",
-          "start": 134.4,
-          "end": 134.8
+          "start": 135.6,
+          "end": 136.1
         },
         {
           "word_index": 4,
           "text": "rompiendo",
-          "start": 134.8,
-          "end": 135.2
+          "start": 136.1,
+          "end": 136.2
         }
       ]
     },
     {
       "line_index": 42,
-      "text": "\u00bfY d\u00f3nde est\u00e1 mi gente?",
-      "start": 135.75,
-      "end": 137.5,
+      "text": "¿Y dónde está mi gente?",
+      "start": 136.2,
+      "end": 137.8,
       "words": [
         {
           "word_index": 1,
-          "text": "\u00bfY",
-          "start": 135.75,
-          "end": 136.0
+          "text": "¿Y",
+          "start": 136.2,
+          "end": 136.3
         },
         {
           "word_index": 2,
-          "text": "d\u00f3nde",
-          "start": 136.0,
-          "end": 136.2
+          "text": "dónde",
+          "start": 136.3,
+          "end": 136.7
         },
         {
           "word_index": 3,
-          "text": "est\u00e1",
-          "start": 136.2,
-          "end": 136.65
+          "text": "está",
+          "start": 136.7,
+          "end": 137.2
         },
         {
           "word_index": 4,
           "text": "mi",
-          "start": 136.65,
-          "end": 137.05
+          "start": 137.2,
+          "end": 137.35
         },
         {
           "word_index": 5,
           "text": "gente?",
-          "start": 137.05,
-          "end": 137.5
+          "start": 137.35,
+          "end": 137.8
         }
       ]
     },
     {
       "line_index": 43,
-      "text": "Mais fais bouger la t\u00eate",
-      "start": 138.5,
-      "end": 140.45,
+      "text": "Mais fais bouger la tête",
+      "start": 138.15,
+      "end": 139.95,
       "words": [
         {
           "word_index": 1,
           "text": "Mais",
-          "start": 138.5,
-          "end": 138.8
+          "start": 138.15,
+          "end": 138.4
         },
         {
           "word_index": 2,
           "text": "fais",
-          "start": 138.8,
-          "end": 139.1
+          "start": 138.4,
+          "end": 138.75
         },
         {
           "word_index": 3,
           "text": "bouger",
-          "start": 139.1,
-          "end": 139.55
+          "start": 138.75,
+          "end": 139.25
         },
         {
           "word_index": 4,
           "text": "la",
-          "start": 139.55,
-          "end": 140.0
+          "start": 139.25,
+          "end": 139.5
         },
         {
           "word_index": 5,
-          "text": "t\u00eate",
-          "start": 140.0,
-          "end": 140.45
+          "text": "tête",
+          "start": 139.5,
+          "end": 139.95
         }
       ]
     },
     {
       "line_index": 44,
-      "text": "\u00bfY d\u00f3nde est\u00e1 mi gente?",
-      "start": 140.95,
-      "end": 142.45,
+      "text": "¿Y dónde está mi gente?",
+      "start": 140.6,
+      "end": 142.55,
       "words": [
         {
           "word_index": 1,
-          "text": "\u00bfY",
-          "start": 140.95,
-          "end": 141.15
+          "text": "¿Y",
+          "start": 140.6,
+          "end": 140.7
         },
         {
           "word_index": 2,
-          "text": "d\u00f3nde",
-          "start": 141.15,
-          "end": 141.5
+          "text": "dónde",
+          "start": 140.7,
+          "end": 141.35
         },
         {
           "word_index": 3,
-          "text": "est\u00e1",
-          "start": 141.5,
-          "end": 141.75
+          "text": "está",
+          "start": 141.35,
+          "end": 141.8
         },
         {
           "word_index": 4,
           "text": "mi",
-          "start": 141.75,
-          "end": 142.0
+          "start": 141.8,
+          "end": 142.1
         },
         {
           "word_index": 5,
           "text": "gente?",
-          "start": 142.0,
-          "end": 142.45
+          "start": 142.1,
+          "end": 142.55
         }
       ]
     },
     {
       "line_index": 45,
       "text": "Say yeah, yeah, yeah",
-      "start": 143.15,
+      "start": 142.75,
       "end": 144.15,
       "words": [
         {
           "word_index": 1,
           "text": "Say",
-          "start": 143.15,
-          "end": 143.45
+          "start": 142.75,
+          "end": 143.2
         },
         {
           "word_index": 2,
           "text": "yeah,",
-          "start": 143.45,
-          "end": 143.65
+          "start": 143.2,
+          "end": 143.5
         },
         {
           "word_index": 3,
           "text": "yeah,",
-          "start": 143.65,
-          "end": 143.9
+          "start": 143.5,
+          "end": 143.85
         },
         {
           "word_index": 4,
           "text": "yeah",
-          "start": 143.9,
+          "start": 143.85,
           "end": 144.15
         }
       ]
     },
     {
       "line_index": 46,
-      "text": "\u00a1Un, dos, tres, leggo! (Ay, di que s\u00ed)",
-      "start": 144.75,
-      "end": 146.75,
+      "text": "¡Un, dos, tres, leggo! (Ay, di que sí)",
+      "start": 144.15,
+      "end": 147.4,
       "words": [
         {
           "word_index": 1,
-          "text": "\u00a1Un,",
-          "start": 144.75,
-          "end": 144.95
+          "text": "¡Un,",
+          "start": 144.15,
+          "end": 144.65
         },
         {
           "word_index": 2,
           "text": "dos,",
-          "start": 144.95,
-          "end": 145.2
+          "start": 144.65,
+          "end": 145.15
         },
         {
           "word_index": 3,
           "text": "tres,",
-          "start": 145.2,
-          "end": 145.5
+          "start": 145.15,
+          "end": 145.65
         },
         {
           "word_index": 4,
           "text": "leggo!",
-          "start": 145.5,
-          "end": 145.85
+          "start": 145.65,
+          "end": 146.05
         },
         {
           "word_index": 5,
           "text": "(Ay,",
-          "start": 145.85,
-          "end": 146.1
+          "start": 146.05,
+          "end": 146.45
         },
         {
           "word_index": 6,
           "text": "di",
-          "start": 146.1,
-          "end": 146.35
+          "start": 146.45,
+          "end": 146.8
         },
         {
           "word_index": 7,
           "text": "que",
-          "start": 146.35,
-          "end": 146.6
+          "start": 146.8,
+          "end": 147.05
         },
         {
           "word_index": 8,
-          "text": "s\u00ed)",
-          "start": 146.6,
-          "end": 146.75
+          "text": "sí)",
+          "start": 147.05,
+          "end": 147.4
         }
       ]
     },
     {
       "line_index": 47,
       "text": "Worldwide, Willy William",
-      "start": 160.55,
-      "end": 162.65,
+      "start": 160.4,
+      "end": 162.4,
       "words": [
         {
           "word_index": 1,
           "text": "Worldwide,",
-          "start": 160.55,
-          "end": 161.25
+          "start": 160.4,
+          "end": 161.05
         },
         {
           "word_index": 2,
           "text": "Willy",
-          "start": 161.25,
-          "end": 161.95
+          "start": 161.05,
+          "end": 161.75
         },
         {
           "word_index": 3,
           "text": "William",
-          "start": 161.95,
-          "end": 162.65
+          "start": 161.75,
+          "end": 162.4
         }
       ]
     },
     {
       "line_index": 48,
-      "text": "J Balvin, man, aj\u00e1",
-      "start": 162.65,
-      "end": 164.6,
+      "text": "J Balvin, man",
+      "start": 162.4,
+      "end": 164.2,
       "words": [
         {
           "word_index": 1,
           "text": "J",
-          "start": 162.65,
-          "end": 163.15
+          "start": 162.4,
+          "end": 163.0
         },
         {
           "word_index": 2,
           "text": "Balvin,",
-          "start": 163.15,
-          "end": 163.65
+          "start": 163.0,
+          "end": 163.6
         },
         {
           "word_index": 3,
-          "text": "man,",
-          "start": 163.65,
-          "end": 164.15
-        },
-        {
-          "word_index": 4,
-          "text": "aj\u00e1",
-          "start": 164.15,
-          "end": 164.6
+          "text": "man",
+          "start": 163.6,
+          "end": 164.2
         }
       ]
     },
     {
       "line_index": 49,
-      "text": "Aj\u00e1",
-      "start": 165.0,
-      "end": 165.8,
+      "text": "Ajá",
+      "start": 164.2,
+      "end": 164.7,
       "words": [
         {
           "word_index": 1,
-          "text": "Aj\u00e1",
-          "start": 165.0,
-          "end": 165.8
+          "text": "Ajá",
+          "start": 164.2,
+          "end": 164.7
         }
       ]
     },
     {
       "line_index": 50,
-      "text": "Aj\u00e1",
-      "start": 169.15,
-      "end": 169.95,
+      "text": "Ajá",
+      "start": 166.55,
+      "end": 167.05,
       "words": [
         {
           "word_index": 1,
-          "text": "Aj\u00e1",
-          "start": 169.15,
-          "end": 169.95
+          "text": "Ajá",
+          "start": 166.55,
+          "end": 167.05
         }
       ]
     },
     {
       "line_index": 51,
-      "text": "Aj\u00e1",
-      "start": 171.7,
-      "end": 172.5,
+      "text": "Ajá",
+      "start": 169.15,
+      "end": 169.65,
       "words": [
         {
           "word_index": 1,
-          "text": "Aj\u00e1",
-          "start": 171.7,
-          "end": 172.5
+          "text": "Ajá",
+          "start": 169.15,
+          "end": 169.65
+        }
+      ]
+    },
+    {
+      "line_index": 52,
+      "text": "Ajá",
+      "start": 171.3,
+      "end": 171.8,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Ajá",
+          "start": 171.3,
+          "end": 171.8
         }
       ]
     }
