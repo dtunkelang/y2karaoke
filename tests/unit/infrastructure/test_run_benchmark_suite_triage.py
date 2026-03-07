@@ -175,6 +175,32 @@ def test_aggregate_reports_reference_excluded_primary_metric():
         ]
         == 2.0
     )
+    assert agg["curated_canary_song_count"] == 1
+    assert agg["curated_canary_song_names"] == ["B - Clean"]
+    assert agg["curated_canary_reference_watchlist_count"] == 1
+    assert agg["curated_canary_reference_watchlist"] == ["A - Refy"]
+    assert agg["curated_canary_avg_abs_word_start_delta_sec_word_weighted_mean"] == 2.0
+
+
+def test_gold_metric_warnings_prefer_curated_canary_subset():
+    module = _load_module()
+    warnings = module._gold_metric_warnings(
+        {
+            "gold_metric_song_count": 3,
+            "gold_metric_song_coverage_ratio": 1.0,
+            "gold_word_coverage_ratio_total": 1.0,
+            "avg_abs_word_start_delta_sec_word_weighted_mean": 7.2,
+            "curated_canary_song_count": 2,
+            "curated_canary_song_coverage_ratio": 1.0,
+            "curated_canary_gold_word_coverage_ratio_total": 0.99,
+            "curated_canary_avg_abs_word_start_delta_sec_word_weighted_mean": 1.02,
+        }
+    )
+    assert any(
+        "Curated-canary gold-set avg abs word-start delta is high" in w
+        for w in warnings
+    )
+    assert all("Gold-set avg abs word-start delta is high" not in w for w in warnings)
 
 
 def test_infer_reference_divergence_with_gold_strong_dtw_high_mismatch():

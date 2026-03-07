@@ -2047,6 +2047,18 @@ def _aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:  # noqa: C901
         result = _mean(metric_values(key))
         return float(result) if result is not None else None
 
+    def metric_mean_for_rows(rows: list[dict[str, Any]], key: str) -> float | None:
+        values: list[float] = []
+        for row in rows:
+            metrics_obj = row.get("metrics", {})
+            if not isinstance(metrics_obj, dict):
+                continue
+            value = metrics_obj.get(key)
+            if isinstance(value, (int, float)):
+                values.append(float(value))
+        result = _mean(values)
+        return float(result) if result is not None else None
+
     total_lines = int(sum(metric_values("line_count")))
     low_conf_total = int(sum(metric_values("low_confidence_lines")))
     agreement_count_total = int(sum(metric_values("agreement_count")))
@@ -2304,12 +2316,41 @@ def _aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:  # noqa: C901
         if f"{row['artist']} - {row['title']}" not in reference_divergence_song_keys
     ]
     gold_metric_song_count_excluding_reference = len(gold_measured_non_reference_songs)
+    curated_canary_song_names = [
+        f"{row['artist']} - {row['title']}" for row in gold_measured_non_reference_songs
+    ]
+    curated_canary_gold_word_count_total = int(
+        sum(
+            int(r.get("metrics", {}).get("gold_word_count", 0) or 0)
+            for r in gold_measured_non_reference_songs
+        )
+    )
+    curated_canary_gold_comparable_word_count_total = int(
+        sum(
+            int(r.get("metrics", {}).get("gold_comparable_word_count", 0) or 0)
+            for r in gold_measured_non_reference_songs
+        )
+    )
+    curated_canary_gold_word_coverage_ratio_total = (
+        (
+            curated_canary_gold_comparable_word_count_total
+            / curated_canary_gold_word_count_total
+        )
+        if curated_canary_gold_word_count_total
+        else 0.0
+    )
     avg_abs_word_start_delta_word_weighted_mean_excluding_reference = (
         weighted_metric_mean_for_rows(
             gold_measured_non_reference_songs,
             "avg_abs_word_start_delta_sec",
             weight_key="gold_comparable_word_count",
         )
+    )
+    curated_canary_gold_end_mean_abs_sec_mean = metric_mean_for_rows(
+        gold_measured_non_reference_songs, "gold_end_mean_abs_sec"
+    )
+    curated_canary_gold_start_p95_abs_sec_mean = metric_mean_for_rows(
+        gold_measured_non_reference_songs, "gold_start_p95_abs_sec"
     )
     triage_rankings = _build_triage_rankings(succeeded, top_n=5)
     diagnosis_counts: dict[str, int] = {}
@@ -2574,6 +2615,51 @@ def _aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:  # noqa: C901
             ),
             4,
         ),
+        "curated_canary_song_count": gold_metric_song_count_excluding_reference,
+        "curated_canary_song_coverage_ratio": round(
+            (
+                (gold_metric_song_count_excluding_reference / len(succeeded))
+                if succeeded
+                else 0.0
+            ),
+            4,
+        ),
+        "curated_canary_song_names": curated_canary_song_names,
+        "curated_canary_gold_word_count_total": curated_canary_gold_word_count_total,
+        "curated_canary_gold_comparable_word_count_total": (
+            curated_canary_gold_comparable_word_count_total
+        ),
+        "curated_canary_gold_word_coverage_ratio_total": round(
+            curated_canary_gold_word_coverage_ratio_total, 4
+        ),
+        "curated_canary_avg_abs_word_start_delta_sec_word_weighted_mean": (
+            round(
+                float(
+                    avg_abs_word_start_delta_word_weighted_mean_excluding_reference
+                    or 0.0
+                ),
+                4,
+            )
+            if avg_abs_word_start_delta_word_weighted_mean_excluding_reference
+            is not None
+            else None
+        ),
+        "curated_canary_gold_start_p95_abs_sec_mean": (
+            round(float(curated_canary_gold_start_p95_abs_sec_mean or 0.0), 4)
+            if curated_canary_gold_start_p95_abs_sec_mean is not None
+            else None
+        ),
+        "curated_canary_gold_end_mean_abs_sec_mean": (
+            round(float(curated_canary_gold_end_mean_abs_sec_mean or 0.0), 4)
+            if curated_canary_gold_end_mean_abs_sec_mean is not None
+            else None
+        ),
+        "curated_canary_reference_watchlist_count": len(reference_divergence_suspects),
+        "curated_canary_reference_watchlist": [
+            row["song"]
+            for row in reference_divergence_suspects
+            if isinstance(row, dict)
+        ],
         "reference_divergence_suspected_count": len(reference_divergence_suspects),
         "reference_divergence_suspected_ratio": round(
             (len(reference_divergence_suspects) / len(succeeded)) if succeeded else 0.0,
@@ -2863,25 +2949,44 @@ def _diagnosis_ratio_warnings(aggregate: dict[str, Any]) -> list[str]:
 
 def _gold_metric_warnings(aggregate: dict[str, Any]) -> list[str]:
     warnings: list[str] = []
+    curated_canary_song_count = int(aggregate.get("curated_canary_song_count", 0) or 0)
     gold_metric_song_count = int(aggregate.get("gold_metric_song_count", 0) or 0)
-    if gold_metric_song_count <= 0:
+    use_curated_canaries = curated_canary_song_count > 0
+    active_song_count = (
+        curated_canary_song_count if use_curated_canaries else gold_metric_song_count
+    )
+    if active_song_count <= 0:
         return warnings
-    gold_song_cov = float(aggregate.get("gold_metric_song_coverage_ratio", 0.0) or 0.0)
+    coverage_key = (
+        "curated_canary_song_coverage_ratio"
+        if use_curated_canaries
+        else "gold_metric_song_coverage_ratio"
+    )
+    word_cov_key = (
+        "curated_canary_gold_word_coverage_ratio_total"
+        if use_curated_canaries
+        else "gold_word_coverage_ratio_total"
+    )
+    start_mean_key = (
+        "curated_canary_avg_abs_word_start_delta_sec_word_weighted_mean"
+        if use_curated_canaries
+        else "avg_abs_word_start_delta_sec_word_weighted_mean"
+    )
+    label = "Curated-canary gold-set" if use_curated_canaries else "Gold-set"
+    gold_song_cov = float(aggregate.get(coverage_key, 0.0) or 0.0)
     if gold_song_cov < 0.5:
         warnings.append(
-            "Gold-set metric song coverage is low: " f"{gold_song_cov:.3f} < 0.500"
+            f"{label} metric song coverage is low: " f"{gold_song_cov:.3f} < 0.500"
         )
-    gold_word_cov = float(aggregate.get("gold_word_coverage_ratio_total", 0.0) or 0.0)
+    gold_word_cov = float(aggregate.get(word_cov_key, 0.0) or 0.0)
     if gold_word_cov < 0.8:
         warnings.append(
-            "Gold-set comparable word coverage is low: " f"{gold_word_cov:.3f} < 0.800"
+            f"{label} comparable word coverage is low: " f"{gold_word_cov:.3f} < 0.800"
         )
-    gold_start_mean = float(
-        aggregate.get("avg_abs_word_start_delta_sec_word_weighted_mean", 0.0) or 0.0
-    )
+    gold_start_mean = float(aggregate.get(start_mean_key, 0.0) or 0.0)
     if gold_start_mean > 0.35:
         warnings.append(
-            "Gold-set avg abs word-start delta is high: "
+            f"{label} avg abs word-start delta is high: "
             f"{gold_start_mean:.3f}s > 0.350s"
         )
     return warnings
@@ -3077,6 +3182,29 @@ def _write_markdown_summary(  # noqa: C901
         f"`{aggregate.get('gold_metric_song_count', 0)}/{aggregate.get('songs_succeeded', 0)}` songs, "
         f"`{aggregate.get('gold_comparable_word_count_total', 0)}/{aggregate.get('gold_word_count_total', 0)}` words"
     )
+    curated_canary_song_count = int(aggregate.get("curated_canary_song_count", 0) or 0)
+    if curated_canary_song_count > 0:
+        lines.append(
+            "- Curated canary gold coverage: "
+            f"`{curated_canary_song_count}/{aggregate.get('songs_succeeded', 0)}` songs, "
+            f"`{aggregate.get('curated_canary_gold_comparable_word_count_total', 0)}`/"
+            f"`{aggregate.get('curated_canary_gold_word_count_total', 0)}` words"
+        )
+        lines.append(
+            "- Curated canary primary metric (avg abs word-start delta): "
+            f"`{_fmt_num(aggregate.get('curated_canary_avg_abs_word_start_delta_sec_word_weighted_mean'), unit='s')}` "
+            "(word-weighted)"
+        )
+        lines.append(
+            "- Curated canary p95 abs word-start delta: "
+            f"`{_fmt_num(aggregate.get('curated_canary_gold_start_p95_abs_sec_mean'), unit='s')}`"
+        )
+        watchlist = aggregate.get("curated_canary_reference_watchlist", [])
+        if isinstance(watchlist, list) and watchlist:
+            lines.append(
+                "- Curated reference-divergence watchlist: "
+                + ", ".join(f"`{item}`" for item in watchlist)
+            )
     lines.append(
         "- Gold comparable word coverage ratio: "
         f"`{aggregate.get('gold_word_coverage_ratio_total', 0.0):.3f}`"
