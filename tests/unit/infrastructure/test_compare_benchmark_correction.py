@@ -35,6 +35,12 @@ def test_build_comparison_reports_net_improvement() -> None:
             "agreement_bad_ratio_mean": 0.20,
             "dtw_word_coverage_line_weighted_mean": 0.80,
             "avg_abs_word_start_delta_sec_word_weighted_mean": 1.2,
+            "curated_canary_song_count": 2,
+            "curated_canary_gold_word_coverage_ratio_total": 0.98,
+            "curated_canary_avg_abs_word_start_delta_sec_word_weighted_mean": 1.4,
+            "curated_canary_gold_start_p95_abs_sec_mean": 3.4,
+            "curated_canary_reference_watchlist_count": 1,
+            "curated_canary_reference_watchlist": ["Artist B - Song B"],
         },
         "songs": [
             {
@@ -59,6 +65,12 @@ def test_build_comparison_reports_net_improvement() -> None:
             "agreement_bad_ratio_mean": 0.18,
             "dtw_word_coverage_line_weighted_mean": 0.84,
             "avg_abs_word_start_delta_sec_word_weighted_mean": 1.0,
+            "curated_canary_song_count": 2,
+            "curated_canary_gold_word_coverage_ratio_total": 0.99,
+            "curated_canary_avg_abs_word_start_delta_sec_word_weighted_mean": 1.1,
+            "curated_canary_gold_start_p95_abs_sec_mean": 2.9,
+            "curated_canary_reference_watchlist_count": 0,
+            "curated_canary_reference_watchlist": [],
         },
         "songs": [
             {
@@ -91,6 +103,14 @@ def test_build_comparison_reports_net_improvement() -> None:
         ]
         is True
     )
+    assert (
+        report["curated_canary_deltas"][
+            "curated_canary_avg_abs_word_start_delta_sec_word_weighted_mean"
+        ]["improved"]
+        is True
+    )
+    assert report["curated_canary_watchlist"]["baseline"] == ["Artist B - Song B"]
+    assert report["curated_canary_watchlist"]["corrected"] == []
     song_row = report["song_deltas"][0]
     assert song_row["net_score"] > 0
 
@@ -136,6 +156,8 @@ def test_main_writes_json_and_markdown(tmp_path, monkeypatch) -> None:
     assert rc == 0
     assert (corrected_dir / "human_correction_delta.json").exists()
     assert (corrected_dir / "human_correction_delta.md").exists()
+    markdown = (corrected_dir / "human_correction_delta.md").read_text(encoding="utf-8")
+    assert "## Curated Canary Deltas" in markdown
 
 
 def test_main_assert_tradeoff_fails_on_bad_ratio_regression(

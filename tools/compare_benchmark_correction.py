@@ -45,6 +45,34 @@ METRICS_AGGREGATE: list[dict[str, str]] = [
     },
 ]
 
+METRICS_CURATED_CANARY: list[dict[str, str]] = [
+    {
+        "key": "curated_canary_song_count",
+        "label": "curated_canary_song_count",
+        "direction": "higher",
+    },
+    {
+        "key": "curated_canary_gold_word_coverage_ratio_total",
+        "label": "curated_canary_gold_word_coverage",
+        "direction": "higher",
+    },
+    {
+        "key": "curated_canary_avg_abs_word_start_delta_sec_word_weighted_mean",
+        "label": "curated_canary_gold_start_abs_word",
+        "direction": "lower",
+    },
+    {
+        "key": "curated_canary_gold_start_p95_abs_sec_mean",
+        "label": "curated_canary_gold_start_p95_abs_sec",
+        "direction": "lower",
+    },
+    {
+        "key": "curated_canary_reference_watchlist_count",
+        "label": "curated_canary_watchlist_count",
+        "direction": "lower",
+    },
+]
+
 METRICS_SONG: list[dict[str, str]] = [
     {"key": "timing_quality_score", "label": "timing_quality", "direction": "higher"},
     {
@@ -57,7 +85,11 @@ METRICS_SONG: list[dict[str, str]] = [
         "label": "agreement_start_p95_abs_sec",
         "direction": "lower",
     },
-    {"key": "agreement_bad_ratio", "label": "agreement_bad_ratio", "direction": "lower"},
+    {
+        "key": "agreement_bad_ratio",
+        "label": "agreement_bad_ratio",
+        "direction": "lower",
+    },
     {"key": "gold_start_mean_abs_sec", "label": "gold_start_abs", "direction": "lower"},
     {"key": "dtw_word_coverage", "label": "dtw_word_coverage", "direction": "higher"},
 ]
@@ -108,10 +140,12 @@ def _metric_delta(
 
 
 def _compare_aggregate(
-    baseline_aggregate: dict[str, Any], corrected_aggregate: dict[str, Any]
+    baseline_aggregate: dict[str, Any],
+    corrected_aggregate: dict[str, Any],
+    metrics: list[dict[str, str]],
 ) -> dict[str, dict[str, Any]]:
     out: dict[str, dict[str, Any]] = {}
-    for metric in METRICS_AGGREGATE:
+    for metric in metrics:
         key = metric["key"]
         out[key] = _metric_delta(
             _num(baseline_aggregate.get(key)),
@@ -205,10 +239,57 @@ def _write_markdown(path: Path, report: dict[str, Any], top_n: int) -> None:
                 improved=_fmt_improved(data["improved"]),
             )
         )
+    curated = report.get("curated_canary_deltas", {})
+    if curated:
+        lines.append("")
+        lines.append("## Curated Canary Deltas")
+        lines.append("")
+        lines.append("| Metric | Baseline | Corrected | Delta | Improved |")
+        lines.append("|---|---:|---:|---:|---|")
+        for metric in METRICS_CURATED_CANARY:
+            key = metric["key"]
+            data = curated.get(key)
+            if not isinstance(data, dict):
+                continue
+            lines.append(
+                "| {metric} | {base} | {corr} | {delta} | {improved} |".format(
+                    metric=metric["label"],
+                    base=_fmt_num(data["baseline"]),
+                    corr=_fmt_num(data["corrected"]),
+                    delta=_fmt_num(data["delta"], signed=True),
+                    improved=_fmt_improved(data["improved"]),
+                )
+            )
+        watchlist = report.get("curated_canary_watchlist", {})
+        if isinstance(watchlist, dict):
+            baseline_watch = watchlist.get("baseline")
+            corrected_watch = watchlist.get("corrected")
+            if isinstance(baseline_watch, list) or isinstance(corrected_watch, list):
+                lines.append("")
+                lines.append(
+                    "- Curated canary watchlist baseline: "
+                    + (
+                        ", ".join(f"`{item}`" for item in baseline_watch)
+                        if isinstance(baseline_watch, list) and baseline_watch
+                        else "`-`"
+                    )
+                )
+                lines.append(
+                    "- Curated canary watchlist corrected: "
+                    + (
+                        ", ".join(f"`{item}`" for item in corrected_watch)
+                        if isinstance(corrected_watch, list) and corrected_watch
+                        else "`-`"
+                    )
+                )
 
     sorted_rows = sorted(
         report["song_deltas"],
-        key=lambda row: (row["net_score"], row["improved_metrics"], -row["regressed_metrics"]),
+        key=lambda row: (
+            row["net_score"],
+            row["improved_metrics"],
+            -row["regressed_metrics"],
+        ),
         reverse=True,
     )
     top_rows = sorted_rows[:top_n]
@@ -218,7 +299,9 @@ def _write_markdown(path: Path, report: dict[str, Any], top_n: int) -> None:
         lines.append("")
         lines.append(f"## {title}")
         lines.append("")
-        lines.append("| Song | Net | Improved | Regressed | timing_quality_delta | agreement_cov_delta | p95_delta_sec |")
+        lines.append(
+            "| Song | Net | Improved | Regressed | timing_quality_delta | agreement_cov_delta | p95_delta_sec |"
+        )
         lines.append("|---|---:|---:|---:|---:|---:|---:|")
         for row in rows:
             m = row["metrics"]
@@ -230,7 +313,9 @@ def _write_markdown(path: Path, report: dict[str, Any], top_n: int) -> None:
                     reg=row["regressed_metrics"],
                     tq=_fmt_num(m["timing_quality_score"]["delta"], signed=True),
                     cov=_fmt_num(m["agreement_coverage_ratio"]["delta"], signed=True),
-                    p95=_fmt_num(m["agreement_start_p95_abs_sec"]["delta"], signed=True),
+                    p95=_fmt_num(
+                        m["agreement_start_p95_abs_sec"]["delta"], signed=True
+                    ),
                 )
             )
 
@@ -272,7 +357,27 @@ def _build_comparison(
         "aggregate_deltas": _compare_aggregate(
             baseline_report.get("aggregate", {}) or {},
             corrected_report.get("aggregate", {}) or {},
+            METRICS_AGGREGATE,
         ),
+        "curated_canary_deltas": _compare_aggregate(
+            baseline_report.get("aggregate", {}) or {},
+            corrected_report.get("aggregate", {}) or {},
+            METRICS_CURATED_CANARY,
+        ),
+        "curated_canary_watchlist": {
+            "baseline": list(
+                (baseline_report.get("aggregate", {}) or {}).get(
+                    "curated_canary_reference_watchlist", []
+                )
+                or []
+            ),
+            "corrected": list(
+                (corrected_report.get("aggregate", {}) or {}).get(
+                    "curated_canary_reference_watchlist", []
+                )
+                or []
+            ),
+        },
         "song_deltas": song_deltas,
         "summary": _summarize_song_comparison(song_deltas),
     }
@@ -369,8 +474,12 @@ def main() -> int:
     )
 
     corrected_path = args.corrected.expanduser().resolve()
-    default_output_root = corrected_path if corrected_path.is_dir() else corrected_path.parent
-    output_json = args.output_json or default_output_root / "human_correction_delta.json"
+    default_output_root = (
+        corrected_path if corrected_path.is_dir() else corrected_path.parent
+    )
+    output_json = (
+        args.output_json or default_output_root / "human_correction_delta.json"
+    )
     output_md = args.output_md or default_output_root / "human_correction_delta.md"
 
     output_json.parent.mkdir(parents=True, exist_ok=True)
@@ -379,7 +488,9 @@ def main() -> int:
 
     tradeoff_issue: str | None = None
     if args.assert_agreement_tradeoff:
-        agree_cov = comparison["aggregate_deltas"].get("agreement_coverage_ratio_mean", {})
+        agree_cov = comparison["aggregate_deltas"].get(
+            "agreement_coverage_ratio_mean", {}
+        )
         agree_bad = comparison["aggregate_deltas"].get("agreement_bad_ratio_mean", {})
         cov_delta = _num(agree_cov.get("delta"))
         bad_delta = _num(agree_bad.get("delta"))
