@@ -1,0 +1,2150 @@
+{
+  "schema_version": "1.0",
+  "title": "Mi Gente",
+  "artist": "J Balvin",
+  "audio_path": "",
+  "lines": [
+    {
+      "line_index": 1,
+      "text": "\u00a1Wuh!",
+      "start": 8.0,
+      "end": 8.4,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "\u00a1Wuh!",
+          "start": 8.0,
+          "end": 8.4
+        }
+      ]
+    },
+    {
+      "line_index": 2,
+      "text": "Si el ritmo te lleva a mover la cabeza Ya empezamo' como es",
+      "start": 9.5,
+      "end": 12.75,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Si",
+          "start": 9.5,
+          "end": 9.7
+        },
+        {
+          "word_index": 2,
+          "text": "el",
+          "start": 9.7,
+          "end": 9.9
+        },
+        {
+          "word_index": 3,
+          "text": "ritmo",
+          "start": 9.9,
+          "end": 10.15
+        },
+        {
+          "word_index": 4,
+          "text": "te",
+          "start": 10.15,
+          "end": 10.35
+        },
+        {
+          "word_index": 5,
+          "text": "lleva",
+          "start": 10.35,
+          "end": 10.6
+        },
+        {
+          "word_index": 6,
+          "text": "a",
+          "start": 10.6,
+          "end": 10.8
+        },
+        {
+          "word_index": 7,
+          "text": "mover",
+          "start": 10.8,
+          "end": 11.05
+        },
+        {
+          "word_index": 8,
+          "text": "la",
+          "start": 11.05,
+          "end": 11.35
+        },
+        {
+          "word_index": 9,
+          "text": "cabeza",
+          "start": 11.35,
+          "end": 11.6
+        },
+        {
+          "word_index": 10,
+          "text": "Ya",
+          "start": 11.6,
+          "end": 11.8
+        },
+        {
+          "word_index": 11,
+          "text": "empezamo'",
+          "start": 11.8,
+          "end": 12.25
+        },
+        {
+          "word_index": 12,
+          "text": "como",
+          "start": 12.25,
+          "end": 12.5
+        },
+        {
+          "word_index": 13,
+          "text": "es",
+          "start": 12.5,
+          "end": 12.75
+        }
+      ]
+    },
+    {
+      "line_index": 3,
+      "text": "Mi m\u00fasica no discrimina a nadie As\u00ed que vamo' a romper",
+      "start": 13.65,
+      "end": 17.3,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Mi",
+          "start": 13.65,
+          "end": 14.0
+        },
+        {
+          "word_index": 2,
+          "text": "m\u00fasica",
+          "start": 14.0,
+          "end": 14.6
+        },
+        {
+          "word_index": 3,
+          "text": "no",
+          "start": 14.6,
+          "end": 14.8
+        },
+        {
+          "word_index": 4,
+          "text": "discrimina",
+          "start": 14.8,
+          "end": 15.5
+        },
+        {
+          "word_index": 5,
+          "text": "a",
+          "start": 15.5,
+          "end": 15.65
+        },
+        {
+          "word_index": 6,
+          "text": "nadie",
+          "start": 15.65,
+          "end": 16.0
+        },
+        {
+          "word_index": 7,
+          "text": "As\u00ed",
+          "start": 16.0,
+          "end": 16.2
+        },
+        {
+          "word_index": 8,
+          "text": "que",
+          "start": 16.2,
+          "end": 16.4
+        },
+        {
+          "word_index": 9,
+          "text": "vamo'",
+          "start": 16.4,
+          "end": 16.7
+        },
+        {
+          "word_index": 10,
+          "text": "a",
+          "start": 16.7,
+          "end": 16.8
+        },
+        {
+          "word_index": 11,
+          "text": "romper",
+          "start": 16.8,
+          "end": 17.3
+        }
+      ]
+    },
+    {
+      "line_index": 4,
+      "text": "Toda mi gente se mueve (rra)",
+      "start": 17.3,
+      "end": 19.15,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Toda",
+          "start": 17.3,
+          "end": 17.6
+        },
+        {
+          "word_index": 2,
+          "text": "mi",
+          "start": 17.6,
+          "end": 17.9
+        },
+        {
+          "word_index": 3,
+          "text": "gente",
+          "start": 17.9,
+          "end": 18.2
+        },
+        {
+          "word_index": 4,
+          "text": "se",
+          "start": 18.2,
+          "end": 18.5
+        },
+        {
+          "word_index": 5,
+          "text": "mueve",
+          "start": 18.5,
+          "end": 18.8
+        },
+        {
+          "word_index": 6,
+          "text": "(rra)",
+          "start": 18.8,
+          "end": 19.15
+        }
+      ]
+    },
+    {
+      "line_index": 5,
+      "text": "Mira el ritmo c\u00f3mo los tiene",
+      "start": 19.9,
+      "end": 21.7,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Mira",
+          "start": 19.9,
+          "end": 20.1
+        },
+        {
+          "word_index": 2,
+          "text": "el",
+          "start": 20.1,
+          "end": 20.2
+        },
+        {
+          "word_index": 3,
+          "text": "ritmo",
+          "start": 20.2,
+          "end": 20.5
+        },
+        {
+          "word_index": 4,
+          "text": "c\u00f3mo",
+          "start": 20.5,
+          "end": 20.8
+        },
+        {
+          "word_index": 5,
+          "text": "los",
+          "start": 20.8,
+          "end": 21.1
+        },
+        {
+          "word_index": 6,
+          "text": "tiene",
+          "start": 21.1,
+          "end": 21.7
+        }
+      ]
+    },
+    {
+      "line_index": 6,
+      "text": "Hago m\u00fasica que entretiene",
+      "start": 22.15,
+      "end": 23.5,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Hago",
+          "start": 22.15,
+          "end": 22.4
+        },
+        {
+          "word_index": 2,
+          "text": "m\u00fasica",
+          "start": 22.4,
+          "end": 22.75
+        },
+        {
+          "word_index": 3,
+          "text": "que",
+          "start": 22.75,
+          "end": 23.05
+        },
+        {
+          "word_index": 4,
+          "text": "entretiene",
+          "start": 23.05,
+          "end": 23.5
+        }
+      ]
+    },
+    {
+      "line_index": 7,
+      "text": "El mundo nos quiere, nos quiere, me quiere a m\u00ed",
+      "start": 24.2,
+      "end": 26.55,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "El",
+          "start": 24.2,
+          "end": 24.45
+        },
+        {
+          "word_index": 2,
+          "text": "mundo",
+          "start": 24.45,
+          "end": 24.7
+        },
+        {
+          "word_index": 3,
+          "text": "nos",
+          "start": 24.7,
+          "end": 24.95
+        },
+        {
+          "word_index": 4,
+          "text": "quiere,",
+          "start": 24.95,
+          "end": 25.2
+        },
+        {
+          "word_index": 5,
+          "text": "nos",
+          "start": 25.2,
+          "end": 25.45
+        },
+        {
+          "word_index": 6,
+          "text": "quiere,",
+          "start": 25.45,
+          "end": 25.65
+        },
+        {
+          "word_index": 7,
+          "text": "me",
+          "start": 25.65,
+          "end": 25.85
+        },
+        {
+          "word_index": 8,
+          "text": "quiere",
+          "start": 25.85,
+          "end": 26.05
+        },
+        {
+          "word_index": 9,
+          "text": "a",
+          "start": 26.05,
+          "end": 26.3
+        },
+        {
+          "word_index": 10,
+          "text": "m\u00ed",
+          "start": 26.3,
+          "end": 26.55
+        }
+      ]
+    },
+    {
+      "line_index": 8,
+      "text": "Toda mi gente se mueve (rra)",
+      "start": 26.55,
+      "end": 28.25,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Toda",
+          "start": 26.55,
+          "end": 26.85
+        },
+        {
+          "word_index": 2,
+          "text": "mi",
+          "start": 26.85,
+          "end": 27.15
+        },
+        {
+          "word_index": 3,
+          "text": "gente",
+          "start": 27.15,
+          "end": 27.4
+        },
+        {
+          "word_index": 4,
+          "text": "se",
+          "start": 27.4,
+          "end": 27.65
+        },
+        {
+          "word_index": 5,
+          "text": "mueve",
+          "start": 27.65,
+          "end": 27.95
+        },
+        {
+          "word_index": 6,
+          "text": "(rra)",
+          "start": 27.95,
+          "end": 28.25
+        }
+      ]
+    },
+    {
+      "line_index": 9,
+      "text": "Mira el ritmo c\u00f3mo los tiene",
+      "start": 28.9,
+      "end": 30.65,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Mira",
+          "start": 28.9,
+          "end": 29.2
+        },
+        {
+          "word_index": 2,
+          "text": "el",
+          "start": 29.2,
+          "end": 29.45
+        },
+        {
+          "word_index": 3,
+          "text": "ritmo",
+          "start": 29.45,
+          "end": 29.85
+        },
+        {
+          "word_index": 4,
+          "text": "c\u00f3mo",
+          "start": 29.85,
+          "end": 30.1
+        },
+        {
+          "word_index": 5,
+          "text": "los",
+          "start": 30.1,
+          "end": 30.3
+        },
+        {
+          "word_index": 6,
+          "text": "tiene",
+          "start": 30.3,
+          "end": 30.65
+        }
+      ]
+    },
+    {
+      "line_index": 10,
+      "text": "Hago m\u00fasica que entretiene",
+      "start": 31.25,
+      "end": 33.2,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Hago",
+          "start": 31.25,
+          "end": 31.6
+        },
+        {
+          "word_index": 2,
+          "text": "m\u00fasica",
+          "start": 31.6,
+          "end": 32.2
+        },
+        {
+          "word_index": 3,
+          "text": "que",
+          "start": 32.2,
+          "end": 32.75
+        },
+        {
+          "word_index": 4,
+          "text": "entretiene",
+          "start": 32.75,
+          "end": 33.2
+        }
+      ]
+    },
+    {
+      "line_index": 11,
+      "text": "Mi m\u00fasica los tiene fuerte bailando y se baila as\u00ed (let's go)",
+      "start": 33.25,
+      "end": 36.9,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Mi",
+          "start": 33.25,
+          "end": 33.65
+        },
+        {
+          "word_index": 2,
+          "text": "m\u00fasica",
+          "start": 33.65,
+          "end": 34.0
+        },
+        {
+          "word_index": 3,
+          "text": "los",
+          "start": 34.0,
+          "end": 34.35
+        },
+        {
+          "word_index": 4,
+          "text": "tiene",
+          "start": 34.35,
+          "end": 34.65
+        },
+        {
+          "word_index": 5,
+          "text": "fuerte",
+          "start": 34.65,
+          "end": 35.0
+        },
+        {
+          "word_index": 6,
+          "text": "bailando",
+          "start": 35.0,
+          "end": 35.35
+        },
+        {
+          "word_index": 7,
+          "text": "y",
+          "start": 35.35,
+          "end": 35.55
+        },
+        {
+          "word_index": 8,
+          "text": "se",
+          "start": 35.55,
+          "end": 35.75
+        },
+        {
+          "word_index": 9,
+          "text": "baila",
+          "start": 35.75,
+          "end": 36.25
+        },
+        {
+          "word_index": 10,
+          "text": "as\u00ed",
+          "start": 36.25,
+          "end": 36.45
+        },
+        {
+          "word_index": 11,
+          "text": "(let's",
+          "start": 36.45,
+          "end": 36.7
+        },
+        {
+          "word_index": 12,
+          "text": "go)",
+          "start": 36.7,
+          "end": 36.9
+        }
+      ]
+    },
+    {
+      "line_index": 12,
+      "text": "Estamo' rompiendo la discoteca",
+      "start": 54.5,
+      "end": 56.5,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Estamo'",
+          "start": 54.5,
+          "end": 54.95
+        },
+        {
+          "word_index": 2,
+          "text": "rompiendo",
+          "start": 54.95,
+          "end": 55.5
+        },
+        {
+          "word_index": 3,
+          "text": "la",
+          "start": 55.5,
+          "end": 55.8
+        },
+        {
+          "word_index": 4,
+          "text": "discoteca",
+          "start": 55.8,
+          "end": 56.5
+        }
+      ]
+    },
+    {
+      "line_index": 13,
+      "text": "La fiesta no para, apenas comienza",
+      "start": 56.65,
+      "end": 58.9,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "La",
+          "start": 56.65,
+          "end": 56.95
+        },
+        {
+          "word_index": 2,
+          "text": "fiesta",
+          "start": 56.95,
+          "end": 57.4
+        },
+        {
+          "word_index": 3,
+          "text": "no",
+          "start": 57.4,
+          "end": 57.8
+        },
+        {
+          "word_index": 4,
+          "text": "para,",
+          "start": 57.8,
+          "end": 58.3
+        },
+        {
+          "word_index": 5,
+          "text": "apenas",
+          "start": 58.3,
+          "end": 58.65
+        },
+        {
+          "word_index": 6,
+          "text": "comienza",
+          "start": 58.65,
+          "end": 58.9
+        }
+      ]
+    },
+    {
+      "line_index": 14,
+      "text": "(\u00a1Eh!) C'est comme ci (\u00a1eh!), c'est comme \u00e7a",
+      "start": 59.1,
+      "end": 61.5,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "(\u00a1Eh!)",
+          "start": 59.1,
+          "end": 59.5
+        },
+        {
+          "word_index": 2,
+          "text": "C'est",
+          "start": 59.5,
+          "end": 59.9
+        },
+        {
+          "word_index": 3,
+          "text": "comme",
+          "start": 59.9,
+          "end": 60.3
+        },
+        {
+          "word_index": 4,
+          "text": "ci",
+          "start": 60.3,
+          "end": 60.65
+        },
+        {
+          "word_index": 5,
+          "text": "(\u00a1eh!),",
+          "start": 60.65,
+          "end": 60.75
+        },
+        {
+          "word_index": 6,
+          "text": "c'est",
+          "start": 60.75,
+          "end": 61.0
+        },
+        {
+          "word_index": 7,
+          "text": "comme",
+          "start": 61.0,
+          "end": 61.25
+        },
+        {
+          "word_index": 8,
+          "text": "\u00e7a",
+          "start": 61.25,
+          "end": 61.5
+        }
+      ]
+    },
+    {
+      "line_index": 15,
+      "text": "(\u00a1Eh!) Ma ch\u00e9rie, la-la-la-la-la",
+      "start": 61.5,
+      "end": 63.85,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "(\u00a1Eh!)",
+          "start": 61.5,
+          "end": 62.15
+        },
+        {
+          "word_index": 2,
+          "text": "Ma",
+          "start": 62.15,
+          "end": 62.55
+        },
+        {
+          "word_index": 3,
+          "text": "ch\u00e9rie,",
+          "start": 62.55,
+          "end": 63.0
+        },
+        {
+          "word_index": 4,
+          "text": "la-la-la-la-la",
+          "start": 63.0,
+          "end": 63.85
+        }
+      ]
+    },
+    {
+      "line_index": 16,
+      "text": "(Eh) Francia (eh), Colombia (eh)",
+      "start": 63.85,
+      "end": 66.5,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "(Eh)",
+          "start": 63.85,
+          "end": 64.4
+        },
+        {
+          "word_index": 2,
+          "text": "Francia",
+          "start": 64.4,
+          "end": 65.5
+        },
+        {
+          "word_index": 3,
+          "text": "(eh),",
+          "start": 65.5,
+          "end": 65.6
+        },
+        {
+          "word_index": 4,
+          "text": "Colombia",
+          "start": 65.6,
+          "end": 66.4
+        },
+        {
+          "word_index": 5,
+          "text": "(eh)",
+          "start": 66.4,
+          "end": 66.5
+        }
+      ]
+    },
+    {
+      "line_index": 17,
+      "text": "Me gusta (\u00a1freeze!)",
+      "start": 66.5,
+      "end": 67.8,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Me",
+          "start": 66.5,
+          "end": 66.95
+        },
+        {
+          "word_index": 2,
+          "text": "gusta",
+          "start": 66.95,
+          "end": 67.35
+        },
+        {
+          "word_index": 3,
+          "text": "(\u00a1freeze!)",
+          "start": 67.35,
+          "end": 67.8
+        }
+      ]
+    },
+    {
+      "line_index": 18,
+      "text": "(Eh) J Balvin (eh), Willy William (eh)",
+      "start": 68.9,
+      "end": 71.1,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "(Eh)",
+          "start": 68.9,
+          "end": 69.1
+        },
+        {
+          "word_index": 2,
+          "text": "J",
+          "start": 69.1,
+          "end": 69.25
+        },
+        {
+          "word_index": 3,
+          "text": "Balvin",
+          "start": 69.25,
+          "end": 69.7
+        },
+        {
+          "word_index": 4,
+          "text": "(eh),",
+          "start": 69.7,
+          "end": 70.05
+        },
+        {
+          "word_index": 5,
+          "text": "Willy",
+          "start": 70.05,
+          "end": 70.4
+        },
+        {
+          "word_index": 6,
+          "text": "William",
+          "start": 70.4,
+          "end": 70.75
+        },
+        {
+          "word_index": 7,
+          "text": "(eh)",
+          "start": 70.75,
+          "end": 71.1
+        }
+      ]
+    },
+    {
+      "line_index": 19,
+      "text": "Me gusta (\u00a1freeze!)",
+      "start": 71.25,
+      "end": 72.45,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Me",
+          "start": 71.25,
+          "end": 71.55
+        },
+        {
+          "word_index": 2,
+          "text": "gusta",
+          "start": 71.55,
+          "end": 71.95
+        },
+        {
+          "word_index": 3,
+          "text": "(\u00a1freeze!)",
+          "start": 71.95,
+          "end": 72.45
+        }
+      ]
+    },
+    {
+      "line_index": 20,
+      "text": "Los DJs no mienten, les gusta mi gente",
+      "start": 72.85,
+      "end": 75.2,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Los",
+          "start": 72.85,
+          "end": 73.15
+        },
+        {
+          "word_index": 2,
+          "text": "DJs",
+          "start": 73.15,
+          "end": 73.4
+        },
+        {
+          "word_index": 3,
+          "text": "no",
+          "start": 73.4,
+          "end": 73.7
+        },
+        {
+          "word_index": 4,
+          "text": "mienten,",
+          "start": 73.7,
+          "end": 74.15
+        },
+        {
+          "word_index": 5,
+          "text": "les",
+          "start": 74.15,
+          "end": 74.35
+        },
+        {
+          "word_index": 6,
+          "text": "gusta",
+          "start": 74.35,
+          "end": 74.7
+        },
+        {
+          "word_index": 7,
+          "text": "mi",
+          "start": 74.7,
+          "end": 74.9
+        },
+        {
+          "word_index": 8,
+          "text": "gente",
+          "start": 74.9,
+          "end": 75.2
+        }
+      ]
+    },
+    {
+      "line_index": 21,
+      "text": "Y eso se fue mundial (\u00a1freeze!)",
+      "start": 75.2,
+      "end": 76.75,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Y",
+          "start": 75.2,
+          "end": 75.5
+        },
+        {
+          "word_index": 2,
+          "text": "eso",
+          "start": 75.5,
+          "end": 75.75
+        },
+        {
+          "word_index": 3,
+          "text": "se",
+          "start": 75.75,
+          "end": 76.0
+        },
+        {
+          "word_index": 4,
+          "text": "fue",
+          "start": 76.0,
+          "end": 76.25
+        },
+        {
+          "word_index": 5,
+          "text": "mundial",
+          "start": 76.25,
+          "end": 76.5
+        },
+        {
+          "word_index": 6,
+          "text": "(\u00a1freeze!)",
+          "start": 76.5,
+          "end": 76.75
+        }
+      ]
+    },
+    {
+      "line_index": 22,
+      "text": "No le bajamos, mas nunca paramos",
+      "start": 77.7,
+      "end": 79.5,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "No",
+          "start": 77.7,
+          "end": 77.9
+        },
+        {
+          "word_index": 2,
+          "text": "le",
+          "start": 77.9,
+          "end": 78.1
+        },
+        {
+          "word_index": 3,
+          "text": "bajamos,",
+          "start": 78.1,
+          "end": 78.5
+        },
+        {
+          "word_index": 4,
+          "text": "mas",
+          "start": 78.5,
+          "end": 78.7
+        },
+        {
+          "word_index": 5,
+          "text": "nunca",
+          "start": 78.7,
+          "end": 79.0
+        },
+        {
+          "word_index": 6,
+          "text": "paramos",
+          "start": 79.0,
+          "end": 79.5
+        }
+      ]
+    },
+    {
+      "line_index": 23,
+      "text": "Es otro palo y, \u00a1blam!",
+      "start": 80.05,
+      "end": 81.05,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Es",
+          "start": 80.05,
+          "end": 80.25
+        },
+        {
+          "word_index": 2,
+          "text": "otro",
+          "start": 80.25,
+          "end": 80.45
+        },
+        {
+          "word_index": 3,
+          "text": "palo",
+          "start": 80.45,
+          "end": 80.65
+        },
+        {
+          "word_index": 4,
+          "text": "y,",
+          "start": 80.65,
+          "end": 80.85
+        },
+        {
+          "word_index": 5,
+          "text": "\u00a1blam!",
+          "start": 80.85,
+          "end": 81.05
+        }
+      ]
+    },
+    {
+      "line_index": 24,
+      "text": "\u00bfY d\u00f3nde est\u00e1 mi gente?",
+      "start": 81.05,
+      "end": 82.6,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "\u00bfY",
+          "start": 81.05,
+          "end": 81.45
+        },
+        {
+          "word_index": 2,
+          "text": "d\u00f3nde",
+          "start": 81.45,
+          "end": 81.8
+        },
+        {
+          "word_index": 3,
+          "text": "est\u00e1",
+          "start": 81.8,
+          "end": 82.1
+        },
+        {
+          "word_index": 4,
+          "text": "mi",
+          "start": 82.1,
+          "end": 82.2
+        },
+        {
+          "word_index": 5,
+          "text": "gente?",
+          "start": 82.2,
+          "end": 82.6
+        }
+      ]
+    },
+    {
+      "line_index": 25,
+      "text": "Mais fais bouger la t\u00eate",
+      "start": 83.3,
+      "end": 85.0,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Mais",
+          "start": 83.3,
+          "end": 83.75
+        },
+        {
+          "word_index": 2,
+          "text": "fais",
+          "start": 83.75,
+          "end": 84.1
+        },
+        {
+          "word_index": 3,
+          "text": "bouger",
+          "start": 84.1,
+          "end": 84.55
+        },
+        {
+          "word_index": 4,
+          "text": "la",
+          "start": 84.55,
+          "end": 84.7
+        },
+        {
+          "word_index": 5,
+          "text": "t\u00eate",
+          "start": 84.7,
+          "end": 85.0
+        }
+      ]
+    },
+    {
+      "line_index": 26,
+      "text": "\u00bfY d\u00f3nde est\u00e1 mi gente?",
+      "start": 85.5,
+      "end": 87.2,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "\u00bfY",
+          "start": 85.5,
+          "end": 85.9
+        },
+        {
+          "word_index": 2,
+          "text": "d\u00f3nde",
+          "start": 85.9,
+          "end": 86.25
+        },
+        {
+          "word_index": 3,
+          "text": "est\u00e1",
+          "start": 86.25,
+          "end": 86.6
+        },
+        {
+          "word_index": 4,
+          "text": "mi",
+          "start": 86.6,
+          "end": 86.75
+        },
+        {
+          "word_index": 5,
+          "text": "gente?",
+          "start": 86.75,
+          "end": 87.2
+        }
+      ]
+    },
+    {
+      "line_index": 27,
+      "text": "Say yeah, yeah, yeah",
+      "start": 88.05,
+      "end": 89.05,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Say",
+          "start": 88.05,
+          "end": 88.4
+        },
+        {
+          "word_index": 2,
+          "text": "yeah,",
+          "start": 88.4,
+          "end": 88.6
+        },
+        {
+          "word_index": 3,
+          "text": "yeah,",
+          "start": 88.6,
+          "end": 88.8
+        },
+        {
+          "word_index": 4,
+          "text": "yeah",
+          "start": 88.8,
+          "end": 89.05
+        }
+      ]
+    },
+    {
+      "line_index": 28,
+      "text": "\u00a1Un, dos, tres, leggo! (Ay, di que s\u00ed)",
+      "start": 89.05,
+      "end": 91.15,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "\u00a1Un,",
+          "start": 89.05,
+          "end": 89.3
+        },
+        {
+          "word_index": 2,
+          "text": "dos,",
+          "start": 89.3,
+          "end": 89.6
+        },
+        {
+          "word_index": 3,
+          "text": "tres,",
+          "start": 89.6,
+          "end": 89.85
+        },
+        {
+          "word_index": 4,
+          "text": "leggo!",
+          "start": 89.85,
+          "end": 90.1
+        },
+        {
+          "word_index": 5,
+          "text": "(Ay,",
+          "start": 90.1,
+          "end": 90.35
+        },
+        {
+          "word_index": 6,
+          "text": "di",
+          "start": 90.35,
+          "end": 90.65
+        },
+        {
+          "word_index": 7,
+          "text": "que",
+          "start": 90.65,
+          "end": 90.9
+        },
+        {
+          "word_index": 8,
+          "text": "s\u00ed)",
+          "start": 90.9,
+          "end": 91.15
+        }
+      ]
+    },
+    {
+      "line_index": 29,
+      "text": "\u00a1Rra!",
+      "start": 91.15,
+      "end": 91.25,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "\u00a1Rra!",
+          "start": 91.15,
+          "end": 91.25
+        }
+      ]
+    },
+    {
+      "line_index": 30,
+      "text": "Esquina a esquina, de ah\u00ed no' vamo'",
+      "start": 109.9,
+      "end": 111.75,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Esquina",
+          "start": 109.9,
+          "end": 110.2
+        },
+        {
+          "word_index": 2,
+          "text": "a",
+          "start": 110.2,
+          "end": 110.4
+        },
+        {
+          "word_index": 3,
+          "text": "esquina,",
+          "start": 110.4,
+          "end": 110.7
+        },
+        {
+          "word_index": 4,
+          "text": "de",
+          "start": 110.7,
+          "end": 110.95
+        },
+        {
+          "word_index": 5,
+          "text": "ah\u00ed",
+          "start": 110.95,
+          "end": 111.2
+        },
+        {
+          "word_index": 6,
+          "text": "no'",
+          "start": 111.2,
+          "end": 111.45
+        },
+        {
+          "word_index": 7,
+          "text": "vamo'",
+          "start": 111.45,
+          "end": 111.75
+        }
+      ]
+    },
+    {
+      "line_index": 31,
+      "text": "El mundo es grande, pero lo tengo en mi' manos",
+      "start": 112.1,
+      "end": 114.15,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "El",
+          "start": 112.1,
+          "end": 112.25
+        },
+        {
+          "word_index": 2,
+          "text": "mundo",
+          "start": 112.25,
+          "end": 112.5
+        },
+        {
+          "word_index": 3,
+          "text": "es",
+          "start": 112.5,
+          "end": 112.7
+        },
+        {
+          "word_index": 4,
+          "text": "grande,",
+          "start": 112.7,
+          "end": 112.95
+        },
+        {
+          "word_index": 5,
+          "text": "pero",
+          "start": 112.95,
+          "end": 113.2
+        },
+        {
+          "word_index": 6,
+          "text": "lo",
+          "start": 113.2,
+          "end": 113.35
+        },
+        {
+          "word_index": 7,
+          "text": "tengo",
+          "start": 113.35,
+          "end": 113.6
+        },
+        {
+          "word_index": 8,
+          "text": "en",
+          "start": 113.6,
+          "end": 113.8
+        },
+        {
+          "word_index": 9,
+          "text": "mi'",
+          "start": 113.8,
+          "end": 113.95
+        },
+        {
+          "word_index": 10,
+          "text": "manos",
+          "start": 113.95,
+          "end": 114.15
+        }
+      ]
+    },
+    {
+      "line_index": 32,
+      "text": "Estoy muy duro, s\u00ed, okay, ah\u00ed vamos",
+      "start": 114.45,
+      "end": 116.3,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Estoy",
+          "start": 114.45,
+          "end": 114.75
+        },
+        {
+          "word_index": 2,
+          "text": "muy",
+          "start": 114.75,
+          "end": 115.0
+        },
+        {
+          "word_index": 3,
+          "text": "duro,",
+          "start": 115.0,
+          "end": 115.2
+        },
+        {
+          "word_index": 4,
+          "text": "s\u00ed,",
+          "start": 115.2,
+          "end": 115.5
+        },
+        {
+          "word_index": 5,
+          "text": "okay,",
+          "start": 115.6,
+          "end": 115.9
+        },
+        {
+          "word_index": 6,
+          "text": "ah\u00ed",
+          "start": 115.9,
+          "end": 116.1
+        },
+        {
+          "word_index": 7,
+          "text": "vamos",
+          "start": 116.1,
+          "end": 116.3
+        }
+      ]
+    },
+    {
+      "line_index": 33,
+      "text": "Y con el tiempo nos seguimos elevando (y yeah)",
+      "start": 116.55,
+      "end": 118.8,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Y",
+          "start": 116.55,
+          "end": 116.75
+        },
+        {
+          "word_index": 2,
+          "text": "con",
+          "start": 116.75,
+          "end": 117.0
+        },
+        {
+          "word_index": 3,
+          "text": "el",
+          "start": 117.0,
+          "end": 117.25
+        },
+        {
+          "word_index": 4,
+          "text": "tiempo",
+          "start": 117.25,
+          "end": 117.5
+        },
+        {
+          "word_index": 5,
+          "text": "nos",
+          "start": 117.5,
+          "end": 117.75
+        },
+        {
+          "word_index": 6,
+          "text": "seguimos",
+          "start": 117.75,
+          "end": 118.0
+        },
+        {
+          "word_index": 7,
+          "text": "elevando",
+          "start": 118.0,
+          "end": 118.25
+        },
+        {
+          "word_index": 8,
+          "text": "(y",
+          "start": 118.25,
+          "end": 118.5
+        },
+        {
+          "word_index": 9,
+          "text": "yeah)",
+          "start": 118.5,
+          "end": 118.8
+        }
+      ]
+    },
+    {
+      "line_index": 34,
+      "text": "Que seguimos rompiendo aqu\u00ed (y yeah)",
+      "start": 119.25,
+      "end": 121.3,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Que",
+          "start": 119.25,
+          "end": 119.45
+        },
+        {
+          "word_index": 2,
+          "text": "seguimos",
+          "start": 119.45,
+          "end": 119.85
+        },
+        {
+          "word_index": 3,
+          "text": "rompiendo",
+          "start": 119.85,
+          "end": 120.35
+        },
+        {
+          "word_index": 4,
+          "text": "aqu\u00ed",
+          "start": 120.35,
+          "end": 121.05
+        },
+        {
+          "word_index": 5,
+          "text": "(y",
+          "start": 121.05,
+          "end": 121.2
+        },
+        {
+          "word_index": 6,
+          "text": "yeah)",
+          "start": 121.2,
+          "end": 121.3
+        }
+      ]
+    },
+    {
+      "line_index": 35,
+      "text": "Esta fiesta no tiene fin (y yeah)",
+      "start": 121.3,
+      "end": 123.25,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Esta",
+          "start": 121.3,
+          "end": 121.55
+        },
+        {
+          "word_index": 2,
+          "text": "fiesta",
+          "start": 121.55,
+          "end": 121.85
+        },
+        {
+          "word_index": 3,
+          "text": "no",
+          "start": 121.85,
+          "end": 122.1
+        },
+        {
+          "word_index": 4,
+          "text": "tiene",
+          "start": 122.1,
+          "end": 122.4
+        },
+        {
+          "word_index": 5,
+          "text": "fin",
+          "start": 122.4,
+          "end": 122.65
+        },
+        {
+          "word_index": 6,
+          "text": "(y",
+          "start": 122.65,
+          "end": 122.95
+        },
+        {
+          "word_index": 7,
+          "text": "yeah)",
+          "start": 122.95,
+          "end": 123.25
+        }
+      ]
+    },
+    {
+      "line_index": 36,
+      "text": "Botellas para arriba, s\u00ed",
+      "start": 123.55,
+      "end": 125.0,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Botellas",
+          "start": 123.55,
+          "end": 123.9
+        },
+        {
+          "word_index": 2,
+          "text": "para",
+          "start": 123.9,
+          "end": 124.25
+        },
+        {
+          "word_index": 3,
+          "text": "arriba,",
+          "start": 124.25,
+          "end": 124.6
+        },
+        {
+          "word_index": 4,
+          "text": "s\u00ed",
+          "start": 124.6,
+          "end": 125.0
+        }
+      ]
+    },
+    {
+      "line_index": 37,
+      "text": "Los tengo bailando, rompiendo y yo sigo aqu\u00ed (y yeah)",
+      "start": 125.0,
+      "end": 127.7,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Los",
+          "start": 125.0,
+          "end": 125.35
+        },
+        {
+          "word_index": 2,
+          "text": "tengo",
+          "start": 125.35,
+          "end": 125.8
+        },
+        {
+          "word_index": 3,
+          "text": "bailando,",
+          "start": 125.8,
+          "end": 126.15
+        },
+        {
+          "word_index": 4,
+          "text": "rompiendo",
+          "start": 126.15,
+          "end": 126.55
+        },
+        {
+          "word_index": 5,
+          "text": "y",
+          "start": 126.55,
+          "end": 126.75
+        },
+        {
+          "word_index": 6,
+          "text": "yo",
+          "start": 126.75,
+          "end": 126.95
+        },
+        {
+          "word_index": 7,
+          "text": "sigo",
+          "start": 126.95,
+          "end": 127.25
+        },
+        {
+          "word_index": 8,
+          "text": "aqu\u00ed",
+          "start": 127.25,
+          "end": 127.5
+        },
+        {
+          "word_index": 9,
+          "text": "(y",
+          "start": 127.5,
+          "end": 127.6
+        },
+        {
+          "word_index": 10,
+          "text": "yeah)",
+          "start": 127.6,
+          "end": 127.7
+        }
+      ]
+    },
+    {
+      "line_index": 38,
+      "text": "Que seguimos rompiendo aqu\u00ed (y yeah)",
+      "start": 127.7,
+      "end": 129.7,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Que",
+          "start": 127.7,
+          "end": 128.0
+        },
+        {
+          "word_index": 2,
+          "text": "seguimos",
+          "start": 128.0,
+          "end": 128.35
+        },
+        {
+          "word_index": 3,
+          "text": "rompiendo",
+          "start": 128.35,
+          "end": 128.7
+        },
+        {
+          "word_index": 4,
+          "text": "aqu\u00ed",
+          "start": 128.7,
+          "end": 129.05
+        },
+        {
+          "word_index": 5,
+          "text": "(y",
+          "start": 129.05,
+          "end": 129.35
+        },
+        {
+          "word_index": 6,
+          "text": "yeah)",
+          "start": 129.35,
+          "end": 129.7
+        }
+      ]
+    },
+    {
+      "line_index": 39,
+      "text": "Esta fiesta no tiene fin, yeah",
+      "start": 129.7,
+      "end": 131.9,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Esta",
+          "start": 129.7,
+          "end": 130.05
+        },
+        {
+          "word_index": 2,
+          "text": "fiesta",
+          "start": 130.05,
+          "end": 130.45
+        },
+        {
+          "word_index": 3,
+          "text": "no",
+          "start": 130.45,
+          "end": 130.8
+        },
+        {
+          "word_index": 4,
+          "text": "tiene",
+          "start": 130.8,
+          "end": 131.15
+        },
+        {
+          "word_index": 5,
+          "text": "fin,",
+          "start": 131.15,
+          "end": 131.55
+        },
+        {
+          "word_index": 6,
+          "text": "yeah",
+          "start": 131.55,
+          "end": 131.9
+        }
+      ]
+    },
+    {
+      "line_index": 40,
+      "text": "Botellas para arriba, s\u00ed",
+      "start": 131.9,
+      "end": 133.6,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Botellas",
+          "start": 131.9,
+          "end": 132.35
+        },
+        {
+          "word_index": 2,
+          "text": "para",
+          "start": 132.35,
+          "end": 132.75
+        },
+        {
+          "word_index": 3,
+          "text": "arriba,",
+          "start": 132.75,
+          "end": 133.2
+        },
+        {
+          "word_index": 4,
+          "text": "s\u00ed",
+          "start": 133.2,
+          "end": 133.6
+        }
+      ]
+    },
+    {
+      "line_index": 41,
+      "text": "Los tengo bailando, rompiendo",
+      "start": 133.6,
+      "end": 135.2,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Los",
+          "start": 133.6,
+          "end": 134.0
+        },
+        {
+          "word_index": 2,
+          "text": "tengo",
+          "start": 134.0,
+          "end": 134.4
+        },
+        {
+          "word_index": 3,
+          "text": "bailando,",
+          "start": 134.4,
+          "end": 134.8
+        },
+        {
+          "word_index": 4,
+          "text": "rompiendo",
+          "start": 134.8,
+          "end": 135.2
+        }
+      ]
+    },
+    {
+      "line_index": 42,
+      "text": "\u00bfY d\u00f3nde est\u00e1 mi gente?",
+      "start": 135.75,
+      "end": 137.5,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "\u00bfY",
+          "start": 135.75,
+          "end": 136.0
+        },
+        {
+          "word_index": 2,
+          "text": "d\u00f3nde",
+          "start": 136.0,
+          "end": 136.2
+        },
+        {
+          "word_index": 3,
+          "text": "est\u00e1",
+          "start": 136.2,
+          "end": 136.65
+        },
+        {
+          "word_index": 4,
+          "text": "mi",
+          "start": 136.65,
+          "end": 137.05
+        },
+        {
+          "word_index": 5,
+          "text": "gente?",
+          "start": 137.05,
+          "end": 137.5
+        }
+      ]
+    },
+    {
+      "line_index": 43,
+      "text": "Mais fais bouger la t\u00eate",
+      "start": 138.5,
+      "end": 140.45,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Mais",
+          "start": 138.5,
+          "end": 138.8
+        },
+        {
+          "word_index": 2,
+          "text": "fais",
+          "start": 138.8,
+          "end": 139.1
+        },
+        {
+          "word_index": 3,
+          "text": "bouger",
+          "start": 139.1,
+          "end": 139.55
+        },
+        {
+          "word_index": 4,
+          "text": "la",
+          "start": 139.55,
+          "end": 140.0
+        },
+        {
+          "word_index": 5,
+          "text": "t\u00eate",
+          "start": 140.0,
+          "end": 140.45
+        }
+      ]
+    },
+    {
+      "line_index": 44,
+      "text": "\u00bfY d\u00f3nde est\u00e1 mi gente?",
+      "start": 140.95,
+      "end": 142.45,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "\u00bfY",
+          "start": 140.95,
+          "end": 141.15
+        },
+        {
+          "word_index": 2,
+          "text": "d\u00f3nde",
+          "start": 141.15,
+          "end": 141.5
+        },
+        {
+          "word_index": 3,
+          "text": "est\u00e1",
+          "start": 141.5,
+          "end": 141.75
+        },
+        {
+          "word_index": 4,
+          "text": "mi",
+          "start": 141.75,
+          "end": 142.0
+        },
+        {
+          "word_index": 5,
+          "text": "gente?",
+          "start": 142.0,
+          "end": 142.45
+        }
+      ]
+    },
+    {
+      "line_index": 45,
+      "text": "Say yeah, yeah, yeah",
+      "start": 143.15,
+      "end": 144.15,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Say",
+          "start": 143.15,
+          "end": 143.45
+        },
+        {
+          "word_index": 2,
+          "text": "yeah,",
+          "start": 143.45,
+          "end": 143.65
+        },
+        {
+          "word_index": 3,
+          "text": "yeah,",
+          "start": 143.65,
+          "end": 143.9
+        },
+        {
+          "word_index": 4,
+          "text": "yeah",
+          "start": 143.9,
+          "end": 144.15
+        }
+      ]
+    },
+    {
+      "line_index": 46,
+      "text": "\u00a1Un, dos, tres, leggo! (Ay, di que s\u00ed)",
+      "start": 144.75,
+      "end": 146.75,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "\u00a1Un,",
+          "start": 144.75,
+          "end": 144.95
+        },
+        {
+          "word_index": 2,
+          "text": "dos,",
+          "start": 144.95,
+          "end": 145.2
+        },
+        {
+          "word_index": 3,
+          "text": "tres,",
+          "start": 145.2,
+          "end": 145.5
+        },
+        {
+          "word_index": 4,
+          "text": "leggo!",
+          "start": 145.5,
+          "end": 145.85
+        },
+        {
+          "word_index": 5,
+          "text": "(Ay,",
+          "start": 145.85,
+          "end": 146.1
+        },
+        {
+          "word_index": 6,
+          "text": "di",
+          "start": 146.1,
+          "end": 146.35
+        },
+        {
+          "word_index": 7,
+          "text": "que",
+          "start": 146.35,
+          "end": 146.6
+        },
+        {
+          "word_index": 8,
+          "text": "s\u00ed)",
+          "start": 146.6,
+          "end": 146.75
+        }
+      ]
+    },
+    {
+      "line_index": 47,
+      "text": "Worldwide, Willy William",
+      "start": 160.55,
+      "end": 162.65,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Worldwide,",
+          "start": 160.55,
+          "end": 161.25
+        },
+        {
+          "word_index": 2,
+          "text": "Willy",
+          "start": 161.25,
+          "end": 161.95
+        },
+        {
+          "word_index": 3,
+          "text": "William",
+          "start": 161.95,
+          "end": 162.65
+        }
+      ]
+    },
+    {
+      "line_index": 48,
+      "text": "J Balvin, man, aj\u00e1",
+      "start": 162.65,
+      "end": 164.6,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "J",
+          "start": 162.65,
+          "end": 163.15
+        },
+        {
+          "word_index": 2,
+          "text": "Balvin,",
+          "start": 163.15,
+          "end": 163.65
+        },
+        {
+          "word_index": 3,
+          "text": "man,",
+          "start": 163.65,
+          "end": 164.15
+        },
+        {
+          "word_index": 4,
+          "text": "aj\u00e1",
+          "start": 164.15,
+          "end": 164.6
+        }
+      ]
+    },
+    {
+      "line_index": 49,
+      "text": "Aj\u00e1",
+      "start": 165.0,
+      "end": 165.8,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Aj\u00e1",
+          "start": 165.0,
+          "end": 165.8
+        }
+      ]
+    },
+    {
+      "line_index": 50,
+      "text": "Aj\u00e1",
+      "start": 169.15,
+      "end": 169.95,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Aj\u00e1",
+          "start": 169.15,
+          "end": 169.95
+        }
+      ]
+    },
+    {
+      "line_index": 51,
+      "text": "Aj\u00e1",
+      "start": 171.7,
+      "end": 172.5,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Aj\u00e1",
+          "start": 171.7,
+          "end": 172.5
+        }
+      ]
+    }
+  ]
+}
