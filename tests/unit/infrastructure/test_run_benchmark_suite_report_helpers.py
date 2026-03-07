@@ -138,7 +138,8 @@ def test_collect_song_results_aggregate_only_delegates(tmp_path):
     module = _load_module()
     songs = [
         module.BenchmarkSong(
-            artist="Artist A",
+        manifest_index=1,
+        artist="Artist A",
             title="Alpha",
             youtube_id="aaaaaaaaaaa",
             youtube_url="https://www.youtube.com/watch?v=aaaaaaaaaaa",
@@ -398,6 +399,7 @@ def test_prepare_run_context_resolves_manifest_run_dir_and_baseline(tmp_path):
 def test_try_reuse_cached_song_result_reuses_matching_ok_result(tmp_path):
     module = _load_module()
     song = module.BenchmarkSong(
+        manifest_index=1,
         artist="Artist A",
         title="Alpha",
         youtube_id="aaaaaaaaaaa",
@@ -437,6 +439,7 @@ def test_try_reuse_cached_song_result_reuses_matching_ok_result(tmp_path):
 def test_try_reuse_cached_song_result_ignores_mismatched_signature(tmp_path):
     module = _load_module()
     song = module.BenchmarkSong(
+        manifest_index=1,
         artist="Artist A",
         title="Alpha",
         youtube_id="aaaaaaaaaaa",
@@ -469,6 +472,7 @@ def test_try_reuse_cached_song_result_ignores_mismatched_signature(tmp_path):
 def test_run_single_song_generation_returns_record_and_result_path(tmp_path):
     module = _load_module()
     song = module.BenchmarkSong(
+        manifest_index=1,
         artist="Artist A",
         title="Alpha",
         youtube_id="aaaaaaaaaaa",
@@ -559,6 +563,7 @@ def test_append_result_and_checkpoint_writes_optional_result_file(tmp_path):
 def test_collect_single_song_result_prefers_reuse_path(tmp_path):
     module = _load_module()
     song = module.BenchmarkSong(
+        manifest_index=1,
         artist="Artist A",
         title="Alpha",
         youtube_id="aaaaaaaaaaa",
@@ -607,13 +612,15 @@ def test_collect_song_results_honors_fail_fast(tmp_path):
     module = _load_module()
     songs = [
         module.BenchmarkSong(
-            artist="Artist A",
+        manifest_index=1,
+        artist="Artist A",
             title="Alpha",
             youtube_id="aaaaaaaaaaa",
             youtube_url="https://www.youtube.com/watch?v=aaaaaaaaaaa",
         ),
         module.BenchmarkSong(
-            artist="Artist B",
+        manifest_index=1,
+        artist="Artist B",
             title="Beta",
             youtube_id="bbbbbbbbbbb",
             youtube_url="https://www.youtube.com/watch?v=bbbbbbbbbbb",

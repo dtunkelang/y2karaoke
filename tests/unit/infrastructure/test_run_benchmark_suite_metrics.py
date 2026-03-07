@@ -648,6 +648,7 @@ def test_extract_song_metrics_gold_matching_handles_insertions():
 def test_gold_path_for_song_prefers_indexed_filename(tmp_path):
     module = _load_module()
     song = module.BenchmarkSong(
+        manifest_index=2,
         artist="Billie Eilish",
         title="bad guy",
         youtube_id="ayxYgDgBD3g",
@@ -661,9 +662,26 @@ def test_gold_path_for_song_prefers_indexed_filename(tmp_path):
     assert found == indexed
 
 
+def test_gold_path_for_song_uses_slug_match_when_index_prefix_changed(tmp_path):
+    module = _load_module()
+    song = module.BenchmarkSong(
+        manifest_index=10,
+        artist="J Balvin",
+        title="Mi Gente",
+        youtube_id="wnJ6LuUFpMo",
+        youtube_url="https://www.youtube.com/watch?v=wnJ6LuUFpMo",
+    )
+    legacy_indexed = tmp_path / f"07_{song.slug}.gold.json"
+    legacy_indexed.write_text("{}", encoding="utf-8")
+
+    found = module._gold_path_for_song(index=3, song=song, gold_root=tmp_path)
+    assert found == legacy_indexed
+
+
 def test_rebaseline_song_from_report_writes_default_indexed_gold(tmp_path):
     module = _load_module()
     song = module.BenchmarkSong(
+        manifest_index=2,
         artist="Billie Eilish",
         title="bad guy",
         youtube_id="ayxYgDgBD3g",
@@ -690,6 +708,7 @@ def test_rebaseline_song_from_report_writes_default_indexed_gold(tmp_path):
 def test_rebaseline_song_from_report_prefers_existing_gold_path(tmp_path):
     module = _load_module()
     song = module.BenchmarkSong(
+        manifest_index=2,
         artist="Billie Eilish",
         title="bad guy",
         youtube_id="ayxYgDgBD3g",

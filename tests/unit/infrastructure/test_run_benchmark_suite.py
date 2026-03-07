@@ -24,6 +24,7 @@ def _load_module():
 def test_build_generate_command_includes_expected_flags(tmp_path):
     module = _load_module()
     song = module.BenchmarkSong(
+        manifest_index=1,
         artist="X",
         title="Y",
         youtube_id="abcdefghijk",
@@ -55,6 +56,7 @@ def test_build_generate_command_includes_expected_flags(tmp_path):
 def test_build_generate_command_strategy_variants(tmp_path):
     module = _load_module()
     song = module.BenchmarkSong(
+        manifest_index=1,
         artist="X",
         title="Y",
         youtube_id="abcdefghijk",
@@ -222,13 +224,15 @@ def test_filter_manifest_songs_match_and_limit():
     module = _load_module()
     songs = [
         module.BenchmarkSong(
-            artist="Artist A",
+        manifest_index=1,
+        artist="Artist A",
             title="Alpha",
             youtube_id="aaaaaaaaaaa",
             youtube_url="https://www.youtube.com/watch?v=aaaaaaaaaaa",
         ),
         module.BenchmarkSong(
-            artist="Artist B",
+        manifest_index=1,
+        artist="Artist B",
             title="Beta",
             youtube_id="bbbbbbbbbbb",
             youtube_url="https://www.youtube.com/watch?v=bbbbbbbbbbb",
@@ -242,12 +246,14 @@ def test_filter_manifest_songs_match_and_limit():
 def test_apply_aggregate_only_cached_scope(tmp_path):
     module = _load_module()
     song_a = module.BenchmarkSong(
+        manifest_index=1,
         artist="Artist A",
         title="Alpha",
         youtube_id="aaaaaaaaaaa",
         youtube_url="https://www.youtube.com/watch?v=aaaaaaaaaaa",
     )
     song_b = module.BenchmarkSong(
+        manifest_index=1,
         artist="Artist B",
         title="Beta",
         youtube_id="bbbbbbbbbbb",
@@ -276,12 +282,14 @@ def test_apply_aggregate_only_cached_scope(tmp_path):
 def test_load_aggregate_only_results_refreshes_cached_and_marks_missing(tmp_path):
     module = _load_module()
     song_a = module.BenchmarkSong(
+        manifest_index=1,
         artist="A",
         title="Song A",
         youtube_id="aaaaaaaaaaa",
         youtube_url="https://www.youtube.com/watch?v=aaaaaaaaaaa",
     )
     song_b = module.BenchmarkSong(
+        manifest_index=1,
         artist="B",
         title="Song B",
         youtube_id="bbbbbbbbbbb",
@@ -323,6 +331,7 @@ def test_load_aggregate_only_results_refreshes_cached_and_marks_missing(tmp_path
 def test_load_aggregate_only_results_falls_back_to_slug_match(tmp_path):
     module = _load_module()
     song = module.BenchmarkSong(
+        manifest_index=1,
         artist="B",
         title="Song B",
         youtube_id="bbbbbbbbbbb",

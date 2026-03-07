@@ -81,6 +81,7 @@ _AGREEMENT_COLLOQUIAL_SPECIALS: dict[str, tuple[str, ...]] = {
 
 @dataclass(frozen=True)
 class BenchmarkSong:
+    manifest_index: int
     artist: str
     title: str
     youtube_id: str
@@ -109,6 +110,7 @@ def _parse_manifest(path: Path) -> list[BenchmarkSong]:
         try:
             songs.append(
                 BenchmarkSong(
+                    manifest_index=idx + 1,
                     artist=str(song["artist"]),
                     title=str(song["title"]),
                     youtube_id=str(song["youtube_id"]),
@@ -403,10 +405,19 @@ def _flatten_words_from_timing_doc(
 def _gold_path_for_song(
     index: int, song: BenchmarkSong, gold_root: Path
 ) -> Path | None:
-    candidates = [
-        gold_root / f"{index:02d}_{song.slug}.gold.json",
-        gold_root / f"{song.slug}.gold.json",
+    index_candidates = [index]
+    if song.manifest_index not in index_candidates:
+        index_candidates.append(song.manifest_index)
+    explicit_candidates = [
+        gold_root / f"{candidate_index:02d}_{song.slug}.gold.json"
+        for candidate_index in index_candidates
     ]
+    explicit_candidates.append(gold_root / f"{song.slug}.gold.json")
+    slug_matches = sorted(gold_root.glob(f"*_{song.slug}.gold.json"))
+    candidates: list[Path] = []
+    for path in explicit_candidates + slug_matches:
+        if path not in candidates:
+            candidates.append(path)
     for path in candidates:
         if path.exists():
             return path
@@ -416,7 +427,7 @@ def _gold_path_for_song(
 def _default_gold_path_for_song(
     index: int, song: BenchmarkSong, gold_root: Path
 ) -> Path:
-    return gold_root / f"{index:02d}_{song.slug}.gold.json"
+    return gold_root / f"{song.manifest_index:02d}_{song.slug}.gold.json"
 
 
 def _resolve_gold_rebaseline_path(
