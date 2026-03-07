@@ -274,6 +274,7 @@ Benchmark seed set for timing quality work:
   - Enforce committed main benchmark guardrails: `./venv/bin/python tools/main_benchmark_guardrails.py`
   - Enforce curated canary guardrails on the manually curated subset:
     - `./venv/bin/python tools/main_benchmark_guardrails.py --guardrails-json benchmarks/curated_canary_guardrails.json --report-json benchmarks/results/<run_id>/benchmark_report.json`
+    - Makefile shortcut: `make curated-canary-guardrails`
     - Useful aggregate fields in the report:
       - `curated_canary_avg_abs_word_start_delta_sec_word_weighted_mean`
       - `curated_canary_gold_start_p95_abs_sec_mean`
