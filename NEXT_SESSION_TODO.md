@@ -29,11 +29,21 @@
   - Baseline `20260305T225648Z` vs candidate `20260305T231015Z` (non-human proxy).
 - [ ] Run a focused manual-correction pass for current top priority songs:
   - `J Balvin - Mi Gente`
-  - `Indila - Derniere danse`
   - `Bruno Mars - Uptown Funk`
   - `ROSALIA - DESPECHA`
-  - `The Weeknd - Blinding Lights`
-- [ ] Produce an auto-vs-corrected benchmark comparison using `tools/compare_benchmark_correction.py`.
+- [x] Complete first curated canary pair:
+  - `benchmarks/gold_set_candidate/20260305T231015Z/08_indila-derniere-danse.gold.json`
+  - `benchmarks/gold_set_candidate/20260305T231015Z/06_the-weeknd-blinding-lights.gold.json`
+- [x] Produce a focused auto-vs-corrected canary comparison using `tools/compare_benchmark_correction.py`.
+  - Artifacts:
+    - `benchmarks/results/20260306T_two_song_curated_fresh/human_correction_delta.json`
+    - `benchmarks/results/20260306T_two_song_curated_fresh/human_correction_delta.md`
+  - Current 2-song canary outcome:
+    - `avg_abs_word_start_delta_sec_word_weighted_mean: 2.57s -> 1.019s`
+    - `agreement_start_p95_abs_sec_mean: 0.880s -> 0.8473s`
+    - `agreement_bad_ratio_mean: 0.1177 -> 0.0732`
+    - `agreement_coverage_ratio_mean: 0.2206 -> 0.2236`
+    - tradeoff to investigate: `dtw_word_coverage_line_weighted_mean: 0.9422 -> 0.7887`
 - [ ] Quantify human edit ROI:
   - coverage delta
   - p95 delta
@@ -47,10 +57,24 @@
 - [x] Add/validate another conservative agreement rescue that improves comparability only under tight timing constraints.
   - Implemented weak-lexical tight-timing rescue; validated on `20260305T231015Z` (`agreement_coverage_ratio_total=0.3524`, guard pass).
 - [x] Add a regression test fixture for long noisy `nearest_segment_start_text` anchors (Blinding Lights-like behavior).
+- [ ] Explore syllable-level alignment signal as a fallback for lexical-comparability gaps.
+  - Hypothesis: syllable overlap can recover valid matches when word-level text similarity is low but timing is close.
+  - Scope: fallback-only path behind a feature flag (do not replace primary word-level logic).
+  - Guardrails for accepting syllable-based matches:
+    - tight start delta (e.g., <=`0.20s`)
+    - strong local Whisper evidence
+    - preserve/avoid regression in `agreement_bad_ratio_mean` and p95.
+  - Evaluation plan:
+    - add focused unit tests for syllable fallback acceptance/rejection branches
+    - run 10-song benchmark A/B (`flag off` vs `flag on`)
+    - require tradeoff guard pass (`min_coverage_gain=0.005`, `max_bad_ratio_increase=0.002`) before promotion.
 
 ## 4. Gold Set and Benchmark Data Quality
 - [ ] Increase gold comparable-word coverage from ~`0.747` toward >=`0.800`.
 - [ ] Prioritize gold-set expansion for songs with highest human-guidance priority and poor comparability.
+- [x] Establish curated canary slice for hard-song analysis.
+  - Current canaries: `Indila - Derniere danse`, `The Weeknd - Blinding Lights`
+  - Use curated-gold metrics as a separate promotion lens for difficult songs.
 - [ ] Keep gold updates traceable (song-level changelog note per rebaseline).
 
 ## 5. Runtime and Efficiency
@@ -64,12 +88,12 @@
 - [x] Add a compact “ready-to-edit” export list for editor workflow handoff.
 
 ## 7. CI/CD Checklist (reset for next push cycle)
-- [ ] `black --check src tests`
-- [ ] `flake8 src/y2karaoke --count --max-complexity=15 --max-line-length=127 --statistics`
-- [ ] `mypy src`
-- [ ] targeted unit tests for touched modules
-- [ ] `python tools/quality_guardrails.py`
-- [ ] if benchmark logic changed: run `tools/main_benchmark_guardrails.py`
+- [x] `black --check src tests`
+- [x] `flake8 src/y2karaoke --count --max-complexity=15 --max-line-length=127 --statistics`
+- [x] `mypy src`
+- [x] targeted unit tests for touched modules
+- [x] `python tools/quality_guardrails.py`
+- [x] if benchmark logic changed: run `tools/main_benchmark_guardrails.py`
 
 ## 8. Success Criteria for This New Queue
 - [ ] At least one new run that keeps `agreement_coverage_ratio_total >= 0.35` and improves p95 meaningfully.

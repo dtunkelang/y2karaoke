@@ -2,7 +2,7 @@
 
 import logging
 from pathlib import Path
-from typing import List, Optional, Tuple
+from typing import Any, List, Optional, Tuple
 
 from .helpers import (
     _apply_timing_to_lines,
@@ -22,6 +22,8 @@ from ..alignment.alignment_policy import decide_lrc_timing_trust
 
 logger = logging.getLogger(__name__)
 
+TailGuardrailSnapshot = dict[str, Any]
+
 
 def _line_set_end(lines: List[Line]) -> float:
     return max(
@@ -35,14 +37,15 @@ def _tail_guardrail_snapshot(
     *,
     target_duration: Optional[int],
     metrics: Optional[dict],
-) -> dict:
+) -> TailGuardrailSnapshot:
     line_end = _line_set_end(lines)
-    snapshot = {
+    snapshot: TailGuardrailSnapshot = {
         "line_end_sec": float(line_end),
         "target_coverage_ratio": None,
         "target_shortfall_sec": None,
         "whisper_timeline_ratio": None,
         "flagged": False,
+        "reasons": [],
     }
     reasons: List[str] = []
 
@@ -119,6 +122,93 @@ def _tail_guardrail_should_accept_retry(
     if retry_line_cov < base_line_cov - 0.08:
         return False
     return True
+
+
+def _apply_tail_guardrail_metrics(
+    metrics: Optional[dict],
+    guard: TailGuardrailSnapshot,
+    *,
+    fallback_attempted: bool = False,
+    fallback_applied: bool = False,
+) -> dict:
+    out = dict(metrics or {})
+    out["tail_guardrail_flagged"] = 1.0 if bool(guard.get("flagged")) else 0.0
+    out["tail_guardrail_fallback_attempted"] = 1.0 if fallback_attempted else 0.0
+    out["tail_guardrail_fallback_applied"] = 1.0 if fallback_applied else 0.0
+    if isinstance(guard.get("target_coverage_ratio"), (int, float)):
+        out["tail_guardrail_target_coverage_ratio"] = float(
+            guard["target_coverage_ratio"]
+        )
+    if isinstance(guard.get("target_shortfall_sec"), (int, float)):
+        out["tail_guardrail_target_shortfall_sec"] = float(
+            guard["target_shortfall_sec"]
+        )
+    if isinstance(guard.get("whisper_timeline_ratio"), (int, float)):
+        out["tail_guardrail_whisper_timeline_ratio"] = float(
+            guard["whisper_timeline_ratio"]
+        )
+    return out
+
+
+def _maybe_retry_tail_guardrail(
+    *,
+    align_fn: Any,
+    source_lines: List[Line],
+    vocals_path: str,
+    whisper_language: Optional[str],
+    whisper_model: Optional[str],
+    whisper_force_dtw: bool,
+    whisper_aggressive: bool,
+    whisper_temperature: float,
+    lenient_vocal_activity_threshold: float,
+    lenient_activity_bonus: float,
+    low_word_confidence_threshold: float,
+    target_duration: Optional[int],
+    baseline_guard: TailGuardrailSnapshot,
+    baseline_metrics: dict,
+) -> tuple[List[Line], List[str], dict, str]:
+    retry_lines, retry_fixes, retry_metrics = align_fn(
+        source_lines,
+        vocals_path,
+        whisper_language,
+        whisper_model,
+        whisper_force_dtw,
+        whisper_aggressive,
+        whisper_temperature=whisper_temperature,
+        prefer_whisper_timing_map=True,
+        lenient_vocal_activity_threshold=lenient_vocal_activity_threshold,
+        lenient_activity_bonus=lenient_activity_bonus,
+        low_word_confidence_threshold=low_word_confidence_threshold,
+    )
+    retry_guard = _tail_guardrail_snapshot(
+        retry_lines,
+        target_duration=target_duration,
+        metrics=retry_metrics,
+    )
+    if not _tail_guardrail_should_accept_retry(
+        baseline_guard=baseline_guard,
+        retry_guard=retry_guard,
+        baseline_metrics=baseline_metrics,
+        retry_metrics=retry_metrics,
+    ):
+        return (
+            source_lines,
+            [],
+            baseline_metrics,
+            ("Tail completeness guardrail retry rejected (insufficient gain)"),
+        )
+    updated_metrics = _apply_tail_guardrail_metrics(
+        retry_metrics,
+        retry_guard,
+        fallback_attempted=True,
+        fallback_applied=True,
+    )
+    return (
+        retry_lines,
+        retry_fixes,
+        updated_metrics,
+        "Tail completeness guardrail applied fallback timing-map retry",
+    )
 
 
 def _clip_lines_to_target_duration(
@@ -823,25 +913,7 @@ def _apply_whisper_with_quality(
             target_duration=target_duration,
             metrics=whisper_metrics,
         )
-        if whisper_metrics is None:
-            whisper_metrics = {}
-        whisper_metrics["tail_guardrail_flagged"] = (
-            1.0 if baseline_guard["flagged"] else 0.0
-        )
-        whisper_metrics["tail_guardrail_fallback_attempted"] = 0.0
-        whisper_metrics["tail_guardrail_fallback_applied"] = 0.0
-        if isinstance(baseline_guard.get("target_coverage_ratio"), (int, float)):
-            whisper_metrics["tail_guardrail_target_coverage_ratio"] = float(
-                baseline_guard["target_coverage_ratio"]
-            )
-        if isinstance(baseline_guard.get("target_shortfall_sec"), (int, float)):
-            whisper_metrics["tail_guardrail_target_shortfall_sec"] = float(
-                baseline_guard["target_shortfall_sec"]
-            )
-        if isinstance(baseline_guard.get("whisper_timeline_ratio"), (int, float)):
-            whisper_metrics["tail_guardrail_whisper_timeline_ratio"] = float(
-                baseline_guard["whisper_timeline_ratio"]
-            )
+        whisper_metrics = _apply_tail_guardrail_metrics(whisper_metrics, baseline_guard)
 
         if baseline_guard["flagged"]:
             quality_report["issues"].append(
@@ -854,59 +926,32 @@ def _apply_whisper_with_quality(
         )
         if should_retry_tail_guard:
             whisper_metrics["tail_guardrail_fallback_attempted"] = 1.0
-            retry_lines, retry_fixes, retry_metrics = (
-                lw._apply_whisper_alignment_for_state(
-                    lines,
-                    vocals_path,
-                    whisper_language,
-                    whisper_model,
-                    whisper_force_dtw,
-                    whisper_aggressive,
-                    whisper_temperature=whisper_temperature,
-                    prefer_whisper_timing_map=True,
-                    lenient_vocal_activity_threshold=lenient_vocal_activity_threshold,
-                    lenient_activity_bonus=lenient_activity_bonus,
-                    low_word_confidence_threshold=low_word_confidence_threshold,
-                )
-            )
-            retry_guard = _tail_guardrail_snapshot(
-                retry_lines,
+            (
+                retried_lines,
+                retried_fixes,
+                retried_metrics,
+                retry_issue,
+            ) = _maybe_retry_tail_guardrail(
+                align_fn=lw._apply_whisper_alignment_for_state,
+                source_lines=lines,
+                vocals_path=vocals_path,
+                whisper_language=whisper_language,
+                whisper_model=whisper_model,
+                whisper_force_dtw=whisper_force_dtw,
+                whisper_aggressive=whisper_aggressive,
+                whisper_temperature=whisper_temperature,
+                lenient_vocal_activity_threshold=lenient_vocal_activity_threshold,
+                lenient_activity_bonus=lenient_activity_bonus,
+                low_word_confidence_threshold=low_word_confidence_threshold,
                 target_duration=target_duration,
-                metrics=retry_metrics,
-            )
-            if _tail_guardrail_should_accept_retry(
                 baseline_guard=baseline_guard,
-                retry_guard=retry_guard,
                 baseline_metrics=whisper_metrics,
-                retry_metrics=retry_metrics,
-            ):
-                aligned_lines = retry_lines
-                whisper_fixes = retry_fixes
-                whisper_metrics = retry_metrics or {}
-                whisper_metrics["tail_guardrail_flagged"] = (
-                    1.0 if retry_guard["flagged"] else 0.0
-                )
-                whisper_metrics["tail_guardrail_fallback_attempted"] = 1.0
-                whisper_metrics["tail_guardrail_fallback_applied"] = 1.0
-                if isinstance(retry_guard.get("target_coverage_ratio"), (int, float)):
-                    whisper_metrics["tail_guardrail_target_coverage_ratio"] = float(
-                        retry_guard["target_coverage_ratio"]
-                    )
-                if isinstance(retry_guard.get("target_shortfall_sec"), (int, float)):
-                    whisper_metrics["tail_guardrail_target_shortfall_sec"] = float(
-                        retry_guard["target_shortfall_sec"]
-                    )
-                if isinstance(retry_guard.get("whisper_timeline_ratio"), (int, float)):
-                    whisper_metrics["tail_guardrail_whisper_timeline_ratio"] = float(
-                        retry_guard["whisper_timeline_ratio"]
-                    )
-                quality_report["issues"].append(
-                    "Tail completeness guardrail applied fallback timing-map retry"
-                )
-            else:
-                quality_report["issues"].append(
-                    "Tail completeness guardrail retry rejected (insufficient gain)"
-                )
+            )
+            if retried_fixes:
+                aligned_lines = retried_lines
+                whisper_fixes = retried_fixes
+                whisper_metrics = retried_metrics
+            quality_report["issues"].append(retry_issue)
 
         no_evidence_fallback = bool(
             float(whisper_metrics.get("no_evidence_fallback", 0.0))

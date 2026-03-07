@@ -1,0 +1,142 @@
+{
+  "baseline": "/tmp/two_song_curated_baseline_report.json",
+  "corrected": "benchmarks/results/20260306T_two_song_curated_fresh/benchmark_report.json",
+  "aggregate_deltas": {
+    "timing_quality_score_line_weighted_mean": {
+      "baseline": 0.8075,
+      "corrected": 0.7538,
+      "delta": -0.0537,
+      "improved": false
+    },
+    "agreement_coverage_ratio_mean": {
+      "baseline": 0.2206,
+      "corrected": 0.2236,
+      "delta": 0.003,
+      "improved": true
+    },
+    "agreement_start_p95_abs_sec_mean": {
+      "baseline": 0.88,
+      "corrected": 0.8473,
+      "delta": -0.0327,
+      "improved": true
+    },
+    "agreement_bad_ratio_mean": {
+      "baseline": 0.1177,
+      "corrected": 0.0732,
+      "delta": -0.0445,
+      "improved": true
+    },
+    "dtw_word_coverage_line_weighted_mean": {
+      "baseline": 0.9422,
+      "corrected": 0.7887,
+      "delta": -0.1535,
+      "improved": false
+    },
+    "avg_abs_word_start_delta_sec_word_weighted_mean": {
+      "baseline": 2.57,
+      "corrected": 1.019,
+      "delta": -1.551,
+      "improved": true
+    }
+  },
+  "song_deltas": [
+    {
+      "song_key": "indila::derniere danse",
+      "artist": "Indila",
+      "title": "Derniere danse",
+      "improved_metrics": 3,
+      "regressed_metrics": 3,
+      "net_score": 0,
+      "metrics": {
+        "timing_quality_score": {
+          "baseline": 0.7905,
+          "corrected": 0.7311,
+          "delta": -0.0594,
+          "improved": false
+        },
+        "agreement_coverage_ratio": {
+          "baseline": 0.4412,
+          "corrected": 0.3902,
+          "delta": -0.051,
+          "improved": false
+        },
+        "agreement_start_p95_abs_sec": {
+          "baseline": 1.76,
+          "corrected": 1.685,
+          "delta": -0.075,
+          "improved": true
+        },
+        "agreement_bad_ratio": {
+          "baseline": 0.2353,
+          "corrected": 0.1463,
+          "delta": -0.089,
+          "improved": true
+        },
+        "gold_start_mean_abs_sec": {
+          "baseline": 2.9074,
+          "corrected": 0.6254,
+          "delta": -2.282,
+          "improved": true
+        },
+        "dtw_word_coverage": {
+          "baseline": 0.996,
+          "corrected": 0.616,
+          "delta": -0.38,
+          "improved": false
+        }
+      }
+    },
+    {
+      "song_key": "the weeknd::blinding lights",
+      "artist": "The Weeknd",
+      "title": "Blinding Lights",
+      "improved_metrics": 3,
+      "regressed_metrics": 2,
+      "net_score": 1,
+      "metrics": {
+        "timing_quality_score": {
+          "baseline": 0.824,
+          "corrected": 0.7804,
+          "delta": -0.0436,
+          "improved": false
+        },
+        "agreement_coverage_ratio": {
+          "baseline": 0.0,
+          "corrected": 0.0571,
+          "delta": 0.0571,
+          "improved": true
+        },
+        "agreement_start_p95_abs_sec": {
+          "baseline": 0.0,
+          "corrected": 0.0095,
+          "delta": 0.0095,
+          "improved": false
+        },
+        "agreement_bad_ratio": {
+          "baseline": 0.0,
+          "corrected": 0.0,
+          "delta": 0.0,
+          "improved": null
+        },
+        "gold_start_mean_abs_sec": {
+          "baseline": 2.2555,
+          "corrected": 1.4748,
+          "delta": -0.7807,
+          "improved": true
+        },
+        "dtw_word_coverage": {
+          "baseline": 0.89,
+          "corrected": 0.991,
+          "delta": 0.101,
+          "improved": true
+        }
+      }
+    }
+  ],
+  "summary": {
+    "songs_compared": 2,
+    "songs_net_improved": 1,
+    "songs_net_regressed": 0,
+    "songs_net_unchanged": 1
+  }
+}
