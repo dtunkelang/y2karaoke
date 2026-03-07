@@ -272,6 +272,12 @@ Benchmark seed set for timing quality work:
     - `make benchmark-sweep-agreement BASELINE=benchmarks/results/<baseline_run_id> TEXT_SIM_VALUES=0.60,0.58 TOKEN_OVERLAP_VALUES=0.50,0.48 RUN_ID_PREFIX=agreement_sweep OFFLINE=1`
     - Runs benchmark suites for each threshold combo and writes consolidated tradeoff analysis output.
   - Enforce committed main benchmark guardrails: `./venv/bin/python tools/main_benchmark_guardrails.py`
+  - Enforce curated canary guardrails on the manually curated subset:
+    - `./venv/bin/python tools/main_benchmark_guardrails.py --guardrails-json benchmarks/curated_canary_guardrails.json --report-json benchmarks/results/<run_id>/benchmark_report.json`
+    - Useful aggregate fields in the report:
+      - `curated_canary_avg_abs_word_start_delta_sec_word_weighted_mean`
+      - `curated_canary_gold_start_p95_abs_sec_mean`
+      - `curated_canary_reference_watchlist`
 
 Main benchmark reference trust policy (first pass):
 - Some songs are intentionally excluded from `benchmarks/main_benchmark_songs.yaml` when the benchmark report flags likely `reference_divergence` (strong internal alignment signals but severe gold-reference mismatch).
