@@ -138,8 +138,8 @@ def test_collect_song_results_aggregate_only_delegates(tmp_path):
     module = _load_module()
     songs = [
         module.BenchmarkSong(
-        manifest_index=1,
-        artist="Artist A",
+            manifest_index=1,
+            artist="Artist A",
             title="Alpha",
             youtube_id="aaaaaaaaaaa",
             youtube_url="https://www.youtube.com/watch?v=aaaaaaaaaaa",
@@ -612,15 +612,15 @@ def test_collect_song_results_honors_fail_fast(tmp_path):
     module = _load_module()
     songs = [
         module.BenchmarkSong(
-        manifest_index=1,
-        artist="Artist A",
+            manifest_index=1,
+            artist="Artist A",
             title="Alpha",
             youtube_id="aaaaaaaaaaa",
             youtube_url="https://www.youtube.com/watch?v=aaaaaaaaaaa",
         ),
         module.BenchmarkSong(
-        manifest_index=1,
-        artist="Artist B",
+            manifest_index=1,
+            artist="Artist B",
             title="Beta",
             youtube_id="bbbbbbbbbbb",
             youtube_url="https://www.youtube.com/watch?v=bbbbbbbbbbb",
