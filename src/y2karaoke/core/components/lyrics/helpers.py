@@ -159,6 +159,8 @@ def _duration_cap_multiplier_for_line(
     estimated_duration: float,
 ) -> float:
     """Allow extra room for long pause-heavy sung lines without broad gap fill."""
+    tokens = [re.sub(r"[^a-z]+", "", tok.lower()) for tok in line_text.split()]
+    tokens = [tok for tok in tokens if tok]
     if word_count < 6:
         return 1.3
     if gap_to_next < max(4.5, estimated_duration * 1.8):
@@ -170,6 +172,12 @@ def _duration_cap_multiplier_for_line(
         return 1.3
     lower_text = line_text.lower()
     if not re.search(r"\b(oh|ooh|ah|hey|yeah)\b", lower_text):
+        return 1.3
+    if (
+        len(tokens) >= 2
+        and tokens[0] in {"oh", "ooh", "ah", "hey", "yeah"}
+        and tokens[1] not in {"oh", "ooh", "ah", "hey", "yeah"}
+    ):
         return 1.3
     if re.search(r"\((oh|ooh|ah|hey|yeah)\)", lower_text):
         return 1.3

@@ -126,6 +126,16 @@ def test_distribute_word_timing_keeps_comma_heavy_non_interjection_line_default_
     assert line.end_time == pytest.approx(96.81, abs=0.02)
 
 
+def test_distribute_word_timing_keeps_leading_interjection_phrase_default_cap():
+    line = _line_with_words(
+        ["Oh,", "when", "I'm", "like", "this,", "you're", "the", "one", "I", "trust"]
+    )
+
+    lh._distribute_word_timing_in_line(line, line_start=134.17, next_line_start=139.33)
+
+    assert line.end_time == pytest.approx(137.52, abs=0.02)
+
+
 def test_apply_timing_to_lines():
     lines = [_line_with_words(["a", "b"]), _line_with_words(["c"])]
     line_timings = [(1.0, "a b"), (3.0, "c")]
