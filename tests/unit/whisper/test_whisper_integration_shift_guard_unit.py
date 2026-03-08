@@ -49,7 +49,7 @@ def test_restore_weak_evidence_large_start_shifts_keeps_supported_shift():
         Line(words=[Word(text="alpha", start_time=10.0, end_time=11.0)]),
     ]
     whisper_words = [
-        TranscriptionWord(text="i", start=19.4, end=19.5, probability=0.8),
+        TranscriptionWord(text="alpha", start=19.85, end=19.95, probability=0.8),
         TranscriptionWord(text="hear", start=19.8, end=20.0, probability=0.8),
         TranscriptionWord(text="words", start=20.2, end=20.4, probability=0.8),
         TranscriptionWord(text="[VOCAL]", start=20.6, end=20.9, probability=0.8),

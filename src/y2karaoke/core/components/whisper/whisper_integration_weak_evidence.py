@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from typing import List, Tuple
 
 from ... import models
@@ -23,6 +24,49 @@ def _count_non_vocal_words_near_time(
         if lo <= word.start <= hi:
             count += 1
     return count
+
+
+def _normalize_support_token(text: str) -> str:
+    cleaned = re.sub(r"[^a-z]+", "", text.lower())
+    if cleaned.endswith("s") and len(cleaned) > 3:
+        cleaned = cleaned[:-1]
+    return cleaned
+
+
+def _line_has_local_first_token_support(
+    mapped_lines: List[models.Line],
+    line_index: int,
+    whisper_words: List[timing_models.TranscriptionWord],
+    *,
+    window_lead_sec: float = 0.3,
+    window_follow_sec: float = 1.2,
+) -> bool:
+    line = mapped_lines[line_index]
+    if not line.words:
+        return False
+    first_token = _normalize_support_token(line.words[0].text)
+    if not first_token:
+        return True
+    if len(first_token) < 2:
+        return True
+    lo = line.start_time - window_lead_sec
+    hi = line.start_time + window_follow_sec
+    for word in whisper_words:
+        if word.text == "[VOCAL]" or word.start < lo or word.start > hi:
+            continue
+        token = _normalize_support_token(word.text)
+        if not token:
+            continue
+        if (
+            token == first_token
+            or token.startswith(first_token)
+            or first_token.startswith(token)
+            or (
+                len(first_token) >= 2 and (token in first_token or first_token in token)
+            )
+        ):
+            return True
+    return False
 
 
 def _line_window_has_low_confidence(
@@ -68,6 +112,7 @@ def restore_weak_evidence_large_start_shifts(
     min_shift_sec: float = 1.1,
     min_support_words: int = 3,
     support_window_sec: float = 1.0,
+    lexical_support_shift_sec: float = 1.3,
 ) -> Tuple[List[models.Line], int]:
     repaired = list(mapped_lines)
     restored = 0
@@ -79,6 +124,17 @@ def restore_weak_evidence_large_start_shifts(
             continue
         shift = mapped.start_time - base.start_time
         if shift < min_shift_sec:
+            continue
+        if (
+            shift >= lexical_support_shift_sec
+            and not _line_has_local_first_token_support(
+                repaired,
+                idx,
+                whisper_words,
+            )
+        ):
+            repaired[idx] = base
+            restored += 1
             continue
         if _line_window_has_low_confidence(repaired, idx, whisper_words):
             repaired[idx] = base

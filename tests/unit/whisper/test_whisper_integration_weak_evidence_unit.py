@@ -51,3 +51,65 @@ def test_restore_weak_evidence_large_start_shifts_restores_low_confidence_window
     )
     assert restored == 1
     assert repaired[0].start_time == 8.0
+
+
+def test_restore_weak_evidence_large_start_shifts_restores_without_lexical_onset_support():
+    mapped = [
+        Line(
+            words=[
+                Word(text="So", start_time=10.0, end_time=10.3),
+                Word(text="hit", start_time=10.3, end_time=10.8),
+            ]
+        )
+    ]
+    baseline = [
+        Line(
+            words=[
+                Word(text="So", start_time=8.0, end_time=8.3),
+                Word(text="hit", start_time=8.3, end_time=8.8),
+            ]
+        )
+    ]
+    whisper_words = [
+        TranscriptionWord(text="want", start=10.0, end=10.1, probability=0.99),
+        TranscriptionWord(text="to", start=10.1, end=10.2, probability=0.99),
+        TranscriptionWord(text="bless", start=10.2, end=10.3, probability=0.99),
+    ]
+
+    repaired, restored = restore_weak_evidence_large_start_shifts(
+        mapped, baseline, whisper_words
+    )
+
+    assert restored == 1
+    assert repaired[0].start_time == 8.0
+
+
+def test_restore_weak_evidence_large_start_shifts_keeps_lexically_supported_shift():
+    mapped = [
+        Line(
+            words=[
+                Word(text="So", start_time=10.0, end_time=10.3),
+                Word(text="hit", start_time=10.3, end_time=10.8),
+            ]
+        )
+    ]
+    baseline = [
+        Line(
+            words=[
+                Word(text="So", start_time=8.0, end_time=8.3),
+                Word(text="hit", start_time=8.3, end_time=8.8),
+            ]
+        )
+    ]
+    whisper_words = [
+        TranscriptionWord(text="so", start=9.95, end=10.05, probability=0.99),
+        TranscriptionWord(text="road", start=10.1, end=10.3, probability=0.99),
+        TranscriptionWord(text="hit", start=10.35, end=10.55, probability=0.99),
+    ]
+
+    repaired, restored = restore_weak_evidence_large_start_shifts(
+        mapped, baseline, whisper_words
+    )
+
+    assert restored == 0
+    assert repaired[0].start_time == 10.0
