@@ -33,7 +33,10 @@ def _is_implausibly_short_multiword_line(line: models.Line) -> bool:
     duration = line.end_time - line.start_time
     if duration <= 0:
         return True
-    return duration < 0.5 and (duration / max(word_count, 1)) < 0.14
+    per_word = duration / max(word_count, 1)
+    if duration < 0.5 and per_word < 0.14:
+        return True
+    return word_count >= 6 and duration < 1.0 and per_word < 0.09
 
 
 def _implausibly_short_multiword_count(lines: List[models.Line]) -> int:
