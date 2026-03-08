@@ -173,7 +173,7 @@ def _duration_cap_multiplier_for_line(
         return 1.3
     if re.search(r"\((oh|ooh|ah|hey|yeah)\)", lower_text):
         return 1.3
-    return 2.5
+    return 2.7
 
 
 def _extract_text_lines_from_lrc(lrc_text: str) -> List[str]:

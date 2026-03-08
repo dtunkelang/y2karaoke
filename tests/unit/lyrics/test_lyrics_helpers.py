@@ -92,7 +92,7 @@ def test_distribute_word_timing_extends_pause_heavy_long_line():
 
     lh._distribute_word_timing_in_line(line, line_start=150.59, next_line_start=156.57)
 
-    assert line.end_time == pytest.approx(155.98, abs=0.02)
+    assert line.end_time == pytest.approx(156.42, abs=0.02)
 
 
 def test_distribute_word_timing_keeps_parenthetical_interjection_tail_default_cap():
