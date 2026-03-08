@@ -2471,6 +2471,18 @@ def _aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:  # noqa: C901
     curated_canary_gold_start_p95_abs_sec_mean = metric_mean_for_rows(
         gold_measured_non_reference_songs, "gold_start_p95_abs_sec"
     )
+    curated_canary_gold_parenthetical_interjection_start_mean_abs_sec_mean = (
+        metric_mean_for_rows(
+            gold_measured_non_reference_songs,
+            "gold_parenthetical_interjection_start_mean_abs_sec",
+        )
+    )
+    curated_canary_gold_parenthetical_interjection_start_p95_abs_sec_mean = (
+        metric_mean_for_rows(
+            gold_measured_non_reference_songs,
+            "gold_parenthetical_interjection_start_p95_abs_sec",
+        )
+    )
     triage_rankings = _build_triage_rankings(succeeded, top_n=5)
     diagnosis_counts: dict[str, int] = {}
     for row in succeeded:
@@ -2771,6 +2783,30 @@ def _aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:  # noqa: C901
         "curated_canary_gold_end_mean_abs_sec_mean": (
             round(float(curated_canary_gold_end_mean_abs_sec_mean or 0.0), 4)
             if curated_canary_gold_end_mean_abs_sec_mean is not None
+            else None
+        ),
+        "curated_canary_gold_parenthetical_interjection_start_mean_abs_sec_mean": (
+            round(
+                float(
+                    curated_canary_gold_parenthetical_interjection_start_mean_abs_sec_mean
+                    or 0.0
+                ),
+                4,
+            )
+            if curated_canary_gold_parenthetical_interjection_start_mean_abs_sec_mean
+            is not None
+            else None
+        ),
+        "curated_canary_gold_parenthetical_interjection_start_p95_abs_sec_mean": (
+            round(
+                float(
+                    curated_canary_gold_parenthetical_interjection_start_p95_abs_sec_mean
+                    or 0.0
+                ),
+                4,
+            )
+            if curated_canary_gold_parenthetical_interjection_start_p95_abs_sec_mean
+            is not None
             else None
         ),
         "curated_canary_reference_watchlist_count": len(reference_divergence_suspects),
@@ -3318,6 +3354,18 @@ def _write_markdown_summary(  # noqa: C901
             "- Curated canary p95 abs word-start delta: "
             f"`{_fmt_num(aggregate.get('curated_canary_gold_start_p95_abs_sec_mean'), unit='s')}`"
         )
+        interjection_mean = aggregate.get(
+            "curated_canary_gold_parenthetical_interjection_start_mean_abs_sec_mean"
+        )
+        interjection_p95 = aggregate.get(
+            "curated_canary_gold_parenthetical_interjection_start_p95_abs_sec_mean"
+        )
+        if interjection_mean is not None or interjection_p95 is not None:
+            lines.append(
+                "- Curated canary parenthetical-interjection start delta: "
+                f"`{_fmt_num(interjection_mean, unit='s')}` mean, "
+                f"`{_fmt_num(interjection_p95, unit='s')}` p95"
+            )
         watchlist = aggregate.get("curated_canary_reference_watchlist", [])
         if isinstance(watchlist, list) and watchlist:
             lines.append(

@@ -333,6 +333,58 @@ def test_persist_final_report_outputs_writes_json_md_progress_and_latest(tmp_pat
     assert wrote_markdown == [(md_path, "run-xyz")]
 
 
+def test_persist_final_report_outputs_markdown_can_include_interjection_canary_metric(
+    tmp_path,
+):
+    module = _load_module()
+    run_dir = tmp_path / "run"
+    run_dir.mkdir()
+    md_path = run_dir / "benchmark_report.md"
+    args = _sample_args(tmp_path)
+
+    report_json = {
+        "run_id": "run-xyz",
+        "status": "finished",
+        "aggregate": {
+            "songs_total": 2,
+            "songs_succeeded": 2,
+            "songs_failed": 0,
+            "failed_songs": [],
+            "success_rate": 1.0,
+            "line_count_total": 20,
+            "low_confidence_lines_total": 0,
+            "low_confidence_ratio_total": 0.0,
+            "gold_metric_song_count": 2,
+            "gold_comparable_word_count_total": 100,
+            "gold_word_count_total": 120,
+            "curated_canary_song_count": 2,
+            "curated_canary_gold_comparable_word_count_total": 100,
+            "curated_canary_gold_word_count_total": 120,
+            "curated_canary_avg_abs_word_start_delta_sec_word_weighted_mean": 0.7,
+            "curated_canary_gold_start_p95_abs_sec_mean": 1.6,
+            "curated_canary_gold_parenthetical_interjection_start_mean_abs_sec_mean": 0.78,
+            "curated_canary_gold_parenthetical_interjection_start_p95_abs_sec_mean": 0.819,
+            "curated_canary_reference_watchlist": [],
+            "gold_word_coverage_ratio_total": 0.83,
+            "reference_divergence_suspected_count": 0,
+            "reference_divergence_suspected_ratio": 0.0,
+        },
+        "results": [],
+    }
+
+    module._write_markdown_summary(
+        md_path,
+        run_id="run-xyz",
+        manifest=tmp_path / "manifest.yaml",
+        aggregate=report_json["aggregate"],
+        songs=[],
+    )
+
+    markdown = md_path.read_text(encoding="utf-8")
+    assert "Curated canary parenthetical-interjection start delta" in markdown
+    assert "`0.780s` mean, `0.819s` p95" in markdown
+
+
 def test_prepare_run_context_resolves_manifest_run_dir_and_baseline(tmp_path):
     module = _load_module()
     manifest_path = tmp_path / "manifest.yaml"
