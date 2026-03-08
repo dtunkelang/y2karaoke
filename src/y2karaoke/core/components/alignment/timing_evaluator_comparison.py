@@ -1,6 +1,8 @@
 """Lyrics source comparison and selection based on timing quality."""
 
-from typing import Optional, Tuple, Dict
+from difflib import SequenceMatcher
+import re
+from typing import Any, Optional, Tuple, Dict
 
 from ....utils.logging import get_logger
 from .timing_models import TimingReport
@@ -11,6 +13,134 @@ extract_audio_features = audio_analysis.extract_audio_features
 evaluate_timing = timing_evaluator_core.evaluate_timing
 
 logger = get_logger(__name__)
+
+
+def _normalize_line_text(text: str) -> str:
+    lowered = (text or "").strip().lower()
+    lowered = re.sub(r"\[[^\]]*\]", " ", lowered)
+    lowered = re.sub(r"\([^)]*\)", " ", lowered)
+    lowered = re.sub(r"[^a-z0-9\s']", " ", lowered)
+    return re.sub(r"\s+", " ", lowered).strip()
+
+
+def _summarize_source(
+    *,
+    title: str,
+    artist: str,
+    source_name: str,
+    lrc_text: Optional[str],
+    duration: Optional[int],
+) -> dict[str, Any]:
+    from ..lyrics.lrc import parse_lrc_with_timing
+
+    summary: dict[str, Any] = {
+        "source_name": source_name,
+        "has_lrc": bool(lrc_text),
+        "duration": duration,
+        "line_count": 0,
+        "first_start": None,
+        "last_start": None,
+        "normalized_text": "",
+        "comparable": False,
+    }
+    if not lrc_text:
+        return summary
+    try:
+        timings = parse_lrc_with_timing(lrc_text, title, artist)
+    except Exception:
+        return summary
+    if not timings:
+        return summary
+
+    normalized_lines = [
+        _normalize_line_text(text)
+        for _ts, text in timings
+        if _normalize_line_text(text)
+    ]
+    summary.update(
+        {
+            "line_count": len(timings),
+            "first_start": float(timings[0][0]),
+            "last_start": float(timings[-1][0]),
+            "normalized_text": "\n".join(normalized_lines),
+            "comparable": True,
+        }
+    )
+    return summary
+
+
+def analyze_source_disagreement(
+    title: str,
+    artist: str,
+    sources: Dict[str, Tuple[Optional[str], Optional[int]]],
+) -> dict[str, Any]:
+    """Summarize whether multiple timed-lyrics sources materially disagree."""
+    source_summaries = [
+        _summarize_source(
+            title=title,
+            artist=artist,
+            source_name=source_name,
+            lrc_text=lrc_text,
+            duration=duration,
+        )
+        for source_name, (lrc_text, duration) in sources.items()
+    ]
+    comparable = [item for item in source_summaries if item["comparable"]]
+    if len(comparable) < 2:
+        return {
+            "source_count": len(source_summaries),
+            "comparable_source_count": len(comparable),
+            "duration_spread_sec": 0.0,
+            "line_count_spread": 0,
+            "last_start_spread_sec": 0.0,
+            "min_pairwise_text_similarity": 1.0 if comparable else 0.0,
+            "flagged": False,
+            "reasons": [],
+            "sources": source_summaries,
+        }
+
+    durations = [float(item["duration"]) for item in comparable if item["duration"]]
+    line_counts = [int(item["line_count"]) for item in comparable]
+    last_starts = [float(item["last_start"]) for item in comparable]
+    duration_spread = (max(durations) - min(durations)) if len(durations) >= 2 else 0.0
+    line_count_spread = max(line_counts) - min(line_counts) if line_counts else 0
+    last_start_spread = max(last_starts) - min(last_starts) if last_starts else 0.0
+
+    text_similarities: list[float] = []
+    for idx, current in enumerate(comparable):
+        current_text = str(current["normalized_text"] or "")
+        if not current_text:
+            continue
+        for other in comparable[idx + 1 :]:
+            other_text = str(other["normalized_text"] or "")
+            if not other_text:
+                continue
+            text_similarities.append(
+                SequenceMatcher(a=current_text, b=other_text).ratio()
+            )
+    min_text_similarity = min(text_similarities) if text_similarities else 1.0
+
+    reasons: list[str] = []
+    if duration_spread >= 8.0:
+        reasons.append(f"duration spread {duration_spread:.1f}s")
+    if line_count_spread >= 3:
+        reasons.append(f"line-count spread {line_count_spread}")
+    if last_start_spread >= 8.0:
+        reasons.append(f"tail-start spread {last_start_spread:.1f}s")
+    if min_text_similarity <= 0.85:
+        reasons.append(f"text similarity {min_text_similarity:.2f}")
+
+    return {
+        "source_count": len(source_summaries),
+        "comparable_source_count": len(comparable),
+        "duration_spread_sec": round(duration_spread, 3),
+        "line_count_spread": line_count_spread,
+        "last_start_spread_sec": round(last_start_spread, 3),
+        "min_pairwise_text_similarity": round(min_text_similarity, 4),
+        "flagged": bool(reasons),
+        "reasons": reasons,
+        "sources": source_summaries,
+    }
 
 
 def _score_with_duration_bonus(
@@ -63,6 +193,8 @@ def compare_sources(
     title: str,
     artist: str,
     vocals_path: str,
+    *,
+    sources: Optional[Dict[str, Tuple[Optional[str], Optional[int]]]] = None,
 ) -> Dict[str, TimingReport]:
     """Compare timing quality across all available lyrics sources.
 
@@ -87,7 +219,7 @@ def compare_sources(
         return {}
 
     # Fetch from all sources
-    sources = fetch_from_all_sources(title, artist)
+    sources = sources or fetch_from_all_sources(title, artist)
 
     reports: Dict[str, TimingReport] = {}
 
@@ -133,6 +265,8 @@ def select_best_source(
     artist: str,
     vocals_path: str,
     target_duration: Optional[int] = None,
+    *,
+    sources: Optional[Dict[str, Tuple[Optional[str], Optional[int]]]] = None,
 ) -> Tuple[Optional[str], Optional[str], Optional[TimingReport]]:
     """Select the best lyrics source based on timing quality.
 
@@ -150,7 +284,13 @@ def select_best_source(
     """
     from ..lyrics.sync import fetch_from_all_sources
 
-    reports = compare_sources(title, artist, vocals_path)
+    sources = sources or fetch_from_all_sources(title, artist)
+    try:
+        reports = compare_sources(title, artist, vocals_path, sources=sources)
+    except TypeError as error:
+        if "unexpected keyword argument 'sources'" not in str(error):
+            raise
+        reports = compare_sources(title, artist, vocals_path)
 
     if not reports:
         logger.warning("No lyrics sources available for comparison")
@@ -161,8 +301,6 @@ def select_best_source(
     best_score = -1.0
     best_report = None
     best_duration_diff: Optional[float] = None
-
-    sources = fetch_from_all_sources(title, artist)
 
     for source_name, report in reports.items():
         score, duration_diff = _score_with_duration_bonus(

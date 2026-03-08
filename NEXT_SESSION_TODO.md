@@ -93,6 +93,20 @@
   - Next question:
     - why is the pipeline still early on those lines relative to both gold and onset evidence?
   - Favor pipeline-stage diagnosis over more gold-target skepticism here.
+- [ ] Use multi-source timed-lyrics disagreement as a routing signal.
+  - Hypothesis: provider disagreement is useful evidence that line timestamps are untrustworthy and we should rely more on audio/Whisper scoring.
+  - Initial evidence:
+    - `Blinding Lights`: `lyriq`, `NetEase`, and `Lrclib` agree closely, but `Lrclib` still scores slightly better against audio than `lyriq`.
+    - `Derniere danse`: sources disagree structurally (`41` vs `44` lines), suggesting provider choice matters.
+    - `Mi Gente`: sources disagree heavily on duration, line count, tail timing, and text structure.
+  - Artifacts:
+    - `benchmarks/results/20260308T_source_disagreement/blinding_lights.json`
+    - `benchmarks/results/20260308T_source_disagreement/derniere_danse.json`
+    - `benchmarks/results/20260308T_source_disagreement/mi_gente.json`
+  - Candidate routing:
+    - low disagreement: run cheap audio scoring across candidates and pick the best source
+    - high disagreement: distrust provider timing and lean harder on Whisper/audio alignment
+    - extremely high disagreement: flag as likely reference-divergence/watchlist case
 
 ## 4. Gold Set and Benchmark Data Quality
 - [ ] Increase gold comparable-word coverage from ~`0.747` toward >=`0.800`.

@@ -166,6 +166,79 @@ def test_select_best_source_prefers_highest_score(monkeypatch):
     assert report is reports["b"]
 
 
+def test_analyze_source_disagreement_flags_large_spreads(monkeypatch):
+    monkeypatch.setattr(
+        "y2karaoke.core.components.lyrics.lrc.parse_lrc_with_timing",
+        lambda _text, _title, _artist: (
+            [(0.0, "hello world"), (10.0, "goodbye world")]
+            if "A" in _text
+            else [(0.0, "hello world"), (21.0, "farewell world"), (32.0, "later")]
+        ),
+    )
+
+    result = te_comp.analyze_source_disagreement(
+        "Song",
+        "Artist",
+        {
+            "A": ("A", 30),
+            "B": ("B", 45),
+        },
+    )
+
+    assert result["flagged"] is True
+    assert result["duration_spread_sec"] == 15.0
+    assert result["line_count_spread"] == 1
+    assert any("duration spread" in reason for reason in result["reasons"])
+    assert any("tail-start spread" in reason for reason in result["reasons"])
+
+
+def test_compare_sources_uses_prefetched_sources(monkeypatch):
+    features = AudioFeatures(
+        onset_times=[],
+        silence_regions=[],
+        vocal_start=0.0,
+        vocal_end=1.0,
+        duration=1.0,
+        energy_envelope=[],
+        energy_times=[],
+    )
+    monkeypatch.setattr(te_comp, "extract_audio_features", lambda _path: features)
+    monkeypatch.setattr(
+        "y2karaoke.core.components.lyrics.sync.fetch_from_all_sources",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(AssertionError("unexpected")),
+    )
+    monkeypatch.setattr(
+        "y2karaoke.core.components.lyrics.lrc.create_lines_from_lrc",
+        lambda _text, romanize=False, title=None, artist=None: [
+            Line(words=[Word(text="hello", start_time=0.0, end_time=0.1)])
+        ],
+    )
+    monkeypatch.setattr(
+        "y2karaoke.core.components.lyrics.lrc.parse_lrc_with_timing",
+        lambda _text, _title, _artist: [(0.0, "hello")],
+    )
+    monkeypatch.setattr(
+        te_comp,
+        "evaluate_timing",
+        lambda _lines, _features, source_name: TimingReport(
+            source_name=source_name,
+            overall_score=80.0,
+            line_alignment_score=80.0,
+            pause_alignment_score=90.0,
+            summary="ok",
+        ),
+    )
+
+    reports = te.compare_sources(
+        "Song",
+        "Artist",
+        "vocals.wav",
+        sources={"source1": ("[00:00.00]hello", 3.0)},
+    )
+
+    assert "source1" in reports
+
+
 def test_select_best_source_handles_no_reports(monkeypatch):
     monkeypatch.setattr(te_comp, "compare_sources", lambda *_args: {})
     lrc_text, source, report = te.select_best_source("Song", "Artist", "vocals.wav")

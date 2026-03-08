@@ -119,3 +119,28 @@ def test_select_best_source_tie_breaks_on_duration_presence(monkeypatch):
     assert lrc_text == "lrcB"
     assert source == "B"
     assert report is report_b
+
+
+def test_select_best_source_uses_prefetched_sources(monkeypatch):
+    report = te.TimingReport(
+        source_name="A",
+        overall_score=80.0,
+        line_alignment_score=80.0,
+        pause_alignment_score=80.0,
+    )
+    monkeypatch.setattr(te_comp, "compare_sources", lambda *a, **k: {"A": report})
+    monkeypatch.setattr(
+        "y2karaoke.core.components.lyrics.sync.fetch_from_all_sources",
+        lambda *a, **k: (_ for _ in ()).throw(AssertionError("unexpected")),
+    )
+
+    lrc_text, source, selected_report = te.select_best_source(
+        "Title",
+        "Artist",
+        "vocals.wav",
+        sources={"A": ("lrcA", 123)},
+    )
+
+    assert lrc_text == "lrcA"
+    assert source == "A"
+    assert selected_report is report
