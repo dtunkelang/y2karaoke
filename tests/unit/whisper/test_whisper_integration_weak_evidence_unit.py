@@ -1,6 +1,7 @@
 from y2karaoke.core.models import Line, Word
 from y2karaoke.core.components.alignment.timing_models import TranscriptionWord
 from y2karaoke.core.components.whisper.whisper_integration_weak_evidence import (
+    restore_unsupported_early_duplicate_shifts,
     restore_weak_evidence_large_start_shifts,
 )
 
@@ -113,3 +114,49 @@ def test_restore_weak_evidence_large_start_shifts_keeps_lexically_supported_shif
 
     assert restored == 0
     assert repaired[0].start_time == 10.0
+
+
+def test_restore_unsupported_early_duplicate_shifts_restores_unsupported_repeat():
+    mapped = [
+        Line(words=[Word(text="(Hey,", start_time=160.79, end_time=161.16)]),
+        Line(words=[Word(text="(Hey,", start_time=169.91, end_time=170.19)]),
+    ]
+    baseline = [
+        Line(words=[Word(text="(Hey,", start_time=160.79, end_time=161.16)]),
+        Line(words=[Word(text="(Hey,", start_time=171.94, end_time=172.22)]),
+    ]
+    whisper_words = [
+        TranscriptionWord(text="[VOCAL]", start=169.9, end=170.0, probability=1.0),
+    ]
+
+    repaired, restored = restore_unsupported_early_duplicate_shifts(
+        mapped,
+        baseline,
+        whisper_words,
+    )
+
+    assert restored == 1
+    assert repaired[1].start_time == 171.94
+
+
+def test_restore_unsupported_early_duplicate_shifts_keeps_supported_repeat():
+    mapped = [
+        Line(words=[Word(text="(Hey,", start_time=160.79, end_time=161.16)]),
+        Line(words=[Word(text="(Hey,", start_time=169.91, end_time=170.19)]),
+    ]
+    baseline = [
+        Line(words=[Word(text="(Hey,", start_time=160.79, end_time=161.16)]),
+        Line(words=[Word(text="(Hey,", start_time=171.94, end_time=172.22)]),
+    ]
+    whisper_words = [
+        TranscriptionWord(text="hey", start=170.0, end=170.1, probability=0.9),
+    ]
+
+    repaired, restored = restore_unsupported_early_duplicate_shifts(
+        mapped,
+        baseline,
+        whisper_words,
+    )
+
+    assert restored == 0
+    assert repaired[1].start_time == 169.91

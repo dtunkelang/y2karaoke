@@ -33,6 +33,10 @@ def _normalize_support_token(text: str) -> str:
     return cleaned
 
 
+def _normalize_line_text(text: str) -> str:
+    return " ".join(_normalize_support_token(tok) for tok in text.split()).strip()
+
+
 def _line_has_local_first_token_support(
     mapped_lines: List[models.Line],
     line_index: int,
@@ -146,6 +150,56 @@ def restore_weak_evidence_large_start_shifts(
             window_sec=support_window_sec,
         )
         if support >= min_support_words:
+            continue
+        repaired[idx] = base
+        restored += 1
+    return repaired, restored
+
+
+def restore_unsupported_early_duplicate_shifts(
+    mapped_lines: List[models.Line],
+    baseline_lines: List[models.Line],
+    whisper_words: List[timing_models.TranscriptionWord],
+    *,
+    min_early_shift_sec: float = 1.0,
+    max_word_count: int = 4,
+    support_window_sec: float = 0.8,
+) -> Tuple[List[models.Line], int]:
+    repaired = list(mapped_lines)
+    restored = 0
+    limit = min(len(mapped_lines), len(baseline_lines))
+    for idx in range(1, limit):
+        mapped = repaired[idx]
+        base = baseline_lines[idx]
+        prev_mapped = repaired[idx - 1]
+        prev_base = baseline_lines[idx - 1]
+        if (
+            not mapped.words
+            or not base.words
+            or not prev_mapped.words
+            or not prev_base.words
+        ):
+            continue
+        if (
+            len(mapped.words) > max_word_count
+            or len(prev_mapped.words) > max_word_count
+        ):
+            continue
+        shift = base.start_time - mapped.start_time
+        if shift < min_early_shift_sec:
+            continue
+        mapped_text = _normalize_line_text(mapped.text)
+        prev_text = _normalize_line_text(prev_mapped.text)
+        base_text = _normalize_line_text(base.text)
+        prev_base_text = _normalize_line_text(prev_base.text)
+        if not mapped_text or mapped_text != prev_text or base_text != prev_base_text:
+            continue
+        support = _count_non_vocal_words_near_time(
+            whisper_words,
+            mapped.start_time,
+            window_sec=support_window_sec,
+        )
+        if support > 0:
             continue
         repaired[idx] = base
         restored += 1

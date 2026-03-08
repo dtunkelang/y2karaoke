@@ -19,6 +19,7 @@ from .whisper_integration_shift_guard import (
 )
 from .whisper_integration_weak_evidence import (
     restore_weak_evidence_large_start_shifts as _restore_weak_evidence_large_start_shifts,
+    restore_unsupported_early_duplicate_shifts as _restore_unsupported_early_duplicate_shifts,
 )
 from .whisper_profile import get_whisper_profile
 
@@ -355,6 +356,18 @@ def align_lrc_text_to_whisper_timings_impl(  # noqa: C901
     if restored_weak:
         corrections.append(
             f"Restored {restored_weak} weak-evidence large start shift line(s) to baseline"
+        )
+    mapped_lines, restored_early_duplicates = (
+        _restore_unsupported_early_duplicate_shifts(
+            mapped_lines,
+            baseline_lines,
+            all_words,
+        )
+    )
+    if restored_early_duplicates:
+        corrections.append(
+            "Restored "
+            f"{restored_early_duplicates} unsupported early duplicate line(s) to baseline"
         )
     mapped_lines, restored_short = restore_implausibly_short_lines_fn(
         baseline_lines, mapped_lines
