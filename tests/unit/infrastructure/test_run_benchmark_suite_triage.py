@@ -340,6 +340,27 @@ def test_classify_quality_diagnosis_defers_to_reference_divergence():
     assert "severe_gold_timing_mismatch" in diagnosis["reasons"]
 
 
+def test_classify_quality_diagnosis_does_not_overcall_pipeline_when_gold_is_strong():
+    module = _load_module()
+    diagnosis = module._classify_quality_diagnosis(
+        {
+            "line_count": 41,
+            "dtw_line_coverage": 0.805,
+            "dtw_word_coverage": 0.616,
+            "low_confidence_ratio": 0.0488,
+            "agreement_coverage_ratio": 0.3902,
+            "agreement_start_p95_abs_sec": 1.685,
+            "gold_word_coverage_ratio": 1.0,
+            "gold_start_mean_abs_sec": 0.6254,
+            "gold_start_p95_abs_sec": 1.669,
+            "gold_comparable_word_count": 271,
+            "gold_available": True,
+        }
+    )
+    assert diagnosis["verdict"] == "needs_manual_review"
+    assert "high_agreement_p95" not in diagnosis["reasons"]
+
+
 def test_aggregate_includes_quality_diagnosis_counts():
     module = _load_module()
     results = [

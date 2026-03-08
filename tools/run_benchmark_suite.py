@@ -1764,6 +1764,7 @@ def _classify_quality_diagnosis(
     agree_p95 = _f("agreement_start_p95_abs_sec")
     gold_cov = _f("gold_word_coverage_ratio")
     gold_start_mean = _f("gold_start_mean_abs_sec")
+    gold_start_p95 = _f("gold_start_p95_abs_sec")
     gold_comparable_words = int(metrics.get("gold_comparable_word_count", 0) or 0)
     has_gold = bool(metrics.get("gold_available"))
     has_dtw = isinstance(metrics.get("dtw_line_coverage"), (int, float))
@@ -1815,6 +1816,7 @@ def _classify_quality_diagnosis(
         and gold_comparable_words >= 40
         and gold_cov >= 0.8
         and gold_start_mean <= 0.65
+        and gold_start_p95 <= 1.9
     )
 
     if strong_internal and stable_agreement and (not has_gold or strong_gold):
@@ -1828,7 +1830,7 @@ def _classify_quality_diagnosis(
             dtw_line < 0.75
             or dtw_word < 0.45
             or low_conf > 0.2
-            or (agree_cov >= 0.35 and agree_p95 > 1.2)
+            or (agree_cov >= 0.35 and agree_p95 > 1.2 and not strong_gold)
         )
         if severe_pipeline_signals:
             verdict = "needs_pipeline_work"
@@ -1839,7 +1841,7 @@ def _classify_quality_diagnosis(
                 reasons.append("low_dtw_word_coverage")
             if low_conf > 0.2:
                 reasons.append("high_low_confidence_ratio")
-            if agree_cov >= 0.35 and agree_p95 > 1.2:
+            if agree_cov >= 0.35 and agree_p95 > 1.2 and not strong_gold:
                 reasons.append("high_agreement_p95")
         else:
             verdict = "needs_manual_review"
