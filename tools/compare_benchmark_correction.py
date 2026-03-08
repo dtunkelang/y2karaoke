@@ -384,6 +384,60 @@ def _build_comparison(
     return report
 
 
+def _curated_canary_cli_summary(report: dict[str, Any]) -> list[str]:
+    curated = report.get("curated_canary_deltas", {})
+    if not isinstance(curated, dict) or not curated:
+        return []
+    start_abs = curated.get(
+        "curated_canary_avg_abs_word_start_delta_sec_word_weighted_mean", {}
+    )
+    start_p95 = curated.get("curated_canary_gold_start_p95_abs_sec_mean", {})
+    watchlist = curated.get("curated_canary_reference_watchlist_count", {})
+    baseline_watch = (report.get("curated_canary_watchlist", {}) or {}).get(
+        "baseline", []
+    )
+    corrected_watch = (report.get("curated_canary_watchlist", {}) or {}).get(
+        "corrected", []
+    )
+    lines = ["  curated_canary:"]
+    lines.append(
+        "    gold_start_abs_word={base} -> {corr}".format(
+            base=_fmt_num(start_abs.get("baseline")),
+            corr=_fmt_num(start_abs.get("corrected")),
+        )
+    )
+    lines.append(
+        "    gold_start_p95_abs_sec={base} -> {corr}".format(
+            base=_fmt_num(start_p95.get("baseline")),
+            corr=_fmt_num(start_p95.get("corrected")),
+        )
+    )
+    lines.append(
+        "    watchlist_count={base} -> {corr}".format(
+            base=_fmt_num(watchlist.get("baseline")),
+            corr=_fmt_num(watchlist.get("corrected")),
+        )
+    )
+    if isinstance(baseline_watch, list) or isinstance(corrected_watch, list):
+        lines.append(
+            "    watchlist_baseline="
+            + (
+                ", ".join(str(item) for item in baseline_watch)
+                if isinstance(baseline_watch, list) and baseline_watch
+                else "-"
+            )
+        )
+        lines.append(
+            "    watchlist_corrected="
+            + (
+                ", ".join(str(item) for item in corrected_watch)
+                if isinstance(corrected_watch, list) and corrected_watch
+                else "-"
+            )
+        )
+    return lines
+
+
 def _resolve_label(path: Path) -> str:
     if path.is_dir():
         return path.name
@@ -515,6 +569,8 @@ def main() -> int:
         print(f"  baseline={baseline_label}")
         print(f"  corrected={corrected_label}")
         print(f"  songs_compared={comparison['summary']['songs_compared']}")
+        for line in _curated_canary_cli_summary(comparison):
+            print(line)
         print(f"  output_json={output_json}")
         print(f"  output_md={output_md}")
         if tradeoff_issue:

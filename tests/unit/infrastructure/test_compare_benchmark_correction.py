@@ -115,14 +115,23 @@ def test_build_comparison_reports_net_improvement() -> None:
     assert song_row["net_score"] > 0
 
 
-def test_main_writes_json_and_markdown(tmp_path, monkeypatch) -> None:
+def test_main_writes_json_markdown_and_curated_canary_cli_summary(
+    tmp_path, monkeypatch, capsys
+) -> None:
     baseline_dir = tmp_path / "baseline"
     corrected_dir = tmp_path / "corrected"
     baseline_dir.mkdir()
     corrected_dir.mkdir()
 
     minimal_report = {
-        "aggregate": {},
+        "aggregate": {
+            "curated_canary_song_count": 2,
+            "curated_canary_gold_word_coverage_ratio_total": 0.99,
+            "curated_canary_avg_abs_word_start_delta_sec_word_weighted_mean": 1.4,
+            "curated_canary_gold_start_p95_abs_sec_mean": 3.2,
+            "curated_canary_reference_watchlist_count": 1,
+            "curated_canary_reference_watchlist": ["Artist Y - Song Y"],
+        },
         "songs": [
             {
                 "artist": "Artist X",
@@ -153,11 +162,14 @@ def test_main_writes_json_and_markdown(tmp_path, monkeypatch) -> None:
     )
 
     rc = _MODULE.main()
+    captured = capsys.readouterr()
     assert rc == 0
     assert (corrected_dir / "human_correction_delta.json").exists()
     assert (corrected_dir / "human_correction_delta.md").exists()
     markdown = (corrected_dir / "human_correction_delta.md").read_text(encoding="utf-8")
     assert "## Curated Canary Deltas" in markdown
+    assert "curated_canary:" in captured.out
+    assert "watchlist_corrected=Artist Y - Song Y" in captured.out
 
 
 def test_main_assert_tradeoff_fails_on_bad_ratio_regression(
