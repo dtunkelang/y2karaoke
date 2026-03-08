@@ -245,6 +245,12 @@ Benchmark seed set for timing quality work:
     - or `make benchmark-compare-correction BASELINE=benchmarks/results/<auto_run_id> CORRECTED=benchmarks/results/<corrected_run_id>`
     - Optional assertion gate: add `ASSERT_TRADEOFF=1` (override tolerance via `MIN_COVERAGE_GAIN` / `MAX_BAD_RATIO_INCREASE`)
     - Writes `human_correction_delta.{json,md}` to the corrected run directory
+  - Compare curated canary baseline vs candidate runs:
+    - `make curated-canary-compare BASELINE=benchmarks/results/<baseline_run_id> CORRECTED=benchmarks/results/<candidate_run_id>`
+    - Terminal output now prints the curated-canary summary first:
+      - gold start abs word metric
+      - gold start p95
+      - reference-divergence watchlist counts/names
   - Classify per-song dominant failure mode from benchmark output:
     - `./venv/bin/python tools/classify_alignment_failures.py --report benchmarks/results/<run_id>`
     - or `make benchmark-classify-failures REPORT=benchmarks/results/<run_id> [MATCH="levitating"]`
