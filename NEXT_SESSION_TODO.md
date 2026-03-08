@@ -81,6 +81,18 @@
     - only apply when text match is strong and local structure is clearly repeated
     - do not let repetition transfer override strong local Whisper/onset evidence
     - measure both main curated canary metrics and interjection/repetition-specific deltas
+- [ ] Investigate gold-vs-audio interpretation gaps on repeated chorus lines.
+  - Earlier source-vs-gold comparison suggested `Blinding Lights` chorus starts were about `0.7s-1.2s` earlier than curated gold.
+  - Artifact:
+    - `benchmarks/results/20260308T_canary_eval_interjection_markdown/blinding_lights_chorus_start_comparison.md`
+    - `benchmarks/results/20260308T_canary_eval_interjection_markdown/gold_onset_bias.md`
+  - Updated finding:
+    - measured curated gold for `Blinding Lights` is not globally late against nearby onsets
+    - aggregate onset-minus-gold-start is about `0.168s`
+    - remaining chorus lines are also close to onset (`~0.01s-0.41s`)
+  - Next question:
+    - why is the pipeline still early on those lines relative to both gold and onset evidence?
+  - Favor pipeline-stage diagnosis over more gold-target skepticism here.
 
 ## 4. Gold Set and Benchmark Data Quality
 - [ ] Increase gold comparable-word coverage from ~`0.747` toward >=`0.800`.
