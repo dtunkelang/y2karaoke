@@ -4,7 +4,7 @@ PYTEST := PYTHONPATH=src $(PYTHON) -m pytest
 MIN_COVERAGE_GAIN ?= 0.005
 MAX_BAD_RATIO_INCREASE ?= 0.002
 
-.PHONY: bootstrap dep-check fmt fmt-check lint type test-fast test-full perf-smoke quality-guardrails bootstrap-quality-guardrails visual-eval visual-eval-guardrails bootstrap-calibrate benchmark-validate benchmark-run benchmark-aggregate-only benchmark-matrix benchmark-recommend benchmark-compare-correction benchmark-classify-failures benchmark-profile-runtime benchmark-compare-runtime benchmark-recommend-human-guidance benchmark-analyze-agreement benchmark-sweep-agreement benchmark-run-bg benchmark-status benchmark-kill curated-canary-guardrails curated-canary-compare check ci-fast ci-full
+.PHONY: bootstrap dep-check fmt fmt-check lint type test-fast test-full perf-smoke quality-guardrails bootstrap-quality-guardrails visual-eval visual-eval-guardrails bootstrap-calibrate benchmark-validate benchmark-run benchmark-aggregate-only benchmark-matrix benchmark-recommend benchmark-compare-correction benchmark-classify-failures benchmark-profile-runtime benchmark-compare-runtime benchmark-recommend-human-guidance benchmark-analyze-agreement benchmark-sweep-agreement benchmark-run-bg benchmark-status benchmark-kill curated-canary-guardrails curated-canary-compare curated-canary-eval check ci-fast ci-full
 
 bootstrap:
 	./tools/bootstrap_dev.sh
@@ -125,13 +125,20 @@ benchmark-kill:
 	./tools/kill_benchmark_suites.sh
 
 curated-canary-guardrails:
-	$(PYTHON) tools/main_benchmark_guardrails.py --guardrails-json benchmarks/curated_canary_guardrails.json
+	@test -f benchmarks/results/latest.json || (echo "latest benchmark pointer missing for curated canary guardrails"; exit 2)
+	$(PYTHON) tools/main_benchmark_guardrails.py --skip-benchmark --guardrails-json benchmarks/curated_canary_guardrails.json --report-json "$$(cat benchmarks/results/latest.json)"
 
 curated-canary-compare:
 	@test -n "$(BASELINE)" || (echo "BASELINE is required (run dir or benchmark_report.json path)"; exit 2)
 	@test -n "$(CORRECTED)" || (echo "CORRECTED is required (run dir or benchmark_report.json path)"; exit 2)
 	$(PYTHON) tools/compare_benchmark_correction.py --baseline "$(BASELINE)" --corrected "$(CORRECTED)" \
 		$(if $(ASSERT_TRADEOFF),--assert-agreement-tradeoff --min-coverage-gain "$(MIN_COVERAGE_GAIN)" --max-bad-ratio-increase "$(MAX_BAD_RATIO_INCREASE)",)
+
+curated-canary-eval:
+	$(PYTHON) tools/run_benchmark_suite.py --offline --gold-root benchmarks/gold_set_candidate/20260305T231015Z --match "Blinding Lights|Derniere danse|Mi Gente" --max-songs 3 $(if $(RUN_ID),--run-id "$(RUN_ID)",) $(EXTRA_ARGS)
+	@test -f benchmarks/results/latest.json || (echo "latest benchmark pointer missing after curated canary eval"; exit 2)
+	$(PYTHON) tools/main_benchmark_guardrails.py --skip-benchmark --guardrails-json benchmarks/curated_canary_guardrails.json --report-json "$$(cat benchmarks/results/latest.json)"
+	$(if $(BASELINE),$(PYTHON) tools/compare_benchmark_correction.py --baseline "$(BASELINE)" --corrected "$$(cat benchmarks/results/latest.json)" $(if $(ASSERT_TRADEOFF),--assert-agreement-tradeoff --min-coverage-gain "$(MIN_COVERAGE_GAIN)" --max-bad-ratio-increase "$(MAX_BAD_RATIO_INCREASE)",),)
 
 check: dep-check fmt-check lint type test-fast perf-smoke quality-guardrails bootstrap-quality-guardrails benchmark-validate
 

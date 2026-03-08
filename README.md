@@ -279,9 +279,13 @@ Benchmark seed set for timing quality work:
     - Runs benchmark suites for each threshold combo and writes consolidated tradeoff analysis output.
   - Enforce committed main benchmark guardrails: `./venv/bin/python tools/main_benchmark_guardrails.py`
   - Enforce curated canary guardrails on the manually curated subset:
-    - `./venv/bin/python tools/main_benchmark_guardrails.py --guardrails-json benchmarks/curated_canary_guardrails.json --report-json benchmarks/results/<run_id>/benchmark_report.json`
+    - `./venv/bin/python tools/main_benchmark_guardrails.py --skip-benchmark --guardrails-json benchmarks/curated_canary_guardrails.json --report-json benchmarks/results/<run_id>/benchmark_report.json`
     - Makefile shortcut: `make curated-canary-guardrails`
-    - Useful aggregate fields in the report:
+  - Run the curated canary slice end-to-end:
+    - `make curated-canary-eval RUN_ID=<candidate_run_id>`
+    - optional baseline comparison: `make curated-canary-eval RUN_ID=<candidate_run_id> BASELINE=benchmarks/results/<baseline_run_id>`
+    - optional extra benchmark args: `make curated-canary-eval RUN_ID=<candidate_run_id> EXTRA_ARGS='--strategy hybrid_whisper'`
+  - Useful aggregate fields in the report:
       - `curated_canary_avg_abs_word_start_delta_sec_word_weighted_mean`
       - `curated_canary_gold_start_p95_abs_sec_mean`
       - `curated_canary_reference_watchlist`
