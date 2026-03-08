@@ -6,6 +6,9 @@ from y2karaoke.core.components.alignment.timing_models import (
 )
 from y2karaoke.core.components.whisper import whisper_integration as wi
 from y2karaoke.core.components.whisper import whisper_integration_align as wialign
+from y2karaoke.core.components.whisper.whisper_integration_baseline import (
+    _restore_implausibly_short_lines,
+)
 from y2karaoke.core.models import Line, Word
 
 
@@ -92,6 +95,100 @@ def test_restore_weak_evidence_large_start_shifts_restores_low_confidence_window
 
     assert restored == 1
     assert repaired[0].start_time == pytest.approx(10.0)
+
+
+def test_align_pipeline_restores_single_implausibly_short_line_before_rollback():
+    lines = [
+        Line(words=[Word(text="prev", start_time=10.0, end_time=11.0)]),
+        Line(
+            words=[
+                Word(text="So", start_time=20.0, end_time=20.5),
+                Word(text="I", start_time=20.5, end_time=21.0),
+                Word(text="hit", start_time=21.0, end_time=21.5),
+                Word(text="the", start_time=21.5, end_time=22.0),
+            ]
+        ),
+    ]
+    collapsed = [
+        lines[0],
+        Line(
+            words=[
+                Word(text="So", start_time=28.0, end_time=28.0),
+                Word(text="I", start_time=28.0, end_time=28.0),
+                Word(text="hit", start_time=28.0, end_time=28.0),
+                Word(text="the", start_time=28.0, end_time=28.1),
+            ]
+        ),
+    ]
+    whisper_words = [
+        TranscriptionWord(text="prev", start=10.0, end=10.5, probability=0.9),
+        TranscriptionWord(text="So", start=27.8, end=27.9, probability=0.95),
+        TranscriptionWord(text="I", start=28.0, end=28.05, probability=0.95),
+        TranscriptionWord(text="hit", start=28.1, end=28.15, probability=0.95),
+    ]
+    segments = [
+        TranscriptionSegment(
+            start=10.0, end=10.5, text="prev", words=[whisper_words[0]]
+        )
+    ]
+
+    mapped, corrections, _metrics = wialign.align_lrc_text_to_whisper_timings_impl(
+        lines,
+        vocals_path="vocals.wav",
+        language="en",
+        model_size="base",
+        aggressive=False,
+        temperature=0.0,
+        min_similarity=0.15,
+        audio_features=None,
+        lenient_vocal_activity_threshold=0.3,
+        lenient_activity_bonus=0.4,
+        low_word_confidence_threshold=0.5,
+        transcribe_vocals_fn=lambda *_a, **_k: (segments, whisper_words, "en", "base"),
+        extract_audio_features_fn=lambda *_a, **_k: None,
+        dedupe_whisper_segments_fn=lambda s: s,
+        trim_whisper_transcription_by_lyrics_fn=lambda s, w, _t: (s, w, None),
+        fill_vocal_activity_gaps_fn=lambda w, _a, _t, segments=None: (w, segments),
+        dedupe_whisper_words_fn=lambda w: w,
+        filter_low_confidence_whisper_words_fn=lambda w, _t: w,
+        extract_lrc_words_all_fn=lambda in_lines: [
+            {"text": wd.text, "line_idx": li, "word_idx": wi}
+            for li, line in enumerate(in_lines)
+            for wi, wd in enumerate(line.words)
+        ],
+        build_phoneme_tokens_from_lrc_words_fn=lambda _w, _l: [1, 2, 3],
+        build_phoneme_tokens_from_whisper_words_fn=lambda _w, _l: [1, 2, 3],
+        build_syllable_tokens_from_phonemes_fn=lambda _p: [1],
+        build_segment_text_overlap_assignments_fn=lambda _lw, _aw, _s: {0: [0]},
+        build_phoneme_dtw_path_fn=lambda *_a, **_k: [],
+        build_word_assignments_from_phoneme_path_fn=lambda *_a, **_k: {},
+        build_block_segmented_syllable_assignments_fn=lambda *_a, **_k: {},
+        map_lrc_words_to_whisper_fn=lambda *_a, **_k: (collapsed, 1, 0.2, {0}),
+        shift_repeated_lines_to_next_whisper_fn=lambda ml, _aw: ml,
+        enforce_monotonic_line_starts_whisper_fn=lambda ml, _aw: ml,
+        resolve_line_overlaps_fn=lambda ml: ml,
+        extend_line_to_trailing_whisper_matches_fn=lambda ml, _aw: ml,
+        pull_late_lines_to_matching_segments_fn=lambda ml, _s, _lang: ml,
+        retime_short_interjection_lines_fn=lambda ml, _s: ml,
+        snap_first_word_to_whisper_onset_fn=lambda ml, _aw, **_kw: ml,
+        interpolate_unmatched_lines_fn=lambda ml, _set: ml,
+        refine_unmatched_lines_with_onsets_fn=lambda ml, _set, _vp: ml,
+        pull_lines_forward_for_continuous_vocals_fn=lambda ml, _af: (ml, 0),
+        run_mapped_line_postpasses_fn=lambda **kwargs: (
+            kwargs["mapped_lines"],
+            kwargs["corrections"],
+        ),
+        constrain_line_starts_to_baseline_fn=lambda ml, _bl: ml,
+        should_rollback_short_line_degradation_fn=lambda *_a, **_k: (False, 0, 0),
+        restore_implausibly_short_lines_fn=_restore_implausibly_short_lines,
+        clone_lines_for_fallback_fn=lambda in_lines: in_lines,
+        min_segment_overlap_coverage=0.4,
+        logger=wi.logger,
+    )
+
+    assert mapped[1].text == lines[1].text
+    assert mapped[1].start_time == pytest.approx(lines[1].start_time)
+    assert any("short compressed lines" in msg for msg in corrections)
 
 
 def test_align_pipeline_uses_whisperx_on_low_dtw_coverage(monkeypatch):

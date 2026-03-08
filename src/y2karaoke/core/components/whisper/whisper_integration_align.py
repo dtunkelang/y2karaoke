@@ -355,6 +355,13 @@ def align_lrc_text_to_whisper_timings_impl(  # noqa: C901
         corrections.append(
             f"Restored {restored_weak} weak-evidence large start shift line(s) to baseline"
         )
+    mapped_lines, restored_short = restore_implausibly_short_lines_fn(
+        baseline_lines, mapped_lines
+    )
+    if restored_short:
+        corrections.append(
+            f"Restored {restored_short} short compressed lines from baseline timing"
+        )
 
     metrics: Dict[str, Any] = {
         "matched_ratio": matched_ratio,
