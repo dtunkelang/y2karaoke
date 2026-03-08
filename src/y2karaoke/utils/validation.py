@@ -131,6 +131,32 @@ def _compute_shift(start: float, prev_start: float | None) -> float:
     return (prev_start - start) + 0.01
 
 
+def _line_duration(line) -> float:
+    if not _has_words(line):
+        return 0.0
+    return line.end_time - line.start_time
+
+
+def _prefer_rebalancing_previous_line(fixed, idx: int, shift: float) -> bool:
+    if idx <= 0 or shift <= 0:
+        return False
+    prev_line = fixed[idx - 1]
+    cur_line = fixed[idx]
+    if not _has_words(prev_line) or not _has_words(cur_line):
+        return False
+    prev_word_count = len(prev_line.words)
+    if prev_word_count < 5:
+        return False
+    prev_duration = _line_duration(prev_line)
+    cur_duration = _line_duration(cur_line)
+    min_expected_prev_duration = max(0.75, 0.12 * prev_word_count)
+    return (
+        shift >= 1.5
+        and prev_duration < min_expected_prev_duration
+        and cur_duration > max(1.2, prev_duration * 2.0)
+    )
+
+
 def fix_line_order(lines, max_forward_shift: float = 3.0):
     """Fix non-monotonic line ordering by shifting lines forward.
 
@@ -144,6 +170,10 @@ def fix_line_order(lines, max_forward_shift: float = 3.0):
             continue
         start = line.start_time
         shift = _compute_shift(start, prev_start)
+        if shift > 0 and _prefer_rebalancing_previous_line(fixed, idx, shift):
+            _rebalance_previous_lines(fixed, idx, start - 0.01)
+            prev_start = fixed[idx - 1].start_time
+            shift = _compute_shift(start, prev_start)
         if shift > 0 and shift > max_forward_shift and idx > 0:
             _rebalance_previous_lines(fixed, idx, start - 0.01)
             prev_start = fixed[idx - 1].start_time

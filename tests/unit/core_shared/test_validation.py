@@ -144,3 +144,38 @@ class TestValidation:
 
         assert fixed[0].start_time == pytest.approx(10.0)
         assert fixed[1].start_time > fixed[0].start_time
+
+    def test_fix_line_order_pulls_back_short_compressed_previous_line_first(self):
+        lines = [
+            Line(
+                words=[
+                    Word(text="Cause", start_time=103.08, end_time=103.14, singer=""),
+                    Word(text="I", start_time=103.14, end_time=103.20, singer=""),
+                    Word(text="can", start_time=103.20, end_time=103.26, singer=""),
+                    Word(text="see", start_time=103.26, end_time=103.32, singer=""),
+                    Word(text="the", start_time=103.32, end_time=103.38, singer=""),
+                    Word(text="sun", start_time=103.38, end_time=103.44, singer=""),
+                    Word(text="light", start_time=103.44, end_time=103.50, singer=""),
+                    Word(text="up", start_time=103.50, end_time=103.56, singer=""),
+                    Word(text="sky", start_time=103.56, end_time=103.67, singer=""),
+                ]
+            ),
+            Line(
+                words=[
+                    Word(text="So", start_time=100.39, end_time=100.7, singer=""),
+                    Word(text="I", start_time=100.7, end_time=101.0, singer=""),
+                    Word(text="hit", start_time=101.0, end_time=101.6, singer=""),
+                    Word(text="the", start_time=101.6, end_time=102.0, singer=""),
+                    Word(text="road", start_time=102.0, end_time=102.8, singer=""),
+                    Word(text="in", start_time=102.8, end_time=103.1, singer=""),
+                    Word(text="overdrive", start_time=103.1, end_time=104.8, singer=""),
+                    Word(text="baby", start_time=104.8, end_time=105.4, singer=""),
+                    Word(text="oh", start_time=105.4, end_time=106.0, singer=""),
+                ]
+            ),
+        ]
+
+        fixed = fix_line_order(lines, max_forward_shift=3.0)
+
+        assert fixed[0].start_time == pytest.approx(100.38)
+        assert fixed[1].start_time == pytest.approx(100.39)
