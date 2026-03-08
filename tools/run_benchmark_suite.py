@@ -376,6 +376,7 @@ def _flatten_words_from_timing_doc(
         if not isinstance(line_words, list):
             continue
         paren_depth = 0
+        line_word_entries: list[dict[str, Any]] = []
         for w in line_words:
             if not isinstance(w, dict):
                 continue
@@ -391,7 +392,7 @@ def _flatten_words_from_timing_doc(
                 # Parenthesized tokens are treated as optional/backing vocals.
                 optional = paren_depth > 0 or open_count > 0
                 paren_depth = max(0, paren_depth + open_count - close_count)
-            words.append(
+            line_word_entries.append(
                 {
                     "text": text,
                     "start": float(start),
@@ -399,6 +400,15 @@ def _flatten_words_from_timing_doc(
                     "optional": optional,
                 }
             )
+        if mark_parenthetical_optional and line_word_entries:
+            trailing_optional_seen = False
+            for entry in reversed(line_word_entries):
+                if bool(entry.get("optional")):
+                    trailing_optional_seen = True
+                    continue
+                entry["followed_by_optional_tail"] = trailing_optional_seen
+                trailing_optional_seen = False
+        words.extend(line_word_entries)
     return words
 
 
@@ -1013,13 +1023,17 @@ def _extract_song_metrics(
     comparable = len(aligned_pairs)
     start_abs_deltas: list[float] = []
     end_abs_deltas: list[float] = []
+    end_abs_deltas_strict: list[float] = []
     text_matches = 0
 
     for gen_idx, gold_idx, sim in aligned_pairs:
         gen = generated_words[gen_idx]
         gold = gold_words[gold_idx]
         start_abs_deltas.append(abs(gen["start"] - gold["start"]))
-        end_abs_deltas.append(abs(gen["end"] - gold["end"]))
+        end_abs_delta = abs(gen["end"] - gold["end"])
+        end_abs_deltas_strict.append(end_abs_delta)
+        if not bool(gold.get("followed_by_optional_tail")):
+            end_abs_deltas.append(end_abs_delta)
         if sim >= 0.999:
             text_matches += 1
 
@@ -1037,6 +1051,9 @@ def _extract_song_metrics(
             "gold_word_text_match_ratio": round(
                 (text_matches / comparable) if comparable else 0.0, 4
             ),
+            "gold_trailing_parenthetical_softened_word_count": (
+                sum(1 for w in gold_words if bool(w.get("followed_by_optional_tail")))
+            ),
             "avg_abs_word_start_delta_sec": round(_mean(start_abs_deltas) or 0.0, 4),
             "gold_start_mean_abs_sec": round(_mean(start_abs_deltas) or 0.0, 4),
             "gold_start_p95_abs_sec": round(_pctile(start_abs_deltas, 0.95), 4),
@@ -1044,6 +1061,9 @@ def _extract_song_metrics(
             "gold_end_mean_abs_sec": round(_mean(end_abs_deltas) or 0.0, 4),
             "gold_end_p95_abs_sec": round(_pctile(end_abs_deltas, 0.95), 4),
             "gold_end_max_abs_sec": round(max(end_abs_deltas, default=0.0), 4),
+            "gold_end_mean_abs_sec_strict": round(
+                _mean(end_abs_deltas_strict) or 0.0, 4
+            ),
         }
     )
 
