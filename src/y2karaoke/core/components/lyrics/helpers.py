@@ -152,6 +152,30 @@ def _estimate_singing_duration(text: str, word_count: int) -> float:
     return max(0.5, min(duration, 8.0))
 
 
+def _duration_cap_multiplier_for_line(
+    line_text: str,
+    word_count: int,
+    gap_to_next: float,
+    estimated_duration: float,
+) -> float:
+    """Allow extra room for long pause-heavy sung lines without broad gap fill."""
+    if word_count < 6:
+        return 1.3
+    if gap_to_next < max(4.5, estimated_duration * 1.8):
+        return 1.3
+    punctuation_pauses = (
+        line_text.count(",") + line_text.count(";") + line_text.count(":")
+    )
+    if punctuation_pauses == 0:
+        return 1.3
+    lower_text = line_text.lower()
+    if not re.search(r"\b(oh|ooh|ah|hey|yeah)\b", lower_text):
+        return 1.3
+    if re.search(r"\((oh|ooh|ah|hey|yeah)\)", lower_text):
+        return 1.3
+    return 2.25
+
+
 def _extract_text_lines_from_lrc(lrc_text: str) -> List[str]:
     timed = parse_lrc_with_timing(lrc_text, "", "", filter_promos=False)
     if timed:
@@ -292,7 +316,12 @@ def _distribute_word_timing_in_line(
     estimated_duration = _estimate_singing_duration(line_text, word_count)
 
     gap_to_next = next_line_start - line_start
-    max_duration = estimated_duration * 1.3  # 30% buffer
+    max_duration = estimated_duration * _duration_cap_multiplier_for_line(
+        line_text,
+        word_count,
+        gap_to_next,
+        estimated_duration,
+    )
     line_duration = min(gap_to_next, max_duration)
     line_duration = max(line_duration, word_count * 0.15)
 

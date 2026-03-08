@@ -85,6 +85,47 @@ def test_distribute_word_timing_in_line():
     assert line.words[1].end_time <= 3.95
 
 
+def test_distribute_word_timing_extends_pause_heavy_long_line():
+    line = _line_with_words(
+        ["I", "said,", "ooh,", "I'm", "blinded", "by", "the", "lights"]
+    )
+
+    lh._distribute_word_timing_in_line(line, line_start=150.59, next_line_start=156.57)
+
+    assert line.end_time == pytest.approx(155.44, abs=0.02)
+
+
+def test_distribute_word_timing_keeps_parenthetical_interjection_tail_default_cap():
+    line = _line_with_words(["The", "city's", "cold", "and", "empty", "(oh)"])
+
+    lh._distribute_word_timing_in_line(line, line_start=106.92, next_line_start=111.65)
+
+    assert line.end_time == pytest.approx(109.18, abs=0.02)
+
+
+def test_distribute_word_timing_keeps_comma_heavy_non_interjection_line_default_cap():
+    line = _line_with_words(
+        [
+            "Sans",
+            "toi",
+            "ma",
+            "vie",
+            "n'est",
+            "qu'un",
+            "decor",
+            "qui",
+            "brille,",
+            "vide",
+            "de",
+            "sens",
+        ]
+    )
+
+    lh._distribute_word_timing_in_line(line, line_start=92.55, next_line_start=99.9)
+
+    assert line.end_time == pytest.approx(96.81, abs=0.02)
+
+
 def test_apply_timing_to_lines():
     lines = [_line_with_words(["a", "b"]), _line_with_words(["c"])]
     line_timings = [(1.0, "a b"), (3.0, "c")]
