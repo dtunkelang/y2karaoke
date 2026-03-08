@@ -8,6 +8,44 @@ from ... import models
 from ..alignment import timing_models
 
 
+def _line_duration(line: models.Line) -> float:
+    if not line.words:
+        return 0.0
+    return line.end_time - line.start_time
+
+
+def _should_pull_previous_line_backward(
+    previous_line: models.Line,
+    current_line: models.Line,
+    shift: float,
+) -> bool:
+    if shift < 1.5 or not previous_line.words or not current_line.words:
+        return False
+    prev_word_count = len(previous_line.words)
+    if prev_word_count < 5:
+        return False
+    prev_duration = _line_duration(previous_line)
+    cur_duration = _line_duration(current_line)
+    min_expected_prev_duration = max(0.75, 0.12 * prev_word_count)
+    return prev_duration < min_expected_prev_duration and cur_duration > max(
+        1.2, prev_duration * 2.0
+    )
+
+
+def _shift_line_to_start(line: models.Line, target_start: float) -> models.Line:
+    shift = target_start - line.start_time
+    shifted_words = [
+        models.Word(
+            text=w.text,
+            start_time=w.start_time + shift,
+            end_time=w.end_time + shift,
+            singer=w.singer,
+        )
+        for w in line.words
+    ]
+    return models.Line(words=shifted_words, singer=line.singer)
+
+
 def _shift_repeated_lines_to_next_whisper(
     mapped_lines: List[models.Line],
     all_words: List[timing_models.TranscriptionWord],
@@ -186,6 +224,22 @@ def _enforce_monotonic_line_starts_whisper(
             continue
 
         if prev_start is not None and line.start_time < prev_start:
+            required_time = (prev_end or line.start_time) + 0.01
+            shift_needed = required_time - line.start_time
+            if monotonic_lines and _should_pull_previous_line_backward(
+                monotonic_lines[-1], line, shift_needed
+            ):
+                target_start = max(0.0, line.start_time - 0.01)
+                monotonic_lines[-1] = _shift_line_to_start(
+                    monotonic_lines[-1], target_start
+                )
+                prev_start = monotonic_lines[-1].start_time
+                prev_end = monotonic_lines[-1].end_time
+                if line.start_time >= prev_start:
+                    monotonic_lines.append(line)
+                    prev_start = line.start_time
+                    prev_end = line.end_time
+                    continue
             required_time = (prev_end or line.start_time) + 0.01
             start_idx = next(
                 (idx for idx, ww in enumerate(all_words) if ww.start >= required_time),

@@ -178,6 +178,49 @@ def test_pull_late_lines_prefers_containment_over_higher_overlap() -> None:
     assert adjusted[1].start_time < 168.0
 
 
+def test_enforce_monotonic_line_starts_whisper_pulls_back_short_previous_line() -> None:
+    lines = [
+        Line(
+            words=[
+                Word(text="Cause", start_time=103.08, end_time=103.14),
+                Word(text="I", start_time=103.14, end_time=103.20),
+                Word(text="can", start_time=103.20, end_time=103.26),
+                Word(text="see", start_time=103.26, end_time=103.32),
+                Word(text="the", start_time=103.32, end_time=103.38),
+                Word(text="sun", start_time=103.38, end_time=103.44),
+                Word(text="light", start_time=103.44, end_time=103.50),
+                Word(text="up", start_time=103.50, end_time=103.56),
+                Word(text="sky", start_time=103.56, end_time=103.67),
+            ]
+        ),
+        Line(
+            words=[
+                Word(text="So", start_time=100.39, end_time=100.70),
+                Word(text="I", start_time=100.70, end_time=101.00),
+                Word(text="hit", start_time=101.00, end_time=101.60),
+                Word(text="the", start_time=101.60, end_time=102.00),
+                Word(text="road", start_time=102.00, end_time=102.80),
+                Word(text="in", start_time=102.80, end_time=103.10),
+                Word(text="overdrive", start_time=103.10, end_time=104.80),
+                Word(text="baby", start_time=104.80, end_time=105.40),
+                Word(text="oh", start_time=105.40, end_time=106.00),
+            ]
+        ),
+    ]
+    whisper_words = [
+        TranscriptionWord(start=100.39, end=100.70, text="So", probability=0.9),
+        TranscriptionWord(start=100.70, end=101.00, text="I", probability=0.9),
+        TranscriptionWord(start=101.00, end=101.60, text="hit", probability=0.9),
+        TranscriptionWord(start=101.60, end=102.00, text="the", probability=0.9),
+        TranscriptionWord(start=102.00, end=102.80, text="road", probability=0.9),
+    ]
+
+    adjusted = wm._enforce_monotonic_line_starts_whisper(lines, whisper_words)
+
+    assert adjusted[0].start_time == pytest.approx(100.38)
+    assert adjusted[1].start_time == pytest.approx(100.39)
+
+
 def test_retime_short_interjection_lines_moves_to_matching_segment() -> None:
     lines = [
         Line(words=[Word(text="prev", start_time=71.26, end_time=72.8)]),
