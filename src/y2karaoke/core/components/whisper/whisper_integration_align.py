@@ -10,6 +10,7 @@ from ....utils.lex_lookup_installer import ensure_local_lex_lookup
 from ... import models, phonetic_utils
 from ..alignment import timing_models
 from .whisper_forced_alignment import align_lines_with_whisperx
+from .whisper_integration_finalize import _restore_pairwise_inversions_from_source
 from .whisper_integration_forced_fallback import (
     attempt_whisperx_forced_alignment,
 )
@@ -361,6 +362,16 @@ def align_lrc_text_to_whisper_timings_impl(  # noqa: C901
     if restored_short:
         corrections.append(
             f"Restored {restored_short} short compressed lines from baseline timing"
+        )
+    mapped_lines, restored_inversions = _restore_pairwise_inversions_from_source(
+        baseline_lines,
+        mapped_lines,
+        min_inversion_gap=0.25,
+        min_ahead_shift=2.5,
+    )
+    if restored_inversions:
+        corrections.append(
+            f"Restored {restored_inversions} inversion outlier line(s) from baseline timing"
         )
 
     metrics: Dict[str, Any] = {
