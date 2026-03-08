@@ -65,6 +65,35 @@ def test_restore_weak_evidence_large_start_shifts_keeps_supported_shift():
     assert repaired[0].start_time == pytest.approx(20.0)
 
 
+def test_restore_weak_evidence_large_start_shifts_restores_low_confidence_window():
+    mapped = [
+        Line(words=[Word(text="alpha", start_time=20.0, end_time=21.0)]),
+        Line(words=[Word(text="beta", start_time=22.0, end_time=23.0)]),
+    ]
+    baseline = [
+        Line(words=[Word(text="alpha", start_time=10.0, end_time=11.0)]),
+        Line(words=[Word(text="beta", start_time=22.0, end_time=23.0)]),
+    ]
+    whisper_words = [
+        TranscriptionWord(text="i", start=19.4, end=19.5, probability=0.2),
+        TranscriptionWord(text="hear", start=19.8, end=20.0, probability=0.3),
+        TranscriptionWord(text="words", start=20.2, end=20.4, probability=0.45),
+        TranscriptionWord(text="beta", start=22.0, end=22.5, probability=0.9),
+    ]
+
+    repaired, restored = wialign._restore_weak_evidence_large_start_shifts(
+        mapped,
+        baseline,
+        whisper_words,
+        min_shift_sec=1.1,
+        min_support_words=3,
+        support_window_sec=1.0,
+    )
+
+    assert restored == 1
+    assert repaired[0].start_time == pytest.approx(10.0)
+
+
 def test_align_pipeline_uses_whisperx_on_low_dtw_coverage(monkeypatch):
     lines = [
         Line(words=[Word(text=f"w{i}", start_time=float(i), end_time=float(i) + 0.5)])

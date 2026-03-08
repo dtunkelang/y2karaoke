@@ -35,3 +35,19 @@ def test_restore_weak_evidence_large_start_shifts_keeps_supported_shift():
     )
     assert restored == 0
     assert repaired[0].start_time == 10.0
+
+
+def test_restore_weak_evidence_large_start_shifts_restores_low_confidence_window():
+    mapped = [_line(10.0), _line(12.0)]
+    baseline = [_line(8.0), _line(12.0)]
+    whisper_words = [
+        TranscriptionWord(text="a", start=9.1, end=9.2, probability=0.3),
+        TranscriptionWord(text="b", start=9.5, end=9.6, probability=0.4),
+        TranscriptionWord(text="c", start=9.9, end=10.0, probability=0.45),
+        TranscriptionWord(text="tail", start=12.0, end=12.2, probability=0.9),
+    ]
+    repaired, restored = restore_weak_evidence_large_start_shifts(
+        mapped, baseline, whisper_words
+    )
+    assert restored == 1
+    assert repaired[0].start_time == 8.0
