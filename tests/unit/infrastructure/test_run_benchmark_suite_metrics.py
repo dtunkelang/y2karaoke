@@ -195,6 +195,45 @@ def test_extract_song_metrics_softens_end_deltas_before_trailing_parenthetical_t
     assert metrics["gold_end_mean_abs_sec_strict"] == 0.1
 
 
+def test_extract_song_metrics_reports_parenthetical_interjection_line_deltas():
+    module = _load_module()
+    report = {
+        "lines": [
+            {
+                "text": "(Hey, hey, hey)",
+                "start": 169.91,
+                "end": 170.82,
+                "words": [
+                    {"text": "(Hey,", "start": 169.91, "end": 170.19},
+                    {"text": "hey,", "start": 170.22, "end": 170.49},
+                    {"text": "hey)", "start": 170.52, "end": 170.82},
+                ],
+            }
+        ]
+    }
+    gold = {
+        "lines": [
+            {
+                "text": "(Hey, hey, hey)",
+                "start": 171.94,
+                "end": 173.10,
+                "words": [
+                    {"text": "(Hey,", "start": 171.94, "end": 172.33},
+                    {"text": "hey,", "start": 172.34, "end": 172.72},
+                    {"text": "hey)", "start": 172.72, "end": 173.10},
+                ],
+            }
+        ]
+    }
+
+    metrics = module._extract_song_metrics(report, gold_doc=gold)
+
+    assert metrics["gold_parenthetical_interjection_line_count"] == 1
+    assert metrics["gold_parenthetical_interjection_comparable_line_count"] == 1
+    assert metrics["gold_parenthetical_interjection_start_mean_abs_sec"] == 2.03
+    assert metrics["gold_parenthetical_interjection_start_p95_abs_sec"] == 2.03
+
+
 def test_extract_song_metrics_separates_independent_and_anchor_agreement():
     module = _load_module()
     report = {

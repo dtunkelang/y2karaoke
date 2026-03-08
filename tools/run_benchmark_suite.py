@@ -412,6 +412,79 @@ def _flatten_words_from_timing_doc(
     return words
 
 
+def _normalize_interjection_token(text: str) -> str:
+    return re.sub(r"[^a-z]+", "", str(text).lower())
+
+
+def _extract_parenthetical_interjection_lines(
+    doc: dict[str, Any],
+) -> list[dict[str, Any]]:
+    lines_out: list[dict[str, Any]] = []
+    lines = doc.get("lines", [])
+    if not isinstance(lines, list):
+        return lines_out
+    for line_index, line in enumerate(lines):
+        if not isinstance(line, dict):
+            continue
+        line_words = line.get("words", [])
+        if not isinstance(line_words, list) or not line_words:
+            continue
+        paren_depth = 0
+        optional_flags: list[bool] = []
+        normalized_tokens: list[str] = []
+        for w in line_words:
+            if not isinstance(w, dict):
+                continue
+            text = str(w.get("text", ""))
+            open_count = text.count("(")
+            close_count = text.count(")")
+            optional = paren_depth > 0 or open_count > 0
+            paren_depth = max(0, paren_depth + open_count - close_count)
+            optional_flags.append(optional)
+            token = _normalize_interjection_token(text)
+            if token:
+                normalized_tokens.append(token)
+        if not optional_flags or not all(optional_flags):
+            continue
+        if not normalized_tokens or not all(
+            token in _AGREEMENT_FILLER_TOKENS for token in normalized_tokens
+        ):
+            continue
+        start = line.get("start")
+        end = line.get("end")
+        if not isinstance(start, (int, float)) or not isinstance(end, (int, float)):
+            continue
+        lines_out.append(
+            {
+                "line_index": line_index,
+                "text": str(line.get("text", "")),
+                "normalized_text": " ".join(normalized_tokens),
+                "start": float(start),
+                "end": float(end),
+            }
+        )
+    return lines_out
+
+
+def _align_parenthetical_interjection_lines(
+    generated_lines: list[dict[str, Any]],
+    gold_lines: list[dict[str, Any]],
+) -> list[tuple[int, int]]:
+    matches: list[tuple[int, int]] = []
+    gen_idx = 0
+    gold_idx = 0
+    while gen_idx < len(generated_lines) and gold_idx < len(gold_lines):
+        gen_norm = str(generated_lines[gen_idx].get("normalized_text", "")).strip()
+        gold_norm = str(gold_lines[gold_idx].get("normalized_text", "")).strip()
+        if gen_norm and gen_norm == gold_norm:
+            matches.append((gen_idx, gold_idx))
+            gen_idx += 1
+            gold_idx += 1
+            continue
+        gen_idx += 1
+    return matches
+
+
 def _gold_path_for_song(
     index: int, song: BenchmarkSong, gold_root: Path
 ) -> Path | None:
@@ -1018,12 +1091,19 @@ def _extract_song_metrics(
     gold_words_all = _flatten_words_from_timing_doc(
         gold_doc or {}, mark_parenthetical_optional=True
     )
+    generated_interjection_lines = _extract_parenthetical_interjection_lines(report)
+    gold_interjection_lines = _extract_parenthetical_interjection_lines(gold_doc or {})
+    aligned_interjection_lines = _align_parenthetical_interjection_lines(
+        generated_interjection_lines,
+        gold_interjection_lines,
+    )
     gold_words = [w for w in gold_words_all if not bool(w.get("optional"))]
     aligned_pairs = _align_words_for_gold_comparison(generated_words, gold_words)
     comparable = len(aligned_pairs)
     start_abs_deltas: list[float] = []
     end_abs_deltas: list[float] = []
     end_abs_deltas_strict: list[float] = []
+    interjection_start_abs_deltas: list[float] = []
     text_matches = 0
 
     for gen_idx, gold_idx, sim in aligned_pairs:
@@ -1036,6 +1116,13 @@ def _extract_song_metrics(
             end_abs_deltas.append(end_abs_delta)
         if sim >= 0.999:
             text_matches += 1
+
+    for gen_idx, gold_idx in aligned_interjection_lines:
+        gen_line = generated_interjection_lines[gen_idx]
+        gold_line = gold_interjection_lines[gold_idx]
+        interjection_start_abs_deltas.append(
+            abs(float(gen_line["start"]) - float(gold_line["start"]))
+        )
 
     metrics.update(
         {
@@ -1053,6 +1140,16 @@ def _extract_song_metrics(
             ),
             "gold_trailing_parenthetical_softened_word_count": (
                 sum(1 for w in gold_words if bool(w.get("followed_by_optional_tail")))
+            ),
+            "gold_parenthetical_interjection_line_count": len(gold_interjection_lines),
+            "gold_parenthetical_interjection_comparable_line_count": len(
+                aligned_interjection_lines
+            ),
+            "gold_parenthetical_interjection_start_mean_abs_sec": round(
+                _mean(interjection_start_abs_deltas) or 0.0, 4
+            ),
+            "gold_parenthetical_interjection_start_p95_abs_sec": round(
+                _pctile(interjection_start_abs_deltas, 0.95), 4
             ),
             "avg_abs_word_start_delta_sec": round(_mean(start_abs_deltas) or 0.0, 4),
             "gold_start_mean_abs_sec": round(_mean(start_abs_deltas) or 0.0, 4),
