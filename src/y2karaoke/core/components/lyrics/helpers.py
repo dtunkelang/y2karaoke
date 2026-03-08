@@ -168,20 +168,32 @@ def _duration_cap_multiplier_for_line(
     punctuation_pauses = (
         line_text.count(",") + line_text.count(";") + line_text.count(":")
     )
-    if punctuation_pauses == 0:
-        return 1.3
     lower_text = line_text.lower()
-    if not re.search(r"\b(oh|ooh|ah|hey|yeah)\b", lower_text):
-        return 1.3
-    if (
+    has_interjection = bool(re.search(r"\b(oh|ooh|ah|hey|yeah)\b", lower_text))
+    has_phrase_break = punctuation_pauses > 0 or "(" in line_text or "'" in line_text
+    leading_filler_phrase = (
         len(tokens) >= 2
         and tokens[0] in {"oh", "ooh", "ah", "hey", "yeah"}
         and tokens[1] not in {"oh", "ooh", "ah", "hey", "yeah"}
+    )
+    if punctuation_pauses > 0 and has_interjection and not leading_filler_phrase:
+        if word_count <= 6 and re.search(r"\((oh|ooh|ah|hey|yeah)\)", lower_text):
+            return 1.3
+        return 2.7
+    if (
+        8 <= word_count <= 10
+        and has_phrase_break
+        and gap_to_next >= max(4.2, estimated_duration * 1.8)
+        and not leading_filler_phrase
     ):
+        return 1.55
+    if punctuation_pauses == 0:
         return 1.3
-    if re.search(r"\((oh|ooh|ah|hey|yeah)\)", lower_text):
+    if not has_interjection:
         return 1.3
-    return 2.7
+    if leading_filler_phrase:
+        return 1.3
+    return 1.3
 
 
 def _extract_text_lines_from_lrc(lrc_text: str) -> List[str]:

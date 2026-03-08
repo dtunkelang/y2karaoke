@@ -136,6 +136,26 @@ def test_distribute_word_timing_keeps_leading_interjection_phrase_default_cap():
     assert line.end_time == pytest.approx(137.52, abs=0.02)
 
 
+def test_distribute_word_timing_extends_phrase_break_dense_line():
+    line = _line_with_words(
+        ["Maybe", "you", "can", "show", "me", "how", "to", "love,", "maybe"]
+    )
+
+    lh._distribute_word_timing_in_line(line, line_start=32.62, next_line_start=38.24)
+
+    assert line.end_time == pytest.approx(36.09, abs=0.03)
+
+
+def test_distribute_word_timing_extends_long_line_with_trailing_parenthetical_interjection():
+    line = _line_with_words(
+        ["Will", "never", "let", "you", "go", "this", "time", "(ooh)"]
+    )
+
+    lh._distribute_word_timing_in_line(line, line_start=145.46, next_line_start=150.59)
+
+    assert line.end_time > 148.65
+
+
 def test_apply_timing_to_lines():
     lines = [_line_with_words(["a", "b"]), _line_with_words(["c"])]
     line_timings = [(1.0, "a b"), (3.0, "c")]
