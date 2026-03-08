@@ -68,6 +68,19 @@
     - add focused unit tests for syllable fallback acceptance/rejection branches
     - run 10-song benchmark A/B (`flag off` vs `flag on`)
     - require tradeoff guard pass (`min_coverage_gain=0.005`, `max_bad_ratio_increase=0.002`) before promotion.
+- [ ] Explore repetition-aware timing transfer within a song.
+  - Hypothesis: repeated chorus/refrain lines can borrow or regularize timing from other occurrences when local Whisper evidence is sparse.
+  - Initial targets:
+    - repeated chorus pairs in `The Weeknd - Blinding Lights`
+    - repeated refrain blocks in `Indila - Derniere danse`
+  - Candidate approaches:
+    - align repeated lyric blocks and compare inter-line spacing consistency
+    - use high-confidence repeated occurrences as timing priors for low-support repeats
+    - detect verse/chorus block structure and preserve relative cadence within repeated sections
+  - Guardrails:
+    - only apply when text match is strong and local structure is clearly repeated
+    - do not let repetition transfer override strong local Whisper/onset evidence
+    - measure both main curated canary metrics and interjection/repetition-specific deltas
 
 ## 4. Gold Set and Benchmark Data Quality
 - [ ] Increase gold comparable-word coverage from ~`0.747` toward >=`0.800`.
