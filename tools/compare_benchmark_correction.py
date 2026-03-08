@@ -67,6 +67,16 @@ METRICS_CURATED_CANARY: list[dict[str, str]] = [
         "direction": "lower",
     },
     {
+        "key": "curated_canary_gold_parenthetical_interjection_start_mean_abs_sec_mean",
+        "label": "curated_canary_parenthetical_interjection_start_abs_sec",
+        "direction": "lower",
+    },
+    {
+        "key": "curated_canary_gold_parenthetical_interjection_start_p95_abs_sec_mean",
+        "label": "curated_canary_parenthetical_interjection_start_p95_abs_sec",
+        "direction": "lower",
+    },
+    {
         "key": "curated_canary_reference_watchlist_count",
         "label": "curated_canary_watchlist_count",
         "direction": "lower",
@@ -392,6 +402,12 @@ def _curated_canary_cli_summary(report: dict[str, Any]) -> list[str]:
         "curated_canary_avg_abs_word_start_delta_sec_word_weighted_mean", {}
     )
     start_p95 = curated.get("curated_canary_gold_start_p95_abs_sec_mean", {})
+    interjection_start = curated.get(
+        "curated_canary_gold_parenthetical_interjection_start_mean_abs_sec_mean", {}
+    )
+    interjection_p95 = curated.get(
+        "curated_canary_gold_parenthetical_interjection_start_p95_abs_sec_mean", {}
+    )
     watchlist = curated.get("curated_canary_reference_watchlist_count", {})
     baseline_watch = (report.get("curated_canary_watchlist", {}) or {}).get(
         "baseline", []
@@ -410,6 +426,18 @@ def _curated_canary_cli_summary(report: dict[str, Any]) -> list[str]:
         "    gold_start_p95_abs_sec={base} -> {corr}".format(
             base=_fmt_num(start_p95.get("baseline")),
             corr=_fmt_num(start_p95.get("corrected")),
+        )
+    )
+    lines.append(
+        "    parenthetical_interjection_start_abs_sec={base} -> {corr}".format(
+            base=_fmt_num(interjection_start.get("baseline")),
+            corr=_fmt_num(interjection_start.get("corrected")),
+        )
+    )
+    lines.append(
+        "    parenthetical_interjection_start_p95_abs_sec={base} -> {corr}".format(
+            base=_fmt_num(interjection_p95.get("baseline")),
+            corr=_fmt_num(interjection_p95.get("corrected")),
         )
     )
     lines.append(
