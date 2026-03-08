@@ -1325,284 +1325,284 @@
     {
       "line_index": 27,
       "text": "I'm just walking by to let you know (by to let you know)",
-      "start": 140.55,
-      "end": 143.35,
+      "start": 139.3,
+      "end": 142.1,
       "words": [
         {
           "word_index": 1,
           "text": "I'm",
-          "start": 140.55,
-          "end": 140.75
+          "start": 139.3,
+          "end": 139.5
         },
         {
           "word_index": 2,
           "text": "just",
-          "start": 140.75,
-          "end": 140.95
+          "start": 139.5,
+          "end": 139.7
         },
         {
           "word_index": 3,
           "text": "walking",
-          "start": 140.95,
-          "end": 141.2
+          "start": 139.7,
+          "end": 139.95
         },
         {
           "word_index": 4,
           "text": "by",
-          "start": 141.2,
-          "end": 141.4
+          "start": 139.95,
+          "end": 140.15
         },
         {
           "word_index": 5,
           "text": "to",
-          "start": 141.4,
-          "end": 141.6
+          "start": 140.15,
+          "end": 140.35
         },
         {
           "word_index": 6,
           "text": "let",
-          "start": 141.6,
-          "end": 141.85
+          "start": 140.35,
+          "end": 140.6
         },
         {
           "word_index": 7,
           "text": "you",
-          "start": 141.85,
-          "end": 142.05
+          "start": 140.6,
+          "end": 140.8
         },
         {
           "word_index": 8,
           "text": "know",
-          "start": 142.05,
-          "end": 142.25
+          "start": 140.8,
+          "end": 141.0
         },
         {
           "word_index": 9,
           "text": "(by",
-          "start": 142.25,
-          "end": 142.5
+          "start": 141.0,
+          "end": 141.25
         },
         {
           "word_index": 10,
           "text": "to",
-          "start": 142.5,
-          "end": 142.7
+          "start": 141.25,
+          "end": 141.45
         },
         {
           "word_index": 11,
           "text": "let",
-          "start": 142.7,
-          "end": 142.9
+          "start": 141.45,
+          "end": 141.65
         },
         {
           "word_index": 12,
           "text": "you",
-          "start": 142.9,
-          "end": 143.15
+          "start": 141.65,
+          "end": 141.9
         },
         {
           "word_index": 13,
           "text": "know)",
-          "start": 143.15,
-          "end": 143.35
+          "start": 141.9,
+          "end": 142.1
         }
       ]
     },
     {
       "line_index": 28,
       "text": "I can never say it on the phone (say it on the phone)",
-      "start": 143.35,
-      "end": 146.6,
+      "start": 142.1,
+      "end": 145.35,
       "words": [
         {
           "word_index": 1,
           "text": "I",
-          "start": 143.35,
-          "end": 143.45
+          "start": 142.1,
+          "end": 142.2
         },
         {
           "word_index": 2,
           "text": "can",
-          "start": 143.45,
-          "end": 143.7
+          "start": 142.2,
+          "end": 142.45
         },
         {
           "word_index": 3,
           "text": "never",
-          "start": 143.7,
-          "end": 143.95
+          "start": 142.45,
+          "end": 142.7
         },
         {
           "word_index": 4,
           "text": "say",
-          "start": 143.95,
-          "end": 144.2
+          "start": 142.7,
+          "end": 142.95
         },
         {
           "word_index": 5,
           "text": "it",
-          "start": 144.2,
-          "end": 144.5
+          "start": 142.95,
+          "end": 143.25
         },
         {
           "word_index": 6,
           "text": "on",
-          "start": 144.5,
-          "end": 144.75
+          "start": 143.25,
+          "end": 143.5
         },
         {
           "word_index": 7,
           "text": "the",
-          "start": 144.75,
-          "end": 145.0
+          "start": 143.5,
+          "end": 143.75
         },
         {
           "word_index": 8,
           "text": "phone",
-          "start": 145.0,
-          "end": 145.3
+          "start": 143.75,
+          "end": 144.05
         },
         {
           "word_index": 9,
           "text": "(say",
-          "start": 145.3,
-          "end": 145.55
+          "start": 144.05,
+          "end": 144.3
         },
         {
           "word_index": 10,
           "text": "it",
-          "start": 145.55,
-          "end": 145.8
+          "start": 144.3,
+          "end": 144.55
         },
         {
           "word_index": 11,
           "text": "on",
-          "start": 145.8,
-          "end": 146.1
+          "start": 144.55,
+          "end": 144.85
         },
         {
           "word_index": 12,
           "text": "the",
-          "start": 146.1,
-          "end": 146.35
+          "start": 144.85,
+          "end": 145.1
         },
         {
           "word_index": 13,
           "text": "phone)",
-          "start": 146.35,
-          "end": 146.6
+          "start": 145.1,
+          "end": 145.35
         }
       ]
     },
     {
       "line_index": 29,
       "text": "Will never let you go this time (ooh)",
-      "start": 146.6,
-      "end": 151.75,
+      "start": 145.35,
+      "end": 150.8,
       "words": [
         {
           "word_index": 1,
           "text": "Will",
-          "start": 146.6,
-          "end": 147.05
+          "start": 145.35,
+          "end": 145.8
         },
         {
           "word_index": 2,
           "text": "never",
-          "start": 147.05,
-          "end": 147.45
+          "start": 145.8,
+          "end": 146.2
         },
         {
           "word_index": 3,
           "text": "let",
-          "start": 147.45,
-          "end": 147.8
+          "start": 146.2,
+          "end": 146.55
         },
         {
           "word_index": 4,
           "text": "you",
-          "start": 147.8,
-          "end": 148.2
+          "start": 146.55,
+          "end": 146.95
         },
         {
           "word_index": 5,
           "text": "go",
-          "start": 148.2,
-          "end": 148.55
+          "start": 146.95,
+          "end": 147.3
         },
         {
           "word_index": 6,
           "text": "this",
-          "start": 148.55,
-          "end": 149.1
+          "start": 147.3,
+          "end": 148.4
         },
         {
           "word_index": 7,
           "text": "time",
-          "start": 149.1,
-          "end": 150.55
+          "start": 148.4,
+          "end": 150.2
         },
         {
           "word_index": 8,
           "text": "(ooh)",
-          "start": 151.15,
-          "end": 151.75
+          "start": 150.2,
+          "end": 150.8
         }
       ]
     },
     {
       "line_index": 30,
       "text": "I said, ooh, I'm blinded by the lights",
-      "start": 151.75,
-      "end": 157.2,
+      "start": 150.8,
+      "end": 156.25,
       "words": [
         {
           "word_index": 1,
           "text": "I",
-          "start": 151.75,
-          "end": 152.1
+          "start": 150.8,
+          "end": 151.15
         },
         {
           "word_index": 2,
           "text": "said,",
-          "start": 152.1,
-          "end": 152.6
+          "start": 151.15,
+          "end": 151.65
         },
         {
           "word_index": 3,
           "text": "ooh,",
-          "start": 152.6,
-          "end": 154.95
+          "start": 151.65,
+          "end": 154.0
         },
         {
           "word_index": 4,
           "text": "I'm",
-          "start": 154.95,
-          "end": 155.3
+          "start": 154.0,
+          "end": 154.35
         },
         {
           "word_index": 5,
           "text": "blinded",
-          "start": 155.3,
-          "end": 155.85
+          "start": 154.35,
+          "end": 154.9
         },
         {
           "word_index": 6,
           "text": "by",
-          "start": 155.85,
-          "end": 156.25
+          "start": 154.9,
+          "end": 155.3
         },
         {
           "word_index": 7,
           "text": "the",
-          "start": 156.25,
-          "end": 156.55
+          "start": 155.3,
+          "end": 155.6
         },
         {
           "word_index": 8,
           "text": "lights",
-          "start": 156.55,
-          "end": 157.2
+          "start": 155.6,
+          "end": 156.25
         }
       ]
     },
