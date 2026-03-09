@@ -114,6 +114,9 @@ def test_extract_song_metrics_with_gold_word_deltas():
     assert metrics["avg_abs_word_start_delta_sec"] == 0.3
     assert metrics["gold_start_p95_abs_sec"] == 0.39
     assert metrics["gold_end_mean_abs_sec"] == 0.15
+    assert metrics["gold_comparable_line_count"] == 1
+    assert metrics["gold_line_duration_mean_abs_sec"] == 0.0
+    assert metrics["gold_line_duration_p95_abs_sec"] == 0.0
     assert metrics["timing_quality_score_mode"] == "anchor_fallback"
     assert (
         metrics["gold_alignment_mode"] == "monotonic_text_window_parenthetical_optional"

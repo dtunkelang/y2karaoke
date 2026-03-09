@@ -485,6 +485,74 @@ def _align_parenthetical_interjection_lines(
     return matches
 
 
+def _extract_lines_for_gold_comparison(doc: dict[str, Any]) -> list[dict[str, Any]]:
+    lines_out: list[dict[str, Any]] = []
+    lines = doc.get("lines", [])
+    if not isinstance(lines, list):
+        return lines_out
+    for line_index, line in enumerate(lines):
+        if not isinstance(line, dict):
+            continue
+        start = line.get("start")
+        end = line.get("end")
+        if not isinstance(start, (int, float)) or not isinstance(end, (int, float)):
+            line_words = line.get("words", [])
+            if isinstance(line_words, list) and line_words:
+                valid_words = [w for w in line_words if isinstance(w, dict)]
+                if not isinstance(start, (int, float)) and valid_words:
+                    word_start = valid_words[0].get("start")
+                    if isinstance(word_start, (int, float)):
+                        start = float(word_start)
+                if not isinstance(end, (int, float)) and valid_words:
+                    word_end = valid_words[-1].get("end")
+                    if isinstance(word_end, (int, float)):
+                        end = float(word_end)
+        if not isinstance(start, (int, float)) or not isinstance(end, (int, float)):
+            continue
+        text = str(line.get("text", ""))
+        if not text.strip():
+            line_words = line.get("words", [])
+            if isinstance(line_words, list):
+                text = " ".join(
+                    str(w.get("text", "")).strip()
+                    for w in line_words
+                    if isinstance(w, dict) and str(w.get("text", "")).strip()
+                )
+        normalized_text = _normalize_agreement_text(text)
+        if not normalized_text:
+            continue
+        lines_out.append(
+            {
+                "line_index": line_index,
+                "text": text,
+                "normalized_text": normalized_text,
+                "start": float(start),
+                "end": float(end),
+                "duration": max(0.0, float(end) - float(start)),
+            }
+        )
+    return lines_out
+
+
+def _align_lines_for_gold_comparison(
+    generated_lines: list[dict[str, Any]],
+    gold_lines: list[dict[str, Any]],
+) -> list[tuple[int, int]]:
+    matches: list[tuple[int, int]] = []
+    gen_idx = 0
+    gold_idx = 0
+    while gen_idx < len(generated_lines) and gold_idx < len(gold_lines):
+        gen_norm = str(generated_lines[gen_idx].get("normalized_text", "")).strip()
+        gold_norm = str(gold_lines[gold_idx].get("normalized_text", "")).strip()
+        if gen_norm and gen_norm == gold_norm:
+            matches.append((gen_idx, gold_idx))
+            gen_idx += 1
+            gold_idx += 1
+            continue
+        gen_idx += 1
+    return matches
+
+
 def _gold_path_for_song(
     index: int, song: BenchmarkSong, gold_root: Path
 ) -> Path | None:
@@ -1097,12 +1165,19 @@ def _extract_song_metrics(
         generated_interjection_lines,
         gold_interjection_lines,
     )
+    generated_lines_for_gold = _extract_lines_for_gold_comparison(report)
+    gold_lines_for_gold = _extract_lines_for_gold_comparison(gold_doc or {})
+    aligned_gold_lines = _align_lines_for_gold_comparison(
+        generated_lines_for_gold,
+        gold_lines_for_gold,
+    )
     gold_words = [w for w in gold_words_all if not bool(w.get("optional"))]
     aligned_pairs = _align_words_for_gold_comparison(generated_words, gold_words)
     comparable = len(aligned_pairs)
     start_abs_deltas: list[float] = []
     end_abs_deltas: list[float] = []
     end_abs_deltas_strict: list[float] = []
+    line_duration_abs_deltas: list[float] = []
     interjection_start_abs_deltas: list[float] = []
     text_matches = 0
 
@@ -1122,6 +1197,13 @@ def _extract_song_metrics(
         gold_line = gold_interjection_lines[gold_idx]
         interjection_start_abs_deltas.append(
             abs(float(gen_line["start"]) - float(gold_line["start"]))
+        )
+
+    for gen_idx, gold_idx in aligned_gold_lines:
+        gen_line = generated_lines_for_gold[gen_idx]
+        gold_line = gold_lines_for_gold[gold_idx]
+        line_duration_abs_deltas.append(
+            abs(float(gen_line["duration"]) - float(gold_line["duration"]))
         )
 
     metrics.update(
@@ -1145,11 +1227,18 @@ def _extract_song_metrics(
             "gold_parenthetical_interjection_comparable_line_count": len(
                 aligned_interjection_lines
             ),
+            "gold_comparable_line_count": len(aligned_gold_lines),
             "gold_parenthetical_interjection_start_mean_abs_sec": round(
                 _mean(interjection_start_abs_deltas) or 0.0, 4
             ),
             "gold_parenthetical_interjection_start_p95_abs_sec": round(
                 _pctile(interjection_start_abs_deltas, 0.95), 4
+            ),
+            "gold_line_duration_mean_abs_sec": round(
+                _mean(line_duration_abs_deltas) or 0.0, 4
+            ),
+            "gold_line_duration_p95_abs_sec": round(
+                _pctile(line_duration_abs_deltas, 0.95), 4
             ),
             "avg_abs_word_start_delta_sec": round(_mean(start_abs_deltas) or 0.0, 4),
             "gold_start_mean_abs_sec": round(_mean(start_abs_deltas) or 0.0, 4),
@@ -2517,6 +2606,9 @@ def _aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:  # noqa: C901
     curated_canary_gold_end_mean_abs_sec_mean = metric_mean_for_rows(
         gold_measured_non_reference_songs, "gold_end_mean_abs_sec"
     )
+    curated_canary_gold_line_duration_mean_abs_sec_mean = metric_mean_for_rows(
+        gold_measured_non_reference_songs, "gold_line_duration_mean_abs_sec"
+    )
     curated_canary_gold_start_p95_abs_sec_mean = metric_mean_for_rows(
         gold_measured_non_reference_songs, "gold_start_p95_abs_sec"
     )
@@ -2834,6 +2926,11 @@ def _aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:  # noqa: C901
             if curated_canary_gold_end_mean_abs_sec_mean is not None
             else None
         ),
+        "curated_canary_gold_line_duration_mean_abs_sec_mean": (
+            round(float(curated_canary_gold_line_duration_mean_abs_sec_mean or 0.0), 4)
+            if curated_canary_gold_line_duration_mean_abs_sec_mean is not None
+            else None
+        ),
         "curated_canary_gold_parenthetical_interjection_start_mean_abs_sec_mean": (
             round(
                 float(
@@ -2929,6 +3026,11 @@ def _aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:  # noqa: C901
         "gold_end_mean_abs_sec_mean": (
             round(float(metric_mean("gold_end_mean_abs_sec") or 0.0), 4)
             if metric_mean("gold_end_mean_abs_sec") is not None
+            else None
+        ),
+        "gold_line_duration_mean_abs_sec_mean": (
+            round(float(metric_mean("gold_line_duration_mean_abs_sec") or 0.0), 4)
+            if metric_mean("gold_line_duration_mean_abs_sec") is not None
             else None
         ),
         "gold_end_p95_abs_sec_mean": (
@@ -3415,6 +3517,10 @@ def _write_markdown_summary(  # noqa: C901
             "- Curated canary p95 abs word-start delta: "
             f"`{_fmt_num(aggregate.get('curated_canary_gold_start_p95_abs_sec_mean'), unit='s')}`"
         )
+        lines.append(
+            "- Curated canary mean abs line-duration delta: "
+            f"`{_fmt_num(aggregate.get('curated_canary_gold_line_duration_mean_abs_sec_mean'), unit='s')}`"
+        )
         interjection_mean = aggregate.get(
             "curated_canary_gold_parenthetical_interjection_start_mean_abs_sec_mean"
         )
@@ -3472,6 +3578,10 @@ def _write_markdown_summary(  # noqa: C901
     lines.append(
         "- Secondary metric (avg abs word-end delta): "
         f"`{_fmt_num(aggregate.get('gold_end_mean_abs_sec_mean'), unit='s')}`"
+    )
+    lines.append(
+        "- Secondary metric (avg abs line-duration delta): "
+        f"`{_fmt_num(aggregate.get('gold_line_duration_mean_abs_sec_mean'), unit='s')}`"
     )
     lines.append(
         f"- Mean DTW word coverage: `{_fmt_num(aggregate.get('dtw_word_coverage_mean'))}`"

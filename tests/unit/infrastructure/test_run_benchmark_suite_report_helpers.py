@@ -362,10 +362,12 @@ def test_persist_final_report_outputs_markdown_can_include_interjection_canary_m
             "curated_canary_gold_word_count_total": 120,
             "curated_canary_avg_abs_word_start_delta_sec_word_weighted_mean": 0.7,
             "curated_canary_gold_start_p95_abs_sec_mean": 1.6,
+            "curated_canary_gold_line_duration_mean_abs_sec_mean": 0.52,
             "curated_canary_gold_parenthetical_interjection_start_mean_abs_sec_mean": 0.78,
             "curated_canary_gold_parenthetical_interjection_start_p95_abs_sec_mean": 0.819,
             "curated_canary_reference_watchlist": [],
             "gold_word_coverage_ratio_total": 0.83,
+            "gold_line_duration_mean_abs_sec_mean": 0.61,
             "reference_divergence_suspected_count": 0,
             "reference_divergence_suspected_ratio": 0.0,
         },
@@ -383,6 +385,8 @@ def test_persist_final_report_outputs_markdown_can_include_interjection_canary_m
     markdown = md_path.read_text(encoding="utf-8")
     assert "Curated canary parenthetical-interjection start delta" in markdown
     assert "`0.780s` mean, `0.819s` p95" in markdown
+    assert "Curated canary mean abs line-duration delta" in markdown
+    assert "Secondary metric (avg abs line-duration delta)" in markdown
 
 
 def test_write_markdown_summary_includes_lyrics_source_routing_summary(tmp_path):
