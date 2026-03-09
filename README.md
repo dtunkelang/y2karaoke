@@ -282,6 +282,7 @@ Benchmark seed set for timing quality work:
     - `./venv/bin/python tools/main_benchmark_guardrails.py --skip-benchmark --guardrails-json benchmarks/curated_canary_guardrails.json --report-json benchmarks/results/<run_id>/benchmark_report.json`
     - Makefile shortcut: `make curated-canary-guardrails`
   - Run the curated canary slice end-to-end:
+    - optional source-cache warmup for disagreement-triggered routing: `make curated-canary-prewarm-sources`
     - `make curated-canary-eval RUN_ID=<candidate_run_id>`
     - optional baseline comparison: `make curated-canary-eval RUN_ID=<candidate_run_id> BASELINE=benchmarks/results/<baseline_run_id>`
     - optional extra benchmark args: `make curated-canary-eval RUN_ID=<candidate_run_id> EXTRA_ARGS='--strategy hybrid_whisper'`
