@@ -77,6 +77,16 @@ METRICS_CURATED_CANARY: list[dict[str, str]] = [
         "direction": "lower",
     },
     {
+        "key": "curated_canary_gold_later_onset_choice_line_count_total",
+        "label": "curated_canary_later_onset_choice_line_count",
+        "direction": "lower",
+    },
+    {
+        "key": "curated_canary_gold_later_onset_choice_mean_improvement_sec_mean",
+        "label": "curated_canary_later_onset_choice_mean_improvement_sec",
+        "direction": "lower",
+    },
+    {
         "key": "curated_canary_gold_parenthetical_interjection_start_mean_abs_sec_mean",
         "label": "curated_canary_parenthetical_interjection_start_abs_sec",
         "direction": "lower",
@@ -418,6 +428,12 @@ def _curated_canary_cli_summary(report: dict[str, Any]) -> list[str]:
     nearest_onset_start = curated.get(
         "curated_canary_gold_nearest_onset_start_mean_abs_sec_mean", {}
     )
+    later_onset_choice_count = curated.get(
+        "curated_canary_gold_later_onset_choice_line_count_total", {}
+    )
+    later_onset_choice_mean = curated.get(
+        "curated_canary_gold_later_onset_choice_mean_improvement_sec_mean", {}
+    )
     interjection_start = curated.get(
         "curated_canary_gold_parenthetical_interjection_start_mean_abs_sec_mean", {}
     )
@@ -454,6 +470,18 @@ def _curated_canary_cli_summary(report: dict[str, Any]) -> list[str]:
         "    gold_nearest_onset_start_abs_sec={base} -> {corr}".format(
             base=_fmt_num(nearest_onset_start.get("baseline")),
             corr=_fmt_num(nearest_onset_start.get("corrected")),
+        )
+    )
+    lines.append(
+        "    later_onset_choice_line_count={base} -> {corr}".format(
+            base=_fmt_num(later_onset_choice_count.get("baseline")),
+            corr=_fmt_num(later_onset_choice_count.get("corrected")),
+        )
+    )
+    lines.append(
+        "    later_onset_choice_mean_improvement_sec={base} -> {corr}".format(
+            base=_fmt_num(later_onset_choice_mean.get("baseline")),
+            corr=_fmt_num(later_onset_choice_mean.get("corrected")),
         )
     )
     lines.append(
