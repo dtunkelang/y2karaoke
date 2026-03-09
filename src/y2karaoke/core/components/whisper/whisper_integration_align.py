@@ -400,6 +400,73 @@ def _extend_unsupported_long_lines_before_weak_opening(
     return updated, applied
 
 
+def _local_lexical_overlap_ratio(
+    line: models.Line,
+    whisper_words: List[timing_models.TranscriptionWord],
+    *,
+    pad_before: float = 0.8,
+    pad_after: float = 0.8,
+) -> float:
+    line_tokens = set(_normalized_tokens(line))
+    if not line_tokens:
+        return 0.0
+    nearby_tokens = {
+        re.sub(r"[^a-z]+", "", word.text.lower())
+        for word in whisper_words
+        if line.start_time - pad_before <= word.start <= line.end_time + pad_after
+        and word.text != "[VOCAL]"
+    }
+    nearby_tokens.discard("")
+    if not nearby_tokens:
+        return 0.0
+    overlap = len(line_tokens & nearby_tokens)
+    return overlap / max(len(line_tokens), len(nearby_tokens))
+
+
+def _choose_pre_i_said_extension_end(
+    line: models.Line,
+    next_line: models.Line,
+    whisper_words: List[timing_models.TranscriptionWord],
+) -> Optional[float]:
+    if not line.words or not next_line.words or len(line.words) < 6:
+        return None
+    if _normalized_prefix_tokens(next_line)[:2] != ["i", "said"]:
+        return None
+    if _normalized_prefix_tokens(line)[:2] == ["i", "said"]:
+        return None
+    gap_after = next_line.start_time - line.end_time
+    if gap_after < 1.0 or gap_after > 2.2:
+        return None
+    if (
+        _count_non_vocal_words_near_time(whisper_words, line.start_time, window_sec=0.5)
+        <= 2
+    ):
+        return None
+    if _local_lexical_overlap_ratio(line, whisper_words) > 0.2:
+        return None
+    target_end = next_line.start_time - 0.2
+    if target_end <= line.end_time + 0.5:
+        return None
+    return target_end
+
+
+def _extend_misaligned_lines_before_i_said(
+    mapped_lines: List[models.Line],
+    whisper_words: List[timing_models.TranscriptionWord],
+) -> tuple[List[models.Line], int]:
+    updated = list(mapped_lines)
+    applied = 0
+    for idx in range(len(updated) - 1):
+        line = updated[idx]
+        next_line = updated[idx + 1]
+        target_end = _choose_pre_i_said_extension_end(line, next_line, whisper_words)
+        if target_end is None:
+            continue
+        updated[idx] = _rescale_line_to_new_end(line, target_end)
+        applied += 1
+    return updated, applied
+
+
 def _reanchor_unsupported_i_said_lines_to_later_onset(
     mapped_lines: List[models.Line],
     whisper_words: List[timing_models.TranscriptionWord],
@@ -785,6 +852,15 @@ def align_lrc_text_to_whisper_timings_impl(  # noqa: C901
             corrections.append(
                 "Reanchored "
                 f"{interjection_reanchors} unsupported interjection line(s) to audio onsets"
+            )
+        mapped_lines, pre_i_said_extensions = _extend_misaligned_lines_before_i_said(
+            mapped_lines,
+            all_words,
+        )
+        if pre_i_said_extensions:
+            corrections.append(
+                "Extended "
+                f"{pre_i_said_extensions} lexically mismatched line(s) before unsupported 'I said' lines"
             )
         mapped_lines, pre_weak_opening_extensions = (
             _extend_unsupported_long_lines_before_weak_opening(
