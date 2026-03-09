@@ -1,4 +1,5 @@
 import numpy as np
+import pytest
 
 from y2karaoke.core.components.whisper import whisper_integration_stages as stages
 from y2karaoke.core.models import Line, Word
@@ -148,3 +149,44 @@ def test_run_mapped_line_postpasses_no_audio_calls_snap_with_max_shift():
     assert corrections == []
     assert call_log.count("pull_late") == 2
     assert snap_kwargs == [{}, {"max_shift": 2.5}]
+
+
+def test_shift_weak_opening_lines_past_phrase_carryover_moves_line_when_gap_is_tight():
+    lines = [
+        Line(
+            words=[
+                Word(text="lights", start_time=150.59, end_time=156.41),
+            ]
+        ),
+        Line(
+            words=[
+                Word(text="No,", start_time=156.57, end_time=156.9),
+                Word(text="I", start_time=156.9, end_time=157.2),
+                Word(text="can't", start_time=157.2, end_time=157.5),
+                Word(text="sleep", start_time=157.5, end_time=157.8),
+                Word(text="until", start_time=157.8, end_time=158.2),
+                Word(text="I", start_time=158.2, end_time=158.5),
+                Word(text="feel", start_time=158.5, end_time=158.8),
+                Word(text="your", start_time=158.8, end_time=159.1),
+                Word(text="touch", start_time=159.1, end_time=159.56),
+            ]
+        ),
+        Line(words=[Word(text="next", start_time=160.79, end_time=161.2)]),
+    ]
+    audio_features = AudioFeatures(
+        onset_times=np.array([156.69, 157.11, 157.29, 157.43], dtype=float),
+        silence_regions=[],
+        vocal_start=0.0,
+        vocal_end=200.0,
+        duration=200.0,
+        energy_envelope=np.array([], dtype=float),
+        energy_times=np.array([], dtype=float),
+    )
+
+    adjusted, count = stages._shift_weak_opening_lines_past_phrase_carryover(
+        lines, audio_features
+    )
+
+    assert count == 1
+    assert adjusted[1].start_time == 157.11
+    assert adjusted[1].end_time == pytest.approx(160.10, abs=1e-2)

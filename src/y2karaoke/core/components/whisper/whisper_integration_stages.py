@@ -2,10 +2,83 @@
 
 from __future__ import annotations
 
+import re
 from typing import Any, Callable, List, Optional, Set, Tuple
 
 from ... import models
 from ..alignment import timing_models
+
+
+def _shift_weak_opening_lines_past_phrase_carryover(
+    lines_in: List[models.Line],
+    audio_features: Optional[timing_models.AudioFeatures],
+    *,
+    min_gap: float = 0.05,
+    carryover_buffer: float = 0.7,
+) -> tuple[List[models.Line], int]:
+    if audio_features is None or audio_features.onset_times is None:
+        return lines_in, 0
+    onset_times = audio_features.onset_times
+    if len(onset_times) == 0:
+        return lines_in, 0
+    weak_opening_tokens = {"no", "maybe", "oh", "cause"}
+    shifted = list(lines_in)
+    applied = 0
+    for idx in range(1, len(shifted)):
+        prev_line = shifted[idx - 1]
+        line = shifted[idx]
+        if not prev_line.words or not line.words or len(line.words) < 6:
+            continue
+        gap_before = line.start_time - prev_line.end_time
+        if gap_before > 0.2:
+            continue
+        tokens = [
+            re.sub(r"[^a-z]+", "", word.text.lower())
+            for word in line.words
+            if re.sub(r"[^a-z]+", "", word.text.lower())
+        ]
+        if not tokens or tokens[0] not in weak_opening_tokens:
+            continue
+        next_start = (
+            shifted[idx + 1].start_time
+            if idx + 1 < len(shifted) and shifted[idx + 1].words
+            else None
+        )
+        max_allowed = (
+            max(0.0, next_start - min_gap - line.end_time)
+            if next_start is not None
+            else 1.5
+        )
+        if max_allowed < 0.35:
+            continue
+        candidate_onsets = onset_times[
+            (
+                onset_times
+                >= max(
+                    line.start_time + 0.25,
+                    prev_line.end_time + carryover_buffer,
+                )
+            )
+            & (onset_times <= line.start_time + min(1.4, max_allowed + 0.1))
+        ]
+        if len(candidate_onsets) == 0:
+            continue
+        target_start = float(candidate_onsets[0])
+        shift = target_start - line.start_time
+        if shift < 0.25 or shift > max_allowed + 1e-6:
+            continue
+        shifted_words = [
+            models.Word(
+                text=w.text,
+                start_time=w.start_time + shift,
+                end_time=w.end_time + shift,
+                singer=w.singer,
+            )
+            for w in line.words
+        ]
+        shifted[idx] = models.Line(words=shifted_words, singer=line.singer)
+        applied += 1
+    return shifted, applied
 
 
 def _enforce_mapped_line_stage_invariants(
@@ -181,5 +254,19 @@ def _run_mapped_line_postpasses(
             enforce_monotonic_line_starts_whisper_fn=enforce_monotonic_line_starts_whisper_fn,
             resolve_line_overlaps_fn=resolve_line_overlaps_fn,
         )
+        mapped_lines, carryover_fixes = _shift_weak_opening_lines_past_phrase_carryover(
+            mapped_lines,
+            audio_features,
+        )
+        if carryover_fixes:
+            corrections.append(
+                f"Shifted {carryover_fixes} weak-opening line(s) past prior-phrase carryover"
+            )
+            mapped_lines = _enforce_mapped_line_stage_invariants(
+                mapped_lines,
+                all_words,
+                enforce_monotonic_line_starts_whisper_fn=enforce_monotonic_line_starts_whisper_fn,
+                resolve_line_overlaps_fn=resolve_line_overlaps_fn,
+            )
 
     return mapped_lines, corrections
