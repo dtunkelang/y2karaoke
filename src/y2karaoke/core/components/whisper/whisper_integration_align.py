@@ -311,8 +311,17 @@ def _choose_interjection_window_from_onsets(
         return None
     target_start = float(candidate_onsets[0])
     target_end = float(candidate_onsets[-1])
-    if target_end - target_start < 1.0:
-        return None
+    onset_span = target_end - target_start
+    if onset_span < 1.0:
+        shift = target_start - line.start_time
+        if (
+            onset_span < 0.6
+            or shift > 0.9
+            or gap_after < 8.0
+            or len(candidate_onsets) != 2
+        ):
+            return None
+        target_end = min(next_line.start_time - 0.2, target_start + 1.5)
     return target_start, target_end
 
 
