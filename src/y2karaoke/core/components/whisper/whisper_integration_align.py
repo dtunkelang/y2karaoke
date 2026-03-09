@@ -17,6 +17,9 @@ from .whisper_integration_forced_fallback import (
 from .whisper_integration_shift_guard import (
     should_apply_baseline_constraint as _should_apply_baseline_constraint,
 )
+from .whisper_integration_stages import (
+    _shift_weak_opening_lines_past_phrase_carryover,
+)
 from .whisper_integration_weak_evidence import (
     restore_weak_evidence_large_start_shifts as _restore_weak_evidence_large_start_shifts,
     restore_unsupported_early_duplicate_shifts as _restore_unsupported_early_duplicate_shifts,
@@ -386,6 +389,16 @@ def align_lrc_text_to_whisper_timings_impl(  # noqa: C901
         corrections.append(
             f"Restored {restored_inversions} inversion outlier line(s) from baseline timing"
         )
+    if audio_features is not None:
+        mapped_lines, carryover_fixes = _shift_weak_opening_lines_past_phrase_carryover(
+            mapped_lines,
+            audio_features,
+        )
+        if carryover_fixes:
+            corrections.append(
+                "Shifted "
+                f"{carryover_fixes} weak-opening line(s) past prior-phrase carryover"
+            )
 
     metrics: Dict[str, Any] = {
         "matched_ratio": matched_ratio,
