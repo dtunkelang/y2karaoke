@@ -5,6 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 import time
 from typing import Any, Callable, Dict, List, Optional, Tuple
+import re
 
 from ....utils.lex_lookup_installer import ensure_local_lex_lookup
 from ... import models, phonetic_utils
@@ -69,6 +70,105 @@ def _line_set_end(lines: List[models.Line]) -> float:
         if line.words:
             end_time = max(end_time, line.end_time)
     return end_time
+
+
+def _count_non_vocal_words_near_time(
+    words: List[timing_models.TranscriptionWord],
+    center_time: float,
+    *,
+    window_sec: float = 1.0,
+) -> int:
+    lo = center_time - window_sec
+    hi = center_time + window_sec
+    count = 0
+    for word in words:
+        if word.text == "[VOCAL]":
+            continue
+        if lo <= word.start <= hi:
+            count += 1
+    return count
+
+
+def _normalized_prefix_tokens(line: models.Line, *, limit: int = 3) -> list[str]:
+    return [
+        re.sub(r"[^a-z]+", "", w.text.lower())
+        for w in line.words[:limit]
+        if re.sub(r"[^a-z]+", "", w.text.lower())
+    ]
+
+
+def _rescale_line_to_new_start(line: models.Line, target_start: float) -> models.Line:
+    old_duration = line.end_time - line.start_time
+    new_duration = line.end_time - target_start
+    span = old_duration if old_duration > 0 else 1.0
+    reanchored_words: list[models.Word] = []
+    for word in line.words:
+        rel_start = (word.start_time - line.start_time) / span
+        rel_end = (word.end_time - line.start_time) / span
+        reanchored_words.append(
+            models.Word(
+                text=word.text,
+                start_time=target_start + rel_start * new_duration,
+                end_time=target_start + rel_end * new_duration,
+                singer=word.singer,
+            )
+        )
+    return models.Line(words=reanchored_words, singer=line.singer)
+
+
+def _choose_i_said_reanchor_start(
+    line: models.Line,
+    next_line: models.Line,
+    whisper_words: List[timing_models.TranscriptionWord],
+    onset_times: Any,
+) -> Optional[float]:
+    if not line.words or not next_line.words or len(line.words) < 6:
+        return None
+    if _normalized_prefix_tokens(line)[:2] != ["i", "said"]:
+        return None
+    if _count_non_vocal_words_near_time(whisper_words, line.start_time, window_sec=0.9):
+        return None
+    gap_after = next_line.start_time - line.end_time
+    if gap_after < 0.4 or gap_after > 1.2:
+        return None
+    candidate_onsets = onset_times[
+        (onset_times >= line.start_time + 0.35)
+        & (onset_times <= min(line.start_time + 1.2, line.end_time - 3.5))
+    ]
+    if len(candidate_onsets) == 0:
+        return None
+    target_start = float(candidate_onsets[0])
+    old_duration = line.end_time - line.start_time
+    new_duration = line.end_time - target_start
+    if new_duration < 3.5 or new_duration < old_duration * 0.72:
+        return None
+    return target_start
+
+
+def _reanchor_unsupported_i_said_lines_to_later_onset(
+    mapped_lines: List[models.Line],
+    whisper_words: List[timing_models.TranscriptionWord],
+    audio_features: Optional[timing_models.AudioFeatures],
+) -> tuple[List[models.Line], int]:
+    if audio_features is None or audio_features.onset_times is None:
+        return mapped_lines, 0
+    onset_times = audio_features.onset_times
+    if len(onset_times) == 0:
+        return mapped_lines, 0
+
+    updated = list(mapped_lines)
+    applied = 0
+    for idx in range(len(updated) - 1):
+        line = updated[idx]
+        next_line = updated[idx + 1]
+        target_start = _choose_i_said_reanchor_start(
+            line, next_line, whisper_words, onset_times
+        )
+        if target_start is None:
+            continue
+        updated[idx] = _rescale_line_to_new_start(line, target_start)
+        applied += 1
+    return updated, applied
 
 
 def align_lrc_text_to_whisper_timings_impl(  # noqa: C901
@@ -398,6 +498,18 @@ def align_lrc_text_to_whisper_timings_impl(  # noqa: C901
             corrections.append(
                 "Shifted "
                 f"{carryover_fixes} weak-opening line(s) past prior-phrase carryover"
+            )
+        mapped_lines, said_reanchors = (
+            _reanchor_unsupported_i_said_lines_to_later_onset(
+                mapped_lines,
+                all_words,
+                audio_features,
+            )
+        )
+        if said_reanchors:
+            corrections.append(
+                "Reanchored "
+                f"{said_reanchors} unsupported 'I said' line(s) to later audio onsets"
             )
 
     metrics: Dict[str, Any] = {
