@@ -3575,7 +3575,10 @@ def _write_markdown_summary(  # noqa: C901
                 "- Lyrics providers seen: "
                 + ", ".join(f"`{k}` x{v}" for k, v in sorted(provider_counts.items()))
             )
-        if isinstance(source_selection_mode_counts, dict) and source_selection_mode_counts:
+        if (
+            isinstance(source_selection_mode_counts, dict)
+            and source_selection_mode_counts
+        ):
             lines.append(
                 "- Lyrics source selection modes: "
                 + ", ".join(
