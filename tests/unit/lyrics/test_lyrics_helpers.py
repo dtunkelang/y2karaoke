@@ -143,7 +143,7 @@ def test_distribute_word_timing_extends_phrase_break_dense_line():
 
     lh._distribute_word_timing_in_line(line, line_start=32.62, next_line_start=38.24)
 
-    assert line.end_time == pytest.approx(36.09, abs=0.03)
+    assert line.end_time == pytest.approx(36.42, abs=0.03)
 
 
 def test_distribute_word_timing_extends_long_line_with_trailing_parenthetical_interjection():

@@ -186,7 +186,7 @@ def _duration_cap_multiplier_for_line(
         and gap_to_next >= max(4.2, estimated_duration * 1.8)
         and not leading_filler_phrase
     ):
-        return 1.55
+        return 1.7
     if punctuation_pauses == 0:
         return 1.3
     if not has_interjection:
