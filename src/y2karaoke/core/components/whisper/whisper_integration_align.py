@@ -349,6 +349,48 @@ def _reanchor_unsupported_interjection_lines_to_onsets(
     return updated, applied
 
 
+def _choose_long_line_pre_weak_opening_extension_end(
+    line: models.Line,
+    next_line: models.Line,
+    whisper_words: List[timing_models.TranscriptionWord],
+) -> Optional[float]:
+    if not line.words or not next_line.words or len(line.words) < 7:
+        return None
+    next_tokens = _normalized_tokens(next_line)
+    if not next_tokens or next_tokens[0] not in {"oh", "maybe", "no", "cause"}:
+        return None
+    if _count_non_vocal_words_near_time(whisper_words, line.start_time, window_sec=1.0):
+        return None
+    gap_after = next_line.start_time - line.end_time
+    if gap_after < 0.8 or gap_after > 1.6:
+        return None
+    target_end = next_line.start_time - 0.1
+    if target_end <= line.end_time + 0.5:
+        return None
+    return target_end
+
+
+def _extend_unsupported_long_lines_before_weak_opening(
+    mapped_lines: List[models.Line],
+    whisper_words: List[timing_models.TranscriptionWord],
+) -> tuple[List[models.Line], int]:
+    updated = list(mapped_lines)
+    applied = 0
+    for idx in range(len(updated) - 1):
+        line = updated[idx]
+        next_line = updated[idx + 1]
+        target_end = _choose_long_line_pre_weak_opening_extension_end(
+            line,
+            next_line,
+            whisper_words,
+        )
+        if target_end is None:
+            continue
+        updated[idx] = _rescale_line_to_new_end(line, target_end)
+        applied += 1
+    return updated, applied
+
+
 def _reanchor_unsupported_i_said_lines_to_later_onset(
     mapped_lines: List[models.Line],
     whisper_words: List[timing_models.TranscriptionWord],
@@ -734,6 +776,17 @@ def align_lrc_text_to_whisper_timings_impl(  # noqa: C901
             corrections.append(
                 "Reanchored "
                 f"{interjection_reanchors} unsupported interjection line(s) to audio onsets"
+            )
+        mapped_lines, pre_weak_opening_extensions = (
+            _extend_unsupported_long_lines_before_weak_opening(
+                mapped_lines,
+                all_words,
+            )
+        )
+        if pre_weak_opening_extensions:
+            corrections.append(
+                "Extended "
+                f"{pre_weak_opening_extensions} unsupported line(s) before weak openings"
             )
         mapped_lines, weak_opening_extensions = _extend_unsupported_weak_opening_lines(
             mapped_lines,
