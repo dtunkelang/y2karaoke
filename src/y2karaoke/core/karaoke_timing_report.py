@@ -31,6 +31,24 @@ def _build_base_report(
         "title": title,
         "artist": artist,
         "lyrics_source": quality.get("source", ""),
+        "lyrics_source_audio_scoring_used": quality.get(
+            "lyrics_source_audio_scoring_used", False
+        ),
+        "lyrics_source_disagreement_flagged": quality.get(
+            "lyrics_source_disagreement_flagged", False
+        ),
+        "lyrics_source_disagreement_reasons": quality.get(
+            "lyrics_source_disagreement_reasons", []
+        ),
+        "lyrics_source_candidate_count": quality.get(
+            "lyrics_source_candidate_count", 0
+        ),
+        "lyrics_source_comparable_candidate_count": quality.get(
+            "lyrics_source_comparable_candidate_count", 0
+        ),
+        "lyrics_source_selection_mode": quality.get(
+            "lyrics_source_selection_mode", "default"
+        ),
         "alignment_method": quality.get("alignment_method", ""),
         "whisper_requested": quality.get("whisper_requested", False),
         "whisper_force_dtw": quality.get("whisper_force_dtw", False),
