@@ -137,7 +137,7 @@ def _choose_i_said_reanchor_start(
     if _count_non_vocal_words_near_time(whisper_words, line.start_time, window_sec=0.9):
         return None
     gap_after = next_line.start_time - line.end_time
-    if gap_after < 0.4 or gap_after > 1.8:
+    if gap_after < 0.0 or gap_after > 1.8:
         return None
     candidate_onsets = onset_times[
         (onset_times >= line.start_time + 0.35)
