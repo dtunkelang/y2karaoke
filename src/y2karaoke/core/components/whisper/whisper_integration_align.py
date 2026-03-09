@@ -158,6 +158,25 @@ def _extend_last_word_end(line: models.Line, target_end: float) -> models.Line:
     return models.Line(words=words, singer=line.singer)
 
 
+def _rescale_line_to_new_end(line: models.Line, target_end: float) -> models.Line:
+    old_duration = line.end_time - line.start_time
+    new_duration = target_end - line.start_time
+    span = old_duration if old_duration > 0 else 1.0
+    rescaled_words: list[models.Word] = []
+    for word in line.words:
+        rel_start = (word.start_time - line.start_time) / span
+        rel_end = (word.end_time - line.start_time) / span
+        rescaled_words.append(
+            models.Word(
+                text=word.text,
+                start_time=line.start_time + rel_start * new_duration,
+                end_time=line.start_time + rel_end * new_duration,
+                singer=word.singer,
+            )
+        )
+    return models.Line(words=rescaled_words, singer=line.singer)
+
+
 def _choose_parenthetical_tail_extension_end(
     line: models.Line,
     next_line: models.Line,
@@ -195,6 +214,44 @@ def _extend_unsupported_parenthetical_tails(
         if target_end is None:
             continue
         updated[idx] = _extend_last_word_end(line, target_end)
+        applied += 1
+    return updated, applied
+
+
+def _choose_weak_opening_extension_end(
+    line: models.Line,
+    next_line: models.Line,
+    whisper_words: List[timing_models.TranscriptionWord],
+) -> Optional[float]:
+    if not line.words or not next_line.words or len(line.words) < 7:
+        return None
+    tokens = _normalized_prefix_tokens(line)
+    if not tokens or tokens[0] not in {"oh", "maybe", "no", "cause"}:
+        return None
+    if _count_non_vocal_words_near_time(whisper_words, line.start_time, window_sec=1.0):
+        return None
+    gap_after = next_line.start_time - line.end_time
+    if gap_after < 0.8 or gap_after > 1.8:
+        return None
+    target_end = next_line.start_time - 0.3
+    if target_end <= line.end_time + 0.5:
+        return None
+    return target_end
+
+
+def _extend_unsupported_weak_opening_lines(
+    mapped_lines: List[models.Line],
+    whisper_words: List[timing_models.TranscriptionWord],
+) -> tuple[List[models.Line], int]:
+    updated = list(mapped_lines)
+    applied = 0
+    for idx in range(len(updated) - 1):
+        line = updated[idx]
+        next_line = updated[idx + 1]
+        target_end = _choose_weak_opening_extension_end(line, next_line, whisper_words)
+        if target_end is None:
+            continue
+        updated[idx] = _rescale_line_to_new_end(line, target_end)
         applied += 1
     return updated, applied
 
@@ -572,6 +629,15 @@ def align_lrc_text_to_whisper_timings_impl(  # noqa: C901
         if tail_extensions:
             corrections.append(
                 "Extended " f"{tail_extensions} unsupported parenthetical tail(s)"
+            )
+        mapped_lines, weak_opening_extensions = _extend_unsupported_weak_opening_lines(
+            mapped_lines,
+            all_words,
+        )
+        if weak_opening_extensions:
+            corrections.append(
+                "Extended "
+                f"{weak_opening_extensions} unsupported weak-opening line(s)"
             )
 
     metrics: Dict[str, Any] = {
