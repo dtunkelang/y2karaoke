@@ -57,3 +57,30 @@ def test_extract_alignment_diagnostics_includes_tail_guardrail_fields():
     assert diag["tail_guardrail_target_coverage_ratio"] == 0.81
     assert diag["tail_guardrail_target_shortfall_sec"] == 28.1
     assert "tail_completeness_guardrail" in diag["issue_tags"]
+
+
+def test_extract_alignment_diagnostics_includes_source_routing_fields():
+    module = _load_module()
+    report = {
+        "alignment_method": "lrc_only",
+        "lyrics_source": "lyriq (LRCLib)",
+        "issues": [
+            "Lyrics source disagreement triggered routing: duration spread 15.0s"
+        ],
+        "lyrics_source_audio_scoring_used": True,
+        "lyrics_source_disagreement_flagged": True,
+        "lyrics_source_disagreement_reasons": ["duration spread 15.0s"],
+        "lyrics_source_candidate_count": 3,
+        "lyrics_source_comparable_candidate_count": 3,
+        "lyrics_source_selection_mode": "audio_scored_disagreement",
+    }
+
+    diag = module._extract_alignment_diagnostics(report)
+
+    assert diag["lyrics_source_audio_scoring_used"] is True
+    assert diag["lyrics_source_disagreement_flagged"] is True
+    assert diag["lyrics_source_disagreement_reasons"] == ["duration spread 15.0s"]
+    assert diag["lyrics_source_candidate_count"] == 3
+    assert diag["lyrics_source_comparable_candidate_count"] == 3
+    assert diag["lyrics_source_selection_mode"] == "audio_scored_disagreement"
+    assert "lyrics_source_disagreement" in diag["issue_tags"]

@@ -1176,6 +1176,8 @@ def _extract_song_metrics(
 
 def _issue_tag(message: str) -> str:
     msg = message.lower()
+    if "lyrics source disagreement triggered routing" in msg:
+        return "lyrics_source_disagreement"
     if "tail completeness guardrail" in msg:
         return "tail_completeness_guardrail"
     if "low whisper confidence" in msg:
@@ -1253,6 +1255,24 @@ def _extract_alignment_diagnostics(report: dict[str, Any]) -> dict[str, Any]:
         "alignment_method": alignment_method,
         "lyrics_source": lyrics_source,
         "lyrics_source_provider": lyrics_source_provider,
+        "lyrics_source_audio_scoring_used": bool(
+            report.get("lyrics_source_audio_scoring_used", False)
+        ),
+        "lyrics_source_disagreement_flagged": bool(
+            report.get("lyrics_source_disagreement_flagged", False)
+        ),
+        "lyrics_source_disagreement_reasons": list(
+            report.get("lyrics_source_disagreement_reasons", []) or []
+        ),
+        "lyrics_source_candidate_count": int(
+            report.get("lyrics_source_candidate_count", 0) or 0
+        ),
+        "lyrics_source_comparable_candidate_count": int(
+            report.get("lyrics_source_comparable_candidate_count", 0) or 0
+        ),
+        "lyrics_source_selection_mode": str(
+            report.get("lyrics_source_selection_mode") or "default"
+        ),
         "whisper_requested": bool(report.get("whisper_requested", False)),
         "whisper_used": bool(report.get("whisper_used", False)),
         "whisper_force_dtw": bool(report.get("whisper_force_dtw", False)),

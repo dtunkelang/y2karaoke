@@ -355,6 +355,7 @@ def _fetch_lrc_text_and_timings(
     evaluate_sources: bool = False,
     filter_promos: bool = True,
     offline: bool = False,
+    routing_diagnostics: Optional[dict] = None,
 ) -> Tuple[Optional[str], Optional[List[Tuple[float, str]]], str]:
     """Fetch raw LRC text and parsed timings from available sources.
 
@@ -369,6 +370,16 @@ def _fetch_lrc_text_and_timings(
         Tuple of (lrc_text, parsed_timings, source_name)
     """
     try:
+        if routing_diagnostics is not None:
+            routing_diagnostics.setdefault("lyrics_source_audio_scoring_used", False)
+            routing_diagnostics.setdefault("lyrics_source_disagreement_flagged", False)
+            routing_diagnostics.setdefault("lyrics_source_disagreement_reasons", [])
+            routing_diagnostics.setdefault("lyrics_source_candidate_count", 0)
+            routing_diagnostics.setdefault(
+                "lyrics_source_comparable_candidate_count", 0
+            )
+            routing_diagnostics.setdefault("lyrics_source_selection_mode", "default")
+
         if target_duration and vocals_path and not evaluate_sources and not offline:
             from ..alignment.timing_evaluator import select_best_source
             from ..alignment.timing_evaluator_comparison import (
@@ -378,6 +389,19 @@ def _fetch_lrc_text_and_timings(
 
             sources = fetch_from_all_sources(title, artist)
             disagreement = analyze_source_disagreement(title, artist, sources)
+            if routing_diagnostics is not None:
+                routing_diagnostics["lyrics_source_candidate_count"] = int(
+                    disagreement.get("source_count", 0) or 0
+                )
+                routing_diagnostics["lyrics_source_comparable_candidate_count"] = int(
+                    disagreement.get("comparable_source_count", 0) or 0
+                )
+                routing_diagnostics["lyrics_source_disagreement_flagged"] = bool(
+                    disagreement.get("flagged", False)
+                )
+                routing_diagnostics["lyrics_source_disagreement_reasons"] = list(
+                    disagreement.get("reasons", []) or []
+                )
             if disagreement["flagged"]:
                 reason_text = ", ".join(disagreement["reasons"])
                 logger.info(
@@ -395,6 +419,11 @@ def _fetch_lrc_text_and_timings(
                     sources=sources,
                 )
                 if lrc_text and source:
+                    if routing_diagnostics is not None:
+                        routing_diagnostics["lyrics_source_audio_scoring_used"] = True
+                        routing_diagnostics["lyrics_source_selection_mode"] = (
+                            "audio_scored_disagreement"
+                        )
                     lines = parse_lrc_with_timing(
                         lrc_text, title, artist, filter_promos=filter_promos
                     )
@@ -410,6 +439,11 @@ def _fetch_lrc_text_and_timings(
         if evaluate_sources and vocals_path and not offline:
             from ..alignment.timing_evaluator import select_best_source
 
+            if routing_diagnostics is not None:
+                routing_diagnostics["lyrics_source_audio_scoring_used"] = True
+                routing_diagnostics["lyrics_source_selection_mode"] = (
+                    "audio_scored_explicit"
+                )
             lrc_text, source, report = select_best_source(
                 title, artist, vocals_path, target_duration
             )

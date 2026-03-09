@@ -382,6 +382,14 @@ def _resolve_lrc_inputs(
 
     from .lyrics_whisper import _fetch_lrc_text_and_timings_for_state
 
+    routing_diagnostics = {
+        "lyrics_source_audio_scoring_used": False,
+        "lyrics_source_disagreement_flagged": False,
+        "lyrics_source_disagreement_reasons": [],
+        "lyrics_source_candidate_count": 0,
+        "lyrics_source_comparable_candidate_count": 0,
+        "lyrics_source_selection_mode": "default",
+    }
     lrc_text, line_timings, source = _fetch_lrc_text_and_timings_for_state(
         title=title,
         artist=artist,
@@ -390,7 +398,15 @@ def _resolve_lrc_inputs(
         evaluate_sources=evaluate_sources,
         filter_promos=filter_promos,
         offline=offline,
+        routing_diagnostics=routing_diagnostics,
     )
+    quality_report.update(routing_diagnostics)
+    if routing_diagnostics["lyrics_source_disagreement_flagged"]:
+        reasons = routing_diagnostics["lyrics_source_disagreement_reasons"]
+        reason_text = ", ".join(str(item) for item in reasons) if reasons else "unknown"
+        issues_list.append(
+            "Lyrics source disagreement triggered routing: " f"{reason_text}"
+        )
     if file_lrc_text and file_line_timings:
         lrc_text = file_lrc_text
         line_timings = file_line_timings
@@ -497,6 +513,12 @@ def get_lyrics_with_quality(  # noqa: C901
         "overall_score": 0.0,
         "issues": [],
         "source": "",
+        "lyrics_source_audio_scoring_used": False,
+        "lyrics_source_disagreement_flagged": False,
+        "lyrics_source_disagreement_reasons": [],
+        "lyrics_source_candidate_count": 0,
+        "lyrics_source_comparable_candidate_count": 0,
+        "lyrics_source_selection_mode": "default",
     }
     issues_list: List[str] = quality_report["issues"]  # type: ignore[assignment]
 
