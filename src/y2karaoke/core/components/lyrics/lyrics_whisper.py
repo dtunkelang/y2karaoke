@@ -394,14 +394,18 @@ def _fetch_lrc_text_and_timings(
                 "explicit_audio_scoring"
             )
 
-        if target_duration and vocals_path and not evaluate_sources and not offline:
+        if target_duration and vocals_path and not evaluate_sources:
             from ..alignment.timing_evaluator import select_best_source
             from ..alignment.timing_evaluator_comparison import (
                 analyze_source_disagreement,
             )
             from .sync import fetch_from_all_sources
 
-            sources = fetch_from_all_sources(title, artist)
+            sources = fetch_from_all_sources(title, artist, offline=offline)
+            if routing_diagnostics is not None and offline and not sources:
+                routing_diagnostics["lyrics_source_routing_skip_reason"] = (
+                    "offline_no_cached_sources"
+                )
             disagreement = analyze_source_disagreement(title, artist, sources)
             if routing_diagnostics is not None:
                 routing_diagnostics["lyrics_source_candidate_count"] = int(
@@ -416,6 +420,15 @@ def _fetch_lrc_text_and_timings(
                 routing_diagnostics["lyrics_source_disagreement_reasons"] = list(
                     disagreement.get("reasons", []) or []
                 )
+                if (
+                    not disagreement.get("flagged", False)
+                    and sources
+                    and routing_diagnostics["lyrics_source_routing_skip_reason"]
+                    == "offline"
+                ):
+                    routing_diagnostics["lyrics_source_routing_skip_reason"] = (
+                        "no_material_disagreement"
+                    )
             if disagreement["flagged"]:
                 reason_text = ", ".join(disagreement["reasons"])
                 logger.info(

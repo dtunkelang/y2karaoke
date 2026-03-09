@@ -4,6 +4,7 @@ import logging
 import json
 import os
 import time
+import unicodedata
 from dataclasses import dataclass, field
 from contextlib import contextmanager
 from pathlib import Path
@@ -14,7 +15,10 @@ from ....utils.logging import get_logger
 from . import sync_quality
 from . import sync_search
 from . import sync_providers
-from .sync_pipeline import fetch_lyrics_multi_source_impl
+from .sync_pipeline import (
+    _normalize_for_provider_search,
+    fetch_lyrics_multi_source_impl,
+)
 
 logger = get_logger(__name__)
 
@@ -69,8 +73,16 @@ class SyncState:
         field(default_factory=dict)
     )
     lyriq_cache: Dict[Tuple[str, str], Optional[str]] = field(default_factory=dict)
+    all_sources_cache: Dict[
+        Tuple[str, str], Dict[str, Tuple[Optional[str], Optional[int]]]
+    ] = field(default_factory=dict)
     disk_cache: Dict[str, Any] = field(
-        default_factory=lambda: {"search_cache": {}, "lrc_cache": {}, "lyriq_cache": {}}
+        default_factory=lambda: {
+            "search_cache": {},
+            "lrc_cache": {},
+            "lyriq_cache": {},
+            "all_sources_cache": {},
+        }
     )
     disk_cache_loaded: bool = False
     disk_cache_enabled: bool = True
@@ -245,13 +257,14 @@ _disk_cache = _DEFAULT_SYNC_STATE.disk_cache
 _disk_cache_loaded = _DEFAULT_SYNC_STATE.disk_cache_loaded
 _lrc_cache = _DEFAULT_SYNC_STATE.lrc_cache
 _lyriq_cache = _DEFAULT_SYNC_STATE.lyriq_cache
+_all_sources_cache = _DEFAULT_SYNC_STATE.all_sources_cache
 
 
 def _bind_default_state(state: SyncState) -> None:
     """Bind module-level back-compat aliases to a new default state."""
     global _DEFAULT_SYNC_STATE
     global _failed_providers, _search_cache, _disk_cache, _disk_cache_loaded
-    global _lrc_cache, _lyriq_cache
+    global _lrc_cache, _lyriq_cache, _all_sources_cache
 
     _DEFAULT_SYNC_STATE = state
     _failed_providers = state.failed_providers
@@ -260,6 +273,7 @@ def _bind_default_state(state: SyncState) -> None:
     _disk_cache_loaded = state.disk_cache_loaded
     _lrc_cache = state.lrc_cache
     _lyriq_cache = state.lyriq_cache
+    _all_sources_cache = state.all_sources_cache
 
 
 @contextmanager
@@ -392,7 +406,12 @@ def _disk_cache_enabled(state: Optional[SyncState] = None) -> bool:
 
 
 def _empty_disk_cache() -> Dict[str, Any]:
-    return {"search_cache": {}, "lrc_cache": {}, "lyriq_cache": {}}
+    return {
+        "search_cache": {},
+        "lrc_cache": {},
+        "lyriq_cache": {},
+        "all_sources_cache": {},
+    }
 
 
 def _load_disk_cache(state: Optional[SyncState] = None) -> None:
@@ -439,6 +458,113 @@ def _set_lrc_cache(
         disk_key = f"{cache_key[0]}|{cache_key[1]}"
         runtime_state.disk_cache.setdefault("lrc_cache", {})[disk_key] = list(value)
         _save_disk_cache(runtime_state)
+
+
+def _all_sources_cache_keys(
+    title: str, artist: str
+) -> list[tuple[tuple[str, str], str]]:
+    def _fold(value: str) -> str:
+        normalized = unicodedata.normalize("NFKD", value or "")
+        return "".join(ch for ch in normalized if not unicodedata.combining(ch))
+
+    raw_artist = artist.lower().strip()
+    raw_title = title.lower().strip()
+    raw_folded_artist = _fold(artist).lower().strip()
+    raw_folded_title = _fold(title).lower().strip()
+    normalized_artist = _normalize_for_provider_search(artist).lower().strip()
+    normalized_title = _normalize_for_provider_search(title).lower().strip()
+    normalized_folded_artist = (
+        _fold(_normalize_for_provider_search(artist)).lower().strip()
+    )
+    normalized_folded_title = (
+        _fold(_normalize_for_provider_search(title)).lower().strip()
+    )
+    keys: list[tuple[tuple[str, str], str]] = []
+    for pair in [
+        (raw_artist, raw_title),
+        (raw_folded_artist, raw_folded_title),
+        (normalized_artist or raw_artist, normalized_title or raw_title),
+        (
+            normalized_folded_artist or raw_folded_artist,
+            normalized_folded_title or raw_folded_title,
+        ),
+    ]:
+        disk_key = f"{pair[0]}|{pair[1]}"
+        if pair not in [existing[0] for existing in keys]:
+            keys.append((pair, disk_key))
+    normalized_pair = keys[-1][0]
+    primary_artist = (
+        normalized_pair[0]
+        .split(",", 1)[0]
+        .split(" feat", 1)[0]
+        .split(" featuring", 1)[0]
+        .split(" & ", 1)[0]
+        .strip()
+    )
+    for pair in [
+        normalized_pair,
+        (primary_artist or normalized_pair[0], normalized_pair[1]),
+    ]:
+        disk_key = f"{pair[0]}|{pair[1]}"
+        if pair != keys[-1][0] and pair not in [existing[0] for existing in keys]:
+            keys.append((pair, disk_key))
+    return keys
+
+
+def _serialize_all_sources_result(
+    value: Dict[str, Tuple[Optional[str], Optional[int]]],
+) -> Dict[str, list[Any]]:
+    return {
+        str(source): [payload[0], payload[1]]
+        for source, payload in value.items()
+        if isinstance(source, str) and isinstance(payload, tuple) and len(payload) == 2
+    }
+
+
+def _deserialize_all_sources_result(
+    raw: Any,
+) -> Dict[str, Tuple[Optional[str], Optional[int]]]:
+    if not isinstance(raw, dict):
+        return {}
+    result: Dict[str, Tuple[Optional[str], Optional[int]]] = {}
+    for source, payload in raw.items():
+        if not isinstance(source, str):
+            continue
+        if not isinstance(payload, (list, tuple)) or len(payload) != 2:
+            continue
+        text = payload[0] if isinstance(payload[0], (str, type(None))) else None
+        duration = (
+            payload[1] if isinstance(payload[1], (int, float, type(None))) else None
+        )
+        result[source] = (
+            text,
+            int(duration) if isinstance(duration, (int, float)) else None,
+        )
+    return result
+
+
+def _fold_cache_component(value: str) -> str:
+    normalized = unicodedata.normalize("NFKD", value or "")
+    return (
+        "".join(ch for ch in normalized if not unicodedata.combining(ch))
+        .lower()
+        .strip()
+    )
+
+
+def _artist_aliases(value: str) -> set[str]:
+    folded = _fold_cache_component(value)
+    primary = (
+        folded.split(",", 1)[0]
+        .split(" feat", 1)[0]
+        .split(" featuring", 1)[0]
+        .split(" & ", 1)[0]
+        .strip()
+    )
+    aliases = {folded}
+    if primary:
+        aliases.add(primary)
+    return aliases
 
 
 def _fetch_from_lyriq(
@@ -532,11 +658,63 @@ def fetch_lyrics_for_duration(
 def fetch_from_all_sources(
     title: str,
     artist: str,
+    offline: bool = False,
 ) -> Dict[str, Tuple[Optional[str], Optional[int]]]:
     """Fetch lyrics from all available sources for comparison."""
     runtime_state = _state_or_default(None)
     lyriq_get = runtime_state.lyriq_get_lyrics_fn or lyriq_get_lyrics
-    return sync_providers.fetch_from_all_sources(
+    cache_keys = _all_sources_cache_keys(title, artist)
+    if _disk_cache_enabled(runtime_state):
+        _load_disk_cache(runtime_state)
+    for cache_key, disk_key in cache_keys:
+        if cache_key in runtime_state.all_sources_cache:
+            cached = runtime_state.all_sources_cache[cache_key]
+            if offline or cached:
+                return cached
+    folded_artist_aliases = {
+        alias
+        for cache_key, _disk_key in cache_keys
+        for alias in _artist_aliases(cache_key[0])
+    }
+    for existing_key, cached in runtime_state.all_sources_cache.items():
+        folded_title = _fold_cache_component(existing_key[1])
+        if (
+            folded_title == _fold_cache_component(cache_keys[0][0][1])
+            and _artist_aliases(existing_key[0]).intersection(folded_artist_aliases)
+            and (offline or cached)
+        ):
+            return cached
+    if _disk_cache_enabled(runtime_state):
+        for cache_key, disk_key in cache_keys:
+            disk_cached = _deserialize_all_sources_result(
+                runtime_state.disk_cache.get("all_sources_cache", {}).get(disk_key, {})
+            )
+            if disk_cached:
+                runtime_state.all_sources_cache[cache_key] = disk_cached
+                if offline:
+                    return disk_cached
+        for raw_key, payload in runtime_state.disk_cache.get(
+            "all_sources_cache", {}
+        ).items():
+            if not isinstance(raw_key, str):
+                continue
+            parts = raw_key.split("|", 1)
+            if len(parts) != 2:
+                continue
+            folded_title = _fold_cache_component(parts[1])
+            if folded_title != _fold_cache_component(
+                cache_keys[0][0][1]
+            ) or not _artist_aliases(parts[0]).intersection(folded_artist_aliases):
+                continue
+            disk_cached = _deserialize_all_sources_result(payload)
+            if not disk_cached:
+                continue
+            runtime_state.all_sources_cache[(parts[0], parts[1])] = disk_cached
+            if offline:
+                return disk_cached
+    if offline:
+        return {}
+    results = sync_providers.fetch_from_all_sources(
         title,
         artist,
         state=runtime_state,
@@ -550,3 +728,12 @@ def fetch_from_all_sources(
         suppress_stderr=_suppress_stderr,
         logger=logger,
     )
+    for cache_key, disk_key in cache_keys:
+        runtime_state.all_sources_cache[cache_key] = results
+        if _disk_cache_enabled(runtime_state):
+            runtime_state.disk_cache.setdefault("all_sources_cache", {})[disk_key] = (
+                _serialize_all_sources_result(results)
+            )
+    if _disk_cache_enabled(runtime_state):
+        _save_disk_cache(runtime_state)
+    return results

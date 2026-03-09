@@ -246,6 +246,29 @@ def test_infer_reference_divergence_with_gold_weak_dtw_stays_false():
     assert result["suspected"] is False
 
 
+def test_infer_reference_divergence_with_gold_strong_dtw_tolerates_low_conf_edge():
+    module = _load_module()
+    result = module._infer_reference_divergence_suspicion(
+        {
+            "gold_available": True,
+            "line_count": 54,
+            "gold_comparable_word_count": 254,
+            "gold_word_coverage_ratio": 1.0,
+            "gold_start_mean_abs_sec": 19.48,
+            "gold_start_p95_abs_sec": 34.96,
+            "dtw_line_coverage": 1.0,
+            "dtw_word_coverage": 0.976,
+            "agreement_coverage_ratio": 0.074,
+            "agreement_text_similarity_mean": 0.703,
+            "agreement_bad_ratio": 0.0185,
+            "low_confidence_ratio": 0.1111,
+        }
+    )
+    assert result["suspected"] is True
+    assert "strong_dtw_internal_consistency" in result["evidence"]
+    assert "high_gold_mismatch_with_strong_dtw" in result["evidence"]
+
+
 def test_markdown_summary_includes_triage_rankings(tmp_path):
     module = _load_module()
     out_path = tmp_path / "summary.md"

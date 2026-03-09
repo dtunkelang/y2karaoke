@@ -190,3 +190,39 @@ def test_fetch_from_all_sources_collects_results(monkeypatch, isolated_sync_stat
     assert any(
         provider in results for provider in sync.PROVIDER_ORDER if provider != "Genius"
     )
+
+
+def test_fetch_from_all_sources_uses_cached_results_offline(isolated_sync_state):
+    cache_key = ("artist", "title")
+    cached = {"lyriq (LRCLib)": (LRC_TEXT, 120)}
+    isolated_sync_state.all_sources_cache[cache_key] = cached
+
+    results = sync.fetch_from_all_sources("Title", "Artist", offline=True)
+
+    assert results == cached
+
+
+def test_fetch_from_all_sources_uses_normalized_cached_results_offline(
+    isolated_sync_state,
+):
+    cache_key = ("indila", "dernière danse")
+    cached = {"lyriq (LRCLib)": (LRC_TEXT, 201)}
+    isolated_sync_state.all_sources_cache[cache_key] = cached
+
+    results = sync.fetch_from_all_sources("Derniere danse", "Indila", offline=True)
+
+    assert results == cached
+
+
+def test_fetch_from_all_sources_uses_primary_artist_cached_results_offline(
+    isolated_sync_state,
+):
+    cache_key = ("j balvin", "mi gente")
+    cached = {"lyriq (LRCLib)": (LRC_TEXT, 177)}
+    isolated_sync_state.all_sources_cache[cache_key] = cached
+
+    results = sync.fetch_from_all_sources(
+        "Mi Gente", "J Balvin, Willy William", offline=True
+    )
+
+    assert results == cached

@@ -177,6 +177,49 @@ def test_fetch_lrc_text_and_timings_skips_auto_escalation_without_disagreement(
     assert source == "provider"
 
 
+def test_fetch_lrc_text_and_timings_uses_cached_sources_offline_when_disagreement(
+    monkeypatch,
+):
+    class Report:
+        overall_score = 88.5
+
+    monkeypatch.setattr(
+        "y2karaoke.core.components.lyrics.sync.fetch_from_all_sources",
+        lambda *_args, **_kwargs: {
+            "a": ("[00:01.00]hi", 120),
+            "b": ("[00:02.00]hi", 130),
+        },
+    )
+    monkeypatch.setattr(
+        "y2karaoke.core.components.alignment.timing_evaluator_comparison.analyze_source_disagreement",
+        lambda *_args, **_kwargs: {
+            "flagged": True,
+            "reasons": ["duration spread 10.0s"],
+        },
+    )
+    monkeypatch.setattr(
+        "y2karaoke.core.components.alignment.timing_evaluator.select_best_source",
+        lambda *a, **k: ("[00:01.00]hi", "best", Report()),
+    )
+    monkeypatch.setattr(lh, "parse_lrc_with_timing", lambda *a, **k: [(1.0, "hi")])
+    routing = {}
+
+    lrc_text, timings, source = lw._fetch_lrc_text_and_timings(
+        "Title",
+        "Artist",
+        target_duration=120,
+        vocals_path="vocals.wav",
+        offline=True,
+        routing_diagnostics=routing,
+    )
+
+    assert lrc_text == "[00:01.00]hi"
+    assert timings == [(1.0, "hi")]
+    assert source == "best"
+    assert routing["lyrics_source_selection_mode"] == "audio_scored_disagreement"
+    assert routing["lyrics_source_routing_skip_reason"] == "none"
+
+
 def test_fetch_lrc_text_and_timings_marks_offline_skip_reason():
     routing = {}
 
@@ -192,7 +235,7 @@ def test_fetch_lrc_text_and_timings_marks_offline_skip_reason():
     assert lrc_text is None
     assert timings is None
     assert source == ""
-    assert routing["lyrics_source_routing_skip_reason"] == "offline"
+    assert routing["lyrics_source_routing_skip_reason"] == "offline_no_cached_sources"
 
 
 def test_fetch_lrc_text_and_timings_filters_promos(monkeypatch):

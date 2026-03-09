@@ -1603,7 +1603,7 @@ def _infer_reference_divergence_suspicion(metrics: dict[str, Any]) -> dict[str, 
         )
 
     strong_dtw_internal = (
-        dtw_line_cov >= 0.9 and dtw_word_cov >= 0.4 and low_conf <= 0.1
+        dtw_line_cov >= 0.9 and dtw_word_cov >= 0.4 and low_conf <= 0.12
     )
     strong_agreement_subset = agree_cov >= 0.5 and agree_sim >= 0.9 and low_conf <= 0.08
     if strong_dtw_internal:
@@ -1621,7 +1621,7 @@ def _infer_reference_divergence_suspicion(metrics: dict[str, Any]) -> dict[str, 
     high_gold_mismatch_with_strong_dtw = (
         dtw_line_cov >= 0.88
         and dtw_word_cov >= 0.55
-        and low_conf <= 0.1
+        and low_conf <= 0.12
         and agree_cov <= 0.12
         and gold_start_mean >= 10.0
         and gold_start_p95 >= 18.0
