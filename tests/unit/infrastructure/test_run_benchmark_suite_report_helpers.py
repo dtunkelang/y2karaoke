@@ -365,6 +365,8 @@ def test_persist_final_report_outputs_markdown_can_include_interjection_canary_m
             "curated_canary_gold_line_duration_mean_abs_sec_mean": 0.52,
             "curated_canary_gold_nearest_onset_start_mean_abs_sec_mean": 0.19,
             "curated_canary_gold_nearest_onset_start_non_interjection_mean_abs_sec_mean": 0.24,
+            "curated_canary_gold_later_onset_choice_line_count_total": 3,
+            "curated_canary_gold_later_onset_choice_mean_improvement_sec_mean": 0.81,
             "curated_canary_gold_parenthetical_interjection_start_mean_abs_sec_mean": 0.78,
             "curated_canary_gold_parenthetical_interjection_start_p95_abs_sec_mean": 0.819,
             "curated_canary_reference_watchlist": [],
@@ -388,9 +390,11 @@ def test_persist_final_report_outputs_markdown_can_include_interjection_canary_m
     markdown = md_path.read_text(encoding="utf-8")
     assert "Curated canary parenthetical-interjection start delta" in markdown
     assert "Curated canary nearest-onset start delta" in markdown
+    assert "Curated canary later-onset choice opportunities" in markdown
     assert "`0.780s` mean, `0.819s` p95" in markdown
     assert "Curated canary mean abs line-duration delta" in markdown
     assert "`0.190s` overall, `0.240s` non-interjection" in markdown
+    assert "`3` lines, `0.810s` mean potential improvement" in markdown
     assert "Secondary metric (avg abs line-duration delta)" in markdown
     assert "Secondary metric (mean abs nearest-onset start delta)" in markdown
 

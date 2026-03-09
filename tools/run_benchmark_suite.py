@@ -1195,6 +1195,7 @@ def _extract_song_metrics(
     interjection_start_abs_deltas: list[float] = []
     gold_nearest_onset_start_abs_deltas: list[float] = []
     gold_nearest_onset_start_abs_deltas_non_interjection: list[float] = []
+    gold_later_onset_choice_improvements: list[float] = []
     text_matches = 0
 
     for gen_idx, gold_idx, sim in aligned_pairs:
@@ -1221,6 +1222,13 @@ def _extract_song_metrics(
         line_duration_abs_deltas.append(
             abs(float(gen_line["duration"]) - float(gold_line["duration"]))
         )
+
+    gold_later_onset_choice_improvements = _gold_later_onset_choice_rows(
+        generated_lines=generated_lines_for_gold,
+        gold_lines=gold_lines_for_gold,
+        aligned_line_pairs=aligned_gold_lines,
+        audio_path=audio_path,
+    )
 
     for delta, is_interjection in _gold_line_nearest_onset_start_deltas(
         gold_doc=gold_doc,
@@ -1266,6 +1274,13 @@ def _extract_song_metrics(
             ),
             "gold_nearest_onset_start_non_interjection_mean_abs_sec": round(
                 _mean(gold_nearest_onset_start_abs_deltas_non_interjection) or 0.0, 4
+            ),
+            "gold_later_onset_choice_line_count": len(
+                gold_later_onset_choice_improvements
+            ),
+            "gold_later_onset_choice_mean_improvement_sec": round(
+                _mean(gold_later_onset_choice_improvements) or 0.0,
+                4,
             ),
             "gold_line_duration_mean_abs_sec": round(
                 _mean(line_duration_abs_deltas) or 0.0, 4
@@ -1408,6 +1423,50 @@ def _gold_line_nearest_onset_start_deltas(
         if delta is None:
             continue
         rows.append((delta, _line_is_parenthetical_interjection(line)))
+    return rows
+
+
+def _gold_later_onset_choice_rows(
+    *,
+    generated_lines: list[dict[str, Any]],
+    gold_lines: list[dict[str, Any]],
+    aligned_line_pairs: list[tuple[int, int]],
+    audio_path: str | None,
+) -> list[float]:
+    features = _load_audio_features_cached(audio_path)
+    if features is None or getattr(features, "onset_times", None) is None:
+        return []
+    onset_times = features.onset_times
+    rows: list[float] = []
+    for gen_idx, gold_idx in aligned_line_pairs:
+        gen_line = generated_lines[gen_idx]
+        gold_line = gold_lines[gold_idx]
+        if _line_is_parenthetical_interjection(gold_line):
+            continue
+        gen_start = gen_line.get("start")
+        gold_start = gold_line.get("start")
+        if not isinstance(gen_start, (int, float)) or not isinstance(
+            gold_start, (int, float)
+        ):
+            continue
+        current_error = abs(float(gen_start) - float(gold_start))
+        if current_error < 0.35:
+            continue
+        candidate_onsets = onset_times[
+            (onset_times >= (float(gen_start) + 0.2))
+            & (onset_times <= (float(gen_start) + 1.6))
+        ]
+        if len(candidate_onsets) == 0:
+            continue
+        candidate_errors = [
+            abs(float(onset) - float(gold_start)) for onset in candidate_onsets
+        ]
+        best_error = min(candidate_errors, default=None)
+        if best_error is None:
+            continue
+        improvement = current_error - best_error
+        if improvement >= 0.25:
+            rows.append(improvement)
     return rows
 
 
@@ -2782,6 +2841,18 @@ def _aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:  # noqa: C901
             "gold_nearest_onset_start_non_interjection_mean_abs_sec",
         )
     )
+    curated_canary_gold_later_onset_choice_line_count_total = int(
+        sum(
+            int(r.get("metrics", {}).get("gold_later_onset_choice_line_count", 0) or 0)
+            for r in gold_measured_non_reference_songs
+        )
+    )
+    curated_canary_gold_later_onset_choice_mean_improvement_sec_mean = (
+        metric_mean_for_rows(
+            gold_measured_non_reference_songs,
+            "gold_later_onset_choice_mean_improvement_sec",
+        )
+    )
     triage_rankings = _build_triage_rankings(succeeded, top_n=5)
     diagnosis_counts: dict[str, int] = {}
     for row in succeeded:
@@ -3130,6 +3201,21 @@ def _aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:  # noqa: C901
                 4,
             )
             if curated_canary_gold_nearest_onset_start_non_interjection_mean_abs_sec_mean
+            is not None
+            else None
+        ),
+        "curated_canary_gold_later_onset_choice_line_count_total": (
+            curated_canary_gold_later_onset_choice_line_count_total
+        ),
+        "curated_canary_gold_later_onset_choice_mean_improvement_sec_mean": (
+            round(
+                float(
+                    curated_canary_gold_later_onset_choice_mean_improvement_sec_mean
+                    or 0.0
+                ),
+                4,
+            )
+            if curated_canary_gold_later_onset_choice_mean_improvement_sec_mean
             is not None
             else None
         ),
@@ -3718,6 +3804,18 @@ def _write_markdown_summary(  # noqa: C901
                 "- Curated canary nearest-onset start delta: "
                 f"`{_fmt_num(nearest_onset_mean, unit='s')}` overall, "
                 f"`{_fmt_num(nearest_onset_non_interjection_mean, unit='s')}` non-interjection"
+            )
+        later_onset_choice_count = aggregate.get(
+            "curated_canary_gold_later_onset_choice_line_count_total"
+        )
+        later_onset_choice_mean = aggregate.get(
+            "curated_canary_gold_later_onset_choice_mean_improvement_sec_mean"
+        )
+        if later_onset_choice_count:
+            lines.append(
+                "- Curated canary later-onset choice opportunities: "
+                f"`{later_onset_choice_count}` lines, "
+                f"`{_fmt_num(later_onset_choice_mean, unit='s')}` mean potential improvement"
             )
         interjection_mean = aggregate.get(
             "curated_canary_gold_parenthetical_interjection_start_mean_abs_sec_mean"

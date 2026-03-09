@@ -183,6 +183,59 @@ def test_extract_song_metrics_reports_gold_nearest_onset_start_deltas(tmp_path):
     assert metrics["gold_nearest_onset_start_non_interjection_mean_abs_sec"] == 0.55
 
 
+def test_extract_song_metrics_reports_later_onset_choice_opportunities(tmp_path):
+    module = _load_module()
+
+    class _Features:
+        def __init__(self):
+            self.onset_times = np.array([10.2, 10.95, 11.8], dtype=float)
+
+    module.extract_audio_features = lambda _path: _Features()
+    module._AUDIO_FEATURES_CACHE.clear()
+
+    report = {
+        "lines": [
+            {
+                "text": "No I can't sleep",
+                "start": 10.0,
+                "end": 11.0,
+                "words": [
+                    {"text": "No", "start": 10.0, "end": 10.2},
+                    {"text": "I", "start": 10.2, "end": 10.5},
+                    {"text": "can't", "start": 10.5, "end": 10.8},
+                    {"text": "sleep", "start": 10.8, "end": 11.0},
+                ],
+            }
+        ]
+    }
+    gold = {
+        "lines": [
+            {
+                "text": "No I can't sleep",
+                "start": 10.9,
+                "end": 11.8,
+                "words": [
+                    {"text": "No", "start": 10.9, "end": 11.1},
+                    {"text": "I", "start": 11.1, "end": 11.3},
+                    {"text": "can't", "start": 11.3, "end": 11.5},
+                    {"text": "sleep", "start": 11.5, "end": 11.8},
+                ],
+            }
+        ]
+    }
+    audio_path = tmp_path / "fake.wav"
+    audio_path.write_bytes(b"")
+
+    metrics = module._extract_song_metrics(
+        report,
+        gold_doc=gold,
+        audio_path=str(audio_path),
+    )
+
+    assert metrics["gold_later_onset_choice_line_count"] == 1
+    assert metrics["gold_later_onset_choice_mean_improvement_sec"] == 0.85
+
+
 def test_resolve_song_audio_path_falls_back_to_slug_cache_match(tmp_path):
     module = _load_module()
     module.REPO_ROOT = tmp_path
