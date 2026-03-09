@@ -435,14 +435,16 @@ def _choose_pre_i_said_extension_end(
     if _normalized_prefix_tokens(line)[:2] == ["i", "said"]:
         return None
     gap_after = next_line.start_time - line.end_time
+    local_density = _count_non_vocal_words_near_time(
+        whisper_words, line.start_time, window_sec=0.5
+    )
+    overlap_ratio = _local_lexical_overlap_ratio(line, whisper_words)
     if gap_after < 1.0 or gap_after > 2.2:
         return None
-    if (
-        _count_non_vocal_words_near_time(whisper_words, line.start_time, window_sec=0.5)
-        <= 2
-    ):
+    if local_density == 0:
         return None
-    if _local_lexical_overlap_ratio(line, whisper_words) > 0.2:
+    max_overlap_ratio = 0.25 if local_density <= 2 else 0.2
+    if overlap_ratio > max_overlap_ratio:
         return None
     target_end = next_line.start_time - 0.2
     if target_end <= line.end_time + 0.5:
