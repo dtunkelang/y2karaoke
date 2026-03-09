@@ -97,6 +97,14 @@ def _normalized_prefix_tokens(line: models.Line, *, limit: int = 3) -> list[str]
     ]
 
 
+def _normalized_tokens(line: models.Line) -> list[str]:
+    return [
+        re.sub(r"[^a-z]+", "", w.text.lower())
+        for w in line.words
+        if re.sub(r"[^a-z]+", "", w.text.lower())
+    ]
+
+
 def _rescale_line_to_new_start(line: models.Line, target_start: float) -> models.Line:
     old_duration = line.end_time - line.start_time
     new_duration = line.end_time - target_start
@@ -156,6 +164,29 @@ def _extend_last_word_end(line: models.Line, target_end: float) -> models.Line:
         for idx, w in enumerate(line.words)
     ]
     return models.Line(words=words, singer=line.singer)
+
+
+def _retime_line_to_window(
+    line: models.Line,
+    *,
+    window_start: float,
+    window_end: float,
+) -> models.Line:
+    total_duration = max(window_end - window_start, 0.2)
+    spacing = total_duration / len(line.words)
+    new_words = []
+    for word_idx, w in enumerate(line.words):
+        start = window_start + word_idx * spacing
+        end = start + spacing * 0.9
+        new_words.append(
+            models.Word(
+                text=w.text,
+                start_time=start,
+                end_time=end,
+                singer=w.singer,
+            )
+        )
+    return models.Line(words=new_words, singer=line.singer)
 
 
 def _rescale_line_to_new_end(line: models.Line, target_end: float) -> models.Line:
@@ -252,6 +283,68 @@ def _extend_unsupported_weak_opening_lines(
         if target_end is None:
             continue
         updated[idx] = _rescale_line_to_new_end(line, target_end)
+        applied += 1
+    return updated, applied
+
+
+def _choose_interjection_window_from_onsets(
+    line: models.Line,
+    next_line: models.Line,
+    whisper_words: List[timing_models.TranscriptionWord],
+    onset_times: Any,
+) -> Optional[tuple[float, float]]:
+    tokens = _normalized_tokens(line)
+    if not line.words or len(line.words) > 3 or not tokens:
+        return None
+    if set(tokens) - {"hey", "oh", "ooh", "ah", "yeah"}:
+        return None
+    if _count_non_vocal_words_near_time(whisper_words, line.start_time, window_sec=1.0):
+        return None
+    gap_after = next_line.start_time - line.end_time
+    if gap_after < 4.0:
+        return None
+    candidate_onsets = onset_times[
+        (onset_times >= line.start_time + 0.5)
+        & (onset_times <= min(next_line.start_time - 0.2, line.start_time + 2.5))
+    ]
+    if len(candidate_onsets) < 2:
+        return None
+    target_start = float(candidate_onsets[0])
+    target_end = float(candidate_onsets[-1])
+    if target_end - target_start < 1.0:
+        return None
+    return target_start, target_end
+
+
+def _reanchor_unsupported_interjection_lines_to_onsets(
+    mapped_lines: List[models.Line],
+    whisper_words: List[timing_models.TranscriptionWord],
+    audio_features: Optional[timing_models.AudioFeatures],
+) -> tuple[List[models.Line], int]:
+    if audio_features is None or audio_features.onset_times is None:
+        return mapped_lines, 0
+    onset_times = audio_features.onset_times
+    if len(onset_times) == 0:
+        return mapped_lines, 0
+
+    updated = list(mapped_lines)
+    applied = 0
+    for idx in range(len(updated) - 1):
+        line = updated[idx]
+        next_line = updated[idx + 1]
+        window = _choose_interjection_window_from_onsets(
+            line,
+            next_line,
+            whisper_words,
+            onset_times,
+        )
+        if window is None:
+            continue
+        updated[idx] = _retime_line_to_window(
+            line,
+            window_start=window[0],
+            window_end=window[1],
+        )
         applied += 1
     return updated, applied
 
@@ -629,6 +722,18 @@ def align_lrc_text_to_whisper_timings_impl(  # noqa: C901
         if tail_extensions:
             corrections.append(
                 "Extended " f"{tail_extensions} unsupported parenthetical tail(s)"
+            )
+        mapped_lines, interjection_reanchors = (
+            _reanchor_unsupported_interjection_lines_to_onsets(
+                mapped_lines,
+                all_words,
+                audio_features,
+            )
+        )
+        if interjection_reanchors:
+            corrections.append(
+                "Reanchored "
+                f"{interjection_reanchors} unsupported interjection line(s) to audio onsets"
             )
         mapped_lines, weak_opening_extensions = _extend_unsupported_weak_opening_lines(
             mapped_lines,
