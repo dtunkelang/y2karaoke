@@ -67,6 +67,11 @@ METRICS_CURATED_CANARY: list[dict[str, str]] = [
         "direction": "lower",
     },
     {
+        "key": "curated_canary_gold_line_duration_mean_abs_sec_mean",
+        "label": "curated_canary_gold_line_duration_abs_sec",
+        "direction": "lower",
+    },
+    {
         "key": "curated_canary_gold_parenthetical_interjection_start_mean_abs_sec_mean",
         "label": "curated_canary_parenthetical_interjection_start_abs_sec",
         "direction": "lower",
@@ -402,6 +407,9 @@ def _curated_canary_cli_summary(report: dict[str, Any]) -> list[str]:
         "curated_canary_avg_abs_word_start_delta_sec_word_weighted_mean", {}
     )
     start_p95 = curated.get("curated_canary_gold_start_p95_abs_sec_mean", {})
+    duration_mean = curated.get(
+        "curated_canary_gold_line_duration_mean_abs_sec_mean", {}
+    )
     interjection_start = curated.get(
         "curated_canary_gold_parenthetical_interjection_start_mean_abs_sec_mean", {}
     )
@@ -426,6 +434,12 @@ def _curated_canary_cli_summary(report: dict[str, Any]) -> list[str]:
         "    gold_start_p95_abs_sec={base} -> {corr}".format(
             base=_fmt_num(start_p95.get("baseline")),
             corr=_fmt_num(start_p95.get("corrected")),
+        )
+    )
+    lines.append(
+        "    gold_line_duration_abs_sec={base} -> {corr}".format(
+            base=_fmt_num(duration_mean.get("baseline")),
+            corr=_fmt_num(duration_mean.get("corrected")),
         )
     )
     lines.append(
