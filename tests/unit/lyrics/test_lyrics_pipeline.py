@@ -107,6 +107,76 @@ def test_fetch_lrc_text_and_timings_eval_sources_needs_vocals(monkeypatch):
     assert source == "provider"
 
 
+def test_fetch_lrc_text_and_timings_auto_escalates_on_source_disagreement(
+    monkeypatch,
+):
+    class Report:
+        overall_score = 88.5
+
+    monkeypatch.setattr(
+        "y2karaoke.core.components.lyrics.sync.fetch_from_all_sources",
+        lambda *_args, **_kwargs: {
+            "a": ("[00:01.00]hi", 120),
+            "b": ("[00:02.00]hi", 130),
+        },
+    )
+    monkeypatch.setattr(
+        "y2karaoke.core.components.alignment.timing_evaluator_comparison.analyze_source_disagreement",
+        lambda *_args, **_kwargs: {
+            "flagged": True,
+            "reasons": ["duration spread 10.0s"],
+        },
+    )
+    monkeypatch.setattr(
+        "y2karaoke.core.components.alignment.timing_evaluator.select_best_source",
+        lambda *a, **k: ("[00:01.00]hi", "best", Report()),
+    )
+    monkeypatch.setattr(lh, "parse_lrc_with_timing", lambda *a, **k: [(1.0, "hi")])
+
+    lrc_text, timings, source = lw._fetch_lrc_text_and_timings(
+        "Title",
+        "Artist",
+        target_duration=120,
+        vocals_path="vocals.wav",
+    )
+
+    assert lrc_text == "[00:01.00]hi"
+    assert timings == [(1.0, "hi")]
+    assert source == "best"
+
+
+def test_fetch_lrc_text_and_timings_skips_auto_escalation_without_disagreement(
+    monkeypatch,
+):
+    monkeypatch.setattr(
+        "y2karaoke.core.components.lyrics.sync.fetch_from_all_sources",
+        lambda *_args, **_kwargs: {
+            "a": ("[00:01.00]hi", 120),
+            "b": ("[00:01.10]hi", 121),
+        },
+    )
+    monkeypatch.setattr(
+        "y2karaoke.core.components.alignment.timing_evaluator_comparison.analyze_source_disagreement",
+        lambda *_args, **_kwargs: {"flagged": False, "reasons": []},
+    )
+    monkeypatch.setattr(
+        "y2karaoke.core.components.lyrics.sync.fetch_lyrics_for_duration",
+        lambda *a, **k: ("[00:02.00]hey", True, "provider", 120),
+    )
+    monkeypatch.setattr(lh, "parse_lrc_with_timing", lambda *a, **k: [(2.0, "hey")])
+
+    lrc_text, timings, source = lw._fetch_lrc_text_and_timings(
+        "Title",
+        "Artist",
+        target_duration=120,
+        vocals_path="vocals.wav",
+    )
+
+    assert lrc_text == "[00:02.00]hey"
+    assert timings == [(2.0, "hey")]
+    assert source == "provider"
+
+
 def test_fetch_lrc_text_and_timings_filters_promos(monkeypatch):
     lrc_text = "\n".join(
         [

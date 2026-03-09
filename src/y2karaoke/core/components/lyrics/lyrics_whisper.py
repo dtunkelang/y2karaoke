@@ -369,6 +369,43 @@ def _fetch_lrc_text_and_timings(
         Tuple of (lrc_text, parsed_timings, source_name)
     """
     try:
+        if target_duration and vocals_path and not evaluate_sources and not offline:
+            from ..alignment.timing_evaluator import select_best_source
+            from ..alignment.timing_evaluator_comparison import (
+                analyze_source_disagreement,
+            )
+            from .sync import fetch_from_all_sources
+
+            sources = fetch_from_all_sources(title, artist)
+            disagreement = analyze_source_disagreement(title, artist, sources)
+            if disagreement["flagged"]:
+                reason_text = ", ".join(disagreement["reasons"])
+                logger.info(
+                    "Lyrics source disagreement detected for %s - %s (%s); "
+                    "scoring candidates against audio",
+                    artist,
+                    title,
+                    reason_text,
+                )
+                lrc_text, source, report = select_best_source(
+                    title,
+                    artist,
+                    vocals_path,
+                    target_duration,
+                    sources=sources,
+                )
+                if lrc_text and source:
+                    lines = parse_lrc_with_timing(
+                        lrc_text, title, artist, filter_promos=filter_promos
+                    )
+                    score_str = (
+                        f" (score: {report.overall_score:.1f})" if report else ""
+                    )
+                    logger.info(
+                        f"Selected best source after disagreement: {source}{score_str}"
+                    )
+                    return lrc_text, lines, source
+
         # If evaluation is requested and we have vocals, compare all sources
         if evaluate_sources and vocals_path and not offline:
             from ..alignment.timing_evaluator import select_best_source
