@@ -1555,7 +1555,10 @@ def _extract_lexical_mismatch_diagnostics(
     }
 
 
-def _infer_reference_divergence_suspicion(metrics: dict[str, Any]) -> dict[str, Any]:
+def _infer_reference_divergence_suspicion(
+    metrics: dict[str, Any],
+    alignment_diagnostics: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     if not isinstance(metrics, dict):
         return {"suspected": False, "score": 0.0, "confidence": "low", "evidence": []}
 
@@ -1570,6 +1573,9 @@ def _infer_reference_divergence_suspicion(metrics: dict[str, Any]) -> dict[str, 
     agree_sim = _f("agreement_text_similarity_mean")
     agree_p95 = _f("agreement_start_p95_abs_sec")
     low_conf = _f("low_confidence_ratio")
+    source_disagreement_flagged = bool(
+        (alignment_diagnostics or {}).get("lyrics_source_disagreement_flagged", False)
+    )
 
     if not bool(metrics.get("gold_available")):
         return _infer_reference_divergence_no_gold(
@@ -1635,6 +1641,9 @@ def _infer_reference_divergence_suspicion(metrics: dict[str, Any]) -> dict[str, 
     if high_gold_mismatch_with_strong_dtw:
         score += 1.25
         evidence.append("high_gold_mismatch_with_strong_dtw")
+    if source_disagreement_flagged and high_gold_mismatch_with_strong_dtw:
+        score += 0.5
+        evidence.append("multi_source_disagreement_supports_reference_mismatch")
     if gold_coverage_timing_combo:
         score += 1.0
         evidence.append("gold_coverage_timing_combo_mismatch")
@@ -1668,6 +1677,7 @@ def _infer_reference_divergence_suspicion(metrics: dict[str, Any]) -> dict[str, 
             "agreement_bad_ratio": round(agree_bad, 4),
             "low_confidence_ratio": round(low_conf, 4),
             "gold_comparable_word_count": comparable_words,
+            "lyrics_source_disagreement_flagged": source_disagreement_flagged,
         },
     }
 
@@ -3987,7 +3997,8 @@ def _refresh_cached_metrics(
     record["metrics"] = _extract_song_metrics(report, gold_doc=gold_doc)
     record["alignment_diagnostics"] = _extract_alignment_diagnostics(report)
     record["reference_divergence"] = _infer_reference_divergence_suspicion(
-        record["metrics"]
+        record["metrics"],
+        alignment_diagnostics=record.get("alignment_diagnostics"),
     )
     record["alignment_policy_hint"] = _infer_alignment_policy_hint(
         record["metrics"],
@@ -5303,7 +5314,8 @@ def _run_song_command(
             record["metrics"] = _extract_song_metrics(report, gold_doc=gold_doc)
             record["alignment_diagnostics"] = _extract_alignment_diagnostics(report)
             record["reference_divergence"] = _infer_reference_divergence_suspicion(
-                record["metrics"]
+                record["metrics"],
+                alignment_diagnostics=record.get("alignment_diagnostics"),
             )
             record["alignment_policy_hint"] = _infer_alignment_policy_hint(
                 record["metrics"],
