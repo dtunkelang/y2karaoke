@@ -666,52 +666,9 @@ def fetch_from_all_sources(
     cache_keys = _all_sources_cache_keys(title, artist)
     if _disk_cache_enabled(runtime_state):
         _load_disk_cache(runtime_state)
-    for cache_key, disk_key in cache_keys:
-        if cache_key in runtime_state.all_sources_cache:
-            cached = runtime_state.all_sources_cache[cache_key]
-            if offline or cached:
-                return cached
-    folded_artist_aliases = {
-        alias
-        for cache_key, _disk_key in cache_keys
-        for alias in _artist_aliases(cache_key[0])
-    }
-    for existing_key, cached in runtime_state.all_sources_cache.items():
-        folded_title = _fold_cache_component(existing_key[1])
-        if (
-            folded_title == _fold_cache_component(cache_keys[0][0][1])
-            and _artist_aliases(existing_key[0]).intersection(folded_artist_aliases)
-            and (offline or cached)
-        ):
-            return cached
-    if _disk_cache_enabled(runtime_state):
-        for cache_key, disk_key in cache_keys:
-            disk_cached = _deserialize_all_sources_result(
-                runtime_state.disk_cache.get("all_sources_cache", {}).get(disk_key, {})
-            )
-            if disk_cached:
-                runtime_state.all_sources_cache[cache_key] = disk_cached
-                if offline:
-                    return disk_cached
-        for raw_key, payload in runtime_state.disk_cache.get(
-            "all_sources_cache", {}
-        ).items():
-            if not isinstance(raw_key, str):
-                continue
-            parts = raw_key.split("|", 1)
-            if len(parts) != 2:
-                continue
-            folded_title = _fold_cache_component(parts[1])
-            if folded_title != _fold_cache_component(
-                cache_keys[0][0][1]
-            ) or not _artist_aliases(parts[0]).intersection(folded_artist_aliases):
-                continue
-            disk_cached = _deserialize_all_sources_result(payload)
-            if not disk_cached:
-                continue
-            runtime_state.all_sources_cache[(parts[0], parts[1])] = disk_cached
-            if offline:
-                return disk_cached
+    cached = _get_cached_all_sources(runtime_state, cache_keys, offline=offline)
+    if cached is not None:
+        return cached
     if offline:
         return {}
     results = sync_providers.fetch_from_all_sources(
@@ -737,3 +694,88 @@ def fetch_from_all_sources(
     if _disk_cache_enabled(runtime_state):
         _save_disk_cache(runtime_state)
     return results
+
+
+def _get_cached_all_sources(
+    runtime_state: SyncState,
+    cache_keys: list[tuple[tuple[str, str], str]],
+    *,
+    offline: bool,
+) -> Optional[Dict[str, Tuple[Optional[str], Optional[int]]]]:
+    cached = _get_runtime_cached_all_sources(runtime_state, cache_keys, offline=offline)
+    if cached is not None:
+        return cached
+    if not _disk_cache_enabled(runtime_state):
+        return None
+    return _get_disk_cached_all_sources(runtime_state, cache_keys, offline=offline)
+
+
+def _get_runtime_cached_all_sources(
+    runtime_state: SyncState,
+    cache_keys: list[tuple[tuple[str, str], str]],
+    *,
+    offline: bool,
+) -> Optional[Dict[str, Tuple[Optional[str], Optional[int]]]]:
+    for cache_key, _disk_key in cache_keys:
+        cached = runtime_state.all_sources_cache.get(cache_key)
+        if cached and (offline or cached):
+            return cached
+    folded_title, folded_artist_aliases = _cache_lookup_tokens(cache_keys)
+    for existing_key, cached in runtime_state.all_sources_cache.items():
+        if _is_cache_key_alias_match(existing_key, folded_title, folded_artist_aliases):
+            if offline or cached:
+                return cached
+    return None
+
+
+def _get_disk_cached_all_sources(
+    runtime_state: SyncState,
+    cache_keys: list[tuple[tuple[str, str], str]],
+    *,
+    offline: bool,
+) -> Optional[Dict[str, Tuple[Optional[str], Optional[int]]]]:
+    disk_cache = runtime_state.disk_cache.get("all_sources_cache", {})
+    for cache_key, disk_key in cache_keys:
+        disk_cached = _deserialize_all_sources_result(disk_cache.get(disk_key, {}))
+        if disk_cached:
+            runtime_state.all_sources_cache[cache_key] = disk_cached
+            if offline:
+                return disk_cached
+    folded_title, folded_artist_aliases = _cache_lookup_tokens(cache_keys)
+    for raw_key, payload in disk_cache.items():
+        if not isinstance(raw_key, str):
+            continue
+        parts = raw_key.split("|", 1)
+        if len(parts) != 2 or not _is_cache_key_alias_match(
+            (parts[0], parts[1]), folded_title, folded_artist_aliases
+        ):
+            continue
+        disk_cached = _deserialize_all_sources_result(payload)
+        if not disk_cached:
+            continue
+        runtime_state.all_sources_cache[(parts[0], parts[1])] = disk_cached
+        if offline:
+            return disk_cached
+    return None
+
+
+def _cache_lookup_tokens(
+    cache_keys: list[tuple[tuple[str, str], str]],
+) -> tuple[str, set[str]]:
+    folded_title = _fold_cache_component(cache_keys[0][0][1])
+    folded_artist_aliases = {
+        alias
+        for cache_key, _disk_key in cache_keys
+        for alias in _artist_aliases(cache_key[0])
+    }
+    return folded_title, folded_artist_aliases
+
+
+def _is_cache_key_alias_match(
+    cache_key: tuple[str, str],
+    folded_title: str,
+    folded_artist_aliases: set[str],
+) -> bool:
+    return _fold_cache_component(cache_key[1]) == folded_title and bool(
+        _artist_aliases(cache_key[0]).intersection(folded_artist_aliases)
+    )

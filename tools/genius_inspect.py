@@ -35,7 +35,7 @@ if __name__ == "__main__":
     if len(sys.argv) < 3:
         print("Usage: python3 tools/genius_inspect.py <artist> <title>")
         sys.exit(1)
-    
+
     artist = sys.argv[1]
     title = sys.argv[2]
     print_genius_lyrics(title, artist)

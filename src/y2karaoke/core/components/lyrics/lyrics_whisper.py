@@ -370,100 +370,26 @@ def _fetch_lrc_text_and_timings(
         Tuple of (lrc_text, parsed_timings, source_name)
     """
     try:
-        if routing_diagnostics is not None:
-            routing_diagnostics.setdefault("lyrics_source_audio_scoring_used", False)
-            routing_diagnostics.setdefault("lyrics_source_disagreement_flagged", False)
-            routing_diagnostics.setdefault("lyrics_source_disagreement_reasons", [])
-            routing_diagnostics.setdefault("lyrics_source_candidate_count", 0)
-            routing_diagnostics.setdefault(
-                "lyrics_source_comparable_candidate_count", 0
-            )
-            routing_diagnostics.setdefault("lyrics_source_selection_mode", "default")
-            routing_diagnostics.setdefault("lyrics_source_routing_skip_reason", "none")
+        _initialize_routing_diagnostics(
+            routing_diagnostics,
+            target_duration=target_duration,
+            vocals_path=vocals_path,
+            evaluate_sources=evaluate_sources,
+            offline=offline,
+        )
 
-        if routing_diagnostics is not None and offline:
-            routing_diagnostics["lyrics_source_routing_skip_reason"] = "offline"
-        elif routing_diagnostics is not None and not target_duration:
-            routing_diagnostics["lyrics_source_routing_skip_reason"] = (
-                "no_target_duration"
-            )
-        elif routing_diagnostics is not None and not vocals_path:
-            routing_diagnostics["lyrics_source_routing_skip_reason"] = "no_vocals_path"
-        elif routing_diagnostics is not None and evaluate_sources:
-            routing_diagnostics["lyrics_source_routing_skip_reason"] = (
-                "explicit_audio_scoring"
-            )
-
-        if target_duration and vocals_path and not evaluate_sources:
-            from ..alignment.timing_evaluator import select_best_source
-            from ..alignment.timing_evaluator_comparison import (
-                analyze_source_disagreement,
-            )
-            from .sync import fetch_from_all_sources
-
-            sources = fetch_from_all_sources(title, artist, offline=offline)
-            if routing_diagnostics is not None and offline and not sources:
-                routing_diagnostics["lyrics_source_routing_skip_reason"] = (
-                    "offline_no_cached_sources"
-                )
-            disagreement = analyze_source_disagreement(title, artist, sources)
-            if routing_diagnostics is not None:
-                routing_diagnostics["lyrics_source_candidate_count"] = int(
-                    disagreement.get("source_count", 0) or 0
-                )
-                routing_diagnostics["lyrics_source_comparable_candidate_count"] = int(
-                    disagreement.get("comparable_source_count", 0) or 0
-                )
-                routing_diagnostics["lyrics_source_disagreement_flagged"] = bool(
-                    disagreement.get("flagged", False)
-                )
-                routing_diagnostics["lyrics_source_disagreement_reasons"] = list(
-                    disagreement.get("reasons", []) or []
-                )
-                if (
-                    not disagreement.get("flagged", False)
-                    and sources
-                    and routing_diagnostics["lyrics_source_routing_skip_reason"]
-                    == "offline"
-                ):
-                    routing_diagnostics["lyrics_source_routing_skip_reason"] = (
-                        "no_material_disagreement"
-                    )
-            if disagreement["flagged"]:
-                reason_text = ", ".join(disagreement["reasons"])
-                logger.info(
-                    "Lyrics source disagreement detected for %s - %s (%s); "
-                    "scoring candidates against audio",
-                    artist,
-                    title,
-                    reason_text,
-                )
-                lrc_text, source, report = select_best_source(
-                    title,
-                    artist,
-                    vocals_path,
-                    target_duration,
-                    sources=sources,
-                )
-                if lrc_text and source:
-                    if routing_diagnostics is not None:
-                        routing_diagnostics["lyrics_source_audio_scoring_used"] = True
-                        routing_diagnostics["lyrics_source_selection_mode"] = (
-                            "audio_scored_disagreement"
-                        )
-                        routing_diagnostics["lyrics_source_routing_skip_reason"] = (
-                            "none"
-                        )
-                    lines = parse_lrc_with_timing(
-                        lrc_text, title, artist, filter_promos=filter_promos
-                    )
-                    score_str = (
-                        f" (score: {report.overall_score:.1f})" if report else ""
-                    )
-                    logger.info(
-                        f"Selected best source after disagreement: {source}{score_str}"
-                    )
-                    return lrc_text, lines, source
+        disagreement_selection = _select_disagreement_source_if_needed(
+            title=title,
+            artist=artist,
+            target_duration=target_duration,
+            vocals_path=vocals_path,
+            evaluate_sources=evaluate_sources,
+            filter_promos=filter_promos,
+            offline=offline,
+            routing_diagnostics=routing_diagnostics,
+        )
+        if disagreement_selection is not None:
+            return disagreement_selection
 
         # If evaluation is requested and we have vocals, compare all sources
         if evaluate_sources and vocals_path and not offline:
@@ -524,6 +450,126 @@ def _fetch_lrc_text_and_timings(
     except Exception as e:
         logger.warning(f"LRC fetch failed: {e}")
         return None, None, ""
+
+
+def _initialize_routing_diagnostics(
+    routing_diagnostics: Optional[dict],
+    *,
+    target_duration: Optional[int],
+    vocals_path: Optional[str],
+    evaluate_sources: bool,
+    offline: bool,
+) -> None:
+    if routing_diagnostics is None:
+        return
+    routing_diagnostics.setdefault("lyrics_source_audio_scoring_used", False)
+    routing_diagnostics.setdefault("lyrics_source_disagreement_flagged", False)
+    routing_diagnostics.setdefault("lyrics_source_disagreement_reasons", [])
+    routing_diagnostics.setdefault("lyrics_source_candidate_count", 0)
+    routing_diagnostics.setdefault("lyrics_source_comparable_candidate_count", 0)
+    routing_diagnostics.setdefault("lyrics_source_selection_mode", "default")
+    routing_diagnostics.setdefault("lyrics_source_routing_skip_reason", "none")
+    if offline:
+        routing_diagnostics["lyrics_source_routing_skip_reason"] = "offline"
+    elif not target_duration:
+        routing_diagnostics["lyrics_source_routing_skip_reason"] = "no_target_duration"
+    elif not vocals_path:
+        routing_diagnostics["lyrics_source_routing_skip_reason"] = "no_vocals_path"
+    elif evaluate_sources:
+        routing_diagnostics["lyrics_source_routing_skip_reason"] = (
+            "explicit_audio_scoring"
+        )
+
+
+def _select_disagreement_source_if_needed(
+    *,
+    title: str,
+    artist: str,
+    target_duration: Optional[int],
+    vocals_path: Optional[str],
+    evaluate_sources: bool,
+    filter_promos: bool,
+    offline: bool,
+    routing_diagnostics: Optional[dict],
+) -> Optional[Tuple[Optional[str], Optional[List[Tuple[float, str]]], str]]:
+    if not (target_duration and vocals_path and not evaluate_sources):
+        return None
+    from ..alignment.timing_evaluator import select_best_source
+    from ..alignment.timing_evaluator_comparison import analyze_source_disagreement
+    from .sync import fetch_from_all_sources
+
+    sources = fetch_from_all_sources(title, artist, offline=offline)
+    disagreement = analyze_source_disagreement(title, artist, sources)
+    _update_routing_diagnostics_from_disagreement(
+        routing_diagnostics,
+        sources=sources,
+        offline=offline,
+        disagreement=disagreement,
+    )
+    if not disagreement["flagged"]:
+        return None
+
+    reason_text = ", ".join(disagreement["reasons"])
+    logger.info(
+        "Lyrics source disagreement detected for %s - %s (%s); scoring candidates against audio",
+        artist,
+        title,
+        reason_text,
+    )
+    lrc_text, source, report = select_best_source(
+        title,
+        artist,
+        vocals_path,
+        target_duration,
+        sources=sources,
+    )
+    if not (lrc_text and source):
+        return None
+    if routing_diagnostics is not None:
+        routing_diagnostics["lyrics_source_audio_scoring_used"] = True
+        routing_diagnostics["lyrics_source_selection_mode"] = (
+            "audio_scored_disagreement"
+        )
+        routing_diagnostics["lyrics_source_routing_skip_reason"] = "none"
+    lines = parse_lrc_with_timing(lrc_text, title, artist, filter_promos=filter_promos)
+    score_str = f" (score: {report.overall_score:.1f})" if report else ""
+    logger.info(f"Selected best source after disagreement: {source}{score_str}")
+    return lrc_text, lines, source
+
+
+def _update_routing_diagnostics_from_disagreement(
+    routing_diagnostics: Optional[dict],
+    *,
+    sources: dict,
+    offline: bool,
+    disagreement: dict,
+) -> None:
+    if routing_diagnostics is None:
+        return
+    if offline and not sources:
+        routing_diagnostics["lyrics_source_routing_skip_reason"] = (
+            "offline_no_cached_sources"
+        )
+    routing_diagnostics["lyrics_source_candidate_count"] = int(
+        disagreement.get("source_count", 0) or 0
+    )
+    routing_diagnostics["lyrics_source_comparable_candidate_count"] = int(
+        disagreement.get("comparable_source_count", 0) or 0
+    )
+    routing_diagnostics["lyrics_source_disagreement_flagged"] = bool(
+        disagreement.get("flagged", False)
+    )
+    routing_diagnostics["lyrics_source_disagreement_reasons"] = list(
+        disagreement.get("reasons", []) or []
+    )
+    if (
+        not disagreement.get("flagged", False)
+        and sources
+        and routing_diagnostics["lyrics_source_routing_skip_reason"] == "offline"
+    ):
+        routing_diagnostics["lyrics_source_routing_skip_reason"] = (
+            "no_material_disagreement"
+        )
 
 
 def get_lyrics_simple(  # noqa: C901

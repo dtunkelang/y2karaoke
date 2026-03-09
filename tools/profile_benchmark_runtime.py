@@ -59,24 +59,26 @@ def _parse_rows(report: dict[str, Any]) -> tuple[list[dict[str, Any]], float]:
                     ),
                     4,
                 ),
-                "fallback_map_attempted": int(
-                    metrics.get("fallback_map_attempted", 0) or 0
-                )
-                if isinstance(metrics, dict)
-                else 0,
-                "fallback_map_selected": int(metrics.get("fallback_map_selected", 0) or 0)
-                if isinstance(metrics, dict)
-                else 0,
-                "local_transcribe_cache_hits": int(
-                    metrics.get("local_transcribe_cache_hits", 0) or 0
-                )
-                if isinstance(metrics, dict)
-                else 0,
-                "local_transcribe_cache_misses": int(
-                    metrics.get("local_transcribe_cache_misses", 0) or 0
-                )
-                if isinstance(metrics, dict)
-                else 0,
+                "fallback_map_attempted": (
+                    int(metrics.get("fallback_map_attempted", 0) or 0)
+                    if isinstance(metrics, dict)
+                    else 0
+                ),
+                "fallback_map_selected": (
+                    int(metrics.get("fallback_map_selected", 0) or 0)
+                    if isinstance(metrics, dict)
+                    else 0
+                ),
+                "local_transcribe_cache_hits": (
+                    int(metrics.get("local_transcribe_cache_hits", 0) or 0)
+                    if isinstance(metrics, dict)
+                    else 0
+                ),
+                "local_transcribe_cache_misses": (
+                    int(metrics.get("local_transcribe_cache_misses", 0) or 0)
+                    if isinstance(metrics, dict)
+                    else 0
+                ),
             }
         )
     rows.sort(key=lambda row: row["elapsed_sec"], reverse=True)

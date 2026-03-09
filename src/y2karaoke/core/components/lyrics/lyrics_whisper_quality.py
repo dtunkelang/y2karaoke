@@ -403,7 +403,8 @@ def _resolve_lrc_inputs(
     )
     quality_report.update(routing_diagnostics)
     if routing_diagnostics["lyrics_source_disagreement_flagged"]:
-        reasons = routing_diagnostics["lyrics_source_disagreement_reasons"]
+        raw_reasons = routing_diagnostics["lyrics_source_disagreement_reasons"]
+        reasons = raw_reasons if isinstance(raw_reasons, list) else []
         reason_text = ", ".join(str(item) for item in reasons) if reasons else "unknown"
         issues_list.append(
             "Lyrics source disagreement triggered routing: " f"{reason_text}"

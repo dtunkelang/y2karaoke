@@ -134,7 +134,9 @@ def _collect_correction_targets(song: dict[str, Any], *, limit: int = 2) -> list
         )
         word_slots = line.get("word_slots")
         line_word_count = (
-            int(word_slots) if isinstance(word_slots, (int, float)) else len(line_text.split())
+            int(word_slots)
+            if isinstance(word_slots, (int, float))
+            else len(line_text.split())
         )
         if line_word_count < 1:
             line_word_count = 1
@@ -152,7 +154,9 @@ def _collect_correction_targets(song: dict[str, Any], *, limit: int = 2) -> list
             reason = "high_start_delta"
         elif sim < 0.58 and overlap >= 0.45 and start_delta <= 0.3:
             reason = "likely_lexical_mismatch"
-        elif line_word_count >= 6 and window_word_count < max(2, int(0.35 * line_word_count)):
+        elif line_word_count >= 6 and window_word_count < max(
+            2, int(0.35 * line_word_count)
+        ):
             reason = "sparse_local_anchor_evidence"
         if not reason:
             continue
