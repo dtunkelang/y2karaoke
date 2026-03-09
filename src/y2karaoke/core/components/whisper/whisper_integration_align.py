@@ -189,6 +189,28 @@ def _retime_line_to_window(
     return models.Line(words=new_words, singer=line.singer)
 
 
+def _extend_interjection_line_end(
+    line: models.Line,
+    *,
+    target_end: float,
+) -> models.Line:
+    total_duration = max(target_end - line.start_time, 0.2)
+    spacing = total_duration / len(line.words)
+    new_words = []
+    for word_idx, w in enumerate(line.words):
+        start = line.start_time + word_idx * spacing
+        end = start + spacing * 0.9
+        new_words.append(
+            models.Word(
+                text=w.text,
+                start_time=start,
+                end_time=end,
+                singer=w.singer,
+            )
+        )
+    return models.Line(words=new_words, singer=line.singer)
+
+
 def _rescale_line_to_new_end(line: models.Line, target_end: float) -> models.Line:
     old_duration = line.end_time - line.start_time
     new_duration = target_end - line.start_time
@@ -292,7 +314,7 @@ def _choose_interjection_window_from_onsets(
     next_line: models.Line,
     whisper_words: List[timing_models.TranscriptionWord],
     onset_times: Any,
-) -> Optional[tuple[float, float]]:
+) -> Optional[tuple[float, float, bool]]:
     tokens = _normalized_tokens(line)
     if not line.words or len(line.words) > 3 or not tokens:
         return None
@@ -314,15 +336,26 @@ def _choose_interjection_window_from_onsets(
     onset_span = target_end - target_start
     if onset_span < 1.0:
         shift = target_start - line.start_time
-        if (
+        very_sparse_hey_ok = (
+            len(candidate_onsets) == 2
+            and onset_span >= 0.3
+            and shift > 0.9
+            and shift <= 2.0
+            and gap_after >= 9.5
+            and set(tokens) == {"hey"}
+        )
+        if not very_sparse_hey_ok and (
             onset_span < 0.6
             or shift > 0.9
             or gap_after < 8.0
             or len(candidate_onsets) != 2
         ):
             return None
+        if very_sparse_hey_ok:
+            target_end = min(next_line.start_time - 0.2, target_end + 0.6)
+            return line.start_time, target_end, True
         target_end = min(next_line.start_time - 0.2, target_start + 1.5)
-    return target_start, target_end
+    return target_start, target_end, False
 
 
 def _reanchor_unsupported_interjection_lines_to_onsets(
@@ -349,11 +382,17 @@ def _reanchor_unsupported_interjection_lines_to_onsets(
         )
         if window is None:
             continue
-        updated[idx] = _retime_line_to_window(
-            line,
-            window_start=window[0],
-            window_end=window[1],
-        )
+        if window[2]:
+            updated[idx] = _extend_interjection_line_end(
+                line,
+                target_end=window[1],
+            )
+        else:
+            updated[idx] = _retime_line_to_window(
+                line,
+                window_start=window[0],
+                window_end=window[1],
+            )
         applied += 1
     return updated, applied
 
