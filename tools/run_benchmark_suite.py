@@ -21,6 +21,11 @@ from typing import Any, Iterable
 
 import yaml  # type: ignore[import-untyped]
 
+from y2karaoke.core.audio_analysis import extract_audio_features
+from y2karaoke.core.components.whisper.whisper_alignment_line_helpers import (
+    first_onset_after,
+)
+
 REPO_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_MANIFEST = REPO_ROOT / "benchmarks" / "benchmark_songs.yaml"
 DEFAULT_RESULTS_ROOT = REPO_ROOT / "benchmarks" / "results"
@@ -77,6 +82,7 @@ _AGREEMENT_COLLOQUIAL_SPECIALS: dict[str, tuple[str, ...]] = {
     "cause": ("because",),
     "em": ("them",),
 }
+_AUDIO_FEATURES_CACHE: dict[str, Any] = {}
 
 
 @dataclass(frozen=True)
@@ -483,6 +489,11 @@ def _align_parenthetical_interjection_lines(
             continue
         gen_idx += 1
     return matches
+
+
+def _line_is_parenthetical_interjection(line: dict[str, Any]) -> bool:
+    doc = {"lines": [line]}
+    return bool(_extract_parenthetical_interjection_lines(doc))
 
 
 def _extract_lines_for_gold_comparison(doc: dict[str, Any]) -> list[dict[str, Any]]:
@@ -913,7 +924,10 @@ def _compute_timing_quality_score(values: dict[str, Any]) -> tuple[float, str, s
 
 
 def _extract_song_metrics(
-    report: dict[str, Any], gold_doc: dict[str, Any] | None = None
+    report: dict[str, Any],
+    gold_doc: dict[str, Any] | None = None,
+    *,
+    audio_path: str | None = None,
 ) -> dict[str, Any]:
     lines = report.get("lines", [])
     line_count = len(lines)
@@ -1179,6 +1193,8 @@ def _extract_song_metrics(
     end_abs_deltas_strict: list[float] = []
     line_duration_abs_deltas: list[float] = []
     interjection_start_abs_deltas: list[float] = []
+    gold_nearest_onset_start_abs_deltas: list[float] = []
+    gold_nearest_onset_start_abs_deltas_non_interjection: list[float] = []
     text_matches = 0
 
     for gen_idx, gold_idx, sim in aligned_pairs:
@@ -1205,6 +1221,14 @@ def _extract_song_metrics(
         line_duration_abs_deltas.append(
             abs(float(gen_line["duration"]) - float(gold_line["duration"]))
         )
+
+    for delta, is_interjection in _gold_line_nearest_onset_start_deltas(
+        gold_doc=gold_doc,
+        audio_path=audio_path,
+    ):
+        gold_nearest_onset_start_abs_deltas.append(delta)
+        if not is_interjection:
+            gold_nearest_onset_start_abs_deltas_non_interjection.append(delta)
 
     metrics.update(
         {
@@ -1234,6 +1258,15 @@ def _extract_song_metrics(
             "gold_parenthetical_interjection_start_p95_abs_sec": round(
                 _pctile(interjection_start_abs_deltas, 0.95), 4
             ),
+            "gold_nearest_onset_start_mean_abs_sec": round(
+                _mean(gold_nearest_onset_start_abs_deltas) or 0.0, 4
+            ),
+            "gold_nearest_onset_start_p95_abs_sec": round(
+                _pctile(gold_nearest_onset_start_abs_deltas, 0.95), 4
+            ),
+            "gold_nearest_onset_start_non_interjection_mean_abs_sec": round(
+                _mean(gold_nearest_onset_start_abs_deltas_non_interjection) or 0.0, 4
+            ),
             "gold_line_duration_mean_abs_sec": round(
                 _mean(line_duration_abs_deltas) or 0.0, 4
             ),
@@ -1261,6 +1294,121 @@ def _extract_song_metrics(
     metrics["timing_quality_score_mode"] = timing_quality_score_mode
 
     return metrics
+
+
+def _resolve_song_audio_path(
+    song: BenchmarkSong, gold_doc: dict[str, Any] | None = None
+) -> str | None:
+    if isinstance(gold_doc, dict):
+        gold_audio = gold_doc.get("audio_path")
+        if isinstance(gold_audio, str) and gold_audio.strip():
+            resolved_gold_audio = Path(gold_audio).expanduser()
+            if resolved_gold_audio.exists():
+                return str(resolved_gold_audio.resolve())
+    cache_dir = REPO_ROOT / ".cache" / song.youtube_id
+    wavs = sorted(cache_dir.glob("*.wav"))
+    if wavs:
+        return str(_prefer_primary_song_wav(wavs).resolve())
+    return _resolve_cached_audio_path_by_slug(song.slug)
+
+
+def _prefer_primary_song_wav(wavs: list[Path]) -> Path:
+    ranked = sorted(
+        wavs,
+        key=lambda path: (
+            1 if "_(" in path.name else 0,
+            1 if "instrumental" in path.stem.lower() else 0,
+            len(path.name),
+        ),
+    )
+    return ranked[0]
+
+
+def _resolve_cached_audio_path_by_slug(slug: str) -> str | None:
+    parts = [part for part in slug.split("-") if len(part) >= 3]
+    if not parts:
+        return None
+    candidates: list[tuple[int, Path]] = []
+    for wav in (REPO_ROOT / ".cache").glob("*/*.wav"):
+        name = wav.stem.lower()
+        score = sum(1 for part in parts if part in name)
+        if score > 0:
+            candidates.append((score, wav))
+    if not candidates:
+        return None
+    candidates.sort(
+        key=lambda item: (
+            -item[0],
+            1 if "_(" in item[1].name else 0,
+            1 if "instrumental" in item[1].stem.lower() else 0,
+            len(item[1].name),
+        )
+    )
+    best_score, best_path = candidates[0]
+    if best_score < max(2, min(len(parts), 3)):
+        return None
+    return str(best_path.resolve())
+
+
+def _load_audio_features_cached(audio_path: str | None) -> Any | None:
+    if not isinstance(audio_path, str) or not audio_path.strip():
+        return None
+    cached = _AUDIO_FEATURES_CACHE.get(audio_path)
+    if cached is not None:
+        return cached
+    resolved = Path(audio_path).expanduser()
+    if not resolved.exists():
+        return None
+    features = extract_audio_features(str(resolved))
+    if features is None:
+        return None
+    _AUDIO_FEATURES_CACHE[audio_path] = features
+    return features
+
+
+def _nearest_onset_delta(
+    onset_times: Any, *, target: float, window: float = 1.25
+) -> float | None:
+    if onset_times is None or len(onset_times) == 0:
+        return None
+    next_onset = first_onset_after(onset_times, start=target, window=window)
+    prev_onset = None
+    prev_idx = int(onset_times.searchsorted(target, side="left")) - 1
+    if prev_idx >= 0:
+        prev_candidate = float(onset_times[prev_idx])
+        if abs(prev_candidate - target) <= window:
+            prev_onset = prev_candidate
+    candidates = [
+        abs(float(onset) - target)
+        for onset in (prev_onset, next_onset)
+        if onset is not None and abs(float(onset) - target) <= window
+    ]
+    if not candidates:
+        return None
+    return min(candidates)
+
+
+def _gold_line_nearest_onset_start_deltas(
+    *, gold_doc: dict[str, Any] | None, audio_path: str | None
+) -> list[tuple[float, bool]]:
+    if not isinstance(gold_doc, dict):
+        return []
+    features = _load_audio_features_cached(audio_path)
+    if features is None or getattr(features, "onset_times", None) is None:
+        return []
+    onset_times = features.onset_times
+    rows: list[tuple[float, bool]] = []
+    for line in gold_doc.get("lines", []):
+        if not isinstance(line, dict):
+            continue
+        start = line.get("start")
+        if not isinstance(start, (int, float)):
+            continue
+        delta = _nearest_onset_delta(onset_times, target=float(start))
+        if delta is None:
+            continue
+        rows.append((delta, _line_is_parenthetical_interjection(line)))
+    return rows
 
 
 def _issue_tag(message: str) -> str:
@@ -2624,6 +2772,16 @@ def _aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:  # noqa: C901
             "gold_parenthetical_interjection_start_p95_abs_sec",
         )
     )
+    curated_canary_gold_nearest_onset_start_mean_abs_sec_mean = metric_mean_for_rows(
+        gold_measured_non_reference_songs,
+        "gold_nearest_onset_start_mean_abs_sec",
+    )
+    curated_canary_gold_nearest_onset_start_non_interjection_mean_abs_sec_mean = (
+        metric_mean_for_rows(
+            gold_measured_non_reference_songs,
+            "gold_nearest_onset_start_non_interjection_mean_abs_sec",
+        )
+    )
     triage_rankings = _build_triage_rankings(succeeded, top_n=5)
     diagnosis_counts: dict[str, int] = {}
     for row in succeeded:
@@ -2955,6 +3113,26 @@ def _aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:  # noqa: C901
             is not None
             else None
         ),
+        "curated_canary_gold_nearest_onset_start_mean_abs_sec_mean": (
+            round(
+                float(curated_canary_gold_nearest_onset_start_mean_abs_sec_mean or 0.0),
+                4,
+            )
+            if curated_canary_gold_nearest_onset_start_mean_abs_sec_mean is not None
+            else None
+        ),
+        "curated_canary_gold_nearest_onset_start_non_interjection_mean_abs_sec_mean": (
+            round(
+                float(
+                    curated_canary_gold_nearest_onset_start_non_interjection_mean_abs_sec_mean
+                    or 0.0
+                ),
+                4,
+            )
+            if curated_canary_gold_nearest_onset_start_non_interjection_mean_abs_sec_mean
+            is not None
+            else None
+        ),
         "curated_canary_reference_watchlist_count": len(reference_divergence_suspects),
         "curated_canary_reference_watchlist": [
             row["song"]
@@ -3031,6 +3209,11 @@ def _aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:  # noqa: C901
         "gold_line_duration_mean_abs_sec_mean": (
             round(float(metric_mean("gold_line_duration_mean_abs_sec") or 0.0), 4)
             if metric_mean("gold_line_duration_mean_abs_sec") is not None
+            else None
+        ),
+        "gold_nearest_onset_start_mean_abs_sec_mean": (
+            round(float(metric_mean("gold_nearest_onset_start_mean_abs_sec") or 0.0), 4)
+            if metric_mean("gold_nearest_onset_start_mean_abs_sec") is not None
             else None
         ),
         "gold_end_p95_abs_sec_mean": (
@@ -3521,6 +3704,21 @@ def _write_markdown_summary(  # noqa: C901
             "- Curated canary mean abs line-duration delta: "
             f"`{_fmt_num(aggregate.get('curated_canary_gold_line_duration_mean_abs_sec_mean'), unit='s')}`"
         )
+        nearest_onset_mean = aggregate.get(
+            "curated_canary_gold_nearest_onset_start_mean_abs_sec_mean"
+        )
+        nearest_onset_non_interjection_mean = aggregate.get(
+            "curated_canary_gold_nearest_onset_start_non_interjection_mean_abs_sec_mean"
+        )
+        if (
+            nearest_onset_mean is not None
+            or nearest_onset_non_interjection_mean is not None
+        ):
+            lines.append(
+                "- Curated canary nearest-onset start delta: "
+                f"`{_fmt_num(nearest_onset_mean, unit='s')}` overall, "
+                f"`{_fmt_num(nearest_onset_non_interjection_mean, unit='s')}` non-interjection"
+            )
         interjection_mean = aggregate.get(
             "curated_canary_gold_parenthetical_interjection_start_mean_abs_sec_mean"
         )
@@ -3582,6 +3780,10 @@ def _write_markdown_summary(  # noqa: C901
     lines.append(
         "- Secondary metric (avg abs line-duration delta): "
         f"`{_fmt_num(aggregate.get('gold_line_duration_mean_abs_sec_mean'), unit='s')}`"
+    )
+    lines.append(
+        "- Secondary metric (mean abs nearest-onset start delta): "
+        f"`{_fmt_num(aggregate.get('gold_nearest_onset_start_mean_abs_sec_mean'), unit='s')}`"
     )
     lines.append(
         f"- Mean DTW word coverage: `{_fmt_num(aggregate.get('dtw_word_coverage_mean'))}`"
@@ -4104,7 +4306,14 @@ def _refresh_cached_metrics(
     gold_doc = None
     if index is not None and song is not None:
         gold_doc = _load_gold_doc(index=index, song=song, gold_root=gold_root)
-    record["metrics"] = _extract_song_metrics(report, gold_doc=gold_doc)
+    song_audio_path = (
+        _resolve_song_audio_path(song, gold_doc=gold_doc) if song is not None else None
+    )
+    record["metrics"] = _extract_song_metrics(
+        report,
+        gold_doc=gold_doc,
+        audio_path=song_audio_path,
+    )
     record["alignment_diagnostics"] = _extract_alignment_diagnostics(report)
     record["reference_divergence"] = _infer_reference_divergence_suspicion(
         record["metrics"],
@@ -5421,7 +5630,11 @@ def _run_song_command(
             record["error"] = "timing report was not produced"
         else:
             report = json.loads(report_path.read_text(encoding="utf-8"))
-            record["metrics"] = _extract_song_metrics(report, gold_doc=gold_doc)
+            record["metrics"] = _extract_song_metrics(
+                report,
+                gold_doc=gold_doc,
+                audio_path=_resolve_song_audio_path(song, gold_doc=gold_doc),
+            )
             record["alignment_diagnostics"] = _extract_alignment_diagnostics(report)
             record["reference_divergence"] = _infer_reference_divergence_suspicion(
                 record["metrics"],
@@ -5673,6 +5886,12 @@ def _collect_single_song_result(
         run_signature=run_signature,
         gold_root=gold_root,
         env=env,
+    )
+    record = _refresh_cached_metrics(
+        record,
+        index=index,
+        song=song,
+        gold_root=gold_root,
     )
     _append_result_and_checkpoint(
         record=record,

@@ -7,6 +7,8 @@ import json
 from pathlib import Path
 import sys
 
+import numpy as np
+
 
 def _load_module():
     module_path = (
@@ -121,6 +123,90 @@ def test_extract_song_metrics_with_gold_word_deltas():
     assert (
         metrics["gold_alignment_mode"] == "monotonic_text_window_parenthetical_optional"
     )
+
+
+def test_extract_song_metrics_reports_gold_nearest_onset_start_deltas(tmp_path):
+    module = _load_module()
+
+    class _Features:
+        def __init__(self):
+            self.onset_times = np.array([10.55, 12.35, 15.3], dtype=float)
+
+    module.extract_audio_features = lambda _path: _Features()
+    module._AUDIO_FEATURES_CACHE.clear()
+
+    report = {
+        "lines": [
+            {
+                "words": [
+                    {"text": "Hello", "start": 10.0, "end": 10.4},
+                    {"text": "there", "start": 10.4, "end": 11.0},
+                ]
+            }
+        ]
+    }
+    gold = {
+        "lines": [
+            {
+                "text": "Hello there",
+                "start": 10.0,
+                "end": 11.0,
+                "words": [
+                    {"text": "Hello", "start": 10.0, "end": 10.4},
+                    {"text": "there", "start": 10.4, "end": 11.0},
+                ],
+            },
+            {
+                "text": "(Hey, hey, hey)",
+                "start": 12.0,
+                "end": 12.8,
+                "words": [
+                    {"text": "(Hey,", "start": 12.0, "end": 12.2},
+                    {"text": "hey,", "start": 12.2, "end": 12.5},
+                    {"text": "hey)", "start": 12.5, "end": 12.8},
+                ],
+            },
+        ]
+    }
+
+    audio_path = tmp_path / "fake.wav"
+    audio_path.write_bytes(b"")
+
+    metrics = module._extract_song_metrics(
+        report,
+        gold_doc=gold,
+        audio_path=str(audio_path),
+    )
+
+    assert metrics["gold_nearest_onset_start_mean_abs_sec"] == 0.45
+    assert metrics["gold_nearest_onset_start_p95_abs_sec"] == 0.54
+    assert metrics["gold_nearest_onset_start_non_interjection_mean_abs_sec"] == 0.55
+
+
+def test_resolve_song_audio_path_falls_back_to_slug_cache_match(tmp_path):
+    module = _load_module()
+    module.REPO_ROOT = tmp_path
+    cache_dir = tmp_path / ".cache" / "altid"
+    cache_dir.mkdir(parents=True)
+    primary = cache_dir / "The Weeknd - Blinding Lights (Official Audio).wav"
+    stem = (
+        cache_dir
+        / "The Weeknd - Blinding Lights (Official Audio)_(Vocals)_htdemucs_ft.wav"
+    )
+    primary.write_bytes(b"")
+    stem.write_bytes(b"")
+
+    song = module.BenchmarkSong(
+        manifest_index=1,
+        artist="The Weeknd",
+        title="Blinding Lights",
+        youtube_id="manifestid",
+        youtube_url="https://example.com",
+    )
+
+    resolved = module._resolve_song_audio_path(song, gold_doc={})
+
+    assert resolved == str(primary.resolve())
 
 
 def test_extract_song_metrics_treats_parenthetical_gold_words_as_optional():

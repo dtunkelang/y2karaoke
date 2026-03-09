@@ -40,6 +40,7 @@ def test_build_comparison_reports_net_improvement() -> None:
             "curated_canary_avg_abs_word_start_delta_sec_word_weighted_mean": 1.4,
             "curated_canary_gold_start_p95_abs_sec_mean": 3.4,
             "curated_canary_gold_line_duration_mean_abs_sec_mean": 1.9,
+            "curated_canary_gold_nearest_onset_start_mean_abs_sec_mean": 0.12,
             "curated_canary_gold_parenthetical_interjection_start_mean_abs_sec_mean": 2.1,
             "curated_canary_gold_parenthetical_interjection_start_p95_abs_sec_mean": 2.6,
             "curated_canary_reference_watchlist_count": 1,
@@ -73,6 +74,7 @@ def test_build_comparison_reports_net_improvement() -> None:
             "curated_canary_avg_abs_word_start_delta_sec_word_weighted_mean": 1.1,
             "curated_canary_gold_start_p95_abs_sec_mean": 2.9,
             "curated_canary_gold_line_duration_mean_abs_sec_mean": 0.7,
+            "curated_canary_gold_nearest_onset_start_mean_abs_sec_mean": 0.05,
             "curated_canary_gold_parenthetical_interjection_start_mean_abs_sec_mean": 0.8,
             "curated_canary_gold_parenthetical_interjection_start_p95_abs_sec_mean": 1.0,
             "curated_canary_reference_watchlist_count": 0,
@@ -127,6 +129,12 @@ def test_build_comparison_reports_net_improvement() -> None:
         ]["improved"]
         is True
     )
+    assert (
+        report["curated_canary_deltas"][
+            "curated_canary_gold_nearest_onset_start_mean_abs_sec_mean"
+        ]["improved"]
+        is True
+    )
     assert report["curated_canary_watchlist"]["baseline"] == ["Artist B - Song B"]
     assert report["curated_canary_watchlist"]["corrected"] == []
     song_row = report["song_deltas"][0]
@@ -148,6 +156,7 @@ def test_main_writes_json_markdown_and_curated_canary_cli_summary(
             "curated_canary_avg_abs_word_start_delta_sec_word_weighted_mean": 1.4,
             "curated_canary_gold_start_p95_abs_sec_mean": 3.2,
             "curated_canary_gold_line_duration_mean_abs_sec_mean": 1.7,
+            "curated_canary_gold_nearest_onset_start_mean_abs_sec_mean": 0.2,
             "curated_canary_gold_parenthetical_interjection_start_mean_abs_sec_mean": 2.0,
             "curated_canary_gold_parenthetical_interjection_start_p95_abs_sec_mean": 2.4,
             "curated_canary_reference_watchlist_count": 1,
@@ -191,6 +200,7 @@ def test_main_writes_json_markdown_and_curated_canary_cli_summary(
     assert "## Curated Canary Deltas" in markdown
     assert "curated_canary:" in captured.out
     assert "gold_line_duration_abs_sec=1.7000 -> 1.7000" in captured.out
+    assert "gold_nearest_onset_start_abs_sec=0.2000 -> 0.2000" in captured.out
     assert "parenthetical_interjection_start_abs_sec=2.0000 -> 2.0000" in captured.out
     assert "watchlist_corrected=Artist Y - Song Y" in captured.out
 
