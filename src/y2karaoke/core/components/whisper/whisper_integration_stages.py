@@ -30,7 +30,7 @@ def _shift_weak_opening_lines_past_phrase_carryover(
         if not prev_line.words or not line.words or len(line.words) < 6:
             continue
         gap_before = line.start_time - prev_line.end_time
-        if gap_before > 0.2:
+        if gap_before > 0.25:
             continue
         tokens = [
             re.sub(r"[^a-z]+", "", word.text.lower())

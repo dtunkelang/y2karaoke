@@ -474,6 +474,98 @@ def test_align_pipeline_applies_carryover_shift_after_final_restores():
     assert any("prior-phrase carryover" in msg for msg in corrections)
 
 
+def test_align_pipeline_applies_carryover_shift_with_small_positive_gap():
+    lines = [
+        Line(words=[Word(text="prev", start_time=29.83, end_time=32.41)]),
+        Line(
+            words=[
+                Word(text="Maybe", start_time=32.62, end_time=33.0),
+                Word(text="you", start_time=33.0, end_time=33.4),
+                Word(text="can", start_time=33.4, end_time=33.8),
+                Word(text="show", start_time=33.8, end_time=34.2),
+                Word(text="me", start_time=34.2, end_time=34.6),
+                Word(text="how", start_time=34.6, end_time=35.0),
+                Word(text="to", start_time=35.0, end_time=35.4),
+                Word(text="love,", start_time=35.4, end_time=35.9),
+                Word(text="maybe", start_time=35.9, end_time=36.42),
+            ]
+        ),
+        Line(words=[Word(text="next", start_time=38.24, end_time=40.58)]),
+    ]
+    whisper_words = [
+        TranscriptionWord(text="prev", start=30.64, end=31.64, probability=0.9),
+    ]
+    segments = [
+        TranscriptionSegment(start=29.0, end=41.0, text="segment", words=whisper_words),
+    ]
+    audio_features = AudioFeatures(
+        onset_times=np.array([33.58, 34.02], dtype=float),
+        silence_regions=[],
+        vocal_start=0.0,
+        vocal_end=200.0,
+        duration=200.0,
+        energy_envelope=np.array([], dtype=float),
+        energy_times=np.array([], dtype=float),
+    )
+
+    mapped, corrections, _metrics = wialign.align_lrc_text_to_whisper_timings_impl(
+        lines,
+        vocals_path="vocals.wav",
+        language="en",
+        model_size="base",
+        aggressive=False,
+        temperature=0.0,
+        min_similarity=0.15,
+        audio_features=audio_features,
+        lenient_vocal_activity_threshold=0.3,
+        lenient_activity_bonus=0.4,
+        low_word_confidence_threshold=0.5,
+        transcribe_vocals_fn=lambda *_a, **_k: (segments, whisper_words, "en", "base"),
+        extract_audio_features_fn=lambda *_a, **_k: audio_features,
+        dedupe_whisper_segments_fn=lambda s: s,
+        trim_whisper_transcription_by_lyrics_fn=lambda s, w, _t: (s, w, None),
+        fill_vocal_activity_gaps_fn=lambda w, _a, _t, segments=None: (w, segments),
+        dedupe_whisper_words_fn=lambda w: w,
+        filter_low_confidence_whisper_words_fn=lambda w, _t: w,
+        extract_lrc_words_all_fn=lambda in_lines: [
+            {"text": wd.text, "line_idx": li, "word_idx": wi}
+            for li, line in enumerate(in_lines)
+            for wi, wd in enumerate(line.words)
+        ],
+        build_phoneme_tokens_from_lrc_words_fn=lambda _w, _l: [1, 2, 3],
+        build_phoneme_tokens_from_whisper_words_fn=lambda _w, _l: [1, 2, 3],
+        build_syllable_tokens_from_phonemes_fn=lambda _p: [1],
+        build_segment_text_overlap_assignments_fn=lambda _lw, _aw, _s: {0: [0]},
+        build_phoneme_dtw_path_fn=lambda *_a, **_k: [],
+        build_word_assignments_from_phoneme_path_fn=lambda *_a, **_k: {},
+        build_block_segmented_syllable_assignments_fn=lambda *_a, **_k: {},
+        map_lrc_words_to_whisper_fn=lambda *_a, **_k: (lines, 1, 0.2, {0}),
+        shift_repeated_lines_to_next_whisper_fn=lambda ml, _aw: ml,
+        enforce_monotonic_line_starts_whisper_fn=lambda ml, _aw: ml,
+        resolve_line_overlaps_fn=lambda ml: ml,
+        extend_line_to_trailing_whisper_matches_fn=lambda ml, _aw: ml,
+        pull_late_lines_to_matching_segments_fn=lambda ml, _s, _lang: ml,
+        retime_short_interjection_lines_fn=lambda ml, _s: ml,
+        snap_first_word_to_whisper_onset_fn=lambda ml, _aw, **_kw: ml,
+        interpolate_unmatched_lines_fn=lambda ml, _set: ml,
+        refine_unmatched_lines_with_onsets_fn=lambda ml, _set, _vp: ml,
+        pull_lines_forward_for_continuous_vocals_fn=lambda ml, _af: (ml, 0),
+        run_mapped_line_postpasses_fn=lambda **kwargs: (
+            kwargs["mapped_lines"],
+            kwargs["corrections"],
+        ),
+        constrain_line_starts_to_baseline_fn=lambda ml, _bl: ml,
+        should_rollback_short_line_degradation_fn=lambda *_a, **_k: (False, 0, 0),
+        restore_implausibly_short_lines_fn=lambda _bl, al: (al, 0),
+        clone_lines_for_fallback_fn=lambda in_lines: in_lines,
+        min_segment_overlap_coverage=0.4,
+        logger=wi.logger,
+    )
+
+    assert mapped[1].start_time == pytest.approx(33.58)
+    assert any("prior-phrase carryover" in msg for msg in corrections)
+
+
 def test_align_pipeline_reanchors_unsupported_i_said_line_to_later_onset():
     lines = [
         Line(words=[Word(text="prev", start_time=145.0, end_time=149.0)]),
