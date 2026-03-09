@@ -385,6 +385,47 @@ def test_persist_final_report_outputs_markdown_can_include_interjection_canary_m
     assert "`0.780s` mean, `0.819s` p95" in markdown
 
 
+def test_write_markdown_summary_includes_lyrics_source_routing_summary(tmp_path):
+    module = _load_module()
+    md_path = tmp_path / "benchmark_report.md"
+
+    aggregate = {
+        "songs_total": 2,
+        "songs_succeeded": 2,
+        "songs_failed": 0,
+        "failed_songs": [],
+        "success_rate": 1.0,
+        "line_count_total": 20,
+        "low_confidence_lines_total": 0,
+        "low_confidence_ratio_total": 0.0,
+        "reference_divergence_suspected_count": 0,
+        "reference_divergence_suspected_ratio": 0.0,
+        "alignment_diagnostics_summary": {
+            "lyrics_source_provider_counts": {"lyriq": 1, "Lrclib": 1},
+            "lyrics_source_selection_mode_counts": {
+                "audio_scored_disagreement": 1,
+                "default": 1,
+            },
+            "lyrics_source_disagreement_song_count": 1,
+            "lyrics_source_audio_scoring_song_count": 1,
+        },
+    }
+
+    module._write_markdown_summary(
+        md_path,
+        run_id="run-xyz",
+        manifest=tmp_path / "manifest.yaml",
+        aggregate=aggregate,
+        songs=[],
+    )
+
+    markdown = md_path.read_text(encoding="utf-8")
+    assert "Lyrics source selection modes" in markdown
+    assert "`audio_scored_disagreement` x1, `default` x1" in markdown
+    assert "Lyrics source routing" in markdown
+    assert "`1` disagreement-triggered, `1` audio-scored" in markdown
+
+
 def test_prepare_run_context_resolves_manifest_run_dir_and_baseline(tmp_path):
     module = _load_module()
     manifest_path = tmp_path / "manifest.yaml"

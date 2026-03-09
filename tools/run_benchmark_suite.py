@@ -2381,10 +2381,13 @@ def _aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:  # noqa: C901
     lyrics_source_provider_counts: dict[str, int] = {}
     issue_tag_totals: dict[str, int] = {}
     policy_hint_counts: dict[str, int] = {}
+    lyrics_source_selection_mode_counts: dict[str, int] = {}
     fallback_map_decision_counts: dict[str, int] = {}
     fallback_map_attempted_count = 0
     fallback_map_selected_count = 0
     fallback_map_rejected_count = 0
+    lyrics_source_disagreement_song_count = 0
+    lyrics_source_audio_scoring_song_count = 0
     fallback_map_song_report: list[dict[str, Any]] = []
     for r in succeeded:
         diag = r.get("alignment_diagnostics", {})
@@ -2406,6 +2409,14 @@ def _aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:  # noqa: C901
         if isinstance(policy_hint, dict):
             hint = str(policy_hint.get("hint", "") or "none")
             policy_hint_counts[hint] = policy_hint_counts.get(hint, 0) + 1
+        selection_mode = str(diag.get("lyrics_source_selection_mode", "") or "default")
+        lyrics_source_selection_mode_counts[selection_mode] = (
+            lyrics_source_selection_mode_counts.get(selection_mode, 0) + 1
+        )
+        if bool(diag.get("lyrics_source_disagreement_flagged", False)):
+            lyrics_source_disagreement_song_count += 1
+        if bool(diag.get("lyrics_source_audio_scoring_used", False)):
+            lyrics_source_audio_scoring_song_count += 1
         attempted = bool(diag.get("fallback_map_attempted", False))
         selected = bool(diag.get("fallback_map_selected", False))
         rejected = bool(diag.get("fallback_map_rejected", False))
@@ -2991,6 +3002,15 @@ def _aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:  # noqa: C901
                 sorted(lyrics_source_provider_counts.items())
             ),
             "alignment_policy_hint_counts": dict(sorted(policy_hint_counts.items())),
+            "lyrics_source_selection_mode_counts": dict(
+                sorted(lyrics_source_selection_mode_counts.items())
+            ),
+            "lyrics_source_disagreement_song_count": (
+                lyrics_source_disagreement_song_count
+            ),
+            "lyrics_source_audio_scoring_song_count": (
+                lyrics_source_audio_scoring_song_count
+            ),
             "fallback_map_attempted_count": fallback_map_attempted_count,
             "fallback_map_selected_count": fallback_map_selected_count,
             "fallback_map_rejected_count": fallback_map_rejected_count,
@@ -3525,6 +3545,15 @@ def _write_markdown_summary(  # noqa: C901
         method_counts = diag_summary.get("alignment_method_counts", {})
         provider_counts = diag_summary.get("lyrics_source_provider_counts", {})
         policy_hint_counts = diag_summary.get("alignment_policy_hint_counts", {})
+        source_selection_mode_counts = diag_summary.get(
+            "lyrics_source_selection_mode_counts", {}
+        )
+        source_disagreement_song_count = int(
+            diag_summary.get("lyrics_source_disagreement_song_count", 0) or 0
+        )
+        source_audio_scoring_song_count = int(
+            diag_summary.get("lyrics_source_audio_scoring_song_count", 0) or 0
+        )
         fallback_decision_counts = diag_summary.get("fallback_map_decision_counts", {})
         fallback_attempted_count = int(
             diag_summary.get("fallback_map_attempted_count", 0) or 0
@@ -3545,6 +3574,20 @@ def _write_markdown_summary(  # noqa: C901
             lines.append(
                 "- Lyrics providers seen: "
                 + ", ".join(f"`{k}` x{v}" for k, v in sorted(provider_counts.items()))
+            )
+        if isinstance(source_selection_mode_counts, dict) and source_selection_mode_counts:
+            lines.append(
+                "- Lyrics source selection modes: "
+                + ", ".join(
+                    f"`{k}` x{v}"
+                    for k, v in sorted(source_selection_mode_counts.items())
+                )
+            )
+        if source_disagreement_song_count or source_audio_scoring_song_count:
+            lines.append(
+                "- Lyrics source routing: "
+                f"`{source_disagreement_song_count}` disagreement-triggered, "
+                f"`{source_audio_scoring_song_count}` audio-scored"
             )
         if isinstance(policy_hint_counts, dict) and policy_hint_counts:
             lines.append(
