@@ -379,6 +379,20 @@ def _fetch_lrc_text_and_timings(
                 "lyrics_source_comparable_candidate_count", 0
             )
             routing_diagnostics.setdefault("lyrics_source_selection_mode", "default")
+            routing_diagnostics.setdefault("lyrics_source_routing_skip_reason", "none")
+
+        if routing_diagnostics is not None and offline:
+            routing_diagnostics["lyrics_source_routing_skip_reason"] = "offline"
+        elif routing_diagnostics is not None and not target_duration:
+            routing_diagnostics["lyrics_source_routing_skip_reason"] = (
+                "no_target_duration"
+            )
+        elif routing_diagnostics is not None and not vocals_path:
+            routing_diagnostics["lyrics_source_routing_skip_reason"] = "no_vocals_path"
+        elif routing_diagnostics is not None and evaluate_sources:
+            routing_diagnostics["lyrics_source_routing_skip_reason"] = (
+                "explicit_audio_scoring"
+            )
 
         if target_duration and vocals_path and not evaluate_sources and not offline:
             from ..alignment.timing_evaluator import select_best_source
@@ -424,6 +438,9 @@ def _fetch_lrc_text_and_timings(
                         routing_diagnostics["lyrics_source_selection_mode"] = (
                             "audio_scored_disagreement"
                         )
+                        routing_diagnostics["lyrics_source_routing_skip_reason"] = (
+                            "none"
+                        )
                     lines = parse_lrc_with_timing(
                         lrc_text, title, artist, filter_promos=filter_promos
                     )
@@ -444,6 +461,7 @@ def _fetch_lrc_text_and_timings(
                 routing_diagnostics["lyrics_source_selection_mode"] = (
                     "audio_scored_explicit"
                 )
+                routing_diagnostics["lyrics_source_routing_skip_reason"] = "none"
             lrc_text, source, report = select_best_source(
                 title, artist, vocals_path, target_duration
             )

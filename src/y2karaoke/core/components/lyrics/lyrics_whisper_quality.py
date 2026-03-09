@@ -389,6 +389,7 @@ def _resolve_lrc_inputs(
         "lyrics_source_candidate_count": 0,
         "lyrics_source_comparable_candidate_count": 0,
         "lyrics_source_selection_mode": "default",
+        "lyrics_source_routing_skip_reason": "none",
     }
     lrc_text, line_timings, source = _fetch_lrc_text_and_timings_for_state(
         title=title,
@@ -519,6 +520,7 @@ def get_lyrics_with_quality(  # noqa: C901
         "lyrics_source_candidate_count": 0,
         "lyrics_source_comparable_candidate_count": 0,
         "lyrics_source_selection_mode": "default",
+        "lyrics_source_routing_skip_reason": "none",
     }
     issues_list: List[str] = quality_report["issues"]  # type: ignore[assignment]
 

@@ -780,6 +780,7 @@ def test_aggregate_includes_lyrics_source_routing_summary():
                 "lyrics_source_provider": "lyriq",
                 "issue_tag_counts": {"lyrics_source_disagreement": 1},
                 "lyrics_source_selection_mode": "audio_scored_disagreement",
+                "lyrics_source_routing_skip_reason": "none",
                 "lyrics_source_disagreement_flagged": True,
                 "lyrics_source_audio_scoring_used": True,
                 "fallback_map_attempted": False,
@@ -799,6 +800,7 @@ def test_aggregate_includes_lyrics_source_routing_summary():
                 "lyrics_source_provider": "lyriq",
                 "issue_tag_counts": {},
                 "lyrics_source_selection_mode": "default",
+                "lyrics_source_routing_skip_reason": "offline",
                 "lyrics_source_disagreement_flagged": False,
                 "lyrics_source_audio_scoring_used": False,
                 "fallback_map_attempted": False,
@@ -815,6 +817,8 @@ def test_aggregate_includes_lyrics_source_routing_summary():
         summary["lyrics_source_selection_mode_counts"]["audio_scored_disagreement"] == 1
     )
     assert summary["lyrics_source_selection_mode_counts"]["default"] == 1
+    assert summary["lyrics_source_routing_skip_reason_counts"]["none"] == 1
+    assert summary["lyrics_source_routing_skip_reason_counts"]["offline"] == 1
     assert summary["lyrics_source_disagreement_song_count"] == 1
     assert summary["lyrics_source_audio_scoring_song_count"] == 1
 

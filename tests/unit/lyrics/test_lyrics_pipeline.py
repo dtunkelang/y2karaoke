@@ -177,6 +177,24 @@ def test_fetch_lrc_text_and_timings_skips_auto_escalation_without_disagreement(
     assert source == "provider"
 
 
+def test_fetch_lrc_text_and_timings_marks_offline_skip_reason():
+    routing = {}
+
+    lrc_text, timings, source = lw._fetch_lrc_text_and_timings(
+        "Title",
+        "Artist",
+        target_duration=120,
+        vocals_path="vocals.wav",
+        offline=True,
+        routing_diagnostics=routing,
+    )
+
+    assert lrc_text is None
+    assert timings is None
+    assert source == ""
+    assert routing["lyrics_source_routing_skip_reason"] == "offline"
+
+
 def test_fetch_lrc_text_and_timings_filters_promos(monkeypatch):
     lrc_text = "\n".join(
         [

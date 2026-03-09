@@ -39,3 +39,4 @@ def test_build_base_report_includes_lyrics_source_routing_fields():
     assert report["lyrics_source_candidate_count"] == 3
     assert report["lyrics_source_comparable_candidate_count"] == 2
     assert report["lyrics_source_selection_mode"] == "audio_scored_disagreement"
+    assert report["lyrics_source_routing_skip_reason"] == "none"

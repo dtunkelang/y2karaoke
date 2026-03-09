@@ -49,6 +49,9 @@ def _build_base_report(
         "lyrics_source_selection_mode": quality.get(
             "lyrics_source_selection_mode", "default"
         ),
+        "lyrics_source_routing_skip_reason": quality.get(
+            "lyrics_source_routing_skip_reason", "none"
+        ),
         "alignment_method": quality.get("alignment_method", ""),
         "whisper_requested": quality.get("whisper_requested", False),
         "whisper_force_dtw": quality.get("whisper_force_dtw", False),

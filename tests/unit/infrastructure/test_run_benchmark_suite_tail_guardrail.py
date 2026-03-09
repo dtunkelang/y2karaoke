@@ -73,6 +73,7 @@ def test_extract_alignment_diagnostics_includes_source_routing_fields():
         "lyrics_source_candidate_count": 3,
         "lyrics_source_comparable_candidate_count": 3,
         "lyrics_source_selection_mode": "audio_scored_disagreement",
+        "lyrics_source_routing_skip_reason": "none",
     }
 
     diag = module._extract_alignment_diagnostics(report)
@@ -83,4 +84,5 @@ def test_extract_alignment_diagnostics_includes_source_routing_fields():
     assert diag["lyrics_source_candidate_count"] == 3
     assert diag["lyrics_source_comparable_candidate_count"] == 3
     assert diag["lyrics_source_selection_mode"] == "audio_scored_disagreement"
+    assert diag["lyrics_source_routing_skip_reason"] == "none"
     assert "lyrics_source_disagreement" in diag["issue_tags"]

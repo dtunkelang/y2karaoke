@@ -1273,6 +1273,9 @@ def _extract_alignment_diagnostics(report: dict[str, Any]) -> dict[str, Any]:
         "lyrics_source_selection_mode": str(
             report.get("lyrics_source_selection_mode") or "default"
         ),
+        "lyrics_source_routing_skip_reason": str(
+            report.get("lyrics_source_routing_skip_reason") or "none"
+        ),
         "whisper_requested": bool(report.get("whisper_requested", False)),
         "whisper_used": bool(report.get("whisper_used", False)),
         "whisper_force_dtw": bool(report.get("whisper_force_dtw", False)),
@@ -2382,6 +2385,7 @@ def _aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:  # noqa: C901
     issue_tag_totals: dict[str, int] = {}
     policy_hint_counts: dict[str, int] = {}
     lyrics_source_selection_mode_counts: dict[str, int] = {}
+    lyrics_source_routing_skip_reason_counts: dict[str, int] = {}
     fallback_map_decision_counts: dict[str, int] = {}
     fallback_map_attempted_count = 0
     fallback_map_selected_count = 0
@@ -2412,6 +2416,10 @@ def _aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:  # noqa: C901
         selection_mode = str(diag.get("lyrics_source_selection_mode", "") or "default")
         lyrics_source_selection_mode_counts[selection_mode] = (
             lyrics_source_selection_mode_counts.get(selection_mode, 0) + 1
+        )
+        skip_reason = str(diag.get("lyrics_source_routing_skip_reason", "") or "none")
+        lyrics_source_routing_skip_reason_counts[skip_reason] = (
+            lyrics_source_routing_skip_reason_counts.get(skip_reason, 0) + 1
         )
         if bool(diag.get("lyrics_source_disagreement_flagged", False)):
             lyrics_source_disagreement_song_count += 1
@@ -3005,6 +3013,9 @@ def _aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:  # noqa: C901
             "lyrics_source_selection_mode_counts": dict(
                 sorted(lyrics_source_selection_mode_counts.items())
             ),
+            "lyrics_source_routing_skip_reason_counts": dict(
+                sorted(lyrics_source_routing_skip_reason_counts.items())
+            ),
             "lyrics_source_disagreement_song_count": (
                 lyrics_source_disagreement_song_count
             ),
@@ -3548,6 +3559,9 @@ def _write_markdown_summary(  # noqa: C901
         source_selection_mode_counts = diag_summary.get(
             "lyrics_source_selection_mode_counts", {}
         )
+        source_routing_skip_reason_counts = diag_summary.get(
+            "lyrics_source_routing_skip_reason_counts", {}
+        )
         source_disagreement_song_count = int(
             diag_summary.get("lyrics_source_disagreement_song_count", 0) or 0
         )
@@ -3584,6 +3598,17 @@ def _write_markdown_summary(  # noqa: C901
                 + ", ".join(
                     f"`{k}` x{v}"
                     for k, v in sorted(source_selection_mode_counts.items())
+                )
+            )
+        if (
+            isinstance(source_routing_skip_reason_counts, dict)
+            and source_routing_skip_reason_counts
+        ):
+            lines.append(
+                "- Lyrics source routing skip reasons: "
+                + ", ".join(
+                    f"`{k}` x{v}"
+                    for k, v in sorted(source_routing_skip_reason_counts.items())
                 )
             )
         if source_disagreement_song_count or source_audio_scoring_song_count:

@@ -406,6 +406,10 @@ def test_write_markdown_summary_includes_lyrics_source_routing_summary(tmp_path)
                 "audio_scored_disagreement": 1,
                 "default": 1,
             },
+            "lyrics_source_routing_skip_reason_counts": {
+                "none": 1,
+                "offline": 1,
+            },
             "lyrics_source_disagreement_song_count": 1,
             "lyrics_source_audio_scoring_song_count": 1,
         },
@@ -422,6 +426,8 @@ def test_write_markdown_summary_includes_lyrics_source_routing_summary(tmp_path)
     markdown = md_path.read_text(encoding="utf-8")
     assert "Lyrics source selection modes" in markdown
     assert "`audio_scored_disagreement` x1, `default` x1" in markdown
+    assert "Lyrics source routing skip reasons" in markdown
+    assert "`none` x1, `offline` x1" in markdown
     assert "Lyrics source routing" in markdown
     assert "`1` disagreement-triggered, `1` audio-scored" in markdown
 
