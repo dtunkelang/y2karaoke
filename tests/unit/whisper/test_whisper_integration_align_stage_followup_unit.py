@@ -439,6 +439,35 @@ def test_align_pipeline_extends_unsupported_line_before_weak_opening():
     assert any("before weak openings" in msg for msg in corrections)
 
 
+def test_align_pipeline_does_not_extend_no_line_before_i_said():
+    lines = [
+        Line(
+            words=[
+                Word(text="No,", start_time=123.67, end_time=124.15),
+                Word(text="I", start_time=124.15, end_time=124.55),
+                Word(text="can't", start_time=124.55, end_time=125.05),
+                Word(text="sleep", start_time=125.05, end_time=125.55),
+                Word(text="until", start_time=125.55, end_time=126.05),
+                Word(text="I", start_time=126.05, end_time=126.45),
+                Word(text="feel", start_time=126.45, end_time=126.95),
+                Word(text="your", start_time=126.95, end_time=127.45),
+                Word(text="touch", start_time=127.45, end_time=128.4),
+            ]
+        ),
+        Line(
+            words=[
+                Word(text="I", start_time=130.01, end_time=130.5),
+                Word(text="said,", start_time=130.5, end_time=131.0),
+            ]
+        ),
+    ]
+
+    mapped, applied = wialign._extend_unsupported_weak_opening_lines(lines, [])
+
+    assert applied == 0
+    assert mapped[0].end_time == pytest.approx(128.4)
+
+
 def test_align_pipeline_extends_misaligned_line_before_i_said():
     lines = [
         Line(

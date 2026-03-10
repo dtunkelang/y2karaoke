@@ -327,6 +327,8 @@ def _choose_weak_opening_extension_end(
     tokens = _normalized_prefix_tokens(line)
     if not tokens or tokens[0] not in {"oh", "maybe", "no", "cause"}:
         return None
+    if tokens[0] == "no" and _normalized_prefix_tokens(next_line)[:2] == ["i", "said"]:
+        return None
     if _count_non_vocal_words_near_time(whisper_words, line.start_time, window_sec=1.0):
         return None
     gap_after = next_line.start_time - line.end_time
