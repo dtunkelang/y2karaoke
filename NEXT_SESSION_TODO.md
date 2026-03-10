@@ -123,6 +123,16 @@
       - artifact:
         - `benchmarks/results/20260309T_blinding_exact_replay_delta/blinding_lights_pre_vs_final_delta_vocals.md`
       - active downstream delta on line `25` is therefore `+1.836s`, and the next branch should focus specifically on which Whisper/post-alignment stage applies that late shift.
+    - Mapper-stage update:
+      - new env-controlled trace hooks now expose per-line accepted matches, per-word candidate scores, and per-word preselected assignments:
+        - `Y2K_TRACE_MAPPER_DETAILS_JSON`
+        - `Y2K_TRACE_MAPPER_CANDIDATES_JSON`
+        - `Y2K_TRACE_MAPPER_LINE_RANGE`
+      - latest focused trace on `Blinding Lights` lines `9-10` shows the main issue is upstream of candidate scoring:
+        - line `9` lexical words (`Sin`, `City's`, `cold`, `and`, `empty`) are pre-assigned only to `[VOCAL]` pseudo-words around `61.66-66.66s`
+        - line `10` words are pre-assigned to far-ahead unrelated words like `maybe`, `clearly`, `didn't`, `don't`, `long,`, `me` around `97-112s`
+      - candidate selection is therefore not the primary bug on those lines; it only receives one assigned word per lyric word in the `assigned_words` phase
+      - next mapper branch should inspect the phoneme/DTW assignment entry path and add a confidence gate before those assignments are converted back to word indices
 - [ ] Use multi-source timed-lyrics disagreement as a routing signal.
   - Hypothesis: provider disagreement is useful evidence that line timestamps are untrustworthy and we should rely more on audio/Whisper scoring.
   - Initial evidence:

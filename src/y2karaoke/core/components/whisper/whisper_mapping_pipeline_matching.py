@@ -57,11 +57,14 @@ def _match_assigned_words(
         assigned = lrc_assignments.get(lrc_idx_opt)
         if not assigned:
             continue
+        fallback_used = False
         candidate_indices: Set[int] = set(assigned)
+        segment_indices: Set[int] = set()
         if line_segment is not None:
-            candidate_indices.update(
+            segment_indices = set(
                 _segment_word_indices(ctx.all_words, ctx.word_segment_idx, line_segment)
             )
+            candidate_indices.update(segment_indices)
         whisper_candidates = filter_and_order_candidates_fn(ctx, candidate_indices)
         if not whisper_candidates:
             fallback_indices = _collect_unused_words_near_line(
@@ -71,6 +74,7 @@ def _match_assigned_words(
                 ctx.next_word_idx_start,
                 ctx.prev_line_end,
             )
+            fallback_used = True
             whisper_candidates = filter_and_order_candidates_fn(
                 ctx, set(fallback_indices)
             )
@@ -84,6 +88,12 @@ def _match_assigned_words(
             line_segment,
             line_anchor_time,
             lrc_idx_opt,
+            trace_context={
+                "phase": "assigned_words",
+                "assigned_count": len(assigned),
+                "segment_count": len(segment_indices),
+                "fallback_used": fallback_used,
+            },
         )
         register_word_match_fn(
             ctx,
@@ -133,10 +143,12 @@ def _fill_unmatched_gaps(
             lrc_assignments.get(lrc_idx_opt, []) if lrc_idx_opt is not None else []
         )
         candidate_indices: Set[int] = set(assigned)
+        segment_indices: Set[int] = set()
         if line_segment is not None:
-            candidate_indices.update(
+            segment_indices = set(
                 _segment_word_indices(ctx.all_words, ctx.word_segment_idx, line_segment)
             )
+            candidate_indices.update(segment_indices)
         window_start, window_end, gap_min_idx = _gap_window_bounds(
             ctx=ctx,
             gap_start=gap_start,
@@ -173,6 +185,16 @@ def _fill_unmatched_gaps(
             line_segment,
             line_anchor_time,
             lrc_idx_opt,
+            trace_context={
+                "phase": "gap_fill",
+                "assigned_count": len(assigned),
+                "segment_count": len(segment_indices),
+                "window_candidate_count": len(window_candidates),
+                "gap_start": round(gap_start, 3),
+                "gap_end": round(gap_end, 3),
+                "window_start": round(window_start, 3),
+                "window_end": round(window_end, 3),
+            },
         )
         register_word_match_fn(
             ctx,

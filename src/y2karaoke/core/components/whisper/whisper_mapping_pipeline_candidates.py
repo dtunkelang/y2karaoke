@@ -72,6 +72,7 @@ def _select_best_candidate(
     line_anchor_time: float,
     lrc_idx_opt: Optional[int],
     *,
+    trace_context: Optional[dict[str, object]] = None,
     time_drift_threshold: float,
 ) -> Tuple[timing_models.TranscriptionWord, int]:
     """Score candidates, pick the best, and apply drift fallback."""
@@ -127,6 +128,7 @@ def _select_best_candidate(
             "line_anchor_time": round(line_anchor_time, 3),
             "line_segment": line_segment,
             "lrc_index": lrc_idx_opt,
+            "trace_context": trace_context or {},
             "chosen_index": best_idx,
             "chosen_word": best_word.text,
             "chosen_start": round(best_word.start, 3),

@@ -31,15 +31,42 @@ def _parse_trace_line_range() -> tuple[int, int] | None:
 def _append_mapper_trace_row(
     rows: list[dict[str, Any]],
     *,
+    ctx: _LineMappingContext,
+    line: models.Line,
     line_index: int,
     text: str,
     line_anchor_time: float,
     line_shift: float,
     line_segment: Optional[int],
     assigned_segs: Dict[int, int],
+    lrc_index_by_loc: Dict[tuple[int, int], int],
+    lrc_assignments: Dict[int, List[int]],
     line_matches: List[Tuple[int, Tuple[float, float]]],
     mapped_line: models.Line,
 ) -> None:
+    assigned_words = []
+    for word_idx, word in enumerate(line.words):
+        lrc_idx = lrc_index_by_loc.get((line_index - 1, word_idx))
+        assigned_indices = (
+            lrc_assignments.get(lrc_idx, []) if lrc_idx is not None else []
+        )
+        assigned_words.append(
+            {
+                "word_index": word_idx,
+                "text": word.text,
+                "start": round(word.start_time, 3),
+                "assigned": [
+                    {
+                        "index": wi,
+                        "text": ctx.all_words[wi].text,
+                        "start": round(ctx.all_words[wi].start, 3),
+                        "end": round(ctx.all_words[wi].end, 3),
+                        "segment": ctx.word_segment_idx.get(wi),
+                    }
+                    for wi in assigned_indices
+                ],
+            }
+        )
     rows.append(
         {
             "line_index": line_index,
@@ -48,6 +75,7 @@ def _append_mapper_trace_row(
             "line_shift": round(line_shift, 3),
             "line_segment": line_segment,
             "assigned_segment_votes": dict(sorted(assigned_segs.items())),
+            "assigned_words": assigned_words,
             "match_count": len(line_matches),
             "matches": [
                 {
@@ -236,12 +264,16 @@ def _map_lrc_words_to_whisper(
         ):
             _append_mapper_trace_row(
                 mapper_trace_rows,
+                ctx=ctx,
+                line=line,
                 line_index=line_idx + 1,
                 text=line.text,
                 line_anchor_time=line_anchor_time,
                 line_shift=line_shift,
                 line_segment=line_segment,
                 assigned_segs=assigned_segs,
+                lrc_index_by_loc=lrc_index_by_loc,
+                lrc_assignments=lrc_assignments,
                 line_matches=line_matches,
                 mapped_line=mapped_line,
             )

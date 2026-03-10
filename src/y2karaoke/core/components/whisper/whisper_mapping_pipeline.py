@@ -64,6 +64,8 @@ def _select_best_candidate(
     line_segment: Optional[int],
     line_anchor_time: float,
     lrc_idx_opt: Optional[int],
+    *,
+    trace_context: Dict[str, object] | None = None,
 ) -> Tuple[timing_models.TranscriptionWord, int]:
     return _candidate_helpers._select_best_candidate(
         ctx,
@@ -73,6 +75,7 @@ def _select_best_candidate(
         line_segment,
         line_anchor_time,
         lrc_idx_opt,
+        trace_context=trace_context,
         time_drift_threshold=_TIME_DRIFT_THRESHOLD,
     )
 
