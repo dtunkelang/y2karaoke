@@ -114,6 +114,9 @@
       - lines `23-24` move from `115.38/121.32` to `117.73/123.67`, essentially matching gold `117.70/123.75`
       - line `25` remains the main residual miss, moving from `126.51` pre-Whisper to `130.01` final while gold is `128.65`
     - Next downstream branch should target why `I said, ooh, I'm drowning in the night` is still shifted late after Whisper/post-alignment handling.
+    - Additional tracing note:
+      - `tools/analyze_whisper_postpasses.py` can replay `align_lrc_text_to_whisper_timings`, but direct replay is not fidelity-equal to the offline benchmark path because it may enter a different Whisper/WhisperX fallback branch.
+      - Future line-25 tracing should hook the actual benchmark subprocess path or force the same cached branch before trusting stage-level deltas.
 - [ ] Use multi-source timed-lyrics disagreement as a routing signal.
   - Hypothesis: provider disagreement is useful evidence that line timestamps are untrustworthy and we should rely more on audio/Whisper scoring.
   - Initial evidence:
