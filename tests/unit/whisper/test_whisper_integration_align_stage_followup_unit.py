@@ -131,6 +131,38 @@ def test_extend_unsupported_i_said_tails_helper():
     assert mapped[0].end_time == pytest.approx(123.45)
 
 
+def test_extend_sparse_i_said_tails_helper_with_single_nearby_word():
+    lines = [
+        Line(
+            words=[
+                Word(text="I", start_time=60.78, end_time=61.468),
+                Word(text="said,", start_time=61.504, end_time=62.191),
+                Word(text="ooh,", start_time=62.227, end_time=62.915),
+                Word(text="I'm", start_time=62.951, end_time=63.639),
+                Word(text="blinded", start_time=63.675, end_time=64.363),
+                Word(text="by", start_time=64.399, end_time=65.086),
+                Word(text="the", start_time=65.123, end_time=65.81),
+                Word(text="lights", start_time=65.846, end_time=66.52),
+            ]
+        ),
+        Line(
+            words=[
+                Word(text="No,", start_time=67.50, end_time=68.016),
+                Word(text="I", start_time=68.043, end_time=68.558),
+                Word(text="can't", start_time=68.585, end_time=69.10),
+            ]
+        ),
+    ]
+    whisper_words = [
+        TranscriptionWord(text="been", start=61.42, end=61.66, probability=0.938),
+    ]
+
+    mapped, applied = wialign._extend_unsupported_i_said_tails(lines, whisper_words)
+
+    assert applied == 1
+    assert mapped[0].end_time == pytest.approx(67.28)
+
+
 def test_align_pipeline_reanchors_sparse_interjection_cluster_with_modest_shift():
     lines = [
         Line(words=[Word(text="prev", start_time=77.9, end_time=81.93)]),

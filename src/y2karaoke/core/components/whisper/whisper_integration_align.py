@@ -280,16 +280,22 @@ def _choose_i_said_tail_extension_end(
         return None
     if _normalized_prefix_tokens(line)[:2] != ["i", "said"]:
         return None
-    if _count_non_vocal_words_near_time(whisper_words, line.start_time, window_sec=1.0):
+    nearby_count = _count_non_vocal_words_near_time(
+        whisper_words,
+        line.start_time,
+        window_sec=1.0,
+    )
+    if nearby_count > 1:
         return None
     next_tokens = _normalized_prefix_tokens(next_line)
     if not next_tokens or next_tokens[0] != "no":
         return None
     gap_after = next_line.start_time - line.end_time
-    if gap_after < 1.2 or gap_after > 2.0:
+    min_gap = 0.8 if nearby_count == 1 else 1.2
+    if gap_after < min_gap or gap_after > 2.0:
         return None
     target_end = next_line.start_time - 0.22
-    if target_end <= line.end_time + 0.8:
+    if target_end <= line.end_time + 0.7:
         return None
     return target_end
 
