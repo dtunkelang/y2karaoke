@@ -8,6 +8,7 @@ from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple
 
 from ... import models
 from ..alignment import timing_models
+from .whisper_assignment_confidence import build_assignment_confidence_profile
 from .whisper_dtw import _LineMappingContext
 from .whisper_mapping_helpers import _SPEECH_BLOCK_GAP, _build_word_to_segment_index
 from . import whisper_utils
@@ -38,6 +39,7 @@ def _append_mapper_trace_row(
     line_anchor_time: float,
     line_shift: float,
     line_segment: Optional[int],
+    assignment_profile,
     assigned_segs: Dict[int, int],
     lrc_index_by_loc: Dict[tuple[int, int], int],
     lrc_assignments: Dict[int, List[int]],
@@ -74,6 +76,19 @@ def _append_mapper_trace_row(
             "line_anchor_time": round(line_anchor_time, 3),
             "line_shift": round(line_shift, 3),
             "line_segment": line_segment,
+            "assignment_confidence": {
+                "total_assigned": assignment_profile.total_assigned,
+                "lexical_overlap_ratio": round(
+                    assignment_profile.lexical_overlap_ratio, 4
+                ),
+                "placeholder_ratio": round(assignment_profile.placeholder_ratio, 4),
+                "median_start_drift_sec": round(
+                    assignment_profile.median_start_drift_sec, 4
+                ),
+                "max_start_drift_sec": round(assignment_profile.max_start_drift_sec, 4),
+                "unique_segment_count": assignment_profile.unique_segment_count,
+                "low_confidence": assignment_profile.low_confidence,
+            },
             "assigned_segment_votes": dict(sorted(assigned_segs.items())),
             "assigned_words": assigned_words,
             "match_count": len(line_matches),
@@ -198,6 +213,14 @@ def _map_lrc_words_to_whisper(
             continue
 
         line_segment, line_anchor_time, line_shift = prepare_line_context_fn(ctx, line)
+        assignment_profile = build_assignment_confidence_profile(
+            line_idx=line_idx,
+            line=line,
+            lrc_index_by_loc=lrc_index_by_loc,
+            lrc_assignments=lrc_assignments,
+            all_words=ctx.all_words,
+            word_segment_idx=ctx.word_segment_idx,
+        )
 
         assigned_segs = _line_override_segment_votes(
             line_idx=line_idx,
@@ -271,6 +294,7 @@ def _map_lrc_words_to_whisper(
                 line_anchor_time=line_anchor_time,
                 line_shift=line_shift,
                 line_segment=line_segment,
+                assignment_profile=assignment_profile,
                 assigned_segs=assigned_segs,
                 lrc_index_by_loc=lrc_index_by_loc,
                 lrc_assignments=lrc_assignments,
