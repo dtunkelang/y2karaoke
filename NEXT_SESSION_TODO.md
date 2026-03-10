@@ -207,6 +207,12 @@
           - implication:
             - the default candidate set is already too narrow
             - next redesign must change candidate generation / search, not only scoring
+        - richer default trace shows why the scorer cannot move anything:
+          - for lines `20-31`, the normal candidate set contains only segment `7`
+          - no merged candidates are generated at all in the live default path
+          - segment `7` has `placeholder_ratio ~= 0.9477` and `bag_size = 172`
+          - implication:
+            - next branch must widen candidate generation during stalled runs before any confidence-weighted scorer can matter
         - implication:
           - next upstream redesign needs assignment-confidence weighting on segment bags, not just overlap-based rescue
       - next branch should target segment-cursor stall / oversized stalled-segment handling, not another downstream/postpass heuristic
