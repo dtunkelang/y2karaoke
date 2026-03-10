@@ -147,6 +147,11 @@
         - `seg_cursor` reaches segment `7` by line `14` and then never advances again through lines `20-25`
         - those late chorus lines all score `0.0` or `0.1667` against the same mixed segment-7 bag
         - line-9 placeholder heuristics can therefore regress the canary indirectly by changing cursor progression before the late chorus block
+        - `tools/analyze_segment_cursor_stall.py` summarizes the current live trace as two low-score stall runs on segment `7`:
+          - lines `15-26`
+          - lines `28-35`
+        - artifact:
+          - `benchmarks/results/20260310T_blinding_cursor_trace/segment_cursor_stall.md`
       - next branch should target segment-cursor stall / oversized terminal segment handling, not another downstream/postpass heuristic
 - [ ] Use multi-source timed-lyrics disagreement as a routing signal.
   - Hypothesis: provider disagreement is useful evidence that line timestamps are untrustworthy and we should rely more on audio/Whisper scoring.
