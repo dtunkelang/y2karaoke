@@ -412,6 +412,38 @@ def _extend_unsupported_weak_opening_lines(
     return updated, applied
 
 
+def _restore_zero_support_parenthetical_late_start_expansions(
+    mapped_lines: List[models.Line],
+    baseline_lines: List[models.Line],
+    whisper_words: List[timing_models.TranscriptionWord],
+) -> tuple[List[models.Line], int]:
+    updated = list(mapped_lines)
+    applied = 0
+    for idx, line in enumerate(updated):
+        if idx >= len(baseline_lines):
+            break
+        baseline_line = baseline_lines[idx]
+        if not line.words or not baseline_line.words or len(line.words) < 5:
+            continue
+        if ")" not in line.words[-1].text:
+            continue
+        start_shift = line.start_time - baseline_line.start_time
+        duration_growth = (line.end_time - line.start_time) - (
+            baseline_line.end_time - baseline_line.start_time
+        )
+        if start_shift < 0.75 or duration_growth < 0.6:
+            continue
+        if _count_non_vocal_words_near_time(
+            whisper_words,
+            line.start_time,
+            window_sec=1.0,
+        ):
+            continue
+        updated[idx] = _rescale_line_to_new_start(line, baseline_line.start_time)
+        applied += 1
+    return updated, applied
+
+
 def _choose_interjection_window_from_onsets(
     line: models.Line,
     next_line: models.Line,
@@ -1017,6 +1049,24 @@ def align_lrc_text_to_whisper_timings_impl(  # noqa: C901
     _capture_trace_snapshot(
         trace_snapshots,
         stage="after_restore_pairwise_inversions_from_source",
+        lines=mapped_lines,
+        line_range=trace_line_range,
+    )
+    mapped_lines, restored_zero_support_late = (
+        _restore_zero_support_parenthetical_late_start_expansions(
+            mapped_lines,
+            baseline_lines,
+            all_words,
+        )
+    )
+    if restored_zero_support_late:
+        corrections.append(
+            "Restored "
+            f"{restored_zero_support_late} zero-support parenthetical late expanded line(s) to baseline starts"
+        )
+    _capture_trace_snapshot(
+        trace_snapshots,
+        stage="after_restore_zero_support_parenthetical_late_start_expansions",
         lines=mapped_lines,
         line_range=trace_line_range,
     )

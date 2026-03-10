@@ -163,6 +163,74 @@ def test_extend_sparse_i_said_tails_helper_with_single_nearby_word():
     assert mapped[0].end_time == pytest.approx(67.28)
 
 
+def test_restore_zero_support_parenthetical_late_start_expansions_helper():
+    baseline = [
+        Line(words=[Word(text="prev", start_time=100.39, end_time=106.43)]),
+        Line(
+            words=[
+                Word(text="The", start_time=107.08, end_time=107.46),
+                Word(text="city's", start_time=107.46, end_time=107.83),
+                Word(text="cold", start_time=107.83, end_time=108.21),
+                Word(text="and", start_time=108.21, end_time=108.58),
+                Word(text="empty", start_time=108.58, end_time=108.96),
+                Word(text="(oh)", start_time=108.96, end_time=109.336),
+            ]
+        ),
+        Line(
+            words=[
+                Word(text="No,", start_time=122.84, end_time=123.45),
+                Word(text="I", start_time=123.45, end_time=124.06),
+                Word(text="can't", start_time=124.06, end_time=124.67),
+                Word(text="sleep", start_time=124.67, end_time=125.27),
+                Word(text="until", start_time=125.27, end_time=125.88),
+                Word(text="I", start_time=125.88, end_time=126.49),
+                Word(text="feel", start_time=126.49, end_time=127.10),
+                Word(text="your", start_time=127.10, end_time=127.70),
+                Word(text="touch", start_time=127.70, end_time=129.07),
+            ]
+        ),
+    ]
+    mapped = [
+        baseline[0],
+        Line(
+            words=[
+                Word(text="The", start_time=107.92, end_time=108.473),
+                Word(text="city's", start_time=108.473, end_time=109.027),
+                Word(text="cold", start_time=109.027, end_time=109.58),
+                Word(text="and", start_time=109.58, end_time=110.133),
+                Word(text="empty", start_time=110.133, end_time=110.687),
+                Word(text="(oh)", start_time=110.687, end_time=111.24),
+            ]
+        ),
+        Line(
+            words=[
+                Word(text="No,", start_time=123.67, end_time=124.27),
+                Word(text="I", start_time=124.27, end_time=124.87),
+                Word(text="can't", start_time=124.87, end_time=125.47),
+                Word(text="sleep", start_time=125.47, end_time=126.07),
+                Word(text="until", start_time=126.07, end_time=126.67),
+                Word(text="I", start_time=126.67, end_time=127.27),
+                Word(text="feel", start_time=127.27, end_time=127.87),
+                Word(text="your", start_time=127.87, end_time=128.47),
+                Word(text="touch", start_time=128.47, end_time=129.07),
+            ]
+        ),
+    ]
+
+    restored, applied = (
+        wialign._restore_zero_support_parenthetical_late_start_expansions(
+            mapped,
+            baseline,
+            [],
+        )
+    )
+
+    assert applied == 1
+    assert restored[1].start_time == pytest.approx(107.08, abs=0.01)
+    assert restored[1].end_time == pytest.approx(111.24, abs=0.01)
+    assert restored[2].start_time == pytest.approx(123.67, abs=0.01)
+
+
 def test_align_pipeline_reanchors_sparse_interjection_cluster_with_modest_shift():
     lines = [
         Line(words=[Word(text="prev", start_time=77.9, end_time=81.93)]),
