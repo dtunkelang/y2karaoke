@@ -96,10 +96,11 @@ def test_extract_song_metrics_with_gold_word_deltas():
     report = {
         "lines": [
             {
+                "pre_whisper_start": 1.05,
                 "words": [
                     {"text": "hello", "start": 1.0, "end": 1.5},
                     {"text": "world", "start": 2.0, "end": 2.7},
-                ]
+                ],
             }
         ]
     }
@@ -124,6 +125,9 @@ def test_extract_song_metrics_with_gold_word_deltas():
     assert metrics["gold_comparable_line_count"] == 1
     assert metrics["gold_line_duration_mean_abs_sec"] == 0.0
     assert metrics["gold_line_duration_p95_abs_sec"] == 0.0
+    assert metrics["gold_pre_whisper_start_mean_abs_sec"] == 0.15
+    assert metrics["gold_downstream_regression_line_count"] == 0
+    assert metrics["gold_downstream_regression_mean_improvement_sec"] == 0.0
     assert metrics["timing_quality_score_mode"] == "anchor_fallback"
     assert (
         metrics["gold_alignment_mode"] == "monotonic_text_window_parenthetical_optional"

@@ -1215,6 +1215,8 @@ def _extract_song_metrics(
     gold_nearest_onset_start_abs_deltas: list[float] = []
     gold_nearest_onset_start_abs_deltas_non_interjection: list[float] = []
     gold_later_onset_choice_improvements: list[float] = []
+    pre_whisper_start_abs_deltas_to_gold: list[float] = []
+    downstream_gold_regression_improvements: list[float] = []
     text_matches = 0
 
     for gen_idx, gold_idx, sim in aligned_pairs:
@@ -1241,6 +1243,19 @@ def _extract_song_metrics(
         line_duration_abs_deltas.append(
             abs(float(gen_line["duration"]) - float(gold_line["duration"]))
         )
+        pre_whisper_start = lines[gen_idx].get("pre_whisper_start")
+        if isinstance(pre_whisper_start, (int, float)):
+            pre_whisper_abs_delta = abs(
+                float(pre_whisper_start) - float(gold_line["start"])
+            )
+            final_abs_delta = abs(float(gen_line["start"]) - float(gold_line["start"]))
+            pre_whisper_start_abs_deltas_to_gold.append(pre_whisper_abs_delta)
+            # Count cases where downstream stages materially worsen a line that was
+            # already closer to gold before Whisper/post-alignment drift.
+            if final_abs_delta - pre_whisper_abs_delta >= 0.25:
+                downstream_gold_regression_improvements.append(
+                    final_abs_delta - pre_whisper_abs_delta
+                )
 
     gold_later_onset_choice_improvements = _gold_later_onset_choice_rows(
         generated_lines=generated_lines_for_gold,
@@ -1300,6 +1315,15 @@ def _extract_song_metrics(
             "gold_later_onset_choice_mean_improvement_sec": round(
                 _mean(gold_later_onset_choice_improvements) or 0.0,
                 4,
+            ),
+            "gold_pre_whisper_start_mean_abs_sec": round(
+                _mean(pre_whisper_start_abs_deltas_to_gold) or 0.0, 4
+            ),
+            "gold_downstream_regression_line_count": len(
+                downstream_gold_regression_improvements
+            ),
+            "gold_downstream_regression_mean_improvement_sec": round(
+                _mean(downstream_gold_regression_improvements) or 0.0, 4
             ),
             "gold_line_duration_mean_abs_sec": round(
                 _mean(line_duration_abs_deltas) or 0.0, 4
@@ -2835,6 +2859,9 @@ def _aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:  # noqa: C901
     curated_canary_gold_line_duration_mean_abs_sec_mean = metric_mean_for_rows(
         gold_measured_non_reference_songs, "gold_line_duration_mean_abs_sec"
     )
+    curated_canary_gold_pre_whisper_start_mean_abs_sec_mean = metric_mean_for_rows(
+        gold_measured_non_reference_songs, "gold_pre_whisper_start_mean_abs_sec"
+    )
     curated_canary_gold_start_p95_abs_sec_mean = metric_mean_for_rows(
         gold_measured_non_reference_songs, "gold_start_p95_abs_sec"
     )
@@ -2870,6 +2897,21 @@ def _aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:  # noqa: C901
         metric_mean_for_rows(
             gold_measured_non_reference_songs,
             "gold_later_onset_choice_mean_improvement_sec",
+        )
+    )
+    curated_canary_gold_downstream_regression_line_count_total = int(
+        sum(
+            int(
+                r.get("metrics", {}).get("gold_downstream_regression_line_count", 0)
+                or 0
+            )
+            for r in gold_measured_non_reference_songs
+        )
+    )
+    curated_canary_gold_downstream_regression_mean_improvement_sec_mean = (
+        metric_mean_for_rows(
+            gold_measured_non_reference_songs,
+            "gold_downstream_regression_mean_improvement_sec",
         )
     )
     triage_rankings = _build_triage_rankings(succeeded, top_n=5)
@@ -3179,6 +3221,14 @@ def _aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:  # noqa: C901
             if curated_canary_gold_line_duration_mean_abs_sec_mean is not None
             else None
         ),
+        "curated_canary_gold_pre_whisper_start_mean_abs_sec_mean": (
+            round(
+                float(curated_canary_gold_pre_whisper_start_mean_abs_sec_mean or 0.0),
+                4,
+            )
+            if curated_canary_gold_pre_whisper_start_mean_abs_sec_mean is not None
+            else None
+        ),
         "curated_canary_gold_parenthetical_interjection_start_mean_abs_sec_mean": (
             round(
                 float(
@@ -3235,6 +3285,21 @@ def _aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:  # noqa: C901
                 4,
             )
             if curated_canary_gold_later_onset_choice_mean_improvement_sec_mean
+            is not None
+            else None
+        ),
+        "curated_canary_gold_downstream_regression_line_count_total": (
+            curated_canary_gold_downstream_regression_line_count_total
+        ),
+        "curated_canary_gold_downstream_regression_mean_improvement_sec_mean": (
+            round(
+                float(
+                    curated_canary_gold_downstream_regression_mean_improvement_sec_mean
+                    or 0.0
+                ),
+                4,
+            )
+            if curated_canary_gold_downstream_regression_mean_improvement_sec_mean
             is not None
             else None
         ),
@@ -3809,6 +3874,14 @@ def _write_markdown_summary(  # noqa: C901
             "- Curated canary mean abs line-duration delta: "
             f"`{_fmt_num(aggregate.get('curated_canary_gold_line_duration_mean_abs_sec_mean'), unit='s')}`"
         )
+        pre_whisper_gold_mean = aggregate.get(
+            "curated_canary_gold_pre_whisper_start_mean_abs_sec_mean"
+        )
+        if pre_whisper_gold_mean is not None:
+            lines.append(
+                "- Curated canary pre-Whisper gold start delta: "
+                f"`{_fmt_num(pre_whisper_gold_mean, unit='s')}`"
+            )
         nearest_onset_mean = aggregate.get(
             "curated_canary_gold_nearest_onset_start_mean_abs_sec_mean"
         )
@@ -3835,6 +3908,18 @@ def _write_markdown_summary(  # noqa: C901
                 "- Curated canary later-onset choice opportunities: "
                 f"`{later_onset_choice_count}` lines, "
                 f"`{_fmt_num(later_onset_choice_mean, unit='s')}` mean potential improvement"
+            )
+        downstream_regression_count = aggregate.get(
+            "curated_canary_gold_downstream_regression_line_count_total"
+        )
+        downstream_regression_mean = aggregate.get(
+            "curated_canary_gold_downstream_regression_mean_improvement_sec_mean"
+        )
+        if downstream_regression_count:
+            lines.append(
+                "- Curated canary downstream gold regressions: "
+                f"`{downstream_regression_count}` lines, "
+                f"`{_fmt_num(downstream_regression_mean, unit='s')}` mean avoidable drift"
             )
         interjection_mean = aggregate.get(
             "curated_canary_gold_parenthetical_interjection_start_mean_abs_sec_mean"
