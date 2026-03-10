@@ -582,7 +582,10 @@ def _select_segment_for_line_mode(
         n_segs=n_segs,
         config=config,
     )
-    if mode == "experimental_terminal_stall_lookback":
+    if mode in {
+        "experimental_terminal_stall_lookback",
+        "experimental_terminal_stall_tie_break",
+    }:
         lookback_scores = []
         lb_start = max(0, seg_cursor - config.terminal_stall_lookback_segs)
         for si in range(lb_start, seg_cursor):
@@ -603,7 +606,13 @@ def _select_segment_for_line_mode(
                 }
             )
         if line_trace is not None:
-            line_trace["experimental_terminal_stall_lookback_scores"] = lookback_scores
+            trace_key = (
+                "experimental_terminal_stall_lookback_scores"
+                if mode == "experimental_terminal_stall_lookback"
+                else "experimental_terminal_stall_tie_scores"
+            )
+            line_trace[trace_key] = lookback_scores
+    if mode == "experimental_terminal_stall_lookback":
         rescued_seg, rescued_score = _rescue_terminal_stall_line_assignment(
             words=words,
             best_seg=best_seg,

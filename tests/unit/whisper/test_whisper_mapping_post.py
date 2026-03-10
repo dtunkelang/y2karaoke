@@ -136,6 +136,41 @@ def test_select_segment_for_line_mode_experimental_terminal_stall_looks_back(
     assert score == 1.0
 
 
+def test_select_segment_for_line_mode_experimental_terminal_stall_tie_break_traces(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv(
+        "Y2K_WHISPER_SEGMENT_ASSIGN_SELECTION_MODE",
+        "experimental_terminal_stall_tie_break",
+    )
+    config = whisper_blocks._segment_assignment_config_from_env()
+    trace = {}
+    seg, score = whisper_blocks._select_segment_for_line_mode(
+        words=["said", "i'm", "blinded", "by", "the", "lights"],
+        repeated_phrase_like=False,
+        best_seg=7,
+        best_score=0.1667,
+        seg_cursor=7,
+        seg_word_bags=[
+            [],
+            [],
+            [],
+            ["random"],
+            ["noise"],
+            ["i'm"],
+            ["[vocal]"],
+            ["lights"],
+        ],
+        n_segs=8,
+        config=config,
+        line_trace=trace,
+    )
+
+    assert seg == 7
+    assert score == pytest.approx(0.1667)
+    assert "experimental_terminal_stall_tie_scores" in trace
+
+
 def test_pull_late_lines_to_matching_segments_keeps_small_shift_unchanged() -> None:
     lines = [
         Line(words=[Word(text="my", start_time=78.5, end_time=79.0)]),
