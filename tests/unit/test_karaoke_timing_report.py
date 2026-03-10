@@ -25,6 +25,10 @@ def test_build_base_report_includes_lyrics_source_routing_fields():
             "whisper_force_dtw": False,
             "whisper_used": False,
             "whisper_corrections": 0,
+            "pre_whisper_line_count": 1,
+            "pre_whisper_lines": [
+                {"index": 1, "text": "hello world", "start": 0.7, "end": 1.7}
+            ],
             "issues": [],
             "dtw_metrics": {},
         }
@@ -40,3 +44,6 @@ def test_build_base_report_includes_lyrics_source_routing_fields():
     assert report["lyrics_source_comparable_candidate_count"] == 2
     assert report["lyrics_source_selection_mode"] == "audio_scored_disagreement"
     assert report["lyrics_source_routing_skip_reason"] == "none"
+    assert report["pre_whisper_line_count"] == 1
+    assert report["lines"][0]["pre_whisper_start"] == 0.7
+    assert report["lines"][0]["pre_whisper_end"] == 1.7

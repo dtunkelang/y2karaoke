@@ -956,6 +956,17 @@ def _extract_song_metrics(
     agreement_good_start_sec = 0.35
     agreement_warn_start_sec = 0.8
     whisper_anchor_start_abs_deltas: list[float] = []
+    pre_whisper_start_shift_abs = [
+        abs(float(line.get("start", 0.0)) - float(line.get("pre_whisper_start")))
+        for line in lines
+        if isinstance(line.get("pre_whisper_start"), (int, float))
+    ]
+    pre_whisper_late_shift = [
+        float(line.get("start", 0.0)) - float(line.get("pre_whisper_start"))
+        for line in lines
+        if isinstance(line.get("pre_whisper_start"), (int, float))
+        and float(line.get("start", 0.0)) > float(line.get("pre_whisper_start"))
+    ]
     agreement_text_sims: list[float] = []
     agreement_eligible_line_count = 0
     agreement_adaptive_rescue_count = 0
@@ -1166,6 +1177,14 @@ def _extract_song_metrics(
         ),
         "whisper_anchor_severe_ratio": round(
             (anchor_severe_count / line_count) if line_count else 0.0, 4
+        ),
+        "pre_whisper_line_count": int(report.get("pre_whisper_line_count", 0) or 0),
+        "pre_whisper_start_shift_mean_abs_sec": round(
+            _mean(pre_whisper_start_shift_abs) or 0.0, 4
+        ),
+        "pre_whisper_late_shift_line_count": len(pre_whisper_late_shift),
+        "pre_whisper_late_shift_mean_sec": round(
+            _mean(pre_whisper_late_shift) or 0.0, 4
         ),
     }
 

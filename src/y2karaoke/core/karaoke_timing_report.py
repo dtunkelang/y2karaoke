@@ -57,6 +57,7 @@ def _build_base_report(
         "whisper_force_dtw": quality.get("whisper_force_dtw", False),
         "whisper_used": quality.get("whisper_used", False),
         "whisper_corrections": quality.get("whisper_corrections", 0),
+        "pre_whisper_line_count": int(quality.get("pre_whisper_line_count", 0) or 0),
         "issues": quality.get("issues", []),
         "dtw_metrics": quality.get("dtw_metrics", {}),
         "line_count": len(lines),
@@ -87,6 +88,18 @@ def _build_base_report(
         ],
     }
     dtw_metrics = quality.get("dtw_metrics", {})
+    pre_whisper_lines = quality.get("pre_whisper_lines", []) or []
+    pre_whisper_by_index = {
+        int(item.get("index")): item
+        for item in pre_whisper_lines
+        if isinstance(item, dict) and isinstance(item.get("index"), int)
+    }
+    for line in report["lines"]:
+        pre = pre_whisper_by_index.get(int(line["index"]))
+        if not isinstance(pre, dict):
+            continue
+        line["pre_whisper_start"] = round(float(pre.get("start", line["start"])), 3)
+        line["pre_whisper_end"] = round(float(pre.get("end", line["end"])), 3)
     if dtw_metrics:
         report["dtw_word_coverage"] = round(dtw_metrics.get("word_coverage", 0.0), 3)
         report["dtw_line_coverage"] = round(dtw_metrics.get("line_coverage", 0.0), 3)

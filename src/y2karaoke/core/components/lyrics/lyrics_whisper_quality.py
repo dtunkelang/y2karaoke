@@ -25,6 +25,22 @@ logger = logging.getLogger(__name__)
 TailGuardrailSnapshot = dict[str, Any]
 
 
+def _serialize_line_timing_snapshot(lines: List[Line]) -> list[dict[str, Any]]:
+    snapshot: list[dict[str, Any]] = []
+    for idx, line in enumerate(lines, start=1):
+        if not line.words:
+            continue
+        snapshot.append(
+            {
+                "index": idx,
+                "text": line.text,
+                "start": round(line.start_time, 3),
+                "end": round(line.end_time, 3),
+            }
+        )
+    return snapshot
+
+
 def _line_set_end(lines: List[Line]) -> float:
     return max(
         (w.end_time for line in lines for w in line.words),
@@ -522,6 +538,8 @@ def get_lyrics_with_quality(  # noqa: C901
         "lyrics_source_comparable_candidate_count": 0,
         "lyrics_source_selection_mode": "default",
         "lyrics_source_routing_skip_reason": "none",
+        "pre_whisper_lines": [],
+        "pre_whisper_line_count": 0,
     }
     issues_list: List[str] = quality_report["issues"]  # type: ignore[assignment]
 
@@ -651,6 +669,11 @@ def get_lyrics_with_quality(  # noqa: C901
                 issues_list,
             )
             quality_report["alignment_method"] = method
+
+        if vocals_path and (use_whisper or whisper_map_lrc):
+            pre_whisper_lines = _serialize_line_timing_snapshot(lines)
+            quality_report["pre_whisper_lines"] = pre_whisper_lines
+            quality_report["pre_whisper_line_count"] = len(pre_whisper_lines)
 
         if vocals_path and use_whisper:
             lines, quality_report = _apply_whisper_with_quality(

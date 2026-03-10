@@ -7,8 +7,6 @@ import json
 from pathlib import Path
 import sys
 
-import numpy as np
-
 
 def _load_module():
     module_path = (
@@ -33,6 +31,7 @@ def test_extract_song_metrics():
         "lines": [
             {
                 "whisper_line_start_delta": -0.2,
+                "pre_whisper_start": 9.0,
                 "start": 10.0,
                 "end": 12.0,
                 "nearest_segment_start": 9.8,
@@ -41,6 +40,7 @@ def test_extract_song_metrics():
             },
             {
                 "whisper_line_start_delta": 0.1,
+                "pre_whisper_start": 19.5,
                 "start": 20.0,
                 "end": 21.0,
                 "nearest_segment_start": 20.7,
@@ -49,6 +49,7 @@ def test_extract_song_metrics():
             },
             {
                 "whisper_line_start_delta": None,
+                "pre_whisper_start": 28.0,
                 "start": 30.0,
                 "end": 31.0,
                 "nearest_segment_start": 33.6,
@@ -81,6 +82,10 @@ def test_extract_song_metrics():
     assert metrics["agreement_warn_ratio"] == 0.3333
     assert metrics["agreement_bad_ratio"] == 0.0
     assert metrics["agreement_severe_ratio"] == 0.0
+    assert metrics["pre_whisper_line_count"] == 0
+    assert metrics["pre_whisper_start_shift_mean_abs_sec"] == 1.1667
+    assert metrics["pre_whisper_late_shift_line_count"] == 3
+    assert metrics["pre_whisper_late_shift_mean_sec"] == 1.1667
     assert isinstance(metrics["timing_quality_score"], float)
     assert metrics["timing_quality_band"] in {"poor", "fair", "good", "excellent"}
     assert metrics["timing_quality_score_mode"] in {"dtw_internal", "dtw_internal+gold"}
