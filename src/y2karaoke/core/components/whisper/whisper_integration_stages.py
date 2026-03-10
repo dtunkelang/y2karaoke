@@ -11,13 +11,7 @@ from ... import models
 from ..alignment import timing_models
 
 
-def _normalize_repeated_line_durations(
-    lines_in: List[models.Line],
-    *,
-    min_repeats: int = 2,
-) -> List[models.Line]:
-    if os.getenv("Y2K_REPEAT_DURATION_NORMALIZE", "0") != "1":
-        return lines_in
+def _group_repeated_line_indices(lines_in: List[models.Line]) -> dict[str, list[int]]:
     groups: dict[str, list[int]] = {}
     for idx, line in enumerate(lines_in):
         if not line.words:
@@ -26,9 +20,61 @@ def _normalize_repeated_line_durations(
         if not text:
             continue
         groups.setdefault(text, []).append(idx)
+    return groups
+
+
+def _normalized_line_duration(
+    adjusted: List[models.Line],
+    idx: int,
+    target_duration: float,
+) -> float:
+    line = adjusted[idx]
+    start = line.start_time
+    next_start = (
+        adjusted[idx + 1].start_time
+        if idx + 1 < len(adjusted) and adjusted[idx + 1].words
+        else None
+    )
+    capped_duration = target_duration
+    if next_start is not None:
+        capped_duration = min(
+            capped_duration,
+            max(0.2, next_start - 0.05 - start),
+        )
+    return capped_duration
+
+
+def _scaled_line_duration(
+    line: models.Line, target_duration: float
+) -> models.Line | None:
+    current_duration = max(0.2, line.end_time - line.start_time)
+    if abs(target_duration - current_duration) < 0.12 or target_duration <= 0.2:
+        return None
+    scale = target_duration / current_duration
+    return models.Line(
+        words=[
+            models.Word(
+                text=w.text,
+                start_time=w.start_time,
+                end_time=w.start_time + ((w.end_time - w.start_time) * scale),
+                singer=w.singer,
+            )
+            for w in line.words
+        ],
+        singer=line.singer,
+    )
+
+
+def _normalize_repeated_line_durations(
+    lines_in: List[models.Line],
+    *,
+    min_repeats: int = 2,
+) -> List[models.Line]:
+    if os.getenv("Y2K_REPEAT_DURATION_NORMALIZE", "0") != "1":
+        return lines_in
 
     adjusted = list(lines_in)
-    for indices in groups.values():
+    for indices in _group_repeated_line_indices(lines_in).values():
         if len(indices) < min_repeats:
             continue
         durations = [
@@ -43,36 +89,10 @@ def _normalize_repeated_line_durations(
             line = adjusted[idx]
             if not line.words:
                 continue
-            start = line.start_time
-            next_start = (
-                adjusted[idx + 1].start_time
-                if idx + 1 < len(adjusted) and adjusted[idx + 1].words
-                else None
-            )
-            capped_duration = target_duration
-            if next_start is not None:
-                capped_duration = min(
-                    capped_duration,
-                    max(0.2, next_start - 0.05 - start),
-                )
-            current_duration = max(0.2, line.end_time - line.start_time)
-            if abs(capped_duration - current_duration) < 0.12:
-                continue
-            if capped_duration <= 0.2:
-                continue
-            scale = capped_duration / current_duration
-            adjusted[idx] = models.Line(
-                words=[
-                    models.Word(
-                        text=w.text,
-                        start_time=w.start_time,
-                        end_time=w.start_time + ((w.end_time - w.start_time) * scale),
-                        singer=w.singer,
-                    )
-                    for w in line.words
-                ],
-                singer=line.singer,
-            )
+            capped_duration = _normalized_line_duration(adjusted, idx, target_duration)
+            scaled_line = _scaled_line_duration(line, capped_duration)
+            if scaled_line is not None:
+                adjusted[idx] = scaled_line
     return adjusted
 
 
