@@ -93,6 +93,16 @@
   - Next question:
     - why is the pipeline still early on those lines relative to both gold and onset evidence?
   - Favor pipeline-stage diagnosis over more gold-target skepticism here.
+- [ ] Instrument and patch the audio-only LRC refinement path before Whisper.
+  - Current strongest evidence: the remaining late-chorus distortion for `Blinding Lights` is introduced before Whisper alignment.
+  - Trace tool:
+    - `tools/analyze_lrc_refinement_stages.py`
+  - Current diagnostic artifacts:
+    - `benchmarks/results/20260309T_canary_eval_no_before_i_said/blinding_lights_lrc_refinement_trace.json`
+    - `benchmarks/results/20260309T_canary_eval_no_before_i_said/blinding_lights_lrc_refinement_trace.md`
+  - Confirmed stage-level finding:
+    - `fix_spurious_gaps()` collapses the late `Blinding Lights` chorus block from `35` lines to `24` by merging lines like `I said, ooh, I'm drowning in the night`, `Oh, when I'm like this, you're the one I trust`, and `(Hey, hey, hey)`.
+  - Next branch should patch the first refinement-stage divergence that survives the real offline benchmark path, not add more Whisper-side heuristics.
 - [ ] Use multi-source timed-lyrics disagreement as a routing signal.
   - Hypothesis: provider disagreement is useful evidence that line timestamps are untrustworthy and we should rely more on audio/Whisper scoring.
   - Initial evidence:
