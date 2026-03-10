@@ -9,6 +9,7 @@ from . import whisper_cache
 from . import whisper_dtw
 from . import whisper_mapping
 from . import whisper_phonetic_dtw
+from . import whisper_segment_assignment_experimental
 from . import whisper_utils
 
 ALIAS_EXPORTS: List[str] = [
@@ -195,7 +196,7 @@ def build_aliases() -> Dict[str, Any]:
         whisper_blocks._distribute_words_within_segments
     )
     aliases["_build_segment_text_overlap_assignments"] = (
-        whisper_blocks._build_segment_text_overlap_assignments
+        whisper_segment_assignment_experimental.build_segment_text_overlap_assignments
     )
     aliases["_build_block_word_bags"] = whisper_blocks._build_block_word_bags
     aliases["_syl_to_block"] = whisper_blocks._syl_to_block
