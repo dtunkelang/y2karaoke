@@ -1,7 +1,6 @@
 """Assigned-word and gap-fill matching helpers for Whisper mapping pipeline."""
 
 from __future__ import annotations
-
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple
 
 from ... import models

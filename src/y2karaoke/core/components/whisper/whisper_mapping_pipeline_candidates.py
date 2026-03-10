@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import json
+import os
 from typing import Callable, Dict, List, Optional, Set, Tuple
 
 from ... import models
@@ -9,6 +11,17 @@ from ..alignment import timing_models
 from .whisper_dtw import _LineMappingContext
 from . import whisper_utils
 from .whisper_mapping_helpers import _find_nearest_word_in_segment, _word_match_score
+
+_MAPPER_CANDIDATE_TRACE_ROWS: list[dict[str, object]] = []
+
+
+def _append_candidate_trace_row(row: dict[str, object]) -> None:
+    trace_path = os.environ.get("Y2K_TRACE_MAPPER_CANDIDATES_JSON", "").strip()
+    if not trace_path:
+        return
+    _MAPPER_CANDIDATE_TRACE_ROWS.append(row)
+    with open(trace_path, "w", encoding="utf-8") as fh:
+        json.dump({"rows": _MAPPER_CANDIDATE_TRACE_ROWS}, fh, indent=2)
 
 
 def _register_word_match(
@@ -62,22 +75,28 @@ def _select_best_candidate(
     time_drift_threshold: float,
 ) -> Tuple[timing_models.TranscriptionWord, int]:
     """Score candidates, pick the best, and apply drift fallback."""
-    best_word, best_idx = min(
-        whisper_candidates,
-        key=lambda pair: _word_match_score(
-            pair[0].start,
-            word.start_time + line_shift,
-            ctx.word_segment_idx.get(pair[1]),
-            line_segment,
-            ctx.segments,
-            line_anchor_time,
-            lrc_idx=lrc_idx_opt,
-            candidate_idx=pair[1],
-            total_lrc_words=ctx.total_lrc_words,
-            total_whisper_words=ctx.total_whisper_words,
-        ),
-    )
+    scored_candidates = [
+        (
+            pair[0],
+            pair[1],
+            _word_match_score(
+                pair[0].start,
+                word.start_time + line_shift,
+                ctx.word_segment_idx.get(pair[1]),
+                line_segment,
+                ctx.segments,
+                line_anchor_time,
+                lrc_idx=lrc_idx_opt,
+                candidate_idx=pair[1],
+                total_lrc_words=ctx.total_lrc_words,
+                total_whisper_words=ctx.total_whisper_words,
+            ),
+        )
+        for pair in whisper_candidates
+    ]
+    best_word, best_idx, best_score = min(scored_candidates, key=lambda row: row[2])
     drift = abs(best_word.start - word.start_time)
+    fallback_used = False
     if drift > time_drift_threshold:
         fallback = _find_nearest_word_in_segment(
             whisper_candidates,
@@ -87,6 +106,44 @@ def _select_best_candidate(
         )
         if fallback and abs(fallback[0].start - word.start_time) < drift:
             best_word, best_idx = fallback
+            fallback_used = True
+            best_score = _word_match_score(
+                best_word.start,
+                word.start_time + line_shift,
+                ctx.word_segment_idx.get(best_idx),
+                line_segment,
+                ctx.segments,
+                line_anchor_time,
+                lrc_idx=lrc_idx_opt,
+                candidate_idx=best_idx,
+                total_lrc_words=ctx.total_lrc_words,
+                total_whisper_words=ctx.total_whisper_words,
+            )
+    _append_candidate_trace_row(
+        {
+            "target_word": word.text,
+            "target_start": round(word.start_time, 3),
+            "line_shift": round(line_shift, 3),
+            "line_anchor_time": round(line_anchor_time, 3),
+            "line_segment": line_segment,
+            "lrc_index": lrc_idx_opt,
+            "chosen_index": best_idx,
+            "chosen_word": best_word.text,
+            "chosen_start": round(best_word.start, 3),
+            "chosen_score": round(best_score, 4),
+            "fallback_used": fallback_used,
+            "candidates": [
+                {
+                    "index": idx,
+                    "word": candidate_word.text,
+                    "start": round(candidate_word.start, 3),
+                    "score": round(score, 4),
+                    "segment": ctx.word_segment_idx.get(idx),
+                }
+                for candidate_word, idx, score in scored_candidates[:12]
+            ],
+        }
+    )
     return best_word, best_idx
 
 
