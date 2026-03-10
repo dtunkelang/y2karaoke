@@ -170,6 +170,16 @@
         - artifact:
           - `benchmarks/results/20260310T_blinding_assignment_conf_diag/mapper_assignment_confidence.md`
         - first attempt to suppress low-confidence assignments regressed the canary badly; keep this layer diagnostic-only until segment-choice handling is explicit
+      - segment-selection mode scaffold:
+        - `_select_segment_for_line_mode()` now cleanly separates `default` from `experimental_terminal_stall_lookback`
+        - env flag:
+          - `Y2K_WHISPER_SEGMENT_ASSIGN_SELECTION_MODE=experimental_terminal_stall_lookback`
+        - current exact replay result:
+          - experimental mode stays on the stable cached branch
+          - but it is effectively a no-op on the main late `Blinding Lights` target lines (`20-31`)
+        - implication:
+          - the next useful branch is not more canary scoring yet
+          - it is tracing why the experimental rescue never triggers on those lines
       - next branch should target segment-cursor stall / oversized terminal segment handling, not another downstream/postpass heuristic
 - [ ] Use multi-source timed-lyrics disagreement as a routing signal.
   - Hypothesis: provider disagreement is useful evidence that line timestamps are untrustworthy and we should rely more on audio/Whisper scoring.

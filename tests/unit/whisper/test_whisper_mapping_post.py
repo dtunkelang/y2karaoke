@@ -54,6 +54,88 @@ def test_distribute_words_within_segments_skips_extremely_wide_segments() -> Non
     assert assignments == {}
 
 
+def test_select_segment_for_line_mode_default_keeps_existing_choice() -> None:
+    config = whisper_blocks._segment_assignment_config_from_env()
+    seg, score = whisper_blocks._select_segment_for_line_mode(
+        words=["the", "city's", "cold", "and", "empty"],
+        repeated_phrase_like=False,
+        best_seg=7,
+        best_score=0.0,
+        seg_cursor=7,
+        seg_word_bags=[
+            [],
+            [],
+            [],
+            ["random"],
+            ["noise"],
+            [
+                "i",
+                "look",
+                "around",
+                "and",
+                "see",
+                "the",
+                "city's",
+                "cold",
+                "and",
+                "empty",
+            ],
+            ["[vocal]"],
+            ["for", "long", "maybe", "you", "can", "tell"],
+        ],
+        n_segs=8,
+        config=config,
+        line_trace=None,
+    )
+
+    assert seg == 7
+    assert score == 0.0
+
+
+def test_select_segment_for_line_mode_experimental_terminal_stall_looks_back(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv(
+        "Y2K_WHISPER_SEGMENT_ASSIGN_SELECTION_MODE",
+        "experimental_terminal_stall_lookback",
+    )
+    config = whisper_blocks._segment_assignment_config_from_env()
+    seg, score = whisper_blocks._select_segment_for_line_mode(
+        words=["the", "city's", "cold", "and", "empty"],
+        repeated_phrase_like=False,
+        best_seg=7,
+        best_score=0.0,
+        seg_cursor=7,
+        seg_word_bags=[
+            [],
+            [],
+            [],
+            ["random"],
+            ["noise"],
+            [
+                "i",
+                "look",
+                "around",
+                "and",
+                "see",
+                "the",
+                "city's",
+                "cold",
+                "and",
+                "empty",
+            ],
+            ["[vocal]"],
+            ["for", "long", "maybe", "you", "can", "tell"],
+        ],
+        n_segs=8,
+        config=config,
+        line_trace={},
+    )
+
+    assert seg == 5
+    assert score == 1.0
+
+
 def test_pull_late_lines_to_matching_segments_keeps_small_shift_unchanged() -> None:
     lines = [
         Line(words=[Word(text="my", start_time=78.5, end_time=79.0)]),

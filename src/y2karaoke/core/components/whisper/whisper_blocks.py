@@ -32,14 +32,23 @@ def _parse_trace_line_range_env() -> Tuple[int, int] | None:
 
 @dataclass(frozen=True)
 class _SegmentAssignmentConfig:
+    selection_mode: str
     prefer_later_on_strong_merge: bool
     later_trace: bool
     zero_score_lookback_enabled: bool
     zero_score_lookback_segs: int
+    terminal_stall_lookback_segs: int
+    terminal_stall_max_current_score: float
+    terminal_stall_min_rescue_score: float
+    terminal_stall_min_score_gain: float
 
 
 def _segment_assignment_config_from_env() -> _SegmentAssignmentConfig:
     return _SegmentAssignmentConfig(
+        selection_mode=os.getenv(
+            "Y2K_WHISPER_SEGMENT_ASSIGN_SELECTION_MODE", "default"
+        ).strip()
+        or "default",
         prefer_later_on_strong_merge=(
             os.getenv("Y2K_WHISPER_SEGMENT_ASSIGN_PREFER_LATER_ON_STRONG_MERGE", "1")
             != "0"
@@ -50,6 +59,24 @@ def _segment_assignment_config_from_env() -> _SegmentAssignmentConfig:
         ),
         zero_score_lookback_segs=int(
             os.getenv("Y2K_WHISPER_SEGMENT_ASSIGN_ZERO_SCORE_LOOKBACK_SEGS", "36")
+        ),
+        terminal_stall_lookback_segs=int(
+            os.getenv("Y2K_WHISPER_SEGMENT_ASSIGN_TERMINAL_STALL_LOOKBACK_SEGS", "4")
+        ),
+        terminal_stall_max_current_score=float(
+            os.getenv(
+                "Y2K_WHISPER_SEGMENT_ASSIGN_TERMINAL_STALL_MAX_CURRENT_SCORE", "0.2"
+            )
+        ),
+        terminal_stall_min_rescue_score=float(
+            os.getenv(
+                "Y2K_WHISPER_SEGMENT_ASSIGN_TERMINAL_STALL_MIN_RESCUE_SCORE", "0.4"
+            )
+        ),
+        terminal_stall_min_score_gain=float(
+            os.getenv(
+                "Y2K_WHISPER_SEGMENT_ASSIGN_TERMINAL_STALL_MIN_SCORE_GAIN", "0.15"
+            )
         ),
     )
 
@@ -190,9 +217,7 @@ def _assign_lrc_lines_to_segments(
             config=config,
             line_trace=line_trace,
         )
-        # Zero-score repeated lines can get cursor-locked in long refrain sections.
-        # Allow a limited lookback rescue without moving the global cursor backward.
-        best_seg, best_score = _rescue_zero_score_repeated_line_assignment(
+        best_seg, best_score = _select_segment_for_line_mode(
             words=words,
             repeated_phrase_like=repeated_phrase_like,
             best_seg=best_seg,
@@ -201,6 +226,7 @@ def _assign_lrc_lines_to_segments(
             seg_word_bags=seg_word_bags,
             n_segs=n_segs,
             config=config,
+            line_trace=line_trace,
         )
         # Zero-score lines (e.g. "Oooh") have no text match; advance
         # past the cursor so subsequent lines don't cascade early.
@@ -486,6 +512,96 @@ def _rescue_zero_score_repeated_line_assignment(
                 lb_best_seg = si + 1
     if lb_best_score > 0:
         return lb_best_seg, lb_best_score
+    return best_seg, best_score
+
+
+def _rescue_terminal_stall_line_assignment(
+    *,
+    words: List[str],
+    best_seg: int,
+    best_score: float,
+    seg_cursor: int,
+    seg_word_bags: List[List[str]],
+    n_segs: int,
+    config: _SegmentAssignmentConfig,
+) -> Tuple[int, float]:
+    if (
+        len(words) < 4
+        or n_segs < 2
+        or seg_cursor != n_segs - 1
+        or best_seg != seg_cursor
+        or best_score > config.terminal_stall_max_current_score
+    ):
+        return best_seg, best_score
+
+    lb_start = max(0, seg_cursor - config.terminal_stall_lookback_segs)
+    rescue_seg = best_seg
+    rescue_score = best_score
+    for si in range(lb_start, seg_cursor):
+        score = _text_overlap_score(words, seg_word_bags[si])
+        if score > rescue_score:
+            rescue_seg = si
+            rescue_score = score
+        if si + 1 < n_segs:
+            merged_score = _text_overlap_score(
+                words, seg_word_bags[si] + seg_word_bags[si + 1]
+            )
+            if merged_score > rescue_score:
+                rescue_seg = si + 1
+                rescue_score = merged_score
+    if rescue_score >= max(
+        config.terminal_stall_min_rescue_score,
+        best_score + config.terminal_stall_min_score_gain,
+    ):
+        return rescue_seg, rescue_score
+    return best_seg, best_score
+
+
+def _select_segment_for_line_mode(
+    *,
+    words: List[str],
+    repeated_phrase_like: bool,
+    best_seg: int,
+    best_score: float,
+    seg_cursor: int,
+    seg_word_bags: List[List[str]],
+    n_segs: int,
+    config: _SegmentAssignmentConfig,
+    line_trace: Dict[str, Any] | None,
+) -> Tuple[int, float]:
+    mode = config.selection_mode
+    if line_trace is not None:
+        line_trace["selection_mode"] = mode
+    best_seg, best_score = _rescue_zero_score_repeated_line_assignment(
+        words=words,
+        repeated_phrase_like=repeated_phrase_like,
+        best_seg=best_seg,
+        best_score=best_score,
+        seg_cursor=seg_cursor,
+        seg_word_bags=seg_word_bags,
+        n_segs=n_segs,
+        config=config,
+    )
+    if mode == "experimental_terminal_stall_lookback":
+        rescued_seg, rescued_score = _rescue_terminal_stall_line_assignment(
+            words=words,
+            best_seg=best_seg,
+            best_score=best_score,
+            seg_cursor=seg_cursor,
+            seg_word_bags=seg_word_bags,
+            n_segs=n_segs,
+            config=config,
+        )
+        if line_trace is not None and (
+            rescued_seg != best_seg or rescued_score != best_score
+        ):
+            line_trace["experimental_terminal_stall_rescue"] = {
+                "from_segment": best_seg,
+                "to_segment": rescued_seg,
+                "from_score": round(best_score, 4),
+                "to_score": round(rescued_score, 4),
+            }
+        return rescued_seg, rescued_score
     return best_seg, best_score
 
 
