@@ -187,6 +187,16 @@
         - implication:
           - the next useful branch is not more canary scoring yet
           - it is designing a mode that can act on ties or zero-score lines within a low-score stall run without falling out of the stable cached branch
+        - loose stalled-segment replay moved real lines but regressed curated gold badly:
+          - default `Blinding Lights` one-song eval: `gold_start_abs_mean_weighted = 0.467s`
+          - loose stalled-segment mode: `0.625s`
+        - stalled-segment opportunity summary explains why:
+          - lines `21`, `22`, and `27` show local score gains
+          - but the “better” candidate bags are still placeholder-dominated `[vocal]` segments
+          - artifact:
+            - `benchmarks/results/20260310T_blinding_low_score_stall_trace/stalled_segment_opportunities.md`
+        - implication:
+          - next upstream redesign needs assignment-confidence weighting on segment bags, not just overlap-based rescue
       - next branch should target segment-cursor stall / oversized stalled-segment handling, not another downstream/postpass heuristic
 - [ ] Use multi-source timed-lyrics disagreement as a routing signal.
   - Hypothesis: provider disagreement is useful evidence that line timestamps are untrustworthy and we should rely more on audio/Whisper scoring.
