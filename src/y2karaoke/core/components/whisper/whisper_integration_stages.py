@@ -3,10 +3,77 @@
 from __future__ import annotations
 
 import re
+import os
+import statistics
 from typing import Any, Callable, List, Optional, Set, Tuple
 
 from ... import models
 from ..alignment import timing_models
+
+
+def _normalize_repeated_line_durations(
+    lines_in: List[models.Line],
+    *,
+    min_repeats: int = 2,
+) -> List[models.Line]:
+    if os.getenv("Y2K_REPEAT_DURATION_NORMALIZE", "0") != "1":
+        return lines_in
+    groups: dict[str, list[int]] = {}
+    for idx, line in enumerate(lines_in):
+        if not line.words:
+            continue
+        text = (getattr(line, "text", "") or "").strip().lower()
+        if not text:
+            continue
+        groups.setdefault(text, []).append(idx)
+
+    adjusted = list(lines_in)
+    for indices in groups.values():
+        if len(indices) < min_repeats:
+            continue
+        durations = [
+            max(0.2, adjusted[idx].end_time - adjusted[idx].start_time)
+            for idx in indices
+            if adjusted[idx].words
+        ]
+        if len(durations) < min_repeats:
+            continue
+        target_duration = float(statistics.median(durations))
+        for idx in indices:
+            line = adjusted[idx]
+            if not line.words:
+                continue
+            start = line.start_time
+            next_start = (
+                adjusted[idx + 1].start_time
+                if idx + 1 < len(adjusted) and adjusted[idx + 1].words
+                else None
+            )
+            capped_duration = target_duration
+            if next_start is not None:
+                capped_duration = min(
+                    capped_duration,
+                    max(0.2, next_start - 0.05 - start),
+                )
+            current_duration = max(0.2, line.end_time - line.start_time)
+            if abs(capped_duration - current_duration) < 0.12:
+                continue
+            if capped_duration <= 0.2:
+                continue
+            scale = capped_duration / current_duration
+            adjusted[idx] = models.Line(
+                words=[
+                    models.Word(
+                        text=w.text,
+                        start_time=w.start_time,
+                        end_time=w.start_time + ((w.end_time - w.start_time) * scale),
+                        singer=w.singer,
+                    )
+                    for w in line.words
+                ],
+                singer=line.singer,
+            )
+    return adjusted
 
 
 def _shift_weak_opening_lines_past_phrase_carryover(
@@ -138,6 +205,7 @@ def _run_mapped_line_postpasses(
     )
 
     mapped_lines = shift_repeated_lines_to_next_whisper_fn(mapped_lines, all_words)
+    mapped_lines = _normalize_repeated_line_durations(mapped_lines)
     mapped_lines = _enforce_mapped_line_stage_invariants(
         mapped_lines,
         all_words,

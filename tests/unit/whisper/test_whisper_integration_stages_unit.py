@@ -9,6 +9,69 @@ from y2karaoke.core.components.alignment.timing_models import (
 )
 
 
+def test_normalize_repeated_line_durations_noop_when_flag_disabled(monkeypatch):
+    monkeypatch.delenv("Y2K_REPEAT_DURATION_NORMALIZE", raising=False)
+    lines = [
+        Line(
+            words=[
+                Word(text="I", start_time=10.0, end_time=10.2),
+                Word(text="said", start_time=10.2, end_time=10.7),
+            ]
+        ),
+        Line(
+            words=[
+                Word(text="I", start_time=20.0, end_time=20.2),
+                Word(text="said", start_time=20.2, end_time=21.4),
+            ]
+        ),
+    ]
+
+    out = stages._normalize_repeated_line_durations(lines)
+
+    assert out == lines
+
+
+def test_normalize_repeated_line_durations_scales_repeated_lines_when_flag_enabled(
+    monkeypatch,
+):
+    monkeypatch.setenv("Y2K_REPEAT_DURATION_NORMALIZE", "1")
+    lines = [
+        Line(
+            words=[
+                Word(text="I", start_time=10.0, end_time=10.2),
+                Word(text="said", start_time=10.2, end_time=10.6),
+            ]
+        ),
+        Line(
+            words=[
+                Word(text="I", start_time=20.0, end_time=20.3),
+                Word(text="said", start_time=20.3, end_time=21.5),
+            ]
+        ),
+        Line(
+            words=[
+                Word(text="next", start_time=21.9, end_time=22.4),
+            ]
+        ),
+    ]
+
+    out = stages._normalize_repeated_line_durations(lines)
+
+    assert out[0].start_time == pytest.approx(10.0)
+    assert out[0].end_time == pytest.approx(10.9)
+    assert out[1].start_time == pytest.approx(20.0)
+    assert out[1].end_time == pytest.approx(21.14)
+    assert (
+        abs(
+            (out[0].end_time - out[0].start_time)
+            - (out[1].end_time - out[1].start_time)
+        )
+        < 0.3
+    )
+    assert out[1].end_time < lines[2].start_time - 0.05
+    assert out[2] == lines[2]
+
+
 def test_enforce_mapped_line_stage_invariants_runs_two_cycles():
     lines = [Line(words=[Word(text="a", start_time=1.0, end_time=1.4)])]
     whisper_words = [TranscriptionWord(text="a", start=1.0, end=1.3, probability=0.9)]
