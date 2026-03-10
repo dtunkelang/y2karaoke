@@ -170,62 +170,26 @@ def _assign_lrc_lines_to_segments(
         if not words:
             line_to_seg[li] = line_to_seg[li - 1] if li > 0 else 0
             continue
-        best_seg = seg_cursor
-        best_score = -1.0
         search_end = min(seg_cursor + max(10, n_segs // 4), n_segs)
-        line_trace: Dict[str, Any] | None = None
-        if trace_rows is not None and (
-            trace_line_range is None
-            or trace_line_range[0] <= li + 1 <= trace_line_range[1]
-        ):
-            line_trace = {
-                "line_index": li + 1,
-                "words": words,
-                "seg_cursor_before": seg_cursor,
-                "search_end": search_end,
-                "scores": [],
-            }
-        for si in range(seg_cursor, search_end):
-            score = _text_overlap_score(words, seg_word_bags[si])
-            if line_trace is not None:
-                scores = line_trace["scores"]
-                assert isinstance(scores, list)
-                scores.append(
-                    {
-                        "segment_index": si,
-                        "score": round(score, 4),
-                        "bag_preview": seg_word_bags[si][:16],
-                    }
-                )
-            if score > best_score:
-                best_score = score
-                best_seg = si
-            if si + 1 < n_segs:
-                candidate = _merged_segment_candidate(
-                    words=words,
-                    line_index=li,
-                    segment_index=si,
-                    current_best_score=best_score,
-                    seg_word_bags=seg_word_bags,
-                    seg_durations=seg_durations,
-                    config=config,
-                )
-                if candidate is not None:
-                    if line_trace is not None:
-                        merged_candidates = line_trace.setdefault(
-                            "merged_candidates", []
-                        )
-                        assert isinstance(merged_candidates, list)
-                        merged_candidates.append(
-                            {
-                                "segment_index": si,
-                                "score": round(candidate[0], 4),
-                                "chosen_segment": candidate[1],
-                                "left_bag_preview": seg_word_bags[si][:8],
-                                "right_bag_preview": seg_word_bags[si + 1][:8],
-                            }
-                        )
-                    best_score, best_seg = candidate
+        line_trace = _init_segment_selection_trace(
+            trace_rows=trace_rows,
+            trace_line_range=trace_line_range,
+            line_index=li + 1,
+            words=words,
+            seg_cursor=seg_cursor,
+            search_end=search_end,
+        )
+        best_seg, best_score = _score_segments_for_line(
+            words=words,
+            line_index=li,
+            seg_cursor=seg_cursor,
+            search_end=search_end,
+            n_segs=n_segs,
+            seg_word_bags=seg_word_bags,
+            seg_durations=seg_durations,
+            config=config,
+            line_trace=line_trace,
+        )
         # Zero-score repeated lines can get cursor-locked in long refrain sections.
         # Allow a limited lookback rescue without moving the global cursor backward.
         best_seg, best_score = _rescue_zero_score_repeated_line_assignment(
@@ -270,16 +234,116 @@ def _assign_lrc_lines_to_segments(
                     }
         line_to_seg[li] = best_seg
         seg_cursor = max(seg_cursor, best_seg)
-        if line_trace is not None:
-            line_trace["final_segment"] = best_seg
-            line_trace["final_score"] = round(best_score, 4)
-            line_trace["seg_cursor_after"] = seg_cursor
-            assert trace_rows is not None
-            trace_rows.append(line_trace)
+        _finalize_segment_selection_trace(
+            line_trace=line_trace,
+            trace_rows=trace_rows,
+            best_seg=best_seg,
+            best_score=best_score,
+            seg_cursor=seg_cursor,
+        )
     if trace_path and trace_rows is not None:
         with open(trace_path, "w", encoding="utf-8") as fh:
             json.dump({"rows": trace_rows}, fh, indent=2)
     return line_to_seg
+
+
+def _init_segment_selection_trace(
+    *,
+    trace_rows: List[Dict[str, Any]] | None,
+    trace_line_range: Tuple[int, int] | None,
+    line_index: int,
+    words: List[str],
+    seg_cursor: int,
+    search_end: int,
+) -> Dict[str, Any] | None:
+    if trace_rows is None:
+        return None
+    if trace_line_range is not None and not (
+        trace_line_range[0] <= line_index <= trace_line_range[1]
+    ):
+        return None
+    return {
+        "line_index": line_index,
+        "words": words,
+        "seg_cursor_before": seg_cursor,
+        "search_end": search_end,
+        "scores": [],
+    }
+
+
+def _score_segments_for_line(
+    *,
+    words: List[str],
+    line_index: int,
+    seg_cursor: int,
+    search_end: int,
+    n_segs: int,
+    seg_word_bags: List[List[str]],
+    seg_durations: List[float],
+    config: _SegmentAssignmentConfig,
+    line_trace: Dict[str, Any] | None,
+) -> Tuple[int, float]:
+    best_seg = seg_cursor
+    best_score = -1.0
+    for si in range(seg_cursor, search_end):
+        score = _text_overlap_score(words, seg_word_bags[si])
+        if line_trace is not None:
+            scores = line_trace["scores"]
+            assert isinstance(scores, list)
+            scores.append(
+                {
+                    "segment_index": si,
+                    "score": round(score, 4),
+                    "bag_preview": seg_word_bags[si][:16],
+                }
+            )
+        if score > best_score:
+            best_score = score
+            best_seg = si
+        if si + 1 >= n_segs:
+            continue
+        candidate = _merged_segment_candidate(
+            words=words,
+            line_index=line_index,
+            segment_index=si,
+            current_best_score=best_score,
+            seg_word_bags=seg_word_bags,
+            seg_durations=seg_durations,
+            config=config,
+        )
+        if candidate is None:
+            continue
+        if line_trace is not None:
+            merged_candidates = line_trace.setdefault("merged_candidates", [])
+            assert isinstance(merged_candidates, list)
+            merged_candidates.append(
+                {
+                    "segment_index": si,
+                    "score": round(candidate[0], 4),
+                    "chosen_segment": candidate[1],
+                    "left_bag_preview": seg_word_bags[si][:8],
+                    "right_bag_preview": seg_word_bags[si + 1][:8],
+                }
+            )
+        best_score, best_seg = candidate
+    return best_seg, best_score
+
+
+def _finalize_segment_selection_trace(
+    *,
+    line_trace: Dict[str, Any] | None,
+    trace_rows: List[Dict[str, Any]] | None,
+    best_seg: int,
+    best_score: float,
+    seg_cursor: int,
+) -> None:
+    if line_trace is None:
+        return
+    line_trace["final_segment"] = best_seg
+    line_trace["final_score"] = round(best_score, 4)
+    line_trace["seg_cursor_after"] = seg_cursor
+    assert trace_rows is not None
+    trace_rows.append(line_trace)
 
 
 def _merged_segment_candidate(
@@ -443,46 +507,83 @@ def _distribute_words_within_segments(
         if first_wi < 0:
             continue
         seg_wc = last_wi - first_wi + 1
-        all_lrc: List[int] = []
-        for li in line_indices:
-            for idx, _ in lrc_lines_words[li]:
-                all_lrc.append(idx)
+        all_lrc = _collect_segment_lrc_word_indices(
+            line_indices=line_indices,
+            lrc_lines_words=lrc_lines_words,
+        )
         total = len(all_lrc)
         if total == 0:
             continue
         if seg_wc / total > _MAX_SEGMENT_WORDS_PER_LRC_WORD:
-            if trace_rows is not None:
-                trace_rows.append(
-                    {
-                        "line_indices": [li + 1 for li in line_indices],
-                        "segment_index": si,
-                        "segment_word_range": [first_wi, last_wi],
-                        "segment_word_count": seg_wc,
-                        "lrc_word_indices": all_lrc,
-                        "skipped": True,
-                        "skip_reason": "segment_too_wide_for_positional_distribution",
-                    }
-                )
+            _append_segment_distribution_trace(
+                trace_rows=trace_rows,
+                line_indices=line_indices,
+                segment_index=si,
+                segment_word_range=(first_wi, last_wi),
+                segment_word_count=seg_wc,
+                lrc_word_indices=all_lrc,
+                skipped=True,
+                assignments=None,
+            )
             continue
         for j, lrc_idx in enumerate(all_lrc):
             pos = j / max(total, 1)
             offset = min(int(pos * seg_wc), seg_wc - 1)
             assignments[lrc_idx] = [first_wi + offset]
-        if trace_rows is not None:
-            trace_rows.append(
-                {
-                    "line_indices": [li + 1 for li in line_indices],
-                    "segment_index": si,
-                    "segment_word_range": [first_wi, last_wi],
-                    "segment_word_count": seg_wc,
-                    "lrc_word_indices": all_lrc,
-                    "skipped": False,
-                    "distributed_assignments": {
-                        str(lrc_idx): assignments[lrc_idx][0] for lrc_idx in all_lrc
-                    },
-                }
-            )
+        _append_segment_distribution_trace(
+            trace_rows=trace_rows,
+            line_indices=line_indices,
+            segment_index=si,
+            segment_word_range=(first_wi, last_wi),
+            segment_word_count=seg_wc,
+            lrc_word_indices=all_lrc,
+            skipped=False,
+            assignments=assignments,
+        )
     return assignments
+
+
+def _collect_segment_lrc_word_indices(
+    *,
+    line_indices: List[int],
+    lrc_lines_words: List[List[Tuple[int, str]]],
+) -> List[int]:
+    all_lrc: List[int] = []
+    for li in line_indices:
+        for idx, _ in lrc_lines_words[li]:
+            all_lrc.append(idx)
+    return all_lrc
+
+
+def _append_segment_distribution_trace(
+    *,
+    trace_rows: List[Dict] | None,
+    line_indices: List[int],
+    segment_index: int,
+    segment_word_range: Tuple[int, int],
+    segment_word_count: int,
+    lrc_word_indices: List[int],
+    skipped: bool,
+    assignments: Dict[int, List[int]] | None,
+) -> None:
+    if trace_rows is None:
+        return
+    row: Dict[str, Any] = {
+        "line_indices": [li + 1 for li in line_indices],
+        "segment_index": segment_index,
+        "segment_word_range": [segment_word_range[0], segment_word_range[1]],
+        "segment_word_count": segment_word_count,
+        "lrc_word_indices": lrc_word_indices,
+        "skipped": skipped,
+    }
+    if skipped:
+        row["skip_reason"] = "segment_too_wide_for_positional_distribution"
+    else:
+        assert assignments is not None
+        row["distributed_assignments"] = {
+            str(lrc_idx): assignments[lrc_idx][0] for lrc_idx in lrc_word_indices
+        }
+    trace_rows.append(row)
 
 
 def _build_segment_text_overlap_assignments(
