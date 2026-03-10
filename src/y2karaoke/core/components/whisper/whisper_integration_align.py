@@ -271,6 +271,46 @@ def _extend_unsupported_parenthetical_tails(
     return updated, applied
 
 
+def _choose_i_said_tail_extension_end(
+    line: models.Line,
+    next_line: models.Line,
+    whisper_words: List[timing_models.TranscriptionWord],
+) -> Optional[float]:
+    if not line.words or not next_line.words or len(line.words) < 7:
+        return None
+    if _normalized_prefix_tokens(line)[:2] != ["i", "said"]:
+        return None
+    if _count_non_vocal_words_near_time(whisper_words, line.start_time, window_sec=1.0):
+        return None
+    next_tokens = _normalized_prefix_tokens(next_line)
+    if not next_tokens or next_tokens[0] != "no":
+        return None
+    gap_after = next_line.start_time - line.end_time
+    if gap_after < 1.2 or gap_after > 2.0:
+        return None
+    target_end = next_line.start_time - 0.22
+    if target_end <= line.end_time + 0.8:
+        return None
+    return target_end
+
+
+def _extend_unsupported_i_said_tails(
+    mapped_lines: List[models.Line],
+    whisper_words: List[timing_models.TranscriptionWord],
+) -> tuple[List[models.Line], int]:
+    updated = list(mapped_lines)
+    applied = 0
+    for idx in range(len(updated) - 1):
+        line = updated[idx]
+        next_line = updated[idx + 1]
+        target_end = _choose_i_said_tail_extension_end(line, next_line, whisper_words)
+        if target_end is None:
+            continue
+        updated[idx] = _rescale_line_to_new_end(line, target_end)
+        applied += 1
+    return updated, applied
+
+
 def _choose_weak_opening_extension_end(
     line: models.Line,
     next_line: models.Line,
@@ -881,6 +921,14 @@ def align_lrc_text_to_whisper_timings_impl(  # noqa: C901
         if tail_extensions:
             corrections.append(
                 "Extended " f"{tail_extensions} unsupported parenthetical tail(s)"
+            )
+        mapped_lines, i_said_tail_extensions = _extend_unsupported_i_said_tails(
+            mapped_lines,
+            all_words,
+        )
+        if i_said_tail_extensions:
+            corrections.append(
+                "Extended " f"{i_said_tail_extensions} unsupported 'I said' tail(s)"
             )
         mapped_lines, interjection_reanchors = (
             _reanchor_unsupported_interjection_lines_to_onsets(

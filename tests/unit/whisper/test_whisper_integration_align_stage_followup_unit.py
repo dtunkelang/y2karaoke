@@ -102,6 +102,35 @@ def test_align_pipeline_reanchors_unsupported_interjection_line_to_onsets():
     assert any("unsupported interjection line" in msg for msg in corrections)
 
 
+def test_extend_unsupported_i_said_tails_helper():
+    lines = [
+        Line(
+            words=[
+                Word(text="I", start_time=117.73, end_time=118.12),
+                Word(text="said,", start_time=118.12, end_time=118.50),
+                Word(text="ooh,", start_time=118.50, end_time=118.88),
+                Word(text="I'm", start_time=118.88, end_time=119.26),
+                Word(text="blinded", start_time=119.26, end_time=120.30),
+                Word(text="by", start_time=120.30, end_time=120.75),
+                Word(text="the", start_time=120.75, end_time=121.20),
+                Word(text="lights", start_time=121.20, end_time=121.97),
+            ]
+        ),
+        Line(
+            words=[
+                Word(text="No,", start_time=123.67, end_time=124.10),
+                Word(text="I", start_time=124.10, end_time=124.45),
+                Word(text="can't", start_time=124.45, end_time=124.90),
+            ]
+        ),
+    ]
+
+    mapped, applied = wialign._extend_unsupported_i_said_tails(lines, [])
+
+    assert applied == 1
+    assert mapped[0].end_time == pytest.approx(123.45)
+
+
 def test_align_pipeline_reanchors_sparse_interjection_cluster_with_modest_shift():
     lines = [
         Line(words=[Word(text="prev", start_time=77.9, end_time=81.93)]),
