@@ -30,6 +30,7 @@ def _build_phoneme_tokens_from_lrc_words(
                 {
                     "word_idx": idx,
                     "parent_idx": idx,
+                    "text": text,
                     "ipa": seg,
                     "start": start,
                     "end": end,
@@ -60,6 +61,7 @@ def _build_phoneme_tokens_from_whisper_words(
                 {
                     "word_idx": idx,
                     "parent_idx": idx,
+                    "text": text,
                     "ipa": seg,
                     "start": start,
                     "end": end,
@@ -115,11 +117,15 @@ def _make_syllable_from_tokens(tokens: List[Dict]) -> Dict:
     end = max(t["end"] for t in tokens)
     ipa = "".join(t["ipa"] for t in tokens)
     parent_idxs = {t["parent_idx"] for t in tokens}
+    parent_texts = {
+        t.get("text", "") for t in tokens if t.get("parent_idx") in parent_idxs
+    }
     word_idxs = {t["word_idx"] for t in tokens}
     return {
         "ipa": ipa,
         "start": start,
         "end": end,
         "parent_idxs": parent_idxs,
+        "parent_texts": parent_texts,
         "word_idxs": word_idxs,
     }

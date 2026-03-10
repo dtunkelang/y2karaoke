@@ -132,7 +132,14 @@
         - line `9` lexical words (`Sin`, `City's`, `cold`, `and`, `empty`) are pre-assigned only to `[VOCAL]` pseudo-words around `61.66-66.66s`
         - line `10` words are pre-assigned to far-ahead unrelated words like `maybe`, `clearly`, `didn't`, `don't`, `long,`, `me` around `97-112s`
       - candidate selection is therefore not the primary bug on those lines; it only receives one assigned word per lyric word in the `assigned_words` phase
-      - next mapper branch should inspect the phoneme/DTW assignment entry path and add a confidence gate before those assignments are converted back to word indices
+      - segment-overlap trace now shows the active live source of those bad assignments:
+        - `build_segment_text_overlap_assignments()` assigns line `10-12` to segment `5`
+        - that segment spans Whisper words `176-520` (`345` words) for only `18` lyric words
+        - the positional distributor was therefore manufacturing absurd far-ahead assignments before mapper scoring
+      - kept fix:
+        - skip positional distribution when a segment is pathologically wider than the grouped lyric payload (`>8x` words-per-lyric-word)
+        - current canary after that guard: `gold_start_abs_word=0.4976`, `gold_start_p95_abs_sec=1.1369`
+      - next branch should refine that same assignment path rather than returning to postpass heuristics
 - [ ] Use multi-source timed-lyrics disagreement as a routing signal.
   - Hypothesis: provider disagreement is useful evidence that line timestamps are untrustworthy and we should rely more on audio/Whisper scoring.
   - Initial evidence:

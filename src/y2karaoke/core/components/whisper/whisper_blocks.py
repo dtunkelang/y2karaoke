@@ -1,5 +1,6 @@
 """Block and segment assignment logic for Whisper integration."""
 
+import json
 import os
 from collections import Counter
 from dataclasses import dataclass
@@ -11,6 +12,8 @@ from . import whisper_utils
 from . import whisper_phonetic_dtw
 
 logger = get_logger(__name__)
+
+_MAX_SEGMENT_WORDS_PER_LRC_WORD = 8.0
 
 
 @dataclass(frozen=True)
@@ -354,6 +357,7 @@ def _distribute_words_within_segments(
     line_to_seg: List[int],
     lrc_lines_words: List[List[Tuple[int, str]]],
     seg_word_ranges: List[Tuple[int, int]],
+    trace_rows: List[Dict] | None = None,
 ) -> Dict[int, List[int]]:
     """Positionally map LRC words to Whisper words within each segment."""
     seg_to_lines: Dict[int, List[int]] = {}
@@ -374,10 +378,38 @@ def _distribute_words_within_segments(
         total = len(all_lrc)
         if total == 0:
             continue
+        if seg_wc / total > _MAX_SEGMENT_WORDS_PER_LRC_WORD:
+            if trace_rows is not None:
+                trace_rows.append(
+                    {
+                        "line_indices": [li + 1 for li in line_indices],
+                        "segment_index": si,
+                        "segment_word_range": [first_wi, last_wi],
+                        "segment_word_count": seg_wc,
+                        "lrc_word_indices": all_lrc,
+                        "skipped": True,
+                        "skip_reason": "segment_too_wide_for_positional_distribution",
+                    }
+                )
+            continue
         for j, lrc_idx in enumerate(all_lrc):
             pos = j / max(total, 1)
             offset = min(int(pos * seg_wc), seg_wc - 1)
             assignments[lrc_idx] = [first_wi + offset]
+        if trace_rows is not None:
+            trace_rows.append(
+                {
+                    "line_indices": [li + 1 for li in line_indices],
+                    "segment_index": si,
+                    "segment_word_range": [first_wi, last_wi],
+                    "segment_word_count": seg_wc,
+                    "lrc_word_indices": all_lrc,
+                    "skipped": False,
+                    "distributed_assignments": {
+                        str(lrc_idx): assignments[lrc_idx][0] for lrc_idx in all_lrc
+                    },
+                }
+            )
     return assignments
 
 
@@ -392,6 +424,17 @@ def _build_segment_text_overlap_assignments(
     syllable DTW, which drifts when word counts differ between LRC and
     Whisper.
     """
+    trace_path = os.environ.get("Y2K_TRACE_SEGMENT_ASSIGNMENTS_JSON", "").strip()
+    trace_line_range = None
+    raw_range = os.environ.get("Y2K_TRACE_MAPPER_LINE_RANGE", "").strip()
+    if raw_range:
+        try:
+            start_s, end_s = raw_range.split("-", 1)
+            start, end = int(start_s), int(end_s)
+            if start > 0 and end >= start:
+                trace_line_range = (start, end)
+        except (TypeError, ValueError):
+            trace_line_range = None
     if not segments or not lrc_words:
         return {}
     config = _segment_assignment_config_from_env()
@@ -414,11 +457,40 @@ def _build_segment_text_overlap_assignments(
         seg_durations,
         config,
     )
+    trace_rows: List[Dict] | None = [] if trace_path else None
     assignments = _distribute_words_within_segments(
         line_to_seg,
         lrc_lines_words,
         seg_word_ranges,
+        trace_rows=trace_rows,
     )
+
+    if trace_path and trace_rows is not None:
+        filtered_rows = trace_rows
+        if trace_line_range is not None:
+            filtered_rows = [
+                row
+                for row in trace_rows
+                if any(
+                    trace_line_range[0] <= line_idx <= trace_line_range[1]
+                    for line_idx in row["line_indices"]
+                )
+            ]
+        with open(trace_path, "w", encoding="utf-8") as fh:
+            json.dump(
+                {
+                    "line_to_seg": {
+                        str(i + 1): seg for i, seg in enumerate(line_to_seg)
+                    },
+                    "seg_word_ranges": {
+                        str(i): [first, last]
+                        for i, (first, last) in enumerate(seg_word_ranges)
+                    },
+                    "rows": filtered_rows,
+                },
+                fh,
+                indent=2,
+            )
 
     logger.debug(
         "Segment text-overlap: %d/%d LRC words assigned to %d segments",
@@ -475,6 +547,9 @@ def _run_per_block_dtw(
     whisper_syllables: List[Dict],
     all_words: List[timing_models.TranscriptionWord],
     language: str,
+    trace_rows: List[Dict] | None = None,
+    word_idx_to_line_idx: Dict[int, int] | None = None,
+    trace_line_range: Tuple[int, int] | None = None,
 ) -> Dict[int, List[int]]:
     """Run DTW within each speech block and merge into global assignments."""
     combined_assignments: Dict[int, Set[int]] = {}
@@ -497,6 +572,38 @@ def _run_per_block_dtw(
             global_wi = blk_whi_syl_idxs[local_wi]
             lrc_token = lrc_syllables[global_li]
             whisper_token = whisper_syllables[global_wi]
+            if trace_rows is not None and word_idx_to_line_idx is not None:
+                line_indices = sorted(
+                    {
+                        word_idx_to_line_idx[word_idx]
+                        for word_idx in lrc_token.get("word_idxs", set())
+                        if word_idx in word_idx_to_line_idx
+                    }
+                )
+                if line_indices and (
+                    trace_line_range is None
+                    or any(
+                        trace_line_range[0] <= line_idx + 1 <= trace_line_range[1]
+                        for line_idx in line_indices
+                    )
+                ):
+                    trace_rows.append(
+                        {
+                            "block_index": blk_idx,
+                            "lrc_syllable_index": global_li,
+                            "lrc_word_idxs": sorted(lrc_token.get("word_idxs", set())),
+                            "line_indices": [line_idx + 1 for line_idx in line_indices],
+                            "whisper_syllable_index": global_wi,
+                            "whisper_parent_idxs": sorted(
+                                whisper_token.get("parent_idxs", set())
+                            ),
+                            "whisper_parent_texts": sorted(
+                                whisper_token.get("parent_texts", set())
+                            ),
+                            "whisper_start": round(whisper_token.get("start", 0.0), 3),
+                            "whisper_end": round(whisper_token.get("end", 0.0), 3),
+                        }
+                    )
             for word_idx in lrc_token.get("word_idxs", set()):
                 combined_assignments.setdefault(word_idx, set()).update(
                     whisper_token.get("parent_idxs", set())
@@ -528,15 +635,66 @@ def _build_block_segmented_syllable_assignments(
     language: str,
 ) -> Dict[int, List[int]]:
     """Run syllable DTW within each speech block and merge assignments."""
+    trace_path = os.environ.get("Y2K_TRACE_SYLLABLE_ASSIGNMENTS_JSON", "").strip()
+    trace_line_range = None
+    raw_range = os.environ.get("Y2K_TRACE_MAPPER_LINE_RANGE", "").strip()
+    if raw_range:
+        try:
+            start_s, end_s = raw_range.split("-", 1)
+            start, end = int(start_s), int(end_s)
+            if start > 0 and end >= start:
+                trace_line_range = (start, end)
+        except (TypeError, ValueError):
+            trace_line_range = None
     speech_blocks = whisper_utils._compute_speech_blocks(all_words)
+    word_idx_to_line_idx = {idx: lw["line_idx"] for idx, lw in enumerate(lrc_words)}
     if len(speech_blocks) <= 1:
         # No silence gaps - fall back to a single global DTW
         path = whisper_phonetic_dtw._build_syllable_dtw_path(
             lrc_syllables, whisper_syllables, language
         )
-        return whisper_utils._build_word_assignments_from_syllable_path(
+        assignments = whisper_utils._build_word_assignments_from_syllable_path(
             path, lrc_syllables, whisper_syllables
         )
+        if trace_path:
+            rows = []
+            for lrc_idx, whisper_idx in path:
+                lrc_token = lrc_syllables[lrc_idx]
+                line_indices = sorted(
+                    {
+                        word_idx_to_line_idx[word_idx]
+                        for word_idx in lrc_token.get("word_idxs", set())
+                        if word_idx in word_idx_to_line_idx
+                    }
+                )
+                if line_indices and (
+                    trace_line_range is None
+                    or any(
+                        trace_line_range[0] <= line_idx + 1 <= trace_line_range[1]
+                        for line_idx in line_indices
+                    )
+                ):
+                    whisper_token = whisper_syllables[whisper_idx]
+                    rows.append(
+                        {
+                            "block_index": 0,
+                            "lrc_syllable_index": lrc_idx,
+                            "lrc_word_idxs": sorted(lrc_token.get("word_idxs", set())),
+                            "line_indices": [line_idx + 1 for line_idx in line_indices],
+                            "whisper_syllable_index": whisper_idx,
+                            "whisper_parent_idxs": sorted(
+                                whisper_token.get("parent_idxs", set())
+                            ),
+                            "whisper_parent_texts": sorted(
+                                whisper_token.get("parent_texts", set())
+                            ),
+                            "whisper_start": round(whisper_token.get("start", 0.0), 3),
+                            "whisper_end": round(whisper_token.get("end", 0.0), 3),
+                        }
+                    )
+            with open(trace_path, "w", encoding="utf-8") as fh:
+                json.dump({"rows": rows}, fh, indent=2)
+        return assignments
 
     logger.debug(
         "Block-segmented DTW: %d speech blocks across %d Whisper words",
@@ -595,7 +753,8 @@ def _build_block_segmented_syllable_assignments(
     for si, blk in enumerate(lrc_syl_to_block):
         block_lrc_syls.setdefault(blk, []).append(si)
 
-    return _run_per_block_dtw(
+    trace_rows: List[Dict] | None = [] if trace_path else None
+    assignments = _run_per_block_dtw(
         speech_blocks,
         block_lrc_syls,
         block_whisper_syls,
@@ -603,4 +762,11 @@ def _build_block_segmented_syllable_assignments(
         whisper_syllables,
         all_words,
         language,
+        trace_rows=trace_rows,
+        word_idx_to_line_idx=word_idx_to_line_idx,
+        trace_line_range=trace_line_range,
     )
+    if trace_path and trace_rows is not None:
+        with open(trace_path, "w", encoding="utf-8") as fh:
+            json.dump({"rows": trace_rows}, fh, indent=2)
+    return assignments

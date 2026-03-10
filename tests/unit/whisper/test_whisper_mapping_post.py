@@ -2,6 +2,7 @@ import pytest
 
 from y2karaoke.core.components.whisper import whisper_mapping as wm
 from y2karaoke.core.components.whisper import whisper_mapping_post as wmp
+from y2karaoke.core.components.whisper import whisper_blocks
 from y2karaoke.core.models import Line, Word
 from y2karaoke.core.components.alignment.timing_models import (
     TranscriptionSegment,
@@ -41,6 +42,16 @@ def test_pull_late_lines_to_matching_segments_moves_late_line_earlier() -> None:
     assert adjusted[1].start_time < lines[1].start_time
     assert adjusted[1].start_time == 78.04
     assert adjusted[1].end_time < adjusted[2].start_time
+
+
+def test_distribute_words_within_segments_skips_extremely_wide_segments() -> None:
+    assignments = whisper_blocks._distribute_words_within_segments(
+        line_to_seg=[0, 0, 0],
+        lrc_lines_words=[[(0, "a")], [(1, "b")], [(2, "c")]],
+        seg_word_ranges=[(100, 139)],
+    )
+
+    assert assignments == {}
 
 
 def test_pull_late_lines_to_matching_segments_keeps_small_shift_unchanged() -> None:
