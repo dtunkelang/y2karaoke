@@ -89,11 +89,14 @@ def _build_base_report(
     }
     dtw_metrics = quality.get("dtw_metrics", {})
     pre_whisper_lines = quality.get("pre_whisper_lines", []) or []
-    pre_whisper_by_index = {
-        int(item.get("index")): item
-        for item in pre_whisper_lines
-        if isinstance(item, dict) and isinstance(item.get("index"), int)
-    }
+    pre_whisper_by_index: dict[int, dict[str, Any]] = {}
+    for item in pre_whisper_lines:
+        if not isinstance(item, dict):
+            continue
+        index_value = item.get("index")
+        if not isinstance(index_value, int):
+            continue
+        pre_whisper_by_index[index_value] = item
     for line in report["lines"]:
         pre = pre_whisper_by_index.get(int(line["index"]))
         if not isinstance(pre, dict):
