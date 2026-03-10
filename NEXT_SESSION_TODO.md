@@ -143,7 +143,11 @@
         - line `9` (`Sin City's cold and empty`) gets `0.0` overlap across the searched segments
         - final segment choice still advances to segment `3`, whose bag is entirely `[vocal]`
         - this happens because zero-score lines are forced forward past the cursor
-      - next branch should target zero-score segment-choice behavior for placeholder-only segments, not another downstream/postpass heuristic
+      - cursor-trace update:
+        - `seg_cursor` reaches segment `7` by line `14` and then never advances again through lines `20-25`
+        - those late chorus lines all score `0.0` or `0.1667` against the same mixed segment-7 bag
+        - line-9 placeholder heuristics can therefore regress the canary indirectly by changing cursor progression before the late chorus block
+      - next branch should target segment-cursor stall / oversized terminal segment handling, not another downstream/postpass heuristic
 - [ ] Use multi-source timed-lyrics disagreement as a routing signal.
   - Hypothesis: provider disagreement is useful evidence that line timestamps are untrustworthy and we should rely more on audio/Whisper scoring.
   - Initial evidence:

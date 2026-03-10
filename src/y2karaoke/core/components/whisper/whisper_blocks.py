@@ -181,7 +181,7 @@ def _assign_lrc_lines_to_segments(
             line_trace = {
                 "line_index": li + 1,
                 "words": words,
-                "seg_cursor": seg_cursor,
+                "seg_cursor_before": seg_cursor,
                 "search_end": search_end,
                 "scores": [],
             }
@@ -241,6 +241,11 @@ def _assign_lrc_lines_to_segments(
         # Zero-score lines (e.g. "Oooh") have no text match; advance
         # past the cursor so subsequent lines don't cascade early.
         if best_score <= 0 and best_seg <= seg_cursor:
+            if line_trace is not None:
+                line_trace["zero_score_advance"] = {
+                    "from_segment": best_seg,
+                    "to_segment": min(seg_cursor + 1, n_segs - 1),
+                }
             best_seg = min(seg_cursor + 1, n_segs - 1)
         # When a line maps to the same segment as the previous line,
         # check if the next segment has a comparable score.  If so,
@@ -268,6 +273,7 @@ def _assign_lrc_lines_to_segments(
         if line_trace is not None:
             line_trace["final_segment"] = best_seg
             line_trace["final_score"] = round(best_score, 4)
+            line_trace["seg_cursor_after"] = seg_cursor
             assert trace_rows is not None
             trace_rows.append(line_trace)
     if trace_path and trace_rows is not None:
