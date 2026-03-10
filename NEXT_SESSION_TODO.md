@@ -229,6 +229,15 @@
             - widened segment selection is only affecting positional distribution
             - it is not reaching mapper line context in a form that changes the effective segment used by mapping
             - next branch should trace the assignment/distribution handoff, not segment scoring again
+        - segment-span trace now explains why:
+          - segment `5` spans `97.28-195.28` with first-enclosing word range `200-520`
+          - segment `6` spans `104.42-111.42` with first-enclosing word range `[-1, -1]`
+          - segment `7` spans `112.67-194.17` with first-enclosing word range `[-1, -1]`
+          - so segments `6/7` are nested inside segment `5` and own no words under the mapper's current first-enclosing ownership rule
+          - this is why `line_to_seg=7` can still distribute words whose mapper segment is `5`
+        - aggressive experiment result:
+          - an env-gated `most_specific_enclosing` word-to-segment ownership mode stayed on the stable cached branch but regressed `Blinding Lights` one-song gold metrics (`0.467s -> 0.530s`)
+          - so the right next branch is not to flip global ownership; it is to make stalled-run segment assignment and mapper ownership consistent only where the nested-segment pathology occurs
             - next branch must inspect positional distribution / lrc assignments after widened search, not just selection scores
         - direct mapper override trace refined that diagnosis further:
           - for lines `20-31`, mapper `pre_override_segment` is already `None`

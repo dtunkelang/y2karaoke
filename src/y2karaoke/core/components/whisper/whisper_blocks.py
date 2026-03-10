@@ -192,6 +192,35 @@ def _build_segment_word_info(
     return seg_word_ranges, seg_word_bags, seg_durations
 
 
+def _build_first_enclosing_segment_word_ranges(
+    all_words: List[timing_models.TranscriptionWord],
+    segments: List[timing_models.TranscriptionSegment],
+) -> List[Tuple[int, int]]:
+    """Mirror mapper segment ownership: each word belongs to its first enclosing segment."""
+    ranges: List[Tuple[int, int]] = [(-1, -1) for _ in segments]
+    if not segments:
+        return ranges
+    seg_idx = 0
+    for word_idx, word in enumerate(all_words):
+        while seg_idx + 1 < len(segments) and word.start > whisper_utils._segment_end(
+            segments[seg_idx]
+        ):
+            seg_idx += 1
+        seg = segments[seg_idx]
+        if not (
+            whisper_utils._segment_start(seg)
+            <= word.start
+            <= whisper_utils._segment_end(seg)
+        ):
+            continue
+        first_idx, last_idx = ranges[seg_idx]
+        if first_idx < 0:
+            ranges[seg_idx] = (word_idx, word_idx)
+        else:
+            ranges[seg_idx] = (first_idx, word_idx)
+    return ranges
+
+
 def _assign_lrc_lines_to_segments(
     lrc_lines_words: List[List[Tuple[int, str]]],
     seg_word_bags: List[List[str]],
@@ -832,6 +861,10 @@ def _build_segment_text_overlap_assignments(
         all_words,
         segments,
     )
+    first_enclosing_ranges = _build_first_enclosing_segment_word_ranges(
+        all_words,
+        segments,
+    )
 
     lrc_line_count = max((lw["line_idx"] for lw in lrc_words), default=-1) + 1
     lrc_lines_words: List[List[Tuple[int, str]]] = [[] for _ in range(lrc_line_count)]
@@ -874,6 +907,17 @@ def _build_segment_text_overlap_assignments(
                     "seg_word_ranges": {
                         str(i): [first, last]
                         for i, (first, last) in enumerate(seg_word_ranges)
+                    },
+                    "first_enclosing_seg_word_ranges": {
+                        str(i): [first, last]
+                        for i, (first, last) in enumerate(first_enclosing_ranges)
+                    },
+                    "segment_spans": {
+                        str(i): [
+                            round(whisper_utils._segment_start(seg), 3),
+                            round(whisper_utils._segment_end(seg), 3),
+                        ]
+                        for i, seg in enumerate(segments)
                     },
                     "rows": filtered_rows,
                 },
