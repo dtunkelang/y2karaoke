@@ -583,6 +583,27 @@ def _select_segment_for_line_mode(
         config=config,
     )
     if mode == "experimental_terminal_stall_lookback":
+        lookback_scores = []
+        lb_start = max(0, seg_cursor - config.terminal_stall_lookback_segs)
+        for si in range(lb_start, seg_cursor):
+            score = _text_overlap_score(words, seg_word_bags[si])
+            merged_score = None
+            if si + 1 < n_segs:
+                merged_score = _text_overlap_score(
+                    words, seg_word_bags[si] + seg_word_bags[si + 1]
+                )
+            lookback_scores.append(
+                {
+                    "segment_index": si,
+                    "score": round(score, 4),
+                    "merged_score": (
+                        round(merged_score, 4) if merged_score is not None else None
+                    ),
+                    "bag_preview": seg_word_bags[si][:8],
+                }
+            )
+        if line_trace is not None:
+            line_trace["experimental_terminal_stall_lookback_scores"] = lookback_scores
         rescued_seg, rescued_score = _rescue_terminal_stall_line_assignment(
             words=words,
             best_seg=best_seg,

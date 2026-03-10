@@ -177,9 +177,13 @@
         - current exact replay result:
           - experimental mode stays on the stable cached branch
           - but it is effectively a no-op on the main late `Blinding Lights` target lines (`20-31`)
+        - lookback-score trace now makes the reason explicit:
+          - lines `21/23/25/30` only tie the terminal segment at `0.1667`
+          - lines `20/24/31` have no better score than `0.0`
+          - only line `28` crosses the rescue threshold (`0.0833 -> 0.4167`)
         - implication:
           - the next useful branch is not more canary scoring yet
-          - it is tracing why the experimental rescue never triggers on those lines
+          - it is designing a mode that can act on ties or zero-score lines without falling out of the stable cached branch
       - next branch should target segment-cursor stall / oversized terminal segment handling, not another downstream/postpass heuristic
 - [ ] Use multi-source timed-lyrics disagreement as a routing signal.
   - Hypothesis: provider disagreement is useful evidence that line timestamps are untrustworthy and we should rely more on audio/Whisper scoring.
