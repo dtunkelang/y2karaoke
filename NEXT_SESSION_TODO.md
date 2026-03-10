@@ -103,6 +103,13 @@
   - Confirmed stage-level finding:
     - `fix_spurious_gaps()` collapses the late `Blinding Lights` chorus block from `35` lines to `24` by merging lines like `I said, ooh, I'm drowning in the night`, `Oh, when I'm like this, you're the one I trust`, and `(Hey, hey, hey)`.
   - Next branch should patch the first refinement-stage divergence that survives the real offline benchmark path, not add more Whisper-side heuristics.
+  - Update from live benchmark-path trace:
+    - `tools/analyze_pre_whisper_live_path.py` shows the actual pre-Whisper `get_lyrics_with_quality` path stays structurally intact for the same late chorus block.
+    - Artifacts:
+      - `benchmarks/results/20260309T_canary_eval_no_before_i_said/blinding_lights_live_pre_whisper_trace.json`
+      - `benchmarks/results/20260309T_canary_eval_no_before_i_said/blinding_lights_live_pre_whisper_trace.md`
+    - This means the helper-path `fix_spurious_gaps()` collapse is real, but it is not currently the active blocker in the offline curated-canary benchmark.
+    - The remaining benchmark miss is therefore downstream of the live pre-Whisper path, likely in Whisper alignment / post-alignment handling.
 - [ ] Use multi-source timed-lyrics disagreement as a routing signal.
   - Hypothesis: provider disagreement is useful evidence that line timestamps are untrustworthy and we should rely more on audio/Whisper scoring.
   - Initial evidence:
