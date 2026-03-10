@@ -98,6 +98,17 @@ def _prepare_line_context(
     )
 
 
+def _prepare_line_context_with_details(
+    ctx: _LineMappingContext,
+    line: "models.Line",
+) -> Tuple[Optional[int], float, float, Dict[str, object]]:
+    return _line_context_helpers._prepare_line_context_with_details(
+        ctx,
+        line,
+        max_anchor_drift_from_lrc=_MAX_ANCHOR_DRIFT_FROM_LRC,
+    )
+
+
 def _should_override_line_segment(
     *,
     current_segment: Optional[int],
@@ -293,6 +304,7 @@ def _map_lrc_words_to_whisper(
         language,
         segments,
         prepare_line_context_fn=_prepare_line_context,
+        prepare_line_context_with_details_fn=_prepare_line_context_with_details,
         should_override_line_segment_fn=_should_override_line_segment,
         match_assigned_words_fn=_match_assigned_words,
         fill_unmatched_gaps_fn=_fill_unmatched_gaps,

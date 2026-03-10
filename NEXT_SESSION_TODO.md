@@ -218,6 +218,17 @@
           - but the final timing report remains unchanged
           - implication:
             - downstream assignment/distribution is neutralizing the alternate segment choices
+        - prepare-line-context and mapper-override trace now narrow that handoff further:
+          - for lines `20-31`, `prepare_context.text_choice_segment` and `time_fallback_segment` are both `None`
+          - `pre_override_segment` is also `None`
+          - the mapper is therefore not starting from any propagated segment choice on those lines
+        - widened-search segment trace vs mapper trace shows the stronger mismatch:
+          - `line_to_seg` alternates between stalled segments `5` and `7` for lines `20-31`
+          - but the distributed assigned words seen by the mapper still all vote for mapper segment `5`
+          - implication:
+            - widened segment selection is only affecting positional distribution
+            - it is not reaching mapper line context in a form that changes the effective segment used by mapping
+            - next branch should trace the assignment/distribution handoff, not segment scoring again
             - next branch must inspect positional distribution / lrc assignments after widened search, not just selection scores
         - direct mapper override trace refined that diagnosis further:
           - for lines `20-31`, mapper `pre_override_segment` is already `None`

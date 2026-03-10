@@ -95,6 +95,32 @@ def test_prepare_line_context_keeps_nearby_anchor():
     assert shift == 6.0
 
 
+def test_prepare_line_context_with_details_reports_fallbacks():
+    ctx = _LineMappingContext(
+        all_words=[],
+        segments=_segments(),
+        word_segment_idx={},
+        language="eng-Latn",
+        total_lrc_words=1,
+        total_whisper_words=1,
+        current_segment=1,
+        last_line_start=45.0,
+        prev_line_end=46.0,
+    )
+    line = Line(words=[Word("x", start_time=40.0, end_time=41.0)])
+
+    seg, anchor, shift, details = wmp._prepare_line_context_with_details(ctx, line)
+
+    assert seg is None
+    assert anchor == 46.0
+    assert shift == 6.0
+    assert details == {
+        "text_choice_segment": None,
+        "time_fallback_segment": 3,
+        "cleared_for_monotonicity": True,
+    }
+
+
 def test_clamp_match_window_to_anchor_limits_large_forward_drift():
     start, end = wmp._clamp_match_window_to_anchor(
         actual_start=120.0,

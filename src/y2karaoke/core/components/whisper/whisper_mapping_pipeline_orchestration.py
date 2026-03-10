@@ -39,6 +39,7 @@ def _append_mapper_trace_row(
     line_anchor_time: float,
     line_shift: float,
     line_segment: Optional[int],
+    prepare_context: dict[str, Any],
     pre_override_segment: Optional[int],
     override_decision: dict[str, Any],
     assignment_profile,
@@ -77,6 +78,7 @@ def _append_mapper_trace_row(
             "text": text,
             "line_anchor_time": round(line_anchor_time, 3),
             "line_shift": round(line_shift, 3),
+            "prepare_context": prepare_context,
             "pre_override_segment": pre_override_segment,
             "line_segment": line_segment,
             "override_decision": override_decision,
@@ -191,6 +193,9 @@ def _map_lrc_words_to_whisper(
     segments: Sequence[Any],
     *,
     prepare_line_context_fn: Callable[..., Tuple[Optional[int], float, float]],
+    prepare_line_context_with_details_fn: Callable[
+        ..., Tuple[Optional[int], float, float, Dict[str, object]]
+    ],
     should_override_line_segment_fn: Callable[..., bool],
     match_assigned_words_fn: Callable[..., None],
     fill_unmatched_gaps_fn: Callable[..., None],
@@ -227,7 +232,12 @@ def _map_lrc_words_to_whisper(
             mapped_lines.append(line)
             continue
 
-        line_segment, line_anchor_time, line_shift = prepare_line_context_fn(ctx, line)
+        (
+            line_segment,
+            line_anchor_time,
+            line_shift,
+            prepare_context,
+        ) = prepare_line_context_with_details_fn(ctx, line)
         assignment_profile = build_assignment_confidence_profile(
             line_idx=line_idx,
             line=line,
@@ -315,6 +325,7 @@ def _map_lrc_words_to_whisper(
                 line_anchor_time=line_anchor_time,
                 line_shift=line_shift,
                 line_segment=line_segment,
+                prepare_context=prepare_context,
                 pre_override_segment=pre_override_segment,
                 override_decision=override_decision,
                 assignment_profile=assignment_profile,

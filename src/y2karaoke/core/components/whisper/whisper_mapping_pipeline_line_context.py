@@ -32,27 +32,46 @@ def _prepare_line_context(
     *,
     max_anchor_drift_from_lrc: float,
 ) -> Tuple[Optional[int], float, float]:
+    line_segment, line_anchor_time, line_shift, _ = _prepare_line_context_with_details(
+        ctx,
+        line,
+        max_anchor_drift_from_lrc=max_anchor_drift_from_lrc,
+    )
+    return line_segment, line_anchor_time, line_shift
+
+
+def _prepare_line_context_with_details(
+    ctx: _LineMappingContext,
+    line: "models.Line",
+    *,
+    max_anchor_drift_from_lrc: float,
+) -> Tuple[Optional[int], float, float, dict[str, object]]:
     """Determine segment, anchor time, and shift for a line."""
-    line_segment = _choose_segment_for_line(
+    text_choice_segment = _choose_segment_for_line(
         line,
         ctx.segments,
         ctx.current_segment,
         min_start=ctx.last_line_start,
         excluded_segments=ctx.used_segments,
     )
+    time_fallback_segment = None
+    line_segment = text_choice_segment
     if line_segment is None:
-        line_segment = _find_segment_for_time(
+        time_fallback_segment = _find_segment_for_time(
             line.start_time,
             ctx.segments,
             ctx.current_segment,
             excluded_segments=ctx.used_segments,
         )
+        line_segment = time_fallback_segment
+    cleared_for_monotonicity = False
     if (
         line_segment is not None
         and ctx.segments
         and whisper_utils._segment_start(ctx.segments[line_segment])
         < ctx.last_line_start
     ):
+        cleared_for_monotonicity = True
         line_segment = None
     prior_anchor = max(ctx.last_line_start, ctx.prev_line_end)
     if prior_anchor == float("-inf"):
@@ -63,7 +82,16 @@ def _prepare_line_context(
             min(prior_anchor, line.start_time + max_anchor_drift_from_lrc),
         )
     line_shift = line_anchor_time - line.start_time
-    return line_segment, line_anchor_time, line_shift
+    return (
+        line_segment,
+        line_anchor_time,
+        line_shift,
+        {
+            "text_choice_segment": text_choice_segment,
+            "time_fallback_segment": time_fallback_segment,
+            "cleared_for_monotonicity": cleared_for_monotonicity,
+        },
+    )
 
 
 def _should_override_line_segment(
