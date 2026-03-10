@@ -258,6 +258,16 @@
           - implication:
             - the stalled-run handoff bug is real and partially fixable without a global ownership redesign
             - next step should stay in the same structural area: improve stalled-run assignment consistency further, not reopen downstream heuristics
+        - pre-Whisper branch check:
+          - `tools/analyze_pre_whisper_live_path.py` now supports `--offline`, so its trace can match the benchmark fetch mode
+          - offline trace confirms the benchmark `whisper_map_lrc_dtw` path is skipping `_refine_timing_with_quality()` entirely before Whisper
+          - attempted env-gated experiment:
+            - `Y2K_PREREFINE_BEFORE_WHISPER_MAP=1`
+          - result on `Blinding Lights` one-song eval:
+            - regressed `gold_start_abs_mean_weighted: 0.467s -> 0.509s`
+          - implication:
+            - blindly inserting audio pre-refinement before `whisper_map_lrc_dtw` is not a valid fix
+            - remaining pre-Whisper work should target narrower source/refinement interactions, not wholesale prerefinement
             - next branch must inspect positional distribution / lrc assignments after widened search, not just selection scores
         - direct mapper override trace refined that diagnosis further:
           - for lines `20-31`, mapper `pre_override_segment` is already `None`

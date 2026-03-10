@@ -32,6 +32,9 @@ def _parse_args() -> argparse.Namespace:
     p.add_argument("--artist", required=True)
     p.add_argument("--vocals-path", required=True)
     p.add_argument("--target-duration", type=int, default=None)
+    p.add_argument("--line-from", type=int, default=22)
+    p.add_argument("--line-to", type=int, default=27)
+    p.add_argument("--offline", action="store_true")
     p.add_argument("--json-out", type=Path, required=True)
     p.add_argument("--md-out", type=Path, required=True)
     return p.parse_args()
@@ -100,12 +103,12 @@ def main() -> int:
         target_duration=args.target_duration,
         vocals_path=args.vocals_path,
         evaluate_sources=False,
-        offline=False,
         quality_report=quality_report,
         issues_list=issues,
         drop_lrc_line_timings=False,
         use_whisper=True,
         whisper_map_lrc=False,
+        offline=args.offline,
     )
     if not (lrc_text and line_timings):
         raise SystemExit("No LRC timings available for trace")
@@ -143,8 +146,8 @@ def main() -> int:
         issues,
     )
 
-    line_from = 22
-    line_to = 27
+    line_from = args.line_from
+    line_to = args.line_to
     data = {
         "title": args.title,
         "artist": args.artist,
