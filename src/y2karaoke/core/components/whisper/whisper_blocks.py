@@ -38,6 +38,8 @@ class _SegmentAssignmentConfig:
     later_trace: bool
     zero_score_lookback_enabled: bool
     zero_score_lookback_segs: int
+    stalled_search_min_run: int
+    stalled_search_lookback_segs: int
     terminal_stall_lookback_segs: int
     terminal_stall_max_current_score: float
     terminal_stall_min_rescue_score: float
@@ -60,6 +62,12 @@ def _segment_assignment_config_from_env() -> _SegmentAssignmentConfig:
         ),
         zero_score_lookback_segs=int(
             os.getenv("Y2K_WHISPER_SEGMENT_ASSIGN_ZERO_SCORE_LOOKBACK_SEGS", "36")
+        ),
+        stalled_search_min_run=int(
+            os.getenv("Y2K_WHISPER_SEGMENT_ASSIGN_STALLED_SEARCH_MIN_RUN", "1")
+        ),
+        stalled_search_lookback_segs=int(
+            os.getenv("Y2K_WHISPER_SEGMENT_ASSIGN_STALLED_SEARCH_LOOKBACK_SEGS", "4")
         ),
         terminal_stall_lookback_segs=int(
             os.getenv("Y2K_WHISPER_SEGMENT_ASSIGN_TERMINAL_STALL_LOOKBACK_SEGS", "4")
@@ -198,6 +206,7 @@ def _assign_lrc_lines_to_segments(
     n_segs = len(seg_word_bags)
     line_to_seg: List[int] = [-1] * lrc_line_count
     seg_cursor = 0
+    low_score_stall_run_length = 0
     for li in range(lrc_line_count):
         words = [w for _, w in lrc_lines_words[li]]
         content_words = [w for w in words if len(w) > 2]
@@ -207,18 +216,25 @@ def _assign_lrc_lines_to_segments(
         if not words:
             line_to_seg[li] = line_to_seg[li - 1] if li > 0 else 0
             continue
-        search_end = min(seg_cursor + max(10, n_segs // 4), n_segs)
+        search_start, search_end = _segment_search_window(
+            seg_cursor=seg_cursor,
+            n_segs=n_segs,
+            config=config,
+            low_score_stall_run_length=low_score_stall_run_length,
+        )
         line_trace = _init_segment_selection_trace(
             trace_rows=trace_rows,
             trace_line_range=trace_line_range,
             line_index=li + 1,
             words=words,
             seg_cursor=seg_cursor,
+            search_start=search_start,
             search_end=search_end,
         )
         best_seg, best_score = _score_segments_for_line(
             words=words,
             line_index=li,
+            search_start=search_start,
             seg_cursor=seg_cursor,
             search_end=search_end,
             n_segs=n_segs,
@@ -269,6 +285,13 @@ def _assign_lrc_lines_to_segments(
                         "next_score": round(nxt, 4),
                     }
         line_to_seg[li] = best_seg
+        if (
+            best_seg == seg_cursor
+            and best_score <= config.terminal_stall_max_current_score
+        ):
+            low_score_stall_run_length += 1
+        else:
+            low_score_stall_run_length = 0
         seg_cursor = max(seg_cursor, best_seg)
         _finalize_segment_selection_trace(
             line_trace=line_trace,
@@ -290,6 +313,7 @@ def _init_segment_selection_trace(
     line_index: int,
     words: List[str],
     seg_cursor: int,
+    search_start: int,
     search_end: int,
 ) -> Dict[str, Any] | None:
     if trace_rows is None:
@@ -302,15 +326,35 @@ def _init_segment_selection_trace(
         "line_index": line_index,
         "words": words,
         "seg_cursor_before": seg_cursor,
+        "search_start": search_start,
         "search_end": search_end,
         "scores": [],
     }
+
+
+def _segment_search_window(
+    *,
+    seg_cursor: int,
+    n_segs: int,
+    config: _SegmentAssignmentConfig,
+    low_score_stall_run_length: int,
+) -> Tuple[int, int]:
+    search_start = seg_cursor
+    if (
+        config.selection_mode == "experimental_stall_widened_search"
+        and low_score_stall_run_length >= config.stalled_search_min_run
+        and seg_cursor > 0
+    ):
+        search_start = max(0, seg_cursor - config.stalled_search_lookback_segs)
+    search_end = min(seg_cursor + max(10, n_segs // 4), n_segs)
+    return search_start, search_end
 
 
 def _score_segments_for_line(
     *,
     words: List[str],
     line_index: int,
+    search_start: int,
     seg_cursor: int,
     search_end: int,
     n_segs: int,
@@ -321,7 +365,7 @@ def _score_segments_for_line(
 ) -> Tuple[int, float]:
     best_seg = seg_cursor
     best_score = -1.0
-    for si in range(seg_cursor, search_end):
+    for si in range(search_start, search_end):
         score = _text_overlap_score(words, seg_word_bags[si])
         if line_trace is not None:
             scores = line_trace["scores"]

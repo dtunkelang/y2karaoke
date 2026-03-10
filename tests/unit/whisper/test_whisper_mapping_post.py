@@ -92,6 +92,28 @@ def test_select_segment_for_line_mode_default_keeps_existing_choice() -> None:
     assert score == 0.0
 
 
+def test_segment_search_window_widens_for_stalled_run(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv(
+        "Y2K_WHISPER_SEGMENT_ASSIGN_SELECTION_MODE",
+        "experimental_stall_widened_search",
+    )
+    monkeypatch.setenv("Y2K_WHISPER_SEGMENT_ASSIGN_STALLED_SEARCH_MIN_RUN", "1")
+    monkeypatch.setenv("Y2K_WHISPER_SEGMENT_ASSIGN_STALLED_SEARCH_LOOKBACK_SEGS", "4")
+    config = whisper_blocks._segment_assignment_config_from_env()
+
+    search_start, search_end = whisper_blocks._segment_search_window(
+        seg_cursor=7,
+        n_segs=8,
+        config=config,
+        low_score_stall_run_length=1,
+    )
+
+    assert search_start == 3
+    assert search_end == 8
+
+
 def test_select_segment_for_line_mode_experimental_terminal_stall_looks_back(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

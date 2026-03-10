@@ -213,6 +213,12 @@
           - segment `7` has `placeholder_ratio ~= 0.9477` and `bag_size = 172`
           - implication:
             - next branch must widen candidate generation during stalled runs before any confidence-weighted scorer can matter
+        - experimental widened stalled-search mode now proves the next bottleneck:
+          - it widens candidate generation and changes line-to-segment choices for lines `21/23/25/27/29`
+          - but the final timing report remains unchanged
+          - implication:
+            - downstream assignment/distribution is neutralizing the alternate segment choices
+            - next branch must inspect positional distribution / lrc assignments after widened search, not just selection scores
         - implication:
           - next upstream redesign needs assignment-confidence weighting on segment bags, not just overlap-based rescue
       - next branch should target segment-cursor stall / oversized stalled-segment handling, not another downstream/postpass heuristic
