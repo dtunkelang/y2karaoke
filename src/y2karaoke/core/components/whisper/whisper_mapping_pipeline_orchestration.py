@@ -39,6 +39,8 @@ def _append_mapper_trace_row(
     line_anchor_time: float,
     line_shift: float,
     line_segment: Optional[int],
+    pre_override_segment: Optional[int],
+    override_decision: dict[str, Any],
     assignment_profile,
     assigned_segs: Dict[int, int],
     lrc_index_by_loc: Dict[tuple[int, int], int],
@@ -75,7 +77,9 @@ def _append_mapper_trace_row(
             "text": text,
             "line_anchor_time": round(line_anchor_time, 3),
             "line_shift": round(line_shift, 3),
+            "pre_override_segment": pre_override_segment,
             "line_segment": line_segment,
+            "override_decision": override_decision,
             "assignment_confidence": {
                 "total_assigned": assignment_profile.total_assigned,
                 "lexical_overlap_ratio": round(
@@ -145,10 +149,19 @@ def _maybe_override_line_segment(
     line_shift: float,
     votes: Dict[int, int],
     should_override_line_segment_fn: Callable[..., bool],
-) -> tuple[Optional[int], float, float]:
+) -> tuple[Optional[int], float, float, dict[str, Any]]:
+    decision: dict[str, Any] = {
+        "had_votes": bool(votes),
+        "override_segment": None,
+        "override_hits": 0,
+        "should_override": False,
+        "applied": False,
+    }
     if not votes:
-        return line_segment, line_anchor_time, line_shift
+        return line_segment, line_anchor_time, line_shift, decision
     override_seg = max(votes, key=votes.get)  # type: ignore[arg-type]
+    decision["override_segment"] = override_seg
+    decision["override_hits"] = votes[override_seg]
     should_override = line_segment != override_seg and should_override_line_segment_fn(
         current_segment=line_segment,
         override_segment=override_seg,
@@ -157,14 +170,16 @@ def _maybe_override_line_segment(
         line_anchor_time=line_anchor_time,
         segments=ctx.segments,
     )
+    decision["should_override"] = should_override
     if not should_override:
-        return line_segment, line_anchor_time, line_shift
+        return line_segment, line_anchor_time, line_shift, decision
     line_segment = override_seg
+    decision["applied"] = True
     if ctx.segments and override_seg < len(ctx.segments):
         seg_start = whisper_utils._segment_start(ctx.segments[override_seg])
         line_anchor_time = max(seg_start, ctx.prev_line_end)
         line_shift = line_anchor_time - line.start_time
-    return line_segment, line_anchor_time, line_shift
+    return line_segment, line_anchor_time, line_shift, decision
 
 
 def _map_lrc_words_to_whisper(
@@ -229,7 +244,13 @@ def _map_lrc_words_to_whisper(
             lrc_assignments=lrc_assignments,
             word_segment_idx=ctx.word_segment_idx,
         )
-        line_segment, line_anchor_time, line_shift = _maybe_override_line_segment(
+        pre_override_segment = line_segment
+        (
+            line_segment,
+            line_anchor_time,
+            line_shift,
+            override_decision,
+        ) = _maybe_override_line_segment(
             ctx=ctx,
             line=line,
             line_segment=line_segment,
@@ -294,6 +315,8 @@ def _map_lrc_words_to_whisper(
                 line_anchor_time=line_anchor_time,
                 line_shift=line_shift,
                 line_segment=line_segment,
+                pre_override_segment=pre_override_segment,
+                override_decision=override_decision,
                 assignment_profile=assignment_profile,
                 assigned_segs=assigned_segs,
                 lrc_index_by_loc=lrc_index_by_loc,

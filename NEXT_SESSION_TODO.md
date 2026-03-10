@@ -219,6 +219,13 @@
           - implication:
             - downstream assignment/distribution is neutralizing the alternate segment choices
             - next branch must inspect positional distribution / lrc assignments after widened search, not just selection scores
+        - direct mapper override trace refined that diagnosis further:
+          - for lines `20-31`, mapper `pre_override_segment` is already `None`
+          - lines `20-23` then get overridden to segment `5`
+          - lines `24-31` already stay `None`, with votes for segment `5` but no override applied
+          - implication:
+            - widened segment selection is not feeding into mapper line context at all
+            - next branch must trace the handoff between segment-selection output and `prepare_line_context`, not only mapper override
         - implication:
           - next upstream redesign needs assignment-confidence weighting on segment bags, not just overlap-based rescue
       - next branch should target segment-cursor stall / oversized stalled-segment handling, not another downstream/postpass heuristic

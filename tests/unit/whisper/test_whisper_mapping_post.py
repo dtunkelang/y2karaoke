@@ -3,6 +3,9 @@ import pytest
 from y2karaoke.core.components.whisper import whisper_mapping as wm
 from y2karaoke.core.components.whisper import whisper_mapping_post as wmp
 from y2karaoke.core.components.whisper import whisper_blocks
+from y2karaoke.core.components.whisper import (
+    whisper_mapping_pipeline_orchestration as mpo,
+)
 from y2karaoke.core.models import Line, Word
 from y2karaoke.core.components.alignment.timing_models import (
     TranscriptionSegment,
@@ -191,6 +194,29 @@ def test_select_segment_for_line_mode_experimental_terminal_stall_tie_break_trac
     assert seg == 7
     assert score == pytest.approx(0.1667)
     assert "experimental_terminal_stall_tie_scores" in trace
+
+
+def test_maybe_override_line_segment_reports_decision() -> None:
+    seg, anchor, shift, decision = mpo._maybe_override_line_segment(
+        ctx=type("Ctx", (), {"segments": [], "prev_line_end": 0.0})(),
+        line=Line(words=[Word(text="foo", start_time=10.0, end_time=11.0)]),
+        line_segment=1,
+        line_anchor_time=10.0,
+        line_shift=0.0,
+        votes={2: 3},
+        should_override_line_segment_fn=lambda **kwargs: True,
+    )
+
+    assert seg == 2
+    assert anchor == 10.0
+    assert shift == 0.0
+    assert decision == {
+        "had_votes": True,
+        "override_segment": 2,
+        "override_hits": 3,
+        "should_override": True,
+        "applied": True,
+    }
 
 
 def test_pull_late_lines_to_matching_segments_keeps_small_shift_unchanged() -> None:
