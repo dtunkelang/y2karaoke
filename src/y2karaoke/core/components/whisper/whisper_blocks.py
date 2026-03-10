@@ -5,7 +5,7 @@ import os
 from collections import Counter
 from dataclasses import dataclass
 
-from typing import List, Tuple, Dict, Set
+from typing import Any, List, Tuple, Dict, Set
 from ....utils.logging import get_logger
 from ..alignment import timing_models
 from . import whisper_utils
@@ -14,6 +14,20 @@ from . import whisper_phonetic_dtw
 logger = get_logger(__name__)
 
 _MAX_SEGMENT_WORDS_PER_LRC_WORD = 8.0
+
+
+def _parse_trace_line_range_env() -> Tuple[int, int] | None:
+    raw_range = os.environ.get("Y2K_TRACE_MAPPER_LINE_RANGE", "").strip()
+    if not raw_range:
+        return None
+    try:
+        start_s, end_s = raw_range.split("-", 1)
+        start, end = int(start_s), int(end_s)
+        if start > 0 and end >= start:
+            return (start, end)
+    except (TypeError, ValueError):
+        return None
+    return None
 
 
 @dataclass(frozen=True)
@@ -140,6 +154,9 @@ def _assign_lrc_lines_to_segments(
     config: _SegmentAssignmentConfig,
 ) -> List[int]:
     """Assign each LRC line to a Whisper segment using text overlap."""
+    trace_path = os.environ.get("Y2K_TRACE_SEGMENT_SELECTION_JSON", "").strip()
+    trace_line_range = _parse_trace_line_range_env()
+    trace_rows: List[Dict[str, Any]] | None = [] if trace_path else None
     lrc_line_count = len(lrc_lines_words)
     n_segs = len(seg_word_bags)
     line_to_seg: List[int] = [-1] * lrc_line_count
@@ -156,8 +173,30 @@ def _assign_lrc_lines_to_segments(
         best_seg = seg_cursor
         best_score = -1.0
         search_end = min(seg_cursor + max(10, n_segs // 4), n_segs)
+        line_trace: Dict[str, Any] | None = None
+        if trace_rows is not None and (
+            trace_line_range is None
+            or trace_line_range[0] <= li + 1 <= trace_line_range[1]
+        ):
+            line_trace = {
+                "line_index": li + 1,
+                "words": words,
+                "seg_cursor": seg_cursor,
+                "search_end": search_end,
+                "scores": [],
+            }
         for si in range(seg_cursor, search_end):
             score = _text_overlap_score(words, seg_word_bags[si])
+            if line_trace is not None:
+                scores = line_trace["scores"]
+                assert isinstance(scores, list)
+                scores.append(
+                    {
+                        "segment_index": si,
+                        "score": round(score, 4),
+                        "bag_preview": seg_word_bags[si][:16],
+                    }
+                )
             if score > best_score:
                 best_score = score
                 best_seg = si
@@ -172,6 +211,20 @@ def _assign_lrc_lines_to_segments(
                     config=config,
                 )
                 if candidate is not None:
+                    if line_trace is not None:
+                        merged_candidates = line_trace.setdefault(
+                            "merged_candidates", []
+                        )
+                        assert isinstance(merged_candidates, list)
+                        merged_candidates.append(
+                            {
+                                "segment_index": si,
+                                "score": round(candidate[0], 4),
+                                "chosen_segment": candidate[1],
+                                "left_bag_preview": seg_word_bags[si][:8],
+                                "right_bag_preview": seg_word_bags[si + 1][:8],
+                            }
+                        )
                     best_score, best_seg = candidate
         # Zero-score repeated lines can get cursor-locked in long refrain sections.
         # Allow a limited lookback rescue without moving the global cursor backward.
@@ -205,8 +258,21 @@ def _assign_lrc_lines_to_segments(
             if nxt >= best_score * 0.7 and nxt > 0.5:
                 best_seg = best_seg + 1
                 best_score = nxt
+                if line_trace is not None:
+                    line_trace["advanced_to_next_segment"] = {
+                        "next_segment": best_seg,
+                        "next_score": round(nxt, 4),
+                    }
         line_to_seg[li] = best_seg
         seg_cursor = max(seg_cursor, best_seg)
+        if line_trace is not None:
+            line_trace["final_segment"] = best_seg
+            line_trace["final_score"] = round(best_score, 4)
+            assert trace_rows is not None
+            trace_rows.append(line_trace)
+    if trace_path and trace_rows is not None:
+        with open(trace_path, "w", encoding="utf-8") as fh:
+            json.dump({"rows": trace_rows}, fh, indent=2)
     return line_to_seg
 
 
@@ -425,16 +491,7 @@ def _build_segment_text_overlap_assignments(
     Whisper.
     """
     trace_path = os.environ.get("Y2K_TRACE_SEGMENT_ASSIGNMENTS_JSON", "").strip()
-    trace_line_range = None
-    raw_range = os.environ.get("Y2K_TRACE_MAPPER_LINE_RANGE", "").strip()
-    if raw_range:
-        try:
-            start_s, end_s = raw_range.split("-", 1)
-            start, end = int(start_s), int(end_s)
-            if start > 0 and end >= start:
-                trace_line_range = (start, end)
-        except (TypeError, ValueError):
-            trace_line_range = None
+    trace_line_range = _parse_trace_line_range_env()
     if not segments or not lrc_words:
         return {}
     config = _segment_assignment_config_from_env()
@@ -636,16 +693,7 @@ def _build_block_segmented_syllable_assignments(
 ) -> Dict[int, List[int]]:
     """Run syllable DTW within each speech block and merge assignments."""
     trace_path = os.environ.get("Y2K_TRACE_SYLLABLE_ASSIGNMENTS_JSON", "").strip()
-    trace_line_range = None
-    raw_range = os.environ.get("Y2K_TRACE_MAPPER_LINE_RANGE", "").strip()
-    if raw_range:
-        try:
-            start_s, end_s = raw_range.split("-", 1)
-            start, end = int(start_s), int(end_s)
-            if start > 0 and end >= start:
-                trace_line_range = (start, end)
-        except (TypeError, ValueError):
-            trace_line_range = None
+    trace_line_range = _parse_trace_line_range_env()
     speech_blocks = whisper_utils._compute_speech_blocks(all_words)
     word_idx_to_line_idx = {idx: lw["line_idx"] for idx, lw in enumerate(lrc_words)}
     if len(speech_blocks) <= 1:

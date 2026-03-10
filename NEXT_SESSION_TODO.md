@@ -139,7 +139,11 @@
       - kept fix:
         - skip positional distribution when a segment is pathologically wider than the grouped lyric payload (`>8x` words-per-lyric-word)
         - current canary after that guard: `gold_start_abs_word=0.4976`, `gold_start_p95_abs_sec=1.1369`
-      - next branch should refine that same assignment path rather than returning to postpass heuristics
+      - additional segment-selection trace (`Y2K_TRACE_SEGMENT_SELECTION_JSON`) now shows the remaining line-9 problem is earlier still:
+        - line `9` (`Sin City's cold and empty`) gets `0.0` overlap across the searched segments
+        - final segment choice still advances to segment `3`, whose bag is entirely `[vocal]`
+        - this happens because zero-score lines are forced forward past the cursor
+      - next branch should target zero-score segment-choice behavior for placeholder-only segments, not another downstream/postpass heuristic
 - [ ] Use multi-source timed-lyrics disagreement as a routing signal.
   - Hypothesis: provider disagreement is useful evidence that line timestamps are untrustworthy and we should rely more on audio/Whisper scoring.
   - Initial evidence:
