@@ -130,10 +130,14 @@ def _line_override_segment_votes(
     lrc_assignments: Dict[int, List[int]],
     word_segment_idx: Dict[int, int],
 ) -> Dict[int, int]:
-    prefer_selected_nested = (
-        os.getenv("Y2K_WHISPER_SEGMENT_ASSIGN_SELECTION_MODE", "").strip()
-        == "experimental_stall_nested_vote_handoff"
+    selection_mode = (
+        os.getenv("Y2K_WHISPER_SEGMENT_ASSIGN_SELECTION_MODE", "default").strip()
+        or "default"
     )
+    prefer_selected_nested = selection_mode in {
+        "default",
+        "experimental_stall_nested_vote_handoff",
+    }
     selected_segment_by_lrc_idx = getattr(
         lrc_assignments, "selected_segment_by_lrc_idx", {}
     )

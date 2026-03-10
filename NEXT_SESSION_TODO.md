@@ -239,7 +239,7 @@
           - an env-gated `most_specific_enclosing` word-to-segment ownership mode stayed on the stable cached branch but regressed `Blinding Lights` one-song gold metrics (`0.467s -> 0.530s`)
           - so the right next branch is not to flip global ownership; it is to make stalled-run segment assignment and mapper ownership consistent only where the nested-segment pathology occurs
         - successful local handoff experiment:
-          - env mode: `Y2K_WHISPER_SEGMENT_ASSIGN_SELECTION_MODE=experimental_stall_nested_vote_handoff`
+          - initial env mode: `Y2K_WHISPER_SEGMENT_ASSIGN_SELECTION_MODE=experimental_stall_nested_vote_handoff`
           - behavior:
             - keep global first-enclosing word ownership unchanged
             - but when a selected stalled-run segment is nested, has no first-enclosing words, and still owns the assigned word by positional range, override voting prefers the selected nested segment locally
@@ -249,9 +249,15 @@
               - `gold_start_abs_word: 0.4976 -> 0.4829`
               - `gold_start_p95_abs_sec: 1.1369 -> 1.0951`
               - `gold_line_duration_abs_sec: 0.2746 -> 0.2607`
+          - promoted result:
+            - this local nested-vote handoff now runs in default mode
+            - default curated canary matches the experimental result:
+              - `gold_start_abs_word = 0.4829`
+              - `gold_start_p95_abs_sec = 1.0951`
+              - `gold_line_duration_abs_sec = 0.2607`
           - implication:
             - the stalled-run handoff bug is real and partially fixable without a global ownership redesign
-            - next step should be deciding whether to promote this env-gated behavior into the default selection path or keep iterating on the same local handoff class
+            - next step should stay in the same structural area: improve stalled-run assignment consistency further, not reopen downstream heuristics
             - next branch must inspect positional distribution / lrc assignments after widened search, not just selection scores
         - direct mapper override trace refined that diagnosis further:
           - for lines `20-31`, mapper `pre_override_segment` is already `None`

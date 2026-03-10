@@ -222,10 +222,6 @@ def test_maybe_override_line_segment_reports_decision() -> None:
 def test_line_override_segment_votes_prefers_selected_nested_segment(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    monkeypatch.setenv(
-        "Y2K_WHISPER_SEGMENT_ASSIGN_SELECTION_MODE",
-        "experimental_stall_nested_vote_handoff",
-    )
     assignments = whisper_blocks._SegmentAssignments(
         {10: [300]},
         selected_segment_by_lrc_idx={10: 7},
@@ -244,6 +240,33 @@ def test_line_override_segment_votes_prefers_selected_nested_segment(
     )
 
     assert votes == {7: 1}
+
+
+def test_line_override_segment_votes_can_disable_selected_nested_segment(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv(
+        "Y2K_WHISPER_SEGMENT_ASSIGN_SELECTION_MODE",
+        "experimental_terminal_stall_lookback",
+    )
+    assignments = whisper_blocks._SegmentAssignments(
+        {10: [300]},
+        selected_segment_by_lrc_idx={10: 7},
+        seg_word_ranges=[(-1, -1)] * 8,
+        first_enclosing_ranges=[(-1, -1)] * 8,
+    )
+    assignments.seg_word_ranges[7] = (293, 464)
+    assignments.first_enclosing_ranges[7] = (-1, -1)
+
+    votes = mpo._line_override_segment_votes(
+        line_idx=0,
+        line=Line(words=[Word(text="foo", start_time=0.0, end_time=1.0)]),
+        lrc_index_by_loc={(0, 0): 10},
+        lrc_assignments=assignments,
+        word_segment_idx={300: 5},
+    )
+
+    assert votes == {5: 1}
 
 
 def test_pull_late_lines_to_matching_segments_keeps_small_shift_unchanged() -> None:
