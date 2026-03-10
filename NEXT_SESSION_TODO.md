@@ -117,6 +117,12 @@
     - Additional tracing note:
       - `tools/analyze_whisper_postpasses.py` can replay `align_lrc_text_to_whisper_timings`, but direct replay is not fidelity-equal to the offline benchmark path because it may enter a different Whisper/WhisperX fallback branch.
       - Future line-25 tracing should hook the actual benchmark subprocess path or force the same cached branch before trusting stage-level deltas.
+    - Fidelity-correct benchmark-path trace:
+      - using the real separated vocals stem (`.cache/fHI8X4OXluQ/The Weeknd - Blinding Lights (Official Audio)_(Vocals)_htdemucs_ft.wav`), the live pre-Whisper path keeps line `25` at `128.174s`, close to gold `128.65s`.
+      - the exact replayed offline benchmark output then moves that same line to `130.010s`.
+      - artifact:
+        - `benchmarks/results/20260309T_blinding_exact_replay_delta/blinding_lights_pre_vs_final_delta_vocals.md`
+      - active downstream delta on line `25` is therefore `+1.836s`, and the next branch should focus specifically on which Whisper/post-alignment stage applies that late shift.
 - [ ] Use multi-source timed-lyrics disagreement as a routing signal.
   - Hypothesis: provider disagreement is useful evidence that line timestamps are untrustworthy and we should rely more on audio/Whisper scoring.
   - Initial evidence:
