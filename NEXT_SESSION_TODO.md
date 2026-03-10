@@ -154,6 +154,7 @@
           - `benchmarks/results/20260310T_blinding_cursor_trace/segment_cursor_stall.md`
       - assignment-confidence groundwork:
         - new helper: `whisper_assignment_confidence.py`
+        - new analysis tool: `tools/analyze_mapper_assignment_confidence.py`
         - mapper trace now records per-line assignment confidence:
           - `total_assigned`
           - `lexical_overlap_ratio`
@@ -166,6 +167,8 @@
           - `placeholder_ratio=1.0`
           - `lexical_overlap_ratio=0.0`
           - `median_start_drift_sec=13.44`
+        - artifact:
+          - `benchmarks/results/20260310T_blinding_assignment_conf_diag/mapper_assignment_confidence.md`
         - first attempt to suppress low-confidence assignments regressed the canary badly; keep this layer diagnostic-only until segment-choice handling is explicit
       - next branch should target segment-cursor stall / oversized terminal segment handling, not another downstream/postpass heuristic
 - [ ] Use multi-source timed-lyrics disagreement as a routing signal.
