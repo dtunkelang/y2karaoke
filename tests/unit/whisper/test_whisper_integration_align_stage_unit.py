@@ -400,6 +400,73 @@ def test_align_pipeline_extends_unsupported_parenthetical_tail():
     assert any("parenthetical tail" in msg for msg in corrections)
 
 
+def test_align_pipeline_skips_i_said_reanchor_when_already_late_vs_baseline():
+    lines = [
+        Line(words=[Word(text="prev", start_time=123.67, end_time=129.07)]),
+        Line(
+            words=[
+                Word(text="I", start_time=129.17, end_time=129.77),
+                Word(text="said,", start_time=129.77, end_time=130.37),
+                Word(text="ooh,", start_time=130.37, end_time=130.97),
+                Word(text="I'm", start_time=130.97, end_time=131.57),
+                Word(text="drowning", start_time=131.57, end_time=132.17),
+                Word(text="in", start_time=132.17, end_time=132.77),
+                Word(text="the", start_time=132.77, end_time=133.37),
+                Word(text="night", start_time=133.37, end_time=133.97),
+            ]
+        ),
+        Line(
+            words=[
+                Word(text="Oh,", start_time=135.12, end_time=135.4),
+                Word(text="when", start_time=135.4, end_time=135.8),
+            ]
+        ),
+    ]
+    baseline = [
+        Line(words=[Word(text="prev", start_time=123.67, end_time=129.07)]),
+        Line(
+            words=[
+                Word(text="I", start_time=128.09, end_time=128.82),
+                Word(text="said,", start_time=128.82, end_time=129.54),
+                Word(text="ooh,", start_time=129.54, end_time=130.27),
+                Word(text="I'm", start_time=130.27, end_time=131.0),
+                Word(text="drowning", start_time=131.0, end_time=131.73),
+                Word(text="in", start_time=131.73, end_time=132.45),
+                Word(text="the", start_time=132.45, end_time=133.18),
+                Word(text="night", start_time=133.18, end_time=133.91),
+            ]
+        ),
+        Line(
+            words=[
+                Word(text="Oh,", start_time=133.99, end_time=134.4),
+                Word(text="when", start_time=134.4, end_time=134.8),
+            ]
+        ),
+    ]
+    whisper_words = [
+        TranscriptionWord(text="[VOCAL]", start=120.0, end=120.1, probability=0.9)
+    ]
+    audio_features = AudioFeatures(
+        onset_times=np.array([129.85, 130.01, 130.77], dtype=float),
+        silence_regions=[],
+        vocal_start=0.0,
+        vocal_end=200.0,
+        duration=200.0,
+        energy_envelope=np.array([], dtype=float),
+        energy_times=np.array([], dtype=float),
+    )
+
+    mapped, applied = wialign._reanchor_unsupported_i_said_lines_to_later_onset(
+        lines,
+        baseline,
+        whisper_words,
+        audio_features,
+    )
+
+    assert applied == 0
+    assert mapped[1].start_time == pytest.approx(129.17, abs=0.01)
+
+
 def test_align_pipeline_extends_unsupported_weak_opening_line():
     lines = [
         Line(words=[Word(text="prev", start_time=73.0, end_time=77.1)]),

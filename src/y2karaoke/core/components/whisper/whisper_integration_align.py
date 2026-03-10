@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import json
+import os
 import time
 from typing import Any, Callable, Dict, List, Optional, Tuple
 import re
@@ -70,6 +72,59 @@ def _line_set_end(lines: List[models.Line]) -> float:
         if line.words:
             end_time = max(end_time, line.end_time)
     return end_time
+
+
+def _parse_trace_line_range() -> tuple[int, int] | None:
+    raw = os.environ.get("Y2K_TRACE_WHISPER_LINE_RANGE", "").strip()
+    if not raw:
+        return None
+    try:
+        start_s, end_s = raw.split("-", 1)
+        start = int(start_s)
+        end = int(end_s)
+    except (TypeError, ValueError):
+        return None
+    if start <= 0 or end < start:
+        return None
+    return start, end
+
+
+def _capture_trace_snapshot(
+    snapshots: list[dict[str, Any]],
+    *,
+    stage: str,
+    lines: List[models.Line],
+    line_range: tuple[int, int] | None,
+) -> None:
+    if line_range is None:
+        return
+    start_idx, end_idx = line_range
+    rows: list[dict[str, Any]] = []
+    for idx, line in enumerate(lines, start=1):
+        if idx < start_idx or idx > end_idx or not line.words:
+            continue
+        rows.append(
+            {
+                "line_index": idx,
+                "text": line.text,
+                "start": round(line.start_time, 3),
+                "end": round(line.end_time, 3),
+                "duration": round(line.end_time - line.start_time, 3),
+            }
+        )
+    snapshots.append({"stage": stage, "count": len(lines), "lines": rows})
+
+
+def _maybe_write_trace_snapshot_file(
+    *,
+    snapshots: list[dict[str, Any]],
+    trace_path: str,
+) -> None:
+    if not trace_path:
+        return
+    payload = {"snapshots": snapshots}
+    with open(trace_path, "w", encoding="utf-8") as fh:
+        json.dump(payload, fh, indent=2)
 
 
 def _count_non_vocal_words_near_time(
@@ -558,6 +613,7 @@ def _extend_misaligned_lines_before_i_said(
 
 def _reanchor_unsupported_i_said_lines_to_later_onset(
     mapped_lines: List[models.Line],
+    baseline_lines: List[models.Line],
     whisper_words: List[timing_models.TranscriptionWord],
     audio_features: Optional[timing_models.AudioFeatures],
 ) -> tuple[List[models.Line], int]:
@@ -572,6 +628,13 @@ def _reanchor_unsupported_i_said_lines_to_later_onset(
     for idx in range(len(updated) - 1):
         line = updated[idx]
         next_line = updated[idx + 1]
+        baseline_line = baseline_lines[idx] if idx < len(baseline_lines) else None
+        if (
+            baseline_line is not None
+            and baseline_line.words
+            and line.start_time - baseline_line.start_time > 0.75
+        ):
+            continue
         target_start = _choose_i_said_reanchor_start(
             line, next_line, whisper_words, onset_times
         )
@@ -769,6 +832,9 @@ def align_lrc_text_to_whisper_timings_impl(  # noqa: C901
             )
 
     corrections: List[str] = []
+    trace_path = os.environ.get("Y2K_TRACE_WHISPER_STAGES_JSON", "").strip()
+    trace_line_range = _parse_trace_line_range()
+    trace_snapshots: list[dict[str, Any]] = []
     mapping_start = time.perf_counter()
     mapped_lines, mapped_count, total_similarity, mapped_lines_set = (
         map_lrc_words_to_whisper_fn(
@@ -779,6 +845,12 @@ def align_lrc_text_to_whisper_timings_impl(  # noqa: C901
             epitran_lang,
             transcription,
         )
+    )
+    _capture_trace_snapshot(
+        trace_snapshots,
+        stage="after_map_lrc_words_to_whisper",
+        lines=mapped_lines,
+        line_range=trace_line_range,
     )
     mapping_elapsed = time.perf_counter() - mapping_start
     postpass_start = time.perf_counter()
@@ -801,6 +873,12 @@ def align_lrc_text_to_whisper_timings_impl(  # noqa: C901
         pull_lines_forward_for_continuous_vocals_fn=pull_lines_forward_for_continuous_vocals_fn,
         enforce_monotonic_line_starts_whisper_fn=enforce_monotonic_line_starts_whisper_fn,
         resolve_line_overlaps_fn=resolve_line_overlaps_fn,
+    )
+    _capture_trace_snapshot(
+        trace_snapshots,
+        stage="after_run_mapped_line_postpasses",
+        lines=mapped_lines,
+        line_range=trace_line_range,
     )
     postpass_elapsed = time.perf_counter() - postpass_start
 
@@ -845,6 +923,12 @@ def align_lrc_text_to_whisper_timings_impl(  # noqa: C901
         mapped_lines = constrain_line_starts_to_baseline_fn(
             mapped_lines, baseline_lines
         )
+        _capture_trace_snapshot(
+            trace_snapshots,
+            stage="after_initial_baseline_constraint",
+            lines=mapped_lines,
+            line_range=trace_line_range,
+        )
     else:
         corrections.append(
             "Skipped baseline start constraint due to strong global Whisper shift evidence"
@@ -858,9 +942,21 @@ def align_lrc_text_to_whisper_timings_impl(  # noqa: C901
         )
     except TypeError:
         mapped_lines = snap_first_word_to_whisper_onset_fn(mapped_lines, all_words)
+    _capture_trace_snapshot(
+        trace_snapshots,
+        stage="after_snap_first_word_to_whisper_onset",
+        lines=mapped_lines,
+        line_range=trace_line_range,
+    )
     if apply_baseline_constraint:
         mapped_lines = constrain_line_starts_to_baseline_fn(
             mapped_lines, baseline_lines
+        )
+        _capture_trace_snapshot(
+            trace_snapshots,
+            stage="after_second_baseline_constraint",
+            lines=mapped_lines,
+            line_range=trace_line_range,
         )
     mapped_lines, restored_weak = _restore_weak_evidence_large_start_shifts(
         mapped_lines,
@@ -871,6 +967,12 @@ def align_lrc_text_to_whisper_timings_impl(  # noqa: C901
         corrections.append(
             f"Restored {restored_weak} weak-evidence large start shift line(s) to baseline"
         )
+    _capture_trace_snapshot(
+        trace_snapshots,
+        stage="after_restore_weak_evidence_large_start_shifts",
+        lines=mapped_lines,
+        line_range=trace_line_range,
+    )
     mapped_lines, restored_early_duplicates = (
         _restore_unsupported_early_duplicate_shifts(
             mapped_lines,
@@ -883,6 +985,12 @@ def align_lrc_text_to_whisper_timings_impl(  # noqa: C901
             "Restored "
             f"{restored_early_duplicates} unsupported early duplicate line(s) to baseline"
         )
+    _capture_trace_snapshot(
+        trace_snapshots,
+        stage="after_restore_unsupported_early_duplicate_shifts",
+        lines=mapped_lines,
+        line_range=trace_line_range,
+    )
     mapped_lines, restored_short = restore_implausibly_short_lines_fn(
         baseline_lines, mapped_lines
     )
@@ -890,6 +998,12 @@ def align_lrc_text_to_whisper_timings_impl(  # noqa: C901
         corrections.append(
             f"Restored {restored_short} short compressed lines from baseline timing"
         )
+    _capture_trace_snapshot(
+        trace_snapshots,
+        stage="after_restore_implausibly_short_lines",
+        lines=mapped_lines,
+        line_range=trace_line_range,
+    )
     mapped_lines, restored_inversions = _restore_pairwise_inversions_from_source(
         baseline_lines,
         mapped_lines,
@@ -900,6 +1014,12 @@ def align_lrc_text_to_whisper_timings_impl(  # noqa: C901
         corrections.append(
             f"Restored {restored_inversions} inversion outlier line(s) from baseline timing"
         )
+    _capture_trace_snapshot(
+        trace_snapshots,
+        stage="after_restore_pairwise_inversions_from_source",
+        lines=mapped_lines,
+        line_range=trace_line_range,
+    )
     if audio_features is not None:
         mapped_lines, carryover_fixes = _shift_weak_opening_lines_past_phrase_carryover(
             mapped_lines,
@@ -910,9 +1030,16 @@ def align_lrc_text_to_whisper_timings_impl(  # noqa: C901
                 "Shifted "
                 f"{carryover_fixes} weak-opening line(s) past prior-phrase carryover"
             )
+        _capture_trace_snapshot(
+            trace_snapshots,
+            stage="after_shift_weak_opening_lines_past_phrase_carryover",
+            lines=mapped_lines,
+            line_range=trace_line_range,
+        )
         mapped_lines, said_reanchors = (
             _reanchor_unsupported_i_said_lines_to_later_onset(
                 mapped_lines,
+                baseline_lines,
                 all_words,
                 audio_features,
             )
@@ -922,6 +1049,12 @@ def align_lrc_text_to_whisper_timings_impl(  # noqa: C901
                 "Reanchored "
                 f"{said_reanchors} unsupported 'I said' line(s) to later audio onsets"
             )
+        _capture_trace_snapshot(
+            trace_snapshots,
+            stage="after_reanchor_unsupported_i_said_lines_to_later_onset",
+            lines=mapped_lines,
+            line_range=trace_line_range,
+        )
         mapped_lines, tail_extensions = _extend_unsupported_parenthetical_tails(
             mapped_lines,
             all_words,
@@ -930,6 +1063,12 @@ def align_lrc_text_to_whisper_timings_impl(  # noqa: C901
             corrections.append(
                 "Extended " f"{tail_extensions} unsupported parenthetical tail(s)"
             )
+        _capture_trace_snapshot(
+            trace_snapshots,
+            stage="after_extend_unsupported_parenthetical_tails",
+            lines=mapped_lines,
+            line_range=trace_line_range,
+        )
         mapped_lines, i_said_tail_extensions = _extend_unsupported_i_said_tails(
             mapped_lines,
             all_words,
@@ -938,6 +1077,12 @@ def align_lrc_text_to_whisper_timings_impl(  # noqa: C901
             corrections.append(
                 "Extended " f"{i_said_tail_extensions} unsupported 'I said' tail(s)"
             )
+        _capture_trace_snapshot(
+            trace_snapshots,
+            stage="after_extend_unsupported_i_said_tails",
+            lines=mapped_lines,
+            line_range=trace_line_range,
+        )
         mapped_lines, interjection_reanchors = (
             _reanchor_unsupported_interjection_lines_to_onsets(
                 mapped_lines,
@@ -950,6 +1095,12 @@ def align_lrc_text_to_whisper_timings_impl(  # noqa: C901
                 "Reanchored "
                 f"{interjection_reanchors} unsupported interjection line(s) to audio onsets"
             )
+        _capture_trace_snapshot(
+            trace_snapshots,
+            stage="after_reanchor_unsupported_interjection_lines_to_onsets",
+            lines=mapped_lines,
+            line_range=trace_line_range,
+        )
         mapped_lines, pre_i_said_extensions = _extend_misaligned_lines_before_i_said(
             mapped_lines,
             all_words,
@@ -959,6 +1110,12 @@ def align_lrc_text_to_whisper_timings_impl(  # noqa: C901
                 "Extended "
                 f"{pre_i_said_extensions} lexically mismatched line(s) before unsupported 'I said' lines"
             )
+        _capture_trace_snapshot(
+            trace_snapshots,
+            stage="after_extend_misaligned_lines_before_i_said",
+            lines=mapped_lines,
+            line_range=trace_line_range,
+        )
         mapped_lines, pre_weak_opening_extensions = (
             _extend_unsupported_long_lines_before_weak_opening(
                 mapped_lines,
@@ -970,6 +1127,12 @@ def align_lrc_text_to_whisper_timings_impl(  # noqa: C901
                 "Extended "
                 f"{pre_weak_opening_extensions} unsupported line(s) before weak openings"
             )
+        _capture_trace_snapshot(
+            trace_snapshots,
+            stage="after_extend_unsupported_long_lines_before_weak_opening",
+            lines=mapped_lines,
+            line_range=trace_line_range,
+        )
         mapped_lines, weak_opening_extensions = _extend_unsupported_weak_opening_lines(
             mapped_lines,
             all_words,
@@ -979,6 +1142,17 @@ def align_lrc_text_to_whisper_timings_impl(  # noqa: C901
                 "Extended "
                 f"{weak_opening_extensions} unsupported weak-opening line(s)"
             )
+        _capture_trace_snapshot(
+            trace_snapshots,
+            stage="after_extend_unsupported_weak_opening_lines",
+            lines=mapped_lines,
+            line_range=trace_line_range,
+        )
+
+    _maybe_write_trace_snapshot_file(
+        snapshots=trace_snapshots,
+        trace_path=trace_path,
+    )
 
     metrics: Dict[str, Any] = {
         "matched_ratio": matched_ratio,
