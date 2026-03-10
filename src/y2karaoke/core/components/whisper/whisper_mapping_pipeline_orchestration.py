@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import json
+import os
 from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple
 
 from ... import models
@@ -9,6 +11,66 @@ from ..alignment import timing_models
 from .whisper_dtw import _LineMappingContext
 from .whisper_mapping_helpers import _SPEECH_BLOCK_GAP, _build_word_to_segment_index
 from . import whisper_utils
+
+
+def _parse_trace_line_range() -> tuple[int, int] | None:
+    raw = os.environ.get("Y2K_TRACE_MAPPER_LINE_RANGE", "").strip()
+    if not raw:
+        return None
+    try:
+        start_s, end_s = raw.split("-", 1)
+        start = int(start_s)
+        end = int(end_s)
+    except (TypeError, ValueError):
+        return None
+    if start <= 0 or end < start:
+        return None
+    return start, end
+
+
+def _append_mapper_trace_row(
+    rows: list[dict[str, Any]],
+    *,
+    line_index: int,
+    text: str,
+    line_anchor_time: float,
+    line_shift: float,
+    line_segment: Optional[int],
+    assigned_segs: Dict[int, int],
+    line_matches: List[Tuple[int, Tuple[float, float]]],
+    mapped_line: models.Line,
+) -> None:
+    rows.append(
+        {
+            "line_index": line_index,
+            "text": text,
+            "line_anchor_time": round(line_anchor_time, 3),
+            "line_shift": round(line_shift, 3),
+            "line_segment": line_segment,
+            "assigned_segment_votes": dict(sorted(assigned_segs.items())),
+            "match_count": len(line_matches),
+            "matches": [
+                {
+                    "word_index": word_idx,
+                    "start": round(interval[0], 3),
+                    "end": round(interval[1], 3),
+                }
+                for word_idx, interval in line_matches
+            ],
+            "mapped_start": (
+                round(mapped_line.start_time, 3) if mapped_line.words else None
+            ),
+            "mapped_end": round(mapped_line.end_time, 3) if mapped_line.words else None,
+        }
+    )
+
+
+def _maybe_write_mapper_trace(rows: list[dict[str, Any]]) -> None:
+    trace_path = os.environ.get("Y2K_TRACE_MAPPER_DETAILS_JSON", "").strip()
+    if not trace_path:
+        return
+    with open(trace_path, "w", encoding="utf-8") as fh:
+        json.dump({"lines": rows}, fh, indent=2)
 
 
 def _line_override_segment_votes(
@@ -99,6 +161,8 @@ def _map_lrc_words_to_whisper(
         (lw["line_idx"], lw["word_idx"]): idx for idx, lw in enumerate(lrc_words)
     }
     mapped_lines: List[models.Line] = []
+    mapper_trace_range = _parse_trace_line_range()
+    mapper_trace_rows: list[dict[str, Any]] = []
 
     for line_idx, line in enumerate(lines):
         if not line.words:
@@ -166,5 +230,21 @@ def _map_lrc_words_to_whisper(
             lines[line_idx + 1].start_time if line_idx + 1 < len(lines) else None,
         )
         mapped_lines.append(mapped_line)
+        if (
+            mapper_trace_range is not None
+            and mapper_trace_range[0] <= line_idx + 1 <= mapper_trace_range[1]
+        ):
+            _append_mapper_trace_row(
+                mapper_trace_rows,
+                line_index=line_idx + 1,
+                text=line.text,
+                line_anchor_time=line_anchor_time,
+                line_shift=line_shift,
+                line_segment=line_segment,
+                assigned_segs=assigned_segs,
+                line_matches=line_matches,
+                mapped_line=mapped_line,
+            )
 
+    _maybe_write_mapper_trace(mapper_trace_rows)
     return mapped_lines, ctx.mapped_count, ctx.total_similarity, ctx.mapped_lines_set
