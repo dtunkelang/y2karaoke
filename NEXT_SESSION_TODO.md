@@ -200,6 +200,13 @@
           - aggressive penalty (`0.3`) moved the late chorus block, but obviously distorted spans and starts
           - example:
             - line `26` `135.12-139.03 -> 133.61-142.96`
+        - scorer-only simulation on the normal segment-choice trace shows a deeper limit:
+          - even with aggressive placeholder penalties, no line would change
+          - artifact:
+            - `benchmarks/results/20260310T_blinding_segment_score_trace/segment_selection_scorer.md`
+          - implication:
+            - the default candidate set is already too narrow
+            - next redesign must change candidate generation / search, not only scoring
         - implication:
           - next upstream redesign needs assignment-confidence weighting on segment bags, not just overlap-based rescue
       - next branch should target segment-cursor stall / oversized stalled-segment handling, not another downstream/postpass heuristic

@@ -14,6 +14,7 @@ from . import whisper_phonetic_dtw
 logger = get_logger(__name__)
 
 _MAX_SEGMENT_WORDS_PER_LRC_WORD = 8.0
+_PLACEHOLDER_SEGMENT_TOKENS = {"[vocal]"}
 
 
 def _parse_trace_line_range_env() -> Tuple[int, int] | None:
@@ -140,6 +141,15 @@ def _text_overlap_score(
                 if p in seg_expanded:
                     hits += 1
     return hits / max(total, 1)
+
+
+def _segment_placeholder_ratio(seg_bag: List[str]) -> float:
+    if not seg_bag:
+        return 0.0
+    placeholder_count = sum(
+        1 for token in seg_bag if token in _PLACEHOLDER_SEGMENT_TOKENS
+    )
+    return placeholder_count / len(seg_bag)
 
 
 def _build_segment_word_info(
@@ -320,6 +330,10 @@ def _score_segments_for_line(
                 {
                     "segment_index": si,
                     "score": round(score, 4),
+                    "placeholder_ratio": round(
+                        _segment_placeholder_ratio(seg_word_bags[si]), 4
+                    ),
+                    "bag_size": len(seg_word_bags[si]),
                     "bag_preview": seg_word_bags[si][:16],
                 }
             )
@@ -346,6 +360,13 @@ def _score_segments_for_line(
                 {
                     "segment_index": si,
                     "score": round(candidate[0], 4),
+                    "placeholder_ratio": round(
+                        _segment_placeholder_ratio(
+                            seg_word_bags[si] + seg_word_bags[si + 1]
+                        ),
+                        4,
+                    ),
+                    "bag_size": len(seg_word_bags[si] + seg_word_bags[si + 1]),
                     "chosen_segment": candidate[1],
                     "left_bag_preview": seg_word_bags[si][:8],
                     "right_bag_preview": seg_word_bags[si + 1][:8],
@@ -602,6 +623,20 @@ def _select_segment_for_line_mode(
                     "merged_score": (
                         round(merged_score, 4) if merged_score is not None else None
                     ),
+                    "placeholder_ratio": round(
+                        _segment_placeholder_ratio(seg_word_bags[si]), 4
+                    ),
+                    "merged_placeholder_ratio": (
+                        round(
+                            _segment_placeholder_ratio(
+                                seg_word_bags[si] + seg_word_bags[si + 1]
+                            ),
+                            4,
+                        )
+                        if merged_score is not None
+                        else None
+                    ),
+                    "bag_size": len(seg_word_bags[si]),
                     "bag_preview": seg_word_bags[si][:8],
                 }
             )
