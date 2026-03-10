@@ -130,6 +130,15 @@ def _line_override_segment_votes(
     lrc_assignments: Dict[int, List[int]],
     word_segment_idx: Dict[int, int],
 ) -> Dict[int, int]:
+    prefer_selected_nested = (
+        os.getenv("Y2K_WHISPER_SEGMENT_ASSIGN_SELECTION_MODE", "").strip()
+        == "experimental_stall_nested_vote_handoff"
+    )
+    selected_segment_by_lrc_idx = getattr(
+        lrc_assignments, "selected_segment_by_lrc_idx", {}
+    )
+    seg_word_ranges = getattr(lrc_assignments, "seg_word_ranges", [])
+    first_enclosing_ranges = getattr(lrc_assignments, "first_enclosing_ranges", [])
     votes: Dict[int, int] = {}
     for word_idx in range(len(line.words)):
         lrc_idx = lrc_index_by_loc.get((line_idx, word_idx))
@@ -137,9 +146,42 @@ def _line_override_segment_votes(
             continue
         for wi in lrc_assignments.get(lrc_idx, []):
             si = word_segment_idx.get(wi)
+            if prefer_selected_nested:
+                selected_seg = selected_segment_by_lrc_idx.get(lrc_idx)
+                if _should_prefer_selected_nested_segment(
+                    selected_seg=selected_seg,
+                    mapped_seg=si,
+                    word_index=wi,
+                    seg_word_ranges=seg_word_ranges,
+                    first_enclosing_ranges=first_enclosing_ranges,
+                ):
+                    si = selected_seg
             if si is not None:
                 votes[si] = votes.get(si, 0) + 1
     return votes
+
+
+def _should_prefer_selected_nested_segment(
+    *,
+    selected_seg: Optional[int],
+    mapped_seg: Optional[int],
+    word_index: int,
+    seg_word_ranges: Sequence[tuple[int, int]],
+    first_enclosing_ranges: Sequence[tuple[int, int]],
+) -> bool:
+    if selected_seg is None or mapped_seg is None or selected_seg == mapped_seg:
+        return False
+    if selected_seg >= len(seg_word_ranges) or selected_seg >= len(
+        first_enclosing_ranges
+    ):
+        return False
+    sel_first, sel_last = seg_word_ranges[selected_seg]
+    if sel_first < 0 or not (sel_first <= word_index <= sel_last):
+        return False
+    own_first, own_last = first_enclosing_ranges[selected_seg]
+    if own_first >= 0 or own_last >= 0:
+        return False
+    return True
 
 
 def _maybe_override_line_segment(

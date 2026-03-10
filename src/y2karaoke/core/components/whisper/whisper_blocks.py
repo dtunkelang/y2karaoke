@@ -17,6 +17,23 @@ _MAX_SEGMENT_WORDS_PER_LRC_WORD = 8.0
 _PLACEHOLDER_SEGMENT_TOKENS = {"[vocal]"}
 
 
+class _SegmentAssignments(dict[int, list[int]]):
+    """Dict-like assignments container with optional segment-selection metadata."""
+
+    def __init__(
+        self,
+        *args,
+        selected_segment_by_lrc_idx: Dict[int, int] | None = None,
+        seg_word_ranges: List[Tuple[int, int]] | None = None,
+        first_enclosing_ranges: List[Tuple[int, int]] | None = None,
+        **kwargs,
+    ) -> None:
+        super().__init__(*args, **kwargs)
+        self.selected_segment_by_lrc_idx = selected_segment_by_lrc_idx or {}
+        self.seg_word_ranges = seg_word_ranges or []
+        self.first_enclosing_ranges = first_enclosing_ranges or []
+
+
 def _parse_trace_line_range_env() -> Tuple[int, int] | None:
     raw_range = os.environ.get("Y2K_TRACE_MAPPER_LINE_RANGE", "").strip()
     if not raw_range:
@@ -748,13 +765,14 @@ def _distribute_words_within_segments(
     lrc_lines_words: List[List[Tuple[int, str]]],
     seg_word_ranges: List[Tuple[int, int]],
     trace_rows: List[Dict] | None = None,
-) -> Dict[int, List[int]]:
+) -> _SegmentAssignments:
     """Positionally map LRC words to Whisper words within each segment."""
     seg_to_lines: Dict[int, List[int]] = {}
     for li, si in enumerate(line_to_seg):
         if si >= 0:
             seg_to_lines.setdefault(si, []).append(li)
 
+    selected_segment_by_lrc_idx: Dict[int, int] = {}
     assignments: Dict[int, List[int]] = {}
     for si, line_indices in seg_to_lines.items():
         first_wi, last_wi = seg_word_ranges[si]
@@ -784,6 +802,7 @@ def _distribute_words_within_segments(
             pos = j / max(total, 1)
             offset = min(int(pos * seg_wc), seg_wc - 1)
             assignments[lrc_idx] = [first_wi + offset]
+            selected_segment_by_lrc_idx[lrc_idx] = si
         _append_segment_distribution_trace(
             trace_rows=trace_rows,
             line_indices=line_indices,
@@ -794,7 +813,10 @@ def _distribute_words_within_segments(
             skipped=False,
             assignments=assignments,
         )
-    return assignments
+    return _SegmentAssignments(
+        assignments,
+        selected_segment_by_lrc_idx=selected_segment_by_lrc_idx,
+    )
 
 
 def _collect_segment_lrc_word_indices(
@@ -886,6 +908,8 @@ def _build_segment_text_overlap_assignments(
         seg_word_ranges,
         trace_rows=trace_rows,
     )
+    assignments.seg_word_ranges = seg_word_ranges
+    assignments.first_enclosing_ranges = first_enclosing_ranges
 
     if trace_path and trace_rows is not None:
         filtered_rows = trace_rows
