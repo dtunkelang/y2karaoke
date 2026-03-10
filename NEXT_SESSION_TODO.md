@@ -195,6 +195,11 @@
           - but the “better” candidate bags are still placeholder-dominated `[vocal]` segments
           - artifact:
             - `benchmarks/results/20260310T_blinding_low_score_stall_trace/stalled_segment_opportunities.md`
+        - experimental placeholder-penalty scoring has leverage but is not viable as a simple overlap penalty:
+          - default penalty mode was a no-op
+          - aggressive penalty (`0.3`) moved the late chorus block, but obviously distorted spans and starts
+          - example:
+            - line `26` `135.12-139.03 -> 133.61-142.96`
         - implication:
           - next upstream redesign needs assignment-confidence weighting on segment bags, not just overlap-based rescue
       - next branch should target segment-cursor stall / oversized stalled-segment handling, not another downstream/postpass heuristic
