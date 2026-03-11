@@ -49,6 +49,7 @@ def test_build_comparison_reports_net_improvement() -> None:
             "curated_canary_gold_parenthetical_interjection_start_mean_abs_sec_mean": 2.1,
             "curated_canary_gold_parenthetical_interjection_start_p95_abs_sec_mean": 2.6,
             "lexical_review_song_count": 2,
+            "lexical_hook_boundary_variant_song_count": 2,
             "lexical_hook_boundary_variant_ratio_mean": 0.21,
             "lexical_truncation_pattern_ratio_mean": 0.41,
             "lexical_repetitive_phrase_line_ratio_mean": 0.08,
@@ -92,6 +93,7 @@ def test_build_comparison_reports_net_improvement() -> None:
             "curated_canary_gold_parenthetical_interjection_start_mean_abs_sec_mean": 0.8,
             "curated_canary_gold_parenthetical_interjection_start_p95_abs_sec_mean": 1.0,
             "lexical_review_song_count": 1,
+            "lexical_hook_boundary_variant_song_count": 1,
             "lexical_hook_boundary_variant_ratio_mean": 0.09,
             "lexical_truncation_pattern_ratio_mean": 0.22,
             "lexical_repetitive_phrase_line_ratio_mean": 0.03,
@@ -187,6 +189,12 @@ def test_build_comparison_reports_net_improvement() -> None:
         report["curated_canary_deltas"]["lexical_review_song_count"]["improved"] is True
     )
     assert (
+        report["curated_canary_deltas"]["lexical_hook_boundary_variant_song_count"][
+            "improved"
+        ]
+        is True
+    )
+    assert (
         report["curated_canary_deltas"]["lexical_hook_boundary_variant_ratio_mean"][
             "improved"
         ]
@@ -234,6 +242,7 @@ def test_main_writes_json_markdown_and_curated_canary_cli_summary(
             "curated_canary_gold_parenthetical_interjection_start_mean_abs_sec_mean": 2.0,
             "curated_canary_gold_parenthetical_interjection_start_p95_abs_sec_mean": 2.4,
             "lexical_review_song_count": 1,
+            "lexical_hook_boundary_variant_song_count": 1,
             "lexical_hook_boundary_variant_ratio_mean": 0.21,
             "lexical_truncation_pattern_ratio_mean": 0.37,
             "lexical_repetitive_phrase_line_ratio_mean": 0.03,
@@ -285,6 +294,7 @@ def test_main_writes_json_markdown_and_curated_canary_cli_summary(
     assert "later_onset_choice_mean_improvement_sec=0.4000 -> 0.4000" in captured.out
     assert "parenthetical_interjection_start_abs_sec=2.0000 -> 2.0000" in captured.out
     assert "lexical_review_song_count=1.0000 -> 1.0000" in captured.out
+    assert "lexical_hook_boundary_variant_song_count=1.0000 -> 1.0000" in captured.out
     assert "lexical_hook_boundary_variant_ratio=0.2100 -> 0.2100" in captured.out
     assert "lexical_truncation_pattern_ratio=0.3700 -> 0.3700" in captured.out
     assert "lexical_repetitive_phrase_ratio=0.0300 -> 0.0300" in captured.out

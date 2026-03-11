@@ -3040,6 +3040,7 @@ def _aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:  # noqa: C901
         for key, value in diagnosis_counts.items()
     }
     lexical_review_song_count = 0
+    lexical_hook_boundary_variant_song_count = 0
     lexical_hook_boundary_variant_line_count_total = 0
     lexical_truncation_pattern_line_count_total = 0
     lexical_repetitive_phrase_line_count_total = 0
@@ -3050,7 +3051,15 @@ def _aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:  # noqa: C901
         lexical_diag = row.get("lexical_mismatch_diagnostics", {})
         if not isinstance(lexical_diag, dict) or not bool(lexical_diag.get("active")):
             continue
+        hook_variant_ratio = lexical_diag.get("hook_boundary_variant_ratio")
+        trunc_ratio = lexical_diag.get("truncation_pattern_ratio")
+        rep_ratio = lexical_diag.get("repetitive_phrase_line_ratio")
         lexical_review_song_count += 1
+        if (
+            isinstance(hook_variant_ratio, (int, float))
+            and float(hook_variant_ratio) >= 0.12
+        ):
+            lexical_hook_boundary_variant_song_count += 1
         lexical_hook_boundary_variant_line_count_total += int(
             lexical_diag.get("hook_boundary_variant_count", 0) or 0
         )
@@ -3060,9 +3069,6 @@ def _aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:  # noqa: C901
         lexical_repetitive_phrase_line_count_total += int(
             lexical_diag.get("repetitive_phrase_line_count", 0) or 0
         )
-        hook_variant_ratio = lexical_diag.get("hook_boundary_variant_ratio")
-        trunc_ratio = lexical_diag.get("truncation_pattern_ratio")
-        rep_ratio = lexical_diag.get("repetitive_phrase_line_ratio")
         if isinstance(hook_variant_ratio, (int, float)):
             lexical_hook_boundary_variant_ratio_values.append(float(hook_variant_ratio))
         if isinstance(trunc_ratio, (int, float)):
@@ -3465,6 +3471,9 @@ def _aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:  # noqa: C901
         "quality_diagnosis_counts": diagnosis_counts,
         "quality_diagnosis_ratios": diagnosis_ratios,
         "lexical_review_song_count": lexical_review_song_count,
+        "lexical_hook_boundary_variant_song_count": (
+            lexical_hook_boundary_variant_song_count
+        ),
         "lexical_hook_boundary_variant_line_count_total": (
             lexical_hook_boundary_variant_line_count_total
         ),
@@ -4126,6 +4135,7 @@ def _write_markdown_summary(  # noqa: C901
         lines.append(
             "- Lexical-review hotspots: "
             f"`{lexical_review_song_count}` song(s), "
+            f"hook-boundary songs `{int(aggregate.get('lexical_hook_boundary_variant_song_count', 0) or 0)}`, "
             f"hook-boundary ratio `{_fmt_num(aggregate.get('lexical_hook_boundary_variant_ratio_mean'))}`, "
             f"truncation-pattern ratio "
             f"`{_fmt_num(aggregate.get('lexical_truncation_pattern_ratio_mean'))}`, "

@@ -46,6 +46,7 @@ def test_write_markdown_summary_includes_lexical_review_hotspots(tmp_path):
             "reference_divergence_suspected_ratio": 0.0,
             "quality_diagnosis_counts": {"needs_manual_review": 1},
             "lexical_review_song_count": 1,
+            "lexical_hook_boundary_variant_song_count": 1,
             "lexical_hook_boundary_variant_ratio_mean": 0.214,
             "lexical_truncation_pattern_ratio_mean": 0.3689,
             "lexical_repetitive_phrase_line_ratio_mean": 0.0291,
@@ -90,7 +91,7 @@ def test_write_markdown_summary_includes_lexical_review_hotspots(tmp_path):
     markdown = md_path.read_text(encoding="utf-8")
     assert "Lexical-review hotspots" in markdown
     assert (
-        "`1` song(s), hook-boundary ratio `0.214`, truncation-pattern ratio `0.369`, repetitive-phrase ratio `0.029`"
+        "`1` song(s), hook-boundary songs `1`, hook-boundary ratio `0.214`, truncation-pattern ratio `0.369`, repetitive-phrase ratio `0.029`"
         in markdown
     )
 
