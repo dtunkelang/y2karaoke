@@ -165,7 +165,28 @@ def parse_args() -> argparse.Namespace:
         default=[],
         help="Additional KEY=VALUE env override for the candidate run",
     )
+    parser.add_argument(
+        "--label",
+        default="",
+        help="Optional suffix label for the candidate run id",
+    )
     return parser.parse_args()
+
+
+def _candidate_suffix(
+    *,
+    preset_name: str,
+    extra_env: dict[str, str],
+    label: str,
+) -> str:
+    cleaned = label.strip()
+    if cleaned:
+        return cleaned
+    if preset_name != "baseline":
+        return preset_name
+    if extra_env:
+        return "custom"
+    return preset_name
 
 
 def main() -> int:
@@ -173,7 +194,10 @@ def main() -> int:
     preset = PRESETS[args.experiment]
     extra_env = _parse_env_overrides(list(args.env))
     baseline_run_id = f"{args.run_prefix}_baseline"
-    candidate_run_id = f"{args.run_prefix}_{preset.name}"
+    candidate_run_id = (
+        f"{args.run_prefix}_"
+        f"{_candidate_suffix(preset_name=preset.name, extra_env=extra_env, label=args.label)}"
+    )
 
     baseline_report = _run_benchmark(
         run_id=baseline_run_id,

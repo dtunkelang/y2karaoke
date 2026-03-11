@@ -287,6 +287,7 @@ Benchmark seed set for timing quality work:
     - optional baseline comparison: `make curated-canary-eval RUN_ID=<candidate_run_id> BASELINE=benchmarks/results/<baseline_run_id>`
     - optional extra benchmark args: `make curated-canary-eval RUN_ID=<candidate_run_id> EXTRA_ARGS='--strategy hybrid_whisper'`
     - baseline-vs-experiment harness: `make curated-canary-experiment EXPERIMENT=repeat_duration RUN_PREFIX=<experiment_prefix>`
+    - custom-env candidate label: `./venv/bin/python tools/run_curated_experiment_harness.py --experiment baseline --run-prefix <experiment_prefix> --label silence_off --env Y2K_WHISPER_SILENCE_REFINEMENT=0`
     - also writes `failure_mode_report.{json,md}` for the canary run
     - current best curated canary baseline:
       - `benchmarks/results/20260310T_curated_canary_with_despecha_block_guard_v2`
