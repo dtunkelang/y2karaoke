@@ -1,6 +1,7 @@
 from y2karaoke.core.models import Line, Word
 from y2karaoke.core.components.alignment.timing_models import TranscriptionWord
 from y2karaoke.core.components.whisper.whisper_integration_weak_evidence import (
+    restore_adjacent_near_threshold_late_shifts,
     restore_unsupported_early_duplicate_shifts,
     restore_weak_evidence_large_start_shifts,
 )
@@ -8,6 +9,15 @@ from y2karaoke.core.components.whisper.whisper_integration_weak_evidence import 
 
 def _line(start: float) -> Line:
     return Line(words=[Word(text="x", start_time=start, end_time=start + 0.4)])
+
+
+def _long_line(start: float, end: float) -> Line:
+    return Line(
+        words=[
+            Word(text="x", start_time=start, end_time=(start + end) / 2),
+            Word(text="y", start_time=(start + end) / 2, end_time=end),
+        ]
+    )
 
 
 def test_restore_weak_evidence_large_start_shifts_restores_without_support():
@@ -114,6 +124,66 @@ def test_restore_weak_evidence_large_start_shifts_keeps_lexically_supported_shif
 
     assert restored == 0
     assert repaired[0].start_time == 10.0
+
+
+def test_restore_adjacent_near_threshold_late_shifts_restores_sandwiched_run():
+    mapped = [
+        _line(10.0),
+        _long_line(12.0, 13.8),
+        _long_line(13.8, 15.6),
+        _line(14.6),
+    ]
+    baseline = [
+        _line(10.0),
+        _long_line(11.05, 12.9),
+        _long_line(12.9, 14.7),
+        _line(13.7),
+    ]
+    whisper_words = [
+        TranscriptionWord(text="a", start=11.1, end=11.2, probability=0.99),
+        TranscriptionWord(text="b", start=11.5, end=11.6, probability=0.99),
+        TranscriptionWord(text="c", start=12.9, end=13.0, probability=0.99),
+        TranscriptionWord(text="d", start=13.2, end=13.3, probability=0.99),
+    ]
+
+    repaired, restored = restore_adjacent_near_threshold_late_shifts(
+        mapped,
+        baseline,
+        whisper_words,
+    )
+
+    assert restored == 2
+    assert repaired[1].start_time == 11.05
+    assert repaired[2].start_time == 12.9
+
+
+def test_restore_adjacent_near_threshold_late_shifts_skips_without_baseline_support():
+    mapped = [
+        _line(10.0),
+        _long_line(12.0, 13.8),
+        _long_line(13.8, 15.6),
+        _line(14.6),
+    ]
+    baseline = [
+        _line(10.0),
+        _long_line(11.05, 12.9),
+        _long_line(12.9, 14.7),
+        _line(13.7),
+    ]
+    whisper_words = [
+        TranscriptionWord(text="late", start=12.1, end=12.2, probability=0.99),
+        TranscriptionWord(text="shift", start=12.4, end=12.5, probability=0.99),
+    ]
+
+    repaired, restored = restore_adjacent_near_threshold_late_shifts(
+        mapped,
+        baseline,
+        whisper_words,
+    )
+
+    assert restored == 0
+    assert repaired[1].start_time == 12.0
+    assert repaired[2].start_time == 13.8
 
 
 def test_restore_unsupported_early_duplicate_shifts_restores_unsupported_repeat():

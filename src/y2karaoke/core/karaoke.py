@@ -24,6 +24,7 @@ from ..pipeline.audio import (
     apply_audio_effects,
     separate_vocals_cached as separate_vocals,
 )
+from .components.audio.cache_identity import select_matching_cached_audio
 
 logger = get_logger(__name__)
 
@@ -196,33 +197,44 @@ class KaraokeGenerator:
         )
 
     def _download_audio(
-        self, video_id: str, url: str, force: bool, offline: bool = False
+        self,
+        video_id: str,
+        url: str,
+        force: bool,
+        offline: bool = False,
+        expected_title: Optional[str] = None,
+        expected_artist: Optional[str] = None,
     ) -> Dict[str, str]:
         metadata = self.cache_manager.load_metadata(video_id)
         audio_files = self.cache_manager.find_files(video_id, "*.wav")
         # Filter out separated stems (audio-separator uses parentheses like "(Vocals)")
         separated_stems = ["vocals", "bass", "drums", "other", "instrumental"]
-        original_audio = [
+        original_audio_files = [
             f
             for f in audio_files
             if not any(stem in f.name.lower() for stem in separated_stems)
         ]
+        original_audio = select_matching_cached_audio(
+            original_audio_files,
+            expected_title=expected_title,
+            expected_artist=expected_artist,
+        )
         metadata_title = metadata["title"] if metadata else "Unknown"
         metadata_artist = metadata["artist"] if metadata else "Unknown"
 
         if metadata and not force and original_audio:
             logger.info("📁 Using cached audio")
             return {
-                "audio_path": str(original_audio[0]),
+                "audio_path": str(original_audio),
                 "title": metadata_title,
                 "artist": metadata_artist,
             }
         if offline and original_audio:
             logger.warning("📁 Using cached audio in offline mode")
             return {
-                "audio_path": str(original_audio[0]),
-                "title": metadata_title,
-                "artist": metadata_artist,
+                "audio_path": str(original_audio),
+                "title": expected_title or metadata_title,
+                "artist": expected_artist or metadata_artist,
             }
 
         if offline:
@@ -261,8 +273,17 @@ class KaraokeGenerator:
         use_backgrounds: bool,
         force: bool,
         offline: bool,
+        expected_title: Optional[str] = None,
+        expected_artist: Optional[str] = None,
     ) -> Tuple[Dict[str, str], Optional[str], Dict[str, str]]:
-        audio_result = self._download_audio(video_id, url, force, offline)
+        audio_result = self._download_audio(
+            video_id,
+            url,
+            force,
+            offline,
+            expected_title=expected_title,
+            expected_artist=expected_artist,
+        )
 
         video_path = None
         if use_backgrounds:

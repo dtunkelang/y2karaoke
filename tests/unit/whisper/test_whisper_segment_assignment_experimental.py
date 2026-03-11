@@ -1,65 +1,96 @@
-import pytest
-
-from y2karaoke.core.components.alignment.timing_models import (
-    TranscriptionSegment,
-    TranscriptionWord,
-)
-from y2karaoke.core.components.whisper import whisper_blocks
 from y2karaoke.core.components.whisper import (
-    whisper_segment_assignment_experimental as wsae,
+    whisper_segment_assignment_experimental as exp,
 )
 
 
-def _sample_segments() -> list[TranscriptionSegment]:
-    return [
-        TranscriptionSegment(start=10.0, end=12.0, text="hello world", words=[]),
-        TranscriptionSegment(start=13.0, end=15.0, text="good night", words=[]),
+def test_experimental_segment_score_downweights_function_word_only_overlap_in_placeholder_heavy_segments() -> (
+    None
+):
+    stats = exp._score_segment_for_line_experimental(
+        ["je", "remue", "le", "ciel", "le", "jour", "la", "nuit"],
+        ["[vocal]", "[vocal]", "[vocal]", "[vocal]", "je", "le"],
+    )
+
+    assert float(stats["raw_score"]) > float(stats["score"])
+    assert stats["content_hits"] == 0
+    assert stats["function_hits"] >= 2
+    assert float(stats["score"]) < 0.2
+
+
+def test_experimental_segment_score_preserves_default_score_for_clean_segments() -> (
+    None
+):
+    stats = exp._score_segment_for_line_experimental(
+        ["stylin", "wilin", "livin", "it", "up", "in", "the", "city"],
+        ["saturday", "night", "and", "we", "in", "the", "spot"],
+    )
+
+    assert float(stats["raw_score"]) == float(stats["score"])
+
+
+def test_experimental_assigner_limits_forward_jump_without_content_hits() -> None:
+    lrc_lines_words = [
+        [(0, "oh"), (1, "ma"), (2, "douce"), (3, "souffrance")],
+        [
+            (4, "je"),
+            (5, "remue"),
+            (6, "le"),
+            (7, "ciel"),
+            (8, "le"),
+            (9, "jour"),
+            (10, "la"),
+            (11, "nuit"),
+        ],
     ]
-
-
-def _sample_words() -> list[TranscriptionWord]:
-    return [
-        TranscriptionWord(text="hello", start=10.1, end=10.5, probability=1.0),
-        TranscriptionWord(text="world", start=10.5, end=11.1, probability=1.0),
-        TranscriptionWord(text="good", start=13.1, end=13.6, probability=1.0),
-        TranscriptionWord(text="night", start=13.6, end=14.1, probability=1.0),
+    seg_word_bags = [
+        ["ma", "douce", "souffrance"],
+        ["[vocal]", "[vocal]"],
+        ["je", "[vocal]", "[vocal]", "revance", "[vocal]"],
+        ["[vocal]", "[vocal]"],
+        ["et", "dans", "le", "bruit", "je", "cours", "et", "j", "ai", "peur"],
     ]
+    seg_durations = [2.0, 1.0, 18.0, 1.0, 4.0]
+    config = exp.whisper_blocks._segment_assignment_config_from_env()
+
+    line_to_seg = exp._assign_lrc_lines_to_segments_experimental(
+        lrc_lines_words=lrc_lines_words,
+        seg_word_bags=seg_word_bags,
+        seg_durations=seg_durations,
+        config=config,
+    )
+
+    assert line_to_seg[0] == 0
+    assert line_to_seg[1] <= 2
 
 
-def _sample_lrc_words() -> list[dict]:
-    return [
-        {"line_idx": 0, "text": "hello"},
-        {"line_idx": 0, "text": "world"},
-        {"line_idx": 1, "text": "good"},
-        {"line_idx": 1, "text": "night"},
+def test_experimental_assigner_falls_back_when_placeholder_positive_lines_are_sparse() -> (
+    None
+):
+    trace_rows = [
+        {
+            "scores": [
+                {"placeholder_ratio": 0.0, "score": 0.2},
+                {"placeholder_ratio": 1.0, "score": 0.0},
+            ]
+        }
+        for _ in range(10)
     ]
+    trace_rows[0]["scores"][1]["score"] = 0.1
+
+    assert not exp._should_keep_experimental_assignments(trace_rows, line_count=10)
 
 
-def test_parallel_assigner_defaults_to_current_behavior(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    monkeypatch.delenv("Y2K_WHISPER_SEGMENT_ASSIGN_PIPELINE", raising=False)
+def test_experimental_assigner_keeps_placeholder_heavy_song_patterns() -> None:
+    trace_rows = [
+        {
+            "scores": [
+                {"placeholder_ratio": 0.0, "score": 0.2},
+                {"placeholder_ratio": 0.9, "score": 0.1},
+            ]
+        }
+        for _ in range(10)
+    ]
+    for row in trace_rows[2:]:
+        row["scores"][1]["score"] = 0.0
 
-    experimental = wsae.build_segment_text_overlap_assignments(
-        _sample_lrc_words(), _sample_words(), _sample_segments()
-    )
-    baseline = whisper_blocks._build_segment_text_overlap_assignments(
-        _sample_lrc_words(), _sample_words(), _sample_segments()
-    )
-
-    assert dict(experimental) == dict(baseline)
-
-
-def test_parallel_assigner_experimental_mode_preserves_current_behavior_initially(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    monkeypatch.setenv("Y2K_WHISPER_SEGMENT_ASSIGN_PIPELINE", "parallel_experimental")
-
-    experimental = wsae.build_segment_text_overlap_assignments(
-        _sample_lrc_words(), _sample_words(), _sample_segments()
-    )
-    baseline = whisper_blocks._build_segment_text_overlap_assignments(
-        _sample_lrc_words(), _sample_words(), _sample_segments()
-    )
-
-    assert dict(experimental) == dict(baseline)
+    assert exp._should_keep_experimental_assignments(trace_rows, line_count=10)

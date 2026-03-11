@@ -17,6 +17,22 @@ _MAX_SEGMENT_WORDS_PER_LRC_WORD = 8.0
 _PLACEHOLDER_SEGMENT_TOKENS = {"[vocal]"}
 
 
+def _json_safe_value(value: Any) -> Any:
+    if isinstance(value, dict):
+        return {key: _json_safe_value(val) for key, val in value.items()}
+    if isinstance(value, list):
+        return [_json_safe_value(item) for item in value]
+    if isinstance(value, tuple):
+        return [_json_safe_value(item) for item in value]
+    item_method = getattr(value, "item", None)
+    if callable(item_method):
+        try:
+            return item_method()
+        except (TypeError, ValueError):
+            return value
+    return value
+
+
 class _SegmentAssignments(dict[int, list[int]]):
     """Dict-like assignments container with optional segment-selection metadata."""
 
@@ -348,7 +364,7 @@ def _assign_lrc_lines_to_segments(
         )
     if trace_path and trace_rows is not None:
         with open(trace_path, "w", encoding="utf-8") as fh:
-            json.dump({"rows": trace_rows}, fh, indent=2)
+            json.dump(_json_safe_value({"rows": trace_rows}), fh, indent=2)
     return line_to_seg
 
 
@@ -924,27 +940,29 @@ def _build_segment_text_overlap_assignments(
             ]
         with open(trace_path, "w", encoding="utf-8") as fh:
             json.dump(
-                {
-                    "line_to_seg": {
-                        str(i + 1): seg for i, seg in enumerate(line_to_seg)
-                    },
-                    "seg_word_ranges": {
-                        str(i): [first, last]
-                        for i, (first, last) in enumerate(seg_word_ranges)
-                    },
-                    "first_enclosing_seg_word_ranges": {
-                        str(i): [first, last]
-                        for i, (first, last) in enumerate(first_enclosing_ranges)
-                    },
-                    "segment_spans": {
-                        str(i): [
-                            round(whisper_utils._segment_start(seg), 3),
-                            round(whisper_utils._segment_end(seg), 3),
-                        ]
-                        for i, seg in enumerate(segments)
-                    },
-                    "rows": filtered_rows,
-                },
+                _json_safe_value(
+                    {
+                        "line_to_seg": {
+                            str(i + 1): seg for i, seg in enumerate(line_to_seg)
+                        },
+                        "seg_word_ranges": {
+                            str(i): [first, last]
+                            for i, (first, last) in enumerate(seg_word_ranges)
+                        },
+                        "first_enclosing_seg_word_ranges": {
+                            str(i): [first, last]
+                            for i, (first, last) in enumerate(first_enclosing_ranges)
+                        },
+                        "segment_spans": {
+                            str(i): [
+                                round(whisper_utils._segment_start(seg), 3),
+                                round(whisper_utils._segment_end(seg), 3),
+                            ]
+                            for i, seg in enumerate(segments)
+                        },
+                        "rows": filtered_rows,
+                    }
+                ),
                 fh,
                 indent=2,
             )
@@ -1141,7 +1159,7 @@ def _build_block_segmented_syllable_assignments(
                         }
                     )
             with open(trace_path, "w", encoding="utf-8") as fh:
-                json.dump({"rows": rows}, fh, indent=2)
+                json.dump(_json_safe_value({"rows": rows}), fh, indent=2)
         return assignments
 
     logger.debug(
@@ -1216,5 +1234,5 @@ def _build_block_segmented_syllable_assignments(
     )
     if trace_path and trace_rows is not None:
         with open(trace_path, "w", encoding="utf-8") as fh:
-            json.dump({"rows": trace_rows}, fh, indent=2)
+            json.dump(_json_safe_value({"rows": trace_rows}), fh, indent=2)
     return assignments

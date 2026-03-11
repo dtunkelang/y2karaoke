@@ -72,6 +72,8 @@ def generate_karaoke(
         use_backgrounds,
         force_reprocess,
         offline,
+        expected_title=lyrics_title,
+        expected_artist=lyrics_artist,
     )
     media_elapsed = time() - stage_started
     stage_started = time()

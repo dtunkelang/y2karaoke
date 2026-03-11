@@ -1,6 +1,12 @@
 from y2karaoke.core.components.whisper import whisper_mapping_pipeline as wmp
+from y2karaoke.core.components.whisper import (
+    whisper_mapping_pipeline_candidates as candidates,
+)
 from y2karaoke.core.components.whisper.whisper_dtw_tokens import _LineMappingContext
-from y2karaoke.core.components.alignment.timing_models import TranscriptionSegment
+from y2karaoke.core.components.alignment.timing_models import (
+    TranscriptionSegment,
+    TranscriptionWord,
+)
 from y2karaoke.core.models import Line, Word
 
 
@@ -235,3 +241,66 @@ def test_fallback_unmatched_line_duration_keeps_short_single_word():
     fallback = wmp._fallback_unmatched_line_duration(line)
 
     assert fallback == 0.22
+
+
+def test_register_word_match_advances_current_segment_to_line_override():
+    whisper_word = TranscriptionWord(text="foo", start=12.0, end=12.4)
+    ctx = _LineMappingContext(
+        all_words=[whisper_word],
+        segments=[],
+        word_segment_idx={0: 5},
+        language="eng-Latn",
+        total_lrc_words=1,
+        total_whisper_words=1,
+        current_segment=4,
+    )
+    line_matches = []
+    line_match_intervals = {}
+    line_last_idx_ref = [None]
+
+    candidates._register_word_match(
+        ctx,
+        line_idx=0,
+        word=Word("foo", start_time=12.0, end_time=12.4),
+        best_word=whisper_word,
+        best_idx=0,
+        candidates=[(whisper_word, 0)],
+        line_segment=7,
+        line_matches=line_matches,
+        line_match_intervals=line_match_intervals,
+        word_idx=0,
+        line_last_idx_ref=line_last_idx_ref,
+        phonetic_similarity_fn=lambda *_: 1.0,
+    )
+
+    assert ctx.current_segment == 7
+
+
+def test_register_word_match_keeps_later_best_segment_when_ahead_of_override():
+    whisper_word = TranscriptionWord(text="foo", start=12.0, end=12.4)
+    ctx = _LineMappingContext(
+        all_words=[whisper_word],
+        segments=[],
+        word_segment_idx={0: 8},
+        language="eng-Latn",
+        total_lrc_words=1,
+        total_whisper_words=1,
+        current_segment=4,
+    )
+
+    candidates._register_word_match(
+        ctx,
+        line_idx=0,
+        word=Word("foo", start_time=12.0, end_time=12.4),
+        best_word=whisper_word,
+        best_idx=0,
+        candidates=[(whisper_word, 0)],
+        line_segment=7,
+        line_matches=[],
+        line_match_intervals={},
+        word_idx=0,
+        line_last_idx_ref=[None],
+        phonetic_similarity_fn=lambda *_: 1.0,
+    )
+
+    assert ctx.current_segment == 8

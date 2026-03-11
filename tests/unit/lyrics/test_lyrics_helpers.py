@@ -208,6 +208,48 @@ def test_detect_offset_with_issues_tracks_large_delta(monkeypatch):
     assert updated == line_timings
 
 
+def test_detect_offset_with_issues_scales_auto_offset(monkeypatch):
+    monkeypatch.setattr(
+        "y2karaoke.core.components.alignment.alignment.detect_song_start",
+        lambda _: 2.0,
+    )
+
+    issues = []
+    line_timings = [(1.0, "Line")]
+    updated, offset = lw._detect_offset_with_issues(
+        "vocals.wav",
+        line_timings,
+        lyrics_offset=None,
+        issues=issues,
+        auto_offset_scale=0.6,
+    )
+
+    assert offset == pytest.approx(0.6)
+    assert updated[0][0] == pytest.approx(1.6)
+
+
+def test_detect_offset_with_issues_skips_scaling_outside_window(monkeypatch):
+    monkeypatch.setattr(
+        "y2karaoke.core.components.alignment.alignment.detect_song_start",
+        lambda _: 2.0,
+    )
+
+    issues = []
+    line_timings = [(1.0, "Line")]
+    updated, offset = lw._detect_offset_with_issues(
+        "vocals.wav",
+        line_timings,
+        lyrics_offset=None,
+        issues=issues,
+        auto_offset_scale=0.6,
+        scaled_offset_min_abs_sec=1.2,
+        scaled_offset_max_abs_sec=1.4,
+    )
+
+    assert offset == pytest.approx(1.0)
+    assert updated[0][0] == pytest.approx(2.0)
+
+
 def test_map_lrc_lines_uses_whisper_pause_for_word_slots():
     line = Line(
         words=[

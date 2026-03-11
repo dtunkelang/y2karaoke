@@ -1,4 +1,4 @@
-name: Tests
+name: CI
 
 on:
   push:
@@ -6,8 +6,15 @@ on:
   pull_request:
     branches: [main]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
+
+env:
+  PIP_DISABLE_PIP_VERSION_CHECK: "1"
 
 jobs:
   fast:
@@ -52,34 +59,8 @@ jobs:
           python -m pip install --upgrade pip
           pip install -e ".[dev]"
 
-      - name: Run linting (flake8)
-        run: |
-          flake8 src/y2karaoke --count --select=E9,F63,F7,F82 --show-source --statistics
-          flake8 src --count --max-complexity=16 --statistics
-
-      - name: Run formatting check (black)
-        run: |
-          black --check src tests
-
-      - name: Run type checking (mypy)
-        run: |
-          mypy src
-
-      - name: Run fast unit tests
-        run: |
-          PYTHONPATH=src pytest tests/unit -q -m "not slow and not network"
-
-      - name: Run perf smoke
-        run: |
-          python tools/perf_smoke.py
-
-      - name: Run quality guardrails
-        run: |
-          python tools/quality_guardrails.py
-
-      - name: Run visual eval guardrails (deterministic benchmark metrics)
-        run: |
-          python tools/visual_eval_guardrails.py
+      - name: Run fast CI lane
+        run: make ci-fast
 
   full:
     runs-on: ubuntu-latest

@@ -1,1962 +1,5846 @@
 {
-  "schema_version": "1.0",
   "title": "Derniere danse",
   "artist": "Indila",
-  "audio_path": "",
+  "lyrics_source": "NetEase",
+  "lyrics_source_audio_scoring_used": true,
+  "lyrics_source_disagreement_flagged": true,
+  "lyrics_source_disagreement_reasons": [
+    "line-count spread 3"
+  ],
+  "lyrics_source_candidate_count": 3,
+  "lyrics_source_comparable_candidate_count": 3,
+  "lyrics_source_selection_mode": "audio_scored_disagreement",
+  "lyrics_source_routing_skip_reason": "none",
+  "alignment_method": "whisper_map_lrc_dtw",
+  "whisper_requested": true,
+  "whisper_force_dtw": false,
+  "whisper_used": true,
+  "whisper_corrections": 3,
+  "pre_whisper_line_count": 44,
+  "issues": [
+    "Lyrics source disagreement triggered routing: line-count spread 3",
+    "LRC duration mismatch: LRC=201s vs audio=214s",
+    "Detected likely trailing instrumental outro padding; keeping provider LRC timestamps",
+    "1 line(s) had low Whisper confidence"
+  ],
+  "dtw_metrics": {
+    "matched_ratio": 0.516728624535316,
+    "word_coverage": 0.516728624535316,
+    "avg_similarity": 0.5972310365992918,
+    "line_coverage": 0.7727272727272727,
+    "baseline_timeline_ratio": 0.9983307483174204,
+    "mapped_timeline_ratio": 1.0010691897327015,
+    "median_global_start_shift_sec": 5.504214958518496,
+    "baseline_constraint_applied": 1.0,
+    "phonetic_similarity_coverage": 0.308606372071753,
+    "high_similarity_ratio": 0.5972310365992918,
+    "exact_match_ratio": 0.0,
+    "unmatched_ratio": 0.483271375464684,
+    "dtw_used": 1.0,
+    "dtw_mode": 1.0,
+    "whisper_model": "large",
+    "whisper_transcription_segment_count": 30.0,
+    "whisper_word_count_before_filter": 368.0,
+    "whisper_word_count_after_filter": 361.0,
+    "lrc_word_count": 269.0,
+    "mapped_line_count": 34.0,
+    "mapping_stage_sec": 0.23073799998383038,
+    "mapped_postpasses_sec": 0.27943075000075623,
+    "alignment_total_sec": 1.6305258749925997,
+    "tail_guardrail_flagged": 0.0,
+    "tail_guardrail_fallback_attempted": 0.0,
+    "tail_guardrail_fallback_applied": 0.0,
+    "tail_guardrail_target_coverage_ratio": 0.9316220173988599,
+    "tail_guardrail_target_shortfall_sec": 14.632888276643996
+  },
+  "line_count": 44,
   "lines": [
     {
-      "line_index": 1,
+      "index": 1,
+      "start": 16.11,
+      "end": 18.85,
       "text": "Oh ma douce souffrance",
-      "start": 16.05,
-      "end": 18.7,
       "words": [
         {
-          "word_index": 1,
           "text": "Oh",
-          "start": 16.05,
-          "end": 16.75
+          "start": 16.115,
+          "end": 16.285
         },
         {
-          "word_index": 2,
           "text": "ma",
-          "start": 16.75,
-          "end": 17.4
+          "start": 16.285,
+          "end": 17.627
         },
         {
-          "word_index": 3,
           "text": "douce",
-          "start": 17.4,
-          "end": 18.05
+          "start": 17.627,
+          "end": 17.968
         },
         {
-          "word_index": 4,
           "text": "souffrance",
-          "start": 18.05,
-          "end": 18.7
+          "start": 17.968,
+          "end": 18.846
         }
-      ]
+      ],
+      "word_slots": [
+        0.171,
+        1.342,
+        0.341,
+        0.878
+      ],
+      "word_spoken": [
+        0.171,
+        1.342,
+        0.341,
+        0.878
+      ],
+      "pre_whisper_start": 16.115,
+      "pre_whisper_end": 17.822,
+      "whisper_window_start": 15.11,
+      "whisper_window_end": 19.25,
+      "whisper_window_word_count": 0,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": null,
+      "whisper_window_words": [],
+      "whisper_line_start_delta": null,
+      "nearest_segment_start": 27.18,
+      "nearest_segment_start_end": 29.98,
+      "nearest_segment_start_text": "Sous-titrage Société Radio-Canada",
+      "nearest_segment_end": 29.98,
+      "nearest_segment_end_start": 27.18,
+      "nearest_segment_end_text": "Sous-titrage Société Radio-Canada"
     },
     {
-      "line_index": 2,
-      "text": "Pourquoi s'acharner? Tu recommences",
-      "start": 18.95,
+      "index": 2,
+      "start": 19.25,
       "end": 21.65,
+      "text": "Pourquoi s'acharner tu recommence",
       "words": [
         {
-          "word_index": 1,
           "text": "Pourquoi",
-          "start": 18.95,
-          "end": 19.65
+          "start": 19.255,
+          "end": 19.767
         },
         {
-          "word_index": 2,
-          "text": "s'acharner?",
-          "start": 19.65,
-          "end": 20.2
+          "text": "s'acharner",
+          "start": 19.767,
+          "end": 20.485
         },
         {
-          "word_index": 3,
-          "text": "Tu",
-          "start": 20.25,
-          "end": 21.05
+          "text": "tu",
+          "start": 20.485,
+          "end": 20.773
         },
         {
-          "word_index": 4,
-          "text": "recommences",
-          "start": 21.05,
-          "end": 21.65
-        }
-      ]
-    },
-    {
-      "line_index": 3,
-      "text": "Je ne suis qu'un \u00eatre sans importance",
-      "start": 22.8,
-      "end": 26.65,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "Je",
-          "start": 22.8,
-          "end": 23.3
-        },
-        {
-          "word_index": 2,
-          "text": "ne",
-          "start": 23.3,
-          "end": 23.85
-        },
-        {
-          "word_index": 3,
-          "text": "suis",
-          "start": 23.85,
-          "end": 24.4
-        },
-        {
-          "word_index": 4,
-          "text": "qu'un",
-          "start": 24.4,
-          "end": 24.95
-        },
-        {
-          "word_index": 5,
-          "text": "\u00eatre",
-          "start": 24.95,
-          "end": 25.5
-        },
-        {
-          "word_index": 6,
-          "text": "sans",
-          "start": 25.5,
-          "end": 26.05
-        },
-        {
-          "word_index": 7,
-          "text": "importance",
-          "start": 26.05,
-          "end": 26.65
-        }
-      ]
-    },
-    {
-      "line_index": 4,
-      "text": "Sans lui, je suis un peu paro",
-      "start": 27.0,
-      "end": 29.45,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "Sans",
-          "start": 27.0,
-          "end": 27.25
-        },
-        {
-          "word_index": 2,
-          "text": "lui,",
-          "start": 27.25,
-          "end": 27.75
-        },
-        {
-          "word_index": 3,
-          "text": "je",
-          "start": 27.75,
-          "end": 28.2
-        },
-        {
-          "word_index": 4,
-          "text": "suis",
-          "start": 28.2,
-          "end": 28.55
-        },
-        {
-          "word_index": 5,
-          "text": "un",
-          "start": 28.55,
-          "end": 29.1
-        },
-        {
-          "word_index": 6,
-          "text": "peu",
-          "start": 29.1,
-          "end": 29.3
-        },
-        {
-          "word_index": 7,
-          "text": "paro",
-          "start": 29.35,
-          "end": 29.45
-        }
-      ]
-    },
-    {
-      "line_index": 5,
-      "text": "Je d\u00e9ambule seule dans le m\u00e9tro",
-      "start": 29.6,
-      "end": 31.75,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "Je",
-          "start": 29.6,
-          "end": 30.05
-        },
-        {
-          "word_index": 2,
-          "text": "d\u00e9ambule",
-          "start": 30.05,
-          "end": 30.4
-        },
-        {
-          "word_index": 3,
-          "text": "seule",
-          "start": 30.4,
-          "end": 30.7
-        },
-        {
-          "word_index": 4,
-          "text": "dans",
-          "start": 30.7,
-          "end": 31.05
-        },
-        {
-          "word_index": 5,
-          "text": "le",
-          "start": 31.05,
-          "end": 31.45
-        },
-        {
-          "word_index": 6,
-          "text": "m\u00e9tro",
-          "start": 31.45,
-          "end": 31.75
-        }
-      ]
-    },
-    {
-      "line_index": 6,
-      "text": "Une derni\u00e8re danse",
-      "start": 32.6,
-      "end": 35.7,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "Une",
-          "start": 32.6,
-          "end": 33.6
-        },
-        {
-          "word_index": 2,
-          "text": "derni\u00e8re",
-          "start": 33.6,
-          "end": 34.6
-        },
-        {
-          "word_index": 3,
-          "text": "danse",
-          "start": 34.6,
-          "end": 35.7
-        }
-      ]
-    },
-    {
-      "line_index": 7,
-      "text": "Pour oublier ma peine immense",
-      "start": 35.7,
-      "end": 39.15,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "Pour",
-          "start": 35.7,
-          "end": 36.4
-        },
-        {
-          "word_index": 2,
-          "text": "oublier",
-          "start": 36.4,
-          "end": 37.1
-        },
-        {
-          "word_index": 3,
-          "text": "ma",
-          "start": 37.1,
-          "end": 37.75
-        },
-        {
-          "word_index": 4,
-          "text": "peine",
-          "start": 37.75,
-          "end": 38.4
-        },
-        {
-          "word_index": 5,
-          "text": "immense",
-          "start": 38.4,
-          "end": 39.15
-        }
-      ]
-    },
-    {
-      "line_index": 8,
-      "text": "Je veux m'enfuir que tout recommence",
-      "start": 39.2,
-      "end": 43.15,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "Je",
-          "start": 39.2,
-          "end": 39.85
-        },
-        {
-          "word_index": 2,
-          "text": "veux",
-          "start": 39.85,
-          "end": 40.5
-        },
-        {
-          "word_index": 3,
-          "text": "m'enfuir",
-          "start": 40.5,
-          "end": 41.15
-        },
-        {
-          "word_index": 4,
-          "text": "que",
-          "start": 41.15,
-          "end": 41.8
-        },
-        {
-          "word_index": 5,
-          "text": "tout",
-          "start": 41.8,
-          "end": 42.45
-        },
-        {
-          "word_index": 6,
           "text": "recommence",
-          "start": 42.45,
-          "end": 43.15
+          "start": 20.773,
+          "end": 21.655
         }
-      ]
+      ],
+      "word_slots": [
+        0.513,
+        0.718,
+        0.287,
+        0.882
+      ],
+      "word_spoken": [
+        0.513,
+        0.718,
+        0.287,
+        0.882
+      ],
+      "pre_whisper_start": 19.255,
+      "pre_whisper_end": 21.951,
+      "whisper_window_start": 18.25,
+      "whisper_window_end": 23.35,
+      "whisper_window_word_count": 0,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": null,
+      "whisper_window_words": [],
+      "whisper_line_start_delta": null,
+      "nearest_segment_start": 27.18,
+      "nearest_segment_start_end": 29.98,
+      "nearest_segment_start_text": "Sous-titrage Société Radio-Canada",
+      "nearest_segment_end": 29.98,
+      "nearest_segment_end_start": 27.18,
+      "nearest_segment_end_text": "Sous-titrage Société Radio-Canada"
     },
     {
-      "line_index": 9,
-      "text": "Oh ma douce souffrance",
-      "start": 43.6,
-      "end": 47.05,
+      "index": 3,
+      "start": 23.35,
+      "end": 25.91,
+      "text": "Je ne suis qu'un être sans importance",
       "words": [
         {
-          "word_index": 1,
-          "text": "Oh",
-          "start": 43.6,
-          "end": 44.1
-        },
-        {
-          "word_index": 2,
-          "text": "ma",
-          "start": 44.1,
-          "end": 45.0
-        },
-        {
-          "word_index": 3,
-          "text": "douce",
-          "start": 45.0,
-          "end": 45.4
-        },
-        {
-          "word_index": 4,
-          "text": "souffrance",
-          "start": 45.5,
-          "end": 47.05
-        }
-      ]
-    },
-    {
-      "line_index": 10,
-      "text": "Je remue le ciel, le jour, la nuit",
-      "start": 49.8,
-      "end": 53.8,
-      "words": [
-        {
-          "word_index": 1,
           "text": "Je",
-          "start": 49.8,
-          "end": 50.3
+          "start": 23.355,
+          "end": 23.677
         },
         {
-          "word_index": 2,
-          "text": "remue",
-          "start": 50.3,
-          "end": 50.8
+          "text": "ne",
+          "start": 23.677,
+          "end": 23.763
         },
         {
-          "word_index": 3,
-          "text": "le",
-          "start": 50.8,
-          "end": 51.3
+          "text": "suis",
+          "start": 23.763,
+          "end": 24.065
         },
         {
-          "word_index": 4,
-          "text": "ciel,",
-          "start": 51.3,
-          "end": 51.8
+          "text": "qu'un",
+          "start": 24.065,
+          "end": 24.882
         },
         {
-          "word_index": 5,
-          "text": "le",
-          "start": 51.8,
-          "end": 52.3
+          "text": "être",
+          "start": 24.882,
+          "end": 25.42
         },
         {
-          "word_index": 6,
-          "text": "jour,",
-          "start": 52.3,
-          "end": 52.8
+          "text": "sans",
+          "start": 25.42,
+          "end": 25.743
         },
         {
-          "word_index": 7,
-          "text": "la",
-          "start": 52.8,
-          "end": 53.25
-        },
-        {
-          "word_index": 8,
-          "text": "nuit",
-          "start": 53.25,
-          "end": 53.8
+          "text": "importance",
+          "start": 25.743,
+          "end": 25.915
         }
-      ]
+      ],
+      "word_slots": [
+        0.323,
+        0.086,
+        0.301,
+        0.817,
+        0.538,
+        0.323,
+        0.172
+      ],
+      "word_spoken": [
+        0.323,
+        0.086,
+        0.301,
+        0.817,
+        0.538,
+        0.323,
+        0.172
+      ],
+      "pre_whisper_start": 23.355,
+      "pre_whisper_end": 26.155,
+      "whisper_window_start": 22.35,
+      "whisper_window_end": 27.59,
+      "whisper_window_word_count": 1,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.665,
+      "whisper_window_words": [
+        {
+          "text": "Sous",
+          "start": 27.18,
+          "end": 28.58,
+          "probability": 0.665
+        }
+      ],
+      "whisper_line_start_delta": null,
+      "nearest_segment_start": 27.18,
+      "nearest_segment_start_end": 29.98,
+      "nearest_segment_start_text": "Sous-titrage Société Radio-Canada",
+      "nearest_segment_end": 29.98,
+      "nearest_segment_end_start": 27.18,
+      "nearest_segment_end_text": "Sous-titrage Société Radio-Canada"
     },
     {
-      "line_index": 11,
-      "text": "Je danse avec le vent, la pluie",
-      "start": 54.1,
-      "end": 58.05,
+      "index": 4,
+      "start": 27.59,
+      "end": 29.79,
+      "text": "Sans lui je suis un peu paro",
       "words": [
         {
-          "word_index": 1,
-          "text": "Je",
-          "start": 54.1,
-          "end": 54.65
+          "text": "Sans",
+          "start": 27.595,
+          "end": 27.675
         },
         {
-          "word_index": 2,
-          "text": "danse",
-          "start": 54.65,
-          "end": 55.2
+          "text": "lui",
+          "start": 27.695,
+          "end": 27.81
         },
         {
-          "word_index": 3,
-          "text": "avec",
-          "start": 55.2,
-          "end": 55.75
-        },
-        {
-          "word_index": 4,
-          "text": "le",
-          "start": 55.8,
-          "end": 56.35
-        },
-        {
-          "word_index": 5,
-          "text": "vent,",
-          "start": 56.35,
-          "end": 56.9
-        },
-        {
-          "word_index": 6,
-          "text": "la",
-          "start": 56.9,
-          "end": 57.45
-        },
-        {
-          "word_index": 7,
-          "text": "pluie",
-          "start": 57.45,
-          "end": 58.05
-        }
-      ]
-    },
-    {
-      "line_index": 12,
-      "text": "Un peu d'amour, un brin de miel",
-      "start": 58.95,
-      "end": 61.8,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "Un",
-          "start": 58.95,
-          "end": 59.25
-        },
-        {
-          "word_index": 2,
-          "text": "peu",
-          "start": 59.45,
-          "end": 59.75
-        },
-        {
-          "word_index": 3,
-          "text": "d'amour,",
-          "start": 59.75,
-          "end": 60.05
-        },
-        {
-          "word_index": 4,
-          "text": "un",
-          "start": 60.35,
-          "end": 60.65
-        },
-        {
-          "word_index": 5,
-          "text": "brin",
-          "start": 60.65,
-          "end": 60.95
-        },
-        {
-          "word_index": 6,
-          "text": "de",
-          "start": 61.2,
-          "end": 61.45
-        },
-        {
-          "word_index": 7,
-          "text": "miel",
-          "start": 61.45,
-          "end": 61.8
-        }
-      ]
-    },
-    {
-      "line_index": 13,
-      "text": "Et je danse, danse, danse, danse, danse, danse, danse",
-      "start": 61.8,
-      "end": 66.55,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "Et",
-          "start": 61.8,
-          "end": 62.35
-        },
-        {
-          "word_index": 2,
           "text": "je",
-          "start": 62.35,
-          "end": 62.65
+          "start": 27.83,
+          "end": 28.03
         },
         {
-          "word_index": 3,
-          "text": "danse,",
-          "start": 62.65,
-          "end": 63.3
+          "text": "suis",
+          "start": 28.05,
+          "end": 28.33
         },
         {
-          "word_index": 4,
-          "text": "danse,",
-          "start": 63.3,
-          "end": 63.8
+          "text": "un",
+          "start": 28.35,
+          "end": 28.89
         },
         {
-          "word_index": 5,
-          "text": "danse,",
-          "start": 63.8,
-          "end": 64.2
+          "text": "peu",
+          "start": 28.91,
+          "end": 29.01
         },
         {
-          "word_index": 6,
-          "text": "danse,",
-          "start": 64.2,
-          "end": 64.65
-        },
-        {
-          "word_index": 7,
-          "text": "danse,",
-          "start": 64.65,
-          "end": 65.05
-        },
-        {
-          "word_index": 8,
-          "text": "danse,",
-          "start": 65.05,
-          "end": 65.5
-        },
-        {
-          "word_index": 9,
-          "text": "danse",
-          "start": 65.55,
-          "end": 66.55
+          "text": "paro",
+          "start": 29.03,
+          "end": 29.795
         }
-      ]
+      ],
+      "word_slots": [
+        0.1,
+        0.135,
+        0.22,
+        0.3,
+        0.56,
+        0.12,
+        0.765
+      ],
+      "word_spoken": [
+        0.08,
+        0.115,
+        0.2,
+        0.28,
+        0.54,
+        0.1,
+        0.765
+      ],
+      "pre_whisper_start": 27.595,
+      "pre_whisper_end": 29.853,
+      "whisper_window_start": 26.59,
+      "whisper_window_end": 30.43,
+      "whisper_window_word_count": 7,
+      "whisper_window_low_conf_count": 1,
+      "whisper_window_avg_prob": 0.791,
+      "whisper_window_words": [
+        {
+          "text": "Sous",
+          "start": 27.18,
+          "end": 28.58,
+          "probability": 0.665
+        },
+        {
+          "text": "-titrage",
+          "start": 28.58,
+          "end": 29.98,
+          "probability": 0.931
+        },
+        {
+          "text": "Société",
+          "start": 29.98,
+          "end": 29.98,
+          "probability": 0.712
+        },
+        {
+          "text": "Radio",
+          "start": 29.98,
+          "end": 29.98,
+          "probability": 1.0
+        },
+        {
+          "text": "-Canada",
+          "start": 29.98,
+          "end": 29.98,
+          "probability": 1.0
+        },
+        {
+          "text": "Je",
+          "start": 30.0,
+          "end": 30.0,
+          "probability": 0.294
+        },
+        {
+          "text": "déambule",
+          "start": 30.0,
+          "end": 30.78,
+          "probability": 0.937
+        }
+      ],
+      "whisper_line_start_delta": null,
+      "nearest_segment_start": 27.18,
+      "nearest_segment_start_end": 29.98,
+      "nearest_segment_start_text": "Sous-titrage Société Radio-Canada",
+      "nearest_segment_end": 29.98,
+      "nearest_segment_end_start": 27.18,
+      "nearest_segment_end_text": "Sous-titrage Société Radio-Canada"
     },
     {
-      "line_index": 14,
-      "text": "Et dans le bruit, je cours et j'ai peur",
-      "start": 66.6,
-      "end": 70.9,
+      "index": 5,
+      "start": 30.43,
+      "end": 32.91,
+      "text": "Je déambule seule dans le métro",
       "words": [
         {
-          "word_index": 1,
-          "text": "Et",
-          "start": 66.6,
-          "end": 67.15
+          "text": "Je",
+          "start": 30.435,
+          "end": 30.624
         },
         {
-          "word_index": 2,
+          "text": "déambule",
+          "start": 30.624,
+          "end": 30.827
+        },
+        {
+          "text": "seule",
+          "start": 30.827,
+          "end": 30.928
+        },
+        {
           "text": "dans",
-          "start": 67.15,
-          "end": 67.5
+          "start": 30.928,
+          "end": 31.27
         },
         {
-          "word_index": 3,
+          "text": "le",
+          "start": 31.27,
+          "end": 31.751
+        },
+        {
+          "text": "métro",
+          "start": 31.751,
+          "end": 32.915
+        }
+      ],
+      "word_slots": [
+        0.19,
+        0.202,
+        0.101,
+        0.342,
+        0.481,
+        1.164
+      ],
+      "word_spoken": [
+        0.19,
+        0.202,
+        0.101,
+        0.342,
+        0.481,
+        1.164
+      ],
+      "pre_whisper_start": 30.435,
+      "pre_whisper_end": 32.781,
+      "whisper_window_start": 29.43,
+      "whisper_window_end": 32.92,
+      "whisper_window_word_count": 11,
+      "whisper_window_low_conf_count": 1,
+      "whisper_window_avg_prob": 0.875,
+      "whisper_window_words": [
+        {
+          "text": "Société",
+          "start": 29.98,
+          "end": 29.98,
+          "probability": 0.712
+        },
+        {
+          "text": "Radio",
+          "start": 29.98,
+          "end": 29.98,
+          "probability": 1.0
+        },
+        {
+          "text": "-Canada",
+          "start": 29.98,
+          "end": 29.98,
+          "probability": 1.0
+        },
+        {
+          "text": "Je",
+          "start": 30.0,
+          "end": 30.0,
+          "probability": 0.294
+        },
+        {
+          "text": "déambule",
+          "start": 30.0,
+          "end": 30.78,
+          "probability": 0.937
+        },
+        {
+          "text": "seule",
+          "start": 30.78,
+          "end": 31.04,
+          "probability": 0.746
+        },
+        {
+          "text": "dans",
+          "start": 31.04,
+          "end": 31.34,
+          "probability": 0.992
+        },
+        {
+          "text": "le",
+          "start": 31.34,
+          "end": 31.5,
+          "probability": 0.997
+        },
+        {
+          "text": "métro,",
+          "start": 31.5,
+          "end": 32.06,
+          "probability": 0.999
+        },
+        {
+          "text": "une",
+          "start": 32.1,
+          "end": 32.84,
+          "probability": 0.95
+        },
+        {
+          "text": "dernière",
+          "start": 32.84,
+          "end": 33.2,
+          "probability": 0.999
+        }
+      ],
+      "whisper_line_start_delta": -0.43,
+      "nearest_segment_start": 30.0,
+      "nearest_segment_start_end": 34.54,
+      "nearest_segment_start_text": "Je déambule seule dans le métro, une dernière danse",
+      "nearest_segment_end": 29.98,
+      "nearest_segment_end_start": 27.18,
+      "nearest_segment_end_text": "Sous-titrage Société Radio-Canada",
+      "prior_segment_start": 27.18,
+      "prior_segment_end": 29.98,
+      "prior_segment_late_by": 0.45
+    },
+    {
+      "index": 6,
+      "start": 32.92,
+      "end": 35.22,
+      "text": "Une dernière danse",
+      "words": [
+        {
+          "text": "Une",
+          "start": 32.925,
+          "end": 33.233
+        },
+        {
+          "text": "dernière",
+          "start": 33.233,
+          "end": 34.188
+        },
+        {
+          "text": "danse",
+          "start": 34.188,
+          "end": 35.215
+        }
+      ],
+      "word_slots": [
+        0.308,
+        0.954,
+        1.028
+      ],
+      "word_spoken": [
+        0.308,
+        0.954,
+        1.028
+      ],
+      "pre_whisper_start": 32.925,
+      "pre_whisper_end": 34.356,
+      "whisper_window_start": 31.92,
+      "whisper_window_end": 35.86,
+      "whisper_window_word_count": 5,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.914,
+      "whisper_window_words": [
+        {
+          "text": "une",
+          "start": 32.1,
+          "end": 32.84,
+          "probability": 0.95
+        },
+        {
+          "text": "dernière",
+          "start": 32.84,
+          "end": 33.2,
+          "probability": 0.999
+        },
+        {
+          "text": "danse",
+          "start": 33.2,
+          "end": 34.54,
+          "probability": 0.996
+        },
+        {
+          "text": "Pour",
+          "start": 34.54,
+          "end": 35.56,
+          "probability": 0.624
+        },
+        {
+          "text": "oublier",
+          "start": 35.56,
+          "end": 36.62,
+          "probability": 1.0
+        }
+      ],
+      "whisper_line_start_delta": -0.82,
+      "nearest_segment_start": 34.54,
+      "nearest_segment_start_end": 37.98,
+      "nearest_segment_start_text": "Pour oublier ma peine immense",
+      "nearest_segment_end": 34.54,
+      "nearest_segment_end_start": 30.0,
+      "nearest_segment_end_text": "Je déambule seule dans le métro, une dernière danse",
+      "prior_segment_start": 27.18,
+      "prior_segment_end": 29.98,
+      "prior_segment_late_by": 2.94
+    },
+    {
+      "index": 7,
+      "start": 35.86,
+      "end": 38.22,
+      "text": "Pour oublier ma peine immense",
+      "words": [
+        {
+          "text": "Pour",
+          "start": 35.865,
+          "end": 36.525
+        },
+        {
+          "text": "oublier",
+          "start": 36.525,
+          "end": 36.885
+        },
+        {
+          "text": "ma",
+          "start": 36.885,
+          "end": 37.265
+        },
+        {
+          "text": "peine",
+          "start": 37.265,
+          "end": 37.725
+        },
+        {
+          "text": "immense",
+          "start": 37.725,
+          "end": 38.225
+        }
+      ],
+      "word_slots": [
+        0.66,
+        0.36,
+        0.38,
+        0.46,
+        0.5
+      ],
+      "word_spoken": [
+        0.66,
+        0.36,
+        0.38,
+        0.46,
+        0.5
+      ],
+      "pre_whisper_start": 35.865,
+      "pre_whisper_end": 38.117,
+      "whisper_window_start": 34.86,
+      "whisper_window_end": 40.01,
+      "whisper_window_word_count": 6,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.981,
+      "whisper_window_words": [
+        {
+          "text": "oublier",
+          "start": 35.56,
+          "end": 36.62,
+          "probability": 1.0
+        },
+        {
+          "text": "ma",
+          "start": 36.62,
+          "end": 36.94,
+          "probability": 0.999
+        },
+        {
+          "text": "peine",
+          "start": 36.94,
+          "end": 37.34,
+          "probability": 0.999
+        },
+        {
+          "text": "immense",
+          "start": 37.34,
+          "end": 37.98,
+          "probability": 0.995
+        },
+        {
+          "text": "Je",
+          "start": 37.98,
+          "end": 39.88,
+          "probability": 0.897
+        },
+        {
+          "text": "veux",
+          "start": 39.88,
+          "end": 40.34,
+          "probability": 0.993
+        }
+      ],
+      "whisper_line_start_delta": null,
+      "nearest_segment_start": 34.54,
+      "nearest_segment_start_end": 37.98,
+      "nearest_segment_start_text": "Pour oublier ma peine immense",
+      "nearest_segment_end": 34.54,
+      "nearest_segment_end_start": 30.0,
+      "nearest_segment_end_text": "Je déambule seule dans le métro, une dernière danse",
+      "prior_segment_start": 30.0,
+      "prior_segment_end": 34.54,
+      "prior_segment_late_by": 1.32
+    },
+    {
+      "index": 8,
+      "start": 40.01,
+      "end": 42.65,
+      "text": "Je veux m'enfuir que tout recommence",
+      "words": [
+        {
+          "text": "Je",
+          "start": 40.015,
+          "end": 40.175
+        },
+        {
+          "text": "veux",
+          "start": 40.175,
+          "end": 40.775
+        },
+        {
+          "text": "m'enfuir",
+          "start": 40.775,
+          "end": 41.075
+        },
+        {
+          "text": "que",
+          "start": 41.075,
+          "end": 42.395
+        },
+        {
+          "text": "tout",
+          "start": 42.395,
+          "end": 42.515
+        },
+        {
+          "text": "recommence",
+          "start": 42.515,
+          "end": 42.655
+        }
+      ],
+      "word_slots": [
+        0.16,
+        0.6,
+        0.3,
+        1.32,
+        0.12,
+        0.14
+      ],
+      "word_spoken": [
+        0.16,
+        0.6,
+        0.3,
+        1.32,
+        0.12,
+        0.14
+      ],
+      "pre_whisper_start": 40.015,
+      "pre_whisper_end": 42.812,
+      "whisper_window_start": 39.01,
+      "whisper_window_end": 44.14,
+      "whisper_window_word_count": 7,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.929,
+      "whisper_window_words": [
+        {
+          "text": "veux",
+          "start": 39.88,
+          "end": 40.34,
+          "probability": 0.993
+        },
+        {
+          "text": "m",
+          "start": 40.34,
+          "end": 40.44,
+          "probability": 1.0
+        },
+        {
+          "text": "'enfuir,",
+          "start": 40.44,
+          "end": 41.06,
+          "probability": 0.999
+        },
+        {
+          "text": "que",
+          "start": 41.06,
+          "end": 41.34,
+          "probability": 0.999
+        },
+        {
+          "text": "tout",
+          "start": 41.34,
+          "end": 41.52,
+          "probability": 0.999
+        },
+        {
+          "text": "recommence",
+          "start": 41.52,
+          "end": 42.9,
+          "probability": 0.998
+        },
+        {
+          "text": "Pour",
+          "start": 42.9,
+          "end": 44.28,
+          "probability": 0.513
+        }
+      ],
+      "whisper_line_start_delta": null,
+      "nearest_segment_start": 37.98,
+      "nearest_segment_start_end": 42.9,
+      "nearest_segment_start_text": "Je veux m'enfuir, que tout recommence",
+      "nearest_segment_end": 37.98,
+      "nearest_segment_end_start": 34.54,
+      "nearest_segment_end_text": "Pour oublier ma peine immense",
+      "prior_segment_start": 34.54,
+      "prior_segment_end": 37.98,
+      "prior_segment_late_by": 2.03
+    },
+    {
+      "index": 9,
+      "start": 44.14,
+      "end": 46.88,
+      "text": "Oh ma douce souffrance",
+      "words": [
+        {
+          "text": "Oh",
+          "start": 44.145,
+          "end": 44.6
+        },
+        {
+          "text": "ma",
+          "start": 44.6,
+          "end": 45.125
+        },
+        {
+          "text": "douce",
+          "start": 45.125,
+          "end": 46.439
+        },
+        {
+          "text": "souffrance",
+          "start": 46.439,
+          "end": 46.876
+        }
+      ],
+      "word_slots": [
+        0.455,
+        0.525,
+        1.313,
+        0.438
+      ],
+      "word_spoken": [
+        0.455,
+        0.525,
+        1.313,
+        0.438
+      ],
+      "pre_whisper_start": 44.145,
+      "pre_whisper_end": 45.852,
+      "whisper_window_start": 43.14,
+      "whisper_window_end": 50.24,
+      "whisper_window_word_count": 5,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.991,
+      "whisper_window_words": [
+        {
+          "text": "ma",
+          "start": 44.28,
+          "end": 44.8,
+          "probability": 0.996
+        },
+        {
+          "text": "douce",
+          "start": 44.8,
+          "end": 45.36,
+          "probability": 0.995
+        },
+        {
+          "text": "souffrance",
+          "start": 45.36,
+          "end": 46.88,
+          "probability": 0.997
+        },
+        {
+          "text": "Je",
+          "start": 48.98,
+          "end": 50.02,
+          "probability": 0.968
+        },
+        {
+          "text": "remue",
+          "start": 50.02,
+          "end": 50.9,
+          "probability": 0.998
+        }
+      ],
+      "whisper_line_start_delta": null,
+      "nearest_segment_start": 42.9,
+      "nearest_segment_start_end": 46.88,
+      "nearest_segment_start_text": "Pour ma douce souffrance",
+      "nearest_segment_end": 42.9,
+      "nearest_segment_end_start": 37.98,
+      "nearest_segment_end_text": "Je veux m'enfuir, que tout recommence",
+      "prior_segment_start": 37.98,
+      "prior_segment_end": 42.9,
+      "prior_segment_late_by": 1.24
+    },
+    {
+      "index": 10,
+      "start": 50.24,
+      "end": 54.38,
+      "text": "Je remue le ciel le jour, la nuit",
+      "words": [
+        {
+          "text": "Je",
+          "start": 50.245,
+          "end": 51.105
+        },
+        {
+          "text": "remue",
+          "start": 51.105,
+          "end": 51.573
+        },
+        {
+          "text": "le",
+          "start": 51.573,
+          "end": 52.04
+        },
+        {
+          "text": "ciel",
+          "start": 52.04,
+          "end": 52.508
+        },
+        {
+          "text": "le",
+          "start": 52.508,
+          "end": 52.976
+        },
+        {
+          "text": "jour,",
+          "start": 52.976,
+          "end": 53.443
+        },
+        {
+          "text": "la",
+          "start": 53.443,
+          "end": 53.911
+        },
+        {
+          "text": "nuit",
+          "start": 53.911,
+          "end": 54.379
+        }
+      ],
+      "word_slots": [
+        0.86,
+        0.468,
+        0.468,
+        0.468,
+        0.468,
+        0.468,
+        0.468,
+        0.468
+      ],
+      "word_spoken": [
+        0.86,
+        0.468,
+        0.468,
+        0.468,
+        0.468,
+        0.468,
+        0.468,
+        0.468
+      ],
+      "pre_whisper_start": 50.245,
+      "pre_whisper_end": 52.828,
+      "whisper_window_start": 49.24,
+      "whisper_window_end": 54.53,
+      "whisper_window_word_count": 8,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.977,
+      "whisper_window_words": [
+        {
+          "text": "remue",
+          "start": 50.02,
+          "end": 50.9,
+          "probability": 0.998
+        },
+        {
+          "text": "le",
+          "start": 50.9,
+          "end": 51.14,
+          "probability": 0.999
+        },
+        {
+          "text": "ciel,",
+          "start": 51.14,
+          "end": 51.48,
+          "probability": 1.0
+        },
+        {
+          "text": "le",
+          "start": 51.52,
+          "end": 51.92,
+          "probability": 0.827
+        },
+        {
+          "text": "jour,",
+          "start": 51.92,
+          "end": 52.44,
+          "probability": 1.0
+        },
+        {
+          "text": "la",
+          "start": 52.58,
+          "end": 52.92,
+          "probability": 1.0
+        },
+        {
+          "text": "nuit",
+          "start": 52.92,
+          "end": 53.62,
+          "probability": 1.0
+        },
+        {
+          "text": "Je",
+          "start": 53.62,
+          "end": 54.68,
+          "probability": 0.997
+        }
+      ],
+      "whisper_line_start_delta": 3.38,
+      "nearest_segment_start": 48.98,
+      "nearest_segment_start_end": 53.62,
+      "nearest_segment_start_text": "Je remue le ciel, le jour, la nuit",
+      "nearest_segment_end": 46.88,
+      "nearest_segment_end_start": 42.9,
+      "nearest_segment_end_text": "Pour ma douce souffrance",
+      "prior_segment_start": 42.9,
+      "prior_segment_end": 46.88,
+      "prior_segment_late_by": 3.36
+    },
+    {
+      "index": 11,
+      "start": 54.53,
+      "end": 56.79,
+      "text": "Je danse avec le vent la pluie",
+      "words": [
+        {
+          "text": "Je",
+          "start": 54.535,
+          "end": 54.843
+        },
+        {
+          "text": "danse",
+          "start": 54.86,
+          "end": 55.168
+        },
+        {
+          "text": "avec",
+          "start": 55.185,
+          "end": 55.493
+        },
+        {
+          "text": "le",
+          "start": 55.51,
+          "end": 55.818
+        },
+        {
+          "text": "vent",
+          "start": 55.835,
+          "end": 56.143
+        },
+        {
+          "text": "la",
+          "start": 56.16,
+          "end": 56.468
+        },
+        {
+          "text": "pluie",
+          "start": 56.485,
+          "end": 56.793
+        }
+      ],
+      "word_slots": [
+        0.325,
+        0.325,
+        0.325,
+        0.325,
+        0.325,
+        0.325,
+        0.309
+      ],
+      "word_spoken": [
+        0.309,
+        0.309,
+        0.309,
+        0.309,
+        0.309,
+        0.309,
+        0.309
+      ],
+      "pre_whisper_start": 54.535,
+      "pre_whisper_end": 56.793,
+      "whisper_window_start": 53.53,
+      "whisper_window_end": 58.78,
+      "whisper_window_word_count": 8,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.985,
+      "whisper_window_words": [
+        {
+          "text": "Je",
+          "start": 53.62,
+          "end": 54.68,
+          "probability": 0.997
+        },
+        {
+          "text": "danse",
+          "start": 54.68,
+          "end": 55.22,
+          "probability": 0.999
+        },
+        {
+          "text": "avec",
+          "start": 55.22,
+          "end": 55.64,
+          "probability": 0.999
+        },
+        {
+          "text": "le",
+          "start": 55.64,
+          "end": 56.24,
+          "probability": 0.998
+        },
+        {
+          "text": "vent,",
+          "start": 56.24,
+          "end": 56.72,
+          "probability": 0.999
+        },
+        {
+          "text": "la",
+          "start": 56.72,
+          "end": 57.06,
+          "probability": 0.999
+        },
+        {
+          "text": "pluie",
+          "start": 57.06,
+          "end": 58.18,
+          "probability": 1.0
+        },
+        {
+          "text": "Un",
+          "start": 58.18,
+          "end": 58.92,
+          "probability": 0.892
+        }
+      ],
+      "whisper_line_start_delta": -0.91,
+      "nearest_segment_start": 53.62,
+      "nearest_segment_start_end": 58.18,
+      "nearest_segment_start_text": "Je danse avec le vent, la pluie",
+      "nearest_segment_end": 53.62,
+      "nearest_segment_end_start": 48.98,
+      "nearest_segment_end_text": "Je remue le ciel, le jour, la nuit",
+      "prior_segment_start": 48.98,
+      "prior_segment_end": 53.62,
+      "prior_segment_late_by": 0.91
+    },
+    {
+      "index": 12,
+      "start": 58.78,
+      "end": 61.04,
+      "text": "Un peu d'amour un brin de miel",
+      "words": [
+        {
+          "text": "Un",
+          "start": 58.785,
+          "end": 59.093
+        },
+        {
+          "text": "peu",
+          "start": 59.11,
+          "end": 59.418
+        },
+        {
+          "text": "d'amour",
+          "start": 59.435,
+          "end": 59.743
+        },
+        {
+          "text": "un",
+          "start": 59.76,
+          "end": 60.068
+        },
+        {
+          "text": "brin",
+          "start": 60.085,
+          "end": 60.393
+        },
+        {
+          "text": "de",
+          "start": 60.41,
+          "end": 60.718
+        },
+        {
+          "text": "miel",
+          "start": 60.735,
+          "end": 61.043
+        }
+      ],
+      "word_slots": [
+        0.325,
+        0.325,
+        0.325,
+        0.325,
+        0.325,
+        0.325,
+        0.309
+      ],
+      "word_spoken": [
+        0.309,
+        0.309,
+        0.309,
+        0.309,
+        0.309,
+        0.309,
+        0.309
+      ],
+      "pre_whisper_start": 58.785,
+      "pre_whisper_end": 61.043,
+      "whisper_window_start": 57.78,
+      "whisper_window_end": 62.51,
+      "whisper_window_word_count": 11,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.969,
+      "whisper_window_words": [
+        {
+          "text": "Un",
+          "start": 58.18,
+          "end": 58.92,
+          "probability": 0.892
+        },
+        {
+          "text": "peu",
+          "start": 58.92,
+          "end": 59.24,
+          "probability": 0.999
+        },
+        {
+          "text": "d",
+          "start": 59.24,
+          "end": 59.44,
+          "probability": 1.0
+        },
+        {
+          "text": "'amour,",
+          "start": 59.44,
+          "end": 59.84,
+          "probability": 1.0
+        },
+        {
+          "text": "un",
+          "start": 59.84,
+          "end": 60.28,
+          "probability": 0.999
+        },
+        {
+          "text": "brin",
+          "start": 60.28,
+          "end": 60.84,
+          "probability": 0.977
+        },
+        {
+          "text": "de",
+          "start": 60.84,
+          "end": 61.2,
+          "probability": 1.0
+        },
+        {
+          "text": "miel",
+          "start": 61.2,
+          "end": 61.76,
+          "probability": 0.999
+        },
+        {
+          "text": "Et",
+          "start": 61.76,
+          "end": 62.04,
+          "probability": 0.796
+        },
+        {
+          "text": "je",
+          "start": 62.04,
+          "end": 62.22,
+          "probability": 0.999
+        },
+        {
+          "text": "danse,",
+          "start": 62.22,
+          "end": 63.22,
+          "probability": 0.994
+        }
+      ],
+      "whisper_line_start_delta": -0.6,
+      "nearest_segment_start": 58.18,
+      "nearest_segment_start_end": 61.76,
+      "nearest_segment_start_text": "Un peu d'amour, un brin de miel",
+      "nearest_segment_end": 58.18,
+      "nearest_segment_end_start": 53.62,
+      "nearest_segment_end_text": "Je danse avec le vent, la pluie",
+      "prior_segment_start": 53.62,
+      "prior_segment_end": 58.18,
+      "prior_segment_late_by": 0.6
+    },
+    {
+      "index": 13,
+      "start": 62.51,
+      "end": 66.59,
+      "text": "Et je danse, danse, danse, danse, danse, danse, danse",
+      "words": [
+        {
+          "text": "Et",
+          "start": 62.515,
+          "end": 62.947
+        },
+        {
+          "text": "je",
+          "start": 62.97,
+          "end": 63.402
+        },
+        {
+          "text": "danse,",
+          "start": 63.425,
+          "end": 63.857
+        },
+        {
+          "text": "danse,",
+          "start": 63.88,
+          "end": 64.312
+        },
+        {
+          "text": "danse,",
+          "start": 64.335,
+          "end": 64.767
+        },
+        {
+          "text": "danse,",
+          "start": 64.79,
+          "end": 65.222
+        },
+        {
+          "text": "danse,",
+          "start": 65.245,
+          "end": 65.677
+        },
+        {
+          "text": "danse,",
+          "start": 65.7,
+          "end": 66.132
+        },
+        {
+          "text": "danse",
+          "start": 66.155,
+          "end": 66.587
+        }
+      ],
+      "word_slots": [
+        0.455,
+        0.455,
+        0.455,
+        0.455,
+        0.455,
+        0.455,
+        0.455,
+        0.455,
+        0.432
+      ],
+      "word_spoken": [
+        0.432,
+        0.432,
+        0.432,
+        0.432,
+        0.432,
+        0.432,
+        0.432,
+        0.432,
+        0.432
+      ],
+      "pre_whisper_start": 62.515,
+      "pre_whisper_end": 66.587,
+      "whisper_window_start": 61.51,
+      "whisper_window_end": 67.2,
+      "whisper_window_word_count": 10,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.972,
+      "whisper_window_words": [
+        {
+          "text": "Et",
+          "start": 61.76,
+          "end": 62.04,
+          "probability": 0.796
+        },
+        {
+          "text": "je",
+          "start": 62.04,
+          "end": 62.22,
+          "probability": 0.999
+        },
+        {
+          "text": "danse,",
+          "start": 62.22,
+          "end": 63.22,
+          "probability": 0.994
+        },
+        {
+          "text": "danse,",
+          "start": 63.22,
+          "end": 63.7,
+          "probability": 0.999
+        },
+        {
+          "text": "danse,",
+          "start": 63.78,
+          "end": 64.28,
+          "probability": 1.0
+        },
+        {
+          "text": "danse,",
+          "start": 64.28,
+          "end": 65.16,
+          "probability": 0.999
+        },
+        {
+          "text": "danse,",
+          "start": 65.16,
+          "end": 65.72,
+          "probability": 1.0
+        },
+        {
+          "text": "danse",
+          "start": 65.78,
+          "end": 66.08,
+          "probability": 0.999
+        },
+        {
+          "text": "Et",
+          "start": 66.66,
+          "end": 67.08,
+          "probability": 0.931
+        },
+        {
+          "text": "dans",
+          "start": 67.08,
+          "end": 67.5,
+          "probability": 1.0
+        }
+      ],
+      "whisper_line_start_delta": -0.75,
+      "nearest_segment_start": 61.76,
+      "nearest_segment_start_end": 66.08,
+      "nearest_segment_start_text": "Et je danse, danse, danse, danse, danse, danse",
+      "nearest_segment_end": 61.76,
+      "nearest_segment_end_start": 58.18,
+      "nearest_segment_end_text": "Un peu d'amour, un brin de miel",
+      "prior_segment_start": 58.18,
+      "prior_segment_end": 61.76,
+      "prior_segment_late_by": 0.75
+    },
+    {
+      "index": 14,
+      "start": 67.2,
+      "end": 70.11,
+      "text": "Et dans le bruit, je cours et j'ai peur",
+      "words": [
+        {
+          "text": "Et",
+          "start": 67.205,
+          "end": 67.513
+        },
+        {
+          "text": "dans",
+          "start": 67.53,
+          "end": 67.838
+        },
+        {
+          "text": "le",
+          "start": 67.855,
+          "end": 68.163
+        },
+        {
+          "text": "bruit,",
+          "start": 68.18,
+          "end": 68.488
+        },
+        {
+          "text": "je",
+          "start": 68.505,
+          "end": 68.813
+        },
+        {
+          "text": "cours",
+          "start": 68.83,
+          "end": 69.138
+        },
+        {
+          "text": "et",
+          "start": 69.155,
+          "end": 69.463
+        },
+        {
+          "text": "j'ai",
+          "start": 69.48,
+          "end": 69.788
+        },
+        {
+          "text": "peur",
+          "start": 69.805,
+          "end": 70.113
+        }
+      ],
+      "word_slots": [
+        0.325,
+        0.325,
+        0.325,
+        0.325,
+        0.325,
+        0.325,
+        0.325,
+        0.325,
+        0.309
+      ],
+      "word_spoken": [
+        0.309,
+        0.309,
+        0.309,
+        0.309,
+        0.309,
+        0.309,
+        0.309,
+        0.309,
+        0.309
+      ],
+      "pre_whisper_start": 67.205,
+      "pre_whisper_end": 70.113,
+      "whisper_window_start": 66.2,
+      "whisper_window_end": 71.24,
+      "whisper_window_word_count": 11,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.989,
+      "whisper_window_words": [
+        {
+          "text": "Et",
+          "start": 66.66,
+          "end": 67.08,
+          "probability": 0.931
+        },
+        {
+          "text": "dans",
+          "start": 67.08,
+          "end": 67.5,
+          "probability": 1.0
+        },
+        {
           "text": "le",
           "start": 67.5,
-          "end": 67.95
+          "end": 67.72,
+          "probability": 0.999
         },
         {
-          "word_index": 4,
           "text": "bruit,",
-          "start": 67.95,
-          "end": 68.3
+          "start": 67.72,
+          "end": 68.24,
+          "probability": 1.0
         },
         {
-          "word_index": 5,
           "text": "je",
-          "start": 68.3,
-          "end": 68.65
+          "start": 68.24,
+          "end": 68.76,
+          "probability": 1.0
         },
         {
-          "word_index": 6,
           "text": "cours",
-          "start": 68.65,
-          "end": 69.2
+          "start": 68.76,
+          "end": 69.1,
+          "probability": 0.993
         },
         {
-          "word_index": 7,
           "text": "et",
-          "start": 69.2,
-          "end": 69.35
+          "start": 69.1,
+          "end": 69.38,
+          "probability": 0.999
         },
         {
-          "word_index": 8,
-          "text": "j'ai",
-          "start": 69.35,
-          "end": 69.7
+          "text": "j",
+          "start": 69.38,
+          "end": 69.56,
+          "probability": 1.0
         },
         {
-          "word_index": 9,
+          "text": "'ai",
+          "start": 69.56,
+          "end": 69.78,
+          "probability": 1.0
+        },
+        {
           "text": "peur",
-          "start": 69.7,
-          "end": 70.9
+          "start": 69.78,
+          "end": 70.6,
+          "probability": 1.0
+        },
+        {
+          "text": "Est",
+          "start": 71.14,
+          "end": 71.56,
+          "probability": 0.954
         }
-      ]
+      ],
+      "whisper_line_start_delta": -0.54,
+      "nearest_segment_start": 66.74,
+      "nearest_segment_start_end": 70.6,
+      "nearest_segment_start_text": "Et dans le bruit, je cours et j'ai peur",
+      "nearest_segment_end": 66.08,
+      "nearest_segment_end_start": 61.76,
+      "nearest_segment_end_text": "Et je danse, danse, danse, danse, danse, danse",
+      "prior_segment_start": 61.76,
+      "prior_segment_end": 66.08,
+      "prior_segment_late_by": 1.12
     },
     {
-      "line_index": 15,
-      "text": "Est-ce mon tour? Vient la douleur",
-      "start": 70.9,
-      "end": 74.85,
+      "index": 15,
+      "start": 71.24,
+      "end": 72.5,
+      "text": "Est-ce mon tour?",
       "words": [
         {
-          "word_index": 1,
           "text": "Est-ce",
-          "start": 70.9,
-          "end": 71.55
+          "start": 71.245,
+          "end": 71.648
         },
         {
-          "word_index": 2,
           "text": "mon",
-          "start": 71.55,
-          "end": 72.2
+          "start": 71.669,
+          "end": 72.073
         },
         {
-          "word_index": 3,
           "text": "tour?",
-          "start": 72.2,
-          "end": 72.85
+          "start": 72.094,
+          "end": 72.497
+        }
+      ],
+      "word_slots": [
+        0.425,
+        0.425,
+        0.403
+      ],
+      "word_spoken": [
+        0.403,
+        0.403,
+        0.403
+      ],
+      "pre_whisper_start": 71.245,
+      "pre_whisper_end": 72.497,
+      "whisper_window_start": 70.24,
+      "whisper_window_end": 73.08,
+      "whisper_window_word_count": 7,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.903,
+      "whisper_window_words": [
+        {
+          "text": "Est",
+          "start": 71.14,
+          "end": 71.56,
+          "probability": 0.954
         },
         {
-          "word_index": 4,
+          "text": "-ce",
+          "start": 71.56,
+          "end": 71.88,
+          "probability": 1.0
+        },
+        {
+          "text": "mon",
+          "start": 71.88,
+          "end": 71.98,
+          "probability": 0.862
+        },
+        {
+          "text": "tour",
+          "start": 71.98,
+          "end": 72.36,
+          "probability": 0.976
+        },
+        {
+          "text": "?",
+          "start": 72.36,
+          "end": 72.36,
+          "probability": 0.767
+        },
+        {
           "text": "Vient",
-          "start": 72.85,
-          "end": 73.5
+          "start": 72.36,
+          "end": 73.0,
+          "probability": 0.77
         },
         {
-          "word_index": 5,
           "text": "la",
-          "start": 73.5,
-          "end": 74.15
+          "start": 73.0,
+          "end": 73.24,
+          "probability": 0.992
+        }
+      ],
+      "whisper_line_start_delta": null,
+      "nearest_segment_start": 71.14,
+      "nearest_segment_start_end": 74.44,
+      "nearest_segment_start_text": "Est-ce mon tour ? Vient la douleur",
+      "nearest_segment_end": 70.6,
+      "nearest_segment_end_start": 66.74,
+      "nearest_segment_end_text": "Et dans le bruit, je cours et j'ai peur",
+      "prior_segment_start": 66.74,
+      "prior_segment_end": 70.6,
+      "prior_segment_late_by": 0.64
+    },
+    {
+      "index": 16,
+      "start": 73.08,
+      "end": 74.43,
+      "text": "Vient la douleur.",
+      "words": [
+        {
+          "text": "Vient",
+          "start": 73.085,
+          "end": 73.517
         },
         {
-          "word_index": 6,
+          "text": "la",
+          "start": 73.54,
+          "end": 73.972
+        },
+        {
+          "text": "douleur.",
+          "start": 73.995,
+          "end": 74.427
+        }
+      ],
+      "word_slots": [
+        0.455,
+        0.455,
+        0.432
+      ],
+      "word_spoken": [
+        0.432,
+        0.432,
+        0.432
+      ],
+      "pre_whisper_start": 73.085,
+      "pre_whisper_end": 74.427,
+      "whisper_window_start": 72.08,
+      "whisper_window_end": 75.58,
+      "whisper_window_word_count": 5,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.904,
+      "whisper_window_words": [
+        {
+          "text": "?",
+          "start": 72.36,
+          "end": 72.36,
+          "probability": 0.767
+        },
+        {
+          "text": "Vient",
+          "start": 72.36,
+          "end": 73.0,
+          "probability": 0.77
+        },
+        {
+          "text": "la",
+          "start": 73.0,
+          "end": 73.24,
+          "probability": 0.992
+        },
+        {
           "text": "douleur",
-          "start": 74.15,
-          "end": 74.85
-        }
-      ]
-    },
-    {
-      "line_index": 16,
-      "text": "Dans tout Paris, je m'abandonne",
-      "start": 74.85,
-      "end": 78.35,
-      "words": [
+          "start": 73.24,
+          "end": 74.44,
+          "probability": 1.0
+        },
         {
-          "word_index": 1,
           "text": "Dans",
-          "start": 74.85,
-          "end": 75.25
+          "start": 75.16,
+          "end": 75.58,
+          "probability": 0.993
+        }
+      ],
+      "whisper_line_start_delta": -0.72,
+      "nearest_segment_start": 71.14,
+      "nearest_segment_start_end": 74.44,
+      "nearest_segment_start_text": "Est-ce mon tour ? Vient la douleur",
+      "nearest_segment_end": 74.44,
+      "nearest_segment_end_start": 71.14,
+      "nearest_segment_end_text": "Est-ce mon tour ? Vient la douleur",
+      "prior_segment_start": 66.74,
+      "prior_segment_end": 70.6,
+      "prior_segment_late_by": 2.48
+    },
+    {
+      "index": 17,
+      "start": 75.58,
+      "end": 78.02,
+      "text": "Dans tout Paris, je m'abandonne",
+      "words": [
+        {
+          "text": "Dans",
+          "start": 75.585,
+          "end": 76.051
         },
         {
-          "word_index": 2,
           "text": "tout",
-          "start": 75.25,
-          "end": 75.85
+          "start": 76.076,
+          "end": 76.543
         },
         {
-          "word_index": 3,
           "text": "Paris,",
-          "start": 75.85,
-          "end": 76.2
+          "start": 76.567,
+          "end": 77.034
         },
         {
-          "word_index": 4,
           "text": "je",
-          "start": 76.2,
-          "end": 76.9
+          "start": 77.059,
+          "end": 77.526
         },
         {
-          "word_index": 5,
           "text": "m'abandonne",
-          "start": 76.9,
-          "end": 78.35
+          "start": 77.55,
+          "end": 78.017
         }
-      ]
-    },
-    {
-      "line_index": 17,
-      "text": "Et je m'envole, vole, vole, vole, vole, vole, vole",
-      "start": 78.35,
-      "end": 82.85,
-      "words": [
+      ],
+      "word_slots": [
+        0.491,
+        0.491,
+        0.491,
+        0.491,
+        0.467
+      ],
+      "word_spoken": [
+        0.467,
+        0.467,
+        0.467,
+        0.467,
+        0.467
+      ],
+      "pre_whisper_start": 75.585,
+      "pre_whisper_end": 78.017,
+      "whisper_window_start": 74.58,
+      "whisper_window_end": 79.16,
+      "whisper_window_word_count": 10,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.952,
+      "whisper_window_words": [
         {
-          "word_index": 1,
-          "text": "Et",
-          "start": 78.35,
-          "end": 78.65
+          "text": "Dans",
+          "start": 75.16,
+          "end": 75.58,
+          "probability": 0.993
         },
         {
-          "word_index": 2,
+          "text": "tout",
+          "start": 75.58,
+          "end": 75.82,
+          "probability": 0.999
+        },
+        {
+          "text": "Paris,",
+          "start": 75.82,
+          "end": 76.38,
+          "probability": 0.998
+        },
+        {
           "text": "je",
-          "start": 78.65,
-          "end": 79.0
+          "start": 76.6,
+          "end": 77.08,
+          "probability": 1.0
         },
         {
-          "word_index": 3,
-          "text": "m'envole,",
-          "start": 79.0,
-          "end": 79.65
+          "text": "m",
+          "start": 77.08,
+          "end": 77.24,
+          "probability": 0.987
         },
         {
-          "word_index": 4,
-          "text": "vole,",
-          "start": 79.65,
-          "end": 80.15
+          "text": "'abandonne",
+          "start": 77.24,
+          "end": 78.56,
+          "probability": 0.999
         },
         {
-          "word_index": 5,
-          "text": "vole,",
-          "start": 80.15,
-          "end": 80.7
+          "text": "Et",
+          "start": 78.56,
+          "end": 78.72,
+          "probability": 0.553
         },
         {
-          "word_index": 6,
-          "text": "vole,",
-          "start": 80.7,
-          "end": 81.0
+          "text": "je",
+          "start": 78.72,
+          "end": 78.94,
+          "probability": 0.999
         },
         {
-          "word_index": 7,
-          "text": "vole,",
-          "start": 81.0,
-          "end": 81.5
+          "text": "m",
+          "start": 78.94,
+          "end": 79.12,
+          "probability": 0.998
         },
         {
-          "word_index": 8,
-          "text": "vole,",
-          "start": 81.5,
-          "end": 81.9
-        },
-        {
-          "word_index": 9,
-          "text": "vole",
-          "start": 81.9,
-          "end": 82.85
+          "text": "'envole,",
+          "start": 79.12,
+          "end": 79.8,
+          "probability": 0.998
         }
-      ]
+      ],
+      "whisper_line_start_delta": -0.42,
+      "nearest_segment_start": 75.24,
+      "nearest_segment_start_end": 78.56,
+      "nearest_segment_start_text": "Dans tout Paris, je m'abandonne",
+      "nearest_segment_end": 74.44,
+      "nearest_segment_end_start": 71.14,
+      "nearest_segment_end_text": "Est-ce mon tour ? Vient la douleur",
+      "prior_segment_start": 71.14,
+      "prior_segment_end": 74.44,
+      "prior_segment_late_by": 1.14
     },
     {
-      "line_index": 18,
-      "text": "Que d'esp\u00e9rance",
-      "start": 82.85,
-      "end": 85.75,
+      "index": 18,
+      "start": 79.16,
+      "end": 82.51,
+      "text": "Et je m'envole, vole, vole, vole, vole, vole",
       "words": [
         {
-          "word_index": 1,
+          "text": "Et",
+          "start": 79.165,
+          "end": 79.564
+        },
+        {
+          "text": "je",
+          "start": 79.586,
+          "end": 79.985
+        },
+        {
+          "text": "m'envole,",
+          "start": 80.006,
+          "end": 80.406
+        },
+        {
+          "text": "vole,",
+          "start": 80.427,
+          "end": 80.827
+        },
+        {
+          "text": "vole,",
+          "start": 80.848,
+          "end": 81.248
+        },
+        {
+          "text": "vole,",
+          "start": 81.269,
+          "end": 81.669
+        },
+        {
+          "text": "vole,",
+          "start": 81.69,
+          "end": 82.09
+        },
+        {
+          "text": "vole",
+          "start": 82.111,
+          "end": 82.511
+        }
+      ],
+      "word_slots": [
+        0.421,
+        0.421,
+        0.421,
+        0.421,
+        0.421,
+        0.421,
+        0.421,
+        0.4
+      ],
+      "word_spoken": [
+        0.4,
+        0.4,
+        0.4,
+        0.4,
+        0.4,
+        0.4,
+        0.4,
+        0.4
+      ],
+      "pre_whisper_start": 79.165,
+      "pre_whisper_end": 82.511,
+      "whisper_window_start": 78.16,
+      "whisper_window_end": 83.29,
+      "whisper_window_word_count": 12,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.951,
+      "whisper_window_words": [
+        {
+          "text": "Et",
+          "start": 78.56,
+          "end": 78.72,
+          "probability": 0.553
+        },
+        {
+          "text": "je",
+          "start": 78.72,
+          "end": 78.94,
+          "probability": 0.999
+        },
+        {
+          "text": "m",
+          "start": 78.94,
+          "end": 79.12,
+          "probability": 0.998
+        },
+        {
+          "text": "'envole,",
+          "start": 79.12,
+          "end": 79.8,
+          "probability": 0.998
+        },
+        {
+          "text": "vole,",
+          "start": 79.92,
+          "end": 80.2,
+          "probability": 0.939
+        },
+        {
+          "text": "vole,",
+          "start": 80.2,
+          "end": 80.76,
+          "probability": 0.997
+        },
+        {
+          "text": "vole,",
+          "start": 80.76,
+          "end": 81.2,
+          "probability": 0.998
+        },
+        {
+          "text": "vole,",
+          "start": 81.2,
+          "end": 81.74,
+          "probability": 0.997
+        },
+        {
+          "text": "vole",
+          "start": 81.74,
+          "end": 82.16,
+          "probability": 0.994
+        },
+        {
           "text": "Que",
-          "start": 82.85,
-          "end": 84.2
+          "start": 82.16,
+          "end": 82.86,
+          "probability": 0.94
         },
         {
-          "word_index": 2,
-          "text": "d'esp\u00e9rance",
-          "start": 84.2,
-          "end": 85.75
+          "text": "d",
+          "start": 82.86,
+          "end": 83.06,
+          "probability": 0.998
+        },
+        {
+          "text": "'espérance",
+          "start": 83.06,
+          "end": 83.88,
+          "probability": 0.997
         }
-      ]
+      ],
+      "whisper_line_start_delta": -0.6,
+      "nearest_segment_start": 78.56,
+      "nearest_segment_start_end": 82.16,
+      "nearest_segment_start_text": "Et je m'envole, vole, vole, vole, vole, vole",
+      "nearest_segment_end": 78.56,
+      "nearest_segment_end_start": 75.24,
+      "nearest_segment_end_text": "Dans tout Paris, je m'abandonne",
+      "prior_segment_start": 75.24,
+      "prior_segment_end": 78.56,
+      "prior_segment_late_by": 0.6
     },
     {
-      "line_index": 19,
-      "text": "Sur ce chemin en ton absence",
-      "start": 85.75,
-      "end": 89.5,
+      "index": 19,
+      "start": 83.29,
+      "end": 84.54,
+      "text": "Que d'espérance",
       "words": [
         {
-          "word_index": 1,
+          "text": "Que",
+          "start": 83.295,
+          "end": 83.9
+        },
+        {
+          "text": "d'espérance",
+          "start": 83.932,
+          "end": 84.537
+        }
+      ],
+      "word_slots": [
+        0.637,
+        0.605
+      ],
+      "word_spoken": [
+        0.605,
+        0.605
+      ],
+      "pre_whisper_start": 83.295,
+      "pre_whisper_end": 84.537,
+      "whisper_window_start": 82.29,
+      "whisper_window_end": 86.29,
+      "whisper_window_word_count": 5,
+      "whisper_window_low_conf_count": 1,
+      "whisper_window_avg_prob": 0.883,
+      "whisper_window_words": [
+        {
+          "text": "d",
+          "start": 82.86,
+          "end": 83.06,
+          "probability": 0.998
+        },
+        {
+          "text": "'espérance",
+          "start": 83.06,
+          "end": 83.88,
+          "probability": 0.997
+        },
+        {
           "text": "Sur",
-          "start": 85.75,
-          "end": 86.35
+          "start": 84.92,
+          "end": 85.76,
+          "probability": 0.419
         },
         {
-          "word_index": 2,
           "text": "ce",
-          "start": 86.35,
-          "end": 86.95
+          "start": 85.76,
+          "end": 86.14,
+          "probability": 1.0
         },
         {
-          "word_index": 3,
+          "text": "chemin,",
+          "start": 86.14,
+          "end": 86.76,
+          "probability": 0.999
+        }
+      ],
+      "whisper_line_start_delta": null,
+      "nearest_segment_start": 82.16,
+      "nearest_segment_start_end": 83.88,
+      "nearest_segment_start_text": "Que d'espérance",
+      "nearest_segment_end": 83.88,
+      "nearest_segment_end_start": 82.16,
+      "nearest_segment_end_text": "Que d'espérance",
+      "prior_segment_start": 78.56,
+      "prior_segment_end": 82.16,
+      "prior_segment_late_by": 1.13
+    },
+    {
+      "index": 20,
+      "start": 86.29,
+      "end": 88.37,
+      "text": "Sur ce chemin en ton absence",
+      "words": [
+        {
+          "text": "Sur",
+          "start": 86.295,
+          "end": 86.626
+        },
+        {
+          "text": "ce",
+          "start": 86.643,
+          "end": 86.975
+        },
+        {
           "text": "chemin",
-          "start": 86.95,
-          "end": 87.55
+          "start": 86.992,
+          "end": 87.324
         },
         {
-          "word_index": 4,
           "text": "en",
-          "start": 87.55,
-          "end": 88.2
+          "start": 87.341,
+          "end": 87.673
         },
         {
-          "word_index": 5,
           "text": "ton",
-          "start": 88.2,
-          "end": 88.8
+          "start": 87.69,
+          "end": 88.021
         },
         {
-          "word_index": 6,
           "text": "absence",
-          "start": 88.8,
-          "end": 89.5
+          "start": 88.039,
+          "end": 88.37
         }
-      ]
+      ],
+      "word_slots": [
+        0.349,
+        0.349,
+        0.349,
+        0.349,
+        0.349,
+        0.331
+      ],
+      "word_spoken": [
+        0.331,
+        0.331,
+        0.331,
+        0.331,
+        0.331,
+        0.331
+      ],
+      "pre_whisper_start": 86.295,
+      "pre_whisper_end": 88.37,
+      "whisper_window_start": 85.29,
+      "whisper_window_end": 90.22,
+      "whisper_window_word_count": 6,
+      "whisper_window_low_conf_count": 1,
+      "whisper_window_avg_prob": 0.81,
+      "whisper_window_words": [
+        {
+          "text": "ce",
+          "start": 85.76,
+          "end": 86.14,
+          "probability": 1.0
+        },
+        {
+          "text": "chemin,",
+          "start": 86.14,
+          "end": 86.76,
+          "probability": 0.999
+        },
+        {
+          "text": "ton",
+          "start": 86.98,
+          "end": 87.44,
+          "probability": 0.898
+        },
+        {
+          "text": "absence",
+          "start": 87.44,
+          "end": 87.88,
+          "probability": 0.969
+        },
+        {
+          "text": "J",
+          "start": 89.16,
+          "end": 90.04,
+          "probability": 0.052
+        },
+        {
+          "text": "'ai",
+          "start": 90.04,
+          "end": 90.34,
+          "probability": 0.943
+        }
+      ],
+      "whisper_line_start_delta": null,
+      "nearest_segment_start": 84.92,
+      "nearest_segment_start_end": 87.88,
+      "nearest_segment_start_text": "Sur ce chemin, ton absence",
+      "nearest_segment_end": 87.88,
+      "nearest_segment_end_start": 84.92,
+      "nearest_segment_end_text": "Sur ce chemin, ton absence",
+      "prior_segment_start": 82.16,
+      "prior_segment_end": 83.88,
+      "prior_segment_late_by": 2.41
     },
     {
-      "line_index": 20,
-      "text": "J'ai beau trimer",
-      "start": 89.95,
-      "end": 91.15,
+      "index": 21,
+      "start": 90.22,
+      "end": 94.94,
+      "text": "J'ai beau trimer, sans toi ma vie n'est qu'un décor qui brille,",
       "words": [
         {
-          "word_index": 1,
           "text": "J'ai",
-          "start": 89.95,
-          "end": 90.25
+          "start": 90.225,
+          "end": 90.599
         },
         {
-          "word_index": 2,
           "text": "beau",
-          "start": 90.25,
-          "end": 90.6
+          "start": 90.619,
+          "end": 90.994
         },
         {
-          "word_index": 3,
-          "text": "trimer",
-          "start": 90.6,
-          "end": 91.15
-        }
-      ]
-    },
-    {
-      "line_index": 21,
-      "text": "Sans toi ma vie n'est qu'un d\u00e9cor qui brille, vide de sens",
-      "start": 91.15,
-      "end": 96.4,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "Sans",
-          "start": 91.15,
-          "end": 91.4
+          "text": "trimer,",
+          "start": 91.013,
+          "end": 91.388
         },
         {
-          "word_index": 2,
+          "text": "sans",
+          "start": 91.408,
+          "end": 91.782
+        },
+        {
           "text": "toi",
-          "start": 91.4,
-          "end": 91.65
+          "start": 91.802,
+          "end": 92.177
         },
         {
-          "word_index": 3,
           "text": "ma",
-          "start": 91.65,
-          "end": 92.2
+          "start": 92.196,
+          "end": 92.571
         },
         {
-          "word_index": 4,
           "text": "vie",
-          "start": 92.2,
-          "end": 92.8
+          "start": 92.591,
+          "end": 92.965
         },
         {
-          "word_index": 5,
           "text": "n'est",
-          "start": 92.8,
-          "end": 93.25
+          "start": 92.985,
+          "end": 93.36
         },
         {
-          "word_index": 6,
           "text": "qu'un",
-          "start": 93.25,
-          "end": 93.8
+          "start": 93.379,
+          "end": 93.754
         },
         {
-          "word_index": 7,
-          "text": "d\u00e9cor",
-          "start": 93.8,
-          "end": 94.35
+          "text": "décor",
+          "start": 93.774,
+          "end": 94.148
         },
         {
-          "word_index": 8,
           "text": "qui",
-          "start": 94.35,
-          "end": 94.8
+          "start": 94.168,
+          "end": 94.543
         },
         {
-          "word_index": 9,
           "text": "brille,",
+          "start": 94.562,
+          "end": 94.937
+        }
+      ],
+      "word_slots": [
+        0.394,
+        0.394,
+        0.394,
+        0.394,
+        0.394,
+        0.394,
+        0.394,
+        0.394,
+        0.394,
+        0.394,
+        0.394,
+        0.375
+      ],
+      "word_spoken": [
+        0.375,
+        0.375,
+        0.375,
+        0.375,
+        0.375,
+        0.375,
+        0.375,
+        0.375,
+        0.375,
+        0.375,
+        0.375,
+        0.375
+      ],
+      "pre_whisper_start": 90.225,
+      "pre_whisper_end": 94.937,
+      "whisper_window_start": 89.22,
+      "whisper_window_end": 96.05,
+      "whisper_window_word_count": 16,
+      "whisper_window_low_conf_count": 1,
+      "whisper_window_avg_prob": 0.897,
+      "whisper_window_words": [
+        {
+          "text": "'ai",
+          "start": 90.04,
+          "end": 90.34,
+          "probability": 0.943
+        },
+        {
+          "text": "beau",
+          "start": 90.34,
+          "end": 90.5,
+          "probability": 0.995
+        },
+        {
+          "text": "trimer",
+          "start": 90.5,
+          "end": 91.02,
+          "probability": 0.979
+        },
+        {
+          "text": "sans",
+          "start": 91.02,
+          "end": 91.5,
+          "probability": 0.948
+        },
+        {
+          "text": "toi,",
+          "start": 91.5,
+          "end": 91.76,
+          "probability": 0.996
+        },
+        {
+          "text": "ma",
+          "start": 91.86,
+          "end": 91.96,
+          "probability": 0.985
+        },
+        {
+          "text": "vie",
+          "start": 91.96,
+          "end": 92.16,
+          "probability": 0.999
+        },
+        {
+          "text": "n",
+          "start": 92.16,
+          "end": 92.6,
+          "probability": 0.978
+        },
+        {
+          "text": "'est",
+          "start": 92.6,
+          "end": 92.7,
+          "probability": 0.999
+        },
+        {
+          "text": "qu",
+          "start": 92.7,
+          "end": 92.98,
+          "probability": 0.998
+        },
+        {
+          "text": "'un",
+          "start": 92.98,
+          "end": 93.24,
+          "probability": 0.999
+        },
+        {
+          "text": "décor",
+          "start": 93.24,
+          "end": 94.34,
+          "probability": 0.994
+        },
+        {
+          "text": "Qui",
+          "start": 94.34,
+          "end": 94.8,
+          "probability": 0.103
+        },
+        {
+          "text": "bruit",
           "start": 94.8,
-          "end": 95.2
+          "end": 95.3,
+          "probability": 0.648
         },
         {
-          "word_index": 10,
           "text": "vide",
-          "start": 95.2,
-          "end": 95.5
+          "start": 95.3,
+          "end": 95.84,
+          "probability": 0.794
         },
         {
-          "word_index": 11,
           "text": "de",
-          "start": 95.5,
-          "end": 96.0
+          "start": 95.84,
+          "end": 96.36,
+          "probability": 0.987
+        }
+      ],
+      "whisper_line_start_delta": null,
+      "nearest_segment_start": 89.16,
+      "nearest_segment_start_end": 94.34,
+      "nearest_segment_start_text": "J'ai beau trimer sans toi, ma vie n'est qu'un décor",
+      "nearest_segment_end": 87.88,
+      "nearest_segment_end_start": 84.92,
+      "nearest_segment_end_text": "Sur ce chemin, ton absence",
+      "prior_segment_start": 84.92,
+      "prior_segment_end": 87.88,
+      "prior_segment_late_by": 2.34
+    },
+    {
+      "index": 22,
+      "start": 96.05,
+      "end": 97.01,
+      "text": "Vide de sens",
+      "words": [
+        {
+          "text": "Vide",
+          "start": 96.055,
+          "end": 96.363
         },
         {
-          "word_index": 12,
+          "text": "de",
+          "start": 96.38,
+          "end": 96.688
+        },
+        {
           "text": "sens",
-          "start": 96.0,
-          "end": 96.4
+          "start": 96.705,
+          "end": 97.013
         }
-      ]
+      ],
+      "word_slots": [
+        0.325,
+        0.325,
+        0.309
+      ],
+      "word_spoken": [
+        0.309,
+        0.309,
+        0.309
+      ],
+      "pre_whisper_start": 96.055,
+      "pre_whisper_end": 97.013,
+      "whisper_window_start": 95.05,
+      "whisper_window_end": 100.33,
+      "whisper_window_word_count": 5,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.797,
+      "whisper_window_words": [
+        {
+          "text": "vide",
+          "start": 95.3,
+          "end": 95.84,
+          "probability": 0.794
+        },
+        {
+          "text": "de",
+          "start": 95.84,
+          "end": 96.36,
+          "probability": 0.987
+        },
+        {
+          "text": "sens",
+          "start": 96.36,
+          "end": 96.66,
+          "probability": 0.586
+        },
+        {
+          "text": "Je",
+          "start": 96.66,
+          "end": 98.38,
+          "probability": 0.657
+        },
+        {
+          "text": "remue",
+          "start": 98.38,
+          "end": 100.66,
+          "probability": 0.961
+        }
+      ],
+      "whisper_line_start_delta": -0.75,
+      "nearest_segment_start": 96.66,
+      "nearest_segment_start_end": 103.68,
+      "nearest_segment_start_text": "Je remue le ciel, le jour, la nuit",
+      "nearest_segment_end": 96.66,
+      "nearest_segment_end_start": 94.34,
+      "nearest_segment_end_text": "Qui bruit vide de sens",
+      "prior_segment_start": 89.16,
+      "prior_segment_end": 94.34,
+      "prior_segment_late_by": 1.71
     },
     {
-      "line_index": 22,
-      "text": "Je remue le ciel, le jour, la nuit",
-      "start": 100.05,
-      "end": 104.2,
+      "index": 23,
+      "start": 100.33,
+      "end": 102.92,
+      "text": "Je remue le ciel le jour, la nuit",
       "words": [
         {
-          "word_index": 1,
           "text": "Je",
-          "start": 100.05,
-          "end": 100.55
+          "start": 100.335,
+          "end": 100.643
         },
         {
-          "word_index": 2,
           "text": "remue",
-          "start": 100.55,
-          "end": 101.05
+          "start": 100.66,
+          "end": 100.968
         },
         {
-          "word_index": 3,
           "text": "le",
-          "start": 101.05,
-          "end": 101.6
+          "start": 100.985,
+          "end": 101.293
         },
         {
-          "word_index": 4,
+          "text": "ciel",
+          "start": 101.31,
+          "end": 101.618
+        },
+        {
+          "text": "le",
+          "start": 101.635,
+          "end": 101.943
+        },
+        {
+          "text": "jour,",
+          "start": 101.96,
+          "end": 102.268
+        },
+        {
+          "text": "la",
+          "start": 102.285,
+          "end": 102.593
+        },
+        {
+          "text": "nuit",
+          "start": 102.61,
+          "end": 102.918
+        }
+      ],
+      "word_slots": [
+        0.325,
+        0.325,
+        0.325,
+        0.325,
+        0.325,
+        0.325,
+        0.325,
+        0.309
+      ],
+      "word_spoken": [
+        0.309,
+        0.309,
+        0.309,
+        0.309,
+        0.309,
+        0.309,
+        0.309,
+        0.309
+      ],
+      "pre_whisper_start": 100.335,
+      "pre_whisper_end": 102.918,
+      "whisper_window_start": 99.33,
+      "whisper_window_end": 104.72,
+      "whisper_window_word_count": 7,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.983,
+      "whisper_window_words": [
+        {
+          "text": "le",
+          "start": 100.66,
+          "end": 101.14,
+          "probability": 0.998
+        },
+        {
           "text": "ciel,",
+          "start": 101.14,
+          "end": 101.56,
+          "probability": 1.0
+        },
+        {
+          "text": "le",
           "start": 101.6,
-          "end": 102.1
+          "end": 102.04,
+          "probability": 0.892
         },
         {
-          "word_index": 5,
-          "text": "le",
-          "start": 102.1,
-          "end": 102.6
-        },
-        {
-          "word_index": 6,
           "text": "jour,",
-          "start": 102.6,
-          "end": 103.15
+          "start": 102.04,
+          "end": 102.68,
+          "probability": 1.0
         },
         {
-          "word_index": 7,
           "text": "la",
-          "start": 103.15,
-          "end": 103.65
+          "start": 102.68,
+          "end": 103.0,
+          "probability": 1.0
         },
         {
-          "word_index": 8,
           "text": "nuit",
-          "start": 103.65,
-          "end": 104.2
-        }
-      ]
-    },
-    {
-      "line_index": 23,
-      "text": "Je danse avec le vent, la pluie",
-      "start": 104.2,
-      "end": 108.1,
-      "words": [
+          "start": 103.0,
+          "end": 103.68,
+          "probability": 1.0
+        },
         {
-          "word_index": 1,
           "text": "Je",
-          "start": 104.2,
-          "end": 104.75
+          "start": 103.68,
+          "end": 104.78,
+          "probability": 0.991
+        }
+      ],
+      "whisper_line_start_delta": 3.35,
+      "nearest_segment_start": 103.68,
+      "nearest_segment_start_end": 108.44,
+      "nearest_segment_start_text": "Je danse avec le vent, la pluie",
+      "nearest_segment_end": 103.68,
+      "nearest_segment_end_start": 96.66,
+      "nearest_segment_end_text": "Je remue le ciel, le jour, la nuit",
+      "prior_segment_start": 94.34,
+      "prior_segment_end": 96.66,
+      "prior_segment_late_by": 3.67
+    },
+    {
+      "index": 24,
+      "start": 104.72,
+      "end": 106.98,
+      "text": "Je danse avec le vent la pluie",
+      "words": [
+        {
+          "text": "Je",
+          "start": 104.725,
+          "end": 105.033
         },
         {
-          "word_index": 2,
           "text": "danse",
-          "start": 104.75,
-          "end": 105.3
+          "start": 105.05,
+          "end": 105.358
         },
         {
-          "word_index": 3,
           "text": "avec",
-          "start": 105.3,
-          "end": 105.85
+          "start": 105.375,
+          "end": 105.683
         },
         {
-          "word_index": 4,
           "text": "le",
-          "start": 105.85,
-          "end": 106.4
+          "start": 105.7,
+          "end": 106.008
         },
         {
-          "word_index": 5,
-          "text": "vent,",
-          "start": 106.4,
-          "end": 106.95
+          "text": "vent",
+          "start": 106.025,
+          "end": 106.333
         },
         {
-          "word_index": 6,
           "text": "la",
-          "start": 106.95,
-          "end": 107.5
+          "start": 106.35,
+          "end": 106.658
         },
         {
-          "word_index": 7,
           "text": "pluie",
-          "start": 107.5,
-          "end": 108.1
+          "start": 106.675,
+          "end": 106.983
         }
-      ]
-    },
-    {
-      "line_index": 24,
-      "text": "Un peu d'amour, un brin de miel",
-      "start": 108.1,
-      "end": 111.65,
-      "words": [
+      ],
+      "word_slots": [
+        0.325,
+        0.325,
+        0.325,
+        0.325,
+        0.325,
+        0.325,
+        0.309
+      ],
+      "word_spoken": [
+        0.309,
+        0.309,
+        0.309,
+        0.309,
+        0.309,
+        0.309,
+        0.309
+      ],
+      "pre_whisper_start": 104.725,
+      "pre_whisper_end": 106.983,
+      "whisper_window_start": 103.72,
+      "whisper_window_end": 109.0,
+      "whisper_window_word_count": 7,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.994,
+      "whisper_window_words": [
         {
-          "word_index": 1,
-          "text": "Un",
-          "start": 108.1,
-          "end": 108.6
-        },
-        {
-          "word_index": 2,
-          "text": "peu",
-          "start": 108.6,
-          "end": 109.1
-        },
-        {
-          "word_index": 3,
-          "text": "d'amour,",
-          "start": 109.1,
-          "end": 109.6
-        },
-        {
-          "word_index": 4,
-          "text": "un",
-          "start": 109.6,
-          "end": 110.1
-        },
-        {
-          "word_index": 5,
-          "text": "brin",
-          "start": 110.1,
-          "end": 110.6
-        },
-        {
-          "word_index": 6,
-          "text": "de",
-          "start": 110.6,
-          "end": 111.1
-        },
-        {
-          "word_index": 7,
-          "text": "miel",
-          "start": 111.1,
-          "end": 111.65
-        }
-      ]
-    },
-    {
-      "line_index": 25,
-      "text": "Et je danse, danse, danse, danse, danse, danse, danse",
-      "start": 111.65,
-      "end": 116.75,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "Et",
-          "start": 111.65,
-          "end": 112.0
-        },
-        {
-          "word_index": 2,
-          "text": "je",
-          "start": 112.0,
-          "end": 112.55
-        },
-        {
-          "word_index": 3,
-          "text": "danse,",
-          "start": 112.55,
-          "end": 113.0
-        },
-        {
-          "word_index": 4,
-          "text": "danse,",
-          "start": 113.0,
-          "end": 113.6
-        },
-        {
-          "word_index": 5,
-          "text": "danse,",
-          "start": 113.6,
-          "end": 114.05
-        },
-        {
-          "word_index": 6,
-          "text": "danse,",
-          "start": 114.05,
-          "end": 114.5
-        },
-        {
-          "word_index": 7,
-          "text": "danse,",
-          "start": 114.5,
-          "end": 115.15
-        },
-        {
-          "word_index": 8,
-          "text": "danse,",
-          "start": 115.15,
-          "end": 115.85
-        },
-        {
-          "word_index": 9,
           "text": "danse",
-          "start": 115.85,
-          "end": 116.75
-        }
-      ]
-    },
-    {
-      "line_index": 26,
-      "text": "Et dans le bruit, je cours et j'ai peur",
-      "start": 116.75,
-      "end": 120.9,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "Et",
-          "start": 116.75,
-          "end": 117.05
+          "start": 104.78,
+          "end": 105.24,
+          "probability": 0.996
         },
         {
-          "word_index": 2,
-          "text": "dans",
-          "start": 117.05,
-          "end": 117.5
+          "text": "avec",
+          "start": 105.24,
+          "end": 105.76,
+          "probability": 0.999
         },
         {
-          "word_index": 3,
           "text": "le",
-          "start": 117.5,
-          "end": 117.9
+          "start": 105.76,
+          "end": 106.34,
+          "probability": 0.998
         },
         {
-          "word_index": 4,
-          "text": "bruit,",
-          "start": 117.9,
-          "end": 118.7
+          "text": "vent,",
+          "start": 106.34,
+          "end": 106.84,
+          "probability": 0.999
         },
         {
-          "word_index": 5,
-          "text": "je",
-          "start": 118.7,
-          "end": 119.35
-        },
-        {
-          "word_index": 6,
-          "text": "cours",
-          "start": 119.35,
-          "end": 119.65
-        },
-        {
-          "word_index": 7,
-          "text": "et",
-          "start": 119.65,
-          "end": 119.95
-        },
-        {
-          "word_index": 8,
-          "text": "j'ai",
-          "start": 119.95,
-          "end": 120.2
-        },
-        {
-          "word_index": 9,
-          "text": "peur",
-          "start": 120.2,
-          "end": 120.9
-        }
-      ]
-    },
-    {
-      "line_index": 27,
-      "text": "Est-ce mon tour? Vient la douleur",
-      "start": 120.9,
-      "end": 124.95,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "Est-ce",
-          "start": 120.9,
-          "end": 121.55
-        },
-        {
-          "word_index": 2,
-          "text": "mon",
-          "start": 121.55,
-          "end": 122.25
-        },
-        {
-          "word_index": 3,
-          "text": "tour?",
-          "start": 122.25,
-          "end": 122.95
-        },
-        {
-          "word_index": 4,
-          "text": "Vient",
-          "start": 122.95,
-          "end": 123.6
-        },
-        {
-          "word_index": 5,
           "text": "la",
-          "start": 123.6,
-          "end": 124.25
+          "start": 106.94,
+          "end": 107.18,
+          "probability": 0.985
         },
         {
-          "word_index": 6,
-          "text": "douleur",
-          "start": 124.25,
-          "end": 124.95
+          "text": "pluie",
+          "start": 107.18,
+          "end": 108.44,
+          "probability": 1.0
+        },
+        {
+          "text": "Un",
+          "start": 108.44,
+          "end": 109.04,
+          "probability": 0.98
         }
-      ]
+      ],
+      "whisper_line_start_delta": null,
+      "nearest_segment_start": 103.68,
+      "nearest_segment_start_end": 108.44,
+      "nearest_segment_start_text": "Je danse avec le vent, la pluie",
+      "nearest_segment_end": 103.68,
+      "nearest_segment_end_start": 96.66,
+      "nearest_segment_end_text": "Je remue le ciel, le jour, la nuit",
+      "prior_segment_start": 96.66,
+      "prior_segment_end": 103.68,
+      "prior_segment_late_by": 1.04
     },
     {
-      "line_index": 28,
-      "text": "Dans tout Paris, je m'abandonne",
-      "start": 124.95,
-      "end": 128.05,
+      "index": 25,
+      "start": 109.0,
+      "end": 111.26,
+      "text": "Un peu d'amour un brin de miel",
       "words": [
         {
-          "word_index": 1,
-          "text": "Dans",
-          "start": 124.95,
-          "end": 125.45
+          "text": "Un",
+          "start": 109.005,
+          "end": 109.313
         },
         {
-          "word_index": 2,
-          "text": "tout",
-          "start": 125.45,
-          "end": 126.0
+          "text": "peu",
+          "start": 109.33,
+          "end": 109.638
         },
         {
-          "word_index": 3,
-          "text": "Paris,",
-          "start": 126.0,
-          "end": 126.3
+          "text": "d'amour",
+          "start": 109.655,
+          "end": 109.963
         },
         {
-          "word_index": 4,
-          "text": "je",
-          "start": 126.3,
-          "end": 126.7
+          "text": "un",
+          "start": 109.98,
+          "end": 110.288
         },
         {
-          "word_index": 5,
-          "text": "m'abandonne",
-          "start": 126.7,
-          "end": 128.05
+          "text": "brin",
+          "start": 110.305,
+          "end": 110.613
+        },
+        {
+          "text": "de",
+          "start": 110.63,
+          "end": 110.938
+        },
+        {
+          "text": "miel",
+          "start": 110.955,
+          "end": 111.263
         }
-      ]
-    },
-    {
-      "line_index": 29,
-      "text": "Et je m'envole, vole, vole, vole, vole, vole vole",
-      "start": 128.05,
-      "end": 133.35,
-      "words": [
+      ],
+      "word_slots": [
+        0.325,
+        0.325,
+        0.325,
+        0.325,
+        0.325,
+        0.325,
+        0.309
+      ],
+      "word_spoken": [
+        0.309,
+        0.309,
+        0.309,
+        0.309,
+        0.309,
+        0.309,
+        0.309
+      ],
+      "pre_whisper_start": 109.005,
+      "pre_whisper_end": 111.263,
+      "whisper_window_start": 108.0,
+      "whisper_window_end": 112.44,
+      "whisper_window_word_count": 11,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.987,
+      "whisper_window_words": [
         {
-          "word_index": 1,
+          "text": "Un",
+          "start": 108.44,
+          "end": 109.04,
+          "probability": 0.98
+        },
+        {
+          "text": "peu",
+          "start": 109.04,
+          "end": 109.4,
+          "probability": 0.999
+        },
+        {
+          "text": "d",
+          "start": 109.4,
+          "end": 109.52,
+          "probability": 1.0
+        },
+        {
+          "text": "'amour,",
+          "start": 109.52,
+          "end": 109.74,
+          "probability": 1.0
+        },
+        {
+          "text": "un",
+          "start": 110.0,
+          "end": 110.36,
+          "probability": 0.999
+        },
+        {
+          "text": "brin",
+          "start": 110.36,
+          "end": 110.92,
+          "probability": 0.982
+        },
+        {
+          "text": "de",
+          "start": 110.92,
+          "end": 111.26,
+          "probability": 0.999
+        },
+        {
+          "text": "miel",
+          "start": 111.26,
+          "end": 111.86,
+          "probability": 0.999
+        },
+        {
           "text": "Et",
-          "start": 128.05,
-          "end": 128.3
+          "start": 111.86,
+          "end": 112.14,
+          "probability": 0.902
         },
         {
-          "word_index": 2,
           "text": "je",
-          "start": 128.3,
-          "end": 128.9
+          "start": 112.14,
+          "end": 112.32,
+          "probability": 0.999
         },
         {
-          "word_index": 3,
-          "text": "m'envole,",
-          "start": 128.9,
-          "end": 130.1
-        },
-        {
-          "word_index": 4,
-          "text": "vole,",
-          "start": 130.1,
-          "end": 130.7
-        },
-        {
-          "word_index": 5,
-          "text": "vole,",
-          "start": 130.7,
-          "end": 131.25
-        },
-        {
-          "word_index": 6,
-          "text": "vole,",
-          "start": 131.25,
-          "end": 131.75
-        },
-        {
-          "word_index": 7,
-          "text": "vole,",
-          "start": 131.75,
-          "end": 132.35
-        },
-        {
-          "word_index": 8,
-          "text": "vole",
-          "start": 132.35,
-          "end": 132.8
-        },
-        {
-          "word_index": 9,
-          "text": "vole",
-          "start": 132.8,
-          "end": 133.35
+          "text": "danse,",
+          "start": 112.32,
+          "end": 113.3,
+          "probability": 0.993
         }
-      ]
+      ],
+      "whisper_line_start_delta": -0.56,
+      "nearest_segment_start": 108.44,
+      "nearest_segment_start_end": 111.86,
+      "nearest_segment_start_text": "Un peu d'amour, un brin de miel",
+      "nearest_segment_end": 108.44,
+      "nearest_segment_end_start": 103.68,
+      "nearest_segment_end_text": "Je danse avec le vent, la pluie",
+      "prior_segment_start": 103.68,
+      "prior_segment_end": 108.44,
+      "prior_segment_late_by": 0.56
     },
     {
-      "line_index": 30,
-      "text": "Dans cette douce souffrance",
-      "start": 148.55,
-      "end": 152.35,
+      "index": 26,
+      "start": 112.44,
+      "end": 116.52,
+      "text": "Et je danse, danse, danse, danse, danse, danse, danse",
       "words": [
         {
-          "word_index": 1,
-          "text": "Dans",
-          "start": 148.55,
-          "end": 149.1
+          "text": "Et",
+          "start": 112.445,
+          "end": 112.877
         },
         {
-          "word_index": 2,
+          "text": "je",
+          "start": 112.9,
+          "end": 113.332
+        },
+        {
+          "text": "danse,",
+          "start": 113.355,
+          "end": 113.787
+        },
+        {
+          "text": "danse,",
+          "start": 113.81,
+          "end": 114.242
+        },
+        {
+          "text": "danse,",
+          "start": 114.265,
+          "end": 114.697
+        },
+        {
+          "text": "danse,",
+          "start": 114.72,
+          "end": 115.152
+        },
+        {
+          "text": "danse,",
+          "start": 115.175,
+          "end": 115.607
+        },
+        {
+          "text": "danse,",
+          "start": 115.63,
+          "end": 116.062
+        },
+        {
+          "text": "danse",
+          "start": 116.085,
+          "end": 116.517
+        }
+      ],
+      "word_slots": [
+        0.455,
+        0.455,
+        0.455,
+        0.455,
+        0.455,
+        0.455,
+        0.455,
+        0.455,
+        0.432
+      ],
+      "word_spoken": [
+        0.432,
+        0.432,
+        0.432,
+        0.432,
+        0.432,
+        0.432,
+        0.432,
+        0.432,
+        0.432
+      ],
+      "pre_whisper_start": 112.445,
+      "pre_whisper_end": 116.517,
+      "whisper_window_start": 111.44,
+      "whisper_window_end": 117.32,
+      "whisper_window_word_count": 10,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.951,
+      "whisper_window_words": [
+        {
+          "text": "Et",
+          "start": 111.86,
+          "end": 112.14,
+          "probability": 0.902
+        },
+        {
+          "text": "je",
+          "start": 112.14,
+          "end": 112.32,
+          "probability": 0.999
+        },
+        {
+          "text": "danse,",
+          "start": 112.32,
+          "end": 113.3,
+          "probability": 0.993
+        },
+        {
+          "text": "danse,",
+          "start": 113.32,
+          "end": 113.76,
+          "probability": 0.999
+        },
+        {
+          "text": "danse,",
+          "start": 114.16,
+          "end": 114.38,
+          "probability": 1.0
+        },
+        {
+          "text": "danse,",
+          "start": 114.38,
+          "end": 115.02,
+          "probability": 0.999
+        },
+        {
+          "text": "danse,",
+          "start": 115.02,
+          "end": 115.8,
+          "probability": 0.999
+        },
+        {
+          "text": "danse",
+          "start": 115.82,
+          "end": 116.5,
+          "probability": 0.998
+        },
+        {
+          "text": "Et",
+          "start": 116.5,
+          "end": 117.02,
+          "probability": 0.635
+        },
+        {
+          "text": "dans",
+          "start": 117.02,
+          "end": 117.58,
+          "probability": 0.99
+        }
+      ],
+      "whisper_line_start_delta": -0.58,
+      "nearest_segment_start": 111.86,
+      "nearest_segment_start_end": 116.5,
+      "nearest_segment_start_text": "Et je danse, danse, danse, danse, danse, danse",
+      "nearest_segment_end": 111.86,
+      "nearest_segment_end_start": 108.44,
+      "nearest_segment_end_text": "Un peu d'amour, un brin de miel",
+      "prior_segment_start": 108.44,
+      "prior_segment_end": 111.86,
+      "prior_segment_late_by": 0.58
+    },
+    {
+      "index": 27,
+      "start": 117.32,
+      "end": 120.23,
+      "text": "Et dans le bruit, je cours et j'ai peur",
+      "words": [
+        {
+          "text": "Et",
+          "start": 117.325,
+          "end": 117.633
+        },
+        {
+          "text": "dans",
+          "start": 117.65,
+          "end": 117.958
+        },
+        {
+          "text": "le",
+          "start": 117.975,
+          "end": 118.283
+        },
+        {
+          "text": "bruit,",
+          "start": 118.3,
+          "end": 118.608
+        },
+        {
+          "text": "je",
+          "start": 118.625,
+          "end": 118.933
+        },
+        {
+          "text": "cours",
+          "start": 118.95,
+          "end": 119.258
+        },
+        {
+          "text": "et",
+          "start": 119.275,
+          "end": 119.583
+        },
+        {
+          "text": "j'ai",
+          "start": 119.6,
+          "end": 119.908
+        },
+        {
+          "text": "peur",
+          "start": 119.925,
+          "end": 120.233
+        }
+      ],
+      "word_slots": [
+        0.325,
+        0.325,
+        0.325,
+        0.325,
+        0.325,
+        0.325,
+        0.325,
+        0.325,
+        0.309
+      ],
+      "word_spoken": [
+        0.309,
+        0.309,
+        0.309,
+        0.309,
+        0.309,
+        0.309,
+        0.309,
+        0.309,
+        0.309
+      ],
+      "pre_whisper_start": 117.325,
+      "pre_whisper_end": 120.233,
+      "whisper_window_start": 116.32,
+      "whisper_window_end": 121.41,
+      "whisper_window_word_count": 12,
+      "whisper_window_low_conf_count": 7,
+      "whisper_window_avg_prob": 0.425,
+      "whisper_window_words": [
+        {
+          "text": "Et",
+          "start": 116.5,
+          "end": 117.02,
+          "probability": 0.635
+        },
+        {
+          "text": "dans",
+          "start": 117.02,
+          "end": 117.58,
+          "probability": 0.99
+        },
+        {
+          "text": "le",
+          "start": 117.58,
+          "end": 117.82,
+          "probability": 0.955
+        },
+        {
+          "text": "bruit,",
+          "start": 117.82,
+          "end": 117.86,
+          "probability": 0.464
+        },
+        {
+          "text": "je",
+          "start": 117.86,
+          "end": 117.86,
+          "probability": 0.185
+        },
+        {
+          "text": "cours",
+          "start": 117.86,
+          "end": 117.86,
+          "probability": 0.001
+        },
+        {
+          "text": "et",
+          "start": 117.86,
+          "end": 117.86,
+          "probability": 0.045
+        },
+        {
+          "text": "j",
+          "start": 117.86,
+          "end": 117.86,
+          "probability": 0.025
+        },
+        {
+          "text": "'ai",
+          "start": 117.86,
+          "end": 117.86,
+          "probability": 0.595
+        },
+        {
+          "text": "peur",
+          "start": 117.86,
+          "end": 117.86,
+          "probability": 0.259
+        },
+        {
+          "text": "Est",
+          "start": 117.86,
+          "end": 119.42,
+          "probability": 0.003
+        },
+        {
+          "text": "-ce",
+          "start": 119.42,
+          "end": 121.92,
+          "probability": 0.936
+        }
+      ],
+      "whisper_line_start_delta": -0.82,
+      "nearest_segment_start": 117.86,
+      "nearest_segment_start_end": 124.58,
+      "nearest_segment_start_text": "Est-ce mon tour ? Vient la douleur",
+      "nearest_segment_end": 117.86,
+      "nearest_segment_end_start": 116.5,
+      "nearest_segment_end_text": "Et dans le bruit, je cours et j'ai peur",
+      "prior_segment_start": 111.86,
+      "prior_segment_end": 116.5,
+      "prior_segment_late_by": 0.82
+    },
+    {
+      "index": 28,
+      "start": 121.41,
+      "end": 122.67,
+      "text": "Est-ce mon tour?",
+      "words": [
+        {
+          "text": "Est-ce",
+          "start": 121.415,
+          "end": 121.818
+        },
+        {
+          "text": "mon",
+          "start": 121.839,
+          "end": 122.243
+        },
+        {
+          "text": "tour?",
+          "start": 122.264,
+          "end": 122.667
+        }
+      ],
+      "word_slots": [
+        0.425,
+        0.425,
+        0.403
+      ],
+      "word_spoken": [
+        0.403,
+        0.403,
+        0.403
+      ],
+      "pre_whisper_start": 121.415,
+      "pre_whisper_end": 122.667,
+      "whisper_window_start": 120.41,
+      "whisper_window_end": 123.05,
+      "whisper_window_word_count": 4,
+      "whisper_window_low_conf_count": 1,
+      "whisper_window_avg_prob": 0.649,
+      "whisper_window_words": [
+        {
+          "text": "mon",
+          "start": 121.92,
+          "end": 122.04,
+          "probability": 0.472
+        },
+        {
+          "text": "tour",
+          "start": 122.04,
+          "end": 122.32,
+          "probability": 0.881
+        },
+        {
+          "text": "?",
+          "start": 122.32,
+          "end": 122.46,
+          "probability": 0.539
+        },
+        {
+          "text": "Vient",
+          "start": 122.46,
+          "end": 123.12,
+          "probability": 0.702
+        }
+      ],
+      "whisper_line_start_delta": null,
+      "nearest_segment_start": 117.86,
+      "nearest_segment_start_end": 124.58,
+      "nearest_segment_start_text": "Est-ce mon tour ? Vient la douleur",
+      "nearest_segment_end": 124.58,
+      "nearest_segment_end_start": 117.86,
+      "nearest_segment_end_text": "Est-ce mon tour ? Vient la douleur",
+      "prior_segment_start": 116.5,
+      "prior_segment_end": 117.86,
+      "prior_segment_late_by": 3.55
+    },
+    {
+      "index": 29,
+      "start": 123.05,
+      "end": 124.4,
+      "text": "Vient la douleur.",
+      "words": [
+        {
+          "text": "Vient",
+          "start": 123.055,
+          "end": 123.487
+        },
+        {
+          "text": "la",
+          "start": 123.51,
+          "end": 123.942
+        },
+        {
+          "text": "douleur.",
+          "start": 123.965,
+          "end": 124.397
+        }
+      ],
+      "word_slots": [
+        0.455,
+        0.455,
+        0.432
+      ],
+      "word_spoken": [
+        0.432,
+        0.432,
+        0.432
+      ],
+      "pre_whisper_start": 123.055,
+      "pre_whisper_end": 124.397,
+      "whisper_window_start": 122.05,
+      "whisper_window_end": 125.6,
+      "whisper_window_word_count": 5,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.778,
+      "whisper_window_words": [
+        {
+          "text": "?",
+          "start": 122.32,
+          "end": 122.46,
+          "probability": 0.539
+        },
+        {
+          "text": "Vient",
+          "start": 122.46,
+          "end": 123.12,
+          "probability": 0.702
+        },
+        {
+          "text": "la",
+          "start": 123.12,
+          "end": 123.34,
+          "probability": 0.977
+        },
+        {
+          "text": "douleur",
+          "start": 123.34,
+          "end": 124.58,
+          "probability": 0.994
+        },
+        {
+          "text": "Dans",
+          "start": 125.17,
+          "end": 125.62,
+          "probability": 0.678
+        }
+      ],
+      "whisper_line_start_delta": -0.59,
+      "nearest_segment_start": 125.32,
+      "nearest_segment_start_end": 128.74,
+      "nearest_segment_start_text": "Dans tout Paris, je m'abandonne",
+      "nearest_segment_end": 124.58,
+      "nearest_segment_end_start": 117.86,
+      "nearest_segment_end_text": "Est-ce mon tour ? Vient la douleur",
+      "prior_segment_start": 116.5,
+      "prior_segment_end": 117.86,
+      "prior_segment_late_by": 5.19
+    },
+    {
+      "index": 30,
+      "start": 125.6,
+      "end": 128.04,
+      "text": "Dans tout Paris, je m'abandonne",
+      "words": [
+        {
+          "text": "Dans",
+          "start": 125.605,
+          "end": 126.071
+        },
+        {
+          "text": "tout",
+          "start": 126.096,
+          "end": 126.563
+        },
+        {
+          "text": "Paris,",
+          "start": 126.587,
+          "end": 127.054
+        },
+        {
+          "text": "je",
+          "start": 127.079,
+          "end": 127.546
+        },
+        {
+          "text": "m'abandonne",
+          "start": 127.57,
+          "end": 128.037
+        }
+      ],
+      "word_slots": [
+        0.491,
+        0.491,
+        0.491,
+        0.491,
+        0.467
+      ],
+      "word_spoken": [
+        0.467,
+        0.467,
+        0.467,
+        0.467,
+        0.467
+      ],
+      "pre_whisper_start": 125.605,
+      "pre_whisper_end": 128.037,
+      "whisper_window_start": 124.6,
+      "whisper_window_end": 129.35,
+      "whisper_window_word_count": 10,
+      "whisper_window_low_conf_count": 1,
+      "whisper_window_avg_prob": 0.909,
+      "whisper_window_words": [
+        {
+          "text": "Dans",
+          "start": 125.17,
+          "end": 125.62,
+          "probability": 0.678
+        },
+        {
+          "text": "tout",
+          "start": 125.62,
+          "end": 125.92,
+          "probability": 0.997
+        },
+        {
+          "text": "Paris,",
+          "start": 125.92,
+          "end": 126.48,
+          "probability": 0.993
+        },
+        {
+          "text": "je",
+          "start": 126.68,
+          "end": 127.14,
+          "probability": 0.984
+        },
+        {
+          "text": "m",
+          "start": 127.14,
+          "end": 127.32,
+          "probability": 0.993
+        },
+        {
+          "text": "'abandonne",
+          "start": 127.32,
+          "end": 128.74,
+          "probability": 0.999
+        },
+        {
+          "text": "Et",
+          "start": 128.74,
+          "end": 128.84,
+          "probability": 0.465
+        },
+        {
+          "text": "je",
+          "start": 128.84,
+          "end": 129.02,
+          "probability": 0.992
+        },
+        {
+          "text": "m",
+          "start": 129.02,
+          "end": 129.28,
+          "probability": 0.993
+        },
+        {
+          "text": "'envole,",
+          "start": 129.28,
+          "end": 129.9,
+          "probability": 0.998
+        }
+      ],
+      "whisper_line_start_delta": -0.43,
+      "nearest_segment_start": 125.32,
+      "nearest_segment_start_end": 128.74,
+      "nearest_segment_start_text": "Dans tout Paris, je m'abandonne",
+      "nearest_segment_end": 124.58,
+      "nearest_segment_end_start": 117.86,
+      "nearest_segment_end_text": "Est-ce mon tour ? Vient la douleur",
+      "prior_segment_start": 117.86,
+      "prior_segment_end": 124.58,
+      "prior_segment_late_by": 1.02
+    },
+    {
+      "index": 31,
+      "start": 129.35,
+      "end": 133.73,
+      "text": "Et je m'envole, vole, vole, vole, vole, vole",
+      "words": [
+        {
+          "text": "Et",
+          "start": 129.355,
+          "end": 129.878
+        },
+        {
+          "text": "je",
+          "start": 129.905,
+          "end": 130.428
+        },
+        {
+          "text": "m'envole,",
+          "start": 130.455,
+          "end": 130.978
+        },
+        {
+          "text": "vole,",
+          "start": 131.006,
+          "end": 131.529
+        },
+        {
+          "text": "vole,",
+          "start": 131.556,
+          "end": 132.079
+        },
+        {
+          "text": "vole,",
+          "start": 132.107,
+          "end": 132.629
+        },
+        {
+          "text": "vole,",
+          "start": 132.657,
+          "end": 133.18
+        },
+        {
+          "text": "vole",
+          "start": 133.207,
+          "end": 133.73
+        }
+      ],
+      "word_slots": [
+        0.55,
+        0.55,
+        0.55,
+        0.55,
+        0.55,
+        0.55,
+        0.55,
+        0.523
+      ],
+      "word_spoken": [
+        0.523,
+        0.523,
+        0.523,
+        0.523,
+        0.523,
+        0.523,
+        0.523,
+        0.523
+      ],
+      "pre_whisper_start": 129.355,
+      "pre_whisper_end": 133.73,
+      "whisper_window_start": 128.35,
+      "whisper_window_end": 149.3,
+      "whisper_window_word_count": 48,
+      "whisper_window_low_conf_count": 11,
+      "whisper_window_avg_prob": 0.755,
+      "whisper_window_words": [
+        {
+          "text": "Et",
+          "start": 128.74,
+          "end": 128.84,
+          "probability": 0.465
+        },
+        {
+          "text": "je",
+          "start": 128.84,
+          "end": 129.02,
+          "probability": 0.992
+        },
+        {
+          "text": "m",
+          "start": 129.02,
+          "end": 129.28,
+          "probability": 0.993
+        },
+        {
+          "text": "'envole,",
+          "start": 129.28,
+          "end": 129.9,
+          "probability": 0.998
+        },
+        {
+          "text": "vole,",
+          "start": 130.02,
+          "end": 130.28,
+          "probability": 0.924
+        },
+        {
+          "text": "vole,",
+          "start": 130.28,
+          "end": 130.84,
+          "probability": 0.995
+        },
+        {
+          "text": "vole,",
+          "start": 130.84,
+          "end": 131.3,
+          "probability": 0.998
+        },
+        {
+          "text": "vole,",
+          "start": 131.3,
+          "end": 131.86,
+          "probability": 0.998
+        },
+        {
+          "text": "vole",
+          "start": 131.86,
+          "end": 132.58,
+          "probability": 0.998
+        },
+        {
+          "text": "Que",
+          "start": 132.58,
+          "end": 133.52,
+          "probability": 0.0
+        },
+        {
+          "text": "d",
+          "start": 133.52,
+          "end": 133.82,
+          "probability": 0.004
+        },
+        {
+          "text": "'espérance",
+          "start": 133.82,
+          "end": 134.8,
+          "probability": 0.526
+        },
+        {
+          "text": "Sur",
+          "start": 134.8,
+          "end": 134.92,
+          "probability": 0.0
+        },
+        {
+          "text": "ce",
+          "start": 134.92,
+          "end": 135.98,
+          "probability": 0.068
+        },
+        {
+          "text": "chemin,",
+          "start": 135.98,
+          "end": 135.98,
+          "probability": 0.039
+        },
+        {
+          "text": "ton",
+          "start": 135.98,
+          "end": 136.28,
+          "probability": 0.001
+        },
+        {
+          "text": "absence",
+          "start": 136.28,
+          "end": 136.73,
+          "probability": 0.0
+        },
+        {
+          "text": "Que",
+          "start": 137.16,
+          "end": 137.6,
+          "probability": 0.013
+        },
+        {
+          "text": "d",
+          "start": 137.6,
+          "end": 138.7,
+          "probability": 0.4
+        },
+        {
+          "text": "'espérance",
+          "start": 138.7,
+          "end": 139.2,
+          "probability": 0.967
+        },
+        {
+          "text": "Sur",
+          "start": 139.2,
+          "end": 140.22,
+          "probability": 0.19
+        },
+        {
+          "text": "ce",
+          "start": 140.22,
+          "end": 140.24,
+          "probability": 0.903
+        },
+        {
+          "text": "chemin,",
+          "start": 140.24,
+          "end": 140.24,
+          "probability": 0.973
+        },
+        {
+          "text": "ton",
+          "start": 140.76,
+          "end": 141.04,
+          "probability": 0.99
+        },
+        {
+          "text": "absence",
+          "start": 141.04,
+          "end": 141.22,
+          "probability": 0.988
+        },
+        {
+          "text": "Sur",
+          "start": 141.22,
+          "end": 141.48,
+          "probability": 0.799
+        },
+        {
+          "text": "ce",
+          "start": 141.48,
+          "end": 141.52,
+          "probability": 0.993
+        },
+        {
+          "text": "chemin,",
+          "start": 141.52,
+          "end": 143.14,
+          "probability": 0.996
+        },
+        {
+          "text": "ton",
+          "start": 143.14,
+          "end": 143.14,
+          "probability": 0.999
+        },
+        {
+          "text": "absence",
+          "start": 143.14,
+          "end": 143.84,
+          "probability": 0.987
+        },
+        {
+          "text": "Sur",
+          "start": 143.84,
+          "end": 143.84,
+          "probability": 0.868
+        },
+        {
+          "text": "ce",
+          "start": 143.84,
+          "end": 143.84,
+          "probability": 0.996
+        },
+        {
+          "text": "chemin,",
+          "start": 143.84,
+          "end": 143.84,
+          "probability": 0.997
+        },
+        {
+          "text": "ton",
+          "start": 143.84,
+          "end": 144.08,
+          "probability": 0.999
+        },
+        {
+          "text": "absence",
+          "start": 144.08,
+          "end": 144.54,
+          "probability": 0.987
+        },
+        {
+          "text": "Que",
+          "start": 144.54,
+          "end": 144.82,
+          "probability": 0.836
+        },
+        {
+          "text": "d",
+          "start": 144.82,
+          "end": 145.22,
+          "probability": 0.995
+        },
+        {
+          "text": "'espérance",
+          "start": 145.22,
+          "end": 146.0,
+          "probability": 0.999
+        },
+        {
+          "text": "Sur",
+          "start": 146.0,
+          "end": 146.5,
+          "probability": 0.891
+        },
+        {
+          "text": "ce",
+          "start": 146.5,
+          "end": 146.54,
+          "probability": 0.997
+        },
+        {
+          "text": "chemin,",
+          "start": 146.54,
+          "end": 147.24,
+          "probability": 0.998
+        },
+        {
+          "text": "ton",
+          "start": 147.38,
+          "end": 147.38,
+          "probability": 1.0
+        },
+        {
+          "text": "absence",
+          "start": 147.38,
+          "end": 147.38,
+          "probability": 0.989
+        },
+        {
+          "text": "Que",
+          "start": 147.38,
+          "end": 147.38,
+          "probability": 0.89
+        },
+        {
+          "text": "d",
+          "start": 147.38,
+          "end": 147.38,
+          "probability": 0.998
+        },
+        {
+          "text": "'espérance",
+          "start": 147.38,
+          "end": 147.54,
+          "probability": 0.999
+        },
+        {
+          "text": "Dans",
+          "start": 147.54,
+          "end": 149.16,
+          "probability": 0.682
+        },
+        {
           "text": "cette",
-          "start": 149.1,
-          "end": 149.8
-        },
-        {
-          "word_index": 3,
-          "text": "douce",
-          "start": 149.8,
-          "end": 150.5
-        },
-        {
-          "word_index": 4,
-          "text": "souffrance",
-          "start": 150.5,
-          "end": 152.35
+          "start": 149.16,
+          "end": 149.46,
+          "probability": 0.913
         }
-      ]
+      ],
+      "whisper_line_start_delta": -0.61,
+      "nearest_segment_start": 128.74,
+      "nearest_segment_start_end": 132.58,
+      "nearest_segment_start_text": "Et je m'envole, vole, vole, vole, vole, vole",
+      "nearest_segment_end": 128.74,
+      "nearest_segment_end_start": 125.32,
+      "nearest_segment_end_text": "Dans tout Paris, je m'abandonne",
+      "prior_segment_start": 125.32,
+      "prior_segment_end": 128.74,
+      "prior_segment_late_by": 0.61
     },
     {
-      "line_index": 31,
-      "text": "Dont j'ai pay\u00e9 toutes les offenses",
-      "start": 152.45,
-      "end": 156.9,
+      "index": 32,
+      "start": 149.3,
+      "end": 152.57,
+      "text": "Dans cette douce souffrance.",
       "words": [
         {
-          "word_index": 1,
-          "text": "Dont",
-          "start": 152.45,
-          "end": 152.9
-        },
-        {
-          "word_index": 2,
-          "text": "j'ai",
-          "start": 152.9,
-          "end": 153.55
-        },
-        {
-          "word_index": 3,
-          "text": "pay\u00e9",
-          "start": 153.55,
-          "end": 153.95
-        },
-        {
-          "word_index": 4,
-          "text": "toutes",
-          "start": 153.95,
-          "end": 154.4
-        },
-        {
-          "word_index": 5,
-          "text": "les",
-          "start": 154.4,
-          "end": 154.85
-        },
-        {
-          "word_index": 6,
-          "text": "offenses",
-          "start": 154.85,
-          "end": 156.9
-        }
-      ]
-    },
-    {
-      "line_index": 32,
-      "text": "\u00c9coute comme mon c\u0153ur est immense",
-      "start": 156.95,
-      "end": 160.75,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "\u00c9coute",
-          "start": 156.95,
-          "end": 157.35
-        },
-        {
-          "word_index": 2,
-          "text": "comme",
-          "start": 157.35,
-          "end": 157.95
-        },
-        {
-          "word_index": 3,
-          "text": "mon",
-          "start": 157.95,
-          "end": 158.4
-        },
-        {
-          "word_index": 4,
-          "text": "c\u0153ur",
-          "start": 158.4,
-          "end": 158.7
-        },
-        {
-          "word_index": 5,
-          "text": "est",
-          "start": 158.7,
-          "end": 159.05
-        },
-        {
-          "word_index": 6,
-          "text": "immense",
-          "start": 159.05,
-          "end": 160.75
-        }
-      ]
-    },
-    {
-      "line_index": 33,
-      "text": "Je suis une enfant du monde",
-      "start": 160.8,
-      "end": 165.35,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "Je",
-          "start": 160.8,
-          "end": 161.35
-        },
-        {
-          "word_index": 2,
-          "text": "suis",
-          "start": 161.35,
-          "end": 161.65
-        },
-        {
-          "word_index": 3,
-          "text": "une",
-          "start": 161.65,
-          "end": 162.05
-        },
-        {
-          "word_index": 4,
-          "text": "enfant",
-          "start": 162.05,
-          "end": 162.6
-        },
-        {
-          "word_index": 5,
-          "text": "du",
-          "start": 162.6,
-          "end": 162.75
-        },
-        {
-          "word_index": 6,
-          "text": "monde",
-          "start": 162.75,
-          "end": 165.35
-        }
-      ]
-    },
-    {
-      "line_index": 34,
-      "text": "Je remue le ciel, le jour, la nuit",
-      "start": 166.65,
-      "end": 170.9,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "Je",
-          "start": 166.65,
-          "end": 167.15
-        },
-        {
-          "word_index": 2,
-          "text": "remue",
-          "start": 167.15,
-          "end": 167.5
-        },
-        {
-          "word_index": 3,
-          "text": "le",
-          "start": 167.5,
-          "end": 167.85
-        },
-        {
-          "word_index": 4,
-          "text": "ciel,",
-          "start": 167.85,
-          "end": 168.75
-        },
-        {
-          "word_index": 5,
-          "text": "le",
-          "start": 168.75,
-          "end": 169.0
-        },
-        {
-          "word_index": 6,
-          "text": "jour,",
-          "start": 169.0,
-          "end": 169.8
-        },
-        {
-          "word_index": 7,
-          "text": "la",
-          "start": 169.8,
-          "end": 170.35
-        },
-        {
-          "word_index": 8,
-          "text": "nuit",
-          "start": 170.35,
-          "end": 170.9
-        }
-      ]
-    },
-    {
-      "line_index": 35,
-      "text": "Je danse avec le vent, la pluie",
-      "start": 171.65,
-      "end": 175.25,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "Je",
-          "start": 171.65,
-          "end": 172.1
-        },
-        {
-          "word_index": 2,
-          "text": "danse",
-          "start": 172.1,
-          "end": 172.4
-        },
-        {
-          "word_index": 3,
-          "text": "avec",
-          "start": 172.4,
-          "end": 173.35
-        },
-        {
-          "word_index": 4,
-          "text": "le",
-          "start": 173.35,
-          "end": 173.65
-        },
-        {
-          "word_index": 5,
-          "text": "vent,",
-          "start": 173.65,
-          "end": 173.95
-        },
-        {
-          "word_index": 6,
-          "text": "la",
-          "start": 173.95,
-          "end": 174.3
-        },
-        {
-          "word_index": 7,
-          "text": "pluie",
-          "start": 174.3,
-          "end": 175.25
-        }
-      ]
-    },
-    {
-      "line_index": 36,
-      "text": "Un peu d'amour, un brin de miel",
-      "start": 175.75,
-      "end": 178.6,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "Un",
-          "start": 175.75,
-          "end": 175.95
-        },
-        {
-          "word_index": 2,
-          "text": "peu",
-          "start": 175.95,
-          "end": 176.1
-        },
-        {
-          "word_index": 3,
-          "text": "d'amour,",
-          "start": 176.1,
-          "end": 177.05
-        },
-        {
-          "word_index": 4,
-          "text": "un",
-          "start": 177.05,
-          "end": 177.25
-        },
-        {
-          "word_index": 5,
-          "text": "brin",
-          "start": 177.25,
-          "end": 177.4
-        },
-        {
-          "word_index": 6,
-          "text": "de",
-          "start": 177.4,
-          "end": 177.6
-        },
-        {
-          "word_index": 7,
-          "text": "miel",
-          "start": 177.6,
-          "end": 178.6
-        }
-      ]
-    },
-    {
-      "line_index": 37,
-      "text": "Et je danse, danse, danse, danse, danse, danse, danse",
-      "start": 178.8,
-      "end": 183.8,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "Et",
-          "start": 178.8,
-          "end": 179.0
-        },
-        {
-          "word_index": 2,
-          "text": "je",
-          "start": 179.0,
-          "end": 179.3
-        },
-        {
-          "word_index": 3,
-          "text": "danse,",
-          "start": 179.3,
-          "end": 179.85
-        },
-        {
-          "word_index": 4,
-          "text": "danse,",
-          "start": 179.85,
-          "end": 180.4
-        },
-        {
-          "word_index": 5,
-          "text": "danse,",
-          "start": 180.4,
-          "end": 181.0
-        },
-        {
-          "word_index": 6,
-          "text": "danse,",
-          "start": 181.0,
-          "end": 181.55
-        },
-        {
-          "word_index": 7,
-          "text": "danse,",
-          "start": 181.55,
-          "end": 182.1
-        },
-        {
-          "word_index": 8,
-          "text": "danse,",
-          "start": 182.1,
-          "end": 182.8
-        },
-        {
-          "word_index": 9,
-          "text": "danse",
-          "start": 182.8,
-          "end": 183.8
-        }
-      ]
-    },
-    {
-      "line_index": 38,
-      "text": "Et dans le bruit, je cours et j'ai peur",
-      "start": 183.8,
-      "end": 188.15,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "Et",
-          "start": 183.8,
-          "end": 184.0
-        },
-        {
-          "word_index": 2,
-          "text": "dans",
-          "start": 184.0,
-          "end": 184.15
-        },
-        {
-          "word_index": 3,
-          "text": "le",
-          "start": 184.15,
-          "end": 184.4
-        },
-        {
-          "word_index": 4,
-          "text": "bruit,",
-          "start": 184.4,
-          "end": 185.25
-        },
-        {
-          "word_index": 5,
-          "text": "je",
-          "start": 185.25,
-          "end": 185.5
-        },
-        {
-          "word_index": 6,
-          "text": "cours",
-          "start": 185.5,
-          "end": 185.9
-        },
-        {
-          "word_index": 7,
-          "text": "et",
-          "start": 185.9,
-          "end": 186.15
-        },
-        {
-          "word_index": 8,
-          "text": "j'ai",
-          "start": 186.15,
-          "end": 186.45
-        },
-        {
-          "word_index": 9,
-          "text": "peur",
-          "start": 186.45,
-          "end": 188.15
-        }
-      ]
-    },
-    {
-      "line_index": 39,
-      "text": "Est-ce mon tour? Vient la douleur",
-      "start": 188.15,
-      "end": 192.15,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "Est-ce",
-          "start": 188.15,
-          "end": 188.55
-        },
-        {
-          "word_index": 2,
-          "text": "mon",
-          "start": 188.55,
-          "end": 188.95
-        },
-        {
-          "word_index": 3,
-          "text": "tour?",
-          "start": 188.95,
-          "end": 189.6
-        },
-        {
-          "word_index": 4,
-          "text": "Vient",
-          "start": 189.6,
-          "end": 189.85
-        },
-        {
-          "word_index": 5,
-          "text": "la",
-          "start": 189.85,
-          "end": 190.4
-        },
-        {
-          "word_index": 6,
-          "text": "douleur",
-          "start": 190.4,
-          "end": 192.15
-        }
-      ]
-    },
-    {
-      "line_index": 40,
-      "text": "Dans tout Paris, je m'abandonne",
-      "start": 192.15,
-      "end": 195.6,
-      "words": [
-        {
-          "word_index": 1,
           "text": "Dans",
-          "start": 192.15,
-          "end": 192.65
+          "start": 149.305,
+          "end": 150.122
         },
         {
-          "word_index": 2,
-          "text": "tout",
-          "start": 192.65,
-          "end": 193.1
+          "text": "cette",
+          "start": 150.122,
+          "end": 150.94
         },
         {
-          "word_index": 3,
-          "text": "Paris,",
-          "start": 193.1,
-          "end": 193.75
+          "text": "douce",
+          "start": 150.94,
+          "end": 151.757
         },
         {
-          "word_index": 4,
-          "text": "je",
-          "start": 193.75,
-          "end": 194.0
-        },
-        {
-          "word_index": 5,
-          "text": "m'abandonne",
-          "start": 194.0,
-          "end": 195.6
+          "text": "souffrance.",
+          "start": 151.757,
+          "end": 152.575
         }
-      ]
+      ],
+      "word_slots": [
+        0.817,
+        0.818,
+        0.817,
+        0.817
+      ],
+      "word_spoken": [
+        0.817,
+        0.818,
+        0.817,
+        0.817
+      ],
+      "pre_whisper_start": 149.305,
+      "pre_whisper_end": 151.551,
+      "whisper_window_start": 148.3,
+      "whisper_window_end": 152.58,
+      "whisper_window_word_count": 4,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.89,
+      "whisper_window_words": [
+        {
+          "text": "cette",
+          "start": 149.16,
+          "end": 149.46,
+          "probability": 0.913
+        },
+        {
+          "text": "douce",
+          "start": 149.46,
+          "end": 150.08,
+          "probability": 0.99
+        },
+        {
+          "text": "souffrance",
+          "start": 150.08,
+          "end": 150.74,
+          "probability": 0.984
+        },
+        {
+          "text": "Dont",
+          "start": 151.78,
+          "end": 152.66,
+          "probability": 0.673
+        }
+      ],
+      "whisper_line_start_delta": null,
+      "nearest_segment_start": 147.54,
+      "nearest_segment_start_end": 150.74,
+      "nearest_segment_start_text": "Dans cette douce souffrance",
+      "nearest_segment_end": 150.74,
+      "nearest_segment_end_start": 147.54,
+      "nearest_segment_end_text": "Dans cette douce souffrance",
+      "prior_segment_start": 147.38,
+      "prior_segment_end": 147.54,
+      "prior_segment_late_by": 1.76
     },
     {
-      "line_index": 41,
-      "text": "Et je m'envole, vole, vole, vole, vole, vole vole",
-      "start": 195.6,
-      "end": 200.55,
+      "index": 33,
+      "start": 152.58,
+      "end": 156.58,
+      "text": "Dont j'ai payé toutes les offenses",
       "words": [
         {
-          "word_index": 1,
-          "text": "Et",
-          "start": 195.6,
-          "end": 195.85
+          "text": "Dont",
+          "start": 152.585,
+          "end": 153.369
         },
         {
-          "word_index": 2,
-          "text": "je",
-          "start": 195.85,
-          "end": 196.05
+          "text": "j'ai",
+          "start": 153.369,
+          "end": 154.153
         },
         {
-          "word_index": 3,
-          "text": "m'envole,",
-          "start": 196.05,
-          "end": 196.6
+          "text": "payé",
+          "start": 154.153,
+          "end": 154.938
         },
         {
-          "word_index": 4,
-          "text": "vole,",
-          "start": 196.6,
-          "end": 197.2
+          "text": "toutes",
+          "start": 154.938,
+          "end": 155.722
         },
         {
-          "word_index": 5,
-          "text": "vole,",
-          "start": 197.2,
-          "end": 197.65
+          "text": "les",
+          "start": 155.722,
+          "end": 156.506
         },
         {
-          "word_index": 6,
-          "text": "vole,",
-          "start": 197.65,
-          "end": 198.35
-        },
-        {
-          "word_index": 7,
-          "text": "vole,",
-          "start": 198.35,
-          "end": 199.0
-        },
-        {
-          "word_index": 8,
-          "text": "vole",
-          "start": 199.0,
-          "end": 199.85
-        },
-        {
-          "word_index": 9,
-          "text": "vole",
-          "start": 199.85,
-          "end": 200.55
+          "text": "offenses",
+          "start": 156.506,
+          "end": 156.585
         }
-      ]
+      ],
+      "word_slots": [
+        0.784,
+        0.784,
+        0.784,
+        0.784,
+        0.784,
+        0.078
+      ],
+      "word_spoken": [
+        0.784,
+        0.784,
+        0.784,
+        0.784,
+        0.784,
+        0.078
+      ],
+      "pre_whisper_start": 152.585,
+      "pre_whisper_end": 155.202,
+      "whisper_window_start": 151.58,
+      "whisper_window_end": 156.77,
+      "whisper_window_word_count": 8,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.931,
+      "whisper_window_words": [
+        {
+          "text": "Dont",
+          "start": 151.78,
+          "end": 152.66,
+          "probability": 0.673
+        },
+        {
+          "text": "j",
+          "start": 152.66,
+          "end": 153.06,
+          "probability": 0.929
+        },
+        {
+          "text": "'ai",
+          "start": 153.06,
+          "end": 153.14,
+          "probability": 1.0
+        },
+        {
+          "text": "payé",
+          "start": 153.14,
+          "end": 153.58,
+          "probability": 0.996
+        },
+        {
+          "text": "toutes",
+          "start": 153.58,
+          "end": 153.96,
+          "probability": 0.992
+        },
+        {
+          "text": "les",
+          "start": 153.96,
+          "end": 154.24,
+          "probability": 0.995
+        },
+        {
+          "text": "offenses",
+          "start": 154.24,
+          "end": 154.9,
+          "probability": 0.994
+        },
+        {
+          "text": "Écoute",
+          "start": 156.4,
+          "end": 157.28,
+          "probability": 0.866
+        }
+      ],
+      "whisper_line_start_delta": -0.8,
+      "nearest_segment_start": 151.78,
+      "nearest_segment_start_end": 154.9,
+      "nearest_segment_start_text": "Dont j'ai payé toutes les offenses",
+      "nearest_segment_end": 150.74,
+      "nearest_segment_end_start": 147.54,
+      "nearest_segment_end_text": "Dans cette douce souffrance",
+      "prior_segment_start": 147.54,
+      "prior_segment_end": 150.74,
+      "prior_segment_late_by": 1.84
+    },
+    {
+      "index": 34,
+      "start": 156.77,
+      "end": 160.77,
+      "text": "écoute comme mon c?ur est immense",
+      "words": [
+        {
+          "text": "écoute",
+          "start": 156.775,
+          "end": 157.727
+        },
+        {
+          "text": "comme",
+          "start": 157.727,
+          "end": 158.679
+        },
+        {
+          "text": "mon",
+          "start": 158.679,
+          "end": 159.632
+        },
+        {
+          "text": "c?ur",
+          "start": 159.632,
+          "end": 160.584
+        },
+        {
+          "text": "est",
+          "start": 160.584,
+          "end": 160.679
+        },
+        {
+          "text": "immense",
+          "start": 160.679,
+          "end": 160.775
+        }
+      ],
+      "word_slots": [
+        0.952,
+        0.952,
+        0.952,
+        0.952,
+        0.095,
+        0.095
+      ],
+      "word_spoken": [
+        0.952,
+        0.952,
+        0.952,
+        0.952,
+        0.095,
+        0.095
+      ],
+      "pre_whisper_start": 156.775,
+      "pre_whisper_end": 159.301,
+      "whisper_window_start": 155.77,
+      "whisper_window_end": 161.05,
+      "whisper_window_word_count": 8,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.915,
+      "whisper_window_words": [
+        {
+          "text": "Écoute",
+          "start": 156.4,
+          "end": 157.28,
+          "probability": 0.866
+        },
+        {
+          "text": "comment",
+          "start": 157.28,
+          "end": 157.5,
+          "probability": 0.604
+        },
+        {
+          "text": "mon",
+          "start": 157.5,
+          "end": 158.02,
+          "probability": 0.99
+        },
+        {
+          "text": "cœur",
+          "start": 158.02,
+          "end": 158.24,
+          "probability": 0.865
+        },
+        {
+          "text": "est",
+          "start": 158.24,
+          "end": 158.46,
+          "probability": 1.0
+        },
+        {
+          "text": "immense",
+          "start": 158.46,
+          "end": 158.9,
+          "probability": 0.997
+        },
+        {
+          "text": "Je",
+          "start": 160.08,
+          "end": 160.96,
+          "probability": 0.996
+        },
+        {
+          "text": "suis",
+          "start": 160.96,
+          "end": 161.44,
+          "probability": 1.0
+        }
+      ],
+      "whisper_line_start_delta": -0.37,
+      "nearest_segment_start": 156.4,
+      "nearest_segment_start_end": 158.9,
+      "nearest_segment_start_text": "Écoute comment mon cœur est immense",
+      "nearest_segment_end": 154.9,
+      "nearest_segment_end_start": 151.78,
+      "nearest_segment_end_text": "Dont j'ai payé toutes les offenses",
+      "prior_segment_start": 151.78,
+      "prior_segment_end": 154.9,
+      "prior_segment_late_by": 1.87
+    },
+    {
+      "index": 35,
+      "start": 161.05,
+      "end": 164.23,
+      "text": "Je suis une enfant du monde",
+      "words": [
+        {
+          "text": "Je",
+          "start": 161.055,
+          "end": 161.54
+        },
+        {
+          "text": "suis",
+          "start": 161.54,
+          "end": 162.916
+        },
+        {
+          "text": "une",
+          "start": 162.916,
+          "end": 163.928
+        },
+        {
+          "text": "enfant",
+          "start": 163.928,
+          "end": 164.029
+        },
+        {
+          "text": "du",
+          "start": 164.029,
+          "end": 164.13
+        },
+        {
+          "text": "monde",
+          "start": 164.13,
+          "end": 164.231
+        }
+      ],
+      "word_slots": [
+        0.486,
+        1.376,
+        1.012,
+        0.101,
+        0.101,
+        0.101
+      ],
+      "word_spoken": [
+        0.486,
+        1.376,
+        1.012,
+        0.101,
+        0.101,
+        0.101
+      ],
+      "pre_whisper_start": 161.055,
+      "pre_whisper_end": 163.04,
+      "whisper_window_start": 160.05,
+      "whisper_window_end": 166.79,
+      "whisper_window_word_count": 7,
+      "whisper_window_low_conf_count": 1,
+      "whisper_window_avg_prob": 0.919,
+      "whisper_window_words": [
+        {
+          "text": "Je",
+          "start": 160.08,
+          "end": 160.96,
+          "probability": 0.996
+        },
+        {
+          "text": "suis",
+          "start": 160.96,
+          "end": 161.44,
+          "probability": 1.0
+        },
+        {
+          "text": "une",
+          "start": 161.44,
+          "end": 161.72,
+          "probability": 0.955
+        },
+        {
+          "text": "enfant",
+          "start": 161.72,
+          "end": 162.28,
+          "probability": 0.995
+        },
+        {
+          "text": "du",
+          "start": 162.28,
+          "end": 162.72,
+          "probability": 0.998
+        },
+        {
+          "text": "monde",
+          "start": 162.72,
+          "end": 163.28,
+          "probability": 1.0
+        },
+        {
+          "text": "Je",
+          "start": 166.06,
+          "end": 166.94,
+          "probability": 0.486
+        }
+      ],
+      "whisper_line_start_delta": -0.97,
+      "nearest_segment_start": 160.08,
+      "nearest_segment_start_end": 163.28,
+      "nearest_segment_start_text": "Je suis une enfant du monde",
+      "nearest_segment_end": 158.9,
+      "nearest_segment_end_start": 156.4,
+      "nearest_segment_end_text": "Écoute comment mon cœur est immense",
+      "prior_segment_start": 156.4,
+      "prior_segment_end": 158.9,
+      "prior_segment_late_by": 2.15
+    },
+    {
+      "index": 36,
+      "start": 166.79,
+      "end": 169.38,
+      "text": "Je remue le ciel le jour, la nuit",
+      "words": [
+        {
+          "text": "Je",
+          "start": 166.795,
+          "end": 167.103
+        },
+        {
+          "text": "remue",
+          "start": 167.12,
+          "end": 167.428
+        },
+        {
+          "text": "le",
+          "start": 167.445,
+          "end": 167.753
+        },
+        {
+          "text": "ciel",
+          "start": 167.77,
+          "end": 168.078
+        },
+        {
+          "text": "le",
+          "start": 168.095,
+          "end": 168.403
+        },
+        {
+          "text": "jour,",
+          "start": 168.42,
+          "end": 168.728
+        },
+        {
+          "text": "la",
+          "start": 168.745,
+          "end": 169.053
+        },
+        {
+          "text": "nuit",
+          "start": 169.07,
+          "end": 169.378
+        }
+      ],
+      "word_slots": [
+        0.325,
+        0.325,
+        0.325,
+        0.325,
+        0.325,
+        0.325,
+        0.325,
+        0.309
+      ],
+      "word_spoken": [
+        0.309,
+        0.309,
+        0.309,
+        0.309,
+        0.309,
+        0.309,
+        0.309,
+        0.309
+      ],
+      "pre_whisper_start": 166.795,
+      "pre_whisper_end": 169.378,
+      "whisper_window_start": 165.79,
+      "whisper_window_end": 171.27,
+      "whisper_window_word_count": 9,
+      "whisper_window_low_conf_count": 1,
+      "whisper_window_avg_prob": 0.939,
+      "whisper_window_words": [
+        {
+          "text": "Je",
+          "start": 166.06,
+          "end": 166.94,
+          "probability": 0.486
+        },
+        {
+          "text": "remue",
+          "start": 166.94,
+          "end": 167.66,
+          "probability": 0.971
+        },
+        {
+          "text": "le",
+          "start": 167.66,
+          "end": 167.96,
+          "probability": 0.999
+        },
+        {
+          "text": "ciel,",
+          "start": 167.96,
+          "end": 168.3,
+          "probability": 1.0
+        },
+        {
+          "text": "le",
+          "start": 168.46,
+          "end": 169.04,
+          "probability": 0.994
+        },
+        {
+          "text": "jour,",
+          "start": 169.04,
+          "end": 169.54,
+          "probability": 1.0
+        },
+        {
+          "text": "la",
+          "start": 169.58,
+          "end": 170.02,
+          "probability": 1.0
+        },
+        {
+          "text": "nuit",
+          "start": 170.02,
+          "end": 170.36,
+          "probability": 1.0
+        },
+        {
+          "text": "Je",
+          "start": 170.36,
+          "end": 171.52,
+          "probability": 0.999
+        }
+      ],
+      "whisper_line_start_delta": -0.73,
+      "nearest_segment_start": 166.06,
+      "nearest_segment_start_end": 170.36,
+      "nearest_segment_start_text": "Je remue le ciel, le jour, la nuit",
+      "nearest_segment_end": 163.28,
+      "nearest_segment_end_start": 160.08,
+      "nearest_segment_end_text": "Je suis une enfant du monde",
+      "prior_segment_start": 160.08,
+      "prior_segment_end": 163.28,
+      "prior_segment_late_by": 3.51
+    },
+    {
+      "index": 37,
+      "start": 171.27,
+      "end": 173.53,
+      "text": "Je danse avec le vent la pluie",
+      "words": [
+        {
+          "text": "Je",
+          "start": 171.275,
+          "end": 171.583
+        },
+        {
+          "text": "danse",
+          "start": 171.6,
+          "end": 171.908
+        },
+        {
+          "text": "avec",
+          "start": 171.925,
+          "end": 172.233
+        },
+        {
+          "text": "le",
+          "start": 172.25,
+          "end": 172.558
+        },
+        {
+          "text": "vent",
+          "start": 172.575,
+          "end": 172.883
+        },
+        {
+          "text": "la",
+          "start": 172.9,
+          "end": 173.208
+        },
+        {
+          "text": "pluie",
+          "start": 173.225,
+          "end": 173.533
+        }
+      ],
+      "word_slots": [
+        0.325,
+        0.325,
+        0.325,
+        0.325,
+        0.325,
+        0.325,
+        0.309
+      ],
+      "word_spoken": [
+        0.309,
+        0.309,
+        0.309,
+        0.309,
+        0.309,
+        0.309,
+        0.309
+      ],
+      "pre_whisper_start": 171.275,
+      "pre_whisper_end": 173.533,
+      "whisper_window_start": 170.27,
+      "whisper_window_end": 175.32,
+      "whisper_window_word_count": 8,
+      "whisper_window_low_conf_count": 1,
+      "whisper_window_avg_prob": 0.877,
+      "whisper_window_words": [
+        {
+          "text": "Je",
+          "start": 170.36,
+          "end": 171.52,
+          "probability": 0.999
+        },
+        {
+          "text": "danse",
+          "start": 171.52,
+          "end": 172.04,
+          "probability": 0.996
+        },
+        {
+          "text": "avec",
+          "start": 172.04,
+          "end": 172.44,
+          "probability": 0.998
+        },
+        {
+          "text": "le",
+          "start": 172.44,
+          "end": 173.14,
+          "probability": 0.997
+        },
+        {
+          "text": "vent,",
+          "start": 173.14,
+          "end": 173.52,
+          "probability": 0.058
+        },
+        {
+          "text": "la",
+          "start": 173.68,
+          "end": 173.96,
+          "probability": 1.0
+        },
+        {
+          "text": "pluie",
+          "start": 173.96,
+          "end": 174.92,
+          "probability": 1.0
+        },
+        {
+          "text": "Un",
+          "start": 174.92,
+          "end": 175.76,
+          "probability": 0.972
+        }
+      ],
+      "whisper_line_start_delta": -0.91,
+      "nearest_segment_start": 170.36,
+      "nearest_segment_start_end": 174.92,
+      "nearest_segment_start_text": "Je danse avec le vent, la pluie",
+      "nearest_segment_end": 170.36,
+      "nearest_segment_end_start": 166.06,
+      "nearest_segment_end_text": "Je remue le ciel, le jour, la nuit",
+      "prior_segment_start": 166.06,
+      "prior_segment_end": 170.36,
+      "prior_segment_late_by": 0.91
+    },
+    {
+      "index": 38,
+      "start": 175.32,
+      "end": 177.58,
+      "text": "Un peu d'amour un brin de miel",
+      "words": [
+        {
+          "text": "Un",
+          "start": 175.325,
+          "end": 175.633
+        },
+        {
+          "text": "peu",
+          "start": 175.65,
+          "end": 175.958
+        },
+        {
+          "text": "d'amour",
+          "start": 175.975,
+          "end": 176.283
+        },
+        {
+          "text": "un",
+          "start": 176.3,
+          "end": 176.608
+        },
+        {
+          "text": "brin",
+          "start": 176.625,
+          "end": 176.933
+        },
+        {
+          "text": "de",
+          "start": 176.95,
+          "end": 177.258
+        },
+        {
+          "text": "miel",
+          "start": 177.275,
+          "end": 177.583
+        }
+      ],
+      "word_slots": [
+        0.325,
+        0.325,
+        0.325,
+        0.325,
+        0.325,
+        0.325,
+        0.309
+      ],
+      "word_spoken": [
+        0.309,
+        0.309,
+        0.309,
+        0.309,
+        0.309,
+        0.309,
+        0.309
+      ],
+      "pre_whisper_start": 175.325,
+      "pre_whisper_end": 177.583,
+      "whisper_window_start": 174.32,
+      "whisper_window_end": 179.26,
+      "whisper_window_word_count": 11,
+      "whisper_window_low_conf_count": 4,
+      "whisper_window_avg_prob": 0.602,
+      "whisper_window_words": [
+        {
+          "text": "Un",
+          "start": 174.92,
+          "end": 175.76,
+          "probability": 0.972
+        },
+        {
+          "text": "peu",
+          "start": 175.76,
+          "end": 176.18,
+          "probability": 0.999
+        },
+        {
+          "text": "d",
+          "start": 176.18,
+          "end": 176.32,
+          "probability": 0.999
+        },
+        {
+          "text": "'amour,",
+          "start": 176.32,
+          "end": 176.76,
+          "probability": 1.0
+        },
+        {
+          "text": "un",
+          "start": 176.76,
+          "end": 177.18,
+          "probability": 0.954
+        },
+        {
+          "text": "brin",
+          "start": 177.18,
+          "end": 177.52,
+          "probability": 0.093
+        },
+        {
+          "text": "de",
+          "start": 177.52,
+          "end": 177.52,
+          "probability": 0.627
+        },
+        {
+          "text": "miel",
+          "start": 177.52,
+          "end": 177.52,
+          "probability": 0.004
+        },
+        {
+          "text": "Et",
+          "start": 177.52,
+          "end": 178.32,
+          "probability": 0.023
+        },
+        {
+          "text": "je",
+          "start": 178.32,
+          "end": 179.1,
+          "probability": 0.301
+        },
+        {
+          "text": "danse,",
+          "start": 179.1,
+          "end": 180.1,
+          "probability": 0.647
+        }
+      ],
+      "whisper_line_start_delta": -0.4,
+      "nearest_segment_start": 174.92,
+      "nearest_segment_start_end": 177.52,
+      "nearest_segment_start_text": "Un peu d'amour, un brin de miel",
+      "nearest_segment_end": 174.92,
+      "nearest_segment_end_start": 170.36,
+      "nearest_segment_end_text": "Je danse avec le vent, la pluie",
+      "prior_segment_start": 170.36,
+      "prior_segment_end": 174.92,
+      "prior_segment_late_by": 0.4
+    },
+    {
+      "index": 39,
+      "start": 179.26,
+      "end": 183.34,
+      "text": "Et je danse, danse, danse, danse, danse, danse, danse",
+      "words": [
+        {
+          "text": "Et",
+          "start": 179.265,
+          "end": 179.697
+        },
+        {
+          "text": "je",
+          "start": 179.72,
+          "end": 180.152
+        },
+        {
+          "text": "danse,",
+          "start": 180.175,
+          "end": 180.607
+        },
+        {
+          "text": "danse,",
+          "start": 180.63,
+          "end": 181.062
+        },
+        {
+          "text": "danse,",
+          "start": 181.085,
+          "end": 181.517
+        },
+        {
+          "text": "danse,",
+          "start": 181.54,
+          "end": 181.972
+        },
+        {
+          "text": "danse,",
+          "start": 181.995,
+          "end": 182.427
+        },
+        {
+          "text": "danse,",
+          "start": 182.45,
+          "end": 182.882
+        },
+        {
+          "text": "danse",
+          "start": 182.905,
+          "end": 183.337
+        }
+      ],
+      "word_slots": [
+        0.455,
+        0.455,
+        0.455,
+        0.455,
+        0.455,
+        0.455,
+        0.455,
+        0.455,
+        0.432
+      ],
+      "word_spoken": [
+        0.432,
+        0.432,
+        0.432,
+        0.432,
+        0.432,
+        0.432,
+        0.432,
+        0.432,
+        0.432
+      ],
+      "pre_whisper_start": 179.265,
+      "pre_whisper_end": 183.337,
+      "whisper_window_start": 178.26,
+      "whisper_window_end": 184.17,
+      "whisper_window_word_count": 10,
+      "whisper_window_low_conf_count": 2,
+      "whisper_window_avg_prob": 0.803,
+      "whisper_window_words": [
+        {
+          "text": "je",
+          "start": 178.32,
+          "end": 179.1,
+          "probability": 0.301
+        },
+        {
+          "text": "danse,",
+          "start": 179.1,
+          "end": 180.1,
+          "probability": 0.647
+        },
+        {
+          "text": "danse,",
+          "start": 180.12,
+          "end": 180.62,
+          "probability": 0.995
+        },
+        {
+          "text": "danse,",
+          "start": 180.8,
+          "end": 181.14,
+          "probability": 0.999
+        },
+        {
+          "text": "danse,",
+          "start": 181.14,
+          "end": 181.78,
+          "probability": 0.996
+        },
+        {
+          "text": "danse,",
+          "start": 182.22,
+          "end": 182.46,
+          "probability": 0.993
+        },
+        {
+          "text": "danse,",
+          "start": 182.6,
+          "end": 183.28,
+          "probability": 0.987
+        },
+        {
+          "text": "danse",
+          "start": 183.56,
+          "end": 183.78,
+          "probability": 0.79
+        },
+        {
+          "text": "Et",
+          "start": 183.78,
+          "end": 183.9,
+          "probability": 0.322
+        },
+        {
+          "text": "dans",
+          "start": 183.9,
+          "end": 184.4,
+          "probability": 0.998
+        }
+      ],
+      "whisper_line_start_delta": 4.52,
+      "nearest_segment_start": 177.52,
+      "nearest_segment_start_end": 183.78,
+      "nearest_segment_start_text": "Et je danse, danse, danse, danse, danse, danse, danse",
+      "nearest_segment_end": 177.52,
+      "nearest_segment_end_start": 174.92,
+      "nearest_segment_end_text": "Un peu d'amour, un brin de miel",
+      "prior_segment_start": 174.92,
+      "prior_segment_end": 177.52,
+      "prior_segment_late_by": 1.74
+    },
+    {
+      "index": 40,
+      "start": 184.17,
+      "end": 187.08,
+      "text": "Et dans le bruit, je cours et j'ai peur",
+      "words": [
+        {
+          "text": "Et",
+          "start": 184.175,
+          "end": 184.483
+        },
+        {
+          "text": "dans",
+          "start": 184.5,
+          "end": 184.808
+        },
+        {
+          "text": "le",
+          "start": 184.825,
+          "end": 185.133
+        },
+        {
+          "text": "bruit,",
+          "start": 185.15,
+          "end": 185.458
+        },
+        {
+          "text": "je",
+          "start": 185.475,
+          "end": 185.783
+        },
+        {
+          "text": "cours",
+          "start": 185.8,
+          "end": 186.108
+        },
+        {
+          "text": "et",
+          "start": 186.125,
+          "end": 186.433
+        },
+        {
+          "text": "j'ai",
+          "start": 186.45,
+          "end": 186.758
+        },
+        {
+          "text": "peur",
+          "start": 186.775,
+          "end": 187.083
+        }
+      ],
+      "word_slots": [
+        0.325,
+        0.325,
+        0.325,
+        0.325,
+        0.325,
+        0.325,
+        0.325,
+        0.325,
+        0.309
+      ],
+      "word_spoken": [
+        0.309,
+        0.309,
+        0.309,
+        0.309,
+        0.309,
+        0.309,
+        0.309,
+        0.309,
+        0.309
+      ],
+      "pre_whisper_start": 184.175,
+      "pre_whisper_end": 187.083,
+      "whisper_window_start": 183.17,
+      "whisper_window_end": 188.33,
+      "whisper_window_word_count": 12,
+      "whisper_window_low_conf_count": 2,
+      "whisper_window_avg_prob": 0.845,
+      "whisper_window_words": [
+        {
+          "text": "danse",
+          "start": 183.56,
+          "end": 183.78,
+          "probability": 0.79
+        },
+        {
+          "text": "Et",
+          "start": 183.78,
+          "end": 183.9,
+          "probability": 0.322
+        },
+        {
+          "text": "dans",
+          "start": 183.9,
+          "end": 184.4,
+          "probability": 0.998
+        },
+        {
+          "text": "le",
+          "start": 184.4,
+          "end": 184.58,
+          "probability": 0.952
+        },
+        {
+          "text": "bruit,",
+          "start": 184.58,
+          "end": 184.98,
+          "probability": 0.907
+        },
+        {
+          "text": "je",
+          "start": 185.12,
+          "end": 185.66,
+          "probability": 0.995
+        },
+        {
+          "text": "cours",
+          "start": 185.66,
+          "end": 186.04,
+          "probability": 0.988
+        },
+        {
+          "text": "et",
+          "start": 186.04,
+          "end": 186.38,
+          "probability": 0.991
+        },
+        {
+          "text": "j",
+          "start": 186.38,
+          "end": 186.5,
+          "probability": 1.0
+        },
+        {
+          "text": "'ai",
+          "start": 186.5,
+          "end": 186.8,
+          "probability": 1.0
+        },
+        {
+          "text": "peur",
+          "start": 186.8,
+          "end": 187.46,
+          "probability": 0.998
+        },
+        {
+          "text": "Est",
+          "start": 187.46,
+          "end": 188.44,
+          "probability": 0.198
+        }
+      ],
+      "whisper_line_start_delta": -0.39,
+      "nearest_segment_start": 183.78,
+      "nearest_segment_start_end": 187.46,
+      "nearest_segment_start_text": "Et dans le bruit, je cours et j'ai peur",
+      "nearest_segment_end": 183.78,
+      "nearest_segment_end_start": 177.52,
+      "nearest_segment_end_text": "Et je danse, danse, danse, danse, danse, danse, danse",
+      "prior_segment_start": 177.52,
+      "prior_segment_end": 183.78,
+      "prior_segment_late_by": 0.39
+    },
+    {
+      "index": 41,
+      "start": 188.33,
+      "end": 189.59,
+      "text": "Est-ce mon tour?",
+      "words": [
+        {
+          "text": "Est-ce",
+          "start": 188.335,
+          "end": 188.738
+        },
+        {
+          "text": "mon",
+          "start": 188.759,
+          "end": 189.163
+        },
+        {
+          "text": "tour?",
+          "start": 189.184,
+          "end": 189.587
+        }
+      ],
+      "word_slots": [
+        0.425,
+        0.425,
+        0.403
+      ],
+      "word_spoken": [
+        0.403,
+        0.403,
+        0.403
+      ],
+      "pre_whisper_start": 188.335,
+      "pre_whisper_end": 189.587,
+      "whisper_window_start": 187.33,
+      "whisper_window_end": 190.12,
+      "whisper_window_word_count": 7,
+      "whisper_window_low_conf_count": 1,
+      "whisper_window_avg_prob": 0.756,
+      "whisper_window_words": [
+        {
+          "text": "Est",
+          "start": 187.46,
+          "end": 188.44,
+          "probability": 0.198
+        },
+        {
+          "text": "-ce",
+          "start": 188.44,
+          "end": 188.76,
+          "probability": 0.999
+        },
+        {
+          "text": "mon",
+          "start": 188.76,
+          "end": 188.9,
+          "probability": 0.837
+        },
+        {
+          "text": "tour",
+          "start": 188.9,
+          "end": 189.22,
+          "probability": 0.994
+        },
+        {
+          "text": "?",
+          "start": 189.22,
+          "end": 189.24,
+          "probability": 0.756
+        },
+        {
+          "text": "Vient",
+          "start": 189.24,
+          "end": 189.9,
+          "probability": 0.512
+        },
+        {
+          "text": "la",
+          "start": 189.9,
+          "end": 190.16,
+          "probability": 0.995
+        }
+      ],
+      "whisper_line_start_delta": null,
+      "nearest_segment_start": 187.46,
+      "nearest_segment_start_end": 191.34,
+      "nearest_segment_start_text": "Est-ce mon tour ? Vient la douleur",
+      "nearest_segment_end": 187.46,
+      "nearest_segment_end_start": 183.78,
+      "nearest_segment_end_text": "Et dans le bruit, je cours et j'ai peur",
+      "prior_segment_start": 183.78,
+      "prior_segment_end": 187.46,
+      "prior_segment_late_by": 0.87
+    },
+    {
+      "index": 42,
+      "start": 190.12,
+      "end": 191.47,
+      "text": "Vient la douleur.",
+      "words": [
+        {
+          "text": "Vient",
+          "start": 190.125,
+          "end": 190.557
+        },
+        {
+          "text": "la",
+          "start": 190.58,
+          "end": 191.012
+        },
+        {
+          "text": "douleur.",
+          "start": 191.035,
+          "end": 191.467
+        }
+      ],
+      "word_slots": [
+        0.455,
+        0.455,
+        0.432
+      ],
+      "word_spoken": [
+        0.432,
+        0.432,
+        0.432
+      ],
+      "pre_whisper_start": 190.125,
+      "pre_whisper_end": 191.467,
+      "whisper_window_start": 189.12,
+      "whisper_window_end": 192.66,
+      "whisper_window_word_count": 6,
+      "whisper_window_low_conf_count": 0,
+      "whisper_window_avg_prob": 0.875,
+      "whisper_window_words": [
+        {
+          "text": "?",
+          "start": 189.22,
+          "end": 189.24,
+          "probability": 0.756
+        },
+        {
+          "text": "Vient",
+          "start": 189.24,
+          "end": 189.9,
+          "probability": 0.512
+        },
+        {
+          "text": "la",
+          "start": 189.9,
+          "end": 190.16,
+          "probability": 0.995
+        },
+        {
+          "text": "douleur",
+          "start": 190.16,
+          "end": 191.34,
+          "probability": 0.999
+        },
+        {
+          "text": "Dans",
+          "start": 191.34,
+          "end": 192.44,
+          "probability": 0.986
+        },
+        {
+          "text": "tout",
+          "start": 192.44,
+          "end": 192.7,
+          "probability": 0.999
+        }
+      ],
+      "whisper_line_start_delta": -0.88,
+      "nearest_segment_start": 191.34,
+      "nearest_segment_start_end": 195.58,
+      "nearest_segment_start_text": "Dans tout Paris, je m'abandonne",
+      "nearest_segment_end": 191.34,
+      "nearest_segment_end_start": 187.46,
+      "nearest_segment_end_text": "Est-ce mon tour ? Vient la douleur",
+      "prior_segment_start": 183.78,
+      "prior_segment_end": 187.46,
+      "prior_segment_late_by": 2.66
+    },
+    {
+      "index": 43,
+      "start": 192.66,
+      "end": 195.1,
+      "text": "Dans tout Paris, je m'abandonne",
+      "words": [
+        {
+          "text": "Dans",
+          "start": 192.665,
+          "end": 193.131
+        },
+        {
+          "text": "tout",
+          "start": 193.156,
+          "end": 193.623
+        },
+        {
+          "text": "Paris,",
+          "start": 193.647,
+          "end": 194.114
+        },
+        {
+          "text": "je",
+          "start": 194.139,
+          "end": 194.606
+        },
+        {
+          "text": "m'abandonne",
+          "start": 194.63,
+          "end": 195.097
+        }
+      ],
+      "word_slots": [
+        0.491,
+        0.491,
+        0.491,
+        0.491,
+        0.467
+      ],
+      "word_spoken": [
+        0.467,
+        0.467,
+        0.467,
+        0.467,
+        0.467
+      ],
+      "pre_whisper_start": 192.665,
+      "pre_whisper_end": 195.097,
+      "whisper_window_start": 191.66,
+      "whisper_window_end": 196.3,
+      "whisper_window_word_count": 9,
+      "whisper_window_low_conf_count": 1,
+      "whisper_window_avg_prob": 0.933,
+      "whisper_window_words": [
+        {
+          "text": "tout",
+          "start": 192.44,
+          "end": 192.7,
+          "probability": 0.999
+        },
+        {
+          "text": "Paris,",
+          "start": 192.7,
+          "end": 193.3,
+          "probability": 0.999
+        },
+        {
+          "text": "je",
+          "start": 193.46,
+          "end": 194.02,
+          "probability": 0.999
+        },
+        {
+          "text": "m",
+          "start": 194.02,
+          "end": 194.28,
+          "probability": 1.0
+        },
+        {
+          "text": "'abandonne",
+          "start": 194.28,
+          "end": 195.58,
+          "probability": 0.999
+        },
+        {
+          "text": "Et",
+          "start": 195.58,
+          "end": 195.64,
+          "probability": 0.406
+        },
+        {
+          "text": "je",
+          "start": 195.64,
+          "end": 195.84,
+          "probability": 0.999
+        },
+        {
+          "text": "m",
+          "start": 195.84,
+          "end": 196.08,
+          "probability": 0.995
+        },
+        {
+          "text": "'envole,",
+          "start": 196.08,
+          "end": 196.8,
+          "probability": 0.997
+        }
+      ],
+      "whisper_line_start_delta": null,
+      "nearest_segment_start": 191.34,
+      "nearest_segment_start_end": 195.58,
+      "nearest_segment_start_text": "Dans tout Paris, je m'abandonne",
+      "nearest_segment_end": 191.34,
+      "nearest_segment_end_start": 187.46,
+      "nearest_segment_end_text": "Est-ce mon tour ? Vient la douleur",
+      "prior_segment_start": 187.46,
+      "prior_segment_end": 191.34,
+      "prior_segment_late_by": 1.32
+    },
+    {
+      "index": 44,
+      "start": 196.3,
+      "end": 199.37,
+      "text": "Et je m'envole, vole, vole, vole, vole, vole, vole",
+      "words": [
+        {
+          "text": "Et",
+          "start": 196.305,
+          "end": 196.611
+        },
+        {
+          "text": "je",
+          "start": 196.645,
+          "end": 196.951
+        },
+        {
+          "text": "m'envole,",
+          "start": 196.985,
+          "end": 197.291
+        },
+        {
+          "text": "vole,",
+          "start": 197.325,
+          "end": 197.632
+        },
+        {
+          "text": "vole,",
+          "start": 197.666,
+          "end": 197.972
+        },
+        {
+          "text": "vole,",
+          "start": 198.006,
+          "end": 198.312
+        },
+        {
+          "text": "vole,",
+          "start": 198.346,
+          "end": 198.653
+        },
+        {
+          "text": "vole,",
+          "start": 198.687,
+          "end": 198.993
+        },
+        {
+          "text": "vole",
+          "start": 199.027,
+          "end": 199.367
+        }
+      ],
+      "word_slots": [
+        0.34,
+        0.34,
+        0.34,
+        0.34,
+        0.34,
+        0.34,
+        0.34,
+        0.34,
+        0.34
+      ],
+      "word_spoken": [
+        0.306,
+        0.306,
+        0.306,
+        0.306,
+        0.306,
+        0.306,
+        0.306,
+        0.306,
+        0.34
+      ],
+      "pre_whisper_start": 196.305,
+      "pre_whisper_end": 200.105,
+      "whisper_window_start": 195.3,
+      "whisper_window_end": 201.37,
+      "whisper_window_word_count": 12,
+      "whisper_window_low_conf_count": 3,
+      "whisper_window_avg_prob": 0.791,
+      "whisper_window_words": [
+        {
+          "text": "Et",
+          "start": 195.58,
+          "end": 195.64,
+          "probability": 0.406
+        },
+        {
+          "text": "je",
+          "start": 195.64,
+          "end": 195.84,
+          "probability": 0.999
+        },
+        {
+          "text": "m",
+          "start": 195.84,
+          "end": 196.08,
+          "probability": 0.995
+        },
+        {
+          "text": "'envole,",
+          "start": 196.08,
+          "end": 196.8,
+          "probability": 0.997
+        },
+        {
+          "text": "vole,",
+          "start": 196.82,
+          "end": 197.1,
+          "probability": 0.925
+        },
+        {
+          "text": "vole,",
+          "start": 197.1,
+          "end": 197.6,
+          "probability": 0.996
+        },
+        {
+          "text": "vole,",
+          "start": 197.6,
+          "end": 198.08,
+          "probability": 0.998
+        },
+        {
+          "text": "vole,",
+          "start": 198.08,
+          "end": 198.62,
+          "probability": 0.998
+        },
+        {
+          "text": "vole,",
+          "start": 198.62,
+          "end": 199.18,
+          "probability": 0.998
+        },
+        {
+          "text": "vole",
+          "start": 199.18,
+          "end": 199.92,
+          "probability": 0.994
+        },
+        {
+          "text": "Et",
+          "start": 199.92,
+          "end": 200.38,
+          "probability": 0.005
+        },
+        {
+          "text": "dans",
+          "start": 200.38,
+          "end": 202.68,
+          "probability": 0.181
+        }
+      ],
+      "whisper_line_start_delta": -0.72,
+      "nearest_segment_start": 195.58,
+      "nearest_segment_start_end": 199.92,
+      "nearest_segment_start_text": "Et je m'envole, vole, vole, vole, vole, vole, vole",
+      "nearest_segment_end": 195.58,
+      "nearest_segment_end_start": 191.34,
+      "nearest_segment_end_text": "Dans tout Paris, je m'abandonne",
+      "prior_segment_start": 191.34,
+      "prior_segment_end": 195.58,
+      "prior_segment_late_by": 0.72
+    }
+  ],
+  "dtw_word_coverage": 0.517,
+  "dtw_line_coverage": 0.773,
+  "dtw_phonetic_similarity_coverage": 0.309,
+  "dtw_high_similarity_ratio": 0.597,
+  "dtw_exact_match_ratio": 0.0,
+  "dtw_unmatched_ratio": 0.483,
+  "whisper_segments": [
+    {
+      "start": 27.18,
+      "end": 29.98,
+      "text": "Sous-titrage Société Radio-Canada"
+    },
+    {
+      "start": 30.0,
+      "end": 34.54,
+      "text": "Je déambule seule dans le métro, une dernière danse"
+    },
+    {
+      "start": 34.54,
+      "end": 37.98,
+      "text": "Pour oublier ma peine immense"
+    },
+    {
+      "start": 37.98,
+      "end": 42.9,
+      "text": "Je veux m'enfuir, que tout recommence"
+    },
+    {
+      "start": 42.9,
+      "end": 46.88,
+      "text": "Pour ma douce souffrance"
+    },
+    {
+      "start": 48.98,
+      "end": 53.62,
+      "text": "Je remue le ciel, le jour, la nuit"
+    },
+    {
+      "start": 53.62,
+      "end": 58.18,
+      "text": "Je danse avec le vent, la pluie"
+    },
+    {
+      "start": 58.18,
+      "end": 61.76,
+      "text": "Un peu d'amour, un brin de miel"
+    },
+    {
+      "start": 61.76,
+      "end": 66.08,
+      "text": "Et je danse, danse, danse, danse, danse, danse"
+    },
+    {
+      "start": 66.74,
+      "end": 70.6,
+      "text": "Et dans le bruit, je cours et j'ai peur"
+    },
+    {
+      "start": 71.14,
+      "end": 74.44,
+      "text": "Est-ce mon tour ? Vient la douleur"
+    },
+    {
+      "start": 75.24,
+      "end": 78.56,
+      "text": "Dans tout Paris, je m'abandonne"
+    },
+    {
+      "start": 78.56,
+      "end": 82.16,
+      "text": "Et je m'envole, vole, vole, vole, vole, vole"
+    },
+    {
+      "start": 82.16,
+      "end": 83.88,
+      "text": "Que d'espérance"
+    },
+    {
+      "start": 84.92,
+      "end": 87.88,
+      "text": "Sur ce chemin, ton absence"
+    },
+    {
+      "start": 89.16,
+      "end": 94.34,
+      "text": "J'ai beau trimer sans toi, ma vie n'est qu'un décor"
+    },
+    {
+      "start": 94.34,
+      "end": 96.66,
+      "text": "Qui bruit vide de sens"
+    },
+    {
+      "start": 96.66,
+      "end": 103.68,
+      "text": "Je remue le ciel, le jour, la nuit"
+    },
+    {
+      "start": 103.68,
+      "end": 108.44,
+      "text": "Je danse avec le vent, la pluie"
+    },
+    {
+      "start": 108.44,
+      "end": 111.86,
+      "text": "Un peu d'amour, un brin de miel"
+    },
+    {
+      "start": 111.86,
+      "end": 116.5,
+      "text": "Et je danse, danse, danse, danse, danse, danse"
+    },
+    {
+      "start": 116.5,
+      "end": 117.86,
+      "text": "Et dans le bruit, je cours et j'ai peur"
+    },
+    {
+      "start": 117.86,
+      "end": 124.58,
+      "text": "Est-ce mon tour ? Vient la douleur"
+    },
+    {
+      "start": 125.32,
+      "end": 128.74,
+      "text": "Dans tout Paris, je m'abandonne"
+    },
+    {
+      "start": 128.74,
+      "end": 132.58,
+      "text": "Et je m'envole, vole, vole, vole, vole, vole"
+    },
+    {
+      "start": 132.58,
+      "end": 134.8,
+      "text": "Que d'espérance"
+    },
+    {
+      "start": 134.8,
+      "end": 136.56,
+      "text": "Sur ce chemin, ton absence"
+    },
+    {
+      "start": 137.16,
+      "end": 139.2,
+      "text": "Que d'espérance"
+    },
+    {
+      "start": 139.2,
+      "end": 141.22,
+      "text": "Sur ce chemin, ton absence"
+    },
+    {
+      "start": 141.22,
+      "end": 143.84,
+      "text": "Sur ce chemin, ton absence"
+    },
+    {
+      "start": 143.84,
+      "end": 144.54,
+      "text": "Sur ce chemin, ton absence"
+    },
+    {
+      "start": 144.54,
+      "end": 146.0,
+      "text": "Que d'espérance"
+    },
+    {
+      "start": 146.0,
+      "end": 147.38,
+      "text": "Sur ce chemin, ton absence"
+    },
+    {
+      "start": 147.38,
+      "end": 147.54,
+      "text": "Que d'espérance"
+    },
+    {
+      "start": 147.54,
+      "end": 150.74,
+      "text": "Dans cette douce souffrance"
+    },
+    {
+      "start": 151.78,
+      "end": 154.9,
+      "text": "Dont j'ai payé toutes les offenses"
+    },
+    {
+      "start": 156.4,
+      "end": 158.9,
+      "text": "Écoute comment mon cœur est immense"
+    },
+    {
+      "start": 160.08,
+      "end": 163.28,
+      "text": "Je suis une enfant du monde"
+    },
+    {
+      "start": 166.06,
+      "end": 170.36,
+      "text": "Je remue le ciel, le jour, la nuit"
+    },
+    {
+      "start": 170.36,
+      "end": 174.92,
+      "text": "Je danse avec le vent, la pluie"
+    },
+    {
+      "start": 174.92,
+      "end": 177.52,
+      "text": "Un peu d'amour, un brin de miel"
+    },
+    {
+      "start": 177.52,
+      "end": 183.78,
+      "text": "Et je danse, danse, danse, danse, danse, danse, danse"
+    },
+    {
+      "start": 183.78,
+      "end": 187.46,
+      "text": "Et dans le bruit, je cours et j'ai peur"
+    },
+    {
+      "start": 187.46,
+      "end": 191.34,
+      "text": "Est-ce mon tour ? Vient la douleur"
+    },
+    {
+      "start": 191.34,
+      "end": 195.58,
+      "text": "Dans tout Paris, je m'abandonne"
+    },
+    {
+      "start": 195.58,
+      "end": 199.92,
+      "text": "Et je m'envole, vole, vole, vole, vole, vole, vole"
+    },
+    {
+      "start": 199.92,
+      "end": 207.14,
+      "text": "Et dans le bruit, je cours et j'ai peur"
+    },
+    {
+      "start": 207.14,
+      "end": 207.5,
+      "text": "Et dans le bruit, je cours et j'ai peur"
+    },
+    {
+      "start": 207.5,
+      "end": 209.22,
+      "text": "Et dans le bruit, je m'abandonne"
+    },
+    {
+      "start": 209.22,
+      "end": 211.28,
+      "text": "Et dans le bruit, je m'abandonne"
+    }
+  ],
+  "whisper_word_count": 358,
+  "whisper_window_low_conf_threshold": 0.5,
+  "low_confidence_lines": [
+    {
+      "index": 27,
+      "text": "Et dans le bruit, je cours et j'ai peur",
+      "whisper_window_avg_prob": 0.425,
+      "low_conf_ratio": 0.58
     }
   ]
 }

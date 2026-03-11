@@ -241,16 +241,16 @@ class TestSeparateVocals:
         """Test that cached result is used when available."""
         mock_cache = Mock()
         mock_cache.find_files.side_effect = [
-            ["/cached_vocals.wav"],  # vocals files
-            ["/cached_instrumental.wav"],  # instrumental files
+            ["/audio_(Vocals)_htdemucs_ft.wav"],  # vocals files
+            ["/audio_instrumental.wav"],  # instrumental files
         ]
         mock_separator = Mock()
 
         result = separate_vocals("/audio.wav", "video123", mock_separator, mock_cache)
 
         expected = {
-            "vocals_path": "/cached_vocals.wav",
-            "instrumental_path": "/cached_instrumental.wav",
+            "vocals_path": "/audio_(Vocals)_htdemucs_ft.wav",
+            "instrumental_path": "/audio_instrumental.wav",
         }
         assert result == expected
 
@@ -287,6 +287,29 @@ class TestSeparateVocals:
                 str(cache_dir / "song_vocals.wav"), "video123", Mock(), mock_cache
             )
 
+    def test_ignores_mismatched_cached_stems(self):
+        """Test that cached stems from a different source audio are ignored."""
+        mock_cache = Mock()
+        mock_cache.find_files.side_effect = [
+            ["/other-song_(Vocals)_htdemucs_ft.wav"],
+            ["/other-song_instrumental.wav"],
+        ]
+        mock_cache.get_video_cache_dir.return_value = "/cache/video123"
+
+        mock_separator = Mock()
+        mock_separator.separate_vocals.return_value = {
+            "vocals_path": "/audio_(Vocals)_htdemucs_ft.wav",
+            "instrumental_path": "/audio_instrumental.wav",
+        }
+
+        result = separate_vocals("/audio.wav", "video123", mock_separator, mock_cache)
+
+        assert result["vocals_path"] == "/audio_(Vocals)_htdemucs_ft.wav"
+        assert result["instrumental_path"] == "/audio_instrumental.wav"
+        mock_separator.separate_vocals.assert_called_once_with(
+            "/audio.wav", "/cache/video123"
+        )
+
     def test_force_reseparate_ignores_cache(self):
         """Test that force=True ignores cached result."""
         mock_cache = Mock()
@@ -308,7 +331,10 @@ class TestSeparateVocals:
     def test_returns_dict_format(self):
         """Test that function returns dictionary with expected keys."""
         mock_cache = Mock()
-        mock_cache.find_files.side_effect = [["/vocals.wav"], ["/instrumental.wav"]]
+        mock_cache.find_files.side_effect = [
+            ["/audio_(Vocals)_htdemucs_ft.wav"],
+            ["/audio_instrumental.wav"],
+        ]
         mock_separator = Mock()
 
         result = separate_vocals("/audio.wav", "video123", mock_separator, mock_cache)
@@ -442,13 +468,16 @@ class TestAudioUtilsCaching:
     def test_separate_vocals_caching_logic(self):
         """Test caching logic in separate_vocals."""
         mock_cache = Mock()
-        mock_cache.find_files.side_effect = [["/vocals.wav"], ["/instrumental.wav"]]
+        mock_cache.find_files.side_effect = [
+            ["/audio_(Vocals)_htdemucs_ft.wav"],
+            ["/audio_instrumental.wav"],
+        ]
         mock_separator = Mock()
 
         # Test cache hit
         result = separate_vocals("/audio.wav", "video123", mock_separator, mock_cache)
         expected = {
-            "vocals_path": "/vocals.wav",
-            "instrumental_path": "/instrumental.wav",
+            "vocals_path": "/audio_(Vocals)_htdemucs_ft.wav",
+            "instrumental_path": "/audio_instrumental.wav",
         }
         assert result == expected

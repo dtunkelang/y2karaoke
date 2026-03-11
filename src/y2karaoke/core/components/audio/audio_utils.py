@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Any
 from pydub import AudioSegment
 
+from .cache_identity import select_matching_cached_stem
 from ....utils.logging import get_logger
 
 logger = get_logger(__name__)
@@ -76,12 +77,18 @@ def separate_vocals(
         for marker in ["vocals", "instrumental", "drums", "bass", "other"]
     ):
         cache_dir = cache_manager.get_video_cache_dir(video_id)
-        vocals_files = list(Path(cache_dir).glob("*[Vv]ocals*.wav"))
-        instrumental_files = list(Path(cache_dir).glob("*[Ii]nstrumental*.wav"))
-        if vocals_files and instrumental_files:
+        vocals_path = select_matching_cached_stem(
+            Path(cache_dir).glob("*[Vv]ocals*.wav"),
+            audio_path=audio_path,
+        )
+        instrumental_path = select_matching_cached_stem(
+            Path(cache_dir).glob("*[Ii]nstrumental*.wav"),
+            audio_path=audio_path,
+        )
+        if vocals_path and instrumental_path:
             return {
-                "vocals_path": str(vocals_files[0]),
-                "instrumental_path": str(instrumental_files[0]),
+                "vocals_path": str(vocals_path),
+                "instrumental_path": str(instrumental_path),
             }
         raise RuntimeError(
             f"Found separated file but missing vocals/instrumental: {audio_path}"
@@ -89,13 +96,19 @@ def separate_vocals(
 
     if not force:
         # Check for cached files (audio-separator uses "(Vocals)" and "(Instrumental)" with capitals)
-        vocals_files = cache_manager.find_files(video_id, "*[Vv]ocals*.wav")
-        instrumental_files = cache_manager.find_files(video_id, "*[Ii]nstrumental*.wav")
-        if vocals_files and instrumental_files:
+        vocals_path = select_matching_cached_stem(
+            cache_manager.find_files(video_id, "*[Vv]ocals*.wav"),
+            audio_path=audio_path,
+        )
+        instrumental_path = select_matching_cached_stem(
+            cache_manager.find_files(video_id, "*[Ii]nstrumental*.wav"),
+            audio_path=audio_path,
+        )
+        if vocals_path and instrumental_path:
             logger.info("📁 Using cached vocal separation")
             return {
-                "vocals_path": str(vocals_files[0]),
-                "instrumental_path": str(instrumental_files[0]),
+                "vocals_path": str(vocals_path),
+                "instrumental_path": str(instrumental_path),
             }
 
     cache_dir = cache_manager.get_video_cache_dir(video_id)

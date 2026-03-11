@@ -14,6 +14,22 @@ from .whisper_mapping_helpers import _SPEECH_BLOCK_GAP, _build_word_to_segment_i
 from . import whisper_utils
 
 
+def _json_safe_value(value: Any) -> Any:
+    if isinstance(value, dict):
+        return {key: _json_safe_value(val) for key, val in value.items()}
+    if isinstance(value, list):
+        return [_json_safe_value(item) for item in value]
+    if isinstance(value, tuple):
+        return [_json_safe_value(item) for item in value]
+    item_method = getattr(value, "item", None)
+    if callable(item_method):
+        try:
+            return item_method()
+        except (TypeError, ValueError):
+            return value
+    return value
+
+
 def _parse_trace_line_range() -> tuple[int, int] | None:
     raw = os.environ.get("Y2K_TRACE_MAPPER_LINE_RANGE", "").strip()
     if not raw:
@@ -119,7 +135,7 @@ def _maybe_write_mapper_trace(rows: list[dict[str, Any]]) -> None:
     if not trace_path:
         return
     with open(trace_path, "w", encoding="utf-8") as fh:
-        json.dump({"lines": rows}, fh, indent=2)
+        json.dump(_json_safe_value({"lines": rows}), fh, indent=2)
 
 
 def _line_override_segment_votes(

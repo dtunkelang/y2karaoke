@@ -860,6 +860,54 @@ def _agreement_anchor_outside_window(
     return whisper_anchor_start < window_start or whisper_anchor_start > window_end
 
 
+def _select_agreement_anchor_start(
+    line: dict[str, Any],
+    *,
+    normalize_fn: Callable[[Any], str] = _normalize_agreement_text,
+) -> float | None:
+    anchor_start_raw = line.get("nearest_segment_start")
+    if not isinstance(anchor_start_raw, (int, float)):
+        return None
+    anchor_start = float(anchor_start_raw)
+    anchor_end_raw = line.get("nearest_segment_end")
+    if not isinstance(anchor_end_raw, (int, float)):
+        return anchor_start
+    anchor_end = float(anchor_end_raw)
+    if anchor_end < anchor_start:
+        return anchor_start
+
+    line_start_raw = line.get("start")
+    if not isinstance(line_start_raw, (int, float)):
+        return anchor_start
+    line_start = float(line_start_raw)
+
+    line_text = normalize_fn(line.get("text"))
+    anchor_text = normalize_fn(line.get("nearest_segment_start_text"))
+    if (
+        not line_text
+        or not anchor_text
+        or line_text not in anchor_text
+    ):
+        if line_text != anchor_text:
+            return anchor_start
+        word_count = len(line_text.split())
+        if word_count < 1 or word_count > 4:
+            return anchor_start
+        if abs(line_start - anchor_end) + 0.25 >= abs(line_start - anchor_start):
+            return anchor_start
+        return anchor_end
+    if line_text == anchor_text:
+        word_count = len(line_text.split())
+        if word_count < 1 or word_count > 4:
+            return anchor_start
+        if abs(line_start - anchor_end) + 0.25 >= abs(line_start - anchor_start):
+            return anchor_start
+        return anchor_end
+    if abs(line_start - anchor_end) >= abs(line_start - anchor_start):
+        return anchor_start
+    return anchor_end
+
+
 def _evaluate_agreement_line(
     line: dict[str, Any],
     min_text_similarity: float,
@@ -875,8 +923,11 @@ def _evaluate_agreement_line(
     line_start = line.get("start")
     if not isinstance(line_start, (int, float)):
         return {"skip_reason": "missing_line_start"}
-    whisper_anchor_start = line.get("nearest_segment_start")
-    if not isinstance(whisper_anchor_start, (int, float)):
+    whisper_anchor_start = _select_agreement_anchor_start(
+        line,
+        normalize_fn=normalize_fn,
+    )
+    if whisper_anchor_start is None:
         return {"skip_reason": "missing_anchor_start"}
     if _agreement_anchor_outside_window(line, float(whisper_anchor_start)):
         return {"skip_reason": "anchor_outside_window"}
@@ -6391,7 +6442,9 @@ def _run_single_song_generation(
         whisper_map_lrc_dtw=not args.no_whisper_map_lrc_dtw,
         strategy=args.strategy,
         drop_lrc_line_timings=(args.scenario == "lyrics_no_timing"),
-        evaluate_lyrics_sources=bool(args.evaluate_lyrics_sources),
+        evaluate_lyrics_sources=bool(
+            getattr(args, "evaluate_lyrics_sources", False)
+        ),
     )
     print(f"[{index}/{total_songs}] {song.artist} - {song.title}")
     start = time.monotonic()

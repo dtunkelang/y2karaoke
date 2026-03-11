@@ -156,6 +156,54 @@ def restore_weak_evidence_large_start_shifts(
     return repaired, restored
 
 
+def restore_adjacent_near_threshold_late_shifts(
+    mapped_lines: List[models.Line],
+    baseline_lines: List[models.Line],
+    whisper_words: List[timing_models.TranscriptionWord],
+    *,
+    min_shift_sec: float = 0.75,
+    max_shift_sec: float = 1.1,
+    max_prev_baseline_delta_sec: float = 0.2,
+    min_overlap_with_next_baseline_sec: float = 0.45,
+    min_baseline_support_words: int = 2,
+    support_window_sec: float = 0.8,
+) -> Tuple[List[models.Line], int]:
+    repaired = list(mapped_lines)
+    restored = 0
+    limit = min(len(mapped_lines), len(baseline_lines))
+    for idx in range(1, limit - 1):
+        mapped = repaired[idx]
+        base = baseline_lines[idx]
+        prev = repaired[idx - 1]
+        prev_base = baseline_lines[idx - 1]
+        next_base = baseline_lines[idx + 1]
+        if (
+            not mapped.words
+            or not base.words
+            or not prev.words
+            or not prev_base.words
+            or not next_base.words
+        ):
+            continue
+        shift = mapped.start_time - base.start_time
+        if shift < min_shift_sec or shift >= max_shift_sec:
+            continue
+        if abs(prev.start_time - prev_base.start_time) > max_prev_baseline_delta_sec:
+            continue
+        if mapped.end_time < next_base.start_time + min_overlap_with_next_baseline_sec:
+            continue
+        baseline_support = _count_non_vocal_words_near_time(
+            whisper_words,
+            base.start_time,
+            window_sec=support_window_sec,
+        )
+        if baseline_support < min_baseline_support_words:
+            continue
+        repaired[idx] = base
+        restored += 1
+    return repaired, restored
+
+
 def restore_unsupported_early_duplicate_shifts(
     mapped_lines: List[models.Line],
     baseline_lines: List[models.Line],

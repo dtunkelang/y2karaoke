@@ -382,6 +382,68 @@ def test_evaluate_agreement_line_low_token_overlap_marks_eligible() -> None:
     assert result["skip_reason"] == "low_token_overlap"
 
 
+def test_select_agreement_anchor_start_prefers_segment_end_for_suffix_line() -> None:
+    module = _load_module()
+    line = {
+        "start": 73.08,
+        "text": "Vient la douleur.",
+        "nearest_segment_start": 71.14,
+        "nearest_segment_end": 74.44,
+        "nearest_segment_start_text": "Est-ce mon tour ? Vient la douleur",
+    }
+
+    anchor = module._select_agreement_anchor_start(line)
+
+    assert anchor == 74.44
+
+
+def test_select_agreement_anchor_start_keeps_segment_start_for_full_line() -> None:
+    module = _load_module()
+    line = {
+        "start": 179.26,
+        "text": "Et je danse, danse, danse, danse, danse, danse, danse",
+        "nearest_segment_start": 177.52,
+        "nearest_segment_end": 183.78,
+        "nearest_segment_start_text": "Et je danse, danse, danse, danse, danse, danse, danse",
+    }
+
+    anchor = module._select_agreement_anchor_start(line)
+
+    assert anchor == 177.52
+
+
+def test_select_agreement_anchor_start_keeps_start_for_exact_text_even_if_end_closer() -> (
+    None
+):
+    module = _load_module()
+    line = {
+        "start": 10.9,
+        "text": "hello world",
+        "nearest_segment_start": 10.0,
+        "nearest_segment_end": 11.0,
+        "nearest_segment_start_text": "hello world",
+    }
+
+    anchor = module._select_agreement_anchor_start(line)
+
+    assert anchor == 11.0
+
+
+def test_select_agreement_anchor_start_keeps_start_for_long_exact_text_line() -> None:
+    module = _load_module()
+    line = {
+        "start": 10.9,
+        "text": "hello world this is long",
+        "nearest_segment_start": 10.0,
+        "nearest_segment_end": 11.0,
+        "nearest_segment_start_text": "hello world this is long",
+    }
+
+    anchor = module._select_agreement_anchor_start(line)
+
+    assert anchor == 10.0
+
+
 def test_compute_timing_quality_score_anchor_with_gold_mode() -> None:
     module = _load_module()
     score, band, mode = module._compute_timing_quality_score(

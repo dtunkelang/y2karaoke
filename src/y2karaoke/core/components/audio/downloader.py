@@ -1,11 +1,12 @@
 """YouTube downloader with improved error handling."""
 
 from pathlib import Path
-from typing import Dict, Optional
+from typing import Dict, Mapping, Optional
 
 from ....config import get_cache_dir
 from ....exceptions import DownloadError
 from ....utils.logging import get_logger
+from .cache_identity import select_matching_cached_audio
 from ..identify.youtube_metadata import (
     sanitize_filename,
     validate_youtube_url,
@@ -14,6 +15,7 @@ from ..identify.youtube_metadata import (
 )
 
 logger = get_logger(__name__)
+_SEPARATED_STEM_MARKERS = ("vocals", "bass", "drums", "other", "instrumental")
 
 try:
     import yt_dlp
@@ -79,22 +81,32 @@ class YouTubeDownloader:
         output_dir = Path(output_dir or self.cache_dir / video_id)
         output_dir.mkdir(parents=True, exist_ok=True)
 
-        existing_wav = sorted(
-            output_dir.glob("*.wav"),
-            key=lambda p: (p.stat().st_mtime, p.name),
-            reverse=True,
+        expected_metadata: Mapping[str, Optional[str]]
+        try:
+            expected_metadata = extract_metadata_from_youtube(url)
+        except Exception:
+            expected_metadata = {"artist": "Unknown", "title": None}
+        expected_title = expected_metadata.get("title")
+        expected_artist = expected_metadata.get("artist")
+
+        existing_wav = select_matching_cached_audio(
+            (
+                p
+                for p in output_dir.glob("*.wav")
+                if not any(
+                    marker in p.name.lower() for marker in _SEPARATED_STEM_MARKERS
+                )
+            ),
+            expected_title=expected_title,
+            expected_artist=expected_artist,
         )
         if existing_wav:
-            audio_path = existing_wav[0]
+            audio_path = existing_wav
             logger.info(f"Using cached audio for {video_id}: {audio_path}")
-            try:
-                metadata = extract_metadata_from_youtube(url)
-            except Exception:
-                metadata = {"artist": "Unknown", "title": audio_path.stem}
             return {
                 "audio_path": str(audio_path),
-                "title": metadata.get("title") or audio_path.stem,
-                "artist": metadata.get("artist") or "Unknown",
+                "title": expected_title or audio_path.stem,
+                "artist": expected_artist or "Unknown",
                 "video_id": video_id,
             }
 
@@ -136,9 +148,8 @@ class YouTubeDownloader:
                         raise DownloadError("Downloaded audio file not found")
 
                 # Extract metadata
-                metadata = extract_metadata_from_youtube(url)
-                artist = metadata["artist"]
-                cleaned_title = metadata["title"]
+                artist = expected_artist or "Unknown"
+                cleaned_title = expected_title or audio_path.stem
 
                 return {
                     "audio_path": str(audio_path),

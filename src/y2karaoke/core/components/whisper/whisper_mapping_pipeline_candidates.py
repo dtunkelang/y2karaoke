@@ -51,10 +51,12 @@ def _register_word_match(
     ctx.total_similarity += best_sim
     ctx.used_word_indices.add(best_idx)
     best_seg = ctx.word_segment_idx.get(best_idx)
+    segment_updates = [ctx.current_segment]
     if best_seg is not None:
-        ctx.current_segment = max(ctx.current_segment, best_seg)
-    elif line_segment is not None:
-        ctx.current_segment = max(ctx.current_segment, line_segment)
+        segment_updates.append(best_seg)
+    if line_segment is not None:
+        segment_updates.append(line_segment)
+    ctx.current_segment = max(segment_updates)
     if ctx.speech_blocks:
         match_blk = whisper_utils._word_idx_to_block(best_idx, ctx.speech_blocks)
         if match_blk > ctx.current_block:

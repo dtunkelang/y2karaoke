@@ -84,6 +84,40 @@ def test_trim_whisper_transcription_skips_when_match_far_from_tail():
     assert len(trimmed_words) == len(words)
 
 
+def test_should_ignore_trimmed_transcript_when_it_cuts_lyric_tail():
+    segments = [
+        TranscriptionSegment(start=0, end=20, text="early", words=[]),
+        TranscriptionSegment(start=180, end=198, text="late", words=[]),
+    ]
+    lines = [
+        Line(words=[Word(text="a", start_time=10.0, end_time=11.0)]),
+        Line(words=[Word(text="b", start_time=195.0, end_time=196.0)]),
+    ]
+
+    assert wialign._should_ignore_trimmed_transcript(
+        trimmed_end=184.44,
+        original_transcription=segments,
+        lines=lines,
+    )
+
+
+def test_should_ignore_trimmed_transcript_keeps_normal_tail_trim():
+    segments = [
+        TranscriptionSegment(start=0, end=20, text="early", words=[]),
+        TranscriptionSegment(start=180, end=190, text="late", words=[]),
+    ]
+    lines = [
+        Line(words=[Word(text="a", start_time=10.0, end_time=11.0)]),
+        Line(words=[Word(text="b", start_time=185.0, end_time=186.0)]),
+    ]
+
+    assert not wialign._should_ignore_trimmed_transcript(
+        trimmed_end=184.44,
+        original_transcription=segments,
+        lines=lines,
+    )
+
+
 def test_build_word_to_segment_index():
     segments = [
         TranscriptionSegment(

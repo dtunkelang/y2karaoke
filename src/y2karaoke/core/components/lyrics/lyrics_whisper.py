@@ -221,6 +221,10 @@ def _detect_offset_with_issues(
     line_timings: List[Tuple[float, str]],
     lyrics_offset: Optional[float],
     issues: List[str],
+    *,
+    auto_offset_scale: float = 1.0,
+    scaled_offset_min_abs_sec: float = 0.0,
+    scaled_offset_max_abs_sec: float = float("inf"),
 ) -> Tuple[List[Tuple[float, str]], float]:
     """Detect vocal offset, track issues for quality report.
 
@@ -247,7 +251,10 @@ def _detect_offset_with_issues(
             f"Detected vocal offset ({delta:+.2f}s) matches suspicious range (2.5-5.0s) - NOT auto-applying."
         )
     elif abs(delta) > 0.3 and abs(delta) <= 2.5:
-        offset = delta
+        scale = 1.0
+        if scaled_offset_min_abs_sec <= abs(delta) <= scaled_offset_max_abs_sec:
+            scale = max(0.0, auto_offset_scale)
+        offset = delta * scale
         logger.info(f"Auto-applying vocal offset: {offset:+.2f}s")
     elif abs(delta) > AUTO_OFFSET_MAX_ABS_SEC:
         logger.warning(

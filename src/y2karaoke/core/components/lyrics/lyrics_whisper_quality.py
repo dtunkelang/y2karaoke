@@ -617,8 +617,25 @@ def get_lyrics_with_quality(  # noqa: C901
         )
 
     if vocals_path and line_timings:
+        auto_offset_scale = 1.0
+        scaled_offset_min_abs_sec = 0.0
+        scaled_offset_max_abs_sec = float("inf")
+        if (
+            quality_report.get("lyrics_source_audio_scoring_used")
+            and quality_report.get("lyrics_source_selection_mode")
+            == "audio_scored_disagreement"
+        ):
+            auto_offset_scale = 0.6
+            scaled_offset_min_abs_sec = 0.9
+            scaled_offset_max_abs_sec = 1.4
         line_timings, _ = _detect_offset_with_issues(
-            vocals_path, line_timings, lyrics_offset, issues_list
+            vocals_path,
+            line_timings,
+            lyrics_offset,
+            issues_list,
+            auto_offset_scale=auto_offset_scale,
+            scaled_offset_min_abs_sec=scaled_offset_min_abs_sec,
+            scaled_offset_max_abs_sec=scaled_offset_max_abs_sec,
         )
 
     if should_auto_enable_whisper(

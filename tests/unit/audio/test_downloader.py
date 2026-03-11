@@ -135,7 +135,7 @@ class TestDownloadAudio:
         mock_extract_metadata,
         tmp_path,
     ):
-        """Fallback to any wav if sanitized title path missing."""
+        """Use the newest wav after download if the sanitized title path is missing."""
         mock_validate.return_value = "https://youtube.com/watch?v=test"
         mock_extract_id.return_value = "video123"
         mock_sanitize.return_value = "Expected"
@@ -158,7 +158,9 @@ class TestDownloadAudio:
         assert result["title"] == "Clean"
         assert result["artist"] == "Artist"
         assert result["video_id"] == "video123"
-        mock_instance.download.assert_not_called()
+        mock_instance.download.assert_called_once_with(
+            ["https://youtube.com/watch?v=test"]
+        )
 
     @patch("y2karaoke.core.components.audio.downloader.sanitize_filename")
     @patch("y2karaoke.core.components.audio.downloader.yt_dlp.YoutubeDL")
