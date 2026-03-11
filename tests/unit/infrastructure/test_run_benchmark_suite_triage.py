@@ -482,6 +482,31 @@ def test_classify_quality_diagnosis_deescalates_dtw_lexical_review_with_strong_g
     assert "hook_normalized_agreement_consistent" in diagnosis["reasons"]
 
 
+def test_classify_quality_diagnosis_flags_downstream_regression_dominant_case():
+    module = _load_module()
+    diagnosis = module._classify_quality_diagnosis(
+        {
+            "line_count": 56,
+            "dtw_line_coverage": 0.804,
+            "dtw_word_coverage": 0.778,
+            "low_confidence_ratio": 0.1071,
+            "agreement_coverage_ratio": 0.4107,
+            "agreement_start_p95_abs_sec": 1.126,
+            "gold_word_coverage_ratio": 0.9971,
+            "gold_start_mean_abs_sec": 0.7712,
+            "gold_start_p95_abs_sec": 1.9553,
+            "gold_pre_whisper_start_mean_abs_sec": 0.5193,
+            "gold_downstream_regression_line_count": 8,
+            "gold_downstream_regression_mean_improvement_sec": 1.0363,
+            "gold_comparable_word_count": 346,
+            "gold_available": True,
+        }
+    )
+    assert diagnosis["verdict"] == "needs_pipeline_work"
+    assert "downstream_regression_dominant" in diagnosis["reasons"]
+    assert "pre_whisper_timing_stronger_than_final" in diagnosis["reasons"]
+
+
 def test_aggregate_includes_quality_diagnosis_counts():
     module = _load_module()
     results = [

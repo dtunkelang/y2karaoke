@@ -46,6 +46,15 @@ def _classify_song(song: dict[str, Any]) -> dict[str, Any]:
     low_conf = _num(metrics.get("low_confidence_ratio")) or 0.0
     gold_cov = _num(metrics.get("gold_word_coverage_ratio")) or 0.0
     gold_start_mean = _num(metrics.get("gold_start_mean_abs_sec")) or 0.0
+    pre_whisper_start_mean = (
+        _num(metrics.get("gold_pre_whisper_start_mean_abs_sec")) or 0.0
+    )
+    downstream_regression_lines = int(
+        metrics.get("gold_downstream_regression_line_count", 0) or 0
+    )
+    downstream_regression_mean = (
+        _num(metrics.get("gold_downstream_regression_mean_improvement_sec")) or 0.0
+    )
     hint = str(policy_hint.get("hint") or "")
     hook_boundary_ratio = _num(lexical_diag.get("hook_boundary_variant_ratio")) or 0.0
     trunc_ratio = _num(lexical_diag.get("truncation_pattern_ratio")) or 0.0
@@ -91,6 +100,11 @@ def _classify_song(song: dict[str, Any]) -> dict[str, Any]:
             or repetitive_ratio >= 0.02
         )
     )
+    downstream_regression_dominant = (
+        downstream_regression_lines >= 6
+        and downstream_regression_mean >= 0.6
+        and pre_whisper_start_mean + 0.15 < gold_start_mean
+    )
 
     label = "mixed_or_unclear"
     evidence: list[str] = []
@@ -119,6 +133,14 @@ def _classify_song(song: dict[str, Any]) -> dict[str, Any]:
             f"anchor_outside_window_skips={outside_window}",
             f"timing_delta_clamped={'timing_delta_clamped' in issue_tags}",
             f"match_ratio={match_ratio:.3f}",
+        ]
+    elif downstream_regression_dominant:
+        label = "downstream_timing_regression"
+        evidence = [
+            f"downstream_regression_lines={downstream_regression_lines}",
+            f"downstream_regression_mean={downstream_regression_mean:.3f}s",
+            f"pre_whisper_start_mean={pre_whisper_start_mean:.3f}s",
+            f"gold_start_mean={gold_start_mean:.3f}s",
         ]
     elif strong_drift_signal:
         label = "timing_drift"

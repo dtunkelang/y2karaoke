@@ -1,21 +1,21 @@
 {
-  "manifest": "benchmarks/benchmark_songs.yaml",
-  "latest_pointer": "benchmarks/results/latest.json",
-  "benchmark_args": [
-    "--offline",
-    "--gold-root",
-    "benchmarks/gold_set_candidate/20260305T231015Z",
-    "--match",
-    "Blinding Lights|Derniere danse|Mi Gente",
-    "--max-songs",
-    "3"
-  ],
-  "thresholds": {
-    "min_success_rate": 1.0,
-    "min_curated_canary_song_count": 2,
-    "min_curated_canary_gold_word_coverage_ratio_total": 0.98,
-    "max_curated_canary_avg_abs_word_start_delta_sec_word_weighted_mean": 1.25,
-    "max_curated_canary_gold_start_p95_abs_sec_mean": 3.1,
-    "max_curated_canary_reference_watchlist_count": 1
-  }
+    "manifest": "benchmarks/benchmark_songs.yaml",
+    "latest_pointer": "benchmarks/results/latest.json",
+    "benchmark_args": [
+        "--offline",
+        "--gold-root",
+        "benchmarks/gold_set_candidate/20260305T231015Z",
+        "--match",
+        "Blinding Lights|Derniere danse|Mi Gente|DESPECHA",
+        "--max-songs",
+        "3"
+    ],
+    "thresholds": {
+        "min_success_rate": 1.0,
+        "min_curated_canary_song_count": 2,
+        "min_curated_canary_gold_word_coverage_ratio_total": 0.98,
+        "max_curated_canary_avg_abs_word_start_delta_sec_word_weighted_mean": 1.25,
+        "max_curated_canary_gold_start_p95_abs_sec_mean": 3.1,
+        "max_curated_canary_reference_watchlist_count": 1
+    }
 }

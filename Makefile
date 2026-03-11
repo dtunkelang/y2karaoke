@@ -125,7 +125,7 @@ benchmark-kill:
 	./tools/kill_benchmark_suites.sh
 
 curated-canary-prewarm-sources:
-	$(PYTHON) tools/prewarm_lyrics_source_cache.py --manifest benchmarks/benchmark_songs.yaml --match "Blinding Lights|Derniere danse|Mi Gente" --max-songs 3
+	$(PYTHON) tools/prewarm_lyrics_source_cache.py --manifest benchmarks/benchmark_songs.yaml --match "Blinding Lights|Derniere danse|Mi Gente|DESPECHA" --max-songs 4
 
 curated-canary-guardrails:
 	@test -f benchmarks/results/latest.json || (echo "latest benchmark pointer missing for curated canary guardrails"; exit 2)
@@ -138,7 +138,7 @@ curated-canary-compare:
 		$(if $(ASSERT_TRADEOFF),--assert-agreement-tradeoff --min-coverage-gain "$(MIN_COVERAGE_GAIN)" --max-bad-ratio-increase "$(MAX_BAD_RATIO_INCREASE)",)
 
 curated-canary-eval:
-	$(PYTHON) tools/run_benchmark_suite.py --offline --gold-root benchmarks/gold_set_candidate/20260305T231015Z --match "Blinding Lights|Derniere danse|Mi Gente" --max-songs 3 $(if $(RUN_ID),--run-id "$(RUN_ID)",) $(EXTRA_ARGS)
+	$(PYTHON) tools/run_benchmark_suite.py --offline --gold-root benchmarks/gold_set_candidate/20260305T231015Z --match "Blinding Lights|Derniere danse|Mi Gente|DESPECHA" --max-songs 4 $(if $(RUN_ID),--run-id "$(RUN_ID)",) $(EXTRA_ARGS)
 	@test -f benchmarks/results/latest.json || (echo "latest benchmark pointer missing after curated canary eval"; exit 2)
 	$(PYTHON) tools/main_benchmark_guardrails.py --skip-benchmark --guardrails-json benchmarks/curated_canary_guardrails.json --report-json "$$(cat benchmarks/results/latest.json)"
 	$(PYTHON) tools/classify_alignment_failures.py --report "$$(cat benchmarks/results/latest.json)"

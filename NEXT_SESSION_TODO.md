@@ -29,8 +29,11 @@
   - Baseline `20260305T225648Z` vs candidate `20260305T231015Z` (non-human proxy).
 - [ ] Run a focused manual-correction pass for current top priority songs:
   - `J Balvin - Mi Gente`
-  - `Bruno Mars - Uptown Funk`
-  - `ROSALIA - DESPECHA`
+- [x] Curate additional canary gold songs:
+  - `benchmarks/gold_set_candidate/20260305T231015Z/05_bruno-mars-uptown-funk.gold.json`
+  - `benchmarks/gold_set_candidate/20260305T231015Z/09_rosalia-despecha.gold.json`
+  - `Uptown Funk` now drives lexical hook-boundary review/reporting.
+  - `DESPECHA` now drives downstream timing-regression diagnosis.
 - [x] Complete first curated canary pair:
   - `benchmarks/gold_set_candidate/20260305T231015Z/08_indila-derniere-danse.gold.json`
   - `benchmarks/gold_set_candidate/20260305T231015Z/06_the-weeknd-blinding-lights.gold.json`

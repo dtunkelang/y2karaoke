@@ -2437,6 +2437,11 @@ def _classify_quality_diagnosis(
     gold_cov = _f("gold_word_coverage_ratio")
     gold_start_mean = _f("gold_start_mean_abs_sec")
     gold_start_p95 = _f("gold_start_p95_abs_sec")
+    pre_whisper_start_mean = _f("gold_pre_whisper_start_mean_abs_sec")
+    downstream_regression_lines = int(
+        metrics.get("gold_downstream_regression_line_count", 0) or 0
+    )
+    downstream_regression_mean = _f("gold_downstream_regression_mean_improvement_sec")
     gold_comparable_words = int(metrics.get("gold_comparable_word_count", 0) or 0)
     has_gold = bool(metrics.get("gold_available"))
     has_dtw = isinstance(metrics.get("dtw_line_coverage"), (int, float))
@@ -2496,6 +2501,12 @@ def _classify_quality_diagnosis(
     strong_gold_agreement = (
         strong_gold and agree_cov >= 0.4 and agree_p95 <= 0.9 and low_conf <= 0.1
     )
+    downstream_regression_dominant = (
+        has_gold
+        and downstream_regression_lines >= max(6, int(line_count * 0.1))
+        and downstream_regression_mean >= 0.6
+        and pre_whisper_start_mean + 0.15 < gold_start_mean
+    )
     hook_boundary_ratio = 0.0
     if isinstance(lexical_mismatch_diagnostics, dict):
         hook_boundary_ratio = float(
@@ -2527,6 +2538,15 @@ def _classify_quality_diagnosis(
             0.85, agree_cov + 0.2
         ) and hook_agree_text_similarity >= max(0.9, agree_text_similarity):
             reasons.append("hook_normalized_agreement_consistent")
+    elif downstream_regression_dominant:
+        verdict = "needs_pipeline_work"
+        confidence = "high"
+        reasons.extend(
+            [
+                "downstream_regression_dominant",
+                "pre_whisper_timing_stronger_than_final",
+            ]
+        )
     else:
         severe_pipeline_signals = (
             dtw_line < 0.75
@@ -2568,6 +2588,11 @@ def _classify_quality_diagnosis(
             "agreement_start_p95_abs_sec": round(agree_p95, 4),
             "gold_word_coverage_ratio": round(gold_cov, 4),
             "gold_start_mean_abs_sec": round(gold_start_mean, 4),
+            "gold_pre_whisper_start_mean_abs_sec": round(pre_whisper_start_mean, 4),
+            "gold_downstream_regression_line_count": downstream_regression_lines,
+            "gold_downstream_regression_mean_improvement_sec": round(
+                downstream_regression_mean, 4
+            ),
             "gold_comparable_word_count": gold_comparable_words,
         },
     }

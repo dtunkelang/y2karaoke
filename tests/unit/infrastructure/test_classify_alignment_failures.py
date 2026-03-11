@@ -93,6 +93,30 @@ def test_classify_timing_drift_precedes_sparse_when_signal_is_strong() -> None:
     assert row["label"] == "timing_drift"
 
 
+def test_classify_downstream_timing_regression() -> None:
+    row = _MODULE._classify_song(
+        {
+            "artist": "ROSALIA",
+            "title": "DESPECHA",
+            "metrics": {
+                "agreement_coverage_ratio": 0.4107,
+                "agreement_eligibility_ratio": 0.7857,
+                "agreement_match_ratio_within_eligible": 0.5227,
+                "agreement_start_p95_abs_sec": 1.126,
+                "dtw_line_coverage": 0.804,
+                "gold_start_mean_abs_sec": 0.7712,
+                "gold_pre_whisper_start_mean_abs_sec": 0.5193,
+                "gold_downstream_regression_line_count": 8,
+                "gold_downstream_regression_mean_improvement_sec": 1.0363,
+                "agreement_skip_reason_counts": {},
+            },
+            "alignment_diagnostics": {"issue_tags": []},
+        }
+    )
+    assert row["label"] == "downstream_timing_regression"
+    assert "downstream_regression_lines=8" in row["evidence"]
+
+
 def test_classify_lexical_hook_variant_matching() -> None:
     row = _MODULE._classify_song(
         {
