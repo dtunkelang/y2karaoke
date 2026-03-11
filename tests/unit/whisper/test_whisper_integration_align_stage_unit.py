@@ -685,3 +685,74 @@ def test_restore_consistently_late_runs_from_baseline_skips_inconsistent_run():
 
     assert restored == 0
     assert repaired[1].start_time == pytest.approx(12.4)
+
+
+def test_restore_late_enumeration_lines_from_baseline_restores_late_counting_line():
+    baseline = [
+        Line(
+            words=[
+                Word(text="A,", start_time=69.0, end_time=69.1),
+                Word(text="B,", start_time=69.1, end_time=69.2),
+                Word(text="C,", start_time=69.2, end_time=69.3),
+                Word(text="one,", start_time=69.3, end_time=69.55),
+                Word(text="two,", start_time=69.55, end_time=69.8),
+                Word(text="three", start_time=69.8, end_time=70.1),
+            ]
+        )
+    ]
+    mapped = [
+        Line(
+            words=[
+                Word(text="A,", start_time=71.05, end_time=71.3),
+                Word(text="B,", start_time=71.3, end_time=71.55),
+                Word(text="C,", start_time=71.55, end_time=71.8),
+                Word(text="one,", start_time=71.8, end_time=72.6),
+                Word(text="two,", start_time=72.6, end_time=73.4),
+                Word(text="three", start_time=73.4, end_time=74.23),
+            ]
+        )
+    ]
+
+    repaired, restored = wialign._restore_late_enumeration_lines_from_baseline(
+        mapped,
+        baseline,
+    )
+
+    assert restored == 1
+    assert repaired[0].start_time == pytest.approx(69.0)
+    assert repaired[0].end_time == pytest.approx(70.1)
+
+
+def test_restore_late_enumeration_lines_from_baseline_skips_moderate_shift():
+    baseline = [
+        Line(
+            words=[
+                Word(text="A,", start_time=75.7, end_time=75.8),
+                Word(text="B,", start_time=75.8, end_time=75.9),
+                Word(text="C,", start_time=75.9, end_time=76.0),
+                Word(text="one,", start_time=76.0, end_time=76.2),
+                Word(text="two,", start_time=76.2, end_time=76.4),
+                Word(text="three", start_time=76.4, end_time=76.7),
+            ]
+        )
+    ]
+    mapped = [
+        Line(
+            words=[
+                Word(text="A,", start_time=76.42, end_time=76.55),
+                Word(text="B,", start_time=76.55, end_time=76.68),
+                Word(text="C,", start_time=76.68, end_time=76.81),
+                Word(text="one,", start_time=76.81, end_time=77.05),
+                Word(text="two,", start_time=77.05, end_time=77.3),
+                Word(text="three", start_time=77.3, end_time=78.03),
+            ]
+        )
+    ]
+
+    repaired, restored = wialign._restore_late_enumeration_lines_from_baseline(
+        mapped,
+        baseline,
+    )
+
+    assert restored == 0
+    assert repaired[0].start_time == pytest.approx(76.42)

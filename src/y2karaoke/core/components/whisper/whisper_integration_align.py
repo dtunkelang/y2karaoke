@@ -322,6 +322,39 @@ def _restore_consistently_late_runs_from_baseline(
     return repaired, restored
 
 
+def _restore_late_enumeration_lines_from_baseline(
+    mapped_lines: List[models.Line],
+    baseline_lines: List[models.Line],
+) -> tuple[List[models.Line], int]:
+    repaired = list(mapped_lines)
+    restored = 0
+    limit = min(len(mapped_lines), len(baseline_lines))
+    for idx in range(limit):
+        mapped = mapped_lines[idx]
+        baseline = baseline_lines[idx]
+        if not mapped.words or not baseline.words:
+            continue
+        tokens = [re.sub(r"[^a-z0-9']+", "", w.text.lower()) for w in mapped.words]
+        nonempty = [t for t in tokens if t]
+        if not (3 <= len(nonempty) <= 6):
+            continue
+        short_count = sum(1 for t in nonempty if len(t) <= 3)
+        if short_count < max(3, len(nonempty) - 1):
+            continue
+        if mapped.text.count(",") < 3:
+            continue
+        start_shift = mapped.start_time - baseline.start_time
+        baseline_duration = baseline.end_time - baseline.start_time
+        mapped_duration = mapped.end_time - mapped.start_time
+        if start_shift < 1.5:
+            continue
+        if baseline_duration <= 0.0 or mapped_duration < baseline_duration * 1.5:
+            continue
+        repaired[idx] = baseline
+        restored += 1
+    return repaired, restored
+
+
 def _rescale_line_to_new_end(line: models.Line, target_end: float) -> models.Line:
     old_duration = line.end_time - line.start_time
     new_duration = target_end - line.start_time
@@ -1141,6 +1174,21 @@ def align_lrc_text_to_whisper_timings_impl(  # noqa: C901
     _capture_trace_snapshot(
         trace_snapshots,
         stage="after_restore_zero_support_parenthetical_late_start_expansions",
+        lines=mapped_lines,
+        line_range=trace_line_range,
+    )
+    mapped_lines, restored_enumerations = _restore_late_enumeration_lines_from_baseline(
+        mapped_lines,
+        baseline_lines,
+    )
+    if restored_enumerations:
+        corrections.append(
+            "Restored "
+            f"{restored_enumerations} late enumeration line(s) from baseline timing"
+        )
+    _capture_trace_snapshot(
+        trace_snapshots,
+        stage="after_restore_late_enumeration_lines_from_baseline",
         lines=mapped_lines,
         line_range=trace_line_range,
     )
