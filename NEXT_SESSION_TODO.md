@@ -301,7 +301,13 @@
 - [ ] Increase gold comparable-word coverage from ~`0.747` toward >=`0.800`.
 - [ ] Prioritize gold-set expansion for songs with highest human-guidance priority and poor comparability.
 - [x] Establish curated canary slice for hard-song analysis.
-  - Current canaries: `Indila - Derniere danse`, `The Weeknd - Blinding Lights`
+  - Current trusted canaries: `Indila - Derniere danse`, `The Weeknd - Blinding Lights`, `ROSALIA - DESPECHA`
+  - Current watchlist: `J Balvin - Mi Gente`
+  - Best current canary run: `benchmarks/results/20260310T_curated_canary_with_despecha_block_guard_v2`
+    - `curated_canary_avg_abs_word_start_delta_sec_word_weighted_mean = 0.5512`
+    - `curated_canary_gold_start_p95_abs_sec_mean = 1.2393`
+    - `curated_canary_gold_line_duration_mean_abs_sec_mean = 0.3182`
+    - `curated_canary_gold_downstream_regression_line_count_total = 3`
   - Use curated-gold metrics as a separate promotion lens for difficult songs.
 - [ ] Keep gold updates traceable (song-level changelog note per rebaseline).
 

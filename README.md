@@ -287,6 +287,10 @@ Benchmark seed set for timing quality work:
     - optional baseline comparison: `make curated-canary-eval RUN_ID=<candidate_run_id> BASELINE=benchmarks/results/<baseline_run_id>`
     - optional extra benchmark args: `make curated-canary-eval RUN_ID=<candidate_run_id> EXTRA_ARGS='--strategy hybrid_whisper'`
     - also writes `failure_mode_report.{json,md}` for the canary run
+    - current best curated canary baseline:
+      - `benchmarks/results/20260310T_curated_canary_with_despecha_block_guard_v2`
+      - trusted canaries: `Blinding Lights`, `Derniere danse`, `DESPECHA`
+      - watchlist: `Mi Gente`
   - Useful aggregate fields in the report:
       - `curated_canary_avg_abs_word_start_delta_sec_word_weighted_mean`
       - `curated_canary_gold_start_p95_abs_sec_mean`
