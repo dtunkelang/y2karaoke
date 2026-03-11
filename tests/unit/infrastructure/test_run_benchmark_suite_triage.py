@@ -105,6 +105,34 @@ def test_build_triage_rankings_uses_timing_quality_score_signal():
     assert "low_timing_quality_score" in reasons
 
 
+def test_build_triage_rankings_downweights_hook_boundary_lexical_cases():
+    module = _load_module()
+    succeeded = [
+        {
+            "artist": "Bruno Mars",
+            "title": "Uptown Funk",
+            "metrics": {
+                "gold_available": True,
+                "dtw_line_coverage": 0.724,
+                "dtw_word_coverage": 0.598,
+                "low_confidence_ratio": 0.0381,
+                "agreement_coverage_ratio": 0.6571,
+                "agreement_text_similarity_mean": 0.9022,
+                "agreement_hook_boundary_eligibility_ratio": 0.9524,
+                "agreement_hook_boundary_text_similarity_mean": 0.9166,
+                "agreement_start_p95_abs_sec": 0.728,
+                "agreement_bad_ratio": 0.0286,
+                "timing_quality_score": 0.761,
+            },
+            "lexical_mismatch_diagnostics": {
+                "hook_boundary_variant_ratio": 0.3204,
+            },
+        }
+    ]
+    triage = module._build_triage_rankings(succeeded, top_n=5)
+    assert triage["likely_pipeline_failure"] == []
+
+
 def test_aggregate_includes_triage_ranking_fields():
     module = _load_module()
     results = [

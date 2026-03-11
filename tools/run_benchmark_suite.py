@@ -2655,9 +2655,21 @@ def _build_pipeline_triage_row(
     agree_cov = _triage_metric_float(metrics, "agreement_coverage_ratio")
     agree_p95 = _triage_metric_float(metrics, "agreement_start_p95_abs_sec")
     agree_bad = _triage_metric_float(metrics, "agreement_bad_ratio")
+    hook_agree_eligibility = _triage_metric_float(
+        metrics, "agreement_hook_boundary_eligibility_ratio"
+    )
+    hook_agree_text_similarity = _triage_metric_float(
+        metrics, "agreement_hook_boundary_text_similarity_mean"
+    )
     timing_quality_score = _triage_metric_float(metrics, "timing_quality_score")
     agreement_reliability = max(0.3, min(1.0, agree_cov / 0.5))
     ref_div = record.get("reference_divergence", {})
+    lexical_diag = record.get("lexical_mismatch_diagnostics", {})
+    hook_boundary_ratio = 0.0
+    if isinstance(lexical_diag, dict):
+        hook_boundary_ratio = float(
+            lexical_diag.get("hook_boundary_variant_ratio", 0.0) or 0.0
+        )
 
     pipeline_score = 0.0
     pipeline_reasons: list[str] = []
@@ -2683,6 +2695,16 @@ def _build_pipeline_triage_row(
         elif timing_quality_score >= 0.78:
             pipeline_score = max(0.0, pipeline_score - 0.2)
             pipeline_reasons.append("timing_quality_score_good")
+    if (
+        hook_boundary_ratio >= 0.25
+        and hook_agree_eligibility >= max(0.85, agree_cov + 0.2)
+        and hook_agree_text_similarity >= 0.9
+        and agree_p95 <= 0.9
+        and low_conf <= 0.1
+    ):
+        pipeline_score = max(0.0, pipeline_score - 0.45)
+        pipeline_reasons.append("hook_boundary_variants_dominant")
+        pipeline_reasons.append("hook_normalized_agreement_consistent")
     if isinstance(ref_div, dict) and bool(ref_div.get("suspected")):
         pipeline_score = max(0.0, pipeline_score - 1.0)
         pipeline_reasons.append("downgraded_due_to_reference_divergence")
