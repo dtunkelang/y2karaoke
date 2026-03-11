@@ -23,6 +23,10 @@ from .whisper_integration_shift_guard import (
 from .whisper_integration_stages import (
     _shift_weak_opening_lines_past_phrase_carryover,
 )
+from .whisper_integration_late_run import (
+    late_run_is_restorable,
+    late_run_shift_for_baseline_restore,
+)
 from .whisper_integration_weak_evidence import (
     restore_weak_evidence_large_start_shifts as _restore_weak_evidence_large_start_shifts,
     restore_unsupported_early_duplicate_shifts as _restore_unsupported_early_duplicate_shifts,
@@ -277,21 +281,15 @@ def _restore_consistently_late_runs_from_baseline(
     min_median_shift_sec: float = 1.15,
 ) -> tuple[List[models.Line], int]:
     limit = min(len(mapped_lines), len(baseline_lines))
-    shifts: list[float | None] = []
-    for idx in range(limit):
-        mapped = mapped_lines[idx]
-        baseline = baseline_lines[idx]
-        if not mapped.words or not baseline.words:
-            shifts.append(None)
-            continue
-        if len(mapped.words) < 4 or len(baseline.words) < 4:
-            shifts.append(None)
-            continue
-        shift = mapped.start_time - baseline.start_time
-        if min_shift_sec <= shift <= max_shift_sec:
-            shifts.append(shift)
-        else:
-            shifts.append(None)
+    shifts = [
+        late_run_shift_for_baseline_restore(
+            mapped_lines[idx],
+            baseline_lines[idx],
+            min_shift_sec=min_shift_sec,
+            max_shift_sec=max_shift_sec,
+        )
+        for idx in range(limit)
+    ]
 
     repaired = list(mapped_lines)
     restored = 0
@@ -308,13 +306,12 @@ def _restore_consistently_late_runs_from_baseline(
             run_values.append(shift_value)
             idx += 1
         run_end = idx
-        if len(run_values) < min_run_length:
-            continue
-        if max(run_values) - min(run_values) > max_shift_spread_sec:
-            continue
-        sorted_values = sorted(run_values)
-        median_shift = sorted_values[len(sorted_values) // 2]
-        if median_shift < min_median_shift_sec:
+        if not late_run_is_restorable(
+            run_values,
+            min_run_length=min_run_length,
+            max_shift_spread_sec=max_shift_spread_sec,
+            min_median_shift_sec=min_median_shift_sec,
+        ):
             continue
         for line_idx in range(run_start, run_end):
             repaired[line_idx] = baseline_lines[line_idx]

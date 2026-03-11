@@ -4,7 +4,7 @@ PYTEST := PYTHONPATH=src $(PYTHON) -m pytest
 MIN_COVERAGE_GAIN ?= 0.005
 MAX_BAD_RATIO_INCREASE ?= 0.002
 
-.PHONY: bootstrap dep-check fmt fmt-check lint type test-fast test-full perf-smoke quality-guardrails bootstrap-quality-guardrails visual-eval visual-eval-guardrails bootstrap-calibrate benchmark-validate benchmark-run benchmark-aggregate-only benchmark-matrix benchmark-recommend benchmark-compare-correction benchmark-classify-failures benchmark-profile-runtime benchmark-compare-runtime benchmark-recommend-human-guidance benchmark-analyze-agreement benchmark-sweep-agreement benchmark-run-bg benchmark-status benchmark-kill curated-canary-prewarm-sources curated-canary-guardrails curated-canary-compare curated-canary-eval check ci-fast ci-full
+.PHONY: bootstrap dep-check fmt fmt-check lint type test-fast test-full perf-smoke quality-guardrails bootstrap-quality-guardrails visual-eval visual-eval-guardrails bootstrap-calibrate benchmark-validate benchmark-run benchmark-aggregate-only benchmark-matrix benchmark-recommend benchmark-compare-correction benchmark-classify-failures benchmark-profile-runtime benchmark-compare-runtime benchmark-recommend-human-guidance benchmark-analyze-agreement benchmark-sweep-agreement benchmark-run-bg benchmark-status benchmark-kill curated-canary-prewarm-sources curated-canary-guardrails curated-canary-compare curated-canary-eval curated-canary-experiment check ci-fast ci-full
 
 bootstrap:
 	./tools/bootstrap_dev.sh
@@ -143,6 +143,11 @@ curated-canary-eval:
 	$(PYTHON) tools/main_benchmark_guardrails.py --skip-benchmark --guardrails-json benchmarks/curated_canary_guardrails.json --report-json "$$(cat benchmarks/results/latest.json)"
 	$(PYTHON) tools/classify_alignment_failures.py --report "$$(cat benchmarks/results/latest.json)"
 	$(if $(BASELINE),$(PYTHON) tools/compare_benchmark_correction.py --baseline "$(BASELINE)" --corrected "$$(cat benchmarks/results/latest.json)" $(if $(ASSERT_TRADEOFF),--assert-agreement-tradeoff --min-coverage-gain "$(MIN_COVERAGE_GAIN)" --max-bad-ratio-increase "$(MAX_BAD_RATIO_INCREASE)",),)
+
+curated-canary-experiment:
+	@test -n "$(EXPERIMENT)" || (echo "EXPERIMENT is required (e.g. repeat_duration)"; exit 2)
+	@test -n "$(RUN_PREFIX)" || (echo "RUN_PREFIX is required"; exit 2)
+	$(PYTHON) tools/run_curated_experiment_harness.py --experiment "$(EXPERIMENT)" --run-prefix "$(RUN_PREFIX)" $(if $(MATCH),--match "$(MATCH)",) $(if $(MAX_SONGS),--max-songs "$(MAX_SONGS)",)
 
 check: dep-check fmt-check lint type test-fast perf-smoke quality-guardrails bootstrap-quality-guardrails benchmark-validate
 
