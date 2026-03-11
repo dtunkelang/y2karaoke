@@ -2945,6 +2945,28 @@ def _aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:  # noqa: C901
         key: round((value / len(succeeded)) if succeeded else 0.0, 4)
         for key, value in diagnosis_counts.items()
     }
+    lexical_review_song_count = 0
+    lexical_truncation_pattern_line_count_total = 0
+    lexical_repetitive_phrase_line_count_total = 0
+    lexical_truncation_pattern_ratio_values: list[float] = []
+    lexical_repetitive_phrase_ratio_values: list[float] = []
+    for row in succeeded:
+        lexical_diag = row.get("lexical_mismatch_diagnostics", {})
+        if not isinstance(lexical_diag, dict) or not bool(lexical_diag.get("active")):
+            continue
+        lexical_review_song_count += 1
+        lexical_truncation_pattern_line_count_total += int(
+            lexical_diag.get("truncation_pattern_count", 0) or 0
+        )
+        lexical_repetitive_phrase_line_count_total += int(
+            lexical_diag.get("repetitive_phrase_line_count", 0) or 0
+        )
+        trunc_ratio = lexical_diag.get("truncation_pattern_ratio")
+        rep_ratio = lexical_diag.get("repetitive_phrase_line_ratio")
+        if isinstance(trunc_ratio, (int, float)):
+            lexical_truncation_pattern_ratio_values.append(float(trunc_ratio))
+        if isinstance(rep_ratio, (int, float)):
+            lexical_repetitive_phrase_ratio_values.append(float(rep_ratio))
     timing_quality_band_counts: dict[str, int] = {}
     for row in succeeded:
         metrics_row = row.get("metrics", {})
@@ -3340,6 +3362,23 @@ def _aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:  # noqa: C901
         ),
         "quality_diagnosis_counts": diagnosis_counts,
         "quality_diagnosis_ratios": diagnosis_ratios,
+        "lexical_review_song_count": lexical_review_song_count,
+        "lexical_truncation_pattern_line_count_total": (
+            lexical_truncation_pattern_line_count_total
+        ),
+        "lexical_repetitive_phrase_line_count_total": (
+            lexical_repetitive_phrase_line_count_total
+        ),
+        "lexical_truncation_pattern_ratio_mean": (
+            round(float(_mean(lexical_truncation_pattern_ratio_values) or 0.0), 4)
+            if lexical_truncation_pattern_ratio_values
+            else None
+        ),
+        "lexical_repetitive_phrase_line_ratio_mean": (
+            round(float(_mean(lexical_repetitive_phrase_ratio_values) or 0.0), 4)
+            if lexical_repetitive_phrase_ratio_values
+            else None
+        ),
         "agreement_skip_reason_totals": dict(
             sorted(agreement_skip_reason_totals.items(), key=lambda kv: (-kv[1], kv[0]))
         ),
@@ -3972,6 +4011,16 @@ def _write_markdown_summary(  # noqa: C901
             f"{k}={v}" for k, v in sorted(diagnosis_counts.items())
         )
         lines.append(f"- Per-song quality diagnosis: `{diagnosis_summary}`")
+    lexical_review_song_count = int(aggregate.get("lexical_review_song_count", 0) or 0)
+    if lexical_review_song_count > 0:
+        lines.append(
+            "- Lexical-review hotspots: "
+            f"`{lexical_review_song_count}` song(s), "
+            f"truncation-pattern ratio "
+            f"`{_fmt_num(aggregate.get('lexical_truncation_pattern_ratio_mean'))}`, "
+            f"repetitive-phrase ratio "
+            f"`{_fmt_num(aggregate.get('lexical_repetitive_phrase_line_ratio_mean'))}`"
+        )
     timing_band_counts = aggregate.get("timing_quality_band_counts", {})
     if isinstance(timing_band_counts, dict) and timing_band_counts:
         timing_band_summary = ", ".join(
