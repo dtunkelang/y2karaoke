@@ -435,6 +435,9 @@ def test_classify_quality_diagnosis_deescalates_dtw_lexical_review_with_strong_g
             "dtw_word_coverage": 0.598,
             "low_confidence_ratio": 0.0381,
             "agreement_coverage_ratio": 0.6571,
+            "agreement_text_similarity_mean": 0.9022,
+            "agreement_hook_boundary_eligibility_ratio": 0.9524,
+            "agreement_hook_boundary_text_similarity_mean": 0.9166,
             "agreement_start_p95_abs_sec": 0.728,
             "gold_word_coverage_ratio": 1.0,
             "gold_start_mean_abs_sec": 0.3217,
@@ -448,6 +451,7 @@ def test_classify_quality_diagnosis_deescalates_dtw_lexical_review_with_strong_g
     assert diagnosis["verdict"] == "needs_manual_review"
     assert "review_dtw_lexical_matching" in diagnosis["reasons"]
     assert "hook_boundary_variants_dominant" in diagnosis["reasons"]
+    assert "hook_normalized_agreement_consistent" in diagnosis["reasons"]
 
 
 def test_aggregate_includes_quality_diagnosis_counts():

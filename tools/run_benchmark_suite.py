@@ -2483,6 +2483,9 @@ def _classify_quality_diagnosis(
 
     strong_internal = dtw_line >= 0.85 and dtw_word >= 0.55 and low_conf <= 0.12
     stable_agreement = agree_cov <= 0.0 or agree_p95 <= 0.9
+    hook_agree_eligibility = _f("agreement_hook_boundary_eligibility_ratio")
+    hook_agree_text_similarity = _f("agreement_hook_boundary_text_similarity_mean")
+    agree_text_similarity = _f("agreement_text_similarity_mean")
     strong_gold = (
         has_gold
         and gold_comparable_words >= 40
@@ -2520,6 +2523,10 @@ def _classify_quality_diagnosis(
         )
         if hook_boundary_ratio >= 0.25:
             reasons.append("hook_boundary_variants_dominant")
+        if hook_agree_eligibility >= max(
+            0.85, agree_cov + 0.2
+        ) and hook_agree_text_similarity >= max(0.9, agree_text_similarity):
+            reasons.append("hook_normalized_agreement_consistent")
     else:
         severe_pipeline_signals = (
             dtw_line < 0.75
