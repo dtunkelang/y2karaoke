@@ -558,3 +558,130 @@ def test_align_pipeline_extends_unsupported_weak_opening_line():
 
     assert mapped[1].end_time == pytest.approx(81.93, abs=0.01)
     assert any("weak-opening line" in msg for msg in corrections)
+
+
+def test_restore_consistently_late_runs_from_baseline_restores_dense_run():
+    baseline = [
+        Line(
+            words=[
+                Word(text=t, start_time=54.10 + i * 0.5, end_time=54.50 + i * 0.5)
+                for i, t in enumerate(["a", "b", "c", "d"])
+            ]
+        ),
+        Line(
+            words=[
+                Word(text=t, start_time=56.15 + i * 0.4, end_time=56.45 + i * 0.4)
+                for i, t in enumerate(["a", "b", "c", "d"])
+            ]
+        ),
+        Line(
+            words=[
+                Word(text=t, start_time=57.80 + i * 0.45, end_time=58.10 + i * 0.45)
+                for i, t in enumerate(["a", "b", "c", "d"])
+            ]
+        ),
+        Line(
+            words=[
+                Word(text=t, start_time=59.80 + i * 0.4, end_time=60.10 + i * 0.4)
+                for i, t in enumerate(["a", "b", "c", "d"])
+            ]
+        ),
+    ]
+    mapped = [
+        Line(
+            words=[
+                Word(text=t, start_time=55.67 + i * 0.45, end_time=56.05 + i * 0.45)
+                for i, t in enumerate(["a", "b", "c", "d"])
+            ]
+        ),
+        Line(
+            words=[
+                Word(text=t, start_time=57.51 + i * 0.55, end_time=57.90 + i * 0.55)
+                for i, t in enumerate(["a", "b", "c", "d"])
+            ]
+        ),
+        Line(
+            words=[
+                Word(text=t, start_time=59.87 + i * 0.43, end_time=60.24 + i * 0.43)
+                for i, t in enumerate(["a", "b", "c", "d"])
+            ]
+        ),
+        Line(
+            words=[
+                Word(text=t, start_time=61.71 + i * 0.42, end_time=62.08 + i * 0.42)
+                for i, t in enumerate(["a", "b", "c", "d"])
+            ]
+        ),
+    ]
+
+    repaired, restored = wialign._restore_consistently_late_runs_from_baseline(
+        mapped,
+        baseline,
+    )
+
+    assert restored == 4
+    assert repaired[0].start_time == pytest.approx(54.10)
+    assert repaired[3].start_time == pytest.approx(59.80)
+
+
+def test_restore_consistently_late_runs_from_baseline_skips_inconsistent_run():
+    baseline = [
+        Line(
+            words=[
+                Word(text=t, start_time=10.0 + i * 0.2, end_time=10.15 + i * 0.2)
+                for i, t in enumerate(["a", "b", "c", "d"])
+            ]
+        ),
+        Line(
+            words=[
+                Word(text=t, start_time=11.0 + i * 0.2, end_time=11.15 + i * 0.2)
+                for i, t in enumerate(["a", "b", "c", "d"])
+            ]
+        ),
+        Line(
+            words=[
+                Word(text=t, start_time=12.0 + i * 0.2, end_time=12.15 + i * 0.2)
+                for i, t in enumerate(["a", "b", "c", "d"])
+            ]
+        ),
+        Line(
+            words=[
+                Word(text=t, start_time=13.0 + i * 0.2, end_time=13.15 + i * 0.2)
+                for i, t in enumerate(["a", "b", "c", "d"])
+            ]
+        ),
+    ]
+    mapped = [
+        Line(
+            words=[
+                Word(text=t, start_time=10.9 + i * 0.2, end_time=11.05 + i * 0.2)
+                for i, t in enumerate(["a", "b", "c", "d"])
+            ]
+        ),
+        Line(
+            words=[
+                Word(text=t, start_time=12.4 + i * 0.2, end_time=12.55 + i * 0.2)
+                for i, t in enumerate(["a", "b", "c", "d"])
+            ]
+        ),
+        Line(
+            words=[
+                Word(text=t, start_time=13.1 + i * 0.2, end_time=13.25 + i * 0.2)
+                for i, t in enumerate(["a", "b", "c", "d"])
+            ]
+        ),
+        Line(
+            words=[
+                Word(text=t, start_time=13.95 + i * 0.2, end_time=14.10 + i * 0.2)
+                for i, t in enumerate(["a", "b", "c", "d"])
+            ]
+        ),
+    ]
+
+    repaired, restored = wialign._restore_consistently_late_runs_from_baseline(
+        mapped,
+        baseline,
+    )
+
+    assert restored == 0
+    assert repaired[1].start_time == pytest.approx(12.4)

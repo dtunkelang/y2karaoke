@@ -266,6 +266,62 @@ def _extend_interjection_line_end(
     return models.Line(words=new_words, singer=line.singer)
 
 
+def _restore_consistently_late_runs_from_baseline(
+    mapped_lines: List[models.Line],
+    baseline_lines: List[models.Line],
+    *,
+    min_run_length: int = 3,
+    min_shift_sec: float = 0.8,
+    max_shift_sec: float = 2.2,
+    max_shift_spread_sec: float = 0.8,
+    min_median_shift_sec: float = 1.15,
+) -> tuple[List[models.Line], int]:
+    limit = min(len(mapped_lines), len(baseline_lines))
+    shifts: list[float | None] = []
+    for idx in range(limit):
+        mapped = mapped_lines[idx]
+        baseline = baseline_lines[idx]
+        if not mapped.words or not baseline.words:
+            shifts.append(None)
+            continue
+        if len(mapped.words) < 4 or len(baseline.words) < 4:
+            shifts.append(None)
+            continue
+        shift = mapped.start_time - baseline.start_time
+        if min_shift_sec <= shift <= max_shift_sec:
+            shifts.append(shift)
+        else:
+            shifts.append(None)
+
+    repaired = list(mapped_lines)
+    restored = 0
+    idx = 0
+    while idx < limit:
+        if shifts[idx] is None:
+            idx += 1
+            continue
+        run_start = idx
+        run_values: list[float] = []
+        while idx < limit and shifts[idx] is not None:
+            shift_value = shifts[idx]
+            assert shift_value is not None
+            run_values.append(shift_value)
+            idx += 1
+        run_end = idx
+        if len(run_values) < min_run_length:
+            continue
+        if max(run_values) - min(run_values) > max_shift_spread_sec:
+            continue
+        sorted_values = sorted(run_values)
+        median_shift = sorted_values[len(sorted_values) // 2]
+        if median_shift < min_median_shift_sec:
+            continue
+        for line_idx in range(run_start, run_end):
+            repaired[line_idx] = baseline_lines[line_idx]
+            restored += 1
+    return repaired, restored
+
+
 def _rescale_line_to_new_end(line: models.Line, target_end: float) -> models.Line:
     old_duration = line.end_time - line.start_time
     new_duration = target_end - line.start_time
@@ -1005,6 +1061,24 @@ def align_lrc_text_to_whisper_timings_impl(  # noqa: C901
         lines=mapped_lines,
         line_range=trace_line_range,
     )
+    if not apply_baseline_constraint:
+        mapped_lines, restored_late_runs = (
+            _restore_consistently_late_runs_from_baseline(
+                mapped_lines,
+                baseline_lines,
+            )
+        )
+        if restored_late_runs:
+            corrections.append(
+                "Restored "
+                f"{restored_late_runs} consistently late line(s) from baseline timing"
+            )
+        _capture_trace_snapshot(
+            trace_snapshots,
+            stage="after_restore_consistently_late_runs_from_baseline",
+            lines=mapped_lines,
+            line_range=trace_line_range,
+        )
     mapped_lines, restored_early_duplicates = (
         _restore_unsupported_early_duplicate_shifts(
             mapped_lines,
