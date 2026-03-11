@@ -47,6 +47,7 @@ def _classify_song(song: dict[str, Any]) -> dict[str, Any]:
     gold_cov = _num(metrics.get("gold_word_coverage_ratio")) or 0.0
     gold_start_mean = _num(metrics.get("gold_start_mean_abs_sec")) or 0.0
     hint = str(policy_hint.get("hint") or "")
+    hook_boundary_ratio = _num(lexical_diag.get("hook_boundary_variant_ratio")) or 0.0
     trunc_ratio = _num(lexical_diag.get("truncation_pattern_ratio")) or 0.0
     repetitive_ratio = _num(lexical_diag.get("repetitive_phrase_line_ratio")) or 0.0
 
@@ -84,7 +85,11 @@ def _classify_song(song: dict[str, Any]) -> dict[str, Any]:
         and agreement_cov >= 0.4
         and agreement_p95 <= 0.9
         and low_conf <= 0.1
-        and (trunc_ratio >= 0.15 or repetitive_ratio >= 0.02)
+        and (
+            hook_boundary_ratio >= 0.12
+            or trunc_ratio >= 0.15
+            or repetitive_ratio >= 0.02
+        )
     )
 
     label = "mixed_or_unclear"
@@ -92,13 +97,22 @@ def _classify_song(song: dict[str, Any]) -> dict[str, Any]:
     if not has_agreement_data:
         evidence = ["insufficient_agreement_metrics", f"status={status or 'unknown'}"]
     elif lexical_review_dominant:
-        label = "lexical_hook_variant_matching"
-        evidence = [
-            f"alignment_hint={hint}",
-            f"truncation_ratio={trunc_ratio:.3f}",
-            f"repetitive_phrase_ratio={repetitive_ratio:.3f}",
-            f"agreement_p95={agreement_p95:.3f}s",
-        ]
+        if hook_boundary_ratio >= 0.25:
+            label = "lexical_hook_boundary_variants"
+            evidence = [
+                f"alignment_hint={hint}",
+                f"hook_boundary_ratio={hook_boundary_ratio:.3f}",
+                f"truncation_ratio={trunc_ratio:.3f}",
+                f"agreement_p95={agreement_p95:.3f}s",
+            ]
+        else:
+            label = "lexical_hook_variant_matching"
+            evidence = [
+                f"alignment_hint={hint}",
+                f"truncation_ratio={trunc_ratio:.3f}",
+                f"repetitive_phrase_ratio={repetitive_ratio:.3f}",
+                f"agreement_p95={agreement_p95:.3f}s",
+            ]
     elif repetition_dominant and match_ratio < 0.75:
         label = "repetition_handling"
         evidence = [

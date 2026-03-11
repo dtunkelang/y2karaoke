@@ -113,14 +113,16 @@ def test_classify_lexical_hook_variant_matching() -> None:
                 "hint": "review_dtw_lexical_matching",
             },
             "lexical_mismatch_diagnostics": {
+                "hook_boundary_variant_ratio": 0.3204,
                 "truncation_pattern_ratio": 0.3689,
                 "repetitive_phrase_line_ratio": 0.0291,
             },
             "alignment_diagnostics": {},
         }
     )
-    assert row["label"] == "lexical_hook_variant_matching"
+    assert row["label"] == "lexical_hook_boundary_variants"
     assert "alignment_hint=review_dtw_lexical_matching" in row["evidence"]
+    assert "hook_boundary_ratio=0.320" in row["evidence"]
 
 
 def test_classify_missing_metrics_as_mixed() -> None:
