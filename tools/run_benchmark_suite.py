@@ -272,17 +272,37 @@ def _normalize_agreement_text(text: Any) -> str:
     return " ".join(normalized_tokens).strip()
 
 
-def _agreement_text_similarity(left: Any, right: Any) -> float:
-    a = _normalize_agreement_text(left)
-    b = _normalize_agreement_text(right)
+def _normalize_agreement_text_hook_boundary(text: Any) -> str:
+    base = _normalize_agreement_text(text)
+    if not base:
+        return ""
+    tokens = [tok for tok in base.split() if tok]
+    if not tokens:
+        return ""
+    return " ".join(_strip_optional_hook_boundary_tokens(tokens)).strip()
+
+
+def _agreement_text_similarity(
+    left: Any,
+    right: Any,
+    *,
+    normalize_fn: Callable[[Any], str] = _normalize_agreement_text,
+) -> float:
+    a = normalize_fn(left)
+    b = normalize_fn(right)
     if not a or not b:
         return 0.0
     return SequenceMatcher(None, a, b).ratio()
 
 
-def _agreement_token_overlap(left: Any, right: Any) -> float:
-    a = _normalize_agreement_text(left).split()
-    b = _normalize_agreement_text(right).split()
+def _agreement_token_overlap(
+    left: Any,
+    right: Any,
+    *,
+    normalize_fn: Callable[[Any], str] = _normalize_agreement_text,
+) -> float:
+    a = normalize_fn(left).split()
+    b = normalize_fn(right).split()
     if not a or not b:
         return 0.0
     a_set = set(a)
@@ -841,6 +861,8 @@ def _evaluate_agreement_line(
     line: dict[str, Any],
     min_text_similarity: float,
     min_token_overlap: float,
+    *,
+    normalize_fn: Callable[[Any], str] = _normalize_agreement_text,
 ) -> dict[str, Any]:
     line_word_count = _agreement_line_word_count(line)
     skip_reason = _agreement_window_skip_reason(line, line_word_count)
@@ -866,8 +888,12 @@ def _evaluate_agreement_line(
     )
     window_avg_prob = line.get("whisper_window_avg_prob")
     anchor_start_delta = abs(float(line_start) - float(whisper_anchor_start))
-    sim = _agreement_text_similarity(line_text, whisper_anchor_text)
-    overlap = _agreement_token_overlap(line_text, whisper_anchor_text)
+    sim = _agreement_text_similarity(
+        line_text, whisper_anchor_text, normalize_fn=normalize_fn
+    )
+    overlap = _agreement_token_overlap(
+        line_text, whisper_anchor_text, normalize_fn=normalize_fn
+    )
     has_strong_window_evidence = (
         window_word_count >= max(3, int(0.6 * line_word_count))
         and isinstance(window_avg_prob, (int, float))
@@ -1059,13 +1085,22 @@ def _extract_song_metrics(
         and float(line.get("start", 0.0)) > float(line.get("pre_whisper_start"))
     ]
     agreement_text_sims: list[float] = []
+    agreement_hook_boundary_text_sims: list[float] = []
     agreement_eligible_line_count = 0
+    agreement_hook_boundary_eligible_line_count = 0
     agreement_adaptive_rescue_count = 0
+    agreement_hook_boundary_adaptive_rescue_count = 0
     agreement_skip_reason_counts: dict[str, int] = {}
+    agreement_hook_boundary_skip_reason_counts: dict[str, int] = {}
 
     def _inc_agreement_skip(reason: str) -> None:
         agreement_skip_reason_counts[reason] = (
             agreement_skip_reason_counts.get(reason, 0) + 1
+        )
+
+    def _inc_hook_boundary_skip(reason: str) -> None:
+        agreement_hook_boundary_skip_reason_counts[reason] = (
+            agreement_hook_boundary_skip_reason_counts.get(reason, 0) + 1
         )
 
     for line in lines:
@@ -1074,20 +1109,42 @@ def _extract_song_metrics(
             min_text_similarity=agreement_min_text_similarity,
             min_token_overlap=agreement_min_token_overlap,
         )
+        hook_boundary_evaluation = _evaluate_agreement_line(
+            line=line,
+            min_text_similarity=agreement_min_text_similarity,
+            min_token_overlap=agreement_min_token_overlap,
+            normalize_fn=_normalize_agreement_text_hook_boundary,
+        )
         if bool(evaluation.get("eligible")):
             agreement_eligible_line_count += 1
+        if bool(hook_boundary_evaluation.get("eligible")):
+            agreement_hook_boundary_eligible_line_count += 1
         skip_reason = evaluation.get("skip_reason")
         if isinstance(skip_reason, str) and skip_reason:
             _inc_agreement_skip(skip_reason)
-            continue
-        anchor_start_delta = evaluation.get("anchor_start_delta")
-        text_similarity = evaluation.get("text_similarity")
-        if isinstance(anchor_start_delta, (int, float)):
-            whisper_anchor_start_abs_deltas.append(float(anchor_start_delta))
-        if isinstance(text_similarity, (int, float)):
-            agreement_text_sims.append(float(text_similarity))
-        if bool(evaluation.get("adaptive_rescue")):
-            agreement_adaptive_rescue_count += 1
+        else:
+            anchor_start_delta = evaluation.get("anchor_start_delta")
+            text_similarity = evaluation.get("text_similarity")
+            if isinstance(anchor_start_delta, (int, float)):
+                whisper_anchor_start_abs_deltas.append(float(anchor_start_delta))
+            if isinstance(text_similarity, (int, float)):
+                agreement_text_sims.append(float(text_similarity))
+            if bool(evaluation.get("adaptive_rescue")):
+                agreement_adaptive_rescue_count += 1
+
+        hook_boundary_skip_reason = hook_boundary_evaluation.get("skip_reason")
+        if isinstance(hook_boundary_skip_reason, str) and hook_boundary_skip_reason:
+            _inc_hook_boundary_skip(hook_boundary_skip_reason)
+        else:
+            hook_boundary_text_similarity = hook_boundary_evaluation.get(
+                "text_similarity"
+            )
+            if isinstance(hook_boundary_text_similarity, (int, float)):
+                agreement_hook_boundary_text_sims.append(
+                    float(hook_boundary_text_similarity)
+                )
+            if bool(hook_boundary_evaluation.get("adaptive_rescue")):
+                agreement_hook_boundary_adaptive_rescue_count += 1
 
     # Independent agreement metric:
     # only available when we have DTW-based anchors (cross-strategy comparable path).
@@ -1196,10 +1253,24 @@ def _extract_song_metrics(
         "agreement_min_text_similarity": agreement_min_text_similarity,
         "agreement_min_token_overlap": agreement_min_token_overlap,
         "agreement_adaptive_rescue_count": agreement_adaptive_rescue_count,
+        "agreement_hook_boundary_adaptive_rescue_count": (
+            agreement_hook_boundary_adaptive_rescue_count
+        ),
         "agreement_eligible_lines": agreement_eligible_line_count,
+        "agreement_hook_boundary_eligible_lines": (
+            agreement_hook_boundary_eligible_line_count
+        ),
         "agreement_matched_lines": len(whisper_anchor_start_abs_deltas),
         "agreement_eligibility_ratio": round(
             (agreement_eligible_line_count / line_count) if line_count else 0.0, 4
+        ),
+        "agreement_hook_boundary_eligibility_ratio": round(
+            (
+                agreement_hook_boundary_eligible_line_count / line_count
+                if line_count
+                else 0.0
+            ),
+            4,
         ),
         "agreement_match_ratio_within_eligible": round(
             (
@@ -1209,14 +1280,29 @@ def _extract_song_metrics(
             ),
             4,
         ),
+        "agreement_hook_boundary_match_ratio_within_eligible": round(
+            (
+                len(whisper_anchor_start_abs_deltas)
+                / agreement_hook_boundary_eligible_line_count
+                if agreement_hook_boundary_eligible_line_count
+                else 0.0
+            ),
+            4,
+        ),
         "agreement_skip_reason_counts": dict(
             sorted(agreement_skip_reason_counts.items())
+        ),
+        "agreement_hook_boundary_skip_reason_counts": dict(
+            sorted(agreement_hook_boundary_skip_reason_counts.items())
         ),
         "agreement_count": len(agreement_start_abs_deltas),
         "agreement_coverage_ratio": round(
             (len(agreement_start_abs_deltas) / line_count) if line_count else 0.0, 4
         ),
         "agreement_text_similarity_mean": round(_mean(agreement_text_sims) or 0.0, 4),
+        "agreement_hook_boundary_text_similarity_mean": round(
+            _mean(agreement_hook_boundary_text_sims) or 0.0, 4
+        ),
         "agreement_start_mean_abs_sec": round(
             _mean(agreement_start_abs_deltas) or 0.0, 4
         ),
@@ -3248,9 +3334,27 @@ def _aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:  # noqa: C901
             if metric_mean("agreement_coverage_ratio") is not None
             else None
         ),
+        "agreement_hook_boundary_eligibility_ratio_mean": (
+            round(
+                float(metric_mean("agreement_hook_boundary_eligibility_ratio") or 0.0),
+                4,
+            )
+            if metric_mean("agreement_hook_boundary_eligibility_ratio") is not None
+            else None
+        ),
         "agreement_text_similarity_mean": (
             round(float(metric_mean("agreement_text_similarity_mean") or 0.0), 4)
             if metric_mean("agreement_text_similarity_mean") is not None
+            else None
+        ),
+        "agreement_hook_boundary_text_similarity_mean": (
+            round(
+                float(
+                    metric_mean("agreement_hook_boundary_text_similarity_mean") or 0.0
+                ),
+                4,
+            )
+            if metric_mean("agreement_hook_boundary_text_similarity_mean") is not None
             else None
         ),
         "agreement_start_mean_abs_sec_mean": (
@@ -4175,6 +4279,21 @@ def _write_markdown_summary(  # noqa: C901
             f"repetitive-phrase ratio "
             f"`{_fmt_num(aggregate.get('lexical_repetitive_phrase_line_ratio_mean'))}`"
         )
+        hook_boundary_eligibility = aggregate.get(
+            "agreement_hook_boundary_eligibility_ratio_mean"
+        )
+        hook_boundary_text_similarity = aggregate.get(
+            "agreement_hook_boundary_text_similarity_mean"
+        )
+        if (
+            hook_boundary_eligibility is not None
+            or hook_boundary_text_similarity is not None
+        ):
+            lines.append(
+                "- Hook-normalized agreement signal: "
+                f"eligibility `{_fmt_num(hook_boundary_eligibility)}`, "
+                f"text similarity `{_fmt_num(hook_boundary_text_similarity)}`"
+            )
     timing_band_counts = aggregate.get("timing_quality_band_counts", {})
     if isinstance(timing_band_counts, dict) and timing_band_counts:
         timing_band_summary = ", ".join(

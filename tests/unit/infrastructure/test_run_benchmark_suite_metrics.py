@@ -271,6 +271,27 @@ def test_agreement_normalization_collapses_repeated_fillers():
     assert sim >= 0.95
 
 
+def test_agreement_normalization_strips_optional_hook_boundary_phrases():
+    module = _load_module()
+    assert module._normalize_agreement_text(
+        "Don't believe me just watch (come on)"
+    ) == ("do not believe me just watch come on")
+    assert (
+        module._normalize_agreement_text_hook_boundary(
+            "Don't believe me just watch (come on)"
+        )
+        == "do not believe me just watch"
+    )
+    assert (
+        module._agreement_token_overlap(
+            "Girls hit your hallelujah (whoo)",
+            "Girls hit your hallelujah",
+            normalize_fn=module._normalize_agreement_text_hook_boundary,
+        )
+        == 1.0
+    )
+
+
 def test_agreement_normalization_expands_colloquialisms():
     module = _load_module()
     assert module._normalize_agreement_text("I'm gonna let 'em know") == (

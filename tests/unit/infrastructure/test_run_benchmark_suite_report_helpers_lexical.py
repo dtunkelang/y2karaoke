@@ -60,9 +60,11 @@ def test_write_markdown_summary_includes_lexical_review_hotspots(tmp_path):
             "dtw_phonetic_similarity_coverage_mean": 0.307,
             "low_confidence_ratio_total": 0.038,
             "agreement_coverage_ratio_total": 0.657,
+            "agreement_hook_boundary_eligibility_ratio_mean": 0.714,
             "agreement_eligible_lines_total": 100,
             "agreement_matched_anchor_lines_total": 69,
             "agreement_text_similarity_mean": 0.902,
+            "agreement_hook_boundary_text_similarity_mean": 0.944,
             "agreement_start_mean_abs_sec_mean": 0.38,
             "agreement_start_p95_abs_sec_mean": 0.728,
             "agreement_bad_ratio_total": 0.029,
@@ -101,6 +103,10 @@ def test_write_markdown_summary_includes_lexical_review_hotspots(tmp_path):
     assert "Lexical-review hotspots" in markdown
     assert (
         "`1` song(s), hook-boundary songs `1`, hook-boundary ratio `0.214`, truncation-pattern ratio `0.369`, repetitive-phrase ratio `0.029`"
+        in markdown
+    )
+    assert (
+        "Hook-normalized agreement signal: eligibility `0.714`, text similarity `0.944`"
         in markdown
     )
     assert "Highest hook-boundary lexical variant ratio" in markdown
