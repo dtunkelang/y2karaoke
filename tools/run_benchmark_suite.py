@@ -4761,6 +4761,7 @@ def _load_aggregate_only_results(
                 print(f"  -> gold rebaselined: {rebased_path}")
         prior["result_reused"] = True
         prior["aggregate_only_recomputed"] = True
+        _write_json(result_path, prior)
         song_results.append(prior)
         print(f"  -> {prior.get('status', 'unknown')} (aggregate-only)")
     return song_results, skipped_missing

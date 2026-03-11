@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import importlib.util
+import json
 import os
 from pathlib import Path
 import sys
@@ -326,6 +327,9 @@ def test_load_aggregate_only_results_refreshes_cached_and_marks_missing(tmp_path
     assert rows[0]["result_reused"] is True
     assert rows[0]["aggregate_only_recomputed"] is True
     assert rows[0]["metrics"]["dtw_line_coverage"] == 0.9
+    refreshed = json.loads(result_path.read_text(encoding="utf-8"))
+    assert refreshed["metrics"]["dtw_line_coverage"] == 0.9
+    assert refreshed["aggregate_only_recomputed"] is True
 
 
 def test_load_aggregate_only_results_falls_back_to_slug_match(tmp_path):
