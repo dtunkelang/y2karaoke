@@ -127,6 +127,16 @@ METRICS_CURATED_CANARY: list[dict[str, str]] = [
         "direction": "lower",
     },
     {
+        "key": "agreement_hook_boundary_eligibility_ratio_mean",
+        "label": "agreement_hook_boundary_eligibility_ratio",
+        "direction": "higher",
+    },
+    {
+        "key": "agreement_hook_boundary_text_similarity_mean",
+        "label": "agreement_hook_boundary_text_similarity",
+        "direction": "higher",
+    },
+    {
         "key": "lexical_truncation_pattern_ratio_mean",
         "label": "lexical_truncation_pattern_ratio",
         "direction": "lower",
@@ -494,6 +504,12 @@ def _curated_canary_cli_summary(report: dict[str, Any]) -> list[str]:
         "lexical_hook_boundary_variant_song_count", {}
     )
     lexical_hook_variant = curated.get("lexical_hook_boundary_variant_ratio_mean", {})
+    hook_boundary_eligibility = curated.get(
+        "agreement_hook_boundary_eligibility_ratio_mean", {}
+    )
+    hook_boundary_text_similarity = curated.get(
+        "agreement_hook_boundary_text_similarity_mean", {}
+    )
     lexical_truncation = curated.get("lexical_truncation_pattern_ratio_mean", {})
     lexical_repetitive = curated.get("lexical_repetitive_phrase_line_ratio_mean", {})
     watchlist = curated.get("curated_canary_reference_watchlist_count", {})
@@ -586,6 +602,18 @@ def _curated_canary_cli_summary(report: dict[str, Any]) -> list[str]:
         "    lexical_hook_boundary_variant_ratio={base} -> {corr}".format(
             base=_fmt_num(lexical_hook_variant.get("baseline")),
             corr=_fmt_num(lexical_hook_variant.get("corrected")),
+        )
+    )
+    lines.append(
+        "    agreement_hook_boundary_eligibility_ratio={base} -> {corr}".format(
+            base=_fmt_num(hook_boundary_eligibility.get("baseline")),
+            corr=_fmt_num(hook_boundary_eligibility.get("corrected")),
+        )
+    )
+    lines.append(
+        "    agreement_hook_boundary_text_similarity={base} -> {corr}".format(
+            base=_fmt_num(hook_boundary_text_similarity.get("baseline")),
+            corr=_fmt_num(hook_boundary_text_similarity.get("corrected")),
         )
     )
     lines.append(

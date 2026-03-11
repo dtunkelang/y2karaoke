@@ -51,6 +51,8 @@ def test_build_comparison_reports_net_improvement() -> None:
             "lexical_review_song_count": 2,
             "lexical_hook_boundary_variant_song_count": 2,
             "lexical_hook_boundary_variant_ratio_mean": 0.21,
+            "agreement_hook_boundary_eligibility_ratio_mean": 0.71,
+            "agreement_hook_boundary_text_similarity_mean": 0.89,
             "lexical_truncation_pattern_ratio_mean": 0.41,
             "lexical_repetitive_phrase_line_ratio_mean": 0.08,
             "curated_canary_reference_watchlist_count": 1,
@@ -95,6 +97,8 @@ def test_build_comparison_reports_net_improvement() -> None:
             "lexical_review_song_count": 1,
             "lexical_hook_boundary_variant_song_count": 1,
             "lexical_hook_boundary_variant_ratio_mean": 0.09,
+            "agreement_hook_boundary_eligibility_ratio_mean": 0.93,
+            "agreement_hook_boundary_text_similarity_mean": 0.92,
             "lexical_truncation_pattern_ratio_mean": 0.22,
             "lexical_repetitive_phrase_line_ratio_mean": 0.03,
             "curated_canary_reference_watchlist_count": 0,
@@ -201,6 +205,18 @@ def test_build_comparison_reports_net_improvement() -> None:
         is True
     )
     assert (
+        report["curated_canary_deltas"][
+            "agreement_hook_boundary_eligibility_ratio_mean"
+        ]["improved"]
+        is True
+    )
+    assert (
+        report["curated_canary_deltas"]["agreement_hook_boundary_text_similarity_mean"][
+            "improved"
+        ]
+        is True
+    )
+    assert (
         report["curated_canary_deltas"]["lexical_truncation_pattern_ratio_mean"][
             "improved"
         ]
@@ -244,6 +260,8 @@ def test_main_writes_json_markdown_and_curated_canary_cli_summary(
             "lexical_review_song_count": 1,
             "lexical_hook_boundary_variant_song_count": 1,
             "lexical_hook_boundary_variant_ratio_mean": 0.21,
+            "agreement_hook_boundary_eligibility_ratio_mean": 0.95,
+            "agreement_hook_boundary_text_similarity_mean": 0.917,
             "lexical_truncation_pattern_ratio_mean": 0.37,
             "lexical_repetitive_phrase_line_ratio_mean": 0.03,
             "curated_canary_reference_watchlist_count": 1,
@@ -296,6 +314,8 @@ def test_main_writes_json_markdown_and_curated_canary_cli_summary(
     assert "lexical_review_song_count=1.0000 -> 1.0000" in captured.out
     assert "lexical_hook_boundary_variant_song_count=1.0000 -> 1.0000" in captured.out
     assert "lexical_hook_boundary_variant_ratio=0.2100 -> 0.2100" in captured.out
+    assert "agreement_hook_boundary_eligibility_ratio=0.9500 -> 0.9500" in captured.out
+    assert "agreement_hook_boundary_text_similarity=0.9170 -> 0.9170" in captured.out
     assert "lexical_truncation_pattern_ratio=0.3700 -> 0.3700" in captured.out
     assert "lexical_repetitive_phrase_ratio=0.0300 -> 0.0300" in captured.out
     assert "watchlist_corrected=Artist Y - Song Y" in captured.out
