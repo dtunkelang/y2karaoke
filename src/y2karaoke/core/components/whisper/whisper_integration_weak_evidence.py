@@ -162,7 +162,7 @@ def restore_adjacent_near_threshold_late_shifts(
     whisper_words: List[timing_models.TranscriptionWord],
     *,
     min_shift_sec: float = 0.75,
-    max_shift_sec: float = 1.1,
+    max_shift_sec: float = 1.25,
     max_prev_baseline_delta_sec: float = 0.2,
     min_overlap_with_next_baseline_sec: float = 0.45,
     min_baseline_support_words: int = 2,

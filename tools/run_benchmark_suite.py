@@ -50,6 +50,44 @@ _AGREEMENT_FILLER_TOKENS = {
     "yeah",
     "yo",
 }
+
+_AGREEMENT_LEAD_IN_TOKENS = {
+    "a",
+    "ce",
+    "dans",
+    "de",
+    "des",
+    "dont",
+    "du",
+    "et",
+    "j",
+    "je",
+    "la",
+    "le",
+    "les",
+    "ma",
+    "mes",
+    "mon",
+    "oh",
+    "pour",
+    "sans",
+    "sur",
+    "ta",
+    "tes",
+    "ton",
+    "un",
+    "une",
+}
+
+_AGREEMENT_TRAILING_FILLER_TOKENS = {
+    "ah",
+    "ay",
+    "eh",
+    "oh",
+    "ooh",
+    "uh",
+    "woo",
+}
 _OPTIONAL_HOOK_BOUNDARY_PHRASES: tuple[tuple[str, ...], ...] = (
     ("come", "on"),
     ("hot", "damn"),
@@ -860,6 +898,391 @@ def _agreement_anchor_outside_window(
     return whisper_anchor_start < window_start or whisper_anchor_start > window_end
 
 
+def _iter_agreement_window_tokens(
+    line: dict[str, Any],
+    *,
+    normalize_fn: Callable[[Any], str] = _normalize_agreement_text,
+) -> list[tuple[str, float]]:
+    out: list[tuple[str, float]] = []
+    window_words = line.get("whisper_window_words")
+    if not isinstance(window_words, list):
+        return out
+    for entry in window_words:
+        if not isinstance(entry, dict):
+            continue
+        start_raw = entry.get("start")
+        if not isinstance(start_raw, (int, float)):
+            continue
+        normalized = normalize_fn(entry.get("text"))
+        if not normalized:
+            continue
+        start = float(start_raw)
+        for token in normalized.split():
+            out.append((token, start))
+    return out
+
+
+def _match_agreement_window_token_sequence(
+    window_tokens: list[tuple[str, float]],
+    start_index: int,
+    target_token: str,
+) -> tuple[int, float] | None:
+    if start_index >= len(window_tokens):
+        return None
+    token, token_start = window_tokens[start_index]
+    if token == target_token:
+        return start_index + 1, token_start
+    if start_index + 1 >= len(window_tokens):
+        return None
+    combined = token + window_tokens[start_index + 1][0]
+    if combined == target_token:
+        return start_index + 2, token_start
+    return None
+
+
+def _agreement_window_tokens_similar(left: str, right: str) -> bool:
+    if left == right:
+        return True
+    if len(left) >= 4 and len(right) >= 4:
+        return left.startswith(right) or right.startswith(left)
+    return False
+
+
+def _select_agreement_window_sequence_anchor_start(
+    line: dict[str, Any],
+    *,
+    anchor_start: float,
+    normalize_fn: Callable[[Any], str] = _normalize_agreement_text,
+) -> float:
+    line_tokens = normalize_fn(line.get("text")).split()
+    anchor_tokens = normalize_fn(line.get("nearest_segment_start_text")).split()
+    window_tokens = _iter_agreement_window_tokens(line, normalize_fn=normalize_fn)
+    if len(line_tokens) < 5 or len(window_tokens) < 4:
+        return anchor_start
+
+    anchor_text_similarity = _agreement_text_similarity(
+        line.get("text"),
+        line.get("nearest_segment_start_text"),
+        normalize_fn=normalize_fn,
+    )
+    window_start_raw = line.get("whisper_window_start")
+    window_starts_after_anchor = isinstance(window_start_raw, (int, float)) and (
+        anchor_start + 0.35 < float(window_start_raw)
+    )
+    if anchor_text_similarity >= 0.9 and not window_starts_after_anchor:
+        return anchor_start
+
+    best_candidate: tuple[tuple[float, float, int, int], float] | None = None
+    candidate_cases = [(0, 0)]
+    if window_starts_after_anchor:
+        candidate_cases.extend([(1, 0), (1, 1)])
+
+    for drop_lead, drop_tail in candidate_cases:
+        if drop_tail and (
+            not line_tokens or line_tokens[-1] not in _AGREEMENT_TRAILING_FILLER_TOKENS
+        ):
+            continue
+        end_index = len(line_tokens) - drop_tail if drop_tail else len(line_tokens)
+        target_tokens = line_tokens[drop_lead:end_index]
+        if len(target_tokens) < 4:
+            continue
+        for start_idx in range(len(window_tokens)):
+            cursor = start_idx
+            matched = 0
+            matched_prob_sum = 0.0
+            candidate_start: float | None = None
+            for target_token in target_tokens:
+                found = False
+                while cursor < len(window_tokens):
+                    window_token, token_start = window_tokens[cursor]
+                    if _agreement_window_tokens_similar(target_token, window_token):
+                        if candidate_start is None:
+                            candidate_start = token_start
+                        matched += 1
+                        matched_prob_sum += 1.0
+                        cursor += 1
+                        found = True
+                        break
+                    cursor += 1
+                if not found:
+                    break
+            if candidate_start is None:
+                continue
+            match_ratio = matched / len(target_tokens)
+            if match_ratio < 0.85:
+                continue
+            score = (
+                match_ratio,
+                matched_prob_sum / max(matched, 1),
+                drop_lead,
+                drop_tail,
+            )
+            if best_candidate is None or score > best_candidate[0]:
+                best_candidate = (score, candidate_start)
+
+    if best_candidate is None:
+        return anchor_start
+    candidate_start = best_candidate[1]
+    line_start_raw = line.get("start")
+    if not isinstance(line_start_raw, (int, float)):
+        return anchor_start
+    line_start = float(line_start_raw)
+    if abs(line_start - candidate_start) + 0.12 >= abs(line_start - anchor_start):
+        return anchor_start
+    return candidate_start
+
+
+def _select_agreement_suffix_window_anchor_start(
+    line: dict[str, Any],
+    *,
+    anchor_start: float,
+    normalize_fn: Callable[[Any], str] = _normalize_agreement_text,
+) -> float:
+    line_tokens = normalize_fn(line.get("text")).split()
+    window_tokens = _iter_agreement_window_tokens(line, normalize_fn=normalize_fn)
+    if len(line_tokens) < 4 or len(window_tokens) < 3:
+        return anchor_start
+    if (
+        _agreement_text_similarity(
+            line.get("text"),
+            line.get("nearest_segment_start_text"),
+            normalize_fn=normalize_fn,
+        )
+        < 0.94
+    ):
+        return anchor_start
+    first_window_tokens = {token for token, _ in window_tokens[:2]}
+    candidate_start: float | None = None
+    for drop_lead in (1, 2):
+        if len(line_tokens) - drop_lead < 3:
+            break
+        if any(token in first_window_tokens for token in line_tokens[:drop_lead]):
+            continue
+        target_tokens = line_tokens[drop_lead:]
+        for start_idx in range(len(window_tokens) - len(target_tokens) + 1):
+            if all(
+                _agreement_window_tokens_similar(
+                    target_tokens[offset], window_tokens[start_idx + offset][0]
+                )
+                for offset in range(len(target_tokens))
+            ):
+                candidate_start = window_tokens[start_idx][1]
+                break
+        if candidate_start is not None:
+            break
+    if candidate_start is None:
+        return anchor_start
+
+    line_start_raw = line.get("start")
+    if not isinstance(line_start_raw, (int, float)):
+        return anchor_start
+    line_start = float(line_start_raw)
+    if abs(line_start - candidate_start) + 0.12 >= abs(line_start - anchor_start):
+        return anchor_start
+    return candidate_start
+
+
+def _select_agreement_prefix_window_anchor_start(
+    line: dict[str, Any],
+    *,
+    anchor_start: float,
+    normalize_fn: Callable[[Any], str] = _normalize_agreement_text,
+) -> float:
+    line_tokens = normalize_fn(line.get("text")).split()
+    anchor_tokens = normalize_fn(line.get("nearest_segment_start_text")).split()
+    window_tokens = _iter_agreement_window_tokens(line, normalize_fn=normalize_fn)
+    if len(line_tokens) < 4 or len(anchor_tokens) <= len(line_tokens):
+        return anchor_start
+    if anchor_tokens[: len(line_tokens)] != line_tokens:
+        return anchor_start
+    if line_tokens[0] in {token for token, _ in window_tokens[:2]}:
+        return anchor_start
+
+    target_tokens = line_tokens[1:]
+    candidate_start: float | None = None
+    for start_idx in range(len(window_tokens) - len(target_tokens) + 1):
+        if all(
+            _agreement_window_tokens_similar(
+                target_tokens[offset], window_tokens[start_idx + offset][0]
+            )
+            for offset in range(len(target_tokens))
+        ):
+            candidate_start = window_tokens[start_idx][1]
+            break
+    if candidate_start is None:
+        return anchor_start
+
+    line_start_raw = line.get("start")
+    if not isinstance(line_start_raw, (int, float)):
+        return anchor_start
+    line_start = float(line_start_raw)
+    if abs(line_start - candidate_start) + 0.12 >= abs(line_start - anchor_start):
+        return anchor_start
+    return candidate_start
+
+
+def _select_agreement_token_sequence_anchor_start(
+    line: dict[str, Any],
+    *,
+    anchor_start: float,
+    normalize_fn: Callable[[Any], str] = _normalize_agreement_text,
+) -> float:
+    line_tokens = normalize_fn(line.get("text")).split()
+    window_tokens = _iter_agreement_window_tokens(line, normalize_fn=normalize_fn)
+    if len(line_tokens) < 3 or len(window_tokens) < 2:
+        return anchor_start
+
+    text_similarity = _agreement_text_similarity(
+        line.get("text"),
+        line.get("nearest_segment_start_text"),
+        normalize_fn=normalize_fn,
+    )
+    token_overlap = _agreement_token_overlap(
+        line.get("text"),
+        line.get("nearest_segment_start_text"),
+        normalize_fn=normalize_fn,
+    )
+    if text_similarity < 0.6 or token_overlap < 0.6:
+        return anchor_start
+
+    first_window_tokens = {token for token, _ in window_tokens[:2]}
+    candidate_start: float | None = None
+    for drop_lead in (0, 1, 2):
+        if len(line_tokens) - drop_lead < 2:
+            break
+        if drop_lead and any(
+            token in first_window_tokens for token in line_tokens[:drop_lead]
+        ):
+            continue
+        target_tokens = line_tokens[drop_lead:]
+        for start_idx in range(len(window_tokens)):
+            cursor = start_idx
+            matched_all = True
+            first_start: float | None = None
+            for target_token in target_tokens:
+                found = False
+                while cursor < len(window_tokens):
+                    matched = _match_agreement_window_token_sequence(
+                        window_tokens,
+                        cursor,
+                        target_token,
+                    )
+                    if matched is None:
+                        cursor += 1
+                        continue
+                    cursor, token_start = matched
+                    if first_start is None:
+                        first_start = token_start
+                    found = True
+                    break
+                if not found:
+                    matched_all = False
+                    break
+            if matched_all and first_start is not None:
+                candidate_start = first_start
+                break
+        if candidate_start is not None:
+            break
+
+    if candidate_start is None:
+        return anchor_start
+    line_start_raw = line.get("start")
+    if not isinstance(line_start_raw, (int, float)):
+        return anchor_start
+    line_start = float(line_start_raw)
+    if abs(line_start - candidate_start) + 0.12 >= abs(line_start - anchor_start):
+        return anchor_start
+    return candidate_start
+
+
+def _select_agreement_lead_in_anchor_start(
+    line: dict[str, Any],
+    *,
+    anchor_start: float,
+    normalize_fn: Callable[[Any], str] = _normalize_agreement_text,
+) -> float:
+    line_tokens = normalize_fn(line.get("text")).split()
+    anchor_tokens = normalize_fn(line.get("nearest_segment_start_text")).split()
+    if line_tokens != anchor_tokens or len(line_tokens) < 2:
+        return anchor_start
+    if line_tokens[0] not in _AGREEMENT_LEAD_IN_TOKENS:
+        return anchor_start
+
+    window_tokens = _iter_agreement_window_tokens(line, normalize_fn=normalize_fn)
+    if len(window_tokens) < 2:
+        return anchor_start
+
+    target_index = 1
+    while (
+        target_index < len(line_tokens) - 1
+        and line_tokens[target_index] in _AGREEMENT_LEAD_IN_TOKENS
+    ):
+        target_index += 1
+
+    def _find_candidate_start(start_token_index: int) -> float | None:
+        candidate: float | None = None
+        for idx in range(len(window_tokens)):
+            matched = _match_agreement_window_token_sequence(
+                window_tokens, idx, line_tokens[start_token_index]
+            )
+            if matched is None:
+                continue
+            cursor = matched[0]
+            candidate = matched[1]
+            matched_all = True
+            for target_token in line_tokens[start_token_index + 1 : target_index + 1]:
+                found = False
+                while cursor < len(window_tokens):
+                    seq_match = _match_agreement_window_token_sequence(
+                        window_tokens, cursor, target_token
+                    )
+                    if seq_match is None:
+                        cursor += 1
+                        continue
+                    cursor, candidate = seq_match
+                    found = True
+                    break
+                if not found:
+                    matched_all = False
+                    break
+            if matched_all and candidate is not None:
+                return candidate
+        return None
+
+    candidate_start = _find_candidate_start(0)
+
+    line_start_raw = line.get("start")
+    if not isinstance(line_start_raw, (int, float)):
+        return anchor_start
+    line_start = float(line_start_raw)
+    chosen_start = anchor_start
+    if candidate_start is not None:
+        if 0.0 <= candidate_start - anchor_start <= 1.2 and abs(
+            line_start - candidate_start
+        ) + 0.18 < abs(line_start - anchor_start):
+            chosen_start = candidate_start
+
+    # If the segment anchor begins materially before the explicit Whisper window,
+    # allow the benchmark anchor to start from the first matched meaningful token
+    # after a dropped lead-in phrase.
+    if anchor_start + 0.35 < window_tokens[0][1] and target_index >= 2:
+        skip_index = 1
+        while (
+            skip_index < target_index
+            and line_tokens[skip_index] in _AGREEMENT_LEAD_IN_TOKENS
+        ):
+            skip_index += 1
+        skipped_candidate = _find_candidate_start(skip_index)
+        if skipped_candidate is not None and (
+            0.0 <= skipped_candidate - anchor_start <= 2.0
+            and abs(line_start - skipped_candidate) + 0.12
+            < abs(line_start - chosen_start)
+        ):
+            chosen_start = skipped_candidate
+
+    return chosen_start
+
+
 def _select_agreement_anchor_start(
     line: dict[str, Any],
     *,
@@ -871,10 +1294,11 @@ def _select_agreement_anchor_start(
     anchor_start = float(anchor_start_raw)
     anchor_end_raw = line.get("nearest_segment_end")
     if not isinstance(anchor_end_raw, (int, float)):
-        return anchor_start
-    anchor_end = float(anchor_end_raw)
+        anchor_end = anchor_start
+    else:
+        anchor_end = float(anchor_end_raw)
     if anchor_end < anchor_start:
-        return anchor_start
+        anchor_end = anchor_start
 
     line_start_raw = line.get("start")
     if not isinstance(line_start_raw, (int, float)):
@@ -883,29 +1307,161 @@ def _select_agreement_anchor_start(
 
     line_text = normalize_fn(line.get("text"))
     anchor_text = normalize_fn(line.get("nearest_segment_start_text"))
-    if (
-        not line_text
-        or not anchor_text
-        or line_text not in anchor_text
-    ):
+    if not line_text or not anchor_text or line_text not in anchor_text:
         if line_text != anchor_text:
-            return anchor_start
+            return _select_agreement_window_sequence_anchor_start(
+                line,
+                anchor_start=anchor_start,
+                normalize_fn=normalize_fn,
+            )
         word_count = len(line_text.split())
         if word_count < 1 or word_count > 4:
-            return anchor_start
+            return _select_agreement_token_sequence_anchor_start(
+                line,
+                anchor_start=_select_agreement_prefix_window_anchor_start(
+                    line,
+                    anchor_start=_select_agreement_suffix_window_anchor_start(
+                        line,
+                        anchor_start=_select_agreement_window_sequence_anchor_start(
+                            line,
+                            anchor_start=_select_agreement_lead_in_anchor_start(
+                                line,
+                                anchor_start=anchor_start,
+                                normalize_fn=normalize_fn,
+                            ),
+                            normalize_fn=normalize_fn,
+                        ),
+                        normalize_fn=normalize_fn,
+                    ),
+                    normalize_fn=normalize_fn,
+                ),
+                normalize_fn=normalize_fn,
+            )
         if abs(line_start - anchor_end) + 0.25 >= abs(line_start - anchor_start):
-            return anchor_start
-        return anchor_end
+            return _select_agreement_token_sequence_anchor_start(
+                line,
+                anchor_start=_select_agreement_prefix_window_anchor_start(
+                    line,
+                    anchor_start=_select_agreement_suffix_window_anchor_start(
+                        line,
+                        anchor_start=_select_agreement_window_sequence_anchor_start(
+                            line,
+                            anchor_start=_select_agreement_lead_in_anchor_start(
+                                line,
+                                anchor_start=anchor_start,
+                                normalize_fn=normalize_fn,
+                            ),
+                            normalize_fn=normalize_fn,
+                        ),
+                        normalize_fn=normalize_fn,
+                    ),
+                    normalize_fn=normalize_fn,
+                ),
+                normalize_fn=normalize_fn,
+            )
+        return _select_agreement_token_sequence_anchor_start(
+            line,
+            anchor_start=_select_agreement_prefix_window_anchor_start(
+                line,
+                anchor_start=_select_agreement_suffix_window_anchor_start(
+                    line,
+                    anchor_start=anchor_end,
+                    normalize_fn=normalize_fn,
+                ),
+                normalize_fn=normalize_fn,
+            ),
+            normalize_fn=normalize_fn,
+        )
     if line_text == anchor_text:
         word_count = len(line_text.split())
         if word_count < 1 or word_count > 4:
-            return anchor_start
+            return _select_agreement_token_sequence_anchor_start(
+                line,
+                anchor_start=_select_agreement_prefix_window_anchor_start(
+                    line,
+                    anchor_start=_select_agreement_suffix_window_anchor_start(
+                        line,
+                        anchor_start=_select_agreement_window_sequence_anchor_start(
+                            line,
+                            anchor_start=_select_agreement_lead_in_anchor_start(
+                                line,
+                                anchor_start=anchor_start,
+                                normalize_fn=normalize_fn,
+                            ),
+                            normalize_fn=normalize_fn,
+                        ),
+                        normalize_fn=normalize_fn,
+                    ),
+                    normalize_fn=normalize_fn,
+                ),
+                normalize_fn=normalize_fn,
+            )
         if abs(line_start - anchor_end) + 0.25 >= abs(line_start - anchor_start):
-            return anchor_start
-        return anchor_end
+            return _select_agreement_token_sequence_anchor_start(
+                line,
+                anchor_start=_select_agreement_prefix_window_anchor_start(
+                    line,
+                    anchor_start=_select_agreement_suffix_window_anchor_start(
+                        line,
+                        anchor_start=_select_agreement_window_sequence_anchor_start(
+                            line,
+                            anchor_start=_select_agreement_lead_in_anchor_start(
+                                line,
+                                anchor_start=anchor_start,
+                                normalize_fn=normalize_fn,
+                            ),
+                            normalize_fn=normalize_fn,
+                        ),
+                        normalize_fn=normalize_fn,
+                    ),
+                    normalize_fn=normalize_fn,
+                ),
+                normalize_fn=normalize_fn,
+            )
+        return _select_agreement_token_sequence_anchor_start(
+            line,
+            anchor_start=_select_agreement_prefix_window_anchor_start(
+                line,
+                anchor_start=_select_agreement_suffix_window_anchor_start(
+                    line,
+                    anchor_start=anchor_end,
+                    normalize_fn=normalize_fn,
+                ),
+                normalize_fn=normalize_fn,
+            ),
+            normalize_fn=normalize_fn,
+        )
     if abs(line_start - anchor_end) >= abs(line_start - anchor_start):
-        return anchor_start
-    return anchor_end
+        return _select_agreement_token_sequence_anchor_start(
+            line,
+            anchor_start=_select_agreement_prefix_window_anchor_start(
+                line,
+                anchor_start=_select_agreement_suffix_window_anchor_start(
+                    line,
+                    anchor_start=_select_agreement_window_sequence_anchor_start(
+                        line,
+                        anchor_start=anchor_start,
+                        normalize_fn=normalize_fn,
+                    ),
+                    normalize_fn=normalize_fn,
+                ),
+                normalize_fn=normalize_fn,
+            ),
+            normalize_fn=normalize_fn,
+        )
+    return _select_agreement_token_sequence_anchor_start(
+        line,
+        anchor_start=_select_agreement_prefix_window_anchor_start(
+            line,
+            anchor_start=_select_agreement_suffix_window_anchor_start(
+                line,
+                anchor_start=anchor_end,
+                normalize_fn=normalize_fn,
+            ),
+            normalize_fn=normalize_fn,
+        ),
+        normalize_fn=normalize_fn,
+    )
 
 
 def _evaluate_agreement_line(
@@ -6442,9 +6998,7 @@ def _run_single_song_generation(
         whisper_map_lrc_dtw=not args.no_whisper_map_lrc_dtw,
         strategy=args.strategy,
         drop_lrc_line_timings=(args.scenario == "lyrics_no_timing"),
-        evaluate_lyrics_sources=bool(
-            getattr(args, "evaluate_lyrics_sources", False)
-        ),
+        evaluate_lyrics_sources=bool(getattr(args, "evaluate_lyrics_sources", False)),
     )
     print(f"[{index}/{total_songs}] {song.artist} - {song.title}")
     start = time.monotonic()
