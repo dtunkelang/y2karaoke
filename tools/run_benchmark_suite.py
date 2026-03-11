@@ -303,6 +303,34 @@ def _normalize_word_text(raw: Any) -> str:
     return re.sub(r"\s+", " ", cleaned).strip()
 
 
+def _lexical_tokens_basic_raw(text: str) -> list[str]:
+    tokens: list[str] = []
+    folded = "".join(
+        ch
+        for ch in unicodedata.normalize("NFKD", text)
+        if unicodedata.category(ch) != "Mn"
+    )
+    for raw in folded.split():
+        tok = "".join(ch for ch in raw.lower() if ch.isalpha() or ch == "'")
+        if tok:
+            tokens.append(tok)
+    return tokens
+
+
+def _lexical_tokens_compact_raw(text: str) -> list[str]:
+    tokens: list[str] = []
+    folded = "".join(
+        ch
+        for ch in unicodedata.normalize("NFKD", text)
+        if unicodedata.category(ch) != "Mn"
+    )
+    for raw in folded.split():
+        tok = "".join(ch for ch in raw.lower() if ch.isalpha())
+        if tok:
+            tokens.append(tok)
+    return tokens
+
+
 def _strip_optional_hook_boundary_tokens(tokens: list[str]) -> list[str]:
     if len(tokens) < 3:
         return tokens
@@ -1738,31 +1766,11 @@ def _extract_alignment_diagnostics(report: dict[str, Any]) -> dict[str, Any]:
 
 
 def _lexical_tokens_basic(text: str) -> list[str]:
-    tokens: list[str] = []
-    folded = "".join(
-        ch
-        for ch in unicodedata.normalize("NFKD", text)
-        if unicodedata.category(ch) != "Mn"
-    )
-    for raw in folded.split():
-        tok = "".join(ch for ch in raw.lower() if ch.isalpha() or ch == "'")
-        if tok:
-            tokens.append(tok)
-    return _strip_optional_hook_boundary_tokens(tokens)
+    return _strip_optional_hook_boundary_tokens(_lexical_tokens_basic_raw(text))
 
 
 def _lexical_tokens_compact(text: str) -> list[str]:
-    tokens: list[str] = []
-    folded = "".join(
-        ch
-        for ch in unicodedata.normalize("NFKD", text)
-        if unicodedata.category(ch) != "Mn"
-    )
-    for raw in folded.split():
-        tok = "".join(ch for ch in raw.lower() if ch.isalpha())
-        if tok:
-            tokens.append(tok)
-    return _strip_optional_hook_boundary_tokens(tokens)
+    return _strip_optional_hook_boundary_tokens(_lexical_tokens_compact_raw(text))
 
 
 def _best_lexical_match_index(
@@ -1806,10 +1814,14 @@ def _compute_lexical_line_diagnostics(
     line_text: str,
     whisper_text: str,
 ) -> dict[str, Any] | None:
-    line_basic = _lexical_tokens_basic(line_text)
-    line_compact = _lexical_tokens_compact(line_text)
-    wh_basic = _lexical_tokens_basic(whisper_text)
-    wh_compact = _lexical_tokens_compact(whisper_text)
+    line_basic_raw = _lexical_tokens_basic_raw(line_text)
+    line_compact_raw = _lexical_tokens_compact_raw(line_text)
+    wh_basic_raw = _lexical_tokens_basic_raw(whisper_text)
+    wh_compact_raw = _lexical_tokens_compact_raw(whisper_text)
+    line_basic = _strip_optional_hook_boundary_tokens(line_basic_raw)
+    line_compact = _strip_optional_hook_boundary_tokens(line_compact_raw)
+    wh_basic = _strip_optional_hook_boundary_tokens(wh_basic_raw)
+    wh_compact = _strip_optional_hook_boundary_tokens(wh_compact_raw)
     if not line_basic or not wh_basic:
         return None
 
@@ -1823,6 +1835,15 @@ def _compute_lexical_line_diagnostics(
         max_run >= 3
         and compact_line_set
         and len(compact_line_set & compact_wh_set) < len(compact_line_set)
+    )
+    hook_boundary_variant = bool(
+        (
+            line_basic_raw != line_basic
+            or wh_basic_raw != wh_basic
+            or line_compact_raw != line_compact
+            or wh_compact_raw != wh_compact
+        )
+        and max_run >= 3
     )
 
     used_basic = [False] * len(wh_basic)
@@ -1866,6 +1887,7 @@ def _compute_lexical_line_diagnostics(
         "line_token_count": len(line_basic),
         "compact_rescue": compact_rescue,
         "apostrophe_rescue": apostrophe_rescue,
+        "hook_boundary_variant": hook_boundary_variant,
         "repetitive_phrase": repetitive_phrase,
         "truncation_pattern": truncation_pattern,
         "sample": sample,
@@ -1891,6 +1913,7 @@ def _extract_lexical_mismatch_diagnostics(
     total_line_tokens = 0
     compact_rescue = 0
     apostrophe_rescue = 0
+    hook_boundary_variant_count = 0
     truncation_pattern_count = 0
     repetitive_phrase_line_count = 0
     samples: list[dict[str, Any]] = []
@@ -1921,6 +1944,8 @@ def _extract_lexical_mismatch_diagnostics(
         total_line_tokens += int(line_diag.get("line_token_count", 0) or 0)
         compact_rescue += int(line_diag.get("compact_rescue", 0) or 0)
         apostrophe_rescue += int(line_diag.get("apostrophe_rescue", 0) or 0)
+        if bool(line_diag.get("hook_boundary_variant")):
+            hook_boundary_variant_count += 1
         if bool(line_diag.get("repetitive_phrase")):
             repetitive_phrase_line_count += 1
         if bool(line_diag.get("truncation_pattern")):
@@ -1941,6 +1966,12 @@ def _extract_lexical_mismatch_diagnostics(
         "apostrophe_rescue_token_count": int(apostrophe_rescue),
         "compact_rescue_ratio": round(compact_rescue / total_line_tokens, 4),
         "apostrophe_rescue_ratio": round(apostrophe_rescue / total_line_tokens, 4),
+        "hook_boundary_variant_count": int(hook_boundary_variant_count),
+        "hook_boundary_variant_ratio": (
+            round(hook_boundary_variant_count / line_count_analyzed, 4)
+            if line_count_analyzed
+            else 0.0
+        ),
         "truncation_pattern_count": int(truncation_pattern_count),
         "truncation_pattern_ratio": (
             round(truncation_pattern_count / line_count_analyzed, 4)
@@ -3009,8 +3040,10 @@ def _aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:  # noqa: C901
         for key, value in diagnosis_counts.items()
     }
     lexical_review_song_count = 0
+    lexical_hook_boundary_variant_line_count_total = 0
     lexical_truncation_pattern_line_count_total = 0
     lexical_repetitive_phrase_line_count_total = 0
+    lexical_hook_boundary_variant_ratio_values: list[float] = []
     lexical_truncation_pattern_ratio_values: list[float] = []
     lexical_repetitive_phrase_ratio_values: list[float] = []
     for row in succeeded:
@@ -3018,14 +3051,20 @@ def _aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:  # noqa: C901
         if not isinstance(lexical_diag, dict) or not bool(lexical_diag.get("active")):
             continue
         lexical_review_song_count += 1
+        lexical_hook_boundary_variant_line_count_total += int(
+            lexical_diag.get("hook_boundary_variant_count", 0) or 0
+        )
         lexical_truncation_pattern_line_count_total += int(
             lexical_diag.get("truncation_pattern_count", 0) or 0
         )
         lexical_repetitive_phrase_line_count_total += int(
             lexical_diag.get("repetitive_phrase_line_count", 0) or 0
         )
+        hook_variant_ratio = lexical_diag.get("hook_boundary_variant_ratio")
         trunc_ratio = lexical_diag.get("truncation_pattern_ratio")
         rep_ratio = lexical_diag.get("repetitive_phrase_line_ratio")
+        if isinstance(hook_variant_ratio, (int, float)):
+            lexical_hook_boundary_variant_ratio_values.append(float(hook_variant_ratio))
         if isinstance(trunc_ratio, (int, float)):
             lexical_truncation_pattern_ratio_values.append(float(trunc_ratio))
         if isinstance(rep_ratio, (int, float)):
@@ -3426,11 +3465,19 @@ def _aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:  # noqa: C901
         "quality_diagnosis_counts": diagnosis_counts,
         "quality_diagnosis_ratios": diagnosis_ratios,
         "lexical_review_song_count": lexical_review_song_count,
+        "lexical_hook_boundary_variant_line_count_total": (
+            lexical_hook_boundary_variant_line_count_total
+        ),
         "lexical_truncation_pattern_line_count_total": (
             lexical_truncation_pattern_line_count_total
         ),
         "lexical_repetitive_phrase_line_count_total": (
             lexical_repetitive_phrase_line_count_total
+        ),
+        "lexical_hook_boundary_variant_ratio_mean": (
+            round(float(_mean(lexical_hook_boundary_variant_ratio_values) or 0.0), 4)
+            if lexical_hook_boundary_variant_ratio_values
+            else None
         ),
         "lexical_truncation_pattern_ratio_mean": (
             round(float(_mean(lexical_truncation_pattern_ratio_values) or 0.0), 4)
@@ -4079,6 +4126,7 @@ def _write_markdown_summary(  # noqa: C901
         lines.append(
             "- Lexical-review hotspots: "
             f"`{lexical_review_song_count}` song(s), "
+            f"hook-boundary ratio `{_fmt_num(aggregate.get('lexical_hook_boundary_variant_ratio_mean'))}`, "
             f"truncation-pattern ratio "
             f"`{_fmt_num(aggregate.get('lexical_truncation_pattern_ratio_mean'))}`, "
             f"repetitive-phrase ratio "

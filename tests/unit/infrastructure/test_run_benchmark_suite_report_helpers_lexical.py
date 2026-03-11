@@ -46,6 +46,7 @@ def test_write_markdown_summary_includes_lexical_review_hotspots(tmp_path):
             "reference_divergence_suspected_ratio": 0.0,
             "quality_diagnosis_counts": {"needs_manual_review": 1},
             "lexical_review_song_count": 1,
+            "lexical_hook_boundary_variant_ratio_mean": 0.214,
             "lexical_truncation_pattern_ratio_mean": 0.3689,
             "lexical_repetitive_phrase_line_ratio_mean": 0.0291,
             "timing_quality_band_counts": {"good": 1},
@@ -89,7 +90,7 @@ def test_write_markdown_summary_includes_lexical_review_hotspots(tmp_path):
     markdown = md_path.read_text(encoding="utf-8")
     assert "Lexical-review hotspots" in markdown
     assert (
-        "`1` song(s), truncation-pattern ratio `0.369`, repetitive-phrase ratio `0.029`"
+        "`1` song(s), hook-boundary ratio `0.214`, truncation-pattern ratio `0.369`, repetitive-phrase ratio `0.029`"
         in markdown
     )
 
@@ -108,6 +109,17 @@ def test_compute_lexical_line_diagnostics_rescue_and_flags():
     assert int(diag["apostrophe_rescue"]) >= 0
     sample = diag.get("sample")
     assert sample is None or isinstance(sample, dict)
+
+
+def test_compute_lexical_line_diagnostics_detects_hook_boundary_variant():
+    module = _load_module()
+    diag = module._compute_lexical_line_diagnostics(
+        line={"index": 28},
+        line_text="Don't believe me just watch (come on)",
+        whisper_text="Don't believe me just watch",
+    )
+    assert diag is not None
+    assert bool(diag["hook_boundary_variant"]) is True
 
 
 def test_compute_lexical_line_diagnostics_none_when_no_tokens():
