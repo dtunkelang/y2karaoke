@@ -41,6 +41,11 @@ PRESETS: dict[str, ExperimentPreset] = {
         env={"Y2K_WHISPER_SEGMENT_ASSIGN_PIPELINE": "parallel_experimental"},
         description="Parallel experimental segment assigner scaffold",
     ),
+    "evaluate_lyrics_sources": ExperimentPreset(
+        name="evaluate_lyrics_sources",
+        env={},
+        description="Explicitly compare all timed-lyrics sources and select best",
+    ),
 }
 
 
@@ -66,6 +71,7 @@ def _run_benchmark(
     max_songs: int,
     python_bin: str,
     env_overrides: dict[str, str],
+    evaluate_lyrics_sources: bool = False,
 ) -> Path:
     cmd = [
         python_bin,
@@ -83,6 +89,8 @@ def _run_benchmark(
         "--max-songs",
         str(max_songs),
     ]
+    if evaluate_lyrics_sources:
+        cmd.append("--evaluate-lyrics-sources")
     env = os.environ.copy()
     env.update(env_overrides)
     subprocess.run(cmd, cwd=REPO_ROOT, env=env, check=True)
@@ -218,6 +226,7 @@ def main() -> int:
         max_songs=args.max_songs,
         python_bin=args.python_bin,
         env_overrides=candidate_env,
+        evaluate_lyrics_sources=(preset.name == "evaluate_lyrics_sources"),
     )
 
     _run_compare(

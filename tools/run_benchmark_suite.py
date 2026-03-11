@@ -17,7 +17,7 @@ import sys
 import time
 import unicodedata
 from urllib.parse import parse_qs, urlparse
-from typing import Any, Iterable
+from typing import Any, Callable, Iterable, cast
 
 import yaml  # type: ignore[import-untyped]
 
@@ -765,6 +765,7 @@ def _build_generate_command(
     whisper_map_lrc_dtw: bool,
     strategy: str = "hybrid_dtw",
     drop_lrc_line_timings: bool = False,
+    evaluate_lyrics_sources: bool = False,
 ) -> list[str]:
     cmd = [
         python_bin,
@@ -786,6 +787,8 @@ def _build_generate_command(
         cmd.append("--offline")
     if force:
         cmd.append("--force")
+    if evaluate_lyrics_sources:
+        cmd.append("--evaluate-lyrics")
     if drop_lrc_line_timings:
         cmd.append("--drop-lrc-line-timings")
     if strategy == "hybrid_dtw":
@@ -3097,7 +3100,9 @@ def _aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:  # noqa: C901
         if isinstance(r.get("reference_divergence"), dict)
         and bool(r["reference_divergence"].get("suspected"))
     ]
-    reference_divergence_suspects.sort(key=lambda row: row["score"], reverse=True)
+    reference_divergence_suspects.sort(
+        key=lambda row: cast(float, row["score"]), reverse=True
+    )
     reference_divergence_song_keys = {
         row["song"] for row in reference_divergence_suspects if isinstance(row, dict)
     }
@@ -5461,6 +5466,14 @@ def _parse_args() -> argparse.Namespace:
         ),
     )
     parser.add_argument(
+        "--evaluate-lyrics-sources",
+        action="store_true",
+        help=(
+            "Pass --evaluate-lyrics to y2karaoke generate so all available timed "
+            "lyrics sources are compared and the best-scoring source is selected."
+        ),
+    )
+    parser.add_argument(
         "--fail-fast",
         action="store_true",
         help="Stop at first failing song",
@@ -6378,6 +6391,7 @@ def _run_single_song_generation(
         whisper_map_lrc_dtw=not args.no_whisper_map_lrc_dtw,
         strategy=args.strategy,
         drop_lrc_line_timings=(args.scenario == "lyrics_no_timing"),
+        evaluate_lyrics_sources=bool(args.evaluate_lyrics_sources),
     )
     print(f"[{index}/{total_songs}] {song.artist} - {song.title}")
     start = time.monotonic()
