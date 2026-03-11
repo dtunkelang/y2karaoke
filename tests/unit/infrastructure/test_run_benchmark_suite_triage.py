@@ -443,9 +443,11 @@ def test_classify_quality_diagnosis_deescalates_dtw_lexical_review_with_strong_g
             "gold_available": True,
         },
         alignment_policy_hint={"hint": "review_dtw_lexical_matching"},
+        lexical_mismatch_diagnostics={"hook_boundary_variant_ratio": 0.3204},
     )
     assert diagnosis["verdict"] == "needs_manual_review"
     assert "review_dtw_lexical_matching" in diagnosis["reasons"]
+    assert "hook_boundary_variants_dominant" in diagnosis["reasons"]
 
 
 def test_aggregate_includes_quality_diagnosis_counts():

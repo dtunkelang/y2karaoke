@@ -2328,6 +2328,7 @@ def _classify_quality_diagnosis(
     *,
     alignment_policy_hint: dict[str, Any] | None = None,
     reference_divergence: dict[str, Any] | None = None,
+    lexical_mismatch_diagnostics: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     if not isinstance(metrics, dict):
         return {
@@ -2406,6 +2407,11 @@ def _classify_quality_diagnosis(
     strong_gold_agreement = (
         strong_gold and agree_cov >= 0.4 and agree_p95 <= 0.9 and low_conf <= 0.1
     )
+    hook_boundary_ratio = 0.0
+    if isinstance(lexical_mismatch_diagnostics, dict):
+        hook_boundary_ratio = float(
+            lexical_mismatch_diagnostics.get("hook_boundary_variant_ratio", 0.0) or 0.0
+        )
     hint = ""
     if isinstance(alignment_policy_hint, dict):
         hint = str(alignment_policy_hint.get("hint") or "")
@@ -2426,6 +2432,8 @@ def _classify_quality_diagnosis(
                 "agreement_consistent",
             ]
         )
+        if hook_boundary_ratio >= 0.25:
+            reasons.append("hook_boundary_variants_dominant")
     else:
         severe_pipeline_signals = (
             dtw_line < 0.75
@@ -4714,15 +4722,16 @@ def _refresh_cached_metrics(
         alignment_diagnostics=record.get("alignment_diagnostics"),
         reference_divergence=record.get("reference_divergence"),
     )
-    record["quality_diagnosis"] = _classify_quality_diagnosis(
-        record["metrics"],
-        alignment_policy_hint=record.get("alignment_policy_hint"),
-        reference_divergence=record.get("reference_divergence"),
-    )
     record["lexical_mismatch_diagnostics"] = _extract_lexical_mismatch_diagnostics(
         report,
         record["metrics"],
         alignment_policy_hint=record.get("alignment_policy_hint"),
+    )
+    record["quality_diagnosis"] = _classify_quality_diagnosis(
+        record["metrics"],
+        alignment_policy_hint=record.get("alignment_policy_hint"),
+        reference_divergence=record.get("reference_divergence"),
+        lexical_mismatch_diagnostics=record.get("lexical_mismatch_diagnostics"),
     )
     return record
 
@@ -6036,17 +6045,18 @@ def _run_song_command(
                 alignment_diagnostics=record.get("alignment_diagnostics"),
                 reference_divergence=record.get("reference_divergence"),
             )
-            record["quality_diagnosis"] = _classify_quality_diagnosis(
-                record["metrics"],
-                alignment_policy_hint=record.get("alignment_policy_hint"),
-                reference_divergence=record.get("reference_divergence"),
-            )
             record["lexical_mismatch_diagnostics"] = (
                 _extract_lexical_mismatch_diagnostics(
                     report,
                     record["metrics"],
                     alignment_policy_hint=record.get("alignment_policy_hint"),
                 )
+            )
+            record["quality_diagnosis"] = _classify_quality_diagnosis(
+                record["metrics"],
+                alignment_policy_hint=record.get("alignment_policy_hint"),
+                reference_divergence=record.get("reference_divergence"),
+                lexical_mismatch_diagnostics=record.get("lexical_mismatch_diagnostics"),
             )
             record["status"] = "ok"
     except subprocess.TimeoutExpired as exc:
