@@ -408,6 +408,46 @@ def test_classify_quality_diagnosis_does_not_overcall_pipeline_when_gold_is_stro
     assert "high_agreement_p95" not in diagnosis["reasons"]
 
 
+def test_alignment_policy_hint_flags_dtw_lexical_review_for_uptown_shape():
+    module = _load_module()
+    hint = module._infer_alignment_policy_hint(
+        {
+            "dtw_line_coverage": 0.724,
+            "dtw_word_coverage": 0.598,
+            "low_confidence_ratio": 0.0381,
+            "agreement_coverage_ratio": 0.6571,
+            "agreement_start_p95_abs_sec": 0.728,
+            "agreement_bad_ratio": 0.0286,
+            "gold_word_coverage_ratio": 1.0,
+            "gold_start_mean_abs_sec": 0.3217,
+            "gold_start_p95_abs_sec": 0.72,
+        }
+    )
+    assert hint["hint"] == "review_dtw_lexical_matching"
+
+
+def test_classify_quality_diagnosis_deescalates_dtw_lexical_review_with_strong_gold():
+    module = _load_module()
+    diagnosis = module._classify_quality_diagnosis(
+        {
+            "line_count": 105,
+            "dtw_line_coverage": 0.724,
+            "dtw_word_coverage": 0.598,
+            "low_confidence_ratio": 0.0381,
+            "agreement_coverage_ratio": 0.6571,
+            "agreement_start_p95_abs_sec": 0.728,
+            "gold_word_coverage_ratio": 1.0,
+            "gold_start_mean_abs_sec": 0.3217,
+            "gold_start_p95_abs_sec": 0.72,
+            "gold_comparable_word_count": 526,
+            "gold_available": True,
+        },
+        alignment_policy_hint={"hint": "review_dtw_lexical_matching"},
+    )
+    assert diagnosis["verdict"] == "needs_manual_review"
+    assert "review_dtw_lexical_matching" in diagnosis["reasons"]
+
+
 def test_aggregate_includes_quality_diagnosis_counts():
     module = _load_module()
     results = [

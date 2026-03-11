@@ -2198,16 +2198,18 @@ def _infer_alignment_policy_hint(
     # Candidate for Whisper-heavy / audio-first review: weak DTW lexical coverage but low internal uncertainty.
     if (
         hint == "none"
-        and dtw_line >= 0.75
-        and dtw_word < 0.5
+        and dtw_line >= 0.7
+        and dtw_word < 0.65
         and low_conf <= 0.1
         and gold_cov >= 0.75
+        and agree_cov >= 0.4
+        and agree_p95 <= 0.9
     ):
         hint = "review_dtw_lexical_matching"
         confidence = "medium"
         reasons.extend(
             [
-                "dtw_line_good_but_word_low",
+                "dtw_alignment_weaker_than_gold_agreement",
                 "low_internal_uncertainty",
             ]
         )
@@ -2307,6 +2309,12 @@ def _classify_quality_diagnosis(
         and gold_start_mean <= 0.65
         and gold_start_p95 <= 1.9
     )
+    strong_gold_agreement = (
+        strong_gold and agree_cov >= 0.4 and agree_p95 <= 0.9 and low_conf <= 0.1
+    )
+    hint = ""
+    if isinstance(alignment_policy_hint, dict):
+        hint = str(alignment_policy_hint.get("hint") or "")
 
     if strong_internal and stable_agreement and (not has_gold or strong_gold):
         verdict = "likely_pipeline_ok"
@@ -2314,6 +2322,16 @@ def _classify_quality_diagnosis(
         reasons.extend(["strong_internal_alignment"])
         if has_gold:
             reasons.append("gold_timing_consistent")
+    elif hint == "review_dtw_lexical_matching" and strong_gold_agreement:
+        verdict = "needs_manual_review"
+        confidence = "medium"
+        reasons.extend(
+            [
+                "review_dtw_lexical_matching",
+                "gold_timing_consistent",
+                "agreement_consistent",
+            ]
+        )
     else:
         severe_pipeline_signals = (
             dtw_line < 0.75
