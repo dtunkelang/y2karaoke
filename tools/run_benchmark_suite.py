@@ -2798,6 +2798,30 @@ def _aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:  # noqa: C901
         rows.sort(key=lambda row: float(row["value"]), reverse=reverse)
         return rows[:top_n]
 
+    def _lexical_hook_boundary_hotspots(*, top_n: int = 3) -> list[dict[str, Any]]:
+        rows: list[dict[str, Any]] = []
+        for r in succeeded:
+            lexical_diag = r.get("lexical_mismatch_diagnostics")
+            if not isinstance(lexical_diag, dict):
+                continue
+            ratio = lexical_diag.get("hook_boundary_variant_ratio")
+            if not isinstance(ratio, (int, float)):
+                continue
+            count = int(lexical_diag.get("hook_boundary_variant_count", 0) or 0)
+            if count <= 0 or float(ratio) <= 0.0:
+                continue
+            rows.append(
+                {
+                    "song": f"{r['artist']} - {r['title']}",
+                    "value": round(float(ratio), 4),
+                    "count": count,
+                }
+            )
+        rows.sort(
+            key=lambda row: (float(row["value"]), int(row["count"])), reverse=True
+        )
+        return rows[:top_n]
+
     def _cache_bucket(decision: Any) -> str:
         if not isinstance(decision, str):
             return "unknown"
@@ -3628,6 +3652,7 @@ def _aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:  # noqa: C901
             "lowest_gold_word_coverage_ratio": _hotspot_records(
                 key="gold_word_coverage_ratio", top_n=3, reverse=False
             ),
+            "lexical_hook_boundary_variants": _lexical_hook_boundary_hotspots(),
             "reference_divergence_suspects": reference_divergence_suspects[:5],
             "likely_reference_divergence": triage_rankings.get(
                 "likely_reference_divergence", []
@@ -4489,6 +4514,7 @@ def _write_markdown_summary(  # noqa: C901
         low_timing_quality = hotspots.get("lowest_timing_quality_score", [])
         high_gold_start = hotspots.get("highest_avg_abs_word_start_delta_sec", [])
         low_gold_cov = hotspots.get("lowest_gold_word_coverage_ratio", [])
+        hook_boundary_rows = hotspots.get("lexical_hook_boundary_variants", [])
         ref_div_suspects = hotspots.get("reference_divergence_suspects", [])
         likely_ref_div = hotspots.get("likely_reference_divergence", [])
         likely_pipeline = hotspots.get("likely_pipeline_failure", [])
@@ -4504,6 +4530,7 @@ def _write_markdown_summary(  # noqa: C901
             or low_timing_quality
             or high_gold_start
             or low_gold_cov
+            or hook_boundary_rows
             or ref_div_suspects
             or likely_ref_div
             or likely_pipeline
@@ -4561,6 +4588,15 @@ def _write_markdown_summary(  # noqa: C901
                 for item in low_gold_cov:
                     if isinstance(item, dict):
                         lines.append(f"  - {item.get('song')}: {item.get('value')}")
+            if hook_boundary_rows:
+                lines.append("- Highest hook-boundary lexical variant ratio:")
+                for item in hook_boundary_rows:
+                    if isinstance(item, dict):
+                        lines.append(
+                            "  - "
+                            f"{item.get('song')}: {item.get('value')} "
+                            f"(count={int(item.get('count', 0) or 0)})"
+                        )
             if ref_div_suspects:
                 lines.append("- Reference divergence suspects (heuristic):")
                 for item in ref_div_suspects:

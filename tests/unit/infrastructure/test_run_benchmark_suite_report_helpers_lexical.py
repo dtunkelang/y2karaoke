@@ -85,6 +85,15 @@ def test_write_markdown_summary_includes_lexical_review_hotspots(tmp_path):
             "fallback_map_rejected_count": 0,
             "fallback_map_reason_counts": {},
             "issue_tag_totals": {},
+            "quality_hotspots": {
+                "lexical_hook_boundary_variants": [
+                    {
+                        "song": "Mark Ronson - Uptown Funk",
+                        "value": 0.3204,
+                        "count": 33,
+                    }
+                ]
+            },
         },
         songs=[],
     )
@@ -94,6 +103,8 @@ def test_write_markdown_summary_includes_lexical_review_hotspots(tmp_path):
         "`1` song(s), hook-boundary songs `1`, hook-boundary ratio `0.214`, truncation-pattern ratio `0.369`, repetitive-phrase ratio `0.029`"
         in markdown
     )
+    assert "Highest hook-boundary lexical variant ratio" in markdown
+    assert "Mark Ronson - Uptown Funk: 0.3204 (count=33)" in markdown
 
 
 def test_compute_lexical_line_diagnostics_rescue_and_flags():
