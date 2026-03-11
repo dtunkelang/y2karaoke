@@ -45,10 +45,15 @@ _AGREEMENT_FILLER_TOKENS = {
     "woo",
     "woah",
     "whoa",
+    "whoo",
     "ya",
     "yeah",
     "yo",
 }
+_OPTIONAL_HOOK_BOUNDARY_PHRASES: tuple[tuple[str, ...], ...] = (
+    ("come", "on"),
+    ("hot", "damn"),
+)
 _AGREEMENT_CONTRACTION_SPECIALS: dict[str, tuple[str, ...]] = {
     "can't": ("can", "not"),
     "cannot": ("can", "not"),
@@ -296,6 +301,64 @@ def _normalize_word_text(raw: Any) -> str:
     )
     cleaned = re.sub(r"[^a-z0-9'\s]", " ", folded)
     return re.sub(r"\s+", " ", cleaned).strip()
+
+
+def _strip_optional_hook_boundary_tokens(tokens: list[str]) -> list[str]:
+    if len(tokens) < 3:
+        return tokens
+
+    def _core_token_count(items: list[str]) -> int:
+        return sum(1 for tok in items if tok not in _AGREEMENT_FILLER_TOKENS)
+
+    if not any(tok not in _AGREEMENT_FILLER_TOKENS for tok in tokens):
+        return tokens
+
+    out = list(tokens)
+    changed = True
+    while changed:
+        changed = False
+        for phrase in _OPTIONAL_HOOK_BOUNDARY_PHRASES:
+            phrase_len = len(phrase)
+            if (
+                len(out) - phrase_len >= 2
+                and tuple(out[:phrase_len]) == phrase
+                and _core_token_count(out[phrase_len:]) >= 3
+            ):
+                out = out[phrase_len:]
+                changed = True
+            if (
+                len(out) - phrase_len >= 2
+                and tuple(out[-phrase_len:]) == phrase
+                and _core_token_count(out[:-phrase_len]) >= 3
+            ):
+                out = out[:-phrase_len]
+                changed = True
+        if (
+            len(out) >= 4
+            and out[0] in _AGREEMENT_FILLER_TOKENS
+            and _core_token_count(out[1:]) >= 3
+        ):
+            out = out[1:]
+            changed = True
+        if (
+            len(out) >= 4
+            and out[-1] in _AGREEMENT_FILLER_TOKENS
+            and _core_token_count(out[:-1]) >= 3
+        ):
+            out = out[:-1]
+            changed = True
+        for idx in range(1, len(out) - 1):
+            if (
+                len(out) >= 5
+                and out[idx] in _AGREEMENT_FILLER_TOKENS
+                and out[idx - 1] not in _AGREEMENT_FILLER_TOKENS
+                and out[idx + 1] not in _AGREEMENT_FILLER_TOKENS
+                and _core_token_count(out[:idx] + out[idx + 1 :]) >= 3
+            ):
+                out = out[:idx] + out[idx + 1 :]
+                changed = True
+                break
+    return out
 
 
 def _word_similarity(left: Any, right: Any) -> float:
@@ -1685,7 +1748,7 @@ def _lexical_tokens_basic(text: str) -> list[str]:
         tok = "".join(ch for ch in raw.lower() if ch.isalpha() or ch == "'")
         if tok:
             tokens.append(tok)
-    return tokens
+    return _strip_optional_hook_boundary_tokens(tokens)
 
 
 def _lexical_tokens_compact(text: str) -> list[str]:
@@ -1699,7 +1762,7 @@ def _lexical_tokens_compact(text: str) -> list[str]:
         tok = "".join(ch for ch in raw.lower() if ch.isalpha())
         if tok:
             tokens.append(tok)
-    return tokens
+    return _strip_optional_hook_boundary_tokens(tokens)
 
 
 def _best_lexical_match_index(

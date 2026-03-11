@@ -287,6 +287,40 @@ def test_agreement_normalization_converts_dropped_g_endings():
     )
 
 
+def test_lexical_tokens_strip_optional_hook_boundary_fillers():
+    module = _load_module()
+    assert module._lexical_tokens_basic("Don't believe me just watch uh") == [
+        "don't",
+        "believe",
+        "me",
+        "just",
+        "watch",
+    ]
+    assert module._lexical_tokens_compact("Uptown (woo) funk you up (come on)") == [
+        "uptown",
+        "funk",
+        "you",
+        "up",
+    ]
+    assert module._lexical_tokens_compact("Girls hit your hallelujah (whoo)") == [
+        "girls",
+        "hit",
+        "your",
+        "hallelujah",
+    ]
+    assert module._lexical_tokens_compact("Come on, dance, jump on it") == [
+        "dance",
+        "jump",
+        "on",
+        "it",
+    ]
+    assert module._lexical_tokens_compact("I'm too hot (hot damn)") == [
+        "im",
+        "too",
+        "hot",
+    ]
+
+
 def test_agreement_window_skip_reason_variants() -> None:
     module = _load_module()
     line = {
