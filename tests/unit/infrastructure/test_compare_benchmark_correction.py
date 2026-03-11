@@ -48,6 +48,9 @@ def test_build_comparison_reports_net_improvement() -> None:
             "curated_canary_gold_downstream_regression_mean_improvement_sec_mean": 0.62,
             "curated_canary_gold_parenthetical_interjection_start_mean_abs_sec_mean": 2.1,
             "curated_canary_gold_parenthetical_interjection_start_p95_abs_sec_mean": 2.6,
+            "lexical_review_song_count": 2,
+            "lexical_truncation_pattern_ratio_mean": 0.41,
+            "lexical_repetitive_phrase_line_ratio_mean": 0.08,
             "curated_canary_reference_watchlist_count": 1,
             "curated_canary_reference_watchlist": ["Artist B - Song B"],
         },
@@ -87,6 +90,9 @@ def test_build_comparison_reports_net_improvement() -> None:
             "curated_canary_gold_downstream_regression_mean_improvement_sec_mean": 0.21,
             "curated_canary_gold_parenthetical_interjection_start_mean_abs_sec_mean": 0.8,
             "curated_canary_gold_parenthetical_interjection_start_p95_abs_sec_mean": 1.0,
+            "lexical_review_song_count": 1,
+            "lexical_truncation_pattern_ratio_mean": 0.22,
+            "lexical_repetitive_phrase_line_ratio_mean": 0.03,
             "curated_canary_reference_watchlist_count": 0,
             "curated_canary_reference_watchlist": [],
         },
@@ -175,6 +181,21 @@ def test_build_comparison_reports_net_improvement() -> None:
         ]["improved"]
         is True
     )
+    assert (
+        report["curated_canary_deltas"]["lexical_review_song_count"]["improved"] is True
+    )
+    assert (
+        report["curated_canary_deltas"]["lexical_truncation_pattern_ratio_mean"][
+            "improved"
+        ]
+        is True
+    )
+    assert (
+        report["curated_canary_deltas"]["lexical_repetitive_phrase_line_ratio_mean"][
+            "improved"
+        ]
+        is True
+    )
     assert report["curated_canary_watchlist"]["baseline"] == ["Artist B - Song B"]
     assert report["curated_canary_watchlist"]["corrected"] == []
     song_row = report["song_deltas"][0]
@@ -204,6 +225,9 @@ def test_main_writes_json_markdown_and_curated_canary_cli_summary(
             "curated_canary_gold_downstream_regression_mean_improvement_sec_mean": 0.5,
             "curated_canary_gold_parenthetical_interjection_start_mean_abs_sec_mean": 2.0,
             "curated_canary_gold_parenthetical_interjection_start_p95_abs_sec_mean": 2.4,
+            "lexical_review_song_count": 1,
+            "lexical_truncation_pattern_ratio_mean": 0.37,
+            "lexical_repetitive_phrase_line_ratio_mean": 0.03,
             "curated_canary_reference_watchlist_count": 1,
             "curated_canary_reference_watchlist": ["Artist Y - Song Y"],
         },
@@ -251,6 +275,9 @@ def test_main_writes_json_markdown_and_curated_canary_cli_summary(
     assert "later_onset_choice_line_count=6.0000 -> 6.0000" in captured.out
     assert "later_onset_choice_mean_improvement_sec=0.4000 -> 0.4000" in captured.out
     assert "parenthetical_interjection_start_abs_sec=2.0000 -> 2.0000" in captured.out
+    assert "lexical_review_song_count=1.0000 -> 1.0000" in captured.out
+    assert "lexical_truncation_pattern_ratio=0.3700 -> 0.3700" in captured.out
+    assert "lexical_repetitive_phrase_ratio=0.0300 -> 0.0300" in captured.out
     assert "watchlist_corrected=Artist Y - Song Y" in captured.out
 
 

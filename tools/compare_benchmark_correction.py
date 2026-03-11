@@ -112,6 +112,21 @@ METRICS_CURATED_CANARY: list[dict[str, str]] = [
         "direction": "lower",
     },
     {
+        "key": "lexical_review_song_count",
+        "label": "lexical_review_song_count",
+        "direction": "lower",
+    },
+    {
+        "key": "lexical_truncation_pattern_ratio_mean",
+        "label": "lexical_truncation_pattern_ratio",
+        "direction": "lower",
+    },
+    {
+        "key": "lexical_repetitive_phrase_line_ratio_mean",
+        "label": "lexical_repetitive_phrase_ratio",
+        "direction": "lower",
+    },
+    {
         "key": "curated_canary_reference_watchlist_count",
         "label": "curated_canary_watchlist_count",
         "direction": "lower",
@@ -464,6 +479,9 @@ def _curated_canary_cli_summary(report: dict[str, Any]) -> list[str]:
     interjection_p95 = curated.get(
         "curated_canary_gold_parenthetical_interjection_start_p95_abs_sec_mean", {}
     )
+    lexical_review_count = curated.get("lexical_review_song_count", {})
+    lexical_truncation = curated.get("lexical_truncation_pattern_ratio_mean", {})
+    lexical_repetitive = curated.get("lexical_repetitive_phrase_line_ratio_mean", {})
     watchlist = curated.get("curated_canary_reference_watchlist_count", {})
     baseline_watch = (report.get("curated_canary_watchlist", {}) or {}).get(
         "baseline", []
@@ -536,6 +554,24 @@ def _curated_canary_cli_summary(report: dict[str, Any]) -> list[str]:
         "    parenthetical_interjection_start_p95_abs_sec={base} -> {corr}".format(
             base=_fmt_num(interjection_p95.get("baseline")),
             corr=_fmt_num(interjection_p95.get("corrected")),
+        )
+    )
+    lines.append(
+        "    lexical_review_song_count={base} -> {corr}".format(
+            base=_fmt_num(lexical_review_count.get("baseline")),
+            corr=_fmt_num(lexical_review_count.get("corrected")),
+        )
+    )
+    lines.append(
+        "    lexical_truncation_pattern_ratio={base} -> {corr}".format(
+            base=_fmt_num(lexical_truncation.get("baseline")),
+            corr=_fmt_num(lexical_truncation.get("corrected")),
+        )
+    )
+    lines.append(
+        "    lexical_repetitive_phrase_ratio={base} -> {corr}".format(
+            base=_fmt_num(lexical_repetitive.get("baseline")),
+            corr=_fmt_num(lexical_repetitive.get("corrected")),
         )
     )
     lines.append(
