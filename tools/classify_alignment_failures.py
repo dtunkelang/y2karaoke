@@ -28,6 +28,8 @@ def _num(value: Any) -> float | None:
 def _classify_song(song: dict[str, Any]) -> dict[str, Any]:
     metrics = song.get("metrics", {}) or {}
     diagnostics = song.get("alignment_diagnostics", {}) or {}
+    policy_hint = song.get("alignment_policy_hint", {}) or {}
+    lexical_diag = song.get("lexical_mismatch_diagnostics", {}) or {}
     skip_reasons = metrics.get("agreement_skip_reason_counts", {}) or {}
 
     agreement_cov_raw = _num(metrics.get("agreement_coverage_ratio"))
@@ -41,6 +43,12 @@ def _classify_song(song: dict[str, Any]) -> dict[str, Any]:
     eligibility_ratio = eligibility_ratio_raw or 0.0
     match_ratio = match_ratio_raw or 0.0
     line_cov = line_cov_raw or 0.0
+    low_conf = _num(metrics.get("low_confidence_ratio")) or 0.0
+    gold_cov = _num(metrics.get("gold_word_coverage_ratio")) or 0.0
+    gold_start_mean = _num(metrics.get("gold_start_mean_abs_sec")) or 0.0
+    hint = str(policy_hint.get("hint") or "")
+    trunc_ratio = _num(lexical_diag.get("truncation_pattern_ratio")) or 0.0
+    repetitive_ratio = _num(lexical_diag.get("repetitive_phrase_line_ratio")) or 0.0
 
     low_text = int(skip_reasons.get("low_text_similarity", 0) or 0)
     low_overlap = int(skip_reasons.get("low_token_overlap", 0) or 0)
@@ -69,11 +77,28 @@ def _classify_song(song: dict[str, Any]) -> dict[str, Any]:
         and match_ratio >= 0.45
     )
     repetition_dominant = repetition_signal >= 3 and lexical_signal <= 1
+    lexical_review_dominant = (
+        hint == "review_dtw_lexical_matching"
+        and gold_cov >= 0.75
+        and gold_start_mean <= 0.5
+        and agreement_cov >= 0.4
+        and agreement_p95 <= 0.9
+        and low_conf <= 0.1
+        and (trunc_ratio >= 0.15 or repetitive_ratio >= 0.02)
+    )
 
     label = "mixed_or_unclear"
     evidence: list[str] = []
     if not has_agreement_data:
         evidence = ["insufficient_agreement_metrics", f"status={status or 'unknown'}"]
+    elif lexical_review_dominant:
+        label = "lexical_hook_variant_matching"
+        evidence = [
+            f"alignment_hint={hint}",
+            f"truncation_ratio={trunc_ratio:.3f}",
+            f"repetitive_phrase_ratio={repetitive_ratio:.3f}",
+            f"agreement_p95={agreement_p95:.3f}s",
+        ]
     elif repetition_dominant and match_ratio < 0.75:
         label = "repetition_handling"
         evidence = [

@@ -93,6 +93,36 @@ def test_classify_timing_drift_precedes_sparse_when_signal_is_strong() -> None:
     assert row["label"] == "timing_drift"
 
 
+def test_classify_lexical_hook_variant_matching() -> None:
+    row = _MODULE._classify_song(
+        {
+            "artist": "Mark Ronson",
+            "title": "Uptown Funk",
+            "metrics": {
+                "agreement_coverage_ratio": 0.6571,
+                "agreement_eligibility_ratio": 0.9,
+                "agreement_match_ratio_within_eligible": 0.73,
+                "agreement_start_p95_abs_sec": 0.728,
+                "dtw_line_coverage": 0.724,
+                "low_confidence_ratio": 0.0381,
+                "gold_word_coverage_ratio": 1.0,
+                "gold_start_mean_abs_sec": 0.3217,
+                "agreement_skip_reason_counts": {},
+            },
+            "alignment_policy_hint": {
+                "hint": "review_dtw_lexical_matching",
+            },
+            "lexical_mismatch_diagnostics": {
+                "truncation_pattern_ratio": 0.3689,
+                "repetitive_phrase_line_ratio": 0.0291,
+            },
+            "alignment_diagnostics": {},
+        }
+    )
+    assert row["label"] == "lexical_hook_variant_matching"
+    assert "alignment_hint=review_dtw_lexical_matching" in row["evidence"]
+
+
 def test_classify_missing_metrics_as_mixed() -> None:
     row = _MODULE._classify_song(
         {
