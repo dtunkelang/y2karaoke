@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-import json
 import os
 import time
 from typing import Any, Callable, Dict, List, Optional, Tuple
@@ -30,6 +29,11 @@ from .whisper_integration_align_experimental import (
 from .whisper_integration_finalize import _restore_pairwise_inversions_from_source
 from .whisper_integration_forced_fallback import (
     attempt_whisperx_forced_alignment,
+)
+from .whisper_integration_align_trace import (
+    capture_trace_snapshot as _capture_trace_snapshot,
+    maybe_write_trace_snapshot_file as _maybe_write_trace_snapshot_file,
+    parse_trace_line_range as _parse_trace_line_range,
 )
 from .whisper_integration_shift_guard import (
     should_apply_baseline_constraint as _should_apply_baseline_constraint,
@@ -149,59 +153,6 @@ def _should_force_whisperx_for_tail_shortfall(
         if word.end >= cutoff and word.text.strip().lower() != "[vocal]"
     )
     return recent_non_vocal_words <= max_recent_non_vocal_words
-
-
-def _parse_trace_line_range() -> tuple[int, int] | None:
-    raw = os.environ.get("Y2K_TRACE_WHISPER_LINE_RANGE", "").strip()
-    if not raw:
-        return None
-    try:
-        start_s, end_s = raw.split("-", 1)
-        start = int(start_s)
-        end = int(end_s)
-    except (TypeError, ValueError):
-        return None
-    if start <= 0 or end < start:
-        return None
-    return start, end
-
-
-def _capture_trace_snapshot(
-    snapshots: list[dict[str, Any]],
-    *,
-    stage: str,
-    lines: List[models.Line],
-    line_range: tuple[int, int] | None,
-) -> None:
-    if line_range is None:
-        return
-    start_idx, end_idx = line_range
-    rows: list[dict[str, Any]] = []
-    for idx, line in enumerate(lines, start=1):
-        if idx < start_idx or idx > end_idx or not line.words:
-            continue
-        rows.append(
-            {
-                "line_index": idx,
-                "text": line.text,
-                "start": round(line.start_time, 3),
-                "end": round(line.end_time, 3),
-                "duration": round(line.end_time - line.start_time, 3),
-            }
-        )
-    snapshots.append({"stage": stage, "count": len(lines), "lines": rows})
-
-
-def _maybe_write_trace_snapshot_file(
-    *,
-    snapshots: list[dict[str, Any]],
-    trace_path: str,
-) -> None:
-    if not trace_path:
-        return
-    payload = {"snapshots": snapshots}
-    with open(trace_path, "w", encoding="utf-8") as fh:
-        json.dump(payload, fh, indent=2)
 
 
 def _extend_last_word_end(line: models.Line, target_end: float) -> models.Line:

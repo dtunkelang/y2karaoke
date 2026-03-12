@@ -88,6 +88,12 @@ _AGREEMENT_TRAILING_FILLER_TOKENS = {
     "uh",
     "woo",
 }
+_GOLD_SOFTENED_TAG_TOKENS = {
+    "chris",
+    "jedi",
+    "jeje",
+    "omega",
+}
 _OPTIONAL_HOOK_BOUNDARY_PHRASES: tuple[tuple[str, ...], ...] = (
     ("come", "on"),
     ("hot", "damn"),
@@ -518,14 +524,19 @@ def _align_words_for_gold_comparison(
 
 
 def _flatten_words_from_timing_doc(
-    doc: dict[str, Any], *, mark_parenthetical_optional: bool = False
+    doc: dict[str, Any],
+    *,
+    mark_parenthetical_optional: bool = False,
+    suppress_line_indexes: set[int] | None = None,
 ) -> list[dict[str, Any]]:
     words: list[dict[str, Any]] = []
     lines = doc.get("lines", [])
     if not isinstance(lines, list):
         return words
-    for line in lines:
+    for line_index, line in enumerate(lines):
         if not isinstance(line, dict):
+            continue
+        if suppress_line_indexes and line_index in suppress_line_indexes:
             continue
         line_words = line.get("words", [])
         if not isinstance(line_words, list):
@@ -553,6 +564,7 @@ def _flatten_words_from_timing_doc(
                     "start": float(start),
                     "end": float(end),
                     "optional": optional,
+                    "line_index": line_index,
                 }
             )
         if mark_parenthetical_optional and line_word_entries:
@@ -573,6 +585,8 @@ def _normalize_interjection_token(text: str) -> str:
 
 def _extract_parenthetical_interjection_lines(
     doc: dict[str, Any],
+    *,
+    suppress_line_indexes: set[int] | None = None,
 ) -> list[dict[str, Any]]:
     lines_out: list[dict[str, Any]] = []
     lines = doc.get("lines", [])
@@ -580,6 +594,8 @@ def _extract_parenthetical_interjection_lines(
         return lines_out
     for line_index, line in enumerate(lines):
         if not isinstance(line, dict):
+            continue
+        if suppress_line_indexes and line_index in suppress_line_indexes:
             continue
         line_words = line.get("words", [])
         if not isinstance(line_words, list) or not line_words:
@@ -645,13 +661,19 @@ def _line_is_parenthetical_interjection(line: dict[str, Any]) -> bool:
     return bool(_extract_parenthetical_interjection_lines(doc))
 
 
-def _extract_lines_for_gold_comparison(doc: dict[str, Any]) -> list[dict[str, Any]]:
+def _extract_lines_for_gold_comparison(
+    doc: dict[str, Any],
+    *,
+    suppress_line_indexes: set[int] | None = None,
+) -> list[dict[str, Any]]:
     lines_out: list[dict[str, Any]] = []
     lines = doc.get("lines", [])
     if not isinstance(lines, list):
         return lines_out
     for line_index, line in enumerate(lines):
         if not isinstance(line, dict):
+            continue
+        if suppress_line_indexes and line_index in suppress_line_indexes:
             continue
         start = line.get("start")
         end = line.get("end")
@@ -692,6 +714,60 @@ def _extract_lines_for_gold_comparison(doc: dict[str, Any]) -> list[dict[str, An
             }
         )
     return lines_out
+
+
+def _is_softened_adlib_or_tag_text(text: Any) -> bool:
+    tokens = [tok for tok in _normalize_agreement_text(text).split() if tok]
+    if not tokens or len(tokens) > 4:
+        return False
+    allowed = _AGREEMENT_FILLER_TOKENS | _GOLD_SOFTENED_TAG_TOKENS
+    return all(token in allowed for token in tokens)
+
+
+def _whisper_window_text(line: dict[str, Any]) -> str:
+    raw_words = line.get("whisper_window_words")
+    if not isinstance(raw_words, list):
+        return ""
+    return " ".join(
+        str(word.get("text", "")).strip()
+        for word in raw_words
+        if isinstance(word, dict) and str(word.get("text", "")).strip()
+    ).strip()
+
+
+def _softened_gold_adlib_line_indexes(report: dict[str, Any]) -> set[int]:
+    lines = report.get("lines", [])
+    if not isinstance(lines, list):
+        return set()
+    low_conf_raw = report.get("low_confidence_lines", [])
+    low_conf_indexes: set[int] = set()
+    if isinstance(low_conf_raw, list):
+        for item in low_conf_raw:
+            if not isinstance(item, dict):
+                continue
+            index = item.get("index")
+            if isinstance(index, int) and index > 0:
+                low_conf_indexes.add(index - 1)
+
+    softened: set[int] = set()
+    for line_index, line in enumerate(lines):
+        if not isinstance(line, dict):
+            continue
+        text = str(line.get("text", "")).strip()
+        if not _is_softened_adlib_or_tag_text(text):
+            continue
+        window_text = _whisper_window_text(line)
+        window_overlap = _agreement_token_overlap(text, window_text)
+        avg_prob = line.get("whisper_window_avg_prob")
+        window_word_count = line.get("whisper_window_word_count")
+        if (
+            line_index in low_conf_indexes
+            or (isinstance(avg_prob, (int, float)) and float(avg_prob) < 0.35)
+            or (isinstance(window_word_count, int) and window_word_count <= 1)
+            or window_overlap < 0.35
+        ):
+            softened.add(line_index)
+    return softened
 
 
 def _align_lines_for_gold_comparison(
@@ -2003,18 +2079,34 @@ def _extract_song_metrics(
         ),
     }
 
-    generated_words = _flatten_words_from_timing_doc(report)
-    gold_words_all = _flatten_words_from_timing_doc(
+    softened_gold_line_indexes = _softened_gold_adlib_line_indexes(report)
+    generated_words = _flatten_words_from_timing_doc(
+        report, suppress_line_indexes=softened_gold_line_indexes
+    )
+    gold_words_all_unsuppressed = _flatten_words_from_timing_doc(
         gold_doc or {}, mark_parenthetical_optional=True
     )
-    generated_interjection_lines = _extract_parenthetical_interjection_lines(report)
-    gold_interjection_lines = _extract_parenthetical_interjection_lines(gold_doc or {})
+    gold_words_all = _flatten_words_from_timing_doc(
+        gold_doc or {},
+        mark_parenthetical_optional=True,
+        suppress_line_indexes=softened_gold_line_indexes,
+    )
+    generated_interjection_lines = _extract_parenthetical_interjection_lines(
+        report, suppress_line_indexes=softened_gold_line_indexes
+    )
+    gold_interjection_lines = _extract_parenthetical_interjection_lines(
+        gold_doc or {}, suppress_line_indexes=softened_gold_line_indexes
+    )
     aligned_interjection_lines = _align_parenthetical_interjection_lines(
         generated_interjection_lines,
         gold_interjection_lines,
     )
-    generated_lines_for_gold = _extract_lines_for_gold_comparison(report)
-    gold_lines_for_gold = _extract_lines_for_gold_comparison(gold_doc or {})
+    generated_lines_for_gold = _extract_lines_for_gold_comparison(
+        report, suppress_line_indexes=softened_gold_line_indexes
+    )
+    gold_lines_for_gold = _extract_lines_for_gold_comparison(
+        gold_doc or {}, suppress_line_indexes=softened_gold_line_indexes
+    )
     aligned_gold_lines = _align_lines_for_gold_comparison(
         generated_lines_for_gold,
         gold_lines_for_gold,
@@ -2107,6 +2199,12 @@ def _extract_song_metrics(
             "gold_parenthetical_interjection_line_count": len(gold_interjection_lines),
             "gold_parenthetical_interjection_comparable_line_count": len(
                 aligned_interjection_lines
+            ),
+            "gold_softened_adlib_line_count": len(softened_gold_line_indexes),
+            "gold_softened_adlib_word_count": sum(
+                1
+                for word in gold_words_all_unsuppressed
+                if int(word.get("line_index", -1)) in softened_gold_line_indexes
             ),
             "gold_comparable_line_count": len(aligned_gold_lines),
             "gold_parenthetical_interjection_start_mean_abs_sec": round(
@@ -5576,7 +5674,10 @@ def _inherit_resume_gold_root(args: argparse.Namespace, run_dir: Path) -> Path |
     if requested_gold_root != DEFAULT_GOLD_ROOT.resolve():
         return None
     inferred_from_results = _infer_gold_root_from_cached_results(run_dir)
-    if inferred_from_results is not None and inferred_from_results != requested_gold_root:
+    if (
+        inferred_from_results is not None
+        and inferred_from_results != requested_gold_root
+    ):
         return inferred_from_results
     metadata = _load_run_metadata(run_dir)
     if not metadata:
