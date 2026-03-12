@@ -150,6 +150,7 @@ class BenchmarkSong:
     title: str
     youtube_id: str
     youtube_url: str
+    lyrics_file: str | None = None
 
     @property
     def slug(self) -> str:
@@ -179,11 +180,28 @@ def _parse_manifest(path: Path) -> list[BenchmarkSong]:
                     title=str(song["title"]),
                     youtube_id=str(song["youtube_id"]),
                     youtube_url=str(song["youtube_url"]),
+                    lyrics_file=_resolve_manifest_optional_path(
+                        path.parent, song.get("lyrics_file")
+                    ),
                 )
             )
         except KeyError as exc:
             raise ValueError(f"songs[{idx}] missing required field: {exc}") from exc
     return songs
+
+
+def _resolve_manifest_optional_path(
+    manifest_dir: Path, value: Any
+) -> str | None:
+    if value is None:
+        return None
+    text = str(value).strip()
+    if not text:
+        return None
+    candidate = Path(text).expanduser()
+    if not candidate.is_absolute():
+        candidate = (manifest_dir / candidate).resolve()
+    return str(candidate)
 
 
 def _validate_cli_args(args: argparse.Namespace) -> None:
@@ -938,6 +956,8 @@ def _build_generate_command(
     ]
     if cache_dir is not None:
         cmd.extend(["--work-dir", str(cache_dir)])
+    if song.lyrics_file:
+        cmd.extend(["--lyrics-file", song.lyrics_file])
     if offline:
         cmd.append("--offline")
     if force:

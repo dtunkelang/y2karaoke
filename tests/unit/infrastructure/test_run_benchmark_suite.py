@@ -24,12 +24,15 @@ def _load_module():
 
 def test_build_generate_command_includes_expected_flags(tmp_path):
     module = _load_module()
+    lyrics_file = tmp_path / "lyrics.txt"
+    lyrics_file.write_text("hello\n", encoding="utf-8")
     song = module.BenchmarkSong(
         manifest_index=1,
         artist="X",
         title="Y",
         youtube_id="abcdefghijk",
         youtube_url="https://www.youtube.com/watch?v=abcdefghijk",
+        lyrics_file=str(lyrics_file),
     )
     report_path = tmp_path / "report.json"
     cache_dir = tmp_path / "cache"
@@ -52,6 +55,8 @@ def test_build_generate_command_includes_expected_flags(tmp_path):
     assert "--work-dir" in cmd
     assert str(cache_dir) in cmd
     assert "--drop-lrc-line-timings" in cmd
+    assert "--lyrics-file" in cmd
+    assert str(lyrics_file) in cmd
 
 
 def test_build_generate_command_strategy_variants(tmp_path):
@@ -106,6 +111,32 @@ def test_build_generate_command_strategy_variants(tmp_path):
     assert "--whisper" not in cmd_lrc
     assert "--whisper-only" not in cmd_lrc
     assert "--whisper-map-lrc-dtw" not in cmd_lrc
+
+
+def test_parse_manifest_resolves_optional_lyrics_file(tmp_path):
+    module = _load_module()
+    manifest = tmp_path / "manifest.yaml"
+    lyrics = tmp_path / "lyrics" / "song.txt"
+    lyrics.parent.mkdir()
+    lyrics.write_text("line one\n", encoding="utf-8")
+    manifest.write_text(
+        "\n".join(
+            [
+                "songs:",
+                "  - artist: Test Artist",
+                "    title: Test Song",
+                "    youtube_id: abcdefghijk",
+                "    youtube_url: https://www.youtube.com/watch?v=abcdefghijk",
+                "    lyrics_file: lyrics/song.txt",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    songs = module._parse_manifest(manifest)
+
+    assert len(songs) == 1
+    assert songs[0].lyrics_file == str(lyrics.resolve())
 
 
 def test_resolve_run_dir_resume_latest(tmp_path):
