@@ -7,158 +7,158 @@
     {
       "line_index": 1,
       "text": "Vient la douleur.",
-      "start": 0.055,
-      "end": 1.397,
+      "start": 0.05,
+      "end": 2.2,
       "words": [
         {
           "word_index": 1,
           "text": "Vient",
-          "start": 0.055,
-          "end": 0.487
+          "start": 0.05,
+          "end": 0.35
         },
         {
           "word_index": 2,
           "text": "la",
-          "start": 0.51,
-          "end": 0.942
+          "start": 0.35,
+          "end": 0.8
         },
         {
           "word_index": 3,
           "text": "douleur.",
-          "start": 0.965,
-          "end": 1.397
+          "start": 0.8,
+          "end": 2.2
         }
       ]
     },
     {
       "line_index": 2,
       "text": "Dans tout Paris, je m'abandonne",
-      "start": 2.605,
-      "end": 5.037,
+      "start": 2.5,
+      "end": 5.4,
       "words": [
         {
           "word_index": 1,
           "text": "Dans",
-          "start": 2.605,
-          "end": 3.071
+          "start": 2.5,
+          "end": 2.9
         },
         {
           "word_index": 2,
           "text": "tout",
-          "start": 3.096,
-          "end": 3.563
+          "start": 2.9,
+          "end": 3.3
         },
         {
           "word_index": 3,
           "text": "Paris,",
-          "start": 3.587,
-          "end": 4.054
+          "start": 3.3,
+          "end": 3.85
         },
         {
           "word_index": 4,
           "text": "je",
-          "start": 4.079,
-          "end": 4.546
+          "start": 4.15,
+          "end": 4.6
         },
         {
           "word_index": 5,
           "text": "m'abandonne",
-          "start": 4.57,
-          "end": 5.037
+          "start": 4.6,
+          "end": 5.4
         }
       ]
     },
     {
       "line_index": 3,
-      "text": "Et je m'envole, vole, vole, vole, vole, vole, vole",
-      "start": 6.355,
-      "end": 11.253,
+      "text": "Et je m'envole, vole, vole, vole, vole, vole vole",
+      "start": 5.55,
+      "end": 10.4,
       "words": [
         {
           "word_index": 1,
           "text": "Et",
-          "start": 6.355,
-          "end": 6.878
+          "start": 5.55,
+          "end": 5.85
         },
         {
           "word_index": 2,
           "text": "je",
-          "start": 6.905,
-          "end": 7.428
+          "start": 5.85,
+          "end": 6.15
         },
         {
           "word_index": 3,
           "text": "m'envole,",
-          "start": 7.455,
-          "end": 7.978
+          "start": 6.15,
+          "end": 6.9
         },
         {
           "word_index": 4,
           "text": "vole,",
-          "start": 8.006,
-          "end": 8.529
+          "start": 6.9,
+          "end": 7.45
         },
         {
           "word_index": 5,
           "text": "vole,",
-          "start": 8.556,
-          "end": 9.079
+          "start": 7.45,
+          "end": 8.0
         },
         {
           "word_index": 6,
           "text": "vole,",
-          "start": 9.107,
-          "end": 9.629
+          "start": 8.0,
+          "end": 8.55
         },
         {
           "word_index": 7,
           "text": "vole,",
-          "start": 9.657,
-          "end": 10.18
+          "start": 8.55,
+          "end": 9.1
         },
         {
           "word_index": 8,
           "text": "vole",
-          "start": 10.207,
-          "end": 10.73
+          "start": 9.1,
+          "end": 9.65
         },
         {
           "word_index": 9,
           "text": "vole",
-          "start": 10.757,
-          "end": 11.253
+          "start": 9.65,
+          "end": 10.4
         }
       ]
     },
     {
       "line_index": 4,
       "text": "Dans cette douce souffrance.",
-      "start": 26.305,
-      "end": 29.575,
+      "start": 25.75,
+      "end": 29.0,
       "words": [
         {
           "word_index": 1,
           "text": "Dans",
-          "start": 26.305,
-          "end": 27.122
+          "start": 25.75,
+          "end": 26.15
         },
         {
           "word_index": 2,
           "text": "cette",
-          "start": 27.122,
-          "end": 27.94
+          "start": 26.15,
+          "end": 26.7
         },
         {
           "word_index": 3,
           "text": "douce",
-          "start": 27.94,
-          "end": 28.757
+          "start": 26.7,
+          "end": 27.4
         },
         {
           "word_index": 4,
           "text": "souffrance.",
-          "start": 28.757,
-          "end": 29.575
+          "start": 27.4,
+          "end": 29.0
         }
       ]
     }
