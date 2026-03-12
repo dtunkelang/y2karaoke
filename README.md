@@ -237,6 +237,8 @@ Benchmark seed set for timing quality work:
     - disable for comparison: `Y2KARAOKE_ENABLE_FALLBACK_MAP_COVERAGE_PROMOTION=0`
   - Rebaseline gold from successful reports (all selected songs): `./venv/bin/python tools/run_benchmark_suite.py --rebaseline`
   - Rebaseline one song safely: `./venv/bin/python tools/run_benchmark_suite.py --match "bad guy" --max-songs 1 --rebaseline`
+  - Troubleshooting rule: if a song shows a large benchmark error that persists across multiple runs or heuristics, assume the gold curation may be wrong before assuming the pipeline is wrong.
+    - First verify `candidate_url` / `audio_path`, then listen-check the gold against the actual benchmark source, and rebaseline before spending time on new alignment heuristics.
   - Run strategy matrix and emit combined report: `make benchmark-matrix`
   - Matrix JSON now includes `recommendations` (best strategy by p95/mean start error, low-confidence ratio, DTW coverage, runtime, and quality/runtime balance)
   - Recommend default strategy/thresholds from prior reports: `make benchmark-recommend`
