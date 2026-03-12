@@ -7,6 +7,17 @@ default_lrc_duration_tolerance_sec: 20
 songs:
   - artist: "The Weeknd"
     title: "Blinding Lights"
+    clip_id: "early-verse"
+    audio_start_sec: 27
+    youtube_id: "fHI8X4OXluQ"
+    youtube_url: "https://www.youtube.com/watch?v=fHI8X4OXluQ"
+    preferred_lyrics_provider: "lyriq"
+    fallback_lyrics_provider: "syncedlyrics"
+    lrc_duration_tolerance_sec: 18
+    notes: "Early verse / source-start timing clamp case without hook-repeat ambiguity."
+
+  - artist: "The Weeknd"
+    title: "Blinding Lights"
     clip_id: "hook-repeat"
     audio_start_sec: 112
     youtube_id: "fHI8X4OXluQ"
