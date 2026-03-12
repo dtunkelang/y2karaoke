@@ -115,6 +115,24 @@ def test_apply_aggregate_only_cached_scope(tmp_path):
     )
     assert not_scoped == [song_a, song_b]
 
+    clip_song = module.BenchmarkSong(
+        manifest_index=1,
+        artist="Artist B",
+        title="Beta",
+        youtube_id="bbbbbbbbbbb",
+        youtube_url="https://www.youtube.com/watch?v=bbbbbbbbbbb",
+        clip_id="hook",
+        audio_start_sec=30.0,
+    )
+    selected_clip = module._apply_aggregate_only_cached_scope(
+        [clip_song],
+        aggregate_only=True,
+        match=None,
+        max_songs=0,
+        run_dir=tmp_path,
+    )
+    assert selected_clip == [clip_song]
+
 
 def test_load_aggregate_only_results_refreshes_cached_and_marks_missing(tmp_path):
     module = _load_module()
@@ -206,6 +224,90 @@ def test_load_aggregate_only_results_falls_back_to_slug_match(tmp_path):
     assert len(rows) == 1
     assert rows[0]["status"] == "ok"
     assert rows[0]["metrics"]["dtw_line_coverage"] == 0.8
+
+
+def test_load_aggregate_only_results_scores_clip_from_full_song_result(tmp_path):
+    module = _load_module()
+    clip_root = tmp_path / "clip_gold"
+    clip_root.mkdir(parents=True)
+    module.DEFAULT_CLIP_GOLD_ROOT = clip_root
+    song = module.BenchmarkSong(
+        manifest_index=1,
+        artist="The Weeknd",
+        title="Blinding Lights",
+        youtube_id="fHI8X4OXluQ",
+        youtube_url="https://www.youtube.com/watch?v=fHI8X4OXluQ",
+        clip_id="hook-repeat",
+        audio_start_sec=112.0,
+    )
+    (clip_root / f"01_{song.slug}.gold.json").write_text(
+        json.dumps(
+            {
+                "audio_path": "",
+                "lines": [
+                    {
+                        "start": 1.0,
+                        "end": 4.0,
+                        "text": "I said, ooh",
+                        "words": [
+                            {"text": "I", "start": 1.0, "end": 1.3},
+                            {"text": "said,", "start": 1.3, "end": 1.8},
+                            {"text": "ooh", "start": 1.8, "end": 4.0},
+                        ],
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+    report_path = tmp_path / f"01_{song.base_slug}_timing_report.json"
+    report_path.write_text(
+        json.dumps(
+            {
+                "alignment_method": "whisper_hybrid",
+                "lines": [
+                    {
+                        "index": 23,
+                        "start": 113.0,
+                        "end": 116.8,
+                        "text": "I said, ooh",
+                        "words": [
+                            {"text": "I", "start": 113.0, "end": 113.3},
+                            {"text": "said,", "start": 113.3, "end": 113.8},
+                            {"text": "ooh", "start": 113.8, "end": 116.8},
+                        ],
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+    (tmp_path / f"01_{song.base_slug}_result.json").write_text(
+        json.dumps(
+            {
+                "artist": song.artist,
+                "title": song.title,
+                "youtube_id": song.youtube_id,
+                "report_path": str(report_path),
+                "status": "ok",
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    rows, skipped = module._load_aggregate_only_results(
+        songs=[song],
+        run_dir=tmp_path,
+        gold_root=tmp_path,
+        rebaseline=False,
+    )
+
+    assert skipped == []
+    assert len(rows) == 1
+    assert rows[0]["status"] == "ok"
+    assert rows[0]["clip_scored_from_full_song"] is True
+    assert rows[0]["aggregate_only_recomputed"] is True
+    assert rows[0]["metrics"]["gold_word_coverage_ratio"] == 1.0
 
 
 def test_aggregate_tracks_missing_dtw_and_weighted_means():

@@ -159,13 +159,17 @@ class BenchmarkSong:
 
     @property
     def slug(self) -> str:
-        safe = f"{self.artist}-{self.title}".lower()
-        safe = re.sub(r"[^a-z0-9]+", "-", safe).strip("-")
+        safe = self.base_slug
         if self.clip_id:
             clip_safe = re.sub(r"[^a-z0-9]+", "-", self.clip_id.lower()).strip("-")
             if clip_safe:
                 safe = f"{safe}-{clip_safe}" if safe else clip_safe
         return safe or self.youtube_id
+
+    @property
+    def base_slug(self) -> str:
+        safe = f"{self.artist}-{self.title}".lower()
+        return re.sub(r"[^a-z0-9]+", "-", safe).strip("-") or self.youtube_id
 
 
 def _parse_manifest(path: Path) -> list[BenchmarkSong]:
@@ -284,7 +288,14 @@ def _apply_aggregate_only_cached_scope(
     if not aggregate_only or match or max_songs > 0:
         return songs
     cached_slugs = _discover_cached_result_slugs(run_dir)
-    return [song for song in songs if song.slug in cached_slugs]
+    selected: list[BenchmarkSong] = []
+    for song in songs:
+        slug_candidates = [song.slug]
+        if song.clip_id:
+            slug_candidates.append(song.base_slug)
+        if any(slug in cached_slugs for slug in slug_candidates):
+            selected.append(song)
+    return selected
 
 
 def _pctile(values: list[float], pct: float) -> float:
@@ -5810,6 +5821,23 @@ def _refresh_cached_metrics(
         report = json.loads(report_path.read_text(encoding="utf-8"))
     except Exception:
         return record
+    return _refresh_metrics_from_loaded_report(
+        record,
+        report=report,
+        index=index,
+        song=song,
+        gold_root=gold_root,
+    )
+
+
+def _refresh_metrics_from_loaded_report(
+    record: dict[str, Any],
+    *,
+    report: Any,
+    index: int | None = None,
+    song: BenchmarkSong | None = None,
+    gold_root: Path = DEFAULT_GOLD_ROOT,
+) -> dict[str, Any]:
     if not isinstance(report, dict):
         return record
     gold_doc = None
@@ -5847,6 +5875,85 @@ def _refresh_cached_metrics(
     return record
 
 
+def _shift_report_to_clip_window(
+    report: dict[str, Any],
+    *,
+    song: BenchmarkSong,
+    gold_doc: dict[str, Any] | None,
+) -> dict[str, Any] | None:
+    if not song.clip_id or song.audio_start_sec <= 0.0:
+        return report
+    if not isinstance(gold_doc, dict):
+        return None
+    gold_lines = gold_doc.get("lines")
+    if not isinstance(gold_lines, list) or not gold_lines:
+        return None
+    clip_end = max(
+        (float(line.get("end", 0.0)) for line in gold_lines if isinstance(line, dict)),
+        default=0.0,
+    )
+    if clip_end <= 0.0:
+        return None
+    absolute_start = song.audio_start_sec
+    # Give clip scoring a little slack at the tail so a line that legitimately
+    # overlaps the clipped region is not dropped for ending a few frames late.
+    absolute_end = absolute_start + clip_end + 1.0
+    shifted_lines: list[dict[str, Any]] = []
+    shift_keys = (
+        "start",
+        "end",
+        "pre_whisper_start",
+        "pre_whisper_end",
+        "whisper_window_start",
+        "whisper_window_end",
+        "nearest_segment_start",
+        "nearest_segment_end",
+        "nearest_segment_start_end",
+        "nearest_segment_end_start",
+    )
+    for line in report.get("lines", []):
+        if not isinstance(line, dict):
+            continue
+        start = line.get("start")
+        end = line.get("end")
+        if not isinstance(start, (int, float)) or not isinstance(end, (int, float)):
+            continue
+        if float(start) < absolute_start or float(end) > absolute_end:
+            continue
+        shifted = dict(line)
+        for key in shift_keys:
+            value = shifted.get(key)
+            if isinstance(value, (int, float)):
+                shifted[key] = round(float(value) - absolute_start, 3)
+        words_out: list[dict[str, Any]] = []
+        for word in line.get("words", []):
+            if not isinstance(word, dict):
+                continue
+            ws = word.get("start")
+            we = word.get("end")
+            if not isinstance(ws, (int, float)) or not isinstance(we, (int, float)):
+                continue
+            if float(ws) < absolute_start or float(we) > absolute_end:
+                continue
+            shifted_word = dict(word)
+            shifted_word["start"] = round(float(ws) - absolute_start, 3)
+            shifted_word["end"] = round(float(we) - absolute_start, 3)
+            words_out.append(shifted_word)
+        if words_out:
+            shifted["words"] = words_out
+        shifted_lines.append(shifted)
+    shifted_report = dict(report)
+    shifted_report["lines"] = shifted_lines
+    return shifted_report
+
+
+def _cached_result_slug_candidates(song: BenchmarkSong) -> list[str]:
+    candidates = [song.slug]
+    if song.clip_id:
+        candidates.append(song.base_slug)
+    return candidates
+
+
 def _write_json(path: Path, payload: dict[str, Any]) -> None:
     path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
 
@@ -5864,20 +5971,59 @@ def _load_aggregate_only_results(
         report_path = run_dir / f"{index:02d}_{song.slug}_timing_report.json"
         result_path = _song_result_path(run_dir, index, song.slug)
         prior = _load_song_result(result_path)
+        loaded_via_base_slug = False
         if prior is None:
-            slug_matches = sorted(run_dir.glob(f"*_{song.slug}_result.json"))
-            if len(slug_matches) == 1:
-                result_path = slug_matches[0]
+            slug_matches: list[Path] = []
+            for slug in _cached_result_slug_candidates(song):
+                slug_matches.extend(sorted(run_dir.glob(f"*_{slug}_result.json")))
+            deduped: list[Path] = []
+            for match in slug_matches:
+                if match not in deduped:
+                    deduped.append(match)
+            if len(deduped) == 1:
+                result_path = deduped[0]
                 prior = _load_song_result(result_path)
+                loaded_via_base_slug = song.clip_id is not None and (
+                    result_path.name.endswith(f"{song.base_slug}_result.json")
+                )
         print(f"[{index}/{len(songs)}] {song.artist} - {song.title}")
         if prior is None:
             skipped_missing.append(f"{song.artist} - {song.title}")
             print("  -> skipped (missing cached result)")
             continue
 
-        prior = _refresh_cached_metrics(
-            prior, index=index, song=song, gold_root=gold_root
-        )
+        if loaded_via_base_slug and song.clip_id:
+            report_raw = prior.get("report_path")
+            report_doc: dict[str, Any] | None = None
+            if isinstance(report_raw, str) and report_raw:
+                report_path = Path(report_raw)
+                if report_path.exists():
+                    try:
+                        loaded_report = json.loads(report_path.read_text(encoding="utf-8"))
+                    except Exception:
+                        loaded_report = None
+                    gold_doc = _load_gold_doc(index=index, song=song, gold_root=gold_root)
+                    if isinstance(loaded_report, dict):
+                        report_doc = _shift_report_to_clip_window(
+                            loaded_report, song=song, gold_doc=gold_doc
+                        )
+            if report_doc is None:
+                skipped_missing.append(f"{song.artist} - {song.title}")
+                print("  -> skipped (missing cached clip-compatible report)")
+                continue
+            prior = dict(prior)
+            prior["clip_scored_from_full_song"] = True
+            prior = _refresh_metrics_from_loaded_report(
+                prior,
+                report=report_doc,
+                index=index,
+                song=song,
+                gold_root=gold_root,
+            )
+        else:
+            prior = _refresh_cached_metrics(
+                prior, index=index, song=song, gold_root=gold_root
+            )
         if rebaseline and prior.get("status") == "ok":
             rebased_path = _rebaseline_song_from_report(
                 index=index,
