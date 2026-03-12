@@ -1,0 +1,432 @@
+{
+  "schema_version": "1.0",
+  "title": "DESPECHA [late-nonadlib-run]",
+  "artist": "ROSALIA",
+  "audio_path": "/Users/dtunkelang/y2karaoke/.cache/clip_audio/rosalia-despecha-late-nonadlib-run-10s-40s.wav",
+  "lines": [
+    {
+      "line_index": 1,
+      "text": "Que yo estoy ocup\u00e1' olvidando tus male'",
+      "start": 0.25,
+      "end": 4.6,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Que",
+          "start": 0.25,
+          "end": 0.65
+        },
+        {
+          "word_index": 2,
+          "text": "yo",
+          "start": 0.65,
+          "end": 1.0
+        },
+        {
+          "word_index": 3,
+          "text": "estoy",
+          "start": 1.0,
+          "end": 1.4
+        },
+        {
+          "word_index": 4,
+          "text": "ocup\u00e1'",
+          "start": 1.4,
+          "end": 2.1
+        },
+        {
+          "word_index": 5,
+          "text": "olvidando",
+          "start": 2.1,
+          "end": 3.35
+        },
+        {
+          "word_index": 6,
+          "text": "tus",
+          "start": 3.35,
+          "end": 3.75
+        },
+        {
+          "word_index": 7,
+          "text": "male'",
+          "start": 3.75,
+          "end": 4.6
+        }
+      ]
+    },
+    {
+      "line_index": 2,
+      "text": "Ya decid\u00ed que esta noche se sale",
+      "start": 4.8,
+      "end": 7.75,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Ya",
+          "start": 4.8,
+          "end": 5.15
+        },
+        {
+          "word_index": 2,
+          "text": "decid\u00ed",
+          "start": 5.15,
+          "end": 5.75
+        },
+        {
+          "word_index": 3,
+          "text": "que",
+          "start": 5.75,
+          "end": 6.1
+        },
+        {
+          "word_index": 4,
+          "text": "esta",
+          "start": 6.1,
+          "end": 6.6
+        },
+        {
+          "word_index": 5,
+          "text": "noche",
+          "start": 6.6,
+          "end": 7.0
+        },
+        {
+          "word_index": 6,
+          "text": "se",
+          "start": 7.0,
+          "end": 7.25
+        },
+        {
+          "word_index": 7,
+          "text": "sale",
+          "start": 7.25,
+          "end": 7.75
+        }
+      ]
+    },
+    {
+      "line_index": 3,
+      "text": "Con toda' mis motomami', con toda' mis gyale'",
+      "start": 8.0,
+      "end": 11.75,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Con",
+          "start": 8.0,
+          "end": 8.3
+        },
+        {
+          "word_index": 2,
+          "text": "toda'",
+          "start": 8.3,
+          "end": 8.65
+        },
+        {
+          "word_index": 3,
+          "text": "mis",
+          "start": 8.65,
+          "end": 8.95
+        },
+        {
+          "word_index": 4,
+          "text": "motomami',",
+          "start": 8.95,
+          "end": 9.95
+        },
+        {
+          "word_index": 5,
+          "text": "con",
+          "start": 9.95,
+          "end": 10.4
+        },
+        {
+          "word_index": 6,
+          "text": "toda'",
+          "start": 10.4,
+          "end": 10.75
+        },
+        {
+          "word_index": 7,
+          "text": "mis",
+          "start": 10.75,
+          "end": 11.15
+        },
+        {
+          "word_index": 8,
+          "text": "gyale'",
+          "start": 11.15,
+          "end": 11.75
+        }
+      ]
+    },
+    {
+      "line_index": 4,
+      "text": "Y ando despech\u00e1', oah, aloc\u00e1'",
+      "start": 11.9,
+      "end": 15.25,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Y",
+          "start": 11.9,
+          "end": 12.05
+        },
+        {
+          "word_index": 2,
+          "text": "ando",
+          "start": 12.05,
+          "end": 12.2
+        },
+        {
+          "word_index": 3,
+          "text": "despech\u00e1',",
+          "start": 12.2,
+          "end": 13.5
+        },
+        {
+          "word_index": 4,
+          "text": "oah,",
+          "start": 13.5,
+          "end": 14.15
+        },
+        {
+          "word_index": 5,
+          "text": "aloc\u00e1'",
+          "start": 14.15,
+          "end": 15.25
+        }
+      ]
+    },
+    {
+      "line_index": 5,
+      "text": "Baj\u00e9 con un flow nuevo de caja, baby, hacke\u00e1'",
+      "start": 15.25,
+      "end": 18.9,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Baj\u00e9",
+          "start": 15.25,
+          "end": 15.6
+        },
+        {
+          "word_index": 2,
+          "text": "con",
+          "start": 15.6,
+          "end": 15.95
+        },
+        {
+          "word_index": 3,
+          "text": "un",
+          "start": 15.95,
+          "end": 16.35
+        },
+        {
+          "word_index": 4,
+          "text": "flow",
+          "start": 16.35,
+          "end": 16.75
+        },
+        {
+          "word_index": 5,
+          "text": "nuevo",
+          "start": 16.75,
+          "end": 17.15
+        },
+        {
+          "word_index": 6,
+          "text": "de",
+          "start": 17.15,
+          "end": 17.35
+        },
+        {
+          "word_index": 7,
+          "text": "caja,",
+          "start": 17.35,
+          "end": 17.7
+        },
+        {
+          "word_index": 8,
+          "text": "baby,",
+          "start": 17.7,
+          "end": 18.1
+        },
+        {
+          "word_index": 9,
+          "text": "hacke\u00e1'",
+          "start": 18.1,
+          "end": 18.9
+        }
+      ]
+    },
+    {
+      "line_index": 6,
+      "text": "Lo muevo de la'o a la'o y a otro la'o",
+      "start": 19.05,
+      "end": 22.3,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Lo",
+          "start": 19.05,
+          "end": 19.35
+        },
+        {
+          "word_index": 2,
+          "text": "muevo",
+          "start": 19.35,
+          "end": 19.65
+        },
+        {
+          "word_index": 3,
+          "text": "de",
+          "start": 19.65,
+          "end": 20.15
+        },
+        {
+          "word_index": 4,
+          "text": "la'o",
+          "start": 20.15,
+          "end": 20.45
+        },
+        {
+          "word_index": 5,
+          "text": "a",
+          "start": 20.45,
+          "end": 20.8
+        },
+        {
+          "word_index": 6,
+          "text": "la'o",
+          "start": 20.8,
+          "end": 21.2
+        },
+        {
+          "word_index": 7,
+          "text": "y",
+          "start": 21.2,
+          "end": 21.45
+        },
+        {
+          "word_index": 8,
+          "text": "a",
+          "start": 21.45,
+          "end": 21.7
+        },
+        {
+          "word_index": 9,
+          "text": "otro",
+          "start": 21.7,
+          "end": 22.0
+        },
+        {
+          "word_index": 10,
+          "text": "la'o",
+          "start": 22.0,
+          "end": 22.3
+        }
+      ]
+    },
+    {
+      "line_index": 7,
+      "text": "Hoy salgo con mi baby de la disco coron\u00e1'",
+      "start": 22.35,
+      "end": 26.45,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Hoy",
+          "start": 22.35,
+          "end": 22.75
+        },
+        {
+          "word_index": 2,
+          "text": "salgo",
+          "start": 22.75,
+          "end": 23.25
+        },
+        {
+          "word_index": 3,
+          "text": "con",
+          "start": 23.25,
+          "end": 23.55
+        },
+        {
+          "word_index": 4,
+          "text": "mi",
+          "start": 23.55,
+          "end": 23.85
+        },
+        {
+          "word_index": 5,
+          "text": "baby",
+          "start": 23.85,
+          "end": 24.15
+        },
+        {
+          "word_index": 6,
+          "text": "de",
+          "start": 24.15,
+          "end": 24.5
+        },
+        {
+          "word_index": 7,
+          "text": "la",
+          "start": 24.5,
+          "end": 24.8
+        },
+        {
+          "word_index": 8,
+          "text": "disco",
+          "start": 24.8,
+          "end": 25.15
+        },
+        {
+          "word_index": 9,
+          "text": "coron\u00e1'",
+          "start": 25.15,
+          "end": 26.45
+        }
+      ]
+    },
+    {
+      "line_index": 8,
+      "text": "Y ando despech\u00e1', oah, aloc\u00e1'",
+      "start": 26.45,
+      "end": 30.15,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Y",
+          "start": 26.45,
+          "end": 26.6
+        },
+        {
+          "word_index": 2,
+          "text": "ando",
+          "start": 26.6,
+          "end": 26.95
+        },
+        {
+          "word_index": 3,
+          "text": "despech\u00e1',",
+          "start": 26.95,
+          "end": 28.05
+        },
+        {
+          "word_index": 4,
+          "text": "oah,",
+          "start": 28.05,
+          "end": 28.75
+        },
+        {
+          "word_index": 5,
+          "text": "aloc\u00e1'",
+          "start": 28.75,
+          "end": 30.15
+        }
+      ]
+    }
+  ]
+}
