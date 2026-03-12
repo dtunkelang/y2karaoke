@@ -134,6 +134,15 @@ _AGREEMENT_COLLOQUIAL_SPECIALS: dict[str, tuple[str, ...]] = {
 _AUDIO_FEATURES_CACHE: dict[str, Any] = {}
 
 
+def _benchmark_cache_roots() -> list[Path]:
+    roots = [REPO_ROOT / ".cache", Path.home() / ".cache" / "karaoke"]
+    unique: list[Path] = []
+    for root in roots:
+        if root not in unique:
+            unique.append(root)
+    return unique
+
+
 @dataclass(frozen=True)
 class BenchmarkSong:
     manifest_index: int
@@ -753,6 +762,8 @@ def _softened_gold_adlib_line_indexes(report: dict[str, Any]) -> set[int]:
     for line_index, line in enumerate(lines):
         if not isinstance(line, dict):
             continue
+        if _line_is_parenthetical_interjection(line):
+            continue
         text = str(line.get("text", "")).strip()
         if not _is_softened_adlib_or_tag_text(text):
             continue
@@ -834,6 +845,28 @@ def _write_rebaseline_gold(target_path: Path, report_doc: dict[str, Any]) -> Non
     )
 
 
+def _build_rebaseline_gold_doc(
+    *,
+    song: BenchmarkSong,
+    report_doc: dict[str, Any],
+    prior_gold_doc: dict[str, Any] | None,
+) -> dict[str, Any]:
+    out = dict(report_doc)
+    out["candidate_url"] = str(
+        out.get("candidate_url")
+        or (prior_gold_doc or {}).get("candidate_url")
+        or song.youtube_url
+    )
+    audio_path = (
+        out.get("audio_path")
+        or (prior_gold_doc or {}).get("audio_path")
+        or _resolve_song_audio_path(song, gold_doc=prior_gold_doc)
+    )
+    if isinstance(audio_path, str) and audio_path.strip():
+        out["audio_path"] = audio_path
+    return out
+
+
 def _rebaseline_song_from_report(
     *,
     index: int,
@@ -849,7 +882,15 @@ def _rebaseline_song_from_report(
     gold_path = _resolve_gold_rebaseline_path(
         index=index, song=song, gold_root=gold_root
     )
-    _write_rebaseline_gold(gold_path, loaded)
+    prior_gold_doc = _load_gold_doc(index=index, song=song, gold_root=gold_root)
+    _write_rebaseline_gold(
+        gold_path,
+        _build_rebaseline_gold_doc(
+            song=song,
+            report_doc=loaded,
+            prior_gold_doc=prior_gold_doc,
+        ),
+    )
     return gold_path
 
 
@@ -2276,10 +2317,11 @@ def _resolve_song_audio_path(
             resolved_gold_audio = Path(gold_audio).expanduser()
             if resolved_gold_audio.exists():
                 return str(resolved_gold_audio.resolve())
-    cache_dir = REPO_ROOT / ".cache" / song.youtube_id
-    wavs = sorted(cache_dir.glob("*.wav"))
-    if wavs:
-        return str(_prefer_primary_song_wav(wavs).resolve())
+    for cache_root in _benchmark_cache_roots():
+        cache_dir = cache_root / song.youtube_id
+        wavs = sorted(cache_dir.glob("*.wav"))
+        if wavs:
+            return str(_prefer_primary_song_wav(wavs).resolve())
     return _resolve_cached_audio_path_by_slug(song.slug)
 
 
@@ -2300,11 +2342,12 @@ def _resolve_cached_audio_path_by_slug(slug: str) -> str | None:
     if not parts:
         return None
     candidates: list[tuple[int, Path]] = []
-    for wav in (REPO_ROOT / ".cache").glob("*/*.wav"):
-        name = wav.stem.lower()
-        score = sum(1 for part in parts if part in name)
-        if score > 0:
-            candidates.append((score, wav))
+    for cache_root in _benchmark_cache_roots():
+        for wav in cache_root.glob("*/*.wav"):
+            name = wav.stem.lower()
+            score = sum(1 for part in parts if part in name)
+            if score > 0:
+                candidates.append((score, wav))
     if not candidates:
         return None
     candidates.sort(

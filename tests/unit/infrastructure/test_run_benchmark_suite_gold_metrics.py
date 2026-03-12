@@ -159,6 +159,34 @@ def test_resolve_song_audio_path_falls_back_to_slug_cache_match(tmp_path):
     assert resolved == str(primary.resolve())
 
 
+def test_resolve_song_audio_path_uses_home_karaoke_cache(monkeypatch, tmp_path):
+    module = _load_module()
+    module.REPO_ROOT = tmp_path
+    fake_home = tmp_path / "home"
+    monkeypatch.setattr(module.Path, "home", lambda: fake_home)
+    cache_dir = fake_home / ".cache" / "karaoke" / "wnJ6LuUFpMo"
+    cache_dir.mkdir(parents=True)
+    primary = cache_dir / "J Balvin, Willy William - Mi Gente (Official Video).wav"
+    stem = (
+        cache_dir
+        / "J Balvin, Willy William - Mi Gente (Official Video)_(Vocals)_htdemucs_ft.wav"
+    )
+    primary.write_bytes(b"")
+    stem.write_bytes(b"")
+
+    song = module.BenchmarkSong(
+        manifest_index=10,
+        artist="J Balvin",
+        title="Mi Gente",
+        youtube_id="wnJ6LuUFpMo",
+        youtube_url="https://www.youtube.com/watch?v=wnJ6LuUFpMo",
+    )
+
+    resolved = module._resolve_song_audio_path(song, gold_doc={})
+
+    assert resolved == str(primary.resolve())
+
+
 def test_extract_song_metrics_treats_parenthetical_gold_words_as_optional():
     module = _load_module()
     report = {
