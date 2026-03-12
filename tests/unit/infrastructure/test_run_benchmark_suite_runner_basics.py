@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import importlib.util
+import json
 import os
 from pathlib import Path
 import sys
@@ -218,6 +219,95 @@ def test_refresh_cached_metrics(tmp_path):
     refreshed = module._refresh_cached_metrics(record)
     assert refreshed["metrics"]["alignment_method"] == "whisper_hybrid"
     assert refreshed["metrics"]["dtw_line_coverage"] == 0.9
+
+
+def test_load_aggregate_only_results_keeps_line_overlapping_clip_start(tmp_path):
+    module = _load_module()
+    song = module.BenchmarkSong(
+        manifest_index=1,
+        artist="The Weeknd",
+        title="Blinding Lights",
+        youtube_id="fHI8X4OXluQ",
+        youtube_url="https://www.youtube.com/watch?v=fHI8X4OXluQ",
+        clip_id="early-verse",
+        audio_start_sec=27.0,
+    )
+    gold_path = tmp_path / f"01_{song.slug}.gold.json"
+    gold_path.write_text(
+        json.dumps(
+            {
+                "artist": song.artist,
+                "title": song.title,
+                "youtube_id": song.youtube_id,
+                "clip_id": song.clip_id,
+                "audio_start_sec": song.audio_start_sec,
+                "lines": [
+                    {
+                        "index": 1,
+                        "text": "I've been tryna call",
+                        "start": 0.0,
+                        "end": 1.08,
+                        "words": [
+                            {"text": "I've", "start": 0.0, "end": 0.25},
+                            {"text": "been", "start": 0.25, "end": 0.52},
+                            {"text": "tryna", "start": 0.52, "end": 0.8},
+                            {"text": "call", "start": 0.8, "end": 1.08},
+                        ],
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+    report_path = tmp_path / f"01_{song.base_slug}_timing_report.json"
+    report_path.write_text(
+        json.dumps(
+            {
+                "alignment_method": "whisper_hybrid",
+                "lines": [
+                    {
+                        "index": 4,
+                        "start": 26.95,
+                        "end": 28.03,
+                        "text": "I've been tryna call",
+                        "words": [
+                            {"text": "I've", "start": 26.95, "end": 27.2},
+                            {"text": "been", "start": 27.2, "end": 27.47},
+                            {"text": "tryna", "start": 27.47, "end": 27.75},
+                            {"text": "call", "start": 27.75, "end": 28.03},
+                        ],
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+    (tmp_path / f"01_{song.base_slug}_result.json").write_text(
+        json.dumps(
+            {
+                "artist": song.artist,
+                "title": song.title,
+                "youtube_id": song.youtube_id,
+                "report_path": str(report_path),
+                "status": "ok",
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    rows, skipped = module._load_aggregate_only_results(
+        songs=[song],
+        run_dir=tmp_path,
+        gold_root=tmp_path,
+        rebaseline=False,
+    )
+
+    assert skipped == []
+    assert len(rows) == 1
+    assert rows[0]["status"] == "ok"
+    assert rows[0]["clip_scored_from_full_song"] is True
+    assert rows[0]["aggregate_only_recomputed"] is True
+    assert rows[0]["metrics"]["gold_word_coverage_ratio"] == 1.0
 
 
 def test_build_run_signature(tmp_path):

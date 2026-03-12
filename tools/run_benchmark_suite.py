@@ -5918,13 +5918,14 @@ def _shift_report_to_clip_window(
         end = line.get("end")
         if not isinstance(start, (int, float)) or not isinstance(end, (int, float)):
             continue
-        if float(start) < absolute_start or float(end) > absolute_end:
+        if float(end) <= absolute_start or float(start) >= absolute_end:
             continue
         shifted = dict(line)
         for key in shift_keys:
             value = shifted.get(key)
             if isinstance(value, (int, float)):
-                shifted[key] = round(float(value) - absolute_start, 3)
+                clamped_value = min(max(float(value), absolute_start), absolute_end)
+                shifted[key] = round(clamped_value - absolute_start, 3)
         words_out: list[dict[str, Any]] = []
         for word in line.get("words", []):
             if not isinstance(word, dict):
@@ -5933,11 +5934,15 @@ def _shift_report_to_clip_window(
             we = word.get("end")
             if not isinstance(ws, (int, float)) or not isinstance(we, (int, float)):
                 continue
-            if float(ws) < absolute_start or float(we) > absolute_end:
+            if float(we) <= absolute_start or float(ws) >= absolute_end:
                 continue
             shifted_word = dict(word)
-            shifted_word["start"] = round(float(ws) - absolute_start, 3)
-            shifted_word["end"] = round(float(we) - absolute_start, 3)
+            shifted_word["start"] = round(
+                min(max(float(ws), absolute_start), absolute_end) - absolute_start, 3
+            )
+            shifted_word["end"] = round(
+                min(max(float(we), absolute_start), absolute_end) - absolute_start, 3
+            )
             words_out.append(shifted_word)
         if words_out:
             shifted["words"] = words_out

@@ -34,9 +34,7 @@ def _should_skip_collapsed_assigned_match(
         assigned_indices.update(lrc_assignments.get(lrc_idx_opt, []))
     if not assigned_indices or len(assigned_indices) > max_unique_assigned_words:
         return False
-    valid_indices = [
-        idx for idx in assigned_indices if 0 <= idx < len(ctx.all_words)
-    ]
+    valid_indices = [idx for idx in assigned_indices if 0 <= idx < len(ctx.all_words)]
     if len(valid_indices) != len(assigned_indices):
         return False
     earliest_assigned_start = min(ctx.all_words[idx].start for idx in valid_indices)
