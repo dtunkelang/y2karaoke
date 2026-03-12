@@ -184,3 +184,12 @@ songs:
     fallback_lyrics_provider: "syncedlyrics"
     lrc_duration_tolerance_sec: 20
     notes: "Official audio source for main timing/alignment evaluation; upbeat candidate for guardrail promotion."
+
+  - artist: "The Weepies"
+    title: "Take It From Me"
+    youtube_id: "5yUv1QYD770"
+    youtube_url: "https://www.youtube.com/watch?v=5yUv1QYD770"
+    preferred_lyrics_provider: "lyriq"
+    fallback_lyrics_provider: "syncedlyrics"
+    lrc_duration_tolerance_sec: 20
+    notes: "Official audio source for main timing/alignment evaluation; realistic soft-duet timing candidate with lightly ambiguous outro phrasing."

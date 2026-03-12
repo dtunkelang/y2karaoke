@@ -1,0 +1,2013 @@
+{
+  "schema_version": "1.0",
+  "title": "Take It From Me",
+  "artist": "The Weepies",
+  "candidate_url": "https://www.youtube.com/watch?v=5yUv1QYD770",
+  "audio_path": "/Users/dtunkelang/.cache/karaoke/5yUv1QYD770/Take It From Me.wav",
+  "lines": [
+    {
+      "line_index": 1,
+      "text": "What can I compare you to, a favorite pair of shoes?",
+      "start": 22.55,
+      "end": 27.4,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "What",
+          "start": 22.55,
+          "end": 22.85
+        },
+        {
+          "word_index": 2,
+          "text": "can",
+          "start": 22.85,
+          "end": 23.2
+        },
+        {
+          "word_index": 3,
+          "text": "I",
+          "start": 23.2,
+          "end": 23.6
+        },
+        {
+          "word_index": 4,
+          "text": "compare",
+          "start": 23.6,
+          "end": 24.15
+        },
+        {
+          "word_index": 5,
+          "text": "you",
+          "start": 24.15,
+          "end": 24.55
+        },
+        {
+          "word_index": 6,
+          "text": "to,",
+          "start": 24.55,
+          "end": 25.15
+        },
+        {
+          "word_index": 7,
+          "text": "a",
+          "start": 25.15,
+          "end": 25.5
+        },
+        {
+          "word_index": 8,
+          "text": "favorite",
+          "start": 25.5,
+          "end": 26.05
+        },
+        {
+          "word_index": 9,
+          "text": "pair",
+          "start": 26.05,
+          "end": 26.35
+        },
+        {
+          "word_index": 10,
+          "text": "of",
+          "start": 26.35,
+          "end": 26.75
+        },
+        {
+          "word_index": 11,
+          "text": "shoes?",
+          "start": 26.75,
+          "end": 27.4
+        }
+      ]
+    },
+    {
+      "line_index": 2,
+      "text": "Maybe my bright red boots if they had wings",
+      "start": 28.2,
+      "end": 32.7,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Maybe",
+          "start": 28.2,
+          "end": 28.55
+        },
+        {
+          "word_index": 2,
+          "text": "my",
+          "start": 28.55,
+          "end": 29.0
+        },
+        {
+          "word_index": 3,
+          "text": "bright",
+          "start": 29.0,
+          "end": 29.5
+        },
+        {
+          "word_index": 4,
+          "text": "red",
+          "start": 29.5,
+          "end": 29.85
+        },
+        {
+          "word_index": 5,
+          "text": "boots",
+          "start": 29.85,
+          "end": 30.25
+        },
+        {
+          "word_index": 6,
+          "text": "if",
+          "start": 30.25,
+          "end": 30.55
+        },
+        {
+          "word_index": 7,
+          "text": "they",
+          "start": 30.55,
+          "end": 30.95
+        },
+        {
+          "word_index": 8,
+          "text": "had",
+          "start": 30.95,
+          "end": 31.3
+        },
+        {
+          "word_index": 9,
+          "text": "wings",
+          "start": 31.3,
+          "end": 32.7
+        }
+      ]
+    },
+    {
+      "line_index": 3,
+      "text": "It's funny how we animate colorful objects saved",
+      "start": 33.1,
+      "end": 38.35,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "It's",
+          "start": 33.1,
+          "end": 33.45
+        },
+        {
+          "word_index": 2,
+          "text": "funny",
+          "start": 33.45,
+          "end": 33.7
+        },
+        {
+          "word_index": 3,
+          "text": "how",
+          "start": 33.7,
+          "end": 33.95
+        },
+        {
+          "word_index": 4,
+          "text": "we",
+          "start": 33.95,
+          "end": 34.25
+        },
+        {
+          "word_index": 5,
+          "text": "animate",
+          "start": 34.25,
+          "end": 35.75
+        },
+        {
+          "word_index": 6,
+          "text": "colorful",
+          "start": 36.15,
+          "end": 36.9
+        },
+        {
+          "word_index": 7,
+          "text": "objects",
+          "start": 36.9,
+          "end": 37.6
+        },
+        {
+          "word_index": 8,
+          "text": "saved",
+          "start": 37.6,
+          "end": 38.35
+        }
+      ]
+    },
+    {
+      "line_index": 4,
+      "text": "Funny how it's hard to take a love with no sting",
+      "start": 38.7,
+      "end": 43.3,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Funny",
+          "start": 38.7,
+          "end": 39.15
+        },
+        {
+          "word_index": 2,
+          "text": "how",
+          "start": 39.15,
+          "end": 39.55
+        },
+        {
+          "word_index": 3,
+          "text": "it's",
+          "start": 39.55,
+          "end": 39.9
+        },
+        {
+          "word_index": 4,
+          "text": "hard",
+          "start": 39.9,
+          "end": 40.4
+        },
+        {
+          "word_index": 5,
+          "text": "to",
+          "start": 40.4,
+          "end": 40.7
+        },
+        {
+          "word_index": 6,
+          "text": "take",
+          "start": 40.7,
+          "end": 41.55
+        },
+        {
+          "word_index": 7,
+          "text": "a",
+          "start": 41.55,
+          "end": 41.85
+        },
+        {
+          "word_index": 8,
+          "text": "love",
+          "start": 41.85,
+          "end": 42.25
+        },
+        {
+          "word_index": 9,
+          "text": "with",
+          "start": 42.25,
+          "end": 42.55
+        },
+        {
+          "word_index": 10,
+          "text": "no",
+          "start": 42.55,
+          "end": 42.75
+        },
+        {
+          "word_index": 11,
+          "text": "sting",
+          "start": 42.75,
+          "end": 43.3
+        }
+      ]
+    },
+    {
+      "line_index": 5,
+      "text": "Come on take it, come on take it, take it from me",
+      "start": 43.65,
+      "end": 48.0,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Come",
+          "start": 43.65,
+          "end": 43.9
+        },
+        {
+          "word_index": 2,
+          "text": "on",
+          "start": 43.9,
+          "end": 44.2
+        },
+        {
+          "word_index": 3,
+          "text": "take",
+          "start": 44.2,
+          "end": 44.55
+        },
+        {
+          "word_index": 4,
+          "text": "it,",
+          "start": 44.55,
+          "end": 45.0
+        },
+        {
+          "word_index": 5,
+          "text": "come",
+          "start": 45.0,
+          "end": 45.5
+        },
+        {
+          "word_index": 6,
+          "text": "on",
+          "start": 45.5,
+          "end": 45.85
+        },
+        {
+          "word_index": 7,
+          "text": "take",
+          "start": 45.85,
+          "end": 46.15
+        },
+        {
+          "word_index": 8,
+          "text": "it,",
+          "start": 46.15,
+          "end": 46.55
+        },
+        {
+          "word_index": 9,
+          "text": "take",
+          "start": 46.55,
+          "end": 46.9
+        },
+        {
+          "word_index": 10,
+          "text": "it",
+          "start": 46.9,
+          "end": 47.25
+        },
+        {
+          "word_index": 11,
+          "text": "from",
+          "start": 47.25,
+          "end": 47.55
+        },
+        {
+          "word_index": 12,
+          "text": "me",
+          "start": 47.55,
+          "end": 48.0
+        }
+      ]
+    },
+    {
+      "line_index": 6,
+      "text": "Come on take it, come on take it, take it from me",
+      "start": 49.15,
+      "end": 54.55,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Come",
+          "start": 49.15,
+          "end": 49.45
+        },
+        {
+          "word_index": 2,
+          "text": "on",
+          "start": 49.45,
+          "end": 49.7
+        },
+        {
+          "word_index": 3,
+          "text": "take",
+          "start": 49.7,
+          "end": 50.0
+        },
+        {
+          "word_index": 4,
+          "text": "it,",
+          "start": 50.0,
+          "end": 50.3
+        },
+        {
+          "word_index": 5,
+          "text": "come",
+          "start": 50.3,
+          "end": 50.6
+        },
+        {
+          "word_index": 6,
+          "text": "on",
+          "start": 50.6,
+          "end": 50.9
+        },
+        {
+          "word_index": 7,
+          "text": "take",
+          "start": 50.9,
+          "end": 51.2
+        },
+        {
+          "word_index": 8,
+          "text": "it,",
+          "start": 51.2,
+          "end": 51.5
+        },
+        {
+          "word_index": 9,
+          "text": "take",
+          "start": 51.85,
+          "end": 52.15
+        },
+        {
+          "word_index": 10,
+          "text": "it",
+          "start": 52.15,
+          "end": 52.45
+        },
+        {
+          "word_index": 11,
+          "text": "from",
+          "start": 52.45,
+          "end": 52.75
+        },
+        {
+          "word_index": 12,
+          "text": "me",
+          "start": 52.75,
+          "end": 54.55
+        }
+      ]
+    },
+    {
+      "line_index": 7,
+      "text": "Come on take it, come on take it, take it from me (we've got a good life)",
+      "start": 54.7,
+      "end": 61.0,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Come",
+          "start": 54.7,
+          "end": 55.1
+        },
+        {
+          "word_index": 2,
+          "text": "on",
+          "start": 55.1,
+          "end": 55.45
+        },
+        {
+          "word_index": 3,
+          "text": "take",
+          "start": 55.45,
+          "end": 55.8
+        },
+        {
+          "word_index": 4,
+          "text": "it,",
+          "start": 55.8,
+          "end": 56.15
+        },
+        {
+          "word_index": 5,
+          "text": "come",
+          "start": 56.15,
+          "end": 56.4
+        },
+        {
+          "word_index": 6,
+          "text": "on",
+          "start": 56.4,
+          "end": 56.7
+        },
+        {
+          "word_index": 7,
+          "text": "take",
+          "start": 56.7,
+          "end": 57.05
+        },
+        {
+          "word_index": 8,
+          "text": "it,",
+          "start": 57.05,
+          "end": 57.4
+        },
+        {
+          "word_index": 9,
+          "text": "take",
+          "start": 57.55,
+          "end": 57.9
+        },
+        {
+          "word_index": 10,
+          "text": "it",
+          "start": 57.9,
+          "end": 58.2
+        },
+        {
+          "word_index": 11,
+          "text": "from",
+          "start": 58.2,
+          "end": 58.75
+        },
+        {
+          "word_index": 12,
+          "text": "me",
+          "start": 58.75,
+          "end": 59.25
+        },
+        {
+          "word_index": 13,
+          "text": "(we've",
+          "start": 59.25,
+          "end": 59.35
+        },
+        {
+          "word_index": 14,
+          "text": "got",
+          "start": 59.35,
+          "end": 59.45
+        },
+        {
+          "word_index": 15,
+          "text": "a",
+          "start": 59.45,
+          "end": 59.55
+        },
+        {
+          "word_index": 16,
+          "text": "good",
+          "start": 59.55,
+          "end": 59.65
+        },
+        {
+          "word_index": 17,
+          "text": "life)",
+          "start": 59.65,
+          "end": 61.0
+        }
+      ]
+    },
+    {
+      "line_index": 8,
+      "text": "What can I compare you to, a window the sun shines through?",
+      "start": 66.15,
+      "end": 70.95,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "What",
+          "start": 66.15,
+          "end": 66.4
+        },
+        {
+          "word_index": 2,
+          "text": "can",
+          "start": 66.4,
+          "end": 66.75
+        },
+        {
+          "word_index": 3,
+          "text": "I",
+          "start": 66.75,
+          "end": 66.85
+        },
+        {
+          "word_index": 4,
+          "text": "compare",
+          "start": 66.85,
+          "end": 67.25
+        },
+        {
+          "word_index": 5,
+          "text": "you",
+          "start": 67.25,
+          "end": 67.85
+        },
+        {
+          "word_index": 6,
+          "text": "to,",
+          "start": 67.85,
+          "end": 68.55
+        },
+        {
+          "word_index": 7,
+          "text": "a",
+          "start": 68.55,
+          "end": 68.65
+        },
+        {
+          "word_index": 8,
+          "text": "window",
+          "start": 68.65,
+          "end": 69.15
+        },
+        {
+          "word_index": 9,
+          "text": "the",
+          "start": 69.15,
+          "end": 69.7
+        },
+        {
+          "word_index": 10,
+          "text": "sun",
+          "start": 69.7,
+          "end": 70.05
+        },
+        {
+          "word_index": 11,
+          "text": "shines",
+          "start": 70.05,
+          "end": 70.5
+        },
+        {
+          "word_index": 12,
+          "text": "through?",
+          "start": 70.5,
+          "end": 70.95
+        }
+      ]
+    },
+    {
+      "line_index": 9,
+      "text": "Maybe the silver moon, a smile rising",
+      "start": 71.85,
+      "end": 76.0,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Maybe",
+          "start": 71.85,
+          "end": 72.15
+        },
+        {
+          "word_index": 2,
+          "text": "the",
+          "start": 72.15,
+          "end": 72.3
+        },
+        {
+          "word_index": 3,
+          "text": "silver",
+          "start": 72.3,
+          "end": 72.8
+        },
+        {
+          "word_index": 4,
+          "text": "moon,",
+          "start": 72.8,
+          "end": 73.7
+        },
+        {
+          "word_index": 5,
+          "text": "a",
+          "start": 74.6,
+          "end": 74.7
+        },
+        {
+          "word_index": 6,
+          "text": "smile",
+          "start": 74.7,
+          "end": 75.05
+        },
+        {
+          "word_index": 7,
+          "text": "rising",
+          "start": 75.05,
+          "end": 76.0
+        }
+      ]
+    },
+    {
+      "line_index": 10,
+      "text": "The magic of the fading day, satellites on parade",
+      "start": 77.15,
+      "end": 81.6,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "The",
+          "start": 77.15,
+          "end": 77.55
+        },
+        {
+          "word_index": 2,
+          "text": "magic",
+          "start": 77.55,
+          "end": 77.95
+        },
+        {
+          "word_index": 3,
+          "text": "of",
+          "start": 77.95,
+          "end": 78.15
+        },
+        {
+          "word_index": 4,
+          "text": "the",
+          "start": 78.15,
+          "end": 78.25
+        },
+        {
+          "word_index": 5,
+          "text": "fading",
+          "start": 78.25,
+          "end": 78.7
+        },
+        {
+          "word_index": 6,
+          "text": "day,",
+          "start": 78.7,
+          "end": 79.85
+        },
+        {
+          "word_index": 7,
+          "text": "satellites",
+          "start": 79.85,
+          "end": 80.6
+        },
+        {
+          "word_index": 8,
+          "text": "on",
+          "start": 80.6,
+          "end": 80.75
+        },
+        {
+          "word_index": 9,
+          "text": "parade",
+          "start": 80.75,
+          "end": 81.6
+        }
+      ]
+    },
+    {
+      "line_index": 11,
+      "text": "A toast to the plans we've made to live like kings",
+      "start": 82.45,
+      "end": 86.85,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "A",
+          "start": 82.45,
+          "end": 82.6
+        },
+        {
+          "word_index": 2,
+          "text": "toast",
+          "start": 82.6,
+          "end": 82.95
+        },
+        {
+          "word_index": 3,
+          "text": "to",
+          "start": 82.95,
+          "end": 83.15
+        },
+        {
+          "word_index": 4,
+          "text": "the",
+          "start": 83.15,
+          "end": 83.35
+        },
+        {
+          "word_index": 5,
+          "text": "plans",
+          "start": 83.35,
+          "end": 83.6
+        },
+        {
+          "word_index": 6,
+          "text": "we've",
+          "start": 83.6,
+          "end": 84.05
+        },
+        {
+          "word_index": 7,
+          "text": "made",
+          "start": 84.05,
+          "end": 84.25
+        },
+        {
+          "word_index": 8,
+          "text": "to",
+          "start": 85.3,
+          "end": 85.65
+        },
+        {
+          "word_index": 9,
+          "text": "live",
+          "start": 85.65,
+          "end": 86.0
+        },
+        {
+          "word_index": 10,
+          "text": "like",
+          "start": 86.0,
+          "end": 86.3
+        },
+        {
+          "word_index": 11,
+          "text": "kings",
+          "start": 86.3,
+          "end": 86.85
+        }
+      ]
+    },
+    {
+      "line_index": 12,
+      "text": "Come on take it, come on take it, take it from me",
+      "start": 87.15,
+      "end": 92.95,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Come",
+          "start": 87.15,
+          "end": 87.5
+        },
+        {
+          "word_index": 2,
+          "text": "on",
+          "start": 87.5,
+          "end": 87.85
+        },
+        {
+          "word_index": 3,
+          "text": "take",
+          "start": 87.85,
+          "end": 88.2
+        },
+        {
+          "word_index": 4,
+          "text": "it,",
+          "start": 88.2,
+          "end": 88.55
+        },
+        {
+          "word_index": 5,
+          "text": "come",
+          "start": 88.8,
+          "end": 89.1
+        },
+        {
+          "word_index": 6,
+          "text": "on",
+          "start": 89.1,
+          "end": 89.45
+        },
+        {
+          "word_index": 7,
+          "text": "take",
+          "start": 89.45,
+          "end": 89.75
+        },
+        {
+          "word_index": 8,
+          "text": "it,",
+          "start": 89.75,
+          "end": 90.0
+        },
+        {
+          "word_index": 9,
+          "text": "take",
+          "start": 90.1,
+          "end": 90.5
+        },
+        {
+          "word_index": 10,
+          "text": "it",
+          "start": 90.5,
+          "end": 90.7
+        },
+        {
+          "word_index": 11,
+          "text": "from",
+          "start": 90.7,
+          "end": 91.05
+        },
+        {
+          "word_index": 12,
+          "text": "me",
+          "start": 91.05,
+          "end": 92.95
+        }
+      ]
+    },
+    {
+      "line_index": 13,
+      "text": "Come on take it, come on take it, take it from me",
+      "start": 93.0,
+      "end": 98.2,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Come",
+          "start": 93.0,
+          "end": 93.2
+        },
+        {
+          "word_index": 2,
+          "text": "on",
+          "start": 93.2,
+          "end": 93.4
+        },
+        {
+          "word_index": 3,
+          "text": "take",
+          "start": 93.4,
+          "end": 93.7
+        },
+        {
+          "word_index": 4,
+          "text": "it,",
+          "start": 93.7,
+          "end": 94.2
+        },
+        {
+          "word_index": 5,
+          "text": "come",
+          "start": 94.3,
+          "end": 94.55
+        },
+        {
+          "word_index": 6,
+          "text": "on",
+          "start": 94.55,
+          "end": 94.85
+        },
+        {
+          "word_index": 7,
+          "text": "take",
+          "start": 94.85,
+          "end": 95.15
+        },
+        {
+          "word_index": 8,
+          "text": "it,",
+          "start": 95.15,
+          "end": 95.45
+        },
+        {
+          "word_index": 9,
+          "text": "take",
+          "start": 95.6,
+          "end": 96.0
+        },
+        {
+          "word_index": 10,
+          "text": "it",
+          "start": 96.0,
+          "end": 96.25
+        },
+        {
+          "word_index": 11,
+          "text": "from",
+          "start": 96.25,
+          "end": 96.5
+        },
+        {
+          "word_index": 12,
+          "text": "me",
+          "start": 96.5,
+          "end": 98.2
+        }
+      ]
+    },
+    {
+      "line_index": 14,
+      "text": "Come on take it, come on take it, take it from me (we've got a good life)",
+      "start": 98.55,
+      "end": 105.35,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Come",
+          "start": 98.55,
+          "end": 98.9
+        },
+        {
+          "word_index": 2,
+          "text": "on",
+          "start": 98.9,
+          "end": 99.2
+        },
+        {
+          "word_index": 3,
+          "text": "take",
+          "start": 99.2,
+          "end": 99.5
+        },
+        {
+          "word_index": 4,
+          "text": "it,",
+          "start": 99.5,
+          "end": 99.8
+        },
+        {
+          "word_index": 5,
+          "text": "come",
+          "start": 99.95,
+          "end": 100.25
+        },
+        {
+          "word_index": 6,
+          "text": "on",
+          "start": 100.25,
+          "end": 100.55
+        },
+        {
+          "word_index": 7,
+          "text": "take",
+          "start": 100.55,
+          "end": 100.85
+        },
+        {
+          "word_index": 8,
+          "text": "it,",
+          "start": 100.85,
+          "end": 101.1
+        },
+        {
+          "word_index": 9,
+          "text": "take",
+          "start": 101.25,
+          "end": 101.55
+        },
+        {
+          "word_index": 10,
+          "text": "it",
+          "start": 101.6,
+          "end": 101.85
+        },
+        {
+          "word_index": 11,
+          "text": "from",
+          "start": 101.9,
+          "end": 102.2
+        },
+        {
+          "word_index": 12,
+          "text": "me",
+          "start": 102.25,
+          "end": 102.5
+        },
+        {
+          "word_index": 13,
+          "text": "(we've",
+          "start": 102.55,
+          "end": 102.85
+        },
+        {
+          "word_index": 14,
+          "text": "got",
+          "start": 102.9,
+          "end": 103.15
+        },
+        {
+          "word_index": 15,
+          "text": "a",
+          "start": 103.2,
+          "end": 103.5
+        },
+        {
+          "word_index": 16,
+          "text": "good",
+          "start": 103.5,
+          "end": 103.8
+        },
+        {
+          "word_index": 17,
+          "text": "life)",
+          "start": 103.85,
+          "end": 105.35
+        }
+      ]
+    },
+    {
+      "line_index": 15,
+      "text": "I lose my breath despite the air",
+      "start": 109.6,
+      "end": 114.15,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "I",
+          "start": 109.6,
+          "end": 110.0
+        },
+        {
+          "word_index": 2,
+          "text": "lose",
+          "start": 110.0,
+          "end": 110.5
+        },
+        {
+          "word_index": 3,
+          "text": "my",
+          "start": 110.5,
+          "end": 110.95
+        },
+        {
+          "word_index": 4,
+          "text": "breath",
+          "start": 110.95,
+          "end": 111.55
+        },
+        {
+          "word_index": 5,
+          "text": "despite",
+          "start": 112.25,
+          "end": 112.85
+        },
+        {
+          "word_index": 6,
+          "text": "the",
+          "start": 112.85,
+          "end": 113.45
+        },
+        {
+          "word_index": 7,
+          "text": "air",
+          "start": 113.45,
+          "end": 114.15
+        }
+      ]
+    },
+    {
+      "line_index": 16,
+      "text": "When the rain falls down I give in to despair",
+      "start": 114.85,
+      "end": 119.5,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "When",
+          "start": 114.85,
+          "end": 115.25
+        },
+        {
+          "word_index": 2,
+          "text": "the",
+          "start": 115.25,
+          "end": 115.65
+        },
+        {
+          "word_index": 3,
+          "text": "rain",
+          "start": 115.65,
+          "end": 116.05
+        },
+        {
+          "word_index": 4,
+          "text": "falls",
+          "start": 116.05,
+          "end": 116.45
+        },
+        {
+          "word_index": 5,
+          "text": "down",
+          "start": 116.45,
+          "end": 116.85
+        },
+        {
+          "word_index": 6,
+          "text": "I",
+          "start": 117.05,
+          "end": 117.45
+        },
+        {
+          "word_index": 7,
+          "text": "give",
+          "start": 117.45,
+          "end": 117.85
+        },
+        {
+          "word_index": 8,
+          "text": "in",
+          "start": 117.85,
+          "end": 118.3
+        },
+        {
+          "word_index": 9,
+          "text": "to",
+          "start": 118.3,
+          "end": 118.75
+        },
+        {
+          "word_index": 10,
+          "text": "despair",
+          "start": 118.75,
+          "end": 119.5
+        }
+      ]
+    },
+    {
+      "line_index": 17,
+      "text": "Pink magnolia in winter she doesn't care",
+      "start": 120.25,
+      "end": 125.45,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Pink",
+          "start": 120.25,
+          "end": 121.05
+        },
+        {
+          "word_index": 2,
+          "text": "magnolia",
+          "start": 121.05,
+          "end": 121.85
+        },
+        {
+          "word_index": 3,
+          "text": "in",
+          "start": 121.85,
+          "end": 122.4
+        },
+        {
+          "word_index": 4,
+          "text": "winter",
+          "start": 122.4,
+          "end": 123.35
+        },
+        {
+          "word_index": 5,
+          "text": "she",
+          "start": 123.35,
+          "end": 123.8
+        },
+        {
+          "word_index": 6,
+          "text": "doesn't",
+          "start": 123.8,
+          "end": 124.6
+        },
+        {
+          "word_index": 7,
+          "text": "care",
+          "start": 124.6,
+          "end": 125.45
+        }
+      ]
+    },
+    {
+      "line_index": 18,
+      "text": "If you don't show up to have another cup.",
+      "start": 125.8,
+      "end": 131.6,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "If",
+          "start": 125.8,
+          "end": 126.2
+        },
+        {
+          "word_index": 2,
+          "text": "you",
+          "start": 126.2,
+          "end": 126.6
+        },
+        {
+          "word_index": 3,
+          "text": "don't",
+          "start": 126.6,
+          "end": 127.0
+        },
+        {
+          "word_index": 4,
+          "text": "show",
+          "start": 127.0,
+          "end": 127.4
+        },
+        {
+          "word_index": 5,
+          "text": "up",
+          "start": 127.4,
+          "end": 127.8
+        },
+        {
+          "word_index": 6,
+          "text": "to",
+          "start": 128.35,
+          "end": 128.75
+        },
+        {
+          "word_index": 7,
+          "text": "have",
+          "start": 128.75,
+          "end": 129.15
+        },
+        {
+          "word_index": 8,
+          "text": "another",
+          "start": 129.15,
+          "end": 129.6
+        },
+        {
+          "word_index": 9,
+          "text": "cup.",
+          "start": 129.6,
+          "end": 131.6
+        }
+      ]
+    },
+    {
+      "line_index": 19,
+      "text": "What can I compare you to, when everything looks like you?",
+      "start": 153.25,
+      "end": 158.35,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "What",
+          "start": 153.25,
+          "end": 153.55
+        },
+        {
+          "word_index": 2,
+          "text": "can",
+          "start": 153.55,
+          "end": 153.95
+        },
+        {
+          "word_index": 3,
+          "text": "I",
+          "start": 153.95,
+          "end": 154.1
+        },
+        {
+          "word_index": 4,
+          "text": "compare",
+          "start": 154.1,
+          "end": 154.85
+        },
+        {
+          "word_index": 5,
+          "text": "you",
+          "start": 154.85,
+          "end": 155.3
+        },
+        {
+          "word_index": 6,
+          "text": "to,",
+          "start": 155.3,
+          "end": 155.85
+        },
+        {
+          "word_index": 7,
+          "text": "when",
+          "start": 155.85,
+          "end": 156.35
+        },
+        {
+          "word_index": 8,
+          "text": "everything",
+          "start": 156.35,
+          "end": 156.95
+        },
+        {
+          "word_index": 9,
+          "text": "looks",
+          "start": 156.95,
+          "end": 157.35
+        },
+        {
+          "word_index": 10,
+          "text": "like",
+          "start": 157.35,
+          "end": 157.7
+        },
+        {
+          "word_index": 11,
+          "text": "you?",
+          "start": 157.7,
+          "end": 158.35
+        }
+      ]
+    },
+    {
+      "line_index": 20,
+      "text": "I get a bit confused with every Spring",
+      "start": 158.85,
+      "end": 162.6,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "I",
+          "start": 158.85,
+          "end": 159.1
+        },
+        {
+          "word_index": 2,
+          "text": "get",
+          "start": 159.1,
+          "end": 159.4
+        },
+        {
+          "word_index": 3,
+          "text": "a",
+          "start": 159.4,
+          "end": 159.7
+        },
+        {
+          "word_index": 4,
+          "text": "bit",
+          "start": 159.7,
+          "end": 160.15
+        },
+        {
+          "word_index": 5,
+          "text": "confused",
+          "start": 160.15,
+          "end": 160.8
+        },
+        {
+          "word_index": 6,
+          "text": "with",
+          "start": 161.35,
+          "end": 161.75
+        },
+        {
+          "word_index": 7,
+          "text": "every",
+          "start": 161.75,
+          "end": 162.15
+        },
+        {
+          "word_index": 8,
+          "text": "Spring",
+          "start": 162.15,
+          "end": 162.6
+        }
+      ]
+    },
+    {
+      "line_index": 21,
+      "text": "Flowers that bloom your eyes, hummingbirds side by side",
+      "start": 162.9,
+      "end": 167.8,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Flowers",
+          "start": 162.9,
+          "end": 163.45
+        },
+        {
+          "word_index": 2,
+          "text": "that",
+          "start": 163.45,
+          "end": 163.85
+        },
+        {
+          "word_index": 3,
+          "text": "bloom",
+          "start": 163.85,
+          "end": 164.25
+        },
+        {
+          "word_index": 4,
+          "text": "your",
+          "start": 164.25,
+          "end": 164.95
+        },
+        {
+          "word_index": 5,
+          "text": "eyes,",
+          "start": 164.95,
+          "end": 165.3
+        },
+        {
+          "word_index": 6,
+          "text": "hummingbirds",
+          "start": 165.3,
+          "end": 166.15
+        },
+        {
+          "word_index": 7,
+          "text": "side",
+          "start": 166.15,
+          "end": 166.5
+        },
+        {
+          "word_index": 8,
+          "text": "by",
+          "start": 166.5,
+          "end": 167.3
+        },
+        {
+          "word_index": 9,
+          "text": "side",
+          "start": 167.3,
+          "end": 167.8
+        }
+      ]
+    },
+    {
+      "line_index": 22,
+      "text": "My heart won't stay entirely in this rib caging",
+      "start": 167.8,
+      "end": 174.2,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "My",
+          "start": 167.8,
+          "end": 168.05
+        },
+        {
+          "word_index": 2,
+          "text": "heart",
+          "start": 170.0,
+          "end": 170.35
+        },
+        {
+          "word_index": 3,
+          "text": "won't",
+          "start": 170.35,
+          "end": 170.75
+        },
+        {
+          "word_index": 4,
+          "text": "stay",
+          "start": 170.75,
+          "end": 171.05
+        },
+        {
+          "word_index": 5,
+          "text": "entirely",
+          "start": 171.05,
+          "end": 171.7
+        },
+        {
+          "word_index": 6,
+          "text": "in",
+          "start": 172.1,
+          "end": 172.55
+        },
+        {
+          "word_index": 7,
+          "text": "this",
+          "start": 172.55,
+          "end": 173.0
+        },
+        {
+          "word_index": 8,
+          "text": "rib",
+          "start": 173.0,
+          "end": 173.55
+        },
+        {
+          "word_index": 9,
+          "text": "caging",
+          "start": 173.55,
+          "end": 174.2
+        }
+      ]
+    },
+    {
+      "line_index": 23,
+      "text": "Come on take it, come on take it, take it from me",
+      "start": 174.45,
+      "end": 178.25,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Come",
+          "start": 174.45,
+          "end": 174.7
+        },
+        {
+          "word_index": 2,
+          "text": "on",
+          "start": 174.7,
+          "end": 174.95
+        },
+        {
+          "word_index": 3,
+          "text": "take",
+          "start": 174.95,
+          "end": 175.15
+        },
+        {
+          "word_index": 4,
+          "text": "it,",
+          "start": 175.15,
+          "end": 175.35
+        },
+        {
+          "word_index": 5,
+          "text": "come",
+          "start": 175.35,
+          "end": 175.65
+        },
+        {
+          "word_index": 6,
+          "text": "on",
+          "start": 175.65,
+          "end": 175.85
+        },
+        {
+          "word_index": 7,
+          "text": "take",
+          "start": 175.85,
+          "end": 176.15
+        },
+        {
+          "word_index": 8,
+          "text": "it,",
+          "start": 176.15,
+          "end": 176.3
+        },
+        {
+          "word_index": 9,
+          "text": "take",
+          "start": 176.3,
+          "end": 176.7
+        },
+        {
+          "word_index": 10,
+          "text": "it",
+          "start": 176.7,
+          "end": 177.35
+        },
+        {
+          "word_index": 11,
+          "text": "from",
+          "start": 177.35,
+          "end": 177.8
+        },
+        {
+          "word_index": 12,
+          "text": "me",
+          "start": 177.8,
+          "end": 178.25
+        }
+      ]
+    },
+    {
+      "line_index": 24,
+      "text": "Come on take it, come on take it, take it from me",
+      "start": 179.55,
+      "end": 185.5,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Come",
+          "start": 179.55,
+          "end": 179.95
+        },
+        {
+          "word_index": 2,
+          "text": "on",
+          "start": 179.95,
+          "end": 180.25
+        },
+        {
+          "word_index": 3,
+          "text": "take",
+          "start": 180.25,
+          "end": 180.75
+        },
+        {
+          "word_index": 4,
+          "text": "it,",
+          "start": 180.75,
+          "end": 181.1
+        },
+        {
+          "word_index": 5,
+          "text": "come",
+          "start": 181.1,
+          "end": 181.5
+        },
+        {
+          "word_index": 6,
+          "text": "on",
+          "start": 181.5,
+          "end": 181.9
+        },
+        {
+          "word_index": 7,
+          "text": "take",
+          "start": 181.9,
+          "end": 182.25
+        },
+        {
+          "word_index": 8,
+          "text": "it,",
+          "start": 182.25,
+          "end": 182.5
+        },
+        {
+          "word_index": 9,
+          "text": "take",
+          "start": 182.5,
+          "end": 182.95
+        },
+        {
+          "word_index": 10,
+          "text": "it",
+          "start": 182.95,
+          "end": 183.4
+        },
+        {
+          "word_index": 11,
+          "text": "from",
+          "start": 183.4,
+          "end": 184.25
+        },
+        {
+          "word_index": 12,
+          "text": "me",
+          "start": 184.25,
+          "end": 185.5
+        }
+      ]
+    },
+    {
+      "line_index": 25,
+      "text": "Come on take it, come on take it, take it from me (we've got a good life)",
+      "start": 185.65,
+      "end": 192.65,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Come",
+          "start": 185.65,
+          "end": 185.95
+        },
+        {
+          "word_index": 2,
+          "text": "on",
+          "start": 185.95,
+          "end": 186.25
+        },
+        {
+          "word_index": 3,
+          "text": "take",
+          "start": 186.25,
+          "end": 186.5
+        },
+        {
+          "word_index": 4,
+          "text": "it,",
+          "start": 186.5,
+          "end": 186.8
+        },
+        {
+          "word_index": 5,
+          "text": "come",
+          "start": 186.8,
+          "end": 187.15
+        },
+        {
+          "word_index": 6,
+          "text": "on",
+          "start": 187.15,
+          "end": 187.5
+        },
+        {
+          "word_index": 7,
+          "text": "take",
+          "start": 187.5,
+          "end": 187.85
+        },
+        {
+          "word_index": 8,
+          "text": "it,",
+          "start": 187.85,
+          "end": 188.05
+        },
+        {
+          "word_index": 9,
+          "text": "take",
+          "start": 188.05,
+          "end": 188.5
+        },
+        {
+          "word_index": 10,
+          "text": "it",
+          "start": 188.5,
+          "end": 189.0
+        },
+        {
+          "word_index": 11,
+          "text": "from",
+          "start": 189.0,
+          "end": 189.3
+        },
+        {
+          "word_index": 12,
+          "text": "me",
+          "start": 189.3,
+          "end": 189.6
+        },
+        {
+          "word_index": 13,
+          "text": "(we've",
+          "start": 189.6,
+          "end": 189.95
+        },
+        {
+          "word_index": 14,
+          "text": "got",
+          "start": 189.95,
+          "end": 190.25
+        },
+        {
+          "word_index": 15,
+          "text": "a",
+          "start": 190.25,
+          "end": 190.55
+        },
+        {
+          "word_index": 16,
+          "text": "good",
+          "start": 190.55,
+          "end": 190.9
+        },
+        {
+          "word_index": 17,
+          "text": "life)",
+          "start": 190.9,
+          "end": 192.65
+        }
+      ]
+    },
+    {
+      "line_index": 26,
+      "text": "Take it from me",
+      "start": 192.65,
+      "end": 194.4,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Take",
+          "start": 192.65,
+          "end": 192.8
+        },
+        {
+          "word_index": 2,
+          "text": "it",
+          "start": 192.8,
+          "end": 192.95
+        },
+        {
+          "word_index": 3,
+          "text": "from",
+          "start": 192.95,
+          "end": 193.25
+        },
+        {
+          "word_index": 4,
+          "text": "me",
+          "start": 193.25,
+          "end": 194.4
+        }
+      ]
+    },
+    {
+      "line_index": 27,
+      "text": "Take it from me",
+      "start": 195.4,
+      "end": 197.65,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Take",
+          "start": 195.4,
+          "end": 195.85
+        },
+        {
+          "word_index": 2,
+          "text": "it",
+          "start": 195.85,
+          "end": 196.15
+        },
+        {
+          "word_index": 3,
+          "text": "from",
+          "start": 196.15,
+          "end": 196.6
+        },
+        {
+          "word_index": 4,
+          "text": "me",
+          "start": 196.6,
+          "end": 197.65
+        }
+      ]
+    },
+    {
+      "line_index": 28,
+      "text": "We've got a good life",
+      "start": 200.9,
+      "end": 202.65,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "We've",
+          "start": 200.9,
+          "end": 201.1
+        },
+        {
+          "word_index": 2,
+          "text": "got",
+          "start": 201.1,
+          "end": 201.3
+        },
+        {
+          "word_index": 3,
+          "text": "a",
+          "start": 201.3,
+          "end": 201.5
+        },
+        {
+          "word_index": 4,
+          "text": "good",
+          "start": 201.5,
+          "end": 201.7
+        },
+        {
+          "word_index": 5,
+          "text": "life",
+          "start": 201.7,
+          "end": 202.65
+        }
+      ]
+    },
+    {
+      "line_index": 29,
+      "text": "We've got a good life",
+      "start": 205.5,
+      "end": 207.85,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "We've",
+          "start": 205.5,
+          "end": 206.0
+        },
+        {
+          "word_index": 2,
+          "text": "got",
+          "start": 206.0,
+          "end": 206.45
+        },
+        {
+          "word_index": 3,
+          "text": "a",
+          "start": 206.45,
+          "end": 206.7
+        },
+        {
+          "word_index": 4,
+          "text": "good",
+          "start": 206.7,
+          "end": 207.05
+        },
+        {
+          "word_index": 5,
+          "text": "life",
+          "start": 207.05,
+          "end": 207.85
+        }
+      ]
+    },
+    {
+      "line_index": 30,
+      "text": "We've got a good life",
+      "start": 211.4,
+      "end": 213.6,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "We've",
+          "start": 211.4,
+          "end": 211.7
+        },
+        {
+          "word_index": 2,
+          "text": "got",
+          "start": 211.7,
+          "end": 211.95
+        },
+        {
+          "word_index": 3,
+          "text": "a",
+          "start": 211.95,
+          "end": 212.15
+        },
+        {
+          "word_index": 4,
+          "text": "good",
+          "start": 212.15,
+          "end": 212.5
+        },
+        {
+          "word_index": 5,
+          "text": "life",
+          "start": 212.5,
+          "end": 213.6
+        }
+      ]
+    }
+  ]
+}

@@ -121,3 +121,12 @@ songs:
     fallback_lyrics_provider: "syncedlyrics"
     lrc_duration_tolerance_sec: 18
     notes: "Uses official audio for benchmark alignment."
+
+  - artist: "The Weepies"
+    title: "Take It From Me"
+    youtube_id: "5yUv1QYD770"
+    youtube_url: "https://www.youtube.com/watch?v=5yUv1QYD770"
+    preferred_lyrics_provider: "lyriq"
+    fallback_lyrics_provider: "syncedlyrics"
+    lrc_duration_tolerance_sec: 20
+    notes: "Official audio source; curated benchmark candidate with lightly ambiguous dual-vocal outro phrasing."
