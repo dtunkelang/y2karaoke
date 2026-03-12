@@ -769,6 +769,28 @@ def test_gold_path_for_song_uses_slug_match_when_index_prefix_changed(tmp_path):
     assert found == legacy_indexed
 
 
+def test_gold_path_for_song_uses_clip_gold_root_for_clip_entries(tmp_path):
+    module = _load_module()
+    clip_root = tmp_path / "clip_gold_candidate"
+    clip_root.mkdir(parents=True)
+    module.DEFAULT_CLIP_GOLD_ROOT = clip_root
+    song = module.BenchmarkSong(
+        manifest_index=8,
+        artist="The Weeknd",
+        title="Blinding Lights",
+        youtube_id="fHI8X4OXluQ",
+        youtube_url="https://www.youtube.com/watch?v=fHI8X4OXluQ",
+        clip_id="hook-repeat",
+        audio_start_sec=112.0,
+    )
+    clip_gold = clip_root / "06_the-weeknd-blinding-lights-hook-repeat.gold.json"
+    clip_gold.write_text("{}", encoding="utf-8")
+
+    found = module._gold_path_for_song(index=1, song=song, gold_root=tmp_path)
+
+    assert found == clip_gold
+
+
 def test_aggregate_results():
     module = _load_module()
     results = [

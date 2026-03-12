@@ -30,6 +30,9 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_MANIFEST = REPO_ROOT / "benchmarks" / "benchmark_songs.yaml"
 DEFAULT_RESULTS_ROOT = REPO_ROOT / "benchmarks" / "results"
 DEFAULT_GOLD_ROOT = REPO_ROOT / "benchmarks" / "gold_set_candidate" / "20260305T231015Z"
+DEFAULT_CLIP_GOLD_ROOT = (
+    REPO_ROOT / "benchmarks" / "clip_gold_candidate" / "20260312T_curated_clips"
+)
 _AGREEMENT_FILLER_TOKENS = {
     "ah",
     "aah",
@@ -256,7 +259,14 @@ def _filter_manifest_songs(
         selected = [
             song
             for song in selected
-            if regex.search(f"{song.artist} {song.title}") is not None
+            if regex.search(
+                " ".join(
+                    part
+                    for part in (song.artist, song.title, song.clip_id or "")
+                    if part
+                )
+            )
+            is not None
         ]
     if max_songs > 0:
         selected = selected[:max_songs]
@@ -839,22 +849,27 @@ def _align_lines_for_gold_comparison(
 def _gold_path_for_song(
     index: int, song: BenchmarkSong, gold_root: Path
 ) -> Path | None:
-    index_candidates = [index]
-    if song.manifest_index not in index_candidates:
-        index_candidates.append(song.manifest_index)
-    explicit_candidates = [
-        gold_root / f"{candidate_index:02d}_{song.slug}.gold.json"
-        for candidate_index in index_candidates
-    ]
-    explicit_candidates.append(gold_root / f"{song.slug}.gold.json")
-    slug_matches = sorted(gold_root.glob(f"*_{song.slug}.gold.json"))
-    candidates: list[Path] = []
-    for path in explicit_candidates + slug_matches:
-        if path not in candidates:
-            candidates.append(path)
-    for path in candidates:
-        if path.exists():
-            return path
+    roots = [gold_root]
+    clip_root = DEFAULT_CLIP_GOLD_ROOT.resolve()
+    if song.clip_id and clip_root != gold_root.resolve():
+        roots.append(clip_root)
+    for root in roots:
+        index_candidates = [index]
+        if song.manifest_index not in index_candidates:
+            index_candidates.append(song.manifest_index)
+        explicit_candidates = [
+            root / f"{candidate_index:02d}_{song.slug}.gold.json"
+            for candidate_index in index_candidates
+        ]
+        explicit_candidates.append(root / f"{song.slug}.gold.json")
+        slug_matches = sorted(root.glob(f"*_{song.slug}.gold.json"))
+        candidates: list[Path] = []
+        for path in explicit_candidates + slug_matches:
+            if path not in candidates:
+                candidates.append(path)
+        for path in candidates:
+            if path.exists():
+                return path
     return None
 
 

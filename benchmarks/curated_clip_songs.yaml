@@ -41,7 +41,7 @@ songs:
   - artist: "Indila"
     title: "Derniere danse"
     clip_id: "terminal-tail"
-    audio_start_sec: 124
+    audio_start_sec: 123
     youtube_id: "K5KAc5CoCuk"
     youtube_url: "https://www.youtube.com/watch?v=K5KAc5CoCuk"
     preferred_lyrics_provider: "lyriq"

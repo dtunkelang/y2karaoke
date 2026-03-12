@@ -68,11 +68,16 @@ def test_filter_manifest_songs_match_and_limit():
             title="Beta",
             youtube_id="bbbbbbbbbbb",
             youtube_url="https://www.youtube.com/watch?v=bbbbbbbbbbb",
+            clip_id="hook-repeat",
         ),
     ]
     selected = module._filter_manifest_songs(songs, match="artist", max_songs=1)
     assert len(selected) == 1
     assert selected[0].title == "Alpha"
+    clip_selected = module._filter_manifest_songs(
+        songs, match="hook-repeat", max_songs=0
+    )
+    assert clip_selected == [songs[1]]
 
 
 def test_apply_aggregate_only_cached_scope(tmp_path):
