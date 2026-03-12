@@ -131,20 +131,23 @@ def _validate_top_level(data: dict[str, Any]) -> tuple[list[Any], list[str]]:
 
 def _validate_uniqueness(songs: list[Any]) -> list[str]:
     errors: list[str] = []
-    seen_ids: set[str] = set()
+    seen_ids: set[tuple[str, str | None]] = set()
     seen_tracks: set[tuple[str, str, str | None]] = set()
     for idx, song in enumerate(songs):
         if not isinstance(song, dict):
             continue
-        youtube_id = song.get("youtube_id")
-        if isinstance(youtube_id, str):
-            if youtube_id in seen_ids:
-                errors.append(f"Duplicate youtube_id at songs[{idx}]: {youtube_id}")
-            seen_ids.add(youtube_id)
-        artist = song.get("artist")
-        title = song.get("title")
         clip_id = song.get("clip_id")
         clip_key = clip_id.strip().lower() if isinstance(clip_id, str) else None
+        youtube_id = song.get("youtube_id")
+        if isinstance(youtube_id, str):
+            id_key = (youtube_id, clip_key)
+            if id_key in seen_ids:
+                errors.append(
+                    f"Duplicate youtube_id[/clip_id] at songs[{idx}]: {youtube_id}"
+                )
+            seen_ids.add(id_key)
+        artist = song.get("artist")
+        title = song.get("title")
         if isinstance(artist, str) and isinstance(title, str):
             track_key = (artist.strip().lower(), title.strip().lower(), clip_key)
             if track_key in seen_tracks:

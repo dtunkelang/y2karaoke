@@ -1,0 +1,83 @@
+version: 1
+name: curated_clip_pack_v1
+description: >
+  Targeted clip-style canaries for fast timing/alignment iteration. These entries
+  supplement the full-song curated set and isolate specific failure modes.
+default_lrc_duration_tolerance_sec: 20
+songs:
+  - artist: "The Weeknd"
+    title: "Blinding Lights"
+    clip_id: "hook-repeat"
+    audio_start_sec: 112
+    youtube_id: "fHI8X4OXluQ"
+    youtube_url: "https://www.youtube.com/watch?v=fHI8X4OXluQ"
+    preferred_lyrics_provider: "lyriq"
+    fallback_lyrics_provider: "syncedlyrics"
+    lrc_duration_tolerance_sec: 10
+    notes: "Repeated hook / late-phrase comparability clip around lines 23-28."
+
+  - artist: "ROSALIA"
+    title: "DESPECHA"
+    clip_id: "late-nonadlib-run"
+    audio_start_sec: 8
+    youtube_id: "Y2ESxHKuSOk"
+    youtube_url: "https://www.youtube.com/watch?v=Y2ESxHKuSOk"
+    preferred_lyrics_provider: "lyriq"
+    fallback_lyrics_provider: "syncedlyrics"
+    lrc_duration_tolerance_sec: 10
+    notes: "Source-side late non-adlib block around lines 5-16."
+
+  - artist: "ROSALIA"
+    title: "DESPECHA"
+    clip_id: "adlib-outro"
+    audio_start_sec: 140
+    youtube_id: "Y2ESxHKuSOk"
+    youtube_url: "https://www.youtube.com/watch?v=Y2ESxHKuSOk"
+    preferred_lyrics_provider: "lyriq"
+    fallback_lyrics_provider: "syncedlyrics"
+    lrc_duration_tolerance_sec: 10
+    notes: "Adlib/tag ambiguity block around Jeje / Uh, uh, uh, uh."
+
+  - artist: "Indila"
+    title: "Derniere danse"
+    clip_id: "terminal-tail"
+    audio_start_sec: 124
+    youtube_id: "K5KAc5CoCuk"
+    youtube_url: "https://www.youtube.com/watch?v=K5KAc5CoCuk"
+    preferred_lyrics_provider: "lyriq"
+    fallback_lyrics_provider: "syncedlyrics"
+    lrc_duration_tolerance_sec: 22
+    notes: "Late-song sparse / placeholder-heavy tail block."
+
+  - artist: "J Balvin"
+    title: "Mi Gente"
+    clip_id: "clean-control-mid"
+    audio_start_sec: 56
+    youtube_id: "wnJ6LuUFpMo"
+    youtube_url: "https://www.youtube.com/watch?v=wnJ6LuUFpMo"
+    preferred_lyrics_provider: "lyriq"
+    fallback_lyrics_provider: "syncedlyrics"
+    lrc_duration_tolerance_sec: 18
+    notes: "Clean curated control clip for sanity checks."
+
+  - artist: "The Weepies"
+    title: "Take It From Me"
+    clip_id: "source-text-stress"
+    audio_start_sec: 34
+    youtube_id: "5yUv1QYD770"
+    youtube_url: "https://www.youtube.com/watch?v=5yUv1QYD770"
+    preferred_lyrics_provider: "lyriq"
+    fallback_lyrics_provider: "syncedlyrics"
+    lrc_duration_tolerance_sec: 20
+    notes: "Early source-text mismatch region around lines 3-4."
+
+  - artist: "The Weepies"
+    title: "Take It From Me"
+    clip_id: "duet-outro"
+    audio_start_sec: 174
+    youtube_id: "5yUv1QYD770"
+    youtube_url: "https://www.youtube.com/watch?v=5yUv1QYD770"
+    preferred_lyrics_provider: "lyriq"
+    fallback_lyrics_provider: "syncedlyrics"
+    lrc_duration_tolerance_sec: 20
+    notes: "Soft-duet outro with repeated foreground/background overlap."
