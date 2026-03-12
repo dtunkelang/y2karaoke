@@ -450,7 +450,7 @@
       "line_index": 9,
       "text": "We've got a good life",
       "start": 37.4,
-      "end": 39.6,
+      "end": 40.1,
       "words": [
         {
           "word_index": 1,
@@ -480,7 +480,7 @@
           "word_index": 5,
           "text": "life",
           "start": 38.5,
-          "end": 39.6
+          "end": 40.1
         }
       ]
     }
