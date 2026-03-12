@@ -27,9 +27,7 @@ from .whisper_integration_align_experimental import (
     shift_restored_low_support_runs_to_onset as _shift_restored_low_support_runs_to_onset,
 )
 from .whisper_integration_finalize import _restore_pairwise_inversions_from_source
-from .whisper_integration_forced_fallback import (
-    attempt_whisperx_forced_alignment,
-)
+from .whisper_integration_forced_fallback import attempt_whisperx_forced_alignment
 from .whisper_integration_align_trace import (
     capture_trace_snapshot as _capture_trace_snapshot,
     maybe_write_trace_snapshot_file as _maybe_write_trace_snapshot_file,
@@ -38,9 +36,7 @@ from .whisper_integration_align_trace import (
 from .whisper_integration_shift_guard import (
     should_apply_baseline_constraint as _should_apply_baseline_constraint,
 )
-from .whisper_integration_stages import (
-    _shift_weak_opening_lines_past_phrase_carryover,
-)
+from .whisper_integration_stages import _shift_weak_opening_lines_past_phrase_carryover
 from .whisper_integration_late_run import (
     late_run_is_restorable,
     late_run_shift_for_baseline_restore,
@@ -526,6 +522,8 @@ def _reanchor_unsupported_interjection_lines_to_onsets(
     mapped_lines: List[models.Line],
     whisper_words: List[timing_models.TranscriptionWord],
     audio_features: Optional[timing_models.AudioFeatures],
+    *,
+    max_gap_before_sec: float = 2.0,
 ) -> tuple[List[models.Line], int]:
     if audio_features is None or audio_features.onset_times is None:
         return mapped_lines, 0
@@ -538,6 +536,10 @@ def _reanchor_unsupported_interjection_lines_to_onsets(
     for idx in range(len(updated) - 1):
         line = updated[idx]
         next_line = updated[idx + 1]
+        if idx > 0 and updated[idx - 1].words:
+            gap_before = line.start_time - updated[idx - 1].end_time
+            if gap_before > max_gap_before_sec:
+                continue
         window = _choose_interjection_window_from_onsets(
             line,
             next_line,
@@ -1148,6 +1150,7 @@ def align_lrc_text_to_whisper_timings_impl(  # noqa: C901
         mapped_lines, carryover_fixes = _shift_weak_opening_lines_past_phrase_carryover(
             mapped_lines,
             audio_features,
+            all_words,
         )
         if carryover_fixes:
             corrections.append(

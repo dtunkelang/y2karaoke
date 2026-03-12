@@ -37,6 +37,19 @@ def _normalize_line_text(text: str) -> str:
     return " ".join(_normalize_support_token(tok) for tok in text.split()).strip()
 
 
+def _first_substantive_support_token(line: models.Line) -> str:
+    fallback = ""
+    for word in line.words:
+        token = _normalize_support_token(word.text)
+        if not token:
+            continue
+        if not fallback:
+            fallback = token
+        if len(token) >= 2:
+            return token
+    return fallback
+
+
 def _line_has_local_first_token_support(
     mapped_lines: List[models.Line],
     line_index: int,
@@ -48,10 +61,8 @@ def _line_has_local_first_token_support(
     line = mapped_lines[line_index]
     if not line.words:
         return False
-    first_token = _normalize_support_token(line.words[0].text)
+    first_token = _first_substantive_support_token(line)
     if not first_token:
-        return True
-    if len(first_token) < 2:
         return True
     lo = line.start_time - window_lead_sec
     hi = line.start_time + window_follow_sec
@@ -127,10 +138,13 @@ def restore_weak_evidence_large_start_shifts(
         if not mapped.words or not base.words:
             continue
         shift = mapped.start_time - base.start_time
-        if shift < min_shift_sec:
+        if shift <= -min_shift_sec and len(mapped.words) < 2:
+            continue
+        abs_shift = abs(shift)
+        if abs_shift < min_shift_sec:
             continue
         if (
-            shift >= lexical_support_shift_sec
+            abs_shift >= lexical_support_shift_sec
             and not _line_has_local_first_token_support(
                 repaired,
                 idx,

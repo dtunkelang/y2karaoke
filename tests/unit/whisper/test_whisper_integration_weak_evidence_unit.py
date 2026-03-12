@@ -34,12 +34,16 @@ def test_restore_weak_evidence_large_start_shifts_restores_without_support():
 
 
 def test_restore_weak_evidence_large_start_shifts_keeps_supported_shift():
-    mapped = [_line(10.0)]
-    baseline = [_line(8.0)]
+    mapped = [
+        Line(words=[Word(text="alpha", start_time=10.0, end_time=10.4)]),
+    ]
+    baseline = [
+        Line(words=[Word(text="alpha", start_time=8.0, end_time=8.4)]),
+    ]
     whisper_words = [
-        TranscriptionWord(text="a", start=9.7, end=9.8, probability=1.0),
-        TranscriptionWord(text="b", start=10.0, end=10.1, probability=1.0),
-        TranscriptionWord(text="c", start=10.2, end=10.3, probability=1.0),
+        TranscriptionWord(text="alpha", start=9.7, end=9.8, probability=1.0),
+        TranscriptionWord(text="beta", start=10.0, end=10.1, probability=1.0),
+        TranscriptionWord(text="gamma", start=10.2, end=10.3, probability=1.0),
     ]
     repaired, restored = restore_weak_evidence_large_start_shifts(
         mapped, baseline, whisper_words
@@ -124,6 +128,124 @@ def test_restore_weak_evidence_large_start_shifts_keeps_lexically_supported_shif
 
     assert restored == 0
     assert repaired[0].start_time == 10.0
+
+
+def test_restore_weak_evidence_large_start_shifts_uses_first_substantive_token():
+    mapped = [
+        Line(
+            words=[
+                Word(text="I", start_time=12.8, end_time=13.0),
+                Word(text="said", start_time=13.0, end_time=13.2),
+                Word(text="ooh", start_time=13.2, end_time=13.4),
+            ]
+        )
+    ]
+    baseline = [
+        Line(
+            words=[
+                Word(text="I", start_time=8.0, end_time=8.2),
+                Word(text="said", start_time=8.2, end_time=8.4),
+                Word(text="ooh", start_time=8.4, end_time=8.6),
+            ]
+        )
+    ]
+    whisper_words = [
+        TranscriptionWord(text="drowning", start=12.4, end=12.8, probability=0.99),
+        TranscriptionWord(text="in", start=12.8, end=13.0, probability=0.99),
+        TranscriptionWord(text="the", start=13.0, end=13.2, probability=0.99),
+    ]
+
+    repaired, restored = restore_weak_evidence_large_start_shifts(
+        mapped,
+        baseline,
+        whisper_words,
+    )
+
+    assert restored == 1
+    assert repaired[0].start_time == 8.0
+
+
+def test_restore_weak_evidence_large_start_shifts_restores_unsupported_early_shift():
+    mapped = [
+        Line(
+            words=[
+                Word(text="No", start_time=6.0, end_time=6.2),
+                Word(text="sleep", start_time=6.2, end_time=6.7),
+            ]
+        ),
+        _line(12.0),
+    ]
+    baseline = [
+        Line(
+            words=[
+                Word(text="No", start_time=10.0, end_time=10.2),
+                Word(text="sleep", start_time=10.2, end_time=10.7),
+            ]
+        ),
+        _line(12.0),
+    ]
+    whisper_words = [
+        TranscriptionWord(text="oh", start=6.4, end=6.6, probability=0.02),
+        TranscriptionWord(text="baby", start=7.4, end=7.8, probability=0.05),
+        TranscriptionWord(text="beta", start=12.0, end=12.4, probability=0.9),
+    ]
+
+    repaired, restored = restore_weak_evidence_large_start_shifts(
+        mapped, baseline, whisper_words
+    )
+
+    assert restored == 1
+    assert repaired[0].start_time == 10.0
+
+
+def test_restore_weak_evidence_large_start_shifts_keeps_supported_early_shift():
+    mapped = [
+        Line(
+            words=[
+                Word(text="No", start_time=6.0, end_time=6.2),
+                Word(text="sleep", start_time=6.2, end_time=6.7),
+            ]
+        )
+    ]
+    baseline = [
+        Line(
+            words=[
+                Word(text="No", start_time=10.0, end_time=10.2),
+                Word(text="sleep", start_time=10.2, end_time=10.7),
+            ]
+        )
+    ]
+    whisper_words = [
+        TranscriptionWord(text="No", start=5.9, end=6.1, probability=0.99),
+        TranscriptionWord(text="sleep", start=6.18, end=6.55, probability=0.99),
+        TranscriptionWord(text="touch", start=6.6, end=6.9, probability=0.99),
+    ]
+
+    repaired, restored = restore_weak_evidence_large_start_shifts(
+        mapped, baseline, whisper_words
+    )
+
+    assert restored == 0
+    assert repaired[0].start_time == 6.0
+
+
+def test_restore_weak_evidence_large_start_shifts_keeps_single_word_early_pull():
+    mapped = [
+        Line(words=[Word(text="I'm", start_time=98.0, end_time=99.0)]),
+    ]
+    baseline = [
+        Line(words=[Word(text="I'm", start_time=120.0, end_time=121.0)]),
+    ]
+    whisper_words = [
+        TranscriptionWord(text="im", start=120.2, end=120.8, probability=0.9),
+    ]
+
+    repaired, restored = restore_weak_evidence_large_start_shifts(
+        mapped, baseline, whisper_words
+    )
+
+    assert restored == 0
+    assert repaired[0].start_time == 98.0
 
 
 def test_restore_adjacent_near_threshold_late_shifts_restores_sandwiched_run():

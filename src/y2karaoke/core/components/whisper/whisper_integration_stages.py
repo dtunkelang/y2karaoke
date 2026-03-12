@@ -99,32 +99,28 @@ def _normalize_repeated_line_durations(
 def _shift_weak_opening_lines_past_phrase_carryover(
     lines_in: List[models.Line],
     audio_features: Optional[timing_models.AudioFeatures],
+    whisper_words: Optional[List[timing_models.TranscriptionWord]] = None,
     *,
     min_gap: float = 0.05,
     carryover_buffer: float = 0.7,
+    min_local_overlap_to_keep: float = 0.35,
 ) -> tuple[List[models.Line], int]:
     if audio_features is None or audio_features.onset_times is None:
         return lines_in, 0
     onset_times = audio_features.onset_times
     if len(onset_times) == 0:
         return lines_in, 0
-    weak_opening_tokens = {"no", "maybe", "oh", "cause"}
     shifted = list(lines_in)
     applied = 0
     for idx in range(1, len(shifted)):
         prev_line = shifted[idx - 1]
         line = shifted[idx]
-        if not prev_line.words or not line.words or len(line.words) < 6:
-            continue
-        gap_before = line.start_time - prev_line.end_time
-        if gap_before > 0.25:
-            continue
-        tokens = [
-            re.sub(r"[^a-z]+", "", word.text.lower())
-            for word in line.words
-            if re.sub(r"[^a-z]+", "", word.text.lower())
-        ]
-        if not tokens or tokens[0] not in weak_opening_tokens:
+        if not _should_shift_weak_opening_line(
+            prev_line,
+            line,
+            whisper_words=whisper_words,
+            min_local_overlap_to_keep=min_local_overlap_to_keep,
+        ):
             continue
         next_start = (
             shifted[idx + 1].start_time
@@ -166,6 +162,60 @@ def _shift_weak_opening_lines_past_phrase_carryover(
         shifted[idx] = models.Line(words=shifted_words, singer=line.singer)
         applied += 1
     return shifted, applied
+
+
+def _should_shift_weak_opening_line(
+    prev_line: models.Line,
+    line: models.Line,
+    *,
+    whisper_words: Optional[List[timing_models.TranscriptionWord]],
+    min_local_overlap_to_keep: float,
+) -> bool:
+    if not prev_line.words or not line.words or len(line.words) < 6:
+        return False
+    if line.start_time - prev_line.end_time > 0.25:
+        return False
+    tokens = _normalized_line_tokens(line)
+    if not tokens or tokens[0] not in {"no", "maybe", "oh", "cause"}:
+        return False
+    if whisper_words is None:
+        return True
+    return _local_line_token_overlap(line, whisper_words) < min_local_overlap_to_keep
+
+
+def _normalized_line_tokens(line: models.Line) -> list[str]:
+    return [
+        token
+        for word in line.words
+        if (token := re.sub(r"[^a-z]+", "", word.text.lower()))
+    ]
+
+
+def _local_line_token_overlap(
+    line: models.Line,
+    whisper_words: List[timing_models.TranscriptionWord],
+    *,
+    pad_before: float = 0.8,
+    pad_after: float = 0.8,
+) -> float:
+    line_tokens = {
+        re.sub(r"[^a-z]+", "", word.text.lower())
+        for word in line.words
+        if re.sub(r"[^a-z]+", "", word.text.lower())
+    }
+    if not line_tokens:
+        return 0.0
+    nearby_tokens = {
+        re.sub(r"[^a-z]+", "", word.text.lower())
+        for word in whisper_words
+        if line.start_time - pad_before <= word.start <= line.end_time + pad_after
+        and word.text != "[VOCAL]"
+        and re.sub(r"[^a-z]+", "", word.text.lower())
+    }
+    if not nearby_tokens:
+        return 0.0
+    overlap = len(line_tokens & nearby_tokens)
+    return overlap / max(len(line_tokens), len(nearby_tokens))
 
 
 def _enforce_mapped_line_stage_invariants(
@@ -345,6 +395,7 @@ def _run_mapped_line_postpasses(
         mapped_lines, carryover_fixes = _shift_weak_opening_lines_past_phrase_carryover(
             mapped_lines,
             audio_features,
+            all_words,
         )
         if carryover_fixes:
             corrections.append(

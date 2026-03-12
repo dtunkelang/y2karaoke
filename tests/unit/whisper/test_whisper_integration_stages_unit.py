@@ -253,3 +253,47 @@ def test_shift_weak_opening_lines_past_phrase_carryover_moves_line_when_gap_is_t
     assert count == 1
     assert adjusted[1].start_time == 157.11
     assert adjusted[1].end_time == pytest.approx(160.10, abs=1e-2)
+
+
+def test_shift_weak_opening_lines_past_phrase_carryover_keeps_supported_line():
+    lines = [
+        Line(words=[Word(text="lights", start_time=120.59, end_time=121.97)]),
+        Line(
+            words=[
+                Word(text="No,", start_time=122.84, end_time=123.17),
+                Word(text="I", start_time=123.17, end_time=123.5),
+                Word(text="can't", start_time=123.5, end_time=123.85),
+                Word(text="sleep", start_time=123.85, end_time=124.2),
+                Word(text="until", start_time=124.2, end_time=124.6),
+                Word(text="I", start_time=124.6, end_time=124.9),
+                Word(text="feel", start_time=124.9, end_time=125.2),
+                Word(text="your", start_time=125.2, end_time=125.5),
+                Word(text="touch", start_time=125.5, end_time=126.19),
+            ]
+        ),
+        Line(words=[Word(text="next", start_time=128.09, end_time=128.8)]),
+    ]
+    whisper_words = [
+        TranscriptionWord(text="No", start=122.92, end=123.10, probability=0.99),
+        TranscriptionWord(text="sleep", start=123.75, end=124.15, probability=0.99),
+        TranscriptionWord(text="feel", start=124.85, end=125.10, probability=0.99),
+        TranscriptionWord(text="touch", start=125.45, end=126.15, probability=0.99),
+    ]
+    audio_features = AudioFeatures(
+        onset_times=np.array([123.54, 123.89, 124.32], dtype=float),
+        silence_regions=[],
+        vocal_start=0.0,
+        vocal_end=200.0,
+        duration=200.0,
+        energy_envelope=np.array([], dtype=float),
+        energy_times=np.array([], dtype=float),
+    )
+
+    adjusted, count = stages._shift_weak_opening_lines_past_phrase_carryover(
+        lines,
+        audio_features,
+        whisper_words,
+    )
+
+    assert count == 0
+    assert adjusted[1].start_time == pytest.approx(122.84, abs=1e-2)

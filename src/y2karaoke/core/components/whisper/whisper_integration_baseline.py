@@ -67,9 +67,22 @@ def _restore_implausibly_short_lines(
             continue
         if original is None or aligned is None:
             continue
+        original_duration = original.end_time - original.start_time
+        aligned_duration = aligned.end_time - aligned.start_time
+        severe_duration_collapse = (
+            len(aligned.words) >= 5
+            and original_duration >= 3.0
+            and aligned_duration > 0.0
+            and aligned_duration <= original_duration * 0.6
+            and (original_duration - aligned_duration) >= 1.2
+        )
         if _is_implausibly_short_multiword_line(
             aligned
         ) and not _is_implausibly_short_multiword_line(original):
+            repaired.append(original)
+            restored += 1
+            continue
+        if severe_duration_collapse:
             repaired.append(original)
             restored += 1
             continue

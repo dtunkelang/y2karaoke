@@ -166,6 +166,43 @@ def test_restore_implausibly_short_lines_restores_dense_nine_word_compression():
     assert repaired[0].end_time == pytest.approx(99.8)
 
 
+def test_restore_implausibly_short_lines_restores_severe_long_line_collapse():
+    baseline = [
+        Line(
+            words=[
+                Word(text="I", start_time=184.45, end_time=184.75),
+                Word(text="said", start_time=184.75, end_time=185.15),
+                Word(text="ooh", start_time=185.15, end_time=187.6),
+                Word(text="I'm", start_time=187.6, end_time=188.2),
+                Word(text="blinded", start_time=188.2, end_time=188.8),
+                Word(text="by", start_time=188.8, end_time=189.05),
+                Word(text="the", start_time=189.05, end_time=189.45),
+                Word(text="lights", start_time=189.45, end_time=190.45),
+            ]
+        )
+    ]
+    aligned = [
+        Line(
+            words=[
+                Word(text="I", start_time=184.0, end_time=184.044),
+                Word(text="said", start_time=184.044, end_time=184.481),
+                Word(text="ooh", start_time=184.481, end_time=184.525),
+                Word(text="I'm", start_time=184.525, end_time=184.962),
+                Word(text="blinded", start_time=184.962, end_time=185.399),
+                Word(text="by", start_time=185.399, end_time=185.443),
+                Word(text="the", start_time=185.443, end_time=185.449),
+                Word(text="lights", start_time=185.449, end_time=185.73),
+            ]
+        )
+    ]
+
+    repaired, restored = wib._restore_implausibly_short_lines(baseline, aligned)
+
+    assert restored == 1
+    assert repaired[0].start_time == pytest.approx(baseline[0].start_time)
+    assert repaired[0].end_time == pytest.approx(baseline[0].end_time)
+
+
 def test_restore_pairwise_inversions_from_source_restores_outlier():
     source = [
         Line(words=[Word(text="a", start_time=100.0, end_time=101.0)]),
