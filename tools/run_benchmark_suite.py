@@ -29,7 +29,7 @@ from y2karaoke.core.components.whisper.whisper_alignment_line_helpers import (
 REPO_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_MANIFEST = REPO_ROOT / "benchmarks" / "benchmark_songs.yaml"
 DEFAULT_RESULTS_ROOT = REPO_ROOT / "benchmarks" / "results"
-DEFAULT_GOLD_ROOT = REPO_ROOT / "benchmarks" / "gold_set"
+DEFAULT_GOLD_ROOT = REPO_ROOT / "benchmarks" / "gold_set_candidate" / "20260305T231015Z"
 _AGREEMENT_FILLER_TOKENS = {
     "ah",
     "aah",
